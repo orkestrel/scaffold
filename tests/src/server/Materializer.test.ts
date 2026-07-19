@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { blueprint } from '@src/core'
 import { blueprintToPlan } from '@src/core'
+import { dependency } from '@src/core'
 import { isScaffoldError } from '@src/core'
 import { createMaterializer, isVacant, readTarget } from '@src/server'
 import { createRecorder } from '../../setup.js'
@@ -247,6 +248,134 @@ describe('Materializer.materialize', () => {
 			// `done` is the LAST event, emitted after every per-artifact outcome.
 			expect(sequence.at(-1)).toBe('done')
 			expect(sequence.filter((name) => name === 'done')).toHaveLength(1)
+			materializer.destroy()
+		} finally {
+			await directory.cleanup()
+		}
+	})
+})
+
+// ── Materializer — path containment (defense in depth) ──────────────────────
+
+describe('Materializer — path containment', () => {
+	it('throws the WRITE containment error for a traversal DESTINATION path, writing nothing outside target', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			const plan: Plan = {
+				blueprint: blueprint('traversal-dest-fixture', { surfaces: ['core'] }),
+				groups: ['docs'],
+				artifacts: [{ path: '../escaped.txt', group: 'docs', origin: 'computed', content: 'evil' }],
+			}
+			const materializer = createMaterializer({ host: WORKSPACE_ROOT })
+			let caught: unknown
+			try {
+				materializer.materialize(plan, directory.path)
+			} catch (error) {
+				caught = error
+			}
+			if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
+			expect(caught.code).toBe('WRITE')
+			expect(existsSync(join(directory.path, '..', 'escaped.txt'))).toBe(false)
+			materializer.destroy()
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('throws the TARGET containment error for a traversal host SOURCE path, reading nothing outside host', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			const plan: Plan = {
+				blueprint: blueprint('traversal-source-fixture', { surfaces: ['core'] }),
+				groups: ['docs'],
+				artifacts: [
+					{
+						path: 'escaped.txt',
+						group: 'docs',
+						origin: 'host',
+						source: '../escaped-secret.txt',
+					},
+				],
+			}
+			const materializer = createMaterializer({ host: WORKSPACE_ROOT })
+			let caught: unknown
+			try {
+				materializer.materialize(plan, directory.path)
+			} catch (error) {
+				caught = error
+			}
+			if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
+			expect(caught.code).toBe('TARGET')
+			expect(existsSync(join(directory.path, 'escaped.txt'))).toBe(false)
+			materializer.destroy()
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('holds even when the gate was bypassed — a hand-spliced traversal pointer artifact on a real blueprintToPlan plan still throws', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			// Mirrors the SHAPE `Compiler.#pointerArtifacts` would build for a
+			// traversal-named dependency (`@orkestrel/../evil` → `guides/src/../evil.md`)
+			// — but here it is spliced directly onto a real `blueprintToPlan` plan,
+			// skipping `Compiler`'s gate entirely, to prove the Materializer's OWN
+			// containment holds regardless of how the artifact arrived.
+			const base = blueprintToPlan(
+				blueprint('gate-bypass-fixture', {
+					surfaces: ['core'],
+					dependencies: [dependency('@orkestrel/contract', '^0.0.5')],
+				}),
+				['docs'],
+			)
+			const plan: Plan = {
+				...base,
+				artifacts: [
+					...base.artifacts,
+					{
+						path: 'guides/src/../../escaped.md',
+						group: 'guides',
+						origin: 'host',
+						source: 'guides/src/../../escaped.md',
+					},
+				],
+			}
+			const materializer = createMaterializer({ host: WORKSPACE_ROOT })
+			let caught: unknown
+			try {
+				materializer.materialize(plan, directory.path)
+			} catch (error) {
+				caught = error
+			}
+			if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
+			expect(['WRITE', 'TARGET']).toContain(caught.code)
+			materializer.destroy()
+		} finally {
+			await directory.cleanup()
+		}
+	})
+})
+
+// ── Materializer.materialize — group-scoped plan into a vacant target ───────
+
+describe('Materializer.materialize — group-scoped plan', () => {
+	it('writes ONLY the scoped groups artifacts — a deliberate partial tree', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			const plan = blueprintToPlan(blueprint('scoped-fixture', { surfaces: ['core'] }), ['docs'])
+			expect(plan.artifacts.length).toBeGreaterThan(0)
+			expect(plan.artifacts.every((artifact) => artifact.group === 'docs')).toBe(true)
+
+			const materializer = createMaterializer({ host: WORKSPACE_ROOT })
+			const result = materializer.materialize(plan, directory.path)
+
+			expect(result.written.length + result.copied.length).toBe(plan.artifacts.length)
+			for (const artifact of plan.artifacts) {
+				expect(existsSync(join(directory.path, artifact.path))).toBe(true)
+			}
+			// Nothing outside the `docs` group landed — no `package.json`, no `src/`.
+			expect(existsSync(join(directory.path, 'package.json'))).toBe(false)
+			expect(existsSync(join(directory.path, 'src'))).toBe(false)
 			materializer.destroy()
 		} finally {
 			await directory.cleanup()

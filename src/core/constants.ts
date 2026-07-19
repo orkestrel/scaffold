@@ -87,6 +87,14 @@ export const HOST_PATHS = Object.freeze([
 /** The package-name RegExp — the `scaffold.sh` name law, now data. */
 export const NAME_PATTERN = /^[a-z][a-z0-9-]*$/
 
+/**
+ * The `@orkestrel/*` dependency-name RegExp — every `Dependency.name` must be
+ * scoped to `@orkestrel` and NAME_PATTERN-shaped after the scope, closing the
+ * traversal vector a hand-built `../`-laced name would open through
+ * `Compiler.#pointerArtifacts`' `guides/src/<short>.md` path derivation.
+ */
+export const DEPENDENCY_NAME_PATTERN = /^@orkestrel\/[a-z][a-z0-9-]*$/
+
 /** The starting version the `blueprint` builder fills. */
 export const DEFAULT_VERSION = '0.0.1'
 

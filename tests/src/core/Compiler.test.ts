@@ -98,6 +98,24 @@ describe('Compiler#compile — fail-closed gate paths', () => {
 		).toBe(true)
 		compiler.destroy()
 	})
+
+	it('blocks on a traversal-shaped dependency name, gating BEFORE #pointerArtifacts ever runs', () => {
+		const compiler = new Compiler()
+
+		const scaffolding = compiler.compile(
+			blueprint('router', {
+				surfaces: ['core'],
+				dependencies: [dependency('@orkestrel/../evil', '^1.0.0')],
+			}),
+			['manifest'],
+		)
+
+		expect(scaffolding.complete).toBe(false)
+		expect(scaffolding.plan).toBeUndefined()
+		expect(scaffolding.questions.some((question) => question.field === 'dependencies')).toBe(true)
+		expect(scaffolding.failures.some((failure) => failure.code === 'BLOCKED')).toBe(true)
+		compiler.destroy()
+	})
 })
 
 describe('Compiler#compile — non-vendored dependency', () => {

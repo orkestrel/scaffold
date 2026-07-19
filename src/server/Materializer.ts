@@ -7,7 +7,7 @@ import type {
 import type { Artifact, Audit, Plan } from '@src/core'
 import type { EmitterInterface } from '@orkestrel/emitter'
 import { cpSync, existsSync, mkdirSync, writeFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname, join, resolve, sep } from 'node:path'
 import { Emitter } from '@orkestrel/emitter'
 import { ScaffoldError } from '@src/core'
 import { isVacant } from './helpers.js'
@@ -25,6 +25,16 @@ import { isVacant } from './helpers.js'
  * `missing` / `stale` artifacts an `Audit` names, leaving `aligned` ones
  * untouched. After `destroy()` every method throws `DESTROYED`; teardown is
  * idempotent, emitter last.
+ *
+ * @remarks
+ * Defense in depth at the filesystem trust boundary: EVERY resolved
+ * destination (`materialize` and `repair`, both origins) is asserted to stay
+ * within `resolve(target)` before any write, and every `host`-origin copy
+ * source is asserted to stay within `resolve(host)` before any read — a
+ * traversal segment (`../`) in an artifact's `path` or `source` cannot escape
+ * either root, even if a gate upstream (e.g. an ungated `Plan` built by hand)
+ * let it through. A destination violation throws `ScaffoldError('WRITE', …)`;
+ * a source violation throws `ScaffoldError('TARGET', …)`.
  *
  * @example
  * ```ts
@@ -128,8 +138,8 @@ export class Materializer implements MaterializerInterface {
 
 	#copy(artifact: Artifact, target: string): void {
 		const source = artifact.source ?? artifact.path
-		const from = join(this.#host, source)
-		const to = join(target, artifact.path)
+		const from = Materializer.#assertContained(this.#host, source, 'TARGET', artifact.path)
+		const to = Materializer.#assertContained(target, artifact.path, 'WRITE', artifact.path)
 		try {
 			mkdirSync(dirname(to), { recursive: true })
 			cpSync(from, to, { recursive: true })
@@ -144,7 +154,7 @@ export class Materializer implements MaterializerInterface {
 	}
 
 	#write(artifact: Artifact, target: string): void {
-		const to = join(target, artifact.path)
+		const to = Materializer.#assertContained(target, artifact.path, 'WRITE', artifact.path)
 		try {
 			mkdirSync(dirname(to), { recursive: true })
 			writeFileSync(to, artifact.content ?? '', 'utf8')
@@ -156,6 +166,30 @@ export class Materializer implements MaterializerInterface {
 			})
 		}
 		this.#emitter.emit('write', artifact.path)
+	}
+
+	// Resolve `join(root, relative)` and assert it stays within `resolve(root)`
+	// — a prefix check against the resolved root PLUS a path separator, never
+	// naive `startsWith` on the raw joined string. `code` is `'WRITE'` for a
+	// destination escape (asserted against `target`) and `'TARGET'` for a
+	// source escape (asserted against `host`), per the Errors section's coded
+	// semantics.
+	static #assertContained(
+		root: string,
+		relative: string,
+		code: 'WRITE' | 'TARGET',
+		path: string,
+	): string {
+		const resolvedRoot = resolve(root)
+		const resolvedCandidate = resolve(root, relative)
+		if (resolvedCandidate !== resolvedRoot && !resolvedCandidate.startsWith(resolvedRoot + sep)) {
+			const boundary = code === 'WRITE' ? 'target' : 'host'
+			throw new ScaffoldError(code, `Artifact path "${path}" escapes the ${boundary} root`, {
+				path,
+				root,
+			})
+		}
+		return resolvedCandidate
 	}
 
 	#ensureAlive(): void {

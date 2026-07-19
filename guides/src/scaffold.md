@@ -156,20 +156,21 @@ what keeps the core pure while still describing files it cannot itself read.
 
 ### Constants
 
-| API               | Kind  | Summary                                                                                                                                                                                                                                                                                                                                                                          |
-| ----------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SURFACES`        | const | The three `Surface` values, frozen — compose with `literalOf(...)` / `parseEnum(...)`.                                                                                                                                                                                                                                                                                           |
-| `ORIGINS`         | const | The three `Origin` values, frozen.                                                                                                                                                                                                                                                                                                                                               |
-| `GROUPS`          | const | The seven `Group` values, frozen — the artifact-group selection vocabulary.                                                                                                                                                                                                                                                                                                      |
-| `CATEGORIES`      | const | The four `Category` values, frozen.                                                                                                                                                                                                                                                                                                                                              |
-| `COMPILE_STAGES`  | const | `['draft', 'gate', 'pin']`, frozen — the pipeline phases in order.                                                                                                                                                                                                                                                                                                               |
-| `SURFACE_MATRIX`  | const | The §1.2 variant matrix as data: per `Surface`, its `configs/src` files, Vitest project label, `exports` subpath, and build formats — the per-surface layer `blueprintToPlan` reads BENEATH the SCAFFOLD.md §4.2/§4.3 combination rules it applies on top.                                                                                                                       |
-| `HOST_PATHS`      | const | The byte-copied host artifact paths (AGENTS.md, CLAUDE.md, SCAFFOLD.md, LICENSE, `.claude`, `scripts/*` — the SessionStart hooks + `mirror.sh` + `scaffold.sh` today — `.editorconfig`, `.gitattributes`, `.gitignore`, `.oxfmtrc.json`, `.oxlintrc.json`, `.oxlintignore`, `.prettierignore`, `.github/workflows/ci.yml`), frozen; `scaffold.sh` leaves this set at retirement. |
-| `NAME_PATTERN`    | const | The `/^[a-z][a-z0-9-]*$/` package-name RegExp (the `scaffold.sh` name law, now data).                                                                                                                                                                                                                                                                                            |
-| `DEFAULT_VERSION` | const | `'0.0.1'` — the starting version the `blueprint` builder fills.                                                                                                                                                                                                                                                                                                                  |
-| `DEFAULT_ENGINES` | const | `'>=22'` — the `engines.node` range the `blueprint` builder fills.                                                                                                                                                                                                                                                                                                               |
-| `COMPILER_ID`     | const | `'compiler'` — the default id for a `Compiler` orchestrator.                                                                                                                                                                                                                                                                                                                     |
-| `TEMPLATES`       | const | The shipped, versioned `TemplateDefinition` data every `template`-origin artifact fills against (README, the own-guide stub, the guides index, the source/test stubs) — placeholders documented per entry, frozen.                                                                                                                                                               |
+| API                       | Kind  | Summary                                                                                                                                                                                                                                                                                                                                                                          |
+| ------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SURFACES`                | const | The three `Surface` values, frozen — compose with `literalOf(...)` / `parseEnum(...)`.                                                                                                                                                                                                                                                                                           |
+| `ORIGINS`                 | const | The three `Origin` values, frozen.                                                                                                                                                                                                                                                                                                                                               |
+| `GROUPS`                  | const | The seven `Group` values, frozen — the artifact-group selection vocabulary.                                                                                                                                                                                                                                                                                                      |
+| `CATEGORIES`              | const | The four `Category` values, frozen.                                                                                                                                                                                                                                                                                                                                              |
+| `COMPILE_STAGES`          | const | `['draft', 'gate', 'pin']`, frozen — the pipeline phases in order.                                                                                                                                                                                                                                                                                                               |
+| `SURFACE_MATRIX`          | const | The §1.2 variant matrix as data: per `Surface`, its `configs/src` files, Vitest project label, `exports` subpath, and build formats — the per-surface layer `blueprintToPlan` reads BENEATH the SCAFFOLD.md §4.2/§4.3 combination rules it applies on top.                                                                                                                       |
+| `HOST_PATHS`              | const | The byte-copied host artifact paths (AGENTS.md, CLAUDE.md, SCAFFOLD.md, LICENSE, `.claude`, `scripts/*` — the SessionStart hooks + `mirror.sh` + `scaffold.sh` today — `.editorconfig`, `.gitattributes`, `.gitignore`, `.oxfmtrc.json`, `.oxlintrc.json`, `.oxlintignore`, `.prettierignore`, `.github/workflows/ci.yml`), frozen; `scaffold.sh` leaves this set at retirement. |
+| `NAME_PATTERN`            | const | The `/^[a-z][a-z0-9-]*$/` package-name RegExp (the `scaffold.sh` name law, now data).                                                                                                                                                                                                                                                                                            |
+| `DEPENDENCY_NAME_PATTERN` | const | The `/^@orkestrel\/[a-z][a-z0-9-]*$/` dependency-name RegExp — every `Dependency.name` must be `@orkestrel`-scoped and NAME_PATTERN-shaped after the scope, closing the traversal vector a hand-built `../`-laced name would open through `Compiler`'s pointer-artifact path derivation.                                                                                         |
+| `DEFAULT_VERSION`         | const | `'0.0.1'` — the starting version the `blueprint` builder fills.                                                                                                                                                                                                                                                                                                                  |
+| `DEFAULT_ENGINES`         | const | `'>=22'` — the `engines.node` range the `blueprint` builder fills.                                                                                                                                                                                                                                                                                                               |
+| `COMPILER_ID`             | const | `'compiler'` — the default id for a `Compiler` orchestrator.                                                                                                                                                                                                                                                                                                                     |
+| `TEMPLATES`               | const | The shipped, versioned `TemplateDefinition` data every `template`-origin artifact fills against (README, the own-guide stub, the guides index, the source/test stubs) — placeholders documented per entry, frozen.                                                                                                                                                               |
 
 ```ts
 import {
@@ -480,6 +481,11 @@ excludes `src/bin`).
 | `audit`   | `Audit`       | Compile the blueprint (optionally group-scoped), then diff the plan against the caller-supplied current target content — drift findings as data, no I/O. A gate-failing blueprint returns an `Audit` with `complete: false`, the gate's blocking `questions`, and ZERO findings — no plan to diff. |
 | `destroy` | `void`        | Idempotent teardown — emits `destroy`, then destroys the emitter LAST.                                                                                                                                                                                                                             |
 
+A groups-scoped `Scaffolding`'s `plan`, materialized into a VACANT target, writes only THOSE
+groups' artifacts — a deliberate partial tree, not a complete package. Full package creation
+uses the unscoped `compile` (no `groups` argument); `repair` — which reads an existing target's
+`Audit` rather than assuming vacancy — is the primary scoped consumer.
+
 ```ts
 import { blueprint, createCompiler } from '@orkestrel/scaffold'
 
@@ -502,9 +508,11 @@ compiler.destroy()
 
 #### `PlanManagerInterface`
 
-The self-owning, ordered registry over plans (AGENTS §9). `add` derives each record's `hash`
-from the plan's CONTENT and bumps `version` only when that hash changes; an absent id
-defaults to the content hash itself — deterministic minting, no randomness. The array
+The self-owning, ordered registry over plans (AGENTS §9). `add` re-pins the plan and mints
+each record's `id` FROM its content `hash` — the hash IS the identity, so distinct content
+always mints a fresh record at `version: 1`; re-adding a plan whose content is unchanged
+resolves to the SAME id and returns the existing record untouched, `version` never
+incrementing. The array
 overload of `remove` is declared FIRST (AGENTS §9.2) so an id list resolves to the batch
 form. A call after `destroy()` throws `ScaffoldError('DESTROYED', …)`.
 
@@ -1015,8 +1023,9 @@ fleet.
   override layering, fail-closed blocking (questions + `BLOCKED` failure + absent plan), event
   sequences (`compile` vs `block`, `audit`), idempotent `destroy`, `DESTROYED` throws.
 - [`tests/src/core/PlanManager.test.ts`](../../tests/src/core/PlanManager.test.ts) —
-  content-hash id minting, version bump only on content change, batch `remove`
-  all-or-nothing, per-event emissions, destroy semantics.
+  content-hash IS the id, distinct content mints a fresh record at `version: 1`, an
+  unchanged re-add returns the existing record with `version` never incrementing, batch
+  `remove` all-or-nothing, per-event emissions, destroy semantics.
 - [`tests/src/core/helpers.test.ts`](../../tests/src/core/helpers.test.ts) — every projection
   (`blueprintToMembers` inventory, `blueprintToPlan` variant coverage + `SURFACE_MATRIX`
   wiring + the §4.2/§4.3 combination rules, template-fill vs computed origins + the

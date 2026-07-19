@@ -16,7 +16,13 @@ import type {
 	Validation,
 } from './types.js'
 import { parseInline, renderMarkdown } from '@orkestrel/markdown'
-import { DEFAULT_ENGINES, DEFAULT_VERSION, NAME_PATTERN, SURFACES } from './constants.js'
+import {
+	DEFAULT_ENGINES,
+	DEFAULT_VERSION,
+	DEPENDENCY_NAME_PATTERN,
+	NAME_PATTERN,
+	SURFACES,
+} from './constants.js'
 
 /**
  * Build a fresh `Dependency`.
@@ -379,7 +385,8 @@ export function diffPlan(plan: Plan, current: Readonly<Record<string, string>>):
 		if (path.startsWith('docs/')) return 'docs'
 		if (path.startsWith('configs/')) return 'configs'
 		if (path.startsWith('.github/') || path.startsWith('scripts/')) return 'orchestration'
-		return 'manifest'
+		if (path === 'package.json' || path === 'package-lock.json') return 'manifest'
+		return 'configs'
 	}
 	const findings: Finding[] = []
 	const owned = new Set<string>()
@@ -430,7 +437,10 @@ export function diffPlan(plan: Plan, current: Readonly<Record<string, string>>):
  * @remarks
  * Checks the name against `NAME_PATTERN`, non-empty on-vocabulary `surfaces`
  * with no repeats (a repeat would produce duplicate members), and well-formed
- * `dependencies` (non-empty name/range, no duplicate dependency names).
+ * `dependencies` (non-empty name/range, name shaped `DEPENDENCY_NAME_PATTERN`,
+ * no duplicate dependency names) — a NAME-shaped law at the gate that closes
+ * the traversal vector a hand-built `../`-laced dependency name would open
+ * through `Compiler.#pointerArtifacts`.
  * @returns A `Validation` — never throws.
  *
  * @example
@@ -476,6 +486,12 @@ export function validateBlueprint(spec: Blueprint): Validation {
 			questions.push({
 				field: 'dependencies',
 				text: 'A dependency name must not be empty',
+				blocking: true,
+			})
+		} else if (!DEPENDENCY_NAME_PATTERN.test(item.name)) {
+			questions.push({
+				field: 'dependencies',
+				text: `Dependency name "${item.name}" must match ${DEPENDENCY_NAME_PATTERN.source}`,
 				blocking: true,
 			})
 		}

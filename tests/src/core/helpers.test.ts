@@ -232,6 +232,20 @@ describe('diffPlan — the four drift classes', () => {
 		)
 	})
 
+	it('infers a root-level, prefix-less foreign path as configs, except the two manifest files', () => {
+		const plan = blueprintToPlan(blueprint('router', { surfaces: ['core'] }), [])
+		const audit = diffPlan(plan, { 'mystery.config.ts': 'x', 'package-lock.json': 'y' })
+
+		expect(audit.findings.find((finding) => finding.path === 'mystery.config.ts')?.group).toBe(
+			'configs',
+		)
+		const packageLockFinding = audit.findings.find(
+			(finding) => finding.path === 'package-lock.json',
+		)
+		expect(packageLockFinding?.drift).toBe('foreign')
+		expect(packageLockFinding?.group).toBe('manifest')
+	})
+
 	it('audits a host-origin artifact by presence only — never stale', () => {
 		const plan = blueprintToPlan(blueprint('router', { surfaces: ['core'] }), ['docs'])
 		const hostArtifact = plan.artifacts.find((artifact) => artifact.origin === 'host')
@@ -281,9 +295,22 @@ describe('validateBlueprint', () => {
 		})
 
 		expect(validation.valid).toBe(false)
+		// 'x' is a non-empty but off-DEPENDENCY_NAME_PATTERN name, plus its empty
+		// range — 3 dependency-field questions total, not 2.
 		expect(
 			validation.questions.filter((question) => question.field === 'dependencies').length,
-		).toBe(2)
+		).toBe(3)
+	})
+
+	it('blocks a non-empty dependency name off DEPENDENCY_NAME_PATTERN (the traversal-name gate)', () => {
+		const validation = validateBlueprint({
+			...blueprint('router'),
+			dependencies: [dependency('@orkestrel/../evil', '^1')],
+		})
+
+		expect(validation.valid).toBe(false)
+		expect(validation.questions.some((question) => question.field === 'dependencies')).toBe(true)
+		expect(validation.questions.every((question) => question.blocking)).toBe(true)
 	})
 
 	it('blocks a duplicate dependency name', () => {

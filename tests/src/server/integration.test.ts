@@ -127,4 +127,41 @@ describe('server integration: compile → materialize → audit → repair', () 
 			await vendoredDirectory.cleanup()
 		}
 	})
+
+	it('compiles a multi-surface (core+server) blueprint UNSCOPED, materializes clean, and the disk package.json carries the ./server subpath with no top-level types', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			const compiler = createCompiler()
+			const scaffolding = compiler.compile(blueprint('multitool', { surfaces: ['core', 'server'] }))
+			expect(scaffolding.complete).toBe(true)
+			if (scaffolding.plan === undefined) throw new Error('expected a pinned plan')
+			const plan = scaffolding.plan
+			const paths = plan.artifacts.map((artifact) => artifact.path)
+
+			const materializer = createMaterializer({ host: WORKSPACE_ROOT })
+			materializer.materialize(plan, directory.path)
+
+			const audit = diffPlan(plan, readTarget(directory.path, paths))
+			expect(audit.clean).toBe(true)
+
+			function isRecord(value: unknown): value is Record<string, unknown> {
+				return typeof value === 'object' && value !== null && !Array.isArray(value)
+			}
+			const manifest: unknown = JSON.parse(
+				readFileSync(join(directory.path, 'package.json'), 'utf8'),
+			)
+			if (!isRecord(manifest)) throw new Error('expected package.json to parse to a JSON object')
+			expect(Object.prototype.hasOwnProperty.call(manifest, 'types')).toBe(false)
+			const exportsMap = manifest.exports
+			if (!isRecord(exportsMap)) {
+				throw new Error('expected package.json exports to parse to a JSON object')
+			}
+			expect(Object.prototype.hasOwnProperty.call(exportsMap, './server')).toBe(true)
+
+			materializer.destroy()
+			compiler.destroy()
+		} finally {
+			await directory.cleanup()
+		}
+	})
 })
