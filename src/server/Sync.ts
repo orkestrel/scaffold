@@ -1,9 +1,24 @@
 import type { SyncEventMap, SyncInterface, SyncOptions } from './types.js'
-import type { Dependency, Freshness, GuideSync, SyncReport, VersionSync } from '@src/core'
+import type {
+	CatalogEntry,
+	Dependency,
+	Freshness,
+	GuideSync,
+	SyncReport,
+	VersionSync,
+} from '@src/core'
 import type { EmitterInterface } from '@orkestrel/emitter'
+import type { BlockquoteNode } from '@orkestrel/markdown'
 import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative as relativeOf, resolve, sep } from 'node:path'
 import { Emitter } from '@orkestrel/emitter'
+import {
+	flattenText,
+	isBlockquoteNode,
+	isParagraphNode,
+	parseDocument,
+	walkNodes,
+} from '@orkestrel/markdown'
 import { manifestToDependencies, rangeToFreshness, ScaffoldError } from '@src/core'
 import { readManifest } from './helpers.js'
 
@@ -49,7 +64,6 @@ export class Sync implements SyncInterface {
 	readonly #guidesBase: string
 	readonly #branch: string
 	readonly #guidesTimeout: number
-	readonly #guidesToken: string | undefined
 	readonly #registryBase: string
 	readonly #registryTimeout: number
 	readonly #concurrency: number
@@ -63,7 +77,6 @@ export class Sync implements SyncInterface {
 		this.#guidesBase = options?.guides?.base ?? 'raw.githubusercontent.com'
 		this.#branch = options?.guides?.branch ?? 'main'
 		this.#guidesTimeout = options?.guides?.timeout ?? Sync.#DEFAULT_TIMEOUT
-		this.#guidesToken = options?.guides?.token
 		this.#registryBase = options?.registry?.base ?? 'registry.npmjs.org'
 		this.#registryTimeout = options?.registry?.timeout ?? Sync.#DEFAULT_TIMEOUT
 		this.#concurrency = options?.concurrency ?? Sync.#DEFAULT_CONCURRENCY
@@ -81,18 +94,10 @@ export class Sync implements SyncInterface {
 		current?: Readonly<Record<string, string>>,
 	): Promise<readonly GuideSync[]> {
 		this.#ensureAlive()
-		const headers =
-			this.#guidesToken !== undefined ? { Authorization: `Bearer ${this.#guidesToken}` } : undefined
 		return Sync.#runPool(deps, this.#concurrency, async (dep) => {
 			const short = Sync.#shortName(dep.name)
 			const url = this.#guideUrl(short)
-			const outcome = await Sync.#fetchText(
-				url,
-				this.#guidesTimeout,
-				this.#retries,
-				this.#limit,
-				headers,
-			)
+			const outcome = await Sync.#fetchText(url, this.#guidesTimeout, this.#retries, this.#limit)
 			const guide = Sync.#toGuideSync(dep.name, short, outcome, current)
 			if (outcome.kind === 'failed') this.#emitter.emit('error', outcome.error)
 			this.#emitter.emit('guide', dep.name)
@@ -122,6 +127,68 @@ export class Sync implements SyncInterface {
 			}
 			return version
 		})
+	}
+
+	/**
+	 * The fleet package catalog, sourced from the npm registry — the
+	 * AUTHORITATIVE enumeration (never a caller-supplied root).
+	 *
+	 * @returns One {@link CatalogEntry} per `@orkestrel/*` package the registry
+	 * lists, code-unit sorted by `name`.
+	 * @remarks
+	 * Three fetches build each entry: (1) the org's exact package-list
+	 * (`-/org/orkestrel/package`) enumerates every published name — an
+	 * unreachable or malformed response throws a coded `ScaffoldError('FETCH')`
+	 * UNCONDITIONALLY (never gated by `strict`), since without it there is no
+	 * catalog to build; (2) each name's own registry packument supplies
+	 * `version` (`dist-tags.latest`) and a registry-path `description`
+	 * fallback — a failed/malformed packument keeps the entry (degraded:
+	 * `version: ''`) rather than dropping it, since the org list already
+	 * proved the package exists; (3) each name's own guide
+	 * (`guides/src/<short>.md`, same canonical URL as `guides()`, fetched
+	 * unauthenticated — every fleet repo is public) supplies the PREFERRED
+	 * `description` — its first blockquote's first paragraph — falling back
+	 * to the packument description when the guide 404s, faults, or carries no
+	 * blockquote; a 404 STAYS LISTED (it is a reachability signal, not an
+	 * absence) with a note reading `guide unreachable (HTTP 404 — repo
+	 * private or guide missing?)`. Emits `package` once per entry with a
+	 * combined human-readable `note` (empty when both fetches succeeded)
+	 * alongside the existing `error` events for each degraded sub-fetch.
+	 */
+	async catalog(): Promise<readonly CatalogEntry[]> {
+		this.#ensureAlive()
+		const orgUrl = this.#orgUrl()
+		const orgOutcome = await Sync.#fetchText(
+			orgUrl,
+			this.#registryTimeout,
+			this.#retries,
+			this.#limit,
+		)
+		const names = Sync.#toOrgPackages(orgOutcome, orgUrl)
+		const entries = await Sync.#runPool(names, this.#concurrency, async (name) => {
+			const packumentOutcome = await Sync.#fetchText(
+				this.#registryUrl(name),
+				this.#registryTimeout,
+				this.#retries,
+				this.#limit,
+			)
+			const packument = Sync.#toPackument(packumentOutcome)
+			const short = Sync.#shortName(name)
+			const guideOutcome = await Sync.#fetchText(
+				this.#guideUrl(short),
+				this.#guidesTimeout,
+				this.#retries,
+				this.#limit,
+			)
+			const guide = Sync.#toGuideDescription(guideOutcome)
+			if (packumentOutcome.kind === 'failed') this.#emitter.emit('error', packumentOutcome.error)
+			if (guideOutcome.kind === 'failed') this.#emitter.emit('error', guideOutcome.error)
+			const description = guide.description ?? packument.description
+			const note = Sync.#combineNote(guide.note, packument.note)
+			this.#emitter.emit('package', name, note)
+			return { name, version: packument.version, description }
+		})
+		return [...entries].sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
 	}
 
 	async pull(target: string): Promise<SyncReport> {
@@ -199,6 +266,14 @@ export class Sync implements SyncInterface {
 	// upstream, so a plain slash replace is exhaustive here.
 	#registryUrl(name: string): string {
 		return `${Sync.#normalizeBase(this.#registryBase)}/${name.replace('/', '%2F')}`
+	}
+
+	// The registry's exact-membership org package list — a flat name→access
+	// map, not a fuzzy relevance search — is `catalog()`'s authoritative
+	// enumeration source (never `-/v1/search`, whose `scope:` qualifier does
+	// not filter as its name implies).
+	#orgUrl(): string {
+		return `${Sync.#normalizeBase(this.#registryBase)}/-/org/orkestrel/package`
 	}
 
 	static #normalizeBase(base: string): string {
@@ -286,7 +361,6 @@ export class Sync implements SyncInterface {
 		timeout: number,
 		retries: number,
 		limit: number,
-		headers?: Readonly<Record<string, string>>,
 	): Promise<
 		| { readonly kind: 'ok'; readonly text: string }
 		| { readonly kind: 'missing' }
@@ -300,12 +374,11 @@ export class Sync implements SyncInterface {
 				// must not silently redirect cross-host; any 3xx (or the opaque
 				// redirect response `redirect: 'manual'` itself resolves) is treated
 				// as a distinct, named transport fault — never a bare status code.
-				// `headers` (guide fetches only, FIX 5) carries a private-repo
-				// `Authorization` token — never logged, never echoed into a `note`.
+				// Every fetch is unauthenticated (no headers) — every fleet repo is
+				// public, so reachability alone is the signal.
 				const response = await fetch(url, {
 					signal: AbortSignal.timeout(timeout),
 					redirect: 'manual',
-					headers,
 				})
 				if (response.status === 404) return { kind: 'missing' }
 				if (
@@ -467,6 +540,135 @@ export class Sync implements SyncInterface {
 			latest,
 			freshness: rangeToFreshness(dep.range, latest),
 		}
+	}
+
+	// The org package-list response is the WHOLE reason `catalog()` can claim
+	// to be authoritative — an unreachable or malformed response means there
+	// IS no catalog, so this throws unconditionally (never gated by
+	// `strict`), unlike every other collect-mode FETCH outcome in this class.
+	static #toOrgPackages(
+		outcome:
+			| { readonly kind: 'ok'; readonly text: string }
+			| { readonly kind: 'missing' }
+			| { readonly kind: 'failed'; readonly error: unknown; readonly note: string },
+		url: string,
+	): readonly string[] {
+		if (outcome.kind === 'missing' || outcome.kind === 'failed') {
+			const note = outcome.kind === 'missing' ? 'HTTP 404' : outcome.note
+			throw new ScaffoldError('FETCH', `Failed to fetch the package list at ${url}`, { url, note })
+		}
+		let parsed: unknown
+		try {
+			parsed = JSON.parse(outcome.text)
+		} catch {
+			throw new ScaffoldError('FETCH', `Malformed package list response at ${url}`, { url })
+		}
+		if (!Sync.#isRecord(parsed)) {
+			throw new ScaffoldError('FETCH', `Malformed package list response at ${url}`, { url })
+		}
+		const names = Object.keys(parsed).filter((name) => name.startsWith('@orkestrel/'))
+		if (names.length === 0) {
+			throw new ScaffoldError('FETCH', `Malformed package list response at ${url}`, { url })
+		}
+		return names
+	}
+
+	// A packument fetch that fails or comes back malformed keeps the entry
+	// (the org list already proved the package exists) rather than dropping
+	// it — degraded, never absent. The FULL packument (never the abbreviated
+	// `Accept` form, which omits `description`) supplies both `dist-tags.latest`
+	// and the top-level `description` — the registry-path fallback description.
+	static #toPackument(
+		outcome:
+			| { readonly kind: 'ok'; readonly text: string }
+			| { readonly kind: 'missing' }
+			| { readonly kind: 'failed'; readonly error: unknown; readonly note: string },
+	): { readonly version: string; readonly description: string; readonly note: string } {
+		if (outcome.kind === 'missing') return { version: '', description: '', note: 'HTTP 404' }
+		if (outcome.kind === 'failed') {
+			return { version: '', description: '', note: outcome.note }
+		}
+		let parsed: unknown
+		try {
+			parsed = JSON.parse(outcome.text)
+		} catch {
+			return {
+				version: '',
+				description: '',
+				note: 'malformed registry response (invalid JSON)',
+			}
+		}
+		if (!Sync.#isRecord(parsed)) {
+			return {
+				version: '',
+				description: '',
+				note: 'malformed registry response (not an object)',
+			}
+		}
+		const distTags = parsed['dist-tags']
+		const version =
+			Sync.#isRecord(distTags) && typeof distTags.latest === 'string' ? distTags.latest : ''
+		const description = typeof parsed.description === 'string' ? parsed.description : ''
+		const note = version === '' ? 'malformed registry response (missing dist-tags.latest)' : ''
+		return { version, description, note }
+	}
+
+	// The guide-fetch counterpart of `#toPackument` — `description` is
+	// `undefined` (never `''`) on ANY degradation (404, transport fault, no
+	// blockquote) so `catalog()`'s caller can cleanly fall back to the
+	// packument description with `??`. Every fleet repo is public, so a guide
+	// 404 is a READINESS signal (repo private or guide not yet written), not
+	// an absence — the entry STAYS LISTED with this exact note text.
+	static #toGuideDescription(
+		outcome:
+			| { readonly kind: 'ok'; readonly text: string }
+			| { readonly kind: 'missing' }
+			| { readonly kind: 'failed'; readonly error: unknown; readonly note: string },
+	): { readonly description: string | undefined; readonly note: string } {
+		if (outcome.kind === 'missing') {
+			return {
+				description: undefined,
+				note: 'guide unreachable (HTTP 404 — repo private or guide missing?)',
+			}
+		}
+		if (outcome.kind === 'failed') return { description: undefined, note: outcome.note }
+		const description = Sync.#firstBlockquoteParagraph(outcome.text)
+		return description !== undefined
+			? { description, note: '' }
+			: { description: undefined, note: 'guide has no blockquote description' }
+	}
+
+	// The first top-level paragraph of the guide's first blockquote — the
+	// same extraction `catalogPackages` (server/helpers.ts) performs against a
+	// LOCAL file's content, applied here to FETCHED text.
+	static #firstBlockquoteParagraph(text: string): string | undefined {
+		let document: ReturnType<typeof parseDocument>
+		try {
+			document = parseDocument(text)
+		} catch {
+			return undefined
+		}
+		let quote: BlockquoteNode | undefined
+		for (const node of walkNodes(document)) {
+			if (isBlockquoteNode(node)) {
+				quote = node
+				break
+			}
+		}
+		if (quote === undefined) return undefined
+		const paragraph = quote.children.find((child) => isParagraphNode(child))
+		if (paragraph === undefined) return undefined
+		const flattened = flattenText(paragraph).replace(/\s+/g, ' ').trim()
+		return flattened.length > 0 ? flattened : undefined
+	}
+
+	// Combines a degraded guide/packument note into one human-readable string
+	// for `SyncEventMap['package']`'s `note` — empty when both succeeded.
+	static #combineNote(guideNote: string, packumentNote: string): string {
+		const parts: string[] = []
+		if (packumentNote !== '') parts.push(`version unavailable — ${packumentNote}`)
+		if (guideNote !== '') parts.push(`description from registry — ${guideNote}`)
+		return parts.join('; ')
 	}
 
 	static #parseLatest(text: string): string | undefined {

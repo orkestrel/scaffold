@@ -1,5 +1,13 @@
 import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkestrel/emitter'
-import type { Audit, Dependency, GuideSync, Plan, SyncReport, VersionSync } from '@src/core'
+import type {
+	Audit,
+	CatalogEntry,
+	Dependency,
+	GuideSync,
+	Plan,
+	SyncReport,
+	VersionSync,
+} from '@src/core'
 
 // ============================================================================
 //  @orkestrel/scaffold/server — the materialization + sync faces' type
@@ -66,10 +74,21 @@ export interface MaterializerInterface {
 	destroy(): void
 }
 
-/** `Sync`'s push observation surface (AGENTS §13, server). */
+/**
+ * `Sync`'s push observation surface (AGENTS §13, server).
+ *
+ * @remarks
+ * `package` fires once per `catalog()` entry processed; its `note` is the
+ * empty string when both the registry packument and the guide fetch
+ * succeeded, else a human-readable explanation of which one degraded (and
+ * why) — the same `''`-means-nothing convention `GuideSync.note` /
+ * `VersionSync.note` use, just non-optional here since every `catalog()`
+ * entry emits exactly once regardless of outcome.
+ */
 export type SyncEventMap = {
 	readonly guide: readonly [name: string]
 	readonly version: readonly [name: string]
+	readonly package: readonly [name: string, note: string]
 	readonly write: readonly [path: string]
 	readonly done: readonly [report: SyncReport]
 	readonly error: readonly [error: unknown]
@@ -90,17 +109,20 @@ export type SyncEventMap = {
  * bytes read from a single response body (declared `Content-Length` or
  * streamed total, whichever trips first) — default 5,242,880 (5 MiB); a body
  * that would exceed it is a transport fault, handled exactly like any other
- * (retry-eligible per `retries`, then `failed` / strict `FETCH`). `guides.token`,
- * when set, is sent as an `Authorization: Bearer <token>` header on GUIDE
- * fetches ONLY (never the registry) — for private-repo fleets; it is never
- * logged, never echoed into a `note`, and never reaches a version fetch.
+ * (retry-eligible per `retries`, then `failed` / strict `FETCH`). Every fetch
+ * is unauthenticated — no token, no `Authorization` header, anywhere; every
+ * fleet repo is public, so plain reachability is the only signal (a guide
+ * `404` degrades gracefully rather than needing credentials).
+ * `registry.base` also anchors `catalog()`'s org package-list lookup
+ * (`<registry.base>/-/org/orkestrel/package`) and its per-package packument
+ * fetches (`<registry.base>/<name>`) — the same base every other registry
+ * read already uses.
  */
 export interface SyncOptions {
 	readonly guides?: {
 		readonly base?: string
 		readonly branch?: string
 		readonly timeout?: number
-		readonly token?: string
 	}
 	readonly registry?: {
 		readonly base?: string
@@ -125,6 +147,7 @@ export interface SyncInterface {
 		current?: Readonly<Record<string, string>>,
 	): Promise<readonly GuideSync[]>
 	versions(deps: readonly Dependency[]): Promise<readonly VersionSync[]>
+	catalog(): Promise<readonly CatalogEntry[]>
 	pull(target: string): Promise<SyncReport>
 	write(report: SyncReport, target: string): Promise<readonly string[]>
 	destroy(): void

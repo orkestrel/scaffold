@@ -37,7 +37,7 @@ scaffold sync
 scaffold audit [--live]
 scaffold repair [--apply] [--prune]
 scaffold mirror [--root <dir>] [--apply]
-scaffold catalog [--root <dir> ...] [--target <repo>] [--apply]
+scaffold catalog [--root <dir> ...] [--target <repo>] [--offline] [--apply]
 ```
 
 - **`new <name>`** — drafts a `Blueprint` and compiles it into a `Plan`; dry-run by
@@ -53,18 +53,19 @@ scaffold catalog [--root <dir> ...] [--target <repo>] [--apply]
   target-only files the plan no longer declares.
 - **`mirror`** — propagates the line's shared, host-owned files (`AGENTS.md`,
   `CLAUDE.md`, `.claude/`, `scripts/`, the shared dotfiles, …) from this canonical
-  repo to every `@orkestrel` repo under `--root` (default: the current directory;
-  a write destination, so `cd` into the fleet root first); dry-run by default,
-  `--apply` writes.
-- **`catalog`** — regenerates the orkestrel agent's package catalog from the
-  fleet's guides; scans every `--root`, writes the table into `--target`'s
-  `.claude/agents/orkestrel.md`; dry-run by default, `--apply` writes.
+  repo to every `@orkestrel` repo under `--root`'s IMMEDIATE CHILDREN (default:
+  the current directory; a write destination, so `cd` into the folder that
+  CONTAINS your checkouts first — `repair` is the single-repo counterpart, run
+  from inside one repo); dry-run by default, `--apply` writes.
+- **`catalog`** — regenerates the orkestrel agent's package catalog; the npm
+  registry is the AUTHORITATIVE package list by default (unauthenticated —
+  every fleet repo is public), each `--root` ADDS local-only discoveries on
+  top of it, `--offline` sources `--root`(s) only, and the table writes into
+  `--target`'s `.claude/agents/orkestrel.md`; dry-run by default, `--apply`
+  writes, and a shrink warning prints whenever the new table would have
+  fewer rows than the currently-embedded one.
 
 Every verb is dry-run by default — nothing touches disk until you pass `--apply`.
-
-Private repos: set `GITHUB_TOKEN` (or `GH_TOKEN`) in the environment — `sync` and
-`audit --live` send it as a guide-fetch `Authorization` header (never the registry,
-never a CLI flag, never logged).
 
 ## Library
 

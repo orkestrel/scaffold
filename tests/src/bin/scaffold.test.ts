@@ -314,21 +314,6 @@ describe('scaffold bin', () => {
 				await directory.cleanup()
 			}
 		})
-
-		it('FIX 5: a GITHUB_TOKEN in the environment is picked up but never leaked into output', async () => {
-			const directory = await writeManifest({ '@orkestrel/does-not-exist-xyz': '^1.0.0' })
-			try {
-				const result = runBin(
-					['sync', '--target', '.', '--deps', '@orkestrel/does-not-exist-xyz'],
-					undefined,
-					{ cwd: directory.path, env: { GITHUB_TOKEN: 'test-marker-token-should-not-leak' } },
-				)
-				const output = result.stdout + result.stderr
-				expect(output).not.toContain('test-marker-token-should-not-leak')
-			} finally {
-				await directory.cleanup()
-			}
-		}, 20000)
 	})
 
 	describe('audit', () => {
@@ -970,7 +955,7 @@ describe('scaffold bin', () => {
 			}
 		})
 
-		it('containment: --root escaping the cwd exits 1 with a coded [INVALID] message', async () => {
+		it('containment: --root escaping the cwd exits 1 with a coded [INVALID] message plus the mirror-specific escape hint', async () => {
 			const root = await buildTempDirectory()
 			const sub = join(root.path, 'nested')
 			mkdirSync(sub, { recursive: true })
@@ -979,6 +964,23 @@ describe('scaffold bin', () => {
 				expect(result.status).toBe(1)
 				expect(result.stderr).toContain('[INVALID]')
 				expect(result.stderr).toMatch(/escapes the working directory/)
+				expect(result.stderr).toMatch(
+					/mirror writes into the repos beneath --root, so run scaffold FROM your workspace folder instead of pointing --root outside it/,
+				)
+			} finally {
+				await root.cleanup()
+			}
+		})
+
+		it('empty discovery: no @orkestrel children under root exits 1 with an instructive message pointing at cd .. and repair', async () => {
+			const root = await buildTempDirectory()
+			try {
+				const result = runBin(['mirror'], undefined, { cwd: root.path })
+				expect(result.status).toBe(1)
+				expect(result.stderr).toMatch(/no @orkestrel packages under/)
+				expect(result.stderr).toMatch(
+					/mirror scans the immediate children of the current directory; stand in the folder that contains your checkouts \(cd \.\.\), or use 'repair' to true up just this repo/,
+				)
 			} finally {
 				await root.cleanup()
 			}
@@ -1016,7 +1018,9 @@ describe('scaffold bin', () => {
 			return agentPath
 		}
 
-		it('dry-run: reports the package count and exits nonzero on marker drift', async () => {
+		// `--offline` sources `--root`(s) only — the old, fully-local behavior —
+		// so these dry-run/apply/merge/containment tests stay hermetic (§16).
+		it('--offline dry-run: reports the package count and exits nonzero on marker drift', async () => {
 			const root = await buildTempDirectory()
 			const target = await buildTempDirectory()
 			try {
@@ -1031,9 +1035,11 @@ describe('scaffold bin', () => {
 				})
 				const agentPath = writeAgentFixture(target.path, '\nstale content\n\n')
 
-				const result = runBin(['catalog', '--root', root.path, '--target', '.'], undefined, {
-					cwd: target.path,
-				})
+				const result = runBin(
+					['catalog', '--offline', '--root', root.path, '--target', '.'],
+					undefined,
+					{ cwd: target.path },
+				)
 
 				expect(result.status).toBe(1)
 				expect(result.stdout).toContain('2 packages')
@@ -1045,7 +1051,7 @@ describe('scaffold bin', () => {
 			}
 		})
 
-		it('--apply: writes the spliced table and a re-run exits 0 (clean)', async () => {
+		it('--offline --apply: writes the spliced table and a re-run exits 0 (clean)', async () => {
 			const root = await buildTempDirectory()
 			const target = await buildTempDirectory()
 			try {
@@ -1057,7 +1063,7 @@ describe('scaffold bin', () => {
 				const agentPath = writeAgentFixture(target.path, '\nstale content\n\n')
 
 				const applied = runBin(
-					['catalog', '--root', root.path, '--target', '.', '--apply'],
+					['catalog', '--offline', '--root', root.path, '--target', '.', '--apply'],
 					undefined,
 					{ cwd: target.path },
 				)
@@ -1069,9 +1075,11 @@ describe('scaffold bin', () => {
 				expect(written).not.toContain('stale content')
 				expect(written).toContain('## Other section') // content after the end marker survives
 
-				const rerun = runBin(['catalog', '--root', root.path, '--target', '.'], undefined, {
-					cwd: target.path,
-				})
+				const rerun = runBin(
+					['catalog', '--offline', '--root', root.path, '--target', '.'],
+					undefined,
+					{ cwd: target.path },
+				)
 				expect(rerun.status).toBe(0)
 			} finally {
 				await root.cleanup()
@@ -1079,7 +1087,7 @@ describe('scaffold bin', () => {
 			}
 		})
 
-		it('a target missing either catalog marker exits a coded TARGET failure', async () => {
+		it('--offline: a target missing either catalog marker exits a coded TARGET failure', async () => {
 			const root = await buildTempDirectory()
 			const target = await buildTempDirectory()
 			try {
@@ -1088,9 +1096,11 @@ describe('scaffold bin', () => {
 				mkdirSync(dirname(agentPath), { recursive: true })
 				writeFileSync(agentPath, '# orkestrel\n\nNo markers here at all.\n')
 
-				const result = runBin(['catalog', '--root', root.path, '--target', '.'], undefined, {
-					cwd: target.path,
-				})
+				const result = runBin(
+					['catalog', '--offline', '--root', root.path, '--target', '.'],
+					undefined,
+					{ cwd: target.path },
+				)
 
 				expect(result.status).toBe(1)
 				const output = result.stdout + result.stderr
@@ -1102,7 +1112,7 @@ describe('scaffold bin', () => {
 			}
 		})
 
-		it('merges multiple --root values into one sorted, deduplicated table', async () => {
+		it('--offline: merges multiple --root values into one sorted, deduplicated table', async () => {
 			const first = await buildTempDirectory()
 			const second = await buildTempDirectory()
 			const target = await buildTempDirectory()
@@ -1125,7 +1135,17 @@ describe('scaffold bin', () => {
 				const agentPath = writeAgentFixture(target.path, '\n')
 
 				const result = runBin(
-					['catalog', '--root', first.path, '--root', second.path, '--target', '.', '--apply'],
+					[
+						'catalog',
+						'--offline',
+						'--root',
+						first.path,
+						'--root',
+						second.path,
+						'--target',
+						'.',
+						'--apply',
+					],
 					undefined,
 					{ cwd: target.path },
 				)
@@ -1144,18 +1164,81 @@ describe('scaffold bin', () => {
 			}
 		})
 
-		it('containment: --target escaping the cwd exits 1 with a coded [INVALID] message (its unrestricted --root is unaffected)', async () => {
+		it('--offline containment: --target escaping the cwd exits 1 with a coded [INVALID] message (its unrestricted --root is unaffected)', async () => {
 			const root = await buildTempDirectory()
 			const target = await buildTempDirectory()
 			try {
 				writeCatalogPackage(root.path, 'router', { name: '@orkestrel/router', version: '0.0.5' })
 
-				const result = runBin(['catalog', '--root', root.path, '--target', '..'], undefined, {
-					cwd: target.path,
-				})
+				const result = runBin(
+					['catalog', '--offline', '--root', root.path, '--target', '..'],
+					undefined,
+					{ cwd: target.path },
+				)
 				expect(result.status).toBe(1)
 				expect(result.stderr).toContain('[INVALID]')
 				expect(result.stderr).toMatch(/escapes the working directory/)
+			} finally {
+				await root.cleanup()
+				await target.cleanup()
+			}
+		})
+
+		it('shrink warning: --offline reports the warning on BOTH dry-run and --apply when the new table has fewer rows', async () => {
+			const root = await buildTempDirectory()
+			const target = await buildTempDirectory()
+			try {
+				writeCatalogPackage(root.path, 'router', {
+					name: '@orkestrel/router',
+					version: '0.0.5',
+					guide: '# Router\n\n> A tiny hash-router.\n',
+				})
+				// The existing embedded table carries TWO rows; the new --offline
+				// scan (one root, one package) will only produce ONE.
+				const agentPath = writeAgentFixture(
+					target.path,
+					'\n| Package | Version | Description |\n| --- | --- | --- |\n' +
+						'| @orkestrel/router | 0.0.1 | old |\n' +
+						'| @orkestrel/gone | 0.0.1 | removed upstream |\n\n',
+				)
+
+				const dryRun = runBin(
+					['catalog', '--offline', '--root', root.path, '--target', '.'],
+					undefined,
+					{ cwd: target.path },
+				)
+				expect(dryRun.status).toBe(1)
+				expect(dryRun.stdout).toContain('warning: catalog shrinks from 2 to 1 rows')
+				expect(readFileSync(agentPath, 'utf8')).toContain('@orkestrel/gone') // dry-run writes nothing
+
+				const applied = runBin(
+					['catalog', '--offline', '--root', root.path, '--target', '.', '--apply'],
+					undefined,
+					{ cwd: target.path },
+				)
+				expect(applied.status).toBe(0)
+				expect(applied.stdout).toContain('warning: catalog shrinks from 2 to 1 rows')
+				expect(readFileSync(agentPath, 'utf8')).not.toContain('@orkestrel/gone')
+			} finally {
+				await root.cleanup()
+				await target.cleanup()
+			}
+		})
+
+		it('--offline: no Authorization header applies (unauthenticated by design) and --root works without any registry reachability', async () => {
+			const root = await buildTempDirectory()
+			const target = await buildTempDirectory()
+			try {
+				writeCatalogPackage(root.path, 'router', { name: '@orkestrel/router', version: '0.0.5' })
+				const agentPath = writeAgentFixture(target.path, '\n')
+
+				const result = runBin(
+					['catalog', '--offline', '--root', root.path, '--target', '.', '--apply'],
+					undefined,
+					{ cwd: target.path },
+				)
+				expect(result.status).toBe(0)
+				expect(readFileSync(agentPath, 'utf8')).toContain('@orkestrel/router')
 			} finally {
 				await root.cleanup()
 				await target.cleanup()

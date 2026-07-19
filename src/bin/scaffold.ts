@@ -68,24 +68,31 @@ Every WRITE destination resolves under the current directory — cd there first
     e.g. scaffold repair --apply
 
   mirror [--root .] [--apply] [--prune] [--host <path>]
-    Fleet-wide host-origin audit/repair across every @orkestrel package under
-    root; excludes .github/workflows/ci.yml (repo-flavored — use repair --apply).
+    Fleet-wide host-origin audit/repair across every @orkestrel package
+    beneath root; scans root's IMMEDIATE CHILDREN, never root itself — cd
+    into the folder that CONTAINS your checkouts first (repair is the
+    single-repo tool: run it from inside one repo instead).
+    Excludes .github/workflows/ci.yml (repo-flavored — use repair --apply).
     e.g. cd ../fleet-root && scaffold mirror --apply
 
-  catalog [--root <dir> ...] [--target <repo>] [--apply]
+  catalog [--root <dir> ...] [--target <repo>] [--offline] [--apply]
     Regenerate the fleet package catalog table embedded in
     <target>/.claude/agents/orkestrel.md between its <!-- catalog:start -->
-    / <!-- catalog:end --> markers, sourced from every --root's discovered
-    packages (repeatable; default: cwd; read-only, unrestricted) and each
-    package's own guide's first blockquote. Dry-run reports drift (nonzero on
+    / <!-- catalog:end --> markers. The npm registry is the AUTHORITATIVE
+    package list (every \`@orkestrel/*\` published package, description from
+    its guide's first blockquote, falling back to its registry description);
+    each --root (repeatable; read-only, unrestricted) ADDS local-only
+    discoveries the registry doesn't know about yet, and its guide
+    description wins over the registry's for a package the root ALSO carries.
+    --offline skips the registry/GitHub entirely and sources --root(s) only
+    (default cwd) — the old, fully-local behavior, now opt-in. A shrink
+    warning prints (on dry-run AND --apply) whenever the new table has fewer
+    rows than the one currently embedded. Dry-run reports drift (nonzero on
     any); --apply writes.
     e.g. scaffold catalog --root .. --apply
+    e.g. scaffold catalog --offline --root .. --apply
 
 Flags: --help prints this text; a repeated flag keeps its LAST occurrence.
-
-Private repos: set GITHUB_TOKEN (or GH_TOKEN) in the environment — \`sync\` and
-\`audit --live\` send it as a guide-fetch Authorization header (never the
-registry, never a CLI flag, never logged).
 
 Windows/PowerShell: invoke as \`node ./dist/bin/scaffold.js …\` from a checkout,
 or \`npx scaffold …\` once installed — PowerShell mangles npm's \`--\` passthrough,
@@ -185,6 +192,7 @@ function parseArguments() {
 			prune: { type: 'boolean', default: false },
 			strict: { type: 'boolean', default: false },
 			live: { type: 'boolean', default: false },
+			offline: { type: 'boolean', default: false },
 			help: { type: 'boolean', default: false },
 		},
 	})
@@ -216,17 +224,6 @@ function hydrateBestEffort(
 		if (isScaffoldError(error) && error.code === 'TARGET') return { plan, aware: false }
 		throw error
 	}
-}
-
-/**
- * A private-repo guide-fetch token (FIX 5) — `GITHUB_TOKEN`, falling back to
- * `GH_TOKEN` — picked up from the environment only (deliberately NO CLI flag:
- * tokens don't belong in shell history), `undefined` when neither is set or
- * both are empty. Never logged, never echoed into any output this bin prints.
- */
-function githubToken(): string | undefined {
-	const token = process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN
-	return token !== undefined && token.length > 0 ? token : undefined
 }
 
 /**
@@ -268,7 +265,7 @@ async function main(): Promise<void> {
 		} catch (error) {
 			fail(describe(error))
 		}
-		const sync = createSync({ strict: values.strict, guides: { token: githubToken() } })
+		const sync = createSync({ strict: values.strict })
 		try {
 			const wanted = values.deps?.split(',')
 
@@ -372,7 +369,7 @@ async function main(): Promise<void> {
 
 		let liveNote = ''
 		if (values.live) {
-			const sync = createSync({ guides: { token: githubToken() } })
+			const sync = createSync()
 			try {
 				const guides = await sync.guides(deps)
 				const versions = await sync.versions(deps)
@@ -596,11 +593,24 @@ async function main(): Promise<void> {
 		try {
 			root = containDestination(values.root?.[0] ?? '.')
 		} catch (error) {
+			if (isScaffoldError(error)) {
+				fail(
+					describe(
+						new ScaffoldError(
+							error.code,
+							`${error.message} — mirror writes into the repos beneath --root, so run scaffold FROM your workspace folder instead of pointing --root outside it.`,
+							error.context,
+						),
+					),
+				)
+			}
 			fail(describe(error))
 		}
 		const packages = discoverPackages(root)
 		if (packages.length === 0) {
-			fail(`No @orkestrel packages found under "${root}"`)
+			fail(
+				`no @orkestrel packages under "${root}" — mirror scans the immediate children of the current directory; stand in the folder that contains your checkouts (cd ..), or use 'repair' to true up just this repo.`,
+			)
 		}
 		if (values.prune && !values.apply) {
 			process.stderr.write('note: --prune is ignored on a dry run (pass --apply to write)\n')
@@ -683,10 +693,12 @@ async function main(): Promise<void> {
 		return
 	} else if (command === 'catalog') {
 		// `scaffold catalog` — regenerate the fleet package catalog embedded in
-		// <target>/.claude/agents/orkestrel.md between its marker comments.
-		// `--root` is a READ-ONLY source (unrestricted, like `--host`); only the
-		// write destination `--target` is confined to the cwd.
-		const roots = values.root ?? [process.cwd()]
+		// <target>/.claude/agents/orkestrel.md between its marker comments. The
+		// npm REGISTRY is the authoritative package list by default (network);
+		// `--offline` sources `--root`(s) only, unauthenticated in both modes —
+		// every fleet repo is public. `--root` is a READ-ONLY source
+		// (unrestricted, like `--host`); only the write destination `--target`
+		// is confined to the cwd.
 		let catalogTarget: string
 		try {
 			catalogTarget = containDestination(values.target ?? '.')
@@ -694,22 +706,89 @@ async function main(): Promise<void> {
 			fail(describe(error))
 		}
 
+		const explicitRoots = values.root
 		let entries: readonly CatalogEntry[]
-		try {
-			entries = catalogPackages(roots)
-		} catch (error) {
-			if (isScaffoldError(error)) {
-				fail(describe(error))
-			} else {
-				fail(
-					describe(
-						new ScaffoldError('TARGET', `Failed to read fleet root(s): ${roots.join(', ')}`, {
-							roots,
-							error,
-						}),
-					),
-				)
+		let published = 0
+		let localOnly = 0
+		const notes = new Map<string, string>()
+
+		if (values.offline) {
+			const roots = explicitRoots ?? [process.cwd()]
+			try {
+				entries = catalogPackages(roots)
+			} catch (error) {
+				if (isScaffoldError(error)) {
+					fail(describe(error))
+				} else {
+					fail(
+						describe(
+							new ScaffoldError('TARGET', `Failed to read fleet root(s): ${roots.join(', ')}`, {
+								roots,
+								error,
+							}),
+						),
+					)
+				}
 			}
+		} else {
+			const sync = createSync({
+				on: {
+					package: (name, note) => {
+						if (note !== '') notes.set(name, note)
+					},
+				},
+			})
+			let registryEntries: readonly CatalogEntry[]
+			try {
+				registryEntries = await sync.catalog()
+			} catch (error) {
+				if (isScaffoldError(error)) {
+					fail(describe(error))
+				} else {
+					fail(
+						describe(new ScaffoldError('FETCH', 'Failed to fetch the package catalog', { error })),
+					)
+				}
+			} finally {
+				sync.destroy()
+			}
+			published = registryEntries.length
+
+			let localEntries: readonly CatalogEntry[] = []
+			if (explicitRoots !== undefined) {
+				try {
+					localEntries = catalogPackages(explicitRoots)
+				} catch (error) {
+					if (isScaffoldError(error)) {
+						fail(describe(error))
+					} else {
+						fail(
+							describe(
+								new ScaffoldError(
+									'TARGET',
+									`Failed to read fleet root(s): ${explicitRoots.join(', ')}`,
+									{ roots: explicitRoots, error },
+								),
+							),
+						)
+					}
+				}
+			}
+
+			const merged = new Map<string, CatalogEntry>()
+			for (const entry of registryEntries) merged.set(entry.name, entry)
+			for (const local of localEntries) {
+				const existing = merged.get(local.name)
+				if (existing === undefined) {
+					merged.set(local.name, local)
+					localOnly += 1
+				} else if (local.description.length > 0) {
+					merged.set(local.name, { ...existing, description: local.description })
+				}
+			}
+			entries = [...merged.values()].sort((a, b) =>
+				a.name < b.name ? -1 : a.name > b.name ? 1 : 0,
+			)
 		}
 
 		const block = catalogToBlock(entries)
@@ -745,14 +824,27 @@ async function main(): Promise<void> {
 		const after = current.slice(endIndex)
 		const updated = `${before}\n\n${block}\n${after}`
 
-		const missingDescription = entries
-			.filter((entry) => entry.description.length === 0)
-			.map((entry) => entry.name)
-		reporter.line(`${entries.length} package${entries.length === 1 ? '' : 's'}`)
-		if (missingDescription.length > 0) {
+		const oldBlock = current.slice(startIndex + startMarker.length, endIndex)
+		const oldRows = (oldBlock.match(/^\|\s*@orkestrel\//gm) ?? []).length
+
+		if (values.offline) {
+			const missingDescription = entries
+				.filter((entry) => entry.description.length === 0)
+				.map((entry) => entry.name)
+			reporter.line(`${entries.length} package${entries.length === 1 ? '' : 's'}`)
+			if (missingDescription.length > 0) {
+				reporter.line(
+					`${missingDescription.length} without guide description: ${missingDescription.join(', ')}`,
+				)
+			}
+		} else {
 			reporter.line(
-				`${missingDescription.length} without guide description: ${missingDescription.join(', ')}`,
+				`catalog: ${published} published package${published === 1 ? '' : 's'}, ${localOnly} local-only`,
 			)
+			for (const [name, note] of notes) reporter.line(`  ${name}: ${note}`)
+		}
+		if (entries.length < oldRows) {
+			reporter.line(`warning: catalog shrinks from ${oldRows} to ${entries.length} rows`)
 		}
 
 		if (updated === current) {
