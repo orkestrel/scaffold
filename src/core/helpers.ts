@@ -216,12 +216,8 @@ export function alignTable(
 	}
 	const rendered = renderMarkdown(node)
 	const lines = rendered.split('\n')
-	function splitRow(line: string): readonly string[] {
-		const parts = line.split(/(?<!\\)\|/)
-		return parts.slice(1, -1).map((part) => part.trim())
-	}
-	const headerCells = splitRow(lines[0] ?? '')
-	const bodyCells = lines.slice(2).map((line) => splitRow(line))
+	const headerCells = splitTableRow(lines[0] ?? '')
+	const bodyCells = lines.slice(2).map((line) => splitTableRow(line))
 	const widths: number[] = []
 	for (let column = 0; column < columns; column += 1) {
 		let width = Array.from(headerCells[column] ?? '').length
@@ -231,22 +227,82 @@ export function alignTable(
 		}
 		widths.push(Math.max(3, width))
 	}
-	function pad(text: string, width: number): string {
-		const length = Array.from(text).length
-		return length >= width ? text : text + ' '.repeat(width - length)
-	}
-	function delimiterCell(columnAlign: TableAlign, width: number): string {
-		if (columnAlign === 'left') return `:${'-'.repeat(width - 1)}`
-		if (columnAlign === 'right') return `${'-'.repeat(width - 1)}:`
-		if (columnAlign === 'center') return `:${'-'.repeat(width - 2)}:`
-		return '-'.repeat(width)
-	}
-	const headerLine = `| ${headerCells.map((cell, index) => pad(cell, widths[index] ?? 3)).join(' | ')} |`
+	const headerLine = `| ${headerCells.map((cell, index) => padCell(cell, widths[index] ?? 3)).join(' | ')} |`
 	const delimiterLine = `| ${alignment.map((columnAlign, index) => delimiterCell(columnAlign, widths[index] ?? 3)).join(' | ')} |`
 	const bodyLines = bodyCells.map(
-		(row) => `| ${row.map((cell, index) => pad(cell, widths[index] ?? 3)).join(' | ')} |`,
+		(row) => `| ${row.map((cell, index) => padCell(cell, widths[index] ?? 3)).join(' | ')} |`,
 	)
 	return [headerLine, delimiterLine, ...bodyLines].join('\n')
+}
+
+/**
+ * Split one rendered GFM table row into its trimmed cell strings.
+ *
+ * @param line - A single rendered table line (header, delimiter, or body row).
+ * @remarks
+ * Splits on an UNESCAPED `|` (a `\|` is a literal pipe inside a cell, not a
+ * column boundary), then drops the leading/trailing empty segments the
+ * boundary pipes produce and trims each remaining cell.
+ * @returns The row's cell strings, in column order.
+ *
+ * @example
+ * ```ts
+ * import { splitTableRow } from '@orkestrel/scaffold'
+ *
+ * splitTableRow('| a | b |') // ['a', 'b']
+ * ```
+ */
+export function splitTableRow(line: string): readonly string[] {
+	const parts = line.split(/(?<!\\)\|/)
+	return parts.slice(1, -1).map((part) => part.trim())
+}
+
+/**
+ * Right-pad a cell to a codepoint width, oxfmt-style.
+ *
+ * @param text - The cell text.
+ * @param width - The target codepoint width.
+ * @remarks
+ * Measures via `Array.from` (codepoints, not UTF-16 code units) so a
+ * surrogate-pair or wide codepoint counts once, matching oxfmt's own
+ * width math. A cell already at or past `width` is returned unchanged.
+ * @returns `text` padded with trailing spaces to `width` codepoints.
+ *
+ * @example
+ * ```ts
+ * import { padCell } from '@orkestrel/scaffold'
+ *
+ * padCell('ab', 5) // 'ab   '
+ * ```
+ */
+export function padCell(text: string, width: number): string {
+	const length = Array.from(text).length
+	return length >= width ? text : text + ' '.repeat(width - length)
+}
+
+/**
+ * Build one delimiter-row cell for a GFM table column.
+ *
+ * @param columnAlign - The column's `TableAlign`.
+ * @param width - The column's codepoint width.
+ * @remarks
+ * `'left'` prefixes `:`, `'right'` suffixes `:`, `'center'` wraps both ends,
+ * `'none'` is plain dashes — one dash per width unit, `:` markers consuming
+ * a dash slot rather than adding to `width`.
+ * @returns The delimiter cell string for this column.
+ *
+ * @example
+ * ```ts
+ * import { delimiterCell } from '@orkestrel/scaffold'
+ *
+ * delimiterCell('left', 5) // ':----'
+ * ```
+ */
+export function delimiterCell(columnAlign: TableAlign, width: number): string {
+	if (columnAlign === 'left') return `:${'-'.repeat(width - 1)}`
+	if (columnAlign === 'right') return `${'-'.repeat(width - 1)}:`
+	if (columnAlign === 'center') return `:${'-'.repeat(width - 2)}:`
+	return '-'.repeat(width)
 }
 
 /**
@@ -366,6 +422,24 @@ export function auditToReview(audit: Audit): string {
 }
 
 /**
+ * Test whether a `Freshness` verdict counts toward "behind".
+ *
+ * @param freshness - The freshness verdict to test.
+ * @returns `true` iff `freshness` is `'behind'`.
+ *
+ * @example
+ * ```ts
+ * import { isBehind } from '@orkestrel/scaffold'
+ *
+ * isBehind('behind') // true
+ * isBehind('current') // false
+ * ```
+ */
+export function isBehind(freshness: Freshness): boolean {
+	return freshness === 'behind'
+}
+
+/**
  * Project a `SyncReport` into a markdown freshness report.
  *
  * @param report - The sync report to render.
@@ -379,9 +453,6 @@ export function auditToReview(audit: Audit): string {
  * ```
  */
 export function syncToReview(report: SyncReport): string {
-	function isBehind(freshness: Freshness): boolean {
-		return freshness === 'behind'
-	}
 	const behind =
 		report.guides.filter((guide) => isBehind(guide.freshness)).length +
 		report.versions.filter((version) => isBehind(version.freshness)).length
@@ -462,6 +533,36 @@ export function catalogToBlock(entries: readonly CatalogEntry[]): string {
 }
 
 /**
+ * Infer a foreign path's `Group` from its leading path segment.
+ *
+ * @param path - The target-relative path to classify.
+ * @remarks
+ * Ordered prefix match — `src/`, `tests/`, `guides/`, `docs/`, `configs/`,
+ * then `.github/` / `scripts/` as `'orchestration'`, then the two manifest
+ * files by exact name. Anything else (a root-level, prefix-less file) falls
+ * through to `'configs'`.
+ * @returns The inferred `Group` for `path`.
+ *
+ * @example
+ * ```ts
+ * import { inferGroup } from '@orkestrel/scaffold'
+ *
+ * inferGroup('src/core/index.ts') // 'source'
+ * inferGroup('mystery.config.ts') // 'configs'
+ * ```
+ */
+export function inferGroup(path: string): Group {
+	if (path.startsWith('src/')) return 'source'
+	if (path.startsWith('tests/')) return 'tests'
+	if (path.startsWith('guides/')) return 'guides'
+	if (path.startsWith('docs/')) return 'docs'
+	if (path.startsWith('configs/')) return 'configs'
+	if (path.startsWith('.github/') || path.startsWith('scripts/')) return 'orchestration'
+	if (path === 'package.json' || path === 'package-lock.json') return 'manifest'
+	return 'configs'
+}
+
+/**
  * Diff a plan's artifacts against a target's current content.
  *
  * @param plan - The plan whose artifacts are the source of truth.
@@ -482,16 +583,6 @@ export function catalogToBlock(entries: readonly CatalogEntry[]): string {
  * ```
  */
 export function diffPlan(plan: Plan, current: Readonly<Record<string, string>>): Audit {
-	function inferGroup(path: string): Group {
-		if (path.startsWith('src/')) return 'source'
-		if (path.startsWith('tests/')) return 'tests'
-		if (path.startsWith('guides/')) return 'guides'
-		if (path.startsWith('docs/')) return 'docs'
-		if (path.startsWith('configs/')) return 'configs'
-		if (path.startsWith('.github/') || path.startsWith('scripts/')) return 'orchestration'
-		if (path === 'package.json' || path === 'package-lock.json') return 'manifest'
-		return 'configs'
-	}
 	const findings: Finding[] = []
 	const owned = new Set<string>()
 	for (const artifact of plan.artifacts) {
@@ -535,19 +626,82 @@ export function diffPlan(plan: Plan, current: Readonly<Record<string, string>>):
 }
 
 /**
+ * Validate one dependency-shaped array under the name/range/duplicate rules.
+ *
+ * @param field - The `Question.field` to attribute a violation to (`'dependencies'` / `'peers'` / `'extras'`).
+ * @param items - The `Dependency[]` to check.
+ * @remarks
+ * Pure — takes no closed-over `questions` array to mutate; the caller
+ * concatenates the returned `questions` and inspects the returned `seen` set
+ * to apply the cross-array (`dependencies` vs `peers` vs `extras`) overlap
+ * rules `validateBlueprint` layers on top.
+ * @returns The violations found and the set of names seen, in encounter order.
+ *
+ * @example
+ * ```ts
+ * import { validateDependencyArray } from '@orkestrel/scaffold'
+ *
+ * validateDependencyArray('dependencies', [{ name: '', range: '^1' }])
+ * // { questions: [{ field: 'dependencies', text: 'A dependency name must not be empty', … }], seen: Set(0) {} }
+ * ```
+ */
+export function validateDependencyArray(
+	field: string,
+	items: readonly Dependency[],
+): { readonly questions: readonly Question[]; readonly seen: ReadonlySet<string> } {
+	const questions: Question[] = []
+	const seen = new Set<string>()
+	for (const item of items) {
+		if (item.name.length === 0) {
+			questions.push({ field, text: 'A dependency name must not be empty', blocking: true })
+		} else if (!DEPENDENCY_NAME_PATTERN.test(item.name)) {
+			questions.push({
+				field,
+				text: `Dependency name "${item.name}" must match ${DEPENDENCY_NAME_PATTERN.source}`,
+				blocking: true,
+			})
+		}
+		if (item.range.length === 0) {
+			questions.push({
+				field,
+				text: `Dependency "${item.name}" is missing a version range`,
+				blocking: true,
+			})
+		}
+		if (seen.has(item.name)) {
+			questions.push({
+				field,
+				text: `Dependency "${item.name}" is declared more than once`,
+				blocking: true,
+			})
+		}
+		seen.add(item.name)
+	}
+	return { questions, seen }
+}
+
+/**
  * The semantic pass over a blueprint.
  *
  * @param spec - The blueprint to validate.
  * @remarks
  * Checks the name against `NAME_PATTERN`, non-empty on-vocabulary `surfaces`
- * with no repeats (a repeat would produce duplicate members), and well-formed
- * `dependencies` / `peers` / `extras` (non-empty name/range, name shaped
- * `DEPENDENCY_NAME_PATTERN`, no duplicate names within an array) — a
- * NAME-shaped law at the gate that closes the traversal vector a hand-built
- * `../`-laced dependency name would open through `Compiler.#pointerArtifacts`.
- * A name appearing in both `dependencies` and `peers` is a blocking question
- * (npm forbids sensibly declaring the same package both ways), and an
- * `extras` name may overlap neither `dependencies` nor `peers`.
+ * with no repeats (a repeat would produce duplicate members); a single
+ * surface — `core`-only, `server`-only, `browser`-only — is a fully
+ * first-class declaration (`rootViteConfig` retargets the root export and
+ * runs the surface's own factory as the base, no `core` involved), but a
+ * `browser`+`server` declaration with no `core` has no defined configuration
+ * class `rootViteConfig` / `singleSurfaceViteConfig` can shape — that ONE
+ * exemplar-less combination is a blocking question (without this gate it
+ * would silently drop a surface at `rootViteConfig`'s dispatch while the
+ * manifest still references it). And well-formed `dependencies` / `peers` /
+ * `extras` (non-empty name/range, name shaped `DEPENDENCY_NAME_PATTERN`, no
+ * duplicate names within an array) — a NAME-shaped law at the gate that
+ * closes the traversal vector a hand-built `../`-laced dependency name would
+ * open through `Compiler.#pointerArtifacts`. A name appearing in both
+ * `dependencies` and `peers` is a blocking question (npm forbids sensibly
+ * declaring the same package both ways), and an `extras` name may overlap
+ * neither `dependencies` nor `peers`.
  * @returns A `Validation` — never throws.
  *
  * @example
@@ -630,43 +784,25 @@ export function validateBlueprint(spec: Blueprint): Validation {
 				blocking: true,
 			})
 		}
-	}
-	// Validate one dependency-shaped array (`dependencies` / `peers` / `extras`)
-	// under the same name/range/duplicate rules, returning the set of names seen
-	// so the caller can apply the cross-array overlap rules.
-	function validateDependencyArray(field: string, items: readonly Dependency[]): Set<string> {
-		const seen = new Set<string>()
-		for (const item of items) {
-			if (item.name.length === 0) {
-				questions.push({ field, text: 'A dependency name must not be empty', blocking: true })
-			} else if (!DEPENDENCY_NAME_PATTERN.test(item.name)) {
-				questions.push({
-					field,
-					text: `Dependency name "${item.name}" must match ${DEPENDENCY_NAME_PATTERN.source}`,
-					blocking: true,
-				})
-			}
-			if (item.range.length === 0) {
-				questions.push({
-					field,
-					text: `Dependency "${item.name}" is missing a version range`,
-					blocking: true,
-				})
-			}
-			if (seen.has(item.name)) {
-				questions.push({
-					field,
-					text: `Dependency "${item.name}" is declared more than once`,
-					blocking: true,
-				})
-			}
-			seen.add(item.name)
+		if (spec.surfaces.length > 1 && !spec.surfaces.includes('core')) {
+			questions.push({
+				field: 'surfaces',
+				text: 'The browser+server combination without core has no defined configuration class — declare core alongside them, or declare a single surface',
+				blocking: true,
+			})
 		}
-		return seen
 	}
-	const seenDependencies = validateDependencyArray('dependencies', spec.dependencies)
-	const seenPeers = validateDependencyArray('peers', spec.peers)
-	const seenExtras = validateDependencyArray('extras', spec.extras)
+	const dependenciesResult = validateDependencyArray('dependencies', spec.dependencies)
+	const peersResult = validateDependencyArray('peers', spec.peers)
+	const extrasResult = validateDependencyArray('extras', spec.extras)
+	questions.push(
+		...dependenciesResult.questions,
+		...peersResult.questions,
+		...extrasResult.questions,
+	)
+	const seenDependencies = dependenciesResult.seen
+	const seenPeers = peersResult.seen
+	const seenExtras = extrasResult.seen
 	for (const name of seenPeers) {
 		if (seenDependencies.has(name)) {
 			questions.push({
@@ -696,6 +832,25 @@ export function validateBlueprint(spec: Blueprint): Validation {
 }
 
 /**
+ * Narrow an unknown value to a plain (non-array, non-null) JSON object.
+ *
+ * @param value - The value to narrow.
+ * @returns `true` iff `value` is a non-null, non-array object.
+ *
+ * @example
+ * ```ts
+ * import { isRecord } from '@orkestrel/scaffold'
+ *
+ * isRecord({ a: 1 }) // true
+ * isRecord([1, 2]) // false
+ * isRecord(null) // false
+ * ```
+ */
+export function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+/**
  * Parse a `package.json` text into its declared `@orkestrel/*` dependencies.
  *
  * @param manifestText - The `package.json` file content.
@@ -715,9 +870,6 @@ export function validateBlueprint(spec: Blueprint): Validation {
  * ```
  */
 export function manifestToDependencies(manifestText: string): readonly Dependency[] {
-	function isRecord(value: unknown): value is Record<string, unknown> {
-		return typeof value === 'object' && value !== null && !Array.isArray(value)
-	}
 	let parsed: unknown
 	try {
 		parsed = JSON.parse(manifestText)
@@ -766,12 +918,65 @@ export function rangeToFreshness(range: string, latest: string): Freshness {
 }
 
 /**
+ * Compute a canonical FNV-1a digest of a text string.
+ *
+ * @param text - The text to digest.
+ * @remarks
+ * The 32-bit FNV-1a offset basis/prime, `Math.imul` for the wraparound
+ * multiply, rendered as an 8-hex-digit zero-padded lowercase string —
+ * deterministic, no clocks or randomness.
+ * @returns The 8-hex-digit FNV-1a digest of `text`.
+ *
+ * @example
+ * ```ts
+ * import { computeHash } from '@orkestrel/scaffold'
+ *
+ * computeHash('hello-world') // '428d118e'
+ * ```
+ */
+export function computeHash(text: string): string {
+	let hash = 0x811c9dc5
+	for (let index = 0; index < text.length; index += 1) {
+		hash ^= text.charCodeAt(index)
+		hash = Math.imul(hash, 0x01000193)
+	}
+	return (hash >>> 0).toString(16).padStart(8, '0')
+}
+
+/**
+ * Serialize a value to a canonical, key-order-INDEPENDENT JSON-like string.
+ *
+ * @param value - The value to stringify.
+ * @remarks
+ * Object keys sort code-unit; array order is preserved. So two
+ * logically-equal blueprints built with their fields in a different
+ * construction order still hash identically once fed through `computeHash`.
+ * @returns The canonical string form of `value`.
+ *
+ * @example
+ * ```ts
+ * import { stableStringify } from '@orkestrel/scaffold'
+ *
+ * stableStringify({ b: 1, a: 2 }) // '{"a":2,"b":1}'
+ * ```
+ */
+export function stableStringify(value: unknown): string {
+	if (Array.isArray(value)) return `[${value.map((item) => stableStringify(item)).join(',')}]`
+	if (typeof value === 'object' && value !== null) {
+		const entries = Object.entries(value).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+		return `{${entries.map(([key, entry]) => `${JSON.stringify(key)}:${stableStringify(entry)}`).join(',')}}`
+	}
+	return JSON.stringify(value)
+}
+
+/**
  * Return a fresh `Plan` with `trace` and `hash` filled.
  *
  * @param plan - The plan to pin.
  * @remarks
- * `hash` is a canonical FNV-1a digest of the plan's blueprint/groups/artifacts
- * — deterministic, no clocks or randomness. `trace` is a one-line derivation
+ * `hash` is a canonical `computeHash` digest of the plan's
+ * blueprint/groups/artifacts, serialized through `stableStringify` —
+ * deterministic, no clocks or randomness. `trace` is a one-line derivation
  * summary built from the plan's own `PlanSummary`.
  * @returns The plan with `trace` and `hash` filled.
  *
@@ -783,25 +988,6 @@ export function rangeToFreshness(range: string, latest: string): Freshness {
  * ```
  */
 export function pinPlan(plan: Plan): Plan {
-	function digest(text: string): string {
-		let hash = 0x811c9dc5
-		for (let index = 0; index < text.length; index += 1) {
-			hash ^= text.charCodeAt(index)
-			hash = Math.imul(hash, 0x01000193)
-		}
-		return (hash >>> 0).toString(16).padStart(8, '0')
-	}
-	// A canonical, insertion-order-INDEPENDENT stringify: object keys sort, array
-	// order is preserved — so two logically-equal blueprints built with their
-	// fields in a different construction order still hash identically.
-	function stableStringify(value: unknown): string {
-		if (Array.isArray(value)) return `[${value.map((item) => stableStringify(item)).join(',')}]`
-		if (typeof value === 'object' && value !== null) {
-			const entries = Object.entries(value).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-			return `{${entries.map(([key, entry]) => `${JSON.stringify(key)}:${stableStringify(entry)}`).join(',')}}`
-		}
-		return JSON.stringify(value)
-	}
 	const canonical = stableStringify({
 		blueprint: plan.blueprint,
 		groups: plan.groups,
@@ -809,5 +995,5 @@ export function pinPlan(plan: Plan): Plan {
 	})
 	const summary = planToSummary(plan)
 	const trace = `${plan.blueprint.name} · ${summary.surfaces.join('+')} · groups:${summary.groups.length} · artifacts:${summary.artifacts}`
-	return { ...plan, trace, hash: digest(canonical) }
+	return { ...plan, trace, hash: computeHash(canonical) }
 }

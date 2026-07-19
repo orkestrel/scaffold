@@ -213,28 +213,47 @@ export class Sync implements SyncInterface {
 		worker: (item: T) => Promise<R>,
 	): Promise<R[]> {
 		const results: R[] = new Array(items.length)
-		let cursor = 0
-		let stopped = false
-		let firstError: { readonly error: unknown } | undefined
-		async function run(): Promise<void> {
-			for (;;) {
-				if (stopped) return
-				const index = cursor
-				cursor += 1
-				if (index >= items.length) return
-				try {
-					results[index] = await worker(items[index])
-				} catch (error) {
-					if (firstError === undefined) firstError = { error }
-					stopped = true
-					return
-				}
+		const state: {
+			cursor: number
+			stopped: boolean
+			firstError: { readonly error: unknown } | undefined
+		} = { cursor: 0, stopped: false, firstError: undefined }
+		const workers = Array.from({ length: Math.min(concurrency, items.length) }, () =>
+			Sync.#drain({ items, worker, results, state }),
+		)
+		await Promise.allSettled(workers)
+		if (state.firstError !== undefined) throw state.firstError.error
+		return results
+	}
+
+	// One worker's pull-and-run loop over the shared pool `state` — extracted
+	// from `#runPool` so no function is declared inside another (§4). `state`
+	// carries the mutable cursor/stopped/firstError coordination shared by
+	// every concurrent worker; `items`, `worker`, and `results` are the pool's
+	// immutable inputs and output sink.
+	static async #drain<T, R>(pool: {
+		readonly items: readonly T[]
+		readonly worker: (item: T) => Promise<R>
+		readonly results: R[]
+		readonly state: {
+			cursor: number
+			stopped: boolean
+			firstError: { readonly error: unknown } | undefined
+		}
+	}): Promise<void> {
+		for (;;) {
+			if (pool.state.stopped) return
+			const index = pool.state.cursor
+			pool.state.cursor += 1
+			if (index >= pool.items.length) return
+			try {
+				pool.results[index] = await pool.worker(pool.items[index])
+			} catch (error) {
+				if (pool.state.firstError === undefined) pool.state.firstError = { error }
+				pool.state.stopped = true
+				return
 			}
 		}
-		const workers = Array.from({ length: Math.min(concurrency, items.length) }, () => run())
-		await Promise.allSettled(workers)
-		if (firstError !== undefined) throw firstError.error
-		return results
 	}
 
 	// One HTTPS GET with a per-request `AbortSignal.timeout` and up to

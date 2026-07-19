@@ -1,4 +1,4 @@
-import type { Blueprint, Plan, SyncReport } from '@src/core'
+import type { Blueprint, Plan, Surface, SyncReport } from '@src/core'
 import { fillTemplate } from '@orkestrel/template'
 import {
 	alignTable,
@@ -7,10 +7,16 @@ import {
 	blueprintToMembers,
 	blueprintToPlan,
 	catalogToBlock,
+	computeHash,
+	delimiterCell,
 	dependency,
 	diffPlan,
+	inferGroup,
+	isBehind,
+	isRecord,
 	manifestToDependencies,
 	override,
+	padCell,
 	parseBlueprint,
 	pascalCase,
 	pinPlan,
@@ -18,19 +24,16 @@ import {
 	planToSummary,
 	rangeToFreshness,
 	SCAFFOLD_RANGE,
+	splitTableRow,
+	stableStringify,
 	SURFACE_MATRIX,
 	syncToReview,
 	TEMPLATES,
 	validateBlueprint,
+	validateDependencyArray,
 } from '@src/core'
 import ts from 'typescript'
 import { describe, expect, it } from 'vitest'
-
-// Narrows a parsed package.json (or any nested JSON object field) through
-// validation rather than an `as` assertion (AGENTS §1).
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
 
 function readManifest(content: string | undefined): Record<string, unknown> {
 	const parsed: unknown = JSON.parse(content ?? '{}')
@@ -363,6 +366,38 @@ describe('validateBlueprint', () => {
 		expect(validation.valid).toBe(false)
 	})
 
+	it('blocks the one exemplar-less combination — browser+server declared with no core', () => {
+		const validation = validateBlueprint({
+			...blueprint('router'),
+			surfaces: ['browser', 'server'],
+		})
+
+		expect(validation.valid).toBe(false)
+		expect(
+			validation.questions.some(
+				(question) =>
+					question.field === 'surfaces' &&
+					question.text.includes(
+						'browser+server combination without core has no defined configuration class',
+					),
+			),
+		).toBe(true)
+	})
+
+	it('accepts all six live classes, incl. first-class single-surface no-core (server-only / browser-only)', () => {
+		const variants: readonly (readonly Surface[])[] = [
+			['core'],
+			['server'],
+			['browser'],
+			['core', 'server'],
+			['core', 'browser'],
+			['core', 'browser', 'server'],
+		]
+		for (const surfaces of variants) {
+			expect(validateBlueprint({ ...blueprint('router'), surfaces }).valid).toBe(true)
+		}
+	})
+
 	it('blocks an empty dependency name or range', () => {
 		const validation = validateBlueprint({
 			...blueprint('router'),
@@ -616,6 +651,40 @@ describe('validateBlueprint — peers/extras (per-array rules + cross-array over
 
 		expect(validation.valid).toBe(true)
 	})
+
+	it('orders the full questions array: dependencies, peers, extras, then the three overlap blocks, in fixed sequence', () => {
+		// Each array carries its own violation (an empty name in `dependencies`,
+		// a missing range in `peers` / `extras` — each own-violation name
+		// unique to its array, so it never ALSO trips a cross-array overlap)
+		// plus one name (`shared`) common to all three, tripping every
+		// cross-array overlap block. Grounded on the landed `validateBlueprint`
+		// code: `validateDependencyArray` runs dependencies → peers → extras
+		// (each array's own questions concatenate in that call order), then the
+		// peers-vs-dependencies overlap loop (over `seenPeers`, in insertion
+		// order), then the extras loop (over `seenExtras`, in insertion order)
+		// which checks extras-vs-dependencies immediately before
+		// extras-vs-peers for the SAME name.
+		const shared = dependency('@orkestrel/contract', '^1')
+		const validation = validateBlueprint({
+			...blueprint('router'),
+			dependencies: [dependency('', '^1'), shared],
+			peers: [dependency('@orkestrel/peer-bad', ''), shared],
+			extras: [dependency('@orkestrel/extra-bad', ''), shared],
+		})
+
+		expect(validation.valid).toBe(false)
+		expect(validation.questions.map((question) => [question.field, question.text])).toEqual([
+			['dependencies', 'A dependency name must not be empty'],
+			['peers', 'Dependency "@orkestrel/peer-bad" is missing a version range'],
+			['extras', 'Dependency "@orkestrel/extra-bad" is missing a version range'],
+			['peers', 'Dependency "@orkestrel/contract" is declared in both "dependencies" and "peers"'],
+			[
+				'extras',
+				'Dependency "@orkestrel/contract" is declared in both "dependencies" and "extras"',
+			],
+			['extras', 'Dependency "@orkestrel/contract" is declared in both "peers" and "extras"'],
+		])
+	})
 })
 
 describe('manifestToDependencies', () => {
@@ -722,6 +791,178 @@ describe('syncToReview', () => {
 	})
 })
 
+describe('splitTableRow', () => {
+	it('splits a rendered table row into trimmed cells', () => {
+		expect(splitTableRow('| a | b |')).toEqual(['a', 'b'])
+	})
+
+	it('does not split on an escaped pipe inside a cell', () => {
+		expect(splitTableRow('| a \\| b | c |')).toEqual(['a \\| b', 'c'])
+	})
+
+	it('trims surrounding whitespace from each cell', () => {
+		expect(splitTableRow('|  x  |  y  |')).toEqual(['x', 'y'])
+	})
+})
+
+describe('padCell', () => {
+	it('right-pads a cell to the target width', () => {
+		expect(padCell('ab', 5)).toBe('ab   ')
+	})
+
+	it('returns text unchanged when already at or past width', () => {
+		expect(padCell('abcde', 3)).toBe('abcde')
+		expect(padCell('abc', 3)).toBe('abc')
+	})
+
+	it('measures by codepoint, not UTF-16 code unit (wide/surrogate-pair codepoint)', () => {
+		// U+1F600 (😀) is a single codepoint but two UTF-16 code units.
+		const wide = '😀'
+		expect(padCell(wide, 3)).toBe(`${wide}  `)
+	})
+})
+
+describe('delimiterCell', () => {
+	it('renders a left-aligned delimiter', () => {
+		expect(delimiterCell('left', 5)).toBe(':----')
+	})
+
+	it('renders a right-aligned delimiter', () => {
+		expect(delimiterCell('right', 5)).toBe('----:')
+	})
+
+	it('renders a center-aligned delimiter', () => {
+		expect(delimiterCell('center', 6)).toBe(':----:')
+	})
+
+	it('renders a plain (none) delimiter', () => {
+		expect(delimiterCell('none', 5)).toBe('-----')
+	})
+})
+
+describe('isBehind', () => {
+	it('is true for "behind"', () => {
+		expect(isBehind('behind')).toBe(true)
+	})
+
+	it('is false for "current"', () => {
+		expect(isBehind('current')).toBe(false)
+	})
+})
+
+describe('inferGroup', () => {
+	it('classifies src/ as source', () => {
+		expect(inferGroup('src/core/index.ts')).toBe('source')
+	})
+
+	it('classifies tests/ as tests', () => {
+		expect(inferGroup('tests/src/core/helpers.test.ts')).toBe('tests')
+	})
+
+	it('classifies guides/ as guides', () => {
+		expect(inferGroup('guides/src/router.md')).toBe('guides')
+	})
+
+	it('classifies docs/ as docs', () => {
+		expect(inferGroup('docs/adr/0001.md')).toBe('docs')
+	})
+
+	it('classifies configs/ as configs', () => {
+		expect(inferGroup('configs/src/tsconfig.core.json')).toBe('configs')
+	})
+
+	it('classifies .github/ and scripts/ as orchestration', () => {
+		expect(inferGroup('.github/workflows/ci.yml')).toBe('orchestration')
+		expect(inferGroup('scripts/deps.sh')).toBe('orchestration')
+	})
+
+	it('classifies the two manifest files by exact name', () => {
+		expect(inferGroup('package.json')).toBe('manifest')
+		expect(inferGroup('package-lock.json')).toBe('manifest')
+	})
+
+	it('falls through a root-level, prefix-less path to configs', () => {
+		expect(inferGroup('mystery.config.ts')).toBe('configs')
+	})
+})
+
+describe('validateDependencyArray', () => {
+	it('is pure — returns questions/seen without any external mutation', () => {
+		const result = validateDependencyArray('dependencies', [
+			{ name: '@orkestrel/contract', range: '^1' },
+		])
+
+		expect(result.questions).toEqual([])
+		expect(result.seen.has('@orkestrel/contract')).toBe(true)
+	})
+
+	it('flags an empty name, an off-pattern name, and an empty range', () => {
+		const result = validateDependencyArray('dependencies', [
+			{ name: '', range: '^1' },
+			{ name: 'x', range: '' },
+		])
+
+		expect(result.questions).toHaveLength(3)
+		expect(result.questions.every((question) => question.field === 'dependencies')).toBe(true)
+	})
+
+	it('flags a duplicate name, preserving encounter order in `seen`', () => {
+		const result = validateDependencyArray('peers', [
+			{ name: '@orkestrel/contract', range: '^1' },
+			{ name: '@orkestrel/emitter', range: '^1' },
+			{ name: '@orkestrel/contract', range: '^2' },
+		])
+
+		expect(result.questions.some((question) => question.text.includes('more than once'))).toBe(true)
+		expect([...result.seen]).toEqual(['@orkestrel/contract', '@orkestrel/emitter'])
+	})
+})
+
+describe('isRecord', () => {
+	it('accepts a plain object', () => {
+		expect(isRecord({ a: 1 })).toBe(true)
+	})
+
+	it('rejects an array', () => {
+		expect(isRecord([1, 2])).toBe(false)
+	})
+
+	it('rejects null', () => {
+		expect(isRecord(null)).toBe(false)
+	})
+
+	it('rejects a primitive', () => {
+		expect(isRecord('x')).toBe(false)
+		expect(isRecord(1)).toBe(false)
+	})
+})
+
+describe('computeHash — fixed-vector', () => {
+	it('hashes a known input to a known FNV-1a digest', () => {
+		expect(computeHash('hello-world')).toBe('428d118e')
+	})
+
+	it('hashes the empty string to the raw offset basis', () => {
+		expect(computeHash('')).toBe('811c9dc5')
+	})
+})
+
+describe('stableStringify — determinism', () => {
+	it('is key-order insensitive for objects', () => {
+		expect(stableStringify({ b: 1, a: 2 })).toBe(stableStringify({ a: 2, b: 1 }))
+		expect(stableStringify({ a: 2, b: 1 })).toBe('{"a":2,"b":1}')
+	})
+
+	it('preserves array element order', () => {
+		expect(stableStringify([3, 1, 2])).toBe('[3,1,2]')
+		expect(stableStringify([1, 2, 3])).not.toBe(stableStringify([3, 2, 1]))
+	})
+
+	it('recurses through nested arrays/objects', () => {
+		expect(stableStringify({ z: [1, { y: 2, x: 1 }] })).toBe('{"z":[1,{"x":1,"y":2}]}')
+	})
+})
+
 describe('pinPlan', () => {
 	it('fills trace and hash', () => {
 		const plan = pinPlan({ blueprint: blueprint('router'), groups: ['manifest'], artifacts: [] })
@@ -794,6 +1035,34 @@ describe('pinPlan', () => {
 		})
 
 		expect(fromParsed.hash).toBe(fromBuilder.hash)
+	})
+
+	it('pins the six documented surface variants to their captured pre-refactor hashes (byte-stable)', () => {
+		// Captured from the pre-refactor `digest`/`stableStringify` nested-function
+		// implementation via `blueprintToPlan(blueprint('router', { surfaces }))` +
+		// `pinPlan` — asserted here as literals so the `computeHash`/`stableStringify`
+		// extraction (helpers.ts, AGENTS §7.4 no-nested-functions) is provably byte-stable.
+		const variants: readonly { readonly label: string; readonly surfaces: readonly Surface[] }[] = [
+			{ label: 'core-only', surfaces: ['core'] },
+			{ label: 'server-only', surfaces: ['server'] },
+			{ label: 'browser-only', surfaces: ['browser'] },
+			{ label: 'core+server', surfaces: ['core', 'server'] },
+			{ label: 'core+browser', surfaces: ['core', 'browser'] },
+			{ label: 'core+browser+server', surfaces: ['core', 'browser', 'server'] },
+		]
+		const expected: Record<string, string> = {
+			'core-only': '94650eb7',
+			'server-only': '7960ad54',
+			'browser-only': '65151f33',
+			'core+server': '1beba149',
+			'core+browser': '581f59af',
+			'core+browser+server': 'b9b05150',
+		}
+
+		for (const variant of variants) {
+			const plan = blueprintToPlan(blueprint('router', { surfaces: variant.surfaces }))
+			expect(pinPlan(plan).hash).toBe(expected[variant.label])
+		}
 	})
 })
 

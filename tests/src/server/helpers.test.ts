@@ -10,6 +10,9 @@ import {
 	discoverPackages,
 	hostRoot,
 	hydratePlan,
+	isManifestEntry,
+	locateHostSource,
+	selectOrkestrelEntries,
 } from '@src/server'
 import { buildTempDirectory, WORKSPACE_ROOT } from '../../setupServer.js'
 
@@ -558,5 +561,101 @@ describe('hydratePlan', () => {
 		} finally {
 			await host.cleanup()
 		}
+	})
+})
+
+// ── selectOrkestrelEntries ───────────────────────────────────────────────────
+
+describe('selectOrkestrelEntries', () => {
+	it('filters a manifest record to @orkestrel/-prefixed keys with string values, preserving their ranges', () => {
+		const result = selectOrkestrelEntries({
+			'@orkestrel/contract': '^0.0.5',
+			'@orkestrel/emitter': '^0.0.3',
+			'left-pad': '^1.3.0', // non-@orkestrel — dropped
+		})
+		expect(result).toEqual([
+			['@orkestrel/contract', '^0.0.5'],
+			['@orkestrel/emitter', '^0.0.3'],
+		])
+	})
+
+	it('drops an @orkestrel/-prefixed entry whose value is not a string', () => {
+		const result = selectOrkestrelEntries({
+			'@orkestrel/contract': '^0.0.5',
+			'@orkestrel/broken': 1, // non-string value — dropped despite the prefix match
+		})
+		expect(result).toEqual([['@orkestrel/contract', '^0.0.5']])
+	})
+
+	it('returns [] for a non-record value', () => {
+		expect(selectOrkestrelEntries(null)).toEqual([])
+		expect(selectOrkestrelEntries(['@orkestrel/contract'])).toEqual([])
+		expect(selectOrkestrelEntries(undefined)).toEqual([])
+	})
+})
+
+// ── isManifestEntry ──────────────────────────────────────────────────────────
+
+describe('isManifestEntry', () => {
+	it('accepts a full, well-shaped manifest entry', () => {
+		expect(
+			isManifestEntry({ storage: 'gitignore', destination: '.gitignore', executable: false }),
+		).toBe(true)
+	})
+
+	it('rejects an entry missing a required field', () => {
+		expect(isManifestEntry({ storage: 'gitignore', destination: '.gitignore' })).toBe(false)
+	})
+
+	it('rejects an entry with a mistyped field', () => {
+		expect(
+			isManifestEntry({ storage: 'gitignore', destination: '.gitignore', executable: 'false' }),
+		).toBe(false)
+		expect(isManifestEntry({ storage: 1, destination: '.gitignore', executable: false })).toBe(
+			false,
+		)
+	})
+
+	it('rejects adversarial extras and non-record values', () => {
+		expect(
+			isManifestEntry({
+				storage: 'gitignore',
+				destination: '.gitignore',
+				executable: false,
+				extra: 'unexpected',
+			}),
+		).toBe(true) // extras are tolerated — only the required shape is checked
+		expect(isManifestEntry(null)).toBe(false)
+		expect(isManifestEntry(['gitignore'])).toBe(false)
+		expect(isManifestEntry('gitignore')).toBe(false)
+	})
+})
+
+// ── locateHostSource ─────────────────────────────────────────────────────────
+
+describe('locateHostSource', () => {
+	it('resolves via the SINGLE manifest entry whose destination matches source, to its storage path', () => {
+		const manifest = [
+			{ storage: 'pkg.tmpl', destination: 'package.json', executable: false },
+			{ storage: 'gitignore', destination: '.gitignore', executable: false },
+		]
+		expect(locateHostSource(manifest, 'package.json', '/host')).toBe(join('/host', 'pkg.tmpl'))
+	})
+
+	it('returns undefined when no manifest entry matches destination', () => {
+		const manifest = [{ storage: 'gitignore', destination: '.gitignore', executable: false }]
+		expect(locateHostSource(manifest, 'missing.txt', '/host')).toBeUndefined()
+	})
+
+	it('returns undefined when MORE THAN ONE manifest entry matches destination (ambiguous)', () => {
+		const manifest = [
+			{ storage: 'a.tmpl', destination: 'dup.txt', executable: false },
+			{ storage: 'b.tmpl', destination: 'dup.txt', executable: false },
+		]
+		expect(locateHostSource(manifest, 'dup.txt', '/host')).toBeUndefined()
+	})
+
+	it('joins host and source directly when manifest is absent (raw-repo-root fallback)', () => {
+		expect(locateHostSource(undefined, 'notes.txt', '/host')).toBe(join('/host', 'notes.txt'))
 	})
 })

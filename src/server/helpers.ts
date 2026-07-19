@@ -21,10 +21,9 @@ import { blueprint, DEFAULT_ENGINES, DEFAULT_VERSION, ScaffoldError } from '@src
 //  retirement primitives, and the `catalog` bin verb depend on: `isVacant`,
 //  `readTarget`, `readManifest`, `isRecord`, `readHostManifest`, `listFiles`,
 //  `hydratePlan`, `discoverPackages`, `hostRoot`, `deriveBlueprint`, and
-//  `catalogPackages`. `isManifestEntry` (nested in `readHostManifest`) and
-//  `locateHostSource` (nested in `hydratePlan`) are single-call-site shape
-//  guards / lookups, never imported elsewhere — each lives as a local
-//  closure of its one caller rather than a module-scope declaration.
+//  `catalogPackages`. `selectOrkestrelEntries`, `isManifestEntry`, and
+//  `locateHostSource` are exported module-scope helpers per AGENTS §5's
+//  no-nested-functions law — single-call-site status is not an exemption.
 // ============================================================================
 
 /**
@@ -61,6 +60,32 @@ export function hostRoot(): string {
 		}
 		dir = parent
 	}
+}
+
+/**
+ * Filter a manifest record's entries down to `@orkestrel/`-prefixed keys with
+ * string values — the shared `dependencies` / `peerDependencies` /
+ * `devDependencies` reader `deriveBlueprint` uses for every dependency-shaped
+ * field.
+ *
+ * @param value - The candidate manifest field value (e.g. `parsed.dependencies`).
+ * @returns The `@orkestrel/`-prefixed `[name, range]` entries; `[]` when
+ *   `value` is not a plain object (per `isRecord`).
+ *
+ * @example
+ * ```ts
+ * import { selectOrkestrelEntries } from '@orkestrel/scaffold/server'
+ *
+ * selectOrkestrelEntries({ '@orkestrel/core': '^1.0.0', lodash: '^4.0.0' })
+ * // [['@orkestrel/core', '^1.0.0']]
+ * ```
+ */
+export function selectOrkestrelEntries(value: unknown): readonly (readonly [string, string])[] {
+	if (!isRecord(value)) return []
+	return Object.entries(value).filter(
+		(entry): entry is [string, string] =>
+			typeof entry[1] === 'string' && entry[0].startsWith('@orkestrel/'),
+	)
 }
 
 /**
@@ -144,25 +169,19 @@ export function deriveBlueprint(target: string): Blueprint {
 		throw new ScaffoldError('TARGET', `No surface directory found under ${target}/src`, { target })
 	}
 
-	function orkestrelEntries(value: unknown): readonly (readonly [string, string])[] {
-		if (!isRecord(value)) return []
-		return Object.entries(value).filter(
-			(entry): entry is [string, string] =>
-				typeof entry[1] === 'string' && entry[0].startsWith('@orkestrel/'),
-		)
-	}
-
-	const dependencies: Dependency[] = orkestrelEntries(parsed.dependencies).map(
+	const dependencies: Dependency[] = selectOrkestrelEntries(parsed.dependencies).map(
 		([depName, range]) => ({ name: depName, range }),
 	)
 
 	const peersMeta = isRecord(parsed.peerDependenciesMeta) ? parsed.peerDependenciesMeta : undefined
-	const peers: Dependency[] = orkestrelEntries(parsed.peerDependencies).map(([depName, range]) => {
-		const meta = peersMeta !== undefined ? peersMeta[depName] : undefined
-		return isRecord(meta) && meta.optional === true
-			? { name: depName, range, optional: true }
-			: { name: depName, range }
-	})
+	const peers: Dependency[] = selectOrkestrelEntries(parsed.peerDependencies).map(
+		([depName, range]) => {
+			const meta = peersMeta !== undefined ? peersMeta[depName] : undefined
+			return isRecord(meta) && meta.optional === true
+				? { name: depName, range, optional: true }
+				: { name: depName, range }
+		},
+	)
 
 	// A devDependency that ALSO appears in peerDependencies or dependencies is
 	// excluded from extras — it already surfaces as a peer/dependency above,
@@ -170,10 +189,10 @@ export function deriveBlueprint(target: string): Blueprint {
 	// `validateBlueprint` gate (H3: middleware-shaped packages dev-install a
 	// peer for local testing).
 	const peerAndDependencyNames = new Set([
-		...orkestrelEntries(parsed.peerDependencies).map(([depName]) => depName),
-		...orkestrelEntries(parsed.dependencies).map(([depName]) => depName),
+		...selectOrkestrelEntries(parsed.peerDependencies).map(([depName]) => depName),
+		...selectOrkestrelEntries(parsed.dependencies).map(([depName]) => depName),
 	])
-	const extras: Dependency[] = orkestrelEntries(parsed.devDependencies)
+	const extras: Dependency[] = selectOrkestrelEntries(parsed.devDependencies)
 		.filter(([depName]) => !BASELINE_EXTRAS.has(depName) && !peerAndDependencyNames.has(depName))
 		.map(([depName, range]) => ({ name: depName, range }))
 
@@ -299,6 +318,30 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /**
+ * Whether `value` is a well-formed `host/manifest.json` entry — a string
+ * `storage`, a string `destination`, and a boolean `executable`.
+ *
+ * @param value - The candidate raw manifest entry.
+ * @returns `true` when `value` narrows to `ManifestEntry`.
+ *
+ * @example
+ * ```ts
+ * import { isManifestEntry } from '@orkestrel/scaffold/server'
+ *
+ * isManifestEntry({ storage: 'a', destination: 'b', executable: false }) // true
+ * isManifestEntry({ storage: 'a', destination: 'b' }) // false — missing `executable`
+ * ```
+ */
+export function isManifestEntry(value: unknown): value is ManifestEntry {
+	if (!isRecord(value)) return false
+	return (
+		typeof value.storage === 'string' &&
+		typeof value.destination === 'string' &&
+		typeof value.executable === 'boolean'
+	)
+}
+
+/**
  * Read and validate a vendored host root's `manifest.json`, when present.
  *
  * @param host - The host root to probe.
@@ -316,17 +359,6 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
  * ```
  */
 export function readHostManifest(host: string): readonly ManifestEntry[] | undefined {
-	// Whether `value` is a well-formed `host/manifest.json` entry — a string
-	// `storage`, a string `destination`, and a boolean `executable`. Local to
-	// this read: the only place a raw manifest entry needs shape-checking.
-	function isManifestEntry(value: unknown): value is ManifestEntry {
-		if (!isRecord(value)) return false
-		return (
-			typeof value.storage === 'string' &&
-			typeof value.destination === 'string' &&
-			typeof value.executable === 'boolean'
-		)
-	}
 	const full = join(host, 'manifest.json')
 	if (!existsSync(full)) return undefined
 	let text: string
@@ -391,6 +423,41 @@ export function listFiles(root: string): readonly string[] {
 }
 
 /**
+ * Resolve the absolute host-storage path for a host-origin artifact's
+ * `source`, manifest-aware.
+ *
+ * @param manifest - The host's parsed `manifest.json` entries, or `undefined`
+ *   when the host carries none (raw-repo-root fallback).
+ * @param source - The artifact's `source` (or `path`) to resolve.
+ * @param host - The resolved host root the path is joined against.
+ * @returns `join(host, source)` when `manifest` is `undefined` (no vendored
+ *   staging indirection); when `manifest` is present, `join(host,
+ *   entries[0].storage)` for the SINGLE manifest entry whose `destination`
+ *   equals `source`, or `undefined` when zero or more than one entry matches
+ *   (`source` names a directory, or the manifest is ambiguous — no single
+ *   storage file to point at).
+ *
+ * @example
+ * ```ts
+ * import { locateHostSource } from '@orkestrel/scaffold/server'
+ *
+ * locateHostSource(undefined, 'package.json', './dist/host') // './dist/host/package.json'
+ * locateHostSource([{ storage: 'pkg.tmpl', destination: 'package.json', executable: false }], 'package.json', './dist/host')
+ * // './dist/host/pkg.tmpl'
+ * ```
+ */
+export function locateHostSource(
+	manifest: readonly ManifestEntry[] | undefined,
+	source: string,
+	host: string,
+): string | undefined {
+	if (manifest === undefined) return join(host, source)
+	const entries = manifest.filter((entry) => entry.destination === source)
+	if (entries.length !== 1) return undefined
+	return join(host, entries[0].storage)
+}
+
+/**
  * Rehydrate a `Plan`'s `host`-origin artifacts with their real byte content
  * read from `host` — manifest-aware, via `locateHostSource`.
  *
@@ -410,24 +477,11 @@ export function listFiles(root: string): readonly string[] {
  * ```
  */
 export function hydratePlan(plan: Plan, host: string): Plan {
-	// Resolve the absolute host-storage path for a host-origin artifact's
-	// `source`, manifest-aware — `undefined` when `manifest` is present but
-	// `source` names a directory (no single storage file to point at). Local
-	// to this hydration: the only place a source needs manifest-aware lookup.
-	function locateHostSource(
-		manifest: readonly ManifestEntry[] | undefined,
-		source: string,
-	): string | undefined {
-		if (manifest === undefined) return join(host, source)
-		const entries = manifest.filter((entry) => entry.destination === source)
-		if (entries.length !== 1) return undefined
-		return join(host, entries[0].storage)
-	}
 	const manifest = readHostManifest(host)
 	const artifacts = plan.artifacts.map((artifact): Artifact => {
 		if (artifact.origin !== 'host') return artifact
 		const source = artifact.source ?? artifact.path
-		const full = locateHostSource(manifest, source)
+		const full = locateHostSource(manifest, source, host)
 		if (full === undefined || !existsSync(full) || statSync(full).isDirectory()) return artifact
 		try {
 			return { ...artifact, content: readFileSync(full, 'utf8') }
