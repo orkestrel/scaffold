@@ -1,6 +1,6 @@
 // The `#!/usr/bin/env node` shebang is re-emitted by the build's `output.banner`, not source.
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { basename, join } from 'node:path'
+import { existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
+import { basename, dirname, join, relative as relativeOf, resolve, sep } from 'node:path'
 import { parseArgs } from 'node:util'
 import type { Audit, Blueprint, CatalogEntry, Dependency, Group, Plan, SyncReport } from '@src/core'
 import {
@@ -41,6 +41,8 @@ const USAGE = `Usage: scaffold <new|sync|audit|repair|mirror|catalog> [options]
 Every verb is a DRY RUN by default — pass --apply to write.
 \`new <name>\` writes the package into ./<name> under the cwd (--target overrides the exact destination).
 Run any verb bare on a terminal and it prompts for what's missing.
+Every WRITE destination resolves under the current directory — cd there first
+(e.g. \`cd ../fleet-root && scaffold mirror --apply\`); --host may point anywhere (read-only).
 
   new <name> [--surfaces a,b] [--deps x,y] [--apply] [--target <path>] [--host <path>]
     Create a package. Prompts interactively for a missing name or surfaces on a TTY.
@@ -68,14 +70,15 @@ Run any verb bare on a terminal and it prompts for what's missing.
   mirror [--root .] [--apply] [--prune] [--host <path>]
     Fleet-wide host-origin audit/repair across every @orkestrel package under
     root; excludes .github/workflows/ci.yml (repo-flavored — use repair --apply).
-    e.g. scaffold mirror --root .. --apply
+    e.g. cd ../fleet-root && scaffold mirror --apply
 
   catalog [--root <dir> ...] [--target <repo>] [--apply]
     Regenerate the fleet package catalog table embedded in
     <target>/.claude/agents/orkestrel.md between its <!-- catalog:start -->
     / <!-- catalog:end --> markers, sourced from every --root's discovered
-    packages (repeatable; default: cwd) and each package's own guide's first
-    blockquote. Dry-run reports drift (nonzero on any); --apply writes.
+    packages (repeatable; default: cwd; read-only, unrestricted) and each
+    package's own guide's first blockquote. Dry-run reports drift (nonzero on
+    any); --apply writes.
     e.g. scaffold catalog --root .. --apply
 
 Flags: --help prints this text; a repeated flag keeps its LAST occurrence.
@@ -98,6 +101,43 @@ function fail(message: string): never {
 function describe(error: unknown): string {
 	if (isScaffoldError(error)) return `[${error.code}] ${error.message}`
 	return error instanceof Error ? error.message : 'unknown error'
+}
+
+// Realpath-resolve the DEEPEST EXISTING ancestor of `path` (following any
+// symlink it or its ancestors are), then rejoin the still-nonexistent
+// remainder unchanged — mirrors the server `Materializer`'s `#resolveReal` so
+// a not-yet-created destination is checked against where a symlinked segment
+// actually points, without realpath'ing a leaf that does not exist yet.
+function resolveReal(path: string): string {
+	if (existsSync(path)) return realpathSync(path)
+	const parent = dirname(path)
+	if (parent === path) return path
+	return join(resolveReal(parent), relativeOf(parent, path))
+}
+
+/**
+ * Confine a WRITE destination to the current working directory (global-CLI
+ * safety): `new`'s resolved target, `--target` on sync/audit/repair/catalog,
+ * and `--root` on mirror all pass through here before use. A READ-ONLY
+ * source (`--host`, and `--root` on catalog) is exempt — sibling-repo
+ * sourcing from outside the cwd is legitimate. Equal to the cwd or nested
+ * beneath it passes; anything else is a coded `INVALID` failure (AGENTS §12),
+ * never a silent clamp.
+ *
+ * @returns The resolved (non-realpath'd) absolute path, for use as the
+ * verb's destination.
+ */
+function containDestination(candidate: string): string {
+	const resolvedCwd = resolveReal(resolve(process.cwd()))
+	const resolvedCandidate = resolveReal(resolve(candidate))
+	if (resolvedCandidate !== resolvedCwd && !resolvedCandidate.startsWith(resolvedCwd + sep)) {
+		throw new ScaffoldError(
+			'INVALID',
+			`Target "${candidate}" escapes the working directory — run scaffold from the directory you want to write beneath.`,
+			{ path: candidate },
+		)
+	}
+	return resolve(candidate)
 }
 
 /** `node:util`'s strict `parseArgs`, isolated so its throw on an unknown/malformed flag is catchable (H3). */
@@ -176,7 +216,12 @@ if (command === undefined) {
 	process.stderr.write(USAGE)
 	process.exit(1)
 } else if (command === 'sync') {
-	const target = values.target ?? '.'
+	let target: string
+	try {
+		target = containDestination(values.target ?? '.')
+	} catch (error) {
+		fail(describe(error))
+	}
 	const sync = createSync({ strict: values.strict })
 	const wanted = values.deps?.split(',')
 
@@ -219,7 +264,12 @@ if (command === undefined) {
 	sync.destroy()
 	process.exit(values.strict && report.failed > 0 ? 1 : 0) // nonzero only under --strict with failures
 } else if (command === 'audit') {
-	const target = values.target ?? '.'
+	let target: string
+	try {
+		target = containDestination(values.target ?? '.')
+	} catch (error) {
+		fail(describe(error))
+	}
 	let spec: Blueprint
 	try {
 		spec = deriveBlueprint(target)
@@ -338,11 +388,18 @@ if (command === undefined) {
 	})
 
 	if (values.apply) {
+		let destination: string
+		try {
+			destination = containDestination(values.target ?? `./${name}`)
+		} catch (error) {
+			compiler.destroy()
+			fail(describe(error))
+		}
 		const spinner = createSpinner({ message: 'materializing', sink })
 		spinner.start()
 		const materializer = createMaterializer({ host: values.host })
 		try {
-			const result = materializer.materialize(scaffolding.plan, values.target ?? `./${name}`)
+			const result = materializer.materialize(scaffolding.plan, destination)
 			spinner.success(`wrote ${result.written.length + result.copied.length} files`)
 		} catch (error) {
 			spinner.failure(describe(error))
@@ -354,7 +411,12 @@ if (command === undefined) {
 	}
 	compiler.destroy()
 } else if (command === 'repair') {
-	const target = values.target ?? '.'
+	let target: string
+	try {
+		target = containDestination(values.target ?? '.')
+	} catch (error) {
+		fail(describe(error))
+	}
 	if (values.prune && !values.apply) {
 		process.stderr.write('note: --prune is ignored on a dry run (pass --apply to write)\n')
 	}
@@ -430,7 +492,12 @@ if (command === undefined) {
 	materializer.destroy()
 	process.exit(0)
 } else if (command === 'mirror') {
-	const root = values.root?.[0] ?? '.'
+	let root: string
+	try {
+		root = containDestination(values.root?.[0] ?? '.')
+	} catch (error) {
+		fail(describe(error))
+	}
 	const packages = discoverPackages(root)
 	if (packages.length === 0) {
 		fail(`No @orkestrel packages found under "${root}"`)
@@ -513,8 +580,15 @@ if (command === undefined) {
 } else if (command === 'catalog') {
 	// `scaffold catalog` — regenerate the fleet package catalog embedded in
 	// <target>/.claude/agents/orkestrel.md between its marker comments.
+	// `--root` is a READ-ONLY source (unrestricted, like `--host`); only the
+	// write destination `--target` is confined to the cwd.
 	const roots = values.root ?? [process.cwd()]
-	const catalogTarget = values.target ?? '.'
+	let catalogTarget: string
+	try {
+		catalogTarget = containDestination(values.target ?? '.')
+	} catch (error) {
+		fail(describe(error))
+	}
 
 	let entries: readonly CatalogEntry[]
 	try {

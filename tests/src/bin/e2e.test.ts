@@ -213,19 +213,13 @@ describe('scaffold bin: default-host end-to-end proof (no --host)', () => {
 			const root = await buildTempDirectory()
 			try {
 				for (const name of ['fleeta', 'fleetb']) {
-					const created = runBin([
-						'new',
-						name,
-						'--surfaces',
-						'core',
-						'--apply',
-						'--target',
-						join(root.path, name),
-					])
+					const created = runBin(['new', name, '--surfaces', 'core', '--apply', '--target', name], {
+						cwd: root.path,
+					})
 					expect(created.status).toBe(0)
 				}
 
-				const clean = runBin(['mirror', '--root', root.path])
+				const clean = runBin(['mirror', '--root', '.'], { cwd: root.path })
 				expect(clean.status).toBe(0)
 				expect(clean.stdout).toContain('fleeta: clean')
 				expect(clean.stdout).toContain('fleetb: clean')
@@ -237,19 +231,19 @@ describe('scaffold bin: default-host end-to-end proof (no --host)', () => {
 				const driftedFile = join(root.path, 'fleeta', '.editorconfig')
 				rmSync(driftedFile)
 
-				const drifted = runBin(['mirror', '--root', root.path])
+				const drifted = runBin(['mirror', '--root', '.'], { cwd: root.path })
 				expect(drifted.status).toBe(1)
 				expect(drifted.stdout).toContain('fleeta: drifted 0, missing 1, foreign 0')
 				expect(drifted.stdout).toContain('total: 1 drifted, 0 failed')
 
-				const trued = runBin(['mirror', '--root', root.path, '--apply'])
+				const trued = runBin(['mirror', '--root', '.', '--apply'], { cwd: root.path })
 				expect(trued.status).toBe(0)
 				expect(trued.stdout).toContain('fleeta: repaired (0 remaining)')
 				expect(readFileSync(driftedFile, 'utf8')).toBe(
 					readFileSync(join(WORKSPACE_ROOT, '.editorconfig'), 'utf8'),
 				)
 
-				const rerun = runBin(['mirror', '--root', root.path])
+				const rerun = runBin(['mirror', '--root', '.'], { cwd: root.path })
 				expect(rerun.status).toBe(0)
 				expect(rerun.stdout).toContain('fleeta: clean')
 				expect(rerun.stdout).toContain('fleetb: clean')

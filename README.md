@@ -21,7 +21,9 @@ npx scaffold new mypackage --surfaces core --apply
 
 Every verb is a **dry run by default** — nothing writes until you pass `--apply`,
 and `new <name>` writes into `./<name>` under the current directory (`--target`
-overrides the exact destination).
+overrides the exact destination). Every write destination resolves under the
+current directory — equal to it or nested beneath — so the CLI is safe to run
+as a global command anywhere; `--host` may point anywhere (read-only).
 
 **Windows/PowerShell:** invoke as `node ./dist/bin/scaffold.js …` or `npx scaffold …`
 directly — PowerShell mangles npm's `--` passthrough, so avoid
@@ -51,8 +53,9 @@ scaffold catalog [--root <dir> ...] [--target <repo>] [--apply]
   target-only files the plan no longer declares.
 - **`mirror`** — propagates the line's shared, host-owned files (`AGENTS.md`,
   `CLAUDE.md`, `.claude/`, `scripts/`, the shared dotfiles, …) from this canonical
-  repo to every `@orkestrel` repo under `--root` (default: this repo's parent
-  directory); dry-run by default, `--apply` writes.
+  repo to every `@orkestrel` repo under `--root` (default: the current directory;
+  a write destination, so `cd` into the fleet root first); dry-run by default,
+  `--apply` writes.
 - **`catalog`** — regenerates the orkestrel agent's package catalog from the
   fleet's guides; scans every `--root`, writes the table into `--target`'s
   `.claude/agents/orkestrel.md`; dry-run by default, `--apply` writes.

@@ -10,10 +10,20 @@ import { buildTempDirectory, WORKSPACE_ROOT } from '../../setupServer.js'
 
 const BIN_PATH = join(WORKSPACE_ROOT, 'dist/bin/scaffold.js')
 
-/** Spawn the built `scaffold` bin with `argv` + optional piped `input`, cwd anchored at the repo root so host-path resolution finds the real package. */
-function runBin(argv: readonly string[], input?: string): SpawnSyncReturns<string> {
+/**
+ * Spawn the built `scaffold` bin with `argv` + optional piped `input`, cwd
+ * defaulting to the repo root (so host-path resolution finds the real
+ * package) with an optional override — every WRITE destination is now
+ * confined to the cwd, so a test exercising `--target`/`--root` against a
+ * temp fixture must run WITH that fixture as its cwd.
+ */
+function runBin(
+	argv: readonly string[],
+	input?: string,
+	options?: { readonly cwd?: string },
+): SpawnSyncReturns<string> {
 	return spawnSync(process.execPath, [BIN_PATH, ...argv], {
-		cwd: WORKSPACE_ROOT,
+		cwd: options?.cwd ?? WORKSPACE_ROOT,
 		input: input ?? '',
 		encoding: 'utf8',
 		timeout: 15000,
@@ -97,15 +107,11 @@ describe('scaffold bin', () => {
 		it('apply: writes real files into the target and cleans up after', async () => {
 			const directory = await buildTempDirectory()
 			try {
-				const result = runBin([
-					'new',
-					'demo-apply',
-					'--surfaces',
-					'core',
-					'--apply',
-					'--target',
-					directory.path,
-				])
+				const result = runBin(
+					['new', 'demo-apply', '--surfaces', 'core', '--apply', '--target', '.'],
+					undefined,
+					{ cwd: directory.path },
+				)
 				expect(result.status).toBe(0)
 				expect(result.stdout).toContain('wrote')
 
@@ -189,17 +195,21 @@ describe('scaffold bin', () => {
 			const fixture = await buildHostFixture({ '.editorconfig': 'root = true\n# fixture-marker\n' })
 			const target = await buildTempDirectory()
 			try {
-				const result = runBin([
-					'new',
-					'demo-host-passthrough',
-					'--surfaces',
-					'core',
-					'--apply',
-					'--target',
-					target.path,
-					'--host',
-					fixture.path,
-				])
+				const result = runBin(
+					[
+						'new',
+						'demo-host-passthrough',
+						'--surfaces',
+						'core',
+						'--apply',
+						'--target',
+						'.',
+						'--host',
+						fixture.path,
+					],
+					undefined,
+					{ cwd: target.path },
+				)
 				expect(result.status).toBe(0)
 				expect(result.stdout).toContain('wrote')
 
@@ -211,19 +221,35 @@ describe('scaffold bin', () => {
 				await fixture.cleanup()
 			}
 		})
+
+		it('containment: --target escaping the cwd exits 1 with a coded [INVALID] message and creates nothing', async () => {
+			const cwd = await buildTempDirectory()
+			try {
+				const result = runBin(
+					['new', 'demo-escape', '--surfaces', 'core', '--apply', '--target', '../escape'],
+					undefined,
+					{ cwd: cwd.path },
+				)
+				expect(result.status).toBe(1)
+				const output = result.stdout + result.stderr
+				expect(output).toContain('[INVALID]')
+				expect(output).toMatch(/escapes the working directory/)
+				expect(existsSync(join(cwd.path, '..', 'escape'))).toBe(false)
+			} finally {
+				await cwd.cleanup()
+			}
+		})
 	})
 
 	describe('sync', () => {
 		it('offline posture: a --deps subset with an unreachable dependency still exits 0 (collect mode)', async () => {
 			const directory = await writeManifest({ '@orkestrel/does-not-exist-xyz': '^1.0.0' })
 			try {
-				const result = runBin([
-					'sync',
-					'--target',
-					directory.path,
-					'--deps',
-					'@orkestrel/does-not-exist-xyz',
-				])
+				const result = runBin(
+					['sync', '--target', '.', '--deps', '@orkestrel/does-not-exist-xyz'],
+					undefined,
+					{ cwd: directory.path },
+				)
 				expect(result.status).toBe(0)
 				expect(result.stdout).toContain('Sync')
 			} finally {
@@ -234,14 +260,11 @@ describe('scaffold bin', () => {
 		it('--strict: an unreachable dependency in the --deps subset exits 1 with a clean coded message', async () => {
 			const directory = await writeManifest({ '@orkestrel/does-not-exist-xyz': '^1.0.0' })
 			try {
-				const result = runBin([
-					'sync',
-					'--target',
-					directory.path,
-					'--deps',
-					'@orkestrel/does-not-exist-xyz',
-					'--strict',
-				])
+				const result = runBin(
+					['sync', '--target', '.', '--deps', '@orkestrel/does-not-exist-xyz', '--strict'],
+					undefined,
+					{ cwd: directory.path },
+				)
 				expect(result.status).toBe(1)
 				expect(result.stderr).toContain('FETCH')
 				expect(result.stderr).not.toContain('at Object') // no raw stack trace
@@ -253,14 +276,11 @@ describe('scaffold bin', () => {
 		it('--apply: an unreachable dependency writes zero mirrors and still exits 0', async () => {
 			const directory = await writeManifest({ '@orkestrel/does-not-exist-xyz': '^1.0.0' })
 			try {
-				const result = runBin([
-					'sync',
-					'--target',
-					directory.path,
-					'--deps',
-					'@orkestrel/does-not-exist-xyz',
-					'--apply',
-				])
+				const result = runBin(
+					['sync', '--target', '.', '--deps', '@orkestrel/does-not-exist-xyz', '--apply'],
+					undefined,
+					{ cwd: directory.path },
+				)
 				expect(result.status).toBe(0)
 				expect(result.stdout).toContain('wrote 0 guides')
 				expect(existsSync(join(directory.path, 'guides', 'src'))).toBe(false)
@@ -272,11 +292,23 @@ describe('scaffold bin', () => {
 		it('R1: no package.json in --target exits 1 with a coded [TARGET] line, no raw stack', async () => {
 			const directory = await buildTempDirectory()
 			try {
-				const result = runBin(['sync', '--target', directory.path])
+				const result = runBin(['sync', '--target', '.'], undefined, { cwd: directory.path })
 				expect(result.status).toBe(1)
 				expect(result.stderr).toContain('[TARGET]')
 				expect(result.stderr).not.toContain('at Object')
 				expect(result.stderr).not.toContain('at async')
+			} finally {
+				await directory.cleanup()
+			}
+		})
+
+		it('containment: --target escaping the cwd exits 1 with a coded [INVALID] message', async () => {
+			const directory = await buildTempDirectory()
+			try {
+				const result = runBin(['sync', '--target', '..'], undefined, { cwd: directory.path })
+				expect(result.status).toBe(1)
+				expect(result.stderr).toContain('[INVALID]')
+				expect(result.stderr).toMatch(/escapes the working directory/)
 			} finally {
 				await directory.cleanup()
 			}
@@ -287,18 +319,14 @@ describe('scaffold bin', () => {
 		it('happy dry-run: a clean scaffolded target has no drift', async () => {
 			const directory = await buildTempDirectory()
 			try {
-				const created = runBin([
-					'new',
-					'pkg',
-					'--surfaces',
-					'core',
-					'--apply',
-					'--target',
-					directory.path,
-				])
+				const created = runBin(
+					['new', 'pkg', '--surfaces', 'core', '--apply', '--target', '.'],
+					undefined,
+					{ cwd: directory.path },
+				)
 				expect(created.status).toBe(0)
 
-				const audited = runBin(['audit', '--target', directory.path])
+				const audited = runBin(['audit', '--target', '.'], undefined, { cwd: directory.path })
 				expect(audited.status).toBe(0)
 			} finally {
 				await directory.cleanup()
@@ -308,22 +336,18 @@ describe('scaffold bin', () => {
 		it('structural drift: a mutated file fails the audit', async () => {
 			const directory = await buildTempDirectory()
 			try {
-				const created = runBin([
-					'new',
-					'pkg',
-					'--surfaces',
-					'core',
-					'--apply',
-					'--target',
-					directory.path,
-				])
+				const created = runBin(
+					['new', 'pkg', '--surfaces', 'core', '--apply', '--target', '.'],
+					undefined,
+					{ cwd: directory.path },
+				)
 				expect(created.status).toBe(0)
 				writeFileSync(
 					join(directory.path, 'package.json'),
 					'{"name":"@orkestrel/pkg","mutated":true}',
 				)
 
-				const audited = runBin(['audit', '--target', directory.path])
+				const audited = runBin(['audit', '--target', '.'], undefined, { cwd: directory.path })
 				expect(audited.status).toBe(1)
 			} finally {
 				await directory.cleanup()
@@ -333,7 +357,9 @@ describe('scaffold bin', () => {
 		it('--live: an unreachable declared dependency counts as drift and exits 1', async () => {
 			const directory = await writeManifest({ '@orkestrel/does-not-exist-xyz': '^1.0.0' })
 			try {
-				const result = runBin(['audit', '--target', directory.path, '--live'])
+				const result = runBin(['audit', '--target', '.', '--live'], undefined, {
+					cwd: directory.path,
+				})
 				expect(result.status).toBe(1)
 			} finally {
 				await directory.cleanup()
@@ -343,7 +369,7 @@ describe('scaffold bin', () => {
 		it('R1: no package.json in --target exits 1 with a coded [TARGET] line, no raw stack', async () => {
 			const directory = await buildTempDirectory()
 			try {
-				const result = runBin(['audit', '--target', directory.path])
+				const result = runBin(['audit', '--target', '.'], undefined, { cwd: directory.path })
 				expect(result.status).toBe(1)
 				expect(result.stderr).toContain('[TARGET]')
 				expect(result.stderr).not.toContain('at Object')
@@ -357,20 +383,26 @@ describe('scaffold bin', () => {
 			const fixture = await buildHostFixture()
 			const target = await buildTempDirectory()
 			try {
-				const created = runBin([
-					'new',
-					'demo-audit-host-mode',
-					'--surfaces',
-					'core',
-					'--apply',
-					'--target',
-					target.path,
-					'--host',
-					fixture.path,
-				])
+				const created = runBin(
+					[
+						'new',
+						'demo-audit-host-mode',
+						'--surfaces',
+						'core',
+						'--apply',
+						'--target',
+						'.',
+						'--host',
+						fixture.path,
+					],
+					undefined,
+					{ cwd: target.path },
+				)
 				expect(created.status).toBe(0)
 
-				const aware = runBin(['audit', '--target', target.path, '--host', fixture.path])
+				const aware = runBin(['audit', '--target', '.', '--host', fixture.path], undefined, {
+					cwd: target.path,
+				})
 				expect(aware.stdout).toContain('host: content-aware')
 			} finally {
 				await target.cleanup()
@@ -381,19 +413,25 @@ describe('scaffold bin', () => {
 		it('M1: an EXPLICIT --host that does not resolve to a directory exits 1 with a coded [TARGET] line (never a silent presence-only downgrade)', async () => {
 			const directory = await buildTempDirectory()
 			try {
-				const created = runBin([
-					'new',
-					'demo-audit-explicit-host-missing',
-					'--surfaces',
-					'core',
-					'--apply',
-					'--target',
-					directory.path,
-				])
+				const created = runBin(
+					[
+						'new',
+						'demo-audit-explicit-host-missing',
+						'--surfaces',
+						'core',
+						'--apply',
+						'--target',
+						'.',
+					],
+					undefined,
+					{ cwd: directory.path },
+				)
 				expect(created.status).toBe(0)
 
 				const missingHost = join(directory.path, 'does-not-exist-explicit-host')
-				const result = runBin(['audit', '--target', directory.path, '--host', missingHost])
+				const result = runBin(['audit', '--target', '.', '--host', missingHost], undefined, {
+					cwd: directory.path,
+				})
 				expect(result.status).toBe(1)
 				expect(result.stderr).toContain('[TARGET]')
 			} finally {
@@ -404,21 +442,19 @@ describe('scaffold bin', () => {
 		it('--groups orchestration: a repo with source drift but a CLEAN orchestration group exits 0 (CI can gate on a subset)', async () => {
 			const directory = await buildTempDirectory()
 			try {
-				const created = runBin([
-					'new',
-					'demo-audit-groups-clean',
-					'--surfaces',
-					'core',
-					'--apply',
-					'--target',
-					directory.path,
-				])
+				const created = runBin(
+					['new', 'demo-audit-groups-clean', '--surfaces', 'core', '--apply', '--target', '.'],
+					undefined,
+					{ cwd: directory.path },
+				)
 				expect(created.status).toBe(0)
 				// Source drift (outside the orchestration group) must NOT affect a
 				// --groups orchestration gate.
 				writeFileSync(join(directory.path, 'src', 'core', 'index.ts'), '// mutated\n')
 
-				const result = runBin(['audit', '--target', directory.path, '--groups', 'orchestration'])
+				const result = runBin(['audit', '--target', '.', '--groups', 'orchestration'], undefined, {
+					cwd: directory.path,
+				})
 				expect(result.status).toBe(0)
 			} finally {
 				await directory.cleanup()
@@ -428,18 +464,16 @@ describe('scaffold bin', () => {
 		it('--groups bogus: an unrecognized group name exits 1 with a coded [INVALID] message', async () => {
 			const directory = await buildTempDirectory()
 			try {
-				const created = runBin([
-					'new',
-					'demo-audit-groups-bogus',
-					'--surfaces',
-					'core',
-					'--apply',
-					'--target',
-					directory.path,
-				])
+				const created = runBin(
+					['new', 'demo-audit-groups-bogus', '--surfaces', 'core', '--apply', '--target', '.'],
+					undefined,
+					{ cwd: directory.path },
+				)
 				expect(created.status).toBe(0)
 
-				const result = runBin(['audit', '--target', directory.path, '--groups', 'bogus'])
+				const result = runBin(['audit', '--target', '.', '--groups', 'bogus'], undefined, {
+					cwd: directory.path,
+				})
 				expect(result.status).toBe(1)
 				const output = result.stdout + result.stderr
 				expect(output).toContain('[INVALID]')
@@ -453,29 +487,47 @@ describe('scaffold bin', () => {
 			const fixture = await buildHostFixture()
 			const target = await buildTempDirectory()
 			try {
-				const created = runBin([
-					'new',
-					'demo-audit-host-drift',
-					'--surfaces',
-					'core',
-					'--apply',
-					'--target',
-					target.path,
-					'--host',
-					fixture.path,
-				])
+				const created = runBin(
+					[
+						'new',
+						'demo-audit-host-drift',
+						'--surfaces',
+						'core',
+						'--apply',
+						'--target',
+						'.',
+						'--host',
+						fixture.path,
+					],
+					undefined,
+					{ cwd: target.path },
+				)
 				expect(created.status).toBe(0)
 				writeFileSync(
 					join(target.path, 'package.json'),
 					'{"name":"@orkestrel/demo-audit-host-drift","mutated":true}',
 				)
 
-				const result = runBin(['audit', '--target', target.path, '--host', fixture.path])
+				const result = runBin(['audit', '--target', '.', '--host', fixture.path], undefined, {
+					cwd: target.path,
+				})
 				expect(result.status).toBe(1)
 				expect(result.stdout).toContain('host: content-aware')
 			} finally {
 				await target.cleanup()
 				await fixture.cleanup()
+			}
+		})
+
+		it('containment: --target escaping the cwd exits 1 with a coded [INVALID] message', async () => {
+			const directory = await buildTempDirectory()
+			try {
+				const result = runBin(['audit', '--target', '..'], undefined, { cwd: directory.path })
+				expect(result.status).toBe(1)
+				expect(result.stderr).toContain('[INVALID]')
+				expect(result.stderr).toMatch(/escapes the working directory/)
+			} finally {
+				await directory.cleanup()
 			}
 		})
 	})
@@ -485,17 +537,21 @@ describe('scaffold bin', () => {
 			const fixture = await buildHostFixture()
 			const target = await buildTempDirectory()
 			try {
-				const created = runBin([
-					'new',
-					'demo-repair-dry',
-					'--surfaces',
-					'core',
-					'--apply',
-					'--target',
-					target.path,
-					'--host',
-					fixture.path,
-				])
+				const created = runBin(
+					[
+						'new',
+						'demo-repair-dry',
+						'--surfaces',
+						'core',
+						'--apply',
+						'--target',
+						'.',
+						'--host',
+						fixture.path,
+					],
+					undefined,
+					{ cwd: target.path },
+				)
 				expect(created.status).toBe(0)
 
 				// Host drift: the `.editorconfig` host artifact goes missing —
@@ -506,7 +562,9 @@ describe('scaffold bin', () => {
 				// A file `repair`'s plan does not own, under a `prune`-guarded directory.
 				writeFileSync(join(target.path, 'scripts', 'rogue.sh'), '#!/bin/sh\necho rogue\n')
 
-				const result = runBin(['repair', '--target', target.path, '--host', fixture.path])
+				const result = runBin(['repair', '--target', '.', '--host', fixture.path], undefined, {
+					cwd: target.path,
+				})
 				expect(result.status).toBe(1)
 				expect(result.stdout).toContain('# Audit')
 				expect(result.stdout).toMatch(/missing: [1-9]/)
@@ -525,30 +583,31 @@ describe('scaffold bin', () => {
 			})
 			const target = await buildTempDirectory()
 			try {
-				const created = runBin([
-					'new',
-					'demo-repair-apply',
-					'--surfaces',
-					'core',
-					'--apply',
-					'--target',
-					target.path,
-					'--host',
-					scaffoldFixture.path,
-				])
+				const created = runBin(
+					[
+						'new',
+						'demo-repair-apply',
+						'--surfaces',
+						'core',
+						'--apply',
+						'--target',
+						'.',
+						'--host',
+						scaffoldFixture.path,
+					],
+					undefined,
+					{ cwd: target.path },
+				)
 				expect(created.status).toBe(0)
 
 				rmSync(join(target.path, '.editorconfig'), { force: true })
 				writeFileSync(join(target.path, 'scripts', 'rogue.sh'), '#!/bin/sh\necho rogue\n')
 
-				const result = runBin([
-					'repair',
-					'--target',
-					target.path,
-					'--host',
-					repairFixture.path,
-					'--apply',
-				])
+				const result = runBin(
+					['repair', '--target', '.', '--host', repairFixture.path, '--apply'],
+					undefined,
+					{ cwd: target.path },
+				)
 				expect(result.status).toBe(0)
 				expect(result.stdout).toMatch(/wrote 0, copied 1, skipped \d+, removed 0/)
 
@@ -567,31 +626,31 @@ describe('scaffold bin', () => {
 			const fixture = await buildHostFixture()
 			const target = await buildTempDirectory()
 			try {
-				const created = runBin([
-					'new',
-					'demo-repair-prune',
-					'--surfaces',
-					'core',
-					'--apply',
-					'--target',
-					target.path,
-					'--host',
-					fixture.path,
-				])
+				const created = runBin(
+					[
+						'new',
+						'demo-repair-prune',
+						'--surfaces',
+						'core',
+						'--apply',
+						'--target',
+						'.',
+						'--host',
+						fixture.path,
+					],
+					undefined,
+					{ cwd: target.path },
+				)
 				expect(created.status).toBe(0)
 
 				rmSync(join(target.path, '.editorconfig'), { force: true })
 				writeFileSync(join(target.path, 'scripts', 'rogue.sh'), '#!/bin/sh\necho rogue\n')
 
-				const result = runBin([
-					'repair',
-					'--target',
-					target.path,
-					'--host',
-					fixture.path,
-					'--apply',
-					'--prune',
-				])
+				const result = runBin(
+					['repair', '--target', '.', '--host', fixture.path, '--apply', '--prune'],
+					undefined,
+					{ cwd: target.path },
+				)
 				expect(result.status).toBe(0)
 				expect(result.stdout).toMatch(/removed 1/)
 				expect(existsSync(join(target.path, '.editorconfig'))).toBe(true)
@@ -606,17 +665,21 @@ describe('scaffold bin', () => {
 			const fixture = await buildHostFixture()
 			const target = await buildTempDirectory()
 			try {
-				const created = runBin([
-					'new',
-					'demo-repair-host-scope',
-					'--surfaces',
-					'core',
-					'--apply',
-					'--target',
-					target.path,
-					'--host',
-					fixture.path,
-				])
+				const created = runBin(
+					[
+						'new',
+						'demo-repair-host-scope',
+						'--surfaces',
+						'core',
+						'--apply',
+						'--target',
+						'.',
+						'--host',
+						fixture.path,
+					],
+					undefined,
+					{ cwd: target.path },
+				)
 				expect(created.status).toBe(0)
 
 				// A hand-modified SOURCE file — repair must never restore this,
@@ -627,21 +690,20 @@ describe('scaffold bin', () => {
 				// Genuine host drift alongside it.
 				rmSync(join(target.path, '.editorconfig'), { force: true })
 
-				const dryRun = runBin(['repair', '--target', target.path, '--host', fixture.path])
+				const dryRun = runBin(['repair', '--target', '.', '--host', fixture.path], undefined, {
+					cwd: target.path,
+				})
 				expect(dryRun.status).toBe(1) // reflects the host drift alone
 				expect(dryRun.stdout).toMatch(/missing: [1-9]/)
 				// The hand-modified src file is untouched by the dry-run audit —
 				// its content is still what we hand-wrote.
 				expect(readFileSync(srcPath, 'utf8')).toBe('// hand-modified by the maintainer\n')
 
-				const applied = runBin([
-					'repair',
-					'--target',
-					target.path,
-					'--host',
-					fixture.path,
-					'--apply',
-				])
+				const applied = runBin(
+					['repair', '--target', '.', '--host', fixture.path, '--apply'],
+					undefined,
+					{ cwd: target.path },
+				)
 				expect(applied.status).toBe(0)
 				expect(existsSync(join(target.path, '.editorconfig'))).toBe(true)
 				// The hand-modified src file is STILL untouched after --apply.
@@ -656,34 +718,47 @@ describe('scaffold bin', () => {
 			const fixture = await buildHostFixture()
 			const target = await buildTempDirectory()
 			try {
-				const created = runBin([
-					'new',
-					'demo-repair-prune-noop',
-					'--surfaces',
-					'core',
-					'--apply',
-					'--target',
-					target.path,
-					'--host',
-					fixture.path,
-				])
+				const created = runBin(
+					[
+						'new',
+						'demo-repair-prune-noop',
+						'--surfaces',
+						'core',
+						'--apply',
+						'--target',
+						'.',
+						'--host',
+						fixture.path,
+					],
+					undefined,
+					{ cwd: target.path },
+				)
 				expect(created.status).toBe(0)
 				writeFileSync(join(target.path, 'scripts', 'rogue.sh'), '#!/bin/sh\necho rogue\n')
 
-				const result = runBin([
-					'repair',
-					'--target',
-					target.path,
-					'--host',
-					fixture.path,
-					'--prune',
-				])
+				const result = runBin(
+					['repair', '--target', '.', '--host', fixture.path, '--prune'],
+					undefined,
+					{ cwd: target.path },
+				)
 				expect(result.status).toBe(0) // no other drift induced — dry-run reports clean
 				expect(result.stderr).toMatch(/--prune is ignored on a dry run/i)
 				expect(existsSync(join(target.path, 'scripts', 'rogue.sh'))).toBe(true)
 			} finally {
 				await target.cleanup()
 				await fixture.cleanup()
+			}
+		})
+
+		it('containment: --target escaping the cwd exits 1 with a coded [INVALID] message', async () => {
+			const directory = await buildTempDirectory()
+			try {
+				const result = runBin(['repair', '--target', '..'], undefined, { cwd: directory.path })
+				expect(result.status).toBe(1)
+				expect(result.stderr).toContain('[INVALID]')
+				expect(result.stderr).toMatch(/escapes the working directory/)
+			} finally {
+				await directory.cleanup()
 			}
 		})
 	})
@@ -693,30 +768,38 @@ describe('scaffold bin', () => {
 			const fixture = await buildHostFixture()
 			const root = await buildTempDirectory()
 			try {
-				const clean = runBin([
-					'new',
-					'fleet-clean',
-					'--surfaces',
-					'core',
-					'--apply',
-					'--target',
-					join(root.path, 'fleet-clean'),
-					'--host',
-					fixture.path,
-				])
+				const clean = runBin(
+					[
+						'new',
+						'fleet-clean',
+						'--surfaces',
+						'core',
+						'--apply',
+						'--target',
+						'fleet-clean',
+						'--host',
+						fixture.path,
+					],
+					undefined,
+					{ cwd: root.path },
+				)
 				expect(clean.status).toBe(0)
 
-				const drifted = runBin([
-					'new',
-					'fleet-drifted',
-					'--surfaces',
-					'core',
-					'--apply',
-					'--target',
-					join(root.path, 'fleet-drifted'),
-					'--host',
-					fixture.path,
-				])
+				const drifted = runBin(
+					[
+						'new',
+						'fleet-drifted',
+						'--surfaces',
+						'core',
+						'--apply',
+						'--target',
+						'fleet-drifted',
+						'--host',
+						fixture.path,
+					],
+					undefined,
+					{ cwd: root.path },
+				)
 				expect(drifted.status).toBe(0)
 				// In-scope host drift (mirror repairs this): the `.editorconfig` goes missing.
 				rmSync(join(root.path, 'fleet-drifted', '.editorconfig'), { force: true })
@@ -735,7 +818,9 @@ describe('scaffold bin', () => {
 					JSON.stringify({ name: 'not-an-orkestrel-thing', version: '0.0.1' }),
 				)
 
-				const result = runBin(['mirror', '--root', root.path, '--host', fixture.path])
+				const result = runBin(['mirror', '--root', '.', '--host', fixture.path], undefined, {
+					cwd: root.path,
+				})
 				expect(result.status).toBe(1)
 				expect(result.stdout).toContain('fleet-clean: clean')
 				expect(result.stdout).toContain('fleet-drifted: drifted 0, missing 1, foreign 0')
@@ -758,30 +843,38 @@ describe('scaffold bin', () => {
 			const fixture = await buildHostFixture()
 			const root = await buildTempDirectory()
 			try {
-				const clean = runBin([
-					'new',
-					'fleet-clean',
-					'--surfaces',
-					'core',
-					'--apply',
-					'--target',
-					join(root.path, 'fleet-clean'),
-					'--host',
-					fixture.path,
-				])
+				const clean = runBin(
+					[
+						'new',
+						'fleet-clean',
+						'--surfaces',
+						'core',
+						'--apply',
+						'--target',
+						'fleet-clean',
+						'--host',
+						fixture.path,
+					],
+					undefined,
+					{ cwd: root.path },
+				)
 				expect(clean.status).toBe(0)
 
-				const drifted = runBin([
-					'new',
-					'fleet-drifted',
-					'--surfaces',
-					'core',
-					'--apply',
-					'--target',
-					join(root.path, 'fleet-drifted'),
-					'--host',
-					fixture.path,
-				])
+				const drifted = runBin(
+					[
+						'new',
+						'fleet-drifted',
+						'--surfaces',
+						'core',
+						'--apply',
+						'--target',
+						'fleet-drifted',
+						'--host',
+						fixture.path,
+					],
+					undefined,
+					{ cwd: root.path },
+				)
 				expect(drifted.status).toBe(0)
 				rmSync(join(root.path, 'fleet-drifted', '.editorconfig'), { force: true })
 				rmSync(join(root.path, 'fleet-drifted', '.github', 'workflows', 'ci.yml'), { force: true })
@@ -791,7 +884,11 @@ describe('scaffold bin', () => {
 					'# rogue\n',
 				)
 
-				const result = runBin(['mirror', '--root', root.path, '--host', fixture.path, '--apply'])
+				const result = runBin(
+					['mirror', '--root', '.', '--host', fixture.path, '--apply'],
+					undefined,
+					{ cwd: root.path },
+				)
 				expect(result.status).toBe(0)
 				expect(result.stdout).toContain('fleet-clean: clean')
 				expect(result.stdout).toMatch(/fleet-drifted: repaired \(\d+ remaining\)/)
@@ -815,17 +912,21 @@ describe('scaffold bin', () => {
 			const fixture = await buildHostFixture()
 			const root = await buildTempDirectory()
 			try {
-				const healthy = runBin([
-					'new',
-					'fleet-healthy',
-					'--surfaces',
-					'core',
-					'--apply',
-					'--target',
-					join(root.path, 'fleet-healthy'),
-					'--host',
-					fixture.path,
-				])
+				const healthy = runBin(
+					[
+						'new',
+						'fleet-healthy',
+						'--surfaces',
+						'core',
+						'--apply',
+						'--target',
+						'fleet-healthy',
+						'--host',
+						fixture.path,
+					],
+					undefined,
+					{ cwd: root.path },
+				)
 				expect(healthy.status).toBe(0)
 
 				// A discoverable @orkestrel package (readable, parseable manifest —
@@ -840,7 +941,9 @@ describe('scaffold bin', () => {
 					JSON.stringify({ name: '@orkestrel/fleet-broken', version: '0.0.1' }),
 				)
 
-				const result = runBin(['mirror', '--root', root.path, '--host', fixture.path])
+				const result = runBin(['mirror', '--root', '.', '--host', fixture.path], undefined, {
+					cwd: root.path,
+				})
 				expect(result.status).toBe(1)
 				expect(result.stdout).toContain('fleet-healthy: clean')
 				expect(result.stdout).toContain('fleet-broken: [TARGET]')
@@ -848,6 +951,20 @@ describe('scaffold bin', () => {
 			} finally {
 				await root.cleanup()
 				await fixture.cleanup()
+			}
+		})
+
+		it('containment: --root escaping the cwd exits 1 with a coded [INVALID] message', async () => {
+			const root = await buildTempDirectory()
+			const sub = join(root.path, 'nested')
+			mkdirSync(sub, { recursive: true })
+			try {
+				const result = runBin(['mirror', '--root', '..'], undefined, { cwd: sub })
+				expect(result.status).toBe(1)
+				expect(result.stderr).toContain('[INVALID]')
+				expect(result.stderr).toMatch(/escapes the working directory/)
+			} finally {
+				await root.cleanup()
 			}
 		})
 	})
@@ -898,7 +1015,9 @@ describe('scaffold bin', () => {
 				})
 				const agentPath = writeAgentFixture(target.path, '\nstale content\n\n')
 
-				const result = runBin(['catalog', '--root', root.path, '--target', target.path])
+				const result = runBin(['catalog', '--root', root.path, '--target', '.'], undefined, {
+					cwd: target.path,
+				})
 
 				expect(result.status).toBe(1)
 				expect(result.stdout).toContain('2 packages')
@@ -921,7 +1040,11 @@ describe('scaffold bin', () => {
 				})
 				const agentPath = writeAgentFixture(target.path, '\nstale content\n\n')
 
-				const applied = runBin(['catalog', '--root', root.path, '--target', target.path, '--apply'])
+				const applied = runBin(
+					['catalog', '--root', root.path, '--target', '.', '--apply'],
+					undefined,
+					{ cwd: target.path },
+				)
 				expect(applied.status).toBe(0)
 
 				const written = readFileSync(agentPath, 'utf8')
@@ -930,7 +1053,9 @@ describe('scaffold bin', () => {
 				expect(written).not.toContain('stale content')
 				expect(written).toContain('## Other section') // content after the end marker survives
 
-				const rerun = runBin(['catalog', '--root', root.path, '--target', target.path])
+				const rerun = runBin(['catalog', '--root', root.path, '--target', '.'], undefined, {
+					cwd: target.path,
+				})
 				expect(rerun.status).toBe(0)
 			} finally {
 				await root.cleanup()
@@ -947,7 +1072,9 @@ describe('scaffold bin', () => {
 				mkdirSync(dirname(agentPath), { recursive: true })
 				writeFileSync(agentPath, '# orkestrel\n\nNo markers here at all.\n')
 
-				const result = runBin(['catalog', '--root', root.path, '--target', target.path])
+				const result = runBin(['catalog', '--root', root.path, '--target', '.'], undefined, {
+					cwd: target.path,
+				})
 
 				expect(result.status).toBe(1)
 				const output = result.stdout + result.stderr
@@ -981,16 +1108,11 @@ describe('scaffold bin', () => {
 				})
 				const agentPath = writeAgentFixture(target.path, '\n')
 
-				const result = runBin([
-					'catalog',
-					'--root',
-					first.path,
-					'--root',
-					second.path,
-					'--target',
-					target.path,
-					'--apply',
-				])
+				const result = runBin(
+					['catalog', '--root', first.path, '--root', second.path, '--target', '.', '--apply'],
+					undefined,
+					{ cwd: target.path },
+				)
 
 				expect(result.status).toBe(0)
 				const written = readFileSync(agentPath, 'utf8')
@@ -1002,6 +1124,24 @@ describe('scaffold bin', () => {
 			} finally {
 				await first.cleanup()
 				await second.cleanup()
+				await target.cleanup()
+			}
+		})
+
+		it('containment: --target escaping the cwd exits 1 with a coded [INVALID] message (its unrestricted --root is unaffected)', async () => {
+			const root = await buildTempDirectory()
+			const target = await buildTempDirectory()
+			try {
+				writeCatalogPackage(root.path, 'router', { name: '@orkestrel/router', version: '0.0.5' })
+
+				const result = runBin(['catalog', '--root', root.path, '--target', '..'], undefined, {
+					cwd: target.path,
+				})
+				expect(result.status).toBe(1)
+				expect(result.stderr).toContain('[INVALID]')
+				expect(result.stderr).toMatch(/escapes the working directory/)
+			} finally {
+				await root.cleanup()
 				await target.cleanup()
 			}
 		})
@@ -1028,11 +1168,18 @@ describe('scaffold bin', () => {
 			expect(result.stdout).toMatch(/npm run scaffold -- /)
 		})
 
+		it('--help: states the write-destination containment rule', () => {
+			const result = runBin(['--help'])
+			expect(result.status).toBe(0)
+			expect(result.stdout).toMatch(/resolves? under the current directory/)
+			expect(result.stdout).toMatch(/--host may point anywhere/)
+		})
+
 		it('--help: lists a worked example line per verb', () => {
 			const result = runBin(['--help'])
 			expect(result.stdout).toContain('e.g. scaffold new widget --surfaces core,server --apply')
 			expect(result.stdout).toContain('e.g. scaffold audit --groups configs,docs')
-			expect(result.stdout).toContain('e.g. scaffold mirror --root .. --apply')
+			expect(result.stdout).toContain('e.g. cd ../fleet-root && scaffold mirror --apply')
 		})
 
 		it("leading \"--\" passthrough (PowerShell/npm residue): ['--', '--help'] behaves like ['--help']", () => {

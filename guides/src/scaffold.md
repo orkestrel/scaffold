@@ -1311,7 +1311,11 @@ is absent (a real TTY; a piped run falls back to the flags and the terminal's no
 path). Report-only / dry-run is the default posture everywhere; only `--apply` writes (and
 `--prune` additionally deletes on `repair`), `audit` NEVER writes — `new`'s `--apply` writes the
 package into `./<name>` under the current directory unless `--target` names an exact
-destination — and the exit codes gate CI —
+destination — and EVERY write destination (`new`'s resolved target, `--target` on
+sync/audit/repair/catalog, `--root` on mirror) is confined to the current working directory —
+equal to it or nested beneath — so the CLI is safe to run as a global command anywhere; a
+read-only source (`--host`, and `--root` on `catalog`) is exempt, and an escaping destination is
+a coded `INVALID` failure, never a silent clamp — and the exit codes gate CI —
 `new` nonzero on a block or write failure, `sync` nonzero only under `--strict` with failures,
 `audit` nonzero on ANY drift, `repair` nonzero on unresolved drift in dry-run, `mirror` nonzero
 on residual fleet-wide drift, `catalog` nonzero on unwritten drift in dry-run (clean or
@@ -1519,9 +1523,10 @@ npx @orkestrel/scaffold repair --target . --host ../contract # audit against a s
 
 # mirror — fleet: discoverPackages(--root) then per-repo host-origin audit/repair; dry-run
 # default, --apply writes, exits nonzero on residual drift; excludes .github/workflows/ci.yml
-# (repo-flavored — use `repair --apply` per repo for that one file):
-npx @orkestrel/scaffold mirror --root ~/repos
-npx @orkestrel/scaffold mirror --root ~/repos --apply
+# (repo-flavored — use `repair --apply` per repo for that one file); --root is a WRITE
+# destination, confined to the cwd — cd into the fleet root first:
+cd ~/repos && npx @orkestrel/scaffold mirror
+cd ~/repos && npx @orkestrel/scaffold mirror --apply
 
 # catalog — regenerate the fleet package catalog embedded in orkestrel.md between its
 # markers; --root repeatable (default cwd), dry-run reports drift (nonzero), --apply writes:
