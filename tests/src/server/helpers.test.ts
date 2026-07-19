@@ -13,15 +13,19 @@ import { describe, expect, it } from 'vitest'
 import { blueprint, diffPlan, isScaffoldError, validateBlueprint } from '@src/core'
 import {
 	catalogPackages,
+	createMaterializer,
 	deriveBlueprint,
 	discoverPackages,
 	hostRoot,
 	hydratePlan,
 	isManifestEntry,
 	locateHostSource,
+	PRUNE_DIRECTORIES,
+	readTarget,
 	selectOrkestrelEntries,
 	stageHost,
 	storagePath,
+	vendoredPruneSet,
 } from '@src/server'
 import { buildTempDirectory, canSocket, WORKSPACE_ROOT } from '../../setupServer.js'
 
@@ -487,9 +491,9 @@ describe('hydratePlan', () => {
 	})
 
 	it(
-		'diffPlan audits a host-origin artifact by PRESENCE ONLY, hydrated or not — a byte-mutated ' +
-			"target still reads 'aligned', never 'stale' (diffPlan's own documented contract: a host " +
-			'artifact carries no diffable content, hydration or none)',
+		'diffPlan content-compares a HYDRATED host-origin artifact — a byte-mutated target now reads ' +
+			"'stale' (and is counted as drifted), where the same target against the UNHYDRATED plan " +
+			"still reads 'aligned' (presence-only preserved when there is no content to compare)",
 		async () => {
 			const host = await buildTempDirectory()
 			try {
@@ -505,23 +509,71 @@ describe('hydratePlan', () => {
 				expect(unhydratedAudit.findings).toEqual([
 					{ path: 'notes.txt', group: 'docs', drift: 'aligned' },
 				])
+				expect(unhydratedAudit.drifted).toBe(0)
 
 				const hydrated = hydratePlan(plan, host.path)
 				expect(hydrated.artifacts[0]?.content).toBe('host content\n') // hydration DID attach content
 
 				const hydratedAudit = diffPlan(hydrated, current)
-				// Hydration adds `content` for the Materializer's copy, but
-				// `diffPlan`'s host branch never reads `artifact.content` for
-				// `origin === 'host'` — presence only, `missing` or `aligned`,
-				// documented as "never `stale`". The hydrated audit is therefore
-				// IDENTICAL to the un-hydrated one, even though the target's real
-				// bytes differ from the host's real bytes.
-				expect(hydratedAudit.findings).toEqual(unhydratedAudit.findings)
+				// Hydration attaches the real host bytes as `content`; `diffPlan`'s
+				// host branch now content-compares whenever `content` is present, so
+				// a target that has drifted from those bytes is `stale`, counted in
+				// `drifted` — no longer indistinguishable from the unhydrated,
+				// presence-only audit above.
+				expect(hydratedAudit.findings).toEqual([
+					{ path: 'notes.txt', group: 'docs', drift: 'stale' },
+				])
+				expect(hydratedAudit.drifted).toBe(1)
 			} finally {
 				await host.cleanup()
 			}
 		},
 	)
+
+	it('diffPlan still audits an UNHYDRATED host-origin artifact by presence only — a byte-mutated target reads aligned, never stale', () => {
+		const plan: Plan = {
+			blueprint: blueprint('hydrate-diff-unhydrated-fixture', { surfaces: ['core'] }),
+			groups: ['docs'],
+			artifacts: [{ path: 'notes.txt', group: 'docs', origin: 'host' }],
+		}
+		const current = { 'notes.txt': 'byte-mutated target content\n' }
+
+		const audit = diffPlan(plan, current)
+
+		expect(audit.findings).toEqual([{ path: 'notes.txt', group: 'docs', drift: 'aligned' }])
+		expect(audit.drifted).toBe(0)
+	})
+
+	it("a plan with a hydrated host artifact audited 'stale' repairs to byte-equal via Materializer.repair", async () => {
+		const host = await buildTempDirectory()
+		const target = await buildTempDirectory()
+		try {
+			writeFileSync(join(host.path, 'notes.txt'), 'host content\n', 'utf8')
+			writeFileSync(join(target.path, 'notes.txt'), 'byte-mutated target content\n', 'utf8')
+			const plan: Plan = {
+				blueprint: blueprint('hydrate-repair-fixture', { surfaces: ['core'] }),
+				groups: ['docs'],
+				artifacts: [{ path: 'notes.txt', group: 'docs', origin: 'host' }],
+			}
+
+			const hydrated = hydratePlan(plan, host.path)
+			const current = readTarget(target.path, ['notes.txt'])
+			const audit = diffPlan(hydrated, current)
+			expect(audit.findings).toEqual([{ path: 'notes.txt', group: 'docs', drift: 'stale' }])
+
+			const materializer = createMaterializer({ host: host.path })
+			try {
+				const result = materializer.repair(hydrated, audit, target.path)
+				expect(result.copied).toEqual(['notes.txt'])
+				expect(readFileSync(join(target.path, 'notes.txt'), 'utf8')).toBe('host content\n')
+			} finally {
+				materializer.destroy()
+			}
+		} finally {
+			await host.cleanup()
+			await target.cleanup()
+		}
+	})
 
 	it('an absent host source file leaves the artifact untouched (no content attached, no throw)', async () => {
 		const host = await buildTempDirectory()
@@ -863,6 +915,94 @@ describe('stageHost', () => {
 		} finally {
 			await root.cleanup()
 			await out.cleanup()
+		}
+	})
+})
+
+// ── PRUNE_DIRECTORIES ────────────────────────────────────────────────────────
+
+describe('PRUNE_DIRECTORIES', () => {
+	it('is the hard allowlist of prune-owned directories', () => {
+		expect(PRUNE_DIRECTORIES).toEqual(['.claude/agents', 'scripts'])
+	})
+})
+
+// ── vendoredPruneSet ─────────────────────────────────────────────────────────
+
+describe('vendoredPruneSet', () => {
+	it('reads the allowlist from manifest.json destinations when the host has one', async () => {
+		const host = await buildTempDirectory()
+		try {
+			writeFileSync(
+				join(host.path, 'manifest.json'),
+				JSON.stringify([
+					{
+						storage: 'claude/agents/scout.md',
+						destination: '.claude/agents/scout.md',
+						executable: false,
+					},
+					{
+						storage: 'claude/agents/builder.md',
+						destination: '.claude/agents/builder.md',
+						executable: false,
+					},
+					{ storage: 'scripts/build.sh', destination: 'scripts/build.sh', executable: true },
+				]),
+				'utf8',
+			)
+
+			const result = vendoredPruneSet(host.path, '.claude/agents')
+
+			expect(result).toEqual(new Set(['.claude/agents/scout.md', '.claude/agents/builder.md']))
+		} finally {
+			await host.cleanup()
+		}
+	})
+
+	it('falls back to listing host/<directory> directly when the host has no manifest.json', async () => {
+		const host = await buildTempDirectory()
+		try {
+			mkdirSync(join(host.path, '.claude', 'agents'), { recursive: true })
+			writeFileSync(join(host.path, '.claude', 'agents', 'scout.md'), 'scout\n', 'utf8')
+
+			const result = vendoredPruneSet(host.path, '.claude/agents')
+
+			expect(result).toEqual(new Set(['.claude/agents/scout.md']))
+		} finally {
+			await host.cleanup()
+		}
+	})
+
+	it('throws a coded TARGET error when the host root does not exist', async () => {
+		const host = await buildTempDirectory()
+		const missing = join(host.path, 'nonexistent')
+		try {
+			let caught: unknown
+			try {
+				vendoredPruneSet(missing, '.claude/agents')
+			} catch (error) {
+				caught = error
+			}
+			if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
+			expect(caught.code).toBe('TARGET')
+		} finally {
+			await host.cleanup()
+		}
+	})
+
+	it('throws a coded TARGET error when the host has no manifest.json and no host/<directory>', async () => {
+		const host = await buildTempDirectory()
+		try {
+			let caught: unknown
+			try {
+				vendoredPruneSet(host.path, '.claude/agents')
+			} catch (error) {
+				caught = error
+			}
+			if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
+			expect(caught.code).toBe('TARGET')
+		} finally {
+			await host.cleanup()
 		}
 	})
 })

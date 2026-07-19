@@ -324,7 +324,7 @@ describe('diffPlan — the four drift classes', () => {
 		expect(packageLockFinding?.group).toBe('manifest')
 	})
 
-	it('audits a host-origin artifact by presence only — never stale', () => {
+	it('audits a host-origin artifact by presence only when unhydrated', () => {
 		const plan = blueprintToPlan(blueprint('router', { surfaces: ['core'] }), ['docs'])
 		const hostArtifact = plan.artifacts.find((artifact) => artifact.origin === 'host')
 		const audit = diffPlan(plan, { [hostArtifact?.path ?? '']: 'ANYTHING at all, wrong bytes' })

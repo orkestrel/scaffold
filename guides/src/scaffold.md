@@ -41,8 +41,8 @@
 The problem this module solves: standing up (or auditing) an `@orkestrel` package is a
 mechanical projection of the line's conventions onto a name — the exports map for the
 variant, the per-surface build configs, the barrels, the guide stubs, the parity harness —
-and this package IS that projection: creation and repair through the bin's `new` / `sync` /
-`audit` / `repair` verbs, and fleet-wide propagation through the bin's `mirror` verb.
+and this package IS that projection: creation and repair through the bin's `new` / `pull` /
+`audit` / `repair` verbs, and fleet-wide propagation through the bin's `fleet` verb.
 Rendered defaults ship as **versioned package data** — frozen `TemplateDefinition`s filled
 by `@orkestrel/template`'s pure engine — so a convention change is a version bump here, not
 a hand-edit in every repo. The module is deliberately **mechanism, never policy** (AGENTS
@@ -586,7 +586,7 @@ createBlueprint({ name: 'Router', surfaces: [] }) // throws ScaffoldError('INVAL
 | `Materializer` | class | The materialization entity **(server)** — the impure WRITE surface; writes a plan (green-field) or repairs drift (into-existing).                                                                                  |
 | `Sync`         | class | The upstream-synchronization entity **(server)** — the impure FETCH sibling of `Materializer`; fetches dependency guides + registry versions, refreshes vendored mirrors under the containment law. Promise-based. |
 
-The server surface also ships sixteen helpers and its factories:
+The server surface also ships nineteen helpers and its factories:
 
 | API                      | Kind     | Summary                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | ------------------------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -595,13 +595,16 @@ The server surface also ships sixteen helpers and its factories:
 | `readManifest`           | function | **(server)** Read `target/package.json` text; an absent manifest throws `ScaffoldError('TARGET', …)` — the read that feeds `manifestToDependencies`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | `locateHostSource`       | function | **(server)** Resolve the absolute host-storage path for a host-origin artifact's `source`, manifest-aware — `join(host, source)` when `manifest` is `undefined` (no vendored staging indirection), else the SINGLE matching entry's `storage` path, or `undefined` when zero or more than one entry matches `destination`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `hydratePlan`            | function | **(server)** Fill a `host`-origin artifact's `content` from the resolved `host` root (manifest-aware, via `locateHostSource`) so `diffPlan` can content-compare it — a `host` file's drift becomes `'stale'`-detectable rather than presence-only.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `discoverPackages`       | function | **(server)** List a root's immediate child directories whose `package.json` name starts `@orkestrel/`, as absolute paths, code-unit sorted — the fleet-discovery primitive `mirror` walks.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `discoverPackages`       | function | **(server)** List a root's immediate child directories whose `package.json` name starts `@orkestrel/`, as absolute paths, code-unit sorted — the fleet-discovery primitive `fleet` walks.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `hostRoot`               | function | **(server)** Resolve THIS module's own installed package root (walking up from `import.meta.url`, never `process.cwd()`) and return its vendored `dist/host` path — the single source of truth for the default `Materializer` / bin host; throws `ScaffoldError('TARGET', …)` when no ancestor holds a `package.json`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | `selectOrkestrelEntries` | function | **(server)** Filter a manifest record's entries down to `@orkestrel/`-prefixed keys with string values — the shared `dependencies` / `peerDependencies` / `devDependencies` reader `deriveBlueprint` uses for every dependency-shaped field; `[]` when `value` is not a plain object.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `deriveBlueprint`        | function | **(server)** Reconstruct a `Blueprint` from an EXISTING repo at `target` — `name` strips the `@orkestrel/` prefix, `surfaces` is read off which `src/<surface>/` directories exist, `dependencies` / `peers` come from `manifest.dependencies` / `manifest.peerDependencies` via `selectOrkestrelEntries` (a `peerDependenciesMeta`-flagged peer carries `optional: true`), `extras` is `manifest.devDependencies` EXCLUDING the `@orkestrel/guide` / `@orkestrel/scaffold` baseline, and `overrides` is always `[]`; throws a coded `TARGET` failure on an unreadable/non-`@orkestrel` manifest or no surface directory.                                                                                                                                                                                                     |
 | `isManifestEntry`        | function | **(server)** Whether `value` is a well-formed `host/manifest.json` entry — a string `storage`, a string `destination`, and a boolean `executable`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `readHostManifest`       | function | **(server)** Read and validate a vendored host root's `manifest.json`, when present — returns its `readonly ManifestEntry[]`, or `undefined` when `host` has no `manifest.json` (the raw-root 1:1 fallback); throws `ScaffoldError('TARGET', …)` when the file exists but is unreadable, invalid JSON, or not an array of `ManifestEntry`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `listFiles`              | function | **(server)** Recursively list a directory's files as root-relative, posix-style paths — `[]` when the directory is absent; the walk `Materializer.prune` uses to enumerate a vendored/target directory's current files.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `PRUNE_DIRECTORIES`      | const    | **(server)** `['.claude/agents', 'scripts']`, frozen — the prune-owned directories: the ONLY directories `pruneTargets` scans and `Materializer.prune` deletes under; a file anywhere else is never prune's business.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `vendoredPruneSet`       | function | **(server)** The vendored allowlist for ONE prune directory — the destination-relative paths under `directory` (a `PRUNE_DIRECTORIES` entry) that `host` declares and `pruneTargets` must NOT report: read from `manifest.json` `destination`s when the host carries one, else listed straight off `host/<directory>`. FAIL CLOSED: the vendored source must be POSITIVELY established before ANY allowlist (even an empty one) returns — a missing `host` root, or no `manifest.json` AND no `host/<directory>`, throws `ScaffoldError('TARGET', …)`, so an unresolved host never reads as "vendors nothing"; a host that EXISTS and vendors zero files in `directory` remains a valid empty allowlist.                                                                                                                      |
+| `pruneTargets`           | function | **(server)** List the repo-relative POSIX paths under `target`'s prune directories (`.claude/agents`, `scripts`) that the vendored `host` allowlist does NOT declare — THE single source of truth for prune drift, consumed by both `Materializer.prune` (which deletes exactly these paths) and the bin's audit/preview UX (which shows them honestly instead of a structurally-always-zero foreign count). Pure read — never deletes anything; `[]` when a prune directory is absent under `target`, or when none of its files are unexpected. Throws `ScaffoldError('TARGET', …)` when `host` cannot positively establish a vendored allowlist for a prune directory that DOES exist under `target` (fail-closed — an unresolved host never reads as "vendors nothing").                                                   |
 | `isRecord`               | function | **(server)** Whether `value` is a plain object — not `null`, not an array — narrowing to `Record<string, unknown>`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | `catalogPackages`        | function | **(server)** Build the fleet package catalog — one `CatalogEntry` per `@orkestrel/*` package discovered under each root (`discoverPackages`), its `description` the flattened text of the first paragraph of the guide's opening blockquote (parsed via `@orkestrel/markdown`'s `parseDocument` + `walkNodes`), `''` when the guide is missing/unreadable/blockquote-less/paragraph-less; merged across roots (a later root wins on a repeated name), code-unit sorted. An unreadable ROOT propagates whatever `discoverPackages` throws, unwrapped.                                                                                                                                                                                                                                                                          |
 | `storagePath`            | function | **(server)** Map a repo-relative path to its vendored-host STAGING path — a leading-dot TOP-LEVEL FILE maps to `dotfiles/<name-without-dot>`, a leading-dot DIRECTORY segment loses its dot wherever it appears, an undotted path is unchanged.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
@@ -635,7 +638,7 @@ const audit = diffPlan(
 )
 audit.findings.filter((finding) => finding.drift === 'stale') // now catches drifted host files too
 
-// discoverPackages: the fleet-walk `mirror` runs per-repo.
+// discoverPackages: the fleet-walk `fleet` runs per-repo.
 discoverPackages('/repos') // ['/repos/contract', '/repos/scaffold', …] — @orkestrel/* children, sorted
 ```
 
@@ -663,6 +666,25 @@ listFiles(`${host}/.claude/agents`) // ['scout.md', 'builder.md', …] — root-
 
 isRecord({ a: 1 }) // true
 isRecord(null) // false
+```
+
+```ts
+import {
+	PRUNE_DIRECTORIES,
+	hostRoot,
+	pruneTargets,
+	vendoredPruneSet,
+} from '@orkestrel/scaffold/server'
+
+// pruneTargets: the single source of truth Materializer.prune consumes — a pure
+// read, never a deletion; [] when the target carries no unexpected files.
+pruneTargets('./packages/router', hostRoot()) // ['.claude/agents/rogue.md']
+
+PRUNE_DIRECTORIES // ['.claude/agents', 'scripts'] — the only directories prune ever touches
+
+// vendoredPruneSet: one prune directory's allowlist — fail-closed when the
+// vendored source cannot be positively established.
+vendoredPruneSet(hostRoot(), 'scripts') // Set { 'scripts/deps.sh', 'scripts/cursor.sh', 'scripts/ollama.sh' }
 ```
 
 ```ts
@@ -955,11 +977,12 @@ These invariants hold across `src/core` + `src/server` ↔ `scaffold.md`:
 8. **Diff-first, write-last.** `compile`, `audit`, `blueprintToPlan`, `diffPlan`,
    `planToReview`, `planToSummary`, and `Sync.pull` are report-only; the ONLY writing acts in
    the package are the server surface's `materialize` / `repair` / `prune` / `Sync.write`,
-   each gated behind an explicit call (and the bin's `--apply` / `--prune`). The fleet flow
-   (`scaffold mirror`) is the same shape one level up: `discoverPackages` finds the repos,
-   `hydratePlan` + `diffPlan` reports drift per repo, and only `--apply` writes. The dry-run
-   review is the default posture everywhere — you always see the plan (or the drift, or the
-   freshness) before a byte is written.
+   each gated behind an explicit call (and the bin's `--apply` / `--prune`, or an accepted
+   terminal confirm). The fleet flow (`scaffold fleet`) is the same shape one level up:
+   `discoverPackages` finds the repos, `hydratePlan` + `diffPlan` reports drift per repo, and
+   only a confirmed write (or `--apply`) writes. The dry-run review is the default posture
+   everywhere — you always see the plan (or the drift, or the freshness) before a byte is
+   written.
 9. **Guard totality and single-source parity (§14).** Every validator is a total `Guard` —
    adversarial input returns `false`, never throws. `isBlueprint` / `isPlan` / `isSyncReport`
    / the section guards are COMPILED from `blueprintShape()` / `planShape()` /
@@ -1001,8 +1024,8 @@ These invariants hold across `src/core` + `src/server` ↔ `scaffold.md`:
     implements no interface and is excluded, as in invariant 1.
 
 This package is the line's sole scaffolding and fleet-conformance tool: it renders the
-whole per-surface variant matrix from versioned `TemplateDefinition` data and mirrors the
-fleet through `scaffold mirror`, so a convention change is a version bump here rather than
+whole per-surface variant matrix from versioned `TemplateDefinition` data and trues the
+fleet through `scaffold fleet`, so a convention change is a version bump here rather than
 a hand-edit in every repo's copy. Every repo's shared artifacts flow from its vendored host.
 
 Deliberately absent: any **git** operation (no `git init` / `git clone` — the caller prepares
@@ -1121,7 +1144,11 @@ file the plan does not own is `foreign`. A `host`-origin artifact carries no `co
 RAW plan (the pure core never read the canonical host bytes), so an un-hydrated audit sees it
 by PRESENCE only — `missing` or `aligned`, never `stale`; running the server's `hydratePlan`
 first fills each `host` artifact's `content` from the resolved host root, so the SAME
-`diffPlan` becomes content-aware and a drifted host file surfaces as `stale` too.
+`diffPlan` becomes content-aware and a drifted host file surfaces as `stale` too. A
+directory-shaped host artifact (`.claude`) has no single storage file for `hydratePlan` to
+read, so it stays presence-only regardless — a KNOWN, documented boundary, not a promise:
+`pruneTargets` separately covers UNEXPECTED files under it (the prune allowlist scan), but a
+byte-modified file that IS on the allowlist inside `.claude` is not detected by either path.
 
 ### Repairing drift — write only what changed
 
@@ -1293,60 +1320,146 @@ parser), widens Node's trusted-issuer set to the OS certificate store via
 `rejectUnauthorized` — so `fetch` survives a corporate TLS-inspecting proxy the way npm
 and browsers already do), and dispatches on SIX subcommands: **`new`** creates a package
 (resolving any `--deps` to the registry `latest` → `^latest` ranges, fetching their guides
-into the plan), **`sync`** refreshes an existing repo's vendored dependency mirrors and
-reports range drift, **`audit`** / **`repair`** / **`mirror`** all reconstruct the target's
+into the plan), **`pull`** refreshes an existing repo's vendored dependency mirrors and
+reports range drift, **`audit`** / **`repair`** / **`fleet`** all reconstruct the target's
 `Blueprint` with `deriveBlueprint` (never a hand-built stand-in) before compiling — **`audit`**
 runs the structural conformance check — hydration-aware, so host drift is content-detectable,
 not presence-only — (plus, under `--live`, guide-vs-HEAD and range-vs-latest freshness), and
-accepts an optional `--groups a,b` to restrict the compiled plan to the listed `Group`s
-(validated against `GROUPS`; an unrecognized name is a coded `INVALID` failure) — default
-absent compiles the FULL plan, unchanged; **`repair`** is the HOST-RESTORATION tool, full
+NOW MERGES the prune scan (`pruneTargets`) into its report: an unexpected file under
+`.claude/agents/` or `scripts/` is a real `foreign` row, its count included under `--json`,
+and it counts as drift like any other finding — `audit` exits `1` on a foreign file exactly as
+it does on a `missing` / `stale` one, so an unaudited stray file in a fleet repo is never
+invisible to the CI gate. `audit` accepts an optional `--groups a,b` to restrict the compiled plan to the listed `Group`s
+(validated against `GROUPS`; an unrecognized name is a USAGE error — exit `2`, not a coded
+failure) — default absent compiles the FULL plan, unchanged; **`repair`** is the HOST-RESTORATION tool, full
 stop — after compiling, it filters the plan to `origin === 'host'` artifacts ONLY (including
 `.github/workflows/ci.yml` — single-target explicit intent keeps full HOST scope, unlike
-`mirror`) BEFORE hydrate/diff/apply, so a mature repo's hand-written `src` / `tests` / `guides`
+`fleet`) BEFORE hydrate/diff/apply, so a mature repo's hand-written `src` / `tests` / `guides`
 / `package.json` is NEVER overwritten with a generated stub — writes a SINGLE target's
-missing + stale HOST artifacts (`--apply`) and, under `--prune`, deletes target-only files
-under `.claude/agents/` and `scripts/` ONLY, and **`mirror`** is the fleet verb: `--root`
-(default cwd) → `discoverPackages` → per-repo host-origin audit/repair, printing a per-repo
-AND total drift table and exiting nonzero on residual drift — fleet-wide `mirror --apply`
-EXCLUDES `.github/workflows/ci.yml` from its scope (repo-flavored CI genuinely diverges
-across two live repos in the fleet; fleet apply must never clobber that divergence), while
-single-target `repair --apply` keeps FULL host scope, including `ci.yml`, since it operates
-on one repo the caller is intentionally editing. **`new`** / **`audit`** / **`repair`** /
-**`mirror`** default their `--host` to the resolved `hostRoot()` (the package's own vendored
-`dist/host`) and accept an explicit `--host` to override it (a sibling repo's checkout, for
-fleet-wide mirroring) — the DEFAULT host degrades silently to presence-only auditing when it
-cannot resolve (dev ergonomics), but an EXPLICITLY-passed `--host` that fails to resolve to
-usable data is a coded `TARGET` failure on `audit` / `repair` / `mirror`, never a silent
-downgrade, since the caller named that host on purpose. **`catalog`** is the sixth: it takes
-NO `--host` — its default source is the npm REGISTRY (`Sync.catalog()`), the AUTHORITATIVE
-package list, sourced UNAUTHENTICATED (every fleet repo is public); a repeatable `--root`
-ADDS local-only discoveries the registry doesn't know about yet (registry wins overlapping
-`version`, the local guide's description wins overlapping `description` when the root carries
-one — it may be ahead of GitHub); `--offline` skips the registry/GitHub entirely and sources
-`--root`(s) only (default `[process.cwd()]`) — the prior, fully-local behavior, now opt-in
-rather than the silent default (a single stale `--root` can no longer quietly shrink the
-catalog to whatever that one root sees). The merged/local entries are spliced (via the pure
-core's `catalogToBlock`) into the fleet package catalog table embedded in
-`<target>/.claude/agents/orkestrel.md` between its `<!-- catalog:start -->` /
+missing + stale HOST artifacts and, behind a SECOND confirm (or `--prune`), deletes
+target-only files under `.claude/agents/` and `scripts/` ONLY — the preview (and `fleet`'s
+equivalent preview) LISTS the exact paths `pruneTargets` found rather than a bare count, the
+confirm states the TRUE count derived from that same list, and a count of `0` prints
+"no unexpected files to delete" and skips the prune question entirely (there is nothing to
+ask about) — `--prune` reaches this scan/preview/confirm/deletion flow whenever there is prune
+work to do, REGARDLESS of whether the host itself audits clean: a clean-host repo with a
+planted foreign file still gets pruned; only a clean host WITH nothing to prune skips straight
+to the "nothing to write" verdict. **`repair` WITHOUT `--prune` reports and restores template-owned (host-origin)
+files only** — its own audit is the raw `diffPlan` over the host-scoped plan, so it never
+reports (or acts on) unexpected files at all, an asymmetry with `audit`'s merged, honest
+foreign-aware report that is defensible (repair's scope is host-restoration, not deletion) but
+worth naming explicitly: run `audit` for the honest whole-picture report including unexpected
+files, and `repair --prune` to actually delete them. And **`fleet`** is the fleet
+verb: it walks the CURRENT WORKING DIRECTORY's IMMEDIATE CHILDREN via `discoverPackages`
+(never the cwd itself, and there is NO `--root` flag at all — the cd-model IS the interface:
+the caller `cd`s into the folder that CONTAINS the checkouts first, exactly as `repair` is the
+one-repo counterpart) → per-repo host-origin audit/repair, printing a per-repo AND total drift
+table and exiting nonzero on residual drift — fleet-wide writes EXCLUDE
+`.github/workflows/ci.yml` from their scope (repo-flavored CI genuinely diverges across two
+live repos in the fleet; a fleet write must never clobber that divergence), while
+single-target `repair` keeps FULL host scope, including `ci.yml`, since it operates on one
+repo the caller is intentionally editing. **`new`** / **`audit`** / **`repair`** / **`fleet`**
+default their read-only source to the resolved `hostRoot()` (the package's own vendored
+`dist/host`) and accept a repeatable `--from` to override it (a sibling repo's checkout, for
+fleet-wide mirroring; `--from` is UNCONFINED — a read-only source sits outside the
+write-destination containment law below) — the DEFAULT host degrades silently to
+presence-only auditing when it cannot resolve (dev ergonomics), but an EXPLICITLY-passed
+`--from` that fails to resolve to usable data is a coded `TARGET` failure on `audit` /
+`repair` / `fleet`, never a silent downgrade, since the caller named that source on purpose.
+**`catalog`** is the sixth: its default source is the npm REGISTRY (`Sync.catalog()`), the
+AUTHORITATIVE package list, sourced UNAUTHENTICATED (every fleet repo is public); the SAME
+repeatable `--from` (unified — the prior separate `--host` name and catalog-only `--root` name
+are BOTH gone) ADDS local-only discoveries the registry doesn't know about yet (registry wins
+overlapping `version`, the local guide's description wins overlapping `description` when a
+`--from` root carries one — it may be ahead of GitHub); `--offline` skips the registry/GitHub
+entirely and sources `--from`(s) only (default `[process.cwd()]`) — the prior, fully-local
+behavior, now opt-in rather than the silent default (a single stale `--from` can no longer
+quietly shrink the catalog to whatever that one root sees). The merged/local entries are
+spliced (via the pure core's `catalogToBlock`) into the fleet package catalog table embedded
+in `<target>/.claude/agents/orkestrel.md` between its `<!-- catalog:start -->` /
 `<!-- catalog:end -->` markers — a `target` missing those markers is a coded `TARGET` failure,
-never a silent skip — and a SHRINK WARNING prints (on both dry-run and `--apply`) whenever the
-new table has fewer rows than the one currently embedded, so an accidental catalog shrink is
+never a silent skip — and a SHRINK WARNING prints (dry-run and write alike) whenever the new
+table has fewer rows than the one currently embedded, so an accidental catalog shrink is
 never silent either. It narrates through `@orkestrel/console` and
 prompts interactively through `@orkestrel/terminal`'s `createTerminal` when a required argument
-is absent (a real TTY; a piped run falls back to the flags and the terminal's non-TTY readline
-path). Report-only / dry-run is the default posture everywhere; only `--apply` writes (and
-`--prune` additionally deletes on `repair`), `audit` NEVER writes — `new`'s `--apply` writes the
-package into `./<name>` under the current directory unless `--target` names an exact
-destination — and EVERY write destination (`new`'s resolved target, `--target` on
-sync/audit/repair/catalog, `--root` on mirror) is confined to the current working directory —
-equal to it or nested beneath — so the CLI is safe to run as a global command anywhere; a
-read-only source (`--host`, and `--root` on `catalog`) is exempt, and an escaping destination is
-a coded `INVALID` failure, never a silent clamp — and the exit codes gate CI —
-`new` nonzero on a block or write failure, `sync` nonzero only under `--strict` with failures,
-`audit` nonzero on ANY drift, `repair` nonzero on unresolved drift in dry-run, `mirror` nonzero
-on residual fleet-wide drift, `catalog` nonzero on unwritten drift in dry-run (clean or
-`--apply`-written exits `0`).
+is absent, but ONLY on a real TTY (§ non-TTY ceiling below); a piped run instead falls back to
+its flags, or fails a coded USAGE error naming which flag to pass.
+
+An unknown verb (`scaffold sync`, `scaffold mirror`, or any typo) resolves through the
+did-you-mean helper — `sync` and `mirror` are the two RENAMED former verbs and print an
+EXPLICIT redirect (`'sync' has been renamed — use 'scaffold pull'`,
+`'mirror' has been renamed — use 'scaffold fleet'`) rather than a fuzzy guess; every other
+unrecognized verb still gets the nearest-match suggestion. Either way it is a USAGE error —
+exit `2`.
+
+Dry-run is the default posture everywhere. On a real terminal, every WRITE verb PREVIEWS its
+plan (or drift, or freshness) and then ASKS — one confirm question, default **No**; `repair`'s
+(and `fleet`'s) prune deletion sits behind a SECOND default-**No** question, asked only once
+the first write is accepted and ONLY when `pruneTargets` found at least one unexpected file
+(a `0` count skips the question — nothing to ask about, see the prune-UX paragraph above).
+
+`audit` NEVER writes — not even under `--apply` or `--yes` — full stop. Those two flags gate
+ONLY the plain-old `resolveApply` write-confirm every OTHER verb reads; `audit` never calls it
+for itself, so passing them to `audit` changes nothing about `audit`'s own read-only pass.
+What `audit` DOES offer, purely as an INTERACTIVE convenience, is a repair HANDOFF — a confirm
+question asking whether to launch a real `repair` run on the audited target — and that handoff
+is gated STRICTLY on the session being a real TTY. `--apply` / `--yes` are NOT handoff consent:
+on a non-TTY session (any piped/CI run, `--json` or not) the handoff is never even offered,
+regardless of which flags were passed — the flags that DO reach the handoff are the ones
+`audit` forwards to the `repair` run it launches AFTER the human accepts the question, exactly
+as if `repair` had been invoked directly. The handoff is offered when there is host/template-
+origin (shared-file) drift, OR when there are unexpected (foreign) files AND `--prune` was
+passed (a repair without `--prune` cannot delete a foreign file, so offering the handoff for
+foreign-only drift without `--prune` would be a dead end that still exits `1`) — its question
+names exactly what will happen (`N template-owned files have drift`, plus `and M unexpected
+files will be deleted` only when `--prune` is active and there are foreign files to delete),
+never promising a deletion it will not perform. When foreign files exist but the handoff can't
+help them (no `--prune`, or no handoff offered at all — e.g. non-TTY, or no owned drift and no
+`--prune`), `audit` instead prints a plain hint pointing at `scaffold repair --prune`.
+Generated-file-only drift never offers a handoff either way — `repair` cannot fix it, so
+`audit` prints a plain note that those files are generated instead. After an ACCEPTED handoff,
+`audit` re-diffs the FULL plan (not just the host-scoped slice `repair` wrote) and exits `1` if
+ANY drift remains — e.g. the generated-file drift `repair` structurally cannot touch — so a
+green handoff always means the WHOLE target is clean, never just the host-owned slice. A
+`ctrl-c` at any prompt prints `cancelled — nothing written` and exits `1` — an interrupted run
+is never mistaken for a clean one. `--yes` pre-answers every OTHER verb's write/prune prompts
+affirmatively, so a scripted run never blocks on a TTY that will never come; `--apply` goes
+further for those verbs, skipping the ask ENTIRELY and writing unasked, on a terminal or off
+one alike.
+
+**The non-TTY prompt ceiling.** A non-interactive session (piped stdin, CI, any non-TTY) issues
+AT MOST ONE prompt EVER — the single write confirm above. Any SECOND question a verb would
+otherwise ask on a terminal (the prune confirm) instead resolves straight to its safe default
+(never prune) and prints a one-line explanation of why it was skipped, rather than blocking on
+input that will never arrive; `audit`'s repair-handoff question is not a "second prompt" that
+degrades this way — it is TTY-ONLY from the start (see above), so a non-TTY `audit` never asks
+it at all, degrading straight to the plain hint/note instead. A REQUIRED input missing on a
+non-TTY session (e.g. `new` with no name and no `--surfaces`) is a USAGE error — exit `2` —
+naming the flag to pass, directing the human to either run the verb bare on a real terminal or
+supply the flag; it is never silently defaulted. Full multi-prompt guidance (the name prompt,
+the surfaces checkbox, the write confirm, the prune confirm, the handoff offer) is TTY-ONLY — a
+non-TTY session never sees more than the one write confirm, and `--json` (which never prompts
+at all, TTY or not) is the strictest case of this ceiling.
+
+`--json` emits EXACTLY ONE JSON value per verb on stdout — the same serializable contract each
+verb already returns (`SyncReport` for `pull`, `Audit` for `audit` / `repair` — now including
+the merged foreign-file data, plus a `live` field mirroring the freshness verdict when `--live`
+was passed to `audit` — `{ entries, drift, shrink? }` for `catalog`, a fleet drift array for
+`fleet`) — with NO prose alongside it, and implies non-interactive (no prompt, ever, under
+`--json`; combine with `--apply` to also write). EVERY path emits exactly one JSON value under
+`--json` — including an unknown-verb usage error and any otherwise-unexpected failure — as a
+single error envelope (`{ error: { code, message } }`) whose `code` carries the real
+`ScaffoldError` code (or `USAGE` for a bad flag / unknown verb), never a bare stderr line that
+breaks the "exactly one JSON value" contract. Every
+write destination (`new`'s resolved target, `--target` on `pull` / `audit` / `repair` /
+`catalog`, and `fleet`'s cwd-relative per-repo targets) is confined to the current working
+directory — equal to it or nested beneath — so the CLI is safe to run as a global command
+anywhere; a read-only source (`--from`) is EXEMPT from that containment law, and an escaping
+destination is a coded `INVALID` failure, never a silent clamp. Exit codes are UNIFORM across
+every verb — `0` clean, `1` drift or failure (including a cancelled prompt), `2` usage — and
+`pull`'s prior posture of exiting `0` on an unresolved failure outside `--strict` is GONE: any
+drift or failure now exits `1` regardless of `--strict` (`--strict` still additionally THROWS
+`ScaffoldError('FETCH', …)` on a network fault, rather than merely exiting nonzero).
 
 ```ts
 // The `#!/usr/bin/env node` shebang is re-emitted by the build's `output.banner`, not source.
@@ -1369,6 +1482,7 @@ import {
 	discoverPackages,
 	hostRoot,
 	hydratePlan,
+	pruneTargets,
 	readTarget,
 } from '@src/server'
 import { createReporter, createSpinner } from '@orkestrel/console'
@@ -1381,43 +1495,132 @@ const { values, positionals } = parseArgs({
 		surfaces: { type: 'string' },
 		deps: { type: 'string' },
 		target: { type: 'string' },
-		root: { type: 'string' },
-		host: { type: 'string' },
+		from: { type: 'string', multiple: true },
 		apply: { type: 'boolean', default: false },
+		yes: { type: 'boolean', default: false },
+		json: { type: 'boolean', default: false },
 		strict: { type: 'boolean', default: false },
 		live: { type: 'boolean', default: false },
 		prune: { type: 'boolean', default: false },
+		offline: { type: 'boolean', default: false },
+		groups: { type: 'string' },
 	},
 })
 
 const sink = createServerSink()
 const reporter = createReporter({ sink, width: sink.columns })
-const [command] = positionals // 'new' | 'sync' | 'audit' | 'repair' | 'mirror' | 'catalog'
+const [command] = positionals // 'new' | 'pull' | 'audit' | 'repair' | 'fleet' | 'catalog'
 const target = values.target ?? '.'
-const host = values.host ?? hostRoot() // default: the package's own vendored dist/host
-const materializerOptions = values.host ? { host: values.host } : {}
+const from = values.from ?? []
+const host = from[0] ?? hostRoot() // default: the package's own vendored dist/host
+const materializerOptions = from[0] ? { host: from[0] } : {}
+const terminal = createTerminal()
 
-if (command === 'sync') {
+// Every write verb shares this: --apply skips the ask entirely; --json NEVER prompts and
+// NEVER writes on its own (json without --apply is always a pure dry-run, regardless of
+// --yes — json + apply is the only way to write under --json); --yes auto-answers yes on
+// a non-json run; otherwise only a real terminal ever asks (a non-TTY session here is the
+// ONE prompt the non-TTY ceiling allows).
+async function confirmWrite(message: string): Promise<boolean> {
+	if (values.apply) return true
+	if (values.json) return false
+	if (values.yes) return true
+	try {
+		return await terminal.confirm({ message, default: false })
+	} catch {
+		reporter.status('error', 'cancelled — nothing written')
+		process.exit(1)
+	}
+}
+
+// The SECOND, prune-only confirm — never bundled into confirmWrite's question, and only
+// ever asked once (the non-TTY ceiling: a second question off a real terminal instead
+// resolves to its safe default with a printed explanation, never a second prompt).
+async function confirmPrune(target: string, message: string): Promise<readonly string[]> {
+	const found = pruneTargets(target, host) // the exact paths the preview already listed
+	if (found.length === 0) return [] // "no unexpected files to delete" — no question asked
+	if (values.apply || values.prune) return found
+	if (values.json || values.yes) return values.yes ? found : []
+	if (!terminal.isTTY) {
+		reporter.status('info', 'non-TTY: skipping the second prune question — defaulting to No')
+		return []
+	}
+	return (await confirmWrite(message)) ? found : []
+}
+
+// --json emits exactly one JSON value (the verb's own serializable contract), no prose.
+function emit(value: unknown, prose: () => void): void {
+	if (values.json) reporter.line(JSON.stringify(value))
+	else prose()
+}
+
+if (command === 'pull') {
 	const sync = createSync({ strict: values.strict })
 	const report = await sync.pull(target)
-	reporter.line(syncToReview(report))
-	if (values.apply) await sync.write(report, target)
+	emit(report, () => reporter.line(syncToReview(report)))
+	if (!report.clean && (await confirmWrite('Write refreshed guide mirrors?'))) {
+		await sync.write(report, target)
+	}
 	sync.destroy()
-	process.exit(values.strict && report.failed > 0 ? 1 : 0) // nonzero only under --strict with failures
+	process.exit(report.clean ? 0 : 1) // uniform: any drift/failure is nonzero, --strict or not
 } else if (command === 'audit') {
 	// deriveBlueprint reconstructs the target's spec from its own package.json + src/<surface>/ dirs.
 	const plan = hydratePlan(blueprintToPlan(deriveBlueprint(target)), host)
-	const drifted = !diffPlan(
+	const audit = diffPlan(
 		plan,
 		readTarget(
 			target,
 			plan.artifacts.map((a) => a.path),
 		),
-	).clean
-	process.exit(drifted ? 1 : 0) // ANY drift fails — the CI gate
+	)
+	// The prune scan MERGES into the audit report: `pruneTargets`'s count becomes `audit.foreign`
+	// (a real finding, not a structurally-always-zero placeholder), counted toward drift — audit
+	// exits 1 on a foreign file exactly like a missing/stale one — and carried under --json.
+	const foreignPaths = pruneTargets(target, host)
+	const merged = {
+		...audit,
+		foreign: foreignPaths.length,
+		clean: audit.clean && foreignPaths.length === 0,
+	}
+	emit(merged, () => reporter.line(planToReview(plan)))
+	// The handoff is a TTY-ONLY interactive convenience — `values.apply` / `values.yes` are
+	// NEVER handoff consent (audit itself never writes on their account; they only gate the
+	// SEPARATE `repair` run launched below). It is offered when there is host/template-origin
+	// drift, OR foreign files AND `--prune` was passed (a repair without `--prune` cannot
+	// delete a foreign file, so offering the handoff for foreign-only drift without `--prune`
+	// would be a dead end). Generated-only drift never offers a handoff either way.
+	const originOf = new Map(plan.artifacts.map((a) => [a.path, a.origin]))
+	const drifted = audit.findings.filter((f) => f.drift !== 'aligned')
+	const ownedDrift = drifted.some((f) => originOf.get(f.path) === 'host')
+	const generatedDrift = drifted.some((f) => originOf.get(f.path) !== 'host')
+	const offerHandoff = terminal.isTTY && (ownedDrift || (foreignPaths.length > 0 && values.prune))
+	let handoffAccepted = false
+	if (offerHandoff) {
+		handoffAccepted = await terminal.confirm({ message: 'Hand off to repair?', default: false })
+		if (handoffAccepted) {
+			reporter.status('info', `run: scaffold repair --target ${target}`)
+			// After an ACCEPTED handoff, re-diff the FULL plan (not just repair's host-scoped
+			// slice) so a "clean" handoff always means the whole target, not just the host set.
+		}
+	}
+	if (!handoffAccepted && !values.json) {
+		if (foreignPaths.length > 0 && !values.prune) {
+			reporter.status(
+				'info',
+				"unexpected files found — run 'scaffold repair --prune' to delete them",
+			)
+		}
+		if (generatedDrift) {
+			reporter.status(
+				'info',
+				'generated-file drift found — these files are generated, not hand-repaired',
+			)
+		}
+	}
+	process.exit(merged.clean ? 0 : 1) // ANY drift — including a foreign file — fails the CI gate
 } else if (command === 'repair') {
 	// `scaffold repair` — single target, dry-run default, HOST-ORIGIN scope ONLY
-	// (ci.yml included — full HOST scope, unlike mirror's ci.yml exclusion), so
+	// (ci.yml included — full HOST scope, unlike fleet's ci.yml exclusion), so
 	// hand-written src/tests/guides/package.json are never overwritten.
 	const compiled = blueprintToPlan(deriveBlueprint(target))
 	const scopedToHost = {
@@ -1432,22 +1635,31 @@ if (command === 'sync') {
 			plan.artifacts.map((a) => a.path),
 		),
 	)
-	reporter.line(planToReview(plan))
+	emit(audit, () => reporter.line(planToReview(plan)))
 	const materializer = createMaterializer(materializerOptions)
-	if (values.apply) materializer.repair(plan, audit, target)
-	if (values.prune) materializer.prune(target) // .claude/agents/ + scripts/ foreigns ONLY
+	const wrote = !audit.clean && (await confirmWrite('Write missing/stale host files?'))
+	if (wrote) materializer.repair(plan, audit, target)
+	// pruning sits behind its OWN second confirm, only once the first write is accepted — and
+	// the preview above already LISTED the exact paths `pruneTargets` found (never a bare
+	// count); a count of 0 skips this question entirely (nothing to ask about).
+	if (wrote) {
+		const foreignPaths = pruneTargets(target, host)
+		const pruneNow = await confirmPrune(
+			target,
+			`Also prune ${foreignPaths.length} foreign file(s)?`,
+		)
+		if (pruneNow.length > 0) materializer.prune(target) // .claude/agents/ + scripts/ foreigns ONLY
+	}
 	materializer.destroy()
-	process.exit(!audit.clean && !values.apply ? 1 : 0)
-} else if (command === 'mirror') {
-	// `scaffold mirror` — fleet: discover, then per-repo host-origin audit/repair, EXCLUDING
-	// .github/workflows/ci.yml (repo-flavored CI diverges in two live repos; single-target
-	// `repair --apply` is the tool for that file, never the fleet-wide verb). `discoverPackages`
-	// walks `root`'s IMMEDIATE CHILDREN only, never `root` itself — the caller cd's into the
-	// folder that CONTAINS the checkouts first; `repair` is the one-repo counterpart.
-	const root = values.root ?? '.'
+	process.exit(!audit.clean && !wrote ? 1 : 0)
+} else if (command === 'fleet') {
+	// `scaffold fleet` — the CURRENT WORKING DIRECTORY's IMMEDIATE CHILDREN only, never the
+	// cwd itself: the cd-model IS the interface, no --root flag exists — the caller cd's into
+	// the folder that CONTAINS the checkouts first; `repair` is the one-repo counterpart.
 	const materializer = createMaterializer(materializerOptions)
 	let totalDrift = 0
-	for (const repoTarget of discoverPackages(root)) {
+	const rows: Array<readonly [string, number]> = []
+	for (const repoTarget of discoverPackages('.')) {
 		const repoPlan = blueprintToPlan(deriveBlueprint(repoTarget))
 		const scoped = {
 			...repoPlan,
@@ -1463,20 +1675,34 @@ if (command === 'sync') {
 		)
 		if (!audit.clean) {
 			totalDrift += audit.drifted + audit.missing
-			if (values.apply) materializer.repair(hydrated, audit, repoTarget)
+			if (await confirmWrite(`Write drift for ${repoTarget}?`)) {
+				materializer.repair(hydrated, audit, repoTarget)
+			}
 		}
-		reporter.table({
-			columns: [{ label: 'Repo' }, { label: 'Drift', align: 'right' }],
-			rows: [[repoTarget, String(audit.drifted + audit.missing)]],
-		})
+		rows.push([repoTarget, audit.drifted + audit.missing])
 	}
 	materializer.destroy()
-	process.exit(totalDrift > 0 && !values.apply ? 1 : 0)
+	emit(
+		rows.map(([repo, drift]) => ({ repo, drift })),
+		() =>
+			reporter.table({
+				columns: [{ label: 'Repo' }, { label: 'Drift', align: 'right' }],
+				rows: rows.map(([repo, drift]) => [repo, String(drift)]),
+			}),
+	)
+	process.exit(totalDrift > 0 ? 1 : 0)
+} else if (command === 'catalog') {
+	// --from ADDS local-only discoveries to the registry-authoritative default; --offline
+	// sources --from(s) only (default [cwd]); merged/local entries splice via catalogToBlock
+	// into <target>/.claude/agents/orkestrel.md between its markers, shrink-warning either way.
+	// --json's value is `{ entries, drift, shrink? }` — NEVER a bare `CatalogEntry[]`, so a
+	// consumer can read the drift verdict and any shrink warning without re-deriving them.
+	// (Illustrative — see catalogToBlock / Sync.catalog in the Surface above.)
+	process.exit(0)
 } else {
 	// `scaffold new <name>` — creation.
-	const terminal = createTerminal()
 	const name =
-		argument ??
+		positionals[1] ??
 		(await terminal.input({ message: 'Package name', validate: { pattern: '^[a-z][a-z0-9-]*$' } }))
 	const picked =
 		values.surfaces?.split(',') ??
@@ -1486,7 +1712,7 @@ if (command === 'sync') {
 	// --deps resolve latest from the registry → ranges pin ^latest; their guides fetch into the plan.
 	const sync = createSync()
 	const versions = await sync.versions(
-		(values.deps?.split(',') ?? []).map((name) => dependency(name, '*')),
+		(values.deps?.split(',') ?? []).map((depName) => dependency(depName, '*')),
 	)
 	sync.destroy()
 	const deps = versions.map((version) => dependency(version.name, `^${version.latest}`))
@@ -1496,20 +1722,22 @@ if (command === 'sync') {
 	if (!scaffolding.plan) {
 		reporter.status('error', scaffolding.questions.map((question) => question.text).join('; '))
 		compiler.destroy()
-		process.exit(1)
+		process.exit(2) // usage: an off-contract name/surfaces is caller error, not drift
 	}
-	reporter.section('Plan')
-	reporter.line(planToReview(scaffolding.plan)) // dry-run default: show the review
-	const summary = planToSummary(scaffolding.plan)
-	reporter.table({
-		columns: [{ label: 'Origin' }, { label: 'Count', align: 'right' }],
-		rows: [
-			['host', String(summary.host)],
-			['template', String(summary.template)],
-			['computed', String(summary.computed)],
-		],
+	emit(scaffolding.plan, () => {
+		reporter.section('Plan')
+		reporter.line(planToReview(scaffolding.plan)) // dry-run default: show the review
+		const summary = planToSummary(scaffolding.plan)
+		reporter.table({
+			columns: [{ label: 'Origin' }, { label: 'Count', align: 'right' }],
+			rows: [
+				['host', String(summary.host)],
+				['template', String(summary.template)],
+				['computed', String(summary.computed)],
+			],
+		})
 	})
-	if (values.apply) {
+	if (await confirmWrite('Write the package to disk?')) {
 		const spinner = createSpinner({ message: 'materializing', sink })
 		spinner.start()
 		const materializer = createMaterializer()
@@ -1518,6 +1746,7 @@ if (command === 'sync') {
 		spinner.success(`wrote ${result.written.length + result.copied.length} files`)
 	}
 	compiler.destroy()
+	process.exit(0)
 }
 ```
 
@@ -1534,38 +1763,53 @@ repo's own script), `npx @orkestrel/scaffold` post-publish, and `node_modules/.b
 once it is a devDependency of a consumer.
 
 ```sh
-# new — create a package (dry-run prints the plan; --apply writes):
+# new — create a package (dry-run previews; on a terminal it then asks, default No; --apply
+# writes unasked):
 npx @orkestrel/scaffold new router --surfaces core,browser,server
 npx @orkestrel/scaffold new router --deps @orkestrel/contract --apply --target ./packages/router
 
-# sync — refresh vendored dep mirrors + report range drift (nonzero only under --strict):
-npx @orkestrel/scaffold sync --target . --apply
-npx @orkestrel/scaffold sync --deps @orkestrel/contract,@orkestrel/emitter --strict
+# pull — refresh vendored dep mirrors + report range drift (any drift/failure exits 1,
+# --strict or not; --strict additionally THROWS on a network fault):
+npx @orkestrel/scaffold pull --target . --apply
+npx @orkestrel/scaffold pull --deps @orkestrel/contract,@orkestrel/emitter --strict --json
 
-# audit — structural conformance, +live freshness; nonzero on ANY drift (the CI gate):
+# audit — structural conformance (now merging the prune scan: a stray file under
+# .claude/agents/ or scripts/ is a real foreign finding, counted as drift), +live freshness;
+# nonzero on ANY drift, foreign files included (the CI gate); offers a repair handoff on a
+# terminal whenever host-origin drift OR a foreign file is found (never for generated-only
+# drift, which gets a plain note instead); --json emits exactly one Audit value, its `foreign`
+# count now real and a `live` field present when --live ran:
 npx @orkestrel/scaffold audit --live
+npx @orkestrel/scaffold audit --json
 
-# repair — single target, dry-run default; --apply writes missing+stale, --prune deletes
+# repair — single target, dry-run default; on a terminal it asks before writing (--apply
+# skips the ask), then a SECOND default-No question (or --prune) before deleting
 # target-only files under .claude/agents/ and scripts/ ONLY:
 npx @orkestrel/scaffold repair --target . --apply --prune
-npx @orkestrel/scaffold repair --target . --host ../contract # audit against a sibling's host
+npx @orkestrel/scaffold repair --target . --from ../contract # audit against a sibling's host
 
-# mirror — fleet: discoverPackages(--root) scans root's IMMEDIATE CHILDREN (never root
-# itself) then per-repo host-origin audit/repair; dry-run default, --apply writes, exits
-# nonzero on residual drift; excludes .github/workflows/ci.yml (repo-flavored — use
-# `repair --apply` per repo for that one file); --root is a WRITE destination, confined
-# to the cwd — cd into the folder that CONTAINS your checkouts first (repair is the
-# single-repo tool: run it from inside one repo instead):
-cd ~/repos && npx @orkestrel/scaffold mirror
-cd ~/repos && npx @orkestrel/scaffold mirror --apply
+# fleet — the CURRENT WORKING DIRECTORY's IMMEDIATE CHILDREN (never the cwd itself) then
+# per-repo host-origin audit/repair; dry-run default, confirms per repo on a terminal
+# (--apply writes unasked), nonzero on residual drift; excludes
+# .github/workflows/ci.yml (repo-flavored — use `repair --apply` per repo for that one
+# file); NO --root flag at all — cd into the folder that CONTAINS your checkouts first
+# (repair is the single-repo tool: run it from inside one repo instead):
+cd ~/repos && npx @orkestrel/scaffold fleet
+cd ~/repos && npx @orkestrel/scaffold fleet --apply --json
 
 # catalog — regenerate the fleet package catalog embedded in orkestrel.md between its
-# markers; the npm registry is authoritative by default (unauthenticated), --root ADDS
-# local-only discoveries (repeatable), --offline sources --root(s) only, dry-run reports
-# drift (nonzero) plus any shrink warning, --apply writes:
+# markers; the npm registry is authoritative by default (unauthenticated), --from ADDS
+# local-only discoveries (repeatable — the SAME flag the read-only-source verbs use,
+# replacing the old --host and catalog's old --root), --offline sources --from(s) only,
+# dry-run reports drift (nonzero) plus any shrink warning, --apply writes:
 npx @orkestrel/scaffold catalog --target . --apply
-npx @orkestrel/scaffold catalog --root ~/repos --root ~/other-repos --target . --apply
-npx @orkestrel/scaffold catalog --offline --root ~/repos --target . --apply
+npx @orkestrel/scaffold catalog --from ~/repos --from ~/other-repos --target . --apply
+npx @orkestrel/scaffold catalog --offline --from ~/repos --target . --apply
+
+# unknown verb — the two RENAMED former names redirect explicitly rather than a fuzzy guess;
+# any other typo still gets the nearest-match suggestion. Either way: usage error, exit 2.
+npx @orkestrel/scaffold sync    # 'sync' has been renamed — use 'scaffold pull'
+npx @orkestrel/scaffold mirror  # 'mirror' has been renamed — use 'scaffold fleet'
 ```
 
 ### Fleet wiring
@@ -1578,7 +1822,7 @@ sub-engine). The byte-copied governance files (`HOST_PATHS`) ship VENDORED insid
 published tarball at `dist/host/` (staged there by the build's `build:host` step, alongside a
 `dist/host/manifest.json` recording each entry's storage name, destination, and executable
 bit), which the server's `Materializer` copies from its `host` root — the package's OWN
-vendored copy by default, or an explicit `--host` sibling for fleet-wide mirroring. There is
+vendored copy by default, or an explicit `--from` sibling for fleet-wide mirroring. There is
 ONE versioned source of truth, and `npm update @orkestrel/scaffold` propagates a convention
 change to every consumer.
 
@@ -1588,10 +1832,10 @@ config wrappers, and the audit checklist all live here, projected from the same 
 compiler emits. Every repo in the fleet carries `@orkestrel/scaffold` as a devDependency
 (pinned at `SCAFFOLD_RANGE`, joining `@orkestrel/guide` as line-wide dev tooling) and a
 `"scaffold": "scaffold"` script against the installed bin. Fleet-truing runs as
-`scaffold mirror` — either from the package's own vendored `dist/host` (the common case) or
-from an explicit `--host` sibling repo — trueing every repo's shared artifacts across the
+`scaffold fleet` — either from the package's own vendored `dist/host` (the common case) or
+from an explicit `--from` sibling repo — trueing every repo's shared artifacts across the
 workspace; `repair` and `audit` operate per repo. `.github/workflows/ci.yml` is the one
-fleet exception: two repos carry repo-flavored CI, so `mirror` never writes it — a
+fleet exception: two repos carry repo-flavored CI, so `fleet` never writes it — a
 single-target `repair --apply` does, per repo, for that one file.
 
 ### Practices
@@ -1609,15 +1853,16 @@ single-target `repair --apply` does, per repo, for that one file.
   set with `repair` (never a hand-written `src` / `tests` / `package.json` file — `repair` is
   the host-restoration tool ONLY), refresh mirrors with `Sync.write`, and leave `aligned` /
   `current` untouched.
-- **A named `--host` must resolve** — the default host degrades to presence-only silently when
-  absent (dev ergonomics), but an explicitly-passed `--host` that fails to resolve is a coded
-  `TARGET` failure on `audit` / `repair` / `mirror` — never a silent downgrade for a host the
+- **A named `--from` must resolve** — the default host degrades to presence-only silently when
+  absent (dev ergonomics), but an explicitly-passed `--from` that fails to resolve is a coded
+  `TARGET` failure on `audit` / `repair` / `fleet` — never a silent downgrade for a source the
   caller named on purpose.
-- **True the fleet with `mirror`, not by hand** — `scaffold mirror --root <fleet>` runs
-  `discoverPackages` → per-repo hydrated audit → repair under `--apply`, EXCLUDING
-  `.github/workflows/ci.yml` (repo-flavored, never fleet-clobbered — use single-target
-  `repair --apply` for that one file); reach for `repair --prune` only for the bounded
-  `.claude/agents/` / `scripts/` cleanup a single target needs, never a wider deletion.
+- **True the fleet with `fleet`, not by hand** — run `scaffold fleet` from the folder that
+  CONTAINS your checkouts (no `--root` flag — the cd-model is the interface); it runs
+  `discoverPackages` → per-repo hydrated audit → repair on an accepted confirm (or `--apply`),
+  EXCLUDING `.github/workflows/ci.yml` (repo-flavored, never fleet-clobbered — use
+  single-target `repair --apply` for that one file); reach for `repair --prune` only for the
+  bounded `.claude/agents/` / `scripts/` cleanup a single target needs, never a wider deletion.
 - **Override, don't fork** — need a bespoke file? Add one `override` for that path; the rest
   stay canonical and keep tracking the shipped templates. Never copy the whole plan to change
   one file.
@@ -1672,7 +1917,7 @@ host; the skip is the environment's ceiling, never a hidden failure.
   `peerDependenciesMeta` emission for `peers`, `extras` merging into `devDependencies` with
   extras winning a collision — template-fill vs computed origins + the token-collision
   boundary, `planToReview` / `auditToReview` / `syncToReview` table emission, `planToSummary`
-  counts, `diffPlan` drift verdicts incl. host presence-only on a RAW plan,
+  counts, `diffPlan` drift verdicts incl. host presence-only on a RAW (unhydrated) plan,
   `manifestToDependencies` across all three sections deduplicated, `rangeToFreshness` exact-pin
   law, `pinPlan` determinism), `validateBlueprint` errors + warnings (incl. the per-array
   `peers` / `extras` name/range/duplicate rules and the three cross-array overlap blocks),
@@ -1721,7 +1966,16 @@ host; the skip is the environment's ceiling, never a hidden failure.
   destroy semantics.
 - [`tests/src/server/helpers.test.ts`](../../tests/src/server/helpers.test.ts) — `hostRoot`,
   `deriveBlueprint`, `discoverPackages`, `hydratePlan`, and `catalogPackages` against a real
-  `node:fs` fixture, plus the three no-nested-functions leaves standalone:
+  `node:fs` fixture; `diffPlan` content-comparing a HYDRATED host-origin artifact (a
+  byte-mutated target is `stale`, counted in `drifted`) against the SAME target read by the
+  UNHYDRATED plan (still `aligned` — presence-only preserved when there is no `content` to
+  compare), plus a `Materializer.repair` round-trip proving a hydrated `'stale'` finding
+  re-copies the artifact byte-equal from `host`; `pruneTargets` (a real fixture: an unexpected file under
+  `.claude/agents/` / `scripts/` is reported, a vendored one is not, an absent prune directory
+  under `target` yields `[]`, and the fail-closed `TARGET` throw when `host` cannot positively
+  establish an allowlist for a prune directory that DOES exist under `target` — the same law
+  `Materializer.prune` and the bin's audit/repair UX both consume), plus the three
+  no-nested-functions leaves standalone:
   `selectOrkestrelEntries` (`@orkestrel/`-prefixed string-valued filtering, `[]` on a
   non-object), `isManifestEntry` (valid entry accepted; missing/mistyped `executable` and a
   non-object rejected), and `locateHostSource` (the manifest-`undefined` raw-join fallback, the
@@ -1748,39 +2002,80 @@ private or guide missing?)` note, a failed packument keeps the entry degraded (`
   entries sort code-unit by `name` regardless of org-list key order, and no request anywhere
   (org list, packument, guide) ever carries an `Authorization` header.
 - [`tests/src/server/integration.test.ts`](../../tests/src/server/integration.test.ts) —
-  the full flow against the fixture: `new` → `sync` → `audit --live` (compile → materialize →
+  the full flow against the fixture: `new` → `pull` → `audit --live` (compile → materialize →
   audit clean → mutate a file → audit drift → repair clean; then a stale mirror synced current);
   a scaffolded package whose deps are all vendored (contract / emitter / markdown / template /
   terminal / console) runs its own gates green by construction, while a dep outside that set
   leaves its mirror a pointer plus a non-blocking Question.
 - [`tests/src/bin/scaffold.test.ts`](../../tests/src/bin/scaffold.test.ts) — the bin's six
-  subcommands: `new` (`parseArgs` flag decoding, a non-interactive piped compile + dry-run
-  review + summary table, the interactive fallback driven by a scripted fake terminal, and
-  `--apply` writing into a temp directory), `sync` (report + `--apply` write, `--strict` exit
-  code), `audit` (`deriveBlueprint` reconstruction, `--live` drift → nonzero exit,
-  hydration-aware host drift, `--groups a,b` scoping the compiled plan validated against
-  `GROUPS` with an `INVALID` exit on an unrecognized name, and an EXPLICIT `--host` that fails
-  to resolve exiting `TARGET` rather than silently downgrading — M1), `repair` (`deriveBlueprint`
-  reconstruction, dry-run exit code, `--apply` scoped to HOST-ORIGIN artifacts ONLY (H2) —
-  INCLUDING `.github/workflows/ci.yml` (full HOST scope, no exclusion, unlike `mirror`) but a
-  hand-modified `src` file is NEVER touched even when the target also carries drifted host
-  files — `--prune` deleting ONLY `.claude/agents/` / `scripts/` foreigns, `--host`
-  override defaulting to `hostRoot()`), and `mirror` (a FLEET-MIRROR fixture: multiple
-  `discoverPackages`-discovered repos under one root, `--root` fleet discovery, `.github/
-workflows/ci.yml` EXCLUDED from the scoped plan regardless of `--apply`, per-repo + total
-  drift table, `--apply` writing, nonzero exit on residual drift) — all against the
-  `node:http` fixture — and `catalog` (`--offline` exercises the fully-local path against a
-  fixture fleet under two `--root`s, one guide carrying a blockquote and one missing its guide
-  entirely: dry-run reports the no-description list and exits `1` on marker drift, `--apply`
-  writes the spliced table and a re-run exits `0`, a target `.claude/agents/orkestrel.md`
-  missing either marker exits coded `TARGET`, multiple `--root` values merge into one sorted,
-  deduplicated table, and a shrink warning prints on both dry-run and `--apply` when the new
-  table has fewer rows than the currently-embedded one — the registry-authoritative default
-  path's fetch/merge logic is covered at the `Sync.catalog()` unit level, `tests/src/server/Sync.test.ts`,
-  against a fixture org-list + packument + guide host).
+  subcommands: `new` (`parseArgs` flag decoding, a non-interactive `--json` compile emitting
+  exactly one JSON value, dry-run review + summary table, the interactive preview-then-confirm
+  flow driven by a scripted fake terminal — accept AND default-No decline — `--yes`
+  pre-answering that confirm, `--apply` writing into a temp directory unasked, and the
+  positional package name validated against the SAME shape the interactive prompt enforces
+  (`^[a-z][a-z0-9-]*$`) — an invalid positional name exits `2` naming the expected shape, under
+  `--json` and without alike (F4)), `pull`
+  (report + confirm-then-write, `--apply` writing unasked, `--json` emitting exactly one
+  `SyncReport`, `--strict` still THROWING `FETCH` on a network fault, and any drift/failure
+  exiting `1` regardless of `--strict` — `pull`'s prior only-nonzero-under-`--strict` posture
+  is gone), `audit` (`deriveBlueprint` reconstruction, `--live` drift → exit `1`,
+  hydration-aware host drift, the MERGED prune scan — a `pruneTargets`-found foreign file is a
+  real finding that counts toward drift and exits `1`, its count carried under `--json`
+  (`Audit.foreign`) alongside a `live` field when `--live` ran, `--groups a,b` scoping the
+  compiled plan validated against `GROUPS` with exit `2` (a plain USAGE error, not a coded
+  failure) on an unrecognized name, an EXPLICIT `--from` that fails to resolve exiting `TARGET`
+  rather than silently downgrading — M1, an unscannable `--from` host that DOES resolve but
+  cannot establish a vendored allowlist for a prune directory `target` actually has degrading
+  the audit to its un-scanned findings with a printed `scanSkipped` note instead of crashing
+  (F3), the repair-handoff confirm offered ONLY on a real TTY — `--apply` / `--yes` are NEVER
+  handoff consent, so `audit --apply` (with or without `--prune`) on a drifted/foreign target
+  is asserted to leave every file exactly as found and exit `1`, never auto-repairing or
+  auto-pruning (F1) — and, when offered, ONLY when there is host/template-origin drift OR a
+  foreign file present AND `--prune` was passed (a foreign-only handoff without `--prune` would
+  be a dead end — F2); a foreign file with no `--prune` instead prints the `foreignHint` pointing
+  at `scaffold repair --prune` (never a generated-file note, which stays reserved for
+  computed-only drift), and — on an ACCEPTED handoff — a FULL-PLAN re-diff afterward that still
+  exits `1` if any drift (e.g. generated-file drift `repair` cannot touch) remains), `repair`
+  (`deriveBlueprint` reconstruction,
+  dry-run exit code, confirm-then-write (or `--apply`) scoped to HOST-ORIGIN artifacts ONLY
+  (H2) — INCLUDING `.github/workflows/ci.yml` (full HOST scope, no exclusion, unlike `fleet`)
+  but a hand-modified `src` file is NEVER touched even when the target also carries drifted
+  host files — a SECOND default-No confirm (or `--prune`) that LISTS the exact foreign paths
+  before deleting `.claude/agents/` / `scripts/` foreigns ONLY, a `0`-count skipping the
+  question entirely with a "no unexpected files to delete" note, `--prune` reaching the
+  preview/confirm/deletion flow even on a CLEAN host audit — a clean audit alone no longer
+  bypasses pruning, only a clean audit WITH nothing to prune does (U11 F2) — `--from` override defaulting
+  to `hostRoot()`), a shared non-TTY CASE across every write verb asserting the ONE-PROMPT
+  ceiling — a piped/non-TTY run never sees a second question (the prune confirm resolves to its
+  safe default with a printed `pruneSkipped` explanation instead of blocking; `audit`'s
+  repair-handoff is TTY-only from the start, so a non-TTY `audit` never asks it at all —
+  degrading straight to the `foreignHint` / `generatedNote` prose instead), and a missing
+  REQUIRED input off a TTY (e.g. `new` with no name/`--surfaces`) exits
+  `2` naming the flag rather than hanging, and `fleet` (a FLEET
+  fixture: multiple `discoverPackages`-discovered repos under the CURRENT WORKING DIRECTORY's
+  immediate children — no `--root` flag anywhere, the cd-model IS the interface — `.github/
+workflows/ci.yml` EXCLUDED from the scoped plan regardless of confirm/`--apply`, per-repo +
+  total drift table, `--json` emitting exactly one fleet-drift array, `--apply` writing
+  unasked, exit `1` on residual drift) — all against the `node:http` fixture, PLUS a shared
+  `ctrl-c`-at-prompt case asserting `cancelled — nothing written` and exit `1` — and `catalog`
+  (`--offline` exercises the fully-local path against a fixture fleet under two `--from` roots,
+  one guide carrying a blockquote and one missing its guide entirely: dry-run reports the
+  no-description list and exits `1` on marker drift, `--apply` writes the spliced table and a
+  re-run exits `0`, a target `.claude/agents/orkestrel.md` missing either marker exits coded
+  `TARGET`, multiple `--from` values merge into one sorted, deduplicated table, `--json` emitting
+  exactly `{ entries, drift, shrink? }` — NEVER a bare `CatalogEntry[]` — and a shrink
+  warning prints on both dry-run and `--apply` when the new table has fewer rows than the
+  currently-embedded one — the registry-authoritative default path's fetch/merge logic is
+  covered at the `Sync.catalog()` unit level, `tests/src/server/Sync.test.ts`, against a
+  fixture org-list + packument + guide host). A shared unknown-command case asserts `scaffold
+sync` / `scaffold mirror` print the explicit "renamed" redirect (`pull` / `fleet`
+  respectively) rather than a fuzzy guess, any other typo gets the nearest-`KNOWN_VERBS`
+  suggestion, and either way exits `2` with a single JSON error envelope (`{ error: { code,
+message } }`, `code: 'USAGE'`) under `--json` — the same envelope shape asserted for every
+  other usage/unexpected failure across every verb, so `--json` NEVER emits a bare stderr line.
 - a BUILT-BIN end-to-end pack→install→scaffold-new proof — `npm pack` the built tarball,
   install it into a scratch project as a devDependency, then invoke the installed `scaffold
-new` bin with NO `--host` flag and assert the DEFAULT host resolution (`hostRoot()`) lands on
+new` bin with NO `--from` flag and assert the DEFAULT host resolution (`hostRoot()`) lands on
   the vendored `dist/host` bundle inside the installed package (not the source tree, not
   `process.cwd()`) — proving the published artifact is self-sufficient.
 

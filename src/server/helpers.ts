@@ -625,6 +625,112 @@ export function hydratePlan(plan: Plan, host: string): Plan {
 }
 
 /**
+ * The `prune`-owned directories — a hard allowlist; `pruneTargets` (and the
+ * `Materializer.prune` that consumes it) never scans anything outside these two.
+ *
+ * @example
+ * ```ts
+ * import { PRUNE_DIRECTORIES } from '@orkestrel/scaffold/server'
+ *
+ * PRUNE_DIRECTORIES // ['.claude/agents', 'scripts']
+ * ```
+ */
+export const PRUNE_DIRECTORIES = ['.claude/agents', 'scripts'] as const
+
+/**
+ * The vendored set of destination-relative paths under `directory` (one of
+ * `PRUNE_DIRECTORIES`) that `pruneTargets` must NOT report — read from the
+ * manifest's `destination`s when `host` has one, else listed straight off
+ * `host/<directory>`.
+ *
+ * @param host - The vendored host root to establish the allowlist from.
+ * @param directory - The prune directory (one of `PRUNE_DIRECTORIES`) to scope the allowlist to.
+ * @remarks
+ * FAIL CLOSED: before returning any allowlist (even an empty one), the
+ * vendored source must be POSITIVELY established, or a caller would treat an
+ * unresolved host as "vendors nothing" and report every file under
+ * `target/<directory>` as unexpected. A missing `host` root, or (no
+ * `manifest.json` AND no `host/<directory>`), is a coded `TARGET` failure —
+ * the distinction this guards is missing-host vs genuinely-empty-vendor: a
+ * `host` that EXISTS and vendors zero files in `directory` (an existing empty
+ * dir, or a manifest with zero entries for it) remains a valid empty allowlist.
+ * @returns The allowed destination-relative paths under `directory`.
+ * @throws `ScaffoldError('TARGET', …)` when `host` does not exist, or when
+ *   `host` has no `manifest.json` and no `host/<directory>` either.
+ *
+ * @example
+ * ```ts
+ * import { vendoredPruneSet } from '@orkestrel/scaffold/server'
+ *
+ * vendoredPruneSet('./dist/host', '.claude/agents') // Set { '.claude/agents/scout.md', … }
+ * ```
+ */
+export function vendoredPruneSet(host: string, directory: string): ReadonlySet<string> {
+	if (!existsSync(host)) {
+		throw new ScaffoldError(
+			'TARGET',
+			`Cannot establish vendored source for prune: host root not found at ${host}`,
+			{ host, directory },
+		)
+	}
+	const manifest = readHostManifest(host)
+	if (manifest !== undefined) {
+		return new Set(
+			manifest
+				.filter((entry) => entry.destination.startsWith(`${directory}/`))
+				.map((entry) => entry.destination),
+		)
+	}
+	const hostDirectory = join(host, directory)
+	if (!existsSync(hostDirectory)) {
+		throw new ScaffoldError(
+			'TARGET',
+			`Cannot establish vendored source for prune: no manifest.json and no host directory at ${hostDirectory}`,
+			{ host, directory },
+		)
+	}
+	return new Set(listFiles(hostDirectory).map((relative) => `${directory}/${relative}`))
+}
+
+/**
+ * List the repo-relative POSIX paths under `target`'s prune directories
+ * (`.claude/agents`, `scripts`) that the vendored `host` allowlist does NOT
+ * declare — THE single source of truth for prune drift, consumed by both
+ * `Materializer.prune` (which deletes exactly these paths) and the bin's
+ * audit/preview UX (which now shows them honestly instead of a
+ * structurally-always-zero `audit.foreign`).
+ *
+ * @param target - The target directory to scan for unexpected files.
+ * @param host - The vendored host root the allowlist is derived from.
+ * @returns The unexpected relative paths (e.g. `.claude/agents/rogue.md`); `[]`
+ *   when a prune directory is absent under `target`, or when none of its
+ *   files are unexpected. Pure read — never deletes anything.
+ * @throws `ScaffoldError('TARGET', …)` when `host` cannot positively
+ *   establish a vendored allowlist for a prune directory that DOES exist
+ *   under `target` (see `vendoredPruneSet`'s fail-closed remarks).
+ *
+ * @example
+ * ```ts
+ * import { pruneTargets } from '@orkestrel/scaffold/server'
+ *
+ * pruneTargets('./packages/router', hostRoot()) // ['.claude/agents/rogue.md']
+ * ```
+ */
+export function pruneTargets(target: string, host: string): readonly string[] {
+	const paths: string[] = []
+	for (const directory of PRUNE_DIRECTORIES) {
+		const root = join(target, directory)
+		if (!existsSync(root)) continue
+		const allowed = vendoredPruneSet(host, directory)
+		for (const relative of listFiles(root)) {
+			const path = `${directory}/${relative}`
+			if (!allowed.has(path)) paths.push(path)
+		}
+	}
+	return paths
+}
+
+/**
  * List a fleet root's `@orkestrel/*` package directories.
  *
  * @param root - The fleet root directory to scan.

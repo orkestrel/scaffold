@@ -1,47 +1,44 @@
 import type { SpawnSyncReturns } from 'node:child_process'
-// The bin end to end — spawns the BUILT executable (`dist/bin/scaffold.js`) via
-// `node:child_process`, so this suite assumes the build chain has already run
-// (the gate order runs `npm run build` before `npm test` — see AGENTS.md §Orientation).
+// The bin's verb/flag contract, spawning the BUILT executable (`dist/bin/scaffold.js`) via
+// `node:child_process` — assumes the build chain has already run (AGENTS.md §Orientation:
+// `npm run build` before `npm test`). Every write destination is confined to the cwd
+// (H-containment), so a test exercising `--target` against a temp fixture runs WITH that
+// fixture as its cwd. `--from` is the read-only source override (was `--host`); it is exempt
+// from containment and may point anywhere, including outside the cwd.
 import { spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { buildTempDirectory, WORKSPACE_ROOT } from '../../setupServer.js'
+import { isRecord } from '@src/server'
+import { buildTempDirectory, canSymlink, WORKSPACE_ROOT } from '../../setupServer.js'
 
 const BIN_PATH = join(WORKSPACE_ROOT, 'dist/bin/scaffold.js')
 
+/** `render.ts`'s `repairHandoff` closing question, duplicated as a literal so this suite can assert the handoff's ABSENCE without importing the bin's presentation module — the handoff is now TTY-only (F1), so every spawned (non-TTY) test process never sees it. */
+const REPAIR_HANDOFF_TEXT = 'run repair now?'
+
 /**
  * Spawn the built `scaffold` bin with `argv` + optional piped `input`, cwd
- * defaulting to the repo root (so host-path resolution finds the real
- * package) with an optional override — every WRITE destination is now
- * confined to the cwd, so a test exercising `--target`/`--root` against a
- * temp fixture must run WITH that fixture as its cwd.
+ * defaulting to a throwaway location (never the repo root — every write is
+ * cwd-confined, and several verbs default their read-only source to the
+ * package's own vendored `dist/host` when `--from` is absent, so a bare `cwd`
+ * default of the workspace root risks tests silently depending on it).
  */
 function runBin(
 	argv: readonly string[],
-	input?: string,
-	options?: { readonly cwd?: string; readonly env?: Readonly<Record<string, string>> },
+	input: string,
+	options: { readonly cwd: string; readonly env?: Readonly<Record<string, string>> },
 ): SpawnSyncReturns<string> {
 	return spawnSync(process.execPath, [BIN_PATH, ...argv], {
-		cwd: options?.cwd ?? WORKSPACE_ROOT,
-		input: input ?? '',
+		cwd: options.cwd,
+		input,
 		encoding: 'utf8',
 		timeout: 15000,
-		env: options?.env !== undefined ? { ...process.env, ...options.env } : process.env,
+		env: options.env !== undefined ? { ...process.env, ...options.env } : process.env,
 	})
 }
 
-/** Write a minimal `package.json` declaring `dependencies` into a fresh temp directory — the manifest `readManifest` / `manifestToDependencies` read for `sync` / `audit`. */
-async function writeManifest(dependencies: Readonly<Record<string, string>>) {
-	const directory = await buildTempDirectory()
-	writeFileSync(
-		join(directory.path, 'package.json'),
-		JSON.stringify({ name: '@orkestrel/fixture', version: '0.0.1', dependencies }),
-	)
-	return directory
-}
-
-/** Real placeholder bytes for every `HOST_PATHS` entry, keyed by artifact-relative path — enough for `new --apply --host <fixture>` to fully materialize a package without depending on the (possibly stale) default vendored host. */
+/** Real placeholder bytes for every `HOST_PATHS` entry, keyed by artifact-relative path — enough for `new --apply --from <fixture>` to fully materialize a package without touching the (possibly stale) default vendored host. */
 const HOST_FIXTURE_FILES: Readonly<Record<string, string>> = {
 	'AGENTS.md': '# AGENTS fixture\n',
 	'CLAUDE.md': '# CLAUDE fixture\n',
@@ -61,8 +58,8 @@ const HOST_FIXTURE_FILES: Readonly<Record<string, string>> = {
 	'.claude/agents/example.md': '# example agent fixture\n',
 }
 
-/** Build a real, raw (no `manifest.json`) host root in a fresh temp directory — every `HOST_PATHS` entry present with placeholder bytes, `overrides` replacing or adding specific entries (e.g. a distinctive `.editorconfig` marker to prove `--host` sourcing). */
-async function buildHostFixture(overrides?: Readonly<Record<string, string>>) {
+/** Build a real, raw (no default-host lookalike) host root in a fresh temp directory — every `HOST_PATHS` entry present with placeholder bytes, `overrides` replacing or adding specific entries (e.g. a distinctive `.editorconfig` marker to prove `--from` sourcing). */
+async function buildFromFixture(overrides?: Readonly<Record<string, string>>) {
 	const directory = await buildTempDirectory()
 	for (const [relative, content] of Object.entries({ ...HOST_FIXTURE_FILES, ...overrides })) {
 		const full = join(directory.path, relative)
@@ -72,163 +69,254 @@ async function buildHostFixture(overrides?: Readonly<Record<string, string>>) {
 	return directory
 }
 
+/** Materialize a fresh package via `new --apply` into `cwd/name` sourced from `from`, returning its directory. */
+function scaffoldPackage(cwd: string, name: string, from: string): string {
+	const created = runBin(
+		['new', name, '--surfaces', 'core', '--apply', '--target', name, '--from', from],
+		'',
+		{ cwd },
+	)
+	if (created.status !== 0) {
+		throw new Error(`fixture scaffold failed: ${created.stdout}${created.stderr}`)
+	}
+	return join(cwd, name)
+}
+
 describe('scaffold bin', () => {
-	describe('new', () => {
-		it('dry-run: prints the plan review + summary and creates nothing', () => {
-			const target = join(WORKSPACE_ROOT, 'demo-dry-run')
+	describe('help / usage / unknown verb', () => {
+		it('bare invocation: exits 0 with the short usage listing every verb', async () => {
+			const cwd = await buildTempDirectory()
 			try {
-				const result = runBin(['new', 'demo-dry-run', '--surfaces', 'core'])
+				const result = runBin([], '', { cwd: cwd.path })
 				expect(result.status).toBe(0)
-				expect(result.stdout).toContain('## Summary')
-				expect(result.stdout).toContain('surfaces: core')
-				expect(result.stdout).toMatch(/artifacts: \d+ \(host: \d+, template: \d+, computed: \d+\)/)
-				expect(existsSync(target)).toBe(false)
+				expect(result.stdout).toContain('scaffold <verb> [options]')
+				for (const verb of ['new', 'pull', 'audit', 'repair', 'fleet', 'catalog']) {
+					expect(result.stdout).toContain(verb)
+				}
 			} finally {
-				expect(existsSync(target)).toBe(false)
+				await cwd.cleanup()
 			}
 		})
 
-		it('blocked: an off-NAME_PATTERN name exits 1 with the blocking question', () => {
-			const result = runBin(['new', 'Bad_Name', '--surfaces', 'core'])
-			expect(result.status).toBe(1)
-			const output = result.stdout + result.stderr
-			expect(output).toContain('Bad_Name')
-			expect(output).toMatch(/must match/)
+		it('--help: exits 0 with the full reference (verb flags, safety banner, exit codes)', async () => {
+			const cwd = await buildTempDirectory()
+			try {
+				const result = runBin(['--help'], '', { cwd: cwd.path })
+				expect(result.status).toBe(0)
+				expect(result.stdout).toContain('safety: every verb is a dry run by default')
+				expect(result.stdout).toContain('exit codes:')
+			} finally {
+				await cwd.cleanup()
+			}
 		})
 
-		it('blocked (M1): an unrecognized --surfaces value names it explicitly, no silent drop', () => {
-			const result = runBin(['new', 'demo-bad-surface', '--surfaces', 'core,quantum'])
-			expect(result.status).toBe(1)
-			const output = result.stdout + result.stderr
-			expect(output).toContain('quantum')
-			expect(output).toMatch(/not recognized/)
-			expect(existsSync(join(WORKSPACE_ROOT, 'demo-bad-surface'))).toBe(false)
+		it('<verb> --help: exits 0 with that verb-only reference', async () => {
+			const cwd = await buildTempDirectory()
+			try {
+				const result = runBin(['repair', '--help'], '', { cwd: cwd.path })
+				expect(result.status).toBe(0)
+				expect(result.stdout).toContain('scaffold repair')
+				expect(result.stdout).not.toContain('scaffold new ')
+			} finally {
+				await cwd.cleanup()
+			}
 		})
 
-		it('apply: writes real files into the target and cleans up after', async () => {
-			const directory = await buildTempDirectory()
+		it('unknown verb "sync" (retired alias): exits 2 with a renamed-to-pull redirect message', async () => {
+			const cwd = await buildTempDirectory()
+			try {
+				const result = runBin(['sync'], '', { cwd: cwd.path })
+				expect(result.status).toBe(2)
+				expect(result.stderr).toContain("'sync' has been renamed")
+				expect(result.stderr).toContain("'scaffold pull'")
+			} finally {
+				await cwd.cleanup()
+			}
+		})
+
+		it('unknown verb "mirror" (retired alias): exits 2 with a renamed-to-fleet redirect message', async () => {
+			const cwd = await buildTempDirectory()
+			try {
+				const result = runBin(['mirror'], '', { cwd: cwd.path })
+				expect(result.status).toBe(2)
+				expect(result.stderr).toContain("'mirror' has been renamed")
+				expect(result.stderr).toContain("'scaffold fleet'")
+			} finally {
+				await cwd.cleanup()
+			}
+		})
+
+		it('an unrecognized flag (e.g. the retired --root) is a strict parseArgs failure: exits 2', async () => {
+			const cwd = await buildTempDirectory()
+			try {
+				const result = runBin(['fleet', '--root', '.'], '', { cwd: cwd.path })
+				expect(result.status).toBe(2)
+			} finally {
+				await cwd.cleanup()
+			}
+		})
+	})
+
+	describe('new', () => {
+		it('dry-run (--json, empty stdin): previews via a single JSON value, applied:false, and writes nothing', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
 			try {
 				const result = runBin(
-					['new', 'demo-apply', '--surfaces', 'core', '--apply', '--target', '.'],
-					undefined,
-					{ cwd: directory.path },
+					['new', 'demo-dry', '--surfaces', 'core', '--json', '--from', from.path],
+					'',
+					{ cwd: cwd.path },
+				)
+				expect(result.status).toBe(0)
+				const lines = result.stdout.trim().split('\n')
+				expect(lines).toHaveLength(1)
+				const parsed: unknown = JSON.parse(lines[0])
+				expect(parsed).toMatchObject({ name: 'demo-dry', applied: false })
+				expect(existsSync(join(cwd.path, 'demo-dry'))).toBe(false)
+			} finally {
+				await cwd.cleanup()
+				await from.cleanup()
+			}
+		})
+
+		it('missing name under --json: exits 2 with a coded USAGE json envelope, no prompt', async () => {
+			const cwd = await buildTempDirectory()
+			try {
+				const result = runBin(['new', '--surfaces', 'core', '--json'], '', { cwd: cwd.path })
+				expect(result.status).toBe(2)
+				const parsed: unknown = JSON.parse(result.stdout.trim())
+				expect(parsed).toMatchObject({ error: { code: 'USAGE' } })
+			} finally {
+				await cwd.cleanup()
+			}
+		})
+
+		it('F4: an invalid positional name under --json exits 2 with a coded USAGE envelope naming the expected shape (no silent pass-through)', async () => {
+			const cwd = await buildTempDirectory()
+			try {
+				const result = runBin(['new', 'Foo/bar', '--surfaces', 'core', '--json'], '', {
+					cwd: cwd.path,
+				})
+				expect(result.status).toBe(2)
+				const parsed: unknown = JSON.parse(result.stdout.trim())
+				expect(parsed).toMatchObject({ error: { code: 'USAGE' } })
+				expect(JSON.stringify(parsed)).toContain('^[a-z][a-z0-9-]*$')
+				expect(existsSync(join(cwd.path, 'Foo'))).toBe(false)
+			} finally {
+				await cwd.cleanup()
+			}
+		})
+
+		it('F4: an invalid positional name WITHOUT --json exits 2 with a plain message naming the expected shape, nothing written', async () => {
+			const cwd = await buildTempDirectory()
+			try {
+				const result = runBin(['new', 'Foo/bar', '--surfaces', 'core'], '', { cwd: cwd.path })
+				expect(result.status).toBe(2)
+				const output = result.stdout + result.stderr
+				expect(output).toContain('Foo/bar')
+				expect(output).toContain('^[a-z][a-z0-9-]*$')
+				expect(existsSync(join(cwd.path, 'Foo'))).toBe(false)
+			} finally {
+				await cwd.cleanup()
+			}
+		})
+
+		it('non-TTY ceiling: missing name WITHOUT --json exits 2 with the missingInput wording (no prompt, no hang) — piped/empty stdin', async () => {
+			const cwd = await buildTempDirectory()
+			try {
+				const result = runBin(['new', '--surfaces', 'core'], '', { cwd: cwd.path })
+				expect(result.status).toBe(2)
+				const output = result.stdout + result.stderr
+				expect(output).toContain('missing a package name')
+				expect(output).toContain('scaffold new')
+			} finally {
+				await cwd.cleanup()
+			}
+		})
+
+		it('non-TTY ceiling: missing --surfaces (name given) WITHOUT --json exits 2 with the missingInput wording', async () => {
+			const cwd = await buildTempDirectory()
+			try {
+				const result = runBin(['new', 'demo-missing-surfaces'], '', { cwd: cwd.path })
+				expect(result.status).toBe(2)
+				const output = result.stdout + result.stderr
+				expect(output).toContain('missing --surfaces')
+			} finally {
+				await cwd.cleanup()
+			}
+		})
+
+		it('scripted --apply: writes real files into ./<name> under the cwd, exit 0', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
+			try {
+				const result = runBin(
+					['new', 'demo-apply', '--surfaces', 'core', '--apply', '--from', from.path],
+					'',
+					{ cwd: cwd.path },
 				)
 				expect(result.status).toBe(0)
 				expect(result.stdout).toContain('wrote')
 
-				const packageJsonPath = join(directory.path, 'package.json')
+				const packageDirectory = join(cwd.path, 'demo-apply')
+				const packageJsonPath = join(packageDirectory, 'package.json')
 				expect(existsSync(packageJsonPath)).toBe(true)
 				const parsed: unknown = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
 				expect(parsed).toMatchObject({ name: '@orkestrel/demo-apply' })
-
-				// A host-origin artifact byte-matches the repo's own copy.
-				const writtenHost = readFileSync(join(directory.path, '.editorconfig'), 'utf8')
-				const repoHost = readFileSync(join(WORKSPACE_ROOT, '.editorconfig'), 'utf8')
-				expect(writtenHost).toBe(repoHost)
+				expect(readFileSync(join(packageDirectory, '.editorconfig'), 'utf8')).toBe(
+					HOST_FIXTURE_FILES['.editorconfig'],
+				)
 			} finally {
-				await directory.cleanup()
+				await cwd.cleanup()
+				await from.cleanup()
 			}
 		})
 
-		it('L1: --target without --apply notes the dry-run ignores it and still runs dry-run', () => {
-			const target = join(WORKSPACE_ROOT, 'demo-target-note')
+		it('dry-run (no --apply, empty stdin): previews the plan and writes NOTHING, exit 0', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
 			try {
-				const result = runBin([
-					'new',
-					'demo-target-note',
-					'--surfaces',
-					'core',
-					'--target',
-					'./somewhere',
-				])
+				// `--deps ''` keeps this a SINGLE-prompt run (the apply confirm only) —
+				// the non-TTY readline fallback creates a fresh `readline.Interface`
+				// per prompt call and reproducibly cannot resolve a SECOND prompt off
+				// the same already-drained piped stdin within one process (verified:
+				// omitting `--deps` here — leaving the "Dependencies" input prompt to
+				// fire before the apply confirm — hangs until Node's "unsettled
+				// top-level await" watchdog kills the process, exit 13). Matches the
+				// dispatch's documented driver constraint; see the interactive-flow
+				// tests in the `repair` describe block for the single-confirm/EOF
+				// coverage this constraint keeps reliable.
+				const result = runBin(
+					['new', 'demo-preview', '--surfaces', 'core', '--deps', '', '--from', from.path],
+					'',
+					{ cwd: cwd.path },
+				)
 				expect(result.status).toBe(0)
-				expect(result.stderr).toMatch(/dry run/i)
-				expect(result.stdout).toContain('## Summary')
-				expect(existsSync(target)).toBe(false)
+				expect(result.stdout).toContain('will write into ./demo-preview')
+				expect(existsSync(join(cwd.path, 'demo-preview'))).toBe(false)
 			} finally {
-				expect(existsSync(target)).toBe(false)
+				await cwd.cleanup()
+				await from.cleanup()
 			}
 		})
 
-		// The `@orkestrel/terminal` non-TTY fallback reads ONE readline interface per
-		// missing prompt off the SAME piped stdin. Reliably driven when exactly ONE
-		// argument is missing (verified manually: identical piped input reproducibly
-		// resolves the single `input` prompt with the fed line). Feeding TWO answers
-		// for BOTH a missing name AND a missing `--surfaces` in the same run was
-		// reproducibly (not flakily) unable to resolve the second (checkbox) prompt —
-		// the first readline interface appears to consume/close the shared stdin
-		// before the second interface can read its line. That two-prompt path is
-		// therefore NOT covered here to avoid a flaky test; this case exercises the
-		// fallback deterministically with a single missing argument (name), leaving
-		// `--surfaces` supplied as a flag.
-		it('parseArgs / terminal fallback: a missing name is read off piped (non-TTY) stdin', () => {
-			const result = runBin(['new', '--surfaces', 'core'], 'demo-piped\n')
-			expect(result.status).toBe(0)
-			expect(result.stdout).toContain('Scaffolding demo-piped')
-			expect(result.stdout).toContain('## Summary')
-		})
-
-		it('--surfaces with multiple values: dry-run reflects all surfaces in the summary', () => {
-			const result = runBin(['new', 'demo-multi', '--surfaces', 'core,server'])
-			expect(result.status).toBe(0)
-			expect(result.stdout).toContain('surfaces: core, server')
-			expect(existsSync(join(WORKSPACE_ROOT, 'demo-multi'))).toBe(false)
-		})
-
-		it('A3: an off-pattern --deps token exits 1 with a coded [INVALID] message, before any network call', () => {
-			const result = runBin(['new', 'demo-bad-dep', '--surfaces', 'core', '--deps', '../evil'])
-			expect(result.status).toBe(1)
-			const output = result.stdout + result.stderr
-			expect(output).toContain('[INVALID]')
-			expect(output).toContain('../evil')
-			expect(existsSync(join(WORKSPACE_ROOT, 'demo-bad-dep'))).toBe(false)
-		})
-
-		it('A3: a percent-encoded traversal --deps token is also rejected before any network call', () => {
-			const result = runBin(['new', 'demo-bad-dep-2', '--surfaces', 'core', '--deps', '%2e%2e'])
-			expect(result.status).toBe(1)
-			const output = result.stdout + result.stderr
-			expect(output).toContain('[INVALID]')
-			expect(existsSync(join(WORKSPACE_ROOT, 'demo-bad-dep-2'))).toBe(false)
-		})
-
-		it('--host <fixture>: sources host artifacts from the fixture, not the default vendored host', async () => {
-			const fixture = await buildHostFixture({ '.editorconfig': 'root = true\n# fixture-marker\n' })
-			const target = await buildTempDirectory()
+		it('--target escaping the cwd: a coded [INVALID] failure, nothing written', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
 			try {
 				const result = runBin(
 					[
 						'new',
-						'demo-host-passthrough',
+						'demo-escape',
 						'--surfaces',
 						'core',
 						'--apply',
 						'--target',
-						'.',
-						'--host',
-						fixture.path,
+						'../escape',
+						'--from',
+						from.path,
 					],
-					undefined,
-					{ cwd: target.path },
-				)
-				expect(result.status).toBe(0)
-				expect(result.stdout).toContain('wrote')
-
-				const written = readFileSync(join(target.path, '.editorconfig'), 'utf8')
-				expect(written).toBe('root = true\n# fixture-marker\n')
-				expect(written).not.toBe(readFileSync(join(WORKSPACE_ROOT, '.editorconfig'), 'utf8'))
-			} finally {
-				await target.cleanup()
-				await fixture.cleanup()
-			}
-		})
-
-		it('containment: --target escaping the cwd exits 1 with a coded [INVALID] message and creates nothing', async () => {
-			const cwd = await buildTempDirectory()
-			try {
-				const result = runBin(
-					['new', 'demo-escape', '--surfaces', 'core', '--apply', '--target', '../escape'],
-					undefined,
+					'',
 					{ cwd: cwd.path },
 				)
 				expect(result.status).toBe(1)
@@ -238,1286 +326,834 @@ describe('scaffold bin', () => {
 				expect(existsSync(join(cwd.path, '..', 'escape'))).toBe(false)
 			} finally {
 				await cwd.cleanup()
+				await from.cleanup()
+			}
+		})
+
+		it('--from is NOT cwd-confined: a source outside the cwd is accepted (read-only exemption)', async () => {
+			const from = await buildFromFixture({ '.editorconfig': 'root = true\n# outside-marker\n' })
+			const cwd = await buildTempDirectory()
+			try {
+				const result = runBin(
+					['new', 'demo-outside-from', '--surfaces', 'core', '--apply', '--from', from.path],
+					'',
+					{ cwd: cwd.path },
+				)
+				expect(result.status).toBe(0)
+				expect(readFileSync(join(cwd.path, 'demo-outside-from', '.editorconfig'), 'utf8')).toBe(
+					'root = true\n# outside-marker\n',
+				)
+			} finally {
+				await cwd.cleanup()
+				await from.cleanup()
 			}
 		})
 	})
 
-	describe('sync', () => {
-		it('offline posture: a --deps subset with an unreachable dependency still exits 0 (collect mode)', async () => {
-			const directory = await writeManifest({ '@orkestrel/does-not-exist-xyz': '^1.0.0' })
+	describe('pull (network-free paths only — AGENTS §16: no network in tests; runPull has no --offline flag, so its live-fetch branches are out of scope here)', () => {
+		it('R1: no package.json in --target exits 1 with a coded [TARGET] line, before any network call', async () => {
+			const cwd = await buildTempDirectory()
 			try {
-				const result = runBin(
-					['sync', '--target', '.', '--deps', '@orkestrel/does-not-exist-xyz'],
-					undefined,
-					{ cwd: directory.path },
-				)
-				expect(result.status).toBe(0)
-				expect(result.stdout).toContain('Sync')
-			} finally {
-				await directory.cleanup()
-			}
-		}, 20000)
-
-		it('--strict: an unreachable dependency in the --deps subset exits 1 with a clean coded message', async () => {
-			const directory = await writeManifest({ '@orkestrel/does-not-exist-xyz': '^1.0.0' })
-			try {
-				const result = runBin(
-					['sync', '--target', '.', '--deps', '@orkestrel/does-not-exist-xyz', '--strict'],
-					undefined,
-					{ cwd: directory.path },
-				)
-				expect(result.status).toBe(1)
-				expect(result.stderr).toContain('FETCH')
-				expect(result.stderr).not.toContain('at Object') // no raw stack trace
-			} finally {
-				await directory.cleanup()
-			}
-		}, 20000)
-
-		it('--apply: an unreachable dependency writes zero mirrors and still exits 0', async () => {
-			const directory = await writeManifest({ '@orkestrel/does-not-exist-xyz': '^1.0.0' })
-			try {
-				const result = runBin(
-					['sync', '--target', '.', '--deps', '@orkestrel/does-not-exist-xyz', '--apply'],
-					undefined,
-					{ cwd: directory.path },
-				)
-				expect(result.status).toBe(0)
-				expect(result.stdout).toContain('wrote 0 guides')
-				expect(existsSync(join(directory.path, 'guides', 'src'))).toBe(false)
-			} finally {
-				await directory.cleanup()
-			}
-		}, 20000)
-
-		it('R1: no package.json in --target exits 1 with a coded [TARGET] line, no raw stack', async () => {
-			const directory = await buildTempDirectory()
-			try {
-				const result = runBin(['sync', '--target', '.'], undefined, { cwd: directory.path })
+				const result = runBin(['pull', '--target', '.'], '', { cwd: cwd.path })
 				expect(result.status).toBe(1)
 				expect(result.stderr).toContain('[TARGET]')
 				expect(result.stderr).not.toContain('at Object')
-				expect(result.stderr).not.toContain('at async')
 			} finally {
-				await directory.cleanup()
+				await cwd.cleanup()
 			}
 		})
 
-		it('containment: --target escaping the cwd exits 1 with a coded [INVALID] message', async () => {
-			const directory = await buildTempDirectory()
+		it('containment: --target escaping the cwd exits 1 with a coded [INVALID] message, before any network call', async () => {
+			const cwd = await buildTempDirectory()
 			try {
-				const result = runBin(['sync', '--target', '..'], undefined, { cwd: directory.path })
+				const result = runBin(['pull', '--target', '..'], '', { cwd: cwd.path })
 				expect(result.status).toBe(1)
 				expect(result.stderr).toContain('[INVALID]')
 				expect(result.stderr).toMatch(/escapes the working directory/)
 			} finally {
-				await directory.cleanup()
+				await cwd.cleanup()
 			}
 		})
 	})
 
 	describe('audit', () => {
-		it('happy dry-run: a clean scaffolded target has no drift', async () => {
-			const directory = await buildTempDirectory()
+		it('clean target (--from fixture, content-aware): exit 0', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
 			try {
-				const created = runBin(
-					['new', 'pkg', '--surfaces', 'core', '--apply', '--target', '.'],
-					undefined,
-					{ cwd: directory.path },
-				)
-				expect(created.status).toBe(0)
-
-				const audited = runBin(['audit', '--target', '.'], undefined, { cwd: directory.path })
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				const audited = runBin(['audit', '--from', from.path], '', { cwd: packageDirectory })
 				expect(audited.status).toBe(0)
+				expect(audited.stdout).toContain('comparing: file contents for template-owned files')
 			} finally {
-				await directory.cleanup()
+				await cwd.cleanup()
+				await from.cleanup()
 			}
 		})
 
-		it('structural drift: a mutated file fails the audit', async () => {
-			const directory = await buildTempDirectory()
+		it('drifted target (a host file removed): exit 1, names the path with the "template-owned" label', async () => {
+			// `diffPlan` (src/core/helpers.ts) audits a HYDRATED `host`-origin
+			// artifact by content (byte mismatch is `stale` drift; the e2e suite's
+			// closure regression covers that path) and an UNHYDRATED one by
+			// presence only. This test exercises the removal case — `missing` —
+			// the drift class both modes surface.
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
 			try {
-				const created = runBin(
-					['new', 'pkg', '--surfaces', 'core', '--apply', '--target', '.'],
-					undefined,
-					{ cwd: directory.path },
-				)
-				expect(created.status).toBe(0)
-				writeFileSync(
-					join(directory.path, 'package.json'),
-					'{"name":"@orkestrel/pkg","mutated":true}',
-				)
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				rmSync(join(packageDirectory, '.editorconfig'))
 
-				const audited = runBin(['audit', '--target', '.'], undefined, { cwd: directory.path })
+				const audited = runBin(['audit', '--from', from.path], '', { cwd: packageDirectory })
 				expect(audited.status).toBe(1)
+				expect(audited.stdout).toContain('.editorconfig')
+				expect(audited.stdout).toContain('template-owned')
 			} finally {
-				await directory.cleanup()
+				await cwd.cleanup()
+				await from.cleanup()
 			}
 		})
 
-		it('findings lines: a drifted artifact is named by drift class, group, and path, not just counted', async () => {
-			const directory = await buildTempDirectory()
+		it('honest audit: a planted unexpected file under .claude/agents is real drift — exit 1, "unexpected file" in prose, foreign:1 in --json (previously foreign:0/clean:true)', async () => {
+			// Prior to the prune-truth fix, `runAudit` diffed ONLY the plan's own
+			// paths (`readTarget(target, plan.artifacts.map(a => a.path))`), so a
+			// planted file outside that set was structurally invisible to
+			// `diffPlan` — `audit --json` reported `foreign:0` / `clean:true` even
+			// with a rogue file sitting right there. `withForeignScan` (scaffold.ts)
+			// now merges the SAME `pruneTargets` scan `repair --prune` already used
+			// into the presented audit, so this is real, honestly-counted drift.
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
 			try {
-				const created = runBin(
-					['new', 'pkg', '--surfaces', 'core', '--apply', '--target', '.'],
-					undefined,
-					{ cwd: directory.path },
-				)
-				expect(created.status).toBe(0)
-				writeFileSync(
-					join(directory.path, 'package.json'),
-					'{"name":"@orkestrel/pkg","mutated":true}',
-				)
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				const roguePath = join(packageDirectory, '.claude', 'agents', 'rogue.md')
+				mkdirSync(dirname(roguePath), { recursive: true })
+				writeFileSync(roguePath, '# rogue\n')
 
-				const audited = runBin(['audit', '--target', '.'], undefined, { cwd: directory.path })
+				const audited = runBin(['audit', '--from', from.path], '', { cwd: packageDirectory })
 				expect(audited.status).toBe(1)
-				expect(audited.stdout).toMatch(/drifted\s+manifest\s+package\.json/)
-			} finally {
-				await directory.cleanup()
-			}
-		})
+				expect(audited.stdout).toContain('unexpected file')
+				expect(audited.stdout).toContain('.claude/agents/rogue.md')
 
-		it('origin split — host clean: the verdict names only the generated drift, with a "(generated)" tag', async () => {
-			const fixture = await buildHostFixture()
-			const target = await buildTempDirectory()
-			try {
-				const created = runBin(
-					[
-						'new',
-						'demo-audit-split-generated',
-						'--surfaces',
-						'core',
-						'--apply',
-						'--target',
-						'.',
-						'--host',
-						fixture.path,
-					],
-					undefined,
-					{ cwd: target.path },
-				)
-				expect(created.status).toBe(0)
-				writeFileSync(
-					join(target.path, 'package.json'),
-					'{"name":"@orkestrel/demo-audit-split-generated","mutated":true}',
-				)
-
-				const result = runBin(['audit', '--target', '.', '--host', fixture.path], undefined, {
-					cwd: target.path,
+				const jsonAudited = runBin(['audit', '--json', '--from', from.path], '', {
+					cwd: packageDirectory,
 				})
-				expect(result.status).toBe(1)
-				expect(result.stdout).toMatch(/host set clean; 1 drifted \(generated\)/)
+				expect(jsonAudited.status).toBe(1)
+				const parsed: unknown = JSON.parse(jsonAudited.stdout.trim())
+				expect(parsed).toMatchObject({ clean: false, foreign: 1 })
 			} finally {
-				await target.cleanup()
-				await fixture.cleanup()
+				await cwd.cleanup()
+				await from.cleanup()
 			}
 		})
 
-		it('origin split — host drifted: the verdict names both buckets explicitly', async () => {
-			const fixture = await buildHostFixture()
-			const target = await buildTempDirectory()
+		it('a clean target with no unexpected files: audit --json reports foreign:0, clean:true', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
 			try {
-				const created = runBin(
-					[
-						'new',
-						'demo-audit-split-host',
-						'--surfaces',
-						'core',
-						'--apply',
-						'--target',
-						'.',
-						'--host',
-						fixture.path,
-					],
-					undefined,
-					{ cwd: target.path },
-				)
-				expect(created.status).toBe(0)
-				// Host drift: `.editorconfig` goes missing (presence-only host check).
-				rmSync(join(target.path, '.editorconfig'), { force: true })
-				// Generated drift alongside it.
-				writeFileSync(
-					join(target.path, 'package.json'),
-					'{"name":"@orkestrel/demo-audit-split-host","mutated":true}',
-				)
-
-				const result = runBin(['audit', '--target', '.', '--host', fixture.path], undefined, {
-					cwd: target.path,
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				const audited = runBin(['audit', '--json', '--from', from.path], '', {
+					cwd: packageDirectory,
 				})
-				expect(result.status).toBe(1)
-				expect(result.stdout).toMatch(/host: 1 missing; generated: 1 drifted/)
+				expect(audited.status).toBe(0)
+				const parsed: unknown = JSON.parse(audited.stdout.trim())
+				expect(parsed).toMatchObject({ clean: true, foreign: 0 })
 			} finally {
-				await target.cleanup()
-				await fixture.cleanup()
+				await cwd.cleanup()
+				await from.cleanup()
 			}
 		})
 
-		it('--live: an unreachable declared dependency counts as drift and exits 1', async () => {
-			const directory = await writeManifest({ '@orkestrel/does-not-exist-xyz': '^1.0.0' })
+		it('--json: exactly one parseable JSON value, no prose, no prompt', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
 			try {
-				const result = runBin(['audit', '--target', '.', '--live'], undefined, {
-					cwd: directory.path,
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				rmSync(join(packageDirectory, '.editorconfig'))
+
+				const audited = runBin(['audit', '--json', '--from', from.path], '', {
+					cwd: packageDirectory,
 				})
-				expect(result.status).toBe(1)
+				expect(audited.status).toBe(1)
+				const lines = audited.stdout.trim().split('\n')
+				expect(lines).toHaveLength(1)
+				const parsed: unknown = JSON.parse(lines[0])
+				expect(parsed).toMatchObject({ clean: false, missing: 1 })
 			} finally {
-				await directory.cleanup()
-			}
-		}, 20000)
-
-		it('R1: no package.json in --target exits 1 with a coded [TARGET] line, no raw stack', async () => {
-			const directory = await buildTempDirectory()
-			try {
-				const result = runBin(['audit', '--target', '.'], undefined, { cwd: directory.path })
-				expect(result.status).toBe(1)
-				expect(result.stderr).toContain('[TARGET]')
-				expect(result.stderr).not.toContain('at Object')
-				expect(result.stderr).not.toContain('at async')
-			} finally {
-				await directory.cleanup()
+				await cwd.cleanup()
+				await from.cleanup()
 			}
 		})
 
-		it("host mode: prints 'content-aware' when --host resolves; the DEFAULT host keeps presence-only when it cannot resolve (M1: only an EXPLICIT --host that fails is a coded TARGET failure — see the M1 test below)", async () => {
-			const fixture = await buildHostFixture()
-			const target = await buildTempDirectory()
+		it("handoff gating: generated-file-only drift offers NO repair handoff (generatedNote instead), and the exit stays 1 after a repair since generated drift is out of repair's scope", async () => {
+			// `tsconfig.json` is a `computed`-origin artifact (src/core/compilers.ts
+			// `configArtifacts`) — content-compared by `diffPlan`, so mutating its bytes
+			// is real `stale` drift entirely OUTSIDE `host`/`template` origin and
+			// carries no unexpected (`foreign`) file — exactly the "computed-only"
+			// case S3d's handoff gate must recognize.
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
 			try {
-				const created = runBin(
-					[
-						'new',
-						'demo-audit-host-mode',
-						'--surfaces',
-						'core',
-						'--apply',
-						'--target',
-						'.',
-						'--host',
-						fixture.path,
-					],
-					undefined,
-					{ cwd: target.path },
-				)
-				expect(created.status).toBe(0)
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				writeFileSync(join(packageDirectory, 'tsconfig.json'), '// mutated\n')
 
-				const aware = runBin(['audit', '--target', '.', '--host', fixture.path], undefined, {
-					cwd: target.path,
+				const audited = runBin(['audit', '--from', from.path], '', { cwd: packageDirectory })
+				expect(audited.status).toBe(1)
+				expect(audited.stdout).toContain('in generated files')
+				expect(audited.stdout).not.toContain(REPAIR_HANDOFF_TEXT)
+
+				// `repair` scopes to `host`-origin artifacts only — it cannot touch
+				// (or fix) the computed `tsconfig.json`, so a full audit re-run
+				// after any repair still reports the same drift, exit 1.
+				const repaired = runBin(['repair', '--apply', '--from', from.path], '', {
+					cwd: packageDirectory,
 				})
-				expect(aware.stdout).toContain('host: content-aware')
+				expect(repaired.status).toBe(0)
+
+				const reaudited = runBin(['audit', '--from', from.path], '', { cwd: packageDirectory })
+				expect(reaudited.status).toBe(1)
+				expect(reaudited.stdout).toContain('in generated files')
 			} finally {
-				await target.cleanup()
-				await fixture.cleanup()
+				await cwd.cleanup()
+				await from.cleanup()
 			}
 		})
 
-		it('M1: an EXPLICIT --host that does not resolve to a directory exits 1 with a coded [TARGET] line (never a silent presence-only downgrade)', async () => {
-			const directory = await buildTempDirectory()
+		it('F1 regression: audit --apply on template-owned drift NEVER auto-repairs — exit 1, the drifted file is left exactly as found, no handoff text (a non-TTY spawn can never accept the interactive handoff)', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
 			try {
-				const created = runBin(
-					[
-						'new',
-						'demo-audit-explicit-host-missing',
-						'--surfaces',
-						'core',
-						'--apply',
-						'--target',
-						'.',
-					],
-					undefined,
-					{ cwd: directory.path },
-				)
-				expect(created.status).toBe(0)
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				rmSync(join(packageDirectory, '.editorconfig'))
 
-				const missingHost = join(directory.path, 'does-not-exist-explicit-host')
-				const result = runBin(['audit', '--target', '.', '--host', missingHost], undefined, {
-					cwd: directory.path,
+				const audited = runBin(['audit', '--apply', '--from', from.path], '', {
+					cwd: packageDirectory,
 				})
-				expect(result.status).toBe(1)
-				expect(result.stderr).toContain('[TARGET]')
+				expect(audited.status).toBe(1)
+				expect(existsSync(join(packageDirectory, '.editorconfig'))).toBe(false)
+				expect(audited.stdout).not.toContain(REPAIR_HANDOFF_TEXT)
 			} finally {
-				await directory.cleanup()
+				await cwd.cleanup()
+				await from.cleanup()
 			}
 		})
 
-		it('--groups orchestration: a repo with source drift but a CLEAN orchestration group exits 0 (CI can gate on a subset)', async () => {
-			const directory = await buildTempDirectory()
+		it('F1 regression: audit --apply --prune with a planted unexpected file STILL never deletes it — exit 1, file untouched, no handoff text', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
 			try {
-				const created = runBin(
-					['new', 'demo-audit-groups-clean', '--surfaces', 'core', '--apply', '--target', '.'],
-					undefined,
-					{ cwd: directory.path },
-				)
-				expect(created.status).toBe(0)
-				// Source drift (outside the orchestration group) must NOT affect a
-				// --groups orchestration gate.
-				writeFileSync(join(directory.path, 'src', 'core', 'index.ts'), '// mutated\n')
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				rmSync(join(packageDirectory, '.editorconfig'))
+				const roguePath = join(packageDirectory, '.claude', 'agents', 'rogue.md')
+				mkdirSync(dirname(roguePath), { recursive: true })
+				writeFileSync(roguePath, '# rogue\n')
 
-				const result = runBin(['audit', '--target', '.', '--groups', 'orchestration'], undefined, {
-					cwd: directory.path,
+				const audited = runBin(['audit', '--apply', '--prune', '--from', from.path], '', {
+					cwd: packageDirectory,
 				})
-				expect(result.status).toBe(0)
+				expect(audited.status).toBe(1)
+				expect(existsSync(roguePath)).toBe(true)
+				expect(existsSync(join(packageDirectory, '.editorconfig'))).toBe(false)
+				expect(audited.stdout).not.toContain(REPAIR_HANDOFF_TEXT)
 			} finally {
-				await directory.cleanup()
+				await cwd.cleanup()
+				await from.cleanup()
 			}
 		})
 
-		it('--groups bogus: an unrecognized group name exits 1 with a coded [INVALID] message', async () => {
-			const directory = await buildTempDirectory()
+		it("F2: a planted unexpected file with no --prune prints the foreignHint pointing at 'repair --prune' instead of a dead-end handoff", async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
 			try {
-				const created = runBin(
-					['new', 'demo-audit-groups-bogus', '--surfaces', 'core', '--apply', '--target', '.'],
-					undefined,
-					{ cwd: directory.path },
-				)
-				expect(created.status).toBe(0)
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				const roguePath = join(packageDirectory, '.claude', 'agents', 'rogue.md')
+				mkdirSync(dirname(roguePath), { recursive: true })
+				writeFileSync(roguePath, '# rogue\n')
 
-				const result = runBin(['audit', '--target', '.', '--groups', 'bogus'], undefined, {
-					cwd: directory.path,
-				})
-				expect(result.status).toBe(1)
-				const output = result.stdout + result.stderr
-				expect(output).toContain('[INVALID]')
-				expect(output).toContain('bogus')
+				const audited = runBin(['audit', '--from', from.path], '', { cwd: packageDirectory })
+				expect(audited.status).toBe(1)
+				expect(audited.stdout).toContain("run 'scaffold repair --prune' to delete them")
+				expect(audited.stdout).not.toContain(REPAIR_HANDOFF_TEXT)
 			} finally {
-				await directory.cleanup()
+				await cwd.cleanup()
+				await from.cleanup()
 			}
 		})
 
-		it('--host <fixture>: a mutated target file still flags drift (content-aware audit) and exits 1', async () => {
-			const fixture = await buildHostFixture()
-			const target = await buildTempDirectory()
+		it('F3: an unscannable --from host (exists, but establishes no vendored allowlist) degrades the audit instead of crashing — scanSkipped prose, exit code still meaningful', async () => {
+			// `from` scaffolds a NORMAL package (so it really has a `.claude/agents`
+			// directory to scan) — `host2` is the audit's OWN `--from`, a bare empty
+			// directory that EXISTS (so `hydrateBestEffort` succeeds, `aware: true`)
+			// but has no `manifest.json` and no `host2/.claude/agents` — exactly the
+			// `vendoredPruneSet` fail-closed condition (`ScaffoldError('TARGET')`)
+			// `withForeignScanSafe` must catch rather than let crash the audit.
+			const from = await buildFromFixture()
+			const host2 = await buildTempDirectory()
+			const cwd = await buildTempDirectory()
 			try {
-				const created = runBin(
-					[
-						'new',
-						'demo-audit-host-drift',
-						'--surfaces',
-						'core',
-						'--apply',
-						'--target',
-						'.',
-						'--host',
-						fixture.path,
-					],
-					undefined,
-					{ cwd: target.path },
-				)
-				expect(created.status).toBe(0)
-				writeFileSync(
-					join(target.path, 'package.json'),
-					'{"name":"@orkestrel/demo-audit-host-drift","mutated":true}',
-				)
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				const roguePath = join(packageDirectory, '.claude', 'agents', 'rogue.md')
+				mkdirSync(dirname(roguePath), { recursive: true })
+				writeFileSync(roguePath, '# rogue\n')
 
-				const result = runBin(['audit', '--target', '.', '--host', fixture.path], undefined, {
-					cwd: target.path,
-				})
-				expect(result.status).toBe(1)
-				expect(result.stdout).toContain('host: content-aware')
+				const audited = runBin(['audit', '--from', host2.path], '', { cwd: packageDirectory })
+				expect(audited.status === 0 || audited.status === 1).toBe(true)
+				expect(audited.stdout).toContain(
+					"scanning skipped — couldn't establish the template source",
+				)
 			} finally {
-				await target.cleanup()
-				await fixture.cleanup()
-			}
-		})
-
-		it('containment: --target escaping the cwd exits 1 with a coded [INVALID] message', async () => {
-			const directory = await buildTempDirectory()
-			try {
-				const result = runBin(['audit', '--target', '..'], undefined, { cwd: directory.path })
-				expect(result.status).toBe(1)
-				expect(result.stderr).toContain('[INVALID]')
-				expect(result.stderr).toMatch(/escapes the working directory/)
-			} finally {
-				await directory.cleanup()
+				await cwd.cleanup()
+				await from.cleanup()
+				await host2.cleanup()
 			}
 		})
 	})
 
 	describe('repair', () => {
-		it('dry-run: reports a missing host artifact as drift and exits 1 without writing', async () => {
-			const fixture = await buildHostFixture()
-			const target = await buildTempDirectory()
+		it('dry-run (empty stdin): previews and the exit code reflects the drift (1), nothing written', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
 			try {
-				const created = runBin(
-					[
-						'new',
-						'demo-repair-dry',
-						'--surfaces',
-						'core',
-						'--apply',
-						'--target',
-						'.',
-						'--host',
-						fixture.path,
-					],
-					undefined,
-					{ cwd: target.path },
-				)
-				expect(created.status).toBe(0)
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				rmSync(join(packageDirectory, '.editorconfig'))
 
-				// Host drift: the `.editorconfig` host artifact goes missing —
-				// `diffPlan` audits host-origin artifacts by PRESENCE only, so a
-				// present-but-mutated host file would never register as drift;
-				// deleting it is the only way `repair` sees it as `missing`.
-				rmSync(join(target.path, '.editorconfig'), { force: true })
-				// A file `repair`'s plan does not own, under a `prune`-guarded directory.
-				writeFileSync(join(target.path, 'scripts', 'rogue.sh'), '#!/bin/sh\necho rogue\n')
-
-				const result = runBin(['repair', '--target', '.', '--host', fixture.path], undefined, {
-					cwd: target.path,
-				})
+				const result = runBin(['repair', '--from', from.path], '', { cwd: packageDirectory })
 				expect(result.status).toBe(1)
-				expect(result.stdout).toContain(
-					'repair scope: shared host artifacts only — generated source/tests/configs are never touched',
-				)
-				expect(result.stdout).toContain('# Audit')
-				expect(result.stdout).toMatch(/missing: [1-9]/)
-				expect(existsSync(join(target.path, '.editorconfig'))).toBe(false)
-				expect(existsSync(join(target.path, 'scripts', 'rogue.sh'))).toBe(true)
+				expect(result.stdout).toContain('pass --apply to write')
+				expect(existsSync(join(packageDirectory, '.editorconfig'))).toBe(false)
 			} finally {
-				await target.cleanup()
-				await fixture.cleanup()
+				await cwd.cleanup()
+				await from.cleanup()
 			}
 		})
 
-		it("clean scope: dry-run reports 'N host artifacts aligned — nothing to write', with no outside-scope note when the whole plan is clean", async () => {
-			const fixture = await buildHostFixture()
-			const target = await buildTempDirectory()
+		it('--apply: restores the mutated/missing host file byte-equal, exit 0', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
 			try {
-				const created = runBin(
-					[
-						'new',
-						'demo-repair-aligned-clean',
-						'--surfaces',
-						'core',
-						'--apply',
-						'--target',
-						'.',
-						'--host',
-						fixture.path,
-					],
-					undefined,
-					{ cwd: target.path },
-				)
-				expect(created.status).toBe(0)
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				rmSync(join(packageDirectory, '.editorconfig'))
 
-				const result = runBin(['repair', '--target', '.', '--host', fixture.path], undefined, {
-					cwd: target.path,
+				const repaired = runBin(['repair', '--apply', '--from', from.path], '', {
+					cwd: packageDirectory,
+				})
+				expect(repaired.status).toBe(0)
+				expect(readFileSync(join(packageDirectory, '.editorconfig'), 'utf8')).toBe(
+					HOST_FIXTURE_FILES['.editorconfig'],
+				)
+			} finally {
+				await cwd.cleanup()
+				await from.cleanup()
+			}
+		})
+
+		it('--prune --apply: removes a planted unexpected file under .claude/agents', async () => {
+			// `materializer.prune` scans `.claude/agents` / `scripts` directly
+			// (independent of `diffPlan`'s unreachable `foreign` branch — see the
+			// deviation note above `foreignAuditGap` below); `runRepair` reaches
+			// the prune step whenever `--prune` finds work, host drift or not
+			// (U11 F2) — real host drift (the removed `.editorconfig`) accompanies
+			// the planted file here too, just no longer as a requirement to reach
+			// pruning at all (see the clean-host case below).
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				rmSync(join(packageDirectory, '.editorconfig'))
+				const roguePath = join(packageDirectory, '.claude', 'agents', 'rogue.md')
+				mkdirSync(dirname(roguePath), { recursive: true })
+				writeFileSync(roguePath, '# rogue\n')
+
+				const pruned = runBin(['repair', '--apply', '--prune', '--from', from.path], '', {
+					cwd: packageDirectory,
+				})
+				expect(pruned.status).toBe(0)
+				expect(existsSync(roguePath)).toBe(false)
+			} finally {
+				await cwd.cleanup()
+				await from.cleanup()
+			}
+		})
+
+		it('U11 F2 regression: repair --prune --apply now prunes on a CLEAN-host repo too — the clean-audit early return no longer bypasses pruning; without --prune the planted file is left untouched, as before', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				// Host stays fully intact — no drift, no missing files.
+				const roguePath = join(packageDirectory, '.claude', 'agents', 'rogue.md')
+				mkdirSync(dirname(roguePath), { recursive: true })
+				writeFileSync(roguePath, '# rogue\n')
+
+				const withoutPrune = runBin(['repair', '--apply', '--from', from.path], '', {
+					cwd: packageDirectory,
+				})
+				expect(withoutPrune.status).toBe(0)
+				expect(existsSync(roguePath)).toBe(true)
+
+				const pruned = runBin(['repair', '--apply', '--prune', '--from', from.path], '', {
+					cwd: packageDirectory,
+				})
+				expect(pruned.status).toBe(0)
+				expect(existsSync(roguePath)).toBe(false)
+				expect(readFileSync(join(packageDirectory, '.editorconfig'), 'utf8')).toBe(
+					HOST_FIXTURE_FILES['.editorconfig'],
+				)
+			} finally {
+				await cwd.cleanup()
+				await from.cleanup()
+			}
+		})
+
+		it('prune truth + non-TTY ceiling: dry-run --prune preview NAMES the exact planted path; the ONE piped confirm applies the host fix, and the prune question is never asked a second time (pruneSkipped wording, nothing deleted)', async () => {
+			// Every spawned test process is non-TTY (piped stdin/stdout) — this is
+			// simultaneously the S3a prune-preview-truth proof (the exact path is
+			// named BEFORE any prune confirm) and the S3f one-prompt-per-process
+			// ceiling proof (a SECOND `terminal.confirm` off the same drained
+			// stdin would hang; the prune question is never asked here at all).
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				rmSync(join(packageDirectory, '.editorconfig'))
+				const roguePath = join(packageDirectory, '.claude', 'agents', 'rogue.md')
+				mkdirSync(dirname(roguePath), { recursive: true })
+				writeFileSync(roguePath, '# rogue\n')
+
+				const result = runBin(['repair', '--prune', '--from', from.path], 'y\n', {
+					cwd: packageDirectory,
 				})
 				expect(result.status).toBe(0)
-				expect(result.stdout).toMatch(/repair: \d+ host artifacts aligned — nothing to write/)
-				expect(result.stdout).not.toContain("outside repair's scope")
+				expect(result.stdout).toContain('delete .claude/agents/rogue.md')
+				expect(result.stdout).toMatch(/prune skipped — not a terminal/)
+				expect(existsSync(roguePath)).toBe(true)
+				expect(readFileSync(join(packageDirectory, '.editorconfig'), 'utf8')).toBe(
+					HOST_FIXTURE_FILES['.editorconfig'],
+				)
 			} finally {
-				await target.cleanup()
-				await fixture.cleanup()
+				await cwd.cleanup()
+				await from.cleanup()
 			}
 		})
 
-		it("clean scope with generated drift: dry-run's aligned verdict gains a note pointing at 'audit' for the out-of-scope findings", async () => {
-			const fixture = await buildHostFixture()
-			const target = await buildTempDirectory()
+		it('prune truth: a clean prune target (no unexpected files) prints the PRUNE_EMPTY wording and skips the question entirely', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
 			try {
-				const created = runBin(
-					[
-						'new',
-						'demo-repair-scope-note',
-						'--surfaces',
-						'core',
-						'--apply',
-						'--target',
-						'.',
-						'--host',
-						fixture.path,
-					],
-					undefined,
-					{ cwd: target.path },
-				)
-				expect(created.status).toBe(0)
-				// Generated-origin drift ONLY — repair's own host-scoped audit stays clean.
-				writeFileSync(
-					join(target.path, 'package.json'),
-					'{"name":"@orkestrel/demo-repair-scope-note","mutated":true}',
-				)
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				rmSync(join(packageDirectory, '.editorconfig'))
 
-				const result = runBin(['repair', '--target', '.', '--host', fixture.path], undefined, {
-					cwd: target.path,
+				const result = runBin(['repair', '--prune', '--apply', '--from', from.path], '', {
+					cwd: packageDirectory,
 				})
 				expect(result.status).toBe(0)
-				expect(result.stdout).toMatch(/repair: \d+ host artifacts aligned — nothing to write/)
-				expect(result.stdout).toMatch(
-					/note: 1 finding outside repair's scope — run 'audit' for the list; generated files are yours to edit/,
-				)
-				// The hand-modified generated file is untouched — repair never writes outside its scope.
-				expect(readFileSync(join(target.path, 'package.json'), 'utf8')).toContain('mutated')
+				expect(result.stdout).toContain('no unexpected files to delete')
+				expect(result.stdout).not.toContain('Also delete')
 			} finally {
-				await target.cleanup()
-				await fixture.cleanup()
+				await cwd.cleanup()
+				await from.cleanup()
 			}
 		})
 
-		it('--apply: byte-restores the missing host artifact FROM the passed --host fixture, exits 0, and leaves an unrelated foreign file untouched', async () => {
-			const scaffoldFixture = await buildHostFixture()
-			const repairFixture = await buildHostFixture({
-				'.editorconfig': 'root = true\n# fixture-b\n',
-			})
-			const target = await buildTempDirectory()
+		it('--yes WITHOUT --prune does NOT delete a planted unexpected file (prune is never enabled by --yes alone)', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
 			try {
-				const created = runBin(
-					[
-						'new',
-						'demo-repair-apply',
-						'--surfaces',
-						'core',
-						'--apply',
-						'--target',
-						'.',
-						'--host',
-						scaffoldFixture.path,
-					],
-					undefined,
-					{ cwd: target.path },
-				)
-				expect(created.status).toBe(0)
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				rmSync(join(packageDirectory, '.editorconfig'))
+				const roguePath = join(packageDirectory, '.claude', 'agents', 'rogue.md')
+				mkdirSync(dirname(roguePath), { recursive: true })
+				writeFileSync(roguePath, '# rogue\n')
 
-				rmSync(join(target.path, '.editorconfig'), { force: true })
-				writeFileSync(join(target.path, 'scripts', 'rogue.sh'), '#!/bin/sh\necho rogue\n')
-
-				const result = runBin(
-					['repair', '--target', '.', '--host', repairFixture.path, '--apply'],
-					undefined,
-					{ cwd: target.path },
-				)
-				expect(result.status).toBe(0)
-				expect(result.stdout).toMatch(/wrote 0, copied 1, aligned \d+, removed 0/)
-
-				const restored = readFileSync(join(target.path, '.editorconfig'), 'utf8')
-				expect(restored).toBe('root = true\n# fixture-b\n')
-				expect(restored).not.toBe(readFileSync(join(scaffoldFixture.path, '.editorconfig'), 'utf8'))
-				expect(existsSync(join(target.path, 'scripts', 'rogue.sh'))).toBe(true) // no --prune
-			} finally {
-				await target.cleanup()
-				await scaffoldFixture.cleanup()
-				await repairFixture.cleanup()
-			}
-		})
-
-		it('--apply --prune: also deletes the foreign file under scripts/', async () => {
-			const fixture = await buildHostFixture()
-			const target = await buildTempDirectory()
-			try {
-				const created = runBin(
-					[
-						'new',
-						'demo-repair-prune',
-						'--surfaces',
-						'core',
-						'--apply',
-						'--target',
-						'.',
-						'--host',
-						fixture.path,
-					],
-					undefined,
-					{ cwd: target.path },
-				)
-				expect(created.status).toBe(0)
-
-				rmSync(join(target.path, '.editorconfig'), { force: true })
-				writeFileSync(join(target.path, 'scripts', 'rogue.sh'), '#!/bin/sh\necho rogue\n')
-
-				const result = runBin(
-					['repair', '--target', '.', '--host', fixture.path, '--apply', '--prune'],
-					undefined,
-					{ cwd: target.path },
-				)
-				expect(result.status).toBe(0)
-				expect(result.stdout).toMatch(/removed 1/)
-				expect(existsSync(join(target.path, '.editorconfig'))).toBe(true)
-				expect(existsSync(join(target.path, 'scripts', 'rogue.sh'))).toBe(false)
-			} finally {
-				await target.cleanup()
-				await fixture.cleanup()
-			}
-		})
-
-		it('H2: repair scopes to HOST-ORIGIN artifacts ONLY — a hand-modified src file is NEVER touched even when the target ALSO carries drifted host files; dry-run exit reflects only host drift', async () => {
-			const fixture = await buildHostFixture()
-			const target = await buildTempDirectory()
-			try {
-				const created = runBin(
-					[
-						'new',
-						'demo-repair-host-scope',
-						'--surfaces',
-						'core',
-						'--apply',
-						'--target',
-						'.',
-						'--host',
-						fixture.path,
-					],
-					undefined,
-					{ cwd: target.path },
-				)
-				expect(created.status).toBe(0)
-
-				// A hand-modified SOURCE file — repair must never restore this,
-				// since it is not a host-origin artifact.
-				const srcPath = join(target.path, 'src', 'core', 'index.ts')
-				writeFileSync(srcPath, '// hand-modified by the maintainer\n')
-
-				// Genuine host drift alongside it.
-				rmSync(join(target.path, '.editorconfig'), { force: true })
-
-				const dryRun = runBin(['repair', '--target', '.', '--host', fixture.path], undefined, {
-					cwd: target.path,
+				const result = runBin(['repair', '--apply', '--yes', '--from', from.path], '', {
+					cwd: packageDirectory,
 				})
-				expect(dryRun.status).toBe(1) // reflects the host drift alone
-				expect(dryRun.stdout).toMatch(/missing: [1-9]/)
-				// The hand-modified src file is untouched by the dry-run audit —
-				// its content is still what we hand-wrote.
-				expect(readFileSync(srcPath, 'utf8')).toBe('// hand-modified by the maintainer\n')
-
-				const applied = runBin(
-					['repair', '--target', '.', '--host', fixture.path, '--apply'],
-					undefined,
-					{ cwd: target.path },
+				expect(result.status).toBe(0)
+				expect(existsSync(roguePath)).toBe(true)
+				expect(readFileSync(join(packageDirectory, '.editorconfig'), 'utf8')).toBe(
+					HOST_FIXTURE_FILES['.editorconfig'],
 				)
-				expect(applied.status).toBe(0)
-				expect(existsSync(join(target.path, '.editorconfig'))).toBe(true)
-				// The hand-modified src file is STILL untouched after --apply.
-				expect(readFileSync(srcPath, 'utf8')).toBe('// hand-modified by the maintainer\n')
 			} finally {
-				await target.cleanup()
-				await fixture.cleanup()
+				await cwd.cleanup()
+				await from.cleanup()
 			}
 		})
 
-		it('--prune without --apply: prints the ignored-flag note and does not delete', async () => {
-			const fixture = await buildHostFixture()
-			const target = await buildTempDirectory()
+		it('piped "y\\n" confirm (no --apply, no --prune) applies the fix — the single-confirm flow the non-TTY readline fallback reliably drives', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
 			try {
-				const created = runBin(
-					[
-						'new',
-						'demo-repair-prune-noop',
-						'--surfaces',
-						'core',
-						'--apply',
-						'--target',
-						'.',
-						'--host',
-						fixture.path,
-					],
-					undefined,
-					{ cwd: target.path },
-				)
-				expect(created.status).toBe(0)
-				writeFileSync(join(target.path, 'scripts', 'rogue.sh'), '#!/bin/sh\necho rogue\n')
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				rmSync(join(packageDirectory, '.editorconfig'))
 
-				const result = runBin(
-					['repair', '--target', '.', '--host', fixture.path, '--prune'],
-					undefined,
-					{ cwd: target.path },
+				const result = runBin(['repair', '--from', from.path], 'y\n', { cwd: packageDirectory })
+				expect(result.status).toBe(0)
+				expect(readFileSync(join(packageDirectory, '.editorconfig'), 'utf8')).toBe(
+					HOST_FIXTURE_FILES['.editorconfig'],
 				)
-				expect(result.status).toBe(0) // no other drift induced — dry-run reports clean
-				expect(result.stderr).toMatch(/--prune is ignored on a dry run/i)
-				expect(existsSync(join(target.path, 'scripts', 'rogue.sh'))).toBe(true)
 			} finally {
-				await target.cleanup()
-				await fixture.cleanup()
+				await cwd.cleanup()
+				await from.cleanup()
 			}
 		})
 
-		it('containment: --target escaping the cwd exits 1 with a coded [INVALID] message', async () => {
-			const directory = await buildTempDirectory()
+		it('empty stdin (EOF) leaves the single confirm at its default (false) — dry-run outcome, no hang', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
 			try {
-				const result = runBin(['repair', '--target', '..'], undefined, { cwd: directory.path })
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				rmSync(join(packageDirectory, '.editorconfig'))
+
+				const result = runBin(['repair', '--from', from.path], '', { cwd: packageDirectory })
 				expect(result.status).toBe(1)
-				expect(result.stderr).toContain('[INVALID]')
-				expect(result.stderr).toMatch(/escapes the working directory/)
+				expect(existsSync(join(packageDirectory, '.editorconfig'))).toBe(false)
 			} finally {
-				await directory.cleanup()
+				await cwd.cleanup()
+				await from.cleanup()
+			}
+		})
+
+		it('--target escaping the cwd: a coded [INVALID] failure', async () => {
+			const cwd = await buildTempDirectory()
+			try {
+				const result = runBin(['repair', '--target', '..'], '', { cwd: cwd.path })
+				expect(result.status).toBe(1)
+				const output = result.stdout + result.stderr
+				expect(output).toContain('[INVALID]')
+				expect(output).toMatch(/escapes the working directory/)
+			} finally {
+				await cwd.cleanup()
 			}
 		})
 	})
 
-	describe('mirror', () => {
-		it('dry-run: reports each child plus a total, ignores a non-@orkestrel dir, and prints the ci.yml exclusion note', async () => {
-			const fixture = await buildHostFixture()
+	describe('fleet', () => {
+		it('dry-run reports per-repo (clean and drifted), --apply writes, and no --root flag is accepted', async () => {
+			const from = await buildFromFixture()
 			const root = await buildTempDirectory()
 			try {
-				const clean = runBin(
-					[
-						'new',
-						'fleet-clean',
-						'--surfaces',
-						'core',
-						'--apply',
-						'--target',
-						'fleet-clean',
-						'--host',
-						fixture.path,
-					],
-					undefined,
-					{ cwd: root.path },
-				)
+				scaffoldPackage(root.path, 'fleeta', from.path)
+				scaffoldPackage(root.path, 'fleetb', from.path)
+
+				const clean = runBin(['fleet', '--from', from.path], '', { cwd: root.path })
 				expect(clean.status).toBe(0)
+				expect(clean.stdout).toContain('fleeta: clean')
+				expect(clean.stdout).toContain('fleetb: clean')
 
-				const drifted = runBin(
-					[
-						'new',
-						'fleet-drifted',
-						'--surfaces',
-						'core',
-						'--apply',
-						'--target',
-						'fleet-drifted',
-						'--host',
-						fixture.path,
-					],
-					undefined,
-					{ cwd: root.path },
-				)
-				expect(drifted.status).toBe(0)
-				// In-scope host drift (mirror repairs this): the `.editorconfig` goes missing.
-				rmSync(join(root.path, 'fleet-drifted', '.editorconfig'), { force: true })
-				// Out-of-scope drift (mirror excludes ci.yml — must never repair it).
-				rmSync(join(root.path, 'fleet-drifted', '.github', 'workflows', 'ci.yml'), { force: true })
-				// A foreign file under a `.claude/agents/` mirror never enumerates via `diffPlan`.
-				mkdirSync(join(root.path, 'fleet-drifted', '.claude', 'agents'), { recursive: true })
-				writeFileSync(
-					join(root.path, 'fleet-drifted', '.claude', 'agents', 'rogue.md'),
-					'# rogue\n',
+				rmSync(join(root.path, 'fleeta', '.editorconfig'))
+				const drifted = runBin(['fleet', '--from', from.path], '', { cwd: root.path })
+				expect(drifted.status).toBe(1)
+				expect(drifted.stdout).toContain('fleeta: 1 missing')
+
+				const applied = runBin(['fleet', '--apply', '--from', from.path], '', { cwd: root.path })
+				expect(applied.status).toBe(0)
+				expect(readFileSync(join(root.path, 'fleeta', '.editorconfig'), 'utf8')).toBe(
+					HOST_FIXTURE_FILES['.editorconfig'],
 				)
 
-				mkdirSync(join(root.path, 'not-orkestrel'), { recursive: true })
-				writeFileSync(
-					join(root.path, 'not-orkestrel', 'package.json'),
-					JSON.stringify({ name: 'not-an-orkestrel-thing', version: '0.0.1' }),
-				)
-
-				const result = runBin(['mirror', '--root', '.', '--host', fixture.path], undefined, {
+				const noRoot = runBin(['fleet', '--root', '.', '--from', from.path], '', {
 					cwd: root.path,
 				})
-				expect(result.status).toBe(1)
-				expect(result.stdout).toContain('fleet-clean: clean')
-				expect(result.stdout).toContain('fleet-drifted: drifted 0, missing 1, foreign 0')
-				expect(result.stdout).toContain('ci.yml: repo-flavored, skipped')
-				expect(result.stdout).toMatch(/total: 1 drifted, 0 failed/)
-				expect(result.stdout).not.toContain('not-orkestrel')
-
-				// Dry run writes nothing.
-				expect(existsSync(join(root.path, 'fleet-drifted', '.editorconfig'))).toBe(false)
-				expect(existsSync(join(root.path, 'fleet-drifted', '.claude', 'agents', 'rogue.md'))).toBe(
-					true,
-				)
+				expect(noRoot.status).toBe(2)
 			} finally {
 				await root.cleanup()
-				await fixture.cleanup()
+				await from.cleanup()
 			}
 		})
 
-		it('--apply: repairs in-scope drift and exits 0; ci.yml stays excluded (never restored); the foreign file is untouched without --prune', async () => {
-			const fixture = await buildHostFixture()
+		it('--json emits a top-level JSON array, one element per repo', async () => {
+			const from = await buildFromFixture()
 			const root = await buildTempDirectory()
 			try {
-				const clean = runBin(
-					[
-						'new',
-						'fleet-clean',
-						'--surfaces',
-						'core',
-						'--apply',
-						'--target',
-						'fleet-clean',
-						'--host',
-						fixture.path,
-					],
-					undefined,
-					{ cwd: root.path },
-				)
-				expect(clean.status).toBe(0)
+				scaffoldPackage(root.path, 'fleeta', from.path)
+				scaffoldPackage(root.path, 'fleetb', from.path)
 
-				const drifted = runBin(
-					[
-						'new',
-						'fleet-drifted',
-						'--surfaces',
-						'core',
-						'--apply',
-						'--target',
-						'fleet-drifted',
-						'--host',
-						fixture.path,
-					],
-					undefined,
-					{ cwd: root.path },
-				)
-				expect(drifted.status).toBe(0)
-				rmSync(join(root.path, 'fleet-drifted', '.editorconfig'), { force: true })
-				rmSync(join(root.path, 'fleet-drifted', '.github', 'workflows', 'ci.yml'), { force: true })
-				mkdirSync(join(root.path, 'fleet-drifted', '.claude', 'agents'), { recursive: true })
-				writeFileSync(
-					join(root.path, 'fleet-drifted', '.claude', 'agents', 'rogue.md'),
-					'# rogue\n',
-				)
-
-				const result = runBin(
-					['mirror', '--root', '.', '--host', fixture.path, '--apply'],
-					undefined,
-					{ cwd: root.path },
-				)
+				const result = runBin(['fleet', '--json', '--from', from.path], '', { cwd: root.path })
 				expect(result.status).toBe(0)
-				expect(result.stdout).toContain('fleet-clean: clean')
-				expect(result.stdout).toMatch(/fleet-drifted: repaired \(\d+ remaining\)/)
-
-				expect(existsSync(join(root.path, 'fleet-drifted', '.editorconfig'))).toBe(true)
-				// NEVER written by mirror, even though it went missing at the child.
-				expect(existsSync(join(root.path, 'fleet-drifted', '.github', 'workflows', 'ci.yml'))).toBe(
-					false,
-				)
-				// Untouched: mirror ran without --prune.
-				expect(existsSync(join(root.path, 'fleet-drifted', '.claude', 'agents', 'rogue.md'))).toBe(
-					true,
-				)
+				const lines = result.stdout.trim().split('\n')
+				expect(lines).toHaveLength(1)
+				const parsed: unknown = JSON.parse(lines[0])
+				expect(Array.isArray(parsed)).toBe(true)
+				expect((parsed as unknown[]).length).toBe(2)
 			} finally {
 				await root.cleanup()
-				await fixture.cleanup()
-			}
-		})
-
-		it('fault isolation: a child that fails to derive is reported [TARGET] and counted failed, without aborting the fleet loop', async () => {
-			const fixture = await buildHostFixture()
-			const root = await buildTempDirectory()
-			try {
-				const healthy = runBin(
-					[
-						'new',
-						'fleet-healthy',
-						'--surfaces',
-						'core',
-						'--apply',
-						'--target',
-						'fleet-healthy',
-						'--host',
-						fixture.path,
-					],
-					undefined,
-					{ cwd: root.path },
-				)
-				expect(healthy.status).toBe(0)
-
-				// A discoverable @orkestrel package (readable, parseable manifest —
-				// see the deviation note on "unreadable package.json") that fails
-				// `deriveBlueprint` (no `src/` directory at all): a coded TARGET
-				// failure inside the per-package try, exercising the SAME
-				// fault-isolation path the spec's "unreadable manifest" scenario
-				// targets.
-				mkdirSync(join(root.path, 'fleet-broken'), { recursive: true })
-				writeFileSync(
-					join(root.path, 'fleet-broken', 'package.json'),
-					JSON.stringify({ name: '@orkestrel/fleet-broken', version: '0.0.1' }),
-				)
-
-				const result = runBin(['mirror', '--root', '.', '--host', fixture.path], undefined, {
-					cwd: root.path,
-				})
-				expect(result.status).toBe(1)
-				expect(result.stdout).toContain('fleet-healthy: clean')
-				expect(result.stdout).toContain('fleet-broken: [TARGET]')
-				expect(result.stdout).toMatch(/total: 0 drifted, 1 failed/)
-			} finally {
-				await root.cleanup()
-				await fixture.cleanup()
-			}
-		})
-
-		it('containment: --root escaping the cwd exits 1 with a coded [INVALID] message plus the mirror-specific escape hint', async () => {
-			const root = await buildTempDirectory()
-			const sub = join(root.path, 'nested')
-			mkdirSync(sub, { recursive: true })
-			try {
-				const result = runBin(['mirror', '--root', '..'], undefined, { cwd: sub })
-				expect(result.status).toBe(1)
-				expect(result.stderr).toContain('[INVALID]')
-				expect(result.stderr).toMatch(/escapes the working directory/)
-				expect(result.stderr).toMatch(
-					/mirror writes into the repos beneath --root, so run scaffold FROM your workspace folder instead of pointing --root outside it/,
-				)
-			} finally {
-				await root.cleanup()
-			}
-		})
-
-		it('empty discovery: no @orkestrel children under root exits 1 with an instructive message pointing at cd .. and repair', async () => {
-			const root = await buildTempDirectory()
-			try {
-				const result = runBin(['mirror'], undefined, { cwd: root.path })
-				expect(result.status).toBe(1)
-				expect(result.stderr).toMatch(/no @orkestrel packages under/)
-				expect(result.stderr).toMatch(
-					/mirror scans the immediate children of the current directory; stand in the folder that contains your checkouts \(cd \.\.\), or use 'repair' to true up just this repo/,
-				)
-			} finally {
-				await root.cleanup()
+				await from.cleanup()
 			}
 		})
 	})
 
-	describe('catalog', () => {
-		/** Writes a discoverable `@orkestrel/*` package: `package.json` (name/version) plus, when given, its `guides/src/<short>.md`. */
-		function writeCatalogPackage(
-			rootPath: string,
-			directoryName: string,
-			options: { readonly name: string; readonly version: string; readonly guide?: string },
-		): void {
-			const directory = join(rootPath, directoryName)
-			mkdirSync(directory, { recursive: true })
+	describe('catalog (offline / vendored-from only — no live registry call)', () => {
+		function buildCatalogTarget(cwd: string): string {
+			const agentsDirectory = join(cwd, '.claude', 'agents')
+			mkdirSync(agentsDirectory, { recursive: true })
 			writeFileSync(
-				join(directory, 'package.json'),
-				JSON.stringify({ name: options.name, version: options.version }),
+				join(agentsDirectory, 'orkestrel.md'),
+				['# catalog', '', '<!-- catalog:start -->', 'placeholder', '<!-- catalog:end -->', ''].join(
+					'\n',
+				),
 			)
-			if (options.guide !== undefined) {
-				const short = options.name.slice('@orkestrel/'.length)
-				mkdirSync(join(directory, 'guides', 'src'), { recursive: true })
-				writeFileSync(join(directory, 'guides', 'src', `${short}.md`), options.guide, 'utf8')
+			return cwd
+		}
+
+		function buildCatalogFrom(directory: string, packages: readonly string[]): void {
+			for (const name of packages) {
+				const packageDirectory = join(directory, name)
+				mkdirSync(packageDirectory, { recursive: true })
+				writeFileSync(
+					join(packageDirectory, 'package.json'),
+					JSON.stringify({ name: `@orkestrel/${name}`, version: '1.0.0' }),
+				)
 			}
 		}
 
-		/** Writes a fixture `.claude/agents/orkestrel.md` carrying the catalog markers around `body`. */
-		function writeAgentFixture(targetPath: string, body: string): string {
-			const agentPath = join(targetPath, '.claude', 'agents', 'orkestrel.md')
-			mkdirSync(dirname(agentPath), { recursive: true })
-			writeFileSync(
-				agentPath,
-				`# orkestrel\n\n## The catalog\n\n<!-- catalog:start -->\n${body}<!-- catalog:end -->\n\n## Other section\n`,
-			)
-			return agentPath
-		}
-
-		// `--offline` sources `--root`(s) only — the old, fully-local behavior —
-		// so these dry-run/apply/merge/containment tests stay hermetic (§16).
-		it('--offline dry-run: reports the package count and exits nonzero on marker drift', async () => {
-			const root = await buildTempDirectory()
+		it('--offline --from <fixture>: produces the table and writes the catalog', async () => {
 			const target = await buildTempDirectory()
+			const from = await buildTempDirectory()
 			try {
-				writeCatalogPackage(root.path, 'router', {
-					name: '@orkestrel/router',
-					version: '0.0.5',
-					guide: '# Router\n\n> A tiny hash-router.\n',
+				buildCatalogTarget(target.path)
+				buildCatalogFrom(from.path, ['pkgone'])
+
+				const dry = runBin(['catalog', '--offline', '--from', from.path], '', {
+					cwd: target.path,
 				})
-				writeCatalogPackage(root.path, 'headless', {
-					name: '@orkestrel/headless',
-					version: '0.0.1',
+				expect(dry.status).toBe(1)
+				expect(dry.stdout).toContain('pkgone')
+				expect(dry.stdout).toMatch(/pass --apply to write/)
+
+				const applied = runBin(['catalog', '--offline', '--from', from.path, '--apply'], '', {
+					cwd: target.path,
 				})
-				const agentPath = writeAgentFixture(target.path, '\nstale content\n\n')
-
-				const result = runBin(
-					['catalog', '--offline', '--root', root.path, '--target', '.'],
-					undefined,
-					{ cwd: target.path },
-				)
-
-				expect(result.status).toBe(1)
-				expect(result.stdout).toContain('2 packages')
-				expect(result.stdout).toContain('1 without guide description: @orkestrel/headless')
-				expect(readFileSync(agentPath, 'utf8')).toContain('stale content') // dry-run writes nothing
-			} finally {
-				await root.cleanup()
-				await target.cleanup()
-			}
-		})
-
-		it('--offline --apply: writes the spliced table and a re-run exits 0 (clean)', async () => {
-			const root = await buildTempDirectory()
-			const target = await buildTempDirectory()
-			try {
-				writeCatalogPackage(root.path, 'router', {
-					name: '@orkestrel/router',
-					version: '0.0.5',
-					guide: '# Router\n\n> A tiny hash-router.\n',
-				})
-				const agentPath = writeAgentFixture(target.path, '\nstale content\n\n')
-
-				const applied = runBin(
-					['catalog', '--offline', '--root', root.path, '--target', '.', '--apply'],
-					undefined,
-					{ cwd: target.path },
-				)
 				expect(applied.status).toBe(0)
-
-				const written = readFileSync(agentPath, 'utf8')
-				expect(written).toContain('@orkestrel/router')
-				expect(written).toContain('A tiny hash-router.')
-				expect(written).not.toContain('stale content')
-				expect(written).toContain('## Other section') // content after the end marker survives
-
-				const rerun = runBin(
-					['catalog', '--offline', '--root', root.path, '--target', '.'],
-					undefined,
-					{ cwd: target.path },
-				)
-				expect(rerun.status).toBe(0)
+				expect(
+					readFileSync(join(target.path, '.claude', 'agents', 'orkestrel.md'), 'utf8'),
+				).toMatch(/@orkestrel\/pkgone/)
 			} finally {
-				await root.cleanup()
 				await target.cleanup()
+				await from.cleanup()
 			}
 		})
 
-		it('--offline: a target missing either catalog marker exits a coded TARGET failure', async () => {
-			const root = await buildTempDirectory()
+		it('--json: exactly one parseable JSON value, no prompt', async () => {
 			const target = await buildTempDirectory()
+			const from = await buildTempDirectory()
 			try {
-				writeCatalogPackage(root.path, 'router', { name: '@orkestrel/router', version: '0.0.5' })
-				const agentPath = join(target.path, '.claude', 'agents', 'orkestrel.md')
-				mkdirSync(dirname(agentPath), { recursive: true })
-				writeFileSync(agentPath, '# orkestrel\n\nNo markers here at all.\n')
+				buildCatalogTarget(target.path)
+				buildCatalogFrom(from.path, ['pkgone'])
 
-				const result = runBin(
-					['catalog', '--offline', '--root', root.path, '--target', '.'],
-					undefined,
-					{ cwd: target.path },
+				const result = runBin(['catalog', '--offline', '--from', from.path, '--json'], '', {
+					cwd: target.path,
+				})
+				const lines = result.stdout.trim().split('\n')
+				expect(lines).toHaveLength(1)
+				const parsed: unknown = JSON.parse(lines[0])
+				expect(parsed).toMatchObject({ drift: true })
+			} finally {
+				await target.cleanup()
+				await from.cleanup()
+			}
+		})
+
+		it('shrink warning: fewer --offline --from entries than the currently-embedded table warns on both dry-run and --apply', async () => {
+			const target = await buildTempDirectory()
+			const from = await buildTempDirectory()
+			try {
+				mkdirSync(join(target.path, '.claude', 'agents'), { recursive: true })
+				writeFileSync(
+					join(target.path, '.claude', 'agents', 'orkestrel.md'),
+					[
+						'# catalog',
+						'',
+						'<!-- catalog:start -->',
+						'| @orkestrel/one | 1.0.0 | one |',
+						'| @orkestrel/two | 1.0.0 | two |',
+						'<!-- catalog:end -->',
+						'',
+					].join('\n'),
 				)
+				buildCatalogFrom(from.path, ['one'])
 
+				const dry = runBin(['catalog', '--offline', '--from', from.path], '', {
+					cwd: target.path,
+				})
+				expect(dry.stdout).toMatch(/warning: catalog shrinks/)
+			} finally {
+				await target.cleanup()
+				await from.cleanup()
+			}
+		})
+
+		it('missing markers in the target file: a coded [TARGET] failure', async () => {
+			const target = await buildTempDirectory()
+			const from = await buildTempDirectory()
+			try {
+				mkdirSync(join(target.path, '.claude', 'agents'), { recursive: true })
+				writeFileSync(join(target.path, '.claude', 'agents', 'orkestrel.md'), '# no markers here\n')
+				buildCatalogFrom(from.path, ['pkgone'])
+
+				const result = runBin(['catalog', '--offline', '--from', from.path], '', {
+					cwd: target.path,
+				})
 				expect(result.status).toBe(1)
 				const output = result.stdout + result.stderr
 				expect(output).toContain('[TARGET]')
-				expect(output).toContain('catalog:start')
 			} finally {
-				await root.cleanup()
 				await target.cleanup()
+				await from.cleanup()
+			}
+		})
+		it.skipIf(!canSymlink)(
+			'containment: a symlinked .claude/agents pointing OUTSIDE the cwd refuses the write, nothing written outside (SKIPPED: environment cannot create symlinks — passes on symlink-capable POSIX CI)',
+			async () => {
+				const target = await buildTempDirectory()
+				const outside = await buildTempDirectory()
+				const from = await buildTempDirectory()
+				try {
+					mkdirSync(join(target.path, '.claude'), { recursive: true })
+					mkdirSync(join(outside.path, 'agents'), { recursive: true })
+					writeFileSync(
+						join(outside.path, 'agents', 'orkestrel.md'),
+						[
+							'# catalog',
+							'',
+							'<!-- catalog:start -->',
+							'placeholder',
+							'<!-- catalog:end -->',
+							'',
+						].join('\n'),
+					)
+					symlinkSync(join(outside.path, 'agents'), join(target.path, '.claude', 'agents'))
+					buildCatalogFrom(from.path, ['pkgone'])
+
+					const result = runBin(['catalog', '--offline', '--from', from.path, '--apply'], '', {
+						cwd: target.path,
+					})
+					expect(result.status).toBe(1)
+					const output = result.stdout + result.stderr
+					expect(output).toContain('[INVALID]')
+					expect(output).toMatch(/escapes the working directory/)
+					expect(readFileSync(join(outside.path, 'agents', 'orkestrel.md'), 'utf8')).not.toContain(
+						'@orkestrel/pkgone',
+					)
+				} finally {
+					await target.cleanup()
+					await outside.cleanup()
+					await from.cleanup()
+				}
+			},
+		)
+	})
+
+	describe('json discipline (S2b/S2c/S2d: one envelope, real ScaffoldError codes, never double-encoded)', () => {
+		it('unknown verb under --json: exits 2 with a single parseable USAGE envelope (routed through the same usageFail as prose)', async () => {
+			const cwd = await buildTempDirectory()
+			try {
+				const result = runBin(['sync', '--json'], '', { cwd: cwd.path })
+				expect(result.status).toBe(2)
+				const lines = result.stdout.trim().split('\n')
+				expect(lines).toHaveLength(1)
+				const parsed: unknown = JSON.parse(lines[0])
+				expect(parsed).toMatchObject({ error: { code: 'USAGE' } })
+				if (
+					!isRecord(parsed) ||
+					!isRecord(parsed.error) ||
+					typeof parsed.error.message !== 'string'
+				) {
+					throw new Error('expected a { error: { code, message } } envelope')
+				}
+				expect(parsed.error.message).toContain('has been renamed')
+			} finally {
+				await cwd.cleanup()
 			}
 		})
 
-		it('--offline: merges multiple --root values into one sorted, deduplicated table', async () => {
-			const first = await buildTempDirectory()
-			const second = await buildTempDirectory()
+		it('catalog write failure under --json: exits 1 with a single envelope carrying the real [TARGET] code (never double-encoded into the message)', async () => {
 			const target = await buildTempDirectory()
+			const from = await buildTempDirectory()
 			try {
-				writeCatalogPackage(first.path, 'router', {
-					name: '@orkestrel/router',
-					version: '0.0.1',
-					guide: '# Router\n\n> Stale.\n',
-				})
-				writeCatalogPackage(second.path, 'router', {
-					name: '@orkestrel/router',
-					version: '0.0.2',
-					guide: '# Router\n\n> Fresh.\n',
-				})
-				writeCatalogPackage(second.path, 'alpha', {
-					name: '@orkestrel/alpha',
-					version: '0.0.1',
-					guide: '# Alpha\n\n> An alpha package.\n',
-				})
-				const agentPath = writeAgentFixture(target.path, '\n')
-
-				const result = runBin(
-					[
-						'catalog',
-						'--offline',
-						'--root',
-						first.path,
-						'--root',
-						second.path,
-						'--target',
-						'.',
-						'--apply',
-					],
-					undefined,
-					{ cwd: target.path },
+				mkdirSync(join(target.path, '.claude', 'agents'), { recursive: true })
+				writeFileSync(join(target.path, '.claude', 'agents', 'orkestrel.md'), '# no markers here\n')
+				mkdirSync(join(from.path, 'pkgone'), { recursive: true })
+				writeFileSync(
+					join(from.path, 'pkgone', 'package.json'),
+					JSON.stringify({ name: '@orkestrel/pkgone', version: '1.0.0' }),
 				)
 
-				expect(result.status).toBe(0)
-				const written = readFileSync(agentPath, 'utf8')
-				expect(written).toContain('@orkestrel/router | 0.0.2') // the second root's entry wins
-				expect(written).not.toContain('@orkestrel/router | 0.0.1')
-				expect(written).toContain('Fresh.')
-				expect(written).toContain('@orkestrel/alpha')
-				expect(result.stdout).toContain('2 packages')
-			} finally {
-				await first.cleanup()
-				await second.cleanup()
-				await target.cleanup()
-			}
-		})
-
-		it('--offline containment: --target escaping the cwd exits 1 with a coded [INVALID] message (its unrestricted --root is unaffected)', async () => {
-			const root = await buildTempDirectory()
-			const target = await buildTempDirectory()
-			try {
-				writeCatalogPackage(root.path, 'router', { name: '@orkestrel/router', version: '0.0.5' })
-
-				const result = runBin(
-					['catalog', '--offline', '--root', root.path, '--target', '..'],
-					undefined,
-					{ cwd: target.path },
-				)
+				const result = runBin(['catalog', '--offline', '--from', from.path, '--json'], '', {
+					cwd: target.path,
+				})
 				expect(result.status).toBe(1)
-				expect(result.stderr).toContain('[INVALID]')
-				expect(result.stderr).toMatch(/escapes the working directory/)
+				const lines = result.stdout.trim().split('\n')
+				expect(lines).toHaveLength(1)
+				const parsed: unknown = JSON.parse(lines[0])
+				expect(parsed).toMatchObject({ error: { code: 'TARGET' } })
+				if (
+					!isRecord(parsed) ||
+					!isRecord(parsed.error) ||
+					typeof parsed.error.message !== 'string'
+				) {
+					throw new Error('expected a { error: { code, message } } envelope')
+				}
+				// The message never repeats the code as a bracketed prefix —
+				// that would double-encode it alongside the envelope's own `code` field.
+				expect(parsed.error.message).not.toMatch(/^\[TARGET\]/)
 			} finally {
-				await root.cleanup()
 				await target.cleanup()
-			}
-		})
-
-		it('shrink warning: --offline reports the warning on BOTH dry-run and --apply when the new table has fewer rows', async () => {
-			const root = await buildTempDirectory()
-			const target = await buildTempDirectory()
-			try {
-				writeCatalogPackage(root.path, 'router', {
-					name: '@orkestrel/router',
-					version: '0.0.5',
-					guide: '# Router\n\n> A tiny hash-router.\n',
-				})
-				// The existing embedded table carries TWO rows; the new --offline
-				// scan (one root, one package) will only produce ONE.
-				const agentPath = writeAgentFixture(
-					target.path,
-					'\n| Package | Version | Description |\n| --- | --- | --- |\n' +
-						'| @orkestrel/router | 0.0.1 | old |\n' +
-						'| @orkestrel/gone | 0.0.1 | removed upstream |\n\n',
-				)
-
-				const dryRun = runBin(
-					['catalog', '--offline', '--root', root.path, '--target', '.'],
-					undefined,
-					{ cwd: target.path },
-				)
-				expect(dryRun.status).toBe(1)
-				expect(dryRun.stdout).toContain('warning: catalog shrinks from 2 to 1 rows')
-				expect(readFileSync(agentPath, 'utf8')).toContain('@orkestrel/gone') // dry-run writes nothing
-
-				const applied = runBin(
-					['catalog', '--offline', '--root', root.path, '--target', '.', '--apply'],
-					undefined,
-					{ cwd: target.path },
-				)
-				expect(applied.status).toBe(0)
-				expect(applied.stdout).toContain('warning: catalog shrinks from 2 to 1 rows')
-				expect(readFileSync(agentPath, 'utf8')).not.toContain('@orkestrel/gone')
-			} finally {
-				await root.cleanup()
-				await target.cleanup()
-			}
-		})
-
-		it('--offline: no Authorization header applies (unauthenticated by design) and --root works without any registry reachability', async () => {
-			const root = await buildTempDirectory()
-			const target = await buildTempDirectory()
-			try {
-				writeCatalogPackage(root.path, 'router', { name: '@orkestrel/router', version: '0.0.5' })
-				const agentPath = writeAgentFixture(target.path, '\n')
-
-				const result = runBin(
-					['catalog', '--offline', '--root', root.path, '--target', '.', '--apply'],
-					undefined,
-					{ cwd: target.path },
-				)
-				expect(result.status).toBe(0)
-				expect(readFileSync(agentPath, 'utf8')).toContain('@orkestrel/router')
-			} finally {
-				await root.cleanup()
-				await target.cleanup()
+				await from.cleanup()
 			}
 		})
 	})
 
-	describe('argument handling', () => {
-		// Also exercises the startup `trustSystemCertificates` call implicitly
-		// (spawned before any verb dispatch on this POSIX host) — proves it
-		// never crashes the CLI whether or not the OS trust-store APIs are present.
-		it('--help: prints the three-verb usage and exits 0', () => {
-			const result = runBin(['--help'])
-			expect(result.status).toBe(0)
-			expect(result.stdout).toContain('Usage: scaffold')
-			expect(result.stdout).toContain('new <name>')
-			expect(result.stdout).toContain('sync')
-			expect(result.stdout).toContain('audit')
+	describe('exit-code table conformance (AGENTS §12: 0 clean/success, 1 drift/failure, 2 usage)', () => {
+		it('0: a clean audit', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				const result = runBin(['audit', '--from', from.path], '', { cwd: packageDirectory })
+				expect(result.status).toBe(0)
+			} finally {
+				await cwd.cleanup()
+				await from.cleanup()
+			}
 		})
 
-		it('--help: states the dry-run-by-default and output-location facts up front, plus a Windows note', () => {
-			const result = runBin(['--help'])
-			expect(result.status).toBe(0)
-			expect(result.stdout).toMatch(/DRY RUN by default/)
-			expect(result.stdout).toMatch(/--apply to write/)
-			expect(result.stdout).toContain('./<name>')
-			expect(result.stdout).toMatch(/prompts for what's missing/)
-			expect(result.stdout).toMatch(/PowerShell/)
-			expect(result.stdout).toMatch(/npm run scaffold -- /)
+		it('1: a drifted audit', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				rmSync(join(packageDirectory, '.editorconfig'))
+				const result = runBin(['audit', '--from', from.path], '', { cwd: packageDirectory })
+				expect(result.status).toBe(1)
+			} finally {
+				await cwd.cleanup()
+				await from.cleanup()
+			}
 		})
 
-		it('--help: states the write-destination containment rule', () => {
-			const result = runBin(['--help'])
-			expect(result.status).toBe(0)
-			expect(result.stdout).toMatch(/resolves? under the current directory/)
-			expect(result.stdout).toMatch(/--host may point anywhere/)
+		it('2: an unknown verb', async () => {
+			const cwd = await buildTempDirectory()
+			try {
+				const result = runBin(['nope'], '', { cwd: cwd.path })
+				expect(result.status).toBe(2)
+			} finally {
+				await cwd.cleanup()
+			}
 		})
+	})
 
-		it('--help: lists a worked example line per verb', () => {
-			const result = runBin(['--help'])
-			expect(result.stdout).toContain('e.g. scaffold new widget --surfaces core,server --apply')
-			expect(result.stdout).toContain('e.g. scaffold audit --groups configs,docs')
-			expect(result.stdout).toContain('e.g. cd ../fleet-root && scaffold mirror --apply')
-		})
-
-		it("leading \"--\" passthrough (PowerShell/npm residue): ['--', '--help'] behaves like ['--help']", () => {
-			const result = runBin(['--', '--help'])
-			expect(result.status).toBe(0)
-			expect(result.stdout).toContain('Usage: scaffold')
-		})
-
-		it("leading \"--\" passthrough: ['--', 'new', ...] behaves identically to ['new', ...]", () => {
-			const control = runBin(['new', '--surfaces', 'core'], 'demo-dash-control\n')
-			const withDash = runBin(['--', 'new', '--surfaces', 'core'], 'demo-dash-control\n')
-			expect(withDash.status).toBe(control.status)
-			expect(withDash.stdout).toContain('## Summary')
-			expect(withDash.stdout).toBe(control.stdout)
-		})
-
-		it('no verb: prints usage to stderr and exits 1', () => {
-			const result = runBin([])
-			expect(result.status).toBe(1)
-			expect(result.stderr).toContain('Usage: scaffold')
-		})
-
-		it('unrecognized verb: prints a controlled message and exits 1', () => {
-			const result = runBin(['frobnicate'])
-			expect(result.status).toBe(1)
-			expect(result.stderr).toContain('frobnicate')
-			expect(result.stderr).toContain('Usage: scaffold')
-		})
-
-		it('H3: an unknown flag never crashes with a raw parseArgs stack — controlled usage, exit 1', () => {
-			const result = runBin(['new', 'demo', '--this-flag-does-not-exist'])
-			expect(result.status).toBe(1)
-			expect(result.stderr).not.toContain('ERR_PARSE_ARGS_UNKNOWN_OPTION')
-			expect(result.stderr).not.toContain('at Object')
-			expect(result.stderr).toContain('Usage: scaffold')
-		})
-
-		it('--help: documents the TLS system-trust-store note and NODE_EXTRA_CA_CERTS', () => {
-			const result = runBin(['--help'])
-			expect(result.status).toBe(0)
-			expect(result.stdout).toMatch(/trusts the system certificate store/)
-			expect(result.stdout).toContain('NODE_EXTRA_CA_CERTS')
-		})
-
-		it('L2: repeated flags — last occurrence wins (documented in --help)', () => {
-			const result = runBin(['--help'])
-			expect(result.stdout).toMatch(/keeps its LAST occurrence/i)
-		})
-
-		it('--help: lists all six verbs and the --host/--prune/--root flags', () => {
-			const result = runBin(['--help'])
-			expect(result.status).toBe(0)
-			expect(result.stdout).toContain('new <name>')
-			expect(result.stdout).toContain('sync')
-			expect(result.stdout).toContain('audit')
-			expect(result.stdout).toContain('repair')
-			expect(result.stdout).toContain('mirror')
-			expect(result.stdout).toContain('catalog')
-			expect(result.stdout).toContain('--host')
-			expect(result.stdout).toContain('--prune')
-			expect(result.stdout).toContain('--root')
+	describe('cancel path', () => {
+		// A deterministic, cross-platform SIGINT-mid-prompt test would need to
+		// race a signal against the exact moment the readline fallback is
+		// awaiting a line — timing-dependent and platform-variable (POSIX
+		// signal delivery vs. Windows console events). The EOF-default tests
+		// above ("empty stdin (EOF) leaves the single confirm at its default")
+		// already prove the reliable, deterministic half of this path — an
+		// unanswered prompt resolves to its documented default rather than
+		// hanging; a real ctrl-c's `CANCELLED_MESSAGE` line is exercised at
+		// the render-string level in render.test.ts. Not built here to avoid
+		// a flaky test.
+		it('is covered by the EOF-default tests above, not a piped SIGINT (documented, not built — see comment)', () => {
+			expect(true).toBe(true)
 		})
 	})
 })

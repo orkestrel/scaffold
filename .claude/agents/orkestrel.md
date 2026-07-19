@@ -97,7 +97,7 @@ The standard tree:
   scripts matrix (`format[:check]`, `lint[:check]`, `check[:src:*]`, `build[:src:*]`,
   `test[:src|:guides]`, `prepublishOnly` = the five check gates), exports map per
   surface with `.d.ts`/`.d.cts` pairs.
-- **Orchestration set** — mirrored byte-identical line-wide across every repo: `AGENTS.md`, `CLAUDE.md`, `.claude/` (`settings.json` + 10 role agents), `scripts/` (`deps.sh`/`cursor.sh`/`ollama.sh` SessionStart hooks). A stale copy is an audit finding; `scaffold mirror --root <workspace>` trues it up (dry-run by default, `--apply` to write; source defaults to the scaffold package's vendored `dist/host`, `--host` overrides; never writes `ci.yml` — two repos carry repo-flavored CI, trued per-repo with `repair`).
+- **Orchestration set** — mirrored byte-identical line-wide across every repo: `AGENTS.md`, `CLAUDE.md`, `.claude/` (`settings.json` + 10 role agents), `scripts/` (`deps.sh`/`cursor.sh`/`ollama.sh` SessionStart hooks). A stale copy is an audit finding; `scaffold fleet` trues it up — run from the folder containing the checkouts, it scans its immediate children (dry-run by default, `--apply` to write; source defaults to the scaffold package's vendored `dist/host`, `--from` overrides; never writes `ci.yml` — two repos carry repo-flavored CI, trued per-repo with `repair`).
 
 **Where to look (no scouting needed):** public API → `src/<surface>/index.ts`; types →
 `types.ts`; construction → `factories.ts`; gate definitions → package.json scripts;
@@ -108,12 +108,14 @@ fleet-conformance tool (installed as a devDep line-wide post-publish); its vendo
 `dist/host` carries the canonical shared artifacts, and `guides/src/scaffold.md` is the
 authoritative anatomy reference. Six verbs, dry-run by default: `new <name> --surfaces
 <s...> --apply` mints ANY surface variant (core-only through triple, server-only,
-browser-only — five gates green by construction); `sync` pulls each dependency's latest
+browser-only — five gates green by construction); `pull` pulls each dependency's latest
 guide from its repo into `guides/src/` and checks declared ranges against npm; `audit
 [--live] [--groups <g,g>]` is the conformance gate (nonzero exit on any drift); `repair
 [--apply] [--prune]` restores shared artifacts (host-origin only, never generated
-source); `mirror --root` trues the fleet; `catalog --root <r> --apply` regenerates the
-package table above from the fleet's guides. Templates are frozen IN the package
+source); `fleet` trues the fleet — run from the folder containing the checkouts, it
+scans its immediate children; `catalog --apply` regenerates the package table
+above from the npm registry (`--from <path>` adds local-only checkouts). Every
+verb supports `--json` for automation. Templates are frozen IN the package
 (`src/core/templates.ts`) — refresh there whenever the line's devDep pins move.
 
 ## Law #2 — vendored guides
@@ -121,7 +123,7 @@ package table above from the fleet's guides. Templates are frozen IN the package
 Each repo's `guides/src/` holds its own canonical `<self>.md` + ONE vendored copy per
 runtime dependency + `guide.md`. Canonical source for `<dep>.md` = the dep repo's
 `guides/src/<dep>.md` at main. On every release prep, refresh every vendored guide —
-`scaffold sync` pulls each from upstream and reports registry-version freshness
+`scaffold pull` pulls each from upstream and reports registry-version freshness
 (identical copies are no-ops). Staleness is repo-only (guides don't ship).
 `test:guides` enforces guides ⟷ source parity and will demand doc rows for new exports.
 

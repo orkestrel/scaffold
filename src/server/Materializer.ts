@@ -19,7 +19,7 @@ import {
 import { dirname, join, relative as relativeOf, resolve, sep } from 'node:path'
 import { Emitter } from '@orkestrel/emitter'
 import { ScaffoldError } from '@src/core'
-import { hostRoot, isVacant, listFiles, readHostManifest } from './helpers.js'
+import { hostRoot, isVacant, pruneTargets, readHostManifest } from './helpers.js'
 
 /**
  * The materialization entity (server) — the only impure surface in the
@@ -81,10 +81,6 @@ import { hostRoot, isVacant, listFiles, readHostManifest } from './helpers.js'
  * ```
  */
 export class Materializer implements MaterializerInterface {
-	// The `prune`-owned directories — a hard allowlist; `prune` never touches
-	// anything outside these two.
-	static readonly #PRUNE_DIRECTORIES = ['.claude/agents', 'scripts'] as const
-
 	readonly #emitter: Emitter<MaterializerEventMap>
 	readonly #host: string
 	#manifestLoaded = false
@@ -148,23 +144,17 @@ export class Materializer implements MaterializerInterface {
 		return result
 	}
 
-	// The vendored allowlist is derived from `host` alone — the directories
-	// `prune` guards are host-vendored, not plan-selected.
+	// The unexpected-file scan itself lives in `pruneTargets` (server/helpers.js)
+	// — the single source of truth both this deletion and the bin's audit/preview
+	// UX read from; `prune` only deletes exactly what it reports.
 	prune(target: string): MaterializeResult {
 		this.#ensureAlive()
 		const removed: string[] = []
-		for (const directory of Materializer.#PRUNE_DIRECTORIES) {
-			const allowed = this.#vendored(directory)
-			const root = join(target, directory)
-			if (!existsSync(root)) continue
-			for (const relative of listFiles(root)) {
-				const path = `${directory}/${relative}`
-				if (allowed.has(path)) continue
-				const full = Materializer.#assertContained(target, path, 'WRITE', path)
-				unlinkSync(full)
-				removed.push(path)
-				this.#emitter.emit('remove', path)
-			}
+		for (const path of pruneTargets(target, this.#host)) {
+			const full = Materializer.#assertContained(target, path, 'WRITE', path)
+			unlinkSync(full)
+			removed.push(path)
+			this.#emitter.emit('remove', path)
 		}
 		const result: MaterializeResult = { target, written: [], copied: [], skipped: [], removed }
 		this.#emitter.emit('done', result)
@@ -233,46 +223,6 @@ export class Materializer implements MaterializerInterface {
 			this.#manifestLoaded = true
 		}
 		return this.#manifestEntries
-	}
-
-	// The vendored set of destination-relative paths under `directory`
-	// (`.claude/agents` or `scripts`) that `prune` must NOT delete — read from
-	// the manifest's `destination`s when `host` has one, else listed straight
-	// off `host/<directory>`.
-	//
-	// FAIL CLOSED: before returning any allowlist (even an empty one), the
-	// vendored source must be POSITIVELY established, or `prune` would treat
-	// an unresolved host as "vendors nothing" and delete every file under
-	// `target/<directory>`. A missing `host` root, or (no `manifest.json` AND
-	// no `host/<directory>`), is a coded `TARGET` failure — the distinction
-	// this guards is missing-host vs genuinely-empty-vendor: a `host` that
-	// EXISTS and vendors zero files in `directory` (an existing empty dir, or
-	// a manifest with zero entries for it) remains a valid empty allowlist.
-	#vendored(directory: string): ReadonlySet<string> {
-		if (!existsSync(this.#host)) {
-			throw new ScaffoldError(
-				'TARGET',
-				`Cannot establish vendored source for prune: host root not found at ${this.#host}`,
-				{ host: this.#host, directory },
-			)
-		}
-		const manifest = this.#manifest()
-		if (manifest !== undefined) {
-			return new Set(
-				manifest
-					.filter((entry) => entry.destination.startsWith(`${directory}/`))
-					.map((entry) => entry.destination),
-			)
-		}
-		const hostDirectory = join(this.#host, directory)
-		if (!existsSync(hostDirectory)) {
-			throw new ScaffoldError(
-				'TARGET',
-				`Cannot establish vendored source for prune: no manifest.json and no host directory at ${hostDirectory}`,
-				{ host: this.#host, directory },
-			)
-		}
-		return new Set(listFiles(hostDirectory).map((relative) => `${directory}/${relative}`))
 	}
 
 	#write(artifact: Artifact, target: string): void {

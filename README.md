@@ -1,7 +1,7 @@
 # @orkestrel/scaffold
 
-Blueprint-to-plan package scaffolding, auditing, live dependency sync, and fleet
-mirroring for the `@orkestrel` line.
+Blueprint-to-plan package scaffolding, auditing, dependency guide/version
+pulling, and fleet-wide shared-file upkeep for the `@orkestrel` line.
 
 ## Install
 
@@ -13,17 +13,27 @@ npm install -D @orkestrel/scaffold
 
 ```sh
 # from a checkout (after npm run build)
-node ./dist/bin/scaffold.js new mypackage --surfaces core --apply
+node ./dist/bin/scaffold.js new
 
 # once installed
+npx scaffold new
+```
+
+Run any verb **bare** on a terminal and it guides you: it prompts for whatever's
+missing, previews what it's about to do, and ASKS before writing anything
+(destructive extras like `--prune` are a second, separate question) — hit
+ctrl-c at any prompt and nothing is written. Prefer scripting instead? Every
+flag from the guided flow works standalone:
+
+```sh
 npx scaffold new mypackage --surfaces core --apply
 ```
 
-Every verb is a **dry run by default** — nothing writes until you pass `--apply`,
-and `new <name>` writes into `./<name>` under the current directory (`--target`
-overrides the exact destination). Every write destination resolves under the
-current directory — equal to it or nested beneath — so the CLI is safe to run
-as a global command anywhere; `--host` may point anywhere (read-only).
+In scripts and CI, every verb is dry-run by default and fully non-interactive —
+add `--apply` and/or `--yes` to make it write, `--json` for one machine-readable
+value instead of prose. Every write destination resolves under the current
+directory — equal to it or nested beneath — so the CLI is safe to run as a
+global command anywhere; `--from` may point anywhere (read-only).
 
 **Windows/PowerShell:** invoke as `node ./dist/bin/scaffold.js …` or `npx scaffold …`
 directly — PowerShell mangles npm's `--` passthrough, so avoid
@@ -36,42 +46,45 @@ do; `NODE_EXTRA_CA_CERTS` adds custom PEMs on top.
 ## CLI
 
 ```sh
-scaffold new <name> [--apply] [--live]
-scaffold sync
-scaffold audit [--live]
-scaffold repair [--apply] [--prune]
-scaffold mirror [--root <dir>] [--apply]
-scaffold catalog [--root <dir> ...] [--target <repo>] [--offline] [--apply]
+scaffold new [name] [--surfaces <list>] [--apply] [--yes] [--json]
+scaffold pull [--apply] [--yes] [--json]
+scaffold audit [--live] [--json]
+scaffold repair [--prune] [--apply] [--yes] [--json]
+scaffold fleet [--apply] [--yes] [--json]
+scaffold catalog [--from <path> ...] [--target <repo>] [--offline] [--apply] [--yes] [--json]
 ```
 
-- **`new <name>`** — drafts a `Blueprint` and compiles it into a `Plan`; dry-run by
-  default (prints a review), `--apply` writes the package to disk, `--live` fetches
-  each dependency's current guide + registry version instead of the vendored default.
-- **`sync`** — refreshes vendored dependency mirrors and reports version drift for an
-  existing package.
+Run bare, every verb above guides you interactively; the flags shown are the
+scripting form. Exit codes: `0` clean/success, `1` drift or failure, `2` usage
+error.
+
+- **`new [name]`** — drafts a `Blueprint` and compiles it into a `Plan`; dry-run by
+  default (prints a review), `--apply` writes the package to disk.
+- **`pull`** — fetches the latest vendored dependency guides and registry versions
+  for an existing package and reports drift.
 - **`audit`** — a whole-plan conformance report: diffs a target against the FULL plan
   its own manifest implies (host AND generated artifacts alike) and reports drift as
   data, findings and all; exits nonzero the moment any drift is found, so it gates CI
-  cleanly. `--live` additionally checks upstream guide/version freshness.
+  cleanly. `--live` additionally checks upstream guide/version freshness — `audit` is the
+  ONLY verb that carries `--live`.
 - **`repair`** — restores the shared HOST set only (generated source/tests/configs are
   never touched); re-derives the plan from the audit and re-applies only the drifted
   host artifacts; dry-run by default, `--apply` writes the fixes, `--prune` also removes
-  target-only files the plan no longer declares.
-- **`mirror`** — propagates the line's shared, host-owned files (`AGENTS.md`,
-  `CLAUDE.md`, `.claude/`, `scripts/`, the shared dotfiles, …) from this canonical
-  repo to every `@orkestrel` repo under `--root`'s IMMEDIATE CHILDREN (default:
-  the current directory; a write destination, so `cd` into the folder that
-  CONTAINS your checkouts first — `repair` is the single-repo counterpart, run
-  from inside one repo); dry-run by default, `--apply` writes.
+  target-only files the plan no longer declares (asked as a separate destructive
+  question when run bare).
+- **`fleet`** — audits/repairs the shared, host-owned files (`AGENTS.md`,
+  `CLAUDE.md`, `.claude/`, `scripts/`, the shared dotfiles, …) across every
+  `@orkestrel` repo that is an IMMEDIATE CHILD of the current directory — no root
+  flag; the scope is always your checkouts folder, so `cd` there first (`repair`
+  is the single-repo counterpart, run from inside one repo); dry-run by default,
+  `--apply` writes.
 - **`catalog`** — regenerates the orkestrel agent's package catalog; the npm
   registry is the AUTHORITATIVE package list by default (unauthenticated —
-  every fleet repo is public), each `--root` ADDS local-only discoveries on
-  top of it, `--offline` sources `--root`(s) only, and the table writes into
-  `--target`'s `.claude/agents/orkestrel.md`; dry-run by default, `--apply`
-  writes, and a shrink warning prints whenever the new table would have
-  fewer rows than the currently-embedded one.
-
-Every verb is dry-run by default — nothing touches disk until you pass `--apply`.
+  every fleet repo is public), each `--from <path>` ADDS local-only discoveries
+  on top of it, `--offline` sources the `--from` path(s) only, and the table
+  writes into `--target`'s `.claude/agents/orkestrel.md`; dry-run by default,
+  `--apply` writes, and a shrink warning prints whenever the new table would
+  have fewer rows than the currently-embedded one.
 
 ## Library
 

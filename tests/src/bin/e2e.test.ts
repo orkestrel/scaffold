@@ -1,13 +1,13 @@
 import type { SpawnSyncReturns } from 'node:child_process'
 // The default-HOST end-to-end proof — spawns the BUILT `dist/bin/scaffold.js`
-// with NO `--host`, so every command resolves its host root through the
+// with NO `--from`, so every command resolves its host root through the
 // bin's own default (`hostRoot()`, this package's own vendored `dist/host`),
 // never a caller-supplied fixture. `scaffold.test.ts` always passes an
-// explicit `--host`/`--target` (or runs `sync`/`audit` against a hand-built
-// manifest); this suite instead runs `new`/`audit`/`repair`/`mirror` the way
-// an installed consumer actually would: no `--host`, and `new`/`audit`/
-// `repair` driven purely by `cwd`, no `--target`. Assumes the build chain has
-// already run (`npm run build` before `npm test` — AGENTS.md §Orientation).
+// explicit `--from` (or exercises network-free argument-validation paths only);
+// this suite instead runs `new`/`audit`/`repair`/`fleet` the way an installed
+// consumer actually would: no `--from`, and `new`/`audit`/`repair` driven
+// purely by `cwd`, no `--target`. Assumes the build chain has already run
+// (`npm run build` before `npm test` — AGENTS.md §Orientation).
 import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -31,10 +31,10 @@ const HOST_BYTE_EQUAL_PATHS = [
 
 /**
  * Spawn the built `scaffold` bin with `argv`, `cwd` defaulting to the repo
- * root — the `scaffold.test.ts` `runBin` shape, extended with an optional
- * `cwd` override so `new` / `audit` / `repair` can be driven purely by
- * working directory (their documented `.` default), the path this suite
- * exercises instead of an explicit `--target`.
+ * root — extended with an optional `cwd` override so `new` / `audit` /
+ * `repair` / `fleet` can be driven purely by working directory (their
+ * documented `.` default), the path this suite exercises instead of an
+ * explicit `--target`.
  */
 function runBin(
 	argv: readonly string[],
@@ -58,7 +58,7 @@ function quartet(pascal: string): readonly string[] {
 	return ['types.ts', `${pascal}.ts`, 'factories.ts', 'index.ts']
 }
 
-describe('scaffold bin: default-host end-to-end proof (no --host)', () => {
+describe('scaffold bin: default-host end-to-end proof (no --from)', () => {
 	describe('new --apply: default-host materialization', () => {
 		it('writes host artifacts byte-equal to the repo, executable scripts, no retired legacy files, a wired package.json, and an interpolated guides-parity drop-in', async () => {
 			const cwd = await buildTempDirectory()
@@ -170,20 +170,21 @@ describe('scaffold bin: default-host end-to-end proof (no --host)', () => {
 
 				const cleanAudit = runBin(['audit'], { cwd: packageDirectory })
 				expect(cleanAudit.status).toBe(0)
-				expect(cleanAudit.stdout).toContain('content-aware')
+				expect(cleanAudit.stdout).toContain('comparing: file contents for template-owned files')
 
-				// `diffPlan` (src/core/helpers.ts) audits a `host`-origin artifact by
-				// PRESENCE only — its own doc comment: "never stale" — so a byte-level
-				// mutation of a still-present host file is NOT detectable drift under
-				// the landed source (see this file's final deviation note). Removing
-				// the file (missing) is the drift a host-origin artifact CAN surface,
-				// and still proves the audit -> repair round-trip restores the exact
-				// vendored bytes.
+				// `diffPlan` (src/core/helpers.ts) content-compares a HYDRATED
+				// `host`-origin artifact — a byte-level mutation of a still-present
+				// host file IS now detectable drift (`stale`) — see the AGENTS.md
+				// mutation round-trip below for that case. Removing the file
+				// (`missing`) is the drift every host-origin artifact can ALWAYS
+				// surface, hydrated or not, and still proves the audit -> repair
+				// round-trip restores the exact vendored bytes.
 				const hostFile = join(packageDirectory, '.editorconfig')
 				rmSync(hostFile)
 
 				const driftedAudit = runBin(['audit'], { cwd: packageDirectory })
 				expect(driftedAudit.status).toBe(1)
+				expect(driftedAudit.stdout).toContain('template-owned')
 
 				const repaired = runBin(['repair', '--apply'], { cwd: packageDirectory })
 				expect(repaired.status).toBe(0)
@@ -194,6 +195,14 @@ describe('scaffold bin: default-host end-to-end proof (no --host)', () => {
 				const cleanAgain = runBin(['audit'], { cwd: packageDirectory })
 				expect(cleanAgain.status).toBe(0)
 
+				// `runRepair` (src/bin/scaffold.ts) reaches the prune step whenever
+				// `--prune` finds work, clean host audit or not (U11 F2) —
+				// `materializer.prune` itself scans `.claude/agents` / `scripts`
+				// directly, independent of the audit/diff. Removing the host file a
+				// second time here still proves the SAME round-trip once more,
+				// alongside the planted foreign file.
+				rmSync(hostFile)
+
 				const agentsDirectory = join(packageDirectory, '.claude/agents')
 				mkdirSync(agentsDirectory, { recursive: true })
 				const roguePath = join(agentsDirectory, 'rogue.md')
@@ -202,14 +211,49 @@ describe('scaffold bin: default-host end-to-end proof (no --host)', () => {
 				const pruned = runBin(['repair', '--apply', '--prune'], { cwd: packageDirectory })
 				expect(pruned.status).toBe(0)
 				expect(existsSync(roguePath)).toBe(false)
+				expect(readFileSync(hostFile, 'utf8')).toBe(
+					readFileSync(join(WORKSPACE_ROOT, '.editorconfig'), 'utf8'),
+				)
+			} finally {
+				await cwd.cleanup()
+			}
+		}, 60000)
+
+		it('U11 closure regression: a byte-mutated (never removed) AGENTS.md is detected as drifted (stale), repair restores it byte-equal to the vendored original, and a rerun is clean', async () => {
+			const cwd = await buildTempDirectory()
+			try {
+				const created = runBin(['new', 'demo', '--surfaces', 'core', '--apply'], {
+					cwd: cwd.path,
+				})
+				expect(created.status).toBe(0)
+				const packageDirectory = join(cwd.path, 'demo')
+
+				const agentsFile = join(packageDirectory, 'AGENTS.md')
+				const original = readFileSync(agentsFile, 'utf8')
+				writeFileSync(agentsFile, '# corrupted junk, not the real AGENTS.md\n', 'utf8')
+
+				const driftedAudit = runBin(['audit', '--target', 'demo'], { cwd: cwd.path })
+				expect(driftedAudit.status).toBe(1)
+				expect(driftedAudit.stdout).toContain('AGENTS.md')
+				expect(driftedAudit.stdout).toContain('drifted')
+
+				const repaired = runBin(['repair', '--apply', '--target', 'demo'], { cwd: cwd.path })
+				expect(repaired.status).toBe(0)
+				expect(readFileSync(agentsFile, 'utf8')).toBe(original)
+				expect(readFileSync(agentsFile, 'utf8')).toBe(
+					readFileSync(join(WORKSPACE_ROOT, 'AGENTS.md'), 'utf8'),
+				)
+
+				const cleanAudit = runBin(['audit', '--target', 'demo'], { cwd: cwd.path })
+				expect(cleanAudit.status).toBe(0)
 			} finally {
 				await cwd.cleanup()
 			}
 		}, 60000)
 	})
 
-	describe('fleet round-trip: mirror across two fresh scaffolds', () => {
-		it('mirror is clean right after materializing two fresh scaffolds, fails once one drifts, --apply trues it, and a rerun is clean', async () => {
+	describe('fleet round-trip: two fresh scaffolds under the cwd’s immediate children', () => {
+		it('fleet is clean right after materializing two fresh scaffolds, fails once one drifts, --apply trues it, and a rerun is clean', async () => {
 			const root = await buildTempDirectory()
 			try {
 				for (const name of ['fleeta', 'fleetb']) {
@@ -219,34 +263,41 @@ describe('scaffold bin: default-host end-to-end proof (no --host)', () => {
 					expect(created.status).toBe(0)
 				}
 
-				const clean = runBin(['mirror', '--root', '.'], { cwd: root.path })
+				const clean = runBin(['fleet'], { cwd: root.path })
 				expect(clean.status).toBe(0)
 				expect(clean.stdout).toContain('fleeta: clean')
 				expect(clean.stdout).toContain('fleetb: clean')
 
-				// Mirror scopes its plan to `host`-origin artifacts only (excluding
+				// fleet scopes its plan to `host`-origin artifacts only (excluding
 				// `.github/workflows/ci.yml`), and (per the single-target round-trip
 				// test above) `diffPlan` audits a `host`-origin artifact by presence
-				// only — removing a host file is therefore the drift mirror CAN detect.
+				// only — removing a host file is therefore the drift fleet CAN detect.
 				const driftedFile = join(root.path, 'fleeta', '.editorconfig')
 				rmSync(driftedFile)
 
-				const drifted = runBin(['mirror', '--root', '.'], { cwd: root.path })
+				const drifted = runBin(['fleet'], { cwd: root.path })
 				expect(drifted.status).toBe(1)
-				expect(drifted.stdout).toContain('fleeta: drifted 0, missing 1, foreign 0')
-				expect(drifted.stdout).toContain('total: 1 drifted, 0 failed')
+				expect(drifted.stdout).toContain('fleeta: 1 missing')
+				expect(drifted.stdout).toContain('total: 1 drifted repo, 0 faileds')
 
-				const trued = runBin(['mirror', '--root', '.', '--apply'], { cwd: root.path })
+				const trued = runBin(['fleet', '--apply'], { cwd: root.path })
 				expect(trued.status).toBe(0)
-				expect(trued.stdout).toContain('fleeta: repaired (0 remaining)')
+				expect(trued.stdout).toContain('fleeta: repaired (0 findings remaining)')
 				expect(readFileSync(driftedFile, 'utf8')).toBe(
 					readFileSync(join(WORKSPACE_ROOT, '.editorconfig'), 'utf8'),
 				)
 
-				const rerun = runBin(['mirror', '--root', '.'], { cwd: root.path })
+				const rerun = runBin(['fleet'], { cwd: root.path })
 				expect(rerun.status).toBe(0)
 				expect(rerun.stdout).toContain('fleeta: clean')
 				expect(rerun.stdout).toContain('fleetb: clean')
+
+				// fleet has NO `--root` flag at all — the cd-model IS the interface
+				// (§12/render.ts: `KNOWN_VERBS`, `VERB_FLAGS.fleet` carries no `--root`
+				// entry; `parseArguments` (src/bin/scaffold.ts) declares no `root`
+				// option, so passing it is a strict `parseArgs` failure).
+				const withRoot = runBin(['fleet', '--root', '.'], { cwd: root.path })
+				expect(withRoot.status).toBe(2)
 			} finally {
 				await root.cleanup()
 			}

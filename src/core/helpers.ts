@@ -570,9 +570,12 @@ export function inferGroup(path: string): Group {
  * @remarks
  * A `template` / `computed` artifact whose rendered content the target does not
  * match is `stale`; one the target lacks is `missing`; a target file the plan
- * does not own is `foreign`. A `host`-origin artifact carries no `content` (the
- * pure core never reads the canonical host bytes), so it is audited by
- * PRESENCE only — `missing` or `aligned`, never `stale`.
+ * does not own is `foreign`. A `host`-origin artifact is audited by PRESENCE
+ * only — `missing` or `aligned`, never `stale` — UNLESS it has been hydrated
+ * with its real host bytes (`hydratePlan`'s `content`), in which case it is
+ * content-compared exactly like a `template` / `computed` artifact and CAN be
+ * `stale`. A degrade-path or directory-shaped host artifact (never hydrated)
+ * stays presence-only.
  * @returns The `Audit` of drift findings — pure, no I/O.
  *
  * @example
@@ -589,11 +592,11 @@ export function diffPlan(plan: Plan, current: Readonly<Record<string, string>>):
 		owned.add(artifact.path)
 		const seen = current[artifact.path]
 		if (artifact.origin === 'host') {
-			findings.push({
-				path: artifact.path,
-				group: artifact.group,
-				drift: seen === undefined ? 'missing' : 'aligned',
-			})
+			let drift: Drift
+			if (seen === undefined) drift = 'missing'
+			else if (artifact.content === undefined) drift = 'aligned'
+			else drift = seen === artifact.content ? 'aligned' : 'stale'
+			findings.push({ path: artifact.path, group: artifact.group, drift })
 			continue
 		}
 		if (seen === undefined)
