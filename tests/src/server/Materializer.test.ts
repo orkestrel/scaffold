@@ -11,7 +11,13 @@ import { isScaffoldError } from '@src/core'
 import { createMaterializer, isVacant, readTarget } from '@src/server'
 import { createRecorder } from '../../setup.js'
 import type { TempDirectoryInterface } from '../../setupServer.js'
-import { buildTempDirectory, WORKSPACE_ROOT } from '../../setupServer.js'
+import {
+	buildTempDirectory,
+	canSocket,
+	canSymlink,
+	hasModes,
+	WORKSPACE_ROOT,
+} from '../../setupServer.js'
 
 // ── isVacant ─────────────────────────────────────────────────────────────────
 
@@ -94,32 +100,35 @@ describe('readTarget', () => {
 		}
 	})
 
-	it('wraps a genuine read failure on an EXISTING path into a coded TARGET error (a socket cannot be read as a file, even as root)', async () => {
-		const directory = await buildTempDirectory()
-		try {
-			const socketPath = join(directory.path, 'socket')
-			const server = createServer()
-			await new Promise<void>((resolvePromise, reject) => {
-				server.once('error', reject)
-				server.listen(socketPath, () => resolvePromise())
-			})
+	it.skipIf(!canSocket)(
+		'wraps a genuine read failure on an EXISTING path into a coded TARGET error (a socket cannot be read as a file, even as root) (SKIPPED: environment cannot bind a Unix domain socket — unreadable-existing-path read failure unverified here; passes on socket-capable POSIX CI)',
+		async () => {
+			const directory = await buildTempDirectory()
 			try {
-				let caught: unknown
+				const socketPath = join(directory.path, 'socket')
+				const server = createServer()
+				await new Promise<void>((resolvePromise, reject) => {
+					server.once('error', reject)
+					server.listen(socketPath, () => resolvePromise())
+				})
 				try {
-					readTarget(directory.path, ['socket'])
-				} catch (error) {
-					caught = error
+					let caught: unknown
+					try {
+						readTarget(directory.path, ['socket'])
+					} catch (error) {
+						caught = error
+					}
+					if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
+					expect(caught.code).toBe('TARGET')
+					expect(caught.context).toMatchObject({ path: 'socket' })
+				} finally {
+					await new Promise<void>((resolvePromise) => server.close(() => resolvePromise()))
 				}
-				if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
-				expect(caught.code).toBe('TARGET')
-				expect(caught.context).toMatchObject({ path: 'socket' })
 			} finally {
-				await new Promise<void>((resolvePromise) => server.close(() => resolvePromise()))
+				await directory.cleanup()
 			}
-		} finally {
-			await directory.cleanup()
-		}
-	})
+		},
+	)
 })
 
 // ── Materializer.materialize ─────────────────────────────────────────────────
@@ -385,58 +394,61 @@ describe('Materializer — path containment', () => {
 		}
 	})
 
-	it('repair refuses to write through a SYMLINKED subdirectory that escapes the target (real-path containment, no vacancy gate to shield it)', async () => {
-		const directory = await buildTempDirectory()
-		const outside = await buildTempDirectory()
-		try {
-			// A benign materialize first — happy path must still work after the
-			// real-path change.
-			const benignPlan = blueprintToPlan(blueprint('budget', { surfaces: ['core'] }))
-			const materializer = createMaterializer({ host: WORKSPACE_ROOT })
-			const benignResult = materializer.materialize(benignPlan, directory.path)
-			expect(benignResult.written.length + benignResult.copied.length).toBe(
-				benignPlan.artifacts.length,
-			)
-
-			// Plant a symlinked subdirectory inside the (now-materialized) target
-			// that actually points OUTSIDE it.
-			const linkPath = join(directory.path, 'escape-link')
-			symlinkSync(outside.path, linkPath, 'dir')
-
-			const plan: Plan = {
-				blueprint: blueprint('symlink-escape-fixture', { surfaces: ['core'] }),
-				groups: ['docs'],
-				artifacts: [
-					{ path: 'escape-link/evil.txt', group: 'docs', origin: 'computed', content: 'evil' },
-				],
-			}
-			let caught: unknown
+	it.skipIf(!canSymlink)(
+		'repair refuses to write through a SYMLINKED subdirectory that escapes the target (real-path containment, no vacancy gate to shield it) (SKIPPED: environment cannot create symlinks — symlink-escape containment for repair unverified here; passes on symlink-capable POSIX CI)',
+		async () => {
+			const directory = await buildTempDirectory()
+			const outside = await buildTempDirectory()
 			try {
-				materializer.repair(
-					plan,
-					{
-						findings: [{ path: 'escape-link/evil.txt', group: 'docs', drift: 'missing' }],
-						clean: false,
-						complete: true,
-						questions: [],
-						drifted: 0,
-						missing: 1,
-						foreign: 0,
-					},
-					directory.path,
+				// A benign materialize first — happy path must still work after the
+				// real-path change.
+				const benignPlan = blueprintToPlan(blueprint('budget', { surfaces: ['core'] }))
+				const materializer = createMaterializer({ host: WORKSPACE_ROOT })
+				const benignResult = materializer.materialize(benignPlan, directory.path)
+				expect(benignResult.written.length + benignResult.copied.length).toBe(
+					benignPlan.artifacts.length,
 				)
-			} catch (error) {
-				caught = error
+
+				// Plant a symlinked subdirectory inside the (now-materialized) target
+				// that actually points OUTSIDE it.
+				const linkPath = join(directory.path, 'escape-link')
+				symlinkSync(outside.path, linkPath, 'dir')
+
+				const plan: Plan = {
+					blueprint: blueprint('symlink-escape-fixture', { surfaces: ['core'] }),
+					groups: ['docs'],
+					artifacts: [
+						{ path: 'escape-link/evil.txt', group: 'docs', origin: 'computed', content: 'evil' },
+					],
+				}
+				let caught: unknown
+				try {
+					materializer.repair(
+						plan,
+						{
+							findings: [{ path: 'escape-link/evil.txt', group: 'docs', drift: 'missing' }],
+							clean: false,
+							complete: true,
+							questions: [],
+							drifted: 0,
+							missing: 1,
+							foreign: 0,
+						},
+						directory.path,
+					)
+				} catch (error) {
+					caught = error
+				}
+				if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
+				expect(caught.code).toBe('WRITE')
+				expect(existsSync(join(outside.path, 'evil.txt'))).toBe(false)
+				materializer.destroy()
+			} finally {
+				await directory.cleanup()
+				await outside.cleanup()
 			}
-			if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
-			expect(caught.code).toBe('WRITE')
-			expect(existsSync(join(outside.path, 'evil.txt'))).toBe(false)
-			materializer.destroy()
-		} finally {
-			await directory.cleanup()
-			await outside.cleanup()
-		}
-	})
+		},
+	)
 })
 
 // ── Materializer.materialize — group-scoped plan into a vacant target ───────
@@ -588,74 +600,80 @@ describe('Materializer — manifest-aware host copy', () => {
 		}
 	}
 
-	it('materialize lands manifest-staged files at their DOTTED destinations, with the exec bit set only where the manifest says so', async () => {
-		const directory = await buildTempDirectory()
-		const host = await buildManifestHost()
-		try {
-			const plan = buildManifestPlan()
-			const materializer = createMaterializer({ host: host.path })
-			const result = materializer.materialize(plan, directory.path)
+	it.skipIf(!hasModes)(
+		'materialize lands manifest-staged files at their DOTTED destinations, with the exec bit set only where the manifest says so (SKIPPED: this platform carries no POSIX exec-bit semantics — exec-bit assertions unverified here; pass on POSIX)',
+		async () => {
+			const directory = await buildTempDirectory()
+			const host = await buildManifestHost()
+			try {
+				const plan = buildManifestPlan()
+				const materializer = createMaterializer({ host: host.path })
+				const result = materializer.materialize(plan, directory.path)
 
-			expect([...result.copied].sort()).toEqual(
-				['.claude/settings.json', '.gitignore', 'scripts/deps.sh'].sort(),
-			)
-			expect(readFileSync(join(directory.path, '.gitignore'), 'utf8')).toBe('node_modules\n')
-			expect(readFileSync(join(directory.path, '.claude/settings.json'), 'utf8')).toBe(
-				'{"permissions":{}}',
-			)
-			expect(readFileSync(join(directory.path, 'scripts/deps.sh'), 'utf8')).toBe(
-				'#!/bin/sh\necho deps\n',
-			)
+				expect([...result.copied].sort()).toEqual(
+					['.claude/settings.json', '.gitignore', 'scripts/deps.sh'].sort(),
+				)
+				expect(readFileSync(join(directory.path, '.gitignore'), 'utf8')).toBe('node_modules\n')
+				expect(readFileSync(join(directory.path, '.claude/settings.json'), 'utf8')).toBe(
+					'{"permissions":{}}',
+				)
+				expect(readFileSync(join(directory.path, 'scripts/deps.sh'), 'utf8')).toBe(
+					'#!/bin/sh\necho deps\n',
+				)
 
-			// Only `scripts/deps.sh` is flagged `executable: true` in the manifest.
-			expect(statSync(join(directory.path, 'scripts/deps.sh')).mode & 0o111).not.toBe(0)
-			expect(statSync(join(directory.path, '.gitignore')).mode & 0o111).toBe(0)
-			expect(statSync(join(directory.path, '.claude/settings.json')).mode & 0o111).toBe(0)
+				// Only `scripts/deps.sh` is flagged `executable: true` in the manifest.
+				expect(statSync(join(directory.path, 'scripts/deps.sh')).mode & 0o111).not.toBe(0)
+				expect(statSync(join(directory.path, '.gitignore')).mode & 0o111).toBe(0)
+				expect(statSync(join(directory.path, '.claude/settings.json')).mode & 0o111).toBe(0)
 
-			materializer.destroy()
-		} finally {
-			await directory.cleanup()
-			await host.cleanup()
-		}
-	})
+				materializer.destroy()
+			} finally {
+				await directory.cleanup()
+				await host.cleanup()
+			}
+		},
+	)
 
-	it('repair lands manifest-staged missing files at their DOTTED destinations, with the exec bit set on deps.sh', async () => {
-		const directory = await buildTempDirectory()
-		const host = await buildManifestHost()
-		try {
-			const plan = buildManifestPlan()
-			const materializer = createMaterializer({ host: host.path })
-			const result = materializer.repair(
-				plan,
-				{
-					findings: [
-						{ path: '.gitignore', group: 'configs', drift: 'missing' },
-						{ path: '.claude/settings.json', group: 'configs', drift: 'missing' },
-						{ path: 'scripts/deps.sh', group: 'orchestration', drift: 'missing' },
-					],
-					clean: false,
-					complete: true,
-					questions: [],
-					drifted: 0,
-					missing: 3,
-					foreign: 0,
-				},
-				directory.path,
-			)
+	it.skipIf(!hasModes)(
+		'repair lands manifest-staged missing files at their DOTTED destinations, with the exec bit set on deps.sh (SKIPPED: this platform carries no POSIX exec-bit semantics — exec-bit assertion unverified here; passes on POSIX)',
+		async () => {
+			const directory = await buildTempDirectory()
+			const host = await buildManifestHost()
+			try {
+				const plan = buildManifestPlan()
+				const materializer = createMaterializer({ host: host.path })
+				const result = materializer.repair(
+					plan,
+					{
+						findings: [
+							{ path: '.gitignore', group: 'configs', drift: 'missing' },
+							{ path: '.claude/settings.json', group: 'configs', drift: 'missing' },
+							{ path: 'scripts/deps.sh', group: 'orchestration', drift: 'missing' },
+						],
+						clean: false,
+						complete: true,
+						questions: [],
+						drifted: 0,
+						missing: 3,
+						foreign: 0,
+					},
+					directory.path,
+				)
 
-			expect([...result.copied].sort()).toEqual(
-				['.claude/settings.json', '.gitignore', 'scripts/deps.sh'].sort(),
-			)
-			expect(existsSync(join(directory.path, '.gitignore'))).toBe(true)
-			expect(existsSync(join(directory.path, '.claude/settings.json'))).toBe(true)
-			expect(statSync(join(directory.path, 'scripts/deps.sh')).mode & 0o111).not.toBe(0)
+				expect([...result.copied].sort()).toEqual(
+					['.claude/settings.json', '.gitignore', 'scripts/deps.sh'].sort(),
+				)
+				expect(existsSync(join(directory.path, '.gitignore'))).toBe(true)
+				expect(existsSync(join(directory.path, '.claude/settings.json'))).toBe(true)
+				expect(statSync(join(directory.path, 'scripts/deps.sh')).mode & 0o111).not.toBe(0)
 
-			materializer.destroy()
-		} finally {
-			await directory.cleanup()
-			await host.cleanup()
-		}
-	})
+				materializer.destroy()
+			} finally {
+				await directory.cleanup()
+				await host.cleanup()
+			}
+		},
+	)
 
 	it('a host with NO manifest.json falls back to the 1:1 raw-root mapping (a fresh fixture, not the existing-behavior repo-root tests above)', async () => {
 		const directory = await buildTempDirectory()
@@ -827,36 +845,39 @@ describe('Materializer.prune', () => {
 		}
 	})
 
-	it('refuses to delete through a symlink under scripts/ that escapes the target — containment holds for prune too, nothing outside is deleted', async () => {
-		const directory = await buildTempDirectory()
-		const outside = await buildTempDirectory()
-		const host = await buildVendoredHost()
-		try {
-			writeFileSync(join(outside.path, 'secret.txt'), 'do not touch', 'utf8')
-			mkdirSync(join(directory.path, 'scripts'), { recursive: true })
-			symlinkSync(join(outside.path, 'secret.txt'), join(directory.path, 'scripts', 'escape.sh'))
-
-			const materializer = createMaterializer({ host: host.path })
-			const plan = blueprintToPlan(blueprint('prune-symlink-fixture', { surfaces: ['core'] }))
-			let caught: unknown
+	it.skipIf(!canSymlink)(
+		'refuses to delete through a symlink under scripts/ that escapes the target — containment holds for prune too, nothing outside is deleted (SKIPPED: environment cannot create symlinks — symlink-escape containment for prune unverified here; passes on symlink-capable POSIX CI)',
+		async () => {
+			const directory = await buildTempDirectory()
+			const outside = await buildTempDirectory()
+			const host = await buildVendoredHost()
 			try {
-				materializer.prune(plan, directory.path)
-			} catch (error) {
-				caught = error
+				writeFileSync(join(outside.path, 'secret.txt'), 'do not touch', 'utf8')
+				mkdirSync(join(directory.path, 'scripts'), { recursive: true })
+				symlinkSync(join(outside.path, 'secret.txt'), join(directory.path, 'scripts', 'escape.sh'))
+
+				const materializer = createMaterializer({ host: host.path })
+				const plan = blueprintToPlan(blueprint('prune-symlink-fixture', { surfaces: ['core'] }))
+				let caught: unknown
+				try {
+					materializer.prune(plan, directory.path)
+				} catch (error) {
+					caught = error
+				}
+				if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
+				expect(caught.code).toBe('WRITE')
+				// Neither the outside file nor the symlink itself was touched — the
+				// containment check throws BEFORE any `unlinkSync` runs.
+				expect(existsSync(join(outside.path, 'secret.txt'))).toBe(true)
+				expect(existsSync(join(directory.path, 'scripts', 'escape.sh'))).toBe(true)
+				materializer.destroy()
+			} finally {
+				await directory.cleanup()
+				await outside.cleanup()
+				await host.cleanup()
 			}
-			if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
-			expect(caught.code).toBe('WRITE')
-			// Neither the outside file nor the symlink itself was touched — the
-			// containment check throws BEFORE any `unlinkSync` runs.
-			expect(existsSync(join(outside.path, 'secret.txt'))).toBe(true)
-			expect(existsSync(join(directory.path, 'scripts', 'escape.sh'))).toBe(true)
-			materializer.destroy()
-		} finally {
-			await directory.cleanup()
-			await outside.cleanup()
-			await host.cleanup()
-		}
-	})
+		},
+	)
 
 	it('throws DESTROYED after destroy()', async () => {
 		const directory = await buildTempDirectory()

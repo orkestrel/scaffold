@@ -1598,6 +1598,14 @@ single-target `repair --apply` does, per repo, for that one file.
 
 ## Tests
 
+Environment-dependent cases degrade gracefully rather than false-redding: `tests/setupServer.ts`
+probes the running host's actual capability once at load (`canSymlink`, `canSocket`, `hasModes` —
+the last is platform-as-semantics, since POSIX mode bits have no Windows equivalent to probe for),
+and the handful of tests that need a real symlink, a real Unix domain socket, or a real exec bit
+guard themselves with `it.skipIf` naming exactly what goes unverified on a host lacking the
+capability. Every one of those cases runs — and must pass — unconditionally on a capable POSIX
+host; the skip is the environment's ceiling, never a hidden failure.
+
 - [`tests/guides/src/parity.test.ts`](../../tests/guides/src/parity.test.ts) — the
   `## Surface` ↔ `src/core` + `src/server` bijection (value + type exports; `src/bin` is
   EXCLUDED — the executable has no public exports) and the `## Methods` ↔ interface-method
