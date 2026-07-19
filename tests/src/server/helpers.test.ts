@@ -1,6 +1,14 @@
 import type { Plan } from '@src/core'
 import { dirname, isAbsolute, join } from 'node:path'
-import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
+import {
+	chmodSync,
+	existsSync,
+	mkdirSync,
+	readFileSync,
+	realpathSync,
+	statSync,
+	writeFileSync,
+} from 'node:fs'
 import { createServer } from 'node:net'
 import { describe, expect, it } from 'vitest'
 import { blueprint, diffPlan, isScaffoldError, validateBlueprint } from '@src/core'
@@ -13,6 +21,8 @@ import {
 	isManifestEntry,
 	locateHostSource,
 	selectOrkestrelEntries,
+	stageHost,
+	storagePath,
 } from '@src/server'
 import { buildTempDirectory, WORKSPACE_ROOT } from '../../setupServer.js'
 
@@ -657,5 +667,185 @@ describe('locateHostSource', () => {
 
 	it('joins host and source directly when manifest is absent (raw-repo-root fallback)', () => {
 		expect(locateHostSource(undefined, 'notes.txt', '/host')).toBe(join('/host', 'notes.txt'))
+	})
+})
+
+// ── storagePath ──────────────────────────────────────────────────────────────
+
+describe('storagePath', () => {
+	it('maps a leading-dot TOP-LEVEL file to dotfiles/<name-without-dot>', () => {
+		expect(storagePath('.gitignore')).toBe('dotfiles/gitignore')
+	})
+
+	it('drops the dot off a leading-dot DIRECTORY segment', () => {
+		expect(storagePath('.claude/agents/scout.md')).toBe('claude/agents/scout.md')
+	})
+
+	it('drops the dot off a NESTED leading-dot directory segment', () => {
+		expect(storagePath('.github/workflows/ci.yml')).toBe('github/workflows/ci.yml')
+	})
+
+	it('leaves an undotted path unchanged', () => {
+		expect(storagePath('AGENTS.md')).toBe('AGENTS.md')
+		expect(storagePath('scripts/deps.sh')).toBe('scripts/deps.sh')
+	})
+})
+
+// ── stageHost ────────────────────────────────────────────────────────────────
+
+describe('stageHost', () => {
+	it('stages a plain undotted file at its unchanged storage path, byte-preserving', async () => {
+		const root = await buildTempDirectory()
+		const out = await buildTempDirectory()
+		try {
+			writeFileSync(join(root.path, 'AGENTS.md'), '# rules\n', 'utf8')
+
+			const entries = stageHost(root.path, out.path, ['AGENTS.md'])
+
+			expect(entries).toEqual([
+				{ storage: 'AGENTS.md', destination: 'AGENTS.md', executable: false },
+			])
+			expect(readFileSync(join(out.path, 'AGENTS.md'), 'utf8')).toBe('# rules\n')
+		} finally {
+			await root.cleanup()
+			await out.cleanup()
+		}
+	})
+
+	it('maps a leading-dot top-level file to dotfiles/, un-dots a directory segment, and un-dots a nested workflow path', async () => {
+		const root = await buildTempDirectory()
+		const out = await buildTempDirectory()
+		try {
+			writeFileSync(join(root.path, '.gitignore'), 'node_modules\n', 'utf8')
+			mkdirSync(join(root.path, '.claude', 'agents'), { recursive: true })
+			writeFileSync(join(root.path, '.claude', 'agents', 'scout.md'), 'scout\n', 'utf8')
+			mkdirSync(join(root.path, '.github', 'workflows'), { recursive: true })
+			writeFileSync(join(root.path, '.github', 'workflows', 'ci.yml'), 'ci\n', 'utf8')
+
+			const entries = stageHost(root.path, out.path, ['.gitignore', '.claude', '.github'])
+
+			expect(entries).toEqual([
+				{
+					storage: 'claude/agents/scout.md',
+					destination: '.claude/agents/scout.md',
+					executable: false,
+				},
+				{
+					storage: 'github/workflows/ci.yml',
+					destination: '.github/workflows/ci.yml',
+					executable: false,
+				},
+				{ storage: 'dotfiles/gitignore', destination: '.gitignore', executable: false },
+			])
+			expect(existsSync(join(out.path, 'dotfiles', 'gitignore'))).toBe(true)
+			expect(existsSync(join(out.path, 'claude', 'agents', 'scout.md'))).toBe(true)
+			expect(existsSync(join(out.path, 'github', 'workflows', 'ci.yml'))).toBe(true)
+		} finally {
+			await root.cleanup()
+			await out.cleanup()
+		}
+	})
+
+	it("captures a source's owner-execute bit AND propagates it onto the staged copy", async () => {
+		const root = await buildTempDirectory()
+		const out = await buildTempDirectory()
+		try {
+			const scriptPath = join(root.path, 'run.sh')
+			writeFileSync(scriptPath, '#!/bin/sh\necho hi\n', 'utf8')
+			chmodSync(scriptPath, 0o755)
+
+			const entries = stageHost(root.path, out.path, ['run.sh'])
+
+			expect(entries).toEqual([{ storage: 'run.sh', destination: 'run.sh', executable: true }])
+			const stagedMode = statSync(join(out.path, 'run.sh')).mode
+			expect((stagedMode & 0o100) !== 0).toBe(true)
+		} finally {
+			await root.cleanup()
+			await out.cleanup()
+		}
+	})
+
+	it('writes manifest.json sorted by destination, tab-indented, with a trailing newline', async () => {
+		const root = await buildTempDirectory()
+		const out = await buildTempDirectory()
+		try {
+			writeFileSync(join(root.path, 'zed.txt'), 'z\n', 'utf8')
+			writeFileSync(join(root.path, 'alpha.txt'), 'a\n', 'utf8')
+
+			const entries = stageHost(root.path, out.path, ['zed.txt', 'alpha.txt'])
+
+			expect(entries.map((entry) => entry.destination)).toEqual(['alpha.txt', 'zed.txt'])
+			const manifestText = readFileSync(join(out.path, 'manifest.json'), 'utf8')
+			expect(manifestText).toBe(`${JSON.stringify(entries, null, '\t')}\n`)
+			expect(manifestText.endsWith('\n')).toBe(true)
+			expect(manifestText.includes('\t')).toBe(true)
+		} finally {
+			await root.cleanup()
+			await out.cleanup()
+		}
+	})
+
+	it('wipes out first — a stale file left over from a prior run disappears', async () => {
+		const root = await buildTempDirectory()
+		const out = await buildTempDirectory()
+		try {
+			writeFileSync(join(out.path, 'stale.txt'), 'stale\n', 'utf8')
+			writeFileSync(join(root.path, 'AGENTS.md'), '# rules\n', 'utf8')
+
+			stageHost(root.path, out.path, ['AGENTS.md'])
+
+			expect(existsSync(join(out.path, 'stale.txt'))).toBe(false)
+			expect(existsSync(join(out.path, 'AGENTS.md'))).toBe(true)
+		} finally {
+			await root.cleanup()
+			await out.cleanup()
+		}
+	})
+
+	it('throws a coded TARGET error naming the missing path when a source is absent', async () => {
+		const root = await buildTempDirectory()
+		const out = await buildTempDirectory()
+		try {
+			let caught: unknown
+			try {
+				stageHost(root.path, out.path, ['missing.txt'])
+			} catch (error) {
+				caught = error
+			}
+			if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
+			expect(caught.code).toBe('TARGET')
+			expect(caught.message.includes('missing.txt')).toBe(true)
+		} finally {
+			await root.cleanup()
+			await out.cleanup()
+		}
+	})
+
+	it('throws a coded TARGET error naming BOTH colliding destinations on a storage-path collision', async () => {
+		const root = await buildTempDirectory()
+		const out = await buildTempDirectory()
+		try {
+			// Two distinct top-level dotfiles that BOTH map to 'dotfiles/x' under
+			// the mapping rule ('.x' and a directory 'x' whose top-level-file dot
+			// is unrelated) — craft the collision directly: two entries whose
+			// storagePath() output is identical.
+			writeFileSync(join(root.path, '.x'), 'a\n', 'utf8')
+			mkdirSync(join(root.path, 'dotfiles'), { recursive: true })
+			writeFileSync(join(root.path, 'dotfiles', 'x'), 'b\n', 'utf8')
+
+			let caught: unknown
+			try {
+				stageHost(root.path, out.path, ['.x', 'dotfiles/x'])
+			} catch (error) {
+				caught = error
+			}
+			if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
+			expect(caught.code).toBe('TARGET')
+			expect(caught.message.includes('.x')).toBe(true)
+			expect(caught.message.includes('dotfiles/x')).toBe(true)
+		} finally {
+			await root.cleanup()
+			await out.cleanup()
+		}
 	})
 })

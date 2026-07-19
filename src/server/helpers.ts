@@ -1,7 +1,16 @@
 import type { Artifact, Blueprint, CatalogEntry, Dependency, Plan } from '@src/core'
 import type { BlockquoteNode } from '@orkestrel/markdown'
 import type { ManifestEntry } from './types.js'
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
+import {
+	copyFileSync,
+	existsSync,
+	mkdirSync,
+	readFileSync,
+	readdirSync,
+	rmSync,
+	statSync,
+	writeFileSync,
+} from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
@@ -11,18 +20,19 @@ import {
 	parseDocument,
 	walkNodes,
 } from '@orkestrel/markdown'
-import { blueprint, DEFAULT_ENGINES, DEFAULT_VERSION, ScaffoldError } from '@src/core'
+import { blueprint, DEFAULT_ENGINES, DEFAULT_VERSION, HOST_PATHS, ScaffoldError } from '@src/core'
 
 // ============================================================================
 //  @orkestrel/scaffold/server — helpers.ts (AGENTS §5 source of truth). The
 //  server-only helpers `blueprintToPlan`'s green-field target law, the
 //  `diffPlan`-feeding target reader, `Sync`'s manifest reader, the
-//  `Materializer`'s vendored-host manifest, the scaffold/mirror script
-//  retirement primitives, and the `catalog` bin verb depend on: `isVacant`,
-//  `readTarget`, `readManifest`, `isRecord`, `readHostManifest`, `listFiles`,
-//  `hydratePlan`, `discoverPackages`, `hostRoot`, `deriveBlueprint`, and
-//  `catalogPackages`. `selectOrkestrelEntries`, `isManifestEntry`, and
-//  `locateHostSource` are exported module-scope helpers per AGENTS §5's
+//  `Materializer`'s vendored-host manifest, the vendored-host BUILD staging
+//  primitive (`stageHost`, replacing the retired standalone build script), and the
+//  `catalog` bin verb depend on: `isVacant`, `readTarget`, `readManifest`,
+//  `isRecord`, `readHostManifest`, `listFiles`, `hydratePlan`,
+//  `discoverPackages`, `hostRoot`, `deriveBlueprint`, and `catalogPackages`.
+//  `selectOrkestrelEntries`, `isManifestEntry`, `locateHostSource`, and
+//  `storagePath` are exported module-scope helpers per AGENTS §5's
 //  no-nested-functions law — single-call-site status is not an exemption.
 // ============================================================================
 
@@ -420,6 +430,122 @@ export function listFiles(root: string): readonly string[] {
 		}
 	}
 	return files
+}
+
+/**
+ * Map a repo-relative path to its vendored-host STAGING path, per the
+ * dotfile-mapping rule `stageHost` writes into `manifest.json`.
+ *
+ * @param path - The repo-relative source path (e.g. `.claude/agents/scout.md`).
+ * @returns The mapped storage path: a leading-dot TOP-LEVEL FILE maps to
+ *   `dotfiles/<name-without-dot>`; a leading-dot DIRECTORY segment loses its
+ *   dot wherever it appears; an undotted path is unchanged.
+ *
+ * @example
+ * ```ts
+ * import { storagePath } from '@orkestrel/scaffold/server'
+ *
+ * storagePath('.gitignore') // 'dotfiles/gitignore'
+ * storagePath('.claude/agents/scout.md') // 'claude/agents/scout.md'
+ * storagePath('.github/workflows/ci.yml') // 'github/workflows/ci.yml'
+ * storagePath('AGENTS.md') // 'AGENTS.md'
+ * ```
+ */
+export function storagePath(path: string): string {
+	const segments = path.split('/')
+	if (segments.length === 1) {
+		const name = segments[0]
+		return name.startsWith('.') ? `dotfiles/${name.slice(1)}` : name
+	}
+	return segments.map((segment) => (segment.startsWith('.') ? segment.slice(1) : segment)).join('/')
+}
+
+/**
+ * Stage the vendored host set (byte-preserved copies + `manifest.json`) from
+ * a repo root into an output directory — the BUILD-time primitive the
+ * `build:host` npm script now calls directly (replacing a standalone build
+ * script); `Materializer.materialize` is the RUNTIME reader of what this
+ * writes (via `hostRoot` / `readHostManifest`).
+ *
+ * @param root - The repo root every `paths` entry resolves against.
+ * @param out - The output directory to wipe and stage into (typically `dist/host`).
+ * @param paths - The repo-relative file/directory entries to stage; defaults
+ *   to the package's own vendored set (`HOST_PATHS`) — a caller passes an
+ *   explicit list only to stage an arbitrary/test set.
+ * @remarks
+ * `out` is wiped (`rmSync(out, { recursive: true, force: true })`) BEFORE
+ * staging, so a stale file left over from a prior run never lingers. Each
+ * `paths` entry is walked to its per-file leaves (a directory recursively,
+ * via `listFiles`; a file, itself) and copied byte-for-byte
+ * (`copyFileSync`, which preserves the source's permission bits — including
+ * the owner-execute bit `executable` reports) to `<out>/<storagePath(path)>`.
+ * `manifest.json` is written LAST, as `entries` code-unit sorted by
+ * `destination`, tab-indented JSON with a trailing newline.
+ * @returns The written manifest's entries (`{ storage, destination, executable }`).
+ * @throws `ScaffoldError('TARGET', …)` naming the offending path when a
+ *   `paths` entry has no source under `root`, or naming BOTH colliding
+ *   destinations when two entries map to the same `storagePath` (the guard
+ *   run BEFORE `manifest.json` is written).
+ *
+ * @example
+ * ```ts
+ * import { stageHost } from '@orkestrel/scaffold/server'
+ *
+ * const entries = stageHost(process.cwd(), 'dist/host')
+ * entries.length // number of files staged
+ * ```
+ */
+export function stageHost(
+	root: string,
+	out: string,
+	paths: readonly string[] = HOST_PATHS,
+): readonly ManifestEntry[] {
+	const destinations: string[] = []
+	for (const path of paths) {
+		const absolute = join(root, path)
+		if (!existsSync(absolute)) {
+			throw new ScaffoldError('TARGET', `Missing host source at ${path}`, { path, root })
+		}
+		if (statSync(absolute).isDirectory()) {
+			for (const nested of listFiles(absolute)) destinations.push(`${path}/${nested}`)
+		} else {
+			destinations.push(path)
+		}
+	}
+
+	rmSync(out, { recursive: true, force: true })
+
+	const entries: ManifestEntry[] = []
+	for (const destination of destinations) {
+		const storage = storagePath(destination)
+		const sourceAbsolute = join(root, destination)
+		const destinationAbsolute = join(out, storage)
+		mkdirSync(dirname(destinationAbsolute), { recursive: true })
+		copyFileSync(sourceAbsolute, destinationAbsolute)
+		const executable = (statSync(sourceAbsolute).mode & 0o100) !== 0
+		entries.push({ storage, destination, executable })
+	}
+	entries.sort((a, b) =>
+		a.destination < b.destination ? -1 : a.destination > b.destination ? 1 : 0,
+	)
+
+	const byStorage = new Map<string, string>()
+	for (const entry of entries) {
+		const existing = byStorage.get(entry.storage)
+		if (existing !== undefined) {
+			throw new ScaffoldError(
+				'TARGET',
+				`Storage path collision at "${entry.storage}" — destinations "${existing}" and "${entry.destination}" both map to it`,
+				{ storage: entry.storage, destinations: [existing, entry.destination] },
+			)
+		}
+		byStorage.set(entry.storage, entry.destination)
+	}
+
+	mkdirSync(out, { recursive: true })
+	writeFileSync(join(out, 'manifest.json'), `${JSON.stringify(entries, null, '\t')}\n`)
+
+	return entries
 }
 
 /**
