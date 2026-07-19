@@ -801,12 +801,12 @@ two directories the fleet trues wholesale (`.claude/agents/` and `scripts/`) —
 file elsewhere is left untouched, never guessed at. After `destroy()` every method throws
 `DESTROYED`; teardown is idempotent, emitter last.
 
-| Method        | Returns             | Behavior                                                                                                                                             |
-| ------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `materialize` | `MaterializeResult` | Write a whole plan into a VACANT target — host copies + rendered writes; throws `TARGET` if the target is non-empty beyond `.git`.                   |
-| `repair`      | `MaterializeResult` | Write ONLY the artifacts an `Audit` marks `missing` / `stale`, into an EXISTING target — the drift-repair path, no vacancy check.                    |
-| `prune`       | `MaterializeResult` | Delete ONLY the `foreign` artifacts an `Audit` names that fall under `.claude/agents/` or `scripts/` — the bounded-deletion counterpart to `repair`. |
-| `destroy`     | `void`              | Idempotent teardown — emits `destroy`, then destroys the emitter LAST.                                                                               |
+| Method        | Returns             | Behavior                                                                                                                                                                                 |
+| ------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `materialize` | `MaterializeResult` | Write a whole plan into a VACANT target — host copies + rendered writes; throws `TARGET` if the target is non-empty beyond `.git`.                                                       |
+| `repair`      | `MaterializeResult` | Write ONLY the artifacts an `Audit` marks `missing` / `stale`, into an EXISTING target — the drift-repair path, no vacancy check.                                                        |
+| `prune`       | `MaterializeResult` | Delete the target-only files under `.claude/agents/` or `scripts/` that the vendored host set does not carry — the bounded-deletion counterpart to `repair`; takes only the target path. |
+| `destroy`     | `void`              | Idempotent teardown — emits `destroy`, then destroys the emitter LAST.                                                                                                                   |
 
 ```ts
 import { blueprint, blueprintToPlan, diffPlan } from '@orkestrel/scaffold'
@@ -829,7 +829,7 @@ const audit = diffPlan(
 materializer.repair(plan, audit, './packages/budget')
 
 // prune: delete only foreign files under the two bounded directories.
-const pruned = materializer.prune(audit, './packages/budget') // deletes .claude/agents/ + scripts/ foreigns only
+const pruned = materializer.prune('./packages/budget') // deletes .claude/agents/ + scripts/ foreigns only
 pruned.removed // ['scripts/legacy-hook.sh'] — a foreign file elsewhere is left untouched
 materializer.destroy()
 ```

@@ -815,7 +815,7 @@ describe('Materializer.prune', () => {
 			materializer.emitter.on('remove', removeRecorder.handler)
 
 			const plan = blueprintToPlan(blueprint('prune-fixture', { surfaces: ['core'] }))
-			const result = materializer.prune(plan, directory.path)
+			const result = materializer.prune(directory.path)
 
 			expect([...result.removed].sort()).toEqual(
 				['.claude/agents/foreign-agent.md', 'scripts/foreign-script.sh'].sort(),
@@ -860,7 +860,7 @@ describe('Materializer.prune', () => {
 				const plan = blueprintToPlan(blueprint('prune-symlink-fixture', { surfaces: ['core'] }))
 				let caught: unknown
 				try {
-					materializer.prune(plan, directory.path)
+					materializer.prune(directory.path)
 				} catch (error) {
 					caught = error
 				}
@@ -888,7 +888,7 @@ describe('Materializer.prune', () => {
 			const plan = blueprintToPlan(blueprint('prune-destroyed-fixture', { surfaces: ['core'] }))
 			let caught: unknown
 			try {
-				materializer.prune(plan, directory.path)
+				materializer.prune(directory.path)
 			} catch (error) {
 				caught = error
 			}
@@ -912,7 +912,7 @@ describe('Materializer.prune', () => {
 			)
 			let caught: unknown
 			try {
-				materializer.prune(plan, directory.path)
+				materializer.prune(directory.path)
 			} catch (error) {
 				caught = error
 			}
@@ -942,7 +942,7 @@ describe('Materializer.prune', () => {
 
 			const materializer = createMaterializer({ host: host.path })
 			const plan = blueprintToPlan(blueprint('prune-empty-vendor-fixture', { surfaces: ['core'] }))
-			const result = materializer.prune(plan, directory.path)
+			const result = materializer.prune(directory.path)
 
 			expect(result.removed).toEqual(['scripts/foreign-script.sh'])
 			expect(existsSync(join(directory.path, 'scripts', 'foreign-script.sh'))).toBe(false)

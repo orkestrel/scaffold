@@ -399,7 +399,7 @@ if (command === undefined) {
 	const materializer = createMaterializer({ host: values.host })
 	try {
 		const result = materializer.repair(plan, audit, target)
-		const removed = values.prune ? materializer.prune(plan, target).removed : []
+		const removed = values.prune ? materializer.prune(target).removed : []
 		spinner.success(
 			`wrote ${result.written.length}, copied ${result.copied.length}, skipped ${result.skipped.length}, removed ${removed.length}`,
 		)
@@ -470,7 +470,7 @@ if (command === undefined) {
 
 				if (materializer) {
 					materializer.repair(plan, audit, directory)
-					if (values.prune) materializer.prune(plan, directory)
+					if (values.prune) materializer.prune(directory)
 					audit = diffPlan(plan, readTarget(directory, paths))
 				}
 
