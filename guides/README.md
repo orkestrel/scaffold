@@ -4,9 +4,9 @@ A dual-axis index into this repository's guides — by concept, and by directory
 
 ## By concept
 
-| Concept  | Spec                                 | Source                    | Tests                       |
-| -------- | ------------------------------------ | ------------------------- | --------------------------- |
-| Scaffold | [`src/scaffold.md`](src/scaffold.md) | [`src/core`](../src/core) | [`tests/src`](../tests/src) |
+| Concept  | Spec                                 | Source                                                   | Tests                                                                            |
+| -------- | ------------------------------------ | -------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Scaffold | [`src/scaffold.md`](src/scaffold.md) | [`src/core`](../src/core), [`src/server`](../src/server) | [`tests/src/core`](../tests/src/core), [`tests/src/server`](../tests/src/server) |
 
 The one guide documents the union of the package's LIBRARY faces — the pure core
 ([`src/core`](../src/core)) and the server materialization face

@@ -31,7 +31,7 @@
 The problem this module solves: standing up (or auditing) an `@orkestrel` package is a
 mechanical projection of the line's conventions onto a name — the exports map for the
 variant, the per-surface build configs, the barrels, the guide stubs, the parity harness —
-yet the only tool the line had was [`scripts/scaffold.sh`](../../scripts/scaffold.sh): a
+yet the only tool the line had was `scripts/scaffold.sh`: a
 core-only bash script whose every template is a **frozen heredoc**, so when a convention
 moves, each repo's copy silently rots and the char-width table padding is hand-rolled with
 `printf` byte math a UTF-8 cell defeats. This package **fully replaces** that script.
@@ -136,7 +136,7 @@ orchestration AROUND the synchronous `compile`, never inside it.
 | `PlanManagerOptions`    | interface | `{ plans?, on?, error? }` — input to `createPlanManager`.                                                                                                                                                                                                                                                                                                                                    |
 | `PlanManagerInterface`  | interface | The plan registry contract (AGENTS §9) — `emitter` / `size` + `has` / `plan` / `plans` / `add` / `remove` / `destroy`.                                                                                                                                                                                                                                                                       |
 | `MaterializerEventMap`  | type      | `Materializer`'s push observation surface **(server)** — `copy(path)` · `write(path)` · `done(result)` · `error(error)` · `destroy()`.                                                                                                                                                                                                                                                       |
-| `MaterializerOptions`   | interface | `{ host?, on?, error? }` — input to `createMaterializer` **(server)**; `host` is the vendored-data root host-origin artifacts are copied FROM (defaults to this package's data).                                                                                                                                                                                                             |
+| `MaterializerOptions`   | interface | `{ host?, on?, error? }` — input to `createMaterializer` **(server)**; `host` is the vendored-data root host-origin artifacts are copied FROM (defaults to the nearest package root at or above the working directory).                                                                                                                                                                      |
 | `MaterializerInterface` | interface | The materialization contract **(server)** — `emitter` + `materialize` / `repair` / `destroy`.                                                                                                                                                                                                                                                                                                |
 
 The `Blueprint` and the `Plan` are the two closed contracts — every field is a `string`,
@@ -156,19 +156,20 @@ what keeps the core pure while still describing files it cannot itself read.
 
 ### Constants
 
-| API               | Kind  | Summary                                                                                                                                                                                                                                                    |
-| ----------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SURFACES`        | const | The three `Surface` values, frozen — compose with `literalOf(...)` / `parseEnum(...)`.                                                                                                                                                                     |
-| `ORIGINS`         | const | The three `Origin` values, frozen.                                                                                                                                                                                                                         |
-| `GROUPS`          | const | The seven `Group` values, frozen — the artifact-group selection vocabulary.                                                                                                                                                                                |
-| `CATEGORIES`      | const | The four `Category` values, frozen.                                                                                                                                                                                                                        |
-| `COMPILE_STAGES`  | const | `['draft', 'gate', 'pin']`, frozen — the pipeline phases in order.                                                                                                                                                                                         |
-| `SURFACE_MATRIX`  | const | The §1.2 variant matrix as data: per `Surface`, its `configs/src` files, Vitest project label, `exports` subpath, and build formats — the per-surface layer `blueprintToPlan` reads BENEATH the SCAFFOLD.md §4.2/§4.3 combination rules it applies on top. |
-| `HOST_PATHS`      | const | The byte-copied host artifact paths (AGENTS.md, CLAUDE.md, SCAFFOLD.md, LICENSE, `.claude`, `scripts/*` — the SessionStart hooks + `mirror.sh` + `scaffold.sh` today — dotfiles, `ci.yml`), frozen; `scaffold.sh` leaves this set at retirement.           |
-| `NAME_PATTERN`    | const | The `/^[a-z][a-z0-9-]*$/` package-name RegExp (the `scaffold.sh` name law, now data).                                                                                                                                                                      |
-| `DEFAULT_VERSION` | const | `'0.0.1'` — the starting version the `blueprint` builder fills.                                                                                                                                                                                            |
-| `DEFAULT_ENGINES` | const | `'>=22'` — the `engines.node` range the `blueprint` builder fills.                                                                                                                                                                                         |
-| `COMPILER_ID`     | const | `'compiler'` — the default id for a `Compiler` orchestrator.                                                                                                                                                                                               |
+| API               | Kind  | Summary                                                                                                                                                                                                                                                                                                                                                                          |
+| ----------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SURFACES`        | const | The three `Surface` values, frozen — compose with `literalOf(...)` / `parseEnum(...)`.                                                                                                                                                                                                                                                                                           |
+| `ORIGINS`         | const | The three `Origin` values, frozen.                                                                                                                                                                                                                                                                                                                                               |
+| `GROUPS`          | const | The seven `Group` values, frozen — the artifact-group selection vocabulary.                                                                                                                                                                                                                                                                                                      |
+| `CATEGORIES`      | const | The four `Category` values, frozen.                                                                                                                                                                                                                                                                                                                                              |
+| `COMPILE_STAGES`  | const | `['draft', 'gate', 'pin']`, frozen — the pipeline phases in order.                                                                                                                                                                                                                                                                                                               |
+| `SURFACE_MATRIX`  | const | The §1.2 variant matrix as data: per `Surface`, its `configs/src` files, Vitest project label, `exports` subpath, and build formats — the per-surface layer `blueprintToPlan` reads BENEATH the SCAFFOLD.md §4.2/§4.3 combination rules it applies on top.                                                                                                                       |
+| `HOST_PATHS`      | const | The byte-copied host artifact paths (AGENTS.md, CLAUDE.md, SCAFFOLD.md, LICENSE, `.claude`, `scripts/*` — the SessionStart hooks + `mirror.sh` + `scaffold.sh` today — `.editorconfig`, `.gitattributes`, `.gitignore`, `.oxfmtrc.json`, `.oxlintrc.json`, `.oxlintignore`, `.prettierignore`, `.github/workflows/ci.yml`), frozen; `scaffold.sh` leaves this set at retirement. |
+| `NAME_PATTERN`    | const | The `/^[a-z][a-z0-9-]*$/` package-name RegExp (the `scaffold.sh` name law, now data).                                                                                                                                                                                                                                                                                            |
+| `DEFAULT_VERSION` | const | `'0.0.1'` — the starting version the `blueprint` builder fills.                                                                                                                                                                                                                                                                                                                  |
+| `DEFAULT_ENGINES` | const | `'>=22'` — the `engines.node` range the `blueprint` builder fills.                                                                                                                                                                                                                                                                                                               |
+| `COMPILER_ID`     | const | `'compiler'` — the default id for a `Compiler` orchestrator.                                                                                                                                                                                                                                                                                                                     |
+| `TEMPLATES`       | const | The shipped, versioned `TemplateDefinition` data every `template`-origin artifact fills against (README, the own-guide stub, the guides index, the source/test stubs) — placeholders documented per entry, frozen.                                                                                                                                                               |
 
 ```ts
 import {
@@ -178,6 +179,7 @@ import {
 	NAME_PATTERN,
 	ORIGINS,
 	SURFACES,
+	TEMPLATES,
 } from '@orkestrel/scaffold'
 
 SURFACES // ['core', 'browser', 'server']
@@ -188,6 +190,7 @@ NAME_PATTERN.test('router') // true
 NAME_PATTERN.test('Router') // false — the package-name law rejects a leading capital
 HOST_PATHS.includes('scripts/mirror.sh') // true — the mirror stays in the orchestration set
 HOST_PATHS.includes('scripts/scaffold.sh') // true today — leaves HOST_PATHS at retirement
+TEMPLATES.entity.placeholders // [{ name: 'pascal', … }] — the entity stub's one token
 ```
 
 A closed-set field that does not fit a listed value is a signal the request is mis-scoped,
@@ -226,14 +229,14 @@ Total guards (AGENTS §14) COMPILED from the shapers below via the contract pack
 hostile prototypes) returns `false`, never throws. Every record guard is EXACT: an extra
 key fails, which is why the builders below omit absent optional keys.
 
-| API            | Kind     | Narrows to                                                                                                                                        |
-| -------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `isDependency` | function | `Dependency` — `name` a non-empty string, `range` a non-empty string.                                                                             |
-| `isOverride`   | function | `Override` — `path` / `content` non-empty strings.                                                                                                |
-| `isBlueprint`  | function | `Blueprint` — `surfaces` on-vocabulary and non-empty; `name` a non-empty string (the `NAME_PATTERN` law is the semantic pass's, not the guard's). |
-| `isMember`     | function | `Member` — `category` an on-vocabulary `Category`, `surface` an on-vocabulary `Surface`.                                                          |
-| `isArtifact`   | function | `Artifact` — `group` / `origin` on-vocabulary; `content` xor `source` per `origin`.                                                               |
-| `isPlan`       | function | `Plan` — the whole exact-record contract, section guards composed.                                                                                |
+| API            | Kind  | Narrows to                                                                                                                                        |
+| -------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `isDependency` | const | `Dependency` — `name` a non-empty string, `range` a non-empty string.                                                                             |
+| `isOverride`   | const | `Override` — `path` / `content` non-empty strings.                                                                                                |
+| `isBlueprint`  | const | `Blueprint` — `surfaces` on-vocabulary and non-empty; `name` a non-empty string (the `NAME_PATTERN` law is the semantic pass's, not the guard's). |
+| `isMember`     | const | `Member` — `category` an on-vocabulary `Category`, `surface` an on-vocabulary `Surface`.                                                          |
+| `isArtifact`   | const | `Artifact` — `group` / `origin` on-vocabulary; `content` xor `source` per `origin`.                                                               |
+| `isPlan`       | const | `Plan` — the whole exact-record contract, section guards composed.                                                                                |
 
 ```ts
 import {
@@ -263,10 +266,10 @@ package's `createContract` — a guard-valid value round-trips unchanged, an off
 value returns `undefined`, and neither ever throws (AGENTS §14). This is the parse-then-trust
 boundary for a stored plan, a tool argument, or an agent's emission.
 
-| API              | Kind     | Returns                                                         |
-| ---------------- | -------- | --------------------------------------------------------------- |
-| `parseBlueprint` | function | a `Blueprint` from `unknown` / a JSON string, else `undefined`. |
-| `parsePlan`      | function | a `Plan` from `unknown` / a JSON string, else `undefined`.      |
+| API              | Kind  | Returns                                                         |
+| ---------------- | ----- | --------------------------------------------------------------- |
+| `parseBlueprint` | const | a `Blueprint` from `unknown` / a JSON string, else `undefined`. |
+| `parsePlan`      | const | a `Plan` from `unknown` / a JSON string, else `undefined`.      |
 
 ```ts
 import { blueprint, isBlueprint, parseBlueprint } from '@orkestrel/scaffold'
@@ -295,13 +298,28 @@ module's own validators and parsers are compiled from them at the barrel.
 | `planShape`       | function | the whole `Plan` object shape, section shapes composed; `trace` / `hash` optional.                                                                                                                                                      |
 
 ```ts
-import { blueprintShape } from '@orkestrel/scaffold'
+import {
+	artifactShape,
+	blueprintShape,
+	dependencyShape,
+	memberShape,
+	overrideShape,
+	planShape,
+} from '@orkestrel/scaffold'
 import { createContract, schemaToParameters, seededRandom } from '@orkestrel/contract'
 
 const contract = createContract(blueprintShape())
 contract.schema // the full JSON Schema — hand to a tool boundary via schemaToParameters
 contract.generate(seededRandom(42)) // a reproducible, on-contract seed blueprint for tests
 schemaToParameters(contract.schema) // the open tool-parameters record, no `as` anywhere
+
+// The section shapes `blueprintShape` / `planShape` compose — each is a fresh, independent
+// `ContractShape` value, usable on its own contract:
+createContract(dependencyShape()).schema // the `Dependency` section schema alone
+createContract(overrideShape()).schema // the `Override` section schema alone
+createContract(memberShape()).schema // the `Member` section schema alone
+createContract(artifactShape()).schema // the `Artifact` section schema alone
+createContract(planShape()).schema // the whole `Plan` schema, section shapes composed
 ```
 
 ### Builders
@@ -650,7 +668,7 @@ These invariants hold across `src/core` + `src/server` ↔ `scaffold.md`:
     each implementing class exposes the same public methods, no more (AGENTS §22). The bin
     implements no interface and is excluded, as in invariant 1.
 
-This package **fully replaces** [`scripts/scaffold.sh`](../../scripts/scaffold.sh). The bash
+This package **fully replaces** `scripts/scaffold.sh`. The bash
 script froze every template as a heredoc and derived only a core-only package from a name;
 this module renders the whole §1.2 variant matrix from versioned `TemplateDefinition` data,
 so a convention change is a version bump here rather than a hand-edit in every repo's copy.
@@ -854,17 +872,14 @@ terminal's own non-TTY readline path), compiles, prints `planToReview` and a
 is written without `--apply`.
 
 ```ts
-#!/usr/bin/env node
+// The `#!/usr/bin/env node` shebang is NOT in source — the build's `output.banner`
+// (`configs/src/vite.bin.config.ts`) re-emits it on the compiled entry, avoiding
+// a duplicate-shebang bundling error.
 import { parseArgs } from 'node:util'
-import {
-	blueprint,
-	createCompiler,
-	planToReview,
-	planToSummary,
-	SURFACES,
-} from '@orkestrel/scaffold'
-import { createMaterializer } from '@orkestrel/scaffold/server'
+import { blueprint, createCompiler, planToReview, planToSummary, SURFACES } from '@src/core'
+import { createMaterializer } from '@src/server'
 import { createReporter, createSpinner } from '@orkestrel/console'
+import { createServerSink } from '@orkestrel/console/server'
 import { createTerminal } from '@orkestrel/terminal/server'
 
 const { values, positionals } = parseArgs({
@@ -875,6 +890,9 @@ const { values, positionals } = parseArgs({
 		apply: { type: 'boolean', default: false },
 	},
 })
+
+const sink = createServerSink() // process.stdout / process.stderr — ANSI on a TTY, stripped down a pipe
+const reporter = createReporter({ sink, width: sink.columns })
 
 // Interactive when an argument is absent (a real TTY); a piped run uses the flags verbatim.
 const terminal = createTerminal()
@@ -888,7 +906,6 @@ const surfaces = SURFACES.filter((surface) => picked.includes(surface)) // narro
 
 const compiler = createCompiler()
 const scaffolding = compiler.compile(blueprint(name, { surfaces }))
-const reporter = createReporter()
 
 if (!scaffolding.plan) {
 	reporter.status('error', scaffolding.questions.map((question) => question.text).join('; '))
@@ -909,7 +926,7 @@ reporter.table({
 })
 
 if (values.apply) {
-	const spinner = createSpinner({ message: 'materializing' })
+	const spinner = createSpinner({ message: 'materializing', sink })
 	spinner.start()
 	const materializer = createMaterializer()
 	const result = materializer.materialize(scaffolding.plan, values.target ?? `./${name}`)
@@ -1033,7 +1050,7 @@ fleet.
 
 ## See also
 
-- [`SCAFFOLD.md`](../../SCAFFOLD.md) — the manual packaging recipe this module automates: the
+- `SCAFFOLD.md` — the manual packaging recipe this module automates: the
   variant matrix (§1.2), the per-file inventory (§3), the exports shapes (§4.3), the config
   wrappers (§7), the audit checklist (§13.3), and the `scaffold.sh` fast-path this package
   retires.
