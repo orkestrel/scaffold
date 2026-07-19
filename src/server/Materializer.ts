@@ -148,9 +148,8 @@ export class Materializer implements MaterializerInterface {
 		return result
 	}
 
-	// `_plan` conforms `prune` to `MaterializerInterface`'s materialize-shaped
-	// signature; the vendored allowlist is derived from `host` alone (the
-	// directories `prune` guards are host-vendored, not plan-selected).
+	// The vendored allowlist is derived from `host` alone — the directories
+	// `prune` guards are host-vendored, not plan-selected.
 	prune(target: string): MaterializeResult {
 		this.#ensureAlive()
 		const removed: string[] = []

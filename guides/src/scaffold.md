@@ -1400,7 +1400,7 @@ if (command === 'sync') {
 	reporter.line(planToReview(plan))
 	const materializer = createMaterializer(materializerOptions)
 	if (values.apply) materializer.repair(plan, audit, target)
-	if (values.prune) materializer.prune(plan, target) // .claude/agents/ + scripts/ foreigns ONLY
+	if (values.prune) materializer.prune(target) // .claude/agents/ + scripts/ foreigns ONLY
 	materializer.destroy()
 	process.exit(!audit.clean && !values.apply ? 1 : 0)
 } else if (command === 'mirror') {
