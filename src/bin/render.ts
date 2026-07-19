@@ -260,14 +260,14 @@ export function fleetTotals(drifted: number, failed: number): string {
 	return `total: ${countPart(drifted, 'drifted repo')}, ${countPart(failed, 'failed')}`
 }
 
-/** The `catalog` table — columns Package/Version/Description. */
+/** The `catalog` terminal preview table — columns Package/Version (descriptions live only in the written table and `--json`). */
 export function catalogTable(entries: readonly CatalogEntry[]): {
 	readonly columns: readonly ColumnSpec[]
 	readonly rows: readonly (readonly string[])[]
 } {
 	return {
-		columns: [{ label: 'Package' }, { label: 'Version' }, { label: 'Description' }],
-		rows: entries.map((entry) => [entry.name, entry.version, entry.description] as const),
+		columns: [{ label: 'Package' }, { label: 'Version' }],
+		rows: entries.map((entry) => [entry.name, entry.version] as const),
 	}
 }
 

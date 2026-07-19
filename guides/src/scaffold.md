@@ -1380,7 +1380,10 @@ in `<target>/.claude/agents/orkestrel.md` between its `<!-- catalog:start -->` /
 `<!-- catalog:end -->` markers — a `target` missing those markers is a coded `TARGET` failure,
 never a silent skip — and a SHRINK WARNING prints (dry-run and write alike) whenever the new
 table has fewer rows than the one currently embedded, so an accidental catalog shrink is
-never silent either. It narrates through `@orkestrel/console` and
+never silent either. The TERMINAL preview (`catalogTable`, printed before the apply prompt)
+lists Package + Version only, one line per package — descriptions can run long and would wrap
+each preview row across the terminal, so they stay out of the preview and appear only in the
+written `orkestrel.md` table and in `--json`'s entries. It narrates through `@orkestrel/console` and
 prompts interactively through `@orkestrel/terminal`'s `createTerminal` when a required argument
 is absent, but ONLY on a real TTY (§ non-TTY ceiling below); a piped run instead falls back to
 its flags, or fails a coded USAGE error naming which flag to pass.

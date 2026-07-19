@@ -190,17 +190,13 @@ describe('render: tables', () => {
 		])
 	})
 
-	it('builds the catalog table', () => {
+	it('builds the catalog preview table with no description column', () => {
 		const entries: readonly CatalogEntry[] = [
 			{ name: '@orkestrel/core', version: '1.0.0', description: 'x' },
 		]
 		const table = catalogTable(entries)
-		expect(table.columns.map((column) => column.label)).toEqual([
-			'Package',
-			'Version',
-			'Description',
-		])
-		expect(table.rows).toEqual([['@orkestrel/core', '1.0.0', 'x']])
+		expect(table.columns.map((column) => column.label)).toEqual(['Package', 'Version'])
+		expect(table.rows).toEqual([['@orkestrel/core', '1.0.0']])
 	})
 
 	it('warns on shrink, silent otherwise', () => {
