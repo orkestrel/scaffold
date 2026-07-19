@@ -1,7 +1,9 @@
 import { createContract, seededRandom } from '@orkestrel/contract'
 import {
 	artifactShape,
+	blueprint,
 	blueprintShape,
+	dependency,
 	dependencyShape,
 	isBlueprint,
 	isSyncReport,
@@ -68,6 +70,23 @@ describe('blueprintShape — generated blueprints satisfy isBlueprint', () => {
 
 			expect(isBlueprint(value)).toBe(true)
 		}
+	})
+})
+
+describe('blueprintShape — a hand-built blueprint with peers (one optional) and extras', () => {
+	it('satisfies is() and round-trips through parse() unchanged', () => {
+		const contract = createContract(blueprintShape())
+		const value = blueprint('router', {
+			peers: [
+				dependency('@orkestrel/contract', '^0.0.5'),
+				dependency('@orkestrel/emitter', '^0.0.2', true),
+			],
+			extras: [dependency('@orkestrel/database', '^0.0.9')],
+		})
+
+		expect(contract.is(value)).toBe(true)
+		expect(contract.parse(value)).toEqual(value)
+		expect(isBlueprint(value)).toBe(true)
 	})
 })
 

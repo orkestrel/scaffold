@@ -3,8 +3,8 @@ import type { SpawnSyncReturns } from 'node:child_process'
 // `node:child_process`, so this suite assumes the build chain has already run
 // (the gate order runs `npm run build` before `npm test` — see AGENTS.md §Orientation).
 import { spawnSync } from 'node:child_process'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { buildTempDirectory, WORKSPACE_ROOT } from '../../setupServer.js'
 
@@ -27,6 +27,37 @@ async function writeManifest(dependencies: Readonly<Record<string, string>>) {
 		join(directory.path, 'package.json'),
 		JSON.stringify({ name: '@orkestrel/fixture', version: '0.0.1', dependencies }),
 	)
+	return directory
+}
+
+/** Real placeholder bytes for every `HOST_PATHS` entry, keyed by artifact-relative path — enough for `new --apply --host <fixture>` to fully materialize a package without depending on the (possibly stale) default vendored host. */
+const HOST_FIXTURE_FILES: Readonly<Record<string, string>> = {
+	'AGENTS.md': '# AGENTS fixture\n',
+	'CLAUDE.md': '# CLAUDE fixture\n',
+	LICENSE: 'MIT fixture license\n',
+	'.editorconfig': 'root = true\n# fixture\n',
+	'.gitattributes': '* text=auto\n',
+	'.gitignore': 'node_modules\n',
+	'.oxfmtrc.json': '{}\n',
+	'.oxlintrc.json': '{}\n',
+	'.oxlintignore': 'dist\n',
+	'.prettierignore': 'dist\n',
+	'scripts/deps.sh': '#!/bin/sh\necho deps\n',
+	'scripts/cursor.sh': '#!/bin/sh\necho cursor\n',
+	'scripts/ollama.sh': '#!/bin/sh\necho ollama\n',
+	'.github/workflows/ci.yml': 'name: ci-fixture\n',
+	'guides/src/guide.md': '# guide fixture\n',
+	'.claude/agents/example.md': '# example agent fixture\n',
+}
+
+/** Build a real, raw (no `manifest.json`) host root in a fresh temp directory — every `HOST_PATHS` entry present with placeholder bytes, `overrides` replacing or adding specific entries (e.g. a distinctive `.editorconfig` marker to prove `--host` sourcing). */
+async function buildHostFixture(overrides?: Readonly<Record<string, string>>) {
+	const directory = await buildTempDirectory()
+	for (const [relative, content] of Object.entries({ ...HOST_FIXTURE_FILES, ...overrides })) {
+		const full = join(directory.path, relative)
+		mkdirSync(dirname(full), { recursive: true })
+		writeFileSync(full, content)
+	}
 	return directory
 }
 
@@ -152,6 +183,33 @@ describe('scaffold bin', () => {
 			const output = result.stdout + result.stderr
 			expect(output).toContain('[INVALID]')
 			expect(existsSync(join(WORKSPACE_ROOT, 'demo-bad-dep-2'))).toBe(false)
+		})
+
+		it('--host <fixture>: sources host artifacts from the fixture, not the default vendored host', async () => {
+			const fixture = await buildHostFixture({ '.editorconfig': 'root = true\n# fixture-marker\n' })
+			const target = await buildTempDirectory()
+			try {
+				const result = runBin([
+					'new',
+					'demo-host-passthrough',
+					'--surfaces',
+					'core',
+					'--apply',
+					'--target',
+					target.path,
+					'--host',
+					fixture.path,
+				])
+				expect(result.status).toBe(0)
+				expect(result.stdout).toContain('wrote')
+
+				const written = readFileSync(join(target.path, '.editorconfig'), 'utf8')
+				expect(written).toBe('root = true\n# fixture-marker\n')
+				expect(written).not.toBe(readFileSync(join(WORKSPACE_ROOT, '.editorconfig'), 'utf8'))
+			} finally {
+				await target.cleanup()
+				await fixture.cleanup()
+			}
 		})
 	})
 
@@ -294,6 +352,504 @@ describe('scaffold bin', () => {
 				await directory.cleanup()
 			}
 		})
+
+		it("host mode: prints 'content-aware' when --host resolves; the DEFAULT host keeps presence-only when it cannot resolve (M1: only an EXPLICIT --host that fails is a coded TARGET failure — see the M1 test below)", async () => {
+			const fixture = await buildHostFixture()
+			const target = await buildTempDirectory()
+			try {
+				const created = runBin([
+					'new',
+					'demo-audit-host-mode',
+					'--surfaces',
+					'core',
+					'--apply',
+					'--target',
+					target.path,
+					'--host',
+					fixture.path,
+				])
+				expect(created.status).toBe(0)
+
+				const aware = runBin(['audit', '--target', target.path, '--host', fixture.path])
+				expect(aware.stdout).toContain('host: content-aware')
+			} finally {
+				await target.cleanup()
+				await fixture.cleanup()
+			}
+		})
+
+		it('M1: an EXPLICIT --host that does not resolve to a directory exits 1 with a coded [TARGET] line (never a silent presence-only downgrade)', async () => {
+			const directory = await buildTempDirectory()
+			try {
+				const created = runBin([
+					'new',
+					'demo-audit-explicit-host-missing',
+					'--surfaces',
+					'core',
+					'--apply',
+					'--target',
+					directory.path,
+				])
+				expect(created.status).toBe(0)
+
+				const missingHost = join(directory.path, 'does-not-exist-explicit-host')
+				const result = runBin(['audit', '--target', directory.path, '--host', missingHost])
+				expect(result.status).toBe(1)
+				expect(result.stderr).toContain('[TARGET]')
+			} finally {
+				await directory.cleanup()
+			}
+		})
+
+		it('--groups orchestration: a repo with source drift but a CLEAN orchestration group exits 0 (CI can gate on a subset)', async () => {
+			const directory = await buildTempDirectory()
+			try {
+				const created = runBin([
+					'new',
+					'demo-audit-groups-clean',
+					'--surfaces',
+					'core',
+					'--apply',
+					'--target',
+					directory.path,
+				])
+				expect(created.status).toBe(0)
+				// Source drift (outside the orchestration group) must NOT affect a
+				// --groups orchestration gate.
+				writeFileSync(join(directory.path, 'src', 'core', 'index.ts'), '// mutated\n')
+
+				const result = runBin(['audit', '--target', directory.path, '--groups', 'orchestration'])
+				expect(result.status).toBe(0)
+			} finally {
+				await directory.cleanup()
+			}
+		})
+
+		it('--groups bogus: an unrecognized group name exits 1 with a coded [INVALID] message', async () => {
+			const directory = await buildTempDirectory()
+			try {
+				const created = runBin([
+					'new',
+					'demo-audit-groups-bogus',
+					'--surfaces',
+					'core',
+					'--apply',
+					'--target',
+					directory.path,
+				])
+				expect(created.status).toBe(0)
+
+				const result = runBin(['audit', '--target', directory.path, '--groups', 'bogus'])
+				expect(result.status).toBe(1)
+				const output = result.stdout + result.stderr
+				expect(output).toContain('[INVALID]')
+				expect(output).toContain('bogus')
+			} finally {
+				await directory.cleanup()
+			}
+		})
+
+		it('--host <fixture>: a mutated target file still flags drift (content-aware audit) and exits 1', async () => {
+			const fixture = await buildHostFixture()
+			const target = await buildTempDirectory()
+			try {
+				const created = runBin([
+					'new',
+					'demo-audit-host-drift',
+					'--surfaces',
+					'core',
+					'--apply',
+					'--target',
+					target.path,
+					'--host',
+					fixture.path,
+				])
+				expect(created.status).toBe(0)
+				writeFileSync(
+					join(target.path, 'package.json'),
+					'{"name":"@orkestrel/demo-audit-host-drift","mutated":true}',
+				)
+
+				const result = runBin(['audit', '--target', target.path, '--host', fixture.path])
+				expect(result.status).toBe(1)
+				expect(result.stdout).toContain('host: content-aware')
+			} finally {
+				await target.cleanup()
+				await fixture.cleanup()
+			}
+		})
+	})
+
+	describe('repair', () => {
+		it('dry-run: reports a missing host artifact as drift and exits 1 without writing', async () => {
+			const fixture = await buildHostFixture()
+			const target = await buildTempDirectory()
+			try {
+				const created = runBin([
+					'new',
+					'demo-repair-dry',
+					'--surfaces',
+					'core',
+					'--apply',
+					'--target',
+					target.path,
+					'--host',
+					fixture.path,
+				])
+				expect(created.status).toBe(0)
+
+				// Host drift: the `.editorconfig` host artifact goes missing —
+				// `diffPlan` audits host-origin artifacts by PRESENCE only, so a
+				// present-but-mutated host file would never register as drift;
+				// deleting it is the only way `repair` sees it as `missing`.
+				rmSync(join(target.path, '.editorconfig'), { force: true })
+				// A file `repair`'s plan does not own, under a `prune`-guarded directory.
+				writeFileSync(join(target.path, 'scripts', 'rogue.sh'), '#!/bin/sh\necho rogue\n')
+
+				const result = runBin(['repair', '--target', target.path, '--host', fixture.path])
+				expect(result.status).toBe(1)
+				expect(result.stdout).toContain('# Audit')
+				expect(result.stdout).toMatch(/missing: [1-9]/)
+				expect(existsSync(join(target.path, '.editorconfig'))).toBe(false)
+				expect(existsSync(join(target.path, 'scripts', 'rogue.sh'))).toBe(true)
+			} finally {
+				await target.cleanup()
+				await fixture.cleanup()
+			}
+		})
+
+		it('--apply: byte-restores the missing host artifact FROM the passed --host fixture, exits 0, and leaves an unrelated foreign file untouched', async () => {
+			const scaffoldFixture = await buildHostFixture()
+			const repairFixture = await buildHostFixture({
+				'.editorconfig': 'root = true\n# fixture-b\n',
+			})
+			const target = await buildTempDirectory()
+			try {
+				const created = runBin([
+					'new',
+					'demo-repair-apply',
+					'--surfaces',
+					'core',
+					'--apply',
+					'--target',
+					target.path,
+					'--host',
+					scaffoldFixture.path,
+				])
+				expect(created.status).toBe(0)
+
+				rmSync(join(target.path, '.editorconfig'), { force: true })
+				writeFileSync(join(target.path, 'scripts', 'rogue.sh'), '#!/bin/sh\necho rogue\n')
+
+				const result = runBin([
+					'repair',
+					'--target',
+					target.path,
+					'--host',
+					repairFixture.path,
+					'--apply',
+				])
+				expect(result.status).toBe(0)
+				expect(result.stdout).toMatch(/wrote 0, copied 1, skipped \d+, removed 0/)
+
+				const restored = readFileSync(join(target.path, '.editorconfig'), 'utf8')
+				expect(restored).toBe('root = true\n# fixture-b\n')
+				expect(restored).not.toBe(readFileSync(join(scaffoldFixture.path, '.editorconfig'), 'utf8'))
+				expect(existsSync(join(target.path, 'scripts', 'rogue.sh'))).toBe(true) // no --prune
+			} finally {
+				await target.cleanup()
+				await scaffoldFixture.cleanup()
+				await repairFixture.cleanup()
+			}
+		})
+
+		it('--apply --prune: also deletes the foreign file under scripts/', async () => {
+			const fixture = await buildHostFixture()
+			const target = await buildTempDirectory()
+			try {
+				const created = runBin([
+					'new',
+					'demo-repair-prune',
+					'--surfaces',
+					'core',
+					'--apply',
+					'--target',
+					target.path,
+					'--host',
+					fixture.path,
+				])
+				expect(created.status).toBe(0)
+
+				rmSync(join(target.path, '.editorconfig'), { force: true })
+				writeFileSync(join(target.path, 'scripts', 'rogue.sh'), '#!/bin/sh\necho rogue\n')
+
+				const result = runBin([
+					'repair',
+					'--target',
+					target.path,
+					'--host',
+					fixture.path,
+					'--apply',
+					'--prune',
+				])
+				expect(result.status).toBe(0)
+				expect(result.stdout).toMatch(/removed 1/)
+				expect(existsSync(join(target.path, '.editorconfig'))).toBe(true)
+				expect(existsSync(join(target.path, 'scripts', 'rogue.sh'))).toBe(false)
+			} finally {
+				await target.cleanup()
+				await fixture.cleanup()
+			}
+		})
+
+		it('H2: repair scopes to HOST-ORIGIN artifacts ONLY — a hand-modified src file is NEVER touched even when the target ALSO carries drifted host files; dry-run exit reflects only host drift', async () => {
+			const fixture = await buildHostFixture()
+			const target = await buildTempDirectory()
+			try {
+				const created = runBin([
+					'new',
+					'demo-repair-host-scope',
+					'--surfaces',
+					'core',
+					'--apply',
+					'--target',
+					target.path,
+					'--host',
+					fixture.path,
+				])
+				expect(created.status).toBe(0)
+
+				// A hand-modified SOURCE file — repair must never restore this,
+				// since it is not a host-origin artifact.
+				const srcPath = join(target.path, 'src', 'core', 'index.ts')
+				writeFileSync(srcPath, '// hand-modified by the maintainer\n')
+
+				// Genuine host drift alongside it.
+				rmSync(join(target.path, '.editorconfig'), { force: true })
+
+				const dryRun = runBin(['repair', '--target', target.path, '--host', fixture.path])
+				expect(dryRun.status).toBe(1) // reflects the host drift alone
+				expect(dryRun.stdout).toMatch(/missing: [1-9]/)
+				// The hand-modified src file is untouched by the dry-run audit —
+				// its content is still what we hand-wrote.
+				expect(readFileSync(srcPath, 'utf8')).toBe('// hand-modified by the maintainer\n')
+
+				const applied = runBin([
+					'repair',
+					'--target',
+					target.path,
+					'--host',
+					fixture.path,
+					'--apply',
+				])
+				expect(applied.status).toBe(0)
+				expect(existsSync(join(target.path, '.editorconfig'))).toBe(true)
+				// The hand-modified src file is STILL untouched after --apply.
+				expect(readFileSync(srcPath, 'utf8')).toBe('// hand-modified by the maintainer\n')
+			} finally {
+				await target.cleanup()
+				await fixture.cleanup()
+			}
+		})
+
+		it('--prune without --apply: prints the ignored-flag note and does not delete', async () => {
+			const fixture = await buildHostFixture()
+			const target = await buildTempDirectory()
+			try {
+				const created = runBin([
+					'new',
+					'demo-repair-prune-noop',
+					'--surfaces',
+					'core',
+					'--apply',
+					'--target',
+					target.path,
+					'--host',
+					fixture.path,
+				])
+				expect(created.status).toBe(0)
+				writeFileSync(join(target.path, 'scripts', 'rogue.sh'), '#!/bin/sh\necho rogue\n')
+
+				const result = runBin([
+					'repair',
+					'--target',
+					target.path,
+					'--host',
+					fixture.path,
+					'--prune',
+				])
+				expect(result.status).toBe(0) // no other drift induced — dry-run reports clean
+				expect(result.stderr).toMatch(/--prune is ignored on a dry run/i)
+				expect(existsSync(join(target.path, 'scripts', 'rogue.sh'))).toBe(true)
+			} finally {
+				await target.cleanup()
+				await fixture.cleanup()
+			}
+		})
+	})
+
+	describe('mirror', () => {
+		it('dry-run: reports each child plus a total, ignores a non-@orkestrel dir, and prints the ci.yml exclusion note', async () => {
+			const fixture = await buildHostFixture()
+			const root = await buildTempDirectory()
+			try {
+				const clean = runBin([
+					'new',
+					'fleet-clean',
+					'--surfaces',
+					'core',
+					'--apply',
+					'--target',
+					join(root.path, 'fleet-clean'),
+					'--host',
+					fixture.path,
+				])
+				expect(clean.status).toBe(0)
+
+				const drifted = runBin([
+					'new',
+					'fleet-drifted',
+					'--surfaces',
+					'core',
+					'--apply',
+					'--target',
+					join(root.path, 'fleet-drifted'),
+					'--host',
+					fixture.path,
+				])
+				expect(drifted.status).toBe(0)
+				// In-scope host drift (mirror repairs this): the `.editorconfig` goes missing.
+				rmSync(join(root.path, 'fleet-drifted', '.editorconfig'), { force: true })
+				// Out-of-scope drift (mirror excludes ci.yml — must never repair it).
+				rmSync(join(root.path, 'fleet-drifted', '.github', 'workflows', 'ci.yml'), { force: true })
+				// A foreign file under a `.claude/agents/` mirror never enumerates via `diffPlan`.
+				mkdirSync(join(root.path, 'fleet-drifted', '.claude', 'agents'), { recursive: true })
+				writeFileSync(
+					join(root.path, 'fleet-drifted', '.claude', 'agents', 'rogue.md'),
+					'# rogue\n',
+				)
+
+				mkdirSync(join(root.path, 'not-orkestrel'), { recursive: true })
+				writeFileSync(
+					join(root.path, 'not-orkestrel', 'package.json'),
+					JSON.stringify({ name: 'not-an-orkestrel-thing', version: '0.0.1' }),
+				)
+
+				const result = runBin(['mirror', '--root', root.path, '--host', fixture.path])
+				expect(result.status).toBe(1)
+				expect(result.stdout).toContain('fleet-clean: clean')
+				expect(result.stdout).toContain('fleet-drifted: drifted 0, missing 1, foreign 0')
+				expect(result.stdout).toContain('ci.yml: repo-flavored, skipped')
+				expect(result.stdout).toMatch(/total: 1 drifted, 0 failed/)
+				expect(result.stdout).not.toContain('not-orkestrel')
+
+				// Dry run writes nothing.
+				expect(existsSync(join(root.path, 'fleet-drifted', '.editorconfig'))).toBe(false)
+				expect(existsSync(join(root.path, 'fleet-drifted', '.claude', 'agents', 'rogue.md'))).toBe(
+					true,
+				)
+			} finally {
+				await root.cleanup()
+				await fixture.cleanup()
+			}
+		})
+
+		it('--apply: repairs in-scope drift and exits 0; ci.yml stays excluded (never restored); the foreign file is untouched without --prune', async () => {
+			const fixture = await buildHostFixture()
+			const root = await buildTempDirectory()
+			try {
+				const clean = runBin([
+					'new',
+					'fleet-clean',
+					'--surfaces',
+					'core',
+					'--apply',
+					'--target',
+					join(root.path, 'fleet-clean'),
+					'--host',
+					fixture.path,
+				])
+				expect(clean.status).toBe(0)
+
+				const drifted = runBin([
+					'new',
+					'fleet-drifted',
+					'--surfaces',
+					'core',
+					'--apply',
+					'--target',
+					join(root.path, 'fleet-drifted'),
+					'--host',
+					fixture.path,
+				])
+				expect(drifted.status).toBe(0)
+				rmSync(join(root.path, 'fleet-drifted', '.editorconfig'), { force: true })
+				rmSync(join(root.path, 'fleet-drifted', '.github', 'workflows', 'ci.yml'), { force: true })
+				mkdirSync(join(root.path, 'fleet-drifted', '.claude', 'agents'), { recursive: true })
+				writeFileSync(
+					join(root.path, 'fleet-drifted', '.claude', 'agents', 'rogue.md'),
+					'# rogue\n',
+				)
+
+				const result = runBin(['mirror', '--root', root.path, '--host', fixture.path, '--apply'])
+				expect(result.status).toBe(0)
+				expect(result.stdout).toContain('fleet-clean: clean')
+				expect(result.stdout).toMatch(/fleet-drifted: repaired \(\d+ remaining\)/)
+
+				expect(existsSync(join(root.path, 'fleet-drifted', '.editorconfig'))).toBe(true)
+				// NEVER written by mirror, even though it went missing at the child.
+				expect(existsSync(join(root.path, 'fleet-drifted', '.github', 'workflows', 'ci.yml'))).toBe(
+					false,
+				)
+				// Untouched: mirror ran without --prune.
+				expect(existsSync(join(root.path, 'fleet-drifted', '.claude', 'agents', 'rogue.md'))).toBe(
+					true,
+				)
+			} finally {
+				await root.cleanup()
+				await fixture.cleanup()
+			}
+		})
+
+		it('fault isolation: a child that fails to derive is reported [TARGET] and counted failed, without aborting the fleet loop', async () => {
+			const fixture = await buildHostFixture()
+			const root = await buildTempDirectory()
+			try {
+				const healthy = runBin([
+					'new',
+					'fleet-healthy',
+					'--surfaces',
+					'core',
+					'--apply',
+					'--target',
+					join(root.path, 'fleet-healthy'),
+					'--host',
+					fixture.path,
+				])
+				expect(healthy.status).toBe(0)
+
+				// A discoverable @orkestrel package (readable, parseable manifest —
+				// see the deviation note on "unreadable package.json") that fails
+				// `deriveBlueprint` (no `src/` directory at all): a coded TARGET
+				// failure inside the per-package try, exercising the SAME
+				// fault-isolation path the spec's "unreadable manifest" scenario
+				// targets.
+				mkdirSync(join(root.path, 'fleet-broken'), { recursive: true })
+				writeFileSync(
+					join(root.path, 'fleet-broken', 'package.json'),
+					JSON.stringify({ name: '@orkestrel/fleet-broken', version: '0.0.1' }),
+				)
+
+				const result = runBin(['mirror', '--root', root.path, '--host', fixture.path])
+				expect(result.status).toBe(1)
+				expect(result.stdout).toContain('fleet-healthy: clean')
+				expect(result.stdout).toContain('fleet-broken: [TARGET]')
+				expect(result.stdout).toMatch(/total: 0 drifted, 1 failed/)
+			} finally {
+				await root.cleanup()
+				await fixture.cleanup()
+			}
+		})
 	})
 
 	describe('argument handling', () => {
@@ -330,6 +886,19 @@ describe('scaffold bin', () => {
 		it('L2: repeated flags — last occurrence wins (documented in --help)', () => {
 			const result = runBin(['--help'])
 			expect(result.stdout).toMatch(/keeps its LAST occurrence/i)
+		})
+
+		it('--help: lists all five verbs and the --host/--prune/--root flags', () => {
+			const result = runBin(['--help'])
+			expect(result.status).toBe(0)
+			expect(result.stdout).toContain('new <name>')
+			expect(result.stdout).toContain('sync')
+			expect(result.stdout).toContain('audit')
+			expect(result.stdout).toContain('repair')
+			expect(result.stdout).toContain('mirror')
+			expect(result.stdout).toContain('--host')
+			expect(result.stdout).toContain('--prune')
+			expect(result.stdout).toContain('--root')
 		})
 	})
 })

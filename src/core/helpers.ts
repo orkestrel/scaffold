@@ -31,17 +31,20 @@ import {
  *
  * @param name - The `@orkestrel/*` package name.
  * @param range - The semver range.
- * @returns A `Dependency` with both fields set.
+ * @param optional - Whether this dependency is optional; meaningful only when
+ * used as a `Blueprint` peer. Omitted entirely when absent.
+ * @returns A `Dependency` with `name` / `range` set, `optional` included only when passed.
  *
  * @example
  * ```ts
  * import { dependency } from '@orkestrel/scaffold'
  *
  * dependency('@orkestrel/contract', '^0.0.5') // { name: '@orkestrel/contract', range: '^0.0.5' }
+ * dependency('@orkestrel/database', '^0.0.5', true) // optional: true
  * ```
  */
-export function dependency(name: string, range: string): Dependency {
-	return { name, range }
+export function dependency(name: string, range: string, optional?: boolean): Dependency {
+	return optional === undefined ? { name, range } : { name, range, optional }
 }
 
 /**
@@ -94,9 +97,9 @@ export function member(
  * @param options - A partial of the remaining `Blueprint` fields.
  * @remarks
  * `version` / `engines` default `DEFAULT_VERSION` / `DEFAULT_ENGINES`, `surfaces`
- * defaults `['core']`, and `keywords` / `dependencies` / `overrides` default `[]`.
- * `description` is OMITTED entirely when absent, so the result round-trips the
- * exact-record `Blueprint` guard.
+ * defaults `['core']`, and `keywords` / `dependencies` / `peers` / `extras` /
+ * `overrides` default `[]`. `description` is OMITTED entirely when absent, so
+ * the result round-trips the exact-record `Blueprint` guard.
  * @returns A complete `Blueprint`.
  *
  * @example
@@ -112,6 +115,8 @@ export function blueprint(name: string, options?: Partial<Omit<Blueprint, 'name'
 		keywords: options?.keywords ?? [],
 		surfaces: options?.surfaces ?? ['core'],
 		dependencies: options?.dependencies ?? [],
+		peers: options?.peers ?? [],
+		extras: options?.extras ?? [],
 		version: options?.version ?? DEFAULT_VERSION,
 		engines: options?.engines ?? DEFAULT_ENGINES,
 		overrides: options?.overrides ?? [],
@@ -495,10 +500,13 @@ export function diffPlan(plan: Plan, current: Readonly<Record<string, string>>):
  * @remarks
  * Checks the name against `NAME_PATTERN`, non-empty on-vocabulary `surfaces`
  * with no repeats (a repeat would produce duplicate members), and well-formed
- * `dependencies` (non-empty name/range, name shaped `DEPENDENCY_NAME_PATTERN`,
- * no duplicate dependency names) — a NAME-shaped law at the gate that closes
- * the traversal vector a hand-built `../`-laced dependency name would open
- * through `Compiler.#pointerArtifacts`.
+ * `dependencies` / `peers` / `extras` (non-empty name/range, name shaped
+ * `DEPENDENCY_NAME_PATTERN`, no duplicate names within an array) — a
+ * NAME-shaped law at the gate that closes the traversal vector a hand-built
+ * `../`-laced dependency name would open through `Compiler.#pointerArtifacts`.
+ * A name appearing in both `dependencies` and `peers` is a blocking question
+ * (npm forbids sensibly declaring the same package both ways), and an
+ * `extras` name may overlap neither `dependencies` nor `peers`.
  * @returns A `Validation` — never throws.
  *
  * @example
@@ -582,36 +590,66 @@ export function validateBlueprint(spec: Blueprint): Validation {
 			})
 		}
 	}
-	const seenDependencies = new Set<string>()
-	for (const item of spec.dependencies) {
-		if (item.name.length === 0) {
+	// Validate one dependency-shaped array (`dependencies` / `peers` / `extras`)
+	// under the same name/range/duplicate rules, returning the set of names seen
+	// so the caller can apply the cross-array overlap rules.
+	function validateDependencyArray(field: string, items: readonly Dependency[]): Set<string> {
+		const seen = new Set<string>()
+		for (const item of items) {
+			if (item.name.length === 0) {
+				questions.push({ field, text: 'A dependency name must not be empty', blocking: true })
+			} else if (!DEPENDENCY_NAME_PATTERN.test(item.name)) {
+				questions.push({
+					field,
+					text: `Dependency name "${item.name}" must match ${DEPENDENCY_NAME_PATTERN.source}`,
+					blocking: true,
+				})
+			}
+			if (item.range.length === 0) {
+				questions.push({
+					field,
+					text: `Dependency "${item.name}" is missing a version range`,
+					blocking: true,
+				})
+			}
+			if (seen.has(item.name)) {
+				questions.push({
+					field,
+					text: `Dependency "${item.name}" is declared more than once`,
+					blocking: true,
+				})
+			}
+			seen.add(item.name)
+		}
+		return seen
+	}
+	const seenDependencies = validateDependencyArray('dependencies', spec.dependencies)
+	const seenPeers = validateDependencyArray('peers', spec.peers)
+	const seenExtras = validateDependencyArray('extras', spec.extras)
+	for (const name of seenPeers) {
+		if (seenDependencies.has(name)) {
 			questions.push({
-				field: 'dependencies',
-				text: 'A dependency name must not be empty',
-				blocking: true,
-			})
-		} else if (!DEPENDENCY_NAME_PATTERN.test(item.name)) {
-			questions.push({
-				field: 'dependencies',
-				text: `Dependency name "${item.name}" must match ${DEPENDENCY_NAME_PATTERN.source}`,
+				field: 'peers',
+				text: `Dependency "${name}" is declared in both "dependencies" and "peers"`,
 				blocking: true,
 			})
 		}
-		if (item.range.length === 0) {
+	}
+	for (const name of seenExtras) {
+		if (seenDependencies.has(name)) {
 			questions.push({
-				field: 'dependencies',
-				text: `Dependency "${item.name}" is missing a version range`,
+				field: 'extras',
+				text: `Dependency "${name}" is declared in both "dependencies" and "extras"`,
 				blocking: true,
 			})
 		}
-		if (seenDependencies.has(item.name)) {
+		if (seenPeers.has(name)) {
 			questions.push({
-				field: 'dependencies',
-				text: `Dependency "${item.name}" is declared more than once`,
+				field: 'extras',
+				text: `Dependency "${name}" is declared in both "peers" and "extras"`,
 				blocking: true,
 			})
 		}
-		seenDependencies.add(item.name)
 	}
 	return { valid: questions.length === 0, questions, warnings: [] }
 }

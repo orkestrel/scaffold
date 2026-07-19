@@ -1,5 +1,6 @@
 import type { Artifact, Plan } from '@src/core'
-import { existsSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs'
+import type { ManifestEntry } from '@src/server'
+import { existsSync, mkdirSync, readFileSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:net'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -9,6 +10,7 @@ import { dependency } from '@src/core'
 import { isScaffoldError } from '@src/core'
 import { createMaterializer, isVacant, readTarget } from '@src/server'
 import { createRecorder } from '../../setup.js'
+import type { TempDirectoryInterface } from '../../setupServer.js'
 import { buildTempDirectory, WORKSPACE_ROOT } from '../../setupServer.js'
 
 // ── isVacant ─────────────────────────────────────────────────────────────────
@@ -553,6 +555,162 @@ describe('Materializer.repair', () => {
 	})
 })
 
+// ── Materializer — manifest-aware host copy ─────────────────────────────────
+
+describe('Materializer — manifest-aware host copy', () => {
+	/** A hand-authored vendored `host` fixture: `manifest.json` plus its staged, un-dotted storage files. */
+	async function buildManifestHost(): Promise<TempDirectoryInterface> {
+		const host = await buildTempDirectory()
+		const entries: ManifestEntry[] = [
+			{ storage: 'dotfiles/gitignore', destination: '.gitignore', executable: false },
+			{ storage: 'claude/settings.json', destination: '.claude/settings.json', executable: false },
+			{ storage: 'scripts/deps.sh', destination: 'scripts/deps.sh', executable: true },
+		]
+		mkdirSync(join(host.path, 'dotfiles'), { recursive: true })
+		mkdirSync(join(host.path, 'claude'), { recursive: true })
+		mkdirSync(join(host.path, 'scripts'), { recursive: true })
+		writeFileSync(join(host.path, 'dotfiles', 'gitignore'), 'node_modules\n', 'utf8')
+		writeFileSync(join(host.path, 'claude', 'settings.json'), '{"permissions":{}}', 'utf8')
+		writeFileSync(join(host.path, 'scripts', 'deps.sh'), '#!/bin/sh\necho deps\n', 'utf8')
+		writeFileSync(join(host.path, 'manifest.json'), JSON.stringify(entries), 'utf8')
+		return host
+	}
+
+	function buildManifestPlan(): Plan {
+		return {
+			blueprint: blueprint('manifest-fixture', { surfaces: ['core'] }),
+			groups: ['configs', 'orchestration'],
+			artifacts: [
+				{ path: '.gitignore', group: 'configs', origin: 'host' },
+				{ path: '.claude/settings.json', group: 'configs', origin: 'host' },
+				{ path: 'scripts/deps.sh', group: 'orchestration', origin: 'host' },
+			],
+		}
+	}
+
+	it('materialize lands manifest-staged files at their DOTTED destinations, with the exec bit set only where the manifest says so', async () => {
+		const directory = await buildTempDirectory()
+		const host = await buildManifestHost()
+		try {
+			const plan = buildManifestPlan()
+			const materializer = createMaterializer({ host: host.path })
+			const result = materializer.materialize(plan, directory.path)
+
+			expect([...result.copied].sort()).toEqual(
+				['.claude/settings.json', '.gitignore', 'scripts/deps.sh'].sort(),
+			)
+			expect(readFileSync(join(directory.path, '.gitignore'), 'utf8')).toBe('node_modules\n')
+			expect(readFileSync(join(directory.path, '.claude/settings.json'), 'utf8')).toBe(
+				'{"permissions":{}}',
+			)
+			expect(readFileSync(join(directory.path, 'scripts/deps.sh'), 'utf8')).toBe(
+				'#!/bin/sh\necho deps\n',
+			)
+
+			// Only `scripts/deps.sh` is flagged `executable: true` in the manifest.
+			expect(statSync(join(directory.path, 'scripts/deps.sh')).mode & 0o111).not.toBe(0)
+			expect(statSync(join(directory.path, '.gitignore')).mode & 0o111).toBe(0)
+			expect(statSync(join(directory.path, '.claude/settings.json')).mode & 0o111).toBe(0)
+
+			materializer.destroy()
+		} finally {
+			await directory.cleanup()
+			await host.cleanup()
+		}
+	})
+
+	it('repair lands manifest-staged missing files at their DOTTED destinations, with the exec bit set on deps.sh', async () => {
+		const directory = await buildTempDirectory()
+		const host = await buildManifestHost()
+		try {
+			const plan = buildManifestPlan()
+			const materializer = createMaterializer({ host: host.path })
+			const result = materializer.repair(
+				plan,
+				{
+					findings: [
+						{ path: '.gitignore', group: 'configs', drift: 'missing' },
+						{ path: '.claude/settings.json', group: 'configs', drift: 'missing' },
+						{ path: 'scripts/deps.sh', group: 'orchestration', drift: 'missing' },
+					],
+					clean: false,
+					complete: true,
+					questions: [],
+					drifted: 0,
+					missing: 3,
+					foreign: 0,
+				},
+				directory.path,
+			)
+
+			expect([...result.copied].sort()).toEqual(
+				['.claude/settings.json', '.gitignore', 'scripts/deps.sh'].sort(),
+			)
+			expect(existsSync(join(directory.path, '.gitignore'))).toBe(true)
+			expect(existsSync(join(directory.path, '.claude/settings.json'))).toBe(true)
+			expect(statSync(join(directory.path, 'scripts/deps.sh')).mode & 0o111).not.toBe(0)
+
+			materializer.destroy()
+		} finally {
+			await directory.cleanup()
+			await host.cleanup()
+		}
+	})
+
+	it('a host with NO manifest.json falls back to the 1:1 raw-root mapping (a fresh fixture, not the existing-behavior repo-root tests above)', async () => {
+		const directory = await buildTempDirectory()
+		const host = await buildTempDirectory()
+		try {
+			mkdirSync(join(host.path, 'nested'), { recursive: true })
+			writeFileSync(join(host.path, 'nested', 'file.txt'), 'raw 1:1 content\n', 'utf8')
+			const plan: Plan = {
+				blueprint: blueprint('rawroot-1to1-fixture', { surfaces: ['core'] }),
+				groups: ['docs'],
+				artifacts: [{ path: 'nested/file.txt', group: 'docs', origin: 'host' }],
+			}
+			const materializer = createMaterializer({ host: host.path })
+			const result = materializer.materialize(plan, directory.path)
+
+			expect(result.copied).toEqual(['nested/file.txt'])
+			expect(readFileSync(join(directory.path, 'nested/file.txt'), 'utf8')).toBe(
+				'raw 1:1 content\n',
+			)
+			materializer.destroy()
+		} finally {
+			await directory.cleanup()
+			await host.cleanup()
+		}
+	})
+
+	it('a malformed host manifest.json surfaces as a coded error', async () => {
+		const directory = await buildTempDirectory()
+		const host = await buildTempDirectory()
+		try {
+			// Not an array of manifest entries — `readHostManifest`'s documented
+			// coded-error shape.
+			writeFileSync(join(host.path, 'manifest.json'), '{"not":"an array"}', 'utf8')
+			const plan: Plan = {
+				blueprint: blueprint('malformed-manifest-fixture', { surfaces: ['core'] }),
+				groups: ['docs'],
+				artifacts: [{ path: 'whatever.txt', group: 'docs', origin: 'host' }],
+			}
+			const materializer = createMaterializer({ host: host.path })
+			let caught: unknown
+			try {
+				materializer.materialize(plan, directory.path)
+			} catch (error) {
+				caught = error
+			}
+			if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
+			expect(caught.code).toBe('TARGET')
+			materializer.destroy()
+		} finally {
+			await directory.cleanup()
+			await host.cleanup()
+		}
+	})
+})
+
 // ── destroy semantics ────────────────────────────────────────────────────────
 
 describe('Materializer.destroy', () => {
@@ -596,6 +754,207 @@ describe('Materializer.destroy', () => {
 					throw new Error('expected a DESTROYED ScaffoldError to be thrown')
 				expect(caught.code).toBe('DESTROYED')
 			}
+		} finally {
+			await directory.cleanup()
+		}
+	})
+})
+
+// ── Materializer.prune ───────────────────────────────────────────────────────
+
+describe('Materializer.prune', () => {
+	/** A raw-root `host` fixture (no `manifest.json`) vendoring one file each under `.claude/agents/` and `scripts/`. */
+	async function buildVendoredHost(): Promise<TempDirectoryInterface> {
+		const host = await buildTempDirectory()
+		mkdirSync(join(host.path, '.claude', 'agents'), { recursive: true })
+		mkdirSync(join(host.path, 'scripts'), { recursive: true })
+		writeFileSync(join(host.path, '.claude', 'agents', 'scout.md'), 'vendored scout', 'utf8')
+		writeFileSync(join(host.path, 'scripts', 'build.sh'), 'vendored build', 'utf8')
+		return host
+	}
+
+	it("deletes only in-scope foreign files under .claude/agents/ and scripts/, emits 'remove' per deletion, leaves vendored files and out-of-scope foreign files untouched", async () => {
+		const directory = await buildTempDirectory()
+		const host = await buildVendoredHost()
+		try {
+			// Target already carries the vendored files (untouched by prune) PLUS
+			// a foreign file in each prune-owned directory (deleted) PLUS a
+			// foreign file OUTSIDE those directories (never prune's concern).
+			mkdirSync(join(directory.path, '.claude', 'agents'), { recursive: true })
+			mkdirSync(join(directory.path, 'scripts'), { recursive: true })
+			writeFileSync(join(directory.path, '.claude', 'agents', 'scout.md'), 'vendored scout', 'utf8')
+			writeFileSync(
+				join(directory.path, '.claude', 'agents', 'foreign-agent.md'),
+				'not vendored',
+				'utf8',
+			)
+			writeFileSync(join(directory.path, 'scripts', 'build.sh'), 'vendored build', 'utf8')
+			writeFileSync(join(directory.path, 'scripts', 'foreign-script.sh'), 'not vendored', 'utf8')
+			writeFileSync(join(directory.path, 'README.md'), 'outside prune scope', 'utf8')
+
+			const materializer = createMaterializer({ host: host.path })
+			const removeRecorder = createRecorder<readonly [path: string]>()
+			materializer.emitter.on('remove', removeRecorder.handler)
+
+			const plan = blueprintToPlan(blueprint('prune-fixture', { surfaces: ['core'] }))
+			const result = materializer.prune(plan, directory.path)
+
+			expect([...result.removed].sort()).toEqual(
+				['.claude/agents/foreign-agent.md', 'scripts/foreign-script.sh'].sort(),
+			)
+			expect(result.written).toEqual([])
+			expect(result.copied).toEqual([])
+			expect(result.skipped).toEqual([])
+
+			expect(removeRecorder.count).toBe(2)
+			expect([...removeRecorder.calls.map((call) => call[0])].sort()).toEqual(
+				['.claude/agents/foreign-agent.md', 'scripts/foreign-script.sh'].sort(),
+			)
+
+			// Vendored files survive.
+			expect(existsSync(join(directory.path, '.claude/agents/scout.md'))).toBe(true)
+			expect(existsSync(join(directory.path, 'scripts/build.sh'))).toBe(true)
+			// In-scope foreign files are gone.
+			expect(existsSync(join(directory.path, '.claude/agents/foreign-agent.md'))).toBe(false)
+			expect(existsSync(join(directory.path, 'scripts/foreign-script.sh'))).toBe(false)
+			// Out-of-scope foreign file is never prune's concern.
+			expect(existsSync(join(directory.path, 'README.md'))).toBe(true)
+
+			materializer.destroy()
+		} finally {
+			await directory.cleanup()
+			await host.cleanup()
+		}
+	})
+
+	it('refuses to delete through a symlink under scripts/ that escapes the target — containment holds for prune too, nothing outside is deleted', async () => {
+		const directory = await buildTempDirectory()
+		const outside = await buildTempDirectory()
+		const host = await buildVendoredHost()
+		try {
+			writeFileSync(join(outside.path, 'secret.txt'), 'do not touch', 'utf8')
+			mkdirSync(join(directory.path, 'scripts'), { recursive: true })
+			symlinkSync(join(outside.path, 'secret.txt'), join(directory.path, 'scripts', 'escape.sh'))
+
+			const materializer = createMaterializer({ host: host.path })
+			const plan = blueprintToPlan(blueprint('prune-symlink-fixture', { surfaces: ['core'] }))
+			let caught: unknown
+			try {
+				materializer.prune(plan, directory.path)
+			} catch (error) {
+				caught = error
+			}
+			if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
+			expect(caught.code).toBe('WRITE')
+			// Neither the outside file nor the symlink itself was touched — the
+			// containment check throws BEFORE any `unlinkSync` runs.
+			expect(existsSync(join(outside.path, 'secret.txt'))).toBe(true)
+			expect(existsSync(join(directory.path, 'scripts', 'escape.sh'))).toBe(true)
+			materializer.destroy()
+		} finally {
+			await directory.cleanup()
+			await outside.cleanup()
+			await host.cleanup()
+		}
+	})
+
+	it('throws DESTROYED after destroy()', async () => {
+		const directory = await buildTempDirectory()
+		const host = await buildVendoredHost()
+		try {
+			const materializer = createMaterializer({ host: host.path })
+			materializer.destroy()
+			const plan = blueprintToPlan(blueprint('prune-destroyed-fixture', { surfaces: ['core'] }))
+			let caught: unknown
+			try {
+				materializer.prune(plan, directory.path)
+			} catch (error) {
+				caught = error
+			}
+			if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
+			expect(caught.code).toBe('DESTROYED')
+		} finally {
+			await directory.cleanup()
+			await host.cleanup()
+		}
+	})
+
+	it('H1: fails CLOSED with a coded TARGET error when the host root does not resolve — target files untouched, nothing deleted', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			mkdirSync(join(directory.path, 'scripts'), { recursive: true })
+			writeFileSync(join(directory.path, 'scripts', 'foreign-script.sh'), 'not vendored', 'utf8')
+
+			const materializer = createMaterializer({ host: join(directory.path, 'does-not-exist-host') })
+			const plan = blueprintToPlan(
+				blueprint('prune-nonexistent-host-fixture', { surfaces: ['core'] }),
+			)
+			let caught: unknown
+			try {
+				materializer.prune(plan, directory.path)
+			} catch (error) {
+				caught = error
+			}
+			if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
+			expect(caught.code).toBe('TARGET')
+			// Nothing was deleted — the foreign file is still there, untouched.
+			expect(existsSync(join(directory.path, 'scripts', 'foreign-script.sh'))).toBe(true)
+			materializer.destroy()
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('H1: a host that EXISTS but vendors nothing in scripts/ (an empty directory present, no manifest.json) still prunes every foreign file there — the legitimate empty-vendor case', async () => {
+		const directory = await buildTempDirectory()
+		const host = await buildTempDirectory()
+		try {
+			// Host EXISTS and has an empty scripts/ directory — a genuinely-empty
+			// vendor, distinct from an unresolvable host (H1's fail-closed case).
+			// `.claude/agents/` also exists (empty) so that PRUNE_DIRECTORIES
+			// iteration doesn't throw on the OTHER directory.
+			mkdirSync(join(host.path, 'scripts'), { recursive: true })
+			mkdirSync(join(host.path, '.claude', 'agents'), { recursive: true })
+
+			mkdirSync(join(directory.path, 'scripts'), { recursive: true })
+			writeFileSync(join(directory.path, 'scripts', 'foreign-script.sh'), 'not vendored', 'utf8')
+
+			const materializer = createMaterializer({ host: host.path })
+			const plan = blueprintToPlan(blueprint('prune-empty-vendor-fixture', { surfaces: ['core'] }))
+			const result = materializer.prune(plan, directory.path)
+
+			expect(result.removed).toEqual(['scripts/foreign-script.sh'])
+			expect(existsSync(join(directory.path, 'scripts', 'foreign-script.sh'))).toBe(false)
+			materializer.destroy()
+		} finally {
+			await directory.cleanup()
+			await host.cleanup()
+		}
+	})
+
+	it('materialize and repair both report removed: [] — prune is the only method that ever removes', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			const plan = blueprintToPlan(blueprint('budget', { surfaces: ['core'] }))
+			const materializer = createMaterializer({ host: WORKSPACE_ROOT })
+			const materializeResult = materializer.materialize(plan, directory.path)
+			expect(materializeResult.removed).toEqual([])
+
+			const repairResult = materializer.repair(
+				plan,
+				{
+					findings: [],
+					clean: true,
+					complete: true,
+					questions: [],
+					drifted: 0,
+					missing: 0,
+					foreign: 0,
+				},
+				directory.path,
+			)
+			expect(repairResult.removed).toEqual([])
+			materializer.destroy()
 		} finally {
 			await directory.cleanup()
 		}

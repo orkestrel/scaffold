@@ -1,4 +1,4 @@
-import type { Audit, Question, Scaffolding } from '@src/core'
+import type { Audit, Question, Scaffolding, Surface } from '@src/core'
 import { blueprint, Compiler, dependency, isScaffoldError, override } from '@src/core'
 import { captureError, createRecorder } from '../../setup.js'
 import { describe, expect, it } from 'vitest'
@@ -311,5 +311,55 @@ describe('Compiler — destroy semantics', () => {
 		compiler.destroy()
 
 		expect(compiler.emitter).toBeDefined()
+	})
+})
+
+describe('Compiler#compile — surface parameterization (six variants): emitted artifact path set', () => {
+	const pascal = 'Router'
+
+	function stubQuartet(surface: Surface): readonly string[] {
+		return [
+			`src/${surface}/types.ts`,
+			`src/${surface}/${pascal}.ts`,
+			`src/${surface}/factories.ts`,
+			`src/${surface}/index.ts`,
+		]
+	}
+
+	function testPair(surface: Surface): readonly string[] {
+		return [`tests/src/${surface}/${pascal}.test.ts`, `tests/src/${surface}/factories.test.ts`]
+	}
+
+	const variants: readonly { readonly label: string; readonly surfaces: readonly Surface[] }[] = [
+		{ label: 'core-only', surfaces: ['core'] },
+		{ label: 'core+server', surfaces: ['core', 'server'] },
+		{ label: 'core+browser', surfaces: ['core', 'browser'] },
+		{ label: 'core+browser+server', surfaces: ['core', 'browser', 'server'] },
+		{ label: 'server-only', surfaces: ['server'] },
+		{ label: 'browser-only', surfaces: ['browser'] },
+	]
+
+	describe.each(variants)('$label', ({ surfaces }) => {
+		it('emits the declared-surface stub quartets, setup files, per-surface test pairs, and the always-on parity test', () => {
+			const compiler = new Compiler()
+
+			const scaffolding = compiler.compile(blueprint('router', { surfaces }))
+
+			expect(scaffolding.complete).toBe(true)
+			const paths = new Set(scaffolding.plan?.artifacts.map((artifact) => artifact.path) ?? [])
+
+			for (const surface of ['core', 'browser', 'server'] as const) {
+				const declared = surfaces.includes(surface)
+				for (const path of stubQuartet(surface)) expect(paths.has(path)).toBe(declared)
+				for (const path of testPair(surface)) expect(paths.has(path)).toBe(declared)
+			}
+
+			expect(paths.has('tests/setup.ts')).toBe(true)
+			expect(paths.has('tests/setupServer.ts')).toBe(surfaces.includes('server'))
+			expect(paths.has('tests/setupBrowser.ts')).toBe(surfaces.includes('browser'))
+			expect(paths.has('tests/guides/src/parity.test.ts')).toBe(true)
+
+			compiler.destroy()
+		})
 	})
 })

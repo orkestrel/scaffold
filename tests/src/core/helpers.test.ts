@@ -16,6 +16,7 @@ import {
 	planToReview,
 	planToSummary,
 	rangeToFreshness,
+	SCAFFOLD_RANGE,
 	SURFACE_MATRIX,
 	syncToReview,
 	TEMPLATES,
@@ -418,6 +419,138 @@ describe('validateBlueprint', () => {
 	})
 })
 
+describe('validateBlueprint — peers/extras (per-array rules + cross-array overlap)', () => {
+	it('applies the same empty-name/off-pattern/empty-range rules to peers as to dependencies', () => {
+		const validation = validateBlueprint({
+			...blueprint('router'),
+			peers: [dependency('', '^1'), { name: 'x', range: '' }],
+		})
+
+		expect(validation.valid).toBe(false)
+		// Same shape as the dependencies case: empty name (1) + off-pattern name (1) +
+		// empty range (1) = 3 peers-field questions.
+		expect(validation.questions.filter((question) => question.field === 'peers').length).toBe(3)
+	})
+
+	it('blocks a duplicate peer name', () => {
+		const validation = validateBlueprint({
+			...blueprint('router'),
+			peers: [dependency('@orkestrel/contract', '^1'), dependency('@orkestrel/contract', '^2')],
+		})
+
+		expect(validation.valid).toBe(false)
+		expect(
+			validation.questions.some(
+				(question) =>
+					question.field === 'peers' && question.text.includes('declared more than once'),
+			),
+		).toBe(true)
+	})
+
+	it('applies the same empty-name/off-pattern/empty-range rules to extras as to dependencies', () => {
+		const validation = validateBlueprint({
+			...blueprint('router'),
+			extras: [dependency('', '^1'), { name: 'x', range: '' }],
+		})
+
+		expect(validation.valid).toBe(false)
+		expect(validation.questions.filter((question) => question.field === 'extras').length).toBe(3)
+	})
+
+	it('blocks a duplicate extra name', () => {
+		const validation = validateBlueprint({
+			...blueprint('router'),
+			extras: [dependency('@orkestrel/contract', '^1'), dependency('@orkestrel/contract', '^2')],
+		})
+
+		expect(validation.valid).toBe(false)
+		expect(
+			validation.questions.some(
+				(question) =>
+					question.field === 'extras' && question.text.includes('declared more than once'),
+			),
+		).toBe(true)
+	})
+
+	it('blocks a name declared in both dependencies and peers (positive)', () => {
+		const validation = validateBlueprint({
+			...blueprint('router'),
+			dependencies: [dependency('@orkestrel/contract', '^1')],
+			peers: [dependency('@orkestrel/contract', '^1')],
+		})
+
+		expect(validation.valid).toBe(false)
+		expect(
+			validation.questions.some(
+				(question) =>
+					question.field === 'peers' && question.text.includes('both "dependencies" and "peers"'),
+			),
+		).toBe(true)
+	})
+
+	it('accepts distinct names across dependencies and peers (negative)', () => {
+		const validation = validateBlueprint({
+			...blueprint('router'),
+			dependencies: [dependency('@orkestrel/contract', '^1')],
+			peers: [dependency('@orkestrel/emitter', '^1')],
+		})
+
+		expect(validation.valid).toBe(true)
+	})
+
+	it('blocks a name declared in both dependencies and extras (positive)', () => {
+		const validation = validateBlueprint({
+			...blueprint('router'),
+			dependencies: [dependency('@orkestrel/contract', '^1')],
+			extras: [dependency('@orkestrel/contract', '^1')],
+		})
+
+		expect(validation.valid).toBe(false)
+		expect(
+			validation.questions.some(
+				(question) =>
+					question.field === 'extras' && question.text.includes('both "dependencies" and "extras"'),
+			),
+		).toBe(true)
+	})
+
+	it('accepts distinct names across dependencies and extras (negative)', () => {
+		const validation = validateBlueprint({
+			...blueprint('router'),
+			dependencies: [dependency('@orkestrel/contract', '^1')],
+			extras: [dependency('@orkestrel/emitter', '^1')],
+		})
+
+		expect(validation.valid).toBe(true)
+	})
+
+	it('blocks a name declared in both peers and extras (positive)', () => {
+		const validation = validateBlueprint({
+			...blueprint('router'),
+			peers: [dependency('@orkestrel/contract', '^1')],
+			extras: [dependency('@orkestrel/contract', '^1')],
+		})
+
+		expect(validation.valid).toBe(false)
+		expect(
+			validation.questions.some(
+				(question) =>
+					question.field === 'extras' && question.text.includes('both "peers" and "extras"'),
+			),
+		).toBe(true)
+	})
+
+	it('accepts distinct names across peers and extras (negative)', () => {
+		const validation = validateBlueprint({
+			...blueprint('router'),
+			peers: [dependency('@orkestrel/contract', '^1')],
+			extras: [dependency('@orkestrel/emitter', '^1')],
+		})
+
+		expect(validation.valid).toBe(true)
+	})
+})
+
 describe('manifestToDependencies', () => {
 	it('collects @orkestrel deps across dependencies/devDependencies/peerDependencies', () => {
 		const manifest = JSON.stringify({
@@ -564,6 +697,8 @@ describe('pinPlan', () => {
 			overrides: descriptionLast.overrides,
 			engines: descriptionLast.engines,
 			version: descriptionLast.version,
+			extras: descriptionLast.extras,
+			peers: descriptionLast.peers,
 			dependencies: descriptionLast.dependencies,
 			surfaces: descriptionLast.surfaces,
 			keywords: descriptionLast.keywords,
@@ -836,6 +971,8 @@ describe('blueprintToPlan — content validation across variants (R1/R2)', () =>
 			label: 'core+browser+server',
 			spec: blueprint('router', { surfaces: ['core', 'browser', 'server'] }),
 		},
+		{ label: 'server-only', spec: blueprint('router', { surfaces: ['server'] }) },
+		{ label: 'browser-only', spec: blueprint('router', { surfaces: ['browser'] }) },
 	]
 
 	describe.each(variants)('$label', ({ spec }) => {
@@ -881,5 +1018,205 @@ describe('blueprintToPlan — content validation across variants (R1/R2)', () =>
 				expect(diagnostics ?? []).toHaveLength(0)
 			}
 		})
+	})
+})
+
+describe('blueprintToPlan — packageManifest peers/extras', () => {
+	it('emits no peerDependencies/peerDependenciesMeta fields when peers is empty', () => {
+		const plan = blueprintToPlan(blueprint('router', { surfaces: ['core'] }), ['manifest'])
+		const manifest = plan.artifacts.find((artifact) => artifact.path === 'package.json')
+		const parsed = readManifest(manifest?.content)
+
+		expect(Object.hasOwn(parsed, 'peerDependencies')).toBe(false)
+		expect(Object.hasOwn(parsed, 'peerDependenciesMeta')).toBe(false)
+	})
+
+	it('emits peerDependencies sorted code-unit, with peerDependenciesMeta only for optional peers', () => {
+		const plan = blueprintToPlan(
+			blueprint('router', {
+				surfaces: ['core'],
+				peers: [dependency('@orkestrel/zebra', '^1'), dependency('@orkestrel/apple', '^1', true)],
+			}),
+			['manifest'],
+		)
+		const manifest = plan.artifacts.find((artifact) => artifact.path === 'package.json')
+		const parsed = readManifest(manifest?.content)
+		const peerDependencies = readRecord(parsed.peerDependencies)
+		const peerDependenciesMeta = readRecord(parsed.peerDependenciesMeta)
+
+		expect(Object.keys(peerDependencies)).toEqual(['@orkestrel/apple', '@orkestrel/zebra'])
+		expect(peerDependenciesMeta).toEqual({ '@orkestrel/apple': { optional: true } })
+		expect(Object.hasOwn(peerDependenciesMeta, '@orkestrel/zebra')).toBe(false)
+	})
+
+	it('emits peerDependencies with NO peerDependenciesMeta when no peer is optional', () => {
+		const plan = blueprintToPlan(
+			blueprint('router', {
+				surfaces: ['core'],
+				peers: [dependency('@orkestrel/contract', '^0.0.5')],
+			}),
+			['manifest'],
+		)
+		const manifest = plan.artifacts.find((artifact) => artifact.path === 'package.json')
+		const parsed = readManifest(manifest?.content)
+
+		expect(Object.hasOwn(parsed, 'peerDependencies')).toBe(true)
+		expect(Object.hasOwn(parsed, 'peerDependenciesMeta')).toBe(false)
+	})
+
+	it('merges extras into devDependencies, the extra range winning on a baseline name collision', () => {
+		const plan = blueprintToPlan(
+			blueprint('router', {
+				surfaces: ['core'],
+				extras: [dependency('@orkestrel/guide', '^9.9.9')],
+			}),
+			['manifest'],
+		)
+		const manifest = plan.artifacts.find((artifact) => artifact.path === 'package.json')
+		const parsed = readManifest(manifest?.content)
+		const devDependencies = readRecord(parsed.devDependencies)
+
+		expect(devDependencies['@orkestrel/guide']).toBe('^9.9.9')
+	})
+
+	it('carries the scaffold script and pins @orkestrel/scaffold at SCAFFOLD_RANGE', () => {
+		const plan = blueprintToPlan(blueprint('router', { surfaces: ['core'] }), ['manifest'])
+		const manifest = plan.artifacts.find((artifact) => artifact.path === 'package.json')
+		const parsed = readManifest(manifest?.content)
+		const scripts = readRecord(parsed.scripts)
+		const devDependencies = readRecord(parsed.devDependencies)
+
+		expect(scripts.scaffold).toBe('scaffold')
+		expect(devDependencies['@orkestrel/scaffold']).toBe(SCAFFOLD_RANGE)
+	})
+
+	it('field order: dependencies → devDependencies → peerDependencies → peerDependenciesMeta → engines', () => {
+		const plan = blueprintToPlan(
+			blueprint('router', {
+				surfaces: ['core'],
+				peers: [dependency('@orkestrel/contract', '^0.0.5', true)],
+			}),
+			['manifest'],
+		)
+		const manifest = plan.artifacts.find((artifact) => artifact.path === 'package.json')
+		const parsed = readManifest(manifest?.content)
+		const orderedKeys = [
+			'dependencies',
+			'devDependencies',
+			'peerDependencies',
+			'peerDependenciesMeta',
+			'engines',
+		]
+		const seen = Object.keys(parsed).filter((key) => orderedKeys.includes(key))
+
+		expect(seen).toEqual(orderedKeys)
+	})
+})
+
+describe('blueprintToPlan — HOST_PATHS retirement + group mapping', () => {
+	it('never emits the retired scaffold/mirror script artifacts', () => {
+		const plan = blueprintToPlan(blueprint('router', { surfaces: ['core'] }))
+		const paths = plan.artifacts.map((artifact) => artifact.path)
+
+		expect(paths).not.toContain('SCAFFOLD.md')
+		expect(paths).not.toContain('scripts/scaffold.sh')
+		expect(paths).not.toContain('scripts/mirror.sh')
+	})
+
+	it('emits the current SessionStart hook scripts, grouped orchestration', () => {
+		const plan = blueprintToPlan(blueprint('router', { surfaces: ['core'] }), ['orchestration'])
+
+		for (const path of ['scripts/deps.sh', 'scripts/cursor.sh', 'scripts/ollama.sh']) {
+			const artifact = plan.artifacts.find((entry) => entry.path === path)
+			expect(artifact?.group).toBe('orchestration')
+			expect(artifact?.origin).toBe('host')
+		}
+	})
+
+	it('emits the vendored guide.md mirror, grouped guides', () => {
+		const plan = blueprintToPlan(blueprint('router', { surfaces: ['core'] }), ['guides'])
+		const guideMirror = plan.artifacts.find((artifact) => artifact.path === 'guides/src/guide.md')
+
+		expect(guideMirror?.group).toBe('guides')
+		expect(guideMirror?.origin).toBe('host')
+	})
+})
+
+describe('blueprintToPlan — root vite.config.ts content (surface-shape)', () => {
+	it('server-only: no srcCore export and no @src/core remap (no sibling core build)', () => {
+		const plan = blueprintToPlan(blueprint('router', { surfaces: ['server'] }), ['configs'])
+		const vite = plan.artifacts.find((artifact) => artifact.path === 'vite.config.ts')
+
+		expect(vite?.content).not.toContain('srcCore')
+		expect(vite?.content).not.toContain('@src/core')
+	})
+
+	it('browser-only: ships Playwright (the sole surface must run in a real browser)', () => {
+		const plan = blueprintToPlan(blueprint('router', { surfaces: ['browser'] }), ['configs'])
+		const vite = plan.artifacts.find((artifact) => artifact.path === 'vite.config.ts')
+
+		expect(vite?.content).toContain('@vitest/browser-playwright')
+		expect(vite?.content).toContain('createBrowserProvider')
+	})
+
+	it('server-only: ships NO Playwright (no browser surface to run)', () => {
+		const plan = blueprintToPlan(blueprint('router', { surfaces: ['server'] }), ['configs'])
+		const vite = plan.artifacts.find((artifact) => artifact.path === 'vite.config.ts')
+
+		expect(vite?.content).not.toContain('@vitest/browser-playwright')
+		expect(vite?.content).not.toContain('createBrowserProvider')
+	})
+})
+
+describe('blueprintToPlan — parity test SELF_SPECIFIERS/SPECIFIER_MODULES (surface-shape)', () => {
+	it('core+server: specifiers cover the package specifier (primary=core) plus one per declared surface', () => {
+		const plan = blueprintToPlan(blueprint('router', { surfaces: ['core', 'server'] }), ['tests'])
+		const parity = plan.artifacts.find(
+			(artifact) => artifact.path === 'tests/guides/src/parity.test.ts',
+		)
+		const content = parity?.content ?? ''
+
+		expect(content).toContain(
+			"const SELF_SPECIFIERS = ['@orkestrel/router', '@src/core', '@src/server']",
+		)
+		expect(content).toContain("'@orkestrel/router': 'src/core'")
+		expect(content).toContain("'@src/core': 'src/core'")
+		expect(content).toContain("'@src/server': 'src/server'")
+	})
+
+	it('server-only: the bare package specifier resolves to the sole declared surface (no core to be primary)', () => {
+		const plan = blueprintToPlan(blueprint('router', { surfaces: ['server'] }), ['tests'])
+		const parity = plan.artifacts.find(
+			(artifact) => artifact.path === 'tests/guides/src/parity.test.ts',
+		)
+		const content = parity?.content ?? ''
+
+		expect(content).toContain("const SELF_SPECIFIERS = ['@orkestrel/router', '@src/server']")
+		expect(content).toContain("'@orkestrel/router': 'src/server'")
+	})
+
+	it('browser-only: the bare package specifier resolves to browser', () => {
+		const plan = blueprintToPlan(blueprint('router', { surfaces: ['browser'] }), ['tests'])
+		const parity = plan.artifacts.find(
+			(artifact) => artifact.path === 'tests/guides/src/parity.test.ts',
+		)
+		const content = parity?.content ?? ''
+
+		expect(content).toContain("const SELF_SPECIFIERS = ['@orkestrel/router', '@src/browser']")
+		expect(content).toContain("'@orkestrel/router': 'src/browser'")
+	})
+})
+
+describe('blueprintToPlan — guide artifact memberTable dedupe (multi-surface)', () => {
+	it('does not duplicate a member row shared by two surfaces', () => {
+		const plan = blueprintToPlan(blueprint('router', { surfaces: ['core', 'server'] }), ['guides'])
+		const guide = plan.artifacts.find((artifact) => artifact.path === 'guides/src/router.md')
+		const content = guide?.content ?? ''
+		const factoriesSection =
+			(content.split('### Factories')[1] ?? '').split('### Entities')[0] ?? ''
+		const entitiesSection = (content.split('### Entities')[1] ?? '').split('### Types')[0] ?? ''
+
+		expect(factoriesSection.split('`createRouter`').length - 1).toBe(1)
+		expect(entitiesSection.split('`Router`').length - 1).toBe(1)
 	})
 })

@@ -53,6 +53,8 @@ export type ScaffoldErrorCode = 'INVALID' | 'BLOCKED' | 'DESTROYED' | 'TARGET' |
 export interface Dependency {
 	readonly name: string
 	readonly range: string
+	/** Meaningful only when this `Dependency` appears in a `Blueprint`'s `peers` — `true` emits a `peerDependenciesMeta` `{ optional: true }` entry alongside it. */
+	readonly optional?: boolean
 }
 
 /**
@@ -75,6 +77,10 @@ export interface Blueprint {
 	readonly keywords: readonly string[]
 	readonly surfaces: readonly Surface[]
 	readonly dependencies: readonly Dependency[]
+	/** Runtime `@orkestrel/*` peers, emitted as `peerDependencies` — a peer flagged `optional` also gets a `peerDependenciesMeta` entry. */
+	readonly peers: readonly Dependency[]
+	/** Package-specific `devDependencies` merged into the generated uniform baseline — the middleware pattern of shipping `@orkestrel/{database,router,server}` for its tests. */
+	readonly extras: readonly Dependency[]
 	readonly version: string
 	readonly engines: string
 	readonly overrides: readonly Override[]

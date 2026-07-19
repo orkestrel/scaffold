@@ -5,8 +5,7 @@ import type { TemplateDefinition } from '@orkestrel/template'
  * `template`-origin artifact `blueprintToPlan` renders.
  *
  * @remarks
- * Derived from `scripts/scaffold.sh`'s §C generated-minimal stubs, translated
- * from bash `${name}` / `${pascal}` interpolation to `{{name}}` /
+ * The generated-minimal stub prose/source, expressed as `{{name}}` /
  * `{{pascal}}` `{{token}}` placeholders for `@orkestrel/template`'s pure
  * `fillTemplate` LEAF. Only genuinely templated PROSE / source artifacts live
  * here — the token-collision boundary (AGENTS §14, this guide's Contract
@@ -27,6 +26,8 @@ export const TEMPLATES: Readonly<Record<string, TemplateDefinition>> = (() => {
 	// declaration surface exactly the one export it documents.
 	const EXPORT_KEYWORD = 'export'
 	const CONST_KEYWORD = 'const'
+	const IMPORT_KEYWORD = 'import'
+	const FUNCTION_KEYWORD = 'function'
 	return Object.freeze({
 		readme: Object.freeze({
 			id: 'readme',
@@ -72,6 +73,22 @@ MIT © [Orkestrel](https://github.com/orkestrel) — see [LICENSE](./LICENSE).
 			placeholders: Object.freeze([
 				Object.freeze({ name: 'name', description: 'The lowercase-hyphen package name.' }),
 				Object.freeze({ name: 'pascal', description: 'The PascalCase entity name.' }),
+				Object.freeze({
+					name: 'primary',
+					description: 'The primary Surface (`core` when declared, else the sole surface).',
+				}),
+				Object.freeze({
+					name: 'source',
+					description: 'The rendered "Source: …" fragment over every declared surface.',
+				}),
+				Object.freeze({
+					name: 'barrel',
+					description: 'The rendered "Surfaced through …" sentence.',
+				}),
+				Object.freeze({
+					name: 'tests',
+					description: 'The rendered per-surface Tests section body.',
+				}),
 				Object.freeze({ name: 'factories', description: 'The rendered Factories surface table.' }),
 				Object.freeze({ name: 'entities', description: 'The rendered Entities surface table.' }),
 				Object.freeze({ name: 'types', description: 'The rendered Types surface table.' }),
@@ -79,15 +96,15 @@ MIT © [Orkestrel](https://github.com/orkestrel) — see [LICENSE](./LICENSE).
 			content: `# {{pascal}}
 
 > TODO: one-paragraph description of \`{{pascal}}\` — what it is, what problem it
-> solves, and how it fits the \`@orkestrel\` line. Source: [\`src/core\`](../../src/core).
-> Surfaced through the \`@src/core\` barrel.
+> solves, and how it fits the \`@orkestrel\` line. Source: {{source}}.
+> {{barrel}}
 
 ## Surface
 
 TODO: a short intro line, then a minimal usage example:
 
 \`\`\`ts
-import { create{{pascal}} } from '@src/core'
+import { create{{pascal}} } from '@src/{{primary}}'
 
 ${CONST_KEYWORD} instance = create{{pascal}}({ id: 'example' })
 \`\`\`
@@ -106,10 +123,7 @@ ${CONST_KEYWORD} instance = create{{pascal}}({ id: 'example' })
 
 ## Tests
 
-- [\`tests/src/core/{{pascal}}.test.ts\`](../../tests/src/core/{{pascal}}.test.ts) —
-  id assignment (explicit / generated) and independence across instances.
-- [\`tests/src/core/factories.test.ts\`](../../tests/src/core/factories.test.ts) —
-  \`create{{pascal}}\` returns a working \`{{pascal}}Interface\` backed by a real \`{{pascal}}\`.
+{{tests}}
 
 ## See also
 
@@ -292,16 +306,52 @@ ${EXPORT_KEYWORD} function createRecorder<TArgs extends readonly unknown[]>(): T
 }
 `,
 		}),
+		setupServer: Object.freeze({
+			id: 'setupServer',
+			name: 'setupServer',
+			summary: 'The generated-minimal `tests/setupServer.ts` node-only helper — no placeholders.',
+			category: 'tests',
+			placeholders: Object.freeze([]),
+			content: `// AGENTS §16.1: node-only test helpers anchor \`node:fs\` fixture loaders to
+// this workspace root rather than a relative path, so a loader works
+// regardless of the running test file's directory depth. Add server-specific
+// fixtures/helpers here as this surface grows beyond the shared recorder in
+// tests/setup.ts.
+
+${IMPORT_KEYWORD} { fileURLToPath } from 'node:url'
+
+/** The workspace root, for anchoring \`node:fs\` fixture loaders (AGENTS §16.1). */
+${EXPORT_KEYWORD} ${CONST_KEYWORD} WORKSPACE_ROOT = fileURLToPath(new URL('../', import.meta.url))
+`,
+		}),
+		setupBrowser: Object.freeze({
+			id: 'setupBrowser',
+			name: 'setupBrowser',
+			summary: 'The generated-minimal `tests/setupBrowser.ts` DOM-only helper — no placeholders.',
+			category: 'tests',
+			placeholders: Object.freeze([]),
+			content: `// AGENTS §16.1: DOM/browser-only test helpers (builders, CSS assertion
+// primitives) go here as this surface grows fixtures beyond the shared
+// recorder in tests/setup.ts.
+
+// TODO: [Browser] add browser/DOM test helpers as this surface grows.
+export {}
+`,
+		}),
 		entityTest: Object.freeze({
 			id: 'entityTest',
 			name: 'entityTest',
-			summary: 'The generated-minimal `tests/src/core/{Pascal}.test.ts` stub.',
+			summary: 'The generated-minimal `tests/src/<surface>/{Pascal}.test.ts` stub.',
 			category: 'tests',
 			placeholders: Object.freeze([
 				Object.freeze({ name: 'pascal', description: 'The PascalCase entity name.' }),
+				Object.freeze({
+					name: 'surface',
+					description: 'The owning Surface (`core`/`browser`/`server`).',
+				}),
 			]),
-			content: `import type { {{pascal}}Interface } from '@src/core'
-import { {{pascal}} } from '@src/core'
+			content: `import type { {{pascal}}Interface } from '@src/{{surface}}'
+import { {{pascal}} } from '@src/{{surface}}'
 import { describe, expect, it } from 'vitest'
 
 // The {{pascal}} entity — id assignment (explicit / generated) and independence
@@ -333,13 +383,17 @@ describe('{{pascal}}', () => {
 		factoriesTest: Object.freeze({
 			id: 'factoriesTest',
 			name: 'factoriesTest',
-			summary: 'The generated-minimal `tests/src/core/factories.test.ts` stub.',
+			summary: 'The generated-minimal `tests/src/<surface>/factories.test.ts` stub.',
 			category: 'tests',
 			placeholders: Object.freeze([
 				Object.freeze({ name: 'pascal', description: 'The PascalCase entity name.' }),
+				Object.freeze({
+					name: 'surface',
+					description: 'The owning Surface (`core`/`browser`/`server`).',
+				}),
 			]),
-			content: `import type { {{pascal}}Interface } from '@src/core'
-import { create{{pascal}}, {{pascal}} } from '@src/core'
+			content: `import type { {{pascal}}Interface } from '@src/{{surface}}'
+import { create{{pascal}}, {{pascal}} } from '@src/{{surface}}'
 import { describe, expect, expectTypeOf, it } from 'vitest'
 
 // The {{pascal}} factory — that \`create{{pascal}}\` returns a working {{pascal}}Interface
@@ -362,6 +416,163 @@ describe('create{{pascal}}', () => {
 		expectTypeOf(create{{pascal}}()).toEqualTypeOf<{{pascal}}Interface>()
 	})
 })
+`,
+		}),
+		parityTest: Object.freeze({
+			id: 'parityTest',
+			name: 'parityTest',
+			summary: 'The consumer-side guides-parity drop-in — `tests/guides/src/parity.test.ts`.',
+			category: 'tests',
+			placeholders: Object.freeze([
+				Object.freeze({ name: 'name', description: 'The lowercase-hyphen package name.' }),
+				Object.freeze({
+					name: 'specifiers',
+					description:
+						'The computed SELF_SPECIFIERS / SPECIFIER_MODULES / exportsFor block, one shape for every surface count.',
+				}),
+			]),
+			content: `// The consumer-side guides-parity drop-in: runs \`@orkestrel/guide\`'s
+// checks against this repo's own \`guides/README.md\` manifest.
+
+${IMPORT_KEYWORD} { describe, expect, it } from 'vitest'
+${IMPORT_KEYWORD} { readdirSync, readFileSync } from 'node:fs'
+${IMPORT_KEYWORD} { fileURLToPath } from 'node:url'
+${IMPORT_KEYWORD} { join } from 'node:path'
+${IMPORT_KEYWORD} {
+	createGuide,
+	createSource,
+	fenceImports,
+	findMissing,
+	findUnexampled,
+	isExternalLink,
+	missingSymbols,
+	parseManifest,
+	resolveLink,
+	symbolKey,
+} from '@orkestrel/guide'
+
+${CONST_KEYWORD} ROOT = fileURLToPath(new URL('../../../', import.meta.url))
+${CONST_KEYWORD} WALK_DIRS = ['src', 'guides', 'tests']
+
+${FUNCTION_KEYWORD} walk(dir: string, acc: Record<string, string>): void {
+	for (const entry of readdirSync(join(ROOT, dir), { withFileTypes: true })) {
+		const relative = \`\${dir}/\${entry.name}\`
+		if (entry.isDirectory()) {
+			walk(relative, acc)
+			continue
+		}
+		if (!entry.name.endsWith('.ts') && !entry.name.endsWith('.md')) continue
+		acc[relative] = readFileSync(join(ROOT, relative), 'utf8')
+	}
+}
+
+${CONST_KEYWORD} files: Record<string, string> = {}
+for (const dir of WALK_DIRS) walk(dir, files)
+files['AGENTS.md'] = readFileSync(join(ROOT, 'AGENTS.md'), 'utf8')
+
+${FUNCTION_KEYWORD} readText(relative: string): string {
+	const text = files[relative]
+	if (text === undefined) throw new Error(\`Missing file: \${relative}\`)
+	return text
+}
+
+${CONST_KEYWORD} manifest = parseManifest(readText('guides/README.md'), 'guides')
+
+{{specifiers}}
+
+it('manifest lists at least one guide', () => {
+	expect(manifest.length).toBeGreaterThan(0)
+})
+
+for (const entry of manifest) {
+	const guide = createGuide(readText(entry.spec))
+	const source = createSource({ files, module: entry.source })
+
+	describe(\`\${entry.concept}\`, () => {
+		it('extracts a non-empty documented surface', () => {
+			expect(guide.surface().length).toBeGreaterThan(0)
+		})
+		it('documents every source export', () => {
+			expect(missingSymbols(source.exports(), guide.surface())).toEqual([])
+		})
+		it('documents only real exports', () => {
+			expect(missingSymbols(guide.surface(), source.exports())).toEqual([])
+		})
+
+		it('exposes no hidden module-scope declarations', () => {
+			expect(source.hidden().map(symbolKey)).toEqual([])
+		})
+
+		for (const group of guide.methods()) {
+			const members = source.methods(group.interface)
+			const entity = group.interface.replace(/Interface$/, '')
+			describe(\`\${group.interface}\`, () => {
+				it('documents at least one method', () => {
+					expect(group.methods.length).toBeGreaterThan(0)
+				})
+				it('documents every interface method', () => {
+					expect(findMissing(members, group.methods)).toEqual([])
+				})
+				it('documents no phantom method', () => {
+					expect(findMissing(group.methods, members)).toEqual([])
+				})
+				it(\`\${entity} exposes no undocumented method\`, () => {
+					const extra =
+						entity === group.interface ? [] : findMissing(source.methods(entity), group.methods)
+					expect(extra).toEqual([])
+				})
+			})
+		}
+
+		it('documents an example for every Surface function', () => {
+			const fences = guide.patterns()
+			const names = guide
+				.surface()
+				.filter((symbol) => symbol.kind === 'function')
+				.map((symbol) => symbol.name)
+			expect(findUnexampled(names, fences, source.examples())).toEqual([])
+		})
+
+		for (const group of guide.methods()) {
+			const entity = group.interface.replace(/Interface$/, '')
+			describe(\`\${group.interface} examples\`, () => {
+				it('documents an example for every method', () => {
+					const fences = guide.patterns()
+					const examples =
+						entity === group.interface
+							? source.examples(group.interface)
+							: source.examples(group.interface).concat(source.examples(entity))
+					expect(findUnexampled(group.methods, fences, examples)).toEqual([])
+				})
+			})
+		}
+
+		it('imports only real exports in every \`\`\`ts fence', () => {
+			for (const fence of guide.patterns()) {
+				for (const { specifier, names } of fenceImports(fence)) {
+					if (!SELF_SPECIFIERS.includes(specifier)) continue
+					expect(findMissing(names, exportsFor(specifier))).toEqual([])
+				}
+			}
+		})
+
+		it('resolves every relative link', () => {
+			const broken = guide
+				.links()
+				.filter((href) => !isExternalLink(href))
+				.map((href) => resolveLink(entry.spec, href))
+				.filter((path) => !source.exists(path))
+			expect(broken).toEqual([])
+		})
+		it('links only to test files that exist', () => {
+			const missing = guide
+				.tests()
+				.map((href) => resolveLink(entry.spec, href))
+				.filter((path) => !source.exists(path))
+			expect(missing).toEqual([])
+		})
+	})
+}
 `,
 		}),
 	} as const)

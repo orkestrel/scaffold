@@ -1,18 +1,18 @@
-import type { Artifact, Blueprint, Group, Member, Plan, Surface } from './types.js'
+import type { Artifact, Blueprint, Dependency, Group, Member, Plan, Surface } from './types.js'
 import { fillTemplate } from '@orkestrel/template'
-import { GROUPS, HOST_PATHS, SURFACE_MATRIX } from './constants.js'
+import { GROUPS, HOST_PATHS, SCAFFOLD_RANGE, SURFACE_MATRIX } from './constants.js'
 import { alignTable, blueprintToMembers, pascalCase, pinPlan } from './helpers.js'
 import { TEMPLATES } from './templates.js'
 
 /**
- * The full pure compilation: draft a blueprint's artifacts — the
- * SCAFFOLD.md §4.2/§4.3 combination rules over the per-surface
- * `SURFACE_MATRIX` rows, plus `HOST_PATHS` and `overrides` — then pin.
+ * The full pure compilation: draft a blueprint's artifacts — the manifest and
+ * exports combination rules over the per-surface `SURFACE_MATRIX` rows, plus
+ * `HOST_PATHS` and `overrides` — then pin.
  *
  * @remarks
  * Every drafting leaf below is function-local: the doc↔source Surface
  * bijection (AGENTS §22) documents this module as exactly one export, so the
- * §4.2/§4.3 combination logic, the config/manifest renderers, and the
+ * manifest/exports combination logic, the config/manifest renderers, and the
  * template-fill glue all nest inside this function rather than sit at module
  * scope undocumented.
  *
@@ -28,7 +28,7 @@ import { TEMPLATES } from './templates.js'
  */
 export function blueprintToPlan(blueprint: Blueprint, groups?: readonly Group[]): Plan {
 	// The seven runtime `@orkestrel/*` guide mirrors this repo itself vendors
-	// byte-identically (SCAFFOLD.md §7 / this guide's Contract invariant 7) —
+	// byte-identically (this guide's Contract invariant 7) —
 	// the only dependency names a scaffolded package's `guides/src/<dep>.md`
 	// mirror can be a `host`-origin byte copy for.
 	const vendoredGuides: readonly string[] = [
@@ -43,31 +43,31 @@ export function blueprintToPlan(blueprint: Blueprint, groups?: readonly Group[])
 
 	// Resolve the `Group` a byte-copied `HOST_PATHS` entry belongs to.
 	function hostGroup(path: string): Group {
-		if (
-			path === 'AGENTS.md' ||
-			path === 'CLAUDE.md' ||
-			path === 'SCAFFOLD.md' ||
-			path === 'LICENSE'
-		) {
+		if (path === 'AGENTS.md' || path === 'CLAUDE.md' || path === 'LICENSE') {
 			return 'docs'
 		}
 		if (
 			path === '.claude' ||
-			path === 'scripts/mirror.sh' ||
-			path === 'scripts/scaffold.sh' ||
+			path === 'scripts/deps.sh' ||
+			path === 'scripts/cursor.sh' ||
+			path === 'scripts/ollama.sh' ||
 			path === '.github/workflows/ci.yml'
 		) {
 			return 'orchestration'
 		}
+		if (path === 'guides/src/guide.md') return 'guides'
 		return 'configs'
 	}
 
-	// Fill one `TEMPLATES` entry into a `template`-origin `Artifact`.
+	// Fill one `TEMPLATES` entry into a `template`-origin `Artifact`, optionally
+	// tagged with the owning `Surface` (source/tests artifacts that live under a
+	// declared surface's tree).
 	function fillArtifact(
 		path: string,
 		group: Group,
 		id: string,
 		values: Readonly<Record<string, unknown>>,
+		surface?: Surface,
 	): Artifact {
 		const definition = TEMPLATES[id]
 		if (!definition) throw new Error(`Unknown template id: ${id}`)
@@ -75,22 +75,24 @@ export function blueprintToPlan(blueprint: Blueprint, groups?: readonly Group[])
 			missing: 'error',
 			placeholders: definition.placeholders,
 		})
-		return { path, group, origin: 'template', content }
+		return surface === undefined
+			? { path, group, origin: 'template', content }
+			: { path, group, origin: 'template', surface, content }
 	}
 
-	// Compute the `package.json` artifact's `content`, applying the §4.2/§4.3
-	// combination rules over a blueprint's surfaces — grounded against the
+	// Compute the `package.json` artifact's `content`, applying the manifest
+	// and exports combination rules over a blueprint's surfaces — grounded against the
 	// live @orkestrel/middleware (core+server) and @orkestrel/router
 	// (core+browser+server) exemplars.
 	function packageManifest(spec: Blueprint): string {
-		// Classify a blueprint's surfaces into the §4.2/§4.3 variant class.
+		// Classify a blueprint's surfaces into the manifest/exports variant class.
 		function surfaceVariant(surfaces: readonly Surface[]): Surface | 'multi' {
 			if (surfaces.length > 1) return 'multi'
 			const [only] = surfaces
 			return only ?? 'core'
 		}
 
-		// Build the `main` / `module` / top-level `types` entry fields, per §4.2.
+		// Build the `main` / `module` / top-level `types` entry fields.
 		function entryFields(surfaces: readonly Surface[]): {
 			readonly main: string
 			readonly module: string
@@ -130,7 +132,7 @@ export function blueprintToPlan(blueprint: Blueprint, groups?: readonly Group[])
 			}
 		}
 
-		// Build the `package.json` `exports` map, per §4.3.
+		// Build the `package.json` `exports` map.
 		function exportsMap(surfaces: readonly Surface[]): Readonly<Record<string, unknown>> {
 			const variant = surfaceVariant(surfaces)
 			if (variant === 'browser') {
@@ -168,14 +170,23 @@ export function blueprintToPlan(blueprint: Blueprint, groups?: readonly Group[])
 			return map
 		}
 
+		// A code-unit (not locale-sensitive) comparator — matches the `keywords`
+		// sort below and keeps ordering stable across locales/environments.
+		function compareCodeUnit(a: string, b: string): number {
+			return a < b ? -1 : a > b ? 1 : 0
+		}
+
 		// The devDependency baseline — every repo in the line carries the same
 		// set (`@vitest/browser-playwright` included regardless of a browser
 		// surface: both @orkestrel/middleware, core+server, and @orkestrel/router,
-		// core+browser+server, ship it — grounded, not conditional).
-		function devDependencies(): Readonly<Record<string, string>> {
-			return {
+		// core+browser+server, ship it — grounded, not conditional). A package's
+		// `extras` (code-unit sorted) merge in on top, the extras' declared range
+		// winning on a name collision with the baseline.
+		function devDependencies(extras: readonly Dependency[]): Readonly<Record<string, string>> {
+			const baseline: Record<string, string> = {
 				'@microsoft/api-extractor': '^7.58.11',
 				'@orkestrel/guide': '^0.0.5',
+				'@orkestrel/scaffold': SCAFFOLD_RANGE,
 				'@types/node': '^26.1.1',
 				'@vitest/browser-playwright': '^4.1.10',
 				oxfmt: '^0.59.0',
@@ -185,17 +196,24 @@ export function blueprintToPlan(blueprint: Blueprint, groups?: readonly Group[])
 				'vite-plugin-dts': '^5.0.3',
 				vitest: '^4.1.10',
 			}
+			for (const extra of [...extras].sort((a, b) => compareCodeUnit(a.name, b.name))) {
+				baseline[extra.name] = extra.range
+			}
+			return baseline
 		}
 
 		const entry = entryFields(spec.surfaces)
 		const dependencies: Record<string, string> = {}
-		// A code-unit (not locale-sensitive) comparator — matches the `keywords`
-		// sort below and keeps ordering stable across locales/environments.
-		function compareCodeUnit(a: string, b: string): number {
-			return a < b ? -1 : a > b ? 1 : 0
-		}
 		for (const dep of [...spec.dependencies].sort((a, b) => compareCodeUnit(a.name, b.name))) {
 			dependencies[dep.name] = dep.range
+		}
+		const peerDependencies: Record<string, string> = {}
+		for (const peer of [...spec.peers].sort((a, b) => compareCodeUnit(a.name, b.name))) {
+			peerDependencies[peer.name] = peer.range
+		}
+		const peerDependenciesMeta: Record<string, { readonly optional: true }> = {}
+		for (const peer of spec.peers) {
+			if (peer.optional === true) peerDependenciesMeta[peer.name] = { optional: true }
 		}
 
 		// Scripts are built by sequential assignment so aggregate + per-surface
@@ -207,7 +225,7 @@ export function blueprintToPlan(blueprint: Blueprint, groups?: readonly Group[])
 			copy: "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
 			'tmp:txt':
 				"node -e \"const fs=require('node:fs'),p=require('node:path');function walk(d){for(const e of fs.readdirSync(d,{withFileTypes:true})){const f=p.join(d,e.name);if(e.isDirectory()){walk(f)}else if(!e.name.endsWith('.md')&&!e.name.endsWith('.txt')){const t=f+'.txt';if(!fs.existsSync(t)){fs.renameSync(f,t)}else{console.warn('Skipping '+f+' — target exists: '+t)}}}}try{walk('tmp')}catch(e){if(e.code!=='ENOENT')throw e}\"",
-			scaffold: 'bash scripts/scaffold.sh',
+			scaffold: 'scaffold',
 			lint: 'oxlint --config .oxlintrc.json --fix .',
 			check: 'tsc --noEmit --project tsconfig.json && npm run check:src',
 			'check:src': spec.surfaces.map((surface) => `npm run check:src:${surface}`).join(' && '),
@@ -259,7 +277,9 @@ export function blueprintToPlan(blueprint: Blueprint, groups?: readonly Group[])
 			publishConfig: { access: 'public' },
 			scripts,
 			dependencies,
-			devDependencies: devDependencies(),
+			devDependencies: devDependencies(spec.extras),
+			...(Object.keys(peerDependencies).length > 0 ? { peerDependencies } : {}),
+			...(Object.keys(peerDependenciesMeta).length > 0 ? { peerDependenciesMeta } : {}),
 			engines: { node: spec.engines },
 		}
 		return `${JSON.stringify(manifest, undefined, '\t')}\n`
@@ -297,11 +317,21 @@ export function blueprintToPlan(blueprint: Blueprint, groups?: readonly Group[])
 			return `${JSON.stringify(config, undefined, '\t')}\n`
 		}
 
-		// The root `vite.config.ts` — `srcCore` + `guides` always, plus one
-		// `srcBrowser` / `srcServer` export per non-core surface (each builds
-		// on `srcCore` and externalizes `@src/core` to the sibling build, per
-		// the live exemplars). The Playwright browser-provider machinery ships
-		// unconditionally (middleware carries it with no browser surface).
+		// The root `vite.config.ts` — three grounded shapes, chosen by a
+		// blueprint's `surfaces`:
+		//   1. `core`-only — `srcCore` + `guides`, no Playwright at all (the live
+		//      timeout exemplar: no browser project exists anywhere in the file).
+		//   2. Multi-surface (2+ surfaces, always including `core` per the live
+		//      middleware/router exemplars) — `srcCore` is the shared base;
+		//      `srcBrowser` / `srcServer` extend it and externalize `@src/core` to
+		//      the sibling build. Playwright ships UNCONDITIONALLY (middleware
+		//      carries it with no browser surface — grounded, not conditional).
+		//   3. A single non-`core` surface (`browser`-only / `server`-only) — the
+		//      surface factory itself IS the base (no `srcCore` to extend, so no
+		//      dead `@src/core` externalize/remap either — there is no sibling
+		//      core build), per the live sqlite (server-only) / indexeddb
+		//      (browser-only) exemplars. Playwright ships only when the sole
+		//      surface is `browser` (it must run its own tests in a real browser).
 		function rootViteConfig(surfaces: readonly Surface[]): string {
 			// Rendered blocks below are generated FILE TEXT, so every embedded
 			// declaration keyword is interpolated rather than typed literally at
@@ -313,7 +343,183 @@ export function blueprintToPlan(blueprint: Blueprint, groups?: readonly Group[])
 			// exactly the one export it documents.
 			const EXPORT_KEYWORD = 'export'
 			const CONST_KEYWORD = 'const'
+			const hasCore = surfaces.includes('core')
 			const nonCore = surfaces.filter((surface) => surface !== 'core')
+			const needsPlaywright = surfaces.length > 1 || surfaces.includes('browser')
+
+			// The Playwright-import lines + `createBrowserProvider` — present only
+			// when `needsPlaywright`.
+			const playwrightImports = needsPlaywright
+				? `import { globSync } from 'node:fs'
+import { playwright } from '@vitest/browser-playwright'
+`
+				: ''
+			const browserProviderFn = needsPlaywright
+				? `
+${EXPORT_KEYWORD} function createBrowserProvider() {
+	const { PLAYWRIGHT_EXECUTABLE_PATH, PLAYWRIGHT_WS_ENDPOINT, PLAYWRIGHT_CHANNEL } = process.env
+	if (PLAYWRIGHT_EXECUTABLE_PATH)
+		return playwright({ launchOptions: { executablePath: PLAYWRIGHT_EXECUTABLE_PATH } })
+	if (PLAYWRIGHT_WS_ENDPOINT)
+		return playwright({ connectOptions: { wsEndpoint: PLAYWRIGHT_WS_ENDPOINT } })
+	if (PLAYWRIGHT_CHANNEL) return playwright({ launchOptions: { channel: PLAYWRIGHT_CHANNEL } })
+	if (process.platform === 'linux') {
+		for (const pattern of [
+			'/opt/pw-browsers/chromium',
+			'/opt/pw-browsers/chromium-*/chrome-linux64/chrome',
+			'/opt/pw-browsers/chromium-*/chrome-linux/chrome',
+		]) {
+			const [executablePath] = globSync(pattern).sort().reverse()
+			if (executablePath) return playwright({ launchOptions: { executablePath } })
+		}
+	}
+	const channel = process.platform === 'win32' ? 'msedge' : 'chrome'
+	return playwright({ launchOptions: { channel } })
+}
+`
+				: ''
+			const header = `import type { UserConfig } from 'vite'
+import { defineConfig, mergeConfig } from 'vitest/config'
+import tsconfig from './tsconfig.json' with { type: 'json' }
+import { fileURLToPath, URL } from 'node:url'
+${playwrightImports}
+${EXPORT_KEYWORD} function resolveWorkspacePath(relativePath: string): string {
+	return fileURLToPath(new URL(relativePath, import.meta.url))
+}
+${browserProviderFn}
+${CONST_KEYWORD} resolve = {
+	alias: Object.entries(tsconfig.compilerOptions.paths).reduce(
+		(a, [k, v]) => Object.assign(a, { [k]: resolveWorkspacePath(v[0]) }),
+		{},
+	),
+}
+`
+
+			// Shape 3 — the single non-`core` surface's factory IS the base.
+			function singleSurfaceConfig(surface: 'browser' | 'server'): string {
+				if (surface === 'browser') {
+					return `${header}
+${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
+	mergeConfig(
+		{
+			resolve,
+			build: {
+				emptyOutDir: true,
+				sourcemap: true,
+				minify: false,
+				lib: {
+					entry: resolveWorkspacePath('src/browser/index.ts'),
+					formats: ['es'],
+					fileName: () => 'index.js',
+				},
+				outDir: 'dist/src/browser',
+				rolldownOptions: {
+					external: (id: string) => id.startsWith('@orkestrel/'),
+				},
+			},
+			test: {
+				name: { label: 'src:browser', color: 'yellow' },
+				include: ['tests/src/browser/**/*.test.ts'],
+				setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+				browser: {
+					enabled: true,
+					provider: createBrowserProvider(),
+					instances: [{ browser: 'chromium', headless: true }],
+				},
+				fileParallelism: false,
+			},
+		},
+		config ?? {},
+	)
+
+${EXPORT_KEYWORD} const guides = (config?: UserConfig): UserConfig =>
+	srcBrowser(
+		mergeConfig(
+			{
+				test: {
+					name: { label: 'guides', color: 'green' },
+					include: ['tests/guides/**/*.test.ts'],
+					exclude: ['tests/src/**/*.test.ts', 'tests/setup.test.ts'],
+					environment: 'node',
+					browser: { enabled: false },
+				},
+			},
+			config ?? {},
+		),
+	)
+
+export default defineConfig({
+	resolve,
+	test: {
+		projects: [srcBrowser, guides],
+	},
+})
+`
+				}
+				return `${header}
+${EXPORT_KEYWORD} const srcServer = (config?: UserConfig): UserConfig =>
+	mergeConfig(
+		{
+			resolve,
+			build: {
+				emptyOutDir: true,
+				sourcemap: true,
+				minify: false,
+				lib: {
+					entry: resolveWorkspacePath('src/server/index.ts'),
+					formats: ['es', 'cjs'],
+					fileName: (format: string) => (format === 'es' ? 'index.js' : 'index.cjs'),
+				},
+				outDir: 'dist/src/server',
+				target: 'node24',
+				rolldownOptions: {
+					external: (id: string) => id.startsWith('node:') || id.startsWith('@orkestrel/'),
+				},
+			},
+			test: {
+				name: { label: 'src:server', color: 'red' },
+				include: ['tests/src/server/**/*.test.ts'],
+				setupFiles: ['./tests/setup.ts', './tests/setupServer.ts'],
+				environment: 'node',
+				browser: { enabled: false },
+			},
+		},
+		config ?? {},
+	)
+
+${EXPORT_KEYWORD} const guides = (config?: UserConfig): UserConfig =>
+	srcServer(
+		mergeConfig(
+			{
+				test: {
+					name: { label: 'guides', color: 'green' },
+					include: ['tests/guides/**/*.test.ts'],
+					exclude: ['tests/src/**/*.test.ts', 'tests/setup.test.ts'],
+				},
+			},
+			config ?? {},
+		),
+	)
+
+export default defineConfig({
+	resolve,
+	test: {
+		projects: [srcServer, guides],
+	},
+})
+`
+			}
+
+			if (!hasCore) {
+				const [onlySurface] = nonCore
+				if (onlySurface === 'browser' || onlySurface === 'server') {
+					return singleSurfaceConfig(onlySurface)
+				}
+			}
+
+			// Shape 1 (no `nonCore` entries) / Shape 2 (1-2 `nonCore` entries) —
+			// `srcCore` is always the shared base; `srcBrowser` / `srcServer` extend
+			// it and externalize `@src/core` to the sibling build.
 			const browserBlock = `
 ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 	srcCore(
@@ -393,49 +599,11 @@ ${EXPORT_KEYWORD} const srcServer = (config?: UserConfig): UserConfig =>
 				.map((surface) => (surface === 'browser' ? browserBlock : serverBlock))
 				.join('')
 			const projectNames = [
-				...(surfaces.includes('core') ? ['srcCore'] : []),
+				...(hasCore ? ['srcCore'] : []),
 				...nonCore.map((surface) => `src${pascalCase(surface)}`),
 				'guides',
 			]
-			return `import type { UserConfig } from 'vite'
-import { defineConfig, mergeConfig } from 'vitest/config'
-import tsconfig from './tsconfig.json' with { type: 'json' }
-import { fileURLToPath, URL } from 'node:url'
-import { globSync } from 'node:fs'
-import { playwright } from '@vitest/browser-playwright'
-
-${EXPORT_KEYWORD} function resolveWorkspacePath(relativePath: string): string {
-	return fileURLToPath(new URL(relativePath, import.meta.url))
-}
-
-${EXPORT_KEYWORD} function createBrowserProvider() {
-	const { PLAYWRIGHT_EXECUTABLE_PATH, PLAYWRIGHT_WS_ENDPOINT, PLAYWRIGHT_CHANNEL } = process.env
-	if (PLAYWRIGHT_EXECUTABLE_PATH)
-		return playwright({ launchOptions: { executablePath: PLAYWRIGHT_EXECUTABLE_PATH } })
-	if (PLAYWRIGHT_WS_ENDPOINT)
-		return playwright({ connectOptions: { wsEndpoint: PLAYWRIGHT_WS_ENDPOINT } })
-	if (PLAYWRIGHT_CHANNEL) return playwright({ launchOptions: { channel: PLAYWRIGHT_CHANNEL } })
-	if (process.platform === 'linux') {
-		for (const pattern of [
-			'/opt/pw-browsers/chromium',
-			'/opt/pw-browsers/chromium-*/chrome-linux64/chrome',
-			'/opt/pw-browsers/chromium-*/chrome-linux/chrome',
-		]) {
-			const [executablePath] = globSync(pattern).sort().reverse()
-			if (executablePath) return playwright({ launchOptions: { executablePath } })
-		}
-	}
-	const channel = process.platform === 'win32' ? 'msedge' : 'chrome'
-	return playwright({ launchOptions: { channel } })
-}
-
-${CONST_KEYWORD} resolve = {
-	alias: Object.entries(tsconfig.compilerOptions.paths).reduce(
-		(a, [k, v]) => Object.assign(a, { [k]: resolveWorkspacePath(v[0]) }),
-		{},
-	),
-}
-
+			return `${header}
 ${EXPORT_KEYWORD} const srcCore = (config?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
@@ -604,26 +772,104 @@ export default defineConfig(
 	}
 
 	// Draft the `source` group's `template` artifacts — the generated-minimal
-	// `src/core/*` stubs, filled from `TEMPLATES` with `missing: 'error'`.
-	function sourceArtifacts(pascal: string): readonly Artifact[] {
+	// `src/<surface>/*` stubs, one full {types, <Pascal>, factories, index} set
+	// PER declared surface (never assuming `core`), filled from `TEMPLATES` with
+	// `missing: 'error'`. `blueprintToMembers` already declares a full entity +
+	// factory per surface (AGENTS §5's per-surface centralized-file pattern), so
+	// every surface gets the same uniform stub shape.
+	function sourceArtifacts(spec: Blueprint, pascal: string): readonly Artifact[] {
 		const values = { pascal }
-		return [
-			fillArtifact('src/core/types.ts', 'source', 'types', values),
-			fillArtifact(`src/core/${pascal}.ts`, 'source', 'entity', values),
-			fillArtifact('src/core/factories.ts', 'source', 'factories', values),
-			fillArtifact('src/core/index.ts', 'source', 'index', values),
-		]
+		const artifacts: Artifact[] = []
+		for (const surface of spec.surfaces) {
+			artifacts.push(
+				fillArtifact(`src/${surface}/types.ts`, 'source', 'types', values, surface),
+				fillArtifact(`src/${surface}/${pascal}.ts`, 'source', 'entity', values, surface),
+				fillArtifact(`src/${surface}/factories.ts`, 'source', 'factories', values, surface),
+				fillArtifact(`src/${surface}/index.ts`, 'source', 'index', values, surface),
+			)
+		}
+		return artifacts
 	}
 
-	// Draft the `tests` group's `template` artifacts — the recorder setup plus
-	// the generated-minimal entity / factory test stubs.
-	function testArtifacts(pascal: string): readonly Artifact[] {
-		const values = { pascal }
-		return [
-			fillArtifact('tests/setup.ts', 'tests', 'setup', {}),
-			fillArtifact(`tests/src/core/${pascal}.test.ts`, 'tests', 'entityTest', values),
-			fillArtifact('tests/src/core/factories.test.ts', 'tests', 'factoriesTest', values),
-		]
+	// Build the computed `SELF_SPECIFIERS` / `SPECIFIER_MODULES` / `exportsFor`
+	// block the `parityTest` template's `{{specifiers}}` placeholder fills —
+	// ONE shape for every surface count (grounded against the live single-surface
+	// websocket/indexeddb and multi-surface router/middleware exemplars, which
+	// both resolve a fence's specifier through a `SPECIFIER_MODULES` map rather
+	// than a single-module lookup). The bare `@orkestrel/<name>` specifier
+	// resolves to the PRIMARY surface — `core` when declared, else the sole
+	// declared surface.
+	function paritySpecifiers(spec: Blueprint): string {
+		// Keyword tokens keep the emitted declarations out of column 0 of THIS
+		// file's raw text, which the guides-parity scanner reads.
+		const CONST_KEYWORD = 'const'
+		const FUNCTION_KEYWORD = 'function'
+		const primary: Surface = spec.surfaces.includes('core') ? 'core' : (spec.surfaces[0] ?? 'core')
+		const packageSpecifier = `@orkestrel/${spec.name}`
+		const selfSpecifiers = [packageSpecifier, ...spec.surfaces.map((surface) => `@src/${surface}`)]
+		const modules: Record<string, string> = { [packageSpecifier]: `src/${primary}` }
+		for (const surface of spec.surfaces) modules[`@src/${surface}`] = `src/${surface}`
+		const specifierList = selfSpecifiers.map((specifier) => `'${specifier}'`).join(', ')
+		const moduleLines = Object.entries(modules)
+			.map(([specifier, module]) => `\t'${specifier}': '${module}',`)
+			.join('\n')
+		return `const SELF_SPECIFIERS = [${specifierList}]
+
+${CONST_KEYWORD} SPECIFIER_MODULES: Readonly<Record<string, string>> = {
+${moduleLines}
+}
+${CONST_KEYWORD} specifierSources = new Map<string, ReturnType<typeof createSource>>()
+${FUNCTION_KEYWORD} exportsFor(specifier: string): readonly string[] {
+	const module = SPECIFIER_MODULES[specifier]
+	if (module === undefined) return []
+	let source = specifierSources.get(module)
+	if (source === undefined) {
+		source = createSource({ files, module })
+		specifierSources.set(module, source)
+	}
+	return source.exports().map((symbol) => symbol.name)
+}`
+	}
+
+	// Draft the `tests` group's `template` artifacts — the shared recorder
+	// setup, one environment-specific setup file per non-`core` surface
+	// (`setupServer.ts` / `setupBrowser.ts`, grounded against the live
+	// exemplars' setup-file naming), the generated-minimal entity / factory test
+	// stubs PER declared surface, and the surface-aware guides-parity drop-in.
+	function testArtifacts(spec: Blueprint, pascal: string): readonly Artifact[] {
+		const artifacts: Artifact[] = [fillArtifact('tests/setup.ts', 'tests', 'setup', {})]
+		if (spec.surfaces.includes('server')) {
+			artifacts.push(fillArtifact('tests/setupServer.ts', 'tests', 'setupServer', {}, 'server'))
+		}
+		if (spec.surfaces.includes('browser')) {
+			artifacts.push(fillArtifact('tests/setupBrowser.ts', 'tests', 'setupBrowser', {}, 'browser'))
+		}
+		for (const surface of spec.surfaces) {
+			const values = { pascal, surface }
+			artifacts.push(
+				fillArtifact(
+					`tests/src/${surface}/${pascal}.test.ts`,
+					'tests',
+					'entityTest',
+					values,
+					surface,
+				),
+				fillArtifact(
+					`tests/src/${surface}/factories.test.ts`,
+					'tests',
+					'factoriesTest',
+					values,
+					surface,
+				),
+			)
+		}
+		artifacts.push(
+			fillArtifact('tests/guides/src/parity.test.ts', 'tests', 'parityTest', {
+				name: spec.name,
+				specifiers: paritySpecifiers(spec),
+			}),
+		)
+		return artifacts
 	}
 
 	// Draft the `guides` group's artifacts — the package's own filled guide
@@ -633,30 +879,70 @@ export default defineConfig(
 		pascal: string,
 		members: readonly Member[],
 	): readonly Artifact[] {
-		// Build an `alignTable` markdown table over a member category's rows.
+		// Build an `alignTable` markdown table over a member category's rows,
+		// deduped by name — `blueprintToMembers` declares one full member set PER
+		// surface, so a multi-surface blueprint carries byte-identical
+		// name/summary rows once per surface; the one guide (AGENTS §22) lists
+		// each declared member once, grouped across its surfaces.
 		function memberTable(category: Member['category']): string {
-			const rows = members
-				.filter((member) => member.category === category)
-				.map((member) => [`\`${member.name}\``, member.summary])
+			const seen = new Set<string>()
+			const rows: string[][] = []
+			for (const item of members) {
+				if (item.category !== category) continue
+				if (seen.has(item.name)) continue
+				seen.add(item.name)
+				rows.push([`\`${item.name}\``, item.summary])
+			}
 			return alignTable(['API', 'Summary'], rows)
 		}
+
+		const primary: Surface = spec.surfaces.includes('core') ? 'core' : (spec.surfaces[0] ?? 'core')
+		const source = spec.surfaces
+			.map((surface) => `[\`src/${surface}\`](../../src/${surface})`)
+			.join(', ')
+		const barrel =
+			spec.surfaces.length === 1
+				? `Surfaced through the \`@src/${primary}\` barrel.`
+				: `Surfaced through the \`@orkestrel/${spec.name}\` barrel (aliased ${spec.surfaces.map((surface) => `\`@src/${surface}\``).join(' / ')} inside this repo).`
+		const tests = spec.surfaces
+			.map(
+				(surface) =>
+					`- [\`tests/src/${surface}/${pascal}.test.ts\`](../../tests/src/${surface}/${pascal}.test.ts) —\n  id assignment (explicit / generated) and independence across instances.\n- [\`tests/src/${surface}/factories.test.ts\`](../../tests/src/${surface}/factories.test.ts) —\n  \`create${pascal}\` returns a working \`${pascal}Interface\` backed by a real \`${pascal}\`.`,
+			)
+			.join('\n')
 
 		const artifacts: Artifact[] = [
 			fillArtifact(`guides/src/${spec.name}.md`, 'guides', 'guide', {
 				name: spec.name,
 				pascal,
+				primary,
+				source,
+				barrel,
+				tests,
 				factories: memberTable('factory'),
 				entities: memberTable('entity'),
 				types: memberTable('type'),
 			}),
 			fillArtifact('guides/README.md', 'guides', 'guidesReadme', {
 				concept: alignTable(
-					['Concept', 'Guide'],
-					[[pascal, `[\`${spec.name}.md\`](src/${spec.name}.md)`]],
+					['Concept', 'Spec', 'Source', 'Tests'],
+					[
+						[
+							pascal,
+							`[\`${spec.name}.md\`](src/${spec.name}.md)`,
+							spec.surfaces.map((surface) => `[\`src/${surface}\`](../src/${surface})`).join(', '),
+							spec.surfaces
+								.map((surface) => `[\`tests/src/${surface}\`](../tests/src/${surface})`)
+								.join(', '),
+						],
+					],
 				),
 				directory: alignTable(
 					['Directory', 'Guide'],
-					[['src/core', `[\`${spec.name}.md\`](src/${spec.name}.md)`]],
+					spec.surfaces.map((surface) => [
+						`src/${surface}`,
+						`[\`${spec.name}.md\`](src/${spec.name}.md)`,
+					]),
 				),
 			}),
 		]
@@ -705,8 +991,8 @@ export default defineConfig(
 		})
 	}
 	if (selected.includes('configs')) artifacts.push(...configArtifacts(blueprint))
-	if (selected.includes('source')) artifacts.push(...sourceArtifacts(pascal))
-	if (selected.includes('tests')) artifacts.push(...testArtifacts(pascal))
+	if (selected.includes('source')) artifacts.push(...sourceArtifacts(blueprint, pascal))
+	if (selected.includes('tests')) artifacts.push(...testArtifacts(blueprint, pascal))
 	if (selected.includes('guides')) artifacts.push(...guideArtifacts(blueprint, pascal, members))
 	if (selected.includes('docs')) {
 		artifacts.push(fillArtifact('README.md', 'docs', 'readme', { name: blueprint.name, pascal }))

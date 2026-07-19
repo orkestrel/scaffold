@@ -4,13 +4,13 @@ import type { Audit, Dependency, GuideSync, Plan, SyncReport, VersionSync } from
 // ============================================================================
 //  @orkestrel/scaffold/server — the materialization + sync faces' type
 //  surface (AGENTS §5 source of truth). The server-marked Types rows from
-//  scaffold.md's `## Surface` table — `MaterializeResult` plus the
-//  `Materializer` triad (`MaterializerEventMap` / `MaterializerOptions` /
-//  `MaterializerInterface`) and the `Sync` triad (`SyncEventMap` /
-//  `SyncOptions` / `SyncInterface`). Everything else the server surface
-//  touches (`Plan`, `Audit`, `Dependency`, `GuideSync`, `VersionSync`,
-//  `SyncReport`, `ScaffoldError`, …) is OWNED by the pure core face
-//  (`@src/core`) — imported here, never redeclared.
+//  scaffold.md's `## Surface` table — `MaterializeResult`, `ManifestEntry`
+//  (one vendored `host/manifest.json` entry), plus the `Materializer` triad
+//  (`MaterializerEventMap` / `MaterializerOptions` / `MaterializerInterface`)
+//  and the `Sync` triad (`SyncEventMap` / `SyncOptions` / `SyncInterface`).
+//  Everything else the server surface touches (`Plan`, `Audit`, `Dependency`,
+//  `GuideSync`, `VersionSync`, `SyncReport`, `ScaffoldError`, …) is OWNED by
+//  the pure core face (`@src/core`) — imported here, never redeclared.
 // ============================================================================
 
 /** The outcome of one materialization (server). */
@@ -19,12 +19,14 @@ export interface MaterializeResult {
 	readonly written: readonly string[]
 	readonly copied: readonly string[]
 	readonly skipped: readonly string[]
+	readonly removed: readonly string[]
 }
 
 /** `Materializer`'s push observation surface (AGENTS §13, server). */
 export type MaterializerEventMap = {
 	readonly copy: readonly [path: string]
 	readonly write: readonly [path: string]
+	readonly remove: readonly [path: string]
 	readonly done: readonly [result: MaterializeResult]
 	readonly error: readonly [error: unknown]
 	readonly destroy: readonly []
@@ -35,7 +37,12 @@ export type MaterializerEventMap = {
  *
  * @remarks
  * `host` is the vendored-data root `host`-origin artifacts are copied FROM;
- * defaults to this package's own root (where `HOST_PATHS` ships as vendored data).
+ * defaults to THIS PACKAGE'S OWN vendored data root (`dist/host`, resolved
+ * from the installed module's own location) — the package vendors its host
+ * data and ships it with itself, so the default host is never the caller's
+ * working directory. A caller-supplied `host` pointing at a raw repo root
+ * (no `manifest.json` alongside it) maps artifact paths 1:1 instead of
+ * through the manifest — the sibling-repo / test-fixture shape.
  */
 export interface MaterializerOptions {
 	readonly host?: string
@@ -43,11 +50,19 @@ export interface MaterializerOptions {
 	readonly error?: EmitterErrorHandler
 }
 
+/** One entry of the vendored host's `manifest.json` (server). */
+export interface ManifestEntry {
+	readonly storage: string
+	readonly destination: string
+	readonly executable: boolean
+}
+
 /** The materialization contract (server) — the only impure entity in the package. */
 export interface MaterializerInterface {
 	readonly emitter: EmitterInterface<MaterializerEventMap>
 	materialize(plan: Plan, target: string): MaterializeResult
 	repair(plan: Plan, audit: Audit, target: string): MaterializeResult
+	prune(plan: Plan, target: string): MaterializeResult
 	destroy(): void
 }
 

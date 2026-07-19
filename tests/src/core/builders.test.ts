@@ -7,6 +7,7 @@ import {
 	isOverride,
 	member,
 	override,
+	parseBlueprint,
 } from '@src/core'
 import { describe, expect, it } from 'vitest'
 
@@ -22,6 +23,29 @@ describe('dependency', () => {
 
 	it('round-trips the isDependency exact-record guard', () => {
 		expect(isDependency(dependency('@orkestrel/contract', '^0.0.5'))).toBe(true)
+	})
+
+	it('propagates optional: true when passed', () => {
+		const result = dependency('@orkestrel/database', '^0.0.5', true)
+
+		expect(result).toEqual({ name: '@orkestrel/database', range: '^0.0.5', optional: true })
+	})
+
+	it('propagates optional: false when explicitly passed (own-key check, not just undefined)', () => {
+		const result = dependency('@orkestrel/database', '^0.0.5', false)
+
+		expect(Object.hasOwn(result, 'optional')).toBe(true)
+		expect(result.optional).toBe(false)
+	})
+
+	it('omits optional entirely when undefined (own-key check, not just undefined value)', () => {
+		const result = dependency('@orkestrel/contract', '^0.0.5')
+
+		expect(Object.hasOwn(result, 'optional')).toBe(false)
+	})
+
+	it('round-trips the isDependency exact-record guard with optional set', () => {
+		expect(isDependency(dependency('@orkestrel/database', '^0.0.5', true))).toBe(true)
 	})
 })
 
@@ -125,5 +149,36 @@ describe('blueprint', () => {
 		})
 
 		expect(isBlueprint(full)).toBe(true)
+	})
+
+	it('defaults peers and extras to empty arrays', () => {
+		const result = blueprint('router')
+
+		expect(result.peers).toEqual([])
+		expect(result.extras).toEqual([])
+	})
+
+	it('honors explicit peers and extras over their defaults', () => {
+		const peer = dependency('@orkestrel/contract', '^0.0.5', true)
+		const extra = dependency('@orkestrel/database', '^0.0.9')
+
+		const result = blueprint('router', { peers: [peer], extras: [extra] })
+
+		expect(result.peers).toEqual([peer])
+		expect(result.extras).toEqual([extra])
+	})
+
+	it('round-trips isBlueprint and parseBlueprint for a blueprint carrying peers (one optional) and extras', () => {
+		const full = blueprint('router', {
+			peers: [
+				dependency('@orkestrel/contract', '^0.0.5'),
+				dependency('@orkestrel/emitter', '^0.0.2', true),
+			],
+			extras: [dependency('@orkestrel/database', '^0.0.9')],
+		})
+
+		expect(isBlueprint(full)).toBe(true)
+		expect(parseBlueprint(full)).toEqual(full)
+		expect(parseBlueprint(JSON.stringify(full))).toEqual(full)
 	})
 })

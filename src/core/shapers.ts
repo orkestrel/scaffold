@@ -12,12 +12,13 @@ import { CATEGORIES, FRESHNESS, GROUPS, ORIGINS, SURFACES } from './constants.js
 /**
  * Build the `Dependency` object shape.
  *
- * @returns A fresh `ContractShape` describing `{ name, range }`.
+ * @returns A fresh `ContractShape` describing `{ name, range, optional? }`.
  */
 export function dependencyShape() {
 	return objectShape({
 		name: stringShape({ min: 1 }),
 		range: stringShape({ min: 1 }),
+		optional: optionalShape(booleanShape()),
 	})
 }
 
@@ -40,7 +41,9 @@ export function overrideShape() {
  * `surfaces` is a `literalShape(SURFACES)` array with `min: 1`; `name` is a
  * plain `min: 1` string, NOT pattern-constrained, so `generate` stays
  * satisfiable — the `NAME_PATTERN` law lives in the semantic pass
- * (`validateBlueprint`), never in this compiled contract.
+ * (`validateBlueprint`), never in this compiled contract. `peers` and `extras`
+ * are `dependencyShape()` arrays alongside `dependencies` — the cross-array
+ * uniqueness and overlap rules also live in `validateBlueprint`.
  *
  * @returns A fresh `ContractShape` describing the closed `Blueprint` spec.
  */
@@ -51,6 +54,8 @@ export function blueprintShape() {
 		keywords: arrayShape(stringShape()),
 		surfaces: arrayShape(literalShape(SURFACES), { min: 1 }),
 		dependencies: arrayShape(dependencyShape()),
+		peers: arrayShape(dependencyShape()),
+		extras: arrayShape(dependencyShape()),
 		version: stringShape({ min: 1 }),
 		engines: stringShape({ min: 1 }),
 		overrides: arrayShape(overrideShape()),

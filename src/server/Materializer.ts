@@ -1,4 +1,5 @@
 import type {
+	ManifestEntry,
 	MaterializeResult,
 	MaterializerEventMap,
 	MaterializerInterface,
@@ -6,11 +7,19 @@ import type {
 } from './types.js'
 import type { Artifact, Audit, Plan } from '@src/core'
 import type { EmitterInterface } from '@orkestrel/emitter'
-import { cpSync, existsSync, mkdirSync, realpathSync, writeFileSync } from 'node:fs'
+import {
+	chmodSync,
+	cpSync,
+	existsSync,
+	mkdirSync,
+	realpathSync,
+	unlinkSync,
+	writeFileSync,
+} from 'node:fs'
 import { dirname, join, relative as relativeOf, resolve, sep } from 'node:path'
 import { Emitter } from '@orkestrel/emitter'
 import { ScaffoldError } from '@src/core'
-import { isVacant } from './helpers.js'
+import { hostRoot, isVacant, listFiles, readHostManifest } from './helpers.js'
 
 /**
  * The materialization entity (server) — the only impure surface in the
@@ -23,8 +32,21 @@ import { isVacant } from './helpers.js'
  * `content`, failing fast on any write error (`ScaffoldError('WRITE', …)`).
  * `repair` is into-existing: it skips the vacancy check and writes ONLY the
  * `missing` / `stale` artifacts an `Audit` names, leaving `aligned` ones
- * untouched. After `destroy()` every method throws `DESTROYED`; teardown is
- * idempotent, emitter last.
+ * untouched. `prune` deletes stale files under `target/.claude/agents/` and
+ * `target/scripts/` that the vendored `host` no longer names — the retired
+ * `mirror.sh`/`scaffold.sh` cleanup step, now a method. After `destroy()`
+ * every method throws `DESTROYED`; teardown is idempotent, emitter last.
+ *
+ * @remarks
+ * `host`-origin copies are MANIFEST-AWARE: when the resolved `host` root
+ * carries a `manifest.json` (this package's own vendored `dist/host`), each
+ * artifact's `source` (a destination-relative path) is looked up in the
+ * manifest to find its un-dotted STORAGE path plus an `executable` bit
+ * (applied via `chmodSync` after the copy) — the vendored-package shape,
+ * where storage names avoid leading dots npm would otherwise mangle. When
+ * `host` carries no `manifest.json` (a caller-supplied raw repo root, e.g. a
+ * sibling checkout or a test fixture), `source` maps to `host` 1:1, exactly
+ * as before.
  *
  * @remarks
  * Defense in depth at the filesystem trust boundary: EVERY resolved
@@ -59,35 +81,21 @@ import { isVacant } from './helpers.js'
  * ```
  */
 export class Materializer implements MaterializerInterface {
+	// The `prune`-owned directories — a hard allowlist; `prune` never touches
+	// anything outside these two.
+	static readonly #PRUNE_DIRECTORIES = ['.claude/agents', 'scripts'] as const
+
 	readonly #emitter: Emitter<MaterializerEventMap>
 	readonly #host: string
+	#manifestLoaded = false
+	#manifestEntries: readonly ManifestEntry[] | undefined
 	#destroyed = false
 
 	constructor(options?: MaterializerOptions) {
 		this.#emitter = new Emitter<MaterializerEventMap>({ on: options?.on, error: options?.error })
-		this.#host = options?.host ?? Materializer.#resolveHostRoot()
-	}
-
-	/**
-	 * Locate the nearest package root AT OR ABOVE the current working
-	 * directory — the directory holding its `package.json` — by walking up
-	 * from `process.cwd()`. The host is where the PROCESS runs, never this
-	 * module's own location: once installed, this module's own directory
-	 * would resolve to `node_modules/@orkestrel/scaffold`, not the consuming
-	 * repo.
-	 */
-	static #resolveHostRoot(): string {
-		let dir = process.cwd()
-		for (;;) {
-			if (existsSync(join(dir, 'package.json'))) return dir
-			const parent = dirname(dir)
-			if (parent === dir) {
-				throw new ScaffoldError('TARGET', 'No package root found above the working directory', {
-					cwd: process.cwd(),
-				})
-			}
-			dir = parent
-		}
+		// The host IS this package's own vendored data unless `options.host`
+		// overrides it — see `hostRoot`'s doc-comment for the resolution law.
+		this.#host = options?.host ?? hostRoot()
 	}
 
 	get emitter(): EmitterInterface<MaterializerEventMap> {
@@ -110,7 +118,7 @@ export class Materializer implements MaterializerInterface {
 				written.push(artifact.path)
 			}
 		}
-		const result: MaterializeResult = { target, written, copied, skipped: [] }
+		const result: MaterializeResult = { target, written, copied, skipped: [], removed: [] }
 		this.#emitter.emit('done', result)
 		return result
 	}
@@ -135,7 +143,31 @@ export class Materializer implements MaterializerInterface {
 				written.push(artifact.path)
 			}
 		}
-		const result: MaterializeResult = { target, written, copied, skipped }
+		const result: MaterializeResult = { target, written, copied, skipped, removed: [] }
+		this.#emitter.emit('done', result)
+		return result
+	}
+
+	// `_plan` conforms `prune` to `MaterializerInterface`'s materialize-shaped
+	// signature; the vendored allowlist is derived from `host` alone (the
+	// directories `prune` guards are host-vendored, not plan-selected).
+	prune(_plan: Plan, target: string): MaterializeResult {
+		this.#ensureAlive()
+		const removed: string[] = []
+		for (const directory of Materializer.#PRUNE_DIRECTORIES) {
+			const allowed = this.#vendored(directory)
+			const root = join(target, directory)
+			if (!existsSync(root)) continue
+			for (const relative of listFiles(root)) {
+				const path = `${directory}/${relative}`
+				if (allowed.has(path)) continue
+				const full = Materializer.#assertContained(target, path, 'WRITE', path)
+				unlinkSync(full)
+				removed.push(path)
+				this.#emitter.emit('remove', path)
+			}
+		}
+		const result: MaterializeResult = { target, written: [], copied: [], skipped: [], removed }
 		this.#emitter.emit('done', result)
 		return result
 	}
@@ -149,19 +181,99 @@ export class Materializer implements MaterializerInterface {
 
 	#copy(artifact: Artifact, target: string): void {
 		const source = artifact.source ?? artifact.path
-		const from = Materializer.#assertContained(this.#host, source, 'TARGET', artifact.path)
-		const to = Materializer.#assertContained(target, artifact.path, 'WRITE', artifact.path)
-		try {
-			mkdirSync(dirname(to), { recursive: true })
-			cpSync(from, to, { recursive: true })
-		} catch (error) {
-			this.#emitter.emit('error', error)
-			throw new ScaffoldError('WRITE', `Failed to copy host artifact at ${artifact.path}`, {
+		const manifest = this.#manifest()
+		if (manifest === undefined) {
+			const from = Materializer.#assertContained(this.#host, source, 'TARGET', artifact.path)
+			const to = Materializer.#assertContained(target, artifact.path, 'WRITE', artifact.path)
+			try {
+				mkdirSync(dirname(to), { recursive: true })
+				cpSync(from, to, { recursive: true })
+			} catch (error) {
+				this.#emitter.emit('error', error)
+				throw new ScaffoldError('WRITE', `Failed to copy host artifact at ${artifact.path}`, {
+					path: artifact.path,
+					error,
+				})
+			}
+			this.#emitter.emit('copy', artifact.path)
+			return
+		}
+		const entries = manifest.filter(
+			(entry) => entry.destination === source || entry.destination.startsWith(`${source}/`),
+		)
+		if (entries.length === 0) {
+			throw new ScaffoldError('TARGET', `No manifest entry for host artifact at ${artifact.path}`, {
 				path: artifact.path,
-				error,
+				source,
 			})
 		}
+		for (const entry of entries) {
+			const from = Materializer.#assertContained(this.#host, entry.storage, 'TARGET', artifact.path)
+			const to = Materializer.#assertContained(target, entry.destination, 'WRITE', artifact.path)
+			try {
+				mkdirSync(dirname(to), { recursive: true })
+				cpSync(from, to)
+				if (entry.executable) chmodSync(to, 0o755)
+			} catch (error) {
+				this.#emitter.emit('error', error)
+				throw new ScaffoldError('WRITE', `Failed to copy host artifact at ${artifact.path}`, {
+					path: artifact.path,
+					error,
+				})
+			}
+		}
 		this.#emitter.emit('copy', artifact.path)
+	}
+
+	// Lazily load + cache `host`'s `manifest.json` (once per instance) —
+	// `undefined` means `host` has no manifest and callers fall back to the
+	// 1:1 raw-root mapping.
+	#manifest(): readonly ManifestEntry[] | undefined {
+		if (!this.#manifestLoaded) {
+			this.#manifestEntries = readHostManifest(this.#host)
+			this.#manifestLoaded = true
+		}
+		return this.#manifestEntries
+	}
+
+	// The vendored set of destination-relative paths under `directory`
+	// (`.claude/agents` or `scripts`) that `prune` must NOT delete — read from
+	// the manifest's `destination`s when `host` has one, else listed straight
+	// off `host/<directory>`.
+	//
+	// FAIL CLOSED: before returning any allowlist (even an empty one), the
+	// vendored source must be POSITIVELY established, or `prune` would treat
+	// an unresolved host as "vendors nothing" and delete every file under
+	// `target/<directory>`. A missing `host` root, or (no `manifest.json` AND
+	// no `host/<directory>`), is a coded `TARGET` failure — the distinction
+	// this guards is missing-host vs genuinely-empty-vendor: a `host` that
+	// EXISTS and vendors zero files in `directory` (an existing empty dir, or
+	// a manifest with zero entries for it) remains a valid empty allowlist.
+	#vendored(directory: string): ReadonlySet<string> {
+		if (!existsSync(this.#host)) {
+			throw new ScaffoldError(
+				'TARGET',
+				`Cannot establish vendored source for prune: host root not found at ${this.#host}`,
+				{ host: this.#host, directory },
+			)
+		}
+		const manifest = this.#manifest()
+		if (manifest !== undefined) {
+			return new Set(
+				manifest
+					.filter((entry) => entry.destination.startsWith(`${directory}/`))
+					.map((entry) => entry.destination),
+			)
+		}
+		const hostDirectory = join(this.#host, directory)
+		if (!existsSync(hostDirectory)) {
+			throw new ScaffoldError(
+				'TARGET',
+				`Cannot establish vendored source for prune: no manifest.json and no host directory at ${hostDirectory}`,
+				{ host: this.#host, directory },
+			)
+		}
+		return new Set(listFiles(hostDirectory).map((relative) => `${directory}/${relative}`))
 	}
 
 	#write(artifact: Artifact, target: string): void {

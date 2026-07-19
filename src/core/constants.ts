@@ -25,9 +25,9 @@ export const FRESHNESS = Object.freeze(['current', 'behind', 'missing', 'failed'
 export const COMPILE_STAGES = Object.freeze(['draft', 'gate', 'pin'] as const)
 
 /**
- * The §1.2 variant matrix as data: per `Surface`, its `configs/src` files,
- * Vitest project label, `exports` subpath, and build formats — the
- * per-surface layer `blueprintToPlan` reads BENEATH the SCAFFOLD.md §4.2/§4.3
+ * The per-surface variant matrix as data: per `Surface`, its `configs/src`
+ * files, Vitest project label, `exports` subpath, and build formats — the
+ * per-surface layer `blueprintToPlan` reads BENEATH the manifest/exports
  * combination rules it applies on top.
  */
 export const SURFACE_MATRIX = Object.freeze({
@@ -64,19 +64,20 @@ export const SURFACE_MATRIX = Object.freeze({
  * The byte-copied host artifact paths, frozen.
  *
  * @remarks
- * `scaffold.sh` leaves this set at retirement. Per SCAFFOLD.md §3/§8: the root
- * docs (`AGENTS.md` / `CLAUDE.md` / `SCAFFOLD.md`), `LICENSE`, `.claude`,
- * `scripts/*` (the SessionStart hooks + `mirror.sh` + `scaffold.sh` today),
- * the line's seven byte-identical root dotfiles, and `.github/workflows/ci.yml`.
+ * The root docs (`AGENTS.md` / `CLAUDE.md`), `LICENSE`, `.claude`, the three
+ * SessionStart hook scripts (`scripts/deps.sh` / `scripts/cursor.sh` /
+ * `scripts/ollama.sh`), the line's seven byte-identical root dotfiles,
+ * `.github/workflows/ci.yml`, and the vendored `@orkestrel/guide` mirror
+ * every repo carries (`guides/src/guide.md`).
  */
 export const HOST_PATHS = Object.freeze([
 	'AGENTS.md',
 	'CLAUDE.md',
-	'SCAFFOLD.md',
 	'LICENSE',
 	'.claude',
-	'scripts/mirror.sh',
-	'scripts/scaffold.sh',
+	'scripts/deps.sh',
+	'scripts/cursor.sh',
+	'scripts/ollama.sh',
 	'.editorconfig',
 	'.gitattributes',
 	'.gitignore',
@@ -85,9 +86,10 @@ export const HOST_PATHS = Object.freeze([
 	'.oxlintignore',
 	'.prettierignore',
 	'.github/workflows/ci.yml',
+	'guides/src/guide.md',
 ] as const)
 
-/** The package-name RegExp — the `scaffold.sh` name law, now data. */
+/** The package-name RegExp — lowercase alphanumeric-with-hyphens, letter-first. */
 export const NAME_PATTERN = /^[a-z][a-z0-9-]*$/
 
 /**
@@ -103,6 +105,9 @@ export const DEFAULT_VERSION = '0.0.1'
 
 /** The `engines.node` range the `blueprint` builder fills. */
 export const DEFAULT_ENGINES = '>=22'
+
+/** The devDependency range generated packages pin `@orkestrel/scaffold` at. */
+export const SCAFFOLD_RANGE = '^0.0.1'
 
 /** The default id for a `Compiler` orchestrator. */
 export const COMPILER_ID = 'compiler'
