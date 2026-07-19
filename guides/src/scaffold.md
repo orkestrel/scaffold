@@ -1287,7 +1287,10 @@ The CLI is its OWN build target — `src/bin/scaffold.ts`, an executable, not a 
 opens with a `#!/usr/bin/env node` shebang, strips a single leading literal `--` off `argv`
 (npm's passthrough residue, mangled by PowerShell on Windows — `npm run scaffold -- new x`
 still parses as `new x`), parses the remainder with `node:util`'s `parseArgs` (no foreign arg
-parser), and dispatches on SIX subcommands: **`new`** creates a package
+parser), widens Node's trusted-issuer set to the OS certificate store via
+`trustSystemCertificates` (feature-detected, try/catch no-op, never touching
+`rejectUnauthorized` — so `fetch` survives a corporate TLS-inspecting proxy the way npm
+and browsers already do), and dispatches on SIX subcommands: **`new`** creates a package
 (resolving any `--deps` to the registry `latest` → `^latest` ranges, fetching their guides
 into the plan), **`sync`** refreshes an existing repo's vendored dependency mirrors and
 reports range drift, **`audit`** / **`repair`** / **`mirror`** all reconstruct the target's

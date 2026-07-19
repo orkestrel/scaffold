@@ -1,6 +1,7 @@
 // The `#!/usr/bin/env node` shebang is re-emitted by the build's `output.banner`, not source.
 import { existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, relative as relativeOf, resolve, sep } from 'node:path'
+import * as tls from 'node:tls'
 import { parseArgs } from 'node:util'
 import type { Audit, Blueprint, CatalogEntry, Dependency, Group, Plan, SyncReport } from '@src/core'
 import {
@@ -93,6 +94,8 @@ Every WRITE destination resolves under the current directory — cd there first
     e.g. scaffold catalog --offline --root .. --apply
 
 Flags: --help prints this text; a repeated flag keeps its LAST occurrence.
+TLS trusts the system certificate store automatically (corporate proxies);
+NODE_EXTRA_CA_CERTS adds custom PEMs.
 
 Windows/PowerShell: invoke as \`node ./dist/bin/scaffold.js …\` from a checkout,
 or \`npx scaffold …\` once installed — PowerShell mangles npm's \`--\` passthrough,
@@ -101,6 +104,35 @@ so avoid \`npm run scaffold -- …\` there.
 
 const sink = createServerSink()
 const reporter = createReporter({ sink, width: sink.columns })
+
+/**
+ * Widen Node's default trusted-issuer set to include the OS certificate
+ * store, so `fetch` behind a corporate TLS-inspecting proxy behaves like npm
+ * (`cafile`) and browsers (OS trust store) instead of failing with
+ * `UNABLE_TO_GET_ISSUER_CERT_LOCALLY` against Node's bundled CA list alone.
+ * Feature-detected (`tls.getCACertificates` / `tls.setDefaultCACertificates`
+ * ship on Node ≈22.16+/24.5+; this package's floor is `>=22`) and wrapped in
+ * try/catch — any failure is a silent no-op, never a crash. This only ADDS
+ * trusted issuers; it never touches `rejectUnauthorized` or
+ * `NODE_TLS_REJECT_UNAUTHORIZED`, so certificate verification stays on.
+ */
+function trustSystemCertificates(): void {
+	if (
+		typeof tls.getCACertificates !== 'function' ||
+		typeof tls.setDefaultCACertificates !== 'function'
+	) {
+		return
+	}
+	try {
+		const merged = new Set([
+			...tls.getCACertificates('default'),
+			...tls.getCACertificates('system'),
+		])
+		tls.setDefaultCACertificates([...merged])
+	} catch {
+		// Trust-store quirks never crash the CLI — fetch failures still surface their own diagnosis.
+	}
+}
 
 /**
  * The one sentinel that unwinds the whole command dispatch to a chosen exit
@@ -869,6 +901,8 @@ async function main(): Promise<void> {
 		return
 	}
 }
+
+trustSystemCertificates()
 
 try {
 	await main()

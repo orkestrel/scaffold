@@ -1247,6 +1247,9 @@ describe('scaffold bin', () => {
 	})
 
 	describe('argument handling', () => {
+		// Also exercises the startup `trustSystemCertificates` call implicitly
+		// (spawned before any verb dispatch on this POSIX host) — proves it
+		// never crashes the CLI whether or not the OS trust-store APIs are present.
 		it('--help: prints the three-verb usage and exits 0', () => {
 			const result = runBin(['--help'])
 			expect(result.status).toBe(0)
@@ -1314,6 +1317,13 @@ describe('scaffold bin', () => {
 			expect(result.stderr).not.toContain('ERR_PARSE_ARGS_UNKNOWN_OPTION')
 			expect(result.stderr).not.toContain('at Object')
 			expect(result.stderr).toContain('Usage: scaffold')
+		})
+
+		it('--help: documents the TLS system-trust-store note and NODE_EXTRA_CA_CERTS', () => {
+			const result = runBin(['--help'])
+			expect(result.status).toBe(0)
+			expect(result.stdout).toMatch(/trusts the system certificate store/)
+			expect(result.stdout).toContain('NODE_EXTRA_CA_CERTS')
 		})
 
 		it('L2: repeated flags — last occurrence wins (documented in --help)', () => {

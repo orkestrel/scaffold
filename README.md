@@ -29,6 +29,10 @@ as a global command anywhere; `--host` may point anywhere (read-only).
 directly — PowerShell mangles npm's `--` passthrough, so avoid
 `npm run scaffold -- …` there.
 
+**TLS:** the CLI trusts the OS certificate store automatically, so `fetch` calls
+succeed behind a corporate TLS-inspecting proxy the same way npm and browsers
+do; `NODE_EXTRA_CA_CERTS` adds custom PEMs on top.
+
 ## CLI
 
 ```sh
