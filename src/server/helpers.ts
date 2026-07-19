@@ -20,7 +20,14 @@ import {
 	parseDocument,
 	walkNodes,
 } from '@orkestrel/markdown'
-import { blueprint, DEFAULT_ENGINES, DEFAULT_VERSION, HOST_PATHS, ScaffoldError } from '@src/core'
+import {
+	blueprint,
+	DEFAULT_ENGINES,
+	DEFAULT_VERSION,
+	devDependenciesFor,
+	HOST_PATHS,
+	ScaffoldError,
+} from '@src/core'
 
 // ============================================================================
 //  @orkestrel/scaffold/server — helpers.ts (AGENTS §5 source of truth). The
@@ -113,11 +120,13 @@ export function selectOrkestrelEntries(value: unknown): readonly (readonly [stri
  * NONE of the three is also a coded `TARGET` failure. `dependencies` /
  * `peers` are the `@orkestrel/`-prefixed entries of `manifest.dependencies` /
  * `manifest.peerDependencies` (a peer flagged `peerDependenciesMeta[name]
- * .optional === true` carries `optional: true`). `extras` is the
- * `@orkestrel/`-prefixed `manifest.devDependencies`, EXCLUDING
- * `@orkestrel/guide` and `@orkestrel/scaffold` — both part of the generated
- * uniform baseline every scaffolded package already carries, never a
- * package-specific extra. A devDependency ALSO present in
+ * .optional === true` carries `optional: true`). `extras` is EVERY entry of
+ * `manifest.devDependencies` (not only `@orkestrel/`-prefixed ones — an
+ * external extra like `zod` must round-trip too), EXCLUDING the generated
+ * devDependency baseline (`devDependenciesFor([])`'s keys, which already
+ * cover `@orkestrel/guide` and `@orkestrel/scaffold`) every scaffolded
+ * package already carries, never a package-specific extra. A devDependency
+ * ALSO present in
  * `manifest.peerDependencies` or `manifest.dependencies` (e.g. a peer
  * dev-installed for local testing) is likewise excluded from `extras` — it
  * already surfaces as a `peer`/`dependency` above, and double-counting it as
@@ -137,10 +146,18 @@ export function selectOrkestrelEntries(value: unknown): readonly (readonly [stri
  * ```
  */
 export function deriveBlueprint(target: string): Blueprint {
-	// Guides + the scaffold tool itself are part of the generated uniform
-	// baseline (every scaffolded package's devDependencies), never a
-	// package-specific `extras` entry — excluded from the `extras` derived below.
-	const BASELINE_EXTRAS = new Set(['@orkestrel/guide', '@orkestrel/scaffold'])
+	// The generated uniform devDependency baseline (every scaffolded package
+	// carries it) is never a package-specific `extras` entry — excluded from
+	// the `extras` derived below. Read from the SAME source of truth the
+	// compiler uses (`devDependenciesFor`, called with `[]` so only its
+	// baseline keys come back) rather than a duplicated literal, plus
+	// `@orkestrel/guide` / `@orkestrel/scaffold` per the existing rule (both
+	// already part of that baseline, restated here for clarity).
+	const BASELINE_EXTRAS = new Set([
+		...Object.keys(devDependenciesFor([])),
+		'@orkestrel/guide',
+		'@orkestrel/scaffold',
+	])
 	const text = readManifest(target)
 	let parsed: unknown
 	try {
@@ -202,7 +219,13 @@ export function deriveBlueprint(target: string): Blueprint {
 		...selectOrkestrelEntries(parsed.peerDependencies).map(([depName]) => depName),
 		...selectOrkestrelEntries(parsed.dependencies).map(([depName]) => depName),
 	])
-	const extras: Dependency[] = selectOrkestrelEntries(parsed.devDependencies)
+	// EVERY devDependency, not only `@orkestrel/`-prefixed ones, is a candidate
+	// `extras` entry — an external extra (e.g. `zod`) must round-trip through
+	// derivation exactly like an `@orkestrel/`-scoped one, or a package
+	// scaffolded with `--extras` audits DRIFTED against its own manifest.
+	const devDependencies = isRecord(parsed.devDependencies) ? parsed.devDependencies : {}
+	const extras: Dependency[] = Object.entries(devDependencies)
+		.filter((entry): entry is [string, string] => typeof entry[1] === 'string')
 		.filter(([depName]) => !BASELINE_EXTRAS.has(depName) && !peerAndDependencyNames.has(depName))
 		.map(([depName, range]) => ({ name: depName, range }))
 

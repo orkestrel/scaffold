@@ -110,6 +110,35 @@ describe('scaffold bin: default-host end-to-end proof (no --from)', () => {
 		})
 	})
 
+	describe('new --apply: --extras (U12b, explicit @range — offline-safe, default host)', () => {
+		it('an explicit @range lands the extra in devDependencies ONLY, dependencies untouched', async () => {
+			const cwd = await buildTempDirectory()
+			try {
+				const created = runBin(
+					['new', 'demoextras', '--surfaces', 'core', '--apply', '--extras', 'zod@^3.23.0'],
+					{ cwd: cwd.path },
+				)
+				expect(created.status).toBe(0)
+
+				const packageDirectory = join(cwd.path, 'demoextras')
+				const manifest: unknown = JSON.parse(
+					readFileSync(join(packageDirectory, 'package.json'), 'utf8'),
+				)
+				if (!isRecord(manifest)) throw new Error('expected package.json to parse to a JSON object')
+				const devDependencies = manifest.devDependencies
+				if (!isRecord(devDependencies)) {
+					throw new Error('expected package.json devDependencies to be an object')
+				}
+				expect(devDependencies.zod).toBe('^3.23.0')
+				const dependencies = manifest.dependencies
+				const zodInDependencies = isRecord(dependencies) ? dependencies.zod : undefined
+				expect(zodInDependencies).toBeUndefined()
+			} finally {
+				await cwd.cleanup()
+			}
+		})
+	})
+
 	describe('new --apply: surface variants', () => {
 		it('server-only: writes the src/server quartet, no src/core anywhere, and a vite.config.ts with no srcCore', async () => {
 			const cwd = await buildTempDirectory()

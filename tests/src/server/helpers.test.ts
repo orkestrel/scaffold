@@ -187,6 +187,33 @@ describe('deriveBlueprint', () => {
 		}
 	})
 
+	it('U12c FIX 3: derives an EXTERNAL (non-@orkestrel) devDependency as an extra too — round-trips zod, keeps baseline (typescript/vitest/etc) and @orkestrel/guide+scaffold excluded', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: '@orkestrel/demo-external-extra',
+				surfaces: ['core'],
+				devDependencies: {
+					'@orkestrel/guide': '^1.0.0', // baseline — excluded from extras
+					'@orkestrel/scaffold': '^1.0.0', // baseline — excluded from extras
+					typescript: '^6.0.3', // baseline (non-@orkestrel) — excluded from extras
+					vitest: '^4.1.10', // baseline (non-@orkestrel) — excluded from extras
+					zod: '^3.23.0', // the ONE external extra beyond baseline
+				},
+			})
+
+			const result = deriveBlueprint(directory.path)
+
+			expect(result.extras).toEqual([{ name: 'zod', range: '^3.23.0' }])
+
+			const validation = validateBlueprint(result)
+			expect(validation.valid).toBe(true)
+			expect(validation.questions).toEqual([])
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
 	it('derives a server-only surfaces list from a server-only repo', async () => {
 		const directory = await buildTempDirectory()
 		try {

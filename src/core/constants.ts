@@ -100,6 +100,20 @@ export const NAME_PATTERN = /^[a-z][a-z0-9-]*$/
  */
 export const DEPENDENCY_NAME_PATTERN = /^@orkestrel\/[a-z][a-z0-9-]*$/
 
+/**
+ * The `extras` dependency-name RegExp — a strict npm package-name shape: an
+ * optional single `@scope/` prefix, then lowercase letters, digits, hyphens,
+ * dots, and underscores (never leading, never adjacent to the scope slash).
+ * Broader than `DEPENDENCY_NAME_PATTERN` on purpose: `extras` names are
+ * manifest-content only (`devDependenciesFor` keys `devDependencies` with
+ * them, `Compiler.#pointerArtifacts` never reads them for a path), so they
+ * carry no traversal vector — no `..`, no backslash, and the single optional
+ * `/` is fixed to the one scope boundary, so the shape stays structurally
+ * incapable of escaping a derived path even though it accepts any valid npm
+ * package name (unscoped or externally-scoped), not just `@orkestrel/*`.
+ */
+export const EXTRA_NAME_PATTERN = /^(?:@[a-z0-9][a-z0-9._-]*\/)?[a-z0-9][a-z0-9._-]*$/
+
 /** The starting version the `blueprint` builder fills. */
 export const DEFAULT_VERSION = '0.0.1'
 

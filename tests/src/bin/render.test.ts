@@ -11,12 +11,14 @@ import {
 	catalogJson,
 	catalogShrinkWarning,
 	catalogTable,
+	catalogUnresolvedNote,
 	catalogVerdict,
 	chooseStyler,
 	comparisonLine,
 	didYouMean,
 	DRIFT_LABEL,
 	editDistance,
+	emptyExtraRange,
 	errorEnvelope,
 	EXIT_CODES,
 	fleetCiSkipped,
@@ -27,13 +29,17 @@ import {
 	FRESHNESS_LABEL,
 	fullHelp,
 	generatedNote,
+	invalidExtraName,
 	invalidName,
 	KNOWN_VERBS,
 	missingInput,
 	nearest,
 	newJson,
 	newPlanPreview,
+	orkestrelBelongsInDeps,
+	orkestrelDepsPrompt,
 	ORIGIN_LABEL,
+	otherDepsPrompt,
 	PRUNE_EMPTY,
 	prunePreview,
 	pruneConfirmMessage,
@@ -49,7 +55,10 @@ import {
 	scopeNote,
 	shortUsage,
 	surfaceChoices,
+	unknownOrkestrelToken,
+	unresolvedVersion,
 	VERB_FLAGS,
+	VERB_FLAG_HELP,
 	verbHelp,
 } from '../../../src/bin/render.js'
 import type { Audit, CatalogEntry, Finding, Plan, SyncReport } from '../../../src/core/index.js'
@@ -278,9 +287,66 @@ describe('render: prompt messages', () => {
 		)
 	})
 
+	it('orkestrelDepsPrompt names short-name deps landing as dependencies', () => {
+		expect(orkestrelDepsPrompt()).toBe(
+			'@orkestrel dependencies (comma-separated short names, e.g. contract, emitter — installed as dependencies)',
+		)
+	})
+
+	it('otherDepsPrompt names full npm names with an optional @range landing as devDependencies', () => {
+		expect(otherDepsPrompt()).toBe(
+			'other dependencies (comma-separated full npm names, optional @range, e.g. zod@^3.23.0 — installed as devDependencies)',
+		)
+	})
+
+	it('unknownOrkestrelToken names the token, no suggestion', () => {
+		expect(unknownOrkestrelToken('@orkestrel/nope', undefined)).toBe(
+			'"@orkestrel/nope" is not a published @orkestrel package — try again',
+		)
+	})
+
+	it('unknownOrkestrelToken names the token AND the nearest suggestion', () => {
+		expect(unknownOrkestrelToken('@orkestrel/contrakt', '@orkestrel/contract')).toBe(
+			'"@orkestrel/contrakt" is not a published @orkestrel package — did you mean "@orkestrel/contract"? try again',
+		)
+	})
+
+	it('orkestrelBelongsInDeps points an @orkestrel/* token at the deps question/flag', () => {
+		expect(orkestrelBelongsInDeps('@orkestrel/contract')).toBe(
+			'"@orkestrel/contract" is an @orkestrel package — list it via the @orkestrel dependencies question (or --deps), not here',
+		)
+	})
+
+	it('catalogUnresolvedNote explains the shape-only degrade', () => {
+		expect(catalogUnresolvedNote()).toBe(
+			"couldn't resolve the vendored @orkestrel catalog — validating names by shape only",
+		)
+	})
+
+	it('invalidExtraName names the offending value and EXTRA_NAME_PATTERN', () => {
+		expect(invalidExtraName('Bad Name')).toBe(
+			'"Bad Name" must match ^(?:@[a-z0-9][a-z0-9._-]*\\/)?[a-z0-9][a-z0-9._-]*$',
+		)
+	})
+
 	it('invalidName names the offending value and the expected pattern', () => {
 		expect(invalidName('Bad_Name', '^[a-z][a-z0-9-]*$')).toBe(
 			'Package name "Bad_Name" must match ^[a-z][a-z0-9-]*$',
+		)
+	})
+
+	it('U12c FIX 2: emptyExtraRange names the offending token and never accepts an empty range', () => {
+		expect(emptyExtraRange('zod@')).toBe(
+			`"zod@" is missing a version range after '@' — write name@^1.2.3 or drop the '@'`,
+		)
+	})
+
+	it('U12c FIX 1: unresolvedVersion names every unresolved package plainly', () => {
+		expect(unresolvedVersion(['left-pad'])).toBe(
+			'could not resolve the latest version for "left-pad" — check the name or pass name@range',
+		)
+		expect(unresolvedVersion(['left-pad', 'zod'])).toBe(
+			'could not resolve the latest version for "left-pad", "zod" — check the name or pass name@range',
 		)
 	})
 
@@ -389,6 +455,15 @@ describe('render: VERB_FLAGS corrections', () => {
 
 	it('catalog advertises --from instead of --root', () => {
 		expect(VERB_FLAGS.catalog).toContain('--from <path>')
+	})
+
+	it('new advertises --extras, only under new, with a matching VERB_FLAG_HELP line', () => {
+		expect(VERB_FLAGS.new).toContain('--extras')
+		for (const verb of KNOWN_VERBS) {
+			if (verb === 'new') continue
+			expect(VERB_FLAGS[verb]).not.toContain('--extras')
+		}
+		expect(VERB_FLAG_HELP.new.some(([flag]) => flag.startsWith('--extras'))).toBe(true)
 	})
 })
 

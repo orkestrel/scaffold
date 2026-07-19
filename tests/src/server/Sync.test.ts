@@ -256,6 +256,38 @@ describe('Sync.versions', () => {
 			await fixture.close()
 		}
 	})
+
+	it('resolves an external (non-@orkestrel) unscoped package name, e.g. "zod"', async () => {
+		const fixture = await buildFixture()
+		try {
+			const canonical = registryPath('zod')
+			expect(canonical).toBe('/zod')
+			fixture.route(canonical, (_request, response) => respondJson(response, '3.23.0'))
+			const sync = createSync({ registry: { base: fixture.base } })
+			const [result] = await sync.versions([dependency('zod', '^3.23.0')])
+			expect(result?.freshness).toBe('current')
+			expect(result?.latest).toBe('3.23.0')
+			expect(fixture.hits.get(canonical)).toBe(1)
+			sync.destroy()
+		} finally {
+			await fixture.close()
+		}
+	})
+
+	it('resolves an external scoped package name, e.g. "@types/node"', async () => {
+		const fixture = await buildFixture()
+		try {
+			const canonical = registryPath('@types/node')
+			expect(canonical).toBe('/@types%2Fnode')
+			fixture.route(canonical, (_request, response) => respondJson(response, '26.1.1'))
+			const sync = createSync({ registry: { base: fixture.base } })
+			const [result] = await sync.versions([dependency('@types/node', '^26.1.1')])
+			expect(result?.freshness).toBe('current')
+			sync.destroy()
+		} finally {
+			await fixture.close()
+		}
+	})
 })
 
 // ── Sync.catalog ──────────────────────────────────────────────────────────

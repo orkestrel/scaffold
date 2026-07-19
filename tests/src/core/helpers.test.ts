@@ -6,6 +6,7 @@ import {
 	blueprint,
 	blueprintToMembers,
 	blueprintToPlan,
+	catalogNames,
 	catalogToBlock,
 	computeHash,
 	delimiterCell,
@@ -144,6 +145,39 @@ describe('alignTable', () => {
 
 		expect(lines[0]).toBe('| A   |')
 		expect(lines[1]).toBe('| --- |')
+	})
+})
+
+describe('catalogNames', () => {
+	it('extracts @orkestrel/<name> names in row order from a real table fixture', () => {
+		const table = alignTable(
+			['Package', 'Description'],
+			[
+				['@orkestrel/contract', 'contracts'],
+				['@orkestrel/emitter', 'events'],
+			],
+		)
+
+		expect(catalogNames(table)).toEqual(['@orkestrel/contract', '@orkestrel/emitter'])
+	})
+
+	it('returns [] for text with no catalog rows', () => {
+		expect(catalogNames('nothing here\njust text')).toEqual([])
+	})
+
+	it('returns [] for empty text (no markers)', () => {
+		expect(catalogNames('')).toEqual([])
+	})
+
+	it('ignores non-catalog rows interleaved with catalog rows', () => {
+		const text = [
+			'| Header | Other |',
+			'| --- | --- |',
+			'| @orkestrel/router | routing |',
+			'| not-a-package | ignored |',
+		].join('\n')
+
+		expect(catalogNames(text)).toEqual(['@orkestrel/router'])
 	})
 })
 
@@ -549,14 +583,51 @@ describe('validateBlueprint — peers/extras (per-array rules + cross-array over
 		).toBe(true)
 	})
 
-	it('applies the same empty-name/off-pattern/empty-range rules to extras as to dependencies', () => {
+	it('applies the same empty-name/off-pattern/empty-range rules to extras, but against EXTRA_NAME_PATTERN', () => {
+		// 'x' is EXTRA_NAME_PATTERN-shaped (extras accept any valid npm name),
+		// unlike the DEPENDENCY_NAME_PATTERN case above — 'X' (uppercase) is the
+		// off-pattern extras name instead.
 		const validation = validateBlueprint({
 			...blueprint('router'),
-			extras: [dependency('', '^1'), { name: 'x', range: '' }],
+			extras: [dependency('', '^1'), { name: 'X', range: '' }],
 		})
 
 		expect(validation.valid).toBe(false)
 		expect(validation.questions.filter((question) => question.field === 'extras').length).toBe(3)
+	})
+
+	it('accepts an EXTRA_NAME_PATTERN-shaped external (non-@orkestrel) extras name', () => {
+		expect(
+			validateBlueprint({ ...blueprint('router'), extras: [dependency('zod', '^3.23.0')] }).valid,
+		).toBe(true)
+		expect(
+			validateBlueprint({
+				...blueprint('router'),
+				extras: [dependency('@types/node', '^26.1.1')],
+			}).valid,
+		).toBe(true)
+	})
+
+	it('rejects an external name in dependencies/peers even though extras would accept it', () => {
+		const dependencies = validateBlueprint({
+			...blueprint('router'),
+			dependencies: [dependency('zod', '^3')],
+		})
+		expect(dependencies.valid).toBe(false)
+		expect(dependencies.questions.some((question) => question.field === 'dependencies')).toBe(true)
+
+		const peers = validateBlueprint({ ...blueprint('router'), peers: [dependency('zod', '^3')] })
+		expect(peers.valid).toBe(false)
+		expect(peers.questions.some((question) => question.field === 'peers')).toBe(true)
+	})
+
+	it('rejects a traversal-shaped extras name (EXTRA_NAME_PATTERN stays traversal-closed)', () => {
+		const validation = validateBlueprint({
+			...blueprint('router'),
+			extras: [dependency('../evil', '^1')],
+		})
+		expect(validation.valid).toBe(false)
+		expect(validation.questions.some((question) => question.field === 'extras')).toBe(true)
 	})
 
 	it('blocks a duplicate extra name', () => {

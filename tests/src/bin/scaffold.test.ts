@@ -9,7 +9,8 @@ import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { isRecord } from '@src/server'
+import { catalogNames } from '@src/core'
+import { hostRoot, isRecord, locateHostSource, readHostManifest } from '@src/server'
 import { buildTempDirectory, canSymlink, WORKSPACE_ROOT } from '../../setupServer.js'
 
 const BIN_PATH = join(WORKSPACE_ROOT, 'dist/bin/scaffold.js')
@@ -81,6 +82,23 @@ function scaffoldPackage(cwd: string, name: string, from: string): string {
 	}
 	return join(cwd, name)
 }
+
+describe('scaffold bin: vendored-catalog resolution mechanics (U12b Q1, offline)', () => {
+	it('resolveCatalogNames-equivalent path: hostRoot() + readHostManifest + locateHostSource resolves the BUILT dist/host orkestrel.md, catalogNames parses real @orkestrel/* names', () => {
+		// Exercises the exact primitive chain `new`'s Q1 catalog resolution uses
+		// (src/bin/scaffold.ts's `resolveCatalogNames`) against the package's
+		// own BUILT vendored host — no fixture, no network, proving the
+		// mechanism resolves for real once `npm run build` has run.
+		const host = hostRoot()
+		const manifest = readHostManifest(host)
+		const full = locateHostSource(manifest, '.claude/agents/orkestrel.md', host)
+		expect(full).toBeDefined()
+		if (full === undefined) return
+		const names = catalogNames(readFileSync(full, 'utf8'))
+		expect(names.length).toBeGreaterThan(0)
+		for (const name of names) expect(name.startsWith('@orkestrel/')).toBe(true)
+	})
+})
 
 describe('scaffold bin', () => {
 	describe('help / usage / unknown verb', () => {
@@ -347,6 +365,174 @@ describe('scaffold bin', () => {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
+		})
+
+		describe('--extras (U12b — offline-safe: an explicit @range never reaches the registry)', () => {
+			it('an explicit @range lands the extra in devDependencies ONLY (never dependencies)', async () => {
+				const from = await buildFromFixture()
+				const cwd = await buildTempDirectory()
+				try {
+					const result = runBin(
+						[
+							'new',
+							'demo-extras',
+							'--surfaces',
+							'core',
+							'--apply',
+							'--extras',
+							'zod@^3.23.0',
+							'--from',
+							from.path,
+						],
+						'',
+						{ cwd: cwd.path },
+					)
+					expect(result.status).toBe(0)
+
+					const packageJsonPath = join(cwd.path, 'demo-extras', 'package.json')
+					const parsed: unknown = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
+					if (!isRecord(parsed)) throw new Error('expected package.json to parse to an object')
+					const devDependencies = parsed.devDependencies
+					const dependencies = parsed.dependencies
+					if (!isRecord(devDependencies)) {
+						throw new Error('expected package.json devDependencies to be an object')
+					}
+					expect(devDependencies.zod).toBe('^3.23.0')
+					const zodInDependencies = isRecord(dependencies) ? dependencies.zod : undefined
+					expect(zodInDependencies).toBeUndefined()
+				} finally {
+					await cwd.cleanup()
+					await from.cleanup()
+				}
+			})
+
+			it('an off-EXTRA_NAME_PATTERN token exits 2 with a coded USAGE message naming the token', async () => {
+				const cwd = await buildTempDirectory()
+				try {
+					const result = runBin(
+						['new', 'demo-extras-bad', '--surfaces', 'core', '--extras', 'Bad Name'],
+						'',
+						{ cwd: cwd.path },
+					)
+					expect(result.status).toBe(2)
+					const output = result.stdout + result.stderr
+					expect(output).toContain('"Bad Name" must match')
+					expect(existsSync(join(cwd.path, 'demo-extras-bad'))).toBe(false)
+				} finally {
+					await cwd.cleanup()
+				}
+			})
+
+			it('an @orkestrel/*-prefixed token is REJECTED — exit 2, message points at --deps, nothing written', async () => {
+				const cwd = await buildTempDirectory()
+				try {
+					const result = runBin(
+						[
+							'new',
+							'demo-extras-orkestrel',
+							'--surfaces',
+							'core',
+							'--extras',
+							'@orkestrel/contract',
+						],
+						'',
+						{ cwd: cwd.path },
+					)
+					expect(result.status).toBe(2)
+					const output = result.stdout + result.stderr
+					expect(output).toContain('is an @orkestrel package')
+					expect(output).toContain('--deps')
+					expect(existsSync(join(cwd.path, 'demo-extras-orkestrel'))).toBe(false)
+				} finally {
+					await cwd.cleanup()
+				}
+			})
+
+			it('--extras under --json: works non-interactively, applies, and the JSON envelope reflects the write (U12b works non-TTY and with --json)', async () => {
+				const from = await buildFromFixture()
+				const cwd = await buildTempDirectory()
+				try {
+					const result = runBin(
+						[
+							'new',
+							'demo-extras-json',
+							'--surfaces',
+							'core',
+							'--json',
+							'--apply',
+							'--extras',
+							'zod@^3.23.0',
+							'--from',
+							from.path,
+						],
+						'',
+						{ cwd: cwd.path },
+					)
+					expect(result.status).toBe(0)
+					const parsed: unknown = JSON.parse(result.stdout.trim())
+					expect(parsed).toMatchObject({ name: 'demo-extras-json', applied: true })
+					const packageJsonPath = join(cwd.path, 'demo-extras-json', 'package.json')
+					const manifest: unknown = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
+					if (!isRecord(manifest) || !isRecord(manifest.devDependencies)) {
+						throw new Error('expected devDependencies to be an object')
+					}
+					expect(manifest.devDependencies.zod).toBe('^3.23.0')
+				} finally {
+					await cwd.cleanup()
+					await from.cleanup()
+				}
+			})
+
+			it('U12c FIX 3 — THE VERIFIER SMOKE (closure regression): new --extras zod@^3.23.0 --apply, then audit --target demo exits 0 CLEAN (an external extra must round-trip through deriveBlueprint, not drift on its own generated package.json)', async () => {
+				const from = await buildFromFixture()
+				const cwd = await buildTempDirectory()
+				try {
+					const created = runBin(
+						[
+							'new',
+							'demo',
+							'--surfaces',
+							'core',
+							'--extras',
+							'zod@^3.23.0',
+							'--apply',
+							'--from',
+							from.path,
+						],
+						'',
+						{ cwd: cwd.path },
+					)
+					expect(created.status).toBe(0)
+
+					const audited = runBin(['audit', '--target', 'demo', '--from', from.path], '', {
+						cwd: cwd.path,
+					})
+					expect(audited.status).toBe(0)
+					expect(audited.stdout).not.toContain('drifted')
+				} finally {
+					await cwd.cleanup()
+					await from.cleanup()
+				}
+			})
+
+			it('U12c FIX 2: --extras "zod@" (trailing @, empty range) exits 2 with the new emptyExtraRange message — never silently written as a "^" range', async () => {
+				const cwd = await buildTempDirectory()
+				try {
+					const result = runBin(
+						['new', 'demo-extras-empty-range', '--surfaces', 'core', '--extras', 'zod@'],
+						'',
+						{ cwd: cwd.path },
+					)
+					expect(result.status).toBe(2)
+					const output = result.stdout + result.stderr
+					expect(output).toContain(
+						`"zod@" is missing a version range after '@' — write name@^1.2.3 or drop the '@'`,
+					)
+					expect(existsSync(join(cwd.path, 'demo-extras-empty-range'))).toBe(false)
+				} finally {
+					await cwd.cleanup()
+				}
+			})
 		})
 	})
 

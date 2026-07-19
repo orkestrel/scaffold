@@ -262,8 +262,11 @@ export class Sync implements SyncInterface {
 	// npm's canonical scoped-package registry path keeps the literal `@` and
 	// encodes only the slash (`encodeURIComponent` would also escape the `@`
 	// into `%40`, which registries accept but which diverges from the
-	// canonical form). `name` is already gated by `DEPENDENCY_NAME_PATTERN`
-	// upstream, so a plain slash replace is exhaustive here.
+	// canonical form). A valid npm package name — `@orkestrel/*` or any other
+	// scoped/unscoped name (`extras` may now carry either, per
+	// `EXTRA_NAME_PATTERN`) — has at most one `/` (the single scope
+	// boundary), so this plain first-occurrence slash replace is exhaustive
+	// for every name `versions()` is called with, not just `@orkestrel/*`.
 	#registryUrl(name: string): string {
 		return `${Sync.#normalizeBase(this.#registryBase)}/${name.replace('/', '%2F')}`
 	}

@@ -23,6 +23,7 @@ import {
 	DEFAULT_ENGINES,
 	DEFAULT_VERSION,
 	DEPENDENCY_NAME_PATTERN,
+	EXTRA_NAME_PATTERN,
 	NAME_PATTERN,
 	SURFACES,
 } from './constants.js'
@@ -177,6 +178,38 @@ export function blueprintToMembers(spec: Blueprint): readonly Member[] {
 		members.push(member(`${screaming}_ID`, 'constant', `The default id for a ${pascal}.`, surface))
 	}
 	return members
+}
+
+/**
+ * Extract the `@orkestrel/<name>` package names from a catalog markdown
+ * block/table, in row order.
+ *
+ * @param text - The markdown block/table text (the `orkestrel.md` embedded
+ * catalog shape — GFM table rows opening `| @orkestrel/<name>`).
+ * @remarks
+ * Pure line-scan: a row matches when, after trimming, it starts with
+ * `| @orkestrel/` followed by a `NAME_PATTERN`-shaped short name and a cell
+ * boundary (`|` or whitespace) — the same row shape `runCatalog`'s shrink
+ * count previously matched inline; this is the single source both consume.
+ * Returns `[]` when the text has no markers/rows (never throws).
+ * @returns The full `@orkestrel/<name>` names found, in order.
+ *
+ * @example
+ * ```ts
+ * import { catalogNames } from '@orkestrel/scaffold'
+ *
+ * catalogNames('| @orkestrel/contract | ... |\n| @orkestrel/emitter | ... |')
+ * // ['@orkestrel/contract', '@orkestrel/emitter']
+ * ```
+ */
+export function catalogNames(text: string): readonly string[] {
+	const rowPattern = /^\|\s*(@orkestrel\/[a-z][a-z0-9-]*)(?=\s|\|)/
+	const names: string[] = []
+	for (const line of text.split('\n')) {
+		const match = rowPattern.exec(line.trimStart())
+		if (match !== null && match[1] !== undefined) names.push(match[1])
+	}
+	return names
 }
 
 /**
@@ -637,7 +670,12 @@ export function diffPlan(plan: Plan, current: Readonly<Record<string, string>>):
  * Pure — takes no closed-over `questions` array to mutate; the caller
  * concatenates the returned `questions` and inspects the returned `seen` set
  * to apply the cross-array (`dependencies` vs `peers` vs `extras`) overlap
- * rules `validateBlueprint` layers on top.
+ * rules `validateBlueprint` layers on top. `field === 'extras'` validates
+ * names against `EXTRA_NAME_PATTERN` (broader — any valid npm package name);
+ * `'dependencies'` and `'peers'` keep `DEPENDENCY_NAME_PATTERN` (closed to
+ * `@orkestrel/*`) — the path-derived arrays stay orkestrel-closed, since only
+ * `dependencies`/`peers` names ever reach `Compiler.#pointerArtifacts`' path
+ * derivation; `extras` names are manifest-content only.
  * @returns The violations found and the set of names seen, in encounter order.
  *
  * @example
@@ -652,15 +690,16 @@ export function validateDependencyArray(
 	field: string,
 	items: readonly Dependency[],
 ): { readonly questions: readonly Question[]; readonly seen: ReadonlySet<string> } {
+	const pattern = field === 'extras' ? EXTRA_NAME_PATTERN : DEPENDENCY_NAME_PATTERN
 	const questions: Question[] = []
 	const seen = new Set<string>()
 	for (const item of items) {
 		if (item.name.length === 0) {
 			questions.push({ field, text: 'A dependency name must not be empty', blocking: true })
-		} else if (!DEPENDENCY_NAME_PATTERN.test(item.name)) {
+		} else if (!pattern.test(item.name)) {
 			questions.push({
 				field,
-				text: `Dependency name "${item.name}" must match ${DEPENDENCY_NAME_PATTERN.source}`,
+				text: `Dependency name "${item.name}" must match ${pattern.source}`,
 				blocking: true,
 			})
 		}
@@ -698,13 +737,16 @@ export function validateDependencyArray(
  * exemplar-less combination is a blocking question (without this gate it
  * would silently drop a surface at `rootViteConfig`'s dispatch while the
  * manifest still references it). And well-formed `dependencies` / `peers` /
- * `extras` (non-empty name/range, name shaped `DEPENDENCY_NAME_PATTERN`, no
- * duplicate names within an array) — a NAME-shaped law at the gate that
- * closes the traversal vector a hand-built `../`-laced dependency name would
- * open through `Compiler.#pointerArtifacts`. A name appearing in both
- * `dependencies` and `peers` is a blocking question (npm forbids sensibly
- * declaring the same package both ways), and an `extras` name may overlap
- * neither `dependencies` nor `peers`.
+ * `extras` (non-empty name/range, no duplicate names within an array):
+ * `dependencies` and `peers` names are shaped `DEPENDENCY_NAME_PATTERN`
+ * (closed to `@orkestrel/*`) — a NAME-shaped law at the gate that closes the
+ * traversal vector a hand-built `../`-laced dependency name would open
+ * through `Compiler.#pointerArtifacts`'s path derivation; `extras` names are
+ * shaped `EXTRA_NAME_PATTERN` instead — broader (any valid npm package name),
+ * safe because `extras` never feeds a path, only `devDependencies` content. A
+ * name appearing in both `dependencies` and `peers` is a blocking question
+ * (npm forbids sensibly declaring the same package both ways), and an
+ * `extras` name may overlap neither `dependencies` nor `peers`.
  * @returns A `Validation` — never throws.
  *
  * @example

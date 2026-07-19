@@ -16,11 +16,13 @@ import type {
 import {
 	blueprint,
 	blueprintToPlan,
+	catalogNames,
 	catalogToBlock,
 	createCompiler,
 	dependency,
 	DEPENDENCY_NAME_PATTERN,
 	diffPlan,
+	EXTRA_NAME_PATTERN,
 	GROUPS,
 	isScaffoldError,
 	manifestToDependencies,
@@ -37,7 +39,9 @@ import {
 	discoverPackages,
 	hostRoot,
 	hydratePlan,
+	locateHostSource,
 	pruneTargets,
+	readHostManifest,
 	readManifest,
 	readTarget,
 } from '@src/server'
@@ -60,10 +64,12 @@ import {
 	catalogJson,
 	catalogShrinkWarning,
 	catalogTable,
+	catalogUnresolvedNote,
 	catalogVerdict,
 	chooseStyler,
 	comparisonLine,
 	didYouMean,
+	emptyExtraRange,
 	errorEnvelope,
 	fleetCiSkipped,
 	fleetRepoLine,
@@ -71,15 +77,20 @@ import {
 	foreignHint,
 	fullHelp,
 	generatedNote,
+	invalidExtraName,
 	invalidName,
 	INVALID_ARGUMENTS_MESSAGE,
 	KNOWN_VERBS,
 	missingInput,
+	nearest,
 	newApplySuccess,
 	newJson,
 	NEW_DRY_RUN_NOTE,
 	newPlanPreview,
 	newPlanTable,
+	orkestrelBelongsInDeps,
+	orkestrelDepsPrompt,
+	otherDepsPrompt,
 	prunePreview,
 	PRUNE_EMPTY,
 	pruneConfirmMessage,
@@ -99,6 +110,8 @@ import {
 	shortUsage,
 	shouldSpin,
 	surfaceChoices,
+	unknownOrkestrelToken,
+	unresolvedVersion,
 	verbHelp,
 	fleetJson,
 } from './render.js'
@@ -282,6 +295,7 @@ function parseArguments() {
 		options: {
 			surfaces: { type: 'string' },
 			deps: { type: 'string' },
+			extras: { type: 'string' },
 			groups: { type: 'string' },
 			target: { type: 'string' },
 			from: { type: 'string', multiple: true },
@@ -503,6 +517,99 @@ function announceFailure(
 	fail(message, json)
 }
 
+/** Split a comma-separated token list, trimming and dropping empties — the shared parse `new`'s Q1/Q2 prompts and `--extras` all go through. */
+function splitTokens(raw: string): readonly string[] {
+	return raw
+		.split(',')
+		.map((token) => token.trim())
+		.filter((token) => token.length > 0)
+}
+
+/** Split `token` at its LAST `@`, beyond position 0 — `name@range` (e.g. `@scope/pkg@^1.2.3`) vs. a bare name (no explicit range) that keeps a leading `@scope/` intact. */
+function splitAtLastAt(token: string): {
+	readonly name: string
+	readonly range: string | undefined
+} {
+	const at = token.lastIndexOf('@')
+	if (at <= 0) return { name: token, range: undefined }
+	return { name: token.slice(0, at), range: token.slice(at + 1) }
+}
+
+/** Normalize a Q1 token to a full `@orkestrel/<name>` — an already-prefixed token passes through unchanged. */
+function normalizeOrkestrelToken(token: string): string {
+	return token.startsWith('@orkestrel/') ? token : `@orkestrel/${token}`
+}
+
+/**
+ * Best-effort vendored `@orkestrel` catalog names, resolved via `host`
+ * (`hostRoot()`, or the active `--from` override) through the host manifest
+ * — `undefined` when the catalog cannot be established (a missing/unreadable
+ * manifest, no `.claude/agents/orkestrel.md` entry, or any other failure),
+ * degrading Q1 to shape-only validation instead of blocking on it.
+ */
+function resolveCatalogNames(host: string): readonly string[] | undefined {
+	try {
+		const manifest = readHostManifest(host)
+		const full = locateHostSource(manifest, '.claude/agents/orkestrel.md', host)
+		if (full === undefined || !existsSync(full)) return undefined
+		return catalogNames(readFileSync(full, 'utf8'))
+	} catch {
+		return undefined
+	}
+}
+
+/** One Q1 token's issue against `catalog` (`undefined` = valid) — shape-only (`DEPENDENCY_NAME_PATTERN`) when `catalog` itself could not be resolved. */
+function orkestrelTokenIssue(
+	normalized: string,
+	catalog: readonly string[] | undefined,
+): string | undefined {
+	if (catalog === undefined) {
+		return DEPENDENCY_NAME_PATTERN.test(normalized)
+			? undefined
+			: unknownOrkestrelToken(normalized, undefined)
+	}
+	if (catalog.includes(normalized)) return undefined
+	return unknownOrkestrelToken(normalized, nearest(normalized, catalog))
+}
+
+/** One `extras` token's issue (its name half, `@range` stripped) — an `@orkestrel/*` token belongs in Q1/`--deps` instead; a trailing `@` with nothing after it is an empty range (never silently written as `^`); otherwise `EXTRA_NAME_PATTERN`-shaped. */
+function extraTokenIssue(token: string): string | undefined {
+	if (token.startsWith('@orkestrel/')) return orkestrelBelongsInDeps(token)
+	const { name, range } = splitAtLastAt(token)
+	if (range === '') return emptyExtraRange(token)
+	return EXTRA_NAME_PATTERN.test(name) ? undefined : invalidExtraName(name)
+}
+
+/** Q1 (TTY only) — `@orkestrel` short-name deps, re-asking on any unresolved token until the input is clean or empty. */
+async function promptOrkestrelDeps(
+	terminal: TerminalInterface,
+	catalog: readonly string[] | undefined,
+): Promise<readonly string[]> {
+	for (;;) {
+		const raw = await guarded(terminal.input({ message: orkestrelDepsPrompt(), default: '' }))
+		const tokens = splitTokens(raw)
+		if (tokens.length === 0) return []
+		const normalized = tokens.map(normalizeOrkestrelToken)
+		const issue = normalized
+			.map((token) => orkestrelTokenIssue(token, catalog))
+			.find((message) => message !== undefined)
+		if (issue === undefined) return normalized
+		reporter.line(issue)
+	}
+}
+
+/** Q2 (TTY only) — full npm names with an optional `@range`, re-asking on any invalid token until the input is clean or empty. */
+async function promptOtherDeps(terminal: TerminalInterface): Promise<readonly string[]> {
+	for (;;) {
+		const raw = await guarded(terminal.input({ message: otherDepsPrompt(), default: '' }))
+		const tokens = splitTokens(raw)
+		if (tokens.length === 0) return []
+		const issue = tokens.map(extraTokenIssue).find((message) => message !== undefined)
+		if (issue === undefined) return tokens
+		reporter.line(issue)
+	}
+}
+
 /** `scaffold new` — scaffold a package into `./<name>` (or `--target`). */
 async function runNew(values: Values, argument: string | undefined, json: boolean): Promise<void> {
 	const terminal = createTerminal()
@@ -559,34 +666,87 @@ async function runNew(values: Values, argument: string | undefined, json: boolea
 	// `--deps` defaults to no extra dependencies rather than failing (only a
 	// REQUIRED input triggers `missingInput`'s usage error); the multi-prompt
 	// guidance below stays TTY-only (S3f's one-prompt-per-process ceiling).
-	let depsInput: string
-	if (values.deps !== undefined) depsInput = values.deps
-	else if (json || !sinkIsTTY) depsInput = ''
-	else {
-		depsInput = await guarded(
-			terminal.input({ message: 'Dependencies (comma-separated, optional)', default: '' }),
-		)
-	}
-	// Every token is gated against `DEPENDENCY_NAME_PATTERN` BEFORE any network
-	// call — a bad token (path traversal, off-pattern name, …) is a coded
-	// usage failure, never reaching `sync.versions` (A3).
-	const depNames = depsInput.split(',').filter((depName) => depName.length > 0)
-	const badDep = depNames.find((depName) => !DEPENDENCY_NAME_PATTERN.test(depName))
-	if (badDep !== undefined) {
-		usageFail(`Dependency name "${badDep}" must match ${DEPENDENCY_NAME_PATTERN.source}`, json)
+	// `--deps` keeps its EXACT prior mechanism verbatim — untrimmed split,
+	// `DEPENDENCY_NAME_PATTERN`-gated BEFORE any network call (A3). The
+	// interactive Q1 replaces only the FREE-TEXT prompt, with short-name
+	// normalization + vendored-catalog validation (re-asking on an unknown
+	// token, degrading to shape-only when the catalog cannot be resolved).
+	let depNames: readonly string[]
+	if (values.deps !== undefined) {
+		depNames = values.deps.split(',').filter((depName) => depName.length > 0)
+		const badDep = depNames.find((depName) => !DEPENDENCY_NAME_PATTERN.test(depName))
+		if (badDep !== undefined) {
+			usageFail(`Dependency name "${badDep}" must match ${DEPENDENCY_NAME_PATTERN.source}`, json)
+		}
+	} else if (json || !sinkIsTTY) {
+		depNames = []
+	} else {
+		const catalogHost = values.from?.[0] ?? hostRoot()
+		const catalog = resolveCatalogNames(catalogHost)
+		if (catalog === undefined) reporter.line(catalogUnresolvedNote())
+		depNames = await promptOrkestrelDeps(terminal, catalog)
 	}
 
-	// --deps resolve latest from the registry → ranges pin ^latest; their guides fetch into the plan.
+	// `--extras` mirrors `--deps`'s optionality — every token is
+	// `EXTRA_NAME_PATTERN`-gated (its name half, `@range` stripped) and an
+	// `@orkestrel/*` token is rejected outright (Q2/`--extras` both point at
+	// Q1/`--deps` instead), all BEFORE any network call. Q2 (TTY only)
+	// re-asks on an invalid token rather than failing the whole run.
+	let extraTokens: readonly string[]
+	if (values.extras !== undefined) {
+		extraTokens = splitTokens(values.extras)
+		const badExtra = extraTokens.map(extraTokenIssue).find((message) => message !== undefined)
+		if (badExtra !== undefined) usageFail(badExtra, json)
+	} else if (json || !sinkIsTTY) {
+		extraTokens = []
+	} else {
+		extraTokens = await promptOtherDeps(terminal)
+	}
+
+	// --deps/Q1 resolve latest from the registry → ranges pin ^latest; their
+	// guides fetch into the plan. --extras/Q2 tokens carrying an explicit
+	// `@range` skip the registry entirely (no network call); a token WITHOUT
+	// one resolves through the SAME `sync.versions` call.
+	const extraEntries = extraTokens.map(splitAtLastAt)
+	const extraExplicit = extraEntries.filter(
+		(entry): entry is { readonly name: string; readonly range: string } =>
+			entry.range !== undefined,
+	)
+	const extraPending = extraEntries
+		.filter((entry) => entry.range === undefined)
+		.map((entry) => entry.name)
+
 	const sync = createSync()
 	let versions
+	let extraVersions
 	try {
 		versions = await sync.versions(depNames.map((depName) => dependency(depName, '*')))
+		extraVersions = await sync.versions(extraPending.map((extraName) => dependency(extraName, '*')))
 	} finally {
 		sync.destroy()
 	}
+	// `createSync()` is non-strict — it never throws — so a range-less
+	// `--deps`/`--extras` name that the registry could not resolve
+	// (`freshness` 'missing'/'failed', `latest` '') is a HARD failure here,
+	// covering BOTH the `--deps` and `--extras` resolution paths from the
+	// SAME `versions`/`extraVersions` results: writing `^` + an empty
+	// `latest` would otherwise land an unwritable `"^"` range in
+	// package.json with exit 0.
+	const unresolved = [...versions, ...extraVersions]
+		.filter(
+			(version) =>
+				(version.freshness !== 'current' && version.freshness !== 'behind') ||
+				version.latest === '',
+		)
+		.map((version) => version.name)
+	if (unresolved.length > 0) fail(unresolvedVersion(unresolved), json)
 	const deps = versions.map((version) => dependency(version.name, `^${version.latest}`))
+	const extras = [
+		...extraExplicit.map((entry) => dependency(entry.name, entry.range)),
+		...extraVersions.map((version) => dependency(version.name, `^${version.latest}`)),
+	]
 
-	const plan = compileOrFail(blueprint(name, { surfaces, dependencies: deps }), json)
+	const plan = compileOrFail(blueprint(name, { surfaces, dependencies: deps, extras }), json)
 
 	const summary = planToSummary(plan)
 
@@ -1248,7 +1408,7 @@ async function runCatalog(values: Values, json: boolean): Promise<void> {
 	const updated = `${before}\n\n${block}\n${after}`
 
 	const oldBlock = current.slice(startIndex + startMarker.length, endIndex)
-	const oldRows = (oldBlock.match(/^\|\s*@orkestrel\//gm) ?? []).length
+	const oldRows = catalogNames(oldBlock).length
 	const shrink = entries.length < oldRows ? oldRows - entries.length : undefined
 
 	if (updated === current) {
