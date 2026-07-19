@@ -1217,10 +1217,11 @@ sync.destroy()
 
 ### Auditing with live drift
 
-`scaffold audit` layers TWO drift sources: the structural `diffPlan` (the plan vs the target
-on disk) and — under `--live` — the `Sync` freshness pass (each dependency's guide vs upstream
-HEAD, each range vs the registry latest). Any drift is a nonzero exit, so it doubles as a CI
-conformance gate. `audit` NEVER writes.
+`scaffold audit` is a WHOLE-PLAN conformance report — host AND generated artifacts alike, unlike
+`repair`'s host-only scope — layering TWO drift sources: the structural `diffPlan` (the plan vs
+the target on disk) and — under `--live` — the `Sync` freshness pass (each dependency's guide vs
+upstream HEAD, each range vs the registry latest). Any drift is a nonzero exit, so it doubles as
+a CI conformance gate. `audit` NEVER writes.
 
 ```ts
 import { blueprintToPlan, diffPlan } from '@orkestrel/scaffold'

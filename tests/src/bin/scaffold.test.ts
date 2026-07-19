@@ -355,6 +355,103 @@ describe('scaffold bin', () => {
 			}
 		})
 
+		it('findings lines: a drifted artifact is named by drift class, group, and path, not just counted', async () => {
+			const directory = await buildTempDirectory()
+			try {
+				const created = runBin(
+					['new', 'pkg', '--surfaces', 'core', '--apply', '--target', '.'],
+					undefined,
+					{ cwd: directory.path },
+				)
+				expect(created.status).toBe(0)
+				writeFileSync(
+					join(directory.path, 'package.json'),
+					'{"name":"@orkestrel/pkg","mutated":true}',
+				)
+
+				const audited = runBin(['audit', '--target', '.'], undefined, { cwd: directory.path })
+				expect(audited.status).toBe(1)
+				expect(audited.stdout).toMatch(/drifted\s+manifest\s+package\.json/)
+			} finally {
+				await directory.cleanup()
+			}
+		})
+
+		it('origin split — host clean: the verdict names only the generated drift, with a "(generated)" tag', async () => {
+			const fixture = await buildHostFixture()
+			const target = await buildTempDirectory()
+			try {
+				const created = runBin(
+					[
+						'new',
+						'demo-audit-split-generated',
+						'--surfaces',
+						'core',
+						'--apply',
+						'--target',
+						'.',
+						'--host',
+						fixture.path,
+					],
+					undefined,
+					{ cwd: target.path },
+				)
+				expect(created.status).toBe(0)
+				writeFileSync(
+					join(target.path, 'package.json'),
+					'{"name":"@orkestrel/demo-audit-split-generated","mutated":true}',
+				)
+
+				const result = runBin(['audit', '--target', '.', '--host', fixture.path], undefined, {
+					cwd: target.path,
+				})
+				expect(result.status).toBe(1)
+				expect(result.stdout).toMatch(/host set clean; 1 drifted \(generated\)/)
+			} finally {
+				await target.cleanup()
+				await fixture.cleanup()
+			}
+		})
+
+		it('origin split — host drifted: the verdict names both buckets explicitly', async () => {
+			const fixture = await buildHostFixture()
+			const target = await buildTempDirectory()
+			try {
+				const created = runBin(
+					[
+						'new',
+						'demo-audit-split-host',
+						'--surfaces',
+						'core',
+						'--apply',
+						'--target',
+						'.',
+						'--host',
+						fixture.path,
+					],
+					undefined,
+					{ cwd: target.path },
+				)
+				expect(created.status).toBe(0)
+				// Host drift: `.editorconfig` goes missing (presence-only host check).
+				rmSync(join(target.path, '.editorconfig'), { force: true })
+				// Generated drift alongside it.
+				writeFileSync(
+					join(target.path, 'package.json'),
+					'{"name":"@orkestrel/demo-audit-split-host","mutated":true}',
+				)
+
+				const result = runBin(['audit', '--target', '.', '--host', fixture.path], undefined, {
+					cwd: target.path,
+				})
+				expect(result.status).toBe(1)
+				expect(result.stdout).toMatch(/host: 1 missing; generated: 1 drifted/)
+			} finally {
+				await target.cleanup()
+				await fixture.cleanup()
+			}
+		})
+
 		it('--live: an unreachable declared dependency counts as drift and exits 1', async () => {
 			const directory = await writeManifest({ '@orkestrel/does-not-exist-xyz': '^1.0.0' })
 			try {
@@ -567,10 +664,88 @@ describe('scaffold bin', () => {
 					cwd: target.path,
 				})
 				expect(result.status).toBe(1)
+				expect(result.stdout).toContain(
+					'repair scope: shared host artifacts only — generated source/tests/configs are never touched',
+				)
 				expect(result.stdout).toContain('# Audit')
 				expect(result.stdout).toMatch(/missing: [1-9]/)
 				expect(existsSync(join(target.path, '.editorconfig'))).toBe(false)
 				expect(existsSync(join(target.path, 'scripts', 'rogue.sh'))).toBe(true)
+			} finally {
+				await target.cleanup()
+				await fixture.cleanup()
+			}
+		})
+
+		it("clean scope: dry-run reports 'N host artifacts aligned — nothing to write', with no outside-scope note when the whole plan is clean", async () => {
+			const fixture = await buildHostFixture()
+			const target = await buildTempDirectory()
+			try {
+				const created = runBin(
+					[
+						'new',
+						'demo-repair-aligned-clean',
+						'--surfaces',
+						'core',
+						'--apply',
+						'--target',
+						'.',
+						'--host',
+						fixture.path,
+					],
+					undefined,
+					{ cwd: target.path },
+				)
+				expect(created.status).toBe(0)
+
+				const result = runBin(['repair', '--target', '.', '--host', fixture.path], undefined, {
+					cwd: target.path,
+				})
+				expect(result.status).toBe(0)
+				expect(result.stdout).toMatch(/repair: \d+ host artifacts aligned — nothing to write/)
+				expect(result.stdout).not.toContain("outside repair's scope")
+			} finally {
+				await target.cleanup()
+				await fixture.cleanup()
+			}
+		})
+
+		it("clean scope with generated drift: dry-run's aligned verdict gains a note pointing at 'audit' for the out-of-scope findings", async () => {
+			const fixture = await buildHostFixture()
+			const target = await buildTempDirectory()
+			try {
+				const created = runBin(
+					[
+						'new',
+						'demo-repair-scope-note',
+						'--surfaces',
+						'core',
+						'--apply',
+						'--target',
+						'.',
+						'--host',
+						fixture.path,
+					],
+					undefined,
+					{ cwd: target.path },
+				)
+				expect(created.status).toBe(0)
+				// Generated-origin drift ONLY — repair's own host-scoped audit stays clean.
+				writeFileSync(
+					join(target.path, 'package.json'),
+					'{"name":"@orkestrel/demo-repair-scope-note","mutated":true}',
+				)
+
+				const result = runBin(['repair', '--target', '.', '--host', fixture.path], undefined, {
+					cwd: target.path,
+				})
+				expect(result.status).toBe(0)
+				expect(result.stdout).toMatch(/repair: \d+ host artifacts aligned — nothing to write/)
+				expect(result.stdout).toMatch(
+					/note: 1 finding outside repair's scope — run 'audit' for the list; generated files are yours to edit/,
+				)
+				// The hand-modified generated file is untouched — repair never writes outside its scope.
+				expect(readFileSync(join(target.path, 'package.json'), 'utf8')).toContain('mutated')
 			} finally {
 				await target.cleanup()
 				await fixture.cleanup()
@@ -610,7 +785,7 @@ describe('scaffold bin', () => {
 					{ cwd: target.path },
 				)
 				expect(result.status).toBe(0)
-				expect(result.stdout).toMatch(/wrote 0, copied 1, skipped \d+, removed 0/)
+				expect(result.stdout).toMatch(/wrote 0, copied 1, aligned \d+, removed 0/)
 
 				const restored = readFileSync(join(target.path, '.editorconfig'), 'utf8')
 				expect(restored).toBe('root = true\n# fixture-b\n')

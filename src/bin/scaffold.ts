@@ -3,7 +3,17 @@ import { existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, relative as relativeOf, resolve, sep } from 'node:path'
 import * as tls from 'node:tls'
 import { parseArgs } from 'node:util'
-import type { Audit, Blueprint, CatalogEntry, Dependency, Group, Plan, SyncReport } from '@src/core'
+import type {
+	Audit,
+	Blueprint,
+	CatalogEntry,
+	Dependency,
+	Drift,
+	Finding,
+	Group,
+	Plan,
+	SyncReport,
+} from '@src/core'
 import {
 	auditToReview,
 	blueprint,
@@ -33,7 +43,7 @@ import {
 	readManifest,
 	readTarget,
 } from '@src/server'
-import { createReporter, createSpinner } from '@orkestrel/console'
+import { align, createReporter, createSpinner } from '@orkestrel/console'
 import { createServerSink } from '@orkestrel/console/server'
 import { createTerminal } from '@orkestrel/terminal/server'
 
@@ -54,18 +64,22 @@ Every WRITE destination resolves under the current directory — cd there first
     e.g. scaffold sync --deps @orkestrel/core --apply
 
   audit [--target .] [--live] [--host <path>] [--groups a,b]
-    Structural conformance check; --live adds guide/version freshness; --host
-    enables content-aware host diffing (default host falls back to
-    presence-only silently; an EXPLICIT --host that fails to resolve is a
-    coded TARGET failure). --groups restricts the plan to the listed groups
-    (default: full plan) — e.g. --groups configs,docs,orchestration for CI.
+    Whole-plan conformance report — every artifact the plan declares, host
+    AND generated, is checked. Structural conformance check; --live adds
+    guide/version freshness; --host enables content-aware host diffing
+    (default host falls back to presence-only silently; an EXPLICIT --host
+    that fails to resolve is a coded TARGET failure). --groups restricts the
+    plan to the listed groups (default: full plan) — e.g. --groups
+    configs,docs,orchestration for CI.
     e.g. scaffold audit --groups configs,docs
 
   repair [--target .] [--apply] [--prune] [--host <path>]
-    Apply drift-only fixes for one target, scoped to HOST-ORIGIN artifacts
-    ONLY (including .github/workflows/ci.yml — single-target explicit intent
-    keeps full host scope, unlike mirror) — never touches hand-written
-    src/tests/guides/package.json; dry-run by default (reports drift).
+    Restores the shared HOST set only — generated source/tests/configs are
+    never touched. Apply drift-only fixes for one target, scoped to
+    HOST-ORIGIN artifacts ONLY (including .github/workflows/ci.yml —
+    single-target explicit intent keeps full host scope, unlike mirror) —
+    never touches hand-written src/tests/guides/package.json; dry-run by
+    default (reports drift).
     e.g. scaffold repair --apply
 
   mirror [--root .] [--apply] [--prune] [--host <path>]
@@ -258,6 +272,123 @@ function hydrateBestEffort(
 	}
 }
 
+/** `audit`'s vocabulary for a non-`aligned` `Drift` — `stale` reads as `drifted`, matching `Audit.drifted`. */
+function driftLabel(drift: Drift): string {
+	return drift === 'stale' ? 'drifted' : drift
+}
+
+/**
+ * One aligned-column line per non-`aligned` `Finding` — drift class, group, path — so `audit`
+ * names exactly what drifted instead of only counting it. Widths are computed from the visible
+ * findings only, via `@orkestrel/console`'s `align`.
+ */
+function findingLines(findings: readonly Finding[]): readonly string[] {
+	const visible = findings.filter((finding) => finding.drift !== 'aligned')
+	const driftWidth = visible.reduce(
+		(width, finding) => Math.max(width, driftLabel(finding.drift).length),
+		0,
+	)
+	const groupWidth = visible.reduce((width, finding) => Math.max(width, finding.group.length), 0)
+	return visible.map(
+		(finding) =>
+			`  ${align(driftLabel(finding.drift), driftWidth + 2)}${align(finding.group, groupWidth + 2)}${finding.path}`,
+	)
+}
+
+/** Nonzero `{count} {label}` parts joined by `, `; `'clean'` when every count is zero. */
+function bucketText(counts: {
+	readonly drifted: number
+	readonly missing: number
+	readonly foreign: number
+}): string {
+	const parts: string[] = []
+	if (counts.drifted > 0) parts.push(`${counts.drifted} drifted`)
+	if (counts.missing > 0) parts.push(`${counts.missing} missing`)
+	if (counts.foreign > 0) parts.push(`${counts.foreign} foreign`)
+	return parts.length > 0 ? parts.join(', ') : 'clean'
+}
+
+/**
+ * Split `findings` by their `plan` artifact's `origin` — `host` vs `template`/`computed` lumped
+ * as `generated` (a `foreign` finding names no plan artifact, so it counts as `generated`: it is
+ * never host-owned). The reconciliation `audit` needs between its whole-plan report and
+ * `repair`'s host-only scope.
+ */
+function partitionOrigin(
+	findings: readonly Finding[],
+	plan: Plan,
+): {
+	readonly host: { readonly drifted: number; readonly missing: number; readonly foreign: number }
+	readonly generated: {
+		readonly drifted: number
+		readonly missing: number
+		readonly foreign: number
+	}
+} {
+	const origins = new Map(plan.artifacts.map((artifact) => [artifact.path, artifact.origin]))
+	let hostDrifted = 0
+	let hostMissing = 0
+	let hostForeign = 0
+	let generatedDrifted = 0
+	let generatedMissing = 0
+	let generatedForeign = 0
+	for (const finding of findings) {
+		const isHost = origins.get(finding.path) === 'host'
+		if (finding.drift === 'aligned') continue
+		else if (finding.drift === 'stale') {
+			if (isHost) hostDrifted += 1
+			else generatedDrifted += 1
+		} else if (finding.drift === 'missing') {
+			if (isHost) hostMissing += 1
+			else generatedMissing += 1
+		} else {
+			if (isHost) hostForeign += 1
+			else generatedForeign += 1
+		}
+	}
+	return {
+		host: { drifted: hostDrifted, missing: hostMissing, foreign: hostForeign },
+		generated: { drifted: generatedDrifted, missing: generatedMissing, foreign: generatedForeign },
+	}
+}
+
+/**
+ * `audit`'s verdict line — an origin split so host health is immediately visible against
+ * `repair`'s host-only scope: a clean host set names the generated drift alone; any host drift
+ * names both buckets explicitly.
+ */
+function auditVerdict(audit: Audit, plan: Plan): string {
+	const total = audit.findings.length
+	if (audit.clean) return `audit: ${total} artifacts — clean`
+	const split = partitionOrigin(audit.findings, plan)
+	const hostClean = split.host.drifted === 0 && split.host.missing === 0 && split.host.foreign === 0
+	return hostClean
+		? `audit: ${total} artifacts — host set clean; ${bucketText(split.generated)} (generated)`
+		: `audit: ${total} artifacts — host: ${bucketText(split.host)}; generated: ${bucketText(split.generated)}`
+}
+
+/** The banner `repair` opens with (dry-run AND `--apply`) — its scope is the shared host set only. */
+const REPAIR_SCOPE =
+	'repair scope: shared host artifacts only — generated source/tests/configs are never touched'
+
+/**
+ * `repair`'s own scope is host-only, but the caller compiles the FULL plan anyway — diff it too
+ * (cheap, local, no network) so a clean host verdict can point at drift OUTSIDE repair's reach
+ * instead of leaving the caller to reconcile `audit`'s findings against `repair`'s silence.
+ */
+function scopeNote(compiled: Plan, target: string): string | undefined {
+	const full = diffPlan(
+		compiled,
+		readTarget(
+			target,
+			compiled.artifacts.map((artifact) => artifact.path),
+		),
+	)
+	const count = full.drifted + full.missing + full.foreign
+	if (count === 0) return undefined
+	return `note: ${count} finding${count === 1 ? '' : 's'} outside repair's scope — run 'audit' for the list; generated files are yours to edit`
+}
+
 /**
  * The whole command dispatch — a single top-level driver (no nested function
  * declarations, AGENTS §4). Every verb sets `process.exitCode` (never
@@ -423,11 +554,9 @@ async function main(): Promise<void> {
 			}
 		}
 
-		reporter.line(
-			drifted
-				? `audit: ${audit.findings.length} artifacts — ${audit.drifted} drifted, ${audit.missing} missing, ${audit.foreign} foreign`
-				: `audit: ${audit.findings.length} artifacts — clean`,
-		)
+		for (const line of findingLines(audit.findings)) reporter.line(line)
+
+		reporter.line(auditVerdict(audit, plan))
 		if (liveNote.length > 0) reporter.line(liveNote)
 		process.exitCode = drifted ? 1 : 0 // ANY drift fails — the CI gate
 		return
@@ -589,15 +718,20 @@ async function main(): Promise<void> {
 		} catch (error) {
 			fail(describe(error))
 		}
+		reporter.line(REPAIR_SCOPE)
 		reporter.section('Audit')
 		reporter.line(auditToReview(audit))
 
 		if (!values.apply) {
-			reporter.line(
-				audit.clean
-					? 'repair: clean'
-					: `repair: ${audit.drifted} drifted, ${audit.missing} missing, ${audit.foreign} foreign — pass --apply to write`,
-			)
+			if (audit.clean) {
+				reporter.line(`repair: ${audit.findings.length} host artifacts aligned — nothing to write`)
+				const note = scopeNote(compiled, target)
+				if (note !== undefined) reporter.line(note)
+			} else {
+				reporter.line(
+					`repair: ${audit.drifted} drifted, ${audit.missing} missing, ${audit.foreign} foreign — pass --apply to write`,
+				)
+			}
 			process.exitCode = audit.clean ? 0 : 1
 			return
 		}
@@ -609,7 +743,7 @@ async function main(): Promise<void> {
 			const result = materializer.repair(plan, audit, target)
 			const removed = values.prune ? materializer.prune(target).removed : []
 			spinner.success(
-				`wrote ${result.written.length}, copied ${result.copied.length}, skipped ${result.skipped.length}, removed ${removed.length}`,
+				`wrote ${result.written.length}, copied ${result.copied.length}, aligned ${result.skipped.length}, removed ${removed.length}`,
 			)
 		} catch (error) {
 			spinner.failure(describe(error))

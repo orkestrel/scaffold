@@ -49,11 +49,13 @@ scaffold catalog [--root <dir> ...] [--target <repo>] [--offline] [--apply]
   each dependency's current guide + registry version instead of the vendored default.
 - **`sync`** — refreshes vendored dependency mirrors and reports version drift for an
   existing package.
-- **`audit`** — diffs a target against the plan its own manifest implies and reports
-  drift as data; exits nonzero the moment any drift is found, so it gates CI cleanly.
-  `--live` additionally checks upstream guide/version freshness.
-- **`repair`** — re-derives the plan from the audit and re-applies only the drifted
-  artifacts; dry-run by default, `--apply` writes the fixes, `--prune` also removes
+- **`audit`** — a whole-plan conformance report: diffs a target against the FULL plan
+  its own manifest implies (host AND generated artifacts alike) and reports drift as
+  data, findings and all; exits nonzero the moment any drift is found, so it gates CI
+  cleanly. `--live` additionally checks upstream guide/version freshness.
+- **`repair`** — restores the shared HOST set only (generated source/tests/configs are
+  never touched); re-derives the plan from the audit and re-applies only the drifted
+  host artifacts; dry-run by default, `--apply` writes the fixes, `--prune` also removes
   target-only files the plan no longer declares.
 - **`mirror`** — propagates the line's shared, host-owned files (`AGENTS.md`,
   `CLAUDE.md`, `.claude/`, `scripts/`, the shared dotfiles, …) from this canonical
