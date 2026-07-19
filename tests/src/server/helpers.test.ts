@@ -4,7 +4,13 @@ import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from
 import { createServer } from 'node:net'
 import { describe, expect, it } from 'vitest'
 import { blueprint, diffPlan, isScaffoldError, validateBlueprint } from '@src/core'
-import { deriveBlueprint, discoverPackages, hostRoot, hydratePlan } from '@src/server'
+import {
+	catalogPackages,
+	deriveBlueprint,
+	discoverPackages,
+	hostRoot,
+	hydratePlan,
+} from '@src/server'
 import { buildTempDirectory, WORKSPACE_ROOT } from '../../setupServer.js'
 
 // Writes a minimal `package.json` plus each requested `src/<surface>/` directory —
@@ -273,6 +279,151 @@ describe('discoverPackages', () => {
 			expect(result.every((path) => isAbsolute(path))).toBe(true)
 		} finally {
 			await root.cleanup()
+		}
+	})
+})
+
+// ── catalogPackages ──────────────────────────────────────────────────────────
+
+/** Writes a package with its `package.json` (name/version) and, when given, its `guides/src/<short>.md`. */
+function writeCatalogPackage(
+	rootPath: string,
+	directoryName: string,
+	options: {
+		readonly name: string
+		readonly version: string
+		readonly guide?: string
+	},
+): void {
+	const directory = join(rootPath, directoryName)
+	writeManifest(directory, { name: options.name, version: options.version })
+	if (options.guide !== undefined) {
+		const short = options.name.slice('@orkestrel/'.length)
+		mkdirSync(join(directory, 'guides', 'src'), { recursive: true })
+		writeFileSync(join(directory, 'guides', 'src', `${short}.md`), options.guide, 'utf8')
+	}
+}
+
+describe('catalogPackages', () => {
+	it('extracts each package guide’s first blockquote, flattened to one line', async () => {
+		const root = await buildTempDirectory()
+		try {
+			writeCatalogPackage(root.path, 'router', {
+				name: '@orkestrel/router',
+				version: '0.0.5',
+				guide: '# Router\n\n> A tiny\n> hash-router.\n\n## Surface\n',
+			})
+
+			const result = catalogPackages([root.path])
+
+			expect(result).toEqual([
+				{ name: '@orkestrel/router', version: '0.0.5', description: 'A tiny hash-router.' },
+			])
+		} finally {
+			await root.cleanup()
+		}
+	})
+
+	it('takes ONLY the first paragraph of a multi-paragraph blockquote overview, never the whole quote glued together', async () => {
+		const root = await buildTempDirectory()
+		try {
+			writeCatalogPackage(root.path, 'router', {
+				name: '@orkestrel/router',
+				version: '0.0.5',
+				guide:
+					'# Router\n\n> A tiny\n> hash-router.\n>\n> Deliberately minimal — no history mode,\n> no nesting.\n\n## Surface\n',
+			})
+
+			const result = catalogPackages([root.path])
+
+			expect(result).toEqual([
+				{ name: '@orkestrel/router', version: '0.0.5', description: 'A tiny hash-router.' },
+			])
+		} finally {
+			await root.cleanup()
+		}
+	})
+
+	it('yields an empty description for a package missing its guide entirely', async () => {
+		const root = await buildTempDirectory()
+		try {
+			writeCatalogPackage(root.path, 'headless', {
+				name: '@orkestrel/headless',
+				version: '0.0.1',
+			})
+
+			const result = catalogPackages([root.path])
+
+			expect(result).toEqual([{ name: '@orkestrel/headless', version: '0.0.1', description: '' }])
+		} finally {
+			await root.cleanup()
+		}
+	})
+
+	it('yields an empty description for a guide with no blockquote', async () => {
+		const root = await buildTempDirectory()
+		try {
+			writeCatalogPackage(root.path, 'plain', {
+				name: '@orkestrel/plain',
+				version: '0.0.1',
+				guide: '# Plain\n\nJust a paragraph, no blockquote at all.\n',
+			})
+
+			const result = catalogPackages([root.path])
+
+			expect(result).toEqual([{ name: '@orkestrel/plain', version: '0.0.1', description: '' }])
+		} finally {
+			await root.cleanup()
+		}
+	})
+
+	it('ignores a non-@orkestrel directory', async () => {
+		const root = await buildTempDirectory()
+		try {
+			writeCatalogPackage(root.path, 'router', {
+				name: '@orkestrel/router',
+				version: '0.0.5',
+				guide: '# Router\n\n> A tiny hash-router.\n',
+			})
+			writeManifest(join(root.path, 'not-orkestrel'), { name: 'some-other-package' })
+
+			const result = catalogPackages([root.path])
+
+			expect(result.map((entry) => entry.name)).toEqual(['@orkestrel/router'])
+		} finally {
+			await root.cleanup()
+		}
+	})
+
+	it('merges across multiple roots, code-unit sorted — a later root wins on a repeated name', async () => {
+		const first = await buildTempDirectory()
+		const second = await buildTempDirectory()
+		try {
+			writeCatalogPackage(first.path, 'router', {
+				name: '@orkestrel/router',
+				version: '0.0.1',
+				guide: '# Router\n\n> Stale description.\n',
+			})
+			writeCatalogPackage(second.path, 'router', {
+				name: '@orkestrel/router',
+				version: '0.0.2',
+				guide: '# Router\n\n> Fresh description.\n',
+			})
+			writeCatalogPackage(second.path, 'alpha', {
+				name: '@orkestrel/alpha',
+				version: '0.0.1',
+				guide: '# Alpha\n\n> An alpha package.\n',
+			})
+
+			const result = catalogPackages([first.path, second.path])
+
+			expect(result).toEqual([
+				{ name: '@orkestrel/alpha', version: '0.0.1', description: 'An alpha package.' },
+				{ name: '@orkestrel/router', version: '0.0.2', description: 'Fresh description.' },
+			])
+		} finally {
+			await first.cleanup()
+			await second.cleanup()
 		}
 	})
 })

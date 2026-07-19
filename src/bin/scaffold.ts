@@ -1,12 +1,13 @@
 // The `#!/usr/bin/env node` shebang is re-emitted by the build's `output.banner`, not source.
-import { existsSync } from 'node:fs'
-import { basename } from 'node:path'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { basename, join } from 'node:path'
 import { parseArgs } from 'node:util'
-import type { Audit, Blueprint, Dependency, Group, Plan, SyncReport } from '@src/core'
+import type { Audit, Blueprint, CatalogEntry, Dependency, Group, Plan, SyncReport } from '@src/core'
 import {
 	auditToReview,
 	blueprint,
 	blueprintToPlan,
+	catalogToBlock,
 	createCompiler,
 	dependency,
 	DEPENDENCY_NAME_PATTERN,
@@ -21,6 +22,7 @@ import {
 	syncToReview,
 } from '@src/core'
 import {
+	catalogPackages,
 	createMaterializer,
 	createSync,
 	deriveBlueprint,
@@ -34,7 +36,7 @@ import { createReporter, createSpinner } from '@orkestrel/console'
 import { createServerSink } from '@orkestrel/console/server'
 import { createTerminal } from '@orkestrel/terminal/server'
 
-const USAGE = `Usage: scaffold <new|sync|audit|repair|mirror> [options]
+const USAGE = `Usage: scaffold <new|sync|audit|repair|mirror|catalog> [options]
 
   new <name> [--surfaces a,b] [--deps x,y] [--apply] [--target <path>] [--host <path>]
     Create a package. Prompts interactively for a missing name or surfaces on a TTY.
@@ -58,6 +60,13 @@ const USAGE = `Usage: scaffold <new|sync|audit|repair|mirror> [options]
   mirror [--root .] [--apply] [--prune] [--host <path>]
     Fleet-wide host-origin audit/repair across every @orkestrel package under
     root; excludes .github/workflows/ci.yml (repo-flavored — use repair --apply).
+
+  catalog [--root <dir> ...] [--target <repo>] [--apply]
+    Regenerate the fleet package catalog table embedded in
+    <target>/.claude/agents/orkestrel.md between its <!-- catalog:start -->
+    / <!-- catalog:end --> markers, sourced from every --root's discovered
+    packages (repeatable; default: cwd) and each package's own guide's first
+    blockquote. Dry-run reports drift (nonzero on any); --apply writes.
 
 Flags: --help prints this text; a repeated flag keeps its LAST occurrence.
 `
@@ -86,7 +95,7 @@ function parseArguments() {
 			deps: { type: 'string' },
 			groups: { type: 'string' },
 			target: { type: 'string' },
-			root: { type: 'string' },
+			root: { type: 'string', multiple: true },
 			host: { type: 'string' },
 			apply: { type: 'boolean', default: false },
 			prune: { type: 'boolean', default: false },
@@ -402,7 +411,7 @@ if (command === undefined) {
 	materializer.destroy()
 	process.exit(0)
 } else if (command === 'mirror') {
-	const root = values.root ?? '.'
+	const root = values.root?.[0] ?? '.'
 	const packages = discoverPackages(root)
 	if (packages.length === 0) {
 		fail(`No @orkestrel packages found under "${root}"`)
@@ -482,6 +491,80 @@ if (command === undefined) {
 
 	reporter.line(`total: ${drifted} drifted, ${failed} failed`)
 	process.exit(drifted > 0 || failed > 0 ? 1 : 0)
+} else if (command === 'catalog') {
+	// `scaffold catalog` — regenerate the fleet package catalog embedded in
+	// <target>/.claude/agents/orkestrel.md between its marker comments.
+	const roots = values.root ?? [process.cwd()]
+	const catalogTarget = values.target ?? '.'
+
+	let entries: readonly CatalogEntry[]
+	try {
+		entries = catalogPackages(roots)
+	} catch (error) {
+		if (isScaffoldError(error)) {
+			fail(describe(error))
+		} else {
+			fail(
+				describe(
+					new ScaffoldError('TARGET', `Failed to read fleet root(s): ${roots.join(', ')}`, {
+						roots,
+						error,
+					}),
+				),
+			)
+		}
+	}
+
+	const block = catalogToBlock(entries)
+	const agentPath = join(catalogTarget, '.claude', 'agents', 'orkestrel.md')
+	let current: string
+	try {
+		current = readFileSync(agentPath, 'utf8')
+	} catch (error) {
+		fail(
+			describe(
+				new ScaffoldError('TARGET', `Failed to read ${agentPath}`, { path: agentPath, error }),
+			),
+		)
+	}
+
+	const startMarker = '<!-- catalog:start -->'
+	const endMarker = '<!-- catalog:end -->'
+	const startIndex = current.indexOf(startMarker)
+	const endIndex = current.indexOf(endMarker)
+	if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) {
+		fail(
+			describe(
+				new ScaffoldError(
+					'TARGET',
+					`Markers "${startMarker}" / "${endMarker}" not found in ${agentPath}`,
+					{ path: agentPath },
+				),
+			),
+		)
+	}
+
+	const before = current.slice(0, startIndex + startMarker.length)
+	const after = current.slice(endIndex)
+	const updated = `${before}\n\n${block}\n${after}`
+
+	const missingDescription = entries
+		.filter((entry) => entry.description.length === 0)
+		.map((entry) => entry.name)
+	reporter.line(`${entries.length} package${entries.length === 1 ? '' : 's'}`)
+	if (missingDescription.length > 0) {
+		reporter.line(
+			`${missingDescription.length} without guide description: ${missingDescription.join(', ')}`,
+		)
+	}
+
+	if (updated === current) process.exit(0) // clean — already in sync
+
+	if (!values.apply) process.exit(1) // dry-run: drift found, report only
+
+	writeFileSync(agentPath, updated, 'utf8')
+	reporter.status('success', `wrote ${agentPath}`)
+	process.exit(0)
 } else {
 	process.stderr.write(`unrecognized command "${command}"\n\n${USAGE}`)
 	process.exit(1)

@@ -2,6 +2,7 @@ import type { TableAlign, TableNode } from '@orkestrel/markdown'
 import type {
 	Audit,
 	Blueprint,
+	CatalogEntry,
 	Category,
 	Dependency,
 	Drift,
@@ -418,6 +419,46 @@ export function syncToReview(report: SyncReport): string {
 		)
 	}
 	return sections.join('\n')
+}
+
+/**
+ * Project a fleet package catalog into a markdown table — the block
+ * `.claude/agents/orkestrel.md`'s catalog markers wrap.
+ *
+ * @param entries - The catalog rows to render.
+ * @remarks
+ * Deduplicated by `name` (a later entry for a repeated name wins), then
+ * code-unit sorted by `name`. An empty `description` renders as `—` (an em
+ * dash), never a blank cell. Deterministic — same input, same output, every
+ * time — via `alignTable`; trailing-newline terminated.
+ * @returns The aligned GFM table string.
+ *
+ * @example
+ * ```ts
+ * import { catalogToBlock } from '@orkestrel/scaffold'
+ *
+ * catalogToBlock([
+ * 	{ name: '@orkestrel/router', version: '0.0.5', description: 'A tiny hash-router.' },
+ * 	{ name: '@orkestrel/contract', version: '0.0.5', description: '' },
+ * ])
+ * // '| Package             | Version | Description         |\n| … |\n| @orkestrel/contract | 0.0.5   | —                   |\n…'
+ * ```
+ */
+export function catalogToBlock(entries: readonly CatalogEntry[]): string {
+	const merged = new Map<string, CatalogEntry>()
+	for (const entry of entries) merged.set(entry.name, entry)
+	const sorted = [...merged.values()].sort((a, b) =>
+		a.name < b.name ? -1 : a.name > b.name ? 1 : 0,
+	)
+	const table = alignTable(
+		['Package', 'Version', 'Description'],
+		sorted.map((entry) => [
+			entry.name,
+			entry.version,
+			entry.description.length === 0 ? '—' : entry.description,
+		]),
+	)
+	return `${table}\n`
 }
 
 /**

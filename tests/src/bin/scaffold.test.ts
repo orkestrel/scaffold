@@ -852,6 +852,161 @@ describe('scaffold bin', () => {
 		})
 	})
 
+	describe('catalog', () => {
+		/** Writes a discoverable `@orkestrel/*` package: `package.json` (name/version) plus, when given, its `guides/src/<short>.md`. */
+		function writeCatalogPackage(
+			rootPath: string,
+			directoryName: string,
+			options: { readonly name: string; readonly version: string; readonly guide?: string },
+		): void {
+			const directory = join(rootPath, directoryName)
+			mkdirSync(directory, { recursive: true })
+			writeFileSync(
+				join(directory, 'package.json'),
+				JSON.stringify({ name: options.name, version: options.version }),
+			)
+			if (options.guide !== undefined) {
+				const short = options.name.slice('@orkestrel/'.length)
+				mkdirSync(join(directory, 'guides', 'src'), { recursive: true })
+				writeFileSync(join(directory, 'guides', 'src', `${short}.md`), options.guide, 'utf8')
+			}
+		}
+
+		/** Writes a fixture `.claude/agents/orkestrel.md` carrying the catalog markers around `body`. */
+		function writeAgentFixture(targetPath: string, body: string): string {
+			const agentPath = join(targetPath, '.claude', 'agents', 'orkestrel.md')
+			mkdirSync(dirname(agentPath), { recursive: true })
+			writeFileSync(
+				agentPath,
+				`# orkestrel\n\n## The catalog\n\n<!-- catalog:start -->\n${body}<!-- catalog:end -->\n\n## Other section\n`,
+			)
+			return agentPath
+		}
+
+		it('dry-run: reports the package count and exits nonzero on marker drift', async () => {
+			const root = await buildTempDirectory()
+			const target = await buildTempDirectory()
+			try {
+				writeCatalogPackage(root.path, 'router', {
+					name: '@orkestrel/router',
+					version: '0.0.5',
+					guide: '# Router\n\n> A tiny hash-router.\n',
+				})
+				writeCatalogPackage(root.path, 'headless', {
+					name: '@orkestrel/headless',
+					version: '0.0.1',
+				})
+				const agentPath = writeAgentFixture(target.path, '\nstale content\n\n')
+
+				const result = runBin(['catalog', '--root', root.path, '--target', target.path])
+
+				expect(result.status).toBe(1)
+				expect(result.stdout).toContain('2 packages')
+				expect(result.stdout).toContain('1 without guide description: @orkestrel/headless')
+				expect(readFileSync(agentPath, 'utf8')).toContain('stale content') // dry-run writes nothing
+			} finally {
+				await root.cleanup()
+				await target.cleanup()
+			}
+		})
+
+		it('--apply: writes the spliced table and a re-run exits 0 (clean)', async () => {
+			const root = await buildTempDirectory()
+			const target = await buildTempDirectory()
+			try {
+				writeCatalogPackage(root.path, 'router', {
+					name: '@orkestrel/router',
+					version: '0.0.5',
+					guide: '# Router\n\n> A tiny hash-router.\n',
+				})
+				const agentPath = writeAgentFixture(target.path, '\nstale content\n\n')
+
+				const applied = runBin(['catalog', '--root', root.path, '--target', target.path, '--apply'])
+				expect(applied.status).toBe(0)
+
+				const written = readFileSync(agentPath, 'utf8')
+				expect(written).toContain('@orkestrel/router')
+				expect(written).toContain('A tiny hash-router.')
+				expect(written).not.toContain('stale content')
+				expect(written).toContain('## Other section') // content after the end marker survives
+
+				const rerun = runBin(['catalog', '--root', root.path, '--target', target.path])
+				expect(rerun.status).toBe(0)
+			} finally {
+				await root.cleanup()
+				await target.cleanup()
+			}
+		})
+
+		it('a target missing either catalog marker exits a coded TARGET failure', async () => {
+			const root = await buildTempDirectory()
+			const target = await buildTempDirectory()
+			try {
+				writeCatalogPackage(root.path, 'router', { name: '@orkestrel/router', version: '0.0.5' })
+				const agentPath = join(target.path, '.claude', 'agents', 'orkestrel.md')
+				mkdirSync(dirname(agentPath), { recursive: true })
+				writeFileSync(agentPath, '# orkestrel\n\nNo markers here at all.\n')
+
+				const result = runBin(['catalog', '--root', root.path, '--target', target.path])
+
+				expect(result.status).toBe(1)
+				const output = result.stdout + result.stderr
+				expect(output).toContain('[TARGET]')
+				expect(output).toContain('catalog:start')
+			} finally {
+				await root.cleanup()
+				await target.cleanup()
+			}
+		})
+
+		it('merges multiple --root values into one sorted, deduplicated table', async () => {
+			const first = await buildTempDirectory()
+			const second = await buildTempDirectory()
+			const target = await buildTempDirectory()
+			try {
+				writeCatalogPackage(first.path, 'router', {
+					name: '@orkestrel/router',
+					version: '0.0.1',
+					guide: '# Router\n\n> Stale.\n',
+				})
+				writeCatalogPackage(second.path, 'router', {
+					name: '@orkestrel/router',
+					version: '0.0.2',
+					guide: '# Router\n\n> Fresh.\n',
+				})
+				writeCatalogPackage(second.path, 'alpha', {
+					name: '@orkestrel/alpha',
+					version: '0.0.1',
+					guide: '# Alpha\n\n> An alpha package.\n',
+				})
+				const agentPath = writeAgentFixture(target.path, '\n')
+
+				const result = runBin([
+					'catalog',
+					'--root',
+					first.path,
+					'--root',
+					second.path,
+					'--target',
+					target.path,
+					'--apply',
+				])
+
+				expect(result.status).toBe(0)
+				const written = readFileSync(agentPath, 'utf8')
+				expect(written).toContain('@orkestrel/router | 0.0.2') // the second root's entry wins
+				expect(written).not.toContain('@orkestrel/router | 0.0.1')
+				expect(written).toContain('Fresh.')
+				expect(written).toContain('@orkestrel/alpha')
+				expect(result.stdout).toContain('2 packages')
+			} finally {
+				await first.cleanup()
+				await second.cleanup()
+				await target.cleanup()
+			}
+		})
+	})
+
 	describe('argument handling', () => {
 		it('--help: prints the three-verb usage and exits 0', () => {
 			const result = runBin(['--help'])
@@ -888,7 +1043,7 @@ describe('scaffold bin', () => {
 			expect(result.stdout).toMatch(/keeps its LAST occurrence/i)
 		})
 
-		it('--help: lists all five verbs and the --host/--prune/--root flags', () => {
+		it('--help: lists all six verbs and the --host/--prune/--root flags', () => {
 			const result = runBin(['--help'])
 			expect(result.status).toBe(0)
 			expect(result.stdout).toContain('new <name>')
@@ -896,6 +1051,7 @@ describe('scaffold bin', () => {
 			expect(result.stdout).toContain('audit')
 			expect(result.stdout).toContain('repair')
 			expect(result.stdout).toContain('mirror')
+			expect(result.stdout).toContain('catalog')
 			expect(result.stdout).toContain('--host')
 			expect(result.stdout).toContain('--prune')
 			expect(result.stdout).toContain('--root')

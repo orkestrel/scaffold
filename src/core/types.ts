@@ -24,6 +24,21 @@ export type Group =
 /** What a declared `Member` IS in the scaffolded surface. */
 export type Category = 'type' | 'constant' | 'factory' | 'entity'
 
+/**
+ * One fleet package's catalog row — the `orkestrel` agent's package-catalog
+ * section, derived rather than hand-maintained.
+ *
+ * @remarks
+ * `description` is the flattened text of the package's own guide's FIRST
+ * blockquote; empty (`''`) when that guide is missing, unreadable, or
+ * carries no blockquote — never a placeholder string.
+ */
+export interface CatalogEntry {
+	readonly name: string
+	readonly version: string
+	readonly description: string
+}
+
 /** One `Finding`'s verdict against the target's current content. */
 export type Drift = 'aligned' | 'stale' | 'missing' | 'foreign'
 

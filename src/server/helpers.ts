@@ -1,22 +1,30 @@
-import type { Artifact, Blueprint, Dependency, Plan } from '@src/core'
+import type { Artifact, Blueprint, CatalogEntry, Dependency, Plan } from '@src/core'
+import type { BlockquoteNode } from '@orkestrel/markdown'
 import type { ManifestEntry } from './types.js'
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import {
+	flattenText,
+	isBlockquoteNode,
+	isParagraphNode,
+	parseDocument,
+	walkNodes,
+} from '@orkestrel/markdown'
 import { blueprint, DEFAULT_ENGINES, DEFAULT_VERSION, ScaffoldError } from '@src/core'
 
 // ============================================================================
 //  @orkestrel/scaffold/server — helpers.ts (AGENTS §5 source of truth). The
 //  server-only helpers `blueprintToPlan`'s green-field target law, the
 //  `diffPlan`-feeding target reader, `Sync`'s manifest reader, the
-//  `Materializer`'s vendored-host manifest, and the scaffold/mirror script
-//  retirement primitives depend on: `isVacant`, `readTarget`, `readManifest`,
-//  `isRecord`, `readHostManifest`, `listFiles`, `hydratePlan`,
-//  `discoverPackages`, `hostRoot`, and `deriveBlueprint`. `isManifestEntry`
-//  (nested in `readHostManifest`) and `locateHostSource` (nested in
-//  `hydratePlan`) are single-call-site shape guards / lookups, never
-//  imported elsewhere — each lives as a local closure of its one caller
-//  rather than a module-scope declaration.
+//  `Materializer`'s vendored-host manifest, the scaffold/mirror script
+//  retirement primitives, and the `catalog` bin verb depend on: `isVacant`,
+//  `readTarget`, `readManifest`, `isRecord`, `readHostManifest`, `listFiles`,
+//  `hydratePlan`, `discoverPackages`, `hostRoot`, `deriveBlueprint`, and
+//  `catalogPackages`. `isManifestEntry` (nested in `readHostManifest`) and
+//  `locateHostSource` (nested in `hydratePlan`) are single-call-site shape
+//  guards / lookups, never imported elsewhere — each lives as a local
+//  closure of its one caller rather than a module-scope declaration.
 // ============================================================================
 
 /**
@@ -469,4 +477,85 @@ export function discoverPackages(root: string): readonly string[] {
 		if (typeof name === 'string' && name.startsWith('@orkestrel/')) packages.push(directory)
 	}
 	return packages.sort()
+}
+
+/**
+ * Build the fleet package catalog — one `CatalogEntry` per `@orkestrel/*`
+ * package discovered under each root, its description drawn from its own
+ * guide's FIRST blockquote.
+ *
+ * @param roots - The fleet root directories to scan (each walked via `discoverPackages`).
+ * @remarks
+ * Per discovered package directory: `name` / `version` come from its own
+ * `package.json`; `description` is the first paragraph of the guide's opening
+ * blockquote — the flattened text of the FIRST `ParagraphNode` among the
+ * FIRST `BlockquoteNode` found's (depth-first, pre-order, via `walkNodes`)
+ * TOP-LEVEL children in its `guides/src/<short>.md` (`<short>` = `name` with
+ * the `@orkestrel/` prefix stripped), parsed with `@orkestrel/markdown`'s
+ * `parseDocument` — a multi-paragraph blockquote overview yields only its
+ * FIRST paragraph, never the whole quote glued together; embedded newlines
+ * collapse to single spaces, and surrounding whitespace trims. A
+ * missing/unreadable guide, a guide carrying no blockquote, or a blockquote
+ * with no top-level paragraph child, yields `description: ''`, never a
+ * thrown error. Entries merge across `roots` (a later root's entry for a
+ * repeated `name` wins), then code-unit sort by `name`. An unreadable ROOT
+ * itself is NOT wrapped here — whatever `discoverPackages` throws for it
+ * propagates as-is; the bin layer is responsible for coding that failure
+ * `TARGET`.
+ * @returns The merged, sorted `CatalogEntry[]`.
+ *
+ * @example
+ * ```ts
+ * import { catalogPackages } from '@orkestrel/scaffold/server'
+ *
+ * catalogPackages(['/repos']) // [{ name: '@orkestrel/contract', version: '0.0.5', description: '…' }, …]
+ * ```
+ */
+export function catalogPackages(roots: readonly string[]): readonly CatalogEntry[] {
+	const merged = new Map<string, CatalogEntry>()
+	for (const root of roots) {
+		for (const directory of discoverPackages(root)) {
+			let parsed: unknown
+			try {
+				parsed = JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8'))
+			} catch {
+				continue
+			}
+			if (!isRecord(parsed)) continue
+			const name = parsed.name
+			if (typeof name !== 'string' || !name.startsWith('@orkestrel/')) continue
+			const version = typeof parsed.version === 'string' ? parsed.version : DEFAULT_VERSION
+			const short = name.slice('@orkestrel/'.length)
+			const guidePath = join(directory, 'guides', 'src', `${short}.md`)
+			let description = ''
+			if (existsSync(guidePath)) {
+				try {
+					const document = parseDocument(readFileSync(guidePath, 'utf8'))
+					let quote: BlockquoteNode | undefined
+					for (const node of walkNodes(document)) {
+						if (isBlockquoteNode(node)) {
+							quote = node
+							break
+						}
+					}
+					if (quote !== undefined) {
+						// Only the FIRST top-level paragraph child of the quote — a
+						// multi-paragraph blockquote overview (an opening sentence
+						// followed by elaboration) would otherwise flatten its ENTIRE
+						// quote into one verbose row; taking just the first paragraph
+						// keeps the catalog description concise, one line per package.
+						const paragraph = quote.children.find((child) => isParagraphNode(child))
+						if (paragraph !== undefined) {
+							const text = flattenText(paragraph)
+							description = text.replace(/\s+/g, ' ').trim()
+						}
+					}
+				} catch {
+					description = ''
+				}
+			}
+			merged.set(name, { name, version, description })
+		}
+	}
+	return [...merged.values()].sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
 }

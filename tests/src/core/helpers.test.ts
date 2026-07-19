@@ -6,6 +6,7 @@ import {
 	blueprint,
 	blueprintToMembers,
 	blueprintToPlan,
+	catalogToBlock,
 	dependency,
 	diffPlan,
 	manifestToDependencies,
@@ -140,6 +141,72 @@ describe('alignTable', () => {
 
 		expect(lines[0]).toBe('| A   |')
 		expect(lines[1]).toBe('| --- |')
+	})
+})
+
+describe('catalogToBlock', () => {
+	it('renders a Package/Version/Description table, trailing-newline terminated', () => {
+		const block = catalogToBlock([
+			{ name: '@orkestrel/router', version: '0.0.5', description: 'A tiny hash-router.' },
+		])
+
+		expect(block.endsWith('\n')).toBe(true)
+		const lines = block.trimEnd().split('\n')
+		expect(lines[0]).toContain('Package')
+		expect(lines[0]).toContain('Version')
+		expect(lines[0]).toContain('Description')
+		expect(lines[2]).toContain('@orkestrel/router')
+		expect(lines[2]).toContain('0.0.5')
+		expect(lines[2]).toContain('A tiny hash-router.')
+	})
+
+	it('renders an empty description as an em dash, never a blank cell', () => {
+		const block = catalogToBlock([
+			{ name: '@orkestrel/contract', version: '0.0.5', description: '' },
+		])
+		const row = block.trimEnd().split('\n')[2] ?? ''
+
+		expect(row).toContain('—')
+	})
+
+	it('code-unit sorts by name regardless of input order', () => {
+		const block = catalogToBlock([
+			{ name: '@orkestrel/zeta', version: '0.0.1', description: 'z' },
+			{ name: '@orkestrel/alpha', version: '0.0.1', description: 'a' },
+		])
+		const rows = block.trimEnd().split('\n').slice(2)
+
+		expect(rows[0]).toContain('@orkestrel/alpha')
+		expect(rows[1]).toContain('@orkestrel/zeta')
+	})
+
+	it('dedupes by name — a later entry for a repeated name wins', () => {
+		const block = catalogToBlock([
+			{ name: '@orkestrel/router', version: '0.0.1', description: 'stale' },
+			{ name: '@orkestrel/router', version: '0.0.2', description: 'fresh' },
+		])
+		const rows = block.trimEnd().split('\n').slice(2)
+
+		expect(rows).toHaveLength(1)
+		expect(rows[0]).toContain('0.0.2')
+		expect(rows[0]).toContain('fresh')
+		expect(rows[0]).not.toContain('stale')
+	})
+
+	it('is deterministic — identical input yields byte-identical output', () => {
+		const entries = [
+			{ name: '@orkestrel/router', version: '0.0.5', description: 'A tiny hash-router.' },
+			{ name: '@orkestrel/contract', version: '0.0.5', description: '' },
+		]
+
+		expect(catalogToBlock(entries)).toBe(catalogToBlock(entries))
+	})
+
+	it('renders an empty entries list as the header + delimiter only', () => {
+		const block = catalogToBlock([])
+		const lines = block.trimEnd().split('\n')
+
+		expect(lines).toHaveLength(2)
 	})
 })
 

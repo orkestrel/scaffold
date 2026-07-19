@@ -7,17 +7,21 @@
 > and every downstream product (the files on disk, a review document, an audit of an
 > existing package, a dry-run summary) is **projected** from that one `Plan`, never
 > authored separately.
+>
 > FORWARD: a `Blueprint` is **drafted** into artifacts — the per-surface variant matrix as
 > data (`SURFACE_MATRIX`) selects the `exports` map, the per-surface configs, and the test
 > projects; caller **`overrides`** layer over the shipped defaults — the fail-closed
 > **gate** validates the name, surfaces, and dependencies, and a passing plan is **pinned**
 > (`trace` + `hash` derived from content, never authored).
+>
 > REVERSE: `planToReview` / `planToSummary` render the plan for humans; `diffPlan` audits
 > it against a target's current content and returns **drift findings as data**; the server
 > surface's `Materializer` is the impure WRITE step.
+>
 > LIVE: the server surface's `Sync` entity fetches each declared dependency's guide and
 > registry version from upstream — reporting freshness, refreshing mirrors under an explicit
 > apply — the ONLY part of the system that touches the network.
+>
 > This module runs no `git`, invokes no `npm`, and embeds no LLM; its only network access is
 > the server `Sync` entity's read-only fetch of upstream guides and registry versions. The
 > core is pure (no `node:*`, no clocks, no randomness — `trace` and `hash` derive from
@@ -37,14 +41,9 @@
 The problem this module solves: standing up (or auditing) an `@orkestrel` package is a
 mechanical projection of the line's conventions onto a name — the exports map for the
 variant, the per-surface build configs, the barrels, the guide stubs, the parity harness —
-yet the only tools the line had were `scripts/scaffold.sh` and `scripts/mirror.sh`: a
-core-only bash script whose every template is a **frozen heredoc**, so when a convention
-moves, each repo's copy silently rots and the char-width table padding is hand-rolled with
-`printf` byte math a UTF-8 cell defeats, plus a second script that re-copied the governance
-files across the fleet with no drift accounting of its own. This package **fully replaces
-both** — creation and repair through the bin's `new` / `sync` / `audit` / `repair` verbs, and
-fleet-wide propagation through the bin's `mirror` verb, which supersedes `mirror.sh`'s job
-entirely. Rendered defaults ship as **versioned package data** — frozen `TemplateDefinition`s filled
+and this package IS that projection: creation and repair through the bin's `new` / `sync` /
+`audit` / `repair` verbs, and fleet-wide propagation through the bin's `mirror` verb.
+Rendered defaults ship as **versioned package data** — frozen `TemplateDefinition`s filled
 by `@orkestrel/template`'s pure engine — so a convention change is a version bump here, not
 a hand-edit in every repo. The module is deliberately **mechanism, never policy** (AGENTS
 §21): the judgment calls (the name, the description, the keywords, which surfaces, which
@@ -123,6 +122,7 @@ AROUND the synchronous `compile` / write, never inside them.
 | `Origin`                | type      | `'host' \| 'template' \| 'computed'` — how an `Artifact`'s content is produced: `host` byte-copied from the vendored data root, `template` filled from a frozen `TemplateDefinition` by `@orkestrel/template`'s pure fill engine, `computed` derived by the core's manifest/exports combination logic; the axis that decides whether it carries `source` (host) or `content` (template / computed).                                                                                                                                                                                             |
 | `Group`                 | type      | `'manifest' \| 'configs' \| 'source' \| 'tests' \| 'guides' \| 'docs' \| 'orchestration'` — the closed artifact-group vocabulary a plan selects over.                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | `Category`              | type      | `'type' \| 'constant' \| 'factory' \| 'entity'` — what a declared `Member` IS in the scaffolded surface.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `CatalogEntry`          | interface | `{ name, version, description }` — one fleet package's catalog row; `description` is the flattened text of that package's guide's FIRST blockquote, `''` when the guide is missing, unreadable, or carries no blockquote.                                                                                                                                                                                                                                                                                                                                                                       |
 | `Drift`                 | type      | `'aligned' \| 'stale' \| 'missing' \| 'foreign'` — one `Finding`'s verdict against the target's current content.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | `Freshness`             | type      | `'current' \| 'behind' \| 'missing' \| 'failed'` — one `GuideSync` / `VersionSync`'s currency against upstream (`missing` = an upstream `404`, `failed` = a transport fault).                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `CompileStage`          | type      | `'draft' \| 'gate' \| 'pin'` — the three fixed pipeline phases, in order.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
@@ -177,23 +177,23 @@ what keeps the core pure while still describing files it cannot itself read.
 
 ### Constants
 
-| API                       | Kind  | Summary                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| ------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SURFACES`                | const | The three `Surface` values, frozen — compose with `literalOf(...)` / `parseEnum(...)`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `ORIGINS`                 | const | The three `Origin` values, frozen.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `GROUPS`                  | const | The seven `Group` values, frozen — the artifact-group selection vocabulary.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `CATEGORIES`              | const | The four `Category` values, frozen.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `FRESHNESS`               | const | The four `Freshness` values, frozen — the currency axis `Sync` reports on.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `COMPILE_STAGES`          | const | `['draft', 'gate', 'pin']`, frozen — the pipeline phases in order.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `SURFACE_MATRIX`          | const | The per-surface variant matrix as data: per `Surface`, its `configs/src` files, Vitest project label, `exports` subpath, and build formats — the per-surface layer `blueprintToPlan` reads BENEATH the manifest and exports combination rules it applies on top.                                                                                                                                                                                                                                                                                                                                                        |
-| `HOST_PATHS`              | const | The byte-copied host artifact paths (`AGENTS.md`, `CLAUDE.md`, `LICENSE`, `.claude`, `scripts/deps.sh`, `scripts/cursor.sh`, `scripts/ollama.sh` — the SessionStart hooks, orchestration-grouped — `guides/src/guide.md` — the line-wide dev-tooling guide, guides-grouped — `.editorconfig`, `.gitattributes`, `.gitignore`, `.oxfmtrc.json`, `.oxlintrc.json`, `.oxlintignore`, `.prettierignore`, `.github/workflows/ci.yml`), frozen; `scripts/scaffold.sh`, `scripts/mirror.sh`, and the manual packaging recipe document are ALL RETIRED and never appear in this set — this package is now the sole living spec. |
-| `SCAFFOLD_RANGE`          | const | `'^0.0.1'` — the exact devDependency range a scaffolded package's `package.json` pins `@orkestrel/scaffold` at.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `NAME_PATTERN`            | const | The `/^[a-z][a-z0-9-]*$/` package-name RegExp, closed vocabulary as data.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `DEPENDENCY_NAME_PATTERN` | const | The `/^@orkestrel\/[a-z][a-z0-9-]*$/` dependency-name RegExp — every `Dependency.name` must be `@orkestrel`-scoped and NAME_PATTERN-shaped after the scope, closing the traversal vector a hand-built `../`-laced name would open through the pointer-artifact and `Sync.write` path derivation.                                                                                                                                                                                                                                                                                                                        |
-| `DEFAULT_VERSION`         | const | `'0.0.1'` — the starting version the `blueprint` builder fills.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `DEFAULT_ENGINES`         | const | `'>=22'` — the `engines.node` range the `blueprint` builder fills.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `COMPILER_ID`             | const | `'compiler'` — the default id for a `Compiler` orchestrator.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `TEMPLATES`               | const | The shipped, versioned `TemplateDefinition` data every `template`-origin artifact fills against (README, the own-guide stub, the guides index, the per-surface source stubs, the shared test recorder plus `parityTest` — the frozen `tests/guides/src/parity.test.ts` body — and `setupServer` / `setupBrowser`, the per-surface test-setup stubs) — placeholders documented per entry, frozen.                                                                                                                                                                                                                        |
+| API                       | Kind  | Summary                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SURFACES`                | const | The three `Surface` values, frozen — compose with `literalOf(...)` / `parseEnum(...)`.                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `ORIGINS`                 | const | The three `Origin` values, frozen.                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `GROUPS`                  | const | The seven `Group` values, frozen — the artifact-group selection vocabulary.                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `CATEGORIES`              | const | The four `Category` values, frozen.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `FRESHNESS`               | const | The four `Freshness` values, frozen — the currency axis `Sync` reports on.                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `COMPILE_STAGES`          | const | `['draft', 'gate', 'pin']`, frozen — the pipeline phases in order.                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `SURFACE_MATRIX`          | const | The per-surface variant matrix as data: per `Surface`, its `configs/src` files, Vitest project label, `exports` subpath, and build formats — the per-surface layer `blueprintToPlan` reads BENEATH the manifest and exports combination rules it applies on top.                                                                                                                                                                                                                                                 |
+| `HOST_PATHS`              | const | The byte-copied host artifact paths (`AGENTS.md`, `CLAUDE.md`, `LICENSE`, `.claude`, `scripts/deps.sh`, `scripts/cursor.sh`, `scripts/ollama.sh` — the SessionStart hooks, orchestration-grouped — `guides/src/guide.md` — the line-wide dev-tooling guide, guides-grouped — `.editorconfig`, `.gitattributes`, `.gitignore`, `.oxfmtrc.json`, `.oxlintrc.json`, `.oxlintignore`, `.prettierignore`, `.github/workflows/ci.yml`), frozen — the shared artifacts every `@orkestrel` repo's vendored host carries. |
+| `SCAFFOLD_RANGE`          | const | `'^0.0.1'` — the exact devDependency range a scaffolded package's `package.json` pins `@orkestrel/scaffold` at.                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `NAME_PATTERN`            | const | The `/^[a-z][a-z0-9-]*$/` package-name RegExp, closed vocabulary as data.                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `DEPENDENCY_NAME_PATTERN` | const | The `/^@orkestrel\/[a-z][a-z0-9-]*$/` dependency-name RegExp — every `Dependency.name` must be `@orkestrel`-scoped and NAME_PATTERN-shaped after the scope, closing the traversal vector a hand-built `../`-laced name would open through the pointer-artifact and `Sync.write` path derivation.                                                                                                                                                                                                                 |
+| `DEFAULT_VERSION`         | const | `'0.0.1'` — the starting version the `blueprint` builder fills.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `DEFAULT_ENGINES`         | const | `'>=22'` — the `engines.node` range the `blueprint` builder fills.                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `COMPILER_ID`             | const | `'compiler'` — the default id for a `Compiler` orchestrator.                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `TEMPLATES`               | const | The shipped, versioned `TemplateDefinition` data every `template`-origin artifact fills against (README, the own-guide stub, the guides index, the per-surface source stubs, the shared test recorder plus `parityTest` — the frozen `tests/guides/src/parity.test.ts` body — and `setupServer` / `setupBrowser`, the per-surface test-setup stubs) — placeholders documented per entry, frozen.                                                                                                                 |
 
 ```ts
 import {
@@ -220,7 +220,7 @@ NAME_PATTERN.test('Router') // false — the package-name law rejects a leading 
 DEPENDENCY_NAME_PATTERN.test('@orkestrel/contract') // true
 DEPENDENCY_NAME_PATTERN.test('@orkestrel/../etc') // false — closes the traversal vector
 HOST_PATHS.includes('scripts/deps.sh') // true — orchestration-grouped host artifact
-HOST_PATHS.includes('scripts/scaffold.sh') // false — retired, never vendored
+HOST_PATHS.includes('src/core/index.ts') // false — the host set covers shared artifacts, not source
 TEMPLATES.entity.placeholders // [{ name: 'pascal', … }] — the entity stub's one token
 ```
 
@@ -409,12 +409,14 @@ behind the `Compiler`, the `Sync` entity, and the projection surface. Projection
 | `planToSummary`          | function | Project a `Plan` into a `PlanSummary` — the artifact tally by `origin`, the surfaces, and the covered groups.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `pascalCase`             | function | Derive the PascalCase entity name from a lowercase-hyphen package name (`'my-router'` → `'MyRouter'`) — hyphens are word breaks.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `alignTable`             | function | Build a formatter-width-aligned GFM table string from header + row cell strings (+ optional `readonly TableAlign[]`) — the guide Surface-table emitter.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `catalogToBlock`         | function | Project a `CatalogEntry[]` into a markdown table via `alignTable` — deduplicated by `name` (a repeated name's LAST entry wins), code-unit sorted; an empty `description` renders `—` (an em dash). The block the `catalog` bin verb splices between `.claude/agents/orkestrel.md`'s markers.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 
 ```ts
 import {
 	alignTable,
 	blueprintToMembers,
 	blueprintToPlan,
+	catalogToBlock,
 	diffPlan,
 	manifestToDependencies,
 	pascalCase,
@@ -441,6 +443,11 @@ manifestToDependencies('{"dependencies":{"@orkestrel/contract":"^0.0.5"}}') // [
 rangeToFreshness('^0.0.5', '0.0.5') // 'current' — pinned to latest
 rangeToFreshness('^0.0.5', '0.0.7') // 'behind' — a newer patch is published
 
+catalogToBlock([
+	{ name: '@orkestrel/router', version: '0.0.5', description: 'A tiny hash-router.' },
+	{ name: '@orkestrel/contract', version: '0.0.5', description: '' },
+]) // '| Package             | Version | Description         |\n| … |\n| @orkestrel/contract | 0.0.5   | —                   |\n…' — empty description renders as an em dash
+
 alignTable(['API', 'Kind'], [['`createRouter`', 'function']]) // '| API           | Kind     |\n| … |'
 ```
 
@@ -450,8 +457,8 @@ STRUCTURE — `\|`-escaping any literal pipe inside a cell and emitting the alig
 row — at a flat 1-space cell padding. `alignTable` then re-pads BOTH the cells AND the
 delimiter row to per-column codepoint width; that re-pad is the whole capability, matching
 oxfmt's markdown re-padding so a generated guide passes `format:check` without a formatter
-run — the char-width-padding problem the retired `scripts/scaffold.sh` hand-rolled with
-byte-counting `printf`, now typed and tested. The `\|`-escape is load-bearing: an unescaped
+run — codepoint-aware re-padding so a CJK or other wide cell keeps every column aligned,
+typed and tested. The `\|`-escape is load-bearing: an unescaped
 pipe in a cell would
 split it into two columns and silently corrupt the table. Its optional `readonly
 TableAlign[]` is the `@orkestrel/markdown` alignment type, imported at the call site, never
@@ -489,7 +496,7 @@ createBlueprint({ name: 'Router', surfaces: [] }) // throws ScaffoldError('INVAL
 | `Materializer` | class | The materialization entity **(server)** — the impure WRITE surface; writes a plan (green-field) or repairs drift (into-existing).                                                                                  |
 | `Sync`         | class | The upstream-synchronization entity **(server)** — the impure FETCH sibling of `Materializer`; fetches dependency guides + registry versions, refreshes vendored mirrors under the containment law. Promise-based. |
 
-The server surface also ships ten helpers and its factories:
+The server surface also ships eleven helpers and its factories:
 
 | API                | Kind     | Summary                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | ------------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -503,6 +510,7 @@ The server surface also ships ten helpers and its factories:
 | `readHostManifest` | function | **(server)** Read and validate a vendored host root's `manifest.json`, when present — returns its `readonly ManifestEntry[]`, or `undefined` when `host` has no `manifest.json` (the raw-root 1:1 fallback); throws `ScaffoldError('TARGET', …)` when the file exists but is unreadable, invalid JSON, or not an array of `ManifestEntry`.                                                                                                                                                                                                                                                   |
 | `listFiles`        | function | **(server)** Recursively list a directory's files as root-relative, posix-style paths — `[]` when the directory is absent; the walk `Materializer.prune` uses to enumerate a vendored/target directory's current files.                                                                                                                                                                                                                                                                                                                                                                      |
 | `isRecord`         | function | **(server)** Whether `value` is a plain object — not `null`, not an array — narrowing to `Record<string, unknown>`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `catalogPackages`  | function | **(server)** Build the fleet package catalog — one `CatalogEntry` per `@orkestrel/*` package discovered under each root (`discoverPackages`), its `description` the flattened text of the first paragraph of the guide's opening blockquote (parsed via `@orkestrel/markdown`'s `parseDocument` + `walkNodes`), `''` when the guide is missing/unreadable/blockquote-less/paragraph-less; merged across roots (a later root wins on a repeated name), code-unit sorted. An unreadable ROOT propagates whatever `discoverPackages` throws, unwrapped.                                         |
 
 ```ts
 import { createMaterializer, isVacant } from '@orkestrel/scaffold/server'
@@ -560,6 +568,15 @@ listFiles(`${host}/.claude/agents`) // ['scout.md', 'builder.md', …] — root-
 
 isRecord({ a: 1 }) // true
 isRecord(null) // false
+```
+
+```ts
+import { catalogPackages } from '@orkestrel/scaffold/server'
+import { catalogToBlock } from '@orkestrel/scaffold'
+
+const entries = catalogPackages(['/repos'])
+entries[0] // { name: '@orkestrel/contract', version: '0.0.5', description: '…' }
+catalogToBlock(entries) // the markdown table `scaffold catalog` splices into orkestrel.md
 ```
 
 ````
@@ -777,8 +794,8 @@ These invariants hold across `src/core` + `src/server` ↔ `scaffold.md`:
    applies the manifest and exports COMBINATION rules — a multi-surface package OMITS the
    top-level `types` field, a single-variant (server-only / browser-only) retargets its lone
    surface to the `.` root with `main` / `module` re-pointed (browser-only using flat ESM
-   conditions). Adding a surface changes the PLAN, not the compiler; the core-only single path
-   the retired `scripts/scaffold.sh` hard-coded is now one row of a table.
+   conditions). Adding a surface changes the PLAN, not the compiler; every variant, including
+   the core-only single path, is one row of a table.
 7. **Mechanism, never policy + scoped mirrors (§21).** The module decides NOTHING about a
    package's identity: the caller owns `name` / `description` / `keywords` / `dependencies`
    and any template `overrides`; the compiler owns the rendering, the closed vocabularies,
@@ -842,12 +859,10 @@ These invariants hold across `src/core` + `src/server` ↔ `scaffold.md`:
     each implementing class exposes the same public methods, no more (AGENTS §22). The bin
     implements no interface and is excluded, as in invariant 1.
 
-This package **fully replaces** `scripts/scaffold.sh` AND `scripts/mirror.sh`. The
-scaffold script froze every template as a heredoc and derived only a core-only package from
-a name, and the mirror script propagated the fleet's governance files with no drift
-accounting of its own; this module renders the whole per-surface variant matrix from versioned
-`TemplateDefinition` data and mirrors the fleet through `scaffold mirror`, so a convention
-change is a version bump here rather than a hand-edit in every repo's copy.
+This package is the line's sole scaffolding and fleet-conformance tool: it renders the
+whole per-surface variant matrix from versioned `TemplateDefinition` data and mirrors the
+fleet through `scaffold mirror`, so a convention change is a version bump here rather than
+a hand-edit in every repo's copy. Every repo's shared artifacts flow from its vendored host.
 
 Deliberately absent: any **git** operation (no `git init` / `git clone` — the caller prepares
 the vacant target, and the package stops at the file boundary), any **npm** INVOCATION (no
@@ -1125,11 +1140,11 @@ try {
 strict.destroy()
 ```
 
-### The `scaffold` bin — five subcommands, one build target
+### The `scaffold` bin — six subcommands, one build target
 
 The CLI is its OWN build target — `src/bin/scaffold.ts`, an executable, not a barrel. It
 opens with a `#!/usr/bin/env node` shebang, parses argv with `node:util`'s `parseArgs` (no
-foreign arg parser), and dispatches on FIVE subcommands: **`new`** creates a package
+foreign arg parser), and dispatches on SIX subcommands: **`new`** creates a package
 (resolving any `--deps` to the registry `latest` → `^latest` ranges, fetching their guides
 into the plan), **`sync`** refreshes an existing repo's vendored dependency mirrors and
 reports range drift, **`audit`** / **`repair`** / **`mirror`** all reconstruct the target's
@@ -1150,20 +1165,26 @@ AND total drift table and exiting nonzero on residual drift — fleet-wide `mirr
 EXCLUDES `.github/workflows/ci.yml` from its scope (repo-flavored CI genuinely diverges
 across two live repos in the fleet; fleet apply must never clobber that divergence), while
 single-target `repair --apply` keeps FULL host scope, including `ci.yml`, since it operates
-on one repo the caller is intentionally editing. All five subcommands default their `--host`
-to the resolved `hostRoot()` (the package's own vendored `dist/host`) and accept an explicit
-`--host` to override it (a sibling repo's checkout, for fleet-wide mirroring) — the DEFAULT
-host degrades silently to presence-only auditing when it cannot resolve (dev ergonomics), but
-an EXPLICITLY-passed `--host` that fails to resolve to usable data is a coded `TARGET`
-failure on `audit` / `repair` / `mirror`, never a silent downgrade, since the caller named
-that host on purpose. It narrates through `@orkestrel/console` and prompts
-interactively through `@orkestrel/terminal`'s `createTerminal` when a required argument is
-absent (a real TTY; a piped run falls back to the flags and the terminal's non-TTY readline
+on one repo the caller is intentionally editing. **`new`** / **`audit`** / **`repair`** /
+**`mirror`** default their `--host` to the resolved `hostRoot()` (the package's own vendored
+`dist/host`) and accept an explicit `--host` to override it (a sibling repo's checkout, for
+fleet-wide mirroring) — the DEFAULT host degrades silently to presence-only auditing when it
+cannot resolve (dev ergonomics), but an EXPLICITLY-passed `--host` that fails to resolve to
+usable data is a coded `TARGET` failure on `audit` / `repair` / `mirror`, never a silent
+downgrade, since the caller named that host on purpose. **`catalog`** is the sixth: it takes
+NO `--host` — instead a repeatable `--root` (default: `[process.cwd()]`) each walked through
+`discoverPackages` and merged (via the pure core's `catalogToBlock`) into the fleet package
+catalog table spliced into `<target>/.claude/agents/orkestrel.md` between its
+`<!-- catalog:start -->` / `<!-- catalog:end -->` markers — a `target` missing those markers
+is a coded `TARGET` failure, never a silent skip. It narrates through `@orkestrel/console` and
+prompts interactively through `@orkestrel/terminal`'s `createTerminal` when a required argument
+is absent (a real TTY; a piped run falls back to the flags and the terminal's non-TTY readline
 path). Report-only / dry-run is the default posture everywhere; only `--apply` writes (and
 `--prune` additionally deletes on `repair`), `audit` NEVER writes, and the exit codes gate CI —
 `new` nonzero on a block or write failure, `sync` nonzero only under `--strict` with failures,
 `audit` nonzero on ANY drift, `repair` nonzero on unresolved drift in dry-run, `mirror` nonzero
-on residual fleet-wide drift.
+on residual fleet-wide drift, `catalog` nonzero on unwritten drift in dry-run (clean or
+`--apply`-written exits `0`).
 
 ```ts
 // The `#!/usr/bin/env node` shebang is re-emitted by the build's `output.banner`, not source.
@@ -1209,7 +1230,7 @@ const { values, positionals } = parseArgs({
 
 const sink = createServerSink()
 const reporter = createReporter({ sink, width: sink.columns })
-const [command] = positionals // 'new' | 'sync' | 'audit' | 'repair' | 'mirror'
+const [command] = positionals // 'new' | 'sync' | 'audit' | 'repair' | 'mirror' | 'catalog'
 const target = values.target ?? '.'
 const host = values.host ?? hostRoot() // default: the package's own vendored dist/host
 const materializerOptions = values.host ? { host: values.host } : {}
@@ -1370,9 +1391,13 @@ npx @orkestrel/scaffold repair --target . --host ../contract # audit against a s
 # (repo-flavored — use `repair --apply` per repo for that one file):
 npx @orkestrel/scaffold mirror --root ~/repos
 npx @orkestrel/scaffold mirror --root ~/repos --apply
+
+# catalog — regenerate the fleet package catalog embedded in orkestrel.md between its
+# markers; --root repeatable (default cwd), dry-run reports drift (nonzero), --apply writes:
+npx @orkestrel/scaffold catalog --root ~/repos --root ~/other-repos --target . --apply
 ```
 
-### Retiring `scaffold.sh`, `mirror.sh`, and the manual recipe — the replacement path
+### Fleet wiring
 
 The rendered defaults ship as **versioned package data**: each is a frozen
 `TemplateDefinition` (a `name`, a `content` string with `{{token}}` placeholders, and its
@@ -1382,24 +1407,21 @@ sub-engine). The byte-copied governance files (`HOST_PATHS`) ship VENDORED insid
 published tarball at `dist/host/` (staged there by the build's `build:host` step, alongside a
 `dist/host/manifest.json` recording each entry's storage name, destination, and executable
 bit), which the server's `Materializer` copies from its `host` root — the package's OWN
-vendored copy by default, or an explicit `--host` sibling for fleet-wide mirroring. So the
-staleness that rotted the frozen bash heredocs cannot happen: there is ONE versioned source
-of truth, and `npm update @orkestrel/scaffold` propagates a convention change to every
-consumer.
+vendored copy by default, or an explicit `--host` sibling for fleet-wide mirroring. There is
+ONE versioned source of truth, and `npm update @orkestrel/scaffold` propagates a convention
+change to every consumer.
 
-This package now FULLY REPLACES all THREE retired artifacts — `scripts/scaffold.sh`,
-`scripts/mirror.sh`, AND the manual packaging recipe document (the guide you are reading now
-absorbed its variant matrix, its per-file inventory, its exports shapes, its config wrappers,
-and its audit checklist) — none of the three appears in `HOST_PATHS` or in any repo's
-`scripts/` directory once retired; this package IS the sole living spec. The post-publish
-wiring: every repo in the fleet gains `@orkestrel/scaffold` as a devDependency (pinned at
-`SCAFFOLD_RANGE`, joining `@orkestrel/guide` as line-wide dev tooling) and swaps its
-`"scaffold": "bash scripts/scaffold.sh"` script for `"scaffold": "scaffold"` against the
-installed bin. The fleet-truing story that `mirror.sh` used to own now runs as
+This package is the line's sole scaffolding and fleet-conformance spec, and this guide is its
+sole living document — the variant matrix, the per-file inventory, the exports shapes, the
+config wrappers, and the audit checklist all live here, projected from the same `Plan` the
+compiler emits. Every repo in the fleet carries `@orkestrel/scaffold` as a devDependency
+(pinned at `SCAFFOLD_RANGE`, joining `@orkestrel/guide` as line-wide dev tooling) and a
+`"scaffold": "scaffold"` script against the installed bin. Fleet-truing runs as
 `scaffold mirror` — either from the package's own vendored `dist/host` (the common case) or
-from an explicit `--host` sibling repo. The line-wide fleet deletion of the two scripts and
-the retired recipe document, plus the `orkestrel.md` cross-package updates, are the separate
-FLEET migration phase this package's publish enables — outside this package's own scope.
+from an explicit `--host` sibling repo — trueing every repo's shared artifacts across the
+workspace; `repair` and `audit` operate per repo. `.github/workflows/ci.yml` is the one
+fleet exception: two repos carry repo-flavored CI, so `mirror` never writes it — a
+single-target `repair --apply` does, per repo, for that one file.
 
 ### Practices
 
@@ -1516,7 +1538,7 @@ FLEET migration phase this package's publish enables — outside this package's 
   a scaffolded package whose deps are all vendored (contract / emitter / markdown / template /
   terminal / console) runs its own gates green by construction, while a dep outside that set
   leaves its mirror a pointer plus a non-blocking Question.
-- [`tests/src/bin/scaffold.test.ts`](../../tests/src/bin/scaffold.test.ts) — the bin's five
+- [`tests/src/bin/scaffold.test.ts`](../../tests/src/bin/scaffold.test.ts) — the bin's six
   subcommands: `new` (`parseArgs` flag decoding, a non-interactive piped compile + dry-run
   review + summary table, the interactive fallback driven by a scripted fake terminal, and
   `--apply` writing into a temp directory), `sync` (report + `--apply` write, `--strict` exit
@@ -1532,7 +1554,11 @@ FLEET migration phase this package's publish enables — outside this package's 
   `discoverPackages`-discovered repos under one root, `--root` fleet discovery, `.github/
 workflows/ci.yml` EXCLUDED from the scoped plan regardless of `--apply`, per-repo + total
   drift table, `--apply` writing, nonzero exit on residual drift) — all against the
-  `node:http` fixture.
+  `node:http` fixture — and `catalog` (a fixture fleet under two `--root`s, one guide
+  carrying a blockquote and one missing its guide entirely: dry-run reports the no-description
+  list and exits `1` on marker drift, `--apply` writes the spliced table and a re-run exits
+  `0`, a target `.claude/agents/orkestrel.md` missing either marker exits coded `TARGET`, and
+  multiple `--root` values merge into one sorted, deduplicated table).
 - a BUILT-BIN end-to-end pack→install→scaffold-new proof — `npm pack` the built tarball,
   install it into a scratch project as a devDependency, then invoke the installed `scaffold
 new` bin with NO `--host` flag and assert the DEFAULT host resolution (`hostRoot()`) lands on

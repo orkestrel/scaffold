@@ -17,6 +17,7 @@ scaffold sync
 scaffold audit [--live]
 scaffold repair [--apply] [--prune]
 scaffold mirror [--root <dir>] [--apply]
+scaffold catalog [--root <dir> ...] [--target <repo>] [--apply]
 ```
 
 - **`new <name>`** — drafts a `Blueprint` and compiles it into a `Plan`; dry-run by
@@ -34,6 +35,9 @@ scaffold mirror [--root <dir>] [--apply]
   `CLAUDE.md`, `.claude/`, `scripts/`, the shared dotfiles, …) from this canonical
   repo to every `@orkestrel` repo under `--root` (default: this repo's parent
   directory); dry-run by default, `--apply` writes.
+- **`catalog`** — regenerates the orkestrel agent's package catalog from the
+  fleet's guides; scans every `--root`, writes the table into `--target`'s
+  `.claude/agents/orkestrel.md`; dry-run by default, `--apply` writes.
 
 Every verb is dry-run by default — nothing touches disk until you pass `--apply`.
 
