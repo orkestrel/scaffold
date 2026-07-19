@@ -9,10 +9,11 @@ A dual-axis index into this repository's guides — by concept, and by directory
 | Scaffold | [`src/scaffold.md`](src/scaffold.md) | [`src/core`](../src/core), [`src/server`](../src/server) | [`tests/src/core`](../tests/src/core), [`tests/src/server`](../tests/src/server) |
 
 The one guide documents the union of the package's LIBRARY faces — the pure core
-([`src/core`](../src/core)) and the server materialization face
-([`src/server`](../src/server)). The `scaffold` bin ([`src/bin`](../src/bin)) is an
-executable build target with NO public exports, so it is documented in prose only and is
-excluded from the doc↔source parity scan.
+([`src/core`](../src/core)) and the server face ([`src/server`](../src/server)), which carries
+BOTH the `Materializer` (writes) and the `Sync` entity (live dependency-guide + registry-version
+freshness; covered by [`tests/src/server/Sync.test.ts`](../tests/src/server/Sync.test.ts)). The
+`scaffold` bin ([`src/bin`](../src/bin)) is an executable build target with NO public exports, so
+it is documented in prose only and is excluded from the doc↔source parity scan.
 
 ## By directory
 

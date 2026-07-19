@@ -14,19 +14,25 @@
 > (`trace` + `hash` derived from content, never authored).
 > REVERSE: `planToReview` / `planToSummary` render the plan for humans; `diffPlan` audits
 > it against a target's current content and returns **drift findings as data**; the server
-> surface's `Materializer` is the only impure step — it writes.
-> Nothing here runs `git`, `npm`, a network call, or an LLM: the core is pure (no `node:*`,
-> no clocks, no randomness — `trace` and `hash` derive from content alone), and writing
-> lives behind an explicit apply on the server surface. A blueprint that fails the gate
-> yields a visible INCOMPLETE `Scaffolding` carrying the questions — a half-formed package
-> is worse than a question, so the gate fails closed rather than emitting.
+> surface's `Materializer` is the impure WRITE step.
+> LIVE: the server surface's `Sync` entity fetches each declared dependency's guide and
+> registry version from upstream — reporting freshness, refreshing mirrors under an explicit
+> apply — the ONLY part of the system that touches the network.
+> This module runs no `git`, invokes no `npm`, and embeds no LLM; its only network access is
+> the server `Sync` entity's read-only fetch of upstream guides and registry versions. The
+> core is pure (no `node:*`, no clocks, no randomness — `trace` and `hash` derive from
+> content alone), and writing lives behind an explicit apply on the server surface. A
+> blueprint that fails the gate yields a visible INCOMPLETE `Scaffolding` carrying the
+> questions — a half-formed package is worse than a question, so the gate fails closed rather
+> than emitting.
 > Every discriminant names its axis, never `kind` / `type` (AGENTS §4.4): `origin` splits
 > how an artifact's content is produced, `group` splits the artifact groups, `surface`
 > splits the environment faces, `category` splits declared members, `drift` splits audit
-> verdicts, `stage` splits the pipeline phases, `code` splits coded errors. Source:
-> [`src/core`](../../src/core) + [`src/server`](../../src/server) + the
-> [`src/bin`](../../src/bin) CLI. The core surfaces through `@src/core`, the materializer
-> through `@src/server`; the bin is an executable, not a barrel.
+> verdicts, `freshness` splits sync currency, `stage` splits the pipeline phases, `code`
+> splits coded errors. Source: [`src/core`](../../src/core) + [`src/server`](../../src/server)
+>
+> - the [`src/bin`](../../src/bin) CLI. The core surfaces through `@src/core`, the materializer
+>   and sync through `@src/server`; the bin is an executable, not a barrel.
 
 The problem this module solves: standing up (or auditing) an `@orkestrel` package is a
 mechanical projection of the line's conventions onto a name — the exports map for the
@@ -47,7 +53,10 @@ and the lossless projections. Separating the WHAT (the `Blueprint`) from the HOW
 the same engine that _creates_ a package can **audit** an existing one (`diffPlan` against
 its current content — the SCAFFOLD.md §13.3 consistency checklist, now returned as
 findings) and **repair** only what drifted. Scaffold is the line's conformance engine, not
-merely its generator.
+merely its generator. And because the vendored dependency mirrors and pinned ranges
+themselves drift as upstream moves, the server `Sync` entity is the freshness arm — it
+fetches each declared `@orkestrel` dependency's guide and registry version from upstream and
+reports (or, under an explicit apply, refreshes) what has fallen behind.
 
 The compiler's core stands on four runtime dependencies — `@orkestrel/contract` (the shape
 DSL behind the `Blueprint` / `Plan` contracts), `@orkestrel/emitter` (the observation
@@ -92,52 +101,60 @@ compiler.destroy()
 `[draft, gate, pin]`; a failing gate yields a visible INCOMPLETE `Scaffolding` (`plan`
 absent, `questions` populated) rather than throwing. Compilation, review, summary, and
 audit are ALL pure — no clocks, no randomness, no `node:*`, no I/O. The package has THREE
-faces: the pure **core** (`@orkestrel/scaffold`), the server **materialization** face
-(`@orkestrel/scaffold/server`) — the only impure step, `node:fs` writes behind an explicit
-call — and the **bin** CLI (`src/bin/scaffold.ts`, the `scaffold` executable). The Surface
-below documents the two LIBRARY faces, marked **(server)** where server-only; the bin is an
+faces: the pure **core** (`@orkestrel/scaffold`), the server face
+(`@orkestrel/scaffold/server`) — the impure `Materializer` writes and the `Sync` fetches —
+and the **bin** CLI (`src/bin/scaffold.ts`, the `scaffold` executable). The Surface below
+documents the two LIBRARY faces, marked **(server)** where server-only; the bin is an
 EXECUTABLE, not a barrel — it exports NO public members, so `SURFACES` stays closed at three
 (`Surface` names the SCAFFOLDED package's environment faces, unrelated to scaffold's own
-three code faces). The core and server are deterministic and synchronous; the bin alone is
-legitimately Promise-based — its interactive prompt flow (`@orkestrel/terminal`) is async
-orchestration AROUND the synchronous `compile`, never inside it.
+three code faces). The core and the `Materializer` are deterministic and synchronous; the
+bin AND the server `Sync` entity are legitimately Promise-based — the bin's interactive
+prompt flow (`@orkestrel/terminal`) and `Sync`'s upstream fetches are async orchestration
+AROUND the synchronous `compile` / write, never inside them.
 
 ### Types
 
-| Type                    | Kind      | Shape                                                                                                                                                                                                                                                                                                                                                                                        |
-| ----------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Surface`               | type      | `'core' \| 'browser' \| 'server'` — the environment surface an artifact or member belongs to (the SCAFFOLDED package's faces, not scaffold's own).                                                                                                                                                                                                                                           |
-| `Origin`                | type      | `'host' \| 'template' \| 'computed'` — how an `Artifact`'s content is produced: `host` byte-copied from the vendored data root, `template` filled from a frozen `TemplateDefinition` by `@orkestrel/template`'s pure fill engine, `computed` derived by the core's §4.2/§4.3 combination logic; the axis that decides whether it carries `source` (host) or `content` (template / computed). |
-| `Group`                 | type      | `'manifest' \| 'configs' \| 'source' \| 'tests' \| 'guides' \| 'docs' \| 'orchestration'` — the closed artifact-group vocabulary a plan selects over.                                                                                                                                                                                                                                        |
-| `Category`              | type      | `'type' \| 'constant' \| 'factory' \| 'entity'` — what a declared `Member` IS in the scaffolded surface.                                                                                                                                                                                                                                                                                     |
-| `Drift`                 | type      | `'aligned' \| 'stale' \| 'missing' \| 'foreign'` — one `Finding`'s verdict against the target's current content.                                                                                                                                                                                                                                                                             |
-| `CompileStage`          | type      | `'draft' \| 'gate' \| 'pin'` — the three fixed pipeline phases, in order.                                                                                                                                                                                                                                                                                                                    |
-| `ScaffoldErrorCode`     | type      | `'INVALID' \| 'BLOCKED' \| 'DESTROYED' \| 'TARGET' \| 'WRITE'` — coded `ScaffoldError` reasons.                                                                                                                                                                                                                                                                                              |
-| `Dependency`            | interface | `{ name, range }` — one runtime `@orkestrel/*` dependency; drives its `package.json` entry, the build externals, and its `guides/src/<dep>.md` mirror — byte-correct for a dep this package vendors (contract / emitter / markdown / template / terminal / console / guide), a `host`-origin POINTER the caller syncs otherwise.                                                             |
-| `Override`              | interface | `{ path, content }` — one caller template override; `content` REPLACES the rendered artifact at `path`, never partially merges. An override whose `path` matches no planned artifact, or targets a `host`-origin path, is a BLOCKING question — never a silent add.                                                                                                                          |
-| `Blueprint`             | interface | `{ name, description, keywords, surfaces, dependencies, version, engines, overrides }` — the closed, JSON-serializable package spec.                                                                                                                                                                                                                                                         |
-| `Member`                | interface | `{ name, category, summary, surface }` — one declared public export of the scaffolded package; derived by `blueprintToMembers`, never authored.                                                                                                                                                                                                                                              |
-| `Artifact`              | interface | `{ path, group, origin, surface?, content?, source? }` — one file in a `Plan`; `content` present for `template` / `computed`, `source` (a host-relative path) for `host`.                                                                                                                                                                                                                    |
-| `Plan`                  | interface | `{ blueprint, groups, artifacts, trace?, hash? }` — the compiled, ordered artifact list plus the selection it covers; `trace` / `hash` filled by the pin.                                                                                                                                                                                                                                    |
-| `Finding`               | interface | `{ path, group, drift }` — one audit drift result.                                                                                                                                                                                                                                                                                                                                           |
-| `Audit`                 | interface | `{ findings, clean, complete, questions, drifted, missing, foreign }` — the whole diff of a plan against a target's content; a `Compiler.audit` over a gate-failing blueprint sets `complete: false` with the gate's `questions` and zero findings, while `diffPlan` over an existing plan is always `complete: true`.                                                                       |
-| `Question`              | interface | `{ field, text, blocking, candidates? }` — one validation issue; `blocking: true` fails the gate closed, `false` is an advisory that rides a complete result.                                                                                                                                                                                                                                |
-| `Validation`            | interface | `{ valid, questions, warnings }` — the semantic pass over a blueprint; returns, never throws.                                                                                                                                                                                                                                                                                                |
-| `PlanSummary`           | interface | `{ name, surfaces, groups, artifacts, host, template, computed }` — the dry-run tally.                                                                                                                                                                                                                                                                                                       |
-| `CompileRecord`         | interface | `{ stage, input, output, failed, error? }` — a structured input/output snapshot of one pipeline phase.                                                                                                                                                                                                                                                                                       |
-| `CompileFailure`        | interface | `{ stage, code, message }` — a visible marker for a stage that failed.                                                                                                                                                                                                                                                                                                                       |
-| `Scaffolding`           | interface | `{ blueprint, plan?, questions, stages, failures, complete, digest }` — the full, replayable outcome of one `compile()` call.                                                                                                                                                                                                                                                                |
-| `PlanRecord`            | interface | `{ id, plan, version, hash }` — a versioned, content-hashed `Plan` inside a `PlanManager`.                                                                                                                                                                                                                                                                                                   |
-| `MaterializeResult`     | interface | `{ target, written, copied, skipped }` — the outcome of one materialization **(server)**.                                                                                                                                                                                                                                                                                                    |
-| `CompilerEventMap`      | type      | `Compiler`'s push observation surface (AGENTS §13) — `compile(scaffolding)` · `audit(audit)` · `block(questions)` · `error(error)` · `destroy()`.                                                                                                                                                                                                                                            |
-| `CompilerOptions`       | interface | `{ on?, error? }` — input to `createCompiler`.                                                                                                                                                                                                                                                                                                                                               |
-| `CompilerInterface`     | interface | The compilation orchestrator contract — `emitter` + `compile` / `audit` / `destroy`.                                                                                                                                                                                                                                                                                                         |
-| `PlanManagerEventMap`   | type      | `PlanManager`'s push observation surface — `add(id)` · `remove(id)` · `destroy()`.                                                                                                                                                                                                                                                                                                           |
-| `PlanManagerOptions`    | interface | `{ plans?, on?, error? }` — input to `createPlanManager`.                                                                                                                                                                                                                                                                                                                                    |
-| `PlanManagerInterface`  | interface | The plan registry contract (AGENTS §9) — `emitter` / `size` + `has` / `plan` / `plans` / `add` / `remove` / `destroy`.                                                                                                                                                                                                                                                                       |
-| `MaterializerEventMap`  | type      | `Materializer`'s push observation surface **(server)** — `copy(path)` · `write(path)` · `done(result)` · `error(error)` · `destroy()`.                                                                                                                                                                                                                                                       |
-| `MaterializerOptions`   | interface | `{ host?, on?, error? }` — input to `createMaterializer` **(server)**; `host` is the vendored-data root host-origin artifacts are copied FROM (defaults to the nearest package root at or above the working directory).                                                                                                                                                                      |
-| `MaterializerInterface` | interface | The materialization contract **(server)** — `emitter` + `materialize` / `repair` / `destroy`.                                                                                                                                                                                                                                                                                                |
+| Type                    | Kind      | Shape                                                                                                                                                                                                                                                                                                                                                                                                               |
+| ----------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Surface`               | type      | `'core' \| 'browser' \| 'server'` — the environment surface an artifact or member belongs to (the SCAFFOLDED package's faces, not scaffold's own).                                                                                                                                                                                                                                                                  |
+| `Origin`                | type      | `'host' \| 'template' \| 'computed'` — how an `Artifact`'s content is produced: `host` byte-copied from the vendored data root, `template` filled from a frozen `TemplateDefinition` by `@orkestrel/template`'s pure fill engine, `computed` derived by the core's §4.2/§4.3 combination logic; the axis that decides whether it carries `source` (host) or `content` (template / computed).                        |
+| `Group`                 | type      | `'manifest' \| 'configs' \| 'source' \| 'tests' \| 'guides' \| 'docs' \| 'orchestration'` — the closed artifact-group vocabulary a plan selects over.                                                                                                                                                                                                                                                               |
+| `Category`              | type      | `'type' \| 'constant' \| 'factory' \| 'entity'` — what a declared `Member` IS in the scaffolded surface.                                                                                                                                                                                                                                                                                                            |
+| `Drift`                 | type      | `'aligned' \| 'stale' \| 'missing' \| 'foreign'` — one `Finding`'s verdict against the target's current content.                                                                                                                                                                                                                                                                                                    |
+| `Freshness`             | type      | `'current' \| 'behind' \| 'missing' \| 'failed'` — one `GuideSync` / `VersionSync`'s currency against upstream (`missing` = an upstream `404`, `failed` = a transport fault).                                                                                                                                                                                                                                       |
+| `CompileStage`          | type      | `'draft' \| 'gate' \| 'pin'` — the three fixed pipeline phases, in order.                                                                                                                                                                                                                                                                                                                                           |
+| `ScaffoldErrorCode`     | type      | `'INVALID' \| 'BLOCKED' \| 'DESTROYED' \| 'TARGET' \| 'WRITE' \| 'FETCH'` — coded `ScaffoldError` reasons.                                                                                                                                                                                                                                                                                                          |
+| `Dependency`            | interface | `{ name, range }` — one runtime `@orkestrel/*` dependency; drives its `package.json` entry, the build externals, and its `guides/src/<dep>.md` mirror — byte-correct for a dep this package vendors (contract / emitter / markdown / template / terminal / console / guide), a `host`-origin POINTER the caller syncs otherwise.                                                                                    |
+| `Override`              | interface | `{ path, content }` — one caller template override; `content` REPLACES the rendered artifact at `path`, never partially merges. An override whose `path` matches no planned artifact, or targets a `host`-origin path, is a BLOCKING question — never a silent add.                                                                                                                                                 |
+| `Blueprint`             | interface | `{ name, description, keywords, surfaces, dependencies, version, engines, overrides }` — the closed, JSON-serializable package spec.                                                                                                                                                                                                                                                                                |
+| `Member`                | interface | `{ name, category, summary, surface }` — one declared public export of the scaffolded package; derived by `blueprintToMembers`, never authored.                                                                                                                                                                                                                                                                     |
+| `Artifact`              | interface | `{ path, group, origin, surface?, content?, source? }` — one file in a `Plan`; `content` present for `template` / `computed`, `source` (a host-relative path) for `host`.                                                                                                                                                                                                                                           |
+| `Plan`                  | interface | `{ blueprint, groups, artifacts, trace?, hash? }` — the compiled, ordered artifact list plus the selection it covers; `trace` / `hash` filled by the pin.                                                                                                                                                                                                                                                           |
+| `Finding`               | interface | `{ path, group, drift }` — one audit drift result.                                                                                                                                                                                                                                                                                                                                                                  |
+| `Audit`                 | interface | `{ findings, clean, complete, questions, drifted, missing, foreign }` — the whole diff of a plan against a target's content; a `Compiler.audit` over a gate-failing blueprint sets `complete: false` with the gate's `questions` and zero findings, while `diffPlan` over an existing plan is always `complete: true`.                                                                                              |
+| `Question`              | interface | `{ field, text, blocking, candidates? }` — one validation issue; `blocking: true` fails the gate closed, `false` is an advisory that rides a complete result.                                                                                                                                                                                                                                                       |
+| `Validation`            | interface | `{ valid, questions, warnings }` — the semantic pass over a blueprint; returns, never throws.                                                                                                                                                                                                                                                                                                                       |
+| `GuideSync`             | interface | `{ name, path, content, freshness }` — one dependency guide fetched from upstream (`content`) at its `path`, plus its `freshness` verdict against the local mirror.                                                                                                                                                                                                                                                 |
+| `VersionSync`           | interface | `{ name, range, latest, freshness }` — one dependency's declared `range` against the registry `latest`, plus its `freshness` verdict.                                                                                                                                                                                                                                                                               |
+| `SyncReport`            | interface | `{ target, guides, versions, clean, failed }` — the whole outcome of a `Sync.pull`: the fetched `guides` + `versions`, `clean` (no drift AND no failures), and the `failed` count.                                                                                                                                                                                                                                  |
+| `PlanSummary`           | interface | `{ name, surfaces, groups, artifacts, host, template, computed }` — the dry-run tally.                                                                                                                                                                                                                                                                                                                              |
+| `CompileRecord`         | interface | `{ stage, input, output, failed, error? }` — a structured input/output snapshot of one pipeline phase.                                                                                                                                                                                                                                                                                                              |
+| `CompileFailure`        | interface | `{ stage, code, message }` — a visible marker for a stage that failed.                                                                                                                                                                                                                                                                                                                                              |
+| `Scaffolding`           | interface | `{ blueprint, plan?, questions, stages, failures, complete, digest }` — the full, replayable outcome of one `compile()` call.                                                                                                                                                                                                                                                                                       |
+| `PlanRecord`            | interface | `{ id, plan, version, hash }` — a versioned, content-hashed `Plan` inside a `PlanManager`.                                                                                                                                                                                                                                                                                                                          |
+| `MaterializeResult`     | interface | `{ target, written, copied, skipped }` — the outcome of one materialization **(server)**.                                                                                                                                                                                                                                                                                                                           |
+| `CompilerEventMap`      | type      | `Compiler`'s push observation surface (AGENTS §13) — `compile(scaffolding)` · `audit(audit)` · `block(questions)` · `error(error)` · `destroy()`.                                                                                                                                                                                                                                                                   |
+| `CompilerOptions`       | interface | `{ on?, error? }` — input to `createCompiler`.                                                                                                                                                                                                                                                                                                                                                                      |
+| `CompilerInterface`     | interface | The compilation orchestrator contract — `emitter` + `compile` / `audit` / `destroy`.                                                                                                                                                                                                                                                                                                                                |
+| `PlanManagerEventMap`   | type      | `PlanManager`'s push observation surface — `add(id)` · `remove(id)` · `destroy()`.                                                                                                                                                                                                                                                                                                                                  |
+| `PlanManagerOptions`    | interface | `{ plans?, on?, error? }` — input to `createPlanManager`.                                                                                                                                                                                                                                                                                                                                                           |
+| `PlanManagerInterface`  | interface | The plan registry contract (AGENTS §9) — `emitter` / `size` + `has` / `plan` / `plans` / `add` / `remove` / `destroy`.                                                                                                                                                                                                                                                                                              |
+| `MaterializerEventMap`  | type      | `Materializer`'s push observation surface **(server)** — `copy(path)` · `write(path)` · `done(result)` · `error(error)` · `destroy()`.                                                                                                                                                                                                                                                                              |
+| `MaterializerOptions`   | interface | `{ host?, on?, error? }` — input to `createMaterializer` **(server)**; `host` is the vendored-data root host-origin artifacts are copied FROM (defaults to the nearest package root at or above the working directory).                                                                                                                                                                                             |
+| `MaterializerInterface` | interface | The materialization contract **(server)** — `emitter` + `materialize` / `repair` / `destroy`.                                                                                                                                                                                                                                                                                                                       |
+| `SyncEventMap`          | type      | `Sync`'s push observation surface **(server)** — `guide(name)` · `version(name)` · `write(path)` · `done(report)` · `error(error)` · `destroy()`.                                                                                                                                                                                                                                                                   |
+| `SyncOptions`           | interface | `{ on?, error?, guides?, registry?, concurrency?, retries?, strict? }` — input to `createSync` **(server)**; the endpoint bases + branch are INJECTABLE (`guides.base` default `raw.githubusercontent.com`, `guides.branch` default `main`, `registry.base` default `registry.npmjs.org`, `guides.timeout` / `registry.timeout` default 10s), `concurrency` default 6, `retries` default 0, `strict` default false. |
+| `SyncInterface`         | interface | The upstream-synchronization contract **(server)** — `emitter` + `guides` / `versions` / `pull` / `write` / `destroy`.                                                                                                                                                                                                                                                                                              |
 
 The `Blueprint` and the `Plan` are the two closed contracts — every field is a `string`,
 `readonly` array, or record, so both round-trip JSON and both cross a tool / RPC boundary
@@ -162,11 +179,12 @@ what keeps the core pure while still describing files it cannot itself read.
 | `ORIGINS`                 | const | The three `Origin` values, frozen.                                                                                                                                                                                                                                                                                                                                               |
 | `GROUPS`                  | const | The seven `Group` values, frozen — the artifact-group selection vocabulary.                                                                                                                                                                                                                                                                                                      |
 | `CATEGORIES`              | const | The four `Category` values, frozen.                                                                                                                                                                                                                                                                                                                                              |
+| `FRESHNESS`               | const | The four `Freshness` values, frozen — the currency axis `Sync` reports on.                                                                                                                                                                                                                                                                                                       |
 | `COMPILE_STAGES`          | const | `['draft', 'gate', 'pin']`, frozen — the pipeline phases in order.                                                                                                                                                                                                                                                                                                               |
 | `SURFACE_MATRIX`          | const | The §1.2 variant matrix as data: per `Surface`, its `configs/src` files, Vitest project label, `exports` subpath, and build formats — the per-surface layer `blueprintToPlan` reads BENEATH the SCAFFOLD.md §4.2/§4.3 combination rules it applies on top.                                                                                                                       |
 | `HOST_PATHS`              | const | The byte-copied host artifact paths (AGENTS.md, CLAUDE.md, SCAFFOLD.md, LICENSE, `.claude`, `scripts/*` — the SessionStart hooks + `mirror.sh` + `scaffold.sh` today — `.editorconfig`, `.gitattributes`, `.gitignore`, `.oxfmtrc.json`, `.oxlintrc.json`, `.oxlintignore`, `.prettierignore`, `.github/workflows/ci.yml`), frozen; `scaffold.sh` leaves this set at retirement. |
 | `NAME_PATTERN`            | const | The `/^[a-z][a-z0-9-]*$/` package-name RegExp (the `scaffold.sh` name law, now data).                                                                                                                                                                                                                                                                                            |
-| `DEPENDENCY_NAME_PATTERN` | const | The `/^@orkestrel\/[a-z][a-z0-9-]*$/` dependency-name RegExp — every `Dependency.name` must be `@orkestrel`-scoped and NAME_PATTERN-shaped after the scope, closing the traversal vector a hand-built `../`-laced name would open through `Compiler`'s pointer-artifact path derivation.                                                                                         |
+| `DEPENDENCY_NAME_PATTERN` | const | The `/^@orkestrel\/[a-z][a-z0-9-]*$/` dependency-name RegExp — every `Dependency.name` must be `@orkestrel`-scoped and NAME_PATTERN-shaped after the scope, closing the traversal vector a hand-built `../`-laced name would open through the pointer-artifact and `Sync.write` path derivation.                                                                                 |
 | `DEFAULT_VERSION`         | const | `'0.0.1'` — the starting version the `blueprint` builder fills.                                                                                                                                                                                                                                                                                                                  |
 | `DEFAULT_ENGINES`         | const | `'>=22'` — the `engines.node` range the `blueprint` builder fills.                                                                                                                                                                                                                                                                                                               |
 | `COMPILER_ID`             | const | `'compiler'` — the default id for a `Compiler` orchestrator.                                                                                                                                                                                                                                                                                                                     |
@@ -175,6 +193,8 @@ what keeps the core pure while still describing files it cannot itself read.
 ```ts
 import {
 	CATEGORIES,
+	DEPENDENCY_NAME_PATTERN,
+	FRESHNESS,
 	GROUPS,
 	HOST_PATHS,
 	NAME_PATTERN,
@@ -187,8 +207,11 @@ SURFACES // ['core', 'browser', 'server']
 ORIGINS // ['host', 'template', 'computed']
 GROUPS // ['manifest', 'configs', 'source', 'tests', 'guides', 'docs', 'orchestration']
 CATEGORIES // ['type', 'constant', 'factory', 'entity']
+FRESHNESS // ['current', 'behind', 'missing', 'failed']
 NAME_PATTERN.test('router') // true
 NAME_PATTERN.test('Router') // false — the package-name law rejects a leading capital
+DEPENDENCY_NAME_PATTERN.test('@orkestrel/contract') // true
+DEPENDENCY_NAME_PATTERN.test('@orkestrel/../etc') // false — closes the traversal vector
 HOST_PATHS.includes('scripts/mirror.sh') // true — the mirror stays in the orchestration set
 HOST_PATHS.includes('scripts/scaffold.sh') // true today — leaves HOST_PATHS at retirement
 TEMPLATES.entity.placeholders // [{ name: 'pascal', … }] — the entity stub's one token
@@ -207,7 +230,7 @@ vocabulary cannot drift between the guard, the parser, and the schema.
 | `isScaffoldError` | function | Narrow a caught value to a `ScaffoldError`.         |
 
 ```ts
-import { ScaffoldError, isScaffoldError } from '@orkestrel/scaffold'
+import { isScaffoldError, ScaffoldError } from '@orkestrel/scaffold'
 
 try {
 	throw new ScaffoldError('INVALID', 'Blueprint failed the exact-record contract')
@@ -220,7 +243,11 @@ Throws are reserved for caller misuse (AGENTS §12): `createBlueprint` on off-co
 throws `INVALID`, any method after `destroy()` throws `DESTROYED`, and on the server surface
 a non-vacant target throws `TARGET` while a failed write throws `WRITE`. A failing gate is
 NOT an error — it fails closed into an incomplete `Scaffolding` whose `failures` carry a
-`BLOCKED` marker, mirroring the brief compiler's visible-incomplete outcome.
+`BLOCKED` marker, mirroring the brief compiler's visible-incomplete outcome. `FETCH` is
+server/bin-only: the `Sync` entity throws it ONLY under `strict` mode when an upstream fetch
+fails (or on wrap-level misuse), naming the failing URL in `context`; in the default COLLECT
+mode a per-dependency `404` becomes `freshness: 'missing'` and any transport error / other
+non-2xx becomes `freshness: 'failed'`, captured on the `SyncReport` rather than thrown.
 
 ### Validators
 
@@ -238,6 +265,7 @@ key fails, which is why the builders below omit absent optional keys.
 | `isMember`     | const | `Member` — `category` an on-vocabulary `Category`, `surface` an on-vocabulary `Surface`.                                                          |
 | `isArtifact`   | const | `Artifact` — `group` / `origin` on-vocabulary; `content` xor `source` per `origin`.                                                               |
 | `isPlan`       | const | `Plan` — the whole exact-record contract, section guards composed.                                                                                |
+| `isSyncReport` | const | `SyncReport` — the whole exact-record sync contract, `guide` / `version` sections composed.                                                       |
 
 ```ts
 import {
@@ -267,10 +295,11 @@ package's `createContract` — a guard-valid value round-trips unchanged, an off
 value returns `undefined`, and neither ever throws (AGENTS §14). This is the parse-then-trust
 boundary for a stored plan, a tool argument, or an agent's emission.
 
-| API              | Kind  | Returns                                                         |
-| ---------------- | ----- | --------------------------------------------------------------- |
-| `parseBlueprint` | const | a `Blueprint` from `unknown` / a JSON string, else `undefined`. |
-| `parsePlan`      | const | a `Plan` from `unknown` / a JSON string, else `undefined`.      |
+| API               | Kind  | Returns                                                          |
+| ----------------- | ----- | ---------------------------------------------------------------- |
+| `parseBlueprint`  | const | a `Blueprint` from `unknown` / a JSON string, else `undefined`.  |
+| `parsePlan`       | const | a `Plan` from `unknown` / a JSON string, else `undefined`.       |
+| `parseSyncReport` | const | a `SyncReport` from `unknown` / a JSON string, else `undefined`. |
 
 ```ts
 import { blueprint, isBlueprint, parseBlueprint } from '@orkestrel/scaffold'
@@ -297,6 +326,7 @@ module's own validators and parsers are compiled from them at the barrel.
 | `memberShape`     | function | the `Member` object shape — `category` / `surface` literal shapes.                                                                                                                                                                      |
 | `artifactShape`   | function | the `Artifact` object shape — `origin` a `literalShape(ORIGINS)`; `content` / `source` optional.                                                                                                                                        |
 | `planShape`       | function | the whole `Plan` object shape, section shapes composed; `trace` / `hash` optional.                                                                                                                                                      |
+| `syncReportShape` | function | the `SyncReport` object shape — `guide` + `version` array sub-shapes (each with a `literalShape(FRESHNESS)`) composed; `isSyncReport` / `parseSyncReport` compile from it.                                                              |
 
 ```ts
 import {
@@ -306,6 +336,7 @@ import {
 	memberShape,
 	overrideShape,
 	planShape,
+	syncReportShape,
 } from '@orkestrel/scaffold'
 import { createContract, schemaToParameters, seededRandom } from '@orkestrel/contract'
 
@@ -321,6 +352,7 @@ createContract(overrideShape()).schema // the `Override` section schema alone
 createContract(memberShape()).schema // the `Member` section schema alone
 createContract(artifactShape()).schema // the `Artifact` section schema alone
 createContract(planShape()).schema // the whole `Plan` schema, section shapes composed
+createContract(syncReportShape()).schema // the `SyncReport` schema — the compiled `isSyncReport` source
 ```
 
 ### Builders
@@ -352,21 +384,24 @@ spec.engines // '>=22' — the builder default
 ### Helpers
 
 Pure, exported utility functions (AGENTS §4.3) — the referentially-transparent leaves
-behind the `Compiler` and the projection surface. Projections use the `{noun}To{Noun}`
-idiom (AGENTS §4.6.1): each consumes a WHOLE and returns a derived view of it.
+behind the `Compiler`, the `Sync` entity, and the projection surface. Projections use the
+`{noun}To{Noun}` idiom (AGENTS §4.6.1): each consumes a WHOLE and returns a derived view of it.
 
-| API                  | Kind     | Summary                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| -------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `blueprintToMembers` | function | Derive the declared public `Member[]` from a blueprint (name → Pascal → the canonical inventory per surface) — the SINGLE source both the source stubs and the guide Surface tables read. The skeleton vocabulary is deliberately the four `Category` buckets (`type` / `constant` / `factory` / `entity`); standalone helpers, validators, and shapers are hand-authored in implementation, not scaffolded.                      |
-| `blueprintToPlan`    | function | The full pure compilation: draft the artifacts — the SCAFFOLD.md §4.2/§4.3 COMBINATION rules (multi-surface OMITS the top-level `package.json` `types`; a single-variant server-/browser-only retargets its lone surface to the `.` root, `main` / `module` re-pointed) OVER the per-surface `SURFACE_MATRIX` rows, plus `HOST_PATHS` and overrides — then pin; optionally scoped to a `Group[]` selection (default: all groups). |
-| `pinPlan`            | function | Return a fresh `Plan` with `trace` (the one-line derivation summary) and `hash` (a canonical structural digest) filled — deterministic, no timestamps, no run-specific data.                                                                                                                                                                                                                                                      |
-| `validateBlueprint`  | function | The semantic pass over a blueprint — name against `NAME_PATTERN`, non-empty on-vocabulary `surfaces`, well-formed `dependencies`, no duplicate members. Returns a `Validation`, never throws.                                                                                                                                                                                                                                     |
-| `diffPlan`           | function | The AUDIT projection: diff a plan's artifacts against a caller-supplied `Readonly<Record<string, string>>` of the target's current content, returning an `Audit` of drift findings — pure, no I/O.                                                                                                                                                                                                                                |
-| `planToReview`       | function | Project a `Plan` into a copy-ready markdown review document — the artifact table by group, the members table, the summary; the diff-first dry run.                                                                                                                                                                                                                                                                                |
-| `auditToReview`      | function | Project an `Audit` into a markdown drift report — findings grouped by `drift`, aligned entries elided; what `repair` will touch.                                                                                                                                                                                                                                                                                                  |
-| `planToSummary`      | function | Project a `Plan` into a `PlanSummary` — the artifact tally by `origin`, the surfaces, and the covered groups.                                                                                                                                                                                                                                                                                                                     |
-| `pascalCase`         | function | Derive the PascalCase entity name from a lowercase-hyphen package name (`'my-router'` → `'MyRouter'`) — hyphens are word breaks.                                                                                                                                                                                                                                                                                                  |
-| `alignTable`         | function | Build a formatter-width-aligned GFM table string from header + row cell strings (+ optional `readonly TableAlign[]`) — the guide Surface-table emitter.                                                                                                                                                                                                                                                                           |
+| API                      | Kind     | Summary                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ------------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `blueprintToMembers`     | function | Derive the declared public `Member[]` from a blueprint (name → Pascal → the canonical inventory per surface) — the SINGLE source both the source stubs and the guide Surface tables read. The skeleton vocabulary is deliberately the four `Category` buckets (`type` / `constant` / `factory` / `entity`); standalone helpers, validators, and shapers are hand-authored in implementation, not scaffolded.                      |
+| `blueprintToPlan`        | function | The full pure compilation: draft the artifacts — the SCAFFOLD.md §4.2/§4.3 COMBINATION rules (multi-surface OMITS the top-level `package.json` `types`; a single-variant server-/browser-only retargets its lone surface to the `.` root, `main` / `module` re-pointed) OVER the per-surface `SURFACE_MATRIX` rows, plus `HOST_PATHS` and overrides — then pin; optionally scoped to a `Group[]` selection (default: all groups). |
+| `pinPlan`                | function | Return a fresh `Plan` with `trace` (the one-line derivation summary) and `hash` (a canonical structural digest) filled — deterministic, no timestamps, no run-specific data.                                                                                                                                                                                                                                                      |
+| `validateBlueprint`      | function | The semantic pass over a blueprint — name against `NAME_PATTERN`, non-empty on-vocabulary `surfaces`, well-formed `dependencies`, no duplicate members. Returns a `Validation`, never throws.                                                                                                                                                                                                                                     |
+| `manifestToDependencies` | function | Parse a `package.json` text into `readonly Dependency[]`, keeping the `DEPENDENCY_NAME_PATTERN` entries across `dependencies` / `devDependencies` / `peerDependencies` (all three, deduplicated) — pure, never throws.                                                                                                                                                                                                            |
+| `rangeToFreshness`       | function | Compare a declared `range` to the registry `latest`: `'current'` iff the range's `^0.0.N` exact pin equals `latest`, else `'behind'` (the `0.0.x` exact-pin law); the `missing` / `failed` verdicts come from the fetch layer, not this pure comparison.                                                                                                                                                                          |
+| `diffPlan`               | function | The AUDIT projection: diff a plan's artifacts against a caller-supplied `Readonly<Record<string, string>>` of the target's current content, returning an `Audit` of drift findings — pure, no I/O.                                                                                                                                                                                                                                |
+| `planToReview`           | function | Project a `Plan` into a copy-ready markdown review document — the artifact table by group, the members table, the summary; the diff-first dry run.                                                                                                                                                                                                                                                                                |
+| `auditToReview`          | function | Project an `Audit` into a markdown drift report — findings grouped by `drift`, aligned entries elided; what `repair` will touch.                                                                                                                                                                                                                                                                                                  |
+| `syncToReview`           | function | Project a `SyncReport` into a markdown freshness report via `alignTable` — the sibling of `auditToReview`, guides + versions grouped by `freshness`.                                                                                                                                                                                                                                                                              |
+| `planToSummary`          | function | Project a `Plan` into a `PlanSummary` — the artifact tally by `origin`, the surfaces, and the covered groups.                                                                                                                                                                                                                                                                                                                     |
+| `pascalCase`             | function | Derive the PascalCase entity name from a lowercase-hyphen package name (`'my-router'` → `'MyRouter'`) — hyphens are word breaks.                                                                                                                                                                                                                                                                                                  |
+| `alignTable`             | function | Build a formatter-width-aligned GFM table string from header + row cell strings (+ optional `readonly TableAlign[]`) — the guide Surface-table emitter.                                                                                                                                                                                                                                                                           |
 
 ```ts
 import {
@@ -374,9 +409,11 @@ import {
 	blueprintToMembers,
 	blueprintToPlan,
 	diffPlan,
+	manifestToDependencies,
 	pascalCase,
 	planToReview,
 	planToSummary,
+	rangeToFreshness,
 	validateBlueprint,
 } from '@orkestrel/scaffold'
 
@@ -392,6 +429,10 @@ validateBlueprint(spec) // { valid: true, questions: [], warnings: [] }
 
 const current = { 'package.json': '{ "name": "@orkestrel/router" }' }
 diffPlan(plan, current) // { findings: [...], clean: false, complete: true, drifted: 1, missing: 20, foreign: 0 }
+
+manifestToDependencies('{"dependencies":{"@orkestrel/contract":"^0.0.5"}}') // [{ name: '@orkestrel/contract', range: '^0.0.5' }]
+rangeToFreshness('^0.0.5', '0.0.5') // 'current' — pinned to latest
+rangeToFreshness('^0.0.5', '0.0.7') // 'behind' — a newer patch is published
 
 alignTable(['API', 'Kind'], [['`createRouter`', 'function']]) // '| API           | Kind     |\n| … |'
 ```
@@ -416,6 +457,7 @@ re-exported here (AGENTS §6).
 | `createPlanManager`  | function | A working `PlanManagerInterface`.                                                                                                                                                |
 | `createBlueprint`    | function | Validate and return a `Blueprint` from plain data — throws `ScaffoldError('INVALID', …)` on failure (structure AND the semantic pass, so an off-`NAME_PATTERN` name throws too). |
 | `createMaterializer` | function | A `MaterializerInterface` **(server)** — the materialization entity, seeded from `MaterializerOptions`.                                                                          |
+| `createSync`         | function | A `SyncInterface` **(server)** — the upstream-synchronization entity, seeded from `SyncOptions`.                                                                                 |
 
 ```ts
 import { createBlueprint, createCompiler, createPlanManager } from '@orkestrel/scaffold'
@@ -432,18 +474,20 @@ createBlueprint({ name: 'Router', surfaces: [] }) // throws ScaffoldError('INVAL
 
 ### Entities
 
-| API            | Kind  | Summary                                                                                                                          |
-| -------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `Compiler`     | class | The compilation orchestrator — runs the three-stage pipeline and the audit projection, owns a typed emitter.                     |
-| `PlanManager`  | class | The self-owning, versioned/hashed plan registry (AGENTS §9) — record ids default to each plan's own content hash.                |
-| `Materializer` | class | The materialization entity **(server)** — the only impure surface; writes a plan (green-field) or repairs drift (into-existing). |
+| API            | Kind  | Summary                                                                                                                                                                                                            |
+| -------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Compiler`     | class | The compilation orchestrator — runs the three-stage pipeline and the audit projection, owns a typed emitter.                                                                                                       |
+| `PlanManager`  | class | The self-owning, versioned/hashed plan registry (AGENTS §9) — record ids default to each plan's own content hash.                                                                                                  |
+| `Materializer` | class | The materialization entity **(server)** — the impure WRITE surface; writes a plan (green-field) or repairs drift (into-existing).                                                                                  |
+| `Sync`         | class | The upstream-synchronization entity **(server)** — the impure FETCH sibling of `Materializer`; fetches dependency guides + registry versions, refreshes vendored mirrors under the containment law. Promise-based. |
 
-The server surface also ships two helpers and its factory:
+The server surface also ships three helpers and its factories:
 
-| API          | Kind     | Summary                                                                                                                                           |
-| ------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `isVacant`   | function | **(server)** Whether a target path is absent, empty, or contains nothing but a `.git` directory — the green-field target law.                     |
-| `readTarget` | function | **(server)** Read a target's current content at a set of relative paths into a `Record<string, string>` — the I/O that feeds the pure `diffPlan`. |
+| API            | Kind     | Summary                                                                                                                                              |
+| -------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `isVacant`     | function | **(server)** Whether a target path is absent, empty, or contains nothing but a `.git` directory — the green-field target law.                        |
+| `readTarget`   | function | **(server)** Read a target's current content at a set of relative paths into a `Record<string, string>` — the I/O that feeds the pure `diffPlan`.    |
+| `readManifest` | function | **(server)** Read `target/package.json` text; an absent manifest throws `ScaffoldError('TARGET', …)` — the read that feeds `manifestToDependencies`. |
 
 ```ts
 import { createMaterializer, isVacant } from '@orkestrel/scaffold/server'
@@ -462,10 +506,10 @@ materializer.destroy()
 
 The public methods of each behavioral interface — one table per type, keyed by its
 backticked name, every call-signature member listed (the `readonly` data members —
-`emitter` on `Compiler`; `emitter` / `size` on `PlanManager`; `emitter` on `Materializer` —
-stay in the Surface rows above). Each implementing class exposes exactly its interface's
-methods, so this doubles as the per-instance method surface (AGENTS §22). The bin
-(`src/bin/scaffold.ts`) is a thin procedural entrypoint — it implements NO behavioral
+`emitter` on `Compiler`; `emitter` / `size` on `PlanManager`; `emitter` on `Materializer`
+and `Sync` — stay in the Surface rows above). Each implementing class exposes exactly its
+interface's methods, so this doubles as the per-instance method surface (AGENTS §22). The
+bin (`src/bin/scaffold.ts`) is a thin procedural entrypoint — it implements NO behavioral
 interface and carries no Methods table (it exports no public members, and §22 parity
 excludes `src/bin`).
 
@@ -512,9 +556,8 @@ The self-owning, ordered registry over plans (AGENTS §9). `add` re-pins the pla
 each record's `id` FROM its content `hash` — the hash IS the identity, so distinct content
 always mints a fresh record at `version: 1`; re-adding a plan whose content is unchanged
 resolves to the SAME id and returns the existing record untouched, `version` never
-incrementing. The array
-overload of `remove` is declared FIRST (AGENTS §9.2) so an id list resolves to the batch
-form. A call after `destroy()` throws `ScaffoldError('DESTROYED', …)`.
+incrementing. The array overload of `remove` is declared FIRST (AGENTS §9.2) so an id list
+resolves to the batch form. A call after `destroy()` throws `ScaffoldError('DESTROYED', …)`.
 
 | Method    | Returns                   | Behavior                                                                                              |
 | --------- | ------------------------- | ----------------------------------------------------------------------------------------------------- |
@@ -541,8 +584,8 @@ plans.destroy()
 
 #### `MaterializerInterface`
 
-**(server surface.)** The only impure entity in the package — `node:fs` writes behind an
-explicit call. `materialize` is green-field: it refuses any target `isVacant` rejects
+**(server surface.)** The impure WRITE entity — `node:fs` writes behind an explicit call.
+`materialize` is green-field: it refuses any target `isVacant` rejects
 (throwing `ScaffoldError('TARGET', …)`), then byte-copies each `host` artifact from the
 `host` root and writes each `template` / `computed` artifact's rendered `content`, failing
 fast on any write error (`WRITE`). `repair` is into-existing: it skips the vacancy check and
@@ -577,6 +620,39 @@ materializer.repair(plan, audit, './packages/budget')
 materializer.destroy()
 ```
 
+#### `SyncInterface`
+
+**(server surface.)** The impure FETCH sibling of `Materializer` — Promise-based,
+network-only. Every method reads upstream over HTTPS with a 10-second per-request timeout
+(`AbortSignal.timeout`) and bounded `concurrency` (default 6, never an unbounded
+`Promise.all`); the default COLLECT posture captures each dependency's `freshness` (`404` →
+`missing`, transport / non-2xx → `failed`) into the report, while `strict` mode instead
+throws `ScaffoldError('FETCH', …)` naming the failing URL. `pull` and `write` are the two
+halves of a sync — `pull` reads and reports (NO writes), `write` commits the fetched guides
+under the containment law. After `destroy()` every method throws `DESTROYED`; teardown is
+idempotent, emitter last.
+
+| Method     | Returns                           | Behavior                                                                                                                                                                                                                        |
+| ---------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `guides`   | `Promise<readonly GuideSync[]>`   | Fetch each named dependency's guide from the branch HEAD and verdict its `freshness` against the local mirror (`current` / `behind` / `missing` / `failed`); emits `guide` per resolution.                                      |
+| `versions` | `Promise<readonly VersionSync[]>` | Fetch each named dependency's registry `latest` and compare it to the declared `range` via `rangeToFreshness`; emits `version` per resolution.                                                                                  |
+| `pull`     | `Promise<SyncReport>`             | Read `target/package.json` (`readManifest`), resolve its declared `@orkestrel` deps (`manifestToDependencies`), fetch guides + versions, and return a `SyncReport` — NO writes; emits `done`.                                   |
+| `write`    | `Promise<readonly string[]>`      | Write a report's fetched guides into `target/guides/src` under the containment law (filenames derived from `DEPENDENCY_NAME_PATTERN`-validated names, never a traversal); returns the written paths and emits `write` per file. |
+| `destroy`  | `void`                            | Idempotent teardown — emits `destroy`, then destroys the emitter LAST.                                                                                                                                                          |
+
+```ts
+import { createSync } from '@orkestrel/scaffold/server'
+
+const sync = createSync() // defaults: raw.githubusercontent.com, branch main, registry.npmjs.org
+const report = await sync.pull('.') // reads ./package.json, fetches guides + versions, NO writes
+report.clean // false — a mirror or a range fell behind
+report.guides.filter((guide) => guide.freshness === 'behind') // stale vendored mirrors
+report.versions.filter((version) => version.freshness === 'behind') // out-of-date ranges
+
+const written = await sync.write(report, '.') // commit the refreshed guides under guides/src
+sync.destroy()
+```
+
 ## Contract
 
 These invariants hold across `src/core` + `src/server` ↔ `scaffold.md`:
@@ -587,14 +663,15 @@ These invariants hold across `src/core` + `src/server` ↔ `scaffold.md`:
    (AGENTS §22). The scan covers `src/core` + `src/server` ONLY; `src/bin` is EXCLUDED — the
    bin is an executable with no public exports. Adding, renaming, or removing a library
    export breaks the parity gate until the doc is reconciled.
-2. **Deterministic, synchronous, immutable — in the core and server (§11).** Same
+2. **Deterministic, synchronous, immutable — in the core and the `Materializer` (§11).** Same
    `Blueprint` + same `Group` selection → the same `Scaffolding`, every time — no clocks, no
    randomness, no I/O in the core, nothing async. `pinPlan`'s `trace` and `hash` derive from
    the plan's CONTENT alone (paths, origins, sources, and rendered content — everything the
    blueprint fully determines), and the `PlanManager` mints record ids from that hash, so
-   re-adding an unchanged plan is a version no-op. The **bin** alone is legitimately
-   Promise-based: its interactive prompt flow is async orchestration AROUND the synchronous
-   `compile`, never inside it. No input is ever mutated; every builder, projection, and
+   re-adding an unchanged plan is a version no-op. The **bin** AND the server `Sync` entity
+   are legitimately Promise-based — the bin's prompt flow and `Sync`'s upstream fetches
+   orchestrate AROUND the synchronous `compile` / write, never inside them; the core and the
+   `Materializer` stay synchronous. No input is ever mutated; every builder, projection, and
    pipeline stage returns a fresh value.
 3. **Three origins, one token boundary.** An `Artifact`'s `origin` is exhaustive and
    load-bearing: `host` artifacts byte-copy from the vendored data root (server-only I/O, no
@@ -638,40 +715,54 @@ These invariants hold across `src/core` + `src/server` ↔ `scaffold.md`:
    copy per runtime dependency): THIS repo vendors all six runtime deps' guides (contract /
    emitter / markdown / template / terminal / console) plus `guide.md` alongside its own —
    seven mirror files. A scaffolded package's `Dependency` therefore gets a BYTE-CORRECT
-   mirror only when scaffold vendors that dep's guide (the seven above); any OTHER
+   OFFLINE mirror only when scaffold vendors that dep's guide (the seven above); any OTHER
    `@orkestrel` dependency yields NO fabricated mirror — the plan emits a `host`-origin
-   POINTER artifact the caller syncs from that dep repo at HEAD, surfaced as a NON-blocking
-   Question.
+   POINTER artifact, surfaced as a NON-blocking Question. Those shipped mirrors are the
+   OFFLINE BASELINE — correct for offline creation; the server `Sync` entity is the FRESHNESS
+   path for ANY declared `@orkestrel` dependency (vendored or not), fetching the current guide
+   and range from upstream and superseding the baseline when the network is available.
 8. **Diff-first, write-last.** `compile`, `audit`, `blueprintToPlan`, `diffPlan`,
-   `planToReview`, and `planToSummary` are pure data with no side effects; the ONLY impure
-   act in the package is the server surface's `materialize` / `repair`, gated behind an
-   explicit call (and the bin's `--apply`). The dry-run review is the default posture
-   everywhere — you always see the plan (or the drift) before a byte is written.
+   `planToReview`, `planToSummary`, and `Sync.pull` are report-only; the ONLY writing acts in
+   the package are the server surface's `materialize` / `repair` / `Sync.write`, each gated
+   behind an explicit call (and the bin's `--apply`). The dry-run review is the default
+   posture everywhere — you always see the plan (or the drift, or the freshness) before a
+   byte is written.
 9. **Guard totality and single-source parity (§14).** Every validator is a total `Guard` —
-   adversarial input returns `false`, never throws. `isBlueprint` / `isPlan` / the section
-   guards are COMPILED from `blueprintShape()` / `planShape()` through the contract package's
-   `createContract`, so the guard, the parser, the JSON Schema, and the seeded generator are
-   lockstep by construction — an off-vocabulary literal, a missing section, or an extra key
-   fails all four identically. `NAME_PATTERN` is deliberately NOT a shape refinement
-   (contract's `compileGenerator` throws on a pattern-constrained string it cannot sample),
-   so `generate` stays satisfiable; the name law lives in the SEMANTIC pass
-   (`validateBlueprint`, the gate, and `createBlueprint`), not the compiled contract.
+   adversarial input returns `false`, never throws. `isBlueprint` / `isPlan` / `isSyncReport`
+   / the section guards are COMPILED from `blueprintShape()` / `planShape()` /
+   `syncReportShape()` through the contract package's `createContract`, so the guard, the
+   parser, the JSON Schema, and the seeded generator are lockstep by construction — an
+   off-vocabulary literal, a missing section, or an extra key fails all four identically.
+   `NAME_PATTERN` is deliberately NOT a shape refinement (contract's `compileGenerator` throws
+   on a pattern-constrained string it cannot sample), so `generate` stays satisfiable; the
+   name law lives in the SEMANTIC pass (`validateBlueprint`, the gate, and `createBlueprint`),
+   not the compiled contract.
 10. **Coded errors (§12).** Every throw out of this module is a `ScaffoldError` with a
-    machine-readable code (`INVALID` / `DESTROYED` from the core, `TARGET` / `WRITE` from the
-    server) and a `context` carrying the offending path or field; `BLOCKED` is a contained
-    failure marker on a `Scaffolding`, never thrown. `catch` blocks narrow with
-    `isScaffoldError`, never `as`.
+    machine-readable code (`INVALID` / `DESTROYED` from the core, `TARGET` / `WRITE` / `FETCH`
+    from the server) and a `context` carrying the offending path, field, or URL; `BLOCKED` is
+    a contained failure marker on a `Scaffolding`, never thrown, and in `Sync`'s default
+    collect mode a fetch fault is a captured `freshness`, not a throw. `catch` blocks narrow
+    with `isScaffoldError`, never `as`.
 11. **Observation is a pure side-channel (§13).** The `Compiler` owns a typed emitter
     (`CompilerEventMap` — `compile` / `audit` / `block` / `error` / `destroy`); the
-    `PlanManager` and the server `Materializer` own their own. Every event is emitted
-    directly and synchronously, AFTER the outcome it reports; only complete `compile()` calls
-    emit `compile`, and a gated one emits `block` instead. `audit()` emits `audit` after its
-    outcome and NEVER `compile`; a gated `audit()` emits `block` then `audit`. A stage throw
-    inside `compile` / `audit` is CONTAINED as a `CompileFailure` on the result AND emitted on
-    the domain `error` event for observability. Listener isolation is the emitter's own — a
-    throwing listener routes to the `error` OPTION handler, never onto the domain `error`
-    event. `destroy()` is idempotent and tears the emitter down LAST.
-12. **DOC ↔ SOURCE method bijection.** Every behavioral interface's `## Methods` table lists
+    `PlanManager`, the server `Materializer`, and the server `Sync` own their own. Every event
+    is emitted directly and synchronously, AFTER the outcome it reports; only complete
+    `compile()` calls emit `compile`, and a gated one emits `block` instead. `audit()` emits
+    `audit` after its outcome and NEVER `compile`; a gated `audit()` emits `block` then
+    `audit`. A stage throw inside `compile` / `audit` is CONTAINED as a `CompileFailure` on the
+    result AND emitted on the domain `error` event for observability. Listener isolation is the
+    emitter's own — a throwing listener routes to the `error` OPTION handler, never onto the
+    domain `error` event. `destroy()` is idempotent and tears the emitter down LAST.
+12. **Network is server/bin-only.** ONLY the server `Sync` entity touches the network — the
+    core, the `Compiler`, the `Materializer`, every projection, and every guard are
+    network-free. `Sync` fetches over HTTPS with a per-request 10-second timeout
+    (`AbortSignal.timeout`), no retries by default (opt in via `retries`), bounded concurrency
+    (default 6, never an unbounded `Promise.all`), and TLS / proxy configured through the
+    ENVIRONMENT (never a verification bypass); it reads guides from `raw.githubusercontent.com`
+    and versions from `registry.npmjs.org` (both `base`s injectable). A failed fetch is EITHER
+    a thrown `ScaffoldError('FETCH', …)` naming the URL (under `strict`) OR a captured
+    `freshness: 'failed'` (the default collect mode) — never an unhandled rejection.
+13. **DOC ↔ SOURCE method bijection.** Every behavioral interface's `## Methods` table lists
     exactly its public methods (call-signature members) — exhaustive, both directions — and
     each implementing class exposes the same public methods, no more (AGENTS §22). The bin
     implements no interface and is excluded, as in invariant 1.
@@ -682,15 +773,16 @@ this module renders the whole §1.2 variant matrix from versioned `TemplateDefin
 so a convention change is a version bump here rather than a hand-edit in every repo's copy.
 
 Deliberately absent: any **git** operation (no `git init` / `git clone` — the caller prepares
-the vacant target, and the package stops at the file boundary), any **npm** invocation (no
-`npm install`, no lockfile generation — the caller runs the gates), any **network** call, any
-**LLM** (the authoring judgment is the caller's, per invariant 7), a foreign template
-ecosystem (the module renders only the `@orkestrel` line's own conventions, versioned in this
-package), asynchronous compilation, and plan persistence (`JSON.stringify(plan)` out,
-`parsePlan` back in). Three sibling engines were considered and REJECTED, each for a concrete
-reason: **`@orkestrel/reason`** — the gate is regex / set-membership / path-matching checks a
-reason `Check`'s comparisons cannot express, and facet deduction already IS `SURFACE_MATRIX`
-plus the §4.2/§4.3 combination rules, so there is no inference gap for a reasoner to fill;
+the vacant target, and the package stops at the file boundary), any **npm** INVOCATION (no
+`npm install`, no lockfile generation — the caller runs the gates; the `Sync` entity's read
+of registry version METADATA is an HTTPS GET, not an npm invocation), any **LLM** (the
+authoring judgment is the caller's, per invariant 7), a foreign template ecosystem (the
+module renders only the `@orkestrel` line's own conventions, versioned in this package),
+asynchronous compilation, and plan persistence (`JSON.stringify(plan)` out, `parsePlan` back
+in). Three sibling engines were considered and REJECTED, each for a concrete reason:
+**`@orkestrel/reason`** — the gate is regex / set-membership / path-matching checks a reason
+`Check`'s comparisons cannot express, and facet deduction already IS `SURFACE_MATRIX` plus the
+§4.2/§4.3 combination rules, so there is no inference gap for a reasoner to fill;
 **`@orkestrel/interpret`** — there is no natural-language input to interpret and no
 `ReasonResult` to render; and **`@orkestrel/relation`** — a plan's artifacts are one ORDERED
 list, fully served by the guards, `diffPlan`, and the summary, so no graph layer is needed
@@ -868,24 +960,125 @@ function handle(argument: string): string {
 contract.generate(seededRandom(7)) // a reproducible on-contract blueprint — the test fixture, for free
 ```
 
-### The `scaffold` bin — a dedicated build target
+### Targeted sync in an existing repo
+
+`Sync.pull` reads the target's `package.json`, resolves its declared `@orkestrel`
+dependencies, and fetches each one's upstream guide and registry version — reporting freshness
+as data, writing nothing. `syncToReview` renders it; only an explicit `write` (the bin's
+`--apply`) commits the refreshed mirrors. To scope to a dependency SUBSET, resolve with
+`manifestToDependencies` and call `guides(deps)` / `versions(deps)` directly.
+
+```ts
+import { syncToReview } from '@orkestrel/scaffold'
+import { createSync } from '@orkestrel/scaffold/server'
+
+const sync = createSync({ concurrency: 6 })
+const report = await sync.pull('.') // all declared @orkestrel deps
+syncToReview(report) // '# Sync — 2 behind\n## Guides\n| Name | Freshness |\n…'
+report.guides.filter((guide) => guide.freshness !== 'current') // the stale / missing mirrors
+
+if (report.failed === 0) await sync.write(report, '.') // refresh the vendored mirrors under guides/src
+sync.destroy()
+```
+
+### Auditing with live drift
+
+`scaffold audit` layers TWO drift sources: the structural `diffPlan` (the plan vs the target
+on disk) and — under `--live` — the `Sync` freshness pass (each dependency's guide vs upstream
+HEAD, each range vs the registry latest). Any drift is a nonzero exit, so it doubles as a CI
+conformance gate. `audit` NEVER writes.
+
+```ts
+import { blueprintToPlan, diffPlan, manifestToDependencies } from '@orkestrel/scaffold'
+import { createSync, readManifest, readTarget } from '@orkestrel/scaffold/server'
+
+const plan = blueprintToPlan(spec) // `spec` — the blueprint reconstructed for this repo
+const structural = diffPlan(
+	plan,
+	readTarget(
+		'.',
+		plan.artifacts.map((artifact) => artifact.path),
+	),
+)
+
+// --live: add guide-vs-HEAD + range-vs-latest freshness for the declared deps.
+const deps = manifestToDependencies(readManifest('.'))
+const sync = createSync()
+const guides = await sync.guides(deps)
+const versions = await sync.versions(deps)
+sync.destroy()
+
+const drifted =
+	!structural.clean ||
+	guides.some((guide) => guide.freshness !== 'current') ||
+	versions.some((version) => version.freshness !== 'current')
+process.exitCode = drifted ? 1 : 0 // ANY drift fails the CI gate
+```
+
+### Offline and failure posture
+
+`Sync` is built for an enterprise network. Each request carries a 10-second
+`AbortSignal.timeout`, there are no retries by default (opt in with `retries`), concurrency is
+bounded (default 6, never an unbounded `Promise.all`), and TLS / proxy come from the
+environment (never a verification bypass). The DEFAULT posture is COLLECT-and-report: a
+per-dependency failure becomes a captured `freshness` (`404` → `missing`, transport →
+`failed`) on the `SyncReport`, so one unreachable dep never sinks the whole run. `strict` flips
+a failure into a thrown `ScaffoldError('FETCH', …)` that names the URL — for a CI gate that
+must go red on any network fault.
+
+```ts
+import { isScaffoldError } from '@orkestrel/scaffold'
+import { createSync } from '@orkestrel/scaffold/server'
+
+// Collect mode (default): partial failure is DATA, not a throw.
+const collect = createSync({ registry: { base: 'https://registry.example.internal' } })
+const report = await collect.pull('.')
+report.failed // 1 — one dep's registry was unreachable; the rest resolved
+report.versions.find((version) => version.freshness === 'failed') // the captured failure
+collect.destroy()
+
+// Strict mode: any fetch fault throws, naming the URL — the CI-gate posture.
+const strict = createSync({ strict: true, retries: 2 })
+try {
+	await strict.pull('.')
+} catch (error) {
+	if (isScaffoldError(error)) error.code // 'FETCH'
+}
+strict.destroy()
+```
+
+### The `scaffold` bin — three subcommands, one build target
 
 The CLI is its OWN build target — `src/bin/scaffold.ts`, an executable, not a barrel. It
 opens with a `#!/usr/bin/env node` shebang, parses argv with `node:util`'s `parseArgs` (no
-foreign arg parser), prompts interactively through `@orkestrel/terminal`'s `createTerminal`
+foreign arg parser), and dispatches on THREE subcommands: **`new`** creates a package
+(resolving any `--deps` to the registry `latest` → `^latest` ranges, fetching their guides
+into the plan), **`sync`** refreshes an existing repo's vendored dependency mirrors and
+reports range drift, and **`audit`** runs the structural conformance check (plus, under
+`--live`, guide-vs-HEAD and range-vs-latest freshness). It narrates through
+`@orkestrel/console` and prompts interactively through `@orkestrel/terminal`'s `createTerminal`
 when a required argument is absent (a real TTY; a piped run falls back to the flags and the
-terminal's own non-TTY readline path), compiles, prints `planToReview` and a
-`reporter.table(planToSummary(plan))` through `@orkestrel/console`, and — ONLY under
-`--apply` — runs the `Materializer` inside a `createSpinner`. Dry-run is the default: nothing
-is written without `--apply`.
+terminal's non-TTY readline path). Report-only is the default posture of all three; only
+`--apply` writes, `audit` NEVER writes, and the exit codes gate CI — `new` nonzero on a block
+or write failure, `sync` nonzero only under `--strict` with failures, `audit` nonzero on ANY
+drift.
 
 ```ts
-// The `#!/usr/bin/env node` shebang is NOT in source — the build's `output.banner`
-// (`configs/src/vite.bin.config.ts`) re-emits it on the compiled entry, avoiding
-// a duplicate-shebang bundling error.
+// The `#!/usr/bin/env node` shebang is re-emitted by the build's `output.banner`, not source.
 import { parseArgs } from 'node:util'
-import { blueprint, createCompiler, planToReview, planToSummary, SURFACES } from '@src/core'
-import { createMaterializer } from '@src/server'
+import {
+	blueprint,
+	blueprintToPlan,
+	createCompiler,
+	dependency,
+	diffPlan,
+	manifestToDependencies,
+	planToReview,
+	planToSummary,
+	SURFACES,
+	syncToReview,
+} from '@src/core'
+import { createMaterializer, createSync, readManifest, readTarget } from '@src/server'
 import { createReporter, createSpinner } from '@orkestrel/console'
 import { createServerSink } from '@orkestrel/console/server'
 import { createTerminal } from '@orkestrel/terminal/server'
@@ -894,54 +1087,93 @@ const { values, positionals } = parseArgs({
 	allowPositionals: true,
 	options: {
 		surfaces: { type: 'string' },
+		deps: { type: 'string' },
 		target: { type: 'string' },
 		apply: { type: 'boolean', default: false },
+		strict: { type: 'boolean', default: false },
+		live: { type: 'boolean', default: false },
 	},
 })
 
-const sink = createServerSink() // process.stdout / process.stderr — ANSI on a TTY, stripped down a pipe
+const sink = createServerSink()
 const reporter = createReporter({ sink, width: sink.columns })
+const [command, argument] = positionals // 'new' | 'sync' | 'audit'
+const target = values.target ?? '.'
 
-// Interactive when an argument is absent (a real TTY); a piped run uses the flags verbatim.
-const terminal = createTerminal()
-const name =
-	positionals[0] ??
-	(await terminal.input({ message: 'Package name', validate: { pattern: '^[a-z][a-z0-9-]*$' } }))
-const picked =
-	values.surfaces?.split(',') ??
-	(await terminal.checkbox({ message: 'Surfaces', choices: [...SURFACES], min: 1 }))
-const surfaces = SURFACES.filter((surface) => picked.includes(surface)) // narrow to Surface[], no `as`
+if (command === 'sync') {
+	const sync = createSync({ strict: values.strict })
+	const report = await sync.pull(target)
+	reporter.line(syncToReview(report))
+	if (values.apply) await sync.write(report, target)
+	sync.destroy()
+	process.exit(values.strict && report.failed > 0 ? 1 : 0) // nonzero only under --strict with failures
+} else if (command === 'audit') {
+	const deps = manifestToDependencies(readManifest(target))
+	const plan = blueprintToPlan(
+		/* the blueprint reconstructed for this repo */ blueprint(argument ?? 'pkg'),
+	)
+	let drifted = !diffPlan(
+		plan,
+		readTarget(
+			target,
+			plan.artifacts.map((a) => a.path),
+		),
+	).clean
+	if (values.live) {
+		const sync = createSync()
+		const guides = await sync.guides(deps)
+		const versions = await sync.versions(deps)
+		sync.destroy()
+		drifted ||= [...guides, ...versions].some((entry) => entry.freshness !== 'current')
+	}
+	process.exit(drifted ? 1 : 0) // ANY drift fails — the CI gate
+} else {
+	// `scaffold new <name>` — creation.
+	const terminal = createTerminal()
+	const name =
+		argument ??
+		(await terminal.input({ message: 'Package name', validate: { pattern: '^[a-z][a-z0-9-]*$' } }))
+	const picked =
+		values.surfaces?.split(',') ??
+		(await terminal.checkbox({ message: 'Surfaces', choices: [...SURFACES], min: 1 }))
+	const surfaces = SURFACES.filter((surface) => picked.includes(surface)) // narrow to Surface[], no `as`
 
-const compiler = createCompiler()
-const scaffolding = compiler.compile(blueprint(name, { surfaces }))
+	// --deps resolve latest from the registry → ranges pin ^latest; their guides fetch into the plan.
+	const sync = createSync()
+	const versions = await sync.versions(
+		(values.deps?.split(',') ?? []).map((name) => dependency(name, '*')),
+	)
+	sync.destroy()
+	const deps = versions.map((version) => dependency(version.name, `^${version.latest}`))
 
-if (!scaffolding.plan) {
-	reporter.status('error', scaffolding.questions.map((question) => question.text).join('; '))
+	const compiler = createCompiler()
+	const scaffolding = compiler.compile(blueprint(name, { surfaces, dependencies: deps }))
+	if (!scaffolding.plan) {
+		reporter.status('error', scaffolding.questions.map((question) => question.text).join('; '))
+		compiler.destroy()
+		process.exit(1)
+	}
+	reporter.section('Plan')
+	reporter.line(planToReview(scaffolding.plan)) // dry-run default: show the review
+	const summary = planToSummary(scaffolding.plan)
+	reporter.table({
+		columns: [{ label: 'Origin' }, { label: 'Count', align: 'right' }],
+		rows: [
+			['host', String(summary.host)],
+			['template', String(summary.template)],
+			['computed', String(summary.computed)],
+		],
+	})
+	if (values.apply) {
+		const spinner = createSpinner({ message: 'materializing', sink })
+		spinner.start()
+		const materializer = createMaterializer()
+		const result = materializer.materialize(scaffolding.plan, values.target ?? `./${name}`)
+		materializer.destroy()
+		spinner.success(`wrote ${result.written.length + result.copied.length} files`)
+	}
 	compiler.destroy()
-	process.exit(1)
 }
-
-reporter.section('Plan')
-reporter.line(planToReview(scaffolding.plan)) // dry-run default: show the review
-const summary = planToSummary(scaffolding.plan)
-reporter.table({
-	columns: [{ label: 'Origin' }, { label: 'Count', align: 'right' }],
-	rows: [
-		['host', String(summary.host)],
-		['template', String(summary.template)],
-		['computed', String(summary.computed)],
-	],
-})
-
-if (values.apply) {
-	const spinner = createSpinner({ message: 'materializing', sink })
-	spinner.start()
-	const materializer = createMaterializer()
-	const result = materializer.materialize(scaffolding.plan, values.target ?? `./${name}`)
-	materializer.destroy()
-	spinner.success(`wrote ${result.written.length + result.copied.length} files`)
-}
-compiler.destroy()
 ```
 
 The build wiring follows the §7 two-file wrapper pattern: `configs/src/tsconfig.bin.json`
@@ -957,11 +1189,16 @@ repo's own script), `npx @orkestrel/scaffold` post-publish, and `node_modules/.b
 once it is a devDependency of a consumer.
 
 ```sh
-# Dry-run by default — prints the plan's review + summary table, writes nothing:
-npx @orkestrel/scaffold router --surfaces core,browser,server
+# new — create a package (dry-run prints the plan; --apply writes):
+npx @orkestrel/scaffold new router --surfaces core,browser,server
+npx @orkestrel/scaffold new router --deps @orkestrel/contract --apply --target ./packages/router
 
-# --apply is the explicit, impure step (the only one):
-npx @orkestrel/scaffold router --surfaces core,browser,server --apply --target ./packages/router
+# sync — refresh vendored dep mirrors + report range drift (nonzero only under --strict):
+npx @orkestrel/scaffold sync --target . --apply
+npx @orkestrel/scaffold sync --deps @orkestrel/contract,@orkestrel/emitter --strict
+
+# audit — structural conformance, +live freshness; nonzero on ANY drift (the CI gate):
+npx @orkestrel/scaffold audit --live
 ```
 
 ### Retiring `scaffold.sh` — the replacement path
@@ -985,21 +1222,25 @@ fleet.
 
 ### Practices
 
-- **Dry-run first, always** — `compile` / `blueprintToPlan` and `planToReview` are pure;
-  read the plan (or `diffPlan`'s audit) before ever calling the server surface. Writing is
-  the only impure act, and it is opt-in (the bin's `--apply`).
+- **Dry-run first, always** — `compile` / `blueprintToPlan` / `planToReview` and `Sync.pull` /
+  `syncToReview` are report-only; read the plan (or the audit, or the freshness) before ever
+  writing. Writing is opt-in (the server's `materialize` / `repair` / `Sync.write`, the bin's
+  `--apply`).
 - **One blueprint, one package** — a compound request (two packages) is two `compile` calls,
   not one blueprint with a wider `surfaces` list; `surfaces` selects the variant of ONE
   package, never bundles several.
 - **Audit before you edit a fleet repo** — `diffPlan` turns the SCAFFOLD.md §13.3 checklist
-  into findings; repair the `missing` / `stale` set with `repair`, and leave `aligned` files
-  untouched.
+  into findings; add `--live` for guide + range freshness; repair the `missing` / `stale` set
+  with `repair`, refresh mirrors with `Sync.write`, and leave `aligned` / `current` untouched.
 - **Override, don't fork** — need a bespoke file? Add one `override` for that path; the rest
   stay canonical and keep tracking the shipped templates. Never copy the whole plan to change
   one file.
 - **Reference deps by their real range** — a `dependency('@orkestrel/contract', '^0.0.5')`
   drives the `package.json` entry, the vendored guide mirror (when scaffold ships it), and the
   build externals from one declaration; declare exactly what `src/` imports (SCAFFOLD.md §4.5).
+- **Collect by default, `strict` for CI** — leave `Sync` in collect mode for an interactive
+  freshness report; flip `strict: true` only where a network fault MUST fail the run (a CI
+  gate), and inject `guides.base` / `registry.base` at a local fixture for hermetic tests.
 - **Gate untrusted blueprints twice** — `parseBlueprint` for shape at the boundary,
   `validateBlueprint` for semantics; reserve `createBlueprint`'s throw for programmer-error
   contexts where invalidity is a bug (§12).
@@ -1010,7 +1251,8 @@ fleet.
   (throwing `TARGET`); repair into an existing package with `repair`, never by clearing it
   first.
 - **Destroy when done** — `destroy()` releases the emitter; a destroyed `Compiler` /
-  `PlanManager` / `Materializer` throws `DESTROYED` on use (narrow with `isScaffoldError`).
+  `PlanManager` / `Materializer` / `Sync` throws `DESTROYED` on use (narrow with
+  `isScaffoldError`).
 
 ## Tests
 
@@ -1029,33 +1271,42 @@ fleet.
 - [`tests/src/core/helpers.test.ts`](../../tests/src/core/helpers.test.ts) — every projection
   (`blueprintToMembers` inventory, `blueprintToPlan` variant coverage + `SURFACE_MATRIX`
   wiring + the §4.2/§4.3 combination rules, template-fill vs computed origins + the
-  token-collision boundary, `planToReview` / `auditToReview` table emission, `planToSummary`
-  counts, `diffPlan` drift verdicts incl. host presence-only, `pinPlan` determinism),
-  `validateBlueprint` errors + warnings, `pascalCase`, and `alignTable` (oxfmt-width padding,
-  `\|` escaping, alignment delimiter row).
+  token-collision boundary, `planToReview` / `auditToReview` / `syncToReview` table emission,
+  `planToSummary` counts, `diffPlan` drift verdicts incl. host presence-only,
+  `manifestToDependencies` across all three sections deduplicated, `rangeToFreshness` exact-pin
+  law, `pinPlan` determinism), `validateBlueprint` errors + warnings, `pascalCase`, and
+  `alignTable` (oxfmt-width padding, `\|` escaping, alignment delimiter row).
 - [`tests/src/core/builders.test.ts`](../../tests/src/core/builders.test.ts) — every builder's
   output shape (defaults filled, absent optional keys omitted, exact-guard round-trips).
 - [`tests/src/core/validators.test.ts`](../../tests/src/core/validators.test.ts) — each guard
   accepts valid / rejects invalid + adversarial junk, exact-record semantics, off-vocabulary
-  literal rejection, `parseBlueprint` / `parsePlan` ↔ guard soundness.
+  literal rejection, `parseBlueprint` / `parsePlan` / `parseSyncReport` ↔ guard soundness.
 - [`tests/src/core/shapers.test.ts`](../../tests/src/core/shapers.test.ts) — `blueprintShape` /
-  `planShape` compilation through `createContract`: guard/parser/schema/generator lockstep,
-  generated blueprints satisfy `isBlueprint`.
+  `planShape` / `syncReportShape` compilation through `createContract`: guard/parser/schema/generator
+  lockstep, generated values satisfy their guards.
 - [`tests/src/server/Materializer.test.ts`](../../tests/src/server/Materializer.test.ts) —
   green-field `materialize` into a vacant temp dir (host copies + rendered writes), `TARGET`
   refusal on a non-vacant target, `repair` writing only drifted artifacts, `isVacant` /
   `readTarget` against a real `node:fs` fixture, `WRITE` fail-fast, event sequences, destroy
   semantics.
+- [`tests/src/server/Sync.test.ts`](../../tests/src/server/Sync.test.ts) — a real `node:http`
+  fixture serving guide bytes at `/<name>/<branch>/guides/src/<name>.md` and registry JSON
+  `{"dist-tags":{"latest":"0.0.N"}}` at the URL-encoded scoped path, with `guides.base` /
+  `registry.base` injected (§16 no-mocks): asserts fetching + writing under the containment
+  law, the `freshness` verdicts (incl. `404` → `missing` and timeout → `failed`), the `strict`
+  `FETCH` throw naming the URL, the bounded `concurrency`, the `guide` / `version` / `write` /
+  `done` event order, and `DESTROYED`.
 - [`tests/src/server/integration.test.ts`](../../tests/src/server/integration.test.ts) —
-  compile → materialize → audit (clean) → mutate a file → audit (drift) → repair (clean
-  again), end to end against a temp directory; a scaffolded package whose deps are all vendored
-  (contract / emitter / markdown / template / terminal / console) runs its own gates green by
-  construction, while a dep outside that set leaves its mirror a pointer plus a non-blocking
-  Question.
-- [`tests/src/bin/scaffold.test.ts`](../../tests/src/bin/scaffold.test.ts) — the bin end to
-  end: `parseArgs` flag decoding, a non-interactive (piped) compile + dry-run review + summary
-  table, the interactive fallback driven by a scripted fake terminal, and `--apply` writing
-  into a temp directory (the one impure path).
+  the full flow against the fixture: `new` → `sync` → `audit --live` (compile → materialize →
+  audit clean → mutate a file → audit drift → repair clean; then a stale mirror synced current);
+  a scaffolded package whose deps are all vendored (contract / emitter / markdown / template /
+  terminal / console) runs its own gates green by construction, while a dep outside that set
+  leaves its mirror a pointer plus a non-blocking Question.
+- [`tests/src/bin/scaffold.test.ts`](../../tests/src/bin/scaffold.test.ts) — the bin's three
+  subcommands: `new` (`parseArgs` flag decoding, a non-interactive piped compile + dry-run
+  review + summary table, the interactive fallback driven by a scripted fake terminal, and
+  `--apply` writing into a temp directory), `sync` (report + `--apply` write, `--strict` exit
+  code), and `audit` (`--live` drift → nonzero exit) against the `node:http` fixture.
 
 ## See also
 
@@ -1065,8 +1316,8 @@ fleet.
   retires.
 - [`contract.md`](contract.md) — the guards, shapers, and `createContract` machinery the
   validators compile from, and `schemaToParameters` / `seededRandom` for the tool boundary.
-- [`emitter.md`](emitter.md) — the typed emitter behind the compiler's, manager's, and
-  materializer's observation surfaces.
+- [`emitter.md`](emitter.md) — the typed emitter behind the compiler's, manager's,
+  materializer's, and sync's observation surfaces.
 - [`markdown.md`](markdown.md) — the AST + `renderMarkdown` writer `alignTable` builds the
   guide Surface tables on (`parseInline`, `TableNode`, `TableAlign`).
 - [`template.md`](template.md) — the `TemplateDefinition` + pure `fillTemplate` engine (`missing:
@@ -1074,7 +1325,7 @@ fleet.
 - [`terminal.md`](terminal.md) — the `createTerminal` `PromptFormInterface` the bin drives for
   interactive blueprint building (with a non-TTY readline fallback).
 - [`console.md`](console.md) — the `createReporter` / `createSpinner` + server `createServerSink`
-  the bin narrates the plan and materialization through.
+  the bin narrates the plan, sync, and materialization through.
 - [`AGENTS.md`](../../AGENTS.md) — the rules; §4 naming, §9 managers, §11 determinism, §12
   errors, §13 emitters, §14 totality, §21 mechanism-never-policy, §22 documentation-as-contracts.
 - [`README.md`](../README.md) — the package index.
