@@ -134,7 +134,7 @@ AROUND the synchronous `compile` / write, never inside them.
 | `Audit`                 | interface | `{ findings, clean, complete, questions, drifted, missing, foreign }` — the whole diff of a plan against a target's content; a `Compiler.audit` over a gate-failing blueprint sets `complete: false` with the gate's `questions` and zero findings, while `diffPlan` over an existing plan is always `complete: true`.                                                                                              |
 | `Question`              | interface | `{ field, text, blocking, candidates? }` — one validation issue; `blocking: true` fails the gate closed, `false` is an advisory that rides a complete result.                                                                                                                                                                                                                                                       |
 | `Validation`            | interface | `{ valid, questions, warnings }` — the semantic pass over a blueprint; returns, never throws.                                                                                                                                                                                                                                                                                                                       |
-| `GuideSync`             | interface | `{ name, path, content, freshness }` — one dependency guide fetched from upstream (`content`) at its `path`, plus its `freshness` verdict against the local mirror.                                                                                                                                                                                                                                                 |
+| `GuideSync`             | interface | `{ name, path, content, freshness }` — one dependency guide fetched from upstream (`content`) at its `path`, plus its `freshness` verdict against the caller-supplied reference (see `guides`).                                                                                                                                                                                                                     |
 | `VersionSync`           | interface | `{ name, range, latest, freshness }` — one dependency's declared `range` against the registry `latest`, plus its `freshness` verdict.                                                                                                                                                                                                                                                                               |
 | `SyncReport`            | interface | `{ target, guides, versions, clean, failed }` — the whole outcome of a `Sync.pull`: the fetched `guides` + `versions`, `clean` (no drift AND no failures), and the `failed` count.                                                                                                                                                                                                                                  |
 | `PlanSummary`           | interface | `{ name, surfaces, groups, artifacts, host, template, computed }` — the dry-run tally.                                                                                                                                                                                                                                                                                                                              |
@@ -632,13 +632,13 @@ halves of a sync — `pull` reads and reports (NO writes), `write` commits the f
 under the containment law. After `destroy()` every method throws `DESTROYED`; teardown is
 idempotent, emitter last.
 
-| Method     | Returns                           | Behavior                                                                                                                                                                                                                        |
-| ---------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `guides`   | `Promise<readonly GuideSync[]>`   | Fetch each named dependency's guide from the branch HEAD and verdict its `freshness` against the local mirror (`current` / `behind` / `missing` / `failed`); emits `guide` per resolution.                                      |
-| `versions` | `Promise<readonly VersionSync[]>` | Fetch each named dependency's registry `latest` and compare it to the declared `range` via `rangeToFreshness`; emits `version` per resolution.                                                                                  |
-| `pull`     | `Promise<SyncReport>`             | Read `target/package.json` (`readManifest`), resolve its declared `@orkestrel` deps (`manifestToDependencies`), fetch guides + versions, and return a `SyncReport` — NO writes; emits `done`.                                   |
-| `write`    | `Promise<readonly string[]>`      | Write a report's fetched guides into `target/guides/src` under the containment law (filenames derived from `DEPENDENCY_NAME_PATTERN`-validated names, never a traversal); returns the written paths and emits `write` per file. |
-| `destroy`  | `void`                            | Idempotent teardown — emits `destroy`, then destroys the emitter LAST.                                                                                                                                                          |
+| Method     | Returns                           | Behavior                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ---------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `guides`   | `Promise<readonly GuideSync[]>`   | Fetch each named dependency's guide from the branch HEAD and verdict its `freshness` against an OPTIONAL `current` reference — a caller-supplied `Readonly<Record<string, string>>` of local-mirror content keyed by dependency name (the caller-supplied-reference pattern `diffPlan` uses for target content). WITH the map: a fetched guide byte-equal to its entry is `current`, differing or absent-from-map is `behind`. WITHOUT the map: a successful fetch is ALWAYS `behind` (no reference means it needs syncing). An HTTP `404` is `missing`, a transport fault `failed`, either way. Emits `guide` per resolution. |
+| `versions` | `Promise<readonly VersionSync[]>` | Fetch each named dependency's registry `latest` and compare it to the declared `range` via `rangeToFreshness`; emits `version` per resolution.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `pull`     | `Promise<SyncReport>`             | Read `target/package.json` (`readManifest`), resolve its declared `@orkestrel` deps (`manifestToDependencies`), READ the target's existing `guides/src/<short>.md` mirrors into the `current` reference map (absent files simply omitted), then fetch guides (WITH that map) + versions and return a `SyncReport` — so `pull`'s `GuideSync` freshness is genuinely target-relative. NO writes; emits `done`.                                                                                                                                                                                                                   |
+| `write`    | `Promise<readonly string[]>`      | Write a report's fetched guides into `target/guides/src` under the containment law (filenames derived from `DEPENDENCY_NAME_PATTERN`-validated names, never a traversal); returns the written paths and emits `write` per file.                                                                                                                                                                                                                                                                                                                                                                                                |
+| `destroy`  | `void`                            | Idempotent teardown — emits `destroy`, then destroys the emitter LAST.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 
 ```ts
 import { createSync } from '@orkestrel/scaffold/server'
@@ -989,8 +989,8 @@ HEAD, each range vs the registry latest). Any drift is a nonzero exit, so it dou
 conformance gate. `audit` NEVER writes.
 
 ```ts
-import { blueprintToPlan, diffPlan, manifestToDependencies } from '@orkestrel/scaffold'
-import { createSync, readManifest, readTarget } from '@orkestrel/scaffold/server'
+import { blueprintToPlan, diffPlan } from '@orkestrel/scaffold'
+import { createSync, readTarget } from '@orkestrel/scaffold/server'
 
 const plan = blueprintToPlan(spec) // `spec` — the blueprint reconstructed for this repo
 const structural = diffPlan(
@@ -1001,17 +1001,17 @@ const structural = diffPlan(
 	),
 )
 
-// --live: add guide-vs-HEAD + range-vs-latest freshness for the declared deps.
-const deps = manifestToDependencies(readManifest('.'))
+// --live: `pull` reads the target's own guides/src mirrors into the reference map ITSELF, so
+// its GuideSync freshness is genuinely target-relative (a target-free `guides(deps)` with no
+// reference would instead read every fetched guide as 'behind').
 const sync = createSync()
-const guides = await sync.guides(deps)
-const versions = await sync.versions(deps)
+const report = await sync.pull('.')
 sync.destroy()
 
 const drifted =
 	!structural.clean ||
-	guides.some((guide) => guide.freshness !== 'current') ||
-	versions.some((version) => version.freshness !== 'current')
+	report.guides.some((guide) => guide.freshness !== 'current') ||
+	report.versions.some((version) => version.freshness !== 'current')
 process.exitCode = drifted ? 1 : 0 // ANY drift fails the CI gate
 ```
 
