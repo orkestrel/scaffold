@@ -1,4 +1,5 @@
-import type { Plan } from '@src/core'
+import type { Blueprint, Plan, SyncReport } from '@src/core'
+import { fillTemplate } from '@orkestrel/template'
 import {
 	alignTable,
 	auditToReview,
@@ -7,14 +8,20 @@ import {
 	blueprintToPlan,
 	dependency,
 	diffPlan,
+	manifestToDependencies,
 	override,
+	parseBlueprint,
 	pascalCase,
 	pinPlan,
 	planToReview,
 	planToSummary,
+	rangeToFreshness,
 	SURFACE_MATRIX,
+	syncToReview,
+	TEMPLATES,
 	validateBlueprint,
 } from '@src/core'
+import ts from 'typescript'
 import { describe, expect, it } from 'vitest'
 
 // Narrows a parsed package.json (or any nested JSON object field) through
@@ -336,6 +343,183 @@ describe('validateBlueprint', () => {
 			}),
 		).not.toThrow()
 	})
+
+	it('accepts a well-formed version and rejects an off-shape version (M2)', () => {
+		expect(validateBlueprint({ ...blueprint('router'), version: '1.2.3' }).valid).toBe(true)
+
+		const validation = validateBlueprint({ ...blueprint('router'), version: '1.2' })
+		expect(validation.valid).toBe(false)
+		expect(validation.questions.some((question) => question.field === 'version')).toBe(true)
+		expect(validation.questions.every((question) => question.blocking)).toBe(true)
+	})
+
+	it('accepts a well-formed engines range and rejects an off-shape one (M2)', () => {
+		expect(validateBlueprint({ ...blueprint('router'), engines: '>=24' }).valid).toBe(true)
+
+		const validation = validateBlueprint({ ...blueprint('router'), engines: '22' })
+		expect(validation.valid).toBe(false)
+		expect(validation.questions.some((question) => question.field === 'engines')).toBe(true)
+		expect(validation.questions.every((question) => question.blocking)).toBe(true)
+	})
+
+	it('accepts non-duplicate override paths and blocks a duplicate override path (M3)', () => {
+		expect(
+			validateBlueprint({
+				...blueprint('router'),
+				overrides: [override('a.ts', 'x'), override('b.ts', 'y')],
+			}).valid,
+		).toBe(true)
+
+		const validation = validateBlueprint({
+			...blueprint('router'),
+			overrides: [override('a.ts', 'x'), override('a.ts', 'y')],
+		})
+		expect(validation.valid).toBe(false)
+		expect(
+			validation.questions.some(
+				(question) => question.field === 'overrides' && question.text.includes('more than once'),
+			),
+		).toBe(true)
+	})
+
+	it('accepts non-empty override content and blocks empty override content (M4)', () => {
+		expect(
+			validateBlueprint({ ...blueprint('router'), overrides: [override('a.ts', 'x')] }).valid,
+		).toBe(true)
+
+		const validation = validateBlueprint({
+			...blueprint('router'),
+			overrides: [override('a.ts', '')],
+		})
+		expect(validation.valid).toBe(false)
+		expect(
+			validation.questions.some(
+				(question) => question.field === 'overrides' && question.text.includes('empty content'),
+			),
+		).toBe(true)
+	})
+
+	it('accepts a name at the 203-char bound and blocks one past it (M6)', () => {
+		const atBound = 'a'.repeat(203)
+		const overBound = 'a'.repeat(204)
+
+		expect(validateBlueprint({ ...blueprint('router'), name: atBound }).valid).toBe(true)
+
+		const validation = validateBlueprint({ ...blueprint('router'), name: overBound })
+		expect(validation.valid).toBe(false)
+		expect(validation.questions.some((question) => question.field === 'name')).toBe(true)
+	})
+
+	it('accepts NAME_PATTERN-shaped trailing/doubled-hyphen names, matching pascalCase (L4)', () => {
+		expect(validateBlueprint({ ...blueprint('router'), name: 'router-' }).valid).toBe(true)
+		expect(validateBlueprint({ ...blueprint('router'), name: 'my--router' }).valid).toBe(true)
+		expect(pascalCase('router-')).toBe('Router')
+		expect(pascalCase('my--router')).toBe('MyRouter')
+	})
+})
+
+describe('manifestToDependencies', () => {
+	it('collects @orkestrel deps across dependencies/devDependencies/peerDependencies', () => {
+		const manifest = JSON.stringify({
+			dependencies: { '@orkestrel/contract': '^0.0.5' },
+			devDependencies: { '@orkestrel/emitter': '^0.0.2' },
+			peerDependencies: { '@orkestrel/markdown': '^0.0.1' },
+		})
+
+		const deps = manifestToDependencies(manifest)
+
+		expect(deps).toEqual([
+			{ name: '@orkestrel/contract', range: '^0.0.5' },
+			{ name: '@orkestrel/emitter', range: '^0.0.2' },
+			{ name: '@orkestrel/markdown', range: '^0.0.1' },
+		])
+	})
+
+	it('filters out non-@orkestrel and off-pattern names', () => {
+		const manifest = JSON.stringify({
+			dependencies: { vitest: '^1.0.0', '@orkestrel/../evil': '^1.0.0' },
+		})
+
+		expect(manifestToDependencies(manifest)).toEqual([])
+	})
+
+	it('deduplicates a name across sections, first occurrence winning', () => {
+		const manifest = JSON.stringify({
+			dependencies: { '@orkestrel/contract': '^0.0.5' },
+			devDependencies: { '@orkestrel/contract': '^0.0.9' },
+		})
+
+		expect(manifestToDependencies(manifest)).toEqual([
+			{ name: '@orkestrel/contract', range: '^0.0.5' },
+		])
+	})
+
+	it('returns an empty list for malformed JSON, never throws', () => {
+		expect(() => manifestToDependencies('{not json')).not.toThrow()
+		expect(manifestToDependencies('{not json')).toEqual([])
+	})
+
+	it('returns an empty list for a non-object root or a missing/malformed section', () => {
+		expect(manifestToDependencies('[]')).toEqual([])
+		expect(manifestToDependencies('{}')).toEqual([])
+		expect(manifestToDependencies(JSON.stringify({ dependencies: 'not an object' }))).toEqual([])
+	})
+})
+
+describe('rangeToFreshness', () => {
+	it('is current when the exact pin equals latest', () => {
+		expect(rangeToFreshness('^0.0.5', '0.0.5')).toBe('current')
+	})
+
+	it('is behind when a newer patch is published', () => {
+		expect(rangeToFreshness('^0.0.5', '0.0.7')).toBe('behind')
+	})
+})
+
+describe('syncToReview', () => {
+	function report(overrides: Partial<SyncReport>): SyncReport {
+		return {
+			target: '.',
+			guides: [],
+			versions: [],
+			clean: true,
+			failed: 0,
+			...overrides,
+		}
+	}
+
+	it('titles the report with the behind count across guides and versions', () => {
+		const review = syncToReview(
+			report({
+				guides: [
+					{
+						name: '@orkestrel/contract',
+						path: 'guides/src/contract.md',
+						content: 'x',
+						freshness: 'behind',
+					},
+				],
+				versions: [
+					{ name: '@orkestrel/emitter', range: '^0.0.1', latest: '0.0.2', freshness: 'behind' },
+				],
+				clean: false,
+			}),
+		)
+
+		expect(review).toContain('# Sync — 2 behind')
+		expect(review).toContain('## Guides')
+		expect(review).toContain('## Versions')
+	})
+
+	it('elides the Guides/Versions sections when empty', () => {
+		const review = syncToReview(report({}))
+
+		expect(review).not.toContain('## Guides')
+		expect(review).not.toContain('## Versions')
+		expect(review).toContain('# Sync — 0 behind')
+		expect(review).toContain('- clean: true')
+		expect(review).toContain('- failed: 0')
+	})
 })
 
 describe('pinPlan', () => {
@@ -371,6 +555,43 @@ describe('pinPlan', () => {
 		}
 
 		expect(pinPlan(base).hash).not.toBe(pinPlan(changed).hash)
+	})
+
+	it('is order-INSENSITIVE — equal content built with fields in a different key order hashes identically (H1)', () => {
+		const descriptionLast = blueprint('router', { description: 'A router.' })
+		const descriptionFirst: Blueprint = {
+			description: descriptionLast.description,
+			overrides: descriptionLast.overrides,
+			engines: descriptionLast.engines,
+			version: descriptionLast.version,
+			dependencies: descriptionLast.dependencies,
+			surfaces: descriptionLast.surfaces,
+			keywords: descriptionLast.keywords,
+			name: descriptionLast.name,
+		}
+
+		const a = pinPlan({ blueprint: descriptionLast, groups: ['manifest'], artifacts: [] })
+		const b = pinPlan({ blueprint: descriptionFirst, groups: ['manifest'], artifacts: [] })
+
+		expect(a.hash).toBe(b.hash)
+	})
+
+	it('a parseBlueprint round-trip of a built blueprint pins to the same hash as the builder output (H1)', () => {
+		const built = blueprint('router', {
+			description: 'A router.',
+			dependencies: [dependency('@orkestrel/contract', '^0.0.5')],
+		})
+		const parsed = parseBlueprint(built)
+		expect(parsed).toBeDefined()
+
+		const fromBuilder = pinPlan({ blueprint: built, groups: ['manifest'], artifacts: [] })
+		const fromParsed = pinPlan({
+			blueprint: parsed ?? built,
+			groups: ['manifest'],
+			artifacts: [],
+		})
+
+		expect(fromParsed.hash).toBe(fromBuilder.hash)
 	})
 })
 
@@ -516,5 +737,149 @@ describe('blueprintToPlan — variant coverage + SURFACE_MATRIX wiring', () => {
 
 		expect(typeof plan.hash).toBe('string')
 		expect(typeof plan.trace).toBe('string')
+	})
+
+	it('an empty groups selection compiles every group — the same artifact set as unscoped (L3)', () => {
+		const spec = blueprint('router', { surfaces: ['core'] })
+		const scoped = blueprintToPlan(spec, [])
+		const unscoped = blueprintToPlan(spec)
+
+		expect(scoped.groups).toEqual(unscoped.groups)
+		expect([...scoped.artifacts.map((artifact) => artifact.path)].sort()).toEqual(
+			[...unscoped.artifacts.map((artifact) => artifact.path)].sort(),
+		)
+	})
+
+	it('sorts dependencies in the package.json by a code-unit (not locale-sensitive) comparator (M7)', () => {
+		const plan = blueprintToPlan(
+			blueprint('router', {
+				surfaces: ['core'],
+				dependencies: [
+					dependency('@orkestrel/zebra', '^1'),
+					dependency('@orkestrel/Apple', '^1'),
+					dependency('@orkestrel/apple', '^1'),
+				],
+			}),
+			['manifest'],
+		)
+		const manifest = plan.artifacts.find((artifact) => artifact.path === 'package.json')
+		const parsed = readManifest(manifest?.content)
+		const dependencies = readRecord(parsed.dependencies)
+
+		expect(Object.keys(dependencies)).toEqual([
+			'@orkestrel/Apple',
+			'@orkestrel/apple',
+			'@orkestrel/zebra',
+		])
+	})
+})
+
+describe('fillTemplate — the delegated missing-placeholder gate (L7)', () => {
+	it('throws when a values map omits a placeholder TEMPLATES declares, missing: "error"', () => {
+		const definition = TEMPLATES.entity
+		expect(definition).toBeDefined()
+		if (definition === undefined) return
+
+		expect(() =>
+			fillTemplate(
+				definition.content,
+				{},
+				{ missing: 'error', placeholders: definition.placeholders },
+			),
+		).toThrow(/pascal/)
+	})
+})
+
+describe('blueprintToPlan — content validation across variants (R1/R2)', () => {
+	const PACKAGE_JSON_FIELDS = [
+		'name',
+		'version',
+		'description',
+		'keywords',
+		'homepage',
+		'bugs',
+		'license',
+		'repository',
+		'files',
+		'type',
+		'sideEffects',
+		'main',
+		'module',
+		'exports',
+		'publishConfig',
+		'scripts',
+		'devDependencies',
+		'engines',
+	] as const
+
+	const SCRIPT_KEYS = [
+		'clean',
+		'copy',
+		'scaffold',
+		'check',
+		'check:src',
+		'format',
+		'format:check',
+		'lint:check',
+		'test',
+		'test:src',
+		'test:guides',
+		'build',
+		'build:src',
+		'prepublishOnly',
+	] as const
+
+	const variants: readonly { readonly label: string; readonly spec: Blueprint }[] = [
+		{ label: 'core-only', spec: blueprint('router', { surfaces: ['core'] }) },
+		{ label: 'core+server', spec: blueprint('router', { surfaces: ['core', 'server'] }) },
+		{
+			label: 'core+browser+server',
+			spec: blueprint('router', { surfaces: ['core', 'browser', 'server'] }),
+		},
+	]
+
+	describe.each(variants)('$label', ({ spec }) => {
+		it('every computed .json artifact parses, and package.json carries the full documented field set', () => {
+			const plan = blueprintToPlan(spec)
+			const jsonArtifacts = plan.artifacts.filter(
+				(artifact) => artifact.origin === 'computed' && artifact.path.endsWith('.json'),
+			)
+			expect(jsonArtifacts.length).toBeGreaterThan(0)
+			for (const artifact of jsonArtifacts) {
+				expect(() => JSON.parse(artifact.content ?? '')).not.toThrow()
+			}
+
+			const manifest = plan.artifacts.find((artifact) => artifact.path === 'package.json')
+			const parsed = readManifest(manifest?.content)
+			for (const field of PACKAGE_JSON_FIELDS) {
+				expect(Object.hasOwn(parsed, field)).toBe(true)
+			}
+			// `types` is present for a single-surface variant, omitted for multi (§4.3).
+			expect(Object.hasOwn(parsed, 'types')).toBe(spec.surfaces.length === 1)
+
+			const scripts = readRecord(parsed.scripts)
+			for (const key of SCRIPT_KEYS) expect(Object.hasOwn(scripts, key)).toBe(true)
+			for (const surface of spec.surfaces) {
+				expect(Object.hasOwn(scripts, `check:src:${surface}`)).toBe(true)
+				expect(Object.hasOwn(scripts, `build:src:${surface}`)).toBe(true)
+				expect(Object.hasOwn(scripts, `test:src:${surface}`)).toBe(true)
+			}
+		})
+
+		it('every computed .ts artifact parses with zero syntactic diagnostics', () => {
+			const plan = blueprintToPlan(spec)
+			const tsArtifacts = plan.artifacts.filter(
+				(artifact) => artifact.origin === 'computed' && artifact.path.endsWith('.ts'),
+			)
+			expect(tsArtifacts.length).toBeGreaterThan(0)
+
+			for (const artifact of tsArtifacts) {
+				const { diagnostics } = ts.transpileModule(artifact.content ?? '', {
+					reportDiagnostics: true,
+					compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ESNext },
+				})
+				expect(diagnostics ?? []).toHaveLength(0)
+			}
+		})
 	})
 })

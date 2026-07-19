@@ -1,11 +1,13 @@
 import {
 	arrayShape,
+	booleanShape,
+	integerShape,
 	literalShape,
 	objectShape,
 	optionalShape,
 	stringShape,
 } from '@orkestrel/contract'
-import { CATEGORIES, GROUPS, ORIGINS, SURFACES } from './constants.js'
+import { CATEGORIES, FRESHNESS, GROUPS, ORIGINS, SURFACES } from './constants.js'
 
 /**
  * Build the `Dependency` object shape.
@@ -105,5 +107,39 @@ export function planShape() {
 		artifacts: arrayShape(artifactShape()),
 		trace: optionalShape(stringShape()),
 		hash: optionalShape(stringShape()),
+	})
+}
+
+/**
+ * Build the `SyncReport` object shape.
+ *
+ * @remarks
+ * `guides` / `versions` are array sub-shapes, each with a
+ * `literalShape(FRESHNESS)` `freshness` field; `isSyncReport` /
+ * `parseSyncReport` compile from it.
+ *
+ * @returns A fresh `ContractShape` describing the whole sync outcome.
+ */
+export function syncReportShape() {
+	return objectShape({
+		target: stringShape({ min: 1 }),
+		guides: arrayShape(
+			objectShape({
+				name: stringShape({ min: 1 }),
+				path: stringShape({ min: 1 }),
+				content: stringShape(),
+				freshness: literalShape(FRESHNESS),
+			}),
+		),
+		versions: arrayShape(
+			objectShape({
+				name: stringShape({ min: 1 }),
+				range: stringShape({ min: 1 }),
+				latest: stringShape({ min: 1 }),
+				freshness: literalShape(FRESHNESS),
+			}),
+		),
+		clean: booleanShape(),
+		failed: integerShape({ min: 0 }),
 	})
 }

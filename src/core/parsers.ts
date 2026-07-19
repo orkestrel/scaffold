@@ -1,6 +1,6 @@
 import { createContract } from '@orkestrel/contract'
-import type { Blueprint, Plan } from './types.js'
-import { blueprintShape, planShape } from './shapers.js'
+import type { Blueprint, Plan, SyncReport } from './types.js'
+import { blueprintShape, planShape, syncReportShape } from './shapers.js'
 
 /**
  * Parse a `Blueprint` from `unknown` (or a JSON string), else `undefined`.
@@ -45,3 +45,26 @@ export const parsePlan: (input: unknown) => Plan | undefined = ((contract) => (i
 		return undefined
 	}
 })(createContract(planShape()))
+
+/**
+ * Parse a `SyncReport` from `unknown` (or a JSON string), else `undefined`.
+ *
+ * @remarks
+ * The coercing counterpart of {@link isSyncReport}, compiled from the same
+ * {@link syncReportShape} via `createContract` (AGENTS §14) — a guard-valid
+ * value round-trips unchanged, an off-contract value returns `undefined`,
+ * and this never throws, including on malformed JSON text.
+ *
+ * @param input - The value (or JSON string) to parse.
+ * @returns A `SyncReport`, else `undefined`.
+ */
+export const parseSyncReport: (input: unknown) => SyncReport | undefined = (
+	(contract) => (input: unknown) => {
+		if (typeof input !== 'string') return contract.parse(input)
+		try {
+			return contract.parse(JSON.parse(input))
+		} catch {
+			return undefined
+		}
+	}
+)(createContract(syncReportShape()))

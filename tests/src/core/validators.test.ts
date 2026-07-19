@@ -1,3 +1,4 @@
+import type { SyncReport } from '@src/core'
 import {
 	blueprint,
 	dependency,
@@ -7,13 +8,34 @@ import {
 	isMember,
 	isOverride,
 	isPlan,
+	isSyncReport,
 	member,
 	override,
 	parseBlueprint,
 	parsePlan,
+	parseSyncReport,
 	pinPlan,
 } from '@src/core'
 import { describe, expect, it } from 'vitest'
+
+function validSyncReport(): SyncReport {
+	return {
+		target: '.',
+		guides: [
+			{
+				name: '@orkestrel/contract',
+				path: 'guides/src/contract.md',
+				content: '# contract',
+				freshness: 'current',
+			},
+		],
+		versions: [
+			{ name: '@orkestrel/contract', range: '^0.0.5', latest: '0.0.5', freshness: 'current' },
+		],
+		clean: true,
+		failed: 0,
+	}
+}
 
 // Every exact-record guard: valid / invalid / adversarial junk, off-vocabulary
 // literal rejection, and the parse↔guard soundness of parseBlueprint / parsePlan.
@@ -174,6 +196,47 @@ describe('isPlan', () => {
 	})
 })
 
+describe('isSyncReport', () => {
+	it('accepts a valid SyncReport', () => {
+		expect(isSyncReport(validSyncReport())).toBe(true)
+	})
+
+	it('accepts empty guides/versions arrays', () => {
+		expect(isSyncReport({ ...validSyncReport(), guides: [], versions: [] })).toBe(true)
+	})
+
+	it('rejects an off-vocabulary freshness in a nested guide', () => {
+		const report = validSyncReport()
+		expect(
+			isSyncReport({
+				...report,
+				guides: [{ ...report.guides[0], freshness: 'stale' }],
+			}),
+		).toBe(false)
+	})
+
+	it('rejects an off-vocabulary freshness in a nested version', () => {
+		const report = validSyncReport()
+		expect(
+			isSyncReport({
+				...report,
+				versions: [{ ...report.versions[0], freshness: 'stale' }],
+			}),
+		).toBe(false)
+	})
+
+	it('rejects adversarial junk', () => {
+		expect(isSyncReport(null)).toBe(false)
+		expect(isSyncReport(42)).toBe(false)
+		expect(isSyncReport([])).toBe(false)
+		expect(isSyncReport({})).toBe(false)
+	})
+
+	it('rejects an object carrying an extra key (exact-record)', () => {
+		expect(isSyncReport({ ...validSyncReport(), extra: true })).toBe(false)
+	})
+})
+
 describe('parseBlueprint', () => {
 	it('round-trips a guard-valid value unchanged', () => {
 		const value = blueprint('router')
@@ -234,5 +297,39 @@ describe('parsePlan', () => {
 		const parsed = parsePlan(plan)
 
 		expect(parsed !== undefined && isPlan(parsed)).toBe(true)
+	})
+})
+
+describe('parseSyncReport', () => {
+	it('round-trips a guard-valid value unchanged', () => {
+		const report = validSyncReport()
+
+		expect(parseSyncReport(report)).toEqual(report)
+	})
+
+	it('parses a JSON string', () => {
+		const report = validSyncReport()
+
+		expect(parseSyncReport(JSON.stringify(report))).toEqual(report)
+	})
+
+	it('returns undefined for malformed JSON text', () => {
+		expect(parseSyncReport('{not json')).toBeUndefined()
+	})
+
+	it('returns undefined for an off-contract value', () => {
+		expect(parseSyncReport({ ...validSyncReport(), failed: 'nope' })).toBeUndefined()
+	})
+
+	it('never throws on adversarial input', () => {
+		expect(() => parseSyncReport(null)).not.toThrow()
+		expect(() => parseSyncReport(42)).not.toThrow()
+		expect(parseSyncReport(null)).toBeUndefined()
+	})
+
+	it('a value it parses always satisfies isSyncReport (soundness)', () => {
+		const parsed = parseSyncReport(validSyncReport())
+
+		expect(parsed !== undefined && isSyncReport(parsed)).toBe(true)
 	})
 })

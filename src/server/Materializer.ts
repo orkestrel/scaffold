@@ -6,8 +6,8 @@ import type {
 } from './types.js'
 import type { Artifact, Audit, Plan } from '@src/core'
 import type { EmitterInterface } from '@orkestrel/emitter'
-import { cpSync, existsSync, mkdirSync, writeFileSync } from 'node:fs'
-import { dirname, join, resolve, sep } from 'node:path'
+import { cpSync, existsSync, mkdirSync, realpathSync, writeFileSync } from 'node:fs'
+import { dirname, join, relative as relativeOf, resolve, sep } from 'node:path'
 import { Emitter } from '@orkestrel/emitter'
 import { ScaffoldError } from '@src/core'
 import { isVacant } from './helpers.js'
@@ -35,6 +35,17 @@ import { isVacant } from './helpers.js'
  * either root, even if a gate upstream (e.g. an ungated `Plan` built by hand)
  * let it through. A destination violation throws `ScaffoldError('WRITE', …)`;
  * a source violation throws `ScaffoldError('TARGET', …)`.
+ *
+ * @remarks
+ * The containment check is REAL-PATH aware, not merely lexical: both the
+ * root (`target` / `host`) and the candidate destination/source are resolved
+ * through `realpathSync` on their DEEPEST EXISTING ancestor before the prefix
+ * comparison, so a symlinked subdirectory planted inside an otherwise
+ * legitimate root cannot smuggle a write (or read) outside it — `repair`,
+ * which has no `isVacant` gate, is covered exactly like `materialize`. A path
+ * segment that does not yet exist on disk (the still-to-be-created file/dir
+ * a write is about to create) is rejoined onto the resolved existing
+ * ancestor rather than realpath'd itself.
  *
  * @example
  * ```ts
@@ -169,19 +180,19 @@ export class Materializer implements MaterializerInterface {
 	}
 
 	// Resolve `join(root, relative)` and assert it stays within `resolve(root)`
-	// — a prefix check against the resolved root PLUS a path separator, never
-	// naive `startsWith` on the raw joined string. `code` is `'WRITE'` for a
-	// destination escape (asserted against `target`) and `'TARGET'` for a
-	// source escape (asserted against `host`), per the Errors section's coded
-	// semantics.
+	// — a prefix check against the REAL-PATH-resolved root PLUS a path
+	// separator, never naive `startsWith` on the raw joined string. `code` is
+	// `'WRITE'` for a destination escape (asserted against `target`) and
+	// `'TARGET'` for a source escape (asserted against `host`), per the Errors
+	// section's coded semantics.
 	static #assertContained(
 		root: string,
 		relative: string,
 		code: 'WRITE' | 'TARGET',
 		path: string,
 	): string {
-		const resolvedRoot = resolve(root)
-		const resolvedCandidate = resolve(root, relative)
+		const resolvedRoot = Materializer.#resolveReal(resolve(root))
+		const resolvedCandidate = Materializer.#resolveReal(resolve(root, relative))
 		if (resolvedCandidate !== resolvedRoot && !resolvedCandidate.startsWith(resolvedRoot + sep)) {
 			const boundary = code === 'WRITE' ? 'target' : 'host'
 			throw new ScaffoldError(code, `Artifact path "${path}" escapes the ${boundary} root`, {
@@ -189,7 +200,19 @@ export class Materializer implements MaterializerInterface {
 				root,
 			})
 		}
-		return resolvedCandidate
+		return resolve(root, relative)
+	}
+
+	// Realpath-resolve the DEEPEST EXISTING ancestor of `path` (following any
+	// symlink it or its ancestors are), then rejoin the still-nonexistent
+	// remainder unchanged — so a containment check sees where a symlinked
+	// segment ACTUALLY points, while a not-yet-created leaf (the file/dir a
+	// write is about to create) is not itself realpath'd (it does not exist).
+	static #resolveReal(path: string): string {
+		if (existsSync(path)) return realpathSync(path)
+		const parent = dirname(path)
+		if (parent === path) return path
+		return join(Materializer.#resolveReal(parent), relativeOf(parent, path))
 	}
 
 	#ensureAlive(): void {

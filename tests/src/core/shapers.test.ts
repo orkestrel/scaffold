@@ -4,9 +4,11 @@ import {
 	blueprintShape,
 	dependencyShape,
 	isBlueprint,
+	isSyncReport,
 	memberShape,
 	overrideShape,
 	planShape,
+	syncReportShape,
 } from '@src/core'
 import { describe, expect, it } from 'vitest'
 
@@ -22,6 +24,7 @@ const shapes = {
 	artifact: artifactShape,
 	blueprint: blueprintShape,
 	plan: planShape,
+	syncReport: syncReportShape,
 } as const
 
 describe.each(Object.entries(shapes))('%s shape — contract lockstep', (_name, build) => {
@@ -64,6 +67,18 @@ describe('blueprintShape — generated blueprints satisfy isBlueprint', () => {
 			const value = contract.generate(seededRandom(seed))
 
 			expect(isBlueprint(value)).toBe(true)
+		}
+	})
+})
+
+describe('syncReportShape — generated reports satisfy isSyncReport', () => {
+	it('a generated SyncReport round-trips the higher-level isSyncReport guard too', () => {
+		const contract = createContract(syncReportShape())
+
+		for (let seed = 0; seed < 25; seed += 1) {
+			const value = contract.generate(seededRandom(seed))
+
+			expect(isSyncReport(value)).toBe(true)
 		}
 	})
 })

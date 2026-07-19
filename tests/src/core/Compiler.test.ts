@@ -99,6 +99,42 @@ describe('Compiler#compile — fail-closed gate paths', () => {
 		compiler.destroy()
 	})
 
+	it('blocks on an off-VERSION_PATTERN version (M2)', () => {
+		const compiler = new Compiler()
+
+		const scaffolding = compiler.compile(
+			{ ...blueprint('router', { surfaces: ['core'] }), version: '1.2' },
+			['manifest'],
+		)
+
+		expect(scaffolding.complete).toBe(false)
+		expect(scaffolding.plan).toBeUndefined()
+		expect(scaffolding.questions.some((question) => question.field === 'version')).toBe(true)
+		expect(scaffolding.failures.some((failure) => failure.code === 'BLOCKED')).toBe(true)
+		compiler.destroy()
+	})
+
+	it('blocks on a duplicate override path (M3)', () => {
+		const compiler = new Compiler()
+
+		const scaffolding = compiler.compile(
+			blueprint('router', {
+				surfaces: ['core'],
+				overrides: [override('README.md', 'x'), override('README.md', 'y')],
+			}),
+			['docs'],
+		)
+
+		expect(scaffolding.complete).toBe(false)
+		expect(scaffolding.plan).toBeUndefined()
+		expect(
+			scaffolding.questions.some(
+				(question) => question.field === 'overrides' && question.text.includes('more than once'),
+			),
+		).toBe(true)
+		compiler.destroy()
+	})
+
 	it('blocks on a traversal-shaped dependency name, gating BEFORE #pointerArtifacts ever runs', () => {
 		const compiler = new Compiler()
 

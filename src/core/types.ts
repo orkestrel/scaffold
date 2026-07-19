@@ -27,11 +27,19 @@ export type Category = 'type' | 'constant' | 'factory' | 'entity'
 /** One `Finding`'s verdict against the target's current content. */
 export type Drift = 'aligned' | 'stale' | 'missing' | 'foreign'
 
+/**
+ * One `GuideSync` / `VersionSync`'s currency against upstream.
+ *
+ * @remarks
+ * `missing` is an upstream `404`; `failed` is a transport fault.
+ */
+export type Freshness = 'current' | 'behind' | 'missing' | 'failed'
+
 /** The three fixed pipeline phases, in order. */
 export type CompileStage = 'draft' | 'gate' | 'pin'
 
 /** Coded `ScaffoldError` reasons. */
-export type ScaffoldErrorCode = 'INVALID' | 'BLOCKED' | 'DESTROYED' | 'TARGET' | 'WRITE'
+export type ScaffoldErrorCode = 'INVALID' | 'BLOCKED' | 'DESTROYED' | 'TARGET' | 'WRITE' | 'FETCH'
 
 /**
  * One runtime `@orkestrel/*` dependency.
@@ -149,6 +157,37 @@ export interface Validation {
 	readonly valid: boolean
 	readonly questions: readonly Question[]
 	readonly warnings: readonly string[]
+}
+
+/** One dependency guide fetched from upstream at its `path`, plus its `freshness` verdict against the local mirror. */
+export interface GuideSync {
+	readonly name: string
+	readonly path: string
+	readonly content: string
+	readonly freshness: Freshness
+}
+
+/** One dependency's declared `range` against the registry `latest`, plus its `freshness` verdict. */
+export interface VersionSync {
+	readonly name: string
+	readonly range: string
+	readonly latest: string
+	readonly freshness: Freshness
+}
+
+/**
+ * The whole outcome of a `Sync.pull`.
+ *
+ * @remarks
+ * `clean` is `true` iff no drift AND no failures; `failed` is the count of
+ * guide/version fetches that came back `missing` or `failed`.
+ */
+export interface SyncReport {
+	readonly target: string
+	readonly guides: readonly GuideSync[]
+	readonly versions: readonly VersionSync[]
+	readonly clean: boolean
+	readonly failed: number
 }
 
 /** The dry-run tally. */

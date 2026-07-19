@@ -18,6 +18,9 @@ export const GROUPS = Object.freeze([
 /** The four `Category` values, frozen. */
 export const CATEGORIES = Object.freeze(['type', 'constant', 'factory', 'entity'] as const)
 
+/** The four `Freshness` values, frozen — the currency axis `Sync` reports on. */
+export const FRESHNESS = Object.freeze(['current', 'behind', 'missing', 'failed'] as const)
+
 /** The pipeline phases in order, frozen. */
 export const COMPILE_STAGES = Object.freeze(['draft', 'gate', 'pin'] as const)
 

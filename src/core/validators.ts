@@ -1,5 +1,13 @@
 import type { Guard } from '@orkestrel/contract'
-import type { Artifact, Blueprint, Dependency, Member, Override, Plan } from './types.js'
+import type {
+	Artifact,
+	Blueprint,
+	Dependency,
+	Member,
+	Override,
+	Plan,
+	SyncReport,
+} from './types.js'
 import { createContract } from '@orkestrel/contract'
 import {
 	artifactShape,
@@ -8,6 +16,7 @@ import {
 	memberShape,
 	overrideShape,
 	planShape,
+	syncReportShape,
 } from './shapers.js'
 
 /**
@@ -67,3 +76,13 @@ export const isArtifact: Guard<Artifact> = createContract(artifactShape()).is
  * total `Guard`, adversarial input returns `false`, never throws.
  */
 export const isPlan: Guard<Plan> = createContract(planShape()).is
+
+/**
+ * Narrow a value to a `SyncReport` — the whole exact-record sync contract,
+ * `guide` / `version` sections composed.
+ *
+ * @remarks
+ * Compiled from {@link syncReportShape} via `createContract` (AGENTS §14) — a
+ * total `Guard`, adversarial input returns `false`, never throws.
+ */
+export const isSyncReport: Guard<SyncReport> = createContract(syncReportShape()).is

@@ -189,7 +189,12 @@ export function blueprintToPlan(blueprint: Blueprint, groups?: readonly Group[])
 
 		const entry = entryFields(spec.surfaces)
 		const dependencies: Record<string, string> = {}
-		for (const dep of [...spec.dependencies].sort((a, b) => a.name.localeCompare(b.name))) {
+		// A code-unit (not locale-sensitive) comparator — matches the `keywords`
+		// sort below and keeps ordering stable across locales/environments.
+		function compareCodeUnit(a: string, b: string): number {
+			return a < b ? -1 : a > b ? 1 : 0
+		}
+		for (const dep of [...spec.dependencies].sort((a, b) => compareCodeUnit(a.name, b.name))) {
 			dependencies[dep.name] = dep.range
 		}
 

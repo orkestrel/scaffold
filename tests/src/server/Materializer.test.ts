@@ -1,5 +1,6 @@
 import type { Artifact, Plan } from '@src/core'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs'
+import { createServer } from 'node:net'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { blueprint } from '@src/core'
@@ -86,6 +87,33 @@ describe('readTarget', () => {
 			expect(current['package.json']).toBe('{"name":"x"}')
 			expect(current['.claude']).toBe('')
 			expect(Object.prototype.hasOwnProperty.call(current, 'missing.txt')).toBe(false)
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('wraps a genuine read failure on an EXISTING path into a coded TARGET error (a socket cannot be read as a file, even as root)', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			const socketPath = join(directory.path, 'socket')
+			const server = createServer()
+			await new Promise<void>((resolvePromise, reject) => {
+				server.once('error', reject)
+				server.listen(socketPath, () => resolvePromise())
+			})
+			try {
+				let caught: unknown
+				try {
+					readTarget(directory.path, ['socket'])
+				} catch (error) {
+					caught = error
+				}
+				if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
+				expect(caught.code).toBe('TARGET')
+				expect(caught.context).toMatchObject({ path: 'socket' })
+			} finally {
+				await new Promise<void>((resolvePromise) => server.close(() => resolvePromise()))
+			}
 		} finally {
 			await directory.cleanup()
 		}
@@ -352,6 +380,59 @@ describe('Materializer — path containment', () => {
 			materializer.destroy()
 		} finally {
 			await directory.cleanup()
+		}
+	})
+
+	it('repair refuses to write through a SYMLINKED subdirectory that escapes the target (real-path containment, no vacancy gate to shield it)', async () => {
+		const directory = await buildTempDirectory()
+		const outside = await buildTempDirectory()
+		try {
+			// A benign materialize first — happy path must still work after the
+			// real-path change.
+			const benignPlan = blueprintToPlan(blueprint('budget', { surfaces: ['core'] }))
+			const materializer = createMaterializer({ host: WORKSPACE_ROOT })
+			const benignResult = materializer.materialize(benignPlan, directory.path)
+			expect(benignResult.written.length + benignResult.copied.length).toBe(
+				benignPlan.artifacts.length,
+			)
+
+			// Plant a symlinked subdirectory inside the (now-materialized) target
+			// that actually points OUTSIDE it.
+			const linkPath = join(directory.path, 'escape-link')
+			symlinkSync(outside.path, linkPath, 'dir')
+
+			const plan: Plan = {
+				blueprint: blueprint('symlink-escape-fixture', { surfaces: ['core'] }),
+				groups: ['docs'],
+				artifacts: [
+					{ path: 'escape-link/evil.txt', group: 'docs', origin: 'computed', content: 'evil' },
+				],
+			}
+			let caught: unknown
+			try {
+				materializer.repair(
+					plan,
+					{
+						findings: [{ path: 'escape-link/evil.txt', group: 'docs', drift: 'missing' }],
+						clean: false,
+						complete: true,
+						questions: [],
+						drifted: 0,
+						missing: 1,
+						foreign: 0,
+					},
+					directory.path,
+				)
+			} catch (error) {
+				caught = error
+			}
+			if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
+			expect(caught.code).toBe('WRITE')
+			expect(existsSync(join(outside.path, 'evil.txt'))).toBe(false)
+			materializer.destroy()
+		} finally {
+			await directory.cleanup()
+			await outside.cleanup()
 		}
 	})
 })

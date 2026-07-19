@@ -6,6 +6,7 @@ import type {
 	Dependency,
 	Drift,
 	Finding,
+	Freshness,
 	Group,
 	Member,
 	Override,
@@ -13,6 +14,7 @@ import type {
 	PlanSummary,
 	Question,
 	Surface,
+	SyncReport,
 	Validation,
 } from './types.js'
 import { parseInline, renderMarkdown } from '@orkestrel/markdown'
@@ -358,6 +360,62 @@ export function auditToReview(audit: Audit): string {
 }
 
 /**
+ * Project a `SyncReport` into a markdown freshness report.
+ *
+ * @param report - The sync report to render.
+ * @returns Guides and versions each in their own table, via `alignTable` — the sibling of `auditToReview`.
+ *
+ * @example
+ * ```ts
+ * import { syncToReview } from '@orkestrel/scaffold'
+ *
+ * syncToReview(report) // '# Sync — 2 behind\n## Guides\n| Name | Freshness |\n…'
+ * ```
+ */
+export function syncToReview(report: SyncReport): string {
+	function isBehind(freshness: Freshness): boolean {
+		return freshness === 'behind'
+	}
+	const behind =
+		report.guides.filter((guide) => isBehind(guide.freshness)).length +
+		report.versions.filter((version) => isBehind(version.freshness)).length
+	const sections: string[] = [
+		`# Sync — ${behind} behind`,
+		'',
+		`- clean: ${report.clean}`,
+		`- failed: ${report.failed}`,
+	]
+	if (report.guides.length > 0) {
+		sections.push(
+			'',
+			'## Guides',
+			'',
+			alignTable(
+				['Name', 'Freshness'],
+				report.guides.map((guide) => [guide.name, guide.freshness]),
+			),
+		)
+	}
+	if (report.versions.length > 0) {
+		sections.push(
+			'',
+			'## Versions',
+			'',
+			alignTable(
+				['Name', 'Range', 'Latest', 'Freshness'],
+				report.versions.map((version) => [
+					version.name,
+					version.range,
+					version.latest,
+					version.freshness,
+				]),
+			),
+		)
+	}
+	return sections.join('\n')
+}
+
+/**
  * Diff a plan's artifacts against a target's current content.
  *
  * @param plan - The plan whose artifacts are the source of truth.
@@ -451,6 +509,11 @@ export function diffPlan(plan: Plan, current: Readonly<Record<string, string>>):
  * ```
  */
 export function validateBlueprint(spec: Blueprint): Validation {
+	// The published `@orkestrel/<name>` scope adds 11 characters; npm caps a
+	// package name at 214, so the bare `name` field must fit within 214 - 11.
+	const MAX_NAME_LENGTH = 203
+	const VERSION_PATTERN = /^\d+\.\d+\.\d+$/
+	const ENGINES_PATTERN = /^>=\d+$/
 	const questions: Question[] = []
 	if (!NAME_PATTERN.test(spec.name)) {
 		questions.push({
@@ -458,6 +521,45 @@ export function validateBlueprint(spec: Blueprint): Validation {
 			text: `Name "${spec.name}" must match ${NAME_PATTERN.source}`,
 			blocking: true,
 		})
+	}
+	if (spec.name.length > MAX_NAME_LENGTH) {
+		questions.push({
+			field: 'name',
+			text: `Name "${spec.name}" is ${spec.name.length} characters — the published @orkestrel/<name> must fit npm's 214-character limit (max ${MAX_NAME_LENGTH})`,
+			blocking: true,
+		})
+	}
+	if (!VERSION_PATTERN.test(spec.version)) {
+		questions.push({
+			field: 'version',
+			text: `Version "${spec.version}" must match ${VERSION_PATTERN.source}`,
+			blocking: true,
+		})
+	}
+	if (!ENGINES_PATTERN.test(spec.engines)) {
+		questions.push({
+			field: 'engines',
+			text: `Engines "${spec.engines}" must match ${ENGINES_PATTERN.source}`,
+			blocking: true,
+		})
+	}
+	const seenOverridePaths = new Set<string>()
+	for (const item of spec.overrides) {
+		if (seenOverridePaths.has(item.path)) {
+			questions.push({
+				field: 'overrides',
+				text: `Override path "${item.path}" is declared more than once`,
+				blocking: true,
+			})
+		}
+		seenOverridePaths.add(item.path)
+		if (item.content.length === 0) {
+			questions.push({
+				field: 'overrides',
+				text: `Override path "${item.path}" has empty content`,
+				blocking: true,
+			})
+		}
 	}
 	if (spec.surfaces.length === 0) {
 		questions.push({ field: 'surfaces', text: 'At least one surface is required', blocking: true })
@@ -515,6 +617,76 @@ export function validateBlueprint(spec: Blueprint): Validation {
 }
 
 /**
+ * Parse a `package.json` text into its declared `@orkestrel/*` dependencies.
+ *
+ * @param manifestText - The `package.json` file content.
+ * @remarks
+ * Reads `dependencies`, `devDependencies`, and `peerDependencies` (ALL three,
+ * in that order), keeps only `DEPENDENCY_NAME_PATTERN`-shaped names,
+ * deduplicated (first occurrence wins). Malformed JSON, a non-object root, or
+ * a non-object/non-string section entry is skipped, never thrown.
+ * @returns The declared `Dependency[]` — pure, never throws.
+ *
+ * @example
+ * ```ts
+ * import { manifestToDependencies } from '@orkestrel/scaffold'
+ *
+ * manifestToDependencies('{"dependencies":{"@orkestrel/contract":"^0.0.5"}}')
+ * // [{ name: '@orkestrel/contract', range: '^0.0.5' }]
+ * ```
+ */
+export function manifestToDependencies(manifestText: string): readonly Dependency[] {
+	function isRecord(value: unknown): value is Record<string, unknown> {
+		return typeof value === 'object' && value !== null && !Array.isArray(value)
+	}
+	let parsed: unknown
+	try {
+		parsed = JSON.parse(manifestText)
+	} catch {
+		return []
+	}
+	if (!isRecord(parsed)) return []
+	const seen = new Set<string>()
+	const dependencies: Dependency[] = []
+	for (const section of ['dependencies', 'devDependencies', 'peerDependencies'] as const) {
+		const entries = parsed[section]
+		if (!isRecord(entries)) continue
+		for (const [name, range] of Object.entries(entries)) {
+			if (typeof range !== 'string') continue
+			if (!DEPENDENCY_NAME_PATTERN.test(name)) continue
+			if (seen.has(name)) continue
+			seen.add(name)
+			dependencies.push({ name, range })
+		}
+	}
+	return dependencies
+}
+
+/**
+ * Compare a declared range to the registry latest.
+ *
+ * @param range - The declared semver range.
+ * @param latest - The registry's latest published version.
+ * @remarks
+ * The `0.0.x` exact-pin law: `'current'` iff `range`'s `^0.0.N` exact pin
+ * equals `latest`, else `'behind'`. The `'missing'` / `'failed'` verdicts
+ * come from the fetch layer, never this pure comparison.
+ * @returns `'current'` or `'behind'`.
+ *
+ * @example
+ * ```ts
+ * import { rangeToFreshness } from '@orkestrel/scaffold'
+ *
+ * rangeToFreshness('^0.0.5', '0.0.5') // 'current' — pinned to latest
+ * rangeToFreshness('^0.0.5', '0.0.7') // 'behind' — a newer patch is published
+ * ```
+ */
+export function rangeToFreshness(range: string, latest: string): Freshness {
+	const pinned = range.replace(/^\^/, '')
+	return pinned === latest ? 'current' : 'behind'
+}
+
+/**
  * Return a fresh `Plan` with `trace` and `hash` filled.
  *
  * @param plan - The plan to pin.
@@ -540,7 +712,18 @@ export function pinPlan(plan: Plan): Plan {
 		}
 		return (hash >>> 0).toString(16).padStart(8, '0')
 	}
-	const canonical = JSON.stringify({
+	// A canonical, insertion-order-INDEPENDENT stringify: object keys sort, array
+	// order is preserved — so two logically-equal blueprints built with their
+	// fields in a different construction order still hash identically.
+	function stableStringify(value: unknown): string {
+		if (Array.isArray(value)) return `[${value.map((item) => stableStringify(item)).join(',')}]`
+		if (typeof value === 'object' && value !== null) {
+			const entries = Object.entries(value).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+			return `{${entries.map(([key, entry]) => `${JSON.stringify(key)}:${stableStringify(entry)}`).join(',')}}`
+		}
+		return JSON.stringify(value)
+	}
+	const canonical = stableStringify({
 		blueprint: plan.blueprint,
 		groups: plan.groups,
 		artifacts: plan.artifacts,
