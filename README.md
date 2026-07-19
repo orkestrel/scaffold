@@ -9,6 +9,24 @@ mirroring for the `@orkestrel` line.
 npm install -D @orkestrel/scaffold
 ```
 
+## Quickstart
+
+```sh
+# from a checkout (after npm run build)
+node ./dist/bin/scaffold.js new mypackage --surfaces core --apply
+
+# once installed
+npx scaffold new mypackage --surfaces core --apply
+```
+
+Every verb is a **dry run by default** — nothing writes until you pass `--apply`,
+and `new <name>` writes into `./<name>` under the current directory (`--target`
+overrides the exact destination).
+
+**Windows/PowerShell:** invoke as `node ./dist/bin/scaffold.js …` or `npx scaffold …`
+directly — PowerShell mangles npm's `--` passthrough, so avoid
+`npm run scaffold -- …` there.
+
 ## CLI
 
 ```sh

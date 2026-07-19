@@ -38,11 +38,17 @@ import { createTerminal } from '@orkestrel/terminal/server'
 
 const USAGE = `Usage: scaffold <new|sync|audit|repair|mirror|catalog> [options]
 
+Every verb is a DRY RUN by default — pass --apply to write.
+\`new <name>\` writes the package into ./<name> under the cwd (--target overrides the exact destination).
+Run any verb bare on a terminal and it prompts for what's missing.
+
   new <name> [--surfaces a,b] [--deps x,y] [--apply] [--target <path>] [--host <path>]
     Create a package. Prompts interactively for a missing name or surfaces on a TTY.
+    e.g. scaffold new widget --surfaces core,server --apply
 
   sync [--target .] [--deps x,y] [--apply] [--strict]
     Refresh vendored dependency mirrors and report range drift.
+    e.g. scaffold sync --deps @orkestrel/core --apply
 
   audit [--target .] [--live] [--host <path>] [--groups a,b]
     Structural conformance check; --live adds guide/version freshness; --host
@@ -50,16 +56,19 @@ const USAGE = `Usage: scaffold <new|sync|audit|repair|mirror|catalog> [options]
     presence-only silently; an EXPLICIT --host that fails to resolve is a
     coded TARGET failure). --groups restricts the plan to the listed groups
     (default: full plan) — e.g. --groups configs,docs,orchestration for CI.
+    e.g. scaffold audit --groups configs,docs
 
   repair [--target .] [--apply] [--prune] [--host <path>]
     Apply drift-only fixes for one target, scoped to HOST-ORIGIN artifacts
     ONLY (including .github/workflows/ci.yml — single-target explicit intent
     keeps full host scope, unlike mirror) — never touches hand-written
     src/tests/guides/package.json; dry-run by default (reports drift).
+    e.g. scaffold repair --apply
 
   mirror [--root .] [--apply] [--prune] [--host <path>]
     Fleet-wide host-origin audit/repair across every @orkestrel package under
     root; excludes .github/workflows/ci.yml (repo-flavored — use repair --apply).
+    e.g. scaffold mirror --root .. --apply
 
   catalog [--root <dir> ...] [--target <repo>] [--apply]
     Regenerate the fleet package catalog table embedded in
@@ -67,8 +76,13 @@ const USAGE = `Usage: scaffold <new|sync|audit|repair|mirror|catalog> [options]
     / <!-- catalog:end --> markers, sourced from every --root's discovered
     packages (repeatable; default: cwd) and each package's own guide's first
     blockquote. Dry-run reports drift (nonzero on any); --apply writes.
+    e.g. scaffold catalog --root .. --apply
 
 Flags: --help prints this text; a repeated flag keeps its LAST occurrence.
+
+Windows/PowerShell: invoke as \`node ./dist/bin/scaffold.js …\` from a checkout,
+or \`npx scaffold …\` once installed — PowerShell mangles npm's \`--\` passthrough,
+so avoid \`npm run scaffold -- …\` there.
 `
 
 const sink = createServerSink()
@@ -88,7 +102,12 @@ function describe(error: unknown): string {
 
 /** `node:util`'s strict `parseArgs`, isolated so its throw on an unknown/malformed flag is catchable (H3). */
 function parseArguments() {
+	// Strip a single leading literal '--' (npm passthrough residue that
+	// PowerShell mangles, e.g. `npm run scaffold -- new x`) so it parses as `new x`.
+	const args = process.argv.slice(2)
+	if (args[0] === '--') args.shift()
 	return parseArgs({
+		args,
 		allowPositionals: true,
 		options: {
 			surfaces: { type: 'string' },

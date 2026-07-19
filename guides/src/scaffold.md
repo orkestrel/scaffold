@@ -1270,8 +1270,10 @@ strict.destroy()
 ### The `scaffold` bin — six subcommands, one build target
 
 The CLI is its OWN build target — `src/bin/scaffold.ts`, an executable, not a barrel. It
-opens with a `#!/usr/bin/env node` shebang, parses argv with `node:util`'s `parseArgs` (no
-foreign arg parser), and dispatches on SIX subcommands: **`new`** creates a package
+opens with a `#!/usr/bin/env node` shebang, strips a single leading literal `--` off `argv`
+(npm's passthrough residue, mangled by PowerShell on Windows — `npm run scaffold -- new x`
+still parses as `new x`), parses the remainder with `node:util`'s `parseArgs` (no foreign arg
+parser), and dispatches on SIX subcommands: **`new`** creates a package
 (resolving any `--deps` to the registry `latest` → `^latest` ranges, fetching their guides
 into the plan), **`sync`** refreshes an existing repo's vendored dependency mirrors and
 reports range drift, **`audit`** / **`repair`** / **`mirror`** all reconstruct the target's
@@ -1307,7 +1309,9 @@ is a coded `TARGET` failure, never a silent skip. It narrates through `@orkestre
 prompts interactively through `@orkestrel/terminal`'s `createTerminal` when a required argument
 is absent (a real TTY; a piped run falls back to the flags and the terminal's non-TTY readline
 path). Report-only / dry-run is the default posture everywhere; only `--apply` writes (and
-`--prune` additionally deletes on `repair`), `audit` NEVER writes, and the exit codes gate CI —
+`--prune` additionally deletes on `repair`), `audit` NEVER writes — `new`'s `--apply` writes the
+package into `./<name>` under the current directory unless `--target` names an exact
+destination — and the exit codes gate CI —
 `new` nonzero on a block or write failure, `sync` nonzero only under `--strict` with failures,
 `audit` nonzero on ANY drift, `repair` nonzero on unresolved drift in dry-run, `mirror` nonzero
 on residual fleet-wide drift, `catalog` nonzero on unwritten drift in dry-run (clean or

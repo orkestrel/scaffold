@@ -1017,6 +1017,38 @@ describe('scaffold bin', () => {
 			expect(result.stdout).toContain('audit')
 		})
 
+		it('--help: states the dry-run-by-default and output-location facts up front, plus a Windows note', () => {
+			const result = runBin(['--help'])
+			expect(result.status).toBe(0)
+			expect(result.stdout).toMatch(/DRY RUN by default/)
+			expect(result.stdout).toMatch(/--apply to write/)
+			expect(result.stdout).toContain('./<name>')
+			expect(result.stdout).toMatch(/prompts for what's missing/)
+			expect(result.stdout).toMatch(/PowerShell/)
+			expect(result.stdout).toMatch(/npm run scaffold -- /)
+		})
+
+		it('--help: lists a worked example line per verb', () => {
+			const result = runBin(['--help'])
+			expect(result.stdout).toContain('e.g. scaffold new widget --surfaces core,server --apply')
+			expect(result.stdout).toContain('e.g. scaffold audit --groups configs,docs')
+			expect(result.stdout).toContain('e.g. scaffold mirror --root .. --apply')
+		})
+
+		it("leading \"--\" passthrough (PowerShell/npm residue): ['--', '--help'] behaves like ['--help']", () => {
+			const result = runBin(['--', '--help'])
+			expect(result.status).toBe(0)
+			expect(result.stdout).toContain('Usage: scaffold')
+		})
+
+		it("leading \"--\" passthrough: ['--', 'new', ...] behaves identically to ['new', ...]", () => {
+			const control = runBin(['new', '--surfaces', 'core'], 'demo-dash-control\n')
+			const withDash = runBin(['--', 'new', '--surfaces', 'core'], 'demo-dash-control\n')
+			expect(withDash.status).toBe(control.status)
+			expect(withDash.stdout).toContain('## Summary')
+			expect(withDash.stdout).toBe(control.stdout)
+		})
+
 		it('no verb: prints usage to stderr and exits 1', () => {
 			const result = runBin([])
 			expect(result.status).toBe(1)
