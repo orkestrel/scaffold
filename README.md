@@ -62,6 +62,10 @@ scaffold catalog [--root <dir> ...] [--target <repo>] [--apply]
 
 Every verb is dry-run by default — nothing touches disk until you pass `--apply`.
 
+Private repos: set `GITHUB_TOKEN` (or `GH_TOKEN`) in the environment — `sync` and
+`audit --live` send it as a guide-fetch `Authorization` header (never the registry,
+never a CLI flag, never logged).
+
 ## Library
 
 ```ts

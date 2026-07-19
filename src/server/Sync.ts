@@ -49,6 +49,7 @@ export class Sync implements SyncInterface {
 	readonly #guidesBase: string
 	readonly #branch: string
 	readonly #guidesTimeout: number
+	readonly #guidesToken: string | undefined
 	readonly #registryBase: string
 	readonly #registryTimeout: number
 	readonly #concurrency: number
@@ -62,6 +63,7 @@ export class Sync implements SyncInterface {
 		this.#guidesBase = options?.guides?.base ?? 'raw.githubusercontent.com'
 		this.#branch = options?.guides?.branch ?? 'main'
 		this.#guidesTimeout = options?.guides?.timeout ?? Sync.#DEFAULT_TIMEOUT
+		this.#guidesToken = options?.guides?.token
 		this.#registryBase = options?.registry?.base ?? 'registry.npmjs.org'
 		this.#registryTimeout = options?.registry?.timeout ?? Sync.#DEFAULT_TIMEOUT
 		this.#concurrency = options?.concurrency ?? Sync.#DEFAULT_CONCURRENCY
@@ -79,10 +81,18 @@ export class Sync implements SyncInterface {
 		current?: Readonly<Record<string, string>>,
 	): Promise<readonly GuideSync[]> {
 		this.#ensureAlive()
+		const headers =
+			this.#guidesToken !== undefined ? { Authorization: `Bearer ${this.#guidesToken}` } : undefined
 		return Sync.#runPool(deps, this.#concurrency, async (dep) => {
 			const short = Sync.#shortName(dep.name)
 			const url = this.#guideUrl(short)
-			const outcome = await Sync.#fetchText(url, this.#guidesTimeout, this.#retries, this.#limit)
+			const outcome = await Sync.#fetchText(
+				url,
+				this.#guidesTimeout,
+				this.#retries,
+				this.#limit,
+				headers,
+			)
 			const guide = Sync.#toGuideSync(dep.name, short, outcome, current)
 			if (outcome.kind === 'failed') this.#emitter.emit('error', outcome.error)
 			this.#emitter.emit('guide', dep.name)
@@ -172,8 +182,14 @@ export class Sync implements SyncInterface {
 		this.#emitter.destroy()
 	}
 
+	// The CANONICAL raw.githubusercontent.com form — `/orkestrel/<short>/refs/heads/<branch>/…`
+	// — never the legacy `/orkestrel/<short>/<branch>/…` shorthand, which the
+	// host now 301-redirects to this exact canonical form. `redirect: 'manual'`
+	// (A1) is a deliberate, kept security posture, so building the canonical
+	// URL directly (never following the redirect) is the fix — not a relaxed
+	// redirect policy.
 	#guideUrl(short: string): string {
-		return `${Sync.#normalizeBase(this.#guidesBase)}/${short}/${this.#branch}/guides/src/${short}.md`
+		return `${Sync.#normalizeBase(this.#guidesBase)}/orkestrel/${short}/refs/heads/${this.#branch}/guides/src/${short}.md`
 	}
 
 	// npm's canonical scoped-package registry path keeps the literal `@` and
@@ -260,43 +276,80 @@ export class Sync implements SyncInterface {
 	// `retries` additional attempts on a TRANSPORT fault (a thrown/rejected
 	// fetch, a non-2xx non-404 response, a manual 3xx redirect (A1), or a body
 	// exceeding `limit` bytes (R2)) — a `404` is a definitive upstream answer
-	// and is never retried.
+	// and is never retried. Every `failed` outcome carries `note`, the LAST
+	// attempt's human-readable cause — a transport error message (with an
+	// `ECONNREFUSED`-style cause code appended when present), an `HTTP
+	// <status>`, the fixed redirect-blocked string, or the oversized-body
+	// message — so a caller can tell WHY, not just THAT, the fetch failed.
 	static async #fetchText(
 		url: string,
 		timeout: number,
 		retries: number,
 		limit: number,
+		headers?: Readonly<Record<string, string>>,
 	): Promise<
 		| { readonly kind: 'ok'; readonly text: string }
 		| { readonly kind: 'missing' }
-		| { readonly kind: 'failed'; readonly error: unknown }
+		| { readonly kind: 'failed'; readonly error: unknown; readonly note: string }
 	> {
 		let lastError: unknown
+		let lastNote = ''
 		for (let attempt = 0; attempt <= retries; attempt += 1) {
 			try {
 				// `redirect: 'manual'` (A1) — a compromised/misconfigured endpoint
-				// must not silently redirect cross-host; any 3xx is treated as a
-				// non-2xx transport fault, same as an unexpected status code.
+				// must not silently redirect cross-host; any 3xx (or the opaque
+				// redirect response `redirect: 'manual'` itself resolves) is treated
+				// as a distinct, named transport fault — never a bare status code.
+				// `headers` (guide fetches only, FIX 5) carries a private-repo
+				// `Authorization` token — never logged, never echoed into a `note`.
 				const response = await fetch(url, {
 					signal: AbortSignal.timeout(timeout),
 					redirect: 'manual',
+					headers,
 				})
 				if (response.status === 404) return { kind: 'missing' }
+				if (
+					response.type === 'opaqueredirect' ||
+					(response.status >= 300 && response.status < 400)
+				) {
+					lastNote = 'redirected (redirect following is disabled)'
+					lastError = new Error(`Redirect blocked for ${url}`)
+					continue
+				}
 				if (!response.ok) {
+					lastNote = `HTTP ${String(response.status)}`
 					lastError = new Error(`Unexpected HTTP status ${response.status} for ${url}`)
 					continue
 				}
 				const read = await Sync.#readBounded(response, url, limit)
 				if (!read.ok) {
 					lastError = read.error
+					lastNote = read.note
 					continue
 				}
 				return { kind: 'ok', text: read.text }
 			} catch (error) {
 				lastError = error
+				lastNote = Sync.#transportNote(error)
 			}
 		}
-		return { kind: 'failed', error: lastError }
+		return { kind: 'failed', error: lastError, note: lastNote }
+	}
+
+	// A thrown/rejected `fetch`'s message, with the underlying cause's `code`
+	// (e.g. `ECONNREFUSED`, `ETIMEDOUT`) appended when the runtime attaches
+	// one — Node's `fetch failed` wraps the real socket error in `.cause`.
+	static #transportNote(error: unknown): string {
+		if (!(error instanceof Error)) return String(error)
+		const code = Sync.#causeCode(error)
+		return code !== undefined ? `${error.message}: ${code}` : error.message
+	}
+
+	static #causeCode(error: Error): string | undefined {
+		const cause = error.cause
+		if (typeof cause !== 'object' || cause === null) return undefined
+		if (!('code' in cause)) return undefined
+		return typeof cause.code === 'string' ? cause.code : undefined
 	}
 
 	// Reads `response.body` incrementally, counting bytes, aborting past
@@ -310,7 +363,8 @@ export class Sync implements SyncInterface {
 		url: string,
 		limit: number,
 	): Promise<
-		{ readonly ok: true; readonly text: string } | { readonly ok: false; readonly error: unknown }
+		| { readonly ok: true; readonly text: string }
+		| { readonly ok: false; readonly error: unknown; readonly note: string }
 	> {
 		const declared = response.headers.get('content-length')
 		if (declared !== null) {
@@ -321,6 +375,7 @@ export class Sync implements SyncInterface {
 					error: new Error(
 						`Response body for ${url} declares ${String(declaredBytes)} bytes, exceeding the ${String(limit)}-byte limit`,
 					),
+					note: `response exceeded limit (${String(limit)} bytes)`,
 				}
 			}
 		}
@@ -339,6 +394,7 @@ export class Sync implements SyncInterface {
 					return {
 						ok: false,
 						error: new Error(`Response body for ${url} exceeded the ${String(limit)}-byte limit`),
+						note: `response exceeded limit (${String(limit)} bytes)`,
 					}
 				}
 				chunks.push(decoder.decode(value, { stream: true }))
@@ -356,12 +412,16 @@ export class Sync implements SyncInterface {
 		outcome:
 			| { readonly kind: 'ok'; readonly text: string }
 			| { readonly kind: 'missing' }
-			| { readonly kind: 'failed'; readonly error: unknown },
+			| { readonly kind: 'failed'; readonly error: unknown; readonly note: string },
 		current?: Readonly<Record<string, string>>,
 	): GuideSync {
 		const path = `guides/src/${short}.md`
-		if (outcome.kind === 'missing') return { name, path, content: '', freshness: 'missing' }
-		if (outcome.kind === 'failed') return { name, path, content: '', freshness: 'failed' }
+		if (outcome.kind === 'missing') {
+			return { name, path, content: '', freshness: 'missing', note: 'HTTP 404' }
+		}
+		if (outcome.kind === 'failed') {
+			return { name, path, content: '', freshness: 'failed', note: outcome.note }
+		}
 		const freshness: Freshness = current?.[name] === outcome.text ? 'current' : 'behind'
 		return { name, path, content: outcome.text, freshness }
 	}
@@ -371,17 +431,35 @@ export class Sync implements SyncInterface {
 		outcome:
 			| { readonly kind: 'ok'; readonly text: string }
 			| { readonly kind: 'missing' }
-			| { readonly kind: 'failed'; readonly error: unknown },
+			| { readonly kind: 'failed'; readonly error: unknown; readonly note: string },
 	): VersionSync {
 		if (outcome.kind === 'missing') {
-			return { name: dep.name, range: dep.range, latest: '', freshness: 'missing' }
+			return {
+				name: dep.name,
+				range: dep.range,
+				latest: '',
+				freshness: 'missing',
+				note: 'HTTP 404',
+			}
 		}
 		if (outcome.kind === 'failed') {
-			return { name: dep.name, range: dep.range, latest: '', freshness: 'failed' }
+			return {
+				name: dep.name,
+				range: dep.range,
+				latest: '',
+				freshness: 'failed',
+				note: outcome.note,
+			}
 		}
 		const latest = Sync.#parseLatest(outcome.text)
 		if (latest === undefined) {
-			return { name: dep.name, range: dep.range, latest: '', freshness: 'failed' }
+			return {
+				name: dep.name,
+				range: dep.range,
+				latest: '',
+				freshness: 'failed',
+				note: 'malformed registry response (missing dist-tags.latest)',
+			}
 		}
 		return {
 			name: dep.name,

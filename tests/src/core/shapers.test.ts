@@ -101,3 +101,67 @@ describe('syncReportShape — generated reports satisfy isSyncReport', () => {
 		}
 	})
 })
+
+describe('syncReportShape — GuideSync / VersionSync note round-trips', () => {
+	it('a report with note present on a failed guide/version satisfies is() and round-trips through parse()', () => {
+		const contract = createContract(syncReportShape())
+		const value = {
+			target: '.',
+			guides: [
+				{
+					name: '@orkestrel/contract',
+					path: 'guides/src/contract.md',
+					content: '',
+					freshness: 'failed' as const,
+					note: 'HTTP 500',
+				},
+			],
+			versions: [
+				{
+					name: '@orkestrel/contract',
+					range: '^0.0.5',
+					// `latest` is `stringShape({ min: 1 })` — a failed VersionSync's
+					// unknown latest is represented by a placeholder, never `''`.
+					latest: 'unknown',
+					freshness: 'failed' as const,
+					note: 'fetch failed: ECONNREFUSED',
+				},
+			],
+			clean: false,
+			failed: 2,
+		}
+
+		expect(contract.is(value)).toBe(true)
+		expect(contract.parse(value)).toEqual(value)
+		expect(isSyncReport(value)).toBe(true)
+	})
+
+	it('a report with note absent on a current guide/version satisfies is() and round-trips through parse()', () => {
+		const contract = createContract(syncReportShape())
+		const value = {
+			target: '.',
+			guides: [
+				{
+					name: '@orkestrel/contract',
+					path: 'guides/src/contract.md',
+					content: '# Contract Guide\n',
+					freshness: 'current' as const,
+				},
+			],
+			versions: [
+				{
+					name: '@orkestrel/contract',
+					range: '^0.0.5',
+					latest: '0.0.5',
+					freshness: 'current' as const,
+				},
+			],
+			clean: true,
+			failed: 0,
+		}
+
+		expect(contract.is(value)).toBe(true)
+		expect(contract.parse(value)).toEqual(value)
+		expect(isSyncReport(value)).toBe(true)
+	})
+})

@@ -90,13 +90,17 @@ export type SyncEventMap = {
  * bytes read from a single response body (declared `Content-Length` or
  * streamed total, whichever trips first) — default 5,242,880 (5 MiB); a body
  * that would exceed it is a transport fault, handled exactly like any other
- * (retry-eligible per `retries`, then `failed` / strict `FETCH`).
+ * (retry-eligible per `retries`, then `failed` / strict `FETCH`). `guides.token`,
+ * when set, is sent as an `Authorization: Bearer <token>` header on GUIDE
+ * fetches ONLY (never the registry) — for private-repo fleets; it is never
+ * logged, never echoed into a `note`, and never reaches a version fetch.
  */
 export interface SyncOptions {
 	readonly guides?: {
 		readonly base?: string
 		readonly branch?: string
 		readonly timeout?: number
+		readonly token?: string
 	}
 	readonly registry?: {
 		readonly base?: string

@@ -180,20 +180,38 @@ export interface Validation {
 	readonly warnings: readonly string[]
 }
 
-/** One dependency guide fetched from upstream at its `path`, plus its `freshness` verdict against the local mirror. */
+/**
+ * One dependency guide fetched from upstream at its `path`, plus its
+ * `freshness` verdict against the local mirror.
+ *
+ * @remarks
+ * `note` carries the failure/anomaly CAUSE — a transport error message, an
+ * `HTTP <status>`, `redirected (redirect following is disabled)`, or a
+ * `response exceeded limit (<n> bytes)` — present on every non-`current`
+ * outcome that has a discoverable cause; absent on `current` and on `behind`
+ * (both are clean outcomes with nothing to explain).
+ */
 export interface GuideSync {
 	readonly name: string
 	readonly path: string
 	readonly content: string
 	readonly freshness: Freshness
+	readonly note?: string
 }
 
-/** One dependency's declared `range` against the registry `latest`, plus its `freshness` verdict. */
+/**
+ * One dependency's declared `range` against the registry `latest`, plus its
+ * `freshness` verdict.
+ *
+ * @remarks
+ * `note` carries the failure/anomaly CAUSE — see {@link GuideSync.note}.
+ */
 export interface VersionSync {
 	readonly name: string
 	readonly range: string
 	readonly latest: string
 	readonly freshness: Freshness
+	readonly note?: string
 }
 
 /**

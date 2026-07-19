@@ -20,13 +20,14 @@ const BIN_PATH = join(WORKSPACE_ROOT, 'dist/bin/scaffold.js')
 function runBin(
 	argv: readonly string[],
 	input?: string,
-	options?: { readonly cwd?: string },
+	options?: { readonly cwd?: string; readonly env?: Readonly<Record<string, string>> },
 ): SpawnSyncReturns<string> {
 	return spawnSync(process.execPath, [BIN_PATH, ...argv], {
 		cwd: options?.cwd ?? WORKSPACE_ROOT,
 		input: input ?? '',
 		encoding: 'utf8',
 		timeout: 15000,
+		env: options?.env !== undefined ? { ...process.env, ...options.env } : process.env,
 	})
 }
 
@@ -313,6 +314,21 @@ describe('scaffold bin', () => {
 				await directory.cleanup()
 			}
 		})
+
+		it('FIX 5: a GITHUB_TOKEN in the environment is picked up but never leaked into output', async () => {
+			const directory = await writeManifest({ '@orkestrel/does-not-exist-xyz': '^1.0.0' })
+			try {
+				const result = runBin(
+					['sync', '--target', '.', '--deps', '@orkestrel/does-not-exist-xyz'],
+					undefined,
+					{ cwd: directory.path, env: { GITHUB_TOKEN: 'test-marker-token-should-not-leak' } },
+				)
+				const output = result.stdout + result.stderr
+				expect(output).not.toContain('test-marker-token-should-not-leak')
+			} finally {
+				await directory.cleanup()
+			}
+		}, 20000)
 	})
 
 	describe('audit', () => {

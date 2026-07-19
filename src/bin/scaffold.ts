@@ -83,6 +83,10 @@ Every WRITE destination resolves under the current directory — cd there first
 
 Flags: --help prints this text; a repeated flag keeps its LAST occurrence.
 
+Private repos: set GITHUB_TOKEN (or GH_TOKEN) in the environment — \`sync\` and
+\`audit --live\` send it as a guide-fetch Authorization header (never the
+registry, never a CLI flag, never logged).
+
 Windows/PowerShell: invoke as \`node ./dist/bin/scaffold.js …\` from a checkout,
 or \`npx scaffold …\` once installed — PowerShell mangles npm's \`--\` passthrough,
 so avoid \`npm run scaffold -- …\` there.
@@ -91,10 +95,31 @@ so avoid \`npm run scaffold -- …\` there.
 const sink = createServerSink()
 const reporter = createReporter({ sink, width: sink.columns })
 
-/** Print a one-line coded error (never a stack) and exit nonzero. */
+/**
+ * The one sentinel that unwinds the whole command dispatch to a chosen exit
+ * code (H4/Windows) — thrown instead of calling `process.exit`, so every
+ * `finally` between the throw site and the top-level driver still runs
+ * (entity teardown drains naturally instead of racing process teardown).
+ * Caught exactly once, at the bottom of this file.
+ */
+class CliExit extends Error {
+	readonly code: number
+
+	constructor(code: number) {
+		super(`cli-exit:${String(code)}`)
+		this.code = code
+	}
+}
+
+/** Halt command dispatch with `code` (H4) — never `process.exit`; unwinds through every `finally` first. */
+function halt(code: number): never {
+	throw new CliExit(code)
+}
+
+/** Print a one-line coded error (never a stack) and halt nonzero. */
 function fail(message: string): never {
 	reporter.status('error', message)
-	process.exit(1)
+	halt(1)
 }
 
 /** Render a caught error as a clean one-line message — a `ScaffoldError`'s code, or a bare message otherwise. */
@@ -193,472 +218,573 @@ function hydrateBestEffort(
 	}
 }
 
-let parsed: ReturnType<typeof parseArguments>
-try {
-	parsed = parseArguments()
-} catch (error) {
-	process.stderr.write(
-		`${error instanceof Error ? error.message : 'invalid arguments'}\n\n${USAGE}`,
-	)
-	process.exit(1)
+/**
+ * A private-repo guide-fetch token (FIX 5) — `GITHUB_TOKEN`, falling back to
+ * `GH_TOKEN` — picked up from the environment only (deliberately NO CLI flag:
+ * tokens don't belong in shell history), `undefined` when neither is set or
+ * both are empty. Never logged, never echoed into any output this bin prints.
+ */
+function githubToken(): string | undefined {
+	const token = process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN
+	return token !== undefined && token.length > 0 ? token : undefined
 }
 
-const { values, positionals } = parsed
-
-if (values.help) {
-	process.stdout.write(USAGE)
-	process.exit(0)
-}
-
-const [command, argument] = positionals
-
-if (command === undefined) {
-	process.stderr.write(USAGE)
-	process.exit(1)
-} else if (command === 'sync') {
-	let target: string
+/**
+ * The whole command dispatch — a single top-level driver (no nested function
+ * declarations, AGENTS §4). Every verb sets `process.exitCode` (never
+ * `process.exit`, H4) and returns, or `halt()`s through a `finally` that
+ * tears its entities down first; the caller at the bottom of this file
+ * catches exactly one sentinel (`CliExit`) and stops.
+ */
+async function main(): Promise<void> {
+	let parsed: ReturnType<typeof parseArguments>
 	try {
-		target = containDestination(values.target ?? '.')
+		parsed = parseArguments()
 	} catch (error) {
-		fail(describe(error))
+		process.stderr.write(
+			`${error instanceof Error ? error.message : 'invalid arguments'}\n\n${USAGE}`,
+		)
+		process.exitCode = 1
+		return
 	}
-	const sync = createSync({ strict: values.strict })
-	const wanted = values.deps?.split(',')
 
-	let report: SyncReport
-	try {
-		const declared = manifestToDependencies(readManifest(target))
-		const deps = wanted ? declared.filter((dep) => wanted.includes(dep.name)) : declared
-		if (wanted) {
-			const guides = await sync.guides(deps)
-			const versions = await sync.versions(deps)
-			const failed = [...guides, ...versions].filter(
-				(entry) => entry.freshness === 'missing' || entry.freshness === 'failed',
-			).length
-			const clean =
-				failed === 0 &&
-				guides.every((guide) => guide.freshness === 'current') &&
-				versions.every((version) => version.freshness === 'current')
-			report = { target, guides, versions, clean, failed }
-		} else {
-			report = await sync.pull(target)
-		}
-	} catch (error) {
-		sync.destroy()
-		fail(describe(error))
+	const { values, positionals } = parsed
+
+	if (values.help) {
+		process.stdout.write(USAGE)
+		return
 	}
-	reporter.line(syncToReview(report))
 
-	if (values.apply) {
-		const spinner = createSpinner({ message: 'writing mirrors', sink })
-		spinner.start()
+	const [command, argument] = positionals
+
+	if (command === undefined) {
+		process.stderr.write(USAGE)
+		process.exitCode = 1
+		return
+	} else if (command === 'sync') {
+		let target: string
 		try {
-			const written = await sync.write(report, target)
-			spinner.success(`wrote ${written.length} guide${written.length === 1 ? '' : 's'}`)
+			target = containDestination(values.target ?? '.')
 		} catch (error) {
-			spinner.failure(describe(error))
-			sync.destroy()
-			process.exit(1)
+			fail(describe(error))
 		}
-	}
-	sync.destroy()
-	process.exit(values.strict && report.failed > 0 ? 1 : 0) // nonzero only under --strict with failures
-} else if (command === 'audit') {
-	let target: string
-	try {
-		target = containDestination(values.target ?? '.')
-	} catch (error) {
-		fail(describe(error))
-	}
-	let spec: Blueprint
-	try {
-		spec = deriveBlueprint(target)
-	} catch (error) {
-		fail(describe(error))
-	}
-	const deps: readonly Dependency[] = [...spec.dependencies, ...spec.peers, ...spec.extras]
-
-	const groupsInput = values.groups?.split(',')
-	let groups: readonly Group[] | undefined
-	if (groupsInput !== undefined) {
-		const unrecognized = groupsInput.filter((name) => !GROUPS.some((group) => group === name))
-		if (unrecognized.length > 0) {
-			fail(
-				describe(
-					new ScaffoldError('INVALID', `Group "${unrecognized.join('", "')}" is not recognized`, {
-						groups: unrecognized,
-					}),
-				),
-			)
-		}
-		groups = GROUPS.filter((group) => groupsInput.includes(group))
-	}
-
-	const compiled = blueprintToPlan(spec, groups)
-	const host = values.host ?? hostRoot()
-	let hydrated: { readonly plan: Plan; readonly aware: boolean }
-	try {
-		hydrated = hydrateBestEffort(compiled, host, values.host !== undefined)
-	} catch (error) {
-		fail(describe(error))
-	}
-	const plan = hydrated.plan
-	reporter.line(`host: ${hydrated.aware ? 'content-aware' : 'presence-only'}`)
-	let drifted = !diffPlan(
-		plan,
-		readTarget(
-			target,
-			plan.artifacts.map((artifact) => artifact.path),
-		),
-	).clean
-
-	if (values.live) {
-		const sync = createSync()
+		const sync = createSync({ strict: values.strict, guides: { token: githubToken() } })
 		try {
-			const guides = await sync.guides(deps)
-			const versions = await sync.versions(deps)
-			drifted ||= [...guides, ...versions].some((entry) => entry.freshness !== 'current')
+			const wanted = values.deps?.split(',')
+
+			let report: SyncReport
+			try {
+				const declared = manifestToDependencies(readManifest(target))
+				const deps = wanted ? declared.filter((dep) => wanted.includes(dep.name)) : declared
+				if (wanted) {
+					const guides = await sync.guides(deps)
+					const versions = await sync.versions(deps)
+					const failed = [...guides, ...versions].filter(
+						(entry) => entry.freshness === 'missing' || entry.freshness === 'failed',
+					).length
+					const clean =
+						failed === 0 &&
+						guides.every((guide) => guide.freshness === 'current') &&
+						versions.every((version) => version.freshness === 'current')
+					report = { target, guides, versions, clean, failed }
+				} else {
+					report = await sync.pull(target)
+				}
+			} catch (error) {
+				fail(describe(error))
+			}
+			reporter.line(syncToReview(report))
+			const failing = [...report.guides, ...report.versions].filter(
+				(entry) => entry.note !== undefined,
+			)
+			for (const entry of failing)
+				reporter.line(`  ${entry.name}: ${entry.freshness} — ${entry.note}`)
+
+			if (values.apply) {
+				const spinner = createSpinner({ message: 'writing mirrors', sink })
+				spinner.start()
+				try {
+					const written = await sync.write(report, target)
+					spinner.success(`wrote ${written.length} guide${written.length === 1 ? '' : 's'}`)
+				} catch (error) {
+					spinner.failure(describe(error))
+					process.exitCode = 1
+					return
+				}
+			}
+			reporter.line(
+				`sync: ${report.guides.length + report.versions.length} entries — ${report.failed} failed`,
+			)
+			process.exitCode = values.strict && report.failed > 0 ? 1 : 0 // nonzero only under --strict with failures
+			return
 		} finally {
 			sync.destroy()
 		}
-	}
-	process.exit(drifted ? 1 : 0) // ANY drift fails — the CI gate
-} else if (command === 'new') {
-	if (values.target !== undefined && !values.apply) {
-		process.stderr.write('note: --target is ignored on a dry run (pass --apply to write)\n')
-	}
-
-	const terminal = createTerminal()
-	const name =
-		argument ??
-		(await terminal.input({ message: 'Package name', validate: { pattern: '^[a-z][a-z0-9-]*$' } }))
-
-	const picked =
-		values.surfaces?.split(',') ??
-		(await terminal.checkbox({ message: 'Surfaces', choices: [...SURFACES], min: 1 }))
-	const unrecognized = picked.filter(
-		(candidate) => !SURFACES.some((surface) => surface === candidate),
-	)
-	if (unrecognized.length > 0) {
-		fail(`Surface "${unrecognized.join('", "')}" is not recognized`)
-	}
-	const surfaces = SURFACES.filter((surface) => picked.includes(surface)) // narrow to Surface[], no `as`
-
-	// --deps resolve latest from the registry → ranges pin ^latest; their guides fetch into the plan.
-	// Every token is gated against `DEPENDENCY_NAME_PATTERN` BEFORE any network
-	// call — a bad token (path traversal, off-pattern name, …) is a coded
-	// INVALID failure through `fail`, never reaching `sync.versions` (A3).
-	const depNames = values.deps?.split(',') ?? []
-	const badDep = depNames.find((depName) => !DEPENDENCY_NAME_PATTERN.test(depName))
-	if (badDep !== undefined) {
-		fail(
-			describe(
-				new ScaffoldError(
-					'INVALID',
-					`Dependency name "${badDep}" must match ${DEPENDENCY_NAME_PATTERN.source}`,
-					{
-						name: badDep,
-					},
-				),
-			),
-		)
-	}
-	const sync = createSync()
-	const versions = await sync.versions(depNames.map((depName) => dependency(depName, '*')))
-	sync.destroy()
-	const deps = versions.map((version) => dependency(version.name, `^${version.latest}`))
-
-	const compiler = createCompiler()
-	const scaffolding = compiler.compile(blueprint(name, { surfaces, dependencies: deps }))
-	if (!scaffolding.plan) {
-		const message = scaffolding.questions.map((question) => question.text).join('; ')
-		compiler.destroy()
-		fail(message)
-	}
-	reporter.section('Plan')
-	reporter.line(planToReview(scaffolding.plan)) // dry-run default: show the review
-	const summary = planToSummary(scaffolding.plan)
-	reporter.table({
-		columns: [{ label: 'Origin' }, { label: 'Count', align: 'right' }],
-		rows: [
-			['host', String(summary.host)],
-			['template', String(summary.template)],
-			['computed', String(summary.computed)],
-		],
-	})
-
-	if (values.apply) {
-		let destination: string
+	} else if (command === 'audit') {
+		let target: string
 		try {
-			destination = containDestination(values.target ?? `./${name}`)
+			target = containDestination(values.target ?? '.')
 		} catch (error) {
-			compiler.destroy()
 			fail(describe(error))
 		}
-		const spinner = createSpinner({ message: 'materializing', sink })
-		spinner.start()
-		const materializer = createMaterializer({ host: values.host })
+		let spec: Blueprint
 		try {
-			const result = materializer.materialize(scaffolding.plan, destination)
-			spinner.success(`wrote ${result.written.length + result.copied.length} files`)
+			spec = deriveBlueprint(target)
 		} catch (error) {
-			spinner.failure(describe(error))
-			materializer.destroy()
-			compiler.destroy()
-			process.exit(1)
+			fail(describe(error))
 		}
-		materializer.destroy()
-	}
-	compiler.destroy()
-} else if (command === 'repair') {
-	let target: string
-	try {
-		target = containDestination(values.target ?? '.')
-	} catch (error) {
-		fail(describe(error))
-	}
-	if (values.prune && !values.apply) {
-		process.stderr.write('note: --prune is ignored on a dry run (pass --apply to write)\n')
-	}
-	let spec: Blueprint
-	try {
-		spec = deriveBlueprint(target)
-	} catch (error) {
-		fail(describe(error))
-	}
+		const deps: readonly Dependency[] = [...spec.dependencies, ...spec.peers, ...spec.extras]
 
-	const compiler = createCompiler()
-	const scaffolding = compiler.compile(spec)
-	if (!scaffolding.plan) {
-		const message = scaffolding.questions.map((question) => question.text).join('; ')
-		compiler.destroy()
-		fail(message)
-	}
-	const compiled = scaffolding.plan
-	compiler.destroy()
+		const groupsInput = values.groups?.split(',')
+		let groups: readonly Group[] | undefined
+		if (groupsInput !== undefined) {
+			const unrecognized = groupsInput.filter((name) => !GROUPS.some((group) => group === name))
+			if (unrecognized.length > 0) {
+				fail(
+					describe(
+						new ScaffoldError('INVALID', `Group "${unrecognized.join('", "')}" is not recognized`, {
+							groups: unrecognized,
+						}),
+					),
+				)
+			}
+			groups = GROUPS.filter((group) => groupsInput.includes(group))
+		}
 
-	// H2: repair is the host-restoration tool ONLY — scope to host-origin
-	// artifacts before hydrate/diff/apply so a mature repo's hand-written
-	// src/tests/guides/package.json is never overwritten with a stub.
-	// `.github/workflows/ci.yml` STAYS in scope here (unlike `mirror`'s
-	// fleet-wide exclusion) — single-target `repair --apply` is explicit
-	// per-repo intent.
-	const scoped: Plan = {
-		...compiled,
-		artifacts: compiled.artifacts.filter((artifact) => artifact.origin === 'host'),
-	}
-
-	const host = values.host ?? hostRoot()
-	let plan: Plan
-	try {
-		plan = hydrateBestEffort(scoped, host, values.host !== undefined).plan
-	} catch (error) {
-		fail(describe(error))
-	}
-
-	let audit: Audit
-	try {
-		audit = diffPlan(
+		const compiled = blueprintToPlan(spec, groups)
+		const host = values.host ?? hostRoot()
+		let hydrated: { readonly plan: Plan; readonly aware: boolean }
+		try {
+			hydrated = hydrateBestEffort(compiled, host, values.host !== undefined)
+		} catch (error) {
+			fail(describe(error))
+		}
+		const plan = hydrated.plan
+		reporter.line(`host: ${hydrated.aware ? 'content-aware' : 'presence-only'}`)
+		const audit = diffPlan(
 			plan,
 			readTarget(
 				target,
 				plan.artifacts.map((artifact) => artifact.path),
 			),
 		)
-	} catch (error) {
-		fail(describe(error))
-	}
-	reporter.section('Audit')
-	reporter.line(auditToReview(audit))
+		let drifted = !audit.clean
 
-	if (!values.apply) {
-		process.exit(audit.clean ? 0 : 1)
-	}
-
-	const spinner = createSpinner({ message: 'repairing', sink })
-	spinner.start()
-	const materializer = createMaterializer({ host: values.host })
-	try {
-		const result = materializer.repair(plan, audit, target)
-		const removed = values.prune ? materializer.prune(target).removed : []
-		spinner.success(
-			`wrote ${result.written.length}, copied ${result.copied.length}, skipped ${result.skipped.length}, removed ${removed.length}`,
-		)
-	} catch (error) {
-		spinner.failure(describe(error))
-		materializer.destroy()
-		process.exit(1)
-	}
-	materializer.destroy()
-	process.exit(0)
-} else if (command === 'mirror') {
-	let root: string
-	try {
-		root = containDestination(values.root?.[0] ?? '.')
-	} catch (error) {
-		fail(describe(error))
-	}
-	const packages = discoverPackages(root)
-	if (packages.length === 0) {
-		fail(`No @orkestrel packages found under "${root}"`)
-	}
-	if (values.prune && !values.apply) {
-		process.stderr.write('note: --prune is ignored on a dry run (pass --apply to write)\n')
-	}
-
-	const host = values.host ?? hostRoot()
-	const materializer = values.apply ? createMaterializer({ host: values.host }) : undefined
-	let drifted = 0
-	let failed = 0
-	let ciExcluded = false
-
-	try {
-		for (const directory of packages) {
-			const name = basename(directory)
+		let liveNote = ''
+		if (values.live) {
+			const sync = createSync({ guides: { token: githubToken() } })
 			try {
-				const spec = deriveBlueprint(directory)
-				const compiler = createCompiler()
-				const scaffolding = compiler.compile(spec)
-				if (!scaffolding.plan) {
-					const message = scaffolding.questions.map((question) => question.text).join('; ')
-					compiler.destroy()
-					throw new ScaffoldError('INVALID', message)
-				}
-				// Fleet apply must never clobber a repo's intentionally
-				// divergent CI (e.g. ollama, sea) — `.github/workflows/ci.yml`
-				// is scoped out of `mirror`; single-target `repair` keeps full scope.
-				const scoped: Plan = {
-					...scaffolding.plan,
-					artifacts: scaffolding.plan.artifacts.filter(
-						(artifact) =>
-							artifact.origin === 'host' && artifact.path !== '.github/workflows/ci.yml',
-					),
-				}
-				if (
-					!ciExcluded &&
-					scaffolding.plan.artifacts.some(
-						(artifact) => artifact.path === '.github/workflows/ci.yml',
-					)
-				) {
-					reporter.line('ci.yml: repo-flavored, skipped (use repair --apply per repo)')
-					ciExcluded = true
-				}
-				compiler.destroy()
-
-				const plan = hydrateBestEffort(scoped, host, values.host !== undefined).plan
-				const paths = plan.artifacts.map((artifact) => artifact.path)
-				let audit = diffPlan(plan, readTarget(directory, paths))
-
-				if (audit.clean) {
-					reporter.line(`${name}: clean`)
-					continue
-				}
-
-				if (materializer) {
-					materializer.repair(plan, audit, directory)
-					if (values.prune) materializer.prune(directory)
-					audit = diffPlan(plan, readTarget(directory, paths))
-				}
-
-				if (!audit.clean) drifted += 1
-				reporter.line(
-					materializer
-						? `${name}: repaired (${audit.drifted + audit.missing + audit.foreign} remaining)`
-						: `${name}: drifted ${audit.drifted}, missing ${audit.missing}, foreign ${audit.foreign}`,
+				const guides = await sync.guides(deps)
+				const versions = await sync.versions(deps)
+				const entries = [...guides, ...versions]
+				drifted ||= entries.some((entry) => entry.freshness !== 'current')
+				const current = entries.filter((entry) => entry.freshness === 'current').length
+				const behind = entries.filter((entry) => entry.freshness === 'behind').length
+				const other = entries.filter(
+					(entry) => entry.freshness !== 'current' && entry.freshness !== 'behind',
 				)
-			} catch (error) {
-				failed += 1
-				reporter.line(`${name}: ${describe(error)}`)
+				liveNote = `live: ${current} current, ${behind} behind, ${other.length} failed/missing`
+				for (const entry of other) {
+					if (entry.note !== undefined) {
+						reporter.line(`  ${entry.name}: ${entry.freshness} — ${entry.note}`)
+					}
+				}
+			} finally {
+				sync.destroy()
 			}
 		}
-	} finally {
-		materializer?.destroy()
-	}
 
-	reporter.line(`total: ${drifted} drifted, ${failed} failed`)
-	process.exit(drifted > 0 || failed > 0 ? 1 : 0)
-} else if (command === 'catalog') {
-	// `scaffold catalog` — regenerate the fleet package catalog embedded in
-	// <target>/.claude/agents/orkestrel.md between its marker comments.
-	// `--root` is a READ-ONLY source (unrestricted, like `--host`); only the
-	// write destination `--target` is confined to the cwd.
-	const roots = values.root ?? [process.cwd()]
-	let catalogTarget: string
-	try {
-		catalogTarget = containDestination(values.target ?? '.')
-	} catch (error) {
-		fail(describe(error))
-	}
+		reporter.line(
+			drifted
+				? `audit: ${audit.findings.length} artifacts — ${audit.drifted} drifted, ${audit.missing} missing, ${audit.foreign} foreign`
+				: `audit: ${audit.findings.length} artifacts — clean`,
+		)
+		if (liveNote.length > 0) reporter.line(liveNote)
+		process.exitCode = drifted ? 1 : 0 // ANY drift fails — the CI gate
+		return
+	} else if (command === 'new') {
+		if (values.target !== undefined && !values.apply) {
+			process.stderr.write('note: --target is ignored on a dry run (pass --apply to write)\n')
+		}
 
-	let entries: readonly CatalogEntry[]
-	try {
-		entries = catalogPackages(roots)
-	} catch (error) {
-		if (isScaffoldError(error)) {
-			fail(describe(error))
-		} else {
+		const terminal = createTerminal()
+		const name =
+			argument ??
+			(await terminal.input({
+				message: 'Package name',
+				validate: { pattern: '^[a-z][a-z0-9-]*$' },
+			}))
+
+		const picked =
+			values.surfaces?.split(',') ??
+			(await terminal.checkbox({ message: 'Surfaces', choices: [...SURFACES], min: 1 }))
+		const unrecognized = picked.filter(
+			(candidate) => !SURFACES.some((surface) => surface === candidate),
+		)
+		if (unrecognized.length > 0) {
+			fail(`Surface "${unrecognized.join('", "')}" is not recognized`)
+		}
+		const surfaces = SURFACES.filter((surface) => picked.includes(surface)) // narrow to Surface[], no `as`
+
+		// --deps resolve latest from the registry → ranges pin ^latest; their guides fetch into the plan.
+		// Every token is gated against `DEPENDENCY_NAME_PATTERN` BEFORE any network
+		// call — a bad token (path traversal, off-pattern name, …) is a coded
+		// INVALID failure through `fail`, never reaching `sync.versions` (A3).
+		const depNames = values.deps?.split(',') ?? []
+		const badDep = depNames.find((depName) => !DEPENDENCY_NAME_PATTERN.test(depName))
+		if (badDep !== undefined) {
 			fail(
 				describe(
-					new ScaffoldError('TARGET', `Failed to read fleet root(s): ${roots.join(', ')}`, {
-						roots,
-						error,
-					}),
+					new ScaffoldError(
+						'INVALID',
+						`Dependency name "${badDep}" must match ${DEPENDENCY_NAME_PATTERN.source}`,
+						{
+							name: badDep,
+						},
+					),
 				),
 			)
 		}
-	}
+		const sync = createSync()
+		let versions
+		try {
+			versions = await sync.versions(depNames.map((depName) => dependency(depName, '*')))
+		} finally {
+			sync.destroy()
+		}
+		const deps = versions.map((version) => dependency(version.name, `^${version.latest}`))
 
-	const block = catalogToBlock(entries)
-	const agentPath = join(catalogTarget, '.claude', 'agents', 'orkestrel.md')
-	let current: string
-	try {
-		current = readFileSync(agentPath, 'utf8')
-	} catch (error) {
-		fail(
-			describe(
-				new ScaffoldError('TARGET', `Failed to read ${agentPath}`, { path: agentPath, error }),
-			),
-		)
-	}
+		const compiler = createCompiler()
+		try {
+			const scaffolding = compiler.compile(blueprint(name, { surfaces, dependencies: deps }))
+			if (!scaffolding.plan) {
+				const message = scaffolding.questions.map((question) => question.text).join('; ')
+				fail(message)
+			}
+			reporter.section('Plan')
+			reporter.line(planToReview(scaffolding.plan)) // dry-run default: show the review
+			const summary = planToSummary(scaffolding.plan)
+			reporter.table({
+				columns: [{ label: 'Origin' }, { label: 'Count', align: 'right' }],
+				rows: [
+					['host', String(summary.host)],
+					['template', String(summary.template)],
+					['computed', String(summary.computed)],
+				],
+			})
 
-	const startMarker = '<!-- catalog:start -->'
-	const endMarker = '<!-- catalog:end -->'
-	const startIndex = current.indexOf(startMarker)
-	const endIndex = current.indexOf(endMarker)
-	if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) {
-		fail(
-			describe(
-				new ScaffoldError(
-					'TARGET',
-					`Markers "${startMarker}" / "${endMarker}" not found in ${agentPath}`,
-					{ path: agentPath },
+			if (values.apply) {
+				let destination: string
+				try {
+					destination = containDestination(values.target ?? `./${name}`)
+				} catch (error) {
+					fail(describe(error))
+				}
+				const spinner = createSpinner({ message: 'materializing', sink })
+				spinner.start()
+				const materializer = createMaterializer({ host: values.host })
+				try {
+					const result = materializer.materialize(scaffolding.plan, destination)
+					spinner.success(`wrote ${result.written.length + result.copied.length} files`)
+				} catch (error) {
+					spinner.failure(describe(error))
+					process.exitCode = 1
+					return
+				} finally {
+					materializer.destroy()
+				}
+			} else {
+				reporter.line(`dry run — pass --apply to write ./${name}`)
+			}
+		} finally {
+			compiler.destroy()
+		}
+	} else if (command === 'repair') {
+		let target: string
+		try {
+			target = containDestination(values.target ?? '.')
+		} catch (error) {
+			fail(describe(error))
+		}
+		if (values.prune && !values.apply) {
+			process.stderr.write('note: --prune is ignored on a dry run (pass --apply to write)\n')
+		}
+		let spec: Blueprint
+		try {
+			spec = deriveBlueprint(target)
+		} catch (error) {
+			fail(describe(error))
+		}
+
+		const compiler = createCompiler()
+		let compiled: Plan
+		try {
+			const scaffolding = compiler.compile(spec)
+			if (!scaffolding.plan) {
+				const message = scaffolding.questions.map((question) => question.text).join('; ')
+				fail(message)
+			}
+			compiled = scaffolding.plan
+		} finally {
+			compiler.destroy()
+		}
+
+		// H2: repair is the host-restoration tool ONLY — scope to host-origin
+		// artifacts before hydrate/diff/apply so a mature repo's hand-written
+		// src/tests/guides/package.json is never overwritten with a stub.
+		// `.github/workflows/ci.yml` STAYS in scope here (unlike `mirror`'s
+		// fleet-wide exclusion) — single-target `repair --apply` is explicit
+		// per-repo intent.
+		const scoped: Plan = {
+			...compiled,
+			artifacts: compiled.artifacts.filter((artifact) => artifact.origin === 'host'),
+		}
+
+		const host = values.host ?? hostRoot()
+		let plan: Plan
+		try {
+			plan = hydrateBestEffort(scoped, host, values.host !== undefined).plan
+		} catch (error) {
+			fail(describe(error))
+		}
+
+		let audit: Audit
+		try {
+			audit = diffPlan(
+				plan,
+				readTarget(
+					target,
+					plan.artifacts.map((artifact) => artifact.path),
 				),
-			),
-		)
+			)
+		} catch (error) {
+			fail(describe(error))
+		}
+		reporter.section('Audit')
+		reporter.line(auditToReview(audit))
+
+		if (!values.apply) {
+			reporter.line(
+				audit.clean
+					? 'repair: clean'
+					: `repair: ${audit.drifted} drifted, ${audit.missing} missing, ${audit.foreign} foreign — pass --apply to write`,
+			)
+			process.exitCode = audit.clean ? 0 : 1
+			return
+		}
+
+		const spinner = createSpinner({ message: 'repairing', sink })
+		spinner.start()
+		const materializer = createMaterializer({ host: values.host })
+		try {
+			const result = materializer.repair(plan, audit, target)
+			const removed = values.prune ? materializer.prune(target).removed : []
+			spinner.success(
+				`wrote ${result.written.length}, copied ${result.copied.length}, skipped ${result.skipped.length}, removed ${removed.length}`,
+			)
+		} catch (error) {
+			spinner.failure(describe(error))
+			process.exitCode = 1
+			return
+		} finally {
+			materializer.destroy()
+		}
+		process.exitCode = 0
+		return
+	} else if (command === 'mirror') {
+		let root: string
+		try {
+			root = containDestination(values.root?.[0] ?? '.')
+		} catch (error) {
+			fail(describe(error))
+		}
+		const packages = discoverPackages(root)
+		if (packages.length === 0) {
+			fail(`No @orkestrel packages found under "${root}"`)
+		}
+		if (values.prune && !values.apply) {
+			process.stderr.write('note: --prune is ignored on a dry run (pass --apply to write)\n')
+		}
+
+		const host = values.host ?? hostRoot()
+		const materializer = values.apply ? createMaterializer({ host: values.host }) : undefined
+		let drifted = 0
+		let failed = 0
+		let ciExcluded = false
+
+		try {
+			for (const directory of packages) {
+				const name = basename(directory)
+				try {
+					const spec = deriveBlueprint(directory)
+					const compiler = createCompiler()
+					let scoped: Plan
+					try {
+						const scaffolding = compiler.compile(spec)
+						if (!scaffolding.plan) {
+							const message = scaffolding.questions.map((question) => question.text).join('; ')
+							throw new ScaffoldError('INVALID', message)
+						}
+						// Fleet apply must never clobber a repo's intentionally
+						// divergent CI (e.g. ollama, sea) — `.github/workflows/ci.yml`
+						// is scoped out of `mirror`; single-target `repair` keeps full scope.
+						scoped = {
+							...scaffolding.plan,
+							artifacts: scaffolding.plan.artifacts.filter(
+								(artifact) =>
+									artifact.origin === 'host' && artifact.path !== '.github/workflows/ci.yml',
+							),
+						}
+						if (
+							!ciExcluded &&
+							scaffolding.plan.artifacts.some(
+								(artifact) => artifact.path === '.github/workflows/ci.yml',
+							)
+						) {
+							reporter.line('ci.yml: repo-flavored, skipped (use repair --apply per repo)')
+							ciExcluded = true
+						}
+					} finally {
+						compiler.destroy()
+					}
+
+					const plan = hydrateBestEffort(scoped, host, values.host !== undefined).plan
+					const paths = plan.artifacts.map((artifact) => artifact.path)
+					let audit = diffPlan(plan, readTarget(directory, paths))
+
+					if (audit.clean) {
+						reporter.line(`${name}: clean`)
+						continue
+					}
+
+					if (materializer) {
+						materializer.repair(plan, audit, directory)
+						if (values.prune) materializer.prune(directory)
+						audit = diffPlan(plan, readTarget(directory, paths))
+					}
+
+					if (!audit.clean) drifted += 1
+					reporter.line(
+						materializer
+							? `${name}: repaired (${audit.drifted + audit.missing + audit.foreign} remaining)`
+							: `${name}: drifted ${audit.drifted}, missing ${audit.missing}, foreign ${audit.foreign}`,
+					)
+				} catch (error) {
+					failed += 1
+					reporter.line(`${name}: ${describe(error)}`)
+				}
+			}
+		} finally {
+			materializer?.destroy()
+		}
+
+		reporter.line(`total: ${drifted} drifted, ${failed} failed`)
+		process.exitCode = drifted > 0 || failed > 0 ? 1 : 0
+		return
+	} else if (command === 'catalog') {
+		// `scaffold catalog` — regenerate the fleet package catalog embedded in
+		// <target>/.claude/agents/orkestrel.md between its marker comments.
+		// `--root` is a READ-ONLY source (unrestricted, like `--host`); only the
+		// write destination `--target` is confined to the cwd.
+		const roots = values.root ?? [process.cwd()]
+		let catalogTarget: string
+		try {
+			catalogTarget = containDestination(values.target ?? '.')
+		} catch (error) {
+			fail(describe(error))
+		}
+
+		let entries: readonly CatalogEntry[]
+		try {
+			entries = catalogPackages(roots)
+		} catch (error) {
+			if (isScaffoldError(error)) {
+				fail(describe(error))
+			} else {
+				fail(
+					describe(
+						new ScaffoldError('TARGET', `Failed to read fleet root(s): ${roots.join(', ')}`, {
+							roots,
+							error,
+						}),
+					),
+				)
+			}
+		}
+
+		const block = catalogToBlock(entries)
+		const agentPath = join(catalogTarget, '.claude', 'agents', 'orkestrel.md')
+		let current: string
+		try {
+			current = readFileSync(agentPath, 'utf8')
+		} catch (error) {
+			fail(
+				describe(
+					new ScaffoldError('TARGET', `Failed to read ${agentPath}`, { path: agentPath, error }),
+				),
+			)
+		}
+
+		const startMarker = '<!-- catalog:start -->'
+		const endMarker = '<!-- catalog:end -->'
+		const startIndex = current.indexOf(startMarker)
+		const endIndex = current.indexOf(endMarker)
+		if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) {
+			fail(
+				describe(
+					new ScaffoldError(
+						'TARGET',
+						`Markers "${startMarker}" / "${endMarker}" not found in ${agentPath}`,
+						{ path: agentPath },
+					),
+				),
+			)
+		}
+
+		const before = current.slice(0, startIndex + startMarker.length)
+		const after = current.slice(endIndex)
+		const updated = `${before}\n\n${block}\n${after}`
+
+		const missingDescription = entries
+			.filter((entry) => entry.description.length === 0)
+			.map((entry) => entry.name)
+		reporter.line(`${entries.length} package${entries.length === 1 ? '' : 's'}`)
+		if (missingDescription.length > 0) {
+			reporter.line(
+				`${missingDescription.length} without guide description: ${missingDescription.join(', ')}`,
+			)
+		}
+
+		if (updated === current) {
+			reporter.line('catalog: clean')
+			process.exitCode = 0 // clean — already in sync
+			return
+		}
+
+		if (!values.apply) {
+			reporter.line('catalog: drifted — pass --apply to write')
+			process.exitCode = 1 // dry-run: drift found, report only
+			return
+		}
+
+		writeFileSync(agentPath, updated, 'utf8')
+		reporter.status('success', `wrote ${agentPath}`)
+		process.exitCode = 0
+		return
+	} else {
+		process.stderr.write(`unrecognized command "${command}"\n\n${USAGE}`)
+		process.exitCode = 1
+		return
 	}
+}
 
-	const before = current.slice(0, startIndex + startMarker.length)
-	const after = current.slice(endIndex)
-	const updated = `${before}\n\n${block}\n${after}`
-
-	const missingDescription = entries
-		.filter((entry) => entry.description.length === 0)
-		.map((entry) => entry.name)
-	reporter.line(`${entries.length} package${entries.length === 1 ? '' : 's'}`)
-	if (missingDescription.length > 0) {
-		reporter.line(
-			`${missingDescription.length} without guide description: ${missingDescription.join(', ')}`,
-		)
+try {
+	await main()
+} catch (error) {
+	if (error instanceof CliExit) {
+		process.exitCode = error.code
+	} else {
+		reporter.status('error', describe(error))
+		process.exitCode = 1
 	}
-
-	if (updated === current) process.exit(0) // clean — already in sync
-
-	if (!values.apply) process.exit(1) // dry-run: drift found, report only
-
-	writeFileSync(agentPath, updated, 'utf8')
-	reporter.status('success', `wrote ${agentPath}`)
-	process.exit(0)
-} else {
-	process.stderr.write(`unrecognized command "${command}"\n\n${USAGE}`)
-	process.exit(1)
 }

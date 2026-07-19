@@ -134,14 +134,16 @@ export function syncReportShape() {
 				path: stringShape({ min: 1 }),
 				content: stringShape(),
 				freshness: literalShape(FRESHNESS),
+				note: optionalShape(stringShape()),
 			}),
 		),
 		versions: arrayShape(
 			objectShape({
 				name: stringShape({ min: 1 }),
 				range: stringShape({ min: 1 }),
-				latest: stringShape({ min: 1 }),
+				latest: stringShape(),
 				freshness: literalShape(FRESHNESS),
+				note: optionalShape(stringShape()),
 			}),
 		),
 		clean: booleanShape(),

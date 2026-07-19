@@ -55,8 +55,11 @@ async function buildFixture(): Promise<FixtureInterface> {
 	}
 }
 
+// The canonical raw.githubusercontent.com form (FIX 4) — `#guideUrl` builds
+// this directly (never the legacy `/orkestrel/<short>/<branch>/…` shorthand
+// the host now 301-redirects from), so `redirect: 'manual'` never sees one.
 function guidePath(short: string, branch = 'main'): string {
-	return `/${short}/${branch}/guides/src/${short}.md`
+	return `/orkestrel/${short}/refs/heads/${branch}/guides/src/${short}.md`
 }
 
 // npm's canonical scoped-package path keeps the literal `@` and encodes only
@@ -788,6 +791,211 @@ describe('Sync — redirect handling (A1)', () => {
 		} finally {
 			await fixture.close()
 			await target.close()
+		}
+	})
+})
+
+// ── failure notes (the transport/HTTP/redirect/oversized CAUSE) ──────────
+
+describe('Sync — failure notes', () => {
+	it('connection-refused: note contains the connection-refused code', async () => {
+		const fixture = await buildFixture()
+		const port = fixture.base.match(/:(\d+)$/)?.[1] ?? '0'
+		await fixture.close() // close immediately — connections to this port now refuse
+		const deadBase = `http://127.0.0.1:${port}`
+		const sync = createSync({ guides: { base: deadBase, timeout: 2000 } })
+		const [result] = await sync.guides([dependency('@orkestrel/contract', '^0.0.5')])
+		expect(result?.freshness).toBe('failed')
+		expect(result?.note).toContain('ECONNREFUSED')
+		sync.destroy()
+	})
+
+	it('HTTP 500: note is exactly "HTTP 500"', async () => {
+		const fixture = await buildFixture()
+		try {
+			fixture.route(guidePath('contract'), (_request, response) =>
+				respondText(response, 500, 'server error'),
+			)
+			const sync = createSync({ guides: { base: fixture.base } })
+			const [result] = await sync.guides([dependency('@orkestrel/contract', '^0.0.5')])
+			expect(result?.freshness).toBe('failed')
+			expect(result?.note).toBe('HTTP 500')
+			sync.destroy()
+		} finally {
+			await fixture.close()
+		}
+	})
+
+	it('302: note mentions the blocked redirect', async () => {
+		const fixture = await buildFixture()
+		try {
+			fixture.route(guidePath('contract'), (_request, response) => {
+				response.writeHead(302, { location: `${fixture.base}${guidePath('elsewhere')}` })
+				response.end()
+			})
+			const sync = createSync({ guides: { base: fixture.base } })
+			const [result] = await sync.guides([dependency('@orkestrel/contract', '^0.0.5')])
+			expect(result?.freshness).toBe('failed')
+			expect(result?.note).toContain('redirect')
+			sync.destroy()
+		} finally {
+			await fixture.close()
+		}
+	})
+
+	it('oversized body: note mentions the byte limit', async () => {
+		const fixture = await buildFixture()
+		try {
+			fixture.route(guidePath('contract'), (_request, response) => {
+				response.writeHead(200, { 'content-type': 'text/plain' })
+				response.end('x'.repeat(1000))
+			})
+			const sync = createSync({ guides: { base: fixture.base }, limit: 64 })
+			const [result] = await sync.guides([dependency('@orkestrel/contract', '^0.0.5')])
+			expect(result?.freshness).toBe('failed')
+			expect(result?.note).toContain('limit')
+			sync.destroy()
+		} finally {
+			await fixture.close()
+		}
+	})
+
+	it('a 404 verdicts missing with an "HTTP 404" note', async () => {
+		const fixture = await buildFixture()
+		try {
+			const sync = createSync({ guides: { base: fixture.base } })
+			const [result] = await sync.guides([dependency('@orkestrel/contract', '^0.0.5')])
+			expect(result?.freshness).toBe('missing')
+			expect(result?.note).toBe('HTTP 404')
+			sync.destroy()
+		} finally {
+			await fixture.close()
+		}
+	})
+
+	it('behind and current carry no note', async () => {
+		const fixture = await buildFixture()
+		try {
+			fixture.route(guidePath('contract'), (_request, response) =>
+				respondText(response, 200, 'fresh content'),
+			)
+			const sync = createSync({ guides: { base: fixture.base } })
+			const [result] = await sync.guides([dependency('@orkestrel/contract', '^0.0.5')])
+			expect(result?.freshness).toBe('behind')
+			expect(result?.note).toBeUndefined()
+			sync.destroy()
+		} finally {
+			await fixture.close()
+		}
+	})
+})
+
+// ── FIX 4: canonical redirect-free guide URL ──────────────────────────────
+
+describe('Sync.guides — canonical URL shape (FIX 4)', () => {
+	it('requests the canonical /orkestrel/<short>/refs/heads/<branch>/… path directly (never the legacy shorthand)', async () => {
+		const fixture = await buildFixture()
+		try {
+			fixture.route(guidePath('contract'), (_request, response) =>
+				respondText(response, 200, '# Contract Guide\n'),
+			)
+			const sync = createSync({ guides: { base: fixture.base } })
+			const [result] = await sync.guides([dependency('@orkestrel/contract', '^0.0.5')])
+			expect(result?.freshness).toBe('behind')
+			expect(fixture.hits.get('/orkestrel/contract/refs/heads/main/guides/src/contract.md')).toBe(1)
+			// The legacy shorthand this canonical form replaces is never requested.
+			expect(fixture.hits.has('/contract/main/guides/src/contract.md')).toBe(false)
+			sync.destroy()
+		} finally {
+			await fixture.close()
+		}
+	})
+})
+
+// ── FIX 5: private-repo guide auth ────────────────────────────────────────
+
+describe('Sync.guides — private-repo Authorization header (FIX 5)', () => {
+	it('with guides.token set, the guide request carries Authorization: Bearer <token>', async () => {
+		const fixture = await buildFixture()
+		try {
+			let authHeader: string | undefined
+			fixture.route(guidePath('contract'), (request, response) => {
+				authHeader = request.headers.authorization
+				respondText(response, 200, '# Contract Guide\n')
+			})
+			const sync = createSync({ guides: { base: fixture.base, token: 'secret-token-xyz' } })
+			await sync.guides([dependency('@orkestrel/contract', '^0.0.5')])
+			expect(authHeader).toBe('Bearer secret-token-xyz')
+			sync.destroy()
+		} finally {
+			await fixture.close()
+		}
+	})
+
+	it('without guides.token, no Authorization header is sent', async () => {
+		const fixture = await buildFixture()
+		try {
+			let authHeader: string | undefined
+			fixture.route(guidePath('contract'), (request, response) => {
+				authHeader = request.headers.authorization
+				respondText(response, 200, '# Contract Guide\n')
+			})
+			const sync = createSync({ guides: { base: fixture.base } })
+			await sync.guides([dependency('@orkestrel/contract', '^0.0.5')])
+			expect(authHeader).toBeUndefined()
+			sync.destroy()
+		} finally {
+			await fixture.close()
+		}
+	})
+
+	it('a version (registry) fetch never carries the guides token', async () => {
+		const fixture = await buildFixture()
+		try {
+			let authHeader: string | undefined
+			fixture.route(registryPath('@orkestrel/contract'), (request, response) => {
+				authHeader = request.headers.authorization
+				respondJson(response, '0.0.6')
+			})
+			const sync = createSync({
+				registry: { base: fixture.base },
+				guides: { token: 'secret-token-xyz' },
+			})
+			await sync.versions([dependency('@orkestrel/contract', '^0.0.5')])
+			expect(authHeader).toBeUndefined()
+			sync.destroy()
+		} finally {
+			await fixture.close()
+		}
+	})
+
+	it('a 404 with a token set is still "missing" (not special-cased)', async () => {
+		const fixture = await buildFixture()
+		try {
+			// No route registered — falls through to 404.
+			const sync = createSync({ guides: { base: fixture.base, token: 'secret-token-xyz' } })
+			const [result] = await sync.guides([dependency('@orkestrel/contract', '^0.0.5')])
+			expect(result?.freshness).toBe('missing')
+			sync.destroy()
+		} finally {
+			await fixture.close()
+		}
+	})
+
+	it('the token never leaks into a failed fetch note', async () => {
+		const fixture = await buildFixture()
+		try {
+			fixture.route(guidePath('contract'), (_request, response) =>
+				respondText(response, 500, 'server error'),
+			)
+			const sync = createSync({ guides: { base: fixture.base, token: 'super-secret-token-abc' } })
+			const [result] = await sync.guides([dependency('@orkestrel/contract', '^0.0.5')])
+			expect(result?.freshness).toBe('failed')
+			expect(result?.note).toBe('HTTP 500')
+			expect(result?.note).not.toContain('super-secret-token-abc')
+			sync.destroy()
+		} finally {
+			await fixture.close()
 		}
 	})
 })
