@@ -62,7 +62,7 @@ export interface MaterializerInterface {
 	readonly emitter: EmitterInterface<MaterializerEventMap>
 	materialize(plan: Plan, target: string): MaterializeResult
 	repair(plan: Plan, audit: Audit, target: string): MaterializeResult
-	prune(plan: Plan, target: string): MaterializeResult
+	prune(target: string): MaterializeResult
 	destroy(): void
 }
 
