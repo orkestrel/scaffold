@@ -477,8 +477,10 @@ export function storagePath(path: string): string {
  * staging, so a stale file left over from a prior run never lingers. Each
  * `paths` entry is walked to its per-file leaves (a directory recursively,
  * via `listFiles`; a file, itself) and copied byte-for-byte
- * (`copyFileSync`, which preserves the source's permission bits — including
- * the owner-execute bit `executable` reports) to `<out>/<storagePath(path)>`.
+ * (`copyFileSync`) to `<out>/<storagePath(path)>`. The `executable` flag
+ * `entries` reports is derived from the `.sh` suffix on `destination` —
+ * deterministic on every build platform (Windows `stat` carries no execute
+ * bit); all vendored executables are shell scripts by construction.
  * `manifest.json` is written LAST, as `entries` code-unit sorted by
  * `destination`, tab-indented JSON with a trailing newline.
  * @returns The written manifest's entries (`{ storage, destination, executable }`).
@@ -522,7 +524,7 @@ export function stageHost(
 		const destinationAbsolute = join(out, storage)
 		mkdirSync(dirname(destinationAbsolute), { recursive: true })
 		copyFileSync(sourceAbsolute, destinationAbsolute)
-		const executable = (statSync(sourceAbsolute).mode & 0o100) !== 0
+		const executable = destination.endsWith('.sh')
 		entries.push({ storage, destination, executable })
 	}
 	entries.sort((a, b) =>

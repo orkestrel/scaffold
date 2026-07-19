@@ -78,6 +78,8 @@ describe('scaffold bin: default-host end-to-end proof (no --host)', () => {
 				for (const script of ['deps.sh', 'cursor.sh', 'ollama.sh']) {
 					const path = join(packageDirectory, 'scripts', script)
 					expect(existsSync(path)).toBe(true)
+					// Windows `stat` carries no execute bit — the mode check is POSIX-only.
+					if (process.platform === 'win32') continue
 					expect(isExecutable(path)).toBe(true)
 				}
 

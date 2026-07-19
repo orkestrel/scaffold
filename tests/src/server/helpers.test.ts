@@ -6,7 +6,6 @@ import {
 	mkdirSync,
 	readFileSync,
 	realpathSync,
-	statSync,
 	writeFileSync,
 } from 'node:fs'
 import { createServer } from 'node:net'
@@ -746,19 +745,34 @@ describe('stageHost', () => {
 		}
 	})
 
-	it("captures a source's owner-execute bit AND propagates it onto the staged copy", async () => {
+	it('marks a `.sh` destination executable regardless of the source mode bits', async () => {
 		const root = await buildTempDirectory()
 		const out = await buildTempDirectory()
 		try {
 			const scriptPath = join(root.path, 'run.sh')
 			writeFileSync(scriptPath, '#!/bin/sh\necho hi\n', 'utf8')
-			chmodSync(scriptPath, 0o755)
+			chmodSync(scriptPath, 0o644)
 
 			const entries = stageHost(root.path, out.path, ['run.sh'])
 
 			expect(entries).toEqual([{ storage: 'run.sh', destination: 'run.sh', executable: true }])
-			const stagedMode = statSync(join(out.path, 'run.sh')).mode
-			expect((stagedMode & 0o100) !== 0).toBe(true)
+		} finally {
+			await root.cleanup()
+			await out.cleanup()
+		}
+	})
+
+	it('marks a non-`.sh` destination non-executable even with the owner-execute bit set', async () => {
+		const root = await buildTempDirectory()
+		const out = await buildTempDirectory()
+		try {
+			const scriptPath = join(root.path, 'run.txt')
+			writeFileSync(scriptPath, '#!/bin/sh\necho hi\n', 'utf8')
+			chmodSync(scriptPath, 0o755)
+
+			const entries = stageHost(root.path, out.path, ['run.txt'])
+
+			expect(entries).toEqual([{ storage: 'run.txt', destination: 'run.txt', executable: false }])
 		} finally {
 			await root.cleanup()
 			await out.cleanup()
