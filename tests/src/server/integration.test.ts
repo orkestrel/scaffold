@@ -1,8 +1,9 @@
-import { readFileSync, rmSync, writeFileSync } from 'node:fs'
+import type { SyncReport } from '@src/core'
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { blueprint, blueprintToPlan, createCompiler, dependency, diffPlan } from '@src/core'
-import { createMaterializer, readTarget } from '@src/server'
+import { createMaterializer, createSync, readTarget } from '@src/server'
 import { buildTempDirectory, WORKSPACE_ROOT } from '../../setupServer.js'
 
 // ── Full round-trip: compile → materialize → audit → mutate → audit → repair ──
@@ -162,6 +163,88 @@ describe('server integration: compile → materialize → audit → repair', () 
 			compiler.destroy()
 		} finally {
 			await directory.cleanup()
+		}
+	})
+
+	it('a non-vendored dependency guide pointer: materialize succeeds, audits clean immediately (presence-only), then STAYS clean after pull overwrites the stub with real bytes (content-compared once hydrated)', async () => {
+		const directory = await buildTempDirectory()
+		const host = await buildTempDirectory()
+		try {
+			// A host WITH a manifest.json that vendors nothing named `msg` — the
+			// zero-match degrade path (Materializer §1's fix), built fresh so this
+			// test does not depend on the repo's own `dist/host` build state.
+			mkdirSync(join(host.path, 'dotfiles'), { recursive: true })
+			writeFileSync(join(host.path, 'dotfiles', 'gitignore'), 'node_modules\n', 'utf8')
+			writeFileSync(
+				join(host.path, 'manifest.json'),
+				JSON.stringify([
+					{ storage: 'dotfiles/gitignore', destination: '.gitignore', executable: false },
+				]),
+				'utf8',
+			)
+
+			const plan = {
+				blueprint: blueprint('pointer-lifecycle-fixture', {
+					surfaces: ['core'],
+					dependencies: [dependency('@orkestrel/msg', '^1.0.0')],
+				}),
+				groups: ['guides'] as const,
+				artifacts: [
+					{
+						path: 'guides/src/msg.md',
+						group: 'guides' as const,
+						origin: 'host' as const,
+						source: 'guides/src/msg.md',
+					},
+				],
+			}
+			const paths = plan.artifacts.map((artifact) => artifact.path)
+
+			const materializer = createMaterializer({ host: host.path })
+			materializer.materialize(plan, directory.path)
+
+			// 1. `new` succeeds and an immediate audit is clean — the stub is a
+			// never-hydrated host artifact, audited by presence only.
+			const stubAudit = diffPlan(plan, readTarget(directory.path, paths))
+			expect(stubAudit.clean).toBe(true)
+			expect(stubAudit.findings).toEqual([
+				{ path: 'guides/src/msg.md', group: 'guides', drift: 'aligned' },
+			])
+
+			// 2. Simulate `pull`: `Sync.write` overwrites the stub with real guide
+			// bytes, exactly as a live fetch would (a fabricated `behind` entry —
+			// no network involved).
+			const report: SyncReport = {
+				target: directory.path,
+				guides: [
+					{
+						name: '@orkestrel/msg',
+						path: 'guides/src/msg.md',
+						content: '# @orkestrel/msg\n\nReal vendored guide bytes.\n',
+						freshness: 'behind',
+					},
+				],
+				versions: [],
+				clean: false,
+				failed: 0,
+			}
+			const sync = createSync()
+			const written = await sync.write(report, directory.path)
+			expect(written).toEqual(['guides/src/msg.md'])
+			sync.destroy()
+
+			// 3. Audit STILL clean — still presence-only (never hydrated by this
+			// unhydrated `plan`), the real bytes just happen to be on disk now.
+			const pulledAudit = diffPlan(plan, readTarget(directory.path, paths))
+			expect(pulledAudit.clean).toBe(true)
+			expect(readFileSync(join(directory.path, 'guides/src/msg.md'), 'utf8')).toBe(
+				'# @orkestrel/msg\n\nReal vendored guide bytes.\n',
+			)
+
+			materializer.destroy()
+		} finally {
+			await directory.cleanup()
+			await host.cleanup()
 		}
 	})
 })

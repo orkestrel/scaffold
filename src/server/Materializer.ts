@@ -49,6 +49,27 @@ import { hostRoot, isVacant, pruneTargets, readHostManifest } from './helpers.js
  * as before.
  *
  * @remarks
+ * A manifest-present `source` with ZERO matching entries degrades to a stub
+ * ONLY when that `source` is a dependency-guide pointer — one that starts
+ * with `guides/src/` and ends with `.md` (the `guides/src/<dep>.md` pointer
+ * `Compiler` emits for any dependency outside this package's vendored set).
+ * That is the ONLY zero-match case that is legitimate: every `HOST_PATHS`
+ * source is always staged by `stageHost`, so a non-guide zero-match means a
+ * corrupted or truncated `manifest.json`, not an intentionally-unvendored
+ * artifact. For a guide pointer, a short stub file is written at the
+ * destination and reported exactly like a successful copy, mirroring the
+ * READ path (`hydratePlan` leaves such artifacts `content`-undefined, so
+ * `diffPlan` audits them by PRESENCE only). For every OTHER zero-match, the
+ * fail-closed `ScaffoldError('TARGET', …)` is thrown — degrading an
+ * unscoped zero-match would otherwise let a corrupted manifest silently stub
+ * an unrecoverable artifact (e.g. `AGENTS.md` — `pull` only ever fetches
+ * dependency guides) or write a FILE named `.claude` over what should be a
+ * directory artifact. The raw-root fallback (`manifest === undefined`, a
+ * caller-supplied `--from`) keeps its own throw regardless: an EXPLICITLY
+ * named source failing to resolve is a different, caller-error failure
+ * class, not a "not vendored" degrade.
+ *
+ * @remarks
  * Defense in depth at the filesystem trust boundary: EVERY resolved
  * destination (`materialize` and `repair`, both origins) is asserted to stay
  * within `resolve(target)` before any write, and every `host`-origin copy
@@ -191,10 +212,33 @@ export class Materializer implements MaterializerInterface {
 			(entry) => entry.destination === source || entry.destination.startsWith(`${source}/`),
 		)
 		if (entries.length === 0) {
-			throw new ScaffoldError('TARGET', `No manifest entry for host artifact at ${artifact.path}`, {
-				path: artifact.path,
-				source,
-			})
+			if (!source.startsWith('guides/src/') || !source.endsWith('.md')) {
+				// Not a dependency-guide pointer — every HOST_PATHS source is
+				// always staged by `stageHost`, so a non-guide zero-match means a
+				// corrupted or truncated manifest, not a legitimate degrade (see
+				// the class doc comment). Fail closed.
+				throw new ScaffoldError(
+					'TARGET',
+					`Manifest entry for "${source}" is missing — the vendored manifest may be corrupted or truncated`,
+					{ target, source },
+				)
+			}
+			// A dependency-guide pointer — degrade to a stub instead of throwing,
+			// mirroring the read path's presence-only treatment of a
+			// never-hydrated host artifact (see the class doc comment).
+			const to = Materializer.#assertContained(target, artifact.path, 'WRITE', artifact.path)
+			try {
+				mkdirSync(dirname(to), { recursive: true })
+				writeFileSync(to, Materializer.#stub(source), 'utf8')
+			} catch (error) {
+				this.#emitter.emit('error', error)
+				throw new ScaffoldError('WRITE', `Failed to write host artifact stub at ${artifact.path}`, {
+					path: artifact.path,
+					error,
+				})
+			}
+			this.#emitter.emit('copy', artifact.path)
+			return
 		}
 		for (const entry of entries) {
 			const from = Materializer.#assertContained(this.#host, entry.storage, 'TARGET', artifact.path)
@@ -262,6 +306,19 @@ export class Materializer implements MaterializerInterface {
 			})
 		}
 		return resolve(root, relative)
+	}
+
+	// A short, friendly stand-in for a not-yet-fetched dependency guide — the
+	// scaffolded package's own guides-parity test (`tests/guides/src/
+	// parity.test.ts`) only walks `guides/README.md`'s manifest (this
+	// package's OWN concept), never a dependency's `guides/src/<dep>.md`
+	// mirror, so no structural content is required here; `pull` (`Sync.write`)
+	// overwrites this stub with the real bytes once fetched. `source` is
+	// always a `guides/src/<dep>.md` pointer at this call site — the sole
+	// caller (`#copy`'s zero-match branch) already scoped the degrade to it.
+	static #stub(source: string): string {
+		const short = source.slice('guides/src/'.length, source.length - '.md'.length)
+		return `> Vendored guide for @orkestrel/${short} — run \`scaffold pull\` to fetch it.\n`
 	}
 
 	// Realpath-resolve the DEEPEST EXISTING ancestor of `path` (following any
