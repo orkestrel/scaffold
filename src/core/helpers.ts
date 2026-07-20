@@ -24,6 +24,8 @@ import {
 	DEFAULT_VERSION,
 	DEPENDENCY_NAME_PATTERN,
 	EXTRA_NAME_PATTERN,
+	JSON_PRINT_WIDTH,
+	JSON_TAB_WIDTH,
 	NAME_PATTERN,
 	SURFACES,
 } from './constants.js'
@@ -1027,6 +1029,70 @@ export function stableStringify(value: unknown): string {
 		return `{${entries.map(([key, entry]) => `${JSON.stringify(key)}:${stableStringify(entry)}`).join(',')}}`
 	}
 	return JSON.stringify(value)
+}
+
+/**
+ * Serialize a value to newline-terminated JSON that matches the fleet's own
+ * `oxfmt` output byte-for-byte — objects one key per line, arrays collapsed
+ * onto one line when they fit `JSON_PRINT_WIDTH`, one item per line
+ * otherwise.
+ *
+ * @param value - The value to serialize (config JSON — objects/arrays/primitives).
+ * @remarks
+ * `JSON.stringify(value, undefined, '\t')` always breaks arrays one item per
+ * line; `oxfmt` collapses short ones. Emitting through `formatJson` keeps
+ * computed config JSON format-stable by construction — `oxfmt --check` never
+ * has anything left to rewrite. The width check counts each literal tab as
+ * `JSON_TAB_WIDTH` columns (matching `.oxfmtrc.json`'s `tabWidth`), every
+ * other character as one, against the `JSON_PRINT_WIDTH` threshold.
+ * @returns The rendered value, newline-terminated.
+ *
+ * @example
+ * ```ts
+ * import { formatJson } from '@orkestrel/scaffold'
+ *
+ * formatJson({ lib: ['ESNext', 'DOM'] }) // '{\n\t"lib": ["ESNext", "DOM"]\n}\n'
+ * ```
+ */
+export function formatJson(value: unknown): string {
+	function columnWidth(text: string): number {
+		let width = 0
+		for (const char of text) width += char === '\t' ? JSON_TAB_WIDTH : 1
+		return width
+	}
+	function renderArray(
+		entries: readonly unknown[],
+		indent: string,
+		prefix: string,
+		suffix: string,
+	): string {
+		if (entries.length === 0) return '[]'
+		const items = entries.map((entry) => renderValue(entry, indent, '', ''))
+		const inline = `[${items.join(', ')}]`
+		if (columnWidth(`${prefix}${inline}${suffix}`) <= JSON_PRINT_WIDTH) return inline
+		const childIndent = `${indent}\t`
+		const body = items.map((item) => `${childIndent}${item}`).join(',\n')
+		return `[\n${body}\n${indent}]`
+	}
+	function renderObject(entry: Readonly<Record<string, unknown>>, indent: string): string {
+		const keys = Object.keys(entry)
+		if (keys.length === 0) return '{}'
+		const childIndent = `${indent}\t`
+		const lines = keys.map((key, index) => {
+			const prefix = `${childIndent}${JSON.stringify(key)}: `
+			const suffix = index === keys.length - 1 ? '' : ','
+			return `${prefix}${renderValue(entry[key], childIndent, prefix, suffix)}${suffix}`
+		})
+		return `{\n${lines.join('\n')}\n${indent}}`
+	}
+	function renderValue(entry: unknown, indent: string, prefix: string, suffix: string): string {
+		if (Array.isArray(entry)) return renderArray(entry, indent, prefix, suffix)
+		if (typeof entry === 'object' && entry !== null) {
+			return renderObject(entry as Readonly<Record<string, unknown>>, indent)
+		}
+		return JSON.stringify(entry)
+	}
+	return `${renderValue(value, '', '', '')}\n`
 }
 
 /**

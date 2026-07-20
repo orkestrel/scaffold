@@ -127,3 +127,9 @@ export const SCAFFOLD_RANGE = '^0.0.2'
 
 /** The default id for a `Compiler` orchestrator. */
 export const COMPILER_ID = 'compiler'
+
+/** The fleet's `.oxfmtrc.json` `printWidth` — `formatJson`'s array-collapse threshold. */
+export const JSON_PRINT_WIDTH = 100
+
+/** The fleet's `.oxfmtrc.json` `tabWidth` — the column width `formatJson` counts each tab as. */
+export const JSON_TAB_WIDTH = 2

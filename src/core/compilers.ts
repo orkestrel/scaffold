@@ -1,7 +1,7 @@
 import type { Artifact, Blueprint, Dependency, Group, Member, Plan, Surface } from './types.js'
 import { fillTemplate } from '@orkestrel/template'
 import { GROUPS, HOST_PATHS, SCAFFOLD_RANGE, SURFACE_MATRIX } from './constants.js'
-import { alignTable, blueprintToMembers, pascalCase, pinPlan } from './helpers.js'
+import { alignTable, blueprintToMembers, formatJson, pascalCase, pinPlan } from './helpers.js'
 import { TEMPLATES } from './templates.js'
 
 /**
@@ -396,7 +396,7 @@ export function rootTsconfig(surfaces: readonly Surface[]): string {
 		},
 		exclude: ['node_modules', 'dist', 'tmp'],
 	}
-	return `${JSON.stringify(config, undefined, '\t')}\n`
+	return formatJson(config)
 }
 
 /**
@@ -815,7 +815,7 @@ export function coreTsconfig(): string {
 		},
 		include: ['../../src/core/**/*.ts'],
 	}
-	return `${JSON.stringify(config, undefined, '\t')}\n`
+	return formatJson(config)
 }
 
 /**
@@ -885,7 +885,7 @@ export function surfaceTsconfig(surface: 'browser' | 'server'): string {
 		},
 		include: [`../../src/${surface}/**/*.ts`],
 	}
-	return `${JSON.stringify(config, undefined, '\t')}\n`
+	return formatJson(config)
 }
 
 /**

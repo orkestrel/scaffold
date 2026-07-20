@@ -363,4 +363,36 @@ describe('scaffold bin: default-host end-to-end proof (no --from)', () => {
 			}
 		}, 60000)
 	})
+
+	describe('format-stable by construction: computed JSON survives oxfmt untouched', () => {
+		it('a fresh all-surface scaffold passes its own vendored oxfmt --check with zero rewrites', async () => {
+			const oxfmtBin = join(WORKSPACE_ROOT, 'node_modules/.bin/oxfmt')
+			expect(existsSync(oxfmtBin)).toBe(true)
+
+			const cwd = await buildTempDirectory()
+			try {
+				const created = runBin(['new', 'demo', '--surfaces', 'core,browser,server', '--apply'], {
+					cwd: cwd.path,
+				})
+				expect(created.status).toBe(0)
+
+				const packageDirectory = join(cwd.path, 'demo')
+				// the vendored `.oxfmtrc.json` this suite's own `format:check` runs
+				// under — HOST_PATHS byte-copies it into every scaffold, so the
+				// package checks itself against the fleet's own rules, not a
+				// hand-picked substitute.
+				expect(existsSync(join(packageDirectory, '.oxfmtrc.json'))).toBe(true)
+
+				const check = spawnSync(oxfmtBin, ['--config', '.oxfmtrc.json', '--check', '.'], {
+					cwd: packageDirectory,
+					encoding: 'utf8',
+					timeout: 30000,
+				})
+				expect(check.status).toBe(0)
+				expect(`${check.stdout}${check.stderr}`).not.toContain('Format issues found')
+			} finally {
+				await cwd.cleanup()
+			}
+		}, 60000)
+	})
 })

@@ -1160,13 +1160,14 @@ describe('pinPlan', () => {
 	})
 
 	it('pins the six documented surface variants to their captured hashes (byte-stable)', () => {
-		// Re-captured for 0.0.2: `SCAFFOLD_RANGE` bumped to `^0.0.2` and every
-		// declared peer now merges into the generated `devDependencies` (P2),
-		// both of which shift the manifest artifact's rendered bytes and
-		// therefore `pinPlan`'s content hash for every variant — recomputed
-		// honestly via `blueprintToPlan(blueprint('router', { surfaces }))` +
-		// `pinPlan` against the built 0.0.2 output, asserted here as literals so
-		// the `computeHash`/`stableStringify` extraction stays provably
+		// Re-captured for U15b: the root/surface `tsconfig.json` emitters now
+		// render through `formatJson` (oxfmt-byte-matching array collapse)
+		// instead of `JSON.stringify(config, undefined, '\t')` — the `configs`
+		// group's rendered bytes shift for every variant, and therefore
+		// `pinPlan`'s content hash — recomputed honestly via
+		// `blueprintToPlan(blueprint('router', { surfaces }))` + `pinPlan`
+		// against the built output, asserted here as literals so the
+		// `computeHash`/`stableStringify` extraction stays provably
 		// byte-stable going forward.
 		const variants: readonly { readonly label: string; readonly surfaces: readonly Surface[] }[] = [
 			{ label: 'core-only', surfaces: ['core'] },
@@ -1177,12 +1178,12 @@ describe('pinPlan', () => {
 			{ label: 'core+browser+server', surfaces: ['core', 'browser', 'server'] },
 		]
 		const expected: Record<string, string> = {
-			'core-only': 'edc9eadc',
-			'server-only': '4581346f',
-			'browser-only': '3f874370',
-			'core+server': '958d61e4',
-			'core+browser': 'ac0c8db2',
-			'core+browser+server': 'fd76fe1d',
+			'core-only': '9dd8c3b4',
+			'server-only': 'a8104a27',
+			'browser-only': '1e0ac2b4',
+			'core+server': 'e04c1b50',
+			'core+browser': '3c63a746',
+			'core+browser+server': 'ff423db1',
 		}
 
 		for (const variant of variants) {
