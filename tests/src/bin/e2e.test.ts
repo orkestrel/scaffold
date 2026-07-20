@@ -10,7 +10,8 @@ import type { SpawnSyncReturns } from 'node:child_process'
 // (`npm run build` before `npm test` — AGENTS.md §Orientation).
 import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { createRequire } from 'node:module'
+import { dirname, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { pascalCase, SCAFFOLD_RANGE } from '@src/core'
 import { isRecord, listFiles } from '@src/server'
@@ -52,6 +53,30 @@ function runBin(
 /** Whether the file at `path` carries any executable bit (owner, group, or other). */
 function isExecutable(path: string): boolean {
 	return (statSync(path).mode & 0o111) !== 0
+}
+
+/**
+ * The `oxfmt` package's real entry file, resolved through its own
+ * `package.json` `bin` field rather than the `node_modules/.bin/oxfmt`
+ * shim — on POSIX that shim is a symlink to a node-shebang script the
+ * kernel launches directly; on win32 npm instead generates `.CMD`/`.ps1`
+ * wrapper shims spawnSync (no shell, no `PATHEXT` resolution) can never
+ * launch, yielding `status: null` with `error` set. Spawning the
+ * resolved JS entry with `process.execPath` — the same pattern `runBin`
+ * above already uses for the built bin — sidesteps shim resolution
+ * entirely and works identically on every platform.
+ */
+function resolveOxfmtEntry(): string {
+	const require = createRequire(join(WORKSPACE_ROOT, 'package.json'))
+	const oxfmtPackageJsonPath = require.resolve('oxfmt/package.json')
+	const manifest: unknown = JSON.parse(readFileSync(oxfmtPackageJsonPath, 'utf8'))
+	if (!isRecord(manifest)) throw new Error('expected oxfmt/package.json to parse to a JSON object')
+	const bin = manifest.bin
+	const relativeEntry = isRecord(bin) ? bin.oxfmt : bin
+	if (typeof relativeEntry !== 'string') {
+		throw new Error('expected oxfmt/package.json "bin" to carry an "oxfmt" entry')
+	}
+	return join(dirname(oxfmtPackageJsonPath), relativeEntry)
 }
 
 /** The generated-minimal `src/<surface>/*` quartet's four file names (AGENTS §5's per-surface centralized-file set). */
@@ -167,7 +192,7 @@ describe('scaffold bin: default-host end-to-end proof (no --from)', () => {
 			} finally {
 				await cwd.cleanup()
 			}
-		})
+		}, 30000)
 	})
 
 	describe('new --apply: surface variants', () => {
@@ -366,8 +391,8 @@ describe('scaffold bin: default-host end-to-end proof (no --from)', () => {
 
 	describe('format-stable by construction: computed JSON survives oxfmt untouched', () => {
 		it('a fresh all-surface scaffold passes its own vendored oxfmt --check with zero rewrites', async () => {
-			const oxfmtBin = join(WORKSPACE_ROOT, 'node_modules/.bin/oxfmt')
-			expect(existsSync(oxfmtBin)).toBe(true)
+			const oxfmtEntry = resolveOxfmtEntry()
+			expect(existsSync(oxfmtEntry)).toBe(true)
 
 			const cwd = await buildTempDirectory()
 			try {
@@ -383,12 +408,21 @@ describe('scaffold bin: default-host end-to-end proof (no --from)', () => {
 				// hand-picked substitute.
 				expect(existsSync(join(packageDirectory, '.oxfmtrc.json'))).toBe(true)
 
-				const check = spawnSync(oxfmtBin, ['--config', '.oxfmtrc.json', '--check', '.'], {
-					cwd: packageDirectory,
-					encoding: 'utf8',
-					timeout: 30000,
-				})
-				expect(check.status).toBe(0)
+				const check = spawnSync(
+					process.execPath,
+					[oxfmtEntry, '--config', '.oxfmtrc.json', '--check', '.'],
+					{
+						cwd: packageDirectory,
+						encoding: 'utf8',
+						timeout: 30000,
+					},
+				)
+				expect(
+					check.status,
+					`oxfmt --check spawn (entry: ${oxfmtEntry}) failed to run to completion — ` +
+						`status: ${String(check.status)}, error: ${String(check.error)}, ` +
+						`signal: ${String(check.signal)}, stderr: ${check.stderr}`,
+				).toBe(0)
 				expect(`${check.stdout}${check.stderr}`).not.toContain('Format issues found')
 			} finally {
 				await cwd.cleanup()

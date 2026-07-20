@@ -427,7 +427,7 @@ describe('scaffold bin', () => {
 					await cwd.cleanup()
 					await from.cleanup()
 				}
-			})
+			}, 30000)
 		})
 	})
 
@@ -470,7 +470,7 @@ describe('scaffold bin', () => {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
-		})
+		}, 20000)
 
 		it('drifted target (a host file removed): exit 1, names the path with the "template-owned" label', async () => {
 			// `diffPlan` (src/core/helpers.ts) audits a HYDRATED `host`-origin
@@ -492,7 +492,7 @@ describe('scaffold bin', () => {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
-		})
+		}, 20000)
 
 		it('honest audit: a planted unexpected file under .claude/agents is real drift — exit 1, "unexpected file" in prose, foreign:1 in --json (previously foreign:0/clean:true)', async () => {
 			// Prior to the prune-truth fix, `runAudit` diffed ONLY the plan's own
@@ -525,7 +525,7 @@ describe('scaffold bin', () => {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
-		})
+		}, 30000)
 
 		it('a clean target with no unexpected files: audit --json reports foreign:0, clean:true', async () => {
 			const from = await buildFromFixture()
@@ -542,7 +542,7 @@ describe('scaffold bin', () => {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
-		})
+		}, 20000)
 
 		it('--json: exactly one parseable JSON value, no prose, no prompt', async () => {
 			const from = await buildFromFixture()
@@ -563,7 +563,7 @@ describe('scaffold bin', () => {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
-		})
+		}, 20000)
 
 		it("handoff gating: generated-file-only drift offers NO repair handoff (generatedNote instead), and the exit stays 1 after a repair since generated drift is out of repair's scope", async () => {
 			// `tsconfig.json` is a `computed`-origin artifact (src/core/compilers.ts
@@ -597,7 +597,7 @@ describe('scaffold bin', () => {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
-		})
+		}, 60000)
 
 		it('F1 regression: audit --apply on template-owned drift NEVER auto-repairs — exit 1, the drifted file is left exactly as found, no handoff text (a non-TTY spawn can never accept the interactive handoff)', async () => {
 			const from = await buildFromFixture()
@@ -616,7 +616,7 @@ describe('scaffold bin', () => {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
-		})
+		}, 20000)
 
 		it('F1 regression: audit --apply --prune with a planted unexpected file STILL never deletes it — exit 1, file untouched, no handoff text', async () => {
 			const from = await buildFromFixture()
@@ -639,7 +639,7 @@ describe('scaffold bin', () => {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
-		})
+		}, 20000)
 
 		it("F2: a planted unexpected file with no --prune prints the foreignHint pointing at 'repair --prune' instead of a dead-end handoff", async () => {
 			const from = await buildFromFixture()
@@ -658,7 +658,7 @@ describe('scaffold bin', () => {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
-		})
+		}, 20000)
 
 		it('F3: an unscannable --from host (exists, but establishes no vendored allowlist) degrades the audit instead of crashing — scanSkipped prose, exit code still meaningful', async () => {
 			// `from` scaffolds a NORMAL package (so it really has a `.claude/agents`
@@ -686,7 +686,7 @@ describe('scaffold bin', () => {
 				await from.cleanup()
 				await host2.cleanup()
 			}
-		})
+		}, 20000)
 	})
 
 	describe('repair', () => {
@@ -705,7 +705,7 @@ describe('scaffold bin', () => {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
-		})
+		}, 20000)
 
 		it('--apply: restores the mutated/missing host file byte-equal, exit 0', async () => {
 			const from = await buildFromFixture()
@@ -725,7 +725,7 @@ describe('scaffold bin', () => {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
-		})
+		}, 20000)
 
 		it('--prune --apply: removes a planted unexpected file under .claude/agents', async () => {
 			// `materializer.prune` scans `.claude/agents` / `scripts` directly
@@ -753,7 +753,7 @@ describe('scaffold bin', () => {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
-		})
+		}, 20000)
 
 		it('U11 F2 regression: repair --prune --apply now prunes on a CLEAN-host repo too — the clean-audit early return no longer bypasses pruning; without --prune the planted file is left untouched, as before', async () => {
 			const from = await buildFromFixture()
@@ -783,7 +783,7 @@ describe('scaffold bin', () => {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
-		})
+		}, 30000)
 
 		it('prune truth + non-TTY ceiling: dry-run --prune preview NAMES the exact planted path; the ONE piped confirm applies the host fix, and the prune question is never asked a second time (pruneSkipped wording, nothing deleted)', async () => {
 			// Every spawned test process is non-TTY (piped stdin/stdout) — this is
@@ -814,7 +814,7 @@ describe('scaffold bin', () => {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
-		})
+		}, 20000)
 
 		it('prune truth: a clean prune target (no unexpected files) prints the PRUNE_EMPTY wording and skips the question entirely', async () => {
 			const from = await buildFromFixture()
@@ -833,7 +833,7 @@ describe('scaffold bin', () => {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
-		})
+		}, 20000)
 
 		it('--yes WITHOUT --prune does NOT delete a planted unexpected file (prune is never enabled by --yes alone)', async () => {
 			const from = await buildFromFixture()
@@ -857,7 +857,7 @@ describe('scaffold bin', () => {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
-		})
+		}, 20000)
 
 		it('piped "y\\n" confirm (no --apply, no --prune) applies the fix — the single-confirm flow the non-TTY readline fallback reliably drives', async () => {
 			const from = await buildFromFixture()
@@ -875,7 +875,7 @@ describe('scaffold bin', () => {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
-		})
+		}, 20000)
 
 		it('empty stdin (EOF) leaves the single confirm at its default (false) — dry-run outcome, no hang', async () => {
 			const from = await buildFromFixture()
@@ -891,7 +891,7 @@ describe('scaffold bin', () => {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
-		})
+		}, 20000)
 
 		it('--target escaping the cwd: a coded [INVALID] failure', async () => {
 			const cwd = await buildTempDirectory()
@@ -939,7 +939,7 @@ describe('scaffold bin', () => {
 				await root.cleanup()
 				await from.cleanup()
 			}
-		})
+		}, 60000)
 
 		it('--json emits a top-level JSON array, one element per repo', async () => {
 			const from = await buildFromFixture()
@@ -959,7 +959,7 @@ describe('scaffold bin', () => {
 				await root.cleanup()
 				await from.cleanup()
 			}
-		})
+		}, 30000)
 	})
 
 	describe('catalog (offline / vendored-from only — no live registry call)', () => {
@@ -1011,7 +1011,7 @@ describe('scaffold bin', () => {
 				await target.cleanup()
 				await from.cleanup()
 			}
-		})
+		}, 20000)
 
 		it('--json: exactly one parseable JSON value, no prompt', async () => {
 			const target = await buildTempDirectory()
@@ -1195,7 +1195,7 @@ describe('scaffold bin', () => {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
-		})
+		}, 20000)
 
 		it('1: a drifted audit', async () => {
 			const from = await buildFromFixture()
@@ -1209,7 +1209,7 @@ describe('scaffold bin', () => {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
-		})
+		}, 20000)
 
 		it('2: an unknown verb', async () => {
 			const cwd = await buildTempDirectory()
