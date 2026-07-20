@@ -417,12 +417,16 @@ describe('scaffold bin: default-host end-to-end proof (no --from)', () => {
 						timeout: 30000,
 					},
 				)
-				expect(
-					check.status,
-					`oxfmt --check spawn (entry: ${oxfmtEntry}) failed to run to completion — ` +
-						`status: ${String(check.status)}, error: ${String(check.error)}, ` +
-						`signal: ${String(check.signal)}, stderr: ${check.stderr}`,
-				).toBe(0)
+				// A non-zero/null status folds the full spawn diagnostic into the asserted
+				// value so a failure names the entry, error, signal, and stderr — while
+				// staying inside the linter's single-argument `expect` contract.
+				const failure =
+					check.status === 0
+						? ''
+						: `oxfmt --check spawn (entry: ${oxfmtEntry}) failed to run to completion — ` +
+							`status: ${String(check.status)}, error: ${String(check.error)}, ` +
+							`signal: ${String(check.signal)}, stderr: ${check.stderr}`
+				expect(failure).toBe('')
 				expect(`${check.stdout}${check.stderr}`).not.toContain('Format issues found')
 			} finally {
 				await cwd.cleanup()
