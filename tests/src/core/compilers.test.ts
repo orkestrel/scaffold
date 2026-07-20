@@ -264,6 +264,30 @@ describe('packageManifest', () => {
 		expect(dev['@orkestrel/router']).toBe('^0.0.4')
 		expect(dev['@orkestrel/server']).toBe('^0.0.6')
 	})
+
+	it('P3: devDependencies is a SINGLE code-unit-sorted record — peers interleave with the baseline, not appended (grounded against the live @orkestrel/mcp exemplar)', () => {
+		const spec = blueprint('mcp', {
+			surfaces: ['core', 'server'],
+			peers: [dependency('@orkestrel/router', '^0.0.4'), dependency('@orkestrel/server', '^0.0.6')],
+		})
+		const manifest = readManifest(packageManifest(spec))
+		const dev = readRecord(manifest.devDependencies)
+		expect(Object.keys(dev)).toEqual([
+			'@microsoft/api-extractor',
+			'@orkestrel/guide',
+			'@orkestrel/router',
+			'@orkestrel/scaffold',
+			'@orkestrel/server',
+			'@types/node',
+			'@vitest/browser-playwright',
+			'oxfmt',
+			'oxlint',
+			'typescript',
+			'vite',
+			'vite-plugin-dts',
+			'vitest',
+		])
+	})
 })
 
 describe('rootTsconfig', () => {

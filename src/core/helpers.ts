@@ -1032,6 +1032,115 @@ export function stableStringify(value: unknown): string {
 }
 
 /**
+ * Measure a rendered fragment's column width, counting each literal tab as
+ * `JSON_TAB_WIDTH` columns (matching `.oxfmtrc.json`'s `tabWidth`) and every
+ * other character as one.
+ *
+ * @param text - The rendered fragment to measure.
+ * @returns The fragment's column width against `JSON_PRINT_WIDTH`.
+ *
+ * @example
+ * ```ts
+ * import { computeColumnWidth } from '@orkestrel/scaffold'
+ *
+ * computeColumnWidth('\t"a"') // 3 — one tab counted as JSON_TAB_WIDTH, plus two characters
+ * ```
+ */
+export function computeColumnWidth(text: string): number {
+	let width = 0
+	for (const char of text) width += char === '\t' ? JSON_TAB_WIDTH : 1
+	return width
+}
+
+/**
+ * Render a JSON array through `formatJson`'s inline-or-broken rule — inline
+ * when the rendered width (via `computeColumnWidth`) fits `JSON_PRINT_WIDTH`, one
+ * item per line otherwise.
+ *
+ * @param entries - The array's elements, in order.
+ * @param indent - The current indentation prefix.
+ * @param prefix - The text already emitted on this line before the array.
+ * @param suffix - The text that will follow the array on this line.
+ * @returns The rendered array fragment (no trailing newline).
+ *
+ * @example
+ * ```ts
+ * import { renderArray } from '@orkestrel/scaffold'
+ *
+ * renderArray(['ESNext', 'DOM'], '', '', '') // '["ESNext", "DOM"]'
+ * ```
+ */
+export function renderArray(
+	entries: readonly unknown[],
+	indent: string,
+	prefix: string,
+	suffix: string,
+): string {
+	if (entries.length === 0) return '[]'
+	const items = entries.map((entry) => renderValue(entry, indent, '', ''))
+	const inline = `[${items.join(', ')}]`
+	if (computeColumnWidth(`${prefix}${inline}${suffix}`) <= JSON_PRINT_WIDTH) return inline
+	const childIndent = `${indent}\t`
+	const body = items.map((item) => `${childIndent}${item}`).join(',\n')
+	return `[\n${body}\n${indent}]`
+}
+
+/**
+ * Render a JSON object through `formatJson`'s one-key-per-line rule.
+ *
+ * @param entry - The object to render.
+ * @param indent - The current indentation prefix.
+ * @returns The rendered object fragment (no trailing newline).
+ *
+ * @example
+ * ```ts
+ * import { renderObject } from '@orkestrel/scaffold'
+ *
+ * renderObject({ lib: ['ESNext'] }, '') // '{\n\t"lib": ["ESNext"]\n}'
+ * ```
+ */
+export function renderObject(entry: Readonly<Record<string, unknown>>, indent: string): string {
+	const keys = Object.keys(entry)
+	if (keys.length === 0) return '{}'
+	const childIndent = `${indent}\t`
+	const lines = keys.map((key, index) => {
+		const prefix = `${childIndent}${JSON.stringify(key)}: `
+		const suffix = index === keys.length - 1 ? '' : ','
+		return `${prefix}${renderValue(entry[key], childIndent, prefix, suffix)}${suffix}`
+	})
+	return `{\n${lines.join('\n')}\n${indent}}`
+}
+
+/**
+ * Render one JSON value through `formatJson`'s dispatch — arrays via
+ * `renderArray`, objects via `renderObject`, everything else via
+ * `JSON.stringify`.
+ *
+ * @param entry - The value to render.
+ * @param indent - The current indentation prefix.
+ * @param prefix - The text already emitted on this line before `entry`.
+ * @param suffix - The text that will follow `entry` on this line.
+ * @returns The rendered fragment (no trailing newline).
+ *
+ * @example
+ * ```ts
+ * import { renderValue } from '@orkestrel/scaffold'
+ *
+ * renderValue('ESNext', '', '', '') // '"ESNext"'
+ * ```
+ */
+export function renderValue(
+	entry: unknown,
+	indent: string,
+	prefix: string,
+	suffix: string,
+): string {
+	if (Array.isArray(entry)) return renderArray(entry, indent, prefix, suffix)
+	if (isRecord(entry)) return renderObject(entry, indent)
+	return JSON.stringify(entry)
+}
+
+/**
  * Serialize a value to newline-terminated JSON that matches the fleet's own
  * `oxfmt` output byte-for-byte — objects one key per line, arrays collapsed
  * onto one line when they fit `JSON_PRINT_WIDTH`, one item per line
@@ -1042,9 +1151,9 @@ export function stableStringify(value: unknown): string {
  * `JSON.stringify(value, undefined, '\t')` always breaks arrays one item per
  * line; `oxfmt` collapses short ones. Emitting through `formatJson` keeps
  * computed config JSON format-stable by construction — `oxfmt --check` never
- * has anything left to rewrite. The width check counts each literal tab as
- * `JSON_TAB_WIDTH` columns (matching `.oxfmtrc.json`'s `tabWidth`), every
- * other character as one, against the `JSON_PRINT_WIDTH` threshold.
+ * has anything left to rewrite. The rendering itself is delegated to
+ * `renderValue` / `renderArray` / `renderObject` / `computeColumnWidth`, so
+ * `formatJson` is a thin orchestrator around them.
  * @returns The rendered value, newline-terminated.
  *
  * @example
@@ -1055,43 +1164,6 @@ export function stableStringify(value: unknown): string {
  * ```
  */
 export function formatJson(value: unknown): string {
-	function columnWidth(text: string): number {
-		let width = 0
-		for (const char of text) width += char === '\t' ? JSON_TAB_WIDTH : 1
-		return width
-	}
-	function renderArray(
-		entries: readonly unknown[],
-		indent: string,
-		prefix: string,
-		suffix: string,
-	): string {
-		if (entries.length === 0) return '[]'
-		const items = entries.map((entry) => renderValue(entry, indent, '', ''))
-		const inline = `[${items.join(', ')}]`
-		if (columnWidth(`${prefix}${inline}${suffix}`) <= JSON_PRINT_WIDTH) return inline
-		const childIndent = `${indent}\t`
-		const body = items.map((item) => `${childIndent}${item}`).join(',\n')
-		return `[\n${body}\n${indent}]`
-	}
-	function renderObject(entry: Readonly<Record<string, unknown>>, indent: string): string {
-		const keys = Object.keys(entry)
-		if (keys.length === 0) return '{}'
-		const childIndent = `${indent}\t`
-		const lines = keys.map((key, index) => {
-			const prefix = `${childIndent}${JSON.stringify(key)}: `
-			const suffix = index === keys.length - 1 ? '' : ','
-			return `${prefix}${renderValue(entry[key], childIndent, prefix, suffix)}${suffix}`
-		})
-		return `{\n${lines.join('\n')}\n${indent}}`
-	}
-	function renderValue(entry: unknown, indent: string, prefix: string, suffix: string): string {
-		if (Array.isArray(entry)) return renderArray(entry, indent, prefix, suffix)
-		if (typeof entry === 'object' && entry !== null) {
-			return renderObject(entry as Readonly<Record<string, unknown>>, indent)
-		}
-		return JSON.stringify(entry)
-	}
 	return `${renderValue(value, '', '', '')}\n`
 }
 

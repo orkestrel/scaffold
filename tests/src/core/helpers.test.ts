@@ -8,13 +8,17 @@ import {
 	blueprintToPlan,
 	catalogNames,
 	catalogToBlock,
+	computeColumnWidth,
 	computeHash,
 	delimiterCell,
 	dependency,
 	diffPlan,
+	formatJson,
 	inferGroup,
 	isBehind,
 	isRecord,
+	JSON_PRINT_WIDTH,
+	JSON_TAB_WIDTH,
 	manifestToDependencies,
 	override,
 	padCell,
@@ -24,6 +28,9 @@ import {
 	planToReview,
 	planToSummary,
 	rangeToFreshness,
+	renderArray,
+	renderObject,
+	renderValue,
 	SCAFFOLD_RANGE,
 	splitTableRow,
 	stableStringify,
@@ -33,6 +40,8 @@ import {
 	validateBlueprint,
 	validateDependencyArray,
 } from '@src/core'
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
 import { describe, expect, it } from 'vitest'
 
@@ -1691,5 +1700,84 @@ describe('blueprintToPlan — guide artifact memberTable dedupe (multi-surface)'
 
 		expect(factoriesSection.split('`createRouter`').length - 1).toBe(1)
 		expect(entitiesSection.split('`Router`').length - 1).toBe(1)
+	})
+})
+
+describe('computeColumnWidth', () => {
+	it('counts a plain character as one column', () => {
+		expect(computeColumnWidth('abc')).toBe(3)
+	})
+
+	it('counts a literal tab as JSON_TAB_WIDTH columns', () => {
+		expect(computeColumnWidth('\t"a"')).toBe(JSON_TAB_WIDTH + 3)
+	})
+
+	it('returns 0 for an empty string', () => {
+		expect(computeColumnWidth('')).toBe(0)
+	})
+})
+
+describe("renderValue / renderArray / renderObject — formatJson's mutually-recursive core", () => {
+	it('renderValue serializes a primitive via JSON.stringify', () => {
+		expect(renderValue('ESNext', '', '', '')).toBe('"ESNext"')
+		expect(renderValue(1, '', '', '')).toBe('1')
+		expect(renderValue(null, '', '', '')).toBe('null')
+	})
+
+	it('renderValue dispatches an array to renderArray', () => {
+		expect(renderValue(['a', 'b'], '', '', '')).toBe(renderArray(['a', 'b'], '', '', ''))
+	})
+
+	it('renderValue dispatches a plain object to renderObject', () => {
+		expect(renderValue({ a: 1 }, '', '', '')).toBe(renderObject({ a: 1 }, ''))
+	})
+
+	it('renderArray inlines an empty array', () => {
+		expect(renderArray([], '', '', '')).toBe('[]')
+	})
+
+	it('renderArray inlines a short array within JSON_PRINT_WIDTH', () => {
+		expect(renderArray(['ESNext', 'DOM'], '', '', '')).toBe('["ESNext", "DOM"]')
+	})
+
+	it('renderArray breaks one item per line when the inline form exceeds JSON_PRINT_WIDTH', () => {
+		const long = Array.from({ length: 20 }, (_, index) => `item-${index}-of-the-array-contents`)
+		const rendered = renderArray(long, '', '', '')
+		expect(rendered.startsWith('[\n')).toBe(true)
+		expect(rendered.split('\n').length).toBe(long.length + 2)
+	})
+
+	it('renderObject renders {} for an empty object', () => {
+		expect(renderObject({}, '')).toBe('{}')
+	})
+
+	it('renderObject renders one key per line, recursing into nested values via renderValue', () => {
+		expect(renderObject({ lib: ['ESNext'] }, '')).toBe('{\n\t"lib": ["ESNext"]\n}')
+	})
+
+	it('renderObject/renderArray/renderValue mutually recurse through nested structures', () => {
+		const value = { a: [{ b: 1 }, { c: [2, 3] }] }
+		expect(formatJson(value)).toBe(`${renderValue(value, '', '', '')}\n`)
+	})
+})
+
+describe('formatJson', () => {
+	it('is a thin orchestrator delegating to renderValue', () => {
+		expect(formatJson({ lib: ['ESNext', 'DOM'] })).toBe('{\n\t"lib": ["ESNext", "DOM"]\n}\n')
+	})
+
+	it('is newline-terminated', () => {
+		expect(formatJson('x').endsWith('\n')).toBe(true)
+	})
+})
+
+describe('formatJson width constants mirror the shipped .oxfmtrc.json', () => {
+	it('JSON_PRINT_WIDTH matches .oxfmtrc.json printWidth and JSON_TAB_WIDTH matches tabWidth', () => {
+		const rcPath = fileURLToPath(new URL('../../../.oxfmtrc.json', import.meta.url))
+		const rc: unknown = JSON.parse(readFileSync(rcPath, 'utf8'))
+		if (!isRecord(rc)) throw new Error('expected .oxfmtrc.json to parse to a JSON object')
+
+		expect(JSON_PRINT_WIDTH).toBe(rc.printWidth)
+		expect(JSON_TAB_WIDTH).toBe(rc.tabWidth)
 	})
 })

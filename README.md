@@ -68,7 +68,7 @@ error.
 - **`pull`** — fetches the latest vendored dependency guides and registry versions
   for an existing package and reports drift.
 - **`audit`** — a conformance report over the artifacts the plan actually gates: the
-  shared template-owned files (presence, or content once hydrated) AND the generated
+  shared host-origin files (presence, or content once hydrated) AND the generated
   configs/manifest (content); reports drift as data, findings and all; exits nonzero
   the moment any drift is found, so it gates CI cleanly. Starter files — source/test
   stubs, starter guides, README — are written once at scaffold time and are

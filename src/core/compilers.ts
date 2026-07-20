@@ -354,11 +354,22 @@ export function packageManifest(spec: Blueprint): string {
 		publishConfig: { access: 'public' },
 		scripts,
 		dependencies,
-		devDependencies: { ...devDependenciesFor(spec.extras), ...peerDevDependencies },
+		devDependencies: Object.fromEntries(
+			Object.entries({ ...devDependenciesFor(spec.extras), ...peerDevDependencies }).sort(
+				([a], [b]) => compareCodeUnit(a, b),
+			),
+		),
 		...(Object.keys(peerDependencies).length > 0 ? { peerDependencies } : {}),
 		...(Object.keys(peerDependenciesMeta).length > 0 ? { peerDependenciesMeta } : {}),
 		engines: { node: spec.engines },
 	}
+	// Deliberately `JSON.stringify(…, '\t')`, NOT `formatJson`: `oxfmt --check`
+	// proved this exact array-always-broken form is `package.json`'s own fixed
+	// point (unlike the width-collapsed tsconfig arrays), so routing the
+	// manifest through `formatJson` would collapse an array `oxfmt` keeps
+	// broken and reintroduce drift. Keep this call as-is — the tsconfig
+	// emitters (`rootTsconfig` / `coreTsconfig` / `surfaceTsconfig`) are the
+	// ones that need `formatJson`'s width-aware array collapse.
 	return `${JSON.stringify(manifest, undefined, '\t')}\n`
 }
 
