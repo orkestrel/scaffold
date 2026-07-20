@@ -288,6 +288,34 @@ describe('packageManifest', () => {
 			'vitest',
 		])
 	})
+
+	it('a non-engine (child) blueprint carries no bin/build:host tax and keeps @orkestrel/scaffold as a devDependency', () => {
+		const spec = blueprint('router', { surfaces: ['core', 'server'] })
+		const manifest = readManifest(packageManifest(spec))
+		expect(manifest.bin).toBeUndefined()
+		const scripts = readRecord(manifest.scripts)
+		expect(scripts['build:host']).toBeUndefined()
+		expect(scripts.scaffold).toBe('scaffold')
+		const dev = readRecord(manifest.devDependencies)
+		expect(dev['@orkestrel/scaffold']).toBeDefined()
+	})
+
+	it('an engine blueprint carries the bin/build:host self-hosting tax and omits its own devDependency', () => {
+		const spec = blueprint('scaffold', { surfaces: ['core', 'server'], engine: true })
+		const manifest = readManifest(packageManifest(spec))
+		expect(manifest.bin).toEqual({ scaffold: './dist/bin/scaffold.js' })
+		expect(manifest.sideEffects).toEqual(['./src/bin/scaffold.ts', './dist/bin/scaffold.js'])
+		const scripts = readRecord(manifest.scripts)
+		expect(scripts.scaffold).toBe('node ./dist/bin/scaffold.js')
+		expect(scripts['check:src:bin']).toBe('tsc --noEmit -p configs/src/tsconfig.bin.json')
+		expect(scripts['test:src:bin']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin',
+		)
+		expect(scripts['build:src:bin']).toBe('vite build --config configs/src/vite.bin.config.ts')
+		expect(scripts.build).toBe('npm run clean && npm run build:src && npm run build:host')
+		const dev = readRecord(manifest.devDependencies)
+		expect(dev['@orkestrel/scaffold']).toBeUndefined()
+	})
 })
 
 describe('rootTsconfig', () => {
@@ -394,6 +422,16 @@ export default defineConfig({
 		expect(content).not.toContain('@src/core')
 		expect(content).toContain('srcBrowser')
 		expect(content).toContain('@vitest/browser-playwright')
+	})
+
+	it('engine appends the srcBin project (self-hosting tax), absent for a non-engine blueprint', () => {
+		const child = rootViteConfig(['core', 'server'])
+		expect(child).not.toContain('srcBin')
+
+		const engineContent = rootViteConfig(['core', 'server'], true)
+		expect(engineContent).toContain("entry: resolveWorkspacePath('src/bin/scaffold.ts')")
+		expect(engineContent).toContain("outDir: 'dist/bin'")
+		expect(engineContent).toContain('projects: [srcCore, srcServer, guides, srcBin]')
 	})
 })
 
@@ -502,6 +540,14 @@ describe('guideArtifacts / guideMemberTable', () => {
 		const paths = artifacts.map((artifact) => artifact.path)
 		expect(paths).toContain('guides/src/contract.md')
 		expect(paths).not.toContain('guides/src/some-outside-thing.md')
+	})
+
+	it("the package guide stub's Surface usage example self-imports via @orkestrel/<name>, never @src/<name>", () => {
+		const spec = blueprint('router', { surfaces: ['core'] })
+		const artifacts = guideArtifacts(spec, 'Router', blueprintToMembers(spec))
+		const guide = artifacts.find((artifact) => artifact.path === 'guides/src/router.md')
+		expect(guide?.content).toContain("import { createRouter } from '@orkestrel/router'")
+		expect(guide?.content).not.toContain('@src/router')
 	})
 })
 

@@ -124,6 +124,7 @@ export function blueprint(name: string, options?: Partial<Omit<Blueprint, 'name'
 		version: options?.version ?? DEFAULT_VERSION,
 		engines: options?.engines ?? DEFAULT_ENGINES,
 		overrides: options?.overrides ?? [],
+		engine: options?.engine ?? false,
 	}
 	return options?.description === undefined ? base : { ...base, description: options.description }
 }

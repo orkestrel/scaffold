@@ -304,33 +304,49 @@ export function packageManifest(spec: Blueprint): string {
 		copy: "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
 		'tmp:txt':
 			"node -e \"const fs=require('node:fs'),p=require('node:path');function walk(d){for(const e of fs.readdirSync(d,{withFileTypes:true})){const f=p.join(d,e.name);if(e.isDirectory()){walk(f)}else if(!e.name.endsWith('.md')&&!e.name.endsWith('.txt')){const t=f+'.txt';if(!fs.existsSync(t)){fs.renameSync(f,t)}else{console.warn('Skipping '+f+' — target exists: '+t)}}}}try{walk('tmp')}catch(e){if(e.code!=='ENOENT')throw e}\"",
-		scaffold: 'scaffold',
+		scaffold: spec.engine ? 'node ./dist/bin/scaffold.js' : 'scaffold',
 		lint: 'oxlint --config .oxlintrc.json --fix .',
 		check: 'tsc --noEmit --project tsconfig.json && npm run check:src',
-		'check:src': spec.surfaces.map((surface) => `npm run check:src:${surface}`).join(' && '),
+		'check:src':
+			spec.surfaces.map((surface) => `npm run check:src:${surface}`).join(' && ') +
+			(spec.engine ? ' && npm run check:src:bin' : ''),
 	}
 	for (const surface of spec.surfaces) {
 		scripts[`check:src:${surface}`] = `tsc --noEmit -p configs/src/tsconfig.${surface}.json`
 	}
+	if (spec.engine) scripts['check:src:bin'] = 'tsc --noEmit -p configs/src/tsconfig.bin.json'
 	scripts.format = 'oxfmt --config .oxfmtrc.json --write .'
 	scripts['format:check'] = 'oxfmt --config .oxfmtrc.json --check .'
 	scripts['lint:check'] = 'oxlint --config .oxlintrc.json .'
 	scripts.test = 'npm run test:src && npm run test:guides'
 	scripts['test:src'] =
 		'vitest run --config vite.config.ts --no-cache --reporter=dot ' +
-		spec.surfaces.map((surface) => `--project src:${surface}`).join(' ')
+		spec.surfaces.map((surface) => `--project src:${surface}`).join(' ') +
+		(spec.engine ? ' --project src:bin' : '')
 	for (const surface of spec.surfaces) {
 		scripts[`test:src:${surface}`] =
 			`vitest run --config vite.config.ts --no-cache --reporter=dot --project src:${surface}`
 	}
+	if (spec.engine)
+		scripts['test:src:bin'] =
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin'
 	scripts['test:guides'] = 'vitest run --config vite.config.ts --reporter=dot --project guides'
-	scripts.build = 'npm run clean && npm run build:src'
-	scripts['build:src'] = spec.surfaces.map((surface) => `npm run build:src:${surface}`).join(' && ')
+	scripts.build = spec.engine
+		? 'npm run clean && npm run build:src && npm run build:host'
+		: 'npm run clean && npm run build:src'
+	scripts['build:src'] =
+		spec.surfaces.map((surface) => `npm run build:src:${surface}`).join(' && ') +
+		(spec.engine ? ' && npm run build:src:bin' : '')
 	for (const surface of spec.surfaces) {
 		scripts[`build:src:${surface}`] =
 			surface === 'browser'
 				? `vite build --config configs/src/vite.${surface}.config.ts`
 				: `vite build --config configs/src/vite.${surface}.config.ts && npm run copy dist/src/${surface}/index.d.ts dist/src/${surface}/index.d.cts`
+	}
+	if (spec.engine) {
+		scripts['build:src:bin'] = 'vite build --config configs/src/vite.bin.config.ts'
+		scripts['build:host'] =
+			"node -e \"import('./dist/src/server/index.js').then((m)=>{const n=m.stageHost(process.cwd(),'dist/host').length;console.log('build-host: staged '+n+' file(s) into dist/host')})\""
 	}
 	scripts.prepublishOnly =
 		'npm run format:check && npm run lint:check && npm run check && npm run build && npm test'
@@ -344,9 +360,10 @@ export function packageManifest(spec: Blueprint): string {
 		bugs: `https://github.com/orkestrel/${spec.name}/issues`,
 		license: 'MIT',
 		repository: { type: 'git', url: `git+https://github.com/orkestrel/${spec.name}.git` },
+		...(spec.engine ? { bin: { scaffold: './dist/bin/scaffold.js' } } : {}),
 		files: ['dist', 'README.md'],
 		type: 'module',
-		sideEffects: false,
+		sideEffects: spec.engine ? ['./src/bin/scaffold.ts', './dist/bin/scaffold.js'] : false,
 		main: entry.main,
 		module: entry.module,
 		...(entry.types ? { types: entry.types } : {}),
@@ -355,9 +372,9 @@ export function packageManifest(spec: Blueprint): string {
 		scripts,
 		dependencies,
 		devDependencies: Object.fromEntries(
-			Object.entries({ ...devDependenciesFor(spec.extras), ...peerDevDependencies }).sort(
-				([a], [b]) => compareCodeUnit(a, b),
-			),
+			Object.entries({ ...devDependenciesFor(spec.extras), ...peerDevDependencies })
+				.filter(([depName]) => !spec.engine || depName !== '@orkestrel/scaffold')
+				.sort(([a], [b]) => compareCodeUnit(a, b)),
 		),
 		...(Object.keys(peerDependencies).length > 0 ? { peerDependencies } : {}),
 		...(Object.keys(peerDependenciesMeta).length > 0 ? { peerDependenciesMeta } : {}),
@@ -644,6 +661,10 @@ export default defineConfig({
  *      surface is `browser` (it must run its own tests in a real browser).
  *
  * @param surfaces - The declared `Surface[]`.
+ * @param engine - Structural: `true` appends the `srcBin` project (an
+ *   executable build target, never a barrel) after the other declared
+ *   projects — the self-hosting tax, grounded against this very repo's own
+ *   checked-in `vite.config.ts`.
  * @returns The root `vite.config.ts` file content, newline-terminated.
  *
  * @example
@@ -651,7 +672,7 @@ export default defineConfig({
  * rootViteConfig(['core']).includes('srcCore') // true
  * ```
  */
-export function rootViteConfig(surfaces: readonly Surface[]): string {
+export function rootViteConfig(surfaces: readonly Surface[], engine = false): string {
 	// Rendered blocks below are generated FILE TEXT, so every embedded
 	// declaration keyword is interpolated rather than typed literally at
 	// column 0 — the doc↔source parity scan (AGENTS §22) reads this file's
@@ -751,13 +772,44 @@ ${EXPORT_KEYWORD} const srcServer = (config?: UserConfig): UserConfig =>
 		),
 	)
 `
-	const blocks = nonCore
-		.map((surface) => (surface === 'browser' ? browserBlock : serverBlock))
-		.join('')
+	const binBlock = engine
+		? `
+${EXPORT_KEYWORD} const srcBin = (config?: UserConfig): UserConfig =>
+	srcCore(
+		mergeConfig(
+			{
+				build: {
+					lib: {
+						entry: resolveWorkspacePath('src/bin/scaffold.ts'),
+						formats: ['es'],
+						fileName: () => 'scaffold.js',
+					},
+					outDir: 'dist/bin',
+					target: 'node24',
+					rolldownOptions: {
+						external: [/^node:/, /^@orkestrel\\//, /^@src\\//],
+					},
+				},
+				test: {
+					name: { label: 'src:bin', color: 'yellow' },
+					include: ['tests/src/bin/**/*.test.ts'],
+					exclude: ['tests/src/core/**/*.test.ts', 'tests/src/server/**/*.test.ts'],
+					setupFiles: ['./tests/setup.ts', './tests/setupServer.ts'],
+				},
+			},
+			config ?? {},
+		),
+	)
+`
+		: ''
+	const blocks =
+		nonCore.map((surface) => (surface === 'browser' ? browserBlock : serverBlock)).join('') +
+		binBlock
 	const projectNames = [
 		...(hasCore ? ['srcCore'] : []),
 		...nonCore.map((surface) => `src${pascalCase(surface)}`),
 		'guides',
+		...(engine ? ['srcBin'] : []),
 	]
 	return `${header}
 ${EXPORT_KEYWORD} const srcCore = (config?: UserConfig): UserConfig =>
@@ -959,7 +1011,7 @@ export function configArtifacts(spec: Blueprint): readonly Artifact[] {
 			path: 'vite.config.ts',
 			group: 'configs',
 			origin: 'computed',
-			content: rootViteConfig(spec.surfaces),
+			content: rootViteConfig(spec.surfaces, spec.engine),
 		},
 	]
 	for (const surface of spec.surfaces) {

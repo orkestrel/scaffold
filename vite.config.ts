@@ -2,9 +2,32 @@ import type { UserConfig } from 'vite'
 import { defineConfig, mergeConfig } from 'vitest/config'
 import tsconfig from './tsconfig.json' with { type: 'json' }
 import { fileURLToPath, URL } from 'node:url'
+import { globSync } from 'node:fs'
+import { playwright } from '@vitest/browser-playwright'
 
 export function resolveWorkspacePath(relativePath: string): string {
 	return fileURLToPath(new URL(relativePath, import.meta.url))
+}
+
+export function createBrowserProvider() {
+	const { PLAYWRIGHT_EXECUTABLE_PATH, PLAYWRIGHT_WS_ENDPOINT, PLAYWRIGHT_CHANNEL } = process.env
+	if (PLAYWRIGHT_EXECUTABLE_PATH)
+		return playwright({ launchOptions: { executablePath: PLAYWRIGHT_EXECUTABLE_PATH } })
+	if (PLAYWRIGHT_WS_ENDPOINT)
+		return playwright({ connectOptions: { wsEndpoint: PLAYWRIGHT_WS_ENDPOINT } })
+	if (PLAYWRIGHT_CHANNEL) return playwright({ launchOptions: { channel: PLAYWRIGHT_CHANNEL } })
+	if (process.platform === 'linux') {
+		for (const pattern of [
+			'/opt/pw-browsers/chromium',
+			'/opt/pw-browsers/chromium-*/chrome-linux64/chrome',
+			'/opt/pw-browsers/chromium-*/chrome-linux/chrome',
+		]) {
+			const [executablePath] = globSync(pattern).sort().reverse()
+			if (executablePath) return playwright({ launchOptions: { executablePath } })
+		}
+	}
+	const channel = process.platform === 'win32' ? 'msedge' : 'chrome'
+	return playwright({ launchOptions: { channel } })
 }
 
 const resolve = {
@@ -14,7 +37,6 @@ const resolve = {
 	),
 }
 
-// Base: shared resolve + build defaults + src:core tests.
 export const srcCore = (config?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
@@ -35,8 +57,6 @@ export const srcCore = (config?: UserConfig): UserConfig =>
 		config ?? {},
 	)
 
-// Extends srcCore: the guides-parity suite. Node env — it reads the real
-// guides/*.md and the documented source modules off disk — but resolves like core tests.
 export const guides = (config?: UserConfig): UserConfig =>
 	srcCore(
 		mergeConfig(
@@ -51,14 +71,6 @@ export const guides = (config?: UserConfig): UserConfig =>
 		),
 	)
 
-// Extends srcCore: server-only library (`src/server`, the node-only materialization
-// face over the pure core — the sole impure step, `node:fs` writes behind an
-// explicit call). Builds dual ESM+CJS libs for Node and runs its tests in the node
-// environment. Externalizes `node:*` (so node:fs is never bundled), `@orkestrel/*`
-// (so runtime @orkestrel deps are never bundled), AND `@src/core` → the sibling
-// `dist/src/core` build, exactly as core ships dual-format (core and server ship as
-// two subpaths of one package). Build-only — the test project resolves `@src/core`
-// from source through the shared `resolve` alias.
 export const srcServer = (config?: UserConfig): UserConfig =>
 	srcCore(
 		mergeConfig(
@@ -99,11 +111,6 @@ export const srcServer = (config?: UserConfig): UserConfig =>
 		),
 	)
 
-// Extends srcCore: the `scaffold` bin — an executable build target, not a barrel
-// (no public exports). Builds a single ESM lib file (`dist/bin/scaffold.js`),
-// externalizing `node:*`, `@orkestrel/*`, and `@src/*` (the bin links against the
-// sibling core/server builds at runtime, never bundling them). Runs its tests in
-// the node environment.
 export const srcBin = (config?: UserConfig): UserConfig =>
 	srcCore(
 		mergeConfig(

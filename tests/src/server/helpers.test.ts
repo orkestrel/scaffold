@@ -47,6 +47,7 @@ function buildBlueprintFixture(
 		readonly peerDependencies?: Record<string, string>
 		readonly peerDependenciesMeta?: Record<string, { optional?: boolean }>
 		readonly devDependencies?: Record<string, string>
+		readonly bin?: boolean
 	},
 ): void {
 	mkdirSync(root, { recursive: true })
@@ -63,6 +64,9 @@ function buildBlueprintFixture(
 	)
 	for (const surface of options.surfaces ?? []) {
 		mkdirSync(join(root, 'src', surface), { recursive: true })
+	}
+	if (options.bin === true) {
+		mkdirSync(join(root, 'src', 'bin'), { recursive: true })
 	}
 }
 
@@ -121,6 +125,39 @@ describe('deriveBlueprint', () => {
 				{ name: '@orkestrel/emitter', range: '^0.0.3', optional: true },
 			])
 			expect(result.extras).toEqual([{ name: '@orkestrel/database', range: '^0.0.5' }])
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('derives engine: false for a repo with no src/bin directory (structural, not name-based)', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: '@orkestrel/demo',
+				surfaces: ['core', 'server'],
+			})
+
+			const result = deriveBlueprint(directory.path)
+
+			expect(result.engine).toBe(false)
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('derives engine: true structurally from an existing src/bin directory', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: '@orkestrel/scaffold',
+				surfaces: ['core', 'server'],
+				bin: true,
+			})
+
+			const result = deriveBlueprint(directory.path)
+
+			expect(result.engine).toBe(true)
 		} finally {
 			await directory.cleanup()
 		}

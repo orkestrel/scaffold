@@ -59,6 +59,7 @@ export function blueprintShape() {
 		version: stringShape({ min: 1 }),
 		engines: stringShape({ min: 1 }),
 		overrides: arrayShape(overrideShape()),
+		engine: booleanShape(),
 	})
 }
 

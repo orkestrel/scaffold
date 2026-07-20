@@ -70,6 +70,7 @@ const PLAN: Plan = {
 		version: '0.0.1',
 		engines: '>=22',
 		overrides: [],
+		engine: false,
 	},
 	groups: ['manifest'],
 	artifacts: [

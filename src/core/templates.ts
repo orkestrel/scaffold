@@ -104,7 +104,7 @@ MIT © [Orkestrel](https://github.com/orkestrel) — see [LICENSE](./LICENSE).
 TODO: a short intro line, then a minimal usage example:
 
 \`\`\`ts
-import { create{{pascal}} } from '@src/{{primary}}'
+import { create{{pascal}} } from '@orkestrel/{{name}}'
 
 ${CONST_KEYWORD} instance = create{{pascal}}({ id: 'example' })
 \`\`\`

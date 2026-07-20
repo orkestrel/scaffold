@@ -195,6 +195,10 @@ export function deriveBlueprint(target: string): Blueprint {
 	if (surfaces.length === 0) {
 		throw new ScaffoldError('TARGET', `No surface directory found under ${target}/src`, { target })
 	}
+	// Structural only: a repo carries the self-hosting tax (bin field, scaffold
+	// script, check/test/build:src:bin scripts, build:host, the srcBin vite
+	// project) iff it ships its own src/bin — never derived from `name`.
+	const engine = existsSync(join(target, 'src', 'bin'))
 
 	const dependencies: Dependency[] = selectOrkestrelEntries(parsed.dependencies).map(
 		([depName, range]) => ({ name: depName, range }),
@@ -241,6 +245,7 @@ export function deriveBlueprint(target: string): Blueprint {
 		version,
 		engines,
 		overrides: [],
+		engine,
 	})
 }
 

@@ -99,6 +99,8 @@ export interface Blueprint {
 	readonly version: string
 	readonly engines: string
 	readonly overrides: readonly Override[]
+	/** Structural: `true` only for a repo that ships its own `src/bin` — the self-hosting tax (a `bin` field, the `scaffold` script invoking `dist/bin/scaffold.js` directly, the `check/test/build:src:bin` scripts, `build:host`, the `srcBin` vite project) applies ONLY when `true`, never by name. */
+	readonly engine: boolean
 }
 
 /** One declared public export of the scaffolded package; derived by `blueprintToMembers`, never authored. */
