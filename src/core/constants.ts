@@ -123,7 +123,7 @@ export const DEFAULT_VERSION = '0.0.1'
 export const DEFAULT_ENGINES = '>=22'
 
 /** The devDependency range generated packages pin `@orkestrel/scaffold` at. */
-export const SCAFFOLD_RANGE = '^0.0.1'
+export const SCAFFOLD_RANGE = '^0.0.2'
 
 /** The default id for a `Compiler` orchestrator. */
 export const COMPILER_ID = 'compiler'

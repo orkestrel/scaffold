@@ -10,7 +10,14 @@ import {
 } from 'node:fs'
 import { createServer } from 'node:net'
 import { describe, expect, it } from 'vitest'
-import { blueprint, diffPlan, isScaffoldError, validateBlueprint } from '@src/core'
+import {
+	blueprint,
+	diffPlan,
+	isRecord,
+	isScaffoldError,
+	packageManifest,
+	validateBlueprint,
+} from '@src/core'
 import {
 	catalogPackages,
 	createMaterializer,
@@ -209,6 +216,45 @@ describe('deriveBlueprint', () => {
 			const validation = validateBlueprint(result)
 			expect(validation.valid).toBe(true)
 			expect(validation.questions).toEqual([])
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('P2: an mcp-shaped fixture (dev-installed peers) round-trips through derive→recompile with both peers RETAINED in devDependencies', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			// The live @orkestrel/mcp shape: two peers, both ALSO dev-installed for
+			// local testing (the fleet convention, per @orkestrel/middleware too).
+			buildBlueprintFixture(directory.path, {
+				name: '@orkestrel/mcp',
+				surfaces: ['core', 'server'],
+				peerDependencies: {
+					'@orkestrel/router': '^0.0.4',
+					'@orkestrel/server': '^0.0.6',
+				},
+				devDependencies: {
+					'@orkestrel/guide': '^1.0.0',
+					'@orkestrel/scaffold': '^1.0.0',
+					'@orkestrel/router': '^0.0.4',
+					'@orkestrel/server': '^0.0.6',
+				},
+			})
+
+			const derived = deriveBlueprint(directory.path)
+			expect(derived.peers).toEqual(
+				expect.arrayContaining([
+					{ name: '@orkestrel/router', range: '^0.0.4' },
+					{ name: '@orkestrel/server', range: '^0.0.6' },
+				]),
+			)
+			expect(derived.extras).toEqual([])
+
+			const recompiled = packageManifest(derived)
+			const parsed: unknown = JSON.parse(recompiled)
+			const dev = isRecord(parsed) && isRecord(parsed.devDependencies) ? parsed.devDependencies : {}
+			expect(dev['@orkestrel/router']).toBe('^0.0.4')
+			expect(dev['@orkestrel/server']).toBe('^0.0.6')
 		} finally {
 			await directory.cleanup()
 		}

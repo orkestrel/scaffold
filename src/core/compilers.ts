@@ -279,6 +279,22 @@ export function packageManifest(spec: Blueprint): string {
 	for (const peer of spec.peers) {
 		if (peer.optional === true) peerDependenciesMeta[peer.name] = { optional: true }
 	}
+	// Every peer is ALSO dev-installed — grounded against the live
+	// @orkestrel/middleware and @orkestrel/mcp exemplars, where every declared
+	// peer (@orkestrel/database + @orkestrel/server for middleware;
+	// @orkestrel/router + @orkestrel/server for mcp) appears in
+	// `devDependencies` at its peer range, unconditionally (2/2 peer-declaring
+	// exemplars observed). A peer without its dev-install cannot be built or
+	// tested locally — `npm install` alone would never bring it in. Emitting
+	// unconditionally here (rather than deriving from `extras`) keeps
+	// `validateBlueprint`'s `peers ∩ extras` law intact: a peer is a peer, not
+	// an extra, so it never round-trips through the `extras` array — it round-
+	// trips here, directly off `spec.peers`, mirroring how `deriveBlueprint`
+	// reads a dev-installed peer back into `peers` (never `extras`) on the way in.
+	const peerDevDependencies: Record<string, string> = {}
+	for (const peer of [...spec.peers].sort((a, b) => compareCodeUnit(a.name, b.name))) {
+		peerDevDependencies[peer.name] = peer.range
+	}
 
 	// Scripts are built by sequential assignment so aggregate + per-surface
 	// keys interleave in the exact live-package insertion order (`check:src`
@@ -338,7 +354,7 @@ export function packageManifest(spec: Blueprint): string {
 		publishConfig: { access: 'public' },
 		scripts,
 		dependencies,
-		devDependencies: devDependenciesFor(spec.extras),
+		devDependencies: { ...devDependenciesFor(spec.extras), ...peerDevDependencies },
 		...(Object.keys(peerDependencies).length > 0 ? { peerDependencies } : {}),
 		...(Object.keys(peerDependenciesMeta).length > 0 ? { peerDependenciesMeta } : {}),
 		engines: { node: spec.engines },

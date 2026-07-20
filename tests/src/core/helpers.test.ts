@@ -375,6 +375,57 @@ describe('diffPlan — the four drift classes', () => {
 	})
 })
 
+describe('diffPlan — template origin is birth-only, audit-exempt', () => {
+	it('is aligned when a template artifact content differs from current', () => {
+		const plan = blueprintToPlan(blueprint('router', { surfaces: ['core'] }), ['source'])
+		const templateArtifact = plan.artifacts.find((artifact) => artifact.origin === 'template')
+		const audit = diffPlan(plan, {
+			[templateArtifact?.path ?? '']: 'hand-authored real code, nothing like the stub',
+		})
+
+		expect(audit.findings.find((finding) => finding.path === templateArtifact?.path)?.drift).toBe(
+			'aligned',
+		)
+		expect(audit.drifted).toBe(0)
+	})
+
+	it('is aligned, not missing, when a template artifact is absent from current', () => {
+		const plan = blueprintToPlan(blueprint('router', { surfaces: ['core'] }), ['source'])
+		const templateArtifact = plan.artifacts.find((artifact) => artifact.origin === 'template')
+		const audit = diffPlan(plan, {})
+
+		expect(audit.findings.find((finding) => finding.path === templateArtifact?.path)?.drift).toBe(
+			'aligned',
+		)
+		expect(audit.missing).toBe(0)
+	})
+
+	it('clean is true when the only divergence from the plan is template-origin', () => {
+		const plan = blueprintToPlan(blueprint('router', { surfaces: ['core'] }), ['source'])
+		expect(plan.artifacts.every((artifact) => artifact.origin === 'template')).toBe(true)
+		const audit = diffPlan(plan, {})
+
+		expect(audit.clean).toBe(true)
+		expect(audit.drifted).toBe(0)
+		expect(audit.missing).toBe(0)
+	})
+
+	it('a computed artifact still gates as stale alongside all-aligned templates', () => {
+		const plan = blueprintToPlan(blueprint('router', { surfaces: ['core'] }), [
+			'source',
+			'manifest',
+		])
+		const computedArtifact = plan.artifacts.find((artifact) => artifact.origin === 'computed')
+		const audit = diffPlan(plan, { [computedArtifact?.path ?? '']: 'wrong manifest bytes' })
+
+		expect(audit.clean).toBe(false)
+		expect(audit.drifted).toBe(1)
+		expect(audit.findings.find((finding) => finding.path === computedArtifact?.path)?.drift).toBe(
+			'stale',
+		)
+	})
+})
+
 describe('validateBlueprint', () => {
 	it('accepts a well-formed blueprint', () => {
 		expect(validateBlueprint(blueprint('router')).valid).toBe(true)
@@ -1108,11 +1159,15 @@ describe('pinPlan', () => {
 		expect(fromParsed.hash).toBe(fromBuilder.hash)
 	})
 
-	it('pins the six documented surface variants to their captured pre-refactor hashes (byte-stable)', () => {
-		// Captured from the pre-refactor `digest`/`stableStringify` nested-function
-		// implementation via `blueprintToPlan(blueprint('router', { surfaces }))` +
-		// `pinPlan` — asserted here as literals so the `computeHash`/`stableStringify`
-		// extraction (helpers.ts, AGENTS §7.4 no-nested-functions) is provably byte-stable.
+	it('pins the six documented surface variants to their captured hashes (byte-stable)', () => {
+		// Re-captured for 0.0.2: `SCAFFOLD_RANGE` bumped to `^0.0.2` and every
+		// declared peer now merges into the generated `devDependencies` (P2),
+		// both of which shift the manifest artifact's rendered bytes and
+		// therefore `pinPlan`'s content hash for every variant — recomputed
+		// honestly via `blueprintToPlan(blueprint('router', { surfaces }))` +
+		// `pinPlan` against the built 0.0.2 output, asserted here as literals so
+		// the `computeHash`/`stableStringify` extraction stays provably
+		// byte-stable going forward.
 		const variants: readonly { readonly label: string; readonly surfaces: readonly Surface[] }[] = [
 			{ label: 'core-only', surfaces: ['core'] },
 			{ label: 'server-only', surfaces: ['server'] },
@@ -1122,12 +1177,12 @@ describe('pinPlan', () => {
 			{ label: 'core+browser+server', surfaces: ['core', 'browser', 'server'] },
 		]
 		const expected: Record<string, string> = {
-			'core-only': '21d39bd3',
-			'server-only': 'c0cf27ea',
-			'browser-only': '3c4e3439',
-			'core+server': '16cfef4b',
-			'core+browser': '16a68a0b',
-			'core+browser+server': '721cb080',
+			'core-only': 'edc9eadc',
+			'server-only': '4581346f',
+			'browser-only': '3f874370',
+			'core+server': '958d61e4',
+			'core+browser': 'ac0c8db2',
+			'core+browser+server': 'fd76fe1d',
 		}
 
 		for (const variant of variants) {

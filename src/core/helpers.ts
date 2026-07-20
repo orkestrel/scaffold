@@ -601,14 +601,25 @@ export function inferGroup(path: string): Group {
  * @param plan - The plan whose artifacts are the source of truth.
  * @param current - The target's current content, keyed by artifact-relative path.
  * @remarks
- * A `template` / `computed` artifact whose rendered content the target does not
- * match is `stale`; one the target lacks is `missing`; a target file the plan
- * does not own is `foreign`. A `host`-origin artifact is audited by PRESENCE
- * only — `missing` or `aligned`, never `stale` — UNLESS it has been hydrated
- * with its real host bytes (`hydratePlan`'s `content`), in which case it is
- * content-compared exactly like a `template` / `computed` artifact and CAN be
+ * Audit semantics are per-origin. A `host`-origin artifact is audited by
+ * PRESENCE only — `missing` or `aligned`, never `stale` — UNLESS it has been
+ * hydrated with its real host bytes (`hydratePlan`'s `content`), in which case
+ * it is content-compared exactly like a `computed` artifact and CAN be
  * `stale`. A degrade-path or directory-shaped host artifact (never hydrated)
- * stays presence-only.
+ * stays presence-only. A `computed` artifact is content-aware canon —
+ * `missing` / `aligned` / `stale` — and gates the audit like any drifted
+ * finding. A `template`-origin artifact is BIRTH-ONLY and AUDIT-EXEMPT: it is
+ * always reported `aligned`, regardless of whether the target has it at all
+ * or what its bytes are. Starter files (source stubs, test stubs, starter
+ * guides, README) are written ONCE by `materialize` and are legitimately
+ * outgrown — real code replaces the stub, a hand-authored guide replaces the
+ * scaffold prose, an entity gets renamed. Content- or presence-comparing a
+ * mature package against its birth stub is a category error (the build and
+ * parity gates already police the package's substance) AND makes any
+ * unscoped repair a data-loss footgun — a stub overwrite would clobber real,
+ * hand-authored code. `template` findings therefore never contribute to
+ * `drifted` / `missing` / `clean`. A target file the plan does not own is
+ * `foreign`.
  * @returns The `Audit` of drift findings — pure, no I/O.
  *
  * @example
@@ -624,6 +635,10 @@ export function diffPlan(plan: Plan, current: Readonly<Record<string, string>>):
 	for (const artifact of plan.artifacts) {
 		owned.add(artifact.path)
 		const seen = current[artifact.path]
+		if (artifact.origin === 'template') {
+			findings.push({ path: artifact.path, group: artifact.group, drift: 'aligned' })
+			continue
+		}
 		if (artifact.origin === 'host') {
 			let drift: Drift
 			if (seen === undefined) drift = 'missing'

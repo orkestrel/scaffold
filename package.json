@@ -1,6 +1,6 @@
 {
 	"name": "@orkestrel/scaffold",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "Blueprint-to-plan package scaffolding, auditing, dependency guide/version pulling, and fleet-wide shared-file upkeep for the @orkestrel line.",
 	"keywords": [
 		"audit",

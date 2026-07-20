@@ -253,6 +253,17 @@ describe('packageManifest', () => {
 		expect(manifest.peerDependencies).toBeUndefined()
 		expect(manifest.peerDependenciesMeta).toBeUndefined()
 	})
+
+	it('P2: every peer is ALSO dev-installed — merges into devDependencies at its peer range', () => {
+		const spec = blueprint('mcp', {
+			surfaces: ['core', 'server'],
+			peers: [dependency('@orkestrel/router', '^0.0.4'), dependency('@orkestrel/server', '^0.0.6')],
+		})
+		const manifest = readManifest(packageManifest(spec))
+		const dev = readRecord(manifest.devDependencies)
+		expect(dev['@orkestrel/router']).toBe('^0.0.4')
+		expect(dev['@orkestrel/server']).toBe('^0.0.6')
+	})
 })
 
 describe('rootTsconfig', () => {

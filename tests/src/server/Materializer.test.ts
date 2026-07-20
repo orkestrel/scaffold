@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest'
 import { blueprint } from '@src/core'
 import { blueprintToPlan } from '@src/core'
 import { dependency } from '@src/core'
+import { diffPlan } from '@src/core'
 import { isScaffoldError } from '@src/core'
 import { createMaterializer, isVacant, readTarget } from '@src/server'
 import { createRecorder } from '../../setup.js'
@@ -560,6 +561,33 @@ describe('Materializer.repair', () => {
 			expect(result.written).toEqual([])
 			expect(result.copied).toEqual([])
 			expect([...result.skipped].sort()).toEqual(['a.txt', 'b.txt', 'c.txt'])
+			materializer.destroy()
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('a plan whose only divergence is template content writes NOTHING — diffPlan never reports a template finding as missing/stale', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			const plan = blueprintToPlan(blueprint('router', { surfaces: ['core'] }), ['source'])
+			expect(plan.artifacts.every((artifact) => artifact.origin === 'template')).toBe(true)
+			// Current target is EMPTY — every template artifact is absent, the
+			// most divergent case possible, yet still birth-only audit-exempt.
+			const audit = diffPlan(plan, {})
+			expect(audit.findings.every((finding) => finding.drift === 'aligned')).toBe(true)
+			expect(audit.findings.some((finding) => finding.drift === 'missing')).toBe(false)
+			expect(audit.findings.some((finding) => finding.drift === 'stale')).toBe(false)
+
+			const materializer = createMaterializer({ host: WORKSPACE_ROOT })
+			const result = materializer.repair(plan, audit, directory.path)
+
+			expect(result.written).toEqual([])
+			expect(result.copied).toEqual([])
+			expect(result.skipped.length).toBe(plan.artifacts.length)
+			for (const artifact of plan.artifacts) {
+				expect(existsSync(join(directory.path, artifact.path))).toBe(false)
+			}
 			materializer.destroy()
 		} finally {
 			await directory.cleanup()

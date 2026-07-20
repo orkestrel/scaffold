@@ -67,11 +67,14 @@ error.
   its plan from your `package.json` and stays clean over the addition.
 - **`pull`** — fetches the latest vendored dependency guides and registry versions
   for an existing package and reports drift.
-- **`audit`** — a whole-plan conformance report: diffs a target against the FULL plan
-  its own manifest implies (host AND generated artifacts alike) and reports drift as
-  data, findings and all; exits nonzero the moment any drift is found, so it gates CI
-  cleanly. `--live` additionally checks upstream guide/version freshness — `audit` is the
-  ONLY verb that carries `--live`.
+- **`audit`** — a conformance report over the artifacts the plan actually gates: the
+  shared template-owned files (presence, or content once hydrated) AND the generated
+  configs/manifest (content); reports drift as data, findings and all; exits nonzero
+  the moment any drift is found, so it gates CI cleanly. Starter files — source/test
+  stubs, starter guides, README — are written once at scaffold time and are
+  legitimately outgrown, so they are birth-only and never audited; the build and
+  parity gates police their substance instead. `--live` additionally checks upstream
+  guide/version freshness — `audit` is the ONLY verb that carries `--live`.
 - **`repair`** — restores the shared HOST set only (generated source/tests/configs are
   never touched); re-derives the plan from the audit and re-applies only the drifted
   host artifacts; dry-run by default, `--apply` writes the fixes, `--prune` also removes
