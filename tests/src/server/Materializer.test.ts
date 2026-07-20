@@ -902,7 +902,7 @@ describe('Materializer.prune', () => {
 			const removeRecorder = createRecorder<readonly [path: string]>()
 			materializer.emitter.on('remove', removeRecorder.handler)
 
-			const plan = blueprintToPlan(blueprint('prune-fixture', { surfaces: ['core'] }))
+			blueprintToPlan(blueprint('prune-fixture', { surfaces: ['core'] }))
 			const result = materializer.prune(directory.path)
 
 			expect([...result.removed].sort()).toEqual(
@@ -945,7 +945,7 @@ describe('Materializer.prune', () => {
 				symlinkSync(join(outside.path, 'secret.txt'), join(directory.path, 'scripts', 'escape.sh'))
 
 				const materializer = createMaterializer({ host: host.path })
-				const plan = blueprintToPlan(blueprint('prune-symlink-fixture', { surfaces: ['core'] }))
+				blueprintToPlan(blueprint('prune-symlink-fixture', { surfaces: ['core'] }))
 				let caught: unknown
 				try {
 					materializer.prune(directory.path)
@@ -973,7 +973,7 @@ describe('Materializer.prune', () => {
 		try {
 			const materializer = createMaterializer({ host: host.path })
 			materializer.destroy()
-			const plan = blueprintToPlan(blueprint('prune-destroyed-fixture', { surfaces: ['core'] }))
+			blueprintToPlan(blueprint('prune-destroyed-fixture', { surfaces: ['core'] }))
 			let caught: unknown
 			try {
 				materializer.prune(directory.path)
@@ -995,9 +995,7 @@ describe('Materializer.prune', () => {
 			writeFileSync(join(directory.path, 'scripts', 'foreign-script.sh'), 'not vendored', 'utf8')
 
 			const materializer = createMaterializer({ host: join(directory.path, 'does-not-exist-host') })
-			const plan = blueprintToPlan(
-				blueprint('prune-nonexistent-host-fixture', { surfaces: ['core'] }),
-			)
+			blueprintToPlan(blueprint('prune-nonexistent-host-fixture', { surfaces: ['core'] }))
 			let caught: unknown
 			try {
 				materializer.prune(directory.path)
@@ -1029,7 +1027,7 @@ describe('Materializer.prune', () => {
 			writeFileSync(join(directory.path, 'scripts', 'foreign-script.sh'), 'not vendored', 'utf8')
 
 			const materializer = createMaterializer({ host: host.path })
-			const plan = blueprintToPlan(blueprint('prune-empty-vendor-fixture', { surfaces: ['core'] }))
+			blueprintToPlan(blueprint('prune-empty-vendor-fixture', { surfaces: ['core'] }))
 			const result = materializer.prune(directory.path)
 
 			expect(result.removed).toEqual(['scripts/foreign-script.sh'])
