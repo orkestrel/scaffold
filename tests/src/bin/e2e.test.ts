@@ -110,29 +110,59 @@ describe('scaffold bin: default-host end-to-end proof (no --from)', () => {
 		})
 	})
 
-	describe('new --apply: --extras (U12b, explicit @range — offline-safe, default host)', () => {
-		it('an explicit @range lands the extra in devDependencies ONLY, dependencies untouched', async () => {
+	describe('new --apply: extras UX removed — hand-added devDependencies round-trip clean instead (default host)', () => {
+		it('--extras is an unrecognized flag under the default host too — exit 2, nothing written', async () => {
 			const cwd = await buildTempDirectory()
 			try {
-				const created = runBin(
+				const result = runBin(
 					['new', 'demoextras', '--surfaces', 'core', '--apply', '--extras', 'zod@^3.23.0'],
 					{ cwd: cwd.path },
 				)
+				expect(result.status).toBe(2)
+				expect(existsSync(join(cwd.path, 'demoextras'))).toBe(false)
+			} finally {
+				await cwd.cleanup()
+			}
+		})
+
+		it('a hand-added devDependency lands ONLY in devDependencies and audits clean (deriveBlueprint recompiles the extras round-trip, AGENTS §21) — no --extras involved', async () => {
+			const cwd = await buildTempDirectory()
+			try {
+				const created = runBin(['new', 'demoextras', '--surfaces', 'core', '--apply'], {
+					cwd: cwd.path,
+				})
 				expect(created.status).toBe(0)
 
 				const packageDirectory = join(cwd.path, 'demoextras')
-				const manifest: unknown = JSON.parse(
-					readFileSync(join(packageDirectory, 'package.json'), 'utf8'),
-				)
+				const packageJsonPath = join(packageDirectory, 'package.json')
+				const manifest: unknown = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
 				if (!isRecord(manifest)) throw new Error('expected package.json to parse to a JSON object')
-				const devDependencies = manifest.devDependencies
-				if (!isRecord(devDependencies)) {
+				const devDependencies = isRecord(manifest.devDependencies) ? manifest.devDependencies : {}
+				writeFileSync(
+					packageJsonPath,
+					`${JSON.stringify(
+						{ ...manifest, devDependencies: { ...devDependencies, zod: '^3.23.0' } },
+						null,
+						'\t',
+					)}\n`,
+					'utf8',
+				)
+
+				const rehydrated: unknown = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
+				if (!isRecord(rehydrated))
+					throw new Error('expected package.json to parse to a JSON object')
+				const rehydratedDevDependencies = rehydrated.devDependencies
+				if (!isRecord(rehydratedDevDependencies)) {
 					throw new Error('expected package.json devDependencies to be an object')
 				}
-				expect(devDependencies.zod).toBe('^3.23.0')
-				const dependencies = manifest.dependencies
+				expect(rehydratedDevDependencies.zod).toBe('^3.23.0')
+				const dependencies = rehydrated.dependencies
 				const zodInDependencies = isRecord(dependencies) ? dependencies.zod : undefined
 				expect(zodInDependencies).toBeUndefined()
+
+				const audited = runBin(['audit', '--target', 'demoextras'], { cwd: cwd.path })
+				expect(audited.status).toBe(0)
+				expect(audited.stdout).not.toContain('drifted')
 			} finally {
 				await cwd.cleanup()
 			}

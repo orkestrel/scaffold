@@ -367,170 +367,64 @@ describe('scaffold bin', () => {
 			}
 		})
 
-		describe('--extras (U12b — offline-safe: an explicit @range never reaches the registry)', () => {
-			it('an explicit @range lands the extra in devDependencies ONLY (never dependencies)', async () => {
-				const from = await buildFromFixture()
+		describe('extras UX removed — hand-added devDependencies are the owner-sanctioned workflow now', () => {
+			it('--extras is an unrecognized flag — exit 2 (usage error), nothing written', async () => {
 				const cwd = await buildTempDirectory()
 				try {
 					const result = runBin(
-						[
-							'new',
-							'demo-extras',
-							'--surfaces',
-							'core',
-							'--apply',
-							'--extras',
-							'zod@^3.23.0',
-							'--from',
-							from.path,
-						],
-						'',
-						{ cwd: cwd.path },
-					)
-					expect(result.status).toBe(0)
-
-					const packageJsonPath = join(cwd.path, 'demo-extras', 'package.json')
-					const parsed: unknown = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
-					if (!isRecord(parsed)) throw new Error('expected package.json to parse to an object')
-					const devDependencies = parsed.devDependencies
-					const dependencies = parsed.dependencies
-					if (!isRecord(devDependencies)) {
-						throw new Error('expected package.json devDependencies to be an object')
-					}
-					expect(devDependencies.zod).toBe('^3.23.0')
-					const zodInDependencies = isRecord(dependencies) ? dependencies.zod : undefined
-					expect(zodInDependencies).toBeUndefined()
-				} finally {
-					await cwd.cleanup()
-					await from.cleanup()
-				}
-			})
-
-			it('an off-EXTRA_NAME_PATTERN token exits 2 with a coded USAGE message naming the token', async () => {
-				const cwd = await buildTempDirectory()
-				try {
-					const result = runBin(
-						['new', 'demo-extras-bad', '--surfaces', 'core', '--extras', 'Bad Name'],
+						['new', 'demo-extras-removed', '--surfaces', 'core', '--extras', 'zod@^3.23.0'],
 						'',
 						{ cwd: cwd.path },
 					)
 					expect(result.status).toBe(2)
-					const output = result.stdout + result.stderr
-					expect(output).toContain('"Bad Name" must match')
-					expect(existsSync(join(cwd.path, 'demo-extras-bad'))).toBe(false)
+					expect(existsSync(join(cwd.path, 'demo-extras-removed'))).toBe(false)
 				} finally {
 					await cwd.cleanup()
 				}
 			})
 
-			it('an @orkestrel/*-prefixed token is REJECTED — exit 2, message points at --deps, nothing written', async () => {
-				const cwd = await buildTempDirectory()
-				try {
-					const result = runBin(
-						[
-							'new',
-							'demo-extras-orkestrel',
-							'--surfaces',
-							'core',
-							'--extras',
-							'@orkestrel/contract',
-						],
-						'',
-						{ cwd: cwd.path },
-					)
-					expect(result.status).toBe(2)
-					const output = result.stdout + result.stderr
-					expect(output).toContain('is an @orkestrel package')
-					expect(output).toContain('--deps')
-					expect(existsSync(join(cwd.path, 'demo-extras-orkestrel'))).toBe(false)
-				} finally {
-					await cwd.cleanup()
-				}
+			it("'scaffold new --help' advertises no --extras flag", () => {
+				const result = runBin(['new', '--help'], '', { cwd: WORKSPACE_ROOT })
+				expect(result.status).toBe(0)
+				expect(result.stdout).not.toContain('--extras')
 			})
 
-			it('--extras under --json: works non-interactively, applies, and the JSON envelope reflects the write (U12b works non-TTY and with --json)', async () => {
-				const from = await buildFromFixture()
-				const cwd = await buildTempDirectory()
-				try {
-					const result = runBin(
-						[
-							'new',
-							'demo-extras-json',
-							'--surfaces',
-							'core',
-							'--json',
-							'--apply',
-							'--extras',
-							'zod@^3.23.0',
-							'--from',
-							from.path,
-						],
-						'',
-						{ cwd: cwd.path },
-					)
-					expect(result.status).toBe(0)
-					const parsed: unknown = JSON.parse(result.stdout.trim())
-					expect(parsed).toMatchObject({ name: 'demo-extras-json', applied: true })
-					const packageJsonPath = join(cwd.path, 'demo-extras-json', 'package.json')
-					const manifest: unknown = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
-					if (!isRecord(manifest) || !isRecord(manifest.devDependencies)) {
-						throw new Error('expected devDependencies to be an object')
-					}
-					expect(manifest.devDependencies.zod).toBe('^3.23.0')
-				} finally {
-					await cwd.cleanup()
-					await from.cleanup()
-				}
-			})
-
-			it('U12c FIX 3 — THE VERIFIER SMOKE (closure regression): new --extras zod@^3.23.0 --apply, then audit --target demo exits 0 CLEAN (an external extra must round-trip through deriveBlueprint, not drift on its own generated package.json)', async () => {
+			it('a hand-added devDependency round-trips clean: new --apply (no extras), hand-edit package.json devDependencies, audit --target exits 0 CLEAN (deriveBlueprint recompiles the extras round-trip, AGENTS §21)', async () => {
 				const from = await buildFromFixture()
 				const cwd = await buildTempDirectory()
 				try {
 					const created = runBin(
-						[
-							'new',
-							'demo',
-							'--surfaces',
-							'core',
-							'--extras',
-							'zod@^3.23.0',
-							'--apply',
-							'--from',
-							from.path,
-						],
+						['new', 'demo', '--surfaces', 'core', '--apply', '--from', from.path],
 						'',
 						{ cwd: cwd.path },
 					)
 					expect(created.status).toBe(0)
 
+					// Hand-add a devDependency directly to the generated package.json —
+					// the owner's stated post-scaffold workflow now that --extras is gone.
+					const packageJsonPath = join(cwd.path, 'demo', 'package.json')
+					const manifest: unknown = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
+					if (!isRecord(manifest)) throw new Error('expected package.json to parse to an object')
+					const devDependencies = isRecord(manifest.devDependencies) ? manifest.devDependencies : {}
+					writeFileSync(
+						packageJsonPath,
+						`${JSON.stringify(
+							{ ...manifest, devDependencies: { ...devDependencies, zod: '^3.23.0' } },
+							null,
+							'\t',
+						)}\n`,
+						'utf8',
+					)
+
 					const audited = runBin(['audit', '--target', 'demo', '--from', from.path], '', {
 						cwd: cwd.path,
 					})
 					expect(audited.status).toBe(0)
+					expect(audited.stdout).toContain('— clean')
 					expect(audited.stdout).not.toContain('drifted')
 				} finally {
 					await cwd.cleanup()
 					await from.cleanup()
-				}
-			})
-
-			it('U12c FIX 2: --extras "zod@" (trailing @, empty range) exits 2 with the new emptyExtraRange message — never silently written as a "^" range', async () => {
-				const cwd = await buildTempDirectory()
-				try {
-					const result = runBin(
-						['new', 'demo-extras-empty-range', '--surfaces', 'core', '--extras', 'zod@'],
-						'',
-						{ cwd: cwd.path },
-					)
-					expect(result.status).toBe(2)
-					const output = result.stdout + result.stderr
-					expect(output).toContain(
-						`"zod@" is missing a version range after '@' — write name@^1.2.3 or drop the '@'`,
-					)
-					expect(existsSync(join(cwd.path, 'demo-extras-empty-range'))).toBe(false)
-				} finally {
-					await cwd.cleanup()
 				}
 			})
 		})

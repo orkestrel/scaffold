@@ -829,6 +829,13 @@ two directories the fleet trues wholesale (`.claude/agents/` and `scripts/`) —
 file elsewhere is left untouched, never guessed at. After `destroy()` every method throws
 `DESTROYED`; teardown is idempotent, emitter last.
 
+A dependency's `guides/src/<dep>.md` is the ONE write-side degrade: it materializes as a
+short one-line stub at `new`-time (the vendored host never carries other packages' guides),
+and `scaffold pull` later replaces that stub with the real fetched guide. Any OTHER host
+artifact missing from the vendored manifest is a hard `TARGET` failure, never a stub — a
+non-guide zero-match manifest lookup means a corrupted or truncated `manifest.json`, not a
+legitimate degrade.
+
 | Method        | Returns             | Behavior                                                                                                                                                                                 |
 | ------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `materialize` | `MaterializeResult` | Write a whole plan into a VACANT target — host copies + rendered writes; throws `TARGET` if the target is non-empty beyond `.git`.                                                       |
@@ -1326,25 +1333,22 @@ parser), widens Node's trusted-issuer set to the OS certificate store via
 `rejectUnauthorized` — so `fetch` survives a corporate TLS-inspecting proxy the way npm
 and browsers already do), and dispatches on SIX subcommands: **`new`** creates a package
 (resolving any `--deps` — `@orkestrel/*` runtime deps, landing in `Blueprint.dependencies`
-— to the registry `latest` → `^latest` ranges, fetching their guides into the plan;
-`--extras` names any OTHER npm package, optionally pinned `name@range`, landing in
-`Blueprint.extras`/`devDependencies` — an absent `@range` resolves through the SAME
-registry call, an explicit one skips the network entirely; a trailing `@` with nothing
-after it (`zod@`) is a rejected empty range, never silently written as a bare `^` (U12c
-FIX 2), and a range-less `--deps`/`--extras` name the registry could not resolve
-(`freshness` `'missing'`/`'failed'`, or an empty `latest` — `createSync()` is
-non-strict here, it never throws on its own) is likewise a hard failure BEFORE any
-write, across both resolution paths, rather than silently landing an unwritable `"^"`
-range in `package.json` with exit `0` (U12c FIX 1); on a real terminal, `--deps`'s
-free-text prompt is now TWO separate questions asking exactly for that split — Q1 takes
-`@orkestrel` SHORT names (`contract, emitter`; a bare token normalizes to
-`@orkestrel/<token>`, an already-prefixed one passes through unchanged) and validates each
-against the vendored `@orkestrel` catalog embedded in `.claude/agents/orkestrel.md`
-(re-asking, with a nearest-match suggestion, on an unresolved token — degrading to
-shape-only `DEPENDENCY_NAME_PATTERN` validation with a one-line note when the vendored
-catalog itself cannot be resolved), Q2 takes full npm names with an optional `@range` and
-rejects an `@orkestrel/*` token outright, pointing back at Q1/`--deps` — both questions are
-TTY-only, `--deps`/`--extras` work identically off a terminal or under `--json`), **`pull`**
+— to the registry `latest` → `^latest` ranges, fetching their guides into the plan; a
+range-less `--deps` name the registry could not resolve (`freshness` `'missing'`/`'failed'`,
+or an empty `latest` — `createSync()` is non-strict here, it never throws on its own) is a
+hard failure BEFORE any write, rather than silently landing an unwritable `"^"` range in
+`package.json` with exit `0` (U12c FIX 1); on a real terminal, `--deps`'s free-text prompt
+is an interactive question (Q1) taking `@orkestrel` SHORT names (`contract, emitter`; a bare
+token normalizes to `@orkestrel/<token>`, an already-prefixed one passes through unchanged)
+and validates each against the vendored `@orkestrel` catalog embedded in
+`.claude/agents/orkestrel.md` (re-asking, with a nearest-match suggestion, on an unresolved
+token — degrading to shape-only `DEPENDENCY_NAME_PATTERN` validation with a one-line note
+when the vendored catalog itself cannot be resolved) — TTY-only, `--deps` works identically
+off a terminal or under `--json`. Other npm packages are NOT a `new`-time concept — hand-add
+them to the generated `package.json`'s `devDependencies` after scaffolding;
+`deriveBlueprint`'s `extras` round-trip (below) recompiles them back into the plan on the
+next `audit`/`repair`/`pull`, so a hand-added `devDependencies` entry stays audit-clean
+without the CLI ever collecting it), **`pull`**
 refreshes an existing repo's vendored dependency mirrors and
 reports range drift, **`audit`** / **`repair`** / **`fleet`** all reconstruct the target's
 `Blueprint` with `deriveBlueprint` (never a hand-built stand-in) before compiling — **`audit`**
@@ -1522,7 +1526,6 @@ const { values, positionals } = parseArgs({
 	options: {
 		surfaces: { type: 'string' },
 		deps: { type: 'string' },
-		extras: { type: 'string' },
 		target: { type: 'string' },
 		from: { type: 'string', multiple: true },
 		apply: { type: 'boolean', default: false },
@@ -1738,41 +1741,22 @@ if (command === 'pull') {
 		(await terminal.checkbox({ message: 'Surfaces', choices: [...SURFACES], min: 1 }))
 	const surfaces = SURFACES.filter((surface) => picked.includes(surface)) // narrow to Surface[], no `as`
 
-	// --deps (@orkestrel/* runtime deps) and --extras (any other npm package, optionally
-	// `name@range`) BOTH resolve an absent range through the SAME registry call — ranges
-	// pin ^latest; --deps's guides additionally fetch into the plan. An --extras token
-	// carrying its own `@range` (split on the LAST '@' beyond position 0) skips the network
-	// entirely. On a real terminal, this single `--deps` prompt becomes TWO separate
-	// questions instead — @orkestrel short names (catalog-validated) and other full names —
-	// illustrated in prose above, omitted here for brevity.
+	// --deps (@orkestrel/* runtime deps) resolves an absent range through the registry —
+	// ranges pin ^latest; its guides additionally fetch into the plan. On a real terminal,
+	// this prompt becomes an interactive question instead — @orkestrel short names,
+	// catalog-validated — illustrated in prose above, omitted here for brevity. Other npm
+	// packages are hand-added to `package.json`'s `devDependencies` AFTER scaffolding —
+	// `deriveBlueprint`'s `extras` round-trip (below) picks them back up on the next
+	// `audit`/`repair`/`pull`, so `new` never collects them itself.
 	const sync = createSync()
 	const versions = await sync.versions(
 		(values.deps?.split(',') ?? []).map((depName) => dependency(depName, '*')),
 	)
-	// Split each --extras token at its LAST '@', beyond position 0, so a bare scoped name
-	// (`@scope/pkg`, no range) keeps its leading `@` intact while `@scope/pkg@^1.2.3` splits.
-	const extraEntries = (values.extras?.split(',') ?? []).map((token) => {
-		const at = token.lastIndexOf('@')
-		return at > 0
-			? { name: token.slice(0, at), range: token.slice(at + 1) }
-			: { name: token, range: undefined }
-	})
-	const extraVersions = await sync.versions(
-		extraEntries
-			.filter((entry) => entry.range === undefined)
-			.map((entry) => dependency(entry.name, '*')),
-	)
 	sync.destroy()
 	const deps = versions.map((version) => dependency(version.name, `^${version.latest}`))
-	const extras = [
-		...extraEntries
-			.filter((entry): entry is { name: string; range: string } => entry.range !== undefined)
-			.map((entry) => dependency(entry.name, entry.range)),
-		...extraVersions.map((version) => dependency(version.name, `^${version.latest}`)),
-	]
 
 	const compiler = createCompiler()
-	const scaffolding = compiler.compile(blueprint(name, { surfaces, dependencies: deps, extras }))
+	const scaffolding = compiler.compile(blueprint(name, { surfaces, dependencies: deps }))
 	if (!scaffolding.plan) {
 		reporter.status('error', scaffolding.questions.map((question) => question.text).join('; '))
 		compiler.destroy()
@@ -1818,12 +1802,12 @@ once it is a devDependency of a consumer.
 
 ```sh
 # new — create a package (dry-run previews; on a terminal it then asks, default No; --apply
-# writes unasked); --deps is @orkestrel/* runtime deps (dependencies), --extras is any other
-# npm package with an optional name@range (devDependencies) — a bare @orkestrel/* token in
-# --extras is REJECTED, pointing back at --deps:
+# writes unasked); --deps is @orkestrel/* runtime deps (dependencies). Other npm packages are
+# NOT a new-time flag — hand-add them to the generated package.json's devDependencies after
+# scaffolding; audit/repair/pull recompile them back into the plan (deriveBlueprint's extras
+# round-trip), so a hand-added devDependency stays audit-clean:
 npx @orkestrel/scaffold new router --surfaces core,browser,server
 npx @orkestrel/scaffold new router --deps @orkestrel/contract --apply --target ./packages/router
-npx @orkestrel/scaffold new router --extras zod@^3.23.0,lodash --apply
 
 # pull — refresh vendored dep mirrors + report range drift (any drift/failure exits 1,
 # --strict or not; --strict additionally THROWS on a network fault):
@@ -2019,8 +2003,10 @@ host; the skip is the environment's ceiling, never a hidden failure.
   AND any devDependency ALSO present in `peerDependencies` / `dependencies` (H3: the middleware
   pattern of dev-installing a peer for its own tests never double-lands in `extras`), an EXTERNAL
   (non-`@orkestrel`) devDependency (e.g. `zod`) surviving that exclusion as a genuine `extras`
-  round-trip (U12c FIX 3: closes the `--extras zod@range --apply` → immediate self-audit-DRIFTED
-  regression), and the coded `TARGET` failures (unreadable/non-JSON/
+  round-trip (U12c FIX 3: closes the hand-added-devDependency → immediate self-audit-DRIFTED
+  regression — the CLI never collects `extras` itself; a reader hand-adds the entry to
+  `package.json` and `deriveBlueprint` picks it back up), and the coded `TARGET` failures
+  (unreadable/non-JSON/
   non-`@orkestrel` manifest, no surface directory); `hostRoot` resolving to the package's own
   BUILT `dist/host` bundle (never `process.cwd()`); `WRITE` fail-fast, `remove` event emission,
   destroy semantics.
@@ -2074,17 +2060,12 @@ private or guide missing?)` note, a failed packument keeps the entry degraded (`
   pre-answering that confirm, `--apply` writing into a temp directory unasked, and the
   positional package name validated against the SAME shape the interactive prompt enforces
   (`^[a-z][a-z0-9-]*$`) — an invalid positional name exits `2` naming the expected shape, under
-  `--json` and without alike (F4); U12b: `--extras name@range` (an explicit range, offline-safe)
-  lands the entry in the written `package.json`'s `devDependencies` ONLY, never
-  `dependencies`, under a plain apply AND under `--apply --json` alike, an off-
-  `EXTRA_NAME_PATTERN` token exits `2` naming the value, and an `@orkestrel/*`-prefixed
-  `--extras` token is REJECTED outright — exit `2`, the message pointing back at `--deps` —
-  mirroring Q2's interactive re-ask; U12c FIX 2: a trailing-`@`/empty-range token (`zod@`) is
-  REJECTED with `emptyExtraRange`'s message — exit `2`, nothing written, a `{name, range: ''}`
-  Dependency is never constructed; U12c FIX 3 (THE VERIFIER SMOKE, the closure regression): `new
---extras zod@^3.23.0 --apply` followed by `audit --target <name>` exits `0` CLEAN — an
-  external extra round-trips through `deriveBlueprint` instead of drifting on its own generated
-  `package.json`; a dedicated offline case also resolves the package's own
+  `--json` and without alike (F4); the extras UX was removed from `new` entirely (`--extras` is
+  now an unrecognized flag — `parseArgs`'s strict mode rejects it, exit `2`, nothing written);
+  U12c FIX 3 (THE VERIFIER SMOKE, the closure regression): `new --apply` followed by a
+  hand-added `package.json` `devDependencies` entry, then `audit --target <name>` exits `0`
+  CLEAN — an external extra round-trips through `deriveBlueprint` instead of drifting on its
+  own generated `package.json`; a dedicated offline case also resolves the package's own
   BUILT `dist/host` vendored `.claude/agents/orkestrel.md` through `hostRoot()` +
   `readHostManifest` + `locateHostSource`, proving `catalogNames` parses real `@orkestrel/*`
   rows off it — the exact primitive chain Q1's interactive catalog validation reads), `pull`

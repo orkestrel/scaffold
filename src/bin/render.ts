@@ -14,7 +14,6 @@ import type {
 	SyncReport,
 } from '@src/core'
 import type { MaterializeResult } from '@src/server'
-import { EXTRA_NAME_PATTERN } from '@src/core'
 import { createStyler } from '@orkestrel/console'
 import type { ColumnSpec, StylerInterface } from '@orkestrel/console'
 
@@ -358,11 +357,6 @@ export function orkestrelDepsPrompt(): string {
 	return '@orkestrel dependencies (comma-separated short names, e.g. contract, emitter — installed as dependencies)'
 }
 
-/** `new`'s interactive Q2 prompt (TTY only) — full npm names with an optional `@range`, landing in `extras`. */
-export function otherDepsPrompt(): string {
-	return 'other dependencies (comma-separated full npm names, optional @range, e.g. zod@^3.23.0 — installed as devDependencies)'
-}
-
 /**
  * Re-ask wording for a Q1 token that does not resolve against the vendored
  * `@orkestrel` catalog — names the offending token and, when one was found,
@@ -375,29 +369,9 @@ export function unknownOrkestrelToken(token: string, suggestion: string | undefi
 		: `${base} — did you mean "${suggestion}"? try again`
 }
 
-/**
- * Re-ask/rejection wording for an `@orkestrel/*`-prefixed token entered where
- * it does not belong — Q2's interactive re-ask AND `--extras`'s usage
- * rejection share this one message, pointing at the `@orkestrel` dependencies
- * question (or `--deps`) instead.
- */
-export function orkestrelBelongsInDeps(token: string): string {
-	return `"${token}" is an @orkestrel package — list it via the @orkestrel dependencies question (or --deps), not here`
-}
-
 /** Printed once when the vendored `@orkestrel` catalog cannot be resolved — Q1 degrades to shape-only (`DEPENDENCY_NAME_PATTERN`) validation instead of blocking on it. */
 export function catalogUnresolvedNote(): string {
 	return "couldn't resolve the vendored @orkestrel catalog — validating names by shape only"
-}
-
-/** Usage-error / re-ask wording for an `extras` token that fails `EXTRA_NAME_PATTERN` (its name half, `@range` stripped). */
-export function invalidExtraName(token: string): string {
-	return `"${token}" must match ${EXTRA_NAME_PATTERN.source}`
-}
-
-/** Usage-error / re-ask wording for an `extras` token carrying a trailing `@` with nothing after it (e.g. `zod@`) — an empty range, never silently written as `^`. */
-export function emptyExtraRange(token: string): string {
-	return `"${token}" is missing a version range after '@' — write name@^1.2.3 or drop the '@'`
 }
 
 /** The line printed when a confirm prompt is declined. */
@@ -455,7 +429,7 @@ export function shortUsage(): string {
 
 /** Each verb's flag reference — the fullHelp reference and verbHelp share this table. */
 export const VERB_FLAGS: Readonly<Record<Verb, string>> = Object.freeze({
-	new: '--surfaces a,b --deps x,y --extras x@range,y --apply --yes --target <path> --from <path>',
+	new: '--surfaces a,b --deps x,y --apply --yes --target <path> --from <path>',
 	pull: '--target . --deps x,y --apply --yes --strict',
 	audit: '--target . --live --from <path> --groups a,b',
 	repair: '--target . --apply --yes --prune --from <path>',
@@ -469,7 +443,6 @@ export const VERB_FLAG_HELP: Readonly<Record<Verb, readonly (readonly [string, s
 		new: [
 			['--surfaces a,b', 'which surfaces to include (core, browser, server)'],
 			['--deps x,y', '@orkestrel/* dependencies to add (installed as dependencies)'],
-			['--extras x@range,y', 'other npm dependencies to add (installed as devDependencies)'],
 			['--apply', 'write the files (default is a dry run)'],
 			['--yes', 'skip the confirmation question'],
 			['--target <path>', 'destination directory (default: ./<name>)'],
@@ -734,7 +707,7 @@ export function invalidName(name: string, pattern: string): string {
 	return `Package name "${name}" must match ${pattern}`
 }
 
-/** `new`'s hard failure when `sync.versions` cannot resolve a latest version for one or more range-less `--deps`/`--extras` names — names every unresolved package plainly so a `^` (unresolved-latest) range can never be silently written. */
+/** `new`'s hard failure when `sync.versions` cannot resolve a latest version for one or more `--deps` names — names every unresolved package plainly so a `^` (unresolved-latest) range can never be silently written. */
 export function unresolvedVersion(names: readonly string[]): string {
 	return `could not resolve the latest version for ${names.map((name) => `"${name}"`).join(', ')} — check the name or pass name@range`
 }

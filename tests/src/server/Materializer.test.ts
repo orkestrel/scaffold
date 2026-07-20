@@ -727,6 +727,94 @@ describe('Materializer — manifest-aware host copy', () => {
 			await host.cleanup()
 		}
 	})
+
+	it('a manifest-present source with ZERO matching entries (a non-vendored dependency guide pointer) degrades to a stub file instead of throwing', async () => {
+		const directory = await buildTempDirectory()
+		const host = await buildManifestHost()
+		try {
+			const plan: Plan = {
+				blueprint: blueprint('pointer-fixture', {
+					surfaces: ['core'],
+					dependencies: [dependency('@orkestrel/msg', '^1.0.0')],
+				}),
+				groups: ['guides'],
+				artifacts: [
+					{
+						path: 'guides/src/msg.md',
+						group: 'guides',
+						origin: 'host',
+						source: 'guides/src/msg.md',
+					},
+				],
+			}
+			const materializer = createMaterializer({ host: host.path })
+			const copyRecorder = createRecorder<readonly [path: string]>()
+			materializer.emitter.on('copy', copyRecorder.handler)
+			const result = materializer.materialize(plan, directory.path)
+
+			expect(result.copied).toEqual(['guides/src/msg.md'])
+			expect(copyRecorder.calls).toEqual([['guides/src/msg.md']])
+			const stub = readFileSync(join(directory.path, 'guides/src/msg.md'), 'utf8')
+			expect(stub).toContain('@orkestrel/msg')
+			expect(stub).toContain('scaffold pull')
+
+			materializer.destroy()
+		} finally {
+			await directory.cleanup()
+			await host.cleanup()
+		}
+	})
+
+	it('a manifest-present source with ZERO matching entries that is NOT a dependency-guide pointer (a missing manifest entry for a shared artifact) throws a coded TARGET error and writes nothing', async () => {
+		const directory = await buildTempDirectory()
+		const host = await buildManifestHost()
+		try {
+			const plan: Plan = {
+				blueprint: blueprint('missing-entry-fixture', { surfaces: ['core'] }),
+				groups: ['configs'],
+				artifacts: [{ path: 'AGENTS.md', group: 'configs', origin: 'host' }],
+			}
+			const materializer = createMaterializer({ host: host.path })
+			let caught: unknown
+			try {
+				materializer.materialize(plan, directory.path)
+			} catch (error) {
+				caught = error
+			}
+			if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
+			expect(caught.code).toBe('TARGET')
+			expect(existsSync(join(directory.path, 'AGENTS.md'))).toBe(false)
+			materializer.destroy()
+		} finally {
+			await directory.cleanup()
+			await host.cleanup()
+		}
+	})
+
+	it('the raw-root fallback (no manifest.json) still THROWS when an explicitly-named --from source does not exist — a different failure class from the degrade above', async () => {
+		const directory = await buildTempDirectory()
+		const host = await buildTempDirectory()
+		try {
+			const plan: Plan = {
+				blueprint: blueprint('rawroot-missing-fixture', { surfaces: ['core'] }),
+				groups: ['docs'],
+				artifacts: [{ path: 'does-not-exist.txt', group: 'docs', origin: 'host' }],
+			}
+			const materializer = createMaterializer({ host: host.path })
+			let caught: unknown
+			try {
+				materializer.materialize(plan, directory.path)
+			} catch (error) {
+				caught = error
+			}
+			if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
+			expect(caught.code).toBe('WRITE')
+			materializer.destroy()
+		} finally {
+			await directory.cleanup()
+			await host.cleanup()
+		}
+	})
 })
 
 // ── destroy semantics ────────────────────────────────────────────────────────

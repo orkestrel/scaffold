@@ -46,7 +46,7 @@ do; `NODE_EXTRA_CA_CERTS` adds custom PEMs on top.
 ## CLI
 
 ```sh
-scaffold new [name] [--surfaces <list>] [--deps <list>] [--extras <list>] [--apply] [--yes] [--json]
+scaffold new [name] [--surfaces <list>] [--deps <list>] [--apply] [--yes] [--json]
 scaffold pull [--apply] [--yes] [--json]
 scaffold audit [--live] [--json]
 scaffold repair [--prune] [--apply] [--yes] [--json]
@@ -60,10 +60,11 @@ error.
 
 - **`new [name]`** — drafts a `Blueprint` and compiles it into a `Plan`; dry-run by
   default (prints a review), `--apply` writes the package to disk. `--deps` names
-  `@orkestrel/*` runtime dependencies (installed as `dependencies`), `--extras` names
-  any other npm packages with an optional `name@range` (installed as
-  `devDependencies`) — both resolve an absent `@range` to the registry's `latest`; run
-  bare on a terminal, the two land as separate questions asking for exactly that split.
+  `@orkestrel/*` runtime dependencies (installed as `dependencies`), resolving an
+  absent `@range` to the registry's `latest`; run bare on a terminal, it lands as an
+  interactive question. Other npm packages are not a `new`-time flag — hand-add them to
+  the generated `package.json`'s `devDependencies` after scaffolding; `audit` derives
+  its plan from your `package.json` and stays clean over the addition.
 - **`pull`** — fetches the latest vendored dependency guides and registry versions
   for an existing package and reports drift.
 - **`audit`** — a whole-plan conformance report: diffs a target against the FULL plan

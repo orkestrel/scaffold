@@ -221,8 +221,10 @@ export function deriveBlueprint(target: string): Blueprint {
 	])
 	// EVERY devDependency, not only `@orkestrel/`-prefixed ones, is a candidate
 	// `extras` entry — an external extra (e.g. `zod`) must round-trip through
-	// derivation exactly like an `@orkestrel/`-scoped one, or a package
-	// scaffolded with `--extras` audits DRIFTED against its own manifest.
+	// derivation exactly like an `@orkestrel/`-scoped one, or a package with a
+	// HAND-ADDED devDependency (recovered here from the manifest's
+	// devDependencies minus the generated baseline) audits DRIFTED against
+	// its own manifest.
 	const devDependencies = isRecord(parsed.devDependencies) ? parsed.devDependencies : {}
 	const extras: Dependency[] = Object.entries(devDependencies)
 		.filter((entry): entry is [string, string] => typeof entry[1] === 'string')
