@@ -56,6 +56,7 @@ const HOST_FIXTURE_FILES: Readonly<Record<string, string>> = {
 	'scripts/ollama.sh': '#!/bin/sh\necho ollama\n',
 	'.github/workflows/ci.yml': 'name: ci-fixture\n',
 	'guides/src/guide.md': '# guide fixture\n',
+	'guides/src/scaffold.md': '# scaffold self-guide fixture\n',
 	'.claude/agents/example.md': '# example agent fixture\n',
 }
 

@@ -68,8 +68,9 @@ describe('hostGroup', () => {
 		expect(hostGroup('.github/workflows/ci.yml')).toBe('orchestration')
 	})
 
-	it('classes the vendored guide index as guides', () => {
+	it('classes the vendored guide index and the scaffold engine self-guide as guides', () => {
 		expect(hostGroup('guides/src/guide.md')).toBe('guides')
+		expect(hostGroup('guides/src/scaffold.md')).toBe('guides')
 	})
 
 	it('falls back to configs for anything else', () => {

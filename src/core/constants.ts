@@ -67,8 +67,9 @@ export const SURFACE_MATRIX = Object.freeze({
  * The root docs (`AGENTS.md` / `CLAUDE.md`), `LICENSE`, `.claude`, the three
  * SessionStart hook scripts (`scripts/deps.sh` / `scripts/cursor.sh` /
  * `scripts/ollama.sh`), the line's seven byte-identical root dotfiles,
- * `.github/workflows/ci.yml`, and the vendored `@orkestrel/guide` mirror
- * every repo carries (`guides/src/guide.md`).
+ * `.github/workflows/ci.yml`, and the two guides-grouped mirrors every repo
+ * carries: the line-wide dev-tooling guide (`guides/src/guide.md`) and the
+ * scaffold engine's own self-guide (`guides/src/scaffold.md`).
  */
 export const HOST_PATHS = Object.freeze([
 	'AGENTS.md',
@@ -87,6 +88,7 @@ export const HOST_PATHS = Object.freeze([
 	'.prettierignore',
 	'.github/workflows/ci.yml',
 	'guides/src/guide.md',
+	'guides/src/scaffold.md',
 ] as const)
 
 /** The package-name RegExp — lowercase alphanumeric-with-hyphens, letter-first. */

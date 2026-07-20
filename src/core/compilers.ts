@@ -29,7 +29,7 @@ export function hostGroup(path: string): Group {
 	) {
 		return 'orchestration'
 	}
-	if (path === 'guides/src/guide.md') return 'guides'
+	if (path === 'guides/src/guide.md' || path === 'guides/src/scaffold.md') return 'guides'
 	return 'configs'
 }
 

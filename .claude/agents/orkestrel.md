@@ -106,23 +106,29 @@ test layout → vite.config.ts projects; docs surface → `guides/src/<self>.md`
 fleet-conformance tool (installed as a devDep line-wide post-publish); its vendored
 `dist/host` carries the canonical shared artifacts, and `guides/src/scaffold.md` is the
 authoritative anatomy reference. Six verbs, dry-run by default: `new <name> --surfaces
-<s...> --apply` mints ANY surface variant (core-only through triple, server-only,
-browser-only — five gates green by construction); `pull` pulls each dependency's latest
-guide from its repo into `guides/src/` and checks declared ranges against npm; `audit
-[--live] [--groups <g,g>]` is the conformance gate (nonzero exit on any drift); `repair
-[--apply] [--prune]` restores shared artifacts (host-origin only, never generated
-source); `fleet` trues the fleet — run from the folder containing the checkouts, it
-scans its immediate children; `catalog --apply` regenerates the package table
-above from the npm registry (`--from <path>` adds local-only checkouts). Every
-verb supports `--json` for automation. Templates are frozen IN the package
-(`src/core/templates.ts`) — refresh there whenever the line's devDep pins move.
+<s...> [--deps x,y] --apply` mints ANY surface variant (core-only through triple,
+server-only, browser-only — five gates green by construction) — on a terminal it also
+prompts for `@orkestrel` dependencies by SHORT name, validated against the vendored
+catalog; `--deps` supplies the same names non-interactively. Each named dependency's
+range pins `^latest` resolved live from the registry, and its `guides/src/<dep>.md`
+lands as a one-line stub — `pull` replaces every stub with the dep's real guide and
+checks declared ranges against npm. `audit [--live] [--groups <g,g>]` is the
+conformance gate (nonzero exit on any drift); `repair [--apply] [--prune]` restores
+shared artifacts (host-origin only, never generated source); `fleet` trues the fleet —
+run from the folder containing the checkouts, it scans its immediate children;
+`catalog --apply` regenerates the package table above from the npm registry
+(`--from <path>` adds local-only checkouts). Every verb supports `--json` for
+automation. Templates are frozen IN the package (`src/core/templates.ts`) — refresh
+there whenever the line's devDep pins move.
 
 ## Law #2 — vendored guides
 
 Each repo's `guides/src/` holds its own canonical `<self>.md` + ONE vendored copy per
-runtime dependency + `guide.md`. Canonical source for `<dep>.md` = the dep repo's
-`guides/src/<dep>.md` at main. On every release prep, refresh every vendored guide —
-`scaffold pull` pulls each from upstream and reports registry-version freshness
+runtime dependency + `guide.md` + `scaffold.md`. The latter two are HOST-owned — mirrored
+byte-identical line-wide from scaffold's vendored `dist/host`, trued by `repair`/`fleet`,
+never `pull`-refreshed. Canonical source for `<dep>.md` = the dep repo's
+`guides/src/<dep>.md` at main. On every release prep, refresh every vendored dependency
+guide — `scaffold pull` pulls each from upstream and reports registry-version freshness
 (identical copies are no-ops). Staleness is repo-only (guides don't ship).
 `test:guides` enforces guides ⟷ source parity and will demand doc rows for new exports.
 

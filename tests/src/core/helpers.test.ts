@@ -1122,12 +1122,12 @@ describe('pinPlan', () => {
 			{ label: 'core+browser+server', surfaces: ['core', 'browser', 'server'] },
 		]
 		const expected: Record<string, string> = {
-			'core-only': '94650eb7',
-			'server-only': '7960ad54',
-			'browser-only': '65151f33',
-			'core+server': '1beba149',
-			'core+browser': '581f59af',
-			'core+browser+server': 'b9b05150',
+			'core-only': '21d39bd3',
+			'server-only': 'c0cf27ea',
+			'browser-only': '3c4e3439',
+			'core+server': '16cfef4b',
+			'core+browser': '16a68a0b',
+			'core+browser+server': '721cb080',
 		}
 
 		for (const variant of variants) {
@@ -1546,6 +1546,16 @@ describe('blueprintToPlan — HOST_PATHS retirement + group mapping', () => {
 
 		expect(guideMirror?.group).toBe('guides')
 		expect(guideMirror?.origin).toBe('host')
+	})
+
+	it('emits the vendored scaffold.md self-guide mirror, grouped guides', () => {
+		const plan = blueprintToPlan(blueprint('router', { surfaces: ['core'] }), ['guides'])
+		const scaffoldMirror = plan.artifacts.find(
+			(artifact) => artifact.path === 'guides/src/scaffold.md',
+		)
+
+		expect(scaffoldMirror?.group).toBe('guides')
+		expect(scaffoldMirror?.origin).toBe('host')
 	})
 })
 

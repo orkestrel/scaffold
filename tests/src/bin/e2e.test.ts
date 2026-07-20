@@ -27,6 +27,7 @@ const HOST_BYTE_EQUAL_PATHS = [
 	'CLAUDE.md',
 	'LICENSE',
 	'guides/src/guide.md',
+	'guides/src/scaffold.md',
 ] as const
 
 /**
