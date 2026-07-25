@@ -9,11 +9,14 @@
 - The user's current instruction wins. Otherwise, this file and its linked rules outrank existing code. Existing code is evidence to verify, not ground truth.
 - `*/types.ts` is authoritative for public APIs. Implementation and tests conform to it; never undo a user's type edit.
 - `CLAUDE.md` governs Claude-specific orchestration only. It cannot weaken this coding contract.
-- External delegates, including Cursor Composer and Grok, have no exemption. Their dispatch must restate the non-negotiables, applicable rules, and owned files; their output receives independent review.
+- `.codex/config.toml` governs Codex-specific orchestration only. It cannot weaken this coding contract.
+- `.agents/skills/` contains reusable workflows. An explicitly invoked or dispatch-named skill and its required references are binding process instructions, but cannot weaken this file, applicable rules, or the governing guide/spec.
+- External delegates, including Cursor and Codex/OpenAI models, have no exemption. Every dispatch must restate the non-negotiables, applicable rules, guide/spec, and owned files; every result receives independent review.
 - Before working, read in order:
   1. this file;
   2. every applicable file in `.claude/rules/` from the rule map below;
-  3. `guides/README.md`, the matching guide/spec, and `ROADMAP.md` when present.
+  3. every explicitly invoked or dispatch-named skill and the references it requires;
+  4. `guides/README.md`, the matching guide/spec, and `ROADMAP.md` when present.
 - Rules state **how to write**. Guides/specs state **what to build** and the domain workflow. When they conflict, stop and surface the conflict.
 
 ## Project model
@@ -26,7 +29,7 @@ configs/  thin target wrappers around root Vite/TypeScript configuration
 ```
 
 - `core` is host-independent. Browser and server may import core; core imports neither.
-- Application surfaces may import library surfaces.
+- `app/core` is host-independent. `app/server` may import app/core plus core/server libraries, never browser code. `app/browser` may import app/core plus core/browser libraries and reaches server behavior through shared contracts/transports, never Node/server implementation imports.
 - `tsconfig.json`, `vite.config.ts`, and each `*/types.ts` are their respective sources of truth.
 - Use only the surfaces the project needs; do not delete structural files merely because they are empty.
 
@@ -41,8 +44,10 @@ configs/  thin target wrappers around root Vite/TypeScript configuration
 - **NEVER** put `readonly` on parameters.
 - **NEVER** use TypeScript `private`; use runtime-enforced `#` fields.
 - **NEVER** use default exports except where a framework requires them, such as Vue SFCs or config files.
+- **NEVER** use mocks, behavioral fakes, module replacement, framework spies, or fake clocks to simulate project-owned behavior. Use real implementations, recorders, temporary resources, protocol-faithful fixture servers, and inert customizable data stubs.
 - **ALWAYS** make interface properties and public return collections readonly.
 - **ALWAYS** define reusable/public types in `*/types.ts` before implementation.
+- **ALWAYS** inspect the exact declared/installed `@orkestrel/*` capabilities before implementing overlapping logic; reuse a primitive when its semantics match and do not wrap it merely to rename it.
 - **ALWAYS** finish the requested implementation: no empty stubs, deferred logic, or concealed follow-up work.
 - **ALWAYS** follow the repository's naming, placement, export, and dependency-direction rules exactly.
 
@@ -61,6 +66,7 @@ configs/  thin target wrappers around root Vite/TypeScript configuration
 - **Export and test reusable logic.** No hidden module helpers or declarations; fold trivial one-use logic into its caller or export it from the correct centralized module and test it.
 - **No nested functions.** Extract function declarations/assignments from bodies. Anonymous callbacks passed directly as arguments are the sole exception.
 - **Functional core, imperative shell.** Export pure leaves; retain stateful or defining orchestration as class methods. Classes must compose behavior, not forward 1:1 to helpers.
+- **No superfluous wrappers.** A wrapper must add a boundary, invariant, composition, translation, lifecycle, or materially narrower contract. Otherwise use or rename the real symbol and update every consumer.
 - **Minimal public surface.** Add capability with its real consumer; do not speculate. Prefer one minimal interface and one shared engine, allowing native backend overrides only for genuine faster paths.
 - **No compatibility shims.** This is greenfield: update every consumer in the same change.
 - **Mechanism, not product policy.** Framework code supplies reusable mechanisms and stops before application decisions.
@@ -76,15 +82,18 @@ configs/  thin target wrappers around root Vite/TypeScript configuration
 
 If the user changes a type mid-task, treat it as immediately authoritative. Type failures identify implementation that has not caught up.
 
+For comprehensive hardening, research, centralization, contract adoption, real-service integration, or cross-package alignment, follow the applicable repository skill. No current-scope requirement may end as a TODO, skipped test, deferred row, or hidden follow-up.
+
 ## Work process
 
-1. **Understand:** clarify scope and entities; read `*/types.ts`, the rule files, and the matching guide before editing.
-2. **Design:** change types first and typecheck the proposed contract.
-3. **Implement:** match the interface, extract centralized logic, and update the sole barrel.
-4. **Consolidate:** remove duplication without expanding the API.
-5. **Test:** mirror source structure and run the narrowest relevant project.
-6. **Document:** update the guide, examples, and parity contract.
-7. **Verify:** run the required gates and read their actual output before claiming success.
+1. **Understand:** clarify scope and entities; read `*/types.ts`, the rule files, the applicable skill, and the matching guide before editing.
+2. **Research:** when requested or externally material, verify current primary sources and build a capability/defect matrix before changing the API.
+3. **Design:** change types first and typecheck the proposed contract.
+4. **Implement:** match the interface, reuse declared ecosystem primitives, extract centralized logic, and update the sole barrel.
+5. **Consolidate:** remove duplication, nested declarations, and superfluous wrappers without expanding the API.
+6. **Test:** mirror source structure, challenge the applicable seams with real implementations, and run the narrowest relevant project.
+7. **Document:** update the guide, examples, and parity contract.
+8. **Verify:** audit discovery/deferrals/package contents as applicable, run the required gates, and read their actual output before claiming success.
 
 Quality gates before commit, in order:
 
@@ -102,7 +111,7 @@ npm run format → npm run lint → npm run check → npm run build → npm test
 All files below are normative extensions of this root. Read every rule relevant to the files or concepts you touch; path frontmatter only controls Claude's automatic loading.
 
 | Rule                             | Governs                                                                |
-|----------------------------------| ---------------------------------------------------------------------- |
+| -------------------------------- | ---------------------------------------------------------------------- |
 | `.claude/rules/names.md`         | Identifiers, API shape, acronyms, lifecycle vocabulary, files/folders  |
 | `.claude/rules/typescript.md`    | TypeScript syntax, imports, immutability, errors, TSDoc                |
 | `.claude/rules/architecture.md`  | Centralized files, exports, classes, modules, extension points, stores |
@@ -112,6 +121,7 @@ All files below are normative extensions of this root. Read every rule relevant 
 | `.claude/rules/browser.md`       | Vue/browser architecture and platform usage                            |
 | `.claude/rules/styles.md`        | SCSS/CSS centralization, tokens, mixins, layers, naming                |
 | `.claude/rules/documentation.md` | Guides, parity, roadmap, showcase, examples                            |
+| `.claude/rules/quality.md`       | Research, dependency reuse, hardening, completion, package inspection  |
 
 ## Documentation contract
 

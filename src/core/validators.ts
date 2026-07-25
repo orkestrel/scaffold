@@ -8,7 +8,8 @@ import type {
 	Plan,
 	SyncReport,
 } from './types.js'
-import { createContract } from '@orkestrel/contract'
+import { andOf, attempt, createContract } from '@orkestrel/contract'
+import { HEX_PATTERN } from './constants.js'
 import {
 	artifactShape,
 	blueprintShape,
@@ -59,13 +60,38 @@ export const isBlueprint: Guard<Blueprint> = createContract(blueprintShape()).is
 export const isMember: Guard<Member> = createContract(memberShape()).is
 
 /**
- * Narrow a value to an `Artifact` — `group` / `origin` on-vocabulary.
+ * Apply the semantic lowercase byte-pair law to an artifact's optional hex.
+ *
+ * @param artifact - The structurally valid artifact to inspect.
+ * @returns `true` when `hex` is absent or encodes whole lowercase bytes.
+ */
+export function hasValidArtifactHex(artifact: Artifact): boolean {
+	const result = attempt(() => artifact.hex === undefined || HEX_PATTERN.test(artifact.hex))
+	return result.success && result.value
+}
+
+/**
+ * Apply the artifact byte law to every nested artifact in a `Plan`.
+ *
+ * @param plan - The structurally valid plan to inspect.
+ * @returns `true` when every artifact has absent or valid lowercase byte hex.
+ */
+export function hasValidPlanHex(plan: Plan): boolean {
+	const result = attempt(() => plan.artifacts.every(hasValidArtifactHex))
+	return result.success && result.value
+}
+
+/**
+ * Narrow a value to an origin-discriminated `Artifact`.
  *
  * @remarks
- * Compiled from {@link artifactShape} via `createContract` (AGENTS §14) — a
- * total `Guard`, adversarial input returns `false`, never throws.
+ * Compiled from {@link artifactShape} and refined by
+ * {@link hasValidArtifactHex}; total for adversarial input.
  */
-export const isArtifact: Guard<Artifact> = createContract(artifactShape()).is
+export const isArtifact: Guard<Artifact> = andOf(
+	createContract(artifactShape()).is,
+	hasValidArtifactHex,
+)
 
 /**
  * Narrow a value to a `Plan` — the whole exact-record contract, section
@@ -75,7 +101,7 @@ export const isArtifact: Guard<Artifact> = createContract(artifactShape()).is
  * Compiled from {@link planShape} via `createContract` (AGENTS §14) — a
  * total `Guard`, adversarial input returns `false`, never throws.
  */
-export const isPlan: Guard<Plan> = createContract(planShape()).is
+export const isPlan: Guard<Plan> = andOf(createContract(planShape()).is, hasValidPlanHex)
 
 /**
  * Narrow a value to a `SyncReport` — the whole exact-record sync contract,

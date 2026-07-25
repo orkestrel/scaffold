@@ -1,98 +1,38 @@
-import type { SyncReport } from '@src/core'
-import type { AddressInfo } from 'node:net'
 import { mkdirSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { createServer } from 'node:http'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { dependency, isScaffoldError } from '@src/core'
 import { createSync } from '@src/server'
-import { createRecorder } from '../../setup.js'
-import { buildTempDirectory } from '../../setupServer.js'
+import { buildSyncReport, createRecorder } from '../../setup.js'
+import {
+	buildGuidePath,
+	buildHTTPFixture,
+	buildRegistryPath,
+	buildTempDirectory,
+	ORG_REGISTRY_PATH,
+	respondDestroy,
+	respondJSON,
+	respondPackument,
+	respondText,
+} from '../../setupServer.js'
 
 // ── Real HTTP fixture (AGENTS §16: no mocks) ─────────────────────────────────
 //
 // A genuine `node:http` server on an ephemeral port. Each test wires its own
 // route table keyed by the request URL and always tears down in `finally`.
 
-type RouteHandler = (
-	request: import('node:http').IncomingMessage,
-	response: import('node:http').ServerResponse,
-) => void
-
-interface FixtureInterface {
-	readonly base: string
-	readonly hits: Map<string, number>
-	route(path: string, handler: RouteHandler): void
-	close(): Promise<void>
-}
-
-async function buildFixture(): Promise<FixtureInterface> {
-	const routes = new Map<string, RouteHandler>()
-	const hits = new Map<string, number>()
-	const server = createServer((request, response) => {
-		const url = request.url ?? ''
-		hits.set(url, (hits.get(url) ?? 0) + 1)
-		const handler = routes.get(url)
-		if (handler === undefined) {
-			response.writeHead(404)
-			response.end()
-			return
-		}
-		handler(request, response)
-	})
-	await new Promise<void>((resolvePromise) => server.listen(0, '127.0.0.1', () => resolvePromise()))
-	const address = server.address() as AddressInfo
-	const base = `http://127.0.0.1:${address.port}`
-	return {
-		base,
-		hits,
-		route(path, handler) {
-			routes.set(path, handler)
-		},
-		async close() {
-			await new Promise<void>((resolvePromise) => server.close(() => resolvePromise()))
-		},
-	}
-}
-
 // The canonical raw.githubusercontent.com form (FIX 4) — `#guideUrl` builds
 // this directly (never the legacy `/orkestrel/<short>/<branch>/…` shorthand
 // the host now 301-redirects from), so `redirect: 'manual'` never sees one.
-function guidePath(short: string, branch = 'main'): string {
-	return `/orkestrel/${short}/refs/heads/${branch}/guides/src/${short}.md`
-}
-
 // npm's canonical scoped-package path keeps the literal `@` and encodes only
 // the slash (A2) — NOT `encodeURIComponent`, which would also escape `@`.
-function registryPath(name: string): string {
-	return `/${name.replace('/', '%2F')}`
-}
-
-function respondText(
-	response: import('node:http').ServerResponse,
-	status: number,
-	body: string,
-): void {
-	response.writeHead(status, { 'content-type': 'text/plain' })
-	response.end(body)
-}
-
-function respondJson(response: import('node:http').ServerResponse, latest: string): void {
-	response.writeHead(200, { 'content-type': 'application/json' })
-	response.end(JSON.stringify({ 'dist-tags': { latest } }))
-}
-
-function respondDestroy(response: import('node:http').ServerResponse): void {
-	response.destroy()
-}
-
 // ── Sync.guides ───────────────────────────────────────────────────────────
 
 describe('Sync.guides', () => {
 	it('without a reference map: a successful fetch verdicts behind, carrying the fetched content', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			fixture.route(guidePath('contract'), (_request, response) =>
+			fixture.route(buildGuidePath('contract'), (_request, response) =>
 				respondText(response, 200, '# Contract Guide\n'),
 			)
 			const sync = createSync({ guides: { base: fixture.base } })
@@ -106,7 +46,7 @@ describe('Sync.guides', () => {
 	})
 
 	it('a 404 verdicts missing', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
 			// No route registered for the guide path — falls through to 404.
 			const sync = createSync({ guides: { base: fixture.base } })
@@ -119,9 +59,9 @@ describe('Sync.guides', () => {
 	})
 
 	it('a transport fault (destroyed socket) verdicts failed', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			fixture.route(guidePath('contract'), (_request, response) => respondDestroy(response))
+			fixture.route(buildGuidePath('contract'), (_request, response) => respondDestroy(response))
 			const sync = createSync({ guides: { base: fixture.base } })
 			const [result] = await sync.guides([dependency('@orkestrel/contract', '^0.0.5')])
 			expect(result?.freshness).toBe('failed')
@@ -132,9 +72,9 @@ describe('Sync.guides', () => {
 	})
 
 	it('WITH a reference map: byte-equal entry verdicts current', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			fixture.route(guidePath('contract'), (_request, response) =>
+			fixture.route(buildGuidePath('contract'), (_request, response) =>
 				respondText(response, 200, 'same bytes'),
 			)
 			const sync = createSync({ guides: { base: fixture.base } })
@@ -149,9 +89,9 @@ describe('Sync.guides', () => {
 	})
 
 	it('WITH a reference map: a differing entry verdicts behind', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			fixture.route(guidePath('contract'), (_request, response) =>
+			fixture.route(buildGuidePath('contract'), (_request, response) =>
 				respondText(response, 200, 'new bytes'),
 			)
 			const sync = createSync({ guides: { base: fixture.base } })
@@ -166,9 +106,9 @@ describe('Sync.guides', () => {
 	})
 
 	it('WITH a reference map: an entry absent from the map verdicts behind', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			fixture.route(guidePath('contract'), (_request, response) =>
+			fixture.route(buildGuidePath('contract'), (_request, response) =>
 				respondText(response, 200, 'fetched bytes'),
 			)
 			const sync = createSync({ guides: { base: fixture.base } })
@@ -185,10 +125,10 @@ describe('Sync.guides', () => {
 
 describe('Sync.versions', () => {
 	it('current: the declared range is satisfied by latest', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			fixture.route(registryPath('@orkestrel/contract'), (_request, response) =>
-				respondJson(response, '0.0.5'),
+			fixture.route(buildRegistryPath('@orkestrel/contract'), (_request, response) =>
+				respondJSON(response, '0.0.5'),
 			)
 			const sync = createSync({ registry: { base: fixture.base } })
 			const [result] = await sync.versions([dependency('@orkestrel/contract', '^0.0.5')])
@@ -201,10 +141,10 @@ describe('Sync.versions', () => {
 	})
 
 	it('behind: a newer latest than the declared range is published', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			fixture.route(registryPath('@orkestrel/contract'), (_request, response) =>
-				respondJson(response, '0.0.9'),
+			fixture.route(buildRegistryPath('@orkestrel/contract'), (_request, response) =>
+				respondJSON(response, '0.0.9'),
 			)
 			const sync = createSync({ registry: { base: fixture.base } })
 			const [result] = await sync.versions([dependency('@orkestrel/contract', '^0.0.5')])
@@ -216,7 +156,7 @@ describe('Sync.versions', () => {
 	})
 
 	it('a 404 verdicts missing', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
 			const sync = createSync({ registry: { base: fixture.base } })
 			const [result] = await sync.versions([dependency('@orkestrel/contract', '^0.0.5')])
@@ -228,9 +168,9 @@ describe('Sync.versions', () => {
 	})
 
 	it('a transport fault verdicts failed', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			fixture.route(registryPath('@orkestrel/contract'), (_request, response) =>
+			fixture.route(buildRegistryPath('@orkestrel/contract'), (_request, response) =>
 				respondDestroy(response),
 			)
 			const sync = createSync({ registry: { base: fixture.base } })
@@ -243,11 +183,11 @@ describe('Sync.versions', () => {
 	})
 
 	it('A2: the scoped package name keeps a literal @ and encodes only the slash', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			const canonical = registryPath('@orkestrel/contract')
+			const canonical = buildRegistryPath('@orkestrel/contract')
 			expect(canonical).toBe('/@orkestrel%2Fcontract')
-			fixture.route(canonical, (_request, response) => respondJson(response, '0.0.5'))
+			fixture.route(canonical, (_request, response) => respondJSON(response, '0.0.5'))
 			const sync = createSync({ registry: { base: fixture.base } })
 			await sync.versions([dependency('@orkestrel/contract', '^0.0.5')])
 			expect(fixture.hits.get(canonical)).toBe(1)
@@ -258,11 +198,11 @@ describe('Sync.versions', () => {
 	})
 
 	it('resolves an external (non-@orkestrel) unscoped package name, e.g. "zod"', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			const canonical = registryPath('zod')
+			const canonical = buildRegistryPath('zod')
 			expect(canonical).toBe('/zod')
-			fixture.route(canonical, (_request, response) => respondJson(response, '3.23.0'))
+			fixture.route(canonical, (_request, response) => respondJSON(response, '3.23.0'))
 			const sync = createSync({ registry: { base: fixture.base } })
 			const [result] = await sync.versions([dependency('zod', '^3.23.0')])
 			expect(result?.freshness).toBe('current')
@@ -275,11 +215,11 @@ describe('Sync.versions', () => {
 	})
 
 	it('resolves an external scoped package name, e.g. "@types/node"', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			const canonical = registryPath('@types/node')
+			const canonical = buildRegistryPath('@types/node')
 			expect(canonical).toBe('/@types%2Fnode')
-			fixture.route(canonical, (_request, response) => respondJson(response, '26.1.1'))
+			fixture.route(canonical, (_request, response) => respondJSON(response, '26.1.1'))
 			const sync = createSync({ registry: { base: fixture.base } })
 			const [result] = await sync.versions([dependency('@types/node', '^26.1.1')])
 			expect(result?.freshness).toBe('current')
@@ -292,29 +232,17 @@ describe('Sync.versions', () => {
 
 // ── Sync.catalog ──────────────────────────────────────────────────────────
 
-// The registry's exact-membership org package list — `#orgUrl()`'s fixed path.
-const ORG_PATH = '/-/org/orkestrel/package'
-
-function respondPackument(
-	response: import('node:http').ServerResponse,
-	latest: string,
-	description: string,
-): void {
-	response.writeHead(200, { 'content-type': 'application/json' })
-	response.end(JSON.stringify({ 'dist-tags': { latest }, description }))
-}
-
 describe('Sync.catalog', () => {
 	it('registry-sourced entries prefer the guide blockquote description over the packument description', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			fixture.route(ORG_PATH, (_request, response) =>
+			fixture.route(ORG_REGISTRY_PATH, (_request, response) =>
 				respondText(response, 200, JSON.stringify({ '@orkestrel/contract': 'write' })),
 			)
-			fixture.route(registryPath('@orkestrel/contract'), (_request, response) =>
+			fixture.route(buildRegistryPath('@orkestrel/contract'), (_request, response) =>
 				respondPackument(response, '0.0.5', 'registry description'),
 			)
-			fixture.route(guidePath('contract'), (_request, response) =>
+			fixture.route(buildGuidePath('contract'), (_request, response) =>
 				respondText(response, 200, '# Contract\n\n> Guide blockquote description.\n'),
 			)
 			const sync = createSync({ registry: { base: fixture.base }, guides: { base: fixture.base } })
@@ -333,12 +261,12 @@ describe('Sync.catalog', () => {
 	})
 
 	it('a guide 404 keeps the package LISTED with the packument description and a reachability note (owner policy: public repos, no tokens)', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			fixture.route(ORG_PATH, (_request, response) =>
+			fixture.route(ORG_REGISTRY_PATH, (_request, response) =>
 				respondText(response, 200, JSON.stringify({ '@orkestrel/contract': 'write' })),
 			)
-			fixture.route(registryPath('@orkestrel/contract'), (_request, response) =>
+			fixture.route(buildRegistryPath('@orkestrel/contract'), (_request, response) =>
 				respondPackument(response, '0.0.5', 'registry description'),
 			)
 			// No guide route registered — falls through to 404.
@@ -365,15 +293,15 @@ describe('Sync.catalog', () => {
 	})
 
 	it('a failed packument fetch keeps the entry listed, degraded (empty version) rather than dropped', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			fixture.route(ORG_PATH, (_request, response) =>
+			fixture.route(ORG_REGISTRY_PATH, (_request, response) =>
 				respondText(response, 200, JSON.stringify({ '@orkestrel/contract': 'write' })),
 			)
-			fixture.route(registryPath('@orkestrel/contract'), (_request, response) =>
+			fixture.route(buildRegistryPath('@orkestrel/contract'), (_request, response) =>
 				respondText(response, 500, 'server error'),
 			)
-			fixture.route(guidePath('contract'), (_request, response) =>
+			fixture.route(buildGuidePath('contract'), (_request, response) =>
 				respondText(response, 200, '# Contract\n\n> Guide description.\n'),
 			)
 			const noteRecorder = createRecorder<readonly [name: string, note: string]>()
@@ -396,9 +324,9 @@ describe('Sync.catalog', () => {
 	})
 
 	it('an unreachable org package list throws a coded FETCH error', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			// No route registered for ORG_PATH — falls through to 404.
+			// No route registered for ORG_REGISTRY_PATH — falls through to 404.
 			const sync = createSync({ registry: { base: fixture.base } })
 			let caught: unknown
 			try {
@@ -415,9 +343,11 @@ describe('Sync.catalog', () => {
 	})
 
 	it('a malformed org package list response throws a coded FETCH error', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			fixture.route(ORG_PATH, (_request, response) => respondText(response, 200, 'not json'))
+			fixture.route(ORG_REGISTRY_PATH, (_request, response) =>
+				respondText(response, 200, 'not json'),
+			)
 			const sync = createSync({ registry: { base: fixture.base } })
 			let caught: unknown
 			try {
@@ -434,19 +364,19 @@ describe('Sync.catalog', () => {
 	})
 
 	it('sorts entries code-unit by name regardless of org-list key order', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			fixture.route(ORG_PATH, (_request, response) =>
+			fixture.route(ORG_REGISTRY_PATH, (_request, response) =>
 				respondText(
 					response,
 					200,
 					JSON.stringify({ '@orkestrel/relation': 'write', '@orkestrel/contract': 'write' }),
 				),
 			)
-			fixture.route(registryPath('@orkestrel/relation'), (_request, response) =>
+			fixture.route(buildRegistryPath('@orkestrel/relation'), (_request, response) =>
 				respondPackument(response, '0.0.1', 'relation'),
 			)
-			fixture.route(registryPath('@orkestrel/contract'), (_request, response) =>
+			fixture.route(buildRegistryPath('@orkestrel/contract'), (_request, response) =>
 				respondPackument(response, '0.0.5', 'contract'),
 			)
 			const sync = createSync({ registry: { base: fixture.base }, guides: { base: fixture.base } })
@@ -462,20 +392,20 @@ describe('Sync.catalog', () => {
 	})
 
 	it('every fetch is unauthenticated — no Authorization header reaches the guide host or the registry', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
 			let orgAuth: string | undefined
 			let registryAuth: string | undefined
 			let guideAuth: string | undefined
-			fixture.route(ORG_PATH, (request, response) => {
+			fixture.route(ORG_REGISTRY_PATH, (request, response) => {
 				orgAuth = request.headers.authorization
 				respondText(response, 200, JSON.stringify({ '@orkestrel/contract': 'write' }))
 			})
-			fixture.route(registryPath('@orkestrel/contract'), (request, response) => {
+			fixture.route(buildRegistryPath('@orkestrel/contract'), (request, response) => {
 				registryAuth = request.headers.authorization
 				respondPackument(response, '0.0.5', 'registry description')
 			})
-			fixture.route(guidePath('contract'), (request, response) => {
+			fixture.route(buildGuidePath('contract'), (request, response) => {
 				guideAuth = request.headers.authorization
 				respondText(response, 200, '# Contract\n\n> Guide description.\n')
 			})
@@ -495,7 +425,7 @@ describe('Sync.catalog', () => {
 
 describe('Sync.pull', () => {
 	it('reads declared deps from dependencies+devDependencies (deduplicated) and verdicts target-relative freshness', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		const directory = await buildTempDirectory()
 		try {
 			writeFileSync(
@@ -514,18 +444,18 @@ describe('Sync.pull', () => {
 			writeFileSync(join(directory.path, 'guides', 'src', 'contract.md'), 'stale mirror', 'utf8')
 
 			fixture.route(
-				guidePath('contract'),
+				buildGuidePath('contract'),
 				(_request, response) => respondText(response, 200, 'stale mirror'), // byte-equal to local mirror → current
 			)
 			fixture.route(
-				guidePath('relation'),
+				buildGuidePath('relation'),
 				(_request, response) => respondText(response, 200, 'relation guide'), // no local mirror → behind
 			)
-			fixture.route(registryPath('@orkestrel/contract'), (_request, response) =>
-				respondJson(response, '0.0.5'),
+			fixture.route(buildRegistryPath('@orkestrel/contract'), (_request, response) =>
+				respondJSON(response, '0.0.5'),
 			)
-			fixture.route(registryPath('@orkestrel/relation'), (_request, response) =>
-				respondJson(response, '0.0.5'),
+			fixture.route(buildRegistryPath('@orkestrel/relation'), (_request, response) =>
+				respondJSON(response, '0.0.5'),
 			)
 
 			const sync = createSync({ guides: { base: fixture.base }, registry: { base: fixture.base } })
@@ -547,7 +477,7 @@ describe('Sync.pull', () => {
 	})
 
 	it('counts failed fetches and reports NOT clean', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		const directory = await buildTempDirectory()
 		try {
 			writeFileSync(
@@ -571,48 +501,40 @@ describe('Sync.pull', () => {
 // ── Sync.write ────────────────────────────────────────────────────────────
 
 describe('Sync.write', () => {
-	function buildReport(target: string, overrides?: Partial<SyncReport>): SyncReport {
-		return {
-			target,
-			guides: [],
-			versions: [],
-			clean: true,
-			failed: 0,
-			...overrides,
-		}
-	}
-
 	it('writes ONLY behind guides, creating guides/src when absent, returning written paths', async () => {
 		const directory = await buildTempDirectory()
 		try {
-			const report = buildReport(directory.path, {
-				guides: [
-					{
-						name: '@orkestrel/contract',
-						path: 'guides/src/contract.md',
-						content: 'fresh content',
-						freshness: 'behind',
-					},
-					{
-						name: '@orkestrel/relation',
-						path: 'guides/src/relation.md',
-						content: '',
-						freshness: 'current',
-					},
-					{
-						name: '@orkestrel/database',
-						path: 'guides/src/database.md',
-						content: '',
-						freshness: 'missing',
-					},
-					{
-						name: '@orkestrel/tool',
-						path: 'guides/src/tool.md',
-						content: '',
-						freshness: 'failed',
-					},
-				],
-			})
+			const report = buildSyncReport(
+				{
+					guides: [
+						{
+							name: '@orkestrel/contract',
+							path: 'guides/src/contract.md',
+							content: 'fresh content',
+							freshness: 'behind',
+						},
+						{
+							name: '@orkestrel/relation',
+							path: 'guides/src/relation.md',
+							content: '',
+							freshness: 'current',
+						},
+						{
+							name: '@orkestrel/database',
+							path: 'guides/src/database.md',
+							content: '',
+							freshness: 'missing',
+						},
+						{
+							name: '@orkestrel/tool',
+							path: 'guides/src/tool.md',
+							content: '',
+							freshness: 'failed',
+						},
+					],
+				},
+				directory.path,
+			)
 			expect(existsSync(join(directory.path, 'guides', 'src'))).toBe(false)
 			const sync = createSync()
 			const written = await sync.write(report, directory.path)
@@ -632,16 +554,19 @@ describe('Sync.write', () => {
 	it('containment: a hostile hand-built path/name throws a coded error, writing nothing outside target', async () => {
 		const directory = await buildTempDirectory()
 		try {
-			const report = buildReport(directory.path, {
-				guides: [
-					{
-						name: '../../evil',
-						path: '../../escaped.md',
-						content: 'evil',
-						freshness: 'behind',
-					},
-				],
-			})
+			const report = buildSyncReport(
+				{
+					guides: [
+						{
+							name: '../../evil',
+							path: '../../escaped.md',
+							content: 'evil',
+							freshness: 'behind',
+						},
+					],
+				},
+				directory.path,
+			)
 			const sync = createSync()
 			let caught: unknown
 			try {
@@ -663,9 +588,9 @@ describe('Sync.write', () => {
 
 describe('Sync — timeout', () => {
 	it('a route that never responds verdicts failed promptly with a small configured timeout', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			fixture.route(guidePath('contract'), () => {
+			fixture.route(buildGuidePath('contract'), () => {
 				// Never call response.end() — the request must be aborted by the timeout.
 			})
 			const sync = createSync({ guides: { base: fixture.base, timeout: 50 } })
@@ -684,7 +609,7 @@ describe('Sync — timeout', () => {
 
 describe('Sync — strict mode', () => {
 	it('throws a coded FETCH error naming the exact failing URL on the first failure', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
 			// No route registered — 404 → missing → strict throw.
 			const sync = createSync({ guides: { base: fixture.base }, strict: true })
@@ -696,7 +621,7 @@ describe('Sync — strict mode', () => {
 			}
 			if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
 			expect(caught.code).toBe('FETCH')
-			const expectedUrl = `${fixture.base}${guidePath('contract')}`
+			const expectedUrl = `${fixture.base}${buildGuidePath('contract')}`
 			expect(String(caught.message)).toContain(expectedUrl)
 			expect(caught.context).toMatchObject({ url: expectedUrl })
 			sync.destroy()
@@ -710,10 +635,10 @@ describe('Sync — strict mode', () => {
 
 describe('Sync — retries', () => {
 	it('with retries:1, a transport fault then success is retried into behind', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
 			let attempt = 0
-			fixture.route(guidePath('contract'), (_request, response) => {
+			fixture.route(buildGuidePath('contract'), (_request, response) => {
 				attempt += 1
 				if (attempt === 1) {
 					respondDestroy(response)
@@ -733,12 +658,12 @@ describe('Sync — retries', () => {
 	})
 
 	it('a 404 is NOT retried — the fixture sees exactly one hit', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
 			// No route registered — 404.
 			const sync = createSync({ guides: { base: fixture.base }, retries: 3 })
 			await sync.guides([dependency('@orkestrel/contract', '^0.0.5')])
-			expect(fixture.hits.get(guidePath('contract'))).toBe(1)
+			expect(fixture.hits.get(buildGuidePath('contract'))).toBe(1)
 			sync.destroy()
 		} finally {
 			await fixture.close()
@@ -750,7 +675,7 @@ describe('Sync — retries', () => {
 
 describe('Sync — concurrency bound', () => {
 	it('never exceeds the configured concurrency for N deps', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
 			const deps = Array.from({ length: 8 }, (_unused, index) =>
 				dependency(`@orkestrel/dep${index}`, '^0.0.5'),
@@ -758,14 +683,17 @@ describe('Sync — concurrency bound', () => {
 			let inFlight = 0
 			let maxInFlight = 0
 			for (const dep of deps) {
-				fixture.route(guidePath(dep.name.slice('@orkestrel/'.length)), (_request, response) => {
-					inFlight += 1
-					maxInFlight = Math.max(maxInFlight, inFlight)
-					setTimeout(() => {
-						inFlight -= 1
-						respondText(response, 200, 'content')
-					}, 20)
-				})
+				fixture.route(
+					buildGuidePath(dep.name.slice('@orkestrel/'.length)),
+					(_request, response) => {
+						inFlight += 1
+						maxInFlight = Math.max(maxInFlight, inFlight)
+						setTimeout(() => {
+							inFlight -= 1
+							respondText(response, 200, 'content')
+						}, 20)
+					},
+				)
 			}
 			const sync = createSync({ guides: { base: fixture.base }, concurrency: 3 })
 			await sync.guides(deps)
@@ -781,7 +709,7 @@ describe('Sync — concurrency bound', () => {
 
 describe('Sync — events', () => {
 	it('emits guide/version/write/done in order with the expected payloads', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		const directory = await buildTempDirectory()
 		try {
 			writeFileSync(
@@ -789,11 +717,11 @@ describe('Sync — events', () => {
 				JSON.stringify({ name: 'x', dependencies: { '@orkestrel/contract': '^0.0.5' } }),
 				'utf8',
 			)
-			fixture.route(guidePath('contract'), (_request, response) =>
+			fixture.route(buildGuidePath('contract'), (_request, response) =>
 				respondText(response, 200, 'guide content'),
 			)
-			fixture.route(registryPath('@orkestrel/contract'), (_request, response) =>
-				respondJson(response, '0.0.5'),
+			fixture.route(buildRegistryPath('@orkestrel/contract'), (_request, response) =>
+				respondJSON(response, '0.0.5'),
 			)
 			const sequence: string[] = []
 			const guideRecorder = createRecorder<readonly [name: string]>()
@@ -845,9 +773,9 @@ describe('Sync — events', () => {
 	})
 
 	it('routes a listener throw to the configured error handler', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			fixture.route(guidePath('contract'), (_request, response) =>
+			fixture.route(buildGuidePath('contract'), (_request, response) =>
 				respondText(response, 200, 'content'),
 			)
 			const errorRecorder = createRecorder<readonly [error: unknown]>()
@@ -882,13 +810,7 @@ describe('Sync.destroy', () => {
 			sync.destroy() // idempotent — no second emit, no throw
 			expect(destroyRecorder.count).toBe(1)
 
-			const report: SyncReport = {
-				target: directory.path,
-				guides: [],
-				versions: [],
-				clean: true,
-				failed: 0,
-			}
+			const report = buildSyncReport(undefined, directory.path)
 			for (const attempt of [
 				() => sync.guides([dependency('@orkestrel/contract', '^0.0.5')]),
 				() => sync.versions([dependency('@orkestrel/contract', '^0.0.5')]),
@@ -915,9 +837,9 @@ describe('Sync.destroy', () => {
 
 describe('Sync — body size limit', () => {
 	it('a body larger than a small configured limit verdicts failed, process stays healthy', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			fixture.route(guidePath('contract'), (_request, response) => {
+			fixture.route(buildGuidePath('contract'), (_request, response) => {
 				response.writeHead(200, { 'content-type': 'text/plain' })
 				response.end('x'.repeat(1000))
 			})
@@ -931,10 +853,12 @@ describe('Sync — body size limit', () => {
 	})
 
 	it('a body under the limit stays byte-identical', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
 			const body = 'y'.repeat(50)
-			fixture.route(guidePath('contract'), (_request, response) => respondText(response, 200, body))
+			fixture.route(buildGuidePath('contract'), (_request, response) =>
+				respondText(response, 200, body),
+			)
 			const sync = createSync({ guides: { base: fixture.base }, limit: 64 })
 			const [result] = await sync.guides([dependency('@orkestrel/contract', '^0.0.5')])
 			expect(result?.freshness).toBe('behind')
@@ -946,9 +870,9 @@ describe('Sync — body size limit', () => {
 	})
 
 	it('an oversized declared Content-Length verdicts failed without reading the body', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			fixture.route(guidePath('contract'), (_request, response) => {
+			fixture.route(buildGuidePath('contract'), (_request, response) => {
 				response.writeHead(200, { 'content-type': 'text/plain', 'content-length': '1000' })
 				response.end('x'.repeat(1000))
 			})
@@ -966,14 +890,13 @@ describe('Sync — body size limit', () => {
 
 describe('Sync — strict pool teardown', () => {
 	it('a dead endpoint with several deps at concurrency ≥2 rejects once with no unhandledRejection', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		const port = fixture.base.match(/:(\d+)$/)?.[1] ?? '0'
 		await fixture.close() // close immediately — connections to this port now refuse
 		const deadBase = `http://127.0.0.1:${port}`
 
-		const unhandled: unknown[] = []
-		const onUnhandled = (reason: unknown) => unhandled.push(reason)
-		process.on('unhandledRejection', onUnhandled)
+		const unhandledRecorder = createRecorder<readonly [reason: unknown]>()
+		process.on('unhandledRejection', unhandledRecorder.handler)
 		try {
 			const deps = Array.from({ length: 4 }, (_unused, index) =>
 				dependency(`@orkestrel/dep${index}`, '^0.0.5'),
@@ -995,9 +918,9 @@ describe('Sync — strict pool teardown', () => {
 			// Let any straggling microtasks/macrotasks that would surface an
 			// unhandled rejection run before asserting.
 			await new Promise((resolvePromise) => setTimeout(resolvePromise, 50))
-			expect(unhandled).toHaveLength(0)
+			expect(unhandledRecorder.count).toBe(0)
 		} finally {
-			process.off('unhandledRejection', onUnhandled)
+			process.off('unhandledRejection', unhandledRecorder.handler)
 		}
 	})
 })
@@ -1006,14 +929,14 @@ describe('Sync — strict pool teardown', () => {
 
 describe('Sync — redirect handling (A1)', () => {
 	it('a 302 verdicts failed and the redirect target is never requested', async () => {
-		const fixture = await buildFixture()
-		const target = await buildFixture()
+		const fixture = await buildHTTPFixture()
+		const target = await buildHTTPFixture()
 		try {
-			fixture.route(guidePath('contract'), (_request, response) => {
-				response.writeHead(302, { location: `${target.base}${guidePath('contract')}` })
+			fixture.route(buildGuidePath('contract'), (_request, response) => {
+				response.writeHead(302, { location: `${target.base}${buildGuidePath('contract')}` })
 				response.end()
 			})
-			target.route(guidePath('contract'), (_request, response) =>
+			target.route(buildGuidePath('contract'), (_request, response) =>
 				respondText(response, 200, 'should never be fetched'),
 			)
 			const sync = createSync({ guides: { base: fixture.base } })
@@ -1032,7 +955,7 @@ describe('Sync — redirect handling (A1)', () => {
 
 describe('Sync — failure notes', () => {
 	it('connection-refused: note contains the connection-refused code', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		const port = fixture.base.match(/:(\d+)$/)?.[1] ?? '0'
 		await fixture.close() // close immediately — connections to this port now refuse
 		const deadBase = `http://127.0.0.1:${port}`
@@ -1044,9 +967,9 @@ describe('Sync — failure notes', () => {
 	})
 
 	it('HTTP 500: note is exactly "HTTP 500"', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			fixture.route(guidePath('contract'), (_request, response) =>
+			fixture.route(buildGuidePath('contract'), (_request, response) =>
 				respondText(response, 500, 'server error'),
 			)
 			const sync = createSync({ guides: { base: fixture.base } })
@@ -1060,10 +983,10 @@ describe('Sync — failure notes', () => {
 	})
 
 	it('302: note mentions the blocked redirect', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			fixture.route(guidePath('contract'), (_request, response) => {
-				response.writeHead(302, { location: `${fixture.base}${guidePath('elsewhere')}` })
+			fixture.route(buildGuidePath('contract'), (_request, response) => {
+				response.writeHead(302, { location: `${fixture.base}${buildGuidePath('elsewhere')}` })
 				response.end()
 			})
 			const sync = createSync({ guides: { base: fixture.base } })
@@ -1077,9 +1000,9 @@ describe('Sync — failure notes', () => {
 	})
 
 	it('oversized body: note mentions the byte limit', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			fixture.route(guidePath('contract'), (_request, response) => {
+			fixture.route(buildGuidePath('contract'), (_request, response) => {
 				response.writeHead(200, { 'content-type': 'text/plain' })
 				response.end('x'.repeat(1000))
 			})
@@ -1094,7 +1017,7 @@ describe('Sync — failure notes', () => {
 	})
 
 	it('a 404 verdicts missing with an "HTTP 404" note', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
 			const sync = createSync({ guides: { base: fixture.base } })
 			const [result] = await sync.guides([dependency('@orkestrel/contract', '^0.0.5')])
@@ -1107,9 +1030,9 @@ describe('Sync — failure notes', () => {
 	})
 
 	it('behind and current carry no note', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			fixture.route(guidePath('contract'), (_request, response) =>
+			fixture.route(buildGuidePath('contract'), (_request, response) =>
 				respondText(response, 200, 'fresh content'),
 			)
 			const sync = createSync({ guides: { base: fixture.base } })
@@ -1127,9 +1050,9 @@ describe('Sync — failure notes', () => {
 
 describe('Sync.guides — canonical URL shape (FIX 4)', () => {
 	it('requests the canonical /orkestrel/<short>/refs/heads/<branch>/… path directly (never the legacy shorthand)', async () => {
-		const fixture = await buildFixture()
+		const fixture = await buildHTTPFixture()
 		try {
-			fixture.route(guidePath('contract'), (_request, response) =>
+			fixture.route(buildGuidePath('contract'), (_request, response) =>
 				respondText(response, 200, '# Contract Guide\n'),
 			)
 			const sync = createSync({ guides: { base: fixture.base } })

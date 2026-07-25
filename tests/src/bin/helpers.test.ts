@@ -1,107 +1,72 @@
+import { join } from 'node:path'
+import { parseJSON } from '@orkestrel/contract'
 import { describe, expect, it } from 'vitest'
+import { ScaffoldError } from '@src/core'
 import {
 	ACTION_LABEL,
+	CANCELLED_MESSAGE,
+	CATALOG_UNRESOLVED_NOTE,
+	DRIFT_LABEL,
+	EXIT_CODES,
+	FLEET_CI_SKIPPED,
+	FOREIGN_HINT,
+	FRESHNESS_LABEL,
+	KNOWN_VERBS,
+	ORIGIN_LABEL,
+	ORKESTREL_DEPS_PROMPT,
+	PRUNE_EMPTY,
+	PRUNE_SKIPPED,
+	RETIRED_VERBS,
+	SCAN_SKIPPED,
+	SURFACE_CHOICES,
+	VERB_FLAGS,
+	VERB_FLAG_HELP,
+} from '../../../src/bin/constants.js'
+import {
 	applyConfirmMessage,
-	auditJson,
 	auditLiveNote,
 	auditTable,
 	auditVerdict,
 	bucketText,
-	CANCELLED_MESSAGE,
-	catalogJson,
 	catalogShrinkWarning,
 	catalogTable,
-	catalogUnresolvedNote,
 	catalogVerdict,
-	chooseStyler,
 	comparisonLine,
+	containDestination,
+	describeError,
 	didYouMean,
-	DRIFT_LABEL,
 	editDistance,
-	errorEnvelope,
-	EXIT_CODES,
-	fleetCiSkipped,
-	fleetJson,
 	fleetRepoLine,
 	fleetTotals,
-	foreignHint,
-	FRESHNESS_LABEL,
 	fullHelp,
 	generatedNote,
 	invalidName,
-	KNOWN_VERBS,
 	missingInput,
 	nearest,
-	newJson,
 	newPlanPreview,
-	orkestrelDepsPrompt,
-	ORIGIN_LABEL,
-	PRUNE_EMPTY,
+	orkestrelTokenIssue,
 	prunePreview,
 	pruneConfirmMessage,
-	pruneSkipped,
-	pullJson,
 	pullRows,
 	repairHandoff,
-	repairJson,
 	repairSuccess,
 	repairVerdict,
-	RETIRED_VERBS,
-	scanSkipped,
 	scopeNote,
 	shortUsage,
-	surfaceChoices,
 	unknownOrkestrelToken,
 	unresolvedVersion,
-	VERB_FLAGS,
-	VERB_FLAG_HELP,
 	verbHelp,
-} from '../../../src/bin/render.js'
-import type { Audit, CatalogEntry, Finding, Plan, SyncReport } from '../../../src/core/index.js'
-
-const PLAN: Plan = {
-	blueprint: {
-		name: 'widget',
-		keywords: [],
-		surfaces: ['core'],
-		dependencies: [],
-		peers: [],
-		extras: [],
-		version: '0.0.1',
-		engines: '>=22',
-		overrides: [],
-		engine: false,
-	},
-	groups: ['manifest'],
-	artifacts: [
-		{ path: 'AGENTS.md', group: 'manifest', origin: 'host' },
-		{ path: 'src/core/index.ts', group: 'source', origin: 'template' },
-		{ path: 'src/core/computed.ts', group: 'source', origin: 'computed' },
-	],
-}
-
-const FINDINGS: readonly Finding[] = [
-	{ path: 'AGENTS.md', group: 'manifest', drift: 'stale' },
-	{ path: 'src/core/index.ts', group: 'source', drift: 'missing' },
-	{ path: 'src/core/computed.ts', group: 'source', drift: 'stale' },
-	{ path: 'unexpected.txt', group: 'manifest', drift: 'foreign' },
-	{ path: 'clean.ts', group: 'source', drift: 'aligned' },
-]
-
-function makeAudit(findings: readonly Finding[]): Audit {
-	const drifted = findings.filter((finding) => finding.drift === 'stale').length
-	const missing = findings.filter((finding) => finding.drift === 'missing').length
-	const foreign = findings.filter((finding) => finding.drift === 'foreign').length
-	return {
-		findings,
-		clean: drifted === 0 && missing === 0 && foreign === 0,
-		complete: true,
-		questions: [],
-		drifted,
-		missing,
-		foreign,
-	}
-}
+} from '../../../src/bin/helpers.js'
+import {
+	auditToRepairResult,
+	catalogResultOf,
+	errorEnvelopeOf,
+	fleetEntryOf,
+	partitionFindings,
+	summaryToNewResult,
+} from '../../../src/bin/shapers.js'
+import type { CatalogEntry, SyncReport } from '../../../src/core/index.js'
+import { AUDIT_FINDINGS, AUDIT_PLAN, buildAudit } from '../../setupBin.js'
 
 describe('render: jargon translation', () => {
 	it('translates every Origin', () => {
@@ -141,32 +106,39 @@ describe('render: bucketText / verdicts', () => {
 	})
 
 	it('renders a clean audit verdict', () => {
-		const audit = makeAudit([])
-		expect(auditVerdict(audit, PLAN)).toBe('audit: 0 artifacts — clean')
+		const audit = buildAudit([])
+		expect(auditVerdict(audit, AUDIT_PLAN)).toBe('audit: 0 artifacts — clean')
 	})
 
 	it('renders a drifted audit verdict with the origin split', () => {
-		const audit = makeAudit(FINDINGS)
-		const line = auditVerdict(audit, PLAN)
+		const audit = buildAudit(AUDIT_FINDINGS)
+		const line = auditVerdict(audit, AUDIT_PLAN)
 		expect(line.startsWith('audit: 5 artifacts —')).toBe(true)
 		expect(line).toContain('template-owned:')
 		expect(line).toContain('generated:')
 	})
 
 	it('renders repair verdicts for clean and drifted audits', () => {
-		expect(repairVerdict(makeAudit([]))).toContain('aligned — nothing to write')
-		expect(repairVerdict(makeAudit(FINDINGS))).toContain('pass --apply to write')
+		expect(repairVerdict(buildAudit([]))).toContain('aligned — nothing to write')
+		expect(repairVerdict(buildAudit(AUDIT_FINDINGS))).toContain('pass --apply to write')
 	})
 
 	it('renders the repair scope note only when there is out-of-scope drift', () => {
 		expect(scopeNote(0)).toBeUndefined()
 		expect(scopeNote(3)).toContain("outside repair's scope")
 	})
+
+	it('partitions findings by repair ownership', () => {
+		expect(partitionFindings(AUDIT_FINDINGS, AUDIT_PLAN)).toEqual({
+			owned: { drifted: 1, missing: 1, foreign: 0 },
+			generated: { drifted: 1, missing: 0, foreign: 1 },
+		})
+	})
 })
 
 describe('render: tables', () => {
 	it('builds the audit findings table with translated columns and excludes aligned rows', () => {
-		const table = auditTable(makeAudit(FINDINGS), PLAN)
+		const table = auditTable(buildAudit(AUDIT_FINDINGS), AUDIT_PLAN)
 		expect(table.columns.map((column) => column.label)).toEqual(['Status', 'Kind', 'Path'])
 		expect(table.rows).toHaveLength(4)
 		expect(table.rows).toContainEqual(['drifted', 'template-owned', 'AGENTS.md'])
@@ -213,15 +185,15 @@ describe('render: tables', () => {
 })
 
 describe('render: fleet', () => {
-	it('renders each per-repo outcome kind', () => {
-		expect(fleetRepoLine('widget', { kind: 'clean' })).toBe('widget: clean')
-		expect(fleetRepoLine('widget', { kind: 'drifted', drifted: 1, missing: 0, foreign: 0 })).toBe(
+	it('renders each per-repo outcome state', () => {
+		expect(fleetRepoLine('widget', { state: 'clean' })).toBe('widget: clean')
+		expect(fleetRepoLine('widget', { state: 'drifted', drifted: 1, missing: 0, foreign: 0 })).toBe(
 			'widget: 1 drifted',
 		)
-		expect(fleetRepoLine('widget', { kind: 'repaired', remaining: 2 })).toBe(
+		expect(fleetRepoLine('widget', { state: 'repaired', remaining: 2 })).toBe(
 			'widget: repaired (2 findings remaining)',
 		)
-		expect(fleetRepoLine('widget', { kind: 'failed', message: '[TARGET] no host' })).toBe(
+		expect(fleetRepoLine('widget', { state: 'failed', message: '[TARGET] no host' })).toBe(
 			'widget: [TARGET] no host',
 		)
 	})
@@ -245,7 +217,7 @@ describe('render: prompt messages', () => {
 
 	it('builds the prune double-confirm message', () => {
 		expect(pruneConfirmMessage(4)).toBe(
-			'Also delete 4 unexpected files under .claude/agents and scripts? ',
+			'Also delete 4 unexpected files under .claude/agents, .codex/agents, and scripts? ',
 		)
 	})
 
@@ -273,19 +245,19 @@ describe('render: prompt messages', () => {
 	})
 
 	it('foreignHint points at repair --prune', () => {
-		expect(foreignHint()).toBe(
+		expect(FOREIGN_HINT).toBe(
 			"unexpected files found — run 'scaffold repair --prune' to delete them",
 		)
 	})
 
 	it('scanSkipped explains the degraded audit', () => {
-		expect(scanSkipped()).toBe(
+		expect(SCAN_SKIPPED).toBe(
 			"unexpected-file scanning skipped — couldn't establish the template source",
 		)
 	})
 
 	it('orkestrelDepsPrompt names short-name deps landing as dependencies', () => {
-		expect(orkestrelDepsPrompt()).toBe(
+		expect(ORKESTREL_DEPS_PROMPT).toBe(
 			'@orkestrel dependencies (comma-separated short names, e.g. contract, emitter — installed as dependencies)',
 		)
 	})
@@ -302,8 +274,15 @@ describe('render: prompt messages', () => {
 		)
 	})
 
+	it('validates dependency tokens against available and unavailable catalogs', () => {
+		expect(orkestrelTokenIssue('@orkestrel/contract', undefined)).toBeUndefined()
+		expect(orkestrelTokenIssue('@orkestrel/contrakt', ['@orkestrel/contract'])).toContain(
+			'@orkestrel/contract',
+		)
+	})
+
 	it('catalogUnresolvedNote explains the shape-only degrade', () => {
-		expect(catalogUnresolvedNote()).toBe(
+		expect(CATALOG_UNRESOLVED_NOTE).toBe(
 			"couldn't resolve the vendored @orkestrel catalog — validating names by shape only",
 		)
 	})
@@ -324,7 +303,7 @@ describe('render: prompt messages', () => {
 	})
 
 	it('describes each surface checkbox choice', () => {
-		const choices = surfaceChoices()
+		const choices = SURFACE_CHOICES
 		expect(choices.map((choice) => choice.value)).toEqual(['core', 'browser', 'server'])
 		expect(choices.find((choice) => choice.value === 'core')?.description).toBe('the pure engine')
 		expect(choices.find((choice) => choice.value === 'browser')?.description).toBe(
@@ -364,6 +343,23 @@ describe('render: did-you-mean', () => {
 
 	it('still fuzzy-matches inputs that are not retired verbs', () => {
 		expect(didYouMean('flete')).toContain('did you mean "fleet"?')
+	})
+})
+
+describe('bin destination containment', () => {
+	it('accepts nested destinations and rejects escapes', () => {
+		const root = join(process.cwd(), 'fixture-root')
+		const nested = join(root, 'nested')
+		expect(containDestination(root, nested)).toBe(nested)
+		expect(() => containDestination(root, join(root, '..', 'outside'))).toThrow(
+			/escapes the working directory/,
+		)
+	})
+
+	it('renders coded, ordinary, and non-error failures', () => {
+		expect(describeError(new ScaffoldError('TARGET', 'unavailable'))).toBe('[TARGET] unavailable')
+		expect(describeError(new Error('ordinary'))).toBe('ordinary')
+		expect(describeError('failure')).toBe('unknown error')
 	})
 })
 
@@ -407,8 +403,12 @@ describe('render: help tiers', () => {
 	})
 
 	it('verbHelp marks --prune as destructive wherever it appears', () => {
-		expect(verbHelp('repair')).toContain('also DELETE unexpected files under .claude/agents')
-		expect(verbHelp('fleet')).toContain('also DELETE unexpected files under .claude/agents')
+		expect(verbHelp('repair')).toContain(
+			'also DELETE unexpected files under .claude/agents, .codex/agents, and scripts',
+		)
+		expect(verbHelp('fleet')).toContain(
+			'also DELETE unexpected files under .claude/agents, .codex/agents, and scripts',
+		)
 	})
 })
 
@@ -438,14 +438,6 @@ describe('render: VERB_FLAGS corrections', () => {
 	})
 })
 
-describe('render: chooseStyler', () => {
-	it('takes explicit sinkIsTTY and noColor inputs, no process access', () => {
-		expect(chooseStyler(true, false).enabled).toBe(true)
-		expect(chooseStyler(false, false).enabled).toBe(false)
-		expect(chooseStyler(true, true).enabled).toBe(false)
-	})
-})
-
 describe('render: repairSuccess uses ACTION_LABEL', () => {
 	it('wires the materializer tally through ACTION_LABEL words', () => {
 		const result = { target: '.', written: ['a'], copied: ['b'], skipped: ['c'], removed: [] }
@@ -467,7 +459,7 @@ describe('render: new prune/missing/generated/audit-live/comparison/ci/catalog e
 	})
 
 	it('pruneSkipped explains the non-interactive alternative WITHOUT re-asking for --prune (F5 — it was already passed)', () => {
-		const line = pruneSkipped()
+		const line = PRUNE_SKIPPED
 		expect(line).toBe(
 			'prune skipped — not a terminal; add --apply (or --yes) to delete non-interactively',
 		)
@@ -505,7 +497,7 @@ describe('render: new prune/missing/generated/audit-live/comparison/ci/catalog e
 	})
 
 	it('fleetCiSkipped explains ci.yml is left to per-package repair', () => {
-		const line = fleetCiSkipped()
+		const line = FLEET_CI_SKIPPED
 		expect(line).toContain('ci.yml')
 		expect(line).toContain('scaffold repair --apply')
 	})
@@ -516,17 +508,27 @@ describe('render: new prune/missing/generated/audit-live/comparison/ci/catalog e
 	})
 })
 
-describe('render: --json serializers', () => {
+describe('bin result shapers', () => {
 	it('errorEnvelope wraps code + message', () => {
-		expect(errorEnvelope('INVALID', 'bad')).toEqual({ error: { code: 'INVALID', message: 'bad' } })
+		expect(errorEnvelopeOf('INVALID', 'bad')).toEqual({
+			error: { code: 'INVALID', message: 'bad' },
+		})
 	})
 
 	it('newJson is deterministic and JSON-parseable', () => {
-		const value = newJson(
-			{ name: 'widget', surfaces: ['core'], host: 1, template: 2, computed: 3 },
+		const value = summaryToNewResult(
+			{
+				name: 'widget',
+				surfaces: ['core'],
+				groups: ['manifest'],
+				artifacts: 6,
+				host: 1,
+				template: 2,
+				computed: 3,
+			},
 			true,
 		)
-		const parsed: unknown = JSON.parse(JSON.stringify(value))
+		const parsed: unknown = parseJSON(JSON.stringify(value))
 		expect(parsed).toEqual({
 			name: 'widget',
 			surfaces: ['core'],
@@ -537,29 +539,36 @@ describe('render: --json serializers', () => {
 		})
 	})
 
-	it('pullJson / auditJson pass the value through untouched', () => {
-		const report: SyncReport = { target: '.', guides: [], versions: [], clean: true, failed: 0 }
-		expect(pullJson(report)).toBe(report)
-		const audit = makeAudit([])
-		expect(auditJson(audit)).toBe(audit)
-	})
-
-	it('repairJson omits result when not applied, includes it when applied', () => {
-		const audit = makeAudit([])
-		expect(repairJson(audit)).toEqual(audit)
+	it('adds a materialization result to repair JSON', () => {
+		const audit = buildAudit([])
 		const result = { target: '.', written: ['a'], copied: [], skipped: [], removed: [] }
-		expect(repairJson(audit, result)).toEqual({ ...audit, result })
+		expect(auditToRepairResult(audit, result)).toEqual({ ...audit, result })
 	})
 
-	it('fleetJson returns a top-level array', () => {
-		const entries = [{ name: 'widget', drifted: 0, missing: 0, foreign: 0, failed: false }]
-		expect(Array.isArray(fleetJson(entries))).toBe(true)
-		expect(fleetJson(entries)).toBe(entries)
+	it('creates fleet entries for audited and failed repositories', () => {
+		expect(fleetEntryOf('widget', { drifted: 1, missing: 2, foreign: 3 }, false)).toEqual({
+			name: 'widget',
+			drifted: 1,
+			missing: 2,
+			foreign: 3,
+			failed: false,
+		})
+		expect(fleetEntryOf('broken', undefined, true)).toEqual({
+			name: 'broken',
+			drifted: 0,
+			missing: 0,
+			foreign: 0,
+			failed: true,
+		})
 	})
 
 	it('catalogJson includes shrink only when given', () => {
 		const entries: readonly CatalogEntry[] = []
-		expect(catalogJson(entries, false)).toEqual({ entries, drift: false })
-		expect(catalogJson(entries, true, 2)).toEqual({ entries, drift: true, shrink: 2 })
+		expect(catalogResultOf(entries, false)).toEqual({ entries, drift: false })
+		expect(catalogResultOf(entries, true, 2)).toEqual({
+			entries,
+			drift: true,
+			shrink: 2,
+		})
 	})
 })

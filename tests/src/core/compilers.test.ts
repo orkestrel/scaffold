@@ -1,4 +1,5 @@
-import type { Blueprint, Surface } from '@src/core'
+import type { Artifact, Blueprint, Surface } from '@src/core'
+import { parseJSON } from '@orkestrel/contract'
 import {
 	applyOverrides,
 	blueprint,
@@ -30,6 +31,7 @@ import {
 	testArtifacts,
 } from '@src/core'
 import { describe, expect, it } from 'vitest'
+import { readManifest, readRecord } from '../../setup.js'
 
 const VARIANTS: readonly { readonly label: string; readonly surfaces: readonly Surface[] }[] = [
 	{ label: 'core-only', surfaces: ['core'] },
@@ -40,19 +42,6 @@ const VARIANTS: readonly { readonly label: string; readonly surfaces: readonly S
 	{ label: 'browser-only', surfaces: ['browser'] },
 ]
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-function readRecord(value: unknown): Record<string, unknown> {
-	if (!isRecord(value)) throw new Error('expected a JSON object')
-	return value
-}
-
-function readManifest(content: string | undefined): Record<string, unknown> {
-	return readRecord(JSON.parse(content ?? '{}'))
-}
-
 describe('hostGroup', () => {
 	it('classes the root docs paths as docs', () => {
 		expect(hostGroup('AGENTS.md')).toBe('docs')
@@ -60,10 +49,13 @@ describe('hostGroup', () => {
 		expect(hostGroup('LICENSE')).toBe('docs')
 	})
 
-	it('classes .claude and the SessionStart scripts and CI workflow as orchestration', () => {
+	it('classes skills, agent configs, SessionStart scripts, and CI as orchestration', () => {
+		expect(hostGroup('.agents')).toBe('orchestration')
 		expect(hostGroup('.claude')).toBe('orchestration')
+		expect(hostGroup('.codex')).toBe('orchestration')
 		expect(hostGroup('scripts/deps.sh')).toBe('orchestration')
 		expect(hostGroup('scripts/cursor.sh')).toBe('orchestration')
+		expect(hostGroup('scripts/codex.sh')).toBe('orchestration')
 		expect(hostGroup('scripts/ollama.sh')).toBe('orchestration')
 		expect(hostGroup('.github/workflows/ci.yml')).toBe('orchestration')
 	})
@@ -320,7 +312,7 @@ describe('packageManifest', () => {
 
 describe('rootTsconfig', () => {
 	it('emits one @src/<surface> path alias per declared surface, in order', () => {
-		const config = readRecord(JSON.parse(rootTsconfig(['core', 'server'])))
+		const config = readRecord(parseJSON(rootTsconfig(['core', 'server'])))
 		const paths = readRecord(readRecord(config.compilerOptions).paths)
 		expect(Object.keys(paths)).toEqual(['@src/core', '@src/server'])
 		expect(paths['@src/core']).toEqual(['./src/core/index.ts'])
@@ -437,7 +429,7 @@ export default defineConfig({
 
 describe('coreTsconfig / coreViteConfig', () => {
 	it('coreTsconfig points rootDir/outDir at src/core', () => {
-		const config = readRecord(JSON.parse(coreTsconfig()))
+		const config = readRecord(parseJSON(coreTsconfig()))
 		expect(readRecord(config.compilerOptions).rootDir).toBe('../../src/core')
 	})
 
@@ -448,7 +440,7 @@ describe('coreTsconfig / coreViteConfig', () => {
 
 describe('surfaceTsconfig / surfaceViteConfig', () => {
 	it('surfaceTsconfig points at the whole src/dist-src tree', () => {
-		const config = readRecord(JSON.parse(surfaceTsconfig('server')))
+		const config = readRecord(parseJSON(surfaceTsconfig('server')))
 		expect(readRecord(config.compilerOptions).rootDir).toBe('../../src')
 		expect(readRecord(config.compilerOptions).outDir).toBe('../../dist/src')
 	})
@@ -477,7 +469,8 @@ describe('sourceArtifacts', () => {
 			'Router',
 		)
 		const paths = artifacts.map((artifact) => artifact.path)
-		for (const surface of ['core', 'browser'] as const) {
+		const surfaces: readonly Surface[] = ['core', 'browser']
+		for (const surface of surfaces) {
 			expect(paths).toContain(`src/${surface}/types.ts`)
 			expect(paths).toContain(`src/${surface}/Router.ts`)
 			expect(paths).toContain(`src/${surface}/factories.ts`)
@@ -553,31 +546,31 @@ describe('guideArtifacts / guideMemberTable', () => {
 
 describe('applyOverrides', () => {
 	it('replaces a matching artifact content in place', () => {
-		const artifacts = [
-			{ path: 'README.md', group: 'docs' as const, origin: 'template' as const, content: '# old' },
+		const artifacts: readonly Artifact[] = [
+			{ path: 'README.md', group: 'docs', origin: 'template', content: '# old' },
 		]
 		const result = applyOverrides(artifacts, [override('README.md', '# new')])
 		expect(result[0]?.content).toBe('# new')
 	})
 
 	it('is a no-op with an empty overrides list', () => {
-		const artifacts = [
-			{ path: 'README.md', group: 'docs' as const, origin: 'template' as const, content: '# old' },
+		const artifacts: readonly Artifact[] = [
+			{ path: 'README.md', group: 'docs', origin: 'template', content: '# old' },
 		]
 		expect(applyOverrides(artifacts, [])).toBe(artifacts)
 	})
 
 	it('never touches host-origin artifacts, even on a matching path', () => {
-		const artifacts = [
-			{ path: 'AGENTS.md', group: 'docs' as const, origin: 'host' as const, source: 'AGENTS.md' },
+		const artifacts: readonly Artifact[] = [
+			{ path: 'AGENTS.md', group: 'docs', origin: 'host', source: 'AGENTS.md' },
 		]
 		const result = applyOverrides(artifacts, [override('AGENTS.md', 'nope')])
 		expect(result[0]?.content).toBeUndefined()
 	})
 
 	it('leaves a non-matching override unapplied', () => {
-		const artifacts = [
-			{ path: 'README.md', group: 'docs' as const, origin: 'template' as const, content: '# old' },
+		const artifacts: readonly Artifact[] = [
+			{ path: 'README.md', group: 'docs', origin: 'template', content: '# old' },
 		]
 		const result = applyOverrides(artifacts, [override('OTHER.md', '# new')])
 		expect(result[0]?.content).toBe('# old')

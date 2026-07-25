@@ -1,3 +1,4 @@
+import type { SyncReport } from '@src/core'
 import { createContract, seededRandom } from '@orkestrel/contract'
 import {
 	artifactShape,
@@ -27,13 +28,15 @@ const shapes = {
 	blueprint: blueprintShape,
 	plan: planShape,
 	syncReport: syncReportShape,
-} as const
+}
 
-describe.each(Object.entries(shapes))('%s shape — contract lockstep', (_name, build) => {
-	it('emits a JSON Schema of type object', () => {
+describe.each(Object.entries(shapes))('%s shape — contract lockstep', (name, build) => {
+	it('emits the expected root JSON Schema', () => {
 		const contract = createContract(build())
 
-		expect(contract.schema.type).toBe('object')
+		const valid =
+			name === 'artifact' ? contract.schema.anyOf?.length === 2 : contract.schema.type === 'object'
+		expect(valid).toBe(true)
 	})
 
 	it('every generated value across 25 deterministic seeds satisfies is()', () => {
@@ -105,14 +108,14 @@ describe('syncReportShape — generated reports satisfy isSyncReport', () => {
 describe('syncReportShape — GuideSync / VersionSync note round-trips', () => {
 	it('a report with note present on a failed guide/version satisfies is() and round-trips through parse()', () => {
 		const contract = createContract(syncReportShape())
-		const value = {
+		const value: SyncReport = {
 			target: '.',
 			guides: [
 				{
 					name: '@orkestrel/contract',
 					path: 'guides/src/contract.md',
 					content: '',
-					freshness: 'failed' as const,
+					freshness: 'failed',
 					note: 'HTTP 500',
 				},
 			],
@@ -123,7 +126,7 @@ describe('syncReportShape — GuideSync / VersionSync note round-trips', () => {
 					// `latest` is `stringShape({ min: 1 })` — a failed VersionSync's
 					// unknown latest is represented by a placeholder, never `''`.
 					latest: 'unknown',
-					freshness: 'failed' as const,
+					freshness: 'failed',
 					note: 'fetch failed: ECONNREFUSED',
 				},
 			],
@@ -138,14 +141,14 @@ describe('syncReportShape — GuideSync / VersionSync note round-trips', () => {
 
 	it('a report with note absent on a current guide/version satisfies is() and round-trips through parse()', () => {
 		const contract = createContract(syncReportShape())
-		const value = {
+		const value: SyncReport = {
 			target: '.',
 			guides: [
 				{
 					name: '@orkestrel/contract',
 					path: 'guides/src/contract.md',
 					content: '# Contract Guide\n',
-					freshness: 'current' as const,
+					freshness: 'current',
 				},
 			],
 			versions: [
@@ -153,7 +156,7 @@ describe('syncReportShape — GuideSync / VersionSync note round-trips', () => {
 					name: '@orkestrel/contract',
 					range: '^0.0.5',
 					latest: '0.0.5',
-					freshness: 'current' as const,
+					freshness: 'current',
 				},
 			],
 			clean: true,

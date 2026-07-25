@@ -1,6 +1,6 @@
-import { createContract } from '@orkestrel/contract'
 import type { Blueprint, Plan, SyncReport } from './types.js'
-import { blueprintShape, planShape, syncReportShape } from './shapers.js'
+import { parseJSONAs } from '@orkestrel/contract'
+import { isBlueprint, isPlan, isSyncReport } from './validators.js'
 
 /**
  * Parse a `Blueprint` from `unknown` (or a JSON string), else `undefined`.
@@ -14,16 +14,10 @@ import { blueprintShape, planShape, syncReportShape } from './shapers.js'
  * @param input - The value (or JSON string) to parse.
  * @returns A `Blueprint`, else `undefined`.
  */
-export const parseBlueprint: (input: unknown) => Blueprint | undefined = (
-	(contract) => (input: unknown) => {
-		if (typeof input !== 'string') return contract.parse(input)
-		try {
-			return contract.parse(JSON.parse(input))
-		} catch {
-			return undefined
-		}
-	}
-)(createContract(blueprintShape()))
+export function parseBlueprint(input: unknown): Blueprint | undefined {
+	if (typeof input === 'string') return parseJSONAs(input, isBlueprint)
+	return isBlueprint(input) ? input : undefined
+}
 
 /**
  * Parse a `Plan` from `unknown` (or a JSON string), else `undefined`.
@@ -37,14 +31,10 @@ export const parseBlueprint: (input: unknown) => Blueprint | undefined = (
  * @param input - The value (or JSON string) to parse.
  * @returns A `Plan`, else `undefined`.
  */
-export const parsePlan: (input: unknown) => Plan | undefined = ((contract) => (input: unknown) => {
-	if (typeof input !== 'string') return contract.parse(input)
-	try {
-		return contract.parse(JSON.parse(input))
-	} catch {
-		return undefined
-	}
-})(createContract(planShape()))
+export function parsePlan(input: unknown): Plan | undefined {
+	if (typeof input === 'string') return parseJSONAs(input, isPlan)
+	return isPlan(input) ? input : undefined
+}
 
 /**
  * Parse a `SyncReport` from `unknown` (or a JSON string), else `undefined`.
@@ -58,13 +48,7 @@ export const parsePlan: (input: unknown) => Plan | undefined = ((contract) => (i
  * @param input - The value (or JSON string) to parse.
  * @returns A `SyncReport`, else `undefined`.
  */
-export const parseSyncReport: (input: unknown) => SyncReport | undefined = (
-	(contract) => (input: unknown) => {
-		if (typeof input !== 'string') return contract.parse(input)
-		try {
-			return contract.parse(JSON.parse(input))
-		} catch {
-			return undefined
-		}
-	}
-)(createContract(syncReportShape()))
+export function parseSyncReport(input: unknown): SyncReport | undefined {
+	if (typeof input === 'string') return parseJSONAs(input, isSyncReport)
+	return isSyncReport(input) ? input : undefined
+}

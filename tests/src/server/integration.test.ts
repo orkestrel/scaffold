@@ -1,10 +1,16 @@
-import type { SyncReport } from '@src/core'
+import type { Plan, SyncReport } from '@src/core'
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { isRecord, parseJSON } from '@orkestrel/contract'
 import { describe, expect, it } from 'vitest'
 import { blueprint, blueprintToPlan, createCompiler, dependency, diffPlan } from '@src/core'
 import { createMaterializer, createSync, readTarget } from '@src/server'
-import { buildTempDirectory, WORKSPACE_ROOT } from '../../setupServer.js'
+import {
+	buildTempDirectory,
+	hostManifestOf,
+	WORKSPACE_ROOT,
+	writeHostManifest,
+} from '../../setupServer.js'
 
 // ── Full round-trip: compile → materialize → audit → mutate → audit → repair ──
 
@@ -145,10 +151,7 @@ describe('server integration: compile → materialize → audit → repair', () 
 			const audit = diffPlan(plan, readTarget(directory.path, paths))
 			expect(audit.clean).toBe(true)
 
-			function isRecord(value: unknown): value is Record<string, unknown> {
-				return typeof value === 'object' && value !== null && !Array.isArray(value)
-			}
-			const manifest: unknown = JSON.parse(
+			const manifest: unknown = parseJSON(
 				readFileSync(join(directory.path, 'package.json'), 'utf8'),
 			)
 			if (!isRecord(manifest)) throw new Error('expected package.json to parse to a JSON object')
@@ -175,25 +178,31 @@ describe('server integration: compile → materialize → audit → repair', () 
 			// test does not depend on the repo's own `dist/host` build state.
 			mkdirSync(join(host.path, 'dotfiles'), { recursive: true })
 			writeFileSync(join(host.path, 'dotfiles', 'gitignore'), 'node_modules\n', 'utf8')
-			writeFileSync(
-				join(host.path, 'manifest.json'),
-				JSON.stringify([
-					{ storage: 'dotfiles/gitignore', destination: '.gitignore', executable: false },
-				]),
-				'utf8',
+			writeHostManifest(
+				host.path,
+				hostManifestOf(
+					[
+						{
+							storage: 'dotfiles/gitignore',
+							destination: '.gitignore',
+							executable: false,
+						},
+					],
+					[],
+				),
 			)
 
-			const plan = {
+			const plan: Plan = {
 				blueprint: blueprint('pointer-lifecycle-fixture', {
 					surfaces: ['core'],
 					dependencies: [dependency('@orkestrel/msg', '^1.0.0')],
 				}),
-				groups: ['guides'] as const,
+				groups: ['guides'],
 				artifacts: [
 					{
 						path: 'guides/src/msg.md',
-						group: 'guides' as const,
-						origin: 'host' as const,
+						group: 'guides',
+						origin: 'host',
 						source: 'guides/src/msg.md',
 					},
 				],

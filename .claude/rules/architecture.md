@@ -41,7 +41,7 @@ Use only the centralized files a surface needs.
 - Extract local declarations by kind. “Only used here” and “not exported” are not exemptions.
 - Every declaration in a centralized file is exported. Fold away a trivial single-use declaration or export/test it; never leave it hidden.
 - The only permitted non-exported module-scope declarations are in a runtime entrypoint that must be self-contained and cannot import siblings, such as raw source loaded in a worker. Explain that necessity in a comment.
-- Perform a cleanup sweep after implementation: no stray implementation-file declarations and no non-exported centralized declarations.
+- Perform a cleanup sweep after implementation: no stray implementation-file declarations, non-exported/wrong-kind centralized declarations, prohibited nested declarations, duplicate implementations, compatibility aliases, superfluous wrappers, stale imports/barrel rows, or untested extracted functions.
 
 ## Kind purity
 
@@ -53,6 +53,16 @@ Use only the centralized files a surface needs.
   - trivial and genuinely single-use → fold into its caller;
   - non-trivial or reusable → extract, export, unit-test, and route every duplicate through it.
 - `factories.ts`, `compilers.ts`, and `parsers.ts` are centralized files, not hiding places. Factory glue extracts to `helpers.ts`; pure compiler/parser recursion remains exported in its own kind file.
+
+## Wrapper test
+
+A wrapper survives only when it adds a real boundary, invariant, composition, translation, lifecycle, or materially narrower contract.
+
+- Delete one-line delegates, pass-through factories, rename-only helpers/getters, compatibility aliases, and wrappers around semantically identical platform or declared-dependency primitives.
+- Rename or import the real symbol and update every consumer atomically. Do not preserve a wrapper to avoid downstream edits.
+- Do not re-export a dependency's symbol from this package.
+- A public class method composes real entity behavior; it never exists only to forward 1:1 to a helper.
+- Audit callers and callees after every extraction so the old path and duplicate implementation do not remain.
 
 ## Functions and orchestration
 

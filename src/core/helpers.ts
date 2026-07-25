@@ -14,10 +14,12 @@ import type {
 	Plan,
 	PlanSummary,
 	Question,
+	Snapshot,
 	Surface,
 	SyncReport,
 	Validation,
 } from './types.js'
+import { isRecord, parseJSON } from '@orkestrel/contract'
 import { parseInline, renderMarkdown } from '@orkestrel/markdown'
 import {
 	DEFAULT_ENGINES,
@@ -243,7 +245,7 @@ export function alignTable(
 	align?: readonly TableAlign[],
 ): string {
 	const columns = header.length
-	const alignment: readonly TableAlign[] = align ?? header.map(() => 'none' as const)
+	const alignment: readonly TableAlign[] = align ?? header.map<TableAlign>(() => 'none')
 	const node: TableNode = {
 		element: 'table',
 		header: header.map((cell) => parseInline(cell)),
@@ -441,7 +443,8 @@ export function auditToReview(audit: Audit): string {
 		`- missing: ${audit.missing}`,
 		`- foreign: ${audit.foreign}`,
 	]
-	for (const drift of ['stale', 'missing', 'foreign'] as const) {
+	const drifts: readonly Drift[] = ['stale', 'missing', 'foreign']
+	for (const drift of drifts) {
 		const findings = groups[drift]
 		if (findings.length === 0) continue
 		sections.push(
@@ -574,9 +577,9 @@ export function catalogToBlock(entries: readonly CatalogEntry[]): string {
  * @param path - The target-relative path to classify.
  * @remarks
  * Ordered prefix match — `src/`, `tests/`, `guides/`, `docs/`, `configs/`,
- * then `.github/` / `scripts/` as `'orchestration'`, then the two manifest
- * files by exact name. Anything else (a root-level, prefix-less file) falls
- * through to `'configs'`.
+ * then `.agents/`, `.claude/`, `.codex/`, `.github/`, and `scripts/` as
+ * `'orchestration'`, then the two manifest files by exact name. Anything else
+ * (a root-level, prefix-less file) falls through to `'configs'`.
  * @returns The inferred `Group` for `path`.
  *
  * @example
@@ -593,7 +596,15 @@ export function inferGroup(path: string): Group {
 	if (path.startsWith('guides/')) return 'guides'
 	if (path.startsWith('docs/')) return 'docs'
 	if (path.startsWith('configs/')) return 'configs'
-	if (path.startsWith('.github/') || path.startsWith('scripts/')) return 'orchestration'
+	if (
+		path.startsWith('.agents/') ||
+		path.startsWith('.claude/') ||
+		path.startsWith('.codex/') ||
+		path.startsWith('.github/') ||
+		path.startsWith('scripts/')
+	) {
+		return 'orchestration'
+	}
 	if (path === 'package.json' || path === 'package-lock.json') return 'manifest'
 	return 'configs'
 }
@@ -608,8 +619,9 @@ export function inferGroup(path: string): Group {
  * PRESENCE only — `missing` or `aligned`, never `stale` — UNLESS it has been
  * hydrated with its real host bytes (`hydratePlan`'s `content`), in which case
  * it is content-compared exactly like a `computed` artifact and CAN be
- * `stale`. A degrade-path or directory-shaped host artifact (never hydrated)
- * stays presence-only. A `computed` artifact is content-aware canon —
+ * `stale`. `hydratePlan` expands directory-shaped host artifacts into
+ * content-bearing file artifacts; only an unresolved degrade-path host
+ * artifact stays presence-only. A `computed` artifact is content-aware canon —
  * `missing` / `aligned` / `stale` — and gates the audit like any drifted
  * finding. A `template`-origin artifact is BIRTH-ONLY and AUDIT-EXEMPT: it is
  * always reported `aligned`, regardless of whether the target has it at all
@@ -632,12 +644,12 @@ export function inferGroup(path: string): Group {
  * diffPlan(plan, current) // { findings: [...], clean: false, complete: true, drifted: 1, missing: 20, foreign: 0 }
  * ```
  */
-export function diffPlan(plan: Plan, current: Readonly<Record<string, string>>): Audit {
+export function diffPlan(plan: Plan, current: Snapshot): Audit {
 	const findings: Finding[] = []
 	const owned = new Set<string>()
 	for (const artifact of plan.artifacts) {
 		owned.add(artifact.path)
-		const seen = current[artifact.path]
+		const seen = Object.hasOwn(current, artifact.path) ? current[artifact.path] : undefined
 		if (artifact.origin === 'template') {
 			findings.push({ path: artifact.path, group: artifact.group, drift: 'aligned' })
 			continue
@@ -645,14 +657,14 @@ export function diffPlan(plan: Plan, current: Readonly<Record<string, string>>):
 		if (artifact.origin === 'host') {
 			let drift: Drift
 			if (seen === undefined) drift = 'missing'
-			else if (artifact.content === undefined) drift = 'aligned'
-			else drift = seen === artifact.content ? 'aligned' : 'stale'
+			else if (artifact.hex === undefined) drift = 'aligned'
+			else drift = seen === artifact.hex ? 'aligned' : 'stale'
 			findings.push({ path: artifact.path, group: artifact.group, drift })
 			continue
 		}
 		if (seen === undefined)
 			findings.push({ path: artifact.path, group: artifact.group, drift: 'missing' })
-		else if (seen === artifact.content)
+		else if (seen === contentToHex(artifact.content))
 			findings.push({ path: artifact.path, group: artifact.group, drift: 'aligned' })
 		else findings.push({ path: artifact.path, group: artifact.group, drift: 'stale' })
 	}
@@ -677,6 +689,87 @@ export function diffPlan(plan: Plan, current: Readonly<Record<string, string>>):
 		missing,
 		foreign,
 	}
+}
+
+/**
+ * Encode bytes as exact lowercase hexadecimal text.
+ *
+ * @param bytes - The bytes to encode.
+ * @returns Two lowercase hexadecimal digits per input byte.
+ */
+export function bytesToHex(bytes: Uint8Array): string {
+	let hex = ''
+	for (const byte of bytes) hex += byte.toString(16).padStart(2, '0')
+	return hex
+}
+
+/**
+ * Encode a string's UTF-8 bytes as exact lowercase hexadecimal text.
+ *
+ * @param content - The text to encode.
+ * @returns The exact hexadecimal UTF-8 representation.
+ */
+export function contentToHex(content: string): string {
+	return bytesToHex(new TextEncoder().encode(content))
+}
+
+/**
+ * Build an exact-byte snapshot from text content keyed by artifact path.
+ *
+ * @param current - Text content keyed by artifact path.
+ * @returns The same keys with UTF-8 bytes encoded as lowercase hexadecimal.
+ */
+export function snapshotOf(current: Readonly<Record<string, string>>): Snapshot {
+	const entries: [path: string, hex: string][] = []
+	for (const [path, content] of Object.entries(current)) {
+		entries.push([path, contentToHex(content)])
+	}
+	return Object.fromEntries(entries)
+}
+
+/**
+ * Find the first exact or portable case-insensitive path collision.
+ *
+ * @param paths - Portable paths in deterministic input order.
+ * @returns The first `[existing, duplicate]` pair, or `undefined`.
+ */
+export function findPathConflict(
+	paths: readonly string[],
+): readonly [existing: string, duplicate: string] | undefined {
+	const seen = new Map<string, string>()
+	for (const path of paths) {
+		const folded = path.toLowerCase()
+		const existing = seen.get(folded)
+		if (existing !== undefined) return [existing, path]
+		seen.set(folded, path)
+	}
+	return undefined
+}
+
+/**
+ * Find the first exact, case-insensitive, or file/descendant path collision.
+ *
+ * @param paths - Portable file paths in deterministic input order.
+ * @returns The first conflicting pair, or `undefined`.
+ */
+export function findFileConflict(
+	paths: readonly string[],
+): readonly [existing: string, duplicate: string] | undefined {
+	const seen = new Map<string, string>()
+	for (const path of paths) {
+		const folded = path.toLowerCase()
+		for (const [existingPath, existing] of seen) {
+			if (
+				existingPath === folded ||
+				existingPath.startsWith(`${folded}/`) ||
+				folded.startsWith(`${existingPath}/`)
+			) {
+				return [existing, path]
+			}
+		}
+		seen.set(folded, path)
+	}
+	return undefined
 }
 
 /**
@@ -895,25 +988,6 @@ export function validateBlueprint(spec: Blueprint): Validation {
 }
 
 /**
- * Narrow an unknown value to a plain (non-array, non-null) JSON object.
- *
- * @param value - The value to narrow.
- * @returns `true` iff `value` is a non-null, non-array object.
- *
- * @example
- * ```ts
- * import { isRecord } from '@orkestrel/scaffold'
- *
- * isRecord({ a: 1 }) // true
- * isRecord([1, 2]) // false
- * isRecord(null) // false
- * ```
- */
-export function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-/**
  * Parse a `package.json` text into its declared `@orkestrel/*` dependencies.
  *
  * @param manifestText - The `package.json` file content.
@@ -933,16 +1007,11 @@ export function isRecord(value: unknown): value is Record<string, unknown> {
  * ```
  */
 export function manifestToDependencies(manifestText: string): readonly Dependency[] {
-	let parsed: unknown
-	try {
-		parsed = JSON.parse(manifestText)
-	} catch {
-		return []
-	}
+	const parsed = parseJSON(manifestText)
 	if (!isRecord(parsed)) return []
 	const seen = new Set<string>()
 	const dependencies: Dependency[] = []
-	for (const section of ['dependencies', 'devDependencies', 'peerDependencies'] as const) {
+	for (const section of ['dependencies', 'devDependencies', 'peerDependencies']) {
 		const entries = parsed[section]
 		if (!isRecord(entries)) continue
 		for (const [name, range] of Object.entries(entries)) {

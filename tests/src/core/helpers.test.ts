@@ -1,4 +1,5 @@
-import type { Blueprint, Plan, Surface, SyncReport } from '@src/core'
+import type { Blueprint, Plan, Surface } from '@src/core'
+import { parseJSON } from '@orkestrel/contract'
 import { fillTemplate } from '@orkestrel/template'
 import {
 	alignTable,
@@ -6,17 +7,20 @@ import {
 	blueprint,
 	blueprintToMembers,
 	blueprintToPlan,
+	bytesToHex,
 	catalogNames,
 	catalogToBlock,
 	computeColumnWidth,
 	computeHash,
+	contentToHex,
 	delimiterCell,
 	dependency,
 	diffPlan,
+	findFileConflict,
 	formatJson,
+	findPathConflict,
 	inferGroup,
 	isBehind,
-	isRecord,
 	JSON_PRINT_WIDTH,
 	JSON_TAB_WIDTH,
 	manifestToDependencies,
@@ -32,6 +36,7 @@ import {
 	renderObject,
 	renderValue,
 	SCAFFOLD_RANGE,
+	snapshotOf,
 	splitTableRow,
 	stableStringify,
 	SURFACE_MATRIX,
@@ -44,17 +49,7 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
 import { describe, expect, it } from 'vitest'
-
-function readManifest(content: string | undefined): Record<string, unknown> {
-	const parsed: unknown = JSON.parse(content ?? '{}')
-	if (!isRecord(parsed)) throw new Error('expected package.json to parse to a JSON object')
-	return parsed
-}
-
-function readRecord(value: unknown): Record<string, unknown> {
-	if (!isRecord(value)) throw new Error('expected a JSON object')
-	return value
-}
+import { buildSyncReport, readManifest, readRecord } from '../../setup.js'
 
 describe('pascalCase', () => {
 	it('derives PascalCase from a lowercase-hyphen name', () => {
@@ -304,7 +299,7 @@ describe('auditToReview', () => {
 		const plan = blueprintToPlan(blueprint('router', { surfaces: ['core'] }), ['manifest'])
 		const current: Record<string, string> = {}
 		for (const artifact of plan.artifacts) {
-			if (artifact.content !== undefined) current[artifact.path] = artifact.content
+			if (artifact.content !== undefined) current[artifact.path] = contentToHex(artifact.content)
 		}
 		const review = auditToReview(diffPlan(plan, current))
 
@@ -327,7 +322,9 @@ describe('diffPlan — the four drift classes', () => {
 	it('is stale when a template/computed artifact content differs from current', () => {
 		const plan = blueprintToPlan(blueprint('router', { surfaces: ['core'] }), ['manifest'])
 		const [artifact] = plan.artifacts
-		const audit = diffPlan(plan, { [artifact?.path ?? '']: 'not the real content' })
+		const audit = diffPlan(plan, {
+			[artifact?.path ?? '']: contentToHex('not the real content'),
+		})
 
 		expect(audit.drifted).toBe(1)
 		expect(audit.findings.find((finding) => finding.path === artifact?.path)?.drift).toBe('stale')
@@ -336,7 +333,8 @@ describe('diffPlan — the four drift classes', () => {
 	it('is aligned when current content exactly matches', () => {
 		const plan = blueprintToPlan(blueprint('router', { surfaces: ['core'] }), ['manifest'])
 		const [artifact] = plan.artifacts
-		const current = artifact?.content !== undefined ? { [artifact.path]: artifact.content } : {}
+		const current =
+			artifact?.content !== undefined ? { [artifact.path]: contentToHex(artifact.content) } : {}
 		const audit = diffPlan(plan, current)
 
 		expect(audit.clean).toBe(true)
@@ -425,7 +423,9 @@ describe('diffPlan — template origin is birth-only, audit-exempt', () => {
 			'manifest',
 		])
 		const computedArtifact = plan.artifacts.find((artifact) => artifact.origin === 'computed')
-		const audit = diffPlan(plan, { [computedArtifact?.path ?? '']: 'wrong manifest bytes' })
+		const audit = diffPlan(plan, {
+			[computedArtifact?.path ?? '']: contentToHex('wrong manifest bytes'),
+		})
 
 		expect(audit.clean).toBe(false)
 		expect(audit.drifted).toBe(1)
@@ -877,20 +877,9 @@ describe('rangeToFreshness', () => {
 })
 
 describe('syncToReview', () => {
-	function report(overrides: Partial<SyncReport>): SyncReport {
-		return {
-			target: '.',
-			guides: [],
-			versions: [],
-			clean: true,
-			failed: 0,
-			...overrides,
-		}
-	}
-
 	it('titles the report with the behind count across guides and versions', () => {
 		const review = syncToReview(
-			report({
+			buildSyncReport({
 				guides: [
 					{
 						name: '@orkestrel/contract',
@@ -912,7 +901,7 @@ describe('syncToReview', () => {
 	})
 
 	it('elides the Guides/Versions sections when empty', () => {
-		const review = syncToReview(report({}))
+		const review = syncToReview(buildSyncReport())
 
 		expect(review).not.toContain('## Guides')
 		expect(review).not.toContain('## Versions')
@@ -1002,7 +991,10 @@ describe('inferGroup', () => {
 		expect(inferGroup('configs/src/tsconfig.core.json')).toBe('configs')
 	})
 
-	it('classifies .github/ and scripts/ as orchestration', () => {
+	it('classifies skill, agent, CI, and script paths as orchestration', () => {
+		expect(inferGroup('.agents/skills/harden/SKILL.md')).toBe('orchestration')
+		expect(inferGroup('.claude/agents/scout.md')).toBe('orchestration')
+		expect(inferGroup('.codex/agents/scout.toml')).toBe('orchestration')
 		expect(inferGroup('.github/workflows/ci.yml')).toBe('orchestration')
 		expect(inferGroup('scripts/deps.sh')).toBe('orchestration')
 	})
@@ -1049,22 +1041,62 @@ describe('validateDependencyArray', () => {
 	})
 })
 
-describe('isRecord', () => {
-	it('accepts a plain object', () => {
-		expect(isRecord({ a: 1 })).toBe(true)
+describe('byte-exact snapshots', () => {
+	it('encodes arbitrary bytes and UTF-8 text without replacement-character aliasing', () => {
+		expect(bytesToHex(Uint8Array.from([0x00, 0x80, 0xff]))).toBe('0080ff')
+		expect(contentToHex('é')).toBe('c3a9')
+		expect(snapshotOf({ 'text.txt': 'é' })).toEqual({ 'text.txt': 'c3a9' })
 	})
 
-	it('rejects an array', () => {
-		expect(isRecord([1, 2])).toBe(false)
+	it('preserves hostile object-prototype filenames as own data keys', () => {
+		const current = Object.fromEntries([
+			['__proto__', 'proto'],
+			['constructor', 'constructor'],
+			['toString', 'string'],
+		])
+		const snapshot = snapshotOf(current)
+
+		expect(Object.hasOwn(snapshot, '__proto__')).toBe(true)
+		expect(Object.hasOwn(snapshot, 'constructor')).toBe(true)
+		expect(Object.hasOwn(snapshot, 'toString')).toBe(true)
+		expect(snapshot['__proto__']).toBe(contentToHex('proto'))
+		expect(snapshot['constructor']).toBe(contentToHex('constructor'))
+		expect(snapshot['toString']).toBe(contentToHex('string'))
 	})
 
-	it('rejects null', () => {
-		expect(isRecord(null)).toBe(false)
-	})
+	it('does not mistake inherited object members for present artifacts', () => {
+		const plan: Plan = {
+			blueprint: blueprint('router'),
+			groups: ['source'],
+			artifacts: [
+				{ path: '__proto__', group: 'source', origin: 'computed', content: 'proto' },
+				{ path: 'constructor', group: 'source', origin: 'computed', content: 'constructor' },
+				{ path: 'toString', group: 'source', origin: 'computed', content: 'string' },
+			],
+		}
+		const audit = diffPlan(plan, {})
 
-	it('rejects a primitive', () => {
-		expect(isRecord('x')).toBe(false)
-		expect(isRecord(1)).toBe(false)
+		expect(audit.missing).toBe(3)
+		expect(audit.clean).toBe(false)
+		expect(audit.findings.every((finding) => finding.drift === 'missing')).toBe(true)
+	})
+})
+
+describe('findPathConflict', () => {
+	it('finds exact and portable case-only collisions while accepting unique paths', () => {
+		expect(findPathConflict(['a', 'b', 'a'])).toEqual(['a', 'a'])
+		expect(findPathConflict(['Skill.md', 'SKILL.md'])).toEqual(['Skill.md', 'SKILL.md'])
+		expect(findPathConflict(['a', 'b'])).toBeUndefined()
+	})
+})
+
+describe('findFileConflict', () => {
+	it('finds exact, case-only, and file/descendant collisions', () => {
+		expect(findFileConflict(['a', 'b', 'a'])).toEqual(['a', 'a'])
+		expect(findFileConflict(['Skill.md', 'SKILL.md'])).toEqual(['Skill.md', 'SKILL.md'])
+		expect(findFileConflict(['agents', 'agents/scout.md'])).toEqual(['agents', 'agents/scout.md'])
+		expect(findFileConflict(['agents/scout.md', 'agents'])).toEqual(['agents/scout.md', 'agents'])
+		expect(findFileConflict(['agents/a.md', 'agents/b.md'])).toBeUndefined()
 	})
 })
 
@@ -1170,13 +1202,11 @@ describe('pinPlan', () => {
 	})
 
 	it('pins the six documented surface variants to their captured hashes (byte-stable)', () => {
-		// Re-captured for C1-U1: `Blueprint` gained a structural `engine` field
-		// (defaulting `false`), which shifts `blueprint`'s stable-stringified
-		// content — and therefore `pinPlan`'s content hash — for every variant,
-		// recomputed honestly via `blueprintToPlan(blueprint('router', { surfaces
-		// }))` + `pinPlan` against the built output, asserted here as literals so
-		// the `computeHash`/`stableStringify` extraction stays provably
-		// byte-stable going forward.
+		// Re-captured after the host set gained native Codex configuration and
+		// its SessionStart readiness hook. Those host artifacts shift every
+		// plan's stable-stringified content. Values are recomputed through the
+		// built `blueprintToPlan` + `pinPlan` path and kept as literals so
+		// `computeHash`/`stableStringify` remains byte-stable.
 		const variants: readonly { readonly label: string; readonly surfaces: readonly Surface[] }[] = [
 			{ label: 'core-only', surfaces: ['core'] },
 			{ label: 'server-only', surfaces: ['server'] },
@@ -1186,12 +1216,12 @@ describe('pinPlan', () => {
 			{ label: 'core+browser+server', surfaces: ['core', 'browser', 'server'] },
 		]
 		const expected: Record<string, string> = {
-			'core-only': 'd2576bc2',
-			'server-only': 'b5486c79',
-			'browser-only': '01a6e691',
-			'core+server': '378c5e70',
-			'core+browser': '0b3f1e90',
-			'core+browser+server': 'e52a8fc3',
+			'core-only': '41a8af6e',
+			'server-only': '549d7289',
+			'browser-only': 'cfbd8049',
+			'core+server': 'fe2e1880',
+			'core+browser': 'a124eaf0',
+			'core+browser+server': 'f20c9c4b',
 		}
 
 		for (const variant of variants) {
@@ -1416,7 +1446,7 @@ describe('blueprintToPlan — content validation across variants (R1/R2)', () =>
 		'scripts',
 		'devDependencies',
 		'engines',
-	] as const
+	]
 
 	const SCRIPT_KEYS = [
 		'clean',
@@ -1433,7 +1463,7 @@ describe('blueprintToPlan — content validation across variants (R1/R2)', () =>
 		'build',
 		'build:src',
 		'prepublishOnly',
-	] as const
+	]
 
 	const variants: readonly { readonly label: string; readonly spec: Blueprint }[] = [
 		{ label: 'core-only', spec: blueprint('router', { surfaces: ['core'] }) },
@@ -1454,7 +1484,7 @@ describe('blueprintToPlan — content validation across variants (R1/R2)', () =>
 			)
 			expect(jsonArtifacts.length).toBeGreaterThan(0)
 			for (const artifact of jsonArtifacts) {
-				expect(() => JSON.parse(artifact.content ?? '')).not.toThrow()
+				expect(parseJSON(artifact.content ?? '')).toBeDefined()
 			}
 
 			const manifest = plan.artifacts.find((artifact) => artifact.path === 'package.json')
@@ -1597,7 +1627,22 @@ describe('blueprintToPlan — HOST_PATHS retirement + group mapping', () => {
 	it('emits the current SessionStart hook scripts, grouped orchestration', () => {
 		const plan = blueprintToPlan(blueprint('router', { surfaces: ['core'] }), ['orchestration'])
 
-		for (const path of ['scripts/deps.sh', 'scripts/cursor.sh', 'scripts/ollama.sh']) {
+		for (const path of [
+			'scripts/deps.sh',
+			'scripts/cursor.sh',
+			'scripts/codex.sh',
+			'scripts/ollama.sh',
+		]) {
+			const artifact = plan.artifacts.find((entry) => entry.path === path)
+			expect(artifact?.group).toBe('orchestration')
+			expect(artifact?.origin).toBe('host')
+		}
+	})
+
+	it('emits shared skills plus Claude and Codex configuration as host orchestration', () => {
+		const plan = blueprintToPlan(blueprint('router', { surfaces: ['core'] }), ['orchestration'])
+
+		for (const path of ['.agents', '.claude', '.codex']) {
 			const artifact = plan.artifacts.find((entry) => entry.path === path)
 			expect(artifact?.group).toBe('orchestration')
 			expect(artifact?.origin).toBe('host')
@@ -1773,8 +1818,7 @@ describe('formatJson', () => {
 describe('formatJson width constants mirror the shipped .oxfmtrc.json', () => {
 	it('JSON_PRINT_WIDTH matches .oxfmtrc.json printWidth and JSON_TAB_WIDTH matches tabWidth', () => {
 		const rcPath = fileURLToPath(new URL('../../../.oxfmtrc.json', import.meta.url))
-		const rc: unknown = JSON.parse(readFileSync(rcPath, 'utf8'))
-		if (!isRecord(rc)) throw new Error('expected .oxfmtrc.json to parse to a JSON object')
+		const rc = readRecord(parseJSON(readFileSync(rcPath, 'utf8')))
 
 		expect(JSON_PRINT_WIDTH).toBe(rc.printWidth)
 		expect(JSON_TAB_WIDTH).toBe(rc.tabWidth)

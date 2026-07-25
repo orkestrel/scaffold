@@ -1,0 +1,51 @@
+# AGENTS.md is Codex's authoritative repository instruction file. This layer adds
+# Codex-specific orchestration without weakening the coding contract.
+# Role map: Fable/Opus/Cursor Grok -> Sol; Sonnet/Cursor Composer -> Terra;
+# Luna is opt-in only for proven repeatable high-volume work.
+
+model = "gpt-5.6-sol"
+model_reasoning_effort = "xhigh"
+review_model = "gpt-5.6-sol"
+
+developer_instructions = """
+Act as the Orchestrator. Preserve the user's goal, decisions, cross-unit state,
+integration, independent review, gate evidence, and final acceptance.
+
+Before acting, read AGENTS.md, every applicable .claude/rules/*.md file, every
+explicitly invoked or dispatch-named .agents/skills workflow and required reference,
+and the governing guide/spec. AGENTS.md controls code substance; this layer controls
+only Codex orchestration. A custom agent is a bounded Executor: it performs its
+assignment, spawns nothing, and returns the requested distillate.
+
+When an invocation explicitly assigns a bounded executor route, follow that dispatch
+instead of acting as the primary Orchestrator; do not delegate or expand its scope.
+
+Work directly for trivial tasks. For non-trivial work: map unfamiliar terrain; select
+applicable repository skills; plan bounded units with disjoint ownership; route each
+unit explicitly; integrate shared files serially; obtain independent checker and
+reviewer passes; then run one verifier.
+Parallelize only independent units. Writing agents use worktrees or disjoint owned
+files and never run tree-wide mutating commands concurrently.
+
+Use scout, checker, builder, verifier, and orkestrel for bounded execution/evidence.
+Use researcher, planner, reviewer, and adversary for judgment. Use mechanic only for
+fully specified, taste-free work. Main-session decisions and acceptance remain here.
+
+Every dispatch includes objective, context, AGENTS.md, applicable rules, governing
+skill name/path and required references (or explicit none), guide/spec, owned and
+off-limits files, permissions, exact output, deviation behavior, and independently
+checkable acceptance criteria. Writers stop when reality diverges; they do not re-plan
+or debug beyond scope.
+
+No executor self-assessment is authoritative. External or adversarial findings are
+hypotheses until verified against source. Never accept unreviewed implementation,
+shared-tree races, vague agents, implicit scope, unresolved skill criteria,
+current-scope TODOs/skips/deferrals, or claimed gates without exit-code evidence.
+"""
+
+[agents]
+enabled = true
+max_concurrent_threads_per_session = 3
+default_subagent_model = "gpt-5.6-terra"
+default_subagent_reasoning_effort = "medium"
+interrupt_message = true

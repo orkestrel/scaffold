@@ -1,3 +1,6 @@
+import type { Surface, SyncReport } from '@src/core'
+import { attempt, isRecord, parseJSON } from '@orkestrel/contract'
+
 // ── Call recorder (a real callback, not a mock) ──────────────────────────────
 //
 // AGENTS §16.1: when a test only needs to count calls or inspect arguments, use a
@@ -49,10 +52,75 @@ export function createRecorder<TArgs extends readonly unknown[]>(): TestRecorder
  * @returns The thrown value, or `undefined` when `thunk` did not throw
  */
 export function captureError(thunk: () => unknown): unknown {
-	try {
-		thunk()
-		return undefined
-	} catch (error) {
-		return error
+	const result = attempt(thunk)
+	return result.success ? undefined : result.error
+}
+
+/** Parse generated package-manifest text into the record shape tests inspect. */
+export function readManifest(content: string | undefined): Record<string, unknown> {
+	const parsed = parseJSON(content ?? '{}')
+	if (!isRecord(parsed)) throw new Error('expected package.json to parse to a JSON object')
+	return parsed
+}
+
+/** Require an unknown generated JSON field to be a record. */
+export function readRecord(value: unknown): Record<string, unknown> {
+	if (!isRecord(value)) throw new Error('expected a JSON object')
+	return value
+}
+
+/** Build the implementation stub paths emitted for one surface. */
+export function buildSurfaceStubPaths(surface: Surface, pascal = 'Router'): readonly string[] {
+	return [
+		`src/${surface}/types.ts`,
+		`src/${surface}/${pascal}.ts`,
+		`src/${surface}/factories.ts`,
+		`src/${surface}/index.ts`,
+	]
+}
+
+/** Build the test paths emitted for one surface. */
+export function buildSurfaceTestPaths(surface: Surface, pascal = 'Router'): readonly string[] {
+	return [`tests/src/${surface}/${pascal}.test.ts`, `tests/src/${surface}/factories.test.ts`]
+}
+
+/** Build a complete sync-report fixture with focused overrides. */
+export function buildSyncReport(overrides?: Partial<SyncReport>, target = '.'): SyncReport {
+	return {
+		target,
+		guides: [],
+		versions: [],
+		clean: true,
+		failed: 0,
+		...overrides,
 	}
+}
+
+/** Build a populated sync report for guard and parser boundary tests. */
+export function buildPopulatedSyncReport(
+	overrides?: Partial<SyncReport>,
+	target = '.',
+): SyncReport {
+	return buildSyncReport(
+		{
+			guides: [
+				{
+					name: '@orkestrel/contract',
+					path: 'guides/src/contract.md',
+					content: '# contract',
+					freshness: 'current',
+				},
+			],
+			versions: [
+				{
+					name: '@orkestrel/contract',
+					range: '^0.0.5',
+					latest: '0.0.5',
+					freshness: 'current',
+				},
+			],
+			...overrides,
+		},
+		target,
+	)
 }

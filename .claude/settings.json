@@ -18,6 +18,11 @@
 						"type": "command",
 						"command": "\"$CLAUDE_PROJECT_DIR\"/scripts/cursor.sh",
 						"timeout": 120
+					},
+					{
+						"type": "command",
+						"command": "\"$CLAUDE_PROJECT_DIR\"/scripts/codex.sh",
+						"timeout": 120
 					}
 				]
 			}

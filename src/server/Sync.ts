@@ -8,19 +8,12 @@ import type {
 	VersionSync,
 } from '@src/core'
 import type { EmitterInterface } from '@orkestrel/emitter'
-import type { BlockquoteNode } from '@orkestrel/markdown'
-import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
-import { dirname, join, relative as relativeOf, resolve, sep } from 'node:path'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { isRecord, parseJSON } from '@orkestrel/contract'
 import { Emitter } from '@orkestrel/emitter'
-import {
-	flattenText,
-	isBlockquoteNode,
-	isParagraphNode,
-	parseDocument,
-	walkNodes,
-} from '@orkestrel/markdown'
 import { manifestToDependencies, rangeToFreshness, ScaffoldError } from '@src/core'
-import { readManifest } from './helpers.js'
+import { guideToDescription, readManifest, resolveContainedPath } from './helpers.js'
 
 /**
  * The upstream-synchronization entity (server) — the impure FETCH sibling of
@@ -225,7 +218,7 @@ export class Sync implements SyncInterface {
 		const written: string[] = []
 		for (const guide of report.guides) {
 			if (guide.freshness !== 'behind') continue
-			const to = Sync.#assertContained(target, guide.path)
+			const to = resolveContainedPath(target, guide.path, 'WRITE', 'target')
 			try {
 				mkdirSync(dirname(to), { recursive: true })
 				writeFileSync(to, guide.content, 'utf8')
@@ -286,10 +279,6 @@ export class Sync implements SyncInterface {
 	static #shortName(name: string): string {
 		const prefix = '@orkestrel/'
 		return name.startsWith(prefix) ? name.slice(prefix.length) : name
-	}
-
-	static #isRecord(value: unknown): value is Record<string, unknown> {
-		return typeof value === 'object' && value !== null && !Array.isArray(value)
 	}
 
 	// Bounded-concurrency worker pool — never an unbounded `Promise.all` (§12).
@@ -560,13 +549,8 @@ export class Sync implements SyncInterface {
 			const note = outcome.kind === 'missing' ? 'HTTP 404' : outcome.note
 			throw new ScaffoldError('FETCH', `Failed to fetch the package list at ${url}`, { url, note })
 		}
-		let parsed: unknown
-		try {
-			parsed = JSON.parse(outcome.text)
-		} catch {
-			throw new ScaffoldError('FETCH', `Malformed package list response at ${url}`, { url })
-		}
-		if (!Sync.#isRecord(parsed)) {
+		const parsed = parseJSON(outcome.text)
+		if (!isRecord(parsed)) {
 			throw new ScaffoldError('FETCH', `Malformed package list response at ${url}`, { url })
 		}
 		const names = Object.keys(parsed).filter((name) => name.startsWith('@orkestrel/'))
@@ -591,17 +575,15 @@ export class Sync implements SyncInterface {
 		if (outcome.kind === 'failed') {
 			return { version: '', description: '', note: outcome.note }
 		}
-		let parsed: unknown
-		try {
-			parsed = JSON.parse(outcome.text)
-		} catch {
+		const parsed = parseJSON(outcome.text)
+		if (parsed === undefined) {
 			return {
 				version: '',
 				description: '',
 				note: 'malformed registry response (invalid JSON)',
 			}
 		}
-		if (!Sync.#isRecord(parsed)) {
+		if (!isRecord(parsed)) {
 			return {
 				version: '',
 				description: '',
@@ -609,8 +591,7 @@ export class Sync implements SyncInterface {
 			}
 		}
 		const distTags = parsed['dist-tags']
-		const version =
-			Sync.#isRecord(distTags) && typeof distTags.latest === 'string' ? distTags.latest : ''
+		const version = isRecord(distTags) && typeof distTags.latest === 'string' ? distTags.latest : ''
 		const description = typeof parsed.description === 'string' ? parsed.description : ''
 		const note = version === '' ? 'malformed registry response (missing dist-tags.latest)' : ''
 		return { version, description, note }
@@ -635,34 +616,10 @@ export class Sync implements SyncInterface {
 			}
 		}
 		if (outcome.kind === 'failed') return { description: undefined, note: outcome.note }
-		const description = Sync.#firstBlockquoteParagraph(outcome.text)
+		const description = guideToDescription(outcome.text)
 		return description !== undefined
 			? { description, note: '' }
 			: { description: undefined, note: 'guide has no blockquote description' }
-	}
-
-	// The first top-level paragraph of the guide's first blockquote — the
-	// same extraction `catalogPackages` (server/helpers.ts) performs against a
-	// LOCAL file's content, applied here to FETCHED text.
-	static #firstBlockquoteParagraph(text: string): string | undefined {
-		let document: ReturnType<typeof parseDocument>
-		try {
-			document = parseDocument(text)
-		} catch {
-			return undefined
-		}
-		let quote: BlockquoteNode | undefined
-		for (const node of walkNodes(document)) {
-			if (isBlockquoteNode(node)) {
-				quote = node
-				break
-			}
-		}
-		if (quote === undefined) return undefined
-		const paragraph = quote.children.find((child) => isParagraphNode(child))
-		if (paragraph === undefined) return undefined
-		const flattened = flattenText(paragraph).replace(/\s+/g, ' ').trim()
-		return flattened.length > 0 ? flattened : undefined
 	}
 
 	// Combines a degraded guide/packument note into one human-readable string
@@ -675,40 +632,12 @@ export class Sync implements SyncInterface {
 	}
 
 	static #parseLatest(text: string): string | undefined {
-		let parsed: unknown
-		try {
-			parsed = JSON.parse(text)
-		} catch {
-			return undefined
-		}
-		if (!Sync.#isRecord(parsed)) return undefined
+		const parsed = parseJSON(text)
+		if (!isRecord(parsed)) return undefined
 		const distTags = parsed['dist-tags']
-		if (!Sync.#isRecord(distTags)) return undefined
+		if (!isRecord(distTags)) return undefined
 		const latest = distTags.latest
 		return typeof latest === 'string' ? latest : undefined
-	}
-
-	// Mirrors `Materializer.#assertContained` — a real-path-anchored prefix
-	// check against `resolve(target)`, closing the traversal vector a
-	// hand-built or off-pattern dependency name could open through the
-	// derived write path.
-	static #assertContained(target: string, relative: string): string {
-		const resolvedRoot = Sync.#resolveReal(resolve(target))
-		const resolvedCandidate = Sync.#resolveReal(resolve(target, relative))
-		if (resolvedCandidate !== resolvedRoot && !resolvedCandidate.startsWith(resolvedRoot + sep)) {
-			throw new ScaffoldError('WRITE', `Guide path "${relative}" escapes the target root`, {
-				path: relative,
-				target,
-			})
-		}
-		return resolve(target, relative)
-	}
-
-	static #resolveReal(path: string): string {
-		if (existsSync(path)) return realpathSync(path)
-		const parent = dirname(path)
-		if (parent === path) return path
-		return join(Sync.#resolveReal(parent), relativeOf(parent, path))
 	}
 
 	#ensureAlive(): void {

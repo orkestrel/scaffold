@@ -1,88 +1,26 @@
-import type { SpawnSyncReturns } from 'node:child_process'
 // The bin's verb/flag contract, spawning the BUILT executable (`dist/bin/scaffold.js`) via
 // `node:child_process` — assumes the build chain has already run (AGENTS.md §Orientation:
 // `npm run build` before `npm test`). Every write destination is confined to the cwd
 // (H-containment), so a test exercising `--target` against a temp fixture runs WITH that
 // fixture as its cwd. `--from` is the read-only source override (was `--host`); it is exempt
 // from containment and may point anywhere, including outside the cwd.
-import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { isRecord, parseJSON } from '@orkestrel/contract'
 import { describe, expect, it } from 'vitest'
 import { catalogNames } from '@src/core'
-import { hostRoot, isRecord, locateHostSource, readHostManifest } from '@src/server'
+import { hostRoot, locateHostSource, readHostManifest } from '@src/server'
+import {
+	buildCatalogFrom,
+	buildCatalogTarget,
+	buildFromFixture,
+	buildStagedHost,
+	HOST_FIXTURE_FILES,
+	REPAIR_HANDOFF_TEXT,
+	runBin,
+	scaffoldPackage,
+} from '../../setupBin.js'
 import { buildTempDirectory, canSymlink, WORKSPACE_ROOT } from '../../setupServer.js'
-
-const BIN_PATH = join(WORKSPACE_ROOT, 'dist/bin/scaffold.js')
-
-/** `render.ts`'s `repairHandoff` closing question, duplicated as a literal so this suite can assert the handoff's ABSENCE without importing the bin's presentation module — the handoff is now TTY-only (F1), so every spawned (non-TTY) test process never sees it. */
-const REPAIR_HANDOFF_TEXT = 'run repair now?'
-
-/**
- * Spawn the built `scaffold` bin with `argv` + optional piped `input`, cwd
- * defaulting to a throwaway location (never the repo root — every write is
- * cwd-confined, and several verbs default their read-only source to the
- * package's own vendored `dist/host` when `--from` is absent, so a bare `cwd`
- * default of the workspace root risks tests silently depending on it).
- */
-function runBin(
-	argv: readonly string[],
-	input: string,
-	options: { readonly cwd: string; readonly env?: Readonly<Record<string, string>> },
-): SpawnSyncReturns<string> {
-	return spawnSync(process.execPath, [BIN_PATH, ...argv], {
-		cwd: options.cwd,
-		input,
-		encoding: 'utf8',
-		timeout: 15000,
-		env: options.env !== undefined ? { ...process.env, ...options.env } : process.env,
-	})
-}
-
-/** Real placeholder bytes for every `HOST_PATHS` entry, keyed by artifact-relative path — enough for `new --apply --from <fixture>` to fully materialize a package without touching the (possibly stale) default vendored host. */
-const HOST_FIXTURE_FILES: Readonly<Record<string, string>> = {
-	'AGENTS.md': '# AGENTS fixture\n',
-	'CLAUDE.md': '# CLAUDE fixture\n',
-	LICENSE: 'MIT fixture license\n',
-	'.editorconfig': 'root = true\n# fixture\n',
-	'.gitattributes': '* text=auto\n',
-	'.gitignore': 'node_modules\n',
-	'.oxfmtrc.json': '{}\n',
-	'.oxlintrc.json': '{}\n',
-	'.oxlintignore': 'dist\n',
-	'.prettierignore': 'dist\n',
-	'scripts/deps.sh': '#!/bin/sh\necho deps\n',
-	'scripts/cursor.sh': '#!/bin/sh\necho cursor\n',
-	'scripts/ollama.sh': '#!/bin/sh\necho ollama\n',
-	'.github/workflows/ci.yml': 'name: ci-fixture\n',
-	'guides/src/guide.md': '# guide fixture\n',
-	'guides/src/scaffold.md': '# scaffold self-guide fixture\n',
-	'.claude/agents/example.md': '# example agent fixture\n',
-}
-
-/** Build a real, raw (no default-host lookalike) host root in a fresh temp directory — every `HOST_PATHS` entry present with placeholder bytes, `overrides` replacing or adding specific entries (e.g. a distinctive `.editorconfig` marker to prove `--from` sourcing). */
-async function buildFromFixture(overrides?: Readonly<Record<string, string>>) {
-	const directory = await buildTempDirectory()
-	for (const [relative, content] of Object.entries({ ...HOST_FIXTURE_FILES, ...overrides })) {
-		const full = join(directory.path, relative)
-		mkdirSync(dirname(full), { recursive: true })
-		writeFileSync(full, content)
-	}
-	return directory
-}
-
-/** Materialize a fresh package via `new --apply` into `cwd/name` sourced from `from`, returning its directory. */
-function scaffoldPackage(cwd: string, name: string, from: string): string {
-	const created = runBin(
-		['new', name, '--surfaces', 'core', '--apply', '--target', name, '--from', from],
-		'',
-		{ cwd },
-	)
-	if (created.status !== 0) {
-		throw new Error(`fixture scaffold failed: ${created.stdout}${created.stderr}`)
-	}
-	return join(cwd, name)
-}
 
 describe('scaffold bin: vendored-catalog resolution mechanics (U12b Q1, offline)', () => {
 	it('resolveCatalogNames-equivalent path: hostRoot() + readHostManifest + locateHostSource resolves the BUILT dist/host orkestrel.md, catalogNames parses real @orkestrel/* names', () => {
@@ -141,6 +79,21 @@ describe('scaffold bin', () => {
 			}
 		})
 
+		it('rejects repeated --from for every non-catalog verb before execution', async () => {
+			const cwd = await buildTempDirectory()
+			try {
+				for (const verb of ['new', 'pull', 'audit', 'repair', 'fleet']) {
+					const result = runBin([verb, '--from', 'first-host', '--from', 'second-host'], '', {
+						cwd: cwd.path,
+					})
+					expect(result.status).toBe(2)
+					expect(result.stderr).toContain(`--from may be provided only once for '${verb}'`)
+				}
+			} finally {
+				await cwd.cleanup()
+			}
+		})
+
 		it('unknown verb "sync" (retired alias): exits 2 with a renamed-to-pull redirect message', async () => {
 			const cwd = await buildTempDirectory()
 			try {
@@ -189,7 +142,7 @@ describe('scaffold bin', () => {
 				expect(result.status).toBe(0)
 				const lines = result.stdout.trim().split('\n')
 				expect(lines).toHaveLength(1)
-				const parsed: unknown = JSON.parse(lines[0])
+				const parsed: unknown = parseJSON(lines[0])
 				expect(parsed).toMatchObject({ name: 'demo-dry', applied: false })
 				expect(existsSync(join(cwd.path, 'demo-dry'))).toBe(false)
 			} finally {
@@ -203,7 +156,7 @@ describe('scaffold bin', () => {
 			try {
 				const result = runBin(['new', '--surfaces', 'core', '--json'], '', { cwd: cwd.path })
 				expect(result.status).toBe(2)
-				const parsed: unknown = JSON.parse(result.stdout.trim())
+				const parsed: unknown = parseJSON(result.stdout.trim())
 				expect(parsed).toMatchObject({ error: { code: 'USAGE' } })
 			} finally {
 				await cwd.cleanup()
@@ -217,7 +170,7 @@ describe('scaffold bin', () => {
 					cwd: cwd.path,
 				})
 				expect(result.status).toBe(2)
-				const parsed: unknown = JSON.parse(result.stdout.trim())
+				const parsed: unknown = parseJSON(result.stdout.trim())
 				expect(parsed).toMatchObject({ error: { code: 'USAGE' } })
 				expect(JSON.stringify(parsed)).toContain('^[a-z][a-z0-9-]*$')
 				expect(existsSync(join(cwd.path, 'Foo'))).toBe(false)
@@ -280,7 +233,7 @@ describe('scaffold bin', () => {
 				const packageDirectory = join(cwd.path, 'demo-apply')
 				const packageJsonPath = join(packageDirectory, 'package.json')
 				expect(existsSync(packageJsonPath)).toBe(true)
-				const parsed: unknown = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
+				const parsed: unknown = parseJSON(readFileSync(packageJsonPath, 'utf8'))
 				expect(parsed).toMatchObject({ name: '@orkestrel/demo-apply' })
 				expect(readFileSync(join(packageDirectory, '.editorconfig'), 'utf8')).toBe(
 					HOST_FIXTURE_FILES['.editorconfig'],
@@ -404,7 +357,7 @@ describe('scaffold bin', () => {
 					// Hand-add a devDependency directly to the generated package.json —
 					// the owner's stated post-scaffold workflow now that --extras is gone.
 					const packageJsonPath = join(cwd.path, 'demo', 'package.json')
-					const manifest: unknown = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
+					const manifest: unknown = parseJSON(readFileSync(packageJsonPath, 'utf8'))
 					if (!isRecord(manifest)) throw new Error('expected package.json to parse to an object')
 					const devDependencies = isRecord(manifest.devDependencies) ? manifest.devDependencies : {}
 					writeFileSync(
@@ -519,7 +472,7 @@ describe('scaffold bin', () => {
 					cwd: packageDirectory,
 				})
 				expect(jsonAudited.status).toBe(1)
-				const parsed: unknown = JSON.parse(jsonAudited.stdout.trim())
+				const parsed: unknown = parseJSON(jsonAudited.stdout.trim())
 				expect(parsed).toMatchObject({ clean: false, foreign: 1 })
 			} finally {
 				await cwd.cleanup()
@@ -536,7 +489,7 @@ describe('scaffold bin', () => {
 					cwd: packageDirectory,
 				})
 				expect(audited.status).toBe(0)
-				const parsed: unknown = JSON.parse(audited.stdout.trim())
+				const parsed: unknown = parseJSON(audited.stdout.trim())
 				expect(parsed).toMatchObject({ clean: true, foreign: 0 })
 			} finally {
 				await cwd.cleanup()
@@ -557,7 +510,7 @@ describe('scaffold bin', () => {
 				expect(audited.status).toBe(1)
 				const lines = audited.stdout.trim().split('\n')
 				expect(lines).toHaveLength(1)
-				const parsed: unknown = JSON.parse(lines[0])
+				const parsed: unknown = parseJSON(lines[0])
 				expect(parsed).toMatchObject({ clean: false, missing: 1 })
 			} finally {
 				await cwd.cleanup()
@@ -660,31 +613,84 @@ describe('scaffold bin', () => {
 			}
 		}, 20000)
 
-		it('F3: an unscannable --from host (exists, but establishes no vendored allowlist) degrades the audit instead of crashing — scanSkipped prose, exit code still meaningful', async () => {
-			// `from` scaffolds a NORMAL package (so it really has a `.claude/agents`
-			// directory to scan) — `host2` is the audit's OWN `--from`, a bare empty
-			// directory that EXISTS (so `hydrateBestEffort` succeeds, `aware: true`)
-			// but has no `manifest.json` and no `host2/.claude/agents` — exactly the
-			// `vendoredPruneSet` fail-closed condition (`ScaffoldError('TARGET')`)
-			// `withForeignScanSafe` must catch rather than let crash the audit.
+		it('fails closed when an explicit --from exists but cannot establish any host artifacts', async () => {
 			const from = await buildFromFixture()
 			const host2 = await buildTempDirectory()
 			const cwd = await buildTempDirectory()
 			try {
 				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
-				const roguePath = join(packageDirectory, '.claude', 'agents', 'rogue.md')
-				mkdirSync(dirname(roguePath), { recursive: true })
-				writeFileSync(roguePath, '# rogue\n')
-
 				const audited = runBin(['audit', '--from', host2.path], '', { cwd: packageDirectory })
-				expect(audited.status === 0 || audited.status === 1).toBe(true)
-				expect(audited.stdout).toContain(
-					"scanning skipped — couldn't establish the template source",
-				)
+				expect(audited.status).toBe(1)
+				expect(audited.stderr).toContain('[TARGET]')
+				expect(audited.stderr).toContain('missing')
 			} finally {
 				await cwd.cleanup()
 				await from.cleanup()
 				await host2.cleanup()
+			}
+		}, 20000)
+
+		it('fails closed when an explicit --from is a file instead of a directory', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				const invalidHost = join(packageDirectory, 'host.txt')
+				writeFileSync(invalidHost, 'not a directory', 'utf8')
+
+				const audited = runBin(['audit', '--from', invalidHost], '', { cwd: packageDirectory })
+				expect(audited.status).toBe(1)
+				expect(audited.stderr).toContain('[TARGET]')
+				expect(audited.stderr).toContain('not a readable directory')
+			} finally {
+				await cwd.cleanup()
+				await from.cleanup()
+			}
+		}, 20000)
+
+		it('fails closed with one JSON error when an explicit staged host has a malformed manifest', async () => {
+			const from = await buildFromFixture()
+			const host = await buildStagedHost()
+			const cwd = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				writeFileSync(join(host.path, 'manifest.json'), '{', 'utf8')
+
+				const audited = runBin(['audit', '--json', '--from', host.path], '', {
+					cwd: packageDirectory,
+				})
+				expect(audited.status).toBe(1)
+				expect(audited.stderr).toBe('')
+				const lines = audited.stdout.trim().split('\n')
+				expect(lines).toHaveLength(1)
+				expect(parseJSON(lines[0])).toMatchObject({ error: { code: 'TARGET' } })
+			} finally {
+				await cwd.cleanup()
+				await host.cleanup()
+				await from.cleanup()
+			}
+		}, 20000)
+
+		it('fails closed when a staged manifest points at missing storage bytes', async () => {
+			const from = await buildFromFixture()
+			const host = await buildStagedHost()
+			const cwd = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				const manifest = readHostManifest(host.path)
+				const entry = manifest?.entries[0]
+				if (entry === undefined) throw new Error('expected staged host entries')
+				rmSync(join(host.path, entry.storage))
+
+				const audited = runBin(['audit', '--from', host.path], '', { cwd: packageDirectory })
+				expect(audited.status).toBe(1)
+				expect(audited.stderr).toContain('[TARGET]')
+				expect(audited.stderr).toContain('Host storage file')
+				expect(audited.stderr).toContain('is missing or case-mismatched')
+			} finally {
+				await cwd.cleanup()
+				await host.cleanup()
+				await from.cleanup()
 			}
 		}, 20000)
 	})
@@ -728,7 +734,7 @@ describe('scaffold bin', () => {
 		}, 20000)
 
 		it('--prune --apply: removes a planted unexpected file under .claude/agents', async () => {
-			// `materializer.prune` scans `.claude/agents` / `scripts` directly
+			// `materializer.prune` scans `.claude/agents`, `.codex/agents`, and `scripts` directly
 			// (independent of `diffPlan`'s unreachable `foreign` branch — see the
 			// deviation note above `foreignAuditGap` below); `runRepair` reaches
 			// the prune step whenever `--prune` finds work, host drift or not
@@ -952,9 +958,9 @@ describe('scaffold bin', () => {
 				expect(result.status).toBe(0)
 				const lines = result.stdout.trim().split('\n')
 				expect(lines).toHaveLength(1)
-				const parsed: unknown = JSON.parse(lines[0])
-				expect(Array.isArray(parsed)).toBe(true)
-				expect((parsed as unknown[]).length).toBe(2)
+				const parsed: unknown = parseJSON(lines[0])
+				if (!Array.isArray(parsed)) throw new Error('expected a JSON array')
+				expect(parsed).toHaveLength(2)
 			} finally {
 				await root.cleanup()
 				await from.cleanup()
@@ -963,28 +969,37 @@ describe('scaffold bin', () => {
 	})
 
 	describe('catalog (offline / vendored-from only — no live registry call)', () => {
-		function buildCatalogTarget(cwd: string): string {
-			const agentsDirectory = join(cwd, '.claude', 'agents')
-			mkdirSync(agentsDirectory, { recursive: true })
-			writeFileSync(
-				join(agentsDirectory, 'orkestrel.md'),
-				['# catalog', '', '<!-- catalog:start -->', 'placeholder', '<!-- catalog:end -->', ''].join(
-					'\n',
-				),
-			)
-			return cwd
-		}
+		it('accepts repeated --from and merges every local catalog source', async () => {
+			const target = await buildTempDirectory()
+			const first = await buildTempDirectory()
+			const second = await buildTempDirectory()
+			try {
+				buildCatalogTarget(target.path)
+				buildCatalogFrom(first.path, ['one'])
+				buildCatalogFrom(second.path, ['two'])
 
-		function buildCatalogFrom(directory: string, packages: readonly string[]): void {
-			for (const name of packages) {
-				const packageDirectory = join(directory, name)
-				mkdirSync(packageDirectory, { recursive: true })
-				writeFileSync(
-					join(packageDirectory, 'package.json'),
-					JSON.stringify({ name: `@orkestrel/${name}`, version: '1.0.0' }),
+				const result = runBin(
+					['catalog', '--offline', '--from', first.path, '--from', second.path, '--json'],
+					'',
+					{ cwd: target.path },
 				)
+				expect(result.status).toBe(1)
+				const parsed: unknown = parseJSON(result.stdout.trim())
+				if (!isRecord(parsed) || !Array.isArray(parsed.entries)) {
+					throw new Error('expected a catalog JSON result')
+				}
+				expect(parsed.entries).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({ name: '@orkestrel/one' }),
+						expect.objectContaining({ name: '@orkestrel/two' }),
+					]),
+				)
+			} finally {
+				await target.cleanup()
+				await first.cleanup()
+				await second.cleanup()
 			}
-		}
+		})
 
 		it('--offline --from <fixture>: produces the table and writes the catalog', async () => {
 			const target = await buildTempDirectory()
@@ -1025,7 +1040,7 @@ describe('scaffold bin', () => {
 				})
 				const lines = result.stdout.trim().split('\n')
 				expect(lines).toHaveLength(1)
-				const parsed: unknown = JSON.parse(lines[0])
+				const parsed: unknown = parseJSON(lines[0])
 				expect(parsed).toMatchObject({ drift: true })
 			} finally {
 				await target.cleanup()
@@ -1131,7 +1146,7 @@ describe('scaffold bin', () => {
 				expect(result.status).toBe(2)
 				const lines = result.stdout.trim().split('\n')
 				expect(lines).toHaveLength(1)
-				const parsed: unknown = JSON.parse(lines[0])
+				const parsed: unknown = parseJSON(lines[0])
 				expect(parsed).toMatchObject({ error: { code: 'USAGE' } })
 				if (
 					!isRecord(parsed) ||
@@ -1164,7 +1179,7 @@ describe('scaffold bin', () => {
 				expect(result.status).toBe(1)
 				const lines = result.stdout.trim().split('\n')
 				expect(lines).toHaveLength(1)
-				const parsed: unknown = JSON.parse(lines[0])
+				const parsed: unknown = parseJSON(lines[0])
 				expect(parsed).toMatchObject({ error: { code: 'TARGET' } })
 				if (
 					!isRecord(parsed) ||

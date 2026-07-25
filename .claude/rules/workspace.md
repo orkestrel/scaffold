@@ -22,6 +22,7 @@ Use only the surfaces a project needs, but preserve this dependency model.
 | `src/browser/` | Published browser-only library                     |
 | `src/server/`  | Published Node-only library                        |
 | `src/styles/`  | Optional SCSS bundle producing `index.css`         |
+| `src/bin/`     | Optional executable entry; never a public barrel   |
 | `app/core/`    | Shared application logic with an `index.ts` barrel |
 | `app/browser/` | Browser app; `main.ts` entry, not a barrel         |
 | `app/server/`  | Node server app; `main.ts` entry                   |
@@ -29,7 +30,9 @@ Use only the surfaces a project needs, but preserve this dependency model.
 | `configs/`     | Thin target wrappers around root configs           |
 
 - Browser/server import core; core imports neither.
-- Application surfaces import library surfaces.
+- `app/core` is host-independent.
+- `app/server` may import app/core and core/server library surfaces; it never imports browser code.
+- `app/browser` may import app/core and core/browser library surfaces. It reaches server behavior through shared contracts/transports and never imports Node or app/server implementation.
 - Typical browser-app domains: `components/`, `pages/`, `composables.ts`, `controllers/`, `services/`, `stores/`.
 - Typical server-app domains: `handlers/`, `middlewares.ts`, `routes.ts`.
 - `src/styles/index.ts` is a side-effect entry importing `./index.scss`.
@@ -53,7 +56,8 @@ Define aliases in `tsconfig.json` first. `vite.config.ts` derives from `compiler
 - `tsconfig.json`: shared compiler options, all-tree types, and path aliases.
 - `vite.config.ts`: shared builds, test projects, environment loading/mapping, and aliases.
 - `*/types.ts`: public API contracts.
-- `configs/src/`, `configs/app/`, and optional `configs/bin/`: thin per-target wrappers. Shared logic remains in root configs.
+- `configs/src/` and `configs/app/`: thin per-target wrappers, including optional
+  `configs/src/*bin*` files. Shared logic remains in root configs.
 
 Environment rules:
 
@@ -64,15 +68,16 @@ Environment rules:
 
 ## Build outputs
 
-| Output             | Content                       | Format         |
-| ------------------ | ----------------------------- | -------------- |
-| `dist/src/core`    | Core library                  | CJS            |
-| `dist/src/browser` | Browser library               | ES             |
-| `dist/src/server`  | Server library                | CJS            |
-| `dist/src/styles`  | Compiled `index.css`          | ES wrapper     |
-| `dist/app/browser` | Browser application           | target-defined |
-| `dist/app/server`  | Server application            | CJS            |
-| `dist/showcase`    | Single-file `index.html` demo | self-contained |
+| Output             | Content                        | Format          |
+| ------------------ | ------------------------------ | --------------- |
+| `dist/src/core`    | Core library + declarations    | ES and CJS      |
+| `dist/src/browser` | Browser library + declarations | ES              |
+| `dist/src/server`  | Server library + declarations  | ES and CJS      |
+| `dist/src/styles`  | Compiled `index.css`           | ES wrapper      |
+| `dist/bin`         | Optional executable            | ES with shebang |
+| `dist/app/browser` | Browser application            | target-defined  |
+| `dist/app/server`  | Server application             | CJS             |
+| `dist/showcase`    | Single-file `index.html` demo  | self-contained  |
 
 - Library declarations are emitted by `tsc` through `configs/src/tsconfig.{core,browser,server}.json`, chained after each Vite build.
 - Styles ship CSS, not declarations.
@@ -91,6 +96,7 @@ Environment rules:
 | `src:browser` | `tests/src/browser/**` | Playwright Chromium | `setup.ts`, `setupBrowser.ts`                   |
 | `src:server`  | `tests/src/server/**`  | Node                | `setup.ts`, `setupServer.ts`                    |
 | `src:styles`  | `tests/src/styles/**`  | Playwright Chromium | `setup.ts`, `setupBrowser.ts`, `setupStyles.ts` |
+| `src:bin`     | `tests/src/bin/**`     | Node                | `setup.ts`, `setupServer.ts`                    |
 | `app:core`    | `tests/app/core/**`    | Node                | `setup.ts`                                      |
 | `app:browser` | `tests/app/browser/**` | Playwright Chromium | `setup.ts`, `setupBrowser.ts`                   |
 | `app:server`  | `tests/app/server/**`  | Node                | `setup.ts`, `setupServer.ts`                    |
@@ -105,21 +111,17 @@ Scope with `test:src`, `test:src:core`, `test:app`, `test:app:server`, and equiv
 
 ## Typechecking and environment isolation
 
-`npm run check` is one comprehensive root pass:
+`npm run check` is the comprehensive contract. It typechecks the whole tree and
+then runs the configured scoped checks that prove environment isolation.
 
-```text
-vue-tsc --noEmit --project tsconfig.json
-```
-
-It checks the whole tree—source, app, tests, configs, and root Vite config—and provides IDE parity. It does **not** call scoped checks. Lint remains a separate complementary gate.
-
-The on-demand `check:<scope>` family mirrors test projects and proves environment isolation:
-
-- `check:src` → `check:src:{core,browser,server,styles}`.
-- `check:app` → `check:app:{core,browser,server}`.
-- Run one granular scope or the aggregate needed for the change.
-
-Use plain `tsc` for every pure-TS scope. Use `vue-tsc` only for the whole-tree pass and `check:app:browser`, where `.vue` internals must be checked. Plain `tsc` sees the Vue shim but not SFC template/`<script setup>` internals.
+- Use plain `tsc` for a TypeScript-only tree.
+- Use `vue-tsc` only for a scope containing `.vue` internals.
+- `check:src` mirrors configured `src:*` test projects; optional `src:bin` is its
+  own scope.
+- `check:app` mirrors configured `app:*` projects.
+- During development, run the narrowest granular scope that covers the change.
+- Lint is a separate complementary gate; neither lint nor root checking replaces
+  environment-isolation checks.
 
 | Scope                        | `lib`                             | `types`           | Permitted host globals                              |
 | ---------------------------- | --------------------------------- | ----------------- | --------------------------------------------------- |
@@ -149,13 +151,16 @@ Build/check config alignment:
 | `build:showcase`        | Build `dist/showcase`                                             |
 | `show`                  | Build and copy showcase to `demo/showcase.html`                   |
 | `lint`                  | `oxlint --config .oxlintrc.json --fix .`; separate from typecheck |
-| `check`                 | Comprehensive root `vue-tsc` pass                                 |
+| `lint:check`            | Non-mutating whole-tree lint gate                                 |
+| `check`                 | Comprehensive root typecheck plus configured isolation scopes     |
 | `check:<scope>`         | On-demand environment-isolation pass                              |
 | `format`                | Format all files                                                  |
+| `format:check`          | Non-mutating whole-tree format gate                               |
+| `test`                  | Source/application projects, then guide parity                    |
 | `clean`                 | Remove `dist/`                                                    |
 | `copy <from> <to>`      | Copy while creating parent directories                            |
 | `tmp:txt`               | Rename non-Markdown files in `tmp/` to `.txt`                     |
-| `prepublishOnly`        | Full `format → lint → check → build → test` sequence              |
+| `prepublishOnly`        | `format:check → lint:check → check → build → test`                |
 
 Run `show` only **after** formatting. The committed `demo/showcase.html` is generated/minified; formatting after generation would expand its inlined bundle.
 
@@ -166,5 +171,11 @@ Run `show` only **after** formatting. The committed `demo/showcase.html` is gene
 - Formatter: Oxfmt with `.oxfmtrc.json`.
 - Bundler: Vite.
 - Tests: Vitest; `@vitest/browser-playwright` for browser projects.
-- Node build target: Node 24 for core/server.
+- Node build targets derive from the package's declared supported runtime. Keep `engines`, bundler targets, scoped configs, tests, and documentation aligned; never hard-code one Node version line-wide.
 - Browser framework: Vue 3 when present.
+
+## Text integrity
+
+- Store text as UTF-8.
+- Before accepting broad generated or migrated edits, scan changed text for replacement characters, mojibake, unintended control characters, and accidental trailing debris.
+- Preserve intentional Unicode punctuation and symbols; do not “clean” valid text merely because it is non-ASCII.

@@ -12,8 +12,8 @@ import type {
 // ============================================================================
 //  @orkestrel/scaffold/server — the materialization + sync faces' type
 //  surface (AGENTS §5 source of truth). The server-marked Types rows from
-//  scaffold.md's `## Surface` table — `MaterializeResult`, `ManifestEntry`
-//  (one vendored `host/manifest.json` entry), plus the `Materializer` triad
+//  scaffold.md's `## Surface` table — `MaterializeResult`, `HostManifest`,
+//  `ManifestEntry` (one vendored `host/manifest.json` entry), plus the `Materializer` triad
 //  (`MaterializerEventMap` / `MaterializerOptions` / `MaterializerInterface`)
 //  and the `Sync` triad (`SyncEventMap` / `SyncOptions` / `SyncInterface`).
 //  Everything else the server surface touches (`Plan`, `Audit`, `Dependency`,
@@ -63,6 +63,12 @@ export interface ManifestEntry {
 	readonly storage: string
 	readonly destination: string
 	readonly executable: boolean
+}
+
+/** A complete vendored-host inventory with file entries and declared directory roots. */
+export interface HostManifest {
+	readonly entries: readonly ManifestEntry[]
+	readonly roots: readonly string[]
 }
 
 /** The materialization contract (server) — the only impure entity in the package. */

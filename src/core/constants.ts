@@ -1,11 +1,22 @@
+import type {
+	BuildFormat,
+	Category,
+	CompileStage,
+	Freshness,
+	Group,
+	Origin,
+	Surface,
+	SurfaceDefinition,
+} from './types.js'
+
 /** The three `Surface` values, frozen — compose with `literalOf(...)` / `parseEnum(...)`. */
-export const SURFACES = Object.freeze(['core', 'browser', 'server'] as const)
+export const SURFACES: readonly Surface[] = Object.freeze(['core', 'browser', 'server'])
 
 /** The three `Origin` values, frozen. */
-export const ORIGINS = Object.freeze(['host', 'template', 'computed'] as const)
+export const ORIGINS: readonly Origin[] = Object.freeze(['host', 'template', 'computed'])
 
 /** The seven `Group` values, frozen — the artifact-group selection vocabulary. */
-export const GROUPS = Object.freeze([
+export const GROUPS: readonly Group[] = Object.freeze([
 	'manifest',
 	'configs',
 	'source',
@@ -13,16 +24,26 @@ export const GROUPS = Object.freeze([
 	'guides',
 	'docs',
 	'orchestration',
-] as const)
+])
 
 /** The four `Category` values, frozen. */
-export const CATEGORIES = Object.freeze(['type', 'constant', 'factory', 'entity'] as const)
+export const CATEGORIES: readonly Category[] = Object.freeze([
+	'type',
+	'constant',
+	'factory',
+	'entity',
+])
 
 /** The four `Freshness` values, frozen — the currency axis `Sync` reports on. */
-export const FRESHNESS = Object.freeze(['current', 'behind', 'missing', 'failed'] as const)
+export const FRESHNESS: readonly Freshness[] = Object.freeze([
+	'current',
+	'behind',
+	'missing',
+	'failed',
+])
 
 /** The pipeline phases in order, frozen. */
-export const COMPILE_STAGES = Object.freeze(['draft', 'gate', 'pin'] as const)
+export const COMPILE_STAGES: readonly CompileStage[] = Object.freeze(['draft', 'gate', 'pin'])
 
 /**
  * The per-surface variant matrix as data: per `Surface`, its `configs/src`
@@ -30,54 +51,54 @@ export const COMPILE_STAGES = Object.freeze(['draft', 'gate', 'pin'] as const)
  * per-surface layer `blueprintToPlan` reads BENEATH the manifest/exports
  * combination rules it applies on top.
  */
-export const SURFACE_MATRIX = Object.freeze({
+export const SURFACE_MATRIX: Readonly<Record<Surface, SurfaceDefinition>> = Object.freeze({
 	core: Object.freeze({
-		configs: Object.freeze([
-			'configs/src/vite.core.config.ts',
-			'configs/src/tsconfig.core.json',
-		] as const),
+		configs: Object.freeze(['configs/src/vite.core.config.ts', 'configs/src/tsconfig.core.json']),
 		project: 'src:core',
 		path: '.',
-		formats: Object.freeze(['es', 'cjs'] as const),
+		formats: Object.freeze<BuildFormat[]>(['es', 'cjs']),
 	}),
 	browser: Object.freeze({
 		configs: Object.freeze([
 			'configs/src/vite.browser.config.ts',
 			'configs/src/tsconfig.browser.json',
-		] as const),
+		]),
 		project: 'src:browser',
 		path: './browser',
-		formats: Object.freeze(['es'] as const),
+		formats: Object.freeze<BuildFormat[]>(['es']),
 	}),
 	server: Object.freeze({
 		configs: Object.freeze([
 			'configs/src/vite.server.config.ts',
 			'configs/src/tsconfig.server.json',
-		] as const),
+		]),
 		project: 'src:server',
 		path: './server',
-		formats: Object.freeze(['es', 'cjs'] as const),
+		formats: Object.freeze<BuildFormat[]>(['es', 'cjs']),
 	}),
-} as const)
+})
 
 /**
  * The byte-copied host artifact paths, frozen.
  *
  * @remarks
- * The root docs (`AGENTS.md` / `CLAUDE.md`), `LICENSE`, `.claude`, the three
- * SessionStart hook scripts (`scripts/deps.sh` / `scripts/cursor.sh` /
- * `scripts/ollama.sh`), the line's seven byte-identical root dotfiles,
+ * The root docs (`AGENTS.md` / `CLAUDE.md`), `LICENSE`, `.agents`, `.claude`, `.codex`,
+ * the four SessionStart hook scripts (`scripts/deps.sh` / `scripts/cursor.sh` /
+ * `scripts/codex.sh` / `scripts/ollama.sh`), the line's seven byte-identical root dotfiles,
  * `.github/workflows/ci.yml`, and the two guides-grouped mirrors every repo
  * carries: the line-wide dev-tooling guide (`guides/src/guide.md`) and the
  * scaffold engine's own self-guide (`guides/src/scaffold.md`).
  */
-export const HOST_PATHS = Object.freeze([
+export const HOST_PATHS: readonly string[] = Object.freeze([
 	'AGENTS.md',
 	'CLAUDE.md',
 	'LICENSE',
+	'.agents',
 	'.claude',
+	'.codex',
 	'scripts/deps.sh',
 	'scripts/cursor.sh',
+	'scripts/codex.sh',
 	'scripts/ollama.sh',
 	'.editorconfig',
 	'.gitattributes',
@@ -89,10 +110,13 @@ export const HOST_PATHS = Object.freeze([
 	'.github/workflows/ci.yml',
 	'guides/src/guide.md',
 	'guides/src/scaffold.md',
-] as const)
+])
 
 /** The package-name RegExp — lowercase alphanumeric-with-hyphens, letter-first. */
 export const NAME_PATTERN = /^[a-z][a-z0-9-]*$/
+
+/** Exact lowercase hexadecimal bytes: two digits per byte, including empty content. */
+export const HEX_PATTERN = /^(?:[0-9a-f]{2})*$/
 
 /**
  * The `@orkestrel/*` dependency-name RegExp — every `Dependency.name` must be

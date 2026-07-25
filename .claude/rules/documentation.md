@@ -8,6 +8,8 @@ paths:
   - 'app/**/types.ts'
   - 'app/**/index.ts'
   - 'src/styles/**/*'
+  - '.agents/skills/**/*.md'
+  - '.claude/skills/**/*.md'
 ---
 
 # Documentation and parity rules
@@ -51,3 +53,12 @@ Code fences import through the package's published specifier:
 - secondary surface: `@orkestrel/<name>/<surface>`.
 
 Never use in-repository `@src/*` aliases in public guide examples; reserve them for source/tests.
+
+## Workflow skills
+
+- Skills prescribe reusable process; they do not copy naming, placement, syntax, lifecycle, or test laws from `AGENTS.md` and rules.
+- Keep `SKILL.md` concise and route conditional detail to one-level `references/`.
+- Frontmatter contains only `name` and a trigger-focused `description`.
+- Do not put model routing or package version catalogs in a skill.
+- Validate every referenced resource and `agents/openai.yaml`; do not leave template TODOs or auxiliary README/changelog files.
+- Keep provider bridges minimal: they load one canonical workflow and add no competing instructions.

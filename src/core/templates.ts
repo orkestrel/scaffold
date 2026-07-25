@@ -575,5 +575,5 @@ for (const entry of manifest) {
 }
 `,
 		}),
-	} as const)
+	})
 })()

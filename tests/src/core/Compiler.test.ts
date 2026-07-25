@@ -1,6 +1,19 @@
 import type { Audit, Question, Scaffolding, Surface } from '@src/core'
-import { blueprint, Compiler, dependency, isScaffoldError, override } from '@src/core'
-import { captureError, createRecorder } from '../../setup.js'
+import {
+	blueprint,
+	Compiler,
+	contentToHex,
+	dependency,
+	isScaffoldError,
+	override,
+	SURFACES,
+} from '@src/core'
+import {
+	buildSurfaceStubPaths,
+	buildSurfaceTestPaths,
+	captureError,
+	createRecorder,
+} from '../../setup.js'
 import { describe, expect, it } from 'vitest'
 
 describe('Compiler#compile — pipeline stages and records', () => {
@@ -264,7 +277,7 @@ describe('Compiler#audit', () => {
 		const scaffolding = compiler.compile(spec, ['manifest'])
 		const current: Record<string, string> = {}
 		for (const artifact of scaffolding.plan?.artifacts ?? []) {
-			if (artifact.content !== undefined) current[artifact.path] = artifact.content
+			if (artifact.content !== undefined) current[artifact.path] = contentToHex(artifact.content)
 		}
 
 		const result = compiler.audit(spec, current, ['manifest'])
@@ -315,21 +328,6 @@ describe('Compiler — destroy semantics', () => {
 })
 
 describe('Compiler#compile — surface parameterization (six variants): emitted artifact path set', () => {
-	const pascal = 'Router'
-
-	function stubQuartet(surface: Surface): readonly string[] {
-		return [
-			`src/${surface}/types.ts`,
-			`src/${surface}/${pascal}.ts`,
-			`src/${surface}/factories.ts`,
-			`src/${surface}/index.ts`,
-		]
-	}
-
-	function testPair(surface: Surface): readonly string[] {
-		return [`tests/src/${surface}/${pascal}.test.ts`, `tests/src/${surface}/factories.test.ts`]
-	}
-
 	const variants: readonly { readonly label: string; readonly surfaces: readonly Surface[] }[] = [
 		{ label: 'core-only', surfaces: ['core'] },
 		{ label: 'core+server', surfaces: ['core', 'server'] },
@@ -348,10 +346,10 @@ describe('Compiler#compile — surface parameterization (six variants): emitted 
 			expect(scaffolding.complete).toBe(true)
 			const paths = new Set(scaffolding.plan?.artifacts.map((artifact) => artifact.path) ?? [])
 
-			for (const surface of ['core', 'browser', 'server'] as const) {
+			for (const surface of SURFACES) {
 				const declared = surfaces.includes(surface)
-				for (const path of stubQuartet(surface)) expect(paths.has(path)).toBe(declared)
-				for (const path of testPair(surface)) expect(paths.has(path)).toBe(declared)
+				for (const path of buildSurfaceStubPaths(surface)) expect(paths.has(path)).toBe(declared)
+				for (const path of buildSurfaceTestPaths(surface)) expect(paths.has(path)).toBe(declared)
 			}
 
 			expect(paths.has('tests/setup.ts')).toBe(true)

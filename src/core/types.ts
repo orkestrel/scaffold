@@ -3,6 +3,17 @@ import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkes
 /** The environment surface an artifact or member belongs to (the SCAFFOLDED package's faces, not scaffold's own). */
 export type Surface = 'core' | 'browser' | 'server'
 
+/** One supported library-output module format. */
+export type BuildFormat = 'es' | 'cjs'
+
+/** The deterministic build and export settings for one source surface. */
+export interface SurfaceDefinition {
+	readonly configs: readonly string[]
+	readonly project: string
+	readonly path: string
+	readonly formats: readonly BuildFormat[]
+}
+
 /**
  * How an `Artifact`'s content is produced: `host` byte-copied from the vendored
  * data root, `template` filled from a frozen `TemplateDefinition` by
@@ -111,21 +122,35 @@ export interface Member {
 	readonly surface: Surface
 }
 
-/**
- * One file in a `Plan`.
- *
- * @remarks
- * `content` present for `template` / `computed`, `source` (a host-relative
- * path) for `host`.
- */
-export interface Artifact {
+/** Fields shared by every file in a `Plan`. */
+export interface ArtifactBase {
 	readonly path: string
 	readonly group: Group
-	readonly origin: Origin
 	readonly surface?: Surface
-	readonly content?: string
-	readonly source?: string
 }
+
+/** A byte-copied host artifact; `source` falls back to `path` when absent. */
+export interface HostArtifact extends ArtifactBase {
+	readonly origin: 'host'
+	/** Exact lowercase hexadecimal bytes used for byte-safe host auditing. */
+	readonly hex?: string
+	readonly source?: string
+	readonly content?: never
+}
+
+/** A text artifact produced by the template or computed compilation path. */
+export interface ContentArtifact extends ArtifactBase {
+	readonly origin: 'template' | 'computed'
+	readonly content: string
+	readonly hex?: never
+	readonly source?: never
+}
+
+/** One origin-discriminated file in a `Plan`. */
+export type Artifact = HostArtifact | ContentArtifact
+
+/** Exact lowercase hexadecimal target bytes keyed by artifact-relative path. */
+export type Snapshot = Readonly<Record<string, string>>
 
 /** The compiled, ordered artifact list plus the selection it covers; `trace` / `hash` filled by the pin. */
 export interface Plan {

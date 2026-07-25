@@ -7,6 +7,18 @@ paths:
 
 # API pattern rules
 
+## Declared ecosystem capabilities
+
+Before writing a guard, parser, combinator, outcome, safe exception boundary, contract shape/compiler, schema utility, error narrower, emitter helper, or other general primitive:
+
+1. Inspect `package.json`, the lockfile, vendored dependency guides, and exact installed declarations/exports.
+2. Build a semantic overlap map between the proposed/local behavior and declared `@orkestrel/*` capabilities.
+3. Reuse the originating package directly when semantics match.
+4. Keep local behavior only when it adds a real domain invariant, composition, projection, translation, or intentionally different contract.
+5. Test the difference. Similar names are not proof of equivalent semantics.
+
+Never reimplement or rename-wrap a declared package primitive. Do not add an ecosystem dependency unless the user explicitly authorizes it.
+
 ## Options
 
 - Top-level keys are single words.
@@ -102,11 +114,12 @@ Use four orthogonal surfaces:
 | ---------------- | ----------------------------------------------------------------------------- |
 | `validators.ts`  | Total `is*` guards: `(unknown) => value is T`; no coercion/side effects       |
 | `combinators.ts` | Build guards from guards: `arrayOf`, `recordOf`, `unionOf`                    |
-| `parsers.ts`     | Flat coercers returning `T                                                    | undefined` |
+| `parsers.ts`     | Flat coercers returning `T \| undefined`                                      |
 | Shape DSL        | One `ContractShape` compiled into schema, guard, parser, and seeded generator |
 
 - Use plain guards/parsers for small surfaces.
 - Use the shape DSL only when four-way validation/serialization/generation parity earns its complexity.
+- When `@orkestrel/contract` is declared, use its exact installed guards, parsers, combinators, outcomes, `attempt` boundary, and shape DSL wherever their semantics match. Do not maintain a local copy of those primitives.
 - A guard never throws for adversarial input, cycles, deep nesting, or hostile prototypes; return false.
 - Recursive guards track ancestors and cap depth.
 - Recursion enters only through an explicit lazy gate.

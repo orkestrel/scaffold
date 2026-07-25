@@ -3,9 +3,10 @@
 # scripts/ollama.sh — SessionStart hook: Ollama ONLY
 # ----------------------------------------------------------------------------
 # One job: bring the local-model daemon up for this session, healthy.
-# Project dependencies live in scripts/deps.sh; the Cursor bench check lives in
-# scripts/cursor.sh. All three are registered in .claude/settings.json and run
-# IN PARALLEL at session start, so the daemon boots while npm installs.
+# Project dependencies live in scripts/deps.sh; external-model readiness checks
+# live in scripts/cursor.sh and scripts/codex.sh. All four are registered in
+# .claude/settings.json and run IN PARALLEL at session start, so the daemon boots
+# while npm installs.
 #
 #   0. Guards -- the orchestration set (hooks included) is mirrored
 #      byte-identical across every @orkestrel repo, and this repo serves

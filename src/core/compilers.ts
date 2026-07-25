@@ -13,7 +13,9 @@ import { TEMPLATES } from './templates.js'
  * @example
  * ```ts
  * hostGroup('AGENTS.md') // 'docs'
+ * hostGroup('.agents') // 'orchestration'
  * hostGroup('.claude') // 'orchestration'
+ * hostGroup('.codex') // 'orchestration'
  * ```
  */
 export function hostGroup(path: string): Group {
@@ -21,9 +23,12 @@ export function hostGroup(path: string): Group {
 		return 'docs'
 	}
 	if (
+		path === '.agents' ||
 		path === '.claude' ||
+		path === '.codex' ||
 		path === 'scripts/deps.sh' ||
 		path === 'scripts/cursor.sh' ||
+		path === 'scripts/codex.sh' ||
 		path === 'scripts/ollama.sh' ||
 		path === '.github/workflows/ci.yml'
 	) {

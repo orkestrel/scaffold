@@ -6,8 +6,9 @@ import {
 	objectShape,
 	optionalShape,
 	stringShape,
+	unionShape,
 } from '@orkestrel/contract'
-import { CATEGORIES, FRESHNESS, GROUPS, ORIGINS, SURFACES } from './constants.js'
+import { CATEGORIES, FRESHNESS, GROUPS, SURFACES } from './constants.js'
 
 /**
  * Build the `Dependency` object shape.
@@ -81,20 +82,31 @@ export function memberShape() {
  * Build the `Artifact` object shape.
  *
  * @remarks
- * `origin` is a `literalShape(ORIGINS)`; `content` and `source` are both
- * optional (the `origin` axis decides which one a given artifact carries).
+ * The `origin` axis is structural: host artifacts may carry `source` and
+ * byte `hex`, while template/computed artifacts require text `content`.
+ * Lowercase byte-pair validation remains a semantic refinement so the
+ * contract generator can continue producing unconstrained strings.
  *
  * @returns A fresh `ContractShape` describing one planned file.
  */
 export function artifactShape() {
-	return objectShape({
-		path: stringShape({ min: 1 }),
-		group: literalShape(GROUPS),
-		origin: literalShape(ORIGINS),
-		surface: optionalShape(literalShape(SURFACES)),
-		content: optionalShape(stringShape()),
-		source: optionalShape(stringShape()),
-	})
+	return unionShape(
+		objectShape({
+			path: stringShape({ min: 1 }),
+			group: literalShape(GROUPS),
+			origin: literalShape(['host']),
+			surface: optionalShape(literalShape(SURFACES)),
+			hex: optionalShape(stringShape()),
+			source: optionalShape(stringShape()),
+		}),
+		objectShape({
+			path: stringShape({ min: 1 }),
+			group: literalShape(GROUPS),
+			origin: literalShape(['template', 'computed']),
+			surface: optionalShape(literalShape(SURFACES)),
+			content: stringShape(),
+		}),
+	)
 }
 
 /**

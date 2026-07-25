@@ -29,7 +29,7 @@ flag from the guided flow works standalone:
 npx scaffold new mypackage --surfaces core --apply
 ```
 
-In scripts and CI, every verb is dry-run by default and fully non-interactive —
+In scripts, every verb is dry-run by default and fully non-interactive —
 add `--apply` and/or `--yes` to make it write, `--json` for one machine-readable
 value instead of prose. Every write destination resolves under the current
 directory — equal to it or nested beneath — so the CLI is safe to run as a
@@ -68,9 +68,9 @@ error.
 - **`pull`** — fetches the latest vendored dependency guides and registry versions
   for an existing package and reports drift.
 - **`audit`** — a conformance report over the artifacts the plan actually gates: the
-  shared host-origin files (presence, or content once hydrated) AND the generated
-  configs/manifest (content); reports drift as data, findings and all; exits nonzero
-  the moment any drift is found, so it gates CI cleanly. Starter files — source/test
+  shared host-origin files (presence, or exact bytes once hydrated) AND the generated
+  configs/manifest (exact UTF-8 bytes); reports drift as data, findings and all; exits nonzero
+  the moment any drift is found. Starter files — source/test
   stubs, starter guides, README — are written once at scaffold time and are
   legitimately outgrown, so they are birth-only and never audited; the build and
   parity gates police their substance instead. `--live` additionally checks upstream
@@ -81,7 +81,7 @@ error.
   target-only files the plan no longer declares (asked as a separate destructive
   question when run bare).
 - **`fleet`** — audits/repairs the shared, host-owned files (`AGENTS.md`,
-  `CLAUDE.md`, `.claude/`, `scripts/`, the shared dotfiles, …) across every
+  `CLAUDE.md`, `.agents/` skills, `.claude/`, `.codex/`, `scripts/`, the shared dotfiles, …) across every
   `@orkestrel` repo that is an IMMEDIATE CHILD of the current directory — no root
   flag; the scope is always your checkouts folder, so `cd` there first (`repair`
   is the single-repo counterpart, run from inside one repo); dry-run by default,
@@ -107,6 +107,12 @@ const plan = compiler.compile(draft)
 `@orkestrel/scaffold/server` carries the impure surface — `createMaterializer`
 (writes a `Plan` to disk) and `createSync` (the only part of the system that
 touches the network, fetching dependency guides and registry versions).
+
+The built host uses an exact `{ entries, roots }` manifest. Staging preflights
+containment and portable file-tree collisions, builds in a temporary sibling,
+and swaps only after completion. Reading validates that every declared storage
+file exists, every staged file is declared, and every destination root is
+complete; a present but corrupt or truncated manifest fails closed.
 
 ## Guides
 

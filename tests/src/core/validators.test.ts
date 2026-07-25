@@ -1,7 +1,9 @@
-import type { SyncReport } from '@src/core'
+import type { Plan } from '@src/core'
 import {
 	blueprint,
 	dependency,
+	hasValidArtifactHex,
+	hasValidPlanHex,
 	isArtifact,
 	isBlueprint,
 	isDependency,
@@ -17,25 +19,7 @@ import {
 	pinPlan,
 } from '@src/core'
 import { describe, expect, it } from 'vitest'
-
-function validSyncReport(): SyncReport {
-	return {
-		target: '.',
-		guides: [
-			{
-				name: '@orkestrel/contract',
-				path: 'guides/src/contract.md',
-				content: '# contract',
-				freshness: 'current',
-			},
-		],
-		versions: [
-			{ name: '@orkestrel/contract', range: '^0.0.5', latest: '0.0.5', freshness: 'current' },
-		],
-		clean: true,
-		failed: 0,
-	}
-}
+import { buildPopulatedSyncReport } from '../../setup.js'
 
 // Every exact-record guard: valid / invalid / adversarial junk, off-vocabulary
 // literal rejection, and the parse↔guard soundness of parseBlueprint / parsePlan.
@@ -152,6 +136,42 @@ describe('isArtifact', () => {
 		).toBe(true)
 	})
 
+	it('accepts byte-aware host artifacts and rejects a non-string hex field', () => {
+		expect(
+			isArtifact({
+				path: 'asset.bin',
+				group: 'orchestration',
+				origin: 'host',
+				hex: '0080ff',
+			}),
+		).toBe(true)
+		expect(
+			isArtifact({
+				path: 'asset.bin',
+				group: 'orchestration',
+				origin: 'host',
+				hex: 'ABC',
+			}),
+		).toBe(false)
+	})
+
+	it('rejects payload fields that contradict the origin discriminant', () => {
+		expect(isArtifact({ path: 'x', group: 'source', origin: 'computed' })).toBe(false)
+		expect(
+			isArtifact({
+				path: 'x',
+				group: 'source',
+				origin: 'computed',
+				content: 'x',
+				source: 'x',
+			}),
+		).toBe(false)
+		expect(isArtifact({ path: 'x', group: 'source', origin: 'host', content: 'x' })).toBe(false)
+		expect(
+			isArtifact({ path: 'x', group: 'source', origin: 'template', content: 'x', hex: '00' }),
+		).toBe(false)
+	})
+
 	it('rejects an off-vocabulary group', () => {
 		expect(isArtifact({ path: 'x', group: 'scripts', origin: 'host', source: 'x' })).toBe(false)
 	})
@@ -163,6 +183,26 @@ describe('isArtifact', () => {
 	it('rejects adversarial junk', () => {
 		expect(isArtifact(null)).toBe(false)
 		expect(isArtifact(true)).toBe(false)
+	})
+})
+
+describe('hasValidArtifactHex', () => {
+	it('accepts absence, empty bytes, and lowercase byte pairs', () => {
+		expect(hasValidArtifactHex({ path: 'asset.bin', group: 'source', origin: 'host' })).toBe(true)
+		expect(
+			hasValidArtifactHex({ path: 'asset.bin', group: 'source', origin: 'host', hex: '' }),
+		).toBe(true)
+		expect(
+			hasValidArtifactHex({ path: 'asset.bin', group: 'source', origin: 'host', hex: '00aaff' }),
+		).toBe(true)
+	})
+
+	it('rejects odd, uppercase, and non-hex byte text', () => {
+		for (const hex of ['0', 'ABC', 'gg']) {
+			expect(hasValidArtifactHex({ path: 'asset.bin', group: 'source', origin: 'host', hex })).toBe(
+				false,
+			)
+		}
 	})
 })
 
@@ -189,6 +229,20 @@ describe('isPlan', () => {
 		).toBe(false)
 	})
 
+	it('rejects invalid byte hex in every nested host artifact', () => {
+		for (const hex of ['0', 'ABC', 'gg']) {
+			const plan: Plan = {
+				blueprint: blueprint('router'),
+				groups: ['source'],
+				artifacts: [{ path: 'asset.bin', group: 'source', origin: 'host', hex }],
+			}
+			expect(hasValidPlanHex(plan)).toBe(false)
+			expect(isPlan(plan)).toBe(false)
+			expect(parsePlan(plan)).toBeUndefined()
+			expect(parsePlan(JSON.stringify(plan))).toBeUndefined()
+		}
+	})
+
 	it('rejects adversarial junk', () => {
 		expect(isPlan(null)).toBe(false)
 		expect(isPlan(0)).toBe(false)
@@ -198,15 +252,15 @@ describe('isPlan', () => {
 
 describe('isSyncReport', () => {
 	it('accepts a valid SyncReport', () => {
-		expect(isSyncReport(validSyncReport())).toBe(true)
+		expect(isSyncReport(buildPopulatedSyncReport())).toBe(true)
 	})
 
 	it('accepts empty guides/versions arrays', () => {
-		expect(isSyncReport({ ...validSyncReport(), guides: [], versions: [] })).toBe(true)
+		expect(isSyncReport({ ...buildPopulatedSyncReport(), guides: [], versions: [] })).toBe(true)
 	})
 
 	it('rejects an off-vocabulary freshness in a nested guide', () => {
-		const report = validSyncReport()
+		const report = buildPopulatedSyncReport()
 		expect(
 			isSyncReport({
 				...report,
@@ -216,7 +270,7 @@ describe('isSyncReport', () => {
 	})
 
 	it('rejects an off-vocabulary freshness in a nested version', () => {
-		const report = validSyncReport()
+		const report = buildPopulatedSyncReport()
 		expect(
 			isSyncReport({
 				...report,
@@ -233,7 +287,7 @@ describe('isSyncReport', () => {
 	})
 
 	it('rejects an object carrying an extra key (exact-record)', () => {
-		expect(isSyncReport({ ...validSyncReport(), extra: true })).toBe(false)
+		expect(isSyncReport({ ...buildPopulatedSyncReport(), extra: true })).toBe(false)
 	})
 })
 
@@ -302,13 +356,13 @@ describe('parsePlan', () => {
 
 describe('parseSyncReport', () => {
 	it('round-trips a guard-valid value unchanged', () => {
-		const report = validSyncReport()
+		const report = buildPopulatedSyncReport()
 
 		expect(parseSyncReport(report)).toEqual(report)
 	})
 
 	it('parses a JSON string', () => {
-		const report = validSyncReport()
+		const report = buildPopulatedSyncReport()
 
 		expect(parseSyncReport(JSON.stringify(report))).toEqual(report)
 	})
@@ -318,7 +372,7 @@ describe('parseSyncReport', () => {
 	})
 
 	it('returns undefined for an off-contract value', () => {
-		expect(parseSyncReport({ ...validSyncReport(), failed: 'nope' })).toBeUndefined()
+		expect(parseSyncReport({ ...buildPopulatedSyncReport(), failed: 'nope' })).toBeUndefined()
 	})
 
 	it('never throws on adversarial input', () => {
@@ -328,7 +382,7 @@ describe('parseSyncReport', () => {
 	})
 
 	it('a value it parses always satisfies isSyncReport (soundness)', () => {
-		const parsed = parseSyncReport(validSyncReport())
+		const parsed = parseSyncReport(buildPopulatedSyncReport())
 
 		expect(parsed !== undefined && isSyncReport(parsed)).toBe(true)
 	})

@@ -622,7 +622,7 @@ isCheckboxChoice({ name: 'x', value: 'x' }) // true
 isInsecureRemote('http://example.com') // true — non-loopback http
 isInsecureRemote('http://localhost:3000') // false — loopback is fine
 isInsecureRemote('https://example.com') // false — encrypted
-sanitizeChoiceLabels(['plain', { name: 'B', value: 'b', description: 'ok' }]) // control chars stripped
+sanitizeChoiceLabels(['plain', { name: 'B\u0007', value: 'b', description: 'ok' }]) // control chars stripped
 
 // The bridge dispatch step + its wiring seams:
 import { createTerminal } from '@orkestrel/terminal/server'

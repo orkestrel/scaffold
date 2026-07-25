@@ -1,25 +1,40 @@
 import type {
-	ManifestEntry,
+	HostManifest,
 	MaterializeResult,
 	MaterializerEventMap,
 	MaterializerInterface,
 	MaterializerOptions,
 } from './types.js'
-import type { Artifact, Audit, Plan } from '@src/core'
+import type { Audit, ContentArtifact, HostArtifact, Plan } from '@src/core'
 import type { EmitterInterface } from '@orkestrel/emitter'
 import {
 	chmodSync,
+	copyFileSync,
 	cpSync,
 	existsSync,
 	mkdirSync,
-	realpathSync,
-	unlinkSync,
+	renameSync,
+	rmSync,
+	statSync,
 	writeFileSync,
 } from 'node:fs'
-import { dirname, join, relative as relativeOf, resolve, sep } from 'node:path'
+import { randomUUID } from 'node:crypto'
+import { dirname, join } from 'node:path'
+import { attempt } from '@orkestrel/contract'
 import { Emitter } from '@orkestrel/emitter'
-import { ScaffoldError } from '@src/core'
-import { hostRoot, isVacant, pruneTargets, readHostManifest } from './helpers.js'
+import { findFileConflict, isPlan, ScaffoldError } from '@src/core'
+import {
+	hostRoot,
+	hydratePlan,
+	isVacant,
+	listFiles,
+	pruneTargets,
+	readHostManifest,
+	remapArtifactPath,
+	resolveContainedPath,
+	restoreFiles,
+} from './helpers.js'
+import { isPortablePath } from './validators.js'
 
 /**
  * The materialization entity (server) — the only impure surface in the
@@ -32,9 +47,11 @@ import { hostRoot, isVacant, pruneTargets, readHostManifest } from './helpers.js
  * `content`, failing fast on any write error (`ScaffoldError('WRITE', …)`).
  * `repair` is into-existing: it skips the vacancy check and writes ONLY the
  * `missing` / `stale` artifacts an `Audit` names, leaving `aligned` ones
- * untouched. `prune` deletes stale files under `target/.claude/agents/` and
- * `target/scripts/` that the vendored `host` no longer names — the retired
- * `mirror.sh`/`scaffold.sh` cleanup step, now a method. After `destroy()`
+ * untouched. Hydrated directory-shaped host entries are expanded into
+ * file-shaped artifacts, so canonical skills and agent configuration are
+ * audited and repaired file by file. `prune` deletes stale files under `target/.claude/agents/`,
+ * `target/.codex/agents/`, and `target/scripts/` that the vendored `host` no
+ * longer names—the retired `mirror.sh`/`scaffold.sh` cleanup step, now a method. After `destroy()`
  * every method throws `DESTROYED`; teardown is idempotent, emitter last.
  *
  * @remarks
@@ -105,7 +122,7 @@ export class Materializer implements MaterializerInterface {
 	readonly #emitter: Emitter<MaterializerEventMap>
 	readonly #host: string
 	#manifestLoaded = false
-	#manifestEntries: readonly ManifestEntry[] | undefined
+	#manifestValue: HostManifest | undefined
 	#destroyed = false
 
 	constructor(options?: MaterializerOptions) {
@@ -121,6 +138,7 @@ export class Materializer implements MaterializerInterface {
 
 	materialize(plan: Plan, target: string): MaterializeResult {
 		this.#ensureAlive()
+		this.#prepare(plan, target)
 		if (!isVacant(target)) {
 			throw new ScaffoldError('TARGET', 'materialize requires a vacant target', { target })
 		}
@@ -142,13 +160,23 @@ export class Materializer implements MaterializerInterface {
 
 	repair(plan: Plan, audit: Audit, target: string): MaterializeResult {
 		this.#ensureAlive()
-		const drifted = new Map(audit.findings.map((finding) => [finding.path, finding.drift]))
+		const drifted = new Set(
+			audit.findings
+				.filter((finding) => finding.drift === 'missing' || finding.drift === 'stale')
+				.map((finding) => finding.path),
+		)
+		this.#prepare(
+			{
+				...plan,
+				artifacts: plan.artifacts.filter((artifact) => drifted.has(artifact.path)),
+			},
+			target,
+		)
 		const written: string[] = []
 		const copied: string[] = []
 		const skipped: string[] = []
 		for (const artifact of plan.artifacts) {
-			const drift = drifted.get(artifact.path)
-			if (drift !== 'missing' && drift !== 'stale') {
+			if (!drifted.has(artifact.path)) {
 				skipped.push(artifact.path)
 				continue
 			}
@@ -170,13 +198,58 @@ export class Materializer implements MaterializerInterface {
 	// UX read from; `prune` only deletes exactly what it reports.
 	prune(target: string): MaterializeResult {
 		this.#ensureAlive()
-		const removed: string[] = []
-		for (const path of pruneTargets(target, this.#host)) {
-			const full = Materializer.#assertContained(target, path, 'WRITE', path)
-			unlinkSync(full)
-			removed.push(path)
-			this.#emitter.emit('remove', path)
+		const paths = pruneTargets(target, this.#host)
+		const files = paths.map((path) => ({
+			path,
+			full: resolveContainedPath(target, path, 'WRITE', 'target'),
+		}))
+		const quarantine = resolveContainedPath(
+			target,
+			`.scaffold-prune-${randomUUID()}`,
+			'WRITE',
+			'target',
+		)
+		const moved: typeof files = []
+		const staged = attempt(() => {
+			for (const file of files) {
+				const destination = join(quarantine, file.path)
+				mkdirSync(dirname(destination), { recursive: true })
+				renameSync(file.full, destination)
+				moved.push(file)
+			}
+		})
+		if (!staged.success) {
+			const recovery = attempt(() =>
+				restoreFiles(
+					quarantine,
+					target,
+					moved.map((file) => file.path),
+				),
+			)
+			const cleanup = recovery.success
+				? attempt(() => rmSync(quarantine, { recursive: true, force: true }))
+				: undefined
+			throw new ScaffoldError('WRITE', 'Failed to stage prune targets', {
+				target,
+				error: staged.error,
+				quarantine,
+				committed: false,
+				recovery: recovery.success ? undefined : recovery.error,
+				cleanup: cleanup?.success === false ? cleanup.error : undefined,
+			})
 		}
+		const removed = files.map((file) => file.path)
+		const cleared = attempt(() => rmSync(quarantine, { recursive: true, force: true }))
+		if (!cleared.success) {
+			throw new ScaffoldError('WRITE', 'Prune committed with cleanup residue', {
+				target,
+				error: cleared.error,
+				quarantine,
+				committed: true,
+				removed,
+			})
+		}
+		for (const path of removed) this.#emitter.emit('remove', path)
 		const result: MaterializeResult = { target, written: [], copied: [], skipped: [], removed }
 		this.#emitter.emit('done', result)
 		return result
@@ -189,15 +262,37 @@ export class Materializer implements MaterializerInterface {
 		this.#emitter.destroy()
 	}
 
-	#copy(artifact: Artifact, target: string): void {
+	#copy(artifact: HostArtifact, target: string): void {
 		const source = artifact.source ?? artifact.path
 		const manifest = this.#manifest()
 		if (manifest === undefined) {
-			const from = Materializer.#assertContained(this.#host, source, 'TARGET', artifact.path)
-			const to = Materializer.#assertContained(target, artifact.path, 'WRITE', artifact.path)
+			const from = resolveContainedPath(this.#host, source, 'TARGET', 'host')
+			const to = resolveContainedPath(target, artifact.path, 'WRITE', 'target')
 			try {
-				mkdirSync(dirname(to), { recursive: true })
-				cpSync(from, to, { recursive: true })
+				const status = statSync(from)
+				if (status.isDirectory()) {
+					const files = listFiles(from)
+					if (files.length === 0) mkdirSync(to, { recursive: true })
+					for (const path of files) {
+						const nestedSource = resolveContainedPath(
+							this.#host,
+							`${source}/${path}`,
+							'TARGET',
+							'host',
+						)
+						const nestedTarget = resolveContainedPath(
+							target,
+							`${artifact.path}/${path}`,
+							'WRITE',
+							'target',
+						)
+						mkdirSync(dirname(nestedTarget), { recursive: true })
+						copyFileSync(nestedSource, nestedTarget)
+					}
+				} else {
+					mkdirSync(dirname(to), { recursive: true })
+					copyFileSync(from, to)
+				}
 			} catch (error) {
 				this.#emitter.emit('error', error)
 				throw new ScaffoldError('WRITE', `Failed to copy host artifact at ${artifact.path}`, {
@@ -208,7 +303,7 @@ export class Materializer implements MaterializerInterface {
 			this.#emitter.emit('copy', artifact.path)
 			return
 		}
-		const entries = manifest.filter(
+		const entries = manifest.entries.filter(
 			(entry) => entry.destination === source || entry.destination.startsWith(`${source}/`),
 		)
 		if (entries.length === 0) {
@@ -226,7 +321,7 @@ export class Materializer implements MaterializerInterface {
 			// A dependency-guide pointer — degrade to a stub instead of throwing,
 			// mirroring the read path's presence-only treatment of a
 			// never-hydrated host artifact (see the class doc comment).
-			const to = Materializer.#assertContained(target, artifact.path, 'WRITE', artifact.path)
+			const to = resolveContainedPath(target, artifact.path, 'WRITE', 'target')
 			try {
 				mkdirSync(dirname(to), { recursive: true })
 				writeFileSync(to, Materializer.#stub(source), 'utf8')
@@ -241,8 +336,13 @@ export class Materializer implements MaterializerInterface {
 			return
 		}
 		for (const entry of entries) {
-			const from = Materializer.#assertContained(this.#host, entry.storage, 'TARGET', artifact.path)
-			const to = Materializer.#assertContained(target, entry.destination, 'WRITE', artifact.path)
+			const from = resolveContainedPath(this.#host, entry.storage, 'TARGET', 'host')
+			const to = resolveContainedPath(
+				target,
+				remapArtifactPath(artifact, entry.destination),
+				'WRITE',
+				'target',
+			)
 			try {
 				mkdirSync(dirname(to), { recursive: true })
 				cpSync(from, to)
@@ -261,19 +361,100 @@ export class Materializer implements MaterializerInterface {
 	// Lazily load + cache `host`'s `manifest.json` (once per instance) —
 	// `undefined` means `host` has no manifest and callers fall back to the
 	// 1:1 raw-root mapping.
-	#manifest(): readonly ManifestEntry[] | undefined {
-		if (!this.#manifestLoaded) {
-			this.#manifestEntries = readHostManifest(this.#host)
-			this.#manifestLoaded = true
+	#prepare(plan: Plan, target: string): void {
+		if (!isPlan(plan)) {
+			throw new ScaffoldError('INVALID', 'Materializer requires a valid Plan')
 		}
-		return this.#manifestEntries
+		for (const artifact of plan.artifacts) {
+			if (!isPortablePath(artifact.path)) {
+				throw new ScaffoldError('WRITE', `Invalid artifact path at ${artifact.path}`, {
+					path: artifact.path,
+				})
+			}
+			if (artifact.source !== undefined && !isPortablePath(artifact.source)) {
+				throw new ScaffoldError('TARGET', `Invalid artifact source at ${artifact.source}`, {
+					source: artifact.source,
+				})
+			}
+		}
+		const hosted = plan.artifacts.some((artifact) => artifact.origin === 'host')
+		const prepared = hosted ? hydratePlan(plan, this.#host) : plan
+		const conflict = findFileConflict(prepared.artifacts.map((artifact) => artifact.path))
+		if (conflict !== undefined) {
+			throw new ScaffoldError(
+				'INVALID',
+				`Plan artifact collision between "${conflict[0]}" and "${conflict[1]}"`,
+				{ paths: conflict },
+			)
+		}
+		const manifest = hosted ? this.#manifest() : undefined
+		for (const artifact of prepared.artifacts) {
+			const destination = resolveContainedPath(target, artifact.path, 'WRITE', 'target')
+			let parent = dirname(destination)
+			while (!existsSync(parent)) {
+				const ancestor = dirname(parent)
+				if (ancestor === parent) break
+				parent = ancestor
+			}
+			const parentStatus = attempt(() => statSync(parent))
+			if (!parentStatus.success || !parentStatus.value.isDirectory()) {
+				throw new ScaffoldError(
+					'TARGET',
+					`Artifact parent is not a directory at ${artifact.path}`,
+					{
+						path: artifact.path,
+						parent,
+						error: parentStatus.success ? undefined : parentStatus.error,
+					},
+				)
+			}
+			if (!existsSync(destination)) continue
+			const destinationStatus = attempt(() => statSync(destination))
+			if (!destinationStatus.success) {
+				throw new ScaffoldError('TARGET', `Failed to inspect artifact target at ${artifact.path}`, {
+					path: artifact.path,
+					error: destinationStatus.error,
+				})
+			}
+			let directory = false
+			if (artifact.origin === 'host' && manifest === undefined && artifact.hex === undefined) {
+				const source = artifact.source ?? artifact.path
+				const sourcePath = resolveContainedPath(this.#host, source, 'TARGET', 'host')
+				const sourceStatus = attempt(() => statSync(sourcePath))
+				if (!sourceStatus.success) {
+					throw new ScaffoldError('TARGET', `Failed to inspect host artifact at ${source}`, {
+						source,
+						error: sourceStatus.error,
+					})
+				}
+				directory = sourceStatus.value.isDirectory()
+			}
+			if (destinationStatus.value.isDirectory() !== directory) {
+				throw new ScaffoldError(
+					'TARGET',
+					`Artifact target has an incompatible shape at ${artifact.path}`,
+					{
+						path: artifact.path,
+						directory,
+					},
+				)
+			}
+		}
 	}
 
-	#write(artifact: Artifact, target: string): void {
-		const to = Materializer.#assertContained(target, artifact.path, 'WRITE', artifact.path)
+	#manifest(): HostManifest | undefined {
+		if (!this.#manifestLoaded) {
+			this.#manifestValue = readHostManifest(this.#host)
+			this.#manifestLoaded = true
+		}
+		return this.#manifestValue
+	}
+
+	#write(artifact: ContentArtifact, target: string): void {
+		const to = resolveContainedPath(target, artifact.path, 'WRITE', 'target')
 		try {
 			mkdirSync(dirname(to), { recursive: true })
-			writeFileSync(to, artifact.content ?? '', 'utf8')
+			writeFileSync(to, artifact.content, 'utf8')
 		} catch (error) {
 			this.#emitter.emit('error', error)
 			throw new ScaffoldError('WRITE', `Failed to write artifact at ${artifact.path}`, {
@@ -282,30 +463,6 @@ export class Materializer implements MaterializerInterface {
 			})
 		}
 		this.#emitter.emit('write', artifact.path)
-	}
-
-	// Resolve `join(root, relative)` and assert it stays within `resolve(root)`
-	// — a prefix check against the REAL-PATH-resolved root PLUS a path
-	// separator, never naive `startsWith` on the raw joined string. `code` is
-	// `'WRITE'` for a destination escape (asserted against `target`) and
-	// `'TARGET'` for a source escape (asserted against `host`), per the Errors
-	// section's coded semantics.
-	static #assertContained(
-		root: string,
-		relative: string,
-		code: 'WRITE' | 'TARGET',
-		path: string,
-	): string {
-		const resolvedRoot = Materializer.#resolveReal(resolve(root))
-		const resolvedCandidate = Materializer.#resolveReal(resolve(root, relative))
-		if (resolvedCandidate !== resolvedRoot && !resolvedCandidate.startsWith(resolvedRoot + sep)) {
-			const boundary = code === 'WRITE' ? 'target' : 'host'
-			throw new ScaffoldError(code, `Artifact path "${path}" escapes the ${boundary} root`, {
-				path,
-				root,
-			})
-		}
-		return resolve(root, relative)
 	}
 
 	// A short, friendly stand-in for a not-yet-fetched dependency guide — the
@@ -319,18 +476,6 @@ export class Materializer implements MaterializerInterface {
 	static #stub(source: string): string {
 		const short = source.slice('guides/src/'.length, source.length - '.md'.length)
 		return `> Vendored guide for @orkestrel/${short} — run \`scaffold pull\` to fetch it.\n`
-	}
-
-	// Realpath-resolve the DEEPEST EXISTING ancestor of `path` (following any
-	// symlink it or its ancestors are), then rejoin the still-nonexistent
-	// remainder unchanged — so a containment check sees where a symlinked
-	// segment ACTUALLY points, while a not-yet-created leaf (the file/dir a
-	// write is about to create) is not itself realpath'd (it does not exist).
-	static #resolveReal(path: string): string {
-		if (existsSync(path)) return realpathSync(path)
-		const parent = dirname(path)
-		if (parent === path) return path
-		return join(Materializer.#resolveReal(parent), relativeOf(parent, path))
 	}
 
 	#ensureAlive(): void {

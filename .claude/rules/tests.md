@@ -10,14 +10,17 @@ paths:
 
 ## Test contract
 
-- Mirror source structure: `tests/[surface]/[domain]/[Entity].test.ts`.
+- Mirror source/application structure:
+  `tests/{src,app}/[surface]/[domain]/[Entity].test.ts`.
 - Prefer test filenames matching entrypoints: `index.test.ts` for `index.ts`, `main.test.ts` for `main.ts`.
 - Tests are deterministic: identical inputs produce identical results.
 - Keep default suites fast: timers normally use 10–50 ms and tests make no network calls.
-- Use real implementations and small scenarios. Mock only genuine third-party boundaries.
+- Use real implementations and small scenarios. Never use mocks, behavioral fakes, module replacement, or framework spies for project-owned or integrated behavior.
+- Use recorders for calls/events, temporary resources for stateful boundaries, protocol-faithful fixture servers for deterministic network peers, and the real external service when its behavior is the claim.
+- Prefer inert customizable data/input stubs. A scripted boundary stub is allowed only when it implements the real interface/protocol minimally to drive the system under test; it never reimplements project-owned behavior or stands in for the integration being claimed.
 - Cover happy paths, error paths, empty input, boundary values, `NaN`, positive/negative zero, cycles, and Map/Set order where relevant.
 - Test observable behavior, not implementation details.
-- Use `it.todo()` for planned tests; never create an empty passing placeholder.
+- Use `it.todo()` only for explicitly out-of-scope roadmap work, never to complete the current request. Every `.skip` or conditional skip has a narrow verifiable applicability reason.
 - Do not create test files solely for `constants.ts`, barrels, error definitions, or `types.ts`.
 - Run the narrowest relevant Vitest project during development; do not run the entire suite casually.
 
@@ -30,17 +33,19 @@ Live external services/models are the deliberate exception to fast hermetic defa
 - Warm and verify service readiness in setup.
 - Hard-require readiness: throw loudly; never silently skip.
 - Verify service-dependent logic through that service's project, not unrelated module tests or scattered conditional skips.
+- Tune each request to the smallest input/context/output that proves one behavior without becoming brittle or expensive.
+- Prefer semantic bounded assertions over exact generated prose. Increase context/workload only when the scenario requires it.
 
 ## Shared test infrastructure
 
 Test helpers are shared infrastructure, not local test-file clutter.
 
-- Extract a fixture, recorder, event factory, async wait, renderer, scenario builder, scripted collaborator, or DOM builder as soon as it could serve another test.
+- Extract a fixture, recorder, event factory, async wait, renderer, scenario/data builder, protocol fixture, or DOM builder as soon as it could serve another test.
 - Any duplicate or near-duplicate helper is a defect; consolidate it into one general form.
 - Export every reusable helper, fixture type, factory, constant, and guard from setup files.
 - Test files import shared infrastructure rather than declaring local fixture factories.
 - Never reimplement a framework helper in tests or fixtures; import the real parser, signer, flattener, or other helper.
-- Prefer small factories that seed a real scenario over repeated inline setup.
+- Prefer small customizable factories/stubs that seed inert data for a real scenario over repeated inline setup.
 - Helper names follow module-helper naming: `createRecorder`, `buildElement`, `appendItems`, `renderRows`, `waitForDelay`, `extractDetail`.
 
 Place helpers by environment:
@@ -91,7 +96,7 @@ Use the real browser as the system under test:
 - Centralize DOM builders: `createButtonElement`, `createDropdownElements`, `createModalElement`.
 - Assert DOM state, emitted events, callback records, focus, classes, attributes, and public API state.
 - Do not assert private state, internal timers, or framework scheduler internals.
-- Use fake timers only for deterministic timer-driven behavior that would otherwise be slow/flaky; never as a substitute for real interaction.
+- Prefer real short timers and observable wakeups. Never replace the host clock.
 
 ## Runner configuration
 
@@ -104,3 +109,15 @@ Keep Vitest/provider configuration minimal:
 - For slow teardown, inspect test cleanup, open handles, file parallelism, and context churn before adding launch flags.
 - Remove exploratory settings after fixing the cause.
 - Config comments explain the current reason, not the history of failed experiments.
+
+## Discovery and adequacy audit
+
+Before acceptance:
+
+- prove every intended test file is discovered by the correct project;
+- inspect actual test counts and environments;
+- audit `.todo`, `.skip`, conditional skips, retries, and inflated timeouts;
+- confirm each assertion would fail for the defect it claims to catch;
+- confirm helpers do not reimplement production behavior;
+- confirm cleanup runs after setup or assertion failure;
+- confirm current-scope requirements have real tests rather than placeholders.

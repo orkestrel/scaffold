@@ -12,23 +12,24 @@ Every dispatch must tell the executor to read `AGENTS.md`, the applicable rule f
 - A dispatched subagent is an **Executor**: perform its bounded assignment directly, spawn nothing, and return the required distillate. It follows orchestration rules only when explicitly assigned to orchestrate.
 - For a typo, one-line fix, or one quick lookup, work directly. Use orchestration when isolation, parallelism, independent review, or substantial context justifies it.
 
-## Model routing
+## Provider and model routing
 
-| Work                                                               | Route                                       |
-| ------------------------------------------------------------------ | ------------------------------------------- |
-| Main-session decisions, integration, acceptance                    | `fable`                                     |
-| Recon, evidence, bounded implementation, scoped gates, conformance | `sonnet`                                    |
-| Research, diagnosis, planning, judgment review                     | `opus`                                      |
-| Orkestrel mapping/release coordination                             | `orkestrel` (`sonnet`, medium effort)       |
-| Tiny taste-free mechanical bulk                                    | `composer` via Cursor; fallback `builder`   |
-| Independent adversarial hypotheses                                 | `grok` via Cursor; fallback `reviewer`/Opus |
+Route by role, not vendor prestige. The cross-provider rows below are operational equivalents, not claims of capability parity.
 
-- Use Claude aliases (`fable`, `opus`, `sonnet`), never fixed Claude model IDs.
-- Dispatch named agents from `.claude/agents/` and state the model explicitly even when frontmatter pins it. Never rely on `inherit`.
-- Doers use low effort; Opus thinkers use high effort; `orkestrel` uses medium. Override only with a stated reason.
+| Role                         | Claude               | Cursor   | Codex/OpenAI                     |
+| ---------------------------- | -------------------- | -------- | -------------------------------- |
+| Orchestration and acceptance | `fable`, high effort | —        | `gpt-5.6-sol`, `xhigh` effort    |
+| Planning and judgment        | `opus`, high effort  | Grok     | `gpt-5.6-sol`, `high` effort     |
+| Recon and bounded execution  | `sonnet`, low effort | Composer | `gpt-5.6-terra`, `medium` effort |
+| Repetitive high-volume work  | `sonnet`, low effort | Composer | `gpt-5.6-luna`, opt-in only      |
+
+- Native Claude roles remain the default for house-taste work. Use Claude aliases (`fable`, `opus`, `sonnet`), never fixed Claude IDs or `inherit`.
+- Claude agent frontmatter accepts Claude models only. Invoke Cursor through `composer`/`grok` and Codex through `codex`; never put an external model in `model:`.
+- Dispatch named agents from `.claude/agents/` and state the route explicitly even when frontmatter pins it.
 - Never set `CLAUDE_CODE_SUBAGENT_MODEL`; it flattens role routing.
 - The main session uses `fable` through `/model fable` or `"model": "fable"`; if configured otherwise, its Orchestrator duties remain unchanged.
-- Role frontmatter pins model, effort, tools, and charter; its restrictions are structural. Changes to role files take effect after session restart.
+- Doers use low effort; Claude thinkers use high; `orkestrel` uses medium. Codex defaults are fixed below. Override only with a stated reason.
+- Role files pin model, effort, tools, permissions, turn budget, and charter. Claude Code hot-reloads edits to existing role files.
 
 ## Role agents
 
@@ -41,9 +42,10 @@ Every dispatch must tell the executor to read `AGENTS.md`, the applicable rule f
 | `checker`    | Read-only acceptance/rules/scope/parity checklist; escalates judgment                             |
 | `reviewer`   | Read-only correctness/design/security/diff judgment with evidence                                 |
 | `verifier`   | Independent authoritative gates/evidence; reports exit-code truth and exact failures; never fixes |
-| `orkestrel`  | Read-only ecosystem map, drift audit, version/publish sequencing; never publishes                 |
+| `orkestrel`  | Read-only ecosystem map, dependency sequencing, and drift audit                                   |
 | `composer`   | Cursor mechanical executor in an isolated worktree; proposal only; never commits/pushes           |
 | `grok`       | Cursor ask-mode adversary; hypotheses only; never designs, edits, or decides                      |
+| `codex`      | Codex CLI dispatcher: isolated Terra worker or read-only Sol thinker; output is untrusted         |
 
 ## Context and decomposition
 
@@ -67,9 +69,9 @@ Concurrent executors share a filesystem unless isolated. Prevent clobbered edits
 
 1. **Scout:** on unfamiliar terrain, dispatch `scout`; in an Orkestrel repo, dispatch `orkestrel` first. Skip only when the terrain is already known.
 2. **Plan:** restate the goal; define units, dependencies, ownership, parallel/serial order, acceptance criteria, and risks. Use `planner` for non-trivial work and `researcher` only when unknowns block planning. Review and surface the plan before dispatch.
-3. **Dispatch:** select the named role/model and provide a self-contained bounded prompt. Route mechanical, taste-free units to `composer`; use `builder` whenever design judgment remains.
+3. **Dispatch:** select the named role/model and provide a self-contained bounded prompt. Route mechanical, taste-free units to `composer` or `codex:worker`; use `builder` whenever house taste or API judgment remains.
 4. **Integrate:** evaluate each distillate against acceptance criteria; apply shared-file changes serially and route cross-cutting findings.
-5. **Review:** every non-trivial implementation receives independent `checker` and `reviewer` audits. Every Composer diff receives both regardless of size.
+5. **Review:** every non-trivial implementation receives independent `checker` and `reviewer` audits. Every external-model diff receives both regardless of size; external findings remain hypotheses until verified.
 6. **Verify:** one independent `verifier` runs the authoritative gates.
 7. **Accept/report:** the Orchestrator decides and reports concise outcomes, decisions, evidence, and remaining risk.
 
@@ -103,7 +105,9 @@ Every dispatch contains:
 - **Deviation contract:** required stop/report behavior for writers.
 - **Acceptance criteria:** independently checkable completion conditions.
 
-## External bench
+## External model bench
+
+External models widen execution and review capacity; they never inherit authority. Their output is a proposal or hypothesis until the native `checker`, `reviewer`, and Orchestrator verify it.
 
 ### Composer
 
@@ -118,18 +122,46 @@ Every dispatch contains:
 - Canonical command: `agent -p --trust --mode=ask --model "$CURSOR_GROK_MODEL" "<question>"`.
 - It is read-only; `--force` never appears. Findings remain hypotheses until independently verified by `reviewer` or the Orchestrator.
 
+### Codex
+
+- Use `codex:worker` for fully specified implementation that benefits from an independent OpenAI executor. It runs `gpt-5.6-terra` at medium effort in a detached worktree with `--sandbox workspace-write`.
+- Use `codex:thinker` for independent planning, diagnosis, review, or adversarial analysis. It runs `gpt-5.6-sol` at high effort in the current checkout with `--sandbox read-only`.
+- Raise the thinker to `xhigh` only for a stated hard reasoning need. Use `gpt-5.6-luna` only after a repeatable, high-volume workload proves it is sufficient.
+- Both routes use `codex exec --ephemeral`; the dispatcher never commits, pushes, installs, authenticates, or reads credentials.
+- Claude Code Cloud setup installs `@openai/codex` globally but never authenticates:
+  setup state is snapshotted and must contain no Codex credentials.
+- At the start of each live Cloud session, the user runs
+  `codex login --device-auth` and completes ChatGPT approval in their browser.
+  `scripts/codex.sh` only reports readiness; it never installs, authenticates,
+  logs out, reads the auth cache, or performs a model call.
+- If ChatGPT device login is unavailable or expires, the Codex bench is dark.
+  Use the native fallback; never substitute an API key, access token, copied
+  `auth.json`, or another login flow unless the user changes this policy.
+
+Codex environment defaults:
+
+```text
+CODEX_WORKER_MODEL=gpt-5.6-terra
+CODEX_WORKER_EFFORT=medium
+CODEX_THINKER_MODEL=gpt-5.6-sol
+CODEX_THINKER_EFFORT=high
+```
+
 ### Bench mechanics
 
 - Read exact Cursor model IDs from `agent models`; store them in `CURSOR_COMPOSER_MODEL` and `CURSOR_GROK_MODEL`. Never guess or silently substitute.
-- Agent frontmatter accepts one Claude alias (`sonnet`, `opus`, `haiku`, `fable`), one full Claude ID, or `inherit`—never a Cursor model. Project policy still requires aliases and forbids `inherit`. The `composer`/`grok` agents therefore use Sonnet as CLI dispatchers; bench-first behavior is routing policy here, not a model-frontmatter fallback.
-- Never expose `CURSOR_API_KEY`.
-- Cursor reads `AGENTS.md`; each dispatch still names applicable rules, non-negotiables, and file ownership.
+- The external dispatchers use Sonnet only to operate their CLI. External routing is policy, not a frontmatter fallback.
+- Never expose `CURSOR_API_KEY`; never print, inspect, copy, upload, commit, or
+  package Codex auth files. The current Codex policy uses per-session ChatGPT
+  device login, not `CODEX_API_KEY` or `CODEX_ACCESS_TOKEN`.
+- Each dispatch names `AGENTS.md`, applicable rules, guide/spec, non-negotiables, file ownership, output shape, and acceptance criteria.
 - Prefer the bench only for already-qualified work. If the CLI, model, or authentication is unavailable, a retry fails, or taste appears, fall back without ceremony: `composer → builder`, `grok → reviewer`/Opus.
+- Codex fallbacks are `codex:worker → builder` and `codex:thinker → researcher`/`reviewer`.
 - External failure becomes a normal deviation report.
 
 ## Acceptance laws
 
-- No builder, Composer, or Grok self-assessment is authoritative.
+- No builder or external-model self-assessment is authoritative.
 - Do not dispatch vague/generic agents when a role exists, ask Sonnet to plan, spend Opus on cheap discovery/mechanical edits, cold-scout mapped Orkestrel terrain, or let an executor debug beyond scope.
 - Do not accept unreviewed implementation, unverified hypotheses, shared-tree writing races, implicit models, fixed Claude IDs, or verbose completed-work residue.
 - Final acceptance belongs only to the Orchestrator after independent review and gate evidence.
