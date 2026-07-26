@@ -47,7 +47,7 @@ The non-negotiables in `AGENTS.md` apply without exception.
 | Optional missing lookup              | Return `undefined`                          |
 | Invalid input inside a guard         | Return `false`; never throw                 |
 
-Use the existing outcome contract from a declared dependency or the owning surface; do not redeclare it at each call site. When no such contract exists and adding a dependency is not authorized, define this once in the owning `types.ts`:
+Use the existing outcome contract from a declared dependency or the owning environment; do not redeclare it at each call site. When no such contract exists and adding a dependency is not authorized, define this once in the owning `types.ts`:
 
 ```ts
 interface Success<T> {
@@ -64,7 +64,7 @@ type Result<T, E = Error> = Success<T> | Failure<E>
 ```
 
 - When `@orkestrel/contract` is declared, inspect and use its exact installed `Result`, construction/narrowing helpers, and `attempt` behavior instead of duplicating them.
-- Otherwise construct and narrow through the owning surface's centralized helpers.
+- Otherwise construct and narrow through the owning environment's centralized helpers.
 - Error classes expose a machine-readable `code` and optional `context`.
 - Every public error class ships with a guard such as `isAppError` for safe `catch` narrowing.
 

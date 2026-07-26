@@ -1,36 +1,22 @@
 import type { SyncReport } from '@src/core'
 import { createContract, seededRandom } from '@orkestrel/contract'
 import {
-	artifactShape,
 	blueprint,
 	blueprintShape,
 	dependency,
-	dependencyShape,
 	isBlueprint,
 	isSyncReport,
-	memberShape,
-	overrideShape,
-	planShape,
 	syncReportShape,
 } from '@src/core'
 import { describe, expect, it } from 'vitest'
+import { CONTRACT_SHAPES, GENERATABLE_CONTRACT_SHAPES } from '../../setup.js'
 
 // blueprintShape / planShape (and their sibling section shapes) compiled
 // through createContract: guard/parser/schema/generator lockstep — the
 // generator's output always satisfies the shape's own guard, across many
 // deterministic seeds, and a generated Blueprint satisfies isBlueprint.
 
-const shapes = {
-	dependency: dependencyShape,
-	override: overrideShape,
-	member: memberShape,
-	artifact: artifactShape,
-	blueprint: blueprintShape,
-	plan: planShape,
-	syncReport: syncReportShape,
-}
-
-describe.each(Object.entries(shapes))('%s shape — contract lockstep', (name, build) => {
+describe.each(Object.entries(CONTRACT_SHAPES))('%s shape — contract lockstep', (name, build) => {
 	it('emits the expected root JSON Schema', () => {
 		const contract = createContract(build())
 
@@ -38,31 +24,36 @@ describe.each(Object.entries(shapes))('%s shape — contract lockstep', (name, b
 			name === 'artifact' ? contract.schema.anyOf?.length === 2 : contract.schema.type === 'object'
 		expect(valid).toBe(true)
 	})
-
-	it('every generated value across 25 deterministic seeds satisfies is()', () => {
-		const contract = createContract(build())
-
-		for (let seed = 0; seed < 25; seed += 1) {
-			const random = seededRandom(seed)
-			const value = contract.generate(random)
-
-			expect(contract.is(value)).toBe(true)
-		}
-	})
-
-	it('parse() round-trips a generated (guard-valid) value unchanged', () => {
-		const contract = createContract(build())
-		const value = contract.generate(seededRandom(7))
-
-		expect(contract.parse(value)).toEqual(value)
-	})
-
-	it('generate() is deterministic for a fixed seed', () => {
-		const contract = createContract(build())
-
-		expect(contract.generate(seededRandom(11))).toEqual(contract.generate(seededRandom(11)))
-	})
 })
+
+describe.each(Object.entries(GENERATABLE_CONTRACT_SHAPES))(
+	'%s generatable shape — contract lockstep',
+	(name, build) => {
+		it('every generated value across 25 deterministic seeds satisfies is()', () => {
+			const contract = createContract(build())
+
+			for (let seed = 0; seed < 25; seed += 1) {
+				const random = seededRandom(seed)
+				const value = contract.generate(random)
+
+				expect(contract.is(value)).toBe(true)
+			}
+		})
+
+		it('parse() round-trips a generated (guard-valid) value unchanged', () => {
+			const contract = createContract(build())
+			const value = contract.generate(seededRandom(7))
+
+			expect(contract.parse(value)).toEqual(value)
+		})
+
+		it('generate() is deterministic for a fixed seed', () => {
+			const contract = createContract(build())
+
+			expect(contract.generate(seededRandom(11))).toEqual(contract.generate(seededRandom(11)))
+		})
+	},
+)
 
 describe('blueprintShape — generated blueprints satisfy isBlueprint', () => {
 	it('a generated Blueprint round-trips the higher-level isBlueprint guard too', () => {
@@ -93,15 +84,39 @@ describe('blueprintShape — a hand-built blueprint with peers (one optional) an
 	})
 })
 
-describe('syncReportShape — generated reports satisfy isSyncReport', () => {
-	it('a generated SyncReport round-trips the higher-level isSyncReport guard too', () => {
+describe('syncReportShape — pattern boundary', () => {
+	it('accepts only the documented target-aware baselines', () => {
 		const contract = createContract(syncReportShape())
-
-		for (let seed = 0; seed < 25; seed += 1) {
-			const value = contract.generate(seededRandom(seed))
-
-			expect(isSyncReport(value)).toBe(true)
+		const absent = {
+			target: '.',
+			guides: [
+				{
+					name: '@orkestrel/contract',
+					path: 'guides/src/contract.md',
+					content: '# contract',
+					freshness: 'behind',
+					baseline: 'absent',
+				},
+			],
+			versions: [],
+			clean: false,
+			failed: 0,
 		}
+		const digest = structuredClone(absent)
+		const guide = digest.guides[0]
+		if (guide === undefined) throw new Error('expected a guide fixture')
+		guide.baseline = '0'.repeat(64)
+		const malformed = structuredClone(absent)
+		const malformedGuide = malformed.guides[0]
+		if (malformedGuide === undefined) throw new Error('expected a guide fixture')
+		malformedGuide.baseline = 'not-a-digest'
+
+		expect(contract.is(absent)).toBe(true)
+		expect(contract.is(digest)).toBe(true)
+		expect(contract.is(malformed)).toBe(false)
+		expect(isSyncReport(absent)).toBe(true)
+		expect(isSyncReport(digest)).toBe(true)
+		expect(isSyncReport(malformed)).toBe(false)
 	})
 })
 

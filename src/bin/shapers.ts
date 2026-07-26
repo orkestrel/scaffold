@@ -69,7 +69,8 @@ export function errorEnvelopeOf(code: string, message: string): ErrorEnvelope {
 export function summaryToNewResult(summary: PlanSummary, applied: boolean): NewResult {
 	return {
 		name: summary.name,
-		surfaces: summary.surfaces,
+		src: summary.src,
+		app: summary.app,
 		host: summary.host,
 		template: summary.template,
 		computed: summary.computed,

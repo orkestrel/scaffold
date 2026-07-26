@@ -62,21 +62,21 @@ describe('override', () => {
 })
 
 describe('member', () => {
-	it('defaults surface to core when omitted', () => {
+	it('defaults environment to core when omitted', () => {
 		const result = member('RouterOptions', 'type', 'Options for creating a Router.')
 
 		expect(result).toEqual({
 			name: 'RouterOptions',
 			category: 'type',
 			summary: 'Options for creating a Router.',
-			surface: 'core',
+			environment: 'core',
 		})
 	})
 
-	it('honors an explicit surface', () => {
+	it('honors an explicit environment', () => {
 		const result = member('Router', 'entity', 'The Router entity.', 'browser')
 
-		expect(result.surface).toBe('browser')
+		expect(result.environment).toBe('browser')
 	})
 
 	it('round-trips the isMember exact-record guard', () => {
@@ -91,10 +91,11 @@ describe('blueprint', () => {
 
 		expect(result.name).toBe('router')
 		expect(result.keywords).toEqual([])
-		expect(result.surfaces).toEqual(['core'])
+		expect(result.src).toEqual(['core'])
+		expect(result.app).toEqual([])
 		expect(result.dependencies).toEqual([])
 		expect(result.version).toBe('0.0.1')
-		expect(result.engines).toBe('>=22')
+		expect(result.engines).toBe('>=22.12.0')
 		expect(result.overrides).toEqual([])
 	})
 
@@ -114,18 +115,20 @@ describe('blueprint', () => {
 	it('honors every explicit option over its default', () => {
 		const result = blueprint('router', {
 			keywords: ['routing'],
-			surfaces: ['core', 'server'],
+			src: ['core', 'server'],
+			app: ['core', 'browser'],
 			dependencies: [dependency('@orkestrel/contract', '^0.0.5')],
 			version: '1.2.3',
-			engines: '>=24',
+			engines: '>=24.0.0',
 			overrides: [override('README.md', 'hi')],
 		})
 
 		expect(result.keywords).toEqual(['routing'])
-		expect(result.surfaces).toEqual(['core', 'server'])
+		expect(result.src).toEqual(['core', 'server'])
+		expect(result.app).toEqual(['core', 'browser'])
 		expect(result.dependencies).toEqual([dependency('@orkestrel/contract', '^0.0.5')])
 		expect(result.version).toBe('1.2.3')
-		expect(result.engines).toBe('>=24')
+		expect(result.engines).toBe('>=24.0.0')
 		expect(result.overrides).toEqual([override('README.md', 'hi')])
 	})
 
@@ -141,10 +144,10 @@ describe('blueprint', () => {
 		const full = blueprint('router', {
 			description: 'A router.',
 			keywords: ['routing'],
-			surfaces: ['core', 'browser', 'server'],
+			src: ['core', 'browser', 'server'],
 			dependencies: [dependency('@orkestrel/contract', '^0.0.5')],
 			version: '1.2.3',
-			engines: '>=24',
+			engines: '>=24.0.0',
 			overrides: [override('README.md', 'hi')],
 		})
 

@@ -26,7 +26,7 @@ ctrl-c at any prompt and nothing is written. Prefer scripting instead? Every
 flag from the guided flow works standalone:
 
 ```sh
-npx scaffold new mypackage --surfaces core --apply
+npx scaffold new mypackage --src core --app core,browser,server --apply
 ```
 
 In scripts, every verb is dry-run by default and fully non-interactive —
@@ -39,14 +39,14 @@ global command anywhere; `--from` may point anywhere (read-only).
 directly — PowerShell mangles npm's `--` passthrough, so avoid
 `npm run scaffold -- …` there.
 
-**TLS:** the CLI trusts the OS certificate store automatically, so `fetch` calls
-succeed behind a corporate TLS-inspecting proxy the same way npm and browsers
-do; `NODE_EXTRA_CA_CERTS` adds custom PEMs on top.
+**TLS:** when the running Node release exposes system-CA controls, the CLI adds
+the operating-system certificate store. Earlier supported Node 22 releases use
+Node's default roots. `NODE_EXTRA_CA_CERTS` adds custom PEMs in either case.
 
 ## CLI
 
 ```sh
-scaffold new [name] [--surfaces <list>] [--deps <list>] [--apply] [--yes] [--json]
+scaffold new [name] [--src <list>] [--app <list>] [--deps <list>] [--apply] [--yes] [--json]
 scaffold pull [--apply] [--yes] [--json]
 scaffold audit [--live] [--json]
 scaffold repair [--prune] [--apply] [--yes] [--json]
@@ -59,7 +59,10 @@ scripting form. Exit codes: `0` clean/success, `1` drift or failure, `2` usage
 error.
 
 - **`new [name]`** — drafts a `Blueprint` and compiles it into a `Plan`; dry-run by
-  default (prints a review), `--apply` writes the package to disk. `--deps` names
+  default (prints a review), `--apply` writes the workspace to disk. `--src`
+  selects published source environments and `--app` independently selects private application
+  environments; at least one is required. App-only workspaces are unscoped and `"private": true`,
+  while mixed workspaces retain the published `@orkestrel/*` package boundary. `--deps` names
   `@orkestrel/*` runtime dependencies (installed as `dependencies`), resolving an
   absent `@range` to the registry's `latest`; run bare on a terminal, it lands as an
   interactive question. Other npm packages are not a `new`-time flag — hand-add them to
@@ -99,12 +102,17 @@ error.
 ```ts
 import { blueprint, createCompiler } from '@orkestrel/scaffold'
 
-const draft = blueprint({ name: '@orkestrel/example', surfaces: ['core'] })
+const draft = blueprint('example', {
+	src: ['core'],
+	app: ['core', 'browser', 'server'],
+})
 const compiler = createCompiler()
-const plan = compiler.compile(draft)
+const scaffolding = compiler.compile(draft)
+scaffolding.plan?.artifacts.length
+compiler.destroy()
 ```
 
-`@orkestrel/scaffold/server` carries the impure surface — `createMaterializer`
+`@orkestrel/scaffold/server` carries the impure API — `createMaterializer`
 (writes a `Plan` to disk) and `createSync` (the only part of the system that
 touches the network, fetching dependency guides and registry versions).
 
@@ -116,7 +124,7 @@ complete; a present but corrupt or truncated manifest fails closed.
 
 ## Guides
 
-For the full surface, see [`guides/src/scaffold.md`](guides/src/scaffold.md).
+For the full API, see [`guides/src/scaffold.md`](guides/src/scaffold.md).
 
 ## License
 

@@ -1,4 +1,10 @@
-import type { SyncEventMap, SyncInterface, SyncOptions } from './types.js'
+import type {
+	SyncAllowance,
+	SyncEventMap,
+	SyncInterface,
+	SyncOptions,
+	WritePrecondition,
+} from './types.js'
 import type {
 	CatalogEntry,
 	Dependency,
@@ -8,12 +14,47 @@ import type {
 	VersionSync,
 } from '@src/core'
 import type { EmitterInterface } from '@orkestrel/emitter'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { isRecord, parseJSON } from '@orkestrel/contract'
+import { lstatSync, mkdirSync, writeFileSync } from 'node:fs'
+import { dirname } from 'node:path'
+import { attempt, isRecord, parseJSON } from '@orkestrel/contract'
 import { Emitter } from '@orkestrel/emitter'
-import { manifestToDependencies, rangeToFreshness, ScaffoldError } from '@src/core'
-import { guideToDescription, readManifest, resolveContainedPath } from './helpers.js'
+import {
+	isSyncReport,
+	hasOnlyDataProperties,
+	manifestToDependencies,
+	ownDataValue,
+	parseSyncReport,
+	rangeToFreshness,
+	ScaffoldError,
+	DEPENDENCY_NAME_PATTERN,
+	MAX_ARTIFACT_BYTES,
+	SYNC_BASELINE_PATTERN,
+	VERSION_PATTERN,
+} from '@src/core'
+import {
+	commitWriteTransaction,
+	digestFile,
+	digestText,
+	discardWriteTransaction,
+	guideToDescription,
+	packageShortName,
+	readGuideReferences,
+	readManifest,
+	resolvePhysicalPath,
+	resolveGuideWrites,
+	syncReportOf,
+	validateWriteDirectories,
+} from './helpers.js'
+import { parseSyncCurrent, parseSyncDependencies, parseSyncOptions } from './parsers.js'
+import { isCatalogDescription, isFilesystemPath, isMissingPathError } from './validators.js'
+import { WriteTransaction } from './WriteTransaction.js'
+import {
+	DEFAULT_SYNC_BUDGET,
+	DEFAULT_SYNC_CONCURRENCY,
+	DEFAULT_SYNC_ITEMS,
+	DEFAULT_SYNC_LIMIT,
+	DEFAULT_SYNC_TIMEOUT,
+} from './constants.js'
 
 /**
  * The upstream-synchronization entity (server) — the impure FETCH sibling of
@@ -49,10 +90,6 @@ import { guideToDescription, readManifest, resolveContainedPath } from './helper
  * ```
  */
 export class Sync implements SyncInterface {
-	static readonly #DEFAULT_TIMEOUT = 10_000
-	static readonly #DEFAULT_CONCURRENCY = 6
-	static readonly #DEFAULT_LIMIT = 5_242_880 // 5 MiB
-
 	readonly #emitter: Emitter<SyncEventMap>
 	readonly #guidesBase: string
 	readonly #branch: string
@@ -63,19 +100,28 @@ export class Sync implements SyncInterface {
 	readonly #retries: number
 	readonly #strict: boolean
 	readonly #limit: number
+	readonly #items: number
+	readonly #budget: number
+	readonly #controller = new AbortController()
 	#destroyed = false
 
 	constructor(options?: SyncOptions) {
-		this.#emitter = new Emitter<SyncEventMap>({ on: options?.on, error: options?.error })
-		this.#guidesBase = options?.guides?.base ?? 'raw.githubusercontent.com'
-		this.#branch = options?.guides?.branch ?? 'main'
-		this.#guidesTimeout = options?.guides?.timeout ?? Sync.#DEFAULT_TIMEOUT
-		this.#registryBase = options?.registry?.base ?? 'registry.npmjs.org'
-		this.#registryTimeout = options?.registry?.timeout ?? Sync.#DEFAULT_TIMEOUT
-		this.#concurrency = options?.concurrency ?? Sync.#DEFAULT_CONCURRENCY
-		this.#retries = options?.retries ?? 0
-		this.#strict = options?.strict ?? false
-		this.#limit = options?.limit ?? Sync.#DEFAULT_LIMIT
+		const parsed = parseSyncOptions(options)
+		this.#emitter = new Emitter<SyncEventMap>({
+			...(parsed.on === undefined ? {} : { on: parsed.on }),
+			...(parsed.error === undefined ? {} : { error: parsed.error }),
+		})
+		this.#guidesBase = parsed.guides?.base ?? 'https://raw.githubusercontent.com'
+		this.#branch = parsed.guides?.branch ?? 'main'
+		this.#guidesTimeout = parsed.guides?.timeout ?? DEFAULT_SYNC_TIMEOUT
+		this.#registryBase = parsed.registry?.base ?? 'https://registry.npmjs.org'
+		this.#registryTimeout = parsed.registry?.timeout ?? DEFAULT_SYNC_TIMEOUT
+		this.#concurrency = parsed.concurrency ?? DEFAULT_SYNC_CONCURRENCY
+		this.#retries = parsed.retries ?? 0
+		this.#strict = parsed.strict ?? false
+		this.#limit = parsed.limit ?? DEFAULT_SYNC_LIMIT
+		this.#items = parsed.items ?? DEFAULT_SYNC_ITEMS
+		this.#budget = parsed.budget ?? DEFAULT_SYNC_BUDGET
 	}
 
 	get emitter(): EmitterInterface<SyncEventMap> {
@@ -87,11 +133,43 @@ export class Sync implements SyncInterface {
 		current?: Readonly<Record<string, string>>,
 	): Promise<readonly GuideSync[]> {
 		this.#ensureAlive()
-		return Sync.#runPool(deps, this.#concurrency, async (dep) => {
-			const short = Sync.#shortName(dep.name)
+		return this.#guides(deps, current, Float64Array.of(this.#budget))
+	}
+
+	async versions(deps: readonly Dependency[]): Promise<readonly VersionSync[]> {
+		this.#ensureAlive()
+		return this.#versions(deps, Float64Array.of(this.#budget))
+	}
+
+	#guides(
+		deps: readonly Dependency[],
+		current: Readonly<Record<string, string>> | undefined,
+		allowance: SyncAllowance,
+	): Promise<readonly GuideSync[]> {
+		const parsed = parseSyncDependencies(deps, false)
+		if (parsed.length > this.#items) {
+			throw new ScaffoldError('INVALID', 'Sync dependency count exceeds its item limit', {
+				items: parsed.length,
+				limit: this.#items,
+			})
+		}
+		const reference = parseSyncCurrent(
+			current,
+			parsed.map((dependency) => dependency.name),
+			this.#budget,
+		)
+		return Sync.#runPool(parsed, this.#concurrency, async (dep) => {
+			const short = packageShortName(dep.name)
 			const url = this.#guideUrl(short)
-			const outcome = await Sync.#fetchText(url, this.#guidesTimeout, this.#retries, this.#limit)
-			const guide = Sync.#toGuideSync(dep.name, short, outcome, current)
+			const outcome = await Sync.#fetchText(
+				url,
+				this.#guidesTimeout,
+				this.#retries,
+				this.#limit,
+				allowance,
+				this.#controller.signal,
+			)
+			const guide = Sync.#toGuideSync(dep.name, short, outcome, reference)
 			if (outcome.kind === 'failed') this.#emitter.emit('error', outcome.error)
 			this.#emitter.emit('guide', dep.name)
 			if (this.#strict && (guide.freshness === 'missing' || guide.freshness === 'failed')) {
@@ -104,11 +182,27 @@ export class Sync implements SyncInterface {
 		})
 	}
 
-	async versions(deps: readonly Dependency[]): Promise<readonly VersionSync[]> {
-		this.#ensureAlive()
-		return Sync.#runPool(deps, this.#concurrency, async (dep) => {
+	#versions(
+		deps: readonly Dependency[],
+		allowance: SyncAllowance,
+	): Promise<readonly VersionSync[]> {
+		const parsed = parseSyncDependencies(deps, true)
+		if (parsed.length > this.#items) {
+			throw new ScaffoldError('INVALID', 'Sync dependency count exceeds its item limit', {
+				items: parsed.length,
+				limit: this.#items,
+			})
+		}
+		return Sync.#runPool(parsed, this.#concurrency, async (dep) => {
 			const url = this.#registryUrl(dep.name)
-			const outcome = await Sync.#fetchText(url, this.#registryTimeout, this.#retries, this.#limit)
+			const outcome = await Sync.#fetchText(
+				url,
+				this.#registryTimeout,
+				this.#retries,
+				this.#limit,
+				allowance,
+				this.#controller.signal,
+			)
 			const version = Sync.#toVersionSync(dep, outcome)
 			if (outcome.kind === 'failed') this.#emitter.emit('error', outcome.error)
 			this.#emitter.emit('version', dep.name)
@@ -151,27 +245,41 @@ export class Sync implements SyncInterface {
 	async catalog(): Promise<readonly CatalogEntry[]> {
 		this.#ensureAlive()
 		const orgUrl = this.#orgUrl()
+		const allowance: SyncAllowance = Float64Array.of(this.#budget)
 		const orgOutcome = await Sync.#fetchText(
 			orgUrl,
 			this.#registryTimeout,
 			this.#retries,
 			this.#limit,
+			allowance,
+			this.#controller.signal,
 		)
 		const names = Sync.#toOrgPackages(orgOutcome, orgUrl)
+		if (names.length > this.#items) {
+			throw new ScaffoldError('FETCH', `Package list at ${orgUrl} exceeds the item limit`, {
+				url: orgUrl,
+				items: names.length,
+				limit: this.#items,
+			})
+		}
 		const entries = await Sync.#runPool(names, this.#concurrency, async (name) => {
 			const packumentOutcome = await Sync.#fetchText(
 				this.#registryUrl(name),
 				this.#registryTimeout,
 				this.#retries,
 				this.#limit,
+				allowance,
+				this.#controller.signal,
 			)
 			const packument = Sync.#toPackument(packumentOutcome)
-			const short = Sync.#shortName(name)
+			const short = packageShortName(name)
 			const guideOutcome = await Sync.#fetchText(
 				this.#guideUrl(short),
 				this.#guidesTimeout,
 				this.#retries,
 				this.#limit,
+				allowance,
+				this.#controller.signal,
 			)
 			const guide = Sync.#toGuideDescription(guideOutcome)
 			if (packumentOutcome.kind === 'failed') this.#emitter.emit('error', packumentOutcome.error)
@@ -184,72 +292,158 @@ export class Sync implements SyncInterface {
 		return [...entries].sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
 	}
 
-	async pull(target: string): Promise<SyncReport> {
+	async pull(target: string, dependencies?: readonly Dependency[]): Promise<SyncReport> {
 		this.#ensureAlive()
-		const deps = manifestToDependencies(readManifest(target))
-		const current: Record<string, string> = {}
-		for (const dep of deps) {
-			const short = Sync.#shortName(dep.name)
-			const full = join(target, 'guides', 'src', `${short}.md`)
-			if (!existsSync(full)) continue
-			try {
-				current[dep.name] = readFileSync(full, 'utf8')
-			} catch {
-				// An unreadable local mirror is treated exactly like an absent one —
-				// the caller-supplied map simply omits the entry.
-			}
+		const declared = manifestToDependencies(readManifest(target))
+		const deps = dependencies === undefined ? declared : parseSyncDependencies(dependencies, false)
+		if (
+			dependencies !== undefined &&
+			deps.some(
+				(dependency) =>
+					!declared.some(
+						(candidate) =>
+							candidate.name === dependency.name && candidate.range === dependency.range,
+					),
+			)
+		) {
+			throw new ScaffoldError('INVALID', 'Sync pull selection is not declared by the target')
 		}
-		const guides = await this.guides(deps, current)
-		const versions = await this.versions(deps)
-		const failed = [...guides, ...versions].filter(
-			(entry) => entry.freshness === 'missing' || entry.freshness === 'failed',
-		).length
-		const clean =
-			failed === 0 &&
-			guides.every((guide) => guide.freshness === 'current') &&
-			versions.every((version) => version.freshness === 'current')
-		const report: SyncReport = { target, guides, versions, clean, failed }
+		const current = readGuideReferences(target, deps)
+		const allowance: SyncAllowance = Float64Array.of(this.#budget)
+		const guides = await this.#guides(deps, current, allowance)
+		const versions = await this.#versions(deps, allowance)
+		const report = syncReportOf(target, guides, versions)
 		this.#emitter.emit('done', report)
 		return report
 	}
 
 	async write(report: SyncReport, target: string): Promise<readonly string[]> {
 		this.#ensureAlive()
-		const written: string[] = []
-		for (const guide of report.guides) {
-			if (guide.freshness !== 'behind') continue
-			const to = resolveContainedPath(target, guide.path, 'WRITE', 'target')
-			try {
-				mkdirSync(dirname(to), { recursive: true })
-				writeFileSync(to, guide.content, 'utf8')
-			} catch (error) {
-				this.#emitter.emit('error', error)
-				throw new ScaffoldError('WRITE', `Failed to write guide at ${guide.path}`, {
+		if (!isFilesystemPath(target)) {
+			throw new ScaffoldError('WRITE', 'Sync write target is malformed or exceeds its bounds', {
+				target,
+			})
+		}
+		if (!hasOnlyDataProperties(report) || !isSyncReport(report)) {
+			throw new ScaffoldError('WRITE', 'Sync report is malformed')
+		}
+		const snapshot = attempt(() => structuredClone(report))
+		const parsed = snapshot.success ? parseSyncReport(snapshot.value) : undefined
+		if (parsed === undefined) {
+			throw new ScaffoldError('WRITE', 'Sync report is malformed', {
+				...(snapshot.success ? {} : { error: snapshot.error }),
+			})
+		}
+		const destinations = resolveGuideWrites(parsed.guides, target)
+		const written = destinations.map(({ guide }) => guide.path)
+		if (written.length === 0) return written
+		const preconditions: WritePrecondition[] = []
+		for (const { guide, destination } of destinations) {
+			if (guide.baseline === undefined || !SYNC_BASELINE_PATTERN.test(guide.baseline)) {
+				throw new ScaffoldError(
+					'WRITE',
+					`Guide baseline is missing or malformed at ${guide.path}`,
+					{
+						path: guide.path,
+					},
+				)
+			}
+			const status = attempt(() => lstatSync(destination))
+			if (guide.baseline === 'absent') {
+				if (status.success || !isMissingPathError(status.error)) {
+					throw new ScaffoldError('WRITE', `Guide destination changed at ${guide.path}`, {
+						path: guide.path,
+						...(status.success ? {} : { error: status.error }),
+					})
+				}
+				preconditions.push({ path: guide.path, shape: 'absent' })
+			} else if (
+				!status.success ||
+				!status.value.isFile() ||
+				status.value.isSymbolicLink() ||
+				status.value.nlink !== 1 ||
+				digestFile(destination) !== guide.baseline
+			) {
+				throw new ScaffoldError('WRITE', `Guide destination changed at ${guide.path}`, {
 					path: guide.path,
-					error,
+					...(status.success ? {} : { error: status.error }),
+				})
+			} else {
+				preconditions.push({
+					path: guide.path,
+					shape: 'file',
+					digest: guide.baseline,
 				})
 			}
-			written.push(guide.path)
-			this.#emitter.emit('write', guide.path)
 		}
+		const transaction = WriteTransaction.create(target, written, preconditions)
+		const staged = attempt(() => {
+			for (const { guide } of destinations) {
+				if (Buffer.byteLength(guide.content, 'utf8') > MAX_ARTIFACT_BYTES) {
+					throw new ScaffoldError('WRITE', `Guide exceeds the artifact limit at ${guide.path}`, {
+						path: guide.path,
+						limit: MAX_ARTIFACT_BYTES,
+					})
+				}
+				validateWriteDirectories(transaction)
+				const candidate = resolvePhysicalPath(transaction.stage, guide.path, 'WRITE', 'staging')
+				mkdirSync(dirname(candidate), { recursive: true })
+				validateWriteDirectories(transaction)
+				const destination = resolvePhysicalPath(transaction.stage, guide.path, 'WRITE', 'staging')
+				writeFileSync(destination, guide.content, {
+					encoding: 'utf8',
+					flag: 'wx',
+				})
+				const status = lstatSync(destination)
+				if (
+					!status.isFile() ||
+					status.isSymbolicLink() ||
+					status.nlink !== 1 ||
+					digestFile(destination) !== digestText(guide.content)
+				) {
+					throw new ScaffoldError('WRITE', `Staged guide changed at ${guide.path}`, {
+						path: guide.path,
+					})
+				}
+				validateWriteDirectories(transaction)
+			}
+		})
+		if (!staged.success) {
+			const cleanup = attempt(() => discardWriteTransaction(transaction))
+			this.#emitter.emit('error', staged.error)
+			throw new ScaffoldError('WRITE', 'Failed to stage guide synchronization', {
+				target,
+				error: staged.error,
+				cleanup: cleanup.success ? undefined : cleanup.error,
+			})
+		}
+		const committed = attempt(() => commitWriteTransaction(transaction, written))
+		if (!committed.success) {
+			this.#emitter.emit('error', committed.error)
+			throw committed.error
+		}
+		for (const path of written) this.#emitter.emit('write', path)
 		return written
 	}
 
 	destroy(): void {
 		if (this.#destroyed) return
 		this.#destroyed = true
+		this.#controller.abort()
 		this.#emitter.emit('destroy')
 		this.#emitter.destroy()
 	}
 
-	// The CANONICAL raw.githubusercontent.com form — `/orkestrel/<short>/refs/heads/<branch>/…`
-	// — never the legacy `/orkestrel/<short>/<branch>/…` shorthand, which the
-	// host now 301-redirects to this exact canonical form. `redirect: 'manual'`
-	// (A1) is a deliberate, kept security posture, so building the canonical
-	// URL directly (never following the redirect) is the fix — not a relaxed
-	// redirect policy.
+	// The canonical raw.githubusercontent.com form is
+	// `/orkestrel/<short>/refs/heads/<branch>/…`. Requests use
+	// `redirect: 'manual'`, so this direct URL never relaxes redirect policy.
 	#guideUrl(short: string): string {
-		return `${Sync.#normalizeBase(this.#guidesBase)}/orkestrel/${short}/refs/heads/${this.#branch}/guides/src/${short}.md`
+		const branch = this.#branch
+			.split('/')
+			.map((segment) => encodeURIComponent(segment))
+			.join('/')
+		const encoded = encodeURIComponent(short)
+		return `${this.#guidesBase}/orkestrel/${encoded}/refs/heads/${branch}/guides/src/${encoded}.md`
 	}
 
 	// npm's canonical scoped-package registry path keeps the literal `@` and
@@ -261,7 +455,7 @@ export class Sync implements SyncInterface {
 	// boundary), so this plain first-occurrence slash replace is exhaustive
 	// for every name `versions()` is called with, not just `@orkestrel/*`.
 	#registryUrl(name: string): string {
-		return `${Sync.#normalizeBase(this.#registryBase)}/${name.replace('/', '%2F')}`
+		return `${this.#registryBase}/${name.replace('/', '%2F')}`
 	}
 
 	// The registry's exact-membership org package list — a flat name→access
@@ -269,16 +463,7 @@ export class Sync implements SyncInterface {
 	// enumeration source (never `-/v1/search`, whose `scope:` qualifier does
 	// not filter as its name implies).
 	#orgUrl(): string {
-		return `${Sync.#normalizeBase(this.#registryBase)}/-/org/orkestrel/package`
-	}
-
-	static #normalizeBase(base: string): string {
-		return /^https?:\/\//.test(base) ? base : `https://${base}`
-	}
-
-	static #shortName(name: string): string {
-		const prefix = '@orkestrel/'
-		return name.startsWith(prefix) ? name.slice(prefix.length) : name
+		return `${this.#registryBase}/-/org/orkestrel/package`
 	}
 
 	// Bounded-concurrency worker pool — never an unbounded `Promise.all` (§12).
@@ -329,8 +514,10 @@ export class Sync implements SyncInterface {
 			const index = pool.state.cursor
 			pool.state.cursor += 1
 			if (index >= pool.items.length) return
+			const item = pool.items[index]
+			if (item === undefined) return
 			try {
-				pool.results[index] = await pool.worker(pool.items[index])
+				pool.results[index] = await pool.worker(item)
 			} catch (error) {
 				if (pool.state.firstError === undefined) pool.state.firstError = { error }
 				pool.state.stopped = true
@@ -341,8 +528,8 @@ export class Sync implements SyncInterface {
 
 	// One HTTPS GET with a per-request `AbortSignal.timeout` and up to
 	// `retries` additional attempts on a TRANSPORT fault (a thrown/rejected
-	// fetch, a non-2xx non-404 response, a manual 3xx redirect (A1), or a body
-	// exceeding `limit` bytes (R2)) — a `404` is a definitive upstream answer
+	// fetch, a non-2xx non-404 response, a manual 3xx redirect, or a body
+	// exceeding `limit` bytes) — a `404` is a definitive upstream answer
 	// and is never retried. Every `failed` outcome carries `note`, the LAST
 	// attempt's human-readable cause — a transport error message (with an
 	// `ECONNREFUSED`-style cause code appended when present), an `HTTP
@@ -353,6 +540,8 @@ export class Sync implements SyncInterface {
 		timeout: number,
 		retries: number,
 		limit: number,
+		allowance: SyncAllowance,
+		signal: AbortSignal,
 	): Promise<
 		| { readonly kind: 'ok'; readonly text: string }
 		| { readonly kind: 'missing' }
@@ -360,33 +549,41 @@ export class Sync implements SyncInterface {
 	> {
 		let lastError: unknown
 		let lastNote = ''
-		for (let attempt = 0; attempt <= retries; attempt += 1) {
+		for (let retry = 0; retry <= retries; retry += 1) {
+			if (signal.aborted) {
+				throw new ScaffoldError('DESTROYED', 'Sync has been destroyed')
+			}
 			try {
-				// `redirect: 'manual'` (A1) — a compromised/misconfigured endpoint
+				// `redirect: 'manual'` prevents a compromised or misconfigured endpoint
 				// must not silently redirect cross-host; any 3xx (or the opaque
 				// redirect response `redirect: 'manual'` itself resolves) is treated
 				// as a distinct, named transport fault — never a bare status code.
 				// Every fetch is unauthenticated (no headers) — every fleet repo is
 				// public, so reachability alone is the signal.
 				const response = await fetch(url, {
-					signal: AbortSignal.timeout(timeout),
+					signal: AbortSignal.any([signal, AbortSignal.timeout(timeout)]),
 					redirect: 'manual',
 				})
-				if (response.status === 404) return { kind: 'missing' }
+				if (response.status === 404) {
+					await Sync.#cancel(response)
+					return { kind: 'missing' }
+				}
 				if (
 					response.type === 'opaqueredirect' ||
 					(response.status >= 300 && response.status < 400)
 				) {
 					lastNote = 'redirected (redirect following is disabled)'
 					lastError = new Error(`Redirect blocked for ${url}`)
+					await Sync.#cancel(response)
 					continue
 				}
 				if (!response.ok) {
 					lastNote = `HTTP ${String(response.status)}`
 					lastError = new Error(`Unexpected HTTP status ${response.status} for ${url}`)
+					await Sync.#cancel(response)
 					continue
 				}
-				const read = await Sync.#readBounded(response, url, limit)
+				const read = await Sync.#readBounded(response, url, limit, allowance)
 				if (!read.ok) {
 					lastError = read.error
 					lastNote = read.note
@@ -394,11 +591,18 @@ export class Sync implements SyncInterface {
 				}
 				return { kind: 'ok', text: read.text }
 			} catch (error) {
+				if (signal.aborted) {
+					throw new ScaffoldError('DESTROYED', 'Sync has been destroyed', { error })
+				}
 				lastError = error
 				lastNote = Sync.#transportNote(error)
 			}
 		}
 		return { kind: 'failed', error: lastError, note: lastNote }
+	}
+
+	static async #cancel(response: Response): Promise<void> {
+		await response.body?.cancel()
 	}
 
 	// A thrown/rejected `fetch`'s message, with the underlying cause's `code`
@@ -427,6 +631,7 @@ export class Sync implements SyncInterface {
 		response: Response,
 		url: string,
 		limit: number,
+		allowance: SyncAllowance,
 	): Promise<
 		| { readonly ok: true; readonly text: string }
 		| { readonly ok: false; readonly error: unknown; readonly note: string }
@@ -434,20 +639,25 @@ export class Sync implements SyncInterface {
 		const declared = response.headers.get('content-length')
 		if (declared !== null) {
 			const declaredBytes = Number(declared)
-			if (Number.isFinite(declaredBytes) && declaredBytes > limit) {
+			if (
+				Number.isFinite(declaredBytes) &&
+				(declaredBytes > limit || declaredBytes > (allowance[0] ?? 0))
+			) {
+				await response.body?.cancel()
+				const threshold = Math.min(limit, allowance[0] ?? 0)
 				return {
 					ok: false,
 					error: new Error(
-						`Response body for ${url} declares ${String(declaredBytes)} bytes, exceeding the ${String(limit)}-byte limit`,
+						`Response body for ${url} declares ${String(declaredBytes)} bytes, exceeding the ${String(threshold)}-byte allowance`,
 					),
-					note: `response exceeded limit (${String(limit)} bytes)`,
+					note: `response exceeded allowance (${String(threshold)} bytes)`,
 				}
 			}
 		}
 		const body = response.body
 		if (body === null) return { ok: true, text: '' }
 		const reader = body.getReader()
-		const decoder = new TextDecoder()
+		const decoder = new TextDecoder('utf-8', { fatal: true })
 		const chunks: string[] = []
 		let total = 0
 		try {
@@ -455,16 +665,25 @@ export class Sync implements SyncInterface {
 				const { done, value } = await reader.read()
 				if (done) break
 				total += value.byteLength
-				if (total > limit) {
+				if (total > limit || value.byteLength > (allowance[0] ?? 0)) {
+					await reader.cancel()
+					const threshold = Math.min(limit, total + (allowance[0] ?? 0) - value.byteLength)
+					allowance[0] = Math.max(0, (allowance[0] ?? 0) - value.byteLength)
 					return {
 						ok: false,
-						error: new Error(`Response body for ${url} exceeded the ${String(limit)}-byte limit`),
-						note: `response exceeded limit (${String(limit)} bytes)`,
+						error: new Error(
+							`Response body for ${url} exceeded the ${String(threshold)}-byte allowance`,
+						),
+						note: `response exceeded allowance (${String(threshold)} bytes)`,
 					}
 				}
+				allowance[0] = (allowance[0] ?? 0) - value.byteLength
 				chunks.push(decoder.decode(value, { stream: true }))
 			}
 			chunks.push(decoder.decode())
+		} catch (error) {
+			await reader.cancel(error).catch(() => undefined)
+			throw error
 		} finally {
 			reader.releaseLock()
 		}
@@ -481,14 +700,38 @@ export class Sync implements SyncInterface {
 		current?: Readonly<Record<string, string>>,
 	): GuideSync {
 		const path = `guides/src/${short}.md`
+		const local = current?.[name]
+		const baseline =
+			current === undefined ? undefined : local === undefined ? 'absent' : digestText(local)
 		if (outcome.kind === 'missing') {
-			return { name, path, content: '', freshness: 'missing', note: 'HTTP 404' }
+			return {
+				name,
+				path,
+				content: '',
+				freshness: 'missing',
+				note: 'HTTP 404',
+				...(baseline === undefined ? {} : { baseline }),
+			}
 		}
 		if (outcome.kind === 'failed') {
-			return { name, path, content: '', freshness: 'failed', note: outcome.note }
+			return {
+				name,
+				path,
+				content: '',
+				freshness: 'failed',
+				note: outcome.note,
+				...(baseline === undefined ? {} : { baseline }),
+			}
 		}
-		const freshness: Freshness = current?.[name] === outcome.text ? 'current' : 'behind'
-		return { name, path, content: outcome.text, freshness }
+		const freshness: Freshness =
+			current !== undefined && local !== undefined && local === outcome.text ? 'current' : 'behind'
+		return {
+			name,
+			path,
+			content: outcome.text,
+			freshness,
+			...(baseline === undefined ? {} : { baseline }),
+		}
 	}
 
 	static #toVersionSync(
@@ -553,8 +796,8 @@ export class Sync implements SyncInterface {
 		if (!isRecord(parsed)) {
 			throw new ScaffoldError('FETCH', `Malformed package list response at ${url}`, { url })
 		}
-		const names = Object.keys(parsed).filter((name) => name.startsWith('@orkestrel/'))
-		if (names.length === 0) {
+		const names = Object.keys(parsed)
+		if (names.length === 0 || names.some((name) => !DEPENDENCY_NAME_PATTERN.test(name))) {
 			throw new ScaffoldError('FETCH', `Malformed package list response at ${url}`, { url })
 		}
 		return names
@@ -590,9 +833,12 @@ export class Sync implements SyncInterface {
 				note: 'malformed registry response (not an object)',
 			}
 		}
-		const distTags = parsed['dist-tags']
-		const version = isRecord(distTags) && typeof distTags.latest === 'string' ? distTags.latest : ''
-		const description = typeof parsed.description === 'string' ? parsed.description : ''
+		const distTags = ownDataValue(parsed, 'dist-tags')
+		const latest = ownDataValue(distTags, 'latest')
+		const version =
+			isRecord(distTags) && typeof latest === 'string' && VERSION_PATTERN.test(latest) ? latest : ''
+		const rawDescription = ownDataValue(parsed, 'description')
+		const description = isCatalogDescription(rawDescription) ? rawDescription : ''
 		const note = version === '' ? 'malformed registry response (missing dist-tags.latest)' : ''
 		return { version, description, note }
 	}
@@ -634,10 +880,10 @@ export class Sync implements SyncInterface {
 	static #parseLatest(text: string): string | undefined {
 		const parsed = parseJSON(text)
 		if (!isRecord(parsed)) return undefined
-		const distTags = parsed['dist-tags']
+		const distTags = ownDataValue(parsed, 'dist-tags')
 		if (!isRecord(distTags)) return undefined
-		const latest = distTags.latest
-		return typeof latest === 'string' ? latest : undefined
+		const latest = ownDataValue(distTags, 'latest')
+		return typeof latest === 'string' && VERSION_PATTERN.test(latest) ? latest : undefined
 	}
 
 	#ensureAlive(): void {

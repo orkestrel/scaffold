@@ -14,8 +14,8 @@ export const KNOWN_VERBS: readonly Verb[] = Object.freeze([
 
 /** Internal artifact origins translated into user-facing labels. */
 export const ORIGIN_LABEL: Readonly<Record<Origin, string>> = Object.freeze({
-	host: 'template-owned',
-	template: 'template-owned',
+	host: 'host-owned',
+	template: 'starter',
 	computed: 'generated',
 })
 
@@ -45,7 +45,7 @@ export const ACTION_LABEL: Readonly<Record<string, string>> = Object.freeze({
 
 /** Repair's deliberately limited ownership boundary. */
 export const REPAIR_SCOPE =
-	'repair scope: shared template-owned artifacts only — generated source/tests/configs are never touched'
+	'repair scope: shared host-owned artifacts only — starter and generated files are never touched'
 
 /** The dry-run note for `new`. */
 export const NEW_DRY_RUN_NOTE = 'dry run — pass --apply to write'
@@ -56,11 +56,11 @@ export const INVALID_ARGUMENTS_MESSAGE = 'invalid arguments'
 /** Shared prompt-cancellation message. */
 export const CANCELLED_MESSAGE = 'cancelled — nothing written'
 
-/** Terminal choices for a new package's surfaces. */
-export const SURFACE_CHOICES: readonly CheckboxChoice[] = Object.freeze([
+/** Terminal choices for a new workspace's src and app environments. */
+export const ENVIRONMENT_CHOICES: readonly CheckboxChoice[] = Object.freeze([
 	{ name: 'core', value: 'core', description: 'the pure engine' },
-	{ name: 'browser', value: 'browser', description: 'DOM-facing surface' },
-	{ name: 'server', value: 'server', description: 'node-facing surface' },
+	{ name: 'browser', value: 'browser', description: 'DOM-facing environment' },
+	{ name: 'server', value: 'server', description: 'node-facing environment' },
 ])
 
 /** The safety model included in full help. */
@@ -68,7 +68,7 @@ export const SAFETY_BANNER = [
 	'safety: every verb is a dry run by default.',
 	'on a terminal, a write prompts for confirmation; in a script, pass --apply (and --yes to skip the confirm).',
 	'every write is confined to the current working directory — cd there first.',
-	'TLS trusts the system certificate store automatically (corporate proxies); NODE_EXTRA_CA_CERTS adds custom PEMs.',
+	'when Node exposes system-CA controls, TLS adds the OS certificate store; earlier supported Node 22 releases use default roots. NODE_EXTRA_CA_CERTS adds custom PEMs.',
 ].join('\n')
 
 /** Stable command exit-code meanings. */
@@ -80,17 +80,17 @@ export const EXIT_CODES: readonly (readonly [string, string])[] = Object.freeze(
 
 /** One-line command summaries. */
 export const VERB_SUMMARY: Readonly<Record<Verb, string>> = Object.freeze({
-	new: 'scaffold a package into ./<name>',
+	new: 'scaffold a workspace into ./<name>',
 	pull: 'refresh vendored guides/versions, report drift',
 	audit: 'whole-plan conformance report',
-	repair: 'restore the shared template-owned set',
-	fleet: "audit/repair every package under the cwd's immediate children",
+	repair: 'restore the shared host-owned set',
+	fleet: "audit/repair every workspace under the cwd's immediate children",
 	catalog: 'regenerate the fleet package-catalog table',
 })
 
 /** Compact command flag references. */
 export const VERB_FLAGS: Readonly<Record<Verb, string>> = Object.freeze({
-	new: '--surfaces a,b --deps x,y --apply --yes --target <path> --from <path>',
+	new: '--src a,b --app a,b --deps x,y --apply --yes --target <path> --from <path>',
 	pull: '--target . --deps x,y --apply --yes --strict',
 	audit: '--target . --live --from <path> --groups a,b',
 	repair: '--target . --apply --yes --prune --from <path>',
@@ -102,7 +102,8 @@ export const VERB_FLAGS: Readonly<Record<Verb, string>> = Object.freeze({
 export const VERB_FLAG_HELP: Readonly<Record<Verb, readonly (readonly [string, string])[]>> =
 	Object.freeze({
 		new: [
-			['--surfaces a,b', 'which surfaces to include (core, browser, server)'],
+			['--src a,b', 'which src environments to include (core, browser, server)'],
+			['--app a,b', 'which app environments to include (core, browser, server)'],
 			['--deps x,y', '@orkestrel/* dependencies to add (installed as dependencies)'],
 			['--apply', 'write the files (default is a dry run)'],
 			['--yes', 'skip the confirmation question'],
@@ -140,7 +141,7 @@ export const VERB_FLAG_HELP: Readonly<Record<Verb, readonly (readonly [string, s
 		],
 		catalog: [
 			['--from <path> ...', 'one or more local package paths to include'],
-			['--target <repo>', 'the repo whose README catalog table gets updated'],
+			['--target <repo>', 'the repository whose Orkestrel agent catalog table gets updated'],
 			['--offline', 'skip network lookups (npm registry) for package descriptions'],
 			['--apply', 'write the updated table (default is a dry run)'],
 			['--yes', 'skip the confirmation question'],
@@ -160,18 +161,12 @@ export const VERB_DRY_RUN_NOTE: Readonly<Record<Verb, string>> = Object.freeze({
 
 /** One concrete invocation per command. */
 export const VERB_EXAMPLE: Readonly<Record<Verb, string>> = Object.freeze({
-	new: 'example: scaffold new widget --surfaces core,server --apply',
+	new: 'example: scaffold new widget --src core,server --app core,browser --apply',
 	pull: 'example: scaffold pull --apply',
 	audit: 'example: scaffold audit --live',
 	repair: 'example: scaffold repair --apply',
 	fleet: 'example: scaffold fleet --apply --yes',
 	catalog: 'example: scaffold catalog --apply',
-})
-
-/** Retired commands and their replacements. */
-export const RETIRED_VERBS: Readonly<Record<string, string>> = Object.freeze({
-	sync: 'pull',
-	mirror: 'fleet',
 })
 
 /** Message used when a prune scan has no candidates. */
@@ -188,6 +183,15 @@ export const ORKESTREL_DEPS_PROMPT =
 export const CATALOG_UNRESOLVED_NOTE =
 	"couldn't resolve the vendored @orkestrel catalog — validating names by shape only"
 
+/** Catalog block destination in a scaffolded repository. */
+export const CATALOG_AGENT_PATH = '.claude/agents/orkestrel.md'
+
+/** Opening marker for the generated package catalog block. */
+export const CATALOG_START_MARKER = '<!-- catalog:start -->'
+
+/** Closing marker for the generated package catalog block. */
+export const CATALOG_END_MARKER = '<!-- catalog:end -->'
+
 /** Non-terminal prune safety note. */
 export const PRUNE_SKIPPED =
 	'prune skipped — not a terminal; add --apply (or --yes) to delete non-interactively'
@@ -195,7 +199,3 @@ export const PRUNE_SKIPPED =
 /** Degraded unexpected-file scan note. */
 export const SCAN_SKIPPED =
 	"unexpected-file scanning skipped — couldn't establish the template source"
-
-/** Fleet CI ownership note. */
-export const FLEET_CI_SKIPPED =
-	"ci.yml: left unchanged — each package customizes its own CI; run 'scaffold repair --apply' inside that package to update it"

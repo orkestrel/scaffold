@@ -30,8 +30,9 @@ configs/  thin target wrappers around root Vite/TypeScript configuration
 
 - `core` is host-independent. Browser and server may import core; core imports neither.
 - `app/core` is host-independent. `app/server` may import app/core plus core/server libraries, never browser code. `app/browser` may import app/core plus core/browser libraries and reaches server behavior through shared contracts/transports, never Node/server implementation imports.
+- Environment boundaries use the project toolchain directly: Oxlint restricts declared package, alias, and conventional relative imports; scoped TypeScript projects remove host globals from core and the opposite host; Vite resolves and builds the selected Vue/browser and Node/server graphs; and generated-consumer tests exercise those real configurations. Published source never imports private app code, core stays host-independent, and browser/server remain disjoint. Do not add a second parser or source-language analyzer to duplicate TypeScript, Oxlint, Vue, HTML, CSS, or Vite.
 - `tsconfig.json`, `vite.config.ts`, and each `*/types.ts` are their respective sources of truth.
-- Use only the surfaces the project needs; do not delete structural files merely because they are empty.
+- Use only the environments the project needs; do not delete structural files merely because they are empty.
 
 ## Non-negotiable rules
 
@@ -67,7 +68,7 @@ configs/  thin target wrappers around root Vite/TypeScript configuration
 - **No nested functions.** Extract function declarations/assignments from bodies. Anonymous callbacks passed directly as arguments are the sole exception.
 - **Functional core, imperative shell.** Export pure leaves; retain stateful or defining orchestration as class methods. Classes must compose behavior, not forward 1:1 to helpers.
 - **No superfluous wrappers.** A wrapper must add a boundary, invariant, composition, translation, lifecycle, or materially narrower contract. Otherwise use or rename the real symbol and update every consumer.
-- **Minimal public surface.** Add capability with its real consumer; do not speculate. Prefer one minimal interface and one shared engine, allowing native backend overrides only for genuine faster paths.
+- **Minimal public API.** Add capability with its real consumer; do not speculate. Prefer one minimal interface and one shared engine, allowing native backend overrides only for genuine faster paths.
 - **No compatibility shims.** This is greenfield: update every consumer in the same change.
 - **Mechanism, not product policy.** Framework code supplies reusable mechanisms and stops before application decisions.
 - **No polling architecture.** Park idle work on events/abort signals; yield long work cooperatively.
@@ -117,7 +118,8 @@ All files below are normative extensions of this root. Read every rule relevant 
 | `.claude/rules/architecture.md`  | Centralized files, exports, classes, modules, extension points, stores |
 | `.claude/rules/patterns.md`      | Options, managers, emitters, guards, parsers, contracts                |
 | `.claude/rules/tests.md`         | Test behavior, helpers, browser tests, Vitest configuration            |
-| `.claude/rules/workspace.md`     | Surfaces, aliases, environment isolation, builds, scripts, tooling     |
+| `.claude/rules/workspace.md`     | Src/app environments, aliases, isolation, builds, scripts, tooling     |
+| `.claude/rules/application.md`   | App composition, entries, manifest safety, lifecycle, integration      |
 | `.claude/rules/browser.md`       | Vue/browser architecture and platform usage                            |
 | `.claude/rules/styles.md`        | SCSS/CSS centralization, tokens, mixins, layers, naming                |
 | `.claude/rules/documentation.md` | Guides, parity, roadmap, showcase, examples                            |

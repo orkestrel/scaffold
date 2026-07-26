@@ -9,7 +9,6 @@ import {
 	readFileSync,
 	readdirSync,
 	realpathSync,
-	renameSync,
 	rmSync,
 	symlinkSync,
 	writeFileSync,
@@ -23,22 +22,35 @@ import {
 	contentToHex,
 	diffPlan,
 	isScaffoldError,
+	MAX_COLLECTION_ITEMS,
+	MAX_PATH_LENGTH,
 	packageManifest,
 	validateBlueprint,
 } from '@src/core'
 import {
 	catalogPackages,
+	commitWriteTransaction,
+	consumeCatalogAllowance,
 	createMaterializer,
 	deriveBlueprint,
+	discardWriteTransaction,
 	discoverPackages,
 	guideToDescription,
 	hostRoot,
 	hydratePlan,
+	isRealDirectory,
 	listDirectories,
 	listFiles,
 	locateHostSource,
+	MAX_GUIDE_BYTES,
+	MAX_FILESYSTEM_DEPTH,
+	MAX_HOST_ENTRIES,
+	parseFilesystemPaths,
+	parsePortablePaths,
+	parseWritePreconditions,
 	PRUNE_DIRECTORIES,
 	readFileHex,
+	readFileText,
 	readHostManifest,
 	readTarget,
 	remapArtifactPath,
@@ -49,6 +61,7 @@ import {
 	stageHost,
 	storagePath,
 	vendoredPruneSet,
+	WriteTransaction,
 } from '@src/server'
 import {
 	buildBlueprintFixture,
@@ -80,12 +93,151 @@ describe('hostRoot', () => {
 // ── deriveBlueprint ──────────────────────────────────────────────────────────
 
 describe('deriveBlueprint', () => {
-	it('derives name, surfaces, dependencies, optional peers, and extras (baseline excluded) from a core+server repo', async () => {
+	it('rejects inherited manifest identity and publication fields', async () => {
+		const directory = await buildTempDirectory()
+		Reflect.defineProperty(Object.prototype, 'name', {
+			configurable: true,
+			value: '@orkestrel/injected',
+			writable: true,
+		})
+		Reflect.defineProperty(Object.prototype, 'private', {
+			configurable: true,
+			value: true,
+			writable: true,
+		})
+		try {
+			mkdirSync(join(directory.path, 'src', 'core'), { recursive: true })
+			writePackageManifest(directory.path, {})
+
+			expect(() => deriveBlueprint(directory.path)).toThrowError(
+				expect.objectContaining({ code: 'TARGET' }),
+			)
+		} finally {
+			Reflect.deleteProperty(Object.prototype, 'name')
+			Reflect.deleteProperty(Object.prototype, 'private')
+			await directory.cleanup()
+		}
+	})
+
+	it('recognizes only physical directories as structural src and executable roots', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: '@orkestrel/file-shaped',
+				src: ['core'],
+				bin: true,
+			})
+			const core = join(directory.path, 'src', 'core')
+			const bin = join(directory.path, 'src', 'bin')
+			rmSync(core, { recursive: true })
+			rmSync(bin, { recursive: true })
+			writeFileSync(core, 'not a directory', 'utf8')
+			writeFileSync(bin, 'not a directory', 'utf8')
+
+			expect(isRealDirectory(core)).toBe(false)
+			expect(isRealDirectory(bin)).toBe(false)
+			expect(isRealDirectory(join(directory.path, 'missing'))).toBe(false)
+			expect(() => deriveBlueprint(directory.path)).toThrowError(
+				expect.objectContaining({ code: 'TARGET' }),
+			)
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('does not infer src/bin engine support from an ordinary file', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: '@orkestrel/file-bin',
+				src: ['core'],
+			})
+			writeFileSync(join(directory.path, 'src', 'bin'), 'not a directory', 'utf8')
+
+			expect(deriveBlueprint(directory.path).engine).toBe(false)
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it.skipIf(!canDirectoryLink)(
+		'rejects a linked application environment rather than traversing it',
+		async () => {
+			const directory = await buildTempDirectory()
+			const outside = await buildTempDirectory()
+			try {
+				writePackageManifest(directory.path, { name: 'linked-app', private: true })
+				mkdirSync(join(directory.path, 'app'))
+				createDirectoryLink(outside.path, join(directory.path, 'app', 'server'))
+
+				expect(isRealDirectory(join(directory.path, 'app', 'server'))).toBe(false)
+				expect(() => deriveBlueprint(directory.path)).toThrowError(
+					expect.objectContaining({ code: 'TARGET' }),
+				)
+			} finally {
+				await outside.cleanup()
+				await directory.cleanup()
+			}
+		},
+	)
+
+	it('derives a private application-only workspace and all app environments', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: 'taverna',
+				private: true,
+				app: ['core', 'browser', 'server'],
+			})
+
+			const result = deriveBlueprint(directory.path)
+
+			expect(result.name).toBe('taverna')
+			expect(result.src).toEqual([])
+			expect(result.app).toEqual(['core', 'browser', 'server'])
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('rejects an unscoped application that is not publication-blocked', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: 'unsafe-app',
+				app: ['server'],
+			})
+
+			expect(() => deriveBlueprint(directory.path)).toThrowError(
+				expect.objectContaining({ code: 'TARGET' }),
+			)
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('rejects a scoped manifest whose short name violates the workspace-name boundary', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: '@orkestrel/../escape',
+				src: ['core'],
+			})
+
+			expect(() => deriveBlueprint(directory.path)).toThrowError(
+				expect.objectContaining({ code: 'TARGET' }),
+			)
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('derives name, src, dependencies, optional peers, and extras (baseline excluded) from a core+server repo', async () => {
 		const directory = await buildTempDirectory()
 		try {
 			buildBlueprintFixture(directory.path, {
 				name: '@orkestrel/demo',
-				surfaces: ['core', 'server'],
+				src: ['core', 'server'],
 				dependencies: {
 					'@orkestrel/contract': '^0.0.5',
 					'left-pad': '^1.3.0', // non-@orkestrel — ignored
@@ -108,7 +260,7 @@ describe('deriveBlueprint', () => {
 			const result = deriveBlueprint(directory.path)
 
 			expect(result.name).toBe('demo')
-			expect(result.surfaces).toEqual(['core', 'server'])
+			expect(result.src).toEqual(['core', 'server'])
 			expect(result.dependencies).toEqual([{ name: '@orkestrel/contract', range: '^0.0.5' }])
 			expect(result.peers).toEqual([
 				{ name: '@orkestrel/emitter', range: '^0.0.3', optional: true },
@@ -124,7 +276,7 @@ describe('deriveBlueprint', () => {
 		try {
 			buildBlueprintFixture(directory.path, {
 				name: '@orkestrel/demo',
-				surfaces: ['core', 'server'],
+				src: ['core', 'server'],
 			})
 
 			const result = deriveBlueprint(directory.path)
@@ -140,7 +292,7 @@ describe('deriveBlueprint', () => {
 		try {
 			buildBlueprintFixture(directory.path, {
 				name: '@orkestrel/scaffold',
-				surfaces: ['core', 'server'],
+				src: ['core', 'server'],
 				bin: true,
 			})
 
@@ -152,12 +304,12 @@ describe('deriveBlueprint', () => {
 		}
 	})
 
-	it('H3: excludes from extras a devDependency ALSO present in peerDependencies (the middleware pattern) — extras stays clean, peers keeps it, and the derived blueprint validates clean', async () => {
+	it('excludes from extras a devDependency also present in peerDependencies', async () => {
 		const directory = await buildTempDirectory()
 		try {
 			buildBlueprintFixture(directory.path, {
 				name: '@orkestrel/middleware',
-				surfaces: ['core', 'server'],
+				src: ['core', 'server'],
 				peerDependencies: {
 					'@orkestrel/database': '^0.0.5',
 					'@orkestrel/server': '^0.0.5',
@@ -194,12 +346,12 @@ describe('deriveBlueprint', () => {
 		}
 	})
 
-	it('H3: excludes from extras a devDependency ALSO present in dependencies', async () => {
+	it('excludes from extras a devDependency also present in dependencies', async () => {
 		const directory = await buildTempDirectory()
 		try {
 			buildBlueprintFixture(directory.path, {
 				name: '@orkestrel/dep-and-extra',
-				surfaces: ['core'],
+				src: ['core'],
 				dependencies: {
 					'@orkestrel/contract': '^0.0.5',
 				},
@@ -220,12 +372,12 @@ describe('deriveBlueprint', () => {
 		}
 	})
 
-	it('U12c FIX 3: derives an EXTERNAL (non-@orkestrel) devDependency as an extra too — round-trips zod, keeps baseline (typescript/vitest/etc) and @orkestrel/guide+scaffold excluded', async () => {
+	it('derives an external devDependency as an extra while excluding the shared baseline', async () => {
 		const directory = await buildTempDirectory()
 		try {
 			buildBlueprintFixture(directory.path, {
 				name: '@orkestrel/demo-external-extra',
-				surfaces: ['core'],
+				src: ['core'],
 				devDependencies: {
 					'@orkestrel/guide': '^1.0.0', // baseline — excluded from extras
 					'@orkestrel/scaffold': '^1.0.0', // baseline — excluded from extras
@@ -247,14 +399,14 @@ describe('deriveBlueprint', () => {
 		}
 	})
 
-	it('P2: an mcp-shaped fixture (dev-installed peers) round-trips through derive→recompile with both peers RETAINED in devDependencies', async () => {
+	it('round-trips dev-installed peers through derivation and recompilation', async () => {
 		const directory = await buildTempDirectory()
 		try {
 			// The live @orkestrel/mcp shape: two peers, both ALSO dev-installed for
 			// local testing (the fleet convention, per @orkestrel/middleware too).
 			buildBlueprintFixture(directory.path, {
 				name: '@orkestrel/mcp',
-				surfaces: ['core', 'server'],
+				src: ['core', 'server'],
 				peerDependencies: {
 					'@orkestrel/router': '^0.0.4',
 					'@orkestrel/server': '^0.0.6',
@@ -286,12 +438,12 @@ describe('deriveBlueprint', () => {
 		}
 	})
 
-	it('derives a server-only surfaces list from a server-only repo', async () => {
+	it('derives a server-only src list from a server-only repo', async () => {
 		const directory = await buildTempDirectory()
 		try {
-			buildBlueprintFixture(directory.path, { name: '@orkestrel/mailer', surfaces: ['server'] })
+			buildBlueprintFixture(directory.path, { name: '@orkestrel/mailer', src: ['server'] })
 			const result = deriveBlueprint(directory.path)
-			expect(result.surfaces).toEqual(['server'])
+			expect(result.src).toEqual(['server'])
 		} finally {
 			await directory.cleanup()
 		}
@@ -300,7 +452,7 @@ describe('deriveBlueprint', () => {
 	it('throws a coded TARGET error for a non-@orkestrel package name', async () => {
 		const directory = await buildTempDirectory()
 		try {
-			buildBlueprintFixture(directory.path, { name: 'not-orkestrel-thing', surfaces: ['core'] })
+			buildBlueprintFixture(directory.path, { name: 'not-orkestrel-thing', src: ['core'] })
 			let caught: unknown
 			try {
 				deriveBlueprint(directory.path)
@@ -314,10 +466,10 @@ describe('deriveBlueprint', () => {
 		}
 	})
 
-	it('throws a coded TARGET error when the target carries none of the three src/<surface> directories', async () => {
+	it('throws a coded TARGET error when the target carries none of the three src/<environment> directories', async () => {
 		const directory = await buildTempDirectory()
 		try {
-			buildBlueprintFixture(directory.path, { name: '@orkestrel/empty' }) // no surfaces at all
+			buildBlueprintFixture(directory.path, { name: '@orkestrel/empty' }) // no src at all
 			let caught: unknown
 			try {
 				deriveBlueprint(directory.path)
@@ -369,6 +521,97 @@ describe('deriveBlueprint', () => {
 // ── discoverPackages ─────────────────────────────────────────────────────────
 
 describe('discoverPackages', () => {
+	it('rejects an oversized aggregate allowance before traversal', async () => {
+		const root = await buildTempDirectory()
+		try {
+			const result = attempt(() =>
+				discoverPackages(root.path, new Float64Array([MAX_HOST_ENTRIES + 1])),
+			)
+
+			expect(result.success).toBe(false)
+			if (result.success || !isScaffoldError(result.error)) {
+				throw new Error('expected a coded fleet allowance failure')
+			}
+			expect(result.error.code).toBe('TARGET')
+			expect(readdirSync(root.path)).toEqual([])
+		} finally {
+			await root.cleanup()
+		}
+	})
+
+	it('contains revoked and stateful aggregate allowance traps as coded failures', () => {
+		const revoked = Proxy.revocable(new Float64Array([1]), {})
+		revoked.revoke()
+		let reads = 0
+		const stateful = new Proxy(new Float64Array([1]), {
+			get(target, key) {
+				if (key === 'length') return 1
+				if (key === '0') {
+					reads += 1
+					if (reads > 1) throw new Error('stateful allowance read')
+					return 1
+				}
+				return Reflect.get(target, key, target)
+			},
+			set() {
+				throw new Error('stateful allowance write')
+			},
+		})
+		const swallowed = new Proxy(new Float64Array([1]), {
+			get(target, key) {
+				return Reflect.get(target, key, target)
+			},
+			set() {
+				return true
+			},
+		})
+
+		for (const value of [revoked.proxy, stateful, swallowed]) {
+			const result = attempt(() =>
+				Reflect.apply(consumeCatalogAllowance, undefined, [value, 'fleet']),
+			)
+			expect(result.success).toBe(false)
+			if (result.success || !isScaffoldError(result.error)) {
+				throw new Error('expected a coded fleet allowance failure')
+			}
+			expect(result.error.code).toBe('TARGET')
+		}
+
+		const genuine = new Float64Array([1])
+		consumeCatalogAllowance(genuine, 'fleet')
+		expect(genuine[0]).toBe(0)
+		expect(() => consumeCatalogAllowance(genuine, 'fleet')).toThrowError(
+			expect.objectContaining({ code: 'TARGET' }),
+		)
+	})
+
+	it('ignores inherited package names and catalog versions', async () => {
+		const root = await buildTempDirectory()
+		Reflect.defineProperty(Object.prototype, 'name', {
+			configurable: true,
+			value: '@orkestrel/injected',
+			writable: true,
+		})
+		Reflect.defineProperty(Object.prototype, 'version', {
+			configurable: true,
+			value: '9.9.9',
+			writable: true,
+		})
+		try {
+			writePackageManifest(join(root.path, 'missing-name'), { version: '0.0.1' })
+			writePackageManifest(join(root.path, 'missing-version'), {
+				name: '@orkestrel/own-name',
+			})
+
+			expect(discoverPackages(root.path)).toEqual([join(root.path, 'missing-version')])
+			expect(catalogPackages([root.path])).toEqual([])
+		} finally {
+			Reflect.deleteProperty(Object.prototype, 'name')
+			Reflect.deleteProperty(Object.prototype, 'version')
+			await root.cleanup()
+		}
+	})
+
 	it('lists only @orkestrel-named child packages as absolute, code-unit-sorted paths', async () => {
 		const root = await buildTempDirectory()
 		try {
@@ -396,11 +639,71 @@ describe('discoverPackages', () => {
 			await root.cleanup()
 		}
 	})
+
+	it.skipIf(process.platform === 'win32')(
+		'skips unrelated packages in non-portable directory names',
+		async () => {
+			const root = await buildTempDirectory()
+			try {
+				writePackageManifest(join(root.path, 'draft?'), { name: 'unrelated' })
+				mkdirSync(join(root.path, 'aux?'), { recursive: true })
+
+				expect(discoverPackages(root.path)).toEqual([])
+			} finally {
+				await root.cleanup()
+			}
+		},
+	)
+
+	it.skipIf(process.platform === 'win32')(
+		'rejects control-bearing directory names without reflecting them',
+		async () => {
+			const root = await buildTempDirectory()
+			const hostile = `hostile\n\u001b[2J`
+			try {
+				writePackageManifest(join(root.path, hostile), { name: '@orkestrel/hostile' })
+				const result = attempt(() => discoverPackages(root.path))
+
+				expect(result.success).toBe(false)
+				if (result.success || !isScaffoldError(result.error)) {
+					throw new Error('expected a ScaffoldError')
+				}
+				expect(result.error.code).toBe('TARGET')
+				expect(result.error.message).toBe('Fleet discovery found a non-portable directory')
+				expect(result.error.message).not.toContain(hostile)
+				expect(result.error.message).not.toContain('\u001b')
+			} finally {
+				await root.cleanup()
+			}
+		},
+	)
+
+	it('caps a broad directory while consuming entries instead of materializing them all', async () => {
+		const root = await buildTempDirectory()
+		try {
+			for (let index = 0; index <= MAX_HOST_ENTRIES; index += 1) {
+				mkdirSync(join(root.path, `entry-${String(index).padStart(5, '0')}`))
+			}
+
+			expect(() => listFiles(root.path)).toThrow(`Host traversal exceeds ${MAX_HOST_ENTRIES}`)
+			expect(() => listDirectories(root.path)).toThrow(`Host traversal exceeds ${MAX_HOST_ENTRIES}`)
+		} finally {
+			await root.cleanup()
+		}
+	})
 })
 
 // ── catalogPackages ──────────────────────────────────────────────────────────
 
 describe('guideToDescription', () => {
+	it('accepts the exact guide byte ceiling and rejects one byte beyond it', () => {
+		const prefix = '> Exact description.\n\n'
+		const exact = `${prefix}${'a'.repeat(MAX_GUIDE_BYTES - prefix.length)}`
+
+		expect(guideToDescription(exact)).toBe('Exact description.')
+		expect(guideToDescription(`${exact}a`)).toBeUndefined()
+	})
+
 	it('normalizes the first blockquote paragraph to one line', () => {
 		expect(guideToDescription('# Guide\n\n> A concise\n> description.\n')).toBe(
 			'A concise description.',
@@ -424,6 +727,23 @@ describe('guideToDescription', () => {
 })
 
 describe('catalogPackages', () => {
+	it('rejects hostile and oversized root collections before traversal', () => {
+		const roots: string[] = ['C:/safe']
+		let iteratorCalls = 0
+		Object.defineProperty(roots, Symbol.iterator, {
+			value: () => {
+				iteratorCalls += 1
+				throw new Error('hostile iterator')
+			},
+		})
+
+		expect(attempt(() => catalogPackages(roots)).success).toBe(false)
+		expect(
+			attempt(() => catalogPackages(Array(MAX_HOST_ENTRIES + 1).fill('C:/safe'))).success,
+		).toBe(false)
+		expect(iteratorCalls).toBe(0)
+	})
+
 	it('extracts each package guide’s first blockquote, flattened to one line', async () => {
 		const root = await buildTempDirectory()
 		try {
@@ -545,9 +865,57 @@ describe('catalogPackages', () => {
 			await second.cleanup()
 		}
 	})
+
+	it('shares one aggregate traversal allowance across every catalog root', async () => {
+		const first = await buildTempDirectory()
+		const second = await buildTempDirectory()
+		try {
+			writeCatalogPackage(first.path, 'alpha', {
+				name: '@orkestrel/alpha',
+				version: '0.0.1',
+			})
+			writeCatalogPackage(second.path, 'beta', {
+				name: '@orkestrel/beta',
+				version: '0.0.1',
+			})
+
+			expect(() => catalogPackages([first.path, second.path], 3)).toThrowError(
+				expect.objectContaining({ code: 'TARGET' }),
+			)
+			expect(catalogPackages([first.path, second.path], 4)).toHaveLength(2)
+		} finally {
+			await first.cleanup()
+			await second.cleanup()
+		}
+	})
 })
 
 describe('readTarget — hostile object-prototype filenames', () => {
+	it('rejects hostile, sparse, and oversized path collections before reading files', async () => {
+		const target = await buildTempDirectory()
+		try {
+			writeFileSync(join(target.path, 'safe.txt'), 'safe\n', 'utf8')
+			const paths = ['safe.txt']
+			let iteratorCalls = 0
+			Object.defineProperty(paths, Symbol.iterator, {
+				value: () => {
+					iteratorCalls += 1
+					throw new Error('hostile iterator')
+				},
+			})
+
+			expect(attempt(() => readTarget(target.path, paths)).success).toBe(false)
+			expect(attempt(() => readTarget(target.path, Array<string>(1))).success).toBe(false)
+			expect(
+				attempt(() => readTarget(target.path, Array(MAX_COLLECTION_ITEMS + 1).fill('safe.txt')))
+					.success,
+			).toBe(false)
+			expect(iteratorCalls).toBe(0)
+		} finally {
+			await target.cleanup()
+		}
+	})
+
 	it('returns every requested file as an own byte snapshot entry', async () => {
 		const target = await buildTempDirectory()
 		try {
@@ -565,11 +933,66 @@ describe('readTarget — hostile object-prototype filenames', () => {
 			await target.cleanup()
 		}
 	})
+
+	it.skipIf(!canDirectoryLink)(
+		'rejects internal and escaping intermediate directory aliases',
+		async () => {
+			const target = await buildTempDirectory()
+			const outside = await buildTempDirectory()
+			try {
+				mkdirSync(join(target.path, 'physical'))
+				writeFileSync(join(target.path, 'physical', 'inside.txt'), 'inside\n', 'utf8')
+				writeFileSync(join(outside.path, 'outside.txt'), 'outside\n', 'utf8')
+				createDirectoryLink(join(target.path, 'physical'), join(target.path, 'internal'))
+				createDirectoryLink(outside.path, join(target.path, 'escaping'))
+
+				expect(attempt(() => readTarget(target.path, ['internal/inside.txt'])).success).toBe(false)
+				expect(attempt(() => readTarget(target.path, ['escaping/outside.txt'])).success).toBe(false)
+				expect(readFileSync(join(outside.path, 'outside.txt'), 'utf8')).toBe('outside\n')
+			} finally {
+				await target.cleanup()
+				await outside.cleanup()
+			}
+		},
+	)
 })
 
 // ── hydratePlan ──────────────────────────────────────────────────────────────
 
 describe('hydratePlan', () => {
+	it('owns the plan before host I/O and contains revoked or stateful proxy traps', async () => {
+		const host = await buildTempDirectory()
+		try {
+			const plan: Plan = {
+				blueprint: blueprint('hydrate-proxy-fixture', { src: ['core'] }),
+				groups: ['docs'],
+				artifacts: [{ path: 'notes.txt', group: 'docs', origin: 'host' }],
+			}
+			const revocable = Proxy.revocable(plan, {})
+			revocable.revoke()
+			let ownKeyReads = 0
+			const stateful = new Proxy(plan, {
+				ownKeys(target) {
+					ownKeyReads += 1
+					if (ownKeyReads > 1) throw new Error('stateful plan trap')
+					return Reflect.ownKeys(target)
+				},
+			})
+
+			for (const value of [revocable.proxy, stateful]) {
+				const result = attempt(() => Reflect.apply(hydratePlan, undefined, [value, host.path]))
+				expect(result.success).toBe(false)
+				if (result.success || !isScaffoldError(result.error)) {
+					throw new Error('expected a coded hydration boundary failure')
+				}
+				expect(result.error.code).toBe('INVALID')
+			}
+			expect(readdirSync(host.path)).toEqual([])
+		} finally {
+			await host.cleanup()
+		}
+	})
+
 	it('attaches real host bytes to a host-origin artifact — manifest-aware', async () => {
 		const host = await buildTempDirectory()
 		try {
@@ -582,7 +1005,7 @@ describe('hydratePlan', () => {
 				),
 			)
 			const plan: Plan = {
-				blueprint: blueprint('hydrate-manifest-fixture', { surfaces: ['core'] }),
+				blueprint: blueprint('hydrate-manifest-fixture', { src: ['core'] }),
 				groups: ['configs'],
 				artifacts: [{ path: '.gitignore', group: 'configs', origin: 'host' }],
 			}
@@ -600,7 +1023,7 @@ describe('hydratePlan', () => {
 		try {
 			writeFileSync(join(host.path, 'notes.txt'), 'raw root content\n', 'utf8')
 			const plan: Plan = {
-				blueprint: blueprint('hydrate-rawroot-fixture', { surfaces: ['core'] }),
+				blueprint: blueprint('hydrate-rawroot-fixture', { src: ['core'] }),
 				groups: ['docs'],
 				artifacts: [{ path: 'notes.txt', group: 'docs', origin: 'host' }],
 			}
@@ -630,7 +1053,7 @@ describe('hydratePlan', () => {
 				'utf8',
 			)
 			const plan: Plan = {
-				blueprint: blueprint('hydrate-directory-fixture', { surfaces: ['core'] }),
+				blueprint: blueprint('hydrate-directory-fixture', { src: ['core'] }),
 				groups: ['orchestration'],
 				artifacts: [
 					{
@@ -660,6 +1083,39 @@ describe('hydratePlan', () => {
 					hex: contentToHex('# Tests\n'),
 				},
 			])
+		} finally {
+			await host.cleanup()
+		}
+	})
+
+	it('rejects sensitive descendants selected through a raw host directory', async () => {
+		const host = await buildTempDirectory()
+		try {
+			mkdirSync(join(host.path, 'fixtures', '.ssh'), { recursive: true })
+			writeFileSync(join(host.path, 'fixtures', 'visible.txt'), 'visible\n', 'utf8')
+			writeFileSync(join(host.path, 'fixtures', '.ssh', 'id_rsa'), 'secret\n', 'utf8')
+			const plan: Plan = {
+				blueprint: blueprint('hydrate-sensitive-directory-fixture', { src: ['core'] }),
+				groups: ['orchestration'],
+				artifacts: [
+					{
+						path: 'fixtures',
+						group: 'orchestration',
+						origin: 'host',
+						source: 'fixtures',
+					},
+				],
+			}
+
+			const result = attempt(() => hydratePlan(plan, host.path))
+
+			expect(result.success).toBe(false)
+			if (result.success || !isScaffoldError(result.error)) {
+				throw new Error('expected sensitive raw-host hydration to fail')
+			}
+			expect(result.error.code).toBe('TARGET')
+			expect(result.error.message).toContain('Sensitive host artifact source')
+			expect(result.error.context).toMatchObject({ source: 'fixtures/.ssh/id_rsa' })
 		} finally {
 			await host.cleanup()
 		}
@@ -707,7 +1163,7 @@ describe('hydratePlan', () => {
 				'utf8',
 			)
 			const plan: Plan = {
-				blueprint: blueprint('hydrate-staged-directory-fixture', { surfaces: ['core'] }),
+				blueprint: blueprint('hydrate-staged-directory-fixture', { src: ['core'] }),
 				groups: ['orchestration'],
 				artifacts: [
 					{
@@ -727,6 +1183,7 @@ describe('hydratePlan', () => {
 					path: '.agents/skills/harden/SKILL.md',
 					group: 'orchestration',
 					drift: 'stale',
+					observed: contentToHex('# Stale\n'),
 				},
 				{
 					path: '.agents/skills/harden/agents/openai.yaml',
@@ -772,7 +1229,7 @@ describe('hydratePlan', () => {
 			try {
 				writeFileSync(join(host.path, 'notes.txt'), 'host content\n', 'utf8')
 				const plan: Plan = {
-					blueprint: blueprint('hydrate-diff-fixture', { surfaces: ['core'] }),
+					blueprint: blueprint('hydrate-diff-fixture', { src: ['core'] }),
 					groups: ['docs'],
 					artifacts: [{ path: 'notes.txt', group: 'docs', origin: 'host' }],
 				}
@@ -794,7 +1251,12 @@ describe('hydratePlan', () => {
 				// `drifted` — no longer indistinguishable from the unhydrated,
 				// presence-only audit above.
 				expect(hydratedAudit.findings).toEqual([
-					{ path: 'notes.txt', group: 'docs', drift: 'stale' },
+					{
+						path: 'notes.txt',
+						group: 'docs',
+						drift: 'stale',
+						observed: contentToHex('byte-mutated target content\n'),
+					},
 				])
 				expect(hydratedAudit.drifted).toBe(1)
 			} finally {
@@ -805,7 +1267,7 @@ describe('hydratePlan', () => {
 
 	it('diffPlan still audits an UNHYDRATED host-origin artifact by presence only — a byte-mutated target reads aligned, never stale', () => {
 		const plan: Plan = {
-			blueprint: blueprint('hydrate-diff-unhydrated-fixture', { surfaces: ['core'] }),
+			blueprint: blueprint('hydrate-diff-unhydrated-fixture', { src: ['core'] }),
 			groups: ['docs'],
 			artifacts: [{ path: 'notes.txt', group: 'docs', origin: 'host' }],
 		}
@@ -824,7 +1286,7 @@ describe('hydratePlan', () => {
 			writeFileSync(join(host.path, 'notes.txt'), 'host content\n', 'utf8')
 			writeFileSync(join(target.path, 'notes.txt'), 'byte-mutated target content\n', 'utf8')
 			const plan: Plan = {
-				blueprint: blueprint('hydrate-repair-fixture', { surfaces: ['core'] }),
+				blueprint: blueprint('hydrate-repair-fixture', { src: ['core'] }),
 				groups: ['docs'],
 				artifacts: [{ path: 'notes.txt', group: 'docs', origin: 'host' }],
 			}
@@ -832,7 +1294,14 @@ describe('hydratePlan', () => {
 			const hydrated = hydratePlan(plan, host.path)
 			const current = readTarget(target.path, ['notes.txt'])
 			const audit = diffPlan(hydrated, current)
-			expect(audit.findings).toEqual([{ path: 'notes.txt', group: 'docs', drift: 'stale' }])
+			expect(audit.findings).toEqual([
+				{
+					path: 'notes.txt',
+					group: 'docs',
+					drift: 'stale',
+					observed: contentToHex('byte-mutated target content\n'),
+				},
+			])
 
 			const materializer = createMaterializer({ host: host.path })
 			try {
@@ -857,7 +1326,7 @@ describe('hydratePlan', () => {
 			writeFileSync(join(host.path, 'asset.bin'), canonical)
 			writeFileSync(join(target.path, 'asset.bin'), stale)
 			const plan: Plan = {
-				blueprint: blueprint('hydrate-binary-fixture', { surfaces: ['core'] }),
+				blueprint: blueprint('hydrate-binary-fixture', { src: ['core'] }),
 				groups: ['orchestration'],
 				artifacts: [{ path: 'asset.bin', group: 'orchestration', origin: 'host' }],
 			}
@@ -866,7 +1335,12 @@ describe('hydratePlan', () => {
 			expect(hydrated.artifacts[0]?.hex).toBe(bytesToHex(canonical))
 			const audit = diffPlan(hydrated, readTarget(target.path, ['asset.bin']))
 			expect(audit.findings).toEqual([
-				{ path: 'asset.bin', group: 'orchestration', drift: 'stale' },
+				{
+					path: 'asset.bin',
+					group: 'orchestration',
+					drift: 'stale',
+					observed: bytesToHex(stale),
+				},
 			])
 
 			const materializer = createMaterializer({ host: host.path })
@@ -890,7 +1364,7 @@ describe('hydratePlan', () => {
 				hostManifestOf([{ storage: 'missing', destination: 'asset.bin', executable: false }], []),
 			)
 			const plan: Plan = {
-				blueprint: blueprint('hydrate-missing-storage-fixture', { surfaces: ['core'] }),
+				blueprint: blueprint('hydrate-missing-storage-fixture', { src: ['core'] }),
 				groups: ['orchestration'],
 				artifacts: [{ path: 'asset.bin', group: 'orchestration', origin: 'host' }],
 			}
@@ -910,7 +1384,7 @@ describe('hydratePlan', () => {
 		const host = await buildTempDirectory()
 		try {
 			const plan: Plan = {
-				blueprint: blueprint('hydrate-absent-fixture', { surfaces: ['core'] }),
+				blueprint: blueprint('hydrate-absent-fixture', { src: ['core'] }),
 				groups: ['docs'],
 				artifacts: [{ path: 'missing.txt', group: 'docs', origin: 'host' }],
 			}
@@ -942,7 +1416,7 @@ describe('hydratePlan', () => {
 				})
 				try {
 					const plan: Plan = {
-						blueprint: blueprint('hydrate-unreadable-fixture', { surfaces: ['core'] }),
+						blueprint: blueprint('hydrate-unreadable-fixture', { src: ['core'] }),
 						groups: ['docs'],
 						artifacts: [{ path: 'broken-socket', group: 'docs', origin: 'host' }],
 					}
@@ -970,7 +1444,7 @@ describe('hydratePlan', () => {
 			writeFileSync(join(host.path, '.agents', 'skill.md'), 'skill\n', 'utf8')
 			for (const path of ['owned/skill.md', 'OWNED/SKILL.MD', 'owned', 'owned/skill.md/nested']) {
 				const plan: Plan = {
-					blueprint: blueprint('hydrate-collision-fixture', { surfaces: ['core'] }),
+					blueprint: blueprint('hydrate-collision-fixture', { src: ['core'] }),
 					groups: ['orchestration'],
 					artifacts: [
 						{
@@ -1028,6 +1502,33 @@ describe('selectOrkestrelEntries', () => {
 		expect(selectOrkestrelEntries(null)).toEqual([])
 		expect(selectOrkestrelEntries(['@orkestrel/contract'])).toEqual([])
 		expect(selectOrkestrelEntries(undefined)).toEqual([])
+	})
+
+	it('is total and fail-closed for accessors, hostile proxies, and revoked proxies', () => {
+		let reads = 0
+		const accessor = Object.create(null)
+		Object.defineProperty(accessor, '@orkestrel/contract', {
+			enumerable: true,
+			get() {
+				reads += 1
+				return '^0.0.7'
+			},
+		})
+		const hostile = new Proxy(
+			{},
+			{
+				ownKeys() {
+					throw new Error('hostile ownKeys')
+				},
+			},
+		)
+		const revocable = Proxy.revocable({}, {})
+		revocable.revoke()
+
+		expect(selectOrkestrelEntries(accessor)).toEqual([])
+		expect(reads).toBe(0)
+		expect(selectOrkestrelEntries(hostile)).toEqual([])
+		expect(selectOrkestrelEntries(revocable.proxy)).toEqual([])
 	})
 })
 
@@ -1232,6 +1733,25 @@ describe('readFileHex', () => {
 			await root.cleanup()
 		}
 	})
+
+	it('decodes valid UTF-8 strictly and rejects malformed bytes', async () => {
+		const root = await buildTempDirectory()
+		try {
+			writeFileSync(join(root.path, 'valid.txt'), Uint8Array.from([0xf0, 0x9f, 0x98, 0x80]))
+			writeFileSync(join(root.path, 'invalid.txt'), Uint8Array.from([0xf0, 0x28, 0x8c, 0x28]))
+
+			expect(readFileText(root.path, 'valid.txt', 'TARGET', 'catalog')).toBe('😀')
+			const result = attempt(() => readFileText(root.path, 'invalid.txt', 'TARGET', 'catalog'))
+			expect(result.success).toBe(false)
+			if (result.success || !isScaffoldError(result.error)) {
+				throw new Error('expected a ScaffoldError to be returned')
+			}
+			expect(result.error.code).toBe('TARGET')
+			expect(result.error.message).toContain('valid UTF-8')
+		} finally {
+			await root.cleanup()
+		}
+	})
 })
 
 describe('filesystem containment', () => {
@@ -1268,7 +1788,7 @@ describe('filesystem containment', () => {
 				expect(targetResult.error.code).toBe('TARGET')
 
 				const plan: Plan = {
-					blueprint: blueprint('linked-host-fixture', { surfaces: ['core'] }),
+					blueprint: blueprint('linked-host-fixture', { src: ['core'] }),
 					groups: ['orchestration'],
 					artifacts: [
 						{ path: '.agents', group: 'orchestration', origin: 'host', source: '.agents' },
@@ -1305,6 +1825,45 @@ describe('listFiles', () => {
 			await root.cleanup()
 		}
 	})
+
+	it.skipIf(!canSymlink)('rejects a linked listing root instead of following it', async () => {
+		const root = await buildTempDirectory()
+		try {
+			const physical = join(root.path, 'physical')
+			mkdirSync(physical)
+			writeFileSync(join(physical, 'secret.txt'), 'user-owned\n', 'utf8')
+			const linked = join(root.path, 'linked')
+			symlinkSync(physical, linked, 'junction')
+
+			expect(() => listFiles(linked)).toThrowError(expect.objectContaining({ code: 'TARGET' }))
+			expect(readFileSync(join(physical, 'secret.txt'), 'utf8')).toBe('user-owned\n')
+		} finally {
+			await root.cleanup()
+		}
+	})
+
+	it.skipIf(process.platform === 'win32')(
+		'rejects control-bearing filesystem names without reflecting them',
+		async () => {
+			const root = await buildTempDirectory()
+			const hostile = `hostile\n\u001b[2J.md`
+			try {
+				writeFileSync(join(root.path, hostile), 'owned\n', 'utf8')
+				const result = attempt(() => listFiles(root.path))
+
+				expect(result.success).toBe(false)
+				if (result.success || !isScaffoldError(result.error)) {
+					throw new Error('expected a ScaffoldError')
+				}
+				expect(result.error.code).toBe('TARGET')
+				expect(result.error.message).toBe('Filesystem traversal found a non-portable path')
+				expect(result.error.message).not.toContain(hostile)
+				expect(result.error.message).not.toContain('\u001b')
+			} finally {
+				await root.cleanup()
+			}
+		},
+	)
 })
 
 describe('listDirectories', () => {
@@ -1315,6 +1874,22 @@ describe('listDirectories', () => {
 			mkdirSync(join(root.path, 'Alpha'), { recursive: true })
 
 			expect(listDirectories(root.path)).toEqual(['Alpha', 'zeta', 'zeta/nested'])
+		} finally {
+			await root.cleanup()
+		}
+	})
+
+	it.skipIf(!canSymlink)('rejects a linked listing root instead of traversing it', async () => {
+		const root = await buildTempDirectory()
+		try {
+			const physical = join(root.path, 'physical')
+			mkdirSync(join(physical, 'nested'), { recursive: true })
+			const linked = join(root.path, 'linked')
+			symlinkSync(physical, linked, 'junction')
+
+			expect(() => listDirectories(linked)).toThrowError(
+				expect.objectContaining({ code: 'TARGET' }),
+			)
 		} finally {
 			await root.cleanup()
 		}
@@ -1343,6 +1918,246 @@ describe('storagePath', () => {
 	})
 })
 
+describe('commitWriteTransaction', () => {
+	it('rejects malformed targets before filesystem mutation', () => {
+		for (const target of [
+			'',
+			'control\npath',
+			'a'.repeat(MAX_PATH_LENGTH + 1),
+			Array(MAX_FILESYSTEM_DEPTH + 1)
+				.fill('nested')
+				.join('/'),
+		]) {
+			const before = readdirSync(WORKSPACE_ROOT).sort()
+			const result = attempt(() => WriteTransaction.create(target, []))
+
+			expect(result.success).toBe(false)
+			expect(readdirSync(WORKSPACE_ROOT).sort()).toEqual(before)
+		}
+	})
+
+	it('rejects hostile iterators and non-string path elements without invoking caller code', () => {
+		const paths = ['safe.txt']
+		let iteratorCalls = 0
+		Object.defineProperty(paths, Symbol.iterator, {
+			value: () => {
+				iteratorCalls += 1
+				throw new Error('hostile iterator')
+			},
+		})
+		expect(parsePortablePaths(paths, 1)).toBeUndefined()
+		expect(parsePortablePaths([null], 1)).toBeUndefined()
+		expect(iteratorCalls).toBe(0)
+	})
+
+	it('contains revoked and stateful array traps across transaction parsers', async () => {
+		const target = await buildTempDirectory()
+		try {
+			const revoked = Proxy.revocable(['safe.txt'], {})
+			revoked.revoke()
+			let descriptorReads = 0
+			const stateful = new Proxy(['safe.txt'], {
+				getOwnPropertyDescriptor(source, key) {
+					descriptorReads += 1
+					if (descriptorReads > 2) throw new Error('stateful path trap')
+					return Reflect.getOwnPropertyDescriptor(source, key)
+				},
+			})
+			for (const value of [revoked.proxy, stateful]) {
+				expect(parsePortablePaths(value, 1)).toBeUndefined()
+				expect(parseFilesystemPaths(value, 1)).toBeUndefined()
+				const result = attempt(() =>
+					Reflect.apply(WriteTransaction.create, WriteTransaction, [target.path, value]),
+				)
+				expect(result.success).toBe(false)
+				if (result.success || !isScaffoldError(result.error)) {
+					throw new Error('expected a coded transaction boundary failure')
+				}
+				expect(result.error.code).toBe('WRITE')
+			}
+		} finally {
+			await target.cleanup()
+		}
+	})
+
+	it('snapshots write preconditions without invoking proxy property getters', () => {
+		let gets = 0
+		const shape: 'absent' = 'absent'
+		const precondition = new Proxy(
+			{ path: 'safe.txt', shape },
+			{
+				get() {
+					gets += 1
+					throw new Error('hostile precondition getter')
+				},
+			},
+		)
+		const revoked = Proxy.revocable([precondition], {})
+		revoked.revoke()
+
+		expect(parseWritePreconditions([precondition], 1)).toEqual([
+			{ path: 'safe.txt', shape: 'absent' },
+		])
+		expect(gets).toBe(0)
+		expect(parseWritePreconditions(revoked.proxy, 1)).toBeUndefined()
+	})
+
+	it('rejects a limit-plus-one path collection before filesystem staging', async () => {
+		const target = await buildTempDirectory()
+		try {
+			const result = attempt(() =>
+				WriteTransaction.create(target.path, Array(MAX_COLLECTION_ITEMS + 1).fill('a.txt')),
+			)
+			expect(result.success).toBe(false)
+			expect(readdirSync(target.path)).toEqual([])
+		} finally {
+			await target.cleanup()
+		}
+	})
+
+	it.skipIf(!canDirectoryLink)(
+		'rejects an intermediate target link before reading an outside destination',
+		async () => {
+			const target = await buildTempDirectory()
+			const outside = await buildTempDirectory()
+			try {
+				writeFileSync(join(outside.path, 'secret.txt'), 'outside-secret\n', 'utf8')
+				createDirectoryLink(outside.path, join(target.path, 'linked'))
+
+				const result = attempt(() => WriteTransaction.create(target.path, ['linked/secret.txt']))
+
+				expect(result.success).toBe(false)
+				expect(readFileSync(join(outside.path, 'secret.txt'), 'utf8')).toBe('outside-secret\n')
+			} finally {
+				await target.cleanup()
+				await outside.cleanup()
+			}
+		},
+	)
+
+	it('rejects a staged directory before creating its destination', async () => {
+		const target = await buildTempDirectory()
+		try {
+			const transaction = WriteTransaction.create(target.path, ['tree'])
+			mkdirSync(join(transaction.stage, 'tree'))
+
+			const result = attempt(() => commitWriteTransaction(transaction, ['tree']))
+
+			expect(result.success).toBe(false)
+			expect(existsSync(join(target.path, 'tree'))).toBe(false)
+		} finally {
+			await target.cleanup()
+		}
+	})
+
+	it.skipIf(!canDirectoryLink)(
+		'rejects an intermediate staging link without reading or mutating outside files',
+		async () => {
+			const target = await buildTempDirectory()
+			const outside = await buildTempDirectory()
+			try {
+				const transaction = WriteTransaction.create(target.path, ['linked/staged.txt'])
+				writeFileSync(join(outside.path, 'staged.txt'), 'outside-staged\n', 'utf8')
+				createDirectoryLink(outside.path, join(transaction.stage, 'linked'))
+
+				const result = attempt(() => commitWriteTransaction(transaction, ['linked/staged.txt']))
+
+				expect(result.success).toBe(false)
+				expect(existsSync(join(target.path, 'linked'))).toBe(false)
+				expect(readFileSync(join(outside.path, 'staged.txt'), 'utf8')).toBe('outside-staged\n')
+			} finally {
+				await target.cleanup()
+				await outside.cleanup()
+			}
+		},
+	)
+
+	it('preflights every staged entry before replacing an earlier user file', async () => {
+		const target = await buildTempDirectory()
+		try {
+			const original = join(target.path, 'a.txt')
+			writeFileSync(original, 'user-owned\n', 'utf8')
+			const before = lstatSync(original)
+			const transaction = WriteTransaction.create(target.path, ['a.txt', 'b.txt'])
+			writeFileSync(join(transaction.stage, 'a.txt'), 'replacement\n', 'utf8')
+
+			const result = attempt(() => commitWriteTransaction(transaction, ['a.txt', 'b.txt']))
+
+			expect(result.success).toBe(false)
+			expect(readFileSync(original, 'utf8')).toBe('user-owned\n')
+			const after = lstatSync(original)
+			expect({
+				device: after.dev,
+				inode: after.ino,
+				modified: after.mtimeMs,
+				size: after.size,
+			}).toEqual({
+				device: before.dev,
+				inode: before.ino,
+				modified: before.mtimeMs,
+				size: before.size,
+			})
+		} finally {
+			await target.cleanup()
+		}
+	})
+
+	it('rejects a same-length wrong path set before replacing an earlier user file', async () => {
+		const target = await buildTempDirectory()
+		try {
+			const original = join(target.path, 'a.txt')
+			writeFileSync(original, 'user-owned\n', 'utf8')
+			const before = lstatSync(original)
+			const transaction = WriteTransaction.create(target.path, ['a.txt', 'b.txt'])
+			writeFileSync(join(transaction.stage, 'a.txt'), 'replacement\n', 'utf8')
+			writeFileSync(join(transaction.stage, 'b.txt'), 'second\n', 'utf8')
+
+			const result = attempt(() => commitWriteTransaction(transaction, ['a.txt', 'c.txt']))
+
+			expect(result.success).toBe(false)
+			expect(readFileSync(original, 'utf8')).toBe('user-owned\n')
+			const after = lstatSync(original)
+			expect({
+				device: after.dev,
+				inode: after.ino,
+				modified: after.mtimeMs,
+				size: after.size,
+			}).toEqual({
+				device: before.dev,
+				inode: before.ino,
+				modified: before.mtimeMs,
+				size: before.size,
+			})
+		} finally {
+			await target.cleanup()
+		}
+	})
+})
+
+describe('discardWriteTransaction', () => {
+	it('removes every transaction-created ancestor from deepest to shallowest', async () => {
+		const parent = await buildTempDirectory()
+		try {
+			const first = join(parent.path, 'one')
+			const second = join(first, 'two')
+			const target = join(second, 'target')
+			const transaction = WriteTransaction.create(target, [])
+
+			expect(existsSync(first)).toBe(true)
+			expect(existsSync(second)).toBe(true)
+			expect(existsSync(transaction.root)).toBe(true)
+
+			discardWriteTransaction(transaction)
+
+			expect(existsSync(transaction.root)).toBe(false)
+			expect(existsSync(second)).toBe(false)
+			expect(existsSync(first)).toBe(false)
+		} finally {
+			await parent.cleanup()
+		}
+	})
+})
+
 describe('host recovery helpers', () => {
 	it('remaps exact and nested manifest destinations beneath the artifact target', () => {
 		const artifact: HostArtifact = {
@@ -1362,83 +2177,107 @@ describe('host recovery helpers', () => {
 	})
 
 	it('restores in reverse order and preserves quarantine when a real destination is blocked', async () => {
-		const quarantine = await buildTempDirectory()
 		const target = await buildTempDirectory()
 		try {
-			mkdirSync(join(quarantine.path, 'nested'), { recursive: true })
-			writeFileSync(join(quarantine.path, 'nested', 'file.txt'), 'recoverable\n', 'utf8')
+			const transaction = WriteTransaction.create(target.path, [])
+			mkdirSync(join(transaction.backup, 'nested'), { recursive: true })
+			writeFileSync(join(transaction.backup, 'nested', 'file.txt'), 'recoverable\n', 'utf8')
 			writeFileSync(join(target.path, 'nested'), 'blocking file\n', 'utf8')
 
-			const result = attempt(() => restoreFiles(quarantine.path, target.path, ['nested/file.txt']))
+			const result = attempt(() => restoreFiles(transaction, ['nested/file.txt']))
 
 			expect(result.success).toBe(false)
-			expect(existsSync(join(quarantine.path, 'nested', 'file.txt'))).toBe(true)
+			expect(existsSync(join(transaction.backup, 'nested', 'file.txt'))).toBe(true)
 			expect(readFileSync(join(target.path, 'nested'), 'utf8')).toBe('blocking file\n')
+			discardWriteTransaction(transaction)
 		} finally {
-			await quarantine.cleanup()
 			await target.cleanup()
 		}
 	})
 
 	it('preserves both files when the exact restore destination already exists', async () => {
-		const quarantine = await buildTempDirectory()
 		const target = await buildTempDirectory()
 		try {
-			writeFileSync(join(quarantine.path, 'file.txt'), 'quarantined\n', 'utf8')
+			const transaction = WriteTransaction.create(target.path, [])
+			writeFileSync(join(transaction.backup, 'file.txt'), 'quarantined\n', 'utf8')
 			writeFileSync(join(target.path, 'file.txt'), 'concurrent\n', 'utf8')
 
-			const result = attempt(() => restoreFiles(quarantine.path, target.path, ['file.txt']))
+			const result = attempt(() => restoreFiles(transaction, ['file.txt']))
 
 			expect(result.success).toBe(false)
-			expect(readFileSync(join(quarantine.path, 'file.txt'), 'utf8')).toBe('quarantined\n')
+			expect(readFileSync(join(transaction.backup, 'file.txt'), 'utf8')).toBe('quarantined\n')
 			expect(readFileSync(join(target.path, 'file.txt'), 'utf8')).toBe('concurrent\n')
+			discardWriteTransaction(transaction)
 		} finally {
-			await quarantine.cleanup()
 			await target.cleanup()
 		}
 	})
 
-	it('attempts every restore when one relative path is invalid', async () => {
-		const quarantine = await buildTempDirectory()
+	it('rejects an invalid path collection before restoring any quarantined file', async () => {
 		const target = await buildTempDirectory()
 		try {
-			writeFileSync(join(quarantine.path, 'recover.txt'), 'recoverable\n', 'utf8')
+			const transaction = WriteTransaction.create(target.path, [])
+			writeFileSync(join(transaction.backup, 'recover.txt'), 'recoverable\n', 'utf8')
 
-			const result = attempt(() =>
-				restoreFiles(quarantine.path, target.path, ['recover.txt', '../escape']),
-			)
+			const result = attempt(() => restoreFiles(transaction, ['recover.txt', '../escape']))
 
 			expect(result.success).toBe(false)
-			expect(readFileSync(join(target.path, 'recover.txt'), 'utf8')).toBe('recoverable\n')
-			expect(existsSync(join(quarantine.path, 'recover.txt'))).toBe(false)
+			expect(existsSync(join(target.path, 'recover.txt'))).toBe(false)
+			expect(readFileSync(join(transaction.backup, 'recover.txt'), 'utf8')).toBe('recoverable\n')
+			discardWriteTransaction(transaction)
 		} finally {
-			await quarantine.cleanup()
+			await target.cleanup()
+		}
+	})
+
+	it('rejects a hostile restore iterator without invocation or mutation', async () => {
+		const target = await buildTempDirectory()
+		try {
+			const transaction = WriteTransaction.create(target.path, [])
+			writeFileSync(join(transaction.backup, 'recover.txt'), 'recoverable\n', 'utf8')
+			const paths = ['recover.txt']
+			let iteratorCalls = 0
+			Object.defineProperty(paths, Symbol.iterator, {
+				value: () => {
+					iteratorCalls += 1
+					throw new Error('hostile iterator')
+				},
+			})
+
+			const result = attempt(() => restoreFiles(transaction, paths))
+
+			expect(result.success).toBe(false)
+			expect(iteratorCalls).toBe(0)
+			expect(existsSync(join(target.path, 'recover.txt'))).toBe(false)
+			expect(readFileSync(join(transaction.backup, 'recover.txt'), 'utf8')).toBe('recoverable\n')
+			discardWriteTransaction(transaction)
+		} finally {
 			await target.cleanup()
 		}
 	})
 
 	it.skipIf(!canSymlink)(
-		'restores a valid symlink after quarantine relocation without following it from quarantine',
+		'rejects a quarantined symlink and preserves it for inspection',
 		async () => {
-			const root = await buildTempDirectory()
+			const target = await buildTempDirectory()
 			try {
-				const quarantine = join(root.path, 'quarantine')
-				const target = join(root.path, 'target')
-				const link = join(target, 'scripts', 'link.txt')
-				const moved = join(quarantine, 'scripts', 'link.txt')
+				const transaction = WriteTransaction.create(target.path, [])
+				const link = join(target.path, 'scripts', 'link.txt')
+				const moved = join(transaction.backup, 'scripts', 'link.txt')
 				mkdirSync(dirname(link), { recursive: true })
 				mkdirSync(dirname(moved), { recursive: true })
-				writeFileSync(join(target, 'scripts', 'source.txt'), 'source\n', 'utf8')
-				symlinkSync('source.txt', link, 'file')
-				renameSync(link, moved)
+				writeFileSync(join(target.path, 'scripts', 'source.txt'), 'source\n', 'utf8')
+				symlinkSync('source.txt', moved, 'file')
 
-				restoreFiles(quarantine, target, ['scripts/link.txt'])
+				const result = attempt(() => restoreFiles(transaction, ['scripts/link.txt']))
 
-				expect(lstatSync(link).isSymbolicLink()).toBe(true)
-				expect(readlinkSync(link)).toBe('source.txt')
-				expect(existsSync(moved)).toBe(false)
+				expect(result.success).toBe(false)
+				expect(existsSync(link)).toBe(false)
+				expect(lstatSync(moved).isSymbolicLink()).toBe(true)
+				expect(readlinkSync(moved)).toBe('source.txt')
+				discardWriteTransaction(transaction)
 			} finally {
-				await root.cleanup()
+				await target.cleanup()
 			}
 		},
 	)
@@ -1521,6 +2360,92 @@ describe('host recovery helpers', () => {
 // ── stageHost ────────────────────────────────────────────────────────────────
 
 describe('stageHost', () => {
+	it('rejects a limit-plus-one path collection before reading or replacing output', async () => {
+		const root = await buildTempDirectory()
+		const out = await buildTempDirectory()
+		try {
+			writeFileSync(join(root.path, 'AGENTS.md'), '# rules\n', 'utf8')
+			writeFileSync(join(out.path, 'prior.txt'), 'prior\n', 'utf8')
+
+			const result = attempt(() =>
+				stageHost(root.path, out.path, Array(MAX_HOST_ENTRIES + 1).fill('AGENTS.md')),
+			)
+
+			expect(result.success).toBe(false)
+			expect(readFileSync(join(out.path, 'prior.txt'), 'utf8')).toBe('prior\n')
+		} finally {
+			await root.cleanup()
+			await out.cleanup()
+		}
+	})
+
+	it('rejects expanded destination roots before staging or replacing prior output', async () => {
+		const workspace = await buildTempDirectory()
+		const root = join(workspace.path, 'source')
+		const out = join(workspace.path, 'host-output')
+		mkdirSync(root)
+		mkdirSync(out)
+		writeFileSync(join(out, 'prior.txt'), 'prior\n', 'utf8')
+		const paths: string[] = []
+		try {
+			for (let branch = 0; branch < 110; branch += 1) {
+				const segments = [
+					`branch-${String(branch).padStart(3, '0')}`,
+					...Array.from(
+						{ length: 38 },
+						(_value, depth) => `level-${String(depth).padStart(2, '0')}`,
+					),
+				]
+				const path = `${segments.join('/')}/file.txt`
+				mkdirSync(join(root, ...segments), { recursive: true })
+				writeFileSync(join(root, ...path.split('/')), 'entry\n', 'utf8')
+				paths.push(path)
+			}
+
+			const result = attempt(() => stageHost(root, out, paths))
+
+			expect(result.success).toBe(false)
+			expect(readFileSync(join(out, 'prior.txt'), 'utf8')).toBe('prior\n')
+			expect(
+				readdirSync(workspace.path).filter(
+					(entry) =>
+						entry.startsWith('.host-output.stage-') || entry.startsWith('.host-output.backup-'),
+				),
+			).toEqual([])
+		} finally {
+			await workspace.cleanup()
+		}
+	})
+
+	it('rejects sensitive descendants selected through a parent and preserves prior output', async () => {
+		for (const testCase of [
+			{ parent: '.git', child: 'config' },
+			{ parent: '.aws', child: 'sso/cache/token.json' },
+			{ parent: 'safe', child: '.env/token' },
+			{ parent: 'safe', child: 'signing.p12' },
+			{ parent: 'safe', child: 'signing.pfx' },
+			{ parent: 'safe', child: 'signing.pkcs12' },
+			{ parent: 'safe', child: 'signing.jks' },
+		]) {
+			const root = await buildTempDirectory()
+			const out = await buildTempDirectory()
+			try {
+				const source = join(root.path, testCase.parent, ...testCase.child.split('/'))
+				mkdirSync(dirname(source), { recursive: true })
+				writeFileSync(source, 'secret\n', 'utf8')
+				writeFileSync(join(out.path, 'prior.txt'), 'prior\n', 'utf8')
+
+				const result = attempt(() => stageHost(root.path, out.path, [testCase.parent]))
+
+				expect(result.success).toBe(false)
+				expect(readFileSync(join(out.path, 'prior.txt'), 'utf8')).toBe('prior\n')
+			} finally {
+				await root.cleanup()
+				await out.cleanup()
+			}
+		}
+	})
+
 	it('stages a plain undotted file at its unchanged storage path, byte-preserving', async () => {
 		const root = await buildTempDirectory()
 		const out = await buildTempDirectory()

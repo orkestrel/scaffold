@@ -1,4 +1,4 @@
-import type { Audit, CatalogEntry, Plan, Surface } from '@src/core'
+import type { Audit, CatalogEntry, Plan, Environment } from '@src/core'
 import type { MaterializeResult } from '@src/server'
 
 /** The command-line interface's closed command vocabulary. */
@@ -11,7 +11,8 @@ export interface CLIInterface {
 
 /** Parsed values shared by every command runner. */
 export interface CLIValues {
-	readonly surfaces?: string
+	readonly src?: string
+	readonly app?: string
 	readonly deps?: string
 	readonly groups?: string
 	readonly target?: string
@@ -64,19 +65,12 @@ export interface FleetRepo {
 	readonly directory: string
 	readonly plan: Plan
 	readonly audit: Audit
-	readonly aware: boolean
 }
 
 /** One fleet repository that could not be inspected. */
 export interface FleetFailure {
 	readonly name: string
 	readonly message: string
-}
-
-/** Best-effort plan hydration outcome. */
-export interface HydrationResult {
-	readonly plan: Plan
-	readonly aware: boolean
 }
 
 /** Unexpected-file scan outcome. */
@@ -103,7 +97,8 @@ export interface ErrorEnvelope {
 /** Machine-readable `new` outcome. */
 export interface NewResult {
 	readonly name: string
-	readonly surfaces: readonly Surface[]
+	readonly src: readonly Environment[]
+	readonly app: readonly Environment[]
 	readonly host: number
 	readonly template: number
 	readonly computed: number

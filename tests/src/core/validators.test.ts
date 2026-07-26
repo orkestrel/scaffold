@@ -1,25 +1,63 @@
 import type { Plan } from '@src/core'
+import { isString } from '@orkestrel/contract'
 import {
 	blueprint,
+	blueprintToPlan,
 	dependency,
+	hasValidArtifactBytes,
 	hasValidArtifactHex,
+	hasValidPlanBytes,
 	hasValidPlanHex,
+	hasOnlyDataProperties,
 	isArtifact,
 	isBlueprint,
+	isDenseDataArray,
 	isDependency,
 	isMember,
 	isOverride,
 	isPlan,
+	isScaffoldError,
 	isSyncReport,
+	isWorkspaceName,
+	MAX_ARTIFACT_BYTES,
 	member,
 	override,
+	parseBoundedJSON,
 	parseBlueprint,
 	parsePlan,
 	parseSyncReport,
 	pinPlan,
+	snapshotPlan,
+	validatePlan,
 } from '@src/core'
 import { describe, expect, it } from 'vitest'
-import { buildPopulatedSyncReport } from '../../setup.js'
+import { buildGenerativeDataProxy, buildPopulatedSyncReport, captureError } from '../../setup.js'
+
+describe('isDenseDataArray', () => {
+	it('uses one own length descriptor and never invokes a stateful length getter trap', () => {
+		let reads = 0
+		const value = new Proxy(['owned'], {
+			get(target, key, receiver) {
+				if (key === 'length') {
+					reads += 1
+					if (reads > 1) return Number.MAX_SAFE_INTEGER
+				}
+				return Reflect.get(target, key, receiver)
+			},
+		})
+
+		expect(isDenseDataArray(value, 1, isString)).toBe(true)
+		expect(reads).toBe(0)
+	})
+})
+
+describe('hasOnlyDataProperties', () => {
+	it('bounds fresh-identity generative graphs and fails coded snapshots closed', () => {
+		expect(hasOnlyDataProperties(buildGenerativeDataProxy())).toBe(false)
+		const error = captureError(() => snapshotPlan(buildGenerativeDataProxy()))
+		expect(isScaffoldError(error) && error.code === 'INVALID').toBe(true)
+	})
+})
 
 // Every exact-record guard: valid / invalid / adversarial junk, off-vocabulary
 // literal rejection, and the parse↔guard soundness of parseBlueprint / parsePlan.
@@ -65,21 +103,36 @@ describe('isOverride', () => {
 	})
 })
 
+describe('isWorkspaceName', () => {
+	it('accepts the exact lexical and length boundaries', () => {
+		expect(isWorkspaceName('a')).toBe(true)
+		expect(isWorkspaceName('a'.repeat(203))).toBe(true)
+	})
+
+	it('rejects malformed, oversized, and adversarial values', () => {
+		expect(isWorkspaceName('A')).toBe(false)
+		expect(isWorkspaceName('../escape')).toBe(false)
+		expect(isWorkspaceName('a'.repeat(204))).toBe(false)
+		expect(isWorkspaceName(null)).toBe(false)
+		expect(isWorkspaceName({ toString: () => 'name' })).toBe(false)
+	})
+})
+
 describe('isMember', () => {
 	it('accepts a valid Member', () => {
 		expect(isMember(member('Router', 'entity', 'The Router entity.'))).toBe(true)
 	})
 
 	it('rejects an off-vocabulary category', () => {
-		expect(isMember({ name: 'Router', category: 'widget', summary: 'x', surface: 'core' })).toBe(
-			false,
-		)
+		expect(
+			isMember({ name: 'Router', category: 'widget', summary: 'x', environment: 'core' }),
+		).toBe(false)
 	})
 
-	it('rejects an off-vocabulary surface', () => {
-		expect(isMember({ name: 'Router', category: 'entity', summary: 'x', surface: 'client' })).toBe(
-			false,
-		)
+	it('rejects an off-vocabulary environment', () => {
+		expect(
+			isMember({ name: 'Router', category: 'entity', summary: 'x', environment: 'client' }),
+		).toBe(false)
 	})
 
 	it('rejects adversarial junk', () => {
@@ -94,12 +147,17 @@ describe('isBlueprint', () => {
 		expect(isBlueprint(blueprint('router'))).toBe(true)
 	})
 
-	it('rejects an empty surfaces array', () => {
-		expect(isBlueprint({ ...blueprint('router'), surfaces: [] })).toBe(false)
+	it('rejects an empty src array', () => {
+		expect(isBlueprint({ ...blueprint('router'), src: [] })).toBe(false)
 	})
 
-	it('rejects an off-vocabulary surface literal', () => {
-		expect(isBlueprint({ ...blueprint('router'), surfaces: ['mobile'] })).toBe(false)
+	it('accepts app-only and rejects an empty workspace', () => {
+		expect(isBlueprint({ ...blueprint('router'), src: [], app: ['server'] })).toBe(true)
+		expect(isBlueprint({ ...blueprint('router'), src: [], app: [] })).toBe(false)
+	})
+
+	it('rejects an off-vocabulary environment literal', () => {
+		expect(isBlueprint({ ...blueprint('router'), src: ['mobile'] })).toBe(false)
 	})
 
 	it('rejects a malformed nested dependency', () => {
@@ -206,6 +264,58 @@ describe('hasValidArtifactHex', () => {
 	})
 })
 
+describe('retained byte limits', () => {
+	it('accepts an exact multibyte artifact boundary and rejects one byte beyond it', () => {
+		const exact = '😀'.repeat(MAX_ARTIFACT_BYTES / 4)
+		expect(
+			hasValidArtifactBytes({
+				path: 'exact.txt',
+				group: 'source',
+				origin: 'computed',
+				content: exact,
+			}),
+		).toBe(true)
+		expect(
+			hasValidArtifactBytes({
+				path: 'overflow.txt',
+				group: 'source',
+				origin: 'computed',
+				content: `${exact}a`,
+			}),
+		).toBe(false)
+	})
+
+	it('accepts exactly 100 MiB across artifacts and rejects the next 5 MiB artifact', () => {
+		const content = 'a'.repeat(MAX_ARTIFACT_BYTES)
+		const artifacts: Plan['artifacts'] = Array.from({ length: 20 }, (_, index) => ({
+			path: `artifact-${index}.txt`,
+			group: 'source',
+			origin: 'computed',
+			content,
+		}))
+		const plan: Plan = {
+			blueprint: blueprint('aggregate-budget'),
+			groups: ['source'],
+			artifacts,
+		}
+		expect(hasValidPlanBytes(plan)).toBe(true)
+		expect(
+			hasValidPlanBytes({
+				...plan,
+				artifacts: [
+					...artifacts,
+					{
+						path: 'overflow.txt',
+						group: 'source',
+						origin: 'computed',
+						content,
+					},
+				],
+			}),
+		).toBe(false)
+	})
+})
+
 describe('isPlan', () => {
 	it('accepts a pinned Plan', () => {
 		const plan = pinPlan({ blueprint: blueprint('router'), groups: ['manifest'], artifacts: [] })
@@ -247,6 +357,50 @@ describe('isPlan', () => {
 		expect(isPlan(null)).toBe(false)
 		expect(isPlan(0)).toBe(false)
 		expect(isPlan([])).toBe(false)
+	})
+})
+
+describe('validatePlan', () => {
+	it('accepts a plan whose blueprint and overrides match the materialized artifact set', () => {
+		const plan = blueprintToPlan(
+			blueprint('router', {
+				src: ['core'],
+				overrides: [override('README.md', '# Router')],
+			}),
+		)
+
+		expect(validatePlan(plan)).toEqual({ valid: true, questions: [], warnings: [] })
+	})
+
+	it.each([
+		{
+			label: 'missing',
+			path: 'missing.ts',
+			message: 'matches no planned artifact',
+		},
+		{
+			label: 'host-owned',
+			path: 'AGENTS.md',
+			message: 'targets a host-origin artifact',
+		},
+		{
+			label: 'publication-boundary',
+			path: 'package.json',
+			message: 'targets the blueprint-owned publication boundary',
+		},
+	])('rejects a $label override context', ({ path, message }) => {
+		const plan = blueprintToPlan(
+			blueprint('router', {
+				src: ['core'],
+				overrides: [override(path, 'replacement')],
+			}),
+		)
+		const validation = validatePlan(plan)
+
+		expect(validation.valid).toBe(false)
+		expect(validation.questions.map((question) => question.text)).toContainEqual(
+			expect.stringContaining(message),
+		)
 	})
 })
 
@@ -292,6 +446,14 @@ describe('isSyncReport', () => {
 })
 
 describe('parseBlueprint', () => {
+	it('rejects serialized JSON before parsing when its UTF-8 budget is exceeded', () => {
+		expect(parseBoundedJSON('"ok"', isString, 4)).toBe('ok')
+		expect(parseBoundedJSON('"ok"', isString, 3)).toBeUndefined()
+		expect(parseBoundedJSON('"😀"', isString, 6)).toBe('😀')
+		expect(parseBoundedJSON('"😀"', isString, 5)).toBeUndefined()
+		expect(parseBoundedJSON('"ok"', isString, Number.NaN)).toBeUndefined()
+	})
+
 	it('round-trips a guard-valid value unchanged', () => {
 		const value = blueprint('router')
 
@@ -309,7 +471,7 @@ describe('parseBlueprint', () => {
 	})
 
 	it('returns undefined for an off-contract value', () => {
-		expect(parseBlueprint({ name: 'router', surfaces: ['mobile'] })).toBeUndefined()
+		expect(parseBlueprint({ name: 'router', src: ['mobile'] })).toBeUndefined()
 	})
 
 	it('never throws on adversarial input', () => {

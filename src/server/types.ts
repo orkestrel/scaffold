@@ -5,18 +5,19 @@ import type {
 	Dependency,
 	GuideSync,
 	Plan,
+	Snapshot,
 	SyncReport,
 	VersionSync,
 } from '@src/core'
 
 // ============================================================================
 //  @orkestrel/scaffold/server — the materialization + sync faces' type
-//  surface (AGENTS §5 source of truth). The server-marked Types rows from
-//  scaffold.md's `## Surface` table — `MaterializeResult`, `HostManifest`,
+//  contracts (AGENTS §5 source of truth). The server-marked rows in
+//  scaffold.md's public API table — `MaterializeResult`, `HostManifest`,
 //  `ManifestEntry` (one vendored `host/manifest.json` entry), plus the `Materializer` triad
 //  (`MaterializerEventMap` / `MaterializerOptions` / `MaterializerInterface`)
 //  and the `Sync` triad (`SyncEventMap` / `SyncOptions` / `SyncInterface`).
-//  Everything else the server surface touches (`Plan`, `Audit`, `Dependency`,
+//  Everything else the server contracts reference (`Plan`, `Audit`, `Dependency`,
 //  `GuideSync`, `VersionSync`, `SyncReport`, `ScaffoldError`, …) is OWNED by
 //  the pure core face (`@src/core`) — imported here, never redeclared.
 // ============================================================================
@@ -30,7 +31,7 @@ export interface MaterializeResult {
 	readonly removed: readonly string[]
 }
 
-/** `Materializer`'s push observation surface (AGENTS §13, server). */
+/** `Materializer`'s push observation channel (AGENTS §13, server). */
 export type MaterializerEventMap = {
 	readonly copy: readonly [path: string]
 	readonly write: readonly [path: string]
@@ -71,17 +72,66 @@ export interface HostManifest {
 	readonly roots: readonly string[]
 }
 
+/** One destination snapshot required to remain stable through a write commit. */
+export interface WriteExpectation {
+	readonly path: string
+	readonly shape: 'absent' | 'file' | 'directory'
+	readonly device?: number
+	readonly inode?: number
+	readonly modified?: number
+	readonly size?: number
+	readonly digest?: string
+}
+
+/** Caller-observed destination state that a write transaction must still match. */
+export interface WritePrecondition {
+	readonly path: string
+	readonly shape: 'absent' | 'file'
+	readonly digest?: string
+}
+
+/** A physical directory identity captured across a write transaction. */
+export interface WriteAnchor {
+	readonly path: string
+	readonly device: number
+	readonly inode: number
+}
+
+/** Anchored result of creating a physical directory path one segment at a time. */
+export interface WriteDirectoryResult {
+	readonly anchor: WriteAnchor
+	readonly created: readonly WriteAnchor[]
+}
+
+/** Mutable one-cell byte allowance shared by concurrent Sync readers. */
+export type SyncAllowance = Float64Array
+
+/** One mutable aggregate entry allowance shared by fleet catalog roots. */
+export type CatalogAllowance = Float64Array
+
+/** One normalized upstream HTTP(S) endpoint base accepted by `Sync`. */
+export type SyncBase = string
+
+/** One bounded Git-compatible branch path accepted by the guide endpoint. */
+export type SyncBranch = string
+
+/** One validated guide update and its contained destination. */
+export interface GuideWrite {
+	readonly guide: GuideSync
+	readonly destination: string
+}
+
 /** The materialization contract (server) — the only impure entity in the package. */
 export interface MaterializerInterface {
 	readonly emitter: EmitterInterface<MaterializerEventMap>
 	materialize(plan: Plan, target: string): MaterializeResult
 	repair(plan: Plan, audit: Audit, target: string): MaterializeResult
-	prune(target: string): MaterializeResult
+	prune(target: string, expected: Snapshot): MaterializeResult
 	destroy(): void
 }
 
 /**
- * `Sync`'s push observation surface (AGENTS §13, server).
+ * `Sync`'s push observation channel (AGENTS §13, server).
  *
  * @remarks
  * `package` fires once per `catalog()` entry processed; its `note` is the
@@ -126,18 +176,20 @@ export type SyncEventMap = {
  */
 export interface SyncOptions {
 	readonly guides?: {
-		readonly base?: string
-		readonly branch?: string
+		readonly base?: SyncBase
+		readonly branch?: SyncBranch
 		readonly timeout?: number
 	}
 	readonly registry?: {
-		readonly base?: string
+		readonly base?: SyncBase
 		readonly timeout?: number
 	}
 	readonly concurrency?: number
 	readonly retries?: number
 	readonly strict?: boolean
 	readonly limit?: number
+	readonly items?: number
+	readonly budget?: number
 	readonly on?: EmitterHooks<SyncEventMap>
 	readonly error?: EmitterErrorHandler
 }
@@ -154,7 +206,7 @@ export interface SyncInterface {
 	): Promise<readonly GuideSync[]>
 	versions(deps: readonly Dependency[]): Promise<readonly VersionSync[]>
 	catalog(): Promise<readonly CatalogEntry[]>
-	pull(target: string): Promise<SyncReport>
+	pull(target: string, dependencies?: readonly Dependency[]): Promise<SyncReport>
 	write(report: SyncReport, target: string): Promise<readonly string[]>
 	destroy(): void
 }

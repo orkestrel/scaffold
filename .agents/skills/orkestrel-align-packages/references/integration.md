@@ -1,17 +1,17 @@
-# Cross-package and surface integration
+# Cross-package and environment integration
 
 ## Map ownership
 
 Use this dependency model unless a package-specific guide narrows it:
 
-| Surface       | May depend on                                                       | Must not depend on                 |
-| ------------- | ------------------------------------------------------------------- | ---------------------------------- |
-| `src/core`    | host-independent Orkestrel core packages                            | Node, DOM, browser/server surfaces |
-| `src/server`  | its core and server-capable dependencies                            | browser/app surfaces               |
-| `src/browser` | its core and browser-capable dependencies                           | Node/server/app surfaces           |
-| `app/core`    | host-independent library/core and app/core logic                    | Node, DOM, app/server, app/browser |
-| `app/server`  | app/core plus core/server libraries                                 | browser/app/browser                |
-| `app/browser` | app/core plus core/browser libraries and shared transport contracts | Node/app/server implementation     |
+| Surface       | May depend on                                                       | Must not depend on                     |
+| ------------- | ------------------------------------------------------------------- | -------------------------------------- |
+| `src/core`    | host-independent Orkestrel core packages                            | Node, DOM, browser/server environments |
+| `src/server`  | its core and server-capable dependencies                            | browser/app environments               |
+| `src/browser` | its core and browser-capable dependencies                           | Node/server/app environments           |
+| `app/core`    | host-independent library/core and app/core logic                    | Node, DOM, app/server, app/browser     |
+| `app/server`  | app/core plus core/server libraries                                 | browser/app/browser                    |
+| `app/browser` | app/core plus core/browser libraries and shared transport contracts | Node/app/server implementation         |
 
 Browser application code reaches server behavior through shared contracts and transports, not server implementation imports.
 

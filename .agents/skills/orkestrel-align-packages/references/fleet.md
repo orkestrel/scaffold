@@ -9,7 +9,7 @@ For every relevant repository, record:
 - dirty paths and owning session;
 - declared and resolved `@orkestrel/*` dependencies, peers, and dev dependencies;
 - vendored guide freshness;
-- supported runtime and package surfaces;
+- supported runtime and package environments;
 - local gate/package state.
 
 Use npm, git, manifests, lockfiles, installed packages, canonical guides, and current scaffold authority. Do not copy a package catalog or burned-version list into this skill.

@@ -1,3 +1,4 @@
+import { mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseJSON } from '@orkestrel/contract'
 import { describe, expect, it } from 'vitest'
@@ -8,7 +9,6 @@ import {
 	CATALOG_UNRESOLVED_NOTE,
 	DRIFT_LABEL,
 	EXIT_CODES,
-	FLEET_CI_SKIPPED,
 	FOREIGN_HINT,
 	FRESHNESS_LABEL,
 	KNOWN_VERBS,
@@ -16,9 +16,8 @@ import {
 	ORKESTREL_DEPS_PROMPT,
 	PRUNE_EMPTY,
 	PRUNE_SKIPPED,
-	RETIRED_VERBS,
 	SCAN_SKIPPED,
-	SURFACE_CHOICES,
+	ENVIRONMENT_CHOICES,
 	VERB_FLAGS,
 	VERB_FLAG_HELP,
 } from '../../../src/bin/constants.js'
@@ -67,11 +66,12 @@ import {
 } from '../../../src/bin/shapers.js'
 import type { CatalogEntry, SyncReport } from '../../../src/core/index.js'
 import { AUDIT_FINDINGS, AUDIT_PLAN, buildAudit } from '../../setupBin.js'
+import { buildTempDirectory, canDirectoryLink, createDirectoryLink } from '../../setupServer.js'
 
 describe('render: jargon translation', () => {
 	it('translates every Origin', () => {
-		expect(ORIGIN_LABEL.host).toBe('template-owned')
-		expect(ORIGIN_LABEL.template).toBe('template-owned')
+		expect(ORIGIN_LABEL.host).toBe('host-owned')
+		expect(ORIGIN_LABEL.template).toBe('starter')
 		expect(ORIGIN_LABEL.computed).toBe('generated')
 	})
 
@@ -114,7 +114,7 @@ describe('render: bucketText / verdicts', () => {
 		const audit = buildAudit(AUDIT_FINDINGS)
 		const line = auditVerdict(audit, AUDIT_PLAN)
 		expect(line.startsWith('audit: 5 artifacts —')).toBe(true)
-		expect(line).toContain('template-owned:')
+		expect(line).toContain('host-owned:')
 		expect(line).toContain('generated:')
 	})
 
@@ -141,7 +141,7 @@ describe('render: tables', () => {
 		const table = auditTable(buildAudit(AUDIT_FINDINGS), AUDIT_PLAN)
 		expect(table.columns.map((column) => column.label)).toEqual(['Status', 'Kind', 'Path'])
 		expect(table.rows).toHaveLength(4)
-		expect(table.rows).toContainEqual(['drifted', 'template-owned', 'AGENTS.md'])
+		expect(table.rows).toContainEqual(['drifted', 'host-owned', 'AGENTS.md'])
 		expect(table.rows).toContainEqual(['unexpected file', 'unexpected file', 'unexpected.txt'])
 	})
 
@@ -225,23 +225,23 @@ describe('render: prompt messages', () => {
 		expect(CANCELLED_MESSAGE).toBe('cancelled — nothing written')
 	})
 
-	it('repairHandoff: owned drift only names the template-owned count, no deletion clause', () => {
-		expect(repairHandoff(3, 0, false)).toBe('3 template-owned files have drift — run repair now? ')
-		expect(repairHandoff(1, 0, false)).toBe('1 template-owned file has drift — run repair now? ')
+	it('repairHandoff: owned drift only names the host-owned count, no deletion clause', () => {
+		expect(repairHandoff(3, 0, false)).toBe('3 host-owned files have drift — run repair now? ')
+		expect(repairHandoff(1, 0, false)).toBe('1 host-owned file has drift — run repair now? ')
 	})
 
 	it('repairHandoff: owned drift + prune names BOTH clauses, joined by "and"', () => {
 		expect(repairHandoff(2, 1, true)).toBe(
-			'2 template-owned files have drift and 1 unexpected file will be deleted — run repair now? ',
+			'2 host-owned files have drift and 1 unexpected file will be deleted — run repair now? ',
 		)
 	})
 
-	it('repairHandoff: foreign-only (owned:0) + prune names ONLY the deletion clause — the F2 dead-end fix', () => {
+	it('repairHandoff: foreign-only drift with pruning names only the deletion clause', () => {
 		expect(repairHandoff(0, 2, true)).toBe('2 unexpected files will be deleted — run repair now? ')
 	})
 
 	it('repairHandoff: foreign present but prune false never mentions deletion (nothing would be deleted)', () => {
-		expect(repairHandoff(1, 2, false)).toBe('1 template-owned file has drift — run repair now? ')
+		expect(repairHandoff(1, 2, false)).toBe('1 host-owned file has drift — run repair now? ')
 	})
 
 	it('foreignHint points at repair --prune', () => {
@@ -293,7 +293,7 @@ describe('render: prompt messages', () => {
 		)
 	})
 
-	it('U12c FIX 1: unresolvedVersion names every unresolved package plainly', () => {
+	it('unresolvedVersion names every unresolved package plainly', () => {
 		expect(unresolvedVersion(['left-pad'])).toBe(
 			'could not resolve the latest version for "left-pad" — check the name or pass name@range',
 		)
@@ -302,15 +302,15 @@ describe('render: prompt messages', () => {
 		)
 	})
 
-	it('describes each surface checkbox choice', () => {
-		const choices = SURFACE_CHOICES
+	it('describes each environment checkbox choice', () => {
+		const choices = ENVIRONMENT_CHOICES
 		expect(choices.map((choice) => choice.value)).toEqual(['core', 'browser', 'server'])
 		expect(choices.find((choice) => choice.value === 'core')?.description).toBe('the pure engine')
 		expect(choices.find((choice) => choice.value === 'browser')?.description).toBe(
-			'DOM-facing surface',
+			'DOM-facing environment',
 		)
 		expect(choices.find((choice) => choice.value === 'server')?.description).toBe(
-			'node-facing surface',
+			'node-facing environment',
 		)
 	})
 })
@@ -330,18 +330,11 @@ describe('render: did-you-mean', () => {
 		expect(didYouMean('flete')).toBe('unknown command "flete" — did you mean "fleet"?')
 	})
 
-	it('lists every KNOWN_VERBS entry with the new names', () => {
+	it('lists every known verb', () => {
 		expect([...KNOWN_VERBS]).toEqual(['new', 'pull', 'audit', 'repair', 'fleet', 'catalog'])
 	})
 
-	it('redirects retired verb names before fuzzy matching', () => {
-		expect(RETIRED_VERBS.sync).toBe('pull')
-		expect(RETIRED_VERBS.mirror).toBe('fleet')
-		expect(didYouMean('sync')).toBe("'sync' has been renamed — use 'scaffold pull'")
-		expect(didYouMean('mirror')).toBe("'mirror' has been renamed — use 'scaffold fleet'")
-	})
-
-	it('still fuzzy-matches inputs that are not retired verbs', () => {
+	it('fuzzy-matches unknown inputs', () => {
 		expect(didYouMean('flete')).toContain('did you mean "fleet"?')
 	})
 })
@@ -352,8 +345,37 @@ describe('bin destination containment', () => {
 		const nested = join(root, 'nested')
 		expect(containDestination(root, nested)).toBe(nested)
 		expect(() => containDestination(root, join(root, '..', 'outside'))).toThrow(
-			/escapes the working directory/,
+			/outside or traverses a linked parent/,
 		)
+	})
+
+	it('accepts the real invocation root as the default dot destination', () => {
+		expect(containDestination(process.cwd(), '.')).toBe(process.cwd())
+	})
+
+	it.each(['\n', '\r', '\u001b', '\u0085', '\u2028', '\u202e'])(
+		'rejects terminal control %j before resolving or echoing a destination',
+		(control) => {
+			expect(() => containDestination(process.cwd(), `hostile${control}target`)).toThrow(
+				'Target paths must not contain control characters',
+			)
+		},
+	)
+
+	it.skipIf(!canDirectoryLink)('rejects an internal linked parent before planning', async () => {
+		const root = await buildTempDirectory()
+		try {
+			const physical = join(root.path, 'physical')
+			const linked = join(root.path, 'linked')
+			mkdirSync(physical)
+			createDirectoryLink(physical, linked)
+
+			expect(() => containDestination(root.path, join(linked, 'package'))).toThrow(
+				/outside or traverses a linked parent/,
+			)
+		} finally {
+			await root.cleanup()
+		}
 	})
 
 	it('renders coded, ordinary, and non-error failures', () => {
@@ -371,13 +393,10 @@ describe('render: help tiers', () => {
 		expect(shortUsage()).toContain('scaffold <verb> --help')
 	})
 
-	it('fullHelp includes the exit-code table and the new verb names, never the old ones', () => {
+	it('fullHelp includes the exit-code table and every supported verb', () => {
 		const text = fullHelp()
 		for (const [code] of EXIT_CODES) expect(text).toContain(code)
-		expect(text).toContain('fleet')
-		expect(text).toContain('pull')
-		expect(text).not.toMatch(/\bmirror\b/)
-		expect(text).not.toMatch(/\bsync\b/)
+		for (const verb of KNOWN_VERBS) expect(text).toContain(verb)
 	})
 
 	it('verbHelp renders one verb section', () => {
@@ -430,7 +449,7 @@ describe('render: VERB_FLAGS corrections', () => {
 		expect(VERB_FLAGS.catalog).toContain('--from <path>')
 	})
 
-	it('no verb advertises --extras — the extras UX was removed; hand-add devDependencies instead', () => {
+	it('no verb advertises the unsupported --extras flag', () => {
 		for (const verb of KNOWN_VERBS) {
 			expect(VERB_FLAGS[verb]).not.toContain('--extras')
 			expect(VERB_FLAG_HELP[verb].some(([flag]) => flag.startsWith('--extras'))).toBe(false)
@@ -458,7 +477,7 @@ describe('render: new prune/missing/generated/audit-live/comparison/ci/catalog e
 		expect(PRUNE_EMPTY).toContain('no unexpected files to delete')
 	})
 
-	it('pruneSkipped explains the non-interactive alternative WITHOUT re-asking for --prune (F5 — it was already passed)', () => {
+	it('pruneSkipped explains the non-interactive alternative without re-asking for --prune', () => {
 		const line = PRUNE_SKIPPED
 		expect(line).toBe(
 			'prune skipped — not a terminal; add --apply (or --yes) to delete non-interactively',
@@ -485,21 +504,15 @@ describe('render: new prune/missing/generated/audit-live/comparison/ci/catalog e
 		expect(line).toContain('1')
 	})
 
-	it('comparisonLine translates host vocabulary without the words "host" or "presence-only"', () => {
+	it('comparisonLine reports exact host-file comparison depth without implementation jargon', () => {
 		const aware = comparisonLine(true)
 		const notAware = comparisonLine(false)
-		expect(aware.toLowerCase()).not.toContain('host')
+		expect(aware).toBe('comparing: file contents for host-owned files')
 		expect(aware.toLowerCase()).not.toContain('presence-only')
-		expect(notAware.toLowerCase()).not.toContain('host')
+		expect(notAware).toBe(
+			'comparing: file names only for host-owned files (no vendored source found)',
+		)
 		expect(notAware.toLowerCase()).not.toContain('presence-only')
-		expect(aware).toContain('file contents')
-		expect(notAware).toContain('file names only')
-	})
-
-	it('fleetCiSkipped explains ci.yml is left to per-package repair', () => {
-		const line = FLEET_CI_SKIPPED
-		expect(line).toContain('ci.yml')
-		expect(line).toContain('scaffold repair --apply')
 	})
 
 	it('catalogVerdict renders clean and drifted lines', () => {
@@ -519,7 +532,8 @@ describe('bin result shapers', () => {
 		const value = summaryToNewResult(
 			{
 				name: 'widget',
-				surfaces: ['core'],
+				src: ['core'],
+				app: [],
 				groups: ['manifest'],
 				artifacts: 6,
 				host: 1,
@@ -531,7 +545,8 @@ describe('bin result shapers', () => {
 		const parsed: unknown = parseJSON(JSON.stringify(value))
 		expect(parsed).toEqual({
 			name: 'widget',
-			surfaces: ['core'],
+			src: ['core'],
+			app: [],
 			host: 1,
 			template: 2,
 			computed: 3,

@@ -11,7 +11,7 @@ paths:
 ## Test contract
 
 - Mirror source/application structure:
-  `tests/{src,app}/[surface]/[domain]/[Entity].test.ts`.
+  `tests/{src,app}/[environment]/[domain]/[Entity].test.ts`.
 - Prefer test filenames matching entrypoints: `index.test.ts` for `index.ts`, `main.test.ts` for `main.ts`.
 - Tests are deterministic: identical inputs produce identical results.
 - Keep default suites fast: timers normally use 10–50 ms and tests make no network calls.

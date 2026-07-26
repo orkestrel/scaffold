@@ -1,6 +1,6 @@
 ---
 name: orkestrel-align-packages
-description: Audit and improve how multiple Orkestrel packages or their core, server, browser, and application surfaces fit together. Use for coordinated extraction/refactoring, developer ergonomics, real round-trip integration, fleet alignment, dependency/guide readiness, and topological package campaigns.
+description: Audit and improve how multiple Orkestrel packages or their core, server, browser, and app environments fit together. Use for coordinated extraction/refactoring, developer ergonomics, real round-trip integration, fleet alignment, dependency/guide readiness, and topological package campaigns.
 ---
 
 # Load the canonical workflow

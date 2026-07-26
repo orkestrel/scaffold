@@ -12,9 +12,9 @@ paths:
 
 # Workspace, environments, builds, and scripts
 
-Use only the surfaces a project needs, but preserve this dependency model.
+Use only the environments a project needs, but preserve this dependency model.
 
-## Surfaces
+## Environments
 
 | Path           | Purpose                                            |
 | -------------- | -------------------------------------------------- |
@@ -26,13 +26,13 @@ Use only the surfaces a project needs, but preserve this dependency model.
 | `app/core/`    | Shared application logic with an `index.ts` barrel |
 | `app/browser/` | Browser app; `main.ts` entry, not a barrel         |
 | `app/server/`  | Node server app; `main.ts` entry                   |
-| `tests/`       | Mirrors source/application surfaces                |
+| `tests/`       | Mirrors src/app environments                       |
 | `configs/`     | Thin target wrappers around root configs           |
 
 - Browser/server import core; core imports neither.
 - `app/core` is host-independent.
-- `app/server` may import app/core and core/server library surfaces; it never imports browser code.
-- `app/browser` may import app/core and core/browser library surfaces. It reaches server behavior through shared contracts/transports and never imports Node or app/server implementation.
+- `app/server` may import app/core and core/server libraries; it never imports browser code.
+- `app/browser` may import app/core and core/browser libraries. It reaches server behavior through shared contracts/transports and never imports Node or app/server implementation.
 - Typical browser-app domains: `components/`, `pages/`, `composables.ts`, `controllers/`, `services/`, `stores/`.
 - Typical server-app domains: `handlers/`, `middlewares.ts`, `routes.ts`.
 - `src/styles/index.ts` is a side-effect entry importing `./index.scss`.
@@ -88,7 +88,7 @@ Environment rules:
 
 ## Test project matrix
 
-`vite.config.ts` defines one Vitest project per surface × environment:
+`vite.config.ts` defines one Vitest project per src/app axis × environment:
 
 | Project       | Files                  | Environment         | Setup                                           |
 | ------------- | ---------------------- | ------------------- | ----------------------------------------------- |
@@ -130,7 +130,7 @@ then runs the configured scoped checks that prove environment isolation.
 | `src:server`, `app:server`   | `["ESNext"]`                      | `["node"]`        | Node; no DOM                                        |
 | `src:styles`                 | `["ESNext"]`                      | `["vite/client"]` | Vite SCSS module declaration only                   |
 
-Strict core is load-bearing. A host-dependent helper belongs in its host surface; for example, a `generateId` using host `crypto` belongs in server, not core.
+Strict core is load-bearing. A host-dependent helper belongs in its host environment; for example, a `generateId` using host `crypto` belongs in server, not core.
 
 Build/check config alignment:
 
@@ -159,7 +159,6 @@ Build/check config alignment:
 | `test`                  | Source/application projects, then guide parity                    |
 | `clean`                 | Remove `dist/`                                                    |
 | `copy <from> <to>`      | Copy while creating parent directories                            |
-| `tmp:txt`               | Rename non-Markdown files in `tmp/` to `.txt`                     |
 | `prepublishOnly`        | `format:check → lint:check → check → build → test`                |
 
 Run `show` only **after** formatting. The committed `demo/showcase.html` is generated/minified; formatting after generation would expand its inlined bundle.

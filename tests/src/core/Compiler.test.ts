@@ -1,4 +1,4 @@
-import type { Audit, Question, Scaffolding, Surface } from '@src/core'
+import type { Audit, Question, Scaffolding, Environment } from '@src/core'
 import {
 	blueprint,
 	Compiler,
@@ -6,21 +6,72 @@ import {
 	dependency,
 	isScaffoldError,
 	override,
-	SURFACES,
+	ENVIRONMENTS,
+	parseCompilerOptions,
 } from '@src/core'
 import {
-	buildSurfaceStubPaths,
-	buildSurfaceTestPaths,
+	buildEnvironmentStubPaths,
+	buildEnvironmentTestPaths,
 	captureError,
 	createRecorder,
 } from '../../setup.js'
 import { describe, expect, it } from 'vitest'
 
+describe('Compiler options boundary', () => {
+	it('owns exact listener hooks and ignores later caller mutation', () => {
+		const calls: string[] = []
+		const hooks = {
+			compile: () => {
+				calls.push('owned')
+			},
+		}
+		const parsed = parseCompilerOptions({ on: hooks })
+		const compiler = new Compiler(parsed)
+		hooks.compile = () => {
+			calls.push('mutated')
+		}
+
+		compiler.compile(blueprint('owned-hooks', { src: ['core'] }), ['manifest'])
+
+		expect(calls).toEqual(['owned'])
+		expect(Object.isFrozen(parsed)).toBe(true)
+		expect(Object.isFrozen(parsed.on)).toBe(true)
+		compiler.destroy()
+	})
+
+	it('rejects accessors, unknown keys, revoked proxies, and stateful hook traps', () => {
+		const revoked = Proxy.revocable({}, {})
+		revoked.revoke()
+		let reads = 0
+		const statefulHooks = new Proxy(
+			{ compile: () => undefined },
+			{
+				getOwnPropertyDescriptor(target, key) {
+					reads += 1
+					if (reads > 1) throw new Error('stateful hook trap')
+					return Reflect.getOwnPropertyDescriptor(target, key)
+				},
+			},
+		)
+		for (const value of [
+			null,
+			[],
+			{ extra: true },
+			Object.defineProperty({}, 'on', { get: () => ({}) }),
+			revoked.proxy,
+			{ on: statefulHooks },
+		]) {
+			const error = captureError(() => Reflect.construct(Compiler, [value]))
+			expect(isScaffoldError(error) && error.code === 'INVALID').toBe(true)
+		}
+	})
+})
+
 describe('Compiler#compile — pipeline stages and records', () => {
 	it('runs the three stages in order for a complete compile', () => {
 		const compiler = new Compiler()
 
-		const scaffolding = compiler.compile(blueprint('router', { surfaces: ['core'] }), ['manifest'])
+		const scaffolding = compiler.compile(blueprint('router', { src: ['core'] }), ['manifest'])
 
 		expect(scaffolding.stages.map((record) => record.stage)).toEqual(['draft', 'gate', 'pin'])
 		expect(scaffolding.stages.every((record) => !record.failed)).toBe(true)
@@ -32,7 +83,7 @@ describe('Compiler#compile — pipeline stages and records', () => {
 
 	it('carries the blueprint as the draft stage input and the drafted plan as its output', () => {
 		const compiler = new Compiler()
-		const spec = blueprint('router', { surfaces: ['core'] })
+		const spec = blueprint('router', { src: ['core'] })
 
 		const scaffolding = compiler.compile(spec, ['manifest'])
 
@@ -44,7 +95,7 @@ describe('Compiler#compile — pipeline stages and records', () => {
 	it('scopes the plan to the requested groups', () => {
 		const compiler = new Compiler()
 
-		const scaffolding = compiler.compile(blueprint('router', { surfaces: ['core'] }), ['source'])
+		const scaffolding = compiler.compile(blueprint('router', { src: ['core'] }), ['source'])
 
 		expect(scaffolding.plan?.groups).toEqual(['source'])
 		expect(scaffolding.plan?.artifacts.every((artifact) => artifact.group === 'source')).toBe(true)
@@ -54,7 +105,7 @@ describe('Compiler#compile — pipeline stages and records', () => {
 	it('selects the full plan when groups is omitted', () => {
 		const compiler = new Compiler()
 
-		const scaffolding = compiler.compile(blueprint('router', { surfaces: ['core'] }))
+		const scaffolding = compiler.compile(blueprint('router', { src: ['core'] }))
 
 		const groups = new Set(scaffolding.plan?.artifacts.map((artifact) => artifact.group))
 		expect(groups.size).toBeGreaterThan(1)
@@ -80,7 +131,7 @@ describe('Compiler#compile — fail-closed gate paths', () => {
 
 		const scaffolding = compiler.compile(
 			blueprint('router', {
-				surfaces: ['core'],
+				src: ['core'],
 				overrides: [override('nowhere/does-not-exist.ts', 'x')],
 			}),
 			['manifest'],
@@ -100,7 +151,7 @@ describe('Compiler#compile — fail-closed gate paths', () => {
 		const compiler = new Compiler()
 
 		const scaffolding = compiler.compile(
-			blueprint('router', { surfaces: ['core'], overrides: [override('AGENTS.md', 'x')] }),
+			blueprint('router', { src: ['core'], overrides: [override('AGENTS.md', 'x')] }),
 			['docs'],
 		)
 
@@ -112,11 +163,48 @@ describe('Compiler#compile — fail-closed gate paths', () => {
 		compiler.destroy()
 	})
 
-	it('blocks on an off-VERSION_PATTERN version (M2)', () => {
+	it.each([
+		{
+			label: 'app-only',
+			spec: blueprint('dashboard', {
+				src: [],
+				app: ['core'],
+				overrides: [
+					override(
+						'package.json',
+						'{"name":"dashboard","private":false,"publishConfig":{"access":"public"}}',
+					),
+				],
+			}),
+		},
+		{
+			label: 'mixed',
+			spec: blueprint('dashboard', {
+				src: ['core'],
+				app: ['core'],
+				overrides: [override('package.json', '{"files":["dist/src","dist/app"]}')],
+			}),
+		},
+	])('blocks a $label package.json publication override before pinning', ({ spec }) => {
+		const compiler = new Compiler()
+
+		const scaffolding = compiler.compile(spec, ['manifest'])
+
+		expect(scaffolding.complete).toBe(false)
+		expect(scaffolding.plan).toBeUndefined()
+		expect(
+			scaffolding.questions.some((question) =>
+				question.text.includes('blueprint-owned publication boundary'),
+			),
+		).toBe(true)
+		compiler.destroy()
+	})
+
+	it('blocks on a version outside VERSION_PATTERN', () => {
 		const compiler = new Compiler()
 
 		const scaffolding = compiler.compile(
-			{ ...blueprint('router', { surfaces: ['core'] }), version: '1.2' },
+			{ ...blueprint('router', { src: ['core'] }), version: '1.2' },
 			['manifest'],
 		)
 
@@ -127,12 +215,12 @@ describe('Compiler#compile — fail-closed gate paths', () => {
 		compiler.destroy()
 	})
 
-	it('blocks on a duplicate override path (M3)', () => {
+	it('blocks on a duplicate override path', () => {
 		const compiler = new Compiler()
 
 		const scaffolding = compiler.compile(
 			blueprint('router', {
-				surfaces: ['core'],
+				src: ['core'],
 				overrides: [override('README.md', 'x'), override('README.md', 'y')],
 			}),
 			['docs'],
@@ -153,7 +241,7 @@ describe('Compiler#compile — fail-closed gate paths', () => {
 
 		const scaffolding = compiler.compile(
 			blueprint('router', {
-				surfaces: ['core'],
+				src: ['core'],
 				dependencies: [dependency('@orkestrel/../evil', '^1.0.0')],
 			}),
 			['manifest'],
@@ -168,13 +256,13 @@ describe('Compiler#compile — fail-closed gate paths', () => {
 })
 
 describe('Compiler#compile — non-vendored dependency', () => {
-	it('surfaces a non-blocking Question and a host-origin pointer artifact, and still completes', () => {
+	it('emits a non-blocking Question and a host-origin pointer artifact, and still completes', () => {
 		const compiler = new Compiler()
 
 		const scaffolding = compiler.compile(
 			blueprint('router', {
-				surfaces: ['core'],
-				dependencies: [dependency('@orkestrel/some-outside-thing', '^1.0.0')],
+				src: ['core'],
+				dependencies: [dependency('@orkestrel/some-outside-thing', '^0.0.1')],
 			}),
 			['manifest', 'guides'],
 		)
@@ -189,12 +277,12 @@ describe('Compiler#compile — non-vendored dependency', () => {
 		compiler.destroy()
 	})
 
-	it('does NOT surface a question for a vendored dependency', () => {
+	it('does NOT emit a question for a vendored dependency', () => {
 		const compiler = new Compiler()
 
 		const scaffolding = compiler.compile(
 			blueprint('router', {
-				surfaces: ['core'],
+				src: ['core'],
 				dependencies: [dependency('@orkestrel/contract', '^0.0.5')],
 			}),
 			['manifest'],
@@ -213,7 +301,7 @@ describe('Compiler#compile — event sequences', () => {
 		compiler.emitter.on('compile', compileRecorder.handler)
 		compiler.emitter.on('block', blockRecorder.handler)
 
-		compiler.compile(blueprint('router', { surfaces: ['core'] }), ['manifest'])
+		compiler.compile(blueprint('router', { src: ['core'] }), ['manifest'])
 
 		expect(compileRecorder.count).toBe(1)
 		expect(blockRecorder.count).toBe(0)
@@ -262,7 +350,7 @@ describe('Compiler#audit', () => {
 		compiler.emitter.on('block', blockRecorder.handler)
 		compiler.emitter.on('audit', auditRecorder.handler)
 
-		const result = compiler.audit(blueprint('router', { surfaces: ['core'] }), {}, ['manifest'])
+		const result = compiler.audit(blueprint('router', { src: ['core'] }), {}, ['manifest'])
 
 		expect(result.complete).toBe(true)
 		expect(result.missing).toBe(1)
@@ -273,7 +361,7 @@ describe('Compiler#audit', () => {
 
 	it('reports clean when the target already matches the compiled plan', () => {
 		const compiler = new Compiler()
-		const spec = blueprint('router', { surfaces: ['core'] })
+		const spec = blueprint('router', { src: ['core'] })
 		const scaffolding = compiler.compile(spec, ['manifest'])
 		const current: Record<string, string> = {}
 		for (const artifact of scaffolding.plan?.artifacts ?? []) {
@@ -303,7 +391,7 @@ describe('Compiler — destroy semantics', () => {
 		const compiler = new Compiler()
 		compiler.destroy()
 
-		const error = captureError(() => compiler.compile(blueprint('router', { surfaces: ['core'] })))
+		const error = captureError(() => compiler.compile(blueprint('router', { src: ['core'] })))
 
 		expect(isScaffoldError(error) && error.code === 'DESTROYED').toBe(true)
 	})
@@ -312,9 +400,7 @@ describe('Compiler — destroy semantics', () => {
 		const compiler = new Compiler()
 		compiler.destroy()
 
-		const error = captureError(() =>
-			compiler.audit(blueprint('router', { surfaces: ['core'] }), {}),
-		)
+		const error = captureError(() => compiler.audit(blueprint('router', { src: ['core'] }), {}))
 
 		expect(isScaffoldError(error) && error.code === 'DESTROYED').toBe(true)
 	})
@@ -327,34 +413,36 @@ describe('Compiler — destroy semantics', () => {
 	})
 })
 
-describe('Compiler#compile — surface parameterization (six variants): emitted artifact path set', () => {
-	const variants: readonly { readonly label: string; readonly surfaces: readonly Surface[] }[] = [
-		{ label: 'core-only', surfaces: ['core'] },
-		{ label: 'core+server', surfaces: ['core', 'server'] },
-		{ label: 'core+browser', surfaces: ['core', 'browser'] },
-		{ label: 'core+browser+server', surfaces: ['core', 'browser', 'server'] },
-		{ label: 'server-only', surfaces: ['server'] },
-		{ label: 'browser-only', surfaces: ['browser'] },
+describe('Compiler#compile — environment parameterization (six variants): emitted artifact path set', () => {
+	const variants: readonly { readonly label: string; readonly src: readonly Environment[] }[] = [
+		{ label: 'core-only', src: ['core'] },
+		{ label: 'core+server', src: ['core', 'server'] },
+		{ label: 'core+browser', src: ['core', 'browser'] },
+		{ label: 'core+browser+server', src: ['core', 'browser', 'server'] },
+		{ label: 'server-only', src: ['server'] },
+		{ label: 'browser-only', src: ['browser'] },
 	]
 
-	describe.each(variants)('$label', ({ surfaces }) => {
-		it('emits the declared-surface stub quartets, setup files, per-surface test pairs, and the always-on parity test', () => {
+	describe.each(variants)('$label', ({ src }) => {
+		it('emits the declared-environment stub quartets, setup files, per-environment test pairs, and the always-on parity test', () => {
 			const compiler = new Compiler()
 
-			const scaffolding = compiler.compile(blueprint('router', { surfaces }))
+			const scaffolding = compiler.compile(blueprint('router', { src }))
 
 			expect(scaffolding.complete).toBe(true)
 			const paths = new Set(scaffolding.plan?.artifacts.map((artifact) => artifact.path) ?? [])
 
-			for (const surface of SURFACES) {
-				const declared = surfaces.includes(surface)
-				for (const path of buildSurfaceStubPaths(surface)) expect(paths.has(path)).toBe(declared)
-				for (const path of buildSurfaceTestPaths(surface)) expect(paths.has(path)).toBe(declared)
+			for (const environment of ENVIRONMENTS) {
+				const declared = src.includes(environment)
+				for (const path of buildEnvironmentStubPaths(environment))
+					expect(paths.has(path)).toBe(declared)
+				for (const path of buildEnvironmentTestPaths(environment))
+					expect(paths.has(path)).toBe(declared)
 			}
 
 			expect(paths.has('tests/setup.ts')).toBe(true)
-			expect(paths.has('tests/setupServer.ts')).toBe(surfaces.includes('server'))
-			expect(paths.has('tests/setupBrowser.ts')).toBe(surfaces.includes('browser'))
+			expect(paths.has('tests/setupServer.ts')).toBe(src.includes('server'))
+			expect(paths.has('tests/setupBrowser.ts')).toBe(src.includes('browser'))
 			expect(paths.has('tests/guides/src/parity.test.ts')).toBe(true)
 
 			compiler.destroy()

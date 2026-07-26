@@ -35,7 +35,7 @@ The rule does not apply to standalone helpers, type names with role suffixes, or
 
 ## Split instead of compounding
 
-A compound entity member usually means the surface contains multiple entities or behaviors. Do not create `addTool`, `removeDocument`, `databasePath`, or `serverTimeout`.
+A compound entity member usually means the API contains multiple entities or behaviors. Do not create `addTool`, `removeDocument`, `databasePath`, or `serverTimeout`.
 
 ### Group options by entity
 

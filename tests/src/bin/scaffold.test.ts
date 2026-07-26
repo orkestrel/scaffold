@@ -2,7 +2,7 @@
 // `node:child_process` — assumes the build chain has already run (AGENTS.md §Orientation:
 // `npm run build` before `npm test`). Every write destination is confined to the cwd
 // (H-containment), so a test exercising `--target` against a temp fixture runs WITH that
-// fixture as its cwd. `--from` is the read-only source override (was `--host`); it is exempt
+// fixture as its cwd. `--from` is the read-only source override; it is exempt
 // from containment and may point anywhere, including outside the cwd.
 import { existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -22,9 +22,9 @@ import {
 } from '../../setupBin.js'
 import { buildTempDirectory, canSymlink, WORKSPACE_ROOT } from '../../setupServer.js'
 
-describe('scaffold bin: vendored-catalog resolution mechanics (U12b Q1, offline)', () => {
+describe('scaffold bin: offline vendored-catalog resolution', () => {
 	it('resolveCatalogNames-equivalent path: hostRoot() + readHostManifest + locateHostSource resolves the BUILT dist/host orkestrel.md, catalogNames parses real @orkestrel/* names', () => {
-		// Exercises the exact primitive chain `new`'s Q1 catalog resolution uses
+		// Exercises the exact primitive chain the `new` dependency prompt uses
 		// (src/bin/scaffold.ts's `resolveCatalogNames`) against the package's
 		// own BUILT vendored host — no fixture, no network, proving the
 		// mechanism resolves for real once `npm run build` has run.
@@ -94,34 +94,22 @@ describe('scaffold bin', () => {
 			}
 		})
 
-		it('unknown verb "sync" (retired alias): exits 2 with a renamed-to-pull redirect message', async () => {
+		it('an unknown verb exits 2 with the nearest known command', async () => {
 			const cwd = await buildTempDirectory()
 			try {
-				const result = runBin(['sync'], '', { cwd: cwd.path })
+				const result = runBin(['flete'], '', { cwd: cwd.path })
 				expect(result.status).toBe(2)
-				expect(result.stderr).toContain("'sync' has been renamed")
-				expect(result.stderr).toContain("'scaffold pull'")
+				expect(result.stderr).toContain('unknown command "flete"')
+				expect(result.stderr).toContain('did you mean "fleet"?')
 			} finally {
 				await cwd.cleanup()
 			}
 		})
 
-		it('unknown verb "mirror" (retired alias): exits 2 with a renamed-to-fleet redirect message', async () => {
+		it('an unrecognized flag is a strict parseArgs failure with exit 2', async () => {
 			const cwd = await buildTempDirectory()
 			try {
-				const result = runBin(['mirror'], '', { cwd: cwd.path })
-				expect(result.status).toBe(2)
-				expect(result.stderr).toContain("'mirror' has been renamed")
-				expect(result.stderr).toContain("'scaffold fleet'")
-			} finally {
-				await cwd.cleanup()
-			}
-		})
-
-		it('an unrecognized flag (e.g. the retired --root) is a strict parseArgs failure: exits 2', async () => {
-			const cwd = await buildTempDirectory()
-			try {
-				const result = runBin(['fleet', '--root', '.'], '', { cwd: cwd.path })
+				const result = runBin(['fleet', '--bogus'], '', { cwd: cwd.path })
 				expect(result.status).toBe(2)
 			} finally {
 				await cwd.cleanup()
@@ -135,14 +123,14 @@ describe('scaffold bin', () => {
 			const cwd = await buildTempDirectory()
 			try {
 				const result = runBin(
-					['new', 'demo-dry', '--surfaces', 'core', '--json', '--from', from.path],
+					['new', 'demo-dry', '--src', 'core', '--json', '--from', from.path],
 					'',
 					{ cwd: cwd.path },
 				)
 				expect(result.status).toBe(0)
 				const lines = result.stdout.trim().split('\n')
 				expect(lines).toHaveLength(1)
-				const parsed: unknown = parseJSON(lines[0])
+				const parsed: unknown = parseJSON(lines.join('\n'))
 				expect(parsed).toMatchObject({ name: 'demo-dry', applied: false })
 				expect(existsSync(join(cwd.path, 'demo-dry'))).toBe(false)
 			} finally {
@@ -154,7 +142,7 @@ describe('scaffold bin', () => {
 		it('missing name under --json: exits 2 with a coded USAGE json envelope, no prompt', async () => {
 			const cwd = await buildTempDirectory()
 			try {
-				const result = runBin(['new', '--surfaces', 'core', '--json'], '', { cwd: cwd.path })
+				const result = runBin(['new', '--src', 'core', '--json'], '', { cwd: cwd.path })
 				expect(result.status).toBe(2)
 				const parsed: unknown = parseJSON(result.stdout.trim())
 				expect(parsed).toMatchObject({ error: { code: 'USAGE' } })
@@ -163,10 +151,10 @@ describe('scaffold bin', () => {
 			}
 		})
 
-		it('F4: an invalid positional name under --json exits 2 with a coded USAGE envelope naming the expected shape (no silent pass-through)', async () => {
+		it('an invalid positional name under --json exits 2 with a coded USAGE envelope naming the expected shape', async () => {
 			const cwd = await buildTempDirectory()
 			try {
-				const result = runBin(['new', 'Foo/bar', '--surfaces', 'core', '--json'], '', {
+				const result = runBin(['new', 'Foo/bar', '--src', 'core', '--json'], '', {
 					cwd: cwd.path,
 				})
 				expect(result.status).toBe(2)
@@ -179,10 +167,10 @@ describe('scaffold bin', () => {
 			}
 		})
 
-		it('F4: an invalid positional name WITHOUT --json exits 2 with a plain message naming the expected shape, nothing written', async () => {
+		it('an invalid positional name without --json exits 2 with a plain shape error and writes nothing', async () => {
 			const cwd = await buildTempDirectory()
 			try {
-				const result = runBin(['new', 'Foo/bar', '--surfaces', 'core'], '', { cwd: cwd.path })
+				const result = runBin(['new', 'Foo/bar', '--src', 'core'], '', { cwd: cwd.path })
 				expect(result.status).toBe(2)
 				const output = result.stdout + result.stderr
 				expect(output).toContain('Foo/bar')
@@ -196,7 +184,7 @@ describe('scaffold bin', () => {
 		it('non-TTY ceiling: missing name WITHOUT --json exits 2 with the missingInput wording (no prompt, no hang) — piped/empty stdin', async () => {
 			const cwd = await buildTempDirectory()
 			try {
-				const result = runBin(['new', '--surfaces', 'core'], '', { cwd: cwd.path })
+				const result = runBin(['new', '--src', 'core'], '', { cwd: cwd.path })
 				expect(result.status).toBe(2)
 				const output = result.stdout + result.stderr
 				expect(output).toContain('missing a package name')
@@ -206,13 +194,82 @@ describe('scaffold bin', () => {
 			}
 		})
 
-		it('non-TTY ceiling: missing --surfaces (name given) WITHOUT --json exits 2 with the missingInput wording', async () => {
+		it('non-TTY ceiling: missing --src (name given) WITHOUT --json exits 2 with the missingInput wording', async () => {
 			const cwd = await buildTempDirectory()
 			try {
-				const result = runBin(['new', 'demo-missing-surfaces'], '', { cwd: cwd.path })
+				const result = runBin(['new', 'demo-missing-src'], '', { cwd: cwd.path })
 				expect(result.status).toBe(2)
 				const output = result.stdout + result.stderr
-				expect(output).toContain('missing --surfaces')
+				expect(output).toContain('at least one of --src or --app is required')
+			} finally {
+				await cwd.cleanup()
+			}
+		})
+
+		it('rejects repeated src and app environments before compiling or writing', async () => {
+			const cwd = await buildTempDirectory()
+			try {
+				const published = runBin(['new', 'duplicate-source', '--src', 'core,core'], '', {
+					cwd: cwd.path,
+				})
+				const application = runBin(['new', 'duplicate-app', '--app', 'server,server'], '', {
+					cwd: cwd.path,
+				})
+
+				expect(published.status).toBe(2)
+				expect(published.stdout + published.stderr).toContain(
+					'Published src environments must not repeat',
+				)
+				expect(application.status).toBe(2)
+				expect(application.stdout + application.stderr).toContain(
+					'Application environments must not repeat',
+				)
+				expect(existsSync(join(cwd.path, 'duplicate-source'))).toBe(false)
+				expect(existsSync(join(cwd.path, 'duplicate-app'))).toBe(false)
+			} finally {
+				await cwd.cleanup()
+			}
+		})
+
+		it('rejects off-vocabulary src and app environments before writing', async () => {
+			const cwd = await buildTempDirectory()
+			try {
+				const published = runBin(['new', 'bad-source', '--src', 'worker'], '', {
+					cwd: cwd.path,
+				})
+				const application = runBin(['new', 'bad-app', '--app', 'worker'], '', {
+					cwd: cwd.path,
+				})
+				expect(published.status).toBe(2)
+				expect(published.stdout + published.stderr).toContain(
+					'Environment "worker" is not recognized',
+				)
+				expect(application.status).toBe(2)
+				expect(application.stdout + application.stderr).toContain(
+					'Application environment "worker" is not recognized',
+				)
+				expect(existsSync(join(cwd.path, 'bad-source'))).toBe(false)
+				expect(existsSync(join(cwd.path, 'bad-app'))).toBe(false)
+			} finally {
+				await cwd.cleanup()
+			}
+		})
+
+		it('reports independent source and application selections in the JSON result', async () => {
+			const cwd = await buildTempDirectory()
+			try {
+				const result = runBin(
+					['new', 'mixed-json', '--src', 'core,server', '--app', 'core,browser', '--json'],
+					'',
+					{ cwd: cwd.path },
+				)
+				expect(result.status).toBe(0)
+				const parsed: unknown = parseJSON(result.stdout.trim())
+				expect(parsed).toMatchObject({
+					src: ['core', 'server'],
+					app: ['core', 'browser'],
+					applied: false,
+				})
 			} finally {
 				await cwd.cleanup()
 			}
@@ -223,7 +280,7 @@ describe('scaffold bin', () => {
 			const cwd = await buildTempDirectory()
 			try {
 				const result = runBin(
-					['new', 'demo-apply', '--surfaces', 'core', '--apply', '--from', from.path],
+					['new', 'demo-apply', '--src', 'core', '--apply', '--from', from.path],
 					'',
 					{ cwd: cwd.path },
 				)
@@ -259,7 +316,7 @@ describe('scaffold bin', () => {
 				// tests in the `repair` describe block for the single-confirm/EOF
 				// coverage this constraint keeps reliable.
 				const result = runBin(
-					['new', 'demo-preview', '--surfaces', 'core', '--deps', '', '--from', from.path],
+					['new', 'demo-preview', '--src', 'core', '--deps', '', '--from', from.path],
 					'',
 					{ cwd: cwd.path },
 				)
@@ -280,7 +337,7 @@ describe('scaffold bin', () => {
 					[
 						'new',
 						'demo-escape',
-						'--surfaces',
+						'--src',
 						'core',
 						'--apply',
 						'--target',
@@ -294,7 +351,7 @@ describe('scaffold bin', () => {
 				expect(result.status).toBe(1)
 				const output = result.stdout + result.stderr
 				expect(output).toContain('[INVALID]')
-				expect(output).toMatch(/escapes the working directory/)
+				expect(output).toMatch(/outside or traverses a linked parent/)
 				expect(existsSync(join(cwd.path, '..', 'escape'))).toBe(false)
 			} finally {
 				await cwd.cleanup()
@@ -307,7 +364,7 @@ describe('scaffold bin', () => {
 			const cwd = await buildTempDirectory()
 			try {
 				const result = runBin(
-					['new', 'demo-outside-from', '--surfaces', 'core', '--apply', '--from', from.path],
+					['new', 'demo-outside-from', '--src', 'core', '--apply', '--from', from.path],
 					'',
 					{ cwd: cwd.path },
 				)
@@ -326,7 +383,7 @@ describe('scaffold bin', () => {
 				const cwd = await buildTempDirectory()
 				try {
 					const result = runBin(
-						['new', 'demo-extras-removed', '--surfaces', 'core', '--extras', 'zod@^3.23.0'],
+						['new', 'demo-extras-removed', '--src', 'core', '--extras', 'zod@^3.23.0'],
 						'',
 						{ cwd: cwd.path },
 					)
@@ -348,7 +405,7 @@ describe('scaffold bin', () => {
 				const cwd = await buildTempDirectory()
 				try {
 					const created = runBin(
-						['new', 'demo', '--surfaces', 'core', '--apply', '--from', from.path],
+						['new', 'demo', '--src', 'core', '--apply', '--from', from.path],
 						'',
 						{ cwd: cwd.path },
 					)
@@ -385,7 +442,7 @@ describe('scaffold bin', () => {
 	})
 
 	describe('pull (network-free paths only — AGENTS §16: no network in tests; runPull has no --offline flag, so its live-fetch branches are out of scope here)', () => {
-		it('R1: no package.json in --target exits 1 with a coded [TARGET] line, before any network call', async () => {
+		it('a target without package.json exits 1 with a coded TARGET line before network access', async () => {
 			const cwd = await buildTempDirectory()
 			try {
 				const result = runBin(['pull', '--target', '.'], '', { cwd: cwd.path })
@@ -403,7 +460,7 @@ describe('scaffold bin', () => {
 				const result = runBin(['pull', '--target', '..'], '', { cwd: cwd.path })
 				expect(result.status).toBe(1)
 				expect(result.stderr).toContain('[INVALID]')
-				expect(result.stderr).toMatch(/escapes the working directory/)
+				expect(result.stderr).toMatch(/outside or traverses a linked parent/)
 			} finally {
 				await cwd.cleanup()
 			}
@@ -418,19 +475,16 @@ describe('scaffold bin', () => {
 				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
 				const audited = runBin(['audit', '--from', from.path], '', { cwd: packageDirectory })
 				expect(audited.status).toBe(0)
-				expect(audited.stdout).toContain('comparing: file contents for template-owned files')
+				expect(audited.stdout).toContain('comparing: file contents for host-owned files')
 			} finally {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
 		}, 20000)
 
-		it('drifted target (a host file removed): exit 1, names the path with the "template-owned" label', async () => {
-			// `diffPlan` (src/core/helpers.ts) audits a HYDRATED `host`-origin
-			// artifact by content (byte mismatch is `stale` drift; the e2e suite's
-			// closure regression covers that path) and an UNHYDRATED one by
-			// presence only. This test exercises the removal case — `missing` —
-			// the drift class both modes surface.
+		it('drifted target (a host file removed): exit 1, names the path with the "host-owned" label', async () => {
+			// Hydrated host artifacts are compared by content and unhydrated ones
+			// by presence. A missing artifact is drift in either mode.
 			const from = await buildFromFixture()
 			const cwd = await buildTempDirectory()
 			try {
@@ -440,21 +494,14 @@ describe('scaffold bin', () => {
 				const audited = runBin(['audit', '--from', from.path], '', { cwd: packageDirectory })
 				expect(audited.status).toBe(1)
 				expect(audited.stdout).toContain('.editorconfig')
-				expect(audited.stdout).toContain('template-owned')
+				expect(audited.stdout).toContain('host-owned')
 			} finally {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
 		}, 20000)
 
-		it('honest audit: a planted unexpected file under .claude/agents is real drift — exit 1, "unexpected file" in prose, foreign:1 in --json (previously foreign:0/clean:true)', async () => {
-			// Prior to the prune-truth fix, `runAudit` diffed ONLY the plan's own
-			// paths (`readTarget(target, plan.artifacts.map(a => a.path))`), so a
-			// planted file outside that set was structurally invisible to
-			// `diffPlan` — `audit --json` reported `foreign:0` / `clean:true` even
-			// with a rogue file sitting right there. `withForeignScan` (scaffold.ts)
-			// now merges the SAME `pruneTargets` scan `repair --prune` already used
-			// into the presented audit, so this is real, honestly-counted drift.
+		it('counts a planted unexpected .claude/agents file as foreign audit drift', async () => {
 			const from = await buildFromFixture()
 			const cwd = await buildTempDirectory()
 			try {
@@ -510,7 +557,7 @@ describe('scaffold bin', () => {
 				expect(audited.status).toBe(1)
 				const lines = audited.stdout.trim().split('\n')
 				expect(lines).toHaveLength(1)
-				const parsed: unknown = parseJSON(lines[0])
+				const parsed: unknown = parseJSON(lines.join('\n'))
 				expect(parsed).toMatchObject({ clean: false, missing: 1 })
 			} finally {
 				await cwd.cleanup()
@@ -522,8 +569,8 @@ describe('scaffold bin', () => {
 			// `tsconfig.json` is a `computed`-origin artifact (src/core/compilers.ts
 			// `configArtifacts`) — content-compared by `diffPlan`, so mutating its bytes
 			// is real `stale` drift entirely OUTSIDE `host`/`template` origin and
-			// carries no unexpected (`foreign`) file — exactly the "computed-only"
-			// case S3d's handoff gate must recognize.
+			// carries no unexpected (`foreign`) file, so it must not offer a host
+			// repair handoff.
 			const from = await buildFromFixture()
 			const cwd = await buildTempDirectory()
 			try {
@@ -552,7 +599,7 @@ describe('scaffold bin', () => {
 			}
 		}, 60000)
 
-		it('F1 regression: audit --apply on template-owned drift NEVER auto-repairs — exit 1, the drifted file is left exactly as found, no handoff text (a non-TTY spawn can never accept the interactive handoff)', async () => {
+		it('audit --apply never auto-repairs host-owned drift in a non-TTY process', async () => {
 			const from = await buildFromFixture()
 			const cwd = await buildTempDirectory()
 			try {
@@ -571,7 +618,7 @@ describe('scaffold bin', () => {
 			}
 		}, 20000)
 
-		it('F1 regression: audit --apply --prune with a planted unexpected file STILL never deletes it — exit 1, file untouched, no handoff text', async () => {
+		it('audit --apply --prune never deletes an unexpected file', async () => {
 			const from = await buildFromFixture()
 			const cwd = await buildTempDirectory()
 			try {
@@ -594,7 +641,7 @@ describe('scaffold bin', () => {
 			}
 		}, 20000)
 
-		it("F2: a planted unexpected file with no --prune prints the foreignHint pointing at 'repair --prune' instead of a dead-end handoff", async () => {
+		it("an unexpected file without --prune points at 'repair --prune'", async () => {
 			const from = await buildFromFixture()
 			const cwd = await buildTempDirectory()
 			try {
@@ -663,7 +710,7 @@ describe('scaffold bin', () => {
 				expect(audited.stderr).toBe('')
 				const lines = audited.stdout.trim().split('\n')
 				expect(lines).toHaveLength(1)
-				expect(parseJSON(lines[0])).toMatchObject({ error: { code: 'TARGET' } })
+				expect(parseJSON(lines.join('\n'))).toMatchObject({ error: { code: 'TARGET' } })
 			} finally {
 				await cwd.cleanup()
 				await host.cleanup()
@@ -735,12 +782,8 @@ describe('scaffold bin', () => {
 
 		it('--prune --apply: removes a planted unexpected file under .claude/agents', async () => {
 			// `materializer.prune` scans `.claude/agents`, `.codex/agents`, and `scripts` directly
-			// (independent of `diffPlan`'s unreachable `foreign` branch — see the
-			// deviation note above `foreignAuditGap` below); `runRepair` reaches
-			// the prune step whenever `--prune` finds work, host drift or not
-			// (U11 F2) — real host drift (the removed `.editorconfig`) accompanies
-			// the planted file here too, just no longer as a requirement to reach
-			// pruning at all (see the clean-host case below).
+			// independently from the host-artifact diff. `runRepair` reaches the
+			// prune step whenever `--prune` finds work, with or without host drift.
 			const from = await buildFromFixture()
 			const cwd = await buildTempDirectory()
 			try {
@@ -761,7 +804,7 @@ describe('scaffold bin', () => {
 			}
 		}, 20000)
 
-		it('U11 F2 regression: repair --prune --apply now prunes on a CLEAN-host repo too — the clean-audit early return no longer bypasses pruning; without --prune the planted file is left untouched, as before', async () => {
+		it('prunes a foreign file from a clean-host repo only when --prune is present', async () => {
 			const from = await buildFromFixture()
 			const cwd = await buildTempDirectory()
 			try {
@@ -792,11 +835,9 @@ describe('scaffold bin', () => {
 		}, 30000)
 
 		it('prune truth + non-TTY ceiling: dry-run --prune preview NAMES the exact planted path; the ONE piped confirm applies the host fix, and the prune question is never asked a second time (pruneSkipped wording, nothing deleted)', async () => {
-			// Every spawned test process is non-TTY (piped stdin/stdout) — this is
-			// simultaneously the S3a prune-preview-truth proof (the exact path is
-			// named BEFORE any prune confirm) and the S3f one-prompt-per-process
-			// ceiling proof (a SECOND `terminal.confirm` off the same drained
-			// stdin would hang; the prune question is never asked here at all).
+			// A spawned process receives piped streams. It must preview the exact
+			// path before confirmation and never ask a second question from drained
+			// stdin.
 			const from = await buildFromFixture()
 			const cwd = await buildTempDirectory()
 			try {
@@ -906,7 +947,7 @@ describe('scaffold bin', () => {
 				expect(result.status).toBe(1)
 				const output = result.stdout + result.stderr
 				expect(output).toContain('[INVALID]')
-				expect(output).toMatch(/escapes the working directory/)
+				expect(output).toMatch(/outside or traverses a linked parent/)
 			} finally {
 				await cwd.cleanup()
 			}
@@ -958,7 +999,7 @@ describe('scaffold bin', () => {
 				expect(result.status).toBe(0)
 				const lines = result.stdout.trim().split('\n')
 				expect(lines).toHaveLength(1)
-				const parsed: unknown = parseJSON(lines[0])
+				const parsed: unknown = parseJSON(lines.join('\n'))
 				if (!Array.isArray(parsed)) throw new Error('expected a JSON array')
 				expect(parsed).toHaveLength(2)
 			} finally {
@@ -1040,7 +1081,7 @@ describe('scaffold bin', () => {
 				})
 				const lines = result.stdout.trim().split('\n')
 				expect(lines).toHaveLength(1)
-				const parsed: unknown = parseJSON(lines[0])
+				const parsed: unknown = parseJSON(lines.join('\n'))
 				expect(parsed).toMatchObject({ drift: true })
 			} finally {
 				await target.cleanup()
@@ -1096,6 +1137,85 @@ describe('scaffold bin', () => {
 				await from.cleanup()
 			}
 		})
+
+		it('rejects duplicate, nested, and reversed catalog markers before mutation', async () => {
+			const cases: readonly (readonly string[])[] = [
+				[
+					'# duplicate start',
+					'<!-- catalog:start -->',
+					'<!-- catalog:start -->',
+					'placeholder',
+					'<!-- catalog:end -->',
+				],
+				[
+					'# duplicate end',
+					'<!-- catalog:start -->',
+					'placeholder',
+					'<!-- catalog:end -->',
+					'<!-- catalog:end -->',
+				],
+				[
+					'# nested',
+					'<!-- catalog:start -->',
+					'<!-- catalog:start -->',
+					'placeholder',
+					'<!-- catalog:end -->',
+					'<!-- catalog:end -->',
+				],
+				['# reversed', '<!-- catalog:end -->', 'placeholder', '<!-- catalog:start -->'],
+			]
+
+			for (const lines of cases) {
+				const target = await buildTempDirectory()
+				const from = await buildTempDirectory()
+				try {
+					const path = join(target.path, '.claude', 'agents', 'orkestrel.md')
+					const content = `${lines.join('\n')}\n`
+					mkdirSync(join(target.path, '.claude', 'agents'), { recursive: true })
+					writeFileSync(path, content)
+					buildCatalogFrom(from.path, ['pkgone'])
+
+					const result = runBin(['catalog', '--offline', '--from', from.path, '--apply'], '', {
+						cwd: target.path,
+					})
+
+					expect(result.status).toBe(1)
+					expect(`${result.stdout}${result.stderr}`).toContain('[TARGET]')
+					expect(readFileSync(path, 'utf8')).toBe(content)
+				} finally {
+					await target.cleanup()
+					await from.cleanup()
+				}
+			}
+		})
+
+		it('rejects malformed UTF-8 around canonical markers without rewriting user bytes', async () => {
+			const target = await buildTempDirectory()
+			const from = await buildTempDirectory()
+			try {
+				const path = join(target.path, '.claude', 'agents', 'orkestrel.md')
+				const content = Buffer.concat([
+					Buffer.from([0xff]),
+					Buffer.from('\n<!-- catalog:start -->\nplaceholder\n<!-- catalog:end -->\n', 'utf8'),
+					Buffer.from([0xfe]),
+				])
+				mkdirSync(join(target.path, '.claude', 'agents'), { recursive: true })
+				writeFileSync(path, content)
+				buildCatalogFrom(from.path, ['pkgone'])
+
+				const result = runBin(['catalog', '--offline', '--from', from.path, '--apply'], '', {
+					cwd: target.path,
+				})
+
+				expect(result.status).toBe(1)
+				expect(`${result.stdout}${result.stderr}`).toContain('[TARGET]')
+				expect(readFileSync(path)).toEqual(content)
+			} finally {
+				await target.cleanup()
+				await from.cleanup()
+			}
+		})
+
 		it.skipIf(!canSymlink)(
 			'containment: a symlinked .claude/agents pointing OUTSIDE the cwd refuses the write, nothing written outside (SKIPPED: environment cannot create symlinks — passes on symlink-capable POSIX CI)',
 			async () => {
@@ -1125,7 +1245,7 @@ describe('scaffold bin', () => {
 					expect(result.status).toBe(1)
 					const output = result.stdout + result.stderr
 					expect(output).toContain('[INVALID]')
-					expect(output).toMatch(/escapes the working directory/)
+					expect(output).toMatch(/outside or traverses a linked parent/)
 					expect(readFileSync(join(outside.path, 'agents', 'orkestrel.md'), 'utf8')).not.toContain(
 						'@orkestrel/pkgone',
 					)
@@ -1138,15 +1258,15 @@ describe('scaffold bin', () => {
 		)
 	})
 
-	describe('json discipline (S2b/S2c/S2d: one envelope, real ScaffoldError codes, never double-encoded)', () => {
+	describe('JSON discipline', () => {
 		it('unknown verb under --json: exits 2 with a single parseable USAGE envelope (routed through the same usageFail as prose)', async () => {
 			const cwd = await buildTempDirectory()
 			try {
-				const result = runBin(['sync', '--json'], '', { cwd: cwd.path })
+				const result = runBin(['flete', '--json'], '', { cwd: cwd.path })
 				expect(result.status).toBe(2)
 				const lines = result.stdout.trim().split('\n')
 				expect(lines).toHaveLength(1)
-				const parsed: unknown = parseJSON(lines[0])
+				const parsed: unknown = parseJSON(lines.join('\n'))
 				expect(parsed).toMatchObject({ error: { code: 'USAGE' } })
 				if (
 					!isRecord(parsed) ||
@@ -1155,7 +1275,7 @@ describe('scaffold bin', () => {
 				) {
 					throw new Error('expected a { error: { code, message } } envelope')
 				}
-				expect(parsed.error.message).toContain('has been renamed')
+				expect(parsed.error.message).toContain('did you mean "fleet"?')
 			} finally {
 				await cwd.cleanup()
 			}
@@ -1179,7 +1299,7 @@ describe('scaffold bin', () => {
 				expect(result.status).toBe(1)
 				const lines = result.stdout.trim().split('\n')
 				expect(lines).toHaveLength(1)
-				const parsed: unknown = parseJSON(lines[0])
+				const parsed: unknown = parseJSON(lines.join('\n'))
 				expect(parsed).toMatchObject({ error: { code: 'TARGET' } })
 				if (
 					!isRecord(parsed) ||

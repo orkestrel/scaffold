@@ -5,7 +5,7 @@ import { srcBin } from '../../vite.config'
 // executable ships no types), with the `#!/usr/bin/env node` shebang re-emitted via
 // `output.banner` (rolldown strips shebangs from source during bundling), and
 // `output.paths` rewriting the externalized `@src/*` specifiers to the built sibling
-// surfaces (relative to `dist/bin/`), so the emitted bin resolves at runtime.
+// src environments (relative to `dist/bin/`), so the emitted bin resolves at runtime.
 export default defineConfig(
 	srcBin({
 		build: {

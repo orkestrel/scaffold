@@ -20,6 +20,7 @@ paths:
 | Pure helpers              | `*/helpers.ts`                               |
 | Guards                    | `*/validators.ts`                            |
 | Guard combinators         | `*/combinators.ts`                           |
+| Owned snapshots           | `*/cloners.ts`                               |
 | Coercers                  | `*/parsers.ts`                               |
 | Shape values              | `*/shapers.ts`                               |
 | Shape/algorithm compilers | `*/compilers.ts`                             |
@@ -32,7 +33,7 @@ paths:
 | Public exports            | `*/index.ts`                                 |
 | Implementations           | `*/[domain]/[Entity].ts`, one class per file |
 
-Use only the centralized files a surface needs.
+Use only the centralized files an environment needs.
 
 ## Declaration placement
 
@@ -104,13 +105,13 @@ Store child managers in `#` fields and expose readonly getters typed as their in
 - Extract reusable cross-middleware machinery to helpers/classes.
 - `MiddlewareManager` is the sole manager of the middleware composition chain; do not create one manager per middleware.
 
-## Surface/module placement
+## Environment/module placement
 
-- Shared cross-surface logic belongs in the central core/shared layer. Other surfaces import core; core imports neither browser nor server.
-- A surface with multiple modules keeps cross-module types/helpers at the surface root and module-specific declarations inside the module.
-- Promote a declaration to the surface root only when at least two modules use it.
-- The surface barrel re-exports root files and module barrels.
-- Cover cross-cutting surface-root helpers with behavioral tests; module public surfaces receive their own guide parity.
+- Shared cross-environment logic belongs in the central core/shared layer. Other environments import core; core imports neither browser nor server.
+- An environment with multiple modules keeps cross-module types/helpers at the environment root and module-specific declarations inside the module.
+- Promote a declaration to the environment root only when at least two modules use it.
+- The environment barrel re-exports root files and module barrels.
+- Cover cross-cutting environment-root helpers with behavioral tests; each module API receives its own guide parity.
 
 ### Entity subfolders
 
@@ -144,13 +145,17 @@ Both obey:
 
 - `*/index.ts` is the sole public barrel.
 - Only an `index.ts` may re-export.
+- A barrel contains only `export * from './module.js'` declarations. Do not use
+  named, default, namespace, or type-only barrel exports.
+- A star-export collision is a design failure: rename the conflicting concept
+  at its owner and update consumers. Never hide the collision with a selective
+  barrel row.
 - Never re-export a symbol originating in another package; fix consumer imports to the originating package.
 - Implementation files export their own classes directly.
-- Use `export type *` for type modules and `export *` for values.
 - When a symbol moves, update every import; never leave a compatibility re-export.
 
 ```ts
-export type * from './types.js'
+export * from './types.js'
 export * from './constants.js'
 export * from './errors.js'
 export * from './validators.js'

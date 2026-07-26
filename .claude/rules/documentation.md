@@ -43,14 +43,14 @@ Parity scope:
 
 - Normally scope a guide to one module directory.
 - A layer concept may include the core module and backend modules implementing it.
-- Cross-cutting surface-root helpers are covered by behavioral tests rather than forced into one module guide.
+- Cross-cutting environment-root helpers are covered by behavioral tests rather than forced into one module guide.
 
 ## Guide examples
 
 Code fences import through the package's published specifier:
 
-- primary/core surface: `@orkestrel/<name>`;
-- secondary surface: `@orkestrel/<name>/<surface>`.
+- primary/core API: `@orkestrel/<name>`;
+- secondary environment API: `@orkestrel/<name>/<environment>`.
 
 Never use in-repository `@src/*` aliases in public guide examples; reserve them for source/tests.
 

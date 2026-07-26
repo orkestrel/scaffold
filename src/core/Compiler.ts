@@ -15,8 +15,10 @@ import type {
 import type { EmitterInterface } from '@orkestrel/emitter'
 import { Emitter } from '@orkestrel/emitter'
 import { blueprintToPlan } from './compilers.js'
-import { diffPlan, pinPlan, validateBlueprint } from './helpers.js'
+import { diffPlan, pinPlan } from './helpers.js'
+import { validatePlan } from './validators.js'
 import { ScaffoldError } from './errors.js'
+import { parseCompilerOptions } from './parsers.js'
 
 /**
  * The compilation orchestrator — runs the fixed three-stage `[draft, gate,
@@ -28,7 +30,7 @@ import { ScaffoldError } from './errors.js'
  * CLOSED — a blueprint failing `validateBlueprint`, or carrying an override
  * that matches no planned artifact or targets a `host`-origin path, yields a
  * visible incomplete `Scaffolding` (`plan` absent, `questions` populated)
- * rather than throwing. A dependency outside the vendored guide set surfaces
+ * rather than throwing. A dependency outside the vendored guide set src
  * a non-blocking `Question` and a `host`-origin pointer artifact instead of a
  * fabricated mirror. `compile` emits `compile` only for a complete
  * compilation and `block` for a gated one; `audit` emits `block` (when gated)
@@ -40,7 +42,7 @@ import { ScaffoldError } from './errors.js'
  * import { blueprint, Compiler } from '@src/core'
  *
  * const compiler = new Compiler()
- * const scaffolding = compiler.compile(blueprint('router', { surfaces: ['core'] }))
+ * const scaffolding = compiler.compile(blueprint('router', { src: ['core'] }))
  * scaffolding.complete // true
  * compiler.destroy()
  * ```
@@ -64,7 +66,11 @@ export class Compiler implements CompilerInterface {
 	#destroyed = false
 
 	constructor(options?: CompilerOptions) {
-		this.#emitter = new Emitter<CompilerEventMap>({ on: options?.on, error: options?.error })
+		const parsed = parseCompilerOptions(options)
+		this.#emitter = new Emitter<CompilerEventMap>({
+			...(parsed.on === undefined ? {} : { on: parsed.on }),
+			...(parsed.error === undefined ? {} : { error: parsed.error }),
+		})
 	}
 
 	get emitter(): EmitterInterface<CompilerEventMap> {
@@ -82,7 +88,7 @@ export class Compiler implements CompilerInterface {
 	 *
 	 * @example
 	 * ```ts
-	 * const scaffolding = compiler.compile(blueprint('timeout', { surfaces: ['core'] }))
+	 * const scaffolding = compiler.compile(blueprint('timeout', { src: ['core'] }))
 	 * scaffolding.stages.map((record) => record.stage) // ['draft', 'gate', 'pin']
 	 * ```
 	 */
@@ -107,7 +113,7 @@ export class Compiler implements CompilerInterface {
 	 *
 	 * @example
 	 * ```ts
-	 * const audit = compiler.audit(blueprint('timeout', { surfaces: ['core'] }), {})
+	 * const audit = compiler.audit(blueprint('timeout', { src: ['core'] }), {})
 	 * audit.missing // every artifact — nothing exists at the target yet
 	 * ```
 	 */
@@ -191,10 +197,9 @@ export class Compiler implements CompilerInterface {
 			}
 		}
 
-		const validation = validateBlueprint(blueprint)
-		const overrideQuestions = this.#overrideQuestions(blueprint, draft.artifacts)
+		const validation = validatePlan(draft)
 		const dependencyQuestions = this.#dependencyQuestions(blueprint)
-		const blocking = [...validation.questions, ...overrideQuestions]
+		const blocking = [...validation.questions]
 		const questions: Question[] = [...blocking, ...dependencyQuestions]
 		stages.push({
 			stage: 'gate',
@@ -236,32 +241,6 @@ export class Compiler implements CompilerInterface {
 			this.#emitter.emit('error', error)
 			return { blueprint, questions, stages, failures, complete: false, digest: '' }
 		}
-	}
-
-	// Blocking questions for overrides matching no planned artifact, or
-	// targeting a host-origin path — the fail-closed override rule.
-	#overrideQuestions(blueprint: Blueprint, artifacts: readonly Artifact[]): readonly Question[] {
-		const byPath = new Map(artifacts.map((artifact) => [artifact.path, artifact]))
-		const questions: Question[] = []
-		for (const item of blueprint.overrides) {
-			const artifact = byPath.get(item.path)
-			if (artifact === undefined) {
-				questions.push({
-					field: 'overrides',
-					text: `Override path "${item.path}" matches no planned artifact`,
-					blocking: true,
-				})
-				continue
-			}
-			if (artifact.origin === 'host') {
-				questions.push({
-					field: 'overrides',
-					text: `Override path "${item.path}" targets a host-origin artifact`,
-					blocking: true,
-				})
-			}
-		}
-		return questions
 	}
 
 	// Non-blocking questions for a dependency outside the vendored guide set.

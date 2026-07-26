@@ -6,7 +6,7 @@ import type { ScaffoldErrorCode } from './types.js'
  * @remarks
  * Throws are reserved for caller misuse: `createBlueprint` on off-contract
  * data throws `INVALID`, any method after `destroy()` throws `DESTROYED`, and
- * on the server surface a non-vacant target throws `TARGET` while a failed
+ * in the server environment a non-vacant target throws `TARGET` while a failed
  * write throws `WRITE`. A failing gate is NOT an error — it fails closed into
  * an incomplete `Scaffolding` whose `failures` carry a `BLOCKED` marker.
  *
@@ -47,5 +47,9 @@ export class ScaffoldError extends Error {
  * ```
  */
 export function isScaffoldError(value: unknown): value is ScaffoldError {
-	return value instanceof ScaffoldError
+	try {
+		return value instanceof ScaffoldError
+	} catch {
+		return false
+	}
 }

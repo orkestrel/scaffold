@@ -1,13 +1,22 @@
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
-import { srcCore, resolveWorkspacePath } from '../../vite.config'
+import { outputBoundary, resolveWorkspacePath, srcCore } from '../../vite.config'
 
 export default defineConfig(
 	srcCore({
 		plugins: [
+			outputBoundary('dist/src/core'),
 			dts({
 				tsconfigPath: resolveWorkspacePath('configs/src/tsconfig.core.json'),
-				bundleTypes: true,
+				bundleTypes: {
+					extractorConfig: {
+						compiler: {
+							overrideTsconfig: {
+								compilerOptions: { types: ['node'] },
+							},
+						},
+					},
+				},
 			}),
 		],
 		build: {
@@ -17,7 +26,7 @@ export default defineConfig(
 				fileName: (format) => (format === 'es' ? 'index.js' : 'index.cjs'),
 			},
 			outDir: 'dist/src/core',
-			rollupOptions: {
+			rolldownOptions: {
 				external: [/^node:/, /^@orkestrel\//],
 			},
 		},

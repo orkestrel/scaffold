@@ -2,9 +2,6 @@
 // checks against this repo's own `guides/README.md` manifest.
 
 import { describe, expect, it } from 'vitest'
-import { readdirSync, readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
-import { join } from 'node:path'
 import {
 	createGuide,
 	createSource,
@@ -13,46 +10,24 @@ import {
 	findUnexampled,
 	isExternalLink,
 	missingSymbols,
-	parseManifest,
 	resolveLink,
 	symbolKey,
 } from '@orkestrel/guide'
-
-const ROOT = fileURLToPath(new URL('../../../', import.meta.url))
-const WALK_DIRS = ['src', 'guides', 'tests']
-const SELF_SPECIFIERS = ['@orkestrel/scaffold', '@src/core']
-
-function walk(dir: string, acc: Record<string, string>): void {
-	for (const entry of readdirSync(join(ROOT, dir), { withFileTypes: true })) {
-		const relative = `${dir}/${entry.name}`
-		if (entry.isDirectory()) {
-			walk(relative, acc)
-			continue
-		}
-		if (!entry.name.endsWith('.ts') && !entry.name.endsWith('.md')) continue
-		acc[relative] = readFileSync(join(ROOT, relative), 'utf8')
-	}
-}
-
-const files: Record<string, string> = {}
-for (const dir of WALK_DIRS) walk(dir, files)
-files['AGENTS.md'] = readFileSync(join(ROOT, 'AGENTS.md'), 'utf8')
-
-function readText(relative: string): string {
-	const text = files[relative]
-	if (text === undefined) throw new Error(`Missing file: ${relative}`)
-	return text
-}
-
-const manifest = parseManifest(readText('guides/README.md'), 'guides')
+import {
+	exportsFor,
+	GUIDE_FILES,
+	GUIDE_MANIFEST,
+	readGuideText,
+	SELF_SPECIFIERS,
+} from '../../setupGuides.js'
 
 it('manifest lists at least one guide', () => {
-	expect(manifest.length).toBeGreaterThan(0)
+	expect(GUIDE_MANIFEST.length).toBeGreaterThan(0)
 })
 
-for (const entry of manifest) {
-	const guide = createGuide(readText(entry.spec))
-	const source = createSource({ files, module: entry.source })
+for (const entry of GUIDE_MANIFEST) {
+	const guide = createGuide(readGuideText(entry.spec))
+	const source = createSource({ files: GUIDE_FILES, module: entry.source })
 
 	describe(`${entry.concept}`, () => {
 		it('extracts a non-empty documented surface', () => {
@@ -90,7 +65,7 @@ for (const entry of manifest) {
 			})
 		}
 
-		it('documents an example for every Surface function', () => {
+		it('documents an example for every API Surface function', () => {
 			const fences = guide.patterns()
 			const names = guide
 				.surface()
@@ -114,11 +89,10 @@ for (const entry of manifest) {
 		}
 
 		it('imports only real exports in every ```ts fence', () => {
-			const exportNames = source.exports().map((symbol) => symbol.name)
 			for (const fence of guide.patterns()) {
 				for (const { specifier, names } of fenceImports(fence)) {
 					if (!SELF_SPECIFIERS.includes(specifier)) continue
-					expect(findMissing(names, exportNames)).toEqual([])
+					expect(findMissing(names, exportsFor(specifier))).toEqual([])
 				}
 			}
 		})

@@ -90,13 +90,13 @@ Never inherit from `Emitter`, write delegation boilerplate, or use `Omit` to res
 
 ### Browser/DOM variant
 
-In a pure browser-DOM surface where each entity already owns a host `Element`, the element may be the event host:
+In a pure browser-DOM environment where each entity already owns a host `Element`, the element may be the event host:
 
 - emit a typed bubbling `CustomEvent` through shared dispatch helpers;
 - subscribe with shared listener helpers;
 - bind `options.on` through one `bindEventMap` helper.
 
-Choose one event model per surface. `Emitter<TMap>` remains the default outside exclusively DOM-bound surfaces.
+Choose one event model per environment. `Emitter<TMap>` remains the default outside exclusively DOM-bound environments.
 
 ### Event maps
 
@@ -108,7 +108,7 @@ Choose one event model per surface. `Emitter<TMap>` remains the default outside 
 
 ## Validation and contracts
 
-Use four orthogonal surfaces:
+Use four orthogonal contract mechanisms:
 
 | Surface          | Contract                                                                      |
 | ---------------- | ----------------------------------------------------------------------------- |
@@ -117,7 +117,7 @@ Use four orthogonal surfaces:
 | `parsers.ts`     | Flat coercers returning `T \| undefined`                                      |
 | Shape DSL        | One `ContractShape` compiled into schema, guard, parser, and seeded generator |
 
-- Use plain guards/parsers for small surfaces.
+- Use plain guards/parsers for small contracts.
 - Use the shape DSL only when four-way validation/serialization/generation parity earns its complexity.
 - When `@orkestrel/contract` is declared, use its exact installed guards, parsers, combinators, outcomes, `attempt` boundary, and shape DSL wherever their semantics match. Do not maintain a local copy of those primitives.
 - A guard never throws for adversarial input, cycles, deep nesting, or hostile prototypes; return false.

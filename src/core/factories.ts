@@ -65,7 +65,7 @@ export function createPlanManager(options?: PlanManagerOptions): PlanManagerInte
  * ```ts
  * import { createBlueprint } from '@src/core'
  *
- * createBlueprint({ name: 'Router', surfaces: [] }) // throws ScaffoldError('INVALID', …)
+ * createBlueprint({ name: 'Router', src: [] }) // throws ScaffoldError('INVALID', …)
  * ```
  */
 export function createBlueprint(data: Partial<Blueprint> & { readonly name: string }): Blueprint {

@@ -1,6 +1,7 @@
 # Guides
 
-A dual-axis index into this repository's guides — by concept, and by directory (AGENTS §22).
+A dual-axis index into this repository's guides — by concept, and by directory, following the
+documentation contract in [`.claude/rules/documentation.md`](../.claude/rules/documentation.md).
 
 ## By concept
 
@@ -42,4 +43,4 @@ so a reader can see the primitives this package builds on without leaving the gu
 
 ## See also
 
-- [`AGENTS.md`](../AGENTS.md) — the rules; §22 documentation-as-contracts.
+- [`AGENTS.md`](../AGENTS.md) and [`.claude/rules/documentation.md`](../.claude/rules/documentation.md) — the repository rules and documentation contract.

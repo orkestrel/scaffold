@@ -39,7 +39,7 @@ Load [hardening.md](references/hardening.md) for the hardening lane and for any 
 
 ## Execute the workflow
 
-1. **Bound the campaign.** Record requested outcomes, in-scope surfaces/domains, explicit exclusions, supported environments, dirty files, and evidence needed for acceptance.
+1. **Bound the campaign.** Record requested outcomes, in-scope environments/domains, explicit exclusions, supported hosts, dirty files, and evidence needed for acceptance.
 2. **Map before editing.** Trace public types, implementations, callers, tests, guides, exports, runtime boundaries, installed Orkestrel dependencies, and applicable legacy/upstream references.
 3. **Establish the intended contract.** Build a capability/defect matrix. Separate verified fact from inference. Mark each row implement, repair, retain, or exclude with a reason.
 4. **Design types first.** Update guide/spec intent and `*/types.ts` before implementation. Preserve dependency direction, single-word entity APIs, and mechanism-over-policy boundaries. Do not retain compatibility shims.
@@ -50,7 +50,7 @@ Load [hardening.md](references/hardening.md) for the hardening lane and for any 
 9. **Document the final behavior.** Update the governing guide, examples, method tables, limitations, and parity coverage. Document architectural limits honestly.
 10. **Audit completion.** Inspect test discovery, `.todo`/`.skip`/conditional skip use, source/test helper duplication, exports, environment isolation, unexpected text corruption, and the entire diff.
 11. **Verify.** Run the repository-prescribed gates in order and inspect the generated outputs relevant to the request.
-12. **Review independently.** When orchestration is available, require checker and reviewer passes; add an adversarial pass for security, concurrency, destructive paths, or external input. Resolve every required finding, then rerun affected verification.
+12. **Review independently.** When orchestration is available, require a design-fit reviewer, an objective correctness/constraints analyst, and a mechanical checker; add an adversarial pass for security, concurrency, destructive paths, or external input. Resolve every required finding, then rerun affected verification.
 
 ## Accept the result
 

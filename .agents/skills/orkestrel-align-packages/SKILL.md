@@ -1,6 +1,6 @@
 ---
 name: orkestrel-align-packages
-description: Audit and improve how two or more Orkestrel packages, or their core, server, browser, and application surfaces, fit together. Use for coordinated package-stack refactors, cross-package extraction, developer-ergonomics reviews, end-to-end or live integration testing, dependency and guide alignment, and fleet/package-manager campaigns. Preserve host-independent core boundaries, update dependents topologically, and use the package-hardening workflow for each implementation unit.
+description: Audit and improve how two or more Orkestrel packages, or their core, server, browser, and app environments, fit together. Use for coordinated package-stack refactors, cross-package extraction, developer-ergonomics reviews, end-to-end or live integration testing, dependency and guide alignment, and fleet/package-manager campaigns. Preserve host-independent core boundaries, update dependents topologically, and use the package-hardening workflow for each implementation unit.
 ---
 
 # Align Orkestrel packages
@@ -18,7 +18,7 @@ Explicit user scope wins.
 
 Use live manifests, lockfiles, installed declarations, guides, branches, and consumer code. Never trust remembered package versions, dependency ranges, or catalog entries.
 
-Load [integration.md](references/integration.md) for cross-package or cross-surface ownership, ergonomics, extraction, and real round-trip tests.
+Load [integration.md](references/integration.md) for cross-package or cross-environment ownership, ergonomics, extraction, and real round-trip tests.
 
 Load [fleet.md](references/fleet.md) for version/range/guide drift, dependency blast radius, consumer-artifact validation, or campaign state.
 

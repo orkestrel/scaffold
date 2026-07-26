@@ -1,6 +1,6 @@
 {
 	"name": "@orkestrel/scaffold",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"description": "Blueprint-to-plan package scaffolding, auditing, dependency guide/version pulling, and fleet-wide shared-file upkeep for the @orkestrel line.",
 	"keywords": [
 		"audit",
@@ -24,7 +24,9 @@
 		"scaffold": "./dist/bin/scaffold.js"
 	},
 	"files": [
-		"dist",
+		"dist/src",
+		"dist/bin",
+		"dist/host",
 		"README.md"
 	],
 	"type": "module",
@@ -61,11 +63,10 @@
 		"access": "public"
 	},
 	"scripts": {
-		"clean": "node -e \"try{require('node:fs').rmSync('dist',{recursive:true,force:true})}catch{}\"",
+		"clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
 		"copy": "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
-		"tmp:txt": "node -e \"const fs=require('node:fs'),p=require('node:path');function walk(d){for(const e of fs.readdirSync(d,{withFileTypes:true})){const f=p.join(d,e.name);if(e.isDirectory()){walk(f)}else if(!e.name.endsWith('.md')&&!e.name.endsWith('.txt')){const t=f+'.txt';if(!fs.existsSync(t)){fs.renameSync(f,t)}else{console.warn('Skipping '+f+' — target exists: '+t)}}}}try{walk('tmp')}catch(e){if(e.code!=='ENOENT')throw e}\"",
 		"scaffold": "node ./dist/bin/scaffold.js",
-		"lint": "oxlint --config .oxlintrc.json --fix .",
+		"lint": "oxlint --config .oxlintrc.json --fix --deny-warnings .",
 		"check": "tsc --noEmit --project tsconfig.json && npm run check:src",
 		"check:src": "npm run check:src:core && npm run check:src:server && npm run check:src:bin",
 		"check:src:core": "tsc --noEmit -p configs/src/tsconfig.core.json",
@@ -73,12 +74,13 @@
 		"check:src:bin": "tsc --noEmit -p configs/src/tsconfig.bin.json",
 		"format": "oxfmt --config .oxfmtrc.json --write .",
 		"format:check": "oxfmt --config .oxfmtrc.json --check .",
-		"lint:check": "oxlint --config .oxlintrc.json .",
+		"lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
 		"test": "npm run test:src && npm run test:guides",
 		"test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:server --project src:bin",
 		"test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
 		"test:src:server": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server",
 		"test:src:bin": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin",
+		"test:integration": "vitest run --config vite.config.ts --no-cache --reporter=dot --project integration",
 		"test:guides": "vitest run --config vite.config.ts --reporter=dot --project guides",
 		"build": "npm run clean && npm run build:src && npm run build:host",
 		"build:src": "npm run build:src:core && npm run build:src:server && npm run build:src:bin",
@@ -86,29 +88,29 @@
 		"build:src:server": "vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts",
 		"build:src:bin": "vite build --config configs/src/vite.bin.config.ts",
 		"build:host": "node -e \"import('./dist/src/server/index.js').then((m)=>{const n=m.stageHost(process.cwd(),'dist/host').length;console.log('build-host: staged '+n+' file(s) into dist/host')})\"",
-		"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test"
+		"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:integration"
 	},
 	"dependencies": {
 		"@orkestrel/console": "^0.0.3",
-		"@orkestrel/contract": "^0.0.5",
+		"@orkestrel/contract": "^0.0.7",
 		"@orkestrel/emitter": "^0.0.3",
 		"@orkestrel/markdown": "^0.0.5",
 		"@orkestrel/template": "^0.0.1",
 		"@orkestrel/terminal": "^0.0.4"
 	},
 	"devDependencies": {
-		"@microsoft/api-extractor": "^7.58.11",
+		"@microsoft/api-extractor": "^7.58.12",
 		"@orkestrel/guide": "^0.0.5",
 		"@types/node": "^26.1.1",
 		"@vitest/browser-playwright": "^4.1.10",
-		"oxfmt": "^0.59.0",
-		"oxlint": "^1.74.0",
+		"oxfmt": "^0.60.0",
+		"oxlint": "^1.75.0",
 		"typescript": "^6.0.3",
 		"vite": "^8.1.5",
 		"vite-plugin-dts": "^5.0.3",
 		"vitest": "^4.1.10"
 	},
 	"engines": {
-		"node": ">=22"
+		"node": ">=22.12.0"
 	}
 }

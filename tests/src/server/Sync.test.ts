@@ -1,8 +1,20 @@
+import type { Dependency, GuideSync } from '@src/core'
 import { mkdirSync, existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { dependency, isScaffoldError } from '@src/core'
-import { createSync } from '@src/server'
+import {
+	createSync,
+	digestText,
+	MAX_SYNC_BASE_LENGTH,
+	MAX_SYNC_BRANCH_LENGTH,
+	MAX_SYNC_ITEMS,
+	MAX_SYNC_LIMIT,
+	parseSyncBase,
+	parseSyncBranch,
+	parseSyncDependencies,
+	parseSyncOptions,
+} from '@src/server'
 import { buildSyncReport, createRecorder } from '../../setup.js'
 import {
 	buildGuidePath,
@@ -21,12 +33,178 @@ import {
 // A genuine `node:http` server on an ephemeral port. Each test wires its own
 // route table keyed by the request URL and always tears down in `finally`.
 
-// The canonical raw.githubusercontent.com form (FIX 4) — `#guideUrl` builds
-// this directly (never the legacy `/orkestrel/<short>/<branch>/…` shorthand
-// the host now 301-redirects from), so `redirect: 'manual'` never sees one.
+// `#guideUrl` builds the canonical raw.githubusercontent.com form directly,
+// so `redirect: 'manual'` never needs to follow a redirect.
 // npm's canonical scoped-package path keeps the literal `@` and encodes only
-// the slash (A2) — NOT `encodeURIComponent`, which would also escape `@`.
+// the slash — not `encodeURIComponent`, which would also escape `@`.
 // ── Sync.guides ───────────────────────────────────────────────────────────
+
+describe('Sync options boundary', () => {
+	it('owns listener hooks and contains stateful hook proxies', () => {
+		const calls: string[] = []
+		const hooks = {
+			destroy: () => {
+				calls.push('owned')
+			},
+		}
+		const sync = createSync({ on: hooks })
+		hooks.destroy = () => {
+			calls.push('mutated')
+		}
+		sync.destroy()
+		expect(calls).toEqual(['owned'])
+
+		let reads = 0
+		const statefulHooks = new Proxy(
+			{ destroy: () => undefined },
+			{
+				getOwnPropertyDescriptor(target, key) {
+					reads += 1
+					if (reads > 1) throw new Error('stateful hook trap')
+					return Reflect.getOwnPropertyDescriptor(target, key)
+				},
+			},
+		)
+		expect(() => createSync({ on: statefulHooks })).toThrowError(
+			expect.objectContaining({ code: 'INVALID' }),
+		)
+	})
+
+	it('contains revoked and stateful dependency-array proxies as coded failures', () => {
+		const dependencies = [dependency('@orkestrel/contract', '^0.0.5')]
+		const revoked = Proxy.revocable(dependencies, {})
+		revoked.revoke()
+		let reads = 0
+		const stateful = new Proxy(dependencies, {
+			getOwnPropertyDescriptor(target, key) {
+				reads += 1
+				if (reads > 1) throw new Error('stateful dependency trap')
+				return Reflect.getOwnPropertyDescriptor(target, key)
+			},
+		})
+
+		for (const value of [revoked.proxy, stateful]) {
+			expect(() => Reflect.apply(parseSyncDependencies, undefined, [value, false])).toThrowError(
+				expect.objectContaining({ code: 'INVALID' }),
+			)
+		}
+	})
+
+	it('accepts bounded values and returns a fresh parsed record', () => {
+		expect(
+			parseSyncOptions({
+				guides: { base: 'https://example.test/', branch: 'feature/hardening', timeout: 1 },
+				registry: { base: 'registry.npmjs.org', timeout: 300_000 },
+				concurrency: 64,
+				retries: 5,
+				strict: true,
+				limit: MAX_SYNC_LIMIT,
+			}),
+		).toEqual({
+			guides: { base: 'https://example.test', branch: 'feature/hardening', timeout: 1 },
+			registry: { base: 'https://registry.npmjs.org', timeout: 300_000 },
+			concurrency: 64,
+			retries: 5,
+			strict: true,
+			limit: MAX_SYNC_LIMIT,
+		})
+	})
+
+	it.each([
+		{ concurrency: 0 },
+		{ concurrency: Number.NaN },
+		{ concurrency: Number.POSITIVE_INFINITY },
+		{ concurrency: 65 },
+		{ retries: -1 },
+		{ retries: 6 },
+		{ limit: 0 },
+		{ limit: Number.POSITIVE_INFINITY },
+		{ guides: { timeout: 0 } },
+		{ registry: { timeout: 300_001 } },
+		{ guides: { branch: '../main' } },
+		{ guides: { base: 'file:///tmp/data' } },
+		{ registry: { base: 'https://user:secret@example.test' } },
+		{ extra: true },
+		Object.defineProperty({}, 'strict', { get: () => true }),
+		Object.create({ concurrency: 1 }),
+		Object.create({ base: 'https://example.test' }),
+	])('rejects malformed, unbounded, inherited, and accessor options %#', (value) => {
+		expect(() => Reflect.apply(createSync, undefined, [value])).toThrowError(
+			expect.objectContaining({ code: 'INVALID' }),
+		)
+	})
+
+	it('ignores polluted inherited nested keys and parses only explicit own data', () => {
+		Reflect.defineProperty(Object.prototype, 'base', {
+			configurable: true,
+			value: 'https://attacker.invalid',
+		})
+		try {
+			expect(parseSyncOptions({ guides: {} })).toEqual({ guides: {} })
+		} finally {
+			Reflect.deleteProperty(Object.prototype, 'base')
+		}
+	})
+
+	it('requires HTTPS except for explicit loopback development endpoints', () => {
+		expect(parseSyncBase('example.test')).toBe('https://example.test')
+		expect(parseSyncBase('http://127.0.0.1:3000')).toBe('http://127.0.0.1:3000')
+		expect(parseSyncBase('http://localhost:3000')).toBe('http://localhost:3000')
+		expect(parseSyncBase('http://[::1]:3000')).toBe('http://[::1]:3000')
+		for (const base of ['http://example.test', 'http://127.0.0.2', 'http://sub.localhost']) {
+			expect(() => parseSyncBase(base)).toThrowError(expect.objectContaining({ code: 'INVALID' }))
+		}
+	})
+
+	it('accepts exact endpoint and branch bounds and rejects one character beyond them', () => {
+		const endpointPrefix = 'https://example.test/'
+		const endpoint = endpointPrefix + 'a'.repeat(MAX_SYNC_BASE_LENGTH - endpointPrefix.length)
+		const branch = 'a'.repeat(MAX_SYNC_BRANCH_LENGTH)
+
+		expect(parseSyncBase(endpoint)).toBe(endpoint)
+		expect(parseSyncBranch(branch)).toBe(branch)
+		expect(() => parseSyncBase(`${endpoint}a`)).toThrowError(
+			expect.objectContaining({ code: 'INVALID' }),
+		)
+		expect(() => parseSyncBranch(`${branch}a`)).toThrowError(
+			expect.objectContaining({ code: 'INVALID' }),
+		)
+	})
+
+	it('rejects branch paths outside the portable Git ref subset', () => {
+		for (const branch of [
+			'feature..x',
+			'x/.hidden',
+			'x/end.',
+			'x/name.lock',
+			'x/name.LOCK',
+			'x//name',
+			'../main',
+			'-option',
+		]) {
+			expect(() => parseSyncBranch(branch)).toThrowError(
+				expect.objectContaining({ code: 'INVALID' }),
+			)
+		}
+	})
+
+	it('returns coded failures for hostile direct endpoint and branch parser inputs', () => {
+		const hostile = new Proxy(
+			{},
+			{
+				get() {
+					throw new Error('hostile get')
+				},
+			},
+		)
+		for (const value of [null, 42, hostile]) {
+			expect(() => parseSyncBase(value)).toThrowError(expect.objectContaining({ code: 'INVALID' }))
+			expect(() => parseSyncBranch(value)).toThrowError(
+				expect.objectContaining({ code: 'INVALID' }),
+			)
+		}
+	})
+})
 
 describe('Sync.guides', () => {
 	it('without a reference map: a successful fetch verdicts behind, carrying the fetched content', async () => {
@@ -123,6 +301,66 @@ describe('Sync.guides', () => {
 
 // ── Sync.versions ─────────────────────────────────────────────────────────
 
+describe('Sync dependency boundary', () => {
+	it('rejects hostile, accessor, sparse, and oversized arrays before any request', async () => {
+		const fixture = await buildHTTPFixture()
+		try {
+			const sync = createSync({ guides: { base: fixture.base } })
+			const hostile = [dependency('@orkestrel/contract', '^0.0.5')]
+			let everyCalls = 0
+			Object.defineProperty(hostile, 'every', {
+				value: () => {
+					everyCalls += 1
+					throw new Error('hostile every')
+				},
+			})
+			const accessor = [
+				{
+					get name(): string {
+						throw new Error('hostile name getter')
+					},
+					range: '^0.0.5',
+				},
+			]
+
+			await expect(sync.guides(hostile)).rejects.toMatchObject({ code: 'INVALID' })
+			await expect(sync.guides(accessor)).rejects.toMatchObject({ code: 'INVALID' })
+			await expect(sync.guides(Array<Dependency>(1))).rejects.toMatchObject({
+				code: 'INVALID',
+			})
+			await expect(
+				sync.guides(
+					Array.from({ length: MAX_SYNC_ITEMS + 1 }, () =>
+						dependency('@orkestrel/contract', '^0.0.5'),
+					),
+				),
+			).rejects.toMatchObject({ code: 'INVALID' })
+			expect(everyCalls).toBe(0)
+			expect(fixture.hits.size).toBe(0)
+			sync.destroy()
+		} finally {
+			await fixture.close()
+		}
+	})
+
+	it('preflights every guide dependency before starting any request', async () => {
+		const fixture = await buildHTTPFixture()
+		try {
+			const sync = createSync({ guides: { base: fixture.base } })
+			await expect(
+				sync.guides([
+					dependency('@orkestrel/contract', '^0.0.5'),
+					dependency('@orkestrel/../evil?query', '^0.0.5'),
+				]),
+			).rejects.toMatchObject({ code: 'INVALID' })
+			expect(fixture.hits.size).toBe(0)
+			sync.destroy()
+		} finally {
+			await fixture.close()
+		}
+	})
+})
+
 describe('Sync.versions', () => {
 	it('current: the declared range is satisfied by latest', async () => {
 		const fixture = await buildHTTPFixture()
@@ -182,7 +420,7 @@ describe('Sync.versions', () => {
 		}
 	})
 
-	it('A2: the scoped package name keeps a literal @ and encodes only the slash', async () => {
+	it('keeps a scoped package name literal @ and encodes only its slash', async () => {
 		const fixture = await buildHTTPFixture()
 		try {
 			const canonical = buildRegistryPath('@orkestrel/contract')
@@ -233,6 +471,45 @@ describe('Sync.versions', () => {
 // ── Sync.catalog ──────────────────────────────────────────────────────────
 
 describe('Sync.catalog', () => {
+	it('does not accept inherited packument tags or descriptions', async () => {
+		const fixture = await buildHTTPFixture()
+		Reflect.defineProperty(Object.prototype, 'dist-tags', {
+			configurable: true,
+			value: { latest: '9.9.9' },
+			writable: true,
+		})
+		Reflect.defineProperty(Object.prototype, 'description', {
+			configurable: true,
+			value: 'inherited description',
+			writable: true,
+		})
+		try {
+			fixture.route(ORG_REGISTRY_PATH, (_request, response) =>
+				respondText(response, 200, JSON.stringify({ '@orkestrel/contract': 'write' })),
+			)
+			fixture.route(buildRegistryPath('@orkestrel/contract'), (_request, response) =>
+				respondText(response, 200, '{}'),
+			)
+			fixture.route(buildGuidePath('contract'), (_request, response) =>
+				respondText(response, 200, '# Contract\n\n> Own guide description.\n'),
+			)
+			const sync = createSync({ registry: { base: fixture.base }, guides: { base: fixture.base } })
+
+			expect(await sync.catalog()).toEqual([
+				{
+					name: '@orkestrel/contract',
+					version: '',
+					description: 'Own guide description.',
+				},
+			])
+			sync.destroy()
+		} finally {
+			Reflect.deleteProperty(Object.prototype, 'dist-tags')
+			Reflect.deleteProperty(Object.prototype, 'description')
+			await fixture.close()
+		}
+	})
+
 	it('registry-sourced entries prefer the guide blockquote description over the packument description', async () => {
 		const fixture = await buildHTTPFixture()
 		try {
@@ -512,6 +789,7 @@ describe('Sync.write', () => {
 							path: 'guides/src/contract.md',
 							content: 'fresh content',
 							freshness: 'behind',
+							baseline: 'absent',
 						},
 						{
 							name: '@orkestrel/relation',
@@ -577,6 +855,150 @@ describe('Sync.write', () => {
 			if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
 			expect(caught.code).toBe('WRITE')
 			expect(existsSync(join(directory.path, '..', '..', 'escaped.md'))).toBe(false)
+			sync.destroy()
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('preflights every behind destination before preserving an earlier valid user-owned mirror', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			const valid = join(directory.path, 'guides', 'src', 'contract.md')
+			mkdirSync(dirname(valid), { recursive: true })
+			writeFileSync(valid, 'user-owned bytes', 'utf8')
+			const report = buildSyncReport(
+				{
+					guides: [
+						{
+							name: '@orkestrel/contract',
+							path: 'guides/src/contract.md',
+							content: 'replacement bytes',
+							freshness: 'behind',
+							baseline: digestText('user-owned bytes'),
+						},
+						{
+							name: '@orkestrel/evil',
+							path: '../../escaped.md',
+							content: 'evil',
+							freshness: 'behind',
+						},
+					],
+				},
+				directory.path,
+			)
+			const sync = createSync()
+			await expect(sync.write(report, directory.path)).rejects.toMatchObject({ code: 'WRITE' })
+			expect(readFileSync(valid, 'utf8')).toBe('user-owned bytes')
+			expect(existsSync(join(directory.path, '..', '..', 'escaped.md'))).toBe(false)
+			sync.destroy()
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('rejects non-canonical ownership, report tree collisions, and later directory shapes before mutation', async () => {
+		const cases: readonly {
+			readonly second: GuideSync
+			readonly prepare: string | undefined
+		}[] = [
+			{
+				second: {
+					name: '@orkestrel/evil',
+					path: 'package.json',
+					content: 'attacker bytes',
+					freshness: 'behind',
+				},
+				prepare: undefined,
+			},
+			{
+				second: {
+					name: '@orkestrel/foo',
+					path: 'guides/src/foo.md/bar.md',
+					content: 'nested bytes',
+					freshness: 'behind',
+				},
+				prepare: undefined,
+			},
+			{
+				second: {
+					name: '@orkestrel/relation',
+					path: 'guides/src/relation.md',
+					content: 'replacement bytes',
+					freshness: 'behind',
+				},
+				prepare: 'guides/src/relation.md',
+			},
+		]
+		for (const testCase of cases) {
+			const directory = await buildTempDirectory()
+			try {
+				const valid = join(directory.path, 'guides', 'src', 'contract.md')
+				mkdirSync(dirname(valid), { recursive: true })
+				writeFileSync(valid, 'user-owned bytes', 'utf8')
+				if (testCase.prepare !== undefined) {
+					mkdirSync(join(directory.path, testCase.prepare), { recursive: true })
+				}
+				const report = buildSyncReport(
+					{
+						guides: [
+							{
+								name: '@orkestrel/contract',
+								path: 'guides/src/contract.md',
+								content: 'replacement bytes',
+								freshness: 'behind',
+								baseline: digestText('user-owned bytes'),
+							},
+							testCase.second,
+						],
+					},
+					directory.path,
+				)
+				const sync = createSync()
+				await expect(sync.write(report, directory.path)).rejects.toMatchObject({ code: 'WRITE' })
+				expect(readFileSync(valid, 'utf8')).toBe('user-owned bytes')
+				sync.destroy()
+			} finally {
+				await directory.cleanup()
+			}
+		}
+	})
+
+	it('rejects accessors before they can redirect a validated write', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			const valid = join(directory.path, 'guides', 'src', 'contract.md')
+			mkdirSync(dirname(valid), { recursive: true })
+			writeFileSync(valid, 'user-owned bytes', 'utf8')
+			const report = buildSyncReport(
+				{
+					guides: [
+						{
+							name: '@orkestrel/contract',
+							path: 'guides/src/contract.md',
+							content: 'replacement bytes',
+							freshness: 'behind',
+							baseline: digestText('user-owned bytes'),
+						},
+					],
+				},
+				directory.path,
+			)
+			const guide = report.guides[0]
+			if (guide === undefined) throw new Error('expected one guide')
+			let pathReads = 0
+			Object.defineProperty(guide, 'path', {
+				configurable: true,
+				get: () => {
+					pathReads += 1
+					return pathReads === 1 ? 'guides/src/contract.md' : 'package.json'
+				},
+			})
+			const sync = createSync()
+			await expect(sync.write(report, directory.path)).rejects.toMatchObject({ code: 'WRITE' })
+			expect(pathReads).toBe(0)
+			expect(readFileSync(valid, 'utf8')).toBe('user-owned bytes')
+			expect(existsSync(join(directory.path, 'package.json'))).toBe(false)
 			sync.destroy()
 		} finally {
 			await directory.cleanup()
@@ -833,9 +1255,66 @@ describe('Sync.destroy', () => {
 	})
 })
 
-// ── R2: body size limit ──────────────────────────────────────────────────
+// ── body size limit ──────────────────────────────────────────────────────
 
 describe('Sync — body size limit', () => {
+	it('cancels a malformed UTF-8 stream, reports failed, and releases the peer promptly', async () => {
+		const fixture = await buildHTTPFixture()
+		const peerClosed = Promise.withResolvers<void>()
+		let interval: ReturnType<typeof setInterval> | undefined
+		try {
+			fixture.route(buildGuidePath('contract'), (request, response) => {
+				response.writeHead(200, { 'content-type': 'text/markdown; charset=utf-8' })
+				response.write(Buffer.from([0xff]))
+				interval = setInterval(() => response.write('still-open'), 25)
+				request.once('close', () => {
+					peerClosed.resolve()
+					if (interval !== undefined) clearInterval(interval)
+				})
+			})
+			const sync = createSync({ guides: { base: fixture.base }, retries: 0 })
+			const [result] = await sync.guides([dependency('@orkestrel/contract', '^0.0.5')])
+			await peerClosed.promise
+
+			expect(result?.freshness).toBe('failed')
+			sync.destroy()
+		} finally {
+			if (interval !== undefined) clearInterval(interval)
+			await fixture.close()
+		}
+	})
+
+	it('throws FETCH in strict mode for malformed UTF-8 without retaining the stream', async () => {
+		const fixture = await buildHTTPFixture()
+		const peerClosed = Promise.withResolvers<void>()
+		let interval: ReturnType<typeof setInterval> | undefined
+		try {
+			fixture.route(buildGuidePath('contract'), (request, response) => {
+				response.writeHead(200, { 'content-type': 'text/markdown; charset=utf-8' })
+				response.write(Buffer.from([0xff]))
+				interval = setInterval(() => response.write('still-open'), 25)
+				request.once('close', () => {
+					peerClosed.resolve()
+					if (interval !== undefined) clearInterval(interval)
+				})
+			})
+			const sync = createSync({
+				guides: { base: fixture.base },
+				retries: 0,
+				strict: true,
+			})
+
+			await expect(
+				sync.guides([dependency('@orkestrel/contract', '^0.0.5')]),
+			).rejects.toMatchObject({ code: 'FETCH' })
+			await peerClosed.promise
+			sync.destroy()
+		} finally {
+			if (interval !== undefined) clearInterval(interval)
+			await fixture.close()
+		}
+	})
+
 	it('a body larger than a small configured limit verdicts failed, process stays healthy', async () => {
 		const fixture = await buildHTTPFixture()
 		try {
@@ -886,7 +1365,7 @@ describe('Sync — body size limit', () => {
 	})
 })
 
-// ── R3: pool fail-fast without unhandled rejections ──────────────────────
+// ── pool fail-fast without unhandled rejections ──────────────────────────
 
 describe('Sync — strict pool teardown', () => {
 	it('a dead endpoint with several deps at concurrency ≥2 rejects once with no unhandledRejection', async () => {
@@ -915,7 +1394,7 @@ describe('Sync — strict pool teardown', () => {
 			if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
 			expect(caught.code).toBe('FETCH')
 			sync.destroy()
-			// Let any straggling microtasks/macrotasks that would surface an
+			// Let any straggling microtasks/macrotasks that would produce an
 			// unhandled rejection run before asserting.
 			await new Promise((resolvePromise) => setTimeout(resolvePromise, 50))
 			expect(unhandledRecorder.count).toBe(0)
@@ -925,9 +1404,9 @@ describe('Sync — strict pool teardown', () => {
 	})
 })
 
-// ── A1: manual redirect handling ──────────────────────────────────────────
+// ── manual redirect handling ──────────────────────────────────────────────
 
-describe('Sync — redirect handling (A1)', () => {
+describe('Sync redirect handling', () => {
 	it('a 302 verdicts failed and the redirect target is never requested', async () => {
 		const fixture = await buildHTTPFixture()
 		const target = await buildHTTPFixture()
@@ -1009,7 +1488,7 @@ describe('Sync — failure notes', () => {
 			const sync = createSync({ guides: { base: fixture.base }, limit: 64 })
 			const [result] = await sync.guides([dependency('@orkestrel/contract', '^0.0.5')])
 			expect(result?.freshness).toBe('failed')
-			expect(result?.note).toContain('limit')
+			expect(result?.note).toContain('allowance')
 			sync.destroy()
 		} finally {
 			await fixture.close()
@@ -1046,10 +1525,10 @@ describe('Sync — failure notes', () => {
 	})
 })
 
-// ── FIX 4: canonical redirect-free guide URL ──────────────────────────────
+// ── Canonical redirect-free guide URL ─────────────────────────────────────
 
-describe('Sync.guides — canonical URL shape (FIX 4)', () => {
-	it('requests the canonical /orkestrel/<short>/refs/heads/<branch>/… path directly (never the legacy shorthand)', async () => {
+describe('Sync.guides — canonical URL shape', () => {
+	it('requests the canonical /orkestrel/<short>/refs/heads/<branch>/… path directly', async () => {
 		const fixture = await buildHTTPFixture()
 		try {
 			fixture.route(buildGuidePath('contract'), (_request, response) =>
@@ -1059,8 +1538,6 @@ describe('Sync.guides — canonical URL shape (FIX 4)', () => {
 			const [result] = await sync.guides([dependency('@orkestrel/contract', '^0.0.5')])
 			expect(result?.freshness).toBe('behind')
 			expect(fixture.hits.get('/orkestrel/contract/refs/heads/main/guides/src/contract.md')).toBe(1)
-			// The legacy shorthand this canonical form replaces is never requested.
-			expect(fixture.hits.has('/contract/main/guides/src/contract.md')).toBe(false)
 			sync.destroy()
 		} finally {
 			await fixture.close()

@@ -1,6 +1,6 @@
 import type { Audit, CatalogEntry, Finding, Plan, PlanSummary, SyncReport } from '@src/core'
 import { DEPENDENCY_NAME_PATTERN, isScaffoldError, ScaffoldError } from '@src/core'
-import { resolveContainedPath } from '@src/server'
+import { isFilesystemPath, resolvePhysicalPath } from '@src/server'
 import type { MaterializeResult } from '@src/server'
 import type { TableOptions } from '@orkestrel/console'
 import { attempt } from '@orkestrel/contract'
@@ -11,7 +11,6 @@ import {
 	FRESHNESS_LABEL,
 	KNOWN_VERBS,
 	ORIGIN_LABEL,
-	RETIRED_VERBS,
 	SAFETY_BANNER,
 	VERB_DRY_RUN_NOTE,
 	VERB_EXAMPLE,
@@ -43,8 +42,8 @@ export function auditVerdict(audit: Audit, plan: Plan): string {
 	const split = partitionFindings(audit.findings, plan)
 	const owned = split.owned.drifted === 0 && split.owned.missing === 0 && split.owned.foreign === 0
 	return owned
-		? `audit: ${countPart(count, 'artifact')} — template-owned clean; ${bucketText(split.generated)} (generated)`
-		: `audit: ${countPart(count, 'artifact')} — template-owned: ${bucketText(split.owned)}; generated: ${bucketText(split.generated)}`
+		? `audit: ${countPart(count, 'artifact')} — host-owned clean; ${bucketText(split.generated)} (generated)`
+		: `audit: ${countPart(count, 'artifact')} — host-owned: ${bucketText(split.owned)}; generated: ${bucketText(split.generated)}`
 }
 
 /** Render non-aligned audit findings as terminal table rows. */
@@ -79,7 +78,7 @@ export function scopeNote(count: number): string | undefined {
 /** Render repair's dry-run verdict. */
 export function repairVerdict(audit: Audit): string {
 	if (audit.clean) {
-		return `repair: ${countPart(audit.findings.length, 'template-owned artifact')} aligned — nothing to write`
+		return `repair: ${countPart(audit.findings.length, 'host-owned artifact')} aligned — nothing to write`
 	}
 	return `repair: ${bucketText(audit)} — pass --apply to write`
 }
@@ -173,7 +172,8 @@ export function newPlanTable(summary: PlanSummary): TableOptions {
 	return {
 		columns: [{ label: 'Origin' }, { label: 'Count', align: 'right' }],
 		rows: [
-			['template-owned', String(summary.host + summary.template)],
+			['host-owned', String(summary.host)],
+			['starter', String(summary.template)],
 			['generated', String(summary.computed)],
 		],
 	}
@@ -209,7 +209,7 @@ export function pruneConfirmMessage(count: number): string {
 export function repairHandoff(owned: number, foreign: number, prune: boolean): string {
 	const parts: string[] = []
 	if (owned > 0) {
-		parts.push(`${countPart(owned, 'template-owned file')} ${owned === 1 ? 'has' : 'have'} drift`)
+		parts.push(`${countPart(owned, 'host-owned file')} ${owned === 1 ? 'has' : 'have'} drift`)
 	}
 	if (prune && foreign > 0) {
 		parts.push(`${countPart(foreign, 'unexpected file')} will be deleted`)
@@ -274,20 +274,21 @@ export function verbHelp(verb: Verb): string {
 export function editDistance(left: string, right: string): number {
 	const rows = left.length + 1
 	const columns = right.length + 1
-	const table: number[][] = Array.from({ length: rows }, () => new Array<number>(columns).fill(0))
-	for (let row = 0; row < rows; row += 1) table[row][0] = row
-	for (let column = 0; column < columns; column += 1) table[0][column] = column
+	const table = new Uint32Array(rows * columns)
+	for (let row = 0; row < rows; row += 1) table[row * columns] = row
+	for (let column = 0; column < columns; column += 1) table[column] = column
 	for (let row = 1; row < rows; row += 1) {
 		for (let column = 1; column < columns; column += 1) {
 			const cost = left[row - 1] === right[column - 1] ? 0 : 1
-			table[row][column] = Math.min(
-				table[row - 1][column] + 1,
-				table[row][column - 1] + 1,
-				table[row - 1][column - 1] + cost,
+			const index = row * columns + column
+			table[index] = Math.min(
+				(table[index - columns] ?? 0) + 1,
+				(table[index - 1] ?? 0) + 1,
+				(table[index - columns - 1] ?? 0) + cost,
 			)
 		}
 	}
-	return table[rows - 1][columns - 1]
+	return table[rows * columns - 1] ?? 0
 }
 
 /** Find the nearest string by edit distance. */
@@ -304,10 +305,8 @@ export function nearest(input: string, set: readonly string[]): string | undefin
 	return best
 }
 
-/** Render an unknown command with a migration or nearest-command hint. */
+/** Render an unknown command with a nearest-command hint. */
 export function didYouMean(command: string): string {
-	const retired = RETIRED_VERBS[command]
-	if (retired !== undefined) return `'${command}' has been renamed — use 'scaffold ${retired}'`
 	const suggestion = nearest(command, KNOWN_VERBS)
 	return suggestion === undefined
 		? `unknown command "${command}"`
@@ -347,8 +346,8 @@ export function auditLiveNote(current: number, behind: number, failed: number): 
 /** Render whether an audit compared content or presence. */
 export function comparisonLine(aware: boolean): string {
 	return aware
-		? 'comparing: file contents for template-owned files'
-		: 'comparing: file names only for template-owned files (no vendored source found)'
+		? 'comparing: file contents for host-owned files'
+		: 'comparing: file names only for host-owned files (no vendored source found)'
 }
 
 /** Render catalog's final verdict. */
@@ -364,14 +363,17 @@ export function describeError(error: unknown): string {
 
 /** Resolve and confine one write destination to its invocation root. */
 export function containDestination(root: string, candidate: string): string {
+	if (!isFilesystemPath(root) || !isFilesystemPath(candidate)) {
+		throw new ScaffoldError('INVALID', 'Target paths must not contain control characters')
+	}
 	const contained = attempt(() =>
-		resolveContainedPath(root, candidate, 'INVALID', 'working directory'),
+		resolvePhysicalPath(root, candidate, 'INVALID', 'working directory'),
 	)
 	if (contained.success) return contained.value
 	if (isScaffoldError(contained.error) && contained.error.code === 'INVALID') {
 		throw new ScaffoldError(
 			'INVALID',
-			`Target "${candidate}" escapes the working directory — run scaffold from the directory you want to write beneath.`,
+			`Target "${candidate}" is outside or traverses a linked parent of the working directory — run scaffold from the physical directory you want to write beneath.`,
 			{ path: candidate },
 		)
 	}

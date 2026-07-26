@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { isRecord, parseJSON } from '@orkestrel/contract'
 import { describe, expect, it } from 'vitest'
 import { blueprint, blueprintToPlan, createCompiler, dependency, diffPlan } from '@src/core'
-import { createMaterializer, createSync, readTarget } from '@src/server'
+import { createMaterializer, createSync, digestFile, readTarget } from '@src/server'
 import {
 	buildTempDirectory,
 	hostManifestOf,
@@ -18,7 +18,7 @@ describe('server integration: compile → materialize → audit → repair', () 
 	it('audits clean after materialize, reports exact stale+missing after a mutation+deletion, and repair restores exactly those', async () => {
 		const directory = await buildTempDirectory()
 		try {
-			const spec = blueprint('gadget', { surfaces: ['core'] })
+			const spec = blueprint('gadget', { src: ['core'] })
 			const plan = blueprintToPlan(spec)
 			const paths = plan.artifacts.map((artifact) => artifact.path)
 
@@ -82,7 +82,7 @@ describe('server integration: compile → materialize → audit → repair', () 
 			// run green by construction, zero questions.
 			const vendoredScaffolding = compiler.compile(
 				blueprint('widget', {
-					surfaces: ['core'],
+					src: ['core'],
 					dependencies: [
 						dependency('@orkestrel/contract', '^0.0.5'),
 						dependency('@orkestrel/emitter', '^0.0.5'),
@@ -111,7 +111,7 @@ describe('server integration: compile → materialize → audit → repair', () 
 			// advisory Question surfaced on `Scaffolding.questions`.
 			const foreignScaffolding = compiler.compile(
 				blueprint('gizmo', {
-					surfaces: ['core'],
+					src: ['core'],
 					dependencies: [dependency('@orkestrel/router', '^0.0.1')],
 				}),
 			)
@@ -135,11 +135,11 @@ describe('server integration: compile → materialize → audit → repair', () 
 		}
 	})
 
-	it('compiles a multi-surface (core+server) blueprint UNSCOPED, materializes clean, and the disk package.json carries the ./server subpath with no top-level types', async () => {
+	it('compiles a multi-environment (core+server) blueprint UNSCOPED, materializes clean, and the disk package.json carries the ./server subpath with no top-level types', async () => {
 		const directory = await buildTempDirectory()
 		try {
 			const compiler = createCompiler()
-			const scaffolding = compiler.compile(blueprint('multitool', { surfaces: ['core', 'server'] }))
+			const scaffolding = compiler.compile(blueprint('multitool', { src: ['core', 'server'] }))
 			expect(scaffolding.complete).toBe(true)
 			if (scaffolding.plan === undefined) throw new Error('expected a pinned plan')
 			const plan = scaffolding.plan
@@ -194,8 +194,8 @@ describe('server integration: compile → materialize → audit → repair', () 
 
 			const plan: Plan = {
 				blueprint: blueprint('pointer-lifecycle-fixture', {
-					surfaces: ['core'],
-					dependencies: [dependency('@orkestrel/msg', '^1.0.0')],
+					src: ['core'],
+					dependencies: [dependency('@orkestrel/msg', '^0.0.1')],
 				}),
 				groups: ['guides'],
 				artifacts: [
@@ -231,6 +231,7 @@ describe('server integration: compile → materialize → audit → repair', () 
 						path: 'guides/src/msg.md',
 						content: '# @orkestrel/msg\n\nReal vendored guide bytes.\n',
 						freshness: 'behind',
+						baseline: digestFile(join(directory.path, 'guides/src/msg.md')),
 					},
 				],
 				versions: [],

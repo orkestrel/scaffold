@@ -1,33 +1,49 @@
 #!/bin/bash
-# ============================================================================
-# scripts/codex.sh — SessionStart hook: Codex bench readiness only
-# ----------------------------------------------------------------------------
-# Codex is invoked on demand by .claude/agents/codex.md. This hook performs no
-# install, login, logout, model call, auth-cache read, or credential-value
-# inspection. It only reports CLI and auth readiness into Claude Code's
-# SessionStart context. Always exits 0.
-# ============================================================================
+# SessionStart capability probe for the Codex bench. External command output
+# and route identifiers never cross the hook-to-context boundary.
 
 if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
   exit 0
 fi
 
 if ! command -v codex >/dev/null 2>&1; then
-  echo "codex.sh: bench dark — Codex CLI is not installed; install it in the Claude Code Cloud environment setup."
+  echo "codex.sh: bench unavailable."
   exit 0
 fi
 
-version="$(codex --version 2>/dev/null | head -n 1)"
-worker_model="${CODEX_WORKER_MODEL:-gpt-5.6-terra}"
-worker_effort="${CODEX_WORKER_EFFORT:-medium}"
-thinker_model="${CODEX_THINKER_MODEL:-gpt-5.6-sol}"
-thinker_effort="${CODEX_THINKER_EFFORT:-high}"
+analyst_model="${CODEX_ANALYST_MODEL:-gpt-5.6-sol}"
+analyst_effort="${CODEX_ANALYST_EFFORT:-high}"
+implementer_model="${CODEX_IMPLEMENTER_MODEL:-gpt-5.6-sol}"
+implementer_effort="${CODEX_IMPLEMENTER_EFFORT:-high}"
+
+valid_model() {
+  case "$1" in
+    ''|*[!A-Za-z0-9._-]*) return 1 ;;
+  esac
+  [ "${#1}" -le 128 ]
+}
+
+valid_effort() {
+  case "$1" in
+    low|medium|high|xhigh|max|ultra) return 0 ;;
+    *) return 1 ;;
+  esac
+}
 
 if codex login status >/dev/null 2>&1; then
-  auth="cached Codex authentication ready"
+  auth="authentication ready"
 else
-  auth="AUTH DARK — run 'codex login --device-auth' in this live Cloud session, then retry"
+  auth="authentication unavailable"
 fi
 
-echo "codex.sh: bench lit — ${version}; ${auth}; worker=${worker_model}/${worker_effort}; thinker=${thinker_model}/${thinker_effort}."
+if valid_model "$analyst_model" &&
+  valid_model "$implementer_model" &&
+  valid_effort "$analyst_effort" &&
+  valid_effort "$implementer_effort"; then
+  routes="routes configured"
+else
+  routes="routes invalid"
+fi
+
+echo "codex.sh: bench detected; ${auth}; ${routes}."
 exit 0

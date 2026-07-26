@@ -2,7 +2,7 @@
 
 ## Inventory declarations
 
-Inspect every touched implementation and centralized file, then sweep the full affected surfaces.
+Inspect every touched implementation and centralized file, then sweep the full affected environments.
 
 For implementation files, inventory:
 
@@ -22,7 +22,7 @@ For centralized files, inventory every module declaration. Each declaration must
 - be reachable from the sole public barrel when public by repository law;
 - have direct behavioral coverage when it contains logic.
 
-Promote a declaration to a surface root only when multiple modules consume it. Otherwise keep it in the owning module's centralized file.
+Promote a declaration to an environment root only when multiple modules consume it. Otherwise keep it in the owning module's centralized file.
 
 ## Apply the leaf test
 

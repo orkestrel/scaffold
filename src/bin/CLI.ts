@@ -1,6 +1,6 @@
 // The `#!/usr/bin/env node` shebang is re-emitted by the build's `output.banner`, not source.
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { basename, join } from 'node:path'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { basename, dirname, join, relative as relativeOf } from 'node:path'
 import * as tls from 'node:tls'
 import type {
 	Audit,
@@ -10,6 +10,7 @@ import type {
 	Dependency,
 	Group,
 	Plan,
+	Snapshot,
 	SyncReport,
 } from '@src/core'
 import {
@@ -24,24 +25,35 @@ import {
 	GROUPS,
 	isScaffoldError,
 	manifestToDependencies,
+	MAX_ARTIFACT_BYTES,
 	NAME_PATTERN,
 	planToSummary,
 	ScaffoldError,
-	SURFACES,
+	ENVIRONMENTS,
 } from '@src/core'
 import {
 	catalogPackages,
+	commitWriteTransaction,
 	createMaterializer,
 	createSync,
 	deriveBlueprint,
 	discoverPackages,
+	digestFile,
+	digestText,
+	discardWriteTransaction,
 	hostRoot,
 	hydratePlan,
+	isRealDirectory,
+	isVacant,
 	locateHostSource,
 	pruneTargets,
+	readFileText,
 	readHostManifest,
 	readManifest,
 	readTarget,
+	resolvePhysicalPath,
+	validateWriteDirectories,
+	WriteTransaction,
 } from '@src/server'
 import type { SpinnerInterface } from '@orkestrel/console'
 import { createReporter, createSpinner, createStyler } from '@orkestrel/console'
@@ -53,7 +65,9 @@ import { createTerminal } from '@orkestrel/terminal/server'
 import {
 	CANCELLED_MESSAGE,
 	CATALOG_UNRESOLVED_NOTE,
-	FLEET_CI_SKIPPED,
+	CATALOG_AGENT_PATH,
+	CATALOG_END_MARKER,
+	CATALOG_START_MARKER,
 	FOREIGN_HINT,
 	INVALID_ARGUMENTS_MESSAGE,
 	NEW_DRY_RUN_NOTE,
@@ -62,7 +76,7 @@ import {
 	PRUNE_SKIPPED,
 	REPAIR_SCOPE,
 	SCAN_SKIPPED,
-	SURFACE_CHOICES,
+	ENVIRONMENT_CHOICES,
 } from './constants.js'
 import { CLIExitError } from './errors.js'
 import {
@@ -103,7 +117,12 @@ import {
 	unresolvedVersion,
 	verbHelp,
 } from './helpers.js'
-import { normalizeOrkestrelToken, parseArguments, splitTokens } from './parsers.js'
+import {
+	normalizeOrkestrelToken,
+	parseArguments,
+	parsePullDependencies,
+	splitTokens,
+} from './parsers.js'
 import {
 	auditToRepairResult,
 	catalogResultOf,
@@ -120,7 +139,6 @@ import type {
 	FleetFailure,
 	FleetRepo,
 	ForeignScanResult,
-	HydrationResult,
 	LiveResult,
 } from './types.js'
 import { isVerb } from './validators.js'
@@ -163,7 +181,7 @@ export class CLI implements CLIInterface {
 	 * (`cafile`) and browsers (OS trust store) instead of failing with
 	 * `UNABLE_TO_GET_ISSUER_CERT_LOCALLY` against Node's bundled CA list alone.
 	 * Feature-detected (`tls.getCACertificates` / `tls.setDefaultCACertificates`
-	 * ship on Node ≈22.16+/24.5+; this package's floor is `>=22`) and captured
+	 * ship on Node ≈22.16+/24.5+; this package's floor is `>=22.12.0`) and captured
 	 * through `attempt` — any failure is a silent no-op, never a crash. This only ADDS
 	 * trusted issuers; it never touches `rejectUnauthorized` or
 	 * `NODE_TLS_REJECT_UNAUTHORIZED`, so certificate verification stays on.
@@ -189,7 +207,7 @@ export class CLI implements CLIInterface {
 		process.stdout.write(`${JSON.stringify(value)}\n`)
 	}
 
-	/** A general operation failure (H1: exit 1) — a prose status line, or the one JSON error envelope under `--json`. */
+	/** Report a general operation failure with exit 1 as prose or one JSON error envelope. */
 	#fail(message: string, json: boolean): never {
 		if (json) this.#write(errorEnvelopeOf('ERROR', message))
 		else this.#reporter.status('error', message)
@@ -197,7 +215,7 @@ export class CLI implements CLIInterface {
 	}
 
 	/**
-	 * A general operation failure FROM A CAUGHT ERROR (H1: exit 1) — the real
+	 * A general operation failure from a caught error — the real
 	 * `ScaffoldError` code when available ('ERROR' last resort), prose (via
 	 * `describe`, which still carries the bracketed code for a human reader) or
 	 * the one JSON error envelope under `--json` (code and message kept
@@ -221,14 +239,14 @@ export class CLI implements CLIInterface {
 		throw new CLIExitError(2)
 	}
 
-	/** `containDestination`, halting (H1/`fail`) on a coded escape instead of throwing — the shared entry every runner's target resolution goes through. */
+	/** Contain a destination and report any coded escape through the shared CLI error path. */
 	#contain(candidate: string, json: boolean): string {
 		const contained = attempt(() => containDestination(process.cwd(), candidate))
 		if (contained.success) return contained.value
 		this.#error(contained.error, json)
 	}
 
-	/** Compile `spec` and unwrap its `plan`, halting (H1/`fail`) with the joined open-question text when compilation could not resolve one — the shared entry every runner's compile step goes through. */
+	/** Compile a spec and report unresolved blocking questions through the shared CLI error path. */
 	#compile(spec: Blueprint, json: boolean): Plan {
 		const compiler = createCompiler()
 		try {
@@ -241,25 +259,6 @@ export class CLI implements CLIInterface {
 		} finally {
 			compiler.destroy()
 		}
-	}
-
-	/**
-	 * Best-effort `hydratePlan` — used by `audit` / `repair` / `fleet` so a
-	 * missing DEFAULT vendored-source root degrades to presence-only auditing
-	 * instead of failing the verb. An EXPLICITLY-passed `--from` that does not
-	 * resolve to a usable directory is NOT downgraded silently — that is a coded
-	 * `TARGET` failure (M1), since the caller named that source on purpose.
-	 */
-	#hydrate(plan: Plan, host: string, explicit: boolean): HydrationResult {
-		if (!existsSync(host)) {
-			if (explicit) {
-				throw new ScaffoldError('TARGET', `--from does not resolve to a directory: ${host}`, {
-					host,
-				})
-			}
-			return { plan, aware: false }
-		}
-		return { plan: hydratePlan(plan, host), aware: true }
 	}
 
 	/**
@@ -288,18 +287,30 @@ export class CLI implements CLIInterface {
 	}
 
 	/**
-	 * `withForeignScan`, degrading instead of crashing (F3): `pruneTargets` throws
-	 * a coded `TARGET` failure when a prune directory exists under `target` but
-	 * `host` cannot positively establish its allowlist (`vendoredPruneSet`'s
-	 * fail-closed contract) — an audit should report the un-scanned findings and
-	 * say scanning was skipped, never crash on this alone (`runFleet` already
-	 * shields its own per-repo audit the same way).
+	 * Add unexpected-file findings when the vendored allowlist can be established.
+	 * When fail-closed allowlist discovery raises a coded `TARGET` failure, retain
+	 * the existing findings and mark the audit incomplete instead of crashing.
 	 */
 	#scanSafe(audit: Audit, target: string, host: string): ForeignScanResult {
 		const scanned = attempt(() => this.#scan(audit, target, host))
 		if (scanned.success) return { audit: scanned.value, skipped: false }
 		if (isScaffoldError(scanned.error) && scanned.error.code === 'TARGET') {
-			return { audit, skipped: true }
+			return {
+				audit: {
+					...audit,
+					clean: false,
+					complete: false,
+					questions: [
+						...audit.questions,
+						{
+							field: 'host',
+							text: scanned.error.message,
+							blocking: true,
+						},
+					],
+				},
+				skipped: true,
+			}
 		}
 		throw scanned.error
 	}
@@ -366,12 +377,9 @@ export class CLI implements CLIInterface {
 		if (values.apply) return true
 		if (json) return false
 		if (values.yes) return true
-		// One-prompt-per-non-TTY-process ceiling (S3f): the write confirm
-		// (`resolveApply`) already spent the ONE prompt a non-interactive stream
-		// can reliably answer — a second `terminal.confirm` off the same drained
-		// stdin hangs until the runtime's watchdog kills the process. Pruning is
-		// therefore never asked on non-TTY; it resolves `false` and prints
-		// `pruneSkipped()` instead.
+		// The write confirmation already consumed the single answer available on a
+		// non-interactive stream. Never ask a second question from drained stdin;
+		// skip pruning explicitly instead.
 		if (!this.#tty) {
 			this.#reporter.line(PRUNE_SKIPPED)
 			return false
@@ -404,19 +412,20 @@ export class CLI implements CLIInterface {
 	 * (`hostRoot()`, or the active `--from` override) through the host manifest
 	 * — `undefined` when the catalog cannot be established (a missing/unreadable
 	 * manifest, no `.claude/agents/orkestrel.md` entry, or any other failure),
-	 * degrading Q1 to shape-only validation instead of blocking on it.
+	 * degrading the dependency prompt to shape-only validation instead of blocking on it.
 	 */
 	#names(host: string): readonly string[] | undefined {
 		const names = attempt(() => {
 			const manifest = readHostManifest(host)
 			const full = locateHostSource(manifest, '.claude/agents/orkestrel.md', host)
 			if (full === undefined || !existsSync(full)) return undefined
-			return catalogNames(readFileSync(full, 'utf8'))
+			const relative = relativeOf(host, full).replaceAll('\\', '/')
+			return catalogNames(readFileText(host, relative, 'TARGET', 'host'))
 		})
 		return names.success ? names.value : undefined
 	}
 
-	/** Q1 (TTY only) — `@orkestrel` short-name deps, re-asking on any unresolved token until the input is clean or empty. */
+	/** Prompt for `@orkestrel` short-name dependencies until every token resolves or input is empty. */
 	async #prompt(
 		terminal: TerminalInterface,
 		catalog: readonly string[] | undefined,
@@ -453,46 +462,101 @@ export class CLI implements CLIInterface {
 				}),
 			)
 		}
-		// F4: the positional (or interactively-collected) name is validated against
-		// the SAME `NAME_PATTERN` (core's single source of truth) the interactive
-		// prompt enforces — a positional name never bypassed this shape before.
+		// Validate positional and interactively collected names against the same
+		// core-owned package-name contract.
 		if (!NAME_PATTERN.test(name)) {
 			this.#usage(invalidName(name, NAME_PATTERN.source), json)
 		}
 
-		let surfaceInput: readonly string[]
-		if (values.surfaces !== undefined) {
-			surfaceInput = values.surfaces.split(',')
-		} else if (json) {
-			this.#usage('--surfaces is required with --json', json)
-		} else if (!this.#tty) {
-			this.#usage(missingInput('--surfaces', 'new'), json)
+		let srcInput: readonly string[]
+		let appInput: readonly string[]
+		if (values.src !== undefined) {
+			srcInput = values.src.split(',').map((candidate) => candidate.trim())
+		} else if (values.app !== undefined) {
+			srcInput = []
+		} else if (json || !this.#tty) {
+			this.#usage('at least one of --src or --app is required', json)
 		} else {
-			surfaceInput = await this.#guard(
-				terminal.checkbox({ message: 'Surfaces', choices: SURFACE_CHOICES, min: 1 }),
+			srcInput = await this.#guard(
+				terminal.checkbox({
+					message: 'Published src environments',
+					choices: ENVIRONMENT_CHOICES,
+					min: 0,
+				}),
 			)
 		}
-		const unrecognizedSurface = surfaceInput.filter(
-			(candidate) => !SURFACES.some((surface) => surface === candidate),
-		)
-		if (unrecognizedSurface.length > 0) {
-			this.#usage(`Surface "${unrecognizedSurface.join('", "')}" is not recognized`, json)
+		if (values.app !== undefined) {
+			appInput = values.app.split(',').map((candidate) => candidate.trim())
+		} else if (values.src !== undefined || json || !this.#tty) {
+			appInput = []
+		} else {
+			appInput = await this.#guard(
+				terminal.checkbox({
+					message: 'Application environments',
+					choices: ENVIRONMENT_CHOICES,
+					min: 0,
+				}),
+			)
 		}
-		const surfaces = SURFACES.filter((surface) => surfaceInput.includes(surface))
+		const unrecognizedSrcEnvironment = srcInput.filter(
+			(candidate) => !ENVIRONMENTS.some((environment) => environment === candidate),
+		)
+		if (unrecognizedSrcEnvironment.length > 0) {
+			this.#usage(
+				`Environment "${unrecognizedSrcEnvironment.join('", "')}" is not recognized`,
+				json,
+			)
+		}
+		if (new Set(srcInput).size !== srcInput.length) {
+			this.#usage('Published src environments must not repeat', json)
+		}
+		const src = ENVIRONMENTS.filter((environment) => srcInput.includes(environment))
+		const unrecognizedAppEnvironment = appInput.filter(
+			(candidate) => !ENVIRONMENTS.some((environment) => environment === candidate),
+		)
+		if (unrecognizedAppEnvironment.length > 0) {
+			this.#usage(
+				`Application environment "${unrecognizedAppEnvironment.join('", "')}" is not recognized`,
+				json,
+			)
+		}
+		if (new Set(appInput).size !== appInput.length) {
+			this.#usage('Application environments must not repeat', json)
+		}
+		const app = ENVIRONMENTS.filter((environment) => appInput.includes(environment))
+		if (src.length === 0 && app.length === 0) {
+			this.#usage('at least one source or application environment is required', json)
+		}
 
-		// S3g: containment happens ONCE, here, near the top — before any preview,
-		// network call, or confirm — so a `--target` escape is caught up front
-		// rather than after the user has already reviewed a plan for a
-		// destination the write can never reach.
+		// Establish containment before preview, network access, confirmation, or
+		// any other work that assumes the destination is writable.
 		const destination = this.#contain(values.target ?? `./${name}`, json)
+		if (!isVacant(destination)) {
+			this.#error(
+				new ScaffoldError('TARGET', 'new requires a vacant target', { target: destination }),
+				json,
+			)
+		}
+		const explicitHost = values.from?.[0]
+		if (explicitHost !== undefined) {
+			if (!isRealDirectory(explicitHost)) {
+				this.#error(
+					new ScaffoldError('TARGET', `Host root is not a physical directory at ${explicitHost}`, {
+						host: explicitHost,
+					}),
+					json,
+				)
+			}
+			readHostManifest(explicitHost)
+		}
 
 		// `--deps` is OPTIONAL — a non-TTY session with neither `--json` nor
 		// `--deps` defaults to no extra dependencies rather than failing (only a
 		// REQUIRED input triggers `missingInput`'s usage error); the multi-prompt
-		// guidance below stays TTY-only (S3f's one-prompt-per-process ceiling).
-		// `--deps` keeps its EXACT prior mechanism verbatim — untrimmed split,
-		// `DEPENDENCY_NAME_PATTERN`-gated BEFORE any network call (A3). The
-		// interactive Q1 replaces only the FREE-TEXT prompt, with short-name
+		// guidance below stays TTY-only under the one-prompt-per-process ceiling.
+		// `--deps` uses an untrimmed split and is
+		// `DEPENDENCY_NAME_PATTERN`-gated BEFORE any network call. The
+		// interactive prompt adds short-name
 		// normalization + vendored-catalog validation (re-asking on an unknown
 		// token, degrading to shape-only when the catalog cannot be resolved).
 		let depNames: readonly string[]
@@ -514,7 +578,7 @@ export class CLI implements CLIInterface {
 			depNames = await this.#prompt(terminal, catalog)
 		}
 
-		// --deps/Q1 resolve latest from the registry → ranges pin ^latest; their
+		// `--deps` resolves latest versions from the registry and pins caret ranges; their
 		// guides fetch into the plan.
 		const sync = createSync()
 		let versions
@@ -538,12 +602,12 @@ export class CLI implements CLIInterface {
 		if (unresolved.length > 0) this.#fail(unresolvedVersion(unresolved), json)
 		const deps = versions.map((version) => dependency(version.name, `^${version.latest}`))
 
-		// Extra devDependencies are no longer collected here — hand-add them to
-		// `package.json` after scaffolding; `deriveBlueprint`'s extras round-trip
+		// Extra devDependencies are authored in `package.json` after scaffolding;
+		// `deriveBlueprint`'s extras round-trip
 		// (`@src/server`) recompiles them back into the plan, so `audit` stays
 		// clean over a hand-added `devDependencies` entry (AGENTS §21 core stays
 		// the single source of truth for that relaxation).
-		const plan = this.#compile(blueprint(name, { surfaces, dependencies: deps }), json)
+		const plan = this.#compile(blueprint(name, { src, app, dependencies: deps }), json)
 
 		const summary = planToSummary(plan)
 
@@ -569,7 +633,8 @@ export class CLI implements CLIInterface {
 
 		const spinner = this.#spinner('materializing', json)
 		spinner?.start()
-		const materializer = createMaterializer({ host: values.from?.[0] })
+		const host = values.from?.[0]
+		const materializer = createMaterializer(host === undefined ? undefined : { host })
 		try {
 			const result = materializer.materialize(plan, destination)
 			const count = result.written.length + result.copied.length
@@ -587,27 +652,13 @@ export class CLI implements CLIInterface {
 	async #pull(values: CLIValues, json: boolean): Promise<void> {
 		const target = this.#contain(values.target ?? '.', json)
 
-		const sync = createSync({ strict: values.strict })
+		const sync = createSync(values.strict === undefined ? undefined : { strict: values.strict })
 		try {
-			const wanted = values.deps?.split(',')
 			let report: SyncReport
 			try {
 				const declared = manifestToDependencies(readManifest(target))
-				const deps = wanted ? declared.filter((dep) => wanted.includes(dep.name)) : declared
-				if (wanted) {
-					const guides = await sync.guides(deps)
-					const versions = await sync.versions(deps)
-					const failed = [...guides, ...versions].filter(
-						(entry) => entry.freshness === 'missing' || entry.freshness === 'failed',
-					).length
-					const clean =
-						failed === 0 &&
-						guides.every((guide) => guide.freshness === 'current') &&
-						versions.every((version) => version.freshness === 'current')
-					report = { target, guides, versions, clean, failed }
-				} else {
-					report = await sync.pull(target)
-				}
+				const selected = parsePullDependencies(values.deps, declared)
+				report = await sync.pull(target, selected)
 			} catch (error) {
 				this.#error(error, json)
 			}
@@ -674,26 +725,19 @@ export class CLI implements CLIInterface {
 		const compiled = blueprintToPlan(spec, groups)
 		const from = values.from?.[0]
 		const host = from ?? hostRoot()
-		let hydrated: HydrationResult
+		let plan: Plan
 		try {
-			hydrated = this.#hydrate(compiled, host, from !== undefined)
+			plan = hydratePlan(compiled, host)
 		} catch (error) {
 			this.#error(error, json)
 		}
-		const plan = hydrated.plan
 		const artifactPaths = plan.artifacts.map((artifact) => artifact.path)
 
-		// S3b (honest audit): merge the `pruneTargets` scan into the presented
-		// audit — an "unexpected file" is real drift here, not the structurally-
-		// always-zero `diffPlan.foreign`. Only attempted when the host is actually
-		// established (`hydrated.aware`) — the same condition `hostRoot`/`--from`
-		// already require to positively enumerate a vendored allowlist. F3: the
-		// scan itself degrades (never crashes) when a prune dir exists under
-		// `target` but `host` cannot establish its allowlist.
+		// Merge the physical unexpected-file scan into the presented audit. Only an
+		// established host can positively define the vendored allowlist; a failed
+		// scan marks the audit incomplete without erasing its other findings.
 		const rawAudit = diffPlan(plan, readTarget(target, artifactPaths))
-		const scanned = hydrated.aware
-			? this.#scanSafe(rawAudit, target, host)
-			: { audit: rawAudit, skipped: false }
+		const scanned = this.#scanSafe(rawAudit, target, host)
 		const audit = scanned.audit
 		let drifted = !audit.clean
 
@@ -721,7 +765,7 @@ export class CLI implements CLIInterface {
 		}
 
 		if (scanned.skipped) this.#reporter.line(SCAN_SKIPPED)
-		this.#reporter.line(comparisonLine(hydrated.aware))
+		this.#reporter.line(comparisonLine(true))
 		this.#reporter.table(auditTable(audit, plan))
 		this.#reporter.line(auditVerdict(audit, plan))
 		if (live !== undefined) {
@@ -734,11 +778,11 @@ export class CLI implements CLIInterface {
 			const computedCount = split.generated.drifted + split.generated.missing
 			const pruneRequested = values.prune === true
 
-			// F1 (audit never writes via flags): the handoff is an INTERACTIVE
+			// Audit never writes via flags: the handoff is an INTERACTIVE
 			// convenience only, offered exclusively on a TTY session — `--apply` /
 			// `--yes` NEVER count as handoff consent here (they gate the SEPARATE
 			// `repair` run this branch may launch, never audit's own read-only
-			// pass). F2 (foreign-only handoff dead-end): the handoff also covers
+			// pass. A foreign-only handoff would be a dead end: the handoff also covers
 			// foreign files, but ONLY when `--prune` was passed — an inherited
 			// repair without `--prune` cannot delete them, so offering the handoff
 			// for foreign-only drift without `--prune` would be a dead end.
@@ -751,22 +795,20 @@ export class CLI implements CLIInterface {
 				handoffAccepted = await this.#guard(terminal.confirm({ message, default: false }))
 				if (handoffAccepted) {
 					await this.#repair(values, false)
-					// S3c (handoff exit truth): repair's own exit code reflects only
+					// Repair's own exit code reflects only
 					// ITS scope — re-diff the FULL plan (host/template/computed AND
 					// the foreign scan) so the audit's exit code stays truthful about
 					// ANY drift still remaining, mirroring `runFleet`'s post-repair
 					// `finalAudit` pattern.
 					const rawFinal = diffPlan(plan, readTarget(target, artifactPaths))
-					const finalScanned = hydrated.aware
-						? this.#scanSafe(rawFinal, target, host)
-						: { audit: rawFinal, skipped: false }
+					const finalScanned = this.#scanSafe(rawFinal, target, host)
 					process.exitCode = finalScanned.audit.clean ? 0 : 1
 					return
 				}
 			}
 
 			if (!handoffAccepted) {
-				// F2: when the handoff cannot help foreign files (no `--prune`, or no
+				// When the handoff cannot help foreign files (no `--prune`, or no
 				// handoff offered at all), point at the one command that can.
 				if (audit.foreign > 0 && !pruneRequested) this.#reporter.line(FOREIGN_HINT)
 				// computed-origin drift is regenerated, never hand-edited — `repair`
@@ -778,7 +820,7 @@ export class CLI implements CLIInterface {
 		process.exitCode = drifted ? 1 : 0
 	}
 
-	/** `scaffold repair` — restore the shared template-owned set for ONE target. */
+	/** `scaffold repair` — restore the shared host-owned set for one target. */
 	async #repair(values: CLIValues, json: boolean): Promise<void> {
 		const target = this.#contain(values.target ?? '.', json)
 
@@ -791,11 +833,9 @@ export class CLI implements CLIInterface {
 
 		const compiled = this.#compile(spec, json)
 
-		// H2: repair is the host-restoration tool ONLY — scope to host-origin
+		// Repair is the host-restoration tool ONLY — scope to host-origin
 		// artifacts before hydrate/diff/apply so a mature repo's hand-written
 		// src/tests/guides/package.json is never overwritten with a stub.
-		// `.github/workflows/ci.yml` STAYS in scope here (unlike `fleet`'s
-		// exclusion) — single-target `repair --apply` is explicit per-repo intent.
 		const scoped: Plan = {
 			...compiled,
 			artifacts: compiled.artifacts.filter((artifact) => artifact.origin === 'host'),
@@ -805,7 +845,7 @@ export class CLI implements CLIInterface {
 		const host = from ?? hostRoot()
 		let plan: Plan
 		try {
-			plan = this.#hydrate(scoped, host, from !== undefined).plan
+			plan = hydratePlan(scoped, host)
 		} catch (error) {
 			this.#error(error, json)
 		}
@@ -829,15 +869,16 @@ export class CLI implements CLIInterface {
 			this.#reporter.table(auditTable(audit, plan))
 		}
 
-		// S3a: the prune preview/confirm are driven by the REAL scan
+		// The prune preview/confirm are driven by the real scan
 		// (`pruneTargets`), never `audit.foreign` (which `diffPlan` can never
 		// populate through this call path — it only ever reads the plan's own
 		// paths). A zero-length scan skips the question entirely and is a no-op.
-		// U11 F2: computed BEFORE the clean-audit check so `--prune` still reaches
+		// Compute this BEFORE the clean-audit check so `--prune` still reaches
 		// this scan (and the deletion flow below) on a clean-host repo — a clean
-		// audit alone no longer bypasses pruning, only a clean audit WITH nothing
-		// to prune does.
-		const prunePaths = values.prune && existsSync(host) ? pruneTargets(target, host) : []
+		// this scan and deletion flow on a clean-host repo. Only a clean audit
+		// with nothing to prune returns early.
+		const prunePaths = values.prune ? pruneTargets(target, host) : []
+		const pruneSnapshot = readTarget(target, prunePaths)
 
 		if (audit.clean && prunePaths.length === 0) {
 			if (json) {
@@ -880,10 +921,10 @@ export class CLI implements CLIInterface {
 
 		const spinner = this.#spinner('repairing', json)
 		spinner?.start()
-		const materializer = createMaterializer({ host: values.from?.[0] })
+		const materializer = createMaterializer({ host })
 		try {
 			const result = materializer.repair(plan, audit, target)
-			const removed = doPrune ? materializer.prune(target).removed : []
+			const removed = doPrune ? materializer.prune(target, pruneSnapshot).removed : []
 			if (json) this.#write(auditToRepairResult(audit, { ...result, removed }))
 			else this.#succeed(spinner, json, repairSuccess(result, removed))
 		} catch (error) {
@@ -908,12 +949,9 @@ export class CLI implements CLIInterface {
 
 		const from = values.from?.[0]
 		const host = from ?? hostRoot()
-		const explicit = from !== undefined
 
 		const repos: FleetRepo[] = []
 		const failures: FleetFailure[] = []
-		let ciExcluded = false
-
 		for (const directory of packages) {
 			const name = basename(directory)
 			try {
@@ -926,37 +964,20 @@ export class CLI implements CLIInterface {
 						const message = scaffolding.questions.map((question) => question.text).join('; ')
 						throw new ScaffoldError('INVALID', message)
 					}
-					// Fleet apply must never clobber a repo's intentionally divergent
-					// CI (e.g. ollama, sea) — `.github/workflows/ci.yml` is scoped out
-					// of `fleet`; single-target `repair` keeps full scope.
 					scoped = {
 						...scaffolding.plan,
-						artifacts: scaffolding.plan.artifacts.filter(
-							(artifact) =>
-								artifact.origin === 'host' && artifact.path !== '.github/workflows/ci.yml',
-						),
-					}
-					if (
-						!ciExcluded &&
-						scaffolding.plan.artifacts.some(
-							(artifact) => artifact.path === '.github/workflows/ci.yml',
-						)
-					) {
-						if (!json) this.#reporter.line(FLEET_CI_SKIPPED)
-						ciExcluded = true
+						artifacts: scaffolding.plan.artifacts.filter((artifact) => artifact.origin === 'host'),
 					}
 				} finally {
 					compiler.destroy()
 				}
 
-				const hydrated = this.#hydrate(scoped, host, explicit)
-				const plan = hydrated.plan
+				const plan = hydratePlan(scoped, host)
 				const paths = plan.artifacts.map((artifact) => artifact.path)
 				const rawAudit = diffPlan(plan, readTarget(directory, paths))
-				// S3b (honest audit): merge each repo's `pruneTargets` scan in, same
-				// as `runAudit` — an unexpected file is real drift here too.
-				const audit = hydrated.aware ? this.#scan(rawAudit, directory, host) : rawAudit
-				repos.push({ name, directory, plan, audit, aware: hydrated.aware })
+				// Include physical unexpected-file findings in each repository audit.
+				const audit = this.#scan(rawAudit, directory, host)
+				repos.push({ name, directory, plan, audit })
 			} catch (error) {
 				failures.push({ name, message: describeError(error) })
 			}
@@ -1013,18 +1034,21 @@ export class CLI implements CLIInterface {
 			json,
 		)
 
-		// S3a: fleet's prune preview/confirm are driven by the REAL per-repo scan
-		// (`pruneTargets`), never `audit.foreign` — each unexpected path is shown
-		// `<repo>/<path>`-prefixed so the fleet-wide preview stays legible. Scanned
-		// only when `host` itself is establishable (`existsSync`) — same
-		// precondition `hydrateBestEffort` already gates awareness on; an
-		// unestablished host degrades to a no-op prune, never a thrown scan.
-		const prunePaths =
-			proceed && values.prune && existsSync(host)
-				? dirty.flatMap((repo) =>
-						pruneTargets(repo.directory, host).map((path) => `${repo.name}/${path}`),
+		// Drive the fleet prune preview from each repository's physical scan and
+		// prefix every path with its repository name. An unestablished host cannot
+		// define an allowlist, so pruning remains a no-op.
+		const pruneSets =
+			proceed && values.prune
+				? new Map(
+						dirty.map((repo) => {
+							const paths = pruneTargets(repo.directory, host)
+							return [repo.name, readTarget(repo.directory, paths)]
+						}),
 					)
-				: []
+				: new Map<string, Snapshot>()
+		const prunePaths = dirty.flatMap((repo) =>
+			Object.keys(pruneSets.get(repo.name) ?? {}).map((path) => `${repo.name}/${path}`),
+		)
 		if (proceed && values.prune && !json) {
 			if (prunePaths.length === 0) this.#reporter.line(PRUNE_EMPTY)
 			else for (const line of prunePreview(prunePaths)) this.#reporter.line(line)
@@ -1058,10 +1082,12 @@ export class CLI implements CLIInterface {
 			for (const repo of dirty) {
 				try {
 					materializer.repair(repo.plan, repo.audit, repo.directory)
-					if (doPrune) materializer.prune(repo.directory)
+					if (doPrune) {
+						materializer.prune(repo.directory, pruneSets.get(repo.name) ?? {})
+					}
 					const paths = repo.plan.artifacts.map((artifact) => artifact.path)
 					const rawFinal = diffPlan(repo.plan, readTarget(repo.directory, paths))
-					const finalAudit = repo.aware ? this.#scan(rawFinal, repo.directory, host) : rawFinal
+					const finalAudit = this.#scan(rawFinal, repo.directory, host)
 					if (!finalAudit.clean) drifted += 1
 					entries.push(fleetEntryOf(repo.name, finalAudit, false))
 					if (!json) {
@@ -1118,12 +1144,9 @@ export class CLI implements CLIInterface {
 				this.#error(error, json)
 			}
 		} else {
-			const sync = createSync({
-				on: {
-					package: (name, note) => {
-						if (note !== '') notes.set(name, note)
-					},
-				},
+			const sync = createSync()
+			sync.emitter.on('package', (name, note) => {
+				if (note !== '') notes.set(name, note)
 			})
 			let registryEntries: readonly CatalogEntry[]
 			try {
@@ -1161,14 +1184,14 @@ export class CLI implements CLIInterface {
 		}
 
 		const block = catalogToBlock(entries)
-		// S3g: the LEAF write path is re-confined (same mechanism as every other
-		// verb's destination) — `target` itself passed containment, but a
-		// symlinked segment nested BENEATH it (e.g. a symlinked `.claude`) could
-		// still let this specific path escape the cwd.
-		const agentPath = this.#contain(join(target, '.claude', 'agents', 'orkestrel.md'), json)
+		// Re-confine the exact leaf because a linked segment beneath an otherwise
+		// contained target could redirect this write outside the working directory.
+		const agentPath = this.#contain(join(target, CATALOG_AGENT_PATH), json)
 		let current: string
+		let baseline: string
 		try {
-			current = readFileSync(agentPath, 'utf8')
+			current = readFileText(target, CATALOG_AGENT_PATH, 'TARGET', 'target')
+			baseline = digestText(current)
 		} catch (error) {
 			this.#error(
 				new ScaffoldError('TARGET', `Failed to read ${agentPath}`, { path: agentPath, error }),
@@ -1176,26 +1199,32 @@ export class CLI implements CLIInterface {
 			)
 		}
 
-		const startMarker = '<!-- catalog:start -->'
-		const endMarker = '<!-- catalog:end -->'
-		const startIndex = current.indexOf(startMarker)
-		const endIndex = current.indexOf(endMarker)
-		if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) {
+		const startIndex = current.indexOf(CATALOG_START_MARKER)
+		const endIndex = current.indexOf(CATALOG_END_MARKER)
+		const startParts = current.split(CATALOG_START_MARKER)
+		const endParts = current.split(CATALOG_END_MARKER)
+		if (
+			startIndex === -1 ||
+			endIndex === -1 ||
+			endIndex < startIndex ||
+			startParts.length !== 2 ||
+			endParts.length !== 2
+		) {
 			this.#error(
 				new ScaffoldError(
 					'TARGET',
-					`Markers "${startMarker}" / "${endMarker}" not found in ${agentPath}`,
+					`Expected exactly one ordered "${CATALOG_START_MARKER}" / "${CATALOG_END_MARKER}" pair in ${agentPath}`,
 					{ path: agentPath },
 				),
 				json,
 			)
 		}
 
-		const before = current.slice(0, startIndex + startMarker.length)
+		const before = current.slice(0, startIndex + CATALOG_START_MARKER.length)
 		const after = current.slice(endIndex)
 		const updated = `${before}\n\n${block}\n${after}`
 
-		const oldBlock = current.slice(startIndex + startMarker.length, endIndex)
+		const oldBlock = current.slice(startIndex + CATALOG_START_MARKER.length, endIndex)
 		const oldRows = catalogNames(oldBlock).length
 		const shrink = entries.length < oldRows ? oldRows - entries.length : undefined
 
@@ -1235,14 +1264,57 @@ export class CLI implements CLIInterface {
 			return
 		}
 
-		try {
-			writeFileSync(agentPath, updated, 'utf8')
-		} catch (error) {
+		if (Buffer.byteLength(updated, 'utf8') > MAX_ARTIFACT_BYTES) {
 			this.#error(
-				new ScaffoldError('TARGET', `Failed to write ${agentPath}`, { path: agentPath, error }),
+				new ScaffoldError('WRITE', `Catalog exceeds the artifact limit at ${agentPath}`, {
+					path: agentPath,
+					limit: MAX_ARTIFACT_BYTES,
+				}),
 				json,
 			)
 		}
+		const transaction = WriteTransaction.create(
+			target,
+			[CATALOG_AGENT_PATH],
+			[{ path: CATALOG_AGENT_PATH, shape: 'file', digest: baseline }],
+		)
+		const staged = attempt(() => {
+			validateWriteDirectories(transaction)
+			const destination = resolvePhysicalPath(
+				transaction.stage,
+				CATALOG_AGENT_PATH,
+				'WRITE',
+				'staging',
+			)
+			mkdirSync(dirname(destination), { recursive: true })
+			validateWriteDirectories(transaction)
+			const contained = resolvePhysicalPath(
+				transaction.stage,
+				CATALOG_AGENT_PATH,
+				'WRITE',
+				'staging',
+			)
+			writeFileSync(contained, updated, { encoding: 'utf8', flag: 'wx' })
+			if (digestFile(contained) !== digestText(updated)) {
+				throw new ScaffoldError('WRITE', `Staged catalog changed at ${agentPath}`, {
+					path: agentPath,
+				})
+			}
+			validateWriteDirectories(transaction)
+		})
+		if (!staged.success) {
+			const cleanup = attempt(() => discardWriteTransaction(transaction))
+			this.#error(
+				new ScaffoldError('WRITE', `Failed to stage ${agentPath}`, {
+					path: agentPath,
+					error: staged.error,
+					cleanup: cleanup.success ? undefined : cleanup.error,
+				}),
+				json,
+			)
+		}
+		const committed = attempt(() => commitWriteTransaction(transaction, [CATALOG_AGENT_PATH]))
+		if (!committed.success) this.#error(committed.error, json)
 		if (json) this.#write(catalogResultOf(entries, true, shrink))
 		else this.#reporter.status('success', catalogApplySuccess(agentPath))
 		process.exitCode = 0
@@ -1251,7 +1323,7 @@ export class CLI implements CLIInterface {
 	/**
 	 * The whole command dispatch — a single top-level driver (no nested function
 	 * declarations, AGENTS §4). Every verb sets `process.exitCode` (never
-	 * `process.exit`, H4) and returns, or `halt()`s through a `finally` that
+	 * `process.exit`) and returns, or `halt()`s through a `finally` that
 	 * tears its entities down first; the caller at the bottom of this file
 	 * catches exactly one sentinel (`CliExit`) and stops.
 	 */

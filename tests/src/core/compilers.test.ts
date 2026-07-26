@@ -1,10 +1,17 @@
-import type { Artifact, Blueprint, Surface } from '@src/core'
+import type { Artifact, Blueprint, Environment } from '@src/core'
 import { parseJSON } from '@orkestrel/contract'
+import { describe, expect, it } from 'vitest'
 import {
 	applyOverrides,
+	applicationArtifacts,
+	applicationViteConfig,
+	APP_MATRIX,
+	appTsconfig,
+	appViteConfig,
 	blueprint,
 	blueprintToMembers,
 	blueprintToPlan,
+	ciWorkflow,
 	compareCodeUnit,
 	configArtifacts,
 	coreTsconfig,
@@ -24,23 +31,45 @@ import {
 	paritySpecifiers,
 	rootTsconfig,
 	rootViteConfig,
+	serializeTypeScriptString,
 	sourceArtifacts,
-	surfaceTsconfig,
-	surfaceVariant,
-	surfaceViteConfig,
+	srcTsconfig,
+	srcVariant,
+	srcViteConfig,
 	testArtifacts,
+	TYPESCRIPT_EXTENSIONS,
 } from '@src/core'
-import { describe, expect, it } from 'vitest'
-import { readManifest, readRecord } from '../../setup.js'
+import {
+	APPLICATION_VARIANTS,
+	readManifest,
+	readRecord,
+	SOURCE_VARIANTS,
+	WORKSPACE_VARIANTS,
+} from '../../setup.js'
 
-const VARIANTS: readonly { readonly label: string; readonly surfaces: readonly Surface[] }[] = [
-	{ label: 'core-only', surfaces: ['core'] },
-	{ label: 'core+server', surfaces: ['core', 'server'] },
-	{ label: 'core+browser', surfaces: ['core', 'browser'] },
-	{ label: 'core+browser+server', surfaces: ['core', 'browser', 'server'] },
-	{ label: 'server-only', surfaces: ['server'] },
-	{ label: 'browser-only', surfaces: ['browser'] },
-]
+describe('ciWorkflow', () => {
+	it('pins official actions to reviewed full commit SHAs and disables install scripts', () => {
+		const workflow = ciWorkflow(blueprint('router', { src: ['core'] }))
+
+		expect(workflow).toContain(
+			'uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2',
+		)
+		expect(workflow).toContain('persist-credentials: false')
+		expect(workflow).toContain(
+			'uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0',
+		)
+		expect(workflow).toContain("node: ['22.12.0', '26']")
+		expect(workflow).toContain('node-version: ${{ matrix.node }}')
+		expect(workflow).toContain('run: npm ci --ignore-scripts')
+		expect(workflow).not.toMatch(/uses: actions\/[^@\s]+@v\d/)
+	})
+
+	it('installs Chromium for the engine-owned generated browser consumer proof', () => {
+		const workflow = ciWorkflow(blueprint('scaffold', { src: ['core', 'server'], engine: true }))
+
+		expect(workflow).toContain('playwright install --with-deps chromium')
+	})
+})
 
 describe('hostGroup', () => {
 	it('classes the root docs paths as docs', () => {
@@ -50,9 +79,9 @@ describe('hostGroup', () => {
 	})
 
 	it('classes skills, agent configs, SessionStart scripts, and CI as orchestration', () => {
-		expect(hostGroup('.agents')).toBe('orchestration')
-		expect(hostGroup('.claude')).toBe('orchestration')
-		expect(hostGroup('.codex')).toBe('orchestration')
+		expect(hostGroup('.agents/skills')).toBe('orchestration')
+		expect(hostGroup('.claude/agents')).toBe('orchestration')
+		expect(hostGroup('.codex/agents')).toBe('orchestration')
 		expect(hostGroup('scripts/deps.sh')).toBe('orchestration')
 		expect(hostGroup('scripts/cursor.sh')).toBe('orchestration')
 		expect(hostGroup('scripts/codex.sh')).toBe('orchestration')
@@ -65,24 +94,232 @@ describe('hostGroup', () => {
 		expect(hostGroup('guides/src/scaffold.md')).toBe('guides')
 	})
 
+	it('classes the shared AST coding-policy gate as tests', () => {
+		expect(hostGroup('tests/setupPolicy.ts')).toBe('tests')
+	})
+
 	it('falls back to configs for anything else', () => {
 		expect(hostGroup('.oxlintrc.json')).toBe('configs')
 	})
 })
 
+describe('application layer compilation', () => {
+	describe.each(APPLICATION_VARIANTS)('$label application selection', ({ app }) => {
+		it.each(WORKSPACE_VARIANTS)(
+			'emits the complete $label manifest, config, source, test, and script class',
+			({ label, src }) => {
+				const spec = blueprint('complete-app', { src, app })
+				const plan = blueprintToPlan(spec)
+				const paths = new Set(plan.artifacts.map((artifact) => artifact.path))
+				const manifest = readManifest(packageManifest(spec))
+				const scripts = readRecord(manifest.scripts)
+
+				expect(manifest.private).toBe(label === 'app-only' ? true : undefined)
+				expect(manifest.sideEffects).toBe(label === 'app-only' ? undefined : false)
+				expect(manifest.files).toEqual([
+					label === 'app-only' ? 'dist/app' : 'dist/src',
+					'README.md',
+				])
+				expect(readRecord(manifest.dependencies).vue).toBeUndefined()
+				expect(readRecord(manifest.devDependencies).vue).toBe(
+					app.includes('browser') ? '^3.5.40' : undefined,
+				)
+				for (const environment of app) {
+					for (const path of APP_MATRIX[environment].configs) expect(paths.has(path)).toBe(true)
+					expect(scripts[`test:app:${environment}`]).toContain(
+						`--project ${APP_MATRIX[environment].project}`,
+					)
+					expect(paths.has(`app/${environment}/index.ts`)).toBe(true)
+				}
+				expect(paths.has('tests/guides/src/parity.test.ts')).toBe(true)
+			},
+		)
+	})
+
+	it('emits a private app-only manifest without package entry points', () => {
+		const spec = blueprint('console-app', {
+			src: [],
+			app: ['core', 'browser', 'server'],
+		})
+		const manifest = readManifest(packageManifest(spec))
+
+		expect(manifest.name).toBe('console-app')
+		expect(manifest.private).toBe(true)
+		expect(manifest.main).toBeUndefined()
+		expect(manifest.module).toBeUndefined()
+		expect(manifest.types).toBeUndefined()
+		expect(manifest.exports).toBeUndefined()
+		expect(manifest.publishConfig).toBeUndefined()
+		expect(manifest.files).toEqual(['dist/app', 'README.md'])
+		expect(manifest.sideEffects).toBeUndefined()
+		expect(readRecord(manifest.dependencies).vue).toBeUndefined()
+		expect(readRecord(manifest.devDependencies).vue).toBe('^3.5.40')
+		expect(readRecord(manifest.devDependencies)['vite-plugin-dts']).toBeUndefined()
+		expect(readRecord(manifest.devDependencies)['@microsoft/api-extractor']).toBeUndefined()
+		expect(readRecord(manifest.scripts)['build:app:server']).toBe(
+			'vite build --config configs/app/vite.server.config.ts',
+		)
+	})
+
+	it('adds the Vue/browser toolchain only when app/browser is selected', () => {
+		const manifest = readManifest(
+			packageManifest(blueprint('worker', { src: [], app: ['core', 'server'] })),
+		)
+		expect(readRecord(manifest.dependencies).vue).toBeUndefined()
+		expect(readRecord(manifest.devDependencies)['@vitejs/plugin-vue']).toBeUndefined()
+		expect(readRecord(manifest.devDependencies).playwright).toBeUndefined()
+		expect(readRecord(manifest.devDependencies)['vue-tsc']).toBeUndefined()
+	})
+
+	it('keeps a mixed workspace publishable while excluding app output from files', () => {
+		const manifest = readManifest(
+			packageManifest(
+				blueprint('console', {
+					src: ['core'],
+					app: ['core', 'browser'],
+				}),
+			),
+		)
+
+		expect(manifest.name).toBe('@orkestrel/console')
+		expect(manifest.private).toBeUndefined()
+		expect(manifest.files).toEqual(['dist/src', 'README.md'])
+		expect(manifest.sideEffects).toBe(false)
+		expect(readRecord(manifest.dependencies).vue).toBeUndefined()
+		expect(readRecord(manifest.devDependencies).vue).toBe('^3.5.40')
+	})
+
+	it('emits aliases, thin configs, runnable sources, and real environment tests', () => {
+		const spec = blueprint('console-app', {
+			src: [],
+			app: ['core', 'browser', 'server'],
+		})
+		const plan = blueprintToPlan(spec)
+		const paths = new Set(plan.artifacts.map((artifact) => artifact.path))
+		const tsconfig = plan.artifacts.find((artifact) => artifact.path === 'tsconfig.json')
+		const vite = plan.artifacts.find((artifact) => artifact.path === 'vite.config.ts')
+		const serverTypes = plan.artifacts.find((artifact) => artifact.path === 'app/server/types.ts')
+		const serverRunner = plan.artifacts.find(
+			(artifact) => artifact.path === 'app/server/ApplicationServerRunner.ts',
+		)
+		const serverFactories = plan.artifacts.find(
+			(artifact) => artifact.path === 'app/server/factories.ts',
+		)
+
+		expect(tsconfig?.content).toContain('"@app/core"')
+		expect(tsconfig?.content).toContain('"@app/browser"')
+		expect(tsconfig?.content).toContain('"@app/server"')
+		expect(vite?.content).toBe(applicationViteConfig([], spec.app))
+		expect(vite?.content).toContain('projects: [appCore, appBrowser(), appServer, policy, guides]')
+		expect(
+			plan.artifacts.find((artifact) => artifact.path === 'app/server/main.ts')?.content,
+		).toContain('startApplicationServer()')
+		expect(serverTypes?.content).toContain('start(): void\n\tstop(): Promise<void>')
+		expect(serverFactories?.content).toContain(
+			'function startApplicationServer(\n\toptions: ApplicationServerOptions = {},\n): ApplicationServerRunnerInterface',
+		)
+		expect(serverFactories?.content).toContain('return runner')
+		expect(serverRunner?.content).not.toContain('function startApplicationServer')
+		for (const path of [
+			'configs/app/tsconfig.core.json',
+			'configs/app/tsconfig.browser.json',
+			'configs/app/tsconfig.server.json',
+			'configs/app/vite.browser.config.ts',
+			'configs/app/vite.server.config.ts',
+			'app/core/index.ts',
+			'app/browser/index.html',
+			'app/browser/ApplicationView.vue',
+			'app/server/main.ts',
+			'app/server/ApplicationServerRunner.ts',
+			'tests/app/core/factories.test.ts',
+			'tests/app/browser/factories.test.ts',
+			'tests/app/server/ApplicationServer.test.ts',
+		]) {
+			expect({ path, exists: paths.has(path) }).toEqual({ path, exists: true })
+		}
+	})
+
+	it('keeps browser-only and server-only applications independent of app/core', () => {
+		const browser = applicationArtifacts(blueprint('browser-app', { src: [], app: ['browser'] }))
+		const server = applicationArtifacts(blueprint('server-app', { src: [], app: ['server'] }))
+
+		expect(browser.some((artifact) => artifact.path === 'app/core/index.ts')).toBe(false)
+		expect(
+			browser.find((artifact) => artifact.path === 'app/browser/factories.ts')?.content,
+		).toContain("from './constants.js'")
+		expect(server.some((artifact) => artifact.path === 'app/core/index.ts')).toBe(false)
+		expect(
+			server.find((artifact) => artifact.path === 'app/server/constants.ts')?.content,
+		).toContain("APP_NAME = 'server-app'")
+	})
+
+	it('serializes hostile names for TypeScript strings and HTML text nodes', () => {
+		const hostile = `x'</title><script>throw new Error("owned")</script>`
+		const artifacts = applicationArtifacts({
+			...blueprint('safe', { src: [], app: ['core', 'browser', 'server'] }),
+			name: hostile,
+		})
+		const core = artifacts.find((artifact) => artifact.path === 'app/core/constants.ts')
+		const html = artifacts.find((artifact) => artifact.path === 'app/browser/index.html')
+
+		expect(core?.content).toContain(`APP_NAME = ${serializeTypeScriptString(hostile)}`)
+		expect(html?.content).not.toContain('<script>')
+		expect(html?.content).toContain('&lt;script&gt;')
+	})
+
+	it('preserves host-independent core and disjoint browser/server implementation direction', () => {
+		const artifacts = applicationArtifacts(
+			blueprint('application', {
+				src: [],
+				app: ['core', 'browser', 'server'],
+			}),
+		)
+		const coreContent = artifacts
+			.filter((artifact) => artifact.path.startsWith('app/core/'))
+			.map((artifact) => artifact.content ?? '')
+			.join('\n')
+		const browserContent = artifacts
+			.filter((artifact) => artifact.path.startsWith('app/browser/'))
+			.map((artifact) => artifact.content ?? '')
+			.join('\n')
+		const serverContent = artifacts
+			.filter((artifact) => artifact.path.startsWith('app/server/'))
+			.map((artifact) => artifact.content ?? '')
+			.join('\n')
+
+		expect(coreContent).not.toMatch(/node:|from 'vue'|@app\/(?:browser|server)/)
+		expect(browserContent).not.toContain('@app/server')
+		expect(serverContent).not.toContain('@app/browser')
+	})
+
+	it('builds check-only app tsconfigs and thin executable Vite wrappers', () => {
+		expect(appTsconfig('core', true)).toContain('"types": []')
+		for (const extension of TYPESCRIPT_EXTENSIONS) {
+			expect(appTsconfig('browser', true)).toContain(`"../../app/browser/**/*.${extension}"`)
+			expect(appTsconfig('browser', true)).toContain(`"../../app/core/**/*.${extension}"`)
+			expect(appTsconfig('server', false)).not.toContain(`"../../app/core/**/*.${extension}"`)
+		}
+		expect(appViteConfig('browser')).toContain('appBrowser()')
+		expect(appViteConfig('server')).toContain('appServer()')
+	})
+})
+
 describe('fillArtifact', () => {
-	it('fills a template into a template-origin artifact without a surface', () => {
+	it('fills a template into a template-origin artifact without a environment', () => {
 		const artifact = fillArtifact('README.md', 'docs', 'readme', {
 			name: 'router',
-			pascal: 'Router',
+			title: '@orkestrel/router',
+			description: 'A router.',
+			install: 'Install it.',
+			usage: 'Use it.',
 		})
 		expect(artifact.group).toBe('docs')
 		expect(artifact.origin).toBe('template')
-		expect(artifact.surface).toBeUndefined()
+		expect(artifact.environment).toBeUndefined()
 		expect(artifact.content).toContain('router')
 	})
 
-	it('tags the artifact with a surface when provided', () => {
+	it('tags the artifact with a environment when provided', () => {
 		const artifact = fillArtifact(
 			'src/core/types.ts',
 			'source',
@@ -90,7 +327,7 @@ describe('fillArtifact', () => {
 			{ pascal: 'Router' },
 			'core',
 		)
-		expect(artifact.surface).toBe('core')
+		expect(artifact.environment).toBe('core')
 	})
 
 	it('throws on an unknown template id', () => {
@@ -98,25 +335,39 @@ describe('fillArtifact', () => {
 	})
 })
 
-describe('surfaceVariant', () => {
-	it('resolves a sole surface', () => {
-		expect(surfaceVariant(['core'])).toBe('core')
-		expect(surfaceVariant(['browser'])).toBe('browser')
-		expect(surfaceVariant(['server'])).toBe('server')
+describe('generated test formatting boundaries', () => {
+	it('breaks a long explicit entity construction at the call arguments', () => {
+		const spec = blueprint('scaffold-mixed-layer-acceptance', { src: ['core'] })
+		const test = testArtifacts(spec, pascalCase(spec.name)).find(
+			(artifact) => artifact.path === 'tests/src/core/ScaffoldMixedLayerAcceptance.test.ts',
+		)
+
+		expect(test?.content).toContain(
+			"const instance: ScaffoldMixedLayerAcceptanceInterface = new ScaffoldMixedLayerAcceptance({\n\t\t\tid: 'example',\n\t\t})",
+		)
+		expect(test?.content).not.toContain('ScaffoldMixedLayerAcceptanceInterface =\n')
+	})
+})
+
+describe('srcVariant', () => {
+	it('resolves a sole environment', () => {
+		expect(srcVariant(['core'])).toBe('core')
+		expect(srcVariant(['browser'])).toBe('browser')
+		expect(srcVariant(['server'])).toBe('server')
 	})
 
-	it('resolves multi for two or more surfaces', () => {
-		expect(surfaceVariant(['core', 'server'])).toBe('multi')
-		expect(surfaceVariant(['core', 'browser', 'server'])).toBe('multi')
+	it('resolves multi for two or more src', () => {
+		expect(srcVariant(['core', 'server'])).toBe('multi')
+		expect(srcVariant(['core', 'browser', 'server'])).toBe('multi')
 	})
 
 	it('falls back to core for an empty list', () => {
-		expect(surfaceVariant([])).toBe('core')
+		expect(srcVariant([])).toBe('core')
 	})
 })
 
 describe('entryFields', () => {
-	it('multi-surface: cjs main/module, no types', () => {
+	it('multi-environment: cjs main/module, no types', () => {
 		const entry = entryFields(['core', 'server'])
 		expect(entry.main).toBe('./dist/src/core/index.cjs')
 		expect(entry.module).toBe('./dist/src/core/index.js')
@@ -186,7 +437,7 @@ describe('exportsMap', () => {
 		})
 	})
 
-	it('multi-surface: root dual condition + per-surface subpaths, browser import-only', () => {
+	it('multi-environment: root dual condition + per-environment subpaths, browser import-only', () => {
 		const map = exportsMap(['core', 'browser', 'server'])
 		expect(map['.']).toEqual(dualCondition('./dist/src/core/index'))
 		expect(map['./browser']).toEqual({
@@ -211,7 +462,7 @@ describe('devDependenciesFor', () => {
 	it('carries the baseline unconditionally', () => {
 		const deps = devDependenciesFor([])
 		expect(deps.typescript).toBe('^6.0.3')
-		expect(deps['@vitest/browser-playwright']).toBe('^4.1.10')
+		expect(deps['@vitest/browser-playwright']).toBeUndefined()
 	})
 
 	it('merges extras on top, extras winning on collision', () => {
@@ -246,9 +497,9 @@ describe('packageManifest', () => {
 		expect(manifest.peerDependenciesMeta).toBeUndefined()
 	})
 
-	it('P2: every peer is ALSO dev-installed — merges into devDependencies at its peer range', () => {
+	it('dev-installs every peer at its peer range', () => {
 		const spec = blueprint('mcp', {
-			surfaces: ['core', 'server'],
+			src: ['core', 'server'],
 			peers: [dependency('@orkestrel/router', '^0.0.4'), dependency('@orkestrel/server', '^0.0.6')],
 		})
 		const manifest = readManifest(packageManifest(spec))
@@ -257,9 +508,9 @@ describe('packageManifest', () => {
 		expect(dev['@orkestrel/server']).toBe('^0.0.6')
 	})
 
-	it('P3: devDependencies is a SINGLE code-unit-sorted record — peers interleave with the baseline, not appended (grounded against the live @orkestrel/mcp exemplar)', () => {
+	it('sorts peers and baseline dependencies together by code unit', () => {
 		const spec = blueprint('mcp', {
-			surfaces: ['core', 'server'],
+			src: ['core', 'server'],
 			peers: [dependency('@orkestrel/router', '^0.0.4'), dependency('@orkestrel/server', '^0.0.6')],
 		})
 		const manifest = readManifest(packageManifest(spec))
@@ -271,7 +522,6 @@ describe('packageManifest', () => {
 			'@orkestrel/scaffold',
 			'@orkestrel/server',
 			'@types/node',
-			'@vitest/browser-playwright',
 			'oxfmt',
 			'oxlint',
 			'typescript',
@@ -282,7 +532,7 @@ describe('packageManifest', () => {
 	})
 
 	it('a non-engine (child) blueprint carries no bin/build:host tax and keeps @orkestrel/scaffold as a devDependency', () => {
-		const spec = blueprint('router', { surfaces: ['core', 'server'] })
+		const spec = blueprint('router', { src: ['core', 'server'] })
 		const manifest = readManifest(packageManifest(spec))
 		expect(manifest.bin).toBeUndefined()
 		const scripts = readRecord(manifest.scripts)
@@ -293,9 +543,10 @@ describe('packageManifest', () => {
 	})
 
 	it('an engine blueprint carries the bin/build:host self-hosting tax and omits its own devDependency', () => {
-		const spec = blueprint('scaffold', { surfaces: ['core', 'server'], engine: true })
+		const spec = blueprint('scaffold', { src: ['core', 'server'], engine: true })
 		const manifest = readManifest(packageManifest(spec))
 		expect(manifest.bin).toEqual({ scaffold: './dist/bin/scaffold.js' })
+		expect(manifest.files).toEqual(['dist/src', 'dist/bin', 'dist/host', 'README.md'])
 		expect(manifest.sideEffects).toEqual(['./src/bin/scaffold.ts', './dist/bin/scaffold.js'])
 		const scripts = readRecord(manifest.scripts)
 		expect(scripts.scaffold).toBe('node ./dist/bin/scaffold.js')
@@ -303,15 +554,23 @@ describe('packageManifest', () => {
 		expect(scripts['test:src:bin']).toBe(
 			'vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin',
 		)
+		expect(scripts['test:integration']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project integration',
+		)
+		expect(scripts.prepublishOnly).toBe(
+			'npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:integration',
+		)
 		expect(scripts['build:src:bin']).toBe('vite build --config configs/src/vite.bin.config.ts')
 		expect(scripts.build).toBe('npm run clean && npm run build:src && npm run build:host')
 		const dev = readRecord(manifest.devDependencies)
 		expect(dev['@orkestrel/scaffold']).toBeUndefined()
+		expect(dev['@vitest/browser-playwright']).toBe('^4.1.10')
+		expect(dev.playwright).toBe('^1.61.1')
 	})
 })
 
 describe('rootTsconfig', () => {
-	it('emits one @src/<surface> path alias per declared surface, in order', () => {
+	it('emits one @src/<environment> path alias per declared environment, in order', () => {
 		const config = readRecord(parseJSON(rootTsconfig(['core', 'server'])))
 		const paths = readRecord(readRecord(config.compilerOptions).paths)
 		expect(Object.keys(paths)).toEqual(['@src/core', '@src/server'])
@@ -319,97 +578,65 @@ describe('rootTsconfig', () => {
 	})
 })
 
-describe('rootViteConfig / singleSurfaceViteConfig', () => {
+describe('rootViteConfig / singleSrcViteConfig', () => {
 	it('core-only carries no Playwright import anywhere', () => {
 		const content = rootViteConfig(['core'])
 		expect(content).not.toContain('@vitest/browser-playwright')
 		expect(content).toContain('srcCore')
 	})
 
-	it('multi-surface always ships Playwright unconditionally', () => {
+	it('non-browser src do not ship Playwright', () => {
 		const content = rootViteConfig(['core', 'server'])
-		expect(content).toContain('@vitest/browser-playwright')
+		expect(content).not.toContain('@vitest/browser-playwright')
 		expect(content).toContain('srcServer')
+		expect(content).not.toContain("formats: ['es', 'cjs']")
 	})
 
-	it('server-only is the surface factory itself as base, no @src/core externalize', () => {
+	it('mixed source/application config omits library formats when server output is explicit', () => {
+		const content = applicationViteConfig(['core', 'server'], ['core', 'server'])
+		expect(content).toContain('srcServer')
+		expect(content).not.toContain("formats: ['es', 'cjs']")
+		expect(applicationViteConfig(['server'], ['server'])).toContain("formats: ['es', 'cjs']")
+	})
+
+	it('keeps deployable application builds minified without public source maps', () => {
+		const content = applicationViteConfig([], ['browser', 'server'])
+
+		expect(content).not.toContain('sourcemap: true')
+		expect(content).not.toContain('minify: false')
+		expect(content).toContain('orkestrel-environment-boundary')
+		expect(content).toContain("environmentBoundary('app/browser')")
+		expect(content).toContain('prepareHtml()')
+		expect(content).toContain('restoreHtml()')
+		expect(content).toContain('finalizeHtml()')
+		expect(content).toContain("outputBoundary('dist/app/browser'),")
+		expect(content).toContain('const environmentKeys = new Set<string>()')
+		expect(content).toContain('handler: maskIgnoredHtml.bind(undefined, environmentKeys)')
+		expect(content).not.toContain('HTML_ENVIRONMENT_KEYS')
+		expect(content).toContain('HTML_SECURITY_PREFIX')
+		expect(content).toContain("script-src 'self'")
+		expect(content).toContain('Classic external scripts are not permitted')
+		expect(content).toContain('Module script URLs must remain in the local Vite graph')
+		expect(content).toContain('function appBrowser(...config: readonly never[])')
+		expect(content).toContain('Browser configuration overrides are not permitted')
+		expect(content).toContain('Browser assets must remain external for output auditing')
+		expect(content).toContain('Rolldown output directories and files cannot override')
+		expect(content).toContain('@(?:app|src)\\/server')
+		expect(content).toContain('isBuiltin(sourcePath)')
+		expect(content).toContain('containedPath(root, physical)')
+		expect(content).toContain("Object.getOwnPropertyDescriptor(manifest, 'name')?.value")
+		expect(content).toContain('Dynamic imports must use static string values')
+	})
+
+	it('server-only is the environment factory itself as base, no @src/core externalize', () => {
 		const content = rootViteConfig(['server'])
 		expect(content).not.toContain('@src/core')
 		expect(content).toContain('srcServer')
 		expect(content).not.toContain('@vitest/browser-playwright')
+		expect(content).toContain("environmentBoundary('src/server')")
 	})
 
-	it('server-only produces this EXACT byte-for-byte vite.config.ts (breaks the blueprintToPlan/direct-helper drift tautology)', () => {
-		expect(rootViteConfig(['server'])).toBe(`import type { UserConfig } from 'vite'
-import { defineConfig, mergeConfig } from 'vitest/config'
-import tsconfig from './tsconfig.json' with { type: 'json' }
-import { fileURLToPath, URL } from 'node:url'
-
-export function resolveWorkspacePath(relativePath: string): string {
-	return fileURLToPath(new URL(relativePath, import.meta.url))
-}
-
-const resolve = {
-	alias: Object.entries(tsconfig.compilerOptions.paths).reduce(
-		(a, [k, v]) => Object.assign(a, { [k]: resolveWorkspacePath(v[0]) }),
-		{},
-	),
-}
-
-export const srcServer = (config?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			build: {
-				emptyOutDir: true,
-				sourcemap: true,
-				minify: false,
-				lib: {
-					entry: resolveWorkspacePath('src/server/index.ts'),
-					formats: ['es', 'cjs'],
-					fileName: (format: string) => (format === 'es' ? 'index.js' : 'index.cjs'),
-				},
-				outDir: 'dist/src/server',
-				target: 'node24',
-				rolldownOptions: {
-					external: (id: string) => id.startsWith('node:') || id.startsWith('@orkestrel/'),
-				},
-			},
-			test: {
-				name: { label: 'src:server', color: 'red' },
-				include: ['tests/src/server/**/*.test.ts'],
-				setupFiles: ['./tests/setup.ts', './tests/setupServer.ts'],
-				environment: 'node',
-				browser: { enabled: false },
-			},
-		},
-		config ?? {},
-	)
-
-export const guides = (config?: UserConfig): UserConfig =>
-	srcServer(
-		mergeConfig(
-			{
-				test: {
-					name: { label: 'guides', color: 'green' },
-					include: ['tests/guides/**/*.test.ts'],
-					exclude: ['tests/src/**/*.test.ts', 'tests/setup.test.ts'],
-				},
-			},
-			config ?? {},
-		),
-	)
-
-export default defineConfig({
-	resolve,
-	test: {
-		projects: [srcServer, guides],
-	},
-})
-`)
-	})
-
-	it('browser-only is the surface factory itself as base, ships Playwright', () => {
+	it('browser-only is the environment factory itself as base, ships Playwright', () => {
 		const content = rootViteConfig(['browser'])
 		expect(content).not.toContain('@src/core')
 		expect(content).toContain('srcBrowser')
@@ -423,14 +650,22 @@ export default defineConfig({
 		const engineContent = rootViteConfig(['core', 'server'], true)
 		expect(engineContent).toContain("entry: resolveWorkspacePath('src/bin/scaffold.ts')")
 		expect(engineContent).toContain("outDir: 'dist/bin'")
-		expect(engineContent).toContain('projects: [srcCore, srcServer, guides, srcBin]')
+		expect(engineContent).toContain(
+			'projects: [srcCore, srcServer, policy, guides, srcBin, integration]',
+		)
+		expect(engineContent).toContain("include: ['tests/integration/**/*.test.ts']")
 	})
 })
 
 describe('coreTsconfig / coreViteConfig', () => {
 	it('coreTsconfig points rootDir/outDir at src/core', () => {
 		const config = readRecord(parseJSON(coreTsconfig()))
-		expect(readRecord(config.compilerOptions).rootDir).toBe('../../src/core')
+		const options = readRecord(config.compilerOptions)
+		expect(options.rootDir).toBe('../../src/core')
+		expect(options.types).toEqual([])
+		for (const extension of TYPESCRIPT_EXTENSIONS) {
+			expect(coreTsconfig()).toContain(`"../../src/core/**/*.${extension}"`)
+		}
 	})
 
 	it('coreViteConfig inlines its own build.lib', () => {
@@ -438,22 +673,25 @@ describe('coreTsconfig / coreViteConfig', () => {
 	})
 })
 
-describe('surfaceTsconfig / surfaceViteConfig', () => {
-	it('surfaceTsconfig points at the whole src/dist-src tree', () => {
-		const config = readRecord(parseJSON(surfaceTsconfig('server')))
+describe('srcTsconfig / srcViteConfig', () => {
+	it('srcTsconfig points at the whole src/dist-src tree', () => {
+		const config = readRecord(parseJSON(srcTsconfig('server')))
 		expect(readRecord(config.compilerOptions).rootDir).toBe('../../src')
 		expect(readRecord(config.compilerOptions).outDir).toBe('../../dist/src')
+		for (const extension of TYPESCRIPT_EXTENSIONS) {
+			expect(srcTsconfig('server')).toContain(`"../../src/server/**/*.${extension}"`)
+		}
 	})
 
-	it('surfaceViteConfig anchors on the surface factory', () => {
-		expect(surfaceViteConfig('browser')).toContain('srcBrowser')
-		expect(surfaceViteConfig('server')).toContain('srcServer')
+	it('srcViteConfig anchors on the environment factory', () => {
+		expect(srcViteConfig('browser')).toContain('srcBrowser')
+		expect(srcViteConfig('server')).toContain('srcServer')
 	})
 })
 
 describe('configArtifacts', () => {
-	it('drafts the root pair plus each declared surface pair', () => {
-		const artifacts = configArtifacts(blueprint('router', { surfaces: ['core', 'server'] }))
+	it('drafts the root pair plus each declared environment pair', () => {
+		const artifacts = configArtifacts(blueprint('router', { src: ['core', 'server'] }))
 		const paths = artifacts.map((artifact) => artifact.path)
 		expect(paths).toContain('tsconfig.json')
 		expect(paths).toContain('vite.config.ts')
@@ -463,37 +701,34 @@ describe('configArtifacts', () => {
 })
 
 describe('sourceArtifacts', () => {
-	it('drafts one full stub quartet per declared surface', () => {
-		const artifacts = sourceArtifacts(
-			blueprint('router', { surfaces: ['core', 'browser'] }),
-			'Router',
-		)
+	it('drafts one full stub quartet per declared environment', () => {
+		const artifacts = sourceArtifacts(blueprint('router', { src: ['core', 'browser'] }), 'Router')
 		const paths = artifacts.map((artifact) => artifact.path)
-		const surfaces: readonly Surface[] = ['core', 'browser']
-		for (const surface of surfaces) {
-			expect(paths).toContain(`src/${surface}/types.ts`)
-			expect(paths).toContain(`src/${surface}/Router.ts`)
-			expect(paths).toContain(`src/${surface}/factories.ts`)
-			expect(paths).toContain(`src/${surface}/index.ts`)
+		const src: readonly Environment[] = ['core', 'browser']
+		for (const environment of src) {
+			expect(paths).toContain(`src/${environment}/types.ts`)
+			expect(paths).toContain(`src/${environment}/Router.ts`)
+			expect(paths).toContain(`src/${environment}/factories.ts`)
+			expect(paths).toContain(`src/${environment}/index.ts`)
 		}
 	})
 })
 
 describe('paritySpecifiers', () => {
-	it('resolves the primary surface to core when declared', () => {
-		const content = paritySpecifiers(blueprint('router', { surfaces: ['core', 'server'] }))
+	it('resolves the primary environment to core when declared', () => {
+		const content = paritySpecifiers(blueprint('router', { src: ['core', 'server'] }))
 		expect(content).toContain("'@orkestrel/router': 'src/core'")
 	})
 
-	it('resolves the primary surface to the sole declared surface otherwise', () => {
-		const content = paritySpecifiers(blueprint('router', { surfaces: ['server'] }))
+	it('resolves the primary environment to the sole declared environment otherwise', () => {
+		const content = paritySpecifiers(blueprint('router', { src: ['server'] }))
 		expect(content).toContain("'@orkestrel/router': 'src/server'")
 	})
 })
 
 describe('testArtifacts', () => {
-	it('drafts setup.ts, per-surface pairs, and the always-on parity test', () => {
-		const artifacts = testArtifacts(blueprint('router', { surfaces: ['server'] }), 'Router')
+	it('drafts setup.ts, per-environment pairs, and the always-on parity test', () => {
+		const artifacts = testArtifacts(blueprint('router', { src: ['server'] }), 'Router')
 		const paths = artifacts.map((artifact) => artifact.path)
 		expect(paths).toContain('tests/setup.ts')
 		expect(paths).toContain('tests/setupServer.ts')
@@ -505,8 +740,8 @@ describe('testArtifacts', () => {
 })
 
 describe('guideArtifacts / guideMemberTable', () => {
-	it('dedupes member rows across surfaces sharing the same name/summary', () => {
-		const spec = blueprint('router', { surfaces: ['core', 'server'] })
+	it('dedupes member rows across src sharing the same name/summary', () => {
+		const spec = blueprint('router', { src: ['core', 'server'] })
 		const members = blueprintToMembers(spec)
 		const table = guideMemberTable('entity', members)
 		const rows = table.split('\n').filter((line) => line.startsWith('| `Router`'))
@@ -514,7 +749,7 @@ describe('guideArtifacts / guideMemberTable', () => {
 	})
 
 	it('emits the package guide and guides README', () => {
-		const spec = blueprint('router', { surfaces: ['core'] })
+		const spec = blueprint('router', { src: ['core'] })
 		const artifacts = guideArtifacts(spec, 'Router', blueprintToMembers(spec))
 		const paths = artifacts.map((artifact) => artifact.path)
 		expect(paths).toContain('guides/src/router.md')
@@ -523,7 +758,7 @@ describe('guideArtifacts / guideMemberTable', () => {
 
 	it('vendors a guide mirror only for the seven grounded @orkestrel/* dependency names', () => {
 		const spec = blueprint('router', {
-			surfaces: ['core'],
+			src: ['core'],
 			dependencies: [
 				dependency('@orkestrel/contract', '^0.0.5'),
 				dependency('@orkestrel/some-outside-thing', '^1.0.0'),
@@ -535,8 +770,8 @@ describe('guideArtifacts / guideMemberTable', () => {
 		expect(paths).not.toContain('guides/src/some-outside-thing.md')
 	})
 
-	it("the package guide stub's Surface usage example self-imports via @orkestrel/<name>, never @src/<name>", () => {
-		const spec = blueprint('router', { surfaces: ['core'] })
+	it("the package guide stub's Environment usage example self-imports via @orkestrel/<name>, never @src/<name>", () => {
+		const spec = blueprint('router', { src: ['core'] })
 		const artifacts = guideArtifacts(spec, 'Router', blueprintToMembers(spec))
 		const guide = artifacts.find((artifact) => artifact.path === 'guides/src/router.md')
 		expect(guide?.content).toContain("import { createRouter } from '@orkestrel/router'")
@@ -568,6 +803,15 @@ describe('applyOverrides', () => {
 		expect(result[0]?.content).toBeUndefined()
 	})
 
+	it('never overrides the blueprint-owned package manifest', () => {
+		const artifacts: readonly Artifact[] = [
+			{ path: 'package.json', group: 'manifest', origin: 'computed', content: '{"private":true}' },
+		]
+		const result = applyOverrides(artifacts, [override('package.json', '{"private":false}')])
+
+		expect(result[0]?.content).toBe('{"private":true}')
+	})
+
 	it('leaves a non-matching override unapplied', () => {
 		const artifacts: readonly Artifact[] = [
 			{ path: 'README.md', group: 'docs', origin: 'template', content: '# old' },
@@ -578,29 +822,37 @@ describe('applyOverrides', () => {
 })
 
 describe('direct-helper / blueprintToPlan cross-consistency', () => {
-	describe.each(VARIANTS)('$label', ({ surfaces }) => {
+	describe.each(SOURCE_VARIANTS)('$label', ({ src }) => {
 		it('vite.config.ts content matches the blueprintToPlan-emitted artifact byte for byte', () => {
-			const spec: Blueprint = blueprint('router', { surfaces })
+			const spec: Blueprint = blueprint('router', { src })
 			const plan = blueprintToPlan(spec, ['configs'])
 			const emitted = plan.artifacts.find((artifact) => artifact.path === 'vite.config.ts')
-			expect(emitted?.content).toBe(rootViteConfig(surfaces))
+			expect(emitted?.content).toBe(rootViteConfig(src))
 		})
 
-		it('tests/guides/src/parity.test.ts content matches the direct paritySpecifiers-derived artifact byte for byte', () => {
-			const spec: Blueprint = blueprint('router', { surfaces })
+		it('guide-parity setup and suite match their direct artifacts byte for byte', () => {
+			const spec: Blueprint = blueprint('router', { src })
 			const plan = blueprintToPlan(spec, ['tests'])
-			const emitted = plan.artifacts.find(
+			const emittedSuite = plan.artifacts.find(
 				(artifact) => artifact.path === 'tests/guides/src/parity.test.ts',
 			)
-			const direct = testArtifacts(spec, pascalCase(spec.name)).find(
+			const emittedSetup = plan.artifacts.find(
+				(artifact) => artifact.path === 'tests/setupGuides.ts',
+			)
+			const directArtifacts = testArtifacts(spec, pascalCase(spec.name))
+			const directSuite = directArtifacts.find(
 				(artifact) => artifact.path === 'tests/guides/src/parity.test.ts',
 			)
-			expect(emitted?.content).toBe(direct?.content)
-			expect(emitted?.content).toContain(paritySpecifiers(spec))
+			const directSetup = directArtifacts.find(
+				(artifact) => artifact.path === 'tests/setupGuides.ts',
+			)
+			expect(emittedSuite?.content).toBe(directSuite?.content)
+			expect(emittedSetup?.content).toBe(directSetup?.content)
+			expect(emittedSetup?.content).toContain(paritySpecifiers(spec))
 		})
 
 		it('package.json content matches the direct packageManifest output byte for byte', () => {
-			const spec: Blueprint = blueprint('router', { surfaces })
+			const spec: Blueprint = blueprint('router', { src })
 			const plan = blueprintToPlan(spec, ['manifest'])
 			const emitted = plan.artifacts.find((artifact) => artifact.path === 'package.json')
 			expect(emitted?.content).toBe(packageManifest(spec))

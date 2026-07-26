@@ -8,7 +8,20 @@ import {
 	stringShape,
 	unionShape,
 } from '@orkestrel/contract'
-import { CATEGORIES, FRESHNESS, GROUPS, SURFACES } from './constants.js'
+import {
+	CATEGORIES,
+	FRESHNESS,
+	GROUPS,
+	MAX_ARTIFACT_BYTES,
+	MAX_ARTIFACT_HEX_LENGTH,
+	MAX_COLLECTION_ITEMS,
+	MAX_DEPENDENCY_NAME_LENGTH,
+	MAX_NAME_LENGTH,
+	MAX_PATH_LENGTH,
+	MAX_RANGE_LENGTH,
+	ENVIRONMENTS,
+	SYNC_BASELINE_PATTERN,
+} from './constants.js'
 
 /**
  * Build the `Dependency` object shape.
@@ -17,8 +30,8 @@ import { CATEGORIES, FRESHNESS, GROUPS, SURFACES } from './constants.js'
  */
 export function dependencyShape() {
 	return objectShape({
-		name: stringShape({ min: 1 }),
-		range: stringShape({ min: 1 }),
+		name: stringShape({ min: 1, max: MAX_DEPENDENCY_NAME_LENGTH }),
+		range: stringShape({ min: 1, max: MAX_RANGE_LENGTH }),
 		optional: optionalShape(booleanShape()),
 	})
 }
@@ -30,8 +43,8 @@ export function dependencyShape() {
  */
 export function overrideShape() {
 	return objectShape({
-		path: stringShape({ min: 1 }),
-		content: stringShape({ min: 1 }),
+		path: stringShape({ min: 1, max: MAX_PATH_LENGTH }),
+		content: stringShape({ min: 1, max: MAX_ARTIFACT_BYTES }),
 	})
 }
 
@@ -39,27 +52,32 @@ export function overrideShape() {
  * Build the `Blueprint` object shape.
  *
  * @remarks
- * `surfaces` is a `literalShape(SURFACES)` array with `min: 1`; `name` is a
- * plain `min: 1` string, NOT pattern-constrained, so `generate` stays
- * satisfiable — the `NAME_PATTERN` law lives in the semantic pass
- * (`validateBlueprint`), never in this compiled contract. `peers` and `extras`
- * are `dependencyShape()` arrays alongside `dependencies` — the cross-array
- * uniqueness and overlap rules also live in `validateBlueprint`.
+ * `src` and `app` are independent `literalShape(ENVIRONMENTS)` arrays; the
+ * cross-field requirement that at least one is non-empty lives in
+ * `hasBlueprintEnvironment`. `name` is a plain `min: 1` string, NOT
+ * pattern-constrained, so `generate` stays satisfiable — the `NAME_PATTERN`
+ * law lives in the semantic pass (`validateBlueprint`), never in this compiled
+ * contract. `peers` and `extras` are `dependencyShape()` arrays alongside
+ * `dependencies` — the cross-array uniqueness and overlap rules also live in
+ * `validateBlueprint`.
  *
  * @returns A fresh `ContractShape` describing the closed `Blueprint` spec.
  */
 export function blueprintShape() {
 	return objectShape({
-		name: stringShape({ min: 1 }),
-		description: optionalShape(stringShape()),
-		keywords: arrayShape(stringShape()),
-		surfaces: arrayShape(literalShape(SURFACES), { min: 1 }),
-		dependencies: arrayShape(dependencyShape()),
-		peers: arrayShape(dependencyShape()),
-		extras: arrayShape(dependencyShape()),
-		version: stringShape({ min: 1 }),
-		engines: stringShape({ min: 1 }),
-		overrides: arrayShape(overrideShape()),
+		name: stringShape({ min: 1, max: MAX_NAME_LENGTH }),
+		description: optionalShape(stringShape({ max: MAX_ARTIFACT_BYTES })),
+		keywords: arrayShape(stringShape({ max: MAX_PATH_LENGTH }), {
+			max: MAX_COLLECTION_ITEMS,
+		}),
+		src: arrayShape(literalShape(ENVIRONMENTS), { max: ENVIRONMENTS.length }),
+		app: arrayShape(literalShape(ENVIRONMENTS), { max: ENVIRONMENTS.length }),
+		dependencies: arrayShape(dependencyShape(), { max: MAX_COLLECTION_ITEMS }),
+		peers: arrayShape(dependencyShape(), { max: MAX_COLLECTION_ITEMS }),
+		extras: arrayShape(dependencyShape(), { max: MAX_COLLECTION_ITEMS }),
+		version: stringShape({ min: 1, max: MAX_RANGE_LENGTH }),
+		engines: stringShape({ min: 1, max: MAX_RANGE_LENGTH }),
+		overrides: arrayShape(overrideShape(), { max: MAX_COLLECTION_ITEMS }),
 		engine: booleanShape(),
 	})
 }
@@ -67,14 +85,14 @@ export function blueprintShape() {
 /**
  * Build the `Member` object shape.
  *
- * @returns A fresh `ContractShape` describing `{ name, category, summary, surface }`.
+ * @returns A fresh `ContractShape` describing `{ name, category, summary, environment }`.
  */
 export function memberShape() {
 	return objectShape({
-		name: stringShape({ min: 1 }),
+		name: stringShape({ min: 1, max: MAX_PATH_LENGTH }),
 		category: literalShape(CATEGORIES),
-		summary: stringShape({ min: 1 }),
-		surface: literalShape(SURFACES),
+		summary: stringShape({ min: 1, max: MAX_PATH_LENGTH }),
+		environment: literalShape(ENVIRONMENTS),
 	})
 }
 
@@ -92,19 +110,19 @@ export function memberShape() {
 export function artifactShape() {
 	return unionShape(
 		objectShape({
-			path: stringShape({ min: 1 }),
+			path: stringShape({ min: 1, max: MAX_PATH_LENGTH }),
 			group: literalShape(GROUPS),
 			origin: literalShape(['host']),
-			surface: optionalShape(literalShape(SURFACES)),
-			hex: optionalShape(stringShape()),
-			source: optionalShape(stringShape()),
+			environment: optionalShape(literalShape(ENVIRONMENTS)),
+			hex: optionalShape(stringShape({ max: MAX_ARTIFACT_HEX_LENGTH })),
+			source: optionalShape(stringShape({ max: MAX_PATH_LENGTH })),
 		}),
 		objectShape({
-			path: stringShape({ min: 1 }),
+			path: stringShape({ min: 1, max: MAX_PATH_LENGTH }),
 			group: literalShape(GROUPS),
 			origin: literalShape(['template', 'computed']),
-			surface: optionalShape(literalShape(SURFACES)),
-			content: stringShape(),
+			environment: optionalShape(literalShape(ENVIRONMENTS)),
+			content: stringShape({ max: MAX_ARTIFACT_BYTES }),
 		}),
 	)
 }
@@ -121,10 +139,10 @@ export function artifactShape() {
 export function planShape() {
 	return objectShape({
 		blueprint: blueprintShape(),
-		groups: arrayShape(literalShape(GROUPS)),
-		artifacts: arrayShape(artifactShape()),
-		trace: optionalShape(stringShape()),
-		hash: optionalShape(stringShape()),
+		groups: arrayShape(literalShape(GROUPS), { max: GROUPS.length }),
+		artifacts: arrayShape(artifactShape(), { max: MAX_COLLECTION_ITEMS }),
+		trace: optionalShape(stringShape({ max: MAX_PATH_LENGTH })),
+		hash: optionalShape(stringShape({ max: MAX_PATH_LENGTH })),
 	})
 }
 
@@ -140,24 +158,27 @@ export function planShape() {
  */
 export function syncReportShape() {
 	return objectShape({
-		target: stringShape({ min: 1 }),
+		target: stringShape({ min: 1, max: MAX_PATH_LENGTH }),
 		guides: arrayShape(
 			objectShape({
-				name: stringShape({ min: 1 }),
-				path: stringShape({ min: 1 }),
-				content: stringShape(),
+				name: stringShape({ min: 1, max: MAX_DEPENDENCY_NAME_LENGTH }),
+				path: stringShape({ min: 1, max: MAX_PATH_LENGTH }),
+				content: stringShape({ max: MAX_ARTIFACT_BYTES }),
 				freshness: literalShape(FRESHNESS),
-				note: optionalShape(stringShape()),
+				note: optionalShape(stringShape({ max: MAX_PATH_LENGTH })),
+				baseline: optionalShape(stringShape({ pattern: SYNC_BASELINE_PATTERN })),
 			}),
+			{ max: MAX_COLLECTION_ITEMS },
 		),
 		versions: arrayShape(
 			objectShape({
-				name: stringShape({ min: 1 }),
-				range: stringShape({ min: 1 }),
-				latest: stringShape(),
+				name: stringShape({ min: 1, max: MAX_DEPENDENCY_NAME_LENGTH }),
+				range: stringShape({ min: 1, max: MAX_RANGE_LENGTH }),
+				latest: stringShape({ max: MAX_RANGE_LENGTH }),
 				freshness: literalShape(FRESHNESS),
-				note: optionalShape(stringShape()),
+				note: optionalShape(stringShape({ max: MAX_PATH_LENGTH })),
 			}),
+			{ max: MAX_COLLECTION_ITEMS },
 		),
 		clean: booleanShape(),
 		failed: integerShape({ min: 0 }),

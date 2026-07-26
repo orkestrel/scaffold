@@ -87,7 +87,7 @@ Verify:
 
 ## Inspect generated outputs
 
-- build all supported surfaces;
+- build all supported environments;
 - inspect export/declaration alignment and supported runtime targets;
 - confirm required declarations, maps, and assets are present;
 - confirm secrets, temporary artifacts, and generated reports do not leak into outputs.

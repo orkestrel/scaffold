@@ -1,7 +1,7 @@
-import type { Plan, Surface } from '@src/core'
+import type { Plan, Environment } from '@src/core'
 import type { HostManifest, ManifestEntry } from '@src/server'
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { createServer as createHTTPServer } from 'node:http'
 import { createServer as createNetServer } from 'node:net'
@@ -42,7 +42,9 @@ export interface HTTPFixtureInterface {
 /** Focused package shape for filesystem-backed blueprint derivation tests. */
 export interface BlueprintFixtureOptions {
 	readonly name: string
-	readonly surfaces?: readonly Surface[]
+	readonly src?: readonly Environment[]
+	readonly app?: readonly Environment[]
+	readonly private?: boolean
 	readonly dependencies?: Record<string, string>
 	readonly peerDependencies?: Record<string, string>
 	readonly peerDependenciesMeta?: Record<string, { optional?: boolean }>
@@ -97,6 +99,7 @@ export function buildBlueprintFixture(root: string, options: BlueprintFixtureOpt
 		join(root, 'package.json'),
 		JSON.stringify({
 			name: options.name,
+			private: options.private,
 			dependencies: options.dependencies ?? {},
 			peerDependencies: options.peerDependencies ?? {},
 			peerDependenciesMeta: options.peerDependenciesMeta ?? {},
@@ -104,8 +107,11 @@ export function buildBlueprintFixture(root: string, options: BlueprintFixtureOpt
 		}),
 		'utf8',
 	)
-	for (const surface of options.surfaces ?? []) {
-		mkdirSync(join(root, 'src', surface), { recursive: true })
+	for (const environment of options.src ?? []) {
+		mkdirSync(join(root, 'src', environment), { recursive: true })
+	}
+	for (const environment of options.app ?? []) {
+		mkdirSync(join(root, 'app', environment), { recursive: true })
 	}
 	if (options.bin === true) mkdirSync(join(root, 'src', 'bin'), { recursive: true })
 }
@@ -255,7 +261,7 @@ export async function buildManifestHost(): Promise<TempDirectoryInterface> {
 /** Build the canonical plan used by manifest-aware materializer tests. */
 export function buildManifestPlan(): Plan {
 	return {
-		blueprint: blueprint('manifest-fixture', { surfaces: ['core'] }),
+		blueprint: blueprint('manifest-fixture', { src: ['core'] }),
 		groups: ['configs', 'orchestration'],
 		artifacts: [
 			{ path: '.gitignore', group: 'configs', origin: 'host' },
@@ -268,7 +274,7 @@ export function buildManifestPlan(): Plan {
 /** Build the canonical three-artifact plan used by repair tests. */
 export function buildRepairPlan(): Plan {
 	return {
-		blueprint: blueprint('repair-fixture', { surfaces: ['core'] }),
+		blueprint: blueprint('repair-fixture', { src: ['core'] }),
 		groups: ['docs'],
 		artifacts: [
 			{ path: 'a.txt', group: 'docs', origin: 'computed', content: 'A' },
@@ -341,11 +347,25 @@ export function probeDirectoryLink(): boolean {
 	}
 }
 
+/** Probe whether this filesystem resolves path segments without regard to ASCII case. */
+export function probeCaseInsensitiveFilesystem(): boolean {
+	const scratch = mkdtempSync(join(tmpdir(), 'scaffold-probe-case-'))
+	try {
+		mkdirSync(join(scratch, 'MixedCase'))
+		return existsSync(join(scratch, 'MIXEDCASE')) && existsSync(join(scratch, 'mixedcase'))
+	} finally {
+		rmSync(scratch, { recursive: true, force: true })
+	}
+}
+
 /** Whether this environment can create filesystem symlinks (POSIX with permission, or Windows in developer mode/admin). Tests guarded by `it.skipIf(!canSymlink)` skip with an advisory naming the containment case as unverified; they pass unconditionally on capable POSIX hosts. */
 export const canSymlink = probeSymlink()
 
 /** Whether this environment can create a filesystem directory link/junction. */
 export const canDirectoryLink = probeDirectoryLink()
+
+/** Whether this environment's temporary filesystem is case-insensitive. */
+export const canIgnoreFilesystemCase = probeCaseInsensitiveFilesystem()
 
 /** Whether this environment can bind Unix domain sockets. Tests guarded by `it.skipIf(!canSocket)` skip with an advisory naming the unreadable-source case as unverified; they pass unconditionally on socket-capable hosts. */
 export const canSocket = await probeSocket()

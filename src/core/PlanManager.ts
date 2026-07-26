@@ -7,8 +7,10 @@ import type {
 } from './types.js'
 import type { EmitterInterface } from '@orkestrel/emitter'
 import { Emitter } from '@orkestrel/emitter'
-import { pinPlan } from './helpers.js'
+import { pinPlan, planPayload } from './helpers.js'
+import { snapshotPlan } from './cloners.js'
 import { ScaffoldError } from './errors.js'
+import { parsePlanIds, parsePlanManagerOptions } from './parsers.js'
 
 /**
  * The self-owning, versioned/hashed plan registry (AGENTS §9).
@@ -18,17 +20,20 @@ import { ScaffoldError } from './errors.js'
  * `hash` — deterministic, no randomness. Re-adding a plan whose content is
  * unchanged resolves to the SAME id and returns the existing record
  * untouched (`version` stays put); a plan whose content differs mints a
- * fresh id at `version: 1`. The array overload of `remove` is declared FIRST
- * (AGENTS §9.2) so an id list resolves to the batch form; the batch form is
- * ALL-OR-NOTHING. After `destroy()` every method but the getters and
- * `destroy` itself throws `ScaffoldError('DESTROYED', …)`.
+ * fresh id at `version: 1`, while a distinct canonical payload with the same
+ * digest throws `INVALID`. Every stored plan and returned record is a detached,
+ * recursively frozen snapshot. The array overload of `remove` is declared
+ * FIRST (AGENTS §9.2) so an id list resolves to the batch form; the batch form
+ * is ALL-OR-NOTHING and commits every deletion before emitting. After
+ * `destroy()` every method but the getters and `destroy` itself throws
+ * `ScaffoldError('DESTROYED', …)`.
  *
  * @example
  * ```ts
  * import { blueprint, blueprintToPlan, PlanManager } from '@src/core'
  *
  * const plans = new PlanManager()
- * const record = plans.add(blueprintToPlan(blueprint('budget', { surfaces: ['core'] })))
+ * const record = plans.add(blueprintToPlan(blueprint('budget', { src: ['core'] })))
  * record.id === record.hash // true — id minted from content
  * plans.destroy()
  * ```
@@ -39,10 +44,13 @@ export class PlanManager implements PlanManagerInterface {
 	#destroyed = false
 
 	constructor(options?: PlanManagerOptions) {
-		this.#emitter = new Emitter<PlanManagerEventMap>({ on: options?.on, error: options?.error })
-		for (const plan of options?.plans ?? []) {
-			const record = this.#pin(plan)
-			this.#plans.set(record.id, record)
+		const parsed = parsePlanManagerOptions(options)
+		this.#emitter = new Emitter<PlanManagerEventMap>({
+			...(parsed.on === undefined ? {} : { on: parsed.on }),
+			...(parsed.error === undefined ? {} : { error: parsed.error }),
+		})
+		for (const plan of parsed.plans ?? []) {
+			this.#set(this.#pin(plan))
 		}
 	}
 
@@ -95,16 +103,14 @@ export class PlanManager implements PlanManagerInterface {
 	 *
 	 * @example
 	 * ```ts
-	 * const record = plans.add(blueprintToPlan(blueprint('budget', { surfaces: ['core'] })))
+	 * const record = plans.add(blueprintToPlan(blueprint('budget', { src: ['core'] })))
 	 * record.version // 1
 	 * ```
 	 */
 	add(plan: Plan): PlanRecord {
 		this.#assertAlive()
-		const record = this.#pin(plan)
-		const existing = this.#plans.get(record.id)
-		const final = existing ?? record
-		this.#plans.set(final.id, final)
+		const record = this.#pin(snapshotPlan(plan))
+		const final = this.#set(record)
 		this.#emitter.emit('add', final.id)
 		return final
 	}
@@ -119,7 +125,8 @@ export class PlanManager implements PlanManagerInterface {
 	 * `remove(id)` removes one plan, emitting `remove` and returning `true`
 	 * when it existed, `false` otherwise. `remove(ids)` is ALL-OR-NOTHING: if
 	 * any listed id is unregistered, the collection is left untouched and
-	 * `false` is returned.
+	 * `false` is returned. Successful batch and remove-all calls commit every
+	 * deletion before the first stable-order event.
 	 *
 	 * @param target - Omit to remove all, a single id, or a list of ids.
 	 * @returns `boolean` for the single-id / list-of-ids forms; `void` for the remove-all form.
@@ -130,8 +137,9 @@ export class PlanManager implements PlanManagerInterface {
 	remove(target?: string | readonly string[]): boolean | void {
 		this.#assertAlive()
 		if (target === undefined) {
-			for (const id of this.#plans.keys()) this.#emitter.emit('remove', id)
+			const ids = [...this.#plans.keys()]
 			this.#plans.clear()
+			for (const id of ids) this.#emitter.emit('remove', id)
 			return
 		}
 		if (typeof target === 'string') {
@@ -140,9 +148,13 @@ export class PlanManager implements PlanManagerInterface {
 			this.#emitter.emit('remove', target)
 			return true
 		}
-		for (const id of target) if (!this.#plans.has(id)) return false
-		for (const id of target) {
-			this.#plans.delete(id)
+		const ids = parsePlanIds(target)
+		if (ids === undefined) {
+			throw new ScaffoldError('INVALID', 'Plan ids must be a dense unique string array')
+		}
+		for (const id of ids) if (!this.#plans.has(id)) return false
+		for (const id of ids) this.#plans.delete(id)
+		for (const id of ids) {
 			this.#emitter.emit('remove', id)
 		}
 		return true
@@ -160,9 +172,21 @@ export class PlanManager implements PlanManagerInterface {
 	// Re-pin a plan and mint its record — the content hash IS the id, so an
 	// unchanged plan always resolves to the same record.
 	#pin(plan: Plan): PlanRecord {
-		const pinned = pinPlan(plan)
+		const pinned = Object.freeze(pinPlan(plan))
 		const hash = pinned.hash ?? ''
-		return { id: hash, plan: pinned, version: 1, hash }
+		return Object.freeze({ id: hash, plan: pinned, version: 1, hash })
+	}
+
+	#set(record: PlanRecord): PlanRecord {
+		const existing = this.#plans.get(record.id)
+		if (existing === undefined) {
+			this.#plans.set(record.id, record)
+			return record
+		}
+		if (planPayload(existing.plan) !== planPayload(record.plan)) {
+			throw new ScaffoldError('INVALID', 'Plan hash collision')
+		}
+		return existing
 	}
 
 	#assertAlive(): void {

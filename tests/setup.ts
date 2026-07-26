@@ -1,5 +1,145 @@
-import type { Surface, SyncReport } from '@src/core'
+import type { Environment, Plan, SyncReport } from '@src/core'
 import { attempt, isRecord, parseJSON } from '@orkestrel/contract'
+import {
+	artifactShape,
+	blueprint,
+	blueprintShape,
+	dependencyShape,
+	memberShape,
+	overrideShape,
+	planShape,
+	syncReportShape,
+} from '@src/core'
+
+/** Return the exact distinct canonical plans that share the documented 32-bit pin. */
+export function collisionPlans(): readonly [Plan, Plan] {
+	return [
+		{
+			blueprint: blueprint('x', { description: 'ld72wp13ky550' }),
+			groups: [],
+			artifacts: [],
+		},
+		{
+			blueprint: blueprint('x', { description: '1ll8cflf8mf8c' }),
+			groups: [],
+			artifacts: [],
+		},
+	]
+}
+
+/** Published-source environment matrices exercised by compiler generation tests. */
+export const SOURCE_VARIANTS: readonly {
+	readonly label: string
+	readonly src: readonly Environment[]
+}[] = Object.freeze([
+	Object.freeze({ label: 'core-only', src: Object.freeze<Environment[]>(['core']) }),
+	Object.freeze({
+		label: 'core+server',
+		src: Object.freeze<Environment[]>(['core', 'server']),
+	}),
+	Object.freeze({
+		label: 'core+browser',
+		src: Object.freeze<Environment[]>(['core', 'browser']),
+	}),
+	Object.freeze({
+		label: 'core+browser+server',
+		src: Object.freeze<Environment[]>(['core', 'browser', 'server']),
+	}),
+	Object.freeze({ label: 'server-only', src: Object.freeze<Environment[]>(['server']) }),
+	Object.freeze({ label: 'browser-only', src: Object.freeze<Environment[]>(['browser']) }),
+])
+
+/** Private-application environment matrices exercised by compiler generation tests. */
+export const APPLICATION_VARIANTS: readonly {
+	readonly label: string
+	readonly app: readonly Environment[]
+}[] = Object.freeze([
+	Object.freeze({ label: 'core', app: Object.freeze<Environment[]>(['core']) }),
+	Object.freeze({ label: 'browser', app: Object.freeze<Environment[]>(['browser']) }),
+	Object.freeze({ label: 'server', app: Object.freeze<Environment[]>(['server']) }),
+	Object.freeze({
+		label: 'core+browser',
+		app: Object.freeze<Environment[]>(['core', 'browser']),
+	}),
+	Object.freeze({
+		label: 'core+server',
+		app: Object.freeze<Environment[]>(['core', 'server']),
+	}),
+	Object.freeze({
+		label: 'core+browser+server',
+		app: Object.freeze<Environment[]>(['core', 'browser', 'server']),
+	}),
+])
+
+/** App-only and mixed workspace matrices exercised by compiler generation tests. */
+export const WORKSPACE_VARIANTS: readonly {
+	readonly label: string
+	readonly src: readonly Environment[]
+}[] = Object.freeze([
+	Object.freeze({ label: 'app-only', src: Object.freeze<Environment[]>([]) }),
+	Object.freeze({ label: 'mixed', src: Object.freeze<Environment[]>(['core']) }),
+])
+
+/** Every contract-shape factory whose schema and guard remain in lockstep. */
+export const CONTRACT_SHAPES = Object.freeze({
+	dependency: dependencyShape,
+	override: overrideShape,
+	member: memberShape,
+	artifact: artifactShape,
+	blueprint: blueprintShape,
+	plan: planShape,
+	syncReport: syncReportShape,
+})
+
+/** Contract-shape factories that support deterministic value generation. */
+export const GENERATABLE_CONTRACT_SHAPES = Object.freeze({
+	dependency: dependencyShape,
+	override: overrideShape,
+	member: memberShape,
+	artifact: artifactShape,
+	blueprint: blueprintShape,
+	plan: planShape,
+})
+
+/** Required top-level fields in every generated published-source manifest fixture. */
+export const SOURCE_MANIFEST_FIELDS: readonly string[] = Object.freeze([
+	'name',
+	'version',
+	'description',
+	'keywords',
+	'homepage',
+	'bugs',
+	'license',
+	'repository',
+	'files',
+	'type',
+	'sideEffects',
+	'main',
+	'module',
+	'exports',
+	'publishConfig',
+	'scripts',
+	'devDependencies',
+	'engines',
+])
+
+/** Required aggregate script keys in every generated published-source manifest fixture. */
+export const SOURCE_SCRIPT_KEYS: readonly string[] = Object.freeze([
+	'clean',
+	'copy',
+	'scaffold',
+	'check',
+	'check:src',
+	'format',
+	'format:check',
+	'lint:check',
+	'test',
+	'test:src',
+	'test:guides',
+	'build',
+	'build:src',
+	'prepublishOnly',
+])
 
 // ── Call recorder (a real callback, not a mock) ──────────────────────────────
 //
@@ -69,19 +209,34 @@ export function readRecord(value: unknown): Record<string, unknown> {
 	return value
 }
 
-/** Build the implementation stub paths emitted for one surface. */
-export function buildSurfaceStubPaths(surface: Surface, pascal = 'Router'): readonly string[] {
+/** Build the implementation stub paths emitted for one environment. */
+export function buildEnvironmentStubPaths(
+	environment: Environment,
+	pascal = 'Router',
+): readonly string[] {
 	return [
-		`src/${surface}/types.ts`,
-		`src/${surface}/${pascal}.ts`,
-		`src/${surface}/factories.ts`,
-		`src/${surface}/index.ts`,
+		`src/${environment}/types.ts`,
+		`src/${environment}/${pascal}.ts`,
+		`src/${environment}/factories.ts`,
+		`src/${environment}/index.ts`,
 	]
 }
 
-/** Build the test paths emitted for one surface. */
-export function buildSurfaceTestPaths(surface: Surface, pascal = 'Router'): readonly string[] {
-	return [`tests/src/${surface}/${pascal}.test.ts`, `tests/src/${surface}/factories.test.ts`]
+/** Build the test paths emitted for one environment. */
+export function buildEnvironmentTestPaths(
+	environment: Environment,
+	pascal = 'Router',
+): readonly string[] {
+	return [
+		`tests/src/${environment}/${pascal}.test.ts`,
+		`tests/src/${environment}/factories.test.ts`,
+	]
+}
+
+/** Whether a repository-relative Vue SFC path belongs to the private browser application. */
+export function isBrowserVuePath(path: string): boolean {
+	const normalized = path.replaceAll('\\', '/')
+	return normalized.startsWith('app/browser/')
 }
 
 /** Build a complete sync-report fixture with focused overrides. */
@@ -123,4 +278,18 @@ export function buildPopulatedSyncReport(
 		},
 		target,
 	)
+}
+
+/** Build a hostile data-property graph that yields a fresh record at every traversed node. */
+export function buildGenerativeDataProxy(): object {
+	const handler: ProxyHandler<object> = {
+		ownKeys: () => ['next'],
+		getOwnPropertyDescriptor: () => ({
+			configurable: true,
+			enumerable: true,
+			value: new Proxy({}, handler),
+			writable: true,
+		}),
+	}
+	return new Proxy({}, handler)
 }

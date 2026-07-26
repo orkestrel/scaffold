@@ -1,17 +1,24 @@
 import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkestrel/emitter'
 
-/** The environment surface an artifact or member belongs to (the SCAFFOLDED package's faces, not scaffold's own). */
-export type Surface = 'core' | 'browser' | 'server'
+/** One core, browser, or server environment in the scaffolded workspace. */
+export type Environment = 'core' | 'browser' | 'server'
 
 /** One supported library-output module format. */
 export type BuildFormat = 'es' | 'cjs'
 
-/** The deterministic build and export settings for one source surface. */
-export interface SurfaceDefinition {
+/** The deterministic build and export settings for one source environment. */
+export interface SrcDefinition {
 	readonly configs: readonly string[]
 	readonly project: string
 	readonly path: string
 	readonly formats: readonly BuildFormat[]
+}
+
+/** The deterministic config, test-project, and runtime-entry settings for one application environment. */
+export interface AppDefinition {
+	readonly configs: readonly string[]
+	readonly project: string
+	readonly entry?: string
 }
 
 /**
@@ -32,8 +39,17 @@ export type Group =
 	| 'docs'
 	| 'orchestration'
 
-/** What a declared `Member` IS in the scaffolded surface. */
-export type Category = 'type' | 'constant' | 'factory' | 'entity'
+/** What a declared public `Member` is in the scaffolded environment. */
+export type Category =
+	| 'type'
+	| 'alias'
+	| 'constant'
+	| 'factory'
+	| 'entity'
+	| 'parser'
+	| 'guard'
+	| 'handler'
+	| 'error'
 
 /**
  * One fleet package's catalog row — the `orkestrel` agent's package-catalog
@@ -96,12 +112,15 @@ export interface Override {
 	readonly content: string
 }
 
-/** The closed, JSON-serializable package spec. */
+/** The closed, JSON-serializable source/application workspace spec. */
 export interface Blueprint {
 	readonly name: string
 	readonly description?: string
 	readonly keywords: readonly string[]
-	readonly surfaces: readonly Surface[]
+	/** Published library environments under `src`; empty for an application-only workspace. */
+	readonly src: readonly Environment[]
+	/** Private runtime environments under `app`; empty for a library-only workspace. */
+	readonly app: readonly Environment[]
 	readonly dependencies: readonly Dependency[]
 	/** Runtime `@orkestrel/*` peers, emitted as `peerDependencies` — a peer flagged `optional` also gets a `peerDependenciesMeta` entry. */
 	readonly peers: readonly Dependency[]
@@ -119,14 +138,14 @@ export interface Member {
 	readonly name: string
 	readonly category: Category
 	readonly summary: string
-	readonly surface: Surface
+	readonly environment: Environment
 }
 
 /** Fields shared by every file in a `Plan`. */
 export interface ArtifactBase {
 	readonly path: string
 	readonly group: Group
-	readonly surface?: Surface
+	readonly environment?: Environment
 }
 
 /** A byte-copied host artifact; `source` falls back to `path` when absent. */
@@ -152,7 +171,13 @@ export type Artifact = HostArtifact | ContentArtifact
 /** Exact lowercase hexadecimal target bytes keyed by artifact-relative path. */
 export type Snapshot = Readonly<Record<string, string>>
 
-/** The compiled, ordered artifact list plus the selection it covers; `trace` / `hash` filled by the pin. */
+/**
+ * The compiled, ordered artifact list plus the independent source/application selection it covers.
+ *
+ * @remarks
+ * `pinPlan` fills `trace` with explicit `src:` and `app:` axes and fills
+ * `hash` from the plan's identity payload.
+ */
 export interface Plan {
 	readonly blueprint: Blueprint
 	readonly groups: readonly Group[]
@@ -166,6 +191,8 @@ export interface Finding {
 	readonly path: string
 	readonly group: Group
 	readonly drift: Drift
+	/** Exact bounded observed bytes for a stale destination, used as the repair precondition. */
+	readonly observed?: string
 }
 
 /**
@@ -224,6 +251,8 @@ export interface GuideSync {
 	readonly content: string
 	readonly freshness: Freshness
 	readonly note?: string
+	/** SHA-256 of the observed local mirror, or `absent`; omitted outside target-aware pulls. */
+	readonly baseline?: string
 }
 
 /**
@@ -256,10 +285,11 @@ export interface SyncReport {
 	readonly failed: number
 }
 
-/** The dry-run tally. */
+/** The dry-run tally, including the independent source and application environment selections. */
 export interface PlanSummary {
 	readonly name: string
-	readonly surfaces: readonly Surface[]
+	readonly src: readonly Environment[]
+	readonly app: readonly Environment[]
 	readonly groups: readonly Group[]
 	readonly artifacts: number
 	readonly host: number
@@ -302,7 +332,7 @@ export interface PlanRecord {
 	readonly hash: string
 }
 
-/** `Compiler`'s push observation surface (AGENTS §13). */
+/** `Compiler`'s push observation channel (AGENTS §13). */
 export type CompilerEventMap = {
 	readonly compile: readonly [scaffolding: Scaffolding]
 	readonly audit: readonly [audit: Audit]
@@ -329,7 +359,7 @@ export interface CompilerInterface {
 	destroy(): void
 }
 
-/** `PlanManager`'s push observation surface (AGENTS §13). */
+/** `PlanManager`'s push observation channel (AGENTS §13). */
 export type PlanManagerEventMap = {
 	readonly add: readonly [id: string]
 	readonly remove: readonly [id: string]
