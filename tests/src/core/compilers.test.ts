@@ -1,4 +1,5 @@
 import type { Artifact, Blueprint, Environment } from '@src/core'
+import { createHash } from 'node:crypto'
 import { parseJSON } from '@orkestrel/contract'
 import { describe, expect, it } from 'vitest'
 import {
@@ -38,6 +39,8 @@ import {
 	srcViteConfig,
 	testArtifacts,
 	TYPESCRIPT_EXTENSIONS,
+	viteHeader,
+	viteMachinery,
 } from '@src/core'
 import {
 	APPLICATION_VARIANTS,
@@ -578,7 +581,216 @@ describe('rootTsconfig', () => {
 	})
 })
 
+describe('viteMachinery / viteHeader', () => {
+	it('derives the browser, vue, and output axes from the declared environments', () => {
+		expect(viteMachinery(['core'])).toEqual({ browser: false, vue: false, output: true })
+		expect(viteMachinery(['core', 'server'])).toEqual({
+			browser: false,
+			vue: false,
+			output: true,
+		})
+		expect(viteMachinery(['core', 'browser'])).toEqual({
+			browser: true,
+			vue: false,
+			output: true,
+		})
+		expect(viteMachinery([], ['core'])).toEqual({ browser: false, vue: false, output: false })
+		expect(viteMachinery([], ['core', 'browser'])).toEqual({
+			browser: true,
+			vue: true,
+			output: true,
+		})
+		expect(viteMachinery([], ['core', 'server'])).toEqual({
+			browser: false,
+			vue: false,
+			output: true,
+		})
+	})
+
+	it('restores output containment for an app-core workspace that also builds', () => {
+		expect(viteMachinery(['core'], ['core']).output).toBe(true)
+		expect(viteMachinery([], ['core'], true).output).toBe(true)
+		expect(viteMachinery([], []).output).toBe(true)
+	})
+
+	it('is the sole derivation every root config shape reads', () => {
+		expect(rootViteConfig(['core', 'browser'])).toContain(
+			viteHeader(viteMachinery(['core', 'browser'])),
+		)
+		expect(rootViteConfig(['server'])).toContain(viteHeader(viteMachinery(['server'])))
+		expect(applicationViteConfig([], ['core', 'browser'])).toContain(
+			viteHeader(viteMachinery([], ['core', 'browser'])),
+		)
+	})
+})
+
 describe('rootViteConfig / singleSrcViteConfig', () => {
+	it('emits the filename-first parseSync result program wherever the boundary is emitted', () => {
+		for (const content of [
+			rootViteConfig(['core']),
+			rootViteConfig(['browser']),
+			rootViteConfig(['server']),
+			rootViteConfig(['core', 'browser', 'server']),
+			applicationViteConfig([], ['core']),
+			applicationViteConfig([], ['browser']),
+			applicationViteConfig([], ['server']),
+			applicationViteConfig(['core', 'browser', 'server'], ['core', 'browser', 'server']),
+		]) {
+			expect(content).not.toContain('parseAst')
+			expect(content).toContain('visitor.visit(parseSync(path, transformed.code).program)')
+		}
+	})
+
+	it('audits the module graph of every blueprint that emits the environment boundary', () => {
+		// The `@vite-ignore` dynamic import never reaches `resolveId` and never
+		// enters the module graph `buildEnd` walks, so the AST visitor is the
+		// only enforcement point for it — and `environmentBoundary('src/core')`
+		// is emitted for core-only and app-core exactly as it is for the full
+		// blueprint. The audit is induced by the boundary, not by a host axis.
+		for (const content of [
+			rootViteConfig(['core']),
+			rootViteConfig(['core', 'server']),
+			applicationViteConfig([], ['core']),
+			applicationViteConfig(['core'], ['core']),
+		]) {
+			expect(content).toContain('environmentBoundary')
+			expect(content).toContain('async function environmentAssetSources(')
+			expect(content).toContain('ImportExpression(node) {')
+			expect(content).toContain('new Visitor({')
+			expect(content).toContain('ENVIRONMENT_MODULE_BYTES')
+			expect(content).toContain('transform: {')
+		}
+	})
+
+	it('rejects stylesheets from core and server in every blueprint', () => {
+		// Stylesheet REJECTION is an owner-independent boundary guarantee: a
+		// core or server module may never import one, whether or not the
+		// workspace declares a browser environment that needs the CSS pipeline.
+		for (const content of [
+			rootViteConfig(['core']),
+			rootViteConfig(['core', 'server']),
+			rootViteConfig(['server']),
+			applicationViteConfig([], ['core']),
+			applicationViteConfig([], ['server']),
+			applicationViteConfig(['core', 'server'], ['core', 'server']),
+		]) {
+			expect(content).toContain('function isStylesheetPath(path: string): boolean {')
+			expect(content).toContain('const stylesheet = isStylesheetPath(target)')
+			expect(content).toContain('const stylesheet = isStylesheetPath(normalizedSource)')
+			expect(content).toContain('(stylesheet || targetBrowser || targetServer)')
+			expect(content).toContain('(stylesheet || targetBrowser)')
+			expect(content).toContain('(builtin || browserPackage || serverPackage || stylesheet)')
+			expect(content).toContain('(browserPackage || stylesheet)')
+		}
+	})
+
+	it('emits HTML boundary machinery only for an app browser environment', () => {
+		const withoutHtml = [
+			rootViteConfig(['core']),
+			rootViteConfig(['browser']),
+			rootViteConfig(['server']),
+			rootViteConfig(['core', 'browser', 'server']),
+			applicationViteConfig([], ['core']),
+			applicationViteConfig([], ['server']),
+			applicationViteConfig(['core', 'browser', 'server'], ['core', 'server']),
+		]
+		const htmlNames = [
+			'HtmlAssetSource',
+			'HTMLOptions',
+			'IMPORT_META_ENV_PREFIX',
+			'filterHtmlAssetSource',
+			'filterHtmlScriptSource',
+			'filterHtmlMetaSource',
+			'environmentHtml',
+			'HTML_SECURITY_PREFIX',
+			'maskIgnoredHtml',
+			'prepareHtml',
+			'restoreHtml',
+			'finalizeHtml',
+		]
+
+		for (const content of withoutHtml) {
+			for (const name of htmlNames) expect(content).not.toContain(name)
+		}
+
+		const withHtml = applicationViteConfig([], ['browser'])
+		for (const name of htmlNames) expect(withHtml).toContain(name)
+		expect(withHtml).toContain('html: environmentHtml()')
+		expect(withHtml).toContain('restoreHtml()')
+		expect(withHtml).toContain('prepareHtml()')
+		expect(withHtml).toContain('finalizeHtml()')
+	})
+
+	it('emits host pipelines on their axes and boundary guarantees on every blueprint', () => {
+		const core = rootViteConfig(['core'])
+		const server = rootViteConfig(['core', 'server'])
+		const browser = rootViteConfig(['core', 'browser'])
+		const appCore = applicationViteConfig([], ['core'])
+		const full = applicationViteConfig(['core', 'browser', 'server'], ['core', 'browser', 'server'])
+		// Owner-independent laws. Every one of these enforces a rule that holds
+		// for `src/core` and `app/core` exactly as it holds for the full
+		// blueprint, so they travel with `environmentBoundary` itself.
+		const guaranteeNames = [
+			'parseSync',
+			'transformWithOxc',
+			'Visitor',
+			'ENVIRONMENT_MODULE_BYTES',
+			'decodeAssetSource',
+			'environmentAssetSources',
+			'isStylesheetPath',
+			'environmentBoundary',
+			'environmentPathError',
+			'environmentSourceError',
+			'packageRootOf',
+		]
+		// The CSS pipeline itself — reading, preprocessing, and auditing real
+		// stylesheets — exists only where a browser environment is declared.
+		const cssNames = [
+			'CSSOptions',
+			'ResolvedConfig',
+			'isCSSRequest',
+			'preprocessCSS',
+			'ENVIRONMENT_CSS',
+			'stylesheetAssetError',
+		]
+		const htmlNames = [
+			'HtmlAssetSource',
+			'HTMLOptions',
+			'IMPORT_META_ENV_PREFIX',
+			'restoreIgnoredHtml',
+			'environmentHtml',
+			'prepareHtml',
+			'restoreHtml',
+			'finalizeHtml',
+		]
+		const outputNames = ['outputBoundary', 'enforceOutputPath', 'generateBundle']
+
+		for (const content of [core, server, browser, appCore, full]) {
+			for (const name of guaranteeNames) expect(content).toContain(name)
+		}
+		for (const content of [core, server, appCore]) {
+			for (const name of [...cssNames, ...htmlNames]) expect(content).not.toContain(name)
+		}
+		for (const name of cssNames) expect(browser).toContain(name)
+		for (const name of htmlNames) expect(browser).not.toContain(name)
+		for (const name of [...cssNames, ...htmlNames]) expect(full).toContain(name)
+		for (const content of [core, server, browser, full]) {
+			for (const name of outputNames) expect(content).toContain(name)
+		}
+		for (const name of outputNames) expect(appCore).not.toContain(name)
+	})
+
+	it('keeps the S4 full-app vite template byte-equivalent', () => {
+		const content = applicationViteConfig(
+			['core', 'browser', 'server'],
+			['core', 'browser', 'server'],
+		)
+
+		expect(createHash('sha256').update(content).digest('hex')).toBe(
+			'3b2eaa7ea114f95f211ed4fce7e003be6201c6ae3f6589e6aba51accb9400b0b',
+		)
+	})
+
 	it('core-only carries no Playwright import anywhere', () => {
 		const content = rootViteConfig(['core'])
 		expect(content).not.toContain('@vitest/browser-playwright')
@@ -670,6 +882,18 @@ describe('coreTsconfig / coreViteConfig', () => {
 
 	it('coreViteConfig inlines its own build.lib', () => {
 		expect(coreViteConfig()).toContain("entry: resolveWorkspacePath('src/core/index.ts')")
+	})
+
+	it('omits CSS plumbing from the generated core build wrapper without a browser axis', () => {
+		const artifacts = configArtifacts(blueprint('router', { src: ['core'] }))
+		const content = artifacts.find(
+			(artifact) => artifact.path === 'configs/src/vite.core.config.ts',
+		)?.content
+
+		expect(content).not.toContain('ENVIRONMENT_CSS')
+		expect(content).not.toContain('css:')
+		expect(content).toContain('environmentBoundary')
+		expect(content).toContain('outputBoundary')
 	})
 })
 

@@ -22,6 +22,26 @@ export interface AppDefinition {
 }
 
 /**
+ * Which host-specific machinery a generated root `vite.config.ts` carries.
+ *
+ * @remarks
+ * The boundary GUARANTEES never vary by blueprint: every generated
+ * configuration emits the environment-boundary plugin, its module-graph AST
+ * audit, and stylesheet rejection, because those enforce owner-independent
+ * laws. Only the host-specific pipelines below are selected by the declared
+ * environments. `browser` covers everything a declared browser environment
+ * needs — the CSS pipeline and the Playwright-backed browser test project;
+ * `vue` adds the single-file-component, HTML, and development-server
+ * machinery an application browser environment needs; `output` adds build
+ * output containment, which an application of `core` alone never builds.
+ */
+export interface ViteMachinery {
+	readonly browser: boolean
+	readonly vue: boolean
+	readonly output: boolean
+}
+
+/**
  * How an `Artifact`'s content is produced: `host` byte-copied from the vendored
  * data root, `template` filled from a frozen `TemplateDefinition` by
  * `@orkestrel/template`'s pure fill engine, `computed` derived by the core's

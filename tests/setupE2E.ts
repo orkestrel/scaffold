@@ -7,7 +7,14 @@
 // consumer actually would: no `--from`, and `new`/`audit`/`repair` driven
 // purely by `cwd`, no `--target`. Assumes the build chain has already run
 // (`npm run build` before `npm test` — AGENTS.md §Orientation).
+//
+// The one deliberate exception is the `generated lean configuration` suite,
+// which asserts nothing about host resolution: it materializes each lean
+// blueprint through the shared `scaffoldPackage` fixture (and so through an
+// explicit `--from`) purely to get a real generated workspace whose emitted
+// `vite.config.ts` it can then build, test, and violate.
 import type { ChildProcess } from 'node:child_process'
+import type { Environment } from '@src/core'
 import { spawn, spawnSync } from 'node:child_process'
 import {
 	existsSync,
@@ -27,6 +34,7 @@ import { listFiles } from '@src/server'
 import {
 	ALLOWED_LINT_SOURCES,
 	buildEnvironmentQuartet,
+	buildFromFixture,
 	canBash,
 	canCursorModels,
 	HOST_BYTE_EQUAL_PATHS,
@@ -41,6 +49,7 @@ import {
 	runDefaultBin,
 	runHook,
 	runNpmScript,
+	scaffoldPackage,
 } from './setupBin.js'
 import {
 	buildTempDirectory,
@@ -53,6 +62,129 @@ import {
 
 /** Maximum time allowed for a generated Vite child to start or stop. */
 export const GENERATED_VITE_SERVER_TIMEOUT = 15_000
+
+/** Maximum time allowed for ONE generated package script in the lean-blueprint gates. */
+export const LEAN_SCRIPT_TIMEOUT = 120_000
+
+/**
+ * Slack a lean-blueprint gate adds on top of its scripts' own budgets.
+ *
+ * @remarks
+ * Every lean gate's total budget is its script count times
+ * {@link LEAN_SCRIPT_TIMEOUT} plus this, so one slow script always surfaces as
+ * that script's own timeout — with its stdout and stderr — instead of being
+ * swallowed by the surrounding test's deadline.
+ */
+export const LEAN_SETUP_TIMEOUT = 60_000
+
+/** One boundary violation a lean blueprint's trimmed configuration must still reject. */
+export interface LeanRejection {
+	readonly path: string
+	readonly content: string
+	readonly script: string
+	readonly message: string
+	readonly fixture?: { readonly path: string; readonly content: string }
+}
+
+/** One lean blueprint whose trimmed generated configuration must build, test, and still reject. */
+export interface LeanBlueprint {
+	readonly name: string
+	readonly src: readonly Environment[]
+	readonly app: readonly Environment[]
+	readonly scripts: readonly string[]
+	readonly rejections: readonly LeanRejection[]
+}
+
+/**
+ * The lean blueprints whose generated configuration carries less machinery than
+ * the full six-environment workspace.
+ *
+ * @remarks
+ * Every `rejections` entry is the same violation, in the same vocabulary, that
+ * the full blueprint's own boundary suite already pins — proving a trimmed
+ * configuration still REJECTS rather than merely still running. `core-only`
+ * covers the two cases only the module-graph AST audit can catch (a
+ * resolution-bypassing dynamic import and an outside-workspace URL reference);
+ * `core-server` covers stylesheet rejection from both core and server.
+ */
+export const LEAN_BLUEPRINTS: readonly LeanBlueprint[] = Object.freeze([
+	Object.freeze<LeanBlueprint>({
+		name: 'lean-core',
+		src: ['core'],
+		app: [],
+		scripts: ['build', 'test:src'],
+		rejections: Object.freeze([
+			Object.freeze<LeanRejection>({
+				path: 'src/core/index.ts',
+				content: "void import(/* @vite-ignore */ 'node:fs')\n",
+				script: 'build:src:core',
+				message: 'Core modules must remain host-independent',
+			}),
+			Object.freeze<LeanRejection>({
+				path: 'src/core/index.ts',
+				content: "void new URL('../../../outside.txt', import.meta.url)\n",
+				script: 'build:src:core',
+				message: 'Environment modules cannot import files outside the workspace',
+			}),
+		]),
+	}),
+	Object.freeze<LeanBlueprint>({
+		name: 'lean-core-server',
+		src: ['core', 'server'],
+		app: [],
+		scripts: ['build', 'test:src'],
+		rejections: Object.freeze([
+			Object.freeze<LeanRejection>({
+				path: 'src/core/index.ts',
+				content: "import './boundary.pcss'\n",
+				script: 'build:src:core',
+				message: 'Core modules must remain host-independent',
+				fixture: Object.freeze({
+					path: 'src/core/boundary.pcss',
+					content: 'main { color: red; }\n',
+				}),
+			}),
+			Object.freeze<LeanRejection>({
+				path: 'src/server/index.ts',
+				content: "import './boundary.pcss'\n",
+				script: 'build:src:server',
+				message: 'Server modules cannot depend on Vue or browser-only modules',
+				fixture: Object.freeze({
+					path: 'src/server/boundary.pcss',
+					content: 'main { color: red; }\n',
+				}),
+			}),
+		]),
+	}),
+	Object.freeze<LeanBlueprint>({
+		name: 'lean-src-browser',
+		src: ['core', 'browser'],
+		app: [],
+		scripts: ['build', 'test:src'],
+		rejections: Object.freeze([]),
+	}),
+	Object.freeze<LeanBlueprint>({
+		name: 'lean-app-core',
+		src: [],
+		app: ['core'],
+		scripts: ['build', 'test:app'],
+		rejections: Object.freeze([
+			Object.freeze<LeanRejection>({
+				path: 'app/core/index.ts',
+				content: "void import(/* @vite-ignore */ 'node:fs')\n",
+				script: 'test:app',
+				message: 'Core modules must remain host-independent',
+			}),
+		]),
+	}),
+	Object.freeze<LeanBlueprint>({
+		name: 'lean-app-server',
+		src: [],
+		app: ['server'],
+		scripts: ['build', 'test:app'],
+		rejections: Object.freeze([]),
+	}),
+])
 
 /** Place adversarial HTML after the generated application's mandatory security prologue. */
 export function browserDocument(original: string, content: string): string {
@@ -918,6 +1050,92 @@ export function registerHermeticBinGates(): void {
 			},
 			60000,
 		)
+	})
+
+	describe('generated lean configuration', () => {
+		for (const spec of LEAN_BLUEPRINTS) {
+			it.skipIf(!canDirectoryLink)(
+				`executes ${spec.name} through its real build and test projects`,
+				async () => {
+					const from = await buildFromFixture()
+					const cwd = await buildTempDirectory()
+					try {
+						const packageDirectory = scaffoldPackage(cwd.path, spec.name, from.path, {
+							src: spec.src,
+							app: spec.app,
+						})
+						createDirectoryLink(
+							join(WORKSPACE_ROOT, 'node_modules'),
+							join(packageDirectory, 'node_modules'),
+						)
+						for (const script of spec.scripts) {
+							const result = runNpmScript(packageDirectory, script, LEAN_SCRIPT_TIMEOUT)
+							const output = `${result.stdout}${result.stderr}`
+							expect(result.status, `${spec.name}:${script}\n${output}`).toBe(0)
+							expect(result.error?.message).toBeUndefined()
+							expect(result.signal).toBeNull()
+						}
+					} finally {
+						await cwd.cleanup()
+						await from.cleanup()
+					}
+				},
+				spec.scripts.length * LEAN_SCRIPT_TIMEOUT + LEAN_SETUP_TIMEOUT,
+			)
+		}
+
+		for (const spec of LEAN_BLUEPRINTS.filter((entry) => entry.rejections.length > 0)) {
+			it.skipIf(!canDirectoryLink)(
+				`keeps ${spec.name}'s boundary rejecting what the full blueprint rejects`,
+				async () => {
+					const from = await buildFromFixture()
+					const cwd = await buildTempDirectory()
+					try {
+						const packageDirectory = scaffoldPackage(cwd.path, spec.name, from.path, {
+							src: spec.src,
+							app: spec.app,
+						})
+						createDirectoryLink(
+							join(WORKSPACE_ROOT, 'node_modules'),
+							join(packageDirectory, 'node_modules'),
+						)
+						writeFileSync(join(cwd.path, 'outside.txt'), 'outside-owned\n', 'utf8')
+						const originals = new Map(
+							spec.rejections.map((rejection) => [
+								rejection.path,
+								readFileSync(join(packageDirectory, rejection.path), 'utf8'),
+							]),
+						)
+						for (const rejection of spec.rejections) {
+							for (const [path, content] of originals) {
+								writeFileSync(join(packageDirectory, path), content, 'utf8')
+							}
+							if (rejection.fixture !== undefined) {
+								writeFileSync(
+									join(packageDirectory, rejection.fixture.path),
+									rejection.fixture.content,
+									'utf8',
+								)
+							}
+							writeFileSync(join(packageDirectory, rejection.path), rejection.content, 'utf8')
+							const rejected = runNpmScript(packageDirectory, rejection.script, LEAN_SCRIPT_TIMEOUT)
+							const output = `${rejected.stdout}${rejected.stderr}`
+
+							expect(
+								rejected.status,
+								`${spec.name}:${rejection.script}: ${rejection.content}\n${output}`,
+							).not.toBe(0)
+							expect(output).toContain('orkestrel-environment-boundary')
+							expect(output).toContain(rejection.message)
+						}
+					} finally {
+						await cwd.cleanup()
+						await from.cleanup()
+					}
+				},
+				spec.rejections.length * LEAN_SCRIPT_TIMEOUT + LEAN_SETUP_TIMEOUT,
+			)
+		}
 	})
 }
 

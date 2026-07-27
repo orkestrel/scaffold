@@ -5,7 +5,7 @@ import { copyFileSync, mkdirSync, readFileSync, statSync, writeFileSync } from '
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { isRecord, parseJSON } from '@orkestrel/contract'
-import type { Audit, Finding, Plan } from '@src/core'
+import type { Audit, Environment, Finding, Plan } from '@src/core'
 import { stageHost } from '@src/server'
 import { buildTempDirectory, WORKSPACE_ROOT } from './setupServer.js'
 
@@ -39,6 +39,19 @@ export interface LintSource {
 /** One generated source file whose declared import direction Oxlint rejects. */
 export interface RejectedLintSource extends LintSource {
 	readonly message: string
+}
+
+/**
+ * Environment selection for one generated-package execution fixture.
+ *
+ * @remarks
+ * Both axes are independent and optional, exactly as the command's own
+ * `--src` / `--app` flags are: a workspace may declare either, or both at once.
+ * An omitted or empty selection emits no flag at all.
+ */
+export interface ScaffoldPackageOptions {
+	readonly src?: readonly Environment[]
+	readonly app?: readonly Environment[]
 }
 
 /** Representative package, alias, query, and conventional relative imports forbidden by Oxlint. */
@@ -568,9 +581,20 @@ export async function buildStagedHost(): Promise<TempDirectoryInterface> {
 }
 
 /** Materialize a fresh package through the built command. */
-export function scaffoldPackage(cwd: string, name: string, from: string): string {
+export function scaffoldPackage(
+	cwd: string,
+	name: string,
+	from: string,
+	options: ScaffoldPackageOptions = { src: ['core'] },
+): string {
+	const src = options.src ?? []
+	const app = options.app ?? []
+	const selections = [
+		...(src.length > 0 ? ['--src', src.join(',')] : []),
+		...(app.length > 0 ? ['--app', app.join(',')] : []),
+	]
 	const created = runBin(
-		['new', name, '--src', 'core', '--apply', '--target', name, '--from', from],
+		['new', name, ...selections, '--apply', '--target', name, '--from', from],
 		'',
 		{ cwd },
 	)

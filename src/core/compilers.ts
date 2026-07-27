@@ -1,4 +1,13 @@
-import type { Artifact, Blueprint, Dependency, Group, Member, Plan, Environment } from './types.js'
+import type {
+	Artifact,
+	Blueprint,
+	Dependency,
+	Group,
+	Member,
+	Plan,
+	Environment,
+	ViteMachinery,
+} from './types.js'
 import { fillTemplate } from '@orkestrel/template'
 import {
 	APP_MATRIX,
@@ -545,24 +554,69 @@ export function rootTsconfig(
 }
 
 /**
- * The rendered import / `resolve` header block every `rootViteConfig` shape
- * prefixes — the official Playwright provider import appears only when
- * `needsPlaywright`, per the three grounded `rootViteConfig`
- * shapes: unconditional for a multi-environment blueprint, conditional on the
- * sole environment being `'browser'` for a single non-`core` environment, absent for
- * `core`-only.
+ * Derive which host-specific machinery a workspace's generated root
+ * `vite.config.ts` carries from its declared environments.
  *
- * @param needsPlaywright - Whether this shape ships a browser test project (and so needs Playwright).
- * @param needsVue - Whether the generated root imports the Vue Vite plugin.
+ * @remarks
+ * This is the SOLE derivation of that set; `rootViteConfig`,
+ * `singleSrcViteConfig`, `applicationViteConfig`, and `configArtifacts` all
+ * read it rather than recomputing an axis of their own. Nothing here selects
+ * a boundary GUARANTEE — the environment-boundary plugin, its module-graph
+ * AST audit, and stylesheet rejection ship in every shape.
+ *
+ * @param src - The declared published `Environment[]`.
+ * @param app - The declared application `Environment[]`, defaulting to none.
+ * @param engine - Whether the workspace also builds its own executable.
+ * @returns The machinery set the generated header renders.
+ *
+ * @example
+ * ```ts
+ * viteMachinery(['core']) // { browser: false, vue: false, output: true }
+ * viteMachinery([], ['core']) // { browser: false, vue: false, output: false }
+ * ```
+ */
+export function viteMachinery(
+	src: readonly Environment[],
+	app: readonly Environment[] = [],
+	engine = false,
+): ViteMachinery {
+	// An application of `core` alone compiles but never builds: it declares no
+	// published library target, no runtime application target, and no engine
+	// executable, so there is no output directory to contain. `app.length > 0`
+	// guards the degenerate empty blueprint, which `hasBlueprintEnvironment`
+	// already rejects.
+	const unbuilt =
+		src.length === 0 &&
+		app.length > 0 &&
+		!engine &&
+		app.every((environment) => environment === 'core')
+	return {
+		browser: src.includes('browser') || app.includes('browser'),
+		vue: app.includes('browser'),
+		output: !unbuilt,
+	}
+}
+
+/**
+ * The rendered import / `resolve` header block every `rootViteConfig` shape
+ * prefixes — the environment boundary and every guarantee it enforces ship
+ * unconditionally; `machinery` selects only the host-specific pipelines layered
+ * over them, per the three grounded `rootViteConfig` shapes: browser machinery
+ * unconditional for a multi-environment blueprint carrying `browser`,
+ * conditional on the sole environment being `'browser'` for a single non-`core`
+ * environment, absent for `core`-only.
+ *
+ * @param machinery - The host-specific machinery this shape carries, from `viteMachinery`.
  * @returns The rendered header block, newline-terminated.
  *
  * @example
  * ```ts
- * viteHeader(false).includes('@vitest/browser-playwright') // false
- * viteHeader(true).includes('@vitest/browser-playwright') // true
+ * viteHeader(viteMachinery(['core'])).includes('@vitest/browser-playwright') // false
+ * viteHeader(viteMachinery(['core', 'browser'])).includes('@vitest/browser-playwright') // true
  * ```
  */
-export function viteHeader(needsPlaywright: boolean, needsVue = false): string {
+export function viteHeader(machinery: ViteMachinery): string {
+	const { browser: needsBrowser, vue: needsVue, output: needsOutput } = machinery
 	// Rendered blocks below are generated FILE TEXT, so every embedded
 	// declaration keyword is interpolated rather than typed literally at
 	// column 0 — the doc↔source parity scan (AGENTS §22) reads this file's
@@ -572,7 +626,7 @@ export function viteHeader(needsPlaywright: boolean, needsVue = false): string {
 	// bytes identical while keeping this file's own declaration environment
 	// exactly the one export it documents.
 	// The official Playwright provider import is present only when needed.
-	const playwrightImports = needsPlaywright
+	const playwrightImports = needsBrowser
 		? `import { playwright } from '@vitest/browser-playwright'
 import { chromium } from 'playwright'
 `
@@ -582,6 +636,18 @@ import { chromium } from 'playwright'
 import { parse as parseVue } from 'vue/compiler-sfc'
 `
 		: ''
+	const viteTypeImports = needsVue
+		? `import type {
+	CSSOptions,
+	HtmlAssetSource,
+	HTMLOptions,
+	Plugin,
+	ResolvedConfig,
+	UserConfig,
+} from 'vite'`
+		: needsBrowser
+			? `import type { CSSOptions, Plugin, ResolvedConfig, UserConfig } from 'vite'`
+			: `import type { Plugin, UserConfig } from 'vite'`
 	const vueBoundary = needsVue
 		? `,
 		transform: {
@@ -743,11 +809,11 @@ import { parse as parseVue } from 'vue/compiler-sfc'
 				return restored === code ? null : restored
 			},
 		}`
-		: `,
+		: needsBrowser
+			? `,
 		transform: {
 			order: 'pre',
 			async handler(code, id) {
-				const restored = /[?&]html-proxy(?:[=&]|$)/.test(id) ? restoreIgnoredHtml(code) : code
 				const target = workspacePath(id)
 				const physicalImporter = physicalPath(id)
 				const importerPackageRoot = trustedPackageRootFor(physicalImporter, trustedPackageRoots)
@@ -761,15 +827,13 @@ import { parse as parseVue } from 'vue/compiler-sfc'
 				}
 				const environmentModule =
 					target !== undefined && /^(?:app|src)\\/(?:core|browser|server)\\//.test(target)
-				if (!environmentModule && importerPackageRoot === undefined) {
-					return restored === code ? null : restored
-				}
+				if (!environmentModule && importerPackageRoot === undefined) return null
 				if (isCSSRequest(id)) {
 					const config = resolvedConfig
 					if (config === undefined) {
 						this.error('Environment boundary requires resolved Vite configuration')
 					}
-					const stylesheet = await preprocessCSS(restored, id, config)
+					const stylesheet = await preprocessCSS(code, id, config)
 					for (const dependency of stylesheet.deps ?? []) {
 						const physicalDependency = physicalPath(dependency)
 						const dependencyTarget = workspacePath(physicalDependency)
@@ -783,7 +847,7 @@ import { parse as parseVue } from 'vue/compiler-sfc'
 						if (dependencyError !== undefined) this.error(dependencyError)
 					}
 				}
-				for (const source of await environmentAssetSources(restored, id)) {
+				for (const source of await environmentAssetSources(code, id)) {
 					const normalizedSource = source.replaceAll('\\\\', '/')
 					const sourceError = environmentSourceError(owner, normalizedSource)
 					if (sourceError !== undefined) this.error(sourceError)
@@ -826,12 +890,75 @@ import { parse as parseVue } from 'vue/compiler-sfc'
 					const assetError = environmentPathError(owner, resolvedSource)
 					if (assetError !== undefined) this.error(assetError)
 				}
-				return restored === code ? null : restored
+				return null
+			},
+		}`
+			: `,
+		transform: {
+			order: 'pre',
+			async handler(code, id) {
+				const target = workspacePath(id)
+				const physicalImporter = physicalPath(id)
+				const importerPackageRoot = trustedPackageRootFor(physicalImporter, trustedPackageRoots)
+				if (target === undefined) {
+					if (isOutsideWorkspacePath(id) && importerPackageRoot === undefined) {
+						this.error('Environment modules cannot import files outside the workspace')
+					}
+				} else {
+					const pathError = environmentPathError(owner, target)
+					if (pathError !== undefined) this.error(pathError)
+				}
+				const environmentModule =
+					target !== undefined && /^(?:app|src)\\/(?:core|browser|server)\\//.test(target)
+				if (!environmentModule && importerPackageRoot === undefined) return null
+				for (const source of await environmentAssetSources(code, id)) {
+					const normalizedSource = source.replaceAll('\\\\', '/')
+					const sourceError = environmentSourceError(owner, normalizedSource)
+					if (sourceError !== undefined) this.error(sourceError)
+					const [sourcePath] = normalizedSource.split(/[?#]/)
+					if (sourcePath !== undefined && isBuiltin(sourcePath)) continue
+					const resolution = await this.resolve(normalizedSource, id, { skipSelf: true })
+					const fallbackSource = sourceFallback(physicalImporter, normalizedSource)
+					const physicalSource = physicalPath(resolution?.id ?? fallbackSource)
+					if (importerPackageRoot !== undefined) {
+						const pathLike =
+							normalizedSource.startsWith('.') ||
+							normalizedSource.startsWith('/') ||
+							/^file:/i.test(normalizedSource) ||
+							/^[A-Za-z]:[\\\\/]/.test(normalizedSource)
+						if (pathLike && !containedPath(importerPackageRoot, physicalSource)) {
+							this.error(
+								'Dependency modules cannot import files outside their physical package root',
+							)
+						}
+						if (!pathLike && !containedPath(importerPackageRoot, physicalSource)) {
+							const packageName = packageNameOf(normalizedSource)
+							const packageRoot = normalizedSource.startsWith('#')
+								? workspacePath(physicalSource) === undefined
+									? packageRootForResolved(physicalSource)
+									: undefined
+								: packageName === undefined
+									? undefined
+									: packageRootOf(packageName, physicalSource)
+							if (packageRoot === undefined || !containedPath(packageRoot, physicalSource)) {
+								this.error('Resolved dependencies must remain inside their physical package root')
+							}
+							trustedPackageRoots.add(packageRoot)
+						}
+						continue
+					}
+					const resolvedSource = workspacePath(physicalSource)
+					if (resolvedSource === undefined) {
+						this.error('Environment modules cannot import files outside the workspace')
+					}
+					const assetError = environmentPathError(owner, resolvedSource)
+					if (assetError !== undefined) this.error(assetError)
+				}
+				return null
 			},
 		}`
 	const environmentBoundary = `
-${CONST_KEYWORD} WORKSPACE_ROOT = realpathSync.native(dirname(fileURLToPath(import.meta.url)))
-${EXPORT_KEYWORD} ${CONST_KEYWORD} IMPORT_META_ENV_PREFIX = 'import.meta.env.'
+${CONST_KEYWORD} WORKSPACE_ROOT = realpathSync.native(dirname(fileURLToPath(import.meta.url)))${needsVue ? `\n${EXPORT_KEYWORD} ${CONST_KEYWORD} IMPORT_META_ENV_PREFIX = 'import.meta.env.'` : ''}
 
 ${EXPORT_KEYWORD} function physicalPath(path: string): string {
 	const [pathWithoutQuery] = path.split('?')
@@ -876,11 +1003,11 @@ ${EXPORT_KEYWORD} function containedPath(root: string, target: string): boolean 
 		relativePath === '' ||
 		(relativePath !== '..' && !relativePath.startsWith(\`..\${sep}\`) && !isAbsolute(relativePath))
 	)
-}
+}${
+		needsVue
+			? `
 
-${
-	needsVue
-		? `${EXPORT_KEYWORD} function browserServerRoots(): readonly string[] {
+${EXPORT_KEYWORD} function browserServerRoots(): readonly string[] {
 	const roots: string[] = []
 	for (const path of [
 		'app/browser',
@@ -952,8 +1079,8 @@ ${EXPORT_KEYWORD} function isBrowserServerPathAllowed(
 	if (path === undefined) return true
 	return path !== null && roots.some((root) => containedPath(root, path))
 }`
-		: ''
-}
+			: ''
+	}
 
 ${EXPORT_KEYWORD} function packageNameOf(source: string): string | undefined {
 	const [sourcePath] = source.replaceAll('\\\\', '/').split(/[?#]/)
@@ -1164,7 +1291,9 @@ ${EXPORT_KEYWORD} function environmentSourceError(owner: string, source: string)
 	return undefined
 }
 
-${EXPORT_KEYWORD} function stylesheetAssetError(
+${
+	needsBrowser
+		? `${EXPORT_KEYWORD} function stylesheetAssetError(
 	source: string | undefined,
 	value: string,
 ): string | undefined {
@@ -1211,7 +1340,11 @@ ${EXPORT_KEYWORD} function stylesheetAssetError(
 	return undefined
 }
 
-${EXPORT_KEYWORD} function enforceOutputPath(configured: string, expected: string): void {
+`
+		: ''
+}${
+		needsOutput
+			? `${EXPORT_KEYWORD} function enforceOutputPath(configured: string, expected: string): void {
 	if (relative(expected, configured) !== '') {
 		throw new Error(
 			'[orkestrel-output-boundary] Build output must use its exact configured workspace directory',
@@ -1278,7 +1411,9 @@ ${EXPORT_KEYWORD} function outputBoundary(output: string): Plugin {
 	}
 }
 
-${EXPORT_KEYWORD} function decodeAssetSource(source: string): string | undefined {
+`
+			: ''
+	}${EXPORT_KEYWORD} function decodeAssetSource(source: string): string | undefined {
 	try {
 		return decodeURI(source)
 	} catch {
@@ -1286,7 +1421,9 @@ ${EXPORT_KEYWORD} function decodeAssetSource(source: string): string | undefined
 	}
 }
 
-${EXPORT_KEYWORD} function filterHtmlAssetSource(
+${
+	needsVue
+		? `${EXPORT_KEYWORD} function filterHtmlAssetSource(
 	data: Parameters<NonNullable<HtmlAssetSource['filter']>>[0],
 ): boolean {
 	const decoded = decodeAssetSource(data.value)
@@ -1431,7 +1568,11 @@ ${EXPORT_KEYWORD} function maskIgnoredHtml(environmentKeys: ReadonlySet<string>,
 	)
 }
 
-${EXPORT_KEYWORD} function restoreIgnoredHtml(code: string): string {
+`
+		: ''
+}${
+		needsVue
+			? `${EXPORT_KEYWORD} function restoreIgnoredHtml(code: string): string {
 	const literals = code.replace(
 		/(?<prefix>[vV][iI][tT][eE])&#45;(?<suffix>[iI][gG][nN][oO][rR][eE])/gu,
 		'$<prefix>-$<suffix>',
@@ -1487,7 +1628,9 @@ ${EXPORT_KEYWORD} function finalizeHtml(): Plugin {
 	}
 }
 
-${EXPORT_KEYWORD} async function environmentAssetSources(
+`
+			: ''
+	}${EXPORT_KEYWORD} async function environmentAssetSources(
 	code: string,
 	id: string,
 	emitted = false,
@@ -1572,23 +1715,27 @@ ${EXPORT_KEYWORD} async function environmentAssetSources(
 			}
 		},
 	})
-	visitor.visit(parseAst(transformed.code, null, path))
+	visitor.visit(parseSync(path, transformed.code).program)
 	return sources
 }
 
 ${EXPORT_KEYWORD} function environmentBoundary(
 	owner: 'src/core' | 'src/browser' | 'src/server' | 'app/core' | 'app/browser' | 'app/server',
 ): Plugin {
-	const trustedPackageRoots = new Set<string>()
-	let environmentRoot = WORKSPACE_ROOT
-	let resolvedConfig: ResolvedConfig | undefined
+	const trustedPackageRoots = new Set<string>()${
+		needsOutput ? '\n\tlet environmentRoot = WORKSPACE_ROOT' : ''
+	}${needsBrowser ? '\n\tlet resolvedConfig: ResolvedConfig | undefined' : ''}
 	return {
 		name: 'orkestrel-environment-boundary',
-		enforce: 'pre',
-		configResolved(config) {
-			environmentRoot = physicalPath(config.root)
-			resolvedConfig = config
-		},
+		enforce: 'pre',${
+			needsOutput || needsBrowser
+				? `
+		configResolved(config) {${
+			needsOutput ? '\n\t\t\tenvironmentRoot = physicalPath(config.root)' : ''
+		}${needsBrowser ? '\n\t\t\tresolvedConfig = config' : ''}
+		},`
+				: ''
+		}
 ${
 	needsVue
 		? `		configureServer(server) {
@@ -1725,7 +1872,9 @@ ${
 				}
 			}
 			return null
-		},
+		},${
+			needsOutput
+				? `
 		async generateBundle(_options, bundle) {
 			for (const output of Object.values(bundle)) {
 				if (output.type === 'chunk') {
@@ -1755,7 +1904,9 @@ ${
 					if (pathError !== undefined) this.error(pathError)
 				}
 			}
-		},
+		},`
+				: ''
+		}
 		buildEnd(error) {
 			if (error !== undefined) return
 			for (const id of this.getModuleIds()) {
@@ -1776,16 +1927,13 @@ ${
 	}
 }
 `
-	return `import type {
-	CSSOptions,
-	HtmlAssetSource,
-	HTMLOptions,
-	Plugin,
-	ResolvedConfig,
-	UserConfig,
-} from 'vite'
-import { isCSSRequest, parseAst, preprocessCSS, transformWithOxc, Visitor } from 'vite'
-import { defineConfig, mergeConfig } from 'vitest/config'
+	const viteImports = needsBrowser
+		? `import { isCSSRequest, parseSync, preprocessCSS, transformWithOxc, Visitor } from 'vite'
+`
+		: `import { parseSync, transformWithOxc, Visitor } from 'vite'
+`
+	return `${viteTypeImports}
+${viteImports}import { defineConfig, mergeConfig } from 'vitest/config'
 import tsconfig from './tsconfig.json' with { type: 'json' }
 import { fileURLToPath, URL } from 'node:url'
 import { isBuiltin } from 'node:module'
@@ -1800,8 +1948,7 @@ import {
 	realpathSync,
 } from 'node:fs'
 import { dirname, isAbsolute, relative, resolve as resolvePath, sep } from 'node:path'
-${playwrightImports}${vueImports}
-${needsPlaywright ? `${CONST_KEYWORD} hasChromium = existsSync(chromium.executablePath())\n` : ''}
+${playwrightImports}${vueImports}${needsBrowser ? `\n${CONST_KEYWORD} hasChromium = existsSync(chromium.executablePath())\n` : ''}
 ${EXPORT_KEYWORD} function resolveWorkspacePath(relativePath: string): string {
 	return fileURLToPath(new URL(relativePath, import.meta.url))
 }
@@ -1822,7 +1969,9 @@ ${CONST_KEYWORD} resolve = {
 	}, {}),
 }
 
-${EXPORT_KEYWORD} ${CONST_KEYWORD} ENVIRONMENT_CSS = Object.freeze({
+${
+	needsBrowser
+		? `${EXPORT_KEYWORD} ${CONST_KEYWORD} ENVIRONMENT_CSS = Object.freeze({
 	transformer: 'lightningcss',
 	lightningcss: {
 		visitor: () => {
@@ -1853,7 +2002,9 @@ ${EXPORT_KEYWORD} ${CONST_KEYWORD} ENVIRONMENT_CSS = Object.freeze({
 		},
 	},
 } satisfies CSSOptions)
-${EXPORT_KEYWORD} ${CONST_KEYWORD} PACKAGE_MANIFEST_BYTES = 1_048_576
+`
+		: ''
+}${EXPORT_KEYWORD} ${CONST_KEYWORD} PACKAGE_MANIFEST_BYTES = 1_048_576
 ${EXPORT_KEYWORD} ${CONST_KEYWORD} ENVIRONMENT_MODULE_BYTES = 8_388_608
 ${environmentBoundary}`
 }
@@ -1900,7 +2051,8 @@ export function singleSrcViteConfig(environment: 'browser' | 'server'): string {
 	// to that line-based scan; interpolating the keyword keeps the emitted
 	// bytes identical while keeping this file's own declaration environment
 	// exactly the one export it documents.
-	const header = viteHeader(environment === 'browser')
+	const machinery = viteMachinery([environment])
+	const header = viteHeader(machinery)
 	if (environment === 'browser') {
 		return `${header}
 ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
@@ -1909,10 +2061,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 			resolve,
 			css: ENVIRONMENT_CSS,
 			publicDir: false,
-			plugins: [
-				outputBoundary('dist/src/browser'),
-				environmentBoundary('src/browser'),
-			],
+			plugins: [outputBoundary('dist/src/browser'), environmentBoundary('src/browser')],
 			build: {
 				assetsInlineLimit: 0,
 				emptyOutDir: true,
@@ -1973,13 +2122,9 @@ export default defineConfig({
 ${EXPORT_KEYWORD} const srcServer = (config?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
-			resolve,
-			css: ENVIRONMENT_CSS,
+			resolve,${machinery.browser ? '\n\t\t\tcss: ENVIRONMENT_CSS,' : ''}
 			publicDir: false,
-			plugins: [
-				outputBoundary('dist/src/server'),
-				environmentBoundary('src/server'),
-			],
+			plugins: [outputBoundary('dist/src/server'), environmentBoundary('src/server')],
 			build: {
 				emptyOutDir: true,
 				sourcemap: true,
@@ -2070,8 +2215,8 @@ export function rootViteConfig(src: readonly Environment[], engine = false): str
 	// exactly the one export it documents.
 	const hasCore = src.includes('core')
 	const nonCore = src.filter((environment) => environment !== 'core')
-	const needsPlaywright = src.includes('browser')
-	const header = viteHeader(needsPlaywright)
+	const machinery = viteMachinery(src)
+	const header = viteHeader(machinery)
 
 	if (!hasCore) {
 		const [onlyEnvironment] = nonCore
@@ -2090,10 +2235,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 			{
 				css: ENVIRONMENT_CSS,
 				publicDir: false,
-				plugins: [
-					outputBoundary('dist/src/browser'),
-					environmentBoundary('src/browser'),
-				],
+				plugins: [outputBoundary('dist/src/browser'), environmentBoundary('src/browser')],
 				build: {
 					assetsInlineLimit: 0,
 					lib: {
@@ -2129,13 +2271,9 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 ${EXPORT_KEYWORD} const srcServer = (config?: UserConfig): UserConfig =>
 	srcCore(
 		mergeConfig(
-			{
-				css: ENVIRONMENT_CSS,
+			{${machinery.browser ? '\n\t\t\t\tcss: ENVIRONMENT_CSS,' : ''}
 				publicDir: false,
-				plugins: [
-					outputBoundary('dist/src/server'),
-					environmentBoundary('src/server'),
-				],
+				plugins: [outputBoundary('dist/src/server'), environmentBoundary('src/server')],
 				build: {
 					lib: {
 						entry: resolveWorkspacePath('src/server/index.ts'),
@@ -2295,8 +2433,8 @@ export function applicationViteConfig(
 	engine = false,
 ): string {
 	const hasSourceCore = src.includes('core')
-	const needsBrowser = src.includes('browser') || app.includes('browser')
-	const header = viteHeader(needsBrowser, app.includes('browser'))
+	const machinery = viteMachinery(src, app, engine)
+	const header = viteHeader(machinery)
 	const projects: string[] = []
 	const blocks: string[] = []
 
@@ -2306,8 +2444,7 @@ export function applicationViteConfig(
 ${EXPORT_KEYWORD} const srcCore = (config?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
-			resolve,
-			css: ENVIRONMENT_CSS,
+			resolve,${machinery.browser ? '\n\t\t\tcss: ENVIRONMENT_CSS,' : ''}
 			publicDir: false,
 			plugins: [environmentBoundary('src/core')],
 			build: { emptyOutDir: true, sourcemap: true, minify: false },
@@ -2393,8 +2530,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 ${EXPORT_KEYWORD} const srcServer = (config?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
-			resolve,
-			css: ENVIRONMENT_CSS,
+			resolve,${machinery.browser ? '\n\t\t\tcss: ENVIRONMENT_CSS,' : ''}
 			publicDir: false,
 			plugins: [outputBoundary('dist/src/server'), environmentBoundary('src/server')],
 			build: {
@@ -2430,8 +2566,7 @@ ${EXPORT_KEYWORD} const srcServer = (config?: UserConfig): UserConfig =>
 ${EXPORT_KEYWORD} const appCore = (config?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
-			resolve,
-			css: ENVIRONMENT_CSS,
+			resolve,${machinery.browser ? '\n\t\t\tcss: ENVIRONMENT_CSS,' : ''}
 			publicDir: false,
 			plugins: [environmentBoundary('app/core')],
 			test: {
@@ -2508,8 +2643,7 @@ ${EXPORT_KEYWORD} function appBrowser(...config: readonly never[]): UserConfig {
 ${EXPORT_KEYWORD} const appServer = (config?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
-			resolve,
-			css: ENVIRONMENT_CSS,
+			resolve,${machinery.browser ? '\n\t\t\tcss: ENVIRONMENT_CSS,' : ''}
 			publicDir: false,
 			plugins: [outputBoundary('dist/app/server'), environmentBoundary('app/server')],
 			build: {
@@ -2641,6 +2775,7 @@ export function coreTsconfig(): string {
  * `configs/src/vite.core.config.ts` — inlines its own `build.lib` /
  * `rolldownOptions` (core's `srcCore` root export carries no build.lib).
  *
+ * @param browser - Whether a declared browser environment enables the shared CSS pipeline.
  * @returns The core environment `vite.config.ts` file content, newline-terminated.
  *
  * @example
@@ -2648,12 +2783,11 @@ export function coreTsconfig(): string {
  * coreViteConfig().includes('srcCore(') // true
  * ```
  */
-export function coreViteConfig(): string {
+export function coreViteConfig(browser = true): string {
 	return `import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
 import {
-	ENVIRONMENT_CSS,
-	environmentBoundary,
+${browser ? '\tENVIRONMENT_CSS,\n' : ''}	environmentBoundary,
 	outputBoundary,
 	srcCore,
 	resolveWorkspacePath,
@@ -2661,8 +2795,7 @@ import {
 
 export default defineConfig(
 	srcCore({
-		css: ENVIRONMENT_CSS,
-		publicDir: false,
+${browser ? '\t\tcss: ENVIRONMENT_CSS,\n' : ''}		publicDir: false,
 		plugins: [
 			outputBoundary('dist/src/core'),
 			environmentBoundary('src/core'),
@@ -2901,6 +3034,7 @@ ${browser}
  * ```
  */
 export function configArtifacts(spec: Blueprint): readonly Artifact[] {
+	const machinery = viteMachinery(spec.src, spec.app, spec.engine)
 	const artifacts: Artifact[] = [
 		{
 			path: 'tsconfig.json',
@@ -2926,7 +3060,7 @@ export function configArtifacts(spec: Blueprint): readonly Artifact[] {
 				environment === 'core'
 					? isTsconfig
 						? coreTsconfig()
-						: coreViteConfig()
+						: coreViteConfig(machinery.browser)
 					: isTsconfig
 						? srcTsconfig(environment)
 						: srcViteConfig(environment)
