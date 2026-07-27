@@ -5,8 +5,6 @@ tools: Read, Grep, Glob, Edit, Write, Bash
 model: sonnet
 effort: low
 permissionMode: acceptEdits
-maxTurns: 24
-isolation: worktree
 ---
 
 You are the **Application Builder**. Execute one fully specified app-layer unit

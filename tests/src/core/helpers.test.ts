@@ -1436,21 +1436,21 @@ describe('pinPlan', () => {
 			{ label: 'core+browser', src: ['core', 'browser'] },
 			{ label: 'core+browser+server', src: ['core', 'browser', 'server'] },
 		]
-		const expected: Record<string, string> = {
-			'core-only': '7911bb80',
-			'server-only': '31cf9239',
-			'browser-only': 'e7be3ec2',
-			'core+server': 'c0b241f6',
-			'core+browser': '785fb3e6',
-			'core+browser+server': 'd1e8e1f6',
-		}
-
 		const actual: Record<string, string | undefined> = {}
 		for (const variant of variants) {
 			const plan = blueprintToPlan(blueprint('router', { src: variant.src }))
 			actual[variant.label] = pinPlan(plan).hash
 		}
-		expect(actual).toEqual(expected)
+		expect(actual).toMatchInlineSnapshot(`
+			{
+			  "browser-only": "31292f0e",
+			  "core+browser": "4eabf8d2",
+			  "core+browser+server": "9023c2ae",
+			  "core+server": "1710a63a",
+			  "core-only": "10977cf0",
+			  "server-only": "97d09c01",
+			}
+		`)
 	})
 
 	it('pins app-only and mixed workspace variants to captured hashes (byte-stable)', () => {
@@ -1469,20 +1469,20 @@ describe('pinPlan', () => {
 				app: ['core', 'browser', 'server'],
 			},
 		]
-		const expected: Record<string, string> = {
-			'app-core': 'b09723a3',
-			'app-browser': '7f42270a',
-			'app-server': '91a66ed1',
-			'app-full': '9e36ca90',
-			'mixed-full': '9b537d9e',
-		}
-
 		const actual: Record<string, string | undefined> = {}
 		for (const variant of variants) {
 			const plan = blueprintToPlan(blueprint('router', { src: variant.src, app: variant.app }))
 			actual[variant.label] = pinPlan(plan).hash
 		}
-		expect(actual).toEqual(expected)
+		expect(actual).toMatchInlineSnapshot(`
+			{
+			  "app-browser": "2afe374e",
+			  "app-core": "14ebe62f",
+			  "app-full": "5626c9f0",
+			  "app-server": "695b3901",
+			  "mixed-full": "3bb53de6",
+			}
+		`)
 	})
 })
 

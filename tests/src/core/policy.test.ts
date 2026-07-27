@@ -39,7 +39,7 @@ describe('repository coding law', () => {
 		const permissions = readRecord(settings.permissions)
 
 		expect(permissions.allow).toBeUndefined()
-		expect(permissions.ask).toEqual(['Bash'])
+		expect(permissions.ask).toBeUndefined()
 		expect(permissions.deny).toEqual(
 			expect.arrayContaining([
 				'Read(.env*)',

@@ -295,12 +295,17 @@ export const HOST_FIXTURE_FILES: Readonly<Record<string, string>> = {
 	'tests/setupPolicy.ts': readFileSync(join(WORKSPACE_ROOT, 'tests/setupPolicy.ts'), 'utf8'),
 	'.agents/skills/example/SKILL.md': '---\nname: example\ndescription: Fixture skill.\n---\n',
 	'.claude/agents/example.md': '# example agent fixture\n',
+	'.claude/agents/implementer.md': '# implementer agent fixture\n',
 	'.claude/rules/example.md': '# example rule fixture\n',
 	'.claude/skills/example/SKILL.md': '---\nname: example\ndescription: Fixture skill.\n---\n',
 	'.claude/settings.json': '{}\n',
 	'.codex/config.toml': 'model = "gpt-5.6-sol"\n',
 	'.codex/agents/example.toml':
 		'name = "example"\ndescription = "fixture"\ndeveloper_instructions = "fixture"\n',
+	'.codex/agents/opus.toml':
+		'name = "opus"\ndescription = "fixture"\ndeveloper_instructions = "fixture"\n',
+	'.cursor/mcp.json': '{}\n',
+	'.mcp.json': '{}\n',
 }
 
 /** Spawn the built command with an isolated current directory. */
