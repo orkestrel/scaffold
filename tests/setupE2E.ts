@@ -15,8 +15,9 @@
 // `vite.config.ts` it can then build, test, and violate.
 import type { ChildProcess } from 'node:child_process'
 import type { Environment } from '@src/core'
-import { spawn, spawnSync } from 'node:child_process'
+import { fork, spawn, spawnSync } from 'node:child_process'
 import {
+	copyFileSync,
 	existsSync,
 	mkdirSync,
 	readFileSync,
@@ -28,6 +29,7 @@ import {
 } from 'node:fs'
 import { dirname, join, relative as pathRelative, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { stripVTControlCharacters } from 'node:util'
 import { isRecord } from '@orkestrel/contract'
 import { describe, expect, it } from 'vitest'
 import { pascalCase, SCAFFOLD_RANGE } from '@src/core'
@@ -66,6 +68,464 @@ export const GENERATED_VITE_SERVER_TIMEOUT = 15_000
 
 /** Maximum time allowed for ONE generated package script in the lean-blueprint gates. */
 export const LEAN_SCRIPT_TIMEOUT = 120_000
+
+/** Maximum time allowed for one programmatic generated-workspace boundary build. */
+export const BOUNDARY_BUILD_TIMEOUT = 120_000
+
+/** Maximum child stderr suffix retained when a boundary build driver exits unexpectedly. */
+export const BOUNDARY_DRIVER_STDERR_LIMIT = 16_384
+
+/** Boundary diagnostic prefix whose complete line identifies a rejected policy. */
+export const BOUNDARY_ERROR_MARKER = '[orkestrel-environment-boundary]'
+
+/** Normalized outcome class shared by spawned and programmatic boundary builds. */
+export type BoundaryBuildStatus = 'accepted' | 'rejected' | 'failed'
+
+/** Spawn-compatible output used by boundary assertions and equivalence comparison. */
+export interface BoundaryBuildOutput {
+	readonly status: number | null
+	readonly stdout: string
+	readonly stderr: string
+	readonly error?: { readonly message: string } | undefined
+	readonly signal: NodeJS.Signals | null
+}
+
+/** Normalized programmatic build output shaped like the existing spawn result. */
+export interface BoundaryBuildResult extends BoundaryBuildOutput {
+	readonly status: 0 | 1
+	readonly signal: null
+}
+
+/**
+ * Resolve the exact generated Vite config exercised by one boundary npm script.
+ *
+ * @param script - Generated package script name.
+ * @returns Its workspace-relative Vite config path.
+ */
+export function resolveBoundaryConfig(script: string): string {
+	switch (script) {
+		case 'build:app:browser':
+			return 'configs/app/vite.browser.config.ts'
+		case 'build:app:server':
+			return 'configs/app/vite.server.config.ts'
+		case 'build:src:browser':
+			return 'configs/src/vite.browser.config.ts'
+		case 'build:src:core':
+			return 'configs/src/vite.core.config.ts'
+		case 'build:src:server':
+			return 'configs/src/vite.server.config.ts'
+		default:
+			throw new Error(`unsupported boundary build script: ${script}`)
+	}
+}
+
+/**
+ * Classify one spawn-compatible boundary build without conflating transport failure with rejection.
+ *
+ * @param result - Spawned or programmatic build output.
+ * @returns Accepted, policy-rejected, or failed-to-complete.
+ */
+export function classifyBoundaryBuild(result: BoundaryBuildOutput): BoundaryBuildStatus {
+	if (result.status === null || result.error !== undefined || result.signal !== null)
+		return 'failed'
+	return result.status === 0 ? 'accepted' : 'rejected'
+}
+
+/**
+ * Extract the complete environment-boundary identity line from build output.
+ *
+ * @param output - Combined stdout and stderr text.
+ * @returns The color-free marker line, or `undefined` when no boundary rejection was reported.
+ */
+export function extractBoundaryIdentity(output: string): string | undefined {
+	for (const line of output.split(/\r?\n/u)) {
+		const offset = line.indexOf(BOUNDARY_ERROR_MARKER)
+		if (offset >= 0) {
+			return stripVTControlCharacters(line.slice(offset)).trimEnd()
+		}
+	}
+	return undefined
+}
+
+/**
+ * Render an exact spawned-versus-driver equivalence diff.
+ *
+ * @param reference - Existing npm-script spawn result.
+ * @param driver - Persistent IPC driver result.
+ * @returns `undefined` for equivalence, otherwise both verdicts, identities, and complete outputs.
+ */
+export function renderBoundaryDifference(
+	reference: BoundaryBuildOutput,
+	driver: BoundaryBuildOutput,
+): string | undefined {
+	const referenceStatus = classifyBoundaryBuild(reference)
+	const driverStatus = classifyBoundaryBuild(driver)
+	const referenceOutput = `${reference.stdout}${reference.stderr}`
+	const driverOutput = `${driver.stdout}${driver.stderr}`
+	const referenceIdentity = extractBoundaryIdentity(referenceOutput)
+	const driverIdentity = extractBoundaryIdentity(driverOutput)
+	if (referenceStatus === driverStatus && referenceIdentity === driverIdentity) return undefined
+	return [
+		`spawn verdict: ${referenceStatus}`,
+		`driver verdict: ${driverStatus}`,
+		`spawn boundary: ${referenceIdentity ?? 'none'}`,
+		`driver boundary: ${driverIdentity ?? 'none'}`,
+		'spawn output:',
+		referenceOutput,
+		'driver output:',
+		driverOutput,
+	].join('\n')
+}
+
+/**
+ * Render an unexpected boundary build driver exit with its active case and child diagnostics.
+ *
+ * @param code - Child process exit code.
+ * @param signal - Child process exit signal.
+ * @param id - In-flight request id remembered by the parent or reported by the child.
+ * @param stack - Structured child failure stack received over IPC.
+ * @param stderr - Rolling child stderr suffix captured by the parent.
+ * @returns A complete driver-exit diagnostic.
+ */
+export function renderBoundaryDriverExit(
+	code: number | null,
+	signal: NodeJS.Signals | null,
+	id: number | undefined,
+	stack: string | undefined,
+	stderr: string,
+): string {
+	return [
+		`boundary build driver exited ${String(code)} (${signal ?? 'no signal'})`,
+		`case id: ${id === undefined ? 'none' : String(id)}`,
+		`child failure:\n${stack ?? 'none'}`,
+		`stderr tail:\n${stderr || 'none'}`,
+	].join('\n')
+}
+
+/**
+ * Persistent IPC owner that performs fresh programmatic Vite builds for one boundary shard.
+ *
+ * @remarks
+ * The child is rooted in the generated workspace, accepts one build at a time, and is destroyed
+ * explicitly after the shard. A parent IPC disconnect also terminates the child.
+ */
+export class BoundaryBuildDriver {
+	readonly #child: ChildProcess
+	readonly #package: string
+	readonly #ready: Promise<void>
+	#resolve: (() => void) | undefined
+	#reject: ((error: Error) => void) | undefined
+	#startup: NodeJS.Timeout | undefined
+	#pending:
+		| {
+				readonly id: number
+				readonly resolve: (result: BoundaryBuildResult) => void
+				readonly reject: (error: Error) => void
+				readonly timeout: NodeJS.Timeout
+				readonly result?: { readonly status: 0 | 1; readonly output: string }
+		  }
+		| undefined
+	#destroying:
+		| {
+				readonly resolve: () => void
+				readonly reject: (error: Error) => void
+				readonly timeout: NodeJS.Timeout
+				readonly error?: Error
+		  }
+		| undefined
+	#failure: Error | undefined
+	#crash: { readonly id: number | undefined; readonly stack: string } | undefined
+	#diagnostic = ''
+	#tail = ''
+	#stdout = ''
+	#stderr = ''
+	#next = 0
+
+	/**
+	 * Create one shard driver and begin its cloned-workspace Vite import.
+	 *
+	 * @param packageDirectory - Fresh generated workspace owned by one boundary shard.
+	 */
+	constructor(packageDirectory: string) {
+		this.#package = packageDirectory
+		const driverPath = join(packageDirectory, '.scaffold-boundary-build-driver.mjs')
+		copyFileSync(join(WORKSPACE_ROOT, 'tests', 'fixtures', 'boundaryBuildDriver.mjs'), driverPath)
+		this.#child = fork(driverPath, [packageDirectory], {
+			cwd: packageDirectory,
+			stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
+		})
+		this.#ready = new Promise((resolve, reject) => {
+			this.#resolve = resolve
+			this.#reject = reject
+		})
+		this.#startup = setTimeout(() => {
+			this.#abort(new Error(`boundary build driver startup timed out\n${this.#diagnostic}`))
+		}, GENERATED_VITE_SERVER_TIMEOUT)
+		this.#child.stdout?.on('data', (chunk: unknown) => {
+			this.#capture('stdout', String(chunk))
+		})
+		this.#child.stderr?.on('data', (chunk: unknown) => {
+			this.#capture('stderr', String(chunk))
+		})
+		this.#child.on('message', (message: unknown) => {
+			this.#receive(message)
+		})
+		this.#child.once('error', (error) => {
+			this.#abort(error)
+		})
+		this.#child.once('close', (code, signal) => {
+			this.#exit(code, signal)
+		})
+	}
+
+	/**
+	 * Execute one generated package build through a fresh Vite builder.
+	 *
+	 * @param script - Boundary build script whose config determines the environment.
+	 * @returns Spawn-compatible status-class and combined output.
+	 */
+	async build(script: string): Promise<BoundaryBuildResult> {
+		await this.#ready
+		if (this.#failure !== undefined) throw this.#failure
+		if (this.#pending !== undefined) throw new Error('boundary build driver is already building')
+		if (this.#destroying !== undefined) throw new Error('boundary build driver is being destroyed')
+		const id = this.#next
+		this.#next += 1
+		const config = join(this.#package, resolveBoundaryConfig(script))
+		this.#stdout = ''
+		this.#stderr = ''
+		return new Promise((resolve, reject) => {
+			const timeout = setTimeout(() => {
+				this.#failBuild(
+					id,
+					new Error(
+						`${script} programmatic Vite build timed out\ncase id: ${String(id)}\nstderr tail:\n${this.#tail || 'none'}`,
+					),
+				)
+			}, BOUNDARY_BUILD_TIMEOUT)
+			this.#pending = { id, resolve, reject, timeout }
+			this.#child.send({ command: 'build', id, config }, (error) => {
+				if (error !== null) this.#failBuild(id, error)
+			})
+		})
+	}
+
+	/** Destroy the shard child and wait for its process to exit. */
+	async destroy(): Promise<void> {
+		try {
+			await this.#ready
+		} catch (error) {
+			this.#terminate()
+			throw error
+		}
+		if (this.#pending !== undefined) {
+			this.#abort(new Error('boundary build driver destroyed during an active build'))
+		}
+		if (this.#failure !== undefined) {
+			this.#terminate()
+			throw this.#failure
+		}
+		if (this.#child.exitCode !== null) {
+			if (this.#child.exitCode === 0) return
+			throw new Error(
+				renderBoundaryDriverExit(
+					this.#child.exitCode,
+					this.#child.signalCode,
+					this.#pending?.id ?? this.#crash?.id,
+					this.#crash?.stack,
+					this.#tail,
+				),
+			)
+		}
+		if (this.#destroying !== undefined) {
+			throw new Error('boundary build driver is already being destroyed')
+		}
+		return new Promise((resolve, reject) => {
+			const timeout = setTimeout(() => {
+				const pending = this.#destroying
+				if (pending === undefined) return
+				this.#destroying = {
+					...pending,
+					error: new Error(`boundary build driver destroy timed out\n${this.#diagnostic}`),
+				}
+				this.#terminate()
+			}, GENERATED_VITE_SERVER_TIMEOUT)
+			this.#destroying = { resolve, reject, timeout }
+			this.#child.send({ command: 'destroy' }, (error) => {
+				if (error !== null) this.#failDestroy(error)
+			})
+		})
+	}
+
+	#receive(message: unknown): void {
+		if (!isRecord(message) || typeof message.command !== 'string') {
+			this.#abort(new Error(`boundary build driver sent an invalid message\n${this.#diagnostic}`))
+			return
+		}
+		if (message.command === 'ready') {
+			if (this.#resolve === undefined) {
+				this.#abort(new Error('boundary build driver sent a duplicate ready message'))
+				return
+			}
+			if (this.#startup !== undefined) clearTimeout(this.#startup)
+			const resolve = this.#resolve
+			this.#startup = undefined
+			this.#resolve = undefined
+			this.#reject = undefined
+			resolve()
+			return
+		}
+		if (message.command === 'failure') {
+			if (
+				(message.id !== undefined &&
+					(typeof message.id !== 'number' || !Number.isSafeInteger(message.id))) ||
+				typeof message.stack !== 'string'
+			) {
+				this.#abort(new Error(`boundary build driver sent an invalid failure\n${this.#diagnostic}`))
+				return
+			}
+			this.#crash = { id: message.id, stack: message.stack }
+			return
+		}
+		if (message.command !== 'result') {
+			this.#abort(new Error(`boundary build driver sent an unknown command: ${message.command}`))
+			return
+		}
+		const pending = this.#pending
+		if (
+			pending === undefined ||
+			message.id !== pending.id ||
+			(message.status !== 0 && message.status !== 1) ||
+			typeof message.output !== 'string'
+		) {
+			this.#abort(new Error(`boundary build driver sent an invalid result\n${this.#diagnostic}`))
+			return
+		}
+		this.#pending = {
+			...pending,
+			result: { status: message.status, output: message.output },
+		}
+		setImmediate(() => {
+			this.#completeBuild()
+		})
+	}
+
+	#failBuild(id: number, error: Error): void {
+		const pending = this.#pending
+		if (pending === undefined || pending.id !== id) return
+		clearTimeout(pending.timeout)
+		this.#pending = undefined
+		pending.reject(error)
+		this.#abort(error)
+	}
+
+	#capture(channel: 'stdout' | 'stderr', output: string): void {
+		if (channel === 'stderr') {
+			this.#tail = `${this.#tail}${output}`.slice(-BOUNDARY_DRIVER_STDERR_LIMIT)
+		}
+		if (this.#pending === undefined) {
+			this.#diagnostic += output
+			return
+		}
+		if (channel === 'stdout') this.#stdout += output
+		else this.#stderr += output
+	}
+
+	#completeBuild(): void {
+		const pending = this.#pending
+		const result = pending?.result
+		if (pending === undefined || result === undefined) return
+		clearTimeout(pending.timeout)
+		const stdout = `${result.output}${this.#stdout}`
+		const stderr = this.#stderr
+		this.#pending = undefined
+		this.#stdout = ''
+		this.#stderr = ''
+		pending.resolve({
+			status: result.status,
+			stdout,
+			stderr,
+			error: undefined,
+			signal: null,
+		})
+	}
+
+	#failDestroy(error: Error): void {
+		const pending = this.#destroying
+		if (pending === undefined) return
+		clearTimeout(pending.timeout)
+		this.#destroying = undefined
+		pending.reject(error)
+		this.#terminate()
+	}
+
+	#abort(error: Error): void {
+		if (this.#failure === undefined) this.#failure = error
+		if (this.#startup !== undefined) clearTimeout(this.#startup)
+		this.#startup = undefined
+		const reject = this.#reject
+		this.#resolve = undefined
+		this.#reject = undefined
+		reject?.(error)
+		const pending = this.#pending
+		if (pending !== undefined) {
+			clearTimeout(pending.timeout)
+			this.#pending = undefined
+			pending.reject(error)
+		}
+		const destroying = this.#destroying
+		if (destroying !== undefined) {
+			clearTimeout(destroying.timeout)
+			this.#destroying = undefined
+			destroying.reject(error)
+		}
+		this.#terminate()
+	}
+
+	#exit(code: number | null, signal: NodeJS.Signals | null): void {
+		const destroying = this.#destroying
+		if (destroying !== undefined) {
+			clearTimeout(destroying.timeout)
+			this.#destroying = undefined
+			if (destroying.error !== undefined) destroying.reject(destroying.error)
+			else if (code === 0) destroying.resolve()
+			else {
+				destroying.reject(
+					new Error(
+						renderBoundaryDriverExit(
+							code,
+							signal,
+							this.#pending?.id ?? this.#crash?.id,
+							this.#crash?.stack,
+							this.#tail,
+						),
+					),
+				)
+			}
+			return
+		}
+		if (code === 0 && this.#failure === undefined) {
+			this.#abort(new Error('boundary build driver exited before shutdown'))
+			return
+		}
+		this.#abort(
+			this.#failure ??
+				new Error(
+					renderBoundaryDriverExit(
+						code,
+						signal,
+						this.#pending?.id ?? this.#crash?.id,
+						this.#crash?.stack,
+						this.#tail,
+					),
+				),
+		)
+	}
+
+	#terminate(): void {
+		if (this.#child.exitCode === null) this.#child.kill()
+	}
+}
 
 /**
  * Slack a lean-blueprint gate adds on top of its scripts' own budgets.
@@ -2248,13 +2708,15 @@ export function selectBoundaryCases(
  * @param cases - Deterministically selected rejection cases.
  * @returns The number of cases actually executed.
  */
-export function executeBoundaryCases(
+export async function executeBoundaryCases(
 	packageDirectory: string,
 	cases: readonly BoundaryCase[],
-): number {
+): Promise<number> {
 	const originals = buildBoundaryOriginals(packageDirectory)
 	const browserHtml = join(packageDirectory, 'app', 'browser', 'index.html')
 	const browserOriginal = originals.get(browserHtml) ?? ''
+	const driver = new BoundaryBuildDriver(packageDirectory)
+	const equivalence = process.env.SCAFFOLD_BOUNDARY_EQUIVALENCE === '1'
 	let count = 0
 	try {
 		for (const testCase of cases) {
@@ -2277,7 +2739,18 @@ export function executeBoundaryCases(
 				expect(written.startsWith(browserOriginal.slice(0, offset))).toBe(true)
 				expect(written.split(testCase.content)).toHaveLength(2)
 			}
-			const rejected = runNpmScript(packageDirectory, testCase.script, 120_000)
+			const reference = equivalence
+				? runNpmScript(packageDirectory, testCase.script, BOUNDARY_BUILD_TIMEOUT)
+				: undefined
+			const rejected = await driver.build(testCase.script)
+			if (reference !== undefined) {
+				const difference = renderBoundaryDifference(reference, rejected)
+				if (difference !== undefined) {
+					throw new Error(
+						`${testCase.script} boundary equivalence differed for ${testCase.content}\nfixture: ${testCase.setupContent ?? 'none'}\n${difference}`,
+					)
+				}
+			}
 			const output = `${rejected.stdout}${rejected.stderr}`
 			expect(
 				rejected.status,
@@ -2296,7 +2769,11 @@ export function executeBoundaryCases(
 			count += 1
 		}
 	} finally {
-		for (const [path, content] of originals) writeFileSync(path, content, 'utf8')
+		try {
+			for (const [path, content] of originals) writeFileSync(path, content, 'utf8')
+		} finally {
+			await driver.destroy()
+		}
 	}
 	return count
 }

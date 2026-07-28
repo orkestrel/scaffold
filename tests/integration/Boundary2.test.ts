@@ -25,7 +25,7 @@ describe('generated mixed-workspace boundary shard 2', () => {
 			const cases = buildBoundaryCases(packageDirectory)
 			const first = selectBoundaryCases(cases, 0)
 			const second = selectBoundaryCases(cases, 1)
-			const count = executeBoundaryCases(packageDirectory, second)
+			const count = await executeBoundaryCases(packageDirectory, second)
 
 			expect(count).toBe(second.length)
 			expect(first.length + count).toBe(cases.length)

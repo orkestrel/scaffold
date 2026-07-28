@@ -1,3 +1,5 @@
+import type { BoundaryBuildOutput } from '../../setupE2E.js'
+import { Console } from 'node:console'
 import {
 	lstatSync,
 	mkdirSync,
@@ -9,8 +11,10 @@ import {
 	writeFileSync,
 } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { Writable } from 'node:stream'
 import { parseJSON } from '@orkestrel/contract'
 import { describe, expect, it } from 'vitest'
+import { createLogger } from 'vite'
 import { ScaffoldError } from '@src/core'
 import {
 	ACTION_LABEL,
@@ -81,7 +85,15 @@ import {
 	cloneGeneratedConsumer,
 	cloneGeneratedModules,
 } from '../../setupBin.js'
-import { buildBoundaryCases, selectBoundaryCases } from '../../setupE2E.js'
+import {
+	buildBoundaryCases,
+	classifyBoundaryBuild,
+	extractBoundaryIdentity,
+	renderBoundaryDifference,
+	renderBoundaryDriverExit,
+	resolveBoundaryConfig,
+	selectBoundaryCases,
+} from '../../setupE2E.js'
 import {
 	buildTempDirectory,
 	canDirectoryLink,
@@ -193,6 +205,95 @@ describe('generated consumer clones', () => {
 		} finally {
 			await workspace.cleanup()
 		}
+	})
+
+	it('maps boundary scripts and compares normalized build verdicts exactly', () => {
+		expect(resolveBoundaryConfig('build:app:browser')).toBe('configs/app/vite.browser.config.ts')
+		expect(resolveBoundaryConfig('build:app:server')).toBe('configs/app/vite.server.config.ts')
+		expect(resolveBoundaryConfig('build:src:browser')).toBe('configs/src/vite.browser.config.ts')
+		expect(resolveBoundaryConfig('build:src:core')).toBe('configs/src/vite.core.config.ts')
+		expect(resolveBoundaryConfig('build:src:server')).toBe('configs/src/vite.server.config.ts')
+		expect(() => resolveBoundaryConfig('build')).toThrow('unsupported boundary build script')
+
+		const boundary = '[orkestrel-environment-boundary] Browser cannot import server'
+		const reference = {
+			status: 1,
+			stdout: '',
+			stderr: `\u001B[31mError: ${boundary}\u001B[39m\r\n`,
+			signal: null,
+		}
+		const equivalent = {
+			status: 1,
+			stdout: `Error: ${boundary}\n`,
+			stderr: '',
+			signal: null,
+		}
+		const failed: BoundaryBuildOutput = {
+			status: null,
+			stdout: '',
+			stderr: 'timed out\n',
+			error: new Error('timeout'),
+			signal: 'SIGTERM',
+		}
+
+		expect(classifyBoundaryBuild({ ...equivalent, status: 0 })).toBe('accepted')
+		expect(classifyBoundaryBuild(reference)).toBe('rejected')
+		expect(classifyBoundaryBuild(failed)).toBe('failed')
+		expect(extractBoundaryIdentity(reference.stderr)).toBe(boundary)
+		expect(extractBoundaryIdentity('ordinary build failure\n')).toBeUndefined()
+		expect(renderBoundaryDifference(reference, equivalent)).toBeUndefined()
+		expect(renderBoundaryDifference(reference, failed)).toBe(
+			[
+				'spawn verdict: rejected',
+				'driver verdict: failed',
+				`spawn boundary: ${boundary}`,
+				'driver boundary: none',
+				'spawn output:',
+				reference.stderr,
+				'driver output:',
+				failed.stderr,
+			].join('\n'),
+		)
+		expect(renderBoundaryDriverExit(1, null, 17, 'Error: child failed', 'stderr suffix\n')).toBe(
+			[
+				'boundary build driver exited 1 (no signal)',
+				'case id: 17',
+				'child failure:\nError: child failed',
+				'stderr tail:\nstderr suffix\n',
+			].join('\n'),
+		)
+	})
+
+	it('keeps the complete Vite logger surface safe when plugin wrappers rebind methods', () => {
+		const output: string[] = []
+		const stream = new Writable({
+			write(chunk: unknown, _encoding: BufferEncoding, callback: (error?: Error | null) => void) {
+				output.push(String(chunk))
+				callback()
+			},
+		})
+		const logger = createLogger('info', {
+			allowClearScreen: false,
+			console: new Console({ stdout: stream, stderr: stream, colorMode: false }),
+		})
+		const logged = new Error('logged')
+		const info = logger.info
+		const warn = logger.warn
+		const warnOnce = logger.warnOnce
+		const error = logger.error
+		const clearScreen = logger.clearScreen
+		const hasErrorLogged = logger.hasErrorLogged
+
+		info.call(undefined, 'info')
+		warn.call(undefined, 'warn')
+		warnOnce.call(undefined, 'once')
+		warnOnce.call(undefined, 'once')
+		error.call(undefined, 'error', { error: logged })
+		clearScreen.call(undefined, 'info')
+
+		expect(logger.hasWarned).toBe(true)
+		expect(hasErrorLogged.call(undefined, logged)).toBe(true)
+		expect(output).toEqual(['info\n', 'warn\n', 'once\n', 'error\n'])
 	})
 })
 
