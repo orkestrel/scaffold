@@ -79,7 +79,7 @@ export const BOUNDARY_DRIVER_STDERR_LIMIT = 16_384
 export const BOUNDARY_ERROR_MARKER = '[orkestrel-environment-boundary]'
 
 /** Normalized outcome class shared by spawned and programmatic boundary builds. */
-export type BoundaryBuildStatus = 'accepted' | 'rejected' | 'failed'
+export type BoundaryBuildStatus = 'accepted' | 'rejected'
 
 /** Spawn-compatible output used by boundary assertions and equivalence comparison. */
 export interface BoundaryBuildOutput {
@@ -120,14 +120,12 @@ export function resolveBoundaryConfig(script: string): string {
 }
 
 /**
- * Classify one spawn-compatible boundary build without conflating transport failure with rejection.
+ * Classify one spawn-compatible boundary build by the boundary suite's zero/nonzero contract.
  *
  * @param result - Spawned or programmatic build output.
- * @returns Accepted, policy-rejected, or failed-to-complete.
+ * @returns Accepted for exit zero, otherwise rejected.
  */
 export function classifyBoundaryBuild(result: BoundaryBuildOutput): BoundaryBuildStatus {
-	if (result.status === null || result.error !== undefined || result.signal !== null)
-		return 'failed'
 	return result.status === 0 ? 'accepted' : 'rejected'
 }
 
@@ -152,11 +150,13 @@ export function extractBoundaryIdentity(output: string): string | undefined {
  *
  * @param reference - Existing npm-script spawn result.
  * @param driver - Persistent IPC driver result.
+ * @param message - Boundary message required by the original case assertion.
  * @returns `undefined` for equivalence, otherwise both verdicts, identities, and complete outputs.
  */
 export function renderBoundaryDifference(
 	reference: BoundaryBuildOutput,
 	driver: BoundaryBuildOutput,
+	message: string,
 ): string | undefined {
 	const referenceStatus = classifyBoundaryBuild(reference)
 	const driverStatus = classifyBoundaryBuild(driver)
@@ -164,7 +164,23 @@ export function renderBoundaryDifference(
 	const driverOutput = `${driver.stdout}${driver.stderr}`
 	const referenceIdentity = extractBoundaryIdentity(referenceOutput)
 	const driverIdentity = extractBoundaryIdentity(driverOutput)
-	if (referenceStatus === driverStatus && referenceIdentity === driverIdentity) return undefined
+	const marker = BOUNDARY_ERROR_MARKER.slice(1, -1)
+	const referenceMarker = referenceOutput.includes(marker)
+	const driverMarker = driverOutput.includes(marker)
+	const referenceMessage = referenceOutput.includes(message)
+	const driverMessage = driverOutput.includes(message)
+	const identitiesDiffer =
+		referenceIdentity !== undefined &&
+		driverIdentity !== undefined &&
+		referenceIdentity !== driverIdentity
+	if (
+		referenceStatus === driverStatus &&
+		referenceMarker === driverMarker &&
+		referenceMessage === driverMessage &&
+		!identitiesDiffer
+	) {
+		return undefined
+	}
 	return [
 		`spawn verdict: ${referenceStatus}`,
 		`driver verdict: ${driverStatus}`,
@@ -2744,7 +2760,7 @@ export async function executeBoundaryCases(
 				: undefined
 			const rejected = await driver.build(testCase.script)
 			if (reference !== undefined) {
-				const difference = renderBoundaryDifference(reference, rejected)
+				const difference = renderBoundaryDifference(reference, rejected, testCase.message)
 				if (difference !== undefined) {
 					throw new Error(
 						`${testCase.script} boundary equivalence differed for ${testCase.content}\nfixture: ${testCase.setupContent ?? 'none'}\n${difference}`,
