@@ -701,6 +701,59 @@ describe('Sync.catalog', () => {
 // ── Sync.pull ─────────────────────────────────────────────────────────────
 
 describe('Sync.pull', () => {
+	it('excludes its own guide from pull writes while retaining self version freshness', async () => {
+		const fixture = await buildHTTPFixture()
+		const directory = await buildTempDirectory()
+		let selfGuideRequests = 0
+		try {
+			writeFileSync(
+				join(directory.path, 'package.json'),
+				JSON.stringify({
+					name: '@orkestrel/guide',
+					dependencies: { '@orkestrel/contract': '^0.0.5' },
+					devDependencies: { '@orkestrel/guide': '^0.0.5' },
+				}),
+				'utf8',
+			)
+			fixture.route(buildGuidePath('guide'), (_request, response) => {
+				selfGuideRequests += 1
+				respondText(response, 200, 'self guide replacement')
+			})
+			fixture.route(buildGuidePath('contract'), (_request, response) =>
+				respondText(response, 200, 'contract guide'),
+			)
+			fixture.route(buildRegistryPath('@orkestrel/guide'), (_request, response) =>
+				respondJSON(response, '0.0.5'),
+			)
+			fixture.route(buildRegistryPath('@orkestrel/contract'), (_request, response) =>
+				respondJSON(response, '0.0.5'),
+			)
+			const sync = createSync({ guides: { base: fixture.base }, registry: { base: fixture.base } })
+			try {
+				const report = await sync.pull(directory.path)
+				const written = await sync.write(report, directory.path)
+
+				expect(selfGuideRequests).toBe(0)
+				expect(report.guides.map((guide) => guide.name)).toEqual(['@orkestrel/contract'])
+				expect(
+					report.versions.find((version) => version.name === '@orkestrel/guide'),
+				).toMatchObject({
+					freshness: 'current',
+				})
+				expect(written).toEqual(['guides/src/contract.md'])
+				expect(readFileSync(join(directory.path, 'guides', 'src', 'contract.md'), 'utf8')).toBe(
+					'contract guide',
+				)
+				expect(existsSync(join(directory.path, 'guides', 'src', 'guide.md'))).toBe(false)
+			} finally {
+				sync.destroy()
+			}
+		} finally {
+			await directory.cleanup()
+			await fixture.close()
+		}
+	})
+
 	it('reads declared deps from dependencies+devDependencies (deduplicated) and verdicts target-relative freshness', async () => {
 		const fixture = await buildHTTPFixture()
 		const directory = await buildTempDirectory()

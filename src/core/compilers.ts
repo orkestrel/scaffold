@@ -33,6 +33,7 @@ import {
 	formatJson,
 	pascalCase,
 	pinPlan,
+	selectHostPaths,
 	serializeTypeScriptString,
 } from './helpers.js'
 import { TEMPLATES } from './templates.js'
@@ -3860,14 +3861,18 @@ export function guideArtifacts(
 			),
 		}),
 	]
+	const hostPaths = selectHostPaths(HOST_PATHS, spec.name)
+	const guidePath = `guides/src/${spec.name}.md`
 	for (const dep of spec.dependencies) {
 		if (!vendoredGuides.includes(dep.name)) continue
 		const short = dep.name.replace('@orkestrel/', '')
+		const path = `guides/src/${short}.md`
+		if (path === guidePath || hostPaths.includes(path)) continue
 		artifacts.push({
-			path: `guides/src/${short}.md`,
+			path,
 			group: 'guides',
 			origin: 'host',
-			source: `guides/src/${short}.md`,
+			source: path,
 		})
 	}
 	return artifacts
@@ -3968,7 +3973,7 @@ npm install @orkestrel/${blueprint.name}
 		})
 	}
 
-	for (const path of HOST_PATHS) {
+	for (const path of selectHostPaths(HOST_PATHS, blueprint.name)) {
 		const group = hostGroup(path)
 		if (!selected.includes(group)) continue
 		artifacts.push({ path, group, origin: 'host', source: path })

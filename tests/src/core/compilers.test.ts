@@ -1003,6 +1003,61 @@ describe('guideArtifacts / guideMemberTable', () => {
 	})
 })
 
+describe('blueprintToPlan guide ownership', () => {
+	it.each(['scaffold', 'guide'])('lets the %s blueprint template own its guide path', (name) => {
+		const plan = blueprintToPlan(blueprint(name, { src: ['core'] }), ['guides'])
+		const guides = plan.artifacts.filter((artifact) => artifact.path === `guides/src/${name}.md`)
+
+		expect(guides).toEqual([
+			expect.objectContaining({
+				path: `guides/src/${name}.md`,
+				group: 'guides',
+				origin: 'template',
+			}),
+		])
+	})
+
+	it('carries both host mirrors beside a normal blueprint own guide', () => {
+		const plan = blueprintToPlan(blueprint('abort', { src: ['core'] }), ['guides'])
+		const guides = plan.artifacts.filter((artifact) => artifact.path.startsWith('guides/src/'))
+
+		expect(guides).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					path: 'guides/src/abort.md',
+					group: 'guides',
+					origin: 'template',
+				}),
+				expect.objectContaining({
+					path: 'guides/src/guide.md',
+					group: 'guides',
+					origin: 'host',
+				}),
+				expect.objectContaining({
+					path: 'guides/src/scaffold.md',
+					group: 'guides',
+					origin: 'host',
+				}),
+			]),
+		)
+		expect(guides).toHaveLength(3)
+	})
+
+	it('carries one guide mirror when the dependency is already in the host set', () => {
+		const plan = blueprintToPlan(
+			blueprint('abort', {
+				src: ['core'],
+				dependencies: [dependency('@orkestrel/guide', '^0.0.5')],
+			}),
+			['guides'],
+		)
+		const mirrors = plan.artifacts.filter((artifact) => artifact.path === 'guides/src/guide.md')
+
+		expect(mirrors).toHaveLength(1)
+		expect(mirrors[0]).toMatchObject({ group: 'guides', origin: 'host' })
+	})
+})
+
 describe('applyOverrides', () => {
 	it('replaces a matching artifact content in place', () => {
 		const artifacts: readonly Artifact[] = [

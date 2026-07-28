@@ -294,7 +294,8 @@ export class Sync implements SyncInterface {
 
 	async pull(target: string, dependencies?: readonly Dependency[]): Promise<SyncReport> {
 		this.#ensureAlive()
-		const declared = manifestToDependencies(readManifest(target))
+		const manifest = readManifest(target)
+		const declared = manifestToDependencies(manifest)
 		const deps = dependencies === undefined ? declared : parseSyncDependencies(dependencies, false)
 		if (
 			dependencies !== undefined &&
@@ -308,9 +309,13 @@ export class Sync implements SyncInterface {
 		) {
 			throw new ScaffoldError('INVALID', 'Sync pull selection is not declared by the target')
 		}
-		const current = readGuideReferences(target, deps)
+		const parsed = parseJSON(manifest)
+		const name = isRecord(parsed) ? ownDataValue(parsed, 'name') : undefined
+		const guideDependencies =
+			typeof name === 'string' ? deps.filter((dependency) => dependency.name !== name) : deps
+		const current = readGuideReferences(target, guideDependencies)
 		const allowance: SyncAllowance = Float64Array.of(this.#budget)
-		const guides = await this.#guides(deps, current, allowance)
+		const guides = await this.#guides(guideDependencies, current, allowance)
 		const versions = await this.#versions(deps, allowance)
 		const report = syncReportOf(target, guides, versions)
 		this.#emitter.emit('done', report)

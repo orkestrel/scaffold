@@ -39,6 +39,7 @@ import {
 	renderObject,
 	renderValue,
 	SCAFFOLD_RANGE,
+	selectHostPaths,
 	serializeTypeScriptString,
 	snapshotOf,
 	splitTableRow,
@@ -448,6 +449,20 @@ describe('diffPlan — the four drift classes', () => {
 })
 
 describe('diffPlan — template origin is birth-only, audit-exempt', () => {
+	it('keeps the surviving own guide aligned after local edits', () => {
+		const plan = blueprintToPlan(blueprint('scaffold', { src: ['core'] }), ['guides'])
+		const guide = plan.artifacts.find((artifact) => artifact.path === 'guides/src/scaffold.md')
+		const audit = diffPlan(plan, {
+			'guides/src/scaffold.md': contentToHex('# Hand-authored scaffold guide\n'),
+		})
+
+		expect(guide?.origin).toBe('template')
+		expect(audit.findings.find((finding) => finding.path === 'guides/src/scaffold.md')?.drift).toBe(
+			'aligned',
+		)
+		expect(audit.drifted).toBe(0)
+	})
+
 	it('is aligned when a template artifact content differs from current', () => {
 		const plan = blueprintToPlan(blueprint('router', { src: ['core'] }), ['source'])
 		const templateArtifact = plan.artifacts.find((artifact) => artifact.origin === 'template')
@@ -1280,6 +1295,22 @@ describe('byte-exact snapshots', () => {
 		expect(audit.missing).toBe(3)
 		expect(audit.clean).toBe(false)
 		expect(audit.findings.every((finding) => finding.drift === 'missing')).toBe(true)
+	})
+})
+
+describe('selectHostPaths', () => {
+	it('preserves every path when the host set has no own guide', () => {
+		const paths = Object.freeze(['LICENSE', 'guides/src/guide.md'])
+
+		expect(selectHostPaths(paths, 'router')).toEqual(paths)
+		expect(paths).toEqual(['LICENSE', 'guides/src/guide.md'])
+	})
+
+	it('drops exactly the own guide path without mutating the input', () => {
+		const paths = Object.freeze(['guides/src/guide.md', 'guides/src/scaffold.md', 'LICENSE'])
+
+		expect(selectHostPaths(paths, 'scaffold')).toEqual(['guides/src/guide.md', 'LICENSE'])
+		expect(paths).toEqual(['guides/src/guide.md', 'guides/src/scaffold.md', 'LICENSE'])
 	})
 })
 

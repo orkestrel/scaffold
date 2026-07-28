@@ -1151,6 +1151,23 @@ export function snapshotOf(current: Readonly<Record<string, string>>): Snapshot 
 }
 
 /**
+ * Select host paths without the guide owned by the target blueprint.
+ *
+ * @param paths - Host artifact paths in deterministic input order.
+ * @param name - The target blueprint's unscoped package name.
+ * @returns Every host path except `guides/src/<name>.md`, in input order.
+ *
+ * @example
+ * ```ts
+ * selectHostPaths(['guides/src/guide.md', 'LICENSE'], 'guide') // ['LICENSE']
+ * ```
+ */
+export function selectHostPaths(paths: readonly string[], name: string): readonly string[] {
+	const guide = `guides/src/${name}.md`
+	return paths.filter((path) => path !== guide)
+}
+
+/**
  * Find the first exact or portable case-insensitive path collision.
  *
  * @param paths - Portable paths in deterministic input order.

@@ -18,6 +18,7 @@ import { attempt, isRecord, parseJSON } from '@orkestrel/contract'
 import { describe, expect, it } from 'vitest'
 import {
 	blueprint,
+	blueprintToPlan,
 	bytesToHex,
 	contentToHex,
 	diffPlan,
@@ -960,6 +961,30 @@ describe('readTarget — hostile object-prototype filenames', () => {
 // ── hydratePlan ──────────────────────────────────────────────────────────────
 
 describe('hydratePlan', () => {
+	it('hydrates a scaffold self-case plan against a staged host without colliding', async () => {
+		const source = await buildTempDirectory()
+		const host = await buildTempDirectory()
+		try {
+			mkdirSync(join(source.path, 'guides', 'src'), { recursive: true })
+			writeFileSync(join(source.path, 'guides', 'src', 'guide.md'), '# Guide host\n', 'utf8')
+			writeFileSync(join(source.path, 'guides', 'src', 'scaffold.md'), '# Scaffold host\n', 'utf8')
+			stageHost(source.path, host.path, ['guides/src/guide.md', 'guides/src/scaffold.md'])
+			const plan = blueprintToPlan(blueprint('scaffold', { src: ['core'] }), ['guides'])
+
+			const hydrated = hydratePlan(plan, host.path)
+			const guides = hydrated.artifacts.filter(
+				(artifact) => artifact.path === 'guides/src/scaffold.md',
+			)
+
+			expect(guides).toHaveLength(1)
+			expect(guides[0]?.origin).toBe('template')
+			expect(guides[0]).not.toHaveProperty('hex')
+		} finally {
+			await host.cleanup()
+			await source.cleanup()
+		}
+	})
+
 	it('owns the plan before host I/O and contains revoked or stateful proxy traps', async () => {
 		const host = await buildTempDirectory()
 		try {

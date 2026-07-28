@@ -468,6 +468,21 @@ describe('scaffold bin', () => {
 	})
 
 	describe('audit', () => {
+		it('a minted scaffold self-case audits cleanly', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(cwd.path, 'scaffold', from.path)
+
+				const audited = runBin(['audit', '--from', from.path], '', { cwd: packageDirectory })
+
+				expect(audited.status).toBe(0)
+			} finally {
+				await cwd.cleanup()
+				await from.cleanup()
+			}
+		}, 20000)
+
 		it('clean target (--from fixture, content-aware): exit 0', async () => {
 			const from = await buildFromFixture()
 			const cwd = await buildTempDirectory()
