@@ -87,8 +87,10 @@ import {
 } from '../../setupBin.js'
 import {
 	buildBoundaryCases,
+	BOUNDARY_PLUGIN,
 	classifyBoundaryBuild,
 	extractBoundaryIdentity,
+	mergeBoundaryOutput,
 	renderBoundaryDifference,
 	renderBoundaryDriverExit,
 	resolveBoundaryConfig,
@@ -239,6 +241,11 @@ describe('generated consumer clones', () => {
 		expect(classifyBoundaryBuild({ ...equivalent, status: 0 })).toBe('accepted')
 		expect(classifyBoundaryBuild(reference)).toBe('rejected')
 		expect(classifyBoundaryBuild(failed)).toBe('rejected')
+		expect(BOUNDARY_PLUGIN).toBe('orkestrel-environment-boundary')
+		expect(mergeBoundaryOutput('shared\n', 'shared\n')).toBe('shared\n')
+		expect(mergeBoundaryOutput('captured\nshared\n', 'shared\npiped\n')).toBe(
+			'captured\nshared\npiped\n',
+		)
 		expect(extractBoundaryIdentity(reference.stderr)).toBe(boundary)
 		expect(extractBoundaryIdentity('ordinary build failure\n')).toBeUndefined()
 		expect(renderBoundaryDifference(reference, equivalent, 'Browser cannot import server')).toBe(

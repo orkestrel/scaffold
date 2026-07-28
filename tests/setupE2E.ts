@@ -75,8 +75,11 @@ export const BOUNDARY_BUILD_TIMEOUT = 120_000
 /** Maximum child stderr suffix retained when a boundary build driver exits unexpectedly. */
 export const BOUNDARY_DRIVER_STDERR_LIMIT = 16_384
 
+/** Generated Vite plugin that owns environment-boundary diagnostics. */
+export const BOUNDARY_PLUGIN = 'orkestrel-environment-boundary'
+
 /** Boundary diagnostic prefix whose complete line identifies a rejected policy. */
-export const BOUNDARY_ERROR_MARKER = '[orkestrel-environment-boundary]'
+export const BOUNDARY_ERROR_MARKER = `[${BOUNDARY_PLUGIN}]`
 
 /** Normalized outcome class shared by spawned and programmatic boundary builds. */
 export type BoundaryBuildStatus = 'accepted' | 'rejected'
@@ -130,6 +133,23 @@ export function classifyBoundaryBuild(result: BoundaryBuildOutput): BoundaryBuil
 }
 
 /**
+ * Merge IPC-captured and pipe-captured build output without reporting shared bytes twice.
+ *
+ * @param ipc - Output returned through the child IPC result.
+ * @param pipe - Output independently observed on the child stdout pipe.
+ * @returns Both sources with contained or boundary-overlapping bytes deduplicated.
+ */
+export function mergeBoundaryOutput(ipc: string, pipe: string): string {
+	if (ipc.includes(pipe)) return ipc
+	if (pipe.includes(ipc)) return pipe
+	const limit = Math.min(ipc.length, pipe.length)
+	for (let length = limit; length > 0; length -= 1) {
+		if (ipc.endsWith(pipe.slice(0, length))) return `${ipc}${pipe.slice(length)}`
+	}
+	return `${ipc}${pipe}`
+}
+
+/**
  * Extract the complete environment-boundary identity line from build output.
  *
  * @param output - Combined stdout and stderr text.
@@ -164,9 +184,8 @@ export function renderBoundaryDifference(
 	const driverOutput = `${driver.stdout}${driver.stderr}`
 	const referenceIdentity = extractBoundaryIdentity(referenceOutput)
 	const driverIdentity = extractBoundaryIdentity(driverOutput)
-	const marker = BOUNDARY_ERROR_MARKER.slice(1, -1)
-	const referenceMarker = referenceOutput.includes(marker)
-	const driverMarker = driverOutput.includes(marker)
+	const referenceMarker = referenceOutput.includes(BOUNDARY_PLUGIN)
+	const driverMarker = driverOutput.includes(BOUNDARY_PLUGIN)
 	const referenceMessage = referenceOutput.includes(message)
 	const driverMessage = driverOutput.includes(message)
 	const identitiesDiffer =
@@ -250,7 +269,7 @@ export class BoundaryBuildDriver {
 		  }
 		| undefined
 	#failure: Error | undefined
-	#crash: { readonly id: number | undefined; readonly stack: string } | undefined
+	#childFailure: { readonly id: number | undefined; readonly stack: string } | undefined
 	#diagnostic = ''
 	#tail = ''
 	#stdout = ''
@@ -347,8 +366,8 @@ export class BoundaryBuildDriver {
 				renderBoundaryDriverExit(
 					this.#child.exitCode,
 					this.#child.signalCode,
-					this.#pending?.id ?? this.#crash?.id,
-					this.#crash?.stack,
+					this.#pending?.id ?? this.#childFailure?.id,
+					this.#childFailure?.stack,
 					this.#tail,
 				),
 			)
@@ -400,7 +419,7 @@ export class BoundaryBuildDriver {
 				this.#abort(new Error(`boundary build driver sent an invalid failure\n${this.#diagnostic}`))
 				return
 			}
-			this.#crash = { id: message.id, stack: message.stack }
+			this.#childFailure = { id: message.id, stack: message.stack }
 			return
 		}
 		if (message.command !== 'result') {
@@ -452,7 +471,7 @@ export class BoundaryBuildDriver {
 		const result = pending?.result
 		if (pending === undefined || result === undefined) return
 		clearTimeout(pending.timeout)
-		const stdout = `${result.output}${this.#stdout}`
+		const stdout = mergeBoundaryOutput(result.output, this.#stdout)
 		const stderr = this.#stderr
 		this.#pending = undefined
 		this.#stdout = ''
@@ -511,8 +530,8 @@ export class BoundaryBuildDriver {
 						renderBoundaryDriverExit(
 							code,
 							signal,
-							this.#pending?.id ?? this.#crash?.id,
-							this.#crash?.stack,
+							this.#pending?.id ?? this.#childFailure?.id,
+							this.#childFailure?.stack,
 							this.#tail,
 						),
 					),
@@ -530,8 +549,8 @@ export class BoundaryBuildDriver {
 					renderBoundaryDriverExit(
 						code,
 						signal,
-						this.#pending?.id ?? this.#crash?.id,
-						this.#crash?.stack,
+						this.#pending?.id ?? this.#childFailure?.id,
+						this.#childFailure?.stack,
 						this.#tail,
 					),
 				),

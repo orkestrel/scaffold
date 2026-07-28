@@ -40,8 +40,8 @@ class OutputConsole {
 
 const packageDirectory = process.argv[2]
 let active
-let incident
-let failing = false
+let failure
+let handlingFailure = false
 
 function sendMessage(message) {
 	return new Promise((resolve, reject) => {
@@ -84,7 +84,7 @@ async function executeBuild(message) {
 	const stderr = process.stderr.write
 	let status = 0
 	active = message.id
-	incident = undefined
+	failure = undefined
 	process.stdout.write = output.capture
 	process.stderr.write = output.capture
 	try {
@@ -104,9 +104,9 @@ async function executeBuild(message) {
 			output.error(`error during build:\n${renderFailure(error)}`)
 		}
 		await waitForTurn()
-		if (incident !== undefined) {
+		if (failure !== undefined) {
 			status = 1
-			output.error(`error after build teardown:\n${renderFailure(incident.reason)}`)
+			output.error(`error after build teardown:\n${renderFailure(failure.reason)}`)
 		}
 	} finally {
 		process.stdout.write = stdout
@@ -114,7 +114,7 @@ async function executeBuild(message) {
 	}
 	await sendMessage({ command: 'result', id: message.id, status, output: output.output })
 	active = undefined
-	incident = undefined
+	failure = undefined
 }
 
 async function receiveMessage(message) {
@@ -139,8 +139,8 @@ async function receiveMessage(message) {
 }
 
 async function failDriver(reason) {
-	if (failing) return
-	failing = true
+	if (handlingFailure) return
+	handlingFailure = true
 	const stack = renderFailure(reason)
 	writeDiagnostic(`${stack}\n`)
 	try {
@@ -151,10 +151,10 @@ async function failDriver(reason) {
 	process.exit(1)
 }
 
-function captureFailure(reason) {
+function handleFailure(reason) {
 	if (active !== undefined) {
-		if (incident === undefined) {
-			incident = { reason }
+		if (failure === undefined) {
+			failure = { reason }
 			writeDiagnostic(`case ${String(active)} asynchronous failure:\n${renderFailure(reason)}\n`)
 		}
 		return
@@ -166,10 +166,10 @@ process.on('disconnect', () => {
 	process.exit(0)
 })
 process.on('unhandledRejection', (reason) => {
-	captureFailure(reason)
+	handleFailure(reason)
 })
 process.on('uncaughtException', (error) => {
-	captureFailure(error)
+	handleFailure(error)
 })
 process.on('message', (message) => {
 	receiveMessage(message).catch(failDriver)

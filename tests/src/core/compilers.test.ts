@@ -35,6 +35,7 @@ import {
 	paritySpecifiers,
 	rootTsconfig,
 	rootViteConfig,
+	renderViteTest,
 	serializeTypeScriptString,
 	sourceArtifacts,
 	srcTsconfig,
@@ -571,6 +572,9 @@ describe('packageManifest', () => {
 		expect(scripts['test:integration']).toBe(
 			'vitest run --config vite.config.ts --no-cache --reporter=dot --project integration',
 		)
+		expect(scripts['test:equivalence']).toBe(
+			"node -e \"const c=require('node:child_process'),n=process.platform==='win32'?'npm.cmd':'npm',r=c.spawnSync(n,['run','test:integration'],{stdio:'inherit',env:{...process.env,SCAFFOLD_BOUNDARY_EQUIVALENCE:'1'}});process.exit(r.status??1)\"",
+		)
 		expect(scripts.prepublishOnly).toBe(
 			'npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:integration',
 		)
@@ -667,6 +671,28 @@ describe('viteMachinery / viteHeader', () => {
 		expect(rootViteConfig(['server'])).toContain(viteHeader(viteMachinery(['server'])))
 		expect(applicationViteConfig([], ['core', 'browser'])).toContain(
 			viteHeader(viteMachinery([], ['core', 'browser'])),
+		)
+	})
+})
+
+describe('renderViteTest', () => {
+	it('renders plain projects or browser registrations from the supplied ownership data', () => {
+		const registrations = [{ project: 'srcBrowser', browser: 'src:browser' }, { project: 'policy' }]
+
+		expect(renderViteTest(registrations, false)).toBe(
+			'\ttest: {\n\t\tprojects: [srcBrowser, policy],\n\t},',
+		)
+		expect(renderViteTest(registrations, true)).toBe(
+			[
+				'\ttest: gateBrowserProjects(',
+				'\t\t[',
+				"\t\t\t{ project: srcBrowser, browser: 'src:browser' },",
+				'\t\t\t{ project: policy },',
+				'\t\t],',
+				'\t\thasChromium,',
+				'\t\tprocess.argv,',
+				'\t),',
+			].join('\n'),
 		)
 	})
 })
@@ -945,7 +971,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		)
 
 		expect(createHash('sha256').update(content).digest('hex')).toBe(
-			'43958608167483b80edc05634bcd0e1cbc9556792610ac85fa252a43b97d91e4',
+			'1fd5334667647ecbadd0f04c4980d219bd34dc16906d8ee3c7d65c022bb1d0dd',
 		)
 	})
 
@@ -1067,31 +1093,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		expect(application).toContain("{ project: appBrowser, browser: 'app:browser' }")
 	})
 
-	it('emits same-label no-test placeholders and greens only all-gated exact filters when absent', () => {
-		const browser = rootViteConfig(['browser'])
-		const source = rootViteConfig(['core', 'browser', 'server'])
-		const application = applicationViteConfig(
-			['core', 'browser', 'server'],
-			['core', 'browser', 'server'],
-		)
-
-		for (const content of [browser, source, application]) {
-			expect(content).toContain('if (registration.browser !== undefined && !available)')
-			expect(content).toContain("name: { label: registration.browser, color: 'yellow' }")
-			expect(content).toContain('include: []')
-			expect(content).toContain('browser: { enabled: false }')
-			expect(content).toContain(
-				"console.warn(`browser projects skipped: Chromium absent (${gated.join(', ')})`)",
-			)
-			expect(content).toContain("if (argv[index] !== '--project') continue")
-			expect(content).toContain(
-				'filters.length > 0 && filters.every((filter) => gated.includes(filter))',
-			)
-			expect(content).toContain('{ passWithNoTests: true, projects }')
-		}
-	})
-
-	it('loads both emitted gate branches with real Vitest project configuration', async () => {
+	it('loads both emitted gate branches and exact project-filter forms with real Vitest configuration', async () => {
 		const directory = await buildWorkspaceTempDirectory()
 		try {
 			writeFileSync(join(directory.path, 'emitted.config.ts'), rootViteConfig(['browser']), 'utf8')
@@ -1100,50 +1102,62 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 				'{"compilerOptions":{"paths":{}}}\n',
 				'utf8',
 			)
+			const filters = [
+				{ label: 'space', argv: "['--project', 'src:browser']", pass: true },
+				{ label: 'equals', argv: "['--project=src:browser']", pass: true },
+				{ label: 'empty', argv: "['--project=']", pass: undefined },
+				{
+					label: 'missing',
+					argv: "['--project=src:browser', '--project']",
+					pass: undefined,
+				},
+			]
 			for (const chromium of [false, true]) {
-				const configPath = join(directory.path, `gate-${chromium}.config.ts`)
-				writeFileSync(
-					configPath,
-					[
-						"import { defineConfig } from 'vitest/config'",
-						"import { gateBrowserProjects } from './emitted.config.ts'",
-						'',
-						'export default defineConfig({',
-						'\ttest: gateBrowserProjects(',
-						'\t\t[',
-						'\t\t\t{',
-						"\t\t\t\tbrowser: 'src:browser',",
-						'\t\t\t\tproject: () => ({',
-						'\t\t\t\t\ttest: {',
-						"\t\t\t\t\t\tname: { label: 'actual', color: 'blue' },",
-						"\t\t\t\t\t\tinclude: ['tests/actual.test.ts'],",
-						'\t\t\t\t\t},',
-						'\t\t\t\t}),',
-						'\t\t\t},',
-						'\t\t],',
-						`\t\t${chromium},`,
-						"\t\t['--project', 'src:browser'],",
-						'\t),',
-						'})',
-						'',
-					].join('\n'),
-					'utf8',
-				)
-				const loaded = await loadConfigFromFile(
-					{ command: 'serve', mode: 'test' },
-					configPath,
-					directory.path,
-					'silent',
-				)
-				const test = readRecord(loaded?.config.test)
-				if (!Array.isArray(test.projects)) throw new Error('expected emitted test projects')
-				const project = readRecord(test.projects[0])
-				const projectTest = readRecord(project.test)
-				const name = readRecord(projectTest.name)
+				for (const filter of filters) {
+					const configPath = join(directory.path, `gate-${chromium}-${filter.label}.config.ts`)
+					writeFileSync(
+						configPath,
+						[
+							"import { defineConfig } from 'vitest/config'",
+							"import { gateBrowserProjects } from './emitted.config.ts'",
+							'',
+							'export default defineConfig({',
+							'\ttest: gateBrowserProjects(',
+							'\t\t[',
+							'\t\t\t{',
+							"\t\t\t\tbrowser: 'src:browser',",
+							'\t\t\t\tproject: () => ({',
+							'\t\t\t\t\ttest: {',
+							"\t\t\t\t\t\tname: { label: 'actual', color: 'blue' },",
+							"\t\t\t\t\t\tinclude: ['tests/actual.test.ts'],",
+							'\t\t\t\t\t},',
+							'\t\t\t\t}),',
+							'\t\t\t},',
+							'\t\t],',
+							`\t\t${chromium},`,
+							`\t\t${filter.argv},`,
+							'\t),',
+							'})',
+							'',
+						].join('\n'),
+						'utf8',
+					)
+					const loaded = await loadConfigFromFile(
+						{ command: 'serve', mode: 'test' },
+						configPath,
+						directory.path,
+						'silent',
+					)
+					const test = readRecord(loaded?.config.test)
+					if (!Array.isArray(test.projects)) throw new Error('expected emitted test projects')
+					const project = readRecord(test.projects[0])
+					const projectTest = readRecord(project.test)
+					const name = readRecord(projectTest.name)
 
-				expect(name.label).toBe(chromium ? 'actual' : 'src:browser')
-				expect(projectTest.include).toEqual(chromium ? ['tests/actual.test.ts'] : [])
-				expect(test.passWithNoTests).toBe(chromium ? undefined : true)
+					expect(name.label).toBe(chromium ? 'actual' : 'src:browser')
+					expect(projectTest.include).toEqual(chromium ? ['tests/actual.test.ts'] : [])
+					expect(test.passWithNoTests).toBe(chromium ? undefined : filter.pass)
+				}
 			}
 		} finally {
 			await directory.cleanup()

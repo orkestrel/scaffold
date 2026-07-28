@@ -1523,9 +1523,9 @@ describe('pinPlan', () => {
 		}
 		expect(actual).toMatchInlineSnapshot(`
 			{
-			  "browser-only": "cd7e59b5",
-			  "core+browser": "2f1b4baa",
-			  "core+browser+server": "6f398713",
+			  "browser-only": "892c07b1",
+			  "core+browser": "b6c0c2d6",
+			  "core+browser+server": "e68bac53",
 			  "core+server": "070fdd11",
 			  "core-only": "be96d32b",
 			  "server-only": "b10520c3",
@@ -1556,11 +1556,11 @@ describe('pinPlan', () => {
 		}
 		expect(actual).toMatchInlineSnapshot(`
 			{
-			  "app-browser": "168d65b6",
+			  "app-browser": "41e0bc66",
 			  "app-core": "36404f91",
-			  "app-full": "2b09f0fa",
+			  "app-full": "01f4680e",
 			  "app-server": "38ea0e4f",
-			  "mixed-full": "08186c34",
+			  "mixed-full": "4202a120",
 			}
 		`)
 	})

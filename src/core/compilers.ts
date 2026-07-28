@@ -7,6 +7,7 @@ import type {
 	Plan,
 	Environment,
 	ViteMachinery,
+	ViteProjectRegistration,
 } from './types.js'
 import { fillTemplate } from '@orkestrel/template'
 import {
@@ -383,6 +384,9 @@ export function packageManifest(spec: Blueprint): string {
 	if (spec.engine)
 		scripts['test:integration'] =
 			'vitest run --config vite.config.ts --no-cache --reporter=dot --project integration'
+	if (spec.engine)
+		scripts['test:equivalence'] =
+			"node -e \"const c=require('node:child_process'),n=process.platform==='win32'?'npm.cmd':'npm',r=c.spawnSync(n,['run','test:integration'],{stdio:'inherit',env:{...process.env,SCAFFOLD_BOUNDARY_EQUIVALENCE:'1'}});process.exit(r.status??1)\""
 	if (spec.app.length > 0) {
 		scripts['test:app'] =
 			'vitest run --config vite.config.ts --no-cache --reporter=dot ' +
@@ -596,6 +600,51 @@ export function viteMachinery(
 		vue: app.includes('browser'),
 		output: !unbuilt,
 	}
+}
+
+/**
+ * Render the root Vitest project registration, preserving browser ownership
+ * supplied by the caller.
+ *
+ * @param registrations - Ordered project factory identifiers with optional browser labels.
+ * @param browser - Whether the generated configuration carries browser machinery.
+ * @returns The rendered root `test` property.
+ *
+ * @example
+ * ```ts
+ * renderViteTest([{ project: 'srcCore' }], false)
+ * // '\ttest: {\n\t\tprojects: [srcCore],\n\t},'
+ * ```
+ */
+export function renderViteTest(
+	registrations: readonly ViteProjectRegistration[],
+	browser: boolean,
+): string {
+	const projects = registrations.map((registration) => registration.project)
+	const inlineProjects = `		projects: [${projects.join(', ')}],`
+	const renderedProjects =
+		computeColumnWidth(inlineProjects) <= JSON_PRINT_WIDTH
+			? inlineProjects
+			: `		projects: [
+${projects.map((project) => `			${project},`).join('\n')}
+		],`
+	if (!browser) {
+		return `	test: {
+${renderedProjects}
+	},`
+	}
+	const renderedRegistrations = registrations.map((registration) =>
+		registration.browser === undefined
+			? `{ project: ${registration.project} }`
+			: `{ project: ${registration.project}, browser: ${serializeTypeScriptString(registration.browser)} }`,
+	)
+	return `	test: gateBrowserProjects(
+		[
+${renderedRegistrations.map((registration) => `			${registration},`).join('\n')}
+		],
+		hasChromium,
+		process.argv,
+	),`
 }
 
 /**
@@ -2066,13 +2115,24 @@ ${
 	if (gated.length === 0) return { projects }
 	console.warn(\`browser projects skipped: Chromium absent (\${gated.join(', ')})\`)
 	const filters: string[] = []
+	let readable = true
 	for (let index = 0; index < argv.length; index += 1) {
-		if (argv[index] !== '--project') continue
-		const filter = argv[index + 1]
-		if (filter !== undefined) filters.push(filter)
-		index += 1
+		const argument = argv[index]
+		if (argument === '--project') {
+			const filter = argv[index + 1]
+			if (filter === undefined) {
+				readable = false
+				continue
+			}
+			filters.push(filter)
+			index += 1
+			continue
+		}
+		if (argument?.startsWith('--project=') === true) {
+			filters.push(argument.slice('--project='.length))
+		}
 	}
-	return filters.length > 0 && filters.every((filter) => gated.includes(filter))
+	return readable && filters.length > 0 && filters.every((filter) => gated.includes(filter))
 		? { passWithNoTests: true, projects }
 		: { projects }
 }
@@ -2469,37 +2529,18 @@ ${EXPORT_KEYWORD} const integration = (config?: UserConfig): UserConfig =>
 		nonCore
 			.map((environment) => (environment === 'browser' ? browserBlock : serverBlock))
 			.join('') + binBlock
-	const projectNames = [
-		...(hasCore ? ['srcCore'] : []),
-		...nonCore.map((environment) => `src${pascalCase(environment)}`),
-		'policy',
-		'guides',
-		...(engine ? ['srcBin'] : []),
-		...(engine ? ['integration'] : []),
-	]
-	const inlineProjects = `		projects: [${projectNames.join(', ')}],`
-	const renderedProjects =
-		computeColumnWidth(inlineProjects) <= JSON_PRINT_WIDTH
-			? inlineProjects
-			: `		projects: [
-${projectNames.map((project) => `			${project},`).join('\n')}
-		],`
-	const browserRegistrations = projectNames.map((project) =>
-		project === 'srcBrowser'
-			? `{ project: ${project}, browser: '${SRC_MATRIX.browser.project}' }`
-			: `{ project: ${project} }`,
-	)
-	const renderedTest = machinery.browser
-		? `	test: gateBrowserProjects(
-		[
-${browserRegistrations.map((registration) => `			${registration},`).join('\n')}
-		],
-		hasChromium,
-		process.argv,
-	),`
-		: `	test: {
-${renderedProjects}
-	},`
+	const registrations: ViteProjectRegistration[] = []
+	if (hasCore) registrations.push({ project: 'srcCore' })
+	for (const environment of nonCore) {
+		registrations.push(
+			environment === 'browser'
+				? { project: 'srcBrowser', browser: SRC_MATRIX.browser.project }
+				: { project: 'srcServer' },
+		)
+	}
+	registrations.push({ project: 'policy' }, { project: 'guides' })
+	if (engine) registrations.push({ project: 'srcBin' }, { project: 'integration' })
+	const renderedTest = renderViteTest(registrations, machinery.browser)
 	return `${header}
 ${EXPORT_KEYWORD} const srcCore = (config?: UserConfig): UserConfig =>
 	mergeConfig(
@@ -2566,11 +2607,11 @@ export function applicationViteConfig(
 	const hasSourceCore = src.includes('core')
 	const machinery = viteMachinery(src, app, engine)
 	const header = viteHeader(machinery)
-	const projects: string[] = []
+	const registrations: ViteProjectRegistration[] = []
 	const blocks: string[] = []
 
 	if (src.includes('core')) {
-		projects.push('srcCore')
+		registrations.push({ project: 'srcCore' })
 		blocks.push(`
 ${EXPORT_KEYWORD} const srcCore = (config?: UserConfig): UserConfig =>
 	mergeConfig(
@@ -2592,7 +2633,7 @@ ${EXPORT_KEYWORD} const srcCore = (config?: UserConfig): UserConfig =>
 `)
 	}
 	if (src.includes('browser')) {
-		projects.push('srcBrowser')
+		registrations.push({ project: 'srcBrowser', browser: SRC_MATRIX.browser.project })
 		const coreOutput = hasSourceCore
 			? `
 					output: { paths: { '@src/core': '../core/index.js' } },`
@@ -2638,7 +2679,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 `)
 	}
 	if (src.includes('server')) {
-		projects.push('srcServer')
+		registrations.push({ project: 'srcServer' })
 		const coreOutput = hasSourceCore
 			? `
 					output: [
@@ -2691,7 +2732,7 @@ ${EXPORT_KEYWORD} const srcServer = (config?: UserConfig): UserConfig =>
 `)
 	}
 	if (app.includes('core')) {
-		projects.push('appCore')
+		registrations.push({ project: 'appCore' })
 		blocks.push(`
 ${EXPORT_KEYWORD} const appCore = (config?: UserConfig): UserConfig =>
 	mergeConfig(
@@ -2712,7 +2753,7 @@ ${EXPORT_KEYWORD} const appCore = (config?: UserConfig): UserConfig =>
 `)
 	}
 	if (app.includes('browser')) {
-		projects.push('appBrowser')
+		registrations.push({ project: 'appBrowser', browser: APP_MATRIX.browser.project })
 		blocks.push(`
 ${EXPORT_KEYWORD} function appBrowser(...config: readonly never[]): UserConfig {
 	if (config.length > 0) {
@@ -2767,7 +2808,7 @@ ${EXPORT_KEYWORD} function appBrowser(...config: readonly never[]): UserConfig {
 `)
 	}
 	if (app.includes('server')) {
-		projects.push('appServer')
+		registrations.push({ project: 'appServer' })
 		blocks.push(`
 ${EXPORT_KEYWORD} const appServer = (config?: UserConfig): UserConfig =>
 	mergeConfig(
@@ -2801,7 +2842,7 @@ ${EXPORT_KEYWORD} const appServer = (config?: UserConfig): UserConfig =>
 `)
 	}
 	if (engine) {
-		projects.push('srcBin', 'integration')
+		registrations.push({ project: 'srcBin' }, { project: 'integration' })
 		blocks.push(`
 ${EXPORT_KEYWORD} const srcBin = (config?: UserConfig): UserConfig =>
 	mergeConfig(
@@ -2846,32 +2887,8 @@ ${EXPORT_KEYWORD} const integration = (config?: UserConfig): UserConfig =>
 `)
 	}
 
-	const projectNames = [...projects, 'policy', 'guides']
-	const inlineProjects = `		projects: [${projectNames.join(', ')}],`
-	const renderedProjects =
-		computeColumnWidth(inlineProjects) <= JSON_PRINT_WIDTH
-			? inlineProjects
-			: `		projects: [
-${projectNames.map((project) => `			${project},`).join('\n')}
-		],`
-	const browserRegistrations = projectNames.map((project) =>
-		project === 'srcBrowser'
-			? `{ project: ${project}, browser: '${SRC_MATRIX.browser.project}' }`
-			: project === 'appBrowser'
-				? `{ project: ${project}, browser: '${APP_MATRIX.browser.project}' }`
-				: `{ project: ${project} }`,
-	)
-	const renderedTest = machinery.browser
-		? `	test: gateBrowserProjects(
-		[
-${browserRegistrations.map((registration) => `			${registration},`).join('\n')}
-		],
-		hasChromium,
-		process.argv,
-	),`
-		: `	test: {
-${renderedProjects}
-	},`
+	registrations.push({ project: 'policy' }, { project: 'guides' })
+	const renderedTest = renderViteTest(registrations, machinery.browser)
 	return `${header}
 ${policyViteProject()}
 ${EXPORT_KEYWORD} const guides = (config?: UserConfig): UserConfig =>

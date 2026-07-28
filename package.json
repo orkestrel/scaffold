@@ -81,6 +81,7 @@
 		"test:src:server": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server",
 		"test:src:bin": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin",
 		"test:integration": "vitest run --config vite.config.ts --no-cache --reporter=dot --project integration",
+		"test:equivalence": "node -e \"const c=require('node:child_process'),n=process.platform==='win32'?'npm.cmd':'npm',r=c.spawnSync(n,['run','test:integration'],{stdio:'inherit',env:{...process.env,SCAFFOLD_BOUNDARY_EQUIVALENCE:'1'}});process.exit(r.status??1)\"",
 		"test:guides": "vitest run --config vite.config.ts --reporter=dot --project guides",
 		"pin": "vitest run --config vite.config.ts --no-cache --project src:core -t pinPlan -u",
 		"build": "npm run clean && npm run build:src && npm run build:host",

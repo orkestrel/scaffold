@@ -41,6 +41,12 @@ export interface ViteMachinery {
 	readonly output: boolean
 }
 
+/** One generated Vitest project factory and its optional browser-project label. */
+export interface ViteProjectRegistration {
+	readonly project: string
+	readonly browser?: string
+}
+
 /**
  * How an `Artifact`'s content is produced: `host` byte-copied from the vendored
  * data root, `template` filled from a frozen `TemplateDefinition` by
