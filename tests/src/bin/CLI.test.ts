@@ -68,4 +68,58 @@ describe('CLI audit --live', () => {
 			await fixture.close()
 		}
 	})
+
+	it('does not fetch a scoped self-declaring app-only package guide', async () => {
+		const fixture = await buildHTTPFixture()
+		const host = await buildFromFixture()
+		const target = await buildWorkspaceTempDirectory()
+		const guideRecorder = createRecorder<[name: string]>()
+		const versionRecorder = createRecorder<[name: string]>()
+		const exitCode = process.exitCode
+		try {
+			buildBlueprintFixture(target.path, {
+				name: '@orkestrel/router',
+				app: ['core'],
+				dependencies: { '@orkestrel/router': '^0.0.5' },
+			})
+			fixture.route(buildGuidePath('router'), (_request, response) =>
+				respondText(response, 200, 'self guide replacement'),
+			)
+			fixture.route(buildRegistryPath('@orkestrel/router'), (_request, response) =>
+				respondJSON(response, '0.0.5'),
+			)
+			const cli = new CLI({
+				guides: { base: fixture.base },
+				registry: { base: fixture.base },
+				on: {
+					guide: guideRecorder.handler,
+					version: versionRecorder.handler,
+				},
+			})
+			process.exitCode = undefined
+
+			await cli.run([
+				'audit',
+				'--target',
+				relative(WORKSPACE_ROOT, target.path),
+				'--groups',
+				'source',
+				'--live',
+				'--json',
+				'--from',
+				host.path,
+			])
+
+			expect(fixture.hits.get(buildGuidePath('router')) ?? 0).toBe(0)
+			expect(fixture.hits.get(buildRegistryPath('@orkestrel/router'))).toBe(1)
+			expect(guideRecorder.count).toBe(0)
+			expect(versionRecorder.calls).toEqual([['@orkestrel/router']])
+			expect(process.exitCode).toBe(0)
+		} finally {
+			process.exitCode = exitCode
+			await target.cleanup()
+			await host.cleanup()
+			await fixture.close()
+		}
+	})
 })

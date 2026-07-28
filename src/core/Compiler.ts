@@ -16,7 +16,7 @@ import type { EmitterInterface } from '@orkestrel/emitter'
 import { Emitter } from '@orkestrel/emitter'
 import { blueprintToPlan } from './compilers.js'
 import { HOST_PATHS } from './constants.js'
-import { diffPlan, pinPlan, selectHostPaths } from './helpers.js'
+import { diffPlan, pinPlan } from './helpers.js'
 import { validatePlan } from './validators.js'
 import { ScaffoldError } from './errors.js'
 import { parseCompilerOptions } from './parsers.js'
@@ -262,12 +262,11 @@ export class Compiler implements CompilerInterface {
 	#pointerArtifacts(blueprint: Blueprint): readonly Artifact[] {
 		const artifacts: Artifact[] = []
 		const guidePath = `guides/src/${blueprint.name}.md`
-		const hostPaths = selectHostPaths(HOST_PATHS, blueprint.name)
 		for (const item of blueprint.dependencies) {
 			if (Compiler.#vendored.includes(item.name)) continue
 			const short = item.name.replace('@orkestrel/', '')
 			const path = `guides/src/${short}.md`
-			if (path === guidePath || hostPaths.includes(path)) continue
+			if (path === guidePath || HOST_PATHS.includes(path)) continue
 			artifacts.push({ path, group: 'guides', origin: 'host', source: path })
 		}
 		return artifacts

@@ -26,6 +26,7 @@ import {
 	GROUPS,
 	isScaffoldError,
 	manifestToDependencies,
+	manifestToName,
 	MAX_ARTIFACT_BYTES,
 	NAME_PATTERN,
 	planToSummary,
@@ -759,7 +760,7 @@ export class CLI implements CLIInterface {
 		if (values.live) {
 			const sync = createSync(this.#sync)
 			try {
-				const manifestName = spec.src.length > 0 ? `@orkestrel/${spec.name}` : spec.name
+				const manifestName = manifestToName(readManifest(target))
 				const guideDependencies = deps.filter((entry) => entry.name !== manifestName)
 				const guides = await sync.guides(guideDependencies)
 				const versions = await sync.versions(deps)
