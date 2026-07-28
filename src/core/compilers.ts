@@ -2372,6 +2372,13 @@ ${EXPORT_KEYWORD} const integration = (config?: UserConfig): UserConfig =>
 		...(engine ? ['srcBin'] : []),
 		...(engine ? ['integration'] : []),
 	]
+	const inlineProjects = `		projects: [${projectNames.join(', ')}],`
+	const renderedProjects =
+		computeColumnWidth(inlineProjects) <= JSON_PRINT_WIDTH
+			? inlineProjects
+			: `		projects: [
+${projectNames.map((project) => `			${project},`).join('\n')}
+		],`
 	return `${header}
 ${EXPORT_KEYWORD} const srcCore = (config?: UserConfig): UserConfig =>
 	mergeConfig(
@@ -2412,7 +2419,7 @@ ${blocks}
 export default defineConfig({
 	resolve,
 	test: {
-		projects: [${projectNames.join(', ')}],
+${renderedProjects}
 	},
 })
 `
@@ -2722,6 +2729,14 @@ ${EXPORT_KEYWORD} const integration = (config?: UserConfig): UserConfig =>
 `)
 	}
 
+	const projectNames = [...projects, 'policy', 'guides']
+	const inlineProjects = `		projects: [${projectNames.join(', ')}],`
+	const renderedProjects =
+		computeColumnWidth(inlineProjects) <= JSON_PRINT_WIDTH
+			? inlineProjects
+			: `		projects: [
+${projectNames.map((project) => `			${project},`).join('\n')}
+		],`
 	return `${header}
 ${policyViteProject()}
 ${EXPORT_KEYWORD} const guides = (config?: UserConfig): UserConfig =>
@@ -2743,7 +2758,7 @@ ${blocks.join('')}
 export default defineConfig({
 	resolve,
 	test: {
-		projects: [${[...projects, 'policy', 'guides'].join(', ')}],
+${renderedProjects}
 	},
 })
 `

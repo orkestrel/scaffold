@@ -868,6 +868,7 @@ export class CLI implements CLIInterface {
 		// src/tests/guides/package.json is never overwritten with a stub.
 		const scoped: Plan = {
 			...compiled,
+			blueprint: { ...compiled.blueprint, overrides: [] },
 			artifacts: compiled.artifacts.filter((artifact) => artifact.origin === 'host'),
 		}
 
@@ -997,6 +998,7 @@ export class CLI implements CLIInterface {
 					}
 					scoped = {
 						...scaffolding.plan,
+						blueprint: { ...scaffolding.plan.blueprint, overrides: [] },
 						artifacts: scaffolding.plan.artifacts.filter((artifact) => artifact.origin === 'host'),
 					}
 					questions = scaffolding.questions
