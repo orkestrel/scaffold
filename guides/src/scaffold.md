@@ -848,7 +848,6 @@ From [`helpers.ts`](../../src/server/helpers.ts).
 | `replaceDirectory`         | function |
 | `selectOrkestrelEntries`   | function |
 | `deriveBlueprint`          | function |
-| `readOverrides`            | function |
 | `isVacant`                 | function |
 | `readTarget`               | function |
 | `readManifest`             | function |
@@ -916,21 +915,9 @@ dependency-less stand-in. Environments come from `src/<environment>/` and `app/<
 scoped entries, with an optional peer recovered from `peerDependenciesMeta`; and `extras` is every
 development dependency minus the generated baseline and minus anything already declared as a
 dependency or peer, so a hand-added development dependency round-trips and stays audit-clean.
-`overrides` is read rather than guessed, through `readOverrides`.
-
-**A repository declares a flavored computed artifact by mirroring it under `overrides/`.** The
-mirror is the declaration: `overrides/.github/workflows/ci.yml` says that this repository's CI
-workflow is its own, and the mirrored bytes are that repository's canon for the path. `readOverrides`
-reconstructs the array from that directory — relative paths, decoded UTF-8, the same
-physical-file, collision, collection, and byte bounds every other target read obeys, `[]` for an
-absent mirror, and a coded `TARGET` failure for a violation. Intent that lives on disk survives the
-call that declared it, which is the whole point: derivation runs on every later audit, and an
-argument would have evaporated. The three gate refusals — an override matching no planned artifact,
-one targeting a host-origin artifact, and one targeting `package.json` — remain the entire abuse
-guard, because a repository declaring its own computed content is the feature rather than the
-attack. An accepted override is applied before the diff, so `audit` compares the target against the
-declared bytes, reports that path `aligned`, and carries a retained non-blocking advisory naming it:
-a flavored repository reads as clean and visibly flavored, never as clean and silent.
+Derivation yields no `overrides`: they are caller-time inputs, not repository state. A computed
+artifact that must differ reveals a gap in the canon; the blueprint grows an axis for that
+distinction rather than the repository forking the file.
 
 `storagePath`, `stageHost`, `readHostManifest`, `locateHostSource`, `remapArtifactPath`, and
 `hydratePlan` are the vendored-host path. `storagePath` maps a repo-relative path to its un-dotted
@@ -1294,18 +1281,16 @@ anything, so a mature workspace's hand-written source, tests, guides, and manife
 overwritten with a stub. A consequence worth stating plainly: the generated
 `.github/workflows/ci.yml` is a **computed** artifact, so **user-owned CI is never repaired**. Once
 a workspace has its own workflow, that copy stands, and any change to it is an ordinary edit in that
-workspace. Audit still compares it, because computed artifacts are content-aware canon — and the
-`overrides/` mirror is how that comparison is settled rather than merely tolerated. A repository
-that mirrors its workflow at `overrides/.github/workflows/ci.yml` makes those bytes the planned
-content, so repo-flavored CI audits clean on its own declared terms instead of reading as permanent
-drift.
+workspace. Audit still compares it because computed artifacts are content-aware canon. A legitimate
+difference that the blueprint cannot express is a canon gap: add the missing blueprint axis rather
+than forking the computed file in one repository.
 
 Overrides respect the same boundary from the other direction. `applyOverrides` never replaces a
 host-origin artifact and never replaces `package.json`; the gate turns either attempt — and an
 override matching no planned artifact at all — into a blocking question rather than a silent no-op.
 What survives those three refusals is applied and announced: the gate carries a non-blocking
 advisory naming each replaced path, and that advisory rides the `Scaffolding` and the `Audit` all
-the way out to the executable's output.
+the way through the library result.
 
 Guide mirrors are the one place ownership is conditional, and the law is one owner per guide path.
 **A workspace mirrors every line guide except its own.** When the name matches — the guide package
@@ -2153,7 +2138,6 @@ import {
 	listDirectories,
 	listFiles,
 	pruneTargets,
-	readOverrides,
 	selectOrkestrelEntries,
 	vendoredPruneSet,
 } from '@orkestrel/scaffold/server'
@@ -2162,7 +2146,6 @@ const catalogAllowance = new Float64Array([2])
 consumeCatalogAllowance(catalogAllowance, './packages') // one aggregate slot remains
 discoverPackages('./packages') // every scoped workspace directly under the root
 deriveBlueprint('./packages/router') // the faithful inverse an audit diffs against
-readOverrides('./packages/router') // the declared overrides/ mirror, or [] when there is none
 selectOrkestrelEntries({ '@orkestrel/contract': '^0.0.7', vite: '^8.1.5' })
 
 isRealDirectory('./packages/router')

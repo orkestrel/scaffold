@@ -5,7 +5,6 @@ import type {
 	Dependency,
 	GuideSync,
 	HostArtifact,
-	Override,
 	Plan,
 	ScaffoldErrorCode,
 	Snapshot,
@@ -71,7 +70,6 @@ import {
 	MAX_TOTAL_ARTIFACT_BYTES,
 	isPlan,
 	ownDataValue,
-	override,
 	ScaffoldError,
 	snapshotPlan,
 	ENVIRONMENTS,
@@ -1390,15 +1388,12 @@ export function selectOrkestrelEntries(value: unknown): readonly (readonly [stri
  * dev-installed for local testing) is likewise excluded from `extras` — it
  * already appears as a `peer`/`dependency` above, and double-counting it as
  * an `extra` would land it in `peers ∩ extras`, a blocking `validateBlueprint`
- * gate. `overrides` is reconstructed from the optional mirrored
- * `overrides/` directory, whose relative paths and UTF-8 bytes are the
- * declared canon.
+ * gate. `overrides` is always `[]` — derivation cannot recover a caller's
+ * artifact-override intent from repository state.
  * @returns The reconstructed `Blueprint`.
  * @throws `ScaffoldError('TARGET', …)` when `target`'s manifest is unreadable
  *   (via `readManifest`), is not valid JSON, its name is unsafe for its
- *   publication mode, `target` carries no source or application environment,
- *   or its override mirror violates the physical-file, path, collection, or
- *   byte bounds.
+ *   publication mode, or `target` carries no source or application environment.
  *
  * @example
  * ```ts
@@ -1518,8 +1513,6 @@ export function deriveBlueprint(target: string): Blueprint {
 		.filter((entry): entry is [string, string] => typeof entry[1] === 'string')
 		.filter(([depName]) => !baselineExtras.has(depName) && !peerAndDependencyNames.has(depName))
 		.map(([depName, range]) => ({ name: depName, range }))
-	const overrides = readOverrides(target)
-
 	return blueprint(name, {
 		...(description === undefined ? {} : { description }),
 		keywords,
@@ -1530,7 +1523,7 @@ export function deriveBlueprint(target: string): Blueprint {
 		extras,
 		version,
 		engines,
-		overrides,
+		overrides: [],
 		engine,
 	})
 }
@@ -1955,67 +1948,6 @@ export function readFileText(
 		})
 	}
 	return decoded.value
-}
-
-/**
- * Read a repository's persistent artifact overrides from its mirrored
- * `overrides/` directory.
- *
- * @param target - The repository root containing the optional mirror.
- * @returns Ordered overrides whose paths are relative to `overrides/`, or an
- *   empty array when the mirror is absent.
- * @throws `ScaffoldError('TARGET', …)` when the mirror exceeds collection or
- *   byte bounds, contains a path collision, or contains anything other than
- *   bounded physical UTF-8 files.
- *
- * @example
- * ```ts
- * import { readOverrides } from '@orkestrel/scaffold/server'
- *
- * readOverrides('./packages/router')
- * // [{ path: '.github/workflows/ci.yml', content: 'name: flavored\n' }]
- * ```
- */
-export function readOverrides(target: string): readonly Override[] {
-	const root = join(target, 'overrides')
-	const paths = listFiles(root)
-	const overflow = paths[MAX_COLLECTION_ITEMS]
-	if (overflow !== undefined) {
-		throw new ScaffoldError(
-			'TARGET',
-			`Override collection exceeds ${MAX_COLLECTION_ITEMS} entries at ${overflow}`,
-			{ target, path: overflow, limit: MAX_COLLECTION_ITEMS },
-		)
-	}
-	const conflict = findFileConflict(paths)
-	if (conflict !== undefined) {
-		throw new ScaffoldError(
-			'TARGET',
-			`Override path collision between "${conflict[0]}" and "${conflict[1]}"`,
-			{ target, paths: conflict },
-		)
-	}
-	let remaining = MAX_TOTAL_ARTIFACT_BYTES
-	const overrides: Override[] = []
-	for (const path of paths) {
-		if (remaining <= 0) {
-			throw new ScaffoldError(
-				'TARGET',
-				`Override content exceeds the aggregate byte limit at ${path}`,
-				{ target, path, limit: MAX_TOTAL_ARTIFACT_BYTES },
-			)
-		}
-		const content = readFileText(
-			root,
-			path,
-			'TARGET',
-			'override',
-			Math.min(MAX_ARTIFACT_BYTES, remaining),
-		)
-		remaining -= contentByteLength(content)
-		overrides.push(override(path, content))
-	}
-	return Object.freeze(overrides)
 }
 
 /**
