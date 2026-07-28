@@ -189,6 +189,7 @@ export const integration = (config?: UserConfig): UserConfig =>
 					name: { label: 'integration', color: 'blue' },
 					include: ['tests/integration/**/*.test.ts'],
 					exclude: ['tests/src/**/*.test.ts', 'tests/guides/**/*.test.ts'],
+					globalSetup: ['./tests/setupIntegration.ts'],
 				},
 			},
 			config ?? {},

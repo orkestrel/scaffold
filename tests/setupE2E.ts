@@ -37,12 +37,13 @@ import {
 	buildFromFixture,
 	canBash,
 	canCursorModels,
+	cloneGeneratedConsumer,
 	HOST_BYTE_EQUAL_PATHS,
 	installArchive,
-	installGeneratedDependencies,
 	isExecutable,
 	packArchive,
 	packFiles,
+	prepareGeneratedConsumer,
 	REJECTED_LINT_SOURCES,
 	resolveToolEntry,
 	resolveInstalledBin,
@@ -54,7 +55,6 @@ import {
 import {
 	buildTempDirectory,
 	canDirectoryLink,
-	canIgnoreFilesystemCase,
 	canSymlink,
 	createDirectoryLink,
 	WORKSPACE_ROOT,
@@ -1191,1661 +1191,1718 @@ export function registerHermeticBinGates(): void {
 	})
 }
 
-/** Register the external-install generated-consumer integration suite. */
-export function registerGeneratedConsumerGates(): void {
-	describe('generated mixed-workspace consumer gates', () => {
-		it('runs formatting, lint, typecheck, build, source/app tests, and guide parity in a fresh full workspace', async () => {
-			const cwd = await buildTempDirectory()
-			try {
-				const generationRoot = join(cwd.path, 'app', 'server')
-				mkdirSync(generationRoot, { recursive: true })
-				const created = runDefaultBin(
-					[
-						'new',
-						'consumer-proof',
-						'--src',
-						'core,browser,server',
-						'--app',
-						'core,browser,server',
-						'--apply',
-					],
-					{ cwd: generationRoot },
-				)
-				expect(created.status).toBe(0)
-				const packageDirectory = join(generationRoot, 'consumer-proof')
-				const installed = installGeneratedDependencies(packageDirectory)
-				expect({
-					status: installed.status,
-					error: installed.error?.message,
-					signal: installed.signal,
-					output: `${installed.stdout}${installed.stderr}`,
-				}).toEqual({
-					status: 0,
-					error: undefined,
-					signal: null,
-					output: `${installed.stdout}${installed.stderr}`,
-				})
+/** One generated-workspace environment-boundary rejection. */
+export interface BoundaryCase {
+	readonly path: string
+	readonly content: string
+	readonly script: string
+	readonly message: string
+	readonly setupPath?: string
+	readonly setupContent?: string
+}
 
-				for (const script of [
-					'format:check',
-					'lint:check',
-					'check',
-					'build',
-					'test:src',
-					'test:app',
-					'test:policy',
-					'test:guides',
-				]) {
-					const result = runNpmScript(packageDirectory, script, 120_000)
-					const output = `${result.stdout}${result.stderr}`
-					expect(result.status, `${script}\n${output}`).toBe(0)
-					expect(result.error?.message).toBeUndefined()
-					expect(result.signal).toBeNull()
-				}
-				const unrelatedPath = join(packageDirectory, 'browser-forbidden.txt')
-				const symlinkPath = join(packageDirectory, 'app', 'browser', 'forbidden-link.txt')
-				const aliasSymlinkPath = join(packageDirectory, 'app', 'core', 'forbidden-link.txt')
-				const sentinel = 'BROWSER_SERVER_SENTINEL_7dd5af41'
-				writeFileSync(unrelatedPath, sentinel, 'utf8')
-				if (canSymlink) {
-					symlinkSync(unrelatedPath, symlinkPath)
-					symlinkSync(unrelatedPath, aliasSymlinkPath)
-				}
-				const viteServer = await startGeneratedViteServer(
-					packageDirectory,
-					join(packageDirectory, 'configs/app/vite.browser.config.ts'),
-				)
-				try {
-					const browserResponse = await fetch(`${viteServer.base}/main.ts`)
-					const browserBody = await browserResponse.text()
-					if (browserResponse.status !== 200) {
-						throw new Error(
-							`browser entry returned ${String(browserResponse.status)}\n${browserBody}`,
-						)
-					}
-					expect(browserResponse.status).toBe(200)
-					for (const path of [
-						join(packageDirectory, 'app', 'server', 'main.ts'),
-						join(packageDirectory, 'src', 'server', 'index.ts'),
-						unrelatedPath,
-					]) {
-						const route = `/@fs/${path.replaceAll('\\', '/')}`
-						const response = await fetch(`${viteServer.base}${route}`)
-						expect(response.status).toBe(403)
-						expect(await response.text()).toBe('Forbidden\n')
-					}
-					const symlinkResponses = canSymlink
-						? await Promise.all(
-								['/forbidden-link.txt', '/@app/core/forbidden-link.txt'].map(async (route) => {
-									const response = await fetch(`${viteServer.base}${route}`)
-									return { status: response.status, body: await response.text() }
-								}),
-							)
-						: []
-					expect(symlinkResponses).toEqual(
-						canSymlink
-							? [
-									{ status: 403, body: 'Forbidden\n' },
-									{ status: 403, body: 'Forbidden\n' },
-								]
-							: [],
-					)
-				} finally {
-					await viteServer.close()
-					if (existsSync(symlinkPath)) rmSync(symlinkPath)
-					if (existsSync(aliasSymlinkPath)) rmSync(aliasSymlinkPath)
-					rmSync(unrelatedPath)
-				}
-				const linkedRootFailures: boolean[] = []
-				if (canDirectoryLink) {
-					for (const linked of [
-						{
-							root: join(packageDirectory, 'app', 'core'),
-							target: join(packageDirectory, 'private-core-root'),
-						},
-						{
-							root: join(packageDirectory, 'app', 'browser'),
-							target: join(packageDirectory, '..', 'outside-browser-root'),
-						},
-					]) {
-						renameSync(linked.root, linked.target)
-						const rootSentinel = join(linked.target, 'root-sentinel.txt')
-						writeFileSync(rootSentinel, sentinel, 'utf8')
-						createDirectoryLink(linked.target, linked.root)
-						let escapedServer: GeneratedViteServerInterface | undefined
-						let escapedError: unknown
-						try {
-							escapedServer = await startGeneratedViteServer(
-								packageDirectory,
-								join(packageDirectory, 'configs/app/vite.browser.config.ts'),
-							)
-						} catch (error) {
-							escapedError = error
-						} finally {
-							await escapedServer?.close()
-							rmSync(linked.root, { recursive: true, force: true })
-							rmSync(rootSentinel)
-							renameSync(linked.target, linked.root)
-						}
-						linkedRootFailures.push(escapedError instanceof Error)
-					}
-				}
-				expect(linkedRootFailures).toEqual(canDirectoryLink ? [true, true] : [])
-				expect(
-					listFiles(join(packageDirectory, 'dist', 'app')).some((path) => path.endsWith('.map')),
-				).toBe(false)
-				const unmanagedPublic = join(packageDirectory, 'public')
-				mkdirSync(unmanagedPublic)
-				writeFileSync(join(unmanagedPublic, 'secret.txt'), 'user-owned\n', 'utf8')
-				expect(runNpmScript(packageDirectory, 'build:app:server', 120_000).status).toBe(0)
-				expect(
-					listFiles(join(packageDirectory, 'dist', 'app', 'server')).some((path) =>
-						path.endsWith('secret.txt'),
-					),
-				).toBe(false)
-				rmSync(unmanagedPublic, { recursive: true })
+/** Read the generated entry bytes restored before every boundary rejection. */
+export function buildBoundaryOriginals(packageDirectory: string): ReadonlyMap<string, string> {
+	const paths = [
+		join(packageDirectory, 'app', 'browser', 'ApplicationView.vue'),
+		join(packageDirectory, 'app', 'browser', 'main.ts'),
+		join(packageDirectory, 'app', 'browser', 'index.html'),
+		join(packageDirectory, 'configs', 'app', 'vite.browser.config.ts'),
+		join(packageDirectory, 'app', 'server', 'main.ts'),
+		join(packageDirectory, 'src', 'core', 'index.ts'),
+		join(packageDirectory, 'src', 'browser', 'index.ts'),
+		join(packageDirectory, 'src', 'server', 'index.ts'),
+	]
+	return new Map(paths.map((path) => [path, readFileSync(path, 'utf8')]))
+}
 
-				const hostileVue = join(packageDirectory, 'app', 'browser', 'Hostile.vue')
-				const hostileReference = join(packageDirectory, 'app', 'core', 'hostile-reference.ts')
-				writeFileSync(
-					hostileVue,
-					'<script setup lang="ts">const value = {} as object\nvoid value</script>\n',
-				)
-				writeFileSync(hostileReference, '/// <reference types="node" />\n')
-				const policyRejected = runNpmScript(packageDirectory, 'test:policy', 120_000)
-				const policyOutput = `${policyRejected.stdout}${policyRejected.stderr}`.replaceAll(
-					'\\',
-					'/',
-				)
-				expect(policyRejected.status).not.toBe(0)
-				expect(policyOutput).toContain('app/browser/Hostile.vue')
-				expect(policyOutput).toContain('app/core/hostile-reference.ts')
-				rmSync(hostileVue)
-				rmSync(hostileReference)
-				const unusedBoundary = join(packageDirectory, 'app', 'browser', 'unused-boundary.ts')
-				writeFileSync(
-					unusedBoundary,
-					"export { default } from '@app/server'\nvoid import('@app/server')\nrequire('@app/server')\n",
-					'utf8',
-				)
-				const lintRejected = runNpmScript(packageDirectory, 'lint:check', 120_000)
-				const lintOutput = `${lintRejected.stdout}${lintRejected.stderr}`.replaceAll('\\', '/')
-				expect(lintRejected.status).not.toBe(0)
-				expect(lintOutput).toContain('app/browser/unused-boundary.ts')
-				expect(lintOutput).toContain('app/browser must not depend on Node or server-only modules')
-				rmSync(unusedBoundary)
+/** Write the shared real files referenced by generated boundary cases. */
+export function prepareBoundaryFixtures(packageDirectory: string, generationRoot: string): void {
+	const fixtures = new Map([
+		[
+			join(packageDirectory, 'app', 'server', 'boundary.ts'),
+			"const value = 'server'\nexport default value\n",
+		],
+		[join(packageDirectory, 'app', 'server', 'boundary.js'), "export default 'server'\n"],
+		[join(packageDirectory, 'app', 'server', 'boundary.css'), 'body { color: red; }\n'],
+		[join(packageDirectory, 'app', 'server', 'boundary.txt'), 'server\n'],
+		[join(packageDirectory, 'app', 'server', 'boundary-worker.ts'), "self.postMessage('server')\n"],
+		[join(packageDirectory, 'app', 'browser', 'boundary.txt'), 'browser\n'],
+		[
+			join(packageDirectory, 'src', 'server', 'boundary.ts'),
+			"const value = 'server'\nexport default value\n",
+		],
+		[join(packageDirectory, 'src', 'browser', 'boundary.txt'), 'browser\n'],
+	])
+	for (const [path, content] of fixtures) writeFileSync(path, content, 'utf8')
+	const outsideModule = join(generationRoot, 'outside.ts')
+	writeFileSync(outsideModule, "export const outside = 'outside'\n", 'utf8')
+	writeFileSync(join(generationRoot, 'outside.js'), "export default 'outside'\n", 'utf8')
+	writeFileSync(join(generationRoot, 'outside.css'), 'body { color: blue; }\n', 'utf8')
+	mkdirSync(join(generationRoot, 'node_modules'), { recursive: true })
+	writeFileSync(join(generationRoot, 'node_modules', 'outside.css'), 'body { color: purple; }\n')
+}
 
-				const applicationView = join(packageDirectory, 'app', 'browser', 'ApplicationView.vue')
-				const browserMain = join(packageDirectory, 'app', 'browser', 'main.ts')
-				const browserHtml = join(packageDirectory, 'app', 'browser', 'index.html')
-				const browserViteConfig = join(packageDirectory, 'configs', 'app', 'vite.browser.config.ts')
-				const appServerMain = join(packageDirectory, 'app', 'server', 'main.ts')
-				const sourceCoreIndex = join(packageDirectory, 'src', 'core', 'index.ts')
-				const sourceBrowserIndex = join(packageDirectory, 'src', 'browser', 'index.ts')
-				const sourceServerIndex = join(packageDirectory, 'src', 'server', 'index.ts')
-				const originals = new Map([
-					[applicationView, readFileSync(applicationView, 'utf8')],
-					[browserMain, readFileSync(browserMain, 'utf8')],
-					[browserHtml, readFileSync(browserHtml, 'utf8')],
-					[browserViteConfig, readFileSync(browserViteConfig, 'utf8')],
-					[appServerMain, readFileSync(appServerMain, 'utf8')],
-					[sourceCoreIndex, readFileSync(sourceCoreIndex, 'utf8')],
-					[sourceBrowserIndex, readFileSync(sourceBrowserIndex, 'utf8')],
-					[sourceServerIndex, readFileSync(sourceServerIndex, 'utf8')],
-				])
-				const fixtures = new Map([
-					[
-						join(packageDirectory, 'app', 'server', 'boundary.ts'),
-						"const value = 'server'\nexport default value\n",
-					],
-					[join(packageDirectory, 'app', 'server', 'boundary.js'), "export default 'server'\n"],
-					[join(packageDirectory, 'app', 'server', 'boundary.css'), 'body { color: red; }\n'],
-					[join(packageDirectory, 'app', 'server', 'boundary.txt'), 'server\n'],
-					[
-						join(packageDirectory, 'app', 'server', 'boundary-worker.ts'),
-						"self.postMessage('server')\n",
-					],
-					[join(packageDirectory, 'app', 'browser', 'boundary.txt'), 'browser\n'],
-					[
-						join(packageDirectory, 'src', 'server', 'boundary.ts'),
-						"const value = 'server'\nexport default value\n",
-					],
-					[join(packageDirectory, 'src', 'browser', 'boundary.txt'), 'browser\n'],
-				])
-				for (const [path, content] of fixtures) writeFileSync(path, content, 'utf8')
-				const browserCss = join(packageDirectory, 'app', 'browser', 'boundary.css')
-				const outsideModule = join(generationRoot, 'outside.ts')
-				writeFileSync(outsideModule, "export const outside = 'outside'\n", 'utf8')
-				writeFileSync(join(generationRoot, 'outside.js'), "export default 'outside'\n", 'utf8')
-				writeFileSync(join(generationRoot, 'outside.css'), 'body { color: blue; }\n', 'utf8')
-				mkdirSync(join(generationRoot, 'node_modules'), { recursive: true })
-				writeFileSync(
-					join(generationRoot, 'node_modules', 'outside.css'),
-					'body { color: purple; }\n',
-				)
-				const transitiveRoot = join(packageDirectory, 'node_modules', 'transitive-node')
-				mkdirSync(transitiveRoot, { recursive: true })
-				writeFileSync(
-					join(transitiveRoot, 'package.json'),
-					'{"name":"transitive-node","type":"module","exports":"./index.js"}\n',
-				)
-				writeFileSync(
-					join(transitiveRoot, 'index.js'),
-					"void import(/* @vite-ignore */ 'node:fs')\nexport default null\n",
-				)
-				const mixedCaseFileUrl = pathToFileURL(
-					join(packageDirectory, 'app', 'server', 'boundary.txt'),
-				).href.replace(/^file:/u, 'FiLe:')
-				const boundaryCases = [
-					{
-						path: sourceCoreIndex,
-						content: "import 'data:text/javascript,export default globalThis.process'\n",
-						script: 'build:src:core',
-						message: 'Environment modules cannot import non-Node URL schemes',
-					},
-					{
-						path: sourceCoreIndex,
-						content: "void import(/* @vite-ignore */ 'node:fs')\n",
-						script: 'build:src:core',
-						message: 'Core modules must remain host-independent',
-					},
-					{
-						path: sourceCoreIndex,
-						content: "import './boundary.pcss'\n",
-						setupPath: join(packageDirectory, 'src', 'core', 'boundary.pcss'),
-						setupContent: 'main { color: red; }\n',
-						script: 'build:src:core',
-						message: 'Core modules must remain host-independent',
-					},
-					{
-						path: sourceServerIndex,
-						content: "import './boundary.pcss'\n",
-						setupPath: join(packageDirectory, 'src', 'server', 'boundary.pcss'),
-						setupContent: 'main { color: red; }\n',
-						script: 'build:src:server',
-						message: 'Server modules cannot depend on Vue or browser-only modules',
-					},
-					{
-						path: applicationView,
-						content:
-							'<script src="../server/boundary.ts"></script><template><main></main></template>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: applicationView,
-						content: '<template src="../server/boundary.txt"></template>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: applicationView,
-						content: '<i18n src="../server/boundary.txt"></i18n><template><main /></template>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: applicationView,
-						content:
-							'<script src="../../../outside.ts"></script><template><main></main></template>\n',
-						script: 'build:app:browser',
-						message: 'Environment modules cannot import files outside the workspace',
-					},
-					{
-						path: applicationView,
-						content:
-							'<script setup lang="ts">void import(`fs`)</script><template><main></main></template>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: applicationView,
-						content:
-							'<script setup lang="ts">void import(`@app/server`)</script><template><main></main></template>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserMain,
-						content: "void import(/* @vite-ignore */ 'node:fs')\n",
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserMain,
-						content: "void import(/* @vite-ignore */ 'data:text/javascript,export default 1')\n",
-						script: 'build:app:browser',
-						message: 'Environment modules cannot import non-Node URL schemes',
-					},
-					{
-						path: browserMain,
-						content: "void import(/* @vite-ignore */ '@app/server')\n",
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserMain,
-						content: "void import(/* @vite-ignore */ './%2e%2e/server/boundary.ts')\n",
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserMain,
-						content: "void import(/* @vite-ignore */ '..\\\\server/boundary.ts')\n",
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserMain,
-						content: `import ${JSON.stringify(mixedCaseFileUrl)}\n`,
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserMain,
-						content: `void import(/* @vite-ignore */ ${JSON.stringify(mixedCaseFileUrl)})\n`,
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserMain,
-						content: `void new URL(${JSON.stringify(mixedCaseFileUrl)}, import.meta.url)\n`,
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserMain,
-						content:
-							"const target = '../server/boundary.ts'\nvoid import(/* @vite-ignore */ target)\n",
-						script: 'build:app:browser',
-						message: 'Dynamic imports must use static string values',
-					},
-					{
-						path: applicationView,
-						content:
-							'<script setup lang="ts">const target = "../server/boundary.ts"; void import(/* @vite-ignore */ target)</script><template><main /></template>\n',
-						script: 'build:app:browser',
-						message: 'Dynamic imports must use static string values',
-					},
-					{
-						path: applicationView,
-						content:
-							'<script setup lang="ts">const target = "../server/boundary.txt"; void new URL(target, import.meta.url)</script><template><main /></template>\n',
-						script: 'build:app:browser',
-						message: 'Asset URLs must use static string values',
-					},
-					{
-						path: applicationView,
-						content:
-							'<template><main /></template><style>@import "../server/boundary.css";</style>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: applicationView,
-						content:
-							'<template><main /></template><style>main { background: url("../server/boundary.txt"); }</style>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="../server/boundary.ts"></script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script src="../server/boundary.js"></script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Classic external scripts are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="MODULE" src="../server/boundary.js"></script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Classic external scripts are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="https://app.example/server.js"></script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Module script URLs must remain in the local Vite graph',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="ht&#00009tps://app.example/server.js"></script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Environment module URLs cannot contain ASCII controls',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="data&#10;:text/javascript,void%200"></script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Environment module URLs cannot contain ASCII controls',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="java&#13script:void%200"></script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Environment module URLs cannot contain ASCII controls',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="&#1;https://app.example/server.js"></script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Environment module URLs cannot contain ASCII controls',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="&#01https://app.example/server.js"></script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Environment module URLs cannot contain ASCII controls',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="&#x1;https://app.example/server.js"></script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Environment module URLs cannot contain ASCII controls',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="h&#x74;tps://app.example/server.js"></script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Module script URLs must remain in the local Vite graph',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="h&Tab;tps://app.example/server.js"></script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Environment module URLs cannot contain ASCII controls',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="//app.example/server.js"></script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Module script URLs must remain in the local Vite graph',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="data:text/javascript,void%200"></script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Module script URLs must remain in the local Vite graph',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="#server"></script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Module script URLs must remain in the local Vite graph',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><svg><script href="./local.js"></script></svg></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Classic external scripts are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><svg><script xlink:href="https://app.example/server.js"></script></svg></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Classic external scripts are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script src="../server/boundary.js"></script></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(\n\tappBrowser({\n\t\thtml: {\n\t\t\tadditionalAssetSources: {\n\t\t\t\tscript: { srcAttributes: ['src'], filter: () => false },\n\t\t\t},\n\t\t},\n\t}),\n)\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script src="../../../outside.js"></script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Classic external scripts are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module">const target = "../server/boundary.ts"; void import(/* @vite-ignore */ target)</script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Dynamic imports must use static string values',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module">void import(/* @vite-ignore */ "node:fs")</script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module">void import(/* @vite-ignore */ "@app/server")</script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module">const target = "../server/boundary.txt"; void new URL(/* @vite-ignore */ `./${target}`, import.meta.url)</script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Asset URLs must use static string values',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" vite-ignore src="../server/boundary.ts"></script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script/vite-ignore type="module" src="../server/boundary.ts"></script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><img src="../server/boundary.txt"></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><img src="..\\server/boundary.txt"></body></html>\n',
-						script: 'build:app:browser',
-						message: 'HTML asset URLs must use forward slashes',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><img vite-ignore src="../server/boundary.txt"></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><img ViTe-IgNoRe src="../server/boundary.txt"></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><img vite-ignore="yes" src="../server/boundary.txt"></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><img title="> vite-ignore is text" vite-ignore src="../server/boundary.txt"></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content: '<!doctype html><!--><img vite-ignore src="../server/boundary.txt">\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content: '<!doctype html><!---><img vite-ignore src="../server/boundary.txt">\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content: '<!doctype html><!-- --!><img vite-ignore src="../server/boundary.txt">\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content: '<!doctype html>\u0130<img vite-ignore src="../server/boundary.txt">\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content: '<!doctype html><![CDATA[><img vite-ignore src="../server/boundary.txt">]]>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><svg><style>/* preserved foreign style */</style><image vite-ignore href="../server/boundary.txt"></image></svg>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><svg><script/><image vite-ignore href="../server/boundary.txt"/></svg>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><select><style></select><input vite-ignore src="../server/boundary.txt"></style>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content: '<!doctype html><img = vite-ignore src="../server/boundary.txt">\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><script type="module" vite-ignore>void import("@app/server")</script>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><img src="../server/boundary.txt"></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import type { Plugin } from 'vite'\nimport { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nconst injectIgnore = {\n\tname: 'inject-ignore',\n\ttransformIndexHtml: {\n\t\torder: 'pre',\n\t\thandler: (html: string) => html.replace('<img ', '<img vite-ignore '),\n\t},\n} satisfies Plugin\n\nexport default defineConfig(appBrowser({ plugins: [injectIgnore] }))\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ worker: { plugins: () => [] } }))\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ build: { rolldownOptions: { external: ['@app/core'], output: { paths: { '@app/core': '../../server/main.cjs' } } } } }))\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ build: { rolldownOptions: { output: { banner: 'import \"../../server/main.cjs\"' } } } }))\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ css: { transformer: 'postcss', postcss: './postcss.config.js' } }))\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ css: { lightningcss: { visitor: {} } } }))\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ experimental: { renderBuiltUrl: () => '../server/main.cjs' } }))\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ ssr: { optimizeDeps: { rolldownOptions: { plugins: [] } } } }))\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ build: { createEnvironment: () => undefined } }))\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ dev: { createEnvironment: () => undefined } }))\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ build: { rollupOptions: { plugins: [] } } }))\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ build: { rollupOptions: { output: [{ plugins: [] }] } } }))\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ build: { rolldownOptions: { output: { plugins: [] } } } }))\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ worker: { rolldownOptions: { output: { plugins: [] } } } }))\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ worker: { rollupOptions: { output: [{ plugins: [] }] } } }))\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ build: { rolldownOptions: { output: [{ plugins: [] }] } } }))\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ optimizeDeps: { rolldownOptions: { plugins: [] } } }))\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ optimizeDeps: { rollupOptions: { output: { plugins: [] } } } }))\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ optimizeDeps: { esbuildOptions: { plugins: [] } } }))\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ css: { postcss: { plugins: [] } } }))\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ environments: { client: { build: { rolldownOptions: { plugins: [] } } } } }))\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ builder: { buildApp: async () => undefined } }))\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><img %ATTR% src="../server/boundary.txt"></body></html>\n',
-						setupPath: browserViteConfig,
-						setupContent:
-							"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(\n\tappBrowser({ define: { 'import.meta.env.ATTR': JSON.stringify('vite-ignore') } }),\n)\n",
-						script: 'build:app:browser',
-						message: 'Browser configuration overrides are not permitted',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><img/vite-ignore src="../server/boundary.txt"></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content: '<!doctype html><html><body><img src=../server/boundary.txt></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><img src="&#x2e;&#x2e;/server/boundary.txt"></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><img src="%2e%2e/server/boundary.txt"></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><svg><image xlink:href="../server/boundary.txt"></image></svg></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><head><meta property="og:image" content="../server/boundary.txt"></head></html>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><head><meta name="msapplication-tileimage" content="../server/boundary.txt"></head></html>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><img src="../server/boundary.txt?inline"></body></html>\n',
-						script: 'build:app:browser',
-						message: 'HTML asset URLs cannot force inlining',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><head><link rel="icon" href="../../../outside.css"></head><body></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Environment modules cannot import files outside the workspace',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><source srcset="../server/boundary.txt 1x"></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module">void new URL("../server/boundary.txt", import.meta.url)</script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type=module>void new URL("../server/boundary.txt", import.meta.url)</script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><body><script type="module">new Worker(new URL("../server/boundary-worker.ts", import.meta.url), { type: "module" })</script></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserHtml,
-						content:
-							'<!doctype html><html><head><style>@import "../server/boundary.css";</style></head><body></body></html>\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserMain,
-						content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
-						setupPath: browserCss,
-						setupContent: '@import "../server/boundary.css";\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserMain,
-						content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
-						setupPath: browserCss,
-						setupContent: '@IMPORT "../server/boundary.css";\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserMain,
-						content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
-						setupPath: browserCss,
-						setupContent: '@import "../../../outside.css";\n',
-						script: 'build:app:browser',
-						message: 'Environment modules cannot import files outside the workspace',
-					},
-					{
-						path: browserMain,
-						content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
-						setupPath: browserCss,
-						setupContent: '@import "../../../node_modules/outside.css";\n',
-						script: 'build:app:browser',
-						message: 'Environment modules cannot import files outside the workspace',
-					},
-					{
-						path: browserMain,
-						content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
-						setupPath: browserCss,
-						setupContent: 'main { background: url("../server/boundary.txt"); }\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserMain,
-						content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
-						setupPath: browserCss,
-						setupContent: 'main { background: url("%2e%2e/server/boundary.txt"); }\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserMain,
-						content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
-						setupPath: browserCss,
-						setupContent: 'main { background: url("..%5cserver/boundary.txt"); }\n',
-						script: 'build:app:browser',
-						message: 'Stylesheet asset URLs must use forward slashes',
-					},
-					{
-						path: browserMain,
-						content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
-						setupPath: browserCss,
-						setupContent: 'main { background: URL("../../../outside.css"); }\n',
-						script: 'build:app:browser',
-						message: 'Environment modules cannot import files outside the workspace',
-					},
-					{
-						path: browserMain,
-						content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
-						setupPath: browserCss,
-						setupContent: 'main { background: u\\72l("../server/boundary.txt"); }\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserMain,
-						content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
-						setupPath: browserCss,
-						setupContent: 'main { background: image-set(url("../server/boundary.txt") 1x); }\n',
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserMain,
-						content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
-						setupPath: browserCss,
-						setupContent: `@import "${mixedCaseFileUrl}";\n`,
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserMain,
-						content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
-						setupPath: browserCss,
-						setupContent: `main { background: url("${mixedCaseFileUrl}"); }\n`,
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserMain,
-						content: `const marker: string = 'typed'\nvoid marker\nvoid new URL('../server/boundary.txt', import.meta.url)\n${originals.get(browserMain) ?? ''}`,
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserMain,
-						content: `void new URL(\`../server/boundary.txt\`, import.meta.url)\n${originals.get(browserMain) ?? ''}`,
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserMain,
-						content: `const assetName = 'boundary'\nvoid new URL(\`../server/\${assetName}.txt\`, import.meta.url)\n${originals.get(browserMain) ?? ''}`,
-						script: 'build:app:browser',
-						message: 'Asset URLs must use static string values',
-					},
-					{
-						path: browserMain,
-						content: `const environment = 'server'\nvoid new URL(\`../\${environment}/boundary.txt\`, import.meta.url)\n${originals.get(browserMain) ?? ''}`,
-						script: 'build:app:browser',
-						message: 'Asset URLs must use static string values',
-					},
-					{
-						path: browserMain,
-						content: `const target = '../server/boundary.txt'\nvoid new URL(target, import.meta.url)\n${originals.get(browserMain) ?? ''}`,
-						script: 'build:app:browser',
-						message: 'Asset URLs must use static string values',
-					},
-					{
-						path: browserMain,
-						content: `void new URL('./%2e%2e/server/boundary.txt', import.meta.url)\n${originals.get(browserMain) ?? ''}`,
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserMain,
-						content: `void new URL('..\\\\server/boundary.txt', import.meta.url)\n${originals.get(browserMain) ?? ''}`,
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserMain,
-						content: `import './boundary.tsx'\n${originals.get(browserMain) ?? ''}`,
-						setupPath: join(packageDirectory, 'app', 'browser', 'boundary.tsx'),
-						setupContent:
-							"export const view = <main />\nvoid view\nvoid new URL('../server/boundary.txt', import.meta.url)\n",
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserMain,
-						content: `new Worker(new URL('../server/boundary-worker.ts', import.meta.url), { type: 'module' })\n${originals.get(browserMain) ?? ''}`,
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: browserMain,
-						content: `import '../../../outside.ts'\n${originals.get(browserMain) ?? ''}`,
-						script: 'build:app:browser',
-						message: 'Environment modules cannot import files outside the workspace',
-					},
-					{
-						path: appServerMain,
-						content: `void new URL('../browser/boundary.txt', import.meta.url)\n${originals.get(appServerMain) ?? ''}`,
-						script: 'build:app:server',
-						message: 'Server modules cannot depend on Vue or browser-only modules',
-					},
-					{
-						path: appServerMain,
-						content: `import './boundary.css'\n${originals.get(appServerMain) ?? ''}`,
-						script: 'build:app:server',
-						message: 'Server modules cannot depend on Vue or browser-only modules',
-					},
-					{
-						path: sourceBrowserIndex,
-						content: `void new URL('../server/boundary.ts', import.meta.url)\n${originals.get(sourceBrowserIndex) ?? ''}`,
-						script: 'build:src:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
-						path: sourceServerIndex,
-						content: `void new URL('../browser/boundary.txt', import.meta.url)\n${originals.get(sourceServerIndex) ?? ''}`,
-						script: 'build:src:server',
-						message: 'Server modules cannot depend on Vue or browser-only modules',
-					},
-				]
-				for (const testCase of boundaryCases) {
-					for (const [path, content] of originals) writeFileSync(path, content, 'utf8')
-					if (
-						'setupPath' in testCase &&
-						testCase.setupPath !== undefined &&
-						testCase.setupContent !== undefined
-					) {
-						writeFileSync(testCase.setupPath, testCase.setupContent, 'utf8')
-					}
-					writeFileSync(
-						testCase.path,
-						testCase.path === browserHtml
-							? browserDocument(originals.get(browserHtml) ?? '', testCase.content)
-							: testCase.content,
-						'utf8',
-					)
-					const rejected = runNpmScript(packageDirectory, testCase.script, 120_000)
-					const output = `${rejected.stdout}${rejected.stderr}`
+/**
+ * Build the complete generated-workspace environment-boundary case table.
+ *
+ * @param packageDirectory - Fresh full-workspace clone.
+ * @returns All 128 rejection cases in deterministic order.
+ */
+export function buildBoundaryCases(packageDirectory: string): readonly BoundaryCase[] {
+	const applicationView = join(packageDirectory, 'app', 'browser', 'ApplicationView.vue')
+	const browserMain = join(packageDirectory, 'app', 'browser', 'main.ts')
+	const browserHtml = join(packageDirectory, 'app', 'browser', 'index.html')
+	const browserViteConfig = join(packageDirectory, 'configs', 'app', 'vite.browser.config.ts')
+	const browserCss = join(packageDirectory, 'app', 'browser', 'boundary.css')
+	const appServerMain = join(packageDirectory, 'app', 'server', 'main.ts')
+	const sourceCoreIndex = join(packageDirectory, 'src', 'core', 'index.ts')
+	const sourceBrowserIndex = join(packageDirectory, 'src', 'browser', 'index.ts')
+	const sourceServerIndex = join(packageDirectory, 'src', 'server', 'index.ts')
+	const originals = new Map([
+		[applicationView, readFileSync(applicationView, 'utf8')],
+		[browserMain, readFileSync(browserMain, 'utf8')],
+		[browserHtml, readFileSync(browserHtml, 'utf8')],
+		[browserViteConfig, readFileSync(browserViteConfig, 'utf8')],
+		[appServerMain, readFileSync(appServerMain, 'utf8')],
+		[sourceCoreIndex, readFileSync(sourceCoreIndex, 'utf8')],
+		[sourceBrowserIndex, readFileSync(sourceBrowserIndex, 'utf8')],
+		[sourceServerIndex, readFileSync(sourceServerIndex, 'utf8')],
+	])
+	const mixedCaseFileUrl = pathToFileURL(
+		join(packageDirectory, 'app', 'server', 'boundary.txt'),
+	).href.replace(/^file:/u, 'FiLe:')
+	const boundaryCases: readonly BoundaryCase[] = [
+		{
+			path: sourceCoreIndex,
+			content: "import 'data:text/javascript,export default globalThis.process'\n",
+			script: 'build:src:core',
+			message: 'Environment modules cannot import non-Node URL schemes',
+		},
+		{
+			path: sourceCoreIndex,
+			content: "void import(/* @vite-ignore */ 'node:fs')\n",
+			script: 'build:src:core',
+			message: 'Core modules must remain host-independent',
+		},
+		{
+			path: sourceCoreIndex,
+			content: "import './boundary.pcss'\n",
+			setupPath: join(packageDirectory, 'src', 'core', 'boundary.pcss'),
+			setupContent: 'main { color: red; }\n',
+			script: 'build:src:core',
+			message: 'Core modules must remain host-independent',
+		},
+		{
+			path: sourceServerIndex,
+			content: "import './boundary.pcss'\n",
+			setupPath: join(packageDirectory, 'src', 'server', 'boundary.pcss'),
+			setupContent: 'main { color: red; }\n',
+			script: 'build:src:server',
+			message: 'Server modules cannot depend on Vue or browser-only modules',
+		},
+		{
+			path: applicationView,
+			content: '<script src="../server/boundary.ts"></script><template><main></main></template>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: applicationView,
+			content: '<template src="../server/boundary.txt"></template>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: applicationView,
+			content: '<i18n src="../server/boundary.txt"></i18n><template><main /></template>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: applicationView,
+			content: '<script src="../../../outside.ts"></script><template><main></main></template>\n',
+			script: 'build:app:browser',
+			message: 'Environment modules cannot import files outside the workspace',
+		},
+		{
+			path: applicationView,
+			content:
+				'<script setup lang="ts">void import(`fs`)</script><template><main></main></template>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: applicationView,
+			content:
+				'<script setup lang="ts">void import(`@app/server`)</script><template><main></main></template>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserMain,
+			content: "void import(/* @vite-ignore */ 'node:fs')\n",
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserMain,
+			content: "void import(/* @vite-ignore */ 'data:text/javascript,export default 1')\n",
+			script: 'build:app:browser',
+			message: 'Environment modules cannot import non-Node URL schemes',
+		},
+		{
+			path: browserMain,
+			content: "void import(/* @vite-ignore */ '@app/server')\n",
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserMain,
+			content: "void import(/* @vite-ignore */ './%2e%2e/server/boundary.ts')\n",
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserMain,
+			content: "void import(/* @vite-ignore */ '..\\\\server/boundary.ts')\n",
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserMain,
+			content: `import ${JSON.stringify(mixedCaseFileUrl)}\n`,
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserMain,
+			content: `void import(/* @vite-ignore */ ${JSON.stringify(mixedCaseFileUrl)})\n`,
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserMain,
+			content: `void new URL(${JSON.stringify(mixedCaseFileUrl)}, import.meta.url)\n`,
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserMain,
+			content: "const target = '../server/boundary.ts'\nvoid import(/* @vite-ignore */ target)\n",
+			script: 'build:app:browser',
+			message: 'Dynamic imports must use static string values',
+		},
+		{
+			path: applicationView,
+			content:
+				'<script setup lang="ts">const target = "../server/boundary.ts"; void import(/* @vite-ignore */ target)</script><template><main /></template>\n',
+			script: 'build:app:browser',
+			message: 'Dynamic imports must use static string values',
+		},
+		{
+			path: applicationView,
+			content:
+				'<script setup lang="ts">const target = "../server/boundary.txt"; void new URL(target, import.meta.url)</script><template><main /></template>\n',
+			script: 'build:app:browser',
+			message: 'Asset URLs must use static string values',
+		},
+		{
+			path: applicationView,
+			content: '<template><main /></template><style>@import "../server/boundary.css";</style>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: applicationView,
+			content:
+				'<template><main /></template><style>main { background: url("../server/boundary.txt"); }</style>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="../server/boundary.ts"></script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script src="../server/boundary.js"></script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Classic external scripts are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="MODULE" src="../server/boundary.js"></script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Classic external scripts are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="https://app.example/server.js"></script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Module script URLs must remain in the local Vite graph',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="ht&#00009tps://app.example/server.js"></script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Environment module URLs cannot contain ASCII controls',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="data&#10;:text/javascript,void%200"></script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Environment module URLs cannot contain ASCII controls',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="java&#13script:void%200"></script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Environment module URLs cannot contain ASCII controls',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="&#1;https://app.example/server.js"></script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Environment module URLs cannot contain ASCII controls',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="&#01https://app.example/server.js"></script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Environment module URLs cannot contain ASCII controls',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="&#x1;https://app.example/server.js"></script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Environment module URLs cannot contain ASCII controls',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="h&#x74;tps://app.example/server.js"></script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Module script URLs must remain in the local Vite graph',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="h&Tab;tps://app.example/server.js"></script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Environment module URLs cannot contain ASCII controls',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="//app.example/server.js"></script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Module script URLs must remain in the local Vite graph',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="data:text/javascript,void%200"></script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Module script URLs must remain in the local Vite graph',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="#server"></script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Module script URLs must remain in the local Vite graph',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><svg><script href="./local.js"></script></svg></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Classic external scripts are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><svg><script xlink:href="https://app.example/server.js"></script></svg></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Classic external scripts are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script src="../server/boundary.js"></script></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(\n\tappBrowser({\n\t\thtml: {\n\t\t\tadditionalAssetSources: {\n\t\t\t\tscript: { srcAttributes: ['src'], filter: () => false },\n\t\t\t},\n\t\t},\n\t}),\n)\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script src="../../../outside.js"></script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Classic external scripts are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module">const target = "../server/boundary.ts"; void import(/* @vite-ignore */ target)</script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Dynamic imports must use static string values',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module">void import(/* @vite-ignore */ "node:fs")</script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module">void import(/* @vite-ignore */ "@app/server")</script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module">const target = "../server/boundary.txt"; void new URL(/* @vite-ignore */ `./${target}`, import.meta.url)</script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Asset URLs must use static string values',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" vite-ignore src="../server/boundary.ts"></script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script/vite-ignore type="module" src="../server/boundary.ts"></script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content: '<!doctype html><html><body><img src="../server/boundary.txt"></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content: '<!doctype html><html><body><img src="..\\server/boundary.txt"></body></html>\n',
+			script: 'build:app:browser',
+			message: 'HTML asset URLs must use forward slashes',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><img vite-ignore src="../server/boundary.txt"></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><img ViTe-IgNoRe src="../server/boundary.txt"></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><img vite-ignore="yes" src="../server/boundary.txt"></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><img title="> vite-ignore is text" vite-ignore src="../server/boundary.txt"></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content: '<!doctype html><!--><img vite-ignore src="../server/boundary.txt">\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content: '<!doctype html><!---><img vite-ignore src="../server/boundary.txt">\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content: '<!doctype html><!-- --!><img vite-ignore src="../server/boundary.txt">\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content: '<!doctype html>\u0130<img vite-ignore src="../server/boundary.txt">\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content: '<!doctype html><![CDATA[><img vite-ignore src="../server/boundary.txt">]]>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><svg><style>/* preserved foreign style */</style><image vite-ignore href="../server/boundary.txt"></image></svg>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><svg><script/><image vite-ignore href="../server/boundary.txt"/></svg>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><select><style></select><input vite-ignore src="../server/boundary.txt"></style>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content: '<!doctype html><img = vite-ignore src="../server/boundary.txt">\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><script type="module" vite-ignore>void import("@app/server")</script>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content: '<!doctype html><html><body><img src="../server/boundary.txt"></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import type { Plugin } from 'vite'\nimport { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nconst injectIgnore = {\n\tname: 'inject-ignore',\n\ttransformIndexHtml: {\n\t\torder: 'pre',\n\t\thandler: (html: string) => html.replace('<img ', '<img vite-ignore '),\n\t},\n} satisfies Plugin\n\nexport default defineConfig(appBrowser({ plugins: [injectIgnore] }))\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ worker: { plugins: () => [] } }))\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ build: { rolldownOptions: { external: ['@app/core'], output: { paths: { '@app/core': '../../server/main.cjs' } } } } }))\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ build: { rolldownOptions: { output: { banner: 'import \"../../server/main.cjs\"' } } } }))\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ css: { transformer: 'postcss', postcss: './postcss.config.js' } }))\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ css: { lightningcss: { visitor: {} } } }))\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ experimental: { renderBuiltUrl: () => '../server/main.cjs' } }))\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ ssr: { optimizeDeps: { rolldownOptions: { plugins: [] } } } }))\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ build: { createEnvironment: () => undefined } }))\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ dev: { createEnvironment: () => undefined } }))\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ build: { rollupOptions: { plugins: [] } } }))\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ build: { rollupOptions: { output: [{ plugins: [] }] } } }))\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ build: { rolldownOptions: { output: { plugins: [] } } } }))\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ worker: { rolldownOptions: { output: { plugins: [] } } } }))\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ worker: { rollupOptions: { output: [{ plugins: [] }] } } }))\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ build: { rolldownOptions: { output: [{ plugins: [] }] } } }))\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ optimizeDeps: { rolldownOptions: { plugins: [] } } }))\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ optimizeDeps: { rollupOptions: { output: { plugins: [] } } } }))\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ optimizeDeps: { esbuildOptions: { plugins: [] } } }))\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ css: { postcss: { plugins: [] } } }))\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ environments: { client: { build: { rolldownOptions: { plugins: [] } } } } }))\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ builder: { buildApp: async () => undefined } }))\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><img %ATTR% src="../server/boundary.txt"></body></html>\n',
+			setupPath: browserViteConfig,
+			setupContent:
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(\n\tappBrowser({ define: { 'import.meta.env.ATTR': JSON.stringify('vite-ignore') } }),\n)\n",
+			script: 'build:app:browser',
+			message: 'Browser configuration overrides are not permitted',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><img/vite-ignore src="../server/boundary.txt"></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content: '<!doctype html><html><body><img src=../server/boundary.txt></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><img src="&#x2e;&#x2e;/server/boundary.txt"></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content: '<!doctype html><html><body><img src="%2e%2e/server/boundary.txt"></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><svg><image xlink:href="../server/boundary.txt"></image></svg></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><head><meta property="og:image" content="../server/boundary.txt"></head></html>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><head><meta name="msapplication-tileimage" content="../server/boundary.txt"></head></html>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><img src="../server/boundary.txt?inline"></body></html>\n',
+			script: 'build:app:browser',
+			message: 'HTML asset URLs cannot force inlining',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><head><link rel="icon" href="../../../outside.css"></head><body></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Environment modules cannot import files outside the workspace',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><source srcset="../server/boundary.txt 1x"></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module">void new URL("../server/boundary.txt", import.meta.url)</script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type=module>void new URL("../server/boundary.txt", import.meta.url)</script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><body><script type="module">new Worker(new URL("../server/boundary-worker.ts", import.meta.url), { type: "module" })</script></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserHtml,
+			content:
+				'<!doctype html><html><head><style>@import "../server/boundary.css";</style></head><body></body></html>\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserMain,
+			content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
+			setupPath: browserCss,
+			setupContent: '@import "../server/boundary.css";\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserMain,
+			content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
+			setupPath: browserCss,
+			setupContent: '@IMPORT "../server/boundary.css";\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserMain,
+			content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
+			setupPath: browserCss,
+			setupContent: '@import "../../../outside.css";\n',
+			script: 'build:app:browser',
+			message: 'Environment modules cannot import files outside the workspace',
+		},
+		{
+			path: browserMain,
+			content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
+			setupPath: browserCss,
+			setupContent: '@import "../../../node_modules/outside.css";\n',
+			script: 'build:app:browser',
+			message: 'Environment modules cannot import files outside the workspace',
+		},
+		{
+			path: browserMain,
+			content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
+			setupPath: browserCss,
+			setupContent: 'main { background: url("../server/boundary.txt"); }\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserMain,
+			content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
+			setupPath: browserCss,
+			setupContent: 'main { background: url("%2e%2e/server/boundary.txt"); }\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserMain,
+			content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
+			setupPath: browserCss,
+			setupContent: 'main { background: url("..%5cserver/boundary.txt"); }\n',
+			script: 'build:app:browser',
+			message: 'Stylesheet asset URLs must use forward slashes',
+		},
+		{
+			path: browserMain,
+			content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
+			setupPath: browserCss,
+			setupContent: 'main { background: URL("../../../outside.css"); }\n',
+			script: 'build:app:browser',
+			message: 'Environment modules cannot import files outside the workspace',
+		},
+		{
+			path: browserMain,
+			content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
+			setupPath: browserCss,
+			setupContent: 'main { background: u\\72l("../server/boundary.txt"); }\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserMain,
+			content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
+			setupPath: browserCss,
+			setupContent: 'main { background: image-set(url("../server/boundary.txt") 1x); }\n',
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserMain,
+			content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
+			setupPath: browserCss,
+			setupContent: `@import "${mixedCaseFileUrl}";\n`,
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserMain,
+			content: `import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
+			setupPath: browserCss,
+			setupContent: `main { background: url("${mixedCaseFileUrl}"); }\n`,
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserMain,
+			content: `const marker: string = 'typed'\nvoid marker\nvoid new URL('../server/boundary.txt', import.meta.url)\n${originals.get(browserMain) ?? ''}`,
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserMain,
+			content: `void new URL(\`../server/boundary.txt\`, import.meta.url)\n${originals.get(browserMain) ?? ''}`,
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserMain,
+			content: `const assetName = 'boundary'\nvoid new URL(\`../server/\${assetName}.txt\`, import.meta.url)\n${originals.get(browserMain) ?? ''}`,
+			script: 'build:app:browser',
+			message: 'Asset URLs must use static string values',
+		},
+		{
+			path: browserMain,
+			content: `const environment = 'server'\nvoid new URL(\`../\${environment}/boundary.txt\`, import.meta.url)\n${originals.get(browserMain) ?? ''}`,
+			script: 'build:app:browser',
+			message: 'Asset URLs must use static string values',
+		},
+		{
+			path: browserMain,
+			content: `const target = '../server/boundary.txt'\nvoid new URL(target, import.meta.url)\n${originals.get(browserMain) ?? ''}`,
+			script: 'build:app:browser',
+			message: 'Asset URLs must use static string values',
+		},
+		{
+			path: browserMain,
+			content: `void new URL('./%2e%2e/server/boundary.txt', import.meta.url)\n${originals.get(browserMain) ?? ''}`,
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserMain,
+			content: `void new URL('..\\\\server/boundary.txt', import.meta.url)\n${originals.get(browserMain) ?? ''}`,
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserMain,
+			content: `import './boundary.tsx'\n${originals.get(browserMain) ?? ''}`,
+			setupPath: join(packageDirectory, 'app', 'browser', 'boundary.tsx'),
+			setupContent:
+				"export const view = <main />\nvoid view\nvoid new URL('../server/boundary.txt', import.meta.url)\n",
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserMain,
+			content: `new Worker(new URL('../server/boundary-worker.ts', import.meta.url), { type: 'module' })\n${originals.get(browserMain) ?? ''}`,
+			script: 'build:app:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: browserMain,
+			content: `import '../../../outside.ts'\n${originals.get(browserMain) ?? ''}`,
+			script: 'build:app:browser',
+			message: 'Environment modules cannot import files outside the workspace',
+		},
+		{
+			path: appServerMain,
+			content: `void new URL('../browser/boundary.txt', import.meta.url)\n${originals.get(appServerMain) ?? ''}`,
+			script: 'build:app:server',
+			message: 'Server modules cannot depend on Vue or browser-only modules',
+		},
+		{
+			path: appServerMain,
+			content: `import './boundary.css'\n${originals.get(appServerMain) ?? ''}`,
+			script: 'build:app:server',
+			message: 'Server modules cannot depend on Vue or browser-only modules',
+		},
+		{
+			path: sourceBrowserIndex,
+			content: `void new URL('../server/boundary.ts', import.meta.url)\n${originals.get(sourceBrowserIndex) ?? ''}`,
+			script: 'build:src:browser',
+			message: 'Browser modules cannot depend on Node or server-only modules',
+		},
+		{
+			path: sourceServerIndex,
+			content: `void new URL('../browser/boundary.txt', import.meta.url)\n${originals.get(sourceServerIndex) ?? ''}`,
+			script: 'build:src:server',
+			message: 'Server modules cannot depend on Vue or browser-only modules',
+		},
+	]
+	const prepared = boundaryCases.map((testCase) =>
+		Object.freeze({
+			...testCase,
+			content:
+				testCase.path === browserHtml
+					? browserDocument(originals.get(browserHtml) ?? '', testCase.content)
+					: testCase.content,
+		}),
+	)
+	return Object.freeze([
+		...prepared,
+		Object.freeze({
+			path: browserHtml,
+			content:
+				'<!doctype html><html><script>globalThis.executed = true</script><head></head><body></body></html>\n',
+			script: 'build:app:browser',
+			message: 'must preserve the generated security prologue',
+		}),
+	])
+}
 
-					expect(
-						rejected.status,
-						`${testCase.script}: ${testCase.content}\nfixture: ${testCase.setupContent ?? 'none'}`,
-					).not.toBe(0)
-					if (!output.includes('orkestrel-environment-boundary')) {
-						throw new Error(
-							`${testCase.script} bypassed the environment boundary for ${testCase.content}\nfixture: ${testCase.setupContent ?? 'none'}\n${output}`,
-						)
-					}
-					if (!output.includes(testCase.message)) {
-						throw new Error(
-							`${testCase.script} returned the wrong boundary error for ${testCase.content}\n${output}`,
-						)
-					}
-					expect(output).toContain(testCase.message)
-				}
-				for (const [path, content] of originals) writeFileSync(path, content, 'utf8')
-				writeFileSync(
-					browserMain,
-					`import 'transitive-node'\n${originals.get(browserMain) ?? ''}`,
-					'utf8',
-				)
-				expect(runNpmScript(packageDirectory, 'build:app:browser', 120_000).status).toBe(0)
-				writeFileSync(browserMain, originals.get(browserMain) ?? '', 'utf8')
-				writeFileSync(
-					browserHtml,
-					'<!doctype html><html><script>globalThis.executed = true</script><head></head><body></body></html>\n',
-					'utf8',
-				)
-				const missingSecurityPrologue = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
-				const missingSecurityOutput = `${missingSecurityPrologue.stdout}${missingSecurityPrologue.stderr}`
-				expect(missingSecurityPrologue.status).not.toBe(0)
-				expect(missingSecurityOutput).toContain('orkestrel-environment-boundary')
-				expect(missingSecurityOutput).toContain('must preserve the generated security prologue')
-				const overriddenOutput = join(generationRoot, 'user-owned-output')
-				const overriddenOutputSentinel = join(overriddenOutput, 'sentinel.txt')
-				mkdirSync(overriddenOutput)
-				writeFileSync(overriddenOutputSentinel, 'preserve\n', 'utf8')
-				for (const outputCase of [
-					{
-						config:
-							"import { defineConfig, mergeConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(mergeConfig(appBrowser(), { publicDir: '../server' }))\n",
-						message: 'Public directories are disabled',
-					},
-					{
-						config:
-							"import { defineConfig, mergeConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(mergeConfig(appBrowser(), { build: { assetsInlineLimit: 100_000 } }))\n",
-						message: 'Browser assets must remain external for output auditing',
-					},
-					{
-						config:
-							"import { defineConfig, mergeConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(mergeConfig(appBrowser(), { build: { rolldownOptions: { output: { dir: " +
-							JSON.stringify(overriddenOutput) +
-							' } } } }))\n',
-						message: 'Rolldown output directories and files cannot override',
-					},
-				]) {
-					for (const [path, content] of originals) writeFileSync(path, content, 'utf8')
-					writeFileSync(browserViteConfig, outputCase.config, 'utf8')
-					const rejected = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
-					const output = `${rejected.stdout}${rejected.stderr}`
+/**
+ * Select one deterministic half of the boundary matrix.
+ *
+ * @param cases - Complete ordered boundary case table.
+ * @param shard - Zero-based shard index.
+ * @returns The selected half without mutating the table.
+ */
+export function selectBoundaryCases(
+	cases: readonly BoundaryCase[],
+	shard: 0 | 1,
+): readonly BoundaryCase[] {
+	const middle = Math.ceil(cases.length / 2)
+	return shard === 0 ? cases.slice(0, middle) : cases.slice(middle)
+}
 
-					expect(rejected.status).not.toBe(0)
-					expect(output).toContain('orkestrel-output-boundary')
-					expect(output).toContain(outputCase.message)
-					expect(readFileSync(overriddenOutputSentinel, 'utf8')).toBe('preserve\n')
-					expect(existsSync(join(packageDirectory, 'dist', 'app', 'browser', 'boundary.txt'))).toBe(
-						false,
-					)
-				}
-				for (const [path, content] of originals) writeFileSync(path, content, 'utf8')
-				writeFileSync(
-					appServerMain,
-					`import 'transitive-node'\n${originals.get(appServerMain) ?? ''}`,
-					'utf8',
-				)
-				expect(runNpmScript(packageDirectory, 'build:app:server', 120_000).status).toBe(0)
-				writeFileSync(appServerMain, originals.get(appServerMain) ?? '', 'utf8')
-				const safeCss = join(packageDirectory, 'app', 'browser', 'safe.css')
-				writeFileSync(safeCss, 'main { color: green; }\n', 'utf8')
-				writeFileSync(
-					browserCss,
-					'/* @import "../server/boundary.css"; */\n/* url("../server/boundary.txt") */\n@import "./safe.css";\nmain { --example: "url(../server/boundary.txt)"; background: url("./boundary.txt"); }\n',
-					'utf8',
-				)
-				writeFileSync(
-					browserMain,
-					`import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
-					'utf8',
-				)
-				expect(runNpmScript(packageDirectory, 'build:app:browser', 120_000).status).toBe(0)
-				writeFileSync(
-					browserHtml,
-					browserDocument(
-						originals.get(browserHtml) ?? '',
-						'<img src="./boundary.txt"><script type="module" src="/main.ts"></script>',
-					),
-					'utf8',
-				)
-				writeFileSync(browserMain, originals.get(browserMain) ?? '', 'utf8')
-				expect(runNpmScript(packageDirectory, 'build:app:browser', 120_000).status).toBe(0)
-				writeFileSync(
-					browserHtml,
-					browserDocument(
-						originals.get(browserHtml) ?? '',
-						'<meta name="description" content="100% coverage"><script type="module" src="/main.ts"></script>',
-					),
-					'utf8',
-				)
-				expect(runNpmScript(packageDirectory, 'build:app:browser', 120_000).status).toBe(0)
-				const overlappingPercentFragment = '<p>%%DEV%% %MISSING%DEV%</p>'
-				writeFileSync(
-					browserHtml,
-					browserDocument(
-						originals.get(browserHtml) ?? '',
-						`${overlappingPercentFragment}<script type="module" src="/main.ts"></script>`,
-					),
-					'utf8',
-				)
-				const overlappingPercentBuild = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
-				expect(
-					overlappingPercentBuild.status,
-					`${overlappingPercentBuild.stdout}\n${overlappingPercentBuild.stderr}`,
-				).toBe(0)
-				expect(
-					readFileSync(join(packageDirectory, 'dist', 'app', 'browser', 'index.html'), 'utf8'),
-				).toContain(overlappingPercentFragment)
-				writeFileSync(browserViteConfig, originals.get(browserViteConfig) ?? '', 'utf8')
-				writeFileSync(
-					browserHtml,
-					browserDocument(
-						originals.get(browserHtml) ?? '',
-						'<script>const target = "../server/main.cjs"; void import(/* @vite-ignore */ target)</script><script type="module" src="/main.ts"></script>',
-					),
-					'utf8',
-				)
-				const classicInlineBuild = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
-				expect(
-					classicInlineBuild.status,
-					`${classicInlineBuild.stdout}\n${classicInlineBuild.stderr}`,
-				).toBe(0)
-				const classicInlineOutput = readFileSync(
-					join(packageDirectory, 'dist', 'app', 'browser', 'index.html'),
-					'utf8',
-				)
-				const policyOffset = classicInlineOutput.indexOf('http-equiv="Content-Security-Policy"')
-				expect(policyOffset).toBeGreaterThanOrEqual(0)
-				expect(policyOffset).toBeLessThan(classicInlineOutput.indexOf('<script>'))
-				expect(classicInlineOutput).toContain("script-src 'self'")
-				writeFileSync(
-					browserHtml,
-					browserDocument(
-						originals.get(browserHtml) ?? '',
-						'<!-- vite-ignore is unsupported --><p title=\'vite-ignore\'>vite-ignore\nis visible text</p><script>globalThis.marker = "</scriptfoo><img vite-ignore src=x>"</script><script><!--<script></script><img vite-ignore src=x>--></script><style>/* </stylefoo><img vite-ignore src=x> */</style><textarea></textareafoo><img vite-ignore src=x></textarea><svg><![CDATA[<b><img vite-ignore src=x>]]></svg><script type="module" src="/main.ts"></script>',
-					),
-					'utf8',
-				)
-				const safeHtmlBuild = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
-				expect(safeHtmlBuild.status, `${safeHtmlBuild.stdout}\n${safeHtmlBuild.stderr}`).toBe(0)
-				for (const rawHtml of [
-					'<script/>globalThis.marker = "<img vite-ignore src=x>"</script>',
-					'<style/>/* <img vite-ignore src=x> */</style>',
-					'<textarea/><img vite-ignore src=x></textarea>',
-					'<plaintext/><img vite-ignore src=x>',
-					'<img == vite-ignore src="./boundary.txt">',
-				]) {
-					writeFileSync(
-						browserHtml,
-						browserDocument(originals.get(browserHtml) ?? '', rawHtml),
-						'utf8',
-					)
-					const rawBuild = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
-					expect(rawBuild.status, `${rawBuild.stdout}\n${rawBuild.stderr}`).toBe(0)
-				}
-				const preservedFragment =
-					'<!-- ViTe-IgNoRe vite&#45;ignore vite&#045;ignore vite-ignoredeadbeef vite-ignore0 vite-ignorevite-ignore --><p title="ViTe-IgNoRe vite&#45;ignore">vite-ignoredeadbeef</p>'
-				writeFileSync(
-					browserHtml,
-					browserDocument(originals.get(browserHtml) ?? '', preservedFragment),
-					'utf8',
-				)
-				const preservedBuild = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
-				expect(preservedBuild.status, `${preservedBuild.stdout}\n${preservedBuild.stderr}`).toBe(0)
-				expect(
-					readFileSync(join(packageDirectory, 'dist', 'app', 'browser', 'index.html'), 'utf8'),
-				).toContain(preservedFragment)
-				const entityAsset = join(packageDirectory, 'app', 'browser', 'entity-image.png')
-				writeFileSync(entityAsset, 'ENTITY_IMAGE_SENTINEL\n', 'utf8')
-				writeFileSync(
-					browserHtml,
-					browserDocument(
-						originals.get(browserHtml) ?? '',
-						'<img src="./entity&#45;image.png"><script type="module" src="/main.ts"></script>',
-					),
-					'utf8',
-				)
-				const entityAssetBuild = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
-				expect(
-					entityAssetBuild.status,
-					`${entityAssetBuild.stdout}\n${entityAssetBuild.stderr}`,
-				).toBe(0)
-				const entityAssetOutputRoot = join(packageDirectory, 'dist', 'app', 'browser')
-				expect(
-					listFiles(entityAssetOutputRoot).some((path) =>
-						readFileSync(join(entityAssetOutputRoot, path), 'utf8').includes(
-							'ENTITY_IMAGE_SENTINEL',
-						),
-					),
-				).toBe(true)
-				rmSync(entityAsset)
-				const ignoredModule = join(packageDirectory, 'app', 'browser', 'vite-ignore.ts')
-				const ignoredImage = join(packageDirectory, 'app', 'browser', 'vite-ignore.png')
-				const ignoredPoster = join(packageDirectory, 'app', 'browser', 'vite-ignore-poster.png')
-				writeFileSync(
-					ignoredModule,
-					"document.documentElement.dataset.ignoreModule = 'VITE_IGNORE_MODULE_SENTINEL'\n",
-					'utf8',
-				)
-				writeFileSync(ignoredImage, 'VITE_IGNORE_IMAGE_SENTINEL\n', 'utf8')
-				writeFileSync(ignoredPoster, 'VITE_IGNORE_POSTER_SENTINEL\n', 'utf8')
-				writeFileSync(
-					browserHtml,
-					browserDocument(
-						originals.get(browserHtml) ?? '',
-						'<img src="./vite-ignore.png" srcset="./vite-ignore.png 1x"><video poster="./vite-ignore-poster.png"></video><script type="module" src="./vite-ignore.ts"></script>',
-					),
-					'utf8',
-				)
-				const ignoredFilenameBuild = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
-				expect(
-					ignoredFilenameBuild.status,
-					`${ignoredFilenameBuild.stdout}\n${ignoredFilenameBuild.stderr}`,
-				).toBe(0)
-				const ignoredFilenameOutputRoot = join(packageDirectory, 'dist', 'app', 'browser')
-				const ignoredFilenameOutput = listFiles(ignoredFilenameOutputRoot).map((path) =>
-					readFileSync(join(ignoredFilenameOutputRoot, path), 'utf8'),
-				)
-				for (const resourceSentinel of [
-					'VITE_IGNORE_MODULE_SENTINEL',
-					'VITE_IGNORE_IMAGE_SENTINEL',
-					'VITE_IGNORE_POSTER_SENTINEL',
-				]) {
-					expect(ignoredFilenameOutput.some((content) => content.includes(resourceSentinel))).toBe(
-						true,
-					)
-				}
-				rmSync(ignoredModule)
-				rmSync(ignoredImage)
-				rmSync(ignoredPoster)
-				const nestedAssets = join(packageDirectory, 'app', 'browser', 'assets')
-				mkdirSync(nestedAssets)
-				writeFileSync(join(nestedAssets, 'nested.txt'), 'nested\n', 'utf8')
-				writeFileSync(
-					browserHtml,
-					browserDocument(
-						originals.get(browserHtml) ?? '',
-						'<img src="./assets/nested.txt"><script type="module" src="/main.ts"></script>',
-					),
-					'utf8',
-				)
-				expect(runNpmScript(packageDirectory, 'build:app:browser', 120_000).status).toBe(0)
-				rmSync(nestedAssets, { recursive: true })
-				writeFileSync(browserHtml, originals.get(browserHtml) ?? '', 'utf8')
-				writeFileSync(
-					browserMain,
-					`void new URL('./boundary.txt', import.meta.url)\n${originals.get(browserMain) ?? ''}`,
-					'utf8',
-				)
-				expect(runNpmScript(packageDirectory, 'build:app:browser', 120_000).status).toBe(0)
-				for (const [path, content] of originals) writeFileSync(path, content, 'utf8')
-				rmSync(browserCss, { force: true })
-				rmSync(safeCss, { force: true })
+/**
+ * Execute one boundary shard against a fresh generated workspace.
+ *
+ * @param packageDirectory - Fresh full-workspace clone.
+ * @param cases - Deterministically selected rejection cases.
+ * @returns The number of cases actually executed.
+ */
+export function executeBoundaryCases(
+	packageDirectory: string,
+	cases: readonly BoundaryCase[],
+): number {
+	const originals = buildBoundaryOriginals(packageDirectory)
+	let count = 0
+	for (const testCase of cases) {
+		for (const [path, content] of originals) writeFileSync(path, content, 'utf8')
+		if (testCase.setupPath !== undefined && testCase.setupContent !== undefined) {
+			writeFileSync(testCase.setupPath, testCase.setupContent, 'utf8')
+		}
+		writeFileSync(testCase.path, testCase.content, 'utf8')
+		const rejected = runNpmScript(packageDirectory, testCase.script, 120_000)
+		const output = `${rejected.stdout}${rejected.stderr}`
+		expect(
+			rejected.status,
+			`${testCase.script}: ${testCase.content}\nfixture: ${testCase.setupContent ?? 'none'}\n${output}`,
+		).not.toBe(0)
+		if (!output.includes('orkestrel-environment-boundary')) {
+			throw new Error(
+				`${testCase.script} returned a non-boundary exit for ${testCase.content}\nfixture: ${testCase.setupContent ?? 'none'}\nstatus: ${String(rejected.status)}\nerror: ${rejected.error?.message ?? 'none'}\nsignal: ${rejected.signal ?? 'none'}\n${output}`,
+			)
+		}
+		if (!output.includes(testCase.message)) {
+			throw new Error(
+				`${testCase.script} returned the wrong boundary error for ${testCase.content}\n${output}`,
+			)
+		}
+		count += 1
+	}
+	return count
+}
 
-				const packageRoot = join(packageDirectory, 'node_modules', 'path-shape')
-				mkdirSync(join(packageRoot, 'src', 'server'), { recursive: true })
-				writeFileSync(
-					join(packageRoot, 'package.json'),
-					'{"name":"path-shape","type":"module","exports":"./index.js"}\n',
-				)
-				writeFileSync(
-					join(packageRoot, 'index.js'),
-					"export { default } from './src/server/value.js'\n",
-				)
-				writeFileSync(
-					join(packageRoot, 'src', 'server', 'value.js'),
-					"export default 'allowed dependency path'\n",
-				)
-				writeFileSync(
-					browserMain,
-					`import value from 'path-shape'\nvoid value\n${originals.get(browserMain) ?? ''}`,
-					'utf8',
-				)
-				expect(runNpmScript(packageDirectory, 'build:app:browser', 120_000).status).toBe(0)
-				writeFileSync(
-					join(packageRoot, 'index.js'),
-					"export { default } from './src/server/value.js'\n",
-					'utf8',
-				)
+/** Execute the generated consumer's canonical full-workspace lifecycle chain. */
+export async function executeGeneratedConsumerGates(root: string): Promise<void> {
+	const cwd = await buildTempDirectory()
+	try {
+		const generationRoot = join(cwd.path, 'app', 'server')
+		mkdirSync(generationRoot, { recursive: true })
+		const packageDirectory = cloneGeneratedConsumer(root, 'full', generationRoot)
+		const manifest = JSON.parse(readFileSync(join(packageDirectory, 'package.json'), 'utf8'))
+		if (!isRecord(manifest) || !isRecord(manifest.scripts)) {
+			throw new Error('expected generated consumer manifest scripts')
+		}
+		expect(manifest.scripts.prepublishOnly).toBe(
+			'npm run format:check && npm run lint:check && npm run check && npm run build && npm test',
+		)
+		const result = runNpmScript(packageDirectory, 'prepublishOnly', 600_000)
+		const output = `${result.stdout}${result.stderr}`
+		expect(
+			{
+				status: result.status,
+				error: result.error?.message,
+				signal: result.signal,
+			},
+			`prepublishOnly lifecycle failure\n${output}`,
+		).toEqual({ status: 0, error: undefined, signal: null })
+		for (const stage of ['format:check', 'lint:check', 'check', 'build', 'test']) {
+			expect(output).toContain(stage)
+		}
+	} finally {
+		await cwd.cleanup()
+	}
+}
 
-				const hoistedModules = join(generationRoot, 'node_modules')
-				rmSync(hoistedModules, { recursive: true, force: true })
-				renameSync(join(packageDirectory, 'node_modules'), hoistedModules)
-				expect(runNpmScript(packageDirectory, 'build:app:browser', 120_000).status).toBe(0)
-			} finally {
-				await cwd.cleanup()
+/** Execute non-matrix dependency, development-server, and output-boundary proofs. */
+export async function executeGeneratedConsumerDependencies(): Promise<void> {
+	const cwd = await buildTempDirectory()
+	try {
+		const generationRoot = join(cwd.path, 'app', 'server')
+		mkdirSync(generationRoot, { recursive: true })
+		const packageDirectory = prepareGeneratedConsumer(generationRoot, 'consumer-proof', {
+			src: ['core', 'browser', 'server'],
+			app: ['core', 'browser', 'server'],
+		})
+		const baseline = runNpmScript(packageDirectory, 'build', 180_000)
+		const baselineOutput = `${baseline.stdout}${baseline.stderr}`
+		expect(baseline.status, `build\n${baselineOutput}`).toBe(0)
+		const unrelatedPath = join(packageDirectory, 'browser-forbidden.txt')
+		const symlinkPath = join(packageDirectory, 'app', 'browser', 'forbidden-link.txt')
+		const aliasSymlinkPath = join(packageDirectory, 'app', 'core', 'forbidden-link.txt')
+		const sentinel = 'BROWSER_SERVER_SENTINEL_7dd5af41'
+		writeFileSync(unrelatedPath, sentinel, 'utf8')
+		if (canSymlink) {
+			symlinkSync(unrelatedPath, symlinkPath)
+			symlinkSync(unrelatedPath, aliasSymlinkPath)
+		}
+		const viteServer = await startGeneratedViteServer(
+			packageDirectory,
+			join(packageDirectory, 'configs/app/vite.browser.config.ts'),
+		)
+		try {
+			const browserResponse = await fetch(`${viteServer.base}/main.ts`)
+			const browserBody = await browserResponse.text()
+			if (browserResponse.status !== 200) {
+				throw new Error(`browser entry returned ${String(browserResponse.status)}\n${browserBody}`)
 			}
-		}, 360_000)
-
-		it.skipIf(!canIgnoreFilesystemCase)(
-			'rejects an absent manifest beneath a mixed-case node_modules boundary',
-			async () => {
-				const cwd = await buildTempDirectory()
+			expect(browserResponse.status).toBe(200)
+			for (const path of [
+				join(packageDirectory, 'app', 'server', 'main.ts'),
+				join(packageDirectory, 'src', 'server', 'index.ts'),
+				unrelatedPath,
+			]) {
+				const route = `/@fs/${path.replaceAll('\\', '/')}`
+				const response = await fetch(`${viteServer.base}${route}`)
+				expect(response.status).toBe(403)
+				expect(await response.text()).toBe('Forbidden\n')
+			}
+			const symlinkResponses = canSymlink
+				? await Promise.all(
+						['/forbidden-link.txt', '/@app/core/forbidden-link.txt'].map(async (route) => {
+							const response = await fetch(`${viteServer.base}${route}`)
+							return { status: response.status, body: await response.text() }
+						}),
+					)
+				: []
+			expect(symlinkResponses).toEqual(
+				canSymlink
+					? [
+							{ status: 403, body: 'Forbidden\n' },
+							{ status: 403, body: 'Forbidden\n' },
+						]
+					: [],
+			)
+		} finally {
+			await viteServer.close()
+			if (existsSync(symlinkPath)) rmSync(symlinkPath)
+			if (existsSync(aliasSymlinkPath)) rmSync(aliasSymlinkPath)
+			rmSync(unrelatedPath)
+		}
+		const linkedRootFailures: boolean[] = []
+		if (canDirectoryLink) {
+			for (const linked of [
+				{
+					root: join(packageDirectory, 'app', 'core'),
+					target: join(packageDirectory, 'private-core-root'),
+				},
+				{
+					root: join(packageDirectory, 'app', 'browser'),
+					target: join(packageDirectory, '..', 'outside-browser-root'),
+				},
+			]) {
+				renameSync(linked.root, linked.target)
+				const rootSentinel = join(linked.target, 'root-sentinel.txt')
+				writeFileSync(rootSentinel, sentinel, 'utf8')
+				createDirectoryLink(linked.target, linked.root)
+				let escapedServer: GeneratedViteServerInterface | undefined
+				let escapedError: unknown
 				try {
-					const generationRoot = join(cwd.path, 'CaseRoot')
-					mkdirSync(generationRoot)
-					const created = runDefaultBin(['new', 'case-proof', '--app', 'core,browser', '--apply'], {
-						cwd: generationRoot,
-					})
-					expect(created.status).toBe(0)
-					const packageDirectory = join(generationRoot, 'case-proof')
-					expect(installGeneratedDependencies(packageDirectory).status).toBe(0)
-					const outsideSentinel = 'mixed-case-package-boundary-must-not-ship'
-					writeFileSync(join(generationRoot, 'outside-secret.txt'), outsideSentinel, 'utf8')
-					writeFileSync(
-						join(generationRoot, 'package.json'),
-						'{"name":"escape-package","type":"module"}\n',
-						'utf8',
+					escapedServer = await startGeneratedViteServer(
+						packageDirectory,
+						join(packageDirectory, 'configs/app/vite.browser.config.ts'),
 					)
-					const dependency = join(generationRoot, 'NODE_MODULES', 'escape-package')
-					mkdirSync(dependency, { recursive: true })
-					writeFileSync(
-						join(dependency, 'index.js'),
-						"export { default } from '../../outside-secret.txt?raw'\n",
-						'utf8',
-					)
-					writeFileSync(
-						join(packageDirectory, 'app', 'browser', 'main.ts'),
-						"import value from 'escape-package'\nvoid value\n",
-						'utf8',
-					)
-
-					const rejected = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
-					const output = `${rejected.stdout}${rejected.stderr}`
-
-					expect(rejected.status).not.toBe(0)
-					expect(output).toContain('orkestrel-environment-boundary')
-					expect(output).toContain('physical package root')
-					const browserOutput = join(packageDirectory, 'dist', 'app', 'browser')
-					for (const path of existsSync(browserOutput) ? listFiles(browserOutput) : []) {
-						expect(readFileSync(join(browserOutput, path), 'utf8')).not.toContain(outsideSentinel)
-					}
+				} catch (error) {
+					escapedError = error
 				} finally {
-					await cwd.cleanup()
+					await escapedServer?.close()
+					rmSync(linked.root, { recursive: true, force: true })
+					rmSync(rootSentinel)
+					renameSync(linked.target, linked.root)
 				}
+				linkedRootFailures.push(escapedError instanceof Error)
+			}
+		}
+		expect(linkedRootFailures).toEqual(canDirectoryLink ? [true, true] : [])
+		expect(
+			listFiles(join(packageDirectory, 'dist', 'app')).some((path) => path.endsWith('.map')),
+		).toBe(false)
+		const unmanagedPublic = join(packageDirectory, 'public')
+		mkdirSync(unmanagedPublic)
+		writeFileSync(join(unmanagedPublic, 'secret.txt'), 'user-owned\n', 'utf8')
+		expect(runNpmScript(packageDirectory, 'build:app:server', 120_000).status).toBe(0)
+		expect(
+			listFiles(join(packageDirectory, 'dist', 'app', 'server')).some((path) =>
+				path.endsWith('secret.txt'),
+			),
+		).toBe(false)
+		rmSync(unmanagedPublic, { recursive: true })
+
+		const hostileVue = join(packageDirectory, 'app', 'browser', 'Hostile.vue')
+		const hostileReference = join(packageDirectory, 'app', 'core', 'hostile-reference.ts')
+		writeFileSync(
+			hostileVue,
+			'<script setup lang="ts">const value = {} as object\nvoid value</script>\n',
+		)
+		writeFileSync(hostileReference, '/// <reference types="node" />\n')
+		const policyRejected = runNpmScript(packageDirectory, 'test:policy', 120_000)
+		const policyOutput = `${policyRejected.stdout}${policyRejected.stderr}`.replaceAll('\\', '/')
+		expect(policyRejected.status).not.toBe(0)
+		expect(policyOutput).toContain('app/browser/Hostile.vue')
+		expect(policyOutput).toContain('app/core/hostile-reference.ts')
+		rmSync(hostileVue)
+		rmSync(hostileReference)
+		const unusedBoundary = join(packageDirectory, 'app', 'browser', 'unused-boundary.ts')
+		writeFileSync(
+			unusedBoundary,
+			"export { default } from '@app/server'\nvoid import('@app/server')\nrequire('@app/server')\n",
+			'utf8',
+		)
+		const lintRejected = runNpmScript(packageDirectory, 'lint:check', 120_000)
+		const lintOutput = `${lintRejected.stdout}${lintRejected.stderr}`.replaceAll('\\', '/')
+		expect(lintRejected.status).not.toBe(0)
+		expect(lintOutput).toContain('app/browser/unused-boundary.ts')
+		expect(lintOutput).toContain('app/browser must not depend on Node or server-only modules')
+		rmSync(unusedBoundary)
+
+		const applicationView = join(packageDirectory, 'app', 'browser', 'ApplicationView.vue')
+		const browserMain = join(packageDirectory, 'app', 'browser', 'main.ts')
+		const browserHtml = join(packageDirectory, 'app', 'browser', 'index.html')
+		const browserViteConfig = join(packageDirectory, 'configs', 'app', 'vite.browser.config.ts')
+		const appServerMain = join(packageDirectory, 'app', 'server', 'main.ts')
+		const sourceCoreIndex = join(packageDirectory, 'src', 'core', 'index.ts')
+		const sourceBrowserIndex = join(packageDirectory, 'src', 'browser', 'index.ts')
+		const sourceServerIndex = join(packageDirectory, 'src', 'server', 'index.ts')
+		const originals = new Map([
+			[applicationView, readFileSync(applicationView, 'utf8')],
+			[browserMain, readFileSync(browserMain, 'utf8')],
+			[browserHtml, readFileSync(browserHtml, 'utf8')],
+			[browserViteConfig, readFileSync(browserViteConfig, 'utf8')],
+			[appServerMain, readFileSync(appServerMain, 'utf8')],
+			[sourceCoreIndex, readFileSync(sourceCoreIndex, 'utf8')],
+			[sourceBrowserIndex, readFileSync(sourceBrowserIndex, 'utf8')],
+			[sourceServerIndex, readFileSync(sourceServerIndex, 'utf8')],
+		])
+		const fixtures = new Map([
+			[
+				join(packageDirectory, 'app', 'server', 'boundary.ts'),
+				"const value = 'server'\nexport default value\n",
+			],
+			[join(packageDirectory, 'app', 'server', 'boundary.js'), "export default 'server'\n"],
+			[join(packageDirectory, 'app', 'server', 'boundary.css'), 'body { color: red; }\n'],
+			[join(packageDirectory, 'app', 'server', 'boundary.txt'), 'server\n'],
+			[
+				join(packageDirectory, 'app', 'server', 'boundary-worker.ts'),
+				"self.postMessage('server')\n",
+			],
+			[join(packageDirectory, 'app', 'browser', 'boundary.txt'), 'browser\n'],
+			[
+				join(packageDirectory, 'src', 'server', 'boundary.ts'),
+				"const value = 'server'\nexport default value\n",
+			],
+			[join(packageDirectory, 'src', 'browser', 'boundary.txt'), 'browser\n'],
+		])
+		for (const [path, content] of fixtures) writeFileSync(path, content, 'utf8')
+		const browserCss = join(packageDirectory, 'app', 'browser', 'boundary.css')
+		const outsideModule = join(generationRoot, 'outside.ts')
+		writeFileSync(outsideModule, "export const outside = 'outside'\n", 'utf8')
+		writeFileSync(join(generationRoot, 'outside.js'), "export default 'outside'\n", 'utf8')
+		writeFileSync(join(generationRoot, 'outside.css'), 'body { color: blue; }\n', 'utf8')
+		mkdirSync(join(generationRoot, 'node_modules'), { recursive: true })
+		writeFileSync(join(generationRoot, 'node_modules', 'outside.css'), 'body { color: purple; }\n')
+		const transitiveRoot = join(packageDirectory, 'node_modules', 'transitive-node')
+		mkdirSync(transitiveRoot, { recursive: true })
+		writeFileSync(
+			join(transitiveRoot, 'package.json'),
+			'{"name":"transitive-node","type":"module","exports":"./index.js"}\n',
+		)
+		writeFileSync(
+			join(transitiveRoot, 'index.js'),
+			"void import(/* @vite-ignore */ 'node:fs')\nexport default null\n",
+		)
+		for (const [path, content] of originals) writeFileSync(path, content, 'utf8')
+		writeFileSync(
+			browserMain,
+			`import 'transitive-node'\n${originals.get(browserMain) ?? ''}`,
+			'utf8',
+		)
+		expect(runNpmScript(packageDirectory, 'build:app:browser', 120_000).status).toBe(0)
+		writeFileSync(browserMain, originals.get(browserMain) ?? '', 'utf8')
+		const overriddenOutput = join(generationRoot, 'user-owned-output')
+		const overriddenOutputSentinel = join(overriddenOutput, 'sentinel.txt')
+		mkdirSync(overriddenOutput)
+		writeFileSync(overriddenOutputSentinel, 'preserve\n', 'utf8')
+		for (const outputCase of [
+			{
+				config:
+					"import { defineConfig, mergeConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(mergeConfig(appBrowser(), { publicDir: '../server' }))\n",
+				message: 'Public directories are disabled',
 			},
-			180_000,
+			{
+				config:
+					"import { defineConfig, mergeConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(mergeConfig(appBrowser(), { build: { assetsInlineLimit: 100_000 } }))\n",
+				message: 'Browser assets must remain external for output auditing',
+			},
+			{
+				config:
+					"import { defineConfig, mergeConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(mergeConfig(appBrowser(), { build: { rolldownOptions: { output: { dir: " +
+					JSON.stringify(overriddenOutput) +
+					' } } } }))\n',
+				message: 'Rolldown output directories and files cannot override',
+			},
+		]) {
+			for (const [path, content] of originals) writeFileSync(path, content, 'utf8')
+			writeFileSync(browserViteConfig, outputCase.config, 'utf8')
+			const rejected = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
+			const output = `${rejected.stdout}${rejected.stderr}`
+
+			expect(rejected.status).not.toBe(0)
+			expect(output).toContain('orkestrel-output-boundary')
+			expect(output).toContain(outputCase.message)
+			expect(readFileSync(overriddenOutputSentinel, 'utf8')).toBe('preserve\n')
+			expect(existsSync(join(packageDirectory, 'dist', 'app', 'browser', 'boundary.txt'))).toBe(
+				false,
+			)
+		}
+		for (const [path, content] of originals) writeFileSync(path, content, 'utf8')
+		writeFileSync(
+			appServerMain,
+			`import 'transitive-node'\n${originals.get(appServerMain) ?? ''}`,
+			'utf8',
+		)
+		expect(runNpmScript(packageDirectory, 'build:app:server', 120_000).status).toBe(0)
+		writeFileSync(appServerMain, originals.get(appServerMain) ?? '', 'utf8')
+		const safeCss = join(packageDirectory, 'app', 'browser', 'safe.css')
+		writeFileSync(safeCss, 'main { color: green; }\n', 'utf8')
+		writeFileSync(
+			browserCss,
+			'/* @import "../server/boundary.css"; */\n/* url("../server/boundary.txt") */\n@import "./safe.css";\nmain { --example: "url(../server/boundary.txt)"; background: url("./boundary.txt"); }\n',
+			'utf8',
+		)
+		writeFileSync(
+			browserMain,
+			`import './boundary.css'\n${originals.get(browserMain) ?? ''}`,
+			'utf8',
+		)
+		expect(runNpmScript(packageDirectory, 'build:app:browser', 120_000).status).toBe(0)
+		writeFileSync(
+			browserHtml,
+			browserDocument(
+				originals.get(browserHtml) ?? '',
+				'<img src="./boundary.txt"><script type="module" src="/main.ts"></script>',
+			),
+			'utf8',
+		)
+		writeFileSync(browserMain, originals.get(browserMain) ?? '', 'utf8')
+		expect(runNpmScript(packageDirectory, 'build:app:browser', 120_000).status).toBe(0)
+		writeFileSync(
+			browserHtml,
+			browserDocument(
+				originals.get(browserHtml) ?? '',
+				'<meta name="description" content="100% coverage"><script type="module" src="/main.ts"></script>',
+			),
+			'utf8',
+		)
+		expect(runNpmScript(packageDirectory, 'build:app:browser', 120_000).status).toBe(0)
+		const overlappingPercentFragment = '<p>%%DEV%% %MISSING%DEV%</p>'
+		writeFileSync(
+			browserHtml,
+			browserDocument(
+				originals.get(browserHtml) ?? '',
+				`${overlappingPercentFragment}<script type="module" src="/main.ts"></script>`,
+			),
+			'utf8',
+		)
+		const overlappingPercentBuild = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
+		expect(
+			overlappingPercentBuild.status,
+			`${overlappingPercentBuild.stdout}\n${overlappingPercentBuild.stderr}`,
+		).toBe(0)
+		expect(
+			readFileSync(join(packageDirectory, 'dist', 'app', 'browser', 'index.html'), 'utf8'),
+		).toContain(overlappingPercentFragment)
+		writeFileSync(browserViteConfig, originals.get(browserViteConfig) ?? '', 'utf8')
+		writeFileSync(
+			browserHtml,
+			browserDocument(
+				originals.get(browserHtml) ?? '',
+				'<script>const target = "../server/main.cjs"; void import(/* @vite-ignore */ target)</script><script type="module" src="/main.ts"></script>',
+			),
+			'utf8',
+		)
+		const classicInlineBuild = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
+		expect(
+			classicInlineBuild.status,
+			`${classicInlineBuild.stdout}\n${classicInlineBuild.stderr}`,
+		).toBe(0)
+		const classicInlineOutput = readFileSync(
+			join(packageDirectory, 'dist', 'app', 'browser', 'index.html'),
+			'utf8',
+		)
+		const policyOffset = classicInlineOutput.indexOf('http-equiv="Content-Security-Policy"')
+		expect(policyOffset).toBeGreaterThanOrEqual(0)
+		expect(policyOffset).toBeLessThan(classicInlineOutput.indexOf('<script>'))
+		expect(classicInlineOutput).toContain("script-src 'self'")
+		writeFileSync(
+			browserHtml,
+			browserDocument(
+				originals.get(browserHtml) ?? '',
+				'<!-- vite-ignore is unsupported --><p title=\'vite-ignore\'>vite-ignore\nis visible text</p><script>globalThis.marker = "</scriptfoo><img vite-ignore src=x>"</script><script><!--<script></script><img vite-ignore src=x>--></script><style>/* </stylefoo><img vite-ignore src=x> */</style><textarea></textareafoo><img vite-ignore src=x></textarea><svg><![CDATA[<b><img vite-ignore src=x>]]></svg><script type="module" src="/main.ts"></script>',
+			),
+			'utf8',
+		)
+		const safeHtmlBuild = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
+		expect(safeHtmlBuild.status, `${safeHtmlBuild.stdout}\n${safeHtmlBuild.stderr}`).toBe(0)
+		for (const rawHtml of [
+			'<script/>globalThis.marker = "<img vite-ignore src=x>"</script>',
+			'<style/>/* <img vite-ignore src=x> */</style>',
+			'<textarea/><img vite-ignore src=x></textarea>',
+			'<plaintext/><img vite-ignore src=x>',
+			'<img == vite-ignore src="./boundary.txt">',
+		]) {
+			writeFileSync(browserHtml, browserDocument(originals.get(browserHtml) ?? '', rawHtml), 'utf8')
+			const rawBuild = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
+			expect(rawBuild.status, `${rawBuild.stdout}\n${rawBuild.stderr}`).toBe(0)
+		}
+		const preservedFragment =
+			'<!-- ViTe-IgNoRe vite&#45;ignore vite&#045;ignore vite-ignoredeadbeef vite-ignore0 vite-ignorevite-ignore --><p title="ViTe-IgNoRe vite&#45;ignore">vite-ignoredeadbeef</p>'
+		writeFileSync(
+			browserHtml,
+			browserDocument(originals.get(browserHtml) ?? '', preservedFragment),
+			'utf8',
+		)
+		const preservedBuild = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
+		expect(preservedBuild.status, `${preservedBuild.stdout}\n${preservedBuild.stderr}`).toBe(0)
+		expect(
+			readFileSync(join(packageDirectory, 'dist', 'app', 'browser', 'index.html'), 'utf8'),
+		).toContain(preservedFragment)
+		const entityAsset = join(packageDirectory, 'app', 'browser', 'entity-image.png')
+		writeFileSync(entityAsset, 'ENTITY_IMAGE_SENTINEL\n', 'utf8')
+		writeFileSync(
+			browserHtml,
+			browserDocument(
+				originals.get(browserHtml) ?? '',
+				'<img src="./entity&#45;image.png"><script type="module" src="/main.ts"></script>',
+			),
+			'utf8',
+		)
+		const entityAssetBuild = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
+		expect(entityAssetBuild.status, `${entityAssetBuild.stdout}\n${entityAssetBuild.stderr}`).toBe(
+			0,
+		)
+		const entityAssetOutputRoot = join(packageDirectory, 'dist', 'app', 'browser')
+		expect(
+			listFiles(entityAssetOutputRoot).some((path) =>
+				readFileSync(join(entityAssetOutputRoot, path), 'utf8').includes('ENTITY_IMAGE_SENTINEL'),
+			),
+		).toBe(true)
+		rmSync(entityAsset)
+		const ignoredModule = join(packageDirectory, 'app', 'browser', 'vite-ignore.ts')
+		const ignoredImage = join(packageDirectory, 'app', 'browser', 'vite-ignore.png')
+		const ignoredPoster = join(packageDirectory, 'app', 'browser', 'vite-ignore-poster.png')
+		writeFileSync(
+			ignoredModule,
+			"document.documentElement.dataset.ignoreModule = 'VITE_IGNORE_MODULE_SENTINEL'\n",
+			'utf8',
+		)
+		writeFileSync(ignoredImage, 'VITE_IGNORE_IMAGE_SENTINEL\n', 'utf8')
+		writeFileSync(ignoredPoster, 'VITE_IGNORE_POSTER_SENTINEL\n', 'utf8')
+		writeFileSync(
+			browserHtml,
+			browserDocument(
+				originals.get(browserHtml) ?? '',
+				'<img src="./vite-ignore.png" srcset="./vite-ignore.png 1x"><video poster="./vite-ignore-poster.png"></video><script type="module" src="./vite-ignore.ts"></script>',
+			),
+			'utf8',
+		)
+		const ignoredFilenameBuild = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
+		expect(
+			ignoredFilenameBuild.status,
+			`${ignoredFilenameBuild.stdout}\n${ignoredFilenameBuild.stderr}`,
+		).toBe(0)
+		const ignoredFilenameOutputRoot = join(packageDirectory, 'dist', 'app', 'browser')
+		const ignoredFilenameOutput = listFiles(ignoredFilenameOutputRoot).map((path) =>
+			readFileSync(join(ignoredFilenameOutputRoot, path), 'utf8'),
+		)
+		for (const resourceSentinel of [
+			'VITE_IGNORE_MODULE_SENTINEL',
+			'VITE_IGNORE_IMAGE_SENTINEL',
+			'VITE_IGNORE_POSTER_SENTINEL',
+		]) {
+			expect(ignoredFilenameOutput.some((content) => content.includes(resourceSentinel))).toBe(true)
+		}
+		rmSync(ignoredModule)
+		rmSync(ignoredImage)
+		rmSync(ignoredPoster)
+		const nestedAssets = join(packageDirectory, 'app', 'browser', 'assets')
+		mkdirSync(nestedAssets)
+		writeFileSync(join(nestedAssets, 'nested.txt'), 'nested\n', 'utf8')
+		writeFileSync(
+			browserHtml,
+			browserDocument(
+				originals.get(browserHtml) ?? '',
+				'<img src="./assets/nested.txt"><script type="module" src="/main.ts"></script>',
+			),
+			'utf8',
+		)
+		expect(runNpmScript(packageDirectory, 'build:app:browser', 120_000).status).toBe(0)
+		rmSync(nestedAssets, { recursive: true })
+		writeFileSync(browserHtml, originals.get(browserHtml) ?? '', 'utf8')
+		writeFileSync(
+			browserMain,
+			`void new URL('./boundary.txt', import.meta.url)\n${originals.get(browserMain) ?? ''}`,
+			'utf8',
+		)
+		expect(runNpmScript(packageDirectory, 'build:app:browser', 120_000).status).toBe(0)
+		for (const [path, content] of originals) writeFileSync(path, content, 'utf8')
+		rmSync(browserCss, { force: true })
+		rmSync(safeCss, { force: true })
+
+		const packageRoot = join(packageDirectory, 'node_modules', 'path-shape')
+		mkdirSync(join(packageRoot, 'src', 'server'), { recursive: true })
+		writeFileSync(
+			join(packageRoot, 'package.json'),
+			'{"name":"path-shape","type":"module","exports":"./index.js"}\n',
+		)
+		writeFileSync(
+			join(packageRoot, 'index.js'),
+			"export { default } from './src/server/value.js'\n",
+		)
+		writeFileSync(
+			join(packageRoot, 'src', 'server', 'value.js'),
+			"export default 'allowed dependency path'\n",
+		)
+		writeFileSync(
+			browserMain,
+			`import value from 'path-shape'\nvoid value\n${originals.get(browserMain) ?? ''}`,
+			'utf8',
+		)
+		expect(runNpmScript(packageDirectory, 'build:app:browser', 120_000).status).toBe(0)
+		writeFileSync(
+			join(packageRoot, 'index.js'),
+			"export { default } from './src/server/value.js'\n",
+			'utf8',
 		)
 
-		it.skipIf(!canSymlink)(
-			'rejects imported symlinks that escape app/browser and ignores public-directory symlinks',
-			async () => {
-				const cwd = await buildTempDirectory()
-				try {
-					const created = runDefaultBin(
-						['new', 'symlink-proof', '--src', 'core', '--app', 'core,browser', '--apply'],
-						{ cwd: cwd.path },
-					)
-					expect(created.status).toBe(0)
-					const packageDirectory = join(cwd.path, 'symlink-proof')
-					expect(installGeneratedDependencies(packageDirectory).status).toBe(0)
-					const outside = join(cwd.path, 'outside.txt')
-					writeFileSync(outside, 'outside-owned\n', 'utf8')
-					const publicDirectory = join(packageDirectory, 'app', 'browser', 'public')
-					mkdirSync(publicDirectory, { recursive: true })
-					symlinkSync(outside, join(publicDirectory, 'leaked.txt'))
-					expect(runNpmScript(packageDirectory, 'build:app:browser', 120_000).status).toBe(0)
-					expect(
-						listFiles(join(packageDirectory, 'dist', 'app', 'browser')).some((path) =>
-							path.endsWith('leaked.txt'),
-						),
-					).toBe(false)
+		const hoistedModules = join(generationRoot, 'node_modules')
+		rmSync(hoistedModules, { recursive: true, force: true })
+		renameSync(join(packageDirectory, 'node_modules'), hoistedModules)
+		expect(runNpmScript(packageDirectory, 'build:app:browser', 120_000).status).toBe(0)
+	} finally {
+		await cwd.cleanup()
+	}
+}
 
-					const browserLink = join(packageDirectory, 'app', 'browser', 'outside.txt')
-					symlinkSync(outside, browserLink)
-					const browserHtml = join(packageDirectory, 'app', 'browser', 'index.html')
-					const originalHtml = readFileSync(browserHtml, 'utf8')
-					writeFileSync(
-						browserHtml,
-						browserDocument(
-							originalHtml,
-							'<img src="./outside.txt"><script type="module" src="/main.ts"></script>',
-						),
-						'utf8',
-					)
-					const rejectedHtml = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
-					const htmlOutput = `${rejectedHtml.stdout}${rejectedHtml.stderr}`
-					expect(rejectedHtml.status).not.toBe(0)
-					expect(htmlOutput).toContain('orkestrel-environment-boundary')
-					expect(htmlOutput).toContain('outside the workspace')
-					writeFileSync(browserHtml, originalHtml, 'utf8')
-					const browserMain = join(packageDirectory, 'app', 'browser', 'main.ts')
-					writeFileSync(browserMain, "void new URL('./outside.txt', import.meta.url)\n", 'utf8')
-					const rejected = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
-					const output = `${rejected.stdout}${rejected.stderr}`
-					expect(rejected.status).not.toBe(0)
-					expect(output).toContain('orkestrel-environment-boundary')
-					expect(output).toContain('outside the workspace')
-				} finally {
-					await cwd.cleanup()
-				}
-			},
-			180_000,
+/** Execute the case-insensitive physical-package-root rejection proof. */
+export async function executeMixedCaseConsumer(): Promise<void> {
+	const cwd = await buildTempDirectory()
+	try {
+		const generationRoot = join(cwd.path, 'CaseRoot')
+		mkdirSync(generationRoot)
+		const packageDirectory = prepareGeneratedConsumer(generationRoot, 'case-proof', {
+			app: ['core', 'browser'],
+		})
+		const outsideSentinel = 'mixed-case-package-boundary-must-not-ship'
+		writeFileSync(join(generationRoot, 'outside-secret.txt'), outsideSentinel, 'utf8')
+		writeFileSync(
+			join(generationRoot, 'package.json'),
+			'{"name":"escape-package","type":"module"}\n',
+			'utf8',
+		)
+		const dependency = join(generationRoot, 'NODE_MODULES', 'escape-package')
+		mkdirSync(dependency, { recursive: true })
+		writeFileSync(
+			join(dependency, 'index.js'),
+			"export { default } from '../../outside-secret.txt?raw'\n",
+			'utf8',
+		)
+		writeFileSync(
+			join(packageDirectory, 'app', 'browser', 'main.ts'),
+			"import value from 'escape-package'\nvoid value\n",
+			'utf8',
 		)
 
-		it.skipIf(!canDirectoryLink)(
-			'rejects a linked build output before preserving user-owned bytes',
-			async () => {
-				const cwd = await buildTempDirectory()
-				try {
-					const created = runDefaultBin(
-						['new', 'output-proof', '--app', 'core,browser', '--apply'],
-						{ cwd: cwd.path },
-					)
-					expect(created.status).toBe(0)
-					const packageDirectory = join(cwd.path, 'output-proof')
-					expect(installGeneratedDependencies(packageDirectory).status).toBe(0)
-					const userOutput = join(cwd.path, 'user-output')
-					mkdirSync(userOutput)
-					const sentinel = join(userOutput, 'sentinel.txt')
-					writeFileSync(sentinel, 'preserve\n', 'utf8')
-					const outputParent = join(packageDirectory, 'dist', 'app')
-					mkdirSync(join(packageDirectory, 'dist'))
-					createDirectoryLink(userOutput, outputParent)
+		const rejected = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
+		const output = `${rejected.stdout}${rejected.stderr}`
 
-					const linkedOutput = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
-					const output = `${linkedOutput.stdout}${linkedOutput.stderr}`
-					expect(linkedOutput.status).not.toBe(0)
-					expect(output).toContain('orkestrel-output-boundary')
-					expect(readFileSync(sentinel, 'utf8')).toBe('preserve\n')
-				} finally {
-					await cwd.cleanup()
-				}
-			},
-			180_000,
+		expect(rejected.status).not.toBe(0)
+		expect(output).toContain('orkestrel-environment-boundary')
+		expect(output).toContain('physical package root')
+		const browserOutput = join(packageDirectory, 'dist', 'app', 'browser')
+		for (const path of existsSync(browserOutput) ? listFiles(browserOutput) : []) {
+			expect(readFileSync(join(browserOutput, path), 'utf8')).not.toContain(outsideSentinel)
+		}
+	} finally {
+		await cwd.cleanup()
+	}
+}
+
+/** Execute the imported-symlink and public-directory containment proof. */
+export async function executeSymlinkConsumer(): Promise<void> {
+	const cwd = await buildTempDirectory()
+	try {
+		const packageDirectory = prepareGeneratedConsumer(cwd.path, 'symlink-proof', {
+			src: ['core'],
+			app: ['core', 'browser'],
+		})
+		const outside = join(cwd.path, 'outside.txt')
+		writeFileSync(outside, 'outside-owned\n', 'utf8')
+		const publicDirectory = join(packageDirectory, 'app', 'browser', 'public')
+		mkdirSync(publicDirectory, { recursive: true })
+		symlinkSync(outside, join(publicDirectory, 'leaked.txt'))
+		expect(runNpmScript(packageDirectory, 'build:app:browser', 120_000).status).toBe(0)
+		expect(
+			listFiles(join(packageDirectory, 'dist', 'app', 'browser')).some((path) =>
+				path.endsWith('leaked.txt'),
+			),
+		).toBe(false)
+
+		const browserLink = join(packageDirectory, 'app', 'browser', 'outside.txt')
+		symlinkSync(outside, browserLink)
+		const browserHtml = join(packageDirectory, 'app', 'browser', 'index.html')
+		const originalHtml = readFileSync(browserHtml, 'utf8')
+		writeFileSync(
+			browserHtml,
+			browserDocument(
+				originalHtml,
+				'<img src="./outside.txt"><script type="module" src="/main.ts"></script>',
+			),
+			'utf8',
 		)
-	})
+		const rejectedHtml = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
+		const htmlOutput = `${rejectedHtml.stdout}${rejectedHtml.stderr}`
+		expect(rejectedHtml.status).not.toBe(0)
+		expect(htmlOutput).toContain('orkestrel-environment-boundary')
+		expect(htmlOutput).toContain('outside the workspace')
+		writeFileSync(browserHtml, originalHtml, 'utf8')
+		const browserMain = join(packageDirectory, 'app', 'browser', 'main.ts')
+		writeFileSync(browserMain, "void new URL('./outside.txt', import.meta.url)\n", 'utf8')
+		const rejected = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
+		const output = `${rejected.stdout}${rejected.stderr}`
+		expect(rejected.status).not.toBe(0)
+		expect(output).toContain('orkestrel-environment-boundary')
+		expect(output).toContain('outside the workspace')
+	} finally {
+		await cwd.cleanup()
+	}
+}
+
+/** Execute the linked output-directory preservation proof. */
+export async function executeLinkedOutputConsumer(): Promise<void> {
+	const cwd = await buildTempDirectory()
+	try {
+		const packageDirectory = prepareGeneratedConsumer(cwd.path, 'output-proof', {
+			app: ['core', 'browser'],
+		})
+		const userOutput = join(cwd.path, 'user-output')
+		mkdirSync(userOutput)
+		const sentinel = join(userOutput, 'sentinel.txt')
+		writeFileSync(sentinel, 'preserve\n', 'utf8')
+		const outputParent = join(packageDirectory, 'dist', 'app')
+		mkdirSync(join(packageDirectory, 'dist'))
+		createDirectoryLink(userOutput, outputParent)
+
+		const linkedOutput = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
+		const output = `${linkedOutput.stdout}${linkedOutput.stderr}`
+		expect(linkedOutput.status).not.toBe(0)
+		expect(output).toContain('orkestrel-output-boundary')
+		expect(readFileSync(sentinel, 'utf8')).toBe('preserve\n')
+	} finally {
+		await cwd.cleanup()
+	}
 }

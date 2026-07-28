@@ -1,5 +1,14 @@
-import { mkdirSync } from 'node:fs'
-import { join } from 'node:path'
+import {
+	lstatSync,
+	mkdirSync,
+	readFileSync,
+	readdirSync,
+	readlinkSync,
+	statSync,
+	symlinkSync,
+	writeFileSync,
+} from 'node:fs'
+import { dirname, join } from 'node:path'
 import { parseJSON } from '@orkestrel/contract'
 import { describe, expect, it } from 'vitest'
 import { ScaffoldError } from '@src/core'
@@ -65,8 +74,119 @@ import {
 	summaryToNewResult,
 } from '../../../src/bin/shapers.js'
 import type { CatalogEntry, SyncReport } from '../../../src/core/index.js'
-import { AUDIT_FINDINGS, AUDIT_PLAN, buildAudit } from '../../setupBin.js'
-import { buildTempDirectory, canDirectoryLink, createDirectoryLink } from '../../setupServer.js'
+import {
+	AUDIT_FINDINGS,
+	AUDIT_PLAN,
+	buildAudit,
+	cloneGeneratedConsumer,
+	cloneGeneratedModules,
+} from '../../setupBin.js'
+import { buildBoundaryCases, selectBoundaryCases } from '../../setupE2E.js'
+import {
+	buildTempDirectory,
+	canDirectoryLink,
+	canSymlink,
+	createDirectoryLink,
+} from '../../setupServer.js'
+
+describe('generated consumer clones', () => {
+	it('copies workspace files, farms dependency hardlinks, preserves symlinks, and isolates Vite caches', async () => {
+		const registry = await buildTempDirectory()
+		const destination = await buildTempDirectory()
+		try {
+			const template = join(registry.path, 'full', 'app', 'server', 'consumer-proof')
+			const modules = join(template, 'node_modules')
+			const dependency = join(modules, 'fixture', 'nested')
+			mkdirSync(dependency, { recursive: true })
+			writeFileSync(join(template, 'package.json'), '{"name":"fixture"}\n', 'utf8')
+			writeFileSync(join(template, 'package-lock.json'), '{"lockfileVersion":3}\n', 'utf8')
+			writeFileSync(join(template, 'source.ts'), "export const value = 'fixture'\n", 'utf8')
+			writeFileSync(join(dependency, 'index.js'), "export default 'fixture'\n", 'utf8')
+			mkdirSync(join(modules, '.vite'))
+			writeFileSync(join(modules, '.vite', 'stale.js'), 'stale\n', 'utf8')
+			if (canSymlink) {
+				symlinkSync('nested/index.js', join(modules, 'fixture', 'entry.js'))
+			}
+
+			const copiedModules = join(destination.path, 'copied')
+			cloneGeneratedModules(modules, copiedModules, false)
+			expect(readFileSync(join(copiedModules, 'fixture', 'nested', 'index.js'), 'utf8')).toBe(
+				"export default 'fixture'\n",
+			)
+			expect(statSync(join(copiedModules, 'fixture', 'nested', 'index.js')).ino).not.toBe(
+				statSync(join(dependency, 'index.js')).ino,
+			)
+			expect(lstatSync(join(copiedModules, 'fixture')).isDirectory()).toBe(true)
+			expect(readdirSync(copiedModules)).not.toContain('.vite')
+			const copiedLink = canSymlink
+				? {
+						symlink: lstatSync(join(copiedModules, 'fixture', 'entry.js')).isSymbolicLink(),
+						target: readlinkSync(join(copiedModules, 'fixture', 'entry.js')),
+					}
+				: undefined
+			expect(copiedLink).toEqual(
+				canSymlink ? { symlink: true, target: 'nested/index.js' } : undefined,
+			)
+
+			const clone = cloneGeneratedConsumer(registry.path, 'full', destination.path)
+			expect(readFileSync(join(clone, 'package.json'))).toEqual(
+				readFileSync(join(template, 'package.json')),
+			)
+			expect(readFileSync(join(clone, 'package-lock.json'))).toEqual(
+				readFileSync(join(template, 'package-lock.json')),
+			)
+			expect(statSync(join(clone, 'source.ts')).ino).not.toBe(
+				statSync(join(template, 'source.ts')).ino,
+			)
+			expect(statSync(join(clone, 'node_modules', 'fixture', 'nested', 'index.js')).ino).toBe(
+				statSync(join(dependency, 'index.js')).ino,
+			)
+			const cache = join(clone, 'node_modules', '.vite')
+			expect(lstatSync(cache).isDirectory()).toBe(true)
+			expect(lstatSync(cache).isSymbolicLink()).toBe(false)
+			expect(readdirSync(cache)).toEqual([])
+		} finally {
+			await destination.cleanup()
+			await registry.cleanup()
+		}
+	})
+
+	it('partitions every boundary case exactly once across two deterministic shards', async () => {
+		const workspace = await buildTempDirectory()
+		try {
+			for (const path of [
+				'app/browser/ApplicationView.vue',
+				'app/browser/main.ts',
+				'app/browser/index.html',
+				'configs/app/vite.browser.config.ts',
+				'app/server/main.ts',
+				'src/core/index.ts',
+				'src/browser/index.ts',
+				'src/server/index.ts',
+			]) {
+				const target = join(workspace.path, path)
+				mkdirSync(dirname(target), { recursive: true })
+				writeFileSync(
+					target,
+					path.endsWith('index.html')
+						? '<html><head>\n\t\t<meta charset="UTF-8">\n</head></html>\n'
+						: `// ${path}\n`,
+					'utf8',
+				)
+			}
+			const cases = buildBoundaryCases(workspace.path)
+			const first = selectBoundaryCases(cases, 0)
+			const second = selectBoundaryCases(cases, 1)
+
+			expect(cases).toHaveLength(128)
+			expect(first).toHaveLength(64)
+			expect(second).toHaveLength(64)
+			expect([...first, ...second]).toEqual(cases)
+		} finally {
+			await workspace.cleanup()
+		}
+	})
+})
 
 describe('render: jargon translation', () => {
 	it('translates every Origin', () => {

@@ -1,9 +1,22 @@
 import type { SpawnSyncReturns } from 'node:child_process'
 import type { TempDirectoryInterface } from './setupServer.js'
 import { spawnSync } from 'node:child_process'
-import { copyFileSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import {
+	copyFileSync,
+	cpSync,
+	existsSync,
+	linkSync,
+	mkdirSync,
+	readFileSync,
+	readdirSync,
+	readlinkSync,
+	rmSync,
+	statSync,
+	symlinkSync,
+	writeFileSync,
+} from 'node:fs'
 import { createRequire } from 'node:module'
-import { dirname, join } from 'node:path'
+import { basename, dirname, join, relative as pathRelative } from 'node:path'
 import { isRecord, parseJSON } from '@orkestrel/contract'
 import type { Audit, Environment, Finding, Plan } from '@src/core'
 import { stageHost } from '@src/server'
@@ -53,6 +66,26 @@ export interface ScaffoldPackageOptions {
 	readonly src?: readonly Environment[]
 	readonly app?: readonly Environment[]
 }
+
+/** Installed generated-consumer manifest shape prepared by integration global setup. */
+export type GeneratedConsumerTemplate = 'full'
+
+/** One generated-consumer template definition. */
+export interface GeneratedConsumerTemplateDefinition extends ScaffoldPackageOptions {
+	readonly shape: GeneratedConsumerTemplate
+	readonly name: string
+}
+
+/** Generated-consumer manifest shape installed once before integration workers start. */
+export const GENERATED_CONSUMER_TEMPLATES: readonly GeneratedConsumerTemplateDefinition[] =
+	Object.freeze([
+		Object.freeze<GeneratedConsumerTemplateDefinition>({
+			shape: 'full',
+			name: 'consumer-proof',
+			src: ['core', 'browser', 'server'],
+			app: ['core', 'browser', 'server'],
+		}),
+	])
 
 /** Representative package, alias, query, and conventional relative imports forbidden by Oxlint. */
 export const REJECTED_LINT_SOURCES: readonly RejectedLintSource[] = Object.freeze([
@@ -421,6 +454,181 @@ export function installGeneratedDependencies(
 		encoding: 'utf8',
 		timeout,
 	})
+}
+
+/**
+ * Scaffold and install one generated consumer at its proof-bearing location.
+ *
+ * @param cwd - Parent directory that will own the generated package.
+ * @param name - Generated package directory name.
+ * @param options - Independent source and application selections.
+ * @returns The installed generated package directory.
+ */
+export function prepareGeneratedConsumer(
+	cwd: string,
+	name: string,
+	options: ScaffoldPackageOptions,
+): string {
+	const src = options.src ?? []
+	const app = options.app ?? []
+	const selections = [
+		...(src.length > 0 ? ['--src', src.join(',')] : []),
+		...(app.length > 0 ? ['--app', app.join(',')] : []),
+	]
+	const created = runDefaultBin(['new', name, ...selections, '--apply'], { cwd })
+	if (created.status !== 0) {
+		throw new Error(`generated consumer scaffold failed\n${created.stdout}${created.stderr}`)
+	}
+	const packageDirectory = join(cwd, name)
+	const installed = installGeneratedDependencies(packageDirectory)
+	if (installed.status !== 0) {
+		throw new Error(`generated consumer install failed\n${installed.stdout}${installed.stderr}`)
+	}
+	return packageDirectory
+}
+
+/**
+ * Resolve one installed generated-consumer template by manifest shape.
+ *
+ * @param root - Registry root provided by integration global setup.
+ * @param shape - Manifest shape to resolve.
+ * @returns The installed template workspace path.
+ */
+export function resolveGeneratedConsumerTemplate(
+	root: string,
+	shape: GeneratedConsumerTemplate,
+): string {
+	const definition = GENERATED_CONSUMER_TEMPLATES.find((entry) => entry.shape === shape)
+	if (definition === undefined) {
+		throw new Error(`expected generated consumer template definition for ${shape}`)
+	}
+	return join(root, shape, 'app', 'server', definition.name)
+}
+
+/**
+ * Recreate one node_modules tree with real directories and file hardlinks.
+ *
+ * @param source - Template node_modules directory.
+ * @param destination - Clone node_modules directory.
+ * @param hardlinks - Whether the one-time link probe succeeded.
+ */
+export function cloneGeneratedModules(
+	source: string,
+	destination: string,
+	hardlinks: boolean,
+): void {
+	mkdirSync(destination, { recursive: true })
+	for (const entry of readdirSync(source, { withFileTypes: true })) {
+		if (entry.name === '.vite') continue
+		const sourcePath = join(source, entry.name)
+		const destinationPath = join(destination, entry.name)
+		if (entry.isDirectory()) {
+			cloneGeneratedModules(sourcePath, destinationPath, hardlinks)
+			continue
+		}
+		if (entry.isSymbolicLink()) {
+			symlinkSync(readlinkSync(sourcePath), destinationPath)
+			continue
+		}
+		if (!entry.isFile()) {
+			throw new Error(`expected generated consumer dependency to be a file: ${sourcePath}`)
+		}
+		if (hardlinks) {
+			try {
+				linkSync(sourcePath, destinationPath)
+				continue
+			} catch {
+				cpSync(sourcePath, destinationPath, { force: true, preserveTimestamps: true })
+				continue
+			}
+		}
+		cpSync(sourcePath, destinationPath, { force: true, preserveTimestamps: true })
+	}
+}
+
+/**
+ * Probe hardlink support once for a template/clone filesystem pair.
+ *
+ * @param template - Installed template workspace.
+ * @param destination - Fresh clone workspace.
+ * @returns Whether files can be hardlinked between the two roots.
+ */
+export function probeGeneratedHardlinks(template: string, destination: string): boolean {
+	const modules = join(destination, 'node_modules')
+	const probe = join(modules, '.orkestrel-hardlink-probe')
+	mkdirSync(modules, { recursive: true })
+	try {
+		linkSync(join(template, 'package-lock.json'), probe)
+		return true
+	} catch {
+		return false
+	} finally {
+		rmSync(probe, { force: true })
+	}
+}
+
+/**
+ * Clone one installed generated-consumer template for an isolated test.
+ *
+ * @param root - Registry root provided by integration global setup.
+ * @param shape - Manifest shape to clone.
+ * @param destination - Parent directory that will own the cloned package.
+ * @returns The cloned package directory.
+ */
+export function cloneGeneratedConsumer(
+	root: string,
+	shape: GeneratedConsumerTemplate,
+	destination: string,
+): string {
+	const template = resolveGeneratedConsumerTemplate(root, shape)
+	const packageDirectory = join(destination, basename(template))
+	const templateModules = join(template, 'node_modules')
+	const packageModules = join(packageDirectory, 'node_modules')
+	cpSync(template, packageDirectory, {
+		recursive: true,
+		preserveTimestamps: true,
+		verbatimSymlinks: true,
+		filter: (source) => pathRelative(template, source).split(/[\\/]/u)[0] !== 'node_modules',
+	})
+	cloneGeneratedModules(
+		templateModules,
+		packageModules,
+		probeGeneratedHardlinks(template, packageDirectory),
+	)
+	mkdirSync(join(packageModules, '.vite'))
+	for (const path of ['package.json', 'package-lock.json']) {
+		const templateBytes = readFileSync(join(template, path))
+		const cloneBytes = readFileSync(join(packageDirectory, path))
+		if (!templateBytes.equals(cloneBytes)) {
+			throw new Error(`generated consumer clone changed installation proof bytes: ${path}`)
+		}
+	}
+	return packageDirectory
+}
+
+/**
+ * Build and install every generated-consumer manifest shape once.
+ *
+ * @returns A temporary registry whose cleanup runs after the integration project.
+ */
+export async function buildGeneratedConsumerTemplates(): Promise<TempDirectoryInterface> {
+	const registry = await buildTempDirectory()
+	try {
+		for (const definition of GENERATED_CONSUMER_TEMPLATES) {
+			const destination = join(registry.path, definition.shape, 'app', 'server')
+			mkdirSync(destination, { recursive: true })
+			const template = prepareGeneratedConsumer(destination, definition.name, definition)
+			const cache = join(template, 'node_modules', '.vite')
+			rmSync(cache, { recursive: true, force: true })
+			if (existsSync(cache)) {
+				throw new Error(`generated consumer template retained a Vite cache: ${definition.shape}`)
+			}
+		}
+		return registry
+	} catch (error) {
+		await registry.cleanup()
+		throw error
+	}
 }
 
 /** Pack one built package into a caller-owned directory and return the archive path. */
