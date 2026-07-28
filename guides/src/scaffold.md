@@ -370,7 +370,9 @@ value lists behind their literal unions. `SRC_MATRIX` is the `src` environment m
 data — each environment's `configs/src` files, test-project label, `exports` subpath, and build
 formats. `APP_MATRIX` is its application sibling, adding the runtime entry where an environment produces
 one (`app/browser/index.html`, `app/server/main.ts`). `HOST_PATHS` is the ordered list of
-byte-copied host artifacts.
+byte-copied host artifacts, and it is the staging manifest rather than the per-plan carried set:
+`stageHost` vendors every path on it, while each plan carries the subset `selectHostPaths` selects
+for that one workspace.
 
 The bounds are public because they are part of the contract, not implementation trivia.
 `MAX_ARTIFACT_BYTES` caps one artifact at 5 MiB and `MAX_TOTAL_ARTIFACT_BYTES` caps one blueprint,
@@ -736,6 +738,7 @@ From [`helpers.ts`](../../src/core/helpers.ts).
 | `contentByteLength`         | function |
 | `contentToHex`              | function |
 | `snapshotOf`                | function |
+| `selectHostPaths`           | function |
 | `findPathConflict`          | function |
 | `findFileConflict`          | function |
 | `validateDependencyArray`   | function |
@@ -786,8 +789,11 @@ report projections count with.
 `snapshotOf`, `contentToHex`, `contentToBytes`, `contentByteLength`, `contentCodePoint`, and
 `bytesToHex` are the host-independent byte leaves that make exact comparison possible without a
 host encoder or buffer; an unpaired surrogate encodes as `U+FFFD` rather than throwing.
-`findPathConflict` finds the first exact or case-insensitive collision in a path list, and
-`findFileConflict` additionally rejects a file that would sit inside another planned path.
+`selectHostPaths` is the one-owner filter plan assembly applies before it carries anything: it
+returns the host paths in input order minus `guides/src/<name>.md`, so a workspace never plans a
+vendored mirror of the guide it writes itself. `findPathConflict` finds the first exact or
+case-insensitive collision in a path list, and `findFileConflict` additionally rejects a file that
+would sit inside another planned path — the loud backstop behind that selection.
 
 `validateBlueprint` and `validateDependencyArray` are the semantic pass. The array validator is
 pure — it returns its questions and the set of names it saw, so the caller can apply the
@@ -1190,8 +1196,9 @@ in-flight request. The interface also exposes the readonly `emitter`.
 `compile` runs three stages in fixed order and records each as a `CompileRecord` carrying its input,
 its output, whether it failed, and any error text.
 
-1. **draft** — `blueprintToPlan` selects the covered groups, drafts each group's artifacts, appends
-   the host set, applies overrides, and pins the draft. A throw here records a `draft` failure coded
+1. **draft** — `blueprintToPlan` selects the covered groups, drafts each group's artifacts, carries
+   the selected host set — every vendored host path except the workspace's own guide — applies
+   overrides, and pins the draft. A throw here records a `draft` failure coded
    `INVALID`, emits `error`, marks the remaining two stages skipped, and returns incomplete.
 2. **gate** — `validatePlan` runs the semantic pass over the blueprint and checks every override
    against the drafted artifact set. Blocking questions fail the stage; a dependency outside the
@@ -1227,7 +1234,8 @@ how it is audited, and whether it may ever be overwritten.
 - **`host`** — byte-copied from the vendored data root. These are the shared files a whole fleet
   keeps identical: the root instruction documents and licence, the agent, rule, and skill
   directories, the session scripts, the repository coding-law policy module, the byte-identical root
-  dotfiles, and the two guide mirrors every workspace carries. `HOST_PATHS` is the exact list.
+  dotfiles, and the two line guide mirrors a workspace carries for contracts other than its own.
+  `HOST_PATHS` is the exact vendored list; what a given plan carries is `selectHostPaths` of it.
 - **`template`** — filled from a frozen template definition by a pure fill engine. These are
   starter files: source stubs, test stubs, the starter guide, the README.
 - **`computed`** — derived by this package's own combination logic. These are the structural files:
@@ -1256,18 +1264,29 @@ anything, so a mature workspace's hand-written source, tests, guides, and manife
 overwritten with a stub. A consequence worth stating plainly: the generated
 `.github/workflows/ci.yml` is a **computed** artifact, so **user-owned CI is never repaired**. Once
 a workspace has its own workflow, that copy stands, and any change to it is an ordinary edit in that
-workspace.
+workspace. Because a plan names exactly one owner per path, `audit`, `repair`, and `fleet` all read
+the same compiled plan and cannot disagree about who owns a guide: a workspace holding its own
+contract guide audits clean, since that guide is template-origin and audit-exempt and no host-origin
+mirror competes for the path.
 
 Overrides respect the same boundary from the other direction. `applyOverrides` never replaces a
 host-origin artifact and never replaces `package.json`; the gate turns either attempt — and an
 override matching no planned artifact at all — into a blocking question rather than a silent no-op.
 
-Guide mirrors are the one place ownership is conditional. A dependency this package vendors a
-byte-identical mirror for gets a real host-origin copy of `guides/src/<short>.md`. Any other
-dependency gets a host-origin _pointer_ artifact plus a non-blocking question, never a fabricated
-mirror; on materialization that pointer degrades to a short stub, and `scaffold pull` fetches the
-real thing. That degrade is scoped exactly to guide pointers: any other missing manifest entry
-means a corrupt or truncated vendored manifest, and fails closed.
+Guide mirrors are the one place ownership is conditional, and the law is one owner per guide path.
+**A workspace mirrors every line guide except its own.** When the name matches — the guide package
+on `guides/src/guide.md`, this package on `guides/src/scaffold.md` — the workspace itself is the
+owner, keeping that path as its **template**-origin starter guide, and `selectHostPaths` drops the
+vendored mirror so the path is contributed exactly once. For every other contract the mirror is the
+owner: a dependency this package vendors a byte-identical mirror for gets a real host-origin copy of
+`guides/src/<short>.md`, contributed once whether it arrives through the host set or through the
+dependency, so a package depending on `@orkestrel/guide` plans one `guides/src/guide.md` rather than
+two. Any other dependency gets a host-origin _pointer_ artifact plus a non-blocking question, never
+a fabricated mirror; on materialization that pointer degrades to a short stub, and `scaffold pull`
+fetches the real thing. That degrade is scoped exactly to guide pointers: any other missing manifest
+entry means a corrupt or truncated vendored manifest, and fails closed. Selection is the law and
+`findFileConflict` is its backstop: two artifacts at one path refuse the plan rather than racing to
+be the last writer.
 
 ## Audit, repair, and prune
 
@@ -1317,10 +1336,13 @@ because there is nothing to explain.
 `pull` is the target-aware composition. It reads the target's declared scoped dependencies from its
 manifest, rejects any explicit selection the target does not declare, builds the reference map from
 the target's own `guides/src/<short>.md` mirrors, fetches guides and versions under one shared
-allowance, and assembles a report whose `clean` flag requires both no drift and no failures. `write`
-then commits only the `behind` guides — never `current`, `missing`, or `failed`, none of which carry
-trustworthy content — under the same containment and precondition law `Materializer` enforces,
-including a baseline digest check against what is actually on disk.
+allowance, and assembles a report whose `clean` flag requires both no drift and no failures. A
+target that declares itself is the one asymmetry, and it follows the same single-owner law: the
+guide pass drops the self dependency, so `pull` never fetches or writes a workspace's own contract
+guide over the copy that workspace owns, while the version pass keeps it and still reports its
+freshness. `write` then commits only the `behind` guides — never `current`, `missing`, or `failed`,
+none of which carry trustworthy content — under the same containment and precondition law
+`Materializer` enforces, including a baseline digest check against what is actually on disk.
 
 `catalog` builds the fleet package catalog from three reads per entry. The registry's exact
 organization package list is authoritative and unconditionally required. Each package's own registry
@@ -1903,6 +1925,7 @@ import {
 	hostGroup,
 	packageManifest,
 	paritySpecifiers,
+	selectHostPaths,
 	sourceArtifacts,
 	srcVariant,
 	testArtifacts,
@@ -1912,6 +1935,7 @@ const spec = blueprint('router', { src: ['core'], app: ['core', 'server'] })
 const members = blueprintToMembers(spec)
 
 hostGroup('AGENTS.md') // 'docs'
+selectHostPaths(['guides/src/router.md', 'LICENSE'], spec.name) // ['LICENSE'] — never its own guide
 srcVariant(['core', 'server']) // 'multi'
 entryFields(['browser']).main // './dist/src/browser/index.js'
 dualCondition('./dist/src/core/index')
@@ -2220,7 +2244,8 @@ isMissingPathError(caught) // true only for an ENOENT error
 ## Tests
 
 - [`tests/src/core/helpers.test.ts`](../../tests/src/core/helpers.test.ts) — the pure leaves: table
-  alignment, byte encoding, snapshots, conflicts, projections, hashing, and format-stable JSON.
+  alignment, byte encoding, snapshots, host selection, conflicts, projections, hashing, and
+  format-stable JSON.
 - [`tests/src/core/builders.test.ts`](../../tests/src/core/builders.test.ts) — the blueprint,
   dependency, override, and member builders, including optional-field omission.
 - [`tests/src/core/validators.test.ts`](../../tests/src/core/validators.test.ts) — every guard and
@@ -2228,7 +2253,8 @@ isMissingPathError(caught) // true only for an ENOENT error
 - [`tests/src/core/shapers.test.ts`](../../tests/src/core/shapers.test.ts) — per-shape guard
   exactness, schema essentials, seeded generation, and parse round-trips.
 - [`tests/src/core/compilers.test.ts`](../../tests/src/core/compilers.test.ts) — every drafted
-  group, the manifest and exports combination rules, and the emitted configuration text.
+  group, the manifest and exports combination rules, the one-owner guide law for a workspace that
+  names a line guide, and the emitted configuration text.
 - [`tests/src/core/Compiler.test.ts`](../../tests/src/core/Compiler.test.ts) — the three-stage
   pipeline, the fail-closed gate, the emission sequences, and post-destroy behavior.
 - [`tests/src/core/PlanManager.test.ts`](../../tests/src/core/PlanManager.test.ts) — content-hash
