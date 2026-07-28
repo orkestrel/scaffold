@@ -1,5 +1,7 @@
 import type { Artifact, Blueprint, Environment } from '@src/core'
 import { createHash } from 'node:crypto'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { parseJSON } from '@orkestrel/contract'
 import { describe, expect, it } from 'vitest'
 import {
@@ -49,6 +51,7 @@ import {
 	SOURCE_VARIANTS,
 	WORKSPACE_VARIANTS,
 } from '../../setup.js'
+import { WORKSPACE_ROOT } from '../../setupServer.js'
 
 describe('ciWorkflow', () => {
 	it('pins official actions to reviewed full commit SHAs and disables install scripts', () => {
@@ -1223,5 +1226,35 @@ describe('direct-helper / blueprintToPlan cross-consistency', () => {
 			const emitted = plan.artifacts.find((artifact) => artifact.path === 'package.json')
 			expect(emitted?.content).toBe(packageManifest(spec))
 		})
+	})
+})
+
+describe('consumer lockfile fixture guard', () => {
+	it('keeps tests/fixtures/consumer-package-lock.json devDependencies in sync with the emitted mixed-workspace manifest', () => {
+		const fixturePath = join(WORKSPACE_ROOT, 'tests', 'fixtures', 'consumer-package-lock.json')
+		const lock = readRecord(parseJSON(readFileSync(fixturePath, 'utf8')))
+		const root = readRecord(readRecord(lock.packages)[''])
+		const fixtureDevDependencies = readRecord(root.devDependencies)
+
+		const spec: Blueprint = blueprint('consumer-proof', {
+			src: ['core', 'browser', 'server'],
+			app: ['core', 'browser', 'server'],
+		})
+		const manifest = readManifest(packageManifest(spec))
+		const emittedDevDependencies = readRecord(manifest.devDependencies)
+		const { '@orkestrel/scaffold': _scaffold, ...expectedDevDependencies } = emittedDevDependencies
+
+		if (JSON.stringify(fixtureDevDependencies) !== JSON.stringify(expectedDevDependencies)) {
+			throw new Error(
+				`${fixturePath} devDependencies drifted from the emitted consumer manifest. ` +
+					'Regenerate by creating a fresh workspace (scaffold new), removing the ' +
+					'@orkestrel/scaffold devDependency, running npm install --package-lock-only, ' +
+					'and copying the result over the fixture. This requires registry network access ' +
+					'and can never run inside the Codex sandbox.\n' +
+					`fixture: ${JSON.stringify(fixtureDevDependencies)}\n` +
+					`expected: ${JSON.stringify(expectedDevDependencies)}`,
+			)
+		}
+		expect(fixtureDevDependencies).toEqual(expectedDevDependencies)
 	})
 })
