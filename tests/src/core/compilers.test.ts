@@ -945,7 +945,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		)
 
 		expect(createHash('sha256').update(content).digest('hex')).toBe(
-			'7cf7cd77b74fe37d05acd725f7a97ae818e46337e1aa6b45bcc3f4ac355dbd08',
+			'43958608167483b80edc05634bcd0e1cbc9556792610ac85fa252a43b97d91e4',
 		)
 	})
 
@@ -1076,7 +1076,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		)
 
 		for (const content of [browser, source, application]) {
-			expect(content).toContain('if (registration.browser !== undefined && !chromium)')
+			expect(content).toContain('if (registration.browser !== undefined && !available)')
 			expect(content).toContain("name: { label: registration.browser, color: 'yellow' }")
 			expect(content).toContain('include: []')
 			expect(content).toContain('browser: { enabled: false }')
