@@ -1027,7 +1027,8 @@ emits `environmentBoundary`, its `resolveId` / `load` / `buildEnd` walks, the mo
 plus its `environmentPathError` / `environmentSourceError` clauses). Those enforce owner-independent
 laws: core stays host-independent whatever else the workspace declares, a server module never
 imports a stylesheet, and a `@vite-ignore` dynamic import — which `resolveId` never sees and the
-module graph never records — has no other enforcement point. Only host-specific pipelines vary,
+module graph never records — has no other enforcement point in workspace-owned source. Dependency
+and toolchain modules are outside that ownership boundary. Only host-specific pipelines vary,
 along the three `ViteMachinery` axes:
 
 | Machinery                                                         | Emitted when                         |
@@ -1451,10 +1452,10 @@ application's module graph through `import.meta.env` instead.
 Asset URLs that force `?inline` are rejected before Vite can read them outside that auditable output
 graph. Dynamic imports must use a static quoted string or expression-free template string; even
 `/* @vite-ignore */` static values repeat the same environment and containment checks inside the
-transform boundary, including inline HTML proxy modules and trusted dependency modules. Trusted
-dependency modules also pass through a bounded, no-follow, identity-checked load inspection before
-Vite transforms or tree-shakes their raw source, so dependency-side asset references cannot escape
-the physical package root by disappearing from the later graph.
+transform boundary, including inline HTML proxy modules. The transform, load, resolution, emitted
+asset, and finished-module-graph passes apply that law only to workspace-owned `src/*` and `app/*`
+modules. Resolved ids under any `node_modules` segment, Vite/Vitest virtual ids, and tooling client
+injections remain owned by their toolchain and are exempt.
 
 Browser application scripts are modules. Vite's parsed HTML asset callback rejects a classic
 external `<script src>` before resolution and directs the author to `type="module"`. A module
@@ -1469,9 +1470,9 @@ path remains Vite-owned and passes through the environment resolver, which rejec
 ASCII control range and every non-Node URL scheme before loading or output. No second HTML parser or global
 reference rewrite is involved, so comments, text, non-script attributes, and entity-spelled asset
 filenames retain Vite's native parsing and resolution behavior.
-The resolver leaves NUL-prefixed Rolldown/Vite virtual module IDs to the tool that owns that
-namespace; author module and asset URLs are extracted and validated before they reach that resolver
-exception.
+The resolver leaves NUL-prefixed and `virtual:` Rolldown/Vite module IDs, tooling client injections,
+and every resolved `node_modules` module to the tool that owns that namespace; author module and
+asset URLs are extracted and validated before they reach those resolver exceptions.
 SVG script `href` and `xlink:href` attributes are parsed too and rejected as classic script loads.
 Inline module scripts enter Vite's HTML proxy graph and receive the same Oxc boundary analysis as
 module files. Classic inline scripts cannot enter that graph, so the required security prologue places
@@ -1511,11 +1512,7 @@ What it rejects is equally deliberate:
   browser or server package subpath;
 - a browser module reaching a Node builtin or a server subpath;
 - a server module reaching a stylesheet, Vue, or a browser subpath;
-- a workspace-relative import that resolves outside the workspace, or a dependency import that
-  escapes the exact physical package root established by the nearest bounded, unlinked
-  `package.json` whose own `name` exactly matches the resolved dependency;
-- a package `#imports` mapping that resolves outside both the declaring package and another exact
-  physical package root;
+- a workspace-relative import that resolves outside the workspace;
 - an HTML reference carrying `vite-ignore` that violates the same environment or containment law
   as an ordinary reference, a Vite `%ENV%` HTML substitution, a classic external script, or a
   computed dynamic import in the module graph that would bypass graph resolution;

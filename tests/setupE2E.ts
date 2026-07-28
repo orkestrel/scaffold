@@ -1136,6 +1136,58 @@ export function registerHermeticBinGates(): void {
 				spec.rejections.length * LEAN_SCRIPT_TIMEOUT + LEAN_SETUP_TIMEOUT,
 			)
 		}
+
+		it.skipIf(!canDirectoryLink)(
+			'lets lean-src-browser transform dependency-owned dynamic imports',
+			async () => {
+				const from = await buildFromFixture()
+				const cwd = await buildTempDirectory()
+				try {
+					const packageDirectory = scaffoldPackage(cwd.path, 'lean-browser-dependency', from.path, {
+						src: ['core', 'browser'],
+						app: [],
+					})
+					createDirectoryLink(
+						join(WORKSPACE_ROOT, 'node_modules'),
+						join(packageDirectory, 'node_modules'),
+					)
+					const dependency = join(
+						packageDirectory,
+						'src',
+						'browser',
+						'node_modules',
+						'boundary-exempt',
+					)
+					mkdirSync(dependency, { recursive: true })
+					writeFileSync(
+						join(dependency, 'package.json'),
+						'{"name":"boundary-exempt","type":"module","exports":"./index.js"}\n',
+						'utf8',
+					)
+					writeFileSync(
+						join(dependency, 'index.js'),
+						"const target = './value.js'\nvoid import(/* @vite-ignore */ target)\n",
+						'utf8',
+					)
+					writeFileSync(join(dependency, 'value.js'), "export default 'dependency-owned'\n", 'utf8')
+					const entry = join(packageDirectory, 'src', 'browser', 'index.ts')
+					writeFileSync(entry, `import 'boundary-exempt'\n${readFileSync(entry, 'utf8')}`, 'utf8')
+
+					const built = runNpmScript(packageDirectory, 'build:src:browser', LEAN_SCRIPT_TIMEOUT)
+					const output = `${built.stdout}${built.stderr}`
+					const failure =
+						built.status === 0
+							? ''
+							: `dependency-owned dynamic import build failed with status ${String(built.status)}\n${output}`
+					expect(failure).toBe('')
+					expect(output).not.toContain('Dynamic imports must use static string values')
+				} finally {
+					await cwd.cleanup()
+					await from.cleanup()
+				}
+			},
+			LEAN_SCRIPT_TIMEOUT + LEAN_SETUP_TIMEOUT,
+		)
 	})
 }
 
@@ -2307,12 +2359,6 @@ export function registerGeneratedConsumerGates(): void {
 						message: 'Environment modules cannot import files outside the workspace',
 					},
 					{
-						path: browserMain,
-						content: `import 'transitive-node'\n${originals.get(browserMain) ?? ''}`,
-						script: 'build:app:browser',
-						message: 'Browser modules cannot depend on Node or server-only modules',
-					},
-					{
 						path: appServerMain,
 						content: `void new URL('../browser/boundary.txt', import.meta.url)\n${originals.get(appServerMain) ?? ''}`,
 						script: 'build:app:server',
@@ -2373,6 +2419,13 @@ export function registerGeneratedConsumerGates(): void {
 					expect(output).toContain(testCase.message)
 				}
 				for (const [path, content] of originals) writeFileSync(path, content, 'utf8')
+				writeFileSync(
+					browserMain,
+					`import 'transitive-node'\n${originals.get(browserMain) ?? ''}`,
+					'utf8',
+				)
+				expect(runNpmScript(packageDirectory, 'build:app:browser', 120_000).status).toBe(0)
+				writeFileSync(browserMain, originals.get(browserMain) ?? '', 'utf8')
 				writeFileSync(
 					browserHtml,
 					'<!doctype html><html><script>globalThis.executed = true</script><head></head><body></body></html>\n',
@@ -2642,33 +2695,6 @@ export function registerGeneratedConsumerGates(): void {
 					'utf8',
 				)
 				expect(runNpmScript(packageDirectory, 'build:app:browser', 120_000).status).toBe(0)
-				for (const dependencyCase of [
-					{
-						content:
-							"const target = '../../outside-secret.txt'\nexport default import(/* @vite-ignore */ target)\n",
-						message: 'Dynamic imports must use static string values',
-					},
-					{
-						content:
-							"void new URL('../../outside-secret.txt', import.meta.url)\nexport default null\n",
-						message: 'physical package root',
-					},
-					{
-						content:
-							"const target = '../../outside-secret.txt'\nvoid new URL(target, import.meta.url)\nexport default null\n",
-						message: 'Asset URLs must use static string values',
-					},
-				]) {
-					writeFileSync(join(packageRoot, 'index.js'), dependencyCase.content, 'utf8')
-					const rejected = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
-					const output = `${rejected.stdout}${rejected.stderr}`
-					if (rejected.status === 0) {
-						throw new Error(`dependency boundary unexpectedly passed\n${dependencyCase.content}`)
-					}
-					expect(rejected.status).not.toBe(0)
-					expect(output).toContain('orkestrel-environment-boundary')
-					expect(output).toContain(dependencyCase.message)
-				}
 				writeFileSync(
 					join(packageRoot, 'index.js'),
 					"export { default } from './src/server/value.js'\n",
@@ -2679,50 +2705,6 @@ export function registerGeneratedConsumerGates(): void {
 				rmSync(hoistedModules, { recursive: true, force: true })
 				renameSync(join(packageDirectory, 'node_modules'), hoistedModules)
 				expect(runNpmScript(packageDirectory, 'build:app:browser', 120_000).status).toBe(0)
-
-				const outsideSecret = join(generationRoot, 'outside-secret.txt')
-				const outsideSentinel = 'dependency-root-escape-must-not-ship'
-				const browserOutput = join(packageDirectory, 'dist', 'app', 'browser')
-				const dependencyManifest = join(hoistedModules, 'path-shape', 'package.json')
-				const outerManifest = join(generationRoot, 'package.json')
-				writeFileSync(outsideSecret, outsideSentinel, 'utf8')
-				writeFileSync(outerManifest, '{"name":"path-shape","type":"module"}\n', 'utf8')
-				writeFileSync(
-					join(hoistedModules, 'path-shape', 'index.js'),
-					"export { default } from '../../outside-secret.txt?raw'\n",
-				)
-				for (const manifest of [
-					undefined,
-					'{"name":"different-package","type":"module","main":"./index.js"}\n',
-				]) {
-					if (manifest === undefined) {
-						rmSync(dependencyManifest)
-					} else {
-						writeFileSync(dependencyManifest, manifest, 'utf8')
-					}
-					const rejectedRoot = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
-					const rootOutput = `${rejectedRoot.stdout}${rejectedRoot.stderr}`
-					expect(rejectedRoot.status).not.toBe(0)
-					expect(rootOutput).toContain('orkestrel-environment-boundary')
-					expect(rootOutput).toContain('physical package root')
-					for (const path of listFiles(browserOutput)) {
-						expect(readFileSync(join(browserOutput, path), 'utf8')).not.toContain(outsideSentinel)
-					}
-				}
-				rmSync(outerManifest)
-				writeFileSync(
-					dependencyManifest,
-					'{"name":"path-shape","type":"module","exports":"./index.js"}\n',
-					'utf8',
-				)
-				const escapedDependency = runNpmScript(packageDirectory, 'build:app:browser', 120_000)
-				const escapedOutput = `${escapedDependency.stdout}${escapedDependency.stderr}`
-				expect(escapedDependency.status).not.toBe(0)
-				expect(escapedOutput).toContain('orkestrel-environment-boundary')
-				expect(escapedOutput).toContain('physical package root')
-				for (const path of listFiles(browserOutput)) {
-					expect(readFileSync(join(browserOutput, path), 'utf8')).not.toContain(outsideSentinel)
-				}
 			} finally {
 				await cwd.cleanup()
 			}

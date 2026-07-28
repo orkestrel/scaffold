@@ -799,7 +799,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		)
 
 		expect(createHash('sha256').update(content).digest('hex')).toBe(
-			'63c9cef8360aefdfbf79cc11730c13af46256177e7ce14c656caf199e080e3f5',
+			'07d8e08ae5c651198e6954cce82cf4c0d8823a03773bd460e076147afb481f99',
 		)
 	})
 
@@ -850,6 +850,13 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		expect(content).toContain('containedPath(root, physical)')
 		expect(content).toContain("Object.getOwnPropertyDescriptor(manifest, 'name')?.value")
 		expect(content).toContain('Dynamic imports must use static string values')
+		expect(content).toContain("normalizedId.startsWith('\\0')")
+		expect(content).toContain("normalizedId.includes('virtual:')")
+		expect(content).toContain("segment.toLowerCase() === 'node_modules'")
+		expect(content).toContain('if (!isWorkspaceBoundaryModule(id)) return null')
+		expect(content).toContain(
+			'if (importer === undefined || !isWorkspaceBoundaryModule(importer)) return null',
+		)
 	})
 
 	it('server-only is the environment factory itself as base, no @src/core externalize', () => {
