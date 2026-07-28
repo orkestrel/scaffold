@@ -744,6 +744,7 @@ From [`helpers.ts`](../../src/core/helpers.ts).
 | `validateDependencyArray`   | function |
 | `validateBlueprint`         | function |
 | `manifestToDependencies`    | function |
+| `manifestToName`            | function |
 | `rangeToFreshness`          | function |
 | `computeHash`               | function |
 | `stableStringify`           | function |
@@ -799,7 +800,10 @@ would sit inside another planned path — the loud backstop behind that selectio
 pure — it returns its questions and the set of names it saw, so the caller can apply the
 cross-array overlap rules on top. `manifestToDependencies` reads a manifest's `dependencies`,
 `devDependencies`, and `peerDependencies` in that order, keeps only own data sections and scoped
-names, deduplicates, and never throws. `rangeToFreshness` applies the exact-pin comparison; the `missing` and `failed`
+names, deduplicates, and never throws. `manifestToName` is its self-reading sibling over the same
+text: the manifest's own string `name`, or `undefined` when the text is oversized, malformed,
+rootless, or nameless — the projection that lets a target recognize itself in its own declared
+dependencies. `rangeToFreshness` applies the exact-pin comparison; the `missing` and `failed`
 verdicts come from the fetch layer, never from this pure comparison.
 
 `computeHash` is a deterministic FNV-1a digest and `stableStringify` a key-order-independent
@@ -1264,10 +1268,7 @@ anything, so a mature workspace's hand-written source, tests, guides, and manife
 overwritten with a stub. A consequence worth stating plainly: the generated
 `.github/workflows/ci.yml` is a **computed** artifact, so **user-owned CI is never repaired**. Once
 a workspace has its own workflow, that copy stands, and any change to it is an ordinary edit in that
-workspace. Because a plan names exactly one owner per path, `audit`, `repair`, and `fleet` all read
-the same compiled plan and cannot disagree about who owns a guide: a workspace holding its own
-contract guide audits clean, since that guide is template-origin and audit-exempt and no host-origin
-mirror competes for the path.
+workspace.
 
 Overrides respect the same boundary from the other direction. `applyOverrides` never replaces a
 host-origin artifact and never replaces `package.json`; the gate turns either attempt — and an
@@ -1340,7 +1341,9 @@ allowance, and assembles a report whose `clean` flag requires both no drift and 
 target that declares itself is the one asymmetry, and it follows the same single-owner law: the
 guide pass drops the self dependency, so `pull` never fetches or writes a workspace's own contract
 guide over the copy that workspace owns, while the version pass keeps it and still reports its
-freshness. `write` then commits only the `behind` guides — never `current`, `missing`, or `failed`,
+freshness. A `--live` audit reads upstream through the same two passes and applies the same
+self-exclusion, so the freshness a workspace reports about itself never depends on which verb asked.
+`write` then commits only the `behind` guides — never `current`, `missing`, or `failed`,
 none of which carry trustworthy content — under the same containment and precondition law
 `Materializer` enforces, including a baseline digest check against what is actually on disk.
 
@@ -2003,7 +2006,12 @@ applicationViteConfig([], ['core', 'server']).includes('appServer') // true
 ### Reading declared dependencies and comparing freshness
 
 ```ts
-import { isBehind, manifestToDependencies, rangeToFreshness } from '@orkestrel/scaffold'
+import {
+	isBehind,
+	manifestToDependencies,
+	manifestToName,
+	rangeToFreshness,
+} from '@orkestrel/scaffold'
 import {
 	guideStub,
 	packageShortName,
@@ -2012,6 +2020,7 @@ import {
 } from '@orkestrel/scaffold/server'
 
 manifestToDependencies('{"dependencies":{"@orkestrel/contract":"^0.0.7"}}')
+manifestToName('{"name":"@orkestrel/router"}') // '@orkestrel/router' — the target's own name
 rangeToFreshness('^0.0.7', '0.0.7') // 'current'
 isBehind(rangeToFreshness('^0.0.7', '0.0.9')) // true
 
