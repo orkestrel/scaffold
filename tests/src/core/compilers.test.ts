@@ -213,7 +213,9 @@ describe('application layer compilation', () => {
 		expect(tsconfig?.content).toContain('"@app/browser"')
 		expect(tsconfig?.content).toContain('"@app/server"')
 		expect(vite?.content).toBe(applicationViteConfig([], spec.app))
-		expect(vite?.content).toContain('projects: [appCore, appBrowser(), appServer, policy, guides]')
+		expect(vite?.content).toContain(
+			'projects: [appCore, ...(hasChromium ? [appBrowser()] : []), appServer, policy, guides]',
+		)
 		expect(
 			plan.artifacts.find((artifact) => artifact.path === 'app/server/main.ts')?.content,
 		).toContain('startApplicationServer()')
@@ -296,7 +298,14 @@ describe('application layer compilation', () => {
 	})
 
 	it('builds check-only app tsconfigs and thin executable Vite wrappers', () => {
-		expect(appTsconfig('core', true)).toContain('"types": []')
+		const core = readRecord(parseJSON(appTsconfig('core', true)))
+		const browser = readRecord(parseJSON(appTsconfig('browser', true)))
+		const server = readRecord(parseJSON(appTsconfig('server', true)))
+
+		expect(readRecord(core.compilerOptions).lib).toEqual(['ESNext', 'WebWorker'])
+		expect(readRecord(core.compilerOptions).types).toEqual([])
+		expect(readRecord(browser.compilerOptions).lib).toEqual(['ESNext', 'DOM', 'DOM.Iterable'])
+		expect(readRecord(server.compilerOptions).lib).toEqual(['ESNext'])
 		for (const extension of TYPESCRIPT_EXTENSIONS) {
 			expect(appTsconfig('browser', true)).toContain(`"../../app/browser/**/*.${extension}"`)
 			expect(appTsconfig('browser', true)).toContain(`"../../app/core/**/*.${extension}"`)
@@ -787,7 +796,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		)
 
 		expect(createHash('sha256').update(content).digest('hex')).toBe(
-			'3b2eaa7ea114f95f211ed4fce7e003be6201c6ae3f6589e6aba51accb9400b0b',
+			'245d0739898d7df7df181652a6513e9d440e4b0ec9dd1196096bf11dd167dc21',
 		)
 	})
 
@@ -855,6 +864,31 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		expect(content).toContain('@vitest/browser-playwright')
 	})
 
+	it('excludes every browser project from discovery when Chromium is unavailable', () => {
+		const browser = rootViteConfig(['browser'])
+		const source = rootViteConfig(['core', 'browser', 'server'])
+		const application = applicationViteConfig(
+			['core', 'browser', 'server'],
+			['core', 'browser', 'server'],
+		)
+
+		expect(browser).toContain('projects: [...(hasChromium ? [srcBrowser] : []), policy, guides]')
+		expect(source).toContain(
+			'projects: [srcCore, ...(hasChromium ? [srcBrowser] : []), srcServer, policy, guides]',
+		)
+		expect(application).toContain('...(hasChromium ? [srcBrowser] : [])')
+		expect(application).toContain('...(hasChromium ? [appBrowser()] : [])')
+		expect(application).toContain("include: hasChromium ? ['tests/app/browser/**/*.test.ts'] : []")
+		expect(application).toContain('passWithNoTests: !hasChromium')
+	})
+
+	it('keeps non-browser projects directly discoverable without a Chromium guard', () => {
+		const content = applicationViteConfig(['core', 'server'], ['core', 'server'])
+
+		expect(content).not.toContain('hasChromium')
+		expect(content).toContain('projects: [srcCore, srcServer, appCore, appServer, policy, guides]')
+	})
+
 	it('engine appends the srcBin project (self-hosting tax), absent for a non-engine blueprint', () => {
 		const child = rootViteConfig(['core', 'server'])
 		expect(child).not.toContain('srcBin')
@@ -874,6 +908,7 @@ describe('coreTsconfig / coreViteConfig', () => {
 		const config = readRecord(parseJSON(coreTsconfig()))
 		const options = readRecord(config.compilerOptions)
 		expect(options.rootDir).toBe('../../src/core')
+		expect(options.lib).toEqual(['ESNext', 'WebWorker'])
 		expect(options.types).toEqual([])
 		for (const extension of TYPESCRIPT_EXTENSIONS) {
 			expect(coreTsconfig()).toContain(`"../../src/core/**/*.${extension}"`)

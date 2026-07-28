@@ -2114,7 +2114,7 @@ ${EXPORT_KEYWORD} const guides = (config?: UserConfig): UserConfig =>
 export default defineConfig({
 	resolve,
 	test: {
-		projects: [srcBrowser, policy, guides],
+		projects: [...(hasChromium ? [srcBrowser] : []), policy, guides],
 	},
 })
 `
@@ -2362,7 +2362,11 @@ ${EXPORT_KEYWORD} const integration = (config?: UserConfig): UserConfig =>
 			.join('') + binBlock
 	const projectNames = [
 		...(hasCore ? ['srcCore'] : []),
-		...nonCore.map((environment) => `src${pascalCase(environment)}`),
+		...nonCore.map((environment) =>
+			environment === 'browser'
+				? '...(hasChromium ? [srcBrowser] : [])'
+				: `src${pascalCase(environment)}`,
+		),
 		'policy',
 		'guides',
 		...(engine ? ['srcBin'] : []),
@@ -2462,7 +2466,7 @@ ${EXPORT_KEYWORD} const srcCore = (config?: UserConfig): UserConfig =>
 `)
 	}
 	if (src.includes('browser')) {
-		projects.push('srcBrowser')
+		projects.push('...(hasChromium ? [srcBrowser] : [])')
 		const coreOutput = hasSourceCore
 			? `
 					output: { paths: { '@src/core': '../core/index.js' } },`
@@ -2583,7 +2587,7 @@ ${EXPORT_KEYWORD} const appCore = (config?: UserConfig): UserConfig =>
 `)
 	}
 	if (app.includes('browser')) {
-		projects.push('appBrowser()')
+		projects.push('...(hasChromium ? [appBrowser()] : [])')
 		blocks.push(`
 ${EXPORT_KEYWORD} function appBrowser(...config: readonly never[]): UserConfig {
 	if (config.length > 0) {
@@ -2746,7 +2750,7 @@ export default defineConfig({
 }
 
 /**
- * `configs/src/tsconfig.core.json` — unchanged core shape.
+ * `configs/src/tsconfig.core.json` — host-neutral core with web interop declarations.
  *
  * @returns The core environment `tsconfig` file content, newline-terminated.
  *
@@ -2759,7 +2763,7 @@ export function coreTsconfig(): string {
 	const config = {
 		extends: '../../tsconfig.json',
 		compilerOptions: {
-			lib: ['ESNext'],
+			lib: ['ESNext', 'WebWorker'],
 			types: [],
 			noEmit: false,
 			declaration: true,
@@ -2916,7 +2920,12 @@ export function appTsconfig(environment: Environment, hasCore: boolean): string 
 	const config = {
 		extends: '../../tsconfig.json',
 		compilerOptions: {
-			lib: environment === 'browser' ? ['ESNext', 'DOM', 'DOM.Iterable'] : ['ESNext'],
+			lib:
+				environment === 'browser'
+					? ['ESNext', 'DOM', 'DOM.Iterable']
+					: environment === 'core'
+						? ['ESNext', 'WebWorker']
+						: ['ESNext'],
 			types:
 				environment === 'browser'
 					? ['vite/client', 'vue']

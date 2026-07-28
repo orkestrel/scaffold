@@ -55,6 +55,20 @@ export const DATA_SOURCE_FILES: readonly string[] = Object.freeze([
 	'validators.ts',
 ])
 
+/** Worker-only value globals that WebWorker typing must not expose to core implementations. */
+export const WORKER_SCOPE_VALUE_GLOBALS: readonly string[] = Object.freeze([
+	'self',
+	'postMessage',
+	'importScripts',
+	'close',
+	'caches',
+	'indexedDB',
+	'onmessage',
+	'onmessageerror',
+	'location',
+	'navigator',
+])
+
 /** One script block extracted from a Vue SFC by the official compiler. */
 export interface VueScriptBlockInterface {
 	readonly content: string
@@ -188,6 +202,17 @@ export function inspectVueCodingLaw(
 
 /** Add syntax-wide coding-law violations while traversing one source tree. */
 export function inspectCodingNode(path: string, node: ts.Node, violations: string[]): void {
+	if (
+		/^(?:app|src)[\\/]core[\\/]/u.test(path) &&
+		ts.isIdentifier(node) &&
+		(node.text === 'close'
+			? ts.isCallExpression(node.parent) && node.parent.expression === node
+			: WORKER_SCOPE_VALUE_GLOBALS.includes(node.text))
+	) {
+		violations.push(
+			`${path}:${formatPolicyPosition(node)} forbids worker-scope global ${node.text} in core`,
+		)
+	}
 	if (
 		ts.isAsExpression(node) ||
 		ts.isTypeAssertionExpression(node) ||

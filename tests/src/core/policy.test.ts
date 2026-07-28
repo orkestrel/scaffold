@@ -32,6 +32,44 @@ describe('repository coding law', () => {
 		expect(inspectCodingWorkspace(WORKSPACE_ROOT)).toEqual([])
 	})
 
+	it('permits web interop in core while fencing worker-only value globals', () => {
+		expect(
+			inspectCodingLaw(
+				'src/core/helpers.ts',
+				'export function createController() { return new AbortController() }\n',
+			),
+		).toEqual([])
+		expect(
+			inspectCodingLaw(
+				'src/core/helpers.ts',
+				'export function stopResource(resource: { close(): void }) { resource.close() }\n',
+			),
+		).toEqual([])
+
+		const cases = [
+			['self', 'void self'],
+			['postMessage', "postMessage('ready')"],
+			['importScripts', "importScripts('./worker.js')"],
+			['close', 'close()'],
+			['caches', "void caches.open('assets')"],
+			['indexedDB', "void indexedDB.open('state')"],
+			['onmessage', 'void onmessage'],
+			['onmessageerror', 'void onmessageerror'],
+			['location', 'void location'],
+			['navigator', 'void navigator'],
+		]
+
+		for (const [identifier, content] of cases) {
+			const violations = inspectCodingLaw(
+				'app/core/helpers.ts',
+				`export function inspectWorker() { ${content ?? ''} }\n`,
+			)
+			expect(violations).toEqual([
+				expect.stringContaining(`forbids worker-scope global ${identifier ?? ''}`),
+			])
+		}
+	})
+
 	it('requires approval for every Bash command and denies sensitive file families', () => {
 		const settings = readRecord(
 			parseJSON(readFileSync(join(WORKSPACE_ROOT, '.claude', 'settings.json'), 'utf8')),
