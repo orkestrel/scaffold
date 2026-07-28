@@ -1,8 +1,9 @@
 import type { Artifact, Blueprint, Environment } from '@src/core'
 import { createHash } from 'node:crypto'
-import { readFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseJSON } from '@orkestrel/contract'
+import { build as buildVite, loadConfigFromFile } from 'vite'
 import { describe, expect, it } from 'vitest'
 import {
 	applyOverrides,
@@ -51,7 +52,7 @@ import {
 	SOURCE_VARIANTS,
 	WORKSPACE_VARIANTS,
 } from '../../setup.js'
-import { WORKSPACE_ROOT } from '../../setupServer.js'
+import { buildWorkspaceTempDirectory, WORKSPACE_ROOT } from '../../setupServer.js'
 
 describe('ciWorkflow', () => {
 	it('pins official actions to reviewed full commit SHAs and disables install scripts', () => {
@@ -637,6 +638,117 @@ describe('viteMachinery / viteHeader', () => {
 })
 
 describe('rootViteConfig / singleSrcViteConfig', () => {
+	it('normalizes emitted workspace boundary ids without claiming toolchain modules', async () => {
+		const directory = await buildWorkspaceTempDirectory()
+		try {
+			writeFileSync(join(directory.path, 'boundary.config.ts'), rootViteConfig(['core']), 'utf8')
+			writeFileSync(
+				join(directory.path, 'tsconfig.json'),
+				'{"compilerOptions":{"paths":{}}}\n',
+				'utf8',
+			)
+			const configPath = join(directory.path, 'classifier.config.ts')
+			writeFileSync(
+				configPath,
+				[
+					"import { resolve as resolvePath } from 'node:path'",
+					"import { fileURLToPath, URL } from 'node:url'",
+					"import { defineConfig } from 'vite'",
+					"import { isWorkspaceBoundaryModule } from './boundary.config.ts'",
+					'',
+					"const root = fileURLToPath(new URL('.', import.meta.url))",
+					"const absolute = resolvePath(root, 'app/browser/index.html')",
+					'const cases: readonly (readonly [string, boolean])[] = [',
+					'\t[absolute, true],',
+					"\t['/app/browser/index.html', true],",
+					'\t[`/@fs/${absolute}`, true],',
+					'\t[`${absolute}?html-proxy&index=0.js`, true],',
+					"\t[resolvePath(root, 'node_modules/vite/client.mjs'), false],",
+					"\t[resolvePath(root, 'node_modules/.vite-temp/vite.config.ts.timestamp.mjs'), false],",
+					']',
+					'',
+					'for (const [id, expected] of cases) {',
+					'\tif (isWorkspaceBoundaryModule(id) !== expected) {',
+					'\t\tthrow new Error(`unexpected boundary classification for ${id}`)',
+					'\t}',
+					'}',
+					'',
+					'export default defineConfig({})',
+					'',
+				].join('\n'),
+				'utf8',
+			)
+
+			await expect(
+				loadConfigFromFile(
+					{ command: 'build', mode: 'test' },
+					configPath,
+					directory.path,
+					'silent',
+				),
+			).resolves.not.toBeNull()
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('rejects Vite HTML assets whose root-relative output source crosses environments', async () => {
+		const directory = await buildWorkspaceTempDirectory()
+		try {
+			const browser = join(directory.path, 'app', 'browser')
+			const server = join(directory.path, 'app', 'server')
+			mkdirSync(browser, { recursive: true })
+			mkdirSync(server, { recursive: true })
+			writeFileSync(join(server, 'boundary.txt'), 'boundary\n', 'utf8')
+			writeFileSync(join(directory.path, 'boundary.config.ts'), rootViteConfig(['core']), 'utf8')
+			writeFileSync(
+				join(directory.path, 'tsconfig.json'),
+				'{"compilerOptions":{"paths":{}}}\n',
+				'utf8',
+			)
+			writeFileSync(
+				join(directory.path, 'vite.config.ts'),
+				[
+					"import { defineConfig } from 'vite'",
+					"import { fileURLToPath, URL } from 'node:url'",
+					"import { environmentBoundary } from './boundary.config.ts'",
+					'',
+					'const resolvePath = (path: string): string => fileURLToPath(new URL(path, import.meta.url))',
+					'',
+					'export default defineConfig({',
+					"\troot: resolvePath('app/browser/'),",
+					'\tpublicDir: false,',
+					"\tplugins: [environmentBoundary('app/browser')],",
+					'\tbuild: {',
+					'\t\tassetsInlineLimit: 0,',
+					'\t\temptyOutDir: true,',
+					"\t\toutDir: resolvePath('dist/'),",
+					"\t\trolldownOptions: { input: resolvePath('app/browser/index.html') },",
+					'\t},',
+					'})',
+					'',
+				].join('\n'),
+				'utf8',
+			)
+
+			for (const attribute of ['', ' vite&#45;ignore']) {
+				writeFileSync(
+					join(browser, 'index.html'),
+					`<img${attribute} src="../server/boundary.txt">\n`,
+					'utf8',
+				)
+				await expect(
+					buildVite({
+						configFile: join(directory.path, 'vite.config.ts'),
+						logLevel: 'silent',
+					}),
+				).rejects.toThrow('Browser modules cannot depend on Node or server-only modules')
+			}
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
 	it('emits the filename-first parseSync result program wherever the boundary is emitted', () => {
 		for (const content of [
 			rootViteConfig(['core']),
@@ -799,7 +911,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		)
 
 		expect(createHash('sha256').update(content).digest('hex')).toBe(
-			'07d8e08ae5c651198e6954cce82cf4c0d8823a03773bd460e076147afb481f99',
+			'd3393c3ce74c77b25d128f17caca804331ba0b582efca65ff8f2947cb57fba9a',
 		)
 	})
 
@@ -857,6 +969,10 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		expect(content).toContain(
 			'if (importer === undefined || !isWorkspaceBoundaryModule(importer)) return null',
 		)
+		expect(content).toContain(
+			'isBoundaryExemptModule(original) || isBoundaryExemptModule(physical)',
+		)
+		expect(content).not.toContain('if (!isWorkspaceBoundaryModule(original)) continue')
 	})
 
 	it('server-only is the environment factory itself as base, no @src/core externalize', () => {

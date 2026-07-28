@@ -1035,9 +1035,12 @@ ${EXPORT_KEYWORD} function isWorkspaceBoundaryModule(id: string): boolean {
 	} catch {
 		return false
 	}
-	const absoluteCandidate = isAbsolute(candidate)
-		? candidate
-		: resolvePath(WORKSPACE_ROOT, candidate)
+	const rootRelative = /^\\/(?:app|src)\\/(?:core|browser|server)\\//.test(candidate)
+	const absoluteCandidate = rootRelative
+		? resolvePath(WORKSPACE_ROOT, candidate.slice(1))
+		: isAbsolute(candidate)
+			? candidate
+			: resolvePath(WORKSPACE_ROOT, candidate)
 	const relativeId = relative(WORKSPACE_ROOT, absoluteCandidate).replaceAll('\\\\', '/')
 	return (
 		relativeId !== '..' &&
@@ -1951,10 +1954,10 @@ ${
 					continue
 				}
 				for (const original of output.originalFileNames) {
-					if (!isWorkspaceBoundaryModule(original)) continue
 					const physical = physicalPath(
 						isAbsolute(original) ? original : resolvePath(environmentRoot, original),
 					)
+					if (isBoundaryExemptModule(original) || isBoundaryExemptModule(physical)) continue
 					const target = workspacePath(physical)
 					if (target === undefined) {
 						if (trustedPackageRootFor(physical, trustedPackageRoots) === undefined) {
