@@ -120,12 +120,13 @@ export interface Dependency {
 }
 
 /**
- * One caller template override.
+ * One artifact override.
  *
  * @remarks
  * `content` REPLACES the rendered artifact at `path`, never partially merges.
- * An override whose `path` matches no planned artifact, or targets a
- * `host`-origin path, is a BLOCKING question — never a silent add.
+ * An override whose `path` matches no planned artifact, targets a
+ * `host`-origin path, or targets `package.json` is a BLOCKING question.
+ * Accepted overrides surface as retained non-blocking advisories.
  */
 export interface Override {
 	readonly path: string

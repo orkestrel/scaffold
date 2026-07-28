@@ -8,6 +8,7 @@ import {
 	inspectCodingWorkspace,
 	inspectVueCodingLaw,
 	normalizePolicyPath,
+	WORKER_SCOPE_VALUE_GLOBALS,
 } from '../../setupPolicy.js'
 import { WORKSPACE_ROOT } from '../../setupServer.js'
 
@@ -45,29 +46,40 @@ describe('repository coding law', () => {
 				'export function stopResource(resource: { close(): void }) { resource.close() }\n',
 			),
 		).toEqual([])
+		expect(
+			inspectCodingLaw(
+				'src/core/helpers.ts',
+				'export function inspectLocation(location: string) { return { location: location.length } }\n',
+			),
+		).toEqual([])
+		expect(
+			inspectCodingLaw('src/core/types.ts', 'export type WorkerLocation = typeof location\n'),
+		).toEqual([])
 
-		const cases = [
-			['self', 'void self'],
-			['postMessage', "postMessage('ready')"],
-			['importScripts', "importScripts('./worker.js')"],
-			['close', 'close()'],
-			['caches', "void caches.open('assets')"],
-			['indexedDB', "void indexedDB.open('state')"],
-			['onmessage', 'void onmessage'],
-			['onmessageerror', 'void onmessageerror'],
-			['location', 'void location'],
-			['navigator', 'void navigator'],
-		]
-
-		for (const [identifier, content] of cases) {
+		for (const identifier of WORKER_SCOPE_VALUE_GLOBALS) {
 			const violations = inspectCodingLaw(
 				'app/core/helpers.ts',
-				`export function inspectWorker() { ${content ?? ''} }\n`,
+				`export function inspectWorker() { void ${identifier} }\n`,
 			)
 			expect(violations).toEqual([
-				expect.stringContaining(`forbids worker-scope global ${identifier ?? ''}`),
+				expect.stringContaining(`forbids worker-scope global ${identifier}`),
 			])
 		}
+
+		for (const identifier of ['location', 'name', 'self']) {
+			expect(
+				inspectCodingLaw(
+					'app/core/helpers.ts',
+					`export function inspectWorker() { return ${identifier} }\n`,
+				),
+			).toEqual([expect.stringContaining(`forbids worker-scope global ${identifier}`)])
+		}
+		expect(
+			inspectCodingLaw(
+				'app/core/helpers.ts',
+				'export function inspectWorker() { return { location } }\n',
+			),
+		).toEqual([expect.stringContaining('forbids worker-scope global location')])
 	})
 
 	it('requires approval for every Bash command and denies sensitive file families', () => {

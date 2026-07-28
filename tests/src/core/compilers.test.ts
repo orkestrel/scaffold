@@ -796,7 +796,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		)
 
 		expect(createHash('sha256').update(content).digest('hex')).toBe(
-			'245d0739898d7df7df181652a6513e9d440e4b0ec9dd1196096bf11dd167dc21',
+			'7bb0c8526b89e6a32eae257d16765849e7918c5562059af1d1247e041bab2aca',
 		)
 	})
 

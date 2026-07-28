@@ -988,7 +988,7 @@ export class CLI implements CLIInterface {
 			try {
 				const compiler = createCompiler()
 				let scoped: Plan
-				let questions: readonly Question[] = []
+				let questions: readonly Question[]
 				try {
 					const spec = deriveBlueprint(directory)
 					const scaffolding = compiler.compile(spec)
@@ -1008,7 +1008,10 @@ export class CLI implements CLIInterface {
 
 				const plan = hydratePlan(scoped, host)
 				const paths = plan.artifacts.map((artifact) => artifact.path)
-				const rawAudit = diffPlan(plan, readTarget(directory, paths))
+				const rawAudit = {
+					...diffPlan(plan, readTarget(directory, paths)),
+					questions,
+				}
 				// Include physical unexpected-file findings in each repository audit.
 				const audit = this.#scan(rawAudit, directory, host)
 				repos.push({
@@ -1016,7 +1019,6 @@ export class CLI implements CLIInterface {
 					directory,
 					plan,
 					audit,
-					questions,
 				})
 			} catch (error) {
 				failures.push({ name, message: describeError(error) })
@@ -1038,7 +1040,7 @@ export class CLI implements CLIInterface {
 								},
 					),
 				)
-				for (const question of repo.questions) {
+				for (const question of repo.audit.questions) {
 					if (!question.blocking) {
 						this.#reporter.line(`${repo.name}: warning: ${question.text}`)
 					}

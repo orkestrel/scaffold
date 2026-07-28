@@ -1998,6 +1998,13 @@ export function readOverrides(target: string): readonly Override[] {
 	let remaining = MAX_TOTAL_ARTIFACT_BYTES
 	const overrides: Override[] = []
 	for (const path of paths) {
+		if (remaining <= 0) {
+			throw new ScaffoldError(
+				'TARGET',
+				`Override content exceeds the aggregate byte limit at ${path}`,
+				{ target, path, limit: MAX_TOTAL_ARTIFACT_BYTES },
+			)
+		}
 		const content = readFileText(
 			root,
 			path,

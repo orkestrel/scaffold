@@ -1560,7 +1560,7 @@ describe('pinPlan', () => {
 			  "app-core": "9bb105f7",
 			  "app-full": "9ce2a039",
 			  "app-server": "589510e4",
-			  "mixed-full": "7367a8c5",
+			  "mixed-full": "8f0eaee5",
 			}
 		`)
 	})

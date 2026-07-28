@@ -1422,12 +1422,18 @@ a fixed, interleaved order so aggregates sit immediately before their per-enviro
 **Environment isolation.** Scoped TypeScript projects remove the wrong host's globals from each
 environment: core scopes carry the WHATWG web-interop surface and no host at all — no DOM, no Node,
 no `vite/client`; browser scopes carry DOM and no Node; server scopes carry Node and no DOM. The
-worker-only globals the `WebWorker` declarations would otherwise admit — `self`, `postMessage`,
-`importScripts`, `close`, `caches`, `indexedDB`, `onmessage`, `onmessageerror`, `location`, and
-`navigator` — are fenced out of `src/core` and `app/core` sources by the policy suite, so the
-declarations widen what a host-independent module may call without widening where it may run. Lint
-restricts declared package, alias, and conventional relative imports in the same directions. Neither
-replaces the other, and neither replaces the build.
+worker-only globals the `WebWorker` declarations would otherwise admit — `name`, `onrtctransform`,
+`close`, `postMessage`, `dispatchEvent`, `location`, `onerror`, `onlanguagechange`, `onoffline`,
+`ononline`, `onrejectionhandled`, `onunhandledrejection`, `self`, `importScripts`, `fonts`, `caches`,
+`crossOriginIsolated`, `indexedDB`, `isSecureContext`, `origin`, `scheduler`, `createImageBitmap`,
+`reportError`, `cancelAnimationFrame`, `requestAnimationFrame`, `onmessage`, `onmessageerror`,
+`addEventListener`, and `removeEventListener` — are fenced out of `src/core` and `app/core` sources
+by the policy suite, so the declarations widen what a host-independent module may call without
+widening where it may run. On every TypeScript bump, derive this list from the module-scope
+global-object `declare var` and `declare function` declarations in the installed
+`lib.webworker.d.ts`, then subtract values supplied by `lib.esnext*` or current Node globals. Lint
+restricts declared package, alias, and conventional relative imports in the same directions.
+Neither replaces the other, and neither replaces the build.
 
 **The generated build boundary.** The emitted configuration carries an environment-boundary plugin
 that resolves the real module graph rather than re-implementing a parser. **TypeScript and

@@ -150,8 +150,13 @@ describe('readOverrides', () => {
 				throw new Error('expected a coded aggregate override failure')
 			}
 			expect(result.error.code).toBe('TARGET')
-			expect(result.error.message).toContain(path)
-			expect(result.error.context).toMatchObject({ path })
+			expect(result.error.message).toBe(
+				`Override content exceeds the aggregate byte limit at ${path}`,
+			)
+			expect(result.error.context).toMatchObject({
+				path,
+				limit: MAX_TOTAL_ARTIFACT_BYTES,
+			})
 		} finally {
 			await directory.cleanup()
 		}
