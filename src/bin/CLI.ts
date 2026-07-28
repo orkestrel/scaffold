@@ -10,13 +10,13 @@ import type {
 	Dependency,
 	Group,
 	Plan,
+	Question,
 	Snapshot,
 	SyncReport,
 } from '@src/core'
 import type { SyncOptions } from '@src/server'
 import {
 	blueprint,
-	blueprintToPlan,
 	catalogNames,
 	catalogToBlock,
 	createCompiler,
@@ -260,15 +260,22 @@ export class CLI implements CLIInterface {
 	}
 
 	/** Compile a spec and report unresolved blocking questions through the shared CLI error path. */
-	#compile(spec: Blueprint, json: boolean): Plan {
+	#compile(
+		spec: Blueprint,
+		json: boolean,
+		groups?: readonly Group[],
+	): readonly [plan: Plan, questions: readonly Question[]] {
 		const compiler = createCompiler()
 		try {
-			const scaffolding = compiler.compile(spec)
+			const scaffolding = compiler.compile(spec, groups)
 			if (!scaffolding.plan) {
-				const message = scaffolding.questions.map((question) => question.text).join('; ')
+				const blocking = scaffolding.questions.filter((question) => question.blocking)
+				const message = (blocking.length > 0 ? blocking : scaffolding.questions)
+					.map((question) => question.text)
+					.join('; ')
 				this.#fail(message, json)
 			}
-			return scaffolding.plan
+			return [scaffolding.plan, scaffolding.questions]
 		} finally {
 			compiler.destroy()
 		}
@@ -620,7 +627,7 @@ export class CLI implements CLIInterface {
 		// (`@src/server`) recompiles them back into the plan, so `audit` stays
 		// clean over a hand-added `devDependencies` entry (AGENTS §21 core stays
 		// the single source of truth for that relaxation).
-		const plan = this.#compile(blueprint(name, { src, app, dependencies: deps }), json)
+		const [plan] = this.#compile(blueprint(name, { src, app, dependencies: deps }), json)
 
 		const summary = planToSummary(plan)
 
@@ -737,7 +744,7 @@ export class CLI implements CLIInterface {
 			groups = GROUPS.filter((group) => groupsInput.includes(group))
 		}
 
-		const compiled = blueprintToPlan(spec, groups)
+		const [compiled, questions] = this.#compile(spec, json, groups)
 		const from = values.from?.[0]
 		const host = from ?? hostRoot()
 		let plan: Plan
@@ -751,7 +758,10 @@ export class CLI implements CLIInterface {
 		// Merge the physical unexpected-file scan into the presented audit. Only an
 		// established host can positively define the vendored allowlist; a failed
 		// scan marks the audit incomplete without erasing its other findings.
-		const rawAudit = diffPlan(plan, readTarget(target, artifactPaths))
+		const rawAudit = {
+			...diffPlan(plan, readTarget(target, artifactPaths)),
+			questions,
+		}
 		const scanned = this.#scanSafe(rawAudit, target, host)
 		const audit = scanned.audit
 		let drifted = !audit.clean
@@ -782,6 +792,9 @@ export class CLI implements CLIInterface {
 		}
 
 		if (scanned.skipped) this.#reporter.line(SCAN_SKIPPED)
+		for (const question of audit.questions) {
+			if (!question.blocking) this.#reporter.line(`warning: ${question.text}`)
+		}
 		this.#reporter.line(comparisonLine(true))
 		this.#reporter.table(auditTable(audit, plan))
 		this.#reporter.line(auditVerdict(audit, plan))
@@ -848,7 +861,7 @@ export class CLI implements CLIInterface {
 			this.#error(error, json)
 		}
 
-		const compiled = this.#compile(spec, json)
+		const [compiled] = this.#compile(spec, json)
 
 		// Repair is the host-restoration tool ONLY — scope to host-origin
 		// artifacts before hydrate/diff/apply so a mature repo's hand-written
@@ -974,6 +987,7 @@ export class CLI implements CLIInterface {
 			try {
 				const compiler = createCompiler()
 				let scoped: Plan
+				let questions: readonly Question[] = []
 				try {
 					const spec = deriveBlueprint(directory)
 					const scaffolding = compiler.compile(spec)
@@ -985,6 +999,7 @@ export class CLI implements CLIInterface {
 						...scaffolding.plan,
 						artifacts: scaffolding.plan.artifacts.filter((artifact) => artifact.origin === 'host'),
 					}
+					questions = scaffolding.questions
 				} finally {
 					compiler.destroy()
 				}
@@ -994,7 +1009,13 @@ export class CLI implements CLIInterface {
 				const rawAudit = diffPlan(plan, readTarget(directory, paths))
 				// Include physical unexpected-file findings in each repository audit.
 				const audit = this.#scan(rawAudit, directory, host)
-				repos.push({ name, directory, plan, audit })
+				repos.push({
+					name,
+					directory,
+					plan,
+					audit,
+					questions,
+				})
 			} catch (error) {
 				failures.push({ name, message: describeError(error) })
 			}
@@ -1015,6 +1036,11 @@ export class CLI implements CLIInterface {
 								},
 					),
 				)
+				for (const question of repo.questions) {
+					if (!question.blocking) {
+						this.#reporter.line(`${repo.name}: warning: ${question.text}`)
+					}
+				}
 			}
 			for (const failure of failures) {
 				this.#reporter.line(

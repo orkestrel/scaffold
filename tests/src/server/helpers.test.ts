@@ -23,10 +23,13 @@ import {
 	contentToHex,
 	diffPlan,
 	isScaffoldError,
+	MAX_ARTIFACT_BYTES,
 	MAX_COLLECTION_ITEMS,
 	MAX_PATH_LENGTH,
+	MAX_TOTAL_ARTIFACT_BYTES,
 	packageManifest,
 	validateBlueprint,
+	validatePlan,
 } from '@src/core'
 import {
 	catalogPackages,
@@ -54,6 +57,7 @@ import {
 	readFileHex,
 	readFileText,
 	readHostManifest,
+	readOverrides,
 	readTarget,
 	remapArtifactPath,
 	replaceDirectory,
@@ -92,9 +96,206 @@ describe('hostRoot', () => {
 	})
 })
 
+// ── readOverrides ────────────────────────────────────────────────────────────
+
+describe('readOverrides', () => {
+	it('returns an empty collection when the mirror is absent', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			expect(readOverrides(directory.path)).toEqual([])
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('rejects an oversized physical file with a coded path-bearing TARGET error', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			const path = 'configs/oversized.txt'
+			const full = join(directory.path, 'overrides', path)
+			mkdirSync(dirname(full), { recursive: true })
+			writeFileSync(full, Buffer.alloc(MAX_ARTIFACT_BYTES + 1))
+
+			const result = attempt(() => readOverrides(directory.path))
+
+			expect(result.success).toBe(false)
+			if (result.success || !isScaffoldError(result.error)) {
+				throw new Error('expected a coded override read failure')
+			}
+			expect(result.error.code).toBe('TARGET')
+			expect(result.error.message).toContain(path)
+			expect(result.error.context).toMatchObject({ path })
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('rejects aggregate mirror content beyond the blueprint byte ceiling', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			const root = join(directory.path, 'overrides')
+			mkdirSync(root, { recursive: true })
+			const content = 'a'.repeat(MAX_ARTIFACT_BYTES)
+			const count = MAX_TOTAL_ARTIFACT_BYTES / MAX_ARTIFACT_BYTES
+			for (let index = 0; index < count; index += 1) {
+				writeFileSync(join(root, `chunk-${String(index).padStart(2, '0')}.txt`), content)
+			}
+			const path = 'overflow.txt'
+			writeFileSync(join(root, path), 'x')
+
+			const result = attempt(() => readOverrides(directory.path))
+
+			expect(result.success).toBe(false)
+			if (result.success || !isScaffoldError(result.error)) {
+				throw new Error('expected a coded aggregate override failure')
+			}
+			expect(result.error.code).toBe('TARGET')
+			expect(result.error.message).toContain(path)
+			expect(result.error.context).toMatchObject({ path })
+		} finally {
+			await directory.cleanup()
+		}
+	}, 30_000)
+
+	it('rejects more than the public collection limit and names the first excess path', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			const root = join(directory.path, 'overrides')
+			mkdirSync(root, { recursive: true })
+			for (let index = 0; index <= MAX_COLLECTION_ITEMS; index += 1) {
+				writeFileSync(join(root, `${String(index).padStart(4, '0')}.txt`), 'x')
+			}
+
+			const result = attempt(() => readOverrides(directory.path))
+
+			expect(result.success).toBe(false)
+			if (result.success || !isScaffoldError(result.error)) {
+				throw new Error('expected a coded override collection failure')
+			}
+			expect(result.error.code).toBe('TARGET')
+			expect(result.error.message).toContain('1000.txt')
+			expect(result.error.context).toMatchObject({ path: '1000.txt' })
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it.skipIf(!canSymlink)('rejects a symlinked mirror entry and names its path', async () => {
+		const directory = await buildTempDirectory()
+		const outside = await buildTempDirectory()
+		try {
+			const path = 'linked.txt'
+			writeFileSync(join(outside.path, 'source.txt'), 'outside')
+			mkdirSync(join(directory.path, 'overrides'))
+			symlinkSync(join(outside.path, 'source.txt'), join(directory.path, 'overrides', path))
+
+			const result = attempt(() => readOverrides(directory.path))
+
+			expect(result.success).toBe(false)
+			if (result.success || !isScaffoldError(result.error)) {
+				throw new Error('expected a coded linked override failure')
+			}
+			expect(result.error.code).toBe('TARGET')
+			expect(result.error.message).toContain(path)
+			expect(result.error.context).toMatchObject({ path })
+		} finally {
+			await outside.cleanup()
+			await directory.cleanup()
+		}
+	})
+
+	it('rejects invalid UTF-8 and names the mirror path', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			const path = 'invalid.txt'
+			const root = join(directory.path, 'overrides')
+			mkdirSync(root)
+			writeFileSync(join(root, path), new Uint8Array([0xc3, 0x28]))
+
+			const result = attempt(() => readOverrides(directory.path))
+
+			expect(result.success).toBe(false)
+			if (result.success || !isScaffoldError(result.error)) {
+				throw new Error('expected a coded UTF-8 override failure')
+			}
+			expect(result.error.code).toBe('TARGET')
+			expect(result.error.message).toContain(path)
+			expect(result.error.context).toMatchObject({ path })
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('rejects case-insensitive path collisions and names both paths', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			const root = join(directory.path, 'overrides')
+			mkdirSync(root)
+			writeFileSync(join(root, 'Flavor.txt'), 'first')
+			writeFileSync(join(root, 'flavor.txt'), 'second')
+
+			const result = attempt(() => readOverrides(directory.path))
+
+			expect(result.success).toBe(false)
+			if (result.success || !isScaffoldError(result.error)) {
+				throw new Error('expected a coded override collision')
+			}
+			expect(result.error.code).toBe('TARGET')
+			expect(result.error.message).toContain('Flavor.txt')
+			expect(result.error.message).toContain('flavor.txt')
+			expect(result.error.context).toMatchObject({ paths: ['Flavor.txt', 'flavor.txt'] })
+		} finally {
+			await directory.cleanup()
+		}
+	})
+})
+
 // ── deriveBlueprint ──────────────────────────────────────────────────────────
 
 describe('deriveBlueprint', () => {
+	it('derives mirrored override bytes and preserves the computed artifact origin', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: '@orkestrel/flavored',
+				src: ['core'],
+			})
+			const path = '.github/workflows/ci.yml'
+			const content = 'name: flavored\n'
+			const full = join(directory.path, 'overrides', path)
+			mkdirSync(dirname(full), { recursive: true })
+			writeFileSync(full, content)
+
+			const spec = deriveBlueprint(directory.path)
+			const plan = blueprintToPlan(spec)
+			const artifact = plan.artifacts.find((candidate) => candidate.path === path)
+
+			expect(spec.overrides).toEqual([{ path, content }])
+			expect(artifact).toMatchObject({ path, origin: 'computed', content })
+			expect(validatePlan(plan)).toMatchObject({
+				valid: true,
+				questions: [],
+				warnings: [expect.stringContaining(path)],
+			})
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('derives an empty override collection when the mirror is absent', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: '@orkestrel/plain',
+				src: ['core'],
+			})
+
+			expect(deriveBlueprint(directory.path).overrides).toEqual([])
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
 	it('rejects inherited manifest identity and publication fields', async () => {
 		const directory = await buildTempDirectory()
 		Reflect.defineProperty(Object.prototype, 'name', {
@@ -2776,6 +2977,25 @@ describe('stageHost', () => {
 describe('PRUNE_DIRECTORIES', () => {
 	it('is the hard allowlist of prune-owned directories', () => {
 		expect(PRUNE_DIRECTORIES).toEqual(['.claude/agents', '.codex/agents', 'scripts'])
+	})
+
+	it('stays disjoint from every computed artifact path', () => {
+		const plan = blueprintToPlan(
+			blueprint('prune-disjoint', {
+				src: ['core', 'browser', 'server'],
+				app: ['core', 'browser', 'server'],
+				engine: true,
+			}),
+		)
+		const computed = plan.artifacts.filter((artifact) => artifact.origin === 'computed')
+
+		for (const artifact of computed) {
+			expect(
+				PRUNE_DIRECTORIES.some(
+					(directory) => artifact.path === directory || artifact.path.startsWith(`${directory}/`),
+				),
+			).toBe(false)
+		}
 	})
 })
 

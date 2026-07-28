@@ -341,6 +341,30 @@ describe('Compiler#compile — non-vendored dependency', () => {
 	})
 })
 
+describe('Compiler#compile — override advisories', () => {
+	it('carries every accepted override warning as a non-blocking question', () => {
+		const compiler = new Compiler()
+		const path = '.github/workflows/ci.yml'
+
+		const scaffolding = compiler.compile(
+			blueprint('router', {
+				src: ['core'],
+				overrides: [override(path, 'name: flavored\n')],
+			}),
+		)
+
+		expect(scaffolding.complete).toBe(true)
+		expect(scaffolding.questions).toEqual([
+			{
+				field: 'overrides',
+				text: `Override path "${path}" replaces its planned artifact content`,
+				blocking: false,
+			},
+		])
+		compiler.destroy()
+	})
+})
+
 describe('Compiler#compile — event sequences', () => {
 	it('emits compile (not block) for a complete compilation', () => {
 		const compiler = new Compiler()
@@ -419,6 +443,34 @@ describe('Compiler#audit', () => {
 		const result = compiler.audit(spec, current, ['manifest'])
 
 		expect(result.clean).toBe(true)
+		compiler.destroy()
+	})
+
+	it('preserves accepted override advisories on a clean audit', () => {
+		const compiler = new Compiler()
+		const path = '.github/workflows/ci.yml'
+		const content = 'name: flavored\n'
+		const spec = blueprint('router', {
+			src: ['core'],
+			overrides: [override(path, content)],
+		})
+		const compiled = compiler.compile(spec, ['orchestration'])
+		const current: Record<string, string> = {}
+		for (const artifact of compiled.plan?.artifacts ?? []) {
+			current[artifact.path] = artifact.content === undefined ? '' : contentToHex(artifact.content)
+		}
+
+		const result = compiler.audit(spec, current, ['orchestration'])
+
+		expect(result.clean).toBe(true)
+		expect(result.missing).toBe(0)
+		expect(result.questions).toEqual([
+			expect.objectContaining({
+				field: 'overrides',
+				text: expect.stringContaining(path),
+				blocking: false,
+			}),
+		])
 		compiler.destroy()
 	})
 })

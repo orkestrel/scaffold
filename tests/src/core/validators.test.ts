@@ -369,7 +369,11 @@ describe('validatePlan', () => {
 			}),
 		)
 
-		expect(validatePlan(plan)).toEqual({ valid: true, questions: [], warnings: [] })
+		expect(validatePlan(plan)).toEqual({
+			valid: true,
+			questions: [],
+			warnings: ['Override path "README.md" replaces its planned artifact content'],
+		})
 	})
 
 	it.each([

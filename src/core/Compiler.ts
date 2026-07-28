@@ -139,7 +139,7 @@ export class Compiler implements CompilerInterface {
 			this.#emitter.emit('audit', result)
 			return result
 		}
-		const result = diffPlan(scaffolding.plan, current)
+		const result = { ...diffPlan(scaffolding.plan, current), questions: scaffolding.questions }
 		this.#emitter.emit('audit', result)
 		return result
 	}
@@ -201,7 +201,12 @@ export class Compiler implements CompilerInterface {
 		const validation = validatePlan(draft)
 		const dependencyQuestions = this.#dependencyQuestions(blueprint)
 		const blocking = [...validation.questions]
-		const questions: Question[] = [...blocking, ...dependencyQuestions]
+		const warningQuestions: Question[] = validation.warnings.map((text) => ({
+			field: 'overrides',
+			text,
+			blocking: false,
+		}))
+		const questions: Question[] = [...blocking, ...warningQuestions, ...dependencyQuestions]
 		stages.push({
 			stage: 'gate',
 			input: draft,

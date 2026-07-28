@@ -1,4 +1,4 @@
-import type { Audit, CatalogEntry, Plan, Environment } from '@src/core'
+import type { Audit, CatalogEntry, Environment, Plan, Question } from '@src/core'
 import type { MaterializeResult } from '@src/server'
 
 /** The command-line interface's closed command vocabulary. */
@@ -65,6 +65,7 @@ export interface FleetRepo {
 	readonly directory: string
 	readonly plan: Plan
 	readonly audit: Audit
+	readonly questions: readonly Question[]
 }
 
 /** One fleet repository that could not be inspected. */

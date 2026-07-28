@@ -389,6 +389,7 @@ export const isPlan: Guard<Plan> = andOf(
 export function validatePlan(plan: Plan): Validation {
 	const blueprintValidation = validateBlueprint(plan.blueprint)
 	const questions: Question[] = [...blueprintValidation.questions]
+	const warnings = [...blueprintValidation.warnings]
 	if (!hasValidPlanBytes(plan)) {
 		questions.push({
 			field: 'artifacts',
@@ -421,12 +422,14 @@ export function validatePlan(plan: Plan): Validation {
 				text: 'Override path "package.json" targets the blueprint-owned publication boundary',
 				blocking: true,
 			})
+			continue
 		}
+		warnings.push(`Override path "${item.path}" replaces its planned artifact content`)
 	}
 	return {
 		valid: questions.length === 0,
 		questions,
-		warnings: blueprintValidation.warnings,
+		warnings,
 	}
 }
 

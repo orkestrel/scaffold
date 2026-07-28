@@ -497,6 +497,71 @@ describe('scaffold bin', () => {
 			}
 		}, 20000)
 
+		it('a persistent computed override audits clean with an advisory, then reports live drift from its mirror', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				const path = '.github/workflows/ci.yml'
+				const live = join(packageDirectory, path)
+				const mirror = join(packageDirectory, 'overrides', path)
+				mkdirSync(dirname(mirror), { recursive: true })
+				writeFileSync(mirror, readFileSync(live))
+
+				const clean = runBin(['audit', '--from', from.path], '', { cwd: packageDirectory })
+
+				expect(clean.status).toBe(0)
+				expect(clean.stdout).toContain(`warning: Override path "${path}"`)
+				expect(clean.stdout).toContain('— clean')
+
+				writeFileSync(live, 'name: locally-edited\n')
+				const stale = runBin(['audit', '--from', from.path], '', { cwd: packageDirectory })
+
+				expect(stale.status).toBe(1)
+				expect(stale.stdout).toContain('drifted')
+				expect(stale.stdout).toContain(path)
+				expect(stale.stdout).toContain(`warning: Override path "${path}"`)
+			} finally {
+				await cwd.cleanup()
+				await from.cleanup()
+			}
+		}, 30000)
+
+		it('routes audit through the existing override gate for unmatched, host, and package mirrors', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				const cases = [
+					{ path: 'missing.ts', message: 'matches no planned artifact' },
+					{ path: 'AGENTS.md', message: 'targets a host-origin artifact' },
+					{
+						path: 'package.json',
+						message: 'targets the blueprint-owned publication boundary',
+					},
+				]
+				for (const scenario of cases) {
+					const root = join(packageDirectory, 'overrides')
+					rmSync(root, { recursive: true, force: true })
+					const full = join(root, scenario.path)
+					mkdirSync(dirname(full), { recursive: true })
+					writeFileSync(full, 'declared override\n')
+
+					const result = runBin(['audit', '--from', from.path], '', {
+						cwd: packageDirectory,
+					})
+					const output = result.stdout + result.stderr
+
+					expect(result.status).toBe(1)
+					expect(output).toContain(scenario.path)
+					expect(output).toContain(scenario.message)
+				}
+			} finally {
+				await cwd.cleanup()
+				await from.cleanup()
+			}
+		}, 60000)
+
 		it('drifted target (a host file removed): exit 1, names the path with the "host-owned" label', async () => {
 			// Hydrated host artifacts are compared by content and unhydrated ones
 			// by presence. A missing artifact is drift in either mode.
@@ -976,11 +1041,17 @@ describe('scaffold bin', () => {
 			try {
 				scaffoldPackage(root.path, 'fleeta', from.path)
 				scaffoldPackage(root.path, 'fleetb', from.path)
+				const overridePath = '.github/workflows/ci.yml'
+				const live = join(root.path, 'fleeta', overridePath)
+				const mirror = join(root.path, 'fleeta', 'overrides', overridePath)
+				mkdirSync(dirname(mirror), { recursive: true })
+				writeFileSync(mirror, readFileSync(live))
 
 				const clean = runBin(['fleet', '--from', from.path], '', { cwd: root.path })
 				expect(clean.status).toBe(0)
 				expect(clean.stdout).toContain('fleeta: clean')
 				expect(clean.stdout).toContain('fleetb: clean')
+				expect(clean.stdout).toContain(`fleeta: warning: Override path "${overridePath}"`)
 
 				rmSync(join(root.path, 'fleeta', '.editorconfig'))
 				const drifted = runBin(['fleet', '--from', from.path], '', { cwd: root.path })
