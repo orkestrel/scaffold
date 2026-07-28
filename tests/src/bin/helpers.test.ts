@@ -752,11 +752,11 @@ describe('render: new prune/missing/generated/audit-live/comparison/ci/catalog e
 		expect(line).toContain('scaffold new')
 	})
 
-	it('generatedNote explains repair does not touch generated files', () => {
+	it('generatedNote directs generated drift to the explicit repair opt-in', () => {
 		const line = generatedNote(3)
 		expect(line).toContain('3 findings')
 		expect(line.toLowerCase()).toContain('generated')
-		expect(line.toLowerCase()).toContain('repair')
+		expect(line).toContain('repair --computed')
 	})
 
 	it('auditLiveNote reports current/behind/failed counts', () => {

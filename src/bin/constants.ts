@@ -47,6 +47,10 @@ export const ACTION_LABEL: Readonly<Record<string, string>> = Object.freeze({
 export const REPAIR_SCOPE =
 	'repair scope: shared host-owned artifacts only — starter and generated files are never touched'
 
+/** Repair's opt-in generated-canon ownership boundary. */
+export const REPAIR_COMPUTED_SCOPE =
+	'repair scope: shared host-owned and generated artifacts — starter files and package.json are never touched'
+
 /** The dry-run note for `new`. */
 export const NEW_DRY_RUN_NOTE = 'dry run — pass --apply to write'
 
@@ -93,7 +97,7 @@ export const VERB_FLAGS: Readonly<Record<Verb, string>> = Object.freeze({
 	new: '--src a,b --app a,b --deps x,y --apply --yes --target <path> --from <path>',
 	pull: '--target . --deps x,y --apply --yes --strict',
 	audit: '--target . --live --from <path> --groups a,b',
-	repair: '--target . --apply --yes --prune --from <path>',
+	repair: '--target . --computed --apply --yes --prune --from <path>',
 	fleet: '--apply --yes --prune --from <path>',
 	catalog: '--from <path> ... --target <repo> --offline --apply --yes',
 })
@@ -125,6 +129,7 @@ export const VERB_FLAG_HELP: Readonly<Record<Verb, readonly (readonly [string, s
 		],
 		repair: [
 			['--target .', 'directory to repair (default: current directory)'],
+			['--computed', 'also restore generated files except package.json'],
 			['--apply', 'write the fixes (default is a dry run)'],
 			['--yes', 'skip the confirmation question'],
 			['--prune', 'also DELETE unexpected files under .claude/agents, .codex/agents, and scripts'],

@@ -971,7 +971,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		)
 
 		expect(createHash('sha256').update(content).digest('hex')).toBe(
-			'1fd5334667647ecbadd0f04c4980d219bd34dc16906d8ee3c7d65c022bb1d0dd',
+			'2a200195b4ec7d63cdcf621f76c074427a720c58ec15281bbc4414febb5b1dd5',
 		)
 	})
 
@@ -1091,6 +1091,34 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		expect(source).toContain("{ project: srcBrowser, browser: 'src:browser' }")
 		expect(application).toContain("{ project: srcBrowser, browser: 'src:browser' }")
 		expect(application).toContain("{ project: appBrowser, browser: 'app:browser' }")
+	})
+
+	it('pre-seeds every emitted browser project with the Vitest browser entry chain', () => {
+		const browser = rootViteConfig(['browser'])
+		const source = rootViteConfig(['core', 'browser', 'server'])
+		const appBrowser = applicationViteConfig([], ['browser'])
+		const application = applicationViteConfig(
+			['core', 'browser', 'server'],
+			['core', 'browser', 'server'],
+		)
+		const sourceSeed = 'optimizeDeps: { include: [...BROWSER_TEST_DEPENDENCIES] }'
+		const appSeed = "optimizeDeps: { include: ['vue', ...BROWSER_TEST_DEPENDENCIES] }"
+
+		for (const content of [browser, source, appBrowser, application]) {
+			for (const specifier of [
+				'@vitest/browser/client',
+				'vitest/browser',
+				'vitest/internal/browser',
+				'vitest',
+			]) {
+				expect(content).toContain(`'${specifier}'`)
+			}
+		}
+		expect(browser.split(sourceSeed)).toHaveLength(2)
+		expect(source.split(sourceSeed)).toHaveLength(2)
+		expect(appBrowser.split(appSeed)).toHaveLength(2)
+		expect(application.split(sourceSeed)).toHaveLength(2)
+		expect(application.split(appSeed)).toHaveLength(2)
 	})
 
 	it('loads both emitted gate branches and exact project-filter forms with real Vitest configuration', async () => {

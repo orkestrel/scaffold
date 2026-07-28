@@ -2168,6 +2168,14 @@ ${EXPORT_KEYWORD} ${CONST_KEYWORD} ENVIRONMENT_CSS = Object.freeze({
 		},
 	},
 } satisfies CSSOptions)
+
+/** Dependencies every Vitest browser project pre-optimizes before its first run. */
+${EXPORT_KEYWORD} ${CONST_KEYWORD} BROWSER_TEST_DEPENDENCIES = Object.freeze([
+	'@vitest/browser/client',
+	'vitest/browser',
+	'vitest/internal/browser',
+	'vitest',
+])
 `
 		: ''
 }${EXPORT_KEYWORD} ${CONST_KEYWORD} PACKAGE_MANIFEST_BYTES = 1_048_576
@@ -2243,6 +2251,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 					external: (id: string) => id.startsWith('@orkestrel/'),
 				},
 			},
+			optimizeDeps: { include: [...BROWSER_TEST_DEPENDENCIES] },
 			test: {
 				name: { label: 'src:browser', color: 'yellow' },
 				include: ['tests/src/browser/**/*.test.ts'],
@@ -2420,6 +2429,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 						output: { paths: { '@src/core': '../core/index.js' } },
 					},
 				},
+				optimizeDeps: { include: [...BROWSER_TEST_DEPENDENCIES] },
 				test: {
 					name: { label: 'src:browser', color: 'yellow' },
 					include: ['tests/src/browser/**/*.test.ts'],
@@ -2662,6 +2672,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 					external: (id: string) => ${coreExternal}id.startsWith('@orkestrel/'),${coreOutput}
 				},
 			},
+			optimizeDeps: { include: [...BROWSER_TEST_DEPENDENCIES] },
 			test: {
 				name: { label: 'src:browser', color: 'yellow' },
 				include: ['tests/src/browser/**/*.test.ts'],
@@ -2773,7 +2784,7 @@ ${EXPORT_KEYWORD} function appBrowser(...config: readonly never[]): UserConfig {
 			prepareHtml(),
 			finalizeHtml(),
 		],
-		optimizeDeps: { include: ['vue'] },
+		optimizeDeps: { include: ['vue', ...BROWSER_TEST_DEPENDENCIES] },
 		root: resolveWorkspacePath('app/browser'),
 		publicDir: false,
 		server: {

@@ -77,6 +77,7 @@ import {
 	ORKESTREL_DEPS_PROMPT,
 	PRUNE_EMPTY,
 	PRUNE_SKIPPED,
+	REPAIR_COMPUTED_SCOPE,
 	REPAIR_SCOPE,
 	SCAN_SKIPPED,
 	ENVIRONMENT_CHOICES,
@@ -841,8 +842,8 @@ export class CLI implements CLIInterface {
 				// When the handoff cannot help foreign files (no `--prune`, or no
 				// handoff offered at all), point at the one command that can.
 				if (audit.foreign > 0 && !pruneRequested) this.#reporter.line(FOREIGN_HINT)
-				// computed-origin drift is regenerated, never hand-edited — `repair`
-				// has nothing to offer for it; `generatedNote` says so instead.
+				// Computed-origin drift is regenerated, never hand-edited;
+				// `generatedNote` names the explicit repair opt-in.
 				if (computedCount > 0) this.#reporter.line(generatedNote(computedCount))
 			}
 		}
@@ -863,13 +864,18 @@ export class CLI implements CLIInterface {
 
 		const [compiled] = this.#compile(spec, json)
 
-		// Repair is the host-restoration tool ONLY — scope to host-origin
-		// artifacts before hydrate/diff/apply so a mature repo's hand-written
-		// src/tests/guides/package.json is never overwritten with a stub.
+		// Repair defaults to the host-restoration boundary. `--computed` adds
+		// generated canon while preserving the birth-only template boundary and
+		// package.json's independent publication protection.
+		const computed = values.computed === true
 		const scoped: Plan = {
 			...compiled,
 			blueprint: { ...compiled.blueprint, overrides: [] },
-			artifacts: compiled.artifacts.filter((artifact) => artifact.origin === 'host'),
+			artifacts: compiled.artifacts.filter(
+				(artifact) =>
+					artifact.origin === 'host' ||
+					(computed && artifact.origin === 'computed' && artifact.path !== 'package.json'),
+			),
 		}
 
 		const from = values.from?.[0]
@@ -895,7 +901,7 @@ export class CLI implements CLIInterface {
 		}
 
 		if (!json) {
-			this.#reporter.line(REPAIR_SCOPE)
+			this.#reporter.line(computed ? REPAIR_COMPUTED_SCOPE : REPAIR_SCOPE)
 			this.#reporter.section('Audit')
 			this.#reporter.table(auditTable(audit, plan))
 		}

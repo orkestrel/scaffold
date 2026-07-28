@@ -335,7 +335,7 @@ export function unresolvedVersion(names: readonly string[]): string {
 
 /** Render drift that belongs to generated artifacts. */
 export function generatedNote(count: number): string {
-	return `${countPart(count, 'finding')} in generated files — these are regenerated, not hand-edited; repair does not touch them`
+	return `${countPart(count, 'finding')} in generated files — these are regenerated, not hand-edited; run 'scaffold repair --computed' to restore them`
 }
 
 /** Render live dependency freshness tallies. */

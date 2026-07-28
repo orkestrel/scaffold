@@ -8,7 +8,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync
 import { dirname, join } from 'node:path'
 import { isRecord, parseJSON } from '@orkestrel/contract'
 import { describe, expect, it } from 'vitest'
-import { catalogNames } from '@src/core'
+import { catalogNames, formatJson } from '@src/core'
 import { hostRoot, locateHostSource, readHostManifest } from '@src/server'
 import {
 	buildCatalogFrom,
@@ -597,9 +597,8 @@ describe('scaffold bin', () => {
 				expect(audited.stdout).toContain('in generated files')
 				expect(audited.stdout).not.toContain(REPAIR_HANDOFF_TEXT)
 
-				// `repair` scopes to `host`-origin artifacts only — it cannot touch
-				// (or fix) the computed `tsconfig.json`, so a full audit re-run
-				// after any repair still reports the same drift, exit 1.
+				// Repair without `--computed` scopes to `host`-origin artifacts
+				// only, so a full audit re-run still reports the same drift.
 				const repaired = runBin(['repair', '--apply', '--from', from.path], '', {
 					cwd: packageDirectory,
 				})
@@ -794,6 +793,56 @@ describe('scaffold bin', () => {
 				await from.cleanup()
 			}
 		}, 20000)
+
+		it('--computed repairs generated drift while default, template, host, and package.json ownership stay unchanged', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				const computedPath = join(packageDirectory, 'tsconfig.json')
+				const templatePath = join(packageDirectory, 'README.md')
+				const manifestPath = join(packageDirectory, 'package.json')
+				const canonicalComputed = readFileSync(computedPath, 'utf8')
+				const consumerTemplate = '# consumer-owned readme\n'
+				const parsedManifest: unknown = parseJSON(readFileSync(manifestPath, 'utf8'))
+				if (!isRecord(parsedManifest)) throw new Error('expected a generated manifest object')
+				const consumerManifest = formatJson({ ...parsedManifest, consumer: true })
+
+				writeFileSync(computedPath, '// generated drift\n', 'utf8')
+				writeFileSync(templatePath, consumerTemplate, 'utf8')
+				writeFileSync(manifestPath, consumerManifest, 'utf8')
+				rmSync(join(packageDirectory, '.editorconfig'))
+
+				const defaultRepair = runBin(['repair', '--apply', '--from', from.path], '', {
+					cwd: packageDirectory,
+				})
+				expect(defaultRepair.status).toBe(0)
+				expect(readFileSync(computedPath, 'utf8')).toBe('// generated drift\n')
+				expect(readFileSync(templatePath, 'utf8')).toBe(consumerTemplate)
+				expect(readFileSync(manifestPath, 'utf8')).toBe(consumerManifest)
+				expect(readFileSync(join(packageDirectory, '.editorconfig'), 'utf8')).toBe(
+					HOST_FIXTURE_FILES['.editorconfig'],
+				)
+
+				rmSync(join(packageDirectory, '.editorconfig'))
+				const computedRepair = runBin(
+					['repair', '--computed', '--apply', '--from', from.path],
+					'',
+					{ cwd: packageDirectory },
+				)
+				expect(computedRepair.status).toBe(0)
+				expect(computedRepair.stdout).toContain('shared host-owned and generated artifacts')
+				expect(readFileSync(computedPath, 'utf8')).toBe(canonicalComputed)
+				expect(readFileSync(templatePath, 'utf8')).toBe(consumerTemplate)
+				expect(readFileSync(manifestPath, 'utf8')).toBe(consumerManifest)
+				expect(readFileSync(join(packageDirectory, '.editorconfig'), 'utf8')).toBe(
+					HOST_FIXTURE_FILES['.editorconfig'],
+				)
+			} finally {
+				await cwd.cleanup()
+				await from.cleanup()
+			}
+		}, 30000)
 
 		it('--prune --apply: removes a planted unexpected file under .claude/agents', async () => {
 			// `materializer.prune` scans `.claude/agents`, `.codex/agents`, and `scripts` directly
