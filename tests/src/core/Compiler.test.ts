@@ -307,7 +307,7 @@ describe('Compiler#compile — non-vendored dependency', () => {
 		const scaffolding = compiler.compile(
 			blueprint('router', {
 				src: ['core'],
-				dependencies: [dependency('@orkestrel/scaffold', '^0.0.5')],
+				dependencies: [dependency('@orkestrel/scaffold', '^0.0.6')],
 			}),
 			['guides'],
 		)

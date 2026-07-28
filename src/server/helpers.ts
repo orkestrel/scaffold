@@ -91,6 +91,7 @@ import {
 	isMissingPathError,
 	isPortablePath,
 	isSensitiveHostPath,
+	isTerminalText,
 } from './validators.js'
 import { parseFilesystemPaths, parsePortablePaths } from './parsers.js'
 import { WriteTransaction } from './WriteTransaction.js'
@@ -2853,6 +2854,8 @@ export function consumeCatalogAllowance(allowance: CatalogAllowance, root: strin
  *   `@orkestrel/`. A child with an unreadable or unparsable `package.json`,
  *   or a non-`@orkestrel` name, is skipped silently — it simply is not a
  *   fleet member.
+ * @throws `ScaffoldError('TARGET', …)` when a child directory name contains
+ *   terminal controls and therefore cannot be safely inspected or reported.
  *
  * @example
  * ```ts
@@ -2889,6 +2892,9 @@ export function discoverPackages(
 			if (entry === null) break
 			consumeCatalogAllowance(allowance, root)
 			if (!entry.isDirectory()) continue
+			if (!isTerminalText(entry.name)) {
+				throw new ScaffoldError('TARGET', 'Fleet discovery found a non-portable directory')
+			}
 			const directory = join(root, entry.name)
 			const text = attempt(() =>
 				readFileText(directory, 'package.json', 'TARGET', 'package', MAX_MANIFEST_BYTES),

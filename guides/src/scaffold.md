@@ -936,7 +936,9 @@ anything.
 `consumeCatalogAllowance` decrements the single shared entry allowance and throws `TARGET` before an
 over-budget traversal continues. `discoverPackages` requires a real, unlinked root and lists its
 immediate child directories whose bounded manifest names a scoped package, skipping anything else
-silently. `catalogPackages` applies one allowance across every root and directory rather than
+silently. A control-bearing child directory fails closed before its manifest is read and the
+untrusted name is never reflected in the diagnostic. `catalogPackages` applies one allowance across
+every root and directory rather than
 resetting a per-root budget, then draws each description from the first paragraph of the first
 blockquote of that package's own bounded guide via `guideToDescription`; a missing guide, an
 unreadable or oversized one, or one with no blockquote yields an empty description rather than an

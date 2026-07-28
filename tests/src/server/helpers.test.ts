@@ -40,6 +40,7 @@ import {
 	hostRoot,
 	hydratePlan,
 	isRealDirectory,
+	isTerminalText,
 	listDirectories,
 	listFiles,
 	locateHostSource,
@@ -656,28 +657,38 @@ describe('discoverPackages', () => {
 		},
 	)
 
-	it.skipIf(process.platform === 'win32')(
-		'rejects control-bearing directory names without reflecting them',
-		async () => {
-			const root = await buildTempDirectory()
-			const hostile = `hostile\n\u001b[2J`
-			try {
-				writePackageManifest(join(root.path, hostile), { name: '@orkestrel/hostile' })
-				const result = attempt(() => discoverPackages(root.path))
+	it('rejects control-bearing directory names without reflecting them', async () => {
+		const root = await buildTempDirectory()
+		const hostile = `hostile\n\u001b[2J`
+		try {
+			const created = attempt(() =>
+				writePackageManifest(join(root.path, hostile), { name: '@orkestrel/hostile' }),
+			)
+			const discovered = created.success ? attempt(() => discoverPackages(root.path)) : undefined
+			const error =
+				discovered !== undefined && !discovered.success && isScaffoldError(discovered.error)
+					? discovered.error
+					: undefined
 
-				expect(result.success).toBe(false)
-				if (result.success || !isScaffoldError(result.error)) {
-					throw new Error('expected a ScaffoldError')
-				}
-				expect(result.error.code).toBe('TARGET')
-				expect(result.error.message).toBe('Fleet discovery found a non-portable directory')
-				expect(result.error.message).not.toContain(hostile)
-				expect(result.error.message).not.toContain('\u001b')
-			} finally {
-				await root.cleanup()
-			}
-		},
-	)
+			expect({
+				terminal: isTerminalText(hostile),
+				rejected: !created.success || error !== undefined,
+				code: error?.code,
+				message: error?.message,
+				hostile: error?.message.includes(hostile) ?? false,
+				escape: error?.message.includes('\u001b') ?? false,
+			}).toEqual({
+				terminal: false,
+				rejected: true,
+				code: created.success ? 'TARGET' : undefined,
+				message: created.success ? 'Fleet discovery found a non-portable directory' : undefined,
+				hostile: false,
+				escape: false,
+			})
+		} finally {
+			await root.cleanup()
+		}
+	})
 
 	it('caps a broad directory while consuming entries instead of materializing them all', async () => {
 		const root = await buildTempDirectory()

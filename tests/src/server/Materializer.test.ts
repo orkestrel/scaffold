@@ -1407,17 +1407,16 @@ describe('Materializer.prune', () => {
 				blueprintToPlan(blueprint('prune-symlink-fixture', { src: ['core'] }))
 				let caught: unknown
 				try {
-					materializer.prune(
-						directory.path,
-						readTarget(directory.path, pruneTargets(directory.path, host.path)),
-					)
+					materializer.prune(directory.path, {
+						'scripts/escape.sh': contentToHex('do not touch'),
+					})
 				} catch (error) {
 					caught = error
 				}
 				if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
-				expect(caught.code).toBe('WRITE')
+				expect(caught.code).toBe('TARGET')
 				// Neither the outside file nor the symlink itself was touched — the
-				// containment check throws BEFORE any `unlinkSync` runs.
+				// target preview containment check throws before a write transaction begins.
 				expect(existsSync(join(outside.path, 'secret.txt'))).toBe(true)
 				expect(existsSync(join(directory.path, 'scripts', 'escape.sh'))).toBe(true)
 				materializer.destroy()
