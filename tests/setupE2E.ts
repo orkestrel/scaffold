@@ -187,10 +187,12 @@ export const LEAN_BLUEPRINTS: readonly LeanBlueprint[] = Object.freeze([
 	}),
 ])
 
+/** Marker immediately following the generated browser application's mandatory security prologue. */
+export const BROWSER_SECURITY_MARKER = '\t\t<meta charset='
+
 /** Place adversarial HTML after the generated application's mandatory security prologue. */
 export function browserDocument(original: string, content: string): string {
-	const marker = '\t\t<meta charset='
-	const offset = original.indexOf(marker)
+	const offset = original.indexOf(BROWSER_SECURITY_MARKER)
 	if (offset < 0) throw new Error('generated browser HTML is missing its security prologue')
 	return `${original.slice(0, offset)}\t</head>
 	<body>
@@ -2251,31 +2253,50 @@ export function executeBoundaryCases(
 	cases: readonly BoundaryCase[],
 ): number {
 	const originals = buildBoundaryOriginals(packageDirectory)
+	const browserHtml = join(packageDirectory, 'app', 'browser', 'index.html')
+	const browserOriginal = originals.get(browserHtml) ?? ''
 	let count = 0
-	for (const testCase of cases) {
+	try {
+		for (const testCase of cases) {
+			for (const [path, content] of originals) writeFileSync(path, content, 'utf8')
+			if (testCase.setupPath !== undefined && testCase.setupContent !== undefined) {
+				writeFileSync(testCase.setupPath, testCase.setupContent, 'utf8')
+			}
+			const securedHtml =
+				testCase.path === browserHtml &&
+				testCase.message !== 'must preserve the generated security prologue'
+			const expected = securedHtml
+				? browserDocument(browserOriginal, testCase.content)
+				: testCase.content
+			writeFileSync(testCase.path, expected, 'utf8')
+			const written = readFileSync(testCase.path, 'utf8')
+			expect(written).toBe(expected)
+			if (securedHtml) {
+				const offset = browserOriginal.indexOf(BROWSER_SECURITY_MARKER)
+				expect(offset).toBeGreaterThan(0)
+				expect(written.startsWith(browserOriginal.slice(0, offset))).toBe(true)
+				expect(written.split(testCase.content)).toHaveLength(2)
+			}
+			const rejected = runNpmScript(packageDirectory, testCase.script, 120_000)
+			const output = `${rejected.stdout}${rejected.stderr}`
+			expect(
+				rejected.status,
+				`${testCase.script}: ${testCase.content}\nfixture: ${testCase.setupContent ?? 'none'}\n${output}`,
+			).not.toBe(0)
+			if (!output.includes('orkestrel-environment-boundary')) {
+				throw new Error(
+					`${testCase.script} returned a non-boundary exit for ${testCase.content}\nfixture: ${testCase.setupContent ?? 'none'}\nstatus: ${String(rejected.status)}\nerror: ${rejected.error?.message ?? 'none'}\nsignal: ${rejected.signal ?? 'none'}\n${output}`,
+				)
+			}
+			if (!output.includes(testCase.message)) {
+				throw new Error(
+					`${testCase.script} returned the wrong boundary error for ${testCase.content}\n${output}`,
+				)
+			}
+			count += 1
+		}
+	} finally {
 		for (const [path, content] of originals) writeFileSync(path, content, 'utf8')
-		if (testCase.setupPath !== undefined && testCase.setupContent !== undefined) {
-			writeFileSync(testCase.setupPath, testCase.setupContent, 'utf8')
-		}
-		writeFileSync(testCase.path, testCase.content, 'utf8')
-		expect(readFileSync(testCase.path, 'utf8')).toBe(testCase.content)
-		const rejected = runNpmScript(packageDirectory, testCase.script, 120_000)
-		const output = `${rejected.stdout}${rejected.stderr}`
-		expect(
-			rejected.status,
-			`${testCase.script}: ${testCase.content}\nfixture: ${testCase.setupContent ?? 'none'}\n${output}`,
-		).not.toBe(0)
-		if (!output.includes('orkestrel-environment-boundary')) {
-			throw new Error(
-				`${testCase.script} returned a non-boundary exit for ${testCase.content}\nfixture: ${testCase.setupContent ?? 'none'}\nstatus: ${String(rejected.status)}\nerror: ${rejected.error?.message ?? 'none'}\nsignal: ${rejected.signal ?? 'none'}\n${output}`,
-			)
-		}
-		if (!output.includes(testCase.message)) {
-			throw new Error(
-				`${testCase.script} returned the wrong boundary error for ${testCase.content}\n${output}`,
-			)
-		}
-		count += 1
 	}
 	return count
 }
