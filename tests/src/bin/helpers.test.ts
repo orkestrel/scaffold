@@ -177,11 +177,19 @@ describe('generated consumer clones', () => {
 			const cases = buildBoundaryCases(workspace.path)
 			const first = selectBoundaryCases(cases, 0)
 			const second = selectBoundaryCases(cases, 1)
+			const rawHtml =
+				'<!doctype html><html><body><img src="../server/boundary.txt"></body></html>\n'
 
 			expect(cases).toHaveLength(128)
 			expect(first).toHaveLength(64)
 			expect(second).toHaveLength(64)
 			expect([...first, ...second]).toEqual(cases)
+			expect(cases.some((testCase) => testCase.content === rawHtml)).toBe(true)
+			expect(
+				cases.some(
+					(testCase) => testCase.content !== rawHtml && testCase.content.includes(rawHtml),
+				),
+			).toBe(false)
 		} finally {
 			await workspace.cleanup()
 		}

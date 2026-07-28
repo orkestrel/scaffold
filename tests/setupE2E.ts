@@ -20,12 +20,13 @@ import {
 	existsSync,
 	mkdirSync,
 	readFileSync,
+	realpathSync,
 	renameSync,
 	rmSync,
 	symlinkSync,
 	writeFileSync,
 } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname, join, relative as pathRelative, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { isRecord } from '@orkestrel/contract'
 import { describe, expect, it } from 'vitest'
@@ -2211,17 +2212,8 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 			message: 'Server modules cannot depend on Vue or browser-only modules',
 		},
 	]
-	const prepared = boundaryCases.map((testCase) =>
-		Object.freeze({
-			...testCase,
-			content:
-				testCase.path === browserHtml
-					? browserDocument(originals.get(browserHtml) ?? '', testCase.content)
-					: testCase.content,
-		}),
-	)
 	return Object.freeze([
-		...prepared,
+		...boundaryCases.map((testCase) => Object.freeze(testCase)),
 		Object.freeze({
 			path: browserHtml,
 			content:
@@ -2266,6 +2258,7 @@ export function executeBoundaryCases(
 			writeFileSync(testCase.setupPath, testCase.setupContent, 'utf8')
 		}
 		writeFileSync(testCase.path, testCase.content, 'utf8')
+		expect(readFileSync(testCase.path, 'utf8')).toBe(testCase.content)
 		const rejected = runNpmScript(packageDirectory, testCase.script, 120_000)
 		const output = `${rejected.stdout}${rejected.stderr}`
 		expect(
@@ -2854,13 +2847,18 @@ export async function executeSymlinkConsumer(): Promise<void> {
 
 		const browserLink = join(packageDirectory, 'app', 'browser', 'outside.txt')
 		symlinkSync(outside, browserLink)
+		expect(pathRelative(packageDirectory, outside).startsWith(`..${sep}`)).toBe(true)
+		expect(
+			pathRelative(join(packageDirectory, 'app', 'browser'), outside).startsWith(`..${sep}`),
+		).toBe(true)
+		expect(realpathSync(browserLink)).toBe(realpathSync(outside))
 		const browserHtml = join(packageDirectory, 'app', 'browser', 'index.html')
 		const originalHtml = readFileSync(browserHtml, 'utf8')
 		writeFileSync(
 			browserHtml,
 			browserDocument(
 				originalHtml,
-				'<img src="./outside.txt"><script type="module" src="/main.ts"></script>',
+				'<script type="module">void new URL("./outside.txt", import.meta.url)</script>',
 			),
 			'utf8',
 		)
