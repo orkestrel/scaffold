@@ -217,9 +217,7 @@ describe('application layer compilation', () => {
 		expect(tsconfig?.content).toContain('"@app/browser"')
 		expect(tsconfig?.content).toContain('"@app/server"')
 		expect(vite?.content).toBe(applicationViteConfig([], spec.app))
-		expect(vite?.content).toContain(
-			'projects: [appCore, ...(hasChromium ? [appBrowser()] : []), appServer, policy, guides]',
-		)
+		expect(vite?.content).toContain("{ project: appBrowser, browser: 'app:browser' }")
 		expect(
 			plan.artifacts.find((artifact) => artifact.path === 'app/server/main.ts')?.content,
 		).toContain('startApplicationServer()')
@@ -583,6 +581,42 @@ describe('packageManifest', () => {
 		expect(dev['@vitest/browser-playwright']).toBe('^4.1.10')
 		expect(dev.playwright).toBe('^1.61.1')
 	})
+
+	it('keeps browser-only, mixed, and full project filters stable for config-owned gating', () => {
+		const browser = readRecord(
+			readManifest(packageManifest(blueprint('indexeddb', { src: ['browser'] }))).scripts,
+		)
+		const mixed = readRecord(
+			readManifest(
+				packageManifest(
+					blueprint('router', {
+						src: ['core', 'browser', 'server'],
+					}),
+				),
+			).scripts,
+		)
+		const full = readRecord(
+			readManifest(
+				packageManifest(
+					blueprint('application', {
+						src: ['core', 'browser', 'server'],
+						app: ['core', 'browser', 'server'],
+					}),
+				),
+			).scripts,
+		)
+
+		expect(browser['test:src']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project src:browser',
+		)
+		expect(browser['test:src:browser']).toBe(browser['test:src'])
+		expect(mixed['test:src']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:browser --project src:server',
+		)
+		expect(full['test:app']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project app:core --project app:browser --project app:server',
+		)
+	})
 })
 
 describe('rootTsconfig', () => {
@@ -911,7 +945,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		)
 
 		expect(createHash('sha256').update(content).digest('hex')).toBe(
-			'd3393c3ce74c77b25d128f17caca804331ba0b582efca65ff8f2947cb57fba9a',
+			'7cf7cd77b74fe37d05acd725f7a97ae818e46337e1aa6b45bcc3f4ac355dbd08',
 		)
 	})
 
@@ -990,7 +1024,27 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		expect(content).toContain('@vitest/browser-playwright')
 	})
 
-	it('excludes every browser project from discovery when Chromium is unavailable', () => {
+	it('keeps the indexeddb browser, policy, and guides shape registered through the shared gate', () => {
+		const content = rootViteConfig(['browser'])
+
+		expect(content).not.toContain('hasChromium ? [')
+		expect(content).toContain(
+			[
+				'\ttest: gateBrowserProjects(',
+				'\t\t[',
+				"\t\t\t{ project: srcBrowser, browser: 'src:browser' },",
+				'\t\t\t{ project: policy },',
+				'\t\t\t{ project: guides },',
+				'\t\t],',
+			].join('\n'),
+		)
+		expect(content).toContain("name: { label: registration.browser, color: 'yellow' }")
+		expect(content).toContain('include: []')
+		expect(content).toContain("environment: 'node'")
+		expect(content).toContain('browser: { enabled: false }')
+	})
+
+	it('emits one gate owner whose present branch returns every real browser project', () => {
 		const browser = rootViteConfig(['browser'])
 		const source = rootViteConfig(['core', 'browser', 'server'])
 		const appBrowser = applicationViteConfig([], ['browser'])
@@ -999,29 +1053,101 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 			['core', 'browser', 'server'],
 		)
 
-		expect(browser).toContain(
-			"if (!hasChromium) console.warn('browser projects skipped: Chromium absent (src:browser)')",
-		)
-		expect(source).toContain(
-			"if (!hasChromium) console.warn('browser projects skipped: Chromium absent (src:browser)')",
-		)
-		expect(appBrowser).toContain(
-			"if (!hasChromium) console.warn('browser projects skipped: Chromium absent (app:browser)')",
-		)
-		expect(application).toContain(
-			"if (!hasChromium)\n\tconsole.warn('browser projects skipped: Chromium absent (src:browser, app:browser)')",
-		)
 		for (const content of [browser, source, appBrowser, application]) {
+			expect(content.split('function gateBrowserProjects(')).toHaveLength(2)
 			expect(content.split('console.warn(')).toHaveLength(2)
+			expect(content).toContain('projects.push(registration.project())')
+			expect(content).toContain('include: [')
+			expect(content).toContain('enabled: true')
+			expect(content).not.toContain('include: hasChromium ?')
+			expect(content).not.toContain('enabled: hasChromium')
 		}
-		expect(browser).toContain('projects: [...(hasChromium ? [srcBrowser] : []), policy, guides]')
-		expect(source).toContain(
-			'projects: [srcCore, ...(hasChromium ? [srcBrowser] : []), srcServer, policy, guides]',
+		expect(source).toContain("{ project: srcBrowser, browser: 'src:browser' }")
+		expect(application).toContain("{ project: srcBrowser, browser: 'src:browser' }")
+		expect(application).toContain("{ project: appBrowser, browser: 'app:browser' }")
+	})
+
+	it('emits same-label no-test placeholders and greens only all-gated exact filters when absent', () => {
+		const browser = rootViteConfig(['browser'])
+		const source = rootViteConfig(['core', 'browser', 'server'])
+		const application = applicationViteConfig(
+			['core', 'browser', 'server'],
+			['core', 'browser', 'server'],
 		)
-		expect(application).toContain('...(hasChromium ? [srcBrowser] : [])')
-		expect(application).toContain('...(hasChromium ? [appBrowser()] : [])')
-		expect(application).toContain("include: hasChromium ? ['tests/app/browser/**/*.test.ts'] : []")
-		expect(application).toContain('passWithNoTests: !hasChromium')
+
+		for (const content of [browser, source, application]) {
+			expect(content).toContain('if (registration.browser !== undefined && !chromium)')
+			expect(content).toContain("name: { label: registration.browser, color: 'yellow' }")
+			expect(content).toContain('include: []')
+			expect(content).toContain('browser: { enabled: false }')
+			expect(content).toContain(
+				"console.warn(`browser projects skipped: Chromium absent (${gated.join(', ')})`)",
+			)
+			expect(content).toContain("if (argv[index] !== '--project') continue")
+			expect(content).toContain(
+				'filters.length > 0 && filters.every((filter) => gated.includes(filter))',
+			)
+			expect(content).toContain('{ passWithNoTests: true, projects }')
+		}
+	})
+
+	it('loads both emitted gate branches with real Vitest project configuration', async () => {
+		const directory = await buildWorkspaceTempDirectory()
+		try {
+			writeFileSync(join(directory.path, 'emitted.config.ts'), rootViteConfig(['browser']), 'utf8')
+			writeFileSync(
+				join(directory.path, 'tsconfig.json'),
+				'{"compilerOptions":{"paths":{}}}\n',
+				'utf8',
+			)
+			for (const chromium of [false, true]) {
+				const configPath = join(directory.path, `gate-${chromium}.config.ts`)
+				writeFileSync(
+					configPath,
+					[
+						"import { defineConfig } from 'vitest/config'",
+						"import { gateBrowserProjects } from './emitted.config.ts'",
+						'',
+						'export default defineConfig({',
+						'\ttest: gateBrowserProjects(',
+						'\t\t[',
+						'\t\t\t{',
+						"\t\t\t\tbrowser: 'src:browser',",
+						'\t\t\t\tproject: () => ({',
+						'\t\t\t\t\ttest: {',
+						"\t\t\t\t\t\tname: { label: 'actual', color: 'blue' },",
+						"\t\t\t\t\t\tinclude: ['tests/actual.test.ts'],",
+						'\t\t\t\t\t},',
+						'\t\t\t\t}),',
+						'\t\t\t},',
+						'\t\t],',
+						`\t\t${chromium},`,
+						"\t\t['--project', 'src:browser'],",
+						'\t),',
+						'})',
+						'',
+					].join('\n'),
+					'utf8',
+				)
+				const loaded = await loadConfigFromFile(
+					{ command: 'serve', mode: 'test' },
+					configPath,
+					directory.path,
+					'silent',
+				)
+				const test = readRecord(loaded?.config.test)
+				if (!Array.isArray(test.projects)) throw new Error('expected emitted test projects')
+				const project = readRecord(test.projects[0])
+				const projectTest = readRecord(project.test)
+				const name = readRecord(projectTest.name)
+
+				expect(name.label).toBe(chromium ? 'actual' : 'src:browser')
+				expect(projectTest.include).toEqual(chromium ? ['tests/actual.test.ts'] : [])
+				expect(test.passWithNoTests).toBe(chromium ? undefined : true)
+			}
+		} finally {
+			await directory.cleanup()
+		}
 	})
 
 	it('keeps non-browser projects directly discoverable without a Chromium guard', () => {

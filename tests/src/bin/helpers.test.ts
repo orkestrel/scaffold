@@ -207,7 +207,7 @@ describe('generated consumer clones', () => {
 		}
 	})
 
-	it('maps boundary scripts and compares normalized build verdicts exactly', () => {
+	it('maps boundary scripts and compares the original boundary contract exactly', () => {
 		expect(resolveBoundaryConfig('build:app:browser')).toBe('configs/app/vite.browser.config.ts')
 		expect(resolveBoundaryConfig('build:app:server')).toBe('configs/app/vite.server.config.ts')
 		expect(resolveBoundaryConfig('build:src:browser')).toBe('configs/src/vite.browser.config.ts')
@@ -238,14 +238,16 @@ describe('generated consumer clones', () => {
 
 		expect(classifyBoundaryBuild({ ...equivalent, status: 0 })).toBe('accepted')
 		expect(classifyBoundaryBuild(reference)).toBe('rejected')
-		expect(classifyBoundaryBuild(failed)).toBe('failed')
+		expect(classifyBoundaryBuild(failed)).toBe('rejected')
 		expect(extractBoundaryIdentity(reference.stderr)).toBe(boundary)
 		expect(extractBoundaryIdentity('ordinary build failure\n')).toBeUndefined()
-		expect(renderBoundaryDifference(reference, equivalent)).toBeUndefined()
-		expect(renderBoundaryDifference(reference, failed)).toBe(
+		expect(renderBoundaryDifference(reference, equivalent, 'Browser cannot import server')).toBe(
+			undefined,
+		)
+		expect(renderBoundaryDifference(reference, failed, 'Browser cannot import server')).toBe(
 			[
 				'spawn verdict: rejected',
-				'driver verdict: failed',
+				'driver verdict: rejected',
 				`spawn boundary: ${boundary}`,
 				'driver boundary: none',
 				'spawn output:',
@@ -254,6 +256,29 @@ describe('generated consumer clones', () => {
 				failed.stderr,
 			].join('\n'),
 		)
+		const controls = 'Environment module URLs cannot contain ASCII controls'
+		const stacked = {
+			status: 1,
+			stdout: '',
+			stderr: `cause: Error [RolldownError]: ${controls}\nplugin: 'orkestrel-environment-boundary'\n`,
+			signal: null,
+		}
+		const clean = {
+			status: 1,
+			stdout: `Error: [orkestrel-environment-boundary] ${controls}\n`,
+			stderr: '',
+			signal: null,
+		}
+
+		expect(extractBoundaryIdentity(stacked.stderr)).toBeUndefined()
+		expect(renderBoundaryDifference(stacked, clean, controls)).toBeUndefined()
+		expect(
+			renderBoundaryDifference(
+				reference,
+				{ ...equivalent, stdout: `${equivalent.stdout.trimEnd()} with different detail\n` },
+				'Browser cannot import server',
+			),
+		).not.toBeUndefined()
 		expect(renderBoundaryDriverExit(1, null, 17, 'Error: child failed', 'stderr suffix\n')).toBe(
 			[
 				'boundary build driver exited 1 (no signal)',

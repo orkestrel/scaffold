@@ -2037,7 +2037,47 @@ ${CONST_KEYWORD} resolve = {
 
 ${
 	needsBrowser
-		? `${EXPORT_KEYWORD} ${CONST_KEYWORD} ENVIRONMENT_CSS = Object.freeze({
+		? `${EXPORT_KEYWORD} function gateBrowserProjects(
+	registrations: readonly {
+		readonly project: () => UserConfig
+		readonly browser?: string
+	}[],
+	available: boolean,
+	argv: readonly string[],
+): NonNullable<UserConfig['test']> {
+	const projects: UserConfig[] = []
+	const gated: string[] = []
+	for (const registration of registrations) {
+		if (registration.browser !== undefined && !available) {
+			gated.push(registration.browser)
+			projects.push({
+				resolve,
+				test: {
+					name: { label: registration.browser, color: 'yellow' },
+					include: [],
+					environment: 'node',
+					browser: { enabled: false },
+				},
+			})
+			continue
+		}
+		projects.push(registration.project())
+	}
+	if (gated.length === 0) return { projects }
+	console.warn(\`browser projects skipped: Chromium absent (\${gated.join(', ')})\`)
+	const filters: string[] = []
+	for (let index = 0; index < argv.length; index += 1) {
+		if (argv[index] !== '--project') continue
+		const filter = argv[index + 1]
+		if (filter !== undefined) filters.push(filter)
+		index += 1
+	}
+	return filters.length > 0 && filters.every((filter) => gated.includes(filter))
+		? { passWithNoTests: true, projects }
+		: { projects }
+}
+
+${EXPORT_KEYWORD} ${CONST_KEYWORD} ENVIRONMENT_CSS = Object.freeze({
 	transformer: 'lightningcss',
 	lightningcss: {
 		visitor: () => {
@@ -2121,7 +2161,6 @@ export function singleSrcViteConfig(environment: 'browser' | 'server'): string {
 	const header = viteHeader(machinery)
 	if (environment === 'browser') {
 		return `${header}
-if (!hasChromium) console.warn('browser projects skipped: Chromium absent (${SRC_MATRIX.browser.project})')
 ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
@@ -2146,11 +2185,10 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 			},
 			test: {
 				name: { label: 'src:browser', color: 'yellow' },
-				include: hasChromium ? ['tests/src/browser/**/*.test.ts'] : [],
-				passWithNoTests: !hasChromium,
+				include: ['tests/src/browser/**/*.test.ts'],
 				setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
 				browser: {
-					enabled: hasChromium,
+					enabled: true,
 					provider: playwright(),
 					instances: [{ browser: 'chromium', headless: true }],
 				},
@@ -2179,9 +2217,15 @@ ${EXPORT_KEYWORD} const guides = (config?: UserConfig): UserConfig =>
 
 export default defineConfig({
 	resolve,
-	test: {
-		projects: [...(hasChromium ? [srcBrowser] : []), policy, guides],
-	},
+	test: gateBrowserProjects(
+		[
+			{ project: srcBrowser, browser: 'src:browser' },
+			{ project: policy },
+			{ project: guides },
+		],
+		hasChromium,
+		process.argv,
+	),
 })
 `
 	}
@@ -2318,12 +2362,11 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 				},
 				test: {
 					name: { label: 'src:browser', color: 'yellow' },
-					include: hasChromium ? ['tests/src/browser/**/*.test.ts'] : [],
-					passWithNoTests: !hasChromium,
+					include: ['tests/src/browser/**/*.test.ts'],
 					exclude: ['tests/src/core/**/*.test.ts'],
 					setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
 					browser: {
-						enabled: hasChromium,
+						enabled: true,
 						provider: playwright(),
 						instances: [{ browser: 'chromium', headless: true }],
 					},
@@ -2428,11 +2471,7 @@ ${EXPORT_KEYWORD} const integration = (config?: UserConfig): UserConfig =>
 			.join('') + binBlock
 	const projectNames = [
 		...(hasCore ? ['srcCore'] : []),
-		...nonCore.map((environment) =>
-			environment === 'browser'
-				? '...(hasChromium ? [srcBrowser] : [])'
-				: `src${pascalCase(environment)}`,
-		),
+		...nonCore.map((environment) => `src${pascalCase(environment)}`),
 		'policy',
 		'guides',
 		...(engine ? ['srcBin'] : []),
@@ -2445,8 +2484,24 @@ ${EXPORT_KEYWORD} const integration = (config?: UserConfig): UserConfig =>
 			: `		projects: [
 ${projectNames.map((project) => `			${project},`).join('\n')}
 		],`
+	const browserRegistrations = projectNames.map((project) =>
+		project === 'srcBrowser'
+			? `{ project: ${project}, browser: '${SRC_MATRIX.browser.project}' }`
+			: `{ project: ${project} }`,
+	)
+	const renderedTest = machinery.browser
+		? `	test: gateBrowserProjects(
+		[
+${browserRegistrations.map((registration) => `			${registration},`).join('\n')}
+		],
+		hasChromium,
+		process.argv,
+	),`
+		: `	test: {
+${renderedProjects}
+	},`
 	return `${header}
-${machinery.browser ? `if (!hasChromium) console.warn('browser projects skipped: Chromium absent (${SRC_MATRIX.browser.project})')\n` : ''}${EXPORT_KEYWORD} const srcCore = (config?: UserConfig): UserConfig =>
+${EXPORT_KEYWORD} const srcCore = (config?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
 			resolve,
@@ -2484,9 +2539,7 @@ ${EXPORT_KEYWORD} const guides = (config?: UserConfig): UserConfig =>
 ${blocks}
 export default defineConfig({
 	resolve,
-	test: {
-${renderedProjects}
-	},
+${renderedTest}
 })
 `
 }
@@ -2539,7 +2592,7 @@ ${EXPORT_KEYWORD} const srcCore = (config?: UserConfig): UserConfig =>
 `)
 	}
 	if (src.includes('browser')) {
-		projects.push('...(hasChromium ? [srcBrowser] : [])')
+		projects.push('srcBrowser')
 		const coreOutput = hasSourceCore
 			? `
 					output: { paths: { '@src/core': '../core/index.js' } },`
@@ -2570,11 +2623,10 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 			},
 			test: {
 				name: { label: 'src:browser', color: 'yellow' },
-				include: hasChromium ? ['tests/src/browser/**/*.test.ts'] : [],
-				passWithNoTests: !hasChromium,
+				include: ['tests/src/browser/**/*.test.ts'],
 				${hasSourceCore ? "exclude: ['tests/src/core/**/*.test.ts'],\n\t\t\t\t" : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
 				browser: {
-					enabled: hasChromium,
+					enabled: true,
 					provider: playwright(),
 					instances: [{ browser: 'chromium', headless: true }],
 				},
@@ -2660,7 +2712,7 @@ ${EXPORT_KEYWORD} const appCore = (config?: UserConfig): UserConfig =>
 `)
 	}
 	if (app.includes('browser')) {
-		projects.push('...(hasChromium ? [appBrowser()] : [])')
+		projects.push('appBrowser')
 		blocks.push(`
 ${EXPORT_KEYWORD} function appBrowser(...config: readonly never[]): UserConfig {
 	if (config.length > 0) {
@@ -2701,11 +2753,10 @@ ${EXPORT_KEYWORD} function appBrowser(...config: readonly never[]): UserConfig {
 			name: { label: '${APP_MATRIX.browser.project}', color: 'blue' },
 			root: resolveWorkspacePath('.'),
 			dir: resolveWorkspacePath('.'),
-			include: hasChromium ? ['tests/app/browser/**/*.test.ts'] : [],
-			passWithNoTests: !hasChromium,
+			include: ['tests/app/browser/**/*.test.ts'],
 			setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
 			browser: {
-				enabled: hasChromium,
+				enabled: true,
 				provider: playwright(),
 				instances: [{ browser: 'chromium', headless: true }],
 			},
@@ -2803,23 +2854,26 @@ ${EXPORT_KEYWORD} const integration = (config?: UserConfig): UserConfig =>
 			: `		projects: [
 ${projectNames.map((project) => `			${project},`).join('\n')}
 		],`
-	const browserProjects = [
-		...(src.includes('browser') ? [SRC_MATRIX.browser.project] : []),
-		...(app.includes('browser') ? [APP_MATRIX.browser.project] : []),
-	]
-	const browserNotice = serializeTypeScriptString(
-		`browser projects skipped: Chromium absent (${browserProjects.join(', ')})`,
+	const browserRegistrations = projectNames.map((project) =>
+		project === 'srcBrowser'
+			? `{ project: ${project}, browser: '${SRC_MATRIX.browser.project}' }`
+			: project === 'appBrowser'
+				? `{ project: ${project}, browser: '${APP_MATRIX.browser.project}' }`
+				: `{ project: ${project} }`,
 	)
-	const inlineBrowserNotice = `if (!hasChromium) console.warn(${browserNotice})`
-	const renderedBrowserNotice =
-		browserProjects.length === 0
-			? undefined
-			: computeColumnWidth(inlineBrowserNotice) <= JSON_PRINT_WIDTH
-				? inlineBrowserNotice
-				: `if (!hasChromium)
-	console.warn(${browserNotice})`
+	const renderedTest = machinery.browser
+		? `	test: gateBrowserProjects(
+		[
+${browserRegistrations.map((registration) => `			${registration},`).join('\n')}
+		],
+		hasChromium,
+		process.argv,
+	),`
+		: `	test: {
+${renderedProjects}
+	},`
 	return `${header}
-${renderedBrowserNotice === undefined ? '' : `${renderedBrowserNotice}\n`}${policyViteProject()}
+${policyViteProject()}
 ${EXPORT_KEYWORD} const guides = (config?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
@@ -2838,9 +2892,7 @@ ${EXPORT_KEYWORD} const guides = (config?: UserConfig): UserConfig =>
 ${blocks.join('')}
 export default defineConfig({
 	resolve,
-	test: {
-${renderedProjects}
-	},
+${renderedTest}
 })
 `
 }

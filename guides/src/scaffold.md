@@ -1546,10 +1546,12 @@ host-origin file and run it as a dedicated Node-only `policy` test project over
 **Real browser capability.** Browser test projects are gated on the real executable: the generated
 configuration and the generated policy test both probe `existsSync(chromium.executablePath())`. A
 browser suite runs when a real Chromium is installed and is skipped honestly when it is not, rather
-than being faked. The gate is applied at registration, not only inside the project: without a
-Chromium the browser project is left out of the emitted `projects` list entirely, so the runner
-never has to reconcile a registered project whose include set resolves to nothing, and one printed
-warning names every omitted project label. A machine with a browser runs the browser suite; a
+than being faked. The gate is applied at registration, not inside the real browser project: without
+Chromium, each browser factory is replaced by a same-label Node/no-test placeholder, so generated
+`--project` filters still resolve while no browser code runs. The root permits an empty run only
+when every exact project filter names one of those gated placeholders; a mixed filter keeps the
+ordinary no-test failure semantics for its Node projects. One printed warning names every gated
+project label. A machine with a browser registers and runs the real browser suites unchanged; a
 machine without one runs the remaining projects and says so.
 
 **Continuous integration.** The generated workflow runs on push and pull request, on
