@@ -276,7 +276,13 @@ journal head as the recovery handle.
   `tmp/codex/<unit>-brief.md`, one `codex exec --json` streaming to `tmp/codex/<unit>.jsonl`
   with `--output-last-message`, foreground when it fits the shell cap, backgrounded with the
   turn ended when it may not — the harness re-invocation is the wait; placeholder loops and
-  wait-promise reports are deviations. Recovery ladder on interruption: persisted-id
+  wait-promise reports are deviations. Every exec names its working directory with `-C`, and
+  that directory must be a trusted git repository; cross-repo and fleet-container work rooted
+  outside a checkout adds `--skip-git-repo-check`, or the exec dies on its first line with
+  `Not inside a trusted directory`. A launch is not a launch until the journal grows past its
+  header: the bridge confirms the event stream advanced beyond the session-configured head
+  before it reports the exec started, and treats an instantly-dead journal as a failed launch
+  whose tail is the evidence. Recovery ladder on interruption: persisted-id
   `codex-reply` re-emission → fresh CLI session with the same brief file → for an interrupted
   CLI exec, the journal survives and the Orchestrator chooses resume or fresh.
 - **The inverse bridge exists too:** Claude Code exposes `claude mcp serve`, registered in
@@ -296,10 +302,18 @@ journal head as the recovery handle.
   snapshotted setup state must contain no Codex credentials.
 - At the start of each live Cloud session the user runs `codex login --device-auth` and
   completes ChatGPT approval in the browser. `scripts/codex.sh` only reports readiness; it
-  never installs, authenticates, logs out, reads the auth cache, or performs a model call.
-- If ChatGPT device login is unavailable or expires, the Codex bench is dark. Fall back to
-  `planner`/`reviewer` (Opus 5) and `builder`, and say so. Never substitute an API key, access
-  token, copied `auth.json`, or another login flow unless the user changes this policy.
+  never installs, authenticates, logs out, reads the auth cache, or performs a model call. A
+  probe that finds the binary present but authentication unavailable starts recovery in the
+  same turn instead of recording the bench dark and waiting: the Orchestrator backgrounds
+  `codex login --device-auth` with its output captured to `tmp/codex/login.log`, surfaces the
+  verification URL and one-time code to the user the moment they appear there, arms a watcher
+  on completion, and re-probes `codex login status` when it fires. The bench comes live
+  mid-session with no restart; a session that sits dark until the user asks for the login has
+  failed the probe, not the bench.
+- If that recovery cannot complete — device login unavailable, declined, or expired — the
+  Codex bench is dark. Fall back to `planner`/`reviewer` (Opus 5) and `builder`, and say so.
+  Never substitute an API key, access token, copied `auth.json`, or another login flow unless
+  the user changes this policy.
 
 Codex environment defaults:
 
