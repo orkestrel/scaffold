@@ -25,6 +25,7 @@ import {
 	JSON_PRINT_WIDTH,
 	JSON_TAB_WIDTH,
 	manifestToDependencies,
+	manifestToName,
 	MAX_MANIFEST_BYTES,
 	override,
 	ownDataValue,
@@ -461,6 +462,23 @@ describe('diffPlan — template origin is birth-only, audit-exempt', () => {
 			'aligned',
 		)
 		expect(audit.drifted).toBe(0)
+	})
+
+	it('keeps an absent self-owned guide as the sole aligned finding', () => {
+		const compiled = blueprintToPlan(blueprint('scaffold', { src: ['core'] }), ['guides'])
+		const plan: Plan = {
+			...compiled,
+			artifacts: compiled.artifacts.filter(
+				(artifact) => artifact.path === 'guides/src/scaffold.md',
+			),
+		}
+		const audit = diffPlan(plan, {})
+
+		expect(audit.findings).toEqual([
+			{ path: 'guides/src/scaffold.md', group: 'guides', drift: 'aligned' },
+		])
+		expect(audit.missing).toBe(0)
+		expect(audit.clean).toBe(true)
 	})
 
 	it('is aligned when a template artifact content differs from current', () => {
@@ -1036,6 +1054,28 @@ describe('manifestToDependencies', () => {
 	})
 })
 
+describe('manifestToName', () => {
+	it('projects scoped and unscoped own string names', () => {
+		expect(manifestToName('{"name":"@orkestrel/router"}')).toBe('@orkestrel/router')
+		expect(manifestToName('{"name":"dashboard"}')).toBe('dashboard')
+	})
+
+	it('returns undefined for malformed, non-object, missing, and non-string names', () => {
+		for (const manifest of ['{not json', '[]', '{}', '{"name":1}']) {
+			expect(manifestToName(manifest)).toBeUndefined()
+		}
+	})
+
+	it('accepts the exact manifest byte ceiling and rejects one byte beyond it', () => {
+		const prefix = '{"name":"@orkestrel/router","padding":"'
+		const suffix = '"}'
+		const exact = `${prefix}${'a'.repeat(MAX_MANIFEST_BYTES - prefix.length - suffix.length)}${suffix}`
+
+		expect(manifestToName(exact)).toBe('@orkestrel/router')
+		expect(manifestToName(`${exact} `)).toBeUndefined()
+	})
+})
+
 describe('ownDataValue', () => {
 	it('returns own data and rejects inherited or accessor-backed values', () => {
 		const inherited = Object.create({ name: 'inherited' })
@@ -1312,6 +1352,15 @@ describe('selectHostPaths', () => {
 		expect(selectHostPaths(paths, 'scaffold')).toEqual(['guides/src/guide.md', 'LICENSE'])
 		expect(paths).toEqual(['guides/src/guide.md', 'guides/src/scaffold.md', 'LICENSE'])
 	})
+
+	it.each(['@orkestrel/guide', 'Guide', 'nested/guide'])(
+		'uses exact path equality for the %s boundary',
+		(name) => {
+			const paths = Object.freeze(['guides/src/guide.md'])
+
+			expect(selectHostPaths(paths, name)).toEqual(paths)
+		},
+	)
 })
 
 describe('findPathConflict', () => {

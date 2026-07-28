@@ -13,6 +13,7 @@ import type {
 	Snapshot,
 	SyncReport,
 } from '@src/core'
+import type { SyncOptions } from '@src/server'
 import {
 	blueprint,
 	blueprintToPlan,
@@ -51,6 +52,7 @@ import {
 	readHostManifest,
 	readManifest,
 	readTarget,
+	parseSyncOptions,
 	resolvePhysicalPath,
 	validateWriteDirectories,
 	WriteTransaction,
@@ -145,6 +147,7 @@ import { isVerb } from './validators.js'
 
 /** Stateful command-line orchestration and its process boundary. */
 export class CLI implements CLIInterface {
+	readonly #sync: SyncOptions
 	#sink = createServerSink()
 	#tty = process.stdout.isTTY === true
 	#styler = createStyler({ enabled: process.env.NO_COLOR === undefined && this.#tty })
@@ -154,6 +157,15 @@ export class CLI implements CLIInterface {
 		styler: this.#styler,
 	})
 	#json = false
+
+	/**
+	 * Create command-line orchestration with optional upstream endpoint settings.
+	 *
+	 * @param sync - Sync settings used by every live dependency operation.
+	 */
+	constructor(sync?: SyncOptions) {
+		this.#sync = parseSyncOptions(sync)
+	}
 
 	/** Execute one command-line argument vector. */
 	async run(argv: readonly string[]): Promise<void> {
@@ -580,7 +592,7 @@ export class CLI implements CLIInterface {
 
 		// `--deps` resolves latest versions from the registry and pins caret ranges; their
 		// guides fetch into the plan.
-		const sync = createSync()
+		const sync = createSync(this.#sync)
 		let versions
 		try {
 			versions = await sync.versions(depNames.map((depName) => dependency(depName, '*')))
@@ -652,7 +664,9 @@ export class CLI implements CLIInterface {
 	async #pull(values: CLIValues, json: boolean): Promise<void> {
 		const target = this.#contain(values.target ?? '.', json)
 
-		const sync = createSync(values.strict === undefined ? undefined : { strict: values.strict })
+		const sync = createSync(
+			values.strict === undefined ? this.#sync : { ...this.#sync, strict: values.strict },
+		)
 		try {
 			let report: SyncReport
 			try {
@@ -743,9 +757,11 @@ export class CLI implements CLIInterface {
 
 		let live: LiveResult | undefined
 		if (values.live) {
-			const sync = createSync()
+			const sync = createSync(this.#sync)
 			try {
-				const guides = await sync.guides(deps)
+				const manifestName = spec.src.length > 0 ? `@orkestrel/${spec.name}` : spec.name
+				const guideDependencies = deps.filter((entry) => entry.name !== manifestName)
+				const guides = await sync.guides(guideDependencies)
 				const versions = await sync.versions(deps)
 				const entries = [...guides, ...versions]
 				drifted ||= entries.some((entry) => entry.freshness !== 'current')
@@ -1144,7 +1160,7 @@ export class CLI implements CLIInterface {
 				this.#error(error, json)
 			}
 		} else {
-			const sync = createSync()
+			const sync = createSync(this.#sync)
 			sync.emitter.on('package', (name, note) => {
 				if (note !== '') notes.set(name, note)
 			})

@@ -701,7 +701,7 @@ describe('Sync.catalog', () => {
 // ── Sync.pull ─────────────────────────────────────────────────────────────
 
 describe('Sync.pull', () => {
-	it('excludes its own guide from pull writes while retaining self version freshness', async () => {
+	it('fetches a non-self guide while excluding a generic self guide and retaining its version', async () => {
 		const fixture = await buildHTTPFixture()
 		const directory = await buildTempDirectory()
 		let selfGuideRequests = 0
@@ -709,23 +709,25 @@ describe('Sync.pull', () => {
 			writeFileSync(
 				join(directory.path, 'package.json'),
 				JSON.stringify({
-					name: '@orkestrel/guide',
-					dependencies: { '@orkestrel/contract': '^0.0.5' },
-					devDependencies: { '@orkestrel/guide': '^0.0.5' },
+					name: '@orkestrel/router',
+					dependencies: {
+						'@orkestrel/guide': '^0.0.5',
+						'@orkestrel/router': '^0.0.5',
+					},
 				}),
 				'utf8',
 			)
-			fixture.route(buildGuidePath('guide'), (_request, response) => {
+			fixture.route(buildGuidePath('router'), (_request, response) => {
 				selfGuideRequests += 1
 				respondText(response, 200, 'self guide replacement')
 			})
-			fixture.route(buildGuidePath('contract'), (_request, response) =>
-				respondText(response, 200, 'contract guide'),
+			fixture.route(buildGuidePath('guide'), (_request, response) =>
+				respondText(response, 200, 'guide guide'),
 			)
 			fixture.route(buildRegistryPath('@orkestrel/guide'), (_request, response) =>
 				respondJSON(response, '0.0.5'),
 			)
-			fixture.route(buildRegistryPath('@orkestrel/contract'), (_request, response) =>
+			fixture.route(buildRegistryPath('@orkestrel/router'), (_request, response) =>
 				respondJSON(response, '0.0.5'),
 			)
 			const sync = createSync({ guides: { base: fixture.base }, registry: { base: fixture.base } })
@@ -734,17 +736,17 @@ describe('Sync.pull', () => {
 				const written = await sync.write(report, directory.path)
 
 				expect(selfGuideRequests).toBe(0)
-				expect(report.guides.map((guide) => guide.name)).toEqual(['@orkestrel/contract'])
+				expect(report.guides.map((guide) => guide.name)).toEqual(['@orkestrel/guide'])
 				expect(
-					report.versions.find((version) => version.name === '@orkestrel/guide'),
+					report.versions.find((version) => version.name === '@orkestrel/router'),
 				).toMatchObject({
 					freshness: 'current',
 				})
-				expect(written).toEqual(['guides/src/contract.md'])
-				expect(readFileSync(join(directory.path, 'guides', 'src', 'contract.md'), 'utf8')).toBe(
-					'contract guide',
+				expect(written).toEqual(['guides/src/guide.md'])
+				expect(readFileSync(join(directory.path, 'guides', 'src', 'guide.md'), 'utf8')).toBe(
+					'guide guide',
 				)
-				expect(existsSync(join(directory.path, 'guides', 'src', 'guide.md'))).toBe(false)
+				expect(existsSync(join(directory.path, 'guides', 'src', 'router.md'))).toBe(false)
 			} finally {
 				sync.destroy()
 			}

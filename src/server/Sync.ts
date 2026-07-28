@@ -22,6 +22,7 @@ import {
 	isSyncReport,
 	hasOnlyDataProperties,
 	manifestToDependencies,
+	manifestToName,
 	ownDataValue,
 	parseSyncReport,
 	rangeToFreshness,
@@ -309,10 +310,9 @@ export class Sync implements SyncInterface {
 		) {
 			throw new ScaffoldError('INVALID', 'Sync pull selection is not declared by the target')
 		}
-		const parsed = parseJSON(manifest)
-		const name = isRecord(parsed) ? ownDataValue(parsed, 'name') : undefined
+		const name = manifestToName(manifest)
 		const guideDependencies =
-			typeof name === 'string' ? deps.filter((dependency) => dependency.name !== name) : deps
+			name === undefined ? deps : deps.filter((dependency) => dependency.name !== name)
 		const current = readGuideReferences(target, guideDependencies)
 		const allowance: SyncAllowance = Float64Array.of(this.#budget)
 		const guides = await this.#guides(guideDependencies, current, allowance)

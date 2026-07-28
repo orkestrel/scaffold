@@ -1056,6 +1056,41 @@ describe('blueprintToPlan guide ownership', () => {
 		expect(mirrors).toHaveLength(1)
 		expect(mirrors[0]).toMatchObject({ group: 'guides', origin: 'host' })
 	})
+
+	it('lets a vendored package own its guide when it declares itself as a dependency', () => {
+		const plan = blueprintToPlan(
+			blueprint('contract', {
+				src: ['core'],
+				dependencies: [dependency('@orkestrel/contract', '^0.0.7')],
+			}),
+			['guides'],
+		)
+		const guides = plan.artifacts.filter((artifact) => artifact.path === 'guides/src/contract.md')
+
+		expect(guides).toEqual([
+			expect.objectContaining({
+				path: 'guides/src/contract.md',
+				group: 'guides',
+				origin: 'template',
+			}),
+		])
+	})
+
+	it.each([
+		{ name: 'scaffold', other: 'guide' },
+		{ name: 'guide', other: 'scaffold' },
+	])('keeps the other host mirror beside the $name self-guide', ({ name, other }) => {
+		const plan = blueprintToPlan(blueprint(name, { src: ['core'] }), ['guides'])
+		const mirror = plan.artifacts.filter((artifact) => artifact.path === `guides/src/${other}.md`)
+
+		expect(mirror).toEqual([
+			expect.objectContaining({
+				path: `guides/src/${other}.md`,
+				group: 'guides',
+				origin: 'host',
+			}),
+		])
+	})
 })
 
 describe('applyOverrides', () => {

@@ -3764,12 +3764,15 @@ export function guideTests(spec: Blueprint, pascal: string): string {
 
 /**
  * Draft the `guides` group's artifacts — the package's own filled guide stub,
- * the guides index, and any vendored dependency guide mirrors.
+ * the guides index, and vendored dependency guide mirrors whose paths are
+ * neither the package's own guide nor already carried by the selected host
+ * set.
  *
  * @param spec - The `Blueprint` to derive guide artifacts from.
  * @param pascal - The package's PascalCase entity name.
  * @param members - The blueprint's derived `Member[]`.
- * @returns The `guides` group's `Artifact[]`.
+ * @returns The `guides` group's `Artifact[]`, with one contributor per guide
+ * path.
  *
  * @example
  * ```ts
@@ -3861,13 +3864,12 @@ export function guideArtifacts(
 			),
 		}),
 	]
-	const hostPaths = selectHostPaths(HOST_PATHS, spec.name)
 	const guidePath = `guides/src/${spec.name}.md`
 	for (const dep of spec.dependencies) {
 		if (!vendoredGuides.includes(dep.name)) continue
 		const short = dep.name.replace('@orkestrel/', '')
 		const path = `guides/src/${short}.md`
-		if (path === guidePath || hostPaths.includes(path)) continue
+		if (HOST_PATHS.includes(path) || path === guidePath) continue
 		artifacts.push({
 			path,
 			group: 'guides',
@@ -3910,7 +3912,7 @@ export function applyOverrides(
 /**
  * The full pure compilation: draft a blueprint's artifacts — the manifest and
  * exports combination rules over the per-environment `SRC_MATRIX` rows, plus
- * `HOST_PATHS` and `overrides` — then pin.
+ * the `selectHostPaths` selection of `HOST_PATHS` and `overrides` — then pin.
  *
  * @param blueprint - The `Blueprint` to compile.
  * @param groups - An optional `Group[]` selection (default: all groups).

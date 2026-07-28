@@ -277,6 +277,54 @@ describe('Compiler#compile — non-vendored dependency', () => {
 		compiler.destroy()
 	})
 
+	it('does not append a self-named pointer beside the blueprint-owned guide', () => {
+		const compiler = new Compiler()
+
+		const scaffolding = compiler.compile(
+			blueprint('router', {
+				src: ['core'],
+				dependencies: [dependency('@orkestrel/router', '^0.0.1')],
+			}),
+			['guides'],
+		)
+		const guides = scaffolding.plan?.artifacts.filter(
+			(artifact) => artifact.path === 'guides/src/router.md',
+		)
+
+		expect(guides).toEqual([
+			expect.objectContaining({
+				path: 'guides/src/router.md',
+				group: 'guides',
+				origin: 'template',
+			}),
+		])
+		compiler.destroy()
+	})
+
+	it('does not append a pointer when the selected host set carries the mirror', () => {
+		const compiler = new Compiler()
+
+		const scaffolding = compiler.compile(
+			blueprint('router', {
+				src: ['core'],
+				dependencies: [dependency('@orkestrel/scaffold', '^0.0.5')],
+			}),
+			['guides'],
+		)
+		const guides = scaffolding.plan?.artifacts.filter(
+			(artifact) => artifact.path === 'guides/src/scaffold.md',
+		)
+
+		expect(guides).toEqual([
+			expect.objectContaining({
+				path: 'guides/src/scaffold.md',
+				group: 'guides',
+				origin: 'host',
+			}),
+		])
+		compiler.destroy()
+	})
+
 	it('does NOT emit a question for a vendored dependency', () => {
 		const compiler = new Compiler()
 

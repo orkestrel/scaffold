@@ -92,6 +92,19 @@ export async function buildTempDirectory(): Promise<TempDirectoryInterface> {
 	return new TempDirectory(path)
 }
 
+/**
+ * Create a temporary directory inside the workspace for containment-boundary tests.
+ *
+ * @returns A {@link TempDirectoryInterface} rooted under the workspace's
+ * ignored `tmp` directory.
+ */
+export async function buildWorkspaceTempDirectory(): Promise<TempDirectoryInterface> {
+	const root = join(WORKSPACE_ROOT, 'tmp')
+	mkdirSync(root, { recursive: true })
+	const path = await mkdtemp(join(root, 'scaffold-server-'))
+	return new TempDirectory(path)
+}
+
 /** Build a package manifest plus the source directories blueprint derivation inspects. */
 export function buildBlueprintFixture(root: string, options: BlueprintFixtureOptions): void {
 	mkdirSync(root, { recursive: true })

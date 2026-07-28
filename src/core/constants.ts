@@ -118,9 +118,12 @@ export const APP_MATRIX: Readonly<Record<Environment, AppDefinition>> = Object.f
  * The root docs (`AGENTS.md` / `CLAUDE.md`), `LICENSE`, `.agents`, `.claude`, `.codex`,
  * the four SessionStart hook scripts (`scripts/deps.sh` / `scripts/cursor.sh` /
  * `scripts/codex.sh` / `scripts/ollama.sh`), the repository coding-law policy module,
- * the line's seven byte-identical root dotfiles, and the two guides-grouped mirrors every repo carries: the line-wide
- * dev-tooling guide (`guides/src/guide.md`) and the
- * scaffold engine's own self-guide (`guides/src/scaffold.md`).
+ * the line's seven byte-identical root dotfiles, and the two guides-grouped
+ * mirror candidates: the line-wide dev-tooling guide
+ * (`guides/src/guide.md`) and the scaffold engine's own self-guide
+ * (`guides/src/scaffold.md`). `stageHost` vendors both; each plan carries the
+ * subset selected by `selectHostPaths`, omitting the target blueprint's own
+ * guide.
  */
 export const HOST_PATHS: readonly string[] = Object.freeze([
 	'AGENTS.md',

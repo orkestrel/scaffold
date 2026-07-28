@@ -1545,6 +1545,32 @@ export function manifestToDependencies(manifestText: string): readonly Dependenc
 }
 
 /**
+ * Project a `package.json` text to its own string `name`.
+ *
+ * @param manifest - The `package.json` file content.
+ * @returns The own string `name`, or `undefined` when the manifest exceeds its
+ * byte ceiling, is malformed, has a non-object root, or has no own string
+ * `name`.
+ *
+ * @example
+ * ```ts
+ * import { manifestToName } from '@orkestrel/scaffold'
+ *
+ * manifestToName('{"name":"@orkestrel/router"}') // '@orkestrel/router'
+ * manifestToName('{}') // undefined
+ * ```
+ */
+export function manifestToName(manifest: string): string | undefined {
+	if (manifest.length > MAX_MANIFEST_BYTES || contentByteLength(manifest) > MAX_MANIFEST_BYTES) {
+		return undefined
+	}
+	const parsed = parseJSON(manifest)
+	if (!isRecord(parsed)) return undefined
+	const name = ownDataValue(parsed, 'name')
+	return typeof name === 'string' ? name : undefined
+}
+
+/**
  * Compare a declared range to the registry latest.
  *
  * @param range - The declared semver range.
