@@ -2056,6 +2056,7 @@ export function singleSrcViteConfig(environment: 'browser' | 'server'): string {
 	const header = viteHeader(machinery)
 	if (environment === 'browser') {
 		return `${header}
+if (!hasChromium) console.warn('browser projects skipped: Chromium absent (${SRC_MATRIX.browser.project})')
 ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
@@ -2380,7 +2381,7 @@ ${EXPORT_KEYWORD} const integration = (config?: UserConfig): UserConfig =>
 ${projectNames.map((project) => `			${project},`).join('\n')}
 		],`
 	return `${header}
-${EXPORT_KEYWORD} const srcCore = (config?: UserConfig): UserConfig =>
+${machinery.browser ? `if (!hasChromium) console.warn('browser projects skipped: Chromium absent (${SRC_MATRIX.browser.project})')\n` : ''}${EXPORT_KEYWORD} const srcCore = (config?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
 			resolve,
@@ -2737,8 +2738,23 @@ ${EXPORT_KEYWORD} const integration = (config?: UserConfig): UserConfig =>
 			: `		projects: [
 ${projectNames.map((project) => `			${project},`).join('\n')}
 		],`
+	const browserProjects = [
+		...(src.includes('browser') ? [SRC_MATRIX.browser.project] : []),
+		...(app.includes('browser') ? [APP_MATRIX.browser.project] : []),
+	]
+	const browserNotice = serializeTypeScriptString(
+		`browser projects skipped: Chromium absent (${browserProjects.join(', ')})`,
+	)
+	const inlineBrowserNotice = `if (!hasChromium) console.warn(${browserNotice})`
+	const renderedBrowserNotice =
+		browserProjects.length === 0
+			? undefined
+			: computeColumnWidth(inlineBrowserNotice) <= JSON_PRINT_WIDTH
+				? inlineBrowserNotice
+				: `if (!hasChromium)
+	console.warn(${browserNotice})`
 	return `${header}
-${policyViteProject()}
+${renderedBrowserNotice === undefined ? '' : `${renderedBrowserNotice}\n`}${policyViteProject()}
 ${EXPORT_KEYWORD} const guides = (config?: UserConfig): UserConfig =>
 	mergeConfig(
 		{

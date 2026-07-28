@@ -796,7 +796,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		)
 
 		expect(createHash('sha256').update(content).digest('hex')).toBe(
-			'7bb0c8526b89e6a32eae257d16765849e7918c5562059af1d1247e041bab2aca',
+			'63c9cef8360aefdfbf79cc11730c13af46256177e7ce14c656caf199e080e3f5',
 		)
 	})
 
@@ -867,11 +867,27 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 	it('excludes every browser project from discovery when Chromium is unavailable', () => {
 		const browser = rootViteConfig(['browser'])
 		const source = rootViteConfig(['core', 'browser', 'server'])
+		const appBrowser = applicationViteConfig([], ['browser'])
 		const application = applicationViteConfig(
 			['core', 'browser', 'server'],
 			['core', 'browser', 'server'],
 		)
 
+		expect(browser).toContain(
+			"if (!hasChromium) console.warn('browser projects skipped: Chromium absent (src:browser)')",
+		)
+		expect(source).toContain(
+			"if (!hasChromium) console.warn('browser projects skipped: Chromium absent (src:browser)')",
+		)
+		expect(appBrowser).toContain(
+			"if (!hasChromium) console.warn('browser projects skipped: Chromium absent (app:browser)')",
+		)
+		expect(application).toContain(
+			"if (!hasChromium)\n\tconsole.warn('browser projects skipped: Chromium absent (src:browser, app:browser)')",
+		)
+		for (const content of [browser, source, appBrowser, application]) {
+			expect(content.split('console.warn(')).toHaveLength(2)
+		}
 		expect(browser).toContain('projects: [...(hasChromium ? [srcBrowser] : []), policy, guides]')
 		expect(source).toContain(
 			'projects: [srcCore, ...(hasChromium ? [srcBrowser] : []), srcServer, policy, guides]',
@@ -886,6 +902,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		const content = applicationViteConfig(['core', 'server'], ['core', 'server'])
 
 		expect(content).not.toContain('hasChromium')
+		expect(content).not.toContain('console.warn(')
 		expect(content).toContain('projects: [srcCore, srcServer, appCore, appServer, policy, guides]')
 	})
 

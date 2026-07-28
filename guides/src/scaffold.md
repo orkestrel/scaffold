@@ -1551,8 +1551,9 @@ configuration and the generated policy test both probe `existsSync(chromium.exec
 browser suite runs when a real Chromium is installed and is skipped honestly when it is not, rather
 than being faked. The gate is applied at registration, not only inside the project: without a
 Chromium the browser project is left out of the emitted `projects` list entirely, so the runner
-never has to reconcile a registered project whose include set resolves to nothing. A machine with a
-browser runs the browser suite; a machine without one runs the remaining projects and says so.
+never has to reconcile a registered project whose include set resolves to nothing, and one printed
+warning names every omitted project label. A machine with a browser runs the browser suite; a
+machine without one runs the remaining projects and says so.
 
 **Continuous integration.** The generated workflow runs on push and pull request, on
 `ubuntu-latest`, with read-only contents permission, a 60-minute timeout, and a matrix that **tests
