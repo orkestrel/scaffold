@@ -1068,14 +1068,19 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 					"import { resolve as resolvePath } from 'node:path'",
 					"import { fileURLToPath, URL } from 'node:url'",
 					"import { defineConfig } from 'vite'",
-					"import { isWorkspaceBoundaryModule } from './boundary.config.ts'",
+					"import { isWorkspaceBoundaryModule, physicalPath } from './boundary.config.ts'",
 					'',
 					"const root = fileURLToPath(new URL('.', import.meta.url))",
 					"const absolute = resolvePath(root, 'app/browser/index.html')",
+					'const collapsed = `/@fs${absolute}`',
+					'if (physicalPath(collapsed) !== absolute) {',
+					"\tthrow new Error('collapsed /@fs/ path did not restore its leading slash')",
+					'}',
 					'const cases: readonly (readonly [string, boolean])[] = [',
 					'\t[absolute, true],',
 					"\t['/app/browser/index.html', true],",
 					'\t[`/@fs/${absolute}`, true],',
+					'\t[collapsed, true],',
 					'\t[`${absolute}?html-proxy&index=0.js`, true],',
 					"\t[resolvePath(root, 'node_modules/vite/client.mjs'), false],",
 					"\t[resolvePath(root, 'node_modules/.vite-temp/vite.config.ts.timestamp.mjs'), false],",
@@ -1085,6 +1090,92 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 					'\tif (isWorkspaceBoundaryModule(id) !== expected) {',
 					'\t\tthrow new Error(`unexpected boundary classification for ${id}`)',
 					'\t}',
+					'}',
+					'',
+					'export default defineConfig({})',
+					'',
+				].join('\n'),
+				'utf8',
+			)
+
+			await expect(
+				loadConfigFromFile(
+					{ command: 'build', mode: 'test' },
+					configPath,
+					directory.path,
+					'silent',
+				),
+			).resolves.not.toBeNull()
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('emits app browser tester boundary exemptions without widening workspace roots', () => {
+		const content = applicationViteConfig([], ['browser'])
+
+		expect(content).toContain('function decodeFileSystemPath(path: string): string {')
+		expect(content.split('decodeFileSystemPath(')).toHaveLength(6)
+		expect(content).toContain('? decodeFileSystemPath(pathWithoutQuery)')
+		expect(content).toContain("? decodeFileSystemPath(path) : path")
+		expect(content).toContain('const candidate = decodeFileSystemPath(decoded)')
+		expect(content).toContain("if (decoded === '/') return undefined")
+		expect(content).not.toContain('roots.push(physicalPath(environmentRoot))')
+		expect(
+			content.split(
+				"const entry = physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/index.html'))",
+			),
+		).toHaveLength(4)
+		expect(content.split('if (physicalPath(context.filename) !== entry) return undefined')).toHaveLength(
+			4,
+		)
+	})
+
+	it('resolves existing absolute browser module URLs before root-relative denials', async () => {
+		const directory = await buildWorkspaceTempDirectory()
+		try {
+			const content = applicationViteConfig([], ['browser'])
+			const pathStart = content.indexOf('export function decodeFileSystemPath')
+			const pathEnd = content.indexOf('\n\nexport function sourceFallback', pathStart)
+			const browserStart = content.indexOf('export function browserServerPath')
+			const browserEnd = content.indexOf(
+				'\n\nexport function isBrowserServerPathAllowed',
+				browserStart,
+			)
+			if (pathStart === -1 || pathEnd === -1 || browserStart === -1 || browserEnd === -1) {
+				throw new Error('emitted browser path helpers were not found')
+			}
+			const root = join(directory.path, 'app', 'browser')
+			mkdirSync(root, { recursive: true })
+			const configPath = join(directory.path, 'absolute.config.ts')
+			const missing = join(directory.path, 'tests', 'missing.ts')
+			writeFileSync(
+				configPath,
+				[
+					"import { existsSync, realpathSync } from 'node:fs'",
+					"import { dirname, isAbsolute, resolve as resolvePath } from 'node:path'",
+					"import { fileURLToPath } from 'node:url'",
+					"import { defineConfig } from 'vite'",
+					'',
+					'const WORKSPACE_ROOT = realpathSync.native(dirname(fileURLToPath(import.meta.url)))',
+					'',
+					content.slice(pathStart, pathEnd),
+					'',
+					content.slice(browserStart, browserEnd),
+					'',
+					`const root = ${serializeTypeScriptString(root)}`,
+					`const existing = ${serializeTypeScriptString(configPath)}`,
+					`const missing = ${serializeTypeScriptString(missing)}`,
+					'const expected = physicalPath(resolvePath(root, missing.slice(1)))',
+					'',
+					'if (browserServerPath(existing, root) !== physicalPath(existing)) {',
+					"\tthrow new Error('existing absolute browser path was mangled')",
+					'}',
+					'if (existsSync(missing)) {',
+					"\tthrow new Error('nonexistent browser path fixture unexpectedly exists')",
+					'}',
+					'if (browserServerPath(missing, root) !== expected) {',
+					"\tthrow new Error('nonexistent absolute browser path escaped root-relative denial')",
 					'}',
 					'',
 					'export default defineConfig({})',
@@ -1318,7 +1409,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		for (const name of outputNames) expect(appCore).not.toContain(name)
 	})
 
-	it('keeps the S4 full-app vite template byte-equivalent', () => {
+	it('keeps the S4 full-app vite template canonical', () => {
 		const content = applicationViteConfig(
 			['core', 'browser', 'server'],
 			['core', 'browser', 'server'],
@@ -1326,7 +1417,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 
 		expect(content).toContain('\t)\n\nexport const policy')
 		expect(createHash('sha256').update(content).digest('hex')).toBe(
-			'f6355e33cab86f8fdac47cc7905023915e67997ba7a8cac2e7e446095f699440',
+			'e71869234bc558c2de51f5b241f71a894fbb28aa218c72cf6424ba4f8432e423',
 		)
 	})
 
@@ -1362,7 +1453,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		expect(content).toContain('finalizeHtml()')
 		expect(content).toContain("outputBoundary('dist/app/browser'),")
 		expect(content).toContain('const environmentKeys = new Set<string>()')
-		expect(content).toContain('handler: maskIgnoredHtml.bind(undefined, environmentKeys)')
+		expect(content).toContain('return maskIgnoredHtml(environmentKeys, html)')
 		expect(content).not.toContain('HTML_ENVIRONMENT_KEYS')
 		expect(content).toContain('HTML_SECURITY_PREFIX')
 		expect(content).toContain("script-src 'self'")

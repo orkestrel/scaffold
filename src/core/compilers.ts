@@ -1065,10 +1065,17 @@ import { parse as parseVue } from 'vue/compiler-sfc'
 	const environmentBoundary = `
 ${CONST_KEYWORD} WORKSPACE_ROOT = realpathSync.native(dirname(fileURLToPath(import.meta.url)))${needsVue ? `\n${EXPORT_KEYWORD} ${CONST_KEYWORD} IMPORT_META_ENV_PREFIX = 'import.meta.env.'` : ''}
 
+${EXPORT_KEYWORD} function decodeFileSystemPath(path: string): string {
+	const candidate = path.slice('/@fs/'.length)
+	return candidate.startsWith('/') || /^[A-Za-z]:[\\\\/]/.test(candidate)
+		? candidate
+		: \`/\${candidate}\`
+}
+
 ${EXPORT_KEYWORD} function physicalPath(path: string): string {
 	const [pathWithoutQuery] = path.split('?')
 	const candidate = pathWithoutQuery?.startsWith('/@fs/')
-		? pathWithoutQuery.slice('/@fs/'.length)
+		? decodeFileSystemPath(pathWithoutQuery)
 		: pathWithoutQuery
 	const physicalCandidate =
 		candidate !== undefined && /^file:/i.test(candidate) ? fileURLToPath(candidate) : candidate
@@ -1130,7 +1137,7 @@ ${EXPORT_KEYWORD} function isWorkspaceBoundaryModule(id: string): boolean {
 	const normalizedId = id.replaceAll('\\\\', '/')
 	const [path] = normalizedId.split(/[?#]/)
 	if (path === undefined) return false
-	let candidate = path.startsWith('/@fs/') ? path.slice('/@fs/'.length) : path
+	let candidate = path.startsWith('/@fs/') ? decodeFileSystemPath(path) : path
 	try {
 		if (/^file:/i.test(candidate)) candidate = fileURLToPath(candidate)
 	} catch {
@@ -1155,7 +1162,7 @@ ${EXPORT_KEYWORD} function isOutsideWorkspacePath(path: string): boolean {
 	const [pathWithoutQuery] = path.split('?')
 	if (pathWithoutQuery === undefined) return false
 	const candidate = pathWithoutQuery.startsWith('/@fs/')
-		? pathWithoutQuery.slice('/@fs/'.length)
+		? decodeFileSystemPath(pathWithoutQuery)
 		: pathWithoutQuery
 	return isAbsolute(candidate)
 }
@@ -1209,7 +1216,7 @@ ${EXPORT_KEYWORD} function browserServerPath(
 	try {
 		const decoded = decodeURIComponent(pathname)
 		if (decoded.startsWith('/@fs/')) {
-			const candidate = decoded.slice('/@fs/'.length)
+			const candidate = decodeFileSystemPath(decoded)
 			if (candidate.length === 0) return null
 			return physicalPath(candidate)
 		}
@@ -1228,8 +1235,13 @@ ${EXPORT_KEYWORD} function browserServerPath(
 			return undefined
 		}
 		if (/^\\/@(?:app|src)\\//.test(decoded)) return null
+		// Vite owns the app root request, while Vitest owns its in-memory tester root request.
+		if (decoded === '/') return undefined
 		if (!decoded.startsWith('/')) return null
-		return physicalPath(resolvePath(root, decoded.slice(1)))
+		const candidate = physicalPath(resolvePath(root, decoded.slice(1)))
+		if (existsSync(candidate)) return candidate
+		if (isAbsolute(decoded) && existsSync(decoded)) return physicalPath(decoded)
+		return candidate
 	} catch {
 		return null
 	}
@@ -1748,6 +1760,7 @@ ${EXPORT_KEYWORD} function maskIgnoredHtml(environmentKeys: ReadonlySet<string>,
 
 ${EXPORT_KEYWORD} function prepareHtml(): Plugin {
 	const environmentKeys = new Set<string>()
+	const entry = physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/index.html'))
 	return {
 		name: 'orkestrel-html-boundary-prepare',
 		enforce: 'post',
@@ -1761,26 +1774,35 @@ ${EXPORT_KEYWORD} function prepareHtml(): Plugin {
 		},
 		transformIndexHtml: {
 			order: 'pre',
-			handler: maskIgnoredHtml.bind(undefined, environmentKeys),
+			handler(html, context) {
+				if (physicalPath(context.filename) !== entry) return undefined
+				return maskIgnoredHtml(environmentKeys, html)
+			},
 		},
 	}
 }
 
 ${EXPORT_KEYWORD} function restoreHtml(): Plugin {
+	const entry = physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/index.html'))
 	return {
 		name: 'orkestrel-html-boundary-restore',
 		enforce: 'pre',
-		transformIndexHtml: restoreIgnoredHtml,
+		transformIndexHtml(html, context) {
+			if (physicalPath(context.filename) !== entry) return undefined
+			return restoreIgnoredHtml(html)
+		},
 	}
 }
 
 ${EXPORT_KEYWORD} function finalizeHtml(): Plugin {
+	const entry = physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/index.html'))
 	return {
 		name: 'orkestrel-html-boundary-finalize',
 		enforce: 'post',
 		transformIndexHtml: {
 			order: 'post',
-			handler(html) {
+			handler(html, context) {
+				if (physicalPath(context.filename) !== entry) return undefined
 				if (!html.includes(HTML_SECURITY_META)) {
 					throw new Error(
 						'[orkestrel-environment-boundary] Browser HTML must retain its security policy',
