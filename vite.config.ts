@@ -53,8 +53,7 @@ export function fileSystemPath(pathname: string): string {
 export function physicalPath(path: string): string {
 	const [pathWithoutQuery] = path.split('?')
 	const candidate = fileSystemPath(pathWithoutQuery ?? path)
-	const physicalCandidate =
-		/^file:/i.test(candidate) ? fileURLToPath(candidate) : candidate
+	const physicalCandidate = /^file:/i.test(candidate) ? fileURLToPath(candidate) : candidate
 	const absoluteCandidate =
 		physicalCandidate.length === 0
 			? WORKSPACE_ROOT

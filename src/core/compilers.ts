@@ -1077,8 +1077,7 @@ ${EXPORT_KEYWORD} function fileSystemPath(pathname: string): string {
 ${EXPORT_KEYWORD} function physicalPath(path: string): string {
 	const [pathWithoutQuery] = path.split('?')
 	const candidate = fileSystemPath(pathWithoutQuery ?? path)
-	const physicalCandidate =
-		/^file:/i.test(candidate) ? fileURLToPath(candidate) : candidate
+	const physicalCandidate = /^file:/i.test(candidate) ? fileURLToPath(candidate) : candidate
 	const absoluteCandidate =
 		physicalCandidate.length === 0
 			? WORKSPACE_ROOT
@@ -1757,8 +1756,7 @@ ${EXPORT_KEYWORD} function maskIgnoredHtml(environmentKeys: ReadonlySet<string>,
 
 ${EXPORT_KEYWORD} function isBrowserHtmlEntry(filename: string): boolean {
 	return (
-		physicalPath(filename) ===
-		physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/index.html'))
+		physicalPath(filename) === physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/index.html'))
 	)
 }
 

@@ -1518,7 +1518,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 
 		expect(content).toContain('\t)\n\nexport const policy')
 		expect(createHash('sha256').update(content).digest('hex')).toBe(
-			'e873024667f901aa457497c781aefeef5cdd226766e1eb342b4ddae1b135e82b',
+			'85a2c14d1aaaeac5a5cdad69d2b0b0d42ac907ff32a078fa0df7592f9c16f26b',
 		)
 	})
 
