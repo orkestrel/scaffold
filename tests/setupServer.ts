@@ -52,6 +52,7 @@ export interface BlueprintFixtureOptions {
 	readonly bin?: boolean
 	readonly integration?: boolean
 	readonly service?: boolean
+	readonly networked?: boolean
 }
 
 /** Focused package shape for filesystem-backed catalog tests. */
@@ -137,6 +138,10 @@ export function buildBlueprintFixture(root: string, options: BlueprintFixtureOpt
 		writeFileSync(join(root, 'tests', 'setupService.ts'), '', 'utf8')
 		mkdirSync(join(root, 'scripts'), { recursive: true })
 		writeFileSync(join(root, 'scripts', 'service.sh'), '', 'utf8')
+	}
+	if (options.networked === true) {
+		mkdirSync(join(root, 'tests'), { recursive: true })
+		writeFileSync(join(root, 'tests', 'setupBrowserServer.ts'), '', 'utf8')
 	}
 }
 

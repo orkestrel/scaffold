@@ -81,6 +81,7 @@ export function blueprintShape() {
 		bin: booleanShape(),
 		integration: booleanShape(),
 		service: booleanShape(),
+		networked: booleanShape(),
 	})
 }
 

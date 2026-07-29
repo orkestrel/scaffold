@@ -143,8 +143,8 @@ export function member(
  * `version` / `engines` default `DEFAULT_VERSION` / `DEFAULT_ENGINES`,
  * `src` defaults `['core']`, and `app` / `keywords` / `dependencies` /
  * `peers` / `extras` / `overrides` default `[]`, and `bin` / `integration` /
- * `service` default `false`. `description` is OMITTED entirely when absent, so
- * the result round-trips the exact-record `Blueprint` guard.
+ * `service` / `networked` default `false`. `description` is OMITTED entirely
+ * when absent, so the result round-trips the exact-record `Blueprint` guard.
  * @returns A complete `Blueprint`.
  *
  * @example
@@ -169,6 +169,7 @@ export function blueprint(name: string, options?: Partial<Omit<Blueprint, 'name'
 		bin: options?.bin ?? false,
 		integration: options?.integration ?? false,
 		service: options?.service ?? false,
+		networked: options?.networked ?? false,
 	}
 	return options?.description === undefined ? base : { ...base, description: options.description }
 }

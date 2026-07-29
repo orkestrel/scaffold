@@ -41,11 +41,12 @@ export interface ViteMachinery {
 	readonly output: boolean
 }
 
-/** Optional structural projects appended to a generated root Vite configuration. */
+/** Optional structural facts consumed by a generated root Vite configuration. */
 export interface ViteAxes {
 	readonly bin?: boolean
 	readonly integration?: boolean
 	readonly service?: boolean
+	readonly networked?: boolean
 }
 
 /** One generated Vitest project factory and its optional browser-project label. */
@@ -169,6 +170,8 @@ export interface Blueprint {
 	readonly integration: boolean
 	/** Structural: `true` only for a repo that ships `tests/service` — a slow, opt-in proof project against a foreign running process, outside the default run, never by name. Derivation requires `tests/setupService.ts` and `scripts/service.sh` beside it and fails `TARGET` otherwise. */
 	readonly service: boolean
+	/** Derived: `true` only for a repo that carries the physical `tests/setupBrowserServer.ts` fixture — its `srcBrowser` project runs that consumer-owned Node fixture as global setup, while application browser projects remain untouched. */
+	readonly networked: boolean
 }
 
 /** One declared public export of the scaffolded package; derived by `blueprintToMembers`, never authored. */

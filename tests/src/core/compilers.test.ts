@@ -1094,6 +1094,65 @@ ${guidesViteProject()}`)
 })
 
 describe('rootViteConfig / singleSrcViteConfig', () => {
+	it.each([
+		{
+			label: 'single source browser',
+			absent: singleSrcViteConfig('browser'),
+			present: singleSrcViteConfig('browser', { networked: true }),
+			plain:
+				"\t\t\t\tinclude: ['tests/src/browser/**/*.test.ts'],\n" +
+				"\t\t\t\tsetupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],",
+			wired:
+				"\t\t\t\tinclude: ['tests/src/browser/**/*.test.ts'],\n" +
+				"\t\t\t\tglobalSetup: './tests/setupBrowserServer.ts',\n" +
+				"\t\t\t\tsetupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],",
+		},
+		{
+			label: 'shared-core source browser',
+			absent: rootViteConfig(['core', 'browser']),
+			present: rootViteConfig(['core', 'browser'], { networked: true }),
+			plain:
+				"\t\t\t\t\tinclude: ['tests/src/browser/**/*.test.ts'],\n" +
+				"\t\t\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" +
+				"\t\t\t\t\tsetupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],",
+			wired:
+				"\t\t\t\t\tinclude: ['tests/src/browser/**/*.test.ts'],\n" +
+				"\t\t\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" +
+				"\t\t\t\t\tglobalSetup: './tests/setupBrowserServer.ts',\n" +
+				"\t\t\t\t\tsetupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],",
+		},
+		{
+			label: 'application-bearing source browser',
+			absent: applicationViteConfig(['core', 'browser'], ['browser']),
+			present: applicationViteConfig(['core', 'browser'], ['browser'], { networked: true }),
+			plain:
+				"\t\t\t\tinclude: ['tests/src/browser/**/*.test.ts'],\n" +
+				"\t\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" +
+				"\t\t\t\tsetupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],",
+			wired:
+				"\t\t\t\tinclude: ['tests/src/browser/**/*.test.ts'],\n" +
+				"\t\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" +
+				"\t\t\t\tglobalSetup: './tests/setupBrowserServer.ts',\n" +
+				"\t\t\t\tsetupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],",
+		},
+	])('emits the derived browser fixture byte-exactly for $label', (fixture) => {
+		const line = "globalSetup: './tests/setupBrowserServer.ts'"
+
+		expect(fixture.absent).toContain(fixture.plain)
+		expect(fixture.absent).not.toContain(line)
+		expect(fixture.present).toBe(fixture.absent.replace(fixture.plain, fixture.wired))
+		expect(fixture.present.split(line)).toHaveLength(2)
+	})
+
+	it('never wires the browser fixture outside a source-browser project', () => {
+		const sourceServer = rootViteConfig(['core', 'server'], { networked: true })
+		const appBrowser = applicationViteConfig([], ['browser'], { networked: true })
+
+		expect(sourceServer).not.toContain("globalSetup: './tests/setupBrowserServer.ts'")
+		expect(appBrowser).not.toContain("globalSetup: './tests/setupBrowserServer.ts'")
+		expect(appBrowser).toContain("setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts']")
+	})
+
 	it('normalizes emitted workspace boundary ids without claiming toolchain modules', async () => {
 		const directory = await buildWorkspaceTempDirectory()
 		try {

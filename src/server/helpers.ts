@@ -52,6 +52,7 @@ import {
 } from '@orkestrel/markdown'
 import {
 	blueprint,
+	BROWSER_SERVER_SETUP_PATH,
 	bytesToHex,
 	contentByteLength,
 	DEFAULT_ENGINES,
@@ -1393,7 +1394,8 @@ export function selectOrkestrelEntries(value: unknown): readonly (readonly [stri
  * `app/<environment>/`; a target with no environment on either axis is also a coded
  * `TARGET` failure. The `bin`, `integration`, and `service` facts probe physical
  * directories at `src/bin`, `tests/integration`, and `tests/service`, respectively,
- * never the workspace name. `dependencies` /
+ * while `networked` probes the physical `tests/setupBrowserServer.ts` file; none is
+ * inferred from the workspace name. `dependencies` /
  * `peers` are the `@orkestrel/`-prefixed entries of `manifest.dependencies` /
  * `manifest.peerDependencies` (a peer flagged `peerDependenciesMeta[name]
  * .optional === true` carries `optional: true`). `extras` is EVERY entry of
@@ -1483,6 +1485,7 @@ export function deriveBlueprint(target: string): Blueprint {
 	const bin = isRealDirectory(join(target, 'src', 'bin'))
 	const integration = isRealDirectory(join(target, 'tests', 'integration'))
 	const service = isRealDirectory(join(target, 'tests', 'service'))
+	const networked = isRealFile(join(target, BROWSER_SERVER_SETUP_PATH))
 	if (service) {
 		const missing: string[] = []
 		if (!isRealFile(join(target, 'tests', 'setupService.ts'))) {
@@ -1538,6 +1541,7 @@ export function deriveBlueprint(target: string): Blueprint {
 					bin,
 					integration,
 					service,
+					networked,
 				}),
 			),
 		),
@@ -1570,6 +1574,7 @@ export function deriveBlueprint(target: string): Blueprint {
 		bin,
 		integration,
 		service,
+		networked,
 	})
 }
 

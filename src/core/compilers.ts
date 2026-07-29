@@ -15,6 +15,7 @@ import {
 	APP_BROWSER_DEV_DEPENDENCIES,
 	BASE_DEV_DEPENDENCIES,
 	BIN_CONFIGS,
+	BROWSER_SERVER_SETUP_PATH,
 	CHECKOUT_ACTION_SHA,
 	CONST_KEYWORD,
 	EXPORT_KEYWORD,
@@ -596,7 +597,8 @@ export function viteMachinery(
  *
  * @param src - The declared published environments.
  * @param app - The declared application environments.
- * @param axes - Optional executable, integration, and service project axes.
+ * @param axes - Optional structural facts; executable, integration, and service
+ *   append projects while `networked` is irrelevant to registration.
  * @returns Source projects, application projects, proof projects, then optional axis projects.
  *
  * @example
@@ -637,7 +639,8 @@ export function viteProjectRegistrations(
 /**
  * Render the one ordered proof and structural-axis project definition block.
  *
- * @param axes - Optional executable, integration, and service project axes.
+ * @param axes - Optional structural facts; executable, integration, and service
+ *   append definitions while `networked` is irrelevant to this block.
  * @returns Policy, guides, then selected axis project definitions, separated by one blank line.
  *
  * @example
@@ -2438,7 +2441,8 @@ export function serviceViteProject(): string {
  * projects.
  *
  * @param environment - The sole declared non-`core` environment.
- * @param axes - Optional executable, integration, and service project axes.
+ * @param axes - Optional executable, integration, service, and source-browser
+ *   fixture facts.
  * @returns The root `vite.config.ts` file content for a single non-`core` environment, newline-terminated.
  *
  * @example
@@ -2490,7 +2494,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 			test: {
 				name: { label: 'src:browser', color: 'yellow' },
 				include: ['tests/src/browser/**/*.test.ts'],
-				setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+				${axes.networked === true ? `globalSetup: './${BROWSER_SERVER_SETUP_PATH}',\n\t\t\t\t` : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
 				...(config?.test?.browser?.enabled === false
 					? {}
 					: {
@@ -2581,9 +2585,9 @@ ${renderedTest}
  *      environment is `browser` (it must run its own tests in a real browser).
  *
  * @param src - The declared `Environment[]`.
- * @param axes - Optional structural project axes. `bin` appends the standalone
- *   executable build-and-test project; `integration` and `service` append their
- *   standalone proof projects.
+ * @param axes - Optional structural facts. `bin` appends the standalone executable
+ *   build-and-test project; `integration` and `service` append their standalone
+ *   proof projects; `networked` wires the source-browser fixture.
  * @returns The root `vite.config.ts` file content, newline-terminated.
  *
  * @example
@@ -2642,7 +2646,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 					name: { label: 'src:browser', color: 'yellow' },
 					include: ['tests/src/browser/**/*.test.ts'],
 					exclude: ['tests/src/core/**/*.test.ts'],
-					setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+					${axes.networked === true ? `globalSetup: './${BROWSER_SERVER_SETUP_PATH}',\n\t\t\t\t\t` : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
 					...(config?.test?.browser?.enabled === false
 						? {}
 						: {
@@ -2751,7 +2755,8 @@ ${renderedTest}
  *
  * @param src - Published src environments.
  * @param app - Private app environments.
- * @param axes - Optional executable, integration, and service project axes.
+ * @param axes - Optional executable, integration, service, and source-browser
+ *   fixture facts.
  * @returns The root `vite.config.ts` content.
  *
  * @example
@@ -2822,7 +2827,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 			test: {
 				name: { label: 'src:browser', color: 'yellow' },
 				include: ['tests/src/browser/**/*.test.ts'],
-				${hasSourceCore ? "exclude: ['tests/src/core/**/*.test.ts'],\n\t\t\t\t" : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+				${hasSourceCore ? "exclude: ['tests/src/core/**/*.test.ts'],\n\t\t\t\t" : ''}${axes.networked === true ? `globalSetup: './${BROWSER_SERVER_SETUP_PATH}',\n\t\t\t\t` : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
 				...(config?.test?.browser?.enabled === false
 					? {}
 					: {

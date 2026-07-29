@@ -20,6 +20,7 @@ import {
 	blueprint,
 	blueprintToPlan,
 	bytesToHex,
+	configArtifacts,
 	contentToHex,
 	diffPlan,
 	isScaffoldError,
@@ -120,8 +121,61 @@ describe('deriveBlueprint', () => {
 				bin: true,
 				integration: true,
 				service: false,
+				networked: false,
 			}),
 		)
+	})
+
+	it('derives the physical browser fixture and audits its committed Vite config clean', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: '@orkestrel/browser-fixture',
+				src: ['core', 'browser'],
+			})
+
+			const absent = deriveBlueprint(directory.path)
+			const absentVite = configArtifacts(absent).find(
+				(artifact) => artifact.path === 'vite.config.ts',
+			)
+			if (absentVite === undefined || absentVite.origin === 'host') {
+				throw new Error('expected a computed Vite config')
+			}
+			expect(absent.networked).toBe(false)
+			expect(absentVite.content).not.toContain("globalSetup: './tests/setupBrowserServer.ts'")
+
+			buildBlueprintFixture(directory.path, {
+				name: '@orkestrel/browser-fixture',
+				src: ['core', 'browser'],
+				networked: true,
+			})
+			const present = deriveBlueprint(directory.path)
+			const presentVite = configArtifacts(present).find(
+				(artifact) => artifact.path === 'vite.config.ts',
+			)
+			if (presentVite === undefined || presentVite.origin === 'host') {
+				throw new Error('expected a computed Vite config')
+			}
+			expect(present.networked).toBe(true)
+			expect(presentVite.content).toContain("globalSetup: './tests/setupBrowserServer.ts'")
+
+			writeFileSync(join(directory.path, presentVite.path), presentVite.content, 'utf8')
+			const plan: Plan = {
+				blueprint: present,
+				groups: ['configs'],
+				artifacts: [presentVite],
+			}
+			const audit = diffPlan(plan, readTarget(directory.path, [presentVite.path]))
+
+			expect(audit).toMatchObject({
+				clean: true,
+				drifted: 0,
+				missing: 0,
+				foreign: 0,
+			})
+		} finally {
+			await directory.cleanup()
+		}
 	})
 
 	it('rejects inherited manifest identity and publication fields', async () => {
