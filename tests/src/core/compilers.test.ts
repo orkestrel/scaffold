@@ -51,6 +51,7 @@ import {
 	TYPESCRIPT_EXTENSIONS,
 	viteHeader,
 	viteMachinery,
+	viteProjectDefinitions,
 	viteProjectRegistrations,
 } from '@src/core'
 import {
@@ -738,23 +739,42 @@ describe('proof Vite projects and registration', () => {
 	it('emits the executable project from its single compiler without changing its behavior', () => {
 		const bin = binViteProject()
 
+		expect(bin).toContain('\t\t\tresolve,')
+		expect(bin).toContain('\t\t\tpublicDir: false,')
 		expect(bin).toContain("entry: resolveWorkspacePath('src/bin/scaffold.ts')")
 		expect(bin).toContain("outDir: 'dist/bin'")
+		expect(bin).toContain('\t\t\t\temptyOutDir: true,')
+		expect(bin).toContain('\t\t\t\tsourcemap: true,')
+		expect(bin).toContain('\t\t\t\tminify: false,')
 		expect(bin).toContain("include: ['tests/src/bin/**/*.test.ts']")
 		expect(bin).toContain("setupFiles: ['./tests/setup.ts', './tests/setupServer.ts']")
 		expect(bin).toContain("environment: 'node'")
 		expect(bin).toContain('browser: { enabled: false }')
+		expect(bin).not.toContain("exclude: ['tests/src/core/**/*.test.ts']")
+		expect(bin).not.toContain("exclude: ['tests/src/server/**/*.test.ts']")
 	})
 
-	it('derives one registration order for source, application, proof, and axis projects', () => {
+	it('renders one ordered proof and axis definition block with exact separators', () => {
+		expect(viteProjectDefinitions()).toBe(`${policyViteProject()}
+${guidesViteProject()}`)
+		expect(viteProjectDefinitions({ bin: true, integration: true, service: true })).toBe(
+			[
+				policyViteProject(),
+				guidesViteProject(),
+				binViteProject(),
+				integrationViteProject(),
+				serviceViteProject(),
+			].join('\n'),
+		)
+	})
+
+	it('derives canonical registration order regardless of caller environment order', () => {
 		expect(
-			viteProjectRegistrations(
-				['core', 'browser', 'server'],
-				['core', 'browser', 'server'],
-				true,
-				true,
-				true,
-			),
+			viteProjectRegistrations(['server', 'core', 'browser'], ['server', 'browser', 'core'], {
+				bin: true,
+				integration: true,
+				service: true,
+			}),
 		).toEqual([
 			{ project: 'srcCore' },
 			{ project: 'srcBrowser', browser: 'src:browser' },
@@ -768,6 +788,40 @@ describe('proof Vite projects and registration', () => {
 			{ project: 'integration' },
 			{ project: 'service' },
 		])
+	})
+
+	it('emits root definitions in the same canonical order as their registrations', () => {
+		const content = rootViteConfig(['server', 'core', 'browser'], {
+			bin: true,
+			integration: true,
+			service: true,
+		})
+		const definitions = [
+			'export const srcCore =',
+			'export const srcBrowser =',
+			'export const srcServer =',
+			'export const policy =',
+			'export const guides =',
+			'export const srcBin =',
+			'export const integration =',
+			'export const service =',
+		]
+		const positions = definitions.map((definition) => content.indexOf(definition))
+
+		expect(positions).not.toContain(-1)
+		expect(positions).toEqual([...positions].sort((left, right) => left - right))
+		expect(content).toContain(
+			[
+				'\t\t\t{ project: srcCore },',
+				"\t\t\t{ project: srcBrowser, browser: 'src:browser' },",
+				'\t\t\t{ project: srcServer },',
+				'\t\t\t{ project: policy },',
+				'\t\t\t{ project: guides },',
+				'\t\t\t{ project: srcBin },',
+				'\t\t\t{ project: integration },',
+				'\t\t\t{ project: service },',
+			].join('\n'),
+		)
 	})
 
 	it('emits each demanded proof-project definition exactly once across every root shape', () => {
@@ -805,19 +859,19 @@ describe('proof Vite projects and registration', () => {
 				service: false,
 			},
 			{
-				content: rootViteConfig(['core', 'server'], true, false, false),
+				content: rootViteConfig(['core', 'server'], { bin: true }),
 				bin: true,
 				integration: false,
 				service: false,
 			},
 			{
-				content: rootViteConfig(['server'], false, true, false),
+				content: rootViteConfig(['server'], { integration: true }),
 				bin: false,
 				integration: true,
 				service: false,
 			},
 			{
-				content: applicationViteConfig([], ['server'], false, false, true),
+				content: applicationViteConfig([], ['server'], { service: true }),
 				bin: false,
 				integration: false,
 				service: true,
@@ -1123,8 +1177,9 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 			['core', 'browser', 'server'],
 		)
 
+		expect(content).toContain('\t)\n\nexport const policy')
 		expect(createHash('sha256').update(content).digest('hex')).toBe(
-			'acce2225d47ad0260fa40132538e0196f291519a0dba2d1ef2cbc5776668e302',
+			'f6355e33cab86f8fdac47cc7905023915e67997ba7a8cac2e7e446095f699440',
 		)
 	})
 
@@ -1412,18 +1467,18 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		expect(child).not.toContain("include: ['tests/integration/**/*.test.ts']")
 		expect(child).not.toContain("include: ['tests/service/**/*.test.ts']")
 
-		const bin = rootViteConfig(['core', 'server'], true, false, false)
+		const bin = rootViteConfig(['core', 'server'], { bin: true })
 		expect(bin).toContain("entry: resolveWorkspacePath('src/bin/scaffold.ts')")
 		expect(bin).toContain("outDir: 'dist/bin'")
 		expect(bin).toContain('projects: [srcCore, srcServer, policy, guides, srcBin]')
 		expect(bin).not.toContain("include: ['tests/integration/**/*.test.ts']")
 
-		const integration = rootViteConfig(['server'], false, true, false)
+		const integration = rootViteConfig(['server'], { integration: true })
 		expect(integration).not.toContain('srcBin')
 		expect(integration).toContain('projects: [srcServer, policy, guides, integration]')
 		expect(integration).toContain("include: ['tests/integration/**/*.test.ts']")
 
-		const service = applicationViteConfig([], ['server'], false, false, true)
+		const service = applicationViteConfig([], ['server'], { service: true })
 		expect(service).toContain('projects: [appServer, policy, guides, service]')
 		expect(service).toContain("include: ['tests/service/**/*.test.ts']")
 	})

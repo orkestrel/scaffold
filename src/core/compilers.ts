@@ -6,6 +6,7 @@ import type {
 	Member,
 	Plan,
 	Environment,
+	ViteAxes,
 	ViteMachinery,
 	ViteProjectRegistration,
 } from './types.js'
@@ -21,6 +22,7 @@ import {
 	GROUPS,
 	HOST_PATHS,
 	JSON_PRINT_WIDTH,
+	ENVIRONMENTS,
 	SOURCE_BROWSER_DEV_DEPENDENCIES,
 	SETUP_NODE_ACTION_SHA,
 	SRC_MATRIX,
@@ -605,33 +607,31 @@ export function viteMachinery(
  *
  * @param src - The declared published environments.
  * @param app - The declared application environments.
- * @param bin - Whether the workspace builds its executable project.
- * @param integration - Whether the workspace carries its integration proof project.
- * @param service - Whether the workspace carries its service proof project.
+ * @param axes - Optional executable, integration, and service project axes.
  * @returns Source projects, application projects, proof projects, then optional axis projects.
  *
  * @example
  * ```ts
- * viteProjectRegistrations(['core'], [], false, true)
+ * viteProjectRegistrations(['core'], [], { integration: true })
  * // [{ project: 'srcCore' }, { project: 'policy' }, { project: 'guides' }, { project: 'integration' }]
  * ```
  */
 export function viteProjectRegistrations(
 	src: readonly Environment[],
 	app: readonly Environment[] = [],
-	bin = false,
-	integration = false,
-	service = false,
+	axes: ViteAxes = {},
 ): readonly ViteProjectRegistration[] {
 	const registrations: ViteProjectRegistration[] = []
-	for (const environment of src) {
+	for (const environment of ENVIRONMENTS) {
+		if (!src.includes(environment)) continue
 		if (environment === 'core') registrations.push({ project: 'srcCore' })
 		if (environment === 'browser') {
 			registrations.push({ project: 'srcBrowser', browser: SRC_MATRIX.browser.project })
 		}
 		if (environment === 'server') registrations.push({ project: 'srcServer' })
 	}
-	for (const environment of app) {
+	for (const environment of ENVIRONMENTS) {
+		if (!app.includes(environment)) continue
 		if (environment === 'core') registrations.push({ project: 'appCore' })
 		if (environment === 'browser') {
 			registrations.push({ project: 'appBrowser', browser: APP_MATRIX.browser.project })
@@ -639,10 +639,29 @@ export function viteProjectRegistrations(
 		if (environment === 'server') registrations.push({ project: 'appServer' })
 	}
 	registrations.push({ project: 'policy' }, { project: 'guides' })
-	if (bin) registrations.push({ project: 'srcBin' })
-	if (integration) registrations.push({ project: 'integration' })
-	if (service) registrations.push({ project: 'service' })
+	if (axes.bin === true) registrations.push({ project: 'srcBin' })
+	if (axes.integration === true) registrations.push({ project: 'integration' })
+	if (axes.service === true) registrations.push({ project: 'service' })
 	return registrations
+}
+
+/**
+ * Render the one ordered proof and structural-axis project definition block.
+ *
+ * @param axes - Optional executable, integration, and service project axes.
+ * @returns Policy, guides, then selected axis project definitions, separated by one blank line.
+ *
+ * @example
+ * ```ts
+ * viteProjectDefinitions({ bin: true }).includes('export const srcBin =') // true
+ * ```
+ */
+export function viteProjectDefinitions(axes: ViteAxes = {}): string {
+	const definitions = [policyViteProject(), guidesViteProject()]
+	if (axes.bin === true) definitions.push(binViteProject())
+	if (axes.integration === true) definitions.push(integrationViteProject())
+	if (axes.service === true) definitions.push(serviceViteProject())
+	return definitions.join('\n')
 }
 
 /**
@@ -2392,12 +2411,12 @@ export function serviceViteProject(): string {
  * The single non-`core` environment's factory IS the base (Shape 3 of
  * `rootViteConfig`) — the environment's own `viteHeader` (Playwright only when
  * `environment === 'browser'`, per the live sqlite/indexeddb exemplars) prefixes
- * the environment-specific `srcBrowser` / `srcServer` + `guides` projects export.
+ * the environment-specific `srcBrowser` / `srcServer` project, followed by the
+ * standalone policy and guides proof projects and any selected structural-axis
+ * projects.
  *
  * @param environment - The sole declared non-`core` environment.
- * @param bin - Whether the workspace builds its executable project.
- * @param integration - Whether the workspace carries its integration proof project.
- * @param service - Whether the workspace carries its service proof project.
+ * @param axes - Optional executable, integration, and service project axes.
  * @returns The root `vite.config.ts` file content for a single non-`core` environment, newline-terminated.
  *
  * @example
@@ -2407,9 +2426,7 @@ export function serviceViteProject(): string {
  */
 export function singleSrcViteConfig(
 	environment: 'browser' | 'server',
-	bin = false,
-	integration = false,
-	service = false,
+	axes: ViteAxes = {},
 ): string {
 	// Rendered blocks below are generated FILE TEXT, so every embedded
 	// declaration keyword is interpolated rather than typed literally at
@@ -2421,10 +2438,9 @@ export function singleSrcViteConfig(
 	// exactly the one export it documents.
 	const machinery = viteMachinery([environment])
 	const header = viteHeader(machinery)
-	const registrations = viteProjectRegistrations([environment], [], bin, integration, service)
+	const registrations = viteProjectRegistrations([environment], [], axes)
 	const renderedTest = renderViteTest(registrations, machinery.browser)
-	const proofProjects = `${policyViteProject()}
-${guidesViteProject()}${bin ? `\n${binViteProject()}` : ''}${integration ? `\n${integrationViteProject()}` : ''}${service ? `\n${serviceViteProject()}` : ''}`
+	const definitions = viteProjectDefinitions(axes)
 	if (environment === 'browser') {
 		return `${header}
 ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
@@ -2476,7 +2492,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 		config ?? {},
 	)
 
-${proofProjects}
+${definitions}
 export default defineConfig({
 	resolve,
 ${renderedTest}
@@ -2516,7 +2532,7 @@ ${EXPORT_KEYWORD} const srcServer = (config?: UserConfig): UserConfig =>
 		config ?? {},
 	)
 
-${proofProjects}
+${definitions}
 export default defineConfig({
 	resolve,
 ${renderedTest}
@@ -2527,7 +2543,8 @@ ${renderedTest}
 /**
  * The root `vite.config.ts` — three grounded shapes, chosen by a blueprint's
  * `src`:
- *   1. `core`-only — `srcCore` + `guides`, no Playwright at all (the live
+ *   1. `core`-only — `srcCore` + standalone policy/guides proof projects, no
+ *      Playwright at all (the live
  *      timeout exemplar: no browser project exists anywhere in the file).
  *   2. Multi-environment (2+ src, always including `core` per the live
  *      middleware/router exemplars) — `srcCore` is the shared base;
@@ -2542,12 +2559,9 @@ ${renderedTest}
  *      environment is `browser` (it must run its own tests in a real browser).
  *
  * @param src - The declared `Environment[]`.
- * @param bin - Structural: `true` appends the `srcBin` project (an
- *   executable build target, never a barrel) after the other declared
- *   projects — the self-hosting tax, grounded against this very repo's own
- *   checked-in `vite.config.ts`.
- * @param integration - Whether the workspace carries its integration proof project.
- * @param service - Whether the workspace carries its service proof project.
+ * @param axes - Optional structural project axes. `bin` appends the standalone
+ *   executable build-and-test project; `integration` and `service` append their
+ *   standalone proof projects.
  * @returns The root `vite.config.ts` file content, newline-terminated.
  *
  * @example
@@ -2555,12 +2569,7 @@ ${renderedTest}
  * rootViteConfig(['core']).includes('srcCore') // true
  * ```
  */
-export function rootViteConfig(
-	src: readonly Environment[],
-	bin = false,
-	integration = false,
-	service = false,
-): string {
+export function rootViteConfig(src: readonly Environment[], axes: ViteAxes = {}): string {
 	// Rendered blocks below are generated FILE TEXT, so every embedded
 	// declaration keyword is interpolated rather than typed literally at
 	// column 0 — the doc↔source parity scan (AGENTS §22) reads this file's
@@ -2570,14 +2579,16 @@ export function rootViteConfig(
 	// bytes identical while keeping this file's own declaration environment
 	// exactly the one export it documents.
 	const hasCore = src.includes('core')
-	const nonCore = src.filter((environment) => environment !== 'core')
-	const machinery = viteMachinery(src, [], bin)
+	const nonCore = ENVIRONMENTS.filter(
+		(environment) => environment !== 'core' && src.includes(environment),
+	)
+	const machinery = viteMachinery(src)
 	const header = viteHeader(machinery)
 
 	if (!hasCore) {
 		const [onlyEnvironment] = nonCore
 		if (onlyEnvironment === 'browser' || onlyEnvironment === 'server') {
-			return singleSrcViteConfig(onlyEnvironment, bin, integration, service)
+			return singleSrcViteConfig(onlyEnvironment, axes)
 		}
 	}
 
@@ -2679,8 +2690,9 @@ ${EXPORT_KEYWORD} const srcServer = (config?: UserConfig): UserConfig =>
 	const blocks = nonCore
 		.map((environment) => (environment === 'browser' ? browserBlock : serverBlock))
 		.join('')
-	const registrations = viteProjectRegistrations(src, [], bin, integration, service)
+	const registrations = viteProjectRegistrations(src, [], axes)
 	const renderedTest = renderViteTest(registrations, machinery.browser)
+	const definitions = viteProjectDefinitions(axes)
 	return `${header}
 ${EXPORT_KEYWORD} const srcCore = (config?: UserConfig): UserConfig =>
 	mergeConfig(
@@ -2702,9 +2714,8 @@ ${EXPORT_KEYWORD} const srcCore = (config?: UserConfig): UserConfig =>
 		},
 		config ?? {},
 	)
-
-${policyViteProject()}
-${guidesViteProject()}${blocks}${bin ? `\n${binViteProject()}` : ''}${integration ? `\n${integrationViteProject()}` : ''}${service ? `\n${serviceViteProject()}` : ''}
+${blocks}
+${definitions}
 export default defineConfig({
 	resolve,
 ${renderedTest}
@@ -2718,9 +2729,7 @@ ${renderedTest}
  *
  * @param src - Published src environments.
  * @param app - Private app environments.
- * @param bin - Whether the workspace also builds scaffold's executable.
- * @param integration - Whether the workspace carries its integration proof project.
- * @param service - Whether the workspace carries its service proof project.
+ * @param axes - Optional executable, integration, and service project axes.
  * @returns The root `vite.config.ts` content.
  *
  * @example
@@ -2731,12 +2740,10 @@ ${renderedTest}
 export function applicationViteConfig(
 	src: readonly Environment[],
 	app: readonly Environment[],
-	bin = false,
-	integration = false,
-	service = false,
+	axes: ViteAxes = {},
 ): string {
 	const hasSourceCore = src.includes('core')
-	const machinery = viteMachinery(src, app, bin)
+	const machinery = viteMachinery(src, app, axes.bin === true)
 	const header = viteHeader(machinery)
 	const blocks: string[] = []
 
@@ -2984,11 +2991,11 @@ ${EXPORT_KEYWORD} const appServer = (config?: UserConfig): UserConfig =>
 	)
 `)
 	}
-	const registrations = viteProjectRegistrations(src, app, bin, integration, service)
+	const registrations = viteProjectRegistrations(src, app, axes)
 	const renderedTest = renderViteTest(registrations, machinery.browser)
-	return `${header}
-${blocks.join('')}${policyViteProject()}
-${guidesViteProject()}${bin ? `\n${binViteProject()}` : ''}${integration ? `\n${integrationViteProject()}` : ''}${service ? `\n${serviceViteProject()}` : ''}
+	const definitions = viteProjectDefinitions(axes)
+	return `${header}${blocks.join('')}
+${definitions}
 export default defineConfig({
 	resolve,
 ${renderedTest}
@@ -3305,8 +3312,8 @@ export function configArtifacts(spec: Blueprint): readonly Artifact[] {
 			origin: 'computed',
 			content:
 				spec.app.length > 0
-					? applicationViteConfig(spec.src, spec.app, spec.bin, spec.integration, spec.service)
-					: rootViteConfig(spec.src, spec.bin, spec.integration, spec.service),
+					? applicationViteConfig(spec.src, spec.app, spec)
+					: rootViteConfig(spec.src, spec),
 		},
 	]
 	for (const environment of spec.src) {

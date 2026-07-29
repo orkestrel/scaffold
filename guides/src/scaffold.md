@@ -134,6 +134,7 @@ From [`types.ts`](../../src/core/types.ts).
 | `SrcDefinition`           | interface |
 | `AppDefinition`           | interface |
 | `ViteMachinery`           | interface |
+| `ViteAxes`                | interface |
 | `ViteProjectRegistration` | interface |
 | `Origin`                  | type      |
 | `Group`                   | type      |
@@ -191,6 +192,9 @@ single-file-component, HTML, and development-server machinery an application bro
 needs, and `output` for build-output containment. It never selects a boundary guarantee — those ship
 in every shape, as the compilers section sets out.
 
+`ViteAxes` is the optional structural-project slice shared by every root Vite compiler:
+`bin`, `integration`, and `service` each select their matching standalone project when `true`.
+
 `ViteProjectRegistration` carries one generated project factory identifier and its optional browser
 label. Root configuration renderers preserve that browser ownership as data through registration
 instead of inferring it from a project identifier.
@@ -216,23 +220,26 @@ interface Blueprint {
 }
 ```
 
-`src` selects published library environments under `src`; `app` selects private runtime environments under
-`app`. The two axes are independent, so library-only, application-only, and mixed workspaces are
-all first class. `dependencies` and `peers` are runtime `@orkestrel/*` packages — a peer flagged
-`optional` also gets a `peerDependenciesMeta` entry. `extras` are package-specific development
-dependencies merged over the generated baseline, and may carry any valid npm package name. `bin`
-is structural, never inferred from a name: it is `true` only for a workspace that ships its own
-`src/bin`, and it alone turns on the self-hosting extras (the manifest's `bin` entry, the `scaffold` script
-pointed at the built executable, the bin check, test, and build scripts, `build:host`, and the
+`src` selects published library environments under `src`; `app` selects private runtime
+environments under `app`. The two axes are independent, so library-only, application-only, and
+mixed workspaces are all first class. `dependencies` and `peers` are runtime `@orkestrel/*`
+packages — a peer flagged `optional` also gets a `peerDependenciesMeta` entry. `extras` are
+package-specific development dependencies merged over the generated baseline, and may carry any
+valid npm package name. `bin` is structural, never inferred from a name: it is `true` only for a
+workspace that ships its own `src/bin`, and it alone turns on the self-hosting extras (the
+manifest's `bin` entry, the `scaffold` script pointed at the built executable, the bin check, test,
+and build scripts, `build:host`, and the
 `src:bin` test project). `integration` is structural and `true` only when `tests/integration/`
 exists: it records a slow, opt-in proof project over the repo's own built output, outside the
 default run. `service` is structural and `true` only when `tests/service/` exists: it records a
 slow, opt-in proof project against a foreign running process, outside the default run. Neither is
 inferred from the workspace name. The generated root configuration registers a standalone
-`integration` project for the former and a standalone `service` project for the latter. Integration includes
-`tests/integration/**/*.test.ts`; service includes `tests/service/**/*.test.ts` and adds
-`tests/setupService.ts` after the shared setup. Their manifest-script and CI selection remain as
-documented in the generated-project section; project structure does not infer product policy.
+`integration` project for the former and a standalone `service` project for the latter.
+Integration includes `tests/integration/**/*.test.ts`; service includes
+`tests/service/**/*.test.ts` and adds `tests/setupService.ts` after the shared setup. The service
+axis registers that root project, but no generated script or workflow step selects it yet. The
+integration script and CI selection remain bin-gated as documented in the generated-project
+section; project structure does not infer product policy.
 
 `Override` replaces a rendered artifact's content at a path, never partially merges it. `Member` is
 one declared public export of the scaffolded workspace, derived rather than authored.
@@ -997,6 +1004,7 @@ From [`compilers.ts`](../../src/core/compilers.ts).
 | `integrationViteProject`   | function |
 | `serviceViteProject`       | function |
 | `viteProjectRegistrations` | function |
+| `viteProjectDefinitions`   | function |
 | `singleSrcViteConfig`      | function |
 | `rootViteConfig`           | function |
 | `applicationViteConfig`    | function |
@@ -1070,10 +1078,12 @@ without output containment — and it still carries every boundary guarantee abo
 `renderViteTest` is the single root-project renderer. It consumes ordered
 `ViteProjectRegistration` data and emits either the plain project list or the browser gate, keeping
 source and application root configurations byte-consistent without reconstructing browser ownership.
-`viteProjectRegistrations` is the one registration derivation every root shape consumes. It orders
-the selected source projects, selected application projects, `policy`, `guides`, then optional
-`srcBin`, `integration`, and `service` projects. Each optional project is controlled only by its
-matching `bin`, `integration`, or `service` blueprint axis.
+`viteProjectRegistrations` is the one registration derivation every root shape consumes. It derives
+selected source and application projects from the canonical environment order, then appends
+`policy`, `guides`, and optional `srcBin`, `integration`, and `service` projects.
+`viteProjectDefinitions` renders the standalone proof and structural-axis definitions in that same
+order with one blank line between declarations. Both consume `ViteAxes`, so each optional project
+is controlled only by its matching `bin`, `integration`, or `service` blueprint axis.
 
 `coreViteConfig`, `srcViteConfig`, and `appViteConfig` emit the thin per-target wrappers;
 `rootViteConfig`, `singleSrcViteConfig`, and `applicationViteConfig` emit the root configuration for
@@ -1082,6 +1092,8 @@ a library-only, single non-core `src` environment, and application-bearing works
 standalone Node proof projects. A proof project is structurally derived from the directory holding
 its tests and never wraps a source or application environment project. The guides project therefore
 uses only `tests/setup.ts`, never `setupServer.ts`, `setupBrowser.ts`, or `setupService.ts`.
+Its `tests/src/**/*.test.ts` and `tests/app/**/*.test.ts` exclude rows are uniform across all root
+shapes by design, including core-only workspaces where one row cannot currently match.
 Integration and service use 120-second test and hook timeouts with file parallelism disabled;
 service alone adds `tests/setupService.ts`. `binViteProject` is the single executable-project
 emitter and remains independent from integration.
@@ -2070,6 +2082,7 @@ import {
 	srcViteConfig,
 	viteHeader,
 	viteMachinery,
+	viteProjectDefinitions,
 	viteProjectRegistrations,
 } from '@orkestrel/scaffold'
 
@@ -2090,10 +2103,11 @@ guidesViteProject()
 binViteProject()
 integrationViteProject()
 serviceViteProject()
-viteProjectRegistrations(['core'], [], false, true).map(({ project }) => project)
+viteProjectDefinitions({ integration: true }).includes('export const integration =') // true
+viteProjectRegistrations(['core'], [], { integration: true }).map(({ project }) => project)
 // ['srcCore', 'policy', 'guides', 'integration']
 
-rootViteConfig(['core', 'server'])
+rootViteConfig(['core', 'server'], { bin: true })
 singleSrcViteConfig('server').includes('srcServer') // true
 applicationViteConfig([], ['core', 'server']).includes('appServer') // true
 ```

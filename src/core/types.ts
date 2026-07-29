@@ -41,6 +41,13 @@ export interface ViteMachinery {
 	readonly output: boolean
 }
 
+/** Optional structural projects appended to a generated root Vite configuration. */
+export interface ViteAxes {
+	readonly bin?: boolean
+	readonly integration?: boolean
+	readonly service?: boolean
+}
+
 /** One generated Vitest project factory and its optional browser-project label. */
 export interface ViteProjectRegistration {
 	readonly project: string
