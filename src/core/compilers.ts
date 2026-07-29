@@ -1065,8 +1065,10 @@ import { parse as parseVue } from 'vue/compiler-sfc'
 	const environmentBoundary = `
 ${CONST_KEYWORD} WORKSPACE_ROOT = realpathSync.native(dirname(fileURLToPath(import.meta.url)))${needsVue ? `\n${EXPORT_KEYWORD} ${CONST_KEYWORD} IMPORT_META_ENV_PREFIX = 'import.meta.env.'` : ''}
 
-${EXPORT_KEYWORD} function decodeFileSystemPath(path: string): string {
-	const candidate = path.slice('/@fs/'.length)
+${EXPORT_KEYWORD} function fileSystemPath(pathname: string): string {
+	if (!pathname.startsWith('/@fs/')) return pathname
+	const candidate = pathname.slice('/@fs/'.length)
+	// Vite URL normalization can collapse the leading slash of a POSIX absolute path.
 	return candidate.startsWith('/') || /^[A-Za-z]:[\\\\/]/.test(candidate)
 		? candidate
 		: \`/\${candidate}\`
@@ -1074,13 +1076,11 @@ ${EXPORT_KEYWORD} function decodeFileSystemPath(path: string): string {
 
 ${EXPORT_KEYWORD} function physicalPath(path: string): string {
 	const [pathWithoutQuery] = path.split('?')
-	const candidate = pathWithoutQuery?.startsWith('/@fs/')
-		? decodeFileSystemPath(pathWithoutQuery)
-		: pathWithoutQuery
+	const candidate = fileSystemPath(pathWithoutQuery ?? path)
 	const physicalCandidate =
-		candidate !== undefined && /^file:/i.test(candidate) ? fileURLToPath(candidate) : candidate
+		/^file:/i.test(candidate) ? fileURLToPath(candidate) : candidate
 	const absoluteCandidate =
-		physicalCandidate === undefined || physicalCandidate.length === 0
+		physicalCandidate.length === 0
 			? WORKSPACE_ROOT
 			: isAbsolute(physicalCandidate)
 				? physicalCandidate
@@ -1137,7 +1137,7 @@ ${EXPORT_KEYWORD} function isWorkspaceBoundaryModule(id: string): boolean {
 	const normalizedId = id.replaceAll('\\\\', '/')
 	const [path] = normalizedId.split(/[?#]/)
 	if (path === undefined) return false
-	let candidate = path.startsWith('/@fs/') ? decodeFileSystemPath(path) : path
+	let candidate = fileSystemPath(path)
 	try {
 		if (/^file:/i.test(candidate)) candidate = fileURLToPath(candidate)
 	} catch {
@@ -1161,10 +1161,7 @@ ${EXPORT_KEYWORD} function isWorkspaceBoundaryModule(id: string): boolean {
 ${EXPORT_KEYWORD} function isOutsideWorkspacePath(path: string): boolean {
 	const [pathWithoutQuery] = path.split('?')
 	if (pathWithoutQuery === undefined) return false
-	const candidate = pathWithoutQuery.startsWith('/@fs/')
-		? decodeFileSystemPath(pathWithoutQuery)
-		: pathWithoutQuery
-	return isAbsolute(candidate)
+	return isAbsolute(fileSystemPath(pathWithoutQuery))
 }
 
 ${EXPORT_KEYWORD} function containedPath(root: string, target: string): boolean {
@@ -1216,7 +1213,7 @@ ${EXPORT_KEYWORD} function browserServerPath(
 	try {
 		const decoded = decodeURIComponent(pathname)
 		if (decoded.startsWith('/@fs/')) {
-			const candidate = decodeFileSystemPath(decoded)
+			const candidate = fileSystemPath(decoded)
 			if (candidate.length === 0) return null
 			return physicalPath(candidate)
 		}
@@ -1239,9 +1236,9 @@ ${EXPORT_KEYWORD} function browserServerPath(
 		if (decoded === '/') return undefined
 		if (!decoded.startsWith('/')) return null
 		const candidate = physicalPath(resolvePath(root, decoded.slice(1)))
-		if (existsSync(candidate)) return candidate
-		if (isAbsolute(decoded) && existsSync(decoded)) return physicalPath(decoded)
-		return candidate
+		if (existsSync(candidate) || !existsSync(decoded)) return candidate
+		// An absolute module URL denotes itself; browserServerRoots still bounds it.
+		return physicalPath(decoded)
 	} catch {
 		return null
 	}
@@ -1758,9 +1755,15 @@ ${EXPORT_KEYWORD} function maskIgnoredHtml(environmentKeys: ReadonlySet<string>,
 	)
 }
 
+${EXPORT_KEYWORD} function isBrowserHtmlEntry(filename: string): boolean {
+	return (
+		physicalPath(filename) ===
+		physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/index.html'))
+	)
+}
+
 ${EXPORT_KEYWORD} function prepareHtml(): Plugin {
 	const environmentKeys = new Set<string>()
-	const entry = physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/index.html'))
 	return {
 		name: 'orkestrel-html-boundary-prepare',
 		enforce: 'post',
@@ -1775,7 +1778,7 @@ ${EXPORT_KEYWORD} function prepareHtml(): Plugin {
 		transformIndexHtml: {
 			order: 'pre',
 			handler(html, context) {
-				if (physicalPath(context.filename) !== entry) return undefined
+				if (!isBrowserHtmlEntry(context.filename)) return undefined
 				return maskIgnoredHtml(environmentKeys, html)
 			},
 		},
@@ -1783,26 +1786,24 @@ ${EXPORT_KEYWORD} function prepareHtml(): Plugin {
 }
 
 ${EXPORT_KEYWORD} function restoreHtml(): Plugin {
-	const entry = physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/index.html'))
 	return {
 		name: 'orkestrel-html-boundary-restore',
 		enforce: 'pre',
 		transformIndexHtml(html, context) {
-			if (physicalPath(context.filename) !== entry) return undefined
+			if (!isBrowserHtmlEntry(context.filename)) return undefined
 			return restoreIgnoredHtml(html)
 		},
 	}
 }
 
 ${EXPORT_KEYWORD} function finalizeHtml(): Plugin {
-	const entry = physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/index.html'))
 	return {
 		name: 'orkestrel-html-boundary-finalize',
 		enforce: 'post',
 		transformIndexHtml: {
 			order: 'post',
 			handler(html, context) {
-				if (physicalPath(context.filename) !== entry) return undefined
+				if (!isBrowserHtmlEntry(context.filename)) return undefined
 				if (!html.includes(HTML_SECURITY_META)) {
 					throw new Error(
 						'[orkestrel-environment-boundary] Browser HTML must retain its security policy',

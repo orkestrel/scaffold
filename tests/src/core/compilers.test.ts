@@ -1111,71 +1111,172 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		}
 	})
 
-	it('emits app browser tester boundary exemptions without widening workspace roots', () => {
+	it('emits unique app browser tester boundary helpers', () => {
 		const content = applicationViteConfig([], ['browser'])
 
-		expect(content).toContain('function decodeFileSystemPath(path: string): string {')
-		expect(content.split('decodeFileSystemPath(')).toHaveLength(6)
-		expect(content).toContain('? decodeFileSystemPath(pathWithoutQuery)')
-		expect(content).toContain("? decodeFileSystemPath(path) : path")
-		expect(content).toContain('const candidate = decodeFileSystemPath(decoded)')
-		expect(content).toContain("if (decoded === '/') return undefined")
-		expect(content).not.toContain('roots.push(physicalPath(environmentRoot))')
-		expect(
-			content.split(
-				"const entry = physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/index.html'))",
-			),
-		).toHaveLength(4)
-		expect(content.split('if (physicalPath(context.filename) !== entry) return undefined')).toHaveLength(
-			4,
-		)
+		expect(content.split('export function fileSystemPath(')).toHaveLength(2)
+		expect(content.split('export function isBrowserHtmlEntry(')).toHaveLength(2)
+		expect(content).toContain("if (!pathname.startsWith('/@fs/')) return pathname")
 	})
 
-	it('resolves existing absolute browser module URLs before root-relative denials', async () => {
+	it('executes app browser tester path, containment, and HTML boundaries', async () => {
 		const directory = await buildWorkspaceTempDirectory()
 		try {
 			const content = applicationViteConfig([], ['browser'])
-			const pathStart = content.indexOf('export function decodeFileSystemPath')
+			const asciiStart = content.indexOf('export function hasAsciiUrlControl')
+			const asciiEnd = content.indexOf('\n\nconst resolve =', asciiStart)
+			const pathStart = content.indexOf('export function fileSystemPath')
 			const pathEnd = content.indexOf('\n\nexport function sourceFallback', pathStart)
-			const browserStart = content.indexOf('export function browserServerPath')
-			const browserEnd = content.indexOf(
-				'\n\nexport function isBrowserServerPathAllowed',
-				browserStart,
+			const browserStart = content.indexOf('export function containedPath')
+			const browserEnd = content.indexOf('\n\nexport function packageNameOf', browserStart)
+			const sourceStart = content.indexOf('export function isStylesheetPath')
+			const sourceEnd = content.indexOf('\n\nexport function stylesheetAssetError', sourceStart)
+			const htmlStart = content.indexOf('export const HTML_SECURITY_POLICY')
+			const htmlEnd = content.indexOf(
+				'\n\nexport async function environmentAssetSources',
+				htmlStart,
 			)
-			if (pathStart === -1 || pathEnd === -1 || browserStart === -1 || browserEnd === -1) {
-				throw new Error('emitted browser path helpers were not found')
+			if (
+				asciiStart === -1 ||
+				asciiEnd === -1 ||
+				pathStart === -1 ||
+				pathEnd === -1 ||
+				browserStart === -1 ||
+				browserEnd === -1 ||
+				sourceStart === -1 ||
+				sourceEnd === -1 ||
+				htmlStart === -1 ||
+				htmlEnd === -1
+			) {
+				throw new Error('emitted browser boundary dependency closure was not found')
 			}
 			const root = join(directory.path, 'app', 'browser')
-			mkdirSync(root, { recursive: true })
-			const configPath = join(directory.path, 'absolute.config.ts')
+			const entry = join(root, 'index.html')
+			const allowed = join(directory.path, 'tests', 'setup.ts')
+			const foreign = join(directory.path, 'node_modules', '@vitest', 'browser', 'tester.html')
+			const outside = join(WORKSPACE_ROOT, 'package.json')
 			const missing = join(directory.path, 'tests', 'missing.ts')
+			mkdirSync(root, { recursive: true })
+			mkdirSync(join(directory.path, 'tests'), { recursive: true })
+			writeFileSync(entry, '<html>app</html>\n', 'utf8')
+			writeFileSync(allowed, 'export {}\n', 'utf8')
+			const configPath = join(directory.path, 'boundaries.config.ts')
 			writeFileSync(
 				configPath,
 				[
+					"import type { Plugin } from 'vite'",
+					"import { isBuiltin } from 'node:module'",
 					"import { existsSync, realpathSync } from 'node:fs'",
-					"import { dirname, isAbsolute, resolve as resolvePath } from 'node:path'",
+					"import { dirname, isAbsolute, relative, resolve as resolvePath, sep } from 'node:path'",
 					"import { fileURLToPath } from 'node:url'",
 					"import { defineConfig } from 'vite'",
 					'',
 					'const WORKSPACE_ROOT = realpathSync.native(dirname(fileURLToPath(import.meta.url)))',
+					"const IMPORT_META_ENV_PREFIX = 'import.meta.env.'",
+					'',
+					content.slice(asciiStart, asciiEnd),
 					'',
 					content.slice(pathStart, pathEnd),
 					'',
 					content.slice(browserStart, browserEnd),
 					'',
-					`const root = ${serializeTypeScriptString(root)}`,
-					`const existing = ${serializeTypeScriptString(configPath)}`,
-					`const missing = ${serializeTypeScriptString(missing)}`,
-					'const expected = physicalPath(resolvePath(root, missing.slice(1)))',
+					content.slice(sourceStart, sourceEnd),
 					'',
-					'if (browserServerPath(existing, root) !== physicalPath(existing)) {',
+					content.slice(htmlStart, htmlEnd),
+					'',
+					`const root = ${serializeTypeScriptString(root)}`,
+					`const entry = ${serializeTypeScriptString(entry)}`,
+					`const allowed = ${serializeTypeScriptString(allowed)}`,
+					`const foreign = ${serializeTypeScriptString(foreign)}`,
+					`const outside = ${serializeTypeScriptString(outside)}`,
+					`const missing = ${serializeTypeScriptString(missing)}`,
+					'const expectedMissing = physicalPath(resolvePath(root, missing.slice(1)))',
+					'const roots = browserServerRoots()',
+					'const expectedRoots = [',
+					"\t'app/browser',",
+					"\t'app/core',",
+					"\t'src/browser',",
+					"\t'src/core',",
+					"\t'node_modules',",
+					"\t'tests/app/browser',",
+					"\t'tests/setup.ts',",
+					"\t'tests/setupBrowser.ts',",
+					'].map((path) => physicalPath(resolvePath(WORKSPACE_ROOT, path)))',
+					'',
+					"if (browserServerPath('/', root) !== undefined) {",
+					"\tthrow new Error('bare browser tester root was not exempt')",
+					'}',
+					'if (roots.length !== expectedRoots.length) {',
+					"\tthrow new Error('browser server roots changed size')",
+					'}',
+					'if (roots.some((path, index) => path !== expectedRoots[index])) {',
+					"\tthrow new Error('browser server roots changed values or order')",
+					'}',
+					'const allowedPath = browserServerPath(allowed, root)',
+					'if (allowedPath !== physicalPath(allowed)) {',
 					"\tthrow new Error('existing absolute browser path was mangled')",
+					'}',
+					'if (!isBrowserServerPathAllowed(allowedPath, roots)) {',
+					"\tthrow new Error('allowed browser path was denied')",
+					'}',
+					'const outsidePath = browserServerPath(outside, root)',
+					'if (isBrowserServerPathAllowed(outsidePath, roots)) {',
+					"\tthrow new Error('outside browser path escaped containment')",
 					'}',
 					'if (existsSync(missing)) {',
 					"\tthrow new Error('nonexistent browser path fixture unexpectedly exists')",
 					'}',
-					'if (browserServerPath(missing, root) !== expected) {',
+					'if (browserServerPath(missing, root) !== expectedMissing) {',
 					"\tthrow new Error('nonexistent absolute browser path escaped root-relative denial')",
+					'}',
+					'',
+					"const html = '<html>tester</html>'",
+					"const foreignContext = { path: '/', filename: foreign }",
+					"const entryContext = { path: '/', filename: entry }",
+					'if (isBrowserHtmlEntry(foreign) || !isBrowserHtmlEntry(entry)) {',
+					"\tthrow new Error('browser HTML entry classification failed')",
+					'}',
+					'const prepare = prepareHtml().transformIndexHtml',
+					"if (typeof prepare !== 'object' || prepare === null) {",
+					"\tthrow new Error('prepare HTML hook shape changed')",
+					'}',
+					'if ((await prepare.handler(html, foreignContext)) !== undefined) {',
+					"\tthrow new Error('prepare HTML hook transformed foreign HTML')",
+					'}',
+					'let prepareRejected = false',
+					'try {',
+					'\tawait prepare.handler(html, entryContext)',
+					'} catch {',
+					'\tprepareRejected = true',
+					'}',
+					'if (!prepareRejected) {',
+					"\tthrow new Error('prepare HTML hook accepted an invalid app entry')",
+					'}',
+					'const restore = restoreHtml().transformIndexHtml',
+					"if (typeof restore !== 'function') {",
+					"\tthrow new Error('restore HTML hook shape changed')",
+					'}',
+					'if ((await restore(html, foreignContext)) !== undefined) {',
+					"\tthrow new Error('restore HTML hook transformed foreign HTML')",
+					'}',
+					"if ((await restore('vite&#45;ignore', entryContext)) !== 'vite-ignore') {",
+					"\tthrow new Error('restore HTML hook did not transform the app entry')",
+					'}',
+					'const finalize = finalizeHtml().transformIndexHtml',
+					"if (typeof finalize !== 'object' || finalize === null) {",
+					"\tthrow new Error('finalize HTML hook shape changed')",
+					'}',
+					'if ((await finalize.handler(html, foreignContext)) !== undefined) {',
+					"\tthrow new Error('finalize HTML hook transformed foreign HTML')",
+					'}',
+					'let finalizeRejected = false',
+					'try {',
+					'\tawait finalize.handler(html, entryContext)',
+					'} catch {',
+					'\tfinalizeRejected = true',
+					'}',
+					'if (!finalizeRejected) {',
+					"\tthrow new Error('finalize HTML hook accepted an invalid app entry')",
 					'}',
 					'',
 					'export default defineConfig({})',
@@ -1409,7 +1510,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		for (const name of outputNames) expect(appCore).not.toContain(name)
 	})
 
-	it('keeps the S4 full-app vite template canonical', () => {
+	it('keeps the S4 full-app vite template byte-equivalent', () => {
 		const content = applicationViteConfig(
 			['core', 'browser', 'server'],
 			['core', 'browser', 'server'],
@@ -1417,7 +1518,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 
 		expect(content).toContain('\t)\n\nexport const policy')
 		expect(createHash('sha256').update(content).digest('hex')).toBe(
-			'e71869234bc558c2de51f5b241f71a894fbb28aa218c72cf6424ba4f8432e423',
+			'e873024667f901aa457497c781aefeef5cdd226766e1eb342b4ddae1b135e82b',
 		)
 	})
 
