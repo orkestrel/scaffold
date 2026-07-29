@@ -55,6 +55,7 @@ import {
 	readTarget,
 	parseSyncOptions,
 	resolvePhysicalPath,
+	SERVICE_SCRIPT_PATH,
 	validateWriteDirectories,
 	WriteTransaction,
 } from '@src/server'
@@ -285,14 +286,17 @@ export class CLI implements CLIInterface {
 	/**
 	 * Merge a `pruneTargets` scan into `audit` as `foreign` findings — pure
 	 * object-spread composition in the BIN only (`src/core`'s `diffPlan` is never
-	 * modified/reimplemented). Every unexpected path becomes one
-	 * `'orchestration'`-group `foreign` finding (the `Group` every `PRUNE_DIRECTORIES`
-	 * entry—`.claude/agents`, `.codex/agents`, `scripts`—belongs to); any scan hit makes the
-	 * merged audit unclean, so an "unexpected file" is honestly counted as drift
-	 * (exit 1) instead of the structurally-always-zero `diffPlan.foreign`.
+	 * modified/reimplemented). Every unexpected path except the declared service
+	 * workspace's exact `SERVICE_SCRIPT_PATH` becomes one `'orchestration'`-group
+	 * `foreign` finding (the `Group` every `PRUNE_DIRECTORIES` entry—`.claude/agents`,
+	 * `.codex/agents`, `scripts`—belongs to); any scan hit makes the merged audit
+	 * unclean, so an "unexpected file" is honestly counted as drift (exit 1)
+	 * instead of the structurally-always-zero `diffPlan.foreign`.
 	 */
-	#scan(audit: Audit, target: string, host: string): Audit {
-		const paths = pruneTargets(target, host)
+	#scan(audit: Audit, target: string, host: string, service: boolean): Audit {
+		const paths = pruneTargets(target, host).filter(
+			(path) => !service || path !== SERVICE_SCRIPT_PATH,
+		)
 		if (paths.length === 0) return audit
 		const findings: Finding[] = paths.map((path) => ({
 			path,
@@ -312,8 +316,8 @@ export class CLI implements CLIInterface {
 	 * When fail-closed allowlist discovery raises a coded `TARGET` failure, retain
 	 * the existing findings and mark the audit incomplete instead of crashing.
 	 */
-	#scanSafe(audit: Audit, target: string, host: string): ForeignScanResult {
-		const scanned = attempt(() => this.#scan(audit, target, host))
+	#scanSafe(audit: Audit, target: string, host: string, service: boolean): ForeignScanResult {
+		const scanned = attempt(() => this.#scan(audit, target, host, service))
 		if (scanned.success) return { audit: scanned.value, skipped: false }
 		if (isScaffoldError(scanned.error) && scanned.error.code === 'TARGET') {
 			return {
@@ -763,7 +767,7 @@ export class CLI implements CLIInterface {
 			...diffPlan(plan, readTarget(target, artifactPaths)),
 			questions,
 		}
-		const scanned = this.#scanSafe(rawAudit, target, host)
+		const scanned = this.#scanSafe(rawAudit, target, host, spec.service)
 		const audit = scanned.audit
 		let drifted = !audit.clean
 
@@ -831,7 +835,7 @@ export class CLI implements CLIInterface {
 					// ANY drift still remaining, mirroring `runFleet`'s post-repair
 					// `finalAudit` pattern.
 					const rawFinal = diffPlan(plan, readTarget(target, artifactPaths))
-					const finalScanned = this.#scanSafe(rawFinal, target, host)
+					const finalScanned = this.#scanSafe(rawFinal, target, host, spec.service)
 					process.exitCode = finalScanned.audit.clean ? 0 : 1
 					return
 				}
@@ -1023,7 +1027,7 @@ export class CLI implements CLIInterface {
 					questions,
 				}
 				// Include physical unexpected-file findings in each repository audit.
-				const audit = this.#scan(rawAudit, directory, host)
+				const audit = this.#scan(rawAudit, directory, host, plan.blueprint.service)
 				repos.push({
 					name,
 					directory,
@@ -1144,7 +1148,7 @@ export class CLI implements CLIInterface {
 					}
 					const paths = repo.plan.artifacts.map((artifact) => artifact.path)
 					const rawFinal = diffPlan(repo.plan, readTarget(repo.directory, paths))
-					const finalAudit = this.#scan(rawFinal, repo.directory, host)
+					const finalAudit = this.#scan(rawFinal, repo.directory, host, repo.plan.blueprint.service)
 					if (!finalAudit.clean) drifted += 1
 					entries.push(fleetEntryOf(repo.name, finalAudit, false))
 					if (!json) {

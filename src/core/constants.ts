@@ -84,6 +84,12 @@ export const SRC_MATRIX: Readonly<Record<Environment, SrcDefinition>> = Object.f
 	}),
 })
 
+/** The computed configuration files required by a workspace-owned executable. */
+export const BIN_CONFIGS: readonly string[] = Object.freeze([
+	'configs/src/vite.bin.config.ts',
+	'configs/src/tsconfig.bin.json',
+])
+
 /**
  * The per-environment application matrix: thin config artifacts, Vitest project
  * label, and executable entry where the environment produces a runtime bundle.

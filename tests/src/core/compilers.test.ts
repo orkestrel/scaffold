@@ -12,6 +12,9 @@ import {
 	APP_MATRIX,
 	appTsconfig,
 	appViteConfig,
+	BIN_CONFIGS,
+	binTsconfig,
+	binViteConfig,
 	binViteProject,
 	blueprint,
 	blueprintToMembers,
@@ -81,9 +84,52 @@ describe('ciWorkflow', () => {
 	})
 
 	it('installs Chromium for the bin-owned generated browser consumer proof', () => {
-		const workflow = ciWorkflow(blueprint('scaffold', { src: ['core', 'server'], bin: true }))
+		const workflow = ciWorkflow(
+			blueprint('scaffold', {
+				src: ['core', 'server'],
+				bin: true,
+				integration: true,
+			}),
+		)
 
 		expect(workflow).toContain('playwright install --with-deps chromium')
+	})
+
+	it('selects integration independently from the executable axis', () => {
+		const bin = ciWorkflow(
+			blueprint('scaffold', { src: ['core', 'server'], bin: true, integration: false }),
+		)
+		const integration = ciWorkflow(
+			blueprint('router', { src: ['core', 'server'], bin: false, integration: true }),
+		)
+
+		expect(bin).not.toContain('npm run test:integration')
+		expect(integration).toContain('npm run test:integration')
+	})
+
+	it('provisions the service immediately before running its isolated project', () => {
+		const workflow = ciWorkflow(blueprint('router', { service: true }))
+		const provision = workflow.indexOf('run: bash scripts/service.sh')
+		const test = workflow.indexOf('run: npm run test:service')
+
+		expect(provision).toBeGreaterThan(-1)
+		expect(test).toBeGreaterThan(provision)
+		expect(ciWorkflow(blueprint('router'))).not.toContain('scripts/service.sh')
+	})
+
+	it('keeps the scaffold workflow byte-identical for its existing axis shape', () => {
+		const workflow = ciWorkflow(
+			blueprint('scaffold', {
+				src: ['core', 'server'],
+				bin: true,
+				integration: true,
+				service: false,
+			}),
+		)
+
+		expect(createHash('sha256').update(workflow).digest('hex')).toBe(
+			'2a40070e54efc519b85af50d1a1bf8aefaac11f9a6bc88b5c02cb1dcefb92156',
+		)
 	})
 })
 
@@ -566,7 +612,11 @@ describe('packageManifest', () => {
 	})
 
 	it('a bin blueprint carries the bin/build:host self-hosting tax and omits its own devDependency', () => {
-		const spec = blueprint('scaffold', { src: ['core', 'server'], bin: true })
+		const spec = blueprint('scaffold', {
+			src: ['core', 'server'],
+			bin: true,
+			integration: true,
+		})
 		const manifest = readManifest(packageManifest(spec))
 		expect(manifest.bin).toEqual({ scaffold: './dist/bin/scaffold.js' })
 		expect(manifest.files).toEqual(['dist/src', 'dist/bin', 'dist/host', 'README.md'])
@@ -592,6 +642,74 @@ describe('packageManifest', () => {
 		expect(dev['@orkestrel/scaffold']).toBeUndefined()
 		expect(dev['@vitest/browser-playwright']).toBe('^4.1.10')
 		expect(dev.playwright).toBe('^1.61.1')
+	})
+
+	it('keys integration scripts and the publish tail only on the integration axis', () => {
+		const bin = readManifest(
+			packageManifest(
+				blueprint('scaffold', {
+					src: ['core', 'server'],
+					bin: true,
+					integration: false,
+				}),
+			),
+		)
+		const integrated = readManifest(
+			packageManifest(
+				blueprint('router', {
+					src: ['core', 'server'],
+					bin: false,
+					integration: true,
+				}),
+			),
+		)
+		const binScripts = readRecord(bin.scripts)
+		const integratedScripts = readRecord(integrated.scripts)
+
+		expect(binScripts['test:integration']).toBeUndefined()
+		expect(binScripts.prepublishOnly).not.toContain('test:integration')
+		expect(binScripts['test:equivalence']).toBeDefined()
+		expect(integratedScripts['test:integration']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project integration',
+		)
+		expect(integratedScripts.prepublishOnly).toContain('npm run test:integration')
+		expect(integrated.bin).toBeUndefined()
+		expect(integratedScripts.scaffold).toBe('scaffold')
+		expect(integratedScripts['check:src:bin']).toBeUndefined()
+		expect(integratedScripts['test:src:bin']).toBeUndefined()
+		expect(integratedScripts['test:equivalence']).toBeUndefined()
+		expect(integratedScripts['build:src:bin']).toBeUndefined()
+		expect(integratedScripts['build:host']).toBeUndefined()
+		expect(readRecord(integrated.devDependencies)['@vitest/browser-playwright']).toBeUndefined()
+	})
+
+	it('emits an isolated service script outside the default and publish chains', () => {
+		const manifest = readManifest(packageManifest(blueprint('router', { service: true })))
+		const scripts = readRecord(manifest.scripts)
+
+		expect(scripts['test:service']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project service',
+		)
+		expect(scripts.test).not.toContain('test:service')
+		expect(scripts.prepublishOnly).not.toContain('test:service')
+		expect(
+			readRecord(readManifest(packageManifest(blueprint('router'))).scripts)['test:service'],
+		).toBeUndefined()
+	})
+
+	it('keeps the scaffold manifest byte-identical for its existing axis shape', () => {
+		const manifest = packageManifest(
+			blueprint('scaffold', {
+				src: ['core', 'server'],
+				bin: true,
+				integration: true,
+				service: false,
+			}),
+		)
+
+		expect(createHash('sha256').update(manifest).digest('hex')).toBe(
+			'7d744e151adc3cac1a496fe844aafab42121eaa1aa84d3262f2aefb39d591854',
+		)
 	})
 
 	it('keeps browser-only, mixed, and full project filters stable for config-owned gating', () => {
@@ -1529,6 +1647,17 @@ describe('srcTsconfig / srcViteConfig', () => {
 	})
 })
 
+describe('binTsconfig / binViteConfig', () => {
+	it('reproduces the checked-in executable configurations byte for byte', () => {
+		expect(binTsconfig()).toBe(
+			readFileSync(join(WORKSPACE_ROOT, 'configs/src/tsconfig.bin.json'), 'utf8'),
+		)
+		expect(binViteConfig()).toBe(
+			readFileSync(join(WORKSPACE_ROOT, 'configs/src/vite.bin.config.ts'), 'utf8'),
+		)
+	})
+})
+
 describe('configArtifacts', () => {
 	it('drafts the root pair plus each declared environment pair', () => {
 		const artifacts = configArtifacts(blueprint('router', { src: ['core', 'server'] }))
@@ -1555,6 +1684,56 @@ describe('configArtifacts', () => {
 		expect(integration).toContain('projects: [srcServer, policy, guides, integration]')
 		expect(integration).not.toContain('export const srcBin =')
 		expect(service).toContain('projects: [srcServer, policy, guides, service]')
+	})
+
+	it('emits the executable configuration pair only for the bin axis', () => {
+		const bin = configArtifacts(blueprint('scaffold', { src: ['core', 'server'], bin: true }))
+		const child = configArtifacts(blueprint('router', { src: ['core', 'server'] }))
+
+		for (const path of BIN_CONFIGS) expect(bin.map((artifact) => artifact.path)).toContain(path)
+		for (const path of BIN_CONFIGS) {
+			expect(child.map((artifact) => artifact.path)).not.toContain(path)
+		}
+	})
+
+	it('closes every script-referenced configs path over the planned artifacts for every axis combination', () => {
+		const axes: readonly {
+			readonly bin: boolean
+			readonly integration: boolean
+			readonly service: boolean
+		}[] = [
+			{ bin: false, integration: false, service: false },
+			{ bin: false, integration: false, service: true },
+			{ bin: false, integration: true, service: false },
+			{ bin: false, integration: true, service: true },
+			{ bin: true, integration: false, service: false },
+			{ bin: true, integration: false, service: true },
+			{ bin: true, integration: true, service: false },
+			{ bin: true, integration: true, service: true },
+		]
+
+		for (const axis of axes) {
+			const plan = blueprintToPlan(
+				blueprint('router', {
+					src: ['core', 'server'],
+					bin: axis.bin,
+					integration: axis.integration,
+					service: axis.service,
+				}),
+				['manifest', 'configs'],
+			)
+			const manifest = plan.artifacts.find((artifact) => artifact.path === 'package.json')
+			const scripts = readRecord(readManifest(manifest?.content).scripts)
+			const referenced = new Set<string>()
+			for (const value of Object.values(scripts)) {
+				if (typeof value !== 'string') continue
+				for (const match of value.match(/configs\/[^\s'"]+/g) ?? []) referenced.add(match)
+			}
+			const planned = new Set(plan.artifacts.map((artifact) => artifact.path))
+
+			for (const path of referenced) expect(planned.has(path)).toBe(true)
+			for (const path of BIN_CONFIGS) expect(referenced.has(path)).toBe(axis.bin)
+		}
 	})
 })
 

@@ -542,6 +542,36 @@ describe('scaffold bin', () => {
 			}
 		}, 30000)
 
+		it('treats scripts/service.sh as expected only for a structurally declared service repo', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
+			try {
+				const plainDirectory = scaffoldPackage(cwd.path, 'plain', from.path)
+				writeFileSync(join(plainDirectory, 'scripts', 'service.sh'), '#!/bin/sh\n')
+				const plainAudit = runBin(['audit', '--json', '--from', from.path], '', {
+					cwd: plainDirectory,
+				})
+				expect(plainAudit.status).toBe(1)
+				expect(parseJSON(plainAudit.stdout.trim())).toMatchObject({
+					clean: false,
+					foreign: 1,
+				})
+
+				const serviceDirectory = scaffoldPackage(cwd.path, 'service', from.path)
+				mkdirSync(join(serviceDirectory, 'tests', 'service'), { recursive: true })
+				writeFileSync(join(serviceDirectory, 'tests', 'setupService.ts'), '\n')
+				writeFileSync(join(serviceDirectory, 'scripts', 'service.sh'), '#!/bin/sh\n')
+				const serviceAudit = runBin(['audit', '--json', '--from', from.path], '', {
+					cwd: serviceDirectory,
+				})
+				expect(serviceAudit.status).toBe(1)
+				expect(parseJSON(serviceAudit.stdout.trim())).toMatchObject({ foreign: 0 })
+			} finally {
+				await cwd.cleanup()
+				await from.cleanup()
+			}
+		}, 30000)
+
 		it('a clean target with no unexpected files: audit --json reports foreign:0, clean:true', async () => {
 			const from = await buildFromFixture()
 			const cwd = await buildTempDirectory()

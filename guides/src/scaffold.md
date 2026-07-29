@@ -237,9 +237,10 @@ inferred from the workspace name. The generated root configuration registers a s
 `integration` project for the former and a standalone `service` project for the latter.
 Integration includes `tests/integration/**/*.test.ts`; service includes
 `tests/service/**/*.test.ts` and adds `tests/setupService.ts` after the shared setup. The service
-axis registers that root project, but no generated script or workflow step selects it yet. The
-integration script and CI selection remain bin-gated as documented in the generated-project
-section; project structure does not infer product policy.
+axis also emits the isolated `test:service` script, while generated CI provisions its foreign
+process through `scripts/service.sh` immediately before selecting that project. The integration
+axis independently emits and selects `test:integration`; neither proof project is inferred from
+the executable axis.
 
 `Override` replaces a rendered artifact's content at a path, never partially merges it. `Member` is
 one declared public export of the scaffolded workspace, derived rather than authored.
@@ -344,6 +345,7 @@ From [`constants.ts`](../../src/core/constants.ts).
 | `FRESHNESS`                       | const |
 | `COMPILE_STAGES`                  | const |
 | `SRC_MATRIX`                      | const |
+| `BIN_CONFIGS`                     | const |
 | `APP_MATRIX`                      | const |
 | `HOST_PATHS`                      | const |
 | `NAME_PATTERN`                    | const |
@@ -390,7 +392,8 @@ From [`constants.ts`](../../src/core/constants.ts).
 `ENVIRONMENTS`, `ORIGINS`, `GROUPS`, `CATEGORIES`, `FRESHNESS`, and `COMPILE_STAGES` are the frozen
 value lists behind their literal unions. `SRC_MATRIX` is the `src` environment matrix as
 data — each environment's `configs/src` files, test-project label, `exports` subpath, and build
-formats. `APP_MATRIX` is its application sibling, adding the runtime entry where an environment produces
+formats. `BIN_CONFIGS` is the executable axis's computed `tsconfig` and Vite wrapper pair.
+`APP_MATRIX` is its application sibling, adding the runtime entry where an environment produces
 one (`app/browser/index.html`, `app/server/main.ts`). `HOST_PATHS` is the ordered list of
 byte-copied host artifacts, and it is the staging manifest rather than the per-plan carried set:
 `stageHost` vendors every path on it, while each plan carries the subset `selectHostPaths` selects
@@ -440,6 +443,7 @@ From [`constants.ts`](../../src/server/constants.ts).
 | Name                             | Kind  |
 | -------------------------------- | ----- |
 | `PRUNE_DIRECTORIES`              | const |
+| `SERVICE_SCRIPT_PATH`            | const |
 | `HOST_MANIFEST_PATH`             | const |
 | `SENSITIVE_HOST_PATH_PATTERN`    | const |
 | `RESERVED_TARGET_PATH_PATTERN`   | const |
@@ -469,6 +473,7 @@ From [`constants.ts`](../../src/server/constants.ts).
 `PRUNE_DIRECTORIES` is the closed set of prune-owned directories — `.claude/agents`,
 `.codex/agents`, and `scripts`. Nothing outside those roots is ever a deletion candidate, which is
 why project-owned skills under `.agents/skills` and `.claude/skills` are structurally safe.
+`SERVICE_SCRIPT_PATH` names the consumer-owned provisioner a service workspace's audit expects.
 `HOST_MANIFEST_PATH` is the reserved `manifest.json` written at the root of every staged host.
 `SENSITIVE_HOST_PATH_PATTERN` rejects credential-like, key-store, certificate-key, and
 local-configuration paths at the staging boundary. `RESERVED_TARGET_PATH_PATTERN` protects `.git`
@@ -1012,6 +1017,8 @@ From [`compilers.ts`](../../src/core/compilers.ts).
 | `coreViteConfig`           | function |
 | `srcTsconfig`              | function |
 | `srcViteConfig`            | function |
+| `binTsconfig`              | function |
+| `binViteConfig`            | function |
 | `appTsconfig`              | function |
 | `appViteConfig`            | function |
 | `ciWorkflow`               | function |
@@ -1085,7 +1092,8 @@ selected source and application projects from the canonical environment order, t
 order with one blank line between declarations. Both consume `ViteAxes`, so each optional project
 is controlled only by its matching `bin`, `integration`, or `service` blueprint axis.
 
-`coreViteConfig`, `srcViteConfig`, and `appViteConfig` emit the thin per-target wrappers;
+`coreViteConfig`, `srcViteConfig`, `binViteConfig`, and `appViteConfig` emit the thin per-target
+wrappers, while `binTsconfig` emits the executable declaration scope;
 `rootViteConfig`, `singleSrcViteConfig`, and `applicationViteConfig` emit the root configuration for
 a library-only, single non-core `src` environment, and application-bearing workspace respectively;
 `policyViteProject`, `guidesViteProject`, `integrationViteProject`, and `serviceViteProject` emit
@@ -1099,7 +1107,9 @@ service alone adds `tests/setupService.ts`. `binViteProject` is the single execu
 emitter and remains independent from integration.
 
 `configArtifacts`, `sourceArtifacts`, `applicationArtifacts`, `testArtifacts`, and `guideArtifacts`
-are the per-group drafters. `paritySpecifiers` computes the self-specifier and module map the
+are the per-group drafters. When `bin` is selected, `configArtifacts` includes
+`configs/src/tsconfig.bin.json` and `configs/src/vite.bin.config.ts` beside the declared environment
+configuration pairs. `paritySpecifiers` computes the self-specifier and module map the
 generated parity suite resolves fence imports through. `guideMemberTable`, `guideUsage`,
 `guideMethods`, and `guideTests` render the generated guide's member tables, usage examples, method
 contract, and test inventory. `fillArtifact` fills one template entry into a `template`-origin
@@ -1365,6 +1375,9 @@ be the last writer.
 An audit is a pure function of a plan and a snapshot, so the same engine that creates a workspace
 checks one. `readTarget` supplies the snapshot as exact bytes; `diffPlan` returns findings as data;
 `auditToReview` renders them for a human. Nothing in that path writes.
+The executable's physical unexpected-file scan treats exactly `scripts/service.sh` as an expected
+consumer-owned seam when the derived blueprint has `service: true`; a non-service workspace still
+reports that same path as foreign.
 
 `repair` turns those findings back into the narrowest possible write. It re-reads the target,
 re-diffs it, and refuses to proceed if the findings changed since the preview it was given — a
@@ -1450,14 +1463,18 @@ a fixed, interleaved order so aggregates sit immediately before their per-enviro
   `check:app` with one `check:app:<environment>` per app environment — the browser app scope uses the
   Vue typechecker, every other scope uses plain `tsc`
 - `test`, then `test:src` and its per-environment scopes, `test:app` and its per-environment scopes,
-  `test:policy`, and `test:guides`; a bin workspace also receives the deliberately non-default
-  `test:integration` live installed-consumer gate and `test:equivalence` driver-reference proof
+  `test:policy`, and `test:guides`; the integration axis receives the deliberately non-default
+  `test:integration` live installed-consumer gate, a bin workspace receives the
+  `test:equivalence` driver-reference proof, and the service axis receives `test:service`
 - `build`, then `build:src` and its per-environment targets, `build:app` and its runtime targets, and
   `build:host` for a bin workspace
 - `dev` when a browser application is selected; `serve` and `serve:build` when a server application
   is selected
 - `prepublishOnly` chaining `format:check → lint:check → check → build → test`, followed by the
-  live generated-consumer integration gate for the scaffold bin itself
+  live generated-consumer integration gate when the integration axis is selected
+
+`test:service` remains outside both the default `test` chain and `prepublishOnly`: neither default
+testing nor publication starts or requires a foreign process.
 
 Run `npm run test:equivalence` after changing the persistent boundary build driver. It reruns the
 integration project in dual-path mode and proves each programmatic driver verdict against the
@@ -1619,7 +1636,8 @@ Node `22.12.0` and `26`** with fail-fast disabled. Checkout and Node setup are p
 action commits, and checkout does not persist credentials. Dependencies install with
 `npm ci --ignore-scripts`; Chromium is installed only when the workspace selects a browser environment
 or builds its own executable. The gates then run in order: `format:check`, `lint:check`, `check`,
-`build`, `test`; bin workspaces then run the separate live installed-consumer integration gate.
+`build`, `test`; integration workspaces then run the separate live installed-consumer gate. A
+service workspace next runs `bash scripts/service.sh` and only then `npm run test:service`.
 
 **Agent orchestration files.** The session hooks in the generated `.claude/settings.json` run the
 dependency, model, and external-tool readiness scripts at session start. The **`Stop` hook runs only

@@ -15,6 +15,7 @@ import {
 	APP_MATRIX,
 	APP_BROWSER_DEV_DEPENDENCIES,
 	BASE_DEV_DEPENDENCIES,
+	BIN_CONFIGS,
 	CHECKOUT_ACTION_SHA,
 	CONST_KEYWORD,
 	EXPORT_KEYWORD,
@@ -383,12 +384,15 @@ export function packageManifest(spec: Blueprint): string {
 	if (spec.bin)
 		scripts['test:src:bin'] =
 			'vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin'
-	if (spec.bin)
+	if (spec.integration)
 		scripts['test:integration'] =
 			'vitest run --config vite.config.ts --no-cache --reporter=dot --project integration'
 	if (spec.bin)
 		scripts['test:equivalence'] =
 			"node -e \"const c=require('node:child_process'),n=process.platform==='win32'?'npm.cmd':'npm',r=c.spawnSync(n,['run','test:integration'],{stdio:'inherit',env:{...process.env,SCAFFOLD_BOUNDARY_EQUIVALENCE:'1'}});process.exit(r.status??1)\""
+	if (spec.service)
+		scripts['test:service'] =
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project service'
 	if (spec.app.length > 0) {
 		scripts['test:app'] =
 			'vitest run --config vite.config.ts --no-cache --reporter=dot ' +
@@ -443,7 +447,7 @@ export function packageManifest(spec: Blueprint): string {
 	}
 	scripts.prepublishOnly =
 		'npm run format:check && npm run lint:check && npm run check && npm run build && npm test' +
-		(spec.bin ? ' && npm run test:integration' : '')
+		(spec.integration ? ' && npm run test:integration' : '')
 
 	const devDependencies = {
 		...devDependenciesFor(spec.extras),
@@ -3152,6 +3156,70 @@ export default defineConfig(
 }
 
 /**
+ * Build the executable's declaration-only `configs/src/tsconfig.bin.json`.
+ *
+ * @returns The executable `tsconfig` file content, newline-terminated.
+ *
+ * @example
+ * ```ts
+ * binTsconfig().includes('"outDir": "../../dist/bin"') // true
+ * ```
+ */
+export function binTsconfig(): string {
+	const config = {
+		extends: '../../tsconfig.json',
+		compilerOptions: {
+			lib: ['ESNext'],
+			types: ['node'],
+			noEmit: false,
+			declaration: true,
+			emitDeclarationOnly: true,
+			rootDir: '../../src',
+			outDir: '../../dist/bin',
+		},
+		include: TYPESCRIPT_EXTENSIONS.map((extension) => `../../src/bin/**/*.${extension}`),
+	}
+	return formatJson(config)
+}
+
+/**
+ * Build the executable's `configs/src/vite.bin.config.ts` wrapper.
+ *
+ * @returns The executable Vite configuration content, newline-terminated.
+ *
+ * @example
+ * ```ts
+ * binViteConfig().includes("banner: '#!/usr/bin/env node'") // true
+ * ```
+ */
+export function binViteConfig(): string {
+	return `import { defineConfig } from 'vite'
+import { srcBin } from '../../vite.config'
+
+// The \`scaffold\` executable build — a single ESM lib file, no declarations (an
+// executable ships no types), with the \`#!/usr/bin/env node\` shebang re-emitted via
+// \`output.banner\` (rolldown strips shebangs from source during bundling), and
+// \`output.paths\` rewriting the externalized \`@src/*\` specifiers to the built sibling
+// src environments (relative to \`dist/bin/\`), so the emitted bin resolves at runtime.
+export default defineConfig(
+	srcBin({
+		build: {
+			rolldownOptions: {
+				output: {
+					banner: '#!/usr/bin/env node',
+					paths: {
+						'@src/core': '../src/core/index.js',
+						'@src/server': '../src/server/index.js',
+					},
+				},
+			},
+		},
+	}),
+)
+`
+}
+
+/**
  * Build one `configs/app/tsconfig.<environment>.json` check-only configuration.
  *
  * @param environment - The application environment.
@@ -3213,7 +3281,7 @@ export default defineConfig(${anchor}())
 }
 
 /**
- * Build selection-aware GitHub CI without external service dependencies.
+ * Build selection-aware GitHub CI, provisioning the declared foreign service before its proof.
  *
  * @param spec - The workspace blueprint.
  * @returns The complete `.github/workflows/ci.yml` content.
@@ -3272,11 +3340,21 @@ ${browser}
 
       - name: Run tests
         run: npm test${
-					spec.bin
+					spec.integration
 						? `
 
       - name: Run live consumer integration
         run: npm run test:integration
+`
+						: ''
+				}${
+					spec.service
+						? `
+      - name: Provision live service
+        run: bash scripts/service.sh
+
+      - name: Run live service tests
+        run: npm run test:service
 `
 						: ''
 				}
@@ -3329,6 +3407,16 @@ export function configArtifacts(spec: Blueprint): readonly Artifact[] {
 						? srcTsconfig(environment)
 						: srcViteConfig(environment)
 			artifacts.push({ path, group: 'configs', origin: 'computed', environment, content })
+		}
+	}
+	if (spec.bin) {
+		for (const path of BIN_CONFIGS) {
+			artifacts.push({
+				path,
+				group: 'configs',
+				origin: 'computed',
+				content: path.endsWith('.json') ? binTsconfig() : binViteConfig(),
+			})
 		}
 	}
 	for (const environment of spec.app) {

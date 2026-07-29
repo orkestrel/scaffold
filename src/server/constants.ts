@@ -18,6 +18,9 @@ export const PRUNE_DIRECTORIES: readonly string[] = Object.freeze([
 	'scripts',
 ])
 
+/** The consumer-owned live-service provisioner expected only by service workspaces. */
+export const SERVICE_SCRIPT_PATH = 'scripts/service.sh'
+
 /** Reserved metadata file written at the root of every staged host. */
 export const HOST_MANIFEST_PATH = 'manifest.json'
 
