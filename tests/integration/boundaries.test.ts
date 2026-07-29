@@ -10,8 +10,32 @@ import {
 } from '../setupE2E.js'
 import { buildTempDirectory } from '../setupServer.js'
 
-describe('generated mixed-workspace boundary shard 2', () => {
-	it('rejects the second deterministic half of the complete boundary matrix', async () => {
+describe('generated mixed-workspace boundaries', () => {
+	it.concurrent('rejects the first deterministic half of the complete boundary matrix', async () => {
+		const cwd = await buildTempDirectory()
+		try {
+			const generationRoot = join(cwd.path, 'app', 'server')
+			mkdirSync(generationRoot, { recursive: true })
+			const packageDirectory = cloneGeneratedConsumer(
+				inject('generatedConsumerTemplates'),
+				'full',
+				generationRoot,
+			)
+			prepareBoundaryFixtures(packageDirectory, generationRoot)
+			const cases = buildBoundaryCases(packageDirectory)
+			const first = selectBoundaryCases(cases, 0)
+			const second = selectBoundaryCases(cases, 1)
+			const count = await executeBoundaryCases(packageDirectory, first)
+
+			expect(count).toBe(first.length)
+			expect(count + second.length).toBe(cases.length)
+			expect([...first, ...second]).toEqual(cases)
+		} finally {
+			await cwd.cleanup()
+		}
+	}, 360_000)
+
+	it.concurrent('rejects the second deterministic half of the complete boundary matrix', async () => {
 		const cwd = await buildTempDirectory()
 		try {
 			const generationRoot = join(cwd.path, 'app', 'server')
