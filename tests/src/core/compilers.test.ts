@@ -12,6 +12,7 @@ import {
 	APP_MATRIX,
 	appTsconfig,
 	appViteConfig,
+	binViteProject,
 	blueprint,
 	blueprintToMembers,
 	blueprintToPlan,
@@ -28,15 +29,20 @@ import {
 	fillArtifact,
 	guideArtifacts,
 	guideMemberTable,
+	guidesViteProject,
 	hostGroup,
+	integrationViteProject,
 	override,
 	packageManifest,
 	pascalCase,
 	paritySpecifiers,
+	policyViteProject,
 	rootTsconfig,
 	rootViteConfig,
 	renderViteTest,
 	serializeTypeScriptString,
+	serviceViteProject,
+	singleSrcViteConfig,
 	sourceArtifacts,
 	srcTsconfig,
 	srcVariant,
@@ -45,6 +51,7 @@ import {
 	TYPESCRIPT_EXTENSIONS,
 	viteHeader,
 	viteMachinery,
+	viteProjectRegistrations,
 } from '@src/core'
 import {
 	APPLICATION_VARIANTS,
@@ -697,6 +704,152 @@ describe('renderViteTest', () => {
 	})
 })
 
+describe('proof Vite projects and registration', () => {
+	it('emits each standalone proof project from its single compiler', () => {
+		const policy = policyViteProject()
+		const guides = guidesViteProject()
+		const integration = integrationViteProject()
+		const service = serviceViteProject()
+
+		for (const content of [policy, guides, integration, service]) {
+			expect(content).toContain('\t\t\tresolve,')
+			expect(content).toContain("environment: 'node'")
+			expect(content).toContain('browser: { enabled: false }')
+		}
+		expect(guides).toContain("include: ['tests/guides/**/*.test.ts']")
+		expect(guides).toContain("setupFiles: ['./tests/setup.ts']")
+		expect(guides).not.toContain('setupServer')
+		expect(guides).not.toContain('setupBrowser')
+		expect(guides).not.toContain('setupService')
+		expect(guides).not.toContain('srcCore(')
+		expect(guides).not.toContain('srcBrowser(')
+		expect(guides).not.toContain('srcServer(')
+		expect(integration).toContain("include: ['tests/integration/**/*.test.ts']")
+		expect(integration).toContain("setupFiles: ['./tests/setup.ts']")
+		expect(service).toContain("include: ['tests/service/**/*.test.ts']")
+		expect(service).toContain("setupFiles: ['./tests/setup.ts', './tests/setupService.ts']")
+		for (const content of [integration, service]) {
+			expect(content).toContain('testTimeout: 120_000')
+			expect(content).toContain('hookTimeout: 120_000')
+			expect(content).toContain('fileParallelism: false')
+		}
+	})
+
+	it('emits the executable project from its single compiler without changing its behavior', () => {
+		const bin = binViteProject()
+
+		expect(bin).toContain("entry: resolveWorkspacePath('src/bin/scaffold.ts')")
+		expect(bin).toContain("outDir: 'dist/bin'")
+		expect(bin).toContain("include: ['tests/src/bin/**/*.test.ts']")
+		expect(bin).toContain("setupFiles: ['./tests/setup.ts', './tests/setupServer.ts']")
+		expect(bin).toContain("environment: 'node'")
+		expect(bin).toContain('browser: { enabled: false }')
+	})
+
+	it('derives one registration order for source, application, proof, and axis projects', () => {
+		expect(
+			viteProjectRegistrations(
+				['core', 'browser', 'server'],
+				['core', 'browser', 'server'],
+				true,
+				true,
+				true,
+			),
+		).toEqual([
+			{ project: 'srcCore' },
+			{ project: 'srcBrowser', browser: 'src:browser' },
+			{ project: 'srcServer' },
+			{ project: 'appCore' },
+			{ project: 'appBrowser', browser: 'app:browser' },
+			{ project: 'appServer' },
+			{ project: 'policy' },
+			{ project: 'guides' },
+			{ project: 'srcBin' },
+			{ project: 'integration' },
+			{ project: 'service' },
+		])
+	})
+
+	it('emits each demanded proof-project definition exactly once across every root shape', () => {
+		const variants: readonly {
+			readonly content: string
+			readonly bin: boolean
+			readonly integration: boolean
+			readonly service: boolean
+		}[] = [
+			{
+				content: singleSrcViteConfig('server'),
+				bin: false,
+				integration: false,
+				service: false,
+			},
+			{
+				content: singleSrcViteConfig('browser'),
+				bin: false,
+				integration: false,
+				service: false,
+			},
+			{
+				content: rootViteConfig(['core', 'browser', 'server']),
+				bin: false,
+				integration: false,
+				service: false,
+			},
+			{
+				content: applicationViteConfig(
+					['core', 'browser', 'server'],
+					['core', 'browser', 'server'],
+				),
+				bin: false,
+				integration: false,
+				service: false,
+			},
+			{
+				content: rootViteConfig(['core', 'server'], true, false, false),
+				bin: true,
+				integration: false,
+				service: false,
+			},
+			{
+				content: rootViteConfig(['server'], false, true, false),
+				bin: false,
+				integration: true,
+				service: false,
+			},
+			{
+				content: applicationViteConfig([], ['server'], false, false, true),
+				bin: false,
+				integration: false,
+				service: true,
+			},
+		]
+
+		for (const variant of variants) {
+			expect(variant.content.split('export const policy =')).toHaveLength(2)
+			expect(variant.content.split('export const guides =')).toHaveLength(2)
+			expect(variant.content.split('export const srcBin =')).toHaveLength(variant.bin ? 2 : 1)
+			expect(variant.content.split('export const integration =')).toHaveLength(
+				variant.integration ? 2 : 1,
+			)
+			expect(variant.content.split('export const service =')).toHaveLength(variant.service ? 2 : 1)
+
+			const guidesStart = variant.content.indexOf('export const guides =')
+			const guidesEnd = variant.content.indexOf('\nexport ', guidesStart + 1)
+			const guides = variant.content.slice(
+				guidesStart,
+				guidesEnd === -1 ? variant.content.length : guidesEnd,
+			)
+			expect(guides).toContain("setupFiles: ['./tests/setup.ts']")
+			expect(guides).not.toContain('setupServer')
+			expect(guides).not.toContain('setupBrowser')
+			expect(guides).not.toContain('setupService')
+			expect(guides).not.toContain('srcCore(')
+			expect(guides).not.toContain('srcBrowser(')
+			expect(guides).not.toContain('srcServer(')
+		}
+	})
+})
+
 describe('rootViteConfig / singleSrcViteConfig', () => {
 	it('normalizes emitted workspace boundary ids without claiming toolchain modules', async () => {
 		const directory = await buildWorkspaceTempDirectory()
@@ -971,7 +1124,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		)
 
 		expect(createHash('sha256').update(content).digest('hex')).toBe(
-			'a8116685b7f9e6aea3903a428792683510ef79b448c1b7561479e2c8ab6e7156',
+			'acce2225d47ad0260fa40132538e0196f291519a0dba2d1ef2cbc5776668e302',
 		)
 	})
 
@@ -1253,17 +1406,26 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		expect(content).toContain('projects: [srcCore, srcServer, appCore, appServer, policy, guides]')
 	})
 
-	it('bin appends the srcBin project (self-hosting tax), absent for a non-bin blueprint', () => {
+	it('registers bin, integration, and service independently after the proof projects', () => {
 		const child = rootViteConfig(['core', 'server'])
 		expect(child).not.toContain('srcBin')
+		expect(child).not.toContain("include: ['tests/integration/**/*.test.ts']")
+		expect(child).not.toContain("include: ['tests/service/**/*.test.ts']")
 
-		const engineContent = rootViteConfig(['core', 'server'], true)
-		expect(engineContent).toContain("entry: resolveWorkspacePath('src/bin/scaffold.ts')")
-		expect(engineContent).toContain("outDir: 'dist/bin'")
-		expect(engineContent).toContain(
-			'projects: [srcCore, srcServer, policy, guides, srcBin, integration]',
-		)
-		expect(engineContent).toContain("include: ['tests/integration/**/*.test.ts']")
+		const bin = rootViteConfig(['core', 'server'], true, false, false)
+		expect(bin).toContain("entry: resolveWorkspacePath('src/bin/scaffold.ts')")
+		expect(bin).toContain("outDir: 'dist/bin'")
+		expect(bin).toContain('projects: [srcCore, srcServer, policy, guides, srcBin]')
+		expect(bin).not.toContain("include: ['tests/integration/**/*.test.ts']")
+
+		const integration = rootViteConfig(['server'], false, true, false)
+		expect(integration).not.toContain('srcBin')
+		expect(integration).toContain('projects: [srcServer, policy, guides, integration]')
+		expect(integration).toContain("include: ['tests/integration/**/*.test.ts']")
+
+		const service = applicationViteConfig([], ['server'], false, false, true)
+		expect(service).toContain('projects: [appServer, policy, guides, service]')
+		expect(service).toContain("include: ['tests/service/**/*.test.ts']")
 	})
 })
 
@@ -1320,6 +1482,24 @@ describe('configArtifacts', () => {
 		expect(paths).toContain('vite.config.ts')
 		expect(paths).toContain('configs/src/tsconfig.core.json')
 		expect(paths).toContain('configs/src/vite.server.config.ts')
+	})
+
+	it('threads the independent proof-project axes into the emitted root configuration', () => {
+		const bin = configArtifacts(
+			blueprint('router', { src: ['server'], bin: true, integration: false }),
+		).find((artifact) => artifact.path === 'vite.config.ts')?.content
+		const integration = configArtifacts(
+			blueprint('router', { src: ['server'], bin: false, integration: true }),
+		).find((artifact) => artifact.path === 'vite.config.ts')?.content
+		const service = configArtifacts(blueprint('router', { src: ['server'], service: true })).find(
+			(artifact) => artifact.path === 'vite.config.ts',
+		)?.content
+
+		expect(bin).toContain('projects: [srcServer, policy, guides, srcBin]')
+		expect(bin).not.toContain('export const integration =')
+		expect(integration).toContain('projects: [srcServer, policy, guides, integration]')
+		expect(integration).not.toContain('export const srcBin =')
+		expect(service).toContain('projects: [srcServer, policy, guides, service]')
 	})
 })
 

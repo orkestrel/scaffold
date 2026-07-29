@@ -228,9 +228,11 @@ pointed at the built executable, the bin check, test, and build scripts, `build:
 exists: it records a slow, opt-in proof project over the repo's own built output, outside the
 default run. `service` is structural and `true` only when `tests/service/` exists: it records a
 slow, opt-in proof project against a foreign running process, outside the default run. Neither is
-inferred from the workspace name. Today `integration` and `service` are derived records only: the
-integration project and `test:integration` script still ride the `bin` axis until their emission
-units land.
+inferred from the workspace name. The generated root configuration registers a standalone
+`integration` project for the former and a standalone `service` project for the latter. Integration includes
+`tests/integration/**/*.test.ts`; service includes `tests/service/**/*.test.ts` and adds
+`tests/setupService.ts` after the shared setup. Their manifest-script and CI selection remain as
+documented in the generated-project section; project structure does not infer product policy.
 
 `Override` replaces a rendered artifact's content at a path, never partially merges it. `Member` is
 one declared public export of the scaffolded workspace, derived rather than authored.
@@ -974,44 +976,49 @@ ordered guide and version outcomes.
 
 From [`compilers.ts`](../../src/core/compilers.ts).
 
-| Name                    | Kind     |
-| ----------------------- | -------- |
-| `hostGroup`             | function |
-| `fillArtifact`          | function |
-| `srcVariant`            | function |
-| `entryFields`           | function |
-| `dualCondition`         | function |
-| `exportsMap`            | function |
-| `compareCodeUnit`       | function |
-| `devDependenciesFor`    | function |
-| `packageManifest`       | function |
-| `rootTsconfig`          | function |
-| `viteMachinery`         | function |
-| `renderViteTest`        | function |
-| `viteHeader`            | function |
-| `policyViteProject`     | function |
-| `singleSrcViteConfig`   | function |
-| `rootViteConfig`        | function |
-| `applicationViteConfig` | function |
-| `coreTsconfig`          | function |
-| `coreViteConfig`        | function |
-| `srcTsconfig`           | function |
-| `srcViteConfig`         | function |
-| `appTsconfig`           | function |
-| `appViteConfig`         | function |
-| `ciWorkflow`            | function |
-| `configArtifacts`       | function |
-| `sourceArtifacts`       | function |
-| `applicationArtifacts`  | function |
-| `paritySpecifiers`      | function |
-| `testArtifacts`         | function |
-| `guideMemberTable`      | function |
-| `guideUsage`            | function |
-| `guideMethods`          | function |
-| `guideTests`            | function |
-| `guideArtifacts`        | function |
-| `applyOverrides`        | function |
-| `blueprintToPlan`       | function |
+| Name                       | Kind     |
+| -------------------------- | -------- |
+| `hostGroup`                | function |
+| `fillArtifact`             | function |
+| `srcVariant`               | function |
+| `entryFields`              | function |
+| `dualCondition`            | function |
+| `exportsMap`               | function |
+| `compareCodeUnit`          | function |
+| `devDependenciesFor`       | function |
+| `packageManifest`          | function |
+| `rootTsconfig`             | function |
+| `viteMachinery`            | function |
+| `renderViteTest`           | function |
+| `viteHeader`               | function |
+| `policyViteProject`        | function |
+| `guidesViteProject`        | function |
+| `binViteProject`           | function |
+| `integrationViteProject`   | function |
+| `serviceViteProject`       | function |
+| `viteProjectRegistrations` | function |
+| `singleSrcViteConfig`      | function |
+| `rootViteConfig`           | function |
+| `applicationViteConfig`    | function |
+| `coreTsconfig`             | function |
+| `coreViteConfig`           | function |
+| `srcTsconfig`              | function |
+| `srcViteConfig`            | function |
+| `appTsconfig`              | function |
+| `appViteConfig`            | function |
+| `ciWorkflow`               | function |
+| `configArtifacts`          | function |
+| `sourceArtifacts`          | function |
+| `applicationArtifacts`     | function |
+| `paritySpecifiers`         | function |
+| `testArtifacts`            | function |
+| `guideMemberTable`         | function |
+| `guideUsage`               | function |
+| `guideMethods`             | function |
+| `guideTests`               | function |
+| `guideArtifacts`           | function |
+| `applyOverrides`           | function |
+| `blueprintToPlan`          | function |
 
 `blueprintToPlan` is the whole pure compilation: draft each selected group's artifacts, append the
 host set, apply overrides, and pin. Everything above it is an exported leaf of that drafting, each
@@ -1063,11 +1070,21 @@ without output containment — and it still carries every boundary guarantee abo
 `renderViteTest` is the single root-project renderer. It consumes ordered
 `ViteProjectRegistration` data and emits either the plain project list or the browser gate, keeping
 source and application root configurations byte-consistent without reconstructing browser ownership.
+`viteProjectRegistrations` is the one registration derivation every root shape consumes. It orders
+the selected source projects, selected application projects, `policy`, `guides`, then optional
+`srcBin`, `integration`, and `service` projects. Each optional project is controlled only by its
+matching `bin`, `integration`, or `service` blueprint axis.
 
 `coreViteConfig`, `srcViteConfig`, and `appViteConfig` emit the thin per-target wrappers;
 `rootViteConfig`, `singleSrcViteConfig`, and `applicationViteConfig` emit the root configuration for
 a library-only, single non-core `src` environment, and application-bearing workspace respectively;
-`policyViteProject` emits the dedicated Node-only repository-policy test project.
+`policyViteProject`, `guidesViteProject`, `integrationViteProject`, and `serviceViteProject` emit
+standalone Node proof projects. A proof project is structurally derived from the directory holding
+its tests and never wraps a source or application environment project. The guides project therefore
+uses only `tests/setup.ts`, never `setupServer.ts`, `setupBrowser.ts`, or `setupService.ts`.
+Integration and service use 120-second test and hook timeouts with file parallelism disabled;
+service alone adds `tests/setupService.ts`. `binViteProject` is the single executable-project
+emitter and remains independent from integration.
 
 `configArtifacts`, `sourceArtifacts`, `applicationArtifacts`, `testArtifacts`, and `guideArtifacts`
 are the per-group drafters. `paritySpecifiers` computes the self-specifier and module map the
@@ -2038,17 +2055,22 @@ import {
 	appTsconfig,
 	appViteConfig,
 	applicationViteConfig,
+	binViteProject,
 	coreTsconfig,
 	coreViteConfig,
+	guidesViteProject,
+	integrationViteProject,
 	policyViteProject,
 	renderViteTest,
 	rootTsconfig,
 	rootViteConfig,
+	serviceViteProject,
 	singleSrcViteConfig,
 	srcTsconfig,
 	srcViteConfig,
 	viteHeader,
 	viteMachinery,
+	viteProjectRegistrations,
 } from '@orkestrel/scaffold'
 
 rootTsconfig(['core'], ['core', 'server'])
@@ -2064,6 +2086,12 @@ coreViteConfig()
 srcViteConfig('browser')
 appViteConfig('server')
 policyViteProject()
+guidesViteProject()
+binViteProject()
+integrationViteProject()
+serviceViteProject()
+viteProjectRegistrations(['core'], [], false, true).map(({ project }) => project)
+// ['srcCore', 'policy', 'guides', 'integration']
 
 rootViteConfig(['core', 'server'])
 singleSrcViteConfig('server').includes('srcServer') // true
