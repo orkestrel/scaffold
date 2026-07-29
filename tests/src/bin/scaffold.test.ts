@@ -4,12 +4,27 @@
 // (H-containment), so a test exercising `--target` against a temp fixture runs WITH that
 // fixture as its cwd. `--from` is the read-only source override; it is exempt
 // from containment and may point anywhere, including outside the cwd.
-import { existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import {
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	symlinkSync,
+	writeFileSync,
+} from 'node:fs'
+import { dirname, join, relative } from 'node:path'
 import { isRecord, parseJSON } from '@orkestrel/contract'
 import { describe, expect, it } from 'vitest'
-import { catalogNames, formatJson } from '@src/core'
-import { hostRoot, locateHostSource, readHostManifest } from '@src/server'
+import { blueprint, blueprintToPlan, catalogNames, configArtifacts, formatJson } from '@src/core'
+import {
+	createMaterializer,
+	deriveBlueprint,
+	hostRoot,
+	locateHostSource,
+	readHostManifest,
+} from '@src/server'
+import { CLI } from '../../../src/bin/CLI.js'
 import {
 	buildCatalogFrom,
 	buildCatalogTarget,
@@ -878,6 +893,82 @@ describe('scaffold bin', () => {
 				await from.cleanup()
 			}
 		}, 20000)
+
+		it('re-samples both global-setup transitions after confirmation before writing generated config', async () => {
+			const from = await buildFromFixture()
+			const addedPackage = mkdtempSync(join(WORKSPACE_ROOT, '.canon-011-r5-added-'))
+			const removedPackage = mkdtempSync(join(WORKSPACE_ROOT, '.canon-011-r5-removed-'))
+			const previousExitCode = process.exitCode
+			try {
+				const addedMaterializer = createMaterializer({ host: from.path })
+				try {
+					addedMaterializer.materialize(
+						blueprintToPlan(blueprint('global-added', { src: ['core', 'browser'] })),
+						addedPackage,
+					)
+				} finally {
+					addedMaterializer.destroy()
+				}
+				rmSync(join(addedPackage, '.editorconfig'))
+				queueMicrotask(() => {
+					writeFileSync(join(addedPackage, 'tests', 'setupGlobal.ts'), '', 'utf8')
+				})
+				await new CLI().run([
+					'repair',
+					'--generated',
+					'--apply',
+					'--target',
+					relative(WORKSPACE_ROOT, addedPackage),
+					'--from',
+					from.path,
+				])
+				expect(process.exitCode).toBe(0)
+				expect(readFileSync(join(addedPackage, 'vite.config.ts'), 'utf8')).toContain(
+					"globalSetup: ['./tests/setupGlobal.ts']",
+				)
+
+				const removedMaterializer = createMaterializer({ host: from.path })
+				try {
+					removedMaterializer.materialize(
+						blueprintToPlan(blueprint('global-removed', { src: ['core', 'browser'] })),
+						removedPackage,
+					)
+				} finally {
+					removedMaterializer.destroy()
+				}
+				writeFileSync(join(removedPackage, 'tests', 'setupGlobal.ts'), '', 'utf8')
+				const present = deriveBlueprint(removedPackage)
+				const presentVite = configArtifacts(present).find(
+					(artifact) => artifact.path === 'vite.config.ts',
+				)
+				if (presentVite === undefined || presentVite.origin === 'host') {
+					throw new Error('expected a computed Vite config')
+				}
+				writeFileSync(join(removedPackage, presentVite.path), presentVite.content, 'utf8')
+				rmSync(join(removedPackage, '.editorconfig'))
+				queueMicrotask(() => {
+					rmSync(join(removedPackage, 'tests', 'setupGlobal.ts'))
+				})
+				await new CLI().run([
+					'repair',
+					'--generated',
+					'--apply',
+					'--target',
+					relative(WORKSPACE_ROOT, removedPackage),
+					'--from',
+					from.path,
+				])
+				expect(process.exitCode).toBe(0)
+				expect(readFileSync(join(removedPackage, 'vite.config.ts'), 'utf8')).not.toContain(
+					"globalSetup: ['./tests/setupGlobal.ts']",
+				)
+			} finally {
+				process.exitCode = previousExitCode
+				rmSync(addedPackage, { recursive: true, force: true })
+				rmSync(removedPackage, { recursive: true, force: true })
+				await from.cleanup()
+			}
+		}, 40000)
 
 		it('--generated repairs generated drift while default, template, host, and package.json ownership stay unchanged', async () => {
 			const from = await buildFromFixture()

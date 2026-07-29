@@ -1,4 +1,4 @@
-import type { Artifact, Blueprint, Environment, ViteAxes } from '@src/core'
+import type { Artifact, Blueprint, Environment, ViteFacts } from '@src/core'
 import { createHash } from 'node:crypto'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -902,21 +902,21 @@ describe('proof Vite projects and registration', () => {
 		}
 	})
 
-	it('wires the template registry only for the bin and integration intersection', () => {
-		const axes: readonly ViteAxes[] = [
-			{ bin: false, integration: false, service: false },
-			{ bin: false, integration: false, service: true },
-			{ bin: false, integration: true, service: false },
-			{ bin: false, integration: true, service: true },
-			{ bin: true, integration: false, service: false },
-			{ bin: true, integration: false, service: true },
-			{ bin: true, integration: true, service: false },
-			{ bin: true, integration: true, service: true },
+	it('wires the template registry only for the bin, integration, and global intersection', () => {
+		const facts: readonly ViteFacts[] = [
+			{ bin: false, integration: false, global: false },
+			{ bin: false, integration: false, global: true },
+			{ bin: false, integration: true, global: false },
+			{ bin: false, integration: true, global: true },
+			{ bin: true, integration: false, global: false },
+			{ bin: true, integration: false, global: true },
+			{ bin: true, integration: true, global: false },
+			{ bin: true, integration: true, global: true },
 		]
 
-		for (const axis of axes) {
-			const integration = integrationViteProject(axis)
-			const expected = axis.bin === true && axis.integration === true
+		for (const fact of facts) {
+			const integration = integrationViteProject(fact)
+			const expected = fact.bin === true && fact.integration === true && fact.global === true
 
 			expect(integration.includes("globalSetup: ['./tests/setupGlobal.ts']")).toBe(expected)
 			expect(
@@ -1098,19 +1098,19 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		{
 			label: 'single source browser',
 			absent: singleSrcViteConfig('browser'),
-			present: singleSrcViteConfig('browser', { networked: true }),
+			present: singleSrcViteConfig('browser', { global: true }),
 			plain:
 				"\t\t\t\tinclude: ['tests/src/browser/**/*.test.ts'],\n" +
 				"\t\t\t\tsetupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],",
 			wired:
 				"\t\t\t\tinclude: ['tests/src/browser/**/*.test.ts'],\n" +
-				"\t\t\t\tglobalSetup: './tests/setupGlobal.ts',\n" +
+				"\t\t\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" +
 				"\t\t\t\tsetupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],",
 		},
 		{
 			label: 'shared-core source browser',
 			absent: rootViteConfig(['core', 'browser']),
-			present: rootViteConfig(['core', 'browser'], { networked: true }),
+			present: rootViteConfig(['core', 'browser'], { global: true }),
 			plain:
 				"\t\t\t\t\tinclude: ['tests/src/browser/**/*.test.ts'],\n" +
 				"\t\t\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" +
@@ -1118,13 +1118,13 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 			wired:
 				"\t\t\t\t\tinclude: ['tests/src/browser/**/*.test.ts'],\n" +
 				"\t\t\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" +
-				"\t\t\t\t\tglobalSetup: './tests/setupGlobal.ts',\n" +
+				"\t\t\t\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" +
 				"\t\t\t\t\tsetupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],",
 		},
 		{
 			label: 'application-bearing source browser',
 			absent: applicationViteConfig(['core', 'browser'], ['browser']),
-			present: applicationViteConfig(['core', 'browser'], ['browser'], { networked: true }),
+			present: applicationViteConfig(['core', 'browser'], ['browser'], { global: true }),
 			plain:
 				"\t\t\t\tinclude: ['tests/src/browser/**/*.test.ts'],\n" +
 				"\t\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" +
@@ -1132,11 +1132,11 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 			wired:
 				"\t\t\t\tinclude: ['tests/src/browser/**/*.test.ts'],\n" +
 				"\t\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" +
-				"\t\t\t\tglobalSetup: './tests/setupGlobal.ts',\n" +
+				"\t\t\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" +
 				"\t\t\t\tsetupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],",
 		},
 	])('emits the derived browser fixture byte-exactly for $label', (fixture) => {
-		const line = "globalSetup: './tests/setupGlobal.ts'"
+		const line = "globalSetup: ['./tests/setupGlobal.ts']"
 
 		expect(fixture.absent).toContain(fixture.plain)
 		expect(fixture.absent).not.toContain(line)
@@ -1145,11 +1145,11 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 	})
 
 	it('never wires the browser fixture outside a source-browser project', () => {
-		const sourceServer = rootViteConfig(['core', 'server'], { networked: true })
-		const appBrowser = applicationViteConfig([], ['browser'], { networked: true })
+		const sourceServer = rootViteConfig(['core', 'server'], { global: true })
+		const appBrowser = applicationViteConfig([], ['browser'], { global: true })
 
-		expect(sourceServer).not.toContain("globalSetup: './tests/setupGlobal.ts'")
-		expect(appBrowser).not.toContain("globalSetup: './tests/setupGlobal.ts'")
+		expect(sourceServer).not.toContain("globalSetup: ['./tests/setupGlobal.ts']")
+		expect(appBrowser).not.toContain("globalSetup: ['./tests/setupGlobal.ts']")
 		expect(appBrowser).toContain("setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts']")
 	})
 

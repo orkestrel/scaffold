@@ -1481,7 +1481,7 @@ describe('pinPlan', () => {
 			bin: descriptionLast.bin,
 			integration: descriptionLast.integration,
 			service: descriptionLast.service,
-			networked: descriptionLast.networked,
+			global: descriptionLast.global,
 		}
 
 		const a = pinPlan({ blueprint: descriptionLast, groups: ['manifest'], artifacts: [] })
@@ -1527,12 +1527,12 @@ describe('pinPlan', () => {
 		}
 		expect(actual).toMatchInlineSnapshot(`
 			{
-			  "browser-only": "c8ba9559",
-			  "core+browser": "5f79154e",
-			  "core+browser+server": "3914dc47",
-			  "core+server": "97694103",
-			  "core-only": "f03f0fd3",
-			  "server-only": "a46196ab",
+			  "browser-only": "fb208339",
+			  "core+browser": "63c62582",
+			  "core+browser+server": "c5101d27",
+			  "core+server": "16f13413",
+			  "core-only": "0541e4b1",
+			  "server-only": "7bf0acf5",
 			}
 		`)
 	})
@@ -1560,11 +1560,11 @@ describe('pinPlan', () => {
 		}
 		expect(actual).toMatchInlineSnapshot(`
 			{
-			  "app-browser": "0304ebad",
-			  "app-core": "2960a781",
-			  "app-full": "9f3ab8bb",
-			  "app-server": "671d9d6b",
-			  "mixed-full": "30a86857",
+			  "app-browser": "96a1340d",
+			  "app-core": "4eebbba1",
+			  "app-full": "a2692aff",
+			  "app-server": "6764e22f",
+			  "mixed-full": "482147b7",
 			}
 		`)
 	})

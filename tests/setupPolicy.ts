@@ -201,10 +201,11 @@ export function hasAllowedTripleSlashReference(path: string, source: ts.SourceFi
 }
 
 /**
- * Whether a source has no runtime module dependency outside Node builtins.
+ * Whether a source is self-contained around a positively identified Node runtime dependency.
  *
  * @param source - The parsed source file to inspect.
- * @returns `true` when every value import names a real `node:` builtin; type-only imports are erased.
+ * @returns `true` when at least one value import names a real `node:` builtin and no sibling,
+ * re-exported, or dynamic runtime dependency is present; type-only imports are erased.
  *
  * @example
  * ```ts
@@ -214,11 +215,27 @@ export function hasAllowedTripleSlashReference(path: string, source: ts.SourceFi
  * 	ts.ScriptTarget.Latest,
  * 	true,
  * )
- * isSelfContainedRuntimeEntrypoint(source) // true
+ * isSelfContained(source) // true
  * ```
  */
-export function isSelfContainedRuntimeEntrypoint(source: ts.SourceFile): boolean {
+export function isSelfContained(source: ts.SourceFile): boolean {
+	const pending: ts.Node[] = [source]
+	while (pending.length > 0) {
+		const node = pending.pop()
+		if (node === undefined) continue
+		if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
+			return false
+		}
+		ts.forEachChild(node, (child) => {
+			pending.push(child)
+		})
+	}
+
+	let builtin = false
 	for (const statement of source.statements) {
+		if (ts.isExportDeclaration(statement) && statement.moduleSpecifier !== undefined) {
+			return false
+		}
 		if (ts.isImportDeclaration(statement)) {
 			const clause = statement.importClause
 			const named = clause?.namedBindings
@@ -234,6 +251,7 @@ export function isSelfContainedRuntimeEntrypoint(source: ts.SourceFile): boolean
 			if (!ts.isStringLiteral(statement.moduleSpecifier)) return false
 			const specifier = statement.moduleSpecifier.text
 			if (!specifier.startsWith('node:') || !isBuiltin(specifier)) return false
+			builtin = true
 		}
 		if (ts.isImportEqualsDeclaration(statement)) {
 			if (statement.isTypeOnly) continue
@@ -247,9 +265,10 @@ export function isSelfContainedRuntimeEntrypoint(source: ts.SourceFile): boolean
 			}
 			const specifier = reference.expression.text
 			if (!specifier.startsWith('node:') || !isBuiltin(specifier)) return false
+			builtin = true
 		}
 	}
-	return true
+	return builtin
 }
 
 /**
@@ -478,7 +497,11 @@ export function inspectCodingLaw(path: string, content: string): readonly string
 	if (source === undefined) throw new Error(`Policy source was not bound at ${path}`)
 	const checker = program.getTypeChecker()
 	const file = basename(path)
-	const placementExempt = isSelfContainedRuntimeEntrypoint(source)
+	const placementExempt =
+		!CENTRAL_SOURCE_FILES.includes(file) &&
+		!FUNCTION_SOURCE_FILES.includes(file) &&
+		!DATA_SOURCE_FILES.includes(file) &&
+		isSelfContained(source)
 
 	if (/\.[cm]?jsx?$/u.test(path)) {
 		violations.push(`${path} production modules use TypeScript source extensions`)
@@ -516,7 +539,6 @@ export function inspectCodingLaw(path: string, content: string): readonly string
 			violations.push(`${path} centralizes interfaces and type aliases in types.ts`)
 		}
 		if (
-			!placementExempt &&
 			CENTRAL_SOURCE_FILES.includes(file) &&
 			(ts.isClassDeclaration(statement) ||
 				ts.isFunctionDeclaration(statement) ||

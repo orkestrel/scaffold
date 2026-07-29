@@ -121,7 +121,7 @@ describe('deriveBlueprint', () => {
 				bin: true,
 				integration: true,
 				service: false,
-				networked: true,
+				global: true,
 			}),
 		)
 	})
@@ -141,13 +141,13 @@ describe('deriveBlueprint', () => {
 			if (absentVite === undefined || absentVite.origin === 'host') {
 				throw new Error('expected a computed Vite config')
 			}
-			expect(absent.networked).toBe(false)
-			expect(absentVite.content).not.toContain("globalSetup: './tests/setupGlobal.ts'")
+			expect(absent.global).toBe(false)
+			expect(absentVite.content).not.toContain("globalSetup: ['./tests/setupGlobal.ts']")
 
 			buildBlueprintFixture(directory.path, {
 				name: '@orkestrel/browser-fixture',
 				src: ['core', 'browser'],
-				networked: true,
+				global: true,
 			})
 			const present = deriveBlueprint(directory.path)
 			const presentVite = configArtifacts(present).find(
@@ -156,8 +156,8 @@ describe('deriveBlueprint', () => {
 			if (presentVite === undefined || presentVite.origin === 'host') {
 				throw new Error('expected a computed Vite config')
 			}
-			expect(present.networked).toBe(true)
-			expect(presentVite.content).toContain("globalSetup: './tests/setupGlobal.ts'")
+			expect(present.global).toBe(true)
+			expect(presentVite.content).toContain("globalSetup: ['./tests/setupGlobal.ts']")
 
 			writeFileSync(join(directory.path, presentVite.path), presentVite.content, 'utf8')
 			const plan: Plan = {
@@ -173,6 +173,31 @@ describe('deriveBlueprint', () => {
 				missing: 0,
 				foreign: 0,
 			})
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('rejects a mismatched-case global-setup entry on every filesystem', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: '@orkestrel/global-case-fixture',
+				src: ['core', 'browser'],
+			})
+			const tests = join(directory.path, 'tests')
+			mkdirSync(tests, { recursive: true })
+			writeFileSync(join(tests, 'setupglobal.ts'), '', 'utf8')
+
+			const derived = deriveBlueprint(directory.path)
+			const vite = configArtifacts(derived).find((artifact) => artifact.path === 'vite.config.ts')
+			if (vite === undefined || vite.origin === 'host') {
+				throw new Error('expected a computed Vite config')
+			}
+
+			expect(readdirSync(tests)).toContain('setupglobal.ts')
+			expect(derived.global).toBe(false)
+			expect(vite.content).not.toContain("globalSetup: ['./tests/setupGlobal.ts']")
 		} finally {
 			await directory.cleanup()
 		}

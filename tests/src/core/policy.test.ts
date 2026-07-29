@@ -8,7 +8,7 @@ import {
 	inspectCodingLaw,
 	inspectCodingWorkspace,
 	inspectVueCodingLaw,
-	isSelfContainedRuntimeEntrypoint,
+	isSelfContained,
 	normalizePolicyPath,
 	WORKER_SCOPE_VALUE_GLOBALS,
 } from '../../setupPolicy.js'
@@ -35,7 +35,7 @@ describe('repository coding law', () => {
 		expect(inspectCodingWorkspace(WORKSPACE_ROOT)).toEqual([])
 	})
 
-	it('exempts only runtime entrypoints whose value imports are Node builtins', async () => {
+	it('exempts only positively self-contained Node runtime entrypoints', async () => {
 		const directory = await buildTempDirectory()
 		const sourceRoot = join(directory.path, 'src', 'server')
 		const entry = join(sourceRoot, 'serve.ts')
@@ -51,9 +51,7 @@ describe('repository coding law', () => {
 
 			expect(inspectCodingWorkspace(directory.path)).toEqual([])
 			expect(
-				isSelfContainedRuntimeEntrypoint(
-					ts.createSourceFile('serve.ts', worker, ts.ScriptTarget.Latest, true),
-				),
+				isSelfContained(ts.createSourceFile('serve.ts', worker, ts.ScriptTarget.Latest, true)),
 			).toBe(true)
 
 			const sibling = worker.replace(
@@ -66,12 +64,35 @@ describe('repository coding law', () => {
 				'src/server/serve.ts places module data in its centralized kind file',
 			])
 
-			writeFileSync(
-				entry,
-				'function receive(value: string) { return value }\nconst result = receive("ready")\n',
-				'utf8',
-			)
-			expect(inspectCodingWorkspace(directory.path)).toEqual([])
+			const importless =
+				'function receive(value: string) { return value }\nconst result = receive("ready")\n'
+			writeFileSync(entry, importless, 'utf8')
+			expect(inspectCodingWorkspace(directory.path)).toEqual([
+				'src/server/serve.ts places module functions in their centralized kind file',
+				'src/server/serve.ts places module data in its centralized kind file',
+			])
+			expect(
+				isSelfContained(ts.createSourceFile('serve.ts', importless, ts.ScriptTarget.Latest, true)),
+			).toBe(false)
+
+			writeFileSync(entry, `${worker}\nvoid import('./sibling.js')\n`, 'utf8')
+			expect(inspectCodingWorkspace(directory.path)).toEqual([
+				'src/server/serve.ts places module functions in their centralized kind file',
+				'src/server/serve.ts places module data in its centralized kind file',
+			])
+
+			writeFileSync(entry, `${worker}\nexport { value } from './sibling.js'\n`, 'utf8')
+			expect(inspectCodingWorkspace(directory.path)).toEqual([
+				'src/server/serve.ts places module functions in their centralized kind file',
+				'src/server/serve.ts places module data in its centralized kind file',
+			])
+
+			expect(
+				inspectCodingLaw(
+					'src/core/constants.ts',
+					"import type { Blueprint } from './types.js'\nconst HIDDEN = 1\n",
+				),
+			).toEqual(['src/core/constants.ts exports every centralized declaration'])
 		} finally {
 			await directory.cleanup()
 		}

@@ -33,6 +33,7 @@ import {
 	mkdirSync,
 	openSync,
 	opendirSync,
+	readdirSync,
 	readSync,
 	realpathSync,
 	renameSync,
@@ -1394,7 +1395,7 @@ export function selectOrkestrelEntries(value: unknown): readonly (readonly [stri
  * `app/<environment>/`; a target with no environment on either axis is also a coded
  * `TARGET` failure. The `bin`, `integration`, and `service` facts probe physical
  * directories at `src/bin`, `tests/integration`, and `tests/service`, respectively,
- * while `networked` probes the physical `tests/setupGlobal.ts` file; none is
+ * while `global` probes the physical exact-case `tests/setupGlobal.ts` file; none is
  * inferred from the workspace name. `dependencies` /
  * `peers` are the `@orkestrel/`-prefixed entries of `manifest.dependencies` /
  * `manifest.peerDependencies` (a peer flagged `peerDependenciesMeta[name]
@@ -1485,7 +1486,12 @@ export function deriveBlueprint(target: string): Blueprint {
 	const bin = isRealDirectory(join(target, 'src', 'bin'))
 	const integration = isRealDirectory(join(target, 'tests', 'integration'))
 	const service = isRealDirectory(join(target, 'tests', 'service'))
-	const networked = isRealFile(join(target, GLOBAL_SETUP_PATH))
+	const tests = join(target, dirname(GLOBAL_SETUP_PATH))
+	const entries = attempt(() => readdirSync(tests))
+	const global =
+		entries.success &&
+		entries.value.includes(basename(GLOBAL_SETUP_PATH)) &&
+		isRealFile(join(target, GLOBAL_SETUP_PATH))
 	if (service) {
 		const missing: string[] = []
 		if (!isRealFile(join(target, 'tests', 'setupService.ts'))) {
@@ -1541,7 +1547,7 @@ export function deriveBlueprint(target: string): Blueprint {
 					bin,
 					integration,
 					service,
-					networked,
+					global,
 				}),
 			),
 		),
@@ -1574,7 +1580,7 @@ export function deriveBlueprint(target: string): Blueprint {
 		bin,
 		integration,
 		service,
-		networked,
+		global,
 	})
 }
 

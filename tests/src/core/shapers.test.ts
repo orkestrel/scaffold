@@ -103,9 +103,9 @@ describe('blueprintShape — structural axes', () => {
 		expect(isBlueprint(value)).toBe(true)
 	})
 
-	it.each([false, true])('guard/parser round-trips networked: %s', (networked) => {
+	it.each([false, true])('guard/parser round-trips global: %s', (global) => {
 		const contract = createContract(blueprintShape())
-		const value = blueprint('browser-fixture', { src: ['browser'], networked })
+		const value = blueprint('browser-fixture', { src: ['browser'], global })
 
 		expect(contract.is(value)).toBe(true)
 		expect(contract.parse(value)).toEqual(value)

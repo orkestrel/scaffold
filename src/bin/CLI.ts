@@ -360,6 +360,46 @@ export class CLI implements CLIInterface {
 		return full.drifted + full.missing + full.foreign
 	}
 
+	/** Compile and audit the selected repair ownership boundary for one structural snapshot. */
+	#prepareRepair(
+		spec: Blueprint,
+		target: string,
+		host: string,
+		generated: boolean,
+		json: boolean,
+	): readonly [compiled: Plan, plan: Plan, audit: Audit] {
+		const [compiled] = this.#compile(spec, json)
+		const scoped: Plan = {
+			...compiled,
+			blueprint: { ...compiled.blueprint, overrides: [] },
+			artifacts: compiled.artifacts.filter(
+				(artifact) =>
+					artifact.origin === 'host' ||
+					(generated && artifact.origin === 'computed' && artifact.path !== 'package.json'),
+			),
+		}
+
+		let plan: Plan
+		try {
+			plan = hydratePlan(scoped, host)
+		} catch (error) {
+			this.#error(error, json)
+		}
+
+		try {
+			const audit = diffPlan(
+				plan,
+				readTarget(
+					target,
+					plan.artifacts.map((artifact) => artifact.path),
+				),
+			)
+			return [compiled, plan, audit]
+		} catch (error) {
+			this.#error(error, json)
+		}
+	}
+
 	/** Reject a cancelled prompt (ctrl-c) with the shared `CANCELLED_MESSAGE` — exit 1, nothing written. */
 	async #guard<T>(promise: Promise<T>): Promise<T> {
 		try {
@@ -869,43 +909,16 @@ export class CLI implements CLIInterface {
 			this.#error(error, json)
 		}
 
-		const [compiled] = this.#compile(spec, json)
-
 		// Repair defaults to the host-restoration boundary. `--generated` adds
 		// generated canon while preserving the birth-only template boundary and
 		// package.json's independent publication protection.
 		const generated = values.generated === true
-		const scoped: Plan = {
-			...compiled,
-			blueprint: { ...compiled.blueprint, overrides: [] },
-			artifacts: compiled.artifacts.filter(
-				(artifact) =>
-					artifact.origin === 'host' ||
-					(generated && artifact.origin === 'computed' && artifact.path !== 'package.json'),
-			),
-		}
-
 		const from = values.from?.[0]
 		const host = from ?? hostRoot()
-		let plan: Plan
-		try {
-			plan = hydratePlan(scoped, host)
-		} catch (error) {
-			this.#error(error, json)
-		}
-
-		let audit: Audit
-		try {
-			audit = diffPlan(
-				plan,
-				readTarget(
-					target,
-					plan.artifacts.map((artifact) => artifact.path),
-				),
-			)
-		} catch (error) {
-			this.#error(error, json)
-		}
+		const prepared = this.#prepareRepair(spec, target, host, generated, json)
+		const compiled = prepared[0]
+		let plan = prepared[1]
+		let audit = prepared[2]
 
 		if (!json) {
 			this.#reporter.line(generated ? REPAIR_GENERATED_SCOPE : REPAIR_SCOPE)
@@ -962,6 +975,19 @@ export class CLI implements CLIInterface {
 		const doPrune =
 			prunePaths.length > 0 &&
 			(await this.#prune(terminal, pruneConfirmMessage(prunePaths.length), values, json))
+
+		let currentGlobal: boolean
+		try {
+			currentGlobal = deriveBlueprint(target).global
+		} catch (error) {
+			this.#error(error, json)
+		}
+		if (currentGlobal !== spec.global) {
+			spec = { ...spec, global: currentGlobal }
+			const refreshed = this.#prepareRepair(spec, target, host, generated, json)
+			plan = refreshed[1]
+			audit = refreshed[2]
+		}
 
 		const spinner = this.#spinner('repairing', json)
 		spinner?.start()

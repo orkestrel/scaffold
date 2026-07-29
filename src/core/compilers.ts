@@ -5,7 +5,7 @@ import type {
 	Member,
 	Plan,
 	Environment,
-	ViteAxes,
+	ViteFacts,
 	ViteMachinery,
 	ViteProjectRegistration,
 } from './types.js'
@@ -597,8 +597,7 @@ export function viteMachinery(
  *
  * @param src - The declared published environments.
  * @param app - The declared application environments.
- * @param axes - Optional structural facts; executable, integration, and service
- *   append projects while `networked` is irrelevant to registration.
+ * @param facts - Optional structural facts.
  * @returns Source projects, application projects, proof projects, then optional axis projects.
  *
  * @example
@@ -610,7 +609,7 @@ export function viteMachinery(
 export function viteProjectRegistrations(
 	src: readonly Environment[],
 	app: readonly Environment[] = [],
-	axes: ViteAxes = {},
+	facts: ViteFacts = {},
 ): readonly ViteProjectRegistration[] {
 	const registrations: ViteProjectRegistration[] = []
 	for (const environment of ENVIRONMENTS) {
@@ -630,17 +629,16 @@ export function viteProjectRegistrations(
 		if (environment === 'server') registrations.push({ project: 'appServer' })
 	}
 	registrations.push({ project: 'policy' }, { project: 'guides' })
-	if (axes.bin === true) registrations.push({ project: 'srcBin' })
-	if (axes.integration === true) registrations.push({ project: 'integration' })
-	if (axes.service === true) registrations.push({ project: 'service' })
+	if (facts.bin === true) registrations.push({ project: 'srcBin' })
+	if (facts.integration === true) registrations.push({ project: 'integration' })
+	if (facts.service === true) registrations.push({ project: 'service' })
 	return registrations
 }
 
 /**
  * Render the one ordered proof and structural-axis project definition block.
  *
- * @param axes - Optional structural facts; executable, integration, and service
- *   append definitions while `networked` is irrelevant to this block.
+ * @param facts - Optional structural facts.
  * @returns Policy, guides, then selected axis project definitions, separated by one blank line.
  *
  * @example
@@ -648,11 +646,11 @@ export function viteProjectRegistrations(
  * viteProjectDefinitions({ bin: true }).includes('export const srcBin =') // true
  * ```
  */
-export function viteProjectDefinitions(axes: ViteAxes = {}): string {
+export function viteProjectDefinitions(facts: ViteFacts = {}): string {
 	const definitions = [policyViteProject(), guidesViteProject()]
-	if (axes.bin === true) definitions.push(binViteProject())
-	if (axes.integration === true) definitions.push(integrationViteProject(axes))
-	if (axes.service === true) definitions.push(serviceViteProject())
+	if (facts.bin === true) definitions.push(binViteProject())
+	if (facts.integration === true) definitions.push(integrationViteProject(facts))
+	if (facts.service === true) definitions.push(serviceViteProject())
 	return definitions.join('\n')
 }
 
@@ -2364,19 +2362,19 @@ export function binViteProject(): string {
 /**
  * Build the standalone Node-only installed-consumer integration proof project.
  *
- * @param axes - Optional executable and integration axes controlling the shared registry setup.
+ * @param facts - Optional structural facts controlling the shared global setup.
  * @returns The emitted `integration` project definition.
  *
  * @example
  * ```ts
- * integrationViteProject({ bin: true, integration: true }).includes(
+ * integrationViteProject({ bin: true, integration: true, global: true }).includes(
  *   "globalSetup: ['./tests/setupGlobal.ts']",
  * ) // true
  * ```
  */
-export function integrationViteProject(axes: ViteAxes = {}): string {
+export function integrationViteProject(facts: ViteFacts = {}): string {
 	const registrySetup =
-		axes.bin === true && axes.integration === true
+		facts.bin === true && facts.integration === true && facts.global === true
 			? `				// Wire the template registry for the generated-consumer proof.
 				globalSetup: ['./${GLOBAL_SETUP_PATH}'],
 `
@@ -2441,8 +2439,7 @@ export function serviceViteProject(): string {
  * projects.
  *
  * @param environment - The sole declared non-`core` environment.
- * @param axes - Optional executable, integration, service, and source-browser
- *   fixture facts.
+ * @param facts - Optional structural facts.
  * @returns The root `vite.config.ts` file content for a single non-`core` environment, newline-terminated.
  *
  * @example
@@ -2452,7 +2449,7 @@ export function serviceViteProject(): string {
  */
 export function singleSrcViteConfig(
 	environment: 'browser' | 'server',
-	axes: ViteAxes = {},
+	facts: ViteFacts = {},
 ): string {
 	// Rendered blocks below are generated FILE TEXT, so every embedded
 	// declaration keyword is interpolated rather than typed literally at
@@ -2464,9 +2461,9 @@ export function singleSrcViteConfig(
 	// exactly the one export it documents.
 	const machinery = viteMachinery([environment])
 	const header = viteHeader(machinery)
-	const registrations = viteProjectRegistrations([environment], [], axes)
+	const registrations = viteProjectRegistrations([environment], [], facts)
 	const renderedTest = renderViteTest(registrations, machinery.browser)
-	const definitions = viteProjectDefinitions(axes)
+	const definitions = viteProjectDefinitions(facts)
 	if (environment === 'browser') {
 		return `${header}
 ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
@@ -2494,7 +2491,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 			test: {
 				name: { label: 'src:browser', color: 'yellow' },
 				include: ['tests/src/browser/**/*.test.ts'],
-				${axes.networked === true ? `globalSetup: './${GLOBAL_SETUP_PATH}',\n\t\t\t\t` : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+				${facts.global === true ? `globalSetup: ['./${GLOBAL_SETUP_PATH}'],\n\t\t\t\t` : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
 				...(config?.test?.browser?.enabled === false
 					? {}
 					: {
@@ -2585,9 +2582,9 @@ ${renderedTest}
  *      environment is `browser` (it must run its own tests in a real browser).
  *
  * @param src - The declared `Environment[]`.
- * @param axes - Optional structural facts. `bin` appends the standalone executable
+ * @param facts - Optional structural facts. `bin` appends the standalone executable
  *   build-and-test project; `integration` and `service` append their standalone
- *   proof projects; `networked` wires the source-browser fixture.
+ *   proof projects; `global` wires the shared global-setup module.
  * @returns The root `vite.config.ts` file content, newline-terminated.
  *
  * @example
@@ -2595,7 +2592,7 @@ ${renderedTest}
  * rootViteConfig(['core']).includes('srcCore') // true
  * ```
  */
-export function rootViteConfig(src: readonly Environment[], axes: ViteAxes = {}): string {
+export function rootViteConfig(src: readonly Environment[], facts: ViteFacts = {}): string {
 	// Rendered blocks below are generated FILE TEXT, so every embedded
 	// declaration keyword is interpolated rather than typed literally at
 	// column 0 — the doc↔source parity scan (AGENTS §22) reads this file's
@@ -2614,7 +2611,7 @@ export function rootViteConfig(src: readonly Environment[], axes: ViteAxes = {})
 	if (!hasCore) {
 		const [onlyEnvironment] = nonCore
 		if (onlyEnvironment === 'browser' || onlyEnvironment === 'server') {
-			return singleSrcViteConfig(onlyEnvironment, axes)
+			return singleSrcViteConfig(onlyEnvironment, facts)
 		}
 	}
 
@@ -2646,7 +2643,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 					name: { label: 'src:browser', color: 'yellow' },
 					include: ['tests/src/browser/**/*.test.ts'],
 					exclude: ['tests/src/core/**/*.test.ts'],
-					${axes.networked === true ? `globalSetup: './${GLOBAL_SETUP_PATH}',\n\t\t\t\t\t` : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+					${facts.global === true ? `globalSetup: ['./${GLOBAL_SETUP_PATH}'],\n\t\t\t\t\t` : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
 					...(config?.test?.browser?.enabled === false
 						? {}
 						: {
@@ -2716,9 +2713,9 @@ ${EXPORT_KEYWORD} const srcServer = (config?: UserConfig): UserConfig =>
 	const blocks = nonCore
 		.map((environment) => (environment === 'browser' ? browserBlock : serverBlock))
 		.join('')
-	const registrations = viteProjectRegistrations(src, [], axes)
+	const registrations = viteProjectRegistrations(src, [], facts)
 	const renderedTest = renderViteTest(registrations, machinery.browser)
-	const definitions = viteProjectDefinitions(axes)
+	const definitions = viteProjectDefinitions(facts)
 	return `${header}
 ${EXPORT_KEYWORD} const srcCore = (config?: UserConfig): UserConfig =>
 	mergeConfig(
@@ -2755,8 +2752,7 @@ ${renderedTest}
  *
  * @param src - Published src environments.
  * @param app - Private app environments.
- * @param axes - Optional executable, integration, service, and source-browser
- *   fixture facts.
+ * @param facts - Optional structural facts.
  * @returns The root `vite.config.ts` content.
  *
  * @example
@@ -2767,10 +2763,10 @@ ${renderedTest}
 export function applicationViteConfig(
 	src: readonly Environment[],
 	app: readonly Environment[],
-	axes: ViteAxes = {},
+	facts: ViteFacts = {},
 ): string {
 	const hasSourceCore = src.includes('core')
-	const machinery = viteMachinery(src, app, axes.bin === true)
+	const machinery = viteMachinery(src, app, facts.bin === true)
 	const header = viteHeader(machinery)
 	const blocks: string[] = []
 
@@ -2827,7 +2823,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 			test: {
 				name: { label: 'src:browser', color: 'yellow' },
 				include: ['tests/src/browser/**/*.test.ts'],
-				${hasSourceCore ? "exclude: ['tests/src/core/**/*.test.ts'],\n\t\t\t\t" : ''}${axes.networked === true ? `globalSetup: './${GLOBAL_SETUP_PATH}',\n\t\t\t\t` : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+				${hasSourceCore ? "exclude: ['tests/src/core/**/*.test.ts'],\n\t\t\t\t" : ''}${facts.global === true ? `globalSetup: ['./${GLOBAL_SETUP_PATH}'],\n\t\t\t\t` : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
 				...(config?.test?.browser?.enabled === false
 					? {}
 					: {
@@ -3018,9 +3014,9 @@ ${EXPORT_KEYWORD} const appServer = (config?: UserConfig): UserConfig =>
 	)
 `)
 	}
-	const registrations = viteProjectRegistrations(src, app, axes)
+	const registrations = viteProjectRegistrations(src, app, facts)
 	const renderedTest = renderViteTest(registrations, machinery.browser)
-	const definitions = viteProjectDefinitions(axes)
+	const definitions = viteProjectDefinitions(facts)
 	return `${header}${blocks.join('')}
 ${definitions}
 export default defineConfig({

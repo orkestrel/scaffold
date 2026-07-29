@@ -134,7 +134,7 @@ From [`types.ts`](../../src/core/types.ts).
 | `SrcDefinition`           | interface |
 | `AppDefinition`           | interface |
 | `ViteMachinery`           | interface |
-| `ViteAxes`                | interface |
+| `ViteFacts`               | interface |
 | `ViteProjectRegistration` | interface |
 | `Origin`                  | type      |
 | `Group`                   | type      |
@@ -192,9 +192,10 @@ single-file-component, HTML, and development-server machinery an application bro
 needs, and `output` for build-output containment. It never selects a boundary guarantee — those ship
 in every shape, as the compilers section sets out.
 
-`ViteAxes` is the optional structural-fact slice shared by every root Vite compiler:
+`ViteFacts` is the optional structural-fact slice shared by every root Vite compiler:
 `bin`, `integration`, and `service` each select their matching standalone project when `true`;
-`networked` wires the consumer-owned Node fixture into a declared source-browser project.
+`global` records the exact-case consumer-owned global-setup module and wires it into each eligible
+project.
 
 `ViteProjectRegistration` carries one generated project factory identifier and its optional browser
 label. Root configuration renderers preserve that browser ownership as data through registration
@@ -218,7 +219,7 @@ interface Blueprint {
 	readonly bin: boolean
 	readonly integration: boolean
 	readonly service: boolean
-	readonly networked: boolean
+	readonly global: boolean
 }
 ```
 
@@ -229,11 +230,11 @@ packages — a peer flagged `optional` also gets a `peerDependenciesMeta` entry.
 package-specific development dependencies merged over the generated baseline, and may carry any
 valid npm package name.
 
-`bin`, `integration`, and `service` are the three structural project axes. `networked` is the
-global-setup presence fact consumed by the source-browser compiler. All four obey one law: each is
-`true` only when the workspace physically ships the directory or file that defines it — never
-because of the workspace's name, and never because a sibling fact is set. `deriveBlueprint` probes
-those paths, so a fresh compile and an audit of a mature repository agree on what the workspace is.
+`bin`, `integration`, `service`, and `global` are structural project facts. All four obey one law:
+each is `true` only when the workspace physically ships the directory or exact-case file that
+defines it — never because of the workspace's name, and never because a sibling fact is set.
+`deriveBlueprint` probes those paths, so a fresh compile and an audit of a mature repository agree
+on what the workspace is.
 
 - **`bin`** — `src/bin/` exists. It alone turns on the self-hosting extras: the manifest's `bin`
   entry, the `scaffold` script pointed at the built executable, the bin check, test, and build
@@ -247,11 +248,10 @@ those paths, so a fresh compile and an audit of a mature repository agree on wha
   running process, outside the default run: a standalone `service` project including
   `tests/service/**/*.test.ts`, with `tests/setupService.ts` after the shared setup, and the
   isolated `test:service` script.
-- **`networked`** — the physical `tests/setupGlobal.ts` file exists. When the workspace also
-  declares `src/browser`, its `srcBrowser` project runs that consumer-owned global fixture as
-  `globalSetup`. The fact never changes application-browser or standalone-proof wiring; the
-  integration project selects the same module only through its independent `bin && integration`
-  condition.
+- **`global`** — the physical, exact-case `tests/setupGlobal.ts` file exists. It is the single
+  governing setup-presence fact. A declared `src/browser` project runs that consumer-owned module
+  as `globalSetup`; integration runs it only when `bin` and `integration` are also true.
+  Application-browser, styles, service, and unrelated proof projects never receive it.
 
 A service workspace owes two companion files beside that directory, and derivation requires both
 physically present: `tests/setupService.ts` and `scripts/service.sh`. Either missing companion is a
@@ -961,9 +961,9 @@ omitting an absent path entirely. `readManifest` reads `package.json` text, and
 `deriveBlueprint` is the faithful inverse an audit needs: it reconstructs a blueprint from an
 existing workspace so a mature package is diffed against its own would-be scaffold rather than a
 dependency-less stand-in. Environments come from `src/<environment>/` and `app/<environment>/`, the
-three structural axes from their directory probes, and `networked` from the physical
-`tests/setupGlobal.ts` file; the service companion law remains the one the blueprint section
-states — every fact is a reading of the filesystem, never of the name. Dependencies and peers come
+three structural project facts from their directory probes, and `global` from the physical,
+exact-case `tests/setupGlobal.ts` file; the service companion law remains the one the blueprint
+section states — every fact is a reading of the filesystem, never of the name. Dependencies and peers come
 from the manifest's scoped entries, with an optional peer recovered from
 `peerDependenciesMeta`; and `extras` is every development dependency minus the complete set
 `devDependenciesFor` emits for those environments and structural axes, and minus anything already
@@ -1113,10 +1113,11 @@ its trailing comma, stays collapsed when it fits and expands one entry per line 
 `viteProjectRegistrations` is the one registration derivation every root shape consumes: it derives
 the selected source and application projects from the canonical environment order, then appends
 `policy`, `guides`, and the optional `srcBin`, `integration`, and `service` projects.
-`viteProjectDefinitions` renders the standalone proof and structural-axis definitions in that same
-order with one blank line between declarations. Both consume `ViteAxes`, so each optional project
-is controlled only by its matching `bin`, `integration`, or `service` blueprint axis; the same
-slice carries `networked` to the source-browser compiler without adding another project.
+`viteProjectDefinitions` renders the standalone proof and structural-fact definitions in that same
+order with one blank line between declarations. Both consume `ViteFacts`, so each optional project
+is controlled only by its matching `bin`, `integration`, or `service` blueprint fact; the same
+slice carries `global` to integration and the source-browser compiler without adding another
+project.
 
 `coreViteConfig`, `srcViteConfig`, `binViteConfig`, and `appViteConfig` emit the thin per-target
 wrappers, while `binTsconfig` emits the executable declaration scope; `rootViteConfig`,
@@ -1130,12 +1131,12 @@ or application environment project. The guides project therefore uses only `test
 `tests/app/**/*.test.ts` exclude rows are uniform across all root shapes by design, including
 core-only workspaces where one row cannot currently match. Integration and service use 120-second
 test and hook timeouts with file parallelism disabled, and service alone layers
-`tests/setupService.ts` onto the shared setup. Where a bin workspace also ships the integration
-project, that project wires `tests/setupGlobal.ts` as its global setup for the shared
-template-registry harness; bin-less integration workspaces do not. Independently, a `networked`
-source-browser project places `globalSetup: './tests/setupGlobal.ts'` immediately before its
-ordinary `setupFiles` row (and after the core-test exclusion where that row exists). Application
-browser projects never receive that field.
+`tests/setupService.ts` onto the shared setup. The integration project wires
+`tests/setupGlobal.ts` for the shared template-registry harness exactly when `bin`, `integration`,
+and `global` are all true. Independently, a `global` source-browser project places
+`globalSetup: ['./tests/setupGlobal.ts']` immediately before its ordinary `setupFiles` row (and
+after the core-test exclusion where that row exists). Application browser projects never receive
+that field.
 
 `configArtifacts`, `sourceArtifacts`, `applicationArtifacts`, `testArtifacts`, and `guideArtifacts`
 are the per-group drafters. When `bin` is selected, `configArtifacts` includes
@@ -1684,12 +1685,14 @@ readonly, that privacy is a runtime `#` field rather than a TypeScript modifier,
 re-exports only through `export *`, that a core source never names a worker-only global the
 `WebWorker` declarations expose, and that a computed dynamic import cannot smuggle a
 cross-environment dependency past the declared import rules. Vue components are inspected for the
-same evasions. A self-contained runtime entrypoint is exempt only from module-scope placement and
-export checks: every value import must name a real `node:` builtin, while erased type-only imports
-may reference sibling contracts; an importless entrypoint also qualifies. Every other policy law
-still applies. It is a complement to lint and typecheck, never a second type system, and it is not a
-general-purpose source analyzer. Generated workspaces receive the same exported policy module as a
-host-origin file and run it as a dedicated Node-only `policy` test project over
+same evasions. A self-contained runtime entrypoint may be exempt from module-scope placement only
+when it is not a centralized kind file and has at least one real `node:` value import. Erased
+type-only imports may reference sibling contracts; any non-`node:` static value import,
+`export … from` re-export, or dynamic `import(...)` disqualifies the exemption. An importless file
+does not qualify, and centralized declarations remain subject to their export law. Every other
+policy law still applies. It is a complement to lint and typecheck, never a second type system, and
+it is not a general-purpose source analyzer. Generated workspaces receive the same exported policy
+module as a host-origin file and run it as a dedicated Node-only `policy` test project over
 `tests/policy.test.ts`.
 
 **Real browser capability.** Browser test projects are gated on the real executable: the generated
@@ -1706,12 +1709,12 @@ projects and says so.
 
 **Consumer-owned global setup.** The single mechanism-named `tests/setupGlobal.ts` module may
 prepare a shared integration registry, a real Node-side counterpart for source-browser tests such
-as a WebSocket fixture server, or both. The scaffold does not emit or replace it. The
-`bin && integration` condition wires it to the integration project, while derivation records its
-physical presence as `networked` and a declared `src/browser` independently wires it to
-`srcBrowser`. Removing the file removes the source-browser field from regenerated configuration
-byte-for-byte. Application browser, styles, and service readiness setup remain isolated from this
-seam.
+as a WebSocket fixture server, or both. The scaffold does not emit or replace it. Derivation
+records its exact-case physical presence as `global`, the single governing fact. Integration
+consumes it only when `bin` and `integration` are also true; a declared `src/browser` independently
+wires it to `srcBrowser`. Removing the file removes both eligible rows from regenerated
+configuration byte-for-byte. Application browser, styles, and service readiness setup remain
+isolated from this seam.
 
 **Continuous integration.** The generated workflow runs on push and pull request, on
 `ubuntu-latest`, with read-only contents permission, a 60-minute timeout, and a matrix that **tests
@@ -2204,7 +2207,7 @@ appViteConfig('server')
 policyViteProject()
 guidesViteProject()
 binViteProject()
-integrationViteProject({ bin: true, integration: true })
+integrationViteProject({ bin: true, integration: true, global: true })
 serviceViteProject()
 viteProjectDefinitions({ integration: true }).includes('export const integration =') // true
 viteProjectRegistrations(['core'], [], { integration: true }).map(({ project }) => project)
