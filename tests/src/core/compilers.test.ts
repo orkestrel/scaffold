@@ -1,4 +1,4 @@
-import type { Artifact, Blueprint, Environment } from '@src/core'
+import type { Artifact, Blueprint, Environment, ViteAxes } from '@src/core'
 import { createHash } from 'node:crypto'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -860,6 +860,29 @@ describe('proof Vite projects and registration', () => {
 		}
 	})
 
+	it('wires the template registry only for the bin and integration intersection', () => {
+		const axes: readonly ViteAxes[] = [
+			{ bin: false, integration: false, service: false },
+			{ bin: false, integration: false, service: true },
+			{ bin: false, integration: true, service: false },
+			{ bin: false, integration: true, service: true },
+			{ bin: true, integration: false, service: false },
+			{ bin: true, integration: false, service: true },
+			{ bin: true, integration: true, service: false },
+			{ bin: true, integration: true, service: true },
+		]
+
+		for (const axis of axes) {
+			const integration = integrationViteProject(axis)
+			const expected = axis.bin === true && axis.integration === true
+
+			expect(integration.includes("globalSetup: ['./tests/setupIntegration.ts']")).toBe(expected)
+			expect(
+				integration.includes('// Wire the template registry for the generated-consumer proof.'),
+			).toBe(expected)
+		}
+	})
+
 	it('emits the executable project from its single compiler without changing its behavior', () => {
 		const bin = binViteProject()
 
@@ -886,7 +909,7 @@ ${guidesViteProject()}`)
 				policyViteProject(),
 				guidesViteProject(),
 				binViteProject(),
-				integrationViteProject(),
+				integrationViteProject({ bin: true, integration: true, service: true }),
 				serviceViteProject(),
 			].join('\n'),
 		)

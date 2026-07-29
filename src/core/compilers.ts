@@ -649,7 +649,7 @@ export function viteProjectRegistrations(
 export function viteProjectDefinitions(axes: ViteAxes = {}): string {
 	const definitions = [policyViteProject(), guidesViteProject()]
 	if (axes.bin === true) definitions.push(binViteProject())
-	if (axes.integration === true) definitions.push(integrationViteProject())
+	if (axes.integration === true) definitions.push(integrationViteProject(axes))
 	if (axes.service === true) definitions.push(serviceViteProject())
 	return definitions.join('\n')
 }
@@ -2338,14 +2338,23 @@ export function binViteProject(): string {
 /**
  * Build the standalone Node-only installed-consumer integration proof project.
  *
+ * @param axes - Optional executable and integration axes controlling the shared registry setup.
  * @returns The emitted `integration` project definition.
  *
  * @example
  * ```ts
- * integrationViteProject().includes("label: 'integration'") // true
+ * integrationViteProject({ bin: true, integration: true }).includes(
+ *   "globalSetup: ['./tests/setupIntegration.ts']",
+ * ) // true
  * ```
  */
-export function integrationViteProject(): string {
+export function integrationViteProject(axes: ViteAxes = {}): string {
+	const registrySetup =
+		axes.bin === true && axes.integration === true
+			? `				// Wire the template registry for the generated-consumer proof.
+				globalSetup: ['./tests/setupIntegration.ts'],
+`
+			: ''
 	return `${EXPORT_KEYWORD} const integration = (config?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
@@ -2354,7 +2363,7 @@ export function integrationViteProject(): string {
 				name: { label: 'integration', color: 'blue' },
 				include: ['tests/integration/**/*.test.ts'],
 				setupFiles: ['./tests/setup.ts'],
-				environment: 'node',
+${registrySetup}				environment: 'node',
 				browser: { enabled: false },
 				testTimeout: 120_000,
 				hookTimeout: 120_000,

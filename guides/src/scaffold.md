@@ -1115,7 +1115,9 @@ or application environment project. The guides project therefore uses only `test
 `tests/app/**/*.test.ts` exclude rows are uniform across all root shapes by design, including
 core-only workspaces where one row cannot currently match. Integration and service use 120-second
 test and hook timeouts with file parallelism disabled, and service alone layers
-`tests/setupService.ts` onto the shared setup.
+`tests/setupService.ts` onto the shared setup. Where a bin workspace also ships the integration
+project, that project wires `tests/setupIntegration.ts` as its global setup for the shared
+template-registry harness; bin-less integration workspaces do not.
 
 `configArtifacts`, `sourceArtifacts`, `applicationArtifacts`, `testArtifacts`, and `guideArtifacts`
 are the per-group drafters. When `bin` is selected, `configArtifacts` includes
@@ -2170,7 +2172,7 @@ appViteConfig('server')
 policyViteProject()
 guidesViteProject()
 binViteProject()
-integrationViteProject()
+integrationViteProject({ bin: true, integration: true })
 serviceViteProject()
 viteProjectDefinitions({ integration: true }).includes('export const integration =') // true
 viteProjectRegistrations(['core'], [], { integration: true }).map(({ project }) => project)
