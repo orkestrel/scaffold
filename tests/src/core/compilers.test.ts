@@ -72,8 +72,8 @@ describe('ciWorkflow', () => {
 		expect(workflow).not.toMatch(/uses: actions\/[^@\s]+@v\d/)
 	})
 
-	it('installs Chromium for the engine-owned generated browser consumer proof', () => {
-		const workflow = ciWorkflow(blueprint('scaffold', { src: ['core', 'server'], engine: true }))
+	it('installs Chromium for the bin-owned generated browser consumer proof', () => {
+		const workflow = ciWorkflow(blueprint('scaffold', { src: ['core', 'server'], bin: true }))
 
 		expect(workflow).toContain('playwright install --with-deps chromium')
 	})
@@ -97,7 +97,7 @@ describe('hostGroup', () => {
 		expect(hostGroup('.github/workflows/ci.yml')).toBe('orchestration')
 	})
 
-	it('classes the vendored guide index and the scaffold engine self-guide as guides', () => {
+	it('classes the vendored guide index and the scaffold bin self-guide as guides', () => {
 		expect(hostGroup('guides/src/guide.md')).toBe('guides')
 		expect(hostGroup('guides/src/scaffold.md')).toBe('guides')
 	})
@@ -546,7 +546,7 @@ describe('packageManifest', () => {
 		])
 	})
 
-	it('a non-engine (child) blueprint carries no bin/build:host tax and keeps @orkestrel/scaffold as a devDependency', () => {
+	it('a non-bin (child) blueprint carries no bin/build:host tax and keeps @orkestrel/scaffold as a devDependency', () => {
 		const spec = blueprint('router', { src: ['core', 'server'] })
 		const manifest = readManifest(packageManifest(spec))
 		expect(manifest.bin).toBeUndefined()
@@ -557,8 +557,8 @@ describe('packageManifest', () => {
 		expect(dev['@orkestrel/scaffold']).toBeDefined()
 	})
 
-	it('an engine blueprint carries the bin/build:host self-hosting tax and omits its own devDependency', () => {
-		const spec = blueprint('scaffold', { src: ['core', 'server'], engine: true })
+	it('a bin blueprint carries the bin/build:host self-hosting tax and omits its own devDependency', () => {
+		const spec = blueprint('scaffold', { src: ['core', 'server'], bin: true })
 		const manifest = readManifest(packageManifest(spec))
 		expect(manifest.bin).toEqual({ scaffold: './dist/bin/scaffold.js' })
 		expect(manifest.files).toEqual(['dist/src', 'dist/bin', 'dist/host', 'README.md'])
@@ -1253,7 +1253,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		expect(content).toContain('projects: [srcCore, srcServer, appCore, appServer, policy, guides]')
 	})
 
-	it('engine appends the srcBin project (self-hosting tax), absent for a non-engine blueprint', () => {
+	it('bin appends the srcBin project (self-hosting tax), absent for a non-bin blueprint', () => {
 		const child = rootViteConfig(['core', 'server'])
 		expect(child).not.toContain('srcBin')
 

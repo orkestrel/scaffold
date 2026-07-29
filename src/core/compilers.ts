@@ -254,7 +254,7 @@ export function compareCodeUnit(a: string, b: string): number {
 /**
  * The host-neutral devDependency baseline every generated workspace needs.
  * Browser providers are added only by browser selections or the scaffold
- * engine's generated-browser consumer proof. A package's `extras` (code-unit
+ * bin axis's generated-browser consumer proof. A package's `extras` (code-unit
  * sorted) merge in on top, the extras' declared range winning on a name
  * collision with the baseline.
  *
@@ -330,24 +330,24 @@ export function packageManifest(spec: Blueprint): string {
 	const scripts: Record<string, string> = {
 		clean: "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
 		copy: "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
-		scaffold: spec.engine ? 'node ./dist/bin/scaffold.js' : 'scaffold',
+		scaffold: spec.bin ? 'node ./dist/bin/scaffold.js' : 'scaffold',
 		lint: 'oxlint --config .oxlintrc.json --fix --deny-warnings .',
 		check: [
 			'tsc --noEmit --project tsconfig.json',
-			...(hasSource || spec.engine ? ['npm run check:src'] : []),
+			...(hasSource || spec.bin ? ['npm run check:src'] : []),
 			...(spec.app.length > 0 ? ['npm run check:app'] : []),
 		].join(' && '),
 	}
-	if (hasSource || spec.engine) {
+	if (hasSource || spec.bin) {
 		scripts['check:src'] =
 			spec.src.map((environment) => `npm run check:src:${environment}`).join(' && ') +
-			(spec.engine ? `${spec.src.length > 0 ? ' && ' : ''}npm run check:src:bin` : '')
+			(spec.bin ? `${spec.src.length > 0 ? ' && ' : ''}npm run check:src:bin` : '')
 		for (const environment of spec.src) {
 			scripts[`check:src:${environment}`] =
 				`tsc --noEmit -p configs/src/tsconfig.${environment}.json`
 		}
 	}
-	if (spec.engine) scripts['check:src:bin'] = 'tsc --noEmit -p configs/src/tsconfig.bin.json'
+	if (spec.bin) scripts['check:src:bin'] = 'tsc --noEmit -p configs/src/tsconfig.bin.json'
 	if (spec.app.length > 0) {
 		scripts['check:app'] = spec.app
 			.map((environment) => `npm run check:app:${environment}`)
@@ -363,28 +363,28 @@ export function packageManifest(spec: Blueprint): string {
 	scripts['format:check'] = 'oxfmt --config .oxfmtrc.json --check .'
 	scripts['lint:check'] = 'oxlint --config .oxlintrc.json --deny-warnings .'
 	scripts.test = [
-		...(hasSource || spec.engine ? ['npm run test:src'] : []),
+		...(hasSource || spec.bin ? ['npm run test:src'] : []),
 		...(spec.app.length > 0 ? ['npm run test:app'] : []),
 		'npm run test:policy',
 		'npm run test:guides',
 	].join(' && ')
-	if (hasSource || spec.engine) {
+	if (hasSource || spec.bin) {
 		scripts['test:src'] =
 			'vitest run --config vite.config.ts --no-cache --reporter=dot ' +
 			spec.src.map((environment) => `--project src:${environment}`).join(' ') +
-			(spec.engine ? `${spec.src.length > 0 ? ' ' : ''}--project src:bin` : '')
+			(spec.bin ? `${spec.src.length > 0 ? ' ' : ''}--project src:bin` : '')
 		for (const environment of spec.src) {
 			scripts[`test:src:${environment}`] =
 				`vitest run --config vite.config.ts --no-cache --reporter=dot --project src:${environment}`
 		}
 	}
-	if (spec.engine)
+	if (spec.bin)
 		scripts['test:src:bin'] =
 			'vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin'
-	if (spec.engine)
+	if (spec.bin)
 		scripts['test:integration'] =
 			'vitest run --config vite.config.ts --no-cache --reporter=dot --project integration'
-	if (spec.engine)
+	if (spec.bin)
 		scripts['test:equivalence'] =
 			"node -e \"const c=require('node:child_process'),n=process.platform==='win32'?'npm.cmd':'npm',r=c.spawnSync(n,['run','test:integration'],{stdio:'inherit',env:{...process.env,SCAFFOLD_BOUNDARY_EQUIVALENCE:'1'}});process.exit(r.status??1)\""
 	if (spec.app.length > 0) {
@@ -401,14 +401,14 @@ export function packageManifest(spec: Blueprint): string {
 	scripts['test:guides'] = 'vitest run --config vite.config.ts --reporter=dot --project guides'
 	scripts.build = [
 		'npm run clean',
-		...(hasSource || spec.engine ? ['npm run build:src'] : []),
+		...(hasSource || spec.bin ? ['npm run build:src'] : []),
 		...(spec.app.length > 0 ? ['npm run build:app'] : []),
-		...(spec.engine ? ['npm run build:host'] : []),
+		...(spec.bin ? ['npm run build:host'] : []),
 	].join(' && ')
-	if (hasSource || spec.engine) {
+	if (hasSource || spec.bin) {
 		scripts['build:src'] =
 			spec.src.map((environment) => `npm run build:src:${environment}`).join(' && ') +
-			(spec.engine ? `${spec.src.length > 0 ? ' && ' : ''}npm run build:src:bin` : '')
+			(spec.bin ? `${spec.src.length > 0 ? ' && ' : ''}npm run build:src:bin` : '')
 		for (const environment of spec.src) {
 			scripts[`build:src:${environment}`] =
 				environment === 'browser'
@@ -434,21 +434,21 @@ export function packageManifest(spec: Blueprint): string {
 			scripts['serve:build'] = 'npm run build:app:server && npm run serve'
 		}
 	}
-	if (spec.engine) {
+	if (spec.bin) {
 		scripts['build:src:bin'] = 'vite build --config configs/src/vite.bin.config.ts'
 		scripts['build:host'] =
 			"node -e \"import('./dist/src/server/index.js').then((m)=>{const n=m.stageHost(process.cwd(),'dist/host').length;console.log('build-host: staged '+n+' file(s) into dist/host')})\""
 	}
 	scripts.prepublishOnly =
 		'npm run format:check && npm run lint:check && npm run check && npm run build && npm test' +
-		(spec.engine ? ' && npm run test:integration' : '')
+		(spec.bin ? ' && npm run test:integration' : '')
 
 	const devDependencies = {
 		...devDependenciesFor(spec.extras),
 		...peerDevDependencies,
 		...(spec.src.includes('browser') ? SOURCE_BROWSER_DEV_DEPENDENCIES : {}),
 		...(spec.app.includes('browser') ? APP_BROWSER_DEV_DEPENDENCIES : {}),
-		...(spec.engine ? SOURCE_BROWSER_DEV_DEPENDENCIES : {}),
+		...(spec.bin ? SOURCE_BROWSER_DEV_DEPENDENCIES : {}),
 	}
 	const manifest: Record<string, unknown> = {
 		name: hasSource ? `@orkestrel/${spec.name}` : spec.name,
@@ -462,8 +462,8 @@ export function packageManifest(spec: Blueprint): string {
 		bugs: `https://github.com/orkestrel/${spec.name}/issues`,
 		license: 'MIT',
 		repository: { type: 'git', url: `git+https://github.com/orkestrel/${spec.name}.git` },
-		...(spec.engine ? { bin: { scaffold: './dist/bin/scaffold.js' } } : {}),
-		files: spec.engine
+		...(spec.bin ? { bin: { scaffold: './dist/bin/scaffold.js' } } : {}),
+		files: spec.bin
 			? ['dist/src', 'dist/bin', 'dist/host', 'README.md']
 			: hasSource
 				? ['dist/src', 'README.md']
@@ -471,7 +471,7 @@ export function packageManifest(spec: Blueprint): string {
 		type: 'module',
 		...(hasSource
 			? {
-					sideEffects: spec.engine ? ['./src/bin/scaffold.ts', './dist/bin/scaffold.js'] : false,
+					sideEffects: spec.bin ? ['./src/bin/scaffold.ts', './dist/bin/scaffold.js'] : false,
 				}
 			: {}),
 		...(entry === undefined
@@ -487,7 +487,7 @@ export function packageManifest(spec: Blueprint): string {
 		dependencies,
 		devDependencies: Object.fromEntries(
 			Object.entries(devDependencies)
-				.filter(([depName]) => !spec.engine || depName !== '@orkestrel/scaffold')
+				.filter(([depName]) => !spec.bin || depName !== '@orkestrel/scaffold')
 				.filter(
 					([depName]) =>
 						hasSource || (depName !== '@microsoft/api-extractor' && depName !== 'vite-plugin-dts'),
@@ -571,7 +571,7 @@ export function rootTsconfig(
  *
  * @param src - The declared published `Environment[]`.
  * @param app - The declared application `Environment[]`, defaulting to none.
- * @param engine - Whether the workspace also builds its own executable.
+ * @param bin - Whether the workspace also builds its own executable.
  * @returns The machinery set the generated header renders.
  *
  * @example
@@ -583,18 +583,15 @@ export function rootTsconfig(
 export function viteMachinery(
 	src: readonly Environment[],
 	app: readonly Environment[] = [],
-	engine = false,
+	bin = false,
 ): ViteMachinery {
 	// An application of `core` alone compiles but never builds: it declares no
-	// published library target, no runtime application target, and no engine
+	// published library target, no runtime application target, and no bin
 	// executable, so there is no output directory to contain. `app.length > 0`
 	// guards the degenerate empty blueprint, which `hasBlueprintEnvironment`
 	// already rejects.
 	const unbuilt =
-		src.length === 0 &&
-		app.length > 0 &&
-		!engine &&
-		app.every((environment) => environment === 'core')
+		src.length === 0 && app.length > 0 && !bin && app.every((environment) => environment === 'core')
 	return {
 		browser: src.includes('browser') || app.includes('browser'),
 		vue: app.includes('browser'),
@@ -2384,7 +2381,7 @@ export default defineConfig({
  *      environment is `browser` (it must run its own tests in a real browser).
  *
  * @param src - The declared `Environment[]`.
- * @param engine - Structural: `true` appends the `srcBin` project (an
+ * @param bin - Structural: `true` appends the `srcBin` project (an
  *   executable build target, never a barrel) after the other declared
  *   projects — the self-hosting tax, grounded against this very repo's own
  *   checked-in `vite.config.ts`.
@@ -2395,7 +2392,7 @@ export default defineConfig({
  * rootViteConfig(['core']).includes('srcCore') // true
  * ```
  */
-export function rootViteConfig(src: readonly Environment[], engine = false): string {
+export function rootViteConfig(src: readonly Environment[], bin = false): string {
 	// Rendered blocks below are generated FILE TEXT, so every embedded
 	// declaration keyword is interpolated rather than typed literally at
 	// column 0 — the doc↔source parity scan (AGENTS §22) reads this file's
@@ -2511,7 +2508,7 @@ ${EXPORT_KEYWORD} const srcServer = (config?: UserConfig): UserConfig =>
 		),
 	)
 `
-	const binBlock = engine
+	const binBlock = bin
 		? `
 ${EXPORT_KEYWORD} const srcBin = (config?: UserConfig): UserConfig =>
 	srcCore(
@@ -2571,7 +2568,7 @@ ${EXPORT_KEYWORD} const integration = (config?: UserConfig): UserConfig =>
 		)
 	}
 	registrations.push({ project: 'policy' }, { project: 'guides' })
-	if (engine) registrations.push({ project: 'srcBin' }, { project: 'integration' })
+	if (bin) registrations.push({ project: 'srcBin' }, { project: 'integration' })
 	const renderedTest = renderViteTest(registrations, machinery.browser)
 	return `${header}
 ${EXPORT_KEYWORD} const srcCore = (config?: UserConfig): UserConfig =>
@@ -2623,7 +2620,7 @@ ${renderedTest}
  *
  * @param src - Published src environments.
  * @param app - Private app environments.
- * @param engine - Whether the workspace also builds scaffold's executable.
+ * @param bin - Whether the workspace also builds scaffold's executable.
  * @returns The root `vite.config.ts` content.
  *
  * @example
@@ -2634,10 +2631,10 @@ ${renderedTest}
 export function applicationViteConfig(
 	src: readonly Environment[],
 	app: readonly Environment[],
-	engine = false,
+	bin = false,
 ): string {
 	const hasSourceCore = src.includes('core')
-	const machinery = viteMachinery(src, app, engine)
+	const machinery = viteMachinery(src, app, bin)
 	const header = viteHeader(machinery)
 	const registrations: ViteProjectRegistration[] = []
 	const blocks: string[] = []
@@ -2892,7 +2889,7 @@ ${EXPORT_KEYWORD} const appServer = (config?: UserConfig): UserConfig =>
 	)
 `)
 	}
-	if (engine) {
+	if (bin) {
 		registrations.push({ project: 'srcBin' }, { project: 'integration' })
 		blocks.push(`
 ${EXPORT_KEYWORD} const srcBin = (config?: UserConfig): UserConfig =>
@@ -3182,7 +3179,7 @@ export default defineConfig(${anchor}())
  */
 export function ciWorkflow(spec: Blueprint): string {
 	const browser =
-		spec.engine || spec.src.includes('browser') || spec.app.includes('browser')
+		spec.bin || spec.src.includes('browser') || spec.app.includes('browser')
 			? `
       - name: Install Playwright browsers
         run: npx --no-install playwright install --with-deps chromium
@@ -3234,7 +3231,7 @@ ${browser}
 
       - name: Run tests
         run: npm test${
-					spec.engine
+					spec.bin
 						? `
 
       - name: Run live consumer integration
@@ -3260,7 +3257,7 @@ ${browser}
  * ```
  */
 export function configArtifacts(spec: Blueprint): readonly Artifact[] {
-	const machinery = viteMachinery(spec.src, spec.app, spec.engine)
+	const machinery = viteMachinery(spec.src, spec.app, spec.bin)
 	const artifacts: Artifact[] = [
 		{
 			path: 'tsconfig.json',
@@ -3274,8 +3271,8 @@ export function configArtifacts(spec: Blueprint): readonly Artifact[] {
 			origin: 'computed',
 			content:
 				spec.app.length > 0
-					? applicationViteConfig(spec.src, spec.app, spec.engine)
-					: rootViteConfig(spec.src, spec.engine),
+					? applicationViteConfig(spec.src, spec.app, spec.bin)
+					: rootViteConfig(spec.src, spec.bin),
 		},
 	]
 	for (const environment of spec.src) {

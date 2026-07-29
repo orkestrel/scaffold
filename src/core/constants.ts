@@ -120,7 +120,7 @@ export const APP_MATRIX: Readonly<Record<Environment, AppDefinition>> = Object.f
  * `scripts/codex.sh` / `scripts/ollama.sh`), the repository coding-law policy module,
  * the line's seven byte-identical root dotfiles, and the two guides-grouped
  * mirror candidates: the line-wide dev-tooling guide
- * (`guides/src/guide.md`) and the scaffold engine's own self-guide
+ * (`guides/src/guide.md`) and the scaffold bin's own self-guide
  * (`guides/src/scaffold.md`). `stageHost` vendors both; each plan carries the
  * subset selected by `selectHostPaths`, omitting the target blueprint's own
  * guide.

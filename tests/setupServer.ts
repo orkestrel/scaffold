@@ -50,6 +50,7 @@ export interface BlueprintFixtureOptions {
 	readonly peerDependenciesMeta?: Record<string, { optional?: boolean }>
 	readonly devDependencies?: Record<string, string>
 	readonly bin?: boolean
+	readonly service?: boolean
 }
 
 /** Focused package shape for filesystem-backed catalog tests. */
@@ -127,6 +128,12 @@ export function buildBlueprintFixture(root: string, options: BlueprintFixtureOpt
 		mkdirSync(join(root, 'app', environment), { recursive: true })
 	}
 	if (options.bin === true) mkdirSync(join(root, 'src', 'bin'), { recursive: true })
+	if (options.service === true) {
+		mkdirSync(join(root, 'tests', 'service'), { recursive: true })
+		writeFileSync(join(root, 'tests', 'setupService.ts'), '', 'utf8')
+		mkdirSync(join(root, 'scripts'), { recursive: true })
+		writeFileSync(join(root, 'scripts', 'service.sh'), '', 'utf8')
+	}
 }
 
 /** Write a minimal package manifest for a real filesystem fixture. */

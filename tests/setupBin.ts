@@ -275,7 +275,9 @@ export const AUDIT_PLAN: Plan = {
 		version: '0.0.1',
 		engines: '>=22.12.0',
 		overrides: [],
-		engine: false,
+		bin: false,
+		integration: false,
+		service: false,
 	},
 	groups: ['manifest'],
 	artifacts: [

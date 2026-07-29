@@ -1473,7 +1473,25 @@ export function deriveBlueprint(target: string): Blueprint {
 	// Structural only: a repo carries the self-hosting tax (bin field, scaffold
 	// script, check/test/build:src:bin scripts, build:host, the srcBin vite
 	// project) iff it ships its own src/bin — never derived from `name`.
-	const engine = isRealDirectory(join(target, 'src', 'bin'))
+	const bin = isRealDirectory(join(target, 'src', 'bin'))
+	const integration = isRealDirectory(join(target, 'tests', 'integration'))
+	const service = isRealDirectory(join(target, 'tests', 'service'))
+	if (service) {
+		const missing: string[] = []
+		if (!existsSync(join(target, 'tests', 'setupService.ts'))) {
+			missing.push('tests/setupService.ts')
+		}
+		if (!existsSync(join(target, 'scripts', 'service.sh'))) {
+			missing.push('scripts/service.sh')
+		}
+		if (missing.length > 0) {
+			throw new ScaffoldError(
+				'TARGET',
+				`Service tests under ${target} require ${missing.join(' and ')}`,
+				{ target, missing },
+			)
+		}
+	}
 
 	const rawDependencies = ownDataValue(parsed, 'dependencies')
 	const rawPeerDependencies = ownDataValue(parsed, 'peerDependencies')
@@ -1524,7 +1542,9 @@ export function deriveBlueprint(target: string): Blueprint {
 		version,
 		engines,
 		overrides: [],
-		engine,
+		bin,
+		integration,
+		service,
 	})
 }
 

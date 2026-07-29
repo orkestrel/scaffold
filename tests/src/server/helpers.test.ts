@@ -95,6 +95,16 @@ describe('hostRoot', () => {
 // ── deriveBlueprint ──────────────────────────────────────────────────────────
 
 describe('deriveBlueprint', () => {
+	it("derives scaffold's own structural axes", () => {
+		expect(deriveBlueprint(WORKSPACE_ROOT)).toEqual(
+			expect.objectContaining({
+				bin: true,
+				integration: true,
+				service: false,
+			}),
+		)
+	})
+
 	it('rejects inherited manifest identity and publication fields', async () => {
 		const directory = await buildTempDirectory()
 		Reflect.defineProperty(Object.prototype, 'name', {
@@ -147,7 +157,7 @@ describe('deriveBlueprint', () => {
 		}
 	})
 
-	it('does not infer src/bin engine support from an ordinary file', async () => {
+	it('does not infer src/bin support from an ordinary file', async () => {
 		const directory = await buildTempDirectory()
 		try {
 			buildBlueprintFixture(directory.path, {
@@ -156,7 +166,7 @@ describe('deriveBlueprint', () => {
 			})
 			writeFileSync(join(directory.path, 'src', 'bin'), 'not a directory', 'utf8')
 
-			expect(deriveBlueprint(directory.path).engine).toBe(false)
+			expect(deriveBlueprint(directory.path).bin).toBe(false)
 		} finally {
 			await directory.cleanup()
 		}
@@ -273,7 +283,7 @@ describe('deriveBlueprint', () => {
 		}
 	})
 
-	it('derives engine: false for a repo with no src/bin directory (structural, not name-based)', async () => {
+	it('derives bin: false for a repo with no src/bin directory (structural, not name-based)', async () => {
 		const directory = await buildTempDirectory()
 		try {
 			buildBlueprintFixture(directory.path, {
@@ -283,13 +293,13 @@ describe('deriveBlueprint', () => {
 
 			const result = deriveBlueprint(directory.path)
 
-			expect(result.engine).toBe(false)
+			expect(result.bin).toBe(false)
 		} finally {
 			await directory.cleanup()
 		}
 	})
 
-	it('derives engine: true structurally from an existing src/bin directory', async () => {
+	it('derives bin: true structurally from an existing src/bin directory', async () => {
 		const directory = await buildTempDirectory()
 		try {
 			buildBlueprintFixture(directory.path, {
@@ -300,7 +310,78 @@ describe('deriveBlueprint', () => {
 
 			const result = deriveBlueprint(directory.path)
 
-			expect(result.engine).toBe(true)
+			expect(result.bin).toBe(true)
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('derives service: true from its directory and both companion files', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: '@orkestrel/service-proof',
+				src: ['core'],
+				service: true,
+			})
+
+			expect(deriveBlueprint(directory.path).service).toBe(true)
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('rejects service tests without tests/setupService.ts and names the companion', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: '@orkestrel/service-proof',
+				src: ['core'],
+				service: true,
+			})
+			rmSync(join(directory.path, 'tests', 'setupService.ts'))
+
+			expect(() => deriveBlueprint(directory.path)).toThrowError(
+				expect.objectContaining({
+					code: 'TARGET',
+					message: expect.stringContaining('tests/setupService.ts'),
+				}),
+			)
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('rejects service tests without scripts/service.sh and names the companion', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: '@orkestrel/service-proof',
+				src: ['core'],
+				service: true,
+			})
+			rmSync(join(directory.path, 'scripts', 'service.sh'))
+
+			expect(() => deriveBlueprint(directory.path)).toThrowError(
+				expect.objectContaining({
+					code: 'TARGET',
+					message: expect.stringContaining('scripts/service.sh'),
+				}),
+			)
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('does not infer service support from a service-shaped repository name', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: '@orkestrel/service',
+				src: ['core'],
+			})
+
+			expect(deriveBlueprint(directory.path).service).toBe(false)
 		} finally {
 			await directory.cleanup()
 		}
@@ -2783,7 +2864,7 @@ describe('PRUNE_DIRECTORIES', () => {
 			blueprint('prune-disjoint', {
 				src: ['core', 'browser', 'server'],
 				app: ['core', 'browser', 'server'],
-				engine: true,
+				bin: true,
 			}),
 		)
 		const computed = plan.artifacts.filter((artifact) => artifact.origin === 'computed')

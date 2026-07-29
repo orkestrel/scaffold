@@ -78,7 +78,9 @@ export function blueprintShape() {
 		version: stringShape({ min: 1, max: MAX_RANGE_LENGTH }),
 		engines: stringShape({ min: 1, max: MAX_RANGE_LENGTH }),
 		overrides: arrayShape(overrideShape(), { max: MAX_COLLECTION_ITEMS }),
-		engine: booleanShape(),
+		bin: booleanShape(),
+		integration: booleanShape(),
+		service: booleanShape(),
 	})
 }
 

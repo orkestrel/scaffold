@@ -1477,7 +1477,9 @@ describe('pinPlan', () => {
 			app: descriptionLast.app,
 			keywords: descriptionLast.keywords,
 			name: descriptionLast.name,
-			engine: descriptionLast.engine,
+			bin: descriptionLast.bin,
+			integration: descriptionLast.integration,
+			service: descriptionLast.service,
 		}
 
 		const a = pinPlan({ blueprint: descriptionLast, groups: ['manifest'], artifacts: [] })
@@ -1504,10 +1506,10 @@ describe('pinPlan', () => {
 		expect(fromParsed.hash).toBe(fromBuilder.hash)
 	})
 
-	it('pins the six documented environment variants to their captured hashes (byte-stable)', () => {
-		// Captured from the production `blueprintToPlan` path after the complete
-		// source/app template contract was stabilized. Literals make any future
-		// byte change an explicit review event.
+	it('pins the six documented environment variants to their captured identity hashes', () => {
+		// Captured from the production `blueprintToPlan` path. Literals make a
+		// blueprint contract or artifact-content identity change an explicit
+		// review event.
 		const variants: readonly { readonly label: string; readonly src: readonly Environment[] }[] = [
 			{ label: 'core-only', src: ['core'] },
 			{ label: 'server-only', src: ['server'] },
@@ -1523,17 +1525,17 @@ describe('pinPlan', () => {
 		}
 		expect(actual).toMatchInlineSnapshot(`
 			{
-			  "browser-only": "c427b535",
-			  "core+browser": "db299876",
-			  "core+browser+server": "82b29ec1",
-			  "core+server": "070fdd11",
-			  "core-only": "be96d32b",
-			  "server-only": "b10520c3",
+			  "browser-only": "e0ed42cb",
+			  "core+browser": "16738428",
+			  "core+browser+server": "c30e780f",
+			  "core+server": "547fc3df",
+			  "core-only": "49f11fe7",
+			  "server-only": "e6a2dae7",
 			}
 		`)
 	})
 
-	it('pins app-only and mixed workspace variants to captured hashes (byte-stable)', () => {
+	it('pins app-only and mixed workspace variants to captured identity hashes', () => {
 		const variants: readonly {
 			readonly label: string
 			readonly src: readonly Environment[]
@@ -1556,11 +1558,11 @@ describe('pinPlan', () => {
 		}
 		expect(actual).toMatchInlineSnapshot(`
 			{
-			  "app-browser": "0f3a171b",
-			  "app-core": "36404f91",
-			  "app-full": "d61d2a3f",
-			  "app-server": "38ea0e4f",
-			  "mixed-full": "50ee61d7",
+			  "app-browser": "043bf6b9",
+			  "app-core": "c91ae08b",
+			  "app-full": "396961f5",
+			  "app-server": "ca9e3565",
+			  "mixed-full": "2a43bbd1",
 			}
 		`)
 	})

@@ -15,12 +15,12 @@ import {
 export function collisionPlans(): readonly [Plan, Plan] {
 	return [
 		{
-			blueprint: blueprint('x', { description: 'ld72wp13ky550' }),
+			blueprint: blueprint('x', { description: 'axis-1csrewm-bml' }),
 			groups: [],
 			artifacts: [],
 		},
 		{
-			blueprint: blueprint('x', { description: '1ll8cflf8mf8c' }),
+			blueprint: blueprint('x', { description: 'axis-j5tk17-1m38' }),
 			groups: [],
 			artifacts: [],
 		},

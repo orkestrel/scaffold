@@ -210,7 +210,9 @@ interface Blueprint {
 	readonly version: string
 	readonly engines: string
 	readonly overrides: readonly Override[]
-	readonly engine: boolean
+	readonly bin: boolean
+	readonly integration: boolean
+	readonly service: boolean
 }
 ```
 
@@ -218,11 +220,14 @@ interface Blueprint {
 `app`. The two axes are independent, so library-only, application-only, and mixed workspaces are
 all first class. `dependencies` and `peers` are runtime `@orkestrel/*` packages — a peer flagged
 `optional` also gets a `peerDependenciesMeta` entry. `extras` are package-specific development
-dependencies merged over the generated baseline, and may carry any valid npm package name. `engine`
+dependencies merged over the generated baseline, and may carry any valid npm package name. `bin`
 is structural, never inferred from a name: it is `true` only for a workspace that ships its own
 `src/bin`, and it alone turns on the self-hosting extras (a `bin` field, the `scaffold` script
 pointed at the built executable, the bin check, test, and build scripts, `build:host`, and the
-`src:bin` test project).
+`src:bin` test project). `integration` is structural and `true` only when `tests/integration/`
+exists: it records a slow, opt-in proof project over the repo's own built output, outside the
+default run. `service` is structural and `true` only when `tests/service/` exists: it records a
+slow, opt-in proof project against a foreign running process, outside the default run.
 
 `Override` replaces a rendered artifact's content at a path, never partially merges it. `Member` is
 one declared public export of the scaffolded workspace, derived rather than authored.
@@ -916,10 +921,14 @@ omitting an absent path entirely. `readManifest` reads `package.json` text, and
 `deriveBlueprint` is the faithful inverse an audit needs: it reconstructs a blueprint from an
 existing workspace so a mature package is diffed against its own would-be scaffold rather than a
 dependency-less stand-in. Environments come from `src/<environment>/` and `app/<environment>/`;
-`engine` is `true` only when `src/bin/` exists; dependencies and peers come from the manifest's
-scoped entries, with an optional peer recovered from `peerDependenciesMeta`; and `extras` is every
-development dependency minus the generated baseline and minus anything already declared as a
-dependency or peer, so a hand-added development dependency round-trips and stays audit-clean.
+`bin` is `true` only when `src/bin/` exists, `integration` only when `tests/integration/` exists,
+and `service` only when `tests/service/` exists. A service directory requires both
+`tests/setupService.ts` and `scripts/service.sh`; either missing companion is a coded `TARGET`
+failure that names the missing path rather than silently deriving `service: false`. Dependencies
+and peers come from the manifest's scoped entries, with an optional peer recovered from
+`peerDependenciesMeta`; and `extras` is every development dependency minus the generated baseline
+and minus anything already declared as a dependency or peer, so a hand-added development
+dependency round-trips and stays audit-clean.
 Derivation yields no `overrides`: they are caller-time inputs, not repository state. A computed
 artifact that must differ reveals a gap in the canon; the blueprint grows an axis for that
 distinction rather than the repository forking the file.
@@ -1408,14 +1417,14 @@ a fixed, interleaved order so aggregates sit immediately before their per-enviro
   `check:app` with one `check:app:<environment>` per app environment — the browser app scope uses the
   Vue typechecker, every other scope uses plain `tsc`
 - `test`, then `test:src` and its per-environment scopes, `test:app` and its per-environment scopes,
-  `test:policy`, and `test:guides`; an engine also receives the deliberately non-default
+  `test:policy`, and `test:guides`; a bin workspace also receives the deliberately non-default
   `test:integration` live installed-consumer gate and `test:equivalence` driver-reference proof
 - `build`, then `build:src` and its per-environment targets, `build:app` and its runtime targets, and
-  `build:host` for an engine workspace
+  `build:host` for a bin workspace
 - `dev` when a browser application is selected; `serve` and `serve:build` when a server application
   is selected
 - `prepublishOnly` chaining `format:check → lint:check → check → build → test`, followed by the
-  live generated-consumer integration gate for the scaffold engine itself
+  live generated-consumer integration gate for the scaffold bin itself
 
 Run `npm run test:equivalence` after changing the persistent boundary build driver. It reruns the
 integration project in dual-path mode and proves each programmatic driver verdict against the
@@ -1577,7 +1586,7 @@ Node `22.12.0` and `26`** with fail-fast disabled. Checkout and Node setup are p
 action commits, and checkout does not persist credentials. Dependencies install with
 `npm ci --ignore-scripts`; Chromium is installed only when the workspace selects a browser environment
 or builds its own executable. The gates then run in order: `format:check`, `lint:check`, `check`,
-`build`, `test`; engine workspaces then run the separate live installed-consumer integration gate.
+`build`, `test`; bin workspaces then run the separate live installed-consumer integration gate.
 
 **Agent orchestration files.** The session hooks in the generated `.claude/settings.json` run the
 dependency, model, and external-tool readiness scripts at session start. The **`Stop` hook runs only

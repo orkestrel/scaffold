@@ -84,6 +84,26 @@ describe('blueprintShape — a hand-built blueprint with peers (one optional) an
 	})
 })
 
+describe('blueprintShape — structural axes', () => {
+	it.each([
+		{ bin: false, integration: false, service: false },
+		{ bin: false, integration: false, service: true },
+		{ bin: false, integration: true, service: false },
+		{ bin: false, integration: true, service: true },
+		{ bin: true, integration: false, service: false },
+		{ bin: true, integration: false, service: true },
+		{ bin: true, integration: true, service: false },
+		{ bin: true, integration: true, service: true },
+	])('guard/parser round-trips $bin/$integration/$service', (axes) => {
+		const contract = createContract(blueprintShape())
+		const value = blueprint('axes', axes)
+
+		expect(contract.is(value)).toBe(true)
+		expect(contract.parse(value)).toEqual(value)
+		expect(isBlueprint(value)).toBe(true)
+	})
+})
+
 describe('syncReportShape — pattern boundary', () => {
 	it('accepts only the documented target-aware baselines', () => {
 		const contract = createContract(syncReportShape())

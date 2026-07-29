@@ -157,7 +157,11 @@ export interface Blueprint {
 	readonly engines: string
 	readonly overrides: readonly Override[]
 	/** Structural: `true` only for a repo that ships its own `src/bin` — the self-hosting tax (a `bin` field, the `scaffold` script invoking `dist/bin/scaffold.js` directly, the `check/test/build:src:bin` scripts, `build:host`, the `srcBin` vite project) applies ONLY when `true`, never by name. */
-	readonly engine: boolean
+	readonly bin: boolean
+	/** Structural: `true` only for a repo that ships `tests/integration` — a slow, opt-in proof project over the repo's own built output, outside the default run. */
+	readonly integration: boolean
+	/** Structural: `true` only for a repo that ships `tests/service` — a slow, opt-in proof project against a foreign running process, outside the default run. */
+	readonly service: boolean
 }
 
 /** One declared public export of the scaffolded package; derived by `blueprintToMembers`, never authored. */
