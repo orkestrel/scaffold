@@ -225,23 +225,33 @@ environments under `app`. The two axes are independent, so library-only, applica
 mixed workspaces are all first class. `dependencies` and `peers` are runtime `@orkestrel/*`
 packages — a peer flagged `optional` also gets a `peerDependenciesMeta` entry. `extras` are
 package-specific development dependencies merged over the generated baseline, and may carry any
-valid npm package name. `bin` is structural, never inferred from a name: it is `true` only for a
-workspace that ships its own `src/bin`, and it alone turns on the self-hosting extras (the
-manifest's `bin` entry, the `scaffold` script pointed at the built executable, the bin check, test,
-and build scripts, `build:host`, the `configs/src/tsconfig.bin.json` and
-`configs/src/vite.bin.config.ts` artifacts, and the `src:bin` test project). `integration` is
-structural and `true` only when `tests/integration/`
-exists: it records a slow, opt-in proof project over the repo's own built output, outside the
-default run. `service` is structural and `true` only when `tests/service/` exists: it records a
-slow, opt-in proof project against a foreign running process, outside the default run. Neither is
-inferred from the workspace name. The generated root configuration registers a standalone
-`integration` project for the former and a standalone `service` project for the latter.
-Integration includes `tests/integration/**/*.test.ts`; service includes
-`tests/service/**/*.test.ts` and adds `tests/setupService.ts` after the shared setup. The service
-axis also emits the isolated `test:service` script, while generated CI provisions its foreign
-process through `scripts/service.sh` immediately before selecting that project. The integration
-axis independently emits and selects `test:integration`; neither proof project is inferred from
-the executable axis.
+valid npm package name.
+
+`bin`, `integration`, and `service` are the three structural axes, and they obey one law: each is
+`true` only when the workspace physically ships the directory that defines it — never because of
+the workspace's name, and never because a sibling axis is set. `deriveBlueprint` probes exactly
+those directories, so a fresh compile and an audit of a mature repository agree on what the
+workspace is.
+
+- **`bin`** — `src/bin/` exists. It alone turns on the self-hosting extras: the manifest's `bin`
+  entry, the `scaffold` script pointed at the built executable, the bin check, test, and build
+  scripts, `build:host`, the `configs/src/tsconfig.bin.json` and `configs/src/vite.bin.config.ts`
+  artifacts, and the `src:bin` test project.
+- **`integration`** — `tests/integration/` exists. It records a slow, opt-in proof project over the
+  workspace's own built output, outside the default run: the generated root configuration registers
+  a standalone `integration` project including `tests/integration/**/*.test.ts`, and the manifest
+  emits `test:integration`.
+- **`service`** — `tests/service/` exists. It records a slow, opt-in proof project against a foreign
+  running process, outside the default run: a standalone `service` project including
+  `tests/service/**/*.test.ts`, with `tests/setupService.ts` after the shared setup, and the
+  isolated `test:service` script.
+
+A service workspace owes two companion files beside that directory, and derivation requires both
+physically present: `tests/setupService.ts` and `scripts/service.sh`. Either missing companion is a
+coded `TARGET` failure naming the missing path rather than a silent `service: false`. This package
+emits neither: both are consumer-owned seams, and the generated-workspace section sets out what
+each owes its workspace and which proof runs in which gate. Nothing here is inferred — the
+executable axis turns on neither proof project, and neither proof project turns on the other.
 
 `Override` replaces a rendered artifact's content at a path, never partially merges it. `Member` is
 one declared public export of the scaffolded workspace, derived rather than authored.
@@ -939,18 +949,15 @@ omitting an absent path entirely. `readManifest` reads `package.json` text, and
 
 `deriveBlueprint` is the faithful inverse an audit needs: it reconstructs a blueprint from an
 existing workspace so a mature package is diffed against its own would-be scaffold rather than a
-dependency-less stand-in. Environments come from `src/<environment>/` and `app/<environment>/`;
-`bin` is `true` only when `src/bin/` exists, `integration` only when `tests/integration/` exists,
-and `service` only when `tests/service/` exists. A service directory requires both physical files
-`tests/setupService.ts` and `scripts/service.sh`; either missing companion is a coded `TARGET`
-failure that names the missing path rather than silently deriving `service: false`. Dependencies
-and peers come from the manifest's scoped entries, with an optional peer recovered from
+dependency-less stand-in. Environments come from `src/<environment>/` and `app/<environment>/`, and
+the three structural axes from the directory probes and the service companion law the blueprint
+section states — every one of them a reading of the filesystem, never of the name. Dependencies and
+peers come from the manifest's scoped entries, with an optional peer recovered from
 `peerDependenciesMeta`; and `extras` is every development dependency minus the generated baseline
-and minus anything already declared as a dependency or peer, so a hand-added development
-dependency round-trips and stays audit-clean.
-Derivation yields no `overrides`: they are caller-time inputs, not repository state. A computed
-artifact that must differ reveals a gap in the canon; the blueprint grows an axis for that
-distinction rather than the repository forking the file.
+and minus anything already declared as a dependency or peer, so a hand-added development dependency
+round-trips and stays audit-clean. Derivation yields no `overrides`: they are caller-time inputs,
+not repository state. A computed artifact that must differ reveals a gap in the canon; the
+blueprint grows an axis for that distinction rather than the repository forking the file.
 
 `storagePath`, `stageHost`, `readHostManifest`, `locateHostSource`, `remapArtifactPath`, and
 `hydratePlan` are the vendored-host path. `storagePath` maps a repo-relative path to its un-dotted
@@ -1083,29 +1090,29 @@ along the three `ViteMachinery` axes:
 An application of `app/core` alone is the sole shape that builds nothing, so it is the sole shape
 without output containment — and it still carries every boundary guarantee above.
 
-`renderViteTest` is the single root-project renderer. It consumes ordered
-`ViteProjectRegistration` data and emits either the plain project list or the browser gate, keeping
-source and application root configurations byte-consistent without reconstructing browser ownership.
-`viteProjectRegistrations` is the one registration derivation every root shape consumes. It derives
-selected source and application projects from the canonical environment order, then appends
-`policy`, `guides`, and optional `srcBin`, `integration`, and `service` projects.
+`renderViteTest` is the single root-project renderer. It consumes ordered `ViteProjectRegistration`
+data and emits either the plain project list or the browser gate, keeping source and application
+root configurations byte-consistent without reconstructing browser ownership.
+`viteProjectRegistrations` is the one registration derivation every root shape consumes: it derives
+the selected source and application projects from the canonical environment order, then appends
+`policy`, `guides`, and the optional `srcBin`, `integration`, and `service` projects.
 `viteProjectDefinitions` renders the standalone proof and structural-axis definitions in that same
-order with one blank line between declarations. Both consume `ViteAxes`, so each optional project
-is controlled only by its matching `bin`, `integration`, or `service` blueprint axis.
+order with one blank line between declarations. Both consume `ViteAxes`, so each optional project is
+controlled only by its matching `bin`, `integration`, or `service` blueprint axis.
 
 `coreViteConfig`, `srcViteConfig`, `binViteConfig`, and `appViteConfig` emit the thin per-target
-wrappers, while `binTsconfig` emits the executable declaration scope;
-`rootViteConfig`, `singleSrcViteConfig`, and `applicationViteConfig` emit the root configuration for
-a library-only, single non-core `src` environment, and application-bearing workspace respectively;
+wrappers, while `binTsconfig` emits the executable declaration scope; `rootViteConfig`,
+`singleSrcViteConfig`, and `applicationViteConfig` emit the root configuration for a library-only,
+single non-core `src` environment, and application-bearing workspace respectively; and
 `policyViteProject`, `guidesViteProject`, `integrationViteProject`, and `serviceViteProject` emit
-standalone Node proof projects. A proof project is structurally derived from the directory holding
-its tests and never wraps a source or application environment project. The guides project therefore
-uses only `tests/setup.ts`, never `setupServer.ts`, `setupBrowser.ts`, or `setupService.ts`.
-Its `tests/src/**/*.test.ts` and `tests/app/**/*.test.ts` exclude rows are uniform across all root
-shapes by design, including core-only workspaces where one row cannot currently match.
-Integration and service use 120-second test and hook timeouts with file parallelism disabled;
-service alone adds `tests/setupService.ts`. `binViteProject` is the single executable-project
-emitter and remains independent from integration.
+the standalone Node proof projects, with `binViteProject` the single executable-project emitter. A
+proof project is structurally derived from the directory holding its tests and never wraps a source
+or application environment project. The guides project therefore uses only `tests/setup.ts`, never
+`setupServer.ts`, `setupBrowser.ts`, or `setupService.ts`; and its `tests/src/**/*.test.ts` and
+`tests/app/**/*.test.ts` exclude rows are uniform across all root shapes by design, including
+core-only workspaces where one row cannot currently match. Integration and service use 120-second
+test and hook timeouts with file parallelism disabled, and service alone layers
+`tests/setupService.ts` onto the shared setup.
 
 `configArtifacts`, `sourceArtifacts`, `applicationArtifacts`, `testArtifacts`, and `guideArtifacts`
 are the per-group drafters. When `bin` is selected, `configArtifacts` includes
@@ -1473,17 +1480,53 @@ a fixed, interleaved order so aggregates sit immediately before their per-enviro
   `build:host` for a bin workspace
 - `dev` when a browser application is selected; `serve` and `serve:build` when a server application
   is selected
-- `prepublishOnly` chaining `format:check → lint:check → check → build → test`, followed by the
-  live generated-consumer integration gate when the integration axis is selected
+- `prepublishOnly` chaining `format:check → lint:check → check → build → test`, followed by
+  `test:integration` when the integration axis is selected
 
-`test:service` remains outside both the default `test` chain and `prepublishOnly`: neither default
-testing nor publication starts or requires a foreign process.
+**Proof gating.** The opt-in proofs are predictable from the axes alone. `test:integration` rides
+the `integration` axis and `test:service` the `service` axis, while `test:equivalence` is emitted
+only where `bin` and `integration` are both set:
 
-The equivalence proof exists only where a bin workspace also ships the integration project. In
-that shape, run `npm run test:equivalence` after changing the persistent boundary build driver; the
-script invokes the integration project in dual-path mode and proves each programmatic driver
-verdict against the spawned npm-script reference. Ordinary integration runs keep the faster
-driver-only path.
+| Proof              | `npm test` | `prepublishOnly` | CI                         |
+| ------------------ | ---------- | ---------------- | -------------------------- |
+| `test:integration` | no         | yes, last        | after the standard gates   |
+| `test:equivalence` | no         | no               | no                         |
+| `test:service`     | no         | never            | after `scripts/service.sh` |
+
+No proof joins the default chain: `npm test` runs the source, application, policy, and guide
+projects, and nothing there needs a build artifact or a foreign process. Publication is the one
+asymmetry — `prepublishOnly` appends `test:integration`, because a package about to be published
+should prove itself against its own built output, while `test:service` is never in that chain.
+Neither default testing nor publication starts or requires a foreign process.
+
+When a prerequisite is absent the proof fails rather than skipping. `test:integration` reads the
+workspace's own built output, so it belongs after `build` — which is exactly where `prepublishOnly`
+and CI put it. `test:service` refuses to start against an unprovisioned service: its setup throws at
+module load, which is why CI runs `bash scripts/service.sh` immediately before it. And a script the
+axes do not emit is simply not there: `test:equivalence` in a workspace that is not both `bin` and
+`integration` is an unknown script rather than a quietly passing one.
+
+The equivalence proof is a dual-path re-run rather than a separate suite. Run
+`npm run test:equivalence` after changing the persistent boundary build driver; it invokes the
+integration project in dual-path mode and proves each programmatic driver verdict against the
+spawned npm-script reference. Ordinary integration runs keep the faster driver-only path.
+
+**Consumer-owned service seams.** The service axis is the one place canon stops at the boundary:
+there is no template for a proof project and neither companion path is on `HOST_PATHS`, so a
+service workspace owns both of its seams outright. They come as a pair.
+
+- `tests/setupService.ts` is the readiness seam. It probes the foreign process and warms it before
+  any test runs, and throws at module load — naming the `service` project — when that process is
+  unreachable, so an unprovisioned run fails loudly instead of passing an empty suite. Only the
+  `service` project loads it.
+- `scripts/service.sh` is the provisioning seam, named once by `SERVICE_SCRIPT_PATH`. It brings that
+  process up idempotently — a second run against an already-provisioned service is a no-op rather
+  than a second instance — and exits nonzero when it cannot, which is what makes CI's
+  `bash scripts/service.sh` step a gate rather than a hint.
+
+The audit expects the script rather than reporting it foreign, on the derive-time warrant the audit
+section gives. Repair pruning applies the same exclusion, so it never proposes or removes that
+required consumer-owned provisioner.
 
 **Environment isolation.** Scoped TypeScript projects remove the wrong host's globals from each
 environment: core scopes carry the WHATWG web-interop surface and no host at all — no DOM, no Node,
@@ -1641,8 +1684,8 @@ Node `22.12.0` and `26`** with fail-fast disabled. Checkout and Node setup are p
 action commits, and checkout does not persist credentials. Dependencies install with
 `npm ci --ignore-scripts`; Chromium is installed only when the workspace selects a browser environment
 or builds its own executable. The gates then run in order: `format:check`, `lint:check`, `check`,
-`build`, `test`; integration workspaces then run the separate live installed-consumer gate. A
-service workspace next runs `bash scripts/service.sh` and only then `npm run test:service`.
+`build`, `test`, and the workspace's selected proofs follow as their own named steps, in the order
+the proof-gating table gives them.
 
 **Agent orchestration files.** The session hooks in the generated `.claude/settings.json` run the
 dependency, model, and external-tool readiness scripts at session start. The **`Stop` hook runs only

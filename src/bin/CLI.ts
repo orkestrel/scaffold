@@ -283,8 +283,14 @@ export class CLI implements CLIInterface {
 		}
 	}
 
+	// Exclude the consumer-owned service provisioner from every physical scan.
+	#prunePaths(target: string, host: string, service: boolean): readonly string[] {
+		const seam = service ? SERVICE_SCRIPT_PATH : undefined
+		return pruneTargets(target, host).filter((path) => path !== seam)
+	}
+
 	/**
-	 * Merge a `pruneTargets` scan into `audit` as `foreign` findings — pure
+	 * Merge the physical prune scan into `audit` as `foreign` findings — pure
 	 * object-spread composition in the BIN only (`src/core`'s `diffPlan` is never
 	 * modified/reimplemented). Every unexpected path except the declared service
 	 * workspace's exact `SERVICE_SCRIPT_PATH` becomes one `'orchestration'`-group
@@ -294,8 +300,7 @@ export class CLI implements CLIInterface {
 	 * instead of the structurally-always-zero `diffPlan.foreign`.
 	 */
 	#scan(audit: Audit, target: string, host: string, service: boolean): Audit {
-		const seam = service ? SERVICE_SCRIPT_PATH : undefined
-		const paths = pruneTargets(target, host).filter((path) => path !== seam)
+		const paths = this.#prunePaths(target, host, service)
 		if (paths.length === 0) return audit
 		const findings: Finding[] = paths.map((path) => ({
 			path,
@@ -916,7 +921,7 @@ export class CLI implements CLIInterface {
 		// this scan (and the deletion flow below) on a clean-host repo — a clean
 		// this scan and deletion flow on a clean-host repo. Only a clean audit
 		// with nothing to prune returns early.
-		const prunePaths = values.prune ? pruneTargets(target, host) : []
+		const prunePaths = values.prune ? this.#prunePaths(target, host, spec.service) : []
 		const pruneSnapshot = readTarget(target, prunePaths)
 
 		if (audit.clean && prunePaths.length === 0) {
@@ -1101,7 +1106,7 @@ export class CLI implements CLIInterface {
 			proceed && values.prune
 				? new Map(
 						dirty.map((repo) => {
-							const paths = pruneTargets(repo.directory, host)
+							const paths = this.#prunePaths(repo.directory, host, repo.plan.blueprint.service)
 							return [repo.name, readTarget(repo.directory, paths)]
 						}),
 					)

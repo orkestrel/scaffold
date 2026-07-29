@@ -542,12 +542,13 @@ describe('scaffold bin', () => {
 			}
 		}, 30000)
 
-		it('treats scripts/service.sh as expected only for a structurally declared service repo', async () => {
+		it('keeps scripts/service.sh out of audit and prune only for a structurally declared service repo', async () => {
 			const from = await buildFromFixture()
 			const cwd = await buildTempDirectory()
 			try {
 				const plainDirectory = scaffoldPackage(cwd.path, 'plain', from.path)
-				writeFileSync(join(plainDirectory, 'scripts', 'service.sh'), '#!/bin/sh\n')
+				const plainScript = join(plainDirectory, 'scripts', 'service.sh')
+				writeFileSync(plainScript, '#!/bin/sh\n')
 				const plainAudit = runBin(['audit', '--json', '--from', from.path], '', {
 					cwd: plainDirectory,
 				})
@@ -556,16 +557,32 @@ describe('scaffold bin', () => {
 					clean: false,
 					foreign: 1,
 				})
+				const plainRepair = runBin(
+					['repair', '--json', '--apply', '--prune', '--from', from.path],
+					'',
+					{ cwd: plainDirectory },
+				)
+				expect(plainRepair.status).toBe(0)
+				expect(existsSync(plainScript)).toBe(false)
 
 				const serviceDirectory = scaffoldPackage(cwd.path, 'service', from.path)
 				mkdirSync(join(serviceDirectory, 'tests', 'service'), { recursive: true })
 				writeFileSync(join(serviceDirectory, 'tests', 'setupService.ts'), '\n')
-				writeFileSync(join(serviceDirectory, 'scripts', 'service.sh'), '#!/bin/sh\n')
+				const serviceScript = join(serviceDirectory, 'scripts', 'service.sh')
+				writeFileSync(serviceScript, '#!/bin/sh\n')
 				const serviceAudit = runBin(['audit', '--json', '--from', from.path], '', {
 					cwd: serviceDirectory,
 				})
 				expect(serviceAudit.status).toBe(1)
 				expect(parseJSON(serviceAudit.stdout.trim())).toMatchObject({ foreign: 0 })
+				const serviceRepair = runBin(
+					['repair', '--json', '--apply', '--prune', '--from', from.path],
+					'',
+					{ cwd: serviceDirectory },
+				)
+				expect(serviceRepair.status).toBe(0)
+				expect(parseJSON(serviceRepair.stdout.trim())).toMatchObject({ foreign: 0 })
+				expect(existsSync(serviceScript)).toBe(true)
 			} finally {
 				await cwd.cleanup()
 				await from.cleanup()
