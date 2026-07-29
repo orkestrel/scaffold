@@ -276,7 +276,7 @@ export const DEFAULT_VERSION = '0.0.1'
 export const DEFAULT_ENGINES = `>=${MINIMUM_NODE_VERSION}`
 
 /** The devDependency range generated packages pin `@orkestrel/scaffold` at. */
-export const SCAFFOLD_RANGE = '^0.0.7'
+export const SCAFFOLD_RANGE = '^0.0.8'
 
 /** Tooling versions shared by scaffold and every generated workspace. */
 export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
