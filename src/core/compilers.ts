@@ -15,7 +15,6 @@ import {
 	APP_BROWSER_DEV_DEPENDENCIES,
 	BASE_DEV_DEPENDENCIES,
 	BIN_CONFIGS,
-	BROWSER_SERVER_SETUP_PATH,
 	CHECKOUT_ACTION_SHA,
 	CONST_KEYWORD,
 	EXPORT_KEYWORD,
@@ -23,6 +22,7 @@ import {
 	GROUPS,
 	HOST_PATHS,
 	ENVIRONMENTS,
+	GLOBAL_SETUP_PATH,
 	SERVICE_SCRIPT_PATH,
 	SOURCE_BROWSER_DEV_DEPENDENCIES,
 	SETUP_NODE_ACTION_SHA,
@@ -2370,7 +2370,7 @@ export function binViteProject(): string {
  * @example
  * ```ts
  * integrationViteProject({ bin: true, integration: true }).includes(
- *   "globalSetup: ['./tests/setupIntegration.ts']",
+ *   "globalSetup: ['./tests/setupGlobal.ts']",
  * ) // true
  * ```
  */
@@ -2378,7 +2378,7 @@ export function integrationViteProject(axes: ViteAxes = {}): string {
 	const registrySetup =
 		axes.bin === true && axes.integration === true
 			? `				// Wire the template registry for the generated-consumer proof.
-				globalSetup: ['./tests/setupIntegration.ts'],
+				globalSetup: ['./${GLOBAL_SETUP_PATH}'],
 `
 			: ''
 	return `${EXPORT_KEYWORD} const integration = (config?: UserConfig): UserConfig =>
@@ -2494,7 +2494,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 			test: {
 				name: { label: 'src:browser', color: 'yellow' },
 				include: ['tests/src/browser/**/*.test.ts'],
-				${axes.networked === true ? `globalSetup: './${BROWSER_SERVER_SETUP_PATH}',\n\t\t\t\t` : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+				${axes.networked === true ? `globalSetup: './${GLOBAL_SETUP_PATH}',\n\t\t\t\t` : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
 				...(config?.test?.browser?.enabled === false
 					? {}
 					: {
@@ -2646,7 +2646,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 					name: { label: 'src:browser', color: 'yellow' },
 					include: ['tests/src/browser/**/*.test.ts'],
 					exclude: ['tests/src/core/**/*.test.ts'],
-					${axes.networked === true ? `globalSetup: './${BROWSER_SERVER_SETUP_PATH}',\n\t\t\t\t\t` : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+					${axes.networked === true ? `globalSetup: './${GLOBAL_SETUP_PATH}',\n\t\t\t\t\t` : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
 					...(config?.test?.browser?.enabled === false
 						? {}
 						: {
@@ -2827,7 +2827,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 			test: {
 				name: { label: 'src:browser', color: 'yellow' },
 				include: ['tests/src/browser/**/*.test.ts'],
-				${hasSourceCore ? "exclude: ['tests/src/core/**/*.test.ts'],\n\t\t\t\t" : ''}${axes.networked === true ? `globalSetup: './${BROWSER_SERVER_SETUP_PATH}',\n\t\t\t\t` : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+				${hasSourceCore ? "exclude: ['tests/src/core/**/*.test.ts'],\n\t\t\t\t" : ''}${axes.networked === true ? `globalSetup: './${GLOBAL_SETUP_PATH}',\n\t\t\t\t` : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
 				...(config?.test?.browser?.enabled === false
 					? {}
 					: {

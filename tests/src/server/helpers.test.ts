@@ -121,7 +121,7 @@ describe('deriveBlueprint', () => {
 				bin: true,
 				integration: true,
 				service: false,
-				networked: false,
+				networked: true,
 			}),
 		)
 	})
@@ -142,7 +142,7 @@ describe('deriveBlueprint', () => {
 				throw new Error('expected a computed Vite config')
 			}
 			expect(absent.networked).toBe(false)
-			expect(absentVite.content).not.toContain("globalSetup: './tests/setupBrowserServer.ts'")
+			expect(absentVite.content).not.toContain("globalSetup: './tests/setupGlobal.ts'")
 
 			buildBlueprintFixture(directory.path, {
 				name: '@orkestrel/browser-fixture',
@@ -157,7 +157,7 @@ describe('deriveBlueprint', () => {
 				throw new Error('expected a computed Vite config')
 			}
 			expect(present.networked).toBe(true)
-			expect(presentVite.content).toContain("globalSetup: './tests/setupBrowserServer.ts'")
+			expect(presentVite.content).toContain("globalSetup: './tests/setupGlobal.ts'")
 
 			writeFileSync(join(directory.path, presentVite.path), presentVite.content, 'utf8')
 			const plan: Plan = {

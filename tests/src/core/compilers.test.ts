@@ -918,7 +918,7 @@ describe('proof Vite projects and registration', () => {
 			const integration = integrationViteProject(axis)
 			const expected = axis.bin === true && axis.integration === true
 
-			expect(integration.includes("globalSetup: ['./tests/setupIntegration.ts']")).toBe(expected)
+			expect(integration.includes("globalSetup: ['./tests/setupGlobal.ts']")).toBe(expected)
 			expect(
 				integration.includes('// Wire the template registry for the generated-consumer proof.'),
 			).toBe(expected)
@@ -1104,7 +1104,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 				"\t\t\t\tsetupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],",
 			wired:
 				"\t\t\t\tinclude: ['tests/src/browser/**/*.test.ts'],\n" +
-				"\t\t\t\tglobalSetup: './tests/setupBrowserServer.ts',\n" +
+				"\t\t\t\tglobalSetup: './tests/setupGlobal.ts',\n" +
 				"\t\t\t\tsetupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],",
 		},
 		{
@@ -1118,7 +1118,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 			wired:
 				"\t\t\t\t\tinclude: ['tests/src/browser/**/*.test.ts'],\n" +
 				"\t\t\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" +
-				"\t\t\t\t\tglobalSetup: './tests/setupBrowserServer.ts',\n" +
+				"\t\t\t\t\tglobalSetup: './tests/setupGlobal.ts',\n" +
 				"\t\t\t\t\tsetupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],",
 		},
 		{
@@ -1132,11 +1132,11 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 			wired:
 				"\t\t\t\tinclude: ['tests/src/browser/**/*.test.ts'],\n" +
 				"\t\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" +
-				"\t\t\t\tglobalSetup: './tests/setupBrowserServer.ts',\n" +
+				"\t\t\t\tglobalSetup: './tests/setupGlobal.ts',\n" +
 				"\t\t\t\tsetupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],",
 		},
 	])('emits the derived browser fixture byte-exactly for $label', (fixture) => {
-		const line = "globalSetup: './tests/setupBrowserServer.ts'"
+		const line = "globalSetup: './tests/setupGlobal.ts'"
 
 		expect(fixture.absent).toContain(fixture.plain)
 		expect(fixture.absent).not.toContain(line)
@@ -1148,8 +1148,8 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		const sourceServer = rootViteConfig(['core', 'server'], { networked: true })
 		const appBrowser = applicationViteConfig([], ['browser'], { networked: true })
 
-		expect(sourceServer).not.toContain("globalSetup: './tests/setupBrowserServer.ts'")
-		expect(appBrowser).not.toContain("globalSetup: './tests/setupBrowserServer.ts'")
+		expect(sourceServer).not.toContain("globalSetup: './tests/setupGlobal.ts'")
+		expect(appBrowser).not.toContain("globalSetup: './tests/setupGlobal.ts'")
 		expect(appBrowser).toContain("setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts']")
 	})
 

@@ -163,8 +163,8 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
 /** The consumer-owned live-service provisioner expected only by service workspaces. */
 export const SERVICE_SCRIPT_PATH = 'scripts/service.sh'
 
-/** The consumer-owned Node fixture wired only into a source-browser test project. */
-export const BROWSER_SERVER_SETUP_PATH = 'tests/setupBrowserServer.ts'
+/** The consumer-owned Vitest global-setup module shared by its independently selected projects. */
+export const GLOBAL_SETUP_PATH = 'tests/setupGlobal.ts'
 
 /** The package-name RegExp — lowercase alphanumeric-with-hyphens, letter-first. */
 export const NAME_PATTERN = /^[a-z][a-z0-9-]*$/

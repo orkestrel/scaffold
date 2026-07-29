@@ -230,10 +230,10 @@ package-specific development dependencies merged over the generated baseline, an
 valid npm package name.
 
 `bin`, `integration`, and `service` are the three structural project axes. `networked` is the
-source-browser fixture fact. All four obey one law: each is `true` only when the workspace
-physically ships the directory or file that defines it — never because of the workspace's name,
-and never because a sibling fact is set. `deriveBlueprint` probes those paths, so a fresh compile
-and an audit of a mature repository agree on what the workspace is.
+global-setup presence fact consumed by the source-browser compiler. All four obey one law: each is
+`true` only when the workspace physically ships the directory or file that defines it — never
+because of the workspace's name, and never because a sibling fact is set. `deriveBlueprint` probes
+those paths, so a fresh compile and an audit of a mature repository agree on what the workspace is.
 
 - **`bin`** — `src/bin/` exists. It alone turns on the self-hosting extras: the manifest's `bin`
   entry, the `scaffold` script pointed at the built executable, the bin check, test, and build
@@ -247,9 +247,11 @@ and an audit of a mature repository agree on what the workspace is.
   running process, outside the default run: a standalone `service` project including
   `tests/service/**/*.test.ts`, with `tests/setupService.ts` after the shared setup, and the
   isolated `test:service` script.
-- **`networked`** — the physical `tests/setupBrowserServer.ts` file exists. When the workspace also
-  declares `src/browser`, its `srcBrowser` project runs that consumer-owned Node fixture as
-  `globalSetup`; no application browser project or standalone proof project inherits it.
+- **`networked`** — the physical `tests/setupGlobal.ts` file exists. When the workspace also
+  declares `src/browser`, its `srcBrowser` project runs that consumer-owned global fixture as
+  `globalSetup`. The fact never changes application-browser or standalone-proof wiring; the
+  integration project selects the same module only through its independent `bin && integration`
+  condition.
 
 A service workspace owes two companion files beside that directory, and derivation requires both
 physically present: `tests/setupService.ts` and `scripts/service.sh`. Either missing companion is a
@@ -365,7 +367,7 @@ From [`constants.ts`](../../src/core/constants.ts).
 | `APP_MATRIX`                      | const |
 | `HOST_PATHS`                      | const |
 | `SERVICE_SCRIPT_PATH`             | const |
-| `BROWSER_SERVER_SETUP_PATH`       | const |
+| `GLOBAL_SETUP_PATH`               | const |
 | `NAME_PATTERN`                    | const |
 | `MAX_NAME_LENGTH`                 | const |
 | `MAX_DEPENDENCY_NAME_LENGTH`      | const |
@@ -416,8 +418,8 @@ axis's computed `tsconfig` and Vite wrapper pair. `HOST_PATHS` is the ordered li
 host artifacts, and it is the staging manifest rather than the per-plan carried set:
 `stageHost` vendors every path on it, while each plan carries the subset `selectHostPaths` selects
 for that one workspace. `SERVICE_SCRIPT_PATH` names the consumer-owned provisioner a service
-workspace's audit expects, and `BROWSER_SERVER_SETUP_PATH` names the consumer-owned Node fixture
-that derivation can wire into source-browser tests.
+workspace's audit expects, and `GLOBAL_SETUP_PATH` names the consumer-owned Vitest global-setup
+module that independently selected projects can load.
 
 The bounds are public because they are part of the contract, not implementation trivia.
 `MAX_ARTIFACT_BYTES` caps one artifact at 5 MiB and `MAX_TOTAL_ARTIFACT_BYTES` caps one blueprint,
@@ -960,7 +962,7 @@ omitting an absent path entirely. `readManifest` reads `package.json` text, and
 existing workspace so a mature package is diffed against its own would-be scaffold rather than a
 dependency-less stand-in. Environments come from `src/<environment>/` and `app/<environment>/`, the
 three structural axes from their directory probes, and `networked` from the physical
-`tests/setupBrowserServer.ts` file; the service companion law remains the one the blueprint section
+`tests/setupGlobal.ts` file; the service companion law remains the one the blueprint section
 states — every fact is a reading of the filesystem, never of the name. Dependencies and peers come
 from the manifest's scoped entries, with an optional peer recovered from
 `peerDependenciesMeta`; and `extras` is every development dependency minus the complete set
@@ -1129,9 +1131,9 @@ or application environment project. The guides project therefore uses only `test
 core-only workspaces where one row cannot currently match. Integration and service use 120-second
 test and hook timeouts with file parallelism disabled, and service alone layers
 `tests/setupService.ts` onto the shared setup. Where a bin workspace also ships the integration
-project, that project wires `tests/setupIntegration.ts` as its global setup for the shared
+project, that project wires `tests/setupGlobal.ts` as its global setup for the shared
 template-registry harness; bin-less integration workspaces do not. Independently, a `networked`
-source-browser project places `globalSetup: './tests/setupBrowserServer.ts'` immediately before its
+source-browser project places `globalSetup: './tests/setupGlobal.ts'` immediately before its
 ordinary `setupFiles` row (and after the core-test exclusion where that row exists). Application
 browser projects never receive that field.
 
@@ -1702,13 +1704,14 @@ Node projects. One printed warning names every gated project label. A machine wi
 registers and runs the real browser suites unchanged; a machine without one runs the remaining
 projects and says so.
 
-**Consumer-owned source-browser fixture.** A source browser may need a real Node-side counterpart,
-such as a WebSocket fixture server. That workspace owns `tests/setupBrowserServer.ts`; the scaffold
-does not emit or replace it. Derivation records its physical presence as `networked`, and only the
-`srcBrowser` project then loads it through Vitest `globalSetup` before browser setup files run.
-Removing the file removes the field from regenerated configuration byte-for-byte. The application
-browser project, styles, integration registry setup, and service readiness setup remain isolated
-from this seam.
+**Consumer-owned global setup.** The single mechanism-named `tests/setupGlobal.ts` module may
+prepare a shared integration registry, a real Node-side counterpart for source-browser tests such
+as a WebSocket fixture server, or both. The scaffold does not emit or replace it. The
+`bin && integration` condition wires it to the integration project, while derivation records its
+physical presence as `networked` and a declared `src/browser` independently wires it to
+`srcBrowser`. Removing the file removes the source-browser field from regenerated configuration
+byte-for-byte. Application browser, styles, and service readiness setup remain isolated from this
+seam.
 
 **Continuous integration.** The generated workflow runs on push and pull request, on
 `ubuntu-latest`, with read-only contents permission, a 60-minute timeout, and a matrix that **tests

@@ -141,7 +141,7 @@ export function buildBlueprintFixture(root: string, options: BlueprintFixtureOpt
 	}
 	if (options.networked === true) {
 		mkdirSync(join(root, 'tests'), { recursive: true })
-		writeFileSync(join(root, 'tests', 'setupBrowserServer.ts'), '', 'utf8')
+		writeFileSync(join(root, 'tests', 'setupGlobal.ts'), '', 'utf8')
 	}
 }
 

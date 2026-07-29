@@ -899,7 +899,7 @@ export const integration = (config?: UserConfig): UserConfig =>
 				include: ['tests/integration/**/*.test.ts'],
 				setupFiles: ['./tests/setup.ts'],
 				// Wire the template registry for the generated-consumer proof.
-				globalSetup: ['./tests/setupIntegration.ts'],
+				globalSetup: ['./tests/setupGlobal.ts'],
 				environment: 'node',
 				browser: { enabled: false },
 				testTimeout: 120_000,

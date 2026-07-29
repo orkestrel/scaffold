@@ -170,7 +170,7 @@ export interface Blueprint {
 	readonly integration: boolean
 	/** Structural: `true` only for a repo that ships `tests/service` — a slow, opt-in proof project against a foreign running process, outside the default run, never by name. Derivation requires `tests/setupService.ts` and `scripts/service.sh` beside it and fails `TARGET` otherwise. */
 	readonly service: boolean
-	/** Derived: `true` only for a repo that carries the physical `tests/setupBrowserServer.ts` fixture — its `srcBrowser` project runs that consumer-owned Node fixture as global setup, while application browser projects remain untouched. */
+	/** Derived: `true` only for a repo that carries the physical `tests/setupGlobal.ts` fixture — its `srcBrowser` project runs that consumer-owned Node fixture as global setup, while application browser projects remain untouched. */
 	readonly networked: boolean
 }
 
