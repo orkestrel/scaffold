@@ -228,8 +228,9 @@ package-specific development dependencies merged over the generated baseline, an
 valid npm package name. `bin` is structural, never inferred from a name: it is `true` only for a
 workspace that ships its own `src/bin`, and it alone turns on the self-hosting extras (the
 manifest's `bin` entry, the `scaffold` script pointed at the built executable, the bin check, test,
-and build scripts, `build:host`, and the
-`src:bin` test project). `integration` is structural and `true` only when `tests/integration/`
+and build scripts, `build:host`, the `configs/src/tsconfig.bin.json` and
+`configs/src/vite.bin.config.ts` artifacts, and the `src:bin` test project). `integration` is
+structural and `true` only when `tests/integration/`
 exists: it records a slow, opt-in proof project over the repo's own built output, outside the
 default run. `service` is structural and `true` only when `tests/service/` exists: it records a
 slow, opt-in proof project against a foreign running process, outside the default run. Neither is
@@ -348,6 +349,7 @@ From [`constants.ts`](../../src/core/constants.ts).
 | `BIN_CONFIGS`                     | const |
 | `APP_MATRIX`                      | const |
 | `HOST_PATHS`                      | const |
+| `SERVICE_SCRIPT_PATH`             | const |
 | `NAME_PATTERN`                    | const |
 | `MAX_NAME_LENGTH`                 | const |
 | `MAX_DEPENDENCY_NAME_LENGTH`      | const |
@@ -392,12 +394,13 @@ From [`constants.ts`](../../src/core/constants.ts).
 `ENVIRONMENTS`, `ORIGINS`, `GROUPS`, `CATEGORIES`, `FRESHNESS`, and `COMPILE_STAGES` are the frozen
 value lists behind their literal unions. `SRC_MATRIX` is the `src` environment matrix as
 data — each environment's `configs/src` files, test-project label, `exports` subpath, and build
-formats. `BIN_CONFIGS` is the executable axis's computed `tsconfig` and Vite wrapper pair.
-`APP_MATRIX` is its application sibling, adding the runtime entry where an environment produces
-one (`app/browser/index.html`, `app/server/main.ts`). `HOST_PATHS` is the ordered list of
-byte-copied host artifacts, and it is the staging manifest rather than the per-plan carried set:
+formats. `APP_MATRIX` is its application sibling, adding the runtime entry where an environment
+produces one (`app/browser/index.html`, `app/server/main.ts`). `BIN_CONFIGS` is the executable
+axis's computed `tsconfig` and Vite wrapper pair. `HOST_PATHS` is the ordered list of byte-copied
+host artifacts, and it is the staging manifest rather than the per-plan carried set:
 `stageHost` vendors every path on it, while each plan carries the subset `selectHostPaths` selects
-for that one workspace.
+for that one workspace. `SERVICE_SCRIPT_PATH` names the consumer-owned provisioner a service
+workspace's audit expects.
 
 The bounds are public because they are part of the contract, not implementation trivia.
 `MAX_ARTIFACT_BYTES` caps one artifact at 5 MiB and `MAX_TOTAL_ARTIFACT_BYTES` caps one blueprint,
@@ -443,7 +446,6 @@ From [`constants.ts`](../../src/server/constants.ts).
 | Name                             | Kind  |
 | -------------------------------- | ----- |
 | `PRUNE_DIRECTORIES`              | const |
-| `SERVICE_SCRIPT_PATH`            | const |
 | `HOST_MANIFEST_PATH`             | const |
 | `SENSITIVE_HOST_PATH_PATTERN`    | const |
 | `RESERVED_TARGET_PATH_PATTERN`   | const |
@@ -473,7 +475,6 @@ From [`constants.ts`](../../src/server/constants.ts).
 `PRUNE_DIRECTORIES` is the closed set of prune-owned directories — `.claude/agents`,
 `.codex/agents`, and `scripts`. Nothing outside those roots is ever a deletion candidate, which is
 why project-owned skills under `.agents/skills` and `.claude/skills` are structurally safe.
-`SERVICE_SCRIPT_PATH` names the consumer-owned provisioner a service workspace's audit expects.
 `HOST_MANIFEST_PATH` is the reserved `manifest.json` written at the root of every staged host.
 `SENSITIVE_HOST_PATH_PATTERN` rejects credential-like, key-store, certificate-key, and
 local-configuration paths at the staging boundary. `RESERVED_TARGET_PATH_PATTERN` protects `.git`
@@ -1375,9 +1376,12 @@ be the last writer.
 An audit is a pure function of a plan and a snapshot, so the same engine that creates a workspace
 checks one. `readTarget` supplies the snapshot as exact bytes; `diffPlan` returns findings as data;
 `auditToReview` renders them for a human. Nothing in that path writes.
+
 The executable's physical unexpected-file scan treats exactly `scripts/service.sh` as an expected
-consumer-owned seam when the derived blueprint has `service: true`; a non-service workspace still
-reports that same path as foreign.
+consumer-owned seam when the derived blueprint has `service: true`. That exclusion is warranted
+because a service blueprint cannot derive without the physical file: the companion-file law raises
+a `TARGET` failure first, so the scan removes a false positive and can never mask an absent
+provisioner. A non-service workspace still reports the same path as foreign.
 
 `repair` turns those findings back into the narrowest possible write. It re-reads the target,
 re-diffs it, and refuses to proceed if the findings changed since the preview it was given — a
@@ -1457,15 +1461,14 @@ configuration, and ships `dist/src` plus its README. An application-only workspa
 that builds its own executable additionally ships `dist/bin` and `dist/host`. Scripts are emitted in
 a fixed, interleaved order so aggregates sit immediately before their per-environment members:
 
-- `clean`, `copy`, `scaffold`
-- `lint` and `lint:check`, `format` and `format:check`
+- `clean`, `copy`, `scaffold`, `lint`
 - `check`, then `check:src` with one `check:src:<environment>` per published environment, then
   `check:app` with one `check:app:<environment>` per app environment — the browser app scope uses the
   Vue typechecker, every other scope uses plain `tsc`
-- `test`, then `test:src` and its per-environment scopes, `test:app` and its per-environment scopes,
-  `test:policy`, and `test:guides`; the integration axis receives the deliberately non-default
-  `test:integration` live installed-consumer gate, a bin workspace receives the
-  `test:equivalence` driver-reference proof, and the service axis receives `test:service`
+- `format`, `format:check`, `lint:check`
+- `test`, then `test:src` and its per-environment scopes, the optional `test:integration`,
+  `test:equivalence`, and `test:service` proofs, `test:app` and its per-environment scopes, then
+  `test:policy` and `test:guides`
 - `build`, then `build:src` and its per-environment targets, `build:app` and its runtime targets, and
   `build:host` for a bin workspace
 - `dev` when a browser application is selected; `serve` and `serve:build` when a server application
@@ -1476,9 +1479,11 @@ a fixed, interleaved order so aggregates sit immediately before their per-enviro
 `test:service` remains outside both the default `test` chain and `prepublishOnly`: neither default
 testing nor publication starts or requires a foreign process.
 
-Run `npm run test:equivalence` after changing the persistent boundary build driver. It reruns the
-integration project in dual-path mode and proves each programmatic driver verdict against the
-spawned npm-script reference; ordinary integration runs keep the faster driver-only path.
+The equivalence proof exists only where a bin workspace also ships the integration project. In
+that shape, run `npm run test:equivalence` after changing the persistent boundary build driver; the
+script invokes the integration project in dual-path mode and proves each programmatic driver
+verdict against the spawned npm-script reference. Ordinary integration runs keep the faster
+driver-only path.
 
 **Environment isolation.** Scoped TypeScript projects remove the wrong host's globals from each
 environment: core scopes carry the WHATWG web-interop surface and no host at all — no DOM, no Node,

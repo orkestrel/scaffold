@@ -114,6 +114,10 @@ describe('ciWorkflow', () => {
 
 		expect(provision).toBeGreaterThan(-1)
 		expect(test).toBeGreaterThan(provision)
+		expect(workflow).toContain('run: npm test\n\n      - name: Provision live service')
+		expect(workflow).toContain(
+			'run: bash scripts/service.sh\n\n      - name: Run live service tests',
+		)
 		expect(ciWorkflow(blueprint('router'))).not.toContain('scripts/service.sh')
 	})
 
@@ -128,8 +132,9 @@ describe('ciWorkflow', () => {
 		)
 
 		expect(createHash('sha256').update(workflow).digest('hex')).toBe(
-			'2a40070e54efc519b85af50d1a1bf8aefaac11f9a6bc88b5c02cb1dcefb92156',
+			'6ed745f2c145cd7e5b47e2a1144d8a8bdd198576aef57e734c8997b6dc6d8f83',
 		)
+		expect(workflow).toBe(readFileSync(join(WORKSPACE_ROOT, '.github/workflows/ci.yml'), 'utf8'))
 	})
 })
 
@@ -668,7 +673,7 @@ describe('packageManifest', () => {
 
 		expect(binScripts['test:integration']).toBeUndefined()
 		expect(binScripts.prepublishOnly).not.toContain('test:integration')
-		expect(binScripts['test:equivalence']).toBeDefined()
+		expect(binScripts['test:equivalence']).toBeUndefined()
 		expect(integratedScripts['test:integration']).toBe(
 			'vitest run --config vite.config.ts --no-cache --reporter=dot --project integration',
 		)
@@ -1696,7 +1701,7 @@ describe('configArtifacts', () => {
 		}
 	})
 
-	it('closes every script-referenced configs path over the planned artifacts for every axis combination', () => {
+	it('closes script and config references over the same manifest and plan for every axis combination', () => {
 		const axes: readonly {
 			readonly bin: boolean
 			readonly integration: boolean
@@ -1723,16 +1728,27 @@ describe('configArtifacts', () => {
 				['manifest', 'configs'],
 			)
 			const manifest = plan.artifacts.find((artifact) => artifact.path === 'package.json')
-			const scripts = readRecord(readManifest(manifest?.content).scripts)
-			const referenced = new Set<string>()
+			expect(manifest).toBeDefined()
+			if (manifest === undefined) throw new Error('expected package.json artifact')
+			const scripts = readRecord(readManifest(manifest.content).scripts)
+			const referencedConfigs = new Set<string>()
+			const referencedScripts = new Set<string>()
 			for (const value of Object.values(scripts)) {
 				if (typeof value !== 'string') continue
-				for (const match of value.match(/configs\/[^\s'"]+/g) ?? []) referenced.add(match)
+				for (const match of value.match(/configs\/[^\s'"]+/g) ?? []) {
+					referencedConfigs.add(match)
+				}
+				for (const match of value.matchAll(/npm run ([^\s&'"]+)/g)) {
+					const name = match[1]
+					if (name !== undefined) referencedScripts.add(name)
+				}
 			}
 			const planned = new Set(plan.artifacts.map((artifact) => artifact.path))
 
-			for (const path of referenced) expect(planned.has(path)).toBe(true)
-			for (const path of BIN_CONFIGS) expect(referenced.has(path)).toBe(axis.bin)
+			expect(referencedScripts.size).toBeGreaterThan(0)
+			for (const path of referencedConfigs) expect(planned.has(path)).toBe(true)
+			for (const name of referencedScripts) expect(Object.hasOwn(scripts, name)).toBe(true)
+			for (const path of BIN_CONFIGS) expect(referencedConfigs.has(path)).toBe(axis.bin)
 		}
 	})
 })

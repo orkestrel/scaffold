@@ -71,6 +71,7 @@ import {
 	isPlan,
 	ownDataValue,
 	ScaffoldError,
+	SERVICE_SCRIPT_PATH,
 	snapshotPlan,
 	ENVIRONMENTS,
 	VERSION_PATTERN,
@@ -1501,8 +1502,8 @@ export function deriveBlueprint(target: string): Blueprint {
 		if (!isRealFile(join(target, 'tests', 'setupService.ts'))) {
 			missing.push('tests/setupService.ts')
 		}
-		if (!isRealFile(join(target, 'scripts', 'service.sh'))) {
-			missing.push('scripts/service.sh')
+		if (!isRealFile(join(target, SERVICE_SCRIPT_PATH))) {
+			missing.push(SERVICE_SCRIPT_PATH)
 		}
 		if (missing.length > 0) {
 			throw new ScaffoldError(

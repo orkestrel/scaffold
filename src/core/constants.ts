@@ -160,6 +160,9 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
 	'guides/src/scaffold.md',
 ])
 
+/** The consumer-owned live-service provisioner expected only by service workspaces. */
+export const SERVICE_SCRIPT_PATH = 'scripts/service.sh'
+
 /** The package-name RegExp — lowercase alphanumeric-with-hyphens, letter-first. */
 export const NAME_PATTERN = /^[a-z][a-z0-9-]*$/
 

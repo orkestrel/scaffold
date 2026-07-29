@@ -24,6 +24,7 @@ import {
 	HOST_PATHS,
 	JSON_PRINT_WIDTH,
 	ENVIRONMENTS,
+	SERVICE_SCRIPT_PATH,
 	SOURCE_BROWSER_DEV_DEPENDENCIES,
 	SETUP_NODE_ACTION_SHA,
 	SRC_MATRIX,
@@ -387,7 +388,7 @@ export function packageManifest(spec: Blueprint): string {
 	if (spec.integration)
 		scripts['test:integration'] =
 			'vitest run --config vite.config.ts --no-cache --reporter=dot --project integration'
-	if (spec.bin)
+	if (spec.bin && spec.integration)
 		scripts['test:equivalence'] =
 			"node -e \"const c=require('node:child_process'),n=process.platform==='win32'?'npm.cmd':'npm',r=c.spawnSync(n,['run','test:integration'],{stdio:'inherit',env:{...process.env,SCAFFOLD_BOUNDARY_EQUIVALENCE:'1'}});process.exit(r.status??1)\""
 	if (spec.service)
@@ -3294,6 +3295,18 @@ export function ciWorkflow(spec: Blueprint): string {
         run: npx --no-install playwright install --with-deps chromium
 `
 			: ''
+	const tail: string[] = []
+	if (spec.integration) {
+		tail.push(`      - name: Run live consumer integration
+        run: npm run test:integration`)
+	}
+	if (spec.service) {
+		tail.push(`      - name: Provision live service
+        run: bash ${SERVICE_SCRIPT_PATH}`)
+		tail.push(`      - name: Run live service tests
+        run: npm run test:service`)
+	}
+	const workflowTail = tail.length === 0 ? '' : `\n\n${tail.join('\n\n')}`
 	return `name: ci.yml
 
 on:
@@ -3339,25 +3352,7 @@ ${browser}
         run: npm run build
 
       - name: Run tests
-        run: npm test${
-					spec.integration
-						? `
-
-      - name: Run live consumer integration
-        run: npm run test:integration
-`
-						: ''
-				}${
-					spec.service
-						? `
-      - name: Provision live service
-        run: bash scripts/service.sh
-
-      - name: Run live service tests
-        run: npm run test:service
-`
-						: ''
-				}
+        run: npm test${workflowTail}
 `
 }
 

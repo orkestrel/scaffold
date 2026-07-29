@@ -31,6 +31,7 @@ import {
 	NAME_PATTERN,
 	planToSummary,
 	ScaffoldError,
+	SERVICE_SCRIPT_PATH,
 	ENVIRONMENTS,
 } from '@src/core'
 import {
@@ -55,7 +56,6 @@ import {
 	readTarget,
 	parseSyncOptions,
 	resolvePhysicalPath,
-	SERVICE_SCRIPT_PATH,
 	validateWriteDirectories,
 	WriteTransaction,
 } from '@src/server'
@@ -294,9 +294,8 @@ export class CLI implements CLIInterface {
 	 * instead of the structurally-always-zero `diffPlan.foreign`.
 	 */
 	#scan(audit: Audit, target: string, host: string, service: boolean): Audit {
-		const paths = pruneTargets(target, host).filter(
-			(path) => !service || path !== SERVICE_SCRIPT_PATH,
-		)
+		const seam = service ? SERVICE_SCRIPT_PATH : undefined
+		const paths = pruneTargets(target, host).filter((path) => path !== seam)
 		if (paths.length === 0) return audit
 		const findings: Finding[] = paths.map((path) => ({
 			path,
