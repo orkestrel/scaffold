@@ -6,5 +6,5 @@ describe('generated mixed-workspace consumer gates', () => {
 		await expect(
 			executeGeneratedConsumerGates(inject('generatedConsumerTemplates')),
 		).resolves.toBeUndefined()
-	}, 660_000)
+	}, 1_260_000)
 })

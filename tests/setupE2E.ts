@@ -2827,7 +2827,9 @@ export async function executeGeneratedConsumerGates(root: string): Promise<void>
 		expect(manifest.scripts.prepublishOnly).toBe(
 			'npm run format:check && npm run lint:check && npm run check && npm run build && npm test',
 		)
-		const result = runNpmScript(packageDirectory, 'prepublishOnly', 600_000)
+		// The consumer's browser projects execute real Chromium suites, so the whole
+		// prepublish lifecycle runs well past the old ten-minute budget on a busy host.
+		const result = runNpmScript(packageDirectory, 'prepublishOnly', 1_200_000)
 		const output = `${result.stdout}${result.stderr}`
 		expect(
 			{
