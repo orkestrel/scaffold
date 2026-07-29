@@ -1286,15 +1286,15 @@ Audit semantics follow directly from that.
 - A target file the plan does not own is `foreign`, and `inferGroup` classifies it by its leading
   path segment.
 
-The same ownership boundary is what makes mutation safe. **`fleet` and default `repair` mutate
-host-origin artifacts only.** `repair --computed` additionally opts into restoring computed canon,
-except `package.json`; template artifacts remain birth-only in either mode. A mature workspace's
-hand-written source, tests, guides, and manifest are therefore never overwritten with a stub. The
-generated `.github/workflows/ci.yml` is a **computed** artifact, so user-owned CI stands by default
-but is intentionally restored when `--computed` is passed. Audit always compares it because
-computed artifacts are content-aware canon. A legitimate difference that the blueprint cannot
-express is a canon gap: add the missing blueprint axis rather than forking the computed file in one
-repository.
+The same ownership boundary is what makes mutation safe. **`fleet` and default `repair` both scope
+the compiled plan to host origin before hydrating, diffing, or applying.** `--generated` widens that
+scoped plan to generated canon except `package.json`; template artifacts remain birth-only in
+either mode. A mature workspace's hand-written source, tests, guides, and manifest are therefore
+never overwritten with a stub. The generated `.github/workflows/ci.yml` is a **computed** artifact,
+so user-owned CI stands by default but is intentionally restored when `--generated` is passed.
+Audit always compares it because computed artifacts are content-aware canon. A legitimate
+difference that the blueprint cannot express is a canon gap: add the missing blueprint axis rather
+than forking the computed file in one repository.
 
 Overrides respect the same boundary from the other direction. `applyOverrides` never replaces a
 host-origin artifact and never replaces `package.json`; the gate turns either attempt — and an
@@ -1330,8 +1330,8 @@ target that moved under the caller is a `TARGET` failure, not a race to win. It 
 precondition per artifact from the audit itself: a `missing` finding requires the destination to
 still be absent, a `stale` finding requires it to still carry exactly the bytes that were observed.
 Those preconditions are checked again inside the write transaction before any promotion.
-At the executable boundary, `repair` supplies a host-only plan by default; `--computed` adds
-computed artifacts other than `package.json` to that same bounded operation.
+An interactive audit repair hand-off forwards `--generated` into the repair invocation when the
+flag was present on `audit`.
 
 `prune` is the deletion arm, and it is deliberately narrow. Its candidate set comes from
 `pruneTargets`, which is also what the executable's audit and preview read, so what is reported and
@@ -1606,7 +1606,7 @@ no module API of its own. Six verbs:
 | `new`     | scaffold a workspace into `./<name>`                     |
 | `pull`    | refresh vendored guides and versions, report drift       |
 | `audit`   | whole-plan conformance report                            |
-| `repair`  | restore host-owned files and optional computed canon     |
+| `repair`  | restore host-owned files and optional generated canon    |
 | `fleet`   | audit or repair every workspace under the cwd's children |
 | `catalog` | regenerate the fleet package-catalog table               |
 
@@ -1627,7 +1627,8 @@ declared dependency mirror is considered.
 `--groups a,b` scopes an audit to artifact groups. `--live` adds an upstream freshness check to an
 audit. `--strict` makes a pull throw on a network fault. `--offline` restricts a catalog to local
 sources. `--prune` opts a repair or fleet run into deleting unexpected files under the three prune
-directories. `--computed` opts a repair into restoring generated canon except `package.json`.
+directories. `--generated` opts a repair or fleet run into restoring generated canon except
+`package.json`; on `audit`, it is inherited if the interactive repair hand-off is accepted.
 `--json` emits one machine-readable value. `--apply` writes, `--yes` skips the confirmation, and
 `-h` or `--help` prints usage.
 
@@ -1639,9 +1640,9 @@ non-interactive session without `--apply` or `--yes` skips pruning rather than g
 operates on the immediate children of the working directory and never on the directory itself, and
 it has no root flag at all — `repair` is the single-workspace tool.
 
-`fleet` and default `repair` are scoped to host-origin artifacts. The executable states the selected
-scope in its output; `repair --computed` adds generated files while still excluding starter files
-and `package.json`.
+`fleet` and default `repair` are scoped to host-origin artifacts. `repair` states its selected scope
+in the output; `--generated` widens both verbs to generated files while still excluding starter
+files and `package.json`.
 
 **Catalog markers.** `catalog` rewrites the block between `<!-- catalog:start -->` and
 `<!-- catalog:end -->` in `.claude/agents/orkestrel.md`. **Ambiguous markers fail before any

@@ -69,18 +69,33 @@ export function auditTable(audit: Audit, plan: Plan): TableOptions {
 	}
 }
 
-/** Render drift outside repair's ownership boundary. */
-export function scopeNote(count: number): string | undefined {
+/**
+ * Render drift outside repair's selected ownership boundary.
+ *
+ * @param count - The number of findings outside the selected scope.
+ * @param generated - Whether generated canon was included in the repair scope.
+ * @returns The scope guidance line, or `undefined` when no findings remain outside scope.
+ */
+export function scopeNote(count: number, generated: boolean): string | undefined {
 	if (count === 0) return undefined
-	return `note: ${countPart(count, 'finding')} outside repair's scope — run 'audit' for the list; generated files are yours to edit`
+	return generated
+		? `note: ${countPart(count, 'finding')} outside host-owned and generated repair scope — run 'audit' for the list; starter files and package.json remain protected`
+		: `note: ${countPart(count, 'finding')} outside host-owned repair scope — run 'audit' for the list`
 }
 
-/** Render repair's dry-run verdict. */
-export function repairVerdict(audit: Audit): string {
+/**
+ * Render repair's dry-run verdict.
+ *
+ * @param audit - The audit over the selected repair plan.
+ * @param generated - Whether generated canon was included in the repair scope.
+ * @returns The scope-aware clean or drifted verdict.
+ */
+export function repairVerdict(audit: Audit, generated: boolean): string {
+	const scope = generated ? 'host-owned and generated' : 'host-owned'
 	if (audit.clean) {
-		return `repair: ${countPart(audit.findings.length, 'host-owned artifact')} aligned — nothing to write`
+		return `repair: ${countPart(audit.findings.length, `${scope} artifact`)} aligned — nothing to write`
 	}
-	return `repair: ${bucketText(audit)} — pass --apply to write`
+	return `repair: ${scope}: ${bucketText(audit)} — pass --apply to write`
 }
 
 /** Render repair's materialization tally. */
@@ -335,7 +350,33 @@ export function unresolvedVersion(names: readonly string[]): string {
 
 /** Render drift that belongs to generated artifacts. */
 export function generatedNote(count: number): string {
-	return `${countPart(count, 'finding')} in generated files — these are regenerated, not hand-edited; run 'scaffold repair --computed' to restore them`
+	return `${countPart(count, 'finding')} in generated files — these are regenerated, not hand-edited; run 'scaffold repair --generated' to restore them`
+}
+
+/**
+ * Render honest repair guidance for computed and protected manifest drift.
+ *
+ * @param findings - The audit findings to classify.
+ * @param plan - The plan that owns each computed artifact.
+ * @returns One line for repairable computed drift and one for protected manifest drift when present.
+ */
+export function renderComputedNotes(findings: readonly Finding[], plan: Plan): readonly string[] {
+	const origins = new Map(plan.artifacts.map((artifact) => [artifact.path, artifact.origin]))
+	let computed = 0
+	let manifest = 0
+	for (const finding of findings) {
+		if (finding.drift === 'aligned' || origins.get(finding.path) !== 'computed') continue
+		if (finding.path === 'package.json') manifest += 1
+		else computed += 1
+	}
+	const notes: string[] = []
+	if (computed > 0) notes.push(generatedNote(computed))
+	if (manifest > 0) {
+		notes.push(
+			`${countPart(manifest, 'finding')} in package.json — repair does not rewrite protected publication metadata; review and edit it directly`,
+		)
+	}
+	return notes
 }
 
 /** Render live dependency freshness tallies. */

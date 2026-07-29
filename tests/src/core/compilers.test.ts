@@ -971,7 +971,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		)
 
 		expect(createHash('sha256').update(content).digest('hex')).toBe(
-			'2a200195b4ec7d63cdcf621f76c074427a720c58ec15281bbc4414febb5b1dd5',
+			'a8116685b7f9e6aea3903a428792683510ef79b448c1b7561479e2c8ab6e7156',
 		)
 	})
 
@@ -1093,7 +1093,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		expect(application).toContain("{ project: appBrowser, browser: 'app:browser' }")
 	})
 
-	it('pre-seeds every emitted browser project with the Vitest browser entry chain', () => {
+	it('pre-seeds only Vitest browser test projects with the browser entry chain', () => {
 		const browser = rootViteConfig(['browser'])
 		const source = rootViteConfig(['core', 'browser', 'server'])
 		const appBrowser = applicationViteConfig([], ['browser'])
@@ -1101,10 +1101,35 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 			['core', 'browser', 'server'],
 			['core', 'browser', 'server'],
 		)
-		const sourceSeed = 'optimizeDeps: { include: [...BROWSER_TEST_DEPENDENCIES] }'
-		const appSeed = "optimizeDeps: { include: ['vue', ...BROWSER_TEST_DEPENDENCIES] }"
+		const sourceSeed = 'include: [...BROWSER_TEST_DEPENDENCIES]'
+		const appSeed = "include: ['vue', ...BROWSER_TEST_DEPENDENCIES]"
+		const variants = [
+			{
+				content: browser,
+				enabled: [{ project: 'srcBrowser', seed: sourceSeed }],
+				disabled: ['policy', 'guides'],
+			},
+			{
+				content: source,
+				enabled: [{ project: 'srcBrowser', seed: sourceSeed }],
+				disabled: ['srcCore', 'srcServer', 'policy', 'guides'],
+			},
+			{
+				content: appBrowser,
+				enabled: [{ project: 'appBrowser', seed: appSeed }],
+				disabled: ['policy', 'guides'],
+			},
+			{
+				content: application,
+				enabled: [
+					{ project: 'srcBrowser', seed: sourceSeed },
+					{ project: 'appBrowser', seed: appSeed },
+				],
+				disabled: ['srcCore', 'srcServer', 'appCore', 'appServer', 'policy', 'guides'],
+			},
+		]
 
-		for (const content of [browser, source, appBrowser, application]) {
+		for (const { content, enabled, disabled } of variants) {
 			for (const specifier of [
 				'@vitest/browser/client',
 				'vitest/browser',
@@ -1113,12 +1138,40 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 			]) {
 				expect(content).toContain(`'${specifier}'`)
 			}
+			for (const { project, seed } of enabled) {
+				const constStart = content.indexOf(`export const ${project}`)
+				const functionStart = content.indexOf(`export function ${project}`)
+				const start = constStart === -1 ? functionStart : constStart
+				expect(start).toBeGreaterThanOrEqual(0)
+				const next = content.indexOf('\nexport ', start + 1)
+				const block = content.slice(start, next === -1 ? content.length : next)
+				expect(block).toContain(seed)
+				expect(block).toContain('deps: {')
+				expect(block).toContain('optimizer: {')
+				expect(block).toContain('client: {')
+				expect(block.indexOf(seed)).toBeGreaterThan(block.indexOf('test: {'))
+				expect(block).toContain('browser: {')
+				expect(block).toContain('enabled: true')
+				expect(block).not.toContain('optimizeDeps')
+			}
+			for (const project of disabled) {
+				const start = content.indexOf(`export const ${project}`)
+				expect(start).toBeGreaterThanOrEqual(0)
+				const next = content.indexOf('\nexport ', start + 1)
+				const block = content.slice(start, next === -1 ? content.length : next)
+				expect(block).not.toContain('BROWSER_TEST_DEPENDENCIES')
+			}
+			expect(content).not.toContain('optimizeDeps')
+			expect(content).toContain(
+				'Prevent the Vitest browser mid-run "optimized dependencies changed, reloading" stall.',
+			)
 		}
-		expect(browser.split(sourceSeed)).toHaveLength(2)
-		expect(source.split(sourceSeed)).toHaveLength(2)
-		expect(appBrowser.split(appSeed)).toHaveLength(2)
-		expect(application.split(sourceSeed)).toHaveLength(2)
-		expect(application.split(appSeed)).toHaveLength(2)
+		const guidesStart = browser.indexOf('export const guides')
+		const guidesEnd = browser.indexOf('\nexport default', guidesStart)
+		const guidesBlock = browser.slice(guidesStart, guidesEnd)
+		expect(guidesBlock).toContain('browser: { enabled: false }')
+		expect(guidesBlock).not.toContain('BROWSER_TEST_DEPENDENCIES')
+		expect(browser).toContain('config?.test?.browser?.enabled === false')
 	})
 
 	it('loads both emitted gate branches and exact project-filter forms with real Vitest configuration', async () => {

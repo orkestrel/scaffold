@@ -597,7 +597,7 @@ describe('scaffold bin', () => {
 				expect(audited.stdout).toContain('in generated files')
 				expect(audited.stdout).not.toContain(REPAIR_HANDOFF_TEXT)
 
-				// Repair without `--computed` scopes to `host`-origin artifacts
+				// Repair without `--generated` scopes to `host`-origin artifacts
 				// only, so a full audit re-run still reports the same drift.
 				const repaired = runBin(['repair', '--apply', '--from', from.path], '', {
 					cwd: packageDirectory,
@@ -612,6 +612,44 @@ describe('scaffold bin', () => {
 				await from.cleanup()
 			}
 		}, 60000)
+
+		it('manifest-only drift stays protected from repair --generated and gets honest audit guidance', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				const manifestPath = join(packageDirectory, 'package.json')
+				const parsedManifest: unknown = parseJSON(readFileSync(manifestPath, 'utf8'))
+				if (!isRecord(parsedManifest)) throw new Error('expected a generated manifest object')
+				const scripts = isRecord(parsedManifest.scripts) ? parsedManifest.scripts : {}
+				const consumerManifest = formatJson({
+					...parsedManifest,
+					scripts: { ...scripts, format: 'consumer-format' },
+				})
+				writeFileSync(manifestPath, consumerManifest, 'utf8')
+
+				const audited = runBin(['audit', '--from', from.path], '', { cwd: packageDirectory })
+				expect(audited.status).toBe(1)
+				expect(audited.stdout).toContain('1 finding in package.json')
+				expect(audited.stdout).toContain('review and edit it directly')
+				expect(audited.stdout).not.toContain('repair --generated')
+
+				const repaired = runBin(['repair', '--generated', '--apply', '--from', from.path], '', {
+					cwd: packageDirectory,
+				})
+				expect(repaired.status).toBe(0)
+				expect(readFileSync(manifestPath, 'utf8')).toBe(consumerManifest)
+
+				const reaudited = runBin(['audit', '--from', from.path], '', {
+					cwd: packageDirectory,
+				})
+				expect(reaudited.status).toBe(1)
+				expect(reaudited.stdout).toContain('1 finding in package.json')
+			} finally {
+				await cwd.cleanup()
+				await from.cleanup()
+			}
+		}, 30000)
 
 		it('audit --apply never auto-repairs host-owned drift in a non-TTY process', async () => {
 			const from = await buildFromFixture()
@@ -794,7 +832,7 @@ describe('scaffold bin', () => {
 			}
 		}, 20000)
 
-		it('--computed repairs generated drift while default, template, host, and package.json ownership stay unchanged', async () => {
+		it('--generated repairs generated drift while default, template, host, and package.json ownership stay unchanged', async () => {
 			const from = await buildFromFixture()
 			const cwd = await buildTempDirectory()
 			try {
@@ -825,13 +863,13 @@ describe('scaffold bin', () => {
 				)
 
 				rmSync(join(packageDirectory, '.editorconfig'))
-				const computedRepair = runBin(
-					['repair', '--computed', '--apply', '--from', from.path],
+				const generatedRepair = runBin(
+					['repair', '--generated', '--apply', '--from', from.path],
 					'',
 					{ cwd: packageDirectory },
 				)
-				expect(computedRepair.status).toBe(0)
-				expect(computedRepair.stdout).toContain('shared host-owned and generated artifacts')
+				expect(generatedRepair.status).toBe(0)
+				expect(generatedRepair.stdout).toContain('shared host-owned and generated artifacts')
 				expect(readFileSync(computedPath, 'utf8')).toBe(canonicalComputed)
 				expect(readFileSync(templatePath, 'utf8')).toBe(consumerTemplate)
 				expect(readFileSync(manifestPath, 'utf8')).toBe(consumerManifest)
@@ -1051,6 +1089,34 @@ describe('scaffold bin', () => {
 				await from.cleanup()
 			}
 		}, 60000)
+
+		it('--generated repairs generated drift across the fleet while the default remains host-only', async () => {
+			const from = await buildFromFixture()
+			const root = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(root.path, 'fleeta', from.path)
+				const generatedPath = join(packageDirectory, 'tsconfig.json')
+				const canonicalGenerated = readFileSync(generatedPath, 'utf8')
+				writeFileSync(generatedPath, '// generated drift\n', 'utf8')
+
+				const defaultRepair = runBin(['fleet', '--apply', '--from', from.path], '', {
+					cwd: root.path,
+				})
+				expect(defaultRepair.status).toBe(0)
+				expect(readFileSync(generatedPath, 'utf8')).toBe('// generated drift\n')
+
+				const generatedRepair = runBin(
+					['fleet', '--generated', '--apply', '--from', from.path],
+					'',
+					{ cwd: root.path },
+				)
+				expect(generatedRepair.status).toBe(0)
+				expect(readFileSync(generatedPath, 'utf8')).toBe(canonicalGenerated)
+			} finally {
+				await root.cleanup()
+				await from.cleanup()
+			}
+		}, 30000)
 
 		it('--json emits a top-level JSON array, one element per repo', async () => {
 			const from = await buildFromFixture()

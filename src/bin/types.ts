@@ -21,7 +21,7 @@ export interface CLIValues {
 	readonly yes?: boolean
 	readonly json?: boolean
 	readonly prune?: boolean
-	readonly computed?: boolean
+	readonly generated?: boolean
 	readonly strict?: boolean
 	readonly live?: boolean
 	readonly offline?: boolean

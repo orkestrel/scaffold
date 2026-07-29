@@ -21,10 +21,10 @@ describe('bin argument parsers', () => {
 		expect(parsed.values.from).toEqual(['first', 'second'])
 	})
 
-	it('round-trips the repair computed opt-in', () => {
-		const parsed = parseArguments(['repair', '--computed'])
+	it('round-trips the repair generated opt-in', () => {
+		const parsed = parseArguments(['repair', '--generated'])
 		expect(parsed.positionals).toEqual(['repair'])
-		expect(parsed.values.computed).toBe(true)
+		expect(parsed.values.generated).toBe(true)
 	})
 
 	it('parses source and application environment selections independently', () => {

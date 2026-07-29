@@ -2169,7 +2169,7 @@ ${EXPORT_KEYWORD} ${CONST_KEYWORD} ENVIRONMENT_CSS = Object.freeze({
 	},
 } satisfies CSSOptions)
 
-/** Dependencies every Vitest browser project pre-optimizes before its first run. */
+/** Prevent the Vitest browser mid-run "optimized dependencies changed, reloading" stall. */
 ${EXPORT_KEYWORD} ${CONST_KEYWORD} BROWSER_TEST_DEPENDENCIES = Object.freeze([
 	'@vitest/browser/client',
 	'vitest/browser',
@@ -2251,11 +2251,22 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 					external: (id: string) => id.startsWith('@orkestrel/'),
 				},
 			},
-			optimizeDeps: { include: [...BROWSER_TEST_DEPENDENCIES] },
 			test: {
 				name: { label: 'src:browser', color: 'yellow' },
 				include: ['tests/src/browser/**/*.test.ts'],
 				setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+				...(config?.test?.browser?.enabled === false
+					? {}
+					: {
+							deps: {
+								optimizer: {
+									client: {
+										enabled: true,
+										include: [...BROWSER_TEST_DEPENDENCIES],
+									},
+								},
+							},
+						}),
 				browser: {
 					enabled: true,
 					provider: playwright(),
@@ -2429,12 +2440,23 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 						output: { paths: { '@src/core': '../core/index.js' } },
 					},
 				},
-				optimizeDeps: { include: [...BROWSER_TEST_DEPENDENCIES] },
 				test: {
 					name: { label: 'src:browser', color: 'yellow' },
 					include: ['tests/src/browser/**/*.test.ts'],
 					exclude: ['tests/src/core/**/*.test.ts'],
 					setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+					...(config?.test?.browser?.enabled === false
+						? {}
+						: {
+								deps: {
+									optimizer: {
+										client: {
+											enabled: true,
+											include: [...BROWSER_TEST_DEPENDENCIES],
+										},
+									},
+								},
+							}),
 					browser: {
 						enabled: true,
 						provider: playwright(),
@@ -2672,11 +2694,22 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 					external: (id: string) => ${coreExternal}id.startsWith('@orkestrel/'),${coreOutput}
 				},
 			},
-			optimizeDeps: { include: [...BROWSER_TEST_DEPENDENCIES] },
 			test: {
 				name: { label: 'src:browser', color: 'yellow' },
 				include: ['tests/src/browser/**/*.test.ts'],
 				${hasSourceCore ? "exclude: ['tests/src/core/**/*.test.ts'],\n\t\t\t\t" : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+				...(config?.test?.browser?.enabled === false
+					? {}
+					: {
+							deps: {
+								optimizer: {
+									client: {
+										enabled: true,
+										include: [...BROWSER_TEST_DEPENDENCIES],
+									},
+								},
+							},
+						}),
 				browser: {
 					enabled: true,
 					provider: playwright(),
@@ -2784,7 +2817,6 @@ ${EXPORT_KEYWORD} function appBrowser(...config: readonly never[]): UserConfig {
 			prepareHtml(),
 			finalizeHtml(),
 		],
-		optimizeDeps: { include: ['vue', ...BROWSER_TEST_DEPENDENCIES] },
 		root: resolveWorkspacePath('app/browser'),
 		publicDir: false,
 		server: {
@@ -2807,6 +2839,14 @@ ${EXPORT_KEYWORD} function appBrowser(...config: readonly never[]): UserConfig {
 			dir: resolveWorkspacePath('.'),
 			include: ['tests/app/browser/**/*.test.ts'],
 			setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+			deps: {
+				optimizer: {
+					client: {
+						enabled: true,
+						include: ['vue', ...BROWSER_TEST_DEPENDENCIES],
+					},
+				},
+			},
 			browser: {
 				enabled: true,
 				provider: playwright(),

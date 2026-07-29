@@ -77,7 +77,7 @@ import {
 	ORKESTREL_DEPS_PROMPT,
 	PRUNE_EMPTY,
 	PRUNE_SKIPPED,
-	REPAIR_COMPUTED_SCOPE,
+	REPAIR_GENERATED_SCOPE,
 	REPAIR_SCOPE,
 	SCAN_SKIPPED,
 	ENVIRONMENT_CHOICES,
@@ -100,7 +100,6 @@ import {
 	fleetRepoLine,
 	fleetTotals,
 	fullHelp,
-	generatedNote,
 	invalidName,
 	missingInput,
 	newApplySuccess,
@@ -116,6 +115,7 @@ import {
 	repairHandoff,
 	repairSuccess,
 	repairVerdict,
+	renderComputedNotes,
 	scopeNote,
 	shortUsage,
 	unresolvedVersion,
@@ -337,9 +337,9 @@ export class CLI implements CLIInterface {
 	}
 
 	/**
-	 * `repair`'s own scope is host-only, but the caller compiles the FULL plan anyway — diff it too
-	 * (cheap, local, no network) so a clean host verdict can point at drift OUTSIDE repair's reach.
-	 * The count feeds the shared `scopeNote` renderer.
+	 * `repair` scopes to host-owned artifacts by default and optionally generated canon, but the
+	 * caller compiles the full plan anyway. Diff it too so a clean scoped verdict can point at drift
+	 * outside the selected boundary. The count feeds the shared `scopeNote` renderer.
 	 */
 	#outside(compiled: Plan, target: string): number {
 		const full = diffPlan(
@@ -806,7 +806,6 @@ export class CLI implements CLIInterface {
 		if (!audit.clean) {
 			const split = partitionFindings(audit.findings, plan)
 			const ownedCount = split.owned.drifted + split.owned.missing
-			const computedCount = split.generated.drifted + split.generated.missing
 			const pruneRequested = values.prune === true
 
 			// Audit never writes via flags: the handoff is an INTERACTIVE
@@ -842,16 +841,16 @@ export class CLI implements CLIInterface {
 				// When the handoff cannot help foreign files (no `--prune`, or no
 				// handoff offered at all), point at the one command that can.
 				if (audit.foreign > 0 && !pruneRequested) this.#reporter.line(FOREIGN_HINT)
-				// Computed-origin drift is regenerated, never hand-edited;
-				// `generatedNote` names the explicit repair opt-in.
-				if (computedCount > 0) this.#reporter.line(generatedNote(computedCount))
+				for (const note of renderComputedNotes(audit.findings, plan)) {
+					this.#reporter.line(note)
+				}
 			}
 		}
 
 		process.exitCode = drifted ? 1 : 0
 	}
 
-	/** `scaffold repair` — restore the shared host-owned set for one target. */
+	/** `scaffold repair` — restore host-owned files and optionally generated canon for one target. */
 	async #repair(values: CLIValues, json: boolean): Promise<void> {
 		const target = this.#contain(values.target ?? '.', json)
 
@@ -864,17 +863,17 @@ export class CLI implements CLIInterface {
 
 		const [compiled] = this.#compile(spec, json)
 
-		// Repair defaults to the host-restoration boundary. `--computed` adds
+		// Repair defaults to the host-restoration boundary. `--generated` adds
 		// generated canon while preserving the birth-only template boundary and
 		// package.json's independent publication protection.
-		const computed = values.computed === true
+		const generated = values.generated === true
 		const scoped: Plan = {
 			...compiled,
 			blueprint: { ...compiled.blueprint, overrides: [] },
 			artifacts: compiled.artifacts.filter(
 				(artifact) =>
 					artifact.origin === 'host' ||
-					(computed && artifact.origin === 'computed' && artifact.path !== 'package.json'),
+					(generated && artifact.origin === 'computed' && artifact.path !== 'package.json'),
 			),
 		}
 
@@ -901,7 +900,7 @@ export class CLI implements CLIInterface {
 		}
 
 		if (!json) {
-			this.#reporter.line(computed ? REPAIR_COMPUTED_SCOPE : REPAIR_SCOPE)
+			this.#reporter.line(generated ? REPAIR_GENERATED_SCOPE : REPAIR_SCOPE)
 			this.#reporter.section('Audit')
 			this.#reporter.table(auditTable(audit, plan))
 		}
@@ -921,15 +920,15 @@ export class CLI implements CLIInterface {
 			if (json) {
 				this.#write(audit)
 			} else {
-				this.#reporter.line(repairVerdict(audit))
-				const note = scopeNote(this.#outside(compiled, target))
+				this.#reporter.line(repairVerdict(audit, generated))
+				const note = scopeNote(this.#outside(compiled, target), generated)
 				if (note !== undefined) this.#reporter.line(note)
 			}
 			process.exitCode = 0
 			return
 		}
 
-		if (!json) this.#reporter.line(repairVerdict(audit))
+		if (!json) this.#reporter.line(repairVerdict(audit, generated))
 
 		const terminal = createTerminal()
 		let proceed = true
@@ -975,6 +974,7 @@ export class CLI implements CLIInterface {
 	/** `scaffold fleet` — audit/repair every `@orkestrel` package beneath the current directory's immediate children. */
 	async #fleet(values: CLIValues, json: boolean): Promise<void> {
 		const root = this.#contain('.', json)
+		const generated = values.generated === true
 
 		const packages = discoverPackages(root)
 		if (packages.length === 0) {
@@ -1005,7 +1005,11 @@ export class CLI implements CLIInterface {
 					scoped = {
 						...scaffolding.plan,
 						blueprint: { ...scaffolding.plan.blueprint, overrides: [] },
-						artifacts: scaffolding.plan.artifacts.filter((artifact) => artifact.origin === 'host'),
+						artifacts: scaffolding.plan.artifacts.filter(
+							(artifact) =>
+								artifact.origin === 'host' ||
+								(generated && artifact.origin === 'computed' && artifact.path !== 'package.json'),
+						),
 					}
 					questions = scaffolding.questions
 				} finally {

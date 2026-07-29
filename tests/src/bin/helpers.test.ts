@@ -63,6 +63,7 @@ import {
 	repairHandoff,
 	repairSuccess,
 	repairVerdict,
+	renderComputedNotes,
 	scopeNote,
 	shortUsage,
 	unknownOrkestrelToken,
@@ -77,7 +78,7 @@ import {
 	partitionFindings,
 	summaryToNewResult,
 } from '../../../src/bin/shapers.js'
-import type { CatalogEntry, SyncReport } from '../../../src/core/index.js'
+import type { CatalogEntry, Plan, SyncReport } from '../../../src/core/index.js'
 import {
 	AUDIT_FINDINGS,
 	AUDIT_PLAN,
@@ -380,13 +381,23 @@ describe('render: bucketText / verdicts', () => {
 	})
 
 	it('renders repair verdicts for clean and drifted audits', () => {
-		expect(repairVerdict(buildAudit([]))).toContain('aligned — nothing to write')
-		expect(repairVerdict(buildAudit(AUDIT_FINDINGS))).toContain('pass --apply to write')
+		expect(repairVerdict(buildAudit([]), false)).toBe(
+			'repair: 0 host-owned artifacts aligned — nothing to write',
+		)
+		expect(repairVerdict(buildAudit([]), true)).toBe(
+			'repair: 0 host-owned and generated artifacts aligned — nothing to write',
+		)
+		expect(repairVerdict(buildAudit(AUDIT_FINDINGS), false)).toContain('repair: host-owned:')
+		expect(repairVerdict(buildAudit(AUDIT_FINDINGS), true)).toContain(
+			'repair: host-owned and generated:',
+		)
 	})
 
 	it('renders the repair scope note only when there is out-of-scope drift', () => {
-		expect(scopeNote(0)).toBeUndefined()
-		expect(scopeNote(3)).toContain("outside repair's scope")
+		expect(scopeNote(0, false)).toBeUndefined()
+		expect(scopeNote(3, false)).toContain('outside host-owned repair scope')
+		expect(scopeNote(3, false)).not.toContain('--generated')
+		expect(scopeNote(3, true)).toContain('starter files and package.json remain protected')
 	})
 
 	it('partitions findings by repair ownership', () => {
@@ -706,6 +717,15 @@ describe('render: VERB_FLAGS corrections', () => {
 		expect(VERB_FLAGS.catalog).not.toContain('--live')
 	})
 
+	it('advertises --generated only where repair scope can inherit or widen', () => {
+		expect(VERB_FLAGS.audit).toContain('--generated')
+		expect(VERB_FLAGS.repair).toContain('--generated')
+		expect(VERB_FLAGS.fleet).toContain('--generated')
+		expect(VERB_FLAGS.new).not.toContain('--generated')
+		expect(VERB_FLAGS.pull).not.toContain('--generated')
+		expect(VERB_FLAGS.catalog).not.toContain('--generated')
+	})
+
 	it('catalog advertises --from instead of --root', () => {
 		expect(VERB_FLAGS.catalog).toContain('--from <path>')
 	})
@@ -756,7 +776,38 @@ describe('render: new prune/missing/generated/audit-live/comparison/ci/catalog e
 		const line = generatedNote(3)
 		expect(line).toContain('3 findings')
 		expect(line.toLowerCase()).toContain('generated')
-		expect(line).toContain('repair --computed')
+		expect(line).toContain('repair --generated')
+	})
+
+	it('separates repairable generated drift from protected package.json guidance', () => {
+		const plan: Plan = {
+			...AUDIT_PLAN,
+			artifacts: [
+				...AUDIT_PLAN.artifacts,
+				{
+					path: 'package.json',
+					group: 'manifest',
+					origin: 'computed',
+					content: '{}\n',
+				},
+			],
+		}
+		const generated = renderComputedNotes(
+			[{ path: 'src/core/computed.ts', group: 'source', drift: 'stale' }],
+			plan,
+		)
+		const manifest = renderComputedNotes(
+			[{ path: 'package.json', group: 'manifest', drift: 'stale' }],
+			plan,
+		)
+
+		expect(generated).toEqual([
+			"1 finding in generated files — these are regenerated, not hand-edited; run 'scaffold repair --generated' to restore them",
+		])
+		expect(manifest).toEqual([
+			'1 finding in package.json — repair does not rewrite protected publication metadata; review and edit it directly',
+		])
+		expect(manifest[0]).not.toContain('repair --generated')
 	})
 
 	it('auditLiveNote reports current/behind/failed counts', () => {
