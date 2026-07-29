@@ -21,7 +21,6 @@ import {
 	FUNCTION_KEYWORD,
 	GROUPS,
 	HOST_PATHS,
-	JSON_PRINT_WIDTH,
 	ENVIRONMENTS,
 	SERVICE_SCRIPT_PATH,
 	SOURCE_BROWSER_DEV_DEPENDENCIES,
@@ -32,8 +31,8 @@ import {
 import {
 	alignTable,
 	blueprintToMembers,
-	computeColumnWidth,
 	escapeHtmlText,
+	fitsPrintWidth,
 	formatJson,
 	pascalCase,
 	pinPlan,
@@ -674,10 +673,9 @@ export function renderViteTest(
 ): string {
 	const projects = registrations.map((registration) => registration.project)
 	const inlineProjects = `		projects: [${projects.join(', ')}],`
-	const renderedProjects =
-		computeColumnWidth(inlineProjects) <= JSON_PRINT_WIDTH
-			? inlineProjects
-			: `		projects: [
+	const renderedProjects = fitsPrintWidth(inlineProjects)
+		? inlineProjects
+		: `		projects: [
 ${projects.map((project) => `			${project},`).join('\n')}
 		],`
 	if (!browser) {
@@ -690,10 +688,14 @@ ${renderedProjects}
 			? `{ project: ${registration.project} }`
 			: `{ project: ${registration.project}, browser: ${serializeTypeScriptString(registration.browser)} }`,
 	)
-	return `	test: gateBrowserProjects(
-		[
+	const inlineRegistrations = `		[${renderedRegistrations.join(', ')}],`
+	const renderedRegistrationArray = fitsPrintWidth(inlineRegistrations)
+		? inlineRegistrations
+		: `		[
 ${renderedRegistrations.map((registration) => `			${registration},`).join('\n')}
-		],
+		],`
+	return `	test: gateBrowserProjects(
+${renderedRegistrationArray}
 		hasChromium,
 		process.argv,
 	),`
@@ -3460,19 +3462,17 @@ export function configArtifacts(spec: Blueprint): readonly Artifact[] {
  */
 export function sourceArtifacts(spec: Blueprint, pascal: string): readonly Artifact[] {
 	const inlineTypeImport = `import type { ${pascal}Interface, ${pascal}Options } from './types.js'`
-	const typeImport =
-		computeColumnWidth(inlineTypeImport) <= JSON_PRINT_WIDTH
-			? inlineTypeImport
-			: `import type {
+	const typeImport = fitsPrintWidth(inlineTypeImport)
+		? inlineTypeImport
+		: `import type {
 	${pascal}Interface,
 	${pascal}Options,
 } from './types.js'`
 	const entityImport = `import { ${pascal} } from './${pascal}.js'`
 	const inlineSignature = `function create${pascal}(options: ${pascal}Options): ${pascal}Interface`
-	const signature =
-		computeColumnWidth(`${EXPORT_KEYWORD} ${inlineSignature} {`) <= JSON_PRINT_WIDTH
-			? inlineSignature
-			: `function create${pascal}(
+	const signature = fitsPrintWidth(`${EXPORT_KEYWORD} ${inlineSignature} {`)
+		? inlineSignature
+		: `function create${pascal}(
 	options: ${pascal}Options,
 ): ${pascal}Interface`
 	const values = { pascal, signature, typeImport, entityImport }
@@ -3636,11 +3636,9 @@ export function paritySpecifiers(spec: Blueprint): string {
 	for (const environment of spec.app) modules[`@app/${environment}`] = `app/${environment}`
 	const specifierItems = selfSpecifiers.map((specifier) => `'${specifier}'`)
 	const inlineSpecifierList = `[${specifierItems.join(', ')}]`
-	const specifierList =
-		computeColumnWidth(`${CONST_KEYWORD} SELF_SPECIFIERS = ${inlineSpecifierList}`) <=
-		JSON_PRINT_WIDTH
-			? inlineSpecifierList
-			: `[
+	const specifierList = fitsPrintWidth(`${CONST_KEYWORD} SELF_SPECIFIERS = ${inlineSpecifierList}`)
+		? inlineSpecifierList
+		: `[
 ${specifierItems.map((specifier) => `\t${specifier},`).join('\n')}
 ]`
 	const moduleLines = Object.entries(modules)
@@ -3766,43 +3764,37 @@ export function testArtifacts(spec: Blueprint, pascal: string): readonly Artifac
 	const multilineExplicitInstance = `instance: ${pascal}Interface = new ${pascal}({
 			id: 'example',
 		})`
-	const explicitInstance =
-		computeColumnWidth(`\t\t${CONST_KEYWORD} ${inlineExplicitInstance}`) <= JSON_PRINT_WIDTH
-			? inlineExplicitInstance
-			: computeColumnWidth(`\t\t${CONST_KEYWORD} instance: ${pascal}Interface = new ${pascal}({`) <=
-				  JSON_PRINT_WIDTH
-				? multilineExplicitInstance
-				: `instance: ${pascal}Interface =
+	const explicitInstance = fitsPrintWidth(`\t\t${CONST_KEYWORD} ${inlineExplicitInstance}`)
+		? inlineExplicitInstance
+		: fitsPrintWidth(`\t\t${CONST_KEYWORD} instance: ${pascal}Interface = new ${pascal}({`)
+			? multilineExplicitInstance
+			: `instance: ${pascal}Interface =
 			new ${pascal}({
 				id: 'example',
 			})`
 	const inlineValueImport = `import { create${pascal}, ${pascal} } from '@src/core'`
-	const valueImport =
-		computeColumnWidth(inlineValueImport) <= JSON_PRINT_WIDTH
-			? inlineValueImport
-			: `import {
+	const valueImport = fitsPrintWidth(inlineValueImport)
+		? inlineValueImport
+		: `import {
 	create${pascal},
 	${pascal},
 } from '@src/core'`
 	const inlineTestTypeImport = `import type { ${pascal}Interface } from '@src/core'`
-	const testTypeImport =
-		computeColumnWidth(inlineTestTypeImport) <= JSON_PRINT_WIDTH
-			? inlineTestTypeImport
-			: `import type {
+	const testTypeImport = fitsPrintWidth(inlineTestTypeImport)
+		? inlineTestTypeImport
+		: `import type {
 	${pascal}Interface,
 } from '@src/core'`
 	const inlineFactoryInstance = `instance = create${pascal}({ id: 'example' })`
-	const factoryInstance =
-		computeColumnWidth(`\t\t${CONST_KEYWORD} ${inlineFactoryInstance}`) <= JSON_PRINT_WIDTH
-			? inlineFactoryInstance
-			: `instance = create${pascal}({
+	const factoryInstance = fitsPrintWidth(`\t\t${CONST_KEYWORD} ${inlineFactoryInstance}`)
+		? inlineFactoryInstance
+		: `instance = create${pascal}({
 			id: 'example',
 		})`
 	const inlineTypeExpectation = `expectTypeOf(create${pascal}({ id: 'example' })).toEqualTypeOf<${pascal}Interface>()`
-	const typeExpectation =
-		computeColumnWidth(`\t\t${inlineTypeExpectation}`) <= JSON_PRINT_WIDTH
-			? inlineTypeExpectation
-			: `expectTypeOf(
+	const typeExpectation = fitsPrintWidth(`\t\t${inlineTypeExpectation}`)
+		? inlineTypeExpectation
+		: `expectTypeOf(
 			create${pascal}({ id: 'example' }),
 		).toEqualTypeOf<${pascal}Interface>()`
 	for (const environment of spec.src) {

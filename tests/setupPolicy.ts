@@ -1,4 +1,5 @@
 import { globSync, readFileSync } from 'node:fs'
+import { isBuiltin } from 'node:module'
 import { basename, join } from 'node:path'
 import * as ts from 'typescript'
 
@@ -197,6 +198,58 @@ export function hasAllowedTripleSlashReference(path: string, source: ts.SourceFi
 		source.typeReferenceDirectives.length === 1 &&
 		source.typeReferenceDirectives[0]?.fileName === 'vite/client'
 	)
+}
+
+/**
+ * Whether a source has no runtime module dependency outside Node builtins.
+ *
+ * @param source - The parsed source file to inspect.
+ * @returns `true` when every value import names a real `node:` builtin; type-only imports are erased.
+ *
+ * @example
+ * ```ts
+ * const source = ts.createSourceFile(
+ * 	'serve.ts',
+ * 	"import { parentPort } from 'node:worker_threads'",
+ * 	ts.ScriptTarget.Latest,
+ * 	true,
+ * )
+ * isSelfContainedRuntimeEntrypoint(source) // true
+ * ```
+ */
+export function isSelfContainedRuntimeEntrypoint(source: ts.SourceFile): boolean {
+	for (const statement of source.statements) {
+		if (ts.isImportDeclaration(statement)) {
+			const clause = statement.importClause
+			const named = clause?.namedBindings
+			const erased =
+				clause?.isTypeOnly === true ||
+				(clause !== undefined &&
+					clause.name === undefined &&
+					named !== undefined &&
+					ts.isNamedImports(named) &&
+					named.elements.length > 0 &&
+					named.elements.every((element) => element.isTypeOnly))
+			if (erased) continue
+			if (!ts.isStringLiteral(statement.moduleSpecifier)) return false
+			const specifier = statement.moduleSpecifier.text
+			if (!specifier.startsWith('node:') || !isBuiltin(specifier)) return false
+		}
+		if (ts.isImportEqualsDeclaration(statement)) {
+			if (statement.isTypeOnly) continue
+			const reference = statement.moduleReference
+			if (
+				!ts.isExternalModuleReference(reference) ||
+				reference.expression === undefined ||
+				!ts.isStringLiteral(reference.expression)
+			) {
+				return false
+			}
+			const specifier = reference.expression.text
+			if (!specifier.startsWith('node:') || !isBuiltin(specifier)) return false
+		}
+	}
+	return true
 }
 
 /**
@@ -425,6 +478,7 @@ export function inspectCodingLaw(path: string, content: string): readonly string
 	if (source === undefined) throw new Error(`Policy source was not bound at ${path}`)
 	const checker = program.getTypeChecker()
 	const file = basename(path)
+	const placementExempt = isSelfContainedRuntimeEntrypoint(source)
 
 	if (/\.[cm]?jsx?$/u.test(path)) {
 		violations.push(`${path} production modules use TypeScript source extensions`)
@@ -462,6 +516,7 @@ export function inspectCodingLaw(path: string, content: string): readonly string
 			violations.push(`${path} centralizes interfaces and type aliases in types.ts`)
 		}
 		if (
+			!placementExempt &&
 			CENTRAL_SOURCE_FILES.includes(file) &&
 			(ts.isClassDeclaration(statement) ||
 				ts.isFunctionDeclaration(statement) ||
@@ -472,10 +527,18 @@ export function inspectCodingLaw(path: string, content: string): readonly string
 		) {
 			violations.push(`${path} exports every centralized declaration`)
 		}
-		if (ts.isFunctionDeclaration(statement) && !FUNCTION_SOURCE_FILES.includes(file)) {
+		if (
+			!placementExempt &&
+			ts.isFunctionDeclaration(statement) &&
+			!FUNCTION_SOURCE_FILES.includes(file)
+		) {
 			violations.push(`${path} places module functions in their centralized kind file`)
 		}
-		if (ts.isVariableStatement(statement) && !DATA_SOURCE_FILES.includes(file)) {
+		if (
+			!placementExempt &&
+			ts.isVariableStatement(statement) &&
+			!DATA_SOURCE_FILES.includes(file)
+		) {
 			violations.push(`${path} places module data in its centralized kind file`)
 		}
 		if (

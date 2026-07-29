@@ -1691,6 +1691,23 @@ export function computeColumnWidth(text: string): number {
 }
 
 /**
+ * Test whether a complete rendered line fits the fleet formatter's print width.
+ *
+ * @param text - The complete rendered line, including indentation and trailing punctuation.
+ * @returns Whether the line fits within `JSON_PRINT_WIDTH`.
+ *
+ * @example
+ * ```ts
+ * import { fitsPrintWidth } from '@orkestrel/scaffold'
+ *
+ * fitsPrintWidth('\t["ESNext"],') // true
+ * ```
+ */
+export function fitsPrintWidth(text: string): boolean {
+	return computeColumnWidth(text) <= JSON_PRINT_WIDTH
+}
+
+/**
  * Render a JSON array through `formatJson`'s inline-or-broken rule — inline
  * when the rendered width (via `computeColumnWidth`) fits `JSON_PRINT_WIDTH`, one
  * item per line otherwise.
@@ -1717,7 +1734,7 @@ export function renderArray(
 	if (entries.length === 0) return '[]'
 	const items = entries.map((entry) => renderValue(entry, indent, '', ''))
 	const inline = `[${items.join(', ')}]`
-	if (computeColumnWidth(`${prefix}${inline}${suffix}`) <= JSON_PRINT_WIDTH) return inline
+	if (fitsPrintWidth(`${prefix}${inline}${suffix}`)) return inline
 	const childIndent = `${indent}\t`
 	const body = items.map((item) => `${childIndent}${item}`).join(',\n')
 	return `[\n${body}\n${indent}]`

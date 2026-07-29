@@ -1,16 +1,18 @@
-import { globSync, readFileSync } from 'node:fs'
+import { globSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseJSON } from '@orkestrel/contract'
+import ts from 'typescript'
 import { describe, expect, it } from 'vitest'
 import { isBrowserVuePath, readRecord } from '../../setup.js'
 import {
 	inspectCodingLaw,
 	inspectCodingWorkspace,
 	inspectVueCodingLaw,
+	isSelfContainedRuntimeEntrypoint,
 	normalizePolicyPath,
 	WORKER_SCOPE_VALUE_GLOBALS,
 } from '../../setupPolicy.js'
-import { WORKSPACE_ROOT } from '../../setupServer.js'
+import { buildTempDirectory, WORKSPACE_ROOT } from '../../setupServer.js'
 
 describe('repository coding law', () => {
 	it('normalizes platform and duplicate glob separators in diagnostics', () => {
@@ -31,6 +33,48 @@ describe('repository coding law', () => {
 
 	it('mechanically enforces source placement, exports, readonly contracts, and syntax law', () => {
 		expect(inspectCodingWorkspace(WORKSPACE_ROOT)).toEqual([])
+	})
+
+	it('exempts only runtime entrypoints whose value imports are Node builtins', async () => {
+		const directory = await buildTempDirectory()
+		const sourceRoot = join(directory.path, 'src', 'server')
+		const entry = join(sourceRoot, 'serve.ts')
+		const worker = [
+			"import type { WorkerOptions } from './types.js'",
+			"import { parentPort } from 'node:worker_threads'",
+			'function receive(options: WorkerOptions) { return options }',
+			'const port = parentPort',
+		].join('\n')
+		try {
+			mkdirSync(sourceRoot, { recursive: true })
+			writeFileSync(entry, `${worker}\n`, 'utf8')
+
+			expect(inspectCodingWorkspace(directory.path)).toEqual([])
+			expect(
+				isSelfContainedRuntimeEntrypoint(
+					ts.createSourceFile('serve.ts', worker, ts.ScriptTarget.Latest, true),
+				),
+			).toBe(true)
+
+			const sibling = worker.replace(
+				"import { parentPort } from 'node:worker_threads'",
+				"import { parentPort } from './worker.js'",
+			)
+			writeFileSync(entry, `${sibling}\n`, 'utf8')
+			expect(inspectCodingWorkspace(directory.path)).toEqual([
+				'src/server/serve.ts places module functions in their centralized kind file',
+				'src/server/serve.ts places module data in its centralized kind file',
+			])
+
+			writeFileSync(
+				entry,
+				'function receive(value: string) { return value }\nconst result = receive("ready")\n',
+				'utf8',
+			)
+			expect(inspectCodingWorkspace(directory.path)).toEqual([])
+		} finally {
+			await directory.cleanup()
+		}
 	})
 
 	it('permits web interop in core while fencing worker-only value globals', () => {
@@ -112,10 +156,13 @@ describe('repository coding law', () => {
 	it('rejects assertions, placement, barrels, mutability, privacy, hidden functions, and computed imports', () => {
 		const cases = [
 			['src/core/hostile.ts', 'interface Hidden { value: string }\nconst value = {} as object\n'],
-			['src/core/random.ts', 'export const BAD = 1\n'],
-			['app/browser/main.ts', 'export function hidden() { return 1 }\n'],
-			['src/core/constants.ts', 'export function misplaced() { return 1 }\n'],
-			['src/core/helpers.ts', 'export const MISPLACED = 1\n'],
+			['src/core/random.ts', "import './sibling.js'\nexport const BAD = 1\n"],
+			['app/browser/main.ts', "import './sibling.js'\nexport function hidden() { return 1 }\n"],
+			[
+				'src/core/constants.ts',
+				"import './sibling.js'\nexport function misplaced() { return 1 }\n",
+			],
+			['src/core/helpers.ts', "import './sibling.js'\nexport const MISPLACED = 1\n"],
 			['src/core/random.ts', 'export class Bad {}\n'],
 			['src/core/random.ts', 'export enum Bad { value }\n'],
 			['src/core/index.ts', "export { value } from './helpers.js'\n"],

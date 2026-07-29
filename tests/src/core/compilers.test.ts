@@ -821,24 +821,53 @@ describe('viteMachinery / viteHeader', () => {
 })
 
 describe('renderViteTest', () => {
-	it('renders plain projects or browser registrations from the supplied ownership data', () => {
-		const registrations = [{ project: 'srcBrowser', browser: 'src:browser' }, { project: 'policy' }]
+	it('renders plain projects or short browser registrations in formatter-fixed-point form', () => {
+		const registrations = [
+			{ project: 'srcBrowser', browser: 'src:browser' },
+			{ project: 'policy' },
+			{ project: 'guides' },
+		]
 
 		expect(renderViteTest(registrations, false)).toBe(
-			'\ttest: {\n\t\tprojects: [srcBrowser, policy],\n\t},',
+			'\ttest: {\n\t\tprojects: [srcBrowser, policy, guides],\n\t},',
 		)
 		expect(renderViteTest(registrations, true)).toBe(
 			[
 				'\ttest: gateBrowserProjects(',
-				'\t\t[',
-				"\t\t\t{ project: srcBrowser, browser: 'src:browser' },",
-				'\t\t\t{ project: policy },',
-				'\t\t],',
+				"\t\t[{ project: srcBrowser, browser: 'src:browser' }, { project: policy }, { project: guides }],",
 				'\t\thasChromium,',
 				'\t\tprocess.argv,',
 				'\t),',
 			].join('\n'),
 		)
+	})
+
+	it('expands browser registrations when their complete emitted line exceeds the print width', () => {
+		const registrations = viteProjectRegistrations(
+			['core', 'browser', 'server'],
+			['core', 'browser', 'server'],
+			{ bin: true, integration: true, service: true },
+		)
+		const content = renderViteTest(registrations, true)
+
+		expect(content).toContain(
+			[
+				'\t\t[',
+				'\t\t\t{ project: srcCore },',
+				"\t\t\t{ project: srcBrowser, browser: 'src:browser' },",
+				'\t\t\t{ project: srcServer },',
+				'\t\t\t{ project: appCore },',
+				"\t\t\t{ project: appBrowser, browser: 'app:browser' },",
+				'\t\t\t{ project: appServer },',
+				'\t\t\t{ project: policy },',
+				'\t\t\t{ project: guides },',
+				'\t\t\t{ project: srcBin },',
+				'\t\t\t{ project: integration },',
+				'\t\t\t{ project: service },',
+				'\t\t],',
+			].join('\n'),
+		)
+		expect(content).not.toContain('\t\t[{ project: srcCore }')
 	})
 })
 
@@ -1629,11 +1658,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		expect(content).toContain(
 			[
 				'\ttest: gateBrowserProjects(',
-				'\t\t[',
-				"\t\t\t{ project: srcBrowser, browser: 'src:browser' },",
-				'\t\t\t{ project: policy },',
-				'\t\t\t{ project: guides },',
-				'\t\t],',
+				"\t\t[{ project: srcBrowser, browser: 'src:browser' }, { project: policy }, { project: guides }],",
 			].join('\n'),
 		)
 		expect(content).toContain("name: { label: registration.browser, color: 'yellow' }")

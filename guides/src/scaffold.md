@@ -789,6 +789,7 @@ From [`helpers.ts`](../../src/core/helpers.ts).
 | `stableStringify`           | function |
 | `planPayload`               | function |
 | `computeColumnWidth`        | function |
+| `fitsPrintWidth`            | function |
 | `renderArray`               | function |
 | `renderObject`              | function |
 | `renderValue`               | function |
@@ -853,7 +854,7 @@ marks an empty axis). `PlanManager` compares the canonical payload whenever an
 id is already registered: an identical plan is idempotent, while a distinct payload with the same
 32-bit digest fails closed with `ScaffoldError('INVALID', 'Plan hash collision')`.
 `formatJson` and its leaves — `renderValue`,
-`renderArray`, `renderObject`, and `computeColumnWidth` — emit JSON that matches the fleet
+`renderArray`, `renderObject`, `computeColumnWidth`, and `fitsPrintWidth` — emit JSON that matches the fleet
 formatter byte for byte, collapsing a short array onto one line and breaking a long one, so
 computed configuration JSON is format-stable by construction.
 
@@ -1095,7 +1096,9 @@ without output containment — and it still carries every boundary guarantee abo
 
 `renderViteTest` is the single root-project renderer. It consumes ordered `ViteProjectRegistration`
 data and emits either the plain project list or the browser gate, keeping source and application
-root configurations byte-consistent without reconstructing browser ownership.
+root configurations byte-consistent without reconstructing browser ownership. Both forms use the
+formatter's 100-column fixed point: a complete registration-array line, including indentation and
+its trailing comma, stays collapsed when it fits and expands one entry per line otherwise.
 `viteProjectRegistrations` is the one registration derivation every root shape consumes: it derives
 the selected source and application projects from the canonical environment order, then appends
 `policy`, `guides`, and the optional `srcBin`, `integration`, and `service` projects.
@@ -1666,7 +1669,10 @@ readonly, that privacy is a runtime `#` field rather than a TypeScript modifier,
 re-exports only through `export *`, that a core source never names a worker-only global the
 `WebWorker` declarations expose, and that a computed dynamic import cannot smuggle a
 cross-environment dependency past the declared import rules. Vue components are inspected for the
-same evasions. It is a complement to lint and typecheck, never a second type system, and it is not a
+same evasions. A self-contained runtime entrypoint is exempt only from module-scope placement and
+export checks: every value import must name a real `node:` builtin, while erased type-only imports
+may reference sibling contracts; an importless entrypoint also qualifies. Every other policy law
+still applies. It is a complement to lint and typecheck, never a second type system, and it is not a
 general-purpose source analyzer. Generated workspaces receive the same exported policy module as a
 host-origin file and run it as a dedicated Node-only `policy` test project over
 `tests/policy.test.ts`.
@@ -1981,6 +1987,7 @@ import {
 	compareCodeUnit,
 	computeColumnWidth,
 	escapeHtmlText,
+	fitsPrintWidth,
 	formatJson,
 	renderArray,
 	renderObject,
@@ -1993,6 +2000,7 @@ renderValue('ESNext', '', '', '') // '"ESNext"'
 renderArray(['ESNext', 'DOM'], '', '', '') // '["ESNext", "DOM"]'
 renderObject({ lib: ['ESNext'] }, '') // '{\n\t"lib": ["ESNext"]\n}'
 computeColumnWidth('\t"a"') // 3
+fitsPrintWidth('\t["ESNext"],') // true
 
 escapeHtmlText('<app & "team">') // '&lt;app &amp; &quot;team&quot;&gt;'
 serializeTypeScriptString("app's") // "'app\\'s'"

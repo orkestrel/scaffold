@@ -17,6 +17,7 @@ import {
 	dependency,
 	diffPlan,
 	findFileConflict,
+	fitsPrintWidth,
 	formatJson,
 	findPathConflict,
 	HOST_PATHS,
@@ -1525,12 +1526,12 @@ describe('pinPlan', () => {
 		}
 		expect(actual).toMatchInlineSnapshot(`
 			{
-			  "browser-only": "2b119b8a",
-			  "core+browser": "61683681",
-			  "core+browser+server": "3c72b0a8",
-			  "core+server": "2584f1de",
-			  "core-only": "bc51baa4",
-			  "server-only": "bdbed66c",
+			  "browser-only": "313a5641",
+			  "core+browser": "bb14f716",
+			  "core+browser+server": "39645ce7",
+			  "core+server": "51a17fe3",
+			  "core-only": "07480b77",
+			  "server-only": "d2dac6a7",
 			}
 		`)
 	})
@@ -1558,11 +1559,11 @@ describe('pinPlan', () => {
 		}
 		expect(actual).toMatchInlineSnapshot(`
 			{
-			  "app-browser": "9a0bab80",
-			  "app-core": "3adc2b9a",
-			  "app-full": "6816d1c4",
-			  "app-server": "bd16f17c",
-			  "mixed-full": "57f1cfaa",
+			  "app-browser": "e6337aed",
+			  "app-core": "207db809",
+			  "app-full": "67e285bb",
+			  "app-server": "5934c18b",
+			  "mixed-full": "2a9ad797",
 			}
 		`)
 	})
@@ -2089,6 +2090,11 @@ describe("renderValue / renderArray / renderObject — formatJson's mutually-rec
 
 	it('renderArray inlines a short array within JSON_PRINT_WIDTH', () => {
 		expect(renderArray(['ESNext', 'DOM'], '', '', '')).toBe('["ESNext", "DOM"]')
+	})
+
+	it('fitsPrintWidth counts complete rendered lines against JSON_PRINT_WIDTH', () => {
+		expect(fitsPrintWidth(`\t${'x'.repeat(JSON_PRINT_WIDTH - JSON_TAB_WIDTH)}`)).toBe(true)
+		expect(fitsPrintWidth(`\t${'x'.repeat(JSON_PRINT_WIDTH - JSON_TAB_WIDTH + 1)}`)).toBe(false)
 	})
 
 	it('renderArray breaks one item per line when the inline form exceeds JSON_PRINT_WIDTH', () => {
