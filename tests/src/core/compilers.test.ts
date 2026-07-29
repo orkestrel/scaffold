@@ -203,6 +203,19 @@ describe('application layer compilation', () => {
 		)
 	})
 
+	it('pins the emitted scaffold devDependency to this package version', () => {
+		// A hand-bumped SCAFFOLD_RANGE went stale across a release once; the emitted
+		// line must always track the version this canon ships as.
+		const own = readManifest(readFileSync(join(WORKSPACE_ROOT, 'package.json'), 'utf8'))
+		const manifest = readManifest(
+			packageManifest(blueprint('range-guard', { src: ['core'], app: [] })),
+		)
+
+		expect(readRecord(manifest.devDependencies)['@orkestrel/scaffold']).toBe(
+			`^${String(own.version)}`,
+		)
+	})
+
 	it('emits a private app-only manifest without package entry points', () => {
 		const spec = blueprint('console-app', {
 			src: [],
