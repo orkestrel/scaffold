@@ -156,11 +156,11 @@ export interface Blueprint {
 	readonly version: string
 	readonly engines: string
 	readonly overrides: readonly Override[]
-	/** Structural: `true` only for a repo that ships its own `src/bin` — the self-hosting tax (a `bin` field, the `scaffold` script invoking `dist/bin/scaffold.js` directly, the `check/test/build:src:bin` scripts, `build:host`, the `srcBin` vite project) applies ONLY when `true`, never by name. */
+	/** Structural: `true` only for a repo that ships its own `src/bin` — the self-hosting tax (the manifest's `bin` entry, the `scaffold` script invoking `dist/bin/scaffold.js` directly, the `check/test/build:src:bin` scripts, `build:host`, the `srcBin` vite project) applies ONLY when `true`, never by name. */
 	readonly bin: boolean
-	/** Structural: `true` only for a repo that ships `tests/integration` — a slow, opt-in proof project over the repo's own built output, outside the default run. */
+	/** Structural: `true` only for a repo that ships `tests/integration` — a slow, opt-in proof project over the repo's own built output, outside the default run, never by name. */
 	readonly integration: boolean
-	/** Structural: `true` only for a repo that ships `tests/service` — a slow, opt-in proof project against a foreign running process, outside the default run. */
+	/** Structural: `true` only for a repo that ships `tests/service` — a slow, opt-in proof project against a foreign running process, outside the default run, never by name. Derivation requires `tests/setupService.ts` and `scripts/service.sh` beside it and fails `TARGET` otherwise. */
 	readonly service: boolean
 }
 

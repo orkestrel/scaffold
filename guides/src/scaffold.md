@@ -222,12 +222,15 @@ all first class. `dependencies` and `peers` are runtime `@orkestrel/*` packages 
 `optional` also gets a `peerDependenciesMeta` entry. `extras` are package-specific development
 dependencies merged over the generated baseline, and may carry any valid npm package name. `bin`
 is structural, never inferred from a name: it is `true` only for a workspace that ships its own
-`src/bin`, and it alone turns on the self-hosting extras (a `bin` field, the `scaffold` script
+`src/bin`, and it alone turns on the self-hosting extras (the manifest's `bin` entry, the `scaffold` script
 pointed at the built executable, the bin check, test, and build scripts, `build:host`, and the
 `src:bin` test project). `integration` is structural and `true` only when `tests/integration/`
 exists: it records a slow, opt-in proof project over the repo's own built output, outside the
 default run. `service` is structural and `true` only when `tests/service/` exists: it records a
-slow, opt-in proof project against a foreign running process, outside the default run.
+slow, opt-in proof project against a foreign running process, outside the default run. Neither is
+inferred from the workspace name. Today `integration` and `service` are derived records only: the
+integration project and `test:integration` script still ride the `bin` axis until their emission
+units land.
 
 `Override` replaces a rendered artifact's content at a path, never partially merges it. `Member` is
 one declared public export of the scaffolded workspace, derived rather than authored.
@@ -836,6 +839,7 @@ From [`helpers.ts`](../../src/server/helpers.ts).
 | Name                       | Kind     |
 | -------------------------- | -------- |
 | `isRealDirectory`          | function |
+| `isRealFile`               | function |
 | `digestFile`               | function |
 | `digestHex`                | function |
 | `digestText`               | function |
@@ -898,7 +902,7 @@ so a file swapped mid-read is a failure rather than a silent wrong digest. `read
 strictly, rejecting invalid UTF-8. Manifest reads stop at `MAX_MANIFEST_BYTES`; catalog guide reads
 stop at `MAX_GUIDE_BYTES`. `listFiles` and `listDirectories` walk a real, unlinked root under the
 entry and depth bounds, returning sorted POSIX-relative paths and `[]` for an absent root.
-`isRealDirectory` is the physical-directory predicate they all lean on.
+`isRealDirectory` and `isRealFile` are the physical path predicates they all lean on.
 
 The write-transaction helpers are the fail-closed mutation path. `createWriteDirectory` establishes
 a directory one segment at a time behind captured identities; `validateWriteAnchor`,
@@ -922,7 +926,7 @@ omitting an absent path entirely. `readManifest` reads `package.json` text, and
 existing workspace so a mature package is diffed against its own would-be scaffold rather than a
 dependency-less stand-in. Environments come from `src/<environment>/` and `app/<environment>/`;
 `bin` is `true` only when `src/bin/` exists, `integration` only when `tests/integration/` exists,
-and `service` only when `tests/service/` exists. A service directory requires both
+and `service` only when `tests/service/` exists. A service directory requires both physical files
 `tests/setupService.ts` and `scripts/service.sh`; either missing companion is a coded `TARGET`
 failure that names the missing path rather than silently deriving `service: false`. Dependencies
 and peers come from the manifest's scoped entries, with an optional peer recovered from
@@ -2166,6 +2170,7 @@ import {
 	discoverPackages,
 	guideToDescription,
 	isRealDirectory,
+	isRealFile,
 	listDirectories,
 	listFiles,
 	pruneTargets,
@@ -2180,6 +2185,7 @@ deriveBlueprint('./packages/router') // the faithful inverse an audit diffs agai
 selectOrkestrelEntries({ '@orkestrel/contract': '^0.0.7', vite: '^8.1.5' })
 
 isRealDirectory('./packages/router')
+isRealFile('./packages/router/package.json')
 listFiles('./packages/router/.claude/agents')
 listDirectories('./packages/router/.claude')
 

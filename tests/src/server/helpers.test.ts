@@ -40,6 +40,7 @@ import {
 	hostRoot,
 	hydratePlan,
 	isRealDirectory,
+	isRealFile,
 	isTerminalText,
 	listDirectories,
 	listFiles,
@@ -89,6 +90,24 @@ describe('hostRoot', () => {
 		// The package root is TWO segments up from `.../dist/host` — assert it
 		// real-path-resolves to the actual repo root this test suite runs from.
 		expect(realpathSync(dirname(dirname(result)))).toBe(realpathSync(WORKSPACE_ROOT))
+	})
+})
+
+describe('physical path predicates', () => {
+	it('accepts a real file and rejects a directory-shaped or absent path', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			const file = join(directory.path, 'real.txt')
+			const folder = join(directory.path, 'folder')
+			writeFileSync(file, 'real', 'utf8')
+			mkdirSync(folder)
+
+			expect(isRealFile(file)).toBe(true)
+			expect(isRealFile(folder)).toBe(false)
+			expect(isRealFile(join(directory.path, 'missing.txt'))).toBe(false)
+		} finally {
+			await directory.cleanup()
+		}
 	})
 })
 
@@ -316,6 +335,26 @@ describe('deriveBlueprint', () => {
 		}
 	})
 
+	it('derives integration independently of the bin axis', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: '@orkestrel/integration-proof',
+				src: ['core'],
+				integration: true,
+			})
+
+			expect(deriveBlueprint(directory.path)).toEqual(
+				expect.objectContaining({
+					bin: false,
+					integration: true,
+				}),
+			)
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
 	it('derives service: true from its directory and both companion files', async () => {
 		const directory = await buildTempDirectory()
 		try {
@@ -330,6 +369,74 @@ describe('deriveBlueprint', () => {
 			await directory.cleanup()
 		}
 	})
+
+	it('rejects directory-shaped service companions as missing physical files', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: '@orkestrel/service-proof',
+				src: ['core'],
+				service: true,
+			})
+			const setup = join(directory.path, 'tests', 'setupService.ts')
+			const script = join(directory.path, 'scripts', 'service.sh')
+			rmSync(setup)
+			rmSync(script)
+			mkdirSync(setup)
+			mkdirSync(script)
+			let caught: unknown
+			try {
+				deriveBlueprint(directory.path)
+			} catch (error) {
+				caught = error
+			}
+			if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
+
+			expect(caught.code).toBe('TARGET')
+			expect(caught.message).toBe(
+				`Service tests under ${directory.path} are missing tests/setupService.ts and scripts/service.sh`,
+			)
+			expect(caught.context).toEqual({
+				target: directory.path,
+				missing: ['tests/setupService.ts', 'scripts/service.sh'],
+			})
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it.skipIf(!canSymlink)(
+		'rejects symlinked service companions as missing physical files',
+		async () => {
+			const directory = await buildTempDirectory()
+			try {
+				buildBlueprintFixture(directory.path, {
+					name: '@orkestrel/service-proof',
+					src: ['core'],
+					service: true,
+				})
+				const setup = join(directory.path, 'tests', 'setupService.ts')
+				const script = join(directory.path, 'scripts', 'service.sh')
+				const setupTarget = join(directory.path, 'linked-setup.ts')
+				const scriptTarget = join(directory.path, 'linked-service.sh')
+				writeFileSync(setupTarget, '', 'utf8')
+				writeFileSync(scriptTarget, '', 'utf8')
+				rmSync(setup)
+				rmSync(script)
+				symlinkSync(setupTarget, setup)
+				symlinkSync(scriptTarget, script)
+
+				expect(() => deriveBlueprint(directory.path)).toThrowError(
+					expect.objectContaining({
+						code: 'TARGET',
+						message: expect.stringContaining('tests/setupService.ts and scripts/service.sh'),
+					}),
+				)
+			} finally {
+				await directory.cleanup()
+			}
+		},
+	)
 
 	it('rejects service tests without tests/setupService.ts and names the companion', async () => {
 		const directory = await buildTempDirectory()

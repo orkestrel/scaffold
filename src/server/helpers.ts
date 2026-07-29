@@ -108,6 +108,22 @@ export function isRealDirectory(path: string): boolean {
 }
 
 /**
+ * Whether a path is an existing physical file rather than a directory or link.
+ *
+ * @param path - The filesystem path to inspect without following links.
+ * @returns `true` only for a successful `lstat` reporting a single-link file.
+ */
+export function isRealFile(path: string): boolean {
+	const status = attempt(() => lstatSync(path))
+	return (
+		status.success &&
+		status.value.isFile() &&
+		!status.value.isSymbolicLink() &&
+		status.value.nlink === 1
+	)
+}
+
+/**
  * Compute a bounded-memory SHA-256 digest for one file.
  *
  * @param path - The file to read.
@@ -1374,7 +1390,9 @@ export function selectOrkestrelEntries(value: unknown): readonly (readonly [stri
  * and the name satisfies `isWorkspaceName`; every other name is a coded
  * `TARGET` failure. `src` is derived from `src/<environment>/` and `app` from
  * `app/<environment>/`; a target with no environment on either axis is also a coded
- * `TARGET` failure. `dependencies` /
+ * `TARGET` failure. The `bin`, `integration`, and `service` facts probe physical
+ * directories at `src/bin`, `tests/integration`, and `tests/service`, respectively,
+ * never the workspace name. `dependencies` /
  * `peers` are the `@orkestrel/`-prefixed entries of `manifest.dependencies` /
  * `manifest.peerDependencies` (a peer flagged `peerDependenciesMeta[name]
  * .optional === true` carries `optional: true`). `extras` is EVERY entry of
@@ -1394,6 +1412,8 @@ export function selectOrkestrelEntries(value: unknown): readonly (readonly [stri
  * @throws `ScaffoldError('TARGET', …)` when `target`'s manifest is unreadable
  *   (via `readManifest`), is not valid JSON, its name is unsafe for its
  *   publication mode, or `target` carries no source or application environment.
+ * @throws `ScaffoldError('TARGET', …)` when `tests/service` exists without the
+ *   physical companion files `tests/setupService.ts` and `scripts/service.sh`.
  *
  * @example
  * ```ts
@@ -1478,16 +1498,16 @@ export function deriveBlueprint(target: string): Blueprint {
 	const service = isRealDirectory(join(target, 'tests', 'service'))
 	if (service) {
 		const missing: string[] = []
-		if (!existsSync(join(target, 'tests', 'setupService.ts'))) {
+		if (!isRealFile(join(target, 'tests', 'setupService.ts'))) {
 			missing.push('tests/setupService.ts')
 		}
-		if (!existsSync(join(target, 'scripts', 'service.sh'))) {
+		if (!isRealFile(join(target, 'scripts', 'service.sh'))) {
 			missing.push('scripts/service.sh')
 		}
 		if (missing.length > 0) {
 			throw new ScaffoldError(
 				'TARGET',
-				`Service tests under ${target} require ${missing.join(' and ')}`,
+				`Service tests under ${target} are missing ${missing.join(' and ')}`,
 				{ target, missing },
 			)
 		}
