@@ -513,19 +513,21 @@ export function resolveGeneratedConsumerTemplate(
  * @param source - Template node_modules directory.
  * @param destination - Clone node_modules directory.
  * @param hardlinks - Whether the one-time link probe succeeded.
+ * @param root - Whether `source` is a node_modules root whose `.vite` entry is optimizer cache.
  */
 export function cloneGeneratedModules(
 	source: string,
 	destination: string,
 	hardlinks: boolean,
+	root = true,
 ): void {
 	mkdirSync(destination, { recursive: true })
 	for (const entry of readdirSync(source, { withFileTypes: true })) {
-		if (entry.name === '.vite') continue
+		if (root && entry.name === '.vite') continue
 		const sourcePath = join(source, entry.name)
 		const destinationPath = join(destination, entry.name)
 		if (entry.isDirectory()) {
-			cloneGeneratedModules(sourcePath, destinationPath, hardlinks)
+			cloneGeneratedModules(sourcePath, destinationPath, hardlinks, entry.name === 'node_modules')
 			continue
 		}
 		if (entry.isSymbolicLink()) {

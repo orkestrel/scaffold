@@ -1,7 +1,6 @@
 import type {
 	Artifact,
 	Blueprint,
-	Dependency,
 	Group,
 	Member,
 	Plan,
@@ -256,30 +255,39 @@ export function compareCodeUnit(a: string, b: string): number {
 }
 
 /**
- * The host-neutral devDependency baseline every generated workspace needs.
- * Browser providers are added only by browser selections or the scaffold
- * bin axis's generated-browser consumer proof. A package's `extras` (code-unit
- * sorted) merge in on top, the extras' declared range winning on a name
- * collision with the baseline.
+ * The complete development dependency set one blueprint emits. The shared
+ * baseline is extended by package extras, dev-installed peers, selected
+ * browser environments, and the bin axis's browser test provider.
  *
- * @param extras - The blueprint's package-specific `extras` `Dependency[]`.
+ * @param spec - The blueprint whose development dependencies are required.
  * @returns The merged `devDependencies` record.
  *
  * @example
  * ```ts
- * devDependenciesFor([])['typescript'] // '^6.0.3'
+ * devDependenciesFor(blueprint('router'))['typescript'] // '^6.0.3'
  * ```
  */
-export function devDependenciesFor(
-	extras: readonly Dependency[],
-): Readonly<Record<string, string>> {
-	const baseline: Record<string, string> = {
+export function devDependenciesFor(spec: Blueprint): Readonly<Record<string, string>> {
+	const dependencies: Record<string, string> = {
 		...BASE_DEV_DEPENDENCIES,
 	}
-	for (const extra of [...extras].sort((a, b) => compareCodeUnit(a.name, b.name))) {
-		baseline[extra.name] = extra.range
+	for (const extra of [...spec.extras].sort((a, b) => compareCodeUnit(a.name, b.name))) {
+		dependencies[extra.name] = extra.range
 	}
-	return baseline
+	for (const peer of [...spec.peers].sort((a, b) => compareCodeUnit(a.name, b.name))) {
+		dependencies[peer.name] = peer.range
+	}
+	return {
+		...dependencies,
+		...(spec.src.includes('browser') ? SOURCE_BROWSER_DEV_DEPENDENCIES : {}),
+		...(spec.app.includes('browser') ? APP_BROWSER_DEV_DEPENDENCIES : {}),
+		...(spec.bin
+			? {
+					'@vitest/browser-playwright':
+						SOURCE_BROWSER_DEV_DEPENDENCIES['@vitest/browser-playwright'],
+				}
+			: {}),
+	}
 }
 
 /**
@@ -311,23 +319,6 @@ export function packageManifest(spec: Blueprint): string {
 	for (const peer of spec.peers) {
 		if (peer.optional === true) peerDependenciesMeta[peer.name] = { optional: true }
 	}
-	// Every peer is ALSO dev-installed — grounded against the live
-	// @orkestrel/middleware and @orkestrel/mcp exemplars, where every declared
-	// peer (@orkestrel/database + @orkestrel/server for middleware;
-	// @orkestrel/router + @orkestrel/server for mcp) appears in
-	// `devDependencies` at its peer range, unconditionally (2/2 peer-declaring
-	// exemplars observed). A peer without its dev-install cannot be built or
-	// tested locally — `npm install` alone would never bring it in. Emitting
-	// unconditionally here (rather than deriving from `extras`) keeps
-	// `validateBlueprint`'s `peers ∩ extras` law intact: a peer is a peer, not
-	// an extra, so it never round-trips through the `extras` array — it round-
-	// trips here, directly off `spec.peers`, mirroring how `deriveBlueprint`
-	// reads a dev-installed peer back into `peers` (never `extras`) on the way in.
-	const peerDevDependencies: Record<string, string> = {}
-	for (const peer of [...spec.peers].sort((a, b) => compareCodeUnit(a.name, b.name))) {
-		peerDevDependencies[peer.name] = peer.range
-	}
-
 	// Scripts are built by sequential assignment so aggregate + per-environment
 	// keys interleave in the exact live-package insertion order (`check:src`
 	// immediately followed by each `check:src:<environment>`, and so on).
@@ -450,13 +441,7 @@ export function packageManifest(spec: Blueprint): string {
 		'npm run format:check && npm run lint:check && npm run check && npm run build && npm test' +
 		(spec.integration ? ' && npm run test:integration' : '')
 
-	const devDependencies = {
-		...devDependenciesFor(spec.extras),
-		...peerDevDependencies,
-		...(spec.src.includes('browser') ? SOURCE_BROWSER_DEV_DEPENDENCIES : {}),
-		...(spec.app.includes('browser') ? APP_BROWSER_DEV_DEPENDENCIES : {}),
-		...(spec.bin ? SOURCE_BROWSER_DEV_DEPENDENCIES : {}),
-	}
+	const devDependencies = devDependenciesFor(spec)
 	const manifest: Record<string, unknown> = {
 		name: hasSource ? `@orkestrel/${spec.name}` : spec.name,
 		version: spec.version,

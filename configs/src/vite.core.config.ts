@@ -1,11 +1,18 @@
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
-import { outputBoundary, resolveWorkspacePath, srcCore } from '../../vite.config'
+import {
+	environmentBoundary,
+	outputBoundary,
+	srcCore,
+	resolveWorkspacePath,
+} from '../../vite.config'
 
 export default defineConfig(
 	srcCore({
+		publicDir: false,
 		plugins: [
 			outputBoundary('dist/src/core'),
+			environmentBoundary('src/core'),
 			dts({
 				tsconfigPath: resolveWorkspacePath('configs/src/tsconfig.core.json'),
 				bundleTypes: {

@@ -335,6 +335,45 @@ describe('deriveBlueprint', () => {
 		}
 	})
 
+	it('excludes a bin-axis emitted browser provider from extras', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: '@orkestrel/scaffold',
+				src: ['core', 'server'],
+				bin: true,
+				devDependencies: {
+					'@vitest/browser-playwright': '^4.1.10',
+				},
+			})
+
+			expect(deriveBlueprint(directory.path).extras).toEqual([])
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('retains an unscoped consumer extra beside bin-axis emitted dependencies', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: '@orkestrel/scaffold',
+				src: ['core', 'server'],
+				bin: true,
+				devDependencies: {
+					'@vitest/browser-playwright': '^4.1.10',
+					playwright: '^1.61.1',
+				},
+			})
+
+			expect(deriveBlueprint(directory.path).extras).toEqual([
+				{ name: 'playwright', range: '^1.61.1' },
+			])
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
 	it('derives integration independently of the bin axis', async () => {
 		const directory = await buildTempDirectory()
 		try {

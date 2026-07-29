@@ -953,11 +953,13 @@ dependency-less stand-in. Environments come from `src/<environment>/` and `app/<
 the three structural axes from the directory probes and the service companion law the blueprint
 section states — every one of them a reading of the filesystem, never of the name. Dependencies and
 peers come from the manifest's scoped entries, with an optional peer recovered from
-`peerDependenciesMeta`; and `extras` is every development dependency minus the generated baseline
-and minus anything already declared as a dependency or peer, so a hand-added development dependency
-round-trips and stays audit-clean. Derivation yields no `overrides`: they are caller-time inputs,
-not repository state. A computed artifact that must differ reveals a gap in the canon; the
-blueprint grows an axis for that distinction rather than the repository forking the file.
+`peerDependenciesMeta`; and `extras` is every development dependency minus the complete set
+`devDependenciesFor` emits for those environments and structural axes, and minus anything already
+declared as a dependency or peer. An axis-emitted dependency is therefore never double-counted,
+while a hand-added development dependency round-trips and stays audit-clean. Derivation yields no
+`overrides`: they are caller-time inputs, not repository state. A computed artifact that must differ
+reveals a gap in the canon; the blueprint grows an axis for that distinction rather than the
+repository forking the file.
 
 `storagePath`, `stageHost`, `readHostManifest`, `locateHostSource`, `remapArtifactPath`, and
 `hydratePlan` are the vendored-host path. `storagePath` maps a repo-relative path to its un-dotted
@@ -1051,10 +1053,11 @@ independently callable and independently tested.
 several. `entryFields`, `dualCondition`, and `exportsMap` build the manifest entry fields and the
 `exports` map from that variant; a browser-only package exports a single module condition, while
 core and server src get dual import and require conditions with matching declaration files.
-`devDependenciesFor` merges a blueprint's extras over the shared baseline, extras winning a name
-collision, sorted by `compareCodeUnit` so ordering is stable across locales. `packageManifest`
-assembles the whole file — name, publication mode, files, scripts, dependencies, peers and their
-optional metadata, and engines.
+`devDependenciesFor` emits the blueprint's complete development dependency set: the shared
+baseline, package extras, dev-installed peers, selected browser toolchains, and the bin axis's
+browser test provider. Extras and peers are sorted by `compareCodeUnit` so ordering is stable across
+locales. `packageManifest` assembles the whole file — name, publication mode, files, scripts,
+dependencies, peers and their optional metadata, and engines.
 
 `rootTsconfig` emits the root compiler options and one path alias per declared environment;
 `coreTsconfig`, `srcTsconfig`, and `appTsconfig` emit the scoped configurations that remove the
@@ -2103,7 +2106,7 @@ srcVariant(['core', 'server']) // 'multi'
 entryFields(['browser']).main // './dist/src/browser/index.js'
 dualCondition('./dist/src/core/index')
 exportsMap(['core'])['.']
-devDependenciesFor(spec.extras).typescript
+devDependenciesFor(spec).typescript
 packageManifest(spec) // the whole manifest, newline-terminated
 
 configArtifacts(spec).length

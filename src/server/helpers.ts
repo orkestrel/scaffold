@@ -1398,11 +1398,9 @@ export function selectOrkestrelEntries(value: unknown): readonly (readonly [stri
  * `manifest.peerDependencies` (a peer flagged `peerDependenciesMeta[name]
  * .optional === true` carries `optional: true`). `extras` is EVERY entry of
  * `manifest.devDependencies` (not only `@orkestrel/`-prefixed ones — an
- * external extra like `zod` must round-trip too), EXCLUDING the generated
- * devDependency baseline (`devDependenciesFor([])`'s keys, which already
- * cover `@orkestrel/guide` and `@orkestrel/scaffold`) every scaffolded
- * package already carries, never a package-specific extra. A devDependency
- * ALSO present in
+ * external extra like `zod` must round-trip too), EXCLUDING the complete
+ * generated dependency set `devDependenciesFor` emits for the reconstructed
+ * blueprint's actual environments and structural axes. A devDependency ALSO present in
  * `manifest.peerDependencies` or `manifest.dependencies` (e.g. a peer
  * dev-installed for local testing) is likewise excluded from `extras` — it
  * already appears as a `peer`/`dependency` above, and double-counting it as
@@ -1424,18 +1422,6 @@ export function selectOrkestrelEntries(value: unknown): readonly (readonly [stri
  * ```
  */
 export function deriveBlueprint(target: string): Blueprint {
-	// The generated uniform devDependency baseline (every scaffolded package
-	// carries it) is never a package-specific `extras` entry — excluded from
-	// the `extras` derived below. Read from the SAME source of truth the
-	// compiler uses (`devDependenciesFor`, called with `[]` so only its
-	// baseline keys come back) rather than a duplicated literal, plus
-	// `@orkestrel/guide` / `@orkestrel/scaffold` per the existing rule (both
-	// already part of that baseline, restated here for clarity).
-	const baselineExtras = new Set([
-		...Object.keys(devDependenciesFor([])),
-		'@orkestrel/guide',
-		'@orkestrel/scaffold',
-	])
 	const text = readManifest(target)
 	const parsed = parseJSON(text)
 	if (!isRecord(parsed)) {
@@ -1540,6 +1526,22 @@ export function deriveBlueprint(target: string): Blueprint {
 		...selectOrkestrelEntries(rawPeerDependencies).map(([depName]) => depName),
 		...selectOrkestrelEntries(rawDependencies).map(([depName]) => depName),
 	])
+	const generatedDevDependencies = new Set(
+		Object.keys(
+			devDependenciesFor(
+				blueprint(name, {
+					src,
+					app,
+					dependencies,
+					peers,
+					extras: [],
+					bin,
+					integration,
+					service,
+				}),
+			),
+		),
+	)
 	// EVERY devDependency, not only `@orkestrel/`-prefixed ones, is a candidate
 	// `extras` entry — an external extra (e.g. `zod`) must round-trip through
 	// derivation exactly like an `@orkestrel/`-scoped one, or a package with a
@@ -1550,7 +1552,9 @@ export function deriveBlueprint(target: string): Blueprint {
 	const devDependencies = isRecord(rawDevDependencies) ? rawDevDependencies : {}
 	const extras: Dependency[] = Object.entries(devDependencies)
 		.filter((entry): entry is [string, string] => typeof entry[1] === 'string')
-		.filter(([depName]) => !baselineExtras.has(depName) && !peerAndDependencyNames.has(depName))
+		.filter(
+			([depName]) => !generatedDevDependencies.has(depName) && !peerAndDependencyNames.has(depName),
+		)
 		.map(([depName, range]) => ({ name: depName, range }))
 	return blueprint(name, {
 		...(description === undefined ? {} : { description }),

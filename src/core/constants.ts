@@ -281,7 +281,7 @@ export const SCAFFOLD_RANGE = '^0.0.7'
 /** Tooling versions shared by scaffold and every generated workspace. */
 export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@microsoft/api-extractor': '^7.58.12',
-	'@orkestrel/guide': '^0.0.5',
+	'@orkestrel/guide': '^0.0.7',
 	'@orkestrel/scaffold': SCAFFOLD_RANGE,
 	'@types/node': '^26.1.2',
 	oxfmt: '^0.61.0',

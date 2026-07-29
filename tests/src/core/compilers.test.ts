@@ -534,16 +534,17 @@ describe('compareCodeUnit', () => {
 
 describe('devDependenciesFor', () => {
 	it('carries the baseline unconditionally', () => {
-		const deps = devDependenciesFor([])
+		const deps = devDependenciesFor(blueprint('router'))
 		expect(deps.typescript).toBe('^6.0.3')
 		expect(deps['@vitest/browser-playwright']).toBeUndefined()
 	})
 
 	it('merges extras on top, extras winning on collision', () => {
-		const deps = devDependenciesFor([
-			dependency('typescript', '^9.9.9'),
-			dependency('foo', '^1.0.0'),
-		])
+		const deps = devDependenciesFor(
+			blueprint('router', {
+				extras: [dependency('typescript', '^9.9.9'), dependency('foo', '^1.0.0')],
+			}),
+		)
 		expect(deps.typescript).toBe('^9.9.9')
 		expect(deps.foo).toBe('^1.0.0')
 	})
@@ -646,7 +647,7 @@ describe('packageManifest', () => {
 		const dev = readRecord(manifest.devDependencies)
 		expect(dev['@orkestrel/scaffold']).toBeUndefined()
 		expect(dev['@vitest/browser-playwright']).toBe('^4.1.10')
-		expect(dev.playwright).toBe('^1.61.1')
+		expect(dev.playwright).toBeUndefined()
 	})
 
 	it('keys integration scripts and the publish tail only on the integration axis', () => {
@@ -713,7 +714,7 @@ describe('packageManifest', () => {
 		)
 
 		expect(createHash('sha256').update(manifest).digest('hex')).toBe(
-			'7d744e151adc3cac1a496fe844aafab42121eaa1aa84d3262f2aefb39d591854',
+			'aff9c8feee47737d594128dc54b98cf25b9b55f85da9e1d9a305708ffb90f036',
 		)
 	})
 
