@@ -562,7 +562,7 @@ export function catalogNames(text: string): readonly string[] {
  *
  * @param header - The header cell strings, in column order.
  * @param rows - The body rows, each a list of cell strings matching `header`'s column count.
- * @param align - Optional per-column alignment; defaults every column to `'none'`.
+ * @param align - Optional per-column alignment; defaults every column to `null` (no alignment).
  * @remarks
  * Builds a `TableNode` (each cell parsed with `parseInline`) and serializes it
  * through `renderMarkdown`, which contributes the structure — `\|`-escaping any
@@ -582,10 +582,10 @@ export function catalogNames(text: string): readonly string[] {
 export function alignTable(
 	header: readonly string[],
 	rows: readonly (readonly string[])[],
-	align?: readonly TableAlign[],
+	align?: readonly (TableAlign | null)[],
 ): string {
 	const columns = header.length
-	const alignment: readonly TableAlign[] = align ?? header.map<TableAlign>(() => 'none')
+	const alignment: readonly (TableAlign | null)[] = align ?? header.map(() => null)
 	const node: TableNode = {
 		element: 'table',
 		header: header.map((cell) => parseInline(cell)),
@@ -661,11 +661,11 @@ export function padCell(text: string, width: number): string {
 /**
  * Build one delimiter-row cell for a GFM table column.
  *
- * @param columnAlign - The column's `TableAlign`.
+ * @param columnAlign - The column's `TableAlign`, or `null` for no alignment.
  * @param width - The column's codepoint width.
  * @remarks
  * `'left'` prefixes `:`, `'right'` suffixes `:`, `'center'` wraps both ends,
- * `'none'` is plain dashes — one dash per width unit, `:` markers consuming
+ * `null` is plain dashes — one dash per width unit, `:` markers consuming
  * a dash slot rather than adding to `width`.
  * @returns The delimiter cell string for this column.
  *
@@ -676,7 +676,7 @@ export function padCell(text: string, width: number): string {
  * delimiterCell('left', 5) // ':----'
  * ```
  */
-export function delimiterCell(columnAlign: TableAlign, width: number): string {
+export function delimiterCell(columnAlign: TableAlign | null, width: number): string {
 	if (columnAlign === 'left') return `:${'-'.repeat(width - 1)}`
 	if (columnAlign === 'right') return `${'-'.repeat(width - 1)}:`
 	if (columnAlign === 'center') return `:${'-'.repeat(width - 2)}:`

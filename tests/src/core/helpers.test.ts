@@ -1178,8 +1178,8 @@ describe('delimiterCell', () => {
 		expect(delimiterCell('center', 6)).toBe(':----:')
 	})
 
-	it('renders a plain (none) delimiter', () => {
-		expect(delimiterCell('none', 5)).toBe('-----')
+	it('renders a plain (null) delimiter', () => {
+		expect(delimiterCell(null, 5)).toBe('-----')
 	})
 })
 
@@ -1527,12 +1527,12 @@ describe('pinPlan', () => {
 		}
 		expect(actual).toMatchInlineSnapshot(`
 			{
-			  "browser-only": "fb208339",
-			  "core+browser": "63c62582",
-			  "core+browser+server": "c5101d27",
-			  "core+server": "16f13413",
-			  "core-only": "0541e4b1",
-			  "server-only": "7bf0acf5",
+			  "browser-only": "762ddbd7",
+			  "core+browser": "ae721c40",
+			  "core+browser+server": "70088b39",
+			  "core+server": "5ca5ec39",
+			  "core-only": "fbc32363",
+			  "server-only": "e63be003",
 			}
 		`)
 	})
@@ -1560,11 +1560,11 @@ describe('pinPlan', () => {
 		}
 		expect(actual).toMatchInlineSnapshot(`
 			{
-			  "app-browser": "96a1340d",
-			  "app-core": "4eebbba1",
-			  "app-full": "a2692aff",
-			  "app-server": "6764e22f",
-			  "mixed-full": "482147b7",
+			  "app-browser": "35faee2b",
+			  "app-core": "d86c61c7",
+			  "app-full": "19ac07bd",
+			  "app-server": "f1baa43d",
+			  "mixed-full": "1985118d",
 			}
 		`)
 	})

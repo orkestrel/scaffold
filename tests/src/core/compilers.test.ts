@@ -727,7 +727,7 @@ describe('packageManifest', () => {
 		)
 
 		expect(createHash('sha256').update(manifest).digest('hex')).toBe(
-			'aff9c8feee47737d594128dc54b98cf25b9b55f85da9e1d9a305708ffb90f036',
+			'632b1926b8bc785817b48ab400514551e4b61c4b3934cb51f8c6e76ed677666e',
 		)
 	})
 
