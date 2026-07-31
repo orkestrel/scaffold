@@ -97,6 +97,7 @@ On Windows, `SEAOptions.windows.sign` is OPTIONAL Authenticode signing. When pre
 | `isCompressible`      | function | Check if a file should be Brotli-compressed based on its extension.             |
 | `walkDirectory`       | function | Recursively walk a directory and return all file paths.                         |
 | `runShell`            | function | Run a command synchronously and return stdout; throws `ShellError`.             |
+| `redactCommand`       | function | Redact a shell command's arguments for safe inclusion in error messages.        |
 | `computeSize`         | function | Compute a size comparison between original and compressed byte counts.          |
 | `compressFile`        | function | Brotli-compress a single file, writing the output alongside it.                 |
 | `compressDirectory`   | function | Compress all compressible files in a directory tree.                            |
@@ -116,6 +117,8 @@ On Windows, `SEAOptions.windows.sign` is OPTIONAL Authenticode signing. When pre
 | `createBlobConfig`    | function | Build the `--experimental-sea-config` JSON object for a SEA blob.               |
 | `patchSentinelFuse`   | function | Patch the sentinel fuse in a binary from `:0` to `:1`.                          |
 | `buildELFNoteHeader`  | function | Build an ELF `PT_NOTE` entry's header bytes for the SEA blob note.              |
+| `alignELFNoteSize`    | function | Round an ELF note payload size up to its four-byte alignment boundary.          |
+| `isPowerOfTwo`        | function | Whether a positive integer is an exact power of two.                            |
 | `copyRange`           | function | Stream a byte range between two file descriptors in fixed-size chunks.          |
 | `openBrowser`         | function | Launch the system default browser at an http(s) URL.                            |
 | `SEAError`            | class    | The coded base error for every failure raised by the seal build.                |
@@ -235,6 +238,7 @@ manager.destroy()
 ```ts
 import {
 	runShell,
+	redactCommand,
 	isShellError,
 	platformConfig,
 	isPlatformSupported,
@@ -258,6 +262,8 @@ import {
 	openBrowser,
 	createSignCommand,
 	syncDirectory,
+	alignELFNoteSize,
+	isPowerOfTwo,
 } from '@orkestrel/sea'
 
 try {
@@ -298,6 +304,10 @@ createSignCommand({ thumbprint: 'AABBCCDDEEFF00112233445566778899AABBCCDD' }, 'd
 // ['signtool', 'sign', '/fd', 'sha256', '/sha1', 'AABBCCDDEEFF00112233445566778899AABBCCDD', 'dist/sea/app.exe']
 
 syncDirectory('/dist/sea') // fsync a directory to durably persist a prior rename/create; no-op on win32
+
+redactCommand(['signtool', 'sign', '/p', 'hunter2']) // ['signtool', 'sign', '/p', '***']
+alignELFNoteSize(10) // 12 — the next four-byte ELF note boundary
+isPowerOfTwo(4096) // true
 ```
 
 ## See also

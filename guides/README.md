@@ -24,22 +24,29 @@ it is documented in prose only and is excluded from the doc↔source parity scan
 | `src/server` | [`src/scaffold.md`](src/scaffold.md) |
 | `src/bin`    | [`src/scaffold.md`](src/scaffold.md) |
 
-## Dependency reference
+## Line reference
 
-This repo vendors ONE byte-identical guide mirror per runtime dependency (the vendored-guides
-law, one copy per dep) plus [`src/guide.md`](src/guide.md) — the mirror for `@orkestrel/guide`,
-the devDependency powering this repo's guides-parity suite (`tests/guides/src/parity.test.ts`).
-The runtime dependencies, and their mirrors kept here:
+This repo vendors a byte-identical guide mirror for **every published `@orkestrel/*` package**,
+not only its own dependencies. Scaffold is the line's blueprint compiler: `new` seeds a
+workspace's vendored guides and `pull` refreshes them, so the authoritative copy of each
+package's guide has to live here to be handed out. The mirrors therefore track the npm org
+membership `catalog` enumerates, and each is fetched from its own repository's `main` at
+`guides/src/<name>.md`.
 
-- **Core** — `@orkestrel/contract` ([`src/contract.md`](src/contract.md)), `@orkestrel/emitter`
-  ([`src/emitter.md`](src/emitter.md)), `@orkestrel/markdown` ([`src/markdown.md`](src/markdown.md)),
-  and `@orkestrel/template` ([`src/template.md`](src/template.md)).
+Two subsets carry extra weight:
+
+- **Runtime dependencies** — `@orkestrel/contract` ([`src/contract.md`](src/contract.md)),
+  `@orkestrel/emitter` ([`src/emitter.md`](src/emitter.md)), `@orkestrel/markdown`
+  ([`src/markdown.md`](src/markdown.md)), and `@orkestrel/template`
+  ([`src/template.md`](src/template.md)).
 - **Bin-only** — `@orkestrel/terminal` ([`src/terminal.md`](src/terminal.md)) and
   `@orkestrel/console` ([`src/console.md`](src/console.md)), consumed exclusively at the
-  `scaffold` executable boundary.
+  `scaffold` executable boundary; plus `@orkestrel/guide`
+  ([`src/guide.md`](src/guide.md)), the devDependency powering this repo's guides-parity
+  suite (`tests/guides/src/parity.test.ts`).
 
-Each mirror documents **that package's** surface, not anything sourced in this repo; it is kept
-so a reader can see the primitives this package builds on without leaving the guide set.
+Every mirror documents **that package's** surface, not anything sourced in this repo. A mirror
+that drifts from its upstream `main` is a defect: refresh it rather than editing it here.
 
 ## See also
 
