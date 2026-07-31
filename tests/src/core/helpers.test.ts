@@ -1527,9 +1527,9 @@ describe('pinPlan', () => {
 		}
 		expect(actual).toMatchInlineSnapshot(`
 			{
-			  "browser-only": "762ddbd7",
-			  "core+browser": "ae721c40",
-			  "core+browser+server": "70088b39",
+			  "browser-only": "a33eed67",
+			  "core+browser": "c5c52792",
+			  "core+browser+server": "13e9b0f7",
 			  "core+server": "5ca5ec39",
 			  "core-only": "fbc32363",
 			  "server-only": "e63be003",
@@ -1560,11 +1560,11 @@ describe('pinPlan', () => {
 		}
 		expect(actual).toMatchInlineSnapshot(`
 			{
-			  "app-browser": "35faee2b",
+			  "app-browser": "ffd331b9",
 			  "app-core": "d86c61c7",
-			  "app-full": "19ac07bd",
+			  "app-full": "0d13c5cd",
 			  "app-server": "f1baa43d",
-			  "mixed-full": "1985118d",
+			  "mixed-full": "145ac8f9",
 			}
 		`)
 	})
@@ -1993,7 +1993,7 @@ describe('blueprintToPlan — root vite.config.ts content (environment-shape)', 
 		const vite = plan.artifacts.find((artifact) => artifact.path === 'vite.config.ts')
 
 		expect(vite?.content).toContain('@vitest/browser-playwright')
-		expect(vite?.content).toContain('provider: playwright()')
+		expect(vite?.content).toContain('provider: playwright(chromiumOptions)')
 		expect(vite?.content).not.toContain('PLAYWRIGHT_EXECUTABLE_PATH')
 	})
 
@@ -2002,7 +2002,7 @@ describe('blueprintToPlan — root vite.config.ts content (environment-shape)', 
 		const vite = plan.artifacts.find((artifact) => artifact.path === 'vite.config.ts')
 
 		expect(vite?.content).not.toContain('@vitest/browser-playwright')
-		expect(vite?.content).not.toContain('provider: playwright()')
+		expect(vite?.content).not.toContain('provider: playwright(')
 	})
 })
 

@@ -835,7 +835,7 @@ describe('renderViteTest', () => {
 			[
 				'\ttest: gateBrowserProjects(',
 				"\t\t[{ project: srcBrowser, browser: 'src:browser' }, { project: policy }, { project: guides }],",
-				'\t\thasChromium,',
+				'\t\tchromiumPath !== undefined,',
 				'\t\tprocess.argv,',
 				'\t),',
 			].join('\n'),
@@ -1631,7 +1631,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 
 		expect(content).toContain('\t)\n\nexport const policy')
 		expect(createHash('sha256').update(content).digest('hex')).toBe(
-			'85a2c14d1aaaeac5a5cdad69d2b0b0d42ac907ff32a078fa0df7592f9c16f26b',
+			'38a99fb861910401d94cc403486c4d26f8d7d025b80655dbf811410794d7e053',
 		)
 	})
 
@@ -1713,7 +1713,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 	it('keeps the indexeddb browser, policy, and guides shape registered through the shared gate', () => {
 		const content = rootViteConfig(['browser'])
 
-		expect(content).not.toContain('hasChromium ? [')
+		expect(content).not.toContain('chromiumPath !== undefined ? [')
 		expect(content).toContain(
 			[
 				'\ttest: gateBrowserProjects(',
@@ -1737,12 +1737,14 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 
 		for (const content of [browser, source, appBrowser, application]) {
 			expect(content.split('function gateBrowserProjects(')).toHaveLength(2)
+			expect(content.split('function resolveChromium(')).toHaveLength(2)
 			expect(content.split('console.warn(')).toHaveLength(2)
 			expect(content).toContain('projects.push(registration.project())')
+			expect(content).toContain('provider: playwright(chromiumOptions)')
 			expect(content).toContain('include: [')
 			expect(content).toContain('enabled: true')
-			expect(content).not.toContain('include: hasChromium ?')
-			expect(content).not.toContain('enabled: hasChromium')
+			expect(content).not.toContain('include: chromiumPath')
+			expect(content).not.toContain('enabled: chromiumPath')
 		}
 		expect(source).toContain("{ project: srcBrowser, browser: 'src:browser' }")
 		expect(application).toContain("{ project: srcBrowser, browser: 'src:browser' }")
@@ -1904,7 +1906,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 	it('keeps non-browser projects directly discoverable without a Chromium guard', () => {
 		const content = applicationViteConfig(['core', 'server'], ['core', 'server'])
 
-		expect(content).not.toContain('hasChromium')
+		expect(content).not.toContain('chromiumPath')
 		expect(content).not.toContain('console.warn(')
 		expect(content).toContain('projects: [srcCore, srcServer, appCore, appServer, policy, guides]')
 	})
