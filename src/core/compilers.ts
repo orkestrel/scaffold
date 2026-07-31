@@ -3741,8 +3741,12 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} exportsFor(specifier: string): readonly st
 export function testArtifacts(spec: Blueprint, pascal: string): readonly Artifact[] {
 	const hasBrowser = spec.src.includes('browser') || spec.app.includes('browser')
 	const hasVue = spec.app.includes('browser')
-	const browserPolicySpecifier = hasBrowser ? ', existsSync' : ''
-	const browserPolicyImport = hasBrowser ? "import { chromium } from 'playwright'" : ''
+	const browserPolicySpecifier = hasBrowser
+		? ', accessSync, constants as FS_CONSTANTS, statSync'
+		: ''
+	const browserPolicyImport = hasBrowser
+		? "import { chromium } from 'playwright'\nimport { resolveChromium } from '../vite.config.js'"
+		: ''
 	const vuePolicyImport = hasVue ? "import { parse as parseVue } from 'vue/compiler-sfc'" : ''
 	const workspacePolicyAssertion = hasVue
 		? `expect(
@@ -3757,12 +3761,13 @@ export function testArtifacts(spec: Blueprint, pascal: string): readonly Artifac
 		: 'expect(inspectCodingWorkspace(process.cwd())).toEqual([])'
 	const browserPolicyTest = hasBrowser
 		? `
-	it.skipIf(!existsSync(chromium.executablePath()))(
-		'runs browser suites only when the real Chromium executable is installed',
-		() => {
-			expect(existsSync(chromium.executablePath())).toBe(true)
-		},
-	)`
+	it('resolves Chromium only to a real executable file', () => {
+		const chromiumPath = resolveChromium(chromium.executablePath())
+		if (chromiumPath === undefined) return
+
+		expect(statSync(chromiumPath).isFile()).toBe(true)
+		expect(() => accessSync(chromiumPath, FS_CONSTANTS.X_OK)).not.toThrow()
+	})`
 		: ''
 	const artifacts: Artifact[] = [
 		fillArtifact('tests/setup.ts', 'tests', 'setup', {}),
