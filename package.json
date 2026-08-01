@@ -1,6 +1,6 @@
 {
 	"name": "@orkestrel/scaffold",
-	"version": "0.0.13",
+	"version": "0.0.14",
 	"description": "Blueprint-to-plan package scaffolding, auditing, dependency guide/version pulling, and fleet-wide shared-file upkeep for the @orkestrel line.",
 	"keywords": [
 		"audit",
@@ -84,13 +84,14 @@
 		"test:equivalence": "node -e \"const c=require('node:child_process'),n=process.platform==='win32'?'npm.cmd':'npm',r=c.spawnSync(n,['run','test:integration'],{stdio:'inherit',env:{...process.env,SCAFFOLD_BOUNDARY_EQUIVALENCE:'1'}});process.exit(r.status??1)\"",
 		"test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
 		"test:guides": "vitest run --config vite.config.ts --reporter=dot --project guides",
+		"pin": "vitest run --config vite.config.ts --no-cache --project src:core -t pinPlan -u",
 		"build": "npm run clean && npm run build:src && npm run build:host",
 		"build:src": "npm run build:src:core && npm run build:src:server && npm run build:src:bin",
 		"build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
 		"build:src:server": "vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts",
 		"build:src:bin": "vite build --config configs/src/vite.bin.config.ts",
 		"build:host": "node -e \"import('./dist/src/server/index.js').then((m)=>{const n=m.stageHost(process.cwd(),'dist/host').length;console.log('build-host: staged '+n+' file(s) into dist/host')})\"",
-		"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:integration"
+		"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm run pin && npm test && npm run test:integration"
 	},
 	"dependencies": {
 		"@orkestrel/console": "^0.0.4",

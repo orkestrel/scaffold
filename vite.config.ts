@@ -11,10 +11,70 @@ import {
 	fstatSync,
 	lstatSync,
 	openSync,
+	readdirSync,
 	readSync,
 	realpathSync,
+	statSync,
 } from 'node:fs'
-import { dirname, isAbsolute, relative, resolve as resolvePath, sep } from 'node:path'
+import { basename, dirname, isAbsolute, relative, resolve as resolvePath, sep } from 'node:path'
+import { playwright } from '@vitest/browser-playwright'
+import { chromium } from 'playwright'
+
+/** Chromium executable layouts inside a `chromium-<revision>` browsers-directory entry, per platform. */
+export const CHROMIUM_LAYOUTS = Object.freeze([
+	'chrome-linux/chrome',
+	'chrome-linux64/chrome',
+	'chrome-win/chrome.exe',
+	'chrome-win64/chrome.exe',
+	'chrome-mac/Chromium.app/Contents/MacOS/Chromium',
+	'chrome-mac-arm64/Chromium.app/Contents/MacOS/Chromium',
+])
+
+/**
+ * Resolve a launchable Chromium executable: the pinned revision when installed,
+ * otherwise a `chromium` / `chromium.exe` alias or any other `chromium-*`
+ * revision under the same Playwright browsers directory. A pinned-revision miss
+ * is not Chromium absence — managed containers ship one usable build (often
+ * behind a revision-agnostic alias) for many Playwright versions.
+ */
+export function resolveChromium(pinned: string): string | undefined {
+	if (existsSync(pinned)) return pinned
+	let revisionRoot = dirname(pinned)
+	for (;;) {
+		if (/^chromium-\d+$/.test(basename(revisionRoot))) break
+		const parent = dirname(revisionRoot)
+		if (parent === revisionRoot) return undefined
+		revisionRoot = parent
+	}
+	const browsersRoot = dirname(revisionRoot)
+	for (const alias of ['chromium', 'chromium.exe']) {
+		const candidate = resolvePath(browsersRoot, alias)
+		if (existsSync(candidate) && statSync(candidate).isFile()) return candidate
+	}
+	let entries: readonly string[]
+	try {
+		entries = readdirSync(browsersRoot)
+	} catch {
+		return undefined
+	}
+	const revisions = entries
+		.filter((entry) => /^chromium-\d+$/.test(entry))
+		.sort((a, b) => Number(b.slice('chromium-'.length)) - Number(a.slice('chromium-'.length)))
+	for (const revision of revisions) {
+		for (const layout of CHROMIUM_LAYOUTS) {
+			const candidate = resolvePath(browsersRoot, revision, layout)
+			if (existsSync(candidate)) return candidate
+		}
+	}
+	return undefined
+}
+
+const chromiumPinned = chromium.executablePath()
+const chromiumPath = resolveChromium(chromiumPinned)
+const chromiumOptions =
+	chromiumPath === undefined || chromiumPath === chromiumPinned
+		? {}
+		: { launchOptions: { executablePath: chromiumPath } }
 
 export function resolveWorkspacePath(relativePath: string): string {
 	return fileURLToPath(new URL(relativePath, import.meta.url))
@@ -36,6 +96,64 @@ const resolve = {
 	}, {}),
 }
 
+export function gateBrowserProjects(
+	registrations: readonly {
+		readonly project: () => UserConfig
+		readonly browser?: string
+	}[],
+	available: boolean,
+	argv: readonly string[],
+): NonNullable<UserConfig['test']> {
+	const projects: UserConfig[] = []
+	const gated: string[] = []
+	for (const registration of registrations) {
+		if (registration.browser !== undefined && !available) {
+			gated.push(registration.browser)
+			projects.push({
+				resolve,
+				test: {
+					name: { label: registration.browser, color: 'yellow' },
+					include: [],
+					environment: 'node',
+					browser: { enabled: false },
+				},
+			})
+			continue
+		}
+		projects.push(registration.project())
+	}
+	if (gated.length === 0) return { projects }
+	console.warn(`browser projects skipped: Chromium absent (${gated.join(', ')})`)
+	const filters: string[] = []
+	let readable = true
+	for (let index = 0; index < argv.length; index += 1) {
+		const argument = argv[index]
+		if (argument === '--project') {
+			const filter = argv[index + 1]
+			if (filter === undefined) {
+				readable = false
+				continue
+			}
+			filters.push(filter)
+			index += 1
+			continue
+		}
+		if (argument?.startsWith('--project=') === true) {
+			filters.push(argument.slice('--project='.length))
+		}
+	}
+	return readable && filters.length > 0 && filters.every((filter) => gated.includes(filter))
+		? { passWithNoTests: true, projects }
+		: { projects }
+}
+
+/** Prevent the Vitest browser mid-run "optimized dependencies changed, reloading" stall. */
+export const BROWSER_TEST_DEPENDENCIES = Object.freeze([
+	'@vitest/browser/client',
+	'vitest/browser',
+	'vitest/internal/browser',
+	'vitest',
+])
 export const PACKAGE_MANIFEST_BYTES = 1_048_576
 export const ENVIRONMENT_MODULE_BYTES = 8_388_608
 
@@ -788,6 +906,55 @@ export const srcCore = (config?: UserConfig): UserConfig =>
 		config ?? {},
 	)
 
+export const srcBrowser = (config?: UserConfig): UserConfig =>
+	srcCore(
+		mergeConfig(
+			{
+				publicDir: false,
+				plugins: [outputBoundary('dist/src/browser'), environmentBoundary('src/browser')],
+				build: {
+					assetsInlineLimit: 0,
+					lib: {
+						entry: resolveWorkspacePath('src/browser/index.ts'),
+						formats: ['es'],
+						fileName: () => 'index.js',
+					},
+					outDir: 'dist/src/browser',
+					rolldownOptions: {
+						external: (id: string) => id === '@src/core' || id.startsWith('@orkestrel/'),
+						output: { paths: { '@src/core': '../core/index.js' } },
+					},
+				},
+				test: {
+					name: { label: 'src:browser', color: 'yellow' },
+					include: ['tests/src/browser/**/*.test.ts'],
+					exclude: ['tests/src/core/**/*.test.ts'],
+					globalSetup: ['./tests/setupGlobal.ts'],
+					setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+					...(config?.test?.browser?.enabled === false
+						? {}
+						: {
+								deps: {
+									optimizer: {
+										client: {
+											enabled: true,
+											include: [...BROWSER_TEST_DEPENDENCIES],
+										},
+									},
+								},
+							}),
+					browser: {
+						enabled: true,
+						provider: playwright(chromiumOptions),
+						instances: [{ browser: 'chromium', headless: true }],
+					},
+					fileParallelism: false,
+				},
+			},
+			config ?? {},
+		),
+	)
+
 export const srcServer = (config?: UserConfig): UserConfig =>
 	srcCore(
 		mergeConfig(
@@ -912,7 +1079,17 @@ export const integration = (config?: UserConfig): UserConfig =>
 
 export default defineConfig({
 	resolve,
-	test: {
-		projects: [srcCore, srcServer, policy, guides, srcBin, integration],
-	},
+	test: gateBrowserProjects(
+		[
+			{ project: srcCore },
+			{ project: srcBrowser, browser: 'src:browser' },
+			{ project: srcServer },
+			{ project: policy },
+			{ project: guides },
+			{ project: srcBin },
+			{ project: integration },
+		],
+		chromiumPath !== undefined,
+		process.argv,
+	),
 })

@@ -1527,12 +1527,12 @@ describe('pinPlan', () => {
 		}
 		expect(actual).toMatchInlineSnapshot(`
 			{
-			  "browser-only": "dfa14517",
-			  "core+browser": "09c37376",
-			  "core+browser+server": "96cf122d",
-			  "core+server": "8ad2cbc2",
-			  "core-only": "74b19dc6",
-			  "server-only": "2b2b2cb2",
+			  "browser-only": "8e210b64",
+			  "core+browser": "eac3189b",
+			  "core+browser+server": "f97c41fc",
+			  "core+server": "334aaefb",
+			  "core-only": "c77cc8c9",
+			  "server-only": "29fd37bd",
 			}
 		`)
 	})
@@ -1560,11 +1560,11 @@ describe('pinPlan', () => {
 		}
 		expect(actual).toMatchInlineSnapshot(`
 			{
-			  "app-browser": "df563bdb",
-			  "app-core": "ba52d21e",
-			  "app-full": "15ce5a01",
-			  "app-server": "095a56c4",
-			  "mixed-full": "4b258bfb",
+			  "app-browser": "da6916b0",
+			  "app-core": "b1c7adb9",
+			  "app-full": "88410c40",
+			  "app-server": "75b2bf2b",
+			  "mixed-full": "a5bbd7b2",
 			}
 		`)
 	})
