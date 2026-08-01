@@ -29,11 +29,14 @@ export interface AppDefinition {
  * configuration emits the environment-boundary plugin, its module-graph AST
  * audit, and stylesheet rejection, because those enforce owner-independent
  * laws. Only the host-specific pipelines below are selected by the declared
- * environments. `browser` covers everything a declared browser environment
- * needs — the CSS pipeline and the Playwright-backed browser test project;
- * `vue` adds the single-file-component, HTML, and development-server
- * machinery an application browser environment needs; `output` adds build
- * output containment, which an application of `core` alone never builds.
+ * environments. `browser` selects the shared root machinery a declared
+ * browser environment needs: CSS analysis and the Playwright-backed browser
+ * test project. Individual `css` configuration belongs only to the
+ * `srcBrowser` and `appBrowser` factories; core and server factories never
+ * inherit it. `vue` adds the single-file-component, HTML, and
+ * development-server machinery an application browser environment needs;
+ * `output` adds build output containment, which an application of `core`
+ * alone never builds.
  */
 export interface ViteMachinery {
 	readonly browser: boolean

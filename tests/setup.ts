@@ -141,6 +141,22 @@ export const SOURCE_SCRIPT_KEYS: readonly string[] = Object.freeze([
 	'prepublishOnly',
 ])
 
+/** Required fragments in every generated standalone guide-parity Vite project. */
+export const GUIDE_PROJECT_REQUIRED_FRAGMENTS: readonly string[] = Object.freeze([
+	"include: ['tests/guides/**/*.test.ts']",
+	"setupFiles: ['./tests/setup.ts']",
+])
+
+/** Fragments forbidden from every generated standalone guide-parity Vite project. */
+export const GUIDE_PROJECT_FORBIDDEN_FRAGMENTS: readonly string[] = Object.freeze([
+	'setupServer',
+	'setupBrowser',
+	'setupService',
+	'srcCore(',
+	'srcBrowser(',
+	'srcServer(',
+])
+
 // ── Call recorder (a real callback, not a mock) ──────────────────────────────
 //
 // AGENTS §16.1: when a test only needs to count calls or inspect arguments, use a

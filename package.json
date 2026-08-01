@@ -1,6 +1,6 @@
 {
 	"name": "@orkestrel/scaffold",
-	"version": "0.0.14",
+	"version": "0.0.15",
 	"description": "Blueprint-to-plan package scaffolding, auditing, dependency guide/version pulling, and fleet-wide shared-file upkeep for the @orkestrel line.",
 	"keywords": [
 		"audit",
@@ -110,7 +110,7 @@
 		"oxlint": "^1.76.0",
 		"playwright": "^1.62.1",
 		"typescript": "^6.0.3",
-		"vite": "^8.2.0",
+		"vite": "~8.2.0",
 		"vite-plugin-dts": "^5.0.3",
 		"vitest": "^4.1.10"
 	},

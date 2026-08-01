@@ -279,7 +279,7 @@ export const DEFAULT_VERSION = '0.0.1'
 export const DEFAULT_ENGINES = `>=${MINIMUM_NODE_VERSION}`
 
 /** The devDependency range generated packages pin `@orkestrel/scaffold` at. */
-export const SCAFFOLD_RANGE = '^0.0.14'
+export const SCAFFOLD_RANGE = '^0.0.15'
 
 /** Tooling versions shared by scaffold and every generated workspace. */
 export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
@@ -290,7 +290,7 @@ export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.fr
 	oxfmt: '^0.61.0',
 	oxlint: '^1.76.0',
 	typescript: '^6.0.3',
-	vite: '^8.1.5',
+	vite: '~8.2.0',
 	'vite-plugin-dts': '^5.0.3',
 	vitest: '^4.1.10',
 })
@@ -298,7 +298,7 @@ export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.fr
 /** Additional development dependency required by a published browser source environment. */
 export const SOURCE_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@vitest/browser-playwright': '^4.1.10',
-	playwright: '^1.62.0',
+	playwright: '^1.62.1',
 })
 
 /** Additional development dependencies required by a private Vue browser application. */

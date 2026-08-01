@@ -126,6 +126,18 @@ describe('deriveBlueprint', () => {
 		)
 	})
 
+	it('keeps every self-hosted Vite artifact byte-identical to its derived configuration', () => {
+		const derived = deriveBlueprint(WORKSPACE_ROOT)
+		const artifacts = configArtifacts(derived).filter(
+			(artifact) => artifact.path === 'vite.config.ts' || artifact.path.includes('/vite.'),
+		)
+
+		for (const artifact of artifacts) {
+			if (artifact.origin === 'host') throw new Error('expected a computed Vite artifact')
+			expect(readFileSync(join(WORKSPACE_ROOT, artifact.path), 'utf8')).toBe(artifact.content)
+		}
+	})
+
 	it('derives the physical browser fixture and audits its committed Vite config clean', async () => {
 		const directory = await buildTempDirectory()
 		try {

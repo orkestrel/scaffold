@@ -59,6 +59,8 @@ import {
 } from '@src/core'
 import {
 	APPLICATION_VARIANTS,
+	GUIDE_PROJECT_FORBIDDEN_FRAGMENTS,
+	GUIDE_PROJECT_REQUIRED_FRAGMENTS,
 	readManifest,
 	readRecord,
 	SOURCE_VARIANTS,
@@ -727,7 +729,7 @@ describe('packageManifest', () => {
 		)
 
 		expect(createHash('sha256').update(manifest).digest('hex')).toBe(
-			'632b1926b8bc785817b48ab400514551e4b61c4b3934cb51f8c6e76ed677666e',
+			'622b30964bb2d0286084c547c912e4a9a503d1fab1cb1731cd404829a209756e',
 		)
 	})
 
@@ -883,14 +885,8 @@ describe('proof Vite projects and registration', () => {
 			expect(content).toContain("environment: 'node'")
 			expect(content).toContain('browser: { enabled: false }')
 		}
-		expect(guides).toContain("include: ['tests/guides/**/*.test.ts']")
-		expect(guides).toContain("setupFiles: ['./tests/setup.ts']")
-		expect(guides).not.toContain('setupServer')
-		expect(guides).not.toContain('setupBrowser')
-		expect(guides).not.toContain('setupService')
-		expect(guides).not.toContain('srcCore(')
-		expect(guides).not.toContain('srcBrowser(')
-		expect(guides).not.toContain('srcServer(')
+		for (const fragment of GUIDE_PROJECT_REQUIRED_FRAGMENTS) expect(guides).toContain(fragment)
+		for (const fragment of GUIDE_PROJECT_FORBIDDEN_FRAGMENTS) expect(guides).not.toContain(fragment)
 		expect(integration).toContain("include: ['tests/integration/**/*.test.ts']")
 		expect(integration).toContain("setupFiles: ['./tests/setup.ts']")
 		expect(service).toContain("include: ['tests/service/**/*.test.ts']")
@@ -1082,13 +1078,10 @@ ${guidesViteProject()}`)
 				guidesStart,
 				guidesEnd === -1 ? variant.content.length : guidesEnd,
 			)
-			expect(guides).toContain("setupFiles: ['./tests/setup.ts']")
-			expect(guides).not.toContain('setupServer')
-			expect(guides).not.toContain('setupBrowser')
-			expect(guides).not.toContain('setupService')
-			expect(guides).not.toContain('srcCore(')
-			expect(guides).not.toContain('srcBrowser(')
-			expect(guides).not.toContain('srcServer(')
+			for (const fragment of GUIDE_PROJECT_REQUIRED_FRAGMENTS) expect(guides).toContain(fragment)
+			for (const fragment of GUIDE_PROJECT_FORBIDDEN_FRAGMENTS) {
+				expect(guides).not.toContain(fragment)
+			}
 		}
 	})
 })
@@ -1258,7 +1251,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 			const missing = join(directory.path, 'tests', 'missing.ts')
 			mkdirSync(root, { recursive: true })
 			mkdirSync(join(directory.path, 'tests'), { recursive: true })
-			writeFileSync(entry, '<html>app</html>\n', 'utf8')
+			writeFileSync(entry, '<html lang="en">app</html>\n', 'utf8')
 			writeFileSync(allowed, 'export {}\n', 'utf8')
 			const configPath = join(directory.path, 'boundaries.config.ts')
 			writeFileSync(
@@ -1343,7 +1336,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 					"\tthrow new Error('nonexistent absolute browser path escaped root-relative denial')",
 					'}',
 					'',
-					"const html = '<html>tester</html>'",
+					'const html = \'<html lang="en">tester</html>\'',
 					"const foreignContext = { path: '/', filename: foreign }",
 					"const entryContext = { path: '/', filename: entry }",
 					'if (isBrowserHtmlEntry(foreign) || !isBrowserHtmlEntry(entry)) {',
@@ -1623,6 +1616,131 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		for (const name of outputNames) expect(appCore).not.toContain(name)
 	})
 
+	it('attaches CSS configuration only to browser factories across every root shape', () => {
+		const nonbrowser = [
+			rootViteConfig(['core']),
+			rootViteConfig(['server']),
+			rootViteConfig(['core', 'server']),
+			applicationViteConfig([], ['core']),
+			applicationViteConfig([], ['server']),
+			applicationViteConfig(['core', 'server'], ['core', 'server']),
+		]
+		for (const content of nonbrowser) {
+			expect(content).not.toContain('ENVIRONMENT_CSS')
+			expect(content).not.toContain('css: ENVIRONMENT_CSS')
+		}
+
+		for (const content of [
+			singleSrcViteConfig('browser'),
+			rootViteConfig(['core', 'browser']),
+			applicationViteConfig(['core', 'browser'], ['core']),
+		]) {
+			expect(content.split('css: ENVIRONMENT_CSS')).toHaveLength(2)
+			const browserStart = content.indexOf('export const srcBrowser =')
+			const browserEnd = content.indexOf('\nexport ', browserStart + 1)
+			const browser = content.slice(browserStart, browserEnd)
+			expect(browser).toContain('css: ENVIRONMENT_CSS')
+		}
+
+		const full = applicationViteConfig(['core', 'browser', 'server'], ['core', 'browser', 'server'])
+		expect(full.split('css: ENVIRONMENT_CSS')).toHaveLength(3)
+		for (const project of ['srcCore', 'srcServer', 'appCore', 'appServer']) {
+			const start = full.indexOf(`export const ${project} =`)
+			const end = full.indexOf('\nexport ', start + 1)
+			expect(full.slice(start, end)).not.toContain('css: ENVIRONMENT_CSS')
+		}
+		for (const project of ['srcBrowser', 'appBrowser']) {
+			const constStart = full.indexOf(`export const ${project} =`)
+			const functionStart = full.indexOf(`export function ${project}(`)
+			const start = constStart === -1 ? functionStart : constStart
+			const end = full.indexOf('\nexport ', start + 1)
+			expect(full.slice(start, end)).toContain('css: ENVIRONMENT_CSS')
+		}
+	})
+
+	it('narrows nullable CSS import values before validating their URLs', () => {
+		const content = singleSrcViteConfig('browser')
+		const ruleValue = 'rule.value'
+		expect(content).toContain(
+			[`if (rule.type !== 'import'`, `${ruleValue} === null) return`].join(' || '),
+		)
+		expect(content).toContain(`stylesheetAssetError(source, ${ruleValue}.url)`)
+	})
+
+	it('uses structural returns before browser boundary values are reused', () => {
+		const commonGuards = [
+			[
+				'if (mappedPackageRoot === undefined) {',
+				'return this.error(',
+				"'Dependency package imports must resolve inside an exact physical package root',",
+				')',
+				'}',
+				'trustedPackageRoots.add(mappedPackageRoot)',
+			].join(' '),
+			[
+				'if (packageRoot === undefined || !containedPath(packageRoot, physicalResolution)) {',
+				"return this.error('Resolved dependencies must remain inside their physical package root')",
+				'}',
+				'trustedPackageRoots.add(packageRoot)',
+			].join(' '),
+			[
+				'if (code === undefined) {',
+				"return this.error('Dependency module source must be a bounded regular file')",
+				'}',
+				'for (const source of await environmentAssetSources(code, id))',
+			].join(' '),
+		]
+		const transformGuards = [
+			[
+				'if (config === undefined) {',
+				"return this.error('Environment boundary requires resolved Vite configuration')",
+				'}',
+			].join(' '),
+			[
+				'if (packageRoot === undefined || !containedPath(packageRoot, physicalSource)) {',
+				'return this.error(',
+				"'Resolved dependencies must remain inside their physical package root',",
+				')',
+				'}',
+				'trustedPackageRoots.add(packageRoot)',
+			].join(' '),
+			[
+				'if (resolvedSource === undefined) {',
+				"return this.error('Environment modules cannot import files outside the workspace')",
+				'}',
+				'const assetError = environmentPathError(owner, resolvedSource)',
+			].join(' '),
+		]
+
+		for (const content of [
+			rootViteConfig(['core', 'browser']),
+			applicationViteConfig(['core', 'browser'], ['core', 'browser']),
+		]) {
+			const compact = content.replaceAll(/\s+/g, ' ')
+			for (const guard of [...commonGuards, ...transformGuards]) expect(compact).toContain(guard)
+		}
+	})
+
+	it('omits ineffective library asset limits while retaining app-browser externalization', () => {
+		for (const content of [
+			singleSrcViteConfig('browser'),
+			rootViteConfig(['core', 'browser']),
+			applicationViteConfig(['browser'], ['core']),
+		]) {
+			expect(content).not.toContain('assetsInlineLimit: 0')
+		}
+
+		const application = applicationViteConfig(['browser'], ['browser'])
+		expect(application.split('assetsInlineLimit: 0')).toHaveLength(2)
+		expect(application).toContain('config.build.lib === false')
+		const sourceStart = application.indexOf('export const srcBrowser =')
+		const sourceEnd = application.indexOf('\nexport ', sourceStart + 1)
+		expect(application.slice(sourceStart, sourceEnd)).not.toContain('assetsInlineLimit')
+		const appStart = application.indexOf('export function appBrowser(')
+		const appEnd = application.indexOf('\nexport ', appStart + 1)
+		expect(application.slice(appStart, appEnd)).toContain('assetsInlineLimit: 0')
+	})
+
 	it('keeps the S4 full-app vite template byte-equivalent', () => {
 		const content = applicationViteConfig(
 			['core', 'browser', 'server'],
@@ -1631,7 +1749,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 
 		expect(content).toContain('\t)\n\nexport const policy')
 		expect(createHash('sha256').update(content).digest('hex')).toBe(
-			'38a99fb861910401d94cc403486c4d26f8d7d025b80655dbf811410794d7e053',
+			'f9a58525a6d4c58cd6a4fbcddcfdeb370607d06e30bf71497228542bddff62d8',
 		)
 	})
 
@@ -1950,16 +2068,21 @@ describe('coreTsconfig / coreViteConfig', () => {
 		expect(coreViteConfig()).toContain("entry: resolveWorkspacePath('src/core/index.ts')")
 	})
 
-	it('omits CSS plumbing from the generated core build wrapper without a browser axis', () => {
-		const artifacts = configArtifacts(blueprint('router', { src: ['core'] }))
-		const content = artifacts.find(
-			(artifact) => artifact.path === 'configs/src/vite.core.config.ts',
-		)?.content
+	it('omits CSS plumbing from the generated core build wrapper on every browser axis', () => {
+		for (const spec of [
+			blueprint('router', { src: ['core'] }),
+			blueprint('router', { src: ['core', 'browser'] }),
+			blueprint('router', { src: ['core'], app: ['browser'] }),
+		]) {
+			const content = configArtifacts(spec).find(
+				(artifact) => artifact.path === 'configs/src/vite.core.config.ts',
+			)?.content
 
-		expect(content).not.toContain('ENVIRONMENT_CSS')
-		expect(content).not.toContain('css:')
-		expect(content).toContain('environmentBoundary')
-		expect(content).toContain('outputBoundary')
+			expect(content).not.toContain('ENVIRONMENT_CSS')
+			expect(content).not.toContain('css:')
+			expect(content).toContain('environmentBoundary')
+			expect(content).toContain('outputBoundary')
+		}
 	})
 })
 
@@ -2095,6 +2218,92 @@ describe('sourceArtifacts', () => {
 })
 
 describe('paritySpecifiers', () => {
+	it('emits the short block as exact bytes', () => {
+		expect(paritySpecifiers(blueprint('router', { src: ['server'] }))).toBe(
+			[
+				"export const SELF_SPECIFIERS = ['@orkestrel/router', '@src/server']",
+				'',
+				[
+					'export',
+					'const',
+					'SPECIFIER_MODULES:',
+					'Readonly<Record<string, string>>',
+					'=',
+					'{',
+				].join(' '),
+				"\t'@orkestrel/router': 'src/server',",
+				"\t'@src/server': 'src/server',",
+				'}',
+				'export const SPECIFIER_SOURCES = new Map<string, ReturnType<typeof createSource>>()',
+				'export function exportsFor(specifier: string): readonly string[] {',
+				'\tconst module = SPECIFIER_MODULES[specifier]',
+				'\tif (module === undefined) return []',
+				'\tlet source = SPECIFIER_SOURCES.get(module)',
+				'\tif (source === undefined) {',
+				'\t\tsource = createSource({ files: GUIDE_FILES, module })',
+				'\t\tSPECIFIER_SOURCES.set(module, source)',
+				'\t}',
+				'\treturn source.exports().map((symbol) => symbol.name)',
+				'}',
+			].join('\n'),
+		)
+	})
+
+	it('emits the expanded block as exact bytes', () => {
+		expect(
+			paritySpecifiers(
+				blueprint('router', {
+					src: ['core', 'browser', 'server'],
+					app: ['core', 'browser', 'server'],
+				}),
+			),
+		).toBe(
+			[
+				'export const SELF_SPECIFIERS = [',
+				"\t'@orkestrel/router',",
+				"\t'@orkestrel/router/browser',",
+				"\t'@orkestrel/router/server',",
+				"\t'@src/core',",
+				"\t'@src/browser',",
+				"\t'@src/server',",
+				"\t'@app/core',",
+				"\t'@app/browser',",
+				"\t'@app/server',",
+				']',
+				'',
+				[
+					'export',
+					'const',
+					'SPECIFIER_MODULES:',
+					'Readonly<Record<string, string>>',
+					'=',
+					'{',
+				].join(' '),
+				"\t'@orkestrel/router': 'src/core',",
+				"\t'@orkestrel/router/browser': 'src/browser',",
+				"\t'@orkestrel/router/server': 'src/server',",
+				"\t'@src/core': 'src/core',",
+				"\t'@src/browser': 'src/browser',",
+				"\t'@src/server': 'src/server',",
+				"\t'@app/core': 'app/core',",
+				"\t'@app/browser': 'app/browser',",
+				"\t'@app/server': 'app/server',",
+				'}',
+				'export const SPECIFIER_SOURCES = new Map<string, ReturnType<typeof createSource>>()',
+				'export function exportsFor(specifier: string): readonly string[] {',
+				'\tconst module = SPECIFIER_MODULES[specifier]',
+				'\tif (module === undefined) return []',
+				'\tlet source = SPECIFIER_SOURCES.get(module)',
+				'\tif (source === undefined) {',
+				'\t\tsource = createSource({ files: GUIDE_FILES, module })',
+				'\t\tSPECIFIER_SOURCES.set(module, source)',
+				'\t}',
+				'\treturn source.exports().map((symbol) => symbol.name)',
+				'}',
+			].join('\n'),
+		)
+	})
+
 	it('resolves the primary environment to core when declared', () => {
 		const content = paritySpecifiers(blueprint('router', { src: ['core', 'server'] }))
 		expect(content).toContain("'@orkestrel/router': 'src/core'")
@@ -2331,6 +2540,18 @@ describe('direct-helper / blueprintToPlan cross-consistency', () => {
 })
 
 describe('consumer lockfile fixture guard', () => {
+	it('keeps generated Vite and Playwright ranges aligned with scaffold tooling', () => {
+		const scaffold = readManifest(readFileSync(join(WORKSPACE_ROOT, 'package.json'), 'utf8'))
+		const declared = readRecord(scaffold.devDependencies)
+		const generated = devDependenciesFor(
+			blueprint('consumer-proof', { src: ['core', 'browser', 'server'] }),
+		)
+
+		for (const name of ['vite', 'playwright']) {
+			expect(generated[name]).toBe(declared[name])
+		}
+	})
+
 	it('keeps tests/fixtures/consumer-package-lock.json devDependencies in sync with the emitted mixed-workspace manifest', () => {
 		const fixturePath = join(WORKSPACE_ROOT, 'tests', 'fixtures', 'consumer-package-lock.json')
 		const lock = readRecord(parseJSON(readFileSync(fixturePath, 'utf8')))
@@ -2357,5 +2578,25 @@ describe('consumer lockfile fixture guard', () => {
 			)
 		}
 		expect(fixtureDevDependencies).toEqual(expectedDevDependencies)
+	})
+
+	it('pins the consumer Playwright package pair to scaffold lockfile evidence', () => {
+		const fixture = readRecord(
+			parseJSON(
+				readFileSync(
+					join(WORKSPACE_ROOT, 'tests', 'fixtures', 'consumer-package-lock.json'),
+					'utf8',
+				),
+			),
+		)
+		const scaffold = readRecord(
+			parseJSON(readFileSync(join(WORKSPACE_ROOT, 'package-lock.json'), 'utf8')),
+		)
+		const fixturePackages = readRecord(fixture.packages)
+		const scaffoldPackages = readRecord(scaffold.packages)
+
+		for (const path of ['node_modules/playwright', 'node_modules/playwright-core']) {
+			expect(fixturePackages[path]).toEqual(scaffoldPackages[path])
+		}
 	})
 })
