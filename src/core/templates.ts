@@ -1560,9 +1560,7 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} isBrowserVuePath(path: string): boolean {
 		content: `import { globSync{{browserPolicySpecifier}} } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { isBrowserVuePath } from './setup.js'
-import { inspectCodingWorkspace } from './setupPolicy.js'
-{{browserPolicyImport}}
-{{vuePolicyImport}}
+import { inspectCodingWorkspace } from './setupPolicy.js'{{browserPolicyImport}}{{vuePolicyImport}}
 
 describe('repository coding law', () => {
 	it('keeps Vue single-file components exclusively in browser environments', () => {
@@ -1573,8 +1571,7 @@ describe('repository coding law', () => {
 
 	it('enforces source placement, exports, readonly contracts, and syntax law', () => {
 		{{workspacePolicyAssertion}}
-	})
-{{browserPolicyTest}}
+	}){{browserPolicyTest}}
 })
 `,
 	}),

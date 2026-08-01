@@ -652,24 +652,21 @@ export class CLI implements CLIInterface {
 		const sync = createSync(this.#sync)
 		let versions
 		try {
-			versions = await sync.versions(depNames.map((depName) => dependency(depName, '*')))
+			versions = await sync.lookup(depNames)
 		} finally {
 			sync.destroy()
 		}
-		// `createSync()` is non-strict — it never throws — so a range-less
+		// `createSync()` is non-strict — it never throws — so a bare-name
 		// `--deps` name that the registry could not resolve (`freshness`
-		// 'missing'/'failed', `latest` '') is a HARD failure here: writing `^` +
-		// an empty `latest` would otherwise land an unwritable `"^"` range in
-		// package.json with exit 0.
+		// 'missing'/'failed') is a HARD failure here.
 		const unresolved = versions
-			.filter(
-				(version) =>
-					(version.freshness !== 'current' && version.freshness !== 'behind') ||
-					version.latest === '',
-			)
+			.filter((version) => version.freshness === 'missing' || version.freshness === 'failed')
 			.map((version) => version.name)
 		if (unresolved.length > 0) this.#fail(unresolvedVersion(unresolved), json)
-		const deps = versions.map((version) => dependency(version.name, `^${version.latest}`))
+		const deps = versions.map((version) => {
+			if (version.freshness !== 'behind') this.#fail(unresolvedVersion([version.name]), json)
+			return dependency(version.name, `^${version.latest}`)
+		})
 
 		// Extra devDependencies are authored in `package.json` after scaffolding;
 		// `deriveBlueprint`'s extras round-trip

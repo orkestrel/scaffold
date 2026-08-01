@@ -1324,60 +1324,72 @@ export function registerHermeticBinGates(): void {
 			}, 60000)
 		})
 
-		describe('format-stable by construction: computed JSON survives oxfmt untouched', () => {
-			it('a fresh long-name mixed scaffold passes its own vendored oxfmt --check with zero rewrites', async () => {
-				const oxfmtEntry = resolveToolEntry('oxfmt', 'oxfmt')
-				expect(existsSync(oxfmtEntry)).toBe(true)
+		describe('format-stable by construction: generated canon survives oxfmt untouched', () => {
+			it.each([
+				{
+					label: 'full browser workspace',
+					name: 'scaffold-mixed-layer-acceptance',
+					src: 'core,browser,server',
+					app: 'core,browser,server',
+				},
+				{
+					label: 'browserless core and server workspace',
+					name: 'scaffold-server-layer-acceptance',
+					src: 'core,server',
+					app: 'core,server',
+				},
+				{
+					label: 'browser source without Vue workspace',
+					name: 'scaffold-browser-layer-acceptance',
+					src: 'browser',
+					app: 'core',
+				},
+			])(
+				'$label passes its own vendored oxfmt --check with zero rewrites',
+				async ({ name, src, app }) => {
+					const oxfmtEntry = resolveToolEntry('oxfmt', 'oxfmt')
+					expect(existsSync(oxfmtEntry)).toBe(true)
 
-				const cwd = await buildTempDirectory()
-				try {
-					const created = runDefaultBin(
-						[
-							'new',
-							'scaffold-mixed-layer-acceptance',
-							'--src',
-							'core,browser,server',
-							'--app',
-							'core,browser,server',
-							'--apply',
-						],
-						{
+					const cwd = await buildTempDirectory()
+					try {
+						const created = runDefaultBin(['new', name, '--src', src, '--app', app, '--apply'], {
 							cwd: cwd.path,
-						},
-					)
-					expect(created.status).toBe(0)
+						})
+						expect(created.status).toBe(0)
 
-					const packageDirectory = join(cwd.path, 'scaffold-mixed-layer-acceptance')
-					// the vendored `.oxfmtrc.json` this suite's own `format:check` runs
-					// under — HOST_PATHS byte-copies it into every scaffold, so the
-					// package checks itself against the fleet's own rules, not a
-					// hand-picked substitute.
-					expect(existsSync(join(packageDirectory, '.oxfmtrc.json'))).toBe(true)
+						const packageDirectory = join(cwd.path, name)
+						// the vendored `.oxfmtrc.json` this suite's own `format:check` runs
+						// under — HOST_PATHS byte-copies it into every scaffold, so the
+						// package checks itself against the fleet's own rules, not a
+						// hand-picked substitute.
+						expect(existsSync(join(packageDirectory, '.oxfmtrc.json'))).toBe(true)
 
-					const check = spawnSync(
-						process.execPath,
-						[oxfmtEntry, '--config', '.oxfmtrc.json', '--check', '.'],
-						{
-							cwd: packageDirectory,
-							encoding: 'utf8',
-							timeout: 30000,
-						},
-					)
-					// A non-zero/null status folds the full spawn diagnostic into the asserted
-					// value so a failure names the entry, error, signal, and process output — while
-					// staying inside the linter's single-argument `expect` contract.
-					const failure =
-						check.status === 0
-							? ''
-							: `oxfmt --check spawn (entry: ${oxfmtEntry}) failed to run to completion — ` +
-								`status: ${String(check.status)}, error: ${String(check.error)}, ` +
-								`signal: ${String(check.signal)}, stdout: ${check.stdout}, stderr: ${check.stderr}`
-					expect(failure).toBe('')
-					expect(`${check.stdout}${check.stderr}`).not.toContain('Format issues found')
-				} finally {
-					await cwd.cleanup()
-				}
-			}, 60000)
+						const check = spawnSync(
+							process.execPath,
+							[oxfmtEntry, '--config', '.oxfmtrc.json', '--check', '.'],
+							{
+								cwd: packageDirectory,
+								encoding: 'utf8',
+								timeout: 30000,
+							},
+						)
+						// A non-zero/null status folds the full spawn diagnostic into the asserted
+						// value so a failure names the entry, error, signal, and process output — while
+						// staying inside the linter's single-argument `expect` contract.
+						const failure =
+							check.status === 0
+								? ''
+								: `oxfmt --check spawn (entry: ${oxfmtEntry}) failed to run to completion — ` +
+									`status: ${String(check.status)}, error: ${String(check.error)}, ` +
+									`signal: ${String(check.signal)}, stdout: ${check.stdout}, stderr: ${check.stderr}`
+						expect(failure).toBe('')
+						expect(`${check.stdout}${check.stderr}`).not.toContain('Format issues found')
+					} finally {
+						await cwd.cleanup()
+					}
+				},
+				60000,
+			)
 		})
 
 		describe('packed installation', () => {

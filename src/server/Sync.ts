@@ -3,6 +3,7 @@ import type {
 	SyncEventMap,
 	SyncInterface,
 	SyncOptions,
+	VersionLookup,
 	WritePrecondition,
 } from './types.js'
 import type {
@@ -46,7 +47,12 @@ import {
 	syncReportOf,
 	validateWriteDirectories,
 } from './helpers.js'
-import { parseSyncCurrent, parseSyncDependencies, parseSyncOptions } from './parsers.js'
+import {
+	parseSyncCurrent,
+	parseSyncDependencies,
+	parseSyncNames,
+	parseSyncOptions,
+} from './parsers.js'
 import { isCatalogDescription, isFilesystemPath, isMissingPathError } from './validators.js'
 import { WriteTransaction } from './WriteTransaction.js'
 import {
@@ -129,6 +135,11 @@ export class Sync implements SyncInterface {
 		return this.#emitter
 	}
 
+	async lookup(names: readonly string[]): Promise<readonly VersionLookup[]> {
+		this.#ensureAlive()
+		return this.#lookup(names, Float64Array.of(this.#budget))
+	}
+
 	async guides(
 		deps: readonly Dependency[],
 		current?: Readonly<Record<string, string>>,
@@ -183,19 +194,37 @@ export class Sync implements SyncInterface {
 		})
 	}
 
-	#versions(
+	async #versions(
 		deps: readonly Dependency[],
 		allowance: SyncAllowance,
 	): Promise<readonly VersionSync[]> {
 		const parsed = parseSyncDependencies(deps, true)
+		const lookups = await this.#lookup(
+			parsed.map((dependency) => dependency.name),
+			allowance,
+		)
+		const versions: VersionSync[] = []
+		for (let index = 0; index < parsed.length; index += 1) {
+			const dep = parsed[index]
+			const lookup = lookups[index]
+			if (dep === undefined || lookup === undefined) {
+				throw new ScaffoldError('INVALID', 'Sync version lookup result is incomplete')
+			}
+			versions.push(Sync.#toVersionSync(dep, lookup))
+		}
+		return Object.freeze(versions)
+	}
+
+	#lookup(names: readonly string[], allowance: SyncAllowance): Promise<readonly VersionLookup[]> {
+		const parsed = parseSyncNames(names)
 		if (parsed.length > this.#items) {
 			throw new ScaffoldError('INVALID', 'Sync dependency count exceeds its item limit', {
 				items: parsed.length,
 				limit: this.#items,
 			})
 		}
-		return Sync.#runPool(parsed, this.#concurrency, async (dep) => {
-			const url = this.#registryUrl(dep.name)
+		return Sync.#runPool(parsed, this.#concurrency, async (name) => {
+			const url = this.#registryUrl(name)
 			const outcome = await Sync.#fetchText(
 				url,
 				this.#registryTimeout,
@@ -204,13 +233,13 @@ export class Sync implements SyncInterface {
 				allowance,
 				this.#controller.signal,
 			)
-			const version = Sync.#toVersionSync(dep, outcome)
+			const version = Sync.#toVersionLookup(name, outcome)
 			if (outcome.kind === 'failed') this.#emitter.emit('error', outcome.error)
-			this.#emitter.emit('version', dep.name)
+			this.#emitter.emit('version', name)
 			if (this.#strict && (version.freshness === 'missing' || version.freshness === 'failed')) {
 				throw new ScaffoldError('FETCH', `Failed to fetch registry version at ${url}`, {
 					url,
-					name: dep.name,
+					name,
 				})
 			}
 			return version
@@ -739,27 +768,23 @@ export class Sync implements SyncInterface {
 		}
 	}
 
-	static #toVersionSync(
-		dep: Dependency,
+	static #toVersionLookup(
+		name: string,
 		outcome:
 			| { readonly kind: 'ok'; readonly text: string }
 			| { readonly kind: 'missing' }
 			| { readonly kind: 'failed'; readonly error: unknown; readonly note: string },
-	): VersionSync {
+	): VersionLookup {
 		if (outcome.kind === 'missing') {
 			return {
-				name: dep.name,
-				range: dep.range,
-				latest: '',
+				name,
 				freshness: 'missing',
 				note: 'HTTP 404',
 			}
 		}
 		if (outcome.kind === 'failed') {
 			return {
-				name: dep.name,
-				range: dep.range,
-				latest: '',
+				name,
 				freshness: 'failed',
 				note: outcome.note,
 			}
@@ -767,18 +792,33 @@ export class Sync implements SyncInterface {
 		const latest = Sync.#parseLatest(outcome.text)
 		if (latest === undefined) {
 			return {
-				name: dep.name,
-				range: dep.range,
-				latest: '',
+				name,
 				freshness: 'failed',
 				note: 'malformed registry response (missing dist-tags.latest)',
 			}
 		}
 		return {
+			name,
+			latest,
+			freshness: 'behind',
+		}
+	}
+
+	static #toVersionSync(dep: Dependency, lookup: VersionLookup): VersionSync {
+		if (lookup.freshness !== 'behind') {
+			return {
+				name: dep.name,
+				range: dep.range,
+				latest: '',
+				freshness: lookup.freshness,
+				note: lookup.note,
+			}
+		}
+		return {
 			name: dep.name,
 			range: dep.range,
-			latest,
-			freshness: rangeToFreshness(dep.range, latest),
+			latest: lookup.latest,
+			freshness: rangeToFreshness(dep.range, lookup.latest),
 		}
 	}
 

@@ -35,7 +35,14 @@ import {
 	runBin,
 	scaffoldPackage,
 } from '../../setupBin.js'
-import { buildTempDirectory, canSymlink, WORKSPACE_ROOT } from '../../setupServer.js'
+import {
+	buildHTTPFixture,
+	buildRegistryPath,
+	buildTempDirectory,
+	canSymlink,
+	respondJSON,
+	WORKSPACE_ROOT,
+} from '../../setupServer.js'
 
 describe('scaffold bin: offline vendored-catalog resolution', () => {
 	it('resolveCatalogNames-equivalent path: hostRoot() + readHostManifest + locateHostSource resolves the BUILT dist/host orkestrel.md, catalogNames parses real @orkestrel/* names', () => {
@@ -133,6 +140,48 @@ describe('scaffold bin', () => {
 	})
 
 	describe('new', () => {
+		it('--deps resolves registry versions and writes caret-pinned dependencies', async () => {
+			const fixture = await buildHTTPFixture()
+			const from = await buildFromFixture({
+				'guides/src/contract.md': '# contract fixture\n',
+			})
+			const target = mkdtempSync(join(WORKSPACE_ROOT, '.deps-regression-'))
+			const previousExitCode = process.exitCode
+			try {
+				fixture.route(buildRegistryPath('@orkestrel/contract'), (_request, response) =>
+					respondJSON(response, '0.0.9'),
+				)
+				process.exitCode = undefined
+				await new CLI({ registry: { base: fixture.base } }).run([
+					'new',
+					'deps-regression',
+					'--src',
+					'core',
+					'--deps',
+					'@orkestrel/contract',
+					'--target',
+					relative(WORKSPACE_ROOT, target),
+					'--from',
+					from.path,
+					'--apply',
+					'--yes',
+					'--json',
+				])
+
+				expect(process.exitCode).toBe(0)
+				expect(fixture.hits.get(buildRegistryPath('@orkestrel/contract'))).toBe(1)
+				const manifest: unknown = parseJSON(readFileSync(join(target, 'package.json'), 'utf8'))
+				expect(manifest).toMatchObject({
+					dependencies: { '@orkestrel/contract': '^0.0.9' },
+				})
+			} finally {
+				process.exitCode = previousExitCode
+				rmSync(target, { recursive: true, force: true })
+				await from.cleanup()
+				await fixture.close()
+			}
+		})
+
 		it('dry-run (--json, empty stdin): previews via a single JSON value, applied:false, and writes nothing', async () => {
 			const from = await buildFromFixture()
 			const cwd = await buildTempDirectory()

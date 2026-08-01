@@ -115,6 +115,19 @@ export type SyncBase = string
 /** One bounded Git-compatible branch path accepted by the guide endpoint. */
 export type SyncBranch = string
 
+/** One bare-name registry lookup, without a caller-invented declaration range. */
+export type VersionLookup =
+	| {
+			readonly name: string
+			readonly latest: string
+			readonly freshness: 'behind'
+	  }
+	| {
+			readonly name: string
+			readonly freshness: 'missing' | 'failed'
+			readonly note: string
+	  }
+
 /** One validated guide update and its contained destination. */
 export interface GuideWrite {
 	readonly guide: GuideSync
@@ -200,6 +213,7 @@ export interface SyncOptions {
  */
 export interface SyncInterface {
 	readonly emitter: EmitterInterface<SyncEventMap>
+	lookup(names: readonly string[]): Promise<readonly VersionLookup[]>
 	guides(
 		deps: readonly Dependency[],
 		current?: Readonly<Record<string, string>>,

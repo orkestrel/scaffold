@@ -3756,9 +3756,9 @@ export function testArtifacts(spec: Blueprint, pascal: string): readonly Artifac
 		? ', accessSync, constants as FS_CONSTANTS, statSync'
 		: ''
 	const browserPolicyImport = hasBrowser
-		? "import { chromium } from 'playwright'\nimport { resolveChromium } from '../vite.config.js'"
+		? "\nimport { chromium } from 'playwright'\nimport { resolveChromium } from '../vite.config.js'"
 		: ''
-	const vuePolicyImport = hasVue ? "import { parse as parseVue } from 'vue/compiler-sfc'" : ''
+	const vuePolicyImport = hasVue ? "\nimport { parse as parseVue } from 'vue/compiler-sfc'" : ''
 	const workspacePolicyAssertion = hasVue
 		? `expect(
 			inspectCodingWorkspace(process.cwd(), (path, content) => {
@@ -3772,6 +3772,7 @@ export function testArtifacts(spec: Blueprint, pascal: string): readonly Artifac
 		: 'expect(inspectCodingWorkspace(process.cwd())).toEqual([])'
 	const browserPolicyTest = hasBrowser
 		? `
+
 	it('resolves Chromium only to a real executable file', () => {
 		const chromiumPath = resolveChromium(chromium.executablePath())
 		if (chromiumPath === undefined) return

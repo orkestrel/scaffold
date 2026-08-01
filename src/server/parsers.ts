@@ -12,9 +12,11 @@ import type { EmitterHooks } from '@orkestrel/emitter'
 import { attempt, isFunction, isRecord } from '@orkestrel/contract'
 import {
 	contentByteLength,
+	EXTRA_NAME_PATTERN,
 	isDenseDataArray,
 	isEmitterErrorHandler,
 	MAX_ARTIFACT_BYTES,
+	MAX_DEPENDENCY_NAME_LENGTH,
 	ScaffoldError,
 	validateDependencyArray,
 } from '@src/core'
@@ -33,6 +35,67 @@ import {
 	isSyncEventHooks,
 	isWritePrecondition,
 } from './validators.js'
+
+/**
+ * Parse and semantically validate bare registry package names before Sync performs network I/O.
+ *
+ * @param value - Untrusted package-name collection.
+ * @returns A frozen owned snapshot of valid unique npm package names.
+ */
+export function parseSyncNames(value: unknown): readonly string[] {
+	const owned = attempt(() => {
+		if (
+			!isDenseDataArray(
+				value,
+				MAX_SYNC_ITEMS,
+				(candidate): candidate is string => typeof candidate === 'string',
+			)
+		) {
+			throw new Error('package names are malformed')
+		}
+		const length = Reflect.getOwnPropertyDescriptor(value, 'length')?.value
+		if (
+			typeof length !== 'number' ||
+			!Number.isSafeInteger(length) ||
+			length < 0 ||
+			length > MAX_SYNC_ITEMS
+		) {
+			throw new Error('package name length is malformed')
+		}
+		const names: string[] = []
+		for (let index = 0; index < length; index += 1) {
+			const descriptor = Reflect.getOwnPropertyDescriptor(value, String(index))
+			if (
+				descriptor === undefined ||
+				!Reflect.has(descriptor, 'value') ||
+				typeof descriptor.value !== 'string'
+			) {
+				throw new Error('package name is malformed')
+			}
+			names.push(descriptor.value)
+		}
+		return Object.freeze(names)
+	})
+	if (!owned.success) {
+		throw new ScaffoldError('INVALID', 'Sync package names are malformed', {
+			error: owned.error,
+		})
+	}
+	const snapshot = owned.value
+	const seen = new Set<string>()
+	for (const name of snapshot) {
+		if (
+			name.length === 0 ||
+			name.length > MAX_DEPENDENCY_NAME_LENGTH ||
+			!EXTRA_NAME_PATTERN.test(name) ||
+			seen.has(name)
+		) {
+			throw new ScaffoldError('INVALID', 'Sync package names are invalid', { name })
+		}
+		seen.add(name)
+	}
+	return snapshot
+}
 
 /** Parse and semantically validate dependency data before Sync performs network I/O. */
 export function parseSyncDependencies(value: unknown, external: boolean): readonly Dependency[] {

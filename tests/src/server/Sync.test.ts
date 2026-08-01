@@ -13,6 +13,7 @@ import {
 	parseSyncBase,
 	parseSyncBranch,
 	parseSyncDependencies,
+	parseSyncNames,
 	parseSyncOptions,
 } from '@src/server'
 import { buildSyncReport, createRecorder } from '../../setup.js'
@@ -88,6 +89,16 @@ describe('Sync options boundary', () => {
 				expect.objectContaining({ code: 'INVALID' }),
 			)
 		}
+	})
+
+	it('parses owned bare registry names without inventing declaration ranges', () => {
+		expect(parseSyncNames(['@orkestrel/contract', 'zod'])).toEqual(['@orkestrel/contract', 'zod'])
+		expect(() => parseSyncNames(['@orkestrel/../contract'])).toThrowError(
+			expect.objectContaining({ code: 'INVALID' }),
+		)
+		expect(() => parseSyncNames(['zod', 'zod'])).toThrowError(
+			expect.objectContaining({ code: 'INVALID' }),
+		)
 	})
 
 	it('accepts bounded values and returns a fresh parsed record', () => {
@@ -354,6 +365,27 @@ describe('Sync dependency boundary', () => {
 				]),
 			).rejects.toMatchObject({ code: 'INVALID' })
 			expect(fixture.hits.size).toBe(0)
+			sync.destroy()
+		} finally {
+			await fixture.close()
+		}
+	})
+})
+
+describe('Sync.lookup', () => {
+	it('resolves a bare package name without a declaration range', async () => {
+		const fixture = await buildHTTPFixture()
+		try {
+			fixture.route(buildRegistryPath('@orkestrel/contract'), (_request, response) =>
+				respondJSON(response, '0.0.9'),
+			)
+			const sync = createSync({ registry: { base: fixture.base } })
+			const [result] = await sync.lookup(['@orkestrel/contract'])
+			expect(result).toEqual({
+				name: '@orkestrel/contract',
+				latest: '0.0.9',
+				freshness: 'behind',
+			})
 			sync.destroy()
 		} finally {
 			await fixture.close()
@@ -1289,6 +1321,7 @@ describe('Sync.destroy', () => {
 
 			const report = buildSyncReport(undefined, directory.path)
 			for (const attempt of [
+				() => sync.lookup(['@orkestrel/contract']),
 				() => sync.guides([dependency('@orkestrel/contract', '^0.0.5')]),
 				() => sync.versions([dependency('@orkestrel/contract', '^0.0.5')]),
 				() => sync.pull(directory.path),
