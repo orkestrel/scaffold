@@ -654,12 +654,26 @@ export function packArchive(cwd: string, destination: string): string {
 			`npm pack failed: status=${String(packed.status)} error=${String(packed.error)} stdout=${packed.stdout} stderr=${packed.stderr}`,
 		)
 	}
-	const reports = parseJSON(packed.stdout)
-	const report = Array.isArray(reports) ? reports[0] : undefined
+	const report = parsePackReport(packed.stdout)
 	if (!isRecord(report) || typeof report.filename !== 'string') {
 		throw new Error('expected npm pack --json to return one archive filename')
 	}
 	return join(destination, report.filename)
+}
+
+/** Parse the one package report emitted by legacy and current npm pack JSON formats. */
+export function parsePackReport(
+	output: string,
+): Readonly<Record<PropertyKey, unknown>> | undefined {
+	const parsed = parseJSON(output)
+	if (Array.isArray(parsed)) {
+		const report = parsed.length === 1 ? parsed[0] : undefined
+		return isRecord(report) ? report : undefined
+	}
+	if (!isRecord(parsed)) return undefined
+	const reports = Object.values(parsed)
+	const report = reports.length === 1 ? reports[0] : undefined
+	return isRecord(report) ? report : undefined
 }
 
 /** Install one local archive in offline mode using the cache populated by the root install. */
@@ -708,8 +722,7 @@ export function packFiles(cwd: string): readonly string[] {
 			`npm pack dry-run failed: status=${String(packed.status)} error=${String(packed.error)} stdout=${packed.stdout} stderr=${packed.stderr}`,
 		)
 	}
-	const reports = parseJSON(packed.stdout)
-	const report = Array.isArray(reports) ? reports[0] : undefined
+	const report = parsePackReport(packed.stdout)
 	if (!isRecord(report) || !Array.isArray(report.files)) {
 		throw new Error('expected npm pack --dry-run --json to return one file report')
 	}

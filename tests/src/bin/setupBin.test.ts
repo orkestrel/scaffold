@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { cloneGeneratedModules } from '../../setupBin.js'
+import { cloneGeneratedModules, parsePackReport } from '../../setupBin.js'
 import { buildTempDirectory } from '../../setupServer.js'
 
 describe('cloneGeneratedModules', () => {
@@ -28,5 +28,21 @@ describe('cloneGeneratedModules', () => {
 			await destination.cleanup()
 			await source.cleanup()
 		}
+	})
+})
+
+describe('parsePackReport', () => {
+	it('normalizes legacy arrays and npm 12 keyed objects', () => {
+		const report = { filename: 'orkestrel-scaffold-0.0.16.tgz', files: [{ path: 'package.json' }] }
+
+		expect(parsePackReport(JSON.stringify([report]))).toEqual(report)
+		expect(parsePackReport(JSON.stringify({ '@orkestrel/scaffold': report }))).toEqual(report)
+	})
+
+	it('fails closed for missing or ambiguous reports', () => {
+		expect(parsePackReport('{}')).toBeUndefined()
+		expect(parsePackReport('[]')).toBeUndefined()
+		expect(parsePackReport('[{},{}]')).toBeUndefined()
+		expect(parsePackReport('{"first":{},"second":{}}')).toBeUndefined()
 	})
 })
