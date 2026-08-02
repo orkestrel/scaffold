@@ -656,7 +656,11 @@ export function packArchive(cwd: string, destination: string): string {
 	}
 	const report = parsePackReport(packed.stdout)
 	if (!isRecord(report) || typeof report.filename !== 'string') {
-		throw new Error('expected npm pack --json to return one archive filename')
+		// Carry the payload: a shape this parser does not recognize is only diagnosable from
+		// what npm actually printed, and a bare sentence costs a whole round trip to find out.
+		throw new Error(
+			`expected npm pack --json to return one archive filename: stdout=${packed.stdout} stderr=${packed.stderr}`,
+		)
 	}
 	return join(destination, report.filename)
 }
@@ -724,7 +728,10 @@ export function packFiles(cwd: string): readonly string[] {
 	}
 	const report = parsePackReport(packed.stdout)
 	if (!isRecord(report) || !Array.isArray(report.files)) {
-		throw new Error('expected npm pack --dry-run --json to return one file report')
+		// Same reason as `packArchive`: the unrecognized payload is the whole diagnosis.
+		throw new Error(
+			`expected npm pack --dry-run --json to return one file report: stdout=${packed.stdout} stderr=${packed.stderr}`,
+		)
 	}
 	const paths: string[] = []
 	for (const file of report.files) {
