@@ -79,8 +79,10 @@ import {
  * map, a fetched guide byte-equal to its entry verdicts `current`, anything
  * differing or absent from the map verdicts `behind`; WITHOUT the map, every
  * successful fetch verdicts `behind` (no reference means it needs syncing).
- * `pull` builds that map itself from the TARGET's own `guides/src/<short>.md`
- * mirrors, so its verdicts are target-relative; `write` commits only the
+ * `pull` builds that map itself from the TARGET's declared dependency mirrors;
+ * `mirror` builds it from the registry's exact organization package list,
+ * excluding the target's own guide and issuing no registry version reads. Both
+ * verdicts are target-relative; `write` commits only the
  * `behind` guides (never `current`, `missing`, or `failed`, which carries no
  * trustworthy content) under the same realpath-anchored containment law
  * `Materializer` enforces. After `destroy()` every method throws `DESTROYED`;
@@ -145,7 +147,12 @@ export class Sync implements SyncInterface {
 		current?: Readonly<Record<string, string>>,
 	): Promise<readonly GuideSync[]> {
 		this.#ensureAlive()
-		return this.#guides(deps, current, Float64Array.of(this.#budget))
+		const parsed = parseSyncDependencies(deps, false)
+		return this.#guides(
+			parsed.map((dependency) => dependency.name),
+			current,
+			Float64Array.of(this.#budget),
+		)
 	}
 
 	async versions(deps: readonly Dependency[]): Promise<readonly VersionSync[]> {
@@ -154,24 +161,20 @@ export class Sync implements SyncInterface {
 	}
 
 	#guides(
-		deps: readonly Dependency[],
+		names: readonly string[],
 		current: Readonly<Record<string, string>> | undefined,
 		allowance: SyncAllowance,
 	): Promise<readonly GuideSync[]> {
-		const parsed = parseSyncDependencies(deps, false)
+		const parsed = parseSyncNames(names)
 		if (parsed.length > this.#items) {
 			throw new ScaffoldError('INVALID', 'Sync dependency count exceeds its item limit', {
 				items: parsed.length,
 				limit: this.#items,
 			})
 		}
-		const reference = parseSyncCurrent(
-			current,
-			parsed.map((dependency) => dependency.name),
-			this.#budget,
-		)
-		return Sync.#runPool(parsed, this.#concurrency, async (dep) => {
-			const short = packageShortName(dep.name)
+		const reference = parseSyncCurrent(current, parsed, this.#budget)
+		return Sync.#runPool(parsed, this.#concurrency, async (name) => {
+			const short = packageShortName(name)
 			const url = this.#guideUrl(short)
 			const outcome = await Sync.#fetchText(
 				url,
@@ -181,13 +184,13 @@ export class Sync implements SyncInterface {
 				allowance,
 				this.#controller.signal,
 			)
-			const guide = Sync.#toGuideSync(dep.name, short, outcome, reference)
+			const guide = Sync.#toGuideSync(name, short, outcome, reference)
 			if (outcome.kind === 'failed') this.#emitter.emit('error', outcome.error)
-			this.#emitter.emit('guide', dep.name)
+			this.#emitter.emit('guide', name)
 			if (this.#strict && (guide.freshness === 'missing' || guide.freshness === 'failed')) {
 				throw new ScaffoldError('FETCH', `Failed to fetch guide at ${url}`, {
 					url,
-					name: dep.name,
+					name,
 				})
 			}
 			return guide
@@ -274,24 +277,8 @@ export class Sync implements SyncInterface {
 	 */
 	async catalog(): Promise<readonly CatalogEntry[]> {
 		this.#ensureAlive()
-		const orgUrl = this.#orgUrl()
 		const allowance: SyncAllowance = Float64Array.of(this.#budget)
-		const orgOutcome = await Sync.#fetchText(
-			orgUrl,
-			this.#registryTimeout,
-			this.#retries,
-			this.#limit,
-			allowance,
-			this.#controller.signal,
-		)
-		const names = Sync.#toOrgPackages(orgOutcome, orgUrl)
-		if (names.length > this.#items) {
-			throw new ScaffoldError('FETCH', `Package list at ${orgUrl} exceeds the item limit`, {
-				url: orgUrl,
-				items: names.length,
-				limit: this.#items,
-			})
-		}
+		const names = await this.#packages(allowance)
 		const entries = await Sync.#runPool(names, this.#concurrency, async (name) => {
 			const packumentOutcome = await Sync.#fetchText(
 				this.#registryUrl(name),
@@ -319,7 +306,7 @@ export class Sync implements SyncInterface {
 			this.#emitter.emit('package', name, note)
 			return { name, version: packument.version, description }
 		})
-		return [...entries].sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
+		return entries
 	}
 
 	async pull(target: string, dependencies?: readonly Dependency[]): Promise<SyncReport> {
@@ -340,13 +327,27 @@ export class Sync implements SyncInterface {
 			throw new ScaffoldError('INVALID', 'Sync pull selection is not declared by the target')
 		}
 		const name = manifestToName(manifest)
-		const guideDependencies =
-			name === undefined ? deps : deps.filter((dependency) => dependency.name !== name)
-		const current = readGuideReferences(target, guideDependencies)
+		const guideNames = deps
+			.map((dependency) => dependency.name)
+			.filter((dependency) => dependency !== name)
+		const current = readGuideReferences(target, guideNames)
 		const allowance: SyncAllowance = Float64Array.of(this.#budget)
-		const guides = await this.#guides(guideDependencies, current, allowance)
+		const guides = await this.#guides(guideNames, current, allowance)
 		const versions = await this.#versions(deps, allowance)
 		const report = syncReportOf(target, guides, versions)
+		this.#emitter.emit('done', report)
+		return report
+	}
+
+	async mirror(target: string): Promise<SyncReport> {
+		this.#ensureAlive()
+		const manifest = readManifest(target)
+		const name = manifestToName(manifest)
+		const allowance: SyncAllowance = Float64Array.of(this.#budget)
+		const names = (await this.#packages(allowance)).filter((candidate) => candidate !== name)
+		const current = readGuideReferences(target, names)
+		const guides = await this.#guides(names, current, allowance)
+		const report = syncReportOf(target, guides, [])
 		this.#emitter.emit('done', report)
 		return report
 	}
@@ -498,6 +499,27 @@ export class Sync implements SyncInterface {
 	// not filter as its name implies).
 	#orgUrl(): string {
 		return `${this.#registryBase}/-/org/orkestrel/package`
+	}
+
+	async #packages(allowance: SyncAllowance): Promise<readonly string[]> {
+		const url = this.#orgUrl()
+		const outcome = await Sync.#fetchText(
+			url,
+			this.#registryTimeout,
+			this.#retries,
+			this.#limit,
+			allowance,
+			this.#controller.signal,
+		)
+		const names = Sync.#toOrgPackages(outcome, url)
+		if (names.length > this.#items) {
+			throw new ScaffoldError('FETCH', `Package list at ${url} exceeds the item limit`, {
+				url,
+				items: names.length,
+				limit: this.#items,
+			})
+		}
+		return [...names].sort((left, right) => (left < right ? -1 : left > right ? 1 : 0))
 	}
 
 	// Bounded-concurrency worker pool — never an unbounded `Promise.all` (§12).

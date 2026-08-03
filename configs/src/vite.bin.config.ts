@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite'
-import { srcBin } from '../../vite.config'
+import { srcBin } from '../../vite.config.ts'
 
 // The `scaffold` executable build — a single ESM lib file, no declarations (an
 // executable ships no types), with the `#!/usr/bin/env node` shebang re-emitted via

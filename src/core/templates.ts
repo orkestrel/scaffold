@@ -1882,9 +1882,7 @@ describe('createApplication', () => {
 			'x'.repeat(204),
 			\`\${' '.repeat(MAX_APPLICATION_NAME_INPUT_LENGTH)}x\`,
 		]) {
-			expect(() => Reflect.apply(createApplication, undefined, [value])).toThrowError(
-				ApplicationError,
-			)
+			expect(() => Reflect.apply(createApplication, undefined, [value])).toThrow(ApplicationError)
 		}
 		const error = new ApplicationError('CONFIG', 'invalid')
 		expect(isApplicationError(error)).toBe(true)
@@ -1961,7 +1959,7 @@ describe('createBrowserApplication', () => {
 			{ name: 'x'.repeat(204) },
 			{ name: \`\${' '.repeat(MAX_BROWSER_APPLICATION_NAME_INPUT_LENGTH)}x\` },
 		]) {
-			expect(() => Reflect.apply(createBrowserApplication, undefined, [value])).toThrowError(
+			expect(() => Reflect.apply(createBrowserApplication, undefined, [value])).toThrow(
 				BrowserApplicationError,
 			)
 		}
@@ -1986,14 +1984,14 @@ describe('createBrowserApplication', () => {
 		const revocable = Proxy.revocable({}, {})
 		revocable.revoke()
 
-		expect(() => parseBrowserApplicationOptions(accessor)).toThrowError(BrowserApplicationError)
+		expect(() => parseBrowserApplicationOptions(accessor)).toThrow(BrowserApplicationError)
 		expect(reads).toBe(0)
-		expect(() => Reflect.apply(createBrowserApplication, undefined, [hostile])).toThrowError(
+		expect(() => Reflect.apply(createBrowserApplication, undefined, [hostile])).toThrow(
 			BrowserApplicationError,
 		)
-		expect(() =>
-			Reflect.apply(createBrowserApplication, undefined, [revocable.proxy]),
-		).toThrowError(BrowserApplicationError)
+		expect(() => Reflect.apply(createBrowserApplication, undefined, [revocable.proxy])).toThrow(
+			BrowserApplicationError,
+		)
 		expect(isBrowserApplicationError(new BrowserApplicationError('CONFIG', 'invalid'))).toBe(true)
 		expect(isBrowserApplicationError(new Error('plain'))).toBe(false)
 		expect(isBrowserApplicationError(revocable.proxy)).toBe(false)
@@ -2098,20 +2096,20 @@ describe('ApplicationServer', () => {
 	})
 
 	it('validates direct options before allocating a listener', () => {
-		expect(() => createApplicationServer({ host: ' ' })).toThrowError(
+		expect(() => createApplicationServer({ host: ' ' })).toThrow(
 			expect.objectContaining({ code: 'CONFIG' }),
 		)
-		expect(() => createApplicationServer({ port: Number.NaN })).toThrowError(
+		expect(() => createApplicationServer({ port: Number.NaN })).toThrow(
 			expect.objectContaining({ code: 'CONFIG' }),
 		)
-		expect(() => createApplicationServer({ port: -1 })).toThrowError(
+		expect(() => createApplicationServer({ port: -1 })).toThrow(
 			expect.objectContaining({ code: 'CONFIG' }),
 		)
-		expect(() => createApplicationServer({ timeout: 0 })).toThrowError(
+		expect(() => createApplicationServer({ timeout: 0 })).toThrow(
 			expect.objectContaining({ code: 'CONFIG' }),
 		)
 		for (const value of [null, 42, [], { host: 42 }, { port: [42] }]) {
-			expect(() => Reflect.apply(createApplicationServer, undefined, [value])).toThrowError(
+			expect(() => Reflect.apply(createApplicationServer, undefined, [value])).toThrow(
 				expect.objectContaining({ code: 'CONFIG' }),
 			)
 		}
@@ -2131,14 +2129,10 @@ describe('ApplicationServer', () => {
 			expect(server.port).toBe(0)
 
 			process.env.APP_PORT = '1e3'
-			expect(() => createApplicationServer()).toThrowError(
-				expect.objectContaining({ code: 'CONFIG' }),
-			)
+			expect(() => createApplicationServer()).toThrow(expect.objectContaining({ code: 'CONFIG' }))
 			process.env.APP_PORT = '0'
 			process.env.APP_START_TIMEOUT = '0'
-			expect(() => createApplicationServer()).toThrowError(
-				expect.objectContaining({ code: 'CONFIG' }),
-			)
+			expect(() => createApplicationServer()).toThrow(expect.objectContaining({ code: 'CONFIG' }))
 		} finally {
 			if (previousHost === undefined) delete process.env.APP_HOST
 			else process.env.APP_HOST = previousHost
@@ -2507,15 +2501,13 @@ describe('application environment parsers', () => {
 		'999.999.999.999',
 		\`\${'a'.repeat(64)}.example\`,
 	])('rejects hostile APP_HOST value %s before listener allocation', (value) => {
-		expect(() => parseApplicationHost(value)).toThrowError(
-			expect.objectContaining({ code: 'CONFIG' }),
-		)
+		expect(() => parseApplicationHost(value)).toThrow(expect.objectContaining({ code: 'CONFIG' }))
 	})
 
 	it.each([null, 42, [], { port: [42] }, { timeout: 0 }])(
 		'rejects hostile option container or leaf value %#',
 		(value) => {
-			expect(() => parseApplicationServerOptions(value)).toThrowError(
+			expect(() => parseApplicationServerOptions(value)).toThrow(
 				expect.objectContaining({ code: 'CONFIG' }),
 			)
 		},
@@ -2538,7 +2530,7 @@ describe('application environment parsers', () => {
 	])(
 		'rejects inherited, unknown, symbolic, accessor, instance, and hostile proxy options %#',
 		(value) => {
-			expect(() => parseApplicationServerOptions(value)).toThrowError(
+			expect(() => parseApplicationServerOptions(value)).toThrow(
 				expect.objectContaining({ code: 'CONFIG' }),
 			)
 		},

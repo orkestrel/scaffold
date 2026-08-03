@@ -237,19 +237,19 @@ export function packageShortName(name: string): string {
 }
 
 /**
- * Read bounded physical local guide mirrors for declared dependencies.
+ * Read bounded physical local guide mirrors for package names.
  *
  * @param target - The package root.
- * @param dependencies - The declared dependencies whose mirrors are eligible.
- * @returns Existing guide content keyed by dependency name.
+ * @param names - The package names whose mirrors are eligible.
+ * @returns Existing guide content keyed by package name.
  */
 export function readGuideReferences(
 	target: string,
-	dependencies: readonly Dependency[],
+	names: readonly string[],
 ): Readonly<Record<string, string>> {
 	const current: Record<string, string> = {}
-	for (const dependency of dependencies) {
-		const path = `guides/src/${packageShortName(dependency.name)}.md`
+	for (const name of names) {
+		const path = `guides/src/${packageShortName(name)}.md`
 		const full = resolvePhysicalPath(target, path, 'TARGET', 'target')
 		const status = attempt(() => lstatSync(full))
 		if (!status.success) {
@@ -264,7 +264,7 @@ export function readGuideReferences(
 				path,
 			})
 		}
-		current[dependency.name] = readFileText(target, path, 'TARGET', 'target')
+		current[name] = readFileText(target, path, 'TARGET', 'target')
 	}
 	return Object.freeze(current)
 }

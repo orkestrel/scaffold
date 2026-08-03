@@ -381,7 +381,7 @@ export function packageManifest(spec: Blueprint): string {
 			'vitest run --config vite.config.ts --no-cache --reporter=dot --project integration'
 	if (spec.bin && spec.integration)
 		scripts['test:equivalence'] =
-			"node -e \"const c=require('node:child_process'),n=process.platform==='win32'?'npm.cmd':'npm',r=c.spawnSync(n,['run','test:integration'],{stdio:'inherit',env:{...process.env,SCAFFOLD_BOUNDARY_EQUIVALENCE:'1'}});process.exit(r.status??1)\""
+			"node -e \"const c=require('node:child_process'),p=process.env.npm_execpath;if(p===undefined)process.exit(1);const r=c.spawnSync(process.execPath,[p,'run','test:integration'],{stdio:'inherit',env:{...process.env,SCAFFOLD_BOUNDARY_EQUIVALENCE:'1'}});process.exit(r.status??1)\""
 	if (spec.service)
 		scripts['test:service'] =
 			'vitest run --config vite.config.ts --no-cache --reporter=dot --project service'
@@ -529,6 +529,7 @@ export function rootTsconfig(
 			target: 'ESNext',
 			module: 'ESNext',
 			moduleResolution: 'bundler',
+			allowImportingTsExtensions: true,
 			lib: ['ESNext', 'DOM', 'DOM.Iterable'],
 			types: ['node', 'vite/client', 'vitest/globals'],
 			moduleDetection: 'force',
@@ -697,7 +698,7 @@ ${renderedRegistrations.map((registration) => `			${registration},`).join('\n')}
 		],`
 	return `	test: gateBrowserProjects(
 ${renderedRegistrationArray}
-		chromiumPath !== undefined,
+		browserOptions !== undefined,
 		process.argv,
 	),`
 }
@@ -731,6 +732,10 @@ export function viteHeader(machinery: ViteMachinery): string {
 	// bytes identical while keeping this file's own declaration environment
 	// exactly the one export it documents.
 	// The official Playwright provider import is present only when needed.
+	const playwrightTypeImports = needsBrowser
+		? `import type { PlaywrightProviderOptions } from '@vitest/browser-playwright'
+`
+		: ''
 	const playwrightImports = needsBrowser
 		? `import { playwright } from '@vitest/browser-playwright'
 import { chromium } from 'playwright'
@@ -1053,7 +1058,9 @@ import { parse as parseVue } from 'vue/compiler-sfc'
 									? undefined
 									: packageRootOf(packageName, physicalSource)
 							if (packageRoot === undefined || !containedPath(packageRoot, physicalSource)) {
-								this.error('Resolved dependencies must remain inside their physical package root')
+								return this.error(
+									'Resolved dependencies must remain inside their physical package root',
+								)
 							}
 							trustedPackageRoots.add(packageRoot)
 						}
@@ -1061,7 +1068,7 @@ import { parse as parseVue } from 'vue/compiler-sfc'
 					}
 					const resolvedSource = workspacePath(physicalSource)
 					if (resolvedSource === undefined) {
-						this.error('Environment modules cannot import files outside the workspace')
+						return this.error('Environment modules cannot import files outside the workspace')
 					}
 					const assetError = environmentPathError(owner, resolvedSource)
 					if (assetError !== undefined) this.error(assetError)
@@ -2131,13 +2138,13 @@ ${
 `
 		: `import { parseSync, transformWithOxc, Visitor } from 'vite'
 `
-	return `${viteTypeImports}
+	return `${playwrightTypeImports}${viteTypeImports}
 ${viteImports}import { defineConfig, mergeConfig } from 'vitest/config'
 import tsconfig from './tsconfig.json' with { type: 'json' }
 import { fileURLToPath, URL } from 'node:url'
 import { isBuiltin } from 'node:module'
 import {
-	closeSync,
+${needsBrowser ? '\taccessSync,\n' : ''}	closeSync,
 	constants as FS_CONSTANTS,
 	existsSync,
 	fstatSync,
@@ -2146,7 +2153,19 @@ import {
 ${needsBrowser ? '\treaddirSync,\n' : ''}	readSync,
 	realpathSync,
 ${needsBrowser ? '\tstatSync,\n' : ''}} from 'node:fs'
-import { ${needsBrowser ? 'basename, ' : ''}dirname, isAbsolute, relative, resolve as resolvePath, sep } from 'node:path'
+${
+	needsBrowser
+		? `import {
+	basename,
+	join,
+	dirname,
+	isAbsolute,
+	relative,
+	resolve as resolvePath,
+	sep,
+} from 'node:path'`
+		: `import { dirname, isAbsolute, relative, resolve as resolvePath, sep } from 'node:path'`
+}
 ${playwrightImports}${vueImports}${
 		needsBrowser
 			? `\n/** Chromium executable layouts inside a \`chromium-<revision>\` browsers-directory entry, per platform. */
@@ -2159,15 +2178,64 @@ ${EXPORT_KEYWORD} ${CONST_KEYWORD} CHROMIUM_LAYOUTS = Object.freeze([
 	'chrome-mac-arm64/Chromium.app/Contents/MacOS/Chromium',
 ])
 
+/** Stable Playwright Chromium channels and their standard executable layouts. */
+${EXPORT_KEYWORD} ${CONST_KEYWORD} SYSTEM_BROWSER_CHANNELS = Object.freeze([
+	Object.freeze({
+		channel: 'chrome',
+		layouts: Object.freeze({
+			linux: '/opt/google/chrome/chrome',
+			darwin: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+			win32: Object.freeze(['Google', 'Chrome', 'Application', 'chrome.exe']),
+		}),
+	}),
+	Object.freeze({
+		channel: 'msedge',
+		layouts: Object.freeze({
+			linux: '/opt/microsoft/msedge/msedge',
+			darwin: '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+			win32: Object.freeze(['Microsoft', 'Edge', 'Application', 'msedge.exe']),
+		}),
+	}),
+])
+
 /**
- * Resolve a launchable Chromium executable: the pinned revision when installed,
+ * Determine whether a path identifies an executable regular file.
+ *
+ * @param path - The filesystem path to inspect.
+ * @returns Whether the path is a regular file with execute access.
+ *
+ * @example
+ * \`\`\`ts
+ * isBrowserExecutable('/opt/google/chrome/chrome')
+ * \`\`\`
+ */
+${EXPORT_KEYWORD} function isBrowserExecutable(path: string): boolean {
+	try {
+		if (!statSync(path).isFile()) return false
+		accessSync(path, FS_CONSTANTS.X_OK)
+		return true
+	} catch {
+		return false
+	}
+}
+
+/**
+ * Resolve a launchable Playwright-managed Chromium executable: the pinned revision when installed,
  * otherwise a \`chromium\` / \`chromium.exe\` alias or any other \`chromium-*\`
  * revision under the same Playwright browsers directory. A pinned-revision miss
  * is not Chromium absence — managed containers ship one usable build (often
  * behind a revision-agnostic alias) for many Playwright versions.
+ *
+ * @param pinned - The executable path for Playwright's pinned Chromium revision.
+ * @returns The managed executable path, or \`undefined\` when none is executable.
+ *
+ * @example
+ * \`\`\`ts
+ * resolveManagedBrowser(chromium.executablePath())
+ * \`\`\`
  */
-${EXPORT_KEYWORD} function resolveChromium(pinned: string): string | undefined {
-	if (existsSync(pinned)) return pinned
+${EXPORT_KEYWORD} function resolveManagedBrowser(pinned: string): string | undefined {
+	if (isBrowserExecutable(pinned)) return pinned
 	let revisionRoot = dirname(pinned)
 	for (;;) {
 		if (/^chromium-\\d+$/.test(basename(revisionRoot))) break
@@ -2178,7 +2246,7 @@ ${EXPORT_KEYWORD} function resolveChromium(pinned: string): string | undefined {
 	const browsersRoot = dirname(revisionRoot)
 	for (const alias of ['chromium', 'chromium.exe']) {
 		const candidate = resolvePath(browsersRoot, alias)
-		if (existsSync(candidate) && statSync(candidate).isFile()) return candidate
+		if (isBrowserExecutable(candidate)) return candidate
 	}
 	let entries: readonly string[]
 	try {
@@ -2192,18 +2260,89 @@ ${EXPORT_KEYWORD} function resolveChromium(pinned: string): string | undefined {
 	for (const revision of revisions) {
 		for (const layout of CHROMIUM_LAYOUTS) {
 			const candidate = resolvePath(browsersRoot, revision, layout)
-			if (existsSync(candidate)) return candidate
+			if (isBrowserExecutable(candidate)) return candidate
 		}
 	}
 	return undefined
 }
 
-${CONST_KEYWORD} chromiumPinned = chromium.executablePath()
-${CONST_KEYWORD} chromiumPath = resolveChromium(chromiumPinned)
-${CONST_KEYWORD} chromiumOptions =
-	chromiumPath === undefined || chromiumPath === chromiumPinned
-		? {}
-		: { launchOptions: { executablePath: chromiumPath } }
+/**
+ * Resolve the first installed stable system Chromium channel.
+ *
+ * @param platform - The Node platform whose standard layouts should be probed.
+ * @param environment - The process environment supplying Windows installation roots.
+ * @returns \`chrome\`, then \`msedge\`, or \`undefined\` when neither is executable.
+ *
+ * @example
+ * \`\`\`ts
+ * resolveSystemBrowser(process.platform, process.env)
+ * \`\`\`
+ */
+${EXPORT_KEYWORD} function resolveSystemBrowser(
+	platform: NodeJS.Platform,
+	environment: NodeJS.ProcessEnv,
+): string | undefined {
+	if (platform !== 'linux' && platform !== 'darwin' && platform !== 'win32') return undefined
+	const roots = new Set<string>()
+	if (platform === 'win32') {
+		for (const root of [
+			environment.LOCALAPPDATA,
+			environment.PROGRAMFILES,
+			environment['PROGRAMFILES(X86)'],
+		]) {
+			if (root !== undefined && root.length > 0) roots.add(root)
+		}
+		const homeDrive = environment.HOMEDRIVE
+		if (homeDrive !== undefined && homeDrive.length > 0) {
+			roots.add(join(homeDrive, 'Program Files'))
+			roots.add(join(homeDrive, 'Program Files (x86)'))
+		}
+	}
+	for (const browser of SYSTEM_BROWSER_CHANNELS) {
+		if (platform === 'win32') {
+			for (const root of roots) {
+				if (isBrowserExecutable(join(root, ...browser.layouts.win32))) return browser.channel
+			}
+			continue
+		}
+		if (isBrowserExecutable(browser.layouts[platform])) return browser.channel
+	}
+	return undefined
+}
+
+/**
+ * Resolve launch options for a managed Chromium or stable system browser.
+ *
+ * @param pinned - The executable path for Playwright's pinned Chromium revision.
+ * @param platform - The Node platform whose standard system layouts should be probed.
+ * @param environment - The process environment supplying Windows installation roots.
+ * @returns Provider options for managed Chromium, Chrome, or Edge, or \`undefined\`.
+ *
+ * @remarks
+ * An installed pinned revision returns an empty object so Playwright retains
+ * its default launch semantics. A different managed executable is selected by
+ * path; a system browser is selected by its stable Playwright channel.
+ *
+ * @example
+ * \`\`\`ts
+ * resolveBrowser(chromium.executablePath(), process.platform, process.env)
+ * \`\`\`
+ */
+${EXPORT_KEYWORD} function resolveBrowser(
+	pinned: string,
+	platform: NodeJS.Platform,
+	environment: NodeJS.ProcessEnv,
+): PlaywrightProviderOptions | undefined {
+	const managed = resolveManagedBrowser(pinned)
+	if (managed !== undefined) {
+		return managed === pinned ? {} : { launchOptions: { executablePath: managed } }
+	}
+	const channel = resolveSystemBrowser(platform, environment)
+	return channel === undefined ? undefined : { launchOptions: { channel } }
+}
+
+${CONST_KEYWORD} browserPinned = chromium.executablePath()
+${CONST_KEYWORD} browserOptions = resolveBrowser(browserPinned, process.platform, process.env)
 `
 			: ''
 	}
@@ -2256,7 +2395,9 @@ ${
 		projects.push(registration.project())
 	}
 	if (gated.length === 0) return { projects }
-	console.warn(\`browser projects skipped: Chromium absent (\${gated.join(', ')})\`)
+	console.warn(
+		\`browser projects skipped: no Playwright Chromium, Chrome, or Edge found (\${gated.join(', ')})\`,
+	)
 	const filters: string[] = []
 	let readable = true
 	for (let index = 0; index < argv.length; index += 1) {
@@ -2572,7 +2713,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 						}),
 				browser: {
 					enabled: true,
-					provider: playwright(chromiumOptions),
+					provider: playwright(browserOptions),
 					instances: [{ browser: 'chromium', headless: true }],
 				},
 				fileParallelism: false,
@@ -2607,6 +2748,7 @@ ${EXPORT_KEYWORD} const srcServer = (config?: UserConfig): UserConfig =>
 				outDir: 'dist/src/server',
 				target: 'node22',
 				rolldownOptions: {
+					platform: 'node',
 					external: (id: string) => id.startsWith('node:') || id.startsWith('@orkestrel/'),
 				},
 			},
@@ -2723,7 +2865,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 							}),
 					browser: {
 						enabled: true,
-						provider: playwright(chromiumOptions),
+						provider: playwright(browserOptions),
 						instances: [{ browser: 'chromium', headless: true }],
 					},
 					fileParallelism: false,
@@ -2748,6 +2890,7 @@ ${EXPORT_KEYWORD} const srcServer = (config?: UserConfig): UserConfig =>
 					outDir: 'dist/src/server',
 					target: 'node22',
 					rolldownOptions: {
+						platform: 'node',
 						external: (id: string) =>
 							id === '@src/core' || id.startsWith('node:') || id.startsWith('@orkestrel/'),
 						output: [
@@ -2902,7 +3045,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 						}),
 				browser: {
 					enabled: true,
-					provider: playwright(chromiumOptions),
+					provider: playwright(browserOptions),
 					instances: [{ browser: 'chromium', headless: true }],
 				},
 				fileParallelism: false,
@@ -2948,6 +3091,7 @@ ${EXPORT_KEYWORD} const srcServer = (config?: UserConfig): UserConfig =>
 				outDir: 'dist/src/server',
 				target: 'node22',
 				rolldownOptions: {
+					platform: 'node',
 					external: (id: string) =>
 						${coreExternal}id.startsWith('node:') || id.startsWith('@orkestrel/'),${coreOutput}
 				},
@@ -3036,7 +3180,7 @@ ${EXPORT_KEYWORD} function appBrowser(...config: readonly never[]): UserConfig {
 			},
 			browser: {
 				enabled: true,
-				provider: playwright(chromiumOptions),
+				provider: playwright(browserOptions),
 				instances: [{ browser: 'chromium', headless: true }],
 			},
 			fileParallelism: false,
@@ -3136,7 +3280,7 @@ import {
 	outputBoundary,
 	srcCore,
 	resolveWorkspacePath,
-} from '../../vite.config'
+} from '../../vite.config.ts'
 
 export default defineConfig(
 	srcCore({
@@ -3220,7 +3364,7 @@ export function srcViteConfig(environment: 'browser' | 'server'): string {
 	const anchor = environment === 'browser' ? 'srcBrowser' : 'srcServer'
 	return `import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
-import { ${anchor}, resolveWorkspacePath } from '../../vite.config'
+import { ${anchor}, resolveWorkspacePath } from '../../vite.config.ts'
 
 // Types are bundled inline by vite-plugin-dts (see configs/src/vite.core.config.ts
 // for the same pattern).
@@ -3276,7 +3420,7 @@ export function binTsconfig(): string {
  */
 export function binViteConfig(): string {
 	return `import { defineConfig } from 'vite'
-import { srcBin } from '../../vite.config'
+import { srcBin } from '../../vite.config.ts'
 
 // The \`scaffold\` executable build — a single ESM lib file, no declarations (an
 // executable ships no types), with the \`#!/usr/bin/env node\` shebang re-emitted via
@@ -3356,7 +3500,7 @@ export function appTsconfig(environment: Environment, hasCore: boolean): string 
 export function appViteConfig(environment: 'browser' | 'server'): string {
 	const anchor = environment === 'browser' ? 'appBrowser' : 'appServer'
 	return `import { defineConfig } from 'vite'
-import { ${anchor} } from '../../vite.config'
+import { ${anchor} } from '../../vite.config.ts'
 
 export default defineConfig(${anchor}())
 `
@@ -3752,11 +3896,8 @@ export function paritySpecifiers(spec: Blueprint): string {
 export function testArtifacts(spec: Blueprint, pascal: string): readonly Artifact[] {
 	const hasBrowser = spec.src.includes('browser') || spec.app.includes('browser')
 	const hasVue = spec.app.includes('browser')
-	const browserPolicySpecifier = hasBrowser
-		? ', accessSync, constants as FS_CONSTANTS, statSync'
-		: ''
 	const browserPolicyImport = hasBrowser
-		? "\nimport { chromium } from 'playwright'\nimport { resolveChromium } from '../vite.config.js'"
+		? "\nimport { chromium } from 'playwright'\nimport { isBrowserExecutable, resolveBrowser, SYSTEM_BROWSER_CHANNELS } from '../vite.config.js'"
 		: ''
 	const vuePolicyImport = hasVue ? "\nimport { parse as parseVue } from 'vue/compiler-sfc'" : ''
 	const workspacePolicyAssertion = hasVue
@@ -3773,18 +3914,23 @@ export function testArtifacts(spec: Blueprint, pascal: string): readonly Artifac
 	const browserPolicyTest = hasBrowser
 		? `
 
-	it('resolves Chromium only to a real executable file', () => {
-		const chromiumPath = resolveChromium(chromium.executablePath())
-		if (chromiumPath === undefined) return
-
-		expect(statSync(chromiumPath).isFile()).toBe(true)
-		expect(() => accessSync(chromiumPath, FS_CONSTANTS.X_OK)).not.toThrow()
+	it('resolves only a real managed executable or stable system browser channel', () => {
+		const options = resolveBrowser(chromium.executablePath(), process.platform, process.env)
+		let valid = options === undefined
+		if (options !== undefined) {
+			const channel = options.launchOptions?.channel
+			valid =
+				channel === undefined
+					? isBrowserExecutable(options.launchOptions?.executablePath ?? chromium.executablePath())
+					: SYSTEM_BROWSER_CHANNELS.some((browser) => browser.channel === channel)
+		}
+		expect(valid).toBe(true)
 	})`
 		: ''
 	const artifacts: Artifact[] = [
 		fillArtifact('tests/setup.ts', 'tests', 'setup', {}),
 		fillArtifact('tests/policy.test.ts', 'tests', 'policyTest', {
-			browserPolicySpecifier,
+			browserPolicySpecifier: '',
 			browserPolicyImport,
 			browserPolicyTest,
 			vuePolicyImport,

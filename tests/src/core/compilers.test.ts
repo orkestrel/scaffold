@@ -1,7 +1,9 @@
 import type { Artifact, Blueprint, Environment, ViteFacts } from '@src/core'
+import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { chmodSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { parseJSON } from '@orkestrel/contract'
 import { build as buildVite, loadConfigFromFile } from 'vite'
 import { describe, expect, it } from 'vitest'
@@ -652,7 +654,7 @@ describe('packageManifest', () => {
 			'vitest run --config vite.config.ts --no-cache --reporter=dot --project integration',
 		)
 		expect(scripts['test:equivalence']).toBe(
-			"node -e \"const c=require('node:child_process'),n=process.platform==='win32'?'npm.cmd':'npm',r=c.spawnSync(n,['run','test:integration'],{stdio:'inherit',env:{...process.env,SCAFFOLD_BOUNDARY_EQUIVALENCE:'1'}});process.exit(r.status??1)\"",
+			"node -e \"const c=require('node:child_process'),p=process.env.npm_execpath;if(p===undefined)process.exit(1);const r=c.spawnSync(process.execPath,[p,'run','test:integration'],{stdio:'inherit',env:{...process.env,SCAFFOLD_BOUNDARY_EQUIVALENCE:'1'}});process.exit(r.status??1)\"",
 		)
 		expect(scripts.prepublishOnly).toBe(
 			'npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:integration',
@@ -729,7 +731,7 @@ describe('packageManifest', () => {
 		)
 
 		expect(createHash('sha256').update(manifest).digest('hex')).toBe(
-			'622b30964bb2d0286084c547c912e4a9a503d1fab1cb1731cd404829a209756e',
+			'd3dadcdf36c34c30f08bab56e536b0ba9a5e48162393f04991831723eabcb122',
 		)
 	})
 
@@ -771,6 +773,13 @@ describe('packageManifest', () => {
 })
 
 describe('rootTsconfig', () => {
+	it('permits explicit TypeScript extensions in generated runtime configuration imports', () => {
+		const config = readRecord(parseJSON(rootTsconfig(['core'])))
+		const options = readRecord(config.compilerOptions)
+
+		expect(options.allowImportingTsExtensions).toBe(true)
+	})
+
 	it('emits one @src/<environment> path alias per declared environment, in order', () => {
 		const config = readRecord(parseJSON(rootTsconfig(['core', 'server'])))
 		const paths = readRecord(readRecord(config.compilerOptions).paths)
@@ -837,7 +846,7 @@ describe('renderViteTest', () => {
 			[
 				'\ttest: gateBrowserProjects(',
 				"\t\t[{ project: srcBrowser, browser: 'src:browser' }, { project: policy }, { project: guides }],",
-				'\t\tchromiumPath !== undefined,',
+				'\t\tbrowserOptions !== undefined,',
 				'\t\tprocess.argv,',
 				'\t),',
 			].join('\n'),
@@ -1749,7 +1758,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 
 		expect(content).toContain('\t)\n\nexport const policy')
 		expect(createHash('sha256').update(content).digest('hex')).toBe(
-			'f9a58525a6d4c58cd6a4fbcddcfdeb370607d06e30bf71497228542bddff62d8',
+			'10af7b2bf4c011040614780d916b191a3c6451648c2a45e9386f47ac4edb82e8',
 		)
 	})
 
@@ -1828,10 +1837,38 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		expect(content).toContain('@vitest/browser-playwright')
 	})
 
+	it.each([
+		{
+			label: 'full browser workspace',
+			content: applicationViteConfig(['core', 'browser', 'server'], ['core', 'browser', 'server']),
+		},
+		{
+			label: 'browser-only source workspace',
+			content: rootViteConfig(['browser']),
+		},
+	])('$label emits an oxfmt-stable root configuration', ({ content }) => {
+		const result = spawnSync(
+			process.execPath,
+			[
+				join(WORKSPACE_ROOT, 'node_modules', 'oxfmt', 'bin', 'oxfmt'),
+				'--config',
+				join(WORKSPACE_ROOT, '.oxfmtrc.json'),
+				'--stdin-filepath',
+				'vite.config.ts',
+			],
+			{ encoding: 'utf8', input: content },
+		)
+
+		expect(result.error).toBeUndefined()
+		expect(result.status).toBe(0)
+		expect(result.stderr).toBe('')
+		expect(result.stdout).toBe(content)
+	})
+
 	it('keeps the indexeddb browser, policy, and guides shape registered through the shared gate', () => {
 		const content = rootViteConfig(['browser'])
 
-		expect(content).not.toContain('chromiumPath !== undefined ? [')
+		expect(content).not.toContain('browserOptions !== undefined ? [')
 		expect(content).toContain(
 			[
 				'\ttest: gateBrowserProjects(',
@@ -1855,18 +1892,155 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 
 		for (const content of [browser, source, appBrowser, application]) {
 			expect(content.split('function gateBrowserProjects(')).toHaveLength(2)
-			expect(content.split('function resolveChromium(')).toHaveLength(2)
+			expect(content.split('function resolveManagedBrowser(')).toHaveLength(2)
+			expect(content.split('function resolveSystemBrowser(')).toHaveLength(2)
+			expect(content.split('function resolveBrowser(')).toHaveLength(2)
 			expect(content.split('console.warn(')).toHaveLength(2)
 			expect(content).toContain('projects.push(registration.project())')
-			expect(content).toContain('provider: playwright(chromiumOptions)')
+			expect(content).toContain('provider: playwright(browserOptions)')
 			expect(content).toContain('include: [')
 			expect(content).toContain('enabled: true')
-			expect(content).not.toContain('include: chromiumPath')
-			expect(content).not.toContain('enabled: chromiumPath')
+			expect(content).not.toContain('include: browserOptions')
+			expect(content).not.toContain('enabled: browserOptions')
 		}
+		expect(browser).toContain("linux: '/opt/google/chrome/chrome'")
+		expect(browser).toContain(
+			"darwin: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'",
+		)
+		expect(browser).toContain("linux: '/opt/microsoft/msedge/msedge'")
+		expect(browser).toContain(
+			"darwin: '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge'",
+		)
+		expect(browser).toContain("environment['PROGRAMFILES(X86)']")
+		expect(browser).toContain("roots.add(join(homeDrive, 'Program Files'))")
+		expect(browser).toContain("roots.add(join(homeDrive, 'Program Files (x86)'))")
 		expect(source).toContain("{ project: srcBrowser, browser: 'src:browser' }")
 		expect(application).toContain("{ project: srcBrowser, browser: 'src:browser' }")
 		expect(application).toContain("{ project: appBrowser, browser: 'app:browser' }")
+	})
+
+	it('resolves managed Chromium before stable Chrome and Edge through executable files', async () => {
+		const directory = await buildWorkspaceTempDirectory()
+		try {
+			const pinned = join(
+				directory.path,
+				'managed-pinned',
+				'chromium-100',
+				'chrome-win',
+				'chrome.exe',
+			)
+			const missingPinned = join(
+				directory.path,
+				'managed-fallback',
+				'chromium-100',
+				'chrome-win',
+				'chrome.exe',
+			)
+			const fallback = join(
+				directory.path,
+				'managed-fallback',
+				'chromium-200',
+				'chrome-win',
+				'chrome.exe',
+			)
+			const systemBoth = join(directory.path, 'system-both')
+			const systemEdge = join(directory.path, 'system-edge')
+			const chrome = join(systemBoth, 'Google', 'Chrome', 'Application', 'chrome.exe')
+			const edgeAfterChrome = join(systemBoth, 'Microsoft', 'Edge', 'Application', 'msedge.exe')
+			const edge = join(systemEdge, 'Microsoft', 'Edge', 'Application', 'msedge.exe')
+			const directoryCandidate = join(directory.path, 'directory-candidate')
+			const nonExecutable = join(directory.path, 'non-executable')
+			for (const path of [pinned, fallback, chrome, edgeAfterChrome, edge, nonExecutable]) {
+				mkdirSync(dirname(path), { recursive: true })
+				writeFileSync(path, 'browser executable', 'utf8')
+			}
+			mkdirSync(directoryCandidate)
+			for (const path of [pinned, fallback, chrome, edgeAfterChrome, edge]) chmodSync(path, 0o755)
+			chmodSync(nonExecutable, 0o644)
+			const emittedPath = join(directory.path, 'emitted.config.ts')
+			writeFileSync(emittedPath, rootViteConfig(['browser']), 'utf8')
+			writeFileSync(
+				join(directory.path, 'tsconfig.json'),
+				'{"compilerOptions":{"paths":{}}}\n',
+				'utf8',
+			)
+			const probePath = join(directory.path, 'probe.config.ts')
+			writeFileSync(
+				probePath,
+				[
+					"import { defineConfig } from 'vitest/config'",
+					'import {',
+					'\tisBrowserExecutable,',
+					'\tresolveBrowser,',
+					'\tresolveManagedBrowser,',
+					'\tresolveSystemBrowser,',
+					'\tSYSTEM_BROWSER_CHANNELS,',
+					"} from './emitted.config.ts'",
+					'',
+					'export default defineConfig({',
+					'\tdefine: {',
+					`\t\tpinned: JSON.stringify(resolveManagedBrowser(${serializeTypeScriptString(pinned)})),`,
+					`\t\tfallback: JSON.stringify(resolveManagedBrowser(${serializeTypeScriptString(missingPinned)})),`,
+					`\t\tmanaged: JSON.stringify(resolveBrowser(${serializeTypeScriptString(pinned)}, 'win32', { PROGRAMFILES: ${serializeTypeScriptString(systemBoth)} })),`,
+					`\t\tmanagedFallback: JSON.stringify(resolveBrowser(${serializeTypeScriptString(missingPinned)}, 'win32', { PROGRAMFILES: ${serializeTypeScriptString(systemBoth)} })),`,
+					`\t\tchrome: JSON.stringify(resolveSystemBrowser('win32', { PROGRAMFILES: ${serializeTypeScriptString(systemBoth)} })),`,
+					`\t\tedge: JSON.stringify(resolveSystemBrowser('win32', { PROGRAMFILES: ${serializeTypeScriptString(systemEdge)} })),`,
+					`\t\tnone: JSON.stringify(resolveSystemBrowser('win32', { PROGRAMFILES: ${serializeTypeScriptString(join(directory.path, 'system-none'))} }) === undefined),`,
+					"\t\tempty: JSON.stringify(resolveSystemBrowser('win32', { LOCALAPPDATA: '', PROGRAMFILES: '', 'PROGRAMFILES(X86)': '', HOMEDRIVE: '' }) === undefined),",
+					"\t\tmissing: JSON.stringify(resolveSystemBrowser('win32', { LOCALAPPDATA: undefined, PROGRAMFILES: undefined, 'PROGRAMFILES(X86)': undefined, HOMEDRIVE: undefined }) === undefined),",
+					`\t\tbrowserChrome: JSON.stringify(resolveBrowser(${serializeTypeScriptString(join(directory.path, 'missing-managed', 'chromium-100', 'chrome'))}, 'win32', { PROGRAMFILES: ${serializeTypeScriptString(systemBoth)} })),`,
+					`\t\tbrowserEdge: JSON.stringify(resolveBrowser(${serializeTypeScriptString(join(directory.path, 'missing-managed', 'chromium-100', 'chrome'))}, 'win32', { PROGRAMFILES: ${serializeTypeScriptString(systemEdge)} })),`,
+					`\t\tbrowserNone: JSON.stringify(resolveBrowser(${serializeTypeScriptString(join(directory.path, 'missing-managed', 'chromium-100', 'chrome'))}, 'win32', {}) === undefined),`,
+					`\t\tfile: JSON.stringify(isBrowserExecutable(${serializeTypeScriptString(pinned)})),`,
+					`\t\tdirectory: JSON.stringify(isBrowserExecutable(${serializeTypeScriptString(directoryCandidate)})),`,
+					`\t\tabsent: JSON.stringify(isBrowserExecutable(${serializeTypeScriptString(join(directory.path, 'absent'))})),`,
+					`\t\tnonExecutable: JSON.stringify(isBrowserExecutable(${serializeTypeScriptString(nonExecutable)})),`,
+					'\t\tfrozen: JSON.stringify(',
+					'\t\t\tObject.isFrozen(SYSTEM_BROWSER_CHANNELS) &&',
+					'\t\t\tSYSTEM_BROWSER_CHANNELS.every((browser) =>',
+					'\t\t\t\tObject.isFrozen(browser) &&',
+					'\t\t\t\tObject.isFrozen(browser.layouts) &&',
+					'\t\t\t\tObject.isFrozen(browser.layouts.win32),',
+					'\t\t\t),',
+					'\t\t),',
+					'\t},',
+					'})',
+					'',
+				].join('\n'),
+				'utf8',
+			)
+			const loaded = await loadConfigFromFile(
+				{ command: 'serve', mode: 'test' },
+				probePath,
+				directory.path,
+				'silent',
+			)
+			const definitions = readRecord(loaded?.config.define)
+
+			expect(definitions.pinned).toBe(JSON.stringify(pinned))
+			expect(definitions.fallback).toBe(JSON.stringify(fallback))
+			expect(definitions.managed).toBe('{}')
+			expect(definitions.managedFallback).toBe(
+				JSON.stringify({ launchOptions: { executablePath: fallback } }),
+			)
+			expect(definitions.chrome).toBe(JSON.stringify('chrome'))
+			expect(definitions.edge).toBe(JSON.stringify('msedge'))
+			expect(definitions.none).toBe('true')
+			expect(definitions.empty).toBe('true')
+			expect(definitions.missing).toBe('true')
+			expect(definitions.browserChrome).toBe(
+				JSON.stringify({ launchOptions: { channel: 'chrome' } }),
+			)
+			expect(definitions.browserEdge).toBe(JSON.stringify({ launchOptions: { channel: 'msedge' } }))
+			expect(definitions.browserNone).toBe('true')
+			expect(definitions.file).toBe('true')
+			expect(definitions.directory).toBe('false')
+			expect(definitions.absent).toBe('false')
+			expect(definitions.nonExecutable).toBe(process.platform === 'win32' ? 'true' : 'false')
+			expect(definitions.frozen).toBe('true')
+		} finally {
+			await directory.cleanup()
+		}
 	})
 
 	it('pre-seeds only Vitest browser test projects with the browser entry chain', () => {
@@ -1969,9 +2143,9 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 					pass: undefined,
 				},
 			]
-			for (const chromium of [false, true]) {
+			for (const available of [false, true]) {
 				for (const filter of filters) {
-					const configPath = join(directory.path, `gate-${chromium}-${filter.label}.config.ts`)
+					const configPath = join(directory.path, `gate-${available}-${filter.label}.config.ts`)
 					writeFileSync(
 						configPath,
 						[
@@ -1991,7 +2165,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 							'\t\t\t\t}),',
 							'\t\t\t},',
 							'\t\t],',
-							`\t\t${chromium},`,
+							`\t\t${available},`,
 							`\t\t${filter.argv},`,
 							'\t),',
 							'})',
@@ -2011,9 +2185,9 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 					const projectTest = readRecord(project.test)
 					const name = readRecord(projectTest.name)
 
-					expect(name.label).toBe(chromium ? 'actual' : 'src:browser')
-					expect(projectTest.include).toEqual(chromium ? ['tests/actual.test.ts'] : [])
-					expect(test.passWithNoTests).toBe(chromium ? undefined : filter.pass)
+					expect(name.label).toBe(available ? 'actual' : 'src:browser')
+					expect(projectTest.include).toEqual(available ? ['tests/actual.test.ts'] : [])
+					expect(test.passWithNoTests).toBe(available ? undefined : filter.pass)
 				}
 			}
 		} finally {
@@ -2021,10 +2195,15 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		}
 	})
 
-	it('keeps non-browser projects directly discoverable without a Chromium guard', () => {
+	it('keeps non-browser projects directly discoverable without browser discovery', () => {
 		const content = applicationViteConfig(['core', 'server'], ['core', 'server'])
 
-		expect(content).not.toContain('chromiumPath')
+		expect(content).not.toContain('browserOptions')
+		expect(content).not.toContain('resolveManagedBrowser')
+		expect(content).not.toContain('resolveSystemBrowser')
+		expect(content).not.toContain('resolveBrowser')
+		expect(content).not.toContain('SYSTEM_BROWSER_CHANNELS')
+		expect(content).not.toContain('@vitest/browser-playwright')
 		expect(content).not.toContain('console.warn(')
 		expect(content).toContain('projects: [srcCore, srcServer, appCore, appServer, policy, guides]')
 	})
@@ -2049,6 +2228,35 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		const service = applicationViteConfig([], ['server'], { service: true })
 		expect(service).toContain('projects: [appServer, policy, guides, service]')
 		expect(service).toContain("include: ['tests/service/**/*.test.ts']")
+	})
+})
+
+describe('thin Vite wrappers', () => {
+	it.each([
+		{ label: 'core source', content: coreViteConfig() },
+		{ label: 'browser source', content: srcViteConfig('browser') },
+		{ label: 'server source', content: srcViteConfig('server') },
+		{ label: 'executable', content: binViteConfig() },
+		{ label: 'browser application', content: appViteConfig('browser') },
+		{ label: 'server application', content: appViteConfig('server') },
+	])('$label imports the physical root TypeScript configuration', ({ content }) => {
+		expect(content).toContain("from '../../vite.config.ts'")
+		expect(content).not.toContain("from '../../vite.config'")
+		expect(content).not.toContain("from '../../vite.config.js'")
+	})
+})
+
+describe('server build platform', () => {
+	it.each([
+		{ label: 'server-only source', content: singleSrcViteConfig('server') },
+		{ label: 'core and server source', content: rootViteConfig(['core', 'server']) },
+		{
+			label: 'application workspace source',
+			content: applicationViteConfig(['core', 'server'], ['core', 'server']),
+		},
+	])('$label selects Rolldown Node semantics', ({ content }) => {
+		expect(content).toContain("platform: 'node'")
+		expect(content.split("platform: 'node'")).toHaveLength(2)
 	})
 })
 
@@ -2103,13 +2311,53 @@ describe('srcTsconfig / srcViteConfig', () => {
 })
 
 describe('binTsconfig / binViteConfig', () => {
-	it('reproduces the checked-in executable configurations byte for byte', () => {
+	it('reproduces the checked-in core, server, and executable configurations byte for byte', () => {
+		expect(coreTsconfig()).toBe(
+			readFileSync(join(WORKSPACE_ROOT, 'configs/src/tsconfig.core.json'), 'utf8'),
+		)
+		expect(coreViteConfig()).toBe(
+			readFileSync(join(WORKSPACE_ROOT, 'configs/src/vite.core.config.ts'), 'utf8'),
+		)
+		expect(srcTsconfig('server')).toBe(
+			readFileSync(join(WORKSPACE_ROOT, 'configs/src/tsconfig.server.json'), 'utf8'),
+		)
+		expect(srcViteConfig('server')).toBe(
+			readFileSync(join(WORKSPACE_ROOT, 'configs/src/vite.server.config.ts'), 'utf8'),
+		)
 		expect(binTsconfig()).toBe(
 			readFileSync(join(WORKSPACE_ROOT, 'configs/src/tsconfig.bin.json'), 'utf8'),
 		)
 		expect(binViteConfig()).toBe(
 			readFileSync(join(WORKSPACE_ROOT, 'configs/src/vite.bin.config.ts'), 'utf8'),
 		)
+	})
+
+	it.each([
+		'configs/src/vite.core.config.ts',
+		'configs/src/vite.server.config.ts',
+		'configs/src/vite.bin.config.ts',
+	])('loads %s through the native Node TypeScript loader', (path) => {
+		const version = process.versions.node.split('.')
+		const major = Number(version[0])
+		const minor = Number(version[1])
+		const flags =
+			(major === 22 && minor >= 12 && minor <= 17) || (major === 23 && minor <= 5)
+				? ['--experimental-strip-types', '--disable-warning=ExperimentalWarning']
+				: []
+		const result = spawnSync(
+			process.execPath,
+			[
+				...flags,
+				'--input-type=module',
+				'--eval',
+				`await import(${JSON.stringify(pathToFileURL(join(WORKSPACE_ROOT, path)).href)})`,
+			],
+			{ cwd: WORKSPACE_ROOT, encoding: 'utf8' },
+		)
+
+		expect(result.error).toBeUndefined()
+		expect(result.status).toBe(0)
+		expect(result.stderr).toBe('')
 	})
 })
 
@@ -2325,6 +2573,40 @@ describe('testArtifacts', () => {
 		expect(paths).toContain('tests/src/server/Router.test.ts')
 		expect(paths).toContain('tests/src/server/factories.test.ts')
 		expect(paths).toContain('tests/guides/src/parity.test.ts')
+	})
+
+	it.each([
+		{ label: 'source browser', spec: blueprint('router', { src: ['browser'] }) },
+		{
+			label: 'full application',
+			spec: blueprint('router', {
+				src: ['core', 'browser', 'server'],
+				app: ['core', 'browser', 'server'],
+			}),
+		},
+	])('emits an oxfmt-stable policy test for $label', ({ spec }) => {
+		const artifact = testArtifacts(spec, 'Router').find(
+			(candidate) => candidate.path === 'tests/policy.test.ts',
+		)
+		if (artifact === undefined || artifact.origin === 'host') {
+			throw new Error('Generated policy test artifact is missing')
+		}
+		const result = spawnSync(
+			process.execPath,
+			[
+				join(WORKSPACE_ROOT, 'node_modules', 'oxfmt', 'bin', 'oxfmt'),
+				'--config',
+				join(WORKSPACE_ROOT, '.oxfmtrc.json'),
+				'--stdin-filepath',
+				artifact.path,
+			],
+			{ encoding: 'utf8', input: artifact.content },
+		)
+
+		expect(result.error).toBeUndefined()
+		expect(result.status).toBe(0)
+		expect(result.stderr).toBe('')
+		expect(result.stdout).toBe(artifact.content)
 	})
 })
 

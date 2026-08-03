@@ -36,11 +36,14 @@ import {
 	scaffoldPackage,
 } from '../../setupBin.js'
 import {
+	buildGuidePath,
 	buildHTTPFixture,
 	buildRegistryPath,
 	buildTempDirectory,
 	canSymlink,
+	ORG_REGISTRY_PATH,
 	respondJSON,
+	respondText,
 	WORKSPACE_ROOT,
 } from '../../setupServer.js'
 
@@ -69,7 +72,7 @@ describe('scaffold bin', () => {
 				const result = runBin([], '', { cwd: cwd.path })
 				expect(result.status).toBe(0)
 				expect(result.stdout).toContain('scaffold <verb> [options]')
-				for (const verb of ['new', 'pull', 'audit', 'repair', 'fleet', 'catalog']) {
+				for (const verb of ['new', 'pull', 'mirror', 'audit', 'repair', 'fleet', 'catalog']) {
 					expect(result.stdout).toContain(verb)
 				}
 			} finally {
@@ -104,7 +107,7 @@ describe('scaffold bin', () => {
 		it('rejects repeated --from for every non-catalog verb before execution', async () => {
 			const cwd = await buildTempDirectory()
 			try {
-				for (const verb of ['new', 'pull', 'audit', 'repair', 'fleet']) {
+				for (const verb of ['new', 'pull', 'mirror', 'audit', 'repair', 'fleet']) {
 					const result = runBin([verb, '--from', 'first-host', '--from', 'second-host'], '', {
 						cwd: cwd.path,
 					})
@@ -527,6 +530,129 @@ describe('scaffold bin', () => {
 				expect(result.stderr).toMatch(/outside or traverses a linked parent/)
 			} finally {
 				await cwd.cleanup()
+			}
+		})
+	})
+
+	describe('mirror', () => {
+		it('applies the exact org guide mirror without requesting package versions', async () => {
+			const fixture = await buildHTTPFixture()
+			const target = mkdtempSync(join(WORKSPACE_ROOT, '.mirror-apply-'))
+			const previousExitCode = process.exitCode
+			try {
+				writeFileSync(
+					join(target, 'package.json'),
+					JSON.stringify({ name: '@orkestrel/scaffold' }),
+					'utf8',
+				)
+				fixture.route(ORG_REGISTRY_PATH, (_request, response) =>
+					respondText(
+						response,
+						200,
+						JSON.stringify({
+							'@orkestrel/scaffold': 'write',
+							'@orkestrel/contract': 'write',
+						}),
+					),
+				)
+				fixture.route(buildGuidePath('contract'), (_request, response) =>
+					respondText(response, 200, '# Contract mirrored\n'),
+				)
+				process.exitCode = undefined
+				await new CLI({
+					registry: { base: fixture.base },
+					guides: { base: fixture.base },
+				}).run([
+					'mirror',
+					'--target',
+					relative(WORKSPACE_ROOT, target),
+					'--apply',
+					'--yes',
+					'--json',
+				])
+
+				expect(process.exitCode).toBe(0)
+				expect(readFileSync(join(target, 'guides', 'src', 'contract.md'), 'utf8')).toBe(
+					'# Contract mirrored\n',
+				)
+				expect(fixture.hits.get(ORG_REGISTRY_PATH)).toBe(1)
+				expect(fixture.hits.get(buildGuidePath('contract'))).toBe(1)
+				expect(fixture.hits.get(buildGuidePath('scaffold'))).toBeUndefined()
+				expect(fixture.hits.get(buildRegistryPath('@orkestrel/contract'))).toBeUndefined()
+			} finally {
+				process.exitCode = previousExitCode
+				rmSync(target, { recursive: true, force: true })
+				await fixture.close()
+			}
+		})
+
+		it('does not partially apply when any guide fetch fails', async () => {
+			const fixture = await buildHTTPFixture()
+			const target = mkdtempSync(join(WORKSPACE_ROOT, '.mirror-failure-'))
+			const previousExitCode = process.exitCode
+			try {
+				writeFileSync(
+					join(target, 'package.json'),
+					JSON.stringify({ name: '@orkestrel/scaffold' }),
+					'utf8',
+				)
+				fixture.route(ORG_REGISTRY_PATH, (_request, response) =>
+					respondText(
+						response,
+						200,
+						JSON.stringify({
+							'@orkestrel/contract': 'write',
+							'@orkestrel/relation': 'write',
+						}),
+					),
+				)
+				fixture.route(buildGuidePath('contract'), (_request, response) =>
+					respondText(response, 200, '# Contract mirrored\n'),
+				)
+				fixture.route(buildGuidePath('relation'), (_request, response) =>
+					respondText(response, 500, 'failed'),
+				)
+				process.exitCode = undefined
+				await new CLI({
+					registry: { base: fixture.base },
+					guides: { base: fixture.base },
+				}).run([
+					'mirror',
+					'--target',
+					relative(WORKSPACE_ROOT, target),
+					'--apply',
+					'--yes',
+					'--json',
+				])
+
+				expect(process.exitCode).toBe(1)
+				expect(existsSync(join(target, 'guides', 'src', 'contract.md'))).toBe(false)
+			} finally {
+				process.exitCode = previousExitCode
+				rmSync(target, { recursive: true, force: true })
+				await fixture.close()
+			}
+		})
+
+		it('rejects a target outside the invocation root before discovery', async () => {
+			const previousExitCode = process.exitCode
+			try {
+				process.exitCode = undefined
+				await new CLI().run(['mirror', '--target', '..', '--json'])
+				expect(process.exitCode).toBe(1)
+			} finally {
+				process.exitCode = previousExitCode
+			}
+		})
+
+		it('rejects dependency selection as a usage error', async () => {
+			const previousExitCode = process.exitCode
+			try {
+				process.exitCode = undefined
+				await new CLI().run(['mirror', '--deps', '@orkestrel/contract', '--json'])
+				expect(process.exitCode).toBe(2)
+			} finally {
+				process.exitCode = previousExitCode
 			}
 		})
 	})

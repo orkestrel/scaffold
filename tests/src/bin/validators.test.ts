@@ -3,7 +3,7 @@ import { isVerb } from '../../../src/bin/validators.js'
 
 describe('bin command validation', () => {
 	it('accepts every command and rejects arbitrary input', () => {
-		for (const command of ['new', 'pull', 'audit', 'repair', 'fleet', 'catalog']) {
+		for (const command of ['new', 'pull', 'mirror', 'audit', 'repair', 'fleet', 'catalog']) {
 			expect(isVerb(command)).toBe(true)
 		}
 		expect(isVerb('sync')).toBe(false)

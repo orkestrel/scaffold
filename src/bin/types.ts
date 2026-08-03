@@ -2,7 +2,7 @@ import type { Audit, CatalogEntry, Environment, Plan } from '@src/core'
 import type { MaterializeResult } from '@src/server'
 
 /** The command-line interface's closed command vocabulary. */
-export type Verb = 'new' | 'pull' | 'audit' | 'repair' | 'fleet' | 'catalog'
+export type Verb = 'new' | 'pull' | 'mirror' | 'audit' | 'repair' | 'fleet' | 'catalog'
 
 /** The executable command-line boundary. */
 export interface CLIInterface {

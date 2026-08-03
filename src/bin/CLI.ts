@@ -14,7 +14,7 @@ import type {
 	Snapshot,
 	SyncReport,
 } from '@src/core'
-import type { SyncOptions } from '@src/server'
+import type { SyncInterface, SyncOptions } from '@src/server'
 import {
 	blueprint,
 	catalogNames,
@@ -109,10 +109,10 @@ import {
 	orkestrelTokenIssue,
 	prunePreview,
 	pruneConfirmMessage,
-	pullCauseNotes,
-	pullSuccess,
-	pullTable,
-	pullVerdict,
+	syncCauseNotes,
+	syncSuccess,
+	syncTable,
+	syncVerdict,
 	repairHandoff,
 	repairSuccess,
 	repairVerdict,
@@ -731,40 +731,67 @@ export class CLI implements CLIInterface {
 				this.#error(error, json)
 			}
 
-			if (!json) {
-				this.#reporter.table(pullTable(report))
-				for (const line of pullCauseNotes(report)) this.#reporter.line(line)
-				this.#reporter.line(pullVerdict(report))
-			}
-
-			const toWrite = [...report.guides, ...report.versions].filter(
-				(entry) => entry.freshness !== 'current',
-			).length
-
-			const terminal = createTerminal()
-			const proceed =
-				toWrite > 0
-					? await this.#apply(terminal, applyConfirmMessage(toWrite), values, json)
-					: false
-
-			if (proceed) {
-				const spinner = this.#spinner('writing mirrors', json)
-				spinner?.start()
-				try {
-					const written = await sync.write(report, target)
-					if (json) this.#write(report)
-					else this.#succeed(spinner, json, pullSuccess(written.length))
-				} catch (error) {
-					this.#reject(spinner, json, error)
-				}
-			} else if (json) {
-				this.#write(report)
-			}
-
-			process.exitCode = report.clean ? 0 : proceed ? 0 : 1
+			await this.#refresh(sync, report, target, values, json, 'pull', true)
 		} finally {
 			sync.destroy()
 		}
+	}
+
+	/** `scaffold mirror` — refresh every published Orkestrel package guide. */
+	async #mirror(values: CLIValues, json: boolean): Promise<void> {
+		const target = this.#contain(values.target ?? '.', json)
+		const sync = createSync(
+			values.strict === undefined ? this.#sync : { ...this.#sync, strict: values.strict },
+		)
+		try {
+			let report: SyncReport
+			try {
+				report = await sync.mirror(target)
+			} catch (error) {
+				this.#error(error, json)
+			}
+			await this.#refresh(sync, report, target, values, json, 'mirror', report.failed === 0)
+		} finally {
+			sync.destroy()
+		}
+	}
+
+	async #refresh(
+		sync: SyncInterface,
+		report: SyncReport,
+		target: string,
+		values: CLIValues,
+		json: boolean,
+		action: 'pull' | 'mirror',
+		writable: boolean,
+	): Promise<void> {
+		if (!json) {
+			this.#reporter.table(syncTable(report))
+			for (const line of syncCauseNotes(report)) this.#reporter.line(line)
+			this.#reporter.line(syncVerdict(report, action))
+		}
+		const toWrite = [...report.guides, ...report.versions].filter(
+			(entry) => entry.freshness !== 'current',
+		).length
+		const terminal = createTerminal()
+		const proceed =
+			writable && toWrite > 0
+				? await this.#apply(terminal, applyConfirmMessage(toWrite), values, json)
+				: false
+		if (proceed) {
+			const spinner = this.#spinner('writing mirrors', json)
+			spinner?.start()
+			try {
+				const written = await sync.write(report, target)
+				if (json) this.#write(report)
+				else this.#succeed(spinner, json, syncSuccess(written.length))
+			} catch (error) {
+				this.#reject(spinner, json, error)
+			}
+		} else if (json) {
+			this.#write(report)
+		}
+		process.exitCode = report.clean ? 0 : proceed ? 0 : 1
 	}
 
 	/** `scaffold audit` — whole-plan conformance report; offers a repair handoff on drift. */
@@ -1445,6 +1472,9 @@ export class CLI implements CLIInterface {
 		if (command !== 'catalog' && values.from !== undefined && values.from.length > 1) {
 			this.#usage(`--from may be provided only once for '${command}'`, json)
 		}
+		if (command === 'mirror' && values.deps !== undefined) {
+			this.#usage("--deps is not supported for 'mirror'; use 'pull --deps'", json)
+		}
 
 		if (values.help) {
 			process.stdout.write(`${verbHelp(command)}\n`)
@@ -1454,6 +1484,7 @@ export class CLI implements CLIInterface {
 
 		if (command === 'new') return this.#new(values, argument, json)
 		if (command === 'pull') return this.#pull(values, json)
+		if (command === 'mirror') return this.#mirror(values, json)
 		if (command === 'audit') return this.#audit(values, json)
 		if (command === 'repair') return this.#repair(values, json)
 		if (command === 'fleet') return this.#fleet(values, json)

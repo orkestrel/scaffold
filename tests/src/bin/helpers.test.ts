@@ -59,7 +59,8 @@ import {
 	orkestrelTokenIssue,
 	prunePreview,
 	pruneConfirmMessage,
-	pullRows,
+	syncRows,
+	syncVerdict,
 	repairHandoff,
 	repairSuccess,
 	repairVerdict,
@@ -417,7 +418,7 @@ describe('render: tables', () => {
 		expect(table.rows).toContainEqual(['unexpected file', 'unexpected file', 'unexpected.txt'])
 	})
 
-	it('builds the pull freshness rows, translated', () => {
+	it('builds synchronization freshness rows, translated', () => {
 		const report: SyncReport = {
 			target: '.',
 			guides: [
@@ -433,11 +434,13 @@ describe('render: tables', () => {
 			clean: false,
 			failed: 0,
 		}
-		const rows = pullRows(report)
+		const rows = syncRows(report)
 		expect(rows).toEqual([
 			['core', 'guide', 'behind'],
 			['emitter', 'version', 'unchanged'],
 		])
+		expect(syncVerdict(report, 'pull')).toBe('pull: 2 entries — 0 failed')
+		expect(syncVerdict(report, 'mirror')).toBe('mirror: 2 entries — 0 failed')
 	})
 
 	it('builds the catalog preview table with no description column', () => {
@@ -603,7 +606,15 @@ describe('render: did-you-mean', () => {
 	})
 
 	it('lists every known verb', () => {
-		expect([...KNOWN_VERBS]).toEqual(['new', 'pull', 'audit', 'repair', 'fleet', 'catalog'])
+		expect([...KNOWN_VERBS]).toEqual([
+			'new',
+			'pull',
+			'mirror',
+			'audit',
+			'repair',
+			'fleet',
+			'catalog',
+		])
 	})
 
 	it('fuzzy-matches unknown inputs', () => {
@@ -658,9 +669,9 @@ describe('bin destination containment', () => {
 })
 
 describe('render: help tiers', () => {
-	it('shortUsage stays within 10 lines and names every verb', () => {
+	it('shortUsage stays within 11 lines and names every verb', () => {
 		const lines = shortUsage().split('\n')
-		expect(lines.length).toBeLessThanOrEqual(10)
+		expect(lines.length).toBeLessThanOrEqual(11)
 		for (const verb of KNOWN_VERBS) expect(shortUsage()).toContain(verb)
 		expect(shortUsage()).toContain('scaffold <verb> --help')
 	})
@@ -712,6 +723,7 @@ describe('render: VERB_FLAGS corrections', () => {
 		expect(VERB_FLAGS.audit).toContain('--live')
 		expect(VERB_FLAGS.new).not.toContain('--live')
 		expect(VERB_FLAGS.pull).not.toContain('--live')
+		expect(VERB_FLAGS.mirror).not.toContain('--live')
 		expect(VERB_FLAGS.repair).not.toContain('--live')
 		expect(VERB_FLAGS.fleet).not.toContain('--live')
 		expect(VERB_FLAGS.catalog).not.toContain('--live')
@@ -723,6 +735,7 @@ describe('render: VERB_FLAGS corrections', () => {
 		expect(VERB_FLAGS.fleet).toContain('--generated')
 		expect(VERB_FLAGS.new).not.toContain('--generated')
 		expect(VERB_FLAGS.pull).not.toContain('--generated')
+		expect(VERB_FLAGS.mirror).not.toContain('--generated')
 		expect(VERB_FLAGS.catalog).not.toContain('--generated')
 	})
 

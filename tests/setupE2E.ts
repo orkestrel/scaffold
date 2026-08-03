@@ -2055,7 +2055,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 				'<!doctype html><html><body><script src="../server/boundary.js"></script></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(\n\tappBrowser({\n\t\thtml: {\n\t\t\tadditionalAssetSources: {\n\t\t\t\tscript: { srcAttributes: ['src'], filter: () => false },\n\t\t\t},\n\t\t},\n\t}),\n)\n",
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(\n\tappBrowser({\n\t\thtml: {\n\t\t\tadditionalAssetSources: {\n\t\t\t\tscript: { srcAttributes: ['src'], filter: () => false },\n\t\t\t},\n\t\t},\n\t}),\n)\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -2217,7 +2217,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 			content: '<!doctype html><html><body><img src="../server/boundary.txt"></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import type { Plugin } from 'vite'\nimport { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nconst injectIgnore = {\n\tname: 'inject-ignore',\n\ttransformIndexHtml: {\n\t\torder: 'pre',\n\t\thandler: (html: string) => html.replace('<img ', '<img vite-ignore '),\n\t},\n} satisfies Plugin\n\nexport default defineConfig(appBrowser({ plugins: [injectIgnore] }))\n",
+				"import type { Plugin } from 'vite'\nimport { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nconst injectIgnore = {\n\tname: 'inject-ignore',\n\ttransformIndexHtml: {\n\t\torder: 'pre',\n\t\thandler: (html: string) => html.replace('<img ', '<img vite-ignore '),\n\t},\n} satisfies Plugin\n\nexport default defineConfig(appBrowser({ plugins: [injectIgnore] }))\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -2227,7 +2227,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ worker: { plugins: () => [] } }))\n",
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(appBrowser({ worker: { plugins: () => [] } }))\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -2237,7 +2237,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ build: { rolldownOptions: { external: ['@app/core'], output: { paths: { '@app/core': '../../server/main.cjs' } } } } }))\n",
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(appBrowser({ build: { rolldownOptions: { external: ['@app/core'], output: { paths: { '@app/core': '../../server/main.cjs' } } } } }))\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -2247,7 +2247,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ build: { rolldownOptions: { output: { banner: 'import \"../../server/main.cjs\"' } } } }))\n",
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(appBrowser({ build: { rolldownOptions: { output: { banner: 'import \"../../server/main.cjs\"' } } } }))\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -2257,7 +2257,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ css: { transformer: 'postcss', postcss: './postcss.config.js' } }))\n",
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(appBrowser({ css: { transformer: 'postcss', postcss: './postcss.config.js' } }))\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -2267,7 +2267,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ css: { lightningcss: { visitor: {} } } }))\n",
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(appBrowser({ css: { lightningcss: { visitor: {} } } }))\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -2277,7 +2277,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ experimental: { renderBuiltUrl: () => '../server/main.cjs' } }))\n",
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(appBrowser({ experimental: { renderBuiltUrl: () => '../server/main.cjs' } }))\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -2287,7 +2287,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ ssr: { optimizeDeps: { rolldownOptions: { plugins: [] } } } }))\n",
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(appBrowser({ ssr: { optimizeDeps: { rolldownOptions: { plugins: [] } } } }))\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -2297,7 +2297,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ build: { createEnvironment: () => undefined } }))\n",
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(appBrowser({ build: { createEnvironment: () => undefined } }))\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -2307,7 +2307,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ dev: { createEnvironment: () => undefined } }))\n",
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(appBrowser({ dev: { createEnvironment: () => undefined } }))\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -2317,7 +2317,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ build: { rollupOptions: { plugins: [] } } }))\n",
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(appBrowser({ build: { rollupOptions: { plugins: [] } } }))\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -2327,7 +2327,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ build: { rollupOptions: { output: [{ plugins: [] }] } } }))\n",
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(appBrowser({ build: { rollupOptions: { output: [{ plugins: [] }] } } }))\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -2337,7 +2337,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ build: { rolldownOptions: { output: { plugins: [] } } } }))\n",
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(appBrowser({ build: { rolldownOptions: { output: { plugins: [] } } } }))\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -2347,7 +2347,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ worker: { rolldownOptions: { output: { plugins: [] } } } }))\n",
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(appBrowser({ worker: { rolldownOptions: { output: { plugins: [] } } } }))\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -2357,7 +2357,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ worker: { rollupOptions: { output: [{ plugins: [] }] } } }))\n",
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(appBrowser({ worker: { rollupOptions: { output: [{ plugins: [] }] } } }))\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -2367,7 +2367,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ build: { rolldownOptions: { output: [{ plugins: [] }] } } }))\n",
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(appBrowser({ build: { rolldownOptions: { output: [{ plugins: [] }] } } }))\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -2377,7 +2377,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ optimizeDeps: { rolldownOptions: { plugins: [] } } }))\n",
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(appBrowser({ optimizeDeps: { rolldownOptions: { plugins: [] } } }))\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -2387,7 +2387,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ optimizeDeps: { rollupOptions: { output: { plugins: [] } } } }))\n",
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(appBrowser({ optimizeDeps: { rollupOptions: { output: { plugins: [] } } } }))\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -2397,7 +2397,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ optimizeDeps: { esbuildOptions: { plugins: [] } } }))\n",
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(appBrowser({ optimizeDeps: { esbuildOptions: { plugins: [] } } }))\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -2407,7 +2407,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ css: { postcss: { plugins: [] } } }))\n",
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(appBrowser({ css: { postcss: { plugins: [] } } }))\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -2417,7 +2417,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ environments: { client: { build: { rolldownOptions: { plugins: [] } } } } }))\n",
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(appBrowser({ environments: { client: { build: { rolldownOptions: { plugins: [] } } } } }))\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -2427,7 +2427,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 				'<!doctype html><html><body><script type="module" src="/main.ts"></script></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(appBrowser({ builder: { buildApp: async () => undefined } }))\n",
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(appBrowser({ builder: { buildApp: async () => undefined } }))\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -2437,7 +2437,7 @@ export function buildBoundaryCases(packageDirectory: string): readonly BoundaryC
 				'<!doctype html><html><body><img %ATTR% src="../server/boundary.txt"></body></html>\n',
 			setupPath: browserViteConfig,
 			setupContent:
-				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(\n\tappBrowser({ define: { 'import.meta.env.ATTR': JSON.stringify('vite-ignore') } }),\n)\n",
+				"import { defineConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(\n\tappBrowser({ define: { 'import.meta.env.ATTR': JSON.stringify('vite-ignore') } }),\n)\n",
 			script: 'build:app:browser',
 			message: 'Browser configuration overrides are not permitted',
 		},
@@ -3070,17 +3070,17 @@ export async function executeGeneratedConsumerDependencies(): Promise<void> {
 		for (const outputCase of [
 			{
 				config:
-					"import { defineConfig, mergeConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(mergeConfig(appBrowser(), { publicDir: '../server' }))\n",
+					"import { defineConfig, mergeConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(mergeConfig(appBrowser(), { publicDir: '../server' }))\n",
 				message: 'Public directories are disabled',
 			},
 			{
 				config:
-					"import { defineConfig, mergeConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(mergeConfig(appBrowser(), { build: { assetsInlineLimit: 100_000 } }))\n",
+					"import { defineConfig, mergeConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(mergeConfig(appBrowser(), { build: { assetsInlineLimit: 100_000 } }))\n",
 				message: 'Browser assets must remain external for output auditing',
 			},
 			{
 				config:
-					"import { defineConfig, mergeConfig } from 'vite'\nimport { appBrowser } from '../../vite.config'\n\nexport default defineConfig(mergeConfig(appBrowser(), { build: { rolldownOptions: { output: { dir: " +
+					"import { defineConfig, mergeConfig } from 'vite'\nimport { appBrowser } from '../../vite.config.ts'\n\nexport default defineConfig(mergeConfig(appBrowser(), { build: { rolldownOptions: { output: { dir: " +
 					JSON.stringify(overriddenOutput) +
 					' } } } }))\n',
 				message: 'Rolldown output directories and files cannot override',

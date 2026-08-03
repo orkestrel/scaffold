@@ -221,6 +221,7 @@ export interface SyncInterface {
 	versions(deps: readonly Dependency[]): Promise<readonly VersionSync[]>
 	catalog(): Promise<readonly CatalogEntry[]>
 	pull(target: string, dependencies?: readonly Dependency[]): Promise<SyncReport>
+	mirror(target: string): Promise<SyncReport>
 	write(report: SyncReport, target: string): Promise<readonly string[]>
 	destroy(): void
 }

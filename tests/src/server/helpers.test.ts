@@ -231,7 +231,7 @@ describe('deriveBlueprint', () => {
 			mkdirSync(join(directory.path, 'src', 'core'), { recursive: true })
 			writePackageManifest(directory.path, {})
 
-			expect(() => deriveBlueprint(directory.path)).toThrowError(
+			expect(() => deriveBlueprint(directory.path)).toThrow(
 				expect.objectContaining({ code: 'TARGET' }),
 			)
 		} finally {
@@ -259,7 +259,7 @@ describe('deriveBlueprint', () => {
 			expect(isRealDirectory(core)).toBe(false)
 			expect(isRealDirectory(bin)).toBe(false)
 			expect(isRealDirectory(join(directory.path, 'missing'))).toBe(false)
-			expect(() => deriveBlueprint(directory.path)).toThrowError(
+			expect(() => deriveBlueprint(directory.path)).toThrow(
 				expect.objectContaining({ code: 'TARGET' }),
 			)
 		} finally {
@@ -293,7 +293,7 @@ describe('deriveBlueprint', () => {
 				createDirectoryLink(outside.path, join(directory.path, 'app', 'server'))
 
 				expect(isRealDirectory(join(directory.path, 'app', 'server'))).toBe(false)
-				expect(() => deriveBlueprint(directory.path)).toThrowError(
+				expect(() => deriveBlueprint(directory.path)).toThrow(
 					expect.objectContaining({ code: 'TARGET' }),
 				)
 			} finally {
@@ -330,7 +330,7 @@ describe('deriveBlueprint', () => {
 				app: ['server'],
 			})
 
-			expect(() => deriveBlueprint(directory.path)).toThrowError(
+			expect(() => deriveBlueprint(directory.path)).toThrow(
 				expect.objectContaining({ code: 'TARGET' }),
 			)
 		} finally {
@@ -346,7 +346,7 @@ describe('deriveBlueprint', () => {
 				src: ['core'],
 			})
 
-			expect(() => deriveBlueprint(directory.path)).toThrowError(
+			expect(() => deriveBlueprint(directory.path)).toThrow(
 				expect.objectContaining({ code: 'TARGET' }),
 			)
 		} finally {
@@ -556,7 +556,7 @@ describe('deriveBlueprint', () => {
 				symlinkSync(setupTarget, setup)
 				symlinkSync(scriptTarget, script)
 
-				expect(() => deriveBlueprint(directory.path)).toThrowError(
+				expect(() => deriveBlueprint(directory.path)).toThrow(
 					expect.objectContaining({
 						code: 'TARGET',
 						message: expect.stringContaining('tests/setupService.ts and scripts/service.sh'),
@@ -578,7 +578,7 @@ describe('deriveBlueprint', () => {
 			})
 			rmSync(join(directory.path, 'tests', 'setupService.ts'))
 
-			expect(() => deriveBlueprint(directory.path)).toThrowError(
+			expect(() => deriveBlueprint(directory.path)).toThrow(
 				expect.objectContaining({
 					code: 'TARGET',
 					message: expect.stringContaining('tests/setupService.ts'),
@@ -599,7 +599,7 @@ describe('deriveBlueprint', () => {
 			})
 			rmSync(join(directory.path, 'scripts', 'service.sh'))
 
-			expect(() => deriveBlueprint(directory.path)).toThrowError(
+			expect(() => deriveBlueprint(directory.path)).toThrow(
 				expect.objectContaining({
 					code: 'TARGET',
 					message: expect.stringContaining('scripts/service.sh'),
@@ -900,7 +900,7 @@ describe('discoverPackages', () => {
 		const genuine = new Float64Array([1])
 		consumeCatalogAllowance(genuine, 'fleet')
 		expect(genuine[0]).toBe(0)
-		expect(() => consumeCatalogAllowance(genuine, 'fleet')).toThrowError(
+		expect(() => consumeCatalogAllowance(genuine, 'fleet')).toThrow(
 			expect.objectContaining({ code: 'TARGET' }),
 		)
 	})
@@ -1209,7 +1209,7 @@ describe('catalogPackages', () => {
 				version: '0.0.1',
 			})
 
-			expect(() => catalogPackages([first.path, second.path], 3)).toThrowError(
+			expect(() => catalogPackages([first.path, second.path], 3)).toThrow(
 				expect.objectContaining({ code: 'TARGET' }),
 			)
 			expect(catalogPackages([first.path, second.path], 4)).toHaveLength(2)
@@ -2189,7 +2189,7 @@ describe('listFiles', () => {
 			const linked = join(root.path, 'linked')
 			symlinkSync(physical, linked, 'junction')
 
-			expect(() => listFiles(linked)).toThrowError(expect.objectContaining({ code: 'TARGET' }))
+			expect(() => listFiles(linked)).toThrow(expect.objectContaining({ code: 'TARGET' }))
 			expect(readFileSync(join(physical, 'secret.txt'), 'utf8')).toBe('user-owned\n')
 		} finally {
 			await root.cleanup()
@@ -2241,9 +2241,7 @@ describe('listDirectories', () => {
 			const linked = join(root.path, 'linked')
 			symlinkSync(physical, linked, 'junction')
 
-			expect(() => listDirectories(linked)).toThrowError(
-				expect.objectContaining({ code: 'TARGET' }),
-			)
+			expect(() => listDirectories(linked)).toThrow(expect.objectContaining({ code: 'TARGET' }))
 		} finally {
 			await root.cleanup()
 		}

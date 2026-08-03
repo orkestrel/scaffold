@@ -28,9 +28,9 @@ it is documented in prose only and is excluded from the doc↔source parity scan
 
 This repo vendors a byte-identical guide mirror for **every published `@orkestrel/*` package**,
 not only its own dependencies. Scaffold is the line's blueprint compiler: `new` seeds a
-workspace's vendored guides and `pull` refreshes them, so the authoritative copy of each
-package's guide has to live here to be handed out. The mirrors therefore track the npm org
-membership `catalog` enumerates, and each is fetched from its own repository's `main` at
+workspace's vendored dependency guides, `pull` refreshes those declared dependencies, and `mirror`
+refreshes the complete published line. The mirrors therefore track the exact npm org membership
+`catalog` and `mirror` share, and each is fetched from its own repository's `main` at
 `guides/src/<name>.md`.
 
 Two subsets carry extra weight:

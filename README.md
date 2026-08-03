@@ -1,7 +1,7 @@
 # @orkestrel/scaffold
 
-Blueprint-to-plan package scaffolding, auditing, dependency guide/version
-pulling, and fleet-wide shared-file upkeep for the `@orkestrel` line.
+Blueprint-to-plan package scaffolding, auditing, dependency guide/version pulling,
+complete guide mirroring, and fleet-wide shared-file upkeep for the `@orkestrel` line.
 
 ## Install
 
@@ -27,6 +27,12 @@ flag from the guided flow works standalone:
 
 ```sh
 npx scaffold new mypackage --src core --app core,browser,server --apply
+
+# refresh every published Orkestrel package guide in the current target
+npx scaffold mirror --apply --yes
+
+# the same command from this checkout, after npm run build
+node ./dist/bin/scaffold.js mirror --apply --yes
 ```
 
 In scripts, every verb is dry-run by default and fully non-interactive —
@@ -48,6 +54,7 @@ Node's default roots. `NODE_EXTRA_CA_CERTS` adds custom PEMs in either case.
 ```sh
 scaffold new [name] [--src <list>] [--app <list>] [--deps <list>] [--apply] [--yes] [--json]
 scaffold pull [--apply] [--yes] [--json]
+scaffold mirror [--apply] [--yes] [--json]
 scaffold audit [--live] [--json]
 scaffold repair [--prune] [--apply] [--yes] [--json]
 scaffold fleet [--apply] [--yes] [--json]
@@ -70,6 +77,9 @@ error.
   its plan from your `package.json` and stays clean over the addition.
 - **`pull`** — fetches the latest vendored dependency guides and registry versions
   for an existing package and reports drift.
+- **`mirror`** — discovers the exact published `@orkestrel/*` package set from npm and refreshes
+  every package's GitHub guide in deterministic name order. It never fetches registry versions or
+  overwrites the target package's own guide, and it applies nothing when any guide fetch fails.
 - **`audit`** — a conformance report over the artifacts the plan actually gates: the
   shared host-origin files (presence, or exact bytes once hydrated) AND the generated
   configs/manifest (exact UTF-8 bytes); reports drift as data, findings and all; exits nonzero
@@ -114,7 +124,7 @@ compiler.destroy()
 
 `@orkestrel/scaffold/server` carries the impure API — `createMaterializer`
 (writes a `Plan` to disk) and `createSync` (the only part of the system that
-touches the network, fetching dependency guides and registry versions).
+touches the network, fetching dependency guides, fleet guide mirrors, and registry versions).
 
 The built host uses an exact `{ entries, roots }` manifest. Staging preflights
 containment and portable file-tree collisions, builds in a temporary sibling,

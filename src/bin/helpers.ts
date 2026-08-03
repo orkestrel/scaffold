@@ -104,8 +104,8 @@ export function repairSuccess(result: MaterializeResult, removed: readonly strin
 	return `${ACTION_LABEL.written} ${written}, ${ACTION_LABEL.skipped} ${result.skipped.length}, ${ACTION_LABEL.removed} ${removed.length}`
 }
 
-/** Render pull freshness as table rows. */
-export function pullRows(report: SyncReport): readonly (readonly [string, string, string])[] {
+/** Render synchronization freshness as table rows. */
+export function syncRows(report: SyncReport): readonly (readonly [string, string, string])[] {
 	const guides = report.guides.map((guide): readonly [string, string, string] => [
 		guide.name,
 		'guide',
@@ -119,16 +119,16 @@ export function pullRows(report: SyncReport): readonly (readonly [string, string
 	return [...guides, ...versions]
 }
 
-/** Create pull's terminal table. */
-export function pullTable(report: SyncReport): TableOptions {
+/** Create a synchronization terminal table. */
+export function syncTable(report: SyncReport): TableOptions {
 	return {
 		columns: [{ label: 'Name' }, { label: 'Kind' }, { label: 'Freshness' }],
-		rows: pullRows(report),
+		rows: syncRows(report),
 	}
 }
 
-/** Render cause notes from non-current pull entries. */
-export function pullCauseNotes(report: SyncReport): readonly string[] {
+/** Render cause notes from non-current synchronization entries. */
+export function syncCauseNotes(report: SyncReport): readonly string[] {
 	return [...report.guides, ...report.versions]
 		.filter((entry) => entry.note !== undefined)
 		.map(
@@ -137,14 +137,14 @@ export function pullCauseNotes(report: SyncReport): readonly string[] {
 		)
 }
 
-/** Render pull's tally. */
-export function pullVerdict(report: SyncReport): string {
+/** Render a command-specific synchronization tally. */
+export function syncVerdict(report: SyncReport, action: 'pull' | 'mirror'): string {
 	const count = report.guides.length + report.versions.length
-	return `pull: ${countPart(count, 'entry')} — ${countPart(report.failed, 'failed')}`
+	return `${action}: ${String(count)} ${count === 1 ? 'entry' : 'entries'} — ${String(report.failed)} failed`
 }
 
-/** Render pull's success tally. */
-export function pullSuccess(count: number): string {
+/** Render a synchronization success tally. */
+export function syncSuccess(count: number): string {
 	return `wrote ${countPart(count, 'guide')}`
 }
 

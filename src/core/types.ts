@@ -302,7 +302,7 @@ export interface GuideSync {
 	readonly content: string
 	readonly freshness: Freshness
 	readonly note?: string
-	/** SHA-256 of the observed local mirror, or `absent`; omitted outside target-aware pulls. */
+	/** SHA-256 of the observed local mirror, or `absent`; omitted outside target-aware synchronization. */
 	readonly baseline?: string
 }
 
@@ -322,7 +322,7 @@ export interface VersionSync {
 }
 
 /**
- * The whole outcome of a `Sync.pull`.
+ * The whole outcome of a `Sync.pull` or `Sync.mirror` synchronization.
  *
  * @remarks
  * `clean` is `true` iff no drift AND no failures; `failed` is the count of

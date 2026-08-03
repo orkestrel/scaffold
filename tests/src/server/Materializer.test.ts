@@ -210,7 +210,7 @@ describe('Materializer.materialize', () => {
 			const target = join(root.path, ...Array(MAX_FILESYSTEM_DEPTH + 1).fill('nested'))
 			const plan = blueprintToPlan(blueprint('router', { src: ['core'] }))
 
-			expect(() => materializer.materialize(plan, target)).toThrowError(
+			expect(() => materializer.materialize(plan, target)).toThrow(
 				expect.objectContaining({ code: 'TARGET' }),
 			)
 			expect(readFileSync(sentinel, 'utf8')).toBe('user-owned\n')
@@ -256,7 +256,7 @@ describe('Materializer.materialize', () => {
 				artifacts: [{ ...artifact, path: '.git/config' }],
 			}
 
-			expect(() => materializer.materialize(plan, directory.path)).toThrowError(
+			expect(() => materializer.materialize(plan, directory.path)).toThrow(
 				expect.objectContaining({ code: 'WRITE' }),
 			)
 			expect(readFileSync(config, 'utf8')).toBe('user-owned repository metadata\n')

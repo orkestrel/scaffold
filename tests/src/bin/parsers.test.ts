@@ -87,7 +87,7 @@ describe('bin argument parsers', () => {
 			'@orkestrel/contract,',
 			'contract',
 		]) {
-			expect(() => parsePullDependencies(raw, declared)).toThrowError(
+			expect(() => parsePullDependencies(raw, declared)).toThrow(
 				expect.objectContaining({ code: 'INVALID' }),
 			)
 		}

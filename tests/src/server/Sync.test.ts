@@ -66,7 +66,7 @@ describe('Sync options boundary', () => {
 				},
 			},
 		)
-		expect(() => createSync({ on: statefulHooks })).toThrowError(
+		expect(() => createSync({ on: statefulHooks })).toThrow(
 			expect.objectContaining({ code: 'INVALID' }),
 		)
 	})
@@ -85,7 +85,7 @@ describe('Sync options boundary', () => {
 		})
 
 		for (const value of [revoked.proxy, stateful]) {
-			expect(() => Reflect.apply(parseSyncDependencies, undefined, [value, false])).toThrowError(
+			expect(() => Reflect.apply(parseSyncDependencies, undefined, [value, false])).toThrow(
 				expect.objectContaining({ code: 'INVALID' }),
 			)
 		}
@@ -93,10 +93,10 @@ describe('Sync options boundary', () => {
 
 	it('parses owned bare registry names without inventing declaration ranges', () => {
 		expect(parseSyncNames(['@orkestrel/contract', 'zod'])).toEqual(['@orkestrel/contract', 'zod'])
-		expect(() => parseSyncNames(['@orkestrel/../contract'])).toThrowError(
+		expect(() => parseSyncNames(['@orkestrel/../contract'])).toThrow(
 			expect.objectContaining({ code: 'INVALID' }),
 		)
-		expect(() => parseSyncNames(['zod', 'zod'])).toThrowError(
+		expect(() => parseSyncNames(['zod', 'zod'])).toThrow(
 			expect.objectContaining({ code: 'INVALID' }),
 		)
 	})
@@ -140,7 +140,7 @@ describe('Sync options boundary', () => {
 		Object.create({ concurrency: 1 }),
 		Object.create({ base: 'https://example.test' }),
 	])('rejects malformed, unbounded, inherited, and accessor options %#', (value) => {
-		expect(() => Reflect.apply(createSync, undefined, [value])).toThrowError(
+		expect(() => Reflect.apply(createSync, undefined, [value])).toThrow(
 			expect.objectContaining({ code: 'INVALID' }),
 		)
 	})
@@ -163,7 +163,7 @@ describe('Sync options boundary', () => {
 		expect(parseSyncBase('http://localhost:3000')).toBe('http://localhost:3000')
 		expect(parseSyncBase('http://[::1]:3000')).toBe('http://[::1]:3000')
 		for (const base of ['http://example.test', 'http://127.0.0.2', 'http://sub.localhost']) {
-			expect(() => parseSyncBase(base)).toThrowError(expect.objectContaining({ code: 'INVALID' }))
+			expect(() => parseSyncBase(base)).toThrow(expect.objectContaining({ code: 'INVALID' }))
 		}
 	})
 
@@ -174,10 +174,10 @@ describe('Sync options boundary', () => {
 
 		expect(parseSyncBase(endpoint)).toBe(endpoint)
 		expect(parseSyncBranch(branch)).toBe(branch)
-		expect(() => parseSyncBase(`${endpoint}a`)).toThrowError(
+		expect(() => parseSyncBase(`${endpoint}a`)).toThrow(
 			expect.objectContaining({ code: 'INVALID' }),
 		)
-		expect(() => parseSyncBranch(`${branch}a`)).toThrowError(
+		expect(() => parseSyncBranch(`${branch}a`)).toThrow(
 			expect.objectContaining({ code: 'INVALID' }),
 		)
 	})
@@ -193,9 +193,7 @@ describe('Sync options boundary', () => {
 			'../main',
 			'-option',
 		]) {
-			expect(() => parseSyncBranch(branch)).toThrowError(
-				expect.objectContaining({ code: 'INVALID' }),
-			)
+			expect(() => parseSyncBranch(branch)).toThrow(expect.objectContaining({ code: 'INVALID' }))
 		}
 	})
 
@@ -209,10 +207,8 @@ describe('Sync options boundary', () => {
 			},
 		)
 		for (const value of [null, 42, hostile]) {
-			expect(() => parseSyncBase(value)).toThrowError(expect.objectContaining({ code: 'INVALID' }))
-			expect(() => parseSyncBranch(value)).toThrowError(
-				expect.objectContaining({ code: 'INVALID' }),
-			)
+			expect(() => parseSyncBase(value)).toThrow(expect.objectContaining({ code: 'INVALID' }))
+			expect(() => parseSyncBranch(value)).toThrow(expect.objectContaining({ code: 'INVALID' }))
 		}
 	})
 })
@@ -725,6 +721,92 @@ describe('Sync.catalog', () => {
 			expect(guideAuth).toBeUndefined()
 			sync.destroy()
 		} finally {
+			await fixture.close()
+		}
+	})
+})
+
+// ── Sync.mirror ───────────────────────────────────────────────────────────
+
+describe('Sync.mirror', () => {
+	it('refreshes the exact org guide set in name order without packuments or the target-owned guide', async () => {
+		const fixture = await buildHTTPFixture()
+		const directory = await buildTempDirectory()
+		const contract = '# Contract current\n'
+		const relation = '# Relation upstream\n'
+		const stale = '# Relation stale\n'
+		const self = '# Scaffold owned\n'
+		const local = '# Supervisor local only\n'
+		try {
+			writeFileSync(
+				join(directory.path, 'package.json'),
+				JSON.stringify({ name: '@orkestrel/scaffold' }),
+				'utf8',
+			)
+			mkdirSync(join(directory.path, 'guides', 'src'), { recursive: true })
+			writeFileSync(join(directory.path, 'guides', 'src', 'contract.md'), contract, 'utf8')
+			writeFileSync(join(directory.path, 'guides', 'src', 'relation.md'), stale, 'utf8')
+			writeFileSync(join(directory.path, 'guides', 'src', 'scaffold.md'), self, 'utf8')
+			writeFileSync(join(directory.path, 'guides', 'src', 'supervisor.md'), local, 'utf8')
+			fixture.route(ORG_REGISTRY_PATH, (_request, response) =>
+				respondText(
+					response,
+					200,
+					JSON.stringify({
+						'@orkestrel/relation': 'write',
+						'@orkestrel/scaffold': 'write',
+						'@orkestrel/contract': 'write',
+					}),
+				),
+			)
+			fixture.route(buildGuidePath('contract'), (_request, response) =>
+				respondText(response, 200, contract),
+			)
+			fixture.route(buildGuidePath('relation'), (_request, response) =>
+				respondText(response, 200, relation),
+			)
+			fixture.route(buildGuidePath('scaffold'), (_request, response) =>
+				respondText(response, 200, '# Scaffold upstream\n'),
+			)
+			const sync = createSync({ registry: { base: fixture.base }, guides: { base: fixture.base } })
+			try {
+				const report = await sync.mirror(directory.path)
+				expect(report.guides.map((guide) => guide.name)).toEqual([
+					'@orkestrel/contract',
+					'@orkestrel/relation',
+				])
+				expect(report.guides.map((guide) => guide.freshness)).toEqual(['current', 'behind'])
+				expect(report.guides.map((guide) => guide.baseline)).toEqual([
+					digestText(contract),
+					digestText(stale),
+				])
+				expect(report.versions).toEqual([])
+				expect(fixture.hits.get(ORG_REGISTRY_PATH)).toBe(1)
+				expect(fixture.hits.get(buildGuidePath('contract'))).toBe(1)
+				expect(fixture.hits.get(buildGuidePath('relation'))).toBe(1)
+				expect(fixture.hits.get(buildGuidePath('scaffold'))).toBeUndefined()
+				for (const name of ['@orkestrel/contract', '@orkestrel/relation', '@orkestrel/scaffold']) {
+					expect(fixture.hits.get(buildRegistryPath(name))).toBeUndefined()
+				}
+				const written = await sync.write(report, directory.path)
+				expect(written).toEqual(['guides/src/relation.md'])
+				expect(readFileSync(join(directory.path, 'guides', 'src', 'contract.md'), 'utf8')).toBe(
+					contract,
+				)
+				expect(readFileSync(join(directory.path, 'guides', 'src', 'relation.md'), 'utf8')).toBe(
+					relation,
+				)
+				expect(readFileSync(join(directory.path, 'guides', 'src', 'scaffold.md'), 'utf8')).toBe(
+					self,
+				)
+				expect(readFileSync(join(directory.path, 'guides', 'src', 'supervisor.md'), 'utf8')).toBe(
+					local,
+				)
+			} finally {
+				sync.destroy()
+			}
+		} finally {
+			await directory.cleanup()
 			await fixture.close()
 		}
 	})
@@ -1325,6 +1407,7 @@ describe('Sync.destroy', () => {
 				() => sync.guides([dependency('@orkestrel/contract', '^0.0.5')]),
 				() => sync.versions([dependency('@orkestrel/contract', '^0.0.5')]),
 				() => sync.pull(directory.path),
+				() => sync.mirror(directory.path),
 				() => sync.write(report, directory.path),
 			]) {
 				let caught: unknown
