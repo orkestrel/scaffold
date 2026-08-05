@@ -25,25 +25,19 @@ isApplicationError(new ApplicationError('CONFIG', 'invalid')) // true
 ```
 
 ```ts
-import { once } from 'node:events'
-import { createServer } from 'node:http'
+import type { ApplicationRecord, ApplicationState } from '@app/server'
 import {
 	APP_HEALTH_METHOD,
 	APP_HEALTH_PATH,
-	APP_HEADERS_TIMEOUT,
 	APP_HOST_LABEL_PATTERN,
-	APP_KEEP_ALIVE_TIMEOUT,
-	APP_MAX_CONNECTIONS,
-	APP_MAX_HEADERS,
-	APP_MAX_REQUESTS_PER_SOCKET,
-	APP_REQUEST_TIMEOUT,
 	APP_NUMERIC_HOST_PATTERN,
 	ApplicationServer,
 	ApplicationServerError,
 	DEFAULT_APP_START_TIMEOUT,
 	MAX_APP_START_TIMEOUT,
 	createApplicationServer,
-	handleApplicationRequest,
+	dispatcher,
+	handleApplicationHealth,
 	isApplicationServerError,
 	parseApplicationHost,
 	parseApplicationPort,
@@ -55,25 +49,18 @@ import {
 const host = parseApplicationHost('127.0.0.1')
 const port = parseApplicationPort('0')
 const timeout = parseApplicationStartTimeout('5000')
-const options = parseApplicationServerOptions({ host, port, timeout })
+const options = parseApplicationServerOptions({ server: { host, port, timeout } })
 APP_HOST_LABEL_PATTERN.test('api') // true
 APP_NUMERIC_HOST_PATTERN.test('999.999.999.999') // true (and therefore rejected as a host)
 APP_HEALTH_METHOD // 'GET'
-APP_HEALTH_PATH // '/'
-APP_MAX_CONNECTIONS // 16
-APP_MAX_HEADERS // 100
-APP_HEADERS_TIMEOUT // 10000
-APP_REQUEST_TIMEOUT // 30000
-APP_KEEP_ALIVE_TIMEOUT // 5000
-APP_MAX_REQUESTS_PER_SOCKET // 100
+APP_HEALTH_PATH // '/health'
 DEFAULT_APP_START_TIMEOUT // 10000
 MAX_APP_START_TIMEOUT // 300000
-const handlerServer = createServer(handleApplicationRequest)
-handlerServer.listen(0, host)
-await once(handlerServer, 'listening')
-const handlerClosed = once(handlerServer, 'close')
-handlerServer.close()
-await handlerClosed
+const state: ApplicationState = { connection: { encrypted: false } }
+const record: ApplicationRecord = { name: 'supervisor', status: 'ok' }
+await dispatcher.handle(new Request(`http://application.test${APP_HEALTH_PATH}`), state)
+Response.json(record)
+handleApplicationHealth()
 
 const error = new ApplicationServerError('CONFIG', 'invalid')
 isApplicationServerError(error) // true
@@ -84,12 +71,13 @@ const server = createApplicationServer(options)
 const controller = new AbortController()
 await server.start(controller.signal)
 await server.stop()
+await server.destroy()
 ```
 
 ```ts
 import { ApplicationServerRunner } from '@app/server'
 
-const runner = new ApplicationServerRunner({ port: 0 })
+const runner = new ApplicationServerRunner({ server: { port: 0 } })
 runner.start() // process owns shutdown signals
 await runner.stop()
 ```
@@ -97,7 +85,7 @@ await runner.stop()
 ```ts
 import { startApplicationServer } from '@app/server'
 
-const processRunner = startApplicationServer({ port: 0 })
+const processRunner = startApplicationServer({ server: { port: 0 } })
 await processRunner.stop()
 ```
 
@@ -115,7 +103,7 @@ await processRunner.stop()
 | Name                      | Kind  | Summary                                         |
 | ------------------------- | ----- | ----------------------------------------------- |
 | `Supervisor`              | class | The Supervisor entity.                          |
-| `ApplicationServer`       | class | The Node HTTP application server.               |
+| `ApplicationServer`       | class | The composed application server.                |
 | `ApplicationServerRunner` | class | The application server process lifecycle owner. |
 
 ### Parsers
@@ -139,7 +127,7 @@ await processRunner.stop()
 
 | Name                           | Kind     | Summary                                                             |
 | ------------------------------ | -------- | ------------------------------------------------------------------- |
-| `handleApplicationRequest`     | function | Handle an application HTTP request.                                 |
+| `handleApplicationHealth`      | function | Return the application health record.                               |
 | `reportApplicationServerError` | function | Report a process-owned failure without exposing diagnostic context. |
 
 ### Errors
@@ -157,6 +145,8 @@ await processRunner.stop()
 | `SupervisorInterface`              | interface | The Supervisor contract.                           |
 | `ApplicationErrorContext`          | interface | Application boundary-failure context.              |
 | `Application`                      | interface | The shared application identity.                   |
+| `ApplicationRecord`                | interface | The application health record.                     |
+| `ApplicationState`                 | interface | Per-request application state.                     |
 | `ApplicationServerErrorContext`    | interface | Application server boundary-failure context.       |
 | `ApplicationServerOptions`         | interface | Options for creating an application server.        |
 | `ApplicationServerInterface`       | interface | The application server lifecycle contract.         |
@@ -182,38 +172,34 @@ await processRunner.stop()
 | `MAX_APP_START_TIMEOUT`             | const | The maximum application startup timeout.          |
 | `MAX_APP_HOST_INPUT_LENGTH`         | const | The maximum raw application-host input length.    |
 | `MAX_APP_NUMBER_INPUT_LENGTH`       | const | The maximum raw application numeric input length. |
-| `APP_MAX_CONNECTIONS`               | const | The simultaneous connection limit.                |
-| `APP_MAX_HEADERS`                   | const | The request-header count limit.                   |
-| `APP_HEADERS_TIMEOUT`               | const | The request-header timeout.                       |
-| `APP_REQUEST_TIMEOUT`               | const | The complete-request timeout.                     |
-| `APP_KEEP_ALIVE_TIMEOUT`            | const | The idle keep-alive timeout.                      |
-| `APP_MAX_REQUESTS_PER_SOCKET`       | const | The keep-alive request limit.                     |
 | `APP_PORT_PATTERN`                  | const | The decimal application-port syntax.              |
 | `APP_HOST_LABEL_PATTERN`            | const | The DNS application-host label syntax.            |
 | `APP_NUMERIC_HOST_PATTERN`          | const | The ambiguous numeric-host rejection syntax.      |
 | `APP_HEALTH_METHOD`                 | const | The owned health request method.                  |
 | `APP_HEALTH_PATH`                   | const | The owned health request path.                    |
+| `dispatcher`                        | const | The standalone application route dispatcher.      |
 
 ## Methods
 
 #### `ApplicationServerInterface`
 
-| Method  | Returns         | Behavior                                                                                                                                                                                                                                                                                                   |
-| ------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `start` | `Promise<void>` | Serialize in call order; start only when stopped, and repeat safely when already listening. The optional `AbortSignal` and bounded startup timeout cancel pending name resolution/listen work. Rejects with `ApplicationServerError` code `LIFECYCLE` when startup fails, times out, or the caller aborts. |
-| `stop`  | `Promise<void>` | Cancel every pending start before its queued stop, force active and idle connections closed, and repeat safely when already stopped. Rejects with `ApplicationServerError` code `LIFECYCLE` when closing fails.                                                                                            |
+| Method    | Returns         | Behavior                                                                                                                                                                                                                                                          |
+| --------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `start`   | `Promise<void>` | Bind the installed `@orkestrel/server` substrate when idle or stopped. The optional `AbortSignal` and bounded startup timeout cancel pending binding. Rejects with `ApplicationServerError` code `LIFECYCLE` when startup fails, times out, or the caller aborts. |
+| `stop`    | `Promise<void>` | Drain and stop the installed server; repeated calls while stopped are safe. Rejects with `ApplicationServerError` code `LIFECYCLE` when closing fails.                                                                                                            |
+| `destroy` | `Promise<void>` | Perform terminal idempotent teardown through the installed server lifecycle. Rejects with `ApplicationServerError` code `LIFECYCLE` when teardown fails.                                                                                                          |
 
 #### `ApplicationServerRunnerInterface`
 
-| Method  | Returns         | Behavior                                                                                                                                                          |
-| ------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `start` | `void`          | Register one idempotent set of SIGINT/SIGTERM cleanup listeners, start the server, and translate asynchronous startup failures into a non-zero process exit code. |
-| `stop`  | `Promise<void>` | Release both process listeners before stopping the server; repeated calls are safe and lifecycle failures reject.                                                 |
+| Method  | Returns         | Behavior                                                                                                                                                                                                                       |
+| ------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `start` | `void`          | Register one generation-owned set of SIGINT/SIGTERM cleanup listeners, start the server, write one `[READY] <name> <url>` line after readiness, and translate asynchronous startup failures into a non-zero process exit code. |
+| `stop`  | `Promise<void>` | Release both process listeners before stopping the server; repeated calls are safe and lifecycle failures reject.                                                                                                              |
 
-The constructor validates direct options plus `APP_HOST`, `APP_PORT`, and
+The constructor validates grouped direct options plus `APP_HOST`, `APP_PORT`, and
 `APP_START_TIMEOUT` before allocating
-a listener. Direct options must be an exact plain own-key data record containing only
-`host`, `port`, and/or `timeout`; inherited properties, accessors, symbols, instances, proxies that
+a listener. Direct options must be an exact plain own-key data record containing only a
+`server` record with `host`, `port`, and/or `timeout`; inherited properties, accessors, symbols, instances, proxies that
 throw during reflection, and unknown keys fail closed. Invalid values throw
 `ApplicationServerError` code `CONFIG`; the default host is loopback and port `0` is
 supported for collision-free ephemeral allocation. Startup defaults to 10 seconds and accepts
@@ -221,10 +207,11 @@ only integer timeouts from 1 through 300,000 milliseconds. Lifecycle failures us
 `LIFECYCLE`; both may carry `context.cause` or `context.value`. Narrow caught values with
 `isApplicationServerError` before reading either field.
 
-The generated server owns exactly `GET /`. It serializes
-`{ name: APP_NAME, status: 'ok' }` as JSON with `cache-control: no-store`;
-every other path returns deterministic plain-text `404 Not Found`, and every unsupported
-method returns deterministic plain-text `405 Method Not Allowed` with `Allow: GET`.
+The standalone dispatcher owns exactly `GET /health` and serializes the shared
+`ApplicationRecord` shape `{ name: APP_NAME, status: 'ok' }` as JSON. The server composes
+`createBoundary()`, `createSecurity()`, then `createDeadline({ ms: timeout })` around that
+dispatcher; every other path returns `404`, and every unsupported method returns `405` with
+`Allow: GET`.
 
 ## Tests
 

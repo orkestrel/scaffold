@@ -384,6 +384,8 @@ export function blueprintToMembers(spec: Blueprint): readonly Member[] {
 	}
 	if (spec.app.includes('server')) {
 		members.push(
+			member('ApplicationRecord', 'type', 'The application health record.', 'server'),
+			member('ApplicationState', 'type', 'Per-request application state.', 'server'),
 			member(
 				'ApplicationServerErrorCode',
 				'alias',
@@ -440,12 +442,6 @@ export function blueprintToMembers(spec: Blueprint): readonly Member[] {
 				'The maximum raw application numeric input length.',
 				'server',
 			),
-			member('APP_MAX_CONNECTIONS', 'constant', 'The simultaneous connection limit.', 'server'),
-			member('APP_MAX_HEADERS', 'constant', 'The request-header count limit.', 'server'),
-			member('APP_HEADERS_TIMEOUT', 'constant', 'The request-header timeout.', 'server'),
-			member('APP_REQUEST_TIMEOUT', 'constant', 'The complete-request timeout.', 'server'),
-			member('APP_KEEP_ALIVE_TIMEOUT', 'constant', 'The idle keep-alive timeout.', 'server'),
-			member('APP_MAX_REQUESTS_PER_SOCKET', 'constant', 'The keep-alive request limit.', 'server'),
 			member('APP_PORT_PATTERN', 'constant', 'The decimal application-port syntax.', 'server'),
 			member(
 				'APP_HOST_LABEL_PATTERN',
@@ -461,7 +457,8 @@ export function blueprintToMembers(spec: Blueprint): readonly Member[] {
 			),
 			member('APP_HEALTH_METHOD', 'constant', 'The owned health request method.', 'server'),
 			member('APP_HEALTH_PATH', 'constant', 'The owned health request path.', 'server'),
-			member('ApplicationServer', 'entity', 'The Node HTTP application server.', 'server'),
+			member('dispatcher', 'constant', 'The standalone application route dispatcher.', 'server'),
+			member('ApplicationServer', 'entity', 'The composed application server.', 'server'),
 			member(
 				'ApplicationServerRunner',
 				'entity',
@@ -495,9 +492,9 @@ export function blueprintToMembers(spec: Blueprint): readonly Member[] {
 				'server',
 			),
 			member(
-				'handleApplicationRequest',
+				'handleApplicationHealth',
 				'handler',
-				'Handle an application HTTP request.',
+				'Return the application health record.',
 				'server',
 			),
 			member(

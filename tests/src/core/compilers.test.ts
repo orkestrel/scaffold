@@ -286,6 +286,13 @@ describe('application layer compilation', () => {
 		const serverRunner = plan.artifacts.find(
 			(artifact) => artifact.path === 'app/server/ApplicationServerRunner.ts',
 		)
+		const server = plan.artifacts.find(
+			(artifact) => artifact.path === 'app/server/ApplicationServer.ts',
+		)
+		const routes = plan.artifacts.find((artifact) => artifact.path === 'app/server/routes.ts')
+		const serverHandlers = plan.artifacts.find(
+			(artifact) => artifact.path === 'app/server/handlers.ts',
+		)
 		const serverFactories = plan.artifacts.find(
 			(artifact) => artifact.path === 'app/server/factories.ts',
 		)
@@ -298,12 +305,28 @@ describe('application layer compilation', () => {
 		expect(
 			plan.artifacts.find((artifact) => artifact.path === 'app/server/main.ts')?.content,
 		).toContain('startApplicationServer()')
-		expect(serverTypes?.content).toContain('start(): void\n\tstop(): Promise<void>')
+		expect(serverTypes?.content).toContain('readonly server?: {')
+		expect(serverTypes?.content).toContain('readonly timeout?: number')
+		expect(serverTypes?.content).toContain('readonly status: ServerStatus')
+		expect(serverTypes?.content).toContain('destroy(): Promise<void>')
+		expect(routes?.content).toContain('createDispatcher<ApplicationState>')
+		expect(routes?.content).toContain('handler: handleApplicationHealth')
+		expect(serverHandlers?.content).toContain('satisfies ApplicationRecord')
+		expect(server?.content).toContain("from '@orkestrel/server'")
+		expect(server?.content).toContain('state: ApplicationServer.#state')
+		expect(server?.content).toContain('return { connection }')
+		expect(server?.content).toContain('createBoundary<ApplicationState>()')
+		expect(server?.content).toContain('createSecurity<ApplicationState>()')
+		expect(server?.content).toContain('createDeadline<ApplicationState>({ ms: timeout })')
+		expect(server?.content).not.toContain("from 'node:http'")
 		expect(serverFactories?.content).toContain(
 			'function startApplicationServer(\n\toptions: ApplicationServerOptions = {},\n): ApplicationServerRunnerInterface',
 		)
 		expect(serverFactories?.content).toContain('return runner')
 		expect(serverRunner?.content).not.toContain('function startApplicationServer')
+		expect(serverRunner?.content).toContain(
+			'process.stderr.write(`[READY] ${APP_NAME} ${this.#server.url}\\n`)',
+		)
 		for (const path of [
 			'configs/app/tsconfig.core.json',
 			'configs/app/tsconfig.browser.json',
@@ -314,6 +337,7 @@ describe('application layer compilation', () => {
 			'app/browser/index.html',
 			'app/browser/ApplicationView.vue',
 			'app/server/main.ts',
+			'app/server/routes.ts',
 			'app/server/ApplicationServerRunner.ts',
 			'tests/app/core/factories.test.ts',
 			'tests/app/browser/factories.test.ts',

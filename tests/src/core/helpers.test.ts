@@ -148,7 +148,11 @@ describe('blueprintToMembers', () => {
 		expect(categories.get('ApplicationServerError')).toBe('error')
 		expect(categories.get('isApplicationServerError')).toBe('guard')
 		expect(categories.get('parseApplicationHost')).toBe('parser')
-		expect(categories.get('handleApplicationRequest')).toBe('handler')
+		expect(categories.get('ApplicationRecord')).toBe('type')
+		expect(categories.get('ApplicationState')).toBe('type')
+		expect(categories.get('dispatcher')).toBe('constant')
+		expect(categories.get('handleApplicationHealth')).toBe('handler')
+		expect(categories.has('handleApplicationRequest')).toBe(false)
 		expect(categories.get('startApplicationServer')).toBe('factory')
 	})
 })
@@ -1564,10 +1568,10 @@ describe('pinPlan', () => {
 			{
 			  "browser-only": "696e92dd",
 			  "core+browser": "0d4b894c",
-			  "core+browser+server": "62e83da9",
-			  "core+server": "49bcb72f",
+			  "core+browser+server": "495a7f68",
+			  "core+server": "0b969c6e",
 			  "core-only": "de32d5d7",
-			  "server-only": "198330b6",
+			  "server-only": "ad2e3d43",
 			}
 		`)
 	})
@@ -1597,9 +1601,9 @@ describe('pinPlan', () => {
 			{
 			  "app-browser": "0a0d924f",
 			  "app-core": "8dcf7261",
-			  "app-full": "76e5e8b0",
-			  "app-server": "93bf3f3d",
-			  "mixed-full": "1fde40f6",
+			  "app-full": "5b1aeefb",
+			  "app-server": "37e39846",
+			  "mixed-full": "7da1784d",
 			}
 		`)
 	})

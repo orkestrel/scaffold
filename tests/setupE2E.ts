@@ -43,6 +43,7 @@ import {
 	cloneGeneratedConsumer,
 	HOST_BYTE_EQUAL_PATHS,
 	installArchive,
+	installGeneratedDependencies,
 	isExecutable,
 	packArchive,
 	packFiles,
@@ -1574,10 +1575,20 @@ export function registerHermeticBinGates(): void {
 							src: spec.src,
 							app: spec.app,
 						})
-						createDirectoryLink(
-							join(WORKSPACE_ROOT, 'node_modules'),
-							join(packageDirectory, 'node_modules'),
-						)
+						const installed = spec.app.includes('server')
+							? installGeneratedDependencies(packageDirectory)
+							: undefined
+						expect({
+							status: installed?.status ?? 0,
+							error: installed?.error?.message,
+							signal: installed?.signal ?? null,
+						}).toEqual({ status: 0, error: undefined, signal: null })
+						if (installed === undefined) {
+							createDirectoryLink(
+								join(WORKSPACE_ROOT, 'node_modules'),
+								join(packageDirectory, 'node_modules'),
+							)
+						}
 						for (const script of spec.scripts) {
 							const result = runNpmScript(packageDirectory, script, LEAN_SCRIPT_TIMEOUT)
 							const output = `${result.stdout}${result.stderr}`

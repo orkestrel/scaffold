@@ -750,7 +750,21 @@ declare module '*.vue' {
 		summary: 'The application server contract.',
 		category: 'source',
 		placeholders: Object.freeze([]),
-		content: `/** A rejected application server boundary. */
+		content: `import type { ConnectionInfo, ServerStatus } from '@orkestrel/server'
+
+/** The application record returned by the health route. */
+${EXPORT_KEYWORD} interface ApplicationRecord {
+	readonly name: string
+	readonly status: 'ok'
+}
+
+/** Per-request application state derived from connection facts. */
+${EXPORT_KEYWORD} interface ApplicationState {
+	readonly connection: ConnectionInfo
+	readonly identifier?: string
+}
+
+/** A rejected application server boundary. */
 ${EXPORT_KEYWORD} type ApplicationServerErrorCode = 'CONFIG' | 'LIFECYCLE'
 
 /** Diagnostic context attached to an application server boundary error. */
@@ -761,19 +775,23 @@ ${EXPORT_KEYWORD} interface ApplicationServerErrorContext {
 
 /** Options for creating an application server. */
 ${EXPORT_KEYWORD} interface ApplicationServerOptions {
-	readonly host?: string
-	readonly port?: number
-	readonly timeout?: number
+	readonly server?: {
+		readonly host?: string
+		readonly port?: number
+		readonly timeout?: number
+	}
 }
 
 /** A lifecycle-safe application server. */
 ${EXPORT_KEYWORD} interface ApplicationServerInterface {
 	readonly host: string
-	readonly port: number
+	readonly port: number | undefined
+	readonly status: ServerStatus
 	readonly listening: boolean
 	readonly url: string
 	start(signal?: AbortSignal): Promise<void>
 	stop(): Promise<void>
+	destroy(): Promise<void>
 }
 
 /** The process lifecycle owner for an application server. */
@@ -812,24 +830,6 @@ ${EXPORT_KEYWORD} ${CONST_KEYWORD} MAX_APP_HOST_INPUT_LENGTH = 255
 /** Maximum raw characters inspected at an application numeric boundary. */
 ${EXPORT_KEYWORD} ${CONST_KEYWORD} MAX_APP_NUMBER_INPUT_LENGTH = 32
 
-/** Maximum simultaneous connections accepted by the generated server. */
-${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_MAX_CONNECTIONS = 16
-
-/** Maximum request headers accepted before Node rejects the request. */
-${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_MAX_HEADERS = 100
-
-/** Maximum milliseconds allowed to receive complete request headers. */
-${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_HEADERS_TIMEOUT = 10_000
-
-/** Maximum milliseconds allowed for one complete request. */
-${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_REQUEST_TIMEOUT = 30_000
-
-/** Idle keep-alive milliseconds before a connection is closed. */
-${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_KEEP_ALIVE_TIMEOUT = 5_000
-
-/** Maximum requests served through one keep-alive connection. */
-${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_MAX_REQUESTS_PER_SOCKET = 100
-
 /** The decimal-only syntax accepted at the APP_PORT string boundary. */
 ${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_PORT_PATTERN = /^\\d+$/
 
@@ -843,7 +843,7 @@ ${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_NUMERIC_HOST_PATTERN = /^[0-9.]+$/
 ${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_HEALTH_METHOD = 'GET'
 
 /** The only HTTP path owned by the generated application server. */
-${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_HEALTH_PATH = '/'
+${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_HEALTH_PATH = '/health'
 `,
 	}),
 	appServerErrors: Object.freeze({
@@ -1018,22 +1018,15 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} parseApplicationServerOptions(value: unkno
 				{ value },
 			)
 		}
-		// The probe: recordOf invokes accessor getters; this walk must not.
 		const keys = Reflect.ownKeys(value)
-		const unknown = keys.filter((key) => key !== 'host' && key !== 'port' && key !== 'timeout')
+		const unknown = keys.filter((key) => key !== 'server')
 		if (unknown.length > 0) {
 			throw new ApplicationServerError('CONFIG', 'Unknown application server option', { value })
 		}
-		const hostDescriptor = Reflect.getOwnPropertyDescriptor(value, 'host')
-		const portDescriptor = Reflect.getOwnPropertyDescriptor(value, 'port')
-		const timeoutDescriptor = Reflect.getOwnPropertyDescriptor(value, 'timeout')
+		const serverDescriptor = Reflect.getOwnPropertyDescriptor(value, 'server')
 		if (
-			(keys.includes('host') &&
-				(hostDescriptor === undefined || !Reflect.has(hostDescriptor, 'value'))) ||
-			(keys.includes('port') &&
-				(portDescriptor === undefined || !Reflect.has(portDescriptor, 'value'))) ||
-			(keys.includes('timeout') &&
-				(timeoutDescriptor === undefined || !Reflect.has(timeoutDescriptor, 'value')))
+			keys.includes('server') &&
+			(serverDescriptor === undefined || !Reflect.has(serverDescriptor, 'value'))
 		) {
 			throw new ApplicationServerError(
 				'CONFIG',
@@ -1041,13 +1034,55 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} parseApplicationServerOptions(value: unkno
 				{ value },
 			)
 		}
+		const server = serverDescriptor?.value
+		if (server === undefined) return {}
+		if (typeof server !== 'object' || server === null || Array.isArray(server)) {
+			throw new ApplicationServerError('CONFIG', 'Application server settings must be an object', {
+				value,
+			})
+		}
+		const serverPrototype = Reflect.getPrototypeOf(server)
+		if (serverPrototype !== Object.prototype && serverPrototype !== null) {
+			throw new ApplicationServerError(
+				'CONFIG',
+				'Application server settings must be a plain record',
+				{ value },
+			)
+		}
+		// The probe: recordOf invokes accessor getters; this walk must not.
+		const serverKeys = Reflect.ownKeys(server)
+		const serverUnknown = serverKeys.filter(
+			(key) => key !== 'host' && key !== 'port' && key !== 'timeout',
+		)
+		if (serverUnknown.length > 0) {
+			throw new ApplicationServerError('CONFIG', 'Unknown application server setting', { value })
+		}
+		const hostDescriptor = Reflect.getOwnPropertyDescriptor(server, 'host')
+		const portDescriptor = Reflect.getOwnPropertyDescriptor(server, 'port')
+		const timeoutDescriptor = Reflect.getOwnPropertyDescriptor(server, 'timeout')
+		if (
+			(serverKeys.includes('host') &&
+				(hostDescriptor === undefined || !Reflect.has(hostDescriptor, 'value'))) ||
+			(serverKeys.includes('port') &&
+				(portDescriptor === undefined || !Reflect.has(portDescriptor, 'value'))) ||
+			(serverKeys.includes('timeout') &&
+				(timeoutDescriptor === undefined || !Reflect.has(timeoutDescriptor, 'value')))
+		) {
+			throw new ApplicationServerError(
+				'CONFIG',
+				'Application server settings must use data properties',
+				{ value },
+			)
+		}
 		const host = hostDescriptor?.value
 		const port = portDescriptor?.value
 		const timeout = timeoutDescriptor?.value
 		return {
-			...(host === undefined ? {} : { host: parseApplicationHost(host) }),
-			...(port === undefined ? {} : { port: parseApplicationPort(port) }),
-			...(timeout === undefined ? {} : { timeout: parseApplicationStartTimeout(timeout) }),
+			server: {
+				...(host === undefined ? {} : { host: parseApplicationHost(host) }),
+				...(port === undefined ? {} : { port: parseApplicationPort(port) }),
+				...(timeout === undefined ? {} : { timeout: parseApplicationStartTimeout(timeout) }),
+			},
 		}
 	} catch (error) {
 		if (isApplicationServerError(error)) throw error
@@ -1058,10 +1093,33 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} parseApplicationServerOptions(value: unkno
 }
 `,
 	}),
+	appServerRoutes: Object.freeze({
+		id: 'appServerRoutes',
+		name: 'appServerRoutes',
+		summary: 'The standalone application route dispatcher.',
+		category: 'source',
+		placeholders: Object.freeze([]),
+		content: `import type { ApplicationState } from './types.js'
+import { createDispatcher } from '@orkestrel/router'
+import { APP_HEALTH_METHOD, APP_HEALTH_PATH } from './constants.js'
+import { handleApplicationHealth } from './handlers.js'
+
+/** Route the generated application's fetch-standard health boundary. */
+${EXPORT_KEYWORD} ${CONST_KEYWORD} dispatcher = createDispatcher<ApplicationState>({
+	routes: [
+		{
+			method: APP_HEALTH_METHOD,
+			path: APP_HEALTH_PATH,
+			handler: handleApplicationHealth,
+		},
+	],
+})
+`,
+	}),
 	appServerHandlers: Object.freeze({
 		id: 'appServerHandlers',
 		name: 'appServerHandlers',
-		summary: 'The server HTTP request handler.',
+		summary: 'The application server diagnostic reporter.',
 		category: 'source',
 		placeholders: Object.freeze([
 			Object.freeze({
@@ -1069,36 +1127,13 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} parseApplicationServerOptions(value: unkno
 				description: 'The selected layer import for APP_NAME.',
 			}),
 		]),
-		content: `import type { IncomingMessage, ServerResponse } from 'node:http'
+		content: `import type { ApplicationRecord } from './types.js'
 {{nameImport}}
-import { APP_HEALTH_METHOD, APP_HEALTH_PATH } from './constants.js'
 import { isApplicationServerError } from './errors.js'
 
-/**
- * Respond to the application health endpoint and reject every other route.
- *
- * @param request - The incoming Node request.
- * @param response - The Node response to complete exactly once.
- */
-${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} handleApplicationRequest(request: IncomingMessage, response: ServerResponse): void {
-	if (request.method !== APP_HEALTH_METHOD) {
-		response.writeHead(405, {
-			allow: APP_HEALTH_METHOD,
-			'content-type': 'text/plain; charset=utf-8',
-		})
-		response.end('Method Not Allowed')
-		return
-	}
-	if (request.url !== APP_HEALTH_PATH) {
-		response.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' })
-		response.end('Not Found')
-		return
-	}
-	response.writeHead(200, {
-		'cache-control': 'no-store',
-		'content-type': 'application/json; charset=utf-8',
-	})
-	response.end(JSON.stringify({ name: APP_NAME, status: 'ok' }))
+/** Return the generated application's shared health record. */
+${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} handleApplicationHealth(): Response {
+	return Response.json({ name: APP_NAME, status: 'ok' } satisfies ApplicationRecord)
 }
 
 /**
@@ -1137,174 +1172,103 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} reportApplicationServerError(error: unknow
 		summary: 'The application server implementation.',
 		category: 'source',
 		placeholders: Object.freeze([]),
-		content: `import type { Server } from 'node:http'
-import type { ApplicationServerInterface, ApplicationServerOptions } from './types.js'
-import { once } from 'node:events'
-import { createServer } from 'node:http'
-import { promisify } from 'node:util'
-import {
-	APP_HEADERS_TIMEOUT,
-	APP_KEEP_ALIVE_TIMEOUT,
-	APP_MAX_CONNECTIONS,
-	APP_MAX_HEADERS,
-	APP_MAX_REQUESTS_PER_SOCKET,
-	APP_REQUEST_TIMEOUT,
-} from './constants.js'
-import { ApplicationServerError, isApplicationServerError } from './errors.js'
-import { handleApplicationRequest } from './handlers.js'
+		content: `import type { ConnectionInfo, ServerInterface } from '@orkestrel/server'
+import type {
+	ApplicationServerInterface,
+	ApplicationServerOptions,
+	ApplicationState,
+} from './types.js'
+import { createBoundary, createDeadline, createSecurity } from '@orkestrel/middleware'
+import { createServer } from '@orkestrel/server'
+import { ApplicationServerError } from './errors.js'
 import {
 	parseApplicationHost,
 	parseApplicationPort,
 	parseApplicationServerOptions,
 	parseApplicationStartTimeout,
 } from './parsers.js'
+import { dispatcher } from './routes.js'
 
-/** A repeat-safe Node HTTP application server. */
+/** A repeat-safe application server composed from the installed server substrate. */
 ${EXPORT_KEYWORD} class ApplicationServer implements ApplicationServerInterface {
 	readonly host: string
 	readonly #requestedPort: number
-	readonly #timeout: number
-	#port: number
-	readonly #server: Server
-	#transition: Promise<void> = Promise.resolve()
-	readonly #starts = new Set<AbortController>()
-	readonly #stopped = new WeakSet<AbortController>()
+	readonly #server: ServerInterface<ApplicationState>
 
 	constructor(options: ApplicationServerOptions = {}) {
 		const parsed = parseApplicationServerOptions(options)
-		this.host = parseApplicationHost(parsed.host === undefined ? process.env.APP_HOST : parsed.host)
-		this.#requestedPort = parseApplicationPort(
-			parsed.port === undefined ? process.env.APP_PORT : parsed.port,
+		const server = parsed.server
+		const host = parseApplicationHost(
+			server?.host === undefined ? process.env.APP_HOST : server.host,
 		)
-		this.#port = this.#requestedPort
-		this.#timeout = parseApplicationStartTimeout(
-			parsed.timeout === undefined ? process.env.APP_START_TIMEOUT : parsed.timeout,
+		const port = parseApplicationPort(
+			server?.port === undefined ? process.env.APP_PORT : server.port,
 		)
-		this.#server = createServer(handleApplicationRequest)
-		this.#server.maxConnections = APP_MAX_CONNECTIONS
-		this.#server.maxHeadersCount = APP_MAX_HEADERS
-		this.#server.headersTimeout = APP_HEADERS_TIMEOUT
-		this.#server.requestTimeout = APP_REQUEST_TIMEOUT
-		this.#server.keepAliveTimeout = APP_KEEP_ALIVE_TIMEOUT
-		this.#server.maxRequestsPerSocket = APP_MAX_REQUESTS_PER_SOCKET
+		const timeout = parseApplicationStartTimeout(
+			server?.timeout === undefined ? process.env.APP_START_TIMEOUT : server.timeout,
+		)
+		this.host = host
+		this.#requestedPort = port
+		this.#server = createServer<ApplicationState>({
+			dispatcher,
+			state: ApplicationServer.#state,
+			middleware: [
+				createBoundary<ApplicationState>(),
+				createSecurity<ApplicationState>(),
+				createDeadline<ApplicationState>({ ms: timeout }),
+			],
+			host,
+			port,
+			timeouts: { start: timeout },
+		})
 	}
 
-	get port(): number {
-		return this.#port
+	static #state(connection: ConnectionInfo): ApplicationState {
+		return { connection }
+	}
+
+	get port(): number | undefined {
+		return this.#server.port
+	}
+
+	get status(): ApplicationServerInterface['status'] {
+		return this.#server.status
 	}
 
 	get listening(): boolean {
-		return this.#server.listening
+		return this.status === 'listening'
 	}
 
 	get url(): string {
 		const hostname = this.host.includes(':') ? \`[\${this.host}]\` : this.host
-		return \`http://\${hostname}:\${this.port}\`
+		return \`http://\${hostname}:\${this.port ?? this.#requestedPort}\`
 	}
 
-	start(signal?: AbortSignal): Promise<void> {
-		const controller = new AbortController()
-		this.#starts.add(controller)
-		const queued = this.#queue(this.#start.bind(this, controller, signal))
-		void queued.then(this.#settle.bind(this, controller), this.#settle.bind(this, controller))
-		return queued
-	}
-
-	stop(): Promise<void> {
-		for (const controller of this.#starts) {
-			this.#stopped.add(controller)
-			controller.abort()
-		}
-		return this.#queue(this.#stop.bind(this))
-	}
-
-	#queue(operation: () => Promise<void>): Promise<void> {
-		const queued = this.#transition.then(operation, operation)
-		this.#transition = queued.then(
-			() => undefined,
-			() => undefined,
-		)
-		return queued
-	}
-
-	async #start(controller: AbortController, signal?: AbortSignal): Promise<void> {
-		if (this.listening) return
-		if (controller.signal.aborted) {
-			if (this.#stopped.has(controller)) return
-			throw new ApplicationServerError('LIFECYCLE', 'Application server startup was cancelled')
-		}
+	async start(signal?: AbortSignal): Promise<void> {
 		try {
-			if (signal?.aborted === true) {
-				throw new ApplicationServerError('LIFECYCLE', 'Application server startup was cancelled', {
-					cause: signal.reason,
-				})
-			}
-			await this.#listen(controller, signal)
-		} catch (error) {
-			if (this.#stopped.has(controller)) return
-			if (isApplicationServerError(error)) throw error
-			throw new ApplicationServerError('LIFECYCLE', 'Failed to inspect startup signal', {
-				cause: error,
-			})
-		}
-	}
-
-	async #stop(): Promise<void> {
-		if (!this.listening) return
-		await this.#close()
-	}
-
-	async #listen(controller: AbortController, signal?: AbortSignal): Promise<void> {
-		const relay = signal === undefined ? undefined : this.#abort.bind(this, controller, signal)
-		const timer = setTimeout(this.#expire.bind(this, controller), this.#timeout)
-		try {
-			if (signal !== undefined && relay !== undefined) {
-				signal.addEventListener('abort', relay, { once: true })
-			}
-			this.#server.listen({
-				port: this.#requestedPort,
-				host: this.host,
-				signal: controller.signal,
-			})
-			await once(this.#server, 'listening', { signal: controller.signal })
+			await this.#server.start(signal)
 		} catch (error) {
 			throw new ApplicationServerError('LIFECYCLE', 'Failed to start application server', {
 				cause: error,
 			})
-		} finally {
-			clearTimeout(timer)
-			if (relay !== undefined && signal !== undefined) {
-				signal.removeEventListener('abort', relay)
-			}
 		}
-		const address = this.#server.address()
-		if (address === null || typeof address === 'string') {
-			await this.#close()
-			throw new ApplicationServerError('LIFECYCLE', 'Server did not expose a TCP address')
-		}
-		this.#port = address.port
 	}
 
-	#abort(controller: AbortController, signal: AbortSignal): void {
-		controller.abort(signal.reason)
-	}
-
-	#expire(controller: AbortController): void {
-		controller.abort(new Error(\`Application server startup exceeded \${this.#timeout} milliseconds\`))
-	}
-
-	#settle(controller: AbortController): void {
-		this.#starts.delete(controller)
-	}
-
-	async #close(): Promise<void> {
+	async stop(): Promise<void> {
 		try {
-			const closed = promisify(this.#server.close.bind(this.#server))()
-			this.#server.closeIdleConnections()
-			this.#server.closeAllConnections()
-			await closed
+			await this.#server.stop()
 		} catch (error) {
 			throw new ApplicationServerError('LIFECYCLE', 'Failed to stop application server', {
+				cause: error,
+			})
+		}
+	}
+
+	async destroy(): Promise<void> {
+		try {
+			await this.#server.destroy()
+		} catch (error) {
+			throw new ApplicationServerError('LIFECYCLE', 'Failed to destroy application server', {
 				cause: error,
 			})
 		}
@@ -1329,16 +1293,17 @@ import { ApplicationServerRunner } from './ApplicationServerRunner.js'
 /**
  * Create a stopped application server.
  *
- * @param options - Optional host and port overrides.
+ * @param options - Optional grouped server overrides.
  * @returns A lifecycle-safe application server.
  *
  * @example
  * \`\`\`ts
  * import { createApplicationServer } from '@app/server'
  *
- * ${CONST_KEYWORD} server = createApplicationServer({ port: 0 })
+ * ${CONST_KEYWORD} server = createApplicationServer({ server: { port: 0 } })
  * await server.start()
  * await server.stop()
+ * await server.destroy()
  * \`\`\`
  */
 ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} createApplicationServer(
@@ -1350,14 +1315,14 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} createApplicationServer(
 /**
  * Start a process-owned application server.
  *
- * @param options - Optional host and port overrides.
+ * @param options - Optional grouped server overrides.
  * @returns The runner that owns signals and provides explicit asynchronous cleanup.
  *
  * @example
  * \`\`\`ts
  * import { startApplicationServer } from '@app/server'
  *
- * ${CONST_KEYWORD} runner = startApplicationServer({ port: 0 })
+ * ${CONST_KEYWORD} runner = startApplicationServer({ server: { port: 0 } })
  * await runner.stop()
  * \`\`\`
  */
@@ -1375,12 +1340,18 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} startApplicationServer(
 		name: 'appServerRunner',
 		summary: 'The application server process lifecycle owner.',
 		category: 'source',
-		placeholders: Object.freeze([]),
+		placeholders: Object.freeze([
+			Object.freeze({
+				name: 'nameImport',
+				description: 'The selected layer import for APP_NAME.',
+			}),
+		]),
 		content: `import type {
 	ApplicationServerInterface,
 	ApplicationServerOptions,
 	ApplicationServerRunnerInterface,
 } from './types.js'
+{{nameImport}}
 import { ApplicationServer } from './ApplicationServer.js'
 import { reportApplicationServerError } from './handlers.js'
 
@@ -1402,7 +1373,9 @@ ${EXPORT_KEYWORD} class ApplicationServerRunner implements ApplicationServerRunn
 		const generation = ++this.#generation
 		process.once('SIGINT', this.#signal)
 		process.once('SIGTERM', this.#signal)
-		void this.#server.start().catch(this.#fail.bind(this, generation))
+		void this.#server
+			.start()
+			.then(this.#ready.bind(this, generation), this.#fail.bind(this, generation))
 	}
 
 	stop(): Promise<void> {
@@ -1415,6 +1388,11 @@ ${EXPORT_KEYWORD} class ApplicationServerRunner implements ApplicationServerRunn
 		if (generation !== this.#generation) return
 		this.#release()
 		reportApplicationServerError(error)
+	}
+
+	#ready(generation: number): void {
+		if (generation !== this.#generation || !this.#started) return
+		process.stderr.write(\`[READY] \${APP_NAME} \${this.#server.url}\\n\`)
 	}
 
 	#shutdown(): void {
@@ -1441,6 +1419,7 @@ ${EXPORT_KEYWORD} class ApplicationServerRunner implements ApplicationServerRunn
 export * from './constants.js'
 export * from './errors.js'
 export * from './parsers.js'
+export * from './routes.js'
 export * from './handlers.js'
 export * from './ApplicationServer.js'
 export * from './ApplicationServerRunner.js'
@@ -1578,6 +1557,7 @@ ${IMPORT_KEYWORD} { createServer } from 'node:http'
 /** One real application child process plus its captured diagnostic output. */
 ${EXPORT_KEYWORD} interface ApplicationProcessInterface {
 	readonly child: ChildProcess
+	readonly ready: Promise<void>
 	output(): string
 }
 
@@ -1664,16 +1644,20 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} startApplicationProcess(
 		stdio: ['ignore', 'pipe', 'pipe'],
 	})
 	const output: string[] = []
+	const readiness = Promise.withResolvers<void>()
 	child.stdout?.setEncoding('utf8')
 	child.stderr?.setEncoding('utf8')
 	child.stdout?.on('data', (chunk: unknown) => {
 		if (typeof chunk === 'string') output.push(chunk)
 	})
 	child.stderr?.on('data', (chunk: unknown) => {
-		if (typeof chunk === 'string') output.push(chunk)
+		if (typeof chunk !== 'string') return
+		output.push(chunk)
+		if (output.join('').includes('[READY] ')) readiness.resolve()
 	})
 	return {
 		child,
+		ready: readiness.promise,
 		output() {
 			return output.join('')
 		},
@@ -1995,7 +1979,7 @@ describe('createBrowserApplication', () => {
 	appServerTest: Object.freeze({
 		id: 'appServerTest',
 		name: 'appServerTest',
-		summary: 'The real loopback application server lifecycle test.',
+		summary: 'The real dispatcher, server-substrate, and runner integration test.',
 		category: 'tests',
 		placeholders: Object.freeze([
 			Object.freeze({
@@ -2007,14 +1991,11 @@ describe('createBrowserApplication', () => {
 import {
 	APP_HEALTH_METHOD,
 	APP_HEALTH_PATH,
-	APP_MAX_CONNECTIONS,
-	ApplicationServerRunner,
 	createApplicationServer,
-	startApplicationServer,
+	dispatcher,
 } from '@app/server'
 import { once } from 'node:events'
 import { createServer } from 'node:http'
-import { connect } from 'node:net'
 import { beforeAll, describe, expect, it } from 'vitest'
 import {
 	buildApplicationServer,
@@ -2022,282 +2003,104 @@ import {
 	startApplicationProcess,
 	stopNodeServer,
 	waitForApplicationProcess,
-	waitForApplicationResponse,
-	waitForLoopbackResponse,
-	waitForSocketClose,
 } from '../../setupServer.js'
 
 beforeAll(() => buildApplicationServer(), 60_000)
 
+describe('application dispatcher', () => {
+	const state = { connection: { encrypted: false } }
+
+	it('returns the typed shared application record for the health route', async () => {
+		const response = await dispatcher.handle(
+			new Request(\`http://application.test\${APP_HEALTH_PATH}\`),
+			state,
+		)
+
+		expect(response.status).toBe(200)
+		expect(await response.json()).toEqual({ name: APP_NAME, status: 'ok' })
+		expect(APP_HEALTH_PATH).toBe('/health')
+	})
+
+	it('distinguishes a wrong method from a missing route', async () => {
+		const method = await dispatcher.handle(
+			new Request(\`http://application.test\${APP_HEALTH_PATH}\`, { method: 'POST' }),
+			state,
+		)
+		const missing = await dispatcher.handle(new Request('http://application.test/missing'), state)
+
+		expect(method.status).toBe(405)
+		expect(method.headers.get('allow')).toContain(APP_HEALTH_METHOD)
+		expect(missing.status).toBe(404)
+	})
+})
+
 describe('ApplicationServer', () => {
-	it('serves a real loopback request and tolerates repeated lifecycle calls', async () => {
-		const server = createApplicationServer({ host: '127.0.0.1', port: 0 })
+	it('composes the real substrate on loopback with security and repeatable lifecycle', async () => {
+		const server = createApplicationServer({
+			server: { host: '127.0.0.1', port: 0, timeout: 1_000 },
+		})
 		try {
-			await Promise.all([server.start(), server.start(), server.start()])
+			expect(server.host).toBe('127.0.0.1')
+			expect(server.port).toBeUndefined()
+			expect(server.status).toBe('idle')
 			await server.start()
+			expect(server.listening).toBe(true)
+			expect(server.status).toBe('listening')
+			expect(server.port).toEqual(expect.any(Number))
 
-			const response = await fetch(server.url)
-			expect(response.status).toBe(200)
-			expect(response.headers.get('cache-control')).toBe('no-store')
-			expect(response.headers.get('content-type')).toBe('application/json; charset=utf-8')
-			expect(await response.json()).toEqual({ name: APP_NAME, status: 'ok' })
-		} finally {
-			await Promise.all([server.stop(), server.stop(), server.stop()])
+			const first = await fetch(\`\${server.url}\${APP_HEALTH_PATH}\`)
+			expect(first.status).toBe(200)
+			expect(first.headers.get('x-content-type-options')).toBe('nosniff')
+			expect(first.headers.get('x-frame-options')).toBe('DENY')
+			expect(first.headers.get('content-security-policy')).not.toBeNull()
+			expect(first.headers.get('x-request-id')).not.toBeNull()
+			expect(await first.json()).toEqual({ name: APP_NAME, status: 'ok' })
+
 			await server.stop()
+			await server.stop()
+			expect(server.listening).toBe(false)
+			expect(server.port).toBeUndefined()
+			expect(server.status).toBe('stopped')
+
+			await server.start()
+			const second = await fetch(\`\${server.url}\${APP_HEALTH_PATH}\`)
+			expect(second.status).toBe(200)
+			await server.stop()
+			await server.destroy()
+			await server.destroy()
+			expect(server.status).toBe('stopped')
+		} finally {
+			await server.destroy()
 		}
 	})
 
-	it('rejects unsupported methods and unknown routes', async () => {
-		const server = createApplicationServer({ host: '127.0.0.1', port: 0 })
-		try {
-			await server.start()
-			const method = await fetch(server.url, { method: 'POST' })
-			expect(method.status).toBe(405)
-			expect(method.headers.get('allow')).toBe(APP_HEALTH_METHOD)
-			expect(method.headers.get('content-type')).toBe('text/plain; charset=utf-8')
-			expect(await method.text()).toBe('Method Not Allowed')
-			const route = await fetch(\`\${server.url}/missing\`)
-			expect(route.status).toBe(404)
-			expect(route.headers.get('content-type')).toBe('text/plain; charset=utf-8')
-			expect(await route.text()).toBe('Not Found')
-			expect(APP_HEALTH_PATH).toBe('/')
-		} finally {
-			await server.stop()
-		}
-	})
-
-	it('serves concurrent loopback requests without cross-request state', async () => {
-		const server = createApplicationServer({ host: '127.0.0.1', port: 0 })
-		try {
-			await server.start()
-			const responses = await Promise.all(
-				Array.from({ length: 8 }, async () => {
-					const response = await fetch(server.url)
-					return { status: response.status, body: await response.json() }
-				}),
-			)
-			expect(responses).toHaveLength(8)
-			for (const response of responses) {
-				expect(response).toEqual({
-					status: 200,
-					body: { name: APP_NAME, status: 'ok' },
-				})
-			}
-		} finally {
-			await server.stop()
-		}
-	})
-
-	it('validates direct options before allocating a listener', () => {
-		expect(() => createApplicationServer({ host: ' ' })).toThrow(
-			expect.objectContaining({ code: 'CONFIG' }),
-		)
-		expect(() => createApplicationServer({ port: Number.NaN })).toThrow(
-			expect.objectContaining({ code: 'CONFIG' }),
-		)
-		expect(() => createApplicationServer({ port: -1 })).toThrow(
-			expect.objectContaining({ code: 'CONFIG' }),
-		)
-		expect(() => createApplicationServer({ timeout: 0 })).toThrow(
-			expect.objectContaining({ code: 'CONFIG' }),
-		)
-		for (const value of [null, 42, [], { host: 42 }, { port: [42] }]) {
+	it('rejects invalid grouped host and port options before binding', () => {
+		for (const value of [
+			{ server: { host: ' ' } },
+			{ server: { port: Number.NaN } },
+			{ server: { port: -1 } },
+			{ server: { timeout: 0 } },
+		]) {
 			expect(() => Reflect.apply(createApplicationServer, undefined, [value])).toThrow(
 				expect.objectContaining({ code: 'CONFIG' }),
 			)
 		}
-		expect(createApplicationServer({ host: '::1' }).url).toBe('http://[::1]:3000')
 	})
+})
 
-	it('parses the real APP_HOST, APP_PORT, and APP_START_TIMEOUT environment boundary and restores it', () => {
-		const previousHost = process.env.APP_HOST
-		const previousPort = process.env.APP_PORT
-		const previousTimeout = process.env.APP_START_TIMEOUT
-		try {
-			process.env.APP_HOST = ' 127.0.0.1 '
-			process.env.APP_PORT = '0'
-			process.env.APP_START_TIMEOUT = '250'
-			const server = createApplicationServer()
-			expect(server.host).toBe('127.0.0.1')
-			expect(server.port).toBe(0)
-
-			process.env.APP_PORT = '1e3'
-			expect(() => createApplicationServer()).toThrow(expect.objectContaining({ code: 'CONFIG' }))
-			process.env.APP_PORT = '0'
-			process.env.APP_START_TIMEOUT = '0'
-			expect(() => createApplicationServer()).toThrow(expect.objectContaining({ code: 'CONFIG' }))
-		} finally {
-			if (previousHost === undefined) delete process.env.APP_HOST
-			else process.env.APP_HOST = previousHost
-			if (previousPort === undefined) delete process.env.APP_PORT
-			else process.env.APP_PORT = previousPort
-			if (previousTimeout === undefined) delete process.env.APP_START_TIMEOUT
-			else process.env.APP_START_TIMEOUT = previousTimeout
-		}
-	})
-
-	it('rejects an aborted startup promptly, cleans up, and remains restartable', async () => {
-		const server = createApplicationServer({
-			host: '127.0.0.1',
-			port: 0,
-			timeout: 1_000,
-		})
-		const controller = new AbortController()
-		controller.abort(new Error('cancelled by test'))
-		try {
-			const started = Date.now()
-			await expect(server.start(controller.signal)).rejects.toMatchObject({ code: 'LIFECYCLE' })
-			expect(Date.now() - started).toBeLessThan(5_000)
-			expect(server.listening).toBe(false)
-
-			await server.stop()
-			await server.start()
-			expect((await fetch(server.url)).status).toBe(200)
-		} finally {
-			await server.stop()
-		}
-	})
-
-	it('contains a revoked startup signal without listening or leaking transition state', async () => {
-		const server = createApplicationServer({ host: '127.0.0.1', port: 0 })
-		const revocable = Proxy.revocable(new AbortController().signal, {})
-		revocable.revoke()
-		try {
-			await expect(Reflect.apply(server.start, server, [revocable.proxy])).rejects.toMatchObject({
-				code: 'LIFECYCLE',
-			})
-			expect(server.listening).toBe(false)
-
-			await server.start()
-			expect((await fetch(server.url)).status).toBe(200)
-		} finally {
-			await server.stop()
-		}
-	})
-
-	it('fails closed on a port collision and preserves the owning server', async () => {
-		const owner = createApplicationServer({ host: '127.0.0.1', port: 0 })
-		let blocked: ReturnType<typeof createApplicationServer> | undefined
-		try {
-			await owner.start()
-			blocked = createApplicationServer({ host: '127.0.0.1', port: owner.port })
-			await expect(blocked.start()).rejects.toMatchObject({ code: 'LIFECYCLE' })
-			expect(blocked.listening).toBe(false)
-			expect((await fetch(owner.url)).status).toBe(200)
-		} finally {
-			await blocked?.stop()
-			await owner.stop()
-		}
-	})
-
-	it('restarts cleanly after a completed stop', async () => {
-		const server = createApplicationServer({ host: '127.0.0.1', port: 0 })
-		try {
-			await server.start()
-			await server.stop()
-			await Promise.all([server.start(), server.start()])
-			expect((await fetch(server.url)).status).toBe(200)
-		} finally {
-			await server.stop()
-		}
-	})
-
-	it('requests a fresh ephemeral port when the previous port is occupied', async () => {
-		const server = createApplicationServer({ host: '127.0.0.1', port: 0 })
-		const occupant = createServer()
-		try {
-			await server.start()
-			const previousPort = server.port
-			await server.stop()
-
-			occupant.listen(previousPort, server.host)
-			await once(occupant, 'listening')
-			await server.start()
-
-			expect(server.port).not.toBe(previousPort)
-			expect((await fetch(server.url)).status).toBe(200)
-		} finally {
-			await server.stop()
-			await stopNodeServer(occupant)
-		}
-	})
-
-	it('honors the latest requested state across opposing concurrent transitions', async () => {
-		const server = createApplicationServer({ host: '127.0.0.1', port: 0 })
-		try {
-			const firstStart = server.start()
-			const stopping = server.stop()
-			const latestStart = server.start()
-			await Promise.all([firstStart, stopping, latestStart])
-
-			expect(server.listening).toBe(true)
-			expect((await fetch(server.url)).status).toBe(200)
-		} finally {
-			await server.stop()
-		}
-	})
-
-	it('forces a hostile partial-header connection closed during stop', async () => {
-		const server = createApplicationServer({ host: '127.0.0.1', port: 0 })
-		try {
-			await server.start()
-			const socket = connect({ host: server.host, port: server.port })
-			try {
-				await once(socket, 'connect')
-				socket.write('GET / HTTP/1.1\\r\\nHost: localhost')
-				const closed = waitForSocketClose(socket)
-
-				await server.stop()
-				await closed
-				expect(socket.destroyed).toBe(true)
-			} finally {
-				socket.destroy()
-			}
-		} finally {
-			await server.stop()
-		}
-	})
-
-	it('bounds simultaneous idle connections and recovers after capacity is released', async () => {
-		const server = createApplicationServer({ host: '127.0.0.1', port: 0 })
-		const sockets = []
-		try {
-			await server.start()
-			for (let index = 0; index < APP_MAX_CONNECTIONS; index += 1) {
-				const socket = connect({ host: server.host, port: server.port })
-				await once(socket, 'connect')
-				socket.write('GET / HTTP/1.1\\r\\nHost: localhost')
-				sockets.push(socket)
-			}
-			const overflow = connect({ host: server.host, port: server.port })
-			try {
-				const closed = waitForSocketClose(overflow)
-				await once(overflow, 'connect')
-				await closed
-				expect(overflow.destroyed).toBe(true)
-			} finally {
-				overflow.destroy()
-			}
-			const released = sockets.pop()
-			if (released === undefined) throw new Error('expected a held connection')
-			const releasedClose = waitForSocketClose(released)
-			released.destroy()
-			await releasedClose
-			const response = await waitForLoopbackResponse(server.port)
-			expect(response.status).toBe(200)
-		} finally {
-			for (const socket of sockets) socket.destroy()
-			await server.stop()
-		}
-	})
-
-	it('starts the built executable, serves loopback traffic, terminates on SIGTERM, and releases its port', async () => {
+describe('ApplicationServerRunner', () => {
+	it('announces readiness exactly once before the first response and releases on SIGTERM', async () => {
 		const port = await reserveLoopbackPort()
 		const application = startApplicationProcess(port)
 		try {
-			const response = await waitForApplicationResponse(application, port)
+			await application.ready
+			const announcement = \`[READY] \${APP_NAME} http://127.0.0.1:\${port}\\n\`
+			expect(application.output()).toBe(announcement)
+
+			const response = await fetch(\`http://127.0.0.1:\${port}\${APP_HEALTH_PATH}\`)
 			expect(response.status).toBe(200)
 			expect(await response.json()).toEqual({ name: APP_NAME, status: 'ok' })
+			expect(application.output().split('[READY]')).toHaveLength(2)
 
 			expect(application.child.kill('SIGTERM')).toBe(true)
 			const exited = await waitForApplicationProcess(application)
@@ -2323,7 +2126,7 @@ describe('ApplicationServer', () => {
 		}
 	})
 
-	it('exits nonzero on a real executable port collision without disturbing the owner', async () => {
+	it('never announces readiness when a real bind fails', async () => {
 		const port = await reserveLoopbackPort()
 		const owner = createServer()
 		owner.listen(port, '127.0.0.1')
@@ -2333,16 +2136,10 @@ describe('ApplicationServer', () => {
 			const exited = await waitForApplicationProcess(application)
 			expect(exited).toEqual({ code: 1, signal: null })
 			expect(application.output()).toBe('[LIFECYCLE] Application server lifecycle failed\\n')
+			expect(application.output()).not.toContain('[READY]')
 			expect(application.output()).not.toContain('EADDRINUSE')
-			expect(application.output()).not.toContain('context')
-			expect(application.output()).not.toContain('cause')
-			expect(application.output()).not.toContain('at ')
 			expect(owner.listening).toBe(true)
 		} finally {
-			if (application.child.exitCode === null && application.child.signalCode === null) {
-				application.child.kill('SIGKILL')
-				await waitForApplicationProcess(application)
-			}
 			await stopNodeServer(owner)
 		}
 	})
@@ -2354,72 +2151,10 @@ describe('ApplicationServer', () => {
 		expect(exited).toEqual({ code: 1, signal: null })
 		expect(application.output()).toBe('[CONFIG] Application server configuration failed\\n')
 		expect(application.output()).not.toContain(secret)
+		expect(application.output()).not.toContain('[READY]')
 		expect(application.output()).not.toContain('context')
 		expect(application.output()).not.toContain('cause')
 		expect(application.output()).not.toContain('at ')
-	})
-
-	it('releases process listeners through explicit, repeated, convenience, and signal cleanup', async () => {
-		const signalCount = process.listenerCount('SIGTERM')
-		const interruptCount = process.listenerCount('SIGINT')
-		const runner = new ApplicationServerRunner({ host: '127.0.0.1', port: 0 })
-		try {
-			expect(runner.start()).toBeUndefined()
-			expect(runner.start()).toBeUndefined()
-			expect(process.listenerCount('SIGTERM')).toBe(signalCount + 1)
-			expect(process.listenerCount('SIGINT')).toBe(interruptCount + 1)
-
-			await runner.stop()
-			await runner.stop()
-			expect(process.listenerCount('SIGTERM')).toBe(signalCount)
-			expect(process.listenerCount('SIGINT')).toBe(interruptCount)
-
-			const convenience = startApplicationServer({ host: '127.0.0.1', port: 0 })
-			expect(process.listenerCount('SIGTERM')).toBe(signalCount + 1)
-			expect(process.listenerCount('SIGINT')).toBe(interruptCount + 1)
-			await convenience.stop()
-			expect(process.listenerCount('SIGTERM')).toBe(signalCount)
-			expect(process.listenerCount('SIGINT')).toBe(interruptCount)
-
-			runner.start()
-			expect(process.listenerCount('SIGTERM')).toBe(signalCount + 1)
-			expect(process.listenerCount('SIGINT')).toBe(interruptCount + 1)
-			process.emit('SIGTERM')
-			await runner.stop()
-			expect(process.listenerCount('SIGTERM')).toBe(signalCount)
-			expect(process.listenerCount('SIGINT')).toBe(interruptCount)
-		} finally {
-			await runner.stop()
-		}
-	})
-
-	it('keeps a newer runner generation owned when an older start fails during restart', async () => {
-		const signalCount = process.listenerCount('SIGTERM')
-		const interruptCount = process.listenerCount('SIGINT')
-		const previousExitCode = process.exitCode
-		const port = await reserveLoopbackPort()
-		const owner = createServer()
-		owner.listen(port, '127.0.0.1')
-		await once(owner, 'listening')
-		const runner = new ApplicationServerRunner({ host: '127.0.0.1', port })
-		try {
-			runner.start()
-			await Promise.resolve()
-			const stopping = runner.stop()
-			runner.start()
-			await stopNodeServer(owner)
-			await stopping
-
-			const response = await waitForLoopbackResponse(port)
-			expect(response.status).toBe(200)
-			expect(process.exitCode).toBe(previousExitCode)
-			expect(process.listenerCount('SIGTERM')).toBe(signalCount + 1)
-			expect(process.listenerCount('SIGINT')).toBe(interruptCount + 1)
-		} finally {
-			await runner.stop()
-			await stopNodeServer(owner)
-			process.exitCode = previousExitCode
-		}
 	})
 })
 `,
@@ -2497,7 +2232,15 @@ describe('application environment parsers', () => {
 		expect(() => parseApplicationHost(value)).toThrow(expect.objectContaining({ code: 'CONFIG' }))
 	})
 
-	it.each([null, 42, [], { port: [42] }, { timeout: 0 }])(
+	it('parses the exact grouped server record including its timeout leaf', () => {
+		expect(
+			parseApplicationServerOptions({
+				server: { host: ' 127.0.0.1 ', port: 0, timeout: 250 },
+			}),
+		).toEqual({ server: { host: '127.0.0.1', port: 0, timeout: 250 } })
+	})
+
+	it.each([null, 42, [], { server: null }, { server: { port: [42] } }, { server: { timeout: 0 } }])(
 		'rejects hostile option container or leaf value %#',
 		(value) => {
 			expect(() => parseApplicationServerOptions(value)).toThrow(
@@ -2507,11 +2250,14 @@ describe('application environment parsers', () => {
 	)
 
 	it.each([
-		Object.create({ host: '0.0.0.0' }),
+		Object.create({ server: { host: '0.0.0.0' } }),
 		{ post: 0 },
 		new Date(),
-		{ [Symbol('host')]: '0.0.0.0' },
-		Object.defineProperty({}, 'host', { get: () => '0.0.0.0' }),
+		{ server: Object.create({ host: '0.0.0.0' }) },
+		{ server: { post: 0 } },
+		{ server: { [Symbol('host')]: '0.0.0.0' } },
+		Object.defineProperty({}, 'server', { get: () => ({ host: '0.0.0.0' }) }),
+		{ server: Object.defineProperty({}, 'host', { get: () => '0.0.0.0' }) },
 		new Proxy(
 			{},
 			{
@@ -2520,6 +2266,16 @@ describe('application environment parsers', () => {
 				},
 			},
 		),
+		{
+			server: new Proxy(
+				{},
+				{
+					ownKeys: () => {
+						throw new Error('hostile nested ownKeys trap')
+					},
+				},
+			),
+		},
 	])(
 		'rejects inherited, unknown, symbolic, accessor, instance, and hostile proxy options %#',
 		(value) => {
@@ -2528,6 +2284,19 @@ describe('application environment parsers', () => {
 			)
 		},
 	)
+
+	it('does not invoke grouped option accessors', () => {
+		let reads = 0
+		const server = Object.defineProperty({}, 'timeout', {
+			get() {
+				reads += 1
+				return 250
+			},
+		})
+
+		expect(() => parseApplicationServerOptions({ server })).toThrow(ApplicationServerError)
+		expect(reads).toBe(0)
+	})
 
 	it('never reflects a hostile symbolic option name into diagnostics', () => {
 		let caught: unknown

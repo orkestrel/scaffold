@@ -3937,6 +3937,7 @@ ${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_NAME = ${nameLiteral}
 			),
 			fillArtifact('app/server/errors.ts', 'source', 'appServerErrors', {}, 'server'),
 			fillArtifact('app/server/parsers.ts', 'source', 'appServerParsers', {}, 'server'),
+			fillArtifact('app/server/routes.ts', 'source', 'appServerRoutes', {}, 'server'),
 			fillArtifact(
 				'app/server/handlers.ts',
 				'source',
@@ -3950,7 +3951,7 @@ ${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_NAME = ${nameLiteral}
 				'app/server/ApplicationServerRunner.ts',
 				'source',
 				'appServerRunner',
-				{},
+				{ nameImport },
 				'server',
 			),
 			fillArtifact('app/server/index.ts', 'source', 'appServerIndex', {}, 'server'),
@@ -4316,25 +4317,19 @@ isBrowserApplicationError(new BrowserApplicationError('CONFIG', 'invalid')) // t
 	}
 	if (spec.app.includes('server')) {
 		examples.push(`\`\`\`ts
-import { once } from 'node:events'
-import { createServer } from 'node:http'
+import type { ApplicationRecord, ApplicationState } from '@app/server'
 import {
 	APP_HEALTH_METHOD,
 	APP_HEALTH_PATH,
-	APP_HEADERS_TIMEOUT,
 	APP_HOST_LABEL_PATTERN,
-	APP_KEEP_ALIVE_TIMEOUT,
-	APP_MAX_CONNECTIONS,
-	APP_MAX_HEADERS,
-	APP_MAX_REQUESTS_PER_SOCKET,
-	APP_REQUEST_TIMEOUT,
 	APP_NUMERIC_HOST_PATTERN,
 	ApplicationServer,
 	ApplicationServerError,
 	DEFAULT_APP_START_TIMEOUT,
 	MAX_APP_START_TIMEOUT,
 	createApplicationServer,
-	handleApplicationRequest,
+	dispatcher,
+	handleApplicationHealth,
 	isApplicationServerError,
 	parseApplicationHost,
 	parseApplicationPort,
@@ -4346,25 +4341,18 @@ import {
 ${CONST_KEYWORD} host = parseApplicationHost('127.0.0.1')
 ${CONST_KEYWORD} port = parseApplicationPort('0')
 ${CONST_KEYWORD} timeout = parseApplicationStartTimeout('5000')
-${CONST_KEYWORD} options = parseApplicationServerOptions({ host, port, timeout })
+${CONST_KEYWORD} options = parseApplicationServerOptions({ server: { host, port, timeout } })
 APP_HOST_LABEL_PATTERN.test('api') // true
 APP_NUMERIC_HOST_PATTERN.test('999.999.999.999') // true (and therefore rejected as a host)
 APP_HEALTH_METHOD // 'GET'
-APP_HEALTH_PATH // '/'
-APP_MAX_CONNECTIONS // 16
-APP_MAX_HEADERS // 100
-APP_HEADERS_TIMEOUT // 10000
-APP_REQUEST_TIMEOUT // 30000
-APP_KEEP_ALIVE_TIMEOUT // 5000
-APP_MAX_REQUESTS_PER_SOCKET // 100
+APP_HEALTH_PATH // '/health'
 DEFAULT_APP_START_TIMEOUT // 10000
 MAX_APP_START_TIMEOUT // 300000
-${CONST_KEYWORD} handlerServer = createServer(handleApplicationRequest)
-handlerServer.listen(0, host)
-await once(handlerServer, 'listening')
-${CONST_KEYWORD} handlerClosed = once(handlerServer, 'close')
-handlerServer.close()
-await handlerClosed
+${CONST_KEYWORD} state: ApplicationState = { connection: { encrypted: false } }
+${CONST_KEYWORD} record: ApplicationRecord = { name: '${spec.name}', status: 'ok' }
+await dispatcher.handle(new Request(\`http://application.test\${APP_HEALTH_PATH}\`), state)
+Response.json(record)
+handleApplicationHealth()
 
 ${CONST_KEYWORD} error = new ApplicationServerError('CONFIG', 'invalid')
 isApplicationServerError(error) // true
@@ -4375,12 +4363,13 @@ ${CONST_KEYWORD} server = createApplicationServer(options)
 ${CONST_KEYWORD} controller = new AbortController()
 await server.start(controller.signal)
 await server.stop()
+await server.destroy()
 \`\`\`
 
 \`\`\`ts
 import { ApplicationServerRunner } from '@app/server'
 
-${CONST_KEYWORD} runner = new ApplicationServerRunner({ port: 0 })
+${CONST_KEYWORD} runner = new ApplicationServerRunner({ server: { port: 0 } })
 runner.start() // process owns shutdown signals
 await runner.stop()
 \`\`\`
@@ -4388,7 +4377,7 @@ await runner.stop()
 \`\`\`ts
 import { startApplicationServer } from '@app/server'
 
-${CONST_KEYWORD} processRunner = startApplicationServer({ port: 0 })
+${CONST_KEYWORD} processRunner = startApplicationServer({ server: { port: 0 } })
 await processRunner.stop()
 \`\`\``)
 	}
@@ -4409,12 +4398,17 @@ export function guideMethods(spec: Blueprint): string {
 			[
 				'`start`',
 				'`Promise<void>`',
-				'Serialize in call order; start only when stopped, and repeat safely when already listening. The optional `AbortSignal` and bounded startup timeout cancel pending name resolution/listen work. Rejects with `ApplicationServerError` code `LIFECYCLE` when startup fails, times out, or the caller aborts.',
+				'Bind the installed `@orkestrel/server` substrate when idle or stopped. The optional `AbortSignal` and bounded startup timeout cancel pending binding. Rejects with `ApplicationServerError` code `LIFECYCLE` when startup fails, times out, or the caller aborts.',
 			],
 			[
 				'`stop`',
 				'`Promise<void>`',
-				'Cancel every pending start before its queued stop, force active and idle connections closed, and repeat safely when already stopped. Rejects with `ApplicationServerError` code `LIFECYCLE` when closing fails.',
+				'Drain and stop the installed server; repeated calls while stopped are safe. Rejects with `ApplicationServerError` code `LIFECYCLE` when closing fails.',
+			],
+			[
+				'`destroy`',
+				'`Promise<void>`',
+				'Perform terminal idempotent teardown through the installed server lifecycle. Rejects with `ApplicationServerError` code `LIFECYCLE` when teardown fails.',
 			],
 		],
 	)
@@ -4424,7 +4418,7 @@ export function guideMethods(spec: Blueprint): string {
 			[
 				'`start`',
 				'`void`',
-				'Register one idempotent set of SIGINT/SIGTERM cleanup listeners, start the server, and translate asynchronous startup failures into a non-zero process exit code.',
+				'Register one generation-owned set of SIGINT/SIGTERM cleanup listeners, start the server, write one `[READY] <name> <url>` line after readiness, and translate asynchronous startup failures into a non-zero process exit code.',
 			],
 			[
 				'`stop`',
@@ -4445,10 +4439,10 @@ ${methods}
 
 ${runnerMethods}
 
-The constructor validates direct options plus \`APP_HOST\`, \`APP_PORT\`, and
+The constructor validates grouped direct options plus \`APP_HOST\`, \`APP_PORT\`, and
 \`APP_START_TIMEOUT\` before allocating
-a listener. Direct options must be an exact plain own-key data record containing only
-\`host\`, \`port\`, and/or \`timeout\`; inherited properties, accessors, symbols, instances, proxies that
+a listener. Direct options must be an exact plain own-key data record containing only a
+\`server\` record with \`host\`, \`port\`, and/or \`timeout\`; inherited properties, accessors, symbols, instances, proxies that
 throw during reflection, and unknown keys fail closed. Invalid values throw
 \`ApplicationServerError\` code \`CONFIG\`; the default host is loopback and port \`0\` is
 supported for collision-free ephemeral allocation. Startup defaults to 10 seconds and accepts
@@ -4456,10 +4450,11 @@ only integer timeouts from 1 through 300,000 milliseconds. Lifecycle failures us
 \`LIFECYCLE\`; both may carry \`context.cause\` or \`context.value\`. Narrow caught values with
 \`isApplicationServerError\` before reading either field.
 
-The generated server owns exactly \`GET /\`. It serializes
-\`{ name: APP_NAME, status: 'ok' }\` as JSON with \`cache-control: no-store\`;
-every other path returns deterministic plain-text \`404 Not Found\`, and every unsupported
-method returns deterministic plain-text \`405 Method Not Allowed\` with \`Allow: GET\`.`
+The standalone dispatcher owns exactly \`GET /health\` and serializes the shared
+\`ApplicationRecord\` shape \`{ name: APP_NAME, status: 'ok' }\` as JSON. The server composes
+\`createBoundary()\`, \`createSecurity()\`, then \`createDeadline({ ms: timeout })\` around that
+dispatcher; every other path returns \`404\`, and every unsupported method returns \`405\` with
+\`Allow: GET\`.`
 }
 
 /**

@@ -67,11 +67,14 @@ than aspirational:
 - `app/browser` reaches server behavior only through shared `app/core` contracts and transports,
   never through a server implementation import.
 
-A generated `app/server` owns strict `APP_HOST`, `APP_PORT`, and `APP_START_TIMEOUT` parsing, a
-repeat-safe HTTP lifecycle, bounded connection behavior, and process signal cleanup. Its exported
-`reportApplicationServerError` handler writes only a stable configuration, lifecycle, or unknown
-failure code; process-owned diagnostics never serialize a rejected value, nested cause, stack, or
-other error context.
+A generated `app/server` owns strict grouped `server.host`, `server.port`, and `server.timeout`
+options plus the `APP_HOST`, `APP_PORT`, and `APP_START_TIMEOUT` environment boundaries. It
+composes the installed router, server, and boundary/security/deadline middleware substrates around
+a standalone `GET /health` dispatcher, supports repeated start/stop cycles and terminal destroy,
+and writes exactly one `[READY] <name> <url>` diagnostic after process-owned readiness. Its
+exported `reportApplicationServerError` handler writes only a stable configuration, lifecycle, or
+unknown failure code; process-owned failures never serialize a rejected value, nested cause,
+stack, secret, or other error context.
 
 Every environment barrel is an export-star barrel: `index.ts` contains only `export * from './x.js'`
 rows and nothing else. Named, default, namespace, and type-only barrel rows are absent by design,
