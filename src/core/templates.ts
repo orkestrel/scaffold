@@ -297,7 +297,12 @@ export * from './factories.js'
 		name: 'appCoreTypes',
 		summary: 'The host-independent application contract.',
 		category: 'source',
-		placeholders: Object.freeze([]),
+		placeholders: Object.freeze([
+			Object.freeze({
+				name: 'record',
+				description: 'The shared health record declared once both hosts read it.',
+			}),
+		]),
 		content: `/** A rejected shared application boundary. */
 ${EXPORT_KEYWORD} type ApplicationErrorCode = 'CONFIG'
 
@@ -311,7 +316,7 @@ ${EXPORT_KEYWORD} interface ApplicationErrorContext {
 ${EXPORT_KEYWORD} interface Application {
 	readonly name: string
 }
-`,
+{{record}}`,
 	}),
 	appCoreConstants: Object.freeze({
 		id: 'appCoreConstants',
@@ -323,6 +328,10 @@ ${EXPORT_KEYWORD} interface Application {
 				name: 'nameLiteral',
 				description: 'The JSON-serialized application name.',
 			}),
+			Object.freeze({
+				name: 'health',
+				description: 'The shared health route constants declared once both hosts read them.',
+			}),
 		]),
 		content: `/** The application name shared by every host environment. */
 ${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_NAME = {{nameLiteral}}
@@ -332,7 +341,7 @@ ${EXPORT_KEYWORD} ${CONST_KEYWORD} MAX_APPLICATION_NAME_LENGTH = 203
 
 /** Maximum raw Unicode code units inspected before trimming an application name. */
 ${EXPORT_KEYWORD} ${CONST_KEYWORD} MAX_APPLICATION_NAME_INPUT_LENGTH = 255
-`,
+{{health}}`,
 	}),
 	appCoreErrors: Object.freeze({
 		id: 'appCoreErrors',
@@ -371,6 +380,33 @@ ${EXPORT_KEYWORD} class ApplicationError extends Error {
  */
 ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} isApplicationError(value: unknown): value is ApplicationError {
 	return holds(() => value instanceof ApplicationError)
+}
+`,
+	}),
+	appCoreValidators: Object.freeze({
+		id: 'appCoreValidators',
+		name: 'appCoreValidators',
+		summary: 'The host-independent guard over the shared health record.',
+		category: 'source',
+		placeholders: Object.freeze([]),
+		content: `import type { ApplicationRecord } from './types.js'
+import { holds, isNonEmptyString, isRecord } from '@orkestrel/contract'
+
+/**
+ * Narrow one unvalidated transport value to the shared application record.
+ *
+ * @param value - The value read from the health route, before validation.
+ * @returns True only for the exact record both hosts agreed on.
+ *
+ * @example
+ * \`\`\`ts
+ * import { isApplicationRecord } from '@app/core'
+ *
+ * isApplicationRecord({ name: 'example', status: 'ok' }) // true
+ * \`\`\`
+ */
+${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} isApplicationRecord(value: unknown): value is ApplicationRecord {
+	return holds(() => isRecord(value) && isNonEmptyString(value.name) && value.status === 'ok')
 }
 `,
 	}),
@@ -414,6 +450,52 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} parseApplicationName(value: unknown): stri
 }
 `,
 	}),
+	appCoreHandlers: Object.freeze({
+		id: 'appCoreHandlers',
+		name: 'appCoreHandlers',
+		summary: 'The host-independent read of the shared health boundary.',
+		category: 'source',
+		placeholders: Object.freeze([]),
+		content: `import type { Application } from './types.js'
+import { APP_HEALTH_PATH, APP_HEALTH_TIMEOUT } from './constants.js'
+import { isApplicationRecord } from './validators.js'
+
+/**
+ * Read the application server's health route and translate its unvalidated JSON
+ * into the shared application identity.
+ *
+ * @param origin - The absolute origin serving the application health route.
+ * @returns The identity the running server reported, or undefined when the boundary
+ * is unreachable, too slow, or off-contract.
+ *
+ * @remarks
+ * The single translation point between the two hosts: the response body is read as
+ * \`unknown\` and narrowed by {@link isApplicationRecord} before any field is consumed,
+ * so a missing, slow, or foreign server degrades to \`undefined\` instead of leaking an
+ * unvalidated value into the application. The record's \`status\` proves liveness; the
+ * identity is what the caller renders.
+ *
+ * @example
+ * \`\`\`ts
+ * import { readApplicationHealth } from '@app/core'
+ *
+ * await readApplicationHealth('http://127.0.0.1:3000') // { name: 'example' }
+ * \`\`\`
+ */
+${EXPORT_KEYWORD} async ${FUNCTION_KEYWORD} readApplicationHealth(origin: string): Promise<Application | undefined> {
+	try {
+		const response = await fetch(new URL(APP_HEALTH_PATH, origin), {
+			signal: AbortSignal.timeout(APP_HEALTH_TIMEOUT),
+		})
+		if (!response.ok) return undefined
+		const record: unknown = await response.json()
+		return isApplicationRecord(record) ? Object.freeze({ name: record.name }) : undefined
+	} catch {
+		return undefined
+	}
+}
+`,
+	}),
 	appCoreFactories: Object.freeze({
 		id: 'appCoreFactories',
 		name: 'appCoreFactories',
@@ -447,12 +529,21 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} createApplication(name: string = APP_NAME)
 		name: 'appCoreIndex',
 		summary: 'The application core barrel.',
 		category: 'source',
-		placeholders: Object.freeze([]),
+		placeholders: Object.freeze([
+			Object.freeze({
+				name: 'validators',
+				description: 'The optional shared-record guard barrel row.',
+			}),
+			Object.freeze({
+				name: 'handlers',
+				description: 'The optional shared health-boundary barrel row.',
+			}),
+		]),
 		content: `export * from './types.js'
 export * from './constants.js'
 export * from './errors.js'
-export * from './parsers.js'
-export * from './factories.js'
+{{validators}}export * from './parsers.js'
+{{handlers}}export * from './factories.js'
 `,
 	}),
 	appBrowserTypes: Object.freeze({
@@ -460,7 +551,12 @@ export * from './factories.js'
 		name: 'appBrowserTypes',
 		summary: 'The browser application options.',
 		category: 'source',
-		placeholders: Object.freeze([]),
+		placeholders: Object.freeze([
+			Object.freeze({
+				name: 'application',
+				description: 'The browser-owned root-view identity declared without application core.',
+			}),
+		]),
 		content: `/** A rejected browser application boundary. */
 ${EXPORT_KEYWORD} type BrowserApplicationErrorCode = 'CONFIG'
 
@@ -474,7 +570,7 @@ ${EXPORT_KEYWORD} interface BrowserApplicationErrorContext {
 ${EXPORT_KEYWORD} interface BrowserApplicationOptions {
 	readonly name?: string
 }
-`,
+{{application}}`,
 	}),
 	appBrowserConstants: Object.freeze({
 		id: 'appBrowserConstants',
@@ -624,6 +720,46 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} parseBrowserApplicationOptions(value: unkn
 }
 `,
 	}),
+	appBrowserSeeders: Object.freeze({
+		id: 'appBrowserSeeders',
+		name: 'appBrowserSeeders',
+		summary: 'The frozen, inert identity the showcase renders.',
+		category: 'source',
+		placeholders: Object.freeze([
+			Object.freeze({
+				name: 'applicationImport',
+				description: 'The selected layer type import for the root-view identity.',
+			}),
+			Object.freeze({
+				name: 'nameImport',
+				description: 'The selected layer import for APP_NAME.',
+			}),
+		]),
+		content: `{{applicationImport}}
+{{nameImport}}
+
+/**
+ * Seed the inert identity the showcase renders.
+ *
+ * @returns A fresh frozen identity, identical on every call.
+ *
+ * @remarks
+ * The showcase's only data. It is exactly the value the shipped root view receives from
+ * the running application, so the showcase exercises the shipped view rather than a
+ * parallel copy of it.
+ *
+ * @example
+ * \`\`\`ts
+ * import { seedApplication } from '@app/browser'
+ *
+ * seedApplication().name // the seeded showcase identity
+ * \`\`\`
+ */
+${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} seedApplication(): Application {
+	return Object.freeze({ name: \`\${APP_NAME} showcase\` })
+}
+`,
+	}),
 	appBrowserFactories: Object.freeze({
 		id: 'appBrowserFactories',
 		name: 'appBrowserFactories',
@@ -634,6 +770,18 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} parseBrowserApplicationOptions(value: unkn
 				name: 'nameImport',
 				description: 'The selected layer import for APP_NAME.',
 			}),
+			Object.freeze({
+				name: 'seedImport',
+				description: 'The optional showcase seeder import.',
+			}),
+			Object.freeze({
+				name: 'showcase',
+				description: 'The optional seeded showcase factory.',
+			}),
+			Object.freeze({
+				name: 'boundary',
+				description: 'The optional server-boundary startup factory.',
+			}),
 		]),
 		content: `import type { App } from 'vue'
 import type { BrowserApplicationOptions } from './types.js'
@@ -641,7 +789,7 @@ import { createApp } from 'vue'
 import ApplicationView from './ApplicationView.vue'
 {{nameImport}}
 import { parseBrowserApplicationOptions } from './parsers.js'
-
+{{seedImport}}
 /**
  * Create an unmounted Vue application.
  *
@@ -659,19 +807,24 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} createBrowserApplication(options: BrowserA
 	const parsed = parseBrowserApplicationOptions(options)
 	return createApp(ApplicationView, { name: parsed.name ?? APP_NAME })
 }
-`,
+{{showcase}}{{boundary}}`,
 	}),
 	appBrowserIndex: Object.freeze({
 		id: 'appBrowserIndex',
 		name: 'appBrowserIndex',
 		summary: 'The browser application barrel.',
 		category: 'source',
-		placeholders: Object.freeze([]),
+		placeholders: Object.freeze([
+			Object.freeze({
+				name: 'seeders',
+				description: 'The optional showcase seeder barrel row.',
+			}),
+		]),
 		content: `export * from './types.js'
 export * from './constants.js'
 export * from './errors.js'
 export * from './parsers.js'
-export * from './factories.js'
+{{seeders}}export * from './factories.js'
 `,
 	}),
 	appBrowserMain: Object.freeze({
@@ -679,10 +832,27 @@ export * from './factories.js'
 		name: 'appBrowserMain',
 		summary: 'The browser executable entry.',
 		category: 'source',
-		placeholders: Object.freeze([]),
-		content: `import { createBrowserApplication } from './index.js'
+		placeholders: Object.freeze([
+			Object.freeze({
+				name: 'factory',
+				description: 'The factory the shipped entry mounts through.',
+			}),
+			Object.freeze({ name: 'mount', description: 'The one mounting expression.' }),
+		]),
+		content: `import { {{factory}} } from './index.js'
 
-createBrowserApplication().mount('#app')
+{{mount}}
+`,
+	}),
+	appBrowserShowcase: Object.freeze({
+		id: 'appBrowserShowcase',
+		name: 'appBrowserShowcase',
+		summary: 'The showcase executable entry.',
+		category: 'source',
+		placeholders: Object.freeze([]),
+		content: `import { createShowcaseApplication } from './index.js'
+
+createShowcaseApplication('#app')
 `,
 	}),
 	appBrowserView: Object.freeze({
@@ -728,6 +898,32 @@ defineProps<{ readonly name: string }>()
 </html>
 `,
 	}),
+	appBrowserShowcaseHtml: Object.freeze({
+		id: 'appBrowserShowcaseHtml',
+		name: 'appBrowserShowcaseHtml',
+		summary: 'The showcase HTML entry, sharing the browser security prologue.',
+		category: 'source',
+		placeholders: Object.freeze([
+			Object.freeze({ name: 'name', description: 'The application name.' }),
+		]),
+		content: `<!doctype html>
+<html lang="en">
+	<head>
+		<meta
+			http-equiv="Content-Security-Policy"
+			content="base-uri 'none'; object-src 'none'; script-src 'self'; script-src-attr 'none'"
+		/>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>{{name}} showcase</title>
+	</head>
+	<body>
+		<div id="app"></div>
+		<script type="module" src="/showcase.ts"></script>
+	</body>
+</html>
+`,
+	}),
 	appBrowserEnv: Object.freeze({
 		id: 'appBrowserEnv',
 		name: 'appBrowserEnv',
@@ -749,16 +945,15 @@ declare module '*.vue' {
 		name: 'appServerTypes',
 		summary: 'The application server contract.',
 		category: 'source',
-		placeholders: Object.freeze([]),
+		placeholders: Object.freeze([
+			Object.freeze({
+				name: 'record',
+				description: 'The health record, declared here only while the server alone reads it.',
+			}),
+		]),
 		content: `import type { ConnectionInfo, ServerStatus } from '@orkestrel/server'
 
-/** The application record returned by the health route. */
-${EXPORT_KEYWORD} interface ApplicationRecord {
-	readonly name: string
-	readonly status: 'ok'
-}
-
-/** Per-request application state derived from connection facts. */
+{{record}}/** Per-request application state derived from connection facts. */
 ${EXPORT_KEYWORD} interface ApplicationState {
 	readonly connection: ConnectionInfo
 	readonly identifier?: string
@@ -811,6 +1006,11 @@ ${EXPORT_KEYWORD} interface ApplicationServerRunnerInterface {
 				name: 'nameConstant',
 				description: 'The optional server-only APP_NAME declaration.',
 			}),
+			Object.freeze({
+				name: 'health',
+				description:
+					'The health route constants, declared here only while the server alone reads them.',
+			}),
 		]),
 		content: `{{nameConstant}}/** The fail-closed loopback host default. */
 ${EXPORT_KEYWORD} ${CONST_KEYWORD} DEFAULT_APP_HOST = '127.0.0.1'
@@ -838,13 +1038,7 @@ ${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_HOST_LABEL_PATTERN = /^[A-Za-z0-9](?:[A-Z
 
 /** Numeric-looking non-IP hosts rejected before platform DNS interpretation. */
 ${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_NUMERIC_HOST_PATTERN = /^[0-9.]+$/
-
-/** The only HTTP method owned by the application health route. */
-${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_HEALTH_METHOD = 'GET'
-
-/** The only HTTP path owned by the generated application server. */
-${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_HEALTH_PATH = '/health'
-`,
+{{health}}`,
 	}),
 	appServerErrors: Object.freeze({
 		id: 'appServerErrors',
@@ -1098,10 +1292,15 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} parseApplicationServerOptions(value: unkno
 		name: 'appServerRoutes',
 		summary: 'The standalone application route dispatcher.',
 		category: 'source',
-		placeholders: Object.freeze([]),
+		placeholders: Object.freeze([
+			Object.freeze({
+				name: 'healthImport',
+				description: 'The selected layer import for the health route constants.',
+			}),
+		]),
 		content: `import type { ApplicationState } from './types.js'
 import { createDispatcher } from '@orkestrel/router'
-import { APP_HEALTH_METHOD, APP_HEALTH_PATH } from './constants.js'
+{{healthImport}}
 import { handleApplicationHealth } from './handlers.js'
 
 /** Route the generated application's fetch-standard health boundary. */
@@ -1123,11 +1322,15 @@ ${EXPORT_KEYWORD} ${CONST_KEYWORD} dispatcher = createDispatcher<ApplicationStat
 		category: 'source',
 		placeholders: Object.freeze([
 			Object.freeze({
+				name: 'recordImport',
+				description: 'The selected layer type import for the health record.',
+			}),
+			Object.freeze({
 				name: 'nameImport',
 				description: 'The selected layer import for APP_NAME.',
 			}),
 		]),
-		content: `import type { ApplicationRecord } from './types.js'
+		content: `{{recordImport}}
 {{nameImport}}
 import { isApplicationServerError } from './errors.js'
 
@@ -1816,15 +2019,28 @@ describe('create{{pascal}}', () => {
 		name: 'appCoreTest',
 		summary: 'The host-independent application test.',
 		category: 'tests',
-		placeholders: Object.freeze([]),
+		placeholders: Object.freeze([
+			Object.freeze({
+				name: 'guardImport',
+				description: 'The optional shared-record guard test import.',
+			}),
+			Object.freeze({
+				name: 'readImport',
+				description: 'The optional shared health-boundary read test import.',
+			}),
+			Object.freeze({
+				name: 'boundary',
+				description: 'The optional shared health-boundary contract test.',
+			}),
+		]),
 		content: `import {
 	APP_NAME,
 	ApplicationError,
 	createApplication,
 	isApplicationError,
-	MAX_APPLICATION_NAME_INPUT_LENGTH,
+{{guardImport}}	MAX_APPLICATION_NAME_INPUT_LENGTH,
 	parseApplicationName,
-} from '@app/core'
+{{readImport}}} from '@app/core'
 import { describe, expect, it } from 'vitest'
 
 describe('createApplication', () => {
@@ -1868,7 +2084,7 @@ describe('createApplication', () => {
 
 		expect(isApplicationError(foreign)).toBe(false)
 	})
-})
+}){{boundary}}
 `,
 	}),
 	appBrowserTest: Object.freeze({
@@ -1881,15 +2097,31 @@ describe('createApplication', () => {
 				name: 'browserTestNameImport',
 				description: 'The layer-correct browser APP_NAME test import.',
 			}),
+			Object.freeze({
+				name: 'showcaseImport',
+				description: 'The optional showcase factory test import.',
+			}),
+			Object.freeze({
+				name: 'entryImport',
+				description: 'The optional seeder and boundary-entry test imports.',
+			}),
+			Object.freeze({
+				name: 'showcase',
+				description: 'The optional real-browser showcase mount test.',
+			}),
+			Object.freeze({
+				name: 'boundary',
+				description: 'The optional real-browser boundary degradation test.',
+			}),
 		]),
 		content: `{{browserTestNameImport}}
 import {
 	BrowserApplicationError,
 	createBrowserApplication,
-	isBrowserApplicationError,
+{{showcaseImport}}	isBrowserApplicationError,
 	MAX_BROWSER_APPLICATION_NAME_INPUT_LENGTH,
 	parseBrowserApplicationOptions,
-} from '@app/browser'
+{{entryImport}}} from '@app/browser'
 import { buildElement } from '../../setupBrowser.js'
 import { describe, expect, it } from 'vitest'
 
@@ -1973,7 +2205,7 @@ describe('createBrowserApplication', () => {
 		expect(isBrowserApplicationError(new Error('plain'))).toBe(false)
 		expect(isBrowserApplicationError(revocable.proxy)).toBe(false)
 	})
-})
+}){{showcase}}{{boundary}}
 `,
 	}),
 	appServerTest: Object.freeze({
@@ -1984,16 +2216,19 @@ describe('createBrowserApplication', () => {
 		placeholders: Object.freeze([
 			Object.freeze({
 				name: 'testNameImport',
-				description: 'The layer-correct APP_NAME test import.',
+				description: 'The layer-correct APP_NAME and health-contract test import.',
+			}),
+			Object.freeze({
+				name: 'serverImport',
+				description: 'The application server test import, minus any relocated health contract.',
+			}),
+			Object.freeze({
+				name: 'boundary',
+				description: 'The optional real-server shared-boundary test.',
 			}),
 		]),
 		content: `{{testNameImport}}
-import {
-	APP_HEALTH_METHOD,
-	APP_HEALTH_PATH,
-	createApplicationServer,
-	dispatcher,
-} from '@app/server'
+{{serverImport}}
 import { once } from 'node:events'
 import { createServer } from 'node:http'
 import { beforeAll, describe, expect, it } from 'vitest'
@@ -2156,7 +2391,7 @@ describe('ApplicationServerRunner', () => {
 		expect(application.output()).not.toContain('cause')
 		expect(application.output()).not.toContain('at ')
 	})
-})
+}){{boundary}}
 `,
 	}),
 	appServerParsersTest: Object.freeze({

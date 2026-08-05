@@ -76,6 +76,19 @@ exported `reportApplicationServerError` handler writes only a stable configurati
 unknown failure code; process-owned failures never serialize a rejected value, nested cause,
 stack, secret, or other error context.
 
+The health contract belongs to whichever layer both hosts can reach. While the server alone reads
+it, `ApplicationRecord`, `APP_HEALTH_METHOD`, and `APP_HEALTH_PATH` stay declared in `app/server`.
+The moment a blueprint declares `app/browser` beside `app/server` — a combination that already
+requires `app/core` — those three declarations move to `app/core` and gain `APP_HEALTH_TIMEOUT`,
+the `isApplicationRecord` guard, and `readApplicationHealth`. That one asynchronous read is the
+whole browser/server boundary: it fetches the running server's health route, reads the body as
+`unknown`, narrows it with the shared guard, and returns the shared `Application` identity or
+`undefined` for an unreachable, slow, or off-contract answer. Nothing is duplicated by the move —
+`app/server` imports the relocated contract from `@app/core`, and `app/browser` still never imports
+a server module. The generated browser entry then mounts `startBrowserApplication`, which performs
+that single read before mounting and falls back to the locally configured identity when the
+boundary yields `undefined`.
+
 Every environment barrel is an export-star barrel: `index.ts` contains only `export * from './x.js'`
 rows and nothing else. Named, default, namespace, and type-only barrel rows are absent by design,
 so a star-export collision is a naming failure to fix at the owner rather than something to paper
@@ -1701,6 +1714,18 @@ minification for an `esnext` build without source maps or module preload, and in
 `build-id` meta. Its generated CSP admits only the inline script and style required by the
 self-contained `file://` artifact while retaining `script-src-attr 'none'`, `object-src 'none'`, and
 `base-uri 'none'`.
+
+The showcase fact also emits its own entry pair, `app/browser/showcase.html` and
+`app/browser/showcase.ts`, beside the application's `index.html` and `main.ts`. Both HTML entries
+open with the same security prologue, so the boundary plugins mask, validate, and finalize them
+identically; only the showcase build swaps in the self-contained policy and renames its single HTML
+output to `index.html`, which is what `show` copies to `demo/showcase.html`. The showcase entry
+mounts `createShowcaseApplication`, and `app/browser/seeders.ts` exports exactly one seeder,
+`seedApplication`, returning a frozen identity of the same shape the shipped root view receives.
+The showcase and the application therefore differ in exactly one expression — where the props come
+from — because both mount the same `createBrowserApplication` root: the showcase passes
+`seedApplication()`, the application passes its own configuration or, across a browser/server
+boundary, the identity `readApplicationHealth` returned.
 
 The browser development server applies the same trust boundary before Vite's internal middleware.
 Its explicit filesystem allowlist contains only browser/core source roots, browser tests, their

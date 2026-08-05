@@ -1797,9 +1797,17 @@ ${EXPORT_KEYWORD} function maskIgnoredHtml(environmentKeys: ReadonlySet<string>,
 }
 
 ${EXPORT_KEYWORD} function isBrowserHtmlEntry(filename: string): boolean {
+	${
+		needsShowcase
+			? `const path = physicalPath(filename)
 	return (
+		path === physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/index.html')) ||
+		path === physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/showcase.html'))
+	)`
+			: `return (
 		physicalPath(filename) === physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/index.html'))
-	)
+	)`
+	}
 }
 
 ${EXPORT_KEYWORD} function prepareHtml(): Plugin {
@@ -1878,6 +1886,23 @@ ${EXPORT_KEYWORD} function showcaseHtml(): Plugin {
 					HTML_SECURITY_META.replace(HTML_SECURITY_POLICY, SHOWCASE_SECURITY_POLICY) +
 						\`\\n\\t\\t<meta name="build-id" content="\${stamp}" />\`,
 				)
+			},
+		},
+		generateBundle: {
+			order: 'post',
+			handler(_options, bundle) {
+				let entry: (typeof bundle)[string] | undefined
+				for (const output of Object.values(bundle)) {
+					if (!output.fileName.endsWith('.html')) continue
+					if (entry !== undefined) {
+						this.error('[orkestrel-showcase] Showcase build emitted multiple HTML entries')
+					}
+					entry = output
+				}
+				if (entry === undefined) {
+					this.error('[orkestrel-showcase] Showcase build did not emit an HTML entry')
+				}
+				entry.fileName = 'index.html'
 			},
 		},
 	}
@@ -3211,6 +3236,7 @@ ${FUNCTION_KEYWORD} applicationBrowser(showcase: boolean): UserConfig {
 		root: resolveWorkspacePath('app/browser'),
 		publicDir: false,
 		server: {
+			...(showcase ? { open: '/showcase.html' } : {}),
 			fs: {
 				strict: true,
 				allow: [...browserServerRoots()],
@@ -3230,7 +3256,9 @@ ${FUNCTION_KEYWORD} applicationBrowser(showcase: boolean): UserConfig {
 			emptyOutDir: true,
 			outDir: resolveWorkspacePath(output),
 			rolldownOptions: {
-				input: resolveWorkspacePath('${APP_MATRIX.browser.entry}'),
+				input: resolveWorkspacePath(
+					showcase ? 'app/browser/showcase.html' : '${APP_MATRIX.browser.entry}',
+				),
 			},
 		},
 		test: {
@@ -3859,23 +3887,83 @@ export function sourceArtifacts(spec: Blueprint, pascal: string): readonly Artif
  * Draft the application source artifacts for every selected app environment.
  *
  * @param spec - The blueprint carrying the application environment set.
+ * @remarks
+ * Two conditional shapes layer over the per-environment set. The health contract —
+ * record, route constants, guard, and the one unknown-to-typed read — is declared by
+ * `app/server` while the server alone reads it and RELOCATES to `app/core` the moment
+ * the browser reads it too, because a contract two hosts share belongs to neither of
+ * them. The showcase entry pair, its seeder, and its factory appear only for a
+ * blueprint that declares the physical showcase wrapper alongside `app/browser`.
  * @returns Complete, runnable app/core, app/browser, and app/server artifacts.
  */
 export function applicationArtifacts(spec: Blueprint): readonly Artifact[] {
 	const artifacts: Artifact[] = []
 	const hasCore = spec.app.includes('core')
+	const hasBrowser = spec.app.includes('browser')
+	const hasBoundary = hasCore && hasBrowser && spec.app.includes('server')
+	const hasShowcase = spec.showcase && hasBrowser
+	const showcaseSource = hasBoundary ? 'its running server' : 'its own configuration'
 	const nameLiteral = serializeTypeScriptString(spec.name)
+	const sharedRecord = `
+/** The application record both hosts read at the health route. */
+${EXPORT_KEYWORD} interface ApplicationRecord {
+	readonly name: string
+	readonly status: 'ok'
+}
+`
+	const healthConstants = `
+/** The only HTTP method owned by the application health route. */
+${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_HEALTH_METHOD = 'GET'
+
+/** The only HTTP path owned by the generated application server. */
+${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_HEALTH_PATH = '/health'
+`
 	if (hasCore) {
 		artifacts.push(
-			fillArtifact('app/core/types.ts', 'source', 'appCoreTypes', {}, 'core'),
-			fillArtifact('app/core/constants.ts', 'source', 'appCoreConstants', { nameLiteral }, 'core'),
+			fillArtifact(
+				'app/core/types.ts',
+				'source',
+				'appCoreTypes',
+				{ record: hasBoundary ? sharedRecord : '' },
+				'core',
+			),
+			fillArtifact(
+				'app/core/constants.ts',
+				'source',
+				'appCoreConstants',
+				{
+					nameLiteral,
+					health: hasBoundary
+						? `${healthConstants}
+/** Milliseconds allowed for one shared application health read. */
+${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_HEALTH_TIMEOUT = 5_000
+`
+						: '',
+				},
+				'core',
+			),
 			fillArtifact('app/core/errors.ts', 'source', 'appCoreErrors', {}, 'core'),
 			fillArtifact('app/core/parsers.ts', 'source', 'appCoreParsers', {}, 'core'),
 			fillArtifact('app/core/factories.ts', 'source', 'appCoreFactories', {}, 'core'),
-			fillArtifact('app/core/index.ts', 'source', 'appCoreIndex', {}, 'core'),
+			fillArtifact(
+				'app/core/index.ts',
+				'source',
+				'appCoreIndex',
+				{
+					validators: hasBoundary ? "export * from './validators.js'\n" : '',
+					handlers: hasBoundary ? "export * from './handlers.js'\n" : '',
+				},
+				'core',
+			),
 		)
+		if (hasBoundary) {
+			artifacts.push(
+				fillArtifact('app/core/validators.ts', 'source', 'appCoreValidators', {}, 'core'),
+				fillArtifact('app/core/handlers.ts', 'source', 'appCoreHandlers', {}, 'core'),
+			)
+		}
 	}
-	if (spec.app.includes('browser')) {
+	if (hasBrowser) {
 		const nameImport = hasCore
 			? "import { APP_NAME } from '@app/core'"
 			: "import { APP_NAME } from './constants.js'"
@@ -3886,7 +3974,23 @@ ${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_NAME = ${nameLiteral}
 
 `
 		artifacts.push(
-			fillArtifact('app/browser/types.ts', 'source', 'appBrowserTypes', {}, 'browser'),
+			fillArtifact(
+				'app/browser/types.ts',
+				'source',
+				'appBrowserTypes',
+				{
+					application:
+						hasShowcase && !hasCore
+							? `
+/** The identity the root view renders. */
+${EXPORT_KEYWORD} interface Application {
+	readonly name: string
+}
+`
+							: '',
+				},
+				'browser',
+			),
 			fillArtifact(
 				'app/browser/constants.ts',
 				'source',
@@ -3900,11 +4004,90 @@ ${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_NAME = ${nameLiteral}
 				'app/browser/factories.ts',
 				'source',
 				'appBrowserFactories',
-				{ nameImport },
+				{
+					nameImport: hasBoundary
+						? "import { APP_NAME, readApplicationHealth } from '@app/core'"
+						: nameImport,
+					seedImport: hasShowcase ? "import { seedApplication } from './seeders.js'\n" : '',
+					showcase: hasShowcase
+						? `
+/**
+ * Create and mount the showcase over its seeded, inert identity.
+ *
+ * @param target - The browser element or selector that receives the showcase.
+ * @returns The mounted Vue application.
+ *
+ * @remarks
+ * The showcase mounts the same {@link createBrowserApplication} root the shipped entry
+ * mounts, so the two differ in exactly one expression — where the props come from. This
+ * one reads {@link seedApplication}; the application reads ${showcaseSource}.
+ *
+ * @example
+ * \`\`\`ts
+ * import { createShowcaseApplication } from '@app/browser'
+ *
+ * createShowcaseApplication('#app')
+ * \`\`\`
+ */
+${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} createShowcaseApplication(target: string | Element): App<Element> {
+	const application = createBrowserApplication(seedApplication())
+	application.mount(target)
+	return application
+}
+`
+						: '',
+					boundary: hasBoundary
+						? `
+/**
+ * Start the application over its real server boundary.
+ *
+ * @param target - The browser element or selector that receives the application.
+ * @returns The mounted Vue application, after one health read settles.
+ *
+ * @remarks
+ * One health read runs before the mount, so the root view renders the identity the
+ * running server reported. An unreachable or off-contract boundary yields \`undefined\`
+ * and the application falls back to its own configuration rather than failing to mount.
+ *
+ * @example
+ * \`\`\`ts
+ * import { startBrowserApplication } from '@app/browser'
+ *
+ * await startBrowserApplication('#app')
+ * \`\`\`
+ */
+${EXPORT_KEYWORD} async ${FUNCTION_KEYWORD} startBrowserApplication(target: string | Element): Promise<App<Element>> {
+	const application = createBrowserApplication(await readApplicationHealth(window.location.origin))
+	application.mount(target)
+	return application
+}
+`
+						: '',
+				},
 				'browser',
 			),
-			fillArtifact('app/browser/index.ts', 'source', 'appBrowserIndex', {}, 'browser'),
-			fillArtifact('app/browser/main.ts', 'source', 'appBrowserMain', {}, 'browser'),
+			fillArtifact(
+				'app/browser/index.ts',
+				'source',
+				'appBrowserIndex',
+				{ seeders: hasShowcase ? "export * from './seeders.js'\n" : '' },
+				'browser',
+			),
+			fillArtifact(
+				'app/browser/main.ts',
+				'source',
+				'appBrowserMain',
+				hasBoundary
+					? {
+							factory: 'startBrowserApplication',
+							mount: "void startBrowserApplication('#app')",
+						}
+					: {
+							factory: 'createBrowserApplication',
+							mount: "createBrowserApplication().mount('#app')",
+						},
+				'browser',
+			),
 			fillArtifact('app/browser/ApplicationView.vue', 'source', 'appBrowserView', {}, 'browser'),
 			fillArtifact(
 				'app/browser/index.html',
@@ -3915,6 +4098,30 @@ ${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_NAME = ${nameLiteral}
 			),
 			fillArtifact('app/browser/env.d.ts', 'source', 'appBrowserEnv', {}, 'browser'),
 		)
+		if (hasShowcase) {
+			artifacts.push(
+				fillArtifact(
+					'app/browser/seeders.ts',
+					'source',
+					'appBrowserSeeders',
+					{
+						applicationImport: hasCore
+							? "import type { Application } from '@app/core'"
+							: "import type { Application } from './types.js'",
+						nameImport,
+					},
+					'browser',
+				),
+				fillArtifact('app/browser/showcase.ts', 'source', 'appBrowserShowcase', {}, 'browser'),
+				fillArtifact(
+					'app/browser/showcase.html',
+					'source',
+					'appBrowserShowcaseHtml',
+					{ name: escapeHtmlText(spec.name) },
+					'browser',
+				),
+			)
+		}
 	}
 	if (spec.app.includes('server')) {
 		const nameImport = hasCore
@@ -3927,22 +4134,53 @@ ${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_NAME = ${nameLiteral}
 
 `
 		artifacts.push(
-			fillArtifact('app/server/types.ts', 'source', 'appServerTypes', {}, 'server'),
+			fillArtifact(
+				'app/server/types.ts',
+				'source',
+				'appServerTypes',
+				{
+					record: hasBoundary
+						? ''
+						: `/** The application record returned by the health route. */
+${EXPORT_KEYWORD} interface ApplicationRecord {
+	readonly name: string
+	readonly status: 'ok'
+}
+
+`,
+				},
+				'server',
+			),
 			fillArtifact(
 				'app/server/constants.ts',
 				'source',
 				'appServerConstants',
-				{ nameConstant },
+				{ nameConstant, health: hasBoundary ? '' : healthConstants },
 				'server',
 			),
 			fillArtifact('app/server/errors.ts', 'source', 'appServerErrors', {}, 'server'),
 			fillArtifact('app/server/parsers.ts', 'source', 'appServerParsers', {}, 'server'),
-			fillArtifact('app/server/routes.ts', 'source', 'appServerRoutes', {}, 'server'),
+			fillArtifact(
+				'app/server/routes.ts',
+				'source',
+				'appServerRoutes',
+				{
+					healthImport: hasBoundary
+						? "import { APP_HEALTH_METHOD, APP_HEALTH_PATH } from '@app/core'"
+						: "import { APP_HEALTH_METHOD, APP_HEALTH_PATH } from './constants.js'",
+				},
+				'server',
+			),
 			fillArtifact(
 				'app/server/handlers.ts',
 				'source',
 				'appServerHandlers',
-				{ nameImport },
+				{
+					recordImport: hasBoundary
+						? "import type { ApplicationRecord } from '@app/core'"
+						: "import type { ApplicationRecord } from './types.js'",
+					nameImport,
+				},
 				'server',
 			),
 			fillArtifact('app/server/ApplicationServer.ts', 'source', 'appServerEntity', {}, 'server'),
@@ -4104,9 +4342,48 @@ export function testArtifacts(spec: Blueprint, pascal: string): readonly Artifac
 	if (spec.src.includes('browser') || spec.app.includes('browser')) {
 		artifacts.push(fillArtifact('tests/setupBrowser.ts', 'tests', 'setupBrowser', {}, 'browser'))
 	}
+	const hasApplicationBoundary =
+		spec.app.includes('browser') && spec.app.includes('server') && spec.app.includes('core')
+	const hasApplicationShowcase = spec.showcase && spec.app.includes('browser')
 	if (spec.app.includes('core')) {
 		artifacts.push(
-			fillArtifact('tests/app/core/factories.test.ts', 'tests', 'appCoreTest', {}, 'core'),
+			fillArtifact(
+				'tests/app/core/factories.test.ts',
+				'tests',
+				'appCoreTest',
+				{
+					guardImport: hasApplicationBoundary ? '\tisApplicationRecord,\n' : '',
+					readImport: hasApplicationBoundary ? '\treadApplicationHealth,\n' : '',
+					boundary: hasApplicationBoundary
+						? `
+
+describe('shared application health boundary', () => {
+	it('accepts the shared record and refuses every off-contract value', () => {
+		expect(isApplicationRecord({ name: APP_NAME, status: 'ok' })).toBe(true)
+		for (const value of [
+			null,
+			[],
+			'ok',
+			{ name: APP_NAME },
+			{ name: '', status: 'ok' },
+			{ name: 1, status: 'ok' },
+			{ name: APP_NAME, status: 'down' },
+		]) {
+			expect(isApplicationRecord(value)).toBe(false)
+		}
+		const revocable = Proxy.revocable({}, {})
+		revocable.revoke()
+		expect(isApplicationRecord(revocable.proxy)).toBe(false)
+	})
+
+	it('refuses a malformed origin before reaching the network', async () => {
+		expect(await readApplicationHealth('not-an-origin')).toBeUndefined()
+	})
+})`
+						: '',
+				},
+				'core',
+			),
 		)
 	}
 	if (spec.app.includes('browser')) {
@@ -4118,21 +4395,107 @@ export function testArtifacts(spec: Blueprint, pascal: string): readonly Artifac
 				'tests/app/browser/factories.test.ts',
 				'tests',
 				'appBrowserTest',
-				{ browserTestNameImport },
+				{
+					browserTestNameImport,
+					showcaseImport: hasApplicationShowcase ? '\tcreateShowcaseApplication,\n' : '',
+					entryImport: `${hasApplicationShowcase ? '\tseedApplication,\n' : ''}${
+						hasApplicationBoundary ? '\tstartBrowserApplication,\n' : ''
+					}`,
+					showcase: hasApplicationShowcase
+						? `
+
+describe('createShowcaseApplication', () => {
+	it('mounts the shipped root view over one frozen, inert seed', () => {
+		const element = buildElement()
+		const seeded = seedApplication()
+		const application = createShowcaseApplication(element)
+		try {
+			expect(element.textContent).toContain(seeded.name)
+			expect(seeded).toEqual(seedApplication())
+			expect(seeded).not.toBe(seedApplication())
+			expect(Object.isFrozen(seeded)).toBe(true)
+		} finally {
+			application.unmount()
+			element.remove()
+		}
+	})
+})`
+						: '',
+					boundary: hasApplicationBoundary
+						? `
+
+describe('startBrowserApplication', () => {
+	it('mounts the configured identity when the boundary answers off-contract', async () => {
+		const element = buildElement()
+		const application = await startBrowserApplication(element)
+		try {
+			expect(element.textContent).toContain(APP_NAME)
+		} finally {
+			application.unmount()
+			element.remove()
+		}
+	})
+})`
+						: '',
+				},
 				'browser',
 			),
 		)
 	}
 	if (spec.app.includes('server')) {
-		const testNameImport = spec.app.includes('core')
-			? "import { APP_NAME } from '@app/core'"
-			: "import { APP_NAME } from '@app/server'"
+		const testNameImport = hasApplicationBoundary
+			? `import {
+	APP_HEALTH_METHOD,
+	APP_HEALTH_PATH,
+	APP_NAME,
+	isApplicationRecord,
+	readApplicationHealth,
+} from '@app/core'`
+			: spec.app.includes('core')
+				? "import { APP_NAME } from '@app/core'"
+				: "import { APP_NAME } from '@app/server'"
+		const serverImport = hasApplicationBoundary
+			? "import { createApplicationServer, dispatcher } from '@app/server'"
+			: `import {
+	APP_HEALTH_METHOD,
+	APP_HEALTH_PATH,
+	createApplicationServer,
+	dispatcher,
+} from '@app/server'`
 		artifacts.push(
 			fillArtifact(
 				'tests/app/server/ApplicationServer.test.ts',
 				'tests',
 				'appServerTest',
-				{ testNameImport },
+				{
+					testNameImport,
+					serverImport,
+					boundary: hasApplicationBoundary
+						? `
+
+describe('shared application boundary', () => {
+	it('answers the shared record and translates it into the shared identity', async () => {
+		const server = createApplicationServer({ server: { host: '127.0.0.1', port: 0 } })
+		try {
+			await server.start()
+			const response = await fetch(\`\${server.url}\${APP_HEALTH_PATH}\`)
+			const record: unknown = await response.json()
+
+			expect(isApplicationRecord(record)).toBe(true)
+			expect(await readApplicationHealth(server.url)).toEqual({ name: APP_NAME })
+		} finally {
+			await server.destroy()
+		}
+	})
+
+	it('reads undefined from a released loopback port', async () => {
+		const port = await reserveLoopbackPort()
+
+		expect(await readApplicationHealth(\`http://127.0.0.1:\${port}\`)).toBeUndefined()
+	})
+})`
+						: '',
+				},
 				'server',
 			),
 			fillArtifact(
@@ -4277,6 +4640,9 @@ export function guideMemberTable(category: Member['category'], members: readonly
  */
 export function guideUsage(spec: Blueprint, pascal: string): string {
 	const examples: string[] = []
+	const hasBoundary =
+		spec.app.includes('core') && spec.app.includes('browser') && spec.app.includes('server')
+	const hasShowcase = spec.showcase && spec.app.includes('browser')
 	if (spec.src.length > 0) {
 		examples.push(`\`\`\`ts
 import { create${pascal} } from '@orkestrel/${spec.name}'
@@ -4298,6 +4664,26 @@ ${CONST_KEYWORD} application = createApplication(name)
 isApplicationError(new ApplicationError('CONFIG', 'invalid')) // true
 \`\`\``)
 	}
+	if (hasBoundary) {
+		examples.push(`\`\`\`ts
+import type { ApplicationRecord } from '@app/core'
+import {
+	APP_HEALTH_METHOD,
+	APP_HEALTH_PATH,
+	APP_HEALTH_TIMEOUT,
+	isApplicationRecord,
+	readApplicationHealth,
+} from '@app/core'
+
+APP_HEALTH_METHOD // 'GET'
+APP_HEALTH_PATH // '/health'
+APP_HEALTH_TIMEOUT // 5000
+${CONST_KEYWORD} healthy: ApplicationRecord = { name: '${spec.name}', status: 'ok' }
+isApplicationRecord(healthy) // true
+isApplicationRecord({ name: '${spec.name}', status: 'down' }) // false
+await readApplicationHealth('http://127.0.0.1:3000') // { name: '${spec.name}' } or undefined
+\`\`\``)
+	}
 	if (spec.app.includes('browser')) {
 		examples.push(`\`\`\`ts
 import {
@@ -4315,13 +4701,38 @@ browser.mount('#app')
 isBrowserApplicationError(new BrowserApplicationError('CONFIG', 'invalid')) // true
 \`\`\``)
 	}
+	if (hasShowcase) {
+		examples.push(`\`\`\`ts
+import { createShowcaseApplication, seedApplication } from '@app/browser'
+
+seedApplication() // { name: '${spec.name} showcase' }
+createShowcaseApplication('#app')
+\`\`\``)
+	}
+	if (hasBoundary) {
+		examples.push(`\`\`\`ts
+import { startBrowserApplication } from '@app/browser'
+
+await startBrowserApplication('#app')
+\`\`\``)
+	}
 	if (spec.app.includes('server')) {
 		examples.push(`\`\`\`ts
-import type { ApplicationRecord, ApplicationState } from '@app/server'
+${
+	hasBoundary
+		? `import type { ApplicationRecord } from '@app/core'
+import type { ApplicationState } from '@app/server'
+import { APP_HEALTH_METHOD, APP_HEALTH_PATH } from '@app/core'`
+		: "import type { ApplicationRecord, ApplicationState } from '@app/server'"
+}
 import {
-	APP_HEALTH_METHOD,
+${
+	hasBoundary
+		? ''
+		: `	APP_HEALTH_METHOD,
 	APP_HEALTH_PATH,
-	APP_HOST_LABEL_PATTERN,
+`
+}	APP_HOST_LABEL_PATTERN,
 	APP_NUMERIC_HOST_PATTERN,
 	ApplicationServer,
 	ApplicationServerError,

@@ -264,7 +264,11 @@ export function serializeTypeScriptString(value: string): string {
  * @remarks
  * Published source environments receive the canonical entity/type/factory/constant
  * inventory. Application environments receive their exact public declaration kinds,
- * including parsers, guards, handlers, errors, and runners where present.
+ * including parsers, guards, handlers, errors, and runners where present. Two groups
+ * move rather than duplicate: the health contract is declared against `app/server`
+ * while the server alone reads it and against `app/core` once the browser reads it
+ * too, and the showcase seed, factory, and root-view identity appear only for a
+ * blueprint whose showcase accompanies `app/browser`.
  * @returns The declared `Member[]`, one set per environment.
  *
  * @example
@@ -277,6 +281,11 @@ export function serializeTypeScriptString(value: string): string {
 export function blueprintToMembers(spec: Blueprint): readonly Member[] {
 	const pascal = pascalCase(spec.name)
 	const members: Member[] = []
+	// A browser beside a server is what makes the health contract shared; validation
+	// already requires app/core for that combination, so the relocation always lands.
+	const hasBoundary =
+		spec.app.includes('core') && spec.app.includes('browser') && spec.app.includes('server')
+	const hasShowcase = spec.showcase && spec.app.includes('browser')
 	for (const environment of spec.src) {
 		members.push(member(pascal, 'entity', `The ${pascal} entity.`, environment))
 		members.push(
@@ -316,6 +325,26 @@ export function blueprintToMembers(spec: Blueprint): readonly Member[] {
 		)
 		members.push(member('parseApplicationName', 'parser', 'Parse an application name.', 'core'))
 		members.push(member('createApplication', 'factory', 'Create an application identity.', 'core'))
+		if (hasBoundary) {
+			members.push(
+				member('ApplicationRecord', 'type', 'The shared application health record.', 'core'),
+				member('APP_HEALTH_METHOD', 'constant', 'The owned health request method.', 'core'),
+				member('APP_HEALTH_PATH', 'constant', 'The owned health request path.', 'core'),
+				member('APP_HEALTH_TIMEOUT', 'constant', 'The shared health read timeout.', 'core'),
+				member(
+					'isApplicationRecord',
+					'guard',
+					'Narrow a transport value to the shared record.',
+					'core',
+				),
+				member(
+					'readApplicationHealth',
+					'handler',
+					'Read the shared health boundary as the application identity.',
+					'core',
+				),
+			)
+		}
 	}
 	if (spec.app.includes('browser')) {
 		members.push(
@@ -373,6 +402,14 @@ export function blueprintToMembers(spec: Blueprint): readonly Member[] {
 		if (!spec.app.includes('core')) {
 			members.push(member('APP_NAME', 'constant', 'The browser application name.', 'browser'))
 		}
+		if (hasShowcase && !spec.app.includes('core')) {
+			members.push(member('Application', 'type', 'The identity the root view renders.', 'browser'))
+		}
+		if (hasShowcase) {
+			members.push(
+				member('seedApplication', 'factory', 'Seed the inert showcase identity.', 'browser'),
+			)
+		}
 		members.push(
 			member(
 				'createBrowserApplication',
@@ -381,10 +418,32 @@ export function blueprintToMembers(spec: Blueprint): readonly Member[] {
 				'browser',
 			),
 		)
+		if (hasShowcase) {
+			members.push(
+				member(
+					'createShowcaseApplication',
+					'factory',
+					'Create and mount the seeded showcase.',
+					'browser',
+				),
+			)
+		}
+		if (hasBoundary) {
+			members.push(
+				member(
+					'startBrowserApplication',
+					'factory',
+					'Start the application over its server boundary.',
+					'browser',
+				),
+			)
+		}
 	}
 	if (spec.app.includes('server')) {
+		if (!hasBoundary) {
+			members.push(member('ApplicationRecord', 'type', 'The application health record.', 'server'))
+		}
 		members.push(
-			member('ApplicationRecord', 'type', 'The application health record.', 'server'),
 			member('ApplicationState', 'type', 'Per-request application state.', 'server'),
 			member(
 				'ApplicationServerErrorCode',
@@ -455,8 +514,12 @@ export function blueprintToMembers(spec: Blueprint): readonly Member[] {
 				'The ambiguous numeric-host rejection syntax.',
 				'server',
 			),
-			member('APP_HEALTH_METHOD', 'constant', 'The owned health request method.', 'server'),
-			member('APP_HEALTH_PATH', 'constant', 'The owned health request path.', 'server'),
+			...(hasBoundary
+				? []
+				: [
+						member('APP_HEALTH_METHOD', 'constant', 'The owned health request method.', 'server'),
+						member('APP_HEALTH_PATH', 'constant', 'The owned health request path.', 'server'),
+					]),
 			member('dispatcher', 'constant', 'The standalone application route dispatcher.', 'server'),
 			member('ApplicationServer', 'entity', 'The composed application server.', 'server'),
 			member(

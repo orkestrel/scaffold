@@ -347,6 +347,122 @@ describe('application layer compilation', () => {
 		}
 	})
 
+	it('relocates the health contract to app/core once the browser reads it too', () => {
+		const artifacts = blueprintToPlan(
+			blueprint('console-app', { src: [], app: ['core', 'browser', 'server'] }),
+		).artifacts
+		const read = (path: string) =>
+			artifacts.find((artifact) => artifact.path === path)?.content ?? ''
+
+		expect(read('app/core/types.ts')).toContain('interface ApplicationRecord {')
+		expect(read('app/core/constants.ts')).toContain("APP_HEALTH_PATH = '/health'")
+		expect(read('app/core/constants.ts')).toContain('APP_HEALTH_TIMEOUT = 5_000')
+		expect(read('app/core/validators.ts')).toContain(
+			'function isApplicationRecord(value: unknown): value is ApplicationRecord',
+		)
+		expect(read('app/core/handlers.ts')).toContain(
+			'function readApplicationHealth(origin: string): Promise<Application | undefined>',
+		)
+		expect(read('app/core/handlers.ts')).toContain('const record: unknown = await response.json()')
+		expect(read('app/core/index.ts')).toContain("export * from './validators.js'")
+		expect(read('app/core/index.ts')).toContain("export * from './handlers.js'")
+		expect(read('app/server/types.ts')).not.toContain('interface ApplicationRecord {')
+		expect(read('app/server/constants.ts')).not.toContain('APP_HEALTH_PATH')
+		expect(read('app/server/routes.ts')).toContain(
+			"import { APP_HEALTH_METHOD, APP_HEALTH_PATH } from '@app/core'",
+		)
+		expect(read('app/server/handlers.ts')).toContain(
+			"import type { ApplicationRecord } from '@app/core'",
+		)
+		expect(read('app/browser/main.ts')).toContain("void startBrowserApplication('#app')")
+		expect(read('app/browser/factories.ts')).toContain(
+			'const application = createBrowserApplication(await readApplicationHealth(window.location.origin))',
+		)
+		expect(read('tests/app/server/ApplicationServer.test.ts')).toContain(
+			'expect(await readApplicationHealth(server.url)).toEqual({ name: APP_NAME })',
+		)
+		expect(read('tests/app/core/factories.test.ts')).toContain(
+			"expect(isApplicationRecord({ name: APP_NAME, status: 'ok' })).toBe(true)",
+		)
+	})
+
+	it('leaves the health contract in app/server while the server alone reads it', () => {
+		for (const app of [
+			['server'],
+			['core', 'server'],
+		] satisfies readonly (readonly Environment[])[]) {
+			const artifacts = blueprintToPlan(blueprint('console-app', { src: [], app })).artifacts
+			const read = (path: string) =>
+				artifacts.find((artifact) => artifact.path === path)?.content ?? ''
+
+			expect(read('app/server/types.ts')).toContain('interface ApplicationRecord {')
+			expect(read('app/server/constants.ts')).toContain("APP_HEALTH_PATH = '/health'")
+			expect(read('app/server/routes.ts')).toContain(
+				"import { APP_HEALTH_METHOD, APP_HEALTH_PATH } from './constants.js'",
+			)
+			expect(read('app/server/handlers.ts')).toContain(
+				"import type { ApplicationRecord } from './types.js'",
+			)
+			expect(read('app/core/validators.ts')).toBe('')
+			expect(read('app/core/handlers.ts')).toBe('')
+			expect(read('app/core/constants.ts')).not.toContain('APP_HEALTH_TIMEOUT')
+		}
+	})
+
+	it('emits the showcase entry pair and its one seeded difference from the application', () => {
+		const showcased = blueprintToPlan(
+			blueprint('console-app', { src: [], app: ['core', 'browser'], showcase: true }),
+		).artifacts
+		const plain = blueprintToPlan(
+			blueprint('console-app', { src: [], app: ['core', 'browser'] }),
+		).artifacts
+		const read = (path: string) =>
+			showcased.find((artifact) => artifact.path === path)?.content ?? ''
+		const paths = new Set(plain.map((artifact) => artifact.path))
+
+		expect(read('app/browser/showcase.html')).toContain('<title>console-app showcase</title>')
+		expect(read('app/browser/showcase.html')).toContain(
+			'<script type="module" src="/showcase.ts"></script>',
+		)
+		expect(read('app/browser/showcase.html')).toContain(
+			`content="base-uri 'none'; object-src 'none'; script-src 'self'; script-src-attr 'none'"`,
+		)
+		expect(read('app/browser/showcase.ts')).toContain("createShowcaseApplication('#app')")
+		expect(read('app/browser/seeders.ts')).toContain(
+			'function seedApplication(): Application {\n\treturn Object.freeze({ name: `${APP_NAME} showcase` })',
+		)
+		expect(read('app/browser/seeders.ts')).toContain("import type { Application } from '@app/core'")
+		expect(read('app/browser/index.ts')).toContain("export * from './seeders.js'")
+		expect(read('app/browser/factories.ts')).toContain(
+			'const application = createBrowserApplication(seedApplication())',
+		)
+		expect(read('app/browser/main.ts')).toContain("createBrowserApplication().mount('#app')")
+		expect(read('tests/app/browser/factories.test.ts')).toContain(
+			'expect(element.textContent).toContain(seeded.name)',
+		)
+		for (const path of [
+			'app/browser/showcase.html',
+			'app/browser/showcase.ts',
+			'app/browser/seeders.ts',
+		]) {
+			expect({ path, showcased: paths.has(path) }).toEqual({ path, showcased: false })
+		}
+	})
+
+	it('declares the browser-owned root-view identity when no app/core carries it', () => {
+		const artifacts = applicationArtifacts(
+			blueprint('console-app', { src: [], app: ['browser'], showcase: true }),
+		)
+		const read = (path: string) =>
+			artifacts.find((artifact) => artifact.path === path)?.content ?? ''
+
+		expect(read('app/browser/types.ts')).toContain('interface Application {')
+		expect(read('app/browser/seeders.ts')).toContain(
+			"import type { Application } from './types.js'",
+		)
+		expect(read('app/browser/seeders.ts')).toContain("import { APP_NAME } from './constants.js'")
+	})
+
 	it('keeps browser-only and server-only applications independent of app/core', () => {
 		const browser = applicationArtifacts(blueprint('browser-app', { src: [], app: ['browser'] }))
 		const server = applicationArtifacts(blueprint('server-app', { src: [], app: ['server'] }))
@@ -2012,6 +2128,24 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		expect(content).toContain(compatible)
 	})
 
+	it('builds the showcase from its own entry and still emits one index.html', () => {
+		const showcased = applicationViteConfig([], ['browser'], { showcase: true })
+		const plain = applicationViteConfig([], ['browser'])
+
+		expect(showcased).toContain("showcase ? 'app/browser/showcase.html' : 'app/browser/index.html'")
+		expect(showcased).toContain("...(showcase ? { open: '/showcase.html' } : {})")
+		expect(showcased).toContain(
+			"path === physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/showcase.html'))",
+		)
+		expect(showcased).toContain("entry.fileName = 'index.html'")
+		expect(showcased).toContain('Showcase build emitted multiple HTML entries')
+		expect(showcased).toContain('Showcase build did not emit an HTML entry')
+		expect(plain).not.toContain('showcase.html')
+		expect(plain).toContain(
+			"physicalPath(filename) === physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/index.html'))",
+		)
+	})
+
 	it('server-only is the environment factory itself as base, no @src/core externalize', () => {
 		const content = rootViteConfig(['server'])
 		expect(content).not.toContain('@src/core')
@@ -2856,6 +2990,47 @@ describe('guideArtifacts / guideMemberTable', () => {
 		const paths = artifacts.map((artifact) => artifact.path)
 		expect(paths).toContain('guides/src/contract.md')
 		expect(paths).not.toContain('guides/src/some-outside-thing.md')
+	})
+
+	it('documents the relocated health contract and the showcase pair in the one guide', () => {
+		const spec = blueprint('router', {
+			src: [],
+			app: ['core', 'browser', 'server'],
+			showcase: true,
+		})
+		const guide = guideArtifacts(spec, 'Router', blueprintToMembers(spec)).find(
+			(artifact) => artifact.path === 'guides/src/router.md',
+		)
+		const content = guide?.content ?? ''
+
+		for (const name of [
+			'`ApplicationRecord`',
+			'`APP_HEALTH_TIMEOUT`',
+			'`isApplicationRecord`',
+			'`readApplicationHealth`',
+			'`seedApplication`',
+			'`createShowcaseApplication`',
+			'`startBrowserApplication`',
+		]) {
+			expect({ name, documented: content.includes(name) }).toEqual({ name, documented: true })
+		}
+		expect(content).toContain("import { APP_HEALTH_METHOD, APP_HEALTH_PATH } from '@app/core'")
+		expect(content).toContain("await readApplicationHealth('http://127.0.0.1:3000')")
+		expect(content).toContain("createShowcaseApplication('#app')")
+		expect(content).toContain("await startBrowserApplication('#app')")
+	})
+
+	it('keeps the health contract documented against app/server without the browser', () => {
+		const spec = blueprint('router', { src: [], app: ['core', 'server'] })
+		const guide = guideArtifacts(spec, 'Router', blueprintToMembers(spec)).find(
+			(artifact) => artifact.path === 'guides/src/router.md',
+		)
+		const content = guide?.content ?? ''
+
+		expect(content).toContain('`APP_HEALTH_PATH`')
+		expect(content).not.toContain('`APP_HEALTH_TIMEOUT`')
+		expect(content).not.toContain('`isApplicationRecord`')
+		expect(content).toContain('	APP_HEALTH_METHOD,\n	APP_HEALTH_PATH,\n	APP_HOST_LABEL_PATTERN,')
 	})
 
 	it("the package guide stub's Environment usage example self-imports via @orkestrel/<name>, never @src/<name>", () => {

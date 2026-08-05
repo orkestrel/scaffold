@@ -155,6 +155,55 @@ describe('blueprintToMembers', () => {
 		expect(categories.has('handleApplicationRequest')).toBe(false)
 		expect(categories.get('startApplicationServer')).toBe('factory')
 	})
+
+	it('moves the health contract to the layer both hosts can reach', () => {
+		const shared = new Map(
+			blueprintToMembers(
+				blueprint('application', { src: [], app: ['core', 'browser', 'server'] }),
+			).map((entry) => [entry.name, entry.environment]),
+		)
+		const owned = new Map(
+			blueprintToMembers(blueprint('application', { src: [], app: ['core', 'server'] })).map(
+				(entry) => [entry.name, entry.environment],
+			),
+		)
+
+		expect(shared.get('ApplicationRecord')).toBe('core')
+		expect(shared.get('APP_HEALTH_METHOD')).toBe('core')
+		expect(shared.get('APP_HEALTH_PATH')).toBe('core')
+		expect(shared.get('APP_HEALTH_TIMEOUT')).toBe('core')
+		expect(shared.get('isApplicationRecord')).toBe('core')
+		expect(shared.get('readApplicationHealth')).toBe('core')
+		expect(shared.get('startBrowserApplication')).toBe('browser')
+		expect(owned.get('ApplicationRecord')).toBe('server')
+		expect(owned.get('APP_HEALTH_PATH')).toBe('server')
+		expect(owned.has('APP_HEALTH_TIMEOUT')).toBe(false)
+		expect(owned.has('isApplicationRecord')).toBe(false)
+		expect(owned.has('readApplicationHealth')).toBe(false)
+		expect(owned.has('startBrowserApplication')).toBe(false)
+	})
+
+	it('declares the showcase seed and factory only for a showcase browser application', () => {
+		const showcased = blueprintToMembers(
+			blueprint('application', { src: [], app: ['browser'], showcase: true }),
+		)
+		const categories = new Map(showcased.map((entry) => [entry.name, entry.category]))
+		const plain = blueprintToMembers(blueprint('application', { src: [], app: ['browser'] })).map(
+			(entry) => entry.name,
+		)
+
+		expect(categories.get('seedApplication')).toBe('factory')
+		expect(categories.get('createShowcaseApplication')).toBe('factory')
+		expect(categories.get('Application')).toBe('type')
+		expect(plain).not.toContain('seedApplication')
+		expect(plain).not.toContain('createShowcaseApplication')
+		expect(plain).not.toContain('Application')
+		expect(
+			blueprintToMembers(
+				blueprint('application', { src: [], app: ['core', 'browser'], showcase: true }),
+			).filter((entry) => entry.name === 'Application' && entry.environment === 'browser'),
+		).toEqual([])
+	})
 })
 
 describe('alignTable', () => {
@@ -1601,9 +1650,9 @@ describe('pinPlan', () => {
 			{
 			  "app-browser": "0a0d924f",
 			  "app-core": "8dcf7261",
-			  "app-full": "5b1aeefb",
+			  "app-full": "c8a88fa1",
 			  "app-server": "37e39846",
-			  "mixed-full": "7da1784d",
+			  "mixed-full": "43af8875",
 			}
 		`)
 	})
