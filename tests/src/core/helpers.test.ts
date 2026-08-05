@@ -1684,9 +1684,9 @@ describe('pinPlan', () => {
 			{
 			  "app-browser": "841e0ec6",
 			  "app-core": "ebf81ea1",
-			  "app-full": "15e2c912",
-			  "app-server": "b3f8fa92",
-			  "mixed-full": "5b93e2dc",
+			  "app-full": "41ea61f0",
+			  "app-server": "dfc3e556",
+			  "mixed-full": "b10a0644",
 			}
 		`)
 	})

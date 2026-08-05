@@ -80,7 +80,9 @@ only the connection fact. `ApplicationServer.url` is `undefined` until a real po
 again after stop or destroy; the redundant `listening` projection is not part of the generated
 interface. The runner narrows the post-start URL before writing `[READY]`, so it never announces a
 stale or unbound address, and it stops the server as part of failing that narrowing rather than
-leaving a bound listener without a shutdown owner.
+leaving a bound listener without a shutdown owner. It also serializes every start and stop on one
+lifecycle queue, so a stop waits for the startup it aborted to settle before closing the server,
+and a restart issued during that shutdown is honoured after it rather than lost.
 
 The health contract belongs to whichever layer both hosts can reach. While the server alone reads
 it, `ApplicationRecord`, `APP_HEALTH_METHOD`, and `APP_HEALTH_PATH` stay declared in `app/server`.

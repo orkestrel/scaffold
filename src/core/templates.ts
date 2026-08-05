@@ -1567,7 +1567,7 @@ ${EXPORT_KEYWORD} class ApplicationServerRunner implements ApplicationServerRunn
 	readonly #server: ApplicationServerInterface
 	readonly #handler: () => void
 	#controller: AbortController | undefined
-	#pending: Promise<void> = Promise.resolve()
+	#queue: Promise<void> = Promise.resolve()
 	#generation = 0
 	#started = false
 
@@ -1584,17 +1584,24 @@ ${EXPORT_KEYWORD} class ApplicationServerRunner implements ApplicationServerRunn
 		this.#controller = controller
 		process.once('SIGINT', this.#handler)
 		process.once('SIGTERM', this.#handler)
-		this.#pending = this.#pending.then(this.#begin.bind(this, generation, controller))
+		// #begin reports its own failures through #fail, so the only rejection reaching the queue
+		// is a failing reporter; absorbing it keeps a later stop from skipping the server.
+		this.#queue = this.#queue
+			.then(this.#begin.bind(this, generation, controller))
+			.catch(() => undefined)
 	}
 
 	stop(): Promise<void> {
-		// Aborting first lets an in-flight substrate startup settle before stop inspects its state;
-		// the shared queue then keeps a subsequent restart behind that complete shutdown.
+		// Aborting first lets an in-flight substrate startup settle before stop inspects its state,
+		// and the generation bump is what discards that abort's rejection while leaving a genuine
+		// stop failure reportable. The shared queue then keeps a subsequent restart behind this
+		// complete shutdown; the caller still receives the rejecting promise, so the trailing catch
+		// discards nothing — it only keeps one failed stop from wedging every later one.
 		this.#generation += 1
 		this.#controller?.abort()
 		this.#release()
-		const stopped = this.#pending.then(() => this.#server.stop())
-		this.#pending = stopped.catch(() => undefined)
+		const stopped = this.#queue.then(() => this.#server.stop())
+		this.#queue = stopped.catch(() => undefined)
 		return stopped
 	}
 

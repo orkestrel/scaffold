@@ -197,10 +197,10 @@ await processRunner.stop()
 
 #### `ApplicationServerRunnerInterface`
 
-| Method  | Returns         | Behavior                                                                                                                                                                                                                       |
-| ------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `start` | `void`          | Register one generation-owned set of SIGINT/SIGTERM cleanup listeners, start the server, write one `[READY] <name> <url>` line after readiness, and translate asynchronous startup failures into a non-zero process exit code. |
-| `stop`  | `Promise<void>` | Abort a startup still in flight and release both process listeners before stopping the server; repeated calls are safe and lifecycle failures reject.                                                                          |
+| Method  | Returns         | Behavior                                                                                                                                                                                                                                                                      |
+| ------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `start` | `void`          | Register one generation-owned set of SIGINT/SIGTERM cleanup listeners, queue the substrate start behind any shutdown already in flight, write one `[READY] <name> <url>` line after readiness, and translate asynchronous startup failures into a non-zero process exit code. |
+| `stop`  | `Promise<void>` | Abort a startup still in flight and release both process listeners, then wait for that startup to settle before stopping the server; repeated calls are safe and lifecycle failures reject.                                                                                   |
 
 The constructor validates grouped direct options plus `APP_HOST`, `APP_PORT`, and
 `APP_START_TIMEOUT` before allocating

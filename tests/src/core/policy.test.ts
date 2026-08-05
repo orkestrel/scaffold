@@ -319,11 +319,8 @@ describe('generated workspace coding law', () => {
 		}
 		const variants = new Map<string, { readonly path: string; readonly content: string }>()
 		for (const projection of projections) {
-			const spec: Blueprint = blueprint(projection.name, {
-				src: projection.src,
-				app: projection.app,
-				showcase: projection.showcase,
-			})
+			const { name, ...facts } = projection
+			const spec: Blueprint = blueprint(name, facts)
 			for (const artifact of blueprintToPlan(spec, ['source']).artifacts) {
 				if (artifact.origin === 'host' || !isCodingSourcePath(artifact.path)) continue
 				const key = `${artifact.path}\u0000${artifact.content}`

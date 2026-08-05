@@ -3950,7 +3950,7 @@ export default defineConfig(appShowcase())
  * factory per environment (AGENTS §5's per-environment centralized-file pattern), so
  * every environment gets the same uniform stub shape.
  *
- * @param spec - The `Blueprint` to derive source stubs from.
+ * @param spec - The blueprint carrying the declared source environment set.
  * @param pascal - The package's PascalCase entity name.
  * @returns The `source` group's `Artifact[]`.
  *
@@ -4963,12 +4963,12 @@ export function guideMethods(spec: Blueprint): string {
 			[
 				'`start`',
 				'`void`',
-				'Register one generation-owned set of SIGINT/SIGTERM cleanup listeners, start the server, write one `[READY] <name> <url>` line after readiness, and translate asynchronous startup failures into a non-zero process exit code.',
+				'Register one generation-owned set of SIGINT/SIGTERM cleanup listeners, queue the substrate start behind any shutdown already in flight, write one `[READY] <name> <url>` line after readiness, and translate asynchronous startup failures into a non-zero process exit code.',
 			],
 			[
 				'`stop`',
 				'`Promise<void>`',
-				'Abort a startup still in flight and release both process listeners before stopping the server; repeated calls are safe and lifecycle failures reject.',
+				'Abort a startup still in flight and release both process listeners, then wait for that startup to settle before stopping the server; repeated calls are safe and lifecycle failures reject.',
 			],
 		],
 	)
