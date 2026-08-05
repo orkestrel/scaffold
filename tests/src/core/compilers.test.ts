@@ -566,8 +566,14 @@ describe('application layer compilation', () => {
 		for (const extension of TYPESCRIPT_EXTENSIONS) {
 			expect(appTsconfig('browser', true)).toContain(`"../../app/browser/**/*.${extension}"`)
 			expect(appTsconfig('browser', true)).toContain(`"../../app/core/**/*.${extension}"`)
+			expect(appTsconfig('browser', true)).toContain(`"../../tests/app/browser/**/*.${extension}"`)
 			expect(appTsconfig('server', false)).not.toContain(`"../../app/core/**/*.${extension}"`)
+			expect(appTsconfig('server', false)).toContain(`"../../tests/app/server/**/*.${extension}"`)
+			expect(appTsconfig('core', false)).toContain(`"../../tests/app/core/**/*.${extension}"`)
 		}
+		expect(appTsconfig('browser', true)).toContain('"../../tests/setupBrowser.ts"')
+		expect(appTsconfig('server', false)).toContain('"../../tests/setupServer.ts"')
+		expect(appTsconfig('core', false)).toContain('"../../tests/setup.ts"')
 		expect(appViteConfig('browser')).toContain('appBrowser()')
 		expect(appViteConfig('server')).toContain('appServer()')
 	})
@@ -968,8 +974,11 @@ describe('packageManifest', () => {
 			'vite build --config configs/app/vite.showcase.config.ts',
 		)
 		expect(presentScripts.show).toBe(
-			'npm run build:showcase && npm run copy dist/showcase/index.html demo/showcase.html',
+			'npm run format && npm run build:showcase && npm run copy dist/showcase/index.html demo/showcase.html',
 		)
+		const show = presentScripts.show
+		if (typeof show !== 'string') throw new Error('expected show script to be a string')
+		expect(show.indexOf('npm run format')).toBeLessThan(show.indexOf('npm run build:showcase'))
 		expect(presentScripts.build).not.toContain('showcase')
 		expect(presentScripts.test).not.toContain('showcase')
 		expect(presentScripts.prepublishOnly).not.toContain('showcase')

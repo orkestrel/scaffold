@@ -2586,9 +2586,7 @@ ${IMPORT_KEYWORD} { createSource, parseManifest } from '@orkestrel/guide'
 ${EXPORT_KEYWORD} ${CONST_KEYWORD} GUIDE_ROOT = fileURLToPath(new URL('../', import.meta.url))
 
 /** Repository roots whose TypeScript and Markdown files participate in guide parity. */
-${EXPORT_KEYWORD} ${CONST_KEYWORD} GUIDE_WALK_DIRECTORIES: readonly string[] = Object.freeze([
-{{walkDirs}}
-])
+${EXPORT_KEYWORD} ${CONST_KEYWORD} GUIDE_WALK_DIRECTORIES: readonly string[] = Object.freeze({{walkDirs}})
 
 {{specifiers}}
 

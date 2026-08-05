@@ -1810,6 +1810,41 @@ export function renderArray(
 }
 
 /**
+ * Render a single-quoted TypeScript string array literal through `oxfmt`'s
+ * inline-or-broken rule — inline when the rendered width fits
+ * `JSON_PRINT_WIDTH`, one item per line with a trailing comma on every line
+ * (including the last) otherwise, matching `.oxfmtrc.json`'s
+ * `trailingComma: "all"` for non-JSON files.
+ *
+ * @param entries - The array's string elements, in order.
+ * @param indent - The current indentation prefix.
+ * @param prefix - The text already emitted on this line before the array.
+ * @param suffix - The text that will follow the array on this line.
+ * @returns The rendered array fragment (no trailing newline).
+ *
+ * @example
+ * ```ts
+ * import { renderStringArray } from '@orkestrel/scaffold'
+ *
+ * renderStringArray(['app', 'guides', 'tests'], '', '', '') // "['app', 'guides', 'tests']"
+ * ```
+ */
+export function renderStringArray(
+	entries: readonly string[],
+	indent: string,
+	prefix: string,
+	suffix: string,
+): string {
+	if (entries.length === 0) return '[]'
+	const items = entries.map((entry) => `'${entry}'`)
+	const inline = `[${items.join(', ')}]`
+	if (fitsPrintWidth(`${prefix}${inline}${suffix}`)) return inline
+	const childIndent = `${indent}\t`
+	const body = items.map((item) => `${childIndent}${item},`).join('\n')
+	return `[\n${body}\n${indent}]`
+}
+
+/**
  * Render a JSON object through `formatJson`'s one-key-per-line rule.
  *
  * @param entry - The object to render.

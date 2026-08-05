@@ -40,6 +40,7 @@ import {
 	formatJson,
 	pascalCase,
 	pinPlan,
+	renderStringArray,
 	selectHostPaths,
 	serializeTypeScriptString,
 } from './helpers.js'
@@ -436,7 +437,7 @@ export function packageManifest(spec: Blueprint): string {
 				scripts.showcase = `vite --config ${SHOWCASE_CONFIG_PATH}`
 				scripts['build:showcase'] = `vite build --config ${SHOWCASE_CONFIG_PATH}`
 				scripts.show =
-					'npm run build:showcase && npm run copy dist/showcase/index.html demo/showcase.html'
+					'npm run format && npm run build:showcase && npm run copy dist/showcase/index.html demo/showcase.html'
 			}
 		}
 		if (spec.app.includes('server')) {
@@ -3731,6 +3732,16 @@ export function appTsconfig(environment: Environment, hasCore: boolean): string 
 	if (environment !== 'core' && hasCore) {
 		include.push(...TYPESCRIPT_EXTENSIONS.map((extension) => `../../app/core/**/*.${extension}`))
 	}
+	include.push(
+		...TYPESCRIPT_EXTENSIONS.map((extension) => `../../tests/app/${environment}/**/*.${extension}`),
+	)
+	include.push(
+		environment === 'browser'
+			? '../../tests/setupBrowser.ts'
+			: environment === 'server'
+				? '../../tests/setupServer.ts'
+				: '../../tests/setup.ts',
+	)
 	const config = {
 		extends: '../../tsconfig.json',
 		compilerOptions: {
@@ -4668,14 +4679,17 @@ describe('shared application boundary', () => {
 	artifacts.push(
 		fillArtifact('tests/setupGuides.ts', 'tests', 'setupGuides', {
 			specifiers: paritySpecifiers(spec),
-			walkDirs: [
-				...(spec.src.length > 0 ? ["'src'"] : []),
-				...(spec.app.length > 0 ? ["'app'"] : []),
-				"'guides'",
-				"'tests'",
-			]
-				.map((directory) => `\t${directory},`)
-				.join('\n'),
+			walkDirs: renderStringArray(
+				[
+					...(spec.src.length > 0 ? ['src'] : []),
+					...(spec.app.length > 0 ? ['app'] : []),
+					'guides',
+					'tests',
+				],
+				'',
+				'export const GUIDE_WALK_DIRECTORIES: readonly string[] = Object.freeze(',
+				')',
+			),
 		}),
 		fillArtifact('tests/guides/src/parity.test.ts', 'tests', 'parityTest', {
 			name: spec.name,
