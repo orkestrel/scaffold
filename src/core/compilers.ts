@@ -4966,7 +4966,7 @@ export function guideMethods(spec: Blueprint): string {
 			[
 				'`stop`',
 				'`Promise<void>`',
-				'Release both process listeners before stopping the server; repeated calls are safe and lifecycle failures reject.',
+				'Abort a startup still in flight and release both process listeners before stopping the server; repeated calls are safe and lifecycle failures reject.',
 			],
 		],
 	)

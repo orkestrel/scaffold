@@ -7,8 +7,8 @@ import { describe, expect, it } from 'vitest'
 import { blueprint, blueprintToPlan } from '@src/core'
 import { isBrowserVuePath, readRecord } from '../../setup.js'
 import {
-	inspectCodingSource,
 	inspectCodingLaw,
+	inspectCodingSource,
 	inspectCodingWorkspace,
 	inspectVueCodingLaw,
 	isCodingSourcePath,
@@ -262,11 +262,38 @@ describe('repository coding law', () => {
 			]),
 		).not.toHaveLength(0)
 	})
+
+	it('keeps components out of non-browser environments and routes each source to its inspector', () => {
+		expect(inspectCodingSource('app/core/Hostile.vue', '<template />')).toEqual([
+			'app/core/Hostile.vue Vue components belong in app/browser',
+		])
+		expect(
+			inspectCodingSource(
+				'app/browser/Hostile.vue',
+				'const value = {} as object',
+				(_path, content) => [{ content, lang: 'ts' }],
+			),
+		).not.toHaveLength(0)
+		expect(
+			inspectCodingSource('src/core/hostile.ts', 'const value = {} as object\n'),
+		).not.toHaveLength(0)
+	})
 })
 
-describe('generated TypeScript and JavaScript corpus', () => {
-	// Vue SFC scripts remain delegated to the generated workspace's injected official compiler.
-	it('inspects every distinct non-Vue variant selected from all blueprint shapes', () => {
+describe('generated workspace coding law', () => {
+	// The generated `policy` project runs this exact module over `{app,src}/**`, so a
+	// template that violates a kind registration fails the consumer's own gates rather
+	// than this repository's. Host artifacts carry no plan content and never land under
+	// `app/` or `src/`; the workspace sweep above covers them.
+	//
+	// The one `.vue` variant is delegated rather than skipped: scaffold declares no `vue`,
+	// so no SFC script can be parsed here. `testArtifacts` (`src/core/compilers.ts`)
+	// injects `vue/compiler-sfc` into every emitted policy test whose blueprint has an app
+	// browser, `tests/setupBin.ts` gives the `'full'` consumer shape that browser (so it
+	// emits `app/browser/ApplicationView.vue`), and `tests/setupE2E.ts` runs that
+	// consumer's own `prepublishOnly` — whose `npm test` includes `test:policy` — from
+	// `tests/integration/gates.test.ts`.
+	it('inspects every distinct non-Vue variant emitted by all blueprint shapes', () => {
 		const selections: readonly (readonly Environment[])[] = [
 			[],
 			['core'],
@@ -284,48 +311,23 @@ describe('generated TypeScript and JavaScript corpus', () => {
 				if (app.includes('browser')) specs.push(blueprint('corpus', { src, app, showcase: true }))
 			}
 		}
-		const selected = new Set([
-			':browser:false',
-			':browser:true',
-			':server:false',
-			':core+browser:false',
-			':core+browser:true',
-			':core+server:false',
-			':core+browser+server:false',
-			'core+browser+server:core+browser+server:true',
-		])
 		const variants = new Map<string, { readonly path: string; readonly content: string }>()
-		const reached = new Map<string, { readonly path: string; readonly content: string }>()
-		const typescript = new Set<string>()
 		for (const spec of specs) {
-			const shape = `${spec.src.join('+')}:${spec.app.join('+')}:${String(spec.showcase)}`
 			for (const artifact of blueprintToPlan(spec, ['source']).artifacts) {
 				if (artifact.origin === 'host' || !isCodingSourcePath(artifact.path)) continue
 				const key = `${artifact.path}\u0000${artifact.content}`
-				const source = { path: artifact.path, content: artifact.content }
-				variants.set(key, source)
-				if (!artifact.path.endsWith('.vue')) typescript.add(key)
-				if (selected.has(shape)) reached.set(key, source)
+				variants.set(key, { path: artifact.path, content: artifact.content })
 			}
 		}
-
-		expect(specs).toHaveLength(69)
-		expect(selected.size).toBe(8)
-		expect(typescript.size).toBe(61)
-		expect(variants.size).toBe(62)
-		expect([...reached.keys()].sort()).toEqual([...variants.keys()].sort())
+		const delegated: string[] = []
 		const violations: string[] = []
-		const uninspected = new Set(reached.keys())
-		for (const [key, source] of reached) {
-			if (source.path.endsWith('.vue')) continue
-			violations.push(...inspectCodingSource(source.path, source.content))
-			uninspected.delete(key)
+		for (const source of variants.values()) {
+			if (source.path.endsWith('.vue')) delegated.push(source.path)
+			else violations.push(...inspectCodingSource(source.path, source.content))
 		}
 
-		expect(uninspected.size).toBeGreaterThan(0)
-		expect([...uninspected].every((key) => reached.get(key)?.path.endsWith('.vue') === true)).toBe(
-			true,
-		)
+		expect(variants.size).toBe(62)
+		expect(delegated).toEqual(['app/browser/ApplicationView.vue'])
 		expect(violations).toEqual([])
 	})
 })

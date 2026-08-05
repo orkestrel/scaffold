@@ -200,7 +200,7 @@ await processRunner.stop()
 | Method  | Returns         | Behavior                                                                                                                                                                                                                       |
 | ------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `start` | `void`          | Register one generation-owned set of SIGINT/SIGTERM cleanup listeners, start the server, write one `[READY] <name> <url>` line after readiness, and translate asynchronous startup failures into a non-zero process exit code. |
-| `stop`  | `Promise<void>` | Release both process listeners before stopping the server; repeated calls are safe and lifecycle failures reject.                                                                                                              |
+| `stop`  | `Promise<void>` | Abort a startup still in flight and release both process listeners before stopping the server; repeated calls are safe and lifecycle failures reject.                                                                          |
 
 The constructor validates grouped direct options plus `APP_HOST`, `APP_PORT`, and
 `APP_START_TIMEOUT` before allocating

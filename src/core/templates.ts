@@ -1565,14 +1565,14 @@ import { reportApplicationServerError } from './handlers.js'
 /** Own process signals and startup failure handling for one application server. */
 ${EXPORT_KEYWORD} class ApplicationServerRunner implements ApplicationServerRunnerInterface {
 	readonly #server: ApplicationServerInterface
-	readonly #signal: () => void
+	readonly #handler: () => void
 	#controller: AbortController | undefined
 	#generation = 0
 	#started = false
 
 	constructor(options: ApplicationServerOptions = {}) {
 		this.#server = new ApplicationServer(options)
-		this.#signal = this.#shutdown.bind(this)
+		this.#handler = this.#shutdown.bind(this)
 	}
 
 	start(): void {
@@ -1581,14 +1581,18 @@ ${EXPORT_KEYWORD} class ApplicationServerRunner implements ApplicationServerRunn
 		const generation = ++this.#generation
 		const controller = new AbortController()
 		this.#controller = controller
-		process.once('SIGINT', this.#signal)
-		process.once('SIGTERM', this.#signal)
+		process.once('SIGINT', this.#handler)
+		process.once('SIGTERM', this.#handler)
 		void this.#server
 			.start(controller.signal)
 			.then(this.#ready.bind(this, generation), this.#fail.bind(this, generation))
 	}
 
 	stop(): Promise<void> {
+		// The substrate's stop is inert unless the server reached listening, so a startup still
+		// in flight must be aborted before it or that listener is stranded; the generation bump
+		// is what discards the resulting abort rejection while leaving a genuine stop failure
+		// reportable.
 		this.#generation += 1
 		this.#controller?.abort()
 		this.#release()
@@ -1627,8 +1631,8 @@ ${EXPORT_KEYWORD} class ApplicationServerRunner implements ApplicationServerRunn
 	}
 
 	#release(): void {
-		process.off('SIGINT', this.#signal)
-		process.off('SIGTERM', this.#signal)
+		process.off('SIGINT', this.#handler)
+		process.off('SIGTERM', this.#handler)
 		this.#started = false
 	}
 }
@@ -1822,11 +1826,17 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} buildApplicationServer(): void {
 	}
 }
 
+/** Start a real Node server bound to one loopback port, or 0 for an ephemeral one. */
+${EXPORT_KEYWORD} async ${FUNCTION_KEYWORD} startLoopbackServer(port: number): Promise<Server> {
+	const server = createServer()
+	server.listen(port, '127.0.0.1')
+	await once(server, 'listening')
+	return server
+}
+
 /** Reserve and release a real loopback port for an immediate child-process bind. */
 ${EXPORT_KEYWORD} async ${FUNCTION_KEYWORD} reserveLoopbackPort(): Promise<number> {
-	const server = createServer()
-	server.listen(0, '127.0.0.1')
-	await once(server, 'listening')
+	const server = await startLoopbackServer(0)
 	const address = server.address()
 	if (address === null || typeof address === 'string') {
 		await stopNodeServer(server)
@@ -2261,13 +2271,12 @@ describe('createBrowserApplication', () => {
 		]),
 		content: `{{testNameImport}}
 {{serverImport}}
-import { once } from 'node:events'
-import { createServer } from 'node:http'
 import { beforeAll, describe, expect, it } from 'vitest'
 import {
 	buildApplicationServer,
 	reserveLoopbackPort,
 	startApplicationProcess,
+	startLoopbackServer,
 	stopNodeServer,
 	waitForApplicationProcess,
 	waitForApplicationRelease,
@@ -2371,20 +2380,21 @@ describe('ApplicationServer', () => {
 })
 
 describe('ApplicationServerRunner', () => {
-	it('cancels an immediate stop before the listener can survive startup', async () => {
+	it('cancels a startup still in flight so an immediate stop leaves the port free', async () => {
 		const port = await reserveLoopbackPort()
 		const runner = new ApplicationServerRunner({ server: { host: '127.0.0.1', port } })
-		const released = createServer()
 		try {
 			runner.start()
 			await runner.stop()
 
-			released.listen(port, '127.0.0.1')
-			await once(released, 'listening')
-			expect(released.listening).toBe(true)
+			const released = await startLoopbackServer(port)
+			try {
+				expect(released.listening).toBe(true)
+			} finally {
+				await stopNodeServer(released)
+			}
 		} finally {
 			await runner.stop()
-			await stopNodeServer(released)
 		}
 	})
 
@@ -2409,10 +2419,8 @@ describe('ApplicationServerRunner', () => {
 					: { code: 0, signal: null },
 			)
 
-			const released = createServer()
+			const released = await startLoopbackServer(port)
 			try {
-				released.listen(port, '127.0.0.1')
-				await once(released, 'listening')
 				expect(released.listening).toBe(true)
 			} finally {
 				await stopNodeServer(released)
@@ -2427,9 +2435,7 @@ describe('ApplicationServerRunner', () => {
 
 	it('never announces readiness when a real bind fails', async () => {
 		const port = await reserveLoopbackPort()
-		const owner = createServer()
-		owner.listen(port, '127.0.0.1')
-		await once(owner, 'listening')
+		const owner = await startLoopbackServer(port)
 		const application = startApplicationProcess(port)
 		try {
 			const exited = await waitForApplicationProcess(application)
@@ -2445,9 +2451,7 @@ describe('ApplicationServerRunner', () => {
 
 	it('releases both process shutdown listeners when startup fails', async () => {
 		const port = await reserveLoopbackPort()
-		const owner = createServer()
-		owner.listen(port, '127.0.0.1')
-		await once(owner, 'listening')
+		const owner = await startLoopbackServer(port)
 		const interrupts = process.listenerCount('SIGINT')
 		const terminations = process.listenerCount('SIGTERM')
 		// The reporter owns the process exit code, so this in-process failure records the

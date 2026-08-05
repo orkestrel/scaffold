@@ -446,23 +446,19 @@ export function inspectVueCodingLaw(
 	return violations
 }
 
-/** Inspect one supported production source through the shared coding-law route. */
+/** Inspect one production source through the shared coding-law route. */
 export function inspectCodingSource(
 	path: string,
 	content: string,
 	vueScripts?: VueScriptExtractorInterface,
 ): readonly string[] {
 	const normalizedPath = normalizePolicyPath(path)
-	if (!isCodingSourcePath(normalizedPath)) return []
+	if (!normalizedPath.endsWith('.vue')) return inspectCodingLaw(normalizedPath, content)
 	const violations: string[] = []
-	if (normalizedPath.endsWith('.vue') && !normalizedPath.startsWith('app/browser/')) {
+	if (!normalizedPath.startsWith('app/browser/')) {
 		violations.push(`${normalizedPath} Vue components belong in app/browser`)
 	}
-	violations.push(
-		...(normalizedPath.endsWith('.vue')
-			? inspectVueCodingLaw(normalizedPath, vueScripts?.(normalizedPath, content))
-			: inspectCodingLaw(normalizedPath, content)),
-	)
+	violations.push(...inspectVueCodingLaw(normalizedPath, vueScripts?.(normalizedPath, content)))
 	return violations
 }
 
@@ -677,7 +673,7 @@ export function inspectCodingLaw(path: string, content: string): readonly string
 	return violations
 }
 
-/** Inspect every production TypeScript module under one workspace. */
+/** Inspect every production source under one workspace. */
 export function inspectCodingWorkspace(
 	root: string,
 	vueScripts?: VueScriptExtractorInterface,
