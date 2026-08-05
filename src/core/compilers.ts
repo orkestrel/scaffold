@@ -770,6 +770,7 @@ import { parse as parseVue } from 'vue/compiler-sfc'
 		? `import { viteSingleFile } from 'vite-plugin-singlefile'
 `
 		: ''
+	const showcaseHashImport = needsShowcase ? "import { createHash } from 'node:crypto'\n" : ''
 	const viteTypeImports = needsVue
 		? `import type {
 	CSSOptions,
@@ -1755,10 +1756,39 @@ ${EXPORT_KEYWORD} ${CONST_KEYWORD} HTML_SECURITY_META =
 	HTML_SECURITY_POLICY +
 	'"\\n\\t\\t/>'
 ${EXPORT_KEYWORD} ${CONST_KEYWORD} HTML_SECURITY_PREFIX =
-	'<!doctype html>\\n<html lang="en">\\n\\t<head>\\n\\t\\t' + HTML_SECURITY_META + '\\n'
+	'<!doctype html>\\n<html lang="en">\\n\\t<head>\\n\\t\\t' + HTML_SECURITY_META + '\\n'${
+		needsShowcase
+			? `
+${EXPORT_KEYWORD} ${CONST_KEYWORD} SHOWCASE_SECURITY_POLICY =
+	"default-src 'none'; base-uri 'none'; object-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src data:; font-src data:; script-src-attr 'none'"
+${EXPORT_KEYWORD} ${CONST_KEYWORD} SHOWCASE_SECURITY_META =
+	'<meta\\n\\t\\t\\thttp-equiv="Content-Security-Policy"\\n\\t\\t\\tcontent="' +
+	SHOWCASE_SECURITY_POLICY +
+	'"\\n\\t\\t/>'
+${EXPORT_KEYWORD} ${CONST_KEYWORD} SHOWCASE_SECURITY_PREFIX =
+	'<!doctype html>\\n<html lang="en">\\n\\t<head>\\n\\t\\t' + SHOWCASE_SECURITY_META + '\\n'
+${EXPORT_KEYWORD} ${CONST_KEYWORD} SHOWCASE_BUILD_SECURITY_POLICY =
+	"default-src 'none'; base-uri 'none'; object-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; font-src data:; script-src-attr 'none'"
+${EXPORT_KEYWORD} ${CONST_KEYWORD} SHOWCASE_BUILD_SECURITY_META =
+	'<meta\\n\\t\\t\\thttp-equiv="Content-Security-Policy"\\n\\t\\t\\tcontent="' +
+	SHOWCASE_BUILD_SECURITY_POLICY +
+	'"\\n\\t\\t/>'
+`
+			: ''
+	}
 
-${EXPORT_KEYWORD} function maskIgnoredHtml(environmentKeys: ReadonlySet<string>, html: string): string {
-	if (!html.replaceAll('\\r\\n', '\\n').startsWith(HTML_SECURITY_PREFIX)) {
+${EXPORT_KEYWORD} function maskIgnoredHtml${
+				needsShowcase
+					? `(
+	environmentKeys: ReadonlySet<string>,
+	html: string,
+	security: string,
+)`
+					: `(environmentKeys: ReadonlySet<string>, html: string)`
+			}: string {
+	if (!html.replaceAll('\\r\\n', '\\n').startsWith(${
+		needsShowcase ? 'security' : 'HTML_SECURITY_PREFIX'
+	})) {
 		throw new Error(
 			'[orkestrel-environment-boundary] Browser HTML must preserve the generated security prologue',
 		)
@@ -1796,19 +1826,44 @@ ${EXPORT_KEYWORD} function maskIgnoredHtml(environmentKeys: ReadonlySet<string>,
 	)
 }
 
-${EXPORT_KEYWORD} function isBrowserHtmlEntry(filename: string): boolean {
+${
+	needsShowcase
+		? `${EXPORT_KEYWORD} function isShowcaseHtmlEntry(filename: string): boolean {
+	return (
+		physicalPath(filename) ===
+		physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/showcase.html'))
+	)
+}
+
+`
+		: ''
+}${EXPORT_KEYWORD} function isBrowserHtmlEntry(filename: string): boolean {
 	${
 		needsShowcase
-			? `const path = physicalPath(filename)
-	return (
-		path === physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/index.html')) ||
-		path === physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/showcase.html'))
+			? `return (
+		isShowcaseHtmlEntry(filename) ||
+		physicalPath(filename) === physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/index.html'))
 	)`
 			: `return (
 		physicalPath(filename) === physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/index.html'))
 	)`
 	}
+}${
+					needsShowcase
+						? `
+
+${EXPORT_KEYWORD} function browserHtmlSecurityPrefix(filename: string): string | undefined {
+	if (!isBrowserHtmlEntry(filename)) return undefined
+	return isShowcaseHtmlEntry(filename) ? SHOWCASE_SECURITY_PREFIX : HTML_SECURITY_PREFIX
 }
+
+${EXPORT_KEYWORD} function browserHtmlSecurityMeta(filename: string, built: boolean): string | undefined {
+	if (!isBrowserHtmlEntry(filename)) return undefined
+	if (!isShowcaseHtmlEntry(filename)) return HTML_SECURITY_META
+	return built ? SHOWCASE_BUILD_SECURITY_META : SHOWCASE_SECURITY_META
+}`
+						: ''
+				}
 
 ${EXPORT_KEYWORD} function prepareHtml(): Plugin {
 	const environmentKeys = new Set<string>()
@@ -1826,8 +1881,14 @@ ${EXPORT_KEYWORD} function prepareHtml(): Plugin {
 		transformIndexHtml: {
 			order: 'pre',
 			handler(html, context) {
-				if (!isBrowserHtmlEntry(context.filename)) return undefined
-				return maskIgnoredHtml(environmentKeys, html)
+				${
+					needsShowcase
+						? `const security = browserHtmlSecurityPrefix(context.filename)
+				if (security === undefined) return undefined
+				return maskIgnoredHtml(environmentKeys, html, security)`
+						: `if (!isBrowserHtmlEntry(context.filename)) return undefined
+				return maskIgnoredHtml(environmentKeys, html)`
+				}
 			},
 		},
 	}
@@ -1851,8 +1912,17 @@ ${EXPORT_KEYWORD} function finalizeHtml(): Plugin {
 		transformIndexHtml: {
 			order: 'post',
 			handler(html, context) {
-				if (!isBrowserHtmlEntry(context.filename)) return undefined
-				if (!html.includes(HTML_SECURITY_META)) {
+				${
+					needsShowcase
+						? `const security = browserHtmlSecurityMeta(
+					context.filename,
+					context.bundle !== undefined,
+				)
+				if (security === undefined) return undefined
+				if (!html.includes(security)) {`
+						: `if (!isBrowserHtmlEntry(context.filename)) return undefined
+				if (!html.includes(HTML_SECURITY_META)) {`
+				}
 					throw new Error(
 						'[orkestrel-environment-boundary] Browser HTML must retain its security policy',
 					)
@@ -1866,43 +1936,49 @@ ${EXPORT_KEYWORD} function finalizeHtml(): Plugin {
 			: ''
 	}${
 		needsShowcase
-			? `${EXPORT_KEYWORD} ${CONST_KEYWORD} SHOWCASE_SECURITY_POLICY =
-	"base-uri 'none'; object-src 'none'; script-src 'self' 'unsafe-inline'; script-src-attr 'none'; style-src 'self' 'unsafe-inline'"
-
-${EXPORT_KEYWORD} function showcaseHtml(): Plugin {
+			? `${EXPORT_KEYWORD} function showcaseHtml(): Plugin {
 	return {
 		name: 'orkestrel-showcase-html',
-		enforce: 'post',
 		transformIndexHtml: {
 			order: 'post',
 			handler(html, context) {
-				if (!isBrowserHtmlEntry(context.filename)) return undefined
-				if (!html.includes(HTML_SECURITY_META)) {
-					throw new Error('[orkestrel-showcase] Browser HTML must retain its security policy')
+				if (!isShowcaseHtmlEntry(context.filename) || context.bundle === undefined) {
+					return undefined
 				}
-				const stamp = new Date().toISOString()
-				return html.replace(
-					HTML_SECURITY_META,
-					HTML_SECURITY_META.replace(HTML_SECURITY_POLICY, SHOWCASE_SECURITY_POLICY) +
-						\`\\n\\t\\t<meta name="build-id" content="\${stamp}" />\`,
-				)
+				if (!html.includes(SHOWCASE_SECURITY_META)) {
+					throw new Error(
+						'[orkestrel-showcase-html] Showcase build did not retain its development security policy',
+					)
+				}
+				const secured = html.replace(SHOWCASE_SECURITY_META, SHOWCASE_BUILD_SECURITY_META)
+				const build = createHash('sha256').update(secured).digest('hex')
+				return {
+					html: secured,
+					tags: [
+						{
+							tag: 'meta',
+							attrs: { name: 'build-id', content: build },
+							injectTo: 'head',
+						},
+					],
+				}
 			},
 		},
 		generateBundle: {
 			order: 'post',
 			handler(_options, bundle) {
-				let entry: (typeof bundle)[string] | undefined
+				let html: (typeof bundle)[string] | undefined
 				for (const output of Object.values(bundle)) {
 					if (!output.fileName.endsWith('.html')) continue
-					if (entry !== undefined) {
-						this.error('[orkestrel-showcase] Showcase build emitted multiple HTML entries')
+					if (html !== undefined) {
+						this.error('[orkestrel-showcase-html] Showcase build emitted multiple HTML entries')
 					}
-					entry = output
+					html = output
 				}
-				if (entry === undefined) {
-					this.error('[orkestrel-showcase] Showcase build did not emit an HTML entry')
+				if (html === undefined) {
+					this.error('[orkestrel-showcase-html] Showcase build did not emit an HTML entry')
 				}
-				entry.fileName = 'index.html'
+				html.fileName = 'index.html'
 			},
 		},
 	}
@@ -2220,7 +2296,7 @@ ${
 ${viteImports}import { defineConfig, mergeConfig } from 'vitest/config'
 import tsconfig from './tsconfig.json' with { type: 'json' }
 import { fileURLToPath, URL } from 'node:url'
-import { isBuiltin } from 'node:module'
+${showcaseHashImport}import { isBuiltin } from 'node:module'
 import {
 ${needsBrowser ? '\taccessSync,\n' : ''}	closeSync,
 	constants as FS_CONSTANTS,
@@ -3210,55 +3286,38 @@ ${EXPORT_KEYWORD} const appCore = (config?: UserConfig): UserConfig =>
 		blocks.push(
 			facts.showcase === true
 				? `
-${FUNCTION_KEYWORD} applicationBrowser(showcase: boolean): UserConfig {
-	const output = showcase ? 'dist/showcase' : 'dist/app/browser'
+${EXPORT_KEYWORD} function appBrowser(...config: never[]): UserConfig {
+	if (config.length > 0) {
+		throw new Error(
+			'[orkestrel-environment-boundary] Browser configuration overrides are not permitted by the generated boundary',
+		)
+	}
 	return {
 		resolve,
 		css: ENVIRONMENT_CSS,
 		html: environmentHtml(),
 		plugins: [
 			restoreHtml(),
-			outputBoundary(output),
+			outputBoundary('dist/app/browser'),
 			environmentBoundary('app/browser'),
 			vue(),
 			prepareHtml(),
 			finalizeHtml(),
-			...(showcase
-				? [
-						viteSingleFile({
-							removeViteModuleLoader: true,
-							useRecommendedBuildConfig: true,
-						}),
-						showcaseHtml(),
-					]
-				: []),
 		],
 		root: resolveWorkspacePath('app/browser'),
 		publicDir: false,
 		server: {
-			...(showcase ? { open: '/showcase.html' } : {}),
 			fs: {
 				strict: true,
 				allow: [...browserServerRoots()],
 			},
 		},
 		build: {
-			...(showcase
-				? {
-						cssMinify: 'lightningcss',
-						minify: 'oxc',
-						modulePreload: false,
-						reportCompressedSize: false,
-						sourcemap: false,
-						target: 'esnext',
-					}
-				: { assetsInlineLimit: 0 }),
+			assetsInlineLimit: 0,
 			emptyOutDir: true,
-			outDir: resolveWorkspacePath(output),
+			outDir: resolveWorkspacePath('dist/app/browser'),
 			rolldownOptions: {
-				input: resolveWorkspacePath(
-					showcase ? 'app/browser/showcase.html' : '${APP_MATRIX.browser.entry}',
-				),
+				input: resolveWorkspacePath('${APP_MATRIX.browser.entry}'),
 			},
 		},
 		test: {
@@ -3285,22 +3344,54 @@ ${FUNCTION_KEYWORD} applicationBrowser(showcase: boolean): UserConfig {
 	}
 }
 
-${EXPORT_KEYWORD} function appBrowser(...config: never[]): UserConfig {
-	if (config.length > 0) {
-		throw new Error(
-			'[orkestrel-environment-boundary] Browser configuration overrides are not permitted by the generated boundary',
-		)
-	}
-	return applicationBrowser(false)
-}
-
-${EXPORT_KEYWORD} function appShowcase(...config: never[]): UserConfig {
+${EXPORT_KEYWORD} function appShowcase(...config: readonly never[]): UserConfig {
 	if (config.length > 0) {
 		throw new Error(
 			'[orkestrel-environment-boundary] Showcase configuration overrides are not permitted by the generated boundary',
 		)
 	}
-	return applicationBrowser(true)
+	return {
+		base: './',
+		resolve,
+		css: ENVIRONMENT_CSS,
+		html: environmentHtml(),
+		plugins: [
+			restoreHtml(),
+			outputBoundary('dist/showcase'),
+			environmentBoundary('app/browser'),
+			vue(),
+			prepareHtml(),
+			showcaseHtml(),
+			viteSingleFile({
+				removeViteModuleLoader: true,
+				useRecommendedBuildConfig: true,
+			}),
+			finalizeHtml(),
+		],
+		root: resolveWorkspacePath('app/browser'),
+		publicDir: false,
+		server: {
+			open: '/showcase.html',
+			fs: {
+				strict: true,
+				allow: [...browserServerRoots()],
+			},
+		},
+		build: {
+			assetsInlineLimit: Number.MAX_SAFE_INTEGER,
+			cssMinify: 'lightningcss',
+			emptyOutDir: true,
+			minify: 'oxc',
+			modulePreload: false,
+			outDir: resolveWorkspacePath('dist/showcase'),
+			reportCompressedSize: false,
+			rolldownOptions: {
+				input: resolveWorkspacePath('app/browser/showcase.html'),
+			},
+			sourcemap: false,
+			target: 'esnext',
+		},
+	}
 }
 `
 				: `

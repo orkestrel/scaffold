@@ -901,7 +901,7 @@ defineProps<{ readonly name: string }>()
 	appBrowserShowcaseHtml: Object.freeze({
 		id: 'appBrowserShowcaseHtml',
 		name: 'appBrowserShowcaseHtml',
-		summary: 'The showcase HTML entry, sharing the browser security prologue.',
+		summary: 'The showcase HTML entry with its development security policy.',
 		category: 'source',
 		placeholders: Object.freeze([
 			Object.freeze({ name: 'name', description: 'The application name.' }),
@@ -911,7 +911,7 @@ defineProps<{ readonly name: string }>()
 	<head>
 		<meta
 			http-equiv="Content-Security-Policy"
-			content="base-uri 'none'; object-src 'none'; script-src 'self'; script-src-attr 'none'"
+			content="default-src 'none'; base-uri 'none'; object-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src data:; font-src data:; script-src-attr 'none'"
 		/>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />

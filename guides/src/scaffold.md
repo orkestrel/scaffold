@@ -1705,21 +1705,25 @@ still rejects public directories, browser asset inlining, and output path overri
 post-factory composition as defense in depth; that narrow check is not a general extension seam.
 
 When the showcase fact is present, the generated root also exports closed
-`appShowcase(...config: never[])`; both factories reject every argument at runtime and
-share one fixed internal browser configuration. The ordinary factory retains its strict
+`appShowcase(...config: readonly never[])`; both factories reject every argument at runtime. The
+ordinary factory retains its strict
 `script-src 'self'` policy, external asset auditing, and `dist/app/browser` output. The showcase
-factory alone writes `dist/showcase`, applies `viteSingleFile` with
+factory is a standalone configuration with `base: './'`, unlimited asset inlining, and
+`dist/showcase` output. It applies `viteSingleFile` with
 `removeViteModuleLoader: true` and `useRecommendedBuildConfig: true`, uses Oxc and Lightning CSS
-minification for an `esnext` build without source maps or module preload, and inserts a non-empty ISO
-`build-id` meta. Its generated CSP admits only the inline script and style required by the
-self-contained `file://` artifact while retaining `script-src-attr 'none'`, `object-src 'none'`, and
-`base-uri 'none'`.
+minification for an `esnext` build without source maps or module preload, and inserts a SHA-256
+`build-id` derived from the secured, fully inlined document. An unchanged document therefore keeps
+the same id, while any changed byte changes it. The showcase development CSP keeps scripts
+same-origin and permits Vue's injected inline styles. Its built CSP swaps that script permission to
+inline and admits only inline styles plus data images and fonts, while both policies retain
+`default-src 'none'`, `script-src-attr 'none'`, `object-src 'none'`, and `base-uri 'none'`.
 
 The showcase fact also emits its own entry pair, `app/browser/showcase.html` and
 `app/browser/showcase.ts`, beside the application's `index.html` and `main.ts`. Both HTML entries
-open with the same security prologue, so the boundary plugins mask, validate, and finalize them
-identically; only the showcase build swaps in the self-contained policy and renames its single HTML
-output to `index.html`, which is what `show` copies to `demo/showcase.html`. The showcase entry
+open with a generated security prologue: the application carries the ordinary strict policy and the
+showcase carries its development policy. The boundary plugins select and validate the matching
+prologue; the showcase build alone swaps in the self-contained policy before hashing and renames its
+single HTML output to `index.html`, which is what `show` copies to `demo/showcase.html`. The showcase entry
 mounts `createShowcaseApplication`, and `app/browser/seeders.ts` exports exactly one seeder,
 `seedApplication`, returning a frozen identity of the same shape the shipped root view receives.
 The showcase and the application therefore differ in exactly one expression — where the props come

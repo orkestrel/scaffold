@@ -425,7 +425,7 @@ describe('application layer compilation', () => {
 			'<script type="module" src="/showcase.ts"></script>',
 		)
 		expect(read('app/browser/showcase.html')).toContain(
-			`content="base-uri 'none'; object-src 'none'; script-src 'self'; script-src-attr 'none'"`,
+			`content="default-src 'none'; base-uri 'none'; object-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src data:; font-src data:; script-src-attr 'none'"`,
 		)
 		expect(read('app/browser/showcase.ts')).toContain("createShowcaseApplication('#app')")
 		expect(read('app/browser/seeders.ts')).toContain(
@@ -2097,23 +2097,36 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 	it('generates one shared closed browser implementation and a hardened single-file showcase', () => {
 		const content = applicationViteConfig([], ['browser'], { showcase: true })
 		const strict = "base-uri 'none'; object-src 'none'; script-src 'self'; script-src-attr 'none'"
-		const compatible =
-			"base-uri 'none'; object-src 'none'; script-src 'self' 'unsafe-inline'; script-src-attr 'none'; style-src 'self' 'unsafe-inline'"
+		const development =
+			"default-src 'none'; base-uri 'none'; object-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src data:; font-src data:; script-src-attr 'none'"
+		const built =
+			"default-src 'none'; base-uri 'none'; object-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; font-src data:; script-src-attr 'none'"
+		const showcasePlugin = content.indexOf('\t\t\tshowcaseHtml(),')
+		const singleFilePlugin = content.indexOf('\t\t\tviteSingleFile({', showcasePlugin)
+		const browserStart = content.indexOf('export function appBrowser(')
+		const browserEnd = content.indexOf('\nexport function appShowcase(', browserStart)
+		const plain = applicationViteConfig([], ['browser'])
+		const plainBrowserStart = plain.indexOf('export function appBrowser(')
+		const plainBrowserEnd = plain.indexOf('\nexport ', plainBrowserStart + 1)
+		const plainBrowser = plain.slice(plainBrowserStart, plainBrowserEnd)
 
+		expect(content).toContain("import { createHash } from 'node:crypto'")
 		expect(content).toContain("import { viteSingleFile } from 'vite-plugin-singlefile'")
-		expect(content).toContain('function applicationBrowser(showcase: boolean): UserConfig')
 		expect(content).toContain('function appBrowser(...config: never[])')
-		expect(content).toContain('function appShowcase(...config: never[])')
-		expect(content).toContain('return applicationBrowser(false)')
-		expect(content).toContain('return applicationBrowser(true)')
+		expect(content).toContain('function appShowcase(...config: readonly never[])')
+		expect(content).not.toContain('function applicationBrowser(showcase: boolean): UserConfig')
 		expect(content).toContain('Browser configuration overrides are not permitted')
 		expect(content).toContain('Showcase configuration overrides are not permitted')
-		expect(content).toContain("const output = showcase ? 'dist/showcase' : 'dist/app/browser'")
-		expect(content).toContain('outputBoundary(output)')
+		expect(content.slice(browserStart, browserEnd)).toBe(plainBrowser)
+		expect(content).toContain("base: './'")
+		expect(content).toContain('assetsInlineLimit: Number.MAX_SAFE_INTEGER')
+		expect(content).toContain("outputBoundary('dist/showcase')")
 		expect(content).toContain("environmentBoundary('app/browser')")
 		expect(content).toContain('vue()')
 		expect(content).toContain('prepareHtml()')
 		expect(content).toContain('finalizeHtml()')
+		expect(showcasePlugin).toBeGreaterThan(-1)
+		expect(singleFilePlugin).toBeGreaterThan(showcasePlugin)
 		expect(content).toContain('removeViteModuleLoader: true')
 		expect(content).toContain('useRecommendedBuildConfig: true')
 		expect(content).toContain("cssMinify: 'lightningcss'")
@@ -2122,22 +2135,169 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		expect(content).toContain('reportCompressedSize: false')
 		expect(content).toContain('sourcemap: false')
 		expect(content).toContain("target: 'esnext'")
-		expect(content).toContain('new Date().toISOString()')
-		expect(content).toContain('<meta name="build-id" content="${stamp}" />')
+		expect(content).not.toContain('new Date().toISOString()')
+		expect(content).toContain("createHash('sha256').update(secured).digest('hex')")
+		expect(content).toContain("attrs: { name: 'build-id', content: build }")
 		expect(content).toContain(strict)
-		expect(content).toContain(compatible)
+		expect(content).toContain(development)
+		expect(content).toContain(built)
+	})
+
+	it('executes the emitted showcase HTML hash and single-output enforcement rows', async () => {
+		const directory = await buildWorkspaceTempDirectory()
+		try {
+			const content = applicationViteConfig([], ['browser'], { showcase: true })
+			const pathStart = content.indexOf('export function fileSystemPath')
+			const pathEnd = content.indexOf('\n\nexport function sourceFallback', pathStart)
+			const securityStart = content.indexOf('export const HTML_SECURITY_POLICY')
+			const securityEnd = content.indexOf('\n\nexport function maskIgnoredHtml', securityStart)
+			const entryStart = content.indexOf('export function isShowcaseHtmlEntry')
+			const entryEnd = content.indexOf('\n\nexport function prepareHtml', entryStart)
+			const showcaseStart = content.indexOf('export function showcaseHtml')
+			const showcaseEnd = content.indexOf(
+				'\n\nexport async function environmentAssetSources',
+				showcaseStart,
+			)
+			if (
+				pathStart === -1 ||
+				pathEnd === -1 ||
+				securityStart === -1 ||
+				securityEnd === -1 ||
+				entryStart === -1 ||
+				entryEnd === -1 ||
+				showcaseStart === -1 ||
+				showcaseEnd === -1
+			) {
+				throw new Error('emitted showcase HTML dependency closure was not found')
+			}
+			const browser = join(directory.path, 'app', 'browser')
+			const entry = join(browser, 'showcase.html')
+			mkdirSync(browser, { recursive: true })
+			writeFileSync(entry, '<html lang="en">showcase</html>\n', 'utf8')
+			const configPath = join(directory.path, 'showcase.config.ts')
+			writeFileSync(
+				configPath,
+				[
+					"import type { Plugin } from 'vite'",
+					"import { createHash } from 'node:crypto'",
+					"import { existsSync, realpathSync } from 'node:fs'",
+					"import { dirname, isAbsolute, resolve as resolvePath } from 'node:path'",
+					"import { fileURLToPath } from 'node:url'",
+					"import { defineConfig } from 'vite'",
+					'',
+					'const WORKSPACE_ROOT = realpathSync.native(dirname(fileURLToPath(import.meta.url)))',
+					'',
+					content.slice(pathStart, pathEnd),
+					'',
+					content.slice(securityStart, securityEnd),
+					'',
+					content.slice(entryStart, entryEnd),
+					'',
+					content.slice(showcaseStart, showcaseEnd),
+					'',
+					`const entry = ${serializeTypeScriptString(entry)}`,
+					"const context = { path: '/showcase.html', filename: entry, bundle: {} }",
+					"const source = SHOWCASE_SECURITY_PREFIX + '</head><body>stable</body></html>'",
+					'const transform = showcaseHtml().transformIndexHtml',
+					"if (typeof transform !== 'object' || transform === null) {",
+					"\tthrow new Error('showcase transform hook shape changed')",
+					'}',
+					'let missingRejected = false',
+					'try {',
+					'\tawait transform.handler(source.replace(SHOWCASE_SECURITY_META, HTML_SECURITY_META), context)',
+					'} catch {',
+					'\tmissingRejected = true',
+					'}',
+					"if (!missingRejected) throw new Error('showcase transform accepted missing development meta')",
+					'const first = await transform.handler(source, context)',
+					'const second = await transform.handler(source, context)',
+					"const changed = await transform.handler(source.replace('stable', 'stable!'), context)",
+					'if (',
+					"\ttypeof first !== 'object' ||",
+					'\tfirst === null ||',
+					"\ttypeof second !== 'object' ||",
+					'\tsecond === null ||',
+					"\ttypeof changed !== 'object' ||",
+					'\tchanged === null',
+					') {',
+					"\tthrow new Error('showcase transform result shape changed')",
+					'}',
+					'const firstTag = first.tags[0]',
+					'const secondTag = second.tags[0]',
+					'const changedTag = changed.tags[0]',
+					'const firstId = firstTag?.attrs?.content',
+					'const secondId = secondTag?.attrs?.content',
+					'const changedId = changedTag?.attrs?.content',
+					"if (typeof firstId !== 'string' || !/^[0-9a-f]{64}$/.test(firstId)) {",
+					"\tthrow new Error('showcase transform did not emit a SHA-256 build id')",
+					'}',
+					"if (firstId !== secondId) throw new Error('unchanged showcase hashes differed')",
+					"if (firstId === changedId) throw new Error('changed showcase hash stayed stable')",
+					'if (',
+					'\t!first.html.includes(SHOWCASE_BUILD_SECURITY_META) ||',
+					'\tfirst.html.includes(SHOWCASE_SECURITY_META)',
+					') {',
+					"\tthrow new Error('showcase transform did not swap the development policy')",
+					'}',
+					'const generate = showcaseHtml().generateBundle',
+					"if (typeof generate !== 'object' || generate === null) {",
+					"\tthrow new Error('showcase bundle hook shape changed')",
+					'}',
+					'const pluginContext = {',
+					'\terror(message: string): never {',
+					'\t\tthrow new Error(message)',
+					'\t},',
+					'}',
+					'let zeroRejected = false',
+					'try {',
+					'\tgenerate.handler.call(pluginContext, {}, {})',
+					'} catch {',
+					'\tzeroRejected = true',
+					'}',
+					"if (!zeroRejected) throw new Error('showcase bundle accepted zero HTML outputs')",
+					'let multipleRejected = false',
+					'try {',
+					'\tgenerate.handler.call(pluginContext, {}, {',
+					"\t\tfirst: { fileName: 'first.html' },",
+					"\t\tsecond: { fileName: 'second.html' },",
+					'\t})',
+					'} catch {',
+					'\tmultipleRejected = true',
+					'}',
+					"if (!multipleRejected) throw new Error('showcase bundle accepted multiple HTML outputs')",
+					"const output = { fileName: 'showcase.html' }",
+					'generate.handler.call(pluginContext, {}, { output })',
+					"if (output.fileName !== 'index.html') throw new Error('showcase HTML was not renamed')",
+					'',
+					'export default defineConfig({})',
+					'',
+				].join('\n'),
+				'utf8',
+			)
+
+			await expect(
+				loadConfigFromFile(
+					{ command: 'build', mode: 'test' },
+					configPath,
+					directory.path,
+					'silent',
+				),
+			).resolves.not.toBeNull()
+		} finally {
+			await directory.cleanup()
+		}
 	})
 
 	it('builds the showcase from its own entry and still emits one index.html', () => {
 		const showcased = applicationViteConfig([], ['browser'], { showcase: true })
 		const plain = applicationViteConfig([], ['browser'])
 
-		expect(showcased).toContain("showcase ? 'app/browser/showcase.html' : 'app/browser/index.html'")
-		expect(showcased).toContain("...(showcase ? { open: '/showcase.html' } : {})")
+		expect(showcased).toContain("input: resolveWorkspacePath('app/browser/showcase.html')")
+		expect(showcased).toContain("open: '/showcase.html'")
 		expect(showcased).toContain(
-			"path === physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/showcase.html'))",
+			"physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/showcase.html'))",
 		)
-		expect(showcased).toContain("entry.fileName = 'index.html'")
+		expect(showcased).toContain("html.fileName = 'index.html'")
 		expect(showcased).toContain('Showcase build emitted multiple HTML entries')
 		expect(showcased).toContain('Showcase build did not emit an HTML entry')
 		expect(plain).not.toContain('showcase.html')
@@ -3235,6 +3395,7 @@ describe('consumer lockfile fixture guard', () => {
 		const spec: Blueprint = blueprint('consumer-proof', {
 			src: ['core', 'browser', 'server'],
 			app: ['core', 'browser', 'server'],
+			showcase: true,
 		})
 		const manifest = readManifest(packageManifest(spec))
 		const emittedDevDependencies = readRecord(manifest.devDependencies)
