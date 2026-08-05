@@ -844,6 +844,7 @@ From [`helpers.ts`](../../src/core/helpers.ts).
 | `renderArray`               | function |
 | `renderObject`              | function |
 | `renderValue`               | function |
+| `renderStringArray`         | function |
 | `formatJson`                | function |
 | `pinPlan`                   | function |
 
@@ -908,7 +909,10 @@ id is already registered: an identical plan is idempotent, while a distinct payl
 `formatJson` and its leaves — `renderValue`,
 `renderArray`, `renderObject`, `computeColumnWidth`, and `fitsPrintWidth` — emit JSON that matches the fleet
 formatter byte for byte, collapsing a short array onto one line and breaking a long one, so
-computed configuration JSON is format-stable by construction.
+computed configuration JSON is format-stable by construction. `renderStringArray` applies the same
+inline-or-broken width rule to single-quoted TypeScript string-array literals — with a trailing
+comma on every broken line, matching `oxfmt`'s `trailingComma: "all"` for non-JSON files — so
+generated TypeScript configuration is format-stable too.
 
 ### Helpers — server
 
