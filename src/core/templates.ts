@@ -1566,6 +1566,7 @@ import { reportApplicationServerError } from './handlers.js'
 ${EXPORT_KEYWORD} class ApplicationServerRunner implements ApplicationServerRunnerInterface {
 	readonly #server: ApplicationServerInterface
 	readonly #signal: () => void
+	#controller: AbortController | undefined
 	#generation = 0
 	#started = false
 
@@ -1578,15 +1579,18 @@ ${EXPORT_KEYWORD} class ApplicationServerRunner implements ApplicationServerRunn
 		if (this.#started) return
 		this.#started = true
 		const generation = ++this.#generation
+		const controller = new AbortController()
+		this.#controller = controller
 		process.once('SIGINT', this.#signal)
 		process.once('SIGTERM', this.#signal)
 		void this.#server
-			.start()
+			.start(controller.signal)
 			.then(this.#ready.bind(this, generation), this.#fail.bind(this, generation))
 	}
 
 	stop(): Promise<void> {
 		this.#generation += 1
+		this.#controller?.abort()
 		this.#release()
 		return this.#server.stop()
 	}
@@ -2367,6 +2371,23 @@ describe('ApplicationServer', () => {
 })
 
 describe('ApplicationServerRunner', () => {
+	it('cancels an immediate stop before the listener can survive startup', async () => {
+		const port = await reserveLoopbackPort()
+		const runner = new ApplicationServerRunner({ server: { host: '127.0.0.1', port } })
+		const released = createServer()
+		try {
+			runner.start()
+			await runner.stop()
+
+			released.listen(port, '127.0.0.1')
+			await once(released, 'listening')
+			expect(released.listening).toBe(true)
+		} finally {
+			await runner.stop()
+			await stopNodeServer(released)
+		}
+	})
+
 	it('announces readiness exactly once before the first response and releases on SIGTERM', async () => {
 		const port = await reserveLoopbackPort()
 		const application = startApplicationProcess(port)

@@ -1,3 +1,4 @@
+import type { Blueprint, Environment } from '@src/core'
 import { globSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseJSON } from '@orkestrel/contract'
@@ -6,9 +7,11 @@ import { describe, expect, it } from 'vitest'
 import { blueprint, blueprintToPlan } from '@src/core'
 import { isBrowserVuePath, readRecord } from '../../setup.js'
 import {
+	inspectCodingSource,
 	inspectCodingLaw,
 	inspectCodingWorkspace,
 	inspectVueCodingLaw,
+	isCodingSourcePath,
 	isSelfContained,
 	normalizePolicyPath,
 	WORKER_SCOPE_VALUE_GLOBALS,
@@ -261,29 +264,68 @@ describe('repository coding law', () => {
 	})
 })
 
-describe('generated workspace coding law', () => {
-	it('emits TypeScript sources that satisfy the policy every generated workspace runs', () => {
-		// The generated `policy` project runs this exact module over `{app,src}/**`,
-		// so a template that violates a kind registration fails the consumer's own
-		// gates rather than this repository's. Host artifacts carry no plan content
-		// and never land under `app/` or `src/`; the workspace sweep above covers them.
-		const specs = [
-			blueprint('boundary', {
-				src: ['core', 'browser', 'server'],
-				app: ['core', 'browser', 'server'],
-				showcase: true,
-			}),
-			blueprint('lean', { src: [], app: ['server'] }),
+describe('generated TypeScript and JavaScript corpus', () => {
+	// Vue SFC scripts remain delegated to the generated workspace's injected official compiler.
+	it('inspects every distinct non-Vue variant selected from all blueprint shapes', () => {
+		const selections: readonly (readonly Environment[])[] = [
+			[],
+			['core'],
+			['browser'],
+			['server'],
+			['core', 'browser'],
+			['core', 'server'],
+			['core', 'browser', 'server'],
 		]
-		const violations: string[] = []
+		const specs: Blueprint[] = []
+		for (const src of selections) {
+			for (const app of selections) {
+				if (src.length === 0 && app.length === 0) continue
+				specs.push(blueprint('corpus', { src, app }))
+				if (app.includes('browser')) specs.push(blueprint('corpus', { src, app, showcase: true }))
+			}
+		}
+		const selected = new Set([
+			':browser:false',
+			':browser:true',
+			':server:false',
+			':core+browser:false',
+			':core+browser:true',
+			':core+server:false',
+			':core+browser+server:false',
+			'core+browser+server:core+browser+server:true',
+		])
+		const variants = new Map<string, { readonly path: string; readonly content: string }>()
+		const reached = new Map<string, { readonly path: string; readonly content: string }>()
+		const typescript = new Set<string>()
 		for (const spec of specs) {
-			for (const artifact of blueprintToPlan(spec).artifacts) {
-				if (artifact.origin === 'host') continue
-				if (!/^(?:app|src)\/.+\.ts$/u.test(artifact.path)) continue
-				violations.push(...inspectCodingLaw(artifact.path, artifact.content))
+			const shape = `${spec.src.join('+')}:${spec.app.join('+')}:${String(spec.showcase)}`
+			for (const artifact of blueprintToPlan(spec, ['source']).artifacts) {
+				if (artifact.origin === 'host' || !isCodingSourcePath(artifact.path)) continue
+				const key = `${artifact.path}\u0000${artifact.content}`
+				const source = { path: artifact.path, content: artifact.content }
+				variants.set(key, source)
+				if (!artifact.path.endsWith('.vue')) typescript.add(key)
+				if (selected.has(shape)) reached.set(key, source)
 			}
 		}
 
+		expect(specs).toHaveLength(69)
+		expect(selected.size).toBe(8)
+		expect(typescript.size).toBe(61)
+		expect(variants.size).toBe(62)
+		expect([...reached.keys()].sort()).toEqual([...variants.keys()].sort())
+		const violations: string[] = []
+		const uninspected = new Set(reached.keys())
+		for (const [key, source] of reached) {
+			if (source.path.endsWith('.vue')) continue
+			violations.push(...inspectCodingSource(source.path, source.content))
+			uninspected.delete(key)
+		}
+
+		expect(uninspected.size).toBeGreaterThan(0)
+		expect([...uninspected].every((key) => reached.get(key)?.path.endsWith('.vue') === true)).toBe(
+			true,
+		)
 		expect(violations).toEqual([])
 	})
 })
