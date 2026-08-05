@@ -253,6 +253,17 @@ describe('application layer compilation', () => {
 		)
 	})
 
+	it('omits GitHub publication identity from an app-only manifest', () => {
+		const content = packageManifest(blueprint('terrain', { src: [], app: ['core', 'browser'] }))
+		const manifest = readManifest(content)
+
+		expect(manifest.homepage).toBeUndefined()
+		expect(manifest.bugs).toBeUndefined()
+		expect(manifest.repository).toBeUndefined()
+		expect(manifest.license).toBe('MIT')
+		expect(content).not.toContain('github.com/orkestrel/terrain')
+	})
+
 	it('adds the Vue/browser toolchain only when app/browser is selected', () => {
 		const manifest = readManifest(
 			packageManifest(blueprint('worker', { src: [], app: ['core', 'server'] })),
@@ -264,17 +275,25 @@ describe('application layer compilation', () => {
 	})
 
 	it('keeps a mixed workspace publishable while excluding app output from files', () => {
-		const manifest = readManifest(
-			packageManifest(
-				blueprint('console', {
-					src: ['core'],
-					app: ['core', 'browser'],
-				}),
-			),
+		const content = packageManifest(
+			blueprint('console', {
+				src: ['core'],
+				app: ['core', 'browser'],
+			}),
 		)
+		const manifest = readManifest(content)
 
 		expect(manifest.name).toBe('@orkestrel/console')
 		expect(manifest.private).toBeUndefined()
+		expect(manifest.homepage).toBe('https://github.com/orkestrel/console#readme')
+		expect(manifest.bugs).toBe('https://github.com/orkestrel/console/issues')
+		expect(manifest.license).toBe('MIT')
+		expect(manifest.repository).toEqual({
+			type: 'git',
+			url: 'git+https://github.com/orkestrel/console.git',
+		})
+		expect(content.indexOf('"bugs"')).toBeLessThan(content.indexOf('"license"'))
+		expect(content.indexOf('"license"')).toBeLessThan(content.indexOf('"repository"'))
 		expect(manifest.files).toEqual(['dist/src', 'README.md'])
 		expect(manifest.sideEffects).toBe(false)
 		expect(readRecord(manifest.dependencies).vue).toBeUndefined()

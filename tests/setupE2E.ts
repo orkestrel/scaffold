@@ -1034,6 +1034,10 @@ export function registerHermeticBinGates(): void {
 					if (!isRecord(manifest)) throw new Error('expected app package.json object')
 					expect(manifest.name).toBe('demoapp')
 					expect(manifest.private).toBe(true)
+					expect(manifest.homepage).toBeUndefined()
+					expect(manifest.bugs).toBeUndefined()
+					expect(manifest.repository).toBeUndefined()
+					expect(manifest.license).toBe('MIT')
 
 					const audited = runDefaultBin(['audit'], { cwd: packageDirectory })
 					expect(audited.status).toBe(0)

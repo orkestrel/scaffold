@@ -468,10 +468,21 @@ export function packageManifest(spec: Blueprint): string {
 			spec.description ??
 			(hasSource ? `The @orkestrel/${spec.name} package.` : `The ${spec.name} application.`),
 		keywords: [...spec.keywords].sort(),
-		homepage: `https://github.com/orkestrel/${spec.name}#readme`,
-		bugs: `https://github.com/orkestrel/${spec.name}/issues`,
+		...(hasSource
+			? {
+					homepage: `https://github.com/orkestrel/${spec.name}#readme`,
+					bugs: `https://github.com/orkestrel/${spec.name}/issues`,
+				}
+			: {}),
 		license: 'MIT',
-		repository: { type: 'git', url: `git+https://github.com/orkestrel/${spec.name}.git` },
+		...(hasSource
+			? {
+					repository: {
+						type: 'git',
+						url: `git+https://github.com/orkestrel/${spec.name}.git`,
+					},
+				}
+			: {}),
 		...(spec.bin ? { bin: { scaffold: './dist/bin/scaffold.js' } } : {}),
 		files: spec.bin
 			? ['dist/src', 'dist/bin', 'dist/host', 'README.md']

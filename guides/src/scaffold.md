@@ -1574,11 +1574,14 @@ fleet refresh is never partial. Files outside the discovered guide set remain un
 
 A generated workspace is not a folder of suggestions; it is a working, gated project.
 
-**Manifest and scripts.** A published workspace is scoped and carries an `exports` map, publish
-configuration, and ships `dist/src` plus its README. An application-only workspace is unscoped and
-`private: true`, with no export map and no publish configuration, and ships `dist/app`. A workspace
-that builds its own executable additionally ships `dist/bin` and `dist/host`. Scripts are emitted in
-a fixed, interleaved order so aggregates sit immediately before their per-environment members:
+**Manifest and scripts.** A published workspace is scoped, carries the Orkestrel GitHub homepage,
+issues, and repository identity, carries an `exports` map and publish configuration, and ships
+`dist/src` plus its README. An application-only workspace is unscoped and `private: true`, with no
+export map, publish configuration, or invented GitHub identity, and ships `dist/app`. Both carry
+`license: "MIT"` because every generated workspace receives the same host-owned MIT `LICENSE`.
+A workspace that builds its own executable additionally ships `dist/bin` and `dist/host`. Scripts
+are emitted in a fixed, interleaved order so aggregates sit immediately before their per-environment
+members:
 
 - `clean`, `copy`, `scaffold`, `lint`
 - `check`, then `check:src` with one `check:src:<environment>` per published environment, then

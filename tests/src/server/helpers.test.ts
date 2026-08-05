@@ -836,6 +836,33 @@ describe('deriveBlueprint', () => {
 		}
 	})
 
+	it('round-trips a private application without inventing publication identity', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: 'terrain',
+				private: true,
+				app: ['core', 'browser'],
+			})
+			writePackageManifest(directory.path, {
+				name: 'terrain',
+				private: true,
+				license: 'MIT',
+			})
+
+			const derived = deriveBlueprint(directory.path)
+			const recompiled: unknown = parseJSON(packageManifest(derived))
+			if (!isRecord(recompiled)) throw new Error('expected a recompiled manifest object')
+
+			expect(recompiled.homepage).toBeUndefined()
+			expect(recompiled.bugs).toBeUndefined()
+			expect(recompiled.repository).toBeUndefined()
+			expect(recompiled.license).toBe('MIT')
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
 	it('derives a server-only src list from a server-only repo', async () => {
 		const directory = await buildTempDirectory()
 		try {
