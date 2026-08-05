@@ -13,6 +13,8 @@ import { fillTemplate } from '@orkestrel/template'
 import {
 	APP_MATRIX,
 	APP_BROWSER_DEV_DEPENDENCIES,
+	APP_CORE_DEV_DEPENDENCIES,
+	APP_SERVER_DEV_DEPENDENCIES,
 	BASE_DEV_DEPENDENCIES,
 	BIN_CONFIGS,
 	CHECKOUT_ACTION_SHA,
@@ -281,7 +283,9 @@ export function devDependenciesFor(spec: Blueprint): Readonly<Record<string, str
 	return {
 		...dependencies,
 		...(spec.src.includes('browser') ? SOURCE_BROWSER_DEV_DEPENDENCIES : {}),
+		...(spec.app.length > 0 ? APP_CORE_DEV_DEPENDENCIES : {}),
 		...(spec.app.includes('browser') ? APP_BROWSER_DEV_DEPENDENCIES : {}),
+		...(spec.app.includes('server') ? APP_SERVER_DEV_DEPENDENCIES : {}),
 		...(spec.showcase ? { 'vite-plugin-singlefile': '^2.3.3' } : {}),
 		...(spec.bin
 			? {

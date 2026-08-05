@@ -290,8 +290,8 @@ export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.fr
 	'@orkestrel/guide': '^0.0.8',
 	'@orkestrel/scaffold': SCAFFOLD_RANGE,
 	'@types/node': '^26.1.2',
-	oxfmt: '^0.61.0',
-	oxlint: '^1.76.0',
+	oxfmt: '^0.62.0',
+	oxlint: '^1.77.0',
 	typescript: '^6.0.3',
 	vite: '~8.2.0',
 	'vite-plugin-dts': '^5.0.3',
@@ -304,12 +304,24 @@ export const SOURCE_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> =
 	playwright: '^1.62.1',
 })
 
+/** Additional development dependency required by every private application environment. */
+export const APP_CORE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
+	'@orkestrel/contract': '^0.0.9',
+})
+
 /** Additional development dependencies required by a private Vue browser application. */
 export const APP_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	...SOURCE_BROWSER_DEV_DEPENDENCIES,
 	'@vitejs/plugin-vue': '^6.0.8',
 	vue: '^3.5.40',
 	'vue-tsc': '^3.3.7',
+})
+
+/** Additional development dependencies required by a private server application. */
+export const APP_SERVER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
+	'@orkestrel/middleware': '^0.0.9',
+	'@orkestrel/router': '^0.0.8',
+	'@orkestrel/server': '^0.0.10',
 })
 
 /** Immutable official actions/checkout v6.0.2 commit used by generated CI. */

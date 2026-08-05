@@ -567,6 +567,57 @@ describe('devDependenciesFor', () => {
 	})
 })
 
+describe('packageManifest app dependency seam', () => {
+	it.each(['core', 'browser', 'server'] satisfies readonly Environment[])(
+		'adds the application contract for app/%s',
+		(environment) => {
+			const manifest = readManifest(
+				packageManifest(blueprint('application', { src: [], app: [environment] })),
+			)
+			const dev = readRecord(manifest.devDependencies)
+
+			expect(dev['@orkestrel/contract']).toBe('^0.0.9')
+		},
+	)
+
+	it('adds the complete server application dependency set', () => {
+		const manifest = readManifest(
+			packageManifest(blueprint('application', { src: [], app: ['server'] })),
+		)
+		const dev = readRecord(manifest.devDependencies)
+
+		expect(
+			Object.entries(dev).filter(([name]) =>
+				[
+					'@orkestrel/contract',
+					'@orkestrel/middleware',
+					'@orkestrel/router',
+					'@orkestrel/server',
+				].includes(name),
+			),
+		).toEqual([
+			['@orkestrel/contract', '^0.0.9'],
+			['@orkestrel/middleware', '^0.0.9'],
+			['@orkestrel/router', '^0.0.8'],
+			['@orkestrel/server', '^0.0.10'],
+		])
+	})
+
+	it('keeps source-only manifests free of application dependencies', () => {
+		const manifest = readManifest(
+			packageManifest(blueprint('router', { src: ['core', 'server'], app: [] })),
+		)
+		const dev = readRecord(manifest.devDependencies)
+
+		expect([
+			dev['@orkestrel/contract'],
+			dev['@orkestrel/middleware'],
+			dev['@orkestrel/router'],
+			dev['@orkestrel/server'],
+		]).toEqual([undefined, undefined, undefined, undefined])
+	})
+})
+
 describe('packageManifest', () => {
 	it('builds a parseable package.json with sorted keywords and dependencies', () => {
 		const spec = blueprint('router', {
@@ -758,7 +809,7 @@ describe('packageManifest', () => {
 		)
 
 		expect(createHash('sha256').update(manifest).digest('hex')).toBe(
-			'd3dadcdf36c34c30f08bab56e536b0ba9a5e48162393f04991831723eabcb122',
+			'1b73688c7f3ebcd284ddbdc6d3cd7a070ef4a530e9a28c755eae607e6ed49833',
 		)
 	})
 

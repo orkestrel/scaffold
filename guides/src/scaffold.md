@@ -416,7 +416,9 @@ From [`constants.ts`](../../src/core/constants.ts).
 | `SCAFFOLD_RANGE`                  | const |
 | `BASE_DEV_DEPENDENCIES`           | const |
 | `SOURCE_BROWSER_DEV_DEPENDENCIES` | const |
+| `APP_CORE_DEV_DEPENDENCIES`       | const |
 | `APP_BROWSER_DEV_DEPENDENCIES`    | const |
+| `APP_SERVER_DEV_DEPENDENCIES`     | const |
 | `CHECKOUT_ACTION_SHA`             | const |
 | `SETUP_NODE_ACTION_SHA`           | const |
 | `COMPILER_ID`                     | const |
@@ -464,7 +466,9 @@ form. `HEX_PATTERN` requires whole lowercase byte pairs, and `SYNC_BASELINE_PATT
 `MINIMUM_NODE_VERSION` is `22.12.0`, `DEFAULT_ENGINES` derives from it, and `DEFAULT_VERSION` is
 `0.0.1`. `BASE_DEV_DEPENDENCIES` is the host-neutral tooling baseline every generated workspace
 gets; `SOURCE_BROWSER_DEV_DEPENDENCIES` adds the real browser providers a published browser environment
-needs, and `APP_BROWSER_DEV_DEPENDENCIES` extends that with the Vue toolchain a private browser
+needs; `APP_CORE_DEV_DEPENDENCIES` adds the shared contract every private application environment
+uses; `APP_BROWSER_DEV_DEPENDENCIES` adds the Vue toolchain a private browser application needs;
+and `APP_SERVER_DEV_DEPENDENCIES` adds the middleware, router, and server packages a private server
 application needs. Vite is minor-pinned at `~8.2.0`: the generated boundary consumes the reviewed
 8.2 `CSSOptions`, `preprocessCSS`, and `isCSSRequest` surface, while the selected
 `css.transformer` / `lightningcss` path is experimental and must not float into an unreviewed minor.
