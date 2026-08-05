@@ -1567,6 +1567,7 @@ ${EXPORT_KEYWORD} class ApplicationServerRunner implements ApplicationServerRunn
 	readonly #server: ApplicationServerInterface
 	readonly #handler: () => void
 	#controller: AbortController | undefined
+	#pending: Promise<void> = Promise.resolve()
 	#generation = 0
 	#started = false
 
@@ -1583,20 +1584,28 @@ ${EXPORT_KEYWORD} class ApplicationServerRunner implements ApplicationServerRunn
 		this.#controller = controller
 		process.once('SIGINT', this.#handler)
 		process.once('SIGTERM', this.#handler)
-		void this.#server
-			.start(controller.signal)
-			.then(this.#ready.bind(this, generation), this.#fail.bind(this, generation))
+		this.#pending = this.#pending.then(this.#begin.bind(this, generation, controller))
 	}
 
 	stop(): Promise<void> {
-		// The substrate's stop is inert unless the server reached listening, so a startup still
-		// in flight must be aborted before it or that listener is stranded; the generation bump
-		// is what discards the resulting abort rejection while leaving a genuine stop failure
-		// reportable.
+		// Aborting first lets an in-flight substrate startup settle before stop inspects its state;
+		// the shared queue then keeps a subsequent restart behind that complete shutdown.
 		this.#generation += 1
 		this.#controller?.abort()
 		this.#release()
-		return this.#server.stop()
+		const stopped = this.#pending.then(() => this.#server.stop())
+		this.#pending = stopped.catch(() => undefined)
+		return stopped
+	}
+
+	async #begin(generation: number, controller: AbortController): Promise<void> {
+		if (generation !== this.#generation || !this.#started) return
+		try {
+			await this.#server.start(controller.signal)
+			await this.#ready(generation)
+		} catch (error) {
+			this.#fail(generation, error)
+		}
 	}
 
 	#fail(generation: number, error: unknown): void {
@@ -1605,7 +1614,7 @@ ${EXPORT_KEYWORD} class ApplicationServerRunner implements ApplicationServerRunn
 		reportApplicationServerError(error)
 	}
 
-	#ready(generation: number): void {
+	async #ready(generation: number): Promise<void> {
 		if (generation !== this.#generation || !this.#started) return
 		const url = this.#server.url
 		if (url === undefined) {
@@ -1618,7 +1627,11 @@ ${EXPORT_KEYWORD} class ApplicationServerRunner implements ApplicationServerRunn
 			)
 			// The server already bound, so failing over it must also release it; a stop
 			// failure reaches the same report rather than stranding a silent listener.
-			void this.#server.stop().catch(this.#fail.bind(this, generation))
+			try {
+				await this.#server.stop()
+			} catch (error) {
+				this.#fail(generation, error)
+			}
 			return
 		}
 		process.stderr.write(\`[READY] \${APP_NAME} \${url}\\n\`)
@@ -2280,6 +2293,7 @@ import {
 	stopNodeServer,
 	waitForApplicationProcess,
 	waitForApplicationRelease,
+	waitForLoopbackResponse,
 } from '../../setupServer.js'
 
 beforeAll(() => buildApplicationServer(), 60_000)
@@ -2380,6 +2394,28 @@ describe('ApplicationServer', () => {
 })
 
 describe('ApplicationServerRunner', () => {
+	it('serves a real request after a restart queued during shutdown', async () => {
+		const port = await reserveLoopbackPort()
+		const code = process.exitCode
+		const runner = new ApplicationServerRunner({ server: { host: '127.0.0.1', port } })
+		try {
+			process.exitCode = undefined
+			runner.start()
+			const stopped = runner.stop()
+			runner.start()
+			await stopped
+
+			await waitForLoopbackResponse(port)
+			const response = await fetch(\`http://127.0.0.1:\${port}\${APP_HEALTH_PATH}\`)
+			expect(response.status).toBe(200)
+			expect(await response.json()).toEqual({ name: APP_NAME, status: 'ok' })
+			expect(process.exitCode).toBeUndefined()
+		} finally {
+			process.exitCode = code
+			await runner.stop()
+		}
+	})
+
 	it('cancels a startup still in flight so an immediate stop leaves the port free', async () => {
 		const port = await reserveLoopbackPort()
 		const runner = new ApplicationServerRunner({ server: { host: '127.0.0.1', port } })

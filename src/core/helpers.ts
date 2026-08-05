@@ -268,7 +268,7 @@ export function serializeTypeScriptString(value: string): string {
  * hasApplicationBoundary(blueprint('application', { app: ['core', 'browser', 'server'] }))
  * ```
  */
-export function hasApplicationBoundary(spec: Blueprint): boolean {
+export function hasApplicationBoundary(spec: Pick<Blueprint, 'app'>): boolean {
 	return spec.app.includes('core') && spec.app.includes('browser') && spec.app.includes('server')
 }
 
@@ -283,7 +283,7 @@ export function hasApplicationBoundary(spec: Blueprint): boolean {
  * hasApplicationShowcase(blueprint('application', { app: ['browser'], showcase: true }))
  * ```
  */
-export function hasApplicationShowcase(spec: Blueprint): boolean {
+export function hasApplicationShowcase(spec: Pick<Blueprint, 'app' | 'showcase'>): boolean {
 	return spec.showcase && spec.app.includes('browser')
 }
 

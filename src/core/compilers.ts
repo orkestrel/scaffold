@@ -3959,7 +3959,7 @@ export default defineConfig(appShowcase())
  * sourceArtifacts(blueprint('router'), 'Router').length // 4
  * ```
  */
-export function sourceArtifacts(spec: Blueprint, pascal: string): readonly Artifact[] {
+export function sourceArtifacts(spec: Pick<Blueprint, 'src'>, pascal: string): readonly Artifact[] {
 	const inlineTypeImport = `import type { ${pascal}Interface, ${pascal}Options } from './types.js'`
 	const typeImport = fitsPrintWidth(inlineTypeImport)
 		? inlineTypeImport
@@ -4000,7 +4000,9 @@ export function sourceArtifacts(spec: Blueprint, pascal: string): readonly Artif
  * blueprint that declares the physical showcase wrapper alongside `app/browser`.
  * @returns Complete, runnable app/core, app/browser, and app/server artifacts.
  */
-export function applicationArtifacts(spec: Blueprint): readonly Artifact[] {
+export function applicationArtifacts(
+	spec: Pick<Blueprint, 'name' | 'app' | 'showcase'>,
+): readonly Artifact[] {
 	const artifacts: Artifact[] = []
 	const hasCore = spec.app.includes('core')
 	const hasBrowser = spec.app.includes('browser')

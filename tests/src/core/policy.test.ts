@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { parseJSON } from '@orkestrel/contract'
 import ts from 'typescript'
 import { describe, expect, it } from 'vitest'
-import { blueprint, blueprintToPlan } from '@src/core'
+import { applicationArtifacts, blueprint, blueprintToPlan, sourceArtifacts } from '@src/core'
 import { isBrowserVuePath, readRecord } from '../../setup.js'
 import {
 	inspectCodingLaw,
@@ -294,6 +294,8 @@ describe('generated workspace coding law', () => {
 	// consumer's own `prepublishOnly` — whose `npm test` includes `test:policy` — from
 	// `tests/integration/gates.test.ts`.
 	it('inspects every distinct non-Vue variant emitted by all blueprint shapes', () => {
+		type SourceEmissionFacts = Parameters<typeof sourceArtifacts>[0] &
+			Parameters<typeof applicationArtifacts>[0]
 		const selections: readonly (readonly Environment[])[] = [
 			[],
 			['core'],
@@ -303,16 +305,25 @@ describe('generated workspace coding law', () => {
 			['core', 'server'],
 			['core', 'browser', 'server'],
 		]
-		const specs: Blueprint[] = []
+		// The name changes literal values rather than structure; src, app, and showcase are every fact
+		// whose closed compiler projection can conditionally change the emitted source inventory.
+		const projections: SourceEmissionFacts[] = []
 		for (const src of selections) {
 			for (const app of selections) {
 				if (src.length === 0 && app.length === 0) continue
-				specs.push(blueprint('corpus', { src, app }))
-				if (app.includes('browser')) specs.push(blueprint('corpus', { src, app, showcase: true }))
+				projections.push({ name: 'corpus', src, app, showcase: false })
+				if (app.includes('browser')) {
+					projections.push({ name: 'corpus', src, app, showcase: true })
+				}
 			}
 		}
 		const variants = new Map<string, { readonly path: string; readonly content: string }>()
-		for (const spec of specs) {
+		for (const projection of projections) {
+			const spec: Blueprint = blueprint(projection.name, {
+				src: projection.src,
+				app: projection.app,
+				showcase: projection.showcase,
+			})
 			for (const artifact of blueprintToPlan(spec, ['source']).artifacts) {
 				if (artifact.origin === 'host' || !isCodingSourcePath(artifact.path)) continue
 				const key = `${artifact.path}\u0000${artifact.content}`
@@ -326,6 +337,7 @@ describe('generated workspace coding law', () => {
 			else violations.push(...inspectCodingSource(source.path, source.content))
 		}
 
+		expect(projections).toHaveLength(69)
 		expect(variants.size).toBe(62)
 		expect(delegated).toEqual(['app/browser/ApplicationView.vue'])
 		expect(violations).toEqual([])
