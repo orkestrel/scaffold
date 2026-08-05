@@ -319,6 +319,7 @@ export const APP_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Ob
 
 /** Additional development dependencies required by a private server application. */
 export const APP_SERVER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
+	'@orkestrel/emitter': '^0.0.5',
 	'@orkestrel/middleware': '^0.0.9',
 	'@orkestrel/router': '^0.0.8',
 	'@orkestrel/server': '^0.0.10',

@@ -72,7 +72,12 @@ options plus the `APP_HOST`, `APP_PORT`, and `APP_START_TIMEOUT` environment bou
 composes the installed router, server, and boundary/security/deadline middleware substrates around
 a fresh `GET /health` dispatcher from `createApplicationDispatcher`, supports repeated start/stop
 cycles and terminal destroy of both the server and its owned dispatcher, and writes exactly one
-`[READY] <name> <url>` diagnostic after process-owned readiness. Its exported
+`[READY] <name> <url>` diagnostic after process-owned readiness. The process runner owns an emitter
+whose `ApplicationServerRunnerEventMap` publishes `ready(url)` and `fail(error)`; initial
+`ApplicationServerRunnerOptions.on` hooks run before the runner's own announcement and reporting
+listeners; a synchronous fail hook sees an otherwise-unset `process.exitCode` as `undefined` before
+the default reporter sets it to `1`. Concurrent stops join one substrate shutdown. In-process tests park on those events,
+while child-process tests still observe the readiness line across the process boundary. Its exported
 `reportApplicationServerError` handler writes only a stable configuration, lifecycle, or unknown
 failure code; process-owned failures never serialize a rejected value, nested cause, stack,
 secret, or other error context. `ApplicationState` extends middleware's `IdentifierState` and adds
@@ -493,8 +498,8 @@ form. `HEX_PATTERN` requires whole lowercase byte pairs, and `SYNC_BASELINE_PATT
 gets; `SOURCE_BROWSER_DEV_DEPENDENCIES` adds the real browser providers a published browser environment
 needs; `APP_DEV_DEPENDENCIES` is the baseline every private application environment gets;
 `APP_BROWSER_DEV_DEPENDENCIES` adds the Vue toolchain a private browser application needs;
-and `APP_SERVER_DEV_DEPENDENCIES` adds the middleware, router, and server packages a private server
-application needs. Vite is minor-pinned at `~8.2.0`: the generated boundary consumes the reviewed
+and `APP_SERVER_DEV_DEPENDENCIES` adds the emitter, middleware, router, and server packages a private
+server application needs. Vite is minor-pinned at `~8.2.0`: the generated boundary consumes the reviewed
 8.2 `CSSOptions`, `preprocessCSS`, and `isCSSRequest` surface, while the selected
 `css.transformer` / `lightningcss` path is experimental and must not float into an unreviewed minor.
 `SCAFFOLD_RANGE` is the range generated workspaces pin this package at.

@@ -499,6 +499,18 @@ export function blueprintToMembers(spec: Blueprint): readonly Member[] {
 				'The application server process lifecycle contract.',
 				'server',
 			),
+			member(
+				'ApplicationServerRunnerEventMap',
+				'alias',
+				'Observable application server runner outcomes.',
+				'server',
+			),
+			member(
+				'ApplicationServerRunnerOptions',
+				'type',
+				'Options for observing an application server runner.',
+				'server',
+			),
 			member('DEFAULT_APP_HOST', 'constant', 'The loopback host default.', 'server'),
 			member('DEFAULT_APP_PORT', 'constant', 'The application port default.', 'server'),
 			member(

@@ -951,7 +951,8 @@ declare module '*.vue' {
 				description: 'The health record, declared here only while the server alone reads it.',
 			}),
 		]),
-		content: `import type { IdentifierState } from '@orkestrel/middleware'
+		content: `import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkestrel/emitter'
+import type { IdentifierState } from '@orkestrel/middleware'
 import type { ConnectionInfo, ServerStatus } from '@orkestrel/server'
 
 {{record}}/** Per-request application state derived from connection facts. */
@@ -988,10 +989,30 @@ ${EXPORT_KEYWORD} interface ApplicationServerInterface {
 	destroy(): Promise<void>
 }
 
+/** Observable process-lifecycle outcomes for an application server runner. */
+${EXPORT_KEYWORD} type ApplicationServerRunnerEventMap = {
+	readonly ready: readonly [url: string]
+	readonly fail: readonly [error: unknown]
+}
+
 /** The process lifecycle owner for an application server. */
 ${EXPORT_KEYWORD} interface ApplicationServerRunnerInterface {
+	readonly emitter: EmitterInterface<ApplicationServerRunnerEventMap>
 	start(): void
 	stop(): Promise<void>
+}
+
+/**
+ * Options for observing an application server runner.
+ *
+ * @remarks
+ * Initial \`on\` hooks run before the runner's own readiness and failure effects. When no earlier
+ * failure set an exit code, a synchronous fail hook therefore observes \`process.exitCode\` as
+ * \`undefined\` before the default reporter sets it to \`1\`.
+ */
+${EXPORT_KEYWORD} interface ApplicationServerRunnerOptions {
+	readonly on?: EmitterHooks<ApplicationServerRunnerEventMap>
+	readonly error?: EmitterErrorHandler
 }
 `,
 	}),
@@ -1366,8 +1387,8 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} reportApplicationServerError(error: unknow
 	} catch {
 		message = '[ERROR] Application server failed'
 	}
-	process.stderr.write(\`\${message}\\n\`)
 	process.exitCode = 1
+	process.stderr.write(\`\${message}\\n\`)
 }
 `,
 	}),
@@ -1535,7 +1556,7 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} createApplicationServer(
 ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} startApplicationServer(
 	options: ApplicationServerOptions = {},
 ): ApplicationServerRunnerInterface {
-	const runner = new ApplicationServerRunner(options)
+	const runner = new ApplicationServerRunner(new ApplicationServer(options))
 	runner.start()
 	return runner
 }
@@ -1552,57 +1573,72 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} startApplicationServer(
 				description: 'The selected layer import for APP_NAME.',
 			}),
 		]),
-		content: `import type {
+		content: `import type { EmitterInterface } from '@orkestrel/emitter'
+import type {
 	ApplicationServerInterface,
-	ApplicationServerOptions,
+	ApplicationServerRunnerEventMap,
 	ApplicationServerRunnerInterface,
+	ApplicationServerRunnerOptions,
 } from './types.js'
+import { Emitter } from '@orkestrel/emitter'
 {{nameImport}}
-import { ApplicationServer } from './ApplicationServer.js'
 import { ApplicationServerError } from './errors.js'
 import { reportApplicationServerError } from './handlers.js'
 
 /** Own process signals and startup failure handling for one application server. */
 ${EXPORT_KEYWORD} class ApplicationServerRunner implements ApplicationServerRunnerInterface {
+	readonly #emitter: Emitter<ApplicationServerRunnerEventMap>
 	readonly #server: ApplicationServerInterface
 	readonly #handler: () => void
 	#controller: AbortController | undefined
 	#queue: Promise<void> = Promise.resolve()
+	#stopping: Promise<void> | undefined
+	#announcement: number | undefined
 	#generation = 0
 	#started = false
 
-	constructor(options: ApplicationServerOptions = {}) {
-		this.#server = new ApplicationServer(options)
+	constructor(server: ApplicationServerInterface, options: ApplicationServerRunnerOptions = {}) {
+		this.#emitter = new Emitter({
+			...(options.on === undefined ? {} : { on: options.on }),
+			...(options.error === undefined ? {} : { error: options.error }),
+		})
+		this.#server = server
 		this.#handler = this.#shutdown.bind(this)
+		this.#emitter.on('ready', this.#announce.bind(this))
+		this.#emitter.on('fail', reportApplicationServerError)
+	}
+
+	get emitter(): EmitterInterface<ApplicationServerRunnerEventMap> {
+		return this.#emitter
 	}
 
 	start(): void {
 		if (this.#started) return
 		this.#started = true
+		this.#stopping = undefined
 		const generation = ++this.#generation
 		const controller = new AbortController()
 		this.#controller = controller
 		process.once('SIGINT', this.#handler)
 		process.once('SIGTERM', this.#handler)
-		// #begin reports its own failures through #fail, so the only rejection reaching the queue
-		// is a failing reporter; absorbing it keeps a later stop from skipping the server.
-		this.#queue = this.#queue
-			.then(this.#begin.bind(this, generation, controller))
-			.catch(() => undefined)
+		this.#queue = this.#queue.then(this.#begin.bind(this, generation, controller))
 	}
 
 	stop(): Promise<void> {
+		if (this.#stopping !== undefined) return this.#stopping
 		// Aborting first lets an in-flight substrate startup settle before stop inspects its state,
 		// and the generation bump is what discards that abort's rejection while leaving a genuine
-		// stop failure reportable. The shared queue then keeps a subsequent restart behind this
-		// complete shutdown; the caller still receives the rejecting promise, so the trailing catch
+		// stop failure reportable. The shared queue then keeps a subsequent restart behind this complete
+		// shutdown; concurrent callers join one substrate stop through #stopping, and the trailing catch
 		// discards nothing — it only keeps one failed stop from wedging every later one.
-		this.#generation += 1
+		++this.#generation
 		this.#controller?.abort()
 		this.#release()
-		const stopped = this.#queue.then(() => this.#server.stop())
-		this.#queue = stopped.catch(() => undefined)
-		return stopped
+		const stopping = this.#queue.then(() => this.#server.stop())
+		this.#stopping = stopping
+		this.#queue = stopping.catch(() => undefined)
+		void stopping.then(this.#finishStop.bind(this, stopping), this.#rejectStop.bind(this, stopping))
+		return stopping
 	}
 
 	async #begin(generation: number, controller: AbortController): Promise<void> {
@@ -1618,36 +1654,54 @@ ${EXPORT_KEYWORD} class ApplicationServerRunner implements ApplicationServerRunn
 	#fail(generation: number, error: unknown): void {
 		if (generation !== this.#generation) return
 		this.#release()
-		reportApplicationServerError(error)
+		this.#emitter.emit('fail', error)
+	}
+
+	#finishStop(stopping: Promise<void>): void {
+		if (this.#stopping === stopping) this.#stopping = undefined
+	}
+
+	#rejectStop(stopping: Promise<void>, error: unknown): void {
+		this.#finishStop(stopping)
+		this.#emitter.emit('fail', error)
 	}
 
 	async #ready(generation: number): Promise<void> {
 		if (generation !== this.#generation || !this.#started) return
 		const url = this.#server.url
 		if (url === undefined) {
-			this.#fail(
-				generation,
-				new ApplicationServerError(
-					'LIFECYCLE',
-					'Application server did not expose a URL after successful startup',
-				),
+			const failure = new ApplicationServerError(
+				'LIFECYCLE',
+				'Application server did not expose a URL after successful startup',
 			)
-			// The server already bound, so failing over it must also release it; a stop
-			// failure reaches the same report rather than stranding a silent listener.
 			try {
 				await this.#server.stop()
 			} catch (error) {
 				this.#fail(generation, error)
+				return
 			}
+			this.#fail(generation, failure)
 			return
 		}
-		process.stderr.write(\`[READY] \${APP_NAME} \${url}\\n\`)
+		this.#announcement = generation
+		this.#emitter.emit('ready', url)
+		this.#announcement = undefined
+	}
+
+	#announce(url: string): void {
+		if (this.#announcement !== this.#generation) return
+		try {
+			process.stderr.write(\`[READY] \${APP_NAME} \${url}\\n\`)
+		} catch (error) {
+			const stopped = this.stop()
+			const generation = this.#generation
+			void stopped.then(this.#fail.bind(this, generation, error), () => undefined)
+		}
 	}
 
 	#shutdown(): void {
 		const stopped = this.stop()
-		const generation = this.#generation
-		void stopped.catch(this.#fail.bind(this, generation))
+		void stopped.catch(() => undefined)
 	}
 
 	#release(): void {
@@ -1693,10 +1747,19 @@ try {
 	setup: Object.freeze({
 		id: 'setup',
 		name: 'setup',
-		summary: 'The generated-minimal `tests/setup.ts` recorder helper — no placeholders.',
+		summary: 'The generated-minimal `tests/setup.ts` shared test helpers.',
 		category: 'tests',
-		placeholders: Object.freeze([]),
-		content: `// ── Call recorder (a real callback, not a mock) ──────────────────────────────
+		placeholders: Object.freeze([
+			Object.freeze({
+				name: 'eventImport',
+				description: 'The optional emitter types used by application server tests.',
+			}),
+			Object.freeze({
+				name: 'eventHelper',
+				description: 'The optional typed event waiter used by application server tests.',
+			}),
+		]),
+		content: `{{eventImport}}// ── Call recorder (a real callback, not a mock) ──────────────────────────────
 //
 // The test rules require a recording callback when a test only needs to count calls or inspect arguments:
 // recorder — a real listener that records every invocation — rather than a test-
@@ -1736,7 +1799,7 @@ ${EXPORT_KEYWORD} function createRecorder<TArgs extends readonly unknown[]>(): T
 		},
 	}
 }
-
+{{eventHelper}}
 /** Whether a repository-relative Vue SFC belongs to the private browser application. */
 ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} isBrowserVuePath(path: string): boolean {
 	const normalized = path.replaceAll('\\\\', '/')
@@ -1866,23 +1929,6 @@ ${EXPORT_KEYWORD} async ${FUNCTION_KEYWORD} reserveLoopbackPort(): Promise<numbe
 	return address.port
 }
 
-/** Wait until one in-process application server responds on loopback. */
-${EXPORT_KEYWORD} async ${FUNCTION_KEYWORD} waitForLoopbackResponse(port: number): Promise<Response> {
-	const deadline = Date.now() + 10_000
-	let failure: unknown
-	while (Date.now() < deadline) {
-		try {
-			return await fetch(\`http://127.0.0.1:\${port}\`, {
-				signal: AbortSignal.timeout(250),
-			})
-		} catch (error) {
-			failure = error
-			await new Promise<void>((resolvePromise) => setTimeout(resolvePromise, 25))
-		}
-	}
-	throw new Error(\`application server did not become ready: \${String(failure)}\`)
-}
-
 /** Start the built application entry as a real child process. */
 ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} startApplicationProcess(
 	port: number,
@@ -1917,16 +1963,6 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} startApplicationProcess(
 			return output.join('')
 		},
 	}
-}
-
-/** Wait until running application runners hold only the recorded shutdown listeners. */
-${EXPORT_KEYWORD} async ${FUNCTION_KEYWORD} waitForApplicationRelease(count: number): Promise<void> {
-	const deadline = Date.now() + 10_000
-	while (Date.now() < deadline) {
-		if (process.listenerCount('SIGINT') + process.listenerCount('SIGTERM') === count) return
-		await new Promise<void>((resolvePromise) => setTimeout(resolvePromise, 25))
-	}
-	throw new Error('application runner did not release its process shutdown listeners')
 }
 
 /** Wait for a real child process and all of its stdio to close. */
@@ -2299,9 +2335,8 @@ import {
 	startLoopbackServer,
 	stopNodeServer,
 	waitForApplicationProcess,
-	waitForApplicationRelease,
-	waitForLoopbackResponse,
 } from '../../setupServer.js'
+import { createRecorder, waitForEvent } from '../../setup.js'
 
 beforeAll(() => buildApplicationServer(), 60_000)
 
@@ -2404,18 +2439,25 @@ describe('ApplicationServerRunner', () => {
 	it('serves a real request after a restart queued during shutdown', async () => {
 		const port = await reserveLoopbackPort()
 		const code = process.exitCode
-		const runner = new ApplicationServerRunner({ server: { host: '127.0.0.1', port } })
+		const server = createApplicationServer({ server: { host: '127.0.0.1', port } })
+		const runner = new ApplicationServerRunner(server)
 		try {
 			process.exitCode = undefined
+			const first = waitForEvent(runner.emitter, 'ready')
 			runner.start()
+			await first
 			const stopped = runner.stop()
+			const second = waitForEvent(runner.emitter, 'ready')
 			runner.start()
 			await stopped
 
-			await waitForLoopbackResponse(port)
-			const response = await fetch(\`http://127.0.0.1:\${port}\${APP_HEALTH_PATH}\`)
+			const [url] = await second
+			const response = await fetch(\`\${url}\${APP_HEALTH_PATH}\`)
 			expect(response.status).toBe(200)
 			expect(await response.json()).toEqual({ name: APP_NAME, status: 'ok' })
+			const stopping = runner.stop()
+			expect(runner.stop()).toBe(stopping)
+			await stopping
 			expect(process.exitCode).toBeUndefined()
 		} finally {
 			process.exitCode = code
@@ -2425,10 +2467,17 @@ describe('ApplicationServerRunner', () => {
 
 	it('cancels a startup still in flight so an immediate stop leaves the port free', async () => {
 		const port = await reserveLoopbackPort()
-		const runner = new ApplicationServerRunner({ server: { host: '127.0.0.1', port } })
+		const ready = createRecorder<[url: string]>()
+		const failed = createRecorder<[error: unknown]>()
+		const server = createApplicationServer({ server: { host: '127.0.0.1', port } })
+		const runner = new ApplicationServerRunner(server, {
+			on: { ready: ready.handler, fail: failed.handler },
+		})
 		try {
 			runner.start()
 			await runner.stop()
+			expect(ready.count).toBe(0)
+			expect(failed.count).toBe(0)
 
 			const released = await startLoopbackServer(port)
 			try {
@@ -2492,7 +2541,7 @@ describe('ApplicationServerRunner', () => {
 		}
 	})
 
-	it('releases both process shutdown listeners when startup fails', async () => {
+	it('isolates a throwing fail listener, releases ownership, and starts again', async () => {
 		const port = await reserveLoopbackPort()
 		const owner = await startLoopbackServer(port)
 		const interrupts = process.listenerCount('SIGINT')
@@ -2500,16 +2549,37 @@ describe('ApplicationServerRunner', () => {
 		// The reporter owns the process exit code, so this in-process failure records the
 		// code it set and then restores whatever the surrounding run had.
 		const code = process.exitCode
-		const runner = new ApplicationServerRunner({ server: { host: '127.0.0.1', port } })
+		const errors = createRecorder<[error: unknown, event: string]>()
+		const server = createApplicationServer({ server: { host: '127.0.0.1', port } })
+		const runner = new ApplicationServerRunner(server, {
+			on: {
+				fail: () => {
+					throw new Error('listener boom')
+				},
+			},
+			error: errors.handler,
+		})
 		try {
+			process.exitCode = undefined
+			const failed = waitForEvent(runner.emitter, 'fail')
 			runner.start()
 			expect(process.listenerCount('SIGINT')).toBe(interrupts + 1)
 			expect(process.listenerCount('SIGTERM')).toBe(terminations + 1)
 
-			await waitForApplicationRelease(interrupts + terminations)
+			const [failure] = await failed
+			expect(failure).toEqual(expect.objectContaining({ code: 'LIFECYCLE' }))
+			expect(errors.count).toBe(1)
+			expect(errors.calls[0]?.[1]).toBe('fail')
 			expect(process.listenerCount('SIGINT')).toBe(interrupts)
 			expect(process.listenerCount('SIGTERM')).toBe(terminations)
 			expect(process.exitCode).toBe(1)
+
+			await stopNodeServer(owner)
+			const ready = waitForEvent(runner.emitter, 'ready')
+			runner.start()
+			const [url] = await ready
+			const response = await fetch(\`\${url}\${APP_HEALTH_PATH}\`)
+			expect(response.status).toBe(200)
 		} finally {
 			process.exitCode = code
 			await runner.stop()

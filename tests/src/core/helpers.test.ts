@@ -184,6 +184,8 @@ describe('blueprintToMembers', () => {
 		expect(categories.get('parseApplicationHost')).toBe('parser')
 		expect(categories.get('ApplicationRecord')).toBe('type')
 		expect(categories.get('ApplicationState')).toBe('type')
+		expect(categories.get('ApplicationServerRunnerEventMap')).toBe('alias')
+		expect(categories.get('ApplicationServerRunnerOptions')).toBe('type')
 		expect(categories.get('createApplicationDispatcher')).toBe('factory')
 		expect(categories.get('handleApplicationHealth')).toBe('handler')
 		expect(categories.has('handleApplicationRequest')).toBe(false)
@@ -1651,10 +1653,10 @@ describe('pinPlan', () => {
 			{
 			  "browser-only": "bb55b56f",
 			  "core+browser": "89bd1d7a",
-			  "core+browser+server": "ee073efd",
-			  "core+server": "00b80aaf",
+			  "core+browser+server": "111025d7",
+			  "core+server": "acedec23",
 			  "core-only": "9ebe0fcf",
-			  "server-only": "6d2b6756",
+			  "server-only": "9b562bc2",
 			}
 		`)
 	})
@@ -1684,9 +1686,9 @@ describe('pinPlan', () => {
 			{
 			  "app-browser": "841e0ec6",
 			  "app-core": "ebf81ea1",
-			  "app-full": "41ea61f0",
-			  "app-server": "dfc3e556",
-			  "mixed-full": "b10a0644",
+			  "app-full": "457209c8",
+			  "app-server": "26ac1836",
+			  "mixed-full": "f0065602",
 			}
 		`)
 	})

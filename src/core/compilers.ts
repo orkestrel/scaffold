@@ -4437,7 +4437,22 @@ export function testArtifacts(spec: Blueprint, pascal: string): readonly Artifac
 	})`
 		: ''
 	const artifacts: Artifact[] = [
-		fillArtifact('tests/setup.ts', 'tests', 'setup', {}),
+		fillArtifact('tests/setup.ts', 'tests', 'setup', {
+			eventImport: spec.app.includes('server')
+				? "import type { EmitterInterface, EventMap } from '@orkestrel/emitter'\n\n"
+				: '',
+			eventHelper: spec.app.includes('server')
+				? `
+/** Wait for one typed event occurrence and return its argument tuple. */
+${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} waitForEvent<TMap extends EventMap, K extends keyof TMap>(
+	emitter: EmitterInterface<TMap>,
+	event: K,
+): Promise<TMap[K]> {
+	return new Promise((resolvePromise) => emitter.once(event, (...args) => resolvePromise(args)))
+}
+`
+				: '',
+		}),
 		fillArtifact('tests/policy.test.ts', 'tests', 'policyTest', {
 			browserPolicySpecifier: '',
 			browserPolicyImport,
@@ -4912,9 +4927,16 @@ await server.destroy()
 \`\`\`
 
 \`\`\`ts
-import { ApplicationServerRunner } from '@app/server'
+import type { ApplicationServerRunnerEventMap, ApplicationServerRunnerOptions } from '@app/server'
+import { ApplicationServerRunner, createApplicationServer } from '@app/server'
 
-${CONST_KEYWORD} runner = new ApplicationServerRunner({ server: { port: 0 } })
+${CONST_KEYWORD} event: keyof ApplicationServerRunnerEventMap = 'ready'
+${CONST_KEYWORD} observe: ApplicationServerRunnerOptions = { on: { fail: () => undefined } }
+${CONST_KEYWORD} runner = new ApplicationServerRunner(
+	createApplicationServer({ server: { port: 0 } }),
+	observe,
+)
+runner.emitter.once(event, (url) => console.log(url))
 runner.start() // process owns shutdown signals
 await runner.stop()
 \`\`\`
@@ -4963,12 +4985,12 @@ export function guideMethods(spec: Blueprint): string {
 			[
 				'`start`',
 				'`void`',
-				'Register one generation-owned set of SIGINT/SIGTERM cleanup listeners, queue the substrate start behind any shutdown already in flight, write one `[READY] <name> <url>` line after readiness, and translate asynchronous startup failures into a non-zero process exit code.',
+				'Register one generation-owned set of SIGINT/SIGTERM cleanup listeners, queue the substrate start behind any shutdown already in flight, emit `ready` after binding, and emit `fail` for a current lifecycle failure.',
 			],
 			[
 				'`stop`',
 				'`Promise<void>`',
-				'Abort a startup still in flight and release both process listeners, then wait for that startup to settle before stopping the server; repeated calls are safe and lifecycle failures reject.',
+				'Abort a startup still in flight and release both process listeners, then wait for that startup to settle before stopping the server; concurrent calls join one substrate stop, and lifecycle failures emit `fail` and reject.',
 			],
 		],
 	)
@@ -4984,9 +5006,10 @@ ${methods}
 
 ${runnerMethods}
 
-The constructor validates grouped direct options plus \`APP_HOST\`, \`APP_PORT\`, and
-\`APP_START_TIMEOUT\` before allocating
-a listener. Direct options must be an exact plain own-key data record containing only a
+The runner exposes its readonly \`emitter\`. \`ApplicationServerRunnerEventMap\` emits \`ready\` with the bound URL and \`fail\` with an \`unknown\` error. \`ApplicationServerRunnerOptions\` accepts initial \`on\` hooks and an emitter \`error\` handler; initial hooks run before the runner's own announcement and reporting listeners, so when no earlier failure set an exit code, a synchronous \`fail\` hook sees \`process.exitCode === undefined\` before the default reporter sets it to \`1\`. The default listeners preserve one exact \`[READY] <name> <url>\` stderr line and the stable redacted failure diagnostics. In-process consumers and tests park on runner events; a child process still observes the \`[READY]\` line because that byte stream is its process-boundary channel.
+
+The application server constructor validates grouped direct options plus \`APP_HOST\`, \`APP_PORT\`, and
+\`APP_START_TIMEOUT\` before binding. Direct options must be an exact plain own-key data record containing only a
 \`server\` record with \`host\`, \`port\`, and/or \`timeout\`; inherited properties, accessors, symbols, instances, proxies that
 throw during reflection, and unknown keys fail closed. Invalid values throw
 \`ApplicationServerError\` code \`CONFIG\`; the default host is loopback and port \`0\` is

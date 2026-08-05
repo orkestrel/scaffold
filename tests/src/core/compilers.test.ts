@@ -296,6 +296,11 @@ describe('application layer compilation', () => {
 		const serverFactories = plan.artifacts.find(
 			(artifact) => artifact.path === 'app/server/factories.ts',
 		)
+		const setup = plan.artifacts.find((artifact) => artifact.path === 'tests/setup.ts')
+		const setupServer = plan.artifacts.find((artifact) => artifact.path === 'tests/setupServer.ts')
+		const serverTest = plan.artifacts.find(
+			(artifact) => artifact.path === 'tests/app/server/ApplicationServer.test.ts',
+		)
 
 		expect(tsconfig?.content).toContain('"@app/core"')
 		expect(tsconfig?.content).toContain('"@app/browser"')
@@ -313,6 +318,17 @@ describe('application layer compilation', () => {
 		expect(serverTypes?.content).not.toContain('readonly listening: boolean')
 		expect(serverTypes?.content).toContain('readonly url: string | undefined')
 		expect(serverTypes?.content).toContain('destroy(): Promise<void>')
+		expect(serverTypes?.content).toContain('type ApplicationServerRunnerEventMap = {')
+		expect(serverTypes?.content).toContain('readonly ready: readonly [url: string]')
+		expect(serverTypes?.content).toContain('readonly fail: readonly [error: unknown]')
+		expect(serverTypes?.content).toContain(
+			'readonly emitter: EmitterInterface<ApplicationServerRunnerEventMap>',
+		)
+		expect(serverTypes?.content).toContain('interface ApplicationServerRunnerOptions {')
+		expect(serverTypes?.content).toContain(
+			'readonly on?: EmitterHooks<ApplicationServerRunnerEventMap>',
+		)
+		expect(serverTypes?.content).toContain('readonly error?: EmitterErrorHandler')
 		expect(routes?.content).toContain(
 			'function createApplicationDispatcher(): DispatcherInterface<ApplicationState>',
 		)
@@ -330,10 +346,60 @@ describe('application layer compilation', () => {
 			'function startApplicationServer(\n\toptions: ApplicationServerOptions = {},\n): ApplicationServerRunnerInterface',
 		)
 		expect(serverFactories?.content).toContain('return runner')
+		expect(serverFactories?.content).toContain(
+			'new ApplicationServerRunner(new ApplicationServer(options))',
+		)
 		expect(serverRunner?.content).not.toContain('function startApplicationServer')
+		expect(serverRunner?.content).toContain("import { Emitter } from '@orkestrel/emitter'")
+		expect(serverRunner?.content).toContain(
+			'readonly #emitter: Emitter<ApplicationServerRunnerEventMap>',
+		)
+		expect(serverRunner?.content).toContain(
+			'constructor(server: ApplicationServerInterface, options: ApplicationServerRunnerOptions = {})',
+		)
+		expect(serverRunner?.content).toContain(
+			'get emitter(): EmitterInterface<ApplicationServerRunnerEventMap>',
+		)
+		expect(serverRunner?.content).toContain(
+			'...(options.on === undefined ? {} : { on: options.on })',
+		)
+		expect(serverRunner?.content).toContain(
+			'...(options.error === undefined ? {} : { error: options.error })',
+		)
+		expect(serverRunner?.content).toContain("this.#emitter.on('ready', this.#announce.bind(this))")
+		expect(serverRunner?.content).toContain(
+			"this.#emitter.on('fail', reportApplicationServerError)",
+		)
+		expect(serverRunner?.content).toContain("this.#emitter.emit('ready', url)")
+		expect(serverRunner?.content).toContain("this.#emitter.emit('fail', error)")
+		expect(serverRunner?.content).toContain('#announcement: number | undefined')
+		expect(serverRunner?.content).toContain('if (this.#announcement !== this.#generation) return')
+		expect(serverRunner?.content).toContain(
+			"#rejectStop(stopping: Promise<void>, error: unknown): void {\n\t\tthis.#finishStop(stopping)\n\t\tthis.#emitter.emit('fail', error)",
+		)
+		expect(serverRunner?.content).not.toContain('this.#fail(generation, error)\n\t}')
+		expect(serverRunner?.content).toContain('#stopping: Promise<void> | undefined')
+		expect(serverRunner?.content).toContain(
+			'if (this.#stopping !== undefined) return this.#stopping',
+		)
+		expect(serverRunner?.content).not.toContain(
+			'.then(this.#begin.bind(this, generation, controller))\n\t\t\t.catch',
+		)
 		expect(serverRunner?.content).toContain('const url = this.#server.url')
 		expect(serverRunner?.content).toContain('if (url === undefined)')
 		expect(serverRunner?.content).toContain('process.stderr.write(`[READY] ${APP_NAME} ${url}\\n`)')
+		expect(serverRunner?.content).toContain('const stopped = this.stop()')
+		expect((serverHandlers?.content ?? '').indexOf('process.exitCode = 1')).toBeLessThan(
+			(serverHandlers?.content ?? '').indexOf('process.stderr.write'),
+		)
+		expect(setup?.content).toContain('function waitForEvent<')
+		expect(setupServer?.content).not.toContain('waitForLoopbackResponse')
+		expect(setupServer?.content).not.toContain('waitForApplicationRelease')
+		expect(serverTest?.content).toContain("waitForEvent(runner.emitter, 'ready')")
+		expect(serverTest?.content).toContain("waitForEvent(runner.emitter, 'fail')")
+		expect(serverTest?.content).toContain("throw new Error('listener boom')")
+		expect(serverTest?.content).not.toContain('waitForLoopbackResponse')
+		expect(serverTest?.content).not.toContain('waitForApplicationRelease')
 		for (const path of [
 			'configs/app/tsconfig.core.json',
 			'configs/app/tsconfig.browser.json',
@@ -788,6 +854,7 @@ describe('packageManifest app dependency seam', () => {
 			Object.entries(dev).filter(([name]) =>
 				[
 					'@orkestrel/contract',
+					'@orkestrel/emitter',
 					'@orkestrel/middleware',
 					'@orkestrel/router',
 					'@orkestrel/server',
@@ -795,6 +862,7 @@ describe('packageManifest app dependency seam', () => {
 			),
 		).toEqual([
 			['@orkestrel/contract', '^0.0.9'],
+			['@orkestrel/emitter', '^0.0.5'],
 			['@orkestrel/middleware', '^0.0.9'],
 			['@orkestrel/router', '^0.0.8'],
 			['@orkestrel/server', '^0.0.10'],
@@ -809,10 +877,11 @@ describe('packageManifest app dependency seam', () => {
 
 		expect([
 			dev['@orkestrel/contract'],
+			dev['@orkestrel/emitter'],
 			dev['@orkestrel/middleware'],
 			dev['@orkestrel/router'],
 			dev['@orkestrel/server'],
-		]).toEqual([undefined, undefined, undefined, undefined])
+		]).toEqual([undefined, undefined, undefined, undefined, undefined])
 	})
 })
 
@@ -3101,7 +3170,9 @@ describe('testArtifacts', () => {
 	it('drafts setup.ts, per-environment pairs, and the always-on parity test', () => {
 		const artifacts = testArtifacts(blueprint('router', { src: ['server'] }), 'Router')
 		const paths = artifacts.map((artifact) => artifact.path)
+		const setup = artifacts.find((artifact) => artifact.path === 'tests/setup.ts')
 		expect(paths).toContain('tests/setup.ts')
+		expect(setup?.content).not.toContain('waitForEvent')
 		expect(paths).toContain('tests/setupServer.ts')
 		expect(paths).not.toContain('tests/setupBrowser.ts')
 		expect(paths).toContain('tests/src/server/Router.test.ts')
@@ -3213,6 +3284,11 @@ describe('guideArtifacts / guideMemberTable', () => {
 		const content = guide?.content ?? ''
 
 		expect(content).toContain('`APP_HEALTH_PATH`')
+		expect(content).toContain('`ApplicationServerRunnerEventMap`')
+		expect(content).toContain('`ApplicationServerRunnerOptions`')
+		expect(content).toContain('readonly `emitter`')
+		expect(content).toContain('emits `ready` with the bound URL and `fail` with an `unknown` error')
+		expect(content).toContain('runner.emitter.once(event')
 		expect(content).not.toContain('`APP_HEALTH_TIMEOUT`')
 		expect(content).not.toContain('`isApplicationRecord`')
 		expect(content).toContain('	APP_HEALTH_METHOD,\n	APP_HEALTH_PATH,\n	APP_HOST_LABEL_PATTERN,')
