@@ -97,6 +97,7 @@ describe('blueprint', () => {
 		expect(result.version).toBe('0.0.1')
 		expect(result.engines).toBe('>=22.12.0')
 		expect(result.overrides).toEqual([])
+		expect(result.showcase).toBe(false)
 	})
 
 	it('omits description entirely when absent (own-key check, not just undefined)', () => {
@@ -121,6 +122,7 @@ describe('blueprint', () => {
 			version: '1.2.3',
 			engines: '>=24.0.0',
 			overrides: [override('README.md', 'hi')],
+			showcase: true,
 		})
 
 		expect(result.keywords).toEqual(['routing'])
@@ -130,6 +132,7 @@ describe('blueprint', () => {
 		expect(result.version).toBe('1.2.3')
 		expect(result.engines).toBe('>=24.0.0')
 		expect(result.overrides).toEqual([override('README.md', 'hi')])
+		expect(result.showcase).toBe(true)
 	})
 
 	it('round-trips the isBlueprint exact-record guard for the bare default', () => {

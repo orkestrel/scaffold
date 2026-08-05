@@ -111,6 +111,15 @@ describe('blueprintShape — structural axes', () => {
 		expect(contract.parse(value)).toEqual(value)
 		expect(isBlueprint(value)).toBe(true)
 	})
+
+	it.each([false, true])('guard/parser round-trips showcase: %s', (showcase) => {
+		const contract = createContract(blueprintShape())
+		const value = blueprint('browser-fixture', { src: [], app: ['browser'], showcase })
+
+		expect(contract.is(value)).toBe(true)
+		expect(contract.parse(value)).toEqual(value)
+		expect(isBlueprint(value)).toBe(true)
+	})
 })
 
 describe('syncReportShape — pattern boundary', () => {

@@ -82,6 +82,7 @@ export function blueprintShape() {
 		integration: booleanShape(),
 		service: booleanShape(),
 		global: booleanShape(),
+		showcase: booleanShape(),
 	})
 }
 

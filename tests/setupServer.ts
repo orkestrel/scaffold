@@ -53,6 +53,7 @@ export interface BlueprintFixtureOptions {
 	readonly integration?: boolean
 	readonly service?: boolean
 	readonly global?: boolean
+	readonly showcase?: boolean
 }
 
 /** Focused package shape for filesystem-backed catalog tests. */
@@ -142,6 +143,10 @@ export function buildBlueprintFixture(root: string, options: BlueprintFixtureOpt
 	if (options.global === true) {
 		mkdirSync(join(root, 'tests'), { recursive: true })
 		writeFileSync(join(root, 'tests', 'setupGlobal.ts'), '', 'utf8')
+	}
+	if (options.showcase === true) {
+		mkdirSync(join(root, 'configs', 'app'), { recursive: true })
+		writeFileSync(join(root, 'configs', 'app', 'vite.showcase.config.ts'), '', 'utf8')
 	}
 }
 

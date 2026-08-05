@@ -122,6 +122,7 @@ describe('deriveBlueprint', () => {
 				integration: true,
 				service: false,
 				global: true,
+				showcase: false,
 			}),
 		)
 	})
@@ -210,6 +211,83 @@ describe('deriveBlueprint', () => {
 			expect(readdirSync(tests)).toContain('setupglobal.ts')
 			expect(derived.global).toBe(false)
 			expect(vite.content).not.toContain("globalSetup: ['./tests/setupGlobal.ts']")
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('derives showcase only from the exact physical app wrapper and classifies its tool correctly', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: 'browser-fixture',
+				private: true,
+				src: [],
+				app: ['browser'],
+				devDependencies: { 'vite-plugin-singlefile': '^2.3.3' },
+			})
+
+			const absent = deriveBlueprint(directory.path)
+			expect(absent.showcase).toBe(false)
+			expect(absent.extras).toEqual([{ name: 'vite-plugin-singlefile', range: '^2.3.3' }])
+
+			buildBlueprintFixture(directory.path, {
+				name: 'browser-fixture',
+				private: true,
+				src: [],
+				app: ['browser'],
+				devDependencies: { 'vite-plugin-singlefile': '^2.3.3' },
+				showcase: true,
+			})
+
+			const present = deriveBlueprint(directory.path)
+			expect(present.showcase).toBe(true)
+			expect(present.extras).toEqual([])
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('rejects wrong-case and directory-shaped showcase wrappers', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: 'browser-fixture',
+				private: true,
+				src: [],
+				app: ['browser'],
+			})
+			const configs = join(directory.path, 'configs', 'app')
+			mkdirSync(configs, { recursive: true })
+			writeFileSync(join(configs, 'vite.Showcase.config.ts'), '', 'utf8')
+
+			expect(deriveBlueprint(directory.path).showcase).toBe(false)
+
+			rmSync(join(configs, 'vite.Showcase.config.ts'))
+			mkdirSync(join(configs, 'vite.showcase.config.ts'))
+
+			expect(deriveBlueprint(directory.path).showcase).toBe(false)
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it.skipIf(!canSymlink)('rejects a symlinked showcase wrapper', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: 'browser-fixture',
+				private: true,
+				src: [],
+				app: ['browser'],
+			})
+			const configs = join(directory.path, 'configs', 'app')
+			const target = join(directory.path, 'showcase-target.ts')
+			mkdirSync(configs, { recursive: true })
+			writeFileSync(target, '', 'utf8')
+			symlinkSync(target, join(configs, 'vite.showcase.config.ts'))
+
+			expect(deriveBlueprint(directory.path).showcase).toBe(false)
 		} finally {
 			await directory.cleanup()
 		}

@@ -279,6 +279,7 @@ export const AUDIT_PLAN: Plan = {
 		integration: false,
 		service: false,
 		global: false,
+		showcase: false,
 	},
 	groups: ['manifest'],
 	artifacts: [

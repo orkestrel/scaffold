@@ -24,6 +24,7 @@ import {
 	ENVIRONMENTS,
 	GLOBAL_SETUP_PATH,
 	SERVICE_SCRIPT_PATH,
+	SHOWCASE_CONFIG_PATH,
 	SOURCE_BROWSER_DEV_DEPENDENCIES,
 	SETUP_NODE_ACTION_SHA,
 	SRC_MATRIX,
@@ -281,6 +282,7 @@ export function devDependenciesFor(spec: Blueprint): Readonly<Record<string, str
 		...dependencies,
 		...(spec.src.includes('browser') ? SOURCE_BROWSER_DEV_DEPENDENCIES : {}),
 		...(spec.app.includes('browser') ? APP_BROWSER_DEV_DEPENDENCIES : {}),
+		...(spec.showcase ? { 'vite-plugin-singlefile': '^2.3.3' } : {}),
 		...(spec.bin
 			? {
 					'@vitest/browser-playwright':
@@ -426,6 +428,12 @@ export function packageManifest(spec: Blueprint): string {
 		}
 		if (spec.app.includes('browser')) {
 			scripts.dev = 'vite --config configs/app/vite.browser.config.ts'
+			if (spec.showcase) {
+				scripts.showcase = `vite --config ${SHOWCASE_CONFIG_PATH}`
+				scripts['build:showcase'] = `vite build --config ${SHOWCASE_CONFIG_PATH}`
+				scripts.show =
+					'npm run build:showcase && npm run copy dist/showcase/index.html demo/showcase.html'
+			}
 		}
 		if (spec.app.includes('server')) {
 			scripts.serve = 'node dist/app/server/main.cjs'
@@ -565,18 +573,20 @@ export function rootTsconfig(
  * @param src - The declared published `Environment[]`.
  * @param app - The declared application `Environment[]`, defaulting to none.
  * @param bin - Whether the workspace also builds its own executable.
+ * @param showcase - Whether the workspace carries its optional app showcase.
  * @returns The machinery set the generated header renders.
  *
  * @example
  * ```ts
- * viteMachinery(['core']) // { browser: false, vue: false, output: true }
- * viteMachinery([], ['core']) // { browser: false, vue: false, output: false }
+ * viteMachinery(['core']) // { browser: false, vue: false, output: true, showcase: false }
+ * viteMachinery([], ['core']) // { browser: false, vue: false, output: false, showcase: false }
  * ```
  */
 export function viteMachinery(
 	src: readonly Environment[],
 	app: readonly Environment[] = [],
 	bin = false,
+	showcase = false,
 ): ViteMachinery {
 	// An application of `core` alone compiles but never builds: it declares no
 	// published library target, no runtime application target, and no bin
@@ -589,6 +599,7 @@ export function viteMachinery(
 		browser: src.includes('browser') || app.includes('browser'),
 		vue: app.includes('browser'),
 		output: !unbuilt,
+		showcase: showcase && app.includes('browser'),
 	}
 }
 
@@ -722,7 +733,12 @@ ${renderedRegistrationArray}
  * ```
  */
 export function viteHeader(machinery: ViteMachinery): string {
-	const { browser: needsBrowser, vue: needsVue, output: needsOutput } = machinery
+	const {
+		browser: needsBrowser,
+		vue: needsVue,
+		output: needsOutput,
+		showcase: needsShowcase,
+	} = machinery
 	// Rendered blocks below are generated FILE TEXT, so every embedded
 	// declaration keyword is interpolated rather than typed literally at
 	// column 0 — the doc↔source parity scan (AGENTS §22) reads this file's
@@ -744,6 +760,10 @@ import { chromium } from 'playwright'
 	const vueImports = needsVue
 		? `import vue from '@vitejs/plugin-vue'
 import { parse as parseVue } from 'vue/compiler-sfc'
+`
+		: ''
+	const showcaseImports = needsShowcase
+		? `import { viteSingleFile } from 'vite-plugin-singlefile'
 `
 		: ''
 	const viteTypeImports = needsVue
@@ -1832,6 +1852,35 @@ ${EXPORT_KEYWORD} function finalizeHtml(): Plugin {
 
 `
 			: ''
+	}${
+		needsShowcase
+			? `${EXPORT_KEYWORD} ${CONST_KEYWORD} SHOWCASE_SECURITY_POLICY =
+	"base-uri 'none'; object-src 'none'; script-src 'self' 'unsafe-inline'; script-src-attr 'none'; style-src 'self' 'unsafe-inline'"
+
+${EXPORT_KEYWORD} function showcaseHtml(): Plugin {
+	return {
+		name: 'orkestrel-showcase-html',
+		enforce: 'post',
+		transformIndexHtml: {
+			order: 'post',
+			handler(html, context) {
+				if (!isBrowserHtmlEntry(context.filename)) return undefined
+				if (!html.includes(HTML_SECURITY_META)) {
+					throw new Error('[orkestrel-showcase] Browser HTML must retain its security policy')
+				}
+				const stamp = new Date().toISOString()
+				return html.replace(
+					HTML_SECURITY_META,
+					HTML_SECURITY_META.replace(HTML_SECURITY_POLICY, SHOWCASE_SECURITY_POLICY) +
+						\`\\n\\t\\t<meta name="build-id" content="\${stamp}" />\`,
+				)
+			},
+		},
+	}
+}
+
+`
+			: ''
 	}${EXPORT_KEYWORD} async function environmentAssetSources(
 	code: string,
 	id: string,
@@ -2166,7 +2215,7 @@ ${
 } from 'node:path'`
 		: `import { dirname, isAbsolute, relative, resolve as resolvePath, sep } from 'node:path'`
 }
-${playwrightImports}${vueImports}${
+${playwrightImports}${vueImports}${showcaseImports}${
 		needsBrowser
 			? `\n/** Chromium executable layouts inside a \`chromium-<revision>\` browsers-directory entry, per platform. */
 ${EXPORT_KEYWORD} ${CONST_KEYWORD} CHROMIUM_LAYOUTS = Object.freeze([
@@ -2974,7 +3023,7 @@ export function applicationViteConfig(
 	facts: ViteFacts = {},
 ): string {
 	const hasSourceCore = src.includes('core')
-	const machinery = viteMachinery(src, app, facts.bin === true)
+	const machinery = viteMachinery(src, app, facts.bin === true, facts.showcase === true)
 	const header = viteHeader(machinery)
 	const blocks: string[] = []
 
@@ -3129,8 +3178,101 @@ ${EXPORT_KEYWORD} const appCore = (config?: UserConfig): UserConfig =>
 `)
 	}
 	if (app.includes('browser')) {
-		blocks.push(`
-${EXPORT_KEYWORD} function appBrowser(...config: readonly never[]): UserConfig {
+		blocks.push(
+			facts.showcase === true
+				? `
+${FUNCTION_KEYWORD} applicationBrowser(showcase: boolean): UserConfig {
+	const output = showcase ? 'dist/showcase' : 'dist/app/browser'
+	return {
+		resolve,
+		css: ENVIRONMENT_CSS,
+		html: environmentHtml(),
+		plugins: [
+			restoreHtml(),
+			outputBoundary(output),
+			environmentBoundary('app/browser'),
+			vue(),
+			prepareHtml(),
+			finalizeHtml(),
+			...(showcase
+				? [
+						viteSingleFile({
+							removeViteModuleLoader: true,
+							useRecommendedBuildConfig: true,
+						}),
+						showcaseHtml(),
+					]
+				: []),
+		],
+		root: resolveWorkspacePath('app/browser'),
+		publicDir: false,
+		server: {
+			fs: {
+				strict: true,
+				allow: [...browserServerRoots()],
+			},
+		},
+		build: {
+			...(showcase
+				? {
+						cssMinify: 'lightningcss',
+						minify: 'oxc',
+						modulePreload: false,
+						reportCompressedSize: false,
+						sourcemap: false,
+						target: 'esnext',
+					}
+				: { assetsInlineLimit: 0 }),
+			emptyOutDir: true,
+			outDir: resolveWorkspacePath(output),
+			rolldownOptions: {
+				input: resolveWorkspacePath('${APP_MATRIX.browser.entry}'),
+			},
+		},
+		test: {
+			name: { label: '${APP_MATRIX.browser.project}', color: 'blue' },
+			root: resolveWorkspacePath('.'),
+			dir: resolveWorkspacePath('.'),
+			include: ['tests/app/browser/**/*.test.ts'],
+			setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+			deps: {
+				optimizer: {
+					client: {
+						enabled: true,
+						include: ['vue', ...BROWSER_TEST_DEPENDENCIES],
+					},
+				},
+			},
+			browser: {
+				enabled: true,
+				provider: playwright(browserOptions),
+				instances: [{ browser: 'chromium', headless: true }],
+			},
+			fileParallelism: false,
+		},
+	}
+}
+
+${EXPORT_KEYWORD} function appBrowser(...config: never[]): UserConfig {
+	if (config.length > 0) {
+		throw new Error(
+			'[orkestrel-environment-boundary] Browser configuration overrides are not permitted by the generated boundary',
+		)
+	}
+	return applicationBrowser(false)
+}
+
+${EXPORT_KEYWORD} function appShowcase(...config: never[]): UserConfig {
+	if (config.length > 0) {
+		throw new Error(
+			'[orkestrel-environment-boundary] Showcase configuration overrides are not permitted by the generated boundary',
+		)
+	}
+	return applicationBrowser(true)
+}
+`
+				: `
+${EXPORT_KEYWORD} function appBrowser(...config: never[]): UserConfig {
 	if (config.length > 0) {
 		throw new Error(
 			'[orkestrel-environment-boundary] Browser configuration overrides are not permitted by the generated boundary',
@@ -3187,7 +3329,8 @@ ${EXPORT_KEYWORD} function appBrowser(...config: readonly never[]): UserConfig {
 		},
 	}
 }
-`)
+`,
+		)
 	}
 	if (app.includes('server')) {
 		blocks.push(`
@@ -3646,6 +3789,19 @@ export function configArtifacts(spec: Blueprint): readonly Artifact[] {
 				: appViteConfig(environment === 'browser' ? 'browser' : 'server')
 			artifacts.push({ path, group: 'configs', origin: 'computed', environment, content })
 		}
+	}
+	if (spec.showcase) {
+		artifacts.push({
+			path: SHOWCASE_CONFIG_PATH,
+			group: 'configs',
+			origin: 'computed',
+			environment: 'browser',
+			content: `import { defineConfig } from 'vite'
+import { appShowcase } from '../../vite.config.ts'
+
+export default defineConfig(appShowcase())
+`,
+		})
 	}
 	return artifacts
 }

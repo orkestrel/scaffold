@@ -720,6 +720,33 @@ describe('packageManifest', () => {
 		).toBeUndefined()
 	})
 
+	it('emits showcase scripts and tooling only for the physical showcase projection', () => {
+		const absent = readManifest(
+			packageManifest(blueprint('browser-fixture', { src: [], app: ['browser'] })),
+		)
+		const present = readManifest(
+			packageManifest(blueprint('browser-fixture', { src: [], app: ['browser'], showcase: true })),
+		)
+		const absentScripts = readRecord(absent.scripts)
+		const presentScripts = readRecord(present.scripts)
+
+		expect(absentScripts.showcase).toBeUndefined()
+		expect(absentScripts['build:showcase']).toBeUndefined()
+		expect(absentScripts.show).toBeUndefined()
+		expect(readRecord(absent.devDependencies)['vite-plugin-singlefile']).toBeUndefined()
+		expect(presentScripts.showcase).toBe('vite --config configs/app/vite.showcase.config.ts')
+		expect(presentScripts['build:showcase']).toBe(
+			'vite build --config configs/app/vite.showcase.config.ts',
+		)
+		expect(presentScripts.show).toBe(
+			'npm run build:showcase && npm run copy dist/showcase/index.html demo/showcase.html',
+		)
+		expect(presentScripts.build).not.toContain('showcase')
+		expect(presentScripts.test).not.toContain('showcase')
+		expect(presentScripts.prepublishOnly).not.toContain('showcase')
+		expect(readRecord(present.devDependencies)['vite-plugin-singlefile']).toBe('^2.3.3')
+	})
+
 	it('keeps the scaffold manifest byte-identical for its existing axis shape', () => {
 		const manifest = packageManifest(
 			blueprint('scaffold', {
@@ -789,29 +816,45 @@ describe('rootTsconfig', () => {
 })
 
 describe('viteMachinery / viteHeader', () => {
-	it('derives the browser, vue, and output axes from the declared environments', () => {
-		expect(viteMachinery(['core'])).toEqual({ browser: false, vue: false, output: true })
+	it('derives the browser, vue, output, and showcase axes from the declared environments', () => {
+		expect(viteMachinery(['core'])).toEqual({
+			browser: false,
+			vue: false,
+			output: true,
+			showcase: false,
+		})
 		expect(viteMachinery(['core', 'server'])).toEqual({
 			browser: false,
 			vue: false,
 			output: true,
+			showcase: false,
 		})
 		expect(viteMachinery(['core', 'browser'])).toEqual({
 			browser: true,
 			vue: false,
 			output: true,
+			showcase: false,
 		})
-		expect(viteMachinery([], ['core'])).toEqual({ browser: false, vue: false, output: false })
+		expect(viteMachinery([], ['core'])).toEqual({
+			browser: false,
+			vue: false,
+			output: false,
+			showcase: false,
+		})
 		expect(viteMachinery([], ['core', 'browser'])).toEqual({
 			browser: true,
 			vue: true,
 			output: true,
+			showcase: false,
 		})
 		expect(viteMachinery([], ['core', 'server'])).toEqual({
 			browser: false,
 			vue: false,
 			output: true,
+			showcase: false,
 		})
+		expect(viteMachinery([], ['browser'], false, true).showcase).toBe(true)
+		expect(viteMachinery([], ['server'], false, true).showcase).toBe(false)
 	})
 
 	it('restores output containment for an app-core workspace that also builds', () => {
@@ -1758,7 +1801,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 
 		expect(content).toContain('\t)\n\nexport const policy')
 		expect(createHash('sha256').update(content).digest('hex')).toBe(
-			'10af7b2bf4c011040614780d916b191a3c6451648c2a45e9386f47ac4edb82e8',
+			'e3abeb8b56faee132fee364356efaf5fd561eb513c962013848a860153ac5607',
 		)
 	})
 
@@ -1800,7 +1843,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		expect(content).toContain("script-src 'self'")
 		expect(content).toContain('Classic external scripts are not permitted')
 		expect(content).toContain('Module script URLs must remain in the local Vite graph')
-		expect(content).toContain('function appBrowser(...config: readonly never[])')
+		expect(content).toContain('function appBrowser(...config: never[])')
 		expect(content).toContain('Browser configuration overrides are not permitted')
 		expect(content).toContain('Browser assets must remain external for output auditing')
 		expect(content).toContain('Rolldown output directories and files cannot override')
@@ -1820,6 +1863,40 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 			'isBoundaryExemptModule(original) || isBoundaryExemptModule(physical)',
 		)
 		expect(content).not.toContain('if (!isWorkspaceBoundaryModule(original)) continue')
+	})
+
+	it('generates one shared closed browser implementation and a hardened single-file showcase', () => {
+		const content = applicationViteConfig([], ['browser'], { showcase: true })
+		const strict = "base-uri 'none'; object-src 'none'; script-src 'self'; script-src-attr 'none'"
+		const compatible =
+			"base-uri 'none'; object-src 'none'; script-src 'self' 'unsafe-inline'; script-src-attr 'none'; style-src 'self' 'unsafe-inline'"
+
+		expect(content).toContain("import { viteSingleFile } from 'vite-plugin-singlefile'")
+		expect(content).toContain('function applicationBrowser(showcase: boolean): UserConfig')
+		expect(content).toContain('function appBrowser(...config: never[])')
+		expect(content).toContain('function appShowcase(...config: never[])')
+		expect(content).toContain('return applicationBrowser(false)')
+		expect(content).toContain('return applicationBrowser(true)')
+		expect(content).toContain('Browser configuration overrides are not permitted')
+		expect(content).toContain('Showcase configuration overrides are not permitted')
+		expect(content).toContain("const output = showcase ? 'dist/showcase' : 'dist/app/browser'")
+		expect(content).toContain('outputBoundary(output)')
+		expect(content).toContain("environmentBoundary('app/browser')")
+		expect(content).toContain('vue()')
+		expect(content).toContain('prepareHtml()')
+		expect(content).toContain('finalizeHtml()')
+		expect(content).toContain('removeViteModuleLoader: true')
+		expect(content).toContain('useRecommendedBuildConfig: true')
+		expect(content).toContain("cssMinify: 'lightningcss'")
+		expect(content).toContain("minify: 'oxc'")
+		expect(content).toContain('modulePreload: false')
+		expect(content).toContain('reportCompressedSize: false')
+		expect(content).toContain('sourcemap: false')
+		expect(content).toContain("target: 'esnext'")
+		expect(content).toContain('new Date().toISOString()')
+		expect(content).toContain('<meta name="build-id" content="${stamp}" />')
+		expect(content).toContain(strict)
+		expect(content).toContain(compatible)
 	})
 
 	it('server-only is the environment factory itself as base, no @src/core externalize', () => {
@@ -2369,6 +2446,33 @@ describe('configArtifacts', () => {
 		expect(paths).toContain('vite.config.ts')
 		expect(paths).toContain('configs/src/tsconfig.core.json')
 		expect(paths).toContain('configs/src/vite.server.config.ts')
+	})
+
+	it('keeps absent showcase generation free and emits only its computed wrapper when selected', () => {
+		const absent = configArtifacts(blueprint('browser-fixture', { src: [], app: ['browser'] }))
+		const present = configArtifacts(
+			blueprint('browser-fixture', { src: [], app: ['browser'], showcase: true }),
+		)
+		const absentRoot = absent.find((artifact) => artifact.path === 'vite.config.ts')
+		const presentRoot = present.find((artifact) => artifact.path === 'vite.config.ts')
+		const wrapper = present.find(
+			(artifact) => artifact.path === 'configs/app/vite.showcase.config.ts',
+		)
+
+		expect(absent.map((artifact) => artifact.path)).not.toContain(
+			'configs/app/vite.showcase.config.ts',
+		)
+		expect(absentRoot?.content).not.toContain('Showcase')
+		expect(absentRoot?.content).not.toContain('vite-plugin-singlefile')
+		expect(presentRoot?.content).toContain('appShowcase')
+		expect(wrapper).toMatchObject({
+			group: 'configs',
+			origin: 'computed',
+			environment: 'browser',
+			content:
+				"import { defineConfig } from 'vite'\nimport { appShowcase } from '../../vite.config.ts'\n\nexport default defineConfig(appShowcase())\n",
+		})
+		expect(present.map((artifact) => artifact.path)).not.toContain('demo/showcase.html')
 	})
 
 	it('threads the independent proof-project axes into the emitted root configuration', () => {

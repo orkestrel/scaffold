@@ -564,6 +564,21 @@ describe('validateBlueprint', () => {
 		).toBe(false)
 	})
 
+	it('accepts showcase only with the app browser environment', () => {
+		const accepted = validateBlueprint(
+			blueprint('browser-fixture', { src: [], app: ['browser'], showcase: true }),
+		)
+		const rejected = validateBlueprint(blueprint('router', { showcase: true }))
+
+		expect(accepted.valid).toBe(true)
+		expect(rejected.valid).toBe(false)
+		expect(rejected.questions).toContainEqual({
+			field: 'showcase',
+			text: 'Showcase requires the app browser environment',
+			blocking: true,
+		})
+	})
+
 	it('fails closed on app browser+server without app core', () => {
 		const validation = validateBlueprint({
 			...blueprint('router'),
@@ -1462,6 +1477,25 @@ describe('pinPlan', () => {
 		expect(pinPlan(base).hash).not.toBe(pinPlan(changed).hash)
 	})
 
+	it('pins showcase intent as blueprint identity', () => {
+		const absent = pinPlan({
+			blueprint: blueprint('browser-fixture', { src: [], app: ['browser'] }),
+			groups: ['configs'],
+			artifacts: [],
+		})
+		const present = pinPlan({
+			blueprint: blueprint('browser-fixture', {
+				src: [],
+				app: ['browser'],
+				showcase: true,
+			}),
+			groups: ['configs'],
+			artifacts: [],
+		})
+
+		expect(absent.hash).not.toBe(present.hash)
+	})
+
 	it('hashes equal content identically regardless of field order', () => {
 		const descriptionLast = blueprint('router', { description: 'A router.' })
 		const descriptionFirst: Blueprint = {
@@ -1482,6 +1516,7 @@ describe('pinPlan', () => {
 			integration: descriptionLast.integration,
 			service: descriptionLast.service,
 			global: descriptionLast.global,
+			showcase: descriptionLast.showcase,
 		}
 
 		const a = pinPlan({ blueprint: descriptionLast, groups: ['manifest'], artifacts: [] })
@@ -1527,12 +1562,12 @@ describe('pinPlan', () => {
 		}
 		expect(actual).toMatchInlineSnapshot(`
 			{
-			  "browser-only": "39cd6b4e",
-			  "core+browser": "e19f235d",
-			  "core+browser+server": "4463fe2e",
-			  "core+server": "082059ca",
-			  "core-only": "eca94c82",
-			  "server-only": "6ec5a7c3",
+			  "browser-only": "261b937f",
+			  "core+browser": "4920c39e",
+			  "core+browser+server": "e5f6f8a3",
+			  "core+server": "54284779",
+			  "core-only": "634bf191",
+			  "server-only": "2ab6ab74",
 			}
 		`)
 	})
@@ -1560,11 +1595,11 @@ describe('pinPlan', () => {
 		}
 		expect(actual).toMatchInlineSnapshot(`
 			{
-			  "app-browser": "442508ab",
-			  "app-core": "2a1a9a84",
-			  "app-full": "63008122",
-			  "app-server": "fafe170c",
-			  "mixed-full": "ab6604a8",
+			  "app-browser": "7c7a7750",
+			  "app-core": "b4b694d7",
+			  "app-full": "0e18daa5",
+			  "app-server": "7e8b005b",
+			  "mixed-full": "70497515",
 			}
 		`)
 	})

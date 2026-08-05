@@ -147,6 +147,15 @@ describe('isBlueprint', () => {
 		expect(isBlueprint(blueprint('router'))).toBe(true)
 	})
 
+	it('requires the exact boolean showcase field', () => {
+		const value = blueprint('browser-fixture', { src: [], app: ['browser'] })
+		const { showcase: _showcase, ...missing } = value
+
+		expect(isBlueprint({ ...value, showcase: true })).toBe(true)
+		expect(isBlueprint(missing)).toBe(false)
+		expect(isBlueprint({ ...value, showcase: 'yes' })).toBe(false)
+	})
+
 	it('rejects an empty src array', () => {
 		expect(isBlueprint({ ...blueprint('router'), src: [] })).toBe(false)
 	})
@@ -178,6 +187,23 @@ describe('isBlueprint', () => {
 		expect(isBlueprint(42)).toBe(false)
 		expect(isBlueprint([])).toBe(false)
 		expect(isBlueprint('{}')).toBe(false)
+	})
+})
+
+describe('snapshotPlan showcase ownership', () => {
+	it('retains and freezes the required showcase fact', () => {
+		const snapshot = snapshotPlan({
+			blueprint: blueprint('browser-fixture', {
+				src: [],
+				app: ['browser'],
+				showcase: true,
+			}),
+			groups: ['configs'],
+			artifacts: [],
+		})
+
+		expect(snapshot.blueprint.showcase).toBe(true)
+		expect(Object.isFrozen(snapshot.blueprint)).toBe(true)
 	})
 })
 

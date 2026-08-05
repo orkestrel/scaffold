@@ -74,6 +74,7 @@ import {
 	ownDataValue,
 	ScaffoldError,
 	SERVICE_SCRIPT_PATH,
+	SHOWCASE_CONFIG_PATH,
 	snapshotPlan,
 	ENVIRONMENTS,
 	VERSION_PATTERN,
@@ -1395,7 +1396,8 @@ export function selectOrkestrelEntries(value: unknown): readonly (readonly [stri
  * `app/<environment>/`; a target with no environment on either axis is also a coded
  * `TARGET` failure. The `bin`, `integration`, and `service` facts probe physical
  * directories at `src/bin`, `tests/integration`, and `tests/service`, respectively,
- * while `global` probes the physical exact-case `tests/setupGlobal.ts` file; none is
+ * while `global` probes the physical exact-case `tests/setupGlobal.ts` file and `showcase`
+ * probes the physical exact-case `configs/app/vite.showcase.config.ts` regular file; none is
  * inferred from the workspace name. `dependencies` /
  * `peers` are the `@orkestrel/`-prefixed entries of `manifest.dependencies` /
  * `manifest.peerDependencies` (a peer flagged `peerDependenciesMeta[name]
@@ -1486,6 +1488,12 @@ export function deriveBlueprint(target: string): Blueprint {
 	const bin = isRealDirectory(join(target, 'src', 'bin'))
 	const integration = isRealDirectory(join(target, 'tests', 'integration'))
 	const service = isRealDirectory(join(target, 'tests', 'service'))
+	const showcaseRoot = join(target, dirname(SHOWCASE_CONFIG_PATH))
+	const showcaseEntries = attempt(() => readdirSync(showcaseRoot))
+	const showcase =
+		showcaseEntries.success &&
+		showcaseEntries.value.includes(basename(SHOWCASE_CONFIG_PATH)) &&
+		isRealFile(join(target, SHOWCASE_CONFIG_PATH))
 	const tests = join(target, dirname(GLOBAL_SETUP_PATH))
 	const entries = attempt(() => readdirSync(tests))
 	const global =
@@ -1548,6 +1556,7 @@ export function deriveBlueprint(target: string): Blueprint {
 					integration,
 					service,
 					global,
+					showcase,
 				}),
 			),
 		),
@@ -1581,6 +1590,7 @@ export function deriveBlueprint(target: string): Blueprint {
 		integration,
 		service,
 		global,
+		showcase,
 	})
 }
 

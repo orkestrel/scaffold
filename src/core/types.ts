@@ -42,6 +42,7 @@ export interface ViteMachinery {
 	readonly browser: boolean
 	readonly vue: boolean
 	readonly output: boolean
+	readonly showcase: boolean
 }
 
 /**
@@ -50,13 +51,15 @@ export interface ViteMachinery {
  * @remarks
  * `bin`, `integration`, and `service` select their matching projects.
  * `global` records the physical `tests/setupGlobal.ts` module and wires it
- * into every selected project that consumes that shared setup.
+ * into every selected project that consumes that shared setup. `showcase`
+ * records the physical app showcase wrapper and selects its browser machinery.
  */
 export interface ViteFacts {
 	readonly bin?: boolean
 	readonly integration?: boolean
 	readonly service?: boolean
 	readonly global?: boolean
+	readonly showcase?: boolean
 }
 
 /** One generated Vitest project factory and its optional browser-project label. */
@@ -182,6 +185,8 @@ export interface Blueprint {
 	readonly service: boolean
 	/** Structural: `true` only for a repo that carries the physical, exact-case `tests/setupGlobal.ts` module — integration and `srcBrowser` projects consume that shared global setup only under their own additional structural conditions. */
 	readonly global: boolean
+	/** Structural: `true` only for a repo that carries the physical, exact-case `configs/app/vite.showcase.config.ts` regular file; valid only with `app/browser`. */
+	readonly showcase: boolean
 }
 
 /** One declared public export of the scaffolded package; derived by `blueprintToMembers`, never authored. */

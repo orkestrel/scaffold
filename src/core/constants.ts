@@ -166,6 +166,9 @@ export const SERVICE_SCRIPT_PATH = 'scripts/service.sh'
 /** The consumer-owned Vitest global-setup module shared by its independently selected projects. */
 export const GLOBAL_SETUP_PATH = 'tests/setupGlobal.ts'
 
+/** The consumer-owned Vite wrapper whose physical presence enables the optional app showcase. */
+export const SHOWCASE_CONFIG_PATH = 'configs/app/vite.showcase.config.ts'
+
 /** The package-name RegExp — lowercase alphanumeric-with-hyphens, letter-first. */
 export const NAME_PATTERN = /^[a-z][a-z0-9-]*$/
 
@@ -279,7 +282,7 @@ export const DEFAULT_VERSION = '0.0.1'
 export const DEFAULT_ENGINES = `>=${MINIMUM_NODE_VERSION}`
 
 /** The devDependency range generated packages pin `@orkestrel/scaffold` at. */
-export const SCAFFOLD_RANGE = '^0.0.18'
+export const SCAFFOLD_RANGE = '^0.0.19'
 
 /** Tooling versions shared by scaffold and every generated workspace. */
 export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
