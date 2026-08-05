@@ -32,8 +32,11 @@ objective and realistic analysis, correctness audit, and all nontrivial
 implementation. Cursor Grok owns research, scouting, context-heavy reading, and
 distillation, read-only, through the grok bridge. Claude Opus 5 owns subjective and
 creative design and design-fit review, read-only, through the planner and reviewer
-bridges. Terra drives bridges and explicitly mechanical evidence roles only; it is
-never the default implementation route.
+bridges. Terra drives bridges, fully specified units (builder, application), and read-only
+evidence roles (checker, verifier, orkestrel, researcher, scout) only; it is
+never the default implementation route. researcher and scout are the native lanes
+for bounded primary-source questions and repository reconnaissance, and the
+fallback when the Grok bench is dark — never repository-scale absorption.
 
 Work directly for trivial tasks. For non-trivial work: send the reading to grok; run
 planner (Opus 5, subjective) and analyst (Sol, objective) on the

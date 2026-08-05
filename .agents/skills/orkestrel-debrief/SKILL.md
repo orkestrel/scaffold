@@ -1,6 +1,6 @@
 ---
 name: orkestrel-debrief
-description: Convert a closed campaign's residue into portable truth through field evidence, a findings ledger, fix loops with live re-proof, canon refinement, and disciplined disposal. Use after a campaign or milestone closes to audit what was built and how it was built, when live field testing must precede judgment, when learnings must propagate into skills/rules/guides/scaffold, or when working ledgers must fold into canon and retire.
+description: Look back at a long campaign to learn from its mistakes and successes and improve the agents, rules, skills, and processes that ran it. Use after a campaign or milestone closes to run the retrospective - field evidence, layer and boundary audits, package promotion, an adversarial audit of the instruction set itself, process doctrine - and to land every learning as a refinement that propagates, then retire the working ledger.
 ---
 
 # Debrief a closed campaign
@@ -11,71 +11,81 @@ Read the current files in this order:
 
 1. `AGENTS.md`.
 2. Every applicable `.claude/rules/*.md`; the documentation and quality laws bind every
-   ledger entry and every canon refinement this skill produces.
-3. [field-testing.md](references/field-testing.md) before running or judging any live
-   field pass.
-4. `guides/README.md`, the governing guide for what the campaign built, and `ROADMAP.md`.
+   ledger entry and every refinement this skill produces.
+3. The references this round needs: [instruction-audit.md](references/instruction-audit.md)
+   before auditing the agent/rule/skill/process layer;
+   [field-testing.md](references/field-testing.md) before running or judging a live field
+   pass of an agent-facing surface.
+4. `guides/README.md`, the governing guides for what the campaign built, and `ROADMAP.md`.
 
-The user's current instruction wins. The debrief judges both the artifact and the process
-that produced it; neither is exempt.
+The user's current instruction wins. The debrief judges the artifact AND the process that
+produced it; neither is exempt, and successes are captured as deliberately as mistakes —
+a practice that worked is codified so it repeats, not merely survived.
 
 ## The debrief laws
 
-- **Use it before you judge it.** A debrief of a surface nobody drove is a review of
-  intentions. Field evidence — real clients, real harnesses, goal-only prompts — precedes
-  every finding about usability, and the field transcript is the evidence of record.
-- **Evidence is verbatim or it is not evidence.** The ledger quotes exact commands, exact
-  refusals, exact reasoning-trace lines. A paraphrase cannot be re-verified after the
-  session that produced it is gone.
-- **Every finding ends in exactly one bucket**: fix now; canon refinement (skill, rule,
-  guide); promotion (package/library boundary move); stays as-is with the reason; or
-  dropped on the record with the refuting evidence. A finding with no bucket is an
-  unfinished debrief.
-- **Fixes are re-proven by the class of evidence that found them.** A defect found by a
-  live field pass is closed by a live field pass, never by the fix's own tests alone.
-- **Portable versus resident.** Anything reusable beyond this repository — process
-  doctrine, teaching-surface laws, harness knowledge — lands in the portable skill/rule
-  set and propagates through the scaffold. Repository-specific truth lands in the guide.
-  Forward-looking work lands in `ROADMAP.md`. Nothing load-bearing stays only in the
-  ledger.
-- **The ledger is ephemeral.** The debrief folder is a working file: fold every surviving
-  truth into its destination, then delete the folder on the owner's explicit go-ahead —
-  never silently, and never leave it as residue after its campaign.
+- **The campaign record is the primary source.** Dispatches, deviation reports, audit
+  verdicts, gate outputs, commit messages, and live transcripts are evidence; recollection
+  is not. Quote verbatim — a paraphrase cannot be re-verified later.
+- **Use it before you judge it.** Where the campaign built something consumable — a
+  package, an app, an agent-facing surface — drive it with representative real consumers
+  before writing findings about it. For agent-facing surfaces, follow
+  [field-testing.md](references/field-testing.md).
+- **Every finding ends in exactly one bucket**: fix now; agent refinement; rule
+  refinement; skill refinement or creation; process refinement (orchestration contract);
+  package promotion; guide truth; roadmap; stays as-is with the reason; or dropped on the
+  record with the refuting evidence. A finding with no bucket is an unfinished debrief.
+- **Fixes are re-proven by the evidence class that found them.** A defect found in live
+  use closes with live use; a process failure closes when the next campaign round runs
+  the corrected process.
+- **Portable versus resident.** Learnings reusable beyond the repository — process
+  doctrine, role charters, rules, skills — land in the portable canon and propagate
+  through the scaffold host inventory. Repository truth lands in the guide; forward work
+  in `ROADMAP.md`. Nothing load-bearing stays only in the ledger.
+- **The ledger is ephemeral.** Fold every surviving truth into its destination, then
+  delete the folder on the owner's explicit go-ahead — never silently, never as residue.
 
 ## Run the round
 
-1. **Scope.** Name the campaign(s) under debrief, the artifact surfaces involved, and the
-   audiences that matter (human operators, frontier models, small models, external
-   clients). State what evidence already exists and what must be produced live.
-2. **Field passes.** Drive the artifact with representative real consumers per
-   [field-testing.md](references/field-testing.md): goal-only prompts, no coaching, the
-   tier ladder from frontier to the smallest model that matters, reasoning traces
-   captured wherever the runtime exposes them. Record every pass verbatim in the ledger.
-3. **Layer audits.** In parallel with the field passes, audit each layer the campaign
-   touched: implementation boundaries (what belongs a layer down or in a published
-   package), the process record (which dispatches failed, which laws were missing, where
-   executors deviated), and the instruction set itself (agents, rules, skills — what
-   confused an executor is a defect in the instruction, not the executor).
-4. **Reconcile into the ledger.** Number the findings, attach verbatim evidence to each,
-   and bucket every one. Confusion signatures from reasoning traces are findings about
-   the artifact's teaching surface, not anecdotes — see the signature catalog in
-   [field-testing.md](references/field-testing.md).
-5. **Fix loops.** Dispatch fix-now findings as bounded units under the repository's
-   engine contract, serialized, failing-first. After each round, re-run the field passes
-   that found the class and record the delta. Iterate until the field tier that matters
-   walks the surface unaided or the residual is proven to be consumer-floor, not
-   artifact darkness — state which, with evidence.
-6. **Canon refinement.** Write or revise the portable skills/rules the findings justify;
-   update the guide for resident truth; update `ROADMAP.md` for forward work. Every
-   retained finding names the artifact that now carries it.
-7. **Propagate.** Land the portable set in the scaffold repository so every future
-   project inherits it; run the scaffold's own gates before pushing.
-8. **Dispose.** Present the ledger's disposition map to the owner: what folded where,
-   what remains open. Delete the ledger only on their explicit go-ahead.
+1. **Scope and gather.** Name the campaign(s) under debrief. Assemble the record: unit
+   ledger, deviations and recoveries, audit verdicts and their reconciliations, gate
+   history, and any live transcripts. State what evidence exists and what must be
+   produced fresh.
+2. **Field evidence.** Drive what was built with real consumers where a consumable
+   surface exists. Record every pass verbatim.
+3. **Artifact audits.** Layer and boundary truth: does app code belong a layer down in
+   src, does src carry application policy, does either duplicate a declared ecosystem
+   primitive? Package promotion: what grew into a reusable mechanism that belongs in an
+   existing package or justifies a new one — mapped dependency-first so promotion order
+   is executable. Every row ends implement, repair, retain, or intentionally exclude,
+   with evidence.
+4. **Process retrospective.** Walk the campaign record for both failure and success:
+   dispatches that deviated and why; recoveries that worked (codify the mechanism that
+   saved them); estimates versus observed durations; audit rounds that caught real
+   defects versus rounds that churned; anything the orchestrator absorbed that should
+   have been dispatched or dispatched that it should have owned.
+5. **Instruction-set audit.** Audit the agents, rules, skills, and orchestration
+   contract themselves against the campaign record, using the adversarial method in
+   [instruction-audit.md](references/instruction-audit.md). What confused an executor is
+   a defect in the instruction, not the executor.
+6. **Reconcile into the ledger.** Number the findings, attach verbatim evidence, bucket
+   every one. Where two audit lanes disagree, rule each divergence on the record with
+   the reason.
+7. **Land the refinements.** Dispatch fix-now findings as bounded units under the
+   repository's engine contract; make the canon edits (charters, rules, skills,
+   orchestration contract) with the owner's direction where the root contract is
+   touched; re-prove per the law above.
+8. **Propagate.** Portable changes are made in the scaffold repository's host inventory,
+   staged, gated, and pushed — editing one project's checkout propagates nothing. Verify
+   the generated-workspace proofs stay green so new projects inherit the refined canon.
+9. **Dispose.** Present the disposition map — finding table with carriers, the canon
+   delta, what remains open — and delete the ledger only on the owner's explicit
+   go-ahead.
 
 ## Verdict shape
 
-Each debrief round ends with one fixed report: the finding table (id, evidence pointer,
-bucket, carrier), the field-pass scoreboard before and after, the canon delta (files
-created or changed), and exactly one terminal line — `DEBRIEF: FOLDED` when every finding
-has a carrier and the propagation is pushed, or `DEBRIEF: OPEN` with the blocking items.
+Each round ends with one fixed report: the finding table (id, evidence pointer, bucket,
+carrier), the canon delta (files created or changed, per layer: agents, rules, skills,
+process, guide, roadmap), the re-proof evidence, and exactly one terminal line —
+`DEBRIEF: FOLDED` when every finding has a carrier and the propagation is pushed, or
+`DEBRIEF: OPEN` with the blocking items.

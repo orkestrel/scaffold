@@ -37,9 +37,12 @@ One workflow runs across both providers. Each engine has one job, and no engine 
 - **After implementation Opus 5 and Sol audit independently** — Opus on design fit, Sol on
   correctness and constraint satisfaction — and the orchestrator reconciles their evidence
   into one verdict.
-- **Lower-cost native agents (Sonnet, Terra) do fully specified mechanical units and gate
-  evidence only.** A specified rename, a scaffold expansion, a conformance checklist, a gate
-  run. They never substitute for Grok, Opus 5, or Sol.
+- **Lower-cost native agents (Sonnet, Terra) do fully specified units and read-only
+  evidence only.** A specified rename, an app-layer expansion, a conformance checklist, a
+  gate run, a bounded primary-source question, a reconnaissance sweep. They never
+  substitute for Grok, Opus 5, or Sol: `researcher` and `scout` are the native evidence
+  lanes for bounded questions and the fallback when the Grok bench is dark, never the
+  route for repository-scale absorption or judgment.
 
 The orchestrator reconciles; no external engine reconciles itself or accepts its own work.
 In Claude Code the orchestrator is the top-level Fable session. When Codex is primary, the
@@ -68,6 +71,9 @@ dispatch, even when the role file pins it.
 | Nontrivial implementation (objective)    | `codex` route `implementer`     | `implementer`                 | GPT-5.6 Sol (bridge / native) |
 | Nontrivial implementation (subjective)   | `implementer`                   | `implementer` route `opus`    | Opus 5 (native / bridge)      |
 | Fully specified mechanical unit          | `builder`                       | `builder`                     | Sonnet / Terra                |
+| Fully specified app-layer unit           | `application`                   | `application`                 | Sonnet / Terra                |
+| Bounded primary-source research          | `researcher`                    | `researcher`                  | Sonnet / Terra                |
+| Repository reconnaissance                | `scout`                         | `scout`                       | Sonnet / Terra                |
 | Mechanical conformance evidence          | `checker`                       | `checker`                     | Sonnet / Terra                |
 | Gate evidence                            | `verifier`                      | `verifier`                    | Sonnet / Terra                |
 | Ecosystem evidence                       | `orkestrel`                     | `orkestrel`                   | Sonnet / Terra                |

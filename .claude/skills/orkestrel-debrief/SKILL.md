@@ -1,6 +1,6 @@
 ---
 name: orkestrel-debrief
-description: Convert a closed campaign's residue into portable truth through field evidence, a findings ledger, fix loops with live re-proof, canon refinement, and disciplined disposal. Use after a campaign or milestone closes to audit what was built and how it was built, when live field testing must precede judgment, when learnings must propagate into skills/rules/guides/scaffold, or when working ledgers must fold into canon and retire.
+description: Look back at a long campaign to learn from its mistakes and successes and improve the agents, rules, skills, and processes that ran it. Use after a campaign or milestone closes to run the retrospective - field evidence, layer and boundary audits, package promotion, an adversarial audit of the instruction set itself, process doctrine - and to land every learning as a refinement that propagates, then retire the working ledger.
 ---
 
 # Load the canonical workflow
