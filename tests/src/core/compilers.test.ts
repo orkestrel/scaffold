@@ -376,6 +376,44 @@ describe('application layer compilation', () => {
 		expect(serverContent).not.toContain('@app/browser')
 	})
 
+	it('adopts contract guards and parsers while retaining accessor-free option walks', () => {
+		const artifacts = blueprintToPlan(
+			blueprint('application', {
+				src: [],
+				app: ['core', 'browser', 'server'],
+			}),
+		).artifacts
+		const coreErrors = artifacts.find((artifact) => artifact.path === 'app/core/errors.ts')
+		const coreParsers = artifacts.find((artifact) => artifact.path === 'app/core/parsers.ts')
+		const coreTest = artifacts.find(
+			(artifact) => artifact.path === 'tests/app/core/factories.test.ts',
+		)
+		const browserErrors = artifacts.find((artifact) => artifact.path === 'app/browser/errors.ts')
+		const browserParsers = artifacts.find((artifact) => artifact.path === 'app/browser/parsers.ts')
+		const serverErrors = artifacts.find((artifact) => artifact.path === 'app/server/errors.ts')
+		const serverParsers = artifacts.find((artifact) => artifact.path === 'app/server/parsers.ts')
+
+		expect(coreErrors?.content).toContain("import { holds } from '@orkestrel/contract'")
+		expect(coreErrors?.content).toContain('return holds(() => value instanceof ApplicationError)')
+		expect(coreParsers?.content).toContain("import { isNonEmptyString } from '@orkestrel/contract'")
+		expect(coreTest?.content).toContain("it('refuses a foreign application error',")
+		expect(browserErrors?.content).toContain(
+			'return holds(() => value instanceof BrowserApplicationError)',
+		)
+		expect(browserParsers?.content).toContain(
+			'// The probe: recordOf invokes accessor getters; this walk must not.',
+		)
+		expect(serverErrors?.content).toContain(
+			'return holds(() => value instanceof ApplicationServerError)',
+		)
+		expect(serverParsers?.content).toContain(
+			"import { isNonEmptyString, parseString } from '@orkestrel/contract'",
+		)
+		expect(serverParsers?.content).toContain(
+			'// The probe: recordOf invokes accessor getters; this walk must not.',
+		)
+	})
+
 	it('builds check-only app tsconfigs and thin executable Vite wrappers', () => {
 		const core = readRecord(parseJSON(appTsconfig('core', true)))
 		const browser = readRecord(parseJSON(appTsconfig('browser', true)))

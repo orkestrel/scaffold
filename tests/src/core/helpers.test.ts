@@ -1595,11 +1595,11 @@ describe('pinPlan', () => {
 		}
 		expect(actual).toMatchInlineSnapshot(`
 			{
-			  "app-browser": "404a9131",
-			  "app-core": "c5ac4092",
-			  "app-full": "aa282fc0",
-			  "app-server": "db317c5c",
-			  "mixed-full": "f19144e4",
+			  "app-browser": "0a0d924f",
+			  "app-core": "8dcf7261",
+			  "app-full": "76e5e8b0",
+			  "app-server": "93bf3f3d",
+			  "mixed-full": "1fde40f6",
 			}
 		`)
 	})

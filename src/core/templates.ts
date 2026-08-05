@@ -341,6 +341,7 @@ ${EXPORT_KEYWORD} ${CONST_KEYWORD} MAX_APPLICATION_NAME_INPUT_LENGTH = 255
 		category: 'source',
 		placeholders: Object.freeze([]),
 		content: `import type { ApplicationErrorCode, ApplicationErrorContext } from './types.js'
+import { holds } from '@orkestrel/contract'
 
 /** A rejected shared application configuration value. */
 ${EXPORT_KEYWORD} class ApplicationError extends Error {
@@ -369,11 +370,7 @@ ${EXPORT_KEYWORD} class ApplicationError extends Error {
  * \`\`\`
  */
 ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} isApplicationError(value: unknown): value is ApplicationError {
-	try {
-		return value instanceof ApplicationError
-	} catch {
-		return false
-	}
+	return holds(() => value instanceof ApplicationError)
 }
 `,
 	}),
@@ -383,7 +380,8 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} isApplicationError(value: unknown): value 
 		summary: 'The host-independent application value parsers.',
 		category: 'source',
 		placeholders: Object.freeze([]),
-		content: `import { MAX_APPLICATION_NAME_INPUT_LENGTH, MAX_APPLICATION_NAME_LENGTH } from './constants.js'
+		content: `import { isNonEmptyString } from '@orkestrel/contract'
+import { MAX_APPLICATION_NAME_INPUT_LENGTH, MAX_APPLICATION_NAME_LENGTH } from './constants.js'
 import { ApplicationError } from './errors.js'
 
 /**
@@ -405,7 +403,7 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} parseApplicationName(value: unknown): stri
 		throw new ApplicationError('CONFIG', 'Application name must be a string', { value })
 	}
 	const name = value.trim()
-	if (name.length === 0 || name.length > MAX_APPLICATION_NAME_LENGTH) {
+	if (!isNonEmptyString(name) || name.length > MAX_APPLICATION_NAME_LENGTH) {
 		throw new ApplicationError(
 			'CONFIG',
 			\`Application name must contain 1 through \${MAX_APPLICATION_NAME_LENGTH} characters\`,
@@ -503,6 +501,7 @@ ${EXPORT_KEYWORD} ${CONST_KEYWORD} MAX_BROWSER_APPLICATION_NAME_INPUT_LENGTH = 2
 		category: 'source',
 		placeholders: Object.freeze([]),
 		content: `import type { BrowserApplicationErrorCode, BrowserApplicationErrorContext } from './types.js'
+import { holds } from '@orkestrel/contract'
 
 /** A rejected browser application configuration value. */
 ${EXPORT_KEYWORD} class BrowserApplicationError extends Error {
@@ -535,11 +534,7 @@ ${EXPORT_KEYWORD} class BrowserApplicationError extends Error {
  * \`\`\`
  */
 ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} isBrowserApplicationError(value: unknown): value is BrowserApplicationError {
-	try {
-		return value instanceof BrowserApplicationError
-	} catch {
-		return false
-	}
+	return holds(() => value instanceof BrowserApplicationError)
 }
 `,
 	}),
@@ -550,6 +545,7 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} isBrowserApplicationError(value: unknown):
 		category: 'source',
 		placeholders: Object.freeze([]),
 		content: `import type { BrowserApplicationOptions } from './types.js'
+import { isNonEmptyString } from '@orkestrel/contract'
 import {
 	MAX_BROWSER_APPLICATION_NAME_INPUT_LENGTH,
 	MAX_BROWSER_APPLICATION_NAME_LENGTH,
@@ -586,6 +582,7 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} parseBrowserApplicationOptions(value: unkn
 				{ value },
 			)
 		}
+		// The probe: recordOf invokes accessor getters; this walk must not.
 		const keys = Reflect.ownKeys(value)
 		if (keys.some((key) => key !== 'name')) {
 			throw new BrowserApplicationError('CONFIG', 'Unknown browser application option', {
@@ -610,7 +607,7 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} parseBrowserApplicationOptions(value: unkn
 			})
 		}
 		const name = descriptor.value.trim()
-		if (name.length === 0 || name.length > MAX_BROWSER_APPLICATION_NAME_LENGTH) {
+		if (!isNonEmptyString(name) || name.length > MAX_BROWSER_APPLICATION_NAME_LENGTH) {
 			throw new BrowserApplicationError(
 				'CONFIG',
 				\`Browser application name must contain 1 through \${MAX_BROWSER_APPLICATION_NAME_LENGTH} characters\`,
@@ -856,6 +853,7 @@ ${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_HEALTH_PATH = '/'
 		category: 'source',
 		placeholders: Object.freeze([]),
 		content: `import type { ApplicationServerErrorCode, ApplicationServerErrorContext } from './types.js'
+import { holds } from '@orkestrel/contract'
 
 /** A rejected application server configuration or lifecycle operation. */
 ${EXPORT_KEYWORD} class ApplicationServerError extends Error {
@@ -888,11 +886,7 @@ ${EXPORT_KEYWORD} class ApplicationServerError extends Error {
  * \`\`\`
  */
 ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} isApplicationServerError(value: unknown): value is ApplicationServerError {
-	try {
-		return value instanceof ApplicationServerError
-	} catch {
-		return false
-	}
+	return holds(() => value instanceof ApplicationServerError)
 }
 `,
 	}),
@@ -903,6 +897,7 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} isApplicationServerError(value: unknown): 
 		category: 'source',
 		placeholders: Object.freeze([]),
 		content: `import type { ApplicationServerOptions } from './types.js'
+import { isNonEmptyString, parseString } from '@orkestrel/contract'
 import { isIP } from 'node:net'
 import {
 	APP_HOST_LABEL_PATTERN,
@@ -932,7 +927,7 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} parseApplicationHost(value: unknown): stri
 	const host = value.trim()
 	const family = isIP(host)
 	if (
-		host.length === 0 ||
+		!isNonEmptyString(host) ||
 		host.length > 253 ||
 		(family === 0 &&
 			(APP_NUMERIC_HOST_PATTERN.test(host) ||
@@ -954,18 +949,14 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} parseApplicationHost(value: unknown): stri
  */
 ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} parseApplicationPort(value: unknown): number {
 	if (value === undefined) return DEFAULT_APP_PORT
-	if (typeof value !== 'string' && typeof value !== 'number') {
+	const text = parseString(value)
+	if (text === undefined || text.length > MAX_APP_NUMBER_INPUT_LENGTH) {
 		throw new ApplicationServerError('CONFIG', 'APP_PORT must be an integer from 0 through 65535', {
 			value,
 		})
 	}
-	if (typeof value === 'string' && value.length > MAX_APP_NUMBER_INPUT_LENGTH) {
-		throw new ApplicationServerError('CONFIG', 'APP_PORT must be an integer from 0 through 65535', {
-			value,
-		})
-	}
-	const text = typeof value === 'string' ? value.trim() : String(value)
-	const port = APP_PORT_PATTERN.test(text) ? Number(text) : Number.NaN
+	const normalized = text.trim()
+	const port = APP_PORT_PATTERN.test(normalized) ? Number(normalized) : Number.NaN
 	if (!Number.isInteger(port) || port < 0 || port > 65_535) {
 		throw new ApplicationServerError('CONFIG', 'APP_PORT must be an integer from 0 through 65535', {
 			value,
@@ -983,22 +974,16 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} parseApplicationPort(value: unknown): numb
  */
 ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} parseApplicationStartTimeout(value: unknown): number {
 	if (value === undefined) return DEFAULT_APP_START_TIMEOUT
-	if (typeof value !== 'string' && typeof value !== 'number') {
+	const text = parseString(value)
+	if (text === undefined || text.length > MAX_APP_NUMBER_INPUT_LENGTH) {
 		throw new ApplicationServerError(
 			'CONFIG',
 			\`APP_START_TIMEOUT must be an integer from 1 through \${MAX_APP_START_TIMEOUT}\`,
 			{ value },
 		)
 	}
-	if (typeof value === 'string' && value.length > MAX_APP_NUMBER_INPUT_LENGTH) {
-		throw new ApplicationServerError(
-			'CONFIG',
-			\`APP_START_TIMEOUT must be an integer from 1 through \${MAX_APP_START_TIMEOUT}\`,
-			{ value },
-		)
-	}
-	const text = typeof value === 'string' ? value.trim() : String(value)
-	const timeout = APP_PORT_PATTERN.test(text) ? Number(text) : Number.NaN
+	const normalized = text.trim()
+	const timeout = APP_PORT_PATTERN.test(normalized) ? Number(normalized) : Number.NaN
 	if (!Number.isInteger(timeout) || timeout < 1 || timeout > MAX_APP_START_TIMEOUT) {
 		throw new ApplicationServerError(
 			'CONFIG',
@@ -1033,6 +1018,7 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} parseApplicationServerOptions(value: unkno
 				{ value },
 			)
 		}
+		// The probe: recordOf invokes accessor getters; this walk must not.
 		const keys = Reflect.ownKeys(value)
 		const unknown = keys.filter((key) => key !== 'host' && key !== 'port' && key !== 'timeout')
 		if (unknown.length > 0) {
@@ -1890,6 +1876,13 @@ describe('createApplication', () => {
 		const revocable = Proxy.revocable({}, {})
 		revocable.revoke()
 		expect(isApplicationError(revocable.proxy)).toBe(false)
+	})
+
+	it('refuses a foreign application error', () => {
+		const foreign = new Error('foreign')
+		foreign.name = 'ApplicationError'
+
+		expect(isApplicationError(foreign)).toBe(false)
 	})
 })
 `,
