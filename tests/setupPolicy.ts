@@ -40,6 +40,7 @@ export const FUNCTION_SOURCE_FILES: readonly string[] = Object.freeze([
 	'middlewares.ts',
 	'parsers.ts',
 	'relations.ts',
+	'routes.ts',
 	'schemas.ts',
 	'seeders.ts',
 	'shapers.ts',

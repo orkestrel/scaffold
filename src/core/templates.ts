@@ -837,7 +837,7 @@ export * from './parsers.js'
 				name: 'factory',
 				description: 'The factory the shipped entry mounts through.',
 			}),
-			Object.freeze({ name: 'mount', description: 'The one mounting expression.' }),
+			Object.freeze({ name: 'mount', description: 'The mounting statement.' }),
 		]),
 		content: `import { {{factory}} } from './index.js'
 
@@ -1608,6 +1608,9 @@ ${EXPORT_KEYWORD} class ApplicationServerRunner implements ApplicationServerRunn
 					'Application server did not expose a URL after successful startup',
 				),
 			)
+			// The server already bound, so failing over it must also release it; a stop
+			// failure reaches the same report rather than stranding a silent listener.
+			void this.#server.stop().catch(this.#fail.bind(this, generation))
 			return
 		}
 		process.stderr.write(\`[READY] \${APP_NAME} \${url}\\n\`)
@@ -1880,6 +1883,16 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} startApplicationProcess(
 			return output.join('')
 		},
 	}
+}
+
+/** Wait until running application runners hold only the recorded shutdown listeners. */
+${EXPORT_KEYWORD} async ${FUNCTION_KEYWORD} waitForApplicationRelease(count: number): Promise<void> {
+	const deadline = Date.now() + 10_000
+	while (Date.now() < deadline) {
+		if (process.listenerCount('SIGINT') + process.listenerCount('SIGTERM') === count) return
+		await new Promise<void>((resolvePromise) => setTimeout(resolvePromise, 25))
+	}
+	throw new Error('application runner did not release its process shutdown listeners')
 }
 
 /** Wait for a real child process and all of its stdio to close. */
@@ -2253,6 +2266,7 @@ import {
 	startApplicationProcess,
 	stopNodeServer,
 	waitForApplicationProcess,
+	waitForApplicationRelease,
 } from '../../setupServer.js'
 
 beforeAll(() => buildApplicationServer(), 60_000)
@@ -2308,7 +2322,6 @@ describe('ApplicationServer', () => {
 			expect(server.status).toBe('listening')
 			expect(server.port).toEqual(expect.any(Number))
 			const firstUrl = server.url
-			expect(firstUrl).toEqual(expect.any(String))
 			if (firstUrl === undefined) throw new Error('Expected a bound application URL')
 
 			const first = await fetch(\`\${firstUrl}\${APP_HEALTH_PATH}\`)
@@ -2405,6 +2418,33 @@ describe('ApplicationServerRunner', () => {
 			expect(application.output()).not.toContain('EADDRINUSE')
 			expect(owner.listening).toBe(true)
 		} finally {
+			await stopNodeServer(owner)
+		}
+	})
+
+	it('releases both process shutdown listeners when startup fails', async () => {
+		const port = await reserveLoopbackPort()
+		const owner = createServer()
+		owner.listen(port, '127.0.0.1')
+		await once(owner, 'listening')
+		const interrupts = process.listenerCount('SIGINT')
+		const terminations = process.listenerCount('SIGTERM')
+		// The reporter owns the process exit code, so this in-process failure records the
+		// code it set and then restores whatever the surrounding run had.
+		const code = process.exitCode
+		const runner = new ApplicationServerRunner({ server: { host: '127.0.0.1', port } })
+		try {
+			runner.start()
+			expect(process.listenerCount('SIGINT')).toBe(interrupts + 1)
+			expect(process.listenerCount('SIGTERM')).toBe(terminations + 1)
+
+			await waitForApplicationRelease(interrupts + terminations)
+			expect(process.listenerCount('SIGINT')).toBe(interrupts)
+			expect(process.listenerCount('SIGTERM')).toBe(terminations)
+			expect(process.exitCode).toBe(1)
+		} finally {
+			process.exitCode = code
+			await runner.stop()
 			await stopNodeServer(owner)
 		}
 	})

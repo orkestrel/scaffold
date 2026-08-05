@@ -1651,10 +1651,10 @@ describe('pinPlan', () => {
 			{
 			  "browser-only": "bb55b56f",
 			  "core+browser": "89bd1d7a",
-			  "core+browser+server": "48339890",
-			  "core+server": "2a25a3ac",
+			  "core+browser+server": "014331ed",
+			  "core+server": "b846ad97",
 			  "core-only": "9ebe0fcf",
-			  "server-only": "cab56859",
+			  "server-only": "3a4e301a",
 			}
 		`)
 	})
@@ -1684,9 +1684,9 @@ describe('pinPlan', () => {
 			{
 			  "app-browser": "841e0ec6",
 			  "app-core": "ebf81ea1",
-			  "app-full": "6b6fe4f3",
-			  "app-server": "b15a53fd",
-			  "mixed-full": "6bd48be9",
+			  "app-full": "80b39e72",
+			  "app-server": "cb095560",
+			  "mixed-full": "b99c5bb6",
 			}
 		`)
 	})

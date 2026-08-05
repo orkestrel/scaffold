@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { parseJSON } from '@orkestrel/contract'
 import ts from 'typescript'
 import { describe, expect, it } from 'vitest'
+import { blueprint, blueprintToPlan } from '@src/core'
 import { isBrowserVuePath, readRecord } from '../../setup.js'
 import {
 	inspectCodingLaw,
@@ -257,5 +258,32 @@ describe('repository coding law', () => {
 				{ content: 'const value = {} as object', lang: 'ts' },
 			]),
 		).not.toHaveLength(0)
+	})
+})
+
+describe('generated workspace coding law', () => {
+	it('emits TypeScript sources that satisfy the policy every generated workspace runs', () => {
+		// The generated `policy` project runs this exact module over `{app,src}/**`,
+		// so a template that violates a kind registration fails the consumer's own
+		// gates rather than this repository's. Host artifacts carry no plan content
+		// and never land under `app/` or `src/`; the workspace sweep above covers them.
+		const specs = [
+			blueprint('boundary', {
+				src: ['core', 'browser', 'server'],
+				app: ['core', 'browser', 'server'],
+				showcase: true,
+			}),
+			blueprint('lean', { src: [], app: ['server'] }),
+		]
+		const violations: string[] = []
+		for (const spec of specs) {
+			for (const artifact of blueprintToPlan(spec).artifacts) {
+				if (artifact.origin === 'host') continue
+				if (!/^(?:app|src)\/.+\.ts$/u.test(artifact.path)) continue
+				violations.push(...inspectCodingLaw(artifact.path, artifact.content))
+			}
+		}
+
+		expect(violations).toEqual([])
 	})
 })

@@ -4450,8 +4450,8 @@ export function testArtifacts(spec: Blueprint, pascal: string): readonly Artifac
 	if (spec.src.includes('browser') || spec.app.includes('browser')) {
 		artifacts.push(fillArtifact('tests/setupBrowser.ts', 'tests', 'setupBrowser', {}, 'browser'))
 	}
-	const boundary = hasApplicationBoundary(spec)
-	const showcase = hasApplicationShowcase(spec)
+	const hasBoundary = hasApplicationBoundary(spec)
+	const hasShowcase = hasApplicationShowcase(spec)
 	if (spec.app.includes('core')) {
 		artifacts.push(
 			fillArtifact(
@@ -4459,9 +4459,9 @@ export function testArtifacts(spec: Blueprint, pascal: string): readonly Artifac
 				'tests',
 				'appCoreTest',
 				{
-					guardImport: boundary ? '\tisApplicationRecord,\n' : '',
-					readImport: boundary ? '\treadApplicationHealth,\n' : '',
-					boundary: boundary
+					guardImport: hasBoundary ? '\tisApplicationRecord,\n' : '',
+					readImport: hasBoundary ? '\treadApplicationHealth,\n' : '',
+					boundary: hasBoundary
 						? `
 
 describe('shared application health boundary', () => {
@@ -4505,11 +4505,11 @@ describe('shared application health boundary', () => {
 				'appBrowserTest',
 				{
 					browserTestNameImport,
-					showcaseImport: showcase ? '\tmountShowcaseApplication,\n' : '',
-					entryImport: `${showcase ? '\tseedApplication,\n' : ''}${
-						boundary ? '\tmountBrowserApplication,\n' : ''
+					showcaseImport: hasShowcase ? '\tmountShowcaseApplication,\n' : '',
+					entryImport: `${hasShowcase ? '\tseedApplication,\n' : ''}${
+						hasBoundary ? '\tmountBrowserApplication,\n' : ''
 					}`,
-					showcase: showcase
+					showcase: hasShowcase
 						? `
 
 describe('mountShowcaseApplication', () => {
@@ -4529,7 +4529,7 @@ describe('mountShowcaseApplication', () => {
 	})
 })`
 						: '',
-					boundary: boundary
+					boundary: hasBoundary
 						? `
 
 describe('mountBrowserApplication', () => {
@@ -4551,7 +4551,7 @@ describe('mountBrowserApplication', () => {
 		)
 	}
 	if (spec.app.includes('server')) {
-		const testNameImport = boundary
+		const testNameImport = hasBoundary
 			? `import {
 	APP_HEALTH_METHOD,
 	APP_HEALTH_PATH,
@@ -4562,11 +4562,16 @@ describe('mountBrowserApplication', () => {
 			: spec.app.includes('core')
 				? "import { APP_NAME } from '@app/core'"
 				: "import { APP_NAME } from '@app/server'"
-		const serverImport = boundary
-			? "import { createApplicationDispatcher, createApplicationServer } from '@app/server'"
+		const serverImport = hasBoundary
+			? `import {
+	ApplicationServerRunner,
+	createApplicationDispatcher,
+	createApplicationServer,
+} from '@app/server'`
 			: `import {
 	APP_HEALTH_METHOD,
 	APP_HEALTH_PATH,
+	ApplicationServerRunner,
 	createApplicationDispatcher,
 	createApplicationServer,
 } from '@app/server'`
@@ -4578,7 +4583,7 @@ describe('mountBrowserApplication', () => {
 				{
 					testNameImport,
 					serverImport,
-					boundary: boundary
+					boundary: hasBoundary
 						? `
 
 describe('shared application boundary', () => {
@@ -4819,7 +4824,7 @@ import { mountShowcaseApplication, seedApplication } from '@app/browser'
 
 ${CONST_KEYWORD} seed = seedApplication()
 ${CONST_KEYWORD} showcase = mountShowcaseApplication('#app')
-if (seed.name.length === 0) throw new Error('Showcase seed is empty')
+seed.name // '${spec.name} showcase'
 showcase.unmount()
 \`\`\``)
 	}
@@ -4867,24 +4872,16 @@ ${CONST_KEYWORD} host = parseApplicationHost('127.0.0.1')
 ${CONST_KEYWORD} port = parseApplicationPort('0')
 ${CONST_KEYWORD} timeout = parseApplicationStartTimeout('5000')
 ${CONST_KEYWORD} options = parseApplicationServerOptions({ server: { host, port, timeout } })
-${CONST_KEYWORD} hostMatches = APP_HOST_LABEL_PATTERN.test('api')
-${CONST_KEYWORD} numericMatches = APP_NUMERIC_HOST_PATTERN.test('999.999.999.999')
-if (
-	!hostMatches ||
-	!numericMatches ||
-	APP_HEALTH_METHOD !== 'GET' ||
-	APP_HEALTH_PATH !== '/health' ||
-	DEFAULT_APP_START_TIMEOUT !== 10_000 ||
-	MAX_APP_START_TIMEOUT !== 300_000
-) {
-	throw new Error('Application constants are off contract')
-}
+parseApplicationStartTimeout(String(DEFAULT_APP_START_TIMEOUT)) // 10000
+MAX_APP_START_TIMEOUT // 300000
+APP_HOST_LABEL_PATTERN.test('api') // true
+APP_NUMERIC_HOST_PATTERN.test('999.999.999.999') // true (and therefore rejected as a host)
 ${CONST_KEYWORD} state: ApplicationState = { connection: { encrypted: false } }
 ${CONST_KEYWORD} record: ApplicationRecord = { name: '${spec.name}', status: 'ok' }
 ${CONST_KEYWORD} dispatcher = createApplicationDispatcher()
 try {
 	${CONST_KEYWORD} response = await dispatcher.handle(
-		new Request(\`http://application.test\${APP_HEALTH_PATH}\`),
+		new Request(\`http://application.test\${APP_HEALTH_PATH}\`, { method: APP_HEALTH_METHOD }),
 		state,
 	)
 	${CONST_KEYWORD} health = handleApplicationHealth()
@@ -4892,7 +4889,7 @@ try {
 	${
 		hasBoundary
 			? `${CONST_KEYWORD} value: unknown = await health.clone().json()
-	if (!isApplicationRecord(value)) throw new Error('Invalid application health record')
+	isApplicationRecord(value) // true
 	`
 			: ''
 	}if (!response.ok || !health.ok || !encoded.ok) throw new Error('Application health failed')
@@ -4900,9 +4897,10 @@ try {
 	dispatcher.destroy()
 }
 
-${CONST_KEYWORD} error = new ApplicationServerError('CONFIG', 'invalid')
-if (!isApplicationServerError(error)) throw new Error('Application server guard failed')
-reportApplicationServerError(error) // writes only a stable CONFIG diagnostic
+${CONST_KEYWORD} failure: unknown = new ApplicationServerError('CONFIG', 'invalid')
+if (isApplicationServerError(failure)) {
+	reportApplicationServerError(failure) // writes only a stable CONFIG diagnostic
+}
 
 ${CONST_KEYWORD} server = createApplicationServer(options)
 ${CONST_KEYWORD} controller = new AbortController()
@@ -4996,13 +4994,14 @@ only integer timeouts from 1 through 300,000 milliseconds. Lifecycle failures us
 \`isApplicationServerError\` before reading either field.
 
 Before binding, \`url\` is \`undefined\`; after a successful start it reflects the real bound port,
-and it returns to \`undefined\` after stop or destroy.
+and it returns to \`undefined\` after stop or destroy. \`ApplicationState\` extends middleware's
+\`IdentifierState\` and adds only its \`connection\` property; there is no redundant \`listening\` member.
 
 Each \`createApplicationDispatcher()\` call returns a fresh dispatcher that owns exactly \`GET /health\`
-and serializes the shared \`ApplicationRecord\` shape \`{ name: APP_NAME, status: 'ok' }\` as JSON. The server composes
-\`createBoundary()\`, \`createSecurity()\`, then \`createDeadline({ ms: timeout })\` around that
-owned dispatcher; standalone callers destroy theirs after use. Every other path returns \`404\`, and every unsupported method returns \`405\` with
-\`Allow: GET\`.`
+and serializes the shared \`ApplicationRecord\` shape \`{ name: APP_NAME, status: 'ok' }\` as JSON. The
+server composes \`createBoundary()\`, \`createSecurity()\`, then \`createDeadline({ ms: timeout })\`
+around that owned dispatcher; standalone callers destroy theirs after use. Every other path returns
+\`404\`, and every unsupported method returns \`405\` with \`Allow: GET\`.`
 }
 
 /**

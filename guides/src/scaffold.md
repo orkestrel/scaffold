@@ -71,15 +71,16 @@ A generated `app/server` owns strict grouped `server.host`, `server.port`, and `
 options plus the `APP_HOST`, `APP_PORT`, and `APP_START_TIMEOUT` environment boundaries. It
 composes the installed router, server, and boundary/security/deadline middleware substrates around
 a fresh `GET /health` dispatcher from `createApplicationDispatcher`, supports repeated start/stop
-cycles and terminal destroy of both the server and its owned dispatcher,
-and writes exactly one `[READY] <name> <url>` diagnostic after process-owned readiness. Its
-exported `reportApplicationServerError` handler writes only a stable configuration, lifecycle, or
-unknown failure code; process-owned failures never serialize a rejected value, nested cause,
-stack, secret, or other error context.
-`ApplicationState` extends middleware's `IdentifierState` and adds only the connection fact.
-`ApplicationServer.url` is `undefined` until a real port is bound and again after stop or destroy;
-the redundant `listening` projection is not part of the generated interface. The runner narrows
-the post-start URL before writing `[READY]`, so it never announces a stale or unbound address.
+cycles and terminal destroy of both the server and its owned dispatcher, and writes exactly one
+`[READY] <name> <url>` diagnostic after process-owned readiness. Its exported
+`reportApplicationServerError` handler writes only a stable configuration, lifecycle, or unknown
+failure code; process-owned failures never serialize a rejected value, nested cause, stack,
+secret, or other error context. `ApplicationState` extends middleware's `IdentifierState` and adds
+only the connection fact. `ApplicationServer.url` is `undefined` until a real port is bound and
+again after stop or destroy; the redundant `listening` projection is not part of the generated
+interface. The runner narrows the post-start URL before writing `[READY]`, so it never announces a
+stale or unbound address, and it stops the server as part of failing that narrowing rather than
+leaving a bound listener without a shutdown owner.
 
 The health contract belongs to whichever layer both hosts can reach. While the server alone reads
 it, `ApplicationRecord`, `APP_HEALTH_METHOD`, and `APP_HEALTH_PATH` stay declared in `app/server`.
@@ -92,7 +93,8 @@ whole browser/server boundary: it fetches the running server's health route, rea
 `app/server` imports the relocated contract from `@app/core`, and `app/browser` still never imports
 a server module. The generated browser entry then mounts `mountBrowserApplication`, which performs
 that single read before mounting and falls back to the locally configured identity when the
-boundary yields `undefined`.
+boundary yields `undefined`. A rejected mount reports the context-free
+`[ERROR] Browser application failed`, the browser twin of that server-side discipline.
 
 Every environment barrel is an export-star barrel: `index.ts` contains only `export * from './x.js'`
 rows and nothing else. Named, default, namespace, and type-only barrel rows are absent by design,
@@ -813,6 +815,8 @@ From [`helpers.ts`](../../src/core/helpers.ts).
 | `pascalCase`                | function |
 | `escapeHtmlText`            | function |
 | `serializeTypeScriptString` | function |
+| `hasApplicationBoundary`    | function |
+| `hasApplicationShowcase`    | function |
 | `blueprintToMembers`        | function |
 | `catalogNames`              | function |
 | `alignTable`                | function |
@@ -850,8 +854,6 @@ From [`helpers.ts`](../../src/core/helpers.ts).
 | `renderObject`              | function |
 | `renderValue`               | function |
 | `renderStringArray`         | function |
-| `hasApplicationBoundary`    | function |
-| `hasApplicationShowcase`    | function |
 | `formatJson`                | function |
 | `pinPlan`                   | function |
 
@@ -864,7 +866,9 @@ guard. `blueprint` fills the defaults: `version` and `engines` from their consta
 derives the entity name from a lowercase-hyphen package name, and `blueprintToMembers` derives the
 declared public `Member[]` — a full entity, options type, interface, and factory per published
 environment, plus the exact declaration inventory each selected application environment
-contributes.
+contributes. `hasApplicationBoundary` recognizes exactly app/core + app/browser + app/server,
+while `hasApplicationShowcase` requires showcase intent beside app/browser; plan assembly, tests,
+guides, and member inventory share those predicates.
 
 `escapeHtmlText` and `serializeTypeScriptString` are the two escaping leaves used when a
 caller-supplied name reaches generated HTML or generated TypeScript source; the latter preserves
@@ -921,9 +925,7 @@ inline-or-broken width rule to single-quoted TypeScript string-array literals �
 comma on every broken line, matching `oxfmt`'s `trailingComma: "all"` for non-JSON files — so
 generated TypeScript configuration is format-stable too. It serializes every string element through
 `serializeTypeScriptString`, so quotes, backslashes, controls, and line separators remain inert in
-both layouts. `hasApplicationBoundary` recognizes exactly app/core + app/browser + app/server,
-while `hasApplicationShowcase` requires showcase intent beside app/browser; plan assembly, tests,
-guides, and member inventory share those predicates.
+both layouts.
 
 ### Helpers — server
 

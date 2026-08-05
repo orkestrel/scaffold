@@ -49,24 +49,16 @@ const host = parseApplicationHost('127.0.0.1')
 const port = parseApplicationPort('0')
 const timeout = parseApplicationStartTimeout('5000')
 const options = parseApplicationServerOptions({ server: { host, port, timeout } })
-const hostMatches = APP_HOST_LABEL_PATTERN.test('api')
-const numericMatches = APP_NUMERIC_HOST_PATTERN.test('999.999.999.999')
-if (
-	!hostMatches ||
-	!numericMatches ||
-	APP_HEALTH_METHOD !== 'GET' ||
-	APP_HEALTH_PATH !== '/health' ||
-	DEFAULT_APP_START_TIMEOUT !== 10_000 ||
-	MAX_APP_START_TIMEOUT !== 300_000
-) {
-	throw new Error('Application constants are off contract')
-}
+parseApplicationStartTimeout(String(DEFAULT_APP_START_TIMEOUT)) // 10000
+MAX_APP_START_TIMEOUT // 300000
+APP_HOST_LABEL_PATTERN.test('api') // true
+APP_NUMERIC_HOST_PATTERN.test('999.999.999.999') // true (and therefore rejected as a host)
 const state: ApplicationState = { connection: { encrypted: false } }
 const record: ApplicationRecord = { name: 'supervisor', status: 'ok' }
 const dispatcher = createApplicationDispatcher()
 try {
 	const response = await dispatcher.handle(
-		new Request(`http://application.test${APP_HEALTH_PATH}`),
+		new Request(`http://application.test${APP_HEALTH_PATH}`, { method: APP_HEALTH_METHOD }),
 		state,
 	)
 	const health = handleApplicationHealth()
@@ -76,9 +68,10 @@ try {
 	dispatcher.destroy()
 }
 
-const error = new ApplicationServerError('CONFIG', 'invalid')
-if (!isApplicationServerError(error)) throw new Error('Application server guard failed')
-reportApplicationServerError(error) // writes only a stable CONFIG diagnostic
+const failure: unknown = new ApplicationServerError('CONFIG', 'invalid')
+if (isApplicationServerError(failure)) {
+	reportApplicationServerError(failure) // writes only a stable CONFIG diagnostic
+}
 
 const server = createApplicationServer(options)
 const controller = new AbortController()
@@ -225,10 +218,10 @@ and it returns to `undefined` after stop or destroy. `ApplicationState` extends 
 `IdentifierState` and adds only its `connection` property; there is no redundant `listening` member.
 
 Each `createApplicationDispatcher()` call returns a fresh dispatcher that owns exactly `GET /health`
-and serializes the shared `ApplicationRecord` shape `{ name: APP_NAME, status: 'ok' }` as JSON. The server composes
-`createBoundary()`, `createSecurity()`, then `createDeadline({ ms: timeout })` around that
-owned dispatcher; standalone callers destroy theirs after use. Every other path returns `404`, and every unsupported method returns `405` with
-`Allow: GET`.
+and serializes the shared `ApplicationRecord` shape `{ name: APP_NAME, status: 'ok' }` as JSON. The
+server composes `createBoundary()`, `createSecurity()`, then `createDeadline({ ms: timeout })`
+around that owned dispatcher; standalone callers destroy theirs after use. Every other path returns
+`404`, and every unsupported method returns `405` with `Allow: GET`.
 
 ## Tests
 
