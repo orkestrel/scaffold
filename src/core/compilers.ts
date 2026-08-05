@@ -370,6 +370,7 @@ export function packageManifest(spec: Blueprint): string {
 		...(hasSource || spec.bin ? ['npm run test:src'] : []),
 		...(spec.app.length > 0 ? ['npm run test:app'] : []),
 		'npm run test:policy',
+		'npm run test:config',
 		'npm run test:guides',
 	].join(' && ')
 	if (hasSource || spec.bin) {
@@ -405,6 +406,8 @@ export function packageManifest(spec: Blueprint): string {
 	}
 	scripts['test:policy'] =
 		'vitest run --config vite.config.ts --no-cache --reporter=dot --project policy'
+	scripts['test:config'] =
+		'vitest run --config vite.config.ts --no-cache --reporter=dot --project config'
 	scripts['test:guides'] = 'vitest run --config vite.config.ts --reporter=dot --project guides'
 	scripts.build = [
 		'npm run clean',
@@ -622,7 +625,7 @@ export function viteMachinery(
  * @example
  * ```ts
  * viteProjectRegistrations(['core'], [], { integration: true })
- * // [{ project: 'srcCore' }, { project: 'policy' }, { project: 'guides' }, { project: 'integration' }]
+ * // [{ project: 'srcCore' }, { project: 'policy' }, { project: 'config' }, { project: 'guides' }, { project: 'integration' }]
  * ```
  */
 export function viteProjectRegistrations(
@@ -647,7 +650,7 @@ export function viteProjectRegistrations(
 		}
 		if (environment === 'server') registrations.push({ project: 'appServer' })
 	}
-	registrations.push({ project: 'policy' }, { project: 'guides' })
+	registrations.push({ project: 'policy' }, { project: 'config' }, { project: 'guides' })
 	if (facts.bin === true) registrations.push({ project: 'srcBin' })
 	if (facts.integration === true) registrations.push({ project: 'integration' })
 	if (facts.service === true) registrations.push({ project: 'service' })
@@ -658,7 +661,7 @@ export function viteProjectRegistrations(
  * Render the one ordered proof and structural-axis project definition block.
  *
  * @param facts - Optional structural facts.
- * @returns Policy, guides, then selected axis project definitions, separated by one blank line.
+ * @returns Policy, config, guides, then selected axis project definitions, separated by one blank line.
  *
  * @example
  * ```ts
@@ -666,7 +669,7 @@ export function viteProjectRegistrations(
  * ```
  */
 export function viteProjectDefinitions(facts: ViteFacts = {}): string {
-	const definitions = [policyViteProject(), guidesViteProject()]
+	const definitions = [policyViteProject(), configViteProject(), guidesViteProject()]
 	if (facts.bin === true) definitions.push(binViteProject())
 	if (facts.integration === true) definitions.push(integrationViteProject(facts))
 	if (facts.service === true) definitions.push(serviceViteProject())
@@ -767,6 +770,7 @@ import { chromium } from 'playwright'
 	const vueImports = needsVue
 		? `import vue from '@vitejs/plugin-vue'
 import { parse as parseVue } from 'vue/compiler-sfc'
+import { parseStartTag } from '@orkestrel/html'
 `
 		: ''
 	const showcaseImports = needsShowcase
@@ -1757,9 +1761,7 @@ ${EXPORT_KEYWORD} ${CONST_KEYWORD} HTML_SECURITY_POLICY =
 ${EXPORT_KEYWORD} ${CONST_KEYWORD} HTML_SECURITY_META =
 	'<meta\\n\\t\\t\\thttp-equiv="Content-Security-Policy"\\n\\t\\t\\tcontent="' +
 	HTML_SECURITY_POLICY +
-	'"\\n\\t\\t/>'
-${EXPORT_KEYWORD} ${CONST_KEYWORD} HTML_SECURITY_PREFIX =
-	'<!doctype html>\\n<html lang="en">\\n\\t<head>\\n\\t\\t' + HTML_SECURITY_META + '\\n'${
+	'"\\n\\t\\t/>'${
 		needsShowcase
 			? `
 ${EXPORT_KEYWORD} ${CONST_KEYWORD} SHOWCASE_SECURITY_POLICY =
@@ -1768,8 +1770,6 @@ ${EXPORT_KEYWORD} ${CONST_KEYWORD} SHOWCASE_SECURITY_META =
 	'<meta\\n\\t\\t\\thttp-equiv="Content-Security-Policy"\\n\\t\\t\\tcontent="' +
 	SHOWCASE_SECURITY_POLICY +
 	'"\\n\\t\\t/>'
-${EXPORT_KEYWORD} ${CONST_KEYWORD} SHOWCASE_SECURITY_PREFIX =
-	'<!doctype html>\\n<html lang="en">\\n\\t<head>\\n\\t\\t' + SHOWCASE_SECURITY_META + '\\n'
 ${EXPORT_KEYWORD} ${CONST_KEYWORD} SHOWCASE_BUILD_SECURITY_POLICY =
 	"default-src 'none'; base-uri 'none'; object-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; font-src data:; script-src-attr 'none'"
 ${EXPORT_KEYWORD} ${CONST_KEYWORD} SHOWCASE_BUILD_SECURITY_META =
@@ -1780,18 +1780,25 @@ ${EXPORT_KEYWORD} ${CONST_KEYWORD} SHOWCASE_BUILD_SECURITY_META =
 			: ''
 	}
 
-${EXPORT_KEYWORD} function maskIgnoredHtml${
-				needsShowcase
-					? `(
+${EXPORT_KEYWORD} function hasSecurityPrologue(html: string, security: string): boolean {
+	const normalized = html.replaceAll('\\r\\n', '\\n')
+	const doctype = '<!doctype html>\\n'
+	if (!normalized.startsWith(doctype)) return false
+	const root = parseStartTag(normalized, doctype.length)
+	return (
+		root !== undefined &&
+		root.name === 'html' &&
+		!root.slashed &&
+		normalized.startsWith('\\n\\t<head>\\n\\t\\t' + security + '\\n', root.next)
+	)
+}
+
+${EXPORT_KEYWORD} function maskIgnoredHtml(
 	environmentKeys: ReadonlySet<string>,
 	html: string,
 	security: string,
-)`
-					: `(environmentKeys: ReadonlySet<string>, html: string)`
-			}: string {
-	if (!html.replaceAll('\\r\\n', '\\n').startsWith(${
-		needsShowcase ? 'security' : 'HTML_SECURITY_PREFIX'
-	})) {
+): string {
+	if (!hasSecurityPrologue(html, security)) {
 		throw new Error(
 			'[orkestrel-environment-boundary] Browser HTML must preserve the generated security prologue',
 		)
@@ -1854,12 +1861,6 @@ ${
 }${
 					needsShowcase
 						? `
-
-${EXPORT_KEYWORD} function browserHtmlSecurityPrefix(filename: string): string | undefined {
-	if (!isBrowserHtmlEntry(filename)) return undefined
-	return isShowcaseHtmlEntry(filename) ? SHOWCASE_SECURITY_PREFIX : HTML_SECURITY_PREFIX
-}
-
 ${EXPORT_KEYWORD} function browserHtmlSecurityMeta(filename: string, built: boolean): string | undefined {
 	if (!isBrowserHtmlEntry(filename)) return undefined
 	if (!isShowcaseHtmlEntry(filename)) return HTML_SECURITY_META
@@ -1886,11 +1887,11 @@ ${EXPORT_KEYWORD} function prepareHtml(): Plugin {
 			handler(html, context) {
 				${
 					needsShowcase
-						? `const security = browserHtmlSecurityPrefix(context.filename)
+						? `const security = browserHtmlSecurityMeta(context.filename, false)
 				if (security === undefined) return undefined
 				return maskIgnoredHtml(environmentKeys, html, security)`
 						: `if (!isBrowserHtmlEntry(context.filename)) return undefined
-				return maskIgnoredHtml(environmentKeys, html)`
+				return maskIgnoredHtml(environmentKeys, html, HTML_SECURITY_META)`
 				}
 			},
 		},
@@ -2635,7 +2636,7 @@ ${environmentBoundary}`
  * ```
  */
 export function policyViteProject(): string {
-	return `${EXPORT_KEYWORD} const policy = (config?: UserConfig): UserConfig =>
+	return `${EXPORT_KEYWORD} const policy = (options?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
 			resolve,
@@ -2647,7 +2648,35 @@ export function policyViteProject(): string {
 				browser: { enabled: false },
 			},
 		},
-		config ?? {},
+		options ?? {},
+	)
+`
+}
+
+/**
+ * Build the standalone Node-only root-configuration Vitest project.
+ *
+ * @returns The emitted `config` project definition.
+ *
+ * @example
+ * ```ts
+ * configViteProject().includes("label: 'config'") // true
+ * ```
+ */
+export function configViteProject(): string {
+	return `${EXPORT_KEYWORD} const config = (options?: UserConfig): UserConfig =>
+	mergeConfig(
+		{
+			resolve,
+			test: {
+				name: { label: 'config', color: 'yellow' },
+				include: ['tests/config/**/*.test.ts'],
+				setupFiles: ['./tests/setup.ts'],
+				environment: 'node',
+				browser: { enabled: false },
+			},
+		},
+		options ?? {},
 	)
 `
 }
@@ -2663,7 +2692,7 @@ export function policyViteProject(): string {
  * ```
  */
 export function guidesViteProject(): string {
-	return `${EXPORT_KEYWORD} const guides = (config?: UserConfig): UserConfig =>
+	return `${EXPORT_KEYWORD} const guides = (options?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
 			resolve,
@@ -2676,7 +2705,7 @@ export function guidesViteProject(): string {
 				browser: { enabled: false },
 			},
 		},
-		config ?? {},
+		options ?? {},
 	)
 `
 }
@@ -2692,7 +2721,7 @@ export function guidesViteProject(): string {
  * ```
  */
 export function binViteProject(): string {
-	return `${EXPORT_KEYWORD} const srcBin = (config?: UserConfig): UserConfig =>
+	return `${EXPORT_KEYWORD} const srcBin = (options?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
 			resolve,
@@ -2719,7 +2748,7 @@ export function binViteProject(): string {
 				browser: { enabled: false },
 			},
 		},
-		config ?? {},
+		options ?? {},
 	)
 `
 }
@@ -2744,7 +2773,7 @@ export function integrationViteProject(facts: ViteFacts = {}): string {
 				globalSetup: ['./${GLOBAL_SETUP_PATH}'],
 `
 			: ''
-	return `${EXPORT_KEYWORD} const integration = (config?: UserConfig): UserConfig =>
+	return `${EXPORT_KEYWORD} const integration = (options?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
 			resolve,
@@ -2759,7 +2788,7 @@ ${registrySetup}				environment: 'node',
 				fileParallelism: false,
 			},
 		},
-		config ?? {},
+		options ?? {},
 	)
 `
 }
@@ -2775,7 +2804,7 @@ ${registrySetup}				environment: 'node',
  * ```
  */
 export function serviceViteProject(): string {
-	return `${EXPORT_KEYWORD} const service = (config?: UserConfig): UserConfig =>
+	return `${EXPORT_KEYWORD} const service = (options?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
 			resolve,
@@ -2790,7 +2819,7 @@ export function serviceViteProject(): string {
 				fileParallelism: false,
 			},
 		},
-		config ?? {},
+		options ?? {},
 	)
 `
 }
@@ -2831,7 +2860,7 @@ export function singleSrcViteConfig(
 	const definitions = viteProjectDefinitions(facts)
 	if (environment === 'browser') {
 		return `${header}
-${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
+${EXPORT_KEYWORD} const srcBrowser = (options?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
 			resolve,
@@ -2856,7 +2885,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 				name: { label: 'src:browser', color: 'yellow' },
 				include: ['tests/src/browser/**/*.test.ts'],
 				${facts.global === true ? `globalSetup: ['./${GLOBAL_SETUP_PATH}'],\n\t\t\t\t` : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
-				...(config?.test?.browser?.enabled === false
+				...(options?.test?.browser?.enabled === false
 					? {}
 					: {
 							deps: {
@@ -2876,7 +2905,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 				fileParallelism: false,
 			},
 		},
-		config ?? {},
+		options ?? {},
 	)
 
 ${definitions}
@@ -2887,7 +2916,7 @@ ${renderedTest}
 `
 	}
 	return `${header}
-${EXPORT_KEYWORD} const srcServer = (config?: UserConfig): UserConfig =>
+${EXPORT_KEYWORD} const srcServer = (options?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
 			resolve,
@@ -2917,7 +2946,7 @@ ${EXPORT_KEYWORD} const srcServer = (config?: UserConfig): UserConfig =>
 				browser: { enabled: false },
 			},
 		},
-		config ?? {},
+		options ?? {},
 	)
 
 ${definitions}
@@ -2984,7 +3013,7 @@ export function rootViteConfig(src: readonly Environment[], facts: ViteFacts = {
 	// `srcCore` is always the shared base; `srcBrowser` / `srcServer` extend
 	// it and externalize `@src/core` to the sibling build.
 	const browserBlock = `
-${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
+${EXPORT_KEYWORD} const srcBrowser = (options?: UserConfig): UserConfig =>
 	srcCore(
 		mergeConfig(
 			{
@@ -3008,7 +3037,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 					include: ['tests/src/browser/**/*.test.ts'],
 					exclude: ['tests/src/core/**/*.test.ts'],
 					${facts.global === true ? `globalSetup: ['./${GLOBAL_SETUP_PATH}'],\n\t\t\t\t\t` : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
-					...(config?.test?.browser?.enabled === false
+					...(options?.test?.browser?.enabled === false
 						? {}
 						: {
 								deps: {
@@ -3028,12 +3057,12 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 					fileParallelism: false,
 				},
 			},
-			config ?? {},
+			options ?? {},
 		),
 	)
 `
 	const serverBlock = `
-${EXPORT_KEYWORD} const srcServer = (config?: UserConfig): UserConfig =>
+${EXPORT_KEYWORD} const srcServer = (options?: UserConfig): UserConfig =>
 	srcCore(
 		mergeConfig(
 			{
@@ -3071,7 +3100,7 @@ ${EXPORT_KEYWORD} const srcServer = (config?: UserConfig): UserConfig =>
 					setupFiles: ['./tests/setup.ts', './tests/setupServer.ts'],
 				},
 			},
-			config ?? {},
+			options ?? {},
 		),
 	)
 `
@@ -3082,7 +3111,7 @@ ${EXPORT_KEYWORD} const srcServer = (config?: UserConfig): UserConfig =>
 	const renderedTest = renderViteTest(registrations, machinery.browser)
 	const definitions = viteProjectDefinitions(facts)
 	return `${header}
-${EXPORT_KEYWORD} const srcCore = (config?: UserConfig): UserConfig =>
+${EXPORT_KEYWORD} const srcCore = (options?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
 			resolve,
@@ -3100,7 +3129,7 @@ ${EXPORT_KEYWORD} const srcCore = (config?: UserConfig): UserConfig =>
 				browser: { enabled: false },
 			},
 		},
-		config ?? {},
+		options ?? {},
 	)
 ${blocks}
 ${definitions}
@@ -3137,7 +3166,7 @@ export function applicationViteConfig(
 
 	if (src.includes('core')) {
 		blocks.push(`
-${EXPORT_KEYWORD} const srcCore = (config?: UserConfig): UserConfig =>
+${EXPORT_KEYWORD} const srcCore = (options?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
 			resolve,
@@ -3152,7 +3181,7 @@ ${EXPORT_KEYWORD} const srcCore = (config?: UserConfig): UserConfig =>
 				browser: { enabled: false },
 			},
 		},
-		config ?? {},
+		options ?? {},
 	)
 `)
 	}
@@ -3163,7 +3192,7 @@ ${EXPORT_KEYWORD} const srcCore = (config?: UserConfig): UserConfig =>
 			: ''
 		const coreExternal = hasSourceCore ? `id === '@src/core' || ` : ''
 		blocks.push(`
-${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
+${EXPORT_KEYWORD} const srcBrowser = (options?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
 			resolve,
@@ -3188,7 +3217,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 				name: { label: 'src:browser', color: 'yellow' },
 				include: ['tests/src/browser/**/*.test.ts'],
 				${hasSourceCore ? "exclude: ['tests/src/core/**/*.test.ts'],\n\t\t\t\t" : ''}${facts.global === true ? `globalSetup: ['./${GLOBAL_SETUP_PATH}'],\n\t\t\t\t` : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
-				...(config?.test?.browser?.enabled === false
+				...(options?.test?.browser?.enabled === false
 					? {}
 					: {
 							deps: {
@@ -3208,7 +3237,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 				fileParallelism: false,
 			},
 		},
-		config ?? {},
+		options ?? {},
 	)
 `)
 	}
@@ -3231,7 +3260,7 @@ ${EXPORT_KEYWORD} const srcBrowser = (config?: UserConfig): UserConfig =>
 		const coreExternal = hasSourceCore ? `id === '@src/core' || ` : ''
 		const formats = hasSourceCore ? '' : "\n\t\t\t\t\tformats: ['es', 'cjs'],"
 		blocks.push(`
-${EXPORT_KEYWORD} const srcServer = (config?: UserConfig): UserConfig =>
+${EXPORT_KEYWORD} const srcServer = (options?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
 			resolve,
@@ -3261,13 +3290,13 @@ ${EXPORT_KEYWORD} const srcServer = (config?: UserConfig): UserConfig =>
 				browser: { enabled: false },
 			},
 		},
-		config ?? {},
+		options ?? {},
 	)
 `)
 	}
 	if (app.includes('core')) {
 		blocks.push(`
-${EXPORT_KEYWORD} const appCore = (config?: UserConfig): UserConfig =>
+${EXPORT_KEYWORD} const appCore = (options?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
 			resolve,
@@ -3281,7 +3310,7 @@ ${EXPORT_KEYWORD} const appCore = (config?: UserConfig): UserConfig =>
 				browser: { enabled: false },
 			},
 		},
-		config ?? {},
+		options ?? {},
 	)
 `)
 	}
@@ -3460,7 +3489,7 @@ ${EXPORT_KEYWORD} function appBrowser(...config: never[]): UserConfig {
 	}
 	if (app.includes('server')) {
 		blocks.push(`
-${EXPORT_KEYWORD} const appServer = (config?: UserConfig): UserConfig =>
+${EXPORT_KEYWORD} const appServer = (options?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
 			resolve,
@@ -3487,7 +3516,7 @@ ${EXPORT_KEYWORD} const appServer = (config?: UserConfig): UserConfig =>
 				browser: { enabled: false },
 			},
 		},
-		config ?? {},
+		options ?? {},
 	)
 `)
 	}
@@ -4405,9 +4434,7 @@ export function paritySpecifiers(spec: Blueprint): string {
 export function testArtifacts(spec: Blueprint, pascal: string): readonly Artifact[] {
 	const hasBrowser = spec.src.includes('browser') || spec.app.includes('browser')
 	const hasVue = spec.app.includes('browser')
-	const browserPolicyImport = hasBrowser
-		? "\nimport { chromium } from 'playwright'\nimport { isBrowserExecutable, resolveBrowser, SYSTEM_BROWSER_CHANNELS } from '../vite.config.js'"
-		: ''
+	const machinery = viteMachinery(spec.src, spec.app, spec.bin, spec.showcase)
 	const vuePolicyImport = hasVue ? "\nimport { parse as parseVue } from 'vue/compiler-sfc'" : ''
 	const workspacePolicyAssertion = hasVue
 		? `expect(
@@ -4420,22 +4447,90 @@ export function testArtifacts(spec: Blueprint, pascal: string): readonly Artifac
 			}),
 		).toEqual([])`
 		: 'expect(inspectCodingWorkspace(process.cwd())).toEqual([])'
-	const browserPolicyTest = hasBrowser
-		? `
+	const configNames = [
+		'containedPath',
+		'environmentPathError',
+		'environmentSourceError',
+		'resolveWorkspacePath',
+		'workspacePath',
+	]
+	if (machinery.output) configNames.push('enforceOutputPath')
+	if (hasBrowser) {
+		configNames.push(
+			'isBrowserExecutable',
+			'resolveBrowser',
+			'resolveManagedBrowser',
+			'resolveSystemBrowser',
+			'SYSTEM_BROWSER_CHANNELS',
+		)
+	}
+	if (hasVue) {
+		configNames.push('hasSecurityPrologue', 'HTML_SECURITY_META', 'HTML_SECURITY_POLICY')
+	}
+	const configImports = [
+		...(hasVue ? ["import { readFileSync } from 'node:fs'"] : []),
+		...(hasBrowser ? ["import { chromium } from 'playwright'"] : []),
+		"import { describe, expect, it } from 'vitest'",
+		'import {',
+		...configNames.map((name) => `\t${name},`),
+		"} from '../../vite.config.js'",
+	].join('\n')
+	const configCases: string[] = []
+	if (machinery.output) {
+		configCases.push(`
+
+	it('contains build output in its exact workspace directory', () => {
+		const expected = resolveWorkspacePath('dist/config-proof')
+
+		expect(() => enforceOutputPath(expected, expected)).not.toThrow()
+		expect(() => enforceOutputPath(resolveWorkspacePath('dist/other'), expected)).toThrow(
+			'exact configured workspace directory',
+		)
+		expect(() =>
+			enforceOutputPath(
+				resolveWorkspacePath('../config-proof'),
+				resolveWorkspacePath('../config-proof'),
+			),
+		).toThrow('remain inside the workspace')
+	})`)
+	}
+	if (hasBrowser) {
+		configCases.push(`
 
 	it('resolves only a real managed executable or stable system browser channel', () => {
-		const options = resolveBrowser(chromium.executablePath(), process.platform, process.env)
-		let valid = options === undefined
-		if (options !== undefined) {
-			const channel = options.launchOptions?.channel
-			valid =
-				channel === undefined
-					? isBrowserExecutable(options.launchOptions?.executablePath ?? chromium.executablePath())
-					: SYSTEM_BROWSER_CHANNELS.some((browser) => browser.channel === channel)
-		}
-		expect(valid).toBe(true)
-	})`
-		: ''
+		const pinned = chromium.executablePath()
+		const managed = resolveManagedBrowser(pinned)
+		const channel = resolveSystemBrowser(process.platform, process.env)
+		const options = resolveBrowser(pinned, process.platform, process.env)
+		const expected =
+			managed === undefined
+				? channel === undefined
+					? undefined
+					: { launchOptions: { channel } }
+				: managed === pinned
+					? {}
+					: { launchOptions: { executablePath: managed } }
+		const executable = managed === undefined || isBrowserExecutable(managed)
+		const stable =
+			managed !== undefined ||
+			channel === undefined ||
+			SYSTEM_BROWSER_CHANNELS.some((browser) => browser.channel === channel)
+
+		expect(options).toEqual(expected)
+		expect(executable).toBe(true)
+		expect(stable).toBe(true)
+	})`)
+	}
+	if (hasVue) {
+		configCases.push(`
+
+	it('preserves the generated browser security prologue', () => {
+		const document = readFileSync(resolveWorkspacePath('app/browser/index.html'), 'utf8')
+
+		expect(hasSecurityPrologue(document, HTML_SECURITY_META)).toBe(true)
+		expect(HTML_SECURITY_META).toContain(HTML_SECURITY_POLICY)
+	})`)
+	}
 	const artifacts: Artifact[] = [
 		fillArtifact('tests/setup.ts', 'tests', 'setup', {
 			eventImport: spec.app.includes('server')
@@ -4454,11 +4549,12 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} waitForEvent<TMap extends EventMap, K exte
 				: '',
 		}),
 		fillArtifact('tests/policy.test.ts', 'tests', 'policyTest', {
-			browserPolicySpecifier: '',
-			browserPolicyImport,
-			browserPolicyTest,
 			vuePolicyImport,
 			workspacePolicyAssertion,
+		}),
+		fillArtifact('tests/config/vite.test.ts', 'tests', 'configTest', {
+			imports: configImports,
+			cases: configCases.join(''),
 		}),
 	]
 	if (spec.src.includes('server') || spec.app.includes('server')) {
@@ -5038,7 +5134,8 @@ around that owned dispatcher; standalone callers destroy theirs after use. Every
  */
 export function guideTests(spec: Blueprint, pascal: string): string {
 	const tests: string[] = [
-		'- [`tests/policy.test.ts`](../../tests/policy.test.ts) — filename placement and real browser capability probing.',
+		'- [`tests/policy.test.ts`](../../tests/policy.test.ts) — repository coding law and filename placement.',
+		'- [`tests/config/vite.test.ts`](../../tests/config/vite.test.ts) — executable root Vite invariants and conditional browser capability.',
 	]
 	for (const environment of spec.src) {
 		tests.push(

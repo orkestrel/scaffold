@@ -135,6 +135,8 @@ export const SOURCE_SCRIPT_KEYS: readonly string[] = Object.freeze([
 	'lint:check',
 	'test',
 	'test:src',
+	'test:policy',
+	'test:config',
 	'test:guides',
 	'build',
 	'build:src',

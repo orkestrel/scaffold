@@ -609,7 +609,7 @@ export const LEAN_BLUEPRINTS: readonly LeanBlueprint[] = Object.freeze([
 		name: 'lean-core',
 		src: ['core'],
 		app: [],
-		scripts: ['build', 'test:src'],
+		scripts: ['build', 'test:src', 'test:config'],
 		rejections: Object.freeze([
 			Object.freeze<LeanRejection>({
 				path: 'src/core/index.ts',
@@ -629,7 +629,7 @@ export const LEAN_BLUEPRINTS: readonly LeanBlueprint[] = Object.freeze([
 		name: 'lean-core-server',
 		src: ['core', 'server'],
 		app: [],
-		scripts: ['build', 'test:src'],
+		scripts: ['build', 'test:src', 'test:config'],
 		rejections: Object.freeze([
 			Object.freeze<LeanRejection>({
 				path: 'src/core/index.ts',
@@ -657,14 +657,14 @@ export const LEAN_BLUEPRINTS: readonly LeanBlueprint[] = Object.freeze([
 		name: 'lean-src-browser',
 		src: ['core', 'browser'],
 		app: [],
-		scripts: ['build', 'test:src'],
+		scripts: ['build', 'test:src', 'test:config'],
 		rejections: Object.freeze([]),
 	}),
 	Object.freeze<LeanBlueprint>({
 		name: 'lean-app-core',
 		src: [],
 		app: ['core'],
-		scripts: ['build', 'test:app'],
+		scripts: ['build', 'test:app', 'test:config'],
 		rejections: Object.freeze([
 			Object.freeze<LeanRejection>({
 				path: 'app/core/index.ts',
@@ -678,7 +678,7 @@ export const LEAN_BLUEPRINTS: readonly LeanBlueprint[] = Object.freeze([
 		name: 'lean-app-server',
 		src: [],
 		app: ['server'],
-		scripts: ['build', 'test:app'],
+		scripts: ['build', 'test:app', 'test:config'],
 		rejections: Object.freeze([]),
 	}),
 ])
@@ -2847,6 +2847,10 @@ export async function executeGeneratedConsumerGates(root: string): Promise<void>
 		if (!isRecord(manifest) || !isRecord(manifest.scripts)) {
 			throw new Error('expected generated consumer manifest scripts')
 		}
+		expect(existsSync(join(packageDirectory, 'tests', 'config', 'vite.test.ts'))).toBe(true)
+		expect(manifest.scripts['test:config']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project config',
+		)
 		expect(manifest.scripts.prepublishOnly).toBe(
 			'npm run format:check && npm run lint:check && npm run check && npm run build && npm test',
 		)
@@ -2865,6 +2869,7 @@ export async function executeGeneratedConsumerGates(root: string): Promise<void>
 		for (const stage of ['format:check', 'lint:check', 'check', 'build', 'test']) {
 			expect(output).toContain(stage)
 		}
+		expect(output).toContain('test:config')
 	} finally {
 		await cwd.cleanup()
 	}
@@ -2880,9 +2885,30 @@ export async function executeGeneratedConsumerDependencies(): Promise<void> {
 			src: ['core', 'browser', 'server'],
 			app: ['core', 'browser', 'server'],
 		})
+		const browserHtmlPath = join(packageDirectory, 'app', 'browser', 'index.html')
+		const sourceHtml = readFileSync(browserHtmlPath, 'utf8')
+		const root = '<html lang="en">'
+		const attributedRoot = '<html lang="en" data-bs-theme="light" data-bs-core="modern">'
+		const securityStart = sourceHtml.indexOf('<meta')
+		const securityEnd = sourceHtml.indexOf(BROWSER_SECURITY_MARKER)
+		if (!sourceHtml.includes(root) || securityStart === -1 || securityEnd <= securityStart) {
+			throw new Error('expected generated browser security prologue')
+		}
+		const securityMeta = sourceHtml.slice(securityStart, securityEnd).trim()
+		const attributedHtml = sourceHtml.replace(root, attributedRoot)
+		expect(attributedHtml).not.toBe(sourceHtml)
+		writeFileSync(browserHtmlPath, attributedHtml, 'utf8')
+		expect(readFileSync(browserHtmlPath, 'utf8')).toBe(attributedHtml)
 		const baseline = runNpmScript(packageDirectory, 'build', 180_000)
 		const baselineOutput = `${baseline.stdout}${baseline.stderr}`
 		expect(baseline.status, `build\n${baselineOutput}`).toBe(0)
+		const builtHtml = readFileSync(
+			join(packageDirectory, 'dist', 'app', 'browser', 'index.html'),
+			'utf8',
+		)
+		expect(builtHtml).toContain('data-bs-theme="light"')
+		expect(builtHtml).toContain('data-bs-core="modern"')
+		expect(builtHtml).toContain(securityMeta)
 		const unrelatedPath = join(packageDirectory, 'browser-forbidden.txt')
 		const symlinkPath = join(packageDirectory, 'app', 'browser', 'forbidden-link.txt')
 		const aliasSymlinkPath = join(packageDirectory, 'app', 'core', 'forbidden-link.txt')
@@ -2897,6 +2923,12 @@ export async function executeGeneratedConsumerDependencies(): Promise<void> {
 			join(packageDirectory, 'configs/app/vite.browser.config.ts'),
 		)
 		try {
+			const documentResponse = await fetch(viteServer.base)
+			const documentBody = await documentResponse.text()
+			expect(documentResponse.status).toBe(200)
+			expect(documentBody).toContain('data-bs-theme="light"')
+			expect(documentBody).toContain('data-bs-core="modern"')
+			expect(documentBody).toContain(securityMeta)
 			const browserResponse = await fetch(`${viteServer.base}/main.ts`)
 			const browserBody = await browserResponse.text()
 			if (browserResponse.status !== 200) {

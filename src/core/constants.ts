@@ -312,6 +312,7 @@ export const APP_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.fre
 /** Additional development dependencies required by a private Vue browser application. */
 export const APP_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	...SOURCE_BROWSER_DEV_DEPENDENCIES,
+	'@orkestrel/html': '^0.0.2',
 	'@vitejs/plugin-vue': '^6.0.8',
 	vue: '^3.5.40',
 	'vue-tsc': '^3.3.7',

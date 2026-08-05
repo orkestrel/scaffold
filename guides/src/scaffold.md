@@ -497,7 +497,8 @@ form. `HEX_PATTERN` requires whole lowercase byte pairs, and `SYNC_BASELINE_PATT
 `0.0.1`. `BASE_DEV_DEPENDENCIES` is the host-neutral tooling baseline every generated workspace
 gets; `SOURCE_BROWSER_DEV_DEPENDENCIES` adds the real browser providers a published browser environment
 needs; `APP_DEV_DEPENDENCIES` is the baseline every private application environment gets;
-`APP_BROWSER_DEV_DEPENDENCIES` adds the Vue toolchain a private browser application needs;
+`APP_BROWSER_DEV_DEPENDENCIES` adds the Vue toolchain and `@orkestrel/html` start-tag parser a
+private browser application needs;
 and `APP_SERVER_DEV_DEPENDENCIES` adds the emitter, middleware, router, and server packages a private
 server application needs. Vite is minor-pinned at `~8.2.0`: the generated boundary consumes the reviewed
 8.2 `CSSOptions`, `preprocessCSS`, and `isCSSRequest` surface, while the selected
@@ -1093,6 +1094,7 @@ From [`compilers.ts`](../../src/core/compilers.ts).
 | `renderViteTest`           | function |
 | `viteHeader`               | function |
 | `policyViteProject`        | function |
+| `configViteProject`        | function |
 | `guidesViteProject`        | function |
 | `binViteProject`           | function |
 | `integrationViteProject`   | function |
@@ -1180,7 +1182,7 @@ formatter's 100-column fixed point: a complete registration-array line, includin
 its trailing comma, stays collapsed when it fits and expands one entry per line otherwise.
 `viteProjectRegistrations` is the one registration derivation every root shape consumes: it derives
 the selected source and application projects from the canonical environment order, then appends
-`policy`, `guides`, and the optional `srcBin`, `integration`, and `service` projects.
+`policy`, `config`, `guides`, and the optional `srcBin`, `integration`, and `service` projects.
 `viteProjectDefinitions` renders the standalone proof and structural-fact definitions in that same
 order with one blank line between declarations. Both consume `ViteFacts`, so each optional project
 is controlled only by its matching `bin`, `integration`, or `service` blueprint fact; the same
@@ -1193,8 +1195,9 @@ the root `srcCore` factory and its wrapper stay host-independent even when the w
 browser target. `binTsconfig` emits the executable declaration scope; `rootViteConfig`,
 `singleSrcViteConfig`, and `applicationViteConfig` emit the root configuration for a library-only,
 single non-core `src` environment, and application-bearing workspace respectively; and
-`policyViteProject`, `guidesViteProject`, `integrationViteProject`, and `serviceViteProject` emit
-the standalone Node proof projects, with `binViteProject` the single executable-project emitter. A
+`policyViteProject`, `configViteProject`, `guidesViteProject`, `integrationViteProject`, and
+`serviceViteProject` emit the standalone Node proof projects, with `binViteProject` the single
+executable-project emitter. A
 proof project is structurally derived from the directory holding its tests and never wraps a source
 or application environment project. The guides project therefore uses only `tests/setup.ts`, never
 `setupServer.ts`, `setupBrowser.ts`, or `setupService.ts`; and its `tests/src/**/*.test.ts` and
@@ -1584,7 +1587,7 @@ a fixed, interleaved order so aggregates sit immediately before their per-enviro
 - `format`, `format:check`, `lint:check`
 - `test`, then `test:src` and its per-environment scopes, the optional `test:integration`,
   `test:equivalence`, and `test:service` proofs, `test:app` and its per-environment scopes, then
-  `test:policy` and `test:guides`
+  `test:policy`, `test:config`, and `test:guides`
 - `build`, then `build:src` and its per-environment targets, `build:app` and its runtime targets, and
   `build:host` for a bin workspace
 - `dev` when a browser application is selected; `serve` and `serve:build` when a server application
@@ -1604,8 +1607,9 @@ only where `bin` and `integration` are both set:
 | `test:equivalence` | no         | no               | no                         |
 | `test:service`     | no         | never            | after `scripts/service.sh` |
 
-No proof joins the default chain: `npm test` runs the source, application, policy, and guide
-projects, and nothing there needs a build artifact or a foreign process. Publication is the one
+No opt-in proof joins the default chain: `npm test` runs the source, application, policy,
+configuration, and guide projects, and nothing there needs a build artifact or a foreign process.
+Publication is the one
 asymmetry — `prepublishOnly` appends `test:integration`, because a package about to be published
 should prove itself against its own built output, while `test:service` is never in that chain.
 Neither default testing nor publication starts or requires a foreign process.
@@ -1677,10 +1681,16 @@ comments, text, raw blocks, attributes, adjacent tokens, casing, and user-author
 byte-stable. The trusted preparation hook owns the final pre-parse phase; inline proxy code is
 restored before module analysis, and the first normal post-parse hook restores the original HTML
 spelling. The browser entry begins with a generated, byte-stable security prologue: the doctype,
-document and head opening, and a `Content-Security-Policy` meta element are one required prefix.
-Preparation rejects a missing, moved, or changed prologue before Vite parses the document, and the
-final trusted post-hook verifies that Vite retained the policy. CRLF and LF files are both accepted;
-the prologue's markup and ordering are otherwise exact. Vite's `%ENV%` HTML substitution is rejected
+head opening, and `Content-Security-Policy` meta markup, ordering, and indentation are exact. The
+opening `html` start tag is parsed by `@orkestrel/html`'s fail-closed `parseStartTag` boundary,
+so ASCII case and well-formed attributes such as `lang`, `data-bs-theme`, and `data-bs-core`
+may vary without weakening the position of the following head and policy. A malformed, incomplete,
+duplicate-attribute, wrong-name, or syntactically slashed root still fails closed. Preparation owns
+that positional check while the document is still generated bytes; the final trusted post-hook
+checks only that the exact
+policy survived because Vite may legitimately inject into the head. CRLF and LF files are both
+accepted. Vite's
+`%ENV%` HTML substitution is rejected
 before parsing because Vite performs that expansion after every plugin pre-hook, where it could
 otherwise create a late control attribute. The guard walks the exact left-to-right `%(\S+?)%`
 tokens Vite recognizes instead of performing a substring search, and each preparation plugin owns
@@ -1816,12 +1826,26 @@ it is not a general-purpose source analyzer. Generated workspaces receive the sa
 module as a host-origin file and run it as a dedicated Node-only `policy` test project over
 `tests/policy.test.ts`.
 
+**The configuration suite.** Policy reads source, the `config` project exercises the root
+configuration, and integration builds for real. Every generated workspace therefore receives a
+universal Node-only
+`config` project over `tests/config/**/*.test.ts`. Its base cases execute the root module's physical
+workspace containment and environment-direction helpers; conditional cases exercise output
+containment when the workspace builds, managed/system browser discovery when a browser environment
+exists, and the HTML/CSP boundary only for an application browser. Those cases import the generated
+root `vite.config.ts` itself, so a failure is repaired in the generator rather than patched into a
+consumer. The generated-consumer integration matrix remains the fidelity boundary for real builds;
+the configuration suite supplies deterministic edge coverage without duplicating build orchestration.
+When scaffold changes a generated configuration invariant, an existing consumer's `vite.config.ts`
+is intentionally reported stale until that consumer accepts the regenerated configuration and its
+matching config test.
+
 **Real browser capability.** Browser test projects are gated on one centralized discovery chain:
 Playwright's pinned Chromium executable first, then a managed Chromium alias or cached revision,
 then stable system Chrome, then stable system Edge. Managed candidates must be executable regular
 files. System channels are selected only when their executable exists at Playwright's standard
 Linux, macOS, or Windows installation location; custom installations are not guessed. The generated
-policy test consumes the same discovery helpers and accepts either an executable managed path or the
+configuration test consumes the same discovery helpers and accepts either an executable managed path or the
 stable `chrome` / `msedge` channel, so it does not maintain a second heuristic.
 
 A browser suite runs when any one of those real browser capabilities is available and is skipped
@@ -1960,7 +1984,10 @@ renderer behind the table and blockquote work; the template engine behind every 
 artifact; and, consumed only at the executable boundary, the terminal prompt toolkit and the console
 reporter. The core face uses the first four and stays pure; the server face adds only `node:*`
 builtins. Development dependencies are the shared tooling baseline plus the guide-parity toolkit
-that drives [`parity.test.ts`](../../tests/guides/src/parity.test.ts). The engines floor is Node
+that drives [`parity.test.ts`](../../tests/guides/src/parity.test.ts) and `@orkestrel/html`,
+which this package's real emitted-configuration tests execute. Generated manifests keep that HTML
+dependency scoped to `app/browser`; source-only, `app/core`, and `app/server` workspaces do not
+receive it. The engines floor is Node
 `>=22.12.0`, and the build emits ES and CJS for both library faces plus an ES executable.
 
 ## Patterns
@@ -2305,6 +2332,7 @@ import {
 	appViteConfig,
 	applicationViteConfig,
 	binViteProject,
+	configViteProject,
 	coreTsconfig,
 	coreViteConfig,
 	guidesViteProject,
@@ -2336,13 +2364,14 @@ coreViteConfig()
 srcViteConfig('browser')
 appViteConfig('server')
 policyViteProject()
+configViteProject()
 guidesViteProject()
 binViteProject()
 integrationViteProject({ bin: true, integration: true, global: true })
 serviceViteProject()
 viteProjectDefinitions({ integration: true }).includes('export const integration =') // true
 viteProjectRegistrations(['core'], [], { integration: true }).map(({ project }) => project)
-// ['srcCore', 'policy', 'guides', 'integration']
+// ['srcCore', 'policy', 'config', 'guides', 'integration']
 
 rootViteConfig(['core', 'server'], { bin: true })
 singleSrcViteConfig('server').includes('srcServer') // true
@@ -2636,6 +2665,8 @@ isMissingPathError(caught) // true only for an ENOENT error
   ids, the batch-overload semantics, and all-or-nothing list removal.
 - [`tests/src/core/policy.test.ts`](../../tests/src/core/policy.test.ts) — the repository coding-law
   policy module against this workspace and against deliberately hostile fixtures.
+- [`tests/config/vite.test.ts`](../../tests/config/vite.test.ts) — the executable root Vite
+  invariants for workspace, environment, and output containment.
 - [`tests/src/server/helpers.test.ts`](../../tests/src/server/helpers.test.ts) — containment,
   digests, host staging, hydration, derivation, prune scanning, and the local catalog.
 - [`tests/src/server/validators.test.ts`](../../tests/src/server/validators.test.ts) — the portable

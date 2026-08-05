@@ -1807,24 +1807,67 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} isBrowserVuePath(path: string): boolean {
 }
 `,
 	}),
+	configTest: Object.freeze({
+		id: 'configTest',
+		name: 'configTest',
+		summary: 'The generated root Vite configuration behavior test.',
+		category: 'tests',
+		placeholders: Object.freeze([
+			Object.freeze({
+				name: 'imports',
+				description: 'The machinery-aware root configuration imports.',
+			}),
+			Object.freeze({
+				name: 'cases',
+				description: 'The machinery-aware root configuration cases.',
+			}),
+		]),
+		content: `{{imports}}
+
+describe('root Vite configuration', () => {
+	it('keeps workspace paths physically contained', () => {
+		const root = resolveWorkspacePath('.')
+		const source = resolveWorkspacePath('src')
+		const parent = resolveWorkspacePath('..')
+
+		expect(workspacePath(root)).toBe('')
+		expect(workspacePath(source)).toBe('src')
+		expect(workspacePath(parent)).toBeUndefined()
+		expect(containedPath(root, source)).toBe(true)
+		expect(containedPath(root, parent)).toBe(false)
+	})
+
+	it('enforces environment direction for paths and module sources', () => {
+		expect(environmentPathError('src/core', 'app/core/index.ts')).toBe(
+			'Published modules cannot depend on private application modules',
+		)
+		expect(environmentPathError('app/core', 'src/browser/index.ts')).toBe(
+			'Core modules must remain host-independent',
+		)
+		expect(environmentPathError('app/browser', 'src/server/index.ts')).toBe(
+			'Browser modules cannot depend on Node or server-only modules',
+		)
+		expect(environmentPathError('app/server', 'src/browser/index.ts')).toBe(
+			'Server modules cannot depend on Vue or browser-only modules',
+		)
+		expect(environmentPathError('app/browser', 'src/core/index.ts')).toBeUndefined()
+		expect(environmentSourceError('src/core', 'node:path')).toBe(
+			'Core modules must remain host-independent',
+		)
+		expect(environmentSourceError('app/server', 'vue')).toBe(
+			'Server modules cannot depend on Vue or browser-only modules',
+		)
+		expect(environmentSourceError('app/browser', '@app/core')).toBeUndefined()
+	}){{cases}}
+})
+`,
+	}),
 	policyTest: Object.freeze({
 		id: 'policyTest',
 		name: 'policyTest',
 		summary: 'The generated repository filename-policy test.',
 		category: 'tests',
 		placeholders: Object.freeze([
-			Object.freeze({
-				name: 'browserPolicySpecifier',
-				description: 'The optional real Chromium filesystem-probe import.',
-			}),
-			Object.freeze({
-				name: 'browserPolicyImport',
-				description: 'The optional real Chromium package import.',
-			}),
-			Object.freeze({
-				name: 'browserPolicyTest',
-				description: 'The optional capability-gated Chromium policy test.',
-			}),
 			Object.freeze({
 				name: 'vuePolicyImport',
 				description: 'The optional official Vue SFC compiler import.',
@@ -1834,10 +1877,10 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} isBrowserVuePath(path: string): boolean {
 				description: 'The formatter-stable workspace policy assertion.',
 			}),
 		]),
-		content: `import { globSync{{browserPolicySpecifier}} } from 'node:fs'
+		content: `import { globSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { isBrowserVuePath } from './setup.js'
-import { inspectCodingWorkspace } from './setupPolicy.js'{{browserPolicyImport}}{{vuePolicyImport}}
+import { inspectCodingWorkspace } from './setupPolicy.js'{{vuePolicyImport}}
 
 describe('repository coding law', () => {
 	it('keeps Vue single-file components exclusively in browser environments', () => {
@@ -1848,7 +1891,7 @@ describe('repository coding law', () => {
 
 	it('enforces source placement, exports, readonly contracts, and syntax law', () => {
 		{{workspacePolicyAssertion}}
-	}){{browserPolicyTest}}
+	})
 })
 `,
 	}),

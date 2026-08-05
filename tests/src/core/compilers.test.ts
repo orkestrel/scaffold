@@ -24,6 +24,7 @@ import {
 	ciWorkflow,
 	compareCodeUnit,
 	configArtifacts,
+	configViteProject,
 	coreTsconfig,
 	coreViteConfig,
 	dependency,
@@ -202,6 +203,13 @@ describe('application layer compilation', () => {
 					)
 					expect(paths.has(`app/${environment}/index.ts`)).toBe(true)
 				}
+				expect(paths.has('tests/config/vite.test.ts')).toBe(true)
+				expect(scripts['test:config']).toBe(
+					'vitest run --config vite.config.ts --no-cache --reporter=dot --project config',
+				)
+				expect(scripts.test).toContain(
+					'npm run test:policy && npm run test:config && npm run test:guides',
+				)
 				expect(paths.has('tests/guides/src/parity.test.ts')).toBe(true)
 			},
 		)
@@ -877,11 +885,36 @@ describe('packageManifest app dependency seam', () => {
 
 		expect([
 			dev['@orkestrel/contract'],
+			dev['@orkestrel/html'],
 			dev['@orkestrel/emitter'],
 			dev['@orkestrel/middleware'],
 			dev['@orkestrel/router'],
 			dev['@orkestrel/server'],
-		]).toEqual([undefined, undefined, undefined, undefined, undefined])
+		]).toEqual([undefined, undefined, undefined, undefined, undefined, undefined])
+	})
+
+	it('adds HTML parsing only to app/browser manifests', () => {
+		const browser = readRecord(
+			readManifest(packageManifest(blueprint('browser-app', { src: [], app: ['browser'] })))
+				.devDependencies,
+		)
+		const core = readRecord(
+			readManifest(packageManifest(blueprint('core-app', { src: [], app: ['core'] })))
+				.devDependencies,
+		)
+		const server = readRecord(
+			readManifest(packageManifest(blueprint('server-app', { src: [], app: ['server'] })))
+				.devDependencies,
+		)
+		const source = readRecord(
+			readManifest(packageManifest(blueprint('browser-source', { src: ['browser'], app: [] })))
+				.devDependencies,
+		)
+
+		expect(browser['@orkestrel/html']).toBe('^0.0.2')
+		expect(core['@orkestrel/html']).toBeUndefined()
+		expect(server['@orkestrel/html']).toBeUndefined()
+		expect(source['@orkestrel/html']).toBeUndefined()
 	})
 })
 
@@ -1079,7 +1112,7 @@ describe('packageManifest', () => {
 		)
 
 		expect(createHash('sha256').update(manifest).digest('hex')).toBe(
-			'1b73688c7f3ebcd284ddbdc6d3cd7a070ef4a530e9a28c755eae607e6ed49833',
+			'6aaef2d0a7b280ea1335100c9d9ff0c8fd6b7623c20d9b4860a7d599ac1d071d',
 		)
 	})
 
@@ -1200,16 +1233,22 @@ describe('renderViteTest', () => {
 		const registrations = [
 			{ project: 'srcBrowser', browser: 'src:browser' },
 			{ project: 'policy' },
+			{ project: 'config' },
 			{ project: 'guides' },
 		]
 
 		expect(renderViteTest(registrations, false)).toBe(
-			'\ttest: {\n\t\tprojects: [srcBrowser, policy, guides],\n\t},',
+			'\ttest: {\n\t\tprojects: [srcBrowser, policy, config, guides],\n\t},',
 		)
 		expect(renderViteTest(registrations, true)).toBe(
 			[
 				'\ttest: gateBrowserProjects(',
-				"\t\t[{ project: srcBrowser, browser: 'src:browser' }, { project: policy }, { project: guides }],",
+				'\t\t[',
+				"\t\t\t{ project: srcBrowser, browser: 'src:browser' },",
+				'\t\t\t{ project: policy },',
+				'\t\t\t{ project: config },',
+				'\t\t\t{ project: guides },',
+				'\t\t],',
 				'\t\tbrowserOptions !== undefined,',
 				'\t\tprocess.argv,',
 				'\t),',
@@ -1235,6 +1274,7 @@ describe('renderViteTest', () => {
 				"\t\t\t{ project: appBrowser, browser: 'app:browser' },",
 				'\t\t\t{ project: appServer },',
 				'\t\t\t{ project: policy },',
+				'\t\t\t{ project: config },',
 				'\t\t\t{ project: guides },',
 				'\t\t\t{ project: srcBin },',
 				'\t\t\t{ project: integration },',
@@ -1249,15 +1289,18 @@ describe('renderViteTest', () => {
 describe('proof Vite projects and registration', () => {
 	it('emits each standalone proof project from its single compiler', () => {
 		const policy = policyViteProject()
+		const config = configViteProject()
 		const guides = guidesViteProject()
 		const integration = integrationViteProject()
 		const service = serviceViteProject()
 
-		for (const content of [policy, guides, integration, service]) {
+		for (const content of [policy, config, guides, integration, service]) {
 			expect(content).toContain('\t\t\tresolve,')
 			expect(content).toContain("environment: 'node'")
 			expect(content).toContain('browser: { enabled: false }')
 		}
+		expect(config).toContain("name: { label: 'config', color: 'yellow' }")
+		expect(config).toContain("include: ['tests/config/**/*.test.ts']")
 		for (const fragment of GUIDE_PROJECT_REQUIRED_FRAGMENTS) expect(guides).toContain(fragment)
 		for (const fragment of GUIDE_PROJECT_FORBIDDEN_FRAGMENTS) expect(guides).not.toContain(fragment)
 		expect(integration).toContain("include: ['tests/integration/**/*.test.ts']")
@@ -1314,10 +1357,12 @@ describe('proof Vite projects and registration', () => {
 
 	it('renders one ordered proof and axis definition block with exact separators', () => {
 		expect(viteProjectDefinitions()).toBe(`${policyViteProject()}
+${configViteProject()}
 ${guidesViteProject()}`)
 		expect(viteProjectDefinitions({ bin: true, integration: true, service: true })).toBe(
 			[
 				policyViteProject(),
+				configViteProject(),
 				guidesViteProject(),
 				binViteProject(),
 				integrationViteProject({ bin: true, integration: true, service: true }),
@@ -1341,6 +1386,7 @@ ${guidesViteProject()}`)
 			{ project: 'appBrowser', browser: 'app:browser' },
 			{ project: 'appServer' },
 			{ project: 'policy' },
+			{ project: 'config' },
 			{ project: 'guides' },
 			{ project: 'srcBin' },
 			{ project: 'integration' },
@@ -1359,6 +1405,7 @@ ${guidesViteProject()}`)
 			'export const srcBrowser =',
 			'export const srcServer =',
 			'export const policy =',
+			'export const config =',
 			'export const guides =',
 			'export const srcBin =',
 			'export const integration =',
@@ -1374,6 +1421,7 @@ ${guidesViteProject()}`)
 				"\t\t\t{ project: srcBrowser, browser: 'src:browser' },",
 				'\t\t\t{ project: srcServer },',
 				'\t\t\t{ project: policy },',
+				'\t\t\t{ project: config },',
 				'\t\t\t{ project: guides },',
 				'\t\t\t{ project: srcBin },',
 				'\t\t\t{ project: integration },',
@@ -1631,6 +1679,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 				configPath,
 				[
 					"import type { Plugin } from 'vite'",
+					"import { parseStartTag } from '@orkestrel/html'",
 					"import { isBuiltin } from 'node:module'",
 					"import { existsSync, realpathSync } from 'node:fs'",
 					"import { dirname, isAbsolute, relative, resolve as resolvePath, sep } from 'node:path'",
@@ -1710,6 +1759,42 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 					'}',
 					'',
 					'const html = \'<html lang="en">tester</html>\'',
+					'const security =',
+					"\t'<!doctype html>\\n<html lang=\"en\">\\n\\t<head>\\n\\t\\t' + HTML_SECURITY_META + '\\n'",
+					'const validSecurityDocuments = [',
+					'\tsecurity,',
+					'\tsecurity.replace(\'<html lang="en">\', \'<html data-bs-theme="light" data-bs-core="modern">\'),',
+					'\tsecurity.replace(\'<html lang="en">\', \'<html data-note="a > b">\'),',
+					"\tsecurity.replaceAll('\\n', '\\r\\n'),",
+					'\tsecurity.replace(\'<html lang="en">\', \'<HTML LANG="en">\'),',
+					']',
+					'const invalidSecurityDocuments = [',
+					"\tsecurity.replace('<html lang=\"en\">', '<body>'),",
+					"\tsecurity.replace('<html lang=\"en\">', '<html =bad>'),",
+					'\tsecurity.replace(\'<html lang="en">\', \'<html lang="en" LANG="fr">\'),',
+					"\tsecurity.replace('<html lang=\"en\">', '<html />'),",
+					'\tsecurity.replace(\'<html lang="en">\', \'<html lang="en"\'),',
+					"\tsecurity.replace('\\n\\t<head>\\n\\t\\t' + HTML_SECURITY_META, '\\n\\t<head>\\n\\t\\t<meta name=\"moved\">\\n\\t\\t' + HTML_SECURITY_META),",
+					'\tsecurity.replace(HTML_SECURITY_META, HTML_SECURITY_META.replace("script-src \'self\'", "script-src \'none\'")),',
+					"\tsecurity.replace('<!doctype html>', '<!DOCTYPE html>'),",
+					']',
+					'for (const document of validSecurityDocuments) {',
+					'\tif (!hasSecurityPrologue(document, HTML_SECURITY_META)) {',
+					"\t\tthrow new Error('valid HTML security prologue was rejected')",
+					'\t}',
+					'}',
+					'for (const document of invalidSecurityDocuments) {',
+					'\tif (hasSecurityPrologue(document, HTML_SECURITY_META)) {',
+					"\t\tthrow new Error('invalid HTML security prologue was accepted')",
+					'\t}',
+					'}',
+					'let environmentRejected = false',
+					'try {',
+					"\tmaskIgnoredHtml(new Set(['KNOWN']), security + '%KNOWN%', HTML_SECURITY_META)",
+					'} catch {',
+					'\tenvironmentRejected = true',
+					'}',
+					"if (!environmentRejected) throw new Error('known HTML environment token was accepted')",
 					"const foreignContext = { path: '/', filename: foreign }",
 					"const entryContext = { path: '/', filename: entry }",
 					'if (isBrowserHtmlEntry(foreign) || !isBrowserHtmlEntry(entry)) {',
@@ -1721,6 +1806,10 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 					'}',
 					'if ((await prepare.handler(html, foreignContext)) !== undefined) {',
 					"\tthrow new Error('prepare HTML hook transformed foreign HTML')",
+					'}',
+					'const prepared = await prepare.handler(security, entryContext)',
+					"if (typeof prepared !== 'string' || !prepared.includes(HTML_SECURITY_META)) {",
+					"\tthrow new Error('prepare HTML hook rejected a valid app entry')",
 					'}',
 					'let prepareRejected = false',
 					'try {',
@@ -1911,7 +2000,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 			'filterHtmlScriptSource',
 			'filterHtmlMetaSource',
 			'environmentHtml',
-			'HTML_SECURITY_PREFIX',
+			'hasSecurityPrologue',
 			'maskIgnoredHtml',
 			'prepareHtml',
 			'restoreHtml',
@@ -1924,6 +2013,9 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 
 		const withHtml = applicationViteConfig([], ['browser'])
 		for (const name of htmlNames) expect(withHtml).toContain(name)
+		expect(withHtml).toContain("import { parseStartTag } from '@orkestrel/html'")
+		expect(withHtml).not.toContain('HTML_SECURITY_PREFIX')
+		expect(withHtml).not.toContain('SHOWCASE_SECURITY_PREFIX')
 		expect(withHtml).toContain('html: environmentHtml()')
 		expect(withHtml).toContain('restoreHtml()')
 		expect(withHtml).toContain('prepareHtml()')
@@ -2122,7 +2214,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 
 		expect(content).toContain('\t)\n\nexport const policy')
 		expect(createHash('sha256').update(content).digest('hex')).toBe(
-			'e3abeb8b56faee132fee364356efaf5fd561eb513c962013848a860153ac5607',
+			'2e6fb871d36fabffce6842c2cc6f4eae5d900f2552854f9f4473b799f04d2e80',
 		)
 	})
 
@@ -2158,9 +2250,9 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		expect(content).toContain('finalizeHtml()')
 		expect(content).toContain("outputBoundary('dist/app/browser'),")
 		expect(content).toContain('const environmentKeys = new Set<string>()')
-		expect(content).toContain('return maskIgnoredHtml(environmentKeys, html)')
+		expect(content).toContain('return maskIgnoredHtml(environmentKeys, html, HTML_SECURITY_META)')
 		expect(content).not.toContain('HTML_ENVIRONMENT_KEYS')
-		expect(content).toContain('HTML_SECURITY_PREFIX')
+		expect(content).toContain('hasSecurityPrologue')
 		expect(content).toContain("script-src 'self'")
 		expect(content).toContain('Classic external scripts are not permitted')
 		expect(content).toContain('Module script URLs must remain in the local Vite graph')
@@ -2289,7 +2381,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 					'',
 					`const entry = ${serializeTypeScriptString(entry)}`,
 					"const context = { path: '/showcase.html', filename: entry, bundle: {} }",
-					"const source = SHOWCASE_SECURITY_PREFIX + '</head><body>stable</body></html>'",
+					"const source = '<!doctype html>\\n<html lang=\"en\">\\n\\t<head>\\n\\t\\t' + SHOWCASE_SECURITY_META + '\\n</head><body>stable</body></html>'",
 					'const transform = showcaseHtml().transformIndexHtml',
 					"if (typeof transform !== 'object' || transform === null) {",
 					"\tthrow new Error('showcase transform hook shape changed')",
@@ -2441,14 +2533,19 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		expect(result.stdout).toBe(content)
 	})
 
-	it('keeps the indexeddb browser, policy, and guides shape registered through the shared gate', () => {
+	it('keeps the indexeddb browser and proof shapes registered through the shared gate', () => {
 		const content = rootViteConfig(['browser'])
 
 		expect(content).not.toContain('browserOptions !== undefined ? [')
 		expect(content).toContain(
 			[
 				'\ttest: gateBrowserProjects(',
-				"\t\t[{ project: srcBrowser, browser: 'src:browser' }, { project: policy }, { project: guides }],",
+				'\t\t[',
+				"\t\t\t{ project: srcBrowser, browser: 'src:browser' },",
+				'\t\t\t{ project: policy },',
+				'\t\t\t{ project: config },',
+				'\t\t\t{ project: guides },',
+				'\t\t],',
 			].join('\n'),
 		)
 		expect(content).toContain("name: { label: registration.browser, color: 'yellow' }")
@@ -2697,7 +2794,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		const guidesBlock = browser.slice(guidesStart, guidesEnd)
 		expect(guidesBlock).toContain('browser: { enabled: false }')
 		expect(guidesBlock).not.toContain('BROWSER_TEST_DEPENDENCIES')
-		expect(browser).toContain('config?.test?.browser?.enabled === false')
+		expect(browser).toContain('options?.test?.browser?.enabled === false')
 	})
 
 	it('loads both emitted gate branches and exact project-filter forms with real Vitest configuration', async () => {
@@ -2781,7 +2878,9 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		expect(content).not.toContain('SYSTEM_BROWSER_CHANNELS')
 		expect(content).not.toContain('@vitest/browser-playwright')
 		expect(content).not.toContain('console.warn(')
-		expect(content).toContain('projects: [srcCore, srcServer, appCore, appServer, policy, guides]')
+		expect(content).toContain(
+			'projects: [srcCore, srcServer, appCore, appServer, policy, config, guides]',
+		)
 	})
 
 	it('registers bin, integration, and service independently after the proof projects', () => {
@@ -2793,16 +2892,16 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		const bin = rootViteConfig(['core', 'server'], { bin: true })
 		expect(bin).toContain("entry: resolveWorkspacePath('src/bin/scaffold.ts')")
 		expect(bin).toContain("outDir: 'dist/bin'")
-		expect(bin).toContain('projects: [srcCore, srcServer, policy, guides, srcBin]')
+		expect(bin).toContain('projects: [srcCore, srcServer, policy, config, guides, srcBin]')
 		expect(bin).not.toContain("include: ['tests/integration/**/*.test.ts']")
 
 		const integration = rootViteConfig(['server'], { integration: true })
 		expect(integration).not.toContain('srcBin')
-		expect(integration).toContain('projects: [srcServer, policy, guides, integration]')
+		expect(integration).toContain('projects: [srcServer, policy, config, guides, integration]')
 		expect(integration).toContain("include: ['tests/integration/**/*.test.ts']")
 
 		const service = applicationViteConfig([], ['server'], { service: true })
-		expect(service).toContain('projects: [appServer, policy, guides, service]')
+		expect(service).toContain('projects: [appServer, policy, config, guides, service]')
 		expect(service).toContain("include: ['tests/service/**/*.test.ts']")
 	})
 })
@@ -2985,11 +3084,11 @@ describe('configArtifacts', () => {
 			(artifact) => artifact.path === 'vite.config.ts',
 		)?.content
 
-		expect(bin).toContain('projects: [srcServer, policy, guides, srcBin]')
+		expect(bin).toContain('projects: [srcServer, policy, config, guides, srcBin]')
 		expect(bin).not.toContain('export const integration =')
-		expect(integration).toContain('projects: [srcServer, policy, guides, integration]')
+		expect(integration).toContain('projects: [srcServer, policy, config, guides, integration]')
 		expect(integration).not.toContain('export const srcBin =')
-		expect(service).toContain('projects: [srcServer, policy, guides, service]')
+		expect(service).toContain('projects: [srcServer, policy, config, guides, service]')
 	})
 
 	it('emits the executable configuration pair only for the bin axis', () => {
@@ -3167,7 +3266,7 @@ describe('paritySpecifiers', () => {
 })
 
 describe('testArtifacts', () => {
-	it('drafts setup.ts, per-environment pairs, and the always-on parity test', () => {
+	it('drafts setup.ts, per-environment pairs, and the always-on config and parity tests', () => {
 		const artifacts = testArtifacts(blueprint('router', { src: ['server'] }), 'Router')
 		const paths = artifacts.map((artifact) => artifact.path)
 		const setup = artifacts.find((artifact) => artifact.path === 'tests/setup.ts')
@@ -3177,7 +3276,101 @@ describe('testArtifacts', () => {
 		expect(paths).not.toContain('tests/setupBrowser.ts')
 		expect(paths).toContain('tests/src/server/Router.test.ts')
 		expect(paths).toContain('tests/src/server/factories.test.ts')
+		expect(paths).toContain('tests/config/vite.test.ts')
 		expect(paths).toContain('tests/guides/src/parity.test.ts')
+	})
+
+	it('keeps browser discovery in config and coding policy free of Vite capability probes', () => {
+		const artifacts = testArtifacts(blueprint('router', { src: ['browser'] }), 'Router')
+		const policy = artifacts.find((artifact) => artifact.path === 'tests/policy.test.ts')
+		const config = artifacts.find((artifact) => artifact.path === 'tests/config/vite.test.ts')
+		if (policy === undefined || policy.origin === 'host')
+			throw new Error('Generated policy test is missing')
+		if (config === undefined || config.origin === 'host')
+			throw new Error('Generated config test is missing')
+
+		expect(policy.content).not.toContain('@vitest/browser-playwright')
+		expect(policy.content).not.toContain("from '../vite.config.js'")
+		expect(policy.content).not.toContain('resolveBrowser')
+		expect(config.content).toContain("from '../../vite.config.js'")
+		expect(config.content).toContain("from 'playwright'")
+		expect(config.content).toContain('resolveBrowser')
+	})
+
+	it.each([
+		{
+			label: 'app core',
+			spec: blueprint('application', { src: [], app: ['core'] }),
+			output: false,
+			browser: false,
+			html: false,
+		},
+		{
+			label: 'source server',
+			spec: blueprint('router', { src: ['server'] }),
+			output: true,
+			browser: false,
+			html: false,
+		},
+		{
+			label: 'source browser',
+			spec: blueprint('indexeddb', { src: ['browser'] }),
+			output: true,
+			browser: true,
+			html: false,
+		},
+		{
+			label: 'app browser',
+			spec: blueprint('application', { src: [], app: ['browser'] }),
+			output: true,
+			browser: true,
+			html: true,
+		},
+	])(
+		'emits only the $label root machinery its config test can import',
+		({ spec, output, browser, html }) => {
+			const artifact = testArtifacts(spec, pascalCase(spec.name)).find(
+				(candidate) => candidate.path === 'tests/config/vite.test.ts',
+			)
+			if (artifact === undefined || artifact.origin === 'host') {
+				throw new Error('Generated config test artifact is missing')
+			}
+
+			expect(artifact.content.includes('enforceOutputPath')).toBe(output)
+			expect(artifact.content.includes('resolveBrowser')).toBe(browser)
+			expect(artifact.content.includes("from 'playwright'")).toBe(browser)
+			expect(artifact.content.includes('hasSecurityPrologue')).toBe(html)
+		},
+	)
+
+	it.each([
+		{ label: 'app core', spec: blueprint('application', { src: [], app: ['core'] }) },
+		{ label: 'source server', spec: blueprint('router', { src: ['server'] }) },
+		{ label: 'source browser', spec: blueprint('indexeddb', { src: ['browser'] }) },
+		{ label: 'app browser', spec: blueprint('application', { src: [], app: ['browser'] }) },
+	])('emits an oxfmt-stable config test for $label', ({ spec }) => {
+		const artifact = testArtifacts(spec, pascalCase(spec.name)).find(
+			(candidate) => candidate.path === 'tests/config/vite.test.ts',
+		)
+		if (artifact === undefined || artifact.origin === 'host') {
+			throw new Error('Generated config test artifact is missing')
+		}
+		const result = spawnSync(
+			process.execPath,
+			[
+				join(WORKSPACE_ROOT, 'node_modules', 'oxfmt', 'bin', 'oxfmt'),
+				'--config',
+				join(WORKSPACE_ROOT, '.oxfmtrc.json'),
+				'--stdin-filepath',
+				artifact.path,
+			],
+			{ encoding: 'utf8', input: artifact.content },
+		)
+
+		expect(result.error).toBeUndefined()
+		expect(result.status).toBe(0)
+		expect(result.stderr).toBe('')
+		expect(result.stdout).toBe(artifact.content)
 	})
 
 	it.each([

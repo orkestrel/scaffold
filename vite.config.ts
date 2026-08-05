@@ -773,7 +773,7 @@ export function environmentBoundary(
 	}
 }
 
-export const srcCore = (config?: UserConfig): UserConfig =>
+export const srcCore = (options?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
 			resolve,
@@ -791,10 +791,10 @@ export const srcCore = (config?: UserConfig): UserConfig =>
 				browser: { enabled: false },
 			},
 		},
-		config ?? {},
+		options ?? {},
 	)
 
-export const srcServer = (config?: UserConfig): UserConfig =>
+export const srcServer = (options?: UserConfig): UserConfig =>
 	srcCore(
 		mergeConfig(
 			{
@@ -832,11 +832,11 @@ export const srcServer = (config?: UserConfig): UserConfig =>
 					setupFiles: ['./tests/setup.ts', './tests/setupServer.ts'],
 				},
 			},
-			config ?? {},
+			options ?? {},
 		),
 	)
 
-export const policy = (config?: UserConfig): UserConfig =>
+export const policy = (options?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
 			resolve,
@@ -848,10 +848,25 @@ export const policy = (config?: UserConfig): UserConfig =>
 				browser: { enabled: false },
 			},
 		},
-		config ?? {},
+		options ?? {},
 	)
 
-export const guides = (config?: UserConfig): UserConfig =>
+export const config = (options?: UserConfig): UserConfig =>
+	mergeConfig(
+		{
+			resolve,
+			test: {
+				name: { label: 'config', color: 'yellow' },
+				include: ['tests/config/**/*.test.ts'],
+				setupFiles: ['./tests/setup.ts'],
+				environment: 'node',
+				browser: { enabled: false },
+			},
+		},
+		options ?? {},
+	)
+
+export const guides = (options?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
 			resolve,
@@ -864,10 +879,10 @@ export const guides = (config?: UserConfig): UserConfig =>
 				browser: { enabled: false },
 			},
 		},
-		config ?? {},
+		options ?? {},
 	)
 
-export const srcBin = (config?: UserConfig): UserConfig =>
+export const srcBin = (options?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
 			resolve,
@@ -894,10 +909,10 @@ export const srcBin = (config?: UserConfig): UserConfig =>
 				browser: { enabled: false },
 			},
 		},
-		config ?? {},
+		options ?? {},
 	)
 
-export const integration = (config?: UserConfig): UserConfig =>
+export const integration = (options?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
 			resolve,
@@ -914,12 +929,12 @@ export const integration = (config?: UserConfig): UserConfig =>
 				fileParallelism: false,
 			},
 		},
-		config ?? {},
+		options ?? {},
 	)
 
 export default defineConfig({
 	resolve,
 	test: {
-		projects: [srcCore, srcServer, policy, guides, srcBin, integration],
+		projects: [srcCore, srcServer, policy, config, guides, srcBin, integration],
 	},
 })
