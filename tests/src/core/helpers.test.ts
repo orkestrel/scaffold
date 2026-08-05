@@ -20,6 +20,8 @@ import {
 	fitsPrintWidth,
 	formatJson,
 	findPathConflict,
+	hasApplicationBoundary,
+	hasApplicationShowcase,
 	HOST_PATHS,
 	inferGroup,
 	isBehind,
@@ -38,6 +40,7 @@ import {
 	planToSummary,
 	rangeToFreshness,
 	renderArray,
+	renderStringArray,
 	renderObject,
 	renderValue,
 	SCAFFOLD_RANGE,
@@ -96,6 +99,37 @@ describe('serializeTypeScriptString', () => {
 	})
 })
 
+describe('renderStringArray', () => {
+	it('serializes every string leaf before applying inline and broken layouts', () => {
+		expect(renderStringArray(["app's", 'guides\\tests'], '', '', '')).toBe(
+			"['app\\'s', 'guides\\\\tests']",
+		)
+		expect(renderStringArray(["app's", 'x'.repeat(120)], '', '', '')).toContain("\n\t'app\\'s',\n")
+	})
+})
+
+describe('application blueprint predicates', () => {
+	it('recognizes only the complete application boundary', () => {
+		expect(
+			hasApplicationBoundary(
+				blueprint('application', { src: [], app: ['core', 'browser', 'server'] }),
+			),
+		).toBe(true)
+		expect(
+			hasApplicationBoundary(blueprint('application', { src: [], app: ['core', 'server'] })),
+		).toBe(false)
+	})
+
+	it('requires both showcase intent and the browser environment', () => {
+		expect(
+			hasApplicationShowcase(
+				blueprint('application', { src: [], app: ['browser'], showcase: true }),
+			),
+		).toBe(true)
+		expect(hasApplicationShowcase(blueprint('application', { showcase: true }))).toBe(false)
+	})
+})
+
 describe('blueprintToMembers', () => {
 	it('derives the four-member inventory for a single environment', () => {
 		const members = blueprintToMembers(blueprint('router', { src: ['core'] }))
@@ -150,7 +184,7 @@ describe('blueprintToMembers', () => {
 		expect(categories.get('parseApplicationHost')).toBe('parser')
 		expect(categories.get('ApplicationRecord')).toBe('type')
 		expect(categories.get('ApplicationState')).toBe('type')
-		expect(categories.get('dispatcher')).toBe('constant')
+		expect(categories.get('createApplicationDispatcher')).toBe('factory')
 		expect(categories.get('handleApplicationHealth')).toBe('handler')
 		expect(categories.has('handleApplicationRequest')).toBe(false)
 		expect(categories.get('startApplicationServer')).toBe('factory')
@@ -174,13 +208,13 @@ describe('blueprintToMembers', () => {
 		expect(shared.get('APP_HEALTH_TIMEOUT')).toBe('core')
 		expect(shared.get('isApplicationRecord')).toBe('core')
 		expect(shared.get('readApplicationHealth')).toBe('core')
-		expect(shared.get('startBrowserApplication')).toBe('browser')
+		expect(shared.get('mountBrowserApplication')).toBe('browser')
 		expect(owned.get('ApplicationRecord')).toBe('server')
 		expect(owned.get('APP_HEALTH_PATH')).toBe('server')
 		expect(owned.has('APP_HEALTH_TIMEOUT')).toBe(false)
 		expect(owned.has('isApplicationRecord')).toBe(false)
 		expect(owned.has('readApplicationHealth')).toBe(false)
-		expect(owned.has('startBrowserApplication')).toBe(false)
+		expect(owned.has('mountBrowserApplication')).toBe(false)
 	})
 
 	it('declares the showcase seed and factory only for a showcase browser application', () => {
@@ -193,10 +227,10 @@ describe('blueprintToMembers', () => {
 		)
 
 		expect(categories.get('seedApplication')).toBe('factory')
-		expect(categories.get('createShowcaseApplication')).toBe('factory')
+		expect(categories.get('mountShowcaseApplication')).toBe('factory')
 		expect(categories.get('Application')).toBe('type')
 		expect(plain).not.toContain('seedApplication')
-		expect(plain).not.toContain('createShowcaseApplication')
+		expect(plain).not.toContain('mountShowcaseApplication')
 		expect(plain).not.toContain('Application')
 		expect(
 			blueprintToMembers(
@@ -1648,11 +1682,11 @@ describe('pinPlan', () => {
 		}
 		expect(actual).toMatchInlineSnapshot(`
 			{
-			  "app-browser": "9a98d37d",
+			  "app-browser": "841e0ec6",
 			  "app-core": "ebf81ea1",
-			  "app-full": "e7d70420",
-			  "app-server": "bf42ae71",
-			  "mixed-full": "348029c8",
+			  "app-full": "6b6fe4f3",
+			  "app-server": "b15a53fd",
+			  "mixed-full": "6bd48be9",
 			}
 		`)
 	})

@@ -13,7 +13,7 @@ import { fillTemplate } from '@orkestrel/template'
 import {
 	APP_MATRIX,
 	APP_BROWSER_DEV_DEPENDENCIES,
-	APP_CORE_DEV_DEPENDENCIES,
+	APP_DEV_DEPENDENCIES,
 	APP_SERVER_DEV_DEPENDENCIES,
 	BASE_DEV_DEPENDENCIES,
 	BIN_CONFIGS,
@@ -38,6 +38,8 @@ import {
 	escapeHtmlText,
 	fitsPrintWidth,
 	formatJson,
+	hasApplicationBoundary,
+	hasApplicationShowcase,
 	pascalCase,
 	pinPlan,
 	renderStringArray,
@@ -284,7 +286,7 @@ export function devDependenciesFor(spec: Blueprint): Readonly<Record<string, str
 	return {
 		...dependencies,
 		...(spec.src.includes('browser') ? SOURCE_BROWSER_DEV_DEPENDENCIES : {}),
-		...(spec.app.length > 0 ? APP_CORE_DEV_DEPENDENCIES : {}),
+		...(spec.app.length > 0 ? APP_DEV_DEPENDENCIES : {}),
 		...(spec.app.includes('browser') ? APP_BROWSER_DEV_DEPENDENCIES : {}),
 		...(spec.app.includes('server') ? APP_SERVER_DEV_DEPENDENCIES : {}),
 		...(spec.showcase ? { 'vite-plugin-singlefile': '^2.3.3' } : {}),
@@ -3345,7 +3347,7 @@ ${EXPORT_KEYWORD} function appBrowser(...config: never[]): UserConfig {
 	}
 }
 
-${EXPORT_KEYWORD} function appShowcase(...config: readonly never[]): UserConfig {
+${EXPORT_KEYWORD} function appShowcase(...config: never[]): UserConfig {
 	if (config.length > 0) {
 		throw new Error(
 			'[orkestrel-environment-boundary] Showcase configuration overrides are not permitted by the generated boundary',
@@ -4002,8 +4004,8 @@ export function applicationArtifacts(spec: Blueprint): readonly Artifact[] {
 	const artifacts: Artifact[] = []
 	const hasCore = spec.app.includes('core')
 	const hasBrowser = spec.app.includes('browser')
-	const hasBoundary = hasCore && hasBrowser && spec.app.includes('server')
-	const hasShowcase = spec.showcase && hasBrowser
+	const hasBoundary = hasApplicationBoundary(spec)
+	const hasShowcase = hasApplicationShowcase(spec)
 	const showcaseSource = hasBoundary ? 'its running server' : 'its own configuration'
 	const nameLiteral = serializeTypeScriptString(spec.name)
 	const sharedRecord = `
@@ -4114,7 +4116,7 @@ ${EXPORT_KEYWORD} interface Application {
 					showcase: hasShowcase
 						? `
 /**
- * Create and mount the showcase over its seeded, inert identity.
+ * Mount the showcase over its seeded, inert identity.
  *
  * @param target - The browser element or selector that receives the showcase.
  * @returns The mounted Vue application.
@@ -4126,13 +4128,14 @@ ${EXPORT_KEYWORD} interface Application {
  *
  * @example
  * \`\`\`ts
- * import { createShowcaseApplication } from '@app/browser'
+ * import { mountShowcaseApplication } from '@app/browser'
  *
- * createShowcaseApplication('#app')
+ * mountShowcaseApplication('#app')
  * \`\`\`
  */
-${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} createShowcaseApplication(target: string | Element): App<Element> {
-	const application = createBrowserApplication(seedApplication())
+${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} mountShowcaseApplication(target: string | Element): App<Element> {
+	const seed = seedApplication()
+	const application = createBrowserApplication({ name: seed.name })
 	application.mount(target)
 	return application
 }
@@ -4141,7 +4144,7 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} createShowcaseApplication(target: string |
 					boundary: hasBoundary
 						? `
 /**
- * Start the application over its real server boundary.
+ * Mount the application over its real server boundary.
  *
  * @param target - The browser element or selector that receives the application.
  * @returns The mounted Vue application, after one health read settles.
@@ -4153,13 +4156,14 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} createShowcaseApplication(target: string |
  *
  * @example
  * \`\`\`ts
- * import { startBrowserApplication } from '@app/browser'
+ * import { mountBrowserApplication } from '@app/browser'
  *
- * await startBrowserApplication('#app')
+ * await mountBrowserApplication('#app')
  * \`\`\`
  */
-${EXPORT_KEYWORD} async ${FUNCTION_KEYWORD} startBrowserApplication(target: string | Element): Promise<App<Element>> {
-	const application = createBrowserApplication(await readApplicationHealth(window.location.origin))
+${EXPORT_KEYWORD} async ${FUNCTION_KEYWORD} mountBrowserApplication(target: string | Element): Promise<App<Element>> {
+	const seed = (await readApplicationHealth(window.location.origin)) ?? { name: APP_NAME }
+	const application = createBrowserApplication({ name: seed.name })
 	application.mount(target)
 	return application
 }
@@ -4181,8 +4185,10 @@ ${EXPORT_KEYWORD} async ${FUNCTION_KEYWORD} startBrowserApplication(target: stri
 				'appBrowserMain',
 				hasBoundary
 					? {
-							factory: 'startBrowserApplication',
-							mount: "void startBrowserApplication('#app')",
+							factory: 'mountBrowserApplication',
+							mount: `void mountBrowserApplication('#app').catch(() => {
+	console.error('[ERROR] Browser application failed')
+})`,
 						}
 					: {
 							factory: 'createBrowserApplication',
@@ -4444,9 +4450,8 @@ export function testArtifacts(spec: Blueprint, pascal: string): readonly Artifac
 	if (spec.src.includes('browser') || spec.app.includes('browser')) {
 		artifacts.push(fillArtifact('tests/setupBrowser.ts', 'tests', 'setupBrowser', {}, 'browser'))
 	}
-	const hasApplicationBoundary =
-		spec.app.includes('browser') && spec.app.includes('server') && spec.app.includes('core')
-	const hasApplicationShowcase = spec.showcase && spec.app.includes('browser')
+	const boundary = hasApplicationBoundary(spec)
+	const showcase = hasApplicationShowcase(spec)
 	if (spec.app.includes('core')) {
 		artifacts.push(
 			fillArtifact(
@@ -4454,14 +4459,15 @@ export function testArtifacts(spec: Blueprint, pascal: string): readonly Artifac
 				'tests',
 				'appCoreTest',
 				{
-					guardImport: hasApplicationBoundary ? '\tisApplicationRecord,\n' : '',
-					readImport: hasApplicationBoundary ? '\treadApplicationHealth,\n' : '',
-					boundary: hasApplicationBoundary
+					guardImport: boundary ? '\tisApplicationRecord,\n' : '',
+					readImport: boundary ? '\treadApplicationHealth,\n' : '',
+					boundary: boundary
 						? `
 
 describe('shared application health boundary', () => {
 	it('accepts the shared record and refuses every off-contract value', () => {
 		expect(isApplicationRecord({ name: APP_NAME, status: 'ok' })).toBe(true)
+		expect(isApplicationRecord({ name: ' ', status: 'ok' })).toBe(true)
 		for (const value of [
 			null,
 			[],
@@ -4499,18 +4505,18 @@ describe('shared application health boundary', () => {
 				'appBrowserTest',
 				{
 					browserTestNameImport,
-					showcaseImport: hasApplicationShowcase ? '\tcreateShowcaseApplication,\n' : '',
-					entryImport: `${hasApplicationShowcase ? '\tseedApplication,\n' : ''}${
-						hasApplicationBoundary ? '\tstartBrowserApplication,\n' : ''
+					showcaseImport: showcase ? '\tmountShowcaseApplication,\n' : '',
+					entryImport: `${showcase ? '\tseedApplication,\n' : ''}${
+						boundary ? '\tmountBrowserApplication,\n' : ''
 					}`,
-					showcase: hasApplicationShowcase
+					showcase: showcase
 						? `
 
-describe('createShowcaseApplication', () => {
+describe('mountShowcaseApplication', () => {
 	it('mounts the shipped root view over one frozen, inert seed', () => {
 		const element = buildElement()
 		const seeded = seedApplication()
-		const application = createShowcaseApplication(element)
+		const application = mountShowcaseApplication(element)
 		try {
 			expect(element.textContent).toContain(seeded.name)
 			expect(seeded).toEqual(seedApplication())
@@ -4523,13 +4529,13 @@ describe('createShowcaseApplication', () => {
 	})
 })`
 						: '',
-					boundary: hasApplicationBoundary
+					boundary: boundary
 						? `
 
-describe('startBrowserApplication', () => {
+describe('mountBrowserApplication', () => {
 	it('mounts the configured identity when the boundary answers off-contract', async () => {
 		const element = buildElement()
-		const application = await startBrowserApplication(element)
+		const application = await mountBrowserApplication(element)
 		try {
 			expect(element.textContent).toContain(APP_NAME)
 		} finally {
@@ -4545,7 +4551,7 @@ describe('startBrowserApplication', () => {
 		)
 	}
 	if (spec.app.includes('server')) {
-		const testNameImport = hasApplicationBoundary
+		const testNameImport = boundary
 			? `import {
 	APP_HEALTH_METHOD,
 	APP_HEALTH_PATH,
@@ -4556,13 +4562,13 @@ describe('startBrowserApplication', () => {
 			: spec.app.includes('core')
 				? "import { APP_NAME } from '@app/core'"
 				: "import { APP_NAME } from '@app/server'"
-		const serverImport = hasApplicationBoundary
-			? "import { createApplicationServer, dispatcher } from '@app/server'"
+		const serverImport = boundary
+			? "import { createApplicationDispatcher, createApplicationServer } from '@app/server'"
 			: `import {
 	APP_HEALTH_METHOD,
 	APP_HEALTH_PATH,
+	createApplicationDispatcher,
 	createApplicationServer,
-	dispatcher,
 } from '@app/server'`
 		artifacts.push(
 			fillArtifact(
@@ -4572,7 +4578,7 @@ describe('startBrowserApplication', () => {
 				{
 					testNameImport,
 					serverImport,
-					boundary: hasApplicationBoundary
+					boundary: boundary
 						? `
 
 describe('shared application boundary', () => {
@@ -4580,11 +4586,13 @@ describe('shared application boundary', () => {
 		const server = createApplicationServer({ server: { host: '127.0.0.1', port: 0 } })
 		try {
 			await server.start()
-			const response = await fetch(\`\${server.url}\${APP_HEALTH_PATH}\`)
+			const url = server.url
+			if (url === undefined) throw new Error('Expected a bound application URL')
+			const response = await fetch(\`\${url}\${APP_HEALTH_PATH}\`)
 			const record: unknown = await response.json()
 
 			expect(isApplicationRecord(record)).toBe(true)
-			expect(await readApplicationHealth(server.url)).toEqual({ name: APP_NAME })
+			expect(await readApplicationHealth(url)).toEqual({ name: APP_NAME })
 		} finally {
 			await server.destroy()
 		}
@@ -4745,9 +4753,8 @@ export function guideMemberTable(category: Member['category'], members: readonly
  */
 export function guideUsage(spec: Blueprint, pascal: string): string {
 	const examples: string[] = []
-	const hasBoundary =
-		spec.app.includes('core') && spec.app.includes('browser') && spec.app.includes('server')
-	const hasShowcase = spec.showcase && spec.app.includes('browser')
+	const hasBoundary = hasApplicationBoundary(spec)
+	const hasShowcase = hasApplicationShowcase(spec)
 	if (spec.src.length > 0) {
 		examples.push(`\`\`\`ts
 import { create${pascal} } from '@orkestrel/${spec.name}'
@@ -4808,17 +4815,20 @@ isBrowserApplicationError(new BrowserApplicationError('CONFIG', 'invalid')) // t
 	}
 	if (hasShowcase) {
 		examples.push(`\`\`\`ts
-import { createShowcaseApplication, seedApplication } from '@app/browser'
+import { mountShowcaseApplication, seedApplication } from '@app/browser'
 
-seedApplication() // { name: '${spec.name} showcase' }
-createShowcaseApplication('#app')
+${CONST_KEYWORD} seed = seedApplication()
+${CONST_KEYWORD} showcase = mountShowcaseApplication('#app')
+if (seed.name.length === 0) throw new Error('Showcase seed is empty')
+showcase.unmount()
 \`\`\``)
 	}
 	if (hasBoundary) {
 		examples.push(`\`\`\`ts
-import { startBrowserApplication } from '@app/browser'
+import { mountBrowserApplication } from '@app/browser'
 
-await startBrowserApplication('#app')
+${CONST_KEYWORD} application = await mountBrowserApplication('#app')
+application.unmount()
 \`\`\``)
 	}
 	if (spec.app.includes('server')) {
@@ -4827,7 +4837,7 @@ ${
 	hasBoundary
 		? `import type { ApplicationRecord } from '@app/core'
 import type { ApplicationState } from '@app/server'
-import { APP_HEALTH_METHOD, APP_HEALTH_PATH } from '@app/core'`
+import { APP_HEALTH_METHOD, APP_HEALTH_PATH, isApplicationRecord } from '@app/core'`
 		: "import type { ApplicationRecord, ApplicationState } from '@app/server'"
 }
 import {
@@ -4839,12 +4849,11 @@ ${
 `
 }	APP_HOST_LABEL_PATTERN,
 	APP_NUMERIC_HOST_PATTERN,
-	ApplicationServer,
 	ApplicationServerError,
 	DEFAULT_APP_START_TIMEOUT,
 	MAX_APP_START_TIMEOUT,
+	createApplicationDispatcher,
 	createApplicationServer,
-	dispatcher,
 	handleApplicationHealth,
 	isApplicationServerError,
 	parseApplicationHost,
@@ -4858,22 +4867,42 @@ ${CONST_KEYWORD} host = parseApplicationHost('127.0.0.1')
 ${CONST_KEYWORD} port = parseApplicationPort('0')
 ${CONST_KEYWORD} timeout = parseApplicationStartTimeout('5000')
 ${CONST_KEYWORD} options = parseApplicationServerOptions({ server: { host, port, timeout } })
-APP_HOST_LABEL_PATTERN.test('api') // true
-APP_NUMERIC_HOST_PATTERN.test('999.999.999.999') // true (and therefore rejected as a host)
-APP_HEALTH_METHOD // 'GET'
-APP_HEALTH_PATH // '/health'
-DEFAULT_APP_START_TIMEOUT // 10000
-MAX_APP_START_TIMEOUT // 300000
+${CONST_KEYWORD} hostMatches = APP_HOST_LABEL_PATTERN.test('api')
+${CONST_KEYWORD} numericMatches = APP_NUMERIC_HOST_PATTERN.test('999.999.999.999')
+if (
+	!hostMatches ||
+	!numericMatches ||
+	APP_HEALTH_METHOD !== 'GET' ||
+	APP_HEALTH_PATH !== '/health' ||
+	DEFAULT_APP_START_TIMEOUT !== 10_000 ||
+	MAX_APP_START_TIMEOUT !== 300_000
+) {
+	throw new Error('Application constants are off contract')
+}
 ${CONST_KEYWORD} state: ApplicationState = { connection: { encrypted: false } }
 ${CONST_KEYWORD} record: ApplicationRecord = { name: '${spec.name}', status: 'ok' }
-await dispatcher.handle(new Request(\`http://application.test\${APP_HEALTH_PATH}\`), state)
-Response.json(record)
-handleApplicationHealth()
+${CONST_KEYWORD} dispatcher = createApplicationDispatcher()
+try {
+	${CONST_KEYWORD} response = await dispatcher.handle(
+		new Request(\`http://application.test\${APP_HEALTH_PATH}\`),
+		state,
+	)
+	${CONST_KEYWORD} health = handleApplicationHealth()
+	${CONST_KEYWORD} encoded = Response.json(record)
+	${
+		hasBoundary
+			? `${CONST_KEYWORD} value: unknown = await health.clone().json()
+	if (!isApplicationRecord(value)) throw new Error('Invalid application health record')
+	`
+			: ''
+	}if (!response.ok || !health.ok || !encoded.ok) throw new Error('Application health failed')
+} finally {
+	dispatcher.destroy()
+}
 
 ${CONST_KEYWORD} error = new ApplicationServerError('CONFIG', 'invalid')
-isApplicationServerError(error) // true
+if (!isApplicationServerError(error)) throw new Error('Application server guard failed')
 reportApplicationServerError(error) // writes only a stable CONFIG diagnostic
-new ApplicationServer(options) // stopped entity
 
 ${CONST_KEYWORD} server = createApplicationServer(options)
 ${CONST_KEYWORD} controller = new AbortController()
@@ -4924,7 +4953,7 @@ export function guideMethods(spec: Blueprint): string {
 			[
 				'`destroy`',
 				'`Promise<void>`',
-				'Perform terminal idempotent teardown through the installed server lifecycle. Rejects with `ApplicationServerError` code `LIFECYCLE` when teardown fails.',
+				'Perform terminal idempotent teardown through the installed server lifecycle, then destroy its owned dispatcher. Rejects with `ApplicationServerError` code `LIFECYCLE` when server teardown fails.',
 			],
 		],
 	)
@@ -4966,10 +4995,13 @@ only integer timeouts from 1 through 300,000 milliseconds. Lifecycle failures us
 \`LIFECYCLE\`; both may carry \`context.cause\` or \`context.value\`. Narrow caught values with
 \`isApplicationServerError\` before reading either field.
 
-The standalone dispatcher owns exactly \`GET /health\` and serializes the shared
-\`ApplicationRecord\` shape \`{ name: APP_NAME, status: 'ok' }\` as JSON. The server composes
+Before binding, \`url\` is \`undefined\`; after a successful start it reflects the real bound port,
+and it returns to \`undefined\` after stop or destroy.
+
+Each \`createApplicationDispatcher()\` call returns a fresh dispatcher that owns exactly \`GET /health\`
+and serializes the shared \`ApplicationRecord\` shape \`{ name: APP_NAME, status: 'ok' }\` as JSON. The server composes
 \`createBoundary()\`, \`createSecurity()\`, then \`createDeadline({ ms: timeout })\` around that
-dispatcher; every other path returns \`404\`, and every unsupported method returns \`405\` with
+owned dispatcher; standalone callers destroy theirs after use. Every other path returns \`404\`, and every unsupported method returns \`405\` with
 \`Allow: GET\`.`
 }
 

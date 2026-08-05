@@ -70,11 +70,16 @@ than aspirational:
 A generated `app/server` owns strict grouped `server.host`, `server.port`, and `server.timeout`
 options plus the `APP_HOST`, `APP_PORT`, and `APP_START_TIMEOUT` environment boundaries. It
 composes the installed router, server, and boundary/security/deadline middleware substrates around
-a standalone `GET /health` dispatcher, supports repeated start/stop cycles and terminal destroy,
+a fresh `GET /health` dispatcher from `createApplicationDispatcher`, supports repeated start/stop
+cycles and terminal destroy of both the server and its owned dispatcher,
 and writes exactly one `[READY] <name> <url>` diagnostic after process-owned readiness. Its
 exported `reportApplicationServerError` handler writes only a stable configuration, lifecycle, or
 unknown failure code; process-owned failures never serialize a rejected value, nested cause,
 stack, secret, or other error context.
+`ApplicationState` extends middleware's `IdentifierState` and adds only the connection fact.
+`ApplicationServer.url` is `undefined` until a real port is bound and again after stop or destroy;
+the redundant `listening` projection is not part of the generated interface. The runner narrows
+the post-start URL before writing `[READY]`, so it never announces a stale or unbound address.
 
 The health contract belongs to whichever layer both hosts can reach. While the server alone reads
 it, `ApplicationRecord`, `APP_HEALTH_METHOD`, and `APP_HEALTH_PATH` stay declared in `app/server`.
@@ -85,7 +90,7 @@ whole browser/server boundary: it fetches the running server's health route, rea
 `unknown`, narrows it with the shared guard, and returns the shared `Application` identity or
 `undefined` for an unreachable, slow, or off-contract answer. Nothing is duplicated by the move —
 `app/server` imports the relocated contract from `@app/core`, and `app/browser` still never imports
-a server module. The generated browser entry then mounts `startBrowserApplication`, which performs
+a server module. The generated browser entry then mounts `mountBrowserApplication`, which performs
 that single read before mounting and falls back to the locally configured identity when the
 boundary yields `undefined`.
 
@@ -432,7 +437,7 @@ From [`constants.ts`](../../src/core/constants.ts).
 | `SCAFFOLD_RANGE`                  | const |
 | `BASE_DEV_DEPENDENCIES`           | const |
 | `SOURCE_BROWSER_DEV_DEPENDENCIES` | const |
-| `APP_CORE_DEV_DEPENDENCIES`       | const |
+| `APP_DEV_DEPENDENCIES`            | const |
 | `APP_BROWSER_DEV_DEPENDENCIES`    | const |
 | `APP_SERVER_DEV_DEPENDENCIES`     | const |
 | `CHECKOUT_ACTION_SHA`             | const |
@@ -482,8 +487,8 @@ form. `HEX_PATTERN` requires whole lowercase byte pairs, and `SYNC_BASELINE_PATT
 `MINIMUM_NODE_VERSION` is `22.12.0`, `DEFAULT_ENGINES` derives from it, and `DEFAULT_VERSION` is
 `0.0.1`. `BASE_DEV_DEPENDENCIES` is the host-neutral tooling baseline every generated workspace
 gets; `SOURCE_BROWSER_DEV_DEPENDENCIES` adds the real browser providers a published browser environment
-needs; `APP_CORE_DEV_DEPENDENCIES` adds the shared contract every private application environment
-uses; `APP_BROWSER_DEV_DEPENDENCIES` adds the Vue toolchain a private browser application needs;
+needs; `APP_DEV_DEPENDENCIES` is the baseline every private application environment gets;
+`APP_BROWSER_DEV_DEPENDENCIES` adds the Vue toolchain a private browser application needs;
 and `APP_SERVER_DEV_DEPENDENCIES` adds the middleware, router, and server packages a private server
 application needs. Vite is minor-pinned at `~8.2.0`: the generated boundary consumes the reviewed
 8.2 `CSSOptions`, `preprocessCSS`, and `isCSSRequest` surface, while the selected
@@ -845,6 +850,8 @@ From [`helpers.ts`](../../src/core/helpers.ts).
 | `renderObject`              | function |
 | `renderValue`               | function |
 | `renderStringArray`         | function |
+| `hasApplicationBoundary`    | function |
+| `hasApplicationShowcase`    | function |
 | `formatJson`                | function |
 | `pinPlan`                   | function |
 
@@ -912,7 +919,11 @@ formatter byte for byte, collapsing a short array onto one line and breaking a l
 computed configuration JSON is format-stable by construction. `renderStringArray` applies the same
 inline-or-broken width rule to single-quoted TypeScript string-array literals — with a trailing
 comma on every broken line, matching `oxfmt`'s `trailingComma: "all"` for non-JSON files — so
-generated TypeScript configuration is format-stable too.
+generated TypeScript configuration is format-stable too. It serializes every string element through
+`serializeTypeScriptString`, so quotes, backslashes, controls, and line separators remain inert in
+both layouts. `hasApplicationBoundary` recognizes exactly app/core + app/browser + app/server,
+while `hasApplicationShowcase` requires showcase intent beside app/browser; plan assembly, tests,
+guides, and member inventory share those predicates.
 
 ### Helpers — server
 
@@ -1570,7 +1581,7 @@ a fixed, interleaved order so aggregates sit immediately before their per-enviro
 - `dev` when a browser application is selected; `serve` and `serve:build` when a server application
   is selected
 - `showcase`, `build:showcase`, and `show` only when the physical showcase wrapper is present;
-  `show` builds and copies `dist/showcase/index.html` to `demo/showcase.html`
+  `show` formats, then builds, then copies `dist/showcase/index.html` to `demo/showcase.html`
 - `prepublishOnly` chaining `format:check → lint:check → check → build → test`, followed by
   `test:integration` when the integration axis is selected
 
@@ -1709,7 +1720,7 @@ still rejects public directories, browser asset inlining, and output path overri
 post-factory composition as defense in depth; that narrow check is not a general extension seam.
 
 When the showcase fact is present, the generated root also exports closed
-`appShowcase(...config: readonly never[])`; both factories reject every argument at runtime. The
+`appShowcase(...config: never[])`; both factories reject every argument at runtime. The
 ordinary factory retains its strict
 `script-src 'self'` policy, external asset auditing, and `dist/app/browser` output. The showcase
 factory is a standalone configuration with `base: './'`, unlimited asset inlining, and
@@ -1728,12 +1739,12 @@ open with a generated security prologue: the application carries the ordinary st
 showcase carries its development policy. The boundary plugins select and validate the matching
 prologue; the showcase build alone swaps in the self-contained policy before hashing and renames its
 single HTML output to `index.html`, which is what `show` copies to `demo/showcase.html`. The showcase entry
-mounts `createShowcaseApplication`, and `app/browser/seeders.ts` exports exactly one seeder,
+mounts `mountShowcaseApplication`, and `app/browser/seeders.ts` exports exactly one seeder,
 `seedApplication`, returning a frozen identity of the same shape the shipped root view receives.
-The showcase and the application therefore differ in exactly one expression — where the props come
-from — because both mount the same `createBrowserApplication` root: the showcase passes
-`seedApplication()`, the application passes its own configuration or, across a browser/server
-boundary, the identity `readApplicationHealth` returned.
+The two mount factories differ in the seed expression alone. Both explicitly pass
+`{ name: seed.name }` to the same `createBrowserApplication` root: the showcase seed comes from
+`seedApplication()`, while the shipped application seed comes from `readApplicationHealth` with
+the configured identity as its fallback.
 
 The browser development server applies the same trust boundary before Vite's internal middleware.
 Its explicit filesystem allowlist contains only browser/core source roots, browser tests, their

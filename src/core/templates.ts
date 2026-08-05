@@ -678,7 +678,7 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} parseBrowserApplicationOptions(value: unkn
 				{ value },
 			)
 		}
-		// The probe: recordOf invokes accessor getters; this walk must not.
+		// Walk own descriptors directly: reading values through a getter would run caller code.
 		const keys = Reflect.ownKeys(value)
 		if (keys.some((key) => key !== 'name')) {
 			throw new BrowserApplicationError('CONFIG', 'Unknown browser application option', {
@@ -850,9 +850,9 @@ export * from './parsers.js'
 		summary: 'The showcase executable entry.',
 		category: 'source',
 		placeholders: Object.freeze([]),
-		content: `import { createShowcaseApplication } from './index.js'
+		content: `import { mountShowcaseApplication } from './index.js'
 
-createShowcaseApplication('#app')
+mountShowcaseApplication('#app')
 `,
 	}),
 	appBrowserView: Object.freeze({
@@ -951,12 +951,12 @@ declare module '*.vue' {
 				description: 'The health record, declared here only while the server alone reads it.',
 			}),
 		]),
-		content: `import type { ConnectionInfo, ServerStatus } from '@orkestrel/server'
+		content: `import type { IdentifierState } from '@orkestrel/middleware'
+import type { ConnectionInfo, ServerStatus } from '@orkestrel/server'
 
 {{record}}/** Per-request application state derived from connection facts. */
-${EXPORT_KEYWORD} interface ApplicationState {
+${EXPORT_KEYWORD} interface ApplicationState extends IdentifierState {
 	readonly connection: ConnectionInfo
-	readonly identifier?: string
 }
 
 /** A rejected application server boundary. */
@@ -982,8 +982,7 @@ ${EXPORT_KEYWORD} interface ApplicationServerInterface {
 	readonly host: string
 	readonly port: number | undefined
 	readonly status: ServerStatus
-	readonly listening: boolean
-	readonly url: string
+	readonly url: string | undefined
 	start(signal?: AbortSignal): Promise<void>
 	stop(): Promise<void>
 	destroy(): Promise<void>
@@ -1243,7 +1242,7 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} parseApplicationServerOptions(value: unkno
 				{ value },
 			)
 		}
-		// The probe: recordOf invokes accessor getters; this walk must not.
+		// Walk own descriptors directly: reading values through a getter would run caller code.
 		const serverKeys = Reflect.ownKeys(server)
 		const serverUnknown = serverKeys.filter(
 			(key) => key !== 'host' && key !== 'port' && key !== 'timeout',
@@ -1290,7 +1289,7 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} parseApplicationServerOptions(value: unkno
 	appServerRoutes: Object.freeze({
 		id: 'appServerRoutes',
 		name: 'appServerRoutes',
-		summary: 'The standalone application route dispatcher.',
+		summary: 'The standalone application route dispatcher factory.',
 		category: 'source',
 		placeholders: Object.freeze([
 			Object.freeze({
@@ -1298,21 +1297,24 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} parseApplicationServerOptions(value: unkno
 				description: 'The selected layer import for the health route constants.',
 			}),
 		]),
-		content: `import type { ApplicationState } from './types.js'
+		content: `import type { DispatcherInterface } from '@orkestrel/router'
+import type { ApplicationState } from './types.js'
 import { createDispatcher } from '@orkestrel/router'
 {{healthImport}}
 import { handleApplicationHealth } from './handlers.js'
 
-/** Route the generated application's fetch-standard health boundary. */
-${EXPORT_KEYWORD} ${CONST_KEYWORD} dispatcher = createDispatcher<ApplicationState>({
-	routes: [
-		{
-			method: APP_HEALTH_METHOD,
-			path: APP_HEALTH_PATH,
-			handler: handleApplicationHealth,
-		},
-	],
-})
+/** Create a fresh dispatcher for the generated application's fetch-standard health boundary. */
+${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} createApplicationDispatcher(): DispatcherInterface<ApplicationState> {
+	return createDispatcher<ApplicationState>({
+		routes: [
+			{
+				method: APP_HEALTH_METHOD,
+				path: APP_HEALTH_PATH,
+				handler: handleApplicationHealth,
+			},
+		],
+	})
+}
 `,
 	}),
 	appServerHandlers: Object.freeze({
@@ -1375,7 +1377,8 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} reportApplicationServerError(error: unknow
 		summary: 'The application server implementation.',
 		category: 'source',
 		placeholders: Object.freeze([]),
-		content: `import type { ConnectionInfo, ServerInterface } from '@orkestrel/server'
+		content: `import type { DispatcherInterface } from '@orkestrel/router'
+import type { ConnectionInfo, ServerInterface } from '@orkestrel/server'
 import type {
 	ApplicationServerInterface,
 	ApplicationServerOptions,
@@ -1390,12 +1393,12 @@ import {
 	parseApplicationServerOptions,
 	parseApplicationStartTimeout,
 } from './parsers.js'
-import { dispatcher } from './routes.js'
+import { createApplicationDispatcher } from './routes.js'
 
 /** A repeat-safe application server composed from the installed server substrate. */
 ${EXPORT_KEYWORD} class ApplicationServer implements ApplicationServerInterface {
 	readonly host: string
-	readonly #requestedPort: number
+	readonly #dispatcher: DispatcherInterface<ApplicationState>
 	readonly #server: ServerInterface<ApplicationState>
 
 	constructor(options: ApplicationServerOptions = {}) {
@@ -1411,9 +1414,9 @@ ${EXPORT_KEYWORD} class ApplicationServer implements ApplicationServerInterface 
 			server?.timeout === undefined ? process.env.APP_START_TIMEOUT : server.timeout,
 		)
 		this.host = host
-		this.#requestedPort = port
+		this.#dispatcher = createApplicationDispatcher()
 		this.#server = createServer<ApplicationState>({
-			dispatcher,
+			dispatcher: this.#dispatcher,
 			state: ApplicationServer.#state,
 			middleware: [
 				createBoundary<ApplicationState>(),
@@ -1438,13 +1441,11 @@ ${EXPORT_KEYWORD} class ApplicationServer implements ApplicationServerInterface 
 		return this.#server.status
 	}
 
-	get listening(): boolean {
-		return this.status === 'listening'
-	}
-
-	get url(): string {
+	get url(): string | undefined {
+		const port = this.port
+		if (port === undefined) return undefined
 		const hostname = this.host.includes(':') ? \`[\${this.host}]\` : this.host
-		return \`http://\${hostname}:\${this.port ?? this.#requestedPort}\`
+		return \`http://\${hostname}:\${port}\`
 	}
 
 	async start(signal?: AbortSignal): Promise<void> {
@@ -1474,6 +1475,8 @@ ${EXPORT_KEYWORD} class ApplicationServer implements ApplicationServerInterface 
 			throw new ApplicationServerError('LIFECYCLE', 'Failed to destroy application server', {
 				cause: error,
 			})
+		} finally {
+			this.#dispatcher.destroy()
 		}
 	}
 }
@@ -1556,6 +1559,7 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} startApplicationServer(
 } from './types.js'
 {{nameImport}}
 import { ApplicationServer } from './ApplicationServer.js'
+import { ApplicationServerError } from './errors.js'
 import { reportApplicationServerError } from './handlers.js'
 
 /** Own process signals and startup failure handling for one application server. */
@@ -1595,7 +1599,18 @@ ${EXPORT_KEYWORD} class ApplicationServerRunner implements ApplicationServerRunn
 
 	#ready(generation: number): void {
 		if (generation !== this.#generation || !this.#started) return
-		process.stderr.write(\`[READY] \${APP_NAME} \${this.#server.url}\\n\`)
+		const url = this.#server.url
+		if (url === undefined) {
+			this.#fail(
+				generation,
+				new ApplicationServerError(
+					'LIFECYCLE',
+					'Application server did not expose a URL after successful startup',
+				),
+			)
+			return
+		}
+		process.stderr.write(\`[READY] \${APP_NAME} \${url}\\n\`)
 	}
 
 	#shutdown(): void {
@@ -2246,26 +2261,36 @@ describe('application dispatcher', () => {
 	const state = { connection: { encrypted: false } }
 
 	it('returns the typed shared application record for the health route', async () => {
-		const response = await dispatcher.handle(
-			new Request(\`http://application.test\${APP_HEALTH_PATH}\`),
-			state,
-		)
+		const dispatcher = createApplicationDispatcher()
+		try {
+			const response = await dispatcher.handle(
+				new Request(\`http://application.test\${APP_HEALTH_PATH}\`),
+				state,
+			)
 
-		expect(response.status).toBe(200)
-		expect(await response.json()).toEqual({ name: APP_NAME, status: 'ok' })
-		expect(APP_HEALTH_PATH).toBe('/health')
+			expect(response.status).toBe(200)
+			expect(await response.json()).toEqual({ name: APP_NAME, status: 'ok' })
+			expect(APP_HEALTH_PATH).toBe('/health')
+		} finally {
+			dispatcher.destroy()
+		}
 	})
 
 	it('distinguishes a wrong method from a missing route', async () => {
-		const method = await dispatcher.handle(
-			new Request(\`http://application.test\${APP_HEALTH_PATH}\`, { method: 'POST' }),
-			state,
-		)
-		const missing = await dispatcher.handle(new Request('http://application.test/missing'), state)
+		const dispatcher = createApplicationDispatcher()
+		try {
+			const method = await dispatcher.handle(
+				new Request(\`http://application.test\${APP_HEALTH_PATH}\`, { method: 'POST' }),
+				state,
+			)
+			const missing = await dispatcher.handle(new Request('http://application.test/missing'), state)
 
-		expect(method.status).toBe(405)
-		expect(method.headers.get('allow')).toContain(APP_HEALTH_METHOD)
-		expect(missing.status).toBe(404)
+			expect(method.status).toBe(405)
+			expect(method.headers.get('allow')).toContain(APP_HEALTH_METHOD)
+			expect(missing.status).toBe(404)
+		} finally {
+			dispatcher.destroy()
+		}
 	})
 })
 
@@ -2277,13 +2302,16 @@ describe('ApplicationServer', () => {
 		try {
 			expect(server.host).toBe('127.0.0.1')
 			expect(server.port).toBeUndefined()
+			expect(server.url).toBeUndefined()
 			expect(server.status).toBe('idle')
 			await server.start()
-			expect(server.listening).toBe(true)
 			expect(server.status).toBe('listening')
 			expect(server.port).toEqual(expect.any(Number))
+			const firstUrl = server.url
+			expect(firstUrl).toEqual(expect.any(String))
+			if (firstUrl === undefined) throw new Error('Expected a bound application URL')
 
-			const first = await fetch(\`\${server.url}\${APP_HEALTH_PATH}\`)
+			const first = await fetch(\`\${firstUrl}\${APP_HEALTH_PATH}\`)
 			expect(first.status).toBe(200)
 			expect(first.headers.get('x-content-type-options')).toBe('nosniff')
 			expect(first.headers.get('x-frame-options')).toBe('DENY')
@@ -2293,12 +2321,14 @@ describe('ApplicationServer', () => {
 
 			await server.stop()
 			await server.stop()
-			expect(server.listening).toBe(false)
 			expect(server.port).toBeUndefined()
+			expect(server.url).toBeUndefined()
 			expect(server.status).toBe('stopped')
 
 			await server.start()
-			const second = await fetch(\`\${server.url}\${APP_HEALTH_PATH}\`)
+			const secondUrl = server.url
+			if (secondUrl === undefined) throw new Error('Expected a rebound application URL')
+			const second = await fetch(\`\${secondUrl}\${APP_HEALTH_PATH}\`)
 			expect(second.status).toBe(200)
 			await server.stop()
 			await server.destroy()
@@ -2415,6 +2445,7 @@ import { describe, expect, it } from 'vitest'
 
 describe('application environment parsers', () => {
 	it('accepts port boundaries and trims a host', () => {
+		expect(parseApplicationPort(3000)).toBe(3000)
 		expect(parseApplicationPort('0')).toBe(0)
 		expect(parseApplicationPort('65535')).toBe(65_535)
 		expect(parseApplicationPort(' 3000 ')).toBe(3000)
@@ -2424,6 +2455,19 @@ describe('application environment parsers', () => {
 		expect(parseApplicationHost(\`\${'a'.repeat(63)}.example\`)).toBe(\`\${'a'.repeat(63)}.example\`)
 		expect(parseApplicationStartTimeout('1')).toBe(1)
 		expect(parseApplicationStartTimeout(String(MAX_APP_START_TIMEOUT))).toBe(MAX_APP_START_TIMEOUT)
+	})
+
+	it('never coerces hostile numeric objects through toString', () => {
+		let calls = 0
+		const hostile = {
+			toString() {
+				calls += 1
+				return '3000'
+			},
+		}
+
+		expect(() => parseApplicationPort(hostile)).toThrow(ApplicationServerError)
+		expect(calls).toBe(0)
 	})
 
 	it.each(['', '-1', '65536', '1.5', '+1', '0x10', '1e3', 'NaN', 'Infinity'])(

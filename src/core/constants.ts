@@ -304,8 +304,8 @@ export const SOURCE_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> =
 	playwright: '^1.62.1',
 })
 
-/** Additional development dependency required by every private application environment. */
-export const APP_CORE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
+/** Baseline development dependency required by every private application environment. */
+export const APP_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@orkestrel/contract': '^0.0.9',
 })
 

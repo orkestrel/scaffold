@@ -258,6 +258,36 @@ export function serializeTypeScriptString(value: string): string {
 }
 
 /**
+ * Determine whether an application blueprint spans the shared browser/server boundary.
+ *
+ * @param spec - The blueprint to inspect.
+ * @returns True only when app/core, app/browser, and app/server are all selected.
+ *
+ * @example
+ * ```ts
+ * hasApplicationBoundary(blueprint('application', { app: ['core', 'browser', 'server'] }))
+ * ```
+ */
+export function hasApplicationBoundary(spec: Blueprint): boolean {
+	return spec.app.includes('core') && spec.app.includes('browser') && spec.app.includes('server')
+}
+
+/**
+ * Determine whether an application blueprint emits its browser showcase.
+ *
+ * @param spec - The blueprint to inspect.
+ * @returns True only when showcase intent accompanies app/browser.
+ *
+ * @example
+ * ```ts
+ * hasApplicationShowcase(blueprint('application', { app: ['browser'], showcase: true }))
+ * ```
+ */
+export function hasApplicationShowcase(spec: Blueprint): boolean {
+	return spec.showcase && spec.app.includes('browser')
+}
+
+/**
  * Derive the declared public `Member[]` from a blueprint.
  *
  * @param spec - The blueprint to derive members from.
@@ -283,9 +313,8 @@ export function blueprintToMembers(spec: Blueprint): readonly Member[] {
 	const members: Member[] = []
 	// A browser beside a server is what makes the health contract shared; validation
 	// already requires app/core for that combination, so the relocation always lands.
-	const hasBoundary =
-		spec.app.includes('core') && spec.app.includes('browser') && spec.app.includes('server')
-	const hasShowcase = spec.showcase && spec.app.includes('browser')
+	const hasBoundary = hasApplicationBoundary(spec)
+	const hasShowcase = hasApplicationShowcase(spec)
 	for (const environment of spec.src) {
 		members.push(member(pascal, 'entity', `The ${pascal} entity.`, environment))
 		members.push(
@@ -420,20 +449,15 @@ export function blueprintToMembers(spec: Blueprint): readonly Member[] {
 		)
 		if (hasShowcase) {
 			members.push(
-				member(
-					'createShowcaseApplication',
-					'factory',
-					'Create and mount the seeded showcase.',
-					'browser',
-				),
+				member('mountShowcaseApplication', 'factory', 'Mount the seeded showcase.', 'browser'),
 			)
 		}
 		if (hasBoundary) {
 			members.push(
 				member(
-					'startBrowserApplication',
+					'mountBrowserApplication',
 					'factory',
-					'Start the application over its server boundary.',
+					'Mount the application over its server boundary.',
 					'browser',
 				),
 			)
@@ -520,7 +544,12 @@ export function blueprintToMembers(spec: Blueprint): readonly Member[] {
 						member('APP_HEALTH_METHOD', 'constant', 'The owned health request method.', 'server'),
 						member('APP_HEALTH_PATH', 'constant', 'The owned health request path.', 'server'),
 					]),
-			member('dispatcher', 'constant', 'The standalone application route dispatcher.', 'server'),
+			member(
+				'createApplicationDispatcher',
+				'factory',
+				'Create a standalone application route dispatcher.',
+				'server',
+			),
 			member('ApplicationServer', 'entity', 'The composed application server.', 'server'),
 			member(
 				'ApplicationServerRunner',
@@ -1836,7 +1865,7 @@ export function renderStringArray(
 	suffix: string,
 ): string {
 	if (entries.length === 0) return '[]'
-	const items = entries.map((entry) => `'${entry}'`)
+	const items = entries.map((entry) => serializeTypeScriptString(entry))
 	const inline = `[${items.join(', ')}]`
 	if (fitsPrintWidth(`${prefix}${inline}${suffix}`)) return inline
 	const childIndent = `${indent}\t`

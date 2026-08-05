@@ -308,8 +308,15 @@ describe('application layer compilation', () => {
 		expect(serverTypes?.content).toContain('readonly server?: {')
 		expect(serverTypes?.content).toContain('readonly timeout?: number')
 		expect(serverTypes?.content).toContain('readonly status: ServerStatus')
+		expect(serverTypes?.content).toContain('interface ApplicationState extends IdentifierState')
+		expect(serverTypes?.content).not.toContain('readonly identifier?: string')
+		expect(serverTypes?.content).not.toContain('readonly listening: boolean')
+		expect(serverTypes?.content).toContain('readonly url: string | undefined')
 		expect(serverTypes?.content).toContain('destroy(): Promise<void>')
-		expect(routes?.content).toContain('createDispatcher<ApplicationState>')
+		expect(routes?.content).toContain(
+			'function createApplicationDispatcher(): DispatcherInterface<ApplicationState>',
+		)
+		expect(routes?.content).toContain('return createDispatcher<ApplicationState>')
 		expect(routes?.content).toContain('handler: handleApplicationHealth')
 		expect(serverHandlers?.content).toContain('satisfies ApplicationRecord')
 		expect(server?.content).toContain("from '@orkestrel/server'")
@@ -324,9 +331,9 @@ describe('application layer compilation', () => {
 		)
 		expect(serverFactories?.content).toContain('return runner')
 		expect(serverRunner?.content).not.toContain('function startApplicationServer')
-		expect(serverRunner?.content).toContain(
-			'process.stderr.write(`[READY] ${APP_NAME} ${this.#server.url}\\n`)',
-		)
+		expect(serverRunner?.content).toContain('const url = this.#server.url')
+		expect(serverRunner?.content).toContain('if (url === undefined)')
+		expect(serverRunner?.content).toContain('process.stderr.write(`[READY] ${APP_NAME} ${url}\\n`)')
 		for (const path of [
 			'configs/app/tsconfig.core.json',
 			'configs/app/tsconfig.browser.json',
@@ -374,12 +381,18 @@ describe('application layer compilation', () => {
 		expect(read('app/server/handlers.ts')).toContain(
 			"import type { ApplicationRecord } from '@app/core'",
 		)
-		expect(read('app/browser/main.ts')).toContain("void startBrowserApplication('#app')")
+		expect(read('app/browser/main.ts')).toContain(
+			"void mountBrowserApplication('#app').catch(() => {",
+		)
+		expect(read('app/browser/main.ts')).toContain(
+			"console.error('[ERROR] Browser application failed')",
+		)
+		expect(read('app/browser/main.ts')).not.toContain('error.message')
 		expect(read('app/browser/factories.ts')).toContain(
-			'const application = createBrowserApplication(await readApplicationHealth(window.location.origin))',
+			'const application = createBrowserApplication({ name: seed.name })',
 		)
 		expect(read('tests/app/server/ApplicationServer.test.ts')).toContain(
-			'expect(await readApplicationHealth(server.url)).toEqual({ name: APP_NAME })',
+			'expect(await readApplicationHealth(url)).toEqual({ name: APP_NAME })',
 		)
 		expect(read('tests/app/core/factories.test.ts')).toContain(
 			"expect(isApplicationRecord({ name: APP_NAME, status: 'ok' })).toBe(true)",
@@ -427,14 +440,15 @@ describe('application layer compilation', () => {
 		expect(read('app/browser/showcase.html')).toContain(
 			`content="default-src 'none'; base-uri 'none'; object-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src data:; font-src data:; script-src-attr 'none'"`,
 		)
-		expect(read('app/browser/showcase.ts')).toContain("createShowcaseApplication('#app')")
+		expect(read('app/browser/showcase.ts')).toContain("mountShowcaseApplication('#app')")
 		expect(read('app/browser/seeders.ts')).toContain(
 			'function seedApplication(): Application {\n\treturn Object.freeze({ name: `${APP_NAME} showcase` })',
 		)
 		expect(read('app/browser/seeders.ts')).toContain("import type { Application } from '@app/core'")
 		expect(read('app/browser/index.ts')).toContain("export * from './seeders.js'")
+		expect(read('app/browser/factories.ts')).toContain('const seed = seedApplication()')
 		expect(read('app/browser/factories.ts')).toContain(
-			'const application = createBrowserApplication(seedApplication())',
+			'const application = createBrowserApplication({ name: seed.name })',
 		)
 		expect(read('app/browser/main.ts')).toContain("createBrowserApplication().mount('#app')")
 		expect(read('tests/app/browser/factories.test.ts')).toContain(
@@ -541,7 +555,7 @@ describe('application layer compilation', () => {
 			'return holds(() => value instanceof BrowserApplicationError)',
 		)
 		expect(browserParsers?.content).toContain(
-			'// The probe: recordOf invokes accessor getters; this walk must not.',
+			'// Walk own descriptors directly: reading values through a getter would run caller code.',
 		)
 		expect(serverErrors?.content).toContain(
 			'return holds(() => value instanceof ApplicationServerError)',
@@ -550,7 +564,7 @@ describe('application layer compilation', () => {
 			"import { isNonEmptyString, parseString } from '@orkestrel/contract'",
 		)
 		expect(serverParsers?.content).toContain(
-			'// The probe: recordOf invokes accessor getters; this walk must not.',
+			'// Walk own descriptors directly: reading values through a getter would run caller code.',
 		)
 	})
 
@@ -2122,7 +2136,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		expect(content).toContain("import { createHash } from 'node:crypto'")
 		expect(content).toContain("import { viteSingleFile } from 'vite-plugin-singlefile'")
 		expect(content).toContain('function appBrowser(...config: never[])')
-		expect(content).toContain('function appShowcase(...config: readonly never[])')
+		expect(content).toContain('function appShowcase(...config: never[])')
 		expect(content).not.toContain('function applicationBrowser(showcase: boolean): UserConfig')
 		expect(content).toContain('Browser configuration overrides are not permitted')
 		expect(content).toContain('Showcase configuration overrides are not permitted')
@@ -3178,15 +3192,17 @@ describe('guideArtifacts / guideMemberTable', () => {
 			'`isApplicationRecord`',
 			'`readApplicationHealth`',
 			'`seedApplication`',
-			'`createShowcaseApplication`',
-			'`startBrowserApplication`',
+			'`mountShowcaseApplication`',
+			'`mountBrowserApplication`',
 		]) {
 			expect({ name, documented: content.includes(name) }).toEqual({ name, documented: true })
 		}
-		expect(content).toContain("import { APP_HEALTH_METHOD, APP_HEALTH_PATH } from '@app/core'")
+		expect(content).toContain(
+			"import { APP_HEALTH_METHOD, APP_HEALTH_PATH, isApplicationRecord } from '@app/core'",
+		)
 		expect(content).toContain("await readApplicationHealth('http://127.0.0.1:3000')")
-		expect(content).toContain("createShowcaseApplication('#app')")
-		expect(content).toContain("await startBrowserApplication('#app')")
+		expect(content).toContain("mountShowcaseApplication('#app')")
+		expect(content).toContain("await mountBrowserApplication('#app')")
 	})
 
 	it('keeps the health contract documented against app/server without the browser', () => {
