@@ -264,9 +264,21 @@ Four bench laws apply to every external engine:
 - **Tracked, never loose.** Every bench unit is registered in the session task registry at
   launch — subject, journal path, session id — and completed there at acceptance, so "what is
   running" always has a first-class answer instead of a recollection of a command.
-- **Ephemeral journals.** Bridges never delete journals; the Orchestrator sweeps them with
-  the campaign's other unit evidence at acceptance, after the final gate evidence is
-  recorded. A journal surviving past its campaign is residue.
+- **Ephemeral streams, durable records.** A journal is a liveness instrument, not a record: it
+  exists to prove a bench is alive and to recover an interrupted session. Journals stay under
+  `tmp/`, are never committed, and the Orchestrator sweeps them at acceptance, after the final
+  gate evidence is recorded. A journal surviving past its campaign is residue.
+  The **brief**, the returned **distillate**, the **audit verdict**, and the **acceptance
+  evidence** are not streams. Each is committed as the unit is dispatched and as it returns,
+  because each encodes knowledge that costs real money to re-derive and none of it is
+  reproducible from the diff. A campaign whose working record lives only on ephemeral disk
+  loses it the first time the filesystem reverts, and the loss is silent.
+  Every campaign artifact lives in the **orchestrator's** repository under `campaign/`, never in
+  the package it is about: a published package's tree is its product, and orchestration residue
+  does not belong in it. The campaign narrative and every ruling live in `ROADMAP.md`.
+  At acceptance the campaign folder is **pruned in a commit**, so the tree ends clean and the
+  record stays recoverable by hash forever. **Git history is the archive; the working tree is
+  the workspace.**
 
 Every long bench exec is launched by the Orchestrator as a harness-tracked background command
 under a hard time cap, never detached from inside a bridge agent: the harness owns the

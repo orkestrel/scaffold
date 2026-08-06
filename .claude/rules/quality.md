@@ -32,6 +32,7 @@ A review that reads a diff finds what the diff shows; a review that tries to bre
 - An audit returning only confirmations has either audited trivial claims or has not tried. Name the claims you could not break, so the next round knows what has already been attacked.
 - A repaired claim is a new claim, not a settled one. Re-ask it at every entry point that reaches the same rule, not only the door the defect arrived through. A fix verified where it was found and assumed everywhere else ships the defect at every other door — and the engine that wrote the fix is the least able to see this, because re-verifying where the fix is feels like verifying the fix.
 - An instrument is not evidence until it has failed. A probe, comparison, or matrix that has never produced its failing verdict cannot tell a sound subject from a broken tool. Pair it with a negative control that must report failure, run under the same conditions. An identity check whose control reports “same” has measured nothing.
+- An instrument that settled a claim is adopted as a test before the work it settled is accepted. The probe that proved a fix, carrying the negative control that proved the probe, is that fix's regression guard; leaving it in a scratch directory discards the most expensive evidence of the round and guarantees the next round re-derives it. A verification that runs once is a rehearsal, not a gate.
 
 ## Ecosystem reuse
 
