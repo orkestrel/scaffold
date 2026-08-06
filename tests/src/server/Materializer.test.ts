@@ -743,6 +743,7 @@ describe('Materializer — path containment', () => {
 							foreign: 0,
 						},
 						directory.path,
+						true,
 					)
 				} catch (error) {
 					caught = error
@@ -788,7 +789,42 @@ describe('Materializer.materialize — group-scoped plan', () => {
 // ── Materializer.repair ──────────────────────────────────────────────────────
 
 describe('Materializer.repair', () => {
-	it('writes ONLY the missing/stale artifacts an Audit names, skipping aligned ones', async () => {
+	it('preserves a legitimate local addition in a stale host-owned file by default', async () => {
+		const directory = await buildTempDirectory()
+		const host = await buildTempDirectory()
+		try {
+			const path = 'tests/setupPolicy.ts'
+			const canonical = "export const FILES = ['src/core/index.ts']\n"
+			const local = "export const FILES = ['src/core/index.ts', 'src/server/index.ts']\n"
+			mkdirSync(join(directory.path, 'tests'), { recursive: true })
+			mkdirSync(join(host.path, 'tests'), { recursive: true })
+			writeFileSync(join(directory.path, path), local, 'utf8')
+			writeFileSync(join(host.path, path), canonical, 'utf8')
+			const plan: Plan = {
+				blueprint: blueprint('host-addition-fixture', { src: ['core'] }),
+				groups: ['tests'],
+				artifacts: [{ path, group: 'tests', origin: 'host' }],
+			}
+			const hydrated = hydratePlan(plan, host.path)
+			const audit = diffPlan(hydrated, readTarget(directory.path, [path]))
+			expect(audit.findings).toEqual([
+				{ path, group: 'tests', drift: 'stale', observed: contentToHex(local) },
+			])
+
+			const materializer = createMaterializer({ host: host.path })
+			const result = materializer.repair(hydrated, audit, directory.path)
+
+			expect(result.copied).toEqual([])
+			expect(result.skipped).toContain(path)
+			expect(readFileSync(join(directory.path, path), 'utf8')).toBe(local)
+			materializer.destroy()
+		} finally {
+			await directory.cleanup()
+			await host.cleanup()
+		}
+	})
+
+	it('writes missing artifacts and explicitly replaces stale artifacts, skipping aligned ones', async () => {
 		const directory = await buildTempDirectory()
 		try {
 			const plan = buildRepairPlan()
@@ -807,6 +843,7 @@ describe('Materializer.repair', () => {
 					),
 				),
 				directory.path,
+				true,
 			)
 
 			expect([...result.written].sort()).toEqual(['b.txt', 'c.txt'])
@@ -983,6 +1020,7 @@ describe('Materializer.repair', () => {
 					),
 				),
 				directory.path,
+				true,
 			)
 
 			expect(result.written).toEqual(['early.txt'])

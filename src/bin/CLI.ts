@@ -109,6 +109,7 @@ import {
 	orkestrelTokenIssue,
 	prunePreview,
 	pruneConfirmMessage,
+	protectCatalogPlan,
 	syncCauseNotes,
 	syncSuccess,
 	syncTable,
@@ -116,6 +117,7 @@ import {
 	repairHandoff,
 	repairSuccess,
 	repairVerdict,
+	replacementNote,
 	renderComputedNotes,
 	scopeNote,
 	shortUsage,
@@ -386,7 +388,7 @@ export class CLI implements CLIInterface {
 
 		let plan: Plan
 		try {
-			plan = hydratePlan(scoped, host)
+			plan = protectCatalogPlan(hydratePlan(scoped, host))
 		} catch (error) {
 			this.#error(error, json)
 		}
@@ -882,7 +884,8 @@ export class CLI implements CLIInterface {
 
 		if (!audit.clean) {
 			const split = partitionFindings(audit.findings, plan)
-			const ownedCount = split.owned.drifted + split.owned.missing
+			const replace = values.replace === true
+			const ownedCount = split.owned.missing + (replace ? split.owned.drifted : 0)
 			const pruneRequested = values.prune === true
 
 			// Audit never writes via flags: the handoff is an INTERACTIVE
@@ -915,6 +918,9 @@ export class CLI implements CLIInterface {
 			}
 
 			if (!handoffAccepted) {
+				if (split.owned.drifted > 0 && !replace) {
+					this.#reporter.line(replacementNote(split.owned.drifted))
+				}
 				// When the handoff cannot help foreign files (no `--prune`, or no
 				// handoff offered at all), point at the one command that can.
 				if (audit.foreign > 0 && !pruneRequested) this.#reporter.line(FOREIGN_HINT)
@@ -942,6 +948,7 @@ export class CLI implements CLIInterface {
 		// generated canon while preserving the birth-only template boundary and
 		// package.json's independent publication protection.
 		const generated = values.generated === true
+		const replace = values.replace === true
 		const from = values.from?.[0]
 		const host = from ?? hostRoot()
 		const prepared = this.#prepareRepair(spec, target, host, generated, json)
@@ -970,7 +977,7 @@ export class CLI implements CLIInterface {
 			if (json) {
 				this.#write(audit)
 			} else {
-				this.#reporter.line(repairVerdict(audit, generated))
+				this.#reporter.line(repairVerdict(audit, generated, replace))
 				const note = scopeNote(this.#outside(compiled, target), generated)
 				if (note !== undefined) this.#reporter.line(note)
 			}
@@ -978,17 +985,19 @@ export class CLI implements CLIInterface {
 			return
 		}
 
-		if (!json) this.#reporter.line(repairVerdict(audit, generated))
+		if (!json) this.#reporter.line(repairVerdict(audit, generated, replace))
+
+		const repairable = audit.missing + (replace ? audit.drifted : 0)
+		if (repairable === 0 && prunePaths.length === 0) {
+			if (json) this.#write(audit)
+			process.exitCode = 1
+			return
+		}
 
 		const terminal = createTerminal()
 		let proceed = true
 		if (!audit.clean) {
-			proceed = await this.#apply(
-				terminal,
-				applyConfirmMessage(audit.drifted + audit.missing + audit.foreign),
-				values,
-				json,
-			)
+			proceed = await this.#apply(terminal, applyConfirmMessage(repairable), values, json)
 		}
 
 		if (!proceed) {
@@ -1022,7 +1031,7 @@ export class CLI implements CLIInterface {
 		spinner?.start()
 		const materializer = createMaterializer({ host })
 		try {
-			const result = materializer.repair(plan, audit, target)
+			const result = materializer.repair(plan, audit, target, replace)
 			const removed = doPrune ? materializer.prune(target, pruneSnapshot).removed : []
 			if (json) this.#write(auditToRepairResult(audit, { ...result, removed }))
 			else this.#succeed(spinner, json, repairSuccess(result, removed))
@@ -1031,13 +1040,14 @@ export class CLI implements CLIInterface {
 		} finally {
 			materializer.destroy()
 		}
-		process.exitCode = 0
+		process.exitCode = audit.drifted > 0 && !replace ? 1 : 0
 	}
 
 	/** `scaffold fleet` — audit/repair every `@orkestrel` package beneath the current directory's immediate children. */
 	async #fleet(values: CLIValues, json: boolean): Promise<void> {
 		const root = this.#contain('.', json)
 		const generated = values.generated === true
+		const replace = values.replace === true
 
 		const packages = discoverPackages(root)
 		if (packages.length === 0) {
@@ -1079,7 +1089,7 @@ export class CLI implements CLIInterface {
 					compiler.destroy()
 				}
 
-				const plan = hydratePlan(scoped, host)
+				const plan = protectCatalogPlan(hydratePlan(scoped, host))
 				const paths = plan.artifacts.map((artifact) => artifact.path)
 				const rawAudit = {
 					...diffPlan(plan, readTarget(directory, paths)),
@@ -1201,7 +1211,7 @@ export class CLI implements CLIInterface {
 		try {
 			for (const repo of dirty) {
 				try {
-					materializer.repair(repo.plan, repo.audit, repo.directory)
+					materializer.repair(repo.plan, repo.audit, repo.directory, replace)
 					if (doPrune) {
 						materializer.prune(repo.directory, pruneSets.get(repo.name) ?? {})
 					}

@@ -19,6 +19,7 @@ import { ScaffoldError } from '@src/core'
 import {
 	ACTION_LABEL,
 	CANCELLED_MESSAGE,
+	CATALOG_AGENT_PATH,
 	CATALOG_UNRESOLVED_NOTE,
 	DRIFT_LABEL,
 	EXIT_CODES,
@@ -59,11 +60,13 @@ import {
 	orkestrelTokenIssue,
 	prunePreview,
 	pruneConfirmMessage,
+	protectCatalogPlan,
 	syncRows,
 	syncVerdict,
 	repairHandoff,
 	repairSuccess,
 	repairVerdict,
+	replacementNote,
 	renderComputedNotes,
 	scopeNote,
 	shortUsage,
@@ -389,9 +392,29 @@ describe('render: bucketText / verdicts', () => {
 			'repair: 0 host-owned and generated artifacts aligned — nothing to write',
 		)
 		expect(repairVerdict(buildAudit(AUDIT_FINDINGS), false)).toContain('repair: host-owned:')
+		expect(repairVerdict(buildAudit(AUDIT_FINDINGS), false)).toContain('report-only')
 		expect(repairVerdict(buildAudit(AUDIT_FINDINGS), true)).toContain(
 			'repair: host-owned and generated:',
 		)
+		expect(repairVerdict(buildAudit(AUDIT_FINDINGS), true, true)).toContain('pass --apply to write')
+	})
+
+	it('keeps the catalog agent presence-repairable without comparing catalog-owned bytes', () => {
+		const plan: Plan = {
+			...AUDIT_PLAN,
+			artifacts: [
+				{
+					path: CATALOG_AGENT_PATH,
+					group: 'orchestration',
+					origin: 'host',
+					hex: '00',
+				},
+			],
+		}
+
+		expect(protectCatalogPlan(plan).artifacts).toEqual([
+			{ path: CATALOG_AGENT_PATH, group: 'orchestration', origin: 'host' },
+		])
 	})
 
 	it('renders the repair scope note only when there is out-of-scope drift', () => {
@@ -739,6 +762,19 @@ describe('render: VERB_FLAGS corrections', () => {
 		expect(VERB_FLAGS.catalog).not.toContain('--generated')
 	})
 
+	it('advertises --replace only where repair can apply or inherit byte replacement', () => {
+		expect(VERB_FLAGS.audit).toContain('--replace')
+		expect(VERB_FLAGS.repair).toContain('--replace')
+		expect(VERB_FLAGS.fleet).toContain('--replace')
+		expect(VERB_FLAG_HELP.repair.find(([flag]) => flag === '--replace')?.[1]).toContain(
+			'discard local changes',
+		)
+		expect(VERB_FLAGS.new).not.toContain('--replace')
+		expect(VERB_FLAGS.pull).not.toContain('--replace')
+		expect(VERB_FLAGS.mirror).not.toContain('--replace')
+		expect(VERB_FLAGS.catalog).not.toContain('--replace')
+	})
+
 	it('catalog advertises --from instead of --root', () => {
 		expect(VERB_FLAGS.catalog).toContain('--from <path>')
 	})
@@ -792,6 +828,13 @@ describe('render: new prune/missing/generated/audit-live/comparison/ci/catalog e
 		expect(line).toContain('repair --generated')
 	})
 
+	it('replacementNote names the destructive host-byte opt-in', () => {
+		const line = replacementNote(2)
+		expect(line).toContain('2 drifted host-owned files')
+		expect(line).toContain('repair --replace')
+		expect(line).toContain('discard local changes')
+	})
+
 	it('separates repairable generated drift from protected package.json guidance', () => {
 		const plan: Plan = {
 			...AUDIT_PLAN,
@@ -815,7 +858,7 @@ describe('render: new prune/missing/generated/audit-live/comparison/ci/catalog e
 		)
 
 		expect(generated).toEqual([
-			"1 finding in generated files — these are regenerated, not hand-edited; run 'scaffold repair --generated' to restore them",
+			"1 finding in generated files — these are regenerated, not hand-edited; run 'scaffold repair --generated --replace' to restore drifted bytes",
 		])
 		expect(manifest).toEqual([
 			'1 finding in package.json — repair does not rewrite protected publication metadata; review and edit it directly',

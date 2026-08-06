@@ -138,7 +138,7 @@ export interface GuideWrite {
 export interface MaterializerInterface {
 	readonly emitter: EmitterInterface<MaterializerEventMap>
 	materialize(plan: Plan, target: string): MaterializeResult
-	repair(plan: Plan, audit: Audit, target: string): MaterializeResult
+	repair(plan: Plan, audit: Audit, target: string, replace?: boolean): MaterializeResult
 	prune(target: string, expected: Snapshot): MaterializeResult
 	destroy(): void
 }

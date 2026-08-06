@@ -1360,13 +1360,14 @@ interface also exposes the readonly `emitter` and `size` properties.
 | `destroy`     | `void`              |
 
 `materialize(plan, target)` is green-field: it refuses any target `isVacant` rejects, then copies
-each host artifact and writes each template and computed artifact. `repair(plan, audit, target)` is
-into-existing: it skips the vacancy check, re-verifies that the target still matches the audit
-preview, and writes only the missing and stale artifacts that audit names, leaving aligned ones
-untouched and reporting them as `skipped`. `prune(target, expected)` deletes exactly the unexpected
-files the vendored host no longer declares under the prune directories, and only after the observed
-bytes still match the `expected` snapshot it was previewed with. `destroy()` is idempotent teardown.
-The interface also exposes the readonly `emitter`.
+each host artifact and writes each template and computed artifact. `repair(plan, audit, target,
+replace?)` is into-existing: it skips the vacancy check, re-verifies that the target still matches
+the audit preview, and writes missing artifacts. Stale artifacts are report-only and returned as
+`skipped` by default; passing `true` for `replace` explicitly replaces their bytes and discards their
+local changes. Aligned artifacts are always `skipped`. `prune(target, expected)` deletes exactly the
+unexpected files the vendored host no longer declares under the prune directories, and only after
+the observed bytes still match the `expected` snapshot it was previewed with. `destroy()` is
+idempotent teardown. The interface also exposes the readonly `emitter`.
 
 #### `SyncInterface`
 
@@ -1464,11 +1465,14 @@ Audit semantics follow directly from that.
   path segment.
 
 The same ownership boundary is what makes mutation safe. **`fleet` and default `repair` both scope
-the compiled plan to host origin before hydrating, diffing, or applying.** `--generated` widens that
-scoped plan to generated canon except `package.json`; template artifacts remain birth-only in
-either mode. A mature workspace's hand-written source, tests, guides, and manifest are therefore
-never overwritten with a stub. The generated `.github/workflows/ci.yml` is a **computed** artifact,
-so user-owned CI stands by default but is intentionally restored when `--generated` is passed.
+the compiled plan to host origin before hydrating, diffing, or applying.** Missing files in that
+scope are restored, but stale files are report-only unless `--replace` explicitly authorizes byte
+replacement. `--generated` widens the selected ownership scope to generated canon except
+`package.json`; it composes with `--replace` and does not itself authorize replacement. Template
+artifacts remain birth-only in either scope. A mature workspace's hand-written source, tests,
+guides, and manifest are therefore never overwritten with a stub. The generated
+`.github/workflows/ci.yml` is a **computed** artifact, so user-owned CI stands by default and is
+restored only when both `--generated` and `--replace` are passed.
 Audit always compares it because computed artifacts are content-aware canon. A legitimate
 difference that the blueprint cannot express is a canon gap: add the missing blueprint axis rather
 than forking the computed file in one repository.
@@ -1510,10 +1514,20 @@ with no services still reports the same path as foreign.
 re-diffs it, and refuses to proceed if the findings changed since the preview it was given — a
 target that moved under the caller is a `TARGET` failure, not a race to win. It then derives a write
 precondition per artifact from the audit itself: a `missing` finding requires the destination to
-still be absent, a `stale` finding requires it to still carry exactly the bytes that were observed.
-Those preconditions are checked again inside the write transaction before any promotion.
-An interactive audit repair hand-off forwards `--generated` into the repair invocation when the
-flag was present on `audit`.
+still be absent. A `stale` finding remains untouched and is reported as skipped unless the caller
+passes `replace`; an authorized stale replacement requires the destination to still carry exactly
+the bytes that were observed. Those preconditions are checked again inside the write transaction
+before any promotion. A skipped stale path keeps the executable at exit `1`, because the selected
+workspace remains drifted; a clean run and a run that fully applies its findings exit `0`. An
+interactive audit repair hand-off forwards both `--generated` and `--replace` when those flags were
+present on `audit`.
+
+The catalog agent has a narrower ownership exception. Repair treats
+`.claude/agents/orkestrel.md` as presence-owned after host hydration: it can restore the absent file,
+but never compares or replaces its existing bytes, even under `--replace`. `catalog` is the sole
+content writer and continues to replace only the uniquely bounded marker region. Thus
+`repair` → `catalog` → `repair` converges without restoring a stale embedded catalog snapshot over
+the current fleet table.
 
 `prune` is the deletion arm, and it is deliberately narrow. Its candidate set comes from
 `pruneTargets`, which is also what the executable's audit and preview read, so what is reported and
@@ -1923,7 +1937,7 @@ no module API of its own. Seven verbs:
 | `pull`    | refresh vendored guides and versions, report drift       |
 | `mirror`  | refresh every published Orkestrel package guide          |
 | `audit`   | whole-plan conformance report                            |
-| `repair`  | restore host-owned files and optional generated canon    |
+| `repair`  | restore missing canon; optionally replace drifted bytes  |
 | `fleet`   | audit or repair every workspace under the cwd's children |
 | `catalog` | regenerate the fleet package-catalog table               |
 
@@ -1946,8 +1960,10 @@ scope, and it fetches guides without registry version or packument requests.
 `--groups a,b` scopes an audit to artifact groups. `--live` adds an upstream freshness check to an
 audit. `--strict` makes a pull or mirror throw on a network fault. `--offline` restricts a catalog to local
 sources. `--prune` opts a repair or fleet run into deleting unexpected files under the three prune
-directories. `--generated` opts a repair or fleet run into restoring generated canon except
+directories. `--generated` opts a repair or fleet run into including generated canon except
 `package.json`; on `audit`, it is inherited if the interactive repair hand-off is accepted.
+`--replace` authorizes repair to discard local changes in the drifted files named by its report; it
+composes with `--generated`, and is likewise inherited by an accepted audit hand-off.
 `--json` emits one machine-readable value. `--apply` writes, `--yes` skips the confirmation, and
 `-h` or `--help` prints usage.
 
@@ -1961,7 +1977,8 @@ it has no root flag at all — `repair` is the single-workspace tool.
 
 `fleet` and default `repair` are scoped to host-origin artifacts. `repair` states its selected scope
 in the output; `--generated` widens both verbs to generated files while still excluding starter
-files and `package.json`.
+files and `package.json`. Within either scope, missing files are safe to restore, stale files are
+report-only by default, and `--replace` is the explicit destructive opt-in.
 
 **Catalog markers.** `catalog` rewrites the block between `<!-- catalog:start -->` and
 `<!-- catalog:end -->` in `.claude/agents/orkestrel.md`. **Ambiguous markers fail before any
@@ -1976,8 +1993,10 @@ The check is a feature detection: **earlier supported Node 22 releases simply us
 roots**. It only ever adds trusted issuers — nothing disables verification — and a failure is a
 silent no-op rather than a crash. Custom PEMs are added through the standard environment variable.
 
-**Exit codes.** `0` is clean or successful, `1` is drift or failure, `2` is a usage error. An audit
-exits non-zero on any drift, foreign files included, which makes it usable directly as a CI gate. A
+**Exit codes.** `0` is clean or successful, `1` is drift or failure, `2` is a usage error. A repair
+that skips stale files exits `1`, using the existing drift/failure code because its selected scope
+remains unaligned; a clean repair and one that fully applies its findings exit `0`. An audit exits
+non-zero on any drift, foreign files included, which makes it usable directly as a CI gate. A
 pull exits non-zero on any drift or failure whether or not `--strict` was passed; `--strict`
 additionally throws on a network fault. Every unknown verb is a usage error and gets a nearest-match
 suggestion when one is sufficiently close.
@@ -2465,7 +2484,8 @@ const current = readTarget(
 	'./packages/router',
 	plan.artifacts.map((artifact) => artifact.path),
 )
-materializer.repair(plan, diffPlan(plan, current), './packages/router')
+materializer.repair(plan, diffPlan(plan, current), './packages/router') // missing only; stale is skipped
+materializer.repair(plan, diffPlan(plan, current), './packages/router', true) // replace stale bytes
 materializer.prune('./packages/router', {})
 materializer.destroy()
 

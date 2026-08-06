@@ -46,11 +46,11 @@ export const ACTION_LABEL: Readonly<Record<string, string>> = Object.freeze({
 
 /** Repair's deliberately limited ownership boundary. */
 export const REPAIR_SCOPE =
-	'repair scope: shared host-owned artifacts only — starter and generated files are never touched'
+	'repair scope: shared host-owned artifacts only — stale files are report-only unless --replace discards their local changes; starter and generated files are never touched'
 
 /** Repair's opt-in generated-canon ownership boundary. */
 export const REPAIR_GENERATED_SCOPE =
-	'repair scope: shared host-owned and generated artifacts — starter files and package.json are never touched'
+	'repair scope: shared host-owned and generated artifacts — stale files are report-only unless --replace discards their local changes; starter files and package.json are never touched'
 
 /** The dry-run note for `new`. */
 export const NEW_DRY_RUN_NOTE = 'dry run — pass --apply to write'
@@ -89,7 +89,7 @@ export const VERB_SUMMARY: Readonly<Record<Verb, string>> = Object.freeze({
 	pull: 'refresh vendored guides/versions, report drift',
 	mirror: 'refresh every published Orkestrel package guide',
 	audit: 'whole-plan conformance report',
-	repair: 'restore host-owned files, plus generated canon with --generated',
+	repair: 'restore missing host-owned files; replace drifted bytes only with --replace',
 	fleet: "audit/repair every workspace under the cwd's immediate children",
 	catalog: 'regenerate the fleet package-catalog table',
 })
@@ -99,9 +99,9 @@ export const VERB_FLAGS: Readonly<Record<Verb, string>> = Object.freeze({
 	new: '--src a,b --app a,b --deps x,y --apply --yes --target <path> --from <path>',
 	pull: '--target . --deps x,y --apply --yes --strict',
 	mirror: '--target . --apply --yes --strict',
-	audit: '--target . --live --generated --from <path> --groups a,b',
-	repair: '--target . --generated --apply --yes --prune --from <path>',
-	fleet: '--generated --apply --yes --prune --from <path>',
+	audit: '--target . --live --generated --replace --from <path> --groups a,b',
+	repair: '--target . --generated --replace --apply --yes --prune --from <path>',
+	fleet: '--generated --replace --apply --yes --prune --from <path>',
 	catalog: '--from <path> ... --target <repo> --offline --apply --yes',
 })
 
@@ -134,12 +134,14 @@ export const VERB_FLAG_HELP: Readonly<Record<Verb, readonly (readonly [string, s
 			['--target .', 'directory to audit (default: current directory)'],
 			['--live', 'also check upstream freshness over the network'],
 			['--generated', 'include generated canon if the repair hand-off is accepted'],
+			['--replace', 'let the repair hand-off discard local changes in the drifted files it names'],
 			['--from <path>', 'read the template from a local path instead of the bundled one'],
 			['--groups a,b', 'limit the audit to these artifact groups'],
 		],
 		repair: [
 			['--target .', 'directory to repair (default: current directory)'],
 			['--generated', 'also restore generated canon except package.json'],
+			['--replace', 'discard local changes in the drifted files named by the repair report'],
 			['--apply', 'write the fixes (default is a dry run)'],
 			['--yes', 'skip the confirmation question'],
 			['--prune', 'also DELETE unexpected files under .claude/agents, .codex/agents, and scripts'],
@@ -147,6 +149,7 @@ export const VERB_FLAG_HELP: Readonly<Record<Verb, readonly (readonly [string, s
 		],
 		fleet: [
 			['--generated', 'also restore generated canon except package.json in every package'],
+			['--replace', 'discard local changes in the drifted files named for every package'],
 			['--apply', 'write fixes across every package (default is a dry run)'],
 			['--yes', 'skip the confirmation question'],
 			[

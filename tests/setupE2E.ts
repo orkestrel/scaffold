@@ -1239,7 +1239,7 @@ export function registerHermeticBinGates(): void {
 				}
 			}, 60000)
 
-			it('detects byte-level AGENTS.md drift, restores the vendored content, and reports the rerun clean', async () => {
+			it('detects byte-level AGENTS.md drift, explicitly replaces it, and reports the rerun clean', async () => {
 				const cwd = await buildTempDirectory()
 				try {
 					const created = runDefaultBin(['new', 'demo', '--src', 'core', '--apply'], {
@@ -1257,7 +1257,7 @@ export function registerHermeticBinGates(): void {
 					expect(driftedAudit.stdout).toContain('AGENTS.md')
 					expect(driftedAudit.stdout).toContain('drifted')
 
-					const repaired = runDefaultBin(['repair', '--apply', '--target', 'demo'], {
+					const repaired = runDefaultBin(['repair', '--replace', '--apply', '--target', 'demo'], {
 						cwd: cwd.path,
 					})
 					expect(repaired.status).toBe(0)
@@ -1293,10 +1293,9 @@ export function registerHermeticBinGates(): void {
 					expect(clean.stdout).toContain('fleeta: clean')
 					expect(clean.stdout).toContain('fleetb: clean')
 
-					// fleet scopes its plan to `host`-origin artifacts only (excluding
-					// `.github/workflows/ci.yml`), and (per the single-target round-trip
-					// test above) `diffPlan` audits a `host`-origin artifact by presence
-					// only — removing a host file is therefore the drift fleet CAN detect.
+					// Fleet scopes its plan to `host`-origin artifacts only (excluding
+					// `.github/workflows/ci.yml`). Removing a host file proves the safe
+					// default restoration path without authorizing stale byte replacement.
 					const driftedFile = join(root.path, 'fleeta', '.editorconfig')
 					rmSync(driftedFile)
 

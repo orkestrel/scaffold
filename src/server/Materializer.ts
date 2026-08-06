@@ -63,9 +63,10 @@ import { parseMaterializerOptions } from './parsers.js'
  * (`ScaffoldError('TARGET', …)`), then byte-copies each `host` artifact from
  * the `host` root and writes each `template` / `computed` artifact's rendered
  * `content`, failing fast on any write error (`ScaffoldError('WRITE', …)`).
- * `repair` is into-existing: it skips the vacancy check and writes ONLY the
- * `missing` / `stale` artifacts an `Audit` names, leaving `aligned` ones
- * untouched. Hydrated directory-shaped host entries are expanded into
+ * `repair` is into-existing: it skips the vacancy check and writes `missing`
+ * artifacts an `Audit` names. `stale` artifacts are report-only unless its
+ * `replace` switch is true, because byte replacement discards local changes.
+ * Hydrated directory-shaped host entries are expanded into
  * file-shaped artifacts, so canonical skills and agent configuration are
  * audited and repaired file by file. `prune` deletes stale files under
  * `target/.claude/agents/`, `target/.codex/agents/`, and `target/scripts/`
@@ -174,7 +175,7 @@ export class Materializer implements MaterializerInterface {
 		return result
 	}
 
-	repair(plan: Plan, audit: Audit, target: string): MaterializeResult {
+	repair(plan: Plan, audit: Audit, target: string, replace = false): MaterializeResult {
 		this.#ensureAlive()
 		const context = this.#prepare(plan, target, plan, false)
 		if (!hasOnlyDataProperties(audit) || !hasValidAuditBytes(audit)) {
@@ -186,14 +187,17 @@ export class Materializer implements MaterializerInterface {
 				...(preview.success ? {} : { error: preview.error }),
 			})
 		}
-		const drifted = new Set(
+		const selectedPaths = new Set(
 			preview.value.findings
-				.filter((finding) => finding.drift === 'missing' || finding.drift === 'stale')
+				.filter(
+					(finding) =>
+						finding.drift === 'missing' || (replace === true && finding.drift === 'stale'),
+				)
 				.map((finding) => finding.path),
 		)
 		const selected = {
 			...context,
-			artifacts: context.artifacts.filter((artifact) => drifted.has(artifact.path)),
+			artifacts: context.artifacts.filter((artifact) => selectedPaths.has(artifact.path)),
 		}
 		const prepared = this.#prepare(selected, target, context)
 		const preparedByPath = new Map(prepared.artifacts.map((artifact) => [artifact.path, artifact]))
@@ -229,7 +233,7 @@ export class Materializer implements MaterializerInterface {
 		})
 		const skipped: string[] = []
 		for (const artifact of context.artifacts) {
-			if (!drifted.has(artifact.path)) {
+			if (!selectedPaths.has(artifact.path)) {
 				skipped.push(artifact.path)
 			}
 		}

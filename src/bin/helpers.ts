@@ -6,6 +6,7 @@ import type { TableOptions } from '@orkestrel/console'
 import { attempt } from '@orkestrel/contract'
 import {
 	ACTION_LABEL,
+	CATALOG_AGENT_PATH,
 	DRIFT_LABEL,
 	EXIT_CODES,
 	FRESHNESS_LABEL,
@@ -88,14 +89,35 @@ export function scopeNote(count: number, generated: boolean): string | undefined
  *
  * @param audit - The audit over the selected repair plan.
  * @param generated - Whether generated canon was included in the repair scope.
+ * @param replace - Whether stale byte replacement was explicitly authorized.
  * @returns The scope-aware clean or drifted verdict.
  */
-export function repairVerdict(audit: Audit, generated: boolean): string {
+export function repairVerdict(audit: Audit, generated: boolean, replace = false): string {
 	const scope = generated ? 'host-owned and generated' : 'host-owned'
 	if (audit.clean) {
 		return `repair: ${countPart(audit.findings.length, `${scope} artifact`)} aligned — nothing to write`
 	}
+	if (audit.drifted > 0 && !replace) {
+		return `repair: ${scope}: ${bucketText(audit)} — missing files can be written; drifted files are report-only unless --replace discards their local changes`
+	}
 	return `repair: ${scope}: ${bucketText(audit)} — pass --apply to write`
+}
+
+/**
+ * Keep the catalog agent presence-repairable while leaving its content to `catalog`.
+ *
+ * @param plan - The hydrated repair plan.
+ * @returns A plan whose catalog agent has no canonical byte comparison.
+ */
+export function protectCatalogPlan(plan: Plan): Plan {
+	return {
+		...plan,
+		artifacts: plan.artifacts.map((artifact) => {
+			if (artifact.origin !== 'host' || artifact.path !== CATALOG_AGENT_PATH) return artifact
+			const { hex: _hex, ...protectedArtifact } = artifact
+			return protectedArtifact
+		}),
+	}
 }
 
 /** Render repair's materialization tally. */
@@ -350,7 +372,17 @@ export function unresolvedVersion(names: readonly string[]): string {
 
 /** Render drift that belongs to generated artifacts. */
 export function generatedNote(count: number): string {
-	return `${countPart(count, 'finding')} in generated files — these are regenerated, not hand-edited; run 'scaffold repair --generated' to restore them`
+	return `${countPart(count, 'finding')} in generated files — these are regenerated, not hand-edited; run 'scaffold repair --generated --replace' to restore drifted bytes`
+}
+
+/**
+ * Render the explicit destructive opt-in for stale host-owned files.
+ *
+ * @param count - The number of stale host-owned files.
+ * @returns The replacement guidance line.
+ */
+export function replacementNote(count: number): string {
+	return `${countPart(count, 'drifted host-owned file')} — run 'scaffold repair --replace' to discard local changes`
 }
 
 /**

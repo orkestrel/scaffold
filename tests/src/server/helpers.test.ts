@@ -1642,7 +1642,7 @@ describe('hydratePlan', () => {
 
 			const materializer = createMaterializer({ host: host.path })
 			try {
-				const result = materializer.repair(hydrated, audit, target.path)
+				const result = materializer.repair(hydrated, audit, target.path, true)
 				expect(result.copied).toEqual([
 					'.agents/skills/harden/SKILL.md',
 					'.agents/skills/harden/agents/openai.yaml',
@@ -1753,7 +1753,7 @@ describe('hydratePlan', () => {
 
 			const materializer = createMaterializer({ host: host.path })
 			try {
-				const result = materializer.repair(hydrated, audit, target.path)
+				const result = materializer.repair(hydrated, audit, target.path, true)
 				expect(result.copied).toEqual(['notes.txt'])
 				expect(readFileSync(join(target.path, 'notes.txt'), 'utf8')).toBe('host content\n')
 			} finally {
@@ -1793,7 +1793,7 @@ describe('hydratePlan', () => {
 
 			const materializer = createMaterializer({ host: host.path })
 			try {
-				materializer.repair(hydrated, audit, target.path)
+				materializer.repair(hydrated, audit, target.path, true)
 				expect(bytesToHex(readFileSync(join(target.path, 'asset.bin')))).toBe(bytesToHex(canonical))
 			} finally {
 				materializer.destroy()

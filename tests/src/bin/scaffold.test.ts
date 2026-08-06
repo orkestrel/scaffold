@@ -1071,6 +1071,36 @@ describe('scaffold bin', () => {
 			}
 		}, 20000)
 
+		it('reports and preserves stale host bytes by default, then replaces them only with --replace', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				const path = join(packageDirectory, '.editorconfig')
+				const local = `${HOST_FIXTURE_FILES['.editorconfig']}# local addition\n`
+				writeFileSync(path, local, 'utf8')
+
+				const preserved = runBin(['repair', '--apply', '--from', from.path], '', {
+					cwd: packageDirectory,
+				})
+				expect(preserved.status).toBe(1)
+				expect(preserved.stdout).toContain('report-only')
+				expect(preserved.stdout).toContain('drifted')
+				expect(preserved.stdout).toContain('host-owned')
+				expect(preserved.stdout).toContain('.editorconfig')
+				expect(readFileSync(path, 'utf8')).toBe(local)
+
+				const replaced = runBin(['repair', '--replace', '--apply', '--from', from.path], '', {
+					cwd: packageDirectory,
+				})
+				expect(replaced.status).toBe(0)
+				expect(readFileSync(path, 'utf8')).toBe(HOST_FIXTURE_FILES['.editorconfig'])
+			} finally {
+				await cwd.cleanup()
+				await from.cleanup()
+			}
+		}, 30000)
+
 		it('re-samples both global-setup transitions after confirmation before writing generated config', async () => {
 			const from = await buildFromFixture()
 			const addedPackage = mkdtempSync(join(WORKSPACE_ROOT, '.canon-011-r5-added-'))
@@ -1093,6 +1123,7 @@ describe('scaffold bin', () => {
 				await new CLI().run([
 					'repair',
 					'--generated',
+					'--replace',
 					'--apply',
 					'--target',
 					relative(WORKSPACE_ROOT, addedPackage),
@@ -1129,6 +1160,7 @@ describe('scaffold bin', () => {
 				await new CLI().run([
 					'repair',
 					'--generated',
+					'--replace',
 					'--apply',
 					'--target',
 					relative(WORKSPACE_ROOT, removedPackage),
@@ -1147,7 +1179,7 @@ describe('scaffold bin', () => {
 			}
 		}, 40000)
 
-		it('--generated repairs generated drift while default, template, host, and package.json ownership stay unchanged', async () => {
+		it('--generated --replace repairs generated drift while default, template, and package.json ownership stay unchanged', async () => {
 			const from = await buildFromFixture()
 			const cwd = await buildTempDirectory()
 			try {
@@ -1177,9 +1209,17 @@ describe('scaffold bin', () => {
 					HOST_FIXTURE_FILES['.editorconfig'],
 				)
 
+				const generatedOnly = runBin(
+					['repair', '--generated', '--apply', '--from', from.path],
+					'',
+					{ cwd: packageDirectory },
+				)
+				expect(generatedOnly.status).toBe(1)
+				expect(readFileSync(computedPath, 'utf8')).toBe('// generated drift\n')
+
 				rmSync(join(packageDirectory, '.editorconfig'))
 				const generatedRepair = runBin(
-					['repair', '--generated', '--apply', '--from', from.path],
+					['repair', '--generated', '--replace', '--apply', '--from', from.path],
 					'',
 					{ cwd: packageDirectory },
 				)
@@ -1405,7 +1445,7 @@ describe('scaffold bin', () => {
 			}
 		}, 60000)
 
-		it('--generated repairs generated drift across the fleet while the default remains host-only', async () => {
+		it('--generated --replace repairs generated drift across the fleet while the default remains host-only', async () => {
 			const from = await buildFromFixture()
 			const root = await buildTempDirectory()
 			try {
@@ -1420,8 +1460,14 @@ describe('scaffold bin', () => {
 				expect(defaultRepair.status).toBe(0)
 				expect(readFileSync(generatedPath, 'utf8')).toBe('// generated drift\n')
 
+				const generatedOnly = runBin(['fleet', '--generated', '--apply', '--from', from.path], '', {
+					cwd: root.path,
+				})
+				expect(generatedOnly.status).toBe(1)
+				expect(readFileSync(generatedPath, 'utf8')).toBe('// generated drift\n')
+
 				const generatedRepair = runBin(
-					['fleet', '--generated', '--apply', '--from', from.path],
+					['fleet', '--generated', '--replace', '--apply', '--from', from.path],
 					'',
 					{ cwd: root.path },
 				)
@@ -1455,6 +1501,52 @@ describe('scaffold bin', () => {
 	})
 
 	describe('catalog (offline / vendored-from only — no live registry call)', () => {
+		it('repair then catalog then repair converges without reverting the catalog region', async () => {
+			const host = await buildFromFixture()
+			const root = await buildTempDirectory()
+			const catalog = await buildTempDirectory()
+			try {
+				buildCatalogTarget(host.path)
+				const packageDirectory = scaffoldPackage(root.path, 'pkg', host.path)
+				buildCatalogFrom(catalog.path, ['pkgone'])
+				const path = join(packageDirectory, '.claude', 'agents', 'orkestrel.md')
+				rmSync(path)
+
+				const firstRepair = runBin(['repair', '--replace', '--apply', '--from', host.path], '', {
+					cwd: packageDirectory,
+				})
+				const firstCatalog = runBin(
+					['catalog', '--offline', '--from', catalog.path, '--apply'],
+					'',
+					{ cwd: packageDirectory },
+				)
+				const catalogued = readFileSync(path, 'utf8')
+				const secondRepair = runBin(['repair', '--replace', '--apply', '--from', host.path], '', {
+					cwd: packageDirectory,
+				})
+				const secondCatalog = runBin(
+					['catalog', '--offline', '--from', catalog.path, '--apply'],
+					'',
+					{ cwd: packageDirectory },
+				)
+
+				expect(firstRepair.status).toBe(0)
+				expect(firstRepair.stdout).toContain('.claude/agents/orkestrel.md')
+				expect(firstCatalog.status).toBe(0)
+				expect(firstCatalog.stdout).toContain('wrote')
+				expect(catalogued).toContain('@orkestrel/pkgone')
+				expect(secondRepair.status).toBe(0)
+				expect(secondRepair.stdout).toContain('aligned — nothing to write')
+				expect(readFileSync(path, 'utf8')).toBe(catalogued)
+				expect(secondCatalog.status).toBe(0)
+				expect(secondCatalog.stdout).toContain('catalog: clean')
+			} finally {
+				await host.cleanup()
+				await root.cleanup()
+				await catalog.cleanup()
+			}
+		}, 40000)
+
 		it('accepts repeated --from and merges every local catalog source', async () => {
 			const target = await buildTempDirectory()
 			const first = await buildTempDirectory()

@@ -25,6 +25,7 @@ export function parseArguments(argv: readonly string[]): CLIArguments {
 			json: { type: 'boolean', default: false },
 			prune: { type: 'boolean', default: false },
 			generated: { type: 'boolean', default: false },
+			replace: { type: 'boolean', default: false },
 			strict: { type: 'boolean', default: false },
 			live: { type: 'boolean', default: false },
 			offline: { type: 'boolean', default: false },

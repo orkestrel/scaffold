@@ -27,6 +27,12 @@ describe('bin argument parsers', () => {
 		expect(parsed.values.generated).toBe(true)
 	})
 
+	it('round-trips the repair replacement opt-in', () => {
+		const parsed = parseArguments(['repair', '--replace'])
+		expect(parsed.positionals).toEqual(['repair'])
+		expect(parsed.values.replace).toBe(true)
+	})
+
 	it('parses source and application environment selections independently', () => {
 		const parsed = parseArguments([
 			'new',

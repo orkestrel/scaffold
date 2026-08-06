@@ -56,7 +56,7 @@ describe('server integration: compile → materialize → audit → repair', () 
 			expect(driftedAudit.missing).toBe(1)
 
 			// 4. Repair: writes exactly the mutated + deleted paths, nothing else.
-			const result = materializer.repair(plan, driftedAudit, directory.path)
+			const result = materializer.repair(plan, driftedAudit, directory.path, true)
 			expect([...result.written].sort()).toEqual([mutated.path, deleted.path].sort())
 			expect(readFileSync(join(directory.path, mutated.path), 'utf8')).toBe(mutated.content ?? '')
 			expect(readFileSync(join(directory.path, deleted.path), 'utf8')).toBe(deleted.content ?? '')
