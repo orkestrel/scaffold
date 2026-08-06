@@ -61,7 +61,7 @@ descriptions never enter agent instruction context.
 | @orkestrel/reason     | 0.0.4   |
 | @orkestrel/relation   | 0.0.7   |
 | @orkestrel/router     | 0.0.8   |
-| @orkestrel/scaffold   | 0.0.20  |
+| @orkestrel/scaffold   | 0.0.21  |
 | @orkestrel/sea        | 0.0.5   |
 | @orkestrel/server     | 0.0.10  |
 | @orkestrel/sqlite     | 0.0.6   |
