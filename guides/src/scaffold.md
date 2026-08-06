@@ -1522,6 +1522,14 @@ workspace remains drifted; a clean run and a run that fully applies its findings
 interactive audit repair hand-off forwards both `--generated` and `--replace` when those flags were
 present on `audit`.
 
+That boundary governs the executable's words too. Every drift line states what a command will do
+rather than how a file came to differ: the executable cannot know whether a generated file was
+hand-edited, and a consumer whose blueprint cannot yet express what it needs legitimately edits one.
+The cost of discarding local content is stated on `--replace` alone — on the repair scope line, in
+the repair verdict, in the audit's drift guidance, and inside the hand-off question itself — and
+never on the safe default, where a warning about a write that cannot happen would only train
+operators to ignore warnings.
+
 The catalog agent has a narrower ownership exception. Repair treats
 `.claude/agents/orkestrel.md` as presence-owned after host hydration: it can restore the absent file,
 but never compares or replaces its existing bytes, even under `--replace`. `catalog` is the sole

@@ -30,6 +30,8 @@ import {
 	ORKESTREL_DEPS_PROMPT,
 	PRUNE_EMPTY,
 	PRUNE_SKIPPED,
+	REPAIR_GENERATED_SCOPE,
+	REPAIR_SCOPE,
 	SCAN_SKIPPED,
 	ENVIRONMENT_CHOICES,
 	VERB_FLAGS,
@@ -391,12 +393,38 @@ describe('render: bucketText / verdicts', () => {
 		expect(repairVerdict(buildAudit([]), true)).toBe(
 			'repair: 0 host-owned and generated artifacts aligned — nothing to write',
 		)
-		expect(repairVerdict(buildAudit(AUDIT_FINDINGS), false)).toContain('repair: host-owned:')
-		expect(repairVerdict(buildAudit(AUDIT_FINDINGS), false)).toContain('report-only')
+		const missingOnly = buildAudit([
+			{ path: 'src/core/index.ts', group: 'source', drift: 'missing' },
+		])
+		expect(repairVerdict(missingOnly, false)).toBe(
+			'repair: host-owned: 1 missing — pass --apply to write',
+		)
+		const preserved = repairVerdict(buildAudit(AUDIT_FINDINGS), false)
+		expect(preserved).toContain('repair: host-owned:')
+		expect(preserved).toContain(
+			'--apply restores missing files; drifted files change only with --replace, which discards local changes',
+		)
 		expect(repairVerdict(buildAudit(AUDIT_FINDINGS), true)).toContain(
 			'repair: host-owned and generated:',
 		)
-		expect(repairVerdict(buildAudit(AUDIT_FINDINGS), true, true)).toContain('pass --apply to write')
+		const replacing = repairVerdict(buildAudit(AUDIT_FINDINGS), true, true)
+		expect(replacing).toContain(
+			'--apply restores missing files and overwrites drifted ones, discarding local changes',
+		)
+		expect(replacing).not.toContain('--replace')
+	})
+
+	it('states the destructive opt-in in both repair scope lines, and claims nothing about the operator’s files', () => {
+		for (const line of [REPAIR_SCOPE, REPAIR_GENERATED_SCOPE]) {
+			expect(line).toContain('missing files are restored')
+			expect(line).toContain(
+				'drifted files change only with --replace, which discards local changes',
+			)
+			expect(line).not.toContain('hand-edited')
+			expect(line).not.toContain('stale')
+		}
+		expect(REPAIR_SCOPE).toContain('starter and generated files are never touched')
+		expect(REPAIR_GENERATED_SCOPE).toContain('starter files and package.json are never touched')
 	})
 
 	it('keeps the catalog agent presence-repairable without comparing catalog-owned bytes', () => {
@@ -523,23 +551,35 @@ describe('render: prompt messages', () => {
 		expect(CANCELLED_MESSAGE).toBe('cancelled — nothing written')
 	})
 
-	it('repairHandoff: owned drift only names the host-owned count, no deletion clause', () => {
-		expect(repairHandoff(3, 0, false)).toBe('3 host-owned files have drift — run repair now? ')
-		expect(repairHandoff(1, 0, false)).toBe('1 host-owned file has drift — run repair now? ')
+	it('repairHandoff: missing-only drift asks to restore, and mentions no overwrite or deletion', () => {
+		expect(repairHandoff(3, 0, 0, false)).toBe(
+			'restore 3 missing host-owned files — run repair now? ',
+		)
+		expect(repairHandoff(1, 0, 0, false)).toBe(
+			'restore 1 missing host-owned file — run repair now? ',
+		)
 	})
 
-	it('repairHandoff: owned drift + prune names BOTH clauses, joined by "and"', () => {
-		expect(repairHandoff(2, 1, true)).toBe(
-			'2 host-owned files have drift and 1 unexpected file will be deleted — run repair now? ',
+	it('repairHandoff: an authorized overwrite carries its cost inside the question itself', () => {
+		expect(repairHandoff(0, 2, 0, false)).toBe(
+			'overwrite 2 drifted host-owned files, discarding local changes — run repair now? ',
+		)
+	})
+
+	it('repairHandoff: names every authorized action, one clause each', () => {
+		expect(repairHandoff(2, 1, 1, true)).toBe(
+			'restore 2 missing host-owned files; overwrite 1 drifted host-owned file, discarding local changes; delete 1 unexpected file — run repair now? ',
 		)
 	})
 
 	it('repairHandoff: foreign-only drift with pruning names only the deletion clause', () => {
-		expect(repairHandoff(0, 2, true)).toBe('2 unexpected files will be deleted — run repair now? ')
+		expect(repairHandoff(0, 0, 2, true)).toBe('delete 2 unexpected files — run repair now? ')
 	})
 
 	it('repairHandoff: foreign present but prune false never mentions deletion (nothing would be deleted)', () => {
-		expect(repairHandoff(1, 2, false)).toBe('1 host-owned file has drift — run repair now? ')
+		expect(repairHandoff(1, 0, 2, false)).toBe(
+			'restore 1 missing host-owned file — run repair now? ',
+		)
 	})
 
 	it('foreignHint points at repair --prune', () => {
@@ -756,6 +796,11 @@ describe('render: VERB_FLAGS corrections', () => {
 		expect(VERB_FLAGS.audit).toContain('--generated')
 		expect(VERB_FLAGS.repair).toContain('--generated')
 		expect(VERB_FLAGS.fleet).toContain('--generated')
+		for (const verb of ['repair', 'fleet'] as const) {
+			const help = VERB_FLAG_HELP[verb].find(([flag]) => flag === '--generated')?.[1]
+			expect(help).toContain('widen the scope to generated files')
+			expect(help).not.toContain('restore')
+		}
 		expect(VERB_FLAGS.new).not.toContain('--generated')
 		expect(VERB_FLAGS.pull).not.toContain('--generated')
 		expect(VERB_FLAGS.mirror).not.toContain('--generated')
@@ -821,18 +866,20 @@ describe('render: new prune/missing/generated/audit-live/comparison/ci/catalog e
 		expect(line).toContain('scaffold new')
 	})
 
-	it('generatedNote directs generated drift to the explicit repair opt-in', () => {
+	it('generatedNote says what repair does with generated drift, never how those files got there', () => {
 		const line = generatedNote(3)
 		expect(line).toContain('3 findings')
-		expect(line.toLowerCase()).toContain('generated')
-		expect(line).toContain('repair --generated')
+		expect(line).toContain('generated files')
+		expect(line).toContain("run 'scaffold repair --generated' to restore missing ones")
+		expect(line).toContain('add --replace to overwrite drifted ones, discarding local changes')
+		expect(line).not.toContain('hand-edited')
 	})
 
-	it('replacementNote names the destructive host-byte opt-in', () => {
+	it('replacementNote names the safe default before the destructive host-byte opt-in', () => {
 		const line = replacementNote(2)
 		expect(line).toContain('2 drifted host-owned files')
-		expect(line).toContain('repair --replace')
-		expect(line).toContain('discard local changes')
+		expect(line).toContain('repair leaves drifted files alone')
+		expect(line).toContain("'scaffold repair --replace' overwrites them, discarding local changes")
 	})
 
 	it('separates repairable generated drift from protected package.json guidance', () => {
@@ -858,7 +905,7 @@ describe('render: new prune/missing/generated/audit-live/comparison/ci/catalog e
 		)
 
 		expect(generated).toEqual([
-			"1 finding in generated files — these are regenerated, not hand-edited; run 'scaffold repair --generated --replace' to restore drifted bytes",
+			"1 finding in generated files — run 'scaffold repair --generated' to restore missing ones; add --replace to overwrite drifted ones, discarding local changes",
 		])
 		expect(manifest).toEqual([
 			'1 finding in package.json — repair does not rewrite protected publication metadata; review and edit it directly',

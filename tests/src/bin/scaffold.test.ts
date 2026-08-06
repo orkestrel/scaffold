@@ -1084,7 +1084,9 @@ describe('scaffold bin', () => {
 					cwd: packageDirectory,
 				})
 				expect(preserved.status).toBe(1)
-				expect(preserved.stdout).toContain('report-only')
+				expect(preserved.stdout).toContain(
+					'drifted files change only with --replace, which discards local changes',
+				)
 				expect(preserved.stdout).toContain('drifted')
 				expect(preserved.stdout).toContain('host-owned')
 				expect(preserved.stdout).toContain('.editorconfig')

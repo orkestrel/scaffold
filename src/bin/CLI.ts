@@ -901,7 +901,12 @@ export class CLI implements CLIInterface {
 			let handoffAccepted = false
 			if (offerHandoff) {
 				const terminal = createTerminal()
-				const message = repairHandoff(ownedCount, audit.foreign, pruneRequested)
+				const message = repairHandoff(
+					split.owned.missing,
+					replace ? split.owned.drifted : 0,
+					audit.foreign,
+					pruneRequested,
+				)
 				handoffAccepted = await this.#guard(terminal.confirm({ message, default: false }))
 				if (handoffAccepted) {
 					await this.#repair(values, false)

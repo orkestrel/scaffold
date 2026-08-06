@@ -97,10 +97,11 @@ export function repairVerdict(audit: Audit, generated: boolean, replace = false)
 	if (audit.clean) {
 		return `repair: ${countPart(audit.findings.length, `${scope} artifact`)} aligned — nothing to write`
 	}
-	if (audit.drifted > 0 && !replace) {
-		return `repair: ${scope}: ${bucketText(audit)} — missing files can be written; drifted files are report-only unless --replace discards their local changes`
-	}
-	return `repair: ${scope}: ${bucketText(audit)} — pass --apply to write`
+	const head = `repair: ${scope}: ${bucketText(audit)}`
+	if (audit.drifted === 0) return `${head} — pass --apply to write`
+	return replace
+		? `${head} — --apply restores missing files and overwrites drifted ones, discarding local changes`
+		: `${head} — --apply restores missing files; drifted files change only with --replace, which discards local changes`
 }
 
 /**
@@ -242,16 +243,30 @@ export function pruneConfirmMessage(count: number): string {
 	return `Also delete ${countPart(count, 'unexpected file')} under .claude/agents, .codex/agents, and scripts? `
 }
 
-/** Render the interactive audit-to-repair handoff. */
-export function repairHandoff(owned: number, foreign: number, prune: boolean): string {
+/**
+ * Render the interactive audit-to-repair handoff as the list of actions it authorizes.
+ *
+ * @param missing - The number of missing host-owned files the inherited repair would restore.
+ * @param drifted - The number of drifted host-owned files it would overwrite, zero unless `--replace` authorized replacement.
+ * @param foreign - The number of unexpected files found.
+ * @param prune - Whether `--prune` authorized deletion, without which no unexpected file is touched.
+ * @returns The confirmation question, naming each authorized action and the cost of overwriting.
+ */
+export function repairHandoff(
+	missing: number,
+	drifted: number,
+	foreign: number,
+	prune: boolean,
+): string {
 	const parts: string[] = []
-	if (owned > 0) {
-		parts.push(`${countPart(owned, 'host-owned file')} ${owned === 1 ? 'has' : 'have'} drift`)
+	if (missing > 0) parts.push(`restore ${countPart(missing, 'missing host-owned file')}`)
+	if (drifted > 0) {
+		parts.push(
+			`overwrite ${countPart(drifted, 'drifted host-owned file')}, discarding local changes`,
+		)
 	}
-	if (prune && foreign > 0) {
-		parts.push(`${countPart(foreign, 'unexpected file')} will be deleted`)
-	}
-	return `${parts.join(' and ')} — run repair now? `
+	if (prune && foreign > 0) parts.push(`delete ${countPart(foreign, 'unexpected file')}`)
+	return `${parts.join('; ')} — run repair now? `
 }
 
 /** Render one unresolved Orkestrel dependency token. */
@@ -370,19 +385,24 @@ export function unresolvedVersion(names: readonly string[]): string {
 	return `could not resolve the latest version for ${names.map((name) => `"${name}"`).join(', ')} — check the name or pass name@range`
 }
 
-/** Render drift that belongs to generated artifacts. */
+/**
+ * Render drift that belongs to generated artifacts.
+ *
+ * @param count - The number of findings on generated artifacts.
+ * @returns The guidance line, stating what each repair scope does rather than how the files differ.
+ */
 export function generatedNote(count: number): string {
-	return `${countPart(count, 'finding')} in generated files — these are regenerated, not hand-edited; run 'scaffold repair --generated --replace' to restore drifted bytes`
+	return `${countPart(count, 'finding')} in generated files — run 'scaffold repair --generated' to restore missing ones; add --replace to overwrite drifted ones, discarding local changes`
 }
 
 /**
  * Render the explicit destructive opt-in for stale host-owned files.
  *
  * @param count - The number of stale host-owned files.
- * @returns The replacement guidance line.
+ * @returns The replacement guidance line, naming the safe default before its destructive opt-in.
  */
 export function replacementNote(count: number): string {
-	return `${countPart(count, 'drifted host-owned file')} — run 'scaffold repair --replace' to discard local changes`
+	return `${countPart(count, 'drifted host-owned file')} — repair leaves drifted files alone; 'scaffold repair --replace' overwrites them, discarding local changes`
 }
 
 /**

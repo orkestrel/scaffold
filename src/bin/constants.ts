@@ -46,11 +46,11 @@ export const ACTION_LABEL: Readonly<Record<string, string>> = Object.freeze({
 
 /** Repair's deliberately limited ownership boundary. */
 export const REPAIR_SCOPE =
-	'repair scope: shared host-owned artifacts only — stale files are report-only unless --replace discards their local changes; starter and generated files are never touched'
+	'repair scope: shared host-owned artifacts only — missing files are restored; drifted files change only with --replace, which discards local changes; starter and generated files are never touched'
 
 /** Repair's opt-in generated-canon ownership boundary. */
 export const REPAIR_GENERATED_SCOPE =
-	'repair scope: shared host-owned and generated artifacts — stale files are report-only unless --replace discards their local changes; starter files and package.json are never touched'
+	'repair scope: shared host-owned and generated artifacts — missing files are restored; drifted files change only with --replace, which discards local changes; starter files and package.json are never touched'
 
 /** The dry-run note for `new`. */
 export const NEW_DRY_RUN_NOTE = 'dry run — pass --apply to write'
@@ -133,14 +133,14 @@ export const VERB_FLAG_HELP: Readonly<Record<Verb, readonly (readonly [string, s
 		audit: [
 			['--target .', 'directory to audit (default: current directory)'],
 			['--live', 'also check upstream freshness over the network'],
-			['--generated', 'include generated canon if the repair hand-off is accepted'],
+			['--generated', 'widen an accepted repair hand-off to generated files'],
 			['--replace', 'let the repair hand-off discard local changes in the drifted files it names'],
 			['--from <path>', 'read the template from a local path instead of the bundled one'],
 			['--groups a,b', 'limit the audit to these artifact groups'],
 		],
 		repair: [
 			['--target .', 'directory to repair (default: current directory)'],
-			['--generated', 'also restore generated canon except package.json'],
+			['--generated', 'widen the scope to generated files, except package.json'],
 			['--replace', 'discard local changes in the drifted files named by the repair report'],
 			['--apply', 'write the fixes (default is a dry run)'],
 			['--yes', 'skip the confirmation question'],
@@ -148,8 +148,8 @@ export const VERB_FLAG_HELP: Readonly<Record<Verb, readonly (readonly [string, s
 			['--from <path>', 'read the template from a local path instead of the bundled one'],
 		],
 		fleet: [
-			['--generated', 'also restore generated canon except package.json in every package'],
-			['--replace', 'discard local changes in the drifted files named for every package'],
+			['--generated', 'widen the scope to generated files in every package, except package.json'],
+			['--replace', 'discard local changes in the drifted files named in each package'],
 			['--apply', 'write fixes across every package (default is a dry run)'],
 			['--yes', 'skip the confirmation question'],
 			[
