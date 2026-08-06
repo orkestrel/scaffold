@@ -80,7 +80,9 @@ export function blueprintShape() {
 		overrides: arrayShape(overrideShape(), { max: MAX_COLLECTION_ITEMS }),
 		bin: booleanShape(),
 		integration: booleanShape(),
-		service: booleanShape(),
+		services: arrayShape(stringShape({ min: 1, max: MAX_NAME_LENGTH }), {
+			max: MAX_COLLECTION_ITEMS,
+		}),
 		global: booleanShape(),
 		showcase: booleanShape(),
 	})

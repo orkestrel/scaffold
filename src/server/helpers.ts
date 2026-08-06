@@ -1394,9 +1394,10 @@ export function selectOrkestrelEntries(value: unknown): readonly (readonly [stri
  * and the name satisfies `isWorkspaceName`; every other name is a coded
  * `TARGET` failure. `src` is derived from `src/<environment>/` and `app` from
  * `app/<environment>/`; a target with no environment on either axis is also a coded
- * `TARGET` failure. The `bin`, `integration`, and `service` facts probe physical
- * directories at `src/bin`, `tests/integration`, and `tests/service`, respectively,
- * while `global` probes the physical exact-case `tests/setupGlobal.ts` file and `showcase`
+ * `TARGET` failure. The `bin` and `integration` facts probe physical
+ * directories at `src/bin` and `tests/integration`. `services` is the sorted
+ * set of direct vendor directories under `tests/service` that contain a test
+ * at any depth, while `global` probes the physical exact-case `tests/setupGlobal.ts` file and `showcase`
  * probes the physical exact-case `configs/app/vite.showcase.config.ts` regular file; none is
  * inferred from the workspace name. `dependencies` /
  * `peers` are the `@orkestrel/`-prefixed entries of `manifest.dependencies` /
@@ -1416,8 +1417,8 @@ export function selectOrkestrelEntries(value: unknown): readonly (readonly [stri
  * @throws `ScaffoldError('TARGET', …)` when `target`'s manifest is unreadable
  *   (via `readManifest`), is not valid JSON, its name is unsafe for its
  *   publication mode, or `target` carries no source or application environment.
- * @throws `ScaffoldError('TARGET', …)` when `tests/service` exists without the
- *   physical companion files `tests/setupService.ts` and `scripts/service.sh`.
+ * @throws `ScaffoldError('INVALID', …)` when service tests use the retired flat
+ *   layout, a vendor directory has no test, or a service companion is missing.
  *
  * @example
  * ```ts
@@ -1487,7 +1488,68 @@ export function deriveBlueprint(target: string): Blueprint {
 	// project) iff it ships its own src/bin — never derived from `name`.
 	const bin = isRealDirectory(join(target, 'src', 'bin'))
 	const integration = isRealDirectory(join(target, 'tests', 'integration'))
-	const service = isRealDirectory(join(target, 'tests', 'service'))
+	const serviceRoot = join(target, 'tests', 'service')
+	const services: string[] = []
+	if (existsSync(serviceRoot)) {
+		if (!isRealDirectory(serviceRoot)) {
+			throw new ScaffoldError(
+				'INVALID',
+				`Service root at ${serviceRoot} must be a physical directory`,
+				{
+					target,
+					path: 'tests/service',
+				},
+			)
+		}
+		const serviceEntries = readdirSync(serviceRoot, { withFileTypes: true })
+		const flat = serviceEntries
+			.filter((entry) => entry.name.endsWith('.test.ts') && !entry.isDirectory())
+			.map((entry) => entry.name)
+			.sort()
+		if (flat.length > 0) {
+			throw new ScaffoldError(
+				'INVALID',
+				`Flat service tests are not supported; move ${flat.join(', ')} into tests/service/<vendor>/`,
+				{ target, paths: flat.map((path) => `tests/service/${path}`) },
+			)
+		}
+		for (const entry of serviceEntries) {
+			const vendor = join(serviceRoot, entry.name)
+			if (!isRealDirectory(vendor)) continue
+			if (!isWorkspaceName(entry.name)) {
+				throw new ScaffoldError(
+					'INVALID',
+					`Service vendor directory "${entry.name}" must use a bounded lowercase name`,
+					{ target, path: `tests/service/${entry.name}` },
+				)
+			}
+			const tests = listFiles(vendor).filter((path) => path.endsWith('.test.ts'))
+			if (tests.length === 0) {
+				throw new ScaffoldError(
+					'INVALID',
+					`Service vendor "${entry.name}" contains no test; add tests/service/${entry.name}/**/*.test.ts or remove the directory`,
+					{ target, service: entry.name },
+				)
+			}
+			const setup = `tests/service/${entry.name}/setup.ts`
+			if (!isRealFile(join(target, setup))) {
+				throw new ScaffoldError(
+					'INVALID',
+					`Service vendor "${entry.name}" is missing ${setup}; add a readiness module that probes and warms the vendor and throws when unavailable`,
+					{ target, service: entry.name, missing: setup },
+				)
+			}
+			services.push(entry.name)
+		}
+		services.sort()
+		if (services.length > 0 && !isRealFile(join(target, SERVICE_SCRIPT_PATH))) {
+			throw new ScaffoldError(
+				'INVALID',
+				`Service vendors are missing ${SERVICE_SCRIPT_PATH}; add an idempotent provisioner that exits nonzero when any vendor cannot be prepared`,
+				{ target, missing: SERVICE_SCRIPT_PATH },
+			)
+		}
+	}
 	const showcaseRoot = join(target, dirname(SHOWCASE_CONFIG_PATH))
 	const showcaseEntries = attempt(() => readdirSync(showcaseRoot))
 	const showcase =
@@ -1500,23 +1562,6 @@ export function deriveBlueprint(target: string): Blueprint {
 		entries.success &&
 		entries.value.includes(basename(GLOBAL_SETUP_PATH)) &&
 		isRealFile(join(target, GLOBAL_SETUP_PATH))
-	if (service) {
-		const missing: string[] = []
-		if (!isRealFile(join(target, 'tests', 'setupService.ts'))) {
-			missing.push('tests/setupService.ts')
-		}
-		if (!isRealFile(join(target, SERVICE_SCRIPT_PATH))) {
-			missing.push(SERVICE_SCRIPT_PATH)
-		}
-		if (missing.length > 0) {
-			throw new ScaffoldError(
-				'TARGET',
-				`Service tests under ${target} are missing ${missing.join(' and ')}`,
-				{ target, missing },
-			)
-		}
-	}
-
 	const rawDependencies = ownDataValue(parsed, 'dependencies')
 	const rawPeerDependencies = ownDataValue(parsed, 'peerDependencies')
 	const dependencies: Dependency[] = selectOrkestrelEntries(rawDependencies).map(
@@ -1554,7 +1599,7 @@ export function deriveBlueprint(target: string): Blueprint {
 					extras: [],
 					bin,
 					integration,
-					service,
+					services,
 					global,
 					showcase,
 				}),
@@ -1588,7 +1633,7 @@ export function deriveBlueprint(target: string): Blueprint {
 		overrides: [],
 		bin,
 		integration,
-		service,
+		services,
 		global,
 		showcase,
 	})

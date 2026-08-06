@@ -226,7 +226,8 @@ application-browser projection. The root machinery selection never attaches a
 compilers section sets out.
 
 `ViteFacts` is the optional structural-fact slice shared by every root Vite compiler:
-`bin`, `integration`, and `service` each select their matching standalone project when `true`;
+`bin` and `integration` each select their matching standalone project when `true`, while `services`
+selects one standalone project for every listed vendor;
 `global` records the exact-case consumer-owned global-setup module and wires it into each eligible
 project; `showcase` records the exact-case consumer-owned showcase wrapper and selects only its
 generated browser machinery.
@@ -252,7 +253,7 @@ interface Blueprint {
 	readonly overrides: readonly Override[]
 	readonly bin: boolean
 	readonly integration: boolean
-	readonly service: boolean
+	readonly services: readonly string[]
 	readonly global: boolean
 	readonly showcase: boolean
 }
@@ -265,9 +266,10 @@ packages — a peer flagged `optional` also gets a `peerDependenciesMeta` entry.
 package-specific development dependencies merged over the generated baseline, and may carry any
 valid npm package name.
 
-`bin`, `integration`, `service`, `global`, and `showcase` are structural project facts. All five obey one law:
-each is `true` only when the workspace physically ships the directory or exact-case file that
-defines it — never because of the workspace's name, and never because a sibling fact is set.
+`bin`, `integration`, `services`, `global`, and `showcase` are structural project facts. They obey
+one law: each boolean is `true`, and each service name is present, only when the workspace physically
+ships the directory or exact-case file that defines it — never because of the workspace's name, and
+never because a sibling fact is set.
 `deriveBlueprint` probes those paths, so a fresh compile and an audit of a mature repository agree
 on what the workspace is.
 
@@ -279,10 +281,11 @@ on what the workspace is.
   workspace's own built output, outside the default run: the generated root configuration registers
   a standalone `integration` project including `tests/integration/**/*.test.ts`, and the manifest
   emits `test:integration`.
-- **`service`** — `tests/service/` exists. It records a slow, opt-in proof project against a foreign
-  running process, outside the default run: a standalone `service` project including
-  `tests/service/**/*.test.ts`, with `tests/setupService.ts` after the shared setup, and the
-  isolated `test:service` script.
+- **`services`** — each direct `tests/service/<vendor>/` directory that contains a `*.test.ts` at
+  any depth contributes its directory name to the sorted list. Each vendor gets a slow, opt-in
+  `service:<vendor>` proof project against its foreign process, including
+  `tests/service/<vendor>/**/*.test.ts`, and an isolated `test:service:<vendor>` script. The
+  aggregate `test:service` runs all vendor projects in one invocation.
 - **`global`** — the physical, exact-case `tests/setupGlobal.ts` file exists. It is the single
   governing setup-presence fact. A declared `src/browser` project runs that consumer-owned module
   as `globalSetup`; integration runs it only when `bin` and `integration` are also true.
@@ -293,12 +296,18 @@ on what the workspace is.
   consumer-only `vite-plugin-singlefile` development dependency. A directory, link, wrong-case
   name, absent wrapper, demo HTML, script, or installed dependency never implies this fact.
 
-A service workspace owes two companion files beside that directory, and derivation requires both
-physically present: `tests/setupService.ts` and `scripts/service.sh`. Either missing companion is a
-coded `TARGET` failure naming the missing path rather than a silent `service: false`. This package
-emits neither: both are consumer-owned seams, and the generated-workspace section sets out what
-each owes its workspace and which proof runs in which gate. Nothing here is inferred — the
-executable axis turns on neither proof project, and neither proof project turns on the other.
+Each service vendor owes `tests/service/<vendor>/setup.ts`, whose module-load readiness check probes
+and warms only that vendor. A service workspace also owes the shared `scripts/service.sh`
+provisioner. Derivation fails with a coded `INVALID` question when either companion is missing,
+when a vendor directory contains no test, or when a test uses the former flat
+`tests/service/*.test.ts` layout. The migration is to move each flat test into
+`tests/service/<vendor>/`, add that vendor's `setup.ts`, and implement the generated provisioner
+skeleton. Nothing here is inferred from a source or application axis: a vendor serves both.
+
+This is a published breaking change: `Blueprint.service` and `ViteFacts.service` were replaced by
+their sorted `services` collections, the single `service` project became one project per vendor,
+and the global `tests/setupService.ts` readiness seam was removed. There is no compatibility
+boolean or declaration file.
 
 `Override` replaces a rendered artifact's content at a path, never partially merges it. `Member` is
 one declared public export of the scaffolded workspace, derived rather than authored.
@@ -464,8 +473,9 @@ produces one (`app/browser/index.html`, `app/server/main.ts`). `BIN_CONFIGS` is 
 axis's computed `tsconfig` and Vite wrapper pair. `HOST_PATHS` is the ordered list of byte-copied
 host artifacts, and it is the staging manifest rather than the per-plan carried set:
 `stageHost` vendors every path on it, while each plan carries the subset `selectHostPaths` selects
-for that one workspace. `SERVICE_SCRIPT_PATH` names the consumer-owned provisioner a service
-workspace's audit expects, and `GLOBAL_SETUP_PATH` names the consumer-owned Vitest global-setup
+for that one workspace. `SERVICE_SCRIPT_PATH` names the generated birth-only provisioner skeleton a
+service workspace must replace with its idempotent vendor provisioning, and `GLOBAL_SETUP_PATH`
+names the consumer-owned Vitest global-setup
 module that independently selected projects can load. `SHOWCASE_CONFIG_PATH` names the sole
 consumer-owned regular file whose exact physical presence enables the optional app showcase.
 
@@ -1030,8 +1040,9 @@ existing workspace so a mature package is diffed against its own would-be scaffo
 dependency-less stand-in. Environments come from `src/<environment>/` and `app/<environment>/`, the
 three directory-shaped structural project facts from their directory probes, `global` from the
 physical exact-case `tests/setupGlobal.ts` file, and `showcase` from the physical exact-case regular
-file `configs/app/vite.showcase.config.ts`; the service companion law remains the one the blueprint
-section states — every fact is a reading of the filesystem, never of the name. Dependencies and peers come
+file `configs/app/vite.showcase.config.ts`; service names come from the direct vendor directories
+under `tests/service/`, subject to the companion law in the blueprint section. Every fact is a
+reading of the filesystem, never of the package name. Dependencies and peers come
 from the manifest's scoped entries, with an optional peer recovered from
 `peerDependenciesMeta`; and `extras` is every development dependency minus the complete set
 `devDependenciesFor` emits for those environments and structural axes, and minus anything already
@@ -1182,10 +1193,11 @@ formatter's 100-column fixed point: a complete registration-array line, includin
 its trailing comma, stays collapsed when it fits and expands one entry per line otherwise.
 `viteProjectRegistrations` is the one registration derivation every root shape consumes: it derives
 the selected source and application projects from the canonical environment order, then appends
-`policy`, `config`, `guides`, and the optional `srcBin`, `integration`, and `service` projects.
+`policy`, `config`, `guides`, the optional `srcBin` and `integration` projects, and one
+`service<Vendor>` project for every selected service.
 `viteProjectDefinitions` renders the standalone proof and structural-fact definitions in that same
 order with one blank line between declarations. Both consume `ViteFacts`, so each optional project
-is controlled only by its matching `bin`, `integration`, or `service` blueprint fact; the same
+is controlled only by its matching `bin`, `integration`, or `services` blueprint fact; the same
 slice carries `global` to integration and the source-browser compiler, and `showcase` to the
 application-browser compiler, without adding another test project.
 
@@ -1200,11 +1212,12 @@ single non-core `src` environment, and application-bearing workspace respectivel
 executable-project emitter. A
 proof project is structurally derived from the directory holding its tests and never wraps a source
 or application environment project. The guides project therefore uses only `tests/setup.ts`, never
-`setupServer.ts`, `setupBrowser.ts`, or `setupService.ts`; and its `tests/src/**/*.test.ts` and
+`setupServer.ts`, `setupBrowser.ts`, or a vendor readiness module; and its `tests/src/**/*.test.ts` and
 `tests/app/**/*.test.ts` exclude rows are uniform across all root shapes by design, including
 core-only workspaces where one row cannot currently match. Integration and service use 120-second
-test and hook timeouts with file parallelism disabled, and service alone layers
-`tests/setupService.ts` onto the shared setup. The integration project wires
+test and hook timeouts with file parallelism disabled. Each service project layers
+`tests/setupServer.ts` and `tests/service/<vendor>/setup.ts` onto the shared setup, carries the
+server environment boundary, and may exercise either the `src` or `app` axis. The integration project wires
 `tests/setupGlobal.ts` for the shared template-registry harness exactly when `bin`, `integration`,
 and `global` are all true. Independently, a `global` source-browser project places
 `globalSetup: ['./tests/setupGlobal.ts']` immediately before its ordinary `setupFiles` row (and
@@ -1489,10 +1502,9 @@ checks one. `readTarget` supplies the snapshot as exact bytes; `diffPlan` return
 `auditToReview` renders them for a human. Nothing in that path writes.
 
 The executable's physical unexpected-file scan treats exactly `scripts/service.sh` as an expected
-consumer-owned seam when the derived blueprint has `service: true`. That exclusion is warranted
-because a service blueprint cannot derive without the physical file: the companion-file law raises
-a `TARGET` failure first, so the scan removes a false positive and can never mask an absent
-provisioner. A non-service workspace still reports the same path as foreign.
+workspace-owned seam when the derived blueprint has at least one service. That exclusion is
+warranted because derivation fails before the scan when the physical file is absent. A workspace
+with no services still reports the same path as foreign.
 
 `repair` turns those findings back into the narrowest possible write. It re-reads the target,
 re-diffs it, and refuses to proceed if the findings changed since the preview it was given — a
@@ -1589,7 +1601,8 @@ members:
   Vue typechecker, every other scope uses plain `tsc`
 - `format`, `format:check`, `lint:check`
 - `test`, then `test:src` and its per-environment scopes, the optional `test:integration`,
-  `test:equivalence`, and `test:service` proofs, `test:app` and its per-environment scopes, then
+  `test:equivalence`, and `test:service` aggregate followed by its sorted per-vendor proofs,
+  `test:app` and its per-environment scopes, then
   `test:policy`, `test:config`, and `test:guides`
 - `build`, then `build:src` and its per-environment targets, `build:app` and its runtime targets, and
   `build:host` for a bin workspace
@@ -1598,24 +1611,24 @@ members:
 - `showcase`, `build:showcase`, and `show` only when the physical showcase wrapper is present;
   `show` formats, then builds, then copies `dist/showcase/index.html` to `demo/showcase.html`
 - `prepublishOnly` chaining `format:check → lint:check → check → build → test`, followed by
-  `test:integration` when the integration axis is selected
+  `test:integration` when selected and finally `test:service` when any service is selected
 
 **Proof gating.** The opt-in proofs are predictable from the axes alone. `test:integration` rides
-the `integration` axis and `test:service` the `service` axis, while `test:equivalence` is emitted
+the `integration` axis and `test:service` a nonempty `services` axis, while `test:equivalence` is emitted
 only where `bin` and `integration` are both set:
 
-| Proof              | `npm test` | `prepublishOnly` | CI                         |
-| ------------------ | ---------- | ---------------- | -------------------------- |
-| `test:integration` | no         | yes, last        | after the standard gates   |
-| `test:equivalence` | no         | no               | no                         |
-| `test:service`     | no         | never            | after `scripts/service.sh` |
+| Proof              | `npm test` | `prepublishOnly`    | CI                         |
+| ------------------ | ---------- | ------------------- | -------------------------- |
+| `test:integration` | no         | yes, before service | after the standard gates   |
+| `test:equivalence` | no         | no                  | no                         |
+| `test:service`     | no         | yes, last           | after `scripts/service.sh` |
 
 No opt-in proof joins the default chain: `npm test` runs the source, application, policy,
 configuration, and guide projects, and nothing there needs a build artifact or a foreign process.
-Publication is the one
-asymmetry — `prepublishOnly` appends `test:integration`, because a package about to be published
-should prove itself against its own built output, while `test:service` is never in that chain.
-Neither default testing nor publication starts or requires a foreign process.
+Publication is the one asymmetry: `prepublishOnly` appends integration and then service proofs.
+A package that claims to drive a vendor has not proved that claim unless publishing runs against
+it, despite the provisioning cost. Neither default testing nor publication starts a foreign
+process; publication requires the caller to provision one first.
 The showcase is likewise outside `build`, `test`, and `prepublishOnly`; it is an explicit projection
 of `app/browser`, not an environment, test-project row, or source/demo artifact.
 Its copied `demo/showcase.html` is generated and minified, so the mirrored `.prettierignore` keeps it
@@ -1633,22 +1646,24 @@ The equivalence proof is a dual-path re-run rather than a separate suite. Run
 integration project in dual-path mode and proves each programmatic driver verdict against the
 spawned npm-script reference. Ordinary integration runs keep the faster driver-only path.
 
-**Consumer-owned service seams.** The service axis is the one place canon stops at the boundary:
-there is no template for a proof project and neither companion path is on `HOST_PATHS`, so a
-service workspace owns both of its seams outright. They come as a pair.
+**Consumer-owned service seams.** Each vendor owns its readiness module at
+`tests/service/<vendor>/setup.ts`. It probes and warms that vendor at module load, throwing a clear
+error when unavailable so only that vendor project fails readiness. The scaffold never generates
+these modules because an inert readiness check would be a false proof.
 
-- `tests/setupService.ts` is the readiness seam. It probes the foreign process and warms it before
-  any test runs, and throws at module load — naming the `service` project — when that process is
-  unreachable, so an unprovisioned run fails loudly instead of passing an empty suite. Only the
-  `service` project loads it.
-- `scripts/service.sh` is the provisioning seam, named once by `SERVICE_SCRIPT_PATH`. It brings that
-  process up idempotently — a second run against an already-provisioned service is a no-op rather
-  than a second instance — and exits nonzero when it cannot, which is what makes CI's
-  `bash scripts/service.sh` step a gate rather than a hint.
+`scripts/service.sh`, named once by `SERVICE_SCRIPT_PATH`, is shared provisioning for every vendor.
+The scaffold emits a birth-only template skeleton that exits nonzero until the workspace replaces
+it with idempotent provisioning; an already-provisioned vendor must be a no-op, and any vendor that
+cannot be prepared must make the script fail. CI invokes it once before the aggregate project run.
+
+The birth-only configuration conformance test lives in the ordinary `config` project, so `npm test`
+checks the directory names, readiness files, project declarations, scripts, default-test omission,
+and publication suffix without contacting a vendor. It remains workspace-owned and audit-exempt
+after creation.
 
 The audit expects the script rather than reporting it foreign, on the derive-time warrant the audit
 section gives. Repair pruning applies the same exclusion, so it never proposes or removes that
-required consumer-owned provisioner.
+required workspace-owned provisioner.
 
 **Environment isolation.** Scoped TypeScript projects remove the wrong host's globals from each
 environment: core scopes carry the WHATWG web-interop surface and no host at all — no DOM, no Node,
@@ -2371,10 +2386,14 @@ configViteProject()
 guidesViteProject()
 binViteProject()
 integrationViteProject({ bin: true, integration: true, global: true })
-serviceViteProject()
-viteProjectDefinitions({ integration: true }).includes('export const integration =') // true
-viteProjectRegistrations(['core'], [], { integration: true }).map(({ project }) => project)
-// ['srcCore', 'policy', 'config', 'guides', 'integration']
+serviceViteProject('claude')
+viteProjectDefinitions({ integration: true, services: ['claude'] }).includes(
+	'export const serviceClaude =',
+) // true
+viteProjectRegistrations(['core'], [], { integration: true, services: ['claude'] }).map(
+	({ project }) => project,
+)
+// ['srcCore', 'policy', 'config', 'guides', 'integration', 'serviceClaude']
 
 rootViteConfig(['core', 'server'], { bin: true })
 singleSrcViteConfig('server').includes('srcServer') // true

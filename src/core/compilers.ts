@@ -25,6 +25,8 @@ import {
 	HOST_PATHS,
 	ENVIRONMENTS,
 	GLOBAL_SETUP_PATH,
+	MAX_NAME_LENGTH,
+	NAME_PATTERN,
 	SERVICE_SCRIPT_PATH,
 	SHOWCASE_CONFIG_PATH,
 	SOURCE_BROWSER_DEV_DEPENDENCIES,
@@ -392,9 +394,15 @@ export function packageManifest(spec: Blueprint): string {
 	if (spec.bin && spec.integration)
 		scripts['test:equivalence'] =
 			"node -e \"const c=require('node:child_process'),p=process.env.npm_execpath;if(p===undefined)process.exit(1);const r=c.spawnSync(process.execPath,[p,'run','test:integration'],{stdio:'inherit',env:{...process.env,SCAFFOLD_BOUNDARY_EQUIVALENCE:'1'}});process.exit(r.status??1)\""
-	if (spec.service)
+	if (spec.services.length > 0) {
 		scripts['test:service'] =
-			'vitest run --config vite.config.ts --no-cache --reporter=dot --project service'
+			'vitest run --config vite.config.ts --no-cache --reporter=dot ' +
+			spec.services.map((service) => `--project service:${service}`).join(' ')
+		for (const service of spec.services) {
+			scripts[`test:service:${service}`] =
+				`vitest run --config vite.config.ts --no-cache --reporter=dot --project service:${service}`
+		}
+	}
 	if (spec.app.length > 0) {
 		scripts['test:app'] =
 			'vitest run --config vite.config.ts --no-cache --reporter=dot ' +
@@ -457,7 +465,8 @@ export function packageManifest(spec: Blueprint): string {
 	}
 	scripts.prepublishOnly =
 		'npm run format:check && npm run lint:check && npm run check && npm run build && npm test' +
-		(spec.integration ? ' && npm run test:integration' : '')
+		(spec.integration ? ' && npm run test:integration' : '') +
+		(spec.services.length > 0 ? ' && npm run test:service' : '')
 
 	const devDependencies = devDependenciesFor(spec)
 	const manifest: Record<string, unknown> = {
@@ -664,7 +673,9 @@ export function viteProjectRegistrations(
 	registrations.push({ project: 'policy' }, { project: 'config' }, { project: 'guides' })
 	if (facts.bin === true) registrations.push({ project: 'srcBin' })
 	if (facts.integration === true) registrations.push({ project: 'integration' })
-	if (facts.service === true) registrations.push({ project: 'service' })
+	for (const service of facts.services ?? []) {
+		registrations.push({ project: `service${pascalCase(service)}` })
+	}
 	return registrations
 }
 
@@ -683,7 +694,7 @@ export function viteProjectDefinitions(facts: ViteFacts = {}): string {
 	const definitions = [policyViteProject(), configViteProject(), guidesViteProject()]
 	if (facts.bin === true) definitions.push(binViteProject())
 	if (facts.integration === true) definitions.push(integrationViteProject(facts))
-	if (facts.service === true) definitions.push(serviceViteProject())
+	for (const service of facts.services ?? []) definitions.push(serviceViteProject(service))
 	return definitions.join('\n')
 }
 
@@ -2805,24 +2816,33 @@ ${registrySetup}				environment: 'node',
 }
 
 /**
- * Build the standalone Node-only live-service proof project.
+ * Build one standalone Node-only live-service vendor proof project.
  *
- * @returns The emitted `service` project definition.
+ * @param name - The bounded vendor directory name.
+ * @returns The emitted `service:<name>` project definition.
  *
  * @example
  * ```ts
- * serviceViteProject().includes("label: 'service'") // true
+ * serviceViteProject('claude').includes("label: 'service:claude'") // true
  * ```
  */
-export function serviceViteProject(): string {
-	return `${EXPORT_KEYWORD} const service = (options?: UserConfig): UserConfig =>
+export function serviceViteProject(name: string): string {
+	if (!NAME_PATTERN.test(name) || name.length > MAX_NAME_LENGTH) {
+		throw new Error('Service project name must be a bounded lowercase directory name')
+	}
+	const identifier = `service${pascalCase(name)}`
+	const label = serializeTypeScriptString(`service:${name}`)
+	const include = serializeTypeScriptString(`tests/service/${name}/**/*.test.ts`)
+	const setup = serializeTypeScriptString(`./tests/service/${name}/setup.ts`)
+	return `${EXPORT_KEYWORD} const ${identifier} = (options?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
 			resolve,
+			plugins: [environmentBoundary('app/server')],
 			test: {
-				name: { label: 'service', color: 'red' },
-				include: ['tests/service/**/*.test.ts'],
-				setupFiles: ['./tests/setup.ts', './tests/setupService.ts'],
+				name: { label: ${label}, color: 'red' },
+				include: [${include}],
+				setupFiles: ['./tests/setup.ts', './tests/setupServer.ts', ${setup}],
 				environment: 'node',
 				browser: { enabled: false },
 				testTimeout: 120_000,
@@ -2988,7 +3008,7 @@ ${renderedTest}
  *
  * @param src - The declared `Environment[]`.
  * @param facts - Optional structural facts. `bin` appends the standalone executable
- *   build-and-test project; `integration` and `service` append their standalone
+ *   build-and-test project; `integration` and `services` append their standalone
  *   proof projects; `global` wires the shared global-setup module.
  * @returns The root `vite.config.ts` file content, newline-terminated.
  *
@@ -3844,7 +3864,7 @@ export function ciWorkflow(spec: Blueprint): string {
 		tail.push(`      - name: Run live consumer integration
         run: npm run test:integration`)
 	}
-	if (spec.service) {
+	if (spec.services.length > 0) {
 		tail.push(`      - name: Provision live service
         run: bash ${SERVICE_SCRIPT_PATH}`)
 		tail.push(`      - name: Run live service tests
@@ -4568,8 +4588,19 @@ ${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} waitForEvent<TMap extends EventMap, K exte
 			cases: configCases.join(''),
 		}),
 	]
-	if (spec.src.includes('server') || spec.app.includes('server')) {
+	if (spec.src.includes('server') || spec.app.includes('server') || spec.services.length > 0) {
 		artifacts.push(fillArtifact('tests/setupServer.ts', 'tests', 'setupServer', {}, 'server'))
+	}
+	if (spec.services.length > 0) {
+		artifacts.push(
+			fillArtifact(
+				'tests/config/services.test.ts',
+				'tests',
+				'serviceConformance',
+				{ services: renderStringArray(spec.services, '\t\t', 'const declared = ', '') },
+				'server',
+			),
+		)
 	}
 	if (spec.src.includes('browser') || spec.app.includes('browser')) {
 		artifacts.push(fillArtifact('tests/setupBrowser.ts', 'tests', 'setupBrowser', {}, 'browser'))
@@ -5384,6 +5415,9 @@ npm install @orkestrel/${blueprint.name}
 			origin: 'computed',
 			content: ciWorkflow(blueprint),
 		})
+		if (blueprint.services.length > 0) {
+			artifacts.push(fillArtifact(SERVICE_SCRIPT_PATH, 'orchestration', 'serviceProvisioner', {}))
+		}
 	}
 
 	for (const path of selectHostPaths(HOST_PATHS, blueprint.name)) {

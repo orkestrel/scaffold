@@ -283,9 +283,9 @@ export class CLI implements CLIInterface {
 		}
 	}
 
-	// Exclude the consumer-owned service provisioner from every physical scan.
-	#prunePaths(target: string, host: string, service: boolean): readonly string[] {
-		const seam = service ? SERVICE_SCRIPT_PATH : undefined
+	// Exclude the workspace-owned service provisioner from every physical scan.
+	#prunePaths(target: string, host: string, services: readonly string[]): readonly string[] {
+		const seam = services.length > 0 ? SERVICE_SCRIPT_PATH : undefined
 		return pruneTargets(target, host).filter((path) => path !== seam)
 	}
 
@@ -299,8 +299,8 @@ export class CLI implements CLIInterface {
 	 * unclean, so an "unexpected file" is honestly counted as drift (exit 1)
 	 * instead of the structurally-always-zero `diffPlan.foreign`.
 	 */
-	#scan(audit: Audit, target: string, host: string, service: boolean): Audit {
-		const paths = this.#prunePaths(target, host, service)
+	#scan(audit: Audit, target: string, host: string, services: readonly string[]): Audit {
+		const paths = this.#prunePaths(target, host, services)
 		if (paths.length === 0) return audit
 		const findings: Finding[] = paths.map((path) => ({
 			path,
@@ -320,8 +320,13 @@ export class CLI implements CLIInterface {
 	 * When fail-closed allowlist discovery raises a coded `TARGET` failure, retain
 	 * the existing findings and mark the audit incomplete instead of crashing.
 	 */
-	#scanSafe(audit: Audit, target: string, host: string, service: boolean): ForeignScanResult {
-		const scanned = attempt(() => this.#scan(audit, target, host, service))
+	#scanSafe(
+		audit: Audit,
+		target: string,
+		host: string,
+		services: readonly string[],
+	): ForeignScanResult {
+		const scanned = attempt(() => this.#scan(audit, target, host, services))
 		if (scanned.success) return { audit: scanned.value, skipped: false }
 		if (isScaffoldError(scanned.error) && scanned.error.code === 'TARGET') {
 			return {
@@ -835,7 +840,7 @@ export class CLI implements CLIInterface {
 			...diffPlan(plan, readTarget(target, artifactPaths)),
 			questions,
 		}
-		const scanned = this.#scanSafe(rawAudit, target, host, spec.service)
+		const scanned = this.#scanSafe(rawAudit, target, host, spec.services)
 		const audit = scanned.audit
 		let drifted = !audit.clean
 
@@ -903,7 +908,7 @@ export class CLI implements CLIInterface {
 					// ANY drift still remaining, mirroring `runFleet`'s post-repair
 					// `finalAudit` pattern.
 					const rawFinal = diffPlan(plan, readTarget(target, artifactPaths))
-					const finalScanned = this.#scanSafe(rawFinal, target, host, spec.service)
+					const finalScanned = this.#scanSafe(rawFinal, target, host, spec.services)
 					process.exitCode = finalScanned.audit.clean ? 0 : 1
 					return
 				}
@@ -958,7 +963,7 @@ export class CLI implements CLIInterface {
 		// this scan (and the deletion flow below) on a clean-host repo — a clean
 		// this scan and deletion flow on a clean-host repo. Only a clean audit
 		// with nothing to prune returns early.
-		const prunePaths = values.prune ? this.#prunePaths(target, host, spec.service) : []
+		const prunePaths = values.prune ? this.#prunePaths(target, host, spec.services) : []
 		const pruneSnapshot = readTarget(target, prunePaths)
 
 		if (audit.clean && prunePaths.length === 0) {
@@ -1081,7 +1086,7 @@ export class CLI implements CLIInterface {
 					questions,
 				}
 				// Include physical unexpected-file findings in each repository audit.
-				const audit = this.#scan(rawAudit, directory, host, plan.blueprint.service)
+				const audit = this.#scan(rawAudit, directory, host, plan.blueprint.services)
 				repos.push({
 					name,
 					directory,
@@ -1156,7 +1161,7 @@ export class CLI implements CLIInterface {
 			proceed && values.prune
 				? new Map(
 						dirty.map((repo) => {
-							const paths = this.#prunePaths(repo.directory, host, repo.plan.blueprint.service)
+							const paths = this.#prunePaths(repo.directory, host, repo.plan.blueprint.services)
 							return [repo.name, readTarget(repo.directory, paths)]
 						}),
 					)
@@ -1202,7 +1207,12 @@ export class CLI implements CLIInterface {
 					}
 					const paths = repo.plan.artifacts.map((artifact) => artifact.path)
 					const rawFinal = diffPlan(repo.plan, readTarget(repo.directory, paths))
-					const finalAudit = this.#scan(rawFinal, repo.directory, host, repo.plan.blueprint.service)
+					const finalAudit = this.#scan(
+						rawFinal,
+						repo.directory,
+						host,
+						repo.plan.blueprint.services,
+					)
 					if (!finalAudit.clean) drifted += 1
 					entries.push(fleetEntryOf(repo.name, finalAudit, false))
 					if (!json) {

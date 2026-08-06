@@ -697,6 +697,35 @@ describe('validateBlueprint', () => {
 		expect(validation.valid).toBe(false)
 	})
 
+	it('requires bounded, unique, sorted service directory names with distinct project identifiers', () => {
+		const validation = validateBlueprint({
+			...blueprint('router'),
+			services: ['ollama', 'claude', 'claude', 'Claude', 'my-service', 'my--service'],
+		})
+
+		expect(validation.valid).toBe(false)
+		expect(validation.questions).toContainEqual({
+			field: 'services',
+			text: 'Services must be sorted by directory name',
+			blocking: true,
+		})
+		expect(validation.questions).toContainEqual({
+			field: 'services',
+			text: 'Service "claude" is declared more than once',
+			blocking: true,
+		})
+		expect(validation.questions).toContainEqual({
+			field: 'services',
+			text: 'Service "my--service" collides with another generated project name',
+			blocking: true,
+		})
+		expect(
+			validation.questions.some(
+				(question) => question.field === 'services' && question.text.includes('"Claude"'),
+			),
+		).toBe(true)
+	})
+
 	it('blocks the one exemplar-less combination — browser+server declared with no core', () => {
 		const validation = validateBlueprint({
 			...blueprint('router'),
@@ -1603,7 +1632,7 @@ describe('pinPlan', () => {
 			name: descriptionLast.name,
 			bin: descriptionLast.bin,
 			integration: descriptionLast.integration,
-			service: descriptionLast.service,
+			services: descriptionLast.services,
 			global: descriptionLast.global,
 			showcase: descriptionLast.showcase,
 		}
@@ -1651,12 +1680,12 @@ describe('pinPlan', () => {
 		}
 		expect(actual).toMatchInlineSnapshot(`
 			{
-			  "browser-only": "ea463ba0",
-			  "core+browser": "090c40af",
-			  "core+browser+server": "a7ccb06a",
-			  "core+server": "8f21536b",
-			  "core-only": "72fe5b33",
-			  "server-only": "d5112e72",
+			  "browser-only": "9a2f45fe",
+			  "core+browser": "27b99fb5",
+			  "core+browser+server": "85f713e4",
+			  "core+server": "cc0bda29",
+			  "core-only": "cd024561",
+			  "server-only": "1d35a878",
 			}
 		`)
 	})
@@ -1684,11 +1713,11 @@ describe('pinPlan', () => {
 		}
 		expect(actual).toMatchInlineSnapshot(`
 			{
-			  "app-browser": "b02be697",
-			  "app-core": "a93ea357",
-			  "app-full": "b7c0e865",
-			  "app-server": "b22bd004",
-			  "mixed-full": "687c59f3",
+			  "app-browser": "712645cd",
+			  "app-core": "5b1f1d8d",
+			  "app-full": "b92fab9b",
+			  "app-server": "418e9e96",
+			  "mixed-full": "b23311b9",
 			}
 		`)
 	})

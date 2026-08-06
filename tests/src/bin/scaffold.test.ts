@@ -756,8 +756,10 @@ describe('scaffold bin', () => {
 				expect(existsSync(plainScript)).toBe(false)
 
 				const serviceDirectory = scaffoldPackage(cwd.path, 'service', from.path)
-				mkdirSync(join(serviceDirectory, 'tests', 'service'), { recursive: true })
-				writeFileSync(join(serviceDirectory, 'tests', 'setupService.ts'), '\n')
+				const vendor = join(serviceDirectory, 'tests', 'service', 'claude')
+				mkdirSync(vendor, { recursive: true })
+				writeFileSync(join(vendor, 'setup.ts'), '\n')
+				writeFileSync(join(vendor, 'claude.test.ts'), '\n')
 				const serviceScript = join(serviceDirectory, 'scripts', 'service.sh')
 				writeFileSync(serviceScript, '#!/bin/sh\n')
 				const serviceAudit = runBin(['audit', '--json', '--from', from.path], '', {

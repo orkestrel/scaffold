@@ -86,15 +86,15 @@ describe('blueprintShape — a hand-built blueprint with peers (one optional) an
 
 describe('blueprintShape — structural axes', () => {
 	it.each([
-		{ bin: false, integration: false, service: false },
-		{ bin: false, integration: false, service: true },
-		{ bin: false, integration: true, service: false },
-		{ bin: false, integration: true, service: true },
-		{ bin: true, integration: false, service: false },
-		{ bin: true, integration: false, service: true },
-		{ bin: true, integration: true, service: false },
-		{ bin: true, integration: true, service: true },
-	])('guard/parser round-trips $bin/$integration/$service', (axes) => {
+		{ bin: false, integration: false, services: [] },
+		{ bin: false, integration: false, services: ['claude'] },
+		{ bin: false, integration: true, services: [] },
+		{ bin: false, integration: true, services: ['claude'] },
+		{ bin: true, integration: false, services: [] },
+		{ bin: true, integration: false, services: ['claude'] },
+		{ bin: true, integration: true, services: [] },
+		{ bin: true, integration: true, services: ['claude'] },
+	])('guard/parser round-trips $bin/$integration/$services', (axes) => {
 		const contract = createContract(blueprintShape())
 		const value = blueprint('axes', axes)
 

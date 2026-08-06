@@ -113,7 +113,7 @@ describe('ciWorkflow', () => {
 	})
 
 	it('provisions the service immediately before running its isolated project', () => {
-		const workflow = ciWorkflow(blueprint('router', { service: true }))
+		const workflow = ciWorkflow(blueprint('router', { services: ['claude'] }))
 		const provision = workflow.indexOf('run: bash scripts/service.sh')
 		const test = workflow.indexOf('run: npm run test:service')
 
@@ -132,7 +132,7 @@ describe('ciWorkflow', () => {
 				src: ['core', 'server'],
 				bin: true,
 				integration: true,
-				service: false,
+				services: [],
 			}),
 		)
 
@@ -1076,15 +1076,30 @@ describe('packageManifest', () => {
 		expect(readRecord(integrated.devDependencies)['@vitest/browser-playwright']).toBeUndefined()
 	})
 
-	it('emits an isolated service script outside the default and publish chains', () => {
-		const manifest = readManifest(packageManifest(blueprint('router', { service: true })))
+	it('emits sorted vendor scripts outside the default chain and last in publication', () => {
+		const manifest = readManifest(
+			packageManifest(blueprint('router', { services: ['ollama', 'cursor', 'claude', 'codex'] })),
+		)
 		const scripts = readRecord(manifest.scripts)
 
 		expect(scripts['test:service']).toBe(
-			'vitest run --config vite.config.ts --no-cache --reporter=dot --project service',
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project service:claude --project service:codex --project service:cursor --project service:ollama',
+		)
+		expect(scripts['test:service:claude']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project service:claude',
+		)
+		expect(scripts['test:service:codex']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project service:codex',
+		)
+		expect(scripts['test:service:cursor']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project service:cursor',
+		)
+		expect(scripts['test:service:ollama']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project service:ollama',
 		)
 		expect(scripts.test).not.toContain('test:service')
-		expect(scripts.prepublishOnly).not.toContain('test:service')
+		// Publishing a vendor driver must execute its live proof.
+		expect(scripts.prepublishOnly).toMatch(/ && npm run test:service$/)
 		expect(
 			readRecord(readManifest(packageManifest(blueprint('router'))).scripts)['test:service'],
 		).toBeUndefined()
@@ -1126,7 +1141,7 @@ describe('packageManifest', () => {
 				src: ['core', 'server'],
 				bin: true,
 				integration: true,
-				service: false,
+				services: [],
 			}),
 		)
 
@@ -1279,7 +1294,7 @@ describe('renderViteTest', () => {
 		const registrations = viteProjectRegistrations(
 			['core', 'browser', 'server'],
 			['core', 'browser', 'server'],
-			{ bin: true, integration: true, service: true },
+			{ bin: true, integration: true, services: ['claude'] },
 		)
 		const content = renderViteTest(registrations, true)
 
@@ -1297,7 +1312,7 @@ describe('renderViteTest', () => {
 				'\t\t\t{ project: guides },',
 				'\t\t\t{ project: srcBin },',
 				'\t\t\t{ project: integration },',
-				'\t\t\t{ project: service },',
+				'\t\t\t{ project: serviceClaude },',
 				'\t\t],',
 			].join('\n'),
 		)
@@ -1311,7 +1326,7 @@ describe('proof Vite projects and registration', () => {
 		const config = configViteProject()
 		const guides = guidesViteProject()
 		const integration = integrationViteProject()
-		const service = serviceViteProject()
+		const service = serviceViteProject('claude')
 
 		for (const content of [policy, config, guides, integration, service]) {
 			expect(content).toContain('\t\t\tresolve,')
@@ -1324,8 +1339,12 @@ describe('proof Vite projects and registration', () => {
 		for (const fragment of GUIDE_PROJECT_FORBIDDEN_FRAGMENTS) expect(guides).not.toContain(fragment)
 		expect(integration).toContain("include: ['tests/integration/**/*.test.ts']")
 		expect(integration).toContain("setupFiles: ['./tests/setup.ts']")
-		expect(service).toContain("include: ['tests/service/**/*.test.ts']")
-		expect(service).toContain("setupFiles: ['./tests/setup.ts', './tests/setupService.ts']")
+		expect(service).toContain("name: { label: 'service:claude', color: 'red' }")
+		expect(service).toContain("include: ['tests/service/claude/**/*.test.ts']")
+		expect(service).toContain(
+			"setupFiles: ['./tests/setup.ts', './tests/setupServer.ts', './tests/service/claude/setup.ts']",
+		)
+		expect(service).toContain("plugins: [environmentBoundary('app/server')]")
 		for (const content of [integration, service]) {
 			expect(content).toContain('testTimeout: 120_000')
 			expect(content).toContain('hookTimeout: 120_000')
@@ -1378,16 +1397,33 @@ describe('proof Vite projects and registration', () => {
 		expect(viteProjectDefinitions()).toBe(`${policyViteProject()}
 ${configViteProject()}
 ${guidesViteProject()}`)
-		expect(viteProjectDefinitions({ bin: true, integration: true, service: true })).toBe(
+		expect(viteProjectDefinitions({ bin: true, integration: true, services: ['claude'] })).toBe(
 			[
 				policyViteProject(),
 				configViteProject(),
 				guidesViteProject(),
 				binViteProject(),
-				integrationViteProject({ bin: true, integration: true, service: true }),
-				serviceViteProject(),
+				integrationViteProject({ bin: true, integration: true, services: ['claude'] }),
+				serviceViteProject('claude'),
 			].join('\n'),
 		)
+	})
+
+	it('emits one ordered project for every vendor directory name', () => {
+		const services = ['claude', 'codex', 'cursor', 'ollama']
+		const definitions = viteProjectDefinitions({ services })
+		const registrations = viteProjectRegistrations(['core'], [], { services })
+
+		expect(registrations.slice(-4)).toEqual([
+			{ project: 'serviceClaude' },
+			{ project: 'serviceCodex' },
+			{ project: 'serviceCursor' },
+			{ project: 'serviceOllama' },
+		])
+		for (const service of services) {
+			expect(definitions).toContain(`label: 'service:${service}'`)
+			expect(definitions).toContain(`tests/service/${service}/**/*.test.ts`)
+		}
 	})
 
 	it('derives canonical registration order regardless of caller environment order', () => {
@@ -1395,7 +1431,7 @@ ${guidesViteProject()}`)
 			viteProjectRegistrations(['server', 'core', 'browser'], ['server', 'browser', 'core'], {
 				bin: true,
 				integration: true,
-				service: true,
+				services: ['claude'],
 			}),
 		).toEqual([
 			{ project: 'srcCore' },
@@ -1409,7 +1445,7 @@ ${guidesViteProject()}`)
 			{ project: 'guides' },
 			{ project: 'srcBin' },
 			{ project: 'integration' },
-			{ project: 'service' },
+			{ project: 'serviceClaude' },
 		])
 	})
 
@@ -1417,7 +1453,7 @@ ${guidesViteProject()}`)
 		const content = rootViteConfig(['server', 'core', 'browser'], {
 			bin: true,
 			integration: true,
-			service: true,
+			services: ['claude'],
 		})
 		const definitions = [
 			'export const srcCore =',
@@ -1428,7 +1464,7 @@ ${guidesViteProject()}`)
 			'export const guides =',
 			'export const srcBin =',
 			'export const integration =',
-			'export const service =',
+			'export const serviceClaude =',
 		]
 		const positions = definitions.map((definition) => content.indexOf(definition))
 
@@ -1444,7 +1480,7 @@ ${guidesViteProject()}`)
 				'\t\t\t{ project: guides },',
 				'\t\t\t{ project: srcBin },',
 				'\t\t\t{ project: integration },',
-				'\t\t\t{ project: service },',
+				'\t\t\t{ project: serviceClaude },',
 			].join('\n'),
 		)
 	})
@@ -1454,25 +1490,25 @@ ${guidesViteProject()}`)
 			readonly content: string
 			readonly bin: boolean
 			readonly integration: boolean
-			readonly service: boolean
+			readonly services: readonly string[]
 		}[] = [
 			{
 				content: singleSrcViteConfig('server'),
 				bin: false,
 				integration: false,
-				service: false,
+				services: [],
 			},
 			{
 				content: singleSrcViteConfig('browser'),
 				bin: false,
 				integration: false,
-				service: false,
+				services: [],
 			},
 			{
 				content: rootViteConfig(['core', 'browser', 'server']),
 				bin: false,
 				integration: false,
-				service: false,
+				services: [],
 			},
 			{
 				content: applicationViteConfig(
@@ -1481,25 +1517,25 @@ ${guidesViteProject()}`)
 				),
 				bin: false,
 				integration: false,
-				service: false,
+				services: [],
 			},
 			{
 				content: rootViteConfig(['core', 'server'], { bin: true }),
 				bin: true,
 				integration: false,
-				service: false,
+				services: [],
 			},
 			{
 				content: rootViteConfig(['server'], { integration: true }),
 				bin: false,
 				integration: true,
-				service: false,
+				services: [],
 			},
 			{
-				content: applicationViteConfig([], ['server'], { service: true }),
+				content: applicationViteConfig([], ['server'], { services: ['claude'] }),
 				bin: false,
 				integration: false,
-				service: true,
+				services: ['claude'],
 			},
 		]
 
@@ -1510,7 +1546,9 @@ ${guidesViteProject()}`)
 			expect(variant.content.split('export const integration =')).toHaveLength(
 				variant.integration ? 2 : 1,
 			)
-			expect(variant.content.split('export const service =')).toHaveLength(variant.service ? 2 : 1)
+			expect(variant.content.split('export const serviceClaude =')).toHaveLength(
+				variant.services.length > 0 ? 2 : 1,
+			)
 
 			const guidesStart = variant.content.indexOf('export const guides =')
 			const guidesEnd = variant.content.indexOf('\nexport ', guidesStart + 1)
@@ -1527,6 +1565,17 @@ ${guidesViteProject()}`)
 })
 
 describe('rootViteConfig / singleSrcViteConfig', () => {
+	it('keeps the zero-service scaffold root configuration byte-identical', () => {
+		const content = rootViteConfig(['core', 'server'], {
+			bin: true,
+			integration: true,
+			services: [],
+			global: true,
+		})
+
+		expect(content).toBe(readFileSync(join(WORKSPACE_ROOT, 'vite.config.ts'), 'utf8'))
+	})
+
 	it.each([
 		{
 			label: 'single source browser',
@@ -2906,7 +2955,7 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		const child = rootViteConfig(['core', 'server'])
 		expect(child).not.toContain('srcBin')
 		expect(child).not.toContain("include: ['tests/integration/**/*.test.ts']")
-		expect(child).not.toContain("include: ['tests/service/**/*.test.ts']")
+		expect(child).not.toContain("include: ['tests/service/claude/**/*.test.ts']")
 
 		const bin = rootViteConfig(['core', 'server'], { bin: true })
 		expect(bin).toContain("entry: resolveWorkspacePath('src/bin/scaffold.ts')")
@@ -2919,9 +2968,9 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 		expect(integration).toContain('projects: [srcServer, policy, config, guides, integration]')
 		expect(integration).toContain("include: ['tests/integration/**/*.test.ts']")
 
-		const service = applicationViteConfig([], ['server'], { service: true })
-		expect(service).toContain('projects: [appServer, policy, config, guides, service]')
-		expect(service).toContain("include: ['tests/service/**/*.test.ts']")
+		const service = applicationViteConfig([], ['server'], { services: ['claude'] })
+		expect(service).toContain('projects: [appServer, policy, config, guides, serviceClaude]')
+		expect(service).toContain("include: ['tests/service/claude/**/*.test.ts']")
 	})
 })
 
@@ -3099,15 +3148,15 @@ describe('configArtifacts', () => {
 		const integration = configArtifacts(
 			blueprint('router', { src: ['server'], bin: false, integration: true }),
 		).find((artifact) => artifact.path === 'vite.config.ts')?.content
-		const service = configArtifacts(blueprint('router', { src: ['server'], service: true })).find(
-			(artifact) => artifact.path === 'vite.config.ts',
-		)?.content
+		const service = configArtifacts(
+			blueprint('router', { src: ['server'], services: ['claude'] }),
+		).find((artifact) => artifact.path === 'vite.config.ts')?.content
 
 		expect(bin).toContain('projects: [srcServer, policy, config, guides, srcBin]')
 		expect(bin).not.toContain('export const integration =')
 		expect(integration).toContain('projects: [srcServer, policy, config, guides, integration]')
 		expect(integration).not.toContain('export const srcBin =')
-		expect(service).toContain('projects: [srcServer, policy, config, guides, service]')
+		expect(service).toContain('projects: [srcServer, policy, config, guides, serviceClaude]')
 	})
 
 	it('emits the executable configuration pair only for the bin axis', () => {
@@ -3124,16 +3173,16 @@ describe('configArtifacts', () => {
 		const axes: readonly {
 			readonly bin: boolean
 			readonly integration: boolean
-			readonly service: boolean
+			readonly services: readonly string[]
 		}[] = [
-			{ bin: false, integration: false, service: false },
-			{ bin: false, integration: false, service: true },
-			{ bin: false, integration: true, service: false },
-			{ bin: false, integration: true, service: true },
-			{ bin: true, integration: false, service: false },
-			{ bin: true, integration: false, service: true },
-			{ bin: true, integration: true, service: false },
-			{ bin: true, integration: true, service: true },
+			{ bin: false, integration: false, services: [] },
+			{ bin: false, integration: false, services: ['claude'] },
+			{ bin: false, integration: true, services: [] },
+			{ bin: false, integration: true, services: ['claude'] },
+			{ bin: true, integration: false, services: [] },
+			{ bin: true, integration: false, services: ['claude'] },
+			{ bin: true, integration: true, services: [] },
+			{ bin: true, integration: true, services: ['claude'] },
 		]
 
 		for (const axis of axes) {
@@ -3142,7 +3191,7 @@ describe('configArtifacts', () => {
 					src: ['core', 'server'],
 					bin: axis.bin,
 					integration: axis.integration,
-					service: axis.service,
+					services: axis.services,
 				}),
 				['manifest', 'configs'],
 			)
@@ -3297,6 +3346,51 @@ describe('testArtifacts', () => {
 		expect(paths).toContain('tests/src/server/factories.test.ts')
 		expect(paths).toContain('tests/config/vite.test.ts')
 		expect(paths).toContain('tests/guides/src/parity.test.ts')
+	})
+
+	it('emits birth-only service conformance and provisioning without fake readiness modules', () => {
+		const spec = blueprint('router', { services: ['claude', 'codex', 'cursor', 'ollama'] })
+		const tests = testArtifacts(spec, 'Router')
+		const conformance = tests.find((artifact) => artifact.path === 'tests/config/services.test.ts')
+		const plan = blueprintToPlan(spec)
+		const provisioner = plan.artifacts.find((artifact) => artifact.path === 'scripts/service.sh')
+
+		expect(tests.map((artifact) => artifact.path)).toContain('tests/setupServer.ts')
+		expect(
+			tests.some(
+				(artifact) =>
+					artifact.path.startsWith('tests/service/') && artifact.path.endsWith('/setup.ts'),
+			),
+		).toBe(false)
+		if (conformance === undefined || conformance.origin === 'host') {
+			throw new Error('Generated service conformance test is missing')
+		}
+		if (provisioner === undefined || provisioner.origin === 'host') {
+			throw new Error('Generated service provisioner is missing')
+		}
+		expect(conformance.origin).toBe('template')
+		expect(conformance.content).toContain(
+			"const declared = ['claude', 'codex', 'cursor', 'ollama']",
+		)
+		expect(conformance.content).toContain(
+			'Service vendors require scripts/service.sh to provision every declared vendor idempotently or exit nonzero',
+		)
+		expect(provisioner.origin).toBe('template')
+		expect(provisioner.content).toContain('exit 1')
+		const formatted = spawnSync(
+			process.execPath,
+			[
+				join(WORKSPACE_ROOT, 'node_modules', 'oxfmt', 'bin', 'oxfmt'),
+				'--config',
+				join(WORKSPACE_ROOT, '.oxfmtrc.json'),
+				'--stdin-filepath',
+				conformance.path,
+			],
+			{ encoding: 'utf8', input: conformance.content },
+		)
+		expect(formatted.status).toBe(0)
+		expect(formatted.stderr).toBe('')
+		expect(formatted.stdout).toBe(conformance.content)
 	})
 
 	it('keeps browser discovery in config and coding policy free of Vite capability probes', () => {

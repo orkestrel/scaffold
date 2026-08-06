@@ -51,7 +51,7 @@ export interface BlueprintFixtureOptions {
 	readonly devDependencies?: Record<string, string>
 	readonly bin?: boolean
 	readonly integration?: boolean
-	readonly service?: boolean
+	readonly services?: readonly string[]
 	readonly global?: boolean
 	readonly showcase?: boolean
 }
@@ -134,9 +134,13 @@ export function buildBlueprintFixture(root: string, options: BlueprintFixtureOpt
 	if (options.integration === true) {
 		mkdirSync(join(root, 'tests', 'integration'), { recursive: true })
 	}
-	if (options.service === true) {
-		mkdirSync(join(root, 'tests', 'service'), { recursive: true })
-		writeFileSync(join(root, 'tests', 'setupService.ts'), '', 'utf8')
+	if (options.services !== undefined && options.services.length > 0) {
+		for (const service of options.services) {
+			const vendor = join(root, 'tests', 'service', service)
+			mkdirSync(vendor, { recursive: true })
+			writeFileSync(join(vendor, 'setup.ts'), '', 'utf8')
+			writeFileSync(join(vendor, `${service}.test.ts`), '', 'utf8')
+		}
 		mkdirSync(join(root, 'scripts'), { recursive: true })
 		writeFileSync(join(root, 'scripts', 'service.sh'), '', 'utf8')
 	}

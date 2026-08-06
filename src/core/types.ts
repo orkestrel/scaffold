@@ -49,7 +49,8 @@ export interface ViteMachinery {
  * Optional structural facts consumed by a generated root Vite configuration.
  *
  * @remarks
- * `bin`, `integration`, and `service` select their matching projects.
+ * `bin` and `integration` select their matching projects. `services` is the
+ * sorted list of vendor projects derived from `tests/service/<name>` directories.
  * `global` records the physical `tests/setupGlobal.ts` module and wires it
  * into every selected project that consumes that shared setup. `showcase`
  * records the physical app showcase wrapper and selects its browser machinery.
@@ -57,7 +58,7 @@ export interface ViteMachinery {
 export interface ViteFacts {
 	readonly bin?: boolean
 	readonly integration?: boolean
-	readonly service?: boolean
+	readonly services?: readonly string[]
 	readonly global?: boolean
 	readonly showcase?: boolean
 }
@@ -181,8 +182,8 @@ export interface Blueprint {
 	readonly bin: boolean
 	/** Structural: `true` only for a repo that ships `tests/integration` — a slow, opt-in proof project over the repo's own built output, outside the default run, never by name. */
 	readonly integration: boolean
-	/** Structural: `true` only for a repo that ships `tests/service` — a slow, opt-in proof project against a foreign running process, outside the default run, never by name. Derivation requires `tests/setupService.ts` and `scripts/service.sh` beside it and fails `TARGET` otherwise. */
-	readonly service: boolean
+	/** Structural vendor names derived from non-empty `tests/service/<name>` directories, sorted in code-unit order. Each vendor owns `tests/service/<name>/setup.ts`; the workspace owns `scripts/service.sh`. */
+	readonly services: readonly string[]
 	/** Structural: `true` only for a repo that carries the physical, exact-case `tests/setupGlobal.ts` module — integration and `srcBrowser` projects consume that shared global setup only under their own additional structural conditions. */
 	readonly global: boolean
 	/** Structural: `true` only for a repo that carries the physical, exact-case `configs/app/vite.showcase.config.ts` regular file; valid only with `app/browser`. */

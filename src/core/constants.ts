@@ -160,7 +160,7 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
 	'guides/src/scaffold.md',
 ])
 
-/** The consumer-owned live-service provisioner expected only by service workspaces. */
+/** The birth-only provisioner skeleton retained by workspaces with declared service vendors. */
 export const SERVICE_SCRIPT_PATH = 'scripts/service.sh'
 
 /** The consumer-owned Vitest global-setup module shared by its independently selected projects. */

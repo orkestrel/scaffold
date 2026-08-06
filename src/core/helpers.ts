@@ -142,8 +142,8 @@ export function member(
  * @remarks
  * `version` / `engines` default `DEFAULT_VERSION` / `DEFAULT_ENGINES`,
  * `src` defaults `['core']`, and `app` / `keywords` / `dependencies` /
- * `peers` / `extras` / `overrides` default `[]`, and `bin` / `integration` /
- * `service` / `global` / `showcase` default `false`. `description` is OMITTED entirely
+ * `peers` / `extras` / `overrides` / `services` default `[]`, and `bin` /
+ * `integration` / `global` / `showcase` default `false`. `description` is OMITTED entirely
  * when absent, so the result round-trips the exact-record `Blueprint` guard.
  * @returns A complete `Blueprint`.
  *
@@ -168,7 +168,7 @@ export function blueprint(name: string, options?: Partial<Omit<Blueprint, 'name'
 		overrides: options?.overrides ?? [],
 		bin: options?.bin ?? false,
 		integration: options?.integration ?? false,
-		service: options?.service ?? false,
+		services: [...(options?.services ?? [])].sort(),
 		global: options?.global ?? false,
 		showcase: options?.showcase ?? false,
 	}
@@ -1522,6 +1522,43 @@ export function validateBlueprint(spec: Blueprint): Validation {
 			text: 'Showcase requires the app browser environment',
 			blocking: true,
 		})
+	}
+	const seenServices = new Set<string>()
+	const serviceProjects = new Set<string>()
+	let previousService: string | undefined
+	for (const service of spec.services) {
+		if (!NAME_PATTERN.test(service) || service.length > MAX_NAME_LENGTH) {
+			questions.push({
+				field: 'services',
+				text: `Service name "${service}" must be a bounded lowercase directory name matching ${NAME_PATTERN.source}`,
+				blocking: true,
+			})
+		}
+		if (seenServices.has(service)) {
+			questions.push({
+				field: 'services',
+				text: `Service "${service}" is declared more than once`,
+				blocking: true,
+			})
+		}
+		if (previousService !== undefined && previousService > service) {
+			questions.push({
+				field: 'services',
+				text: 'Services must be sorted by directory name',
+				blocking: true,
+			})
+		}
+		const project = pascalCase(service)
+		if (serviceProjects.has(project)) {
+			questions.push({
+				field: 'services',
+				text: `Service "${service}" collides with another generated project name`,
+				blocking: true,
+			})
+		}
+		seenServices.add(service)
+		serviceProjects.add(project)
+		previousService = service
 	}
 	if (spec.src.length > 0) {
 		for (const environment of spec.src) {

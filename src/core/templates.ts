@@ -1862,6 +1862,89 @@ describe('root Vite configuration', () => {
 })
 `,
 	}),
+	serviceConformance: Object.freeze({
+		id: 'serviceConformance',
+		name: 'serviceConformance',
+		summary: 'The generated service-vendor structure and configuration conformance test.',
+		category: 'tests',
+		placeholders: Object.freeze([
+			Object.freeze({
+				name: 'services',
+				description: 'The sorted service vendor directory names.',
+			}),
+		]),
+		content: `import { existsSync, lstatSync, readFileSync, readdirSync } from 'node:fs'
+import { join } from 'node:path'
+import { isRecord, parseJSON } from '@orkestrel/contract'
+import { expect, it } from 'vitest'
+
+it('keeps every service vendor structurally complete and exactly configured', () => {
+	const declared = {{services}}
+	const root = join(process.cwd(), 'tests', 'service')
+	const directories = readdirSync(root, { withFileTypes: true })
+		.filter((entry) => entry.isDirectory())
+		.map((entry) => entry.name)
+		.sort()
+	const manifest = parseJSON(readFileSync(join(process.cwd(), 'package.json'), 'utf8'))
+	const scripts = isRecord(manifest) && isRecord(manifest.scripts) ? manifest.scripts : {}
+	const config = readFileSync(join(process.cwd(), 'vite.config.ts'), 'utf8')
+	const provisioner = join(process.cwd(), 'scripts', 'service.sh')
+
+	expect(directories).toEqual(declared)
+	if (!existsSync(provisioner) || !lstatSync(provisioner).isFile()) {
+		throw new Error(
+			'Service vendors require scripts/service.sh to provision every declared vendor idempotently or exit nonzero',
+		)
+	}
+	for (const service of declared) {
+		const setup = join(root, service, 'setup.ts')
+		if (!existsSync(setup) || !lstatSync(setup).isFile()) {
+			throw new Error(
+				\`Service vendor "\${service}" is missing tests/service/\${service}/setup.ts; add a readiness module that probes and warms the vendor and throws when unavailable\`,
+			)
+		}
+		const label = \`name: { label: 'service:\${service}', color: 'red' }\`
+		const include = \`include: ['tests/service/\${service}/**/*.test.ts']\`
+		const setupFiles = \`setupFiles: ['./tests/setup.ts', './tests/setupServer.ts', './tests/service/\${service}/setup.ts']\`
+		if (!config.includes(label) || !config.includes(include) || !config.includes(setupFiles)) {
+			throw new Error(\`Service vendor "\${service}" is missing its exact Vite project\`)
+		}
+		const command = \`vitest run --config vite.config.ts --no-cache --reporter=dot --project service:\${service}\`
+		if (scripts[\`test:service:\${service}\`] !== command) {
+			throw new Error(\`Service vendor "\${service}" is missing its exact npm script\`)
+		}
+	}
+	const aggregate =
+		'vitest run --config vite.config.ts --no-cache --reporter=dot ' +
+		declared.map((service) => \`--project service:\${service}\`).join(' ')
+	if (scripts['test:service'] !== aggregate) {
+		throw new Error('test:service must name every declared service exactly once')
+	}
+	if (typeof scripts.test !== 'string' || scripts.test.includes('test:service')) {
+		throw new Error('The default test script must omit live service proofs')
+	}
+	if (
+		typeof scripts.prepublishOnly !== 'string' ||
+		!scripts.prepublishOnly.endsWith(' && npm run test:service')
+	) {
+		throw new Error('prepublishOnly must end with the aggregate live service proof')
+	}
+})
+`,
+	}),
+	serviceProvisioner: Object.freeze({
+		id: 'serviceProvisioner',
+		name: 'serviceProvisioner',
+		summary: 'The birth-only workspace-owned service-vendor provisioner skeleton.',
+		category: 'orchestration',
+		placeholders: Object.freeze([]),
+		content: `#!/bin/sh
+set -eu
+
+printf '%s\\n' 'Service provisioning is not configured. Implement scripts/service.sh to provision every declared vendor idempotently, then remove this failure.' >&2
+exit 1
+`,
+	}),
 	policyTest: Object.freeze({
 		id: 'policyTest',
 		name: 'policyTest',

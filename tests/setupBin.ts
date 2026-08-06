@@ -277,7 +277,7 @@ export const AUDIT_PLAN: Plan = {
 		overrides: [],
 		bin: false,
 		integration: false,
-		service: false,
+		services: [],
 		global: false,
 		showcase: false,
 	},

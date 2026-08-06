@@ -9,6 +9,7 @@ import {
 	readFileSync,
 	readdirSync,
 	realpathSync,
+	renameSync,
 	rmSync,
 	symlinkSync,
 	writeFileSync,
@@ -120,7 +121,7 @@ describe('deriveBlueprint', () => {
 			expect.objectContaining({
 				bin: true,
 				integration: true,
-				service: false,
+				services: [],
 				global: true,
 				showcase: false,
 			}),
@@ -563,103 +564,47 @@ describe('deriveBlueprint', () => {
 		}
 	})
 
-	it('derives service: true from its directory and both companion files', async () => {
+	it('derives sorted vendor names from tests at any depth', async () => {
 		const directory = await buildTempDirectory()
 		try {
 			buildBlueprintFixture(directory.path, {
 				name: '@orkestrel/service-proof',
 				src: ['core'],
-				service: true,
+				services: ['ollama', 'claude', 'cursor', 'codex'],
 			})
-
-			expect(deriveBlueprint(directory.path).service).toBe(true)
-		} finally {
-			await directory.cleanup()
-		}
-	})
-
-	it('rejects directory-shaped service companions as missing physical files', async () => {
-		const directory = await buildTempDirectory()
-		try {
-			buildBlueprintFixture(directory.path, {
-				name: '@orkestrel/service-proof',
-				src: ['core'],
-				service: true,
-			})
-			const setup = join(directory.path, 'tests', 'setupService.ts')
-			const script = join(directory.path, 'scripts', 'service.sh')
-			rmSync(setup)
-			rmSync(script)
-			mkdirSync(setup)
-			mkdirSync(script)
-			let caught: unknown
-			try {
-				deriveBlueprint(directory.path)
-			} catch (error) {
-				caught = error
-			}
-			if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
-
-			expect(caught.code).toBe('TARGET')
-			expect(caught.message).toBe(
-				`Service tests under ${directory.path} are missing tests/setupService.ts and scripts/service.sh`,
+			const nested = join(directory.path, 'tests', 'service', 'ollama', 'nested')
+			mkdirSync(nested)
+			renameSync(
+				join(directory.path, 'tests', 'service', 'ollama', 'ollama.test.ts'),
+				join(nested, 'ollama.test.ts'),
 			)
-			expect(caught.context).toEqual({
-				target: directory.path,
-				missing: ['tests/setupService.ts', 'scripts/service.sh'],
-			})
+
+			expect(deriveBlueprint(directory.path).services).toEqual([
+				'claude',
+				'codex',
+				'cursor',
+				'ollama',
+			])
 		} finally {
 			await directory.cleanup()
 		}
 	})
 
-	it.skipIf(!canSymlink)(
-		'rejects symlinked service companions as missing physical files',
-		async () => {
-			const directory = await buildTempDirectory()
-			try {
-				buildBlueprintFixture(directory.path, {
-					name: '@orkestrel/service-proof',
-					src: ['core'],
-					service: true,
-				})
-				const setup = join(directory.path, 'tests', 'setupService.ts')
-				const script = join(directory.path, 'scripts', 'service.sh')
-				const setupTarget = join(directory.path, 'linked-setup.ts')
-				const scriptTarget = join(directory.path, 'linked-service.sh')
-				writeFileSync(setupTarget, '', 'utf8')
-				writeFileSync(scriptTarget, '', 'utf8')
-				rmSync(setup)
-				rmSync(script)
-				symlinkSync(setupTarget, setup)
-				symlinkSync(scriptTarget, script)
-
-				expect(() => deriveBlueprint(directory.path)).toThrow(
-					expect.objectContaining({
-						code: 'TARGET',
-						message: expect.stringContaining('tests/setupService.ts and scripts/service.sh'),
-					}),
-				)
-			} finally {
-				await directory.cleanup()
-			}
-		},
-	)
-
-	it('rejects service tests without tests/setupService.ts and names the companion', async () => {
+	it('rejects the retired flat service-test layout with its migration', async () => {
 		const directory = await buildTempDirectory()
 		try {
 			buildBlueprintFixture(directory.path, {
 				name: '@orkestrel/service-proof',
 				src: ['core'],
-				service: true,
 			})
-			rmSync(join(directory.path, 'tests', 'setupService.ts'))
+			mkdirSync(join(directory.path, 'tests', 'service'), { recursive: true })
+			writeFileSync(join(directory.path, 'tests', 'service', 'claude.test.ts'), '', 'utf8')
 
 			expect(() => deriveBlueprint(directory.path)).toThrow(
 				expect.objectContaining({
-					code: 'TARGET',
-					message: expect.stringContaining('tests/setupService.ts'),
+					code: 'INVALID',
+					message:
+						'Flat service tests are not supported; move claude.test.ts into tests/service/<vendor>/',
 				}),
 			)
 		} finally {
@@ -667,20 +612,64 @@ describe('deriveBlueprint', () => {
 		}
 	})
 
-	it('rejects service tests without scripts/service.sh and names the companion', async () => {
+	it('rejects an empty vendor directory with its own blocking question', async () => {
 		const directory = await buildTempDirectory()
 		try {
 			buildBlueprintFixture(directory.path, {
 				name: '@orkestrel/service-proof',
 				src: ['core'],
-				service: true,
+			})
+			mkdirSync(join(directory.path, 'tests', 'service', 'claude'), { recursive: true })
+
+			expect(() => deriveBlueprint(directory.path)).toThrow(
+				expect.objectContaining({
+					code: 'INVALID',
+					message:
+						'Service vendor "claude" contains no test; add tests/service/claude/**/*.test.ts or remove the directory',
+				}),
+			)
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('rejects a vendor without its readiness module and teaches the contract', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: '@orkestrel/service-proof',
+				src: ['core'],
+				services: ['claude'],
+			})
+			rmSync(join(directory.path, 'tests', 'service', 'claude', 'setup.ts'))
+
+			expect(() => deriveBlueprint(directory.path)).toThrow(
+				expect.objectContaining({
+					code: 'INVALID',
+					message:
+						'Service vendor "claude" is missing tests/service/claude/setup.ts; add a readiness module that probes and warms the vendor and throws when unavailable',
+				}),
+			)
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('rejects service vendors without their shared provisioner', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			buildBlueprintFixture(directory.path, {
+				name: '@orkestrel/service-proof',
+				src: ['core'],
+				services: ['claude'],
 			})
 			rmSync(join(directory.path, 'scripts', 'service.sh'))
 
 			expect(() => deriveBlueprint(directory.path)).toThrow(
 				expect.objectContaining({
-					code: 'TARGET',
-					message: expect.stringContaining('scripts/service.sh'),
+					code: 'INVALID',
+					message:
+						'Service vendors are missing scripts/service.sh; add an idempotent provisioner that exits nonzero when any vendor cannot be prepared',
 				}),
 			)
 		} finally {
@@ -688,7 +677,7 @@ describe('deriveBlueprint', () => {
 		}
 	})
 
-	it('does not infer service support from a service-shaped repository name', async () => {
+	it('does not infer service vendors from a service-shaped repository name', async () => {
 		const directory = await buildTempDirectory()
 		try {
 			buildBlueprintFixture(directory.path, {
@@ -696,7 +685,7 @@ describe('deriveBlueprint', () => {
 				src: ['core'],
 			})
 
-			expect(deriveBlueprint(directory.path).service).toBe(false)
+			expect(deriveBlueprint(directory.path).services).toEqual([])
 		} finally {
 			await directory.cleanup()
 		}
