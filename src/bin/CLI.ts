@@ -15,7 +15,7 @@ import type {
 	Snapshot,
 	SyncReport,
 } from '@src/core'
-import type { SyncInterface, SyncOptions } from '@src/server'
+import type { MaterializeResult, SyncInterface, SyncOptions } from '@src/server'
 import {
 	blueprint,
 	CATALOG_AGENT_PATH,
@@ -151,6 +151,7 @@ import type {
 	FleetRepo,
 	ForeignScanResult,
 	LiveResult,
+	RepairAudit,
 } from './types.js'
 import { isVerb } from './validators.js'
 
@@ -373,6 +374,21 @@ export class CLI implements CLIInterface {
 		return audit.findings.filter(
 			(finding) => finding.drift !== 'aligned' && !selectedPaths.has(finding.path),
 		).length
+	}
+
+	// Emit repair's machine result or its human-readable outside-scope explanation.
+	#emitRepair(
+		audit: RepairAudit,
+		generated: boolean,
+		json: boolean,
+		result?: MaterializeResult,
+	): void {
+		if (json) {
+			this.#write(result === undefined ? audit : auditToRepairResult(audit, result))
+			return
+		}
+		const note = scopeNote(audit.outside, generated)
+		if (note !== undefined) this.#reporter.line(note)
 	}
 
 	/** Promote only absent service-owned starter seams into repairable missing artifacts. */
@@ -1013,16 +1029,23 @@ export class CLI implements CLIInterface {
 		let compiled = prepared[0]
 		let plan = prepared[1]
 		let audit = prepared[2]
-		let reported = this.#scanSafe(audit, target, host, spec.services).audit
-		let outside = this.#outside(compiled, plan, target, host)
+		let outcome = repairAuditOf(
+			this.#scanSafe(audit, target, host, spec.services).audit,
+			this.#outside(compiled, plan, target, host),
+		)
+		const verdict = {
+			generated,
+			replace,
+			apply: values.apply === true,
+		}
 
 		if (!json) {
 			// The scope line carries the cost of discarding local changes, so it is
 			// stated only where there is drift for that cost to apply to. A clean
 			// run's verdict already says nothing is being written.
-			if (!reported.clean) this.#reporter.line(scopeLine('repair', generated))
+			if (!outcome.clean) this.#reporter.line(scopeLine('repair', generated))
 			this.#reporter.section('Audit')
-			this.#reporter.table(auditTable(reported, plan))
+			this.#reporter.table(auditTable(outcome, plan))
 		}
 
 		// The prune preview/confirm are driven by the real scan
@@ -1035,41 +1058,21 @@ export class CLI implements CLIInterface {
 		const prunePaths = values.prune ? this.#prunePaths(target, host, spec.services) : []
 		const pruneSnapshot = readTarget(target, prunePaths)
 
-		if (reported.clean && prunePaths.length === 0) {
-			if (json) {
-				this.#write(repairAuditOf(reported, outside))
-			} else {
-				this.#reporter.line(
-					repairVerdict(reported, {
-						generated,
-						replace,
-						apply: values.apply === true,
-					}),
-				)
-				const note = scopeNote(outside, generated)
-				if (note !== undefined) this.#reporter.line(note)
-			}
-			process.exitCode = hasFindings(reported, outside) ? 1 : 0
+		if (outcome.clean && prunePaths.length === 0) {
+			if (!json) this.#reporter.line(repairVerdict(outcome, verdict))
+			this.#emitRepair(outcome, generated, json)
+			process.exitCode = hasFindings(outcome, outcome.outside) ? 1 : 0
 			return
 		}
 
-		if (!json) {
-			this.#reporter.line(
-				repairVerdict(reported, {
-					generated,
-					replace,
-					apply: values.apply === true,
-				}),
-			)
-		}
+		if (!json) this.#reporter.line(repairVerdict(outcome, verdict))
 
 		const repairable = countWrites([audit], replace)
 		if (repairable === 0 && prunePaths.length === 0) {
 			// Nothing here is repairable: the only findings are drifted files no
 			// authorization on this command line covers. Close with the same tally a
 			// run that did write ends on rather than stopping mid-screen.
-			if (json) this.#write(repairAuditOf(reported, outside))
-			else {
+			if (!json) {
 				this.#reporter.line(
 					repairTally({
 						written: 0,
@@ -1078,9 +1081,8 @@ export class CLI implements CLIInterface {
 						removed: 0,
 					}),
 				)
-				const note = scopeNote(outside, generated)
-				if (note !== undefined) this.#reporter.line(note)
 			}
+			this.#emitRepair(outcome, generated, json)
 			process.exitCode = 1
 			return
 		}
@@ -1092,11 +1094,7 @@ export class CLI implements CLIInterface {
 		}
 
 		if (!proceed) {
-			if (json) this.#write(repairAuditOf(reported, outside))
-			else {
-				const note = scopeNote(outside, generated)
-				if (note !== undefined) this.#reporter.line(note)
-			}
+			this.#emitRepair(outcome, generated, json)
 			process.exitCode = 1
 			return
 		}
@@ -1121,8 +1119,10 @@ export class CLI implements CLIInterface {
 			compiled = refreshed[0]
 			plan = refreshed[1]
 			audit = refreshed[2]
-			reported = this.#scanSafe(audit, target, host, spec.services).audit
-			outside = this.#outside(compiled, plan, target, host)
+			outcome = repairAuditOf(
+				this.#scanSafe(audit, target, host, spec.services).audit,
+				this.#outside(compiled, plan, target, host),
+			)
 		}
 
 		const spinner = this.#spinner('repairing', json)
@@ -1131,13 +1131,26 @@ export class CLI implements CLIInterface {
 		try {
 			const result = materializer.repair(plan, audit, target, replace)
 			const removed = doPrune ? materializer.prune(target, pruneSnapshot).removed : []
+			const finalAudit = repairAuditOf(
+				this.#scanSafe(
+					diffPlan(
+						plan,
+						readTarget(
+							target,
+							plan.artifacts.map((artifact) => artifact.path),
+						),
+					),
+					target,
+					host,
+					spec.services,
+				).audit,
+				outcome.outside,
+			)
 			// Every artifact repair did not write lands in `skipped`, drifted ones
 			// included. Split the refused drift back out so the tally's `unchanged`
 			// means what the audit table's `unchanged` means.
 			const left = replace ? 0 : audit.drifted
-			if (json) {
-				this.#write(auditToRepairResult(repairAuditOf(reported, outside), { ...result, removed }))
-			} else {
+			if (!json) {
 				this.#succeed(
 					spinner,
 					json,
@@ -1148,23 +1161,14 @@ export class CLI implements CLIInterface {
 						removed: removed.length,
 					}),
 				)
-				const note = scopeNote(outside, generated)
-				if (note !== undefined) this.#reporter.line(note)
 			}
+			this.#emitRepair(finalAudit, generated, json, { ...result, removed })
+			process.exitCode = hasFindings(finalAudit, finalAudit.outside) ? 1 : 0
 		} catch (error) {
 			this.#reject(spinner, json, error)
 		} finally {
 			materializer.destroy()
 		}
-		const finalRaw = diffPlan(
-			plan,
-			readTarget(
-				target,
-				plan.artifacts.map((artifact) => artifact.path),
-			),
-		)
-		const finalAudit = this.#scanSafe(finalRaw, target, host, spec.services).audit
-		process.exitCode = hasFindings(finalAudit, outside) ? 1 : 0
 	}
 
 	/** `scaffold fleet` — audit/repair every `@orkestrel` package beneath the current directory's immediate children. */

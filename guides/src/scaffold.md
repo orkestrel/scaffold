@@ -2098,8 +2098,10 @@ silent no-op rather than a crash. Custom PEMs are added through the standard env
 and fleet use the same dirty-repository predicate: selected-scope drift or any full-plan finding
 outside that scope keeps exit `1`. A repair that skips stale files therefore exits `1`; a repair
 exits `0` only when its selected audit and its reported outside scope are both clean. An audit exits
-non-zero on any drift, foreign files included, which makes it usable directly as a CI gate. A
-pull exits non-zero on any drift or failure whether or not `--strict` was passed, including when
+non-zero on any drift, foreign files included, which makes it usable directly as a CI gate.
+`repair --json` carries that same terminal audit after any authorized write, while its `result`
+records the files the write copied, wrote, skipped, and removed. A pull exits non-zero on any drift
+or failure whether or not `--strict` was passed, including when
 other entries were applied successfully; `--strict` additionally throws on a network fault. Every
 unknown verb is a usage error and gets a nearest-match
 suggestion when one is sufficiently close.

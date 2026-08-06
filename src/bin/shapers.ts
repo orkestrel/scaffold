@@ -11,7 +11,7 @@ import type {
 	RepairResult,
 } from './types.js'
 
-/** Partition findings by whether repair owns their artifact origin. */
+/** Partition findings by whether repair owns their artifact origin. The `owned` and `generated` buckets carry no foreign findings by construction. */
 export function partitionFindings(findings: readonly Finding[], plan: Plan): OriginPartition {
 	const origins = new Map(plan.artifacts.map((artifact) => [artifact.path, artifact.origin]))
 	let ownedDrifted = 0

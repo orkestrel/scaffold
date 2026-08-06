@@ -42,7 +42,7 @@ export function auditVerdict(audit: Audit, plan: Plan): string {
 	const count = audit.findings.length
 	if (audit.clean) return `audit: ${countPart(count, 'artifact')} — clean`
 	const split = partitionFindings(audit.findings, plan)
-	const owned = split.owned.drifted === 0 && split.owned.missing === 0 && split.owned.foreign === 0
+	const owned = split.owned.drifted === 0 && split.owned.missing === 0
 	const generated = bucketText(split.generated)
 	const foreign = bucketText(split.foreign)
 	if (owned && generated === 'clean') {

@@ -857,6 +857,10 @@ describe('scaffold bin', () => {
 					{ cwd: plainDirectory },
 				)
 				expect(plainRepair.status).toBe(0)
+				expect(parseJSON(plainRepair.stdout.trim())).toMatchObject({
+					clean: true,
+					outside: 0,
+				})
 				expect(existsSync(plainScript)).toBe(false)
 
 				const serviceDirectory = scaffoldPackage(cwd.path, 'service', from.path)
@@ -1268,10 +1272,12 @@ describe('scaffold bin', () => {
 			try {
 				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
 				rmSync(join(packageDirectory, '.editorconfig'))
+				writeFileSync(join(packageDirectory, 'tsconfig.json'), '{}\n', 'utf8')
 
 				const result = runBin(['repair', '--from', from.path], '', { cwd: packageDirectory })
 				expect(result.status).toBe(1)
 				expect(result.stdout).toContain('pass --apply to write')
+				expect(result.stdout).toContain('outside host-owned repair scope')
 				expect(existsSync(join(packageDirectory, '.editorconfig'))).toBe(false)
 			} finally {
 				await cwd.cleanup()
@@ -1338,6 +1344,7 @@ describe('scaffold bin', () => {
 				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
 				const path = join(packageDirectory, '.editorconfig')
 				writeFileSync(path, `${HOST_FIXTURE_FILES['.editorconfig']}# local addition\n`, 'utf8')
+				writeFileSync(join(packageDirectory, 'tsconfig.json'), '{}\n', 'utf8')
 
 				const preserved = runBin(['repair', '--apply', '--from', from.path], '', {
 					cwd: packageDirectory,
@@ -1345,6 +1352,7 @@ describe('scaffold bin', () => {
 				expect(preserved.status).toBe(1)
 				expect(preserved.stdout).toContain('wrote 0, unchanged ')
 				expect(preserved.stdout).toContain('1 drifted file left alone, removed 0')
+				expect(preserved.stdout).toContain('outside host-owned repair scope')
 				// The verdict may not advise an operator to pass the flag they just
 				// passed for files it cannot restore, because none are missing.
 				expect(preserved.stdout).not.toContain('--apply restores missing files')
