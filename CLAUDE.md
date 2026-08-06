@@ -273,9 +273,14 @@ Four bench laws apply to every external engine:
   because each encodes knowledge that costs real money to re-derive and none of it is
   reproducible from the diff. A campaign whose working record lives only on ephemeral disk
   loses it the first time the filesystem reverts, and the loss is silent.
-  Every campaign artifact lives in the **orchestrator's** repository under `campaign/`, never in
-  the package it is about: a published package's tree is its product, and orchestration residue
-  does not belong in it. The campaign narrative and every ruling live in `ROADMAP.md`.
+  Every campaign artifact lives in the **orchestrator's** repository under
+  `.orkestrel/<package>/` — for this repository, `.orkestrel/supervisor/` — never in the package it
+  is about: a published package's tree is its product, and orchestration residue does not belong in
+  it. The dot folder is the boundary: everything Orkestrel owns in a consumer's tree lives beneath
+  it, named for the package it belongs to, so a convention can be settled there without touching
+  anything outside it and without colliding with a convention that is not Orkestrel's. Nothing
+  outside `.orkestrel/` is claimed unless Orkestrel scaffold mandates it. The campaign narrative and
+  every ruling live in `ROADMAP.md`.
   At acceptance the campaign folder is **pruned in a commit**, so the tree ends clean and the
   record stays recoverable by hash forever. **Git history is the archive; the working tree is
   the workspace.**
