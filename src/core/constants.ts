@@ -169,6 +169,17 @@ export const GLOBAL_SETUP_PATH = 'tests/setupGlobal.ts'
 /** The consumer-owned Vite wrapper whose physical presence enables the optional app showcase. */
 export const SHOWCASE_CONFIG_PATH = 'configs/app/vite.showcase.config.ts'
 
+/**
+ * The catalog agent file whose bounded marker region the catalog operation alone owns.
+ *
+ * @remarks
+ * Vendored like every other host artifact, but presence-owned after hydration:
+ * `diffPlan` compares this one path by presence, so a consumer restores it while
+ * absent and never replaces its bytes — not from an audit, not from a repair, and
+ * not under `replace`.
+ */
+export const CATALOG_AGENT_PATH = '.claude/agents/orkestrel.md'
+
 /** The package-name RegExp — lowercase alphanumeric-with-hyphens, letter-first. */
 export const NAME_PATTERN = /^[a-z][a-z0-9-]*$/
 

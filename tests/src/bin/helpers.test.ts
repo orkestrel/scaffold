@@ -47,6 +47,8 @@ import {
 	catalogVerdict,
 	comparisonLine,
 	containDestination,
+	countWrites,
+	describeDestination,
 	describeError,
 	didYouMean,
 	editDistance,
@@ -58,6 +60,7 @@ import {
 	missingInput,
 	mergeServiceManifest,
 	nearest,
+	newApplySuccess,
 	newPlanPreview,
 	orkestrelTokenIssue,
 	prunePreview,
@@ -65,10 +68,11 @@ import {
 	syncRows,
 	syncVerdict,
 	repairHandoff,
-	repairSuccess,
+	repairTally,
 	repairVerdict,
 	replacementNote,
 	renderComputedNotes,
+	scopeLine,
 	scopeNote,
 	shortUsage,
 	unknownOrkestrelToken,
@@ -413,6 +417,17 @@ describe('render: bucketText / verdicts', () => {
 		expect(replacing).not.toContain('--replace')
 	})
 
+	it('drift with nothing missing never promises to restore a missing file', () => {
+		const driftOnly = buildAudit([{ path: '.editorconfig', group: 'configs', drift: 'stale' }])
+		const preserved = repairVerdict(driftOnly, false)
+		expect(preserved).toBe(
+			'repair: host-owned: 1 drifted — drifted files change only with --replace, which discards local changes',
+		)
+		expect(repairVerdict(driftOnly, false, true)).toBe(
+			'repair: host-owned: 1 drifted — --apply overwrites drifted files, discarding local changes',
+		)
+	})
+
 	it('states the destructive opt-in in both repair scope lines, and claims nothing about the operator’s files', () => {
 		for (const line of [REPAIR_SCOPE, REPAIR_GENERATED_SCOPE]) {
 			expect(line).toContain('missing files are restored')
@@ -426,6 +441,27 @@ describe('render: bucketText / verdicts', () => {
 		expect(REPAIR_GENERATED_SCOPE).toContain(
 			'present starter files and package publication metadata are never touched',
 		)
+	})
+
+	it('scopeLine speaks each write verb’s own voice over the one shared boundary', () => {
+		expect(scopeLine('repair', false)).toBe(`repair scope: ${REPAIR_SCOPE}`)
+		expect(scopeLine('repair', true)).toBe(`repair scope: ${REPAIR_GENERATED_SCOPE}`)
+		expect(scopeLine('fleet', false, 4)).toBe(`fleet scope across 4 repos: ${REPAIR_SCOPE}`)
+		expect(scopeLine('fleet', true, 1)).toBe(`fleet scope across 1 repo: ${REPAIR_GENERATED_SCOPE}`)
+	})
+
+	it('countWrites counts what a write authorization will actually write', () => {
+		const counts = [
+			{ drifted: 3, missing: 2, foreign: 4 },
+			{ drifted: 1, missing: 0, foreign: 1 },
+		]
+		// The confirmation is about writes: every missing file, drifted files only
+		// under --replace, and never an unexpected file, which only --prune deletes
+		// and only after its own separate question.
+		expect(countWrites(counts, false)).toBe(2)
+		expect(countWrites(counts, true)).toBe(6)
+		expect(countWrites([], false)).toBe(0)
+		expect(countWrites([{ drifted: 5, missing: 0, foreign: 0 }], false)).toBe(0)
 	})
 
 	it('merges generated service scripts without changing publication metadata or unrelated scripts', () => {
@@ -552,7 +588,17 @@ describe('render: fleet', () => {
 
 describe('render: new preview / apply', () => {
 	it('renders the destination preview line', () => {
-		expect(newPlanPreview('widget')).toBe('will write into ./widget')
+		expect(newPlanPreview('./widget')).toBe('will write into ./widget')
+		expect(newApplySuccess(108, '.')).toBe('wrote 108 files into .')
+	})
+
+	it('describeDestination names the directory the files land in, not the package name', () => {
+		expect(describeDestination('/repos', '/repos/widget')).toBe('./widget')
+		// `new widget --target .` writes into the working directory itself, so the
+		// operator is told `.` rather than a `./widget` that will never exist.
+		expect(describeDestination('/repos', '/repos')).toBe('.')
+		expect(describeDestination('/repos', '/repos/nested/widget')).toBe('./nested/widget')
+		expect(describeDestination('/repos', '/elsewhere/widget')).toBe('/elsewhere/widget')
 	})
 })
 
@@ -603,10 +649,14 @@ describe('render: prompt messages', () => {
 		)
 	})
 
-	it('foreignHint points at repair --prune', () => {
+	it('foreignHint names the command that actually deletes, and the cost of running it', () => {
 		expect(FOREIGN_HINT).toBe(
-			"unexpected files found — run 'scaffold repair --prune' to delete them",
+			"unexpected files are never deleted by default — run 'scaffold repair --prune --apply' to delete them; a file you added yourself is unexpected too, so check the paths above first",
 		)
+		// `--prune` alone deletes nothing: `--apply` is the sole write and delete
+		// authorization, so a hint recommending `repair --prune` on its own would
+		// send the operator at a command that does nothing.
+		expect(FOREIGN_HINT).not.toContain("'scaffold repair --prune'")
 	})
 
 	it('scanSkipped explains the degraded audit', () => {
@@ -853,12 +903,22 @@ describe('render: VERB_FLAGS corrections', () => {
 	})
 })
 
-describe('render: repairSuccess uses ACTION_LABEL', () => {
+describe('render: repairTally uses ACTION_LABEL', () => {
 	it('wires the materializer tally through ACTION_LABEL words', () => {
-		const result = { target: '.', written: ['a'], copied: ['b'], skipped: ['c'], removed: [] }
-		const line = repairSuccess(result, ['d'])
-		expect(line).toBe(
+		expect(repairTally({ written: 2, unchanged: 1, drifted: 0, removed: 1 })).toBe(
 			`${ACTION_LABEL.written} 2, ${ACTION_LABEL.skipped} 1, ${ACTION_LABEL.removed} 1`,
+		)
+	})
+
+	it('never files a drifted file repair refused to touch under the word for aligned', () => {
+		const line = repairTally({ written: 1, unchanged: 38, drifted: 2, removed: 0 })
+		expect(line).toBe('wrote 1, unchanged 38, 2 drifted files left alone, removed 0')
+		// One screen, one meaning per word: `unchanged` is the audit table's word
+		// for an aligned file, so the files repair declined to overwrite carry the
+		// table's own word for their state instead.
+		expect(line).toContain(`${DRIFT_LABEL.stale} files left alone`)
+		expect(repairTally({ written: 0, unchanged: 41, drifted: 1, removed: 0 })).toBe(
+			'wrote 0, unchanged 41, 1 drifted file left alone, removed 0',
 		)
 	})
 })

@@ -396,6 +396,41 @@ describe('scaffold bin', () => {
 			}
 		})
 
+		it('--target names the directory the files actually land in, never the package name', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
+			try {
+				// `--target .` writes into the working directory itself. Announcing
+				// `./probe` would send the operator looking in a directory that was
+				// never created, unable to tell a failed write from a misplaced one.
+				const result = runBin(
+					[
+						'new',
+						'probe',
+						'--target',
+						'.',
+						'--src',
+						'core',
+						'--apply',
+						'--yes',
+						'--from',
+						from.path,
+					],
+					'',
+					{ cwd: cwd.path },
+				)
+				expect(result.status).toBe(0)
+				expect(result.stdout).toContain('will write into .')
+				expect(result.stdout).toContain('files into .')
+				expect(result.stdout).not.toContain('./probe')
+				expect(existsSync(join(cwd.path, 'probe'))).toBe(false)
+				expect(existsSync(join(cwd.path, 'package.json'))).toBe(true)
+			} finally {
+				await cwd.cleanup()
+				await from.cleanup()
+			}
+		}, 30000)
+
 		it('--target escaping the cwd: a coded [INVALID] failure, nothing written', async () => {
 			const from = await buildFromFixture()
 			const cwd = await buildTempDirectory()
@@ -989,7 +1024,7 @@ describe('scaffold bin', () => {
 			}
 		}, 20000)
 
-		it("an unexpected file without --prune points at 'repair --prune'", async () => {
+		it("an unexpected file without --prune points at the command that deletes, not at 'repair --prune'", async () => {
 			const from = await buildFromFixture()
 			const cwd = await buildTempDirectory()
 			try {
@@ -1000,13 +1035,22 @@ describe('scaffold bin', () => {
 
 				const audited = runBin(['audit', '--from', from.path], '', { cwd: packageDirectory })
 				expect(audited.status).toBe(1)
-				expect(audited.stdout).toContain("run 'scaffold repair --prune' to delete them")
+				expect(audited.stdout).toContain("run 'scaffold repair --prune --apply' to delete them")
+				expect(audited.stdout).toContain('a file you added yourself is unexpected too')
 				expect(audited.stdout).not.toContain(REPAIR_HANDOFF_TEXT)
+
+				// The command the hint used to recommend deletes nothing, which is
+				// exactly why the hint may not recommend it.
+				const recommended = runBin(['repair', '--prune', '--from', from.path], '', {
+					cwd: packageDirectory,
+				})
+				expect(recommended.status).toBe(1)
+				expect(existsSync(roguePath)).toBe(true)
 			} finally {
 				await cwd.cleanup()
 				await from.cleanup()
 			}
-		}, 20000)
+		}, 30000)
 
 		it('fails closed when an explicit --from exists but cannot establish any host artifacts', async () => {
 			const from = await buildFromFixture()
@@ -1159,6 +1203,75 @@ describe('scaffold bin', () => {
 				await from.cleanup()
 			}
 		}, 30000)
+
+		it('a drifted-only --apply closes with a tally instead of stopping mid-screen', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				const path = join(packageDirectory, '.editorconfig')
+				writeFileSync(path, `${HOST_FIXTURE_FILES['.editorconfig']}# local addition\n`, 'utf8')
+
+				const preserved = runBin(['repair', '--apply', '--from', from.path], '', {
+					cwd: packageDirectory,
+				})
+				expect(preserved.status).toBe(1)
+				expect(preserved.stdout).toContain('wrote 0, unchanged ')
+				expect(preserved.stdout).toContain('1 drifted file left alone, removed 0')
+				// The verdict may not advise an operator to pass the flag they just
+				// passed for files it cannot restore, because none are missing.
+				expect(preserved.stdout).not.toContain('--apply restores missing files')
+			} finally {
+				await cwd.cleanup()
+				await from.cleanup()
+			}
+		}, 20000)
+
+		it('never files a refused drifted file under the audit table’s word for an aligned one', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				writeFileSync(
+					join(packageDirectory, '.editorconfig'),
+					`${HOST_FIXTURE_FILES['.editorconfig']}# local addition\n`,
+					'utf8',
+				)
+				rmSync(join(packageDirectory, '.gitignore'))
+
+				const repaired = runBin(['repair', '--apply', '--from', from.path], '', {
+					cwd: packageDirectory,
+				})
+				expect(repaired.status).toBe(1)
+				expect(repaired.stdout).toContain('wrote 1, unchanged ')
+				expect(repaired.stdout).toContain('1 drifted file left alone, removed 0')
+				expect(readFileSync(join(packageDirectory, '.gitignore'), 'utf8')).toBe(
+					HOST_FIXTURE_FILES['.gitignore'],
+				)
+			} finally {
+				await cwd.cleanup()
+				await from.cleanup()
+			}
+		}, 20000)
+
+		it('a clean repair states no cost it is not about to pay', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+
+				const clean = runBin(['repair', '--apply', '--from', from.path], '', {
+					cwd: packageDirectory,
+				})
+				expect(clean.status).toBe(0)
+				expect(clean.stdout).toContain('aligned — nothing to write')
+				expect(clean.stdout).not.toContain('discards local changes')
+				expect(clean.stdout).not.toContain('repair scope:')
+			} finally {
+				await cwd.cleanup()
+				await from.cleanup()
+			}
+		}, 20000)
 
 		it('re-samples both global-setup transitions after confirmation before writing generated config', async () => {
 			const from = await buildFromFixture()
@@ -1549,6 +1662,35 @@ describe('scaffold bin', () => {
 				await from.cleanup()
 			}
 		}, 30000)
+
+		it('states its blast radius and its replace cost before it writes, and never on a dry run', async () => {
+			const from = await buildFromFixture()
+			const root = await buildTempDirectory()
+			try {
+				scaffoldPackage(root.path, 'fleeta', from.path)
+				scaffoldPackage(root.path, 'fleetb', from.path)
+				rmSync(join(root.path, 'fleeta', '.editorconfig'))
+				rmSync(join(root.path, 'fleetb', '.editorconfig'))
+
+				const preview = runBin(['fleet', '--from', from.path], '', { cwd: root.path })
+				expect(preview.status).toBe(1)
+				// Nothing can be written without --apply, so nothing may warn about a
+				// discard here.
+				expect(preview.stdout).not.toContain('fleet scope')
+				expect(preview.stdout).not.toContain('discards local changes')
+
+				const applied = runBin(['fleet', '--apply', '--from', from.path], '', { cwd: root.path })
+				expect(applied.status).toBe(0)
+				expect(applied.stdout).toContain('fleet scope across 2 repos:')
+				expect(applied.stdout).toContain('missing files are restored')
+				expect(applied.stdout).toContain(
+					'drifted files change only with --replace, which discards local changes',
+				)
+			} finally {
+				await root.cleanup()
+				await from.cleanup()
+			}
+		}, 60000)
 
 		it('--json emits a top-level JSON array, one element per repo', async () => {
 			const from = await buildFromFixture()

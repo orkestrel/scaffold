@@ -44,13 +44,13 @@ export const ACTION_LABEL: Readonly<Record<string, string>> = Object.freeze({
 	removed: 'removed',
 })
 
-/** Repair's deliberately limited ownership boundary. */
+/** The deliberately limited ownership boundary every write verb repairs within. */
 export const REPAIR_SCOPE =
-	'repair scope: shared host-owned artifacts and absent service seams — missing files are restored; drifted files change only with --replace, which discards local changes; present starter and generated files are never touched'
+	'shared host-owned artifacts and absent service seams — missing files are restored; drifted files change only with --replace, which discards local changes; present starter and generated files are never touched'
 
-/** Repair's opt-in generated-canon ownership boundary. */
+/** The opt-in generated-canon ownership boundary `--generated` widens that write to. */
 export const REPAIR_GENERATED_SCOPE =
-	'repair scope: shared host-owned and generated artifacts plus service manifest scripts — missing files are restored; drifted files change only with --replace, which discards local changes; present starter files and package publication metadata are never touched'
+	'shared host-owned and generated artifacts plus service manifest scripts — missing files are restored; drifted files change only with --replace, which discards local changes; present starter files and package publication metadata are never touched'
 
 /** The dry-run note for `new`. */
 export const NEW_DRY_RUN_NOTE = 'dry run — pass --apply to write'
@@ -195,7 +195,8 @@ export const VERB_EXAMPLE: Readonly<Record<Verb, string>> = Object.freeze({
 export const PRUNE_EMPTY = 'no unexpected files to delete'
 
 /** Guidance for unexpected files outside a non-pruning repair handoff. */
-export const FOREIGN_HINT = "unexpected files found — run 'scaffold repair --prune' to delete them"
+export const FOREIGN_HINT =
+	"unexpected files are never deleted by default — run 'scaffold repair --prune --apply' to delete them; a file you added yourself is unexpected too, so check the paths above first"
 
 /** Interactive dependency prompt. */
 export const ORKESTREL_DEPS_PROMPT =
@@ -204,9 +205,6 @@ export const ORKESTREL_DEPS_PROMPT =
 /** Catalog-degraded validation note. */
 export const CATALOG_UNRESOLVED_NOTE =
 	"couldn't resolve the vendored @orkestrel catalog — validating names by shape only"
-
-/** Catalog block destination in a scaffolded repository. */
-export const CATALOG_AGENT_PATH = '.claude/agents/orkestrel.md'
 
 /** Opening marker for the generated package catalog block. */
 export const CATALOG_START_MARKER = '<!-- catalog:start -->'

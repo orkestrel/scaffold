@@ -8,6 +8,7 @@ import {
 	blueprintToMembers,
 	blueprintToPlan,
 	bytesToHex,
+	CATALOG_AGENT_PATH,
 	catalogNames,
 	catalogToBlock,
 	computeColumnWidth,
@@ -533,12 +534,16 @@ describe('diffPlan — the four drift classes', () => {
 	})
 
 	it('keeps the hydrated catalog agent presence-owned for every library comparison', () => {
+		// A consumer must be able to name the one path this rule hinges on, so the
+		// rule reads off the public constant rather than a literal only `diffPlan`
+		// knows.
+		expect(CATALOG_AGENT_PATH).toBe('.claude/agents/orkestrel.md')
 		const plan: Plan = {
 			blueprint: blueprint('router', { src: ['core'] }),
 			groups: ['orchestration'],
 			artifacts: [
 				{
-					path: '.claude/agents/orkestrel.md',
+					path: CATALOG_AGENT_PATH,
 					group: 'orchestration',
 					origin: 'host',
 					hex: contentToHex('vendored catalog\n'),
@@ -547,19 +552,38 @@ describe('diffPlan — the four drift classes', () => {
 		}
 
 		const present = diffPlan(plan, {
-			'.claude/agents/orkestrel.md': contentToHex('catalog-owned fleet table\n'),
+			[CATALOG_AGENT_PATH]: contentToHex('catalog-owned fleet table\n'),
 		})
 		const missing = diffPlan(plan, {})
 
 		expect(present.clean).toBe(true)
 		expect(present.findings).toEqual([
 			{
-				path: '.claude/agents/orkestrel.md',
+				path: CATALOG_AGENT_PATH,
 				group: 'orchestration',
 				drift: 'aligned',
 			},
 		])
 		expect(missing.missing).toBe(1)
+	})
+
+	it('compares every other hydrated host artifact by bytes, so the exception is exactly one path', () => {
+		const plan: Plan = {
+			blueprint: blueprint('router', { src: ['core'] }),
+			groups: ['orchestration'],
+			artifacts: [
+				{
+					path: '.claude/agents/builder.md',
+					group: 'orchestration',
+					origin: 'host',
+					hex: contentToHex('vendored agent\n'),
+				},
+			],
+		}
+
+		const audit = diffPlan(plan, { '.claude/agents/builder.md': contentToHex('edited\n') })
+
+		expect(audit.drifted).toBe(1)
 	})
 
 	it('complete is always true for diffPlan (unlike a gated Compiler.audit)', () => {

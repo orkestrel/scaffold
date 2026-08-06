@@ -35,6 +35,14 @@ export interface CLIArguments {
 	readonly positionals: readonly string[]
 }
 
+/** Repair's closing tally of what one run changed. */
+export interface RepairTally {
+	readonly written: number
+	readonly unchanged: number
+	readonly drifted: number
+	readonly removed: number
+}
+
 /** Audit drift tallies used by terminal and JSON projections. */
 export interface AuditCounts {
 	readonly drifted: number

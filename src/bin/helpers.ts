@@ -1,9 +1,9 @@
 import type { Audit, CatalogEntry, Finding, Plan, PlanSummary, SyncReport } from '@src/core'
 import { DEPENDENCY_NAME_PATTERN, isScaffoldError, ownDataValue, ScaffoldError } from '@src/core'
 import { isFilesystemPath, resolvePhysicalPath } from '@src/server'
-import type { MaterializeResult } from '@src/server'
 import type { TableOptions } from '@orkestrel/console'
 import { attempt, isRecord, parseJSON } from '@orkestrel/contract'
+import { relative as relativeOf } from 'node:path'
 import {
 	ACTION_LABEL,
 	DRIFT_LABEL,
@@ -11,6 +11,8 @@ import {
 	FRESHNESS_LABEL,
 	KNOWN_VERBS,
 	ORIGIN_LABEL,
+	REPAIR_GENERATED_SCOPE,
+	REPAIR_SCOPE,
 	SAFETY_BANNER,
 	VERB_DRY_RUN_NOTE,
 	VERB_EXAMPLE,
@@ -19,7 +21,7 @@ import {
 	VERB_SUMMARY,
 } from './constants.js'
 import { partitionFindings } from './shapers.js'
-import type { AuditCounts, FleetOutcome, Verb } from './types.js'
+import type { AuditCounts, FleetOutcome, RepairTally, Verb } from './types.js'
 
 /** Render one pluralized count. */
 export function countPart(count: number, label: string): string {
@@ -70,6 +72,36 @@ export function auditTable(audit: Audit, plan: Plan): TableOptions {
 }
 
 /**
+ * Count the files one authorized write will create or overwrite.
+ *
+ * @param counts - The drift tallies of every target the write covers.
+ * @param replace - Whether stale byte replacement was explicitly authorized.
+ * @returns Every missing file, plus drifted files only under `replace`.
+ * @remarks
+ * The one figure every write confirmation asks about, so `repair` and `fleet`
+ * cannot drift apart on it. An unexpected file is never counted here: only
+ * `--prune` deletes one, and only after its own separate question.
+ */
+export function countWrites(counts: readonly AuditCounts[], replace: boolean): number {
+	let total = 0
+	for (const count of counts) total += count.missing + (replace ? count.drifted : 0)
+	return total
+}
+
+/**
+ * Render one write verb's ownership boundary in that verb's own voice.
+ *
+ * @param verb - The command whose scope this is.
+ * @param generated - Whether generated canon was included in the scope.
+ * @param repos - The number of repositories the write covers, absent for a single target.
+ * @returns The scope line naming what the command restores, what it replaces only with `--replace`, and what it never touches.
+ */
+export function scopeLine(verb: Verb, generated: boolean, repos?: number): string {
+	const across = repos === undefined ? '' : ` across ${countPart(repos, 'repo')}`
+	return `${verb} scope${across}: ${generated ? REPAIR_GENERATED_SCOPE : REPAIR_SCOPE}`
+}
+
+/**
  * Render drift outside repair's selected ownership boundary.
  *
  * @param count - The number of findings outside the selected scope.
@@ -98,6 +130,13 @@ export function repairVerdict(audit: Audit, generated: boolean, replace = false)
 	}
 	const head = `repair: ${scope}: ${bucketText(audit)}`
 	if (audit.drifted === 0) return `${head} — pass --apply to write`
+	// With nothing missing there is nothing `--apply` alone can restore, so the
+	// line names only the authorization that would change these files.
+	if (audit.missing === 0) {
+		return replace
+			? `${head} — --apply overwrites drifted files, discarding local changes`
+			: `${head} — drifted files change only with --replace, which discards local changes`
+	}
 	return replace
 		? `${head} — --apply restores missing files and overwrites drifted ones, discarding local changes`
 		: `${head} — --apply restores missing files; drifted files change only with --replace, which discards local changes`
@@ -161,10 +200,22 @@ export function mergeServiceManifest(
 	return `${JSON.stringify({ ...currentManifest, scripts }, undefined, '\t')}\n`
 }
 
-/** Render repair's materialization tally. */
-export function repairSuccess(result: MaterializeResult, removed: readonly string[]): string {
-	const written = result.written.length + result.copied.length
-	return `${ACTION_LABEL.written} ${written}, ${ACTION_LABEL.skipped} ${result.skipped.length}, ${ACTION_LABEL.removed} ${removed.length}`
+/**
+ * Render repair's closing tally.
+ *
+ * @param tally - The displayed counts of one repair run.
+ * @returns The tally line, in the same words the audit table above it used.
+ * @remarks
+ * A drifted file repair was not authorized to overwrite is counted on its own
+ * rather than folded in with the aligned files, because `unchanged` is already
+ * the audit table's word for a file that matches canon.
+ */
+export function repairTally(tally: RepairTally): string {
+	const left =
+		tally.drifted === 0
+			? ''
+			: `, ${countPart(tally.drifted, `${DRIFT_LABEL.stale} file`)} left alone`
+	return `${ACTION_LABEL.written} ${tally.written}, ${ACTION_LABEL.skipped} ${tally.unchanged}${left}, ${ACTION_LABEL.removed} ${tally.removed}`
 }
 
 /** Render synchronization freshness as table rows. */
@@ -257,14 +308,27 @@ export function newPlanTable(summary: PlanSummary): TableOptions {
 	}
 }
 
+/**
+ * Render one contained write destination as the operator's own path to it.
+ *
+ * @param root - The invocation directory every write is confined beneath.
+ * @param destination - The contained physical destination.
+ * @returns The destination relative to the invocation directory, or the absolute path when it is not beneath it.
+ */
+export function describeDestination(root: string, destination: string): string {
+	const path = relativeOf(root, destination).replaceAll('\\', '/')
+	if (path === '') return '.'
+	return path.startsWith('..') ? destination : `./${path}`
+}
+
 /** Render `new`'s dry-run destination. */
-export function newPlanPreview(name: string): string {
-	return `will write into ./${name}`
+export function newPlanPreview(destination: string): string {
+	return `will write into ${destination}`
 }
 
 /** Render `new`'s write result. */
-export function newApplySuccess(count: number, name: string): string {
-	return `wrote ${countPart(count, 'file')} into ./${name}`
+export function newApplySuccess(count: number, destination: string): string {
+	return `wrote ${countPart(count, 'file')} into ${destination}`
 }
 
 /** Render catalog's write result. */

@@ -22,6 +22,7 @@ import type {
 import { attempt, isRecord, parseJSON } from '@orkestrel/contract'
 import { parseInline, renderMarkdown } from '@orkestrel/markdown'
 import {
+	CATALOG_AGENT_PATH,
 	DEFAULT_ENGINES,
 	DEFAULT_VERSION,
 	CONTROL_CHARACTER_PATTERN,
@@ -988,7 +989,7 @@ export function syncToReview(report: SyncReport): string {
 
 /**
  * Project a fleet package catalog into a markdown table — the block
- * `.claude/agents/orkestrel.md`'s catalog markers wrap.
+ * `CATALOG_AGENT_PATH`'s catalog markers wrap.
  *
  * @param entries - The catalog rows to render.
  * @remarks
@@ -1072,8 +1073,8 @@ export function inferGroup(path: string): Group {
  * PRESENCE only — `missing` or `aligned`, never `stale` — UNLESS it has been
  * hydrated with its real host bytes (`hydratePlan`'s `content`), in which case
  * it is content-compared exactly like a `computed` artifact and CAN be
- * `stale`. The catalog agent remains presence-owned after hydration because
- * `catalog` alone owns its bounded marker region. `hydratePlan` expands directory-shaped host artifacts into
+ * `stale`. `CATALOG_AGENT_PATH` remains presence-owned after hydration because
+ * the catalog operation alone owns its bounded marker region. `hydratePlan` expands directory-shaped host artifacts into
  * content-bearing file artifacts; only an unresolved degrade-path host
  * artifact stays presence-only. A `computed` artifact is content-aware canon —
  * `missing` / `aligned` / `stale` — and gates the audit like any drifted
@@ -1111,8 +1112,7 @@ export function diffPlan(plan: Plan, current: Snapshot): Audit {
 		if (artifact.origin === 'host') {
 			let drift: Drift
 			if (seen === undefined) drift = 'missing'
-			else if (artifact.hex === undefined || artifact.path === '.claude/agents/orkestrel.md')
-				drift = 'aligned'
+			else if (artifact.hex === undefined || artifact.path === CATALOG_AGENT_PATH) drift = 'aligned'
 			else drift = seen === artifact.hex ? 'aligned' : 'stale'
 			findings.push({
 				path: artifact.path,

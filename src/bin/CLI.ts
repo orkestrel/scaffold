@@ -18,6 +18,7 @@ import type {
 import type { SyncInterface, SyncOptions } from '@src/server'
 import {
 	blueprint,
+	CATALOG_AGENT_PATH,
 	catalogNames,
 	catalogToBlock,
 	createCompiler,
@@ -70,7 +71,6 @@ import { createTerminal } from '@orkestrel/terminal/server'
 import {
 	CANCELLED_MESSAGE,
 	CATALOG_UNRESOLVED_NOTE,
-	CATALOG_AGENT_PATH,
 	CATALOG_END_MARKER,
 	CATALOG_START_MARKER,
 	FOREIGN_HINT,
@@ -79,8 +79,6 @@ import {
 	ORKESTREL_DEPS_PROMPT,
 	PRUNE_EMPTY,
 	PRUNE_SKIPPED,
-	REPAIR_GENERATED_SCOPE,
-	REPAIR_SCOPE,
 	SCAN_SKIPPED,
 	ENVIRONMENT_CHOICES,
 } from './constants.js'
@@ -97,6 +95,8 @@ import {
 	catalogVerdict,
 	comparisonLine,
 	containDestination,
+	countWrites,
+	describeDestination,
 	describeError,
 	didYouMean,
 	fleetRepoLine,
@@ -116,10 +116,11 @@ import {
 	syncTable,
 	syncVerdict,
 	repairHandoff,
-	repairSuccess,
+	repairTally,
 	repairVerdict,
 	replacementNote,
 	renderComputedNotes,
+	scopeLine,
 	scopeNote,
 	shortUsage,
 	unresolvedVersion,
@@ -526,13 +527,13 @@ export class CLI implements CLIInterface {
 	 * Best-effort vendored `@orkestrel` catalog names, resolved via `host`
 	 * (`hostRoot()`, or the active `--from` override) through the host manifest
 	 * — `undefined` when the catalog cannot be established (a missing/unreadable
-	 * manifest, no `.claude/agents/orkestrel.md` entry, or any other failure),
+	 * manifest, no `CATALOG_AGENT_PATH` entry, or any other failure),
 	 * degrading the dependency prompt to shape-only validation instead of blocking on it.
 	 */
 	#names(host: string): readonly string[] | undefined {
 		const names = attempt(() => {
 			const manifest = readHostManifest(host)
-			const full = locateHostSource(manifest, '.claude/agents/orkestrel.md', host)
+			const full = locateHostSource(manifest, CATALOG_AGENT_PATH, host)
 			if (full === undefined || !existsSync(full)) return undefined
 			const relative = relativeOf(host, full).replaceAll('\\', '/')
 			return catalogNames(readFileText(host, relative, 'TARGET', 'host'))
@@ -723,10 +724,15 @@ export class CLI implements CLIInterface {
 
 		const summary = planToSummary(plan)
 
+		// Name the directory the files land in, not the package they describe:
+		// `--target .` writes into the working directory itself, and an operator
+		// told `./<name>` would go looking in a directory that never existed.
+		const label = describeDestination(process.cwd(), destination)
+
 		if (!json) {
 			this.#reporter.section('Plan')
 			this.#reporter.table(newPlanTable(summary))
-			this.#reporter.line(newPlanPreview(name))
+			this.#reporter.line(newPlanPreview(label))
 		}
 
 		const proceed = await this.#apply(
@@ -751,7 +757,7 @@ export class CLI implements CLIInterface {
 			const result = materializer.materialize(plan, destination)
 			const count = result.written.length + result.copied.length
 			if (json) this.#write(summaryToNewResult(summary, true))
-			else this.#succeed(spinner, json, newApplySuccess(count, name))
+			else this.#succeed(spinner, json, newApplySuccess(count, label))
 		} catch (error) {
 			this.#reject(spinner, json, error)
 		} finally {
@@ -1001,7 +1007,10 @@ export class CLI implements CLIInterface {
 		let audit = prepared[2]
 
 		if (!json) {
-			this.#reporter.line(generated ? REPAIR_GENERATED_SCOPE : REPAIR_SCOPE)
+			// The scope line carries the cost of discarding local changes, so it is
+			// stated only where there is drift for that cost to apply to. A clean
+			// run's verdict already says nothing is being written.
+			if (!audit.clean) this.#reporter.line(scopeLine('repair', generated))
 			this.#reporter.section('Audit')
 			this.#reporter.table(auditTable(audit, plan))
 		}
@@ -1031,9 +1040,22 @@ export class CLI implements CLIInterface {
 
 		if (!json) this.#reporter.line(repairVerdict(audit, generated, replace))
 
-		const repairable = audit.missing + (replace ? audit.drifted : 0)
+		const repairable = countWrites([audit], replace)
 		if (repairable === 0 && prunePaths.length === 0) {
+			// Nothing here is repairable: the only findings are drifted files no
+			// authorization on this command line covers. Close with the same tally a
+			// run that did write ends on rather than stopping mid-screen.
 			if (json) this.#write(audit)
+			else {
+				this.#reporter.line(
+					repairTally({
+						written: 0,
+						unchanged: audit.findings.length - audit.drifted - audit.missing - audit.foreign,
+						drifted: audit.drifted,
+						removed: 0,
+					}),
+				)
+			}
 			process.exitCode = 1
 			return
 		}
@@ -1077,8 +1099,23 @@ export class CLI implements CLIInterface {
 		try {
 			const result = materializer.repair(plan, audit, target, replace)
 			const removed = doPrune ? materializer.prune(target, pruneSnapshot).removed : []
+			// Every artifact repair did not write lands in `skipped`, drifted ones
+			// included. Split the refused drift back out so the tally's `unchanged`
+			// means what the audit table's `unchanged` means.
+			const left = replace ? 0 : audit.drifted
 			if (json) this.#write(auditToRepairResult(audit, { ...result, removed }))
-			else this.#succeed(spinner, json, repairSuccess(result, removed))
+			else {
+				this.#succeed(
+					spinner,
+					json,
+					repairTally({
+						written: result.written.length + result.copied.length,
+						unchanged: result.skipped.length - left,
+						drifted: left,
+						removed: removed.length,
+					}),
+				)
+			}
 		} catch (error) {
 			this.#reject(spinner, json, error)
 		} finally {
@@ -1187,10 +1224,18 @@ export class CLI implements CLIInterface {
 			return
 		}
 
-		const fileCount = dirty.reduce(
-			(total, repo) => total + repo.audit.drifted + repo.audit.missing + repo.audit.foreign,
-			0,
+		const fileCount = countWrites(
+			dirty.map((repo) => repo.audit),
+			replace,
 		)
+
+		// Fleet is the widest write this executable performs and its confirmation
+		// names only a count, so state the boundary and what `--replace` costs
+		// before asking — and only once a write is authorized, never over a dry run
+		// that cannot touch anything.
+		if (!json && values.apply === true) {
+			this.#reporter.line(scopeLine('fleet', generated, dirty.length))
+		}
 
 		const terminal = createTerminal()
 		const proceed = await this.#apply(

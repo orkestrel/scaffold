@@ -424,6 +424,7 @@ From [`constants.ts`](../../src/core/constants.ts).
 | `SERVICE_SCRIPT_PATH`             | const |
 | `GLOBAL_SETUP_PATH`               | const |
 | `SHOWCASE_CONFIG_PATH`            | const |
+| `CATALOG_AGENT_PATH`              | const |
 | `NAME_PATTERN`                    | const |
 | `MAX_NAME_LENGTH`                 | const |
 | `MAX_DEPENDENCY_NAME_LENGTH`      | const |
@@ -480,6 +481,30 @@ workspace must replace with its idempotent vendor provisioning. It is birth-only
 repairable while absent. `GLOBAL_SETUP_PATH` names the consumer-owned Vitest global-setup
 module that independently selected projects can load. `SHOWCASE_CONFIG_PATH` names the sole
 consumer-owned regular file whose exact physical presence enables the optional app showcase.
+`CATALOG_AGENT_PATH` names the one artifact `diffPlan` compares by presence even after hydration,
+so a consumer can name the file the catalog operation owns rather than rediscovering it from a
+finding:
+
+```ts
+import type { Plan } from '@orkestrel/scaffold'
+import { blueprint, CATALOG_AGENT_PATH, contentToHex, diffPlan } from '@orkestrel/scaffold'
+
+const plan: Plan = {
+	blueprint: blueprint('router', { src: ['core'] }),
+	groups: ['orchestration'],
+	artifacts: [
+		{
+			path: CATALOG_AGENT_PATH,
+			group: 'orchestration',
+			origin: 'host',
+			hex: contentToHex('vendored catalog\n'),
+		},
+	],
+}
+
+diffPlan(plan, { [CATALOG_AGENT_PATH]: contentToHex('a newer fleet table\n') }).clean // true
+diffPlan(plan, {}).missing // 1 — restorable while absent, never replaced while present
+```
 
 The bounds are public because they are part of the contract, not implementation trivia.
 `MAX_ARTIFACT_BYTES` caps one artifact at 5 MiB and `MAX_TOTAL_ARTIFACT_BYTES` caps one blueprint,
@@ -911,7 +936,7 @@ that block enters agent instruction context. `isBehind` is the shared freshness 
 report projections count with.
 
 `diffPlan` is the audit engine, and `inferGroup` classifies a target file the plan does not own.
-The hydrated `.claude/agents/orkestrel.md` artifact is its one host-byte exception: `diffPlan`
+The hydrated `CATALOG_AGENT_PATH` artifact is its one host-byte exception: `diffPlan`
 compares that path by presence because `catalog` owns its bounded marker region. The rule therefore
 holds for `Compiler.audit`, the executable verbs, `Materializer.repair`'s preview recheck, and direct
 library consumers without a call-site plan rewrite.
@@ -1537,13 +1562,33 @@ present on `audit`.
 That boundary governs the executable's words too. Every drift line states what a command will do
 rather than how a file came to differ: the executable cannot know whether a generated file was
 hand-edited, and a consumer whose blueprint cannot yet express what it needs legitimately edits one.
-The cost of discarding local content is stated on `--replace` alone — on the repair scope line, in
-the repair verdict, in the audit's drift guidance, and inside the hand-off question itself — and
-never on the safe default, where a warning about a write that cannot happen would only train
-operators to ignore warnings.
+Every cost is stated where it can still be declined, and nowhere else: a run with nothing to write
+states no boundary it is not about to act on, because a warning attached to a no-op only trains
+operators to ignore warnings. `repair` states its scope when the audit found something to repair;
+`fleet` states its scope, its repository count, and the same replacement cost once `--apply` has
+authorized a write; neither states it over a dry run. Each run closes on the tally of what it did,
+including a run that writes nothing — and a drifted file left alone is counted apart from an
+aligned one, because `unchanged` is already the audit table's word for a file that matches canon.
+
+**Four paths discard content a consumer may own, and each names its cost before it acts.**
+
+| Path                              | What it discards                                                     | Ownership boundary                                                                                               |
+| --------------------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `--replace` on repair or fleet    | The local bytes of a drifted file the report named                   | Host-owned artifacts, widened to generated canon by `--generated`; never a present starter, never `package.json` |
+| `--prune --apply`                 | Whole unexpected files, quarantined first and reported by exact path | Only `.claude/agents`, `.codex/agents`, and `scripts`, and only paths the vendored host does not declare         |
+| `catalog --apply`                 | Everything between the two catalog markers, local additions included | Exactly the one bounded marker region of `CATALOG_AGENT_PATH`; the rest of that file is never touched            |
+| `pull --apply` / `mirror --apply` | A locally edited vendored guide mirror, which reads as `behind`      | Only `guides/src/<name>.md` mirrors of other packages; never the guide this workspace owns                       |
+
+`--replace` is the only one of the four that is an opt-in modifier rather than a verb, so it is the
+one whose cost is repeated in every line that offers it: the scope line, the repair verdict, the
+audit's drift guidance, and the hand-off question itself. `--apply` authorizes all four and nothing
+else does — `--yes` only skips a confirmation it can no longer stand in for, and an unexpected-file
+hint that recommended `repair --prune` without it would name a command that deletes nothing. `new`
+is absent from the table on purpose: it refuses any target `isVacant` rejects, so it has no local
+content to discard.
 
 The catalog agent has a narrower ownership exception in `diffPlan` itself.
-`.claude/agents/orkestrel.md` remains presence-owned after host hydration: repair can restore the
+`CATALOG_AGENT_PATH` remains presence-owned after host hydration: repair can restore the
 absent file, but audit, repair, fleet, and direct library consumers never compare or replace its
 existing bytes, even under `--replace`. `catalog` is the sole content writer and continues to
 replace only the uniquely bounded marker region. Thus
@@ -2004,13 +2049,15 @@ operates on the immediate children of the working directory and never on the dir
 it has no root flag at all — `repair` is the single-workspace tool.
 
 `fleet` and default `repair` are scoped to host-origin artifacts plus absent service-owned starter
-seams. `repair` states its selected scope in the output; `--generated` widens both verbs to generated
+seams. Both state that selected scope in the output before they act — `repair` once its audit found
+something to repair, `fleet` once `--apply` authorized a write, naming the number of repositories
+that write covers. `--generated` widens both verbs to generated
 files and the manifest's generated service-script keys while still excluding present starter files
 and package publication metadata. Within either scope, missing files are safe to restore, stale
 files are report-only by default, and `--replace` is the explicit destructive opt-in.
 
 **Catalog markers.** `catalog` rewrites the block between `<!-- catalog:start -->` and
-`<!-- catalog:end -->` in `.claude/agents/orkestrel.md`. **Ambiguous markers fail before any
+`<!-- catalog:end -->` in `CATALOG_AGENT_PATH`. **Ambiguous markers fail before any
 mutation**: the file must contain exactly one ordered pair. A missing marker, a reversed pair, or a
 repeated marker of either kind is a coded `TARGET` failure raised before the file is touched, and
 the run reports the drift and any row-count shrink rather than rewriting a file it cannot bound.
