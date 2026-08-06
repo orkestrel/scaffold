@@ -217,7 +217,6 @@ describe('server integration: compile → materialize → audit → repair', () 
 			const stubAudit = diffPlan(hydrated, readTarget(directory.path, paths))
 			expect(stubAudit.clean).toBe(true)
 			expect(stubAudit.complete).toBe(true)
-			expect(stubAudit.unknown).toBe(0)
 			expect(stubAudit.findings).toEqual([
 				{ path: 'guides/src/msg.md', group: 'guides', drift: 'aligned' },
 			])
@@ -249,7 +248,6 @@ describe('server integration: compile → materialize → audit → repair', () 
 			const pulledAudit = diffPlan(hydrated, readTarget(directory.path, paths))
 			expect(pulledAudit.clean).toBe(true)
 			expect(pulledAudit.complete).toBe(true)
-			expect(pulledAudit.unknown).toBe(0)
 			expect(readFileSync(join(directory.path, 'guides/src/msg.md'), 'utf8')).toBe(
 				'# @orkestrel/msg\n\nReal vendored guide bytes.\n',
 			)

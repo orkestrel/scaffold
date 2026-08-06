@@ -139,6 +139,7 @@ import {
 	errorEnvelopeOf,
 	fleetEntryOf,
 	partitionFindings,
+	repairAuditOf,
 	summaryToNewResult,
 } from './shapers.js'
 import type {
@@ -1009,10 +1010,11 @@ export class CLI implements CLIInterface {
 		const from = values.from?.[0]
 		const host = from ?? hostRoot()
 		const prepared = this.#prepareRepair(spec, target, host, generated, json)
-		const compiled = prepared[0]
+		let compiled = prepared[0]
 		let plan = prepared[1]
 		let audit = prepared[2]
 		let reported = this.#scanSafe(audit, target, host, spec.services).audit
+		let outside = this.#outside(compiled, plan, target, host)
 
 		if (!json) {
 			// The scope line carries the cost of discarding local changes, so it is
@@ -1034,11 +1036,16 @@ export class CLI implements CLIInterface {
 		const pruneSnapshot = readTarget(target, prunePaths)
 
 		if (reported.clean && prunePaths.length === 0) {
-			const outside = this.#outside(compiled, plan, target, host)
 			if (json) {
-				this.#write(reported)
+				this.#write(repairAuditOf(reported, outside))
 			} else {
-				this.#reporter.line(repairVerdict(reported, generated, replace, values.apply === true))
+				this.#reporter.line(
+					repairVerdict(reported, {
+						generated,
+						replace,
+						apply: values.apply === true,
+					}),
+				)
 				const note = scopeNote(outside, generated)
 				if (note !== undefined) this.#reporter.line(note)
 			}
@@ -1047,7 +1054,13 @@ export class CLI implements CLIInterface {
 		}
 
 		if (!json) {
-			this.#reporter.line(repairVerdict(reported, generated, replace, values.apply === true))
+			this.#reporter.line(
+				repairVerdict(reported, {
+					generated,
+					replace,
+					apply: values.apply === true,
+				}),
+			)
 		}
 
 		const repairable = countWrites([audit], replace)
@@ -1055,7 +1068,7 @@ export class CLI implements CLIInterface {
 			// Nothing here is repairable: the only findings are drifted files no
 			// authorization on this command line covers. Close with the same tally a
 			// run that did write ends on rather than stopping mid-screen.
-			if (json) this.#write(reported)
+			if (json) this.#write(repairAuditOf(reported, outside))
 			else {
 				this.#reporter.line(
 					repairTally({
@@ -1065,6 +1078,8 @@ export class CLI implements CLIInterface {
 						removed: 0,
 					}),
 				)
+				const note = scopeNote(outside, generated)
+				if (note !== undefined) this.#reporter.line(note)
 			}
 			process.exitCode = 1
 			return
@@ -1077,7 +1092,11 @@ export class CLI implements CLIInterface {
 		}
 
 		if (!proceed) {
-			if (json) this.#write(reported)
+			if (json) this.#write(repairAuditOf(reported, outside))
+			else {
+				const note = scopeNote(outside, generated)
+				if (note !== undefined) this.#reporter.line(note)
+			}
 			process.exitCode = 1
 			return
 		}
@@ -1099,9 +1118,11 @@ export class CLI implements CLIInterface {
 		if (currentGlobal !== spec.global) {
 			spec = { ...spec, global: currentGlobal }
 			const refreshed = this.#prepareRepair(spec, target, host, generated, json)
+			compiled = refreshed[0]
 			plan = refreshed[1]
 			audit = refreshed[2]
 			reported = this.#scanSafe(audit, target, host, spec.services).audit
+			outside = this.#outside(compiled, plan, target, host)
 		}
 
 		const spinner = this.#spinner('repairing', json)
@@ -1114,8 +1135,9 @@ export class CLI implements CLIInterface {
 			// included. Split the refused drift back out so the tally's `unchanged`
 			// means what the audit table's `unchanged` means.
 			const left = replace ? 0 : audit.drifted
-			if (json) this.#write(auditToRepairResult(reported, { ...result, removed }))
-			else {
+			if (json) {
+				this.#write(auditToRepairResult(repairAuditOf(reported, outside), { ...result, removed }))
+			} else {
 				this.#succeed(
 					spinner,
 					json,
@@ -1126,6 +1148,8 @@ export class CLI implements CLIInterface {
 						removed: removed.length,
 					}),
 				)
+				const note = scopeNote(outside, generated)
+				if (note !== undefined) this.#reporter.line(note)
 			}
 		} catch (error) {
 			this.#reject(spinner, json, error)
@@ -1140,7 +1164,6 @@ export class CLI implements CLIInterface {
 			),
 		)
 		const finalAudit = this.#scanSafe(finalRaw, target, host, spec.services).audit
-		const outside = this.#outside(compiled, plan, target, host)
 		process.exitCode = hasFindings(finalAudit, outside) ? 1 : 0
 	}
 
@@ -1218,7 +1241,6 @@ export class CLI implements CLIInterface {
 									drifted: repo.audit.drifted,
 									missing: repo.audit.missing,
 									foreign: repo.audit.foreign,
-									unknown: repo.audit.unknown,
 								},
 					),
 				)
@@ -1312,9 +1334,7 @@ export class CLI implements CLIInterface {
 		}
 
 		const materializer = createMaterializer({ host })
-		let drifted = repos.filter(
-			(repo) => repo.audit.clean && hasFindings(repo.audit, repo.outside),
-		).length
+		let drifted = repos.filter((repo) => repo.audit.clean && repo.outside > 0).length
 		let failedCount = failures.length
 		const entries: FleetEntry[] = repos
 			.filter((repo) => repo.audit.clean)
@@ -1342,11 +1362,7 @@ export class CLI implements CLIInterface {
 							fleetRepoLine(repo.name, {
 								state: 'repaired',
 								remaining:
-									finalAudit.drifted +
-									finalAudit.missing +
-									finalAudit.foreign +
-									finalAudit.unknown +
-									repo.outside,
+									finalAudit.drifted + finalAudit.missing + finalAudit.foreign + repo.outside,
 							}),
 						)
 					}

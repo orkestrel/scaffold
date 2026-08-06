@@ -21,7 +21,7 @@ import {
 	VERB_SUMMARY,
 } from './constants.js'
 import { partitionFindings } from './shapers.js'
-import type { AuditCounts, FleetOutcome, RepairTally, Verb } from './types.js'
+import type { AuditCounts, FleetOutcome, RepairTally, RepairVerdictOptions, Verb } from './types.js'
 
 /** Render one pluralized count. */
 export function countPart(count: number, label: string): string {
@@ -34,7 +34,6 @@ export function bucketText(counts: AuditCounts): string {
 	if (counts.drifted > 0) parts.push(`${counts.drifted} drifted`)
 	if (counts.missing > 0) parts.push(`${counts.missing} missing`)
 	if (counts.foreign > 0) parts.push(`${counts.foreign} unexpected`)
-	if (counts.unknown > 0) parts.push(`${counts.unknown} unknown`)
 	return parts.length > 0 ? parts.join(', ') : 'clean'
 }
 
@@ -43,11 +42,7 @@ export function auditVerdict(audit: Audit, plan: Plan): string {
 	const count = audit.findings.length
 	if (audit.clean) return `audit: ${countPart(count, 'artifact')} — clean`
 	const split = partitionFindings(audit.findings, plan)
-	const owned =
-		split.owned.drifted === 0 &&
-		split.owned.missing === 0 &&
-		split.owned.foreign === 0 &&
-		split.owned.unknown === 0
+	const owned = split.owned.drifted === 0 && split.owned.missing === 0 && split.owned.foreign === 0
 	const generated = bucketText(split.generated)
 	const foreign = bucketText(split.foreign)
 	if (owned && generated === 'clean') {
@@ -141,33 +136,28 @@ export function scopeNote(count: number, generated: boolean): string | undefined
  * Render repair's dry-run verdict.
  *
  * @param audit - The audit over the selected repair plan.
- * @param generated - Whether generated canon was included in the repair scope.
- * @param replace - Whether stale byte replacement was explicitly authorized.
- * @param apply - Whether this invocation already carries write authorization.
+ * @param options - The selected scope and write authorizations.
  * @returns The scope-aware clean or drifted verdict.
  */
-export function repairVerdict(
-	audit: Audit,
-	generated: boolean,
-	replace = false,
-	apply = false,
-): string {
-	const scope = generated ? 'host-owned and generated' : 'host-owned'
+export function repairVerdict(audit: Audit, options: RepairVerdictOptions): string {
+	const scope = options.generated ? 'host-owned and generated' : 'host-owned'
 	if (audit.clean) {
 		return `repair: ${countPart(audit.findings.length, `${scope} artifact`)} aligned — nothing to write`
 	}
 	const head = `repair: ${scope}: ${bucketText(audit)}`
 	if (audit.drifted === 0) {
-		return apply ? `${head} — missing files will be restored` : `${head} — pass --apply to write`
+		return options.apply
+			? `${head} — missing files will be restored`
+			: `${head} — pass --apply to write`
 	}
 	// With nothing missing there is nothing `--apply` alone can restore, so the
 	// line names only the authorization that would change these files.
 	if (audit.missing === 0) {
-		return replace
+		return options.replace
 			? `${head} — --apply overwrites drifted files, discarding local changes`
 			: `${head} — drifted files change only with --replace, which discards local changes`
 	}
-	return replace
+	return options.replace
 		? `${head} — --apply restores missing files and overwrites drifted ones, discarding local changes`
 		: `${head} — --apply restores missing files; drifted files change only with --replace, which discards local changes`
 }

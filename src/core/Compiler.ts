@@ -135,7 +135,6 @@ export class Compiler implements CompilerInterface {
 				drifted: 0,
 				missing: 0,
 				foreign: 0,
-				unknown: 0,
 			}
 			this.#emitter.emit('audit', result)
 			return result

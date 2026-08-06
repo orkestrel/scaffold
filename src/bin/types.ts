@@ -48,7 +48,13 @@ export interface AuditCounts {
 	readonly drifted: number
 	readonly missing: number
 	readonly foreign: number
-	readonly unknown: number
+}
+
+/** Named inputs for repair's scope-aware verdict. */
+export interface RepairVerdictOptions {
+	readonly generated: boolean
+	readonly replace: boolean
+	readonly apply: boolean
 }
 
 /** Audit tallies partitioned by repair ownership. */
@@ -120,8 +126,13 @@ export interface NewResult {
 	readonly applied: boolean
 }
 
+/** Machine-readable repair audit with the count outside its selected scope. */
+export interface RepairAudit extends Audit {
+	readonly outside: number
+}
+
 /** Machine-readable `repair --apply` outcome. */
-export type RepairResult = Audit & { readonly result: MaterializeResult }
+export type RepairResult = RepairAudit & { readonly result: MaterializeResult }
 
 /** Machine-readable catalog outcome. */
 export interface CatalogResult {

@@ -982,7 +982,7 @@ export function registerHermeticBinGates(): void {
 					expect(repaired.status).toBe(0)
 					expect(fleet.status).toBe(0)
 					expect(json.status).toBe(0)
-					expect(parseJSON(json.stdout)).toMatchObject({ clean: true, unknown: 0 })
+					expect(parseJSON(json.stdout)).toMatchObject({ clean: true })
 
 					writeFileSync(guidePath, 'TOTAL GARBAGE', 'utf8')
 					const presenceOwned = runDefaultBin(['audit'], { cwd: packageDirectory })

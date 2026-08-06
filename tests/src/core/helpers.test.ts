@@ -462,7 +462,6 @@ describe('auditToReview', () => {
 			drifted: 0,
 			missing: 0,
 			foreign: 1,
-			unknown: 0,
 		}
 
 		expect(() => auditToReview(audit)).toThrow('Audit contains an unsafe finding path')
@@ -535,8 +534,6 @@ describe('diffPlan — the four drift classes', () => {
 		expect(audit.findings[0]?.drift).toBe('aligned')
 		expect(audit.clean).toBe(true)
 		expect(audit.complete).toBe(true)
-		expect(audit.unknown).toBe(0)
-		expect(auditToReview(audit)).not.toContain('## unknown')
 	})
 
 	it('keeps the hydrated catalog agent presence-owned for every library comparison', () => {

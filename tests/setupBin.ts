@@ -783,7 +783,6 @@ export function buildAudit(findings: readonly Finding[]): Audit {
 		drifted,
 		missing,
 		foreign,
-		unknown: 0,
 	}
 }
 

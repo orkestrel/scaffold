@@ -184,7 +184,6 @@ describe('deriveBlueprint', () => {
 				drifted: 0,
 				missing: 0,
 				foreign: 0,
-				unknown: 0,
 			})
 		} finally {
 			await directory.cleanup()
@@ -1677,7 +1676,6 @@ describe('hydratePlan', () => {
 				{ path: 'notes.txt', group: 'docs', drift: 'aligned' },
 			])
 			expect(unhydratedAudit.drifted).toBe(0)
-			expect(unhydratedAudit.unknown).toBe(0)
 			expect(unhydratedAudit.complete).toBe(true)
 			expect(unhydratedAudit.clean).toBe(true)
 
@@ -1715,7 +1713,6 @@ describe('hydratePlan', () => {
 
 		expect(audit.clean).toBe(true)
 		expect(audit.complete).toBe(true)
-		expect(audit.unknown).toBe(0)
 		expect(audit.findings).toEqual([{ path: 'notes.txt', group: 'docs', drift: 'aligned' }])
 		expect(audit.questions).toEqual([])
 	})

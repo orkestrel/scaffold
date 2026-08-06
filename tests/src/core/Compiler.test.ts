@@ -457,7 +457,6 @@ describe('Compiler#audit', () => {
 
 		expect(result.clean).toBe(true)
 		expect(result.complete).toBe(true)
-		expect(result.unknown).toBe(0)
 		compiler.destroy()
 	})
 

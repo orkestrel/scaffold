@@ -903,7 +903,6 @@ export function auditToReview(audit: Audit): string {
 		`- drifted: ${audit.drifted}`,
 		`- missing: ${audit.missing}`,
 		`- foreign: ${audit.foreign}`,
-		`- unknown: ${audit.unknown}`,
 	]
 	const drifts: readonly Drift[] = ['stale', 'missing', 'foreign']
 	for (const drift of drifts) {
@@ -1147,7 +1146,6 @@ export function diffPlan(plan: Plan, current: Snapshot): Audit {
 	let drifted = 0
 	let missing = 0
 	let foreign = 0
-	const unknown = 0
 	for (const finding of findings) {
 		if (finding.drift === 'stale') drifted += 1
 		else if (finding.drift === 'missing') missing += 1
@@ -1161,7 +1159,6 @@ export function diffPlan(plan: Plan, current: Snapshot): Audit {
 		drifted,
 		missing,
 		foreign,
-		unknown,
 	}
 }
 

@@ -268,8 +268,6 @@ export interface Audit {
 	readonly drifted: number
 	readonly missing: number
 	readonly foreign: number
-	/** Indeterminate drift count; `diffPlan` returns zero because absent host bytes select presence ownership. */
-	readonly unknown: number
 }
 
 /**

@@ -99,7 +99,7 @@ import { parseMaterializerOptions } from './parsers.js'
  * artifact. For a guide pointer, a short stub file is written at the
  * destination and reported exactly like a successful copy. The READ path
  * leaves that intentional pointer without canonical bytes, so `diffPlan`
- * reports it as `unknown` and fails closed rather than inventing a match.
+ * treats it as presence-owned rather than inventing a byte match.
  * For every OTHER zero-match, the
  * fail-closed `ScaffoldError('TARGET', …)` is thrown — degrading an
  * unscoped zero-match would otherwise let a corrupted manifest silently stub
@@ -441,8 +441,8 @@ export class Materializer implements MaterializerInterface {
 				)
 			}
 			// A dependency-guide pointer — degrade to a stub instead of throwing.
-			// The read path represents this as `unknown` until canonical bytes are
-			// available (see the class doc comment).
+			// The read path treats it as presence-owned while canonical bytes are
+			// unavailable (see the class doc comment).
 			const to = resolvePhysicalPath(transaction.stage, artifact.path, 'WRITE', 'staging')
 			try {
 				mkdirSync(dirname(to), { recursive: true })

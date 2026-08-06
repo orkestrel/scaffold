@@ -86,6 +86,7 @@ import {
 	errorEnvelopeOf,
 	fleetEntryOf,
 	partitionFindings,
+	repairAuditOf,
 	summaryToNewResult,
 } from '../../../src/bin/shapers.js'
 import type { CatalogEntry, Plan, SyncReport } from '../../../src/core/index.js'
@@ -370,13 +371,11 @@ describe('render: jargon translation', () => {
 
 describe('render: bucketText / verdicts', () => {
 	it('reports clean when every count is zero', () => {
-		expect(bucketText({ drifted: 0, missing: 0, foreign: 0, unknown: 0 })).toBe('clean')
+		expect(bucketText({ drifted: 0, missing: 0, foreign: 0 })).toBe('clean')
 	})
 
 	it('joins nonzero buckets with translated labels', () => {
-		expect(bucketText({ drifted: 2, missing: 1, foreign: 0, unknown: 0 })).toBe(
-			'2 drifted, 1 missing',
-		)
+		expect(bucketText({ drifted: 2, missing: 1, foreign: 0 })).toBe('2 drifted, 1 missing')
 	})
 
 	it('renders a clean audit verdict', () => {
@@ -402,30 +401,42 @@ describe('render: bucketText / verdicts', () => {
 	})
 
 	it('renders repair verdicts for clean and drifted audits', () => {
-		expect(repairVerdict(buildAudit([]), false)).toBe(
+		expect(repairVerdict(buildAudit([]), { generated: false, replace: false, apply: false })).toBe(
 			'repair: 0 host-owned artifacts aligned — nothing to write',
 		)
-		expect(repairVerdict(buildAudit([]), true)).toBe(
+		expect(repairVerdict(buildAudit([]), { generated: true, replace: false, apply: false })).toBe(
 			'repair: 0 host-owned and generated artifacts aligned — nothing to write',
 		)
 		const missingOnly = buildAudit([
 			{ path: 'src/core/index.ts', group: 'source', drift: 'missing' },
 		])
-		expect(repairVerdict(missingOnly, false)).toBe(
+		expect(repairVerdict(missingOnly, { generated: false, replace: false, apply: false })).toBe(
 			'repair: host-owned: 1 missing — pass --apply to write',
 		)
-		expect(repairVerdict(missingOnly, false, false, true)).toBe(
+		expect(repairVerdict(missingOnly, { generated: false, replace: false, apply: true })).toBe(
 			'repair: host-owned: 1 missing — missing files will be restored',
 		)
-		const preserved = repairVerdict(buildAudit(AUDIT_FINDINGS), false)
+		const preserved = repairVerdict(buildAudit(AUDIT_FINDINGS), {
+			generated: false,
+			replace: false,
+			apply: false,
+		})
 		expect(preserved).toContain('repair: host-owned:')
 		expect(preserved).toContain(
 			'--apply restores missing files; drifted files change only with --replace, which discards local changes',
 		)
-		expect(repairVerdict(buildAudit(AUDIT_FINDINGS), true)).toContain(
-			'repair: host-owned and generated:',
-		)
-		const replacing = repairVerdict(buildAudit(AUDIT_FINDINGS), true, true)
+		expect(
+			repairVerdict(buildAudit(AUDIT_FINDINGS), {
+				generated: true,
+				replace: false,
+				apply: false,
+			}),
+		).toContain('repair: host-owned and generated:')
+		const replacing = repairVerdict(buildAudit(AUDIT_FINDINGS), {
+			generated: true,
+			replace: true,
+			apply: false,
+		})
 		expect(replacing).toContain(
 			'--apply restores missing files and overwrites drifted ones, discarding local changes',
 		)
@@ -434,11 +445,15 @@ describe('render: bucketText / verdicts', () => {
 
 	it('drift with nothing missing never promises to restore a missing file', () => {
 		const driftOnly = buildAudit([{ path: '.editorconfig', group: 'configs', drift: 'stale' }])
-		const preserved = repairVerdict(driftOnly, false)
+		const preserved = repairVerdict(driftOnly, {
+			generated: false,
+			replace: false,
+			apply: false,
+		})
 		expect(preserved).toBe(
 			'repair: host-owned: 1 drifted — drifted files change only with --replace, which discards local changes',
 		)
-		expect(repairVerdict(driftOnly, false, true)).toBe(
+		expect(repairVerdict(driftOnly, { generated: false, replace: true, apply: false })).toBe(
 			'repair: host-owned: 1 drifted — --apply overwrites drifted files, discarding local changes',
 		)
 	})
@@ -467,8 +482,8 @@ describe('render: bucketText / verdicts', () => {
 
 	it('countWrites counts what a write authorization will actually write', () => {
 		const counts = [
-			{ drifted: 3, missing: 2, foreign: 4, unknown: 0 },
-			{ drifted: 1, missing: 0, foreign: 1, unknown: 0 },
+			{ drifted: 3, missing: 2, foreign: 4 },
+			{ drifted: 1, missing: 0, foreign: 1 },
 		]
 		// The confirmation is about writes: every missing file, drifted files only
 		// under --replace, and never an unexpected file, which only --prune deletes
@@ -476,7 +491,7 @@ describe('render: bucketText / verdicts', () => {
 		expect(countWrites(counts, false)).toBe(2)
 		expect(countWrites(counts, true)).toBe(6)
 		expect(countWrites([], false)).toBe(0)
-		expect(countWrites([{ drifted: 5, missing: 0, foreign: 0, unknown: 0 }], false)).toBe(0)
+		expect(countWrites([{ drifted: 5, missing: 0, foreign: 0 }], false)).toBe(0)
 	})
 
 	it('uses one dirty predicate for selected and outside findings', () => {
@@ -531,9 +546,9 @@ describe('render: bucketText / verdicts', () => {
 
 	it('partitions findings by repair ownership', () => {
 		expect(partitionFindings(AUDIT_FINDINGS, AUDIT_PLAN)).toEqual({
-			owned: { drifted: 1, missing: 1, foreign: 0, unknown: 0 },
-			generated: { drifted: 1, missing: 0, foreign: 0, unknown: 0 },
-			foreign: { drifted: 0, missing: 0, foreign: 1, unknown: 0 },
+			owned: { drifted: 1, missing: 1, foreign: 0 },
+			generated: { drifted: 1, missing: 0, foreign: 0 },
+			foreign: { drifted: 0, missing: 0, foreign: 1 },
 		})
 	})
 })
@@ -597,7 +612,6 @@ describe('render: fleet', () => {
 				drifted: 1,
 				missing: 0,
 				foreign: 0,
-				unknown: 0,
 			}),
 		).toBe('widget: 1 drifted')
 		expect(fleetRepoLine('widget', { state: 'repaired', remaining: 2 })).toBe(
@@ -1094,20 +1108,21 @@ describe('bin result shapers', () => {
 	})
 
 	it('adds a materialization result to repair JSON', () => {
-		const audit = buildAudit([])
+		const audit = repairAuditOf(buildAudit([]), 2)
 		const result = { target: '.', written: ['a'], copied: [], skipped: [], removed: [] }
 		expect(auditToRepairResult(audit, result)).toEqual({ ...audit, result })
 	})
 
+	it('adds the outside-scope count to every repair audit JSON shape', () => {
+		expect(repairAuditOf(buildAudit([]), 2)).toEqual({ ...buildAudit([]), outside: 2 })
+	})
+
 	it('creates fleet entries for audited and failed repositories', () => {
-		expect(
-			fleetEntryOf('widget', { drifted: 1, missing: 2, foreign: 3, unknown: 0 }, false),
-		).toEqual({
+		expect(fleetEntryOf('widget', { drifted: 1, missing: 2, foreign: 3 }, false)).toEqual({
 			name: 'widget',
 			drifted: 1,
 			missing: 2,
 			foreign: 3,
-			unknown: 0,
 			failed: false,
 			outside: 0,
 		})
@@ -1116,7 +1131,6 @@ describe('bin result shapers', () => {
 			drifted: 0,
 			missing: 0,
 			foreign: 0,
-			unknown: 0,
 			failed: true,
 			outside: 0,
 		})

@@ -7,6 +7,7 @@ import type {
 	FleetEntry,
 	NewResult,
 	OriginPartition,
+	RepairAudit,
 	RepairResult,
 } from './types.js'
 
@@ -39,15 +40,13 @@ export function partitionFindings(findings: readonly Finding[], plan: Plan): Ori
 			drifted: ownedDrifted,
 			missing: ownedMissing,
 			foreign: 0,
-			unknown: 0,
 		},
 		generated: {
 			drifted: generatedDrifted,
 			missing: generatedMissing,
 			foreign: 0,
-			unknown: 0,
 		},
-		foreign: { drifted: 0, missing: 0, foreign, unknown: 0 },
+		foreign: { drifted: 0, missing: 0, foreign },
 	}
 }
 
@@ -63,7 +62,6 @@ export function fleetEntryOf(
 		drifted: counts?.drifted ?? 0,
 		missing: counts?.missing ?? 0,
 		foreign: counts?.foreign ?? 0,
-		unknown: counts?.unknown ?? 0,
 		failed,
 		outside,
 	}
@@ -87,8 +85,13 @@ export function summaryToNewResult(summary: PlanSummary, applied: boolean): NewR
 	}
 }
 
-/** Add a materialization result to an audit. */
-export function auditToRepairResult(audit: Audit, result: MaterializeResult): RepairResult {
+/** Add repair's outside-scope count to its selected audit. */
+export function repairAuditOf(audit: Audit, outside: number): RepairAudit {
+	return { ...audit, outside }
+}
+
+/** Add a materialization result to a repair audit. */
+export function auditToRepairResult(audit: RepairAudit, result: MaterializeResult): RepairResult {
 	return { ...audit, result }
 }
 

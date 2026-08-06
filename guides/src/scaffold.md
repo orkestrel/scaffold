@@ -327,7 +327,7 @@ by artifact-relative path.
 self-describing. `PlanSummary` is the dry-run tally by origin and carries both selections. `Finding` is one
 drift verdict with an optional bounded `observed` byte hex for a stale destination, and `Audit` is
 the whole diff plus its `clean` and `complete` flags, `questions`, and `drifted` / `missing` /
-`foreign` counts. Its `unknown` count remains zero because indeterminate bytes are not a drift state.
+`foreign` counts.
 `Question` is one validation issue; `blocking: true` fails the gate closed while
 `false` rides a complete result as an advisory. `Validation` is the semantic pass result and never
 throws.
@@ -1508,8 +1508,11 @@ Audit semantics follow directly from that.
   that the manifest digest matches the manifest's current membership before expansion. That detects
   stale-digest truncation; a self-consistently rewritten manifest defines a smaller valid inventory,
   so the digest alone cannot authenticate omitted membership.
-- A target file the plan does not own is `foreign`, and `inferGroup` classifies it by its leading
-  path segment.
+- In a caller-supplied snapshot, a path the plan does not own is `foreign`, and `inferGroup`
+  classifies it by its leading path segment. The executable supplies unexpected paths only from
+  `.claude/agents`, `.codex/agents`, and `scripts`, because those prune-owned directories are the
+  only regions scaffold has authority to delete from; unplanned files elsewhere are not reported
+  as foreign.
 
 The same ownership boundary is what makes mutation safe. **`fleet` and default `repair` both scope
 the compiled plan to host origin before hydrating, diffing, or applying.** Missing files in that

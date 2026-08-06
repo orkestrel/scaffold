@@ -878,7 +878,23 @@ describe('scaffold bin', () => {
 				)
 				// Findings survive outside the repair scope, so the repository stays dirty.
 				expect(serviceRepair.status).toBe(1)
-				expect(parseJSON(serviceRepair.stdout.trim())).toMatchObject({ foreign: 0 })
+				const serviceRepairPayload: unknown = parseJSON(serviceRepair.stdout.trim())
+				expect(serviceRepairPayload).toMatchObject({ foreign: 0 })
+				if (!isRecord(serviceRepairPayload) || typeof serviceRepairPayload.outside !== 'number') {
+					throw new Error('expected repair JSON to carry an outside count')
+				}
+				expect(serviceRepairPayload.outside).toBeGreaterThan(0)
+
+				// A second repair has no selected-scope work left. Its non-zero exit is
+				// therefore caused only by the same serialized outside-scope findings.
+				const serviceFollowup = runBin(['repair', '--json', '--from', from.path], '', {
+					cwd: serviceDirectory,
+				})
+				expect(serviceFollowup.status).toBe(1)
+				expect(parseJSON(serviceFollowup.stdout.trim())).toMatchObject({
+					clean: true,
+					outside: serviceRepairPayload.outside,
+				})
 				expect(existsSync(serviceScript)).toBe(true)
 			} finally {
 				await cwd.cleanup()
@@ -1487,6 +1503,7 @@ describe('scaffold bin', () => {
 				// The generated drift sits outside the default repair scope, so the
 				// repository stays dirty after the write completes.
 				expect(defaultRepair.status).toBe(1)
+				expect(defaultRepair.stdout).toContain('outside host-owned repair scope')
 				expect(readFileSync(computedPath, 'utf8')).toBe('// generated drift\n')
 				expect(readFileSync(templatePath, 'utf8')).toBe(consumerTemplate)
 				expect(readFileSync(manifestPath, 'utf8')).toBe(consumerManifest)
@@ -1512,6 +1529,7 @@ describe('scaffold bin', () => {
 				// is outside every repair scope, so the repository is still dirty.
 				expect(generatedRepair.status).toBe(1)
 				expect(generatedRepair.stdout).toContain('shared host-owned and generated artifacts')
+				expect(generatedRepair.stdout).toContain('outside host-owned and generated repair scope')
 				expect(readFileSync(computedPath, 'utf8')).toBe(canonicalComputed)
 				expect(readFileSync(templatePath, 'utf8')).toBe(consumerTemplate)
 				expect(readFileSync(manifestPath, 'utf8')).toBe(consumerManifest)
