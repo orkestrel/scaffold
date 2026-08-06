@@ -570,9 +570,8 @@ export function inspectCodingNode(
  */
 export function inspectFunctionModule(path: string, source: ts.SourceFile): readonly string[] {
 	const file = basename(normalizePolicyPath(path))
-	const functions = source.statements
-		.filter(ts.isFunctionDeclaration)
-		.filter((declaration) => declaration.body !== undefined)
+	const declarations = source.statements.filter(ts.isFunctionDeclaration)
+	const functions = declarations.filter((declaration) => declaration.body !== undefined)
 	const invalid = source.statements.filter(
 		(statement) => !ts.isImportDeclaration(statement) && !ts.isFunctionDeclaration(statement),
 	)
@@ -580,14 +579,14 @@ export function inspectFunctionModule(path: string, source: ts.SourceFile): read
 	if (
 		functions.length === 1 &&
 		invalid.length === 0 &&
+		declarations.every((candidate) => candidate.name?.text === file.slice(0, -3)) &&
 		declaration !== undefined &&
-		declaration.name?.text === file.slice(0, -3) &&
 		hasExportModifier(declaration) &&
 		!hasModifier(declaration, ts.SyntaxKind.DefaultKeyword)
 	) {
 		return []
 	}
-	return [`${path} function modules contain imports and one matching exported function`]
+	return [`${path} declarations do not form one matching exported function implementation`]
 }
 
 /** Inspect one TypeScript source module for repository coding-law violations. */

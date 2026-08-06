@@ -89,7 +89,7 @@ describe('repository coding law', () => {
 
 		expect(inspectFunctionModule('app/browser/composables/useTheme.ts', ordinary)).toEqual([])
 		expect(inspectFunctionModule('app/browser/composables/useTheme.ts', declared)).toEqual([
-			'app/browser/composables/useTheme.ts function modules contain imports and one matching exported function',
+			'app/browser/composables/useTheme.ts declarations do not form one matching exported function implementation',
 		])
 		expect(inspectFunctionModule('app/browser/composables/useTheme.ts', overloaded)).toEqual([])
 		expect(inspectFunctionModule('app/browser/composables/useTheme.ts', generator)).toEqual([])
@@ -107,7 +107,7 @@ describe('repository coding law', () => {
 		for (const content of cases) {
 			const source = ts.createSourceFile('useTheme.ts', content, ts.ScriptTarget.Latest, true)
 			expect(inspectFunctionModule('app/browser/composables/useTheme.ts', source)).toEqual([
-				'app/browser/composables/useTheme.ts function modules contain imports and one matching exported function',
+				'app/browser/composables/useTheme.ts declarations do not form one matching exported function implementation',
 			])
 		}
 

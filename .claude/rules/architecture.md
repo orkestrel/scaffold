@@ -126,9 +126,10 @@ Store child managers in `#` fields and expose readonly getters typed as their in
 
 - A word is either a centralized kind or a domain folder, never both.
 - A folder named for a centralized kind—`helpers/`, `validators/`, `handlers/`—is that kind's file, not a folder.
-- A function domain is designated in the workspace policy register (`tests/setupPolicy.ts`,
+- A function domain is designated in the fleet-canon register (`tests/setupPolicy.ts`,
   `FUNCTION_DOMAIN_FOLDERS`), not inferred from a folder's name: a camelCase module inside an
-  undesignated folder is misplaced.
+  undesignated folder is misplaced. A workspace requests a new domain through a fleet-canon change;
+  there is no workspace-local registration path.
 
 ### Extension categories
 
