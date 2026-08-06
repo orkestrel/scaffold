@@ -100,6 +100,17 @@ export function countWrites(counts: readonly AuditCounts[], replace: boolean): n
 }
 
 /**
+ * Test whether a reported repository remains dirty inside or outside the selected scope.
+ *
+ * @param audit - The selected-scope audit.
+ * @param outside - Findings outside that scope.
+ * @returns Whether either source reports drift.
+ */
+export function hasFindings(audit: Audit, outside: number): boolean {
+	return !audit.clean || outside > 0
+}
+
+/**
  * Render one write verb's ownership boundary in that verb's own voice.
  *
  * @param verb - The command whose scope this is.
@@ -132,15 +143,23 @@ export function scopeNote(count: number, generated: boolean): string | undefined
  * @param audit - The audit over the selected repair plan.
  * @param generated - Whether generated canon was included in the repair scope.
  * @param replace - Whether stale byte replacement was explicitly authorized.
+ * @param apply - Whether this invocation already carries write authorization.
  * @returns The scope-aware clean or drifted verdict.
  */
-export function repairVerdict(audit: Audit, generated: boolean, replace = false): string {
+export function repairVerdict(
+	audit: Audit,
+	generated: boolean,
+	replace = false,
+	apply = false,
+): string {
 	const scope = generated ? 'host-owned and generated' : 'host-owned'
 	if (audit.clean) {
 		return `repair: ${countPart(audit.findings.length, `${scope} artifact`)} aligned — nothing to write`
 	}
 	const head = `repair: ${scope}: ${bucketText(audit)}`
-	if (audit.drifted === 0) return `${head} — pass --apply to write`
+	if (audit.drifted === 0) {
+		return apply ? `${head} — missing files will be restored` : `${head} — pass --apply to write`
+	}
 	// With nothing missing there is nothing `--apply` alone can restore, so the
 	// line names only the authorization that would change these files.
 	if (audit.missing === 0) {
@@ -285,7 +304,7 @@ export function fleetRepoLine(name: string, outcome: FleetOutcome): string {
 
 /** Render fleet's repository totals. */
 export function fleetTotals(drifted: number, failed: number): string {
-	return `total: ${countPart(drifted, 'drifted repo')}, ${failed} failed`
+	return `total: ${countPart(drifted, 'dirty repo')}, ${failed} failed`
 }
 
 /** Create catalog's terminal table. */
@@ -556,10 +575,12 @@ export function auditLiveNote(current: number, behind: number, failed: number): 
 }
 
 /** Render whether an audit compared content or presence. */
-export function comparisonLine(aware: boolean): string {
-	return aware
-		? 'comparing: file contents for host-owned files'
-		: 'comparing: file names only for host-owned files (no vendored source found)'
+export function comparisonLine(compared: number, presence: number): string {
+	if (presence === 0) return 'comparing: file contents for host-owned files'
+	if (compared === 0) {
+		return `comparing: file presence for ${countPart(presence, 'presence-owned file')}`
+	}
+	return `comparing: file contents for ${countPart(compared, 'host-owned file')}; presence for ${countPart(presence, 'presence-owned file')}`
 }
 
 /** Render catalog's final verdict. */

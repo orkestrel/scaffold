@@ -30,9 +30,15 @@ import {
 import { dirname, join, relative as pathRelative, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { stripVTControlCharacters } from 'node:util'
-import { isRecord } from '@orkestrel/contract'
+import { isRecord, parseJSON } from '@orkestrel/contract'
 import { describe, expect, it } from 'vitest'
-import { pascalCase, SCAFFOLD_RANGE } from '@src/core'
+import {
+	blueprint,
+	dependency as createDependency,
+	packageManifest,
+	pascalCase,
+	SCAFFOLD_RANGE,
+} from '@src/core'
 import { listFiles } from '@src/server'
 import {
 	ALLOWED_LINT_SOURCES,
@@ -941,7 +947,7 @@ export function registerHermeticBinGates(): void {
 		})
 
 		describe('new --apply: explicit development dependencies round-trip through audit', () => {
-			it('fails closed when a declared dependency guide has target bytes but no vendored comparison bytes', async () => {
+			it('keeps a materialized dependency guide pointer clean across every audit surface', async () => {
 				const cwd = await buildTempDirectory()
 				try {
 					const created = runDefaultBin(['new', 'demoguide', '--src', 'core', '--apply'], {
@@ -949,36 +955,43 @@ export function registerHermeticBinGates(): void {
 					})
 					expect(created.status).toBe(0)
 					const packageDirectory = join(cwd.path, 'demoguide')
-					const manifestPath = join(packageDirectory, 'package.json')
-					const manifest: unknown = JSON.parse(readFileSync(manifestPath, 'utf8'))
-					if (!isRecord(manifest)) throw new Error('expected package manifest')
 					writeFileSync(
-						manifestPath,
-						`${JSON.stringify(
-							{
-								...manifest,
-								dependencies: { '@orkestrel/emitter': '^0.0.5' },
-							},
-							null,
-							'\t',
-						)}\n`,
+						join(packageDirectory, 'package.json'),
+						packageManifest(
+							blueprint('demoguide', {
+								src: ['core'],
+								dependencies: [createDependency('@orkestrel/emitter', '^0.0.5')],
+							}),
+						),
 						'utf8',
 					)
 					const guidePath = join(packageDirectory, 'guides', 'src', 'emitter.md')
-					writeFileSync(guidePath, 'TOTAL GARBAGE', 'utf8')
+					const materialized = runDefaultBin(['repair', '--apply', '--yes'], {
+						cwd: packageDirectory,
+					})
+					expect(materialized.status).toBe(0)
+					expect(existsSync(guidePath)).toBe(true)
 
-					const unknown = runDefaultBin(['audit'], { cwd: packageDirectory })
-					expect(unknown.status).toBe(1)
-					expect(unknown.stdout).toContain(
-						'comparing: file names only for host-owned files (no vendored source found)',
-					)
-					expect(unknown.stdout).toContain('unknown')
+					const audited = runDefaultBin(['audit'], { cwd: packageDirectory })
+					const repaired = runDefaultBin(['repair', '--apply', '--yes'], {
+						cwd: packageDirectory,
+					})
+					const fleet = runDefaultBin(['fleet'], { cwd: cwd.path })
+					const json = runDefaultBin(['audit', '--json'], { cwd: packageDirectory })
+					expect(audited.status).toBe(0)
+					expect(repaired.status).toBe(0)
+					expect(fleet.status).toBe(0)
+					expect(json.status).toBe(0)
+					expect(parseJSON(json.stdout)).toMatchObject({ clean: true, unknown: 0 })
+
+					writeFileSync(guidePath, 'TOTAL GARBAGE', 'utf8')
+					const presenceOwned = runDefaultBin(['audit'], { cwd: packageDirectory })
+					expect(presenceOwned.status).toBe(0)
 
 					rmSync(guidePath)
 					const missing = runDefaultBin(['audit'], { cwd: packageDirectory })
 					expect(missing.status).toBe(1)
 					expect(missing.stdout).toContain('missing')
-					expect(missing.stdout).not.toContain('unknown')
 				} finally {
 					await cwd.cleanup()
 				}
@@ -1353,7 +1366,7 @@ export function registerHermeticBinGates(): void {
 					const drifted = runDefaultBin(['fleet'], { cwd: root.path })
 					expect(drifted.status).toBe(1)
 					expect(drifted.stdout).toContain('fleeta: 1 missing')
-					expect(drifted.stdout).toContain('total: 1 drifted repo, 0 failed')
+					expect(drifted.stdout).toContain('total: 1 dirty repo, 0 failed')
 
 					const trued = runDefaultBin(['fleet', '--apply'], { cwd: root.path })
 					expect(trued.status).toBe(0)

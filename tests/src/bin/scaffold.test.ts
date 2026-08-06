@@ -876,7 +876,8 @@ describe('scaffold bin', () => {
 					'',
 					{ cwd: serviceDirectory },
 				)
-				expect(serviceRepair.status).toBe(0)
+				// Findings survive outside the repair scope, so the repository stays dirty.
+				expect(serviceRepair.status).toBe(1)
 				expect(parseJSON(serviceRepair.stdout.trim())).toMatchObject({ foreign: 0 })
 				expect(existsSync(serviceScript)).toBe(true)
 			} finally {
@@ -1010,7 +1011,7 @@ describe('scaffold bin', () => {
 				const repaired = runBin(['repair', '--apply', '--from', from.path], '', {
 					cwd: packageDirectory,
 				})
-				expect(repaired.status).toBe(0)
+				expect(repaired.status).toBe(1)
 
 				const reaudited = runBin(['audit', '--from', from.path], '', { cwd: packageDirectory })
 				expect(reaudited.status).toBe(1)
@@ -1045,7 +1046,10 @@ describe('scaffold bin', () => {
 				const repaired = runBin(['repair', '--generated', '--apply', '--from', from.path], '', {
 					cwd: packageDirectory,
 				})
-				expect(repaired.status).toBe(0)
+				// `package.json` is never repaired, so the drift survives outside the
+				// selected scope and keeps the repository dirty.
+				expect(repaired.status).toBe(1)
+				expect(repaired.stdout).toContain('outside host-owned and generated repair scope')
 				expect(readFileSync(manifestPath, 'utf8')).toBe(consumerManifest)
 
 				const reaudited = runBin(['audit', '--from', from.path], '', {
@@ -1212,6 +1216,36 @@ describe('scaffold bin', () => {
 	})
 
 	describe('repair', () => {
+		it('--json retains unexpected findings beside repairable host drift', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				rmSync(join(packageDirectory, '.editorconfig'))
+				const rogue = join(packageDirectory, '.claude', 'agents', 'rogue.md')
+				writeFileSync(rogue, '# rogue\n', 'utf8')
+
+				const result = runBin(['repair', '--json', '--from', from.path], '', {
+					cwd: packageDirectory,
+				})
+				const parsed: unknown = parseJSON(result.stdout.trim())
+
+				expect(result.status).toBe(1)
+				expect(parsed).toMatchObject({ missing: 1, foreign: 1 })
+				if (!isRecord(parsed) || !Array.isArray(parsed.findings)) {
+					throw new Error('expected repair findings')
+				}
+				expect(parsed.findings).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({ path: '.claude/agents/rogue.md', drift: 'foreign' }),
+					]),
+				)
+			} finally {
+				await cwd.cleanup()
+				await from.cleanup()
+			}
+		}, 30000)
+
 		it('dry-run (empty stdin): previews and the exit code reflects the drift (1), nothing written', async () => {
 			const from = await buildFromFixture()
 			const cwd = await buildTempDirectory()
@@ -1450,7 +1484,9 @@ describe('scaffold bin', () => {
 				const defaultRepair = runBin(['repair', '--apply', '--from', from.path], '', {
 					cwd: packageDirectory,
 				})
-				expect(defaultRepair.status).toBe(0)
+				// The generated drift sits outside the default repair scope, so the
+				// repository stays dirty after the write completes.
+				expect(defaultRepair.status).toBe(1)
 				expect(readFileSync(computedPath, 'utf8')).toBe('// generated drift\n')
 				expect(readFileSync(templatePath, 'utf8')).toBe(consumerTemplate)
 				expect(readFileSync(manifestPath, 'utf8')).toBe(consumerManifest)
@@ -1472,7 +1508,9 @@ describe('scaffold bin', () => {
 					'',
 					{ cwd: packageDirectory },
 				)
-				expect(generatedRepair.status).toBe(0)
+				// The generated drift is repaired, but the consumer's `package.json` edit
+				// is outside every repair scope, so the repository is still dirty.
+				expect(generatedRepair.status).toBe(1)
 				expect(generatedRepair.stdout).toContain('shared host-owned and generated artifacts')
 				expect(readFileSync(computedPath, 'utf8')).toBe(canonicalComputed)
 				expect(readFileSync(templatePath, 'utf8')).toBe(consumerTemplate)
@@ -1903,7 +1941,7 @@ describe('scaffold bin', () => {
 				expect(result.status).toBe(1)
 				expect(result.stdout).toContain('pkg: clean')
 				expect(result.stdout).toContain('outside host-owned repair scope')
-				expect(result.stdout).toContain('total: 1 drifted repo, 0 failed')
+				expect(result.stdout).toContain('total: 1 dirty repo, 0 failed')
 			} finally {
 				await root.cleanup()
 				await from.cleanup()

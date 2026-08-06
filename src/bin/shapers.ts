@@ -17,8 +17,6 @@ export function partitionFindings(findings: readonly Finding[], plan: Plan): Ori
 	let ownedMissing = 0
 	let generatedDrifted = 0
 	let generatedMissing = 0
-	let unknownOwned = 0
-	let unknownGenerated = 0
 	let foreign = 0
 	for (const finding of findings) {
 		const origin = origins.get(finding.path)
@@ -34,9 +32,6 @@ export function partitionFindings(findings: readonly Finding[], plan: Plan): Ori
 		} else if (finding.drift === 'missing') {
 			if (owned) ownedMissing += 1
 			else generatedMissing += 1
-		} else {
-			if (owned) unknownOwned += 1
-			else unknownGenerated += 1
 		}
 	}
 	return {
@@ -44,13 +39,13 @@ export function partitionFindings(findings: readonly Finding[], plan: Plan): Ori
 			drifted: ownedDrifted,
 			missing: ownedMissing,
 			foreign: 0,
-			unknown: unknownOwned,
+			unknown: 0,
 		},
 		generated: {
 			drifted: generatedDrifted,
 			missing: generatedMissing,
 			foreign: 0,
-			unknown: unknownGenerated,
+			unknown: 0,
 		},
 		foreign: { drifted: 0, missing: 0, foreign, unknown: 0 },
 	}

@@ -446,7 +446,7 @@ describe('Compiler#audit', () => {
 		compiler.destroy()
 	})
 
-	it('fails closed when an unhydrated host artifact has no canonical bytes to compare', () => {
+	it('audits unhydrated host artifacts by presence and reserves byte comparison for hydrated plans', () => {
 		const compiler = new Compiler()
 		const spec = blueprint('router', { src: ['core'] })
 		const compiled = compiler.compile(spec, ['docs'])
@@ -455,8 +455,9 @@ describe('Compiler#audit', () => {
 
 		const result = compiler.audit(spec, current, ['docs'])
 
-		expect(result.clean).toBe(false)
-		expect(result.complete).toBe(false)
+		expect(result.clean).toBe(true)
+		expect(result.complete).toBe(true)
+		expect(result.unknown).toBe(0)
 		compiler.destroy()
 	})
 

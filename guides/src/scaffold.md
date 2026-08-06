@@ -207,8 +207,7 @@ The closed vocabularies are small and total. `Environment` is `'core' | 'browser
 `BuildFormat` is `'es' | 'cjs'`. `Origin` is `'host' | 'template' | 'computed'`. `Group` is
 `'manifest' | 'configs' | 'source' | 'tests' | 'guides' | 'docs' | 'orchestration'`. `Category` is
 `'type' | 'alias' | 'constant' | 'factory' | 'entity' | 'parser' | 'guard' | 'handler' | 'error'`.
-`Drift` is `'aligned' | 'stale' | 'missing' | 'foreign' | 'unknown'`; `unknown` means a present
-host artifact has no canonical bytes and therefore cannot truthfully be compared. `Freshness` is
+`Drift` is `'aligned' | 'stale' | 'missing' | 'foreign'`. `Freshness` is
 `'current' | 'behind' | 'missing' | 'failed'`, where `missing` is an upstream `404` and `failed` is
 a transport fault. `CompileStage` is `'draft' | 'gate' | 'pin'`, in that order. `ScaffoldErrorCode`
 is `'INVALID' | 'BLOCKED' | 'DESTROYED' | 'TARGET' | 'WRITE' | 'FETCH'`.
@@ -328,7 +327,7 @@ by artifact-relative path.
 self-describing. `PlanSummary` is the dry-run tally by origin and carries both selections. `Finding` is one
 drift verdict with an optional bounded `observed` byte hex for a stale destination, and `Audit` is
 the whole diff plus its `clean` and `complete` flags, `questions`, and `drifted` / `missing` /
-`foreign` / `unknown` counts. Any `unknown` finding makes the audit incomplete and unclean.
+`foreign` counts. Its `unknown` count remains zero because indeterminate bytes are not a drift state.
 `Question` is one validation issue; `blocking: true` fails the gate closed while
 `false` rides a complete result as an advisory. `Validation` is the semantic pass result and never
 throws.
@@ -388,8 +387,10 @@ instead of through the manifest.
 `ManifestEntry` is one vendored-host file record — its un-dotted `storage` name, its `destination`
 relative to a target, and an `executable` bit. `HostManifest` pairs the sorted file `entries` with
 the complete sorted directory `roots` inventory and a SHA-256 `digest` of that exact membership.
-The independently persisted digest makes entry removal detectable even when the corresponding
-storage file was also removed, while roots distinguish a declared-empty directory.
+The independently persisted digest detects an entry/root membership edit that did not update the
+digest, while roots distinguish a declared-empty directory. A self-consistent replacement manifest
+remains structurally valid and defines its own smaller membership; authenticity of that complete
+membership is outside the digest's checksum-only contract.
 
 The write-transaction shapes are the fail-closed mutation vocabulary. `WriteExpectation` is one
 destination snapshot captured before mutation (`absent`, `file`, or `directory`, with device,
@@ -939,10 +940,10 @@ that block enters agent instruction context. `isBehind` is the shared freshness 
 report projections count with.
 
 `diffPlan` is the audit engine, and `inferGroup` classifies a target file the plan does not own.
-A present host artifact without canonical `hex` is `unknown`, never `aligned`; it makes the audit
-incomplete and unclean and carries a blocking question. That rule protects an unhydrated
-`Compiler.audit` consumer as well as every executable verb. The hydrated `CATALOG_AGENT_PATH`
-artifact is the one explicit host-byte exception: `diffPlan` compares that path by presence because
+A host artifact without canonical `hex` is presence-owned: present is `aligned`, absent is
+`missing`. The server face attaches `hex` to every readable vendored source before executable
+audits, except the dependency-guide pointers hydration deliberately marks presence-owned. The
+hydrated `CATALOG_AGENT_PATH` artifact remains presence-owned even with vendored bytes because
 `catalog` owns its bounded marker region. The same engine governs `Materializer.repair`'s preview
 recheck and direct library consumers without a call-site plan rewrite.
 `snapshotOf`, `contentToHex`, `contentToBytes`, `contentByteLength`, `contentCodePoint`, and
@@ -1370,7 +1371,10 @@ The public methods of each behavioral interface, one table per type.
 `audit(blueprint, current, groups?)` compiles and then diffs the resulting plan against the
 caller-supplied current content; a gated blueprint returns `complete: false` with the gate's
 blocking questions and zero findings, and a complete one carries the gate's advisories on that same
-`questions` field. `destroy()` is idempotent teardown. The interface also exposes the readonly
+`questions` field. Because this core-only method performs no host I/O, its compiled host artifacts
+have no `hex` and are audited by presence. Callers that need host-byte verdicts hydrate the compiled
+plan through the server face and call `diffPlan`, which is the path every executable audit uses.
+`destroy()` is idempotent teardown. The interface also exposes the readonly
 `emitter`.
 
 #### `PlanManagerInterface`
@@ -1498,13 +1502,12 @@ Audit semantics follow directly from that.
 - A **computed** artifact is content-aware canon: `missing`, `aligned`, or `stale`, and it gates the
   audit like any other drift.
 - A **host** artifact with canonical `hex` is content-compared exactly like a computed artifact and
-  can be `stale`. If the target is present but the plan has no canonical bytes, its verdict is
-  `unknown`: the audit is incomplete and unclean instead of recording absent evidence as a match.
-  A missing target is still directly observable and remains `missing`. The catalog agent is the one
-  explicit presence-owned exception because `catalog` is its sole content writer. Hydration expands
-  a directory-shaped host artifact into one artifact per declared file and verifies the manifest's
-  membership digest before expansion, so a removed entry plus storage file is a coded `TARGET`
-  failure rather than a smaller clean plan.
+  can be `stale`. Without `hex`, it is presence-owned: present is `aligned`, absent is `missing`.
+  The catalog agent is explicitly presence-owned because `catalog` is its sole content writer.
+  Hydration expands a directory-shaped host artifact into one artifact per declared file and verifies
+  that the manifest digest matches the manifest's current membership before expansion. That detects
+  stale-digest truncation; a self-consistently rewritten manifest defines a smaller valid inventory,
+  so the digest alone cannot authenticate omitted membership.
 - A target file the plan does not own is `foreign`, and `inferGroup` classifies it by its leading
   path segment.
 
@@ -1542,10 +1545,11 @@ owner: a dependency this package vendors a byte-identical mirror for gets a real
 dependency, so a package depending on `@orkestrel/guide` plans one `guides/src/guide.md` rather than
 two. Any other dependency gets a host-origin _pointer_ artifact plus a non-blocking question, never
 a fabricated mirror; on materialization that pointer degrades to a short stub, and `scaffold pull`
-fetches the real thing. Until canonical bytes are available, an existing pointer is `unknown` and
-the audit fails closed. That degrade is scoped exactly to guide pointers: the manifest's persisted
-membership digest detects a removed entry even when its storage file was removed too, while any
-other undeclared source is rejected with a coded `TARGET` failure. Selection is the law and
+fetches the real thing. Hydration marks that permanent pointer state presence-owned, so both the
+birth stub and a later pulled guide audit clean while present; `pull` refreshes content but is not a
+remedy for an audit state. That degrade is scoped exactly to guide pointers. A manifest whose
+membership changes without a matching digest is rejected, while any other undeclared or unreadable
+source is rejected with a coded `TARGET` failure. Selection is the law and
 `findFileConflict` is its backstop: two artifacts at one path refuse the plan rather than racing to
 be the last writer.
 
@@ -2087,9 +2091,10 @@ The check is a feature detection: **earlier supported Node 22 releases simply us
 roots**. It only ever adds trusted issuers — nothing disables verification — and a failure is a
 silent no-op rather than a crash. Custom PEMs are added through the standard environment variable.
 
-**Exit codes.** `0` is clean or successful, `1` is drift or failure, `2` is a usage error. A repair
-that skips stale files exits `1`, using the existing drift/failure code because its selected scope
-remains unaligned; a clean repair and one that fully applies its findings exit `0`. An audit exits
+**Exit codes.** `0` is clean or successful, `1` is drift or failure, `2` is a usage error. Repair
+and fleet use the same dirty-repository predicate: selected-scope drift or any full-plan finding
+outside that scope keeps exit `1`. A repair that skips stale files therefore exits `1`; a repair
+exits `0` only when its selected audit and its reported outside scope are both clean. An audit exits
 non-zero on any drift, foreign files included, which makes it usable directly as a CI gate. A
 pull exits non-zero on any drift or failure whether or not `--strict` was passed, including when
 other entries were applied successfully; `--strict` additionally throws on a network fault. Every

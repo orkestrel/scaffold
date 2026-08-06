@@ -2722,7 +2722,11 @@ export function hydratePlan(plan: Plan, host: string): Plan {
 			}
 			if (entries.length === 0) {
 				if (source.startsWith('guides/src/') && source.endsWith('.md')) {
-					artifacts.push(artifact)
+					// The absent `hex` is the structural presence-ownership mark. Strip
+					// caller-carried bytes so a manifest-confirmed guide-pointer degrade
+					// can never masquerade as vendored content canon.
+					const { hex: _hex, ...presenceOwned } = artifact
+					artifacts.push(presenceOwned)
 					continue
 				}
 				throw new ScaffoldError('TARGET', `Host manifest does not declare ${source}`, {

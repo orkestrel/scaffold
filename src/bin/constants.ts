@@ -26,7 +26,6 @@ export const DRIFT_LABEL: Readonly<Record<Drift, string>> = Object.freeze({
 	stale: 'drifted',
 	missing: 'missing',
 	foreign: 'unexpected file',
-	unknown: 'unknown',
 })
 
 /** Dependency freshness states translated into user-facing labels. */

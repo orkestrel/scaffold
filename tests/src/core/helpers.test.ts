@@ -469,7 +469,7 @@ describe('auditToReview', () => {
 	})
 })
 
-describe('diffPlan — the five drift classes', () => {
+describe('diffPlan — the four drift classes', () => {
 	it('is missing when the target lacks the artifact', () => {
 		const plan = blueprintToPlan(blueprint('router', { src: ['core'] }), ['manifest'])
 		const audit = diffPlan(plan, {})
@@ -524,18 +524,19 @@ describe('diffPlan — the five drift classes', () => {
 		expect(packageLockFinding?.group).toBe('manifest')
 	})
 
-	it('fails closed when an unhydrated host-origin artifact is present without canonical bytes', () => {
-		const plan = blueprintToPlan(blueprint('router', { src: ['core'] }), ['docs'])
-		const hostArtifact = plan.artifacts.find((artifact) => artifact.origin === 'host')
-		const audit = diffPlan(plan, { [hostArtifact?.path ?? '']: 'ANYTHING at all, wrong bytes' })
+	it('treats an unhydrated host-origin artifact as presence-owned', () => {
+		const plan: Plan = {
+			blueprint: blueprint('router', { src: ['core'] }),
+			groups: ['docs'],
+			artifacts: [{ path: 'AGENTS.md', group: 'docs', origin: 'host' }],
+		}
+		const audit = diffPlan(plan, { 'AGENTS.md': 'ANYTHING at all, wrong bytes' })
 
-		expect(audit.findings.find((finding) => finding.path === hostArtifact?.path)?.drift).toBe(
-			'unknown',
-		)
-		expect(audit.clean).toBe(false)
-		expect(audit.complete).toBe(false)
-		expect(audit.unknown).toBe(1)
-		expect(auditToReview(audit)).toContain('## unknown')
+		expect(audit.findings[0]?.drift).toBe('aligned')
+		expect(audit.clean).toBe(true)
+		expect(audit.complete).toBe(true)
+		expect(audit.unknown).toBe(0)
+		expect(auditToReview(audit)).not.toContain('## unknown')
 	})
 
 	it('keeps the hydrated catalog agent presence-owned for every library comparison', () => {

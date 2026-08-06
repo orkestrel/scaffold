@@ -169,7 +169,7 @@ describe('server integration: compile → materialize → audit → repair', () 
 		}
 	})
 
-	it('a non-vendored dependency guide pointer stays unknown until canonical comparison bytes exist', async () => {
+	it('a non-vendored dependency guide pointer stays presence-owned before and after pull', async () => {
 		const directory = await buildTempDirectory()
 		const host = await buildTempDirectory()
 		try {
@@ -207,18 +207,19 @@ describe('server integration: compile → materialize → audit → repair', () 
 					},
 				],
 			}
-			const paths = plan.artifacts.map((artifact) => artifact.path)
+			const hydrated = hydratePlan(plan, host.path)
+			const paths = hydrated.artifacts.map((artifact) => artifact.path)
 
 			const materializer = createMaterializer({ host: host.path })
-			materializer.materialize(plan, directory.path)
+			materializer.materialize(hydrated, directory.path)
 
-			// 1. `new` succeeds, but an unhydrated plan cannot claim the stub's
-			// arbitrary bytes match canon.
-			const stubAudit = diffPlan(plan, readTarget(directory.path, paths))
-			expect(stubAudit.clean).toBe(false)
-			expect(stubAudit.complete).toBe(false)
+			// Negative control: the exact bytes materialization wrote must audit clean.
+			const stubAudit = diffPlan(hydrated, readTarget(directory.path, paths))
+			expect(stubAudit.clean).toBe(true)
+			expect(stubAudit.complete).toBe(true)
+			expect(stubAudit.unknown).toBe(0)
 			expect(stubAudit.findings).toEqual([
-				{ path: 'guides/src/msg.md', group: 'guides', drift: 'unknown' },
+				{ path: 'guides/src/msg.md', group: 'guides', drift: 'aligned' },
 			])
 
 			// 2. Simulate `pull`: `Sync.write` overwrites the stub with real guide
@@ -244,12 +245,11 @@ describe('server integration: compile → materialize → audit → repair', () 
 			expect(written).toEqual(['guides/src/msg.md'])
 			sync.destroy()
 
-			// 3. Pull changes the target bytes, not the plan's evidence. Without
-			// canonical comparison bytes, the result therefore remains unknown.
-			const pulledAudit = diffPlan(plan, readTarget(directory.path, paths))
-			expect(pulledAudit.clean).toBe(false)
-			expect(pulledAudit.complete).toBe(false)
-			expect(pulledAudit.unknown).toBe(1)
+			// Pull changes content, but presence remains the defined ownership fact.
+			const pulledAudit = diffPlan(hydrated, readTarget(directory.path, paths))
+			expect(pulledAudit.clean).toBe(true)
+			expect(pulledAudit.complete).toBe(true)
+			expect(pulledAudit.unknown).toBe(0)
 			expect(readFileSync(join(directory.path, 'guides/src/msg.md'), 'utf8')).toBe(
 				'# @orkestrel/msg\n\nReal vendored guide bytes.\n',
 			)

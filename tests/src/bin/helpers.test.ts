@@ -56,6 +56,7 @@ import {
 	fleetTotals,
 	fullHelp,
 	generatedNote,
+	hasFindings,
 	invalidName,
 	missingInput,
 	mergeServiceManifest,
@@ -413,6 +414,9 @@ describe('render: bucketText / verdicts', () => {
 		expect(repairVerdict(missingOnly, false)).toBe(
 			'repair: host-owned: 1 missing — pass --apply to write',
 		)
+		expect(repairVerdict(missingOnly, false, false, true)).toBe(
+			'repair: host-owned: 1 missing — missing files will be restored',
+		)
 		const preserved = repairVerdict(buildAudit(AUDIT_FINDINGS), false)
 		expect(preserved).toContain('repair: host-owned:')
 		expect(preserved).toContain(
@@ -473,6 +477,12 @@ describe('render: bucketText / verdicts', () => {
 		expect(countWrites(counts, true)).toBe(6)
 		expect(countWrites([], false)).toBe(0)
 		expect(countWrites([{ drifted: 5, missing: 0, foreign: 0, unknown: 0 }], false)).toBe(0)
+	})
+
+	it('uses one dirty predicate for selected and outside findings', () => {
+		expect(hasFindings(buildAudit([]), 0)).toBe(false)
+		expect(hasFindings(buildAudit(AUDIT_FINDINGS), 0)).toBe(true)
+		expect(hasFindings(buildAudit([]), 1)).toBe(true)
 	})
 
 	it('merges generated service scripts without changing publication metadata or unrelated scripts', () => {
@@ -599,8 +609,8 @@ describe('render: fleet', () => {
 	})
 
 	it('renders blast-radius totals', () => {
-		expect(fleetTotals(2, 1)).toBe('total: 2 drifted repos, 1 failed')
-		expect(fleetTotals(1, 0)).toBe('total: 1 drifted repo, 0 failed')
+		expect(fleetTotals(2, 1)).toBe('total: 2 dirty repos, 1 failed')
+		expect(fleetTotals(1, 0)).toBe('total: 1 dirty repo, 0 failed')
 	})
 })
 
@@ -1032,13 +1042,15 @@ describe('render: new prune/missing/generated/audit-live/comparison/ci/catalog e
 	})
 
 	it('comparisonLine reports exact host-file comparison depth without implementation jargon', () => {
-		const aware = comparisonLine(true)
-		const notAware = comparisonLine(false)
+		const aware = comparisonLine(88, 0)
+		const mixed = comparisonLine(82, 6)
+		const notAware = comparisonLine(0, 6)
 		expect(aware).toBe('comparing: file contents for host-owned files')
 		expect(aware.toLowerCase()).not.toContain('presence-only')
-		expect(notAware).toBe(
-			'comparing: file names only for host-owned files (no vendored source found)',
+		expect(mixed).toBe(
+			'comparing: file contents for 82 host-owned files; presence for 6 presence-owned files',
 		)
+		expect(notAware).toBe('comparing: file presence for 6 presence-owned files')
 		expect(notAware.toLowerCase()).not.toContain('presence-only')
 	})
 

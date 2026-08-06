@@ -14,7 +14,6 @@ import {
 	symlinkSync,
 	writeFileSync,
 } from 'node:fs'
-import { createServer } from 'node:net'
 import { attempt, isRecord, parseJSON } from '@orkestrel/contract'
 import { describe, expect, it } from 'vitest'
 import {
@@ -72,7 +71,6 @@ import {
 	buildBlueprintFixture,
 	buildTempDirectory,
 	canDirectoryLink,
-	canSocket,
 	canSymlink,
 	createDirectoryLink,
 	hostManifestOf,
@@ -1663,54 +1661,49 @@ describe('hydratePlan', () => {
 		}
 	})
 
-	it(
-		'diffPlan content-compares a HYDRATED host-origin artifact — a byte-mutated target now reads ' +
-			"'stale' (and is counted as drifted), where the same target against the UNHYDRATED plan " +
-			"reads 'unknown' and fails closed when there is no content to compare",
-		async () => {
-			const host = await buildTempDirectory()
-			try {
-				writeFileSync(join(host.path, 'notes.txt'), 'host content\n', 'utf8')
-				const plan: Plan = {
-					blueprint: blueprint('hydrate-diff-fixture', { src: ['core'] }),
-					groups: ['docs'],
-					artifacts: [{ path: 'notes.txt', group: 'docs', origin: 'host' }],
-				}
-				const current = { 'notes.txt': contentToHex('byte-mutated target content\n') }
-
-				const unhydratedAudit = diffPlan(plan, current)
-				expect(unhydratedAudit.findings).toEqual([
-					{ path: 'notes.txt', group: 'docs', drift: 'unknown' },
-				])
-				expect(unhydratedAudit.drifted).toBe(0)
-				expect(unhydratedAudit.unknown).toBe(1)
-				expect(unhydratedAudit.complete).toBe(false)
-				expect(unhydratedAudit.clean).toBe(false)
-
-				const hydrated = hydratePlan(plan, host.path)
-				expect(hydrated.artifacts[0]?.hex).toBe(contentToHex('host content\n'))
-
-				const hydratedAudit = diffPlan(hydrated, current)
-				// Hydration attaches the real host bytes as `hex`; `diffPlan`'s
-				// host branch now byte-compares whenever `hex` is present, so
-				// a target that has drifted from those bytes is `stale`, counted in
-				// `drifted` — distinct from the unhydrated unknown audit above.
-				expect(hydratedAudit.findings).toEqual([
-					{
-						path: 'notes.txt',
-						group: 'docs',
-						drift: 'stale',
-						observed: contentToHex('byte-mutated target content\n'),
-					},
-				])
-				expect(hydratedAudit.drifted).toBe(1)
-			} finally {
-				await host.cleanup()
+	it('diffPlan content-compares a hydrated host artifact while the unhydrated plan is presence-owned', async () => {
+		const host = await buildTempDirectory()
+		try {
+			writeFileSync(join(host.path, 'notes.txt'), 'host content\n', 'utf8')
+			const plan: Plan = {
+				blueprint: blueprint('hydrate-diff-fixture', { src: ['core'] }),
+				groups: ['docs'],
+				artifacts: [{ path: 'notes.txt', group: 'docs', origin: 'host' }],
 			}
-		},
-	)
+			const current = { 'notes.txt': contentToHex('byte-mutated target content\n') }
 
-	it('diffPlan fails closed for a present UNHYDRATED host artifact instead of inventing a match', () => {
+			const unhydratedAudit = diffPlan(plan, current)
+			expect(unhydratedAudit.findings).toEqual([
+				{ path: 'notes.txt', group: 'docs', drift: 'aligned' },
+			])
+			expect(unhydratedAudit.drifted).toBe(0)
+			expect(unhydratedAudit.unknown).toBe(0)
+			expect(unhydratedAudit.complete).toBe(true)
+			expect(unhydratedAudit.clean).toBe(true)
+
+			const hydrated = hydratePlan(plan, host.path)
+			expect(hydrated.artifacts[0]?.hex).toBe(contentToHex('host content\n'))
+
+			const hydratedAudit = diffPlan(hydrated, current)
+			// Hydration attaches the real host bytes as `hex`; `diffPlan`'s
+			// host branch now byte-compares whenever `hex` is present, so
+			// a target that has drifted from those bytes is `stale`, counted in
+			// `drifted` — distinct from the unhydrated presence audit above.
+			expect(hydratedAudit.findings).toEqual([
+				{
+					path: 'notes.txt',
+					group: 'docs',
+					drift: 'stale',
+					observed: contentToHex('byte-mutated target content\n'),
+				},
+			])
+			expect(hydratedAudit.drifted).toBe(1)
+		} finally {
+			await host.cleanup()
+		}
+	})
+
+	it('diffPlan treats a present unhydrated host artifact as presence-owned', () => {
 		const plan: Plan = {
 			blueprint: blueprint('hydrate-diff-unhydrated-fixture', { src: ['core'] }),
 			groups: ['docs'],
@@ -1720,17 +1713,11 @@ describe('hydratePlan', () => {
 
 		const audit = diffPlan(plan, current)
 
-		expect(audit.clean).toBe(false)
-		expect(audit.complete).toBe(false)
-		expect(audit.unknown).toBe(1)
-		expect(audit.findings).toEqual([{ path: 'notes.txt', group: 'docs', drift: 'unknown' }])
-		expect(audit.questions).toEqual([
-			{
-				field: 'notes.txt',
-				text: 'Canonical host bytes are unavailable for notes.txt',
-				blocking: true,
-			},
-		])
+		expect(audit.clean).toBe(true)
+		expect(audit.complete).toBe(true)
+		expect(audit.unknown).toBe(0)
+		expect(audit.findings).toEqual([{ path: 'notes.txt', group: 'docs', drift: 'aligned' }])
+		expect(audit.questions).toEqual([])
 	})
 
 	it('rejects a staged directory whose manifest membership was truncated with its storage', async () => {
@@ -1902,39 +1889,30 @@ describe('hydratePlan', () => {
 		}
 	})
 
-	it.skipIf(!canSocket)(
-		'wraps a genuine unreadable host source into a coded TARGET error (SKIPPED: environment cannot bind a Unix domain socket — unreadable-source hydration unverified here; passes on socket-capable POSIX CI)',
-		async () => {
-			const host = await buildTempDirectory()
-			try {
-				const socketPath = join(host.path, 'broken-socket')
-				const server = createServer()
-				await new Promise<void>((resolvePromise, reject) => {
-					server.once('error', reject)
-					server.listen(socketPath, () => resolvePromise())
-				})
-				try {
-					const plan: Plan = {
-						blueprint: blueprint('hydrate-unreadable-fixture', { src: ['core'] }),
-						groups: ['docs'],
-						artifacts: [{ path: 'broken-socket', group: 'docs', origin: 'host' }],
-					}
-					let caught: unknown
-					try {
-						hydratePlan(plan, host.path)
-					} catch (error) {
-						caught = error
-					}
-					if (!isScaffoldError(caught)) throw new Error('expected a ScaffoldError to be thrown')
-					expect(caught.code).toBe('TARGET')
-				} finally {
-					await new Promise<void>((resolvePromise) => server.close(() => resolvePromise()))
-				}
-			} finally {
-				await host.cleanup()
+	it('rejects a declared staged source that exists as a directory instead of a readable file', async () => {
+		const host = await buildTempDirectory()
+		try {
+			mkdirSync(join(host.path, 'blocked'))
+			writeHostManifest(
+				host.path,
+				hostManifestOf([{ storage: 'blocked', destination: 'asset.bin', executable: false }], []),
+			)
+			const plan: Plan = {
+				blueprint: blueprint('hydrate-unreadable-fixture', { src: ['core'] }),
+				groups: ['docs'],
+				artifacts: [{ path: 'asset.bin', group: 'docs', origin: 'host' }],
 			}
-		},
-	)
+
+			const result = attempt(() => hydratePlan(plan, host.path))
+			expect(result.success).toBe(false)
+			if (result.success || !isScaffoldError(result.error)) {
+				throw new Error('expected a ScaffoldError to be returned')
+			}
+			expect(result.error.code).toBe('TARGET')
+		} finally {
+			await host.cleanup()
+		}
+	})
 
 	it('rejects exact, case-folded, ancestor, and descendant collisions after directory expansion', async () => {
 		const host = await buildTempDirectory()
