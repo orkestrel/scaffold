@@ -15,33 +15,44 @@ export function partitionFindings(findings: readonly Finding[], plan: Plan): Ori
 	const origins = new Map(plan.artifacts.map((artifact) => [artifact.path, artifact.origin]))
 	let ownedDrifted = 0
 	let ownedMissing = 0
-	let ownedForeign = 0
 	let generatedDrifted = 0
 	let generatedMissing = 0
-	let generatedForeign = 0
+	let unknownOwned = 0
+	let unknownGenerated = 0
+	let foreign = 0
 	for (const finding of findings) {
 		const origin = origins.get(finding.path)
 		const owned = origin === 'host' || origin === 'template'
 		if (finding.drift === 'aligned') continue
+		if (finding.drift === 'foreign') {
+			foreign += 1
+			continue
+		}
 		if (finding.drift === 'stale') {
 			if (owned) ownedDrifted += 1
 			else generatedDrifted += 1
 		} else if (finding.drift === 'missing') {
 			if (owned) ownedMissing += 1
 			else generatedMissing += 1
-		} else if (owned) {
-			ownedForeign += 1
 		} else {
-			generatedForeign += 1
+			if (owned) unknownOwned += 1
+			else unknownGenerated += 1
 		}
 	}
 	return {
-		owned: { drifted: ownedDrifted, missing: ownedMissing, foreign: ownedForeign },
+		owned: {
+			drifted: ownedDrifted,
+			missing: ownedMissing,
+			foreign: 0,
+			unknown: unknownOwned,
+		},
 		generated: {
 			drifted: generatedDrifted,
 			missing: generatedMissing,
-			foreign: generatedForeign,
+			foreign: 0,
+			unknown: unknownGenerated,
 		},
+		foreign: { drifted: 0, missing: 0, foreign, unknown: 0 },
 	}
 }
 
@@ -50,13 +61,16 @@ export function fleetEntryOf(
 	name: string,
 	counts: AuditCounts | undefined,
 	failed: boolean,
+	outside = 0,
 ): FleetEntry {
 	return {
 		name,
 		drifted: counts?.drifted ?? 0,
 		missing: counts?.missing ?? 0,
 		foreign: counts?.foreign ?? 0,
+		unknown: counts?.unknown ?? 0,
 		failed,
+		outside,
 	}
 }
 

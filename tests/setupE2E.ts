@@ -941,6 +941,49 @@ export function registerHermeticBinGates(): void {
 		})
 
 		describe('new --apply: explicit development dependencies round-trip through audit', () => {
+			it('fails closed when a declared dependency guide has target bytes but no vendored comparison bytes', async () => {
+				const cwd = await buildTempDirectory()
+				try {
+					const created = runDefaultBin(['new', 'demoguide', '--src', 'core', '--apply'], {
+						cwd: cwd.path,
+					})
+					expect(created.status).toBe(0)
+					const packageDirectory = join(cwd.path, 'demoguide')
+					const manifestPath = join(packageDirectory, 'package.json')
+					const manifest: unknown = JSON.parse(readFileSync(manifestPath, 'utf8'))
+					if (!isRecord(manifest)) throw new Error('expected package manifest')
+					writeFileSync(
+						manifestPath,
+						`${JSON.stringify(
+							{
+								...manifest,
+								dependencies: { '@orkestrel/emitter': '^0.0.5' },
+							},
+							null,
+							'\t',
+						)}\n`,
+						'utf8',
+					)
+					const guidePath = join(packageDirectory, 'guides', 'src', 'emitter.md')
+					writeFileSync(guidePath, 'TOTAL GARBAGE', 'utf8')
+
+					const unknown = runDefaultBin(['audit'], { cwd: packageDirectory })
+					expect(unknown.status).toBe(1)
+					expect(unknown.stdout).toContain(
+						'comparing: file names only for host-owned files (no vendored source found)',
+					)
+					expect(unknown.stdout).toContain('unknown')
+
+					rmSync(guidePath)
+					const missing = runDefaultBin(['audit'], { cwd: packageDirectory })
+					expect(missing.status).toBe(1)
+					expect(missing.stdout).toContain('missing')
+					expect(missing.stdout).not.toContain('unknown')
+				} finally {
+					await cwd.cleanup()
+				}
+			}, 30000)
+
 			it('--extras is an unrecognized flag under the default host too — exit 2, nothing written', async () => {
 				const cwd = await buildTempDirectory()
 				try {

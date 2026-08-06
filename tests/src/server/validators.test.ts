@@ -215,10 +215,13 @@ describe('isHostManifest', () => {
 		expect(isHostManifest(manifest)).toBe(true)
 		expect(isHostManifest(manifest.entries)).toBe(false)
 		expect(isHostManifest({ ...manifest, extra: true })).toBe(false)
-		expect(isHostManifest({ entries: manifest.entries, roots: ['../escape'] })).toBe(false)
+		expect(
+			isHostManifest({ entries: manifest.entries, roots: ['../escape'], digest: manifest.digest }),
+		).toBe(false)
 	})
 
 	it('rejects symbol-extended records and oversized arrays without reading their elements', () => {
+		const digest = hostManifestOf([], []).digest
 		const entry = {
 			storage: 'agents/a',
 			destination: '.agents/a',
@@ -226,7 +229,7 @@ describe('isHostManifest', () => {
 			[Symbol('extra')]: true,
 		}
 		expect(isManifestEntry(entry)).toBe(false)
-		expect(isHostManifest({ entries: [], roots: [], [Symbol('extra')]: true })).toBe(false)
+		expect(isHostManifest({ entries: [], roots: [], digest, [Symbol('extra')]: true })).toBe(false)
 
 		const entries = new Array(MAX_HOST_ENTRIES + 1)
 		Object.defineProperty(entries, '0', {
@@ -240,13 +243,14 @@ describe('isHostManifest', () => {
 				throw new Error('oversized roots must not be traversed')
 			},
 		})
-		expect(() => isHostManifest({ entries, roots: [] })).not.toThrow()
-		expect(isHostManifest({ entries, roots: [] })).toBe(false)
-		expect(() => isHostManifest({ entries: [], roots })).not.toThrow()
-		expect(isHostManifest({ entries: [], roots })).toBe(false)
+		expect(() => isHostManifest({ entries, roots: [], digest })).not.toThrow()
+		expect(isHostManifest({ entries, roots: [], digest })).toBe(false)
+		expect(() => isHostManifest({ entries: [], roots, digest })).not.toThrow()
+		expect(isHostManifest({ entries: [], roots, digest })).toBe(false)
 	})
 
 	it('rejects caller-owned array methods, symbols, sparse indices, and invalid elements', () => {
+		const digest = hostManifestOf([], []).digest
 		const entries: unknown[] = [{ invalid: true }]
 		Object.defineProperty(entries, 'every', {
 			value: () => true,
@@ -255,9 +259,9 @@ describe('isHostManifest', () => {
 		Object.defineProperty(roots, Symbol('extra'), {
 			value: true,
 		})
-		expect(isHostManifest({ entries, roots: [] })).toBe(false)
-		expect(isHostManifest({ entries: [], roots })).toBe(false)
-		expect(isHostManifest({ entries: new Array(1), roots: [] })).toBe(false)
+		expect(isHostManifest({ entries, roots: [], digest })).toBe(false)
+		expect(isHostManifest({ entries: [], roots, digest })).toBe(false)
+		expect(isHostManifest({ entries: new Array(1), roots: [], digest })).toBe(false)
 	})
 
 	it('is total for hostile getters and revoked proxy manifests', () => {

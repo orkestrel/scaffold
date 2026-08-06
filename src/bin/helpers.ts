@@ -34,6 +34,7 @@ export function bucketText(counts: AuditCounts): string {
 	if (counts.drifted > 0) parts.push(`${counts.drifted} drifted`)
 	if (counts.missing > 0) parts.push(`${counts.missing} missing`)
 	if (counts.foreign > 0) parts.push(`${counts.foreign} unexpected`)
+	if (counts.unknown > 0) parts.push(`${counts.unknown} unknown`)
 	return parts.length > 0 ? parts.join(', ') : 'clean'
 }
 
@@ -42,10 +43,20 @@ export function auditVerdict(audit: Audit, plan: Plan): string {
 	const count = audit.findings.length
 	if (audit.clean) return `audit: ${countPart(count, 'artifact')} — clean`
 	const split = partitionFindings(audit.findings, plan)
-	const owned = split.owned.drifted === 0 && split.owned.missing === 0 && split.owned.foreign === 0
+	const owned =
+		split.owned.drifted === 0 &&
+		split.owned.missing === 0 &&
+		split.owned.foreign === 0 &&
+		split.owned.unknown === 0
+	const generated = bucketText(split.generated)
+	const foreign = bucketText(split.foreign)
+	if (owned && generated === 'clean') {
+		return `audit: ${countPart(count, 'artifact')} — host-owned clean; ${foreign}`
+	}
+	const suffix = foreign === 'clean' ? '' : `; unexpected: ${foreign}`
 	return owned
-		? `audit: ${countPart(count, 'artifact')} — host-owned clean; ${bucketText(split.generated)} (generated)`
-		: `audit: ${countPart(count, 'artifact')} — host-owned: ${bucketText(split.owned)}; generated: ${bucketText(split.generated)}`
+		? `audit: ${countPart(count, 'artifact')} — host-owned clean; ${generated} (generated)${suffix}`
+		: `audit: ${countPart(count, 'artifact')} — host-owned: ${bucketText(split.owned)}; generated: ${generated}${suffix}`
 }
 
 /** Render non-aligned audit findings as terminal table rows. */
@@ -527,7 +538,11 @@ export function renderComputedNotes(findings: readonly Finding[], plan: Plan): r
 	}
 	const notes: string[] = []
 	if (computed > 0) notes.push(generatedNote(computed))
-	if (manifest > 0) {
+	if (manifest > 0 && plan.blueprint.services.length > 0) {
+		notes.push(
+			`${countPart(manifest, 'finding')} in package.json — 'scaffold repair --generated' repairs generated service scripts; review any remaining publication metadata directly`,
+		)
+	} else if (manifest > 0) {
 		notes.push(
 			`${countPart(manifest, 'finding')} in package.json — repair does not rewrite protected publication metadata; review and edit it directly`,
 		)

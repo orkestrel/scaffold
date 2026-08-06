@@ -569,6 +569,34 @@ describe('scaffold bin', () => {
 		})
 	})
 
+	describe('pull exit truth', () => {
+		it('exits 1 under --apply --yes when both guide and version fetches failed', async () => {
+			const target = mkdtempSync(join(WORKSPACE_ROOT, '.pull-failure-'))
+			const previousExitCode = process.exitCode
+			try {
+				writeFileSync(
+					join(target, 'package.json'),
+					JSON.stringify({
+						name: '@orkestrel/router',
+						dependencies: { '@orkestrel/contract': '^0.0.1' },
+					}),
+					'utf8',
+				)
+				process.exitCode = undefined
+				await new CLI({
+					registry: { base: 'http://127.0.0.1:1' },
+					guides: { base: 'http://127.0.0.1:1' },
+				}).run(['pull', '--target', relative(WORKSPACE_ROOT, target), '--apply', '--yes', '--json'])
+
+				expect(process.exitCode).toBe(1)
+				expect(existsSync(join(target, 'guides', 'src', 'contract.md'))).toBe(false)
+			} finally {
+				process.exitCode = previousExitCode
+				rmSync(target, { recursive: true, force: true })
+			}
+		})
+	})
+
 	describe('mirror', () => {
 		it('applies the exact org guide mirror without requesting package versions', async () => {
 			const fixture = await buildHTTPFixture()
@@ -723,8 +751,8 @@ describe('scaffold bin', () => {
 		}, 20000)
 
 		it('drifted target (a host file removed): exit 1, names the path with the "host-owned" label', async () => {
-			// Hydrated host artifacts are compared by content and unhydrated ones
-			// by presence. A missing artifact is drift in either mode.
+			// Hydrated host artifacts are compared by content. A missing artifact
+			// remains directly observable even when canonical bytes are unavailable.
 			const from = await buildFromFixture()
 			const cwd = await buildTempDirectory()
 			try {
@@ -741,6 +769,45 @@ describe('scaffold bin', () => {
 			}
 		}, 20000)
 
+		it('a truncated staged-host membership fails TARGET instead of shrinking to a clean plan', async () => {
+			const from = await buildStagedHost()
+			const cwd = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				const targetPath = join(packageDirectory, '.claude', 'rules', 'example.md')
+				writeFileSync(targetPath, 'TOTAL GARBAGE\n', 'utf8')
+
+				const control = runBin(['audit', '--from', from.path], '', { cwd: packageDirectory })
+				expect(control.status).toBe(1)
+				expect(control.stdout).toContain('drifted')
+				expect(control.stdout).toContain('.claude/rules/example.md')
+
+				const manifest = readHostManifest(from.path)
+				if (manifest === undefined) throw new Error('expected staged host manifest')
+				const removed = manifest.entries.find(
+					(entry) => entry.destination === '.claude/rules/example.md',
+				)
+				if (removed === undefined) throw new Error('expected staged rule entry')
+				rmSync(join(from.path, removed.storage))
+				writeFileSync(
+					join(from.path, 'manifest.json'),
+					JSON.stringify({
+						...manifest,
+						entries: manifest.entries.filter((entry) => entry !== removed),
+					}),
+					'utf8',
+				)
+
+				const truncated = runBin(['audit', '--from', from.path], '', { cwd: packageDirectory })
+				expect(truncated.status).toBe(1)
+				expect(truncated.stderr).toContain('[TARGET] Host manifest membership')
+				expect(truncated.stdout).not.toContain('— clean')
+			} finally {
+				await cwd.cleanup()
+				await from.cleanup()
+			}
+		}, 30000)
+
 		it('counts a planted unexpected .claude/agents file as foreign audit drift', async () => {
 			const from = await buildFromFixture()
 			const cwd = await buildTempDirectory()
@@ -754,6 +821,8 @@ describe('scaffold bin', () => {
 				expect(audited.status).toBe(1)
 				expect(audited.stdout).toContain('unexpected file')
 				expect(audited.stdout).toContain('.claude/agents/rogue.md')
+				expect(audited.stdout).toContain('1 unexpected')
+				expect(audited.stdout).not.toContain('1 unexpected (generated)')
 
 				const jsonAudited = runBin(['audit', '--json', '--from', from.path], '', {
 					cwd: packageDirectory,
@@ -827,6 +896,14 @@ describe('scaffold bin', () => {
 				writeFileSync(join(vendor, 'claude.test.ts'), 'export {}\n')
 				const manifestPath = join(packageDirectory, 'package.json')
 				const originalManifest = readFileSync(manifestPath, 'utf8')
+				const auditedBefore = runBin(['audit', '--from', from.path], '', {
+					cwd: packageDirectory,
+				})
+				expect(auditedBefore.status).toBe(1)
+				expect(auditedBefore.stdout).toContain('repair --generated')
+				expect(auditedBefore.stdout).not.toContain(
+					'repair does not rewrite protected publication metadata',
+				)
 
 				const dry = runBin(
 					['repair', '--generated', '--replace', '--yes', '--from', from.path],
@@ -1446,7 +1523,7 @@ describe('scaffold bin', () => {
 				const withoutPrune = runBin(['repair', '--apply', '--from', from.path], '', {
 					cwd: packageDirectory,
 				})
-				expect(withoutPrune.status).toBe(0)
+				expect(withoutPrune.status).toBe(1)
 				expect(existsSync(roguePath)).toBe(true)
 
 				const pruned = runBin(['repair', '--apply', '--prune', '--from', from.path], '', {
@@ -1517,7 +1594,7 @@ describe('scaffold bin', () => {
 				const result = runBin(['repair', '--apply', '--yes', '--from', from.path], '', {
 					cwd: packageDirectory,
 				})
-				expect(result.status).toBe(0)
+				expect(result.status).toBe(1)
 				expect(existsSync(roguePath)).toBe(true)
 				expect(readFileSync(join(packageDirectory, '.editorconfig'), 'utf8')).toBe(
 					HOST_FIXTURE_FILES['.editorconfig'],
@@ -1641,7 +1718,7 @@ describe('scaffold bin', () => {
 				const defaultRepair = runBin(['fleet', '--apply', '--from', from.path], '', {
 					cwd: root.path,
 				})
-				expect(defaultRepair.status).toBe(0)
+				expect(defaultRepair.status).toBe(1)
 				expect(readFileSync(generatedPath, 'utf8')).toBe('// generated drift\n')
 
 				const generatedOnly = runBin(['fleet', '--generated', '--apply', '--from', from.path], '', {
@@ -1802,6 +1879,58 @@ describe('scaffold bin', () => {
 				await second.cleanup()
 			}
 		})
+
+		it('rejects --target as a usage error instead of silently ignoring it', async () => {
+			const root = await buildTempDirectory()
+			try {
+				const result = runBin(['fleet', '--target', './demo'], '', { cwd: root.path })
+				expect(result.status).toBe(2)
+				expect(result.stderr).toContain("--target is not supported for 'fleet'")
+			} finally {
+				await root.cleanup()
+			}
+		})
+
+		it('counts generated drift outside default fleet repair scope', async () => {
+			const from = await buildFromFixture()
+			const root = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(root.path, 'pkg', from.path)
+				rmSync(join(packageDirectory, 'tsconfig.json'))
+
+				const result = runBin(['fleet', '--from', from.path], '', { cwd: root.path })
+
+				expect(result.status).toBe(1)
+				expect(result.stdout).toContain('pkg: clean')
+				expect(result.stdout).toContain('outside host-owned repair scope')
+				expect(result.stdout).toContain('total: 1 drifted repo, 0 failed')
+			} finally {
+				await root.cleanup()
+				await from.cleanup()
+			}
+		}, 30000)
+
+		it('fleet --prune applies the raw repair audit, then deletes the previewed foreign file', async () => {
+			const from = await buildFromFixture()
+			const root = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(root.path, 'pkg', from.path)
+				const rogue = join(packageDirectory, 'scripts', 'junk.sh')
+				writeFileSync(rogue, '#!/bin/sh\n', 'utf8')
+
+				const result = runBin(['fleet', '--prune', '--apply', '--yes', '--from', from.path], '', {
+					cwd: root.path,
+				})
+
+				expect(result.status).toBe(0)
+				expect(result.stdout).toContain('delete pkg/scripts/junk.sh')
+				expect(result.stdout).not.toContain('Repair target changed after its audit preview')
+				expect(existsSync(rogue)).toBe(false)
+			} finally {
+				await root.cleanup()
+				await from.cleanup()
+			}
+		}, 30000)
 
 		it('--offline --from <fixture>: produces the table and writes the catalog', async () => {
 			const target = await buildTempDirectory()

@@ -48,12 +48,14 @@ export interface AuditCounts {
 	readonly drifted: number
 	readonly missing: number
 	readonly foreign: number
+	readonly unknown: number
 }
 
 /** Audit tallies partitioned by repair ownership. */
 export interface OriginPartition {
 	readonly owned: AuditCounts
 	readonly generated: AuditCounts
+	readonly foreign: AuditCounts
 }
 
 /** One rendered fleet outcome. */
@@ -67,6 +69,7 @@ export type FleetOutcome =
 export interface FleetEntry extends AuditCounts {
 	readonly name: string
 	readonly failed: boolean
+	readonly outside: number
 }
 
 /** One successfully inspected fleet repository. */
@@ -74,7 +77,9 @@ export interface FleetRepo {
 	readonly name: string
 	readonly directory: string
 	readonly plan: Plan
+	readonly rawAudit: Audit
 	readonly audit: Audit
+	readonly outside: number
 }
 
 /** One fleet repository that could not be inspected. */

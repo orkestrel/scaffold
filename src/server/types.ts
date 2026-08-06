@@ -70,6 +70,8 @@ export interface ManifestEntry {
 export interface HostManifest {
 	readonly entries: readonly ManifestEntry[]
 	readonly roots: readonly string[]
+	/** SHA-256 of the exact declared entry/root membership. */
+	readonly digest: string
 }
 
 /** One destination snapshot required to remain stable through a write commit. */

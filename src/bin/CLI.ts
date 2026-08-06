@@ -358,15 +358,19 @@ export class CLI implements CLIInterface {
 	 * caller compiles the full plan anyway. Diff it too so a clean scoped verdict can point at drift
 	 * outside the selected boundary. The count feeds the shared `scopeNote` renderer.
 	 */
-	#outside(compiled: Plan, target: string): number {
-		const full = diffPlan(
-			compiled,
+	#outside(compiled: Plan, selected: Plan, target: string, host: string): number {
+		const full = hydratePlan(compiled, host)
+		const selectedPaths = new Set(selected.artifacts.map((artifact) => artifact.path))
+		const audit = diffPlan(
+			full,
 			readTarget(
 				target,
-				compiled.artifacts.map((artifact) => artifact.path),
+				full.artifacts.map((artifact) => artifact.path),
 			),
 		)
-		return full.drifted + full.missing + full.foreign
+		return audit.findings.filter(
+			(finding) => finding.drift !== 'aligned' && !selectedPaths.has(finding.path),
+		).length
 	}
 
 	/** Promote only absent service-owned starter seams into repairable missing artifacts. */
@@ -843,7 +847,7 @@ export class CLI implements CLIInterface {
 		} else if (json) {
 			this.#write(report)
 		}
-		process.exitCode = report.clean ? 0 : proceed ? 0 : 1
+		process.exitCode = report.failed > 0 ? 1 : report.clean || proceed ? 0 : 1
 	}
 
 	/** `scaffold audit` — whole-plan conformance report; offers a repair handoff on drift. */
@@ -920,7 +924,13 @@ export class CLI implements CLIInterface {
 		for (const question of audit.questions) {
 			if (!question.blocking) this.#reporter.line(`warning: ${question.text}`)
 		}
-		this.#reporter.line(comparisonLine(true))
+		this.#reporter.line(
+			comparisonLine(
+				!plan.artifacts.some(
+					(artifact) => artifact.origin === 'host' && artifact.hex === undefined,
+				),
+			),
+		)
 		this.#reporter.table(auditTable(audit, plan))
 		this.#reporter.line(auditVerdict(audit, plan))
 		if (live !== undefined) {
@@ -1005,14 +1015,15 @@ export class CLI implements CLIInterface {
 		const compiled = prepared[0]
 		let plan = prepared[1]
 		let audit = prepared[2]
+		let reported = this.#scanSafe(audit, target, host, spec.services).audit
 
 		if (!json) {
 			// The scope line carries the cost of discarding local changes, so it is
 			// stated only where there is drift for that cost to apply to. A clean
 			// run's verdict already says nothing is being written.
-			if (!audit.clean) this.#reporter.line(scopeLine('repair', generated))
+			if (!reported.clean) this.#reporter.line(scopeLine('repair', generated))
 			this.#reporter.section('Audit')
-			this.#reporter.table(auditTable(audit, plan))
+			this.#reporter.table(auditTable(reported, plan))
 		}
 
 		// The prune preview/confirm are driven by the real scan
@@ -1020,32 +1031,31 @@ export class CLI implements CLIInterface {
 		// populate through this call path — it only ever reads the plan's own
 		// paths). A zero-length scan skips the question entirely and is a no-op.
 		// Compute this BEFORE the clean-audit check so `--prune` still reaches
-		// this scan (and the deletion flow below) on a clean-host repo — a clean
-		// this scan and deletion flow on a clean-host repo. Only a clean audit
-		// with nothing to prune returns early.
+		// the deletion flow on a clean-host repo. Only a clean audit with nothing
+		// to prune returns early.
 		const prunePaths = values.prune ? this.#prunePaths(target, host, spec.services) : []
 		const pruneSnapshot = readTarget(target, prunePaths)
 
-		if (audit.clean && prunePaths.length === 0) {
+		if (reported.clean && prunePaths.length === 0) {
 			if (json) {
-				this.#write(audit)
+				this.#write(reported)
 			} else {
-				this.#reporter.line(repairVerdict(audit, generated, replace))
-				const note = scopeNote(this.#outside(compiled, target), generated)
+				this.#reporter.line(repairVerdict(reported, generated, replace))
+				const note = scopeNote(this.#outside(compiled, plan, target, host), generated)
 				if (note !== undefined) this.#reporter.line(note)
 			}
 			process.exitCode = 0
 			return
 		}
 
-		if (!json) this.#reporter.line(repairVerdict(audit, generated, replace))
+		if (!json) this.#reporter.line(repairVerdict(reported, generated, replace))
 
 		const repairable = countWrites([audit], replace)
 		if (repairable === 0 && prunePaths.length === 0) {
 			// Nothing here is repairable: the only findings are drifted files no
 			// authorization on this command line covers. Close with the same tally a
 			// run that did write ends on rather than stopping mid-screen.
-			if (json) this.#write(audit)
+			if (json) this.#write(reported)
 			else {
 				this.#reporter.line(
 					repairTally({
@@ -1091,6 +1101,7 @@ export class CLI implements CLIInterface {
 			const refreshed = this.#prepareRepair(spec, target, host, generated, json)
 			plan = refreshed[1]
 			audit = refreshed[2]
+			reported = this.#scanSafe(audit, target, host, spec.services).audit
 		}
 
 		const spinner = this.#spinner('repairing', json)
@@ -1103,7 +1114,7 @@ export class CLI implements CLIInterface {
 			// included. Split the refused drift back out so the tally's `unchanged`
 			// means what the audit table's `unchanged` means.
 			const left = replace ? 0 : audit.drifted
-			if (json) this.#write(auditToRepairResult(audit, { ...result, removed }))
+			if (json) this.#write(auditToRepairResult(reported, { ...result, removed }))
 			else {
 				this.#succeed(
 					spinner,
@@ -1121,7 +1132,15 @@ export class CLI implements CLIInterface {
 		} finally {
 			materializer.destroy()
 		}
-		process.exitCode = audit.drifted > 0 && !replace ? 1 : prunePaths.length > 0 && !doPrune ? 1 : 0
+		const finalRaw = diffPlan(
+			plan,
+			readTarget(
+				target,
+				plan.artifacts.map((artifact) => artifact.path),
+			),
+		)
+		const finalAudit = this.#scanSafe(finalRaw, target, host, spec.services).audit
+		process.exitCode = finalAudit.clean ? 0 : 1
 	}
 
 	/** `scaffold fleet` — audit/repair every `@orkestrel` package beneath the current directory's immediate children. */
@@ -1147,6 +1166,7 @@ export class CLI implements CLIInterface {
 			const name = basename(directory)
 			try {
 				const compiler = createCompiler()
+				let compiled: Plan
 				let scoped: Plan
 				let questions: readonly Question[]
 				try {
@@ -1156,7 +1176,8 @@ export class CLI implements CLIInterface {
 						const message = scaffolding.questions.map((question) => question.text).join('; ')
 						throw new ScaffoldError('INVALID', message)
 					}
-					scoped = this.#scopeRepair(scaffolding.plan, directory, generated)
+					compiled = scaffolding.plan
+					scoped = this.#scopeRepair(compiled, directory, generated)
 					questions = scaffolding.questions
 				} finally {
 					compiler.destroy()
@@ -1170,11 +1191,14 @@ export class CLI implements CLIInterface {
 				}
 				// Include physical unexpected-file findings in each repository audit.
 				const audit = this.#scan(rawAudit, directory, host, plan.blueprint.services)
+				const outside = this.#outside(compiled, plan, directory, host)
 				repos.push({
 					name,
 					directory,
 					plan,
+					rawAudit,
 					audit,
+					outside,
 				})
 			} catch (error) {
 				failures.push({ name, message: describeError(error) })
@@ -1193,6 +1217,7 @@ export class CLI implements CLIInterface {
 									drifted: repo.audit.drifted,
 									missing: repo.audit.missing,
 									foreign: repo.audit.foreign,
+									unknown: repo.audit.unknown,
 								},
 					),
 				)
@@ -1201,6 +1226,8 @@ export class CLI implements CLIInterface {
 						this.#reporter.line(`${repo.name}: warning: ${question.text}`)
 					}
 				}
+				const note = scopeNote(repo.outside, generated)
+				if (note !== undefined) this.#reporter.line(`${repo.name}: ${note}`)
 			}
 			for (const failure of failures) {
 				this.#reporter.line(
@@ -1210,17 +1237,18 @@ export class CLI implements CLIInterface {
 		}
 
 		const dirty = repos.filter((repo) => !repo.audit.clean)
+		const reportedDirty = repos.filter((repo) => !repo.audit.clean || repo.outside > 0)
 
 		if (dirty.length === 0) {
 			if (json) {
 				this.#write([
-					...repos.map((repo) => fleetEntryOf(repo.name, repo.audit, false)),
+					...repos.map((repo) => fleetEntryOf(repo.name, repo.audit, false, repo.outside)),
 					...failures.map((failure) => fleetEntryOf(failure.name, undefined, true)),
 				])
 			} else {
-				this.#reporter.line(fleetTotals(0, failures.length))
+				this.#reporter.line(fleetTotals(reportedDirty.length, failures.length))
 			}
-			process.exitCode = failures.length > 0 ? 1 : 0
+			process.exitCode = reportedDirty.length > 0 || failures.length > 0 ? 1 : 0
 			return
 		}
 
@@ -1272,7 +1300,7 @@ export class CLI implements CLIInterface {
 		if (!proceed) {
 			if (json) {
 				this.#write([
-					...repos.map((repo) => fleetEntryOf(repo.name, repo.audit, false)),
+					...repos.map((repo) => fleetEntryOf(repo.name, repo.audit, false, repo.outside)),
 					...failures.map((failure) => fleetEntryOf(failure.name, undefined, true)),
 				])
 			} else {
@@ -1283,16 +1311,16 @@ export class CLI implements CLIInterface {
 		}
 
 		const materializer = createMaterializer({ host })
-		let drifted = 0
+		let drifted = repos.filter((repo) => repo.audit.clean && repo.outside > 0).length
 		let failedCount = failures.length
 		const entries: FleetEntry[] = repos
 			.filter((repo) => repo.audit.clean)
-			.map((repo) => fleetEntryOf(repo.name, repo.audit, false))
+			.map((repo) => fleetEntryOf(repo.name, repo.audit, false, repo.outside))
 
 		try {
 			for (const repo of dirty) {
 				try {
-					materializer.repair(repo.plan, repo.audit, repo.directory, replace)
+					materializer.repair(repo.plan, repo.rawAudit, repo.directory, replace)
 					if (doPrune) {
 						materializer.prune(repo.directory, pruneSets.get(repo.name) ?? {})
 					}
@@ -1304,13 +1332,18 @@ export class CLI implements CLIInterface {
 						host,
 						repo.plan.blueprint.services,
 					)
-					if (!finalAudit.clean) drifted += 1
-					entries.push(fleetEntryOf(repo.name, finalAudit, false))
+					if (!finalAudit.clean || repo.outside > 0) drifted += 1
+					entries.push(fleetEntryOf(repo.name, finalAudit, false, repo.outside))
 					if (!json) {
 						this.#reporter.line(
 							fleetRepoLine(repo.name, {
 								state: 'repaired',
-								remaining: finalAudit.drifted + finalAudit.missing + finalAudit.foreign,
+								remaining:
+									finalAudit.drifted +
+									finalAudit.missing +
+									finalAudit.foreign +
+									finalAudit.unknown +
+									repo.outside,
 							}),
 						)
 					}
@@ -1575,6 +1608,9 @@ export class CLI implements CLIInterface {
 		}
 		if (command === 'mirror' && values.deps !== undefined) {
 			this.#usage("--deps is not supported for 'mirror'; use 'pull --deps'", json)
+		}
+		if (command === 'fleet' && values.target !== undefined) {
+			this.#usage("--target is not supported for 'fleet'; change into the fleet root", json)
 		}
 
 		if (values.help) {

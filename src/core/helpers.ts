@@ -878,7 +878,13 @@ export function planToReview(plan: Plan): string {
  * ```
  */
 export function auditToReview(audit: Audit): string {
-	const groups: Record<Drift, Finding[]> = { aligned: [], stale: [], missing: [], foreign: [] }
+	const groups: Record<Drift, Finding[]> = {
+		aligned: [],
+		stale: [],
+		missing: [],
+		foreign: [],
+		unknown: [],
+	}
 	for (const finding of audit.findings) {
 		if (
 			typeof finding.path !== 'string' ||
@@ -898,8 +904,9 @@ export function auditToReview(audit: Audit): string {
 		`- drifted: ${audit.drifted}`,
 		`- missing: ${audit.missing}`,
 		`- foreign: ${audit.foreign}`,
+		`- unknown: ${audit.unknown}`,
 	]
-	const drifts: readonly Drift[] = ['stale', 'missing', 'foreign']
+	const drifts: readonly Drift[] = ['stale', 'missing', 'foreign', 'unknown']
 	for (const drift of drifts) {
 		const findings = groups[drift]
 		if (findings.length === 0) continue
@@ -1069,14 +1076,16 @@ export function inferGroup(path: string): Group {
  * @param plan - The plan whose artifacts are the source of truth.
  * @param current - The target's current content, keyed by artifact-relative path.
  * @remarks
- * Audit semantics are per-origin. A `host`-origin artifact is audited by
- * PRESENCE only — `missing` or `aligned`, never `stale` — UNLESS it has been
- * hydrated with its real host bytes (`hydratePlan`'s `content`), in which case
- * it is content-compared exactly like a `computed` artifact and CAN be
- * `stale`. `CATALOG_AGENT_PATH` remains presence-owned after hydration because
- * the catalog operation alone owns its bounded marker region. `hydratePlan` expands directory-shaped host artifacts into
- * content-bearing file artifacts; only an unresolved degrade-path host
- * artifact stays presence-only. A `computed` artifact is content-aware canon —
+ * Audit semantics are per-origin. A `host`-origin artifact with canonical
+ * `hex` is content-compared exactly like a `computed` artifact and CAN be
+ * `stale`. A present host artifact without canonical bytes is `unknown`, which
+ * makes the audit incomplete and unclean rather than treating absent evidence
+ * as a match. A missing host artifact remains `missing`, because absence is
+ * directly observable. `CATALOG_AGENT_PATH` remains presence-owned after
+ * hydration because the catalog operation alone owns its bounded marker
+ * region. `hydratePlan` expands directory-shaped host artifacts into
+ * byte-aware file artifacts; only an intentional dependency-guide pointer may
+ * remain without `hex`. A `computed` artifact is content-aware canon —
  * `missing` / `aligned` / `stale` — and gates the audit like any drifted
  * finding. A `template`-origin artifact is BIRTH-ONLY and AUDIT-EXEMPT: it is
  * always reported `aligned`, regardless of whether the target has it at all
@@ -1112,7 +1121,8 @@ export function diffPlan(plan: Plan, current: Snapshot): Audit {
 		if (artifact.origin === 'host') {
 			let drift: Drift
 			if (seen === undefined) drift = 'missing'
-			else if (artifact.hex === undefined || artifact.path === CATALOG_AGENT_PATH) drift = 'aligned'
+			else if (artifact.path === CATALOG_AGENT_PATH) drift = 'aligned'
+			else if (artifact.hex === undefined) drift = 'unknown'
 			else drift = seen === artifact.hex ? 'aligned' : 'stale'
 			findings.push({
 				path: artifact.path,
@@ -1141,19 +1151,28 @@ export function diffPlan(plan: Plan, current: Snapshot): Audit {
 	let drifted = 0
 	let missing = 0
 	let foreign = 0
+	let unknown = 0
 	for (const finding of findings) {
 		if (finding.drift === 'stale') drifted += 1
 		else if (finding.drift === 'missing') missing += 1
 		else if (finding.drift === 'foreign') foreign += 1
+		else if (finding.drift === 'unknown') unknown += 1
 	}
 	return {
 		findings,
-		clean: drifted === 0 && missing === 0 && foreign === 0,
-		complete: true,
-		questions: [],
+		clean: drifted === 0 && missing === 0 && foreign === 0 && unknown === 0,
+		complete: unknown === 0,
+		questions: findings
+			.filter((finding) => finding.drift === 'unknown')
+			.map((finding) => ({
+				field: finding.path,
+				text: `Canonical host bytes are unavailable for ${finding.path}`,
+				blocking: true,
+			})),
 		drifted,
 		missing,
 		foreign,
+		unknown,
 	}
 }
 

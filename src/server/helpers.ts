@@ -76,6 +76,7 @@ import {
 	SHOWCASE_CONFIG_PATH,
 	snapshotPlan,
 	ENVIRONMENTS,
+	stableStringify,
 	VERSION_PATTERN,
 } from '@src/core'
 import {
@@ -212,6 +213,20 @@ export function digestHex(hex: string): string {
  */
 export function digestText(value: string): string {
 	return createHash('sha256').update(value, 'utf8').digest('hex')
+}
+
+/**
+ * Digest the exact declared membership of a vendored host manifest.
+ *
+ * @param entries - The ordered file membership declarations.
+ * @param roots - The ordered directory membership declarations.
+ * @returns A SHA-256 digest independent of the manifest's stored digest field.
+ */
+export function digestHostManifest(
+	entries: readonly ManifestEntry[],
+	roots: readonly string[],
+): string {
+	return digestText(stableStringify({ entries, roots }))
 }
 
 /**
@@ -1778,8 +1793,9 @@ export function readManifest(target: string): string {
  *   `manifest.json` — the raw-repo-root fallback (`Materializer` then maps
  *   an artifact's `source` to `host` 1:1, no vendored staging indirection).
  * @throws `ScaffoldError('TARGET', …)` when `manifest.json` exists but is
- *   unreadable, malformed, collision-prone, root-incomplete, or does not map
- *   bijectively and case-exactly onto real contained storage files.
+ *   unreadable, malformed, membership-corrupted, collision-prone,
+ *   root-incomplete, or does not map bijectively and case-exactly onto real
+ *   contained storage files.
  *
  * @example
  * ```ts
@@ -1807,6 +1823,12 @@ export function readHostManifest(host: string): HostManifest | undefined {
 	const manifest = parseJSONAs(text.value, isHostManifest)
 	if (manifest === undefined) {
 		throw new ScaffoldError('TARGET', `Host manifest at ${full} is malformed`, { host, full })
+	}
+	if (manifest.digest !== digestHostManifest(manifest.entries, manifest.roots)) {
+		throw new ScaffoldError('TARGET', `Host manifest membership at ${full} is corrupted`, {
+			host,
+			full,
+		})
 	}
 	const destinationConflict = findFileConflict(manifest.entries.map((entry) => entry.destination))
 	if (destinationConflict !== undefined) {
@@ -2420,7 +2442,11 @@ export function stageHost(
 			{ paths: rootConflict },
 		)
 	}
-	const manifest: HostManifest = { entries, roots: uniqueRoots }
+	const manifest: HostManifest = {
+		entries,
+		roots: uniqueRoots,
+		digest: digestHostManifest(entries, uniqueRoots),
+	}
 	const parent = dirname(resolve(out))
 	const name = basename(resolve(out))
 	const token = randomUUID()
@@ -2552,6 +2578,7 @@ export function stageHost(
  *   {
  *     entries: [{ storage: 'pkg.tmpl', destination: 'package.json', executable: false }],
  *     roots: [],
+ *     digest: '3b52f19450237ea4cfb39bc7a77b1e5094b52a8ff1fc9c02fd68b13ad088aa0f',
  *   },
  *   'package.json',
  *   './dist/host',

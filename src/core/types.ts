@@ -115,7 +115,7 @@ export interface CatalogEntry {
 }
 
 /** One `Finding`'s verdict against the target's current content. */
-export type Drift = 'aligned' | 'stale' | 'missing' | 'foreign'
+export type Drift = 'aligned' | 'stale' | 'missing' | 'foreign' | 'unknown'
 
 /**
  * One `GuideSync` / `VersionSync`'s currency against upstream.
@@ -257,8 +257,9 @@ export interface Finding {
  *
  * @remarks
  * A `Compiler.audit` over a gate-failing blueprint sets `complete: false` with
- * the gate's `questions` and zero findings, while `diffPlan` over an existing
- * plan is always `complete: true`.
+ * the gate's `questions` and zero findings. `diffPlan` also sets
+ * `complete: false` when a present host artifact has no canonical bytes and
+ * therefore cannot be compared truthfully.
  */
 export interface Audit {
 	readonly findings: readonly Finding[]
@@ -268,6 +269,8 @@ export interface Audit {
 	readonly drifted: number
 	readonly missing: number
 	readonly foreign: number
+	/** Host artifacts present at the target but lacking canonical bytes for comparison. */
+	readonly unknown: number
 }
 
 /**

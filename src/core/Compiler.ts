@@ -135,11 +135,13 @@ export class Compiler implements CompilerInterface {
 				drifted: 0,
 				missing: 0,
 				foreign: 0,
+				unknown: 0,
 			}
 			this.#emitter.emit('audit', result)
 			return result
 		}
-		const result = { ...diffPlan(scaffolding.plan, current), questions: scaffolding.questions }
+		const diff = diffPlan(scaffolding.plan, current)
+		const result = { ...diff, questions: [...scaffolding.questions, ...diff.questions] }
 		this.#emitter.emit('audit', result)
 		return result
 	}

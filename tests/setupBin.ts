@@ -775,14 +775,16 @@ export function buildAudit(findings: readonly Finding[]): Audit {
 	const drifted = findings.filter((finding) => finding.drift === 'stale').length
 	const missing = findings.filter((finding) => finding.drift === 'missing').length
 	const foreign = findings.filter((finding) => finding.drift === 'foreign').length
+	const unknown = findings.filter((finding) => finding.drift === 'unknown').length
 	return {
 		findings,
-		clean: drifted === 0 && missing === 0 && foreign === 0,
-		complete: true,
+		clean: drifted === 0 && missing === 0 && foreign === 0 && unknown === 0,
+		complete: unknown === 0,
 		questions: [],
 		drifted,
 		missing,
 		foreign,
+		unknown,
 	}
 }
 

@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { isRecord, parseJSON } from '@orkestrel/contract'
 import { describe, expect, it } from 'vitest'
 import { blueprint, blueprintToPlan, createCompiler, dependency, diffPlan } from '@src/core'
-import { createMaterializer, createSync, digestFile, readTarget } from '@src/server'
+import { createMaterializer, createSync, digestFile, hydratePlan, readTarget } from '@src/server'
 import {
 	buildTempDirectory,
 	hostManifestOf,
@@ -19,7 +19,7 @@ describe('server integration: compile → materialize → audit → repair', () 
 		const directory = await buildTempDirectory()
 		try {
 			const spec = blueprint('gadget', { src: ['core'] })
-			const plan = blueprintToPlan(spec)
+			const plan = hydratePlan(blueprintToPlan(spec), WORKSPACE_ROOT)
 			const paths = plan.artifacts.map((artifact) => artifact.path)
 
 			const materializer = createMaterializer({ host: WORKSPACE_ROOT })
@@ -142,7 +142,7 @@ describe('server integration: compile → materialize → audit → repair', () 
 			const scaffolding = compiler.compile(blueprint('multitool', { src: ['core', 'server'] }))
 			expect(scaffolding.complete).toBe(true)
 			if (scaffolding.plan === undefined) throw new Error('expected a pinned plan')
-			const plan = scaffolding.plan
+			const plan = hydratePlan(scaffolding.plan, WORKSPACE_ROOT)
 			const paths = plan.artifacts.map((artifact) => artifact.path)
 
 			const materializer = createMaterializer({ host: WORKSPACE_ROOT })
@@ -169,7 +169,7 @@ describe('server integration: compile → materialize → audit → repair', () 
 		}
 	})
 
-	it('a non-vendored dependency guide pointer: materialize succeeds, audits clean immediately (presence-only), then STAYS clean after pull overwrites the stub with real bytes (content-compared once hydrated)', async () => {
+	it('a non-vendored dependency guide pointer stays unknown until canonical comparison bytes exist', async () => {
 		const directory = await buildTempDirectory()
 		const host = await buildTempDirectory()
 		try {
@@ -212,12 +212,13 @@ describe('server integration: compile → materialize → audit → repair', () 
 			const materializer = createMaterializer({ host: host.path })
 			materializer.materialize(plan, directory.path)
 
-			// 1. `new` succeeds and an immediate audit is clean — the stub is a
-			// never-hydrated host artifact, audited by presence only.
+			// 1. `new` succeeds, but an unhydrated plan cannot claim the stub's
+			// arbitrary bytes match canon.
 			const stubAudit = diffPlan(plan, readTarget(directory.path, paths))
-			expect(stubAudit.clean).toBe(true)
+			expect(stubAudit.clean).toBe(false)
+			expect(stubAudit.complete).toBe(false)
 			expect(stubAudit.findings).toEqual([
-				{ path: 'guides/src/msg.md', group: 'guides', drift: 'aligned' },
+				{ path: 'guides/src/msg.md', group: 'guides', drift: 'unknown' },
 			])
 
 			// 2. Simulate `pull`: `Sync.write` overwrites the stub with real guide
@@ -243,10 +244,12 @@ describe('server integration: compile → materialize → audit → repair', () 
 			expect(written).toEqual(['guides/src/msg.md'])
 			sync.destroy()
 
-			// 3. Audit STILL clean — still presence-only (never hydrated by this
-			// unhydrated `plan`), the real bytes just happen to be on disk now.
+			// 3. Pull changes the target bytes, not the plan's evidence. Without
+			// canonical comparison bytes, the result therefore remains unknown.
 			const pulledAudit = diffPlan(plan, readTarget(directory.path, paths))
-			expect(pulledAudit.clean).toBe(true)
+			expect(pulledAudit.clean).toBe(false)
+			expect(pulledAudit.complete).toBe(false)
+			expect(pulledAudit.unknown).toBe(1)
 			expect(readFileSync(join(directory.path, 'guides/src/msg.md'), 'utf8')).toBe(
 				'# @orkestrel/msg\n\nReal vendored guide bytes.\n',
 			)

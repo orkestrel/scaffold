@@ -369,11 +369,13 @@ describe('render: jargon translation', () => {
 
 describe('render: bucketText / verdicts', () => {
 	it('reports clean when every count is zero', () => {
-		expect(bucketText({ drifted: 0, missing: 0, foreign: 0 })).toBe('clean')
+		expect(bucketText({ drifted: 0, missing: 0, foreign: 0, unknown: 0 })).toBe('clean')
 	})
 
 	it('joins nonzero buckets with translated labels', () => {
-		expect(bucketText({ drifted: 2, missing: 1, foreign: 0 })).toBe('2 drifted, 1 missing')
+		expect(bucketText({ drifted: 2, missing: 1, foreign: 0, unknown: 0 })).toBe(
+			'2 drifted, 1 missing',
+		)
 	})
 
 	it('renders a clean audit verdict', () => {
@@ -387,6 +389,15 @@ describe('render: bucketText / verdicts', () => {
 		expect(line.startsWith('audit: 5 artifacts —')).toBe(true)
 		expect(line).toContain('host-owned:')
 		expect(line).toContain('generated:')
+	})
+
+	it('renders a foreign file in its own unexpected bucket', () => {
+		const audit = buildAudit([
+			{ path: 'scripts/junk.sh', group: 'orchestration', drift: 'foreign' },
+		])
+		expect(auditVerdict(audit, AUDIT_PLAN)).toBe(
+			'audit: 1 artifact — host-owned clean; 1 unexpected',
+		)
 	})
 
 	it('renders repair verdicts for clean and drifted audits', () => {
@@ -452,8 +463,8 @@ describe('render: bucketText / verdicts', () => {
 
 	it('countWrites counts what a write authorization will actually write', () => {
 		const counts = [
-			{ drifted: 3, missing: 2, foreign: 4 },
-			{ drifted: 1, missing: 0, foreign: 1 },
+			{ drifted: 3, missing: 2, foreign: 4, unknown: 0 },
+			{ drifted: 1, missing: 0, foreign: 1, unknown: 0 },
 		]
 		// The confirmation is about writes: every missing file, drifted files only
 		// under --replace, and never an unexpected file, which only --prune deletes
@@ -461,7 +472,7 @@ describe('render: bucketText / verdicts', () => {
 		expect(countWrites(counts, false)).toBe(2)
 		expect(countWrites(counts, true)).toBe(6)
 		expect(countWrites([], false)).toBe(0)
-		expect(countWrites([{ drifted: 5, missing: 0, foreign: 0 }], false)).toBe(0)
+		expect(countWrites([{ drifted: 5, missing: 0, foreign: 0, unknown: 0 }], false)).toBe(0)
 	})
 
 	it('merges generated service scripts without changing publication metadata or unrelated scripts', () => {
@@ -510,8 +521,9 @@ describe('render: bucketText / verdicts', () => {
 
 	it('partitions findings by repair ownership', () => {
 		expect(partitionFindings(AUDIT_FINDINGS, AUDIT_PLAN)).toEqual({
-			owned: { drifted: 1, missing: 1, foreign: 0 },
-			generated: { drifted: 1, missing: 0, foreign: 1 },
+			owned: { drifted: 1, missing: 1, foreign: 0, unknown: 0 },
+			generated: { drifted: 1, missing: 0, foreign: 0, unknown: 0 },
+			foreign: { drifted: 0, missing: 0, foreign: 1, unknown: 0 },
 		})
 	})
 })
@@ -569,9 +581,15 @@ describe('render: tables', () => {
 describe('render: fleet', () => {
 	it('renders each per-repo outcome state', () => {
 		expect(fleetRepoLine('widget', { state: 'clean' })).toBe('widget: clean')
-		expect(fleetRepoLine('widget', { state: 'drifted', drifted: 1, missing: 0, foreign: 0 })).toBe(
-			'widget: 1 drifted',
-		)
+		expect(
+			fleetRepoLine('widget', {
+				state: 'drifted',
+				drifted: 1,
+				missing: 0,
+				foreign: 0,
+				unknown: 0,
+			}),
+		).toBe('widget: 1 drifted')
 		expect(fleetRepoLine('widget', { state: 'repaired', remaining: 2 })).toBe(
 			'widget: repaired (2 findings remaining)',
 		)
@@ -867,7 +885,8 @@ describe('render: VERB_FLAGS corrections', () => {
 		expect(VERB_FLAGS.audit).toContain('--generated')
 		expect(VERB_FLAGS.repair).toContain('--generated')
 		expect(VERB_FLAGS.fleet).toContain('--generated')
-		for (const verb of ['repair', 'fleet'] as const) {
+		const VERBS: readonly ['repair', 'fleet'] = ['repair', 'fleet']
+		for (const verb of VERBS) {
 			const help = VERB_FLAG_HELP[verb].find(([flag]) => flag === '--generated')?.[1]
 			expect(help).toContain('widen the scope to generated files')
 			expect(help).not.toContain('restore')
@@ -992,6 +1011,19 @@ describe('render: new prune/missing/generated/audit-live/comparison/ci/catalog e
 			'1 finding in package.json — repair does not rewrite protected publication metadata; review and edit it directly',
 		])
 		expect(manifest[0]).not.toContain('repair --generated')
+
+		const servicePlan: Plan = {
+			...plan,
+			blueprint: { ...plan.blueprint, services: ['postgres'] },
+		}
+		expect(
+			renderComputedNotes(
+				[{ path: 'package.json', group: 'manifest', drift: 'stale' }],
+				servicePlan,
+			),
+		).toEqual([
+			"1 finding in package.json — 'scaffold repair --generated' repairs generated service scripts; review any remaining publication metadata directly",
+		])
 	})
 
 	it('auditLiveNote reports current/behind/failed counts without pluralizing the adjectives', () => {
@@ -1056,19 +1088,25 @@ describe('bin result shapers', () => {
 	})
 
 	it('creates fleet entries for audited and failed repositories', () => {
-		expect(fleetEntryOf('widget', { drifted: 1, missing: 2, foreign: 3 }, false)).toEqual({
+		expect(
+			fleetEntryOf('widget', { drifted: 1, missing: 2, foreign: 3, unknown: 0 }, false),
+		).toEqual({
 			name: 'widget',
 			drifted: 1,
 			missing: 2,
 			foreign: 3,
+			unknown: 0,
 			failed: false,
+			outside: 0,
 		})
 		expect(fleetEntryOf('broken', undefined, true)).toEqual({
 			name: 'broken',
 			drifted: 0,
 			missing: 0,
 			foreign: 0,
+			unknown: 0,
 			failed: true,
+			outside: 0,
 		})
 	})
 

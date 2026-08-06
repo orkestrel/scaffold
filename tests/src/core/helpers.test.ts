@@ -462,13 +462,14 @@ describe('auditToReview', () => {
 			drifted: 0,
 			missing: 0,
 			foreign: 1,
+			unknown: 0,
 		}
 
 		expect(() => auditToReview(audit)).toThrow('Audit contains an unsafe finding path')
 	})
 })
 
-describe('diffPlan — the four drift classes', () => {
+describe('diffPlan — the five drift classes', () => {
 	it('is missing when the target lacks the artifact', () => {
 		const plan = blueprintToPlan(blueprint('router', { src: ['core'] }), ['manifest'])
 		const audit = diffPlan(plan, {})
@@ -523,14 +524,18 @@ describe('diffPlan — the four drift classes', () => {
 		expect(packageLockFinding?.group).toBe('manifest')
 	})
 
-	it('audits a host-origin artifact by presence only when unhydrated', () => {
+	it('fails closed when an unhydrated host-origin artifact is present without canonical bytes', () => {
 		const plan = blueprintToPlan(blueprint('router', { src: ['core'] }), ['docs'])
 		const hostArtifact = plan.artifacts.find((artifact) => artifact.origin === 'host')
 		const audit = diffPlan(plan, { [hostArtifact?.path ?? '']: 'ANYTHING at all, wrong bytes' })
 
 		expect(audit.findings.find((finding) => finding.path === hostArtifact?.path)?.drift).toBe(
-			'aligned',
+			'unknown',
 		)
+		expect(audit.clean).toBe(false)
+		expect(audit.complete).toBe(false)
+		expect(audit.unknown).toBe(1)
+		expect(auditToReview(audit)).toContain('## unknown')
 	})
 
 	it('keeps the hydrated catalog agent presence-owned for every library comparison', () => {

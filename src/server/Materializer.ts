@@ -97,9 +97,10 @@ import { parseMaterializerOptions } from './parsers.js'
  * source is always staged by `stageHost`, so a non-guide zero-match means a
  * corrupted or truncated `manifest.json`, not an intentionally-unvendored
  * artifact. For a guide pointer, a short stub file is written at the
- * destination and reported exactly like a successful copy, mirroring the
- * READ path (`hydratePlan` leaves such artifacts `content`-undefined, so
- * `diffPlan` audits them by PRESENCE only). For every OTHER zero-match, the
+ * destination and reported exactly like a successful copy. The READ path
+ * leaves that intentional pointer without canonical bytes, so `diffPlan`
+ * reports it as `unknown` and fails closed rather than inventing a match.
+ * For every OTHER zero-match, the
  * fail-closed `ScaffoldError('TARGET', …)` is thrown — degrading an
  * unscoped zero-match would otherwise let a corrupted manifest silently stub
  * an unrecoverable artifact (e.g. `AGENTS.md` — `pull` only ever fetches
@@ -439,9 +440,9 @@ export class Materializer implements MaterializerInterface {
 					{ target: transaction.stage, source },
 				)
 			}
-			// A dependency-guide pointer — degrade to a stub instead of throwing,
-			// mirroring the read path's presence-only treatment of a
-			// never-hydrated host artifact (see the class doc comment).
+			// A dependency-guide pointer — degrade to a stub instead of throwing.
+			// The read path represents this as `unknown` until canonical bytes are
+			// available (see the class doc comment).
 			const to = resolvePhysicalPath(transaction.stage, artifact.path, 'WRITE', 'staging')
 			try {
 				mkdirSync(dirname(to), { recursive: true })

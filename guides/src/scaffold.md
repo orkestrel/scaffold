@@ -207,7 +207,8 @@ The closed vocabularies are small and total. `Environment` is `'core' | 'browser
 `BuildFormat` is `'es' | 'cjs'`. `Origin` is `'host' | 'template' | 'computed'`. `Group` is
 `'manifest' | 'configs' | 'source' | 'tests' | 'guides' | 'docs' | 'orchestration'`. `Category` is
 `'type' | 'alias' | 'constant' | 'factory' | 'entity' | 'parser' | 'guard' | 'handler' | 'error'`.
-`Drift` is `'aligned' | 'stale' | 'missing' | 'foreign'`. `Freshness` is
+`Drift` is `'aligned' | 'stale' | 'missing' | 'foreign' | 'unknown'`; `unknown` means a present
+host artifact has no canonical bytes and therefore cannot truthfully be compared. `Freshness` is
 `'current' | 'behind' | 'missing' | 'failed'`, where `missing` is an upstream `404` and `failed` is
 a transport fault. `CompileStage` is `'draft' | 'gate' | 'pin'`, in that order. `ScaffoldErrorCode`
 is `'INVALID' | 'BLOCKED' | 'DESTROYED' | 'TARGET' | 'WRITE' | 'FETCH'`.
@@ -327,7 +328,8 @@ by artifact-relative path.
 self-describing. `PlanSummary` is the dry-run tally by origin and carries both selections. `Finding` is one
 drift verdict with an optional bounded `observed` byte hex for a stale destination, and `Audit` is
 the whole diff plus its `clean` and `complete` flags, `questions`, and `drifted` / `missing` /
-`foreign` counts. `Question` is one validation issue; `blocking: true` fails the gate closed while
+`foreign` / `unknown` counts. Any `unknown` finding makes the audit incomplete and unclean.
+`Question` is one validation issue; `blocking: true` fails the gate closed while
 `false` rides a complete result as an advisory. `Validation` is the semantic pass result and never
 throws.
 
@@ -385,8 +387,9 @@ instead of through the manifest.
 
 `ManifestEntry` is one vendored-host file record — its un-dotted `storage` name, its `destination`
 relative to a target, and an `executable` bit. `HostManifest` pairs the sorted file `entries` with
-the complete sorted directory `roots` inventory, so a destructive consumer can tell a
-declared-empty root from a truncated manifest.
+the complete sorted directory `roots` inventory and a SHA-256 `digest` of that exact membership.
+The independently persisted digest makes entry removal detectable even when the corresponding
+storage file was also removed, while roots distinguish a declared-empty directory.
 
 The write-transaction shapes are the fail-closed mutation vocabulary. `WriteExpectation` is one
 destination snapshot captured before mutation (`absent`, `file`, or `directory`, with device,
@@ -936,10 +939,12 @@ that block enters agent instruction context. `isBehind` is the shared freshness 
 report projections count with.
 
 `diffPlan` is the audit engine, and `inferGroup` classifies a target file the plan does not own.
-The hydrated `CATALOG_AGENT_PATH` artifact is its one host-byte exception: `diffPlan`
-compares that path by presence because `catalog` owns its bounded marker region. The rule therefore
-holds for `Compiler.audit`, the executable verbs, `Materializer.repair`'s preview recheck, and direct
-library consumers without a call-site plan rewrite.
+A present host artifact without canonical `hex` is `unknown`, never `aligned`; it makes the audit
+incomplete and unclean and carries a blocking question. That rule protects an unhydrated
+`Compiler.audit` consumer as well as every executable verb. The hydrated `CATALOG_AGENT_PATH`
+artifact is the one explicit host-byte exception: `diffPlan` compares that path by presence because
+`catalog` owns its bounded marker region. The same engine governs `Materializer.repair`'s preview
+recheck and direct library consumers without a call-site plan rewrite.
 `snapshotOf`, `contentToHex`, `contentToBytes`, `contentByteLength`, `contentCodePoint`, and
 `bytesToHex` are the host-independent byte leaves that make exact comparison possible without a
 host encoder or buffer; an unpaired surrogate encodes as `U+FFFD` rather than throwing.
@@ -987,6 +992,7 @@ From [`helpers.ts`](../../src/server/helpers.ts).
 | `digestFile`               | function |
 | `digestHex`                | function |
 | `digestText`               | function |
+| `digestHostManifest`       | function |
 | `guideStub`                | function |
 | `packageShortName`         | function |
 | `readGuideReferences`      | function |
@@ -1039,7 +1045,9 @@ directory. All three reject malformed paths before filesystem access. Containmen
 realpath-aware rather than merely lexical, so a symlinked subdirectory planted inside an otherwise
 legitimate root cannot smuggle a write or a read outside it.
 
-`digestFile`, `digestHex`, and `digestText` are the three SHA-256 leaves. The file digest is
+`digestFile`, `digestHex`, and `digestText` are the byte and text SHA-256 leaves;
+`digestHostManifest` hashes the canonical entry/root membership independently of the stored digest
+field. The file digest is
 bounded-memory and revalidates device, inode, size, and modification time before and after reading,
 so a file swapped mid-read is a failure rather than a silent wrong digest. `readFileHex` and
 `readFileText` read one contained file under the same revalidation, and the text reader decodes
@@ -1087,7 +1095,8 @@ repository forking the file.
 `hydratePlan` are the vendored-host path. `storagePath` maps a repo-relative path to its un-dotted
 storage name, `stageHost` copies the vendored set into an output directory behind a full preflight
 and an atomic swap, and `readHostManifest` reads and validates the resulting `manifest.json`,
-returning `undefined` when a host has none — the raw-repository-root fallback that maps sources 1:1.
+including its independently stored membership digest, returning `undefined` when a host has none —
+the raw-repository-root fallback that maps sources 1:1.
 `locateHostSource` resolves one source to its storage file, `remapArtifactPath` maps a manifest
 destination back onto an artifact's target prefix, and `hydratePlan` rehydrates a plan's host
 artifacts with their exact bytes, expanding a directory-shaped host artifact into one artifact per
@@ -1488,12 +1497,14 @@ Audit semantics follow directly from that.
   missing, or clean tallies.
 - A **computed** artifact is content-aware canon: `missing`, `aligned`, or `stale`, and it gates the
   audit like any other drift.
-- A **host** artifact is audited by presence alone — `missing` or `aligned`, never `stale` — unless
-  it has been hydrated with its real host bytes, in which case it is content-compared exactly like a
-  computed artifact and can be `stale`. The catalog agent remains presence-owned after hydration
-  because `catalog` is its sole content writer. Hydration also expands a directory-shaped host
-  artifact into one artifact per file, so other agent configuration and skills are audited file by
-  file.
+- A **host** artifact with canonical `hex` is content-compared exactly like a computed artifact and
+  can be `stale`. If the target is present but the plan has no canonical bytes, its verdict is
+  `unknown`: the audit is incomplete and unclean instead of recording absent evidence as a match.
+  A missing target is still directly observable and remains `missing`. The catalog agent is the one
+  explicit presence-owned exception because `catalog` is its sole content writer. Hydration expands
+  a directory-shaped host artifact into one artifact per declared file and verifies the manifest's
+  membership digest before expansion, so a removed entry plus storage file is a coded `TARGET`
+  failure rather than a smaller clean plan.
 - A target file the plan does not own is `foreign`, and `inferGroup` classifies it by its leading
   path segment.
 
@@ -1531,8 +1542,10 @@ owner: a dependency this package vendors a byte-identical mirror for gets a real
 dependency, so a package depending on `@orkestrel/guide` plans one `guides/src/guide.md` rather than
 two. Any other dependency gets a host-origin _pointer_ artifact plus a non-blocking question, never
 a fabricated mirror; on materialization that pointer degrades to a short stub, and `scaffold pull`
-fetches the real thing. That degrade is scoped exactly to guide pointers: any other missing manifest
-entry means a corrupt or truncated vendored manifest, and fails closed. Selection is the law and
+fetches the real thing. Until canonical bytes are available, an existing pointer is `unknown` and
+the audit fails closed. That degrade is scoped exactly to guide pointers: the manifest's persisted
+membership digest detects a removed entry even when its storage file was removed too, while any
+other undeclared source is rejected with a coded `TARGET` failure. Selection is the law and
 `findFileConflict` is its backstop: two artifacts at one path refuse the plan rather than racing to
 be the last writer.
 
@@ -1596,8 +1609,10 @@ replace only the uniquely bounded marker region. Thus
 the current fleet table.
 
 `prune` is the deletion arm, and it is deliberately narrow. Its candidate set comes from
-`pruneTargets`, which is also what the executable's audit and preview read, so what is reported and
-what is deleted cannot diverge. Only the three prune directories are in scope; the allowlist must be
+`pruneTargets`, which is also what the executable's merged report and preview read. Repair's
+optimistic-concurrency recheck receives the raw plan audit, while the separate foreign findings
+remain attached to reporting and exit status; after that recheck succeeds, the same preview snapshot
+drives deletion. Only the three prune directories are in scope; the allowlist must be
 positively established from the vendored host, or the call fails closed rather than treating an
 unresolved host as "vendors nothing" and proposing to delete everything. Each candidate is verified
 as a plain physical file whose bytes still match the preview, moved into a private quarantine rather
@@ -2022,8 +2037,10 @@ Orkestrel short name. Other npm packages are not a creation-time flag — add th
 manifest's development dependencies afterwards, and they round-trip through `deriveBlueprint`'s
 extras so the workspace stays audit-clean.
 
-**Other flags.** `--target <path>` selects the directory a verb operates on. `--from <path>` is
-repeatable and points at a local template or catalog source instead of the bundled one.
+**Other flags.** `--target <path>` selects the directory a single-workspace verb operates on;
+`fleet --target` is a usage error because fleet's root is always the current directory.
+`--from <path>` points at a local template source instead of the bundled one and may be passed once
+to those verbs. It is repeatable only for `catalog`, where each occurrence adds one catalog source.
 On `pull`, `--deps x,y` limits refresh to those declared Orkestrel dependencies; without it, every
 declared dependency mirror is considered.
 `mirror` accepts no dependency selection: its exact npm organization discovery is the operation's
@@ -2044,9 +2061,10 @@ composes with `--generated`, and is likewise inherited by an accepted audit hand
 an authorized write asks for confirmation first, defaulting to no; scripts do not prompt. Every write is
 confined to the working directory, so the instruction is to change into it first rather than to pass
 a root. `repair` asks a second, separately defaulted question before deleting anything, and a
-session without `--apply` skips pruning regardless of `--yes`. `fleet`
-operates on the immediate children of the working directory and never on the directory itself, and
-it has no root flag at all — `repair` is the single-workspace tool.
+session without `--apply` skips pruning regardless of `--yes`. `fleet` operates on the immediate
+children of the working directory and never on the directory itself. It has no root flag at all:
+passing `--target` is rejected with exit `2` instead of being silently ignored. `repair` is the
+single-workspace tool.
 
 `fleet` and default `repair` are scoped to host-origin artifacts plus absent service-owned starter
 seams. Both state that selected scope in the output before they act — `repair` once its audit found
@@ -2073,8 +2091,9 @@ silent no-op rather than a crash. Custom PEMs are added through the standard env
 that skips stale files exits `1`, using the existing drift/failure code because its selected scope
 remains unaligned; a clean repair and one that fully applies its findings exit `0`. An audit exits
 non-zero on any drift, foreign files included, which makes it usable directly as a CI gate. A
-pull exits non-zero on any drift or failure whether or not `--strict` was passed; `--strict`
-additionally throws on a network fault. Every unknown verb is a usage error and gets a nearest-match
+pull exits non-zero on any drift or failure whether or not `--strict` was passed, including when
+other entries were applied successfully; `--strict` additionally throws on a network fault. Every
+unknown verb is a usage error and gets a nearest-match
 suggestion when one is sufficiently close.
 
 ## Package contents
@@ -2085,7 +2104,8 @@ files, plus `./package.json`. The `scaffold` binary maps to the built executable
 
 The published file set is exactly `dist/src`, `dist/bin`, `dist/host`, and `README.md`. `dist/host`
 is the vendored data root: the byte-preserved host files plus the `manifest.json` recording their
-storage names, destinations, and executable bits. Storage names are un-dotted, because a leading dot
+storage names, destinations, executable bits, directory roots, and membership digest. Storage names
+are un-dotted, because a leading dot
 does not survive packaging intact; the manifest is what maps a storage name back to its real
 destination. That is also why the default host is resolved from the installed module's own
 location — the package carries its host data with itself, and a caller-supplied raw repository root
@@ -2528,6 +2548,7 @@ syncReportOf('./packages/router', [], []) // { clean: true, failed: 0, … }
 import { blueprint, blueprintToPlan, diffPlan } from '@orkestrel/scaffold'
 import {
 	createMaterializer,
+	digestHostManifest,
 	hostRoot,
 	hydratePlan,
 	isVacant,
@@ -2541,6 +2562,7 @@ import {
 } from '@orkestrel/scaffold/server'
 
 const host = hostRoot()
+digestHostManifest([], []) // exact empty manifest membership digest
 readHostManifest(host) // the vendored manifest, or undefined for a raw root
 storagePath('.claude/agents/reviewer.md') // 'claude/agents/reviewer.md'
 locateHostSource(undefined, 'package.json', host)
@@ -2756,7 +2778,11 @@ hasOnlyDataProperties({ a: 1 }) // true
 isDenseDataArray(['a'], 10, isPortablePath) // true
 isWritePrecondition({ path: 'package.json', shape: 'absent' }) // true
 isManifestEntry({ storage: 'AGENTS.md', destination: 'AGENTS.md', executable: false }) // true
-isHostManifest({ entries: [], roots: [] }) // true
+isHostManifest({
+	entries: [],
+	roots: [],
+	digest: 'f98e1531d9fd8fab7e301d1cc944249913d93f48c918a11a753048b877211679',
+}) // true
 isSyncEventHooks({ done: () => undefined }) // true
 isMaterializerEventHooks({ done: () => undefined }) // true
 isEmitterErrorHandler(() => undefined) // true

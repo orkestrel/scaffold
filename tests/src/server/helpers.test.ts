@@ -186,6 +186,7 @@ describe('deriveBlueprint', () => {
 				drifted: 0,
 				missing: 0,
 				foreign: 0,
+				unknown: 0,
 			})
 		} finally {
 			await directory.cleanup()
@@ -1665,7 +1666,7 @@ describe('hydratePlan', () => {
 	it(
 		'diffPlan content-compares a HYDRATED host-origin artifact — a byte-mutated target now reads ' +
 			"'stale' (and is counted as drifted), where the same target against the UNHYDRATED plan " +
-			"still reads 'aligned' (presence-only preserved when there is no content to compare)",
+			"reads 'unknown' and fails closed when there is no content to compare",
 		async () => {
 			const host = await buildTempDirectory()
 			try {
@@ -1679,9 +1680,12 @@ describe('hydratePlan', () => {
 
 				const unhydratedAudit = diffPlan(plan, current)
 				expect(unhydratedAudit.findings).toEqual([
-					{ path: 'notes.txt', group: 'docs', drift: 'aligned' },
+					{ path: 'notes.txt', group: 'docs', drift: 'unknown' },
 				])
 				expect(unhydratedAudit.drifted).toBe(0)
+				expect(unhydratedAudit.unknown).toBe(1)
+				expect(unhydratedAudit.complete).toBe(false)
+				expect(unhydratedAudit.clean).toBe(false)
 
 				const hydrated = hydratePlan(plan, host.path)
 				expect(hydrated.artifacts[0]?.hex).toBe(contentToHex('host content\n'))
@@ -1690,8 +1694,7 @@ describe('hydratePlan', () => {
 				// Hydration attaches the real host bytes as `hex`; `diffPlan`'s
 				// host branch now byte-compares whenever `hex` is present, so
 				// a target that has drifted from those bytes is `stale`, counted in
-				// `drifted` — no longer indistinguishable from the unhydrated,
-				// presence-only audit above.
+				// `drifted` — distinct from the unhydrated unknown audit above.
 				expect(hydratedAudit.findings).toEqual([
 					{
 						path: 'notes.txt',
@@ -1707,18 +1710,72 @@ describe('hydratePlan', () => {
 		},
 	)
 
-	it('diffPlan still audits an UNHYDRATED host-origin artifact by presence only — a byte-mutated target reads aligned, never stale', () => {
+	it('diffPlan fails closed for a present UNHYDRATED host artifact instead of inventing a match', () => {
 		const plan: Plan = {
 			blueprint: blueprint('hydrate-diff-unhydrated-fixture', { src: ['core'] }),
 			groups: ['docs'],
 			artifacts: [{ path: 'notes.txt', group: 'docs', origin: 'host' }],
 		}
-		const current = { 'notes.txt': 'byte-mutated target content\n' }
+		const current = { 'notes.txt': contentToHex('byte-mutated target content\n') }
 
 		const audit = diffPlan(plan, current)
 
-		expect(audit.findings).toEqual([{ path: 'notes.txt', group: 'docs', drift: 'aligned' }])
-		expect(audit.drifted).toBe(0)
+		expect(audit.clean).toBe(false)
+		expect(audit.complete).toBe(false)
+		expect(audit.unknown).toBe(1)
+		expect(audit.findings).toEqual([{ path: 'notes.txt', group: 'docs', drift: 'unknown' }])
+		expect(audit.questions).toEqual([
+			{
+				field: 'notes.txt',
+				text: 'Canonical host bytes are unavailable for notes.txt',
+				blocking: true,
+			},
+		])
+	})
+
+	it('rejects a staged directory whose manifest membership was truncated with its storage', async () => {
+		const source = await buildTempDirectory()
+		const host = await buildTempDirectory()
+		try {
+			mkdirSync(join(source.path, '.claude', 'rules'), { recursive: true })
+			writeFileSync(join(source.path, '.claude', 'rules', 'first.md'), '# First\n', 'utf8')
+			writeFileSync(join(source.path, '.claude', 'rules', 'second.md'), '# Second\n', 'utf8')
+			stageHost(source.path, host.path, ['.claude/rules'])
+			const manifest = readHostManifest(host.path)
+			if (manifest === undefined) throw new Error('expected a staged host manifest')
+			const removed = manifest.entries.find(
+				(entry) => entry.destination === '.claude/rules/second.md',
+			)
+			if (removed === undefined) throw new Error('expected the second staged rule')
+			rmSync(join(host.path, removed.storage))
+			writeHostManifest(host.path, {
+				entries: manifest.entries.filter((entry) => entry !== removed),
+				roots: manifest.roots,
+				digest: manifest.digest,
+			})
+			const plan: Plan = {
+				blueprint: blueprint('truncated-host-fixture', { src: ['core'] }),
+				groups: ['orchestration'],
+				artifacts: [
+					{
+						path: '.claude/rules',
+						group: 'orchestration',
+						origin: 'host',
+					},
+				],
+			}
+
+			const result = attempt(() => hydratePlan(plan, host.path))
+
+			expect(result.success).toBe(false)
+			if (result.success || !isScaffoldError(result.error)) {
+				throw new Error('expected truncated manifest hydration to fail')
+			}
+			expect(result.error.code).toBe('TARGET')
+		} finally {
+			await host.cleanup()
+			await source.cleanup()
+		}
 	})
 
 	it("a plan with a hydrated host artifact audited 'stale' repairs to byte-equal via Materializer.repair", async () => {
@@ -2095,7 +2152,11 @@ describe('readHostManifest', () => {
 			expect(missing.success).toBe(false)
 
 			writeHostStorage(host.path, manifest.entries)
-			writeHostManifest(host.path, { entries: manifest.entries, roots: [] })
+			writeHostManifest(host.path, {
+				entries: manifest.entries,
+				roots: [],
+				digest: manifest.digest,
+			})
 			const root = attempt(() => readHostManifest(host.path))
 			expect(root.success).toBe(false)
 

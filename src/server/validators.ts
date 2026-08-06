@@ -229,7 +229,7 @@ export function isManifestEntry(value: unknown): value is ManifestEntry {
  * Narrow a value to one exact complete vendored-host manifest.
  *
  * @param value - The candidate manifest value.
- * @returns `true` only for an exact `{ entries, roots }` record with safe paths.
+ * @returns `true` only for an exact `{ entries, roots, digest }` record with safe paths.
  */
 export function isHostManifest(value: unknown): value is HostManifest {
 	const result = attempt(() => {
@@ -237,15 +237,20 @@ export function isHostManifest(value: unknown): value is HostManifest {
 		const keys = Reflect.ownKeys(value)
 		const entries = Reflect.getOwnPropertyDescriptor(value, 'entries')
 		const roots = Reflect.getOwnPropertyDescriptor(value, 'roots')
+		const digest = Reflect.getOwnPropertyDescriptor(value, 'digest')
 		return (
-			keys.length === 2 &&
-			keys.every((key) => key === 'entries' || key === 'roots') &&
+			keys.length === 3 &&
+			keys.every((key) => key === 'entries' || key === 'roots' || key === 'digest') &&
 			entries !== undefined &&
 			Reflect.has(entries, 'value') &&
 			roots !== undefined &&
 			Reflect.has(roots, 'value') &&
+			digest !== undefined &&
+			Reflect.has(digest, 'value') &&
 			isDenseDataArray(entries.value, MAX_HOST_ENTRIES, isManifestEntry) &&
-			isDenseDataArray(roots.value, MAX_HOST_ENTRIES, isPortablePath)
+			isDenseDataArray(roots.value, MAX_HOST_ENTRIES, isPortablePath) &&
+			typeof digest.value === 'string' &&
+			WRITE_DIGEST_PATTERN.test(digest.value)
 		)
 	})
 	return result.success && result.value

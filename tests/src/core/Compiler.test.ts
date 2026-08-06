@@ -446,21 +446,35 @@ describe('Compiler#audit', () => {
 		compiler.destroy()
 	})
 
+	it('fails closed when an unhydrated host artifact has no canonical bytes to compare', () => {
+		const compiler = new Compiler()
+		const spec = blueprint('router', { src: ['core'] })
+		const compiled = compiler.compile(spec, ['docs'])
+		const current: Record<string, string> = {}
+		for (const artifact of compiled.plan?.artifacts ?? []) current[artifact.path] = ''
+
+		const result = compiler.audit(spec, current, ['docs'])
+
+		expect(result.clean).toBe(false)
+		expect(result.complete).toBe(false)
+		compiler.destroy()
+	})
+
 	it('preserves accepted override advisories on a clean audit', () => {
 		const compiler = new Compiler()
-		const path = '.github/workflows/ci.yml'
-		const content = 'name: flavored\n'
+		const path = 'src/core/Router.ts'
+		const content = 'export class Router {}\n'
 		const spec = blueprint('router', {
 			src: ['core'],
 			overrides: [override(path, content)],
 		})
-		const compiled = compiler.compile(spec, ['orchestration'])
+		const compiled = compiler.compile(spec, ['source'])
 		const current: Record<string, string> = {}
 		for (const artifact of compiled.plan?.artifacts ?? []) {
 			current[artifact.path] = artifact.content === undefined ? '' : contentToHex(artifact.content)
 		}
 
-		const result = compiler.audit(spec, current, ['orchestration'])
+		const result = compiler.audit(spec, current, ['source'])
 
 		expect(result.clean).toBe(true)
 		expect(result.missing).toBe(0)

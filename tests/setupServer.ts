@@ -9,6 +9,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, URL } from 'node:url'
 import { blueprint } from '@src/core'
+import { digestHostManifest } from '@src/server'
 
 // ── Server-only test harness (AGENTS §16.1 / §17.6) ──────────────────────────
 //
@@ -261,7 +262,7 @@ export function hostManifestOf(
 	entries: readonly ManifestEntry[],
 	roots: readonly string[],
 ): HostManifest {
-	return { entries, roots }
+	return { entries, roots, digest: digestHostManifest(entries, roots) }
 }
 
 /** Write a complete host manifest fixture under `host`. */
