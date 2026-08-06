@@ -30,9 +30,9 @@ export function countPart(count: number, label: string): string {
 /** Render nonzero audit buckets or `clean`. */
 export function bucketText(counts: AuditCounts): string {
 	const parts: string[] = []
-	if (counts.drifted > 0) parts.push(countPart(counts.drifted, 'drifted'))
-	if (counts.missing > 0) parts.push(countPart(counts.missing, 'missing'))
-	if (counts.foreign > 0) parts.push(countPart(counts.foreign, 'unexpected'))
+	if (counts.drifted > 0) parts.push(`${counts.drifted} drifted`)
+	if (counts.missing > 0) parts.push(`${counts.missing} missing`)
+	if (counts.foreign > 0) parts.push(`${counts.foreign} unexpected`)
 	return parts.length > 0 ? parts.join(', ') : 'clean'
 }
 
@@ -183,7 +183,7 @@ export function fleetRepoLine(name: string, outcome: FleetOutcome): string {
 
 /** Render fleet's repository totals. */
 export function fleetTotals(drifted: number, failed: number): string {
-	return `total: ${countPart(drifted, 'drifted repo')}, ${countPart(failed, 'failed')}`
+	return `total: ${countPart(drifted, 'drifted repo')}, ${failed} failed`
 }
 
 /** Create catalog's terminal table. */
@@ -433,7 +433,7 @@ export function renderComputedNotes(findings: readonly Finding[], plan: Plan): r
 
 /** Render live dependency freshness tallies. */
 export function auditLiveNote(current: number, behind: number, failed: number): string {
-	return `live: ${countPart(current, 'current')}, ${countPart(behind, 'behind')}, ${countPart(failed, 'failed')}`
+	return `live: ${current} current, ${behind} behind, ${failed} failed`
 }
 
 /** Render whether an audit compared content or presence. */

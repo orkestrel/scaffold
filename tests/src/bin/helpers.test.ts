@@ -370,7 +370,7 @@ describe('render: bucketText / verdicts', () => {
 	})
 
 	it('joins nonzero buckets with translated labels', () => {
-		expect(bucketText({ drifted: 2, missing: 1, foreign: 0 })).toBe('2 drifteds, 1 missing')
+		expect(bucketText({ drifted: 2, missing: 1, foreign: 0 })).toBe('2 drifted, 1 missing')
 	})
 
 	it('renders a clean audit verdict', () => {
@@ -526,6 +526,7 @@ describe('render: fleet', () => {
 
 	it('renders blast-radius totals', () => {
 		expect(fleetTotals(2, 1)).toBe('total: 2 drifted repos, 1 failed')
+		expect(fleetTotals(1, 0)).toBe('total: 1 drifted repo, 0 failed')
 	})
 })
 
@@ -913,10 +914,9 @@ describe('render: new prune/missing/generated/audit-live/comparison/ci/catalog e
 		expect(manifest[0]).not.toContain('repair --generated')
 	})
 
-	it('auditLiveNote reports current/behind/failed counts', () => {
-		const line = auditLiveNote(2, 1, 0)
-		expect(line).toContain('2')
-		expect(line).toContain('1')
+	it('auditLiveNote reports current/behind/failed counts without pluralizing the adjectives', () => {
+		expect(auditLiveNote(2, 1, 0)).toBe('live: 2 current, 1 behind, 0 failed')
+		expect(auditLiveNote(1, 1, 1)).toBe('live: 1 current, 1 behind, 1 failed')
 	})
 
 	it('comparisonLine reports exact host-file comparison depth without implementation jargon', () => {

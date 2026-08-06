@@ -1310,7 +1310,7 @@ export function registerHermeticBinGates(): void {
 					const drifted = runDefaultBin(['fleet'], { cwd: root.path })
 					expect(drifted.status).toBe(1)
 					expect(drifted.stdout).toContain('fleeta: 1 missing')
-					expect(drifted.stdout).toContain('total: 1 drifted repo, 0 faileds')
+					expect(drifted.stdout).toContain('total: 1 drifted repo, 0 failed')
 
 					const trued = runDefaultBin(['fleet', '--apply'], { cwd: root.path })
 					expect(trued.status).toBe(0)
