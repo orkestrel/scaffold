@@ -1239,7 +1239,7 @@ export function registerHermeticBinGates(): void {
 				}
 			}, 60000)
 
-			it('detects byte-level AGENTS.md drift, explicitly replaces it, and reports the rerun clean', async () => {
+			it('detects byte-level AGENTS.md drift, leaves it untouched by default, then explicitly replaces it and reports the rerun clean', async () => {
 				const cwd = await buildTempDirectory()
 				try {
 					const created = runDefaultBin(['new', 'demo', '--src', 'core', '--apply'], {
@@ -1250,12 +1250,20 @@ export function registerHermeticBinGates(): void {
 
 					const agentsFile = join(packageDirectory, 'AGENTS.md')
 					const original = readFileSync(agentsFile, 'utf8')
-					writeFileSync(agentsFile, '# corrupted junk, not the real AGENTS.md\n', 'utf8')
+					const corrupted = '# corrupted junk, not the real AGENTS.md\n'
+					writeFileSync(agentsFile, corrupted, 'utf8')
 
 					const driftedAudit = runDefaultBin(['audit', '--target', 'demo'], { cwd: cwd.path })
 					expect(driftedAudit.status).toBe(1)
 					expect(driftedAudit.stdout).toContain('AGENTS.md')
 					expect(driftedAudit.stdout).toContain('drifted')
+
+					const defaultRepair = runDefaultBin(['repair', '--apply', '--target', 'demo'], {
+						cwd: cwd.path,
+					})
+					expect(defaultRepair.status).not.toBe(0)
+					expect(defaultRepair.stdout).toContain('AGENTS.md')
+					expect(readFileSync(agentsFile, 'utf8')).toBe(corrupted)
 
 					const repaired = runDefaultBin(['repair', '--replace', '--apply', '--target', 'demo'], {
 						cwd: cwd.path,
