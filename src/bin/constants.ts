@@ -46,11 +46,11 @@ export const ACTION_LABEL: Readonly<Record<string, string>> = Object.freeze({
 
 /** Repair's deliberately limited ownership boundary. */
 export const REPAIR_SCOPE =
-	'repair scope: shared host-owned artifacts only — missing files are restored; drifted files change only with --replace, which discards local changes; starter and generated files are never touched'
+	'repair scope: shared host-owned artifacts and absent service seams — missing files are restored; drifted files change only with --replace, which discards local changes; present starter and generated files are never touched'
 
 /** Repair's opt-in generated-canon ownership boundary. */
 export const REPAIR_GENERATED_SCOPE =
-	'repair scope: shared host-owned and generated artifacts — missing files are restored; drifted files change only with --replace, which discards local changes; starter files and package.json are never touched'
+	'repair scope: shared host-owned and generated artifacts plus service manifest scripts — missing files are restored; drifted files change only with --replace, which discards local changes; present starter files and package publication metadata are never touched'
 
 /** The dry-run note for `new`. */
 export const NEW_DRY_RUN_NOTE = 'dry run — pass --apply to write'
@@ -216,7 +216,7 @@ export const CATALOG_END_MARKER = '<!-- catalog:end -->'
 
 /** Non-terminal prune safety note. */
 export const PRUNE_SKIPPED =
-	'prune skipped — not a terminal; add --apply (or --yes) to delete non-interactively'
+	'prune skipped — pass --apply to authorize deletion; --yes only skips confirmation'
 
 /** Degraded unexpected-file scan note. */
 export const SCAN_SKIPPED =

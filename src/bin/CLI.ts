@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, relative as relativeOf } from 'node:path'
 import * as tls from 'node:tls'
 import type {
+	Artifact,
 	Audit,
 	Blueprint,
 	CatalogEntry,
@@ -109,7 +110,7 @@ import {
 	orkestrelTokenIssue,
 	prunePreview,
 	pruneConfirmMessage,
-	protectCatalogPlan,
+	mergeServiceManifest,
 	syncCauseNotes,
 	syncSuccess,
 	syncTable,
@@ -367,6 +368,59 @@ export class CLI implements CLIInterface {
 		return full.drifted + full.missing + full.foreign
 	}
 
+	/** Promote only absent service-owned starter seams into repairable missing artifacts. */
+	#promoteServices(plan: Plan, target: string): Plan {
+		if (plan.blueprint.services.length === 0) return plan
+		const paths = [SERVICE_SCRIPT_PATH, 'tests/config/services.test.ts']
+		const current = readTarget(target, paths)
+		return {
+			...plan,
+			artifacts: plan.artifacts.map((artifact) =>
+				artifact.origin === 'template' &&
+				paths.includes(artifact.path) &&
+				!Object.hasOwn(current, artifact.path)
+					? { ...artifact, origin: 'computed' }
+					: artifact,
+			),
+		}
+	}
+
+	/** Select repair ownership and merge only the manifest's generated service-script keys. */
+	#scopeRepair(compiled: Plan, target: string, generated: boolean): Plan {
+		const promoted = this.#promoteServices(compiled, target)
+		const currentManifest =
+			generated && promoted.blueprint.services.length > 0 ? readManifest(target) : undefined
+		const artifacts: Artifact[] = []
+		for (const artifact of promoted.artifacts) {
+			if (
+				artifact.origin === 'host' ||
+				artifact.path === SERVICE_SCRIPT_PATH ||
+				artifact.path === 'tests/config/services.test.ts' ||
+				(generated && artifact.origin === 'computed' && artifact.path !== 'package.json')
+			) {
+				artifacts.push(artifact)
+				continue
+			}
+			if (
+				currentManifest !== undefined &&
+				artifact.origin === 'computed' &&
+				artifact.path === 'package.json'
+			) {
+				const content = mergeServiceManifest(
+					currentManifest,
+					artifact.content,
+					promoted.blueprint.services,
+				)
+				if (content !== currentManifest) artifacts.push({ ...artifact, content })
+			}
+		}
+		return {
+			...promoted,
+			blueprint: { ...promoted.blueprint, overrides: [] },
+			artifacts,
+		}
+	}
+
 	/** Compile and audit the selected repair ownership boundary for one structural snapshot. */
 	#prepareRepair(
 		spec: Blueprint,
@@ -376,19 +430,11 @@ export class CLI implements CLIInterface {
 		json: boolean,
 	): readonly [compiled: Plan, plan: Plan, audit: Audit] {
 		const [compiled] = this.#compile(spec, json)
-		const scoped: Plan = {
-			...compiled,
-			blueprint: { ...compiled.blueprint, overrides: [] },
-			artifacts: compiled.artifacts.filter(
-				(artifact) =>
-					artifact.origin === 'host' ||
-					(generated && artifact.origin === 'computed' && artifact.path !== 'package.json'),
-			),
-		}
+		const scoped = this.#scopeRepair(compiled, target, generated)
 
 		let plan: Plan
 		try {
-			plan = protectCatalogPlan(hydratePlan(scoped, host))
+			plan = hydratePlan(scoped, host)
 		} catch (error) {
 			this.#error(error, json)
 		}
@@ -422,9 +468,8 @@ export class CLI implements CLIInterface {
 
 	/**
 	 * The shared write-confirmation gate every verb calls before it touches disk.
-	 * `--apply` writes without asking; `--json` (without `--apply`) is a pure
-	 * dry-run and NEVER prompts; `--yes` auto-answers yes; otherwise a real
-	 * confirm with `default: false` (EOF on stdin resolves to the default).
+	 * `--apply` is the sole write authorization. JSON and non-terminal calls do
+	 * not prompt once authorized; `--yes` skips the terminal confirmation.
 	 */
 	async #apply(
 		terminal: TerminalInterface,
@@ -432,16 +477,15 @@ export class CLI implements CLIInterface {
 		values: CLIValues,
 		json: boolean,
 	): Promise<boolean> {
-		if (values.apply) return true
-		if (json) return false
-		if (values.yes) return true
+		if (!values.apply) return false
+		if (json || values.yes || !this.#tty) return true
 		return this.#guard(terminal.confirm({ message, default: false }))
 	}
 
 	/**
 	 * The SECOND, separate confirm for `--prune`-eligible deletions — never
-	 * bundled into `resolveApply`'s question. `--yes` only auto-answers this
-	 * when `--prune` was also passed (it never enables pruning by itself).
+	 * bundled into the write question. Both `--prune` and `--apply` are required;
+	 * `--yes` only skips this confirmation and never authorizes deletion.
 	 */
 	async #prune(
 		terminal: TerminalInterface,
@@ -450,16 +494,11 @@ export class CLI implements CLIInterface {
 		json: boolean,
 	): Promise<boolean> {
 		if (!values.prune) return false
-		if (values.apply) return true
-		if (json) return false
-		if (values.yes) return true
-		// The write confirmation already consumed the single answer available on a
-		// non-interactive stream. Never ask a second question from drained stdin;
-		// skip pruning explicitly instead.
-		if (!this.#tty) {
-			this.#reporter.line(PRUNE_SKIPPED)
+		if (!values.apply) {
+			if (!json && !this.#tty) this.#reporter.line(PRUNE_SKIPPED)
 			return false
 		}
+		if (json || values.yes || !this.#tty) return true
 		return this.#guard(terminal.confirm({ message, default: false }))
 	}
 
@@ -829,7 +868,7 @@ export class CLI implements CLIInterface {
 		const host = from ?? hostRoot()
 		let plan: Plan
 		try {
-			plan = hydratePlan(compiled, host)
+			plan = hydratePlan(this.#promoteServices(compiled, target), host)
 		} catch (error) {
 			this.#error(error, json)
 		}
@@ -949,9 +988,9 @@ export class CLI implements CLIInterface {
 			this.#error(error, json)
 		}
 
-		// Repair defaults to the host-restoration boundary. `--generated` adds
-		// generated canon while preserving the birth-only template boundary and
-		// package.json's independent publication protection.
+		// Repair defaults to host restoration plus absent service seams. `--generated`
+		// adds generated canon and the manifest's service scripts while preserving
+		// present starters and all other manifest data.
 		const generated = values.generated === true
 		const replace = values.replace === true
 		const from = values.from?.[0]
@@ -1045,7 +1084,7 @@ export class CLI implements CLIInterface {
 		} finally {
 			materializer.destroy()
 		}
-		process.exitCode = audit.drifted > 0 && !replace ? 1 : 0
+		process.exitCode = audit.drifted > 0 && !replace ? 1 : prunePaths.length > 0 && !doPrune ? 1 : 0
 	}
 
 	/** `scaffold fleet` — audit/repair every `@orkestrel` package beneath the current directory's immediate children. */
@@ -1080,21 +1119,13 @@ export class CLI implements CLIInterface {
 						const message = scaffolding.questions.map((question) => question.text).join('; ')
 						throw new ScaffoldError('INVALID', message)
 					}
-					scoped = {
-						...scaffolding.plan,
-						blueprint: { ...scaffolding.plan.blueprint, overrides: [] },
-						artifacts: scaffolding.plan.artifacts.filter(
-							(artifact) =>
-								artifact.origin === 'host' ||
-								(generated && artifact.origin === 'computed' && artifact.path !== 'package.json'),
-						),
-					}
+					scoped = this.#scopeRepair(scaffolding.plan, directory, generated)
 					questions = scaffolding.questions
 				} finally {
 					compiler.destroy()
 				}
 
-				const plan = protectCatalogPlan(hydratePlan(scoped, host))
+				const plan = hydratePlan(scoped, host)
 				const paths = plan.artifacts.map((artifact) => artifact.path)
 				const rawAudit = {
 					...diffPlan(plan, readTarget(directory, paths)),

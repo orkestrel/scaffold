@@ -298,11 +298,13 @@ on what the workspace is.
 
 Each service vendor owes `tests/service/<vendor>/setup.ts`, whose module-load readiness check probes
 and warms only that vendor. A service workspace also owes the shared `scripts/service.sh`
-provisioner. Derivation fails with a coded `INVALID` question when either companion is missing,
-when a vendor directory contains no test, or when a test uses the former flat
-`tests/service/*.test.ts` layout. The migration is to move each flat test into
-`tests/service/<vendor>/`, add that vendor's `setup.ts`, and implement the generated provisioner
-skeleton. Nothing here is inferred from a source or application axis: a vendor serves both.
+provisioner. Derivation fails with a coded `INVALID` question when a vendor's readiness module is
+missing, when a vendor directory contains no test, or when a test uses the former flat
+`tests/service/*.test.ts` layout. An absent shared provisioner is instead a repairable missing
+artifact, so declaring the vendor directory does not deadlock the tool that supplies the skeleton.
+The migration is to move each flat test into `tests/service/<vendor>/`, add that vendor's `setup.ts`,
+and customize the repaired provisioner skeleton. Nothing here is inferred from a source or
+application axis: a vendor serves both.
 
 This is a published breaking change: `Blueprint.service` and `ViteFacts.service` were replaced by
 their sorted `services` collections, the single `service` project became one project per vendor,
@@ -473,9 +475,9 @@ produces one (`app/browser/index.html`, `app/server/main.ts`). `BIN_CONFIGS` is 
 axis's computed `tsconfig` and Vite wrapper pair. `HOST_PATHS` is the ordered list of byte-copied
 host artifacts, and it is the staging manifest rather than the per-plan carried set:
 `stageHost` vendors every path on it, while each plan carries the subset `selectHostPaths` selects
-for that one workspace. `SERVICE_SCRIPT_PATH` names the generated birth-only provisioner skeleton a
-service workspace must replace with its idempotent vendor provisioning, and `GLOBAL_SETUP_PATH`
-names the consumer-owned Vitest global-setup
+for that one workspace. `SERVICE_SCRIPT_PATH` names the generated provisioner skeleton a service
+workspace must replace with its idempotent vendor provisioning. It is birth-only while present and
+repairable while absent. `GLOBAL_SETUP_PATH` names the consumer-owned Vitest global-setup
 module that independently selected projects can load. `SHOWCASE_CONFIG_PATH` names the sole
 consumer-owned regular file whose exact physical presence enables the optional app showcase.
 
@@ -909,6 +911,10 @@ that block enters agent instruction context. `isBehind` is the shared freshness 
 report projections count with.
 
 `diffPlan` is the audit engine, and `inferGroup` classifies a target file the plan does not own.
+The hydrated `.claude/agents/orkestrel.md` artifact is its one host-byte exception: `diffPlan`
+compares that path by presence because `catalog` owns its bounded marker region. The rule therefore
+holds for `Compiler.audit`, the executable verbs, `Materializer.repair`'s preview recheck, and direct
+library consumers without a call-site plan rewrite.
 `snapshotOf`, `contentToHex`, `contentToBytes`, `contentByteLength`, `contentCodePoint`, and
 `bytesToHex` are the host-independent byte leaves that make exact comparison possible without a
 host encoder or buffer; an unpaired surrogate encodes as `U+FFFD` rather than throwing.
@@ -1459,18 +1465,24 @@ Audit semantics follow directly from that.
   audit like any other drift.
 - A **host** artifact is audited by presence alone — `missing` or `aligned`, never `stale` — unless
   it has been hydrated with its real host bytes, in which case it is content-compared exactly like a
-  computed artifact and can be `stale`. Hydration also expands a directory-shaped host artifact into
-  one artifact per file, so agent configuration and skills are audited file by file.
+  computed artifact and can be `stale`. The catalog agent remains presence-owned after hydration
+  because `catalog` is its sole content writer. Hydration also expands a directory-shaped host
+  artifact into one artifact per file, so other agent configuration and skills are audited file by
+  file.
 - A target file the plan does not own is `foreign`, and `inferGroup` classifies it by its leading
   path segment.
 
 The same ownership boundary is what makes mutation safe. **`fleet` and default `repair` both scope
 the compiled plan to host origin before hydrating, diffing, or applying.** Missing files in that
 scope are restored, but stale files are report-only unless `--replace` explicitly authorizes byte
-replacement. `--generated` widens the selected ownership scope to generated canon except
-`package.json`; it composes with `--replace` and does not itself authorize replacement. Template
-artifacts remain birth-only in either scope. A mature workspace's hand-written source, tests,
-guides, and manifest are therefore never overwritten with a stub. The generated
+replacement. `--generated` widens the selected ownership scope to generated canon. It keeps the
+`package.json` publication boundary protected except for the generated service-script keys needed
+when the derived service set changes; it composes with `--replace` and does not itself authorize
+replacement. Template
+artifacts remain birth-only in either scope, except that an absent service provisioner and absent
+service conformance test are promoted to missing-file repair artifacts. A present customized copy
+is never compared or replaced. A mature workspace's hand-written source, tests, and guides are
+therefore never overwritten with a stub. The generated
 `.github/workflows/ci.yml` is a **computed** artifact, so user-owned CI stands by default and is
 restored only when both `--generated` and `--replace` are passed.
 Audit always compares it because computed artifacts are content-aware canon. A legitimate
@@ -1507,8 +1519,8 @@ checks one. `readTarget` supplies the snapshot as exact bytes; `diffPlan` return
 
 The executable's physical unexpected-file scan treats exactly `scripts/service.sh` as an expected
 workspace-owned seam when the derived blueprint has at least one service. That exclusion is
-warranted because derivation fails before the scan when the physical file is absent. A workspace
-with no services still reports the same path as foreign.
+warranted because the promoted plan reports an absent file as missing while a present file is
+consumer-owned. A workspace with no services still reports the same path as foreign.
 
 `repair` turns those findings back into the narrowest possible write. It re-reads the target,
 re-diffs it, and refuses to proceed if the findings changed since the preview it was given — a
@@ -1530,10 +1542,11 @@ the repair verdict, in the audit's drift guidance, and inside the hand-off quest
 never on the safe default, where a warning about a write that cannot happen would only train
 operators to ignore warnings.
 
-The catalog agent has a narrower ownership exception. Repair treats
-`.claude/agents/orkestrel.md` as presence-owned after host hydration: it can restore the absent file,
-but never compares or replaces its existing bytes, even under `--replace`. `catalog` is the sole
-content writer and continues to replace only the uniquely bounded marker region. Thus
+The catalog agent has a narrower ownership exception in `diffPlan` itself.
+`.claude/agents/orkestrel.md` remains presence-owned after host hydration: repair can restore the
+absent file, but audit, repair, fleet, and direct library consumers never compare or replace its
+existing bytes, even under `--replace`. `catalog` is the sole content writer and continues to
+replace only the uniquely bounded marker region. Thus
 `repair` → `catalog` → `repair` converges without restoring a stale embedded catalog snapshot over
 the current fleet table.
 
@@ -1674,14 +1687,19 @@ error when unavailable so only that vendor project fails readiness. The scaffold
 these modules because an inert readiness check would be a false proof.
 
 `scripts/service.sh`, named once by `SERVICE_SCRIPT_PATH`, is shared provisioning for every vendor.
-The scaffold emits a birth-only template skeleton that exits nonzero until the workspace replaces
-it with idempotent provisioning; an already-provisioned vendor must be a no-op, and any vendor that
-cannot be prepared must make the script fail. CI invokes it once before the aggregate project run.
+The scaffold emits a template skeleton that exits nonzero until the workspace replaces it with
+idempotent provisioning; an already-provisioned vendor must be a no-op, and any vendor that cannot
+be prepared must make the script fail. The skeleton is written at birth when services are already
+declared, or by repair when a post-birth vendor declaration makes it newly absent. Once present it
+is consumer-owned and never replaced. CI invokes it once before the aggregate project run.
 
-The birth-only configuration conformance test lives in the ordinary `config` project, so `npm test`
-checks the directory names, readiness files, project declarations, scripts, default-test omission,
-and publication suffix without contacting a vendor. It remains workspace-owned and audit-exempt
-after creation.
+The configuration conformance test lives in the ordinary `config` project, so `npm test` checks the
+directory names, readiness files, project declarations, scripts, default-test omission, and
+publication suffix without contacting a vendor. Like the provisioner it is repaired only when
+absent, then remains workspace-owned and audit-exempt. Service adoption under `--generated`
+regenerates the Vite and CI canon and merges only `test:service`, the per-vendor service scripts,
+and the `prepublishOnly` service suffix into `package.json`; publication metadata and unrelated
+scripts retain their existing values.
 
 The audit expects the script rather than reporting it foreign, on the derive-time warrant the audit
 section gives. Repair pruning applies the same exclusion, so it never proposes or removes that
@@ -1968,25 +1986,28 @@ scope, and it fetches guides without registry version or packument requests.
 `--groups a,b` scopes an audit to artifact groups. `--live` adds an upstream freshness check to an
 audit. `--strict` makes a pull or mirror throw on a network fault. `--offline` restricts a catalog to local
 sources. `--prune` opts a repair or fleet run into deleting unexpected files under the three prune
-directories. `--generated` opts a repair or fleet run into including generated canon except
-`package.json`; on `audit`, it is inherited if the interactive repair hand-off is accepted.
+directories. `--generated` opts a repair or fleet run into including generated canon while
+protecting `package.json` outside its generated service-script keys; on `audit`, it is inherited if
+the interactive repair hand-off is accepted.
 `--replace` authorizes repair to discard local changes in the drifted files named by its report; it
 composes with `--generated`, and is likewise inherited by an accepted audit hand-off.
 `--json` emits one machine-readable value. `--apply` writes, `--yes` skips the confirmation, and
 `-h` or `--help` prints usage.
 
-**Safety model.** Every verb is a dry run by default. On a terminal a write asks for confirmation
-first, defaulting to no; in a script, `--apply` writes and `--yes` skips the question. Every write is
+**Safety model.** Every verb is a dry run by default. `--apply` is the sole write authorization;
+`--yes` only skips a confirmation and never authorizes a write or deletion by itself. On a terminal
+an authorized write asks for confirmation first, defaulting to no; scripts do not prompt. Every write is
 confined to the working directory, so the instruction is to change into it first rather than to pass
 a root. `repair` asks a second, separately defaulted question before deleting anything, and a
-non-interactive session without `--apply` or `--yes` skips pruning rather than guessing. `fleet`
+session without `--apply` skips pruning regardless of `--yes`. `fleet`
 operates on the immediate children of the working directory and never on the directory itself, and
 it has no root flag at all — `repair` is the single-workspace tool.
 
-`fleet` and default `repair` are scoped to host-origin artifacts. `repair` states its selected scope
-in the output; `--generated` widens both verbs to generated files while still excluding starter
-files and `package.json`. Within either scope, missing files are safe to restore, stale files are
-report-only by default, and `--replace` is the explicit destructive opt-in.
+`fleet` and default `repair` are scoped to host-origin artifacts plus absent service-owned starter
+seams. `repair` states its selected scope in the output; `--generated` widens both verbs to generated
+files and the manifest's generated service-script keys while still excluding present starter files
+and package publication metadata. Within either scope, missing files are safe to restore, stale
+files are report-only by default, and `--replace` is the explicit destructive opt-in.
 
 **Catalog markers.** `catalog` rewrites the block between `<!-- catalog:start -->` and
 `<!-- catalog:end -->` in `.claude/agents/orkestrel.md`. **Ambiguous markers fail before any

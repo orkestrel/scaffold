@@ -781,6 +781,63 @@ describe('scaffold bin', () => {
 			}
 		}, 30000)
 
+		it('adopts a declared service vendor through repair and reaches a clean audit', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(cwd.path, 'service-adoption', from.path)
+				const vendor = join(packageDirectory, 'tests', 'service', 'claude')
+				mkdirSync(vendor, { recursive: true })
+				writeFileSync(join(vendor, 'setup.ts'), 'export {}\n')
+				writeFileSync(join(vendor, 'claude.test.ts'), 'export {}\n')
+				const manifestPath = join(packageDirectory, 'package.json')
+				const originalManifest = readFileSync(manifestPath, 'utf8')
+
+				const dry = runBin(
+					['repair', '--generated', '--replace', '--yes', '--from', from.path],
+					'',
+					{ cwd: packageDirectory },
+				)
+
+				expect(dry.status).toBe(1)
+				expect(existsSync(join(packageDirectory, 'scripts', 'service.sh'))).toBe(false)
+				expect(existsSync(join(packageDirectory, 'tests', 'config', 'services.test.ts'))).toBe(
+					false,
+				)
+				expect(readFileSync(manifestPath, 'utf8')).toBe(originalManifest)
+
+				const repaired = runBin(
+					['repair', '--generated', '--replace', '--apply', '--yes', '--from', from.path],
+					'',
+					{ cwd: packageDirectory },
+				)
+
+				expect(repaired.status).toBe(0)
+				expect(existsSync(join(packageDirectory, 'scripts', 'service.sh'))).toBe(true)
+				expect(existsSync(join(packageDirectory, 'tests', 'config', 'services.test.ts'))).toBe(true)
+				const manifest: unknown = parseJSON(readFileSync(manifestPath, 'utf8'))
+				if (!isRecord(manifest) || !isRecord(manifest.scripts)) {
+					throw new Error('expected repaired service manifest scripts')
+				}
+				expect(manifest.scripts['test:service:claude']).toBe(
+					'vitest run --config vite.config.ts --no-cache --reporter=dot --project service:claude',
+				)
+				expect(manifest.scripts.prepublishOnly).toMatch(/ && npm run test:service$/)
+				expect(readFileSync(join(packageDirectory, 'vite.config.ts'), 'utf8')).toContain(
+					"label: 'service:claude'",
+				)
+				expect(
+					readFileSync(join(packageDirectory, '.github', 'workflows', 'ci.yml'), 'utf8'),
+				).toContain('run: bash scripts/service.sh')
+
+				const audited = runBin(['audit', '--from', from.path], '', { cwd: packageDirectory })
+				expect(audited.status).toBe(0)
+			} finally {
+				await cwd.cleanup()
+				await from.cleanup()
+			}
+		}, 40000)
+
 		it('a clean target with no unexpected files: audit --json reports foreign:0, clean:true', async () => {
 			const from = await buildFromFixture()
 			const cwd = await buildTempDirectory()
@@ -1293,10 +1350,7 @@ describe('scaffold bin', () => {
 			}
 		}, 30000)
 
-		it('prune truth + non-TTY ceiling: dry-run --prune preview NAMES the exact planted path; the ONE piped confirm applies the host fix, and the prune question is never asked a second time (pruneSkipped wording, nothing deleted)', async () => {
-			// A spawned process receives piped streams. It must preview the exact
-			// path before confirmation and never ask a second question from drained
-			// stdin.
+		it('piped confirmation without --apply cannot write a host fix or delete a prune target', async () => {
 			const from = await buildFromFixture()
 			const cwd = await buildTempDirectory()
 			try {
@@ -1309,13 +1363,9 @@ describe('scaffold bin', () => {
 				const result = runBin(['repair', '--prune', '--from', from.path], 'y\n', {
 					cwd: packageDirectory,
 				})
-				expect(result.status).toBe(0)
-				expect(result.stdout).toContain('delete .claude/agents/rogue.md')
-				expect(result.stdout).toMatch(/prune skipped — not a terminal/)
+				expect(result.status).toBe(1)
 				expect(existsSync(roguePath)).toBe(true)
-				expect(readFileSync(join(packageDirectory, '.editorconfig'), 'utf8')).toBe(
-					HOST_FIXTURE_FILES['.editorconfig'],
-				)
+				expect(existsSync(join(packageDirectory, '.editorconfig'))).toBe(false)
 			} finally {
 				await cwd.cleanup()
 				await from.cleanup()
@@ -1365,7 +1415,28 @@ describe('scaffold bin', () => {
 			}
 		}, 20000)
 
-		it('piped "y\\n" confirm (no --apply, no --prune) applies the fix — the single-confirm flow the non-TTY readline fallback reliably drives', async () => {
+		it('--prune --yes without --apply is a dry run that preserves the exact unexpected file', async () => {
+			const from = await buildFromFixture()
+			const cwd = await buildTempDirectory()
+			try {
+				const packageDirectory = scaffoldPackage(cwd.path, 'pkg', from.path)
+				const roguePath = join(packageDirectory, '.claude', 'agents', 'yes-only.md')
+				mkdirSync(dirname(roguePath), { recursive: true })
+				writeFileSync(roguePath, '# preserve me\n')
+
+				const result = runBin(['repair', '--prune', '--yes', '--from', from.path], '', {
+					cwd: packageDirectory,
+				})
+
+				expect(result.status).toBe(1)
+				expect(readFileSync(roguePath, 'utf8')).toBe('# preserve me\n')
+			} finally {
+				await cwd.cleanup()
+				await from.cleanup()
+			}
+		}, 20000)
+
+		it('piped "y\\n" without --apply remains a dry run', async () => {
 			const from = await buildFromFixture()
 			const cwd = await buildTempDirectory()
 			try {
@@ -1373,10 +1444,8 @@ describe('scaffold bin', () => {
 				rmSync(join(packageDirectory, '.editorconfig'))
 
 				const result = runBin(['repair', '--from', from.path], 'y\n', { cwd: packageDirectory })
-				expect(result.status).toBe(0)
-				expect(readFileSync(join(packageDirectory, '.editorconfig'), 'utf8')).toBe(
-					HOST_FIXTURE_FILES['.editorconfig'],
-				)
+				expect(result.status).toBe(1)
+				expect(existsSync(join(packageDirectory, '.editorconfig'))).toBe(false)
 			} finally {
 				await cwd.cleanup()
 				await from.cleanup()
@@ -1523,7 +1592,14 @@ describe('scaffold bin', () => {
 					{ cwd: packageDirectory },
 				)
 				const catalogued = readFileSync(path, 'utf8')
+				const firstAudit = runBin(['audit', '--from', host.path], '', {
+					cwd: packageDirectory,
+				})
+				const firstFleet = runBin(['fleet', '--from', host.path], '', { cwd: root.path })
 				const secondRepair = runBin(['repair', '--replace', '--apply', '--from', host.path], '', {
+					cwd: packageDirectory,
+				})
+				const secondAudit = runBin(['audit', '--from', host.path], '', {
 					cwd: packageDirectory,
 				})
 				const secondCatalog = runBin(
@@ -1537,9 +1613,13 @@ describe('scaffold bin', () => {
 				expect(firstCatalog.status).toBe(0)
 				expect(firstCatalog.stdout).toContain('wrote')
 				expect(catalogued).toContain('@orkestrel/pkgone')
+				expect(firstAudit.status).toBe(0)
+				expect(firstFleet.status).toBe(0)
+				expect(firstFleet.stdout).toContain('clean')
 				expect(secondRepair.status).toBe(0)
 				expect(secondRepair.stdout).toContain('aligned — nothing to write')
 				expect(readFileSync(path, 'utf8')).toBe(catalogued)
+				expect(secondAudit.status).toBe(0)
 				expect(secondCatalog.status).toBe(0)
 				expect(secondCatalog.stdout).toContain('catalog: clean')
 			} finally {

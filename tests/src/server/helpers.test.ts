@@ -655,7 +655,7 @@ describe('deriveBlueprint', () => {
 		}
 	})
 
-	it('rejects service vendors without their shared provisioner', async () => {
+	it('derives service vendors while their shared provisioner is still repairably absent', async () => {
 		const directory = await buildTempDirectory()
 		try {
 			buildBlueprintFixture(directory.path, {
@@ -665,13 +665,7 @@ describe('deriveBlueprint', () => {
 			})
 			rmSync(join(directory.path, 'scripts', 'service.sh'))
 
-			expect(() => deriveBlueprint(directory.path)).toThrow(
-				expect.objectContaining({
-					code: 'INVALID',
-					message:
-						'Service vendors are missing scripts/service.sh; add an idempotent provisioner that exits nonzero when any vendor cannot be prepared',
-				}),
-			)
+			expect(deriveBlueprint(directory.path).services).toEqual(['claude'])
 		} finally {
 			await directory.cleanup()
 		}

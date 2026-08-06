@@ -73,7 +73,6 @@ import {
 	isPlan,
 	ownDataValue,
 	ScaffoldError,
-	SERVICE_SCRIPT_PATH,
 	SHOWCASE_CONFIG_PATH,
 	snapshotPlan,
 	ENVIRONMENTS,
@@ -1542,13 +1541,6 @@ export function deriveBlueprint(target: string): Blueprint {
 			services.push(entry.name)
 		}
 		services.sort()
-		if (services.length > 0 && !isRealFile(join(target, SERVICE_SCRIPT_PATH))) {
-			throw new ScaffoldError(
-				'INVALID',
-				`Service vendors are missing ${SERVICE_SCRIPT_PATH}; add an idempotent provisioner that exits nonzero when any vendor cannot be prepared`,
-				{ target, missing: SERVICE_SCRIPT_PATH },
-			)
-		}
 	}
 	const showcaseRoot = join(target, dirname(SHOWCASE_CONFIG_PATH))
 	const showcaseEntries = attempt(() => readdirSync(showcaseRoot))

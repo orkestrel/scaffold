@@ -19,7 +19,6 @@ import { ScaffoldError } from '@src/core'
 import {
 	ACTION_LABEL,
 	CANCELLED_MESSAGE,
-	CATALOG_AGENT_PATH,
 	CATALOG_UNRESOLVED_NOTE,
 	DRIFT_LABEL,
 	EXIT_CODES,
@@ -57,12 +56,12 @@ import {
 	generatedNote,
 	invalidName,
 	missingInput,
+	mergeServiceManifest,
 	nearest,
 	newPlanPreview,
 	orkestrelTokenIssue,
 	prunePreview,
 	pruneConfirmMessage,
-	protectCatalogPlan,
 	syncRows,
 	syncVerdict,
 	repairHandoff,
@@ -423,33 +422,54 @@ describe('render: bucketText / verdicts', () => {
 			expect(line).not.toContain('hand-edited')
 			expect(line).not.toContain('stale')
 		}
-		expect(REPAIR_SCOPE).toContain('starter and generated files are never touched')
-		expect(REPAIR_GENERATED_SCOPE).toContain('starter files and package.json are never touched')
+		expect(REPAIR_SCOPE).toContain('present starter and generated files are never touched')
+		expect(REPAIR_GENERATED_SCOPE).toContain(
+			'present starter files and package publication metadata are never touched',
+		)
 	})
 
-	it('keeps the catalog agent presence-repairable without comparing catalog-owned bytes', () => {
-		const plan: Plan = {
-			...AUDIT_PLAN,
-			artifacts: [
-				{
-					path: CATALOG_AGENT_PATH,
-					group: 'orchestration',
-					origin: 'host',
-					hex: '00',
+	it('merges generated service scripts without changing publication metadata or unrelated scripts', () => {
+		const merged = mergeServiceManifest(
+			JSON.stringify({
+				name: '@orkestrel/router',
+				homepage: 'https://consumer.example/router',
+				scripts: {
+					test: 'consumer-test',
+					'test:service:retired': 'retired-command',
+					prepublishOnly: 'consumer-publish',
 				},
-			],
-		}
+			}),
+			JSON.stringify({
+				name: '@orkestrel/router',
+				scripts: {
+					test: 'generated-test',
+					'test:service': 'aggregate-command',
+					'test:service:claude': 'claude-command',
+					prepublishOnly: 'generated-publish && npm run test:service',
+				},
+			}),
+			['claude'],
+		)
 
-		expect(protectCatalogPlan(plan).artifacts).toEqual([
-			{ path: CATALOG_AGENT_PATH, group: 'orchestration', origin: 'host' },
-		])
+		expect(parseJSON(merged)).toEqual({
+			name: '@orkestrel/router',
+			homepage: 'https://consumer.example/router',
+			scripts: {
+				test: 'consumer-test',
+				'test:service': 'aggregate-command',
+				'test:service:claude': 'claude-command',
+				prepublishOnly: 'consumer-publish && npm run test:service',
+			},
+		})
 	})
 
 	it('renders the repair scope note only when there is out-of-scope drift', () => {
 		expect(scopeNote(0, false)).toBeUndefined()
 		expect(scopeNote(3, false)).toContain('outside host-owned repair scope')
 		expect(scopeNote(3, false)).not.toContain('--generated')
-		expect(scopeNote(3, true)).toContain('starter files and package.json remain protected')
+		expect(scopeNote(3, true)).toContain(
+			'present starter files and package publication metadata remain protected',
+		)
 	})
 
 	it('partitions findings by repair ownership', () => {
@@ -856,7 +876,7 @@ describe('render: new prune/missing/generated/audit-live/comparison/ci/catalog e
 	it('pruneSkipped explains the non-interactive alternative without re-asking for --prune', () => {
 		const line = PRUNE_SKIPPED
 		expect(line).toBe(
-			'prune skipped — not a terminal; add --apply (or --yes) to delete non-interactively',
+			'prune skipped — pass --apply to authorize deletion; --yes only skips confirmation',
 		)
 		expect(line).not.toContain('pass --prune')
 	})

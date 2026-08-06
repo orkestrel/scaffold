@@ -1,12 +1,11 @@
 import type { Audit, CatalogEntry, Finding, Plan, PlanSummary, SyncReport } from '@src/core'
-import { DEPENDENCY_NAME_PATTERN, isScaffoldError, ScaffoldError } from '@src/core'
+import { DEPENDENCY_NAME_PATTERN, isScaffoldError, ownDataValue, ScaffoldError } from '@src/core'
 import { isFilesystemPath, resolvePhysicalPath } from '@src/server'
 import type { MaterializeResult } from '@src/server'
 import type { TableOptions } from '@orkestrel/console'
-import { attempt } from '@orkestrel/contract'
+import { attempt, isRecord, parseJSON } from '@orkestrel/contract'
 import {
 	ACTION_LABEL,
-	CATALOG_AGENT_PATH,
 	DRIFT_LABEL,
 	EXIT_CODES,
 	FRESHNESS_LABEL,
@@ -80,7 +79,7 @@ export function auditTable(audit: Audit, plan: Plan): TableOptions {
 export function scopeNote(count: number, generated: boolean): string | undefined {
 	if (count === 0) return undefined
 	return generated
-		? `note: ${countPart(count, 'finding')} outside host-owned and generated repair scope — run 'audit' for the list; starter files and package.json remain protected`
+		? `note: ${countPart(count, 'finding')} outside host-owned and generated repair scope — run 'audit' for the list; present starter files and package publication metadata remain protected`
 		: `note: ${countPart(count, 'finding')} outside host-owned repair scope — run 'audit' for the list`
 }
 
@@ -105,20 +104,61 @@ export function repairVerdict(audit: Audit, generated: boolean, replace = false)
 }
 
 /**
- * Keep the catalog agent presence-repairable while leaving its content to `catalog`.
+ * Merge only generated service scripts into an existing manifest.
  *
- * @param plan - The hydrated repair plan.
- * @returns A plan whose catalog agent has no canonical byte comparison.
+ * @param current - The existing consumer manifest text.
+ * @param generated - The canonical manifest text for the derived service blueprint.
+ * @param services - The declared service vendor names.
+ * @returns Formatter-stable manifest text preserving publication metadata and unrelated scripts.
  */
-export function protectCatalogPlan(plan: Plan): Plan {
-	return {
-		...plan,
-		artifacts: plan.artifacts.map((artifact) => {
-			if (artifact.origin !== 'host' || artifact.path !== CATALOG_AGENT_PATH) return artifact
-			const { hex: _hex, ...protectedArtifact } = artifact
-			return protectedArtifact
-		}),
+export function mergeServiceManifest(
+	current: string,
+	generated: string,
+	services: readonly string[],
+): string {
+	const currentManifest = parseJSON(current)
+	const generatedManifest = parseJSON(generated)
+	if (!isRecord(currentManifest) || !isRecord(generatedManifest)) {
+		throw new ScaffoldError('INVALID', 'Service adoption requires object package manifests')
 	}
+	const currentScriptsValue = ownDataValue(currentManifest, 'scripts')
+	const generatedScriptsValue = ownDataValue(generatedManifest, 'scripts')
+	if (!isRecord(currentScriptsValue) || !isRecord(generatedScriptsValue)) {
+		throw new ScaffoldError('INVALID', 'Service adoption requires object package scripts')
+	}
+	const serviceKeys = ['test:service', ...services.map((service) => `test:service:${service}`)]
+	const serviceNames = new Set(serviceKeys)
+	const currentPublish = ownDataValue(currentScriptsValue, 'prepublishOnly')
+	const generatedPublish = ownDataValue(generatedScriptsValue, 'prepublishOnly')
+	if (typeof currentPublish !== 'string' || typeof generatedPublish !== 'string') {
+		throw new ScaffoldError('INVALID', 'Service adoption requires a prepublishOnly script')
+	}
+	const suffix = ' && npm run test:service'
+	const publish = currentPublish.endsWith(suffix) ? currentPublish : `${currentPublish}${suffix}`
+	const scripts: Record<string, unknown> = {}
+	for (const name of Object.keys(generatedScriptsValue)) {
+		if (serviceNames.has(name)) {
+			const value = ownDataValue(generatedScriptsValue, name)
+			if (typeof value !== 'string') {
+				throw new ScaffoldError('INVALID', `Generated service script is missing at ${name}`)
+			}
+			scripts[name] = value
+			continue
+		}
+		if (name === 'prepublishOnly') {
+			scripts[name] = publish
+			continue
+		}
+		const value = ownDataValue(currentScriptsValue, name)
+		if (value !== undefined) scripts[name] = value
+	}
+	for (const name of Object.keys(currentScriptsValue)) {
+		if (Object.hasOwn(scripts, name)) continue
+		if (name === 'test:service' || name.startsWith('test:service:')) continue
+		const value = ownDataValue(currentScriptsValue, name)
+		if (value !== undefined) scripts[name] = value
+	}
+	return `${JSON.stringify({ ...currentManifest, scripts }, undefined, '\t')}\n`
 }
 
 /** Render repair's materialization tally. */

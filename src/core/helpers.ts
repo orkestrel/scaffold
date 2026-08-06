@@ -1072,7 +1072,8 @@ export function inferGroup(path: string): Group {
  * PRESENCE only — `missing` or `aligned`, never `stale` — UNLESS it has been
  * hydrated with its real host bytes (`hydratePlan`'s `content`), in which case
  * it is content-compared exactly like a `computed` artifact and CAN be
- * `stale`. `hydratePlan` expands directory-shaped host artifacts into
+ * `stale`. The catalog agent remains presence-owned after hydration because
+ * `catalog` alone owns its bounded marker region. `hydratePlan` expands directory-shaped host artifacts into
  * content-bearing file artifacts; only an unresolved degrade-path host
  * artifact stays presence-only. A `computed` artifact is content-aware canon —
  * `missing` / `aligned` / `stale` — and gates the audit like any drifted
@@ -1110,7 +1111,8 @@ export function diffPlan(plan: Plan, current: Snapshot): Audit {
 		if (artifact.origin === 'host') {
 			let drift: Drift
 			if (seen === undefined) drift = 'missing'
-			else if (artifact.hex === undefined) drift = 'aligned'
+			else if (artifact.hex === undefined || artifact.path === '.claude/agents/orkestrel.md')
+				drift = 'aligned'
 			else drift = seen === artifact.hex ? 'aligned' : 'stale'
 			findings.push({
 				path: artifact.path,

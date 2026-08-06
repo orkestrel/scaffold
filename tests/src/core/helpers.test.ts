@@ -532,6 +532,36 @@ describe('diffPlan — the four drift classes', () => {
 		)
 	})
 
+	it('keeps the hydrated catalog agent presence-owned for every library comparison', () => {
+		const plan: Plan = {
+			blueprint: blueprint('router', { src: ['core'] }),
+			groups: ['orchestration'],
+			artifacts: [
+				{
+					path: '.claude/agents/orkestrel.md',
+					group: 'orchestration',
+					origin: 'host',
+					hex: contentToHex('vendored catalog\n'),
+				},
+			],
+		}
+
+		const present = diffPlan(plan, {
+			'.claude/agents/orkestrel.md': contentToHex('catalog-owned fleet table\n'),
+		})
+		const missing = diffPlan(plan, {})
+
+		expect(present.clean).toBe(true)
+		expect(present.findings).toEqual([
+			{
+				path: '.claude/agents/orkestrel.md',
+				group: 'orchestration',
+				drift: 'aligned',
+			},
+		])
+		expect(missing.missing).toBe(1)
+	})
+
 	it('complete is always true for diffPlan (unlike a gated Compiler.audit)', () => {
 		const plan = blueprintToPlan(blueprint('router', { src: ['core'] }), ['manifest'])
 

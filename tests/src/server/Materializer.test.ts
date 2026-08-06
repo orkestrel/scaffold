@@ -762,6 +762,35 @@ describe('Materializer — path containment', () => {
 // ── Materializer.materialize — group-scoped plan into a vacant target ───────
 
 describe('Materializer.materialize — group-scoped plan', () => {
+	it('still writes the catalog agent bytes into a vacant workspace', async () => {
+		const directory = await buildTempDirectory()
+		const host = await buildTempDirectory()
+		try {
+			const path = '.claude/agents/orkestrel.md'
+			const content = '# Orkestrel catalog\n'
+			mkdirSync(join(host.path, '.claude', 'agents'), { recursive: true })
+			writeFileSync(join(host.path, path), content, 'utf8')
+			const plan: Plan = {
+				blueprint: blueprint('catalog-birth', { src: ['core'] }),
+				groups: ['orchestration'],
+				artifacts: [{ path, group: 'orchestration', origin: 'host' }],
+			}
+			const hydrated = hydratePlan(plan, host.path)
+			const materializer = createMaterializer({ host: host.path })
+			try {
+				const result = materializer.materialize(hydrated, directory.path)
+
+				expect(result.copied).toEqual([path])
+				expect(readFileSync(join(directory.path, path), 'utf8')).toBe(content)
+			} finally {
+				materializer.destroy()
+			}
+		} finally {
+			await directory.cleanup()
+			await host.cleanup()
+		}
+	})
+
 	it('writes ONLY the scoped groups artifacts — a deliberate partial tree', async () => {
 		const directory = await buildTempDirectory()
 		try {
@@ -789,6 +818,41 @@ describe('Materializer.materialize — group-scoped plan', () => {
 // ── Materializer.repair ──────────────────────────────────────────────────────
 
 describe('Materializer.repair', () => {
+	it('inherits catalog presence ownership from diffPlan and preserves catalog-owned bytes', async () => {
+		const directory = await buildTempDirectory()
+		const host = await buildTempDirectory()
+		try {
+			const path = '.claude/agents/orkestrel.md'
+			const canonical = '# Vendored catalog\n'
+			const local = '# Catalog\n\n<!-- catalog:start -->\nlocal fleet\n<!-- catalog:end -->\n'
+			mkdirSync(join(directory.path, '.claude', 'agents'), { recursive: true })
+			mkdirSync(join(host.path, '.claude', 'agents'), { recursive: true })
+			writeFileSync(join(directory.path, path), local, 'utf8')
+			writeFileSync(join(host.path, path), canonical, 'utf8')
+			const plan: Plan = {
+				blueprint: blueprint('catalog-library', { src: ['core'] }),
+				groups: ['orchestration'],
+				artifacts: [{ path, group: 'orchestration', origin: 'host' }],
+			}
+			const hydrated = hydratePlan(plan, host.path)
+			const audit = diffPlan(hydrated, readTarget(directory.path, [path]))
+			const materializer = createMaterializer({ host: host.path })
+			try {
+				const result = materializer.repair(hydrated, audit, directory.path, true)
+
+				expect(audit.clean).toBe(true)
+				expect(result.copied).toEqual([])
+				expect(result.skipped).toEqual([path])
+				expect(readFileSync(join(directory.path, path), 'utf8')).toBe(local)
+			} finally {
+				materializer.destroy()
+			}
+		} finally {
+			await directory.cleanup()
+			await host.cleanup()
+		}
+	})
+
 	it('preserves a legitimate local addition in a stale host-owned file by default', async () => {
 		const directory = await buildTempDirectory()
 		const host = await buildTempDirectory()
