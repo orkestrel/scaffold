@@ -1,6 +1,6 @@
 import { globSync, readFileSync } from 'node:fs'
 import { isBuiltin } from 'node:module'
-import { basename, join } from 'node:path'
+import { basename, extname, join } from 'node:path'
 import * as ts from 'typescript'
 
 /** Centralized source modules whose top-level declarations must all be exported. */
@@ -59,6 +59,9 @@ export const DATA_SOURCE_FILES: readonly string[] = Object.freeze([
 	'templates.ts',
 	'validators.ts',
 ])
+
+/** Domain folders whose modules each export one named function rather than one class. */
+export const FUNCTION_DOMAIN_FOLDERS: readonly string[] = Object.freeze(['app/browser/composables'])
 
 /** Worker-only value globals that WebWorker typing must not expose to core implementations. */
 export const WORKER_SCOPE_VALUE_GLOBALS: readonly string[] = Object.freeze([
@@ -136,6 +139,28 @@ export function isCodingSourcePath(path: string): boolean {
 		(normalized.startsWith('app/') || normalized.startsWith('src/')) &&
 		extension !== undefined &&
 		CODING_SOURCE_EXTENSIONS.includes(extension)
+	)
+}
+
+/**
+ * Whether a path is an eligible function-domain module.
+ *
+ * @param path - The workspace-relative source path to inspect
+ * @returns `true` when the path is a direct module of a registered function domain
+ */
+export function isFunctionDomainPath(path: string): boolean {
+	const normalized = normalizePolicyPath(path)
+	const file = basename(normalized)
+	const separator = normalized.lastIndexOf('/')
+	const parent = separator < 0 ? '' : normalized.slice(0, separator)
+	return (
+		FUNCTION_DOMAIN_FOLDERS.includes(parent) &&
+		/^[a-z][A-Za-z0-9]*\.ts$/u.test(file) &&
+		file !== 'index.ts' &&
+		file !== 'main.ts' &&
+		!CENTRAL_SOURCE_FILES.includes(file) &&
+		!FUNCTION_SOURCE_FILES.includes(file) &&
+		!DATA_SOURCE_FILES.includes(file)
 	)
 }
 
@@ -536,6 +561,35 @@ export function inspectCodingNode(
 	ts.forEachChild(node, (child) => inspectCodingNode(path, child, violations, checker))
 }
 
+/**
+ * Inspect one eligible function-domain module for its required declaration shape.
+ *
+ * @param path - The source path used in diagnostics
+ * @param source - The parsed source file to inspect
+ * @returns A shape violation when the module is not imports plus one matching named export
+ */
+export function inspectFunctionModule(path: string, source: ts.SourceFile): readonly string[] {
+	const file = basename(normalizePolicyPath(path))
+	const functions = source.statements
+		.filter(ts.isFunctionDeclaration)
+		.filter((declaration) => declaration.body !== undefined)
+	const invalid = source.statements.filter(
+		(statement) => !ts.isImportDeclaration(statement) && !ts.isFunctionDeclaration(statement),
+	)
+	const declaration = functions[0]
+	if (
+		functions.length === 1 &&
+		invalid.length === 0 &&
+		declaration !== undefined &&
+		declaration.name?.text === file.slice(0, -3) &&
+		hasExportModifier(declaration) &&
+		!hasModifier(declaration, ts.SyntaxKind.DefaultKeyword)
+	) {
+		return []
+	}
+	return [`${path} function modules contain imports and one matching exported function`]
+}
+
 /** Inspect one TypeScript source module for repository coding-law violations. */
 export function inspectCodingLaw(path: string, content: string): readonly string[] {
 	const violations: string[] = []
@@ -544,6 +598,8 @@ export function inspectCodingLaw(path: string, content: string): readonly string
 	if (source === undefined) throw new Error(`Policy source was not bound at ${path}`)
 	const checker = program.getTypeChecker()
 	const file = basename(path)
+	const stem = basename(file, extname(file))
+	const functionModule = isFunctionDomainPath(path)
 	const placementExempt =
 		!CENTRAL_SOURCE_FILES.includes(file) &&
 		!FUNCTION_SOURCE_FILES.includes(file) &&
@@ -552,6 +608,9 @@ export function inspectCodingLaw(path: string, content: string): readonly string
 
 	if (/\.[cm]?jsx?$/u.test(path)) {
 		violations.push(`${path} production modules use TypeScript source extensions`)
+	}
+	if (FUNCTION_DOMAIN_FOLDERS.some((folder) => basename(folder) === stem)) {
+		violations.push(`${path} names a function domain, which belongs in a folder rather than a file`)
 	}
 	if (/@ts-(?:expect-error|ignore|nocheck)|eslint-disable|oxlint-disable/u.test(content)) {
 		violations.push(`${path} forbids suppression directives`)
@@ -598,6 +657,7 @@ export function inspectCodingLaw(path: string, content: string): readonly string
 		}
 		if (
 			!placementExempt &&
+			!functionModule &&
 			ts.isFunctionDeclaration(statement) &&
 			!FUNCTION_SOURCE_FILES.includes(file)
 		) {
@@ -605,6 +665,7 @@ export function inspectCodingLaw(path: string, content: string): readonly string
 		}
 		if (
 			!placementExempt &&
+			!functionModule &&
 			ts.isVariableStatement(statement) &&
 			!DATA_SOURCE_FILES.includes(file)
 		) {
@@ -644,6 +705,10 @@ export function inspectCodingLaw(path: string, content: string): readonly string
 				}
 			}
 		}
+	}
+
+	if (functionModule) {
+		violations.push(...inspectFunctionModule(path, source))
 	}
 
 	if (/^[A-Z][A-Za-z0-9]*\.ts$/u.test(file)) {

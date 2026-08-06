@@ -10,8 +10,10 @@ import {
 	inspectCodingLaw,
 	inspectCodingSource,
 	inspectCodingWorkspace,
+	inspectFunctionModule,
 	inspectVueCodingLaw,
 	isCodingSourcePath,
+	isFunctionDomainPath,
 	isSelfContained,
 	normalizePolicyPath,
 	WORKER_SCOPE_VALUE_GLOBALS,
@@ -37,6 +39,88 @@ describe('repository coding law', () => {
 
 	it('mechanically enforces source placement, exports, readonly contracts, and syntax law', () => {
 		expect(inspectCodingWorkspace(WORKSPACE_ROOT)).toEqual([])
+	})
+
+	it('recognizes only direct registered function-domain modules', () => {
+		const valid =
+			"import type { Ref } from 'vue'\nexport function useTheme(): Ref | undefined { return undefined }\n"
+
+		expect(isFunctionDomainPath('app/browser/composables/useTheme.ts')).toBe(true)
+		expect(isFunctionDomainPath('app\\browser\\composables\\useTheme.ts')).toBe(true)
+		expect(isFunctionDomainPath('app/browser/services/useTheme.ts')).toBe(false)
+		expect(isFunctionDomainPath('app/browser/composables/nested/useTheme.ts')).toBe(false)
+		expect(isFunctionDomainPath('app/browser/composables/index.ts')).toBe(false)
+		expect(isFunctionDomainPath('app/browser/composables/main.ts')).toBe(false)
+		expect(inspectCodingLaw('app/browser/composables/useTheme.ts', valid)).toEqual([])
+		expect(inspectCodingLaw('app/browser/services/useTheme.ts', valid)).toEqual([
+			'app/browser/services/useTheme.ts places module functions in their centralized kind file',
+		])
+	})
+
+	it('accepts only runtime implementations while preserving overloads and generators', () => {
+		const ordinary = ts.createSourceFile(
+			'useTheme.ts',
+			'export function useTheme() { return true }\n',
+			ts.ScriptTarget.Latest,
+			true,
+		)
+		const declared = ts.createSourceFile(
+			'useTheme.ts',
+			'export declare function useTheme(): void\n',
+			ts.ScriptTarget.Latest,
+			true,
+		)
+		const overloaded = ts.createSourceFile(
+			'useTheme.ts',
+			[
+				'export function useTheme(value: string): string',
+				'export function useTheme(value: number): number',
+				'export function useTheme(value: string | number) { return value }',
+			].join('\n'),
+			ts.ScriptTarget.Latest,
+			true,
+		)
+		const generator = ts.createSourceFile(
+			'useTheme.ts',
+			'export function* useTheme() { yield true }\n',
+			ts.ScriptTarget.Latest,
+			true,
+		)
+
+		expect(inspectFunctionModule('app/browser/composables/useTheme.ts', ordinary)).toEqual([])
+		expect(inspectFunctionModule('app/browser/composables/useTheme.ts', declared)).toEqual([
+			'app/browser/composables/useTheme.ts function modules contain imports and one matching exported function',
+		])
+		expect(inspectFunctionModule('app/browser/composables/useTheme.ts', overloaded)).toEqual([])
+		expect(inspectFunctionModule('app/browser/composables/useTheme.ts', generator)).toEqual([])
+	})
+
+	it('rejects invalid function-module shapes and file-shaped function domains', () => {
+		const cases = [
+			'export function useTheme() { return true }\nexport function useMode() { return true }\n',
+			'export const THEME = true\nexport function useTheme() { return THEME }\n',
+			'export default function useTheme() { return true }\n',
+			'function useTheme() { return true }\n',
+			'export function useMode() { return true }\n',
+		]
+
+		for (const content of cases) {
+			const source = ts.createSourceFile('useTheme.ts', content, ts.ScriptTarget.Latest, true)
+			expect(inspectFunctionModule('app/browser/composables/useTheme.ts', source)).toEqual([
+				'app/browser/composables/useTheme.ts function modules contain imports and one matching exported function',
+			])
+		}
+
+		for (const path of [
+			'app/browser/composables.ts',
+			'app/core/composables.ts',
+			'src/core/composables.ts',
+			'src/browser/nested/composables.ts',
+		]) {
+			expect(inspectCodingLaw(path, '')).toEqual([
+				`${path} names a function domain, which belongs in a folder rather than a file`,
+			])
+		}
 	})
 
 	it('exempts only positively self-contained Node runtime entrypoints', async () => {
