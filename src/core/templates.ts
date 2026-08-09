@@ -1950,11 +1950,21 @@ exit 1
 		name: 'policyTest',
 		summary: 'The generated repository filename-policy test.',
 		category: 'tests',
-		placeholders: Object.freeze([]),
+		placeholders: Object.freeze([
+			Object.freeze({
+				name: 'vuePolicyImport',
+				description: 'The Vue SFC parser import, when the workspace declares app/browser.',
+			}),
+			Object.freeze({
+				name: 'workspacePolicyAssertion',
+				description:
+					'The workspace coding-law assertion, carrying a Vue script extractor when the workspace declares app/browser.',
+			}),
+		]),
 		content: `import { globSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { isBrowserVuePath } from './setup.js'
-import { inspectCodingLaw, inspectCodingWorkspace, isFunctionDomainPath } from './setupPolicy.js'
+import { inspectCodingLaw, inspectCodingWorkspace, isFunctionDomainPath } from './setupPolicy.js'{{vuePolicyImport}}
 
 ${CONST_KEYWORD} FUNCTION_MODULE_PATH = 'app/browser/composables/useTheme.ts'
 ${CONST_KEYWORD} FUNCTION_MODULE_VIOLATION =
@@ -1972,7 +1982,7 @@ describe('repository coding law', () => {
 	})
 
 	it('enforces source placement, exports, readonly contracts, and syntax law', () => {
-		expect(inspectCodingWorkspace(process.cwd())).toEqual([])
+		{{workspacePolicyAssertion}}
 	})
 
 	it('accepts one matching exported function in a registered domain', () => {

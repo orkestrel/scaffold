@@ -42,6 +42,7 @@ import {
 	formatJson,
 	hasApplicationBoundary,
 	hasApplicationShowcase,
+	matchesOrchestrationPath,
 	pascalCase,
 	pinPlan,
 	renderStringArray,
@@ -59,24 +60,32 @@ import { TEMPLATES } from './templates.js'
  * @example
  * ```ts
  * hostGroup('AGENTS.md') // 'docs'
- * hostGroup('.agents') // 'orchestration'
- * hostGroup('.claude') // 'orchestration'
- * hostGroup('.codex') // 'orchestration'
+ * hostGroup('.agents/orchestration.md') // 'orchestration'
+ * hostGroup('.claude/rules') // 'orchestration'
+ * hostGroup('.cursor/rules') // 'orchestration'
+ * hostGroup('.mcp.json') // 'orchestration'
+ * hostGroup('.oxlintrc.json') // 'configs'
  * ```
+ *
+ * @remarks
+ * Takes a `HOST_PATHS` entry, so every example above is one. A bare directory
+ * name is not: `ORCHESTRATION_PATH_PREFIXES` entries carry a trailing slash, so
+ * `hostGroup('.cursor')` is `configs`, and no vendored entry has that form.
+ *
+ * Below the `docs` branch the split is by what a path governs rather than where
+ * it sits, which is why both MCP registrations — `.mcp.json` and
+ * `.cursor/mcp.json` — group with the harness bridges instead of with the root
+ * dotfiles beside them. The `docs` branch is checked first and is deliberately
+ * positional: `AGENTS.md`, `CLAUDE.md`, and `LICENSE` are the root documents, and
+ * `CLAUDE.md` stays there as a root document even though it is also a harness
+ * bridge. A plan selecting `orchestration` therefore carries two of the three
+ * bridges; a plan selecting `docs` carries the third.
  */
 export function hostGroup(path: string): Group {
 	if (path === 'AGENTS.md' || path === 'CLAUDE.md' || path === 'LICENSE') {
 		return 'docs'
 	}
-	if (
-		path.startsWith('.agents/') ||
-		path.startsWith('.claude/') ||
-		path.startsWith('.codex/') ||
-		path.startsWith('scripts/') ||
-		path.startsWith('.github/')
-	) {
-		return 'orchestration'
-	}
+	if (matchesOrchestrationPath(path)) return 'orchestration'
 	if (path.startsWith('tests/')) return 'tests'
 	if (path === 'guides/src/guide.md' || path === 'guides/src/scaffold.md') return 'guides'
 	return 'configs'

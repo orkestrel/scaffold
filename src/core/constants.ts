@@ -121,20 +121,29 @@ export const APP_MATRIX: Readonly<Record<Environment, AppDefinition>> = Object.f
  * The byte-copied host artifact paths, frozen.
  *
  * @remarks
- * The root docs (`AGENTS.md` / `CLAUDE.md`), `LICENSE`, `.agents`, `.claude`, `.codex`,
- * the four SessionStart hook scripts (`scripts/deps.sh` / `scripts/cursor.sh` /
- * `scripts/codex.sh` / `scripts/ollama.sh`), the repository coding-law policy module,
- * the line's seven byte-identical root dotfiles, and the two guides-grouped
- * mirror candidates: the line-wide dev-tooling guide
- * (`guides/src/guide.md`) and the scaffold bin's own self-guide
- * (`guides/src/scaffold.md`). `stageHost` vendors both; each plan carries the
- * subset selected by `selectHostPaths`, omitting the target blueprint's own
- * guide.
+ * The root docs (`AGENTS.md` / `CLAUDE.md`), `LICENSE`, the canonical
+ * orchestration contract (`.agents/orchestration.md`) every harness bridge
+ * points at, `.agents`, `.claude`, `.codex`, `.cursor`, the four SessionStart
+ * hook scripts (`scripts/deps.sh` / `scripts/cursor.sh` / `scripts/codex.sh` /
+ * `scripts/ollama.sh`), the repository coding-law policy module, the line's
+ * seven byte-identical root dotfiles, and the two guides-grouped mirror
+ * candidates: the line-wide dev-tooling guide (`guides/src/guide.md`) and the
+ * scaffold bin's own self-guide (`guides/src/scaffold.md`). `stageHost` vendors
+ * both; each plan carries the subset selected by `selectHostPaths`, omitting the
+ * target blueprint's own guide.
+ *
+ * Three harness bridges point at `.agents/orchestration.md` and carry only their
+ * own harness's specifics: `CLAUDE.md`, `.codex/config.toml`, and
+ * `.cursor/rules`. They are meaningless without the contract they reference, but
+ * they do not share a `Group` — `hostGroup` keeps `CLAUDE.md` in `docs` with the
+ * other root documents, so a plan selecting `orchestration` carries two of the
+ * three and a plan selecting `docs` carries the third.
  */
 export const HOST_PATHS: readonly string[] = Object.freeze([
 	'AGENTS.md',
 	'CLAUDE.md',
 	'LICENSE',
+	'.agents/orchestration.md',
 	'.agents/skills',
 	'.claude/agents',
 	'.claude/rules',
@@ -143,6 +152,7 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
 	'.codex/agents',
 	'.codex/config.toml',
 	'.cursor/mcp.json',
+	'.cursor/rules',
 	'.mcp.json',
 	'scripts/deps.sh',
 	'scripts/cursor.sh',
@@ -159,6 +169,34 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
 	'guides/src/guide.md',
 	'guides/src/scaffold.md',
 ])
+
+/**
+ * The path prefixes whose contents instruct or wire an agent, frozen.
+ *
+ * @remarks
+ * Group classification splits by what a path governs, not by where it sits:
+ * anything under these prefixes is `orchestration`, and everything else that is
+ * not source, tests, guides, docs, or a manifest is `configs`. Both classifiers
+ * — `inferGroup` for a foreign target path and `hostGroup` for a `HOST_PATHS`
+ * entry — read this one list, so a new harness directory is admitted once.
+ */
+export const ORCHESTRATION_PATH_PREFIXES: readonly string[] = Object.freeze([
+	'.agents/',
+	'.claude/',
+	'.codex/',
+	'.cursor/',
+	'.github/',
+	'scripts/',
+])
+
+/**
+ * The exact root filenames that wire an agent bench rather than the toolchain, frozen.
+ *
+ * @remarks
+ * `.mcp.json` registers MCP servers for the harness. It sits among the root
+ * dotfiles but governs agents, so it groups with the harness bridges.
+ */
+export const ORCHESTRATION_PATH_NAMES: readonly string[] = Object.freeze(['.mcp.json'])
 
 /** The birth-only provisioner skeleton retained by workspaces with declared service vendors. */
 export const SERVICE_SCRIPT_PATH = 'scripts/service.sh'

@@ -161,6 +161,36 @@ describe('hostGroup', () => {
 		expect(hostGroup('.github/workflows/ci.yml')).toBe('orchestration')
 	})
 
+	it('classes the canonical contract and the two dot-directory bridges as orchestration', () => {
+		expect(hostGroup('.agents/orchestration.md')).toBe('orchestration')
+		expect(hostGroup('.codex/config.toml')).toBe('orchestration')
+		expect(hostGroup('.cursor/rules')).toBe('orchestration')
+		expect(hostGroup('.cursor/rules/orchestration.mdc')).toBe('orchestration')
+	})
+
+	it('keeps CLAUDE.md in docs though it is the third harness bridge', () => {
+		// The docs branch is positional and runs first: the root documents stay
+		// together. A plan selecting `orchestration` therefore carries two bridges
+		// and a plan selecting `docs` carries the third. Asserted so the split is a
+		// recorded decision rather than an accident nobody notices.
+		expect(hostGroup('CLAUDE.md')).toBe('docs')
+	})
+
+	it('classes both MCP registrations as orchestration, not as root dotfiles', () => {
+		expect(hostGroup('.mcp.json')).toBe('orchestration')
+		expect(hostGroup('.cursor/mcp.json')).toBe('orchestration')
+	})
+
+	it('does not class a bare dot-directory name as orchestration', () => {
+		// ORCHESTRATION_PATH_PREFIXES entries carry a trailing slash, and no
+		// HOST_PATHS entry is a bare directory name. Pinned because the @example
+		// block previously claimed otherwise for four such names.
+		expect(hostGroup('.agents')).toBe('configs')
+		expect(hostGroup('.claude')).toBe('configs')
+		expect(hostGroup('.codex')).toBe('configs')
+		expect(hostGroup('.cursor')).toBe('configs')
+	})
+
 	it('classes the vendored guide index and the scaffold bin self-guide as guides', () => {
 		expect(hostGroup('guides/src/guide.md')).toBe('guides')
 		expect(hostGroup('guides/src/scaffold.md')).toBe('guides')

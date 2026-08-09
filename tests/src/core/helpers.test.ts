@@ -24,7 +24,11 @@ import {
 	hasApplicationBoundary,
 	hasApplicationShowcase,
 	HOST_PATHS,
+	hostGroup,
 	inferGroup,
+	matchesOrchestrationPath,
+	ORCHESTRATION_PATH_NAMES,
+	ORCHESTRATION_PATH_PREFIXES,
 	isBehind,
 	JSON_PRINT_WIDTH,
 	JSON_TAB_WIDTH,
@@ -1418,8 +1422,52 @@ describe('inferGroup', () => {
 		expect(inferGroup('package-lock.json')).toBe('manifest')
 	})
 
+	it('classifies Cursor paths as orchestration', () => {
+		expect(inferGroup('.cursor/rules/orchestration.mdc')).toBe('orchestration')
+		expect(inferGroup('.cursor/mcp.json')).toBe('orchestration')
+	})
+
+	it('classifies .mcp.json as orchestration before the manifest and configs branches', () => {
+		expect(inferGroup('.mcp.json')).toBe('orchestration')
+	})
+
 	it('falls through a root-level, prefix-less path to configs', () => {
 		expect(inferGroup('mystery.config.ts')).toBe('configs')
+	})
+})
+
+describe('matchesOrchestrationPath', () => {
+	it('matches every declared prefix', () => {
+		expect(
+			ORCHESTRATION_PATH_PREFIXES.every((prefix) => matchesOrchestrationPath(`${prefix}x`)),
+		).toBe(true)
+	})
+
+	it('matches every declared exact name', () => {
+		expect(ORCHESTRATION_PATH_NAMES.every((name) => matchesOrchestrationPath(name))).toBe(true)
+	})
+
+	it('classifies every HOST_PATHS entry identically to hostGroup', () => {
+		const disagreements = HOST_PATHS.filter(
+			(path) => (hostGroup(path) === 'orchestration') !== matchesOrchestrationPath(path),
+		)
+		expect(disagreements).toEqual([])
+	})
+
+	it('requires a path separator, so a bare directory name does not match', () => {
+		expect(matchesOrchestrationPath('.cursor')).toBe(false)
+		expect(matchesOrchestrationPath('.claude')).toBe(false)
+		expect(matchesOrchestrationPath('.mcp.jsonx')).toBe(false)
+	})
+
+	it('rejects paths outside the population the rule defines', () => {
+		// Controls drawn from outside the membership rule rather than from inside
+		// it: toolchain dotfiles, source, and a manifest. Without these the suite
+		// above would pass for a predicate that returned true unconditionally.
+		expect(matchesOrchestrationPath('.oxlintrc.json')).toBe(false)
+		expect(matchesOrchestrationPath('.editorconfig')).toBe(false)
+		expect(matchesOrchestrationPath('src/core/index.ts')).toBe(false)
+		expect(matchesOrchestrationPath('package.json')).toBe(false)
 	})
 })
 
@@ -1737,12 +1785,12 @@ describe('pinPlan', () => {
 		}
 		expect(actual).toMatchInlineSnapshot(`
 			{
-			  "browser-only": "69d5b5ae",
-			  "core+browser": "cb12dbe5",
-			  "core+browser+server": "5e06b6fc",
-			  "core+server": "26233fa1",
-			  "core-only": "d54cc669",
-			  "server-only": "1b1653f0",
+			  "browser-only": "378088c8",
+			  "core+browser": "9eeb30e7",
+			  "core+browser+server": "e318ff9a",
+			  "core+server": "32d51013",
+			  "core-only": "d445ead3",
+			  "server-only": "049506fa",
 			}
 		`)
 	})
@@ -1770,11 +1818,11 @@ describe('pinPlan', () => {
 		}
 		expect(actual).toMatchInlineSnapshot(`
 			{
-			  "app-browser": "32b5075a",
-			  "app-core": "a1765c75",
-			  "app-full": "c8bc60e8",
-			  "app-server": "5ea53176",
-			  "mixed-full": "619adb68",
+			  "app-browser": "77fb4ce9",
+			  "app-core": "269f4bc7",
+			  "app-full": "ca1aa4e7",
+			  "app-server": "53fc8280",
+			  "mixed-full": "1eacf525",
 			}
 		`)
 	})

@@ -126,10 +126,10 @@ Store child managers in `#` fields and expose readonly getters typed as their in
 
 - A word is either a centralized kind or a domain folder, never both.
 - A folder named for a centralized kind—`helpers/`, `validators/`, `handlers/`—is that kind's file, not a folder.
-- A function domain is designated in the fleet-canon register (`tests/setupPolicy.ts`,
-  `FUNCTION_DOMAIN_FOLDERS`), not inferred from a folder's name: a camelCase module inside an
-  undesignated folder is misplaced. A workspace requests a new domain through a fleet-canon change;
-  there is no workspace-local registration path.
+- Read a function domain from the fleet-canon register (`tests/setupPolicy.ts`,
+  `FUNCTION_DOMAIN_FOLDERS`). Never infer one from a folder's name; a camelCase module inside an
+  undesignated folder is misplaced.
+- Request a new domain through a fleet-canon change. There is no workspace-local registration path.
 
 ### Extension categories
 
@@ -164,11 +164,12 @@ Both obey:
   barrel row.
 - Never re-export a symbol originating in another package; fix consumer imports to the originating package.
 - Implementation files export their own classes directly.
-- Every intentional top-level source export is public through its correct environment barrel. Current
-  consumer count never gates later exposure: developers receive the same supported mechanisms the
-  package uses for full control and customization. If a declaration should not be public, make it a
-  true local/runtime-private detail or remove the capability for a substantive reason; do not leave
-  an intentional reusable export stranded outside the barrel.
+- Expose every intentional top-level source export through its correct environment barrel.
+- Never let current consumer count gate later exposure. Developers receive the same supported
+  mechanisms the package uses, so they retain full control and customization.
+- If a declaration should not be public, make it a true local or runtime-private detail, or remove
+  the capability for a substantive reason. Never leave an intentional reusable export stranded
+  outside the barrel.
 - When a symbol moves, update every import; never leave a compatibility re-export.
 
 ```ts

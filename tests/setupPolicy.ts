@@ -483,7 +483,16 @@ export function inspectCodingSource(
 	if (!normalizedPath.startsWith('app/browser/')) {
 		violations.push(`${normalizedPath} Vue components belong in app/browser`)
 	}
-	violations.push(...inspectVueCodingLaw(normalizedPath, vueScripts?.(normalizedPath, content)))
+	// A missing extractor is reported, never absorbed. Returning [] here would make
+	// every SFC's script block silently unchecked while the surrounding sweep still
+	// reported success — an instrument claiming a coverage it does not have.
+	if (vueScripts === undefined) {
+		violations.push(
+			`${normalizedPath} requires a Vue script extractor; its script blocks were not inspected`,
+		)
+		return violations
+	}
+	violations.push(...inspectVueCodingLaw(normalizedPath, vueScripts(normalizedPath, content)))
 	return violations
 }
 
@@ -737,7 +746,14 @@ export function inspectCodingLaw(path: string, content: string): readonly string
 	return violations
 }
 
-/** Inspect every production source under one workspace. */
+/**
+ * Inspect every production source under one workspace.
+ *
+ * @remarks
+ * `vueScripts` is required whenever the workspace contains a `.vue` file: script
+ * blocks cannot be read without it, and omitting it is reported as a violation
+ * against each SFC rather than passing silently.
+ */
 export function inspectCodingWorkspace(
 	root: string,
 	vueScripts?: VueScriptExtractorInterface,

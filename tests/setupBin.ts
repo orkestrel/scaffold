@@ -314,6 +314,8 @@ export const HOST_BYTE_EQUAL_PATHS: readonly string[] = [
 	'.claude/settings.json',
 	'.codex/config.toml',
 	'.codex/agents/builder.toml',
+	'.agents/orchestration.md',
+	'.cursor/rules/orchestration.mdc',
 	'AGENTS.md',
 	'CLAUDE.md',
 	'LICENSE',
@@ -321,6 +323,25 @@ export const HOST_BYTE_EQUAL_PATHS: readonly string[] = [
 	'guides/src/scaffold.md',
 	'scripts/deps.sh',
 	'tests/setupPolicy.ts',
+]
+
+/**
+ * Repository files deliberately outside `HOST_PATHS`, which a materialized consumer
+ * must therefore NOT contain.
+ *
+ * @remarks
+ * The negative control for `HOST_BYTE_EQUAL_PATHS`. Each entry is drawn from
+ * outside the vendored set's membership rule rather than from inside it:
+ * `tests/setupBin.ts` sits in the same directory as the vendored
+ * `tests/setupPolicy.ts` and `guides/src/reason.md` beside the two vendored
+ * guides, so an absence assertion over them tests the boundary rather than
+ * re-confirming what the set already covers. Without this, a byte-equality sweep
+ * that silently vendored the whole tree would still pass.
+ */
+export const HOST_ABSENT_PATHS: readonly string[] = [
+	'tests/setupBin.ts',
+	'tests/setupE2E.ts',
+	'guides/src/reason.md',
 ]
 
 /** Complete raw host fixture used by built-command tests. */
@@ -355,7 +376,9 @@ export const HOST_FIXTURE_FILES: Readonly<Record<string, string>> = {
 	'.codex/agents/opus.toml':
 		'name = "opus"\ndescription = "fixture"\ndeveloper_instructions = "fixture"\n',
 	'.cursor/mcp.json': '{}\n',
+	'.cursor/rules/orchestration.mdc': '---\ndescription: Fixture rule.\n---\n',
 	'.mcp.json': '{}\n',
+	'.agents/orchestration.md': '# Orchestration fixture\n',
 }
 
 /** Spawn the built command with an isolated current directory. */

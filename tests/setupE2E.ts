@@ -47,6 +47,7 @@ import {
 	canBash,
 	canCursorModels,
 	cloneGeneratedConsumer,
+	HOST_ABSENT_PATHS,
 	HOST_BYTE_EQUAL_PATHS,
 	installArchive,
 	installGeneratedDependencies,
@@ -910,6 +911,15 @@ export function registerHermeticBinGates(): void {
 						expect(readFileSync(join(packageDirectory, relative), 'utf8')).toBe(
 							readFileSync(join(WORKSPACE_ROOT, relative), 'utf8'),
 						)
+					}
+
+					// Negative control for the sweep above. Every entry exists in this
+					// repository but is outside HOST_PATHS, so a staging change that
+					// over-vendored would fail here rather than pass a byte-equality
+					// check that only ever looks at what it already copies.
+					for (const relative of HOST_ABSENT_PATHS) {
+						expect(existsSync(join(WORKSPACE_ROOT, relative))).toBe(true)
+						expect(existsSync(join(packageDirectory, relative))).toBe(false)
 					}
 
 					for (const script of ['deps.sh', 'cursor.sh', 'codex.sh', 'ollama.sh']) {

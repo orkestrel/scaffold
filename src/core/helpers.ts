@@ -40,6 +40,8 @@ import {
 	MAX_TOTAL_ARTIFACT_BYTES,
 	MINIMUM_NODE_VERSION,
 	NAME_PATTERN,
+	ORCHESTRATION_PATH_NAMES,
+	ORCHESTRATION_PATH_PREFIXES,
 	ORKESTREL_RANGE_PATTERN,
 	ENVIRONMENTS,
 	VERSION_PATTERN,
@@ -1034,10 +1036,12 @@ export function catalogToBlock(entries: readonly CatalogEntry[]): string {
  *
  * @param path - The target-relative path to classify.
  * @remarks
- * Ordered prefix match — `src/`, `tests/`, `guides/`, `docs/`, `configs/`,
- * then `.agents/`, `.claude/`, `.codex/`, `.github/`, and `scripts/` as
- * `'orchestration'`, then the two manifest files by exact name. Anything else
- * (a root-level, prefix-less file) falls through to `'configs'`.
+ * Ordered prefix match — `src/`, `tests/`, `guides/`, `docs/`, `configs/`, then
+ * `matchesOrchestrationPath`, which owns the orchestration membership rule for
+ * this function and for `hostGroup` alike, then the two manifest files by exact
+ * name. Anything left falls through to `'configs'`. Read the rule at
+ * `matchesOrchestrationPath` rather than here; one rule with two descriptions
+ * drifts exactly as fast as one rule with two implementations.
  * @returns The inferred `Group` for `path`.
  *
  * @example
@@ -1055,17 +1059,29 @@ export function inferGroup(path: string): Group {
 	if (path.startsWith('guides/')) return 'guides'
 	if (path.startsWith('docs/')) return 'docs'
 	if (path.startsWith('configs/')) return 'configs'
-	if (
-		path.startsWith('.agents/') ||
-		path.startsWith('.claude/') ||
-		path.startsWith('.codex/') ||
-		path.startsWith('.github/') ||
-		path.startsWith('scripts/')
-	) {
-		return 'orchestration'
-	}
+	if (matchesOrchestrationPath(path)) return 'orchestration'
 	if (path === 'package.json' || path === 'package-lock.json') return 'manifest'
 	return 'configs'
+}
+
+/**
+ * Test whether a path instructs or wires an agent rather than the toolchain.
+ *
+ * @param path - The portable path to classify.
+ * @returns `true` when the path is agent orchestration.
+ *
+ * @example
+ * ```ts
+ * import { matchesOrchestrationPath } from '@orkestrel/scaffold'
+ *
+ * matchesOrchestrationPath('.cursor/rules/orchestration.mdc') // true
+ * matchesOrchestrationPath('.mcp.json') // true
+ * matchesOrchestrationPath('.oxlintrc.json') // false
+ * ```
+ */
+export function matchesOrchestrationPath(path: string): boolean {
+	if (ORCHESTRATION_PATH_NAMES.includes(path)) return true
+	return ORCHESTRATION_PATH_PREFIXES.some((prefix) => path.startsWith(prefix))
 }
 
 /**

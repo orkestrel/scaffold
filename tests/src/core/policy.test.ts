@@ -235,13 +235,18 @@ describe('repository coding law', () => {
 		).toEqual([expect.stringContaining('forbids worker-scope global location')])
 	})
 
-	it('requires approval for every Bash command and denies sensitive file families', () => {
+	it('pre-approves only the two codex bench probes and denies sensitive file families', () => {
 		const settings = readRecord(
 			parseJSON(readFileSync(join(WORKSPACE_ROOT, '.claude', 'settings.json'), 'utf8')),
 		)
 		const permissions = readRecord(settings.permissions)
 
-		expect(permissions.allow).toBeUndefined()
+		// The vendored allow list is closed, not a floor: every workspace in the line
+		// inherits it, so an entry added here is added to every package at once. Only the
+		// bench-liveness probe and the device-login recovery the orchestration contract
+		// requires at session start are pre-approved. Machine-local grants belong in
+		// settings.local.json, which SENSITIVE_HOST_PATH_PATTERN keeps out of every host.
+		expect(permissions.allow).toEqual(['Bash(codex --version)', 'Bash(codex login *)'])
 		expect(permissions.ask).toBeUndefined()
 		expect(permissions.deny).toEqual(
 			expect.arrayContaining([
@@ -350,6 +355,7 @@ describe('repository coding law', () => {
 	it('keeps components out of non-browser environments and routes each source to its inspector', () => {
 		expect(inspectCodingSource('app/core/Hostile.vue', '<template />')).toEqual([
 			'app/core/Hostile.vue Vue components belong in app/browser',
+			'app/core/Hostile.vue requires a Vue script extractor; its script blocks were not inspected',
 		])
 		expect(
 			inspectCodingSource(
@@ -361,6 +367,35 @@ describe('repository coding law', () => {
 		expect(
 			inspectCodingSource('src/core/hostile.ts', 'const value = {} as object\n'),
 		).not.toHaveLength(0)
+	})
+
+	it('reports a missing Vue script extractor instead of inspecting nothing', () => {
+		// Regression guard. Without an extractor the SFC arm returned [], so a
+		// workspace sweep reported success while every script block went unread —
+		// which is how a generated Vue consumer shipped a policy gate that could not
+		// see inside its own components.
+		const sfc = '<script setup lang="ts">const value = {} as object\nvoid value</script>\n'
+		const extractor = (_path: string, content: string) => [
+			{ content: content.replace(/^[\s\S]*?>|<\/script>\s*$/gu, ''), lang: 'ts' },
+		]
+
+		const unread = inspectCodingSource('app/browser/Hostile.vue', sfc)
+		expect(unread).toEqual([
+			'app/browser/Hostile.vue requires a Vue script extractor; its script blocks were not inspected',
+		])
+
+		const read = inspectCodingSource('app/browser/Hostile.vue', sfc, extractor)
+		expect(read.some((violation) => violation.includes('forbids type/non-null assertions'))).toBe(
+			true,
+		)
+
+		// Control: the identical assertion in a plain module must be caught, so a
+		// green SFC result can never be credited to a coding law that does not fire.
+		expect(
+			inspectCodingSource('app/browser/plain.ts', 'const value = {} as object\nvoid value\n').some(
+				(violation) => violation.includes('forbids type/non-null assertions'),
+			),
+		).toBe(true)
 	})
 })
 

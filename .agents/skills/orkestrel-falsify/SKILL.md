@@ -44,7 +44,7 @@ it. Follow `references/brief.md`. What this skill adds beyond the conduct law:
 - Unknowns are named as unknowns, with how the auditor reports back on them.
 
 The claim form itself is the Falsification law's — read it there. The **verdict shape** below is this
-skill's, because `CLAUDE.md` assigns it here; everything else about auditor conduct is the law's.
+skill's, because `.agents/orchestration.md` assigns it here; everything else about auditor conduct is the law's.
 
 ## Evidence, by subject type
 
@@ -69,9 +69,12 @@ nobody claimed.
   looking like authority — and it fails silently, because an auditor does not report a heading it
   never saw. Check before dispatch; propagate the missing file rather than restating its contents in
   the brief. This is the reason restatement felt necessary, and it is the wrong cure.
-- Dispatch **two independent auditors on one identical brief**, blind to each other, and reconcile
-  yourself. Engine and role selection are the orchestration contract's, not this skill's. A round run
-  with one auditor is a deviation; record it rather than glossing it.
+- Run the **two-lane adversarial pass** on one identical brief: a subjective lane and an objective
+  lane, each a fresh subagent with a clean context, blind to each other. Reconcile them yourself.
+  `.agents/orchestration.md` owns lane definitions, engine assignment, and what happens when an
+  engine is dark; do not restate them here.
+- A round run with one lane is a deviation. Record it rather than glossing it. If an engine is
+  unavailable, the remaining engine runs both lanes — it never drops one.
 - **Give every auditor the means to run its attacks.** A lens that can only read returns derivations,
   and a derivation reads exactly like a verdict — it will confirm a claim that one probe would break.
 - **Tell each auditor exactly where a probe may live, and verify that place works before you say it.**
