@@ -7,15 +7,20 @@ import { describe, expect, it } from 'vitest'
 import { applicationArtifacts, blueprint, blueprintToPlan, sourceArtifacts } from '@src/core'
 import { isBrowserVuePath, readRecord } from '../../setup.js'
 import {
+	derivePolicyTokens,
 	inspectCodingLaw,
 	inspectCodingSource,
 	inspectCodingWorkspace,
 	inspectFunctionModule,
+	inspectPolicyPurity,
+	inspectPolicyWorkspace,
 	inspectVueCodingLaw,
 	isCodingSourcePath,
 	isFunctionDomainPath,
 	isSelfContained,
 	normalizePolicyPath,
+	POLICY_INFRASTRUCTURE_FILES,
+	readPackageName,
 	WORKER_SCOPE_VALUE_GLOBALS,
 } from '../../setupPolicy.js'
 import { buildTempDirectory, WORKSPACE_ROOT } from '../../setupServer.js'
@@ -457,5 +462,120 @@ describe('generated workspace coding law', () => {
 		expect(variants.size).toBe(62)
 		expect(delegated).toEqual(['app/browser/ApplicationView.vue'])
 		expect(violations).toEqual([])
+	})
+})
+
+describe('fleet policy purity', () => {
+	it('derives the upper-snake and Pascal spellings of a package short name', () => {
+		expect(derivePolicyTokens('@orkestrel/mcp')).toEqual(['MCP', 'Mcp'])
+		expect(derivePolicyTokens('@orkestrel/my-router')).toEqual(['MY_ROUTER', 'MyRouter'])
+		expect(derivePolicyTokens('router')).toEqual(['ROUTER', 'Router'])
+	})
+
+	it('dedupes colliding spellings and derives nothing from a nameless short name', () => {
+		expect(derivePolicyTokens('@orkestrel/X')).toEqual(['X'])
+		expect(derivePolicyTokens('@orkestrel/')).toEqual([])
+	})
+
+	it('reads the declared package name from a workspace manifest', () => {
+		expect(readPackageName(WORKSPACE_ROOT)).toBe('@orkestrel/scaffold')
+	})
+
+	it('rejects a manifest that declares no name', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			writeFileSync(join(directory.path, 'package.json'), '{ "version": "0.0.0" }\n', 'utf8')
+
+			expect(() => readPackageName(directory.path)).toThrow(/declares no name/u)
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('reports a package token and a prefixed environment literal in position order', () => {
+		const content = [
+			'export const MCP_PATHS = []',
+			"export const path = 'src/browser/index.ts'",
+			'',
+		].join('\n')
+
+		expect(inspectPolicyPurity('tests/setupPolicy.ts', content, ['MCP', 'Mcp'])).toEqual([
+			'tests/setupPolicy.ts:1:14 forbids the MCP package token',
+			'tests/setupPolicy.ts:2:21 forbids a source-environment path literal',
+		])
+	})
+
+	it('reads a prefixed environment path out of every template literal part', () => {
+		const content = [
+			'const head = `src/core/${suffix}`',
+			'const tail = `${prefix}src/server/index.ts`',
+			'const bare = `src/browser/index.ts`',
+			'',
+		].join('\n')
+
+		expect(inspectPolicyPurity('tests/setupPolicy.ts', content, [])).toEqual([
+			'tests/setupPolicy.ts:1:14 forbids a source-environment path literal',
+			'tests/setupPolicy.ts:2:23 forbids a source-environment path literal',
+			'tests/setupPolicy.ts:3:14 forbids a source-environment path literal',
+		])
+	})
+
+	it('matches tokens case-sensitively and accepts an unprefixed environment path', () => {
+		const content = [
+			"export const FOLDERS = ['app/browser/composables']",
+			"export const prefix = 'src/'",
+			'export const mcpValue = 0',
+			'',
+		].join('\n')
+
+		expect(inspectPolicyPurity('tests/setupPolicy.ts', content, ['MCP', 'Mcp'])).toEqual([])
+	})
+
+	it('clears a package the policy files merely contain and still reports one they are named for', () => {
+		const tokens = derivePolicyTokens('@orkestrel/contract')
+		const planted = ['export const CONTRACT_PATH = []', ''].join('\n')
+		const violations = POLICY_INFRASTRUCTURE_FILES.flatMap((path) =>
+			inspectPolicyPurity(path, readFileSync(join(WORKSPACE_ROOT, path), 'utf8'), tokens),
+		)
+
+		expect(tokens).toEqual(['CONTRACT', 'Contract'])
+		expect(violations).toEqual([])
+		expect(inspectPolicyPurity('tests/setupPolicy.ts', planted, tokens)).toEqual([
+			'tests/setupPolicy.ts:1:14 forbids the CONTRACT package token',
+		])
+	})
+
+	it('sweeps both fleet policy files against the tokens its manifest derives', async () => {
+		const directory = await buildTempDirectory()
+		try {
+			mkdirSync(join(directory.path, 'tests'), { recursive: true })
+			writeFileSync(
+				join(directory.path, 'package.json'),
+				'{ "name": "@orkestrel/widget" }\n',
+				'utf8',
+			)
+			writeFileSync(
+				join(directory.path, 'tests', 'policy.test.ts'),
+				'export const WIDGET_PATH = []\n',
+				'utf8',
+			)
+			writeFileSync(
+				join(directory.path, 'tests', 'setupPolicy.ts'),
+				"export const path = 'src/core/index.ts'\n",
+				'utf8',
+			)
+
+			expect(POLICY_INFRASTRUCTURE_FILES).toEqual(['tests/policy.test.ts', 'tests/setupPolicy.ts'])
+			expect(inspectPolicyWorkspace(directory.path)).toEqual([
+				'tests/policy.test.ts:1:14 forbids the WIDGET package token',
+				'tests/setupPolicy.ts:1:21 forbids a source-environment path literal',
+			])
+		} finally {
+			await directory.cleanup()
+		}
+	})
+
+	it('keeps this workspace free of its own package architecture', () => {
+		expect(inspectPolicyWorkspace(WORKSPACE_ROOT)).toEqual([])
 	})
 })

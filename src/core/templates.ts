@@ -1964,8 +1964,19 @@ exit 1
 		content: `import { globSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { isBrowserVuePath } from './setup.js'
-import { inspectCodingLaw, inspectCodingWorkspace, isFunctionDomainPath } from './setupPolicy.js'{{vuePolicyImport}}
+import {
+	derivePolicyTokens,
+	inspectCodingLaw,
+	inspectCodingWorkspace,
+	inspectPolicyPurity,
+	inspectPolicyWorkspace,
+	isFunctionDomainPath,
+	POLICY_SOURCE_ENVIRONMENTS,
+	readPackageName,
+} from './setupPolicy.js'{{vuePolicyImport}}
 
+${CONST_KEYWORD} POLICY_PLANTED_PATH = 'tests/setupPolicy.ts'
+${CONST_KEYWORD} POLICY_TOKENS = derivePolicyTokens(readPackageName(process.cwd()))
 ${CONST_KEYWORD} FUNCTION_MODULE_PATH = 'app/browser/composables/useTheme.ts'
 ${CONST_KEYWORD} FUNCTION_MODULE_VIOLATION =
 	FUNCTION_MODULE_PATH + ' declarations do not form one matching exported function implementation'
@@ -2102,6 +2113,30 @@ describe('repository coding law', () => {
 			"import { parentPort } from 'node:worker_threads'\\nconst port = parentPort\\nexport function start(): void { port?.close() }"
 
 		expect(inspectCodingLaw(path, content)).toEqual([])
+	})
+})
+
+describe('fleet policy purity', () => {
+	it('keeps fleet policy files free of this package architecture', () => {
+		expect(inspectPolicyWorkspace(process.cwd())).toEqual([])
+	})
+
+	it('reports planted package architecture, so a clean sweep is evidence', () => {
+		const token = POLICY_TOKENS[0]
+		const environment = POLICY_SOURCE_ENVIRONMENTS[0]
+		if (token === undefined || environment === undefined) {
+			throw new Error('The package manifest derived no policy token to plant')
+		}
+		const planted = [
+			'export const ' + token + '_PATH = []',
+			"export const path = 'src/" + environment + "/index.ts'",
+			'',
+		].join('\\n')
+
+		expect(inspectPolicyPurity(POLICY_PLANTED_PATH, planted, POLICY_TOKENS)).toEqual([
+			POLICY_PLANTED_PATH + ':1:14 forbids the ' + token + ' package token',
+			POLICY_PLANTED_PATH + ':2:21 forbids a source-environment path literal',
+		])
 	})
 })
 `,

@@ -112,6 +112,32 @@ export const CODING_SOURCE_EXTENSIONS: readonly string[] = Object.freeze([
 /** Production-source glob derived from the complete inspected extension vocabulary. */
 export const CODING_SOURCE_GLOB = `{app,src}/**/*.{${CODING_SOURCE_EXTENSIONS.join(',')}}`
 
+/** Fleet-owned policy files that must stay free of any one package's architecture. */
+export const POLICY_INFRASTRUCTURE_FILES: readonly string[] = Object.freeze([
+	'tests/policy.test.ts',
+	'tests/setupPolicy.ts',
+])
+
+/** Source environments whose prefixed paths fleet policy must not name in a literal. */
+export const POLICY_SOURCE_ENVIRONMENTS: readonly string[] = Object.freeze([
+	'browser',
+	'core',
+	'server',
+])
+
+/**
+ * The prefixed source-environment path fleet policy must not name in a literal.
+ *
+ * @remarks
+ * Built rather than written, so this file states no matching literal of its own
+ * and can never report itself. Policy names an environment without the source
+ * prefix when it must name one at all, which is why the prefix is the rule.
+ */
+export const POLICY_ENVIRONMENT_PATTERN: RegExp = new RegExp(
+	`src/(?:${POLICY_SOURCE_ENVIRONMENTS.join('|')})/`,
+	'u',
+)
+
 /** Virtual source text used while binding one policy-inspected module. */
 export const POLICY_SOURCE_TEXTS: Map<string, string> = new Map()
 
@@ -764,6 +790,107 @@ export function inspectCodingWorkspace(
 	})) {
 		const content = readFileSync(join(root, path), 'utf8')
 		violations.push(...inspectCodingSource(path, content, vueScripts))
+	}
+	return violations
+}
+
+/**
+ * Read one workspace's declared package name.
+ *
+ * @param root - The workspace root holding the package manifest
+ * @returns The declared package name
+ */
+export function readPackageName(root: string): string {
+	const manifest: unknown = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
+	const name =
+		typeof manifest === 'object' && manifest !== null && 'name' in manifest
+			? manifest.name
+			: undefined
+	if (typeof name !== 'string') throw new Error(`Package manifest at ${root} declares no name`)
+	return name
+}
+
+/**
+ * Derive the identifier prefixes fleet policy must not use from a package name.
+ *
+ * @param name - The declared package name, scoped or bare
+ * @returns The short name's upper-snake and Pascal spellings, deduped
+ *
+ * @example
+ * ```ts
+ * derivePolicyTokens('@orkestrel/my-router') // ['MY_ROUTER', 'MyRouter']
+ * ```
+ */
+export function derivePolicyTokens(name: string): readonly string[] {
+	const short = name.slice(name.lastIndexOf('/') + 1)
+	const words = short.split(/[^A-Za-z0-9]+/u).filter((word) => word.length > 0)
+	const upper = words.map((word) => word.toUpperCase()).join('_')
+	const pascal = words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join('')
+	return [...new Set([upper, pascal])].filter((token) => token.length > 0)
+}
+
+/**
+ * Add package-architecture violations while traversing one fleet policy source tree.
+ *
+ * @remarks
+ * An identifier carries a package's architecture when it is named for that package,
+ * so it must begin with the token. A word that merely holds the token somewhere
+ * inside it belongs to the fleet's own vocabulary and is left alone.
+ */
+export function inspectPolicyNode(
+	path: string,
+	node: ts.Node,
+	violations: string[],
+	tokens: readonly string[],
+): void {
+	if (ts.isIdentifier(node)) {
+		const token = tokens.find((candidate) => node.text.startsWith(candidate))
+		if (token !== undefined) {
+			violations.push(`${path}:${formatPolicyPosition(node)} forbids the ${token} package token`)
+		}
+	}
+	if (
+		(ts.isStringLiteral(node) || ts.isTemplateLiteralToken(node)) &&
+		POLICY_ENVIRONMENT_PATTERN.test(node.text)
+	) {
+		violations.push(
+			`${path}:${formatPolicyPosition(node)} forbids a source-environment path literal`,
+		)
+	}
+	ts.forEachChild(node, (child) => inspectPolicyNode(path, child, violations, tokens))
+}
+
+/**
+ * Inspect one fleet policy module for a single package's architecture.
+ *
+ * @param path - The workspace-relative source path used in diagnostics
+ * @param content - The TypeScript source text to inspect
+ * @param tokens - The package identifier tokens no identifier may begin with
+ * @returns Every violation, in source-position order
+ */
+export function inspectPolicyPurity(
+	path: string,
+	content: string,
+	tokens: readonly string[],
+): readonly string[] {
+	const violations: string[] = []
+	const source = ts.createSourceFile(path, content, ts.ScriptTarget.Latest, true)
+	inspectPolicyNode(path, source, violations, tokens)
+	return violations
+}
+
+/**
+ * Inspect every fleet policy module under one workspace.
+ *
+ * @param root - The workspace root whose manifest names the consuming package
+ * @returns Every violation across the fleet policy files, in file and position order
+ */
+export function inspectPolicyWorkspace(root: string): readonly string[] {
+	const tokens = derivePolicyTokens(readPackageName(root))
+	const violations: string[] = []
+	for (const path of POLICY_INFRASTRUCTURE_FILES) {
+		const content = readFileSync(join(root, path), 'utf8')
+		violations.push(...inspectPolicyPurity(path, content, tokens))
 	}
 	return violations
 }

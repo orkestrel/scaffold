@@ -3690,28 +3690,72 @@ export function srcTsconfig(environment: 'browser' | 'server'): string {
  * `build.lib` / externals live in the root `srcBrowser` / `srcServer` export
  * instead (per the live exemplars).
  *
+ * @remarks
+ * `bundleTypes` rolls the face up through API Extractor, which leaves every
+ * `src/core` re-export behind a relative `../core/index.ts` specifier — a path no
+ * published tarball carries. A workspace that also declares `core` therefore emits
+ * a `beforeWriteFile` rewrite turning that specifier into `@orkestrel/<name>`, the
+ * package's own published root export. The rewrite is narrowed to the FINAL face
+ * roll-up: applying it to the intermediate declarations makes API Extractor analyse
+ * `src/core`'s own source and abort. A workspace with no `core` emits no rewrite,
+ * because it has no cross-environment specifier to externalize.
+ *
  * @param environment - The non-`core` environment to derive the `vite.config.ts` for.
+ * @param spec - The blueprint slice naming the package and its declared source environments.
  * @returns The environment `vite.config.ts` file content, newline-terminated.
  *
  * @example
  * ```ts
- * srcViteConfig('browser').includes('srcBrowser') // true
+ * srcViteConfig('browser', { name: 'router', src: ['core', 'browser'] }).includes('srcBrowser')
  * ```
  */
-export function srcViteConfig(environment: 'browser' | 'server'): string {
+export function srcViteConfig(
+	environment: 'browser' | 'server',
+	spec: Pick<Blueprint, 'name' | 'src'>,
+): string {
 	const anchor = environment === 'browser' ? 'srcBrowser' : 'srcServer'
+	const specifier = `'@orkestrel/${spec.name}'`
+	const pattern = '/(?:\\.\\.\\/)+core\\/index\\.ts/g'
+	const inlineCall = `\t\t\t\t\t\t? content.replaceAll(${pattern}, ${specifier})`
+	// Both call shapes below are `oxfmt` fixed points, so the generated package
+	// passes its own `format:check` at either end of the legal name length.
+	const call = fitsPrintWidth(inlineCall)
+		? [inlineCall]
+		: [
+				'\t\t\t\t\t\t? content.replaceAll(',
+				`\t\t\t\t\t\t\t\t${pattern},`,
+				`\t\t\t\t\t\t\t\t${specifier},`,
+				'\t\t\t\t\t\t\t)',
+			]
+	const face = `/[\\\\/]dist[\\\\/]src[\\\\/]${environment}[\\\\/]index\\.d\\.ts$/`
+	const external = spec.src.includes('core')
+	const rewrite = external
+		? `\n${[
+				'\t\t\t\tbeforeWriteFile: (path, content) => ({',
+				`\t\t\t\t\tcontent: ${face}.test(path)`,
+				...call,
+				'\t\t\t\t\t\t: content,',
+				'\t\t\t\t}),',
+			].join('\n')}`
+		: ''
+	const note = external
+		? `// vite-plugin-dts rolls this face into one declaration, and the roll-up reaches
+// src/core through a relative source path the tarball does not carry. The rewrite
+// below externalizes core through the package's own published root export, on the
+// final roll-up only.`
+		: `// vite-plugin-dts rolls this face into one declaration. This workspace declares no
+// src/core, so the roll-up has no cross-environment specifier to externalize.`
 	return `import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
 import { ${anchor}, resolveWorkspacePath } from '../../vite.config.ts'
 
-// Types are bundled inline by vite-plugin-dts (see configs/src/vite.core.config.ts
-// for the same pattern).
+${note}
 export default defineConfig(
 	${anchor}({
 		plugins: [
 			dts({
 				tsconfigPath: resolveWorkspacePath('configs/src/tsconfig.${environment}.json'),
-				bundleTypes: true,
+				bundleTypes: true,${rewrite}
 			}),
 		],
 	}),
@@ -3972,7 +4016,7 @@ export function configArtifacts(spec: Blueprint): readonly Artifact[] {
 						: coreViteConfig()
 					: isTsconfig
 						? srcTsconfig(environment)
-						: srcViteConfig(environment)
+						: srcViteConfig(environment, spec)
 			artifacts.push({ path, group: 'configs', origin: 'computed', environment, content })
 		}
 	}

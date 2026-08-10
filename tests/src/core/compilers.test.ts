@@ -38,6 +38,7 @@ import {
 	guidesViteProject,
 	hostGroup,
 	integrationViteProject,
+	MAX_NAME_LENGTH,
 	override,
 	packageManifest,
 	pascalCase,
@@ -3007,8 +3008,14 @@ describe('rootViteConfig / singleSrcViteConfig', () => {
 describe('thin Vite wrappers', () => {
 	it.each([
 		{ label: 'core source', content: coreViteConfig() },
-		{ label: 'browser source', content: srcViteConfig('browser') },
-		{ label: 'server source', content: srcViteConfig('server') },
+		{
+			label: 'browser source',
+			content: srcViteConfig('browser', { name: 'router', src: ['core', 'browser'] }),
+		},
+		{
+			label: 'server source',
+			content: srcViteConfig('server', { name: 'router', src: ['core', 'server'] }),
+		},
 		{ label: 'executable', content: binViteConfig() },
 		{ label: 'browser application', content: appViteConfig('browser') },
 		{ label: 'server application', content: appViteConfig('server') },
@@ -3078,9 +3085,120 @@ describe('srcTsconfig / srcViteConfig', () => {
 	})
 
 	it('srcViteConfig anchors on the environment factory', () => {
-		expect(srcViteConfig('browser')).toContain('srcBrowser')
-		expect(srcViteConfig('server')).toContain('srcServer')
+		expect(srcViteConfig('browser', { name: 'router', src: ['core', 'browser'] })).toContain(
+			'srcBrowser',
+		)
+		expect(srcViteConfig('server', { name: 'router', src: ['core', 'server'] })).toContain(
+			'srcServer',
+		)
 	})
+
+	it('externalizes core through each package own published specifier, never a fixed one', () => {
+		for (const name of ['router', 'middleware']) {
+			for (const environment of ['browser', 'server'] as const) {
+				const content = srcViteConfig(environment, { name, src: ['core', environment] })
+
+				expect(content).toContain(`'@orkestrel/${name}'`)
+				expect(content).toContain('beforeWriteFile: (path, content) => ({')
+				expect(content).toContain(
+					`content: /[\\\\/]dist[\\\\/]src[\\\\/]${environment}[\\\\/]index\\.d\\.ts$/.test(path)`,
+				)
+				expect(content).toContain('content.replaceAll(')
+				expect(content).toContain('/(?:\\.\\.\\/)+core\\/index\\.ts/g,')
+				expect(content).not.toContain('bundled inline')
+			}
+		}
+	})
+
+	it('renders the rewrite call inline when it fits and broken when the name overruns it', () => {
+		// Both shapes are `oxfmt` fixed points at `printWidth: 100` / `tabWidth: 2`,
+		// so a generated package still passes its own `format:check` at either
+		// end of the legal name length.
+		expect(srcViteConfig('server', { name: 'router', src: ['core', 'server'] })).toContain(
+			"\t\t\t\t\t\t? content.replaceAll(/(?:\\.\\.\\/)+core\\/index\\.ts/g, '@orkestrel/router')\n",
+		)
+
+		const long = 'a'.repeat(MAX_NAME_LENGTH)
+
+		expect(srcViteConfig('server', { name: long, src: ['core', 'server'] })).toContain(
+			[
+				'\t\t\t\t\t\t? content.replaceAll(',
+				'\t\t\t\t\t\t\t\t/(?:\\.\\.\\/)+core\\/index\\.ts/g,',
+				`\t\t\t\t\t\t\t\t'@orkestrel/${long}',`,
+				'\t\t\t\t\t\t\t)',
+			].join('\n'),
+		)
+	})
+
+	it('omits a rewrite that could never match when the workspace declares no core', () => {
+		const content = srcViteConfig('server', { name: 'router', src: ['server'] })
+
+		expect(content).toContain('bundleTypes: true,')
+		expect(content).not.toContain('beforeWriteFile')
+		expect(content).not.toContain('@orkestrel/router')
+		expect(content).not.toContain('bundled inline')
+	})
+
+	it('configArtifacts threads the blueprint name into every face wrapper it emits', () => {
+		for (const name of ['router', 'middleware']) {
+			const artifacts = configArtifacts(blueprint(name, { src: ['core', 'browser', 'server'] }))
+			for (const environment of ['browser', 'server']) {
+				const artifact = artifacts.find(
+					(entry) => entry.path === `configs/src/vite.${environment}.config.ts`,
+				)
+
+				expect(artifact?.content).toContain(`'@orkestrel/${name}'`)
+			}
+		}
+	})
+
+	it('emits a face declaration that resolves core through the published specifier', async () => {
+		// The outcome proof: scaffold's own server face imports nothing from
+		// `src/core`, so only a generated workspace whose face DOES cross that
+		// boundary exercises the declaration the template has to get right.
+		const directory = await buildWorkspaceTempDirectory()
+		try {
+			const spec = blueprint('facade', { src: ['core', 'server'] })
+			for (const relative of ['src/core', 'src/server', 'configs/src']) {
+				mkdirSync(join(directory.path, relative), { recursive: true })
+			}
+			writeFileSync(
+				join(directory.path, 'src/core/index.ts'),
+				'export interface Facade {\n\treadonly id: string\n}\n',
+				'utf8',
+			)
+			writeFileSync(
+				join(directory.path, 'src/server/index.ts'),
+				[
+					"import type { Facade } from '@src/core'",
+					'',
+					'export function createFacade(id: string): Facade {',
+					'\treturn { id }',
+					'}',
+					'',
+				].join('\n'),
+				'utf8',
+			)
+			writeFileSync(join(directory.path, 'tsconfig.json'), rootTsconfig(spec.src), 'utf8')
+			writeFileSync(join(directory.path, 'vite.config.ts'), rootViteConfig(spec.src, spec), 'utf8')
+			writeFileSync(
+				join(directory.path, 'configs/src/tsconfig.server.json'),
+				srcTsconfig('server'),
+				'utf8',
+			)
+			const configPath = join(directory.path, 'configs/src/vite.server.config.ts')
+			writeFileSync(configPath, srcViteConfig('server', spec), 'utf8')
+
+			await buildVite({ configFile: configPath, root: directory.path, logLevel: 'silent' })
+			const declaration = readFileSync(join(directory.path, 'dist/src/server/index.d.ts'), 'utf8')
+
+			expect(declaration).toContain("'@orkestrel/facade'")
+			expect(declaration).not.toContain('core/index.ts')
+			expect(declaration.match(/'[^']*\.ts'/gu)).toBeNull()
+		} finally {
+			await directory.cleanup()
+		}
+	}, 180_000)
 })
 
 describe('binTsconfig / binViteConfig', () => {
@@ -3094,7 +3212,7 @@ describe('binTsconfig / binViteConfig', () => {
 		expect(srcTsconfig('server')).toBe(
 			readFileSync(join(WORKSPACE_ROOT, 'configs/src/tsconfig.server.json'), 'utf8'),
 		)
-		expect(srcViteConfig('server')).toBe(
+		expect(srcViteConfig('server', { name: 'scaffold', src: ['core', 'server'] })).toBe(
 			readFileSync(join(WORKSPACE_ROOT, 'configs/src/vite.server.config.ts'), 'utf8'),
 		)
 		expect(binTsconfig()).toBe(

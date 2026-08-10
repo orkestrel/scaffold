@@ -1261,7 +1261,15 @@ application-browser compiler, without adding another test project.
 `coreViteConfig`, `srcViteConfig`, `binViteConfig`, and `appViteConfig` emit the thin per-target
 wrappers. `coreViteConfig()` is parameterless and never imports or attaches browser CSS machinery;
 the root `srcCore` factory and its wrapper stay host-independent even when the workspace also owns a
-browser target. `binTsconfig` emits the executable declaration scope; `rootViteConfig`,
+browser target. `srcViteConfig` takes the environment plus the blueprint's `name` and `src`, because
+its face declaration has to reach `src/core` through a specifier the published tarball carries.
+`bundleTypes` rolls the face up through API Extractor, which leaves each core re-export behind a
+relative `../core/index.ts` path no consumer can resolve; a workspace declaring `core` therefore
+emits a `beforeWriteFile` rewrite turning that path into `@orkestrel/<name>`, its own published root
+export. The rewrite matches the final face roll-up only — applying it to the intermediate
+declarations makes API Extractor analyse `src/core`'s source and abort — and a workspace with no
+`core` emits no rewrite at all. `binTsconfig` emits the executable declaration scope;
+`rootViteConfig`,
 `singleSrcViteConfig`, and `applicationViteConfig` emit the root configuration for a library-only,
 single non-core `src` environment, and application-bearing workspace respectively; and
 `policyViteProject`, `configViteProject`, `guidesViteProject`, `integrationViteProject`, and
@@ -1970,6 +1978,34 @@ it is not a general-purpose source analyzer. Generated workspaces receive the sa
 module as a host-origin file and run it as a dedicated Node-only `policy` test project over
 `tests/policy.test.ts`.
 
+**Fleet policy purity.** Both policy files are fleet-owned: scaffold copies its own
+[`tests/setupPolicy.ts`](../../tests/setupPolicy.ts) into every workspace verbatim and regenerates
+[`tests/policy.test.ts`](../../tests/policy.test.ts) from the shipped template, so a local addition
+to either is discarded at the next bump. A second pass therefore guards them against accumulating
+any one package's architecture. It derives the forbidden identifier tokens from the consuming
+workspace's own declared package name — the short name's upper-snake and Pascal spellings, deduped —
+so the pass states no package literal and can never report itself. It reports every identifier that
+begins with one of those tokens, and it rejects any string or template literal naming a
+source-environment path under the `src/` prefix. Policy names an environment without that prefix
+when it must name one at all, so the rule does not fight the files' real needs. The generated test
+sweeps both files and plants a violation built from the same derived token, so a clean sweep is
+evidence rather than an instrument that has never fired.
+
+**Why the token match is a prefix.** A package's architecture reaches these files as identifiers
+named for the package — `MCP_PATH`, `RouterPlan` — so the identifier must _begin_ with the token.
+A word that merely holds the token somewhere inside it is fleet vocabulary, not one package's
+architecture, and the pass leaves it alone. That is the rule on its own terms, and it also settles
+the collision the fleet actually has: `@orkestrel/contract` derives `Contract`, which
+[`tests/setupPolicy.ts`](../../tests/setupPolicy.ts) holds inside `isContractProperty`, and that
+workspace now adopts the pass unchanged. The match stays case-sensitive, so `mcpValue` is not the
+`MCP` token.
+
+One collision stays open, and its report is correct rather than a false positive. `@orkestrel/policy`
+derives `POLICY`, which both files use as an identifier prefix many times over — the pass would be
+reporting the vocabulary it is built from. A workspace cannot be named for that and adopt this pass;
+it renames or omits the pass. Every other name in the line derives tokens no policy identifier
+begins with.
+
 **The configuration suite.** Policy reads source, the `config` project exercises the root
 configuration, and integration builds for real. Every generated workspace therefore receives a
 universal Node-only
@@ -2528,7 +2564,7 @@ viteMachinery([], ['core', 'browser']) // { browser: true, vue: true, output: tr
 renderViteTest([{ project: 'srcCore' }], false).includes('projects: [srcCore]') // true
 viteHeader(viteMachinery([], ['core', 'browser'])) // the shared header, with browser and Vue support
 coreViteConfig()
-srcViteConfig('browser')
+srcViteConfig('browser', { name: 'router', src: ['core', 'browser'] })
 appViteConfig('server')
 policyViteProject()
 configViteProject()
