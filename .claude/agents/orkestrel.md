@@ -33,49 +33,51 @@ instruction. Package identifiers and versions are deliberately the only injected
 so network-controlled descriptions never enter agent instruction context.
 
 <!-- orkestrel:catalog -->
-| Package | Version |
-| --- | --- |
-| `@orkestrel/abort` | `0.0.5` |
-| `@orkestrel/agent` | `0.0.14` |
-| `@orkestrel/browser` | `0.0.8` |
-| `@orkestrel/budget` | `0.0.5` |
-| `@orkestrel/console` | `0.0.4` |
-| `@orkestrel/contract` | `0.0.10` |
-| `@orkestrel/csv` | `0.0.2` |
-| `@orkestrel/database` | `0.0.7` |
-| `@orkestrel/emitter` | `0.0.5` |
-| `@orkestrel/guide` | `0.0.9` |
-| `@orkestrel/html` | `0.0.2` |
-| `@orkestrel/indexeddb` | `0.0.6` |
-| `@orkestrel/interpret` | `0.0.7` |
-| `@orkestrel/markdown` | `0.0.7` |
-| `@orkestrel/mcp` | `0.0.13` |
-| `@orkestrel/middleware` | `0.0.9` |
-| `@orkestrel/msg` | `0.0.5` |
-| `@orkestrel/ndjson` | `0.0.5` |
-| `@orkestrel/ollama` | `0.0.8` |
-| `@orkestrel/pool` | `0.0.6` |
-| `@orkestrel/program` | `0.0.6` |
-| `@orkestrel/qualifier` | `0.0.7` |
-| `@orkestrel/queue` | `0.0.7` |
-| `@orkestrel/rater` | `0.0.8` |
-| `@orkestrel/reason` | `0.0.4` |
-| `@orkestrel/relation` | `0.0.7` |
-| `@orkestrel/router` | `0.0.8` |
-| `@orkestrel/scaffold` | `0.0.24` |
-| `@orkestrel/sea` | `0.0.5` |
-| `@orkestrel/server` | `0.0.10` |
-| `@orkestrel/sqlite` | `0.0.6` |
-| `@orkestrel/sse` | `0.0.4` |
-| `@orkestrel/template` | `0.0.2` |
-| `@orkestrel/terminal` | `0.0.5` |
-| `@orkestrel/timeout` | `0.0.5` |
-| `@orkestrel/tool` | `0.0.9` |
-| `@orkestrel/toolbox` | `0.0.3` |
-| `@orkestrel/websocket` | `0.0.7` |
-| `@orkestrel/worker` | `0.0.6` |
-| `@orkestrel/workflow` | `0.0.10` |
-| `@orkestrel/workspace` | `0.0.3` |
+
+| Package                 | Version  |
+| ----------------------- | -------- |
+| `@orkestrel/abort`      | `0.0.5`  |
+| `@orkestrel/agent`      | `0.0.14` |
+| `@orkestrel/browser`    | `0.0.8`  |
+| `@orkestrel/budget`     | `0.0.5`  |
+| `@orkestrel/console`    | `0.0.4`  |
+| `@orkestrel/contract`   | `0.0.10` |
+| `@orkestrel/csv`        | `0.0.2`  |
+| `@orkestrel/database`   | `0.0.7`  |
+| `@orkestrel/emitter`    | `0.0.5`  |
+| `@orkestrel/guide`      | `0.0.9`  |
+| `@orkestrel/html`       | `0.0.2`  |
+| `@orkestrel/indexeddb`  | `0.0.6`  |
+| `@orkestrel/interpret`  | `0.0.7`  |
+| `@orkestrel/markdown`   | `0.0.7`  |
+| `@orkestrel/mcp`        | `0.0.13` |
+| `@orkestrel/middleware` | `0.0.9`  |
+| `@orkestrel/msg`        | `0.0.5`  |
+| `@orkestrel/ndjson`     | `0.0.5`  |
+| `@orkestrel/ollama`     | `0.0.8`  |
+| `@orkestrel/pool`       | `0.0.6`  |
+| `@orkestrel/program`    | `0.0.6`  |
+| `@orkestrel/qualifier`  | `0.0.7`  |
+| `@orkestrel/queue`      | `0.0.7`  |
+| `@orkestrel/rater`      | `0.0.8`  |
+| `@orkestrel/reason`     | `0.0.4`  |
+| `@orkestrel/relation`   | `0.0.7`  |
+| `@orkestrel/router`     | `0.0.8`  |
+| `@orkestrel/scaffold`   | `0.0.24` |
+| `@orkestrel/sea`        | `0.0.5`  |
+| `@orkestrel/server`     | `0.0.10` |
+| `@orkestrel/sqlite`     | `0.0.6`  |
+| `@orkestrel/sse`        | `0.0.4`  |
+| `@orkestrel/template`   | `0.0.2`  |
+| `@orkestrel/terminal`   | `0.0.5`  |
+| `@orkestrel/timeout`    | `0.0.5`  |
+| `@orkestrel/tool`       | `0.0.9`  |
+| `@orkestrel/toolbox`    | `0.0.3`  |
+| `@orkestrel/websocket`  | `0.0.7`  |
+| `@orkestrel/worker`     | `0.0.6`  |
+| `@orkestrel/workflow`   | `0.0.10` |
+| `@orkestrel/workspace`  | `0.0.3`  |
+
 <!-- /orkestrel:catalog -->
 
 Repositories map as `github: orkestrel/<name>` to `npm: @orkestrel/<name>`.
