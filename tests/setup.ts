@@ -343,7 +343,7 @@ export function buildSnapshot(): Snapshot {
  * @returns A missing finding, the one branch that records no observed bytes.
  */
 export function buildFinding(): Finding {
-	return { path: 'AGENTS.md', group: 'docs', drift: 'missing' }
+	return { path: 'AGENTS.md', group: 'docs', ownership: 'content', drift: 'missing' }
 }
 
 /**
@@ -508,12 +508,24 @@ export function readKeyCount(value: unknown): number {
  * @returns One case per guard, freshly built.
  */
 export function buildGuardCases(): readonly TestGuardCase[] {
-	const alignedFinding: Finding = { path: 'AGENTS.md', group: 'docs', drift: 'aligned' }
+	const alignedFinding: Finding = {
+		path: 'AGENTS.md',
+		group: 'docs',
+		ownership: 'birth',
+		drift: 'aligned',
+	}
 	const staleFinding: Finding = {
 		path: 'AGENTS.md',
 		group: 'docs',
+		ownership: 'content',
 		drift: 'stale',
 		observed: contentToHex('# Stale\n'),
+	}
+	const foreignFinding: Finding = {
+		path: 'notes.txt',
+		group: 'configs',
+		drift: 'foreign',
+		observed: contentToHex('notes\n'),
 	}
 	const foundMirror: Mirror = {
 		name: '@orkestrel/router',
@@ -602,7 +614,7 @@ export function buildGuardCases(): readonly TestGuardCase[] {
 		{
 			name: 'isFinding',
 			guard: isFinding,
-			accepted: [buildFinding(), alignedFinding, staleFinding],
+			accepted: [buildFinding(), alignedFinding, staleFinding, foreignFinding],
 			admits: [],
 		},
 		{ name: 'isAudit', guard: isAudit, accepted: [buildAudit()], admits: [] },
@@ -672,6 +684,12 @@ export function buildUnionCases(): readonly TestUnionCase[] {
 	const hydratedArtifact: Record<string, unknown> = { ...buildHydratedArtifact() }
 	const contentArtifact: Record<string, unknown> = { ...buildContentArtifact() }
 	const missingFinding: Record<string, unknown> = { ...buildFinding() }
+	const foreignFinding: Record<string, unknown> = {
+		path: 'notes.txt',
+		group: 'configs',
+		drift: 'foreign',
+		observed: contentToHex('notes\n'),
+	}
 	const foundEntry: Record<string, unknown> = {
 		name: '@orkestrel/router',
 		lookup: 'found',
@@ -727,6 +745,12 @@ export function buildUnionCases(): readonly TestUnionCase[] {
 			guard: isFinding,
 			accepted: missingFinding,
 			refused: { ...missingFinding, drift: 'stale' },
+		},
+		{
+			label: 'foreign finding carrying ownership',
+			guard: isFinding,
+			accepted: foreignFinding,
+			refused: { ...foreignFinding, ownership: 'content' },
 		},
 		{
 			label: 'found catalog entry carrying a note',

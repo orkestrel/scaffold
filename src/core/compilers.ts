@@ -1346,13 +1346,16 @@ export function planToHash(plan: Plan): string | undefined {
  * @param artifact - The planned artifact.
  * @param observed - The destination's exact bytes as hexadecimal; absent when
  * the destination holds no file.
- * @returns The finding, carrying `observed` exactly where bytes were read.
+ * @returns The finding, carrying the artifact's ownership and `observed`
+ * exactly where bytes were read.
  *
  * @remarks
  * The comparison itself is {@link inferDrift}'s, so ownership decides it here
  * exactly as it does everywhere else. This adds only the shape: a missing
  * destination has no bytes to record, and every other verdict records the bytes
  * it was given, which is the precondition the mutation that follows is held to.
+ * Ownership is copied rather than inferred from drift because aligned findings
+ * span all three ownership tiers.
  *
  * `foreign` is not answerable here, because it describes a path no artifact was
  * planned for.
@@ -1364,20 +1367,21 @@ export function planToHash(plan: Plan): string | undefined {
  * artifactToFinding(
  * 	{ path: 'README.md', group: 'docs', ownership: 'content', origin: 'computed', content: 'hi\n' },
  * 	'6279650a',
- * ) // { path: 'README.md', group: 'docs', drift: 'stale', observed: '6279650a' }
+ * ) // { path: 'README.md', group: 'docs', ownership: 'content', drift: 'stale', observed: '6279650a' }
  * ```
  */
 export function artifactToFinding(artifact: Artifact, observed?: string): Finding {
 	const path = artifact.path
 	const group = artifact.group
+	const ownership = artifact.ownership
 	if (observed === undefined) {
 		return inferDrift(artifact) === 'aligned'
-			? { path, group, drift: 'aligned' }
-			: { path, group, drift: 'missing' }
+			? { path, group, ownership, drift: 'aligned' }
+			: { path, group, ownership, drift: 'missing' }
 	}
 	return inferDrift(artifact, observed) === 'stale'
-		? { path, group, drift: 'stale', observed }
-		: { path, group, drift: 'aligned', observed }
+		? { path, group, ownership, drift: 'stale', observed }
+		: { path, group, ownership, drift: 'aligned', observed }
 }
 
 /**

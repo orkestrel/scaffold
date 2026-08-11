@@ -475,7 +475,7 @@ describe('CLI audit', () => {
 					fleet.target,
 				]),
 			).toBe(EXIT_CLEAN)
-			expect(sink.output.at(-1)).toBe(
+			expect(sink.output.at(-1)).toContain(
 				`0 of ${String(FLEET_ARTIFACT_COUNT)} planned paths differ from the plan.`,
 			)
 			expect(sink.diagnostic).toHaveLength(1)
@@ -530,6 +530,48 @@ describe('CLI audit', () => {
 			)
 			expect(audit.findings.some((finding) => finding.path === '.claude/rules')).toBe(false)
 			expect(audit.questions).toStrictEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('discloses which planned paths had bytes compared', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			const report = createSink()
+			expect(
+				await new CLI(report.options).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				]),
+			).toBe(EXIT_DRIFT)
+			const json = createSink()
+			expect(
+				await new CLI(json.options).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const audit: Audit = JSON.parse(json.output[0] ?? '')
+			const drift = audit.findings.filter((finding) => finding.drift !== 'aligned').length
+			const content = audit.findings.filter((finding) => finding.ownership === 'content').length
+			const presence = audit.findings.filter((finding) => finding.ownership === 'presence').length
+			const birth = audit.findings.filter((finding) => finding.ownership === 'birth').length
+			expect(report.output.at(-1)).toBe(
+				`${String(drift)} of ${String(audit.findings.length)} planned paths differ from the plan. Audit compared bytes for ${String(content)} planned paths, checked only existence for ${String(presence)}, and did not check ${String(birth)}.`,
+			)
+			expect(content).toBeGreaterThan(0)
+			expect(presence).toBeGreaterThan(0)
+			expect(birth).toBeGreaterThan(0)
+			expect(content + presence + birth).toBe(audit.findings.length)
 		} finally {
 			workspace.destroy()
 		}

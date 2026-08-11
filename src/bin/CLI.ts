@@ -854,6 +854,9 @@ export class CLI implements CLIInterface {
 		const rows = audit.findings
 			.filter((finding) => finding.drift !== 'aligned')
 			.map((finding) => [finding.path, finding.group, finding.drift])
+		const content = audit.findings.filter((finding) => finding.ownership === 'content').length
+		const presence = audit.findings.filter((finding) => finding.ownership === 'presence').length
+		const birth = audit.findings.filter((finding) => finding.ownership === 'birth').length
 		if (rows.length > 0) {
 			const table = renderTable({
 				columns: [{ label: 'path' }, { label: 'group' }, { label: 'drift' }],
@@ -862,7 +865,7 @@ export class CLI implements CLIInterface {
 			for (const line of table.split('\n')) this.#say(line)
 		}
 		this.#say(
-			`${String(rows.length)} of ${String(audit.findings.length)} planned path${audit.findings.length === 1 ? '' : 's'} differ from the plan.`,
+			`${String(rows.length)} of ${String(audit.findings.length)} planned path${audit.findings.length === 1 ? '' : 's'} differ from the plan. Audit compared bytes for ${String(content)} planned paths, checked only existence for ${String(presence)}, and did not check ${String(birth)}.`,
 		)
 	}
 

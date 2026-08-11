@@ -40,7 +40,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `CompilerEventMap`  | type | The compiler's observation channel.                                                              |
 | `Drift`             | type | How one target path compares to the artifact planned for it.                                     |
 | `Environment`       | type | One environment a generated workspace selects on its `src` or `app` axis.                        |
-| `Finding`           | type | One drift verdict against a target path.                                                         |
+| `Finding`           | type | One drift verdict against a target path, with ownership on every planned path.                   |
 | `Group`             | type | The artifact group a plan selects over.                                                          |
 | `Lookup`            | type | Whether an upstream lookup produced an answer.                                                   |
 | `Mirror`            | type | One dependency guide fetched from upstream, beside the local mirror it answers for.              |
@@ -510,7 +510,7 @@ standard error, so a piped value is never polluted.
 | Verb        | Value                                                                      |
 | ----------- | -------------------------------------------------------------------------- |
 | `new`       | `MaterializeResult` — `target`, `written`, `skipped`, `removed`            |
-| `audit`     | `Audit` — `findings` and `questions`                                       |
+| `audit`     | `Audit` — `findings` and `questions`; planned findings carry `ownership`   |
 | `repair`    | `MaterializeResult` plus `audit`, the terminal audit taken after the write |
 | `catalog`   | `MaterializeResult` plus `entries`, `mirrors`, and `dropped`               |
 | `overwrite` | The `catalog` value plus `audit`, `releases`, and `note` on a partial run  |
@@ -627,7 +627,11 @@ selected by their defining paths, as `guides` is. A workspace that needs other l
 must keep those edits outside a content-owned file; `repair` restores that file to the canonical
 project set.
 
-An audit reports one `Finding` per compared path.
+An audit reports one `Finding` per planned path, followed by any foreign path beneath the groups
+the plan covers. Every planned finding carries its artifact's `ownership`. A foreign finding has
+no ownership because no artifact was planned for its path. Consumers can therefore count findings
+by ownership to tell which paths had bytes compared, which had only existence checked, and which
+were not checked. The audit stores no aggregate tally.
 
 | `Drift`   | Means                                 |
 | --------- | ------------------------------------- |

@@ -1376,12 +1376,13 @@ export function buildTargetAudit(
 	for (const path of paths) {
 		const observed = readFileHex(target, path)
 		if (observed === undefined) {
-			findings.push({ path, group: 'docs', drift: 'missing' })
+			findings.push({ path, group: 'docs', ownership: 'content', drift: 'missing' })
 			continue
 		}
 		findings.push({
 			path,
 			group: 'docs',
+			ownership: 'content',
 			drift: stale.includes(path) ? 'stale' : 'aligned',
 			observed,
 		})
@@ -1856,7 +1857,7 @@ export const AUDIT_EXIT_CASES: readonly TestAuditCase[] = [
 	{
 		label: 'an aligned target carrying an advisory',
 		audit: {
-			findings: [{ path: 'AGENTS.md', group: 'docs', drift: 'aligned' }],
+			findings: [{ path: 'AGENTS.md', group: 'docs', ownership: 'birth', drift: 'aligned' }],
 			questions: [buildQuestion({ blocking: false })],
 		},
 		clean: true,
@@ -1869,7 +1870,15 @@ export const AUDIT_EXIT_CASES: readonly TestAuditCase[] = [
 	{
 		label: 'a drifted planned path',
 		audit: {
-			findings: [{ path: 'AGENTS.md', group: 'docs', drift: 'stale', observed: '68690a' }],
+			findings: [
+				{
+					path: 'AGENTS.md',
+					group: 'docs',
+					ownership: 'content',
+					drift: 'stale',
+					observed: '68690a',
+				},
+			],
 			questions: [],
 		},
 		clean: false,

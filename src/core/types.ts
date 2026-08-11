@@ -336,24 +336,37 @@ export interface Plan {
  * the audit showed is the one thing the destructive verb must never do. A
  * missing destination has no bytes to record. An aligned one may have gone
  * uncompared, which is what a birth-owned path always does, so it records
- * bytes only where they were actually read.
+ * bytes only where they were actually read. Every planned finding carries the
+ * artifact's `ownership`, which lets consumers tell whether audit compared
+ * bytes, checked existence alone, or made no comparison. A foreign finding has
+ * no planned artifact and therefore no ownership.
  */
 export type Finding =
 	| {
 			readonly path: string
 			readonly group: Group
-			readonly drift: 'stale' | 'foreign'
+			readonly ownership: Ownership
+			readonly drift: 'stale'
 			readonly observed: string
 	  }
 	| {
 			readonly path: string
 			readonly group: Group
+			readonly ownership?: never
+			readonly drift: 'foreign'
+			readonly observed: string
+	  }
+	| {
+			readonly path: string
+			readonly group: Group
+			readonly ownership: Ownership
 			readonly drift: 'missing'
 			readonly observed?: never
 	  }
 	| {
 			readonly path: string
 			readonly group: Group
+			readonly ownership: Ownership
 			readonly drift: 'aligned'
 			readonly observed?: string
 	  }
@@ -364,7 +377,7 @@ export type Finding =
  * @remarks
  * A blocking question means the gate refused the blueprint, so `findings` is
  * empty and says nothing about the target. Tallies are not stored: count
- * `findings` by `drift`.
+ * `findings` by `drift` or `ownership`.
  */
 export interface Audit {
 	readonly findings: readonly Finding[]

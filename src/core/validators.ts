@@ -368,24 +368,34 @@ export const isQuestion: Guard<Question> = recordOf(
  * @remarks
  * `observed` is required exactly where the mutation it precedes is held to it,
  * absent where the destination had no bytes to record, and optional where the
- * comparison may not have been made.
+ * comparison may not have been made. Planned findings require `ownership`;
+ * foreign findings forbid it because no artifact was planned for their path.
  */
 export const isFinding: Guard<Finding> = unionOf(
 	recordOf({
 		path: isPath,
 		group: isGroup,
-		drift: literalOf('stale', 'foreign'),
+		ownership: literalOf('content', 'presence', 'birth'),
+		drift: literalOf('stale'),
 		observed: isHex,
 	}),
 	recordOf({
 		path: isPath,
 		group: isGroup,
+		drift: literalOf('foreign'),
+		observed: isHex,
+	}),
+	recordOf({
+		path: isPath,
+		group: isGroup,
+		ownership: literalOf('content', 'presence', 'birth'),
 		drift: literalOf('missing'),
 	}),
 	recordOf(
 		{
 			path: isPath,
 			group: isGroup,
+			ownership: literalOf('content', 'presence', 'birth'),
 			drift: literalOf('aligned'),
 			observed: isHex,
 		},
