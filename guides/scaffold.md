@@ -784,6 +784,9 @@ A transaction owns a private root beside the target on the same volume, so every
 rename rather than a copy. A failure part way through commit restores every destination it already
 promoted and removes every directory it created. No destination ever receives half-written bytes.
 It is not a journal: a process killed between two promotions leaves a mixed target.
+The transaction binds each directory's location rather than its lifetime, so an ancestor swapped
+for another path, a file, a symlink, or nothing is refused, and one deleted and recreated in place
+may not be.
 
 Narrow a refusal by its code:
 

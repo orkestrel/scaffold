@@ -62,6 +62,12 @@ import { MAX_PATH_DEPTH } from './constants.js'
  * - **No partly written destination.** Every file is written whole into the
  *   private root and digested there before commit, so a destination never
  *   receives bytes that were still being produced.
+ * - **Containment, not continuity, of the directories it creates.** Every
+ *   ancestor is re-read between `mkdir` calls and again before the first
+ *   promotion, so an ancestor that became a file, a symlink, a directory
+ *   elsewhere, or nothing is refused. An ancestor deleted and recreated under
+ *   the same name can receive its old inode back and is indistinguishable here
+ *   from one that never moved.
  * - **No crash atomicity across destinations.** A process killed between two
  *   promotions leaves the target holding some new files and some old ones, and
  *   leaves the private root behind. Nothing here is a journal, and the private

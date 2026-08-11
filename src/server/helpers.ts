@@ -1214,8 +1214,8 @@ export function stageHost(checkout: string, host: string): readonly ManifestEntr
  * @remarks
  * Device and inode rather than the path, because the path is the thing that can
  * be swapped underneath a write. An anchor captured before a mutation and
- * checked again after it is what proves the directory written into is the
- * directory that was inspected.
+ * checked again after it proves the directory written into sits where the
+ * inspected one sat, not that it is the one that was inspected.
  *
  * @example
  * ```ts
@@ -1240,9 +1240,13 @@ export function readAnchor(path: string): WriteAnchor | undefined {
  * device and inode.
  *
  * @remarks
- * The check a write repeats between steps. A directory replaced by another
- * directory of the same name answers `false` here, which is the case a path
- * comparison alone cannot see.
+ * This binds location rather than history. `true` means the path still resolves
+ * to the same physical directory on the same device, so the next write lands
+ * where the last one did. A path now holding nothing, a file, or a symlink
+ * answers `false`; a directory swapped in by `rename` also answers `false`
+ * because the replacement carries its own inode. A directory deleted and made
+ * again under the same name can receive the old inode back and answers `true`,
+ * which nothing here detects.
  *
  * @example
  * ```ts

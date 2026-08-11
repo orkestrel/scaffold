@@ -3,7 +3,6 @@ import {
 	existsSync,
 	linkSync,
 	lstatSync,
-	mkdirSync,
 	renameSync,
 	rmSync,
 	writeFileSync,
@@ -1197,19 +1196,38 @@ describe('write anchors', () => {
 		}
 	})
 
-	it('reports a directory replaced by another of the same name', () => {
+	it('reports a directory swapped in by rename', () => {
 		const workspace = createWorkspace()
 		try {
 			const target = workspace.directory('project')
 			const anchor = readAnchor(target)
 			expect(anchor).toBeDefined()
 			if (anchor === undefined) return
-			// The rename keeps the original directory allocated, so the filesystem
-			// cannot hand its inode back to the directory created next. Removing it
-			// instead frees the inode for immediate reuse, and the anchor would then
-			// match the replacement it never captured.
-			renameSync(target, join(workspace.path, 'original'))
-			mkdirSync(target)
+			const replacement = workspace.directory('replacement')
+			const replacementAnchor = readAnchor(replacement)
+			expect(replacementAnchor).toBeDefined()
+			if (replacementAnchor === undefined) return
+			expect(
+				replacementAnchor.device === anchor.device && replacementAnchor.inode === anchor.inode,
+			).toBe(false)
+			renameSync(replacement, target)
+			expect(matchesAnchor(anchor)).toBe(false)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reports a path replaced by a symlink to a directory', () => {
+		const workspace = createWorkspace()
+		try {
+			const target = workspace.directory('project')
+			const anchor = readAnchor(target)
+			expect(anchor).toBeDefined()
+			if (anchor === undefined) return
+			const replacement = workspace.directory('replacement')
+			rmSync(target, { recursive: true })
+			workspace.link('project', replacement)
+			expect(lstatSync(target).isSymbolicLink()).toBe(true)
 			expect(matchesAnchor(anchor)).toBe(false)
 		} finally {
 			workspace.destroy()

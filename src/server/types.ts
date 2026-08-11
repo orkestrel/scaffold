@@ -109,7 +109,14 @@ export interface WritePrecondition {
 	readonly digest?: string
 }
 
-/** One physical directory identity captured across a write transaction. */
+/**
+ * One physical directory identity captured across a write transaction.
+ *
+ * @remarks
+ * Device and inode locate the directory and do not date it. Two directories
+ * occupying one slot at different times share an anchor, so an anchor proves
+ * where a write lands and never that the directory was left alone.
+ */
 export interface WriteAnchor {
 	readonly path: string
 	readonly device: number
