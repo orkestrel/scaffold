@@ -1,4 +1,13 @@
-import type { Artifact, Dependency, Drift, Group, Plan, PlanSummary } from './types.js'
+import type {
+	Artifact,
+	Dependency,
+	Drift,
+	Finding,
+	Group,
+	Ownership,
+	Plan,
+	PlanSummary,
+} from './types.js'
 import { compareValues, isRecord, isString, limitEntries, parseJSON } from '@orkestrel/contract'
 import {
 	DEPENDENCY_NAME_PATTERN,
@@ -379,6 +388,24 @@ export function inferDrift(artifact: Artifact, observed?: string): Exclude<Drift
 	if (observed === undefined) return 'missing'
 	if (artifact.ownership === 'presence') return 'aligned'
 	return observed === artifactToHex(artifact) ? 'aligned' : 'stale'
+}
+
+/**
+ * Test whether {@link inferDrift} could have produced a finding for an ownership.
+ *
+ * @param ownership - What scaffold claims at the planned path.
+ * @param finding - The audit verdict to test.
+ * @returns Whether the ownership and verdict are reachable through {@link inferDrift}.
+ *
+ * @remarks
+ * This predicate keeps the comparison law beside the reachability law it
+ * restates. A mutation uses it so a refusal can distinguish an impossible
+ * verdict from a target that genuinely moved after its audit.
+ */
+export function matchesDriftReachability(ownership: Ownership, finding: Finding): boolean {
+	if (finding.drift === 'aligned') return ownership === 'birth' || finding.observed !== undefined
+	if (finding.drift === 'missing') return ownership !== 'birth'
+	return finding.drift === 'stale' && ownership === 'content'
 }
 
 /**

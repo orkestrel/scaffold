@@ -1,3 +1,4 @@
+import type { Audit } from '@src/core'
 import { describe, expect, it } from 'vitest'
 import { width } from '@orkestrel/console'
 import { ScaffoldError } from '@src/core'
@@ -21,6 +22,7 @@ import { isUsageError, UsageError } from '../../../src/bin/errors.js'
 import {
 	argvToCommand,
 	auditToExit,
+	auditToSummary,
 	errorToEnvelope,
 	optionToName,
 	renderUsage,
@@ -224,6 +226,68 @@ describe('auditToExit', () => {
 		const codes = AUDIT_EXIT_CASES.map((auditCase) => auditToExit(auditCase.audit))
 		expect(codes).toContain(EXIT_CLEAN)
 		expect(codes).toContain(EXIT_DRIFT)
+	})
+})
+
+describe('auditToSummary', () => {
+	it('reports no planned paths without inventing a comparison', () => {
+		expect(auditToSummary({ findings: [], questions: [] })).toBe(
+			'0 of 0 planned paths drifted from the plan. Audit compared bytes at 0, existence at 0, and nothing at 0.',
+		)
+	})
+
+	it('inflects a single planned path only on the noun', () => {
+		const audit: Audit = {
+			findings: [{ path: 'package.json', group: 'manifest', ownership: 'birth', drift: 'aligned' }],
+			questions: [],
+		}
+		expect(auditToSummary(audit)).toBe(
+			'0 of 1 planned path drifted from the plan. Audit compared bytes at 0, existence at 0, and nothing at 1.',
+		)
+	})
+
+	it('partitions one finding from each ownership by what decided it', () => {
+		const audit: Audit = {
+			findings: [
+				{
+					path: 'AGENTS.md',
+					group: 'docs',
+					ownership: 'content',
+					drift: 'aligned',
+					observed: '68690a',
+				},
+				{
+					path: '.claude/agents/catalog.md',
+					group: 'orchestration',
+					ownership: 'presence',
+					drift: 'aligned',
+					observed: '68690a',
+				},
+				{
+					path: 'package.json',
+					group: 'manifest',
+					ownership: 'birth',
+					drift: 'aligned',
+				},
+			],
+			questions: [],
+		}
+		expect(auditToSummary(audit)).toBe(
+			'0 of 3 planned paths drifted from the plan. Audit compared bytes at 1, existence at 1, and nothing at 1.',
+		)
+	})
+
+	it('counts foreign findings apart from planned findings', () => {
+		const audit: Audit = {
+			findings: [
+				{ path: 'README.md', group: 'docs', ownership: 'content', drift: 'missing' },
+				{ path: 'stray.txt', group: 'docs', drift: 'foreign', observed: '68690a' },
+			],
+			questions: [],
+		}
+		expect(auditToSummary(audit)).toBe(
+			'1 of 1 planned path drifted from the plan. Audit compared bytes at 0, existence at 1, and nothing at 0. The plan does not own 1 further path beneath its groups.',
+		)
 	})
 })
 

@@ -36,6 +36,7 @@ import {
 	HOSTILE_ARGUMENT,
 	HOSTILE_BYTES,
 	REFUSED_MANIFEST_TEXT,
+	TARGET_MANIFEST_TEXT,
 	trackFiles,
 	USAGE_CASES,
 } from '../../setupServer.js'
@@ -487,16 +488,25 @@ describe('CLI audit', () => {
 				]),
 			).toBe(EXIT_CLEAN)
 			const audit: Audit = JSON.parse(json.output[0] ?? '')
-			const content = audit.findings.filter((finding) => finding.ownership === 'content').length
-			const presence = audit.findings.filter((finding) => finding.ownership === 'presence').length
-			const birth = audit.findings.filter((finding) => finding.ownership === 'birth').length
+			const planned = audit.findings.filter((finding) => finding.drift !== 'foreign')
+			const drifted = planned.filter((finding) => finding.drift !== 'aligned')
+			const bytes = planned.filter(
+				(finding) => finding.ownership === 'content' && finding.observed !== undefined,
+			)
+			const existence = planned.filter(
+				(finding) =>
+					finding.ownership === 'presence' ||
+					(finding.ownership === 'content' && finding.drift === 'missing'),
+			)
+			const nothing = planned.filter((finding) => finding.ownership === 'birth')
 			// The membership the three counts are drawn from: every finding names a
 			// tier, all three are named, and none is proven by an empty population.
 			expect([...new Set(audit.findings.map((finding) => finding.ownership))].sort()).toStrictEqual(
 				['birth', 'content', 'presence'],
 			)
+			expect(bytes.length + existence.length + nothing.length).toBe(planned.length)
 			expect(sink.output.at(-1)).toBe(
-				`0 of ${String(FLEET_ARTIFACT_COUNT)} planned paths differ from the plan. Of those, audit compared the bytes of ${String(content)}, existence only for ${String(presence)}, and nothing for ${String(birth)}.`,
+				`${String(drifted.length)} of ${String(planned.length)} planned paths drifted from the plan. Audit compared bytes at ${String(bytes.length)}, existence at ${String(existence.length)}, and nothing at ${String(nothing.length)}.`,
 			)
 			expect(sink.diagnostic).toHaveLength(1)
 		} finally {
@@ -519,6 +529,71 @@ describe('CLI audit', () => {
 			expect(code).toBe(EXIT_DRIFT)
 			expect(sink.output.join('\n')).toContain('AGENTS.md')
 			expect(sink.output.at(-1) ?? '').toContain(`of ${String(FLEET_ARTIFACT_COUNT)} planned`)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reports one aligned manifest path with one noun inflection', async () => {
+		const workspace = createWorkspace()
+		try {
+			const host = createStagedHost(workspace)
+			const target = workspace.directory('fresh')
+			expect(
+				await new CLI(createSink().options).execute([
+					'new',
+					'sample',
+					'--src',
+					'core',
+					'--from',
+					host,
+					'--target',
+					target,
+				]),
+			).toBe(EXIT_CLEAN)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'audit',
+					'--groups',
+					'manifest',
+					'--from',
+					host,
+					'--target',
+					target,
+				]),
+			).toBe(EXIT_CLEAN)
+			const json = createSink()
+			expect(
+				await new CLI(json.options).execute([
+					'audit',
+					'--groups',
+					'manifest',
+					'--from',
+					host,
+					'--target',
+					target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const audit: Audit = JSON.parse(json.output[0] ?? '')
+			const planned = audit.findings.filter((finding) => finding.drift !== 'foreign')
+			const bytes = planned.filter(
+				(finding) => finding.ownership === 'content' && finding.observed !== undefined,
+			)
+			const existence = planned.filter(
+				(finding) =>
+					finding.ownership === 'presence' ||
+					(finding.ownership === 'content' && finding.drift === 'missing'),
+			)
+			const nothing = planned.filter((finding) => finding.ownership === 'birth')
+			expect(bytes.length + existence.length + nothing.length).toBe(planned.length)
+			expect(bytes).toStrictEqual([])
+			expect(existence).toStrictEqual([])
+			expect(nothing).toStrictEqual(planned)
+			expect(sink.output.at(-1)).toBe(
+				'0 of 1 planned path drifted from the plan. Audit compared bytes at 0, existence at 0, and nothing at 1.',
+			)
 		} finally {
 			workspace.destroy()
 		}
@@ -555,43 +630,57 @@ describe('CLI audit', () => {
 		}
 	})
 
-	it('discloses which planned paths had bytes compared', async () => {
+	it('reports the grounds that decided every verdict in a vacant target', async () => {
 		const workspace = createWorkspace()
 		try {
-			const fleet = createFleet(workspace)
+			const host = createStagedHost(workspace)
+			const target = workspace.directory('target')
+			workspace.write('target/package.json', TARGET_MANIFEST_TEXT)
+			workspace.directory('target/src/core')
 			const report = createSink()
 			expect(
-				await new CLI(report.options).execute([
-					'audit',
-					'--from',
-					fleet.host,
-					'--target',
-					fleet.target,
-				]),
+				await new CLI(report.options).execute(['audit', '--from', host, '--target', target]),
 			).toBe(EXIT_DRIFT)
 			const json = createSink()
 			expect(
 				await new CLI(json.options).execute([
 					'audit',
 					'--from',
-					fleet.host,
+					host,
 					'--target',
-					fleet.target,
+					target,
 					'--json',
 				]),
 			).toBe(EXIT_DRIFT)
 			const audit: Audit = JSON.parse(json.output[0] ?? '')
-			const drift = audit.findings.filter((finding) => finding.drift !== 'aligned').length
-			const content = audit.findings.filter((finding) => finding.ownership === 'content').length
-			const presence = audit.findings.filter((finding) => finding.ownership === 'presence').length
-			const birth = audit.findings.filter((finding) => finding.ownership === 'birth').length
+			const planned = audit.findings.filter((finding) => finding.drift !== 'foreign')
+			const drifted = planned.filter((finding) => finding.drift !== 'aligned')
+			const bytes = planned.filter(
+				(finding) => finding.ownership === 'content' && finding.observed !== undefined,
+			)
+			const existence = planned.filter(
+				(finding) =>
+					finding.ownership === 'presence' ||
+					(finding.ownership === 'content' && finding.drift === 'missing'),
+			)
+			const nothing = planned.filter((finding) => finding.ownership === 'birth')
 			// The membership the three counts are drawn from: every finding names a
 			// tier, all three are named, and none is proven by an empty population.
 			expect([...new Set(audit.findings.map((finding) => finding.ownership))].sort()).toStrictEqual(
 				['birth', 'content', 'presence'],
 			)
+			expect(bytes).toStrictEqual([])
+			expect(existence.length).toBeGreaterThan(planned.length / 2)
+			expect(nothing.length).toBeGreaterThan(0)
+			expect(bytes.length + existence.length + nothing.length).toBe(planned.length)
+			expect(
+				planned.every(
+					(finding) =>
+						bytes.includes(finding) || existence.includes(finding) || nothing.includes(finding),
+				),
+			).toBe(true)
 			expect(report.output.at(-1)).toBe(
-				`${String(drift)} of ${String(audit.findings.length)} planned paths differ from the plan. Of those, audit compared the bytes of ${String(content)}, existence only for ${String(presence)}, and nothing for ${String(birth)}.`,
+				`${String(drifted.length)} of ${String(planned.length)} planned paths drifted from the plan. Audit compared bytes at ${String(bytes.length)}, existence at ${String(existence.length)}, and nothing at ${String(nothing.length)}.`,
 			)
 		} finally {
 			workspace.destroy()
@@ -635,9 +724,17 @@ describe('CLI audit', () => {
 			).toBe(EXIT_DRIFT)
 			const audit: Audit = JSON.parse(json.output[0] ?? '')
 			const planned = audit.findings.filter((finding) => finding.drift !== 'foreign')
-			const content = planned.filter((finding) => finding.ownership === 'content').length
-			const presence = planned.filter((finding) => finding.ownership === 'presence').length
-			const birth = planned.filter((finding) => finding.ownership === 'birth').length
+			const drifted = planned.filter((finding) => finding.drift !== 'aligned')
+			const bytes = planned.filter(
+				(finding) => finding.ownership === 'content' && finding.observed !== undefined,
+			)
+			const existence = planned.filter(
+				(finding) =>
+					finding.ownership === 'presence' ||
+					(finding.ownership === 'content' && finding.drift === 'missing'),
+			)
+			const nothing = planned.filter((finding) => finding.ownership === 'birth')
+			const foreign = audit.findings.filter((finding) => finding.drift === 'foreign')
 			// The two populations by membership rather than by arithmetic: the
 			// findings carrying no tier are exactly the foreign ones, and every
 			// remaining finding names one of the three the counts are drawn from.
@@ -652,8 +749,9 @@ describe('CLI audit', () => {
 				'presence',
 			])
 			expect(planned).toHaveLength(FLEET_ARTIFACT_COUNT)
+			expect(bytes.length + existence.length + nothing.length).toBe(planned.length)
 			expect(report.output.at(-1)).toBe(
-				`0 of ${String(FLEET_ARTIFACT_COUNT)} planned paths differ from the plan. Of those, audit compared the bytes of ${String(content)}, existence only for ${String(presence)}, and nothing for ${String(birth)}. The plan does not own 1 further path beneath its groups.`,
+				`${String(drifted.length)} of ${String(planned.length)} planned paths drifted from the plan. Audit compared bytes at ${String(bytes.length)}, existence at ${String(existence.length)}, and nothing at ${String(nothing.length)}. The plan does not own ${String(foreign.length)} further path beneath its groups.`,
 			)
 			workspace.write('target/.codex/agents/stray.md', 'stray\n')
 			const second = createSink()
@@ -714,7 +812,17 @@ describe('CLI audit', () => {
 				]),
 			).toBe(EXIT_DRIFT)
 			const audit: Audit = JSON.parse(json.output[0] ?? '')
-			const content = audit.findings.filter((finding) => finding.ownership === 'content').length
+			const planned = audit.findings.filter((finding) => finding.drift !== 'foreign')
+			const drifted = planned.filter((finding) => finding.drift !== 'aligned')
+			const bytes = planned.filter(
+				(finding) => finding.ownership === 'content' && finding.observed !== undefined,
+			)
+			const existence = planned.filter(
+				(finding) =>
+					finding.ownership === 'presence' ||
+					(finding.ownership === 'content' && finding.drift === 'missing'),
+			)
+			const nothing = planned.filter((finding) => finding.ownership === 'birth')
 			expect(
 				audit.findings
 					.filter((finding) => finding.drift !== 'aligned')
@@ -723,8 +831,139 @@ describe('CLI audit', () => {
 			expect([...new Set(audit.findings.map((finding) => finding.ownership))]).toStrictEqual([
 				'content',
 			])
+			expect(bytes.length + existence.length + nothing.length).toBe(planned.length)
 			expect(report.output.at(-1)).toBe(
-				`1 of ${String(content)} planned paths differs from the plan. Of those, audit compared the bytes of ${String(content)}, existence only for 0, and nothing for 0.`,
+				`${String(drifted.length)} of ${String(planned.length)} planned paths drifted from the plan. Audit compared bytes at ${String(bytes.length)}, existence at ${String(existence.length)}, and nothing at ${String(nothing.length)}.`,
+			)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('moves deleted content paths from bytes to existence', async () => {
+		const workspace = createWorkspace()
+		try {
+			const host = createStagedHost(workspace)
+			const target = workspace.directory('fresh')
+			expect(
+				await new CLI(createSink().options).execute([
+					'new',
+					'sample',
+					'--src',
+					'core',
+					'--from',
+					host,
+					'--target',
+					target,
+				]),
+			).toBe(EXIT_CLEAN)
+			const repaired = createSink()
+			expect(
+				await new CLI(repaired.options).execute(['audit', '--from', host, '--target', target]),
+			).toBe(EXIT_CLEAN)
+			const repairedJSON = createSink()
+			expect(
+				await new CLI(repairedJSON.options).execute([
+					'audit',
+					'--from',
+					host,
+					'--target',
+					target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const repairedAudit: Audit = JSON.parse(repairedJSON.output[0] ?? '')
+			const repairedPlanned = repairedAudit.findings.filter(
+				(finding) => finding.drift !== 'foreign',
+			)
+			const repairedDrifted = repairedPlanned.filter((finding) => finding.drift !== 'aligned')
+			const repairedBytes = repairedPlanned.filter(
+				(finding) => finding.ownership === 'content' && finding.observed !== undefined,
+			)
+			const repairedExistence = repairedPlanned.filter(
+				(finding) =>
+					finding.ownership === 'presence' ||
+					(finding.ownership === 'content' && finding.drift === 'missing'),
+			)
+			const repairedNothing = repairedPlanned.filter((finding) => finding.ownership === 'birth')
+			expect(repairedBytes.length).toBeGreaterThan(0)
+			expect(repairedExistence.length).toBeGreaterThan(0)
+			expect(repairedBytes.length).toBeGreaterThan(repairedExistence.length)
+			expect(repairedNothing.length).toBeGreaterThan(0)
+			expect(repairedBytes.length + repairedExistence.length + repairedNothing.length).toBe(
+				repairedPlanned.length,
+			)
+			expect(
+				repairedPlanned.every(
+					(finding) =>
+						repairedBytes.includes(finding) ||
+						repairedExistence.includes(finding) ||
+						repairedNothing.includes(finding),
+				),
+			).toBe(true)
+			expect(repaired.output.at(-1)).toBe(
+				`${String(repairedDrifted.length)} of ${String(repairedPlanned.length)} planned paths drifted from the plan. Audit compared bytes at ${String(repairedBytes.length)}, existence at ${String(repairedExistence.length)}, and nothing at ${String(repairedNothing.length)}.`,
+			)
+
+			const deleted = repairedBytes
+				.filter((finding) => finding.group === 'orchestration')
+				.map((finding) => finding.path)
+			expect(deleted.length).toBeGreaterThan(1)
+			for (const path of deleted) workspace.remove(`fresh/${path}`)
+			const report = createSink()
+			expect(
+				await new CLI(report.options).execute(['audit', '--from', host, '--target', target]),
+			).toBe(EXIT_DRIFT)
+			const deletedJSON = createSink()
+			expect(
+				await new CLI(deletedJSON.options).execute([
+					'audit',
+					'--from',
+					host,
+					'--target',
+					target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const deletedAudit: Audit = JSON.parse(deletedJSON.output[0] ?? '')
+			const deletedPlanned = deletedAudit.findings.filter((finding) => finding.drift !== 'foreign')
+			const deletedDrifted = deletedPlanned.filter((finding) => finding.drift !== 'aligned')
+			const deletedBytes = deletedPlanned.filter(
+				(finding) => finding.ownership === 'content' && finding.observed !== undefined,
+			)
+			const deletedExistence = deletedPlanned.filter(
+				(finding) =>
+					finding.ownership === 'presence' ||
+					(finding.ownership === 'content' && finding.drift === 'missing'),
+			)
+			const deletedNothing = deletedPlanned.filter((finding) => finding.ownership === 'birth')
+			expect(deletedBytes.length + deletedExistence.length + deletedNothing.length).toBe(
+				deletedPlanned.length,
+			)
+			expect(
+				deletedPlanned.every(
+					(finding) =>
+						deletedBytes.includes(finding) ||
+						deletedExistence.includes(finding) ||
+						deletedNothing.includes(finding),
+				),
+			).toBe(true)
+			expect(report.output.at(-1)).toBe(
+				`${String(deletedDrifted.length)} of ${String(deletedPlanned.length)} planned paths drifted from the plan. Audit compared bytes at ${String(deletedBytes.length)}, existence at ${String(deletedExistence.length)}, and nothing at ${String(deletedNothing.length)}.`,
+			)
+
+			const removed = new Set(deleted)
+			expect(deletedBytes.filter((finding) => removed.has(finding.path))).toStrictEqual([])
+			expect(
+				deletedExistence
+					.filter((finding) => removed.has(finding.path))
+					.map((finding) => finding.path)
+					.sort(),
+			).toStrictEqual([...deleted].sort())
+			expect(deletedBytes.length).toBe(repairedBytes.length - deleted.length)
+			expect(deletedExistence.length).toBe(repairedExistence.length + deleted.length)
+			expect(deletedNothing.map((finding) => finding.path)).toStrictEqual(
+				repairedNothing.map((finding) => finding.path),
 			)
 		} finally {
 			workspace.destroy()

@@ -65,7 +65,13 @@ import {
 } from '@src/server'
 import { EXIT_CLEAN, EXIT_DRIFT, EXIT_USAGE } from './constants.js'
 import { isUsageError, UsageError } from './errors.js'
-import { argvToCommand, auditToExit, errorToEnvelope, renderUsage } from './helpers.js'
+import {
+	argvToCommand,
+	auditToExit,
+	auditToSummary,
+	errorToEnvelope,
+	renderUsage,
+} from './helpers.js'
 
 /**
  * The executable: one command line in, one exit code out.
@@ -854,15 +860,6 @@ export class CLI implements CLIInterface {
 		const rows = audit.findings
 			.filter((finding) => finding.drift !== 'aligned')
 			.map((finding) => [finding.path, finding.group, finding.drift])
-		// Two populations, counted apart. A foreign path is planned by nothing, so
-		// it carries no ownership and no tier can account for it. Counting it under
-		// the same word as the planned paths is what makes the numbers disagree.
-		const planned = audit.findings.filter((finding) => finding.drift !== 'foreign')
-		const drifted = planned.filter((finding) => finding.drift !== 'aligned').length
-		const content = planned.filter((finding) => finding.ownership === 'content').length
-		const presence = planned.filter((finding) => finding.ownership === 'presence').length
-		const birth = planned.filter((finding) => finding.ownership === 'birth').length
-		const foreign = audit.findings.length - planned.length
 		if (rows.length > 0) {
 			const table = renderTable({
 				columns: [{ label: 'path' }, { label: 'group' }, { label: 'drift' }],
@@ -870,12 +867,7 @@ export class CLI implements CLIInterface {
 			})
 			for (const line of table.split('\n')) this.#say(line)
 		}
-		const summary = `${String(drifted)} of ${String(planned.length)} planned path${planned.length === 1 ? '' : 's'} differ${drifted === 1 ? 's' : ''} from the plan. Of those, audit compared the bytes of ${String(content)}, existence only for ${String(presence)}, and nothing for ${String(birth)}.`
-		this.#say(
-			foreign === 0
-				? summary
-				: `${summary} The plan does not own ${String(foreign)} further path${foreign === 1 ? '' : 's'} beneath its groups.`,
-		)
+		this.#say(auditToSummary(audit))
 	}
 
 	// The catalog outcome as a person reads it.

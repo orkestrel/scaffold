@@ -1,4 +1,4 @@
-import type { Group } from '@src/core'
+import type { Finding, Group, Ownership } from '@src/core'
 import { describe, expect, it } from 'vitest'
 import {
 	artifactToHex,
@@ -16,6 +16,7 @@ import {
 	isDependency,
 	manifestToDependencies,
 	manifestToName,
+	matchesDriftReachability,
 	matchesEngines,
 	matchesOrchestrationPath,
 	matchesRange,
@@ -186,6 +187,43 @@ describe('inferDrift', () => {
 		expect(inferDrift(artifact, contentToHex('# Sample\n'))).toBe('aligned')
 		expect(inferDrift(artifact, contentToHex('# Stale\n'))).toBe('stale')
 		expect(inferDrift(artifact)).toBe('missing')
+	})
+
+	it('binds every ownership and observation to its reachable verdict', () => {
+		for (const ownership of ['content', 'presence', 'birth'] satisfies readonly Ownership[]) {
+			const artifact = buildContentArtifact({ ownership })
+			for (const observed of [
+				undefined,
+				contentToHex('# Sample\n'),
+				contentToHex('# Stale\n'),
+			] satisfies ReadonlyArray<string | undefined>) {
+				const drift = inferDrift(artifact, observed)
+				const finding: Finding =
+					drift === 'stale'
+						? {
+								path: artifact.path,
+								group: artifact.group,
+								ownership,
+								drift,
+								observed: observed ?? '',
+							}
+						: drift === 'missing'
+							? { path: artifact.path, group: artifact.group, ownership, drift }
+							: observed === undefined
+								? { path: artifact.path, group: artifact.group, ownership, drift }
+								: { path: artifact.path, group: artifact.group, ownership, drift, observed }
+				expect(matchesDriftReachability(ownership, finding)).toBe(true)
+			}
+		}
+
+		const unreachable: Finding = {
+			path: 'README.md',
+			group: 'docs',
+			ownership: 'birth',
+			drift: 'stale',
+			observed: contentToHex('# Stale\n'),
+		}
+		expect(matchesDriftReachability('birth', unreachable)).toBe(false)
 	})
 })
 

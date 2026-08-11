@@ -241,6 +241,48 @@ export function auditToExit(audit: Audit): number {
 }
 
 /**
+ * Project an audit into the human summary of its outcome.
+ *
+ * @param audit - The comparison to summarize.
+ * @returns The planned-path outcome, the grounds that decided it, and any foreign-path count.
+ *
+ * @remarks
+ * The three grounds describe what this run did. `bytes` means content-owned
+ * bytes were observed, `existence` means presence or absence alone decided the
+ * finding, and `nothing` means a birth-owned path was not examined. Foreign
+ * paths remain a separate population because no planned ownership accounts for
+ * them.
+ *
+ * @example
+ * ```ts
+ * import { auditToSummary } from './helpers.js'
+ *
+ * auditToSummary({ findings: [], questions: [] })
+ * // '0 of 0 planned paths drifted from the plan. Audit compared bytes at 0, existence at 0, and nothing at 0.'
+ * ```
+ */
+export function auditToSummary(audit: Audit): string {
+	const planned = audit.findings.filter((finding) => finding.drift !== 'foreign')
+	const drifted = planned.filter((finding) => finding.drift !== 'aligned').length
+	// These counts say what decided each verdict on this run. They partition the
+	// planned findings, so they sum to `planned.length` and never to `drifted`.
+	const bytes = planned.filter(
+		(finding) => finding.ownership === 'content' && finding.observed !== undefined,
+	).length
+	const existence = planned.filter(
+		(finding) =>
+			finding.ownership === 'presence' ||
+			(finding.ownership === 'content' && finding.drift === 'missing'),
+	).length
+	const nothing = planned.filter((finding) => finding.ownership === 'birth').length
+	const foreign = audit.findings.length - planned.length
+	const summary = `${String(drifted)} of ${String(planned.length)} planned path${planned.length === 1 ? '' : 's'} drifted from the plan. Audit compared bytes at ${String(bytes)}, existence at ${String(existence)}, and nothing at ${String(nothing)}.`
+	return foreign === 0
+		? summary
+		: `${summary} The plan does not own ${String(foreign)} further path${foreign === 1 ? '' : 's'} beneath its groups.`
+}
+
+/**
  * Project a raised value into the machine-readable failure envelope.
  *
  * @param error - The value a command raised.

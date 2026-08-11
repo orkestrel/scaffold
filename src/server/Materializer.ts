@@ -10,7 +10,6 @@ import type {
 	HostArtifact,
 	HydratedArtifact,
 	Mirror,
-	Ownership,
 	Plan,
 	ScaffoldErrorCode,
 } from '@src/core'
@@ -39,6 +38,7 @@ import {
 	MAX_ARTIFACT_BYTES,
 	MAX_MANIFEST_BYTES,
 	MAX_TOTAL_ARTIFACT_BYTES,
+	matchesDriftReachability,
 	planToFindings,
 	ScaffoldError,
 } from '@src/core'
@@ -728,7 +728,7 @@ export class Materializer implements MaterializerInterface {
 				})
 			}
 			if (other.drift === finding.drift && other.observed === finding.observed) continue
-			if (!this.#reachable(finding.ownership, other)) {
+			if (!matchesDriftReachability(finding.ownership, other)) {
 				throw this.#error(
 					'TARGET',
 					`The path ${finding.path} carries an audit verdict this plan could not produce.`,
@@ -740,19 +740,6 @@ export class Materializer implements MaterializerInterface {
 				path: finding.path,
 			})
 		}
-	}
-
-	// Whether the comparison could have reached this verdict for a path scaffold
-	// owns this way. A birth-owned path is never compared, so it is always aligned
-	// and never missing; a presence-owned path compares existence, so it is never
-	// stale; and bytes are recorded exactly where they were read, so an aligned
-	// verdict carrying none describes a destination that held no file. A verdict
-	// outside that law never described this target, so it is refused as an
-	// impossible verdict rather than reported as movement.
-	#reachable(ownership: Ownership, finding: Finding): boolean {
-		if (finding.drift === 'aligned') return ownership === 'birth' || finding.observed !== undefined
-		if (finding.drift === 'missing') return ownership !== 'birth'
-		return finding.drift === 'stale' && ownership === 'content'
 	}
 
 	// Bind one destination to what this call just observed at it. The digest is

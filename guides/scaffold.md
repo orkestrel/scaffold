@@ -176,6 +176,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `inferGroup`                | function | Infer the `Group` a path belongs to.                                          |
 | `manifestToDependencies`    | function | Project a package manifest's text to the `@orkestrel/*` packages it declares. |
 | `manifestToName`            | function | Project a package manifest's text to its own name.                            |
+| `matchesDriftReachability`  | function | Test whether `inferDrift` could have produced a finding for an ownership.     |
 | `matchesEngines`            | function | Test whether a declared engines floor is at or above the supported minimum.   |
 | `matchesOrchestrationPath`  | function | Test whether a path instructs or wires an agent rather than the toolchain.    |
 | `matchesRange`              | function | Test whether a declared range already admits a published version.             |
@@ -629,9 +630,14 @@ project set.
 
 An audit reports one `Finding` per planned path, followed by any foreign path beneath the groups
 the plan covers. Every planned finding carries its artifact's `ownership`. A foreign finding has
-no ownership because no artifact was planned for its path. Counting the planned findings by
-`content`, `presence`, and `birth` therefore says what the audit compared at each path, and the
-foreign findings are exactly the ones no tier accounts for. The audit stores no aggregate tally.
+no ownership because no artifact was planned for its path. `Ownership` says what scaffold claims at
+a path, not what one run did there. Counting planned findings by `content`, `presence`, and `birth`
+therefore says what audit is entitled to compare and stays the same against a vacant target and a
+repaired one. What one run compared comes from `ownership`, `drift`, and `observed` together. A
+content-owned finding carrying `observed` had its bytes compared. A content-owned `missing` finding
+and every presence-owned finding were decided by existence alone. A birth-owned finding was not
+examined. The foreign findings are exactly the ones no ownership accounts for. The audit stores no
+aggregate tally.
 
 | `Drift`   | Means                                 |
 | --------- | ------------------------------------- |
