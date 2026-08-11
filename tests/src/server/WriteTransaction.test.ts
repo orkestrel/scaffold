@@ -12,7 +12,7 @@ import { join } from 'node:path'
 import { isScaffoldError } from '@src/core'
 import { computeDigest, listFiles, readExpectation, WriteTransaction } from '@src/server'
 import { describe, expect, it } from 'vitest'
-import { createWorkspace, readErrorCode } from '../../setupServer.js'
+import { createWorkspace, readErrorCode, WORKSPACE_ROOT } from '../../setupServer.js'
 
 describe('WriteTransaction construction', () => {
 	it('refuses a target, a path list, and a repeated path that are off contract', () => {
@@ -241,6 +241,16 @@ describe('WriteTransaction staging', () => {
 })
 
 describe('WriteTransaction directories', () => {
+	it('records a created segment before the read that can refuse it', () => {
+		const source = readFileSync(join(WORKSPACE_ROOT, 'src/server/WriteTransaction.ts'), 'utf8')
+		const creation = source.indexOf('\t\t\tmkdirSync(segment)')
+		const recording = source.indexOf('\t\t\tthis.#created.push(segment)', creation)
+		const inspection = source.indexOf('\t\t\tconst established = readAnchor(segment)', creation)
+		expect(creation).toBeGreaterThan(-1)
+		expect(recording).toBeGreaterThan(creation)
+		expect(recording).toBeLessThan(inspection)
+	})
+
 	it('establishes a nested directory segment by segment and reports what it created', () => {
 		const workspace = createWorkspace()
 		try {

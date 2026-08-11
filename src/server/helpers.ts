@@ -17,6 +17,7 @@ import {
 	mkdirSync,
 	opendirSync,
 	openSync,
+	readlinkSync,
 	readdirSync,
 	readSync,
 	realpathSync,
@@ -392,8 +393,7 @@ export function computeFileDigest(path: string): string | undefined {
  * @param path - The absolute or relative host path to resolve.
  * @returns The path with its existing prefix resolved through every link, or
  * `undefined` when the text is not a host path, no bounded existing ancestor
- * resolves, a name on the way exists without resolving, or an ancestor cannot
- * be read.
+ * resolves, a link target cannot be read, or an ancestor cannot be read.
  *
  * @remarks
  * A containment decision has to be made about a destination that does not exist
@@ -403,11 +403,10 @@ export function computeFileDigest(path: string): string | undefined {
  * it. The climb is bounded by the path-depth ceiling, so an adversarial path
  * cannot make it walk indefinitely.
  *
- * Absence is confirmed against the name itself rather than read off the
- * resolution failure, because `realpath` answers `ENOENT` both for a name that
- * is not there and for a link whose target is not there. Only the first is a
- * segment to re-join; the second is a redirection whose destination this
- * function cannot see, so it is refused instead of carried forward as text.
+ * `realpath` answers `ENOENT` both for a name that is not there and for a link
+ * whose target is not there. The name is therefore inspected without following
+ * it: a dangling link redirects the walk to its target, while a genuinely absent
+ * name is retained as one segment of the unresolved suffix.
  *
  * @example
  * ```ts
@@ -428,7 +427,15 @@ export function resolveRealPath(path: string): string | undefined {
 			return physical
 		}
 		if (!matchesMissingPath(real.error)) return undefined
-		if (attempt(() => lstatSync(current)).success) return undefined
+		const status = attempt(() => lstatSync(current))
+		if (status.success) {
+			if (!status.value.isSymbolicLink()) return undefined
+			const target = attempt(() => readlinkSync(current))
+			if (!target.success) return undefined
+			current = resolve(dirname(current), target.value)
+			continue
+		}
+		if (!matchesMissingPath(status.error)) return undefined
 		const parent = dirname(current)
 		if (parent === current) return undefined
 		pending.unshift(relative(parent, current))

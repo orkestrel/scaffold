@@ -1188,6 +1188,13 @@ describe('CLI audit', () => {
 			const audit: Audit = JSON.parse(sink.output[0] ?? '')
 			expect(audit.findings).toStrictEqual([])
 			expect(audit.questions.some((question) => question.blocking)).toBe(true)
+			const report = createSink()
+			expect(
+				await new CLI(report.options).execute(['audit', '--from', fleet.host, '--target', refused]),
+			).toBe(EXIT_DRIFT)
+			expect(report.output[report.output.length - 1]).toBe(
+				'Audit did not compare the target because the blueprint was refused.',
+			)
 		} finally {
 			workspace.destroy()
 		}

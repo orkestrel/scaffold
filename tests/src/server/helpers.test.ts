@@ -328,16 +328,19 @@ describe('resolveRealPath', () => {
 		}
 	})
 
-	it('refuses a name that exists and does not resolve', () => {
+	it('resolves the target of a dangling link and keeps its absent suffix', () => {
 		const outside = createWorkspace()
 		const workspace = createWorkspace()
 		try {
 			workspace.link('mirror', join(outside.path, 'absent'))
-			expect(resolveRealPath(join(workspace.path, 'mirror'))).toBeUndefined()
-			expect(resolveRealPath(join(workspace.path, 'mirror', 'new.md'))).toBeUndefined()
-			// The control, drawn from the population the climb exists for: a name
-			// that is genuinely absent still keeps its segments, so the refusal above
-			// is the link rather than the climb refusing everything it cannot read.
+			expect(resolveRealPath(join(workspace.path, 'mirror'))).toBe(
+				join(resolveRealPath(outside.path) ?? '', 'absent'),
+			)
+			expect(resolveRealPath(join(workspace.path, 'mirror', 'new.md'))).toBe(
+				join(resolveRealPath(outside.path) ?? '', 'absent', 'new.md'),
+			)
+			// The control is a plain absent name, outside the redirected population.
+			// It proves the same suffix preservation without exercising a link.
 			expect(resolveRealPath(join(workspace.path, 'absent', 'new.md'))).toBe(
 				join(resolveRealPath(workspace.path) ?? '', 'absent', 'new.md'),
 			)
@@ -396,25 +399,19 @@ describe('resolveContainedPath', () => {
 		}
 	})
 
-	it('refuses a link inside the root whose target does not exist', () => {
+	it('decides dangling links by their target containment', () => {
 		const outside = createWorkspace()
 		const workspace = createWorkspace()
 		try {
-			// The link a caller cannot see through: `realpath` reports an absent
-			// target and an absent name alike, so a containment answer built by
-			// re-joining the segment would name a destination inside the root whose
-			// real location is this other workspace.
 			workspace.link('escape', join(outside.path, 'absent'))
 			expect(resolveContainedPath(workspace.path, 'escape/router.md')).toBeUndefined()
 			expect(resolveContainedPath(workspace.path, 'escape')).toBeUndefined()
-			// Two controls, both drawn from what the law must still admit: a
-			// destination that does not exist yet, and a directory that does. A
-			// refusal covering those would prove containment by refusing everything.
+			workspace.link('future', join(workspace.path, 'inside/future.md'))
+			expect(resolveContainedPath(workspace.path, 'future')).toBe(join(workspace.path, 'future'))
+			// The control is a plain absent path, outside the link population.
 			expect(resolveContainedPath(workspace.path, 'guides/router.md')).toBe(
 				join(workspace.path, 'guides', 'router.md'),
 			)
-			workspace.directory('real')
-			expect(resolveContainedPath(workspace.path, 'real')).toBe(join(workspace.path, 'real'))
 		} finally {
 			workspace.destroy()
 			outside.destroy()

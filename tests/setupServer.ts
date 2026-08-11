@@ -15,6 +15,7 @@ import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { gzipSync } from 'node:zlib'
 import {
 	CATALOG_AGENT_PATH,
 	Compiler,
@@ -171,12 +172,10 @@ export interface TestEndpointCase {
  * @remarks
  * Every field maps onto a real part of the response, so the fixture never
  * declares anything it does not send: the `content-length` it writes is the
- * body's actual byte count, and `chunked` omits that header entirely so the
- * transfer really is chunked. That split is what lets a test drive the two
- * different doors a bounded reader has — refusing a declared size before
- * reading, and counting bytes while streaming. `held` accepts the request and
- * never answers it, which is how a timeout and an abort are put under a test
- * without touching a clock.
+ * wire body's actual byte count, `encoding` applies the named real content
+ * encoding, and `chunked` omits the length header entirely. `held` accepts the
+ * request and never answers it, which is how a timeout and an abort are put
+ * under a test without touching a clock.
  */
 export interface TestUpstreamReply {
 	readonly status: number
@@ -184,6 +183,7 @@ export interface TestUpstreamReply {
 	readonly type?: string
 	readonly location?: string
 	readonly chunked?: boolean
+	readonly encoding?: 'gzip'
 	readonly held?: boolean
 	readonly delay?: number
 }
@@ -1520,18 +1520,19 @@ export function buildOrganization(names: readonly string[]): string {
  * @returns Nothing.
  *
  * @remarks
- * A chunked reply omits `content-length` so the runtime really does chunk it,
- * which is the only way a reader's streaming byte count is exercised rather than
- * its header check. Every other reply declares the body's true byte length.
+ * A chunked reply omits `content-length` so the runtime really does chunk it.
+ * Every other reply declares the encoded wire body's true byte length.
  */
 export function writeUpstreamReply(response: ServerResponse, reply: TestUpstreamReply): void {
 	const headers: Record<string, string> = { 'content-type': reply.type ?? 'application/json' }
+	const body = reply.encoding === 'gzip' ? gzipSync(reply.body) : Buffer.from(reply.body, 'utf8')
 	if (reply.location !== undefined) headers.location = reply.location
+	if (reply.encoding !== undefined) headers['content-encoding'] = reply.encoding
 	if (reply.chunked !== true) {
-		headers['content-length'] = String(Buffer.byteLength(reply.body, 'utf8'))
+		headers['content-length'] = String(body.byteLength)
 	}
 	response.writeHead(reply.status, headers)
-	response.end(reply.body)
+	response.end(body)
 }
 
 /**

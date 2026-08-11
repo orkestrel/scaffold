@@ -1,4 +1,5 @@
 import type { Mirror, Release } from '@src/core'
+import { gzipSync } from 'node:zlib'
 import { contentToHex, MAX_COLLECTION_ITEMS } from '@src/core'
 import { Upstream } from '@src/server'
 import { describe, expect, it } from 'vitest'
@@ -520,18 +521,21 @@ describe('Upstream catalog', () => {
 })
 
 describe('Upstream bounds', () => {
-	it('refuses a response whose declared length is past the per-response limit', async () => {
+	it('admits a gzip body whose wire length exceeds its decoded limit', async () => {
 		const body = buildPackument('0.0.8')
 		const server = await createUpstreamServer({
-			[UPSTREAM_PATHS.router]: { status: 200, body },
+			[UPSTREAM_PATHS.router]: { status: 200, body, encoding: 'gzip' },
+			[UPSTREAM_PATHS.emitter]: { status: 200, body },
 		})
-		const upstream = new Upstream({ registry: { base: server.base }, limit: 32 })
+		const decoded = Buffer.byteLength(body, 'utf8')
+		expect(gzipSync(body).byteLength).toBeGreaterThan(decoded)
+		const upstream = new Upstream({ registry: { base: server.base }, limit: decoded })
 		try {
-			const [release] = await upstream.lookup([buildDependency({ name: '@orkestrel/router' })])
-			expect(release?.lookup).toBe('failed')
-			expect(release?.note).toBe(
-				`the response declares ${String(body.length)} bytes, past the 32-byte allowance`,
-			)
+			const releases = await upstream.lookup([
+				buildDependency({ name: '@orkestrel/router' }),
+				buildDependency({ name: '@orkestrel/emitter' }),
+			])
+			expect(releases.map((release) => release.lookup)).toStrictEqual(['found', 'found'])
 		} finally {
 			upstream.destroy()
 			await server.destroy()
@@ -555,7 +559,7 @@ describe('Upstream bounds', () => {
 		}
 	})
 
-	it('spends one declared allowance across every read in a call', async () => {
+	it('spends one allowance across every declared-length read in a call', async () => {
 		const body = buildPackument('0.0.8')
 		const budget = body.length * 2 + 10
 		const server = await createUpstreamServer({
@@ -571,11 +575,9 @@ describe('Upstream bounds', () => {
 				buildDependency({ name: '@orkestrel/router' }),
 			])
 			// Each answer is well inside the per-response limit; it is the third
-			// read against what the first two already spent that is refused.
+			// decoded stream against what the first two already spent that is refused.
 			expect(releases.map((release) => release.lookup)).toStrictEqual(['found', 'found', 'failed'])
-			expect(releases[2]?.note).toBe(
-				`the response declares ${String(body.length)} bytes, past the 10-byte allowance`,
-			)
+			expect(releases[2]?.note).toBe(`the call spent its ${String(budget)}-byte allowance`)
 		} finally {
 			upstream.destroy()
 			await server.destroy()

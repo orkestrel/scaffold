@@ -230,10 +230,13 @@ describe('auditToExit', () => {
 })
 
 describe('auditToSummary', () => {
-	it('reports no planned paths without inventing a comparison', () => {
-		expect(auditToSummary({ findings: [], questions: [] })).toBe(
-			'0 of 0 planned paths drifted from the plan. Audit compared bytes at 0, existence at 0, and nothing at 0.',
-		)
+	it('reports a refused blueprint without inventing a comparison', () => {
+		expect(
+			auditToSummary({
+				findings: [],
+				questions: [{ field: 'src', message: 'Core is required.', blocking: true }],
+			}),
+		).toBe('Audit did not compare the target because the blueprint was refused.')
 	})
 
 	it('inflects a single planned path only on the noun', () => {

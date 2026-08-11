@@ -525,16 +525,10 @@ export class Upstream implements UpstreamInterface {
 	// The body, read against both bounds at once. The stream is counted chunk by
 	// chunk against the response limit and against what the whole call has left,
 	// so one oversized answer and many small ones are refused by different tests.
-	// Every byte taken off the wire is spent whatever the verdict, because bytes
-	// a failed read consumed are bytes the caller no longer has.
-	//
-	// The declared-length check ahead of it is an early refusal, never the bound.
-	// `content-length` counts the octets on the wire and both bounds count decoded
-	// bytes, and the registry serves its answers compressed, so a declared length
-	// is at or under the number the stream will produce. It therefore refuses
-	// early where it fires and misses the compressed answers entirely; the
-	// streaming counts are what actually holds. The gap cannot be closed here,
-	// because no header states a decoded size.
+	// Every decoded byte is spent whatever the verdict, because bytes a failed
+	// read consumed are bytes the caller no longer has. `content-length` cannot
+	// refuse early: it counts wire octets, while both bounds count decoded bytes,
+	// and content encoding may make either count larger than the other.
 	//
 	// A status carrying no representation reaches this method too, because `ok`
 	// covers the whole 2xx range. It is a verdict rather than an empty answer: a
@@ -544,20 +538,6 @@ export class Upstream implements UpstreamInterface {
 		response: Response,
 		allowance: { remaining: number },
 	): Promise<{ readonly lookup: Lookup; readonly content: string; readonly note: string }> {
-		const declared = response.headers.get('content-length')
-		const stated = declared === null ? undefined : Number(declared)
-		if (
-			stated !== undefined &&
-			Number.isFinite(stated) &&
-			(stated > this.#limit || stated > allowance.remaining)
-		) {
-			await response.body?.cancel()
-			return {
-				lookup: 'failed',
-				content: '',
-				note: `the response declares ${String(stated)} bytes, past the ${String(Math.min(this.#limit, allowance.remaining))}-byte allowance`,
-			}
-		}
 		const body = response.body
 		if (body === null) {
 			return {

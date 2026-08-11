@@ -244,10 +244,12 @@ export function auditToExit(audit: Audit): number {
  * Project an audit into the human summary of its outcome.
  *
  * @param audit - The comparison to summarize.
- * @returns The planned-path outcome, the grounds that decided it, and any foreign-path count.
+ * @returns The refusal, or the planned-path outcome, its grounds, and any foreign-path count.
  *
  * @remarks
- * The three grounds describe what this run did. `bytes` means content-owned
+ * A blocking question means the gate produced no plan, so the target was not
+ * compared and no finding count is reported. Otherwise the three grounds
+ * describe what this run did. `bytes` means content-owned
  * bytes were observed, `existence` means presence or absence alone decided the
  * finding, and `nothing` means a birth-owned path was not examined. Foreign
  * paths remain a separate population because no planned ownership accounts for
@@ -257,11 +259,17 @@ export function auditToExit(audit: Audit): number {
  * ```ts
  * import { auditToSummary } from './helpers.js'
  *
- * auditToSummary({ findings: [], questions: [] })
- * // '0 of 0 planned paths drifted from the plan. Audit compared bytes at 0, existence at 0, and nothing at 0.'
+ * auditToSummary({
+ *  findings: [],
+ *  questions: [{ field: 'src', message: 'Core is required.', blocking: true }],
+ * })
+ * // 'Audit did not compare the target because the blueprint was refused.'
  * ```
  */
 export function auditToSummary(audit: Audit): string {
+	if (audit.questions.some((question) => question.blocking)) {
+		return 'Audit did not compare the target because the blueprint was refused.'
+	}
 	const planned = audit.findings.filter((finding) => finding.drift !== 'foreign')
 	const drifted = planned.filter((finding) => finding.drift !== 'aligned').length
 	// These counts say what decided each verdict on this run. They partition the

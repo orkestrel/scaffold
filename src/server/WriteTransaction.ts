@@ -105,7 +105,7 @@ export class WriteTransaction {
 	readonly #stage: string
 	readonly #backup: string
 	readonly #expectations: ReadonlyMap<string, WriteExpectation>
-	readonly #created: WriteAnchor[] = []
+	readonly #created: Array<string | WriteAnchor> = []
 	readonly #staged: string[] = []
 	readonly #established: string[] = []
 	readonly #taken: string[] = []
@@ -395,12 +395,10 @@ export class WriteTransaction {
 		const applied = attempt(() => {
 			this.#preflight()
 			for (const path of this.#staged) {
-				this.#promote(path)
-				promoted.push(path)
+				this.#promote(path, promoted)
 			}
 			for (const path of this.#taken) {
-				this.#take(path)
-				taken.push(path)
+				this.#take(path, taken)
 			}
 		})
 		this.#open = false
@@ -537,6 +535,7 @@ export class WriteTransaction {
 				})
 			}
 			mkdirSync(segment)
+			this.#created.push(segment)
 			const established = readAnchor(segment)
 			if (established === undefined) {
 				throw new ScaffoldError('WRITE', `The directory at ${segment} changed while writing.`, {
@@ -544,7 +543,7 @@ export class WriteTransaction {
 				})
 			}
 			anchor = established
-			this.#created.push(established)
+			this.#created[this.#created.length - 1] = established
 			created.push(established)
 		}
 		return { anchor, created }
@@ -555,6 +554,12 @@ export class WriteTransaction {
 	// target exactly as it found it.
 	#preflight(): void {
 		for (const anchor of this.#created) {
+			if (typeof anchor === 'string') {
+				throw new ScaffoldError('WRITE', `The directory at ${anchor} changed while writing.`, {
+					target: this.#target,
+					path: anchor,
+				})
+			}
 			if (!matchesAnchor(anchor)) {
 				throw new ScaffoldError('WRITE', `The directory at ${anchor.path} changed while writing.`, {
 					target: this.#target,
@@ -588,7 +593,7 @@ export class WriteTransaction {
 	// Preserve the destination's bytes under a second name, then replace the
 	// directory entry in one rename. The destination names the whole old file
 	// until that rename lands and the whole new file after it.
-	#promote(path: string): void {
+	#promote(path: string, promoted: string[]): void {
 		const expectation = this.#expectation(path)
 		if (!matchesExpectation(expectation)) {
 			throw new ScaffoldError('WRITE', `The destination at ${path} moved while writing.`, { path })
@@ -602,11 +607,12 @@ export class WriteTransaction {
 			linkSync(expectation.path, backup)
 		}
 		renameSync(staged, expectation.path)
+		promoted.push(path)
 	}
 
 	// Move the file out of the target rather than unlinking it, so a later failure
 	// in the same commit can put the exact bytes back.
-	#take(path: string): void {
+	#take(path: string, taken: string[]): void {
 		const expectation = this.#expectation(path)
 		if (!matchesExpectation(expectation)) {
 			throw new ScaffoldError('WRITE', `The destination at ${path} moved while writing.`, { path })
@@ -614,6 +620,7 @@ export class WriteTransaction {
 		const backup = this.#resolve(this.#backup, path)
 		mkdirSync(dirname(backup), { recursive: true })
 		renameSync(expectation.path, backup)
+		taken.push(path)
 	}
 
 	// Undo everything this transaction did, newest first, and report what it could
@@ -643,8 +650,9 @@ export class WriteTransaction {
 			const cleared = attempt(() => rmSync(this.#root, { recursive: true, force: true }))
 			if (!cleared.success) residue.push(cleared.error)
 		}
-		for (const anchor of [...this.#created].reverse()) {
-			const removed = attempt(() => rmdirSync(anchor.path))
+		for (const created of [...this.#created].reverse()) {
+			const path = typeof created === 'string' ? created : created.path
+			const removed = attempt(() => rmdirSync(path))
 			if (!removed.success && !matchesMissingPath(removed.error)) residue.push(removed.error)
 		}
 		return residue
