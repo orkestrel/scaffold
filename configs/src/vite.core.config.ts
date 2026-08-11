@@ -29,9 +29,7 @@ export default defineConfig(
 				fileName: (format) => (format === 'es' ? 'index.js' : 'index.cjs'),
 			},
 			outDir: 'dist/src/core',
-			rolldownOptions: {
-				external: [/^node:/, /^@orkestrel\//],
-			},
+			rolldownOptions: { external: [/^node:/, /^@orkestrel\//] },
 		},
 	}),
 )

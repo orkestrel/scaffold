@@ -42,7 +42,7 @@ describe('scaffold', () => {
 			const child = spawn(
 				process.execPath,
 				[
-					resolve(WORKSPACE_ROOT, 'dist/bin/scaffold.js'),
+					resolve(WORKSPACE_ROOT, 'dist/bin/main.js'),
 					'audit',
 					'--from',
 					host,
@@ -104,7 +104,7 @@ describe('scaffold', () => {
 				'--target',
 				fleet.target,
 			]
-			await import('../../../src/bin/scaffold.js')
+			await import('../../../src/bin/main.js')
 			expect(process.exitCode).toBe(EXIT_CLEAN)
 		} finally {
 			process.argv = argv

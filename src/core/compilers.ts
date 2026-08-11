@@ -21,12 +21,15 @@ import {
 	APP_SERVER_DEV_DEPENDENCIES,
 	BASE_DEV_DEPENDENCIES,
 	BIN_CONFIGS,
+	BIN_ENTRY_PATH,
 	DEPENDENCY_NAME_PATTERN,
 	ENVIRONMENTS,
 	EXTRA_NAME_PATTERN,
 	EXTRA_RANGE_PATTERN,
 	GLOBAL_SETUP_PATH,
+	GUIDES_TEST_PATH,
 	HOST_PATHS,
+	INTEGRATION_TEST_PATH,
 	MAX_ARTIFACT_BYTES,
 	MAX_COLLECTION_ITEMS,
 	MAX_TOTAL_ARTIFACT_BYTES,
@@ -465,7 +468,7 @@ export function blueprintToManifest(blueprint: Blueprint): string {
 					},
 				}
 			: {}),
-		...(blueprint.bin ? { bin: { [blueprint.name]: `./dist/bin/${blueprint.name}.js` } } : {}),
+		...(blueprint.bin ? { bin: { [blueprint.name]: './dist/bin/main.js' } } : {}),
 		files: blueprint.bin
 			? ['dist/src', 'dist/bin', 'README.md']
 			: publishes
@@ -474,9 +477,7 @@ export function blueprintToManifest(blueprint: Blueprint): string {
 		type: 'module',
 		...(publishes
 			? {
-					sideEffects: blueprint.bin
-						? [`./src/bin/${blueprint.name}.ts`, `./dist/bin/${blueprint.name}.js`]
-						: false,
+					sideEffects: blueprint.bin ? [`./${BIN_ENTRY_PATH}`, './dist/bin/main.js'] : false,
 					main: entry.main,
 					module: entry.module,
 					...(entry.types === undefined ? {} : { types: entry.types }),
@@ -644,23 +645,7 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 		projects.push('srcServer')
 	}
 	if (blueprint.bin) {
-		const entry = serializeTypeScriptString(`src/bin/${blueprint.name}.ts`)
-		const file = serializeTypeScriptString(`${blueprint.name}.js`)
-		factories.push(
-			fillTemplate(CONFIG_TEMPLATES.factories.src.bin, {
-				entry:
-					entry.length <= 58
-						? `entry: resolveWorkspacePath(${entry}),`
-						: `entry: resolveWorkspacePath(
-						${entry},
-					),`,
-				file:
-					file.length <= 70
-						? `fileName: () => ${file},`
-						: `fileName: () =>
-						${file},`,
-			}),
-		)
+		factories.push(CONFIG_TEMPLATES.factories.src.bin)
 		projects.push('srcBin')
 	}
 	if (blueprint.app.includes('core')) {
@@ -730,6 +715,8 @@ export function appShowcase(...options: never[]): UserConfig {
 	projects.push('policy')
 	factories.push(CONFIG_TEMPLATES.factories.config)
 	projects.push('config')
+	factories.push(CONFIG_TEMPLATES.factories.guides)
+	projects.push(`...(isExactCaseFile(resolveWorkspacePath('${GUIDES_TEST_PATH}')) ? [guides] : [])`)
 	if (blueprint.src.length > 0 && blueprint.integration) {
 		factories.push(
 			fillTemplate(CONFIG_TEMPLATES.factories.integration, {
@@ -741,11 +728,7 @@ export function appShowcase(...options: never[]): UserConfig {
 	factories.push(CONFIG_TEMPLATES.factories.probe)
 	projects.push('probe')
 
-	const inline = `\t\tprojects: [${projects.join(', ')}],`
-	const projectRows =
-		inline.length <= 98
-			? inline
-			: `\t\tprojects: [
+	const projectRows = `\t\tprojects: [
 ${projects.map((project) => `\t\t\t${project},`).join('\n')}
 	\t],`
 	return fillTemplate(CONFIG_TEMPLATES.root.vite, {
@@ -867,6 +850,15 @@ ${paths.join('\n')}
 						'../../app/core/**/*.tsx',
 					)
 				}
+				include.push(
+					'../../tests/app/browser/**/*.cts',
+					'../../tests/app/browser/**/*.mts',
+					'../../tests/app/browser/**/*.ts',
+					'../../tests/app/browser/**/*.tsx',
+					'../../tests/app/browser/**/*.vue',
+					'../../tests/setup.ts',
+					'../../tests/setupBrowser.ts',
+				)
 				content = fillTemplate(CONFIG_TEMPLATES.tsconfigs.app.browser, {
 					include: include
 						.map(
@@ -892,6 +884,14 @@ ${paths.join('\n')}
 						'../../app/core/**/*.tsx',
 					)
 				}
+				include.push(
+					'../../tests/app/server/**/*.cts',
+					'../../tests/app/server/**/*.mts',
+					'../../tests/app/server/**/*.ts',
+					'../../tests/app/server/**/*.tsx',
+					'../../tests/setup.ts',
+					'../../tests/setupServer.ts',
+				)
 				content = fillTemplate(CONFIG_TEMPLATES.tsconfigs.app.server, {
 					include: include
 						.map(
@@ -998,7 +998,7 @@ export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly Conte
 	}
 	if (blueprint.bin) {
 		artifacts.push({
-			path: `src/bin/${blueprint.name}.ts`,
+			path: BIN_ENTRY_PATH,
 			group: 'source',
 			ownership: 'birth',
 			origin: 'template',
@@ -1085,13 +1085,13 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 		})
 	}
 	if (blueprint.bin) {
-		const specifier = serializeTypeScriptString(`../../../src/bin/${blueprint.name}.js`)
+		const specifier = serializeTypeScriptString('../../../src/bin/main.js')
 		const statement =
 			specifier.length <= 68
 				? `\t\tconst entry = await import(${specifier})`
 				: `\t\tconst entry =\n\t\t\tawait import(${specifier})`
 		artifacts.push({
-			path: `tests/src/bin/${blueprint.name}.test.ts`,
+			path: 'tests/src/bin/main.test.ts',
 			group: 'tests',
 			ownership: 'birth',
 			origin: 'template',
@@ -1113,7 +1113,7 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 	}
 	if (blueprint.src.length > 0 && blueprint.integration) {
 		artifacts.push({
-			path: 'tests/integration.test.ts',
+			path: INTEGRATION_TEST_PATH,
 			group: 'tests',
 			ownership: 'birth',
 			origin: 'template',

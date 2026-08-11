@@ -91,6 +91,7 @@ export const NAME_ARGUMENT = '<name>'
 export const COMMAND_OPTIONS: ParseArgsOptionsConfig = Object.freeze({
 	src: Object.freeze({ type: 'string' }),
 	app: Object.freeze({ type: 'string' }),
+	bin: Object.freeze({ type: 'boolean' }),
 	deps: Object.freeze({ type: 'string' }),
 	groups: Object.freeze({ type: 'string' }),
 	all: Object.freeze({ type: 'boolean' }),
@@ -111,6 +112,7 @@ export const COMMAND_OPTIONS: ParseArgsOptionsConfig = Object.freeze({
 export const OPTION_SUMMARY: Readonly<Record<string, string>> = Object.freeze({
 	'--src <list>': 'the published library environments to build: core, browser, server',
 	'--app <list>': 'the private application environments to build: core, browser, server',
+	'--bin': 'scaffold a command-line executable at src/bin/main.ts',
 	'--deps <list>': 'the @orkestrel/* packages the workspace depends on',
 	'--groups <list>': 'the artifact groups to cover; every group when absent',
 	'--all': 'fetch a guide for every package the organization publishes, not just the declared ones',
@@ -134,6 +136,7 @@ export const VERB_OPTIONS: Readonly<Record<Verb, readonly string[]>> = Object.fr
 	new: Object.freeze([
 		'--src <list>',
 		'--app <list>',
+		'--bin',
 		'--deps <list>',
 		'--from <path>',
 		'--target <path>',

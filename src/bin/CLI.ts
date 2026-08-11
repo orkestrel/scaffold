@@ -7,6 +7,7 @@ import type {
 	Group,
 	Mirror,
 	Plan,
+	Question,
 	Release,
 } from '@src/core'
 import type {
@@ -31,24 +32,31 @@ import type {
 } from './types.js'
 import { execFileSync } from 'node:child_process'
 import { renderTable, strip, stripControls } from '@orkestrel/console'
-import { attempt } from '@orkestrel/contract'
+import { attempt, isRecord, isString, parseJSON } from '@orkestrel/contract'
 import { createMarkdown, flattenText, isTableNode } from '@orkestrel/markdown'
 import {
 	CATALOG_AGENT_PATH,
+	BIN_ENTRY_PATH,
+	blueprintToRootVite,
 	createBlueprint,
 	createCompiler,
 	DEPENDENCY_NAME_PATTERN,
 	ENVIRONMENTS,
 	GROUPS,
+	GLOBAL_SETUP_PATH,
+	GUIDES_TEST_PATH,
+	INTEGRATION_TEST_PATH,
 	manifestToDependencies,
 	manifestToName,
 	MAX_MANIFEST_BYTES,
 	nameToGuide,
 	ScaffoldError,
+	SHOWCASE_CONFIG_PATH,
 } from '@src/core'
 import {
 	createMaterializer,
 	createUpstream,
+	isExactCaseFile,
 	isPhysicalDirectory,
 	isRepository,
 	readFileText,
@@ -66,7 +74,7 @@ import { argvToCommand, auditToExit, errorToEnvelope, renderUsage } from './help
  * Every destination this class writes to is a handler it was given, and the run
  * ends by returning its code rather than by setting one, so the whole executable
  * is drivable from inside another process. That is what makes proving what a
- * command prints cost a function call: `src/bin/scaffold.ts` is the only module
+ * command prints cost a function call: `src/bin/main.ts` is the only module
  * that reads `process.argv` or assigns `process.exitCode`.
  *
  * Every line leaving here is stripped of ANSI escapes and control characters
@@ -179,6 +187,7 @@ export class CLI implements CLIInterface {
 		const blueprint = createBlueprint(command.name, {
 			src: this.#environments(command.src, 'src'),
 			app: this.#environments(command.app, 'app'),
+			bin: command.bin === true,
 			dependencies: await this.#resolve(this.#packages(command.dependencies)),
 		})
 		const plan = this.#compile(blueprint)
@@ -210,11 +219,16 @@ export class CLI implements CLIInterface {
 	#inspect(command: AuditCommand): number {
 		const target = command.target ?? '.'
 		const blueprint = this.#derive(target)
+		const question = this.#projectQuestion(target, blueprint)
 		const materializer = createMaterializer(
 			command.from === undefined ? undefined : { host: command.from },
 		)
 		try {
-			const [audit] = this.#survey(materializer, blueprint, target, this.#groups(command.groups))
+			const [measured] = this.#survey(materializer, blueprint, target, this.#groups(command.groups))
+			const audit: Audit =
+				question === undefined
+					? measured
+					: { ...measured, questions: [...measured.questions, question] }
 			if (command.json === true) this.#report(audit)
 			else this.#present(audit)
 			return auditToExit(audit)
@@ -232,6 +246,7 @@ export class CLI implements CLIInterface {
 		const target = command.target ?? '.'
 		const groups = this.#groups(command.groups)
 		const blueprint = this.#derive(target)
+		this.#assertProjects(target, blueprint)
 		const materializer = createMaterializer(
 			command.from === undefined ? undefined : { host: command.from },
 		)
@@ -294,6 +309,7 @@ export class CLI implements CLIInterface {
 		const target = command.target ?? '.'
 		const groups = this.#groups(command.groups)
 		const blueprint = this.#derive(target)
+		this.#assertProjects(target, blueprint)
 		const repository = this.#repository(target)
 		if (repository.dirty.length > 0 && command.dirty !== true) {
 			throw new ScaffoldError(
@@ -489,11 +505,9 @@ export class CLI implements CLIInterface {
 		}
 	}
 
-	// The blueprint a target describes about itself: its name and its declared
-	// fleet packages from the manifest, and its two environment axes from the
-	// directories it actually ships. Every other field takes its default, because
-	// the only artifact they reach is the manifest, which is claimed by birth and
-	// therefore never compared and never rewritten by a verb that reads a target.
+	// The blueprint a target describes about itself: manifest identity and fleet
+	// packages, environment directories, and exact structural files. Services stay
+	// unknown because their birth-owned script is not a declaration of its list.
 	#derive(target: string): Blueprint {
 		const manifest = this.#manifest(target)
 		const declared = manifestToName(manifest)
@@ -502,11 +516,172 @@ export class CLI implements CLIInterface {
 				target,
 			})
 		}
+		const bin = resolveContainedPath(target, BIN_ENTRY_PATH)
+		const integration = resolveContainedPath(target, INTEGRATION_TEST_PATH)
+		const global = resolveContainedPath(target, GLOBAL_SETUP_PATH)
+		const showcase = resolveContainedPath(target, SHOWCASE_CONFIG_PATH)
 		return createBlueprint(declared.slice(declared.lastIndexOf('/') + 1), {
 			src: this.#probe(target, 'src'),
 			app: this.#probe(target, 'app'),
 			dependencies: manifestToDependencies(manifest),
+			bin: bin !== undefined && isExactCaseFile(bin),
+			integration: integration !== undefined && isExactCaseFile(integration),
+			global: global !== undefined && isExactCaseFile(global),
+			showcase: showcase !== undefined && isExactCaseFile(showcase),
 		})
+	}
+
+	// Read literal Vitest project values from one shell command. Quotes group a
+	// token but do not hide the option, while shell expansions make its value
+	// unresolved and therefore refuse the write that asked the question.
+	#scriptProjects(script: string): readonly string[] | undefined {
+		const tokens: Array<{ value: string; resolved: boolean }> = []
+		let value = ''
+		let resolved = true
+		let started = false
+		let quote: string | undefined
+		for (let index = 0; index < script.length; index += 1) {
+			const character = script[index]
+			if (character === undefined) return undefined
+			if (quote === undefined) {
+				if (/\s/.test(character)) {
+					if (started) tokens.push({ value, resolved })
+					value = ''
+					resolved = true
+					started = false
+					continue
+				}
+				if (';&|()'.includes(character)) {
+					if (started) tokens.push({ value, resolved })
+					const paired = script[index + 1] === character && (character === '&' || character === '|')
+					tokens.push({ value: paired ? `${character}${character}` : character, resolved: true })
+					value = ''
+					resolved = true
+					started = false
+					if (paired) index += 1
+					continue
+				}
+				if (character === '"' || character === "'") {
+					quote = character
+					started = true
+					continue
+				}
+				if (character === '\\') {
+					const escaped = script[index + 1]
+					if (escaped === undefined) return undefined
+					value += escaped
+					started = true
+					index += 1
+					continue
+				}
+				if (character === '$' || character === '`' || character === '%') resolved = false
+				value += character
+				started = true
+				continue
+			}
+			if (character === quote) {
+				quote = undefined
+				continue
+			}
+			if (character === '\\' && quote === '"') {
+				const escaped = script[index + 1]
+				if (escaped === undefined) return undefined
+				value += escaped
+				index += 1
+				continue
+			}
+			if (quote === '"' && (character === '$' || character === '`' || character === '%')) {
+				resolved = false
+			}
+			value += character
+			started = true
+		}
+		if (quote !== undefined) return undefined
+		if (started) tokens.push({ value, resolved })
+
+		const projects: string[] = []
+		for (let index = 0; index < tokens.length; index += 1) {
+			const token = tokens[index]
+			if (token === undefined) return undefined
+			if (token.value === '--project') {
+				const project = tokens[index + 1]
+				if (
+					project === undefined ||
+					!project.resolved ||
+					project.value.length === 0 ||
+					['&&', '||', ';', '|', '&', '(', ')'].includes(project.value)
+				)
+					return undefined
+				projects.push(project.value)
+				index += 1
+				continue
+			}
+			if (token.value.startsWith('--project=')) {
+				const project = token.value.slice('--project='.length)
+				if (!token.resolved || project.length === 0) return undefined
+				projects.push(project)
+				continue
+			}
+			if (!token.resolved && token.value.includes('--project')) return undefined
+		}
+		return projects
+	}
+
+	// Report the manifest's Vitest calls that the planned root configuration
+	// cannot register. Audit carries the advisory; writing verbs turn it into the
+	// hard boundary that keeps a birth-owned script from pointing at a project
+	// their content-owned configuration removed.
+	#projectQuestion(target: string, blueprint: Blueprint, writing = false): Question | undefined {
+		const manifest = this.#manifest(target)
+		const guides = resolveContainedPath(target, GUIDES_TEST_PATH)
+		const planned = blueprintToRootVite(blueprint)
+		const parsed = parseJSON(manifest)
+		const scripts = isRecord(parsed) && isRecord(parsed.scripts) ? parsed.scripts : undefined
+		const absent = new Set<string>()
+		let unresolved = false
+		if (scripts !== undefined) {
+			for (const script of Object.values(scripts)) {
+				if (!isString(script) || !script.includes('vitest')) continue
+				const projects = this.#scriptProjects(script)
+				if (projects === undefined) {
+					unresolved = true
+					continue
+				}
+				for (const project of projects) {
+					const guide = project === 'guides' && guides !== undefined && isExactCaseFile(guides)
+					if (
+						!planned.includes(`name: { label: '${project}',`) ||
+						(project === 'guides' && !guide)
+					) {
+						absent.add(project)
+					}
+				}
+			}
+		}
+		if (absent.size === 0 && !unresolved) return undefined
+		const projects = [...absent].sort()
+		if (unresolved) {
+			return {
+				field: 'projects',
+				message: `The manifest at ${target} contains a Vitest project expression that cannot be resolved statically.${projects.length === 0 ? '' : ` It also names projects the planned configuration does not register: ${projects.join(', ')}.`} ${writing ? 'Replace it with a literal --project value or remove the script before using a scaffold writing verb.' : 'Replace it with a literal --project value before relying on the planned configuration.'}`,
+				blocking: false,
+			}
+		}
+		return {
+			field: 'projects',
+			message: writing
+				? `The manifest at ${target} names ${projects.length === 1 ? 'a Vitest project' : 'Vitest projects'} the planned configuration does not register: ${projects.join(', ')}. To continue, remove the ${projects.length === 1 ? 'script that names it' : 'scripts that name them'} or do not use scaffold writing verbs on a workspace that needs ${projects.length === 1 ? 'a custom Vitest project' : 'custom Vitest projects'}.`
+				: `The manifest at ${target} names ${projects.length === 1 ? 'a Vitest project' : 'Vitest projects'} the planned configuration does not register: ${projects.join(', ')}. Add ${projects.length === 1 ? 'the project' : 'each project'} to vite.config.ts or remove the ${projects.length === 1 ? 'script that names it' : 'scripts that name them'}.`,
+			blocking: false,
+		}
+	}
+
+	// Writing verbs refuse the advisory because their next step would replace the
+	// configuration. Audit alone may report it without changing the target.
+	#assertProjects(target: string, blueprint: Blueprint): void {
+		const question = this.#projectQuestion(target, blueprint, true)
+		if (question === undefined) return
+		throw new ScaffoldError('TARGET', question.message, { target })
 	}
 
 	// A target's manifest text, which every reading verb needs before it can say

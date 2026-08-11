@@ -47,6 +47,14 @@ import {
 const FILE_GROUPS: readonly Group[] = ['manifest', 'configs', 'tests', 'guides', 'docs']
 
 describe('CLI usage', () => {
+	it('refuses --bin by name on every reading verb', async () => {
+		for (const verb of ['audit', 'repair', 'catalog', 'overwrite']) {
+			const sink = createSink()
+			expect(await new CLI(sink.options).execute([verb, '--bin'])).toBe(EXIT_USAGE)
+			expect(sink.diagnostic).toStrictEqual([`USAGE: '${verb}' does not take --bin.`])
+		}
+	})
+
 	it('answers a request for usage instead of running, and writes nothing to the diagnostic', async () => {
 		const sink = createSink()
 		expect(await new CLI(sink.options).execute(['--help'])).toBe(EXIT_CLEAN)
@@ -172,6 +180,48 @@ describe('CLI sanitization', () => {
 })
 
 describe('CLI new', () => {
+	it('creates a bin workspace that round-trips through audit', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			const fresh = workspace.directory('fresh')
+			const created = createSink()
+			expect(
+				await new CLI(created.options).execute([
+					'new',
+					'widget',
+					'--src',
+					'core,server',
+					'--bin',
+					'--from',
+					fleet.host,
+					'--target',
+					fresh,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const result: MaterializeResult = JSON.parse(created.output[0] ?? '')
+			for (const path of [
+				'src/bin/main.ts',
+				'tests/src/bin/main.test.ts',
+				'configs/src/vite.bin.config.ts',
+				'configs/src/tsconfig.bin.json',
+			]) {
+				expect(result.written).toContain(path)
+			}
+			expect(JSON.parse(workspace.read('fresh/package.json'))).toHaveProperty('bin', {
+				widget: './dist/bin/main.js',
+			})
+
+			const audited = createSink()
+			expect(
+				await new CLI(audited.options).execute(['audit', '--from', fleet.host, '--target', fresh]),
+			).toBe(EXIT_CLEAN)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('writes every planned path into a vacant target and reports what it wrote', async () => {
 		const workspace = createWorkspace()
 		try {
@@ -261,6 +311,179 @@ describe('CLI new', () => {
 })
 
 describe('CLI audit', () => {
+	it('derives every exact structural fact in both directions', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			workspace.directory('target/src/bin')
+			workspace.directory('target/tests')
+			workspace.write('target/configs/app/other.config.ts', 'export {}\n')
+			expect(
+				await new CLI(createSink().options).execute([
+					'repair',
+					'--groups',
+					'configs',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				]),
+			).toBe(EXIT_CLEAN)
+			const absent = workspace.read('target/vite.config.ts')
+			expect(absent).not.toContain("label: 'src:bin'")
+			expect(absent).not.toContain("label: 'integration'")
+			expect(absent).not.toContain('globalSetup:')
+			expect(absent).not.toContain('appShowcase')
+
+			workspace.write('target/src/bin/Main.ts', 'export {}\n')
+			expect(
+				await new CLI(createSink().options).execute([
+					'repair',
+					'--groups',
+					'configs',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				]),
+			).toBe(EXIT_CLEAN)
+			expect(workspace.read('target/vite.config.ts')).not.toContain("label: 'src:bin'")
+			workspace.remove('target/src/bin/Main.ts')
+
+			workspace.write('target/src/bin/main.ts', 'export {}\n')
+			workspace.write('target/tests/integration.test.ts', 'export {}\n')
+			workspace.write('target/tests/setupGlobal.ts', 'export {}\n')
+			workspace.directory('target/app/browser')
+			workspace.write('target/configs/app/vite.showcase.config.ts', 'export {}\n')
+			expect(
+				await new CLI(createSink().options).execute([
+					'repair',
+					'--groups',
+					'configs',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				]),
+			).toBe(EXIT_CLEAN)
+			const present = workspace.read('target/vite.config.ts')
+			expect(present).toContain("label: 'src:bin'")
+			expect(present).toContain("label: 'integration'")
+			expect(present).toContain("globalSetup: ['./tests/setupGlobal.ts']")
+			expect(present).toContain('appShowcase')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reports every unregistered manifest project as one non-blocking question', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			workspace.write(
+				'target/package.json',
+				`${JSON.stringify({
+					name: '@orkestrel/sample',
+					scripts: {
+						test: 'vitest run --project src:core "--project=missing"',
+					},
+				})}\n`,
+			)
+			const sink = createSink()
+			const code = await new CLI(sink.options).execute([
+				'audit',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			expect(code).toBe(EXIT_DRIFT)
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.findings.length).toBeGreaterThan(0)
+			expect(audit.questions).toStrictEqual([
+				{
+					field: 'projects',
+					message: `The manifest at ${fleet.target} names a Vitest project the planned configuration does not register: missing. Add the project to vite.config.ts or remove the script that names it.`,
+					blocking: false,
+				},
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('prints findings and an unregistered-project question in the human report', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			workspace.write(
+				'target/package.json',
+				`${JSON.stringify({
+					name: '@orkestrel/sample',
+					scripts: {
+						test: 'vitest run --project=missing --project "absent"',
+					},
+				})}\n`,
+			)
+			const sink = createSink()
+			const code = await new CLI(sink.options).execute([
+				'audit',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+			])
+			expect(code).toBe(EXIT_DRIFT)
+			expect(sink.output.join('\n')).toContain('AGENTS.md')
+			expect(sink.diagnostic).toStrictEqual([
+				`projects: The manifest at ${fleet.target} names Vitest projects the planned configuration does not register: absent, missing. Add each project to vite.config.ts or remove the scripts that name them.`,
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('does not let a non-blocking project question make an aligned audit drift', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			const created = createSink()
+			expect(
+				await new CLI(created.options).execute([
+					'repair',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				]),
+			).toBe(EXIT_CLEAN)
+			workspace.write(
+				'target/package.json',
+				`${JSON.stringify({
+					name: '@orkestrel/sample',
+					scripts: { test: 'vitest run --project missing' },
+				})}\n`,
+			)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				]),
+			).toBe(EXIT_CLEAN)
+			expect(sink.output.at(-1)).toBe(
+				`0 of ${String(FLEET_ARTIFACT_COUNT)} planned paths differ from the plan.`,
+			)
+			expect(sink.diagnostic).toHaveLength(1)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('reports drift against a target that carries none of its planned paths', async () => {
 		const workspace = createWorkspace()
 		try {
@@ -557,6 +780,129 @@ describe('CLI audit', () => {
 })
 
 describe('CLI repair', () => {
+	it('refuses to write when a manifest script names an unregistered project', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			workspace.write(
+				'target/package.json',
+				`${JSON.stringify({
+					name: '@orkestrel/sample',
+					scripts: { test: 'vitest run "--project=missing"' },
+				})}\n`,
+			)
+			workspace.write('target/vite.config.ts', 'marker\n')
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'repair',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const refusal: unknown = JSON.parse(sink.output[0] ?? '')
+			expect(refusal).toHaveProperty('error.code', 'TARGET')
+			expect(refusal).toHaveProperty('error.message', expect.stringContaining('missing'))
+			expect(refusal).toHaveProperty('error.message', expect.stringContaining('remove the script'))
+			expect(refusal).toHaveProperty(
+				'error.message',
+				expect.not.stringContaining('Add the project to vite.config.ts'),
+			)
+			expect(workspace.read('target/vite.config.ts')).toBe('marker\n')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses an unresolved quoted project expression before writing', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			workspace.write(
+				'target/package.json',
+				`${JSON.stringify({
+					name: '@orkestrel/sample',
+					scripts: { test: 'vitest run "--project=$ROGUE"' },
+				})}\n`,
+			)
+			workspace.write('target/vite.config.ts', 'marker\n')
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'repair',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const refusal: unknown = JSON.parse(sink.output[0] ?? '')
+			expect(refusal).toHaveProperty('error.code', 'TARGET')
+			expect(refusal).toHaveProperty(
+				'error.message',
+				expect.stringContaining('cannot be resolved statically'),
+			)
+			expect(workspace.read('target/vite.config.ts')).toBe('marker\n')
+
+			const audited = createSink()
+			expect(
+				await new CLI(audited.options).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const audit: Audit = JSON.parse(audited.output[0] ?? '')
+			expect(audit.questions).toHaveLength(1)
+			expect(audit.questions[0]?.message).toContain('cannot be resolved statically')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('gives a writing refusal only remedies that survive the verb', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			workspace.write(
+				'target/package.json',
+				`${JSON.stringify({
+					name: '@orkestrel/sample',
+					scripts: { test: 'vitest --project missing' },
+				})}\n`,
+			)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'repair',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const refusal: unknown = JSON.parse(sink.output[0] ?? '')
+			expect(refusal).toHaveProperty(
+				'error.message',
+				expect.stringContaining('do not use scaffold writing verbs'),
+			)
+			expect(refusal).toHaveProperty(
+				'error.message',
+				expect.not.stringContaining('Add the project to vite.config.ts'),
+			)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('writes each planned path the target is missing, over a group of vendored files', async () => {
 		const workspace = createWorkspace()
 		try {
@@ -757,6 +1103,42 @@ describe('CLI repair', () => {
 })
 
 describe('CLI overwrite', () => {
+	it('refuses to write when a manifest script names an unregistered project', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			workspace.write(
+				'target/package.json',
+				`${JSON.stringify({
+					name: '@orkestrel/sample',
+					scripts: { test: 'vitest run "--project=missing"' },
+				})}\n`,
+			)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'overwrite',
+					'--dirty',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const refusal: unknown = JSON.parse(sink.output[0] ?? '')
+			expect(refusal).toHaveProperty('error.code', 'TARGET')
+			expect(refusal).toHaveProperty('error.message', expect.stringContaining('missing'))
+			expect(refusal).toHaveProperty('error.message', expect.stringContaining('remove the script'))
+			expect(refusal).toHaveProperty(
+				'error.message',
+				expect.not.stringContaining('Add the project to vite.config.ts'),
+			)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('overwrites a freshly scaffolded repository without deleting untracked files', async () => {
 		const workspace = createWorkspace()
 		const server = await createUpstreamServer({

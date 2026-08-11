@@ -103,6 +103,9 @@ export const BIN_CONFIGS: readonly string[] = Object.freeze([
 	'configs/src/tsconfig.bin.json',
 ])
 
+/** The executable entry whose presence makes a workspace `bin`. */
+export const BIN_ENTRY_PATH = 'src/bin/main.ts'
+
 /**
  * The paths byte-copied from the vendored data root, frozen.
  *
@@ -194,6 +197,12 @@ export const SERVICE_SCRIPT_PATH = 'scripts/service.sh'
 
 /** The shared Vitest global-setup module whose presence makes a workspace `global`. */
 export const GLOBAL_SETUP_PATH = 'tests/setupGlobal.ts'
+
+/** The guide-parity proof whose physical file selects the fixed `guides` project. */
+export const GUIDES_TEST_PATH = 'tests/guides.test.ts'
+
+/** The installed-package proof whose presence makes a workspace `integration`. */
+export const INTEGRATION_TEST_PATH = 'tests/integration.test.ts'
 
 /** The Vite wrapper whose presence makes a workspace `showcase`. */
 export const SHOWCASE_CONFIG_PATH = 'configs/app/vite.showcase.config.ts'
@@ -300,7 +309,7 @@ export const DEFAULT_ENGINES = `>=${MINIMUM_NODE_VERSION}`
 export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@microsoft/api-extractor': '^7.58.12',
 	'@orkestrel/guide': '^0.0.9',
-	'@orkestrel/scaffold': '^0.0.23',
+	'@orkestrel/scaffold': '^0.0.24',
 	'@types/node': '^26.2.0',
 	oxfmt: '^0.62.0',
 	oxlint: '^1.77.0',

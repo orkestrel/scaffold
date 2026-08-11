@@ -36,7 +36,8 @@ npx scaffold new router --src core,server
 Writes a complete workspace into `./router`: its manifest, its build configuration, empty barrels
 for each selected environment, its tests, its documentation, and every shared file. `--app` selects
 private application environments on an independent axis, and `--deps` names `@orkestrel/*` runtime
-dependencies, each pinned to the registry's latest release.
+dependencies, each pinned to the registry's latest release. `--bin` adds the command-line entry, its
+test, and its scoped build configuration.
 
 ### `audit` — report how a target compares to its plan
 
@@ -117,7 +118,7 @@ vendored data root, and the generated file set.
 
 ## Notes
 
-On Windows, run the executable as `npx scaffold …` or `node ./dist/bin/scaffold.js …`. PowerShell
+On Windows, run the executable as `npx scaffold …` or `node ./dist/bin/main.js …`. PowerShell
 mangles npm's `--` passthrough, so avoid `npm run scaffold -- …` there.
 
 ## License

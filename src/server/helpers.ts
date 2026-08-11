@@ -17,11 +17,12 @@ import {
 	mkdirSync,
 	opendirSync,
 	openSync,
+	readdirSync,
 	readSync,
 	realpathSync,
 	writeFileSync,
 } from 'node:fs'
-import { dirname, join, relative, resolve, sep } from 'node:path'
+import { basename, dirname, join, parse, relative, resolve, sep } from 'node:path'
 import { attempt, holds, isError, parseJSONAs } from '@orkestrel/contract'
 import {
 	bytesToHex,
@@ -271,6 +272,45 @@ export function isPhysicalFile(path: string): boolean {
 		!status.value.isSymbolicLink() &&
 		status.value.nlink === 1
 	)
+}
+
+/**
+ * Test whether a path is a physical file with exact on-disk casing.
+ *
+ * @param path - The host path to inspect segment by segment.
+ * @returns `true` only for a physical file whose requested segments exactly
+ * match the names each parent directory stores.
+ *
+ * @remarks
+ * A direct file lookup follows the host's case-folding rules on Windows and
+ * common macOS filesystems. Reading each parent directory supplies the stored
+ * names, so this predicate can enforce the package's exact-case structural
+ * contract on every supported host.
+ *
+ * @example
+ * ```ts
+ * import { isExactCaseFile } from '@orkestrel/scaffold/server'
+ *
+ * isExactCaseFile('/tmp/project/src/bin/main.ts') // true only for that exact spelling
+ * ```
+ */
+export function isExactCaseFile(path: string): boolean {
+	const full = resolve(path)
+	if (!isPhysicalFile(full)) return false
+	const root = parse(full).root
+	const segments = relative(root, full).split(sep)
+	let parent = root
+	for (const segment of segments) {
+		const entries = attempt(() => readdirSync(parent))
+		if (entries.success) {
+			if (!entries.value.includes(segment)) return false
+		} else {
+			const actual = attempt(() => realpathSync.native(join(parent, segment)))
+			if (!actual.success || basename(actual.value) !== segment) return false
+		}
+		parent = join(parent, segment)
+	}
+	return true
 }
 
 /**

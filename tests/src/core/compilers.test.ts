@@ -1,7 +1,9 @@
 import {
+	blueprintToConfigArtifacts,
 	blueprintToDocumentArtifacts,
 	blueprintToGuideArtifacts,
 	blueprintToOrchestrationArtifacts,
+	blueprintToRootVite,
 	blueprintToScripts,
 	blueprintToSourceArtifacts,
 	blueprintToTestArtifacts,
@@ -64,6 +66,200 @@ describe('blueprintToScripts config projects', () => {
 	})
 })
 
+describe('blueprintToRootVite fixed proofs', () => {
+	it('selects guides only when its exact proof path exists', () => {
+		const configuration = blueprintToRootVite(buildBlueprint())
+		expect(configuration).toContain('export const guides = (options?: UserConfig): UserConfig =>')
+		expect(configuration).toContain("include: ['tests/guides.test.ts']")
+		expect(configuration).toContain('function isExactCaseFile(path: string): boolean')
+		expect(configuration).toContain(
+			"...(isExactCaseFile(resolveWorkspacePath('tests/guides.test.ts')) ? [guides] : []),",
+		)
+		expect(configuration).not.toContain('projects: [guides]')
+	})
+
+	it('explains the server declaration rewrite in every emitted workspace', () => {
+		const server = blueprintToConfigArtifacts(buildBlueprint({ src: ['server'] })).find(
+			({ path }) => path === 'configs/src/vite.server.config.ts',
+		)
+		expect(server?.content).toContain(
+			'vite-plugin-dts rolls this face into one declaration, and the roll-up reaches',
+		)
+		expect(server?.content).toContain('final roll-up only')
+	})
+
+	it('explains the executable build in every emitted bin workspace', () => {
+		const bin = blueprintToConfigArtifacts(buildBlueprint({ bin: true })).find(
+			({ path }) => path === 'configs/src/vite.bin.config.ts',
+		)
+		expect(bin?.content).toContain('a single ESM lib file, no declarations')
+		expect(bin?.content).toContain('rolldown strips shebangs from source during bundling')
+		expect(bin?.content).toContain('relative to `dist/bin/`')
+	})
+})
+
+describe('blueprintToConfigArtifacts app matrix', () => {
+	it('emits exactly the core app config', () => {
+		expect(
+			blueprintToConfigArtifacts(buildBlueprint({ app: ['core'] }))
+				.filter(({ path }) => path.startsWith('configs/app/'))
+				.map(({ path }) => path),
+		).toStrictEqual(['configs/app/tsconfig.core.json'])
+	})
+
+	it('emits exactly the browser app configs', () => {
+		expect(
+			blueprintToConfigArtifacts(buildBlueprint({ app: ['browser'] }))
+				.filter(({ path }) => path.startsWith('configs/app/'))
+				.map(({ path }) => path),
+		).toStrictEqual(['configs/app/vite.browser.config.ts', 'configs/app/tsconfig.browser.json'])
+	})
+
+	it('emits exactly the server app configs', () => {
+		expect(
+			blueprintToConfigArtifacts(buildBlueprint({ app: ['server'] }))
+				.filter(({ path }) => path.startsWith('configs/app/'))
+				.map(({ path }) => path),
+		).toStrictEqual(['configs/app/vite.server.config.ts', 'configs/app/tsconfig.server.json'])
+	})
+
+	it('emits exactly the full app config matrix', () => {
+		expect(
+			blueprintToConfigArtifacts(buildBlueprint({ app: ['core', 'browser', 'server'] }))
+				.filter(({ path }) => path.startsWith('configs/app/'))
+				.map(({ path }) => path),
+		).toStrictEqual([
+			'configs/app/tsconfig.core.json',
+			'configs/app/vite.browser.config.ts',
+			'configs/app/tsconfig.browser.json',
+			'configs/app/vite.server.config.ts',
+			'configs/app/tsconfig.server.json',
+		])
+	})
+
+	it('emits the same exact app matrix without a src axis', () => {
+		expect(
+			blueprintToConfigArtifacts(
+				buildBlueprint({ src: [], app: ['core', 'browser', 'server'] }),
+			).map(({ path }) => path),
+		).toStrictEqual([
+			'tsconfig.json',
+			'vite.config.ts',
+			'configs/app/tsconfig.core.json',
+			'configs/app/vite.browser.config.ts',
+			'configs/app/tsconfig.browser.json',
+			'configs/app/vite.server.config.ts',
+			'configs/app/tsconfig.server.json',
+		])
+	})
+
+	it('emits no app config for the empty app axis', () => {
+		expect(
+			blueprintToConfigArtifacts(buildBlueprint({ app: [] }))
+				.filter(({ path }) => path.startsWith('configs/app/'))
+				.map(({ path }) => path),
+		).toStrictEqual([])
+	})
+})
+
+describe('blueprintToConfigArtifacts app check scopes', () => {
+	it('includes core tests and the host-independent setup explicitly', () => {
+		const core = blueprintToConfigArtifacts(buildBlueprint({ app: ['core'] })).find(
+			({ path }) => path === 'configs/app/tsconfig.core.json',
+		)
+		if (core === undefined || core.origin === 'host') {
+			throw new Error('Expected the core app TypeScript config')
+		}
+		expect(core.content).toBe(`{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"lib": ["ESNext", "WebWorker"],
+		"types": []
+	},
+	"include": [
+		"../../app/core/**/*.cts",
+		"../../app/core/**/*.mts",
+		"../../app/core/**/*.ts",
+		"../../app/core/**/*.tsx",
+		"../../tests/app/core/**/*.cts",
+		"../../tests/app/core/**/*.mts",
+		"../../tests/app/core/**/*.ts",
+		"../../tests/app/core/**/*.tsx",
+		"../../tests/setup.ts"
+	]
+}
+`)
+	})
+
+	it('includes browser tests and only the browser setup explicitly', () => {
+		const browser = blueprintToConfigArtifacts(
+			buildBlueprint({ app: ['core', 'browser', 'server'] }),
+		).find(({ path }) => path === 'configs/app/tsconfig.browser.json')
+		if (browser === undefined || browser.origin === 'host') {
+			throw new Error('Expected the browser app TypeScript config')
+		}
+		expect(browser.content).toBe(`{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"types": ["vite/client", "vue"]
+	},
+	"include": [
+		"../../app/browser/**/*.cts",
+		"../../app/browser/**/*.mts",
+		"../../app/browser/**/*.ts",
+		"../../app/browser/**/*.tsx",
+		"../../app/browser/**/*.vue",
+		"../../app/core/**/*.cts",
+		"../../app/core/**/*.mts",
+		"../../app/core/**/*.ts",
+		"../../app/core/**/*.tsx",
+		"../../tests/app/browser/**/*.cts",
+		"../../tests/app/browser/**/*.mts",
+		"../../tests/app/browser/**/*.ts",
+		"../../tests/app/browser/**/*.tsx",
+		"../../tests/app/browser/**/*.vue",
+		"../../tests/setup.ts",
+		"../../tests/setupBrowser.ts"
+	]
+}
+`)
+	})
+
+	it('includes server tests and only the server setup explicitly', () => {
+		const server = blueprintToConfigArtifacts(
+			buildBlueprint({ app: ['core', 'browser', 'server'] }),
+		).find(({ path }) => path === 'configs/app/tsconfig.server.json')
+		if (server === undefined || server.origin === 'host') {
+			throw new Error('Expected the server app TypeScript config')
+		}
+		expect(server.content).toBe(`{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"lib": ["ESNext"],
+		"types": ["node"]
+	},
+	"include": [
+		"../../app/server/**/*.cts",
+		"../../app/server/**/*.mts",
+		"../../app/server/**/*.ts",
+		"../../app/server/**/*.tsx",
+		"../../app/core/**/*.cts",
+		"../../app/core/**/*.mts",
+		"../../app/core/**/*.ts",
+		"../../app/core/**/*.tsx",
+		"../../tests/app/server/**/*.cts",
+		"../../tests/app/server/**/*.mts",
+		"../../tests/app/server/**/*.ts",
+		"../../tests/app/server/**/*.tsx",
+		"../../tests/setup.ts",
+		"../../tests/setupServer.ts"
+	]
+}
+`)
+	})
+})
+
 describe('content artifact compilers', () => {
 	it('emits every selected source entry without a starter entity', () => {
 		const artifacts = blueprintToSourceArtifacts(
@@ -84,7 +280,7 @@ describe('content artifact compilers', () => {
 			'app/browser/index.html',
 			'app/server/index.ts',
 			'app/server/main.ts',
-			'src/bin/widget.ts',
+			'src/bin/main.ts',
 		])
 		expect(
 			artifacts.every(
@@ -116,7 +312,7 @@ describe('content artifact compilers', () => {
 			'tests/src/core/index.test.ts',
 			'tests/src/browser/index.test.ts',
 			'tests/src/server/index.test.ts',
-			'tests/src/bin/widget.test.ts',
+			'tests/src/bin/main.test.ts',
 			'tests/app/core/index.test.ts',
 			'tests/app/browser/index.test.ts',
 			'tests/app/server/index.test.ts',

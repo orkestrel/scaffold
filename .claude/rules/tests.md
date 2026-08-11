@@ -21,6 +21,7 @@ paths:
 - Allow a scripted boundary stub only when it implements the real interface or protocol minimally, to drive the system under test. It never reimplements project-owned behavior and never stands in for the integration being claimed.
 - Cover happy paths, error paths, empty input, boundary values, `NaN`, positive/negative zero, cycles, and Map/Set order where relevant.
 - Test observable behavior, not implementation details.
+- Assert the membership a discovered or globbed set should have, not a total that a partly empty population satisfies. A glob spanning two locations passes a size check while one of them matches nothing.
 - A regression test records the exact command and its failing count before the fix, and the same command's passing count after.
 - Use `it.todo()` only for explicitly out-of-scope roadmap work, never to complete the current request. Every `.skip` or conditional skip has a narrow verifiable applicability reason.
 - Do not create test files solely for `constants.ts`, barrels, error definitions, or `types.ts`.
@@ -189,7 +190,7 @@ Before acceptance:
 - prove every intended test file is discovered by the correct project;
 - inspect actual test counts and environments;
 - audit `.todo`, `.skip`, conditional skips, retries, and inflated timeouts;
-- confirm each assertion would fail for the defect it claims to catch;
+- confirm each assertion would fail for the defect it claims to catch, and that it fails rather than passes when its population is empty;
 - confirm helpers do not reimplement production behavior;
 - confirm cleanup runs after setup or assertion failure;
 - confirm current-scope requirements have real tests rather than placeholders.

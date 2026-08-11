@@ -1,4 +1,12 @@
-import { chmodSync, linkSync, lstatSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import {
+	chmodSync,
+	existsSync,
+	linkSync,
+	lstatSync,
+	mkdirSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs'
 import { join } from 'node:path'
 import { MAX_ARTIFACT_BYTES, MAX_COLLECTION_ITEMS } from '@src/core'
 import {
@@ -6,6 +14,7 @@ import {
 	computeFileDigest,
 	computeManifestDigest,
 	isPhysicalDirectory,
+	isExactCaseFile,
 	isPhysicalFile,
 	isVacant,
 	listDirectories,
@@ -174,6 +183,19 @@ describe('computeManifestDigest', () => {
 })
 
 describe('physical shape', () => {
+	it('requires every file path segment to match its on-disk case exactly', () => {
+		const workspace = createWorkspace()
+		try {
+			const exact = workspace.write('src/bin/main.ts', 'export {}\n')
+			const folded = join(workspace.path, 'src/bin/Main.ts')
+			expect(existsSync(folded)).toBe(true)
+			expect(isExactCaseFile(exact)).toBe(true)
+			expect(isExactCaseFile(folded)).toBe(false)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('accepts a plain file and a plain directory and refuses each other', () => {
 		const workspace = createWorkspace()
 		try {

@@ -37,14 +37,15 @@ export interface CommandBase {
  * @remarks
  * `name` is the workspace name, and is the only positional argument any verb
  * takes. `src`, `app`, and `dependencies` are the comma-separated selections
- * behind `--src`, `--app`, and `--deps`. `from` reads the data root from a
- * local path instead of the bundled one.
+ * behind `--src`, `--app`, and `--deps`. `bin` adds the executable environment.
+ * `from` reads the data root from a local path instead of the bundled one.
  */
 export interface NewCommand extends CommandBase {
 	readonly verb: 'new'
 	readonly name: string
 	readonly src?: string
 	readonly app?: string
+	readonly bin?: boolean
 	readonly dependencies?: string
 	readonly from?: string
 	readonly groups?: never
@@ -65,6 +66,7 @@ export interface AuditCommand extends CommandBase {
 	readonly name?: never
 	readonly src?: never
 	readonly app?: never
+	readonly bin?: never
 	readonly dependencies?: never
 	readonly all?: never
 	readonly dirty?: never
@@ -78,6 +80,7 @@ export interface RepairCommand extends CommandBase {
 	readonly name?: never
 	readonly src?: never
 	readonly app?: never
+	readonly bin?: never
 	readonly dependencies?: never
 	readonly all?: never
 	readonly dirty?: never
@@ -98,6 +101,7 @@ export interface CatalogCommand extends CommandBase {
 	readonly name?: never
 	readonly src?: never
 	readonly app?: never
+	readonly bin?: never
 	readonly dependencies?: never
 	readonly groups?: never
 	readonly dirty?: never
@@ -119,6 +123,7 @@ export interface OverwriteCommand extends CommandBase {
 	readonly name?: never
 	readonly src?: never
 	readonly app?: never
+	readonly bin?: never
 	readonly dependencies?: never
 	readonly all?: never
 }

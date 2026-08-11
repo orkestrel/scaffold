@@ -91,6 +91,12 @@ describe('verbToSyntax', () => {
 })
 
 describe('renderUsage', () => {
+	it('documents the bin workspace option in the new synopsis and glossary', () => {
+		const usage = renderUsage().join('\n')
+		expect(verbToSyntax('new')).toContain('[--bin]')
+		expect(usage).toContain('--bin')
+	})
+
 	it('returns one line per output call', () => {
 		for (const line of renderUsage()) expect(line).not.toContain('\n')
 	})
@@ -141,6 +147,21 @@ describe('renderUsage', () => {
 })
 
 describe('argvToCommand', () => {
+	it('reads the bin workspace option on new', () => {
+		expect(argvToCommand(['new', 'widget', '--bin'])).toStrictEqual({
+			verb: 'new',
+			name: 'widget',
+			json: false,
+			bin: true,
+		})
+	})
+
+	it('refuses the bin workspace option by name on every reading verb', () => {
+		for (const verb of ['audit', 'repair', 'catalog', 'overwrite']) {
+			expect(() => argvToCommand([verb, '--bin'])).toThrow(`'${verb}' does not take --bin.`)
+		}
+	})
+
 	for (const commandCase of COMMAND_CASES) {
 		it(`reads ${commandCase.label}`, () => {
 			expect(argvToCommand(commandCase.argv)).toStrictEqual(commandCase.command)

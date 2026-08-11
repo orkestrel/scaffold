@@ -1,3 +1,5 @@
+import { BIN_ENTRY_PATH, GUIDES_TEST_PATH, INTEGRATION_TEST_PATH } from './constants.js'
+
 /**
  * Formatter-stable template text for every configuration artifact.
  *
@@ -5,6 +7,9 @@
  * Builders in `compilers.ts` fill these definitions through
  * `@orkestrel/template`. Fixed `lib` and `types` rows stay in the artifact
  * template that owns their scope. Only selection-dependent spans are filled.
+ * App configs are check-only, so they include their mirrored tests and exact
+ * setup modules. Source configs stay source-only because they emit declarations
+ * under `rootDir`; widening them would emit declarations for tests.
  *
  * @example
  * ```ts
@@ -49,10 +54,36 @@ export const CONFIG_TEMPLATES = Object.freeze({
 import { defineConfig, mergeConfig } from 'vitest/config'
 import tsconfig from './tsconfig.json' with { type: 'json' }
 import { environmentBoundary, outputBoundary } from './configs/helpers.js'
+import { lstatSync, readdirSync, realpathSync } from 'node:fs'
+import { basename, join, parse, relative, resolve as resolvePath, sep } from 'node:path'
 import { fileURLToPath, URL } from 'node:url'
 
 export function resolveWorkspacePath(relativePath: string): string {
 	return fileURLToPath(new URL(relativePath, import.meta.url))
+}
+
+// A generated root config must classify its own fixed proof without importing
+// package source, so the exact-case check stays self-contained over Node APIs.
+function isExactCaseFile(path: string): boolean {
+	const full = resolvePath(path)
+	try {
+		const status = lstatSync(full)
+		if (!status.isFile() || status.isSymbolicLink() || status.nlink !== 1) return false
+		const root = parse(full).root
+		const segments = relative(root, full).split(sep)
+		let parent = root
+		for (const segment of segments) {
+			try {
+				if (!readdirSync(parent).includes(segment)) return false
+			} catch {
+				if (basename(realpathSync.native(join(parent, segment))) !== segment) return false
+			}
+			parent = join(parent, segment)
+		}
+		return true
+	} catch {
+		return false
+	}
 }
 
 const resolve = {
@@ -175,9 +206,9 @@ const resolve = {
 				sourcemap: true,
 				minify: false,
 				lib: {
-					{{entry}}
+					entry: resolveWorkspacePath('${BIN_ENTRY_PATH}'),
 					formats: ['es'],
-					{{file}}
+					fileName: () => 'main.js',
 				},
 				outDir: 'dist/bin',
 				target: 'node22',
@@ -309,6 +340,22 @@ export function appBrowser(...options: never[]): UserConfig {
 		options ?? {},
 	)
 `,
+		guides: `export const guides = (options?: UserConfig): UserConfig =>
+	mergeConfig(
+		{
+			resolve,
+			test: {
+				name: { label: 'guides', color: 'green' },
+				include: ['${GUIDES_TEST_PATH}'],
+				exclude: ['tests/src/**/*.test.ts', 'tests/app/**/*.test.ts', 'tests/setup.test.ts'],
+				setupFiles: ['./tests/setup.ts'],
+				environment: 'node',
+				browser: { enabled: false },
+			},
+		},
+		options ?? {},
+	)
+`,
 		probe: `// A workbench, not a proof. No gate selects this project.
 export const probe = (options?: UserConfig): UserConfig =>
 	mergeConfig(
@@ -331,7 +378,7 @@ export const probe = (options?: UserConfig): UserConfig =>
 			resolve,
 			test: {
 				name: { label: 'integration', color: 'blue' },
-				include: ['tests/integration.test.ts'],
+				include: ['${INTEGRATION_TEST_PATH}'],
 				setupFiles: ['./tests/setup.ts'],
 {{global}}				environment: 'node',
 				testTimeout: 120_000,
@@ -414,7 +461,12 @@ export const probe = (options?: UserConfig): UserConfig =>
 		"../../app/core/**/*.cts",
 		"../../app/core/**/*.mts",
 		"../../app/core/**/*.ts",
-		"../../app/core/**/*.tsx"
+		"../../app/core/**/*.tsx",
+		"../../tests/app/core/**/*.cts",
+		"../../tests/app/core/**/*.mts",
+		"../../tests/app/core/**/*.ts",
+		"../../tests/app/core/**/*.tsx",
+		"../../tests/setup.ts"
 	]
 }
 `,
@@ -518,6 +570,10 @@ export default defineConfig(
 import dts from 'vite-plugin-dts'
 import { srcServer, resolveWorkspacePath } from '../../vite.config.ts'
 
+// vite-plugin-dts rolls this face into one declaration, and the roll-up reaches
+// src/core through a relative source path the tarball does not carry. The rewrite
+// below externalizes core through the package's own published root export, on the
+// final roll-up only.
 export default defineConfig(
 	srcServer({
 		plugins: [
@@ -538,6 +594,11 @@ export default defineConfig(
 		bin: `import { defineConfig } from 'vite'
 import { srcBin } from '../../vite.config.ts'
 
+// The \`scaffold\` executable build — a single ESM lib file, no declarations (an
+// executable ships no types), with the \`#!/usr/bin/env node\` shebang re-emitted via
+// \`output.banner\` (rolldown strips shebangs from source during bundling), and
+// \`output.paths\` rewriting the externalized \`@src/*\` specifiers to the built sibling
+// src environments (relative to \`dist/bin/\`), so the emitted bin resolves at runtime.
 export default defineConfig(
 	srcBin({
 		build: {

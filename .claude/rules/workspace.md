@@ -22,7 +22,7 @@ Use only the environments a project needs, and keep the root dependency model in
 | `src/browser/` | Published browser-only library                                |
 | `src/server/`  | Published Node-only library                                   |
 | `src/styles/`  | Optional SCSS bundle producing `index.css`                    |
-| `src/bin/`     | Optional executable entry; never a public barrel              |
+| `src/bin/`     | Optional executable; `main.ts` entry, never a public barrel   |
 | `app/core/`    | Shared application logic with an `index.ts` barrel            |
 | `app/browser/` | Browser app; `main.ts` entry, not a barrel                    |
 | `app/server/`  | Node server app; `main.ts` entry                              |
@@ -33,9 +33,11 @@ Use only the environments a project needs, and keep the root dependency model in
 - Typical browser-app domains: `components/`, `pages/`, `composables/`, `controllers/`, `services/`, `stores/`.
 - Typical server-app domains: `handlers.ts`, `middlewares.ts`, `routes.ts`.
 - `src/styles/index.ts` is a side-effect entry importing `./index.scss`.
-- `src/bin/` holds one entry module named for the command it installs, so `package.json`'s `bin`
-  field and the file agree by inspection. That field is the authority; the rules do not name the
-  file.
+- `src/bin/main.ts` is the executable entry, built to `dist/bin/main.js`. The name is fixed, as it
+  is for `app/browser/main.ts` and `app/server/main.ts`, so every runtime entry in a workspace is
+  found at the same name.
+- `package.json`'s `bin` key is the installed command name. The entry path is the value and does
+  not carry that name.
 
 ## Aliases
 
@@ -77,7 +79,7 @@ Environment rules:
 | `dist/src/browser` | Browser library + declarations | ES              |
 | `dist/src/server`  | Server library + declarations  | ES and CJS      |
 | `dist/src/styles`  | Compiled `index.css`           | ES wrapper      |
-| `dist/bin`         | Optional executable            | ES with shebang |
+| `dist/bin`         | Optional executable `main.js`  | ES with shebang |
 | `dist/app/browser` | Browser application            | target-defined  |
 | `dist/app/server`  | Server application             | CJS             |
 | `dist/showcase`    | Single-file `index.html` demo  | self-contained  |

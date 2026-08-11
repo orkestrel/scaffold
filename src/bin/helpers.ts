@@ -164,6 +164,7 @@ export function argvToCommand(argv: readonly string[]): CLICommand {
 	}
 	const src = typeof values.src === 'string' ? values.src : undefined
 	const app = typeof values.app === 'string' ? values.app : undefined
+	const bin = values.bin === true
 	const dependencies = typeof values.deps === 'string' ? values.deps : undefined
 	const target = typeof values.target === 'string' ? values.target : undefined
 	const json = values.json === true
@@ -184,6 +185,7 @@ export function argvToCommand(argv: readonly string[]): CLICommand {
 				...source,
 				...(src === undefined ? {} : { src }),
 				...(app === undefined ? {} : { app }),
+				...(bin ? { bin } : {}),
 				...(dependencies === undefined ? {} : { dependencies }),
 			}
 		case 'audit':
