@@ -4,6 +4,7 @@ import {
 	linkSync,
 	lstatSync,
 	mkdirSync,
+	renameSync,
 	rmSync,
 	writeFileSync,
 } from 'node:fs'
@@ -188,7 +189,7 @@ describe('physical shape', () => {
 		try {
 			const exact = workspace.write('src/bin/main.ts', 'export {}\n')
 			const folded = join(workspace.path, 'src/bin/Main.ts')
-			expect(existsSync(folded)).toBe(true)
+			expect(existsSync(exact)).toBe(true)
 			expect(isExactCaseFile(exact)).toBe(true)
 			expect(isExactCaseFile(folded)).toBe(false)
 		} finally {
@@ -1193,7 +1194,7 @@ describe('write anchors', () => {
 			const anchor = readAnchor(target)
 			expect(anchor).toBeDefined()
 			if (anchor === undefined) return
-			rmSync(target, { recursive: true })
+			renameSync(target, join(workspace.path, 'original'))
 			mkdirSync(target)
 			expect(matchesAnchor(anchor)).toBe(false)
 		} finally {

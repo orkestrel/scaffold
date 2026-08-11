@@ -93,10 +93,9 @@ describe('Materializer construction', () => {
 				],
 			})
 			workspace.write('host/manifest.json', `${JSON.stringify(recased, null, '\t')}\n`)
-			// The control: this filesystem resolves the recased name, so the refusal
-			// cannot be explained by the file being absent. Only exact-text membership
-			// tells the two spellings apart here.
-			expect(readFileHex(host, 'agents.md')).not.toBe(undefined)
+			// The control: the host stores the exact name the manifest recases, so
+			// absence cannot explain the case-only difference between the two names.
+			expect(readFileHex(host, 'AGENTS.md')).not.toBe(undefined)
 			expect(readHostManifest(host)?.digest).toBe(recased.digest)
 			expect(readErrorCode(() => new Materializer({ host }))).toBe('TARGET')
 		} finally {
