@@ -678,6 +678,15 @@ nothing about whether the verdict is one an audit could have reached. `repair` a
 re-derive every verdict themselves and act only on what they derived, so a verdict the comparison
 could not have produced is refused by name rather than acted on.
 
+That shape is versioned, and the guard runs at runtime. `repair` and `remove` guard the whole audit
+before reading any of it, so an audit persisted or built against an earlier version of this package
+is refused with a coded `INVALID` failure rather than accepted and partly understood. A planned
+finding carries `ownership`, which findings made before that field existed do not. `remove` acts
+only on foreign findings, which never carried ownership, but the guard reads every finding, so one
+older planned finding refuses that call too. Take a fresh audit rather than replaying a stored one:
+a stored audit records what a target looked like then, and both verbs bind their writes to what a
+target holds now. The refusal is deliberate at `0.0.x` and there is no migration path.
+
 ## Vendored data root
 
 The vendored data root is the shared file set, staged into the published package as plain data. It
@@ -798,6 +807,17 @@ verdict carrying its cause rather than thrown, so one unreachable package never 
 rest of the answer. The organization package list is the exception, because without it there is no
 fleet to report.
 
+Both bounds count decoded bytes, and a version lookup asks the registry for the abbreviated
+packument — `dist-tags` and a trimmed version map, rather than the full per-version metadata no
+verdict reads. That is the smallest form the registry publishes, and `limit` is capped at
+`MAX_ARTIFACT_BYTES`, so a package with enough published releases to pass it cannot be looked up at
+all. It comes back as a `failed` verdict naming the limit, which is this reader's bound and not a
+statement about the package.
+
+A status that carries no representation — a `204` or a `205` — is a `failed` verdict naming the
+status, never a `found` answer holding no bytes. A genuinely empty file arrives as a `200` and does
+read as found.
+
 Stage and swap a set of files yourself:
 
 ```ts
@@ -843,7 +863,7 @@ are thrown, so an observer sees a refusal even where the caller catches it.
 
 ## Limits
 
-Three things a reader will look for and not find.
+Four things a reader will look for and not find.
 
 **`isPath` does not prove host portability.** It proves bounded target-relative syntax and rejects
 traversal, separators, controls, and reserved syntax characters. It deliberately admits host-specific
@@ -857,6 +877,13 @@ vendored-root locations on the host.
 `Blueprint` carries no styles field. A workspace that needs `src/styles/` adds the directory, its
 configuration, and its Vitest project by hand. `.claude/rules/workspace.md` describes styles as an
 environment because the fleet has one; scaffold simply does not generate it.
+
+**No host path is normalized before it is guarded.** `isFilesystemPath` refuses an empty segment,
+and a trailing separator and a doubled separator each produce one, so `./packages/router/` and
+`packages//router` are off contract while `./packages/router` and `packages/router` are the same
+locations spelled inside it. Every server entry point and the `--target` option guard the text they
+were handed and resolve it afterwards, so a directory taken from a shell completion arrives with the
+separator the shell appended and is refused with a coded `INVALID` failure. Strip it before calling.
 
 **A generated workspace has empty barrels and no starter entity.** Every emitted `index.ts` exports
 nothing. This is deliberate: a generated sample entity is repeatedly mistaken for real

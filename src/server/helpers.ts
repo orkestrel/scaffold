@@ -392,7 +392,8 @@ export function computeFileDigest(path: string): string | undefined {
  * @param path - The absolute or relative host path to resolve.
  * @returns The path with its existing prefix resolved through every link, or
  * `undefined` when the text is not a host path, no bounded existing ancestor
- * resolves, or an ancestor cannot be read.
+ * resolves, a name on the way exists without resolving, or an ancestor cannot
+ * be read.
  *
  * @remarks
  * A containment decision has to be made about a destination that does not exist
@@ -401,6 +402,12 @@ export function computeFileDigest(path: string): string | undefined {
  * existing ancestor is resolved and the remaining segments are re-joined onto
  * it. The climb is bounded by the path-depth ceiling, so an adversarial path
  * cannot make it walk indefinitely.
+ *
+ * Absence is confirmed against the name itself rather than read off the
+ * resolution failure, because `realpath` answers `ENOENT` both for a name that
+ * is not there and for a link whose target is not there. Only the first is a
+ * segment to re-join; the second is a redirection whose destination this
+ * function cannot see, so it is refused instead of carried forward as text.
  *
  * @example
  * ```ts
@@ -421,6 +428,7 @@ export function resolveRealPath(path: string): string | undefined {
 			return physical
 		}
 		if (!matchesMissingPath(real.error)) return undefined
+		if (attempt(() => lstatSync(current)).success) return undefined
 		const parent = dirname(current)
 		if (parent === current) return undefined
 		pending.unshift(relative(parent, current))
@@ -440,13 +448,20 @@ export function resolveRealPath(path: string): string | undefined {
  * @remarks
  * The containment law, and the one door every read in this module goes through.
  * Both sides are resolved through the real filesystem before they are compared,
- * so a link planted inside the root cannot smuggle a destination out of it; the
- * answer is then the lexical join, so the caller operates on the path it named
- * rather than on a resolved form the target may not recognize.
+ * so a link planted inside the root cannot smuggle a destination out of it,
+ * whether or not that link resolves; the answer is then the lexical join, so the
+ * caller operates on the path it named rather than on a resolved form the target
+ * may not recognize.
  *
  * Comparison is exact text, which fails closed on a case-insensitive
  * filesystem: a root and a path spelled with different case resolve to
  * different strings there and are refused, never wrongly admitted.
+ *
+ * The answer describes the tree as it was read. A link planted between this call
+ * and the write that follows it is a continuity failure rather than a
+ * containment one, and it is caught where the write happens — by the exclusive
+ * creation modes {@link stageHost} opens with, and by the anchors a
+ * `WriteTransaction` holds across its call.
  *
  * @example
  * ```ts

@@ -221,11 +221,23 @@ clobbered edits, formatter and build races, cache phantoms, and validation cross
 
 At session start, before planning, probe bench liveness and plan routing against the result. Resolve
 each CLI first (`codex --version`; `agent --version`, falling back to `agent.cmd --version`), then
-record a bench live only on evidence it can execute: its authentication-state check, or a bounded
-round-tripped model call where it exposes none. A version string proves the binary is installed and
-proves nothing about whether the bench can run a model. Probes are read-only. A bench that resolves
-but cannot execute is dark: record it with its fallback and the lane substitution it forces, and
-never absorb it silently.
+run the bench's authentication-state check where it exposes one. Neither answer is liveness. A
+version string proves the binary is installed, and an authentication-state check reads stored
+credentials, so both pass while the account is out of quota, while the routed model is unavailable to
+it, while the server has already revoked the credential the check just read, and inside a sandbox
+with the network denied. Record a bench live only on a bounded round-tripped model call that came
+back, and record what came back beside the routing decision. Probes are read-only, and the role file
+owns each bench's exact probe.
+
+The two local steps still run, because they route the recovery rather than decide the verdict: an
+unresolved CLI is an install problem, a failed authentication-state check starts the login ladder
+below, and a bench that passes both and still cannot round-trip is dark for a reason no local check
+can see. Record every dark bench with its fallback and the lane substitution it forces, and never
+absorb one silently. A readiness script reports readiness and performs no model call, so the round
+trip belongs to the Orchestrator's own probe or to the bridge carrying the unit, never to the hook.
+Liveness also expires: a dispatch that fails on quota, model access, or the network is a fresh
+liveness result rather than a unit-level fault, so record the bench dark from there and re-plan the
+lane instead of re-dispatching against a session-start answer that no longer holds.
 
 1. **Absorb.** Dispatch `grok` for terrain, prior art, and the reading the decision needs. In an
    Orkestrel repo dispatch `orkestrel` alongside it for live package state. Skip only when the

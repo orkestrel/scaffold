@@ -7,6 +7,7 @@ import {
 	buildOrganization,
 	buildPackument,
 	createUpstreamServer,
+	FLEET_UPSTREAM_PATHS,
 	readErrorCode,
 	readRejectionCode,
 	UPSTREAM_ENDPOINT_CASES,
@@ -219,7 +220,10 @@ describe('Upstream lookup', () => {
 		try {
 			const [release] = await upstream.lookup([buildDependency({ name: '@orkestrel/router' })])
 			expect(release?.lookup).toBe('failed')
-			expect(release?.note).toBe('the answer carries no readable latest version')
+			// The status rather than the unreadable-version note: a server that
+			// declined to send a representation said something a caller can act on,
+			// and reporting it as unreadable content would name the wrong cause.
+			expect(release?.note).toBe('HTTP 204, and the answer carries no body')
 		} finally {
 			upstream.destroy()
 			await server.destroy()
@@ -300,6 +304,59 @@ describe('Upstream fetch', () => {
 		}
 	})
 
+	it('reports a status carrying no representation as a failed mirror, never an empty guide', async () => {
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.guide]: { status: 204, body: '' },
+			[FLEET_UPSTREAM_PATHS.mirrors.emitter]: { status: 205, body: '' },
+		})
+		const upstream = new Upstream({ guides: { base: server.base } })
+		try {
+			const observed = contentToHex('# Router (local)\n')
+			const mirrors = await upstream.fetch(['@orkestrel/router', '@orkestrel/emitter'], {
+				'guides/router.md': observed,
+			})
+			// `found` with no content is the reader asserting upstream's guide is a
+			// zero-byte file, which is a different claim from the one these statuses
+			// make. The local bytes still ride through, as they do for any failure.
+			expect(mirrors).toStrictEqual([
+				{
+					name: '@orkestrel/router',
+					path: 'guides/router.md',
+					lookup: 'failed',
+					note: 'HTTP 204, and the answer carries no body',
+					observed,
+				},
+				{
+					name: '@orkestrel/emitter',
+					path: 'guides/emitter.md',
+					lookup: 'failed',
+					note: 'HTTP 205, and the answer carries no body',
+				},
+			])
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('reports a genuinely empty guide as found, carrying no bytes', async () => {
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.guide]: { status: 200, body: '', type: 'text/plain' },
+		})
+		const upstream = new Upstream({ guides: { base: server.base } })
+		try {
+			// The control the refusal above is measured against, drawn from the
+			// population it must not reach: a real zero-byte file is an answer, and a
+			// `200` carrying it still reads as one.
+			expect(await upstream.fetch(['@orkestrel/router'], {})).toStrictEqual([
+				{ name: '@orkestrel/router', path: 'guides/router.md', lookup: 'found', content: '' },
+			])
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
 	it('omits observed bytes for a mirror the target does not hold', async () => {
 		const server = await createUpstreamServer({
 			[UPSTREAM_PATHS.guide]: { status: 404, body: '404: Not Found', type: 'text/plain' },
@@ -342,6 +399,39 @@ describe('Upstream fetch', () => {
 })
 
 describe('Upstream catalog', () => {
+	it('asks the registry for the abbreviated packument and negotiates nothing else', async () => {
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.organization]: {
+				status: 200,
+				body: buildOrganization(['@orkestrel/router']),
+			},
+			[UPSTREAM_PATHS.router]: { status: 200, body: buildPackument('0.0.8') },
+			[UPSTREAM_PATHS.guide]: { status: 200, body: '# Router\n', type: 'text/plain' },
+		})
+		const upstream = new Upstream({
+			registry: { base: server.base },
+			guides: { base: server.base },
+			concurrency: 1,
+		})
+		try {
+			await upstream.catalog()
+			await upstream.fetch(['@orkestrel/router'], {})
+			// The abbreviated form carries `dist-tags` and nothing a verdict reads. The
+			// organization list and the guide are each published in one form, so those
+			// requests declare no type at all: the control is that the header is not
+			// simply attached to every request the reader makes.
+			expect(server.paths).toStrictEqual([
+				UPSTREAM_PATHS.organization,
+				UPSTREAM_PATHS.router,
+				UPSTREAM_PATHS.guide,
+			])
+			expect(server.accepts).toStrictEqual(['*/*', 'application/vnd.npm.install-v1+json', '*/*'])
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
 	it('catalogs the organization fleet, sorted by name', async () => {
 		const server = await createUpstreamServer({
 			[UPSTREAM_PATHS.organization]: {

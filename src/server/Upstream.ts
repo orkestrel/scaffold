@@ -77,6 +77,10 @@ export class Upstream implements UpstreamInterface {
 	static readonly #defaultBudget = 16_777_216
 	static readonly #scope = 'orkestrel'
 	static readonly #unreadable = 'the answer carries no readable latest version'
+	// The media type that selects the registry's abbreviated packument. It sits
+	// with the request defaults because it is part of how this class asks for a
+	// version, and it is asked for at exactly the two reads that want one.
+	static readonly #packument = 'application/vnd.npm.install-v1+json'
 
 	readonly #emitter: Emitter<UpstreamEventMap>
 	readonly #guideBase: string
@@ -309,6 +313,7 @@ export class Upstream implements UpstreamInterface {
 			this.#registryURL(dependency.name),
 			this.#registryTimeout,
 			allowance,
+			Upstream.#packument,
 		)
 		const latest = outcome.lookup === 'found' ? this.#latest(outcome.content) : undefined
 		const release: Release =
@@ -357,7 +362,12 @@ export class Upstream implements UpstreamInterface {
 	// channel carries the two verdicts the writer binds to, and a catalog row is
 	// neither, so the whole sorted list is the answer instead.
 	async #entry(name: string, allowance: { remaining: number }): Promise<CatalogEntry> {
-		const outcome = await this.#read(this.#registryURL(name), this.#registryTimeout, allowance)
+		const outcome = await this.#read(
+			this.#registryURL(name),
+			this.#registryTimeout,
+			allowance,
+			Upstream.#packument,
+		)
 		const version = outcome.lookup === 'found' ? this.#latest(outcome.content) : undefined
 		if (version !== undefined) return { name, lookup: 'found', version }
 		return {
@@ -401,10 +411,9 @@ export class Upstream implements UpstreamInterface {
 		return [...names].sort()
 	}
 
-	// The latest version the registry states, or nothing. The full packument is
-	// read rather than the abbreviated form, because only the full one carries
-	// `dist-tags`. The version is bounded and control-free before it is admitted,
-	// so an upstream answer cannot smuggle text into a verdict a caller prints.
+	// The latest version the registry states, or nothing. The version is bounded
+	// and control-free before it is admitted, so an upstream answer cannot smuggle
+	// text into a verdict a caller prints.
 	#latest(content: string): string | undefined {
 		const parsed = parseJSON(content)
 		if (!isRecord(parsed)) return undefined
@@ -447,15 +456,20 @@ export class Upstream implements UpstreamInterface {
 	// attempt rather than spending a request to be refused again. The fault is
 	// published here, at the one place that knows the cause, which is what lets
 	// every projection downstream stay a plain value.
+	//
+	// `accept` is stated only where an endpoint publishes more than one form of
+	// the same answer, which is the packument alone. Every other read takes what
+	// the endpoint serves, so no request declares a media type it has no reason to.
 	async #read(
 		url: string,
 		timeout: number,
 		allowance: { remaining: number },
+		accept?: string,
 	): Promise<{ readonly lookup: Lookup; readonly content: string; readonly note: string }> {
 		let note = ''
 		for (let attempt = 0; attempt <= this.#retries; attempt += 1) {
 			this.#assertAlive()
-			const outcome = await this.#request(url, timeout, allowance)
+			const outcome = await this.#request(url, timeout, allowance, accept)
 			if (outcome.lookup !== 'failed') return outcome
 			note = outcome.note
 		}
@@ -470,6 +484,7 @@ export class Upstream implements UpstreamInterface {
 		url: string,
 		timeout: number,
 		allowance: { remaining: number },
+		accept?: string,
 	): Promise<{ readonly lookup: Lookup; readonly content: string; readonly note: string }> {
 		if (allowance.remaining <= 0) {
 			return {
@@ -482,6 +497,7 @@ export class Upstream implements UpstreamInterface {
 			const response = await fetch(url, {
 				signal: AbortSignal.any([this.#controller.signal, AbortSignal.timeout(timeout)]),
 				redirect: 'manual',
+				...(accept === undefined ? {} : { headers: { accept } }),
 			})
 			if (response.status === 404) {
 				await response.body?.cancel()
@@ -506,12 +522,24 @@ export class Upstream implements UpstreamInterface {
 		}
 	}
 
-	// The body, read against both bounds at once. A declared length past either
-	// one is refused before a byte is read; the stream is then counted chunk by
+	// The body, read against both bounds at once. The stream is counted chunk by
 	// chunk against the response limit and against what the whole call has left,
 	// so one oversized answer and many small ones are refused by different tests.
 	// Every byte taken off the wire is spent whatever the verdict, because bytes
 	// a failed read consumed are bytes the caller no longer has.
+	//
+	// The declared-length check ahead of it is an early refusal, never the bound.
+	// `content-length` counts the octets on the wire and both bounds count decoded
+	// bytes, and the registry serves its answers compressed, so a declared length
+	// is at or under the number the stream will produce. It therefore refuses
+	// early where it fires and misses the compressed answers entirely; the
+	// streaming counts are what actually holds. The gap cannot be closed here,
+	// because no header states a decoded size.
+	//
+	// A status carrying no representation reaches this method too, because `ok`
+	// covers the whole 2xx range. It is a verdict rather than an empty answer: a
+	// zero-byte file arrives as a `200` with an empty stream and still reads as
+	// found.
 	async #body(
 		response: Response,
 		allowance: { remaining: number },
@@ -531,7 +559,13 @@ export class Upstream implements UpstreamInterface {
 			}
 		}
 		const body = response.body
-		if (body === null) return { lookup: 'found', content: '', note: '' }
+		if (body === null) {
+			return {
+				lookup: 'failed',
+				content: '',
+				note: `HTTP ${String(response.status)}, and the answer carries no body`,
+			}
+		}
 		const reader = body.getReader()
 		const decoder = new TextDecoder('utf-8', { fatal: true })
 		const chunks: string[] = []

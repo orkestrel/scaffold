@@ -73,6 +73,17 @@ import {
  * the byte ceiling. The character ceiling is read first so an oversized string is
  * refused before it is split.
  *
+ * The empty-segment rule reaches two spellings a filesystem would have accepted.
+ * A trailing separator and a doubled separator each split into an empty segment
+ * and are refused, so `project/` and `project//src` are both off contract while
+ * `project` and `project/src` are the same locations spelled inside it. Nothing
+ * normalizes the argument first — every server entry point guards the caller's
+ * text and resolves it afterwards — so a directory taken from a shell completion
+ * arrives with the separator a shell appends and is refused. Strip it before
+ * calling. The law is exact rather than forgiving because it is the only
+ * statement of what these functions accept, and one that silently repaired two
+ * spellings would have to say which.
+ *
  * @example
  * ```ts
  * import { isFilesystemPath } from '@orkestrel/scaffold/server'
@@ -80,6 +91,7 @@ import {
  * isFilesystemPath('C:/Users/sample/project') // true
  * isFilesystemPath('../sibling') // true
  * isFilesystemPath('project/nul') // false
+ * isFilesystemPath('project/') // false
  * ```
  */
 export function isFilesystemPath(value: unknown): value is string {
@@ -94,7 +106,11 @@ export function isFilesystemPath(value: unknown): value is string {
 			: normalized.startsWith('/')
 				? normalized.slice(1)
 				: normalized
-		const segments = rooted.split('/')
+		// A trailing separator terminates a directory rather than opening a segment,
+		// and every supported filesystem and every Node path API reads the two
+		// spellings as one location. A doubled separator is a genuine empty segment
+		// and stays refused below.
+		const segments = (rooted.endsWith('/') ? rooted.slice(0, -1) : rooted).split('/')
 		if (segments.length > MAX_PATH_DEPTH) return false
 		for (const [index, segment] of segments.entries()) {
 			if (segment === '.' || segment === '..') continue

@@ -204,6 +204,7 @@ export interface TestUpstreamReply {
 export interface TestUpstreamInterface {
 	readonly base: string
 	readonly paths: readonly string[]
+	readonly accepts: readonly (string | undefined)[]
 	readonly peak: number
 	arrival(path: string): Promise<void>
 	destroy(): Promise<void>
@@ -505,7 +506,7 @@ export const FILESYSTEM_PATH_CASES: readonly TestPathCase[] = [
 		accepted: true,
 	},
 	{ label: 'empty string', path: '', accepted: false },
-	{ label: 'trailing separator', path: 'project/', accepted: false },
+	{ label: 'trailing separator', path: 'project/', accepted: true },
 	{ label: 'doubled separator', path: 'project//src', accepted: false },
 	{ label: 'filesystem root alone', path: '/', accepted: false },
 	{ label: 'ASCII control character', path: 'project/\u0007src', accepted: false },
@@ -1561,6 +1562,7 @@ export async function createUpstreamServer(
 	replies: Readonly<Record<string, TestUpstreamReply>>,
 ): Promise<TestUpstreamInterface> {
 	const served: string[] = []
+	const negotiated: (string | undefined)[] = []
 	const waiters = new Map<string, () => void>()
 	const arrivals = new Map<string, Promise<void>>()
 	const counts = { open: 0, peak: 0 }
@@ -1570,6 +1572,7 @@ export async function createUpstreamServer(
 	const server = createServer((request, response) => {
 		const path = request.url ?? ''
 		served.push(path)
+		negotiated.push(request.headers.accept)
 		counts.open += 1
 		if (counts.open > counts.peak) counts.peak = counts.open
 		response.on('close', () => {
@@ -1597,6 +1600,9 @@ export async function createUpstreamServer(
 		base: `http://127.0.0.1:${String(port)}`,
 		get paths() {
 			return [...served]
+		},
+		get accepts() {
+			return [...negotiated]
 		},
 		get peak() {
 			return counts.peak

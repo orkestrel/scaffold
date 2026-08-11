@@ -169,6 +169,14 @@ export interface MaterializerInterface {
 	 * the comparison could not have produced — a birth-owned path reported stale,
 	 * which the `Finding` shape admits — disagrees with the derived one and is
 	 * refused.
+	 *
+	 * The whole audit is guarded before any of it is read, so an audit produced by
+	 * an earlier version of this package is refused at runtime rather than only at
+	 * compile time. A planned finding carries `ownership`, which findings made
+	 * before that field existed do not, and the guard refuses the call with
+	 * `INVALID`. Take a fresh audit from this materializer; a stored one is a record
+	 * of what a target looked like then, not an argument to a write now. The
+	 * refusal is deliberate at `0.0.x` and there is no migration.
 	 */
 	repair(plan: Plan, audit: Audit, target: string): MaterializeResult
 	/**
@@ -213,6 +221,14 @@ export interface MaterializerInterface {
 	 * unlinked, so a failure part way through restores what it already took.
 	 * The package's own source and application trees are never candidates,
 	 * whatever the audit reports.
+	 *
+	 * The whole audit is guarded before any of it is read, so an audit produced by
+	 * an earlier version of this package is refused at runtime rather than only at
+	 * compile time. Only foreign findings are candidates and those never carried
+	 * `ownership`, but the guard reads every finding, so one planned finding made
+	 * before that field existed refuses the whole call with `INVALID`. Take a fresh
+	 * audit from this materializer. The refusal is deliberate at `0.0.x` and there
+	 * is no migration.
 	 */
 	remove(audit: Audit, repository: Repository, target: string): MaterializeResult
 	/**
