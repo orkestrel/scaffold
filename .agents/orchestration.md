@@ -219,10 +219,13 @@ clobbered edits, formatter and build races, cache phantoms, and validation cross
 
 ## Execution loop
 
-At session start, before planning, probe bench liveness with the two cheap commands
-(`codex --version`; `agent --version`, falling back to `agent.cmd --version`) and plan routing
-against the result. Probes are read-only. Record a dark bench with its fallback and the lane
-substitution it forces; never absorb it silently.
+At session start, before planning, probe bench liveness and plan routing against the result. Resolve
+each CLI first (`codex --version`; `agent --version`, falling back to `agent.cmd --version`), then
+record a bench live only on evidence it can execute: its authentication-state check, or a bounded
+round-tripped model call where it exposes none. A version string proves the binary is installed and
+proves nothing about whether the bench can run a model. The role file owns each bench's exact probe.
+Probes are read-only. A bench that resolves but cannot execute is dark: record it with its fallback
+and the lane substitution it forces, and never absorb it silently.
 
 1. **Absorb.** Dispatch `grok` for terrain, prior art, and the reading the decision needs. In an
    Orkestrel repo dispatch `orkestrel` alongside it for live package state. Skip only when the
@@ -364,13 +367,26 @@ The harness bridge names the concrete mechanism for each of these.
 
 ### Check the brief before you send it
 
-Run these five checks on every brief. Each is cheap, and skipping one costs a full dispatch cycle
+Run these seven checks on every brief. Each is cheap, and skipping one costs a full dispatch cycle
 that produces no work, because a unit given a brief that is internally consistent and factually
 wrong is right to stop.
 
-- Paste every factual claim from a command you ran this turn — paths, counts, registrations, file
-  existence. A claim about a search names the scope the search covered. A search bounded to one
-  directory proves something about that directory and nothing about the rest of the tree.
+- Name the executor that will actually read the brief, and write its transport for that reader. The
+  same unit goes either to a bridge driver that invokes a bench CLI or to the bench engine already
+  running inside that CLI, and the sections that are essential for the first are nonsense to the
+  second: a brief telling an engine to launch its own CLI fails on arrival. Describe the route the
+  reader takes, not the route the work travels.
+- Paste the command and its output for every factual claim — paths, counts, registrations, file
+  existence. A description of a result is not the result, and a name recalled beside a counted set
+  is a guess. A claim about a search names the scope the search covered: a search bounded to one
+  directory proves something about that directory and nothing about the rest of the tree, and a
+  filtered set proves something about the filter's membership rule and nothing about the population
+  it was drawn from.
+- Take every measurement under the conditions the unit will run in, or have the unit take it. A
+  number measured in your environment and asserted as a criterion is unreachable when the
+  executor's sandbox denies what yours permitted, and no edit to the owned files can close it.
+  Where the unit is better placed to measure than you are, make the measurement its first step and
+  fix the criterion to the property you want rather than to the number you saw.
 - Read the acceptance criteria against the off-limits list, line by line. Every criterion closes
   using owned files alone. A criterion that needs an off-limits file gets that file granted or gets
   struck.
@@ -396,9 +412,10 @@ proposal or hypothesis until it is verified against source and accepted by the O
 A bench is cross-provider reach only. Never send a model across a bridge when the running harness
 hosts it natively.
 
-Every bridge verifies its CLI is present before running, and stops with a deviation report naming
-the fallback when it is not. The role file owns the exact invocation, flags, paths, and recovery
-ladder; these four laws bind every bench regardless of transport.
+Every bridge verifies before running that its CLI resolves and its bench is authenticated, and stops
+with a deviation report naming the fallback when either fails. The role file owns the exact
+invocation, flags, paths, probe, and recovery ladder; these four laws bind every bench regardless of
+transport.
 
 1. **Transport by work class.** Use an MCP transport only for a short interactive exchange — one
    bounded question or a follow-up on a live thread, finishing in roughly two minutes. Use the
