@@ -110,6 +110,12 @@ describe('root configuration', () => {
 			})
 		}
 		expected.set('probe', { include: 'tmp/probe/**/*.test.ts', setup: ['./tests/setup.ts'] })
+		// A row that is a configuration rather than a factory. A workspace with a
+		// browser application emits one, because that factory refuses overrides and
+		// so is not a value Vitest may call. It is required here, in a workspace that
+		// has no browser application, so this proof exercises that resolution
+		// wherever it runs instead of only where the shape happens to occur.
+		expected.set('concrete', { include: 'tests/concrete.test.ts', setup: ['./tests/setup.ts'] })
 
 		const projects = configuration.test?.projects
 		if (!Array.isArray(projects)) throw new Error('The root configuration carries no projects')
@@ -128,7 +134,14 @@ describe('root configuration', () => {
 			'name',
 			{ value: 'control' },
 		)
-		const controlled = projects.concat(control)
+		const concrete = {
+			test: {
+				name: { label: 'concrete' },
+				include: ['tests/concrete.test.ts'],
+				setupFiles: ['./tests/setup.ts'],
+			},
+		}
+		const controlled = projects.concat(control, concrete)
 		const configured = new Map<
 			string,
 			{ readonly include: string; readonly setup: readonly string[] }
@@ -137,13 +150,23 @@ describe('root configuration', () => {
 			const factoryName = requiredLabel.replace(/:([a-z])/gu, (_match, letter: string) =>
 				letter.toUpperCase(),
 			)
-			const factory = controlled.find(
-				(candidate) => typeof candidate === 'function' && candidate.name === factoryName,
-			)
-			if (typeof factory !== 'function') {
-				throw new Error(`${requiredLabel} has no project factory`)
+			// A row is either the factory named for the project or the configuration
+			// that project resolves to, and a required project is found as whichever
+			// it is. Only the required row is read, so an extra factory is still
+			// selected by name and never called.
+			const row = controlled.find((candidate) => {
+				if (typeof candidate === 'function') return candidate.name === factoryName
+				if (typeof candidate !== 'object' || candidate === null) return false
+				const block: unknown = Object.getOwnPropertyDescriptor(candidate, 'test')?.value
+				if (typeof block !== 'object' || block === null) return false
+				const named: unknown = Object.getOwnPropertyDescriptor(block, 'name')?.value
+				if (typeof named !== 'object' || named === null) return false
+				return Object.getOwnPropertyDescriptor(named, 'label')?.value === requiredLabel
+			})
+			if (row === undefined) {
+				throw new Error(`${requiredLabel} has no project factory or configuration`)
 			}
-			const project: unknown = Reflect.apply(factory, undefined, [])
+			const project: unknown = typeof row === 'function' ? Reflect.apply(row, undefined, []) : row
 			if (typeof project !== 'object' || project === null) {
 				throw new Error('A project factory returned no configuration')
 			}

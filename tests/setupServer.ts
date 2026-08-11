@@ -204,7 +204,7 @@ export interface TestUpstreamReply {
 export interface TestUpstreamInterface {
 	readonly base: string
 	readonly paths: readonly string[]
-	readonly accepts: readonly (string | undefined)[]
+	readonly accepts: ReadonlyArray<string | undefined>
 	readonly peak: number
 	arrival(path: string): Promise<void>
 	destroy(): Promise<void>
@@ -1563,7 +1563,7 @@ export async function createUpstreamServer(
 	replies: Readonly<Record<string, TestUpstreamReply>>,
 ): Promise<TestUpstreamInterface> {
 	const served: string[] = []
-	const negotiated: (string | undefined)[] = []
+	const negotiated: Array<string | undefined> = []
 	const waiters = new Map<string, () => void>()
 	const arrivals = new Map<string, Promise<void>>()
 	const counts = { open: 0, peak: 0 }

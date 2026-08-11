@@ -122,6 +122,43 @@ describe('Compiler artifacts', () => {
 		)
 	})
 
+	// The Limits section of `guides/scaffold.md` states that the library does not
+	// enforce the creating verb's policy, and this is the fact that statement rests
+	// on. The plan handed to a caller for this shape is complete and its manifest
+	// names a `core` build the workspace never runs, which is exactly what the
+	// advisory beside it said. Nothing downstream re-reads that advisory, so a
+	// creating caller reads it here or writes this manifest.
+	it('plans a manifest naming a core build for a published axis that declares no core', () => {
+		const compiler = createCompiler()
+		const scaffolding = compiler.compile(createBlueprint('widget', { src: ['browser', 'server'] }))
+		compiler.destroy()
+
+		expect(
+			scaffolding.questions.map(({ field, blocking }) => `${field}:${String(blocking)}`),
+		).toStrictEqual(['src:false'])
+		const manifest = scaffolding.plan?.artifacts.find(({ path }) => path === 'package.json')
+		if (manifest?.content === undefined) throw new Error('The plan carries no manifest content')
+		const parsed: unknown = JSON.parse(manifest.content)
+		if (typeof parsed !== 'object' || parsed === null) {
+			throw new Error('The planned manifest is not a record')
+		}
+		const exports: unknown = Object.getOwnPropertyDescriptor(parsed, 'exports')?.value
+		const root: unknown =
+			typeof exports === 'object' && exports !== null
+				? Object.getOwnPropertyDescriptor(exports, '.')?.value
+				: undefined
+		const imported: unknown =
+			typeof root === 'object' && root !== null
+				? Object.getOwnPropertyDescriptor(root, 'import')?.value
+				: undefined
+		expect(
+			typeof imported === 'object' && imported !== null
+				? Object.getOwnPropertyDescriptor(imported, 'default')?.value
+				: undefined,
+		).toBe('./dist/src/core/index.js')
+		expect(scaffolding.plan?.artifacts.some(({ path }) => path === 'src/core/index.ts')).toBe(false)
+	})
+
 	it('accepts an override outside a narrowed group selection', () => {
 		const compiler = createCompiler()
 		const blueprint = createBlueprint('widget', {

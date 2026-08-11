@@ -48,6 +48,42 @@ const SELECTIONS: ReadonlyArray<readonly Environment[]> = [
 	['browser', 'server'],
 	['core', 'browser', 'server'],
 ]
+// Every distinct module path the selection matrix emits. Each sweep below reports
+// its finding as an empty list, and an empty population produces the same empty
+// list, so each one asserts the set it actually walked before the verdict it drew
+// from it. A selection that stops emitting a module fails here rather than
+// quietly narrowing three sweeps at once.
+const MODULE_PATHS: readonly string[] = Object.freeze([
+	'app/browser/index.ts',
+	'app/browser/main.ts',
+	'app/core/index.ts',
+	'app/server/index.ts',
+	'app/server/main.ts',
+	'configs/app/vite.browser.config.ts',
+	'configs/app/vite.server.config.ts',
+	'configs/app/vite.showcase.config.ts',
+	'configs/src/vite.bin.config.ts',
+	'configs/src/vite.browser.config.ts',
+	'configs/src/vite.core.config.ts',
+	'configs/src/vite.server.config.ts',
+	'src/bin/main.ts',
+	'src/browser/index.ts',
+	'src/core/index.ts',
+	'src/server/index.ts',
+	'tests/app/browser/index.test.ts',
+	'tests/app/core/index.test.ts',
+	'tests/app/server/index.test.ts',
+	'tests/integration.test.ts',
+	'tests/setup.ts',
+	'tests/setupBrowser.ts',
+	'tests/setupGlobal.ts',
+	'tests/setupServer.ts',
+	'tests/src/bin/main.test.ts',
+	'tests/src/browser/index.test.ts',
+	'tests/src/core/index.test.ts',
+	'tests/src/server/index.test.ts',
+	'vite.config.ts',
+])
 
 // Every selection the compiler accepts, in both structural states it branches on.
 // A shape is emitted for each of the 63 non-empty `src` x `app` pairs twice: once
@@ -356,14 +392,17 @@ describe('emitted workspaces under their own gates', () => {
 			findStrays("import {\n\tused,\n\talso,\n} from 'x'\nexport const value = used + also\n"),
 		).toStrictEqual([])
 
+		const inspected = new Set<string>()
 		const strays: string[] = []
 		for (const blueprint of buildSelections()) {
 			for (const [path, content] of buildModules(blueprint)) {
+				inspected.add(path)
 				for (const binding of findStrays(content)) {
 					strays.push(`${blueprint.src.join('+')}/${blueprint.app.join('+')} ${path} ${binding}`)
 				}
 			}
 		}
+		expect([...inspected].sort()).toStrictEqual([...MODULE_PATHS])
 		expect(strays).toStrictEqual([])
 	})
 
@@ -371,14 +410,17 @@ describe('emitted workspaces under their own gates', () => {
 		expect(findUnassigned("import './index.js'\n")).toStrictEqual(["import './index.js'"])
 		expect(findUnassigned("import './index.scss'\n")).toStrictEqual([])
 
+		const inspected = new Set<string>()
 		const unassigned: string[] = []
 		for (const blueprint of buildSelections()) {
 			for (const [path, content] of buildModules(blueprint)) {
+				inspected.add(path)
 				for (const line of findUnassigned(content)) {
 					unassigned.push(`${path} ${line}`)
 				}
 			}
 		}
+		expect([...inspected].sort()).toStrictEqual([...MODULE_PATHS])
 		expect(unassigned).toStrictEqual([])
 		const application = buildModules(
 			createBlueprint('sample', { app: ['core', 'browser', 'server'] }),
@@ -403,6 +445,11 @@ describe('emitted workspaces under their own gates', () => {
 			// calls with a `ConfigEnv` the factory refuses. It is outside the emitted
 			// population, because no selection emits it any more.
 			expect(emitted).toContain('\t\t\tappBrowser(),')
+			// The evaluated row carries no function name, so the vendored `config`
+			// proof finds it by the label instead. That label is emitted here, and the
+			// two have to agree or a generated browser workspace fails its own `test`
+			// script while passing its `check` script.
+			expect(emitted).toContain("name: { label: 'app:browser', color: 'blue' }")
 			writeFileSync(
 				join(root, 'vite.config.ts'),
 				emitted.replace('\t\t\tappBrowser(),', '\t\t\tappBrowser,'),
@@ -422,12 +469,15 @@ describe('emitted workspaces under their own gates', () => {
 		expect(findWide(`\t\t\t${'a'.repeat(88)} = '_'`)).toStrictEqual([])
 		expect(findWide(`\t\t\t\t'${'a'.repeat(120)}',`)).toStrictEqual([])
 
+		const inspected = new Set<string>()
 		const wide: string[] = []
 		for (const blueprint of buildSelections()) {
 			for (const [path, content] of buildModules(blueprint)) {
+				inspected.add(path)
 				for (const line of findWide(content)) wide.push(`${path} ${line.trim()}`)
 			}
 		}
+		expect([...inspected].sort()).toStrictEqual([...MODULE_PATHS])
 		// The workspace name reaches the emitted declaration rewrite, so its width is
 		// swept over every length the gate admits rather than at one sample: the
 		// joined call fits up to a point this matrix crosses, and one name on either

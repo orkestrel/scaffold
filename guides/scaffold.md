@@ -550,7 +550,8 @@ One published environment owns the package root directly. Several published envi
 `src` selection without `core` therefore emits entry fields naming a `core` build the workspace
 never runs. The gate reports that as a non-blocking `src` question rather than refusing the compile,
 because the shape is chosen once and read afterwards: `new` refuses the advisory, while `audit` and
-`repair` need the plan to describe and restore a target that already has that shape.
+`repair` need the plan to describe and restore a target that already has that shape. A library
+caller creating a workspace holds the same refusal, and the Compile section below states it.
 
 `bin`, `integration`, `services`, `global`, and `showcase` are structural facts. Each is set only
 when the workspace physically ships the directory or exact-case file that defines it, never because
@@ -591,6 +592,30 @@ One rule decides the outcome: a `Scaffolding` carries a plan exactly when no que
 refused blueprint is answered rather than raised, so a caller reads the refusal from the value it
 asked for. Each stage records its input and its output, a failed stage records the coded reason
 beside them, and the stages after a failed one never run.
+
+A plan says the blueprint can be built. It does not say the blueprint should be created. Every
+question beside the plan is advice the compile could not settle, and the caller that chose the shape
+is the one that answers it. So `new` refuses on any question, blocking or not, before it writes,
+while `audit` and `repair` carry the same questions through, because a target that already has that
+shape still has to be described and restored.
+
+A library caller creating a fresh workspace applies `new`'s rule itself:
+
+```ts
+import { createBlueprint, createCompiler } from '@orkestrel/scaffold'
+
+const compiler = createCompiler()
+const scaffolding = compiler.compile(createBlueprint('router', { src: ['browser', 'server'] }))
+
+scaffolding.plan === undefined || scaffolding.questions.length > 0 // true — do not write this shape
+```
+
+`materialize` does not apply that rule for you. It refuses what only a writer can see — a target
+that is not vacant — and writes the plan it is given otherwise. Choosing a shape is a policy about
+which workspace to want, the plan has already answered whether that workspace can be built, and the
+questions are where the package says what it thinks of the choice. That is the same line
+`createBlueprint` draws when it constructs a blueprint the gate will refuse: one law lives in one
+place, and the caller that picked the shape is the one holding it.
 
 Off-contract input is different. A value that is not the exact shape raises `ScaffoldError` coded
 `INVALID`, because it is not a question anyone can answer. Both entry points snapshot the caller's
@@ -861,9 +886,16 @@ try {
 }
 ```
 
-`INVALID` is off-contract input, `BLOCKED` is a refused blueprint recorded on a compile stage,
-`TARGET` is a destination that is not what the caller's observation said it was, `WRITE` is a
-mutation that could not be completed, and `FETCH` is an upstream read that produced no answer.
+`INVALID` is off-contract input, `BLOCKED` is a refused blueprint, `TARGET` is a destination that is
+not what the caller's observation said it was, `WRITE` is a mutation that could not be completed, and
+`FETCH` is an upstream read that produced no answer.
+
+`BLOCKED` covers both refusals a blueprint can meet, because they are one fact — this blueprint will
+not be built — and the questions say which. The compiler answers its refusal rather than throwing it:
+the gate fails closed and records `BLOCKED` on its stage, so a caller reads that refusal from the
+value it asked for. A verb that creates a workspace throws it, because it chose the shape and has
+nothing to hand back. A blocking question closed the gate; a non-blocking one is a shape the package
+can describe and declines to create.
 
 Every entity publishes an emitter. The compiler emits `compile`, `audit`, `block`, `error`, and
 `destroy`; the materializer emits `write`, `remove`, `finish`, `error`, and `destroy`; the upstream
@@ -872,7 +904,14 @@ are thrown, so an observer sees a refusal even where the caller catches it.
 
 ## Limits
 
-Four things a reader will look for and not find.
+Five things a reader will look for and not find.
+
+**The library does not enforce the creating verb's policy.** `new` refuses a blueprint carrying any
+question, and `materialize` writes any plan into any vacant target. A workspace of several published
+`src` environments without `core` is therefore constructible, compilable, and writable through the
+library, and its manifest names a `core` build the workspace never runs — which is exactly what the
+advisory said. The refusal lives in the verb that chose the shape because only that verb knows a
+shape was being chosen; the Compile section states the rule a library caller applies in its place.
 
 **`isPath` does not prove host portability.** It proves bounded target-relative syntax and rejects
 traversal, separators, controls, and reserved syntax characters. It deliberately admits host-specific

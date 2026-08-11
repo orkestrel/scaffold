@@ -213,10 +213,9 @@ export function srcToExports(src: readonly Environment[]): Readonly<Record<strin
  *
  * @example
  * ```ts
- * import type { Blueprint } from '@orkestrel/scaffold'
- * import { blueprintToDevDependencies } from '@orkestrel/scaffold'
+ * import { blueprintToDevDependencies, createBlueprint } from '@orkestrel/scaffold'
  *
- * declare const blueprint: Blueprint
+ * const blueprint = createBlueprint('router', { src: ['core'] })
  *
  * blueprintToDevDependencies(blueprint).typescript // the shared TypeScript pin
  * ```
@@ -261,10 +260,9 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
  *
  * @example
  * ```ts
- * import type { Blueprint } from '@orkestrel/scaffold'
- * import { blueprintToScripts } from '@orkestrel/scaffold'
+ * import { blueprintToScripts, createBlueprint } from '@orkestrel/scaffold'
  *
- * declare const blueprint: Blueprint
+ * const blueprint = createBlueprint('router', { src: ['core'] })
  *
  * blueprintToScripts(blueprint)['format:check'] // 'oxfmt --config .oxfmtrc.json --check .'
  * ```
@@ -419,10 +417,9 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  *
  * @example
  * ```ts
- * import type { Blueprint } from '@orkestrel/scaffold'
- * import { blueprintToManifest } from '@orkestrel/scaffold'
+ * import { blueprintToManifest, createBlueprint } from '@orkestrel/scaffold'
  *
- * declare const blueprint: Blueprint
+ * const blueprint = createBlueprint('router', { src: ['core'] })
  *
  * blueprintToManifest(blueprint).endsWith('}\n') // true
  * ```
@@ -515,12 +512,11 @@ export function blueprintToManifest(blueprint: Blueprint): string {
  *
  * @example
  * ```ts
- * import type { Blueprint } from '@orkestrel/scaffold'
- * import { blueprintToMachinery } from '@orkestrel/scaffold'
+ * import { blueprintToMachinery, createBlueprint } from '@orkestrel/scaffold'
  *
- * declare const blueprint: Blueprint
+ * const blueprint = createBlueprint('router', { app: ['browser'] })
  *
- * blueprintToMachinery(blueprint).vue // true when the app declares browser
+ * blueprintToMachinery(blueprint).vue // true
  * ```
  */
 export function blueprintToMachinery(blueprint: Blueprint): ViteMachinery {
@@ -541,10 +537,9 @@ export function blueprintToMachinery(blueprint: Blueprint): ViteMachinery {
  *
  * @example
  * ```ts
- * import type { Blueprint } from '@orkestrel/scaffold'
- * import { blueprintToRootTsconfig } from '@orkestrel/scaffold'
+ * import { blueprintToRootTsconfig, createBlueprint } from '@orkestrel/scaffold'
  *
- * declare const blueprint: Blueprint
+ * const blueprint = createBlueprint('router', { src: ['core'] })
  *
  * blueprintToRootTsconfig(blueprint).startsWith('{') // true
  * ```
@@ -580,10 +575,9 @@ export function blueprintToRootTsconfig(blueprint: Blueprint): string {
  *
  * @example
  * ```ts
- * import type { Blueprint } from '@orkestrel/scaffold'
- * import { blueprintToRootVite } from '@orkestrel/scaffold'
+ * import { blueprintToRootVite, createBlueprint } from '@orkestrel/scaffold'
  *
- * declare const blueprint: Blueprint
+ * const blueprint = createBlueprint('router', { src: ['core'] })
  *
  * blueprintToRootVite(blueprint).includes('defineConfig') // true
  * ```
@@ -774,10 +768,9 @@ ${projects.map((project) => `\t\t\t${project},`).join('\n')}
  *
  * @example
  * ```ts
- * import type { Blueprint } from '@orkestrel/scaffold'
- * import { blueprintToConfigArtifacts } from '@orkestrel/scaffold'
+ * import { blueprintToConfigArtifacts, createBlueprint } from '@orkestrel/scaffold'
  *
- * declare const blueprint: Blueprint
+ * const blueprint = createBlueprint('router', { src: ['core'] })
  *
  * blueprintToConfigArtifacts(blueprint)[0]?.path // 'tsconfig.json'
  * ```
@@ -974,10 +967,9 @@ ${paths.join('\n')}
  *
  * @example
  * ```ts
- * import type { Blueprint } from '@orkestrel/scaffold'
- * import { blueprintToSourceArtifacts } from '@orkestrel/scaffold'
+ * import { blueprintToSourceArtifacts, createBlueprint } from '@orkestrel/scaffold'
  *
- * declare const blueprint: Blueprint
+ * const blueprint = createBlueprint('router', { src: ['core'] })
  *
  * blueprintToSourceArtifacts(blueprint).every(({ group }) => group === 'source') // true
  * ```
@@ -1061,10 +1053,9 @@ export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly Conte
  *
  * @example
  * ```ts
- * import type { Blueprint } from '@orkestrel/scaffold'
- * import { blueprintToTestArtifacts } from '@orkestrel/scaffold'
+ * import { blueprintToTestArtifacts, createBlueprint } from '@orkestrel/scaffold'
  *
- * declare const blueprint: Blueprint
+ * const blueprint = createBlueprint('router', { src: ['core'] })
  *
  * blueprintToTestArtifacts(blueprint)[0]?.path // 'tests/setup.ts'
  * ```
@@ -1315,10 +1306,9 @@ export function nameToHostArtifacts(name: string): readonly Artifact[] {
  *
  * @example
  * ```ts
- * import type { Artifact } from '@orkestrel/scaffold'
- * import { applyOverrides } from '@orkestrel/scaffold'
+ * import { applyOverrides, blueprintToConfigArtifacts, createBlueprint } from '@orkestrel/scaffold'
  *
- * declare const artifacts: readonly Artifact[]
+ * const artifacts = blueprintToConfigArtifacts(createBlueprint('router', { src: ['core'] }))
  *
  * applyOverrides(artifacts, [{ path: 'README.md', content: '# Title\n' }])
  * ```
@@ -1357,12 +1347,11 @@ export function applyOverrides(
  *
  * @example
  * ```ts
- * import type { Plan } from '@orkestrel/scaffold'
- * import { planToHash } from '@orkestrel/scaffold'
+ * import { createBlueprint, createCompiler, planToHash } from '@orkestrel/scaffold'
  *
- * declare const plan: Plan
+ * const { plan } = createCompiler().compile(createBlueprint('router', { src: ['core'] }))
  *
- * planToHash(plan)?.length // 16
+ * plan === undefined ? undefined : planToHash(plan)?.length // 16
  * ```
  */
 export function planToHash(plan: Plan): string | undefined {
@@ -1440,12 +1429,11 @@ export function artifactToFinding(artifact: Artifact, observed?: string): Findin
  *
  * @example
  * ```ts
- * import type { Plan } from '@orkestrel/scaffold'
- * import { planToFindings } from '@orkestrel/scaffold'
+ * import { createBlueprint, createCompiler, planToFindings } from '@orkestrel/scaffold'
  *
- * declare const plan: Plan
+ * const { plan } = createCompiler().compile(createBlueprint('router', { src: ['core'] }))
  *
- * planToFindings(plan, { 'AGENTS.md': '68690a' })
+ * plan === undefined ? [] : planToFindings(plan, { 'AGENTS.md': '68690a' })
  * ```
  */
 export function planToFindings(plan: Plan, current: Snapshot): readonly Finding[] {
@@ -1562,12 +1550,11 @@ export function dependenciesToQuestions(
  *
  * @example
  * ```ts
- * import type { Blueprint } from '@orkestrel/scaffold'
- * import { blueprintToQuestions } from '@orkestrel/scaffold'
+ * import { blueprintToQuestions, createBlueprint } from '@orkestrel/scaffold'
  *
- * declare const blueprint: Blueprint
+ * const blueprint = createBlueprint('router', { src: ['core'] })
  *
- * blueprintToQuestions(blueprint).length === 0 // true when the gate passes
+ * blueprintToQuestions(blueprint).length === 0 // true
  * ```
  */
 export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] {
@@ -1734,12 +1721,11 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
  *
  * @example
  * ```ts
- * import type { Artifact } from '@orkestrel/scaffold'
- * import { artifactsToQuestions } from '@orkestrel/scaffold'
+ * import { artifactsToQuestions, blueprintToConfigArtifacts, createBlueprint } from '@orkestrel/scaffold'
  *
- * declare const artifacts: readonly Artifact[]
+ * const artifacts = blueprintToConfigArtifacts(createBlueprint('router', { src: ['core'] }))
  *
- * artifactsToQuestions(artifacts).length === 0 // true when the draft is sound
+ * artifactsToQuestions(artifacts).length === 0 // true
  * ```
  */
 export function artifactsToQuestions(artifacts: readonly Artifact[]): readonly Question[] {
@@ -1805,10 +1791,9 @@ export function artifactsToQuestions(artifacts: readonly Artifact[]): readonly Q
  *
  * @example
  * ```ts
- * import type { Artifact } from '@orkestrel/scaffold'
- * import { overridesToQuestions } from '@orkestrel/scaffold'
+ * import { blueprintToConfigArtifacts, createBlueprint, overridesToQuestions } from '@orkestrel/scaffold'
  *
- * declare const artifacts: readonly Artifact[]
+ * const artifacts = blueprintToConfigArtifacts(createBlueprint('router', { src: ['core'] }))
  *
  * overridesToQuestions([{ path: 'package.json', content: '{}\n' }], artifacts).length // 1
  * ```

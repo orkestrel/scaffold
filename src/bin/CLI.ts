@@ -470,6 +470,11 @@ export class CLI implements CLIInterface {
 	// a workspace this package can describe honestly and should not create, and this
 	// is the last moment the caller can pick a different shape. `#survey` is the
 	// reading counterpart, and it carries the same advisories through instead.
+	//
+	// The refusal is `BLOCKED` whichever kind of question earned it, because both
+	// are the one fact that code names: this blueprint will not be built. The
+	// questions the message quotes are what tells the two apart, and a second code
+	// would be a label for a fact they already carry.
 	#compile(blueprint: Blueprint, groups?: readonly Group[]): Plan {
 		const compiler = createCompiler()
 		try {

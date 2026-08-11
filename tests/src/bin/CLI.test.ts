@@ -340,6 +340,34 @@ describe('CLI new', () => {
 		}
 	})
 
+	// `BLOCKED` names one fact — this blueprint will not be built — so both
+	// refusals a creating verb can meet carry it, and the question quoted beside it
+	// is what tells them apart. The advisory refusal above is the other half of
+	// this pair; splitting the code would give one fact two names.
+	it('refuses a blocking and a non-blocking question under the one refusal code', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			const blocked = createSink()
+			const code = await new CLI(blocked.options).execute([
+				'new',
+				'Widget',
+				'--src',
+				'core',
+				'--from',
+				fleet.host,
+				'--target',
+				workspace.directory('refused-name'),
+			])
+
+			expect(code).toBe(EXIT_DRIFT)
+			expect(blocked.diagnostic.join('\n')).toContain('BLOCKED')
+			expect(blocked.diagnostic.join('\n')).toContain('lowercase alphanumeric name')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	// `#derive` reconstructs `src` from the directories on disk, so a workspace
 	// publishing browser and server without core is a shape the reading verbs meet
 	// whatever `new` will create. While the gate refused it, `audit` compared

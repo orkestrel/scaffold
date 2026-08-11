@@ -130,12 +130,19 @@ export class Compiler implements CompilerInterface {
 	 * carries no plan, then `compile` with the whole outcome either way, so an
 	 * observer reads every compile from one event and the refusals from the other.
 	 *
+	 * A plan says the blueprint can be built. It does not say the blueprint should
+	 * be created, and the questions beside it are what this compiler could not
+	 * settle. A caller creating a fresh workspace answers them first and writes
+	 * nothing while any remains, which is the rule the `new` verb applies; a caller
+	 * describing or repairing an existing target carries them through instead.
+	 * Nothing downstream repeats that check, because only the caller knows which of
+	 * the two it is.
+	 *
 	 * @example
 	 * ```ts
-	 * import type { Blueprint } from '@orkestrel/scaffold'
-	 * import { createCompiler } from '@orkestrel/scaffold'
+	 * import { createBlueprint, createCompiler } from '@orkestrel/scaffold'
 	 *
-	 * declare const blueprint: Blueprint
+	 * const blueprint = createBlueprint('router', { src: ['core'] })
 	 *
 	 * createCompiler().compile(blueprint, ['manifest']).plan?.artifacts.length // 1
 	 * ```
@@ -164,14 +171,19 @@ export class Compiler implements CompilerInterface {
 	 * reports no findings and carries the questions instead. Emits `block` in that
 	 * case, then `audit` with the verdict either way.
 	 *
+	 * Ownership decides each verdict, not absence. A birth-owned path is never
+	 * compared and reads `aligned` against a target holding nothing, while a
+	 * content-owned path with no bytes to read is `missing`. An empty snapshot
+	 * therefore produces both verdicts rather than one.
+	 *
 	 * @example
 	 * ```ts
-	 * import type { Blueprint } from '@orkestrel/scaffold'
-	 * import { createCompiler } from '@orkestrel/scaffold'
+	 * import { createBlueprint, createCompiler } from '@orkestrel/scaffold'
 	 *
-	 * declare const blueprint: Blueprint
+	 * const blueprint = createBlueprint('router', { src: ['core'] })
 	 *
-	 * createCompiler().audit(blueprint, {}).findings.every(({ drift }) => drift === 'missing') // true
+	 * createCompiler().audit(blueprint, {}, ['manifest']).findings[0]?.drift // 'aligned'
+	 * createCompiler().audit(blueprint, {}, ['configs']).findings[0]?.drift // 'missing'
 	 * ```
 	 */
 	audit(blueprint: Blueprint, current: Snapshot, groups?: readonly Group[]): Audit {
