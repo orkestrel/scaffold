@@ -149,6 +149,44 @@ Each is evidence for a unit, not a unit itself.
    `401 Unauthorized`. A version string proves the binary is installed and nothing else. The probe
    must make a model call, or read auth state, before a bench is recorded live.
 
+## Acceptance round — FAIL
+
+Run under `orkestrel-falsify` against `76a045b`, `a22b95a`, `0eee854`, `7dc7957`. Both lanes blind
+on one brief, both with execution. Objective (Sol): FAIL, 6 broken, 1 unresolved. Subjective (Opus):
+FAIL, 5 broken, 1 finding outside the claims. Every finding below was reproduced by the Orchestrator
+directly before being recorded.
+
+1. **`matchesAnchor` cannot see the case its contract names, and round 1 hid that.**
+   `src/server/helpers.ts:1243-1245` documents that a directory replaced by another of the same name
+   answers `false`. Probed 12/12: it answers `true`, because `WriteAnchor` is `{path, device, inode}`
+   and ext4 reuses the inode immediately. The guard is live in shipped code at
+   `src/server/WriteTransaction.ts:521` and `:545`. The originally-failing test was a true positive.
+   Round 1 replaced its `rmSync` with `renameSync`, which pins the old inode and guarantees the
+   replacement gets a new one, so the assertion can no longer fail. The fix round then measured the
+   inode reuse — 20/20 against 0/20 — and read the proof of the defect as justification for the
+   precondition. Diagnosis, brief, implementation, checker, and design review all passed it.
+2. **The audit summary states a completed action using a field that describes policy.** With 29
+   content-owned destinations deleted, the line still reads `compared the bytes of 104`; only 75
+   carried observed bytes. The tier triple does not vary with the target at all, because it is a
+   property of the plan. `guides/scaffold.md:633` carries the same falsehood in prose. Third defect
+   in this one sentence across three rounds.
+3. **A documented invocation prints broken English on a clean exit.** `audit --groups manifest` and
+   `--groups source` print `0 of 1 planned path differ`. The noun inflects on `planned.length`, the
+   verb on `drifted`; a one-path aligned selection can never satisfy both. No test covers a singular
+   denominator.
+4. **`isFinding` admits semantically impossible states** — `birth` with `stale`, `content` with
+   `aligned` and no observed bytes. Structurally sound, domain-wide. The lanes split on this: the
+   objective lane attacked semantic validity and broke it, the subjective lane attacked structural
+   validity and could not. Both are right about different questions.
+5. **Bench liveness is improved but not closed.** An authenticated bench with exhausted quota, an
+   unavailable routed model, or server-revoked credentials still records live, because
+   `codex login status` reads local state and never round-trips.
+6. **`repair` and `remove` now refuse a persisted 0.0.24 audit at runtime**, not merely at compile
+   time, through `isAudit`. Correct for 0.0.x and undocumented.
+
+No bump. Findings 1 and 2 are ship-blocking; each is a design ruling rather than another repair,
+per the three-rounds-at-one-seam law.
+
 ## Bench state
 
 Probed 2026-08-11. `cursor-agent 2026.08.04` — Grok live, authentication verified by the session's
