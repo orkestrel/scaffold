@@ -41,6 +41,7 @@ import {
 	INVALID_PATH_CHARACTER_PATTERN,
 	MAX_ARTIFACT_BYTES,
 	MAX_ARTIFACT_HEX_LENGTH,
+	MAX_AUDIT_FINDINGS,
 	MAX_COLLECTION_ITEMS,
 	MAX_DEPENDENCY_NAME_LENGTH,
 	MAX_NAME_LENGTH,
@@ -49,19 +50,20 @@ import {
 } from './constants.js'
 
 /**
- * Narrow a value to a portable target-relative path.
+ * Narrow a value to a logical target-relative path.
  *
  * @param value - The candidate path.
  * @returns `true` for a bounded relative path with no traversal, empty segment,
- * control character, or non-portable visible character.
+ * control character, or reserved syntax character.
  *
  * @remarks
  * Every path this package reads or writes passes here, so one law covers a
  * planned artifact, an override target, an audit finding, a guide mirror, and a
  * snapshot key. Rejecting `..`, a leading `/`, and a backslash at the guard is
  * what stops a caller-supplied path from naming a destination outside the
- * target, and rejecting the non-portable visible characters is what keeps a
- * generated workspace checkable out on every supported filesystem.
+ * target. Host-location validation is a separate server boundary: this guard
+ * does not reject a device spelling, a trailing dot or space, or a segment that
+ * exceeds a host filesystem's byte ceiling.
  *
  * @example
  * ```ts
@@ -413,10 +415,15 @@ export const isFinding: Guard<Finding> = unionOf(
  *
  * @remarks
  * An audit reaches the writer and the destructive verb, so it is guarded as
- * strictly as the plan beside it.
+ * strictly as the plan beside it. Findings use the sum of the two producer
+ * bounds: one per planned artifact, then one per unplanned snapshot path.
  */
 export const isAudit: Guard<Audit> = recordOf({
-	findings: andOf(isCollection, arrayOf(isFinding)),
+	findings: andOf(
+		(value: unknown): value is readonly unknown[] =>
+			holds(() => isArray(value) && value.length <= MAX_AUDIT_FINDINGS),
+		arrayOf(isFinding),
+	),
 	questions: andOf(isCollection, arrayOf(isQuestion)),
 })
 

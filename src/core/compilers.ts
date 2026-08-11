@@ -227,7 +227,7 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
 		...(blueprint.src.includes('browser') ? SOURCE_BROWSER_DEV_DEPENDENCIES : {}),
 		...(blueprint.app.length > 0 ? APP_DEV_DEPENDENCIES : {}),
 		...(blueprint.app.includes('browser') ? APP_BROWSER_DEV_DEPENDENCIES : {}),
-		...(blueprint.showcase ? SHOWCASE_DEV_DEPENDENCIES : {}),
+		...(blueprint.showcase && blueprint.app.includes('browser') ? SHOWCASE_DEV_DEPENDENCIES : {}),
 		...(blueprint.app.includes('server') ? APP_SERVER_DEV_DEPENDENCIES : {}),
 	}
 	for (const extra of blueprint.extras) merged[extra.name] = extra.range
@@ -940,7 +940,7 @@ ${paths.join('\n')}
 			})
 		}
 	}
-	if (blueprint.showcase) {
+	if (blueprint.showcase && blueprint.app.includes('browser')) {
 		artifacts.push({
 			path: SHOWCASE_CONFIG_PATH,
 			group: 'configs',
@@ -1589,6 +1589,14 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 			candidates: ENVIRONMENTS,
 		})
 	}
+	if (blueprint.src.length > 1 && !blueprint.src.includes('core')) {
+		questions.push({
+			field: 'src',
+			message: 'Several published environments require core at the package root.',
+			blocking: true,
+			candidates: ENVIRONMENTS,
+		})
+	}
 	for (const environment of ENVIRONMENTS) {
 		if (blueprint.src.filter((declared) => declared === environment).length > 1) {
 			questions.push({
@@ -1606,14 +1614,6 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 				candidates: ENVIRONMENTS,
 			})
 		}
-	}
-	if (blueprint.showcase && !blueprint.app.includes('browser')) {
-		questions.push({
-			field: 'showcase',
-			message: 'A showcase projects the browser application, which app does not declare.',
-			blocking: true,
-			candidates: ENVIRONMENTS,
-		})
 	}
 	const services = new Set<string>()
 	for (const service of blueprint.services) {

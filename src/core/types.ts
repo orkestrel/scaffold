@@ -120,9 +120,10 @@ export interface Dependency {
  *
  * @remarks
  * `content` replaces the rendered artifact at `path` and never partially
- * merges it. An override that matches no planned artifact, that targets a
- * host-origin artifact, or that targets the manifest is a blocking question
- * rather than a silent no-op.
+ * merges it. Legality is measured against every artifact the blueprint drafts,
+ * before a compile narrows the returned groups. An override that matches none
+ * of those artifacts, that targets a host-origin artifact, or that targets the
+ * manifest is a blocking question rather than a silent no-op.
  */
 export interface Override {
 	readonly path: string
@@ -141,7 +142,9 @@ export interface Override {
  * `bin`, `integration`, `services`, `global`, and `showcase` are structural
  * facts: each is set only when the workspace physically ships the directory or
  * exact-case file that defines it, never because of the workspace's name and
- * never because a sibling fact is set.
+ * never because a sibling fact is set. An axis-dependent fact is inert when its
+ * required axis is absent: `integration` projects only a published `src`, and
+ * `showcase` projects only a browser `app`.
  */
 export interface Blueprint {
 	readonly name: string
@@ -389,7 +392,8 @@ export type Finding =
  * @remarks
  * A blocking question means the gate refused the blueprint, so `findings` is
  * empty and says nothing about the target. Tallies are not stored: count
- * `findings` by `drift` or `ownership`.
+ * `findings` by `drift` or `ownership`. The finding bound is the sum of the
+ * separately bounded plan artifacts and snapshot paths.
  */
 export interface Audit {
 	readonly findings: readonly Finding[]

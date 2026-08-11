@@ -1,6 +1,9 @@
 import type { Group } from '@src/core'
 import { describe, expect, it } from 'vitest'
 import {
+	createBlueprint,
+	createCompiler,
+	isAudit,
 	isCollection,
 	isCompilerHooks,
 	isCompilerOptions,
@@ -8,6 +11,7 @@ import {
 	isHex,
 	isPath,
 	isSnapshot,
+	MAX_AUDIT_FINDINGS,
 	MAX_COLLECTION_ITEMS,
 } from '@src/core'
 import {
@@ -65,6 +69,15 @@ describe('isPath', () => {
 	it('refuses every value that is not a string', () => {
 		const values: readonly unknown[] = [undefined, null, 42, ['AGENTS.md'], Symbol('AGENTS.md')]
 		for (const value of values) expect(isPath(value)).toBe(false)
+	})
+
+	it('admits host-specific segment spellings inside its logical path domain', () => {
+		expect(isPath('nul')).toBe(true)
+		expect(isPath('src/aux.ts')).toBe(true)
+		expect(isPath('guides/data.')).toBe(true)
+		expect(isPath('guides/data ')).toBe(true)
+		expect(isPath('a'.repeat(300))).toBe(true)
+		expect(isPath('../nul')).toBe(false)
 	})
 })
 
@@ -129,6 +142,35 @@ describe('collection bounds', () => {
 	})
 })
 
+describe('isAudit', () => {
+	it('accepts the findings a compiler can produce from a full snapshot', () => {
+		const current: Record<string, string> = {}
+		for (let index = 0; index < MAX_COLLECTION_ITEMS; index += 1) {
+			current[`foreign/f${index}.md`] = ''
+		}
+		const compiler = createCompiler()
+		const audit = compiler.audit(createBlueprint('sample', { src: ['core'] }), current)
+		compiler.destroy()
+
+		expect(audit.findings.length).toBeGreaterThan(MAX_COLLECTION_ITEMS)
+		expect(isAudit(audit)).toBe(true)
+		const finding = audit.findings[0]
+		if (finding === undefined) throw new Error('Expected the compiler to produce findings')
+		expect(
+			isAudit({
+				findings: Array.from({ length: MAX_AUDIT_FINDINGS }, () => finding),
+				questions: [],
+			}),
+		).toBe(true)
+		expect(
+			isAudit({
+				findings: Array.from({ length: MAX_AUDIT_FINDINGS + 1 }, () => finding),
+				questions: [],
+			}),
+		).toBe(false)
+	})
+})
+
 describe('isHex', () => {
 	it('accepts empty content and exact lowercase byte pairs', () => {
 		expect(isHex('')).toBe(true)
@@ -150,7 +192,7 @@ describe('isSnapshot', () => {
 		expect(isSnapshot(filled)).toBe(true)
 	})
 
-	it('refuses a key that is not a portable path and a value that is not exact bytes', () => {
+	it('refuses a key outside target-relative path syntax and a value that is not exact bytes', () => {
 		const traversal: Record<string, unknown> = { '../secrets': '68690a' }
 		const text: Record<string, unknown> = { 'AGENTS.md': 'hi' }
 		const absent: Record<string, unknown> = { 'AGENTS.md': undefined }

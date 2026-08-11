@@ -102,9 +102,10 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `HEX_PATTERN`                     | const | Exact lowercase hexadecimal bytes: two digits per byte, and empty content is valid.              |
 | `HOST_PATHS`                      | const | The paths byte-copied from the vendored data root, frozen.                                       |
 | `INTEGRATION_TEST_PATH`           | const | The installed-package proof whose presence makes a workspace `integration`.                      |
-| `INVALID_PATH_CHARACTER_PATTERN`  | const | Visible characters a portable path and a Markdown path cell both forbid.                         |
+| `INVALID_PATH_CHARACTER_PATTERN`  | const | Visible characters a target-relative path and a Markdown path cell both forbid.                  |
 | `MAX_ARTIFACT_BYTES`              | const | Maximum bytes accepted for one artifact.                                                         |
 | `MAX_ARTIFACT_HEX_LENGTH`         | const | Maximum length of the hexadecimal string carrying one artifact's bytes.                          |
+| `MAX_AUDIT_FINDINGS`              | const | Maximum findings one audit can produce from a bounded plan and snapshot.                         |
 | `MAX_COLLECTION_ITEMS`            | const | Maximum items accepted in one public collection.                                                 |
 | `MAX_DEPENDENCY_NAME_LENGTH`      | const | Maximum dependency package name length, scope included, as the registry caps it.                 |
 | `MAX_MANIFEST_BYTES`              | const | Maximum bytes accepted for one package or vendored-host manifest.                                |
@@ -145,7 +146,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `isHex`             | const    | Narrow a value to exact lowercase hexadecimal bytes within one artifact's limit. |
 | `isMirror`          | const    | Narrow a value to a `Mirror`.                                                    |
 | `isOverride`        | const    | Narrow a value to an `Override`.                                                 |
-| `isPath`            | function | Narrow a value to a portable target-relative path.                               |
+| `isPath`            | function | Narrow a value to a logical target-relative path.                                |
 | `isPlan`            | const    | Narrow a value to a `Plan`.                                                      |
 | `isQuestion`        | const    | Narrow a value to a `Question`.                                                  |
 | `isScaffoldError`   | function | Narrow a caught value to a `ScaffoldError`.                                      |
@@ -544,9 +545,19 @@ The two axes are independent, so a library-only, an application-only, and a mixe
 first class. `dependencies` and `peers` are runtime `@orkestrel/*` packages; `extras` are
 development dependencies and may carry any valid npm name.
 
+One published environment owns the package root directly. Several published environments require
+`core`, which owns that root while each other environment keeps its subpath. The gate blocks a
+multi-environment `src` selection without `core` instead of emitting entry fields for a build the
+workspace does not run.
+
 `bin`, `integration`, `services`, `global`, and `showcase` are structural facts. Each is set only
 when the workspace physically ships the directory or exact-case file that defines it, never because
 of the workspace's name and never because a sibling fact is set.
+
+An axis-dependent structural fact projects only when its required axis exists. `integration`
+projects a published `src`, and `showcase` projects the browser `app` environment. When that axis is
+absent, the flag is inert: it adds no artifact, configuration, script, or dependency, and it does not
+block the rest of the workspace. The same rule applies to both facts.
 
 `createBlueprint` enforces shape only. Whether the name is a name, the version a version, and the
 axis combination one this package can generate are the gate's laws, and the gate answers them with
@@ -583,7 +594,9 @@ Off-contract input is different. A value that is not the exact shape raises `Sca
 value first and then guard the snapshot, so a property backed by an accessor is refused rather than
 read.
 
-Overrides replace a drafted artifact's content whole. An override that matches no planned artifact,
+Overrides replace a drafted artifact's content whole. The gate checks each override against the
+blueprint's full draft before a group selection narrows the returned plan, so an override outside a
+selected group does not block that compile. An override that matches no artifact in the full draft,
 that targets a host-origin artifact, or that targets the manifest is a blocking question rather
 than a silent no-op.
 
@@ -638,6 +651,9 @@ content-owned finding carrying `observed` had its bytes compared. A content-owne
 and every presence-owned finding were decided by existence alone. A birth-owned finding was not
 examined. The foreign findings are exactly the ones no ownership accounts for. The audit stores no
 aggregate tally.
+
+The plan and snapshot are each bounded at `MAX_COLLECTION_ITEMS`. An audit may therefore carry one
+finding per planned artifact plus one per unplanned snapshot path, up to `MAX_AUDIT_FINDINGS`.
 
 | `Drift`   | Means                                 |
 | --------- | ------------------------------------- |
@@ -827,7 +843,15 @@ are thrown, so an observer sees a refusal even where the caller catches it.
 
 ## Limits
 
-Two things a reader will look for and not find.
+Three things a reader will look for and not find.
+
+**`isPath` does not prove host portability.** It proves bounded target-relative syntax and rejects
+traversal, separators, controls, and reserved syntax characters. It deliberately admits host-specific
+segment spellings such as a Windows device name, a trailing dot or space, and a segment beyond a
+filesystem's byte ceiling. The compiler emits none of those names. A caller-supplied plan may carry
+one, and the writer reports the host's refusal rather than treating logical path syntax as a promise
+that every filesystem can create it. `isFilesystemPath` is the separate server guard for target and
+vendored-root locations on the host.
 
 **Scaffold emits no styles axis.** `SRC_MATRIX` is exactly `core`, `browser`, and `server`, and
 `Blueprint` carries no styles field. A workspace that needs `src/styles/` adds the directory, its

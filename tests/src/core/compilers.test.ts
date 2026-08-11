@@ -2,9 +2,11 @@ import type { Ownership } from '@src/core'
 import {
 	artifactToFinding,
 	blueprintToConfigArtifacts,
+	blueprintToDevDependencies,
 	blueprintToDocumentArtifacts,
 	blueprintToGuideArtifacts,
 	blueprintToOrchestrationArtifacts,
+	blueprintToQuestions,
 	blueprintToRootVite,
 	blueprintToScripts,
 	blueprintToSourceArtifacts,
@@ -72,6 +74,35 @@ describe('blueprintToScripts config projects', () => {
 		)
 		expect(application['test:integration']).toBeUndefined()
 		expect(application.prepublishOnly).not.toContain('test:integration')
+	})
+})
+
+describe('blueprint gate laws', () => {
+	it('blocks a multi-environment published axis without core', () => {
+		const questions = blueprintToQuestions(buildBlueprint({ src: ['browser', 'server'] }))
+		expect(questions).toContainEqual({
+			field: 'src',
+			message: 'Several published environments require core at the package root.',
+			blocking: true,
+			candidates: ['core', 'browser', 'server'],
+		})
+	})
+
+	it('drops axis-dependent structural flags when their required axes are absent', () => {
+		const integration = buildBlueprint({ src: [], app: ['server'], integration: true })
+		const showcase = buildBlueprint({ src: ['core'], app: [], showcase: true })
+
+		expect(blueprintToQuestions(integration)).toStrictEqual([])
+		expect(blueprintToTestArtifacts(integration).map(({ path }) => path)).not.toContain(
+			'tests/integration.test.ts',
+		)
+		expect(blueprintToScripts(integration)['test:integration']).toBeUndefined()
+		expect(blueprintToQuestions(showcase)).toStrictEqual([])
+		expect(blueprintToConfigArtifacts(showcase).map(({ path }) => path)).not.toContain(
+			'configs/app/vite.showcase.config.ts',
+		)
+		expect(blueprintToScripts(showcase).showcase).toBeUndefined()
+		expect(blueprintToDevDependencies(showcase)['vite-plugin-singlefile']).toBeUndefined()
 	})
 })
 

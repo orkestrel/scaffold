@@ -101,4 +101,17 @@ describe('Compiler artifacts', () => {
 			]),
 		)
 	})
+
+	it('accepts an override outside a narrowed group selection', () => {
+		const compiler = createCompiler()
+		const blueprint = createBlueprint('widget', {
+			src: ['core'],
+			overrides: [{ path: 'README.md', content: '# Widget\n' }],
+		})
+		const scaffolding = compiler.compile(blueprint, ['manifest'])
+		compiler.destroy()
+
+		expect(scaffolding.questions).toStrictEqual([])
+		expect(scaffolding.plan?.artifacts.map(({ path }) => path)).toStrictEqual(['package.json'])
+	})
 })

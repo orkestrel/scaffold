@@ -214,9 +214,16 @@ export class Compiler implements CompilerInterface {
 	// an audit never emits a compile's completion.
 	#scaffold(blueprint: Blueprint, groups: readonly Group[]): Scaffolding {
 		const stages: CompileRecord[] = []
-		const artifacts = this.#draft(blueprint, groups)
+		const draft = this.#draft(blueprint)
+		const selected: Artifact[] = []
+		for (const group of groups) {
+			for (const artifact of draft) {
+				if (artifact.group === group) selected.push(artifact)
+			}
+		}
+		const artifacts = applyOverrides(selected, blueprint.overrides)
 		stages.push({ stage: 'draft', input: { blueprint, groups }, output: artifacts })
-		const questions = this.#gate(blueprint, artifacts)
+		const questions = this.#gate(blueprint, draft, artifacts)
 		const blocking = questions.filter((question) => question.blocking)
 		if (blocking.length > 0) {
 			stages.push({
@@ -255,13 +262,13 @@ export class Compiler implements CompilerInterface {
 		return { plan, questions, stages }
 	}
 
-	// The drafted artifacts, in plan order. The manifest is the one artifact this
+	// Every artifact the blueprint drafts, in plan order. The manifest is the one artifact this
 	// package's own fields decide, and it is claimed by birth because a workspace
-	// owns its manifest once it exists. Every other drafted path is vendored.
-	// Overrides land here rather than after the gate, so the bytes the gate
-	// measures are the bytes the plan carries.
-	#draft(blueprint: Blueprint, groups: readonly Group[]): readonly Artifact[] {
-		const drafted: readonly Artifact[] = [
+	// owns its manifest once it exists. Every other drafted path is vendored. The
+	// compile spine selects groups and applies overrides after this full set exists,
+	// so override legality never depends on the caller's group selection.
+	#draft(blueprint: Blueprint): readonly Artifact[] {
+		return [
 			{
 				path: 'package.json',
 				group: 'manifest',
@@ -277,23 +284,18 @@ export class Compiler implements CompilerInterface {
 			...blueprintToOrchestrationArtifacts(blueprint),
 			...nameToHostArtifacts(blueprint.name),
 		]
-		const covered: Artifact[] = []
-		for (const group of groups) {
-			for (const artifact of drafted) {
-				if (artifact.group === group) covered.push(artifact)
-			}
-		}
-		return applyOverrides(covered, blueprint.overrides)
 	}
 
-	// Every law measured against one drafted plan. An override is measured against
-	// the artifacts it has already been applied to, which answers identically:
-	// applying one replaces content alone and leaves every path, origin, and group
-	// the refusal reads untouched.
-	#gate(blueprint: Blueprint, artifacts: readonly Artifact[]): readonly Question[] {
+	// Blueprint and override laws span the full draft. Artifact bounds measure the
+	// selected, overridden list the plan will carry.
+	#gate(
+		blueprint: Blueprint,
+		draft: readonly Artifact[],
+		artifacts: readonly Artifact[],
+	): readonly Question[] {
 		return [
 			...blueprintToQuestions(blueprint),
-			...overridesToQuestions(blueprint.overrides, artifacts),
+			...overridesToQuestions(blueprint.overrides, draft),
 			...artifactsToQuestions(artifacts),
 		]
 	}

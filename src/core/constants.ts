@@ -260,7 +260,7 @@ export const HEX_PATTERN = /^(?:[0-9a-f]{2})*$/
 /** Unicode controls, formatting controls, and line and paragraph separators rejected in text. */
 export const CONTROL_CHARACTER_PATTERN = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/u
 
-/** Visible characters a portable path and a Markdown path cell both forbid. */
+/** Visible characters a target-relative path and a Markdown path cell both forbid. */
 export const INVALID_PATH_CHARACTER_PATTERN = /[<>:"|?*\\]/
 
 /**
@@ -283,6 +283,9 @@ export const MAX_PATH_LENGTH = 32_767
 
 /** Maximum items accepted in one public collection. */
 export const MAX_COLLECTION_ITEMS = 1_000
+
+/** Maximum findings one audit can produce from a bounded plan and snapshot. */
+export const MAX_AUDIT_FINDINGS = MAX_COLLECTION_ITEMS * 2
 
 /** Maximum bytes accepted for one artifact. */
 export const MAX_ARTIFACT_BYTES = 5_242_880
