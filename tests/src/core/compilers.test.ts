@@ -87,6 +87,55 @@ describe('blueprintToRootVite fixed proofs', () => {
 		expect(configuration).not.toContain('projects: [guides]')
 	})
 
+	// A generated workspace runs the `lint:check` and `format:check` it was given on
+	// the bytes `new` wrote, so each span below is pinned to the text those two gates
+	// accept. Each covers the selections that reach both sides of its branch, because
+	// one selection per span reads as covered while measuring one side.
+	it('imports the boundary plugins a selection actually reaches', () => {
+		// The four memberships the two symbols have: a core-only workspace builds
+		// nothing and bounds nothing, `bin` bounds only its output, an application
+		// core bounds only its environment, and a published server does both.
+		expect(blueprintToRootVite(buildBlueprint({ src: ['core'] }))).not.toContain(
+			"from './configs/helpers.js'",
+		)
+		expect(blueprintToRootVite(buildBlueprint({ src: ['core'], bin: true }))).toContain(
+			"import { outputBoundary } from './configs/helpers.js'\n",
+		)
+		expect(blueprintToRootVite(buildBlueprint({ src: [], app: ['core'] }))).toContain(
+			"import { environmentBoundary } from './configs/helpers.js'\n",
+		)
+		expect(blueprintToRootVite(buildBlueprint({ src: ['core', 'server'] }))).toContain(
+			"import { environmentBoundary, outputBoundary } from './configs/helpers.js'\n",
+		)
+		// The unused import sat between two imports the config always makes, so the
+		// span it left behind is pinned too.
+		expect(blueprintToRootVite(buildBlueprint({ src: ['core'] }))).toContain(
+			"import type { UserConfig } from 'vite'\nimport { defineConfig, mergeConfig } from 'vitest/config'\nimport tsconfig from './tsconfig.json' with { type: 'json' }\nimport { lstatSync",
+		)
+	})
+
+	it('writes each selection-dependent span the way the formatter leaves it', () => {
+		// The server predicate carries a third test with core beside it and passes
+		// the vendored width; without core it fits the line it starts on, and a
+		// formatter that reprints from the syntax tree joins it back either way.
+		expect(blueprintToRootVite(buildBlueprint({ src: ['server'] }))).toContain(
+			"\t\t\t\t\texternal: (id: string) => id.startsWith('node:') || id.startsWith('@orkestrel/'),\n",
+		)
+		expect(blueprintToRootVite(buildBlueprint({ src: ['core', 'server'] }))).toContain(
+			"\t\t\t\t\texternal: (id: string) =>\n\t\t\t\t\t\tid === '@src/core' || id.startsWith('node:') || id.startsWith('@orkestrel/'),\n",
+		)
+		// The browser plugin array is held open by the showcase spread and by
+		// nothing else, so without a showcase it is emitted joined.
+		expect(blueprintToRootVite(buildBlueprint({ app: ['browser'] }))).toContain(
+			"\t\tplugins: [outputBoundary(output), environmentBoundary('app/browser'), vue()],\n",
+		)
+		const showcase = blueprintToRootVite(buildBlueprint({ app: ['browser'], showcase: true }))
+		expect(showcase).toContain(
+			"\t\tplugins: [\n\t\t\toutputBoundary(output),\n\t\t\tenvironmentBoundary('app/browser'),\n\t\t\tvue(),\n\t\t\t...(showcase\n",
+		)
+		expect(showcase).toContain('\t\t\t\t: []),\n\t\t],\n')
+	})
+
 	it('explains the server declaration rewrite in every emitted workspace', () => {
 		const server = blueprintToConfigArtifacts(buildBlueprint({ src: ['server'] })).find(
 			({ path }) => path === 'configs/src/vite.server.config.ts',
@@ -95,6 +144,25 @@ describe('blueprintToRootVite fixed proofs', () => {
 			'vite-plugin-dts rolls this face into one declaration, and the roll-up reaches',
 		)
 		expect(server?.content).toContain('final roll-up only')
+	})
+
+	it('joins the declaration rewrite only while the line it prints fits the width', () => {
+		// The two names either side of the width: at 22 characters the joined call
+		// prints exactly on the vendored 100 columns and at 23 it prints one past, so
+		// the branch is observable only at that pair. Every longer name the gate
+		// admits, up to `MAX_NAME_LENGTH`, takes the wrapped form.
+		const fitted = blueprintToConfigArtifacts(
+			buildBlueprint({ name: 'a'.repeat(22), src: ['core', 'server'] }),
+		).find(({ path }) => path === 'configs/src/vite.server.config.ts')
+		expect(fitted?.content).toContain(
+			`\t\t\t\t\t\t? content.replaceAll(/(?:\\.\\.\\/)+core\\/index\\.ts/g, '@orkestrel/${'a'.repeat(22)}')\n`,
+		)
+		const wrapped = blueprintToConfigArtifacts(
+			buildBlueprint({ name: 'a'.repeat(23), src: ['core', 'server'] }),
+		).find(({ path }) => path === 'configs/src/vite.server.config.ts')
+		expect(wrapped?.content).toContain(
+			`\t\t\t\t\t\t? content.replaceAll(\n\t\t\t\t\t\t\t\t/(?:\\.\\.\\/)+core\\/index\\.ts/g,\n\t\t\t\t\t\t\t\t'@orkestrel/${'a'.repeat(23)}',\n\t\t\t\t\t\t\t)\n`,
+		)
 	})
 
 	it('explains the executable build in every emitted bin workspace', () => {
@@ -297,6 +365,24 @@ describe('content artifact compilers', () => {
 					group === 'source' && origin === 'template' && ownership === 'birth',
 			),
 		).toBe(true)
+		// Every emitted module is empty, entries included. An entry that started by
+		// importing its barrel for effect would be refused by the `lint:check` the
+		// same command vendors, and it would carry starter content besides.
+		expect(
+			artifacts
+				.filter(({ path }) => path.endsWith('.ts'))
+				.map(({ path, content }) => [path, content]),
+		).toStrictEqual([
+			['src/core/index.ts', ''],
+			['src/browser/index.ts', ''],
+			['src/server/index.ts', ''],
+			['app/core/index.ts', ''],
+			['app/browser/index.ts', ''],
+			['app/browser/main.ts', ''],
+			['app/server/index.ts', ''],
+			['app/server/main.ts', ''],
+			['src/bin/main.ts', ''],
+		])
 		expect(artifacts.map(({ content }) => content).join('\n')).not.toMatch(
 			/\b(?:class|interface)\s+Widget\b/u,
 		)

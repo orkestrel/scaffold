@@ -620,11 +620,14 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 		const core = blueprint.src.includes('core')
 		factories.push(
 			fillTemplate(CONFIG_TEMPLATES.factories.src.server, {
+				// The formatter reprints this arrow from its syntax tree, so each
+				// selection is written the way it measures at the emitted indentation:
+				// the core predicate carries a third test and passes the vendored
+				// width, and the one without core fits on the line it starts on.
 				external: core
 					? `external: (id: string) =>
 						id === '@src/core' || id.startsWith('node:') || id.startsWith('@orkestrel/'),`
-					: `external: (id: string) =>
-						id.startsWith('node:') || id.startsWith('@orkestrel/'),`,
+					: "external: (id: string) => id.startsWith('node:') || id.startsWith('@orkestrel/'),",
 				output: core
 					? `\t\t\t\t\toutput: [
 						{
@@ -653,8 +656,15 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 		projects.push('appCore')
 	}
 	if (blueprint.app.includes('browser')) {
-		const showcasePlugin = machinery.showcase
-			? `\t\t\t...(showcase
+		// The formatter reprints an array from its syntax tree and joins one that
+		// fits the vendored width, so the plugin array is emitted joined wherever
+		// the showcase spread is not there to hold it open.
+		const plugins = machinery.showcase
+			? `\t\tplugins: [
+			outputBoundary(output),
+			environmentBoundary('app/browser'),
+			vue(),
+			...(showcase
 				? [
 						viteSingleFile({
 							removeViteModuleLoader: true,
@@ -675,8 +685,9 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 						},
 					]
 				: []),
+		],
 `
-			: ''
+			: "\t\tplugins: [outputBoundary(output), environmentBoundary('app/browser'), vue()],\n"
 		const showcaseBuild = machinery.showcase
 			? `\t\t\t...(showcase
 				? {
@@ -700,7 +711,7 @@ export function appShowcase(...options: never[]): UserConfig {
 			: ''
 		factories.push(
 			fillTemplate(CONFIG_TEMPLATES.factories.app.browser, {
-				showcasePlugin,
+				plugins,
 				showcaseBuild,
 				showcaseFactory,
 			}),
@@ -731,9 +742,21 @@ export function appShowcase(...options: never[]): UserConfig {
 	const projectRows = `\t\tprojects: [
 ${projects.map((project) => `\t\t\t${project},`).join('\n')}
 	\t],`
+	// The boundary plugins a selection reaches are read off the factories it
+	// emitted rather than restated as a second selection rule, so the generated
+	// config imports what it uses and passes its own lint gate. A core-only
+	// workspace builds nothing and bounds no environment, so it imports neither.
+	const body = `${factories.join('\n')}\n`
+	const boundaries = ['environmentBoundary', 'outputBoundary'].filter((boundary) =>
+		body.includes(boundary),
+	)
 	return fillTemplate(CONFIG_TEMPLATES.root.vite, {
 		imports: imports.length === 0 ? '' : `${imports.join('\n')}\n`,
-		factories: `${factories.join('\n')}\n`,
+		helpers:
+			boundaries.length === 0
+				? ''
+				: `import { ${boundaries.join(', ')} } from './configs/helpers.js'\n`,
+		factories: body,
 		projects: projectRows,
 	})
 }
@@ -781,9 +804,15 @@ export function blueprintToConfigArtifacts(blueprint: Blueprint): readonly Artif
 				content = CONFIG_TEMPLATES.tsconfigs.src.browser
 			} else if (path === 'configs/src/vite.server.config.ts') {
 				const packageName = serializeTypeScriptString(`@orkestrel/${blueprint.name}`)
+				// The formatter keeps this call on one line only while the line it
+				// would print measures inside the vendored width, and the workspace
+				// name is what varies, so the branch is decided by measuring the
+				// candidate line: a tab prints as the vendored two columns, and the
+				// gate admits a name long enough to push the joined call past 100.
+				const joined = `\t\t\t\t\t\t? content.replaceAll(/(?:\\.\\.\\/)+core\\/index\\.ts/g, ${packageName})`
 				const replacement =
-					packageName.length <= 36
-						? `\t\t\t\t\t\t? content.replaceAll(/(?:\\.\\.\\/)+core\\/index\\.ts/g, ${packageName})`
+					joined.replaceAll('\t', '  ').length <= 100
+						? joined
 						: [
 								'\t\t\t\t\t\t? content.replaceAll(',
 								'\t\t\t\t\t\t\t\t/(?:\\.\\.\\/)+core\\/index\\.ts/g,',
@@ -931,9 +960,12 @@ ${paths.join('\n')}
  * @returns Empty published barrels, selected application entries, and the optional bin entry.
  *
  * @remarks
- * The barrels and bin entry intentionally export nothing. A generated sample
- * entity is too easy to mistake for package implementation, so the scaffold
- * establishes only the selected environment boundaries.
+ * The barrels and every runtime entry intentionally hold nothing. A generated
+ * sample entity is too easy to mistake for package implementation, so the
+ * scaffold establishes only the selected environment boundaries. An application
+ * entry is empty for the same reason the bin entry is, and because the vendored
+ * lint config refuses an unassigned import outside a stylesheet, so the entry
+ * cannot start by importing its barrel for effect either.
  *
  * @example
  * ```ts
@@ -974,7 +1006,7 @@ export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly Conte
 					ownership: 'birth',
 					origin: 'template',
 					environment,
-					content: ARTIFACT_TEMPLATES.source.main,
+					content: ARTIFACT_TEMPLATES.source.empty,
 				},
 				{
 					path: 'app/browser/index.html',
@@ -992,7 +1024,7 @@ export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly Conte
 				ownership: 'birth',
 				origin: 'template',
 				environment,
-				content: ARTIFACT_TEMPLATES.source.main,
+				content: ARTIFACT_TEMPLATES.source.empty,
 			})
 		}
 	}

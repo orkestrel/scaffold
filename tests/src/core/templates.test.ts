@@ -1,3 +1,4 @@
+import type { Blueprint, Environment } from '@src/core'
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -7,6 +8,7 @@ import {
 	ARTIFACT_TEMPLATES,
 	blueprintToConfigArtifacts,
 	blueprintToDevDependencies,
+	blueprintToSourceArtifacts,
 	blueprintToTestArtifacts,
 	CONFIG_TEMPLATES,
 	createBlueprint,
@@ -14,6 +16,119 @@ import {
 	MAX_NAME_LENGTH,
 } from '@src/core'
 import { describe, expect, it } from 'vitest'
+
+// The vendored `.oxfmtrc.json` a generated workspace receives: a tab prints as two
+// columns and a line is printed to fit one hundred of them. The emitted text
+// conforms to those bytes, never the reverse, so every width here is measured
+// against them rather than against a width this package would prefer.
+const PRINT_WIDTH = 100
+const TAB_COLUMNS = '  '
+// The specifiers the vendored `import/no-unassigned-import` rule exempts.
+const STYLE_IMPORT = /^import\s+'[^']+\.(?:css|less|sass|scss|styl|stylus|pcss|postcss|sss)'/u
+const SELECTIONS: ReadonlyArray<readonly Environment[]> = [
+	[],
+	['core'],
+	['browser'],
+	['server'],
+	['core', 'browser'],
+	['core', 'server'],
+	['browser', 'server'],
+	['core', 'browser', 'server'],
+]
+
+// Every selection the compiler accepts, in both structural states it branches on.
+// A shape is emitted for each of the 63 non-empty `src` x `app` pairs twice: once
+// with no structural fact set, and once with every one of them set, so no
+// conditional span is measured in one state alone.
+function buildSelections(): readonly Blueprint[] {
+	const blueprints: Blueprint[] = []
+	for (const src of SELECTIONS) {
+		for (const app of SELECTIONS) {
+			if (src.length === 0 && app.length === 0) continue
+			blueprints.push(createBlueprint('sample', { src, app }))
+			blueprints.push(
+				createBlueprint('sample', {
+					src,
+					app,
+					bin: true,
+					integration: true,
+					global: true,
+					showcase: true,
+				}),
+			)
+		}
+	}
+	return blueprints
+}
+
+// Every TypeScript module `scaffold new` writes for a selection: the root config,
+// each scoped config wrapper, each barrel and runtime entry, and each test module.
+function buildModules(blueprint: Blueprint): ReadonlyMap<string, string> {
+	const modules = new Map<string, string>()
+	for (const artifact of [
+		...blueprintToConfigArtifacts(blueprint),
+		...blueprintToSourceArtifacts(blueprint),
+		...blueprintToTestArtifacts(blueprint),
+	]) {
+		if (artifact.origin === 'host' || !artifact.path.endsWith('.ts')) continue
+		modules.set(artifact.path, artifact.content)
+	}
+	return modules
+}
+
+function measureWidth(line: string): number {
+	return line.replaceAll('\t', TAB_COLUMNS).length
+}
+
+// The identifiers one import clause binds, aliases resolved to the bound name.
+function extractBindings(clause: string): readonly string[] {
+	const inner = clause.replace(/^type\s+/u, '').trim()
+	const named = /^\{(?<names>[^}]*)\}$/u.exec(inner)
+	if (named?.groups?.names !== undefined) {
+		return named.groups.names
+			.split(',')
+			.map((part) => part.trim())
+			.filter((part) => part.length > 0)
+			.map((part) => part.split(/\s+as\s+/u).at(-1) ?? part)
+	}
+	const namespace = /^\*\s+as\s+(?<name>[A-Za-z_$][\w$]*)$/u.exec(inner)
+	if (namespace?.groups?.name !== undefined) return [namespace.groups.name]
+	return inner.length === 0 ? [] : [inner]
+}
+
+// What the vendored `no-unused-vars` rule reports on an import: a bound name the
+// module never mentions below its import block.
+function findStrays(content: string): readonly string[] {
+	const tokens = new Set(content.replace(/^import .*$/gmu, '').split(/[^\w$]+/u))
+	const strays: string[] = []
+	for (const line of content.split('\n')) {
+		const match = /^import\s+(?<clause>.*?)\s+from\s+'[^']+'/u.exec(line)
+		if (match?.groups?.clause === undefined) continue
+		for (const binding of extractBindings(match.groups.clause)) {
+			if (!tokens.has(binding)) strays.push(binding)
+		}
+	}
+	return strays
+}
+
+// What the vendored `import/no-unassigned-import` rule reports: an import that
+// binds nothing and names something other than a stylesheet.
+function findUnassigned(content: string): readonly string[] {
+	return content
+		.split('\n')
+		.filter((line) => /^import\s+'[^']+'/u.test(line) && !STYLE_IMPORT.test(line))
+}
+
+// A line the vendored formatter would have printed narrower. The one excess it
+// leaves is a string literal the formatter has already given a line of its own:
+// no break shortens a literal, so a workspace name long enough to pass the width
+// on its own line stays there. Every other over-width line is a line the formatter
+// would have broken, which is what `format:check` refuses.
+function findWide(content: string): readonly string[] {
+	return content
+		.split('\n')
+		.filter((line) => measureWidth(line) > PRINT_WIDTH && !/^\t*'[^']*',?$/u.test(line))
+}
 
 describe('configuration templates', () => {
 	it('uses the dependency fill boundary with missing placeholders closed', () => {
@@ -80,6 +195,13 @@ describe('configuration templates', () => {
 			})
 			expect(readFileSync(controlPath, 'utf8')).not.toBe(controlBefore)
 
+			// The corpus covers each span whose emitted shape the formatter would
+			// decide differently: a published face with core beside it and the same
+			// face without core, an application browser with the showcase spread
+			// holding its plugin array open and the same browser without it, and the
+			// workspace-name lengths either side of the width the joined declaration
+			// rewrite fits in. A corpus of one shape per axis reads as complete and
+			// measures only the branch that shape happens to take.
 			const blueprints = [
 				createBlueprint('core-only', { src: ['core'] }),
 				createBlueprint('published', {
@@ -87,12 +209,16 @@ describe('configuration templates', () => {
 					bin: true,
 					services: ['ollama'],
 				}),
+				createBlueprint('server-only', { src: ['server'] }),
 				createBlueprint('application', {
 					app: ['core', 'browser', 'server'],
 					integration: true,
 					global: true,
 					showcase: true,
 				}),
+				createBlueprint('unshowcased', { app: ['core', 'browser', 'server'] }),
+				createBlueprint('a'.repeat(22), { src: ['core', 'server'] }),
+				createBlueprint('a'.repeat(23), { src: ['core', 'server'] }),
 				createBlueprint('a'.repeat(MAX_NAME_LENGTH), {
 					src: ['core', 'server'],
 					app: ['core', 'browser', 'server'],
@@ -136,5 +262,81 @@ describe('configuration templates', () => {
 		} finally {
 			rmSync(root, { recursive: true, force: true })
 		}
+	})
+})
+
+// A generated workspace vendors `format:check` and `lint:check` and runs both on
+// the bytes `new` just wrote, so the emitted text is measured against the vendored
+// rules directly here. Each instrument's population is every TypeScript module the
+// matrix emits, and each carries a control drawn from outside that population,
+// because an instrument that has never reported is not evidence that the corpus is
+// clean.
+describe('emitted workspaces under their own gates', () => {
+	it('imports no symbol a generated module does not use', () => {
+		expect(findStrays("import { unused } from 'x'\nexport const value = 1\n")).toStrictEqual([
+			'unused',
+		])
+		expect(findStrays("import { used } from 'x'\nexport const value = used\n")).toStrictEqual([])
+
+		const strays: string[] = []
+		for (const blueprint of buildSelections()) {
+			for (const [path, content] of buildModules(blueprint)) {
+				for (const binding of findStrays(content)) {
+					strays.push(`${blueprint.src.join('+')}/${blueprint.app.join('+')} ${path} ${binding}`)
+				}
+			}
+		}
+		expect(strays).toStrictEqual([])
+	})
+
+	it('emits no entry the vendored unassigned-import rule refuses', () => {
+		expect(findUnassigned("import './index.js'\n")).toStrictEqual(["import './index.js'"])
+		expect(findUnassigned("import './index.scss'\n")).toStrictEqual([])
+
+		const unassigned: string[] = []
+		for (const blueprint of buildSelections()) {
+			for (const [path, content] of buildModules(blueprint)) {
+				for (const line of findUnassigned(content)) {
+					unassigned.push(`${path} ${line}`)
+				}
+			}
+		}
+		expect(unassigned).toStrictEqual([])
+		const application = buildModules(
+			createBlueprint('sample', { app: ['core', 'browser', 'server'] }),
+		)
+		expect(application.get('app/browser/main.ts')).toBe('')
+		expect(application.get('app/server/main.ts')).toBe('')
+	})
+
+	it('prints no line past the vendored width the formatter could have broken', () => {
+		// Three tabs print as six columns, so the first control is one column past
+		// the width and the second sits exactly on it. The third is far past it by a
+		// literal on a line of its own, which is the one excess the formatter leaves
+		// and the real formatter confirms it leaves.
+		expect(findWide(`\t\t\t${'a'.repeat(89)} = '_'`)).toHaveLength(1)
+		expect(findWide(`\t\t\t${'a'.repeat(88)} = '_'`)).toStrictEqual([])
+		expect(findWide(`\t\t\t\t'${'a'.repeat(120)}',`)).toStrictEqual([])
+
+		const wide: string[] = []
+		for (const blueprint of buildSelections()) {
+			for (const [path, content] of buildModules(blueprint)) {
+				for (const line of findWide(content)) wide.push(`${path} ${line.trim()}`)
+			}
+		}
+		// The workspace name reaches the emitted declaration rewrite, so its width is
+		// swept over every length the gate admits rather than at one sample: the
+		// joined call fits up to a point this matrix crosses, and one name on either
+		// side of that point is the only place the branch can be observed.
+		for (let length = 1; length <= MAX_NAME_LENGTH; length += 1) {
+			const blueprint = createBlueprint('a'.repeat(length), {
+				src: ['core', 'server'],
+				bin: true,
+			})
+			for (const [path, content] of buildModules(blueprint)) {
+				for (const line of findWide(content)) wide.push(`${length} ${path} ${line.trim()}`)
+			}
+		}
+		expect(wide).toStrictEqual([])
 	})
 })

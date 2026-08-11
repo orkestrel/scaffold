@@ -50,11 +50,9 @@ export const CONFIG_TEMPLATES = Object.freeze({
 }
 `,
 		vite: `import type { UserConfig } from 'vite'
-{{imports}}
-import { defineConfig, mergeConfig } from 'vitest/config'
+{{imports}}import { defineConfig, mergeConfig } from 'vitest/config'
 import tsconfig from './tsconfig.json' with { type: 'json' }
-import { environmentBoundary, outputBoundary } from './configs/helpers.js'
-import { lstatSync, readdirSync, realpathSync } from 'node:fs'
+{{helpers}}import { lstatSync, readdirSync, realpathSync } from 'node:fs'
 import { basename, join, parse, relative, resolve as resolvePath, sep } from 'node:path'
 import { fileURLToPath, URL } from 'node:url'
 
@@ -248,12 +246,7 @@ const resolve = {
 	const output = showcase ? 'dist/showcase' : 'dist/app/browser'
 	return {
 		resolve,
-		plugins: [
-			outputBoundary(output),
-			environmentBoundary('app/browser'),
-			vue(),
-{{showcasePlugin}}		],
-		root: resolveWorkspacePath('app/browser'),
+{{plugins}}		root: resolveWorkspacePath('app/browser'),
 		publicDir: false,
 		build: {
 {{showcaseBuild}}			emptyOutDir: true,
@@ -637,9 +630,13 @@ export default defineConfig(appShowcase())
  *
  * @remarks
  * Builders in `compilers.ts` fill every varying span through
- * `@orkestrel/template`. Empty barrels and setup modules are intentional: the
- * generated workspace starts with no sample domain API, while each selected
- * Vitest project gets a real test that proves its barrel has no starter exports.
+ * `@orkestrel/template`. Empty barrels, entries, and setup modules are
+ * intentional: the generated workspace starts with no sample domain API, while
+ * each selected Vitest project gets a real test that proves its barrel has no
+ * starter exports. An entry starts empty for the same reason its barrel does,
+ * and because the vendored lint config refuses an unassigned import outside a
+ * stylesheet, so a starter `import './index.js'` would fail the workspace's own
+ * `lint:check` on the day it is written.
  *
  * @example
  * ```ts
@@ -651,8 +648,6 @@ export default defineConfig(appShowcase())
 export const ARTIFACT_TEMPLATES = Object.freeze({
 	source: Object.freeze({
 		empty: '',
-		main: `import './index.js'
-`,
 		browser: `<!doctype html>
 <html lang="en">
 	<head>
