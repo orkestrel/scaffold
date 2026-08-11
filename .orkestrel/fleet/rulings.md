@@ -91,3 +91,43 @@ wrong action.
 
 A, then C, then B. Serialized: C and B both rewrite `guides/scaffold.md:630-647`, and A touches the
 transaction section and the server sources.
+
+## Acceptance round 2 — FAIL, reconciled
+
+Both lanes returned FAIL on the successor brief. They broke different claims, which is the shape
+`references/reconcile.md` calls two correct answers to two different questions rather than a tie.
+Every finding below was reproduced by the Orchestrator or carries the lane's own measured control.
+
+### Where the lanes split
+
+- **Claim 1** — the objective lane broke it on containment (a dangling link pointing _inside_ the
+  root is now refused exactly like one pointing outside). The subjective lane broke it on the gate
+  (the multi-environment-requires-core question runs for every verb, so an existing workspace of that
+  shape can no longer be audited or repaired). Both retained; the claim was a universal carrying two
+  subjects.
+- **Claim 3** — the objective lane confirmed. The subjective lane falsified it with a control:
+  gzip expands incompressible input, so wire bytes can exceed decoded bytes and the declared-length
+  pre-check refuses a body the enforced bound admits. The comment's "a declared length is at or under
+  the decoded count" is false. Measurement beats derivation.
+- **Claim 5** — the objective lane broke it: a generated browser-app workspace fails `check` and
+  `test`. The subjective lane could not decide it, lacking browser dependencies. The Orchestrator
+  reproduced the objective lane's finding directly.
+- **Claim 7** — the objective lane confirmed. The subjective lane found the site one line below the
+  repair: a directory is created by `mkdirSync` and recorded only after a `readAnchor` that can throw
+  between them.
+- **Claim 9** — the objective lane could not decide it because the Orchestrator never supplied a
+  disposition of the 27 sweep findings. That omission is the Orchestrator's.
+
+### The pattern both lanes converged on
+
+The chain's **code** rulings held under attack. Its **prose** rulings drifted: where the chain chose
+to document a limit rather than close it, the prose was written for the option that lost, or written
+more confidently than the code earns. The trailing separator is the worst case — the shipped
+declaration's `@example` says `isFilesystemPath('project/') // false` while the build returns `true`,
+inside a guide section whose stated purpose is telling a reader the truth about what the package will
+not do. Prose is the half that gets installed 41 times.
+
+### Bound established
+
+Zero of the 41 published packages export both `browser` and `server` without a root export, so the
+gate regression reaches no fleet package. It is a real defect and it does not block propagation.
