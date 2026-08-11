@@ -1,123 +1,269 @@
+import type { Snapshot } from '@src/core'
 import type {
-	Artifact,
-	Blueprint,
-	CatalogEntry,
-	Dependency,
-	GuideSync,
-	HostArtifact,
-	Plan,
-	ScaffoldErrorCode,
-	Snapshot,
-	SyncReport,
-	VersionSync,
-} from '@src/core'
-import type { BlockquoteNode } from '@orkestrel/markdown'
-import type {
-	CatalogAllowance,
-	GuideWrite,
 	HostManifest,
 	ManifestEntry,
 	WriteAnchor,
-	WriteDirectoryResult,
 	WriteExpectation,
+	WritePrecondition,
 } from './types.js'
-import { createHash, randomUUID } from 'node:crypto'
+import { createHash } from 'node:crypto'
 import {
+	chmodSync,
 	closeSync,
-	constants as FS_CONSTANTS,
+	constants,
 	copyFileSync,
-	existsSync,
 	fstatSync,
-	linkSync,
 	lstatSync,
 	mkdirSync,
-	openSync,
 	opendirSync,
-	readdirSync,
+	openSync,
 	readSync,
 	realpathSync,
-	renameSync,
-	rmdirSync,
-	rmSync,
 	writeFileSync,
 } from 'node:fs'
-import { basename, dirname, join, relative as relativeOf, resolve, sep } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { attempt, isRecord, parseJSON, parseJSONAs } from '@orkestrel/contract'
+import { dirname, join, relative, resolve, sep } from 'node:path'
+import { attempt, holds, isError, parseJSONAs } from '@orkestrel/contract'
 import {
-	flattenText,
-	isBlockquoteNode,
-	isParagraphNode,
-	parseDocument,
-	walkNodes,
-} from '@orkestrel/markdown'
-import {
-	blueprint,
 	bytesToHex,
-	contentByteLength,
-	DEFAULT_ENGINES,
-	DEFAULT_VERSION,
-	DEPENDENCY_NAME_PATTERN,
-	devDependenciesFor,
-	findFileConflict,
-	findPathConflict,
-	GLOBAL_SETUP_PATH,
 	HOST_PATHS,
-	HEX_PATTERN,
-	isWorkspaceName,
+	isCollection,
+	isPath,
 	MAX_ARTIFACT_BYTES,
-	MAX_ARTIFACT_HEX_LENGTH,
 	MAX_COLLECTION_ITEMS,
 	MAX_MANIFEST_BYTES,
 	MAX_TOTAL_ARTIFACT_BYTES,
-	isPlan,
-	ownDataValue,
 	ScaffoldError,
-	SHOWCASE_CONFIG_PATH,
-	snapshotPlan,
-	ENVIRONMENTS,
-	stableStringify,
-	VERSION_PATTERN,
 } from '@src/core'
-import {
-	HOST_MANIFEST_PATH,
-	MAX_FILESYSTEM_DEPTH,
-	MAX_GUIDE_BYTES,
-	MAX_HOST_DEPTH,
-	MAX_HOST_ENTRIES,
-	PRUNE_DIRECTORIES,
-} from './constants.js'
-import {
-	isHostManifest,
-	isCatalogDescription,
-	isCatalogAllowance,
-	isFilesystemPath,
-	isMissingPathError,
-	isPortablePath,
-	isSensitiveHostPath,
-	isTerminalText,
-} from './validators.js'
-import { parseFilesystemPaths, parsePortablePaths } from './parsers.js'
-import { WriteTransaction } from './WriteTransaction.js'
+import { isFilesystemPath, isHostManifest } from './validators.js'
+import { MANIFEST_NAME, MAX_INVENTORY_PATHS, MAX_PATH_DEPTH } from './constants.js'
 
 /**
- * Whether a path is an existing physical directory rather than a file or link.
+ * Test whether a caught filesystem error reports an absent path.
  *
- * @param path - The filesystem path to inspect without following links.
- * @returns `true` only for a successful `lstat` reporting a directory.
+ * @param error - The caught value.
+ * @returns `true` only for an `Error` whose `code` is exactly `ENOENT`.
+ *
+ * @remarks
+ * The one place absence is told apart from failure. Every read here answers
+ * `undefined` or an empty result for a path that is not there and reports a path
+ * that is there but unreadable, so the two must never be read from the same
+ * caught value by eye. Total for any caught value, including a hostile one.
+ *
+ * @example
+ * ```ts
+ * import { matchesMissingPath } from '@orkestrel/scaffold/server'
+ *
+ * matchesMissingPath(Object.assign(new Error('gone'), { code: 'ENOENT' })) // true
+ * matchesMissingPath(new Error('gone')) // false
+ * ```
  */
-export function isRealDirectory(path: string): boolean {
-	const status = attempt(() => lstatSync(path).isDirectory())
-	return status.success && status.value
+export function matchesMissingPath(error: unknown): boolean {
+	return holds(() => isError(error) && Reflect.get(error, 'code') === 'ENOENT')
 }
 
 /**
- * Whether a path is an existing physical file rather than a directory or link.
+ * Test whether a path addresses a target's own repository metadata.
  *
- * @param path - The filesystem path to inspect without following links.
- * @returns `true` only for a successful `lstat` reporting a single-link file.
+ * @param path - The path to classify; either separator is read.
+ * @returns `true` for `.git` and for anything beneath it.
+ *
+ * @remarks
+ * The one home of the `.git` membership rule, read from two directions. A target
+ * holding nothing but this directory is still vacant, because a checkout of an
+ * empty repository is where a fresh workspace legitimately starts. A path
+ * beneath it is never removed and never vendored, because deleting a target's
+ * history is not a repair.
+ *
+ * @example
+ * ```ts
+ * import { matchesGitPath } from '@orkestrel/scaffold/server'
+ *
+ * matchesGitPath('.git') // true
+ * matchesGitPath('.git/config') // true
+ * matchesGitPath('.gitignore') // false
+ * ```
  */
-export function isRealFile(path: string): boolean {
+export function matchesGitPath(path: string): boolean {
+	return /(?:^|\/)\.git(?:\/|$)/i.test(path.replaceAll('\\', '/'))
+}
+
+/**
+ * Test whether a target-relative path is one no verb may delete.
+ *
+ * @param path - The target-relative path to classify.
+ * @returns `true` when the path must survive every verb this package runs.
+ *
+ * @remarks
+ * The deletion deny-list, stated as a rule over paths rather than as a list of
+ * directories. It is the inversion the contract asks for: the candidate set
+ * comes from an audit's foreign findings narrowed by what git tracks, and this
+ * is what that set is then measured against. Repository metadata is protected
+ * because losing history is not a repair, and a target's own `src` and `app`
+ * trees are protected because a workspace's source is the one thing scaffold
+ * never plans and never owns, whatever an audit reports about it.
+ *
+ * @example
+ * ```ts
+ * import { matchesProtectedPath } from '@orkestrel/scaffold/server'
+ *
+ * matchesProtectedPath('src/core/index.ts') // true
+ * matchesProtectedPath('.git/config') // true
+ * matchesProtectedPath('.claude/agents/rogue.md') // false
+ * ```
+ */
+export function matchesProtectedPath(path: string): boolean {
+	const normalized = path.replaceAll('\\', '/')
+	if (matchesGitPath(normalized)) return true
+	if (normalized === 'src' || normalized === 'app') return true
+	return normalized.startsWith('src/') || normalized.startsWith('app/')
+}
+
+/**
+ * Test whether a path names local configuration or a credential.
+ *
+ * @param path - The path to classify; either separator is read.
+ * @returns `true` when the path must never be copied into a vendored host.
+ *
+ * @remarks
+ * The vendoring deny-list. A host root is staged from a real checkout, so the
+ * refusal is stated over the path rather than over the file's content: a
+ * credential is recognizable by where it sits and what it is called long before
+ * anything reads it. Repository metadata is included through
+ * {@link matchesGitPath}, so one call answers the whole question and no caller
+ * has to remember to ask twice.
+ *
+ * @example
+ * ```ts
+ * import { matchesSensitivePath } from '@orkestrel/scaffold/server'
+ *
+ * matchesSensitivePath('.npmrc') // true
+ * matchesSensitivePath('.claude/settings.local.json') // true
+ * matchesSensitivePath('.claude/settings.json') // false
+ * ```
+ */
+export function matchesSensitivePath(path: string): boolean {
+	const normalized = path.replaceAll('\\', '/')
+	if (matchesGitPath(normalized)) return true
+	return /(?:^|\/)(?:(?:\.ssh|\.aws|\.azure|\.docker|\.kube|\.gnupg|\.env(?:\.[^/]*)?)(?:\/|$)|(?:\.npmrc|\.pypirc|\.netrc|\.git-credentials|settings\.local\.json|auth\.json|credentials(?:\.json)?|application_default_credentials\.json|id_rsa|id_ed25519|kubeconfig)$|\.config\/(?:gh|gcloud)(?:\/|$)|\.local\/share\/keyrings(?:\/|$)|[^/]*service-account[^/]*\.json$|[^/]*\.(?:jks|key|p12|pem|pfx|pkcs12)$)/i.test(
+		normalized,
+	)
+}
+
+/**
+ * Project a target-relative path to the storage name a vendored host holds it under.
+ *
+ * @param path - The target-relative path the file is written to.
+ * @returns The storage name beneath the host root.
+ *
+ * @remarks
+ * A staged host is a plain directory that npm packs, and npm's own ignore rules
+ * would drop a leading-dot entry from the tarball. So every dot that opens a
+ * segment comes off, and a dotted file at the root moves under `dotfiles/` to
+ * keep it from colliding with an undotted sibling of the same name. The mapping
+ * is one direction only: a staged host's manifest records the destination each
+ * storage name answers for, so the reader never re-derives this.
+ *
+ * @example
+ * ```ts
+ * import { pathToStorage } from '@orkestrel/scaffold/server'
+ *
+ * pathToStorage('.gitignore') // 'dotfiles/gitignore'
+ * pathToStorage('.claude/rules/names.md') // 'claude/rules/names.md'
+ * pathToStorage('AGENTS.md') // 'AGENTS.md'
+ * ```
+ */
+export function pathToStorage(path: string): string {
+	const segments = path.split('/')
+	if (segments.length === 1) {
+		return path.startsWith('.') ? `dotfiles/${path.slice(1)}` : path
+	}
+	return segments.map((segment) => (segment.startsWith('.') ? segment.slice(1) : segment)).join('/')
+}
+
+/**
+ * Compute the SHA-256 digest of text.
+ *
+ * @param content - The text to digest.
+ * @returns Sixty-four lowercase hexadecimal digits.
+ *
+ * @remarks
+ * The identity the server face states, and the reason it differs from core's:
+ * core settled on a folded 64-bit identity because compilation is synchronous by
+ * contract and the only cryptographic digest a host-independent scope reaches is
+ * asynchronous. A Node host reaches the real one synchronously, and
+ * `HostManifest.digest` is documented as SHA-256, so this is what the server
+ * uses everywhere a digest is claimed.
+ *
+ * @example
+ * ```ts
+ * import { computeDigest } from '@orkestrel/scaffold/server'
+ *
+ * computeDigest('hi\n') // '98ea6e4f216f2fb4b69fff9b3a44842c38686ca685f3f55dc48c5d3fb1107be4'
+ * ```
+ */
+export function computeDigest(content: string): string {
+	return createHash('sha256').update(content, 'utf8').digest('hex')
+}
+
+/**
+ * Compute the digest of a vendored host's declared membership.
+ *
+ * @param entries - The ordered file membership declarations.
+ * @param roots - The ordered directory membership declarations.
+ * @returns The SHA-256 of that exact membership, in that exact order.
+ *
+ * @remarks
+ * Independent of the manifest's own `digest` field, which is what lets a reader
+ * detect a membership edit that did not update it. Order is part of the claim
+ * rather than normalized away, because a staged manifest sorts its entries and
+ * roots once and a reordered copy is a different file. Each entry is projected
+ * to exactly the three declared fields, so a hand-added property cannot ride
+ * into the digest and cannot change it either.
+ *
+ * @example
+ * ```ts
+ * import { computeManifestDigest } from '@orkestrel/scaffold/server'
+ *
+ * computeManifestDigest([], []) // the digest of the empty membership
+ * ```
+ */
+export function computeManifestDigest(
+	entries: readonly ManifestEntry[],
+	roots: readonly string[],
+): string {
+	return computeDigest(
+		JSON.stringify({
+			entries: entries.map((entry) => ({
+				storage: entry.storage,
+				destination: entry.destination,
+				executable: entry.executable,
+			})),
+			roots: [...roots],
+		}),
+	)
+}
+
+/**
+ * Test whether a path is a physical file this package will read or replace.
+ *
+ * @param path - The resolved host path to inspect, without following links.
+ * @returns `true` only for a regular file that is neither a link nor hard-linked
+ * elsewhere.
+ *
+ * @remarks
+ * The link tests are the point. A symbolic link is a path pointing somewhere
+ * else, so writing through one writes outside the target; a hard link means a
+ * second name shares the same bytes, so replacing them changes a file nobody
+ * asked about. Both are refused rather than followed.
+ *
+ * @example
+ * ```ts
+ * import { isPhysicalFile } from '@orkestrel/scaffold/server'
+ *
+ * isPhysicalFile('/tmp/project/AGENTS.md') // true for a plain file
+ * ```
+ */
+export function isPhysicalFile(path: string): boolean {
 	const status = attempt(() => lstatSync(path))
 	return (
 		status.success &&
@@ -128,1981 +274,242 @@ export function isRealFile(path: string): boolean {
 }
 
 /**
- * Compute a bounded-memory SHA-256 digest for one file.
+ * Test whether a path is a physical directory this package will read or write into.
  *
- * @param path - The file to read.
- * @returns Its lowercase SHA-256 digest.
+ * @param path - The resolved host path to inspect, without following links.
+ * @returns `true` only for a directory that is not a link.
+ *
+ * @remarks
+ * A junction and a directory symbolic link both report as directories once
+ * followed, so the inspection deliberately does not follow: a redirected
+ * directory is refused here rather than silently accepted as the one the caller
+ * named.
+ *
+ * @example
+ * ```ts
+ * import { isPhysicalDirectory } from '@orkestrel/scaffold/server'
+ *
+ * isPhysicalDirectory('/tmp/project') // true for a plain directory
+ * ```
  */
-export function digestFile(path: string): string {
-	const initial = lstatSync(path)
-	if (!initial.isFile() || initial.isSymbolicLink() || initial.nlink !== 1) {
-		throw new Error(`Digest source is not a physical file at ${path}`)
-	}
-	if (initial.size > MAX_ARTIFACT_BYTES) {
-		throw new Error(`Digest source exceeds ${MAX_ARTIFACT_BYTES} bytes at ${path}`)
-	}
-	const handle = openSync(path, 'r')
-	const hash = createHash('sha256')
-	const buffer = Buffer.allocUnsafe(65_536)
+export function isPhysicalDirectory(path: string): boolean {
+	const status = attempt(() => lstatSync(path))
+	return status.success && status.value.isDirectory() && !status.value.isSymbolicLink()
+}
+
+/**
+ * Compute the SHA-256 digest of one file's exact bytes.
+ *
+ * @param path - The resolved host path to digest.
+ * @returns The digest, or `undefined` when the path is not a physical file, is
+ * past the artifact ceiling, or moved while it was being read.
+ *
+ * @remarks
+ * Read in bounded chunks rather than loaded whole, so digesting a large file
+ * costs one buffer instead of its size. The file's identity and size are
+ * measured before and after the read and a mismatch answers `undefined`, so a
+ * digest is either of one settled file or is not produced at all.
+ *
+ * @example
+ * ```ts
+ * import { computeFileDigest } from '@orkestrel/scaffold/server'
+ *
+ * computeFileDigest('/tmp/project/AGENTS.md') // the file's SHA-256
+ * computeFileDigest('/tmp/project/absent.md') // undefined
+ * ```
+ */
+export function computeFileDigest(path: string): string | undefined {
+	if (!isPhysicalFile(path)) return undefined
+	const opened = attempt(() => openSync(path, 'r'))
+	if (!opened.success) return undefined
+	const handle = opened.value
 	const read = attempt(() => {
-		const current = fstatSync(handle)
-		if (
-			!current.isFile() ||
-			current.nlink !== 1 ||
-			current.dev !== initial.dev ||
-			current.ino !== initial.ino
-		) {
-			throw new Error(`Digest source changed before reading at ${path}`)
-		}
+		const before = fstatSync(handle)
+		if (!before.isFile() || before.nlink !== 1 || before.size > MAX_ARTIFACT_BYTES) return undefined
+		const hash = createHash('sha256')
+		const buffer = Buffer.alloc(65_536)
 		let size = 0
 		for (;;) {
 			const length = readSync(handle, buffer, 0, buffer.byteLength, null)
 			if (length === 0) break
 			size += length
-			if (size > MAX_ARTIFACT_BYTES) {
-				throw new Error(`Digest source exceeds ${MAX_ARTIFACT_BYTES} bytes at ${path}`)
-			}
+			if (size > MAX_ARTIFACT_BYTES) return undefined
 			hash.update(buffer.subarray(0, length))
 		}
 		const after = fstatSync(handle)
-		const pathStatus = lstatSync(path)
-		if (
-			size !== current.size ||
-			after.dev !== current.dev ||
-			after.ino !== current.ino ||
-			after.mtimeMs !== current.mtimeMs ||
-			after.size !== current.size ||
-			!pathStatus.isFile() ||
-			pathStatus.isSymbolicLink() ||
-			pathStatus.nlink !== 1 ||
-			pathStatus.dev !== current.dev ||
-			pathStatus.ino !== current.ino
-		) {
-			throw new Error(`Digest source changed while reading at ${path}`)
+		if (size !== before.size || after.size !== before.size || after.mtimeMs !== before.mtimeMs) {
+			return undefined
 		}
 		return hash.digest('hex')
 	})
-	const closed = attempt(() => closeSync(handle))
-	if (!read.success) throw read.error
-	if (!closed.success) throw closed.error
-	return read.value
+	attempt(() => closeSync(handle))
+	return read.success ? read.value : undefined
 }
 
 /**
- * Compute SHA-256 from exact lowercase hexadecimal bytes without decoding the whole value at once.
+ * Resolve a path through the real filesystem, keeping the part that does not exist yet.
  *
- * @param hex - Exact hexadecimal bytes.
- * @returns Their lowercase SHA-256 digest.
- */
-export function digestHex(hex: string): string {
-	if (hex.length > MAX_ARTIFACT_HEX_LENGTH || !HEX_PATTERN.test(hex)) {
-		throw new Error('Digest input is not bounded exact hexadecimal bytes')
-	}
-	const hash = createHash('sha256')
-	for (let offset = 0; offset < hex.length; offset += 131_072) {
-		hash.update(Buffer.from(hex.slice(offset, offset + 131_072), 'hex'))
-	}
-	return hash.digest('hex')
-}
-
-/**
- * Compute SHA-256 from UTF-8 text.
+ * @param path - The absolute or relative host path to resolve.
+ * @returns The path with its existing prefix resolved through every link, or
+ * `undefined` when the text is not a host path, no bounded existing ancestor
+ * resolves, or an ancestor cannot be read.
  *
- * @param value - The text to hash.
- * @returns Its lowercase SHA-256 digest.
- */
-export function digestText(value: string): string {
-	return createHash('sha256').update(value, 'utf8').digest('hex')
-}
-
-/**
- * Digest the exact declared membership of a vendored host manifest.
- *
- * @param entries - The ordered file membership declarations.
- * @param roots - The ordered directory membership declarations.
- * @returns A SHA-256 digest independent of the manifest's stored digest field.
- */
-export function digestHostManifest(
-	entries: readonly ManifestEntry[],
-	roots: readonly string[],
-): string {
-	return digestText(stableStringify({ entries, roots }))
-}
-
-/**
- * Render the local pointer written when an upstream dependency guide is not vendored yet.
- *
- * @param source - The canonical `guides/src/<name>.md` source path.
- * @returns The deterministic pointer content.
- */
-export function guideStub(source: string): string {
-	const short = source.slice('guides/src/'.length, source.length - '.md'.length)
-	return `> Vendored guide for @orkestrel/${short} — run \`scaffold pull\` to fetch it.\n`
-}
-
-/**
- * Remove the canonical Orkestrel scope from a dependency name.
- *
- * @param name - A dependency name.
- * @returns Its unscoped member when canonical, otherwise the original name.
- */
-export function packageShortName(name: string): string {
-	const prefix = '@orkestrel/'
-	return name.startsWith(prefix) ? name.slice(prefix.length) : name
-}
-
-/**
- * Read bounded physical local guide mirrors for package names.
- *
- * @param target - The package root.
- * @param names - The package names whose mirrors are eligible.
- * @returns Existing guide content keyed by package name.
- */
-export function readGuideReferences(
-	target: string,
-	names: readonly string[],
-): Readonly<Record<string, string>> {
-	const current: Record<string, string> = {}
-	for (const name of names) {
-		const path = `guides/src/${packageShortName(name)}.md`
-		const full = resolvePhysicalPath(target, path, 'TARGET', 'target')
-		const status = attempt(() => lstatSync(full))
-		if (!status.success) {
-			if (isMissingPathError(status.error)) continue
-			throw new ScaffoldError('TARGET', `Failed to inspect local guide at ${path}`, {
-				path,
-				error: status.error,
-			})
-		}
-		if (!status.value.isFile() || status.value.isSymbolicLink() || status.value.nlink !== 1) {
-			throw new ScaffoldError('TARGET', `Local guide is not a physical file at ${path}`, {
-				path,
-			})
-		}
-		current[name] = readFileText(target, path, 'TARGET', 'target')
-	}
-	return Object.freeze(current)
-}
-
-/**
- * Assemble one synchronization report from already ordered guide and version outcomes.
- *
- * @param target - The target package root.
- * @param guides - Guide outcomes.
- * @param versions - Version outcomes.
- * @returns The derived whole report.
- */
-export function syncReportOf(
-	target: string,
-	guides: readonly GuideSync[],
-	versions: readonly VersionSync[],
-): SyncReport {
-	const failed = [...guides, ...versions].filter(
-		(entry) => entry.freshness === 'missing' || entry.freshness === 'failed',
-	).length
-	const clean =
-		failed === 0 &&
-		guides.every((guide) => guide.freshness === 'current') &&
-		versions.every((version) => version.freshness === 'current')
-	return { target, guides, versions, clean, failed }
-}
-
-// ============================================================================
-//  @orkestrel/scaffold/server — helpers.ts (AGENTS §5 source of truth). The
-//  server-only helpers `blueprintToPlan`'s green-field target law, the
-//  `diffPlan`-feeding target reader, `Sync`'s manifest reader, the
-//  `Materializer`'s vendored-host manifest, the vendored-host BUILD staging
-//  primitive (`stageHost`), and the
-//  `catalog` bin verb depend on: `isVacant`, `readTarget`, `readManifest`,
-//  `readHostManifest`, `readFileHex`, `listFiles`, `hydratePlan`,
-//  `discoverPackages`, `hostRoot`, `deriveBlueprint`, and `catalogPackages`.
-//  `selectOrkestrelEntries`, `locateHostSource`, and
-//  `storagePath` are exported module-scope helpers per AGENTS §5's
-//  no-nested-functions law — single-call-site status is not an exemption.
-// ============================================================================
-
-/**
- * Locate this MODULE's own installed package root — the nearest ancestor of
- * `import.meta.url` holding a `package.json` — and return its vendored
- * `dist/host` data root. THE single source of truth for the default
- * `Materializer` / `scaffold` bin host: once installed, walking up from the
- * module's own file (not `process.cwd()`, which points at whichever project
- * happens to be running) resolves to `node_modules/@orkestrel/scaffold`, the
- * correct default host — the package ships its vendored data with itself.
- * `dist/host` may not exist yet when this resolves from SOURCE under a test
- * runner; that is fine — existence is checked at the point of use, not here.
- *
- * @returns The absolute vendored `dist/host` path.
- * @throws `ScaffoldError('TARGET', …)` when no ancestor of this module's own
- *   location holds a `package.json`.
+ * @remarks
+ * A containment decision has to be made about a destination that does not exist
+ * yet, and a lexical answer is not enough: a link anywhere in the existing
+ * prefix moves the destination somewhere the text never named. So the deepest
+ * existing ancestor is resolved and the remaining segments are re-joined onto
+ * it. The climb is bounded by the path-depth ceiling, so an adversarial path
+ * cannot make it walk indefinitely.
  *
  * @example
  * ```ts
- * import { hostRoot } from '@orkestrel/scaffold/server'
+ * import { resolveRealPath } from '@orkestrel/scaffold/server'
  *
- * hostRoot() // '/…/node_modules/@orkestrel/scaffold/dist/host'
+ * resolveRealPath('./packages/new/src') // the real path of `packages`, plus `new/src`
  * ```
  */
-export function hostRoot(): string {
-	let dir = dirname(fileURLToPath(import.meta.url))
-	for (;;) {
-		if (existsSync(join(dir, 'package.json'))) return join(dir, 'dist', 'host')
-		const parent = dirname(dir)
-		if (parent === dir) {
-			throw new ScaffoldError('TARGET', 'No package root found above the module location', {
-				module: import.meta.url,
-			})
-		}
-		dir = parent
-	}
-}
-
-/**
- * Resolve the deepest existing ancestor of a path through the real filesystem.
- *
- * @param path - The absolute or relative path to resolve.
- * @returns A path whose existing prefix has been resolved through symlinks.
- */
-export function resolveRealPath(path: string): string {
-	if (!isFilesystemPath(path)) {
-		throw new ScaffoldError('TARGET', 'Filesystem path is malformed or exceeds its bounds')
-	}
+export function resolveRealPath(path: string): string | undefined {
+	if (!isFilesystemPath(path)) return undefined
 	let current = resolve(path)
-	const unresolved: string[] = []
-	while (!existsSync(current)) {
-		const parent = dirname(current)
-		if (parent === current || unresolved.length >= MAX_FILESYSTEM_DEPTH) {
-			throw new ScaffoldError('TARGET', 'Filesystem path has no bounded existing ancestor', {
-				path,
-				limit: MAX_FILESYSTEM_DEPTH,
-			})
+	const pending: string[] = []
+	for (let depth = 0; depth <= MAX_PATH_DEPTH; depth += 1) {
+		const real = attempt(() => realpathSync(current))
+		if (real.success) {
+			let physical = real.value
+			for (const segment of pending) physical = join(physical, segment)
+			return physical
 		}
-		unresolved.unshift(relativeOf(parent, current))
+		if (!matchesMissingPath(real.error)) return undefined
+		const parent = dirname(current)
+		if (parent === current) return undefined
+		pending.unshift(relative(parent, current))
 		current = parent
 	}
-	let physical = realpathSync(current)
-	for (const segment of unresolved) physical = join(physical, segment)
-	return physical
+	return undefined
 }
 
 /**
- * Resolve a path beneath a declared root and reject lexical or symlink escape.
+ * Resolve a root-relative path and refuse one that leaves its root.
  *
- * @param root - The containing filesystem root.
- * @param path - The candidate path, relative or absolute.
- * @param code - The coded error to raise on escape.
- * @param boundary - The boundary name used in diagnostics.
- * @returns The lexically resolved candidate after realpath-aware validation.
- */
-export function resolveContainedPath(
-	root: string,
-	path: string,
-	code: ScaffoldErrorCode,
-	boundary: string,
-): string {
-	if (!isFilesystemPath(root) || !isFilesystemPath(path)) {
-		throw new ScaffoldError(code, `${boundary} path is malformed or exceeds its bounds`, {
-			path,
-			root,
-		})
-	}
-	const resolvedRoot = resolveRealPath(resolve(root))
-	const resolvedCandidate = resolveRealPath(resolve(root, path))
-	if (resolvedCandidate !== resolvedRoot && !resolvedCandidate.startsWith(resolvedRoot + sep)) {
-		throw new ScaffoldError(code, `Path "${path}" escapes the ${boundary} root`, {
-			path,
-			root,
-		})
-	}
-	return resolve(root, path)
-}
-
-/**
- * Resolve a contained path whose existing ancestor chain contains no links.
- *
- * @param root - The trusted lexical and physical root.
+ * @param root - The containing host directory.
  * @param path - The portable root-relative path.
- * @param code - The coded error to raise on failure.
- * @param boundary - The boundary name used in diagnostics.
- * @returns The contained destination.
- * @throws `ScaffoldError` when containment fails or an ancestor is not a real directory.
+ * @returns The destination as this package will address it, or `undefined` when
+ * either argument is off contract or the destination lies outside `root`.
+ *
+ * @remarks
+ * The containment law, and the one door every read in this module goes through.
+ * Both sides are resolved through the real filesystem before they are compared,
+ * so a link planted inside the root cannot smuggle a destination out of it; the
+ * answer is then the lexical join, so the caller operates on the path it named
+ * rather than on a resolved form the target may not recognize.
+ *
+ * Comparison is exact text, which fails closed on a case-insensitive
+ * filesystem: a root and a path spelled with different case resolve to
+ * different strings there and are refused, never wrongly admitted.
+ *
+ * @example
+ * ```ts
+ * import { resolveContainedPath } from '@orkestrel/scaffold/server'
+ *
+ * resolveContainedPath('/tmp/project', 'guides/router.md') // '/tmp/project/guides/router.md'
+ * resolveContainedPath('/tmp/project', '../secrets') // undefined
+ * ```
  */
-export function resolvePhysicalPath(
-	root: string,
-	path: string,
-	code: ScaffoldErrorCode,
-	boundary: string,
-): string {
-	const resolvedRoot = resolve(root)
-	const destination = resolveContainedPath(resolvedRoot, path, code, boundary)
-	if (destination === resolvedRoot) {
-		const status = attempt(() => lstatSync(resolvedRoot))
-		if (!status.success || !status.value.isDirectory() || status.value.isSymbolicLink()) {
-			throw new ScaffoldError(code, `${boundary} root is not a real directory`, {
-				path,
-				root,
-				...(status.success ? {} : { error: status.error }),
-			})
-		}
-		return destination
-	}
-	let parent = dirname(destination)
-	for (;;) {
-		if (existsSync(parent)) {
-			const status = attempt(() => lstatSync(parent))
-			if (!status.success || !status.value.isDirectory() || status.value.isSymbolicLink()) {
-				throw new ScaffoldError(code, `${boundary} parent is not a real directory`, {
-					path,
-					parent,
-					...(status.success ? {} : { error: status.error }),
-				})
-			}
-		}
-		if (parent === resolvedRoot) break
-		const next = dirname(parent)
-		if (next === parent) {
-			throw new ScaffoldError(code, `${boundary} parent escapes its root`, {
-				path,
-				root,
-			})
-		}
-		parent = next
-	}
+export function resolveContainedPath(root: string, path: string): string | undefined {
+	if (!isFilesystemPath(root) || !isPath(path)) return undefined
+	const base = resolve(root)
+	const destination = join(base, path)
+	const physicalRoot = resolveRealPath(base)
+	const physical = resolveRealPath(destination)
+	if (physicalRoot === undefined || physical === undefined) return undefined
+	if (physical !== physicalRoot && !physical.startsWith(physicalRoot + sep)) return undefined
 	return destination
 }
 
 /**
- * Revalidate one captured physical-directory identity without following links.
+ * Test whether a target is safe to write a fresh workspace into.
  *
- * @param anchor - The captured path, device, and inode.
- * @param boundary - The boundary name used in diagnostics.
- * @throws `ScaffoldError('WRITE', ...)` when the directory is missing or changed.
- */
-export function validateWriteAnchor(anchor: WriteAnchor, boundary: string): void {
-	const status = attempt(() => lstatSync(anchor.path))
-	if (
-		!status.success ||
-		!status.value.isDirectory() ||
-		status.value.isSymbolicLink() ||
-		status.value.dev !== anchor.device ||
-		status.value.ino !== anchor.inode
-	) {
-		throw new ScaffoldError('WRITE', `Write transaction ${boundary} changed`, {
-			path: anchor.path,
-			...(status.success ? {} : { error: status.error }),
-		})
-	}
-}
-
-/**
- * Create a physical directory path one segment at a time behind captured identities.
+ * @param target - The candidate target directory.
+ * @returns `true` when the target is absent, empty, or holds nothing but its own
+ * `.git` directory.
  *
- * @param path - The absolute directory path to establish.
- * @param boundary - The boundary name used in diagnostics.
- * @returns The final directory anchor and the subset created by this call.
- */
-export function createWriteDirectory(path: string, boundary: string): WriteDirectoryResult {
-	const destination = resolve(path)
-	const missing: string[] = []
-	let current = destination
-	let existing: WriteAnchor | undefined
-	for (;;) {
-		const status = attempt(() => lstatSync(current))
-		if (status.success) {
-			if (!status.value.isDirectory() || status.value.isSymbolicLink()) {
-				throw new ScaffoldError('WRITE', `${boundary} is not a physical directory`, {
-					path: current,
-				})
-			}
-			existing = Object.freeze({
-				path: current,
-				device: status.value.dev,
-				inode: status.value.ino,
-			})
-			break
-		}
-		if (!isMissingPathError(status.error)) {
-			throw new ScaffoldError('WRITE', `Failed to inspect ${boundary}`, {
-				path: current,
-				error: status.error,
-			})
-		}
-		missing.push(current)
-		const parent = dirname(current)
-		if (parent === current) {
-			throw new ScaffoldError('WRITE', `Cannot establish ${boundary}`, { path: destination })
-		}
-		current = parent
-	}
-	const created: WriteAnchor[] = []
-	let anchor = existing
-	for (const directory of [...missing].reverse()) {
-		validateWriteAnchor(anchor, boundary)
-		mkdirSync(directory)
-		validateWriteAnchor(anchor, boundary)
-		const status = lstatSync(directory)
-		if (!status.isDirectory() || status.isSymbolicLink()) {
-			throw new ScaffoldError('WRITE', `${boundary} changed while creating it`, {
-				path: directory,
-			})
-		}
-		anchor = Object.freeze({
-			path: directory,
-			device: status.dev,
-			inode: status.ino,
-		})
-		created.push(anchor)
-	}
-	return { anchor, created }
-}
-
-/**
- * Revalidate every private directory owned by a write transaction.
- *
- * @param transaction - The nominal transaction state.
- * @throws `ScaffoldError('WRITE', ...)` when any private directory changed.
- */
-export function validateWriteDirectories(transaction: WriteTransaction): void {
-	validateWriteAnchor(transaction.anchor, 'anchor')
-	for (const parent of transaction.parents) validateWriteAnchor(parent, 'parent')
-	for (const directory of transaction.directories) {
-		validateWriteAnchor(directory, 'private directory')
-	}
-}
-
-/**
- * Revalidate the transaction target against its original or transaction-owned identity.
- *
- * @param transaction - The nominal transaction state.
- * @param owned - A target directory created by the current commit.
- * @throws `ScaffoldError('WRITE', ...)` when the target identity changed.
- */
-export function validateWriteTarget(
-	transaction: WriteTransaction,
-	owned: WriteAnchor | undefined,
-): void {
-	validateWriteDirectories(transaction)
-	const expected = transaction.existing ?? owned
-	const status = attempt(() => lstatSync(transaction.target))
-	if (expected === undefined) {
-		if (status.success || !isMissingPathError(status.error)) {
-			throw new ScaffoldError('WRITE', 'Write transaction target changed', {
-				target: transaction.target,
-				...(status.success ? {} : { error: status.error }),
-			})
-		}
-		return
-	}
-	if (
-		!status.success ||
-		!status.value.isDirectory() ||
-		status.value.isSymbolicLink() ||
-		status.value.dev !== expected.device ||
-		status.value.ino !== expected.inode
-	) {
-		throw new ScaffoldError('WRITE', 'Write transaction target changed', {
-			target: transaction.target,
-			...(status.success ? {} : { error: status.error }),
-		})
-	}
-}
-
-/**
- * Remove an uncommitted or already-committed write transaction's private residue.
- *
- * @param transaction - The transaction to discard.
- * @throws `ScaffoldError('WRITE', ...)` when its private root cannot be removed.
- */
-export function discardWriteTransaction(transaction: WriteTransaction): void {
-	if (!(transaction instanceof WriteTransaction)) {
-		throw new ScaffoldError('WRITE', 'Write transaction identity is invalid')
-	}
-	validateWriteDirectories(transaction)
-	const discarded = attempt(() => rmSync(transaction.root, { recursive: true }))
-	if (!discarded.success) {
-		throw new ScaffoldError('WRITE', 'Failed to discard write transaction', {
-			target: transaction.target,
-			root: transaction.root,
-			error: discarded.error,
-		})
-	}
-	for (const parent of [...transaction.parents].reverse()) {
-		const removed = attempt(() => {
-			const status = lstatSync(parent.path)
-			if (
-				!status.isDirectory() ||
-				status.isSymbolicLink() ||
-				status.dev !== parent.device ||
-				status.ino !== parent.inode
-			) {
-				throw new Error(`write transaction parent changed at ${parent.path}`)
-			}
-			rmdirSync(parent.path)
-		})
-		if (!removed.success && !isMissingPathError(removed.error)) {
-			throw new ScaffoldError('WRITE', 'Failed to discard write transaction parent', {
-				target: transaction.target,
-				root: transaction.root,
-				parent: parent.path,
-				error: removed.error,
-			})
-		}
-	}
-}
-
-/**
- * Promote a complete staged set and roll every earlier destination back when
- * any later promotion fails.
- *
- * @param transaction - Same-volume sibling staging state.
- * @param paths - Portable target-relative files to promote.
- * @throws `ScaffoldError('WRITE', ...)` with recovery details on failure.
- */
-export function commitWriteTransaction(
-	transaction: WriteTransaction,
-	paths: readonly string[],
-): void {
-	if (!(transaction instanceof WriteTransaction)) {
-		throw new ScaffoldError('WRITE', 'Write transaction identity is invalid')
-	}
-	const requested = parsePortablePaths(paths, MAX_COLLECTION_ITEMS)
-	const conflict = requested === undefined ? undefined : findFileConflict(requested)
-	if (
-		requested === undefined ||
-		conflict !== undefined ||
-		requested.length !== transaction.expectations.length ||
-		requested.some(
-			(path) => !transaction.expectations.some((expectation) => expectation.path === path),
-		) ||
-		transaction.expectations.some(
-			(expectation) => !requested.some((path) => path === expectation.path),
-		)
-	) {
-		discardWriteTransaction(transaction)
-		throw new ScaffoldError(
-			'WRITE',
-			requested !== undefined && conflict === undefined
-				? 'Write transaction paths do not match its expectations'
-				: requested !== undefined
-					? `Write transaction collision between "${conflict?.[0]}" and "${conflict?.[1]}"`
-					: 'Write transaction paths are malformed',
-			{
-				paths: conflict ?? requested ?? [],
-				committed: false,
-			},
-		)
-	}
-	const preflight = attempt(() => {
-		validateWriteTarget(transaction, undefined)
-		validateWriteDirectories(transaction)
-		for (const path of requested) {
-			if (!isPortablePath(path)) {
-				throw new ScaffoldError('WRITE', `Invalid transaction path at ${path}`, { path })
-			}
-			const expectation = transaction.expectations.find((candidate) => candidate.path === path)
-			if (expectation === undefined) {
-				throw new ScaffoldError('WRITE', `Missing transaction expectation at ${path}`, { path })
-			}
-			const staged = resolvePhysicalPath(transaction.stage, path, 'WRITE', 'staging')
-			const stagedStatus = attempt(() => lstatSync(staged))
-			if (
-				!stagedStatus.success ||
-				stagedStatus.value.isSymbolicLink() ||
-				!stagedStatus.value.isFile() ||
-				stagedStatus.value.nlink !== 1
-			) {
-				throw new ScaffoldError('WRITE', `Invalid staged transaction entry at ${path}`, {
-					path,
-					error: stagedStatus.success ? undefined : stagedStatus.error,
-				})
-			}
-			const destination = resolvePhysicalPath(transaction.target, path, 'WRITE', 'target')
-			const current = attempt(() => lstatSync(destination))
-			if (expectation.shape === 'absent') {
-				if (current.success || !isMissingPathError(current.error)) {
-					throw new ScaffoldError('WRITE', `Transaction destination changed at ${path}`, {
-						path,
-						error: current.success ? undefined : current.error,
-					})
-				}
-				continue
-			}
-			if (!current.success) {
-				throw new ScaffoldError('WRITE', `Transaction destination changed at ${path}`, {
-					path,
-					error: current.error,
-				})
-			}
-			const shape = current.value.isDirectory() ? 'directory' : 'file'
-			const content = shape === 'file' ? attempt(() => digestFile(destination)) : undefined
-			if (
-				current.value.isSymbolicLink() ||
-				(current.value.isFile() && current.value.nlink !== 1) ||
-				current.value.isDirectory() !== stagedStatus.value.isDirectory() ||
-				current.value.isDirectory() ||
-				shape !== expectation.shape ||
-				current.value.dev !== expectation.device ||
-				current.value.ino !== expectation.inode ||
-				current.value.mtimeMs !== expectation.modified ||
-				current.value.size !== expectation.size ||
-				(content !== undefined && (!content.success || content.value !== expectation.digest))
-			) {
-				throw new ScaffoldError('WRITE', `Transaction destination changed at ${path}`, {
-					path,
-					...(content?.success === false ? { error: content.error } : {}),
-				})
-			}
-		}
-	})
-	if (!preflight.success) {
-		const cleanup = attempt(() => discardWriteTransaction(transaction))
-		throw new ScaffoldError('WRITE', 'Write transaction failed preflight', {
-			target: transaction.target,
-			error: preflight.error,
-			committed: false,
-			...(cleanup.success ? {} : { cleanup: cleanup.error }),
-		})
-	}
-	const preserved: string[] = []
-	const promoted: WriteExpectation[] = []
-	const createdParents: WriteAnchor[] = []
-	let ownedTarget: WriteAnchor | undefined
-	const committed = attempt(() => {
-		for (const path of requested) {
-			validateWriteTarget(transaction, ownedTarget)
-			validateWriteDirectories(transaction)
-			if (!isPortablePath(path)) {
-				throw new ScaffoldError('WRITE', `Invalid transaction path at ${path}`, { path })
-			}
-			const staged = resolvePhysicalPath(transaction.stage, path, 'WRITE', 'staging')
-			const stagedStatus = attempt(() => lstatSync(staged))
-			if (
-				!stagedStatus.success ||
-				stagedStatus.value.isSymbolicLink() ||
-				!stagedStatus.value.isFile() ||
-				stagedStatus.value.nlink !== 1
-			) {
-				throw new ScaffoldError('WRITE', `Invalid staged transaction entry at ${path}`, {
-					path,
-					error: stagedStatus.success ? undefined : stagedStatus.error,
-				})
-			}
-			const destination = resolvePhysicalPath(transaction.target, path, 'WRITE', 'target')
-			const backup = resolvePhysicalPath(transaction.backup, path, 'WRITE', 'backup')
-			const expectation = transaction.expectations.find((candidate) => candidate.path === path)
-			if (expectation === undefined) {
-				throw new ScaffoldError('WRITE', `Missing transaction expectation at ${path}`, { path })
-			}
-			const current = attempt(() => lstatSync(destination))
-			if (expectation.shape === 'absent') {
-				if (current.success || !isMissingPathError(current.error)) {
-					throw new ScaffoldError('WRITE', `Transaction destination changed at ${path}`, {
-						path,
-						error: current.success ? undefined : current.error,
-					})
-				}
-			} else if (current.success) {
-				const shape = current.value.isDirectory() ? 'directory' : 'file'
-				const content = shape === 'file' ? attempt(() => digestFile(destination)) : undefined
-				if (
-					current.value.isSymbolicLink() ||
-					(current.value.isFile() && current.value.nlink !== 1) ||
-					current.value.isDirectory() !== stagedStatus.value.isDirectory() ||
-					current.value.isDirectory() ||
-					shape !== expectation.shape ||
-					current.value.dev !== expectation.device ||
-					current.value.ino !== expectation.inode ||
-					current.value.mtimeMs !== expectation.modified ||
-					current.value.size !== expectation.size ||
-					(content !== undefined && (!content.success || content.value !== expectation.digest))
-				) {
-					throw new ScaffoldError('WRITE', `Transaction destination changed at ${path}`, {
-						path,
-						...(content?.success === false ? { error: content.error } : {}),
-					})
-				}
-				mkdirSync(dirname(backup), { recursive: true })
-				renameSync(destination, backup)
-				preserved.push(path)
-				const capturedStatus = lstatSync(backup)
-				const capturedContent = digestFile(backup)
-				if (
-					!capturedStatus.isFile() ||
-					capturedStatus.isSymbolicLink() ||
-					capturedStatus.nlink !== 1 ||
-					capturedStatus.dev !== expectation.device ||
-					capturedStatus.ino !== expectation.inode ||
-					capturedStatus.mtimeMs !== expectation.modified ||
-					capturedStatus.size !== expectation.size ||
-					capturedContent !== expectation.digest
-				) {
-					throw new ScaffoldError(
-						'WRITE',
-						`Transaction destination changed during preservation at ${path}`,
-						{ path },
-					)
-				}
-			} else {
-				throw new ScaffoldError('WRITE', `Transaction destination changed at ${path}`, {
-					path,
-					error: current.error,
-				})
-			}
-			const missingParents: string[] = []
-			let parent = dirname(destination)
-			while (parent !== dirname(transaction.target)) {
-				const status = attempt(() => lstatSync(parent))
-				if (status.success) {
-					if (
-						transaction.existing === undefined &&
-						ownedTarget === undefined &&
-						parent === transaction.target
-					) {
-						throw new ScaffoldError('WRITE', 'Write transaction target changed', {
-							target: transaction.target,
-						})
-					}
-					break
-				}
-				if (!isMissingPathError(status.error)) throw status.error
-				missingParents.push(parent)
-				parent = dirname(parent)
-			}
-			for (const createdParent of [...missingParents].reverse()) {
-				mkdirSync(createdParent)
-				const status = lstatSync(createdParent)
-				if (!status.isDirectory() || status.isSymbolicLink()) {
-					throw new ScaffoldError('WRITE', `Write transaction parent changed at ${createdParent}`, {
-						target: transaction.target,
-						parent: createdParent,
-					})
-				}
-				if (!createdParents.some((candidate) => candidate.path === createdParent)) {
-					const captured = Object.freeze({
-						path: createdParent,
-						device: status.dev,
-						inode: status.ino,
-					})
-					createdParents.push(captured)
-					if (createdParent === transaction.target) ownedTarget = captured
-				}
-			}
-			if (transaction.existing === undefined && ownedTarget === undefined) {
-				throw new ScaffoldError('WRITE', 'Write transaction target was not created safely', {
-					target: transaction.target,
-				})
-			}
-			linkSync(staged, destination)
-			const linkedStatus = lstatSync(destination)
-			const stagedAfterLink = lstatSync(staged)
-			if (
-				!linkedStatus.isFile() ||
-				linkedStatus.isSymbolicLink() ||
-				linkedStatus.dev !== stagedStatus.value.dev ||
-				linkedStatus.ino !== stagedStatus.value.ino ||
-				stagedAfterLink.dev !== linkedStatus.dev ||
-				stagedAfterLink.ino !== linkedStatus.ino
-			) {
-				throw new ScaffoldError('WRITE', `Staged promotion changed at ${path}`, { path })
-			}
-			const unlinked = attempt(() => rmSync(staged))
-			if (!unlinked.success) {
-				const cleanup = attempt(() => {
-					const destinationStatus = lstatSync(destination)
-					if (
-						destinationStatus.dev !== linkedStatus.dev ||
-						destinationStatus.ino !== linkedStatus.ino
-					) {
-						throw new Error(`promoted file changed at ${path}`)
-					}
-					rmSync(destination)
-				})
-				throw new ScaffoldError('WRITE', `Failed to release staged link at ${path}`, {
-					path,
-					error: unlinked.error,
-					cleanup: cleanup.success ? undefined : cleanup.error,
-				})
-			}
-			const promotedStatus = lstatSync(destination)
-			promoted.push(
-				Object.freeze({
-					path,
-					shape: 'file',
-					device: promotedStatus.dev,
-					inode: promotedStatus.ino,
-					modified: promotedStatus.mtimeMs,
-					size: promotedStatus.size,
-					digest: digestFile(destination),
-				}),
-			)
-		}
-	})
-	if (!committed.success) {
-		const recoveryErrors: unknown[] = []
-		let preserveResidue = false
-		for (const promotion of [...promoted].reverse()) {
-			const removed = attempt(() => {
-				validateWriteTarget(transaction, ownedTarget)
-				const destination = resolvePhysicalPath(
-					transaction.target,
-					promotion.path,
-					'WRITE',
-					'target',
-				)
-				const status = lstatSync(destination)
-				const shape = status.isDirectory() ? 'directory' : 'file'
-				const digest = shape === 'file' ? attempt(() => digestFile(destination)) : undefined
-				if (
-					status.isSymbolicLink() ||
-					shape !== promotion.shape ||
-					status.dev !== promotion.device ||
-					status.ino !== promotion.inode ||
-					(digest !== undefined &&
-						(!digest.success ||
-							status.mtimeMs !== promotion.modified ||
-							status.size !== promotion.size ||
-							digest.value !== promotion.digest))
-				) {
-					throw new ScaffoldError(
-						'WRITE',
-						`Promoted transaction destination changed at ${promotion.path}`,
-						{
-							path: promotion.path,
-							...(digest?.success === false ? { error: digest.error } : {}),
-						},
-					)
-				}
-				if (shape === 'directory') {
-					const recovery = resolvePhysicalPath(
-						transaction.stage,
-						`.rollback/${promotion.path}`,
-						'WRITE',
-						'rollback',
-					)
-					mkdirSync(dirname(recovery), { recursive: true })
-					validateWriteTarget(transaction, ownedTarget)
-					renameSync(destination, recovery)
-					preserveResidue = true
-				} else {
-					rmSync(destination)
-				}
-			})
-			if (!removed.success) recoveryErrors.push(removed.error)
-		}
-		for (const path of [...preserved].reverse()) {
-			const restored = attempt(() => {
-				validateWriteTarget(transaction, ownedTarget)
-				validateWriteDirectories(transaction)
-				const destination = resolvePhysicalPath(transaction.target, path, 'WRITE', 'target')
-				const backup = resolvePhysicalPath(transaction.backup, path, 'WRITE', 'backup')
-				mkdirSync(dirname(destination), { recursive: true })
-				linkSync(backup, destination)
-				rmSync(backup)
-			})
-			if (!restored.success) recoveryErrors.push(restored.error)
-		}
-		for (const parent of [...createdParents].reverse()) {
-			const removed = attempt(() => {
-				validateWriteTarget(transaction, ownedTarget)
-				validateWriteDirectories(transaction)
-				validateWriteAnchor(parent, 'created parent')
-				rmdirSync(parent.path)
-			})
-			if (!removed.success && !isMissingPathError(removed.error)) recoveryErrors.push(removed.error)
-		}
-		const cleanup =
-			recoveryErrors.length === 0 && !preserveResidue
-				? attempt(() => discardWriteTransaction(transaction))
-				: undefined
-		throw new ScaffoldError('WRITE', 'Write transaction failed before commit', {
-			target: transaction.target,
-			root: transaction.root,
-			error: committed.error,
-			committed: false,
-			recovery: recoveryErrors,
-			residue: preserveResidue ? transaction.root : undefined,
-			cleanup: cleanup?.success === false ? cleanup.error : undefined,
-		})
-	}
-	validateWriteDirectories(transaction)
-	const cleanup = attempt(() => rmSync(transaction.root, { recursive: true }))
-	if (!cleanup.success) {
-		throw new ScaffoldError('WRITE', 'Write transaction committed with cleanup residue', {
-			target: transaction.target,
-			root: transaction.root,
-			error: cleanup.error,
-			committed: true,
-		})
-	}
-}
-
-/**
- * Resolve and completely preflight the canonical guide destinations a sync may write.
- *
- * @param guides - Structurally validated behind guide results.
- * @param target - The repository root that owns `guides/src`.
- * @returns Each guide paired with its contained destination.
- * @throws `ScaffoldError('WRITE', ...)` before mutation for ownership, collision,
- * containment, or existing filesystem-shape violations.
- */
-export function resolveGuideWrites(
-	guides: readonly GuideSync[],
-	target: string,
-): readonly GuideWrite[] {
-	const copied = attempt(() =>
-		guides.map((guide) => {
-			const name = guide.name
-			const path = guide.path
-			const content = guide.content
-			const freshness = guide.freshness
-			const note = guide.note
-			const baseline = guide.baseline
-			return {
-				name,
-				path,
-				content,
-				freshness,
-				...(note === undefined ? {} : { note }),
-				...(baseline === undefined ? {} : { baseline }),
-			}
-		}),
-	)
-	if (!copied.success) {
-		throw new ScaffoldError('WRITE', 'Sync guides could not be read safely', {
-			error: copied.error,
-		})
-	}
-	const behind = copied.value.filter((guide) => guide.freshness === 'behind')
-	const paths: string[] = []
-	for (const guide of behind) {
-		if (!DEPENDENCY_NAME_PATTERN.test(guide.name)) {
-			throw new ScaffoldError('WRITE', `Invalid guide dependency name at ${guide.name}`, {
-				name: guide.name,
-			})
-		}
-		const short = packageShortName(guide.name)
-		const expected = `guides/src/${short}.md`
-		if (guide.path !== expected) {
-			throw new ScaffoldError(
-				'WRITE',
-				`Guide path "${guide.path}" does not match dependency ${guide.name}`,
-				{ path: guide.path, expected },
-			)
-		}
-		paths.push(guide.path)
-	}
-	const conflict = findFileConflict(paths)
-	if (conflict !== undefined) {
-		throw new ScaffoldError(
-			'WRITE',
-			`Guide destination collision between "${conflict[0]}" and "${conflict[1]}"`,
-			{ paths: conflict },
-		)
-	}
-	const resolvedTarget = resolve(target)
-	const destinations = behind.map((guide) => ({
-		guide,
-		destination: resolvePhysicalPath(target, guide.path, 'WRITE', 'target'),
-	}))
-	for (const { guide, destination } of destinations) {
-		if (existsSync(destination)) {
-			const status = attempt(() => lstatSync(destination))
-			if (
-				!status.success ||
-				!status.value.isFile() ||
-				status.value.isSymbolicLink() ||
-				status.value.nlink !== 1
-			) {
-				throw new ScaffoldError('WRITE', `Guide destination is not a file at ${guide.path}`, {
-					path: guide.path,
-					...(status.success ? {} : { error: status.error }),
-				})
-			}
-		}
-		if (!destination.startsWith(resolvedTarget + sep)) {
-			throw new ScaffoldError('WRITE', `Guide destination escapes the target for ${guide.path}`, {
-				path: guide.path,
-				target,
-			})
-		}
-	}
-	return destinations
-}
-
-/**
- * Restore quarantined files to their original target-relative paths.
- *
- * @param transaction - The nominal transaction that owns the quarantine and target.
- * @param paths - The relative paths to restore, in their original move order.
- * @throws `ScaffoldError('WRITE', …)` after attempting every reverse-order
- *   restoration when one or more files could not be restored.
- */
-export function restoreFiles(transaction: WriteTransaction, paths: readonly string[]): void {
-	const requested = parsePortablePaths(paths, MAX_COLLECTION_ITEMS)
-	if (requested === undefined) {
-		throw new ScaffoldError('WRITE', 'Quarantine restore paths are malformed', {
-			limit: MAX_COLLECTION_ITEMS,
-		})
-	}
-	const failed: string[] = []
-	const errors: unknown[] = []
-	for (const path of [...requested].reverse()) {
-		const restored = attempt(() => {
-			validateWriteTarget(transaction, undefined)
-			const from = resolvePhysicalPath(transaction.backup, path, 'WRITE', 'quarantine')
-			const to = resolvePhysicalPath(transaction.target, path, 'WRITE', 'target')
-			const sourceStatus = lstatSync(from)
-			if (!sourceStatus.isFile() || sourceStatus.isSymbolicLink() || sourceStatus.nlink !== 1) {
-				throw new ScaffoldError('WRITE', `Invalid quarantined file at ${path}`, { path })
-			}
-			mkdirSync(dirname(to), { recursive: true })
-			validateWriteTarget(transaction, undefined)
-			linkSync(from, to)
-			validateWriteTarget(transaction, undefined)
-			rmSync(from)
-		})
-		if (!restored.success) {
-			failed.push(path)
-			errors.push(restored.error)
-		}
-	}
-	if (failed.length > 0) {
-		throw new ScaffoldError('WRITE', 'Failed to restore quarantined files', {
-			source: transaction.backup,
-			target: transaction.target,
-			paths: failed,
-			errors,
-		})
-	}
-}
-
-/**
- * Atomically promote a staged sibling directory while preserving recoverable state.
- *
- * @param staging - The completed staging directory.
- * @param target - The destination directory to replace.
- * @param backup - The sibling path reserved for the prior target.
- * @throws `ScaffoldError('WRITE', …)` with explicit `committed` and recovery paths.
- */
-export function replaceDirectory(staging: string, target: string, backup: string): void {
-	const resolvedStaging = resolve(staging)
-	const resolvedTarget = resolve(target)
-	const resolvedBackup = resolve(backup)
-	const parent = dirname(resolvedTarget)
-	const paths = [resolvedStaging, resolvedTarget, resolvedBackup]
-	if (dirname(resolvedStaging) !== parent || dirname(resolvedBackup) !== parent) {
-		throw new ScaffoldError('WRITE', 'Directory replacement paths must share one parent', {
-			staging: resolvedStaging,
-			target: resolvedTarget,
-			backup: resolvedBackup,
-			committed: false,
-		})
-	}
-	if (new Set(paths.map((path) => path.toLowerCase())).size !== paths.length) {
-		throw new ScaffoldError('WRITE', 'Directory replacement paths must be distinct', {
-			staging: resolvedStaging,
-			target: resolvedTarget,
-			backup: resolvedBackup,
-			committed: false,
-		})
-	}
-	const parentStatus = attempt(() => lstatSync(parent))
-	if (
-		!parentStatus.success ||
-		!parentStatus.value.isDirectory() ||
-		parentStatus.value.isSymbolicLink()
-	) {
-		throw new ScaffoldError('WRITE', 'Directory replacement parent must be a real directory', {
-			staging: resolvedStaging,
-			target: resolvedTarget,
-			backup: resolvedBackup,
-			committed: false,
-			...(parentStatus.success ? {} : { error: parentStatus.error }),
-		})
-	}
-	const parentAnchor: WriteAnchor = Object.freeze({
-		path: parent,
-		device: parentStatus.value.dev,
-		inode: parentStatus.value.ino,
-	})
-	const reserved = attempt(() => lstatSync(resolvedBackup))
-	if (reserved.success) {
-		throw new ScaffoldError('WRITE', 'Directory replacement backup already exists', {
-			staging: resolvedStaging,
-			target: resolvedTarget,
-			backup: resolvedBackup,
-			committed: false,
-		})
-	}
-	if (!isMissingPathError(reserved.error)) {
-		throw new ScaffoldError('WRITE', 'Failed to inspect directory replacement backup', {
-			staging: resolvedStaging,
-			target: resolvedTarget,
-			backup: resolvedBackup,
-			committed: false,
-			error: reserved.error,
-		})
-	}
-	const staged = attempt(() => lstatSync(resolvedStaging))
-	if (!staged.success || !staged.value.isDirectory() || staged.value.isSymbolicLink()) {
-		throw new ScaffoldError('WRITE', 'Directory replacement staging must be a real directory', {
-			staging: resolvedStaging,
-			target: resolvedTarget,
-			backup: resolvedBackup,
-			committed: false,
-			error: staged.success ? undefined : staged.error,
-		})
-	}
-	const stagingAnchor: WriteAnchor = Object.freeze({
-		path: resolvedStaging,
-		device: staged.value.dev,
-		inode: staged.value.ino,
-	})
-	const current = attempt(() => lstatSync(resolvedTarget))
-	if (!current.success && !isMissingPathError(current.error)) {
-		throw new ScaffoldError('WRITE', 'Failed to inspect directory replacement target', {
-			staging: resolvedStaging,
-			target: resolvedTarget,
-			backup: resolvedBackup,
-			committed: false,
-			error: current.error,
-		})
-	}
-	if (current.success && (!current.value.isDirectory() || current.value.isSymbolicLink())) {
-		throw new ScaffoldError('WRITE', 'Directory replacement target must be a real directory', {
-			staging: resolvedStaging,
-			target: resolvedTarget,
-			backup: resolvedBackup,
-			committed: false,
-		})
-	}
-	const existing = current.success
-	const targetAnchor: WriteAnchor | undefined = current.success
-		? Object.freeze({
-				path: resolvedTarget,
-				device: current.value.dev,
-				inode: current.value.ino,
-			})
-		: undefined
-	let preserved = false
-	let promoted = false
-	const replacement = attempt(() => {
-		validateWriteAnchor(parentAnchor, 'directory replacement parent')
-		validateWriteAnchor(stagingAnchor, 'directory replacement staging')
-		if (existing) {
-			if (targetAnchor === undefined) {
-				throw new Error('directory replacement target identity is missing')
-			}
-			validateWriteAnchor(targetAnchor, 'directory replacement target')
-			renameSync(resolvedTarget, resolvedBackup)
-			preserved = true
-			validateWriteAnchor(parentAnchor, 'directory replacement parent')
-			validateWriteAnchor(
-				Object.freeze({ ...targetAnchor, path: resolvedBackup }),
-				'directory replacement backup',
-			)
-			const vacated = attempt(() => lstatSync(resolvedTarget))
-			if (vacated.success || !isMissingPathError(vacated.error)) {
-				throw new Error('directory replacement target was not vacated')
-			}
-		}
-		validateWriteAnchor(parentAnchor, 'directory replacement parent')
-		validateWriteAnchor(stagingAnchor, 'directory replacement staging')
-		renameSync(resolvedStaging, resolvedTarget)
-		promoted = true
-		validateWriteAnchor(parentAnchor, 'directory replacement parent')
-		validateWriteAnchor(
-			Object.freeze({ ...stagingAnchor, path: resolvedTarget }),
-			'directory replacement target',
-		)
-		if (existing) {
-			if (targetAnchor === undefined) {
-				throw new Error('directory replacement backup identity is missing')
-			}
-			validateWriteAnchor(
-				Object.freeze({ ...targetAnchor, path: resolvedBackup }),
-				'directory replacement backup',
-			)
-			rmSync(resolvedBackup, { recursive: true, force: true })
-			preserved = false
-		}
-		validateWriteAnchor(parentAnchor, 'directory replacement parent')
-		validateWriteAnchor(
-			Object.freeze({ ...stagingAnchor, path: resolvedTarget }),
-			'directory replacement target',
-		)
-	})
-	if (replacement.success) return
-	const restored =
-		existing && preserved && !promoted
-			? attempt(() => {
-					if (targetAnchor === undefined) {
-						throw new Error('directory replacement backup identity is missing')
-					}
-					validateWriteAnchor(parentAnchor, 'directory replacement parent')
-					validateWriteAnchor(
-						Object.freeze({ ...targetAnchor, path: resolvedBackup }),
-						'directory replacement backup',
-					)
-					const destination = attempt(() => lstatSync(resolvedTarget))
-					if (destination.success || !isMissingPathError(destination.error)) {
-						throw new Error('directory replacement target is not vacant')
-					}
-					renameSync(resolvedBackup, resolvedTarget)
-					validateWriteAnchor(targetAnchor, 'directory replacement target')
-					preserved = false
-				})
-			: undefined
-	throw new ScaffoldError('WRITE', 'Directory replacement failed', {
-		staging: resolvedStaging,
-		target: resolvedTarget,
-		backup: preserved ? resolvedBackup : undefined,
-		committed: promoted,
-		error: replacement.error,
-		restore: restored?.success === false ? restored.error : undefined,
-	})
-}
-
-/**
- * Filter a manifest record's entries down to `@orkestrel/`-prefixed keys with
- * string values — the shared `dependencies` / `peerDependencies` /
- * `devDependencies` reader `deriveBlueprint` uses for every dependency-shaped
- * field.
- *
- * @param value - The candidate manifest field value (e.g. `parsed.dependencies`).
- * @returns The `@orkestrel/`-prefixed `[name, range]` entries; `[]` when
- *   `value` is not a plain object (per `isRecord`).
- *
- * @example
- * ```ts
- * import { selectOrkestrelEntries } from '@orkestrel/scaffold/server'
- *
- * selectOrkestrelEntries({ '@orkestrel/core': '^1.0.0', lodash: '^4.0.0' })
- * // [['@orkestrel/core', '^1.0.0']]
- * ```
- */
-export function selectOrkestrelEntries(value: unknown): readonly (readonly [string, string])[] {
-	if (!isRecord(value)) return []
-	const selected = attempt(() => {
-		const entries: [string, string][] = []
-		for (const [name, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(value))) {
-			if (!Reflect.has(descriptor, 'value')) return []
-			if (typeof descriptor.value === 'string' && DEPENDENCY_NAME_PATTERN.test(name)) {
-				entries.push([name, descriptor.value])
-			}
-		}
-		return entries
-	})
-	return selected.success ? selected.value : []
-}
-
-/**
- * Reconstruct a `Blueprint` from an EXISTING repo at `target` — the faithful
- * inverse `audit` / `repair` / `mirror` need to diff a live package against
- * its own would-be scaffold, rather than a fresh, dependency-less stand-in.
- *
- * @param target - The existing package directory to derive a `Blueprint` from.
  * @remarks
- * A scoped package name is stripped to its bounded safe short name. An
- * unscoped name is accepted only when the target is app-only, `private: true`,
- * and the name satisfies `isWorkspaceName`; every other name is a coded
- * `TARGET` failure. `src` is derived from `src/<environment>/` and `app` from
- * `app/<environment>/`; a target with no environment on either axis is also a coded
- * `TARGET` failure. The `bin` and `integration` facts probe physical
- * directories at `src/bin` and `tests/integration`. `services` is the sorted
- * set of direct vendor directories under `tests/service` that contain a test
- * at any depth, while `global` probes the physical exact-case `tests/setupGlobal.ts` file and `showcase`
- * probes the physical exact-case `configs/app/vite.showcase.config.ts` regular file; none is
- * inferred from the workspace name. `dependencies` /
- * `peers` are the `@orkestrel/`-prefixed entries of `manifest.dependencies` /
- * `manifest.peerDependencies` (a peer flagged `peerDependenciesMeta[name]
- * .optional === true` carries `optional: true`). `extras` is EVERY entry of
- * `manifest.devDependencies` (not only `@orkestrel/`-prefixed ones — an
- * external extra like `zod` must round-trip too), EXCLUDING the complete
- * generated dependency set `devDependenciesFor` emits for the reconstructed
- * blueprint's actual environments and structural axes. A devDependency ALSO present in
- * `manifest.peerDependencies` or `manifest.dependencies` (e.g. a peer
- * dev-installed for local testing) is likewise excluded from `extras` — it
- * already appears as a `peer`/`dependency` above, and double-counting it as
- * an `extra` would land it in `peers ∩ extras`, a blocking `validateBlueprint`
- * gate. `overrides` is always `[]` — derivation cannot recover a caller's
- * artifact-override intent from repository state.
- * @returns The reconstructed `Blueprint`.
- * @throws `ScaffoldError('TARGET', …)` when `target`'s manifest is unreadable
- *   (via `readManifest`), is not valid JSON, its name is unsafe for its
- *   publication mode, or `target` carries no source or application environment.
- * @throws `ScaffoldError('INVALID', …)` when service tests use the retired flat
- *   layout, a vendor directory has no test, or a service companion is missing.
- *
- * @example
- * ```ts
- * import { deriveBlueprint } from '@orkestrel/scaffold/server'
- *
- * deriveBlueprint('./packages/router') // { name: 'router', src: ['core', 'server'], … }
- * ```
- */
-export function deriveBlueprint(target: string): Blueprint {
-	const text = readManifest(target)
-	const parsed = parseJSON(text)
-	if (!isRecord(parsed)) {
-		throw new ScaffoldError('TARGET', `Manifest at ${target} is not a valid JSON object`, {
-			target,
-		})
-	}
-	const src = ENVIRONMENTS.filter((environment) =>
-		isRealDirectory(join(target, 'src', environment)),
-	)
-	const app = ENVIRONMENTS.filter((environment) =>
-		isRealDirectory(join(target, 'app', environment)),
-	)
-	if (src.length === 0 && app.length === 0) {
-		throw new ScaffoldError(
-			'TARGET',
-			`No source or application environment directory found under ${target}`,
-			{ target },
-		)
-	}
-	const rawName = ownDataValue(parsed, 'name')
-	if (typeof rawName !== 'string') {
-		throw new ScaffoldError('TARGET', 'Manifest name must be a string', {
-			target,
-			name: rawName,
-		})
-	}
-	const scopedValue = rawName.startsWith('@orkestrel/')
-		? rawName.slice('@orkestrel/'.length)
-		: undefined
-	const scopedName = isWorkspaceName(scopedValue)
-	const privateAppName =
-		src.length === 0 && ownDataValue(parsed, 'private') === true && isWorkspaceName(rawName)
-	if (!scopedName && !privateAppName) {
-		throw new ScaffoldError(
-			'TARGET',
-			`Manifest name "${String(rawName)}" is neither an @orkestrel package nor a private application`,
-			{ target, name: rawName },
-		)
-	}
-	const name = scopedName ? scopedValue : rawName
-
-	const rawDescription = ownDataValue(parsed, 'description')
-	const description = typeof rawDescription === 'string' ? rawDescription : undefined
-	const rawKeywords = ownDataValue(parsed, 'keywords')
-	const keywords =
-		Array.isArray(rawKeywords) && rawKeywords.every((word) => typeof word === 'string')
-			? rawKeywords
-			: []
-	const rawVersion = ownDataValue(parsed, 'version')
-	const version = typeof rawVersion === 'string' ? rawVersion : DEFAULT_VERSION
-	const rawEngines = ownDataValue(parsed, 'engines')
-	const rawNode = ownDataValue(rawEngines, 'node')
-	const engines = typeof rawNode === 'string' ? rawNode : DEFAULT_ENGINES
-
-	// Structural only: a repo carries the self-hosting tax (bin field, scaffold
-	// script, check/test/build:src:bin scripts, build:host, the srcBin vite
-	// project) iff it ships its own src/bin — never derived from `name`.
-	const bin = isRealDirectory(join(target, 'src', 'bin'))
-	const integration = isRealDirectory(join(target, 'tests', 'integration'))
-	const serviceRoot = join(target, 'tests', 'service')
-	const services: string[] = []
-	if (existsSync(serviceRoot)) {
-		if (!isRealDirectory(serviceRoot)) {
-			throw new ScaffoldError(
-				'INVALID',
-				`Service root at ${serviceRoot} must be a physical directory`,
-				{
-					target,
-					path: 'tests/service',
-				},
-			)
-		}
-		const serviceEntries = readdirSync(serviceRoot, { withFileTypes: true })
-		const flat = serviceEntries
-			.filter((entry) => entry.name.endsWith('.test.ts') && !entry.isDirectory())
-			.map((entry) => entry.name)
-			.sort()
-		if (flat.length > 0) {
-			throw new ScaffoldError(
-				'INVALID',
-				`Flat service tests are not supported; move ${flat.join(', ')} into tests/service/<vendor>/`,
-				{ target, paths: flat.map((path) => `tests/service/${path}`) },
-			)
-		}
-		for (const entry of serviceEntries) {
-			const vendor = join(serviceRoot, entry.name)
-			if (!isRealDirectory(vendor)) continue
-			if (!isWorkspaceName(entry.name)) {
-				throw new ScaffoldError(
-					'INVALID',
-					`Service vendor directory "${entry.name}" must use a bounded lowercase name`,
-					{ target, path: `tests/service/${entry.name}` },
-				)
-			}
-			const tests = listFiles(vendor).filter((path) => path.endsWith('.test.ts'))
-			if (tests.length === 0) {
-				throw new ScaffoldError(
-					'INVALID',
-					`Service vendor "${entry.name}" contains no test; add tests/service/${entry.name}/**/*.test.ts or remove the directory`,
-					{ target, service: entry.name },
-				)
-			}
-			const setup = `tests/service/${entry.name}/setup.ts`
-			if (!isRealFile(join(target, setup))) {
-				throw new ScaffoldError(
-					'INVALID',
-					`Service vendor "${entry.name}" is missing ${setup}; add a readiness module that probes and warms the vendor and throws when unavailable`,
-					{ target, service: entry.name, missing: setup },
-				)
-			}
-			services.push(entry.name)
-		}
-		services.sort()
-	}
-	const showcaseRoot = join(target, dirname(SHOWCASE_CONFIG_PATH))
-	const showcaseEntries = attempt(() => readdirSync(showcaseRoot))
-	const showcase =
-		showcaseEntries.success &&
-		showcaseEntries.value.includes(basename(SHOWCASE_CONFIG_PATH)) &&
-		isRealFile(join(target, SHOWCASE_CONFIG_PATH))
-	const tests = join(target, dirname(GLOBAL_SETUP_PATH))
-	const entries = attempt(() => readdirSync(tests))
-	const global =
-		entries.success &&
-		entries.value.includes(basename(GLOBAL_SETUP_PATH)) &&
-		isRealFile(join(target, GLOBAL_SETUP_PATH))
-	const rawDependencies = ownDataValue(parsed, 'dependencies')
-	const rawPeerDependencies = ownDataValue(parsed, 'peerDependencies')
-	const dependencies: Dependency[] = selectOrkestrelEntries(rawDependencies).map(
-		([depName, range]) => ({ name: depName, range }),
-	)
-
-	const rawPeersMeta = ownDataValue(parsed, 'peerDependenciesMeta')
-	const peersMeta = isRecord(rawPeersMeta) ? rawPeersMeta : undefined
-	const peers: Dependency[] = selectOrkestrelEntries(rawPeerDependencies).map(
-		([depName, range]) => {
-			const meta = ownDataValue(peersMeta, depName)
-			return isRecord(meta) && ownDataValue(meta, 'optional') === true
-				? { name: depName, range, optional: true }
-				: { name: depName, range }
-		},
-	)
-
-	// A devDependency that ALSO appears in peerDependencies or dependencies is
-	// excluded from extras — it already appears as a peer/dependency above,
-	// and leaving it in extras would land it in `peers ∩ extras`, a blocking
-	// `validateBlueprint` gate. Middleware-shaped packages dev-install a peer
-	// for local testing.
-	const peerAndDependencyNames = new Set([
-		...selectOrkestrelEntries(rawPeerDependencies).map(([depName]) => depName),
-		...selectOrkestrelEntries(rawDependencies).map(([depName]) => depName),
-	])
-	const generatedDevDependencies = new Set(
-		Object.keys(
-			devDependenciesFor(
-				blueprint(name, {
-					src,
-					app,
-					dependencies,
-					peers,
-					extras: [],
-					bin,
-					integration,
-					services,
-					global,
-					showcase,
-				}),
-			),
-		),
-	)
-	// EVERY devDependency, not only `@orkestrel/`-prefixed ones, is a candidate
-	// `extras` entry — an external extra (e.g. `zod`) must round-trip through
-	// derivation exactly like an `@orkestrel/`-scoped one, or a package with a
-	// HAND-ADDED devDependency (recovered here from the manifest's
-	// devDependencies minus the generated baseline) audits DRIFTED against
-	// its own manifest.
-	const rawDevDependencies = ownDataValue(parsed, 'devDependencies')
-	const devDependencies = isRecord(rawDevDependencies) ? rawDevDependencies : {}
-	const extras: Dependency[] = Object.entries(devDependencies)
-		.filter((entry): entry is [string, string] => typeof entry[1] === 'string')
-		.filter(
-			([depName]) => !generatedDevDependencies.has(depName) && !peerAndDependencyNames.has(depName),
-		)
-		.map(([depName, range]) => ({ name: depName, range }))
-	return blueprint(name, {
-		...(description === undefined ? {} : { description }),
-		keywords,
-		src,
-		app,
-		dependencies,
-		peers,
-		extras,
-		version,
-		engines,
-		overrides: [],
-		bin,
-		integration,
-		services,
-		global,
-		showcase,
-	})
-}
-
-/**
- * Whether a target path is absent, empty, or contains nothing but a `.git`
- * directory — the green-field target law `Materializer.materialize` enforces.
- *
- * @param target - The candidate target directory path.
- * @returns `true` when `target` is safe to materialize a fresh package into.
+ * The green-field law. A checkout of an empty repository is where a new
+ * workspace legitimately starts, so that one directory is admitted and nothing
+ * else is; anything more means the caller is repairing a workspace rather than
+ * creating one. Only the first two entries are read, so the answer costs the
+ * same on an empty directory and on a full one.
  *
  * @example
  * ```ts
  * import { isVacant } from '@orkestrel/scaffold/server'
  *
- * isVacant('./packages/router-new') // true — absent, empty, or only a .git dir
+ * isVacant('./packages/router-new') // true when absent, empty, or `.git` only
  * ```
  */
 export function isVacant(target: string): boolean {
 	if (!isFilesystemPath(target)) return false
 	const status = attempt(() => lstatSync(target))
-	if (!status.success) return isMissingPathError(status.error)
+	if (!status.success) return matchesMissingPath(status.error)
 	if (!status.value.isDirectory() || status.value.isSymbolicLink()) return false
-	const handle = opendirSync(target)
-	let first: string | undefined
-	let second = false
-	try {
-		first = handle.readSync()?.name
-		second = first === undefined ? false : handle.readSync() !== null
-	} finally {
-		handle.closeSync()
-	}
-	if (first === undefined) return true
-	if (second || first !== '.git') return false
-	const metadata = lstatSync(join(target, '.git'))
-	return metadata.isDirectory() && !metadata.isSymbolicLink()
-}
-
-/**
- * Read a target's current bytes at a set of relative paths into a
- * byte-exact hexadecimal {@link Snapshot} — the I/O that feeds `diffPlan`.
- *
- * @param target - The target directory to read from.
- * @param paths - The plan-relative artifact paths to probe.
- * @returns A snapshot keyed by path; each file maps to its exact lowercase
- *   hexadecimal bytes and a directly requested directory maps to `''`
- *   (presence only). An absent path is omitted entirely.
- * @throws `ScaffoldError('TARGET', …)` when an EXISTING path fails to read
- *   (e.g. `EACCES` / `EPERM`) — carries the offending relative `path` (and
- *   the resolved `full` path) in `context`. An absent path is never an
- *   error — it is simply omitted, per the return contract above.
- *
- * @example
- * ```ts
- * import { readTarget } from '@orkestrel/scaffold/server'
- *
- * readTarget('./packages/router', ['package.json', 'src/core/index.ts'])
- * // { 'package.json': '7b226e616d65223a…', 'src/core/index.ts': '6578706f7274…' }
- * ```
- */
-export function readTarget(target: string, paths: readonly string[]): Snapshot {
-	if (!isFilesystemPath(target)) {
-		throw new ScaffoldError('TARGET', 'Target path is malformed or exceeds its bounds', { target })
-	}
-	const requested = parsePortablePaths(paths, MAX_COLLECTION_ITEMS)
-	if (requested === undefined) {
-		throw new ScaffoldError('TARGET', 'Target snapshot paths are malformed', {
-			target,
-			limit: MAX_COLLECTION_ITEMS,
-		})
-	}
-	let remaining = MAX_TOTAL_ARTIFACT_BYTES
-	const entries: [path: string, hex: string][] = []
-	for (const path of requested) {
-		const full = resolvePhysicalPath(target, path, 'TARGET', 'target')
-		if (!existsSync(full)) continue
-		const status = attempt(() => lstatSync(full))
-		if (
-			!status.success ||
-			status.value.isSymbolicLink() ||
-			(!status.value.isDirectory() &&
-				(!status.value.isFile() || status.value.nlink !== 1 || status.value.size > remaining))
-		) {
-			throw new ScaffoldError('TARGET', `Failed to read target file at ${path}`, {
-				path,
-				full,
-				limit: MAX_TOTAL_ARTIFACT_BYTES,
-				...(status.success ? {} : { error: status.error }),
-			})
-		}
-		if (status.value.isDirectory()) {
-			entries.push([path, ''])
-			continue
-		}
-		const hex = readFileHex(
-			target,
-			path,
-			'TARGET',
-			'target',
-			Math.min(MAX_ARTIFACT_BYTES, remaining),
-		)
-		remaining -= hex.length / 2
-		entries.push([path, hex])
-	}
-	return Object.fromEntries(entries)
-}
-
-/**
- * Read `target/package.json` text — the read that feeds `manifestToDependencies`.
- *
- * @param target - The target directory to read the manifest from.
- * @returns The manifest file's raw text.
- * @throws `ScaffoldError('TARGET', …)` when the manifest is absent or
- *   unreadable (e.g. `EACCES` / `EPERM`) — carries the resolved `full` path
- *   in `context`.
- *
- * @example
- * ```ts
- * import { readManifest } from '@orkestrel/scaffold/server'
- *
- * readManifest('./packages/router') // '{ "name": "@orkestrel/router", … }'
- * ```
- */
-export function readManifest(target: string): string {
-	if (!isFilesystemPath(target)) {
-		throw new ScaffoldError('TARGET', 'Manifest target is malformed or exceeds its bounds', {
-			target,
-		})
-	}
-	const full = join(target, 'package.json')
-	const result = attempt(() =>
-		readFileText(target, 'package.json', 'TARGET', 'target', MAX_MANIFEST_BYTES),
-	)
-	if (!result.success) {
-		throw new ScaffoldError('TARGET', `Failed to read manifest at ${full}`, {
-			target,
-			full,
-			error: result.error,
-		})
-	}
-	return result.value
-}
-
-/**
- * Read and validate a vendored host root's `manifest.json`, when present.
- *
- * @param host - The host root to probe.
- * @returns The parsed complete manifest, or `undefined` when `host` has no
- *   `manifest.json` — the raw-repo-root fallback (`Materializer` then maps
- *   an artifact's `source` to `host` 1:1, no vendored staging indirection).
- * @throws `ScaffoldError('TARGET', …)` when `manifest.json` exists but is
- *   unreadable, malformed, membership-corrupted, collision-prone,
- *   root-incomplete, or does not map bijectively and case-exactly onto real
- *   contained storage files.
- *
- * @example
- * ```ts
- * import { readHostManifest } from '@orkestrel/scaffold/server'
- *
- * readHostManifest('./dist/host') // HostManifest | undefined
- * ```
- */
-export function readHostManifest(host: string): HostManifest | undefined {
-	if (!isFilesystemPath(host)) {
-		throw new ScaffoldError('TARGET', 'Host path is malformed or exceeds its bounds', { host })
-	}
-	const full = resolvePhysicalPath(host, HOST_MANIFEST_PATH, 'TARGET', 'host')
-	if (!existsSync(full)) return undefined
-	const text = attempt(() =>
-		readFileText(host, HOST_MANIFEST_PATH, 'TARGET', 'host', MAX_MANIFEST_BYTES),
-	)
-	if (!text.success) {
-		throw new ScaffoldError('TARGET', `Failed to read host manifest at ${full}`, {
-			host,
-			full,
-			error: text.error,
-		})
-	}
-	const manifest = parseJSONAs(text.value, isHostManifest)
-	if (manifest === undefined) {
-		throw new ScaffoldError('TARGET', `Host manifest at ${full} is malformed`, { host, full })
-	}
-	if (manifest.digest !== digestHostManifest(manifest.entries, manifest.roots)) {
-		throw new ScaffoldError('TARGET', `Host manifest membership at ${full} is corrupted`, {
-			host,
-			full,
-		})
-	}
-	const destinationConflict = findFileConflict(manifest.entries.map((entry) => entry.destination))
-	if (destinationConflict !== undefined) {
-		throw new ScaffoldError(
-			'TARGET',
-			`Host manifest destination collision between "${destinationConflict[0]}" and "${destinationConflict[1]}"`,
-			{ host, full, field: 'destination', paths: destinationConflict },
-		)
-	}
-	const storageConflict = findFileConflict([
-		HOST_MANIFEST_PATH,
-		...manifest.entries.map((entry) => entry.storage),
-	])
-	if (storageConflict !== undefined) {
-		throw new ScaffoldError(
-			'TARGET',
-			`Host manifest storage collision between "${storageConflict[0]}" and "${storageConflict[1]}"`,
-			{ host, full, field: 'storage', paths: storageConflict },
-		)
-	}
-	const rootConflict = findPathConflict(manifest.roots)
-	if (rootConflict !== undefined) {
-		throw new ScaffoldError(
-			'TARGET',
-			`Host manifest root collision between "${rootConflict[0]}" and "${rootConflict[1]}"`,
-			{ host, full, field: 'root', paths: rootConflict },
-		)
-	}
-	const declaredRoots = new Set(manifest.roots)
-	for (const entry of manifest.entries) {
-		const segments = entry.destination.split('/')
-		for (let index = 1; index < segments.length; index += 1) {
-			const root = segments.slice(0, index).join('/')
-			if (!declaredRoots.has(root)) {
-				throw new ScaffoldError(
-					'TARGET',
-					`Host manifest does not declare destination root "${root}"`,
-					{ host, full, root, destination: entry.destination },
-				)
-			}
-		}
-	}
-	for (const root of manifest.roots) {
-		const foldedRoot = root.toLowerCase()
-		const file = manifest.entries.find((entry) => {
-			const destination = entry.destination.toLowerCase()
-			return foldedRoot === destination || foldedRoot.startsWith(`${destination}/`)
-		})
-		if (file !== undefined) {
-			throw new ScaffoldError(
-				'TARGET',
-				`Host manifest directory "${root}" conflicts with file "${file.destination}"`,
-				{ host, full, root, destination: file.destination },
-			)
-		}
-	}
-	const listed = attempt(() => listFiles(host))
-	if (!listed.success) {
-		throw new ScaffoldError('TARGET', `Failed to inventory host storage at ${host}`, {
-			host,
-			full,
-			error: listed.error,
-		})
-	}
-	const stored = listed.value.filter((path) => path !== HOST_MANIFEST_PATH)
-	const storedConflict = findPathConflict(stored)
-	if (storedConflict !== undefined) {
-		throw new ScaffoldError(
-			'TARGET',
-			`Host storage collision between "${storedConflict[0]}" and "${storedConflict[1]}"`,
-			{ host, full, paths: storedConflict },
-		)
-	}
-	const storedByPath = new Map(stored.map((path) => [path.toLowerCase(), path]))
-	const declaredStorage = new Set(manifest.entries.map((entry) => entry.storage.toLowerCase()))
-	for (const path of stored) {
-		if (!declaredStorage.has(path.toLowerCase())) {
-			throw new ScaffoldError('TARGET', `Host storage file "${path}" is not declared`, {
-				host,
-				full,
-				path,
-			})
-		}
-	}
-	for (const entry of manifest.entries) {
-		const storedPath = storedByPath.get(entry.storage.toLowerCase())
-		if (storedPath === undefined || storedPath !== entry.storage) {
-			throw new ScaffoldError(
-				'TARGET',
-				`Host storage file "${entry.storage}" is missing or case-mismatched`,
-				{ host, full, storage: entry.storage, actual: storedPath },
-			)
-		}
-		const storage = resolvePhysicalPath(host, entry.storage, 'TARGET', 'host')
-		const status = attempt(() => lstatSync(storage))
-		if (
-			!status.success ||
-			!status.value.isFile() ||
-			status.value.isSymbolicLink() ||
-			status.value.nlink !== 1
-		) {
-			throw new ScaffoldError('TARGET', `Host storage at "${entry.storage}" is not a file`, {
-				host,
-				full,
-				storage: entry.storage,
-				error: status.success ? undefined : status.error,
-			})
-		}
-	}
-	return manifest
-}
-
-/**
- * Read one contained file as exact lowercase hexadecimal bytes.
- *
- * @param root - The declared containing root.
- * @param path - The root-relative file path.
- * @param code - The coded failure for containment or reading.
- * @param boundary - The boundary name used in diagnostics.
- * @returns The exact file bytes encoded as lowercase hexadecimal.
- */
-export function readFileHex(
-	root: string,
-	path: string,
-	code: ScaffoldErrorCode,
-	boundary: string,
-	limit = MAX_ARTIFACT_BYTES,
-): string {
-	if (!Number.isSafeInteger(limit) || limit < 0 || limit > MAX_ARTIFACT_BYTES) {
-		throw new ScaffoldError(code, `Invalid file byte limit at ${path}`, { path, root, limit })
-	}
-	if (!isPortablePath(path)) {
-		throw new ScaffoldError(code, `Unsafe file path at ${path}`, { path, root })
-	}
-	const full = resolvePhysicalPath(root, path, code, boundary)
-	const status = attempt(() => lstatSync(full))
-	if (
-		!status.success ||
-		!status.value.isFile() ||
-		status.value.isSymbolicLink() ||
-		status.value.nlink !== 1
-	) {
-		throw new ScaffoldError(code, `File is not a physical readable file at ${path}`, {
-			path,
-			full,
-			...(status.success ? {} : { error: status.error }),
-		})
-	}
-	const opened = attempt(() => openSync(full, 'r'))
-	if (!opened.success) {
-		throw new ScaffoldError(code, `Failed to read file at ${path}`, {
-			path,
-			full,
-			error: opened.error,
-		})
-	}
+	const opened = attempt(() => opendirSync(target))
+	if (!opened.success) return false
 	const handle = opened.value
-	const result = attempt(() => {
-		const current = fstatSync(handle)
-		if (
-			!current.isFile() ||
-			current.nlink !== 1 ||
-			current.dev !== status.value.dev ||
-			current.ino !== status.value.ino
-		) {
-			throw new ScaffoldError(code, `File changed before reading at ${path}`, { path, full })
-		}
-		if (current.size > limit) {
-			throw new ScaffoldError(code, `File exceeds the artifact limit at ${path}`, {
-				path,
-				full,
-				limit,
-				size: current.size,
-			})
-		}
-		const bytes = Buffer.alloc(current.size)
-		let offset = 0
-		while (offset < bytes.byteLength) {
-			const length = readSync(handle, bytes, offset, bytes.byteLength - offset, offset)
-			if (length === 0) break
-			offset += length
-		}
-		const overflow = Buffer.alloc(1)
-		const extra = readSync(handle, overflow, 0, overflow.byteLength, offset)
-		const after = fstatSync(handle)
-		const pathStatus = lstatSync(full)
-		if (
-			offset !== bytes.byteLength ||
-			extra !== 0 ||
-			after.dev !== current.dev ||
-			after.ino !== current.ino ||
-			after.mtimeMs !== current.mtimeMs ||
-			after.size !== current.size ||
-			!pathStatus.isFile() ||
-			pathStatus.isSymbolicLink() ||
-			pathStatus.nlink !== 1 ||
-			pathStatus.dev !== current.dev ||
-			pathStatus.ino !== current.ino
-		) {
-			throw new ScaffoldError(code, `File changed while reading at ${path}`, { path, full })
-		}
-		return bytesToHex(bytes)
+	const read = attempt(() => {
+		const first = handle.readSync()
+		if (first === null) return true
+		if (handle.readSync() !== null) return false
+		return matchesGitPath(first.name) && first.isDirectory() && !first.isSymbolicLink()
 	})
-	const closed = attempt(() => closeSync(handle))
-	if (!result.success) throw result.error
-	if (!closed.success) {
-		throw new ScaffoldError(code, `Failed to close file at ${path}`, {
-			path,
-			full,
-			error: closed.error,
-		})
-	}
-	return result.value
+	attempt(() => handle.closeSync())
+	return read.success && read.value
 }
 
 /**
- * Read one contained physical file as bounded UTF-8 text.
+ * List a directory's files as sorted root-relative paths.
  *
- * @param root - The declared containing root.
- * @param path - The root-relative file path.
- * @param code - The coded failure for containment or reading.
- * @param boundary - The boundary name used in diagnostics.
- * @returns The exact file bytes decoded as UTF-8 text.
- */
-export function readFileText(
-	root: string,
-	path: string,
-	code: ScaffoldErrorCode,
-	boundary: string,
-	limit = MAX_ARTIFACT_BYTES,
-): string {
-	const decoded = attempt(() =>
-		new TextDecoder('utf-8', { fatal: true }).decode(
-			Buffer.from(readFileHex(root, path, code, boundary, limit), 'hex'),
-		),
-	)
-	if (!decoded.success) {
-		throw new ScaffoldError(code, `File is not valid UTF-8 at ${path}`, {
-			path,
-			root,
-			error: decoded.error,
-		})
-	}
-	return decoded.value
-}
-
-/**
- * Recursively list a directory's files as root-relative paths.
+ * @param root - The directory to inventory.
+ * @returns Every descendant file as a `/`-separated root-relative path, in
+ * code-unit order, and `[]` when `root` is absent.
+ * @throws `ScaffoldError('INVALID', …)` when `root` is not a host path.
+ * @throws `ScaffoldError('TARGET', …)` when `root` is present but is not a
+ * physical directory, cannot be read, holds a name this package could not plan,
+ * or carries more entries or more nesting than one inventory may report.
  *
- * @param root - The directory to list.
- * @returns Root-relative file paths (posix-style `/` separators), code-unit
- *   sorted, or `[]` when `root` is absent.
+ * @remarks
+ * A whole-tree answer throws where a single-path answer returns `undefined`, and
+ * the reason is that a partial inventory reads exactly like a complete one. A
+ * caller comparing a target against a plan would treat a truncated listing as
+ * proof that the missing files are not there.
+ *
+ * Absence is the one exception: nothing to inventory is a complete answer, so it
+ * is the empty list. Links are listed as files rather than followed, so no
+ * traversal can leave the root and no cycle can form.
  *
  * @example
  * ```ts
  * import { listFiles } from '@orkestrel/scaffold/server'
  *
- * listFiles('./dist/host/.claude/agents') // ['scout.md', 'builder.md', …]
+ * listFiles('./dist/host') // ['AGENTS.md', 'claude/rules/names.md', …]
  * ```
  */
 export function listFiles(root: string): readonly string[] {
 	if (!isFilesystemPath(root)) {
-		throw new ScaffoldError('TARGET', 'Listing root is malformed or exceeds its bounds', { root })
+		throw new ScaffoldError('INVALID', 'Listing root is not a host path', { root })
 	}
-	const rootStatus = attempt(() => lstatSync(root))
-	if (!rootStatus.success) {
-		if (isMissingPathError(rootStatus.error)) return []
-		throw new ScaffoldError('TARGET', 'Failed to inspect listing root', {
+	const status = attempt(() => lstatSync(root))
+	if (!status.success) {
+		if (matchesMissingPath(status.error)) return []
+		throw new ScaffoldError('TARGET', `Listing root cannot be inspected at ${root}`, {
 			root,
-			error: rootStatus.error,
+			error: status.error,
 		})
 	}
-	if (!rootStatus.value.isDirectory() || rootStatus.value.isSymbolicLink()) {
-		throw new ScaffoldError('TARGET', 'Listing root is not a physical directory', { root })
+	if (!status.value.isDirectory() || status.value.isSymbolicLink()) {
+		throw new ScaffoldError('TARGET', `Listing root is not a physical directory at ${root}`, {
+			root,
+		})
 	}
 	const files: string[] = []
 	const pending = [{ full: root, path: '', depth: 0 }]
@@ -2110,63 +517,107 @@ export function listFiles(root: string): readonly string[] {
 	while (pending.length > 0) {
 		const current = pending.pop()
 		if (current === undefined) break
-		const handle = opendirSync(current.full)
-		try {
+		const opened = attempt(() => opendirSync(current.full))
+		if (!opened.success) {
+			throw new ScaffoldError('TARGET', `Listing directory cannot be read at ${current.full}`, {
+				root,
+				path: current.path,
+				error: opened.error,
+			})
+		}
+		const handle = opened.value
+		const walked = attempt(() => {
 			for (;;) {
 				const entry = handle.readSync()
 				if (entry === null) break
 				visited += 1
-				if (visited > MAX_HOST_ENTRIES) {
-					throw new ScaffoldError('TARGET', `Host traversal exceeds ${MAX_HOST_ENTRIES} entries`, {
+				if (visited > MAX_INVENTORY_PATHS) {
+					throw new ScaffoldError('TARGET', 'Listing exceeds the paths one inventory may report', {
 						root,
-						limit: MAX_HOST_ENTRIES,
+						limit: MAX_INVENTORY_PATHS,
 					})
 				}
 				const path = current.path === '' ? entry.name : `${current.path}/${entry.name}`
-				if (!isPortablePath(path)) {
-					throw new ScaffoldError('TARGET', 'Filesystem traversal found a non-portable path')
-				}
-				if (entry.isDirectory() && !entry.isSymbolicLink()) {
-					const depth = current.depth + 1
-					if (depth > MAX_HOST_DEPTH) {
-						throw new ScaffoldError('TARGET', `Host traversal exceeds depth ${MAX_HOST_DEPTH}`, {
+				if (!isPath(path)) {
+					throw new ScaffoldError(
+						'TARGET',
+						`Listing found a path this package cannot plan at ${path}`,
+						{
 							root,
 							path,
-							limit: MAX_HOST_DEPTH,
-						})
-					}
-					pending.push({ full: join(current.full, entry.name), path, depth })
-				} else {
-					files.push(path)
+						},
+					)
 				}
+				if (!entry.isDirectory() || entry.isSymbolicLink()) {
+					files.push(path)
+					continue
+				}
+				const depth = current.depth + 1
+				if (depth >= MAX_PATH_DEPTH) {
+					throw new ScaffoldError(
+						'TARGET',
+						`Listing exceeds the depth one path may carry at ${path}`,
+						{
+							root,
+							path,
+							limit: MAX_PATH_DEPTH,
+						},
+					)
+				}
+				pending.push({ full: join(current.full, entry.name), path, depth })
 			}
-		} finally {
-			handle.closeSync()
-		}
+		})
+		attempt(() => handle.closeSync())
+		if (!walked.success) throw walked.error
 	}
 	return files.sort()
 }
 
 /**
- * Recursively list a directory's descendant directories.
+ * List a directory's descendant directories as sorted root-relative paths.
  *
- * @param root - The directory to list.
- * @returns Root-relative POSIX directory paths in code-unit order.
+ * @param root - The directory to inventory.
+ * @returns Every descendant directory as a `/`-separated root-relative path, in
+ * code-unit order, and `[]` when `root` is absent.
+ * @throws `ScaffoldError('INVALID', …)` when `root` is not a host path.
+ * @throws `ScaffoldError('TARGET', …)` when `root` is present but is not a
+ * physical directory, cannot be read, holds a name this package could not plan,
+ * or carries more entries or more nesting than one inventory may report.
+ *
+ * @remarks
+ * The sibling of {@link listFiles}, under the same bounds and the same refusals,
+ * and it exists because a directory holding no file is invisible to a file walk.
+ * That is the half a vendored host's `roots` declares and the half a file
+ * inventory cannot check, so a stager needs both walks to state a complete
+ * membership.
+ *
+ * `root` itself is not listed, because the answer is root-relative and the root
+ * has no root-relative name. A redirected directory is not listed and is not
+ * walked into, so no traversal can leave the root and no cycle can form.
+ *
+ * @example
+ * ```ts
+ * import { listDirectories } from '@orkestrel/scaffold/server'
+ *
+ * listDirectories('./.claude') // ['agents', 'rules', 'skills', …]
+ * ```
  */
 export function listDirectories(root: string): readonly string[] {
 	if (!isFilesystemPath(root)) {
-		throw new ScaffoldError('TARGET', 'Listing root is malformed or exceeds its bounds', { root })
+		throw new ScaffoldError('INVALID', 'Listing root is not a host path', { root })
 	}
-	const rootStatus = attempt(() => lstatSync(root))
-	if (!rootStatus.success) {
-		if (isMissingPathError(rootStatus.error)) return []
-		throw new ScaffoldError('TARGET', 'Failed to inspect listing root', {
+	const status = attempt(() => lstatSync(root))
+	if (!status.success) {
+		if (matchesMissingPath(status.error)) return []
+		throw new ScaffoldError('TARGET', `Listing root cannot be inspected at ${root}`, {
 			root,
-			error: rootStatus.error,
+			error: status.error,
 		})
 	}
-	if (!rootStatus.value.isDirectory() || rootStatus.value.isSymbolicLink()) {
-		throw new ScaffoldError('TARGET', 'Listing root is not a physical directory', { root })
+	if (!status.value.isDirectory() || status.value.isSymbolicLink()) {
+		throw new ScaffoldError('TARGET', `Listing root is not a physical directory at ${root}`, {
+			root,
+		})
 	}
 	const directories: string[] = []
 	const pending = [{ full: root, path: '', depth: 0 }]
@@ -2174,985 +625,709 @@ export function listDirectories(root: string): readonly string[] {
 	while (pending.length > 0) {
 		const current = pending.pop()
 		if (current === undefined) break
-		const handle = opendirSync(current.full)
-		try {
+		const opened = attempt(() => opendirSync(current.full))
+		if (!opened.success) {
+			throw new ScaffoldError('TARGET', `Listing directory cannot be read at ${current.full}`, {
+				root,
+				path: current.path,
+				error: opened.error,
+			})
+		}
+		const handle = opened.value
+		const walked = attempt(() => {
 			for (;;) {
 				const entry = handle.readSync()
 				if (entry === null) break
 				visited += 1
-				if (visited > MAX_HOST_ENTRIES) {
-					throw new ScaffoldError('TARGET', `Host traversal exceeds ${MAX_HOST_ENTRIES} entries`, {
+				if (visited > MAX_INVENTORY_PATHS) {
+					throw new ScaffoldError('TARGET', 'Listing exceeds the paths one inventory may report', {
 						root,
-						limit: MAX_HOST_ENTRIES,
+						limit: MAX_INVENTORY_PATHS,
 					})
+				}
+				const path = current.path === '' ? entry.name : `${current.path}/${entry.name}`
+				if (!isPath(path)) {
+					throw new ScaffoldError(
+						'TARGET',
+						`Listing found a path this package cannot plan at ${path}`,
+						{
+							root,
+							path,
+						},
+					)
 				}
 				if (!entry.isDirectory() || entry.isSymbolicLink()) continue
-				const path = current.path === '' ? entry.name : `${current.path}/${entry.name}`
-				if (!isPortablePath(path)) {
-					throw new ScaffoldError('TARGET', 'Filesystem traversal found a non-portable path')
-				}
 				const depth = current.depth + 1
-				if (depth > MAX_HOST_DEPTH) {
-					throw new ScaffoldError('TARGET', `Host traversal exceeds depth ${MAX_HOST_DEPTH}`, {
-						root,
-						path,
-						limit: MAX_HOST_DEPTH,
-					})
+				if (depth >= MAX_PATH_DEPTH) {
+					throw new ScaffoldError(
+						'TARGET',
+						`Listing exceeds the depth one path may carry at ${path}`,
+						{
+							root,
+							path,
+							limit: MAX_PATH_DEPTH,
+						},
+					)
 				}
 				directories.push(path)
 				pending.push({ full: join(current.full, entry.name), path, depth })
 			}
-		} finally {
-			handle.closeSync()
-		}
+		})
+		attempt(() => handle.closeSync())
+		if (!walked.success) throw walked.error
 	}
 	return directories.sort()
 }
 
 /**
- * Map a repo-relative path to its vendored-host STAGING path, per the
- * dotfile-mapping rule `stageHost` writes into `manifest.json`.
+ * Read one contained file as its exact bytes in lowercase hexadecimal.
  *
- * @param path - The repo-relative source path (e.g. `.claude/agents/reviewer.md`).
- * @returns The mapped storage path: a leading-dot TOP-LEVEL FILE maps to
- *   `dotfiles/<name-without-dot>`; a leading-dot DIRECTORY segment loses its
- *   dot wherever it appears; an undotted path is unchanged.
+ * @param root - The containing host directory.
+ * @param path - The portable root-relative file path.
+ * @param limit - The most bytes this read accepts; the artifact ceiling by default.
+ * @returns The exact bytes as hexadecimal, or `undefined` when the file is
+ * absent, is not a physical readable file, is past `limit`, or moved while it
+ * was being read.
+ * @throws `ScaffoldError('INVALID', …)` when the arguments are off contract or
+ * `path` leaves `root`.
+ *
+ * @remarks
+ * Hexadecimal rather than text, because this is what a byte comparison is stated
+ * in everywhere in this package: a plan's artifact, an audit finding, and a
+ * snapshot all compare as the same digits. The file's identity and size are
+ * measured before and after the read, and one extra byte is requested past the
+ * declared size, so a file that grew or was replaced mid-read answers
+ * `undefined` rather than half of two files.
  *
  * @example
  * ```ts
- * import { storagePath } from '@orkestrel/scaffold/server'
+ * import { readFileHex } from '@orkestrel/scaffold/server'
  *
- * storagePath('.gitignore') // 'dotfiles/gitignore'
- * storagePath('.claude/agents/reviewer.md') // 'claude/agents/reviewer.md'
- * storagePath('.github/workflows/ci.yml') // 'github/workflows/ci.yml'
- * storagePath('AGENTS.md') // 'AGENTS.md'
+ * readFileHex('/tmp/project', 'AGENTS.md') // '2320416765…'
  * ```
  */
-export function storagePath(path: string): string {
-	const segments = path.split('/')
-	if (segments.length === 1) {
-		const name = segments[0]
-		if (name === undefined) return path
-		return name.startsWith('.') ? `dotfiles/${name.slice(1)}` : name
+export function readFileHex(
+	root: string,
+	path: string,
+	limit: number = MAX_ARTIFACT_BYTES,
+): string | undefined {
+	if (!Number.isSafeInteger(limit) || limit < 0 || limit > MAX_ARTIFACT_BYTES) {
+		throw new ScaffoldError('INVALID', `Byte limit is outside the artifact ceiling at ${path}`, {
+			root,
+			path,
+			limit,
+		})
 	}
-	return segments.map((segment) => (segment.startsWith('.') ? segment.slice(1) : segment)).join('/')
+	const full = resolveContainedPath(root, path)
+	if (full === undefined) {
+		throw new ScaffoldError('INVALID', `Path is off contract or leaves its root at ${path}`, {
+			root,
+			path,
+		})
+	}
+	if (!isPhysicalFile(full)) return undefined
+	const opened = attempt(() => openSync(full, 'r'))
+	if (!opened.success) return undefined
+	const handle = opened.value
+	const read = attempt(() => {
+		const before = fstatSync(handle)
+		if (!before.isFile() || before.nlink !== 1 || before.size > limit) return undefined
+		const bytes = Buffer.alloc(before.size)
+		let offset = 0
+		while (offset < bytes.byteLength) {
+			const length = readSync(handle, bytes, offset, bytes.byteLength - offset, offset)
+			if (length === 0) break
+			offset += length
+		}
+		const overflow = readSync(handle, Buffer.alloc(1), 0, 1, offset)
+		const after = fstatSync(handle)
+		if (
+			offset !== bytes.byteLength ||
+			overflow !== 0 ||
+			after.size !== before.size ||
+			after.mtimeMs !== before.mtimeMs
+		) {
+			return undefined
+		}
+		return bytesToHex(bytes)
+	})
+	attempt(() => closeSync(handle))
+	return read.success ? read.value : undefined
 }
 
 /**
- * Stage the vendored host set (byte-preserved copies + `manifest.json`) from
- * a repo root into an output directory — the BUILD-time primitive the
- * `build:host` npm script now calls directly (replacing a standalone build
- * script); `Materializer.materialize` is the RUNTIME reader of what this
- * writes (via `hostRoot` / `readHostManifest`).
+ * Read one contained file as bounded UTF-8 text.
  *
- * @param root - The repo root every `paths` entry resolves against.
- * @param out - The output directory to replace after staging completes.
- * @param paths - The repo-relative file/directory entries to stage; defaults
- *   to the package's own vendored set (`HOST_PATHS`) — a caller passes an
- *   explicit list only to stage an arbitrary/test set.
+ * @param root - The containing host directory.
+ * @param path - The portable root-relative file path.
+ * @param limit - The most bytes this read accepts; the artifact ceiling by default.
+ * @returns The decoded text, or `undefined` when {@link readFileHex} answers
+ * nothing or the bytes are not valid UTF-8.
+ * @throws `ScaffoldError('INVALID', …)` when the arguments are off contract or
+ * `path` leaves `root`.
+ *
  * @remarks
- * Every source, path collision, and root/output relationship is preflighted
- * before output mutation. Files are copied into a temporary sibling; the
- * completed staging tree atomically replaces `out`, with rollback when the
- * swap fails. The manifest records both sorted file `entries` and the
- * complete sorted directory `roots` inventory so destructive consumers can
- * distinguish a declared-empty root from a truncated manifest.
- * @returns The written manifest's entries (`{ storage, destination, executable }`).
- * @throws `ScaffoldError('TARGET', …)` for an invalid/escaping source or path
- *   collision, and `ScaffoldError('WRITE', …)` for staging/swap failures.
+ * Decoding is strict, so a file carrying an invalid sequence answers `undefined`
+ * rather than text carrying replacement characters. That matters because the
+ * text is parsed next: a manifest silently repaired into valid JSON by lossy
+ * decoding would be trusted.
+ *
+ * @example
+ * ```ts
+ * import { readFileText } from '@orkestrel/scaffold/server'
+ *
+ * readFileText('/tmp/project', 'package.json') // '{ "name": "@orkestrel/router", … }'
+ * ```
+ */
+export function readFileText(
+	root: string,
+	path: string,
+	limit: number = MAX_ARTIFACT_BYTES,
+): string | undefined {
+	const hex = readFileHex(root, path, limit)
+	if (hex === undefined) return undefined
+	const decoded = attempt(() =>
+		new TextDecoder('utf-8', { fatal: true }).decode(Buffer.from(hex, 'hex')),
+	)
+	return decoded.success ? decoded.value : undefined
+}
+
+/**
+ * Read a target's current bytes at the paths a plan claims.
+ *
+ * @param target - The target directory to read.
+ * @param paths - The plan-relative paths to probe.
+ * @returns One entry per path that is there: a file maps to its exact bytes as
+ * hexadecimal and a directory maps to `''`, which records presence with no bytes
+ * to compare. An absent path is omitted.
+ * @throws `ScaffoldError('INVALID', …)` when `target` is not a host path or
+ * `paths` is not a bounded list of plannable paths.
+ * @throws `ScaffoldError('TARGET', …)` when a path that is there cannot be read,
+ * or when the whole read would retain more bytes than one plan may.
+ *
+ * @remarks
+ * The one door from a real directory into the vocabulary an audit compares in.
+ * Absence is omission rather than an empty value, because core reads a missing
+ * key as a missing destination and an empty string as a present directory; the
+ * two are different verdicts. A path that is there but unreadable throws instead
+ * of being omitted, because omission would report it as missing and a repair
+ * would then overwrite whatever is actually sitting there.
+ *
+ * @example
+ * ```ts
+ * import { readSnapshot } from '@orkestrel/scaffold/server'
+ *
+ * readSnapshot('./packages/router', ['package.json', 'guides'])
+ * // { 'package.json': '7b226e…', guides: '' }
+ * ```
+ */
+export function readSnapshot(target: string, paths: readonly string[]): Snapshot {
+	if (!isFilesystemPath(target)) {
+		throw new ScaffoldError('INVALID', 'Snapshot target is not a host path', { target })
+	}
+	if (!isCollection(paths) || !paths.every((path) => isPath(path))) {
+		throw new ScaffoldError('INVALID', 'Snapshot paths are not a bounded list of plannable paths', {
+			target,
+			limit: MAX_COLLECTION_ITEMS,
+		})
+	}
+	let remaining = MAX_TOTAL_ARTIFACT_BYTES
+	const snapshot: Record<string, string> = {}
+	for (const path of paths) {
+		const full = resolveContainedPath(target, path)
+		if (full === undefined) {
+			throw new ScaffoldError('INVALID', `Snapshot path leaves its target at ${path}`, {
+				target,
+				path,
+			})
+		}
+		const status = attempt(() => lstatSync(full))
+		if (!status.success) {
+			if (matchesMissingPath(status.error)) continue
+			throw new ScaffoldError('TARGET', `Snapshot path cannot be inspected at ${path}`, {
+				target,
+				path,
+				error: status.error,
+			})
+		}
+		if (isPhysicalDirectory(full)) {
+			snapshot[path] = ''
+			continue
+		}
+		const hex = readFileHex(target, path, Math.min(MAX_ARTIFACT_BYTES, remaining))
+		if (hex === undefined) {
+			throw new ScaffoldError('TARGET', `Snapshot path is not a readable file at ${path}`, {
+				target,
+				path,
+				limit: MAX_TOTAL_ARTIFACT_BYTES,
+			})
+		}
+		remaining -= hex.length / 2
+		snapshot[path] = hex
+	}
+	return snapshot
+}
+
+/**
+ * Read a vendored host's manifest, when it carries one.
+ *
+ * @param host - The vendored host root to read.
+ * @returns The manifest, or `undefined` when the host carries none.
+ * @throws `ScaffoldError('INVALID', …)` when `host` is not a host path.
+ * @throws `ScaffoldError('TARGET', …)` when the manifest is there but cannot be
+ * read, is not the declared shape, or does not match its own membership.
+ *
+ * @remarks
+ * The two failures are held apart deliberately. A host with no manifest is a
+ * raw checkout, and a caller reads it by mapping each path one to one. A host
+ * with a manifest that does not verify is a staged host that has been edited,
+ * and answering `undefined` there would degrade it to that same one-to-one
+ * mapping — which is how an edited manifest would get a caller to read files it
+ * never declared. So absence answers and corruption throws.
+ *
+ * Verification here is the manifest's own self-consistency: the digest against
+ * the exact membership beside it. Whether that membership matches the files
+ * actually stored is a separate question, and it belongs to the reader that
+ * walks the host.
+ *
+ * @example
+ * ```ts
+ * import { readHostManifest } from '@orkestrel/scaffold/server'
+ *
+ * readHostManifest('./dist/host') // the manifest, or undefined for a raw root
+ * ```
+ */
+export function readHostManifest(host: string): HostManifest | undefined {
+	if (!isFilesystemPath(host)) {
+		throw new ScaffoldError('INVALID', 'Host root is not a host path', { host })
+	}
+	// The reserved metadata name a staged host writes at its own root.
+	const name = MANIFEST_NAME
+	const full = resolveContainedPath(host, name)
+	if (full === undefined) {
+		throw new ScaffoldError('INVALID', `Host manifest leaves its root at ${host}`, { host })
+	}
+	const status = attempt(() => lstatSync(full))
+	if (!status.success) {
+		if (matchesMissingPath(status.error)) return undefined
+		throw new ScaffoldError('TARGET', `Host manifest cannot be inspected at ${full}`, {
+			host,
+			error: status.error,
+		})
+	}
+	const text = readFileText(host, name, MAX_MANIFEST_BYTES)
+	if (text === undefined) {
+		throw new ScaffoldError('TARGET', `Host manifest is not readable text at ${full}`, { host })
+	}
+	const manifest = parseJSONAs(text, isHostManifest)
+	if (manifest === undefined) {
+		throw new ScaffoldError('TARGET', `Host manifest is malformed at ${full}`, { host })
+	}
+	if (manifest.digest !== computeManifestDigest(manifest.entries, manifest.roots)) {
+		throw new ScaffoldError('TARGET', `Host manifest membership is corrupted at ${full}`, { host })
+	}
+	return manifest
+}
+
+/**
+ * Derive one vendored-host manifest entry from a file in a checkout.
+ *
+ * @param destination - The target-relative path the file is written to.
+ * @param source - The resolved host path the bytes are read from.
+ * @returns The entry, or `undefined` when `source` is not a physical file this
+ * package will vendor or carries more bytes than one artifact may.
+ *
+ * @remarks
+ * The one place the three declared fields are decided together, because they are
+ * three readings of one file: {@link pathToStorage} decides where it is stored,
+ * the destination is the path it answers for, and the executable bit is read
+ * from the source's own mode.
+ *
+ * That mode is the honest limit of this reading. A Windows host reports no
+ * executable bit at all, so a host staged there declares every entry
+ * non-executable and a consumer receives scripts without it. Staging on a POSIX
+ * host is what carries the bit through.
+ *
+ * @example
+ * ```ts
+ * import { readManifestEntry } from '@orkestrel/scaffold/server'
+ *
+ * readManifestEntry('.gitignore', '/tmp/checkout/.gitignore')
+ * // { storage: 'dotfiles/gitignore', destination: '.gitignore', executable: false }
+ * ```
+ */
+export function readManifestEntry(destination: string, source: string): ManifestEntry | undefined {
+	if (!isPhysicalFile(source)) return undefined
+	const status = attempt(() => lstatSync(source))
+	if (!status.success || status.value.size > MAX_ARTIFACT_BYTES) return undefined
+	return {
+		storage: pathToStorage(destination),
+		destination,
+		executable: (status.value.mode & 0o111) !== 0,
+	}
+}
+
+/**
+ * Stage a vendored host root from a real checkout.
+ *
+ * @param checkout - The checkout the vendored paths are read from.
+ * @param host - The vendored host root to fill; it must be absent or empty.
+ * @returns One entry per staged file, sorted by storage name.
+ * @throws `ScaffoldError('INVALID', …)` when either argument is not a host path
+ * or a vendored path leaves the checkout or the host root.
+ * @throws `ScaffoldError('TARGET', …)` when the checkout is not a directory, the
+ * host root is not vacant, the checkout does not carry every vendored path, two
+ * vendored files claim one storage name, a vendored file is not a plain file
+ * within the artifact ceiling, or the staged manifest does not read back.
+ * @throws `ScaffoldError('WRITE', …)` when a staged file or the manifest cannot
+ * be written.
+ *
+ * @remarks
+ * This is the producer half of the vendored host, and it is not the mutation
+ * contract `MaterializerInterface` states. That contract owns **target**
+ * writes: it materializes a compiled plan into a consumer's workspace, binds
+ * every destination to what the caller observed, and rolls a failed commit back.
+ * This reads this package's own checkout at build time and fills its own build
+ * output. Different direction, different lifetime, no consumer target involved,
+ * so the two do not overlap and neither one belongs inside the other.
+ *
+ * Staging is plain rather than transactional for the same reason. A
+ * `WriteTransaction` exists to hold a directory that already holds work
+ * still; a build output holds nothing, is deleted whole before every build, and
+ * has no concurrent reader. What replaces it is refusing early and ordering the
+ * writes: the whole membership is derived before anything is created, so a
+ * checkout this refuses leaves no host root at all, and `manifest.json` is
+ * written last, so a stage that failed part way through leaves a root every
+ * reader treats as a raw checkout and fails loudly on.
+ *
+ * A missing vendored path is refused rather than staged around. A partial root
+ * is not detectably partial: it fails later, in a consumer's terminal, on
+ * whichever path the plan reached first. Refusing here fails the build that
+ * produced it, where the maintainer can act, and it names every missing path at
+ * once. A directory is the same case — declaring an absent directory as an empty
+ * root would create an empty directory in every generated workspace.
+ *
+ * The vendoring deny-list applies to what the walk discovers beneath a vendored
+ * directory, where a maintainer's local credential can legitimately sit, and
+ * such a path is skipped. A path `HOST_PATHS` names itself is curated data
+ * rather than discovery, so it is staged or the stage is refused.
  *
  * @example
  * ```ts
  * import { stageHost } from '@orkestrel/scaffold/server'
  *
- * const entries = stageHost(process.cwd(), 'dist/host')
- * entries.length // number of files staged
+ * stageHost(process.cwd(), 'dist/host').length // the files staged
  * ```
  */
-export function stageHost(
-	root: string,
-	out: string,
-	paths: readonly string[] = HOST_PATHS,
-): readonly ManifestEntry[] {
-	if (!isFilesystemPath(root) || !isFilesystemPath(out)) {
-		throw new ScaffoldError('TARGET', 'Host root or output is malformed or exceeds its bounds', {
-			root,
-			out,
+export function stageHost(checkout: string, host: string): readonly ManifestEntry[] {
+	if (!isFilesystemPath(checkout)) {
+		throw new ScaffoldError('INVALID', 'Staging checkout is not a host path', { checkout })
+	}
+	if (!isFilesystemPath(host)) {
+		throw new ScaffoldError('INVALID', 'Staging host root is not a host path', { host })
+	}
+	const source = resolve(checkout)
+	if (!isPhysicalDirectory(source)) {
+		throw new ScaffoldError('TARGET', `Staging checkout is not a physical directory at ${source}`, {
+			checkout: source,
 		})
 	}
-	const copiedPaths = parsePortablePaths(paths, MAX_HOST_ENTRIES)
-	if (copiedPaths === undefined) {
-		throw new ScaffoldError('TARGET', 'Host source paths are malformed', {
-			root,
-			out,
-			limit: MAX_HOST_ENTRIES,
-		})
+	if (!isVacant(host)) {
+		throw new ScaffoldError('TARGET', `Staging host root is not vacant at ${host}`, { host })
 	}
-	const destinations: string[] = []
+	const vendored: string[] = []
 	const roots: string[] = []
-	const resolvedRoot = resolveRealPath(resolve(root))
-	const resolvedOut = resolveRealPath(resolve(out))
-	if (resolvedRoot === resolvedOut || resolvedRoot.startsWith(resolvedOut + sep)) {
-		throw new ScaffoldError('TARGET', `Host output at ${out} contains the source root`, {
-			root,
-			out,
-		})
-	}
-	for (const path of copiedPaths) {
-		if (!isPortablePath(path) || isSensitiveHostPath(path)) {
-			throw new ScaffoldError('TARGET', `Invalid host source path at ${path}`, { path, root })
-		}
-		const absolute = resolvePhysicalPath(root, path, 'TARGET', 'host')
-		if (!existsSync(absolute)) {
-			throw new ScaffoldError('TARGET', `Missing host source at ${path}`, { path, root })
-		}
-		const status = attempt(() => lstatSync(absolute))
-		if (!status.success) {
-			throw new ScaffoldError('TARGET', `Failed to inspect host source at ${path}`, {
+	const missing: string[] = []
+	for (const path of HOST_PATHS) {
+		const full = resolveContainedPath(source, path)
+		if (full === undefined) {
+			throw new ScaffoldError('INVALID', `Vendored path leaves its checkout at ${path}`, {
+				checkout: source,
 				path,
-				root,
-				error: status.error,
 			})
 		}
-		if (status.value.isSymbolicLink()) {
-			throw new ScaffoldError('TARGET', `Host source is linked at ${path}`, { path, root })
+		if (isPhysicalFile(full)) {
+			vendored.push(path)
+			continue
 		}
-		if (status.value.isDirectory()) {
-			const resolvedSource = resolveRealPath(absolute)
-			if (resolvedOut === resolvedSource || resolvedOut.startsWith(resolvedSource + sep)) {
-				throw new ScaffoldError('TARGET', `Host output at ${out} is inside source ${path}`, {
-					root,
-					out,
-					path,
-				})
-			}
-			roots.push(path)
-			for (const nested of listDirectories(absolute)) roots.push(`${path}/${nested}`)
-			for (const nested of listFiles(absolute)) destinations.push(`${path}/${nested}`)
-		} else {
-			destinations.push(path)
+		if (!isPhysicalDirectory(full)) {
+			missing.push(path)
+			continue
+		}
+		roots.push(path)
+		for (const nested of listDirectories(full)) {
+			const rooted = `${path}/${nested}`
+			if (!matchesSensitivePath(rooted)) roots.push(rooted)
+		}
+		for (const name of listFiles(full)) {
+			const destination = `${path}/${name}`
+			if (!matchesSensitivePath(destination)) vendored.push(destination)
 		}
 	}
-	if (destinations.length > MAX_HOST_ENTRIES || roots.length > MAX_HOST_ENTRIES) {
-		throw new ScaffoldError('TARGET', 'Host source inventory exceeds the entry limit', {
-			root,
-			limit: MAX_HOST_ENTRIES,
+	if (missing.length > 0) {
+		throw new ScaffoldError('TARGET', 'The checkout does not carry every vendored path', {
+			checkout: source,
+			missing,
 		})
 	}
-
+	// Seeded with the reserved metadata name a staged host writes at its own root,
+	// the same literal `readHostManifest` reads back, so a vendored file claiming it
+	// is refused rather than silently replaced by the manifest.
+	const stored = new Set<string>([MANIFEST_NAME])
 	const entries: ManifestEntry[] = []
-	const expectations: WriteExpectation[] = []
-	let totalBytes = 0
-	for (const destination of destinations) {
-		if (isSensitiveHostPath(destination)) {
+	for (const destination of vendored) {
+		const full = resolveContainedPath(source, destination)
+		if (full === undefined) {
+			throw new ScaffoldError('INVALID', `Vendored path leaves its checkout at ${destination}`, {
+				checkout: source,
+				path: destination,
+			})
+		}
+		const entry = readManifestEntry(destination, full)
+		if (entry === undefined) {
 			throw new ScaffoldError(
 				'TARGET',
-				`Sensitive host source is not vendorable at ${destination}`,
-				{
-					root,
-					destination,
-				},
+				`Vendored path is not a plain file within the artifact ceiling at ${destination}`,
+				{ checkout: source, path: destination, limit: MAX_ARTIFACT_BYTES },
 			)
 		}
-		const source = resolvePhysicalPath(root, destination, 'TARGET', 'host')
-		const status = attempt(() => lstatSync(source))
-		if (
-			!status.success ||
-			!status.value.isFile() ||
-			status.value.isSymbolicLink() ||
-			status.value.nlink !== 1
-		) {
-			throw new ScaffoldError('TARGET', `Host source is not a readable file at ${destination}`, {
-				root,
-				destination,
-				error: status.success ? undefined : status.error,
-			})
+		if (stored.has(entry.storage)) {
+			throw new ScaffoldError(
+				'TARGET',
+				`Two vendored paths claim the storage name ${entry.storage}`,
+				{ checkout: source, path: destination, storage: entry.storage },
+			)
 		}
-		totalBytes += status.value.size
-		if (totalBytes > MAX_TOTAL_ARTIFACT_BYTES) {
-			throw new ScaffoldError('TARGET', 'Host source inventory exceeds the aggregate byte limit', {
-				root,
-				limit: MAX_TOTAL_ARTIFACT_BYTES,
-			})
-		}
-		expectations.push(
-			Object.freeze({
-				path: destination,
-				shape: 'file',
-				device: status.value.dev,
-				inode: status.value.ino,
-				modified: status.value.mtimeMs,
-				size: status.value.size,
-				digest: digestFile(source),
-			}),
-		)
-		const storage = storagePath(destination)
-		const executable = destination.endsWith('.sh')
-		entries.push({ storage, destination, executable })
-		const segments = destination.split('/')
-		for (let index = 1; index < segments.length; index += 1) {
-			roots.push(segments.slice(0, index).join('/'))
-		}
+		stored.add(entry.storage)
+		entries.push(entry)
 	}
-	entries.sort((a, b) =>
-		a.destination < b.destination ? -1 : a.destination > b.destination ? 1 : 0,
-	)
-	const destinationConflict = findFileConflict(entries.map((entry) => entry.destination))
-	if (destinationConflict !== undefined) {
-		throw new ScaffoldError(
-			'TARGET',
-			`Destination collision between "${destinationConflict[0]}" and "${destinationConflict[1]}"`,
-			{ paths: destinationConflict },
-		)
-	}
-	const storageConflict = findFileConflict(entries.map((entry) => entry.storage))
-	if (storageConflict !== undefined) {
-		const storageDestinations = entries
-			.filter((entry) => entry.storage.toLowerCase() === storageConflict[0].toLowerCase())
-			.map((entry) => entry.destination)
-		throw new ScaffoldError(
-			'TARGET',
-			`Storage collision at "${storageConflict[0]}" between destinations "${storageDestinations[0] ?? ''}" and "${storageDestinations[1] ?? ''}"`,
-			{ storage: storageConflict[0], destinations: storageDestinations },
-		)
-	}
-	const manifestConflict = findFileConflict([
-		HOST_MANIFEST_PATH,
-		...entries.map((entry) => entry.storage),
-	])
-	if (manifestConflict !== undefined) {
-		throw new ScaffoldError(
-			'TARGET',
-			`Storage path "${manifestConflict[1]}" collides with reserved manifest.json`,
-			{ paths: manifestConflict },
-		)
-	}
-	const uniqueRoots = [...new Set(roots)].sort()
-	if (uniqueRoots.length > MAX_HOST_ENTRIES) {
-		throw new ScaffoldError('TARGET', 'Host source inventory exceeds the entry limit', {
-			root,
-			limit: MAX_HOST_ENTRIES,
+	entries.sort((first, second) => (first.storage < second.storage ? -1 : 1))
+	roots.sort()
+	const root = resolve(host)
+	const established = attempt(() => mkdirSync(root, { recursive: true }))
+	if (!established.success || !isPhysicalDirectory(root)) {
+		throw new ScaffoldError('WRITE', `Staging host root could not be established at ${root}`, {
+			host: root,
+			...(established.success ? {} : { error: established.error }),
 		})
 	}
-	const rootConflict = findPathConflict(uniqueRoots)
-	if (rootConflict !== undefined) {
-		throw new ScaffoldError(
-			'TARGET',
-			`Directory collision between "${rootConflict[0]}" and "${rootConflict[1]}"`,
-			{ paths: rootConflict },
-		)
+	for (const entry of entries) {
+		const origin = resolveContainedPath(source, entry.destination)
+		const destination = resolveContainedPath(root, entry.storage)
+		if (origin === undefined || destination === undefined) {
+			throw new ScaffoldError('INVALID', `Vendored path leaves its root at ${entry.destination}`, {
+				checkout: source,
+				host: root,
+				path: entry.destination,
+				storage: entry.storage,
+			})
+		}
+		const copied = attempt(() => {
+			mkdirSync(dirname(destination), { recursive: true })
+			copyFileSync(origin, destination, constants.COPYFILE_EXCL)
+			if (entry.executable) chmodSync(destination, 0o755)
+		})
+		if (!copied.success) {
+			throw new ScaffoldError('WRITE', `Vendored file could not be staged at ${entry.storage}`, {
+				host: root,
+				storage: entry.storage,
+				error: copied.error,
+			})
+		}
 	}
 	const manifest: HostManifest = {
 		entries,
-		roots: uniqueRoots,
-		digest: digestHostManifest(entries, uniqueRoots),
+		roots,
+		digest: computeManifestDigest(entries, roots),
 	}
-	const parent = dirname(resolve(out))
-	const name = basename(resolve(out))
-	const token = randomUUID()
-	const staging = resolveContainedPath(parent, `.${name}.stage-${token}`, 'WRITE', 'output')
-	const backup = resolveContainedPath(parent, `.${name}.backup-${token}`, 'WRITE', 'output')
-	let stagingAnchor: WriteAnchor | undefined
-	let parentDirectory: WriteDirectoryResult | undefined
-	const staged = attempt(() => {
-		parentDirectory = createWriteDirectory(parent, 'host output parent')
-		validateWriteAnchor(parentDirectory.anchor, 'host output parent')
-		mkdirSync(staging, { recursive: false })
-		validateWriteAnchor(parentDirectory.anchor, 'host output parent')
-		const stagingStatus = lstatSync(staging)
-		if (!stagingStatus.isDirectory() || stagingStatus.isSymbolicLink()) {
-			throw new ScaffoldError('WRITE', 'Host staging root is not a physical directory', {
-				staging,
-			})
-		}
-		stagingAnchor = Object.freeze({
-			path: staging,
-			device: stagingStatus.dev,
-			inode: stagingStatus.ino,
-		})
-		for (const entry of entries) {
-			validateWriteAnchor(parentDirectory.anchor, 'host output parent')
-			validateWriteAnchor(stagingAnchor, 'host staging root')
-			const source = resolvePhysicalPath(root, entry.destination, 'TARGET', 'host')
-			const expectation = expectations.find((candidate) => candidate.path === entry.destination)
-			const sourceStatus = lstatSync(source)
-			const sourceDigest = digestFile(source)
-			if (
-				expectation === undefined ||
-				!sourceStatus.isFile() ||
-				sourceStatus.isSymbolicLink() ||
-				sourceStatus.nlink !== 1 ||
-				sourceStatus.dev !== expectation.device ||
-				sourceStatus.ino !== expectation.inode ||
-				sourceStatus.mtimeMs !== expectation.modified ||
-				sourceStatus.size !== expectation.size ||
-				sourceDigest !== expectation.digest
-			) {
-				throw new ScaffoldError('TARGET', `Host source changed at ${entry.destination}`, {
-					root,
-					destination: entry.destination,
-				})
-			}
-			const destination = resolvePhysicalPath(staging, entry.storage, 'WRITE', 'staging')
-			mkdirSync(dirname(destination), { recursive: true })
-			validateWriteAnchor(stagingAnchor, 'host staging root')
-			const containedDestination = resolvePhysicalPath(staging, entry.storage, 'WRITE', 'staging')
-			copyFileSync(source, containedDestination, FS_CONSTANTS.COPYFILE_EXCL)
-			const copiedStatus = lstatSync(containedDestination)
-			if (
-				!copiedStatus.isFile() ||
-				copiedStatus.isSymbolicLink() ||
-				copiedStatus.nlink !== 1 ||
-				digestFile(containedDestination) !== expectation.digest
-			) {
-				throw new ScaffoldError('WRITE', `Host staging copy changed at ${entry.destination}`, {
-					staging,
-					destination: entry.destination,
-				})
-			}
-		}
-		writeFileSync(join(staging, HOST_MANIFEST_PATH), `${JSON.stringify(manifest, null, '\t')}\n`, {
+	const metadata = resolveContainedPath(root, MANIFEST_NAME)
+	if (metadata === undefined) {
+		throw new ScaffoldError('INVALID', `Host manifest leaves its root at ${root}`, { host: root })
+	}
+	const published = attempt(() =>
+		writeFileSync(metadata, `${JSON.stringify(manifest, null, '\t')}\n`, {
 			encoding: 'utf8',
 			flag: 'wx',
-		})
-		validateWriteAnchor(parentDirectory.anchor, 'host output parent')
-		if (readHostManifest(staging) === undefined) {
-			throw new ScaffoldError('WRITE', 'Staged host manifest could not be verified', {
-				staging,
-			})
-		}
-	})
-	if (!staged.success) {
-		const identity = stagingAnchor
-		const cleanup =
-			identity === undefined
-				? undefined
-				: attempt(() => {
-						validateWriteAnchor(identity, 'host staging root')
-						rmSync(staging, { recursive: true })
-					})
-		const parentCleanup = attempt(() => {
-			for (const created of [...(parentDirectory?.created ?? [])].reverse()) {
-				validateWriteAnchor(created, 'host output parent')
-				rmdirSync(created.path)
-			}
-		})
-		throw new ScaffoldError('WRITE', `Failed to stage host output at ${out}`, {
-			root,
-			out,
-			error: staged.error,
-			cleanup: cleanup?.success === false ? cleanup.error : undefined,
-			parentCleanup: parentCleanup.success ? undefined : parentCleanup.error,
+		}),
+	)
+	if (!published.success) {
+		throw new ScaffoldError('WRITE', `Host manifest could not be staged at ${metadata}`, {
+			host: root,
+			error: published.error,
 		})
 	}
-	if (parentDirectory === undefined) {
-		throw new ScaffoldError('WRITE', 'Host output parent was not established', { out })
+	const verified = readHostManifest(root)
+	if (verified === undefined || verified.digest !== manifest.digest) {
+		throw new ScaffoldError('TARGET', `The staged host manifest does not read back at ${root}`, {
+			host: root,
+		})
 	}
-	validateWriteAnchor(parentDirectory.anchor, 'host output parent')
-	replaceDirectory(staging, out, backup)
-
 	return entries
 }
 
 /**
- * Resolve the absolute host-storage path for a host-origin artifact's
- * `source`, manifest-aware.
+ * Capture one directory's physical identity.
  *
- * @param manifest - The parsed complete host manifest, or `undefined`
- *   when the host carries none (raw-repo-root fallback).
- * @param source - The artifact's `source` (or `path`) to resolve.
- * @param host - The resolved host root the path is joined against.
- * @returns `join(host, source)` when `manifest` is `undefined` (no vendored
- *   staging indirection); when `manifest` is present, `join(host,
- *   entries[0].storage)` for the SINGLE manifest entry whose `destination`
- *   equals `source`, or `undefined` when zero or more than one entry matches
- *   (`source` names a directory, or the manifest is ambiguous — no single
- *   storage file to point at).
+ * @param path - The resolved directory path to capture.
+ * @returns The anchor, or `undefined` when the path is not a physical directory.
  *
- * @example
- * ```ts
- * import { locateHostSource } from '@orkestrel/scaffold/server'
- *
- * locateHostSource(undefined, 'package.json', './dist/host') // './dist/host/package.json'
- * locateHostSource(
- *   {
- *     entries: [{ storage: 'pkg.tmpl', destination: 'package.json', executable: false }],
- *     roots: [],
- *     digest: '3b52f19450237ea4cfb39bc7a77b1e5094b52a8ff1fc9c02fd68b13ad088aa0f',
- *   },
- *   'package.json',
- *   './dist/host',
- * )
- * // './dist/host/pkg.tmpl'
- * ```
- */
-export function locateHostSource(
-	manifest: HostManifest | undefined,
-	source: string,
-	host: string,
-): string | undefined {
-	if (manifest === undefined) return join(host, source)
-	const entries = manifest.entries.filter((entry) => entry.destination === source)
-	if (entries.length !== 1) return undefined
-	const [entry] = entries
-	return entry === undefined ? undefined : join(host, entry.storage)
-}
-
-/**
- * Map a manifest destination from an artifact's source prefix to its target prefix.
- *
- * @param artifact - The host artifact carrying the target path and optional source.
- * @param destination - The matched manifest destination.
- * @returns The exact target-relative path for the matched manifest file.
- * @throws `ScaffoldError('INVALID', …)` when `destination` is outside the source prefix.
- */
-export function remapArtifactPath(artifact: HostArtifact, destination: string): string {
-	const source = artifact.source ?? artifact.path
-	if (destination === source) return artifact.path
-	if (!destination.startsWith(`${source}/`)) {
-		throw new ScaffoldError('INVALID', `Manifest destination does not match ${source}`, {
-			source,
-			destination,
-		})
-	}
-	return `${artifact.path}/${destination.slice(source.length + 1)}`
-}
-
-/**
- * Rehydrate a `Plan`'s `host`-origin artifacts with their exact byte hex read
- * from `host` — manifest-aware, via `locateHostSource`.
- *
- * @param plan - The plan to hydrate.
- * @param host - The resolved host root to read from.
- * @returns A new `Plan` whose file-shaped `host` artifacts carry exact `hex`.
- *   Directory-shaped host artifacts expand into one byte-aware artifact
- *   per file, preserving their group and mapping the artifact/source prefixes.
- *   `template` / `computed` artifacts pass through untouched.
- * @throws `ScaffoldError('TARGET', …)` when the host is not a readable
- *   directory, a present manifest is invalid/incomplete, or a required source
- *   is absent, escaping, not a file/directory as declared, or unreadable.
- *
- * @example
- * ```ts
- * import { hydratePlan } from '@orkestrel/scaffold/server'
- *
- * const hydrated = hydratePlan(plan, './dist/host')
- * ```
- */
-export function hydratePlan(plan: Plan, host: string): Plan {
-	if (!isFilesystemPath(host)) {
-		throw new ScaffoldError('TARGET', 'Host path is malformed or exceeds its bounds', { host })
-	}
-	const owned = snapshotPlan(plan)
-	const status = attempt(() => lstatSync(host))
-	if (!status.success || !status.value.isDirectory() || status.value.isSymbolicLink()) {
-		throw new ScaffoldError('TARGET', `Host root is not a readable directory at ${host}`, {
-			host,
-			error: status.success ? undefined : status.error,
-		})
-	}
-	const manifest = readHostManifest(host)
-	const artifacts: Artifact[] = []
-	let remaining = MAX_TOTAL_ARTIFACT_BYTES
-	for (const artifact of owned.artifacts) {
-		if (artifact.origin !== 'host') remaining -= Buffer.byteLength(artifact.content, 'utf8')
-	}
-	for (const artifact of owned.artifacts) {
-		if (artifact.origin !== 'host') {
-			artifacts.push(artifact)
-			continue
-		}
-		const source = artifact.source ?? artifact.path
-		if (!isPortablePath(source) || isSensitiveHostPath(source)) {
-			throw new ScaffoldError('TARGET', `Unsafe host artifact source at ${source}`, {
-				host,
-				source,
-			})
-		}
-		const full = locateHostSource(manifest, source, host)
-		const relative = full === undefined ? undefined : relativeOf(host, full).split(sep).join('/')
-		if (relative !== undefined) {
-			const contained = resolvePhysicalPath(host, relative, 'TARGET', 'host')
-			if (existsSync(contained)) {
-				const exact = attempt(() => lstatSync(contained))
-				if (!exact.success) {
-					throw new ScaffoldError('TARGET', `Failed to inspect host artifact source at ${source}`, {
-						host,
-						source,
-						error: exact.error,
-					})
-				}
-				if (exact.value.isFile() && !exact.value.isSymbolicLink() && exact.value.nlink === 1) {
-					const hex = readFileHex(
-						host,
-						relative,
-						'TARGET',
-						'host',
-						Math.min(MAX_ARTIFACT_BYTES, remaining),
-					)
-					remaining -= hex.length / 2
-					artifacts.push({
-						...artifact,
-						hex,
-					})
-					continue
-				}
-				if (manifest !== undefined) {
-					throw new ScaffoldError('TARGET', `Host artifact source is not a file at ${source}`, {
-						host,
-						source,
-					})
-				}
-			}
-			if (manifest !== undefined) {
-				throw new ScaffoldError('TARGET', `Host artifact source is missing at ${source}`, {
-					host,
-					source,
-				})
-			}
-		}
-
-		if (manifest !== undefined) {
-			const entries = manifest.entries.filter((entry) => entry.destination.startsWith(`${source}/`))
-			if (artifacts.length + entries.length > MAX_COLLECTION_ITEMS) {
-				throw new ScaffoldError('TARGET', 'Hydrated plan exceeds the artifact count limit', {
-					host,
-					limit: MAX_COLLECTION_ITEMS,
-				})
-			}
-			if (entries.length === 0) {
-				if (source.startsWith('guides/src/') && source.endsWith('.md')) {
-					// The absent `hex` is the structural presence-ownership mark. Strip
-					// caller-carried bytes so a manifest-confirmed guide-pointer degrade
-					// can never masquerade as vendored content canon.
-					const { hex: _hex, ...presenceOwned } = artifact
-					artifacts.push(presenceOwned)
-					continue
-				}
-				throw new ScaffoldError('TARGET', `Host manifest does not declare ${source}`, {
-					host,
-					source,
-				})
-			}
-			for (const entry of entries) {
-				if (isSensitiveHostPath(entry.destination)) {
-					throw new ScaffoldError(
-						'TARGET',
-						`Sensitive host artifact source at ${entry.destination}`,
-						{ host, source: entry.destination },
-					)
-				}
-				const nestedPath = entry.destination.slice(source.length + 1)
-				const hex = readFileHex(
-					host,
-					entry.storage,
-					'TARGET',
-					'host',
-					Math.min(MAX_ARTIFACT_BYTES, remaining),
-				)
-				remaining -= hex.length / 2
-				artifacts.push({
-					...artifact,
-					path: `${artifact.path}/${nestedPath}`,
-					source: entry.destination,
-					hex,
-				})
-			}
-			continue
-		}
-
-		const directory = resolvePhysicalPath(host, source, 'TARGET', 'host')
-		if (!existsSync(directory)) {
-			throw new ScaffoldError('TARGET', `Host artifact source is missing at ${source}`, {
-				host,
-				source,
-			})
-		}
-		const directoryStatus = attempt(() => lstatSync(directory))
-		if (
-			!directoryStatus.success ||
-			!directoryStatus.value.isDirectory() ||
-			directoryStatus.value.isSymbolicLink()
-		) {
-			throw new ScaffoldError('TARGET', `Host artifact source is not a directory at ${source}`, {
-				host,
-				source,
-				error: directoryStatus.success ? undefined : directoryStatus.error,
-			})
-		}
-		const relatives = listFiles(directory)
-		if (artifacts.length + relatives.length > MAX_COLLECTION_ITEMS) {
-			throw new ScaffoldError('TARGET', 'Hydrated plan exceeds the artifact count limit', {
-				host,
-				limit: MAX_COLLECTION_ITEMS,
-			})
-		}
-		if (relatives.length === 0) {
-			artifacts.push(artifact)
-			continue
-		}
-		for (const nestedPath of relatives) {
-			const nestedSource = `${source}/${nestedPath}`
-			if (isSensitiveHostPath(nestedSource)) {
-				throw new ScaffoldError('TARGET', `Sensitive host artifact source at ${nestedSource}`, {
-					host,
-					source: nestedSource,
-				})
-			}
-			const hex = readFileHex(
-				host,
-				nestedSource,
-				'TARGET',
-				'host',
-				Math.min(MAX_ARTIFACT_BYTES, remaining),
-			)
-			remaining -= hex.length / 2
-			artifacts.push({
-				...artifact,
-				path: `${artifact.path}/${nestedPath}`,
-				source: nestedSource,
-				hex,
-			})
-		}
-	}
-	const conflict = findFileConflict(artifacts.map((artifact) => artifact.path))
-	if (conflict !== undefined) {
-		throw new ScaffoldError(
-			'INVALID',
-			`Hydrated artifact collision between "${conflict[0]}" and "${conflict[1]}"`,
-			{ paths: conflict },
-		)
-	}
-	const hydrated = { ...owned, artifacts }
-	if (!isPlan(hydrated)) {
-		throw new ScaffoldError('INVALID', 'Hydrated plan violates the bounded Plan contract')
-	}
-	return hydrated
-}
-
-/**
- * The vendored set of destination-relative paths under `directory` (one of
- * `PRUNE_DIRECTORIES`) that `pruneTargets` must NOT report — read from the
- * manifest's `destination`s when `host` has one, else listed straight off
- * `host/<directory>`.
- *
- * @param host - The vendored host root to establish the allowlist from.
- * @param directory - The prune directory (one of `PRUNE_DIRECTORIES`) to scope the allowlist to.
  * @remarks
- * FAIL CLOSED: before returning any allowlist (even an empty one), the
- * vendored source must be POSITIVELY established, or a caller would treat an
- * unresolved host as "vendors nothing" and report every file under
- * `target/<directory>` as unexpected. A missing `host` root, or (no
- * `manifest.json` AND no `host/<directory>`), is a coded `TARGET` failure —
- * the distinction this guards is missing-host vs genuinely-empty-vendor: a
- * `host` that EXISTS and vendors zero files in `directory` (an existing empty
- * dir, or a manifest with zero entries for it) remains a valid empty allowlist.
- * @returns The allowed destination-relative paths under `directory`.
- * @throws `ScaffoldError('TARGET', …)` when `host` does not exist, or when
- *   `host` has no `manifest.json` and no `host/<directory>` either.
+ * Device and inode rather than the path, because the path is the thing that can
+ * be swapped underneath a write. An anchor captured before a mutation and
+ * checked again after it is what proves the directory written into is the
+ * directory that was inspected.
  *
  * @example
  * ```ts
- * import { vendoredPruneSet } from '@orkestrel/scaffold/server'
+ * import { readAnchor } from '@orkestrel/scaffold/server'
  *
- * vendoredPruneSet('./dist/host', '.claude/agents') // Set { '.claude/agents/reviewer.md', … }
+ * readAnchor('/tmp/project') // { path: '/tmp/project', device: 1, inode: 2 }
  * ```
  */
-export function vendoredPruneSet(host: string, directory: string): ReadonlySet<string> {
-	if (!existsSync(host)) {
-		throw new ScaffoldError(
-			'TARGET',
-			`Cannot establish vendored source for prune: host root not found at ${host}`,
-			{ host, directory },
-		)
-	}
-	const manifest = readHostManifest(host)
-	if (manifest !== undefined) {
-		if (!manifest.roots.includes(directory)) {
-			throw new ScaffoldError(
-				'TARGET',
-				`Cannot establish vendored source for prune: manifest does not declare ${directory}`,
-				{ host, directory },
-			)
-		}
-		return new Set(
-			manifest.entries
-				.filter((entry) => entry.destination.startsWith(`${directory}/`))
-				.map((entry) => entry.destination),
-		)
-	}
-	const hostDirectory = resolvePhysicalPath(host, directory, 'TARGET', 'host')
-	if (!existsSync(hostDirectory)) {
-		throw new ScaffoldError(
-			'TARGET',
-			`Cannot establish vendored source for prune: no manifest.json and no host directory at ${hostDirectory}`,
-			{ host, directory },
-		)
-	}
-	const hostStatus = attempt(() => lstatSync(hostDirectory))
-	if (!hostStatus.success || !hostStatus.value.isDirectory() || hostStatus.value.isSymbolicLink()) {
-		throw new ScaffoldError(
-			'TARGET',
-			`Cannot establish vendored source for prune: host directory is not physical at ${hostDirectory}`,
-			{ host, directory, ...(hostStatus.success ? {} : { error: hostStatus.error }) },
-		)
-	}
-	return new Set(listFiles(hostDirectory).map((relative) => `${directory}/${relative}`))
-}
-
-/**
- * List the repo-relative POSIX paths under `target`'s prune directories
- * (`.claude/agents`, `.codex/agents`, `scripts`) that the vendored `host`
- * allowlist does NOT declare — THE single source of truth for prune drift, consumed by both
- * `Materializer.prune` (which deletes exactly these paths) and the bin's
- * audit/preview UX (which now shows them honestly instead of a
- * structurally-always-zero `audit.foreign`).
- *
- * @param target - The target directory to scan for unexpected files.
- * @param host - The vendored host root the allowlist is derived from.
- * @returns The unexpected relative paths (e.g. `.claude/agents/rogue.md`); `[]`
- *   when a prune directory is absent under `target`, or when none of its
- *   files are unexpected. Pure read — never deletes anything.
- * @throws `ScaffoldError('TARGET', …)` when `host` cannot positively
- *   establish a vendored allowlist for a prune directory that DOES exist
- *   under `target` (see `vendoredPruneSet`'s fail-closed remarks).
- *
- * @example
- * ```ts
- * import { pruneTargets } from '@orkestrel/scaffold/server'
- *
- * pruneTargets('./packages/router', hostRoot()) // ['.claude/agents/rogue.md']
- * ```
- */
-export function pruneTargets(target: string, host: string): readonly string[] {
-	if (!isFilesystemPath(target) || !isFilesystemPath(host)) {
-		throw new ScaffoldError('TARGET', 'Prune root is malformed or exceeds its bounds', {
-			target,
-			host,
-		})
-	}
-	const paths: string[] = []
-	for (const directory of PRUNE_DIRECTORIES) {
-		const root = resolvePhysicalPath(target, directory, 'TARGET', 'target')
-		if (!existsSync(root)) continue
-		const status = attempt(() => lstatSync(root))
-		if (!status.success || !status.value.isDirectory() || status.value.isSymbolicLink()) {
-			throw new ScaffoldError('TARGET', `Prune root is not a physical directory at ${root}`, {
-				target,
-				directory,
-				...(status.success ? {} : { error: status.error }),
-			})
-		}
-		const allowed = vendoredPruneSet(host, directory)
-		for (const relative of listFiles(root)) {
-			const path = `${directory}/${relative}`
-			if (!allowed.has(path)) paths.push(path)
-		}
-	}
-	return paths
-}
-
-/** Consume one aggregate fleet-catalog traversal slot. */
-export function consumeCatalogAllowance(allowance: CatalogAllowance, root: string): void {
-	const consumed = attempt(() => {
-		if (!isCatalogAllowance(allowance)) throw new Error('allowance must be one Float64 cell')
-		const remaining = allowance[0]
-		if (
-			remaining === undefined ||
-			!Number.isSafeInteger(remaining) ||
-			remaining < 1 ||
-			remaining > MAX_HOST_ENTRIES
-		) {
-			throw new Error('allowance is outside its bounds')
-		}
-		const next = remaining - 1
-		allowance[0] = next
-		if (allowance[0] !== next) throw new Error('allowance decrement was not retained')
-	})
-	if (!consumed.success) {
-		throw new ScaffoldError('TARGET', 'Fleet catalog exceeds its aggregate entry limit', {
-			root,
-			limit: MAX_HOST_ENTRIES,
-			error: consumed.error,
-		})
-	}
-}
-
-/**
- * List a fleet root's `@orkestrel/*` package directories.
- *
- * @param root - The fleet root directory to scan.
- * @returns Absolute, code-unit-sorted paths of `root`'s immediate child
- *   directories whose `package.json` parses and whose `name` starts with
- *   `@orkestrel/`. A child with an unreadable or unparsable `package.json`,
- *   or a non-`@orkestrel` name, is skipped silently — it simply is not a
- *   fleet member.
- * @throws `ScaffoldError('TARGET', …)` when a child directory name contains
- *   terminal controls and therefore cannot be safely inspected or reported.
- *
- * @example
- * ```ts
- * import { discoverPackages } from '@orkestrel/scaffold/server'
- *
- * discoverPackages('./packages') // ['/abs/packages/router', '/abs/packages/budget']
- * ```
- */
-export function discoverPackages(
-	root: string,
-	allowance: CatalogAllowance = new Float64Array([MAX_HOST_ENTRIES]),
-): readonly string[] {
-	if (!isCatalogAllowance(allowance)) {
-		throw new ScaffoldError('TARGET', 'Fleet catalog allowance is malformed', {
-			root,
-			limit: MAX_HOST_ENTRIES,
-		})
-	}
-	if (!isFilesystemPath(root)) {
-		throw new ScaffoldError('TARGET', 'Fleet root is malformed or exceeds its bounds', { root })
-	}
-	const rootStatus = attempt(() => lstatSync(root))
-	if (!rootStatus.success || !rootStatus.value.isDirectory() || rootStatus.value.isSymbolicLink()) {
-		throw new ScaffoldError('TARGET', `Fleet root is not a physical directory at ${root}`, {
-			root,
-			...(rootStatus.success ? {} : { error: rootStatus.error }),
-		})
-	}
-	const packages: string[] = []
-	const handle = opendirSync(root)
-	try {
-		for (;;) {
-			const entry = handle.readSync()
-			if (entry === null) break
-			consumeCatalogAllowance(allowance, root)
-			if (!entry.isDirectory()) continue
-			if (!isTerminalText(entry.name)) {
-				throw new ScaffoldError('TARGET', 'Fleet discovery found a non-portable directory')
-			}
-			const directory = join(root, entry.name)
-			const text = attempt(() =>
-				readFileText(directory, 'package.json', 'TARGET', 'package', MAX_MANIFEST_BYTES),
-			)
-			if (!text.success) continue
-			const parsed = parseJSON(text.value)
-			if (!isRecord(parsed)) continue
-			const name = ownDataValue(parsed, 'name')
-			if (typeof name !== 'string' || !DEPENDENCY_NAME_PATTERN.test(name)) continue
-			if (!isPortablePath(entry.name)) {
-				throw new ScaffoldError('TARGET', 'Fleet discovery found a non-portable directory')
-			}
-			packages.push(directory)
-		}
-	} finally {
-		handle.closeSync()
-	}
-	return packages.sort()
-}
-
-/**
- * Extract the first paragraph from the first blockquote in a Markdown guide.
- *
- * @param text - The guide Markdown to traverse.
- * @returns A normalized one-line description, or `undefined` when parsing
- *   fails, no blockquote paragraph exists, or the paragraph is empty.
- *
- * @example
- * ```ts
- * import { guideToDescription } from '@orkestrel/scaffold/server'
- *
- * guideToDescription('> A concise package description.\n>\n> More detail.')
- * // 'A concise package description.'
- * ```
- */
-export function guideToDescription(text: string): string | undefined {
-	if (text.length > MAX_GUIDE_BYTES || contentByteLength(text) > MAX_GUIDE_BYTES) {
+export function readAnchor(path: string): WriteAnchor | undefined {
+	const status = attempt(() => lstatSync(path))
+	if (!status.success || !status.value.isDirectory() || status.value.isSymbolicLink()) {
 		return undefined
 	}
-	const parsed = attempt(() => parseDocument(text))
-	if (!parsed.success) return undefined
-	let quote: BlockquoteNode | undefined
-	for (const node of walkNodes(parsed.value)) {
-		if (isBlockquoteNode(node)) {
-			quote = node
-			break
-		}
-	}
-	if (quote === undefined) return undefined
-	const paragraph = quote.children.find((child) => isParagraphNode(child))
-	if (paragraph === undefined) return undefined
-	const description = flattenText(paragraph).replace(/\s+/g, ' ').trim()
-	return description.length > 0 && isCatalogDescription(description) ? description : undefined
+	return { path, device: status.value.dev, inode: status.value.ino }
 }
 
 /**
- * Build the fleet package catalog — one `CatalogEntry` per `@orkestrel/*`
- * package discovered under each root, its description drawn from its own
- * guide's FIRST blockquote.
+ * Test whether a captured directory is still the same directory.
  *
- * @param roots - The fleet root directories to scan (each walked via `discoverPackages`).
+ * @param anchor - The identity captured earlier.
+ * @returns `true` when the path still holds a physical directory of that exact
+ * device and inode.
+ *
  * @remarks
- * Per discovered package directory: `name` / `version` come from its own
- * `package.json`; `description` is the first paragraph of the guide's opening
- * blockquote — the flattened text of the FIRST `ParagraphNode` among the
- * FIRST `BlockquoteNode` found's (depth-first, pre-order, via `walkNodes`)
- * TOP-LEVEL children in its `guides/src/<short>.md` (`<short>` = `name` with
- * the `@orkestrel/` prefix stripped), parsed with `@orkestrel/markdown`'s
- * `parseDocument` — a multi-paragraph blockquote overview yields only its
- * FIRST paragraph, never the whole quote glued together; embedded newlines
- * collapse to single spaces, and surrounding whitespace trims. A
- * missing/unreadable guide, a guide carrying no blockquote, or a blockquote
- * with no top-level paragraph child, yields `description: ''`, never a
- * thrown error. Entries merge across `roots` (a later root's entry for a
- * repeated `name` wins), then code-unit sort by `name`. An unreadable ROOT
- * itself is NOT wrapped here — whatever `discoverPackages` throws for it
- * propagates as-is; the bin layer is responsible for coding that failure
- * `TARGET`.
- * @returns The merged, sorted `CatalogEntry[]`.
+ * The check a write repeats between steps. A directory replaced by another
+ * directory of the same name answers `false` here, which is the case a path
+ * comparison alone cannot see.
  *
  * @example
  * ```ts
- * import { catalogPackages } from '@orkestrel/scaffold/server'
+ * import { matchesAnchor, readAnchor } from '@orkestrel/scaffold/server'
  *
- * catalogPackages(['/repos']) // [{ name: '@orkestrel/contract', version: '0.0.5', description: '…' }, …]
+ * const anchor = readAnchor('/tmp/project')
+ * anchor !== undefined && matchesAnchor(anchor) // true while it is untouched
  * ```
  */
-export function catalogPackages(
-	roots: readonly string[],
-	limit = MAX_HOST_ENTRIES,
-): readonly CatalogEntry[] {
-	const requested = parseFilesystemPaths(roots, MAX_HOST_ENTRIES)
-	if (
-		requested === undefined ||
-		!Number.isSafeInteger(limit) ||
-		limit < 1 ||
-		limit > MAX_HOST_ENTRIES
-	) {
-		throw new ScaffoldError('TARGET', 'Catalog roots are malformed', {
-			limit: MAX_HOST_ENTRIES,
-		})
+export function matchesAnchor(anchor: WriteAnchor): boolean {
+	const current = readAnchor(anchor.path)
+	return current !== undefined && current.device === anchor.device && current.inode === anchor.inode
+}
+
+/**
+ * Capture what one destination holds before a write.
+ *
+ * @param path - The resolved destination path to capture.
+ * @returns The expectation, or `undefined` when the destination is a link or a
+ * shape this package will not write over.
+ *
+ * @remarks
+ * Absence is a captured state rather than a failure, because most writes expect
+ * exactly that. Each shape carries only the facts it supplies: a directory
+ * carries its identity, a file carries its identity, size, and bytes, and an
+ * absent destination carries nothing at all. A file past the artifact ceiling
+ * carries no digest and is bound by its identity, size, and modification time
+ * alone, which is the strongest honest claim about bytes nobody read.
+ *
+ * @example
+ * ```ts
+ * import { readExpectation } from '@orkestrel/scaffold/server'
+ *
+ * readExpectation('/tmp/project/absent.md') // { path: …, shape: 'absent' }
+ * ```
+ */
+export function readExpectation(path: string): WriteExpectation | undefined {
+	const status = attempt(() => lstatSync(path))
+	if (!status.success) {
+		return matchesMissingPath(status.error) ? { path, shape: 'absent' } : undefined
 	}
-	const merged = new Map<string, CatalogEntry>()
-	const allowance = new Float64Array([limit])
-	for (const root of requested) {
-		consumeCatalogAllowance(allowance, root)
-		for (const directory of discoverPackages(root, allowance)) {
-			const text = attempt(() =>
-				readFileText(directory, 'package.json', 'TARGET', 'package', MAX_MANIFEST_BYTES),
-			)
-			if (!text.success) continue
-			const parsed = parseJSON(text.value)
-			if (!isRecord(parsed)) continue
-			const name = ownDataValue(parsed, 'name')
-			if (typeof name !== 'string' || !DEPENDENCY_NAME_PATTERN.test(name)) continue
-			const version = ownDataValue(parsed, 'version')
-			if (typeof version !== 'string' || !VERSION_PATTERN.test(version)) continue
-			const short = packageShortName(name)
-			let description = ''
-			const guide = attempt(() =>
-				readFileText(directory, `guides/src/${short}.md`, 'TARGET', 'package', MAX_GUIDE_BYTES),
-			)
-			if (guide.success) description = guideToDescription(guide.value) ?? ''
-			merged.set(name, { name, version, description })
+	const stats = status.value
+	if (stats.isSymbolicLink()) return undefined
+	if (stats.isDirectory()) {
+		return {
+			path,
+			shape: 'directory',
+			device: stats.dev,
+			inode: stats.ino,
+			modified: stats.mtimeMs,
 		}
 	}
-	return [...merged.values()].sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
+	if (!stats.isFile() || stats.nlink !== 1) return undefined
+	const digest = computeFileDigest(path)
+	return {
+		path,
+		shape: 'file',
+		device: stats.dev,
+		inode: stats.ino,
+		modified: stats.mtimeMs,
+		size: stats.size,
+		...(digest === undefined ? {} : { digest }),
+	}
+}
+
+/**
+ * Test whether a destination still holds what was captured of it.
+ *
+ * @param expectation - The state captured earlier.
+ * @returns `true` when re-reading the destination now produces that same state.
+ *
+ * @remarks
+ * Compared field for field against a fresh {@link readExpectation}, so an
+ * expectation recorded without a digest matches only a destination that still
+ * has no digest to give. That is what keeps the comparison honest in both
+ * directions: nothing is treated as satisfied because it was never measured.
+ *
+ * @example
+ * ```ts
+ * import { matchesExpectation, readExpectation } from '@orkestrel/scaffold/server'
+ *
+ * const expectation = readExpectation('/tmp/project/AGENTS.md')
+ * expectation !== undefined && matchesExpectation(expectation) // true while untouched
+ * ```
+ */
+export function matchesExpectation(expectation: WriteExpectation): boolean {
+	const current = readExpectation(expectation.path)
+	if (current === undefined) return false
+	return (
+		current.shape === expectation.shape &&
+		current.device === expectation.device &&
+		current.inode === expectation.inode &&
+		current.modified === expectation.modified &&
+		current.size === expectation.size &&
+		current.digest === expectation.digest
+	)
+}
+
+/**
+ * Test whether a destination still matches the narrower state a caller observed.
+ *
+ * @param precondition - The caller-observed state the write is held to.
+ * @returns `true` when the destination is absent as stated, or holds a physical
+ * file whose bytes digest to the stated value.
+ *
+ * @remarks
+ * Narrower than {@link matchesExpectation} on purpose. A caller observed bytes,
+ * not inodes and timestamps, so binding a write to a device identity it never
+ * saw would refuse writes that are perfectly safe — a file rewritten to
+ * identical bytes by an editor is still the file the caller read. A precondition
+ * that states no digest claims presence only.
+ *
+ * @example
+ * ```ts
+ * import { matchesPrecondition } from '@orkestrel/scaffold/server'
+ *
+ * matchesPrecondition({ path: '/tmp/project/new.md', shape: 'absent' }) // true while absent
+ * ```
+ */
+export function matchesPrecondition(precondition: WritePrecondition): boolean {
+	const status = attempt(() => lstatSync(precondition.path))
+	if (!status.success) {
+		return precondition.shape === 'absent' && matchesMissingPath(status.error)
+	}
+	if (precondition.shape !== 'file' || !isPhysicalFile(precondition.path)) return false
+	if (precondition.digest === undefined) return true
+	return computeFileDigest(precondition.path) === precondition.digest
 }

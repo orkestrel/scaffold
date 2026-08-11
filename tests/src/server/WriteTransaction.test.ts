@@ -1,0 +1,478 @@
+import { lstatSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { computeDigest, listFiles, readExpectation, WriteTransaction } from '@src/server'
+import { describe, expect, it } from 'vitest'
+import { createWorkspace, readErrorCode } from '../../setupServer.js'
+
+describe('WriteTransaction construction', () => {
+	it('refuses a target, a path list, and a repeated path that are off contract', () => {
+		const workspace = createWorkspace()
+		try {
+			expect(readErrorCode(() => new WriteTransaction('', ['AGENTS.md']))).toBe('INVALID')
+			expect(readErrorCode(() => new WriteTransaction(workspace.path, ['../secrets']))).toBe(
+				'INVALID',
+			)
+			expect(readErrorCode(() => new WriteTransaction(workspace.path, ['a', 'a']))).toBe('INVALID')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses a link that leaves the target rather than following it', () => {
+		const workspace = createWorkspace()
+		try {
+			const outside = workspace.directory('outside')
+			workspace.directory('project')
+			workspace.link('project/linked', outside)
+			const code = readErrorCode(
+				() => new WriteTransaction(join(workspace.path, 'project'), ['linked/names.md']),
+			)
+			// Containment resolves the link and finds the destination outside the
+			// target, so the refusal is the path law's rather than the ancestor law's.
+			expect(code).toBe('INVALID')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses a link that stays inside the target, which containment alone admits', () => {
+		const workspace = createWorkspace()
+		try {
+			const target = workspace.directory('project')
+			const real = workspace.directory('project/real')
+			workspace.link('project/rules', real)
+			// The redirected destination is still inside the target, so containment
+			// passes and only the ancestor law can refuse it. That is the whole reason
+			// the ancestor law exists at write time.
+			expect(readErrorCode(() => new WriteTransaction(target, ['rules/names.md']))).toBe('WRITE')
+			expect(readErrorCode(() => new WriteTransaction(target, ['real/names.md']))).toBe(undefined)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('leaves the tree exactly as it found it when it refuses', () => {
+		const workspace = createWorkspace()
+		try {
+			workspace.write('project/AGENTS.md', '# Agents\n')
+			const before = readdirSync(workspace.path).sort()
+			expect(
+				readErrorCode(() => new WriteTransaction(join(workspace.path, 'project'), ['a', 'a'])),
+			).toBe('INVALID')
+			expect(readdirSync(workspace.path).sort()).toEqual(before)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses a precondition that names no destination and one that no longer holds', () => {
+		const workspace = createWorkspace()
+		try {
+			const target = workspace.directory('project')
+			workspace.write('project/AGENTS.md', '# Agents\n')
+			const destination = join(target, 'AGENTS.md')
+			expect(
+				readErrorCode(
+					() =>
+						new WriteTransaction(target, ['AGENTS.md'], [{ path: 'AGENTS.md', shape: 'absent' }]),
+				),
+			).toBe('INVALID')
+			expect(
+				readErrorCode(
+					() =>
+						new WriteTransaction(target, ['AGENTS.md'], [{ path: destination, shape: 'absent' }]),
+				),
+			).toBe('TARGET')
+			expect(
+				readErrorCode(
+					() =>
+						new WriteTransaction(
+							target,
+							['AGENTS.md'],
+							[{ path: destination, shape: 'file', digest: computeDigest('# Moved\n') }],
+						),
+				),
+			).toBe('TARGET')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('accepts a precondition that still holds and closes cleanly', () => {
+		const workspace = createWorkspace()
+		try {
+			const target = workspace.directory('project')
+			workspace.write('project/AGENTS.md', '# Agents\n')
+			const transaction = new WriteTransaction(
+				target,
+				['AGENTS.md'],
+				[
+					{
+						path: join(target, 'AGENTS.md'),
+						shape: 'file',
+						digest: computeDigest('# Agents\n'),
+					},
+				],
+			)
+			expect(transaction.open).toBe(true)
+			expect(transaction.target).toBe(target)
+			expect(transaction.expectations.map((expectation) => expectation.shape)).toEqual(['file'])
+			transaction.discard()
+			expect(transaction.open).toBe(false)
+			expect(readdirSync(workspace.path)).toEqual(['project'])
+		} finally {
+			workspace.destroy()
+		}
+	})
+})
+
+describe('WriteTransaction staging', () => {
+	it('writes nothing into the target until the commit lands', () => {
+		const workspace = createWorkspace()
+		try {
+			const target = join(workspace.path, 'project')
+			const transaction = new WriteTransaction(target, ['AGENTS.md'])
+			try {
+				transaction.write('AGENTS.md', '# Agents\n')
+				expect(readExpectation(join(target, 'AGENTS.md'))?.shape).toBe('absent')
+				expect(transaction.commit()).toEqual(['AGENTS.md'])
+				expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).toBe('# Agents\n')
+			} finally {
+				transaction.discard()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses an unopened path, a second claim, and a directory destination', () => {
+		const workspace = createWorkspace()
+		try {
+			const target = workspace.directory('project')
+			workspace.directory('project/rules')
+			const transaction = new WriteTransaction(target, ['AGENTS.md', 'rules'])
+			try {
+				expect(readErrorCode(() => transaction.write('LICENSE', 'MIT\n'))).toBe('INVALID')
+				transaction.write('AGENTS.md', '# Agents\n')
+				expect(readErrorCode(() => transaction.write('AGENTS.md', '# Again\n'))).toBe('INVALID')
+				expect(readErrorCode(() => transaction.write('rules', 'not a directory'))).toBe('TARGET')
+			} finally {
+				transaction.discard()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('copies exact bytes and refuses a source that is not a physical file', () => {
+		const workspace = createWorkspace()
+		try {
+			const target = join(workspace.path, 'project')
+			const source = workspace.write('host/codex.sh', '#!/bin/sh\necho hi\n')
+			const transaction = new WriteTransaction(target, ['scripts/codex.sh', 'missing.md'])
+			try {
+				expect(
+					readErrorCode(() =>
+						transaction.copy('missing.md', join(workspace.path, 'host/absent.md'), false),
+					),
+				).toBe('TARGET')
+				transaction.copy('scripts/codex.sh', source, false)
+				expect(transaction.commit()).toEqual(['scripts/codex.sh'])
+				expect(readFileSync(join(target, 'scripts/codex.sh'), 'utf8')).toBe('#!/bin/sh\necho hi\n')
+			} finally {
+				transaction.discard()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it.skipIf(process.platform === 'win32')('sets the executable bit when asked', () => {
+		// Measured on this host: `chmodSync(path, 0o755)` leaves the mode at 666 on
+		// win32, because NTFS carries no POSIX permission bits, so the assertion
+		// below cannot distinguish a set bit from an unset one there.
+		const workspace = createWorkspace()
+		try {
+			const target = join(workspace.path, 'project')
+			const source = workspace.write('host/codex.sh', '#!/bin/sh\n')
+			const transaction = new WriteTransaction(target, ['scripts/codex.sh'])
+			try {
+				transaction.copy('scripts/codex.sh', source, true)
+				transaction.commit()
+				expect(lstatSync(join(target, 'scripts/codex.sh')).mode & 0o111).not.toBe(0)
+			} finally {
+				transaction.discard()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+})
+
+describe('WriteTransaction directories', () => {
+	it('establishes a nested directory segment by segment and reports what it created', () => {
+		const workspace = createWorkspace()
+		try {
+			const target = workspace.directory('project')
+			const transaction = new WriteTransaction(target, ['.claude/skills'])
+			try {
+				const result = transaction.directory('.claude/skills')
+				expect(result.created.map((anchor) => anchor.path)).toEqual([
+					join(target, '.claude'),
+					join(target, '.claude/skills'),
+				])
+				expect(result.anchor.path).toBe(join(target, '.claude/skills'))
+				expect(transaction.commit()).toEqual(['.claude/skills'])
+				expect(lstatSync(join(target, '.claude/skills')).isDirectory()).toBe(true)
+			} finally {
+				transaction.discard()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('creates nothing for a directory already there and refuses one holding a file', () => {
+		const workspace = createWorkspace()
+		try {
+			const target = workspace.directory('project')
+			workspace.directory('project/rules')
+			workspace.write('project/AGENTS.md', '# Agents\n')
+			const transaction = new WriteTransaction(target, ['rules', 'AGENTS.md'])
+			try {
+				expect(transaction.directory('rules').created).toEqual([])
+				expect(readErrorCode(() => transaction.directory('AGENTS.md'))).toBe('TARGET')
+				expect(transaction.commit()).toEqual([])
+			} finally {
+				transaction.discard()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('removes every directory it created when it is discarded', () => {
+		const workspace = createWorkspace()
+		try {
+			const target = join(workspace.path, 'project')
+			const transaction = new WriteTransaction(target, ['.claude/skills'])
+			transaction.directory('.claude/skills')
+			expect(lstatSync(join(target, '.claude/skills')).isDirectory()).toBe(true)
+			transaction.discard()
+			expect(readdirSync(workspace.path)).toEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+})
+
+describe('WriteTransaction commit', () => {
+	it('replaces existing bytes and leaves no private residue beside the target', () => {
+		const workspace = createWorkspace()
+		try {
+			const target = workspace.directory('project')
+			workspace.write('project/AGENTS.md', '# Old\n')
+			const transaction = new WriteTransaction(target, ['AGENTS.md'])
+			try {
+				transaction.write('AGENTS.md', '# New\n')
+				expect(transaction.commit()).toEqual(['AGENTS.md'])
+				expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).toBe('# New\n')
+				expect(readdirSync(workspace.path)).toEqual(['project'])
+				expect(listFiles(target)).toEqual(['AGENTS.md'])
+			} finally {
+				transaction.discard()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('restores a destination it already promoted when a later promotion fails', () => {
+		const workspace = createWorkspace()
+		try {
+			const target = workspace.directory('project')
+			workspace.write('project/first.md', '# First\n')
+			const transaction = new WriteTransaction(target, ['first.md', 'deep/b.md'])
+			transaction.write('first.md', '# First written\n')
+			transaction.write('deep/b.md', '# B\n')
+			// A file is planted where the second destination's parent has to go. The
+			// second destination itself still reads as absent, so the check that runs
+			// before the first promotion cannot see it and the failure lands after
+			// `first.md` has already been replaced.
+			writeFileSync(join(target, 'deep'), 'a file where a directory must go\n', 'utf8')
+			expect(readErrorCode(() => transaction.commit())).toBe('WRITE')
+			expect(readFileSync(join(target, 'first.md'), 'utf8')).toBe('# First\n')
+			expect(readFileSync(join(target, 'deep'), 'utf8')).toBe('a file where a directory must go\n')
+			expect(readdirSync(workspace.path)).toEqual(['project'])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('moves nothing at all when a destination moved before the first promotion', () => {
+		const workspace = createWorkspace()
+		try {
+			const target = workspace.directory('project')
+			workspace.write('project/first.md', '# First\n')
+			workspace.write('project/second.md', '# Second\n')
+			const transaction = new WriteTransaction(target, ['first.md', 'second.md'])
+			transaction.write('first.md', '# First written\n')
+			transaction.write('second.md', '# Second written\n')
+			// The second destination moves after both files are staged, which is the
+			// window the expectation captured at construction exists to close.
+			writeFileSync(join(target, 'second.md'), '# Second moved\n', 'utf8')
+			expect(readErrorCode(() => transaction.commit())).toBe('WRITE')
+			expect(readFileSync(join(target, 'first.md'), 'utf8')).toBe('# First\n')
+			expect(readFileSync(join(target, 'second.md'), 'utf8')).toBe('# Second moved\n')
+			expect(readdirSync(workspace.path)).toEqual(['project'])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('leaves a target without the writer holding both files, which is the control', () => {
+		// The negative control for the rollback assertion above, drawn from outside
+		// the population that assertion covers: a plain writer running the same
+		// scenario. It must leave the first file replaced, because nothing rolled it
+		// back. A rollback assertion that passes here as well is measuring nothing.
+		const workspace = createWorkspace()
+		try {
+			const target = workspace.directory('project')
+			workspace.write('project/first.md', '# First\n')
+			workspace.write('project/second.md', '# Second\n')
+			writeFileSync(join(target, 'first.md'), '# First written\n', 'utf8')
+			writeFileSync(join(target, 'second.md'), '# Second moved\n', 'utf8')
+			expect(readFileSync(join(target, 'first.md'), 'utf8')).toBe('# First written\n')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('removes every directory it created when a promotion fails', () => {
+		const workspace = createWorkspace()
+		try {
+			const target = join(workspace.path, 'project')
+			const transaction = new WriteTransaction(target, ['.claude/rules/names.md', 'AGENTS.md'])
+			transaction.write('.claude/rules/names.md', '# Names\n')
+			transaction.write('AGENTS.md', '# Agents\n')
+			// A file appears where an absent destination was expected, so the promotion
+			// that reaches it refuses and the whole commit unwinds.
+			workspace.write('project/AGENTS.md', '# Planted\n')
+			expect(readErrorCode(() => transaction.commit())).toBe('WRITE')
+			expect(listFiles(target)).toEqual(['AGENTS.md'])
+			expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).toBe('# Planted\n')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('takes a marked file at commit and refuses one that holds no file', () => {
+		const workspace = createWorkspace()
+		try {
+			const target = workspace.directory('project')
+			workspace.write('project/foreign.md', '# Foreign\n')
+			const transaction = new WriteTransaction(target, ['foreign.md', 'absent.md'])
+			try {
+				expect(readErrorCode(() => transaction.remove('absent.md'))).toBe('TARGET')
+				transaction.remove('foreign.md')
+				expect(readFileSync(join(target, 'foreign.md'), 'utf8')).toBe('# Foreign\n')
+				expect(transaction.commit()).toEqual(['foreign.md'])
+				expect(listFiles(target)).toEqual([])
+				expect(readdirSync(workspace.path)).toEqual(['project'])
+			} finally {
+				transaction.discard()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('puts back every file it already took when a later one moved', () => {
+		const workspace = createWorkspace()
+		try {
+			const target = workspace.directory('project')
+			workspace.write('project/first.md', '# First\n')
+			workspace.write('project/second.md', '# Second\n')
+			const transaction = new WriteTransaction(target, ['first.md', 'second.md'])
+			transaction.remove('first.md')
+			transaction.remove('second.md')
+			writeFileSync(join(target, 'second.md'), '# Second moved\n', 'utf8')
+			expect(readErrorCode(() => transaction.commit())).toBe('WRITE')
+			expect(readFileSync(join(target, 'first.md'), 'utf8')).toBe('# First\n')
+			expect(readFileSync(join(target, 'second.md'), 'utf8')).toBe('# Second moved\n')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('closes after a commit, so a second commit and a later discard both stop', () => {
+		const workspace = createWorkspace()
+		try {
+			const target = workspace.directory('project')
+			const transaction = new WriteTransaction(target, ['AGENTS.md'])
+			transaction.write('AGENTS.md', '# Agents\n')
+			transaction.commit()
+			expect(transaction.open).toBe(false)
+			expect(readErrorCode(() => transaction.commit())).toBe('WRITE')
+			expect(readErrorCode(() => transaction.write('AGENTS.md', '# Again\n'))).toBe('WRITE')
+			transaction.discard()
+			transaction.discard()
+			expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).toBe('# Agents\n')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reports promotions, establishments, and removals in that order', () => {
+		const workspace = createWorkspace()
+		try {
+			const target = workspace.directory('project')
+			workspace.write('project/foreign.md', '# Foreign\n')
+			const transaction = new WriteTransaction(target, [
+				'AGENTS.md',
+				'.claude/skills',
+				'foreign.md',
+			])
+			transaction.write('AGENTS.md', '# Agents\n')
+			transaction.directory('.claude/skills')
+			transaction.remove('foreign.md')
+			expect(transaction.commit()).toEqual(['AGENTS.md', '.claude/skills', 'foreign.md'])
+		} finally {
+			workspace.destroy()
+		}
+	})
+})
+
+describe('WriteTransaction discard', () => {
+	it('clears its private root even after a staged write', () => {
+		const workspace = createWorkspace()
+		try {
+			const target = workspace.directory('project')
+			const transaction = new WriteTransaction(target, ['AGENTS.md'])
+			transaction.write('AGENTS.md', '# Agents\n')
+			expect(readdirSync(workspace.path).length).toBe(2)
+			transaction.discard()
+			expect(readdirSync(workspace.path)).toEqual(['project'])
+			expect(listFiles(target)).toEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reports residue rather than swallowing it', () => {
+		const workspace = createWorkspace()
+		try {
+			const target = workspace.directory('project')
+			const transaction = new WriteTransaction(target, ['.claude/skills'])
+			transaction.directory('.claude/skills')
+			// A file planted inside a directory this transaction created stops the
+			// rollback from removing it, which is exactly the residue `discard` owes
+			// the caller instead of a silent success.
+			writeFileSync(join(target, '.claude/skills/planted.md'), '# Planted\n', 'utf8')
+			expect(readErrorCode(() => transaction.discard())).toBe('WRITE')
+			rmSync(join(target, '.claude'), { recursive: true, force: true })
+		} finally {
+			workspace.destroy()
+		}
+	})
+})

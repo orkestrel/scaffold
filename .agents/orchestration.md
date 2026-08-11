@@ -255,9 +255,31 @@ substitution it forces; never absorb it silently.
      discipline.
    - Reconcile their evidence. Drop, on the record, any finding neither engine can substantiate.
 6. **Verify.** Have one independent `verifier` run the authoritative gates.
-7. **Accept.** Decide, then report outcomes, decisions, evidence, and remaining risk concisely.
+7. **Re-baseline.** Reconcile the remaining plan against what the phase revealed, before dispatching
+   the next one.
+   - Rule on every remaining unit: **satisfied**, the phase closed it, strike it; **transformed**,
+     the intent stands and the work changed, restate it; **added**, the phase revealed a fork the
+     plan did not consider; **unchanged**.
+   - Redraw the dependency order. Strike a unit whose subject a later unit deletes. State the new
+     prerequisite of a unit that acquired one.
+   - Walk the remaining units once and ask of each whether what just landed still supports it. A
+     decision taken inside a unit can remove a later unit's foundation, and the unit that took it
+     cannot see that.
+   - Record what changed and why. An unrecorded re-baseline cannot be audited, and the next one
+     re-derives it.
+8. **Accept.** Decide, then report outcomes, decisions, evidence, and remaining risk concisely.
    When step 2's exit criterion is met and the gates are green, accept. The next goal is the
    deliverable.
+
+### Re-baselining is not rescoping
+
+`.claude/rules/quality.md` fixes the enumerated scope when work begins and forbids reopening it. A
+re-baseline changes which units run. It never changes the goal's exit criterion.
+
+Strike a unit because the phase satisfied it, never because it became inconvenient. Add a unit
+because implementation revealed work the exit criterion already required, never because an engine
+thought of something else worth doing. A re-baseline that moves the exit criterion is a rescope, and
+that needs the user.
 
 ## Deviation protocol
 
@@ -300,6 +322,9 @@ The harness bridge names the concrete mechanism for each of these.
 - Amend a brief on re-run rather than restating it. A mid-campaign correction produces a successor
   file recording what changed and why, and the original stays. A fix round's brief names the
   findings it carries and where each came from.
+- Send a decision taken mid-campaign to every unit already in flight whose brief it invalidates. An
+  executor cannot see a change made after it was dispatched, so it writes the state its brief
+  described and the defect surfaces as its own.
 - Treat brief and report files as unit evidence, not deliverables. Never commit them, and sweep
   them when the campaign that produced them is accepted.
 - Promote anything that must outlive the campaign into a durable artifact before the sweep — a

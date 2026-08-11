@@ -1,316 +1,370 @@
+import type { Guard } from '@orkestrel/contract'
 import type { EmitterHooks } from '@orkestrel/emitter'
-import type { Dependency } from '@src/core'
+import type { CatalogEntry, Dependency, Mirror } from '@src/core'
 import type {
-	CatalogAllowance,
 	HostManifest,
 	ManifestEntry,
 	MaterializerEventMap,
-	SyncEventMap,
-	WritePrecondition,
+	MaterializerOptions,
+	Repository,
+	UpstreamEventMap,
+	UpstreamOptions,
 } from './types.js'
-import { attempt, isError, isFunction, isRecord, isString } from '@orkestrel/contract'
 import {
+	andOf,
+	arrayOf,
+	boundsOf,
+	holds,
+	isArray,
+	isBoolean,
+	isFunction,
+	isInteger,
+	isString,
+	recordOf,
+	stringOf,
+} from '@orkestrel/contract'
+import {
+	computeBytes,
 	CONTROL_CHARACTER_PATTERN,
-	contentByteLength,
-	hasOnlyDataProperties,
-	INVALID_PATH_CHARACTER_PATTERN,
-	isDenseDataArray,
+	isCatalogEntry,
+	isCollection,
 	isDependency,
+	isDependencyName,
+	isMirror,
+	isPath,
+	MAX_ARTIFACT_BYTES,
 	MAX_PATH_LENGTH,
+	MAX_TOTAL_ARTIFACT_BYTES,
 } from '@src/core'
 import {
-	MAX_CATALOG_DESCRIPTION_LENGTH,
-	MAX_FILESYSTEM_DEPTH,
-	MAX_HOST_ENTRIES,
+	BRANCH_PATTERN,
+	DIGEST_PATTERN,
+	DRIVE_PATTERN,
+	INVALID_SEGMENT_CHARACTER_PATTERN,
+	MAX_BRANCH_LENGTH,
+	MAX_ENDPOINT_LENGTH,
+	MAX_INVENTORY_PATHS,
+	MAX_PATH_DEPTH,
 	MAX_PATH_SEGMENT_BYTES,
-	RESERVED_PATH_SEGMENT_PATTERN,
-	RESERVED_TARGET_PATH_PATTERN,
-	SENSITIVE_HOST_PATH_PATTERN,
-	WRITE_DIGEST_PATTERN,
+	MAX_UPSTREAM_CONCURRENCY,
+	MAX_UPSTREAM_RETRIES,
+	MAX_UPSTREAM_TIMEOUT,
+	RESERVED_SEGMENT_PATTERN,
 } from './constants.js'
 
-/** Narrow one exact aggregate fleet traversal allowance. */
-export function isCatalogAllowance(value: unknown): value is CatalogAllowance {
-	const result = attempt(() => {
-		const bufferGetter = Object.getOwnPropertyDescriptor(
-			Object.getPrototypeOf(Float64Array.prototype),
-			'buffer',
-		)?.get
-		if (
-			bufferGetter === undefined ||
-			!ArrayBuffer.isView(value) ||
-			!(value instanceof Float64Array) ||
-			!(Reflect.apply(bufferGetter, value, []) instanceof ArrayBuffer) ||
-			value.length !== 1
-		) {
-			return false
-		}
-		const remaining = value[0]
-		return (
-			remaining !== undefined &&
-			Number.isSafeInteger(remaining) &&
-			remaining >= 0 &&
-			remaining <= MAX_HOST_ENTRIES
-		)
-	})
-	return result.success && result.value
-}
-
 /**
- * Determine whether a value is a non-empty portable relative POSIX path.
+ * Narrow a value to a path naming a location on this host.
  *
- * @param value - The candidate path.
- * @returns `true` when every path segment is safe and portable.
+ * @param value - The candidate host path.
+ * @returns `true` for a bounded absolute or relative path whose every segment is
+ * portable across the supported filesystems.
+ *
+ * @remarks
+ * The counterpart to the core path law, not a copy of it. A target directory and
+ * the vendored host root are locations on the machine rather than paths inside a
+ * workspace, so a drive prefix, a UNC share, and a backslash separator are all
+ * admitted here and `..` is a legitimate way to name a sibling directory.
+ * Containment is still enforced, but by the core law over the artifact paths
+ * written beneath the target, not by this one.
+ *
+ * What it does refuse is a segment no supported filesystem can hold: an empty
+ * one, a reserved Windows device name, a trailing dot or space, a wildcard or
+ * redirection character, a colon anywhere but the drive prefix, and a name past
+ * the byte ceiling. The character ceiling is read first so an oversized string is
+ * refused before it is split.
+ *
+ * @example
+ * ```ts
+ * import { isFilesystemPath } from '@orkestrel/scaffold/server'
+ *
+ * isFilesystemPath('C:/Users/sample/project') // true
+ * isFilesystemPath('../sibling') // true
+ * isFilesystemPath('project/nul') // false
+ * ```
  */
-export function isPortablePath(value: unknown): value is string {
-	if (!isString(value) || value.length === 0 || value.length > MAX_PATH_LENGTH) return false
-	if (INVALID_PATH_CHARACTER_PATTERN.test(value) || CONTROL_CHARACTER_PATTERN.test(value)) {
-		return false
-	}
-	const segments = value.split('/')
-	return (
-		segments.length <= MAX_FILESYSTEM_DEPTH &&
-		!segments.some(
-			(segment) =>
-				segment === '' ||
-				segment === '.' ||
-				segment === '..' ||
-				segment.endsWith('.') ||
-				segment.endsWith(' ') ||
-				contentByteLength(segment) > MAX_PATH_SEGMENT_BYTES ||
-				RESERVED_PATH_SEGMENT_PATTERN.test(segment),
-		)
-	)
-}
-
-/** Whether one host filesystem path is bounded, non-empty, and safe to render in a terminal. */
 export function isFilesystemPath(value: unknown): value is string {
-	if (
-		!isString(value) ||
-		value.length === 0 ||
-		value.length > MAX_PATH_LENGTH ||
-		CONTROL_CHARACTER_PATTERN.test(value)
-	) {
-		return false
-	}
-	const normalized = value.replaceAll('\\', '/')
-	const withoutRoot = normalized.startsWith('//')
-		? normalized.slice(2)
-		: normalized.startsWith('/')
-			? normalized.slice(1)
-			: normalized
-	if (withoutRoot.includes('//')) return false
-	const segments = withoutRoot.split('/').filter((segment) => segment.length > 0)
-	if (segments.length > MAX_FILESYSTEM_DEPTH) return false
-	return !segments.some((segment, index) => {
-		if (segment === '.' || segment === '..') return false
-		if (index === 0 && /^[A-Za-z]:$/u.test(segment)) return false
-		return (
-			/[<>:"|?*]/u.test(segment) ||
-			segment.endsWith('.') ||
-			segment.endsWith(' ') ||
-			contentByteLength(segment) > MAX_PATH_SEGMENT_BYTES ||
-			RESERVED_PATH_SEGMENT_PATTERN.test(segment)
-		)
+	return holds(() => {
+		if (!isString(value) || value.length === 0 || value.length > MAX_PATH_LENGTH) return false
+		if (CONTROL_CHARACTER_PATTERN.test(value)) return false
+		const normalized = value.replaceAll('\\', '/')
+		// A UNC share and a POSIX root are prefixes rather than segments, so the
+		// root comes off before the segment law applies to what remains.
+		const rooted = normalized.startsWith('//')
+			? normalized.slice(2)
+			: normalized.startsWith('/')
+				? normalized.slice(1)
+				: normalized
+		const segments = rooted.split('/')
+		if (segments.length > MAX_PATH_DEPTH) return false
+		for (const [index, segment] of segments.entries()) {
+			if (segment === '.' || segment === '..') continue
+			if (index === 0 && DRIVE_PATTERN.test(segment)) continue
+			if (segment.length === 0) return false
+			if (INVALID_SEGMENT_CHARACTER_PATTERN.test(segment)) return false
+			if (segment.endsWith('.') || segment.endsWith(' ')) return false
+			if (computeBytes(segment) > MAX_PATH_SEGMENT_BYTES) return false
+			if (RESERVED_SEGMENT_PATTERN.test(segment)) return false
+		}
+		return true
 	})
-}
-
-/** Whether one externally supplied string is safe to render in terminal or JSON diagnostics. */
-export function isTerminalText(value: unknown): value is string {
-	return isString(value) && !CONTROL_CHARACTER_PATTERN.test(value)
-}
-
-/** Whether one dependency is an exact data-property record safe to snapshot. */
-export function isDependencyData(value: unknown): value is Dependency {
-	return hasOnlyDataProperties(value) && isDependency(value)
 }
 
 /**
- * Determine whether a host-relative path resembles local configuration or credentials.
+ * Narrow a value to one exact SHA-256 digest.
  *
- * @param value - The portable candidate path.
- * @returns `true` when the path must be excluded from vendored host output.
+ * @remarks
+ * The identity a vendored host manifest and a write precondition are both stated
+ * in. Fixed at sixty-four lowercase digits, so the value either is a digest of
+ * that algorithm or is refused; there is no shorter or longer accepted form.
+ *
+ * @example
+ * ```ts
+ * import { isDigest } from '@orkestrel/scaffold/server'
+ *
+ * isDigest('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855') // true
+ * isDigest('E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855') // false
+ * ```
  */
-export function isSensitiveHostPath(value: string): boolean {
-	return SENSITIVE_HOST_PATH_PATTERN.test(value.replaceAll('\\', '/'))
-}
+export const isDigest: Guard<string> = stringOf({ pattern: DIGEST_PATTERN })
 
-/** Determine whether a target-relative path addresses preserved repository metadata. */
-export function isReservedTargetPath(value: string): boolean {
-	return RESERVED_TARGET_PATH_PATTERN.test(value.replaceAll('\\', '/'))
-}
-
-/** Whether a normalized catalog description is bounded and contains no controls. */
-export function isCatalogDescription(value: unknown): value is string {
-	return (
-		isString(value) &&
-		value.length <= MAX_CATALOG_DESCRIPTION_LENGTH &&
-		!CONTROL_CHARACTER_PATTERN.test(value)
-	)
+/**
+ * Narrow a value to a working-tree inventory within the limit one target may report.
+ *
+ * @param value - The candidate inventory.
+ * @returns `true` for an array of no more than `MAX_INVENTORY_PATHS` items.
+ *
+ * @remarks
+ * Compose this ahead of an element guard exactly as the core collection guard is
+ * composed, and for the same reason: the item count is settled before anything
+ * walks the items, and a hostile `length` accessor answers `false` rather than
+ * escaping as a throw. It exists beside that guard rather than reusing it
+ * because the two bound different things — one bounds what a caller may hand a
+ * public method, this one bounds what a checkout may contain.
+ *
+ * @example
+ * ```ts
+ * import { isInventory } from '@orkestrel/scaffold/server'
+ *
+ * isInventory(['AGENTS.md']) // true
+ * isInventory('AGENTS.md') // false
+ * ```
+ */
+export function isInventory(value: unknown): value is readonly unknown[] {
+	return holds(() => isArray(value) && value.length <= MAX_INVENTORY_PATHS)
 }
 
 /**
- * Determine whether a caught filesystem error reports an absent path.
+ * Narrow a value to a bounded upstream endpoint.
  *
- * @param value - The caught value.
- * @returns `true` only for an `Error` whose `code` is exactly `ENOENT`.
+ * @remarks
+ * Length only. Which schemes and hosts an endpoint may name is the reader's law,
+ * because it builds the request and can report why one was refused, where a
+ * guard has only `false` to say.
  */
-export function isMissingPathError(value: unknown): boolean {
-	const result = attempt(() => isError(value) && Reflect.get(value, 'code') === 'ENOENT')
-	return result.success && result.value
-}
-
-/** Narrow one exact transaction destination precondition. */
-export function isWritePrecondition(value: unknown): value is WritePrecondition {
-	const result = attempt(() => {
-		if (!isRecord(value)) return false
-		const keys = Reflect.ownKeys(value)
-		if (
-			keys.some((key) => key !== 'path' && key !== 'shape' && key !== 'digest') ||
-			keys.length < 2 ||
-			keys.length > 3
-		) {
-			return false
-		}
-		const path = Reflect.getOwnPropertyDescriptor(value, 'path')
-		const shape = Reflect.getOwnPropertyDescriptor(value, 'shape')
-		const digest = Reflect.getOwnPropertyDescriptor(value, 'digest')
-		if (
-			path === undefined ||
-			!Reflect.has(path, 'value') ||
-			shape === undefined ||
-			!Reflect.has(shape, 'value') ||
-			(digest !== undefined && !Reflect.has(digest, 'value')) ||
-			!isPortablePath(path.value)
-		) {
-			return false
-		}
-		return shape.value === 'absent'
-			? digest === undefined
-			: shape.value === 'file' &&
-					digest !== undefined &&
-					typeof digest.value === 'string' &&
-					WRITE_DIGEST_PATTERN.test(digest.value)
-	})
-	return result.success && result.value
-}
+export const isEndpoint: Guard<string> = stringOf({ min: 1, max: MAX_ENDPOINT_LENGTH })
 
 /**
- * Narrow a value to one exact vendored-host manifest entry.
+ * Narrow a value to a Git branch the guide endpoint accepts.
  *
- * @param value - The candidate raw manifest entry.
- * @returns `true` only for the exact safe entry shape.
+ * @remarks
+ * A branch reaches the guide URL's path, so the syntax is closed rather than
+ * merely bounded and no `..` is admitted anywhere in it.
+ *
+ * @example
+ * ```ts
+ * import { isBranch } from '@orkestrel/scaffold/server'
+ *
+ * isBranch('main') // true
+ * isBranch('main/../etc') // false
+ * ```
  */
-export function isManifestEntry(value: unknown): value is ManifestEntry {
-	const result = attempt(() => {
-		if (!isRecord(value)) return false
-		const keys = Reflect.ownKeys(value)
-		const storage = Reflect.getOwnPropertyDescriptor(value, 'storage')
-		const destination = Reflect.getOwnPropertyDescriptor(value, 'destination')
-		const executable = Reflect.getOwnPropertyDescriptor(value, 'executable')
-		return (
-			keys.length === 3 &&
-			keys.every((key) => key === 'storage' || key === 'destination' || key === 'executable') &&
-			storage !== undefined &&
-			Reflect.has(storage, 'value') &&
-			destination !== undefined &&
-			Reflect.has(destination, 'value') &&
-			executable !== undefined &&
-			Reflect.has(executable, 'value') &&
-			isPortablePath(storage.value) &&
-			isPortablePath(destination.value) &&
-			typeof executable.value === 'boolean'
-		)
-	})
-	return result.success && result.value
-}
+export const isBranch: Guard<string> = stringOf({
+	min: 1,
+	max: MAX_BRANCH_LENGTH,
+	pattern: BRANCH_PATTERN,
+})
 
 /**
- * Narrow a value to one exact complete vendored-host manifest.
+ * Narrow a value to a per-request timeout in milliseconds.
  *
- * @param value - The candidate manifest value.
- * @returns `true` only for an exact `{ entries, roots, digest }` record with safe paths.
+ * @remarks
+ * A whole number of milliseconds, at least one and no more than
+ * {@link MAX_UPSTREAM_TIMEOUT}. Zero is refused because a request that may not
+ * take any time is a request that cannot succeed.
  */
-export function isHostManifest(value: unknown): value is HostManifest {
-	const result = attempt(() => {
-		if (!isRecord(value)) return false
-		const keys = Reflect.ownKeys(value)
-		const entries = Reflect.getOwnPropertyDescriptor(value, 'entries')
-		const roots = Reflect.getOwnPropertyDescriptor(value, 'roots')
-		const digest = Reflect.getOwnPropertyDescriptor(value, 'digest')
-		return (
-			keys.length === 3 &&
-			keys.every((key) => key === 'entries' || key === 'roots' || key === 'digest') &&
-			entries !== undefined &&
-			Reflect.has(entries, 'value') &&
-			roots !== undefined &&
-			Reflect.has(roots, 'value') &&
-			digest !== undefined &&
-			Reflect.has(digest, 'value') &&
-			isDenseDataArray(entries.value, MAX_HOST_ENTRIES, isManifestEntry) &&
-			isDenseDataArray(roots.value, MAX_HOST_ENTRIES, isPortablePath) &&
-			typeof digest.value === 'string' &&
-			WRITE_DIGEST_PATTERN.test(digest.value)
-		)
-	})
-	return result.success && result.value
-}
+export const isTimeout: Guard<number> = andOf(isInteger, boundsOf(1, MAX_UPSTREAM_TIMEOUT))
 
-/** Narrow an exact initial-listener record for `Sync`. */
-export function isSyncEventHooks(value: unknown): value is EmitterHooks<SyncEventMap> {
-	const result = attempt(() => {
-		if (!isRecord(value)) return false
-		const keys = Reflect.ownKeys(value)
-		if (
-			keys.some(
-				(key) =>
-					key !== 'guide' &&
-					key !== 'version' &&
-					key !== 'package' &&
-					key !== 'write' &&
-					key !== 'done' &&
-					key !== 'error' &&
-					key !== 'destroy',
-			)
-		) {
-			return false
-		}
-		return keys.every((key) => {
-			const descriptor = Reflect.getOwnPropertyDescriptor(value, key)
-			return (
-				descriptor !== undefined && Reflect.has(descriptor, 'value') && isFunction(descriptor.value)
-			)
-		})
-	})
-	return result.success && result.value
-}
+/**
+ * Narrow a value to a bounded list of `@orkestrel` package names.
+ *
+ * @remarks
+ * Composed from the core collection and dependency-name guards rather than
+ * restated, so the scope law that keeps a derived guide mirror inside its
+ * directory has exactly one home.
+ *
+ * @example
+ * ```ts
+ * import { isDependencyNames } from '@orkestrel/scaffold/server'
+ *
+ * isDependencyNames(['@orkestrel/router']) // true
+ * isDependencyNames(['router']) // false
+ * ```
+ */
+export const isDependencyNames: Guard<readonly string[]> = andOf(
+	isCollection,
+	arrayOf(isDependencyName),
+)
 
-/** Narrow an exact initial-listener record for `Materializer`. */
-export function isMaterializerEventHooks(
-	value: unknown,
-): value is EmitterHooks<MaterializerEventMap> {
-	const result = attempt(() => {
-		if (!isRecord(value)) return false
-		const keys = Reflect.ownKeys(value)
-		if (
-			keys.some(
-				(key) =>
-					key !== 'copy' &&
-					key !== 'write' &&
-					key !== 'remove' &&
-					key !== 'done' &&
-					key !== 'error' &&
-					key !== 'destroy',
-			)
-		) {
-			return false
-		}
-		return keys.every((key) => {
-			const descriptor = Reflect.getOwnPropertyDescriptor(value, key)
-			return (
-				descriptor !== undefined && Reflect.has(descriptor, 'value') && isFunction(descriptor.value)
-			)
-		})
-	})
-	return result.success && result.value
-}
+/** Narrow a value to a bounded list of declared runtime dependencies. */
+export const isDependencies: Guard<readonly Dependency[]> = andOf(
+	isCollection,
+	arrayOf(isDependency),
+)
+
+/** Narrow a value to a bounded list of fetched guide mirrors. */
+export const isMirrors: Guard<readonly Mirror[]> = andOf(isCollection, arrayOf(isMirror))
+
+/** Narrow a value to a bounded list of fleet catalog rows. */
+export const isCatalogEntries: Guard<readonly CatalogEntry[]> = andOf(
+	isCollection,
+	arrayOf(isCatalogEntry),
+)
+
+/**
+ * Narrow a value to one {@link ManifestEntry}.
+ *
+ * @remarks
+ * Both paths are measured by the core path law, because a vendored host's
+ * storage name and the destination it maps to are each a path inside a
+ * workspace. That is what stops a hand-edited manifest from mapping a vendored
+ * file to a destination outside the target.
+ *
+ * @example
+ * ```ts
+ * import { isManifestEntry } from '@orkestrel/scaffold/server'
+ *
+ * isManifestEntry({ storage: 'AGENTS.md', destination: 'AGENTS.md', executable: false }) // true
+ * ```
+ */
+export const isManifestEntry: Guard<ManifestEntry> = recordOf({
+	storage: isPath,
+	destination: isPath,
+	executable: isBoolean,
+})
+
+/**
+ * Narrow a value to one {@link HostManifest}.
+ *
+ * @remarks
+ * The manifest is read from a directory a caller named, so it is the least
+ * trusted value the server face handles and is guarded whole: every entry, every
+ * declared root, and the digest that authenticates their membership.
+ */
+export const isHostManifest: Guard<HostManifest> = recordOf({
+	entries: andOf(isCollection, arrayOf(isManifestEntry)),
+	roots: andOf(isCollection, arrayOf(isPath)),
+	digest: isDigest,
+})
+
+/**
+ * Narrow a value to a {@link Repository}.
+ *
+ * @remarks
+ * Both path lists are target-relative, so both are measured by the core path
+ * law: a reported path that is not one this package could have planned is not a
+ * path it will delete. The inventory guard bounds the lists, because a checkout
+ * is legitimately far larger than any collection a caller hands a method.
+ *
+ * @example
+ * ```ts
+ * import { isRepository } from '@orkestrel/scaffold/server'
+ *
+ * isRepository({ tracked: ['AGENTS.md'], dirty: [] }) // true
+ * isRepository({ tracked: ['../secrets'], dirty: [] }) // false
+ * ```
+ */
+export const isRepository: Guard<Repository> = recordOf({
+	tracked: andOf(isInventory, arrayOf(isPath)),
+	dirty: andOf(isInventory, arrayOf(isPath)),
+})
+
+/**
+ * Narrow a value to the materializer's initial listener record.
+ *
+ * @remarks
+ * Every event is optional and every declared value is a function. A key outside
+ * the materializer's event map is refused, so a listener wired to a misspelled
+ * event fails at construction instead of never firing.
+ */
+export const isMaterializerHooks: Guard<EmitterHooks<MaterializerEventMap>> = recordOf(
+	{
+		write: isFunction,
+		remove: isFunction,
+		finish: isFunction,
+		error: isFunction,
+		destroy: isFunction,
+	},
+	true,
+)
+
+/**
+ * Narrow a value to {@link MaterializerOptions}.
+ *
+ * @example
+ * ```ts
+ * import { isMaterializerOptions } from '@orkestrel/scaffold/server'
+ *
+ * isMaterializerOptions({}) // true
+ * isMaterializerOptions({ host: 'dist/host*' }) // false
+ * ```
+ */
+export const isMaterializerOptions: Guard<MaterializerOptions> = recordOf(
+	{ host: isFilesystemPath, on: isMaterializerHooks, error: isFunction },
+	true,
+)
+
+/**
+ * Narrow a value to the upstream reader's initial listener record.
+ *
+ * @remarks
+ * Closed to the reader's own four events for the same reason the materializer's
+ * record is closed to its five.
+ */
+export const isUpstreamHooks: Guard<EmitterHooks<UpstreamEventMap>> = recordOf(
+	{ release: isFunction, mirror: isFunction, error: isFunction, destroy: isFunction },
+	true,
+)
+
+/**
+ * Narrow a value to {@link UpstreamOptions}.
+ *
+ * @remarks
+ * Each grouped endpoint is closed to its own leaves, so a setting written under
+ * the wrong entity is refused rather than ignored. Every numeric leaf is a whole
+ * number inside a ceiling: an unbounded concurrency, retry count, response
+ * limit, or call budget is a way to exhaust the caller, so the ceiling is stated
+ * here rather than left to the reader. The two byte ceilings are the core
+ * artifact and total-artifact limits, because a fetched guide is an artifact and
+ * a whole call retains no more than a whole plan.
+ *
+ * @example
+ * ```ts
+ * import { isUpstreamOptions } from '@orkestrel/scaffold/server'
+ *
+ * isUpstreamOptions({ guides: { branch: 'main' }, concurrency: 4 }) // true
+ * isUpstreamOptions({ concurrency: 0 }) // false
+ * ```
+ */
+export const isUpstreamOptions: Guard<UpstreamOptions> = recordOf(
+	{
+		guides: recordOf({ base: isEndpoint, branch: isBranch, timeout: isTimeout }, true),
+		registry: recordOf({ base: isEndpoint, timeout: isTimeout }, true),
+		concurrency: andOf(isInteger, boundsOf(1, MAX_UPSTREAM_CONCURRENCY)),
+		retries: andOf(isInteger, boundsOf(0, MAX_UPSTREAM_RETRIES)),
+		limit: andOf(isInteger, boundsOf(1, MAX_ARTIFACT_BYTES)),
+		budget: andOf(isInteger, boundsOf(1, MAX_TOTAL_ARTIFACT_BYTES)),
+		on: isUpstreamHooks,
+		error: isFunction,
+	},
+	true,
+)

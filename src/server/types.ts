@@ -1,57 +1,40 @@
 import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkestrel/emitter'
-import type {
-	Audit,
-	CatalogEntry,
-	Dependency,
-	GuideSync,
-	Plan,
-	Snapshot,
-	SyncReport,
-	VersionSync,
-} from '@src/core'
+import type { Audit, CatalogEntry, Dependency, Mirror, Plan, Release, Snapshot } from '@src/core'
 
-// ============================================================================
-//  @orkestrel/scaffold/server — the materialization + sync faces' type
-//  contracts (AGENTS §5 source of truth). The server-marked rows in
-//  scaffold.md's public API table — `MaterializeResult`, `HostManifest`,
-//  `ManifestEntry` (one vendored `host/manifest.json` entry), plus the `Materializer` triad
-//  (`MaterializerEventMap` / `MaterializerOptions` / `MaterializerInterface`)
-//  and the `Sync` triad (`SyncEventMap` / `SyncOptions` / `SyncInterface`).
-//  Everything else the server contracts reference (`Plan`, `Audit`, `Dependency`,
-//  `GuideSync`, `VersionSync`, `SyncReport`, `ScaffoldError`, …) is OWNED by
-//  the pure core face (`@src/core`) — imported here, never redeclared.
-// ============================================================================
-
-/** The outcome of one materialization (server). */
+/**
+ * The outcome of one mutation of a target.
+ *
+ * @remarks
+ * `written` names every path this call created or replaced. `skipped` names
+ * every path it considered and left alone, whether because the target already
+ * matched or because the artifact's ownership forbade touching it. `removed`
+ * names every path it deleted.
+ */
 export interface MaterializeResult {
 	readonly target: string
 	readonly written: readonly string[]
-	readonly copied: readonly string[]
 	readonly skipped: readonly string[]
 	readonly removed: readonly string[]
 }
 
-/** `Materializer`'s push observation channel (AGENTS §13, server). */
+/** The materializer's observation channel. */
 export type MaterializerEventMap = {
-	readonly copy: readonly [path: string]
 	readonly write: readonly [path: string]
 	readonly remove: readonly [path: string]
-	readonly done: readonly [result: MaterializeResult]
+	readonly finish: readonly [result: MaterializeResult]
 	readonly error: readonly [error: unknown]
 	readonly destroy: readonly []
 }
 
 /**
- * Options for `createMaterializer` / the `Materializer` constructor (server).
+ * Options for the materializer.
  *
  * @remarks
- * `host` is the vendored-data root `host`-origin artifacts are copied FROM;
- * defaults to THIS PACKAGE'S OWN vendored data root (`dist/host`, resolved
- * from the installed module's own location) — the package vendors its host
- * data and ships it with itself, so the default host is never the caller's
- * working directory. A caller-supplied `host` pointing at a raw repo root
- * (no `manifest.json` alongside it) maps artifact paths 1:1 instead of
- * through the manifest — the sibling-repo / test-fixture shape.
+ * `host` is the vendored data root host-origin artifacts are copied from. It
+ * defaults to this package's own vendored root, resolved from the installed
+ * module's location rather than the caller's working directory. A host that
+ * carries no manifest beside it maps artifact paths one to one instead of
+ * through the manifest.
  */
 export interface MaterializerOptions {
 	readonly host?: string
@@ -59,22 +42,56 @@ export interface MaterializerOptions {
 	readonly error?: EmitterErrorHandler
 }
 
-/** One entry of the vendored host's `manifest.json` (server). */
+/** One file record of the vendored host's manifest. */
 export interface ManifestEntry {
 	readonly storage: string
 	readonly destination: string
 	readonly executable: boolean
 }
 
-/** A complete vendored-host inventory with file entries and declared directory roots. */
+/**
+ * The complete vendored-host inventory.
+ *
+ * @remarks
+ * `roots` is the sorted directory inventory, which is what distinguishes a
+ * declared empty directory. `digest` is the SHA-256 of that exact entry and
+ * root membership, so a membership edit that did not update the digest is
+ * detected. A self-consistent replacement manifest defines its own smaller
+ * membership; authenticating omitted membership is outside a checksum's
+ * contract.
+ */
 export interface HostManifest {
 	readonly entries: readonly ManifestEntry[]
 	readonly roots: readonly string[]
-	/** SHA-256 of the exact declared entry/root membership. */
 	readonly digest: string
 }
 
-/** One destination snapshot required to remain stable through a write commit. */
+/**
+ * What git reports about a target's working tree.
+ *
+ * @remarks
+ * `tracked` is the only set a deletion may draw from: git does not report the
+ * loss of an untracked path and `git diff` cannot restore it, so an ignored
+ * path such as an installed dependency tree, a build output, or an editor
+ * directory survives every verb. `dirty` is every path carrying an uncommitted
+ * change, taken repo-wide rather than over a write set, because deletion makes
+ * the write set the whole workspace. A clean tree is an empty `dirty`. A target
+ * that is not a git repository yields no `Repository` at all, so the caller
+ * decides what to do about that rather than reading it out of an invented
+ * empty value.
+ */
+export interface Repository {
+	readonly tracked: readonly string[]
+	readonly dirty: readonly string[]
+}
+
+/**
+ * One destination snapshot captured before a write and required to survive it.
+ *
+ * @remarks
+ * `device`, `inode`, `modified`, `size`, and `digest` are present only where
+ * the observed shape supplies them.
+ */
 export interface WriteExpectation {
 	readonly path: string
 	readonly shape: 'absent' | 'file' | 'directory'
@@ -85,145 +102,197 @@ export interface WriteExpectation {
 	readonly digest?: string
 }
 
-/** Caller-observed destination state that a write transaction must still match. */
+/** The narrower caller-observed destination state a write transaction must still match. */
 export interface WritePrecondition {
 	readonly path: string
 	readonly shape: 'absent' | 'file'
 	readonly digest?: string
 }
 
-/** A physical directory identity captured across a write transaction. */
+/** One physical directory identity captured across a write transaction. */
 export interface WriteAnchor {
 	readonly path: string
 	readonly device: number
 	readonly inode: number
 }
 
-/** Anchored result of creating a physical directory path one segment at a time. */
+/** The final directory anchor of a write transaction and the subset one call created. */
 export interface WriteDirectoryResult {
 	readonly anchor: WriteAnchor
 	readonly created: readonly WriteAnchor[]
 }
 
-/** Mutable one-cell byte allowance shared by concurrent Sync readers. */
-export type SyncAllowance = Float64Array
-
-/** One mutable aggregate entry allowance shared by fleet catalog roots. */
-export type CatalogAllowance = Float64Array
-
-/** One normalized upstream HTTP(S) endpoint base accepted by `Sync`. */
-export type SyncBase = string
-
-/** One bounded Git-compatible branch path accepted by the guide endpoint. */
-export type SyncBranch = string
-
-/** One bare-name registry lookup, without a caller-invented declaration range. */
-export type VersionLookup =
-	| {
-			readonly name: string
-			readonly latest: string
-			readonly freshness: 'behind'
-	  }
-	| {
-			readonly name: string
-			readonly freshness: 'missing' | 'failed'
-			readonly note: string
-	  }
-
-/** One validated guide update and its contained destination. */
-export interface GuideWrite {
-	readonly guide: GuideSync
-	readonly destination: string
-}
-
-/** The materialization contract (server) — the only impure entity in the package. */
+/**
+ * The mutation contract: the package's only filesystem writer.
+ *
+ * @remarks
+ * Every method binds to the observation it was given. It re-derives what it is
+ * about to touch, compares that against the supplied preview, and refuses the
+ * whole call when membership or bytes moved, rather than racing to be the last
+ * writer.
+ */
 export interface MaterializerInterface {
 	readonly emitter: EmitterInterface<MaterializerEventMap>
+	/**
+	 * Compare a plan with a target through the vendored host that will repair it.
+	 *
+	 * @param plan - The compiled plan to compare.
+	 * @param target - The directory to inspect.
+	 * @returns One finding per hydrated planned path, plus foreign files beneath owned host roots.
+	 */
+	audit(plan: Plan, target: string): Audit
+	/**
+	 * Write a plan into a vacant target.
+	 *
+	 * @param plan - The compiled plan to write.
+	 * @param target - The directory to write into; it must hold nothing the plan would collide with.
+	 * @returns The paths written and skipped.
+	 */
 	materialize(plan: Plan, target: string): MaterializeResult
-	repair(plan: Plan, audit: Audit, target: string, replace?: boolean): MaterializeResult
-	prune(target: string, expected: Snapshot): MaterializeResult
+	/**
+	 * Write a plan into an existing target, guided by an audit of it.
+	 *
+	 * @param plan - The compiled plan to write.
+	 * @param audit - The preview returned by this materializer's `audit` method.
+	 * @param target - The directory to write into.
+	 * @returns The paths written and skipped, each decided by its artifact's ownership.
+	 */
+	repair(plan: Plan, audit: Audit, target: string): MaterializeResult
+	/**
+	 * Write fetched dependency guides to their local mirrors.
+	 *
+	 * @param mirrors - The fetched guides; each carries the local bytes its write is held to.
+	 * @param target - The directory to write into.
+	 * @returns The mirror paths written and skipped; a mirror already current is skipped.
+	 */
+	mirror(mirrors: readonly Mirror[], target: string): MaterializeResult
+	/**
+	 * Rewrite the marker-bounded package table in the target's catalog agent file.
+	 *
+	 * @param entries - The published packages the table should list.
+	 * @param target - The directory to write into.
+	 * @returns The catalog path, written when the region's bytes moved and skipped otherwise.
+	 */
+	catalog(entries: readonly CatalogEntry[], target: string): MaterializeResult
+	/**
+	 * Rewrite the `@orkestrel/*` range set in the target's manifest.
+	 *
+	 * @param dependencies - The names and ranges the manifest should declare.
+	 * @param target - The directory to write into.
+	 * @returns The manifest path, written when a declared range moved and skipped otherwise.
+	 *
+	 * @remarks
+	 * No other part of the manifest is read back out or rewritten, so a
+	 * consumer's own description, keywords, and scripts survive the call.
+	 */
+	declare(dependencies: readonly Dependency[], target: string): MaterializeResult
+	/**
+	 * Delete the files the plan does not own.
+	 *
+	 * @param audit - The preview returned by this materializer's `audit` method; its foreign findings are the candidate set.
+	 * @param repository - The target's git state; only a tracked path is ever deleted.
+	 * @param target - The directory to delete from.
+	 * @returns The paths removed.
+	 *
+	 * @remarks
+	 * The candidate set is re-derived and compared against the audit before
+	 * anything moves, and every file is quarantined and re-verified rather than
+	 * unlinked, so a failure part way through restores what it already took.
+	 * The package's own source and application trees are never candidates,
+	 * whatever the audit reports.
+	 */
+	remove(audit: Audit, repository: Repository, target: string): MaterializeResult
+	/**
+	 * Tear the materializer down. Every later call throws, and teardown is idempotent.
+	 *
+	 * @returns Nothing.
+	 */
 	destroy(): void
 }
 
 /**
- * `Sync`'s push observation channel (AGENTS §13, server).
+ * The upstream reader's observation channel.
  *
  * @remarks
- * `package` fires once per `catalog()` entry processed; its `note` is the
- * empty string when both the registry packument and the guide fetch
- * succeeded, else a human-readable explanation of which one degraded (and
- * why) — the same `''`-means-nothing convention `GuideSync.note` /
- * `VersionSync.note` use, just non-optional here since every `catalog()`
- * entry emits exactly once regardless of outcome.
+ * Each verdict is published whole rather than as a name beside a summary, so a
+ * listener reads the same value the call returns and a failed lookup is told
+ * apart from a successful one by the verdict's own discriminant rather than by
+ * which event carried it.
  */
-export type SyncEventMap = {
-	readonly guide: readonly [name: string]
-	readonly version: readonly [name: string]
-	readonly package: readonly [name: string, note: string]
-	readonly write: readonly [path: string]
-	readonly done: readonly [report: SyncReport]
+export type UpstreamEventMap = {
+	readonly release: readonly [release: Release]
+	readonly mirror: readonly [mirror: Mirror]
 	readonly error: readonly [error: unknown]
 	readonly destroy: readonly []
 }
 
 /**
- * Options for `createSync` / the `Sync` constructor (server).
+ * Options for the upstream reader.
  *
  * @remarks
- * The endpoint bases + branch are INJECTABLE — `guides.base` defaults to
- * `raw.githubusercontent.com`, `guides.branch` to `main`, `registry.base` to
- * `registry.npmjs.org`, and `guides.timeout` / `registry.timeout` to 10
- * seconds each. `concurrency` bounds in-flight requests (default 6, never an
- * unbounded `Promise.all`); `retries` opts into per-request retry on a
- * transport fault (default 0); `strict` flips a collect-mode failure into a
- * thrown `ScaffoldError('FETCH', …)` (default `false`). `limit` bounds the
- * bytes read from a single response body (declared `Content-Length` or
- * streamed total, whichever trips first) — default 5,242,880 (5 MiB); a body
- * that would exceed it is a transport fault, handled exactly like any other
- * (retry-eligible per `retries`, then `failed` / strict `FETCH`). Every fetch
- * is unauthenticated — no token, no `Authorization` header, anywhere; every
- * fleet repo is public, so plain reachability is the only signal (a guide
- * `404` degrades gracefully rather than needing credentials).
- * `registry.base` also anchors `catalog()`'s org package-list lookup
- * (`<registry.base>/-/org/orkestrel/package`) and its per-package packument
- * fetches (`<registry.base>/<name>`) — the same base every other registry
- * read already uses.
+ * The two endpoints are grouped under the entity each configures: `guides`
+ * takes the guide host's `base`, its `branch`, and its `timeout`; `registry`
+ * takes the registry's `base` and `timeout`. `concurrency` bounds requests in
+ * flight and `retries` opts into per-request retry on a transport fault.
+ * `limit` bounds the bytes read from one response body and `budget` bounds the
+ * bytes read across a whole call, so neither one oversized answer nor many
+ * small ones can exhaust the caller. Every request is unauthenticated and
+ * follows no redirect.
  */
-export interface SyncOptions {
+export interface UpstreamOptions {
 	readonly guides?: {
-		readonly base?: SyncBase
-		readonly branch?: SyncBranch
+		readonly base?: string
+		readonly branch?: string
 		readonly timeout?: number
 	}
 	readonly registry?: {
-		readonly base?: SyncBase
+		readonly base?: string
 		readonly timeout?: number
 	}
 	readonly concurrency?: number
 	readonly retries?: number
-	readonly strict?: boolean
 	readonly limit?: number
-	readonly items?: number
 	readonly budget?: number
-	readonly on?: EmitterHooks<SyncEventMap>
+	readonly on?: EmitterHooks<UpstreamEventMap>
 	readonly error?: EmitterErrorHandler
 }
 
 /**
- * The upstream-synchronization contract (server) — the impure FETCH sibling
- * of `MaterializerInterface`.
+ * The upstream contract: the package's only network reader, and it never writes.
+ *
+ * @remarks
+ * A per-package failure is collected as a verdict carrying its cause, not
+ * thrown, so one unreachable package never costs the caller the rest of the
+ * answer. The organization list is the exception: without it there is no fleet
+ * to report, so an unreachable or malformed list is a coded failure.
  */
-export interface SyncInterface {
-	readonly emitter: EmitterInterface<SyncEventMap>
-	lookup(names: readonly string[]): Promise<readonly VersionLookup[]>
-	guides(
-		deps: readonly Dependency[],
-		current?: Readonly<Record<string, string>>,
-	): Promise<readonly GuideSync[]>
-	versions(deps: readonly Dependency[]): Promise<readonly VersionSync[]>
+export interface UpstreamInterface {
+	readonly emitter: EmitterInterface<UpstreamEventMap>
+	/**
+	 * Look up the registry's latest release for each declared dependency.
+	 *
+	 * @param dependencies - The declared dependencies to look up.
+	 * @returns One release verdict per dependency, in input order.
+	 */
+	lookup(dependencies: readonly Dependency[]): Promise<readonly Release[]>
+	/**
+	 * Fetch each named package's guide, beside the local mirror it answers for.
+	 *
+	 * @param names - The packages to fetch: the target's declared set, or the whole organization.
+	 * @param current - The target's local mirrors as exact bytes, keyed by mirror path.
+	 * @returns One mirror verdict per name, in input order.
+	 */
+	fetch(names: readonly string[], current: Snapshot): Promise<readonly Mirror[]>
+	/**
+	 * Catalog the published fleet from the registry's organization package list.
+	 *
+	 * @returns One row per published package, sorted by name.
+	 */
 	catalog(): Promise<readonly CatalogEntry[]>
-	pull(target: string, dependencies?: readonly Dependency[]): Promise<SyncReport>
-	mirror(target: string): Promise<SyncReport>
-	write(report: SyncReport, target: string): Promise<readonly string[]>
+	/**
+	 * Tear the reader down, aborting every request in flight. Teardown is idempotent.
+	 *
+	 * @returns Nothing.
+	 */
 	destroy(): void
 }

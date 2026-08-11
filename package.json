@@ -1,17 +1,13 @@
 {
 	"name": "@orkestrel/scaffold",
 	"version": "0.0.23",
-	"description": "Blueprint-to-plan package scaffolding, auditing, dependency guide/version pulling, and fleet-wide shared-file upkeep for the @orkestrel line.",
+	"description": "Scaffold workspaces with five commands: new, audit, repair, catalog, and overwrite.",
 	"keywords": [
 		"audit",
-		"blueprint",
-		"codegen",
-		"conformance",
-		"fleet",
-		"orkestrel",
-		"pull",
-		"scaffold",
-		"typescript"
+		"catalog",
+		"new",
+		"overwrite",
+		"repair"
 	],
 	"homepage": "https://github.com/orkestrel/scaffold#readme",
 	"bugs": "https://github.com/orkestrel/scaffold/issues",
@@ -75,32 +71,29 @@
 		"format": "oxfmt --config .oxfmtrc.json --write .",
 		"format:check": "oxfmt --config .oxfmtrc.json --check .",
 		"lint:check": "oxlint --config .oxlintrc.json --deny-warnings .",
-		"test": "npm run test:src && npm run test:policy && npm run test:config && npm run test:guides",
-		"test:src": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:server --project src:bin",
+		"test": "npm run test:src:core && npm run test:src:server && npm run test:src:bin && npm run test:policy && npm run test:config && npm run test:guides",
 		"test:src:core": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core",
 		"test:src:server": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:server",
 		"test:src:bin": "vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin",
-		"test:integration": "vitest run --config vite.config.ts --no-cache --reporter=dot --project integration",
-		"test:equivalence": "node -e \"const c=require('node:child_process'),p=process.env.npm_execpath;if(p===undefined)process.exit(1);const r=c.spawnSync(process.execPath,[p,'run','test:integration'],{stdio:'inherit',env:{...process.env,SCAFFOLD_BOUNDARY_EQUIVALENCE:'1'}});process.exit(r.status??1)\"",
 		"test:policy": "vitest run --config vite.config.ts --no-cache --reporter=dot --project policy",
 		"test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
-		"test:guides": "vitest run --config vite.config.ts --reporter=dot --project guides",
-		"pin": "vitest run --config vite.config.ts --no-cache --project src:core -t pinPlan -u",
+		"test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides",
+		"test:integration": "vitest run --config vite.config.ts --no-cache --reporter=dot --project integration",
+		"test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
 		"build": "npm run clean && npm run build:src && npm run build:host",
 		"build:src": "npm run build:src:core && npm run build:src:server && npm run build:src:bin",
 		"build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
 		"build:src:server": "vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts",
 		"build:src:bin": "vite build --config configs/src/vite.bin.config.ts",
 		"build:host": "node -e \"import('./dist/src/server/index.js').then((m)=>{const n=m.stageHost(process.cwd(),'dist/host').length;console.log('build-host: staged '+n+' file(s) into dist/host')})\"",
-		"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm run pin && npm test && npm run test:integration"
+		"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:integration"
 	},
 	"dependencies": {
 		"@orkestrel/console": "^0.0.4",
 		"@orkestrel/contract": "^0.0.10",
 		"@orkestrel/emitter": "^0.0.5",
 		"@orkestrel/markdown": "^0.0.7",
-		"@orkestrel/template": "^0.0.2",
-		"@orkestrel/terminal": "^0.0.5"
+		"@orkestrel/template": "^0.0.2"
 	},
 	"devDependencies": {
 		"@microsoft/api-extractor": "^7.58.12",

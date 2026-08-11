@@ -1,1653 +1,742 @@
-// The `#!/usr/bin/env node` shebang is re-emitted by the build's `output.banner`, not source.
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
-import { basename, dirname, join, relative as relativeOf } from 'node:path'
-import * as tls from 'node:tls'
 import type {
-	Artifact,
 	Audit,
 	Blueprint,
 	CatalogEntry,
-	Finding,
 	Dependency,
+	Environment,
 	Group,
+	Mirror,
 	Plan,
-	Question,
-	Snapshot,
-	SyncReport,
+	Release,
 } from '@src/core'
-import type { MaterializeResult, SyncInterface, SyncOptions } from '@src/server'
+import type {
+	MaterializeResult,
+	MaterializerInterface,
+	Repository,
+	UpstreamOptions,
+} from '@src/server'
+import type {
+	AuditCommand,
+	CatalogCommand,
+	CatalogResult,
+	CLICommand,
+	CLIInterface,
+	CLIOptions,
+	NewCommand,
+	OutputHandler,
+	OverwriteCommand,
+	OverwriteResult,
+	RepairCommand,
+	RepairResult,
+} from './types.js'
+import { execFileSync } from 'node:child_process'
+import { renderTable, strip, stripControls } from '@orkestrel/console'
+import { attempt } from '@orkestrel/contract'
+import { createMarkdown, flattenText, isTableNode } from '@orkestrel/markdown'
 import {
-	blueprint,
 	CATALOG_AGENT_PATH,
-	catalogNames,
-	catalogToBlock,
+	createBlueprint,
 	createCompiler,
-	dependency,
 	DEPENDENCY_NAME_PATTERN,
-	diffPlan,
+	ENVIRONMENTS,
 	GROUPS,
-	isScaffoldError,
 	manifestToDependencies,
 	manifestToName,
-	MAX_ARTIFACT_BYTES,
-	NAME_PATTERN,
-	planToSummary,
+	MAX_MANIFEST_BYTES,
+	nameToGuide,
 	ScaffoldError,
-	SERVICE_SCRIPT_PATH,
-	ENVIRONMENTS,
 } from '@src/core'
 import {
-	catalogPackages,
-	commitWriteTransaction,
 	createMaterializer,
-	createSync,
-	deriveBlueprint,
-	discoverPackages,
-	digestFile,
-	digestText,
-	discardWriteTransaction,
-	hostRoot,
-	hydratePlan,
-	isRealDirectory,
-	isVacant,
-	locateHostSource,
-	pruneTargets,
+	createUpstream,
+	isPhysicalDirectory,
+	isRepository,
 	readFileText,
-	readHostManifest,
-	readManifest,
-	readTarget,
-	parseSyncOptions,
-	resolvePhysicalPath,
-	validateWriteDirectories,
-	WriteTransaction,
+	readSnapshot,
+	resolveContainedPath,
 } from '@src/server'
-import type { SpinnerInterface } from '@orkestrel/console'
-import { createReporter, createSpinner, createStyler } from '@orkestrel/console'
-import { createServerSink } from '@orkestrel/console/server'
-import { attempt } from '@orkestrel/contract'
-import { isTerminalError } from '@orkestrel/terminal'
-import type { TerminalInterface } from '@orkestrel/terminal/server'
-import { createTerminal } from '@orkestrel/terminal/server'
-import {
-	CANCELLED_MESSAGE,
-	CATALOG_UNRESOLVED_NOTE,
-	CATALOG_END_MARKER,
-	CATALOG_START_MARKER,
-	FOREIGN_HINT,
-	INVALID_ARGUMENTS_MESSAGE,
-	NEW_DRY_RUN_NOTE,
-	ORKESTREL_DEPS_PROMPT,
-	PRUNE_EMPTY,
-	PRUNE_SKIPPED,
-	SCAN_SKIPPED,
-	ENVIRONMENT_CHOICES,
-} from './constants.js'
-import { CLIExitError } from './errors.js'
-import {
-	applyConfirmMessage,
-	auditLiveNote,
-	auditTable,
-	auditVerdict,
-	catalogApplySuccess,
-	catalogCounts,
-	catalogShrinkWarning,
-	catalogTable,
-	catalogVerdict,
-	comparisonLine,
-	containDestination,
-	countWrites,
-	describeDestination,
-	describeError,
-	didYouMean,
-	fleetRepoLine,
-	fleetTotals,
-	fullHelp,
-	hasFindings,
-	invalidName,
-	missingInput,
-	newApplySuccess,
-	newPlanPreview,
-	newPlanTable,
-	orkestrelTokenIssue,
-	prunePreview,
-	pruneConfirmMessage,
-	mergeServiceManifest,
-	syncCauseNotes,
-	syncSuccess,
-	syncTable,
-	syncVerdict,
-	repairHandoff,
-	repairTally,
-	repairVerdict,
-	replacementNote,
-	renderComputedNotes,
-	scopeLine,
-	scopeNote,
-	shortUsage,
-	unresolvedVersion,
-	verbHelp,
-} from './helpers.js'
-import {
-	normalizeOrkestrelToken,
-	parseArguments,
-	parsePullDependencies,
-	splitTokens,
-} from './parsers.js'
-import {
-	auditToRepairResult,
-	catalogResultOf,
-	errorEnvelopeOf,
-	fleetEntryOf,
-	partitionFindings,
-	repairAuditOf,
-	summaryToNewResult,
-} from './shapers.js'
-import type {
-	CLIArguments,
-	CLIInterface,
-	CLIValues,
-	FleetEntry,
-	FleetFailure,
-	FleetRepo,
-	ForeignScanResult,
-	LiveResult,
-	RepairAudit,
-} from './types.js'
-import { isVerb } from './validators.js'
+import { EXIT_CLEAN, EXIT_DRIFT, EXIT_USAGE } from './constants.js'
+import { isUsageError, UsageError } from './errors.js'
+import { argvToCommand, auditToExit, errorToEnvelope, renderUsage } from './helpers.js'
 
-/** Stateful command-line orchestration and its process boundary. */
+/**
+ * The executable: one command line in, one exit code out.
+ *
+ * @remarks
+ * Every destination this class writes to is a handler it was given, and the run
+ * ends by returning its code rather than by setting one, so the whole executable
+ * is drivable from inside another process. That is what makes proving what a
+ * command prints cost a function call: `src/bin/scaffold.ts` is the only module
+ * that reads `process.argv` or assigns `process.exitCode`.
+ *
+ * Every line leaving here is stripped of ANSI escapes and control characters
+ * once, on the way out, because a refusal quotes the argument that caused it and
+ * that argument came from an untrusted command line. The machine-readable path
+ * needs no second pass: `JSON.stringify` escapes a control character into text
+ * before it reaches the handler.
+ *
+ * The collaborators are constructed per run rather than received, because
+ * `--from` decides the vendored root the materializer reads and an instance
+ * handed in before the command line was parsed could not honour it. The
+ * upstream reader is built the same way but from the options, because no
+ * command line names an endpoint: a terminal caller means the published
+ * registry and the published guide host, and only the process driving the
+ * executable can mean anything else. That is the seam that makes the three
+ * verbs which read the network provable without one.
+ *
+ * @example
+ * ```ts
+ * import { CLI } from './CLI.js'
+ *
+ * const lines: string[] = []
+ * const code = await new CLI({ output: (line) => lines.push(line) }).execute(['--help'])
+ * code // 0
+ * ```
+ */
 export class CLI implements CLIInterface {
-	readonly #sync: SyncOptions
-	#sink = createServerSink()
-	#tty = process.stdout.isTTY === true
-	#styler = createStyler({ enabled: process.env.NO_COLOR === undefined && this.#tty })
-	#reporter = createReporter({
-		sink: this.#sink,
-		width: this.#sink.columns,
-		styler: this.#styler,
-	})
-	#json = false
+	// The two destinations a terminal caller means. They are the only process
+	// streams this class names, and it names them once: a handler is what every
+	// write goes through, so the default is a handler too rather than a branch at
+	// each write site.
+	static readonly #stdout: OutputHandler = (line) => void process.stdout.write(`${line}\n`)
+	static readonly #stderr: OutputHandler = (line) => void process.stderr.write(`${line}\n`)
+	readonly #output: OutputHandler
+	readonly #diagnostic: OutputHandler
+	// What every upstream reader this class builds is constructed from. It is held
+	// once and read by each verb that reads the network, so the three of them
+	// cannot disagree about which registry and which guide host a run addresses.
+	readonly #upstream: UpstreamOptions | undefined
 
 	/**
-	 * Create command-line orchestration with optional upstream endpoint settings.
+	 * Construct the executable over the two destinations it writes to.
 	 *
-	 * @param sync - Sync settings used by every live dependency operation.
+	 * @param options - The report and diagnostic handlers and the upstream
+	 * endpoints; the process streams and the published endpoints when absent.
 	 */
-	constructor(sync?: SyncOptions) {
-		this.#sync = parseSyncOptions(sync)
+	constructor(options?: CLIOptions) {
+		this.#output = options?.output ?? CLI.#stdout
+		this.#diagnostic = options?.diagnostic ?? CLI.#stderr
+		this.#upstream = options?.upstream
 	}
 
-	/** Execute one command-line argument vector. */
-	async run(argv: readonly string[]): Promise<void> {
-		this.#trust()
+	/**
+	 * Run one command line to completion and report through the configured output.
+	 *
+	 * @param argv - The arguments following the executable's own name.
+	 * @returns The exit code: `0` clean, `1` drift or failure, `2` a usage error.
+	 *
+	 * @remarks
+	 * A request for usage is answered before anything is parsed, because it
+	 * replaces the run rather than modifying it, and because `--help` is not an
+	 * option any verb takes. Everything after that is one command: read it,
+	 * dispatch it, render what it produced, and answer with the code it earned.
+	 *
+	 * @example
+	 * ```ts
+	 * import { CLI } from './CLI.js'
+	 *
+	 * await new CLI().execute(['audit', '--json']) // 0 when the target matches its plan
+	 * ```
+	 */
+	async execute(argv: readonly string[]): Promise<number> {
+		if (argv.includes('--help')) {
+			for (const line of renderUsage()) this.#say(line)
+			return EXIT_CLEAN
+		}
+		const read = attempt(() => argvToCommand(argv))
+		// A command line that never became a command carries no `--json`, so the
+		// refusal is prose: there is no machine-readable value for it to pollute.
+		if (!read.success) return this.#refuse(read.error, false)
+		const command = read.value
 		try {
-			await this.#dispatch(argv)
+			return await this.#dispatch(command)
 		} catch (error) {
-			if (error instanceof CLIExitError) {
-				process.exitCode = error.code
-			} else if (this.#json) {
-				const code = isScaffoldError(error) ? error.code : 'ERROR'
-				const message = isScaffoldError(error) ? error.message : describeError(error)
-				this.#write(errorEnvelopeOf(code, message))
-				process.exitCode = 1
-			} else {
-				this.#reporter.status('error', describeError(error))
-				process.exitCode = 1
+			return this.#refuse(error, command.json === true)
+		}
+	}
+
+	// One verb per branch, each answering with its own exit code. The switch is
+	// exhaustive over the command union, so a new verb fails to compile here.
+	async #dispatch(command: CLICommand): Promise<number> {
+		switch (command.verb) {
+			case 'new':
+				return this.#create(command)
+			case 'audit':
+				return this.#inspect(command)
+			case 'repair':
+				return this.#restore(command)
+			case 'catalog':
+				return this.#refresh(command)
+			case 'overwrite':
+				return this.#replace(command)
+		}
+	}
+
+	// `new` — resolve the declared dependencies against the registry, compile the
+	// blueprint the command line describes, and write it into a vacant target.
+	async #create(command: NewCommand): Promise<number> {
+		const target = command.target ?? command.name
+		const blueprint = createBlueprint(command.name, {
+			src: this.#environments(command.src, 'src'),
+			app: this.#environments(command.app, 'app'),
+			dependencies: await this.#resolve(this.#packages(command.dependencies)),
+		})
+		const plan = this.#compile(blueprint)
+		const materializer = createMaterializer(
+			command.from === undefined ? undefined : { host: command.from },
+		)
+		try {
+			const result = materializer.materialize(plan, target)
+			if (command.json === true) this.#report(result)
+			else {
+				this.#say(`Scaffolded ${blueprint.name} into ${result.target}.`)
+				this.#say(this.#tally(result))
+			}
+			return EXIT_CLEAN
+		} finally {
+			materializer.destroy()
+		}
+	}
+
+	// `audit` — compare a target to the plan its own manifest and directories
+	// describe, through the vendored host a repair would write from, and write
+	// nothing whatever it finds.
+	//
+	// The host is load-bearing here where it once was not, so `--from` reaches the
+	// comparison and a host that cannot be read refuses the run under its own
+	// coded reason. Refusing is the honest answer: the comparison this verb
+	// reports is the hydrated one, and a fallback to the pure compile would report
+	// `aligned` for exactly the files whose bytes it failed to read.
+	#inspect(command: AuditCommand): number {
+		const target = command.target ?? '.'
+		const blueprint = this.#derive(target)
+		const materializer = createMaterializer(
+			command.from === undefined ? undefined : { host: command.from },
+		)
+		try {
+			const [audit] = this.#survey(materializer, blueprint, target, this.#groups(command.groups))
+			if (command.json === true) this.#report(audit)
+			else this.#present(audit)
+			return auditToExit(audit)
+		} finally {
+			materializer.destroy()
+		}
+	}
+
+	// `repair` — write each planned path the target is missing or has let drift,
+	// then re-audit, because the audit a repair reports is the one taken after it.
+	// One materializer spans the whole verb: the audit that guides the write, the
+	// write, and the audit that answers for it are three readings of one vendored
+	// host, and a second instance could not promise they were.
+	#restore(command: RepairCommand): number {
+		const target = command.target ?? '.'
+		const groups = this.#groups(command.groups)
+		const blueprint = this.#derive(target)
+		const materializer = createMaterializer(
+			command.from === undefined ? undefined : { host: command.from },
+		)
+		try {
+			const [audit, plan] = this.#survey(materializer, blueprint, target, groups)
+			if (plan === undefined) {
+				if (command.json === true) this.#report(audit)
+				else this.#present(audit)
+				return EXIT_DRIFT
+			}
+			const result = materializer.repair(plan, audit, target)
+			const [terminal] = this.#survey(materializer, blueprint, target, groups)
+			const outcome: RepairResult = { ...result, audit: terminal }
+			if (command.json === true) this.#report(outcome)
+			else {
+				this.#present(terminal)
+				this.#say(this.#tally(result))
+			}
+			return auditToExit(terminal)
+		} finally {
+			materializer.destroy()
+		}
+	}
+
+	// `catalog` — regenerate the package table from the organization's published
+	// list and refresh the guide mirrors the target draws on.
+	async #refresh(command: CatalogCommand): Promise<number> {
+		const target = command.target ?? '.'
+		const [host, ...extra] = command.from ?? []
+		if (extra.length > 0) {
+			this.#warn(
+				`Read the data root from ${String(host)}. The other ${String(extra.length)} local root${extra.length === 1 ? '' : 's'} named by --from reach nothing this run does.`,
+			)
+		}
+		const previous = this.#previous(target)
+		const fetched = await this.#fetch(target, command.all === true)
+		const materializer = createMaterializer(host === undefined ? undefined : { host })
+		let result: MaterializeResult
+		try {
+			result = this.#publish(materializer, target, fetched.entries, fetched.mirrors)
+		} finally {
+			materializer.destroy()
+		}
+		const outcome: CatalogResult = {
+			...result,
+			entries: fetched.entries,
+			mirrors: fetched.mirrors,
+			dropped: previous.filter((name) => !fetched.entries.some((entry) => entry.name === name)),
+		}
+		if (command.json === true) this.#report(outcome)
+		else this.#recount(outcome)
+		return fetched.mirrors.some((mirror) => mirror.lookup === 'failed') ? EXIT_DRIFT : EXIT_CLEAN
+	}
+
+	// `overwrite` — everything repair and catalog do, plus the two steps only this
+	// verb carries. The offline half runs first and persists whatever it did,
+	// because it is the destructive one: a run that cannot reach upstream still
+	// leaves the target repaired and says which step it could not complete.
+	async #replace(command: OverwriteCommand): Promise<number> {
+		const target = command.target ?? '.'
+		const groups = this.#groups(command.groups)
+		const blueprint = this.#derive(target)
+		const repository = this.#repository(target)
+		if (repository.dirty.length > 0 && command.dirty !== true) {
+			throw new ScaffoldError(
+				'TARGET',
+				`The target at ${target} carries ${String(repository.dirty.length)} uncommitted change${repository.dirty.length === 1 ? '' : 's'}. Commit them, or pass --dirty to waive the refusal.`,
+				{ target, dirty: repository.dirty.length },
+			)
+		}
+		const materializer = createMaterializer(
+			command.from === undefined ? undefined : { host: command.from },
+		)
+		try {
+			const [audit, plan] = this.#survey(materializer, blueprint, target, groups)
+			if (plan === undefined) {
+				if (command.json === true) this.#report(audit)
+				else this.#present(audit)
+				return EXIT_DRIFT
+			}
+			const repaired = materializer.repair(plan, audit, target)
+			// The candidate set is the audit's own foreign findings, so a path the
+			// plan claims is never a deletion candidate whatever the tree holds, and
+			// neither is a path outside the vendored directories this plan expands.
+			// `--dirty` is expressed here and nowhere else: the waiver clears the
+			// refusal the observed dirty set would otherwise trigger downstream, and
+			// waives nothing about which paths are eligible.
+			const removed = materializer.remove(
+				audit,
+				command.dirty === true ? { tracked: repository.tracked, dirty: [] } : repository,
+				target,
+			)
+			const offline = this.#merge(repaired, removed)
+			const online = await this.#reconcile(materializer, target, blueprint.dependencies)
+			const [terminal] = this.#survey(materializer, blueprint, target, groups)
+			const outcome: OverwriteResult = {
+				...online,
+				...this.#merge(offline, online),
+				audit: terminal,
+			}
+			if (command.json === true) this.#report(outcome)
+			else {
+				this.#present(terminal)
+				this.#recount(outcome)
+				if (online.note !== undefined) this.#warn(online.note)
+			}
+			if (online.note !== undefined) return EXIT_DRIFT
+			return auditToExit(terminal)
+		} finally {
+			materializer.destroy()
+		}
+	}
+
+	// The network half of `overwrite`, collected rather than thrown: the offline
+	// half has already written, so a step that cannot complete is reported as the
+	// step it was instead of discarding what already landed. It writes through the
+	// verb's own materializer rather than opening a second one, so every byte the
+	// run lands comes from the host the caller named once.
+	async #reconcile(
+		materializer: MaterializerInterface,
+		target: string,
+		declared: readonly Dependency[],
+	): Promise<Omit<OverwriteResult, 'audit'>> {
+		const previous = this.#previous(target)
+		try {
+			const releases = await this.#lookup(declared)
+			const fetched = await this.#fetch(target, false)
+			const written = this.#merge(
+				this.#publish(materializer, target, fetched.entries, fetched.mirrors),
+				materializer.declare(this.#pin(releases), target),
+			)
+			return {
+				...written,
+				entries: fetched.entries,
+				mirrors: fetched.mirrors,
+				dropped: previous.filter((name) => !fetched.entries.some((entry) => entry.name === name)),
+				releases,
+			}
+		} catch (error) {
+			return {
+				target,
+				written: [],
+				skipped: [],
+				removed: [],
+				entries: [],
+				mirrors: [],
+				dropped: [],
+				releases: [],
+				note: `The catalog step did not complete: ${errorToEnvelope(error).error.message}`,
 			}
 		}
 	}
 
-	/**
-	 * Widen Node's default trusted-issuer set to include the OS certificate
-	 * store, so `fetch` behind a corporate TLS-inspecting proxy behaves like npm
-	 * (`cafile`) and browsers (OS trust store) instead of failing with
-	 * `UNABLE_TO_GET_ISSUER_CERT_LOCALLY` against Node's bundled CA list alone.
-	 * Feature-detected (`tls.getCACertificates` / `tls.setDefaultCACertificates`
-	 * ship on Node ≈22.16+/24.5+; this package's floor is `>=22.12.0`) and captured
-	 * through `attempt` — any failure is a silent no-op, never a crash. This only ADDS
-	 * trusted issuers; it never touches `rejectUnauthorized` or
-	 * `NODE_TLS_REJECT_UNAUTHORIZED`, so certificate verification stays on.
-	 */
-	#trust(): void {
-		if (
-			typeof tls.getCACertificates !== 'function' ||
-			typeof tls.setDefaultCACertificates !== 'function'
-		) {
-			return
+	// Measure each declared range against the registry's latest release.
+	async #lookup(declared: readonly Dependency[]): Promise<readonly Release[]> {
+		const upstream = createUpstream(this.#upstream)
+		try {
+			return await upstream.lookup(declared)
+		} finally {
+			upstream.destroy()
 		}
-		attempt(() => {
-			const merged = new Set([
-				...tls.getCACertificates('default'),
-				...tls.getCACertificates('system'),
-			])
-			tls.setDefaultCACertificates([...merged])
-		})
 	}
 
-	/** Write ONE machine-readable JSON value to stdout — the entire `--json` output contract. */
-	#write(value: unknown): void {
-		process.stdout.write(`${JSON.stringify(value)}\n`)
-	}
-
-	/** Report a general operation failure with exit 1 as prose or one JSON error envelope. */
-	#fail(message: string, json: boolean): never {
-		if (json) this.#write(errorEnvelopeOf('ERROR', message))
-		else this.#reporter.status('error', message)
-		throw new CLIExitError(1)
-	}
-
-	/**
-	 * A general operation failure from a caught error — the real
-	 * `ScaffoldError` code when available ('ERROR' last resort), prose (via
-	 * `describe`, which still carries the bracketed code for a human reader) or
-	 * the one JSON error envelope under `--json` (code and message kept
-	 * SEPARATE — never double-encoding the code into the message text).
-	 */
-	#error(error: unknown, json: boolean): never {
-		if (json) {
-			const code = isScaffoldError(error) ? error.code : 'ERROR'
-			const message = isScaffoldError(error) ? error.message : describeError(error)
-			this.#write(errorEnvelopeOf(code, message))
-		} else {
-			this.#reporter.status('error', describeError(error))
+	// Read the organization's published list and the guides the target draws on.
+	// The workspace never fetches its own guide: that file is its own product.
+	async #fetch(
+		target: string,
+		all: boolean,
+	): Promise<{ readonly entries: readonly CatalogEntry[]; readonly mirrors: readonly Mirror[] }> {
+		const manifest = this.#manifest(target)
+		const own = manifestToName(manifest)
+		const declared = manifestToDependencies(manifest).map((dependency) => dependency.name)
+		const upstream = createUpstream(this.#upstream)
+		try {
+			const entries = await upstream.catalog()
+			const names = (all ? entries.map((entry) => entry.name) : declared).filter(
+				(name) => name !== own,
+			)
+			const mirrors = await upstream.fetch(names, readSnapshot(target, names.map(nameToGuide)))
+			return { entries, mirrors }
+		} finally {
+			upstream.destroy()
 		}
-		throw new CLIExitError(1)
 	}
 
-	/** A usage error (bad flag value, unknown verb — exit 2) — stderr prose, or the one JSON error envelope under `--json`. */
-	#usage(message: string, json: boolean): never {
-		if (json) this.#write(errorEnvelopeOf('USAGE', message))
-		else process.stderr.write(`${message}\n`)
-		throw new CLIExitError(2)
+	// Write the fetched guides to their mirrors and the published list to the
+	// marker-bounded table, as one result.
+	#publish(
+		materializer: MaterializerInterface,
+		target: string,
+		entries: readonly CatalogEntry[],
+		mirrors: readonly Mirror[],
+	): MaterializeResult {
+		return this.#merge(materializer.mirror(mirrors, target), materializer.catalog(entries, target))
 	}
 
-	/** Contain a destination and report any coded escape through the shared CLI error path. */
-	#contain(candidate: string, json: boolean): string {
-		const contained = attempt(() => containDestination(process.cwd(), candidate))
-		if (contained.success) return contained.value
-		this.#error(contained.error, json)
+	// The ranges a found release pins. A lookup that produced no answer names no
+	// version, so it is left declared as it stands rather than rewritten to a
+	// guess.
+	#pin(releases: readonly Release[]): readonly Dependency[] {
+		const pinned: Dependency[] = []
+		for (const release of releases) {
+			if (release.lookup === 'found')
+				pinned.push({ name: release.name, range: `^${release.latest}` })
+		}
+		return pinned
 	}
 
-	/** Compile a spec and report unresolved blocking questions through the shared CLI error path. */
-	#compile(
-		spec: Blueprint,
-		json: boolean,
-		groups?: readonly Group[],
-	): readonly [plan: Plan, questions: readonly Question[]] {
+	// Compile a blueprint into the plan it describes, or refuse with the questions
+	// that closed the gate.
+	#compile(blueprint: Blueprint, groups?: readonly Group[]): Plan {
 		const compiler = createCompiler()
 		try {
-			const scaffolding = compiler.compile(spec, groups)
-			if (!scaffolding.plan) {
-				const blocking = scaffolding.questions.filter((question) => question.blocking)
-				const message = (blocking.length > 0 ? blocking : scaffolding.questions)
-					.map((question) => question.text)
-					.join('; ')
-				this.#fail(message, json)
-			}
-			return [scaffolding.plan, scaffolding.questions]
+			const scaffolding = compiler.compile(blueprint, groups)
+			if (scaffolding.plan !== undefined) return scaffolding.plan
+			throw new ScaffoldError(
+				'BLOCKED',
+				scaffolding.questions
+					.filter((question) => question.blocking)
+					.map((question) => `${question.field}: ${question.message}`)
+					.join(' '),
+				{ questions: scaffolding.questions.length },
+			)
 		} finally {
 			compiler.destroy()
 		}
 	}
 
-	// Exclude the workspace-owned service provisioner from every physical scan.
-	#prunePaths(target: string, host: string, services: readonly string[]): readonly string[] {
-		const seam = services.length > 0 ? SERVICE_SCRIPT_PATH : undefined
-		return pruneTargets(target, host).filter((path) => path !== seam)
-	}
-
-	/**
-	 * Merge the physical prune scan into `audit` as `foreign` findings — pure
-	 * object-spread composition in the BIN only (`src/core`'s `diffPlan` is never
-	 * modified/reimplemented). Every unexpected path except the declared service
-	 * workspace's exact `SERVICE_SCRIPT_PATH` becomes one `'orchestration'`-group
-	 * `foreign` finding (the `Group` every `PRUNE_DIRECTORIES` entry—`.claude/agents`,
-	 * `.codex/agents`, `scripts`—belongs to); any scan hit makes the merged audit
-	 * unclean, so an "unexpected file" is honestly counted as drift (exit 1)
-	 * instead of the structurally-always-zero `diffPlan.foreign`.
-	 */
-	#scan(audit: Audit, target: string, host: string, services: readonly string[]): Audit {
-		const paths = this.#prunePaths(target, host, services)
-		if (paths.length === 0) return audit
-		const findings: Finding[] = paths.map((path) => ({
-			path,
-			group: 'orchestration',
-			drift: 'foreign',
-		}))
-		return {
-			...audit,
-			clean: false,
-			foreign: audit.foreign + paths.length,
-			findings: [...audit.findings, ...findings],
-		}
-	}
-
-	/**
-	 * Add unexpected-file findings when the vendored allowlist can be established.
-	 * When fail-closed allowlist discovery raises a coded `TARGET` failure, retain
-	 * the existing findings and mark the audit incomplete instead of crashing.
-	 */
-	#scanSafe(
-		audit: Audit,
+	// Compile a blueprint and compare its plan to what the target currently holds,
+	// through the vendored host a write would draw on.
+	//
+	// The materializer owns the comparison because it is the only one that can
+	// make it: the pure compile claims presence alone, so it reads a canon file a
+	// consumer has edited as aligned and a vendored directory as one missing path
+	// no write could ever satisfy. Hydrating first states the bytes and expands
+	// the directory into the files the host actually stores, which is the same
+	// derivation the repair that follows is held to.
+	//
+	// The compiler answers the refused case alone. A blueprint the gate closed
+	// carries no plan, so there is nothing to hydrate and nothing to say about the
+	// target; the audit carries the questions instead.
+	#survey(
+		materializer: MaterializerInterface,
+		blueprint: Blueprint,
 		target: string,
-		host: string,
-		services: readonly string[],
-	): ForeignScanResult {
-		const scanned = attempt(() => this.#scan(audit, target, host, services))
-		if (scanned.success) return { audit: scanned.value, skipped: false }
-		if (isScaffoldError(scanned.error) && scanned.error.code === 'TARGET') {
-			return {
-				audit: {
-					...audit,
-					clean: false,
-					complete: false,
-					questions: [
-						...audit.questions,
-						{
-							field: 'host',
-							text: scanned.error.message,
-							blocking: true,
-						},
-					],
-				},
-				skipped: true,
-			}
+		groups?: readonly Group[],
+	): readonly [audit: Audit, plan: Plan | undefined] {
+		const compiler = createCompiler()
+		try {
+			const scaffolding = compiler.compile(blueprint, groups)
+			if (scaffolding.plan === undefined) return [compiler.audit(blueprint, {}, groups), undefined]
+			return [materializer.audit(scaffolding.plan, target), scaffolding.plan]
+		} finally {
+			compiler.destroy()
 		}
-		throw scanned.error
 	}
 
-	/**
-	 * `repair` scopes to host-owned artifacts by default and optionally generated canon, but the
-	 * caller compiles the full plan anyway. Diff it too so a clean scoped verdict can point at drift
-	 * outside the selected boundary. The count feeds the shared `scopeNote` renderer.
-	 */
-	#outside(compiled: Plan, selected: Plan, target: string, host: string): number {
-		const full = hydratePlan(compiled, host)
-		const selectedPaths = new Set(selected.artifacts.map((artifact) => artifact.path))
-		const audit = diffPlan(
-			full,
-			readTarget(
+	// The blueprint a target describes about itself: its name and its declared
+	// fleet packages from the manifest, and its two environment axes from the
+	// directories it actually ships. Every other field takes its default, because
+	// the only artifact they reach is the manifest, which is claimed by birth and
+	// therefore never compared and never rewritten by a verb that reads a target.
+	#derive(target: string): Blueprint {
+		const manifest = this.#manifest(target)
+		const declared = manifestToName(manifest)
+		if (declared === undefined) {
+			throw new ScaffoldError('TARGET', `The manifest at ${target} declares no package name.`, {
 				target,
-				full.artifacts.map((artifact) => artifact.path),
-			),
-		)
-		return audit.findings.filter(
-			(finding) => finding.drift !== 'aligned' && !selectedPaths.has(finding.path),
-		).length
-	}
-
-	// Emit repair's machine result or its human-readable outside-scope explanation.
-	#emitRepair(
-		audit: RepairAudit,
-		generated: boolean,
-		json: boolean,
-		result?: MaterializeResult,
-	): void {
-		if (json) {
-			this.#write(result === undefined ? audit : auditToRepairResult(audit, result))
-			return
-		}
-		const note = scopeNote(audit.outside, generated)
-		if (note !== undefined) this.#reporter.line(note)
-	}
-
-	/** Promote only absent service-owned starter seams into repairable missing artifacts. */
-	#promoteServices(plan: Plan, target: string): Plan {
-		if (plan.blueprint.services.length === 0) return plan
-		const paths = [SERVICE_SCRIPT_PATH, 'tests/config/services.test.ts']
-		const current = readTarget(target, paths)
-		return {
-			...plan,
-			artifacts: plan.artifacts.map((artifact) =>
-				artifact.origin === 'template' &&
-				paths.includes(artifact.path) &&
-				!Object.hasOwn(current, artifact.path)
-					? { ...artifact, origin: 'computed' }
-					: artifact,
-			),
-		}
-	}
-
-	/** Select repair ownership and merge only the manifest's generated service-script keys. */
-	#scopeRepair(compiled: Plan, target: string, generated: boolean): Plan {
-		const promoted = this.#promoteServices(compiled, target)
-		const currentManifest =
-			generated && promoted.blueprint.services.length > 0 ? readManifest(target) : undefined
-		const artifacts: Artifact[] = []
-		for (const artifact of promoted.artifacts) {
-			if (
-				artifact.origin === 'host' ||
-				artifact.path === SERVICE_SCRIPT_PATH ||
-				artifact.path === 'tests/config/services.test.ts' ||
-				(generated && artifact.origin === 'computed' && artifact.path !== 'package.json')
-			) {
-				artifacts.push(artifact)
-				continue
-			}
-			if (
-				currentManifest !== undefined &&
-				artifact.origin === 'computed' &&
-				artifact.path === 'package.json'
-			) {
-				const content = mergeServiceManifest(
-					currentManifest,
-					artifact.content,
-					promoted.blueprint.services,
-				)
-				if (content !== currentManifest) artifacts.push({ ...artifact, content })
-			}
-		}
-		return {
-			...promoted,
-			blueprint: { ...promoted.blueprint, overrides: [] },
-			artifacts,
-		}
-	}
-
-	/** Compile and audit the selected repair ownership boundary for one structural snapshot. */
-	#prepareRepair(
-		spec: Blueprint,
-		target: string,
-		host: string,
-		generated: boolean,
-		json: boolean,
-	): readonly [compiled: Plan, plan: Plan, audit: Audit] {
-		const [compiled] = this.#compile(spec, json)
-		const scoped = this.#scopeRepair(compiled, target, generated)
-
-		let plan: Plan
-		try {
-			plan = hydratePlan(scoped, host)
-		} catch (error) {
-			this.#error(error, json)
-		}
-
-		try {
-			const audit = diffPlan(
-				plan,
-				readTarget(
-					target,
-					plan.artifacts.map((artifact) => artifact.path),
-				),
-			)
-			return [compiled, plan, audit]
-		} catch (error) {
-			this.#error(error, json)
-		}
-	}
-
-	/** Reject a cancelled prompt (ctrl-c) with the shared `CANCELLED_MESSAGE` — exit 1, nothing written. */
-	async #guard<T>(promise: Promise<T>): Promise<T> {
-		try {
-			return await promise
-		} catch (error) {
-			if (isTerminalError(error) && error.code === 'CANCEL') {
-				this.#reporter.line(CANCELLED_MESSAGE)
-				throw new CLIExitError(1)
-			}
-			throw error
-		}
-	}
-
-	/**
-	 * The shared write-confirmation gate every verb calls before it touches disk.
-	 * `--apply` is the sole write authorization. JSON and non-terminal calls do
-	 * not prompt once authorized; `--yes` skips the terminal confirmation.
-	 */
-	async #apply(
-		terminal: TerminalInterface,
-		message: string,
-		values: CLIValues,
-		json: boolean,
-	): Promise<boolean> {
-		if (!values.apply) return false
-		if (json || values.yes || !this.#tty) return true
-		return this.#guard(terminal.confirm({ message, default: false }))
-	}
-
-	/**
-	 * The SECOND, separate confirm for `--prune`-eligible deletions — never
-	 * bundled into the write question. Both `--prune` and `--apply` are required;
-	 * `--yes` only skips this confirmation and never authorizes deletion.
-	 */
-	async #prune(
-		terminal: TerminalInterface,
-		message: string,
-		values: CLIValues,
-		json: boolean,
-	): Promise<boolean> {
-		if (!values.prune) return false
-		if (!values.apply) {
-			if (!json && !this.#tty) this.#reporter.line(PRUNE_SKIPPED)
-			return false
-		}
-		if (json || values.yes || !this.#tty) return true
-		return this.#guard(terminal.confirm({ message, default: false }))
-	}
-
-	/** A spinner for a long-running write step, absent under `--json` or off a TTY sink. */
-	#spinner(message: string, json: boolean): SpinnerInterface | undefined {
-		return json || !this.#tty
-			? undefined
-			: createSpinner({ message, sink: this.#sink, styler: this.#styler })
-	}
-
-	/** Announce a successful write — the spinner's own success line, or a plain `reporter.status` without one (never under `--json`). */
-	#succeed(spinner: SpinnerInterface | undefined, json: boolean, message: string): void {
-		if (spinner) spinner.success(message)
-		else if (!json) this.#reporter.status('success', message)
-	}
-
-	/** Announce a failed write and halt(1) — the spinner's own failure line (if any), then the shared `fail`. */
-	#reject(spinner: SpinnerInterface | undefined, json: boolean, error: unknown): never {
-		const message = describeError(error)
-		if (spinner) spinner.failure(message)
-		this.#fail(message, json)
-	}
-
-	/**
-	 * Best-effort vendored `@orkestrel` catalog names, resolved via `host`
-	 * (`hostRoot()`, or the active `--from` override) through the host manifest
-	 * — `undefined` when the catalog cannot be established (a missing/unreadable
-	 * manifest, no `CATALOG_AGENT_PATH` entry, or any other failure),
-	 * degrading the dependency prompt to shape-only validation instead of blocking on it.
-	 */
-	#names(host: string): readonly string[] | undefined {
-		const names = attempt(() => {
-			const manifest = readHostManifest(host)
-			const full = locateHostSource(manifest, CATALOG_AGENT_PATH, host)
-			if (full === undefined || !existsSync(full)) return undefined
-			const relative = relativeOf(host, full).replaceAll('\\', '/')
-			return catalogNames(readFileText(host, relative, 'TARGET', 'host'))
-		})
-		return names.success ? names.value : undefined
-	}
-
-	/** Prompt for `@orkestrel` short-name dependencies until every token resolves or input is empty. */
-	async #prompt(
-		terminal: TerminalInterface,
-		catalog: readonly string[] | undefined,
-	): Promise<readonly string[]> {
-		for (;;) {
-			const raw = await this.#guard(terminal.input({ message: ORKESTREL_DEPS_PROMPT, default: '' }))
-			const tokens = splitTokens(raw)
-			if (tokens.length === 0) return []
-			const normalized = tokens.map(normalizeOrkestrelToken)
-			const issue = normalized
-				.map((token) => orkestrelTokenIssue(token, catalog))
-				.find((message) => message !== undefined)
-			if (issue === undefined) return normalized
-			this.#reporter.line(issue)
-		}
-	}
-
-	/** `scaffold new` — scaffold a package into `./<name>` (or `--target`). */
-	async #new(values: CLIValues, argument: string | undefined, json: boolean): Promise<void> {
-		const terminal = createTerminal()
-
-		let name: string
-		if (argument !== undefined) {
-			name = argument
-		} else if (json) {
-			this.#usage('a package name is required with --json', json)
-		} else if (!this.#tty) {
-			this.#usage(missingInput('a package name', 'new'), json)
-		} else {
-			name = await this.#guard(
-				terminal.input({
-					message: 'Package name',
-					validate: { pattern: NAME_PATTERN.source },
-				}),
-			)
-		}
-		// Validate positional and interactively collected names against the same
-		// core-owned package-name contract.
-		if (!NAME_PATTERN.test(name)) {
-			this.#usage(invalidName(name, NAME_PATTERN.source), json)
-		}
-
-		let srcInput: readonly string[]
-		let appInput: readonly string[]
-		if (values.src !== undefined) {
-			srcInput = values.src.split(',').map((candidate) => candidate.trim())
-		} else if (values.app !== undefined) {
-			srcInput = []
-		} else if (json || !this.#tty) {
-			this.#usage('at least one of --src or --app is required', json)
-		} else {
-			srcInput = await this.#guard(
-				terminal.checkbox({
-					message: 'Published src environments',
-					choices: ENVIRONMENT_CHOICES,
-					min: 0,
-				}),
-			)
-		}
-		if (values.app !== undefined) {
-			appInput = values.app.split(',').map((candidate) => candidate.trim())
-		} else if (values.src !== undefined || json || !this.#tty) {
-			appInput = []
-		} else {
-			appInput = await this.#guard(
-				terminal.checkbox({
-					message: 'Application environments',
-					choices: ENVIRONMENT_CHOICES,
-					min: 0,
-				}),
-			)
-		}
-		const unrecognizedSrcEnvironment = srcInput.filter(
-			(candidate) => !ENVIRONMENTS.some((environment) => environment === candidate),
-		)
-		if (unrecognizedSrcEnvironment.length > 0) {
-			this.#usage(
-				`Environment "${unrecognizedSrcEnvironment.join('", "')}" is not recognized`,
-				json,
-			)
-		}
-		if (new Set(srcInput).size !== srcInput.length) {
-			this.#usage('Published src environments must not repeat', json)
-		}
-		const src = ENVIRONMENTS.filter((environment) => srcInput.includes(environment))
-		const unrecognizedAppEnvironment = appInput.filter(
-			(candidate) => !ENVIRONMENTS.some((environment) => environment === candidate),
-		)
-		if (unrecognizedAppEnvironment.length > 0) {
-			this.#usage(
-				`Application environment "${unrecognizedAppEnvironment.join('", "')}" is not recognized`,
-				json,
-			)
-		}
-		if (new Set(appInput).size !== appInput.length) {
-			this.#usage('Application environments must not repeat', json)
-		}
-		const app = ENVIRONMENTS.filter((environment) => appInput.includes(environment))
-		if (src.length === 0 && app.length === 0) {
-			this.#usage('at least one source or application environment is required', json)
-		}
-
-		// Establish containment before preview, network access, confirmation, or
-		// any other work that assumes the destination is writable.
-		const destination = this.#contain(values.target ?? `./${name}`, json)
-		if (!isVacant(destination)) {
-			this.#error(
-				new ScaffoldError('TARGET', 'new requires a vacant target', { target: destination }),
-				json,
-			)
-		}
-		const explicitHost = values.from?.[0]
-		if (explicitHost !== undefined) {
-			if (!isRealDirectory(explicitHost)) {
-				this.#error(
-					new ScaffoldError('TARGET', `Host root is not a physical directory at ${explicitHost}`, {
-						host: explicitHost,
-					}),
-					json,
-				)
-			}
-			readHostManifest(explicitHost)
-		}
-
-		// `--deps` is OPTIONAL — a non-TTY session with neither `--json` nor
-		// `--deps` defaults to no extra dependencies rather than failing (only a
-		// REQUIRED input triggers `missingInput`'s usage error); the multi-prompt
-		// guidance below stays TTY-only under the one-prompt-per-process ceiling.
-		// `--deps` uses an untrimmed split and is
-		// `DEPENDENCY_NAME_PATTERN`-gated BEFORE any network call. The
-		// interactive prompt adds short-name
-		// normalization + vendored-catalog validation (re-asking on an unknown
-		// token, degrading to shape-only when the catalog cannot be resolved).
-		let depNames: readonly string[]
-		if (values.deps !== undefined) {
-			depNames = values.deps.split(',').filter((depName) => depName.length > 0)
-			const badDep = depNames.find((depName) => !DEPENDENCY_NAME_PATTERN.test(depName))
-			if (badDep !== undefined) {
-				this.#usage(
-					`Dependency name "${badDep}" must match ${DEPENDENCY_NAME_PATTERN.source}`,
-					json,
-				)
-			}
-		} else if (json || !this.#tty) {
-			depNames = []
-		} else {
-			const catalogHost = values.from?.[0] ?? hostRoot()
-			const catalog = this.#names(catalogHost)
-			if (catalog === undefined) this.#reporter.line(CATALOG_UNRESOLVED_NOTE)
-			depNames = await this.#prompt(terminal, catalog)
-		}
-
-		// `--deps` resolves latest versions from the registry and pins caret ranges; their
-		// guides fetch into the plan.
-		const sync = createSync(this.#sync)
-		let versions
-		try {
-			versions = await sync.lookup(depNames)
-		} finally {
-			sync.destroy()
-		}
-		// `createSync()` is non-strict — it never throws — so a bare-name
-		// `--deps` name that the registry could not resolve (`freshness`
-		// 'missing'/'failed') is a HARD failure here.
-		const unresolved = versions
-			.filter((version) => version.freshness === 'missing' || version.freshness === 'failed')
-			.map((version) => version.name)
-		if (unresolved.length > 0) this.#fail(unresolvedVersion(unresolved), json)
-		const deps = versions.map((version) => {
-			if (version.freshness !== 'behind') this.#fail(unresolvedVersion([version.name]), json)
-			return dependency(version.name, `^${version.latest}`)
-		})
-
-		// Extra devDependencies are authored in `package.json` after scaffolding;
-		// `deriveBlueprint`'s extras round-trip
-		// (`@src/server`) recompiles them back into the plan, so `audit` stays
-		// clean over a hand-added `devDependencies` entry (AGENTS §21 core stays
-		// the single source of truth for that relaxation).
-		const [plan] = this.#compile(blueprint(name, { src, app, dependencies: deps }), json)
-
-		const summary = planToSummary(plan)
-
-		// Name the directory the files land in, not the package they describe:
-		// `--target .` writes into the working directory itself, and an operator
-		// told `./<name>` would go looking in a directory that never existed.
-		const label = describeDestination(process.cwd(), destination)
-
-		if (!json) {
-			this.#reporter.section('Plan')
-			this.#reporter.table(newPlanTable(summary))
-			this.#reporter.line(newPlanPreview(label))
-		}
-
-		const proceed = await this.#apply(
-			terminal,
-			applyConfirmMessage(summary.host + summary.template + summary.computed),
-			values,
-			json,
-		)
-
-		if (!proceed) {
-			if (json) this.#write(summaryToNewResult(summary, false))
-			else this.#reporter.line(NEW_DRY_RUN_NOTE)
-			process.exitCode = 0
-			return
-		}
-
-		const spinner = this.#spinner('materializing', json)
-		spinner?.start()
-		const host = values.from?.[0]
-		const materializer = createMaterializer(host === undefined ? undefined : { host })
-		try {
-			const result = materializer.materialize(plan, destination)
-			const count = result.written.length + result.copied.length
-			if (json) this.#write(summaryToNewResult(summary, true))
-			else this.#succeed(spinner, json, newApplySuccess(count, label))
-		} catch (error) {
-			this.#reject(spinner, json, error)
-		} finally {
-			materializer.destroy()
-		}
-		process.exitCode = 0
-	}
-
-	/** `scaffold pull` — refresh vendored dependency mirrors and report range drift. */
-	async #pull(values: CLIValues, json: boolean): Promise<void> {
-		const target = this.#contain(values.target ?? '.', json)
-
-		const sync = createSync(
-			values.strict === undefined ? this.#sync : { ...this.#sync, strict: values.strict },
-		)
-		try {
-			let report: SyncReport
-			try {
-				const declared = manifestToDependencies(readManifest(target))
-				const selected = parsePullDependencies(values.deps, declared)
-				report = await sync.pull(target, selected)
-			} catch (error) {
-				this.#error(error, json)
-			}
-
-			await this.#refresh(sync, report, target, values, json, 'pull', true)
-		} finally {
-			sync.destroy()
-		}
-	}
-
-	/** `scaffold mirror` — refresh every published Orkestrel package guide. */
-	async #mirror(values: CLIValues, json: boolean): Promise<void> {
-		const target = this.#contain(values.target ?? '.', json)
-		const sync = createSync(
-			values.strict === undefined ? this.#sync : { ...this.#sync, strict: values.strict },
-		)
-		try {
-			let report: SyncReport
-			try {
-				report = await sync.mirror(target)
-			} catch (error) {
-				this.#error(error, json)
-			}
-			await this.#refresh(sync, report, target, values, json, 'mirror', report.failed === 0)
-		} finally {
-			sync.destroy()
-		}
-	}
-
-	async #refresh(
-		sync: SyncInterface,
-		report: SyncReport,
-		target: string,
-		values: CLIValues,
-		json: boolean,
-		action: 'pull' | 'mirror',
-		writable: boolean,
-	): Promise<void> {
-		if (!json) {
-			this.#reporter.table(syncTable(report))
-			for (const line of syncCauseNotes(report)) this.#reporter.line(line)
-			this.#reporter.line(syncVerdict(report, action))
-		}
-		const toWrite = [...report.guides, ...report.versions].filter(
-			(entry) => entry.freshness !== 'current',
-		).length
-		const terminal = createTerminal()
-		const proceed =
-			writable && toWrite > 0
-				? await this.#apply(terminal, applyConfirmMessage(toWrite), values, json)
-				: false
-		if (proceed) {
-			const spinner = this.#spinner('writing mirrors', json)
-			spinner?.start()
-			try {
-				const written = await sync.write(report, target)
-				if (json) this.#write(report)
-				else this.#succeed(spinner, json, syncSuccess(written.length))
-			} catch (error) {
-				this.#reject(spinner, json, error)
-			}
-		} else if (json) {
-			this.#write(report)
-		}
-		process.exitCode = report.failed > 0 ? 1 : report.clean || proceed ? 0 : 1
-	}
-
-	/** `scaffold audit` — whole-plan conformance report; offers a repair handoff on drift. */
-	async #audit(values: CLIValues, json: boolean): Promise<void> {
-		const target = this.#contain(values.target ?? '.', json)
-
-		let spec: Blueprint
-		try {
-			spec = deriveBlueprint(target)
-		} catch (error) {
-			this.#error(error, json)
-		}
-
-		const deps: readonly Dependency[] = [...spec.dependencies, ...spec.peers, ...spec.extras]
-
-		const groupsInput = values.groups?.split(',')
-		let groups: readonly Group[] | undefined
-		if (groupsInput !== undefined) {
-			const unrecognized = groupsInput.filter((name) => !GROUPS.some((group) => group === name))
-			if (unrecognized.length > 0) {
-				this.#usage(`Group "${unrecognized.join('", "')}" is not recognized`, json)
-			}
-			groups = GROUPS.filter((group) => groupsInput.includes(group))
-		}
-
-		const [compiled, questions] = this.#compile(spec, json, groups)
-		const from = values.from?.[0]
-		const host = from ?? hostRoot()
-		let plan: Plan
-		try {
-			plan = hydratePlan(this.#promoteServices(compiled, target), host)
-		} catch (error) {
-			this.#error(error, json)
-		}
-		const artifactPaths = plan.artifacts.map((artifact) => artifact.path)
-
-		// Merge the physical unexpected-file scan into the presented audit. Only an
-		// established host can positively define the vendored allowlist; a failed
-		// scan marks the audit incomplete without erasing its other findings.
-		const rawAudit = {
-			...diffPlan(plan, readTarget(target, artifactPaths)),
-			questions,
-		}
-		const scanned = this.#scanSafe(rawAudit, target, host, spec.services)
-		const audit = scanned.audit
-		let drifted = !audit.clean
-
-		let live: LiveResult | undefined
-		if (values.live) {
-			const sync = createSync(this.#sync)
-			try {
-				const manifestName = manifestToName(readManifest(target))
-				const guideDependencies = deps.filter((entry) => entry.name !== manifestName)
-				const guides = await sync.guides(guideDependencies)
-				const versions = await sync.versions(deps)
-				const entries = [...guides, ...versions]
-				drifted ||= entries.some((entry) => entry.freshness !== 'current')
-				const current = entries.filter((entry) => entry.freshness === 'current').length
-				const behind = entries.filter((entry) => entry.freshness === 'behind').length
-				const failed = entries.length - current - behind
-				live = { current, behind, failed }
-			} finally {
-				sync.destroy()
-			}
-		}
-
-		if (json) {
-			this.#write(live === undefined ? audit : { ...audit, live })
-			process.exitCode = drifted ? 1 : 0
-			return
-		}
-
-		if (scanned.skipped) this.#reporter.line(SCAN_SKIPPED)
-		for (const question of audit.questions) {
-			if (!question.blocking) this.#reporter.line(`warning: ${question.text}`)
-		}
-		const hostArtifacts = plan.artifacts.filter((artifact) => artifact.origin === 'host')
-		const presenceOwned = hostArtifacts.filter((artifact) => artifact.hex === undefined).length
-		this.#reporter.line(comparisonLine(hostArtifacts.length - presenceOwned, presenceOwned))
-		this.#reporter.table(auditTable(audit, plan))
-		this.#reporter.line(auditVerdict(audit, plan))
-		if (live !== undefined) {
-			this.#reporter.line(auditLiveNote(live.current, live.behind, live.failed))
-		}
-
-		if (!audit.clean) {
-			const split = partitionFindings(audit.findings, plan)
-			const replace = values.replace === true
-			const ownedCount = split.owned.missing + (replace ? split.owned.drifted : 0)
-			const pruneRequested = values.prune === true
-
-			// Audit never writes via flags: the handoff is an INTERACTIVE
-			// convenience only, offered exclusively on a TTY session — `--apply` /
-			// `--yes` NEVER count as handoff consent here (they gate the SEPARATE
-			// `repair` run this branch may launch, never audit's own read-only
-			// pass. A foreign-only handoff would be a dead end: the handoff also covers
-			// foreign files, but ONLY when `--prune` was passed — an inherited
-			// repair without `--prune` cannot delete them, so offering the handoff
-			// for foreign-only drift without `--prune` would be a dead end.
-			const offerHandoff = this.#tty && (ownedCount > 0 || (audit.foreign > 0 && pruneRequested))
-
-			let handoffAccepted = false
-			if (offerHandoff) {
-				const terminal = createTerminal()
-				const message = repairHandoff(
-					split.owned.missing,
-					replace ? split.owned.drifted : 0,
-					audit.foreign,
-					pruneRequested,
-				)
-				handoffAccepted = await this.#guard(terminal.confirm({ message, default: false }))
-				if (handoffAccepted) {
-					await this.#repair(values, false)
-					// Repair's own exit code reflects only
-					// ITS scope — re-diff the FULL plan (host/template/computed AND
-					// the foreign scan) so the audit's exit code stays truthful about
-					// ANY drift still remaining, mirroring `runFleet`'s post-repair
-					// `finalAudit` pattern.
-					const rawFinal = diffPlan(plan, readTarget(target, artifactPaths))
-					const finalScanned = this.#scanSafe(rawFinal, target, host, spec.services)
-					process.exitCode = finalScanned.audit.clean ? 0 : 1
-					return
-				}
-			}
-
-			if (!handoffAccepted) {
-				if (split.owned.drifted > 0 && !replace) {
-					this.#reporter.line(replacementNote(split.owned.drifted))
-				}
-				// When the handoff cannot help foreign files (no `--prune`, or no
-				// handoff offered at all), point at the one command that can.
-				if (audit.foreign > 0 && !pruneRequested) this.#reporter.line(FOREIGN_HINT)
-				for (const note of renderComputedNotes(audit.findings, plan)) {
-					this.#reporter.line(note)
-				}
-			}
-		}
-
-		process.exitCode = drifted ? 1 : 0
-	}
-
-	/** `scaffold repair` — restore host-owned files and optionally generated canon for one target. */
-	async #repair(values: CLIValues, json: boolean): Promise<void> {
-		const target = this.#contain(values.target ?? '.', json)
-
-		let spec: Blueprint
-		try {
-			spec = deriveBlueprint(target)
-		} catch (error) {
-			this.#error(error, json)
-		}
-
-		// Repair defaults to host restoration plus absent service seams. `--generated`
-		// adds generated canon and the manifest's service scripts while preserving
-		// present starters and all other manifest data.
-		const generated = values.generated === true
-		const replace = values.replace === true
-		const from = values.from?.[0]
-		const host = from ?? hostRoot()
-		const prepared = this.#prepareRepair(spec, target, host, generated, json)
-		let compiled = prepared[0]
-		let plan = prepared[1]
-		let audit = prepared[2]
-		let outcome = repairAuditOf(
-			this.#scanSafe(audit, target, host, spec.services).audit,
-			this.#outside(compiled, plan, target, host),
-		)
-		const verdict = {
-			generated,
-			replace,
-			apply: values.apply === true,
-		}
-
-		if (!json) {
-			// The scope line carries the cost of discarding local changes, so it is
-			// stated only where there is drift for that cost to apply to. A clean
-			// run's verdict already says nothing is being written.
-			if (!outcome.clean) this.#reporter.line(scopeLine('repair', generated))
-			this.#reporter.section('Audit')
-			this.#reporter.table(auditTable(outcome, plan))
-		}
-
-		// The prune preview/confirm are driven by the real scan
-		// (`pruneTargets`), never `audit.foreign` (which `diffPlan` can never
-		// populate through this call path — it only ever reads the plan's own
-		// paths). A zero-length scan skips the question entirely and is a no-op.
-		// Compute this BEFORE the clean-audit check so `--prune` still reaches
-		// the deletion flow on a clean-host repo. Only a clean audit with nothing
-		// to prune returns early.
-		const prunePaths = values.prune ? this.#prunePaths(target, host, spec.services) : []
-		const pruneSnapshot = readTarget(target, prunePaths)
-
-		if (outcome.clean && prunePaths.length === 0) {
-			if (!json) this.#reporter.line(repairVerdict(outcome, verdict))
-			this.#emitRepair(outcome, generated, json)
-			process.exitCode = hasFindings(outcome, outcome.outside) ? 1 : 0
-			return
-		}
-
-		if (!json) this.#reporter.line(repairVerdict(outcome, verdict))
-
-		const repairable = countWrites([audit], replace)
-		if (repairable === 0 && prunePaths.length === 0) {
-			// Nothing here is repairable: the only findings are drifted files no
-			// authorization on this command line covers. Close with the same tally a
-			// run that did write ends on rather than stopping mid-screen.
-			if (!json) {
-				this.#reporter.line(
-					repairTally({
-						written: 0,
-						unchanged: audit.findings.length - audit.drifted - audit.missing - audit.foreign,
-						drifted: audit.drifted,
-						removed: 0,
-					}),
-				)
-			}
-			this.#emitRepair(outcome, generated, json)
-			process.exitCode = 1
-			return
-		}
-
-		const terminal = createTerminal()
-		let proceed = true
-		if (!audit.clean) {
-			proceed = await this.#apply(terminal, applyConfirmMessage(repairable), values, json)
-		}
-
-		if (!proceed) {
-			this.#emitRepair(outcome, generated, json)
-			process.exitCode = 1
-			return
-		}
-
-		if (values.prune && !json) {
-			if (prunePaths.length === 0) this.#reporter.line(PRUNE_EMPTY)
-			else for (const line of prunePreview(prunePaths)) this.#reporter.line(line)
-		}
-		const doPrune =
-			prunePaths.length > 0 &&
-			(await this.#prune(terminal, pruneConfirmMessage(prunePaths.length), values, json))
-
-		let currentGlobal: boolean
-		try {
-			currentGlobal = deriveBlueprint(target).global
-		} catch (error) {
-			this.#error(error, json)
-		}
-		if (currentGlobal !== spec.global) {
-			spec = { ...spec, global: currentGlobal }
-			const refreshed = this.#prepareRepair(spec, target, host, generated, json)
-			compiled = refreshed[0]
-			plan = refreshed[1]
-			audit = refreshed[2]
-			outcome = repairAuditOf(
-				this.#scanSafe(audit, target, host, spec.services).audit,
-				this.#outside(compiled, plan, target, host),
-			)
-		}
-
-		const spinner = this.#spinner('repairing', json)
-		spinner?.start()
-		const materializer = createMaterializer({ host })
-		try {
-			const result = materializer.repair(plan, audit, target, replace)
-			const removed = doPrune ? materializer.prune(target, pruneSnapshot).removed : []
-			const finalAudit = repairAuditOf(
-				this.#scanSafe(
-					diffPlan(
-						plan,
-						readTarget(
-							target,
-							plan.artifacts.map((artifact) => artifact.path),
-						),
-					),
-					target,
-					host,
-					spec.services,
-				).audit,
-				outcome.outside,
-			)
-			// Every artifact repair did not write lands in `skipped`, drifted ones
-			// included. Split the refused drift back out so the tally's `unchanged`
-			// means what the audit table's `unchanged` means.
-			const left = replace ? 0 : audit.drifted
-			if (!json) {
-				this.#succeed(
-					spinner,
-					json,
-					repairTally({
-						written: result.written.length + result.copied.length,
-						unchanged: result.skipped.length - left,
-						drifted: left,
-						removed: removed.length,
-					}),
-				)
-			}
-			this.#emitRepair(finalAudit, generated, json, { ...result, removed })
-			process.exitCode = hasFindings(finalAudit, finalAudit.outside) ? 1 : 0
-		} catch (error) {
-			this.#reject(spinner, json, error)
-		} finally {
-			materializer.destroy()
-		}
-	}
-
-	/** `scaffold fleet` — audit/repair every `@orkestrel` package beneath the current directory's immediate children. */
-	async #fleet(values: CLIValues, json: boolean): Promise<void> {
-		const root = this.#contain('.', json)
-		const generated = values.generated === true
-		const replace = values.replace === true
-
-		const packages = discoverPackages(root)
-		if (packages.length === 0) {
-			this.#fail(
-				`no @orkestrel packages under "${root}" — fleet scans the immediate children of the current directory; stand in the folder that contains your checkouts (cd ..), or use 'repair' to true up just this repo.`,
-				json,
-			)
-		}
-
-		const from = values.from?.[0]
-		const host = from ?? hostRoot()
-
-		const repos: FleetRepo[] = []
-		const failures: FleetFailure[] = []
-		for (const directory of packages) {
-			const name = basename(directory)
-			try {
-				const compiler = createCompiler()
-				let compiled: Plan
-				let scoped: Plan
-				let questions: readonly Question[]
-				try {
-					const spec = deriveBlueprint(directory)
-					const scaffolding = compiler.compile(spec)
-					if (!scaffolding.plan) {
-						const message = scaffolding.questions.map((question) => question.text).join('; ')
-						throw new ScaffoldError('INVALID', message)
-					}
-					compiled = scaffolding.plan
-					scoped = this.#scopeRepair(compiled, directory, generated)
-					questions = scaffolding.questions
-				} finally {
-					compiler.destroy()
-				}
-
-				const plan = hydratePlan(scoped, host)
-				const paths = plan.artifacts.map((artifact) => artifact.path)
-				const rawAudit = {
-					...diffPlan(plan, readTarget(directory, paths)),
-					questions,
-				}
-				// Include physical unexpected-file findings in each repository audit.
-				const audit = this.#scan(rawAudit, directory, host, plan.blueprint.services)
-				const outside = this.#outside(compiled, plan, directory, host)
-				repos.push({
-					name,
-					directory,
-					plan,
-					rawAudit,
-					audit,
-					outside,
-				})
-			} catch (error) {
-				failures.push({ name, message: describeError(error) })
-			}
-		}
-
-		if (!json) {
-			for (const repo of repos) {
-				this.#reporter.line(
-					fleetRepoLine(
-						repo.name,
-						repo.audit.clean
-							? { state: 'clean' }
-							: {
-									state: 'drifted',
-									drifted: repo.audit.drifted,
-									missing: repo.audit.missing,
-									foreign: repo.audit.foreign,
-								},
-					),
-				)
-				for (const question of repo.audit.questions) {
-					if (!question.blocking) {
-						this.#reporter.line(`${repo.name}: warning: ${question.text}`)
-					}
-				}
-				const note = scopeNote(repo.outside, generated)
-				if (note !== undefined) this.#reporter.line(`${repo.name}: ${note}`)
-			}
-			for (const failure of failures) {
-				this.#reporter.line(
-					fleetRepoLine(failure.name, { state: 'failed', message: failure.message }),
-				)
-			}
-		}
-
-		const dirty = repos.filter((repo) => !repo.audit.clean)
-		const reportedDirty = repos.filter((repo) => hasFindings(repo.audit, repo.outside))
-
-		if (dirty.length === 0) {
-			if (json) {
-				this.#write([
-					...repos.map((repo) => fleetEntryOf(repo.name, repo.audit, false, repo.outside)),
-					...failures.map((failure) => fleetEntryOf(failure.name, undefined, true)),
-				])
-			} else {
-				this.#reporter.line(fleetTotals(reportedDirty.length, failures.length))
-			}
-			process.exitCode = reportedDirty.length > 0 || failures.length > 0 ? 1 : 0
-			return
-		}
-
-		const fileCount = countWrites(
-			dirty.map((repo) => repo.audit),
-			replace,
-		)
-
-		// Fleet is the widest write this executable performs and its confirmation
-		// names only a count, so state the boundary and what `--replace` costs
-		// before asking — and only once a write is authorized, never over a dry run
-		// that cannot touch anything.
-		if (!json && values.apply === true) {
-			this.#reporter.line(scopeLine('fleet', generated, dirty.length))
-		}
-
-		const terminal = createTerminal()
-		const proceed = await this.#apply(
-			terminal,
-			applyConfirmMessage(fileCount, dirty.length),
-			values,
-			json,
-		)
-
-		// Drive the fleet prune preview from each repository's physical scan and
-		// prefix every path with its repository name. An unestablished host cannot
-		// define an allowlist, so pruning remains a no-op.
-		const pruneSets =
-			proceed && values.prune
-				? new Map(
-						dirty.map((repo) => {
-							const paths = this.#prunePaths(repo.directory, host, repo.plan.blueprint.services)
-							return [repo.name, readTarget(repo.directory, paths)]
-						}),
-					)
-				: new Map<string, Snapshot>()
-		const prunePaths = dirty.flatMap((repo) =>
-			Object.keys(pruneSets.get(repo.name) ?? {}).map((path) => `${repo.name}/${path}`),
-		)
-		if (proceed && values.prune && !json) {
-			if (prunePaths.length === 0) this.#reporter.line(PRUNE_EMPTY)
-			else for (const line of prunePreview(prunePaths)) this.#reporter.line(line)
-		}
-		const doPrune =
-			proceed &&
-			prunePaths.length > 0 &&
-			(await this.#prune(terminal, pruneConfirmMessage(prunePaths.length), values, json))
-
-		if (!proceed) {
-			if (json) {
-				this.#write([
-					...repos.map((repo) => fleetEntryOf(repo.name, repo.audit, false, repo.outside)),
-					...failures.map((failure) => fleetEntryOf(failure.name, undefined, true)),
-				])
-			} else {
-				this.#reporter.line(fleetTotals(reportedDirty.length, failures.length))
-			}
-			process.exitCode = 1
-			return
-		}
-
-		const materializer = createMaterializer({ host })
-		let drifted = repos.filter((repo) => repo.audit.clean && repo.outside > 0).length
-		let failedCount = failures.length
-		const entries: FleetEntry[] = repos
-			.filter((repo) => repo.audit.clean)
-			.map((repo) => fleetEntryOf(repo.name, repo.audit, false, repo.outside))
-
-		try {
-			for (const repo of dirty) {
-				try {
-					materializer.repair(repo.plan, repo.rawAudit, repo.directory, replace)
-					if (doPrune) {
-						materializer.prune(repo.directory, pruneSets.get(repo.name) ?? {})
-					}
-					const paths = repo.plan.artifacts.map((artifact) => artifact.path)
-					const rawFinal = diffPlan(repo.plan, readTarget(repo.directory, paths))
-					const finalAudit = this.#scan(
-						rawFinal,
-						repo.directory,
-						host,
-						repo.plan.blueprint.services,
-					)
-					if (hasFindings(finalAudit, repo.outside)) drifted += 1
-					entries.push(fleetEntryOf(repo.name, finalAudit, false, repo.outside))
-					if (!json) {
-						this.#reporter.line(
-							fleetRepoLine(repo.name, {
-								state: 'repaired',
-								remaining:
-									finalAudit.drifted + finalAudit.missing + finalAudit.foreign + repo.outside,
-							}),
-						)
-					}
-				} catch (error) {
-					failedCount += 1
-					entries.push(fleetEntryOf(repo.name, undefined, true))
-					if (!json) {
-						this.#reporter.line(
-							fleetRepoLine(repo.name, {
-								state: 'failed',
-								message: describeError(error),
-							}),
-						)
-					}
-				}
-			}
-		} finally {
-			materializer.destroy()
-		}
-
-		if (json) {
-			this.#write([
-				...entries,
-				...failures.map((failure) => fleetEntryOf(failure.name, undefined, true)),
-			])
-		} else {
-			this.#reporter.line(fleetTotals(drifted, failedCount))
-		}
-		process.exitCode = drifted > 0 || failedCount > 0 ? 1 : 0
-	}
-
-	/** `scaffold catalog` — regenerate the fleet package catalog table embedded in `.claude/agents/orkestrel.md`. */
-	async #catalog(values: CLIValues, json: boolean): Promise<void> {
-		const target = this.#contain(values.target ?? '.', json)
-
-		const explicitRoots = values.from
-		let entries: readonly CatalogEntry[]
-		let published = 0
-		let localOnly = 0
-		const notes = new Map<string, string>()
-
-		if (values.offline) {
-			const roots = explicitRoots ?? [process.cwd()]
-			try {
-				entries = catalogPackages(roots)
-			} catch (error) {
-				this.#error(error, json)
-			}
-		} else {
-			const sync = createSync(this.#sync)
-			sync.emitter.on('package', (name, note) => {
-				if (note !== '') notes.set(name, note)
 			})
-			let registryEntries: readonly CatalogEntry[]
-			try {
-				registryEntries = await sync.catalog()
-			} catch (error) {
-				this.#error(error, json)
-			} finally {
-				sync.destroy()
-			}
-			published = registryEntries.length
-
-			let localEntries: readonly CatalogEntry[] = []
-			if (explicitRoots !== undefined) {
-				try {
-					localEntries = catalogPackages(explicitRoots)
-				} catch (error) {
-					this.#error(error, json)
-				}
-			}
-
-			const merged = new Map<string, CatalogEntry>()
-			for (const entry of registryEntries) merged.set(entry.name, entry)
-			for (const local of localEntries) {
-				const existing = merged.get(local.name)
-				if (existing === undefined) {
-					merged.set(local.name, local)
-					localOnly += 1
-				} else if (local.description.length > 0) {
-					merged.set(local.name, { ...existing, description: local.description })
-				}
-			}
-			entries = [...merged.values()].sort((a, b) =>
-				a.name < b.name ? -1 : a.name > b.name ? 1 : 0,
-			)
 		}
-
-		const block = catalogToBlock(entries)
-		// Re-confine the exact leaf because a linked segment beneath an otherwise
-		// contained target could redirect this write outside the working directory.
-		const agentPath = this.#contain(join(target, CATALOG_AGENT_PATH), json)
-		let current: string
-		let baseline: string
-		try {
-			current = readFileText(target, CATALOG_AGENT_PATH, 'TARGET', 'target')
-			baseline = digestText(current)
-		} catch (error) {
-			this.#error(
-				new ScaffoldError('TARGET', `Failed to read ${agentPath}`, { path: agentPath, error }),
-				json,
-			)
-		}
-
-		const startIndex = current.indexOf(CATALOG_START_MARKER)
-		const endIndex = current.indexOf(CATALOG_END_MARKER)
-		const startParts = current.split(CATALOG_START_MARKER)
-		const endParts = current.split(CATALOG_END_MARKER)
-		if (
-			startIndex === -1 ||
-			endIndex === -1 ||
-			endIndex < startIndex ||
-			startParts.length !== 2 ||
-			endParts.length !== 2
-		) {
-			this.#error(
-				new ScaffoldError(
-					'TARGET',
-					`Expected exactly one ordered "${CATALOG_START_MARKER}" / "${CATALOG_END_MARKER}" pair in ${agentPath}`,
-					{ path: agentPath },
-				),
-				json,
-			)
-		}
-
-		const before = current.slice(0, startIndex + CATALOG_START_MARKER.length)
-		const after = current.slice(endIndex)
-		const updated = `${before}\n\n${block}\n${after}`
-
-		const oldBlock = current.slice(startIndex + CATALOG_START_MARKER.length, endIndex)
-		const oldRows = catalogNames(oldBlock).length
-		const shrink = entries.length < oldRows ? oldRows - entries.length : undefined
-
-		if (updated === current) {
-			if (json) this.#write(catalogResultOf(entries, false))
-			else this.#reporter.line(catalogVerdict(true))
-			process.exitCode = 0
-			return
-		}
-
-		if (!json) {
-			this.#reporter.table(catalogTable(entries))
-			const warning = catalogShrinkWarning(oldRows, entries.length)
-			if (warning !== undefined) this.#reporter.line(warning)
-			if (values.offline) {
-				const missingDescription = entries
-					.filter((entry) => entry.description.length === 0)
-					.map((entry) => entry.name)
-				if (missingDescription.length > 0) {
-					this.#reporter.line(
-						`${missingDescription.length} without guide description: ${missingDescription.join(', ')}`,
-					)
-				}
-			} else {
-				this.#reporter.line(catalogCounts(published, localOnly))
-				for (const [name, note] of notes) this.#reporter.line(`  ${name}: ${note}`)
-			}
-		}
-
-		const terminal = createTerminal()
-		const proceed = await this.#apply(terminal, applyConfirmMessage(1), values, json)
-
-		if (!proceed) {
-			if (json) this.#write(catalogResultOf(entries, true, shrink))
-			else this.#reporter.line(catalogVerdict(false))
-			process.exitCode = 1
-			return
-		}
-
-		if (Buffer.byteLength(updated, 'utf8') > MAX_ARTIFACT_BYTES) {
-			this.#error(
-				new ScaffoldError('WRITE', `Catalog exceeds the artifact limit at ${agentPath}`, {
-					path: agentPath,
-					limit: MAX_ARTIFACT_BYTES,
-				}),
-				json,
-			)
-		}
-		const transaction = WriteTransaction.create(
-			target,
-			[CATALOG_AGENT_PATH],
-			[{ path: CATALOG_AGENT_PATH, shape: 'file', digest: baseline }],
-		)
-		const staged = attempt(() => {
-			validateWriteDirectories(transaction)
-			const destination = resolvePhysicalPath(
-				transaction.stage,
-				CATALOG_AGENT_PATH,
-				'WRITE',
-				'staging',
-			)
-			mkdirSync(dirname(destination), { recursive: true })
-			validateWriteDirectories(transaction)
-			const contained = resolvePhysicalPath(
-				transaction.stage,
-				CATALOG_AGENT_PATH,
-				'WRITE',
-				'staging',
-			)
-			writeFileSync(contained, updated, { encoding: 'utf8', flag: 'wx' })
-			if (digestFile(contained) !== digestText(updated)) {
-				throw new ScaffoldError('WRITE', `Staged catalog changed at ${agentPath}`, {
-					path: agentPath,
-				})
-			}
-			validateWriteDirectories(transaction)
+		return createBlueprint(declared.slice(declared.lastIndexOf('/') + 1), {
+			src: this.#probe(target, 'src'),
+			app: this.#probe(target, 'app'),
+			dependencies: manifestToDependencies(manifest),
 		})
-		if (!staged.success) {
-			const cleanup = attempt(() => discardWriteTransaction(transaction))
-			this.#error(
-				new ScaffoldError('WRITE', `Failed to stage ${agentPath}`, {
-					path: agentPath,
-					error: staged.error,
-					cleanup: cleanup.success ? undefined : cleanup.error,
-				}),
-				json,
-			)
-		}
-		const committed = attempt(() => commitWriteTransaction(transaction, [CATALOG_AGENT_PATH]))
-		if (!committed.success) this.#error(committed.error, json)
-		if (json) this.#write(catalogResultOf(entries, true, shrink))
-		else this.#reporter.status('success', catalogApplySuccess(agentPath))
-		process.exitCode = 0
 	}
 
-	/**
-	 * The whole command dispatch — a single top-level driver (no nested function
-	 * declarations, AGENTS §4). Every verb sets `process.exitCode` (never
-	 * `process.exit`) and returns, or `halt()`s through a `finally` that
-	 * tears its entities down first; the caller at the bottom of this file
-	 * catches exactly one sentinel (`CliExit`) and stops.
-	 */
-	async #dispatch(argv: readonly string[]): Promise<void> {
-		let parsed: CLIArguments
-		try {
-			parsed = parseArguments(argv)
-		} catch (error) {
-			process.stderr.write(
-				`${error instanceof Error ? error.message : INVALID_ARGUMENTS_MESSAGE}\n`,
+	// A target's manifest text, which every reading verb needs before it can say
+	// anything about the target at all.
+	#manifest(target: string): string {
+		const manifest = readFileText(target, 'package.json', MAX_MANIFEST_BYTES)
+		if (manifest === undefined) {
+			throw new ScaffoldError('TARGET', `The target at ${target} carries no readable manifest.`, {
+				target,
+			})
+		}
+		return manifest
+	}
+
+	// The environments one axis physically ships, read as directories rather than
+	// declared, because a directory is the fact and a declaration would be a
+	// second copy of it free to disagree.
+	#probe(target: string, axis: string): readonly Environment[] {
+		return ENVIRONMENTS.filter((environment) => {
+			const full = resolveContainedPath(target, `${axis}/${environment}`)
+			return full !== undefined && isPhysicalDirectory(full)
+		})
+	}
+
+	// The packages the target's catalog table listed before this run. Read through
+	// the declared markdown parser rather than by pattern, so a row is a row
+	// because the document says so.
+	#previous(target: string): readonly string[] {
+		const text = readFileText(target, CATALOG_AGENT_PATH)
+		if (text === undefined) return []
+		const names: string[] = []
+		for (const table of createMarkdown(text).filter(isTableNode)) {
+			for (const row of table.rows) {
+				const [cell] = row
+				if (cell === undefined) continue
+				const name = cell.map(flattenText).join('').trim()
+				if (DEPENDENCY_NAME_PATTERN.test(name)) names.push(name)
+			}
+		}
+		return names
+	}
+
+	// What git reports about the target's working tree. Deletion draws only on
+	// what git tracks and refuses a tree carrying uncommitted work, so a target
+	// that is not a repository has no recovery mechanism and is refused here.
+	#repository(target: string): Repository {
+		const tracked = this.#inventory(target, ['ls-files', '-z'])
+		const dirty = this.#inventory(target, [
+			'status',
+			'--porcelain=v1',
+			'--untracked-files=all',
+			'-z',
+		]).map((record) => (record.length > 3 && record[2] === ' ' ? record.slice(3) : record))
+		const state = { tracked, dirty }
+		if (!isRepository(state)) {
+			throw new ScaffoldError('TARGET', `The git state at ${target} is not a readable inventory.`, {
+				target,
+				tracked: tracked.length,
+				dirty: dirty.length,
+			})
+		}
+		return state
+	}
+
+	// One git query, answered as its NUL-separated records. Git is asked rather
+	// than reimplemented, because the tracked set and the dirty set are git's own
+	// answers and nothing else can give them.
+	#inventory(target: string, args: readonly string[]): readonly string[] {
+		const read = attempt(() =>
+			execFileSync('git', [...args], {
+				cwd: target,
+				encoding: 'utf8',
+				windowsHide: true,
+				maxBuffer: MAX_MANIFEST_BYTES,
+				// git writes its own refusal to its own stderr, and this class owns
+				// what leaves it: a failure is reported through the diagnostic handler
+				// the caller supplied, never straight onto a stream nobody chose.
+				stdio: ['ignore', 'pipe', 'ignore'],
+			}),
+		)
+		if (!read.success) {
+			throw new ScaffoldError('TARGET', `The target at ${target} is not a git repository.`, {
+				target,
+			})
+		}
+		return read.value.split('\0').filter((record) => record.length > 0)
+	}
+
+	// The environments a comma-separated selection names, refused by name when it
+	// names something that is not one.
+	#environments(selection: string | undefined, axis: string): readonly Environment[] {
+		if (selection === undefined) return []
+		const requested = selection.split(',')
+		const refused = requested.filter(
+			(name) => !ENVIRONMENTS.some((environment) => environment === name),
+		)
+		if (refused.length > 0) {
+			throw new UsageError(
+				`'--${axis}' does not take ${refused.join(', ')}. It takes ${ENVIRONMENTS.join(', ')}.`,
 			)
-			process.exitCode = 2
-			return
 		}
+		return ENVIRONMENTS.filter((environment) => requested.includes(environment))
+	}
 
-		const { values, positionals } = parsed
-		const [command, argument] = positionals
-		const json = values.json === true
-		this.#json = json
+	// The groups a comma-separated selection names; absence covers every group.
+	#groups(selection: string | undefined): readonly Group[] | undefined {
+		if (selection === undefined) return undefined
+		const requested = selection.split(',')
+		const refused = requested.filter((name) => !GROUPS.some((group) => group === name))
+		if (refused.length > 0) {
+			throw new UsageError(
+				`'--groups' does not take ${refused.join(', ')}. It takes ${GROUPS.join(', ')}.`,
+			)
+		}
+		return GROUPS.filter((group) => requested.includes(group))
+	}
 
-		if (command === undefined) {
-			process.stdout.write(`${values.help ? fullHelp() : shortUsage()}\n`)
-			process.exitCode = 0
-			return
+	// The fleet packages a comma-separated selection names.
+	#packages(selection: string | undefined): readonly string[] {
+		if (selection === undefined) return []
+		const requested = selection.split(',')
+		const refused = requested.filter((name) => !DEPENDENCY_NAME_PATTERN.test(name))
+		if (refused.length > 0) {
+			throw new UsageError(
+				`'--deps' does not take ${refused.join(', ')}. Every name is a published @orkestrel package.`,
+			)
 		}
+		return requested
+	}
 
-		if (!isVerb(command)) {
-			this.#usage(didYouMean(command), json)
+	// Pin each named package to the registry's latest release. A name upstream
+	// cannot answer for is refused rather than pinned to an invented range: the
+	// workspace would carry a dependency that does not resolve.
+	async #resolve(names: readonly string[]): Promise<readonly Dependency[]> {
+		if (names.length === 0) return []
+		const upstream = createUpstream(this.#upstream)
+		let releases: readonly Release[]
+		try {
+			releases = await upstream.lookup(names.map((name) => ({ name, range: '*' })))
+		} finally {
+			upstream.destroy()
 		}
+		const refused = releases.filter((release) => release.lookup !== 'found')
+		if (refused.length > 0) {
+			throw new ScaffoldError(
+				'FETCH',
+				`The registry named no release for ${refused.map((release) => release.name).join(', ')}.`,
+				{ names: refused.length },
+			)
+		}
+		return this.#pin(releases)
+	}
 
-		if (command !== 'catalog' && values.from !== undefined && values.from.length > 1) {
-			this.#usage(`--from may be provided only once for '${command}'`, json)
+	// Two results of one run, read as one. Written and skipped never overlap
+	// across the calls a verb makes, because each call answers for its own paths.
+	#merge(first: MaterializeResult, second: MaterializeResult): MaterializeResult {
+		return {
+			target: first.target,
+			written: [...first.written, ...second.written],
+			skipped: [...first.skipped, ...second.skipped],
+			removed: [...first.removed, ...second.removed],
 		}
-		if (command === 'mirror' && values.deps !== undefined) {
-			this.#usage("--deps is not supported for 'mirror'; use 'pull --deps'", json)
-		}
-		if (command === 'fleet' && values.target !== undefined) {
-			this.#usage("--target is not supported for 'fleet'; change into the fleet root", json)
-		}
+	}
 
-		if (values.help) {
-			process.stdout.write(`${verbHelp(command)}\n`)
-			process.exitCode = 0
-			return
+	// The audit as a person reads it: every advisory first, then one row per path
+	// that differs, then the count. An aligned path is not listed, because a
+	// report of everything that is fine is a report nobody reads.
+	#present(audit: Audit): void {
+		for (const question of audit.questions) this.#warn(`${question.field}: ${question.message}`)
+		const rows = audit.findings
+			.filter((finding) => finding.drift !== 'aligned')
+			.map((finding) => [finding.path, finding.group, finding.drift])
+		if (rows.length > 0) {
+			const table = renderTable({
+				columns: [{ label: 'path' }, { label: 'group' }, { label: 'drift' }],
+				rows,
+			})
+			for (const line of table.split('\n')) this.#say(line)
 		}
+		this.#say(
+			`${String(rows.length)} of ${String(audit.findings.length)} planned path${audit.findings.length === 1 ? '' : 's'} differ from the plan.`,
+		)
+	}
 
-		if (command === 'new') return this.#new(values, argument, json)
-		if (command === 'pull') return this.#pull(values, json)
-		if (command === 'mirror') return this.#mirror(values, json)
-		if (command === 'audit') return this.#audit(values, json)
-		if (command === 'repair') return this.#repair(values, json)
-		if (command === 'fleet') return this.#fleet(values, json)
-		return this.#catalog(values, json)
+	// The catalog outcome as a person reads it.
+	#recount(result: CatalogResult): void {
+		this.#say(this.#tally(result))
+		this.#say(
+			`${String(result.entries.length)} published, ${String(result.mirrors.filter((mirror) => mirror.lookup === 'found').length)} guide${result.mirrors.length === 1 ? '' : 's'} fetched, ${String(result.dropped.length)} no longer listed.`,
+		)
+		for (const mirror of result.mirrors) {
+			if (mirror.lookup !== 'found') this.#warn(`${mirror.name}: ${mirror.note}`)
+		}
+	}
+
+	// One line stating what a mutation did.
+	#tally(result: MaterializeResult): string {
+		return `${String(result.written.length)} written, ${String(result.skipped.length)} unchanged, ${String(result.removed.length)} removed in ${result.target}.`
+	}
+
+	// The one machine-readable value a `--json` run emits.
+	#report(value: unknown): void {
+		this.#say(JSON.stringify(value))
+	}
+
+	// Report a refusal under the code it carries and answer with the code it
+	// earned: a command line that was not a command is a usage error, and
+	// everything else is a failed run.
+	#refuse(error: unknown, json: boolean): number {
+		const envelope = errorToEnvelope(error)
+		if (json) this.#report(envelope)
+		else this.#warn(`${envelope.error.code}: ${envelope.error.message}`)
+		return isUsageError(error) ? EXIT_USAGE : EXIT_DRIFT
+	}
+
+	#say(line: string): void {
+		this.#output(this.#sanitize(line))
+	}
+
+	#warn(line: string): void {
+		this.#diagnostic(this.#sanitize(line))
+	}
+
+	// The single write path, and the only place hostile bytes are answered for.
+	// A refusal quotes the argument that caused it, so an escape sequence, a bell,
+	// or a forged second line arrives here inside otherwise ordinary prose. ANSI
+	// escapes go first because they are what repaints a terminal, control
+	// characters next, and what remains is folded onto one line because a handler
+	// takes one line and a caller writing a record per call must get one record.
+	#sanitize(line: string): string {
+		return stripControls(strip(line)).split(/\r?\n/).join(' ')
 	}
 }

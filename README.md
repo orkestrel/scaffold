@@ -1,140 +1,124 @@
 # @orkestrel/scaffold
 
-Blueprint-to-plan package scaffolding, auditing, dependency guide/version pulling,
-complete guide mirroring, and fleet-wide shared-file upkeep for the `@orkestrel` line.
+Compile a workspace specification into an ordered list of files, compare that list to a real
+directory, and write the difference.
+
+Every `@orkestrel` repository shares one toolchain, one set of agent instructions, and one set of
+root dotfiles. Scaffold ships that shared set as data inside the package and gives it verbs: create
+a workspace from it, report how a workspace differs from it, and write the difference back.
 
 ## Install
 
 ```sh
-npm install -D @orkestrel/scaffold
+npm install --save-dev @orkestrel/scaffold
 ```
 
-## Quickstart
+The executable needs Node 22.12 or newer. Run it without installing anything:
 
 ```sh
-# from a checkout (after npm run build)
-node ./dist/bin/scaffold.js new
-
-# once installed
-npx scaffold new
+npx @orkestrel/scaffold --help
 ```
 
-Run any verb **bare** on a terminal and it guides you: it prompts for whatever's
-missing, previews what it's about to do, and ASKS before writing anything
-(destructive extras like `--prune` are a second, separate question) — hit
-ctrl-c at any prompt and nothing is written. Prefer scripting instead? Every
-flag from the guided flow works standalone:
+## Verbs
+
+Five verbs. Authority is the verb's: every verb except `audit` writes when it is typed, and no
+option grants a write. Exit codes are `0` clean, `1` drift or failure, and `2` usage error.
+
+`--target <path>` points any verb at another directory; the working directory is the default.
+`--json` replaces the report with one machine-readable value on standard output.
+
+### `new` — scaffold a workspace
 
 ```sh
-npx scaffold new mypackage --src core --app core,browser,server --apply
-
-# refresh every published Orkestrel package guide in the current target
-npx scaffold mirror --apply --yes
-
-# the same command from this checkout, after npm run build
-node ./dist/bin/scaffold.js mirror --apply --yes
+npx scaffold new router --src core,server
 ```
 
-In scripts, every verb is dry-run by default and fully non-interactive —
-add `--apply` and/or `--yes` to make it write, `--json` for one machine-readable
-value instead of prose. Every write destination resolves under the current
-directory — equal to it or nested beneath — so the CLI is safe to run as a
-global command anywhere; `--from` may point anywhere (read-only).
+Writes a complete workspace into `./router`: its manifest, its build configuration, empty barrels
+for each selected environment, its tests, its documentation, and every shared file. `--app` selects
+private application environments on an independent axis, and `--deps` names `@orkestrel/*` runtime
+dependencies, each pinned to the registry's latest release.
 
-**Windows/PowerShell:** invoke as `node ./dist/bin/scaffold.js …` or `npx scaffold …`
-directly — PowerShell mangles npm's `--` passthrough, so avoid
-`npm run scaffold -- …` there.
-
-**TLS:** when the running Node release exposes system-CA controls, the CLI adds
-the operating-system certificate store. Earlier supported Node 22 releases use
-Node's default roots. `NODE_EXTRA_CA_CERTS` adds custom PEMs in either case.
-
-## CLI
+### `audit` — report how a target compares to its plan
 
 ```sh
-scaffold new [name] [--src <list>] [--app <list>] [--deps <list>] [--apply] [--yes] [--json]
-scaffold pull [--apply] [--yes] [--json]
-scaffold mirror [--apply] [--yes] [--json]
-scaffold audit [--live] [--json]
-scaffold repair [--prune] [--apply] [--yes] [--json]
-scaffold fleet [--apply] [--yes] [--json]
-scaffold catalog [--from <path> ...] [--target <repo>] [--offline] [--apply] [--yes] [--json]
+npx scaffold audit --groups configs,orchestration
 ```
 
-Run bare, every verb above guides you interactively; the flags shown are the
-scripting form. Exit codes: `0` clean/success, `1` drift or failure, `2` usage
-error.
+Writes nothing. Reports one row per path that differs, and exits `1` when anything does. Omit
+`--groups` to cover every group.
 
-- **`new [name]`** — drafts a `Blueprint` and compiles it into a `Plan`; dry-run by
-  default (prints a review), `--apply` writes the workspace to disk. `--src`
-  selects published source environments and `--app` independently selects private application
-  environments; at least one is required. App-only workspaces are unscoped and `"private": true`,
-  while mixed workspaces retain the published `@orkestrel/*` package boundary. `--deps` names
-  `@orkestrel/*` runtime dependencies (installed as `dependencies`), resolving an
-  absent `@range` to the registry's `latest`; run bare on a terminal, it lands as an
-  interactive question. Other npm packages are not a `new`-time flag — hand-add them to
-  the generated `package.json`'s `devDependencies` after scaffolding; `audit` derives
-  its plan from your `package.json` and stays clean over the addition.
-- **`pull`** — fetches the latest vendored dependency guides and registry versions
-  for an existing package and reports drift.
-- **`mirror`** — discovers the exact published `@orkestrel/*` package set from npm and refreshes
-  every package's GitHub guide in deterministic name order. It never fetches registry versions or
-  overwrites the target package's own guide, and it applies nothing when any guide fetch fails.
-- **`audit`** — a conformance report over the artifacts the plan actually gates: the
-  shared host-origin files (presence, or exact bytes once hydrated) AND the generated
-  configs/manifest (exact UTF-8 bytes); reports drift as data, findings and all; exits nonzero
-  the moment any drift is found. Starter files — source/test
-  stubs, starter guides, README — are written once at scaffold time and are
-  legitimately outgrown, so they are birth-only and never audited; the build and
-  parity gates police their substance instead. `--live` additionally checks upstream
-  guide/version freshness — `audit` is the ONLY verb that carries `--live`.
-- **`repair`** — restores the shared HOST set only (generated source/tests/configs are
-  never touched); re-derives the plan from the audit and re-applies only the drifted
-  host artifacts; dry-run by default, `--apply` writes the fixes, `--prune` also removes
-  target-only files the plan no longer declares (asked as a separate destructive
-  question when run bare).
-- **`fleet`** — audits/repairs the shared, host-owned files (`AGENTS.md`,
-  `CLAUDE.md`, `.agents/` skills, `.claude/`, `.codex/`, `scripts/`, the shared dotfiles, …) across every
-  `@orkestrel` repo that is an IMMEDIATE CHILD of the current directory — no root
-  flag; the scope is always your checkouts folder, so `cd` there first (`repair`
-  is the single-repo counterpart, run from inside one repo); dry-run by default,
-  `--apply` writes.
-- **`catalog`** — regenerates the orkestrel agent's package catalog; the npm
-  registry is the AUTHORITATIVE package list by default (unauthenticated —
-  every fleet repo is public), each `--from <path>` ADDS local-only discoveries
-  on top of it, `--offline` sources the `--from` path(s) only, and the table
-  writes into `--target`'s `.claude/agents/orkestrel.md`; dry-run by default,
-  `--apply` writes, and a shrink warning prints whenever the new table would
-  have fewer rows than the currently-embedded one.
+### `repair` — write back what drifted
+
+```sh
+npx scaffold repair
+```
+
+Restores each planned path the target is missing or has let drift, then re-audits. A file the
+workspace owns — its manifest, its source, its tests, its README — is written once at creation and
+is never rewritten here.
+
+### `catalog` — refresh the package table and the guide mirrors
+
+```sh
+npx scaffold catalog --all
+```
+
+Reads the organization's published package list, rewrites the marker-bounded table in
+`.claude/agents/orkestrel.md`, and fetches each package's guide into its local mirror. Without
+`--all` it fetches only the guides the target declares as dependencies.
+
+### `overwrite` — repair, catalog, delete, and re-pin
+
+```sh
+npx scaffold overwrite --dirty
+```
+
+Everything `repair` and `catalog` do, plus the two steps only this verb carries: it deletes tracked
+files the plan does not own, and it rewrites the `@orkestrel/*` ranges in the manifest to the
+registry's latest releases. It needs a git repository, and it refuses a tree carrying uncommitted
+changes unless `--dirty` waives that refusal.
 
 ## Library
 
-```ts
-import { blueprint, createCompiler } from '@orkestrel/scaffold'
+Two entry points, split by host. `@orkestrel/scaffold` is host-independent: it compiles, gates, and
+compares.
 
-const draft = blueprint('example', {
-	src: ['core'],
-	app: ['core', 'browser', 'server'],
-})
+```ts
+import { createBlueprint, createCompiler } from '@orkestrel/scaffold'
+
 const compiler = createCompiler()
-const scaffolding = compiler.compile(draft)
-scaffolding.plan?.artifacts.length
+const scaffolding = compiler.compile(createBlueprint('router', { src: ['core', 'server'] }))
+
+scaffolding.plan?.artifacts // every planned file, in group order
 compiler.destroy()
 ```
 
-`@orkestrel/scaffold/server` carries the impure API — `createMaterializer`
-(writes a `Plan` to disk) and `createSync` (the only part of the system that
-touches the network, fetching dependency guides, fleet guide mirrors, and registry versions).
+`@orkestrel/scaffold/server` is Node-only and holds everything that touches the filesystem or the
+network: `createMaterializer` writes a plan into a target, `createUpstream` reads the registry and
+the guide host, and `WriteTransaction` stages and swaps a set of files with rollback.
 
-The built host uses an exact `{ entries, roots }` manifest. Staging preflights
-containment and portable file-tree collisions, builds in a temporary sibling,
-and swaps only after completion. Reading validates that every declared storage
-file exists, every staged file is declared, and every destination root is
-complete; a present but corrupt or truncated manifest fails closed.
+```ts
+import type { Plan } from '@orkestrel/scaffold'
+import { createMaterializer } from '@orkestrel/scaffold/server'
 
-## Guides
+declare const plan: Plan
 
-For the full API, see [`guides/src/scaffold.md`](guides/src/scaffold.md).
+const materializer = createMaterializer()
+const result = materializer.materialize(plan, './packages/router')
+
+result.written // every path created
+materializer.destroy()
+```
+
+## Guide
+
+[`guides/scaffold.md`](guides/scaffold.md) documents every public export, the compile stages, the
+vendored data root, and the generated file set.
+
+## Notes
+
+On Windows, run the executable as `npx scaffold …` or `node ./dist/bin/scaffold.js …`. PowerShell
+mangles npm's `--` passthrough, so avoid `npm run scaffold -- …` there.
 
 ## License
 

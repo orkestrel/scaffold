@@ -1,22 +1,24 @@
-import type {
-	AppDefinition,
-	BuildFormat,
-	Category,
-	CompileStage,
-	Freshness,
-	Group,
-	Origin,
-	Environment,
-	SrcDefinition,
-} from './types.js'
+import type { AppDefinition, BuildFormat, Environment, Group, SrcDefinition } from './types.js'
 
-/** The three `Environment` values, frozen — compose with `literalOf(...)` / `parseEnum(...)`. */
+/**
+ * The three `Environment` values, frozen.
+ *
+ * @remarks
+ * A blueprint's `src` and `app` axes are caller-supplied, so the gate measures
+ * each selection against this list and reports it as the accepted candidates
+ * when it rejects one. It is also the key order the per-environment matrices
+ * are read in.
+ */
 export const ENVIRONMENTS: readonly Environment[] = Object.freeze(['core', 'browser', 'server'])
 
-/** The three `Origin` values, frozen. */
-export const ORIGINS: readonly Origin[] = Object.freeze(['host', 'template', 'computed'])
-
-/** The seven `Group` values, frozen — the artifact-group selection vocabulary. */
+/**
+ * The seven `Group` values in plan order, frozen.
+ *
+ * @remarks
+ * A compile that names no groups covers every one of them, so this list is the
+ * default selection as well as the accepted candidates for a rejected one. The
+ * order is the order a plan lists its artifacts in.
+ */
 export const GROUPS: readonly Group[] = Object.freeze([
 	'manifest',
 	'configs',
@@ -27,35 +29,15 @@ export const GROUPS: readonly Group[] = Object.freeze([
 	'orchestration',
 ])
 
-/** The nine `Category` values, frozen. */
-export const CATEGORIES: readonly Category[] = Object.freeze([
-	'type',
-	'alias',
-	'constant',
-	'factory',
-	'entity',
-	'parser',
-	'guard',
-	'handler',
-	'error',
-])
-
-/** The four `Freshness` values, frozen — the currency axis `Sync` reports on. */
-export const FRESHNESS: readonly Freshness[] = Object.freeze([
-	'current',
-	'behind',
-	'missing',
-	'failed',
-])
-
-/** The pipeline phases in order, frozen. */
-export const COMPILE_STAGES: readonly CompileStage[] = Object.freeze(['draft', 'gate', 'pin'])
-
 /**
- * The per-environment variant matrix as data: per `Environment`, its `configs/src`
- * files, Vitest project label, `exports` subpath, and build formats — the
- * per-environment layer `blueprintToPlan` reads BENEATH the manifest/exports
- * combination rules it applies on top.
+ * The build and export settings each published `src` environment contributes, frozen.
+ *
+ * @remarks
+ * Per environment: the thin configuration files it adds under `configs/src`,
+ * its Vitest project label, its `exports` subpath, and the module formats it
+ * builds. Core alone occupies the package root, so it is the only environment
+ * whose subpath is `.`; browser ships ES only because no CommonJS consumer
+ * reaches it.
  */
 export const SRC_MATRIX: Readonly<Record<Environment, SrcDefinition>> = Object.freeze({
 	core: Object.freeze({
@@ -84,15 +66,13 @@ export const SRC_MATRIX: Readonly<Record<Environment, SrcDefinition>> = Object.f
 	}),
 })
 
-/** The computed configuration files required by a workspace-owned executable. */
-export const BIN_CONFIGS: readonly string[] = Object.freeze([
-	'configs/src/vite.bin.config.ts',
-	'configs/src/tsconfig.bin.json',
-])
-
 /**
- * The per-environment application matrix: thin config artifacts, Vitest project
- * label, and executable entry where the environment produces a runtime bundle.
+ * The configuration and runtime-entry settings each private `app` environment contributes, frozen.
+ *
+ * @remarks
+ * An application environment declares no exports, so it carries a runtime
+ * entry instead of a subpath and formats. Core carries none because it is
+ * shared logic the other two import rather than a host that runs.
  */
 export const APP_MATRIX: Readonly<Record<Environment, AppDefinition>> = Object.freeze({
 	core: Object.freeze({
@@ -117,27 +97,25 @@ export const APP_MATRIX: Readonly<Record<Environment, AppDefinition>> = Object.f
 	}),
 })
 
+/** The configuration files a workspace that ships its own executable adds, frozen. */
+export const BIN_CONFIGS: readonly string[] = Object.freeze([
+	'configs/src/vite.bin.config.ts',
+	'configs/src/tsconfig.bin.json',
+])
+
 /**
- * The byte-copied host artifact paths, frozen.
+ * The paths byte-copied from the vendored data root, frozen.
  *
  * @remarks
- * The root docs (`AGENTS.md` / `CLAUDE.md`), `LICENSE`, the canonical
- * orchestration contract (`.agents/orchestration.md`) every harness bridge
- * points at, `.agents`, `.claude`, `.codex`, `.cursor`, the four SessionStart
- * hook scripts (`scripts/deps.sh` / `scripts/cursor.sh` / `scripts/codex.sh` /
- * `scripts/ollama.sh`), the repository coding-law policy module, the line's
- * seven byte-identical root dotfiles, and the two guides-grouped mirror
- * candidates: the line-wide dev-tooling guide (`guides/src/guide.md`) and the
- * scaffold bin's own self-guide (`guides/src/scaffold.md`). `stageHost` vendors
- * both; each plan carries the subset selected by `selectHostPaths`, omitting the
- * target blueprint's own guide.
+ * These are the files the fleet shares verbatim: the root instruction
+ * documents, the licence, the canonical orchestration contract every harness
+ * bridge points at, the four harness directories, the session hook scripts,
+ * the shared policy register, the byte-identical root dotfiles, and the two
+ * guide mirrors a generated workspace starts from. A directory entry vendors
+ * everything beneath it.
  *
- * Three harness bridges point at `.agents/orchestration.md` and carry only their
- * own harness's specifics: `CLAUDE.md`, `.codex/config.toml`, and
- * `.cursor/rules`. They are meaningless without the contract they reference, but
- * they do not share a `Group` — `hostGroup` keeps `CLAUDE.md` in `docs` with the
- * other root documents, so a plan selecting `orchestration` carries two of the
- * three and a plan selecting `docs` carries the third.
+ * A plan carries the subset its target selects, which is why the list is a
+ * candidate set rather than a plan: a workspace never mirrors its own guide.
  */
 export const HOST_PATHS: readonly string[] = Object.freeze([
 	'AGENTS.md',
@@ -159,6 +137,9 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
 	'scripts/codex.sh',
 	'scripts/ollama.sh',
 	'tests/setupPolicy.ts',
+	'tests/policy.test.ts',
+	'tests/config.test.ts',
+	'configs/helpers.ts',
 	'.editorconfig',
 	'.gitattributes',
 	'.gitignore',
@@ -166,19 +147,19 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
 	'.oxlintrc.json',
 	'.oxlintignore',
 	'.prettierignore',
-	'guides/src/guide.md',
-	'guides/src/scaffold.md',
+	'guides/guide.md',
+	'guides/scaffold.md',
 ])
 
 /**
  * The path prefixes whose contents instruct or wire an agent, frozen.
  *
  * @remarks
- * Group classification splits by what a path governs, not by where it sits:
- * anything under these prefixes is `orchestration`, and everything else that is
- * not source, tests, guides, docs, or a manifest is `configs`. Both classifiers
- * — `inferGroup` for a foreign target path and `hostGroup` for a `HOST_PATHS`
- * entry — read this one list, so a new harness directory is admitted once.
+ * A path is grouped by what it governs rather than by where it sits: anything
+ * beneath one of these prefixes is `orchestration`, and everything else that is
+ * not source, tests, guides, docs, or a manifest is `configs`. A vendored path
+ * and a foreign path found in a target are classified against the same list, so
+ * a new harness directory is admitted once.
  */
 export const ORCHESTRATION_PATH_PREFIXES: readonly string[] = Object.freeze([
 	'.agents/',
@@ -198,147 +179,129 @@ export const ORCHESTRATION_PATH_PREFIXES: readonly string[] = Object.freeze([
  */
 export const ORCHESTRATION_PATH_NAMES: readonly string[] = Object.freeze(['.mcp.json'])
 
-/** The birth-only provisioner skeleton retained by workspaces with declared service vendors. */
-export const SERVICE_SCRIPT_PATH = 'scripts/service.sh'
-
-/** The consumer-owned Vitest global-setup module shared by its independently selected projects. */
-export const GLOBAL_SETUP_PATH = 'tests/setupGlobal.ts'
-
-/** The consumer-owned Vite wrapper whose physical presence enables the optional app showcase. */
-export const SHOWCASE_CONFIG_PATH = 'configs/app/vite.showcase.config.ts'
-
 /**
- * The catalog agent file whose bounded marker region the catalog operation alone owns.
+ * The agent file whose marker-bounded package table the catalog verb alone owns.
  *
  * @remarks
- * Vendored like every other host artifact, but presence-owned after hydration:
- * `diffPlan` compares this one path by presence, so a consumer restores it while
- * absent and never replaces its bytes — not from an audit, not from a repair, and
- * not under `replace`.
+ * It is vendored like every other host artifact but claimed by presence rather
+ * than content, so a consumer's own edits to the file survive every verb and
+ * only the catalog verb rewrites the region inside the markers.
  */
 export const CATALOG_AGENT_PATH = '.claude/agents/orkestrel.md'
 
-/** The package-name RegExp — lowercase alphanumeric-with-hyphens, letter-first. */
+/** The provisioner skeleton a workspace with declared service vendors is given once. */
+export const SERVICE_SCRIPT_PATH = 'scripts/service.sh'
+
+/** The shared Vitest global-setup module whose presence makes a workspace `global`. */
+export const GLOBAL_SETUP_PATH = 'tests/setupGlobal.ts'
+
+/** The Vite wrapper whose presence makes a workspace `showcase`. */
+export const SHOWCASE_CONFIG_PATH = 'configs/app/vite.showcase.config.ts'
+
+/** The bare workspace name syntax: lowercase alphanumeric with hyphens, letter first. */
 export const NAME_PATTERN = /^[a-z][a-z0-9-]*$/
 
-/** Maximum bare workspace name length beneath the generated `@orkestrel/` scope. */
-export const MAX_NAME_LENGTH = 203
-
-/** Maximum dependency package name length, including the canonical scope. */
-export const MAX_DEPENDENCY_NAME_LENGTH = 214
-
-/** Maximum general path length accepted at serialized package boundaries. */
-export const MAX_PATH_LENGTH = 32_767
-
-/** Unicode controls, formatting controls, and line/paragraph separators rejected at text boundaries. */
-export const CONTROL_CHARACTER_PATTERN = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/u
-
-/** Visible characters forbidden by portable paths and Markdown path cells. */
-export const INVALID_PATH_CHARACTER_PATTERN = /[<>:"|?*\\]/
-
-/** Maximum package range or endpoint-sized token length. */
-export const MAX_RANGE_LENGTH = 2_048
-
-/** Maximum items accepted by one public package collection. */
-export const MAX_COLLECTION_ITEMS = 1_000
-
-/** Maximum distinct records or arrays traversed at one untrusted data-only graph boundary. */
-export const MAX_DATA_GRAPH_NODES = MAX_COLLECTION_ITEMS * 20
-
-/** Maximum own keys inspected across one untrusted data-only graph boundary. */
-export const MAX_DATA_GRAPH_KEYS = MAX_DATA_GRAPH_NODES * 16
-
-/** The exact three-component version syntax accepted by `validateBlueprint`. */
-export const VERSION_PATTERN = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/
-
-/** The exact caret-pinned pre-1.0 range accepted for Orkestrel runtime dependencies. */
-export const ORKESTREL_RANGE_PATTERN = /^\^0\.0\.(?:0|[1-9]\d*)$/
-
-/** The registry-only semver subset accepted for package-specific development extras. */
-export const EXTRA_RANGE_PATTERN =
-	/^(?:\^|~)?(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*)?$/
-
-/** The minimum-Node engine syntax accepted by `validateBlueprint`. */
-export const ENGINES_PATTERN = /^>=(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/
-
-/** The oldest Node version supported by the generated Vite toolchain. */
-export const MINIMUM_NODE_VERSION = '22.12.0'
-
-/** Declaration token kept out of template literals so parity scans see only real exports. */
-export const EXPORT_KEYWORD = 'export'
-
-/** Constant-declaration token kept out of template literals consumed by parity scans. */
-export const CONST_KEYWORD = 'const'
-
-/** Import token kept out of template literals consumed by parity scans. */
-export const IMPORT_KEYWORD = 'import'
-
-/** Function-declaration token kept out of template literals consumed by parity scans. */
-export const FUNCTION_KEYWORD = 'function'
-
-/** Exact lowercase hexadecimal bytes: two digits per byte, including empty content. */
-export const HEX_PATTERN = /^(?:[0-9a-f]{2})*$/
-
-/** Maximum byte size accepted for one scaffold artifact. */
-export const MAX_ARTIFACT_BYTES = 5_242_880
-
-/** Maximum UTF-8 bytes accepted for one package or host manifest. */
-export const MAX_MANIFEST_BYTES = 1_048_576
-
-/** Maximum aggregate bytes retained by one blueprint, plan, audit, or sync report. */
-export const MAX_TOTAL_ARTIFACT_BYTES = 104_857_600
-
 /**
- * Maximum UTF-8 bytes accepted by a public serialized JSON parser.
+ * The runtime dependency name syntax: the `@orkestrel` scope and a bare name.
  *
- * Four aggregate artifact budgets admit the hexadecimal and metadata overhead
- * of the largest supported contracts while bounding allocation before JSON parsing.
- */
-export const MAX_SERIALIZED_INPUT_BYTES = MAX_TOTAL_ARTIFACT_BYTES * 4
-
-/** Maximum hexadecimal string length representing one scaffold artifact. */
-export const MAX_ARTIFACT_HEX_LENGTH = MAX_ARTIFACT_BYTES * 2
-
-/** Target-aware guide baseline: an absence marker or exact SHA-256 digest. */
-export const SYNC_BASELINE_PATTERN = /^(?:absent|[0-9a-f]{64})$/
-
-/**
- * The `@orkestrel/*` dependency-name RegExp — every `Dependency.name` must be
- * scoped to `@orkestrel` and NAME_PATTERN-shaped after the scope, closing the
- * traversal vector a hand-built `../`-laced name would open through
- * `Compiler.#pointerArtifacts`' `guides/src/<short>.md` path derivation.
+ * @remarks
+ * A dependency name reaches a path, because a workspace's guide mirror is
+ * derived from it. Fixing the scope and forbidding everything but the bare name
+ * after it is what stops a hand-built name from escaping the directory the
+ * mirror belongs in.
  */
 export const DEPENDENCY_NAME_PATTERN = /^@orkestrel\/[a-z][a-z0-9-]*$/
 
 /**
- * The `extras` dependency-name RegExp — a strict npm package-name shape: an
- * optional single `@scope/` prefix, then lowercase letters, digits, hyphens,
- * dots, and underscores (never leading, never adjacent to the scope slash).
- * Broader than `DEPENDENCY_NAME_PATTERN` on purpose: `extras` names are
- * manifest-content only (`devDependenciesFor` keys `devDependencies` with
- * them, `Compiler.#pointerArtifacts` never reads them for a path), so they
- * carry no traversal vector — no `..`, no backslash, and the single optional
- * `/` is fixed to the one scope boundary, so the shape stays structurally
- * incapable of escaping a derived path even though it accepts any valid npm
- * package name (unscoped or externally-scoped), not just `@orkestrel/*`.
+ * The development extra name syntax: any valid npm package name.
+ *
+ * @remarks
+ * Wider than a runtime dependency name on purpose. An extra is manifest content
+ * and never reaches a path, so it may carry any scope or no scope at all. The
+ * single optional `/` is still fixed to the one scope boundary, and neither `..`
+ * nor a backslash is admitted, so the shape cannot express a traversal even
+ * though it accepts far more names.
  */
 export const EXTRA_NAME_PATTERN = /^(?:@[a-z0-9][a-z0-9._-]*\/)?[a-z0-9][a-z0-9._-]*$/
 
-/** The starting version the `blueprint` builder fills. */
+/** The exact three-component version syntax a blueprint declares. */
+export const VERSION_PATTERN = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/
+
+/**
+ * The exact caret-pinned pre-1.0 range accepted for an `@orkestrel/*` runtime dependency.
+ *
+ * @remarks
+ * Pre-1.0 means any `0.x`, not `0.0.x`. The narrower form would refuse the first
+ * fleet package to reach `0.1.0`, and `catalog` pins to whatever the registry
+ * publishes, so a single minor release would block every later run against a
+ * workspace that had already been pinned to it.
+ */
+export const ORKESTREL_RANGE_PATTERN = /^\^0\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/
+
+/** The registry-only semver subset accepted for a development extra's range. */
+export const EXTRA_RANGE_PATTERN =
+	/^(?:\^|~)?(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*)?$/
+
+/** The minimum-Node engine syntax a blueprint declares. */
+export const ENGINES_PATTERN = /^>=(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/
+
+/** Exact lowercase hexadecimal bytes: two digits per byte, and empty content is valid. */
+export const HEX_PATTERN = /^(?:[0-9a-f]{2})*$/
+
+/** Unicode controls, formatting controls, and line and paragraph separators rejected in text. */
+export const CONTROL_CHARACTER_PATTERN = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/u
+
+/** Visible characters a portable path and a Markdown path cell both forbid. */
+export const INVALID_PATH_CHARACTER_PATTERN = /[<>:"|?*\\]/
+
+/**
+ * Maximum bare workspace name length.
+ *
+ * @remarks
+ * The registry caps a whole package name at 214 characters and the generated
+ * scope `@orkestrel/` spends 11 of them.
+ */
+export const MAX_NAME_LENGTH = 203
+
+/** Maximum dependency package name length, scope included, as the registry caps it. */
+export const MAX_DEPENDENCY_NAME_LENGTH = 214
+
+/** Maximum length of one declared package range. */
+export const MAX_RANGE_LENGTH = 2_048
+
+/** Maximum length of one path, matching the longest a supported filesystem accepts. */
+export const MAX_PATH_LENGTH = 32_767
+
+/** Maximum items accepted in one public collection. */
+export const MAX_COLLECTION_ITEMS = 1_000
+
+/** Maximum bytes accepted for one artifact. */
+export const MAX_ARTIFACT_BYTES = 5_242_880
+
+/** Maximum length of the hexadecimal string carrying one artifact's bytes. */
+export const MAX_ARTIFACT_HEX_LENGTH = MAX_ARTIFACT_BYTES * 2
+
+/** Maximum bytes accepted for one package or vendored-host manifest. */
+export const MAX_MANIFEST_BYTES = 1_048_576
+
+/** Maximum bytes retained across one whole plan or audit. */
+export const MAX_TOTAL_ARTIFACT_BYTES = 104_857_600
+
+/** The oldest Node version the generated toolchain supports. */
+export const MINIMUM_NODE_VERSION = '22.12.0'
+
+/** The version a workspace starts at. */
 export const DEFAULT_VERSION = '0.0.1'
 
-/** The `engines.node` range the `blueprint` builder fills. */
+/** The `engines.node` range a workspace starts with. */
 export const DEFAULT_ENGINES = `>=${MINIMUM_NODE_VERSION}`
 
-/** The devDependency range generated packages pin `@orkestrel/scaffold` at. */
-export const SCAFFOLD_RANGE = '^0.0.23'
-
-/** Tooling versions shared by scaffold and every generated workspace. */
+/** The tooling versions scaffold and every generated workspace share. */
 export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@microsoft/api-extractor': '^7.58.12',
-	'@orkestrel/guide': '^0.0.8',
-	'@orkestrel/scaffold': SCAFFOLD_RANGE,
-	'@types/node': '^26.1.2',
+	'@orkestrel/guide': '^0.0.9',
+	'@orkestrel/scaffold': '^0.0.23',
+	'@types/node': '^26.2.0',
 	oxfmt: '^0.62.0',
 	oxlint: '^1.77.0',
 	typescript: '^6.0.3',
@@ -347,18 +310,18 @@ export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.fr
 	vitest: '^4.1.10',
 })
 
-/** Additional development dependency required by a published browser source environment. */
+/** The development dependencies a published browser `src` environment adds. */
 export const SOURCE_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@vitest/browser-playwright': '^4.1.10',
 	playwright: '^1.62.1',
 })
 
-/** Baseline development dependency required by every private application environment. */
+/** The development dependency every private `app` environment adds. */
 export const APP_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
-	'@orkestrel/contract': '^0.0.9',
+	'@orkestrel/contract': '^0.0.10',
 })
 
-/** Additional development dependencies required by a private Vue browser application. */
+/** The development dependencies a private Vue browser application adds. */
 export const APP_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	...SOURCE_BROWSER_DEV_DEPENDENCIES,
 	'@orkestrel/html': '^0.0.2',
@@ -367,28 +330,24 @@ export const APP_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Ob
 	'vue-tsc': '^3.3.7',
 })
 
-/** Additional development dependencies required by a private server application. */
+/**
+ * The development dependency used only by the optional single-file showcase build.
+ *
+ * @example
+ * ```ts
+ * import { SHOWCASE_DEV_DEPENDENCIES } from '@orkestrel/scaffold'
+ *
+ * SHOWCASE_DEV_DEPENDENCIES['vite-plugin-singlefile'] // '^2.3.3'
+ * ```
+ */
+export const SHOWCASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
+	'vite-plugin-singlefile': '^2.3.3',
+})
+
+/** The development dependencies a private server application adds. */
 export const APP_SERVER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@orkestrel/emitter': '^0.0.5',
 	'@orkestrel/middleware': '^0.0.9',
 	'@orkestrel/router': '^0.0.8',
 	'@orkestrel/server': '^0.0.10',
 })
-
-/** Immutable official actions/checkout v6.0.2 commit used by generated CI. */
-export const CHECKOUT_ACTION_SHA = 'de0fac2e4500dabe0009e67214ff5f5447ce83dd'
-
-/** Immutable official actions/setup-node v6.4.0 commit used by generated CI. */
-export const SETUP_NODE_ACTION_SHA = '48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e'
-
-/** The default id for a `Compiler` orchestrator. */
-export const COMPILER_ID = 'compiler'
-
-/** TypeScript module extensions every generated scoped configuration checks. */
-export const TYPESCRIPT_EXTENSIONS: readonly string[] = Object.freeze(['cts', 'mts', 'ts', 'tsx'])
-
-/** The fleet's `.oxfmtrc.json` `printWidth` — `formatJson`'s array-collapse threshold. */
-export const JSON_PRINT_WIDTH = 100
-
-/** The fleet's `.oxfmtrc.json` `tabWidth` — the column width `formatJson` counts each tab as. */
-export const JSON_TAB_WIDTH = 2

@@ -1,282 +1,148 @@
 import { describe, expect, it } from 'vitest'
+import { MAX_COLLECTION_ITEMS } from '@src/core'
 import {
-	isCatalogAllowance,
-	isHostManifest,
+	computeDigest,
+	isCatalogEntries,
+	isDependencies,
+	isDependencyNames,
+	isDigest,
 	isFilesystemPath,
-	isManifestEntry,
-	isMissingPathError,
-	isPortablePath,
-	isSensitiveHostPath,
-	isTerminalText,
-	MAX_FILESYSTEM_DEPTH,
-	MAX_HOST_ENTRIES,
-	MAX_PATH_SEGMENT_BYTES,
+	isInventory,
+	isMirrors,
+	isRepository,
+	MAX_INVENTORY_PATHS,
 } from '@src/server'
-import { hostManifestOf } from '../../setupServer.js'
+import { buildHostileCases, readKeyCount, selectHostileCase } from '../../setup.js'
+import {
+	buildBoundaryCases,
+	buildServerGuardCases,
+	createWorkspace,
+	FILESYSTEM_PATH_CASES,
+	WORKSPACE_ROOT,
+} from '../../setupServer.js'
 
-describe('isCatalogAllowance', () => {
-	it('accepts only one bounded Float64 cell with a non-shared intrinsic backing buffer', () => {
-		expect(isCatalogAllowance(new Float64Array([MAX_HOST_ENTRIES]))).toBe(true)
-		expect(isCatalogAllowance(new Float64Array([MAX_HOST_ENTRIES + 1]))).toBe(false)
+describe('guard totality', () => {
+	it('reports a real failure when the probe under it is not total', () => {
+		const revoked = selectHostileCase('revoked proxy')
+		const oversized = selectHostileCase('oversized array')
+		// The negative control sits outside the population the matrix covers: a naive
+		// reader rather than a total guard. It must break both halves of the matrix's
+		// assertion — the throw and the verdict — or the matrix proves nothing.
+		expect(() => readKeyCount(revoked.value)).toThrow(/revoked/u)
+		expect(readKeyCount(oversized.value) > 0).toBe(true)
+		expect(isInventory(revoked.value)).toBe(false)
+	})
 
-		const shared = new Float64Array(new SharedArrayBuffer(Float64Array.BYTES_PER_ELEMENT))
-		Object.defineProperty(shared, 'buffer', {
-			value: new ArrayBuffer(Float64Array.BYTES_PER_ELEMENT),
+	for (const guardCase of buildServerGuardCases()) {
+		it(`${guardCase.name} answers every hostile value without throwing`, () => {
+			const hostileCases = buildHostileCases()
+			for (const hostile of hostileCases) {
+				expect(() => guardCase.guard(hostile.value)).not.toThrow()
+				expect(typeof guardCase.guard(hostile.value)).toBe('boolean')
+			}
+			const observed = hostileCases.map(
+				(hostile) => `${hostile.label} -> ${String(guardCase.guard(hostile.value))}`,
+			)
+			const expected = hostileCases.map(
+				(hostile) => `${hostile.label} -> ${String(guardCase.admits.includes(hostile.label))}`,
+			)
+			expect(observed).toStrictEqual(expected)
 		})
-		expect(isCatalogAllowance(shared)).toBe(false)
-	})
+
+		it(`${guardCase.name} accepts every value it must`, () => {
+			expect(guardCase.accepted.length).toBeGreaterThan(0)
+			for (const accepted of guardCase.accepted) expect(guardCase.guard(accepted)).toBe(true)
+		})
+	}
 })
 
-describe('isPortablePath', () => {
-	it('accepts safe relative POSIX paths', () => {
-		expect(isPortablePath('agents/skills/harden/SKILL.md')).toBe(true)
-		expect(isPortablePath('.agents')).toBe(true)
-		expect(isPortablePath('a'.repeat(MAX_PATH_SEGMENT_BYTES))).toBe(true)
-		expect(isPortablePath(Array(MAX_FILESYSTEM_DEPTH).fill('a').join('/'))).toBe(true)
+describe('isFilesystemPath', () => {
+	for (const pathCase of FILESYSTEM_PATH_CASES) {
+		it(`${pathCase.accepted ? 'accepts' : 'refuses'} ${pathCase.label}`, () => {
+			expect(isFilesystemPath(pathCase.path)).toBe(pathCase.accepted)
+		})
+	}
+
+	it('refuses every value that is not a string', () => {
+		const values: readonly unknown[] = [undefined, null, 42, ['project'], Symbol('project')]
+		for (const value of values) expect(isFilesystemPath(value)).toBe(false)
 	})
 
-	it('rejects non-strings, empty paths, traversal, drive, backslash, empty, and NUL segments', () => {
-		for (const path of [
-			'',
-			'/absolute',
-			'C:/absolute',
-			'../escape',
-			'agents/../escape',
-			'agents\\escape',
-			'agents//escape',
-			'agents/\0escape',
-			'agents/a?.md',
-			'agents/trailing.',
-			'agents/trailing ',
-			'agents/CON',
-			'agents/aux.txt',
-			'agents/CONIN$',
-			'agents/conout$.txt',
-			`agents/${String.fromCharCode(0x7f)}escape`,
-			`agents/${String.fromCharCode(0x85)}escape`,
-			'a'.repeat(MAX_PATH_SEGMENT_BYTES + 1),
-			`agents/${'😀'.repeat(64)}`,
-			Array(MAX_FILESYSTEM_DEPTH + 1)
-				.fill('a')
-				.join('/'),
-		]) {
-			expect(isPortablePath(path)).toBe(false)
+	it('accepts the absolute paths this host actually produced', () => {
+		const workspace = createWorkspace()
+		try {
+			const file = workspace.write('guides/router.md', '# Router\n')
+			expect(isFilesystemPath(WORKSPACE_ROOT)).toBe(true)
+			expect(isFilesystemPath(workspace.path)).toBe(true)
+			expect(isFilesystemPath(file)).toBe(true)
+			expect(workspace.read('guides/router.md')).toBe('# Router\n')
+		} finally {
+			workspace.destroy()
 		}
-		expect(isPortablePath(null)).toBe(false)
-		expect(isPortablePath([])).toBe(false)
+	})
+
+	it('refuses the portable target law it is not', () => {
+		// The two laws are deliberately different: a host path may name a sibling
+		// directory and carry a drive prefix, and a target-relative path may not.
+		expect(isFilesystemPath('../sibling')).toBe(true)
+		expect(isFilesystemPath('C:/project')).toBe(true)
+		expect(isFilesystemPath('project\\src')).toBe(true)
 	})
 })
 
-describe('terminal-safe external strings and paths', () => {
-	it('accepts ordinary Unicode while rejecting terminal controls and separators', () => {
-		expect(isTerminalText('résumé/資料')).toBe(true)
-		expect(isFilesystemPath('C:\\résumé\\資料')).toBe(true)
-		expect(isFilesystemPath(`C:\\${'a'.repeat(MAX_PATH_SEGMENT_BYTES)}`)).toBe(true)
-		expect(isFilesystemPath(`C:\\${'a'.repeat(MAX_PATH_SEGMENT_BYTES + 1)}`)).toBe(false)
+describe('isDigest', () => {
+	it('accepts what the host digest actually produces', () => {
+		const workspace = createWorkspace()
+		try {
+			workspace.write('AGENTS.md', '# Agents\n')
+			const digest = computeDigest(workspace.read('AGENTS.md'))
+			expect(digest).toHaveLength(64)
+			expect(isDigest(digest)).toBe(true)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses a digest of the wrong case, length, or alphabet', () => {
+		const digest = computeDigest('scaffold')
+		expect(isDigest(digest.toUpperCase())).toBe(false)
+		expect(isDigest(digest.slice(1))).toBe(false)
+		expect(isDigest(`${digest}0`)).toBe(false)
+		expect(isDigest('')).toBe(false)
+		expect(isDigest('g'.repeat(64))).toBe(false)
+	})
+})
+
+describe('boundary law', () => {
+	for (const boundaryCase of buildBoundaryCases()) {
+		it(`${boundaryCase.accepted ? 'accepts' : 'refuses'} ${boundaryCase.label}`, () => {
+			expect(boundaryCase.guard(boundaryCase.value)).toBe(boundaryCase.accepted)
+		})
+	}
+})
+
+describe('composition with core', () => {
+	it('measures every list element by the core guard it names', () => {
+		expect(isDependencyNames(['router'])).toBe(false)
+		expect(isDependencyNames(['@orkestrel/../etc'])).toBe(false)
+		expect(isDependencies([{ name: '@orkestrel/emitter' }])).toBe(false)
 		expect(
-			isFilesystemPath(
-				Array(MAX_FILESYSTEM_DEPTH + 1)
-					.fill('a')
-					.join('/'),
-			),
+			isMirrors([{ name: '@orkestrel/router', path: '../secrets', lookup: 'found', content: '' }]),
 		).toBe(false)
-		for (const control of ['\0', '\n', '\r', '\u001b', '\u0085', '\u2028', '\u2029', '\u202e']) {
-			expect(isTerminalText(`before${control}after`)).toBe(false)
-			expect(isFilesystemPath(`before${control}after`)).toBe(false)
-			expect(isPortablePath(`before${control}after`)).toBe(false)
-		}
-	})
-})
-
-describe('isSensitiveHostPath', () => {
-	it('rejects credential roots and secret descendants without matching ordinary governance paths', () => {
-		for (const path of [
-			'.git/config',
-			'.aws/sso/cache/token.json',
-			'safe/.env/token',
-			'.docker/config.json',
-			'.kube/config',
-			'.config/gcloud/application_default_credentials.json',
-			'.local/share/keyrings/login.keyring',
-		]) {
-			expect(isSensitiveHostPath(path)).toBe(true)
-		}
-		expect(isSensitiveHostPath('.github/workflows/ci.yml')).toBe(false)
-		expect(isSensitiveHostPath('.agents/skills/example/SKILL.md')).toBe(false)
-	})
-})
-
-describe('isMissingPathError', () => {
-	it('accepts only an Error carrying the exact ENOENT code', () => {
-		const missing = new Error('missing')
-		Object.defineProperty(missing, 'code', { value: 'ENOENT' })
-		const denied = new Error('denied')
-		Object.defineProperty(denied, 'code', { value: 'EACCES' })
-
-		expect(isMissingPathError(missing)).toBe(true)
-		expect(isMissingPathError(denied)).toBe(false)
-		expect(isMissingPathError({ code: 'ENOENT' })).toBe(false)
-		expect(isMissingPathError(undefined)).toBe(false)
+		expect(isCatalogEntries([{ name: 'router', lookup: 'found', version: '0.0.8' }])).toBe(false)
 	})
 
-	it('is total for a hostile code getter', () => {
-		const hostile = new Error('hostile')
-		Object.defineProperty(hostile, 'code', {
-			get() {
-				throw new Error('hostile code')
-			},
-		})
-
-		expect(() => isMissingPathError(hostile)).not.toThrow()
-		expect(isMissingPathError(hostile)).toBe(false)
-	})
-})
-
-describe('isManifestEntry', () => {
-	it('accepts a full, well-shaped manifest entry', () => {
-		expect(
-			isManifestEntry({ storage: 'gitignore', destination: '.gitignore', executable: false }),
-		).toBe(true)
+	it('bounds a caller-supplied list by the core collection ceiling', () => {
+		const atLimit = Array.from({ length: MAX_COLLECTION_ITEMS }, () => '@orkestrel/router')
+		const overLimit = Array.from({ length: MAX_COLLECTION_ITEMS + 1 }, () => '@orkestrel/router')
+		expect(isDependencyNames(atLimit)).toBe(true)
+		expect(isDependencyNames(overLimit)).toBe(false)
 	})
 
-	it('rejects missing, mistyped, extra, and non-record fields', () => {
-		expect(isManifestEntry({ storage: 'gitignore', destination: '.gitignore' })).toBe(false)
-		expect(
-			isManifestEntry({ storage: 'gitignore', destination: '.gitignore', executable: 'false' }),
-		).toBe(false)
-		expect(isManifestEntry({ storage: 1, destination: '.gitignore', executable: false })).toBe(
-			false,
-		)
-		expect(
-			isManifestEntry({
-				storage: 'gitignore',
-				destination: '.gitignore',
-				executable: false,
-				extra: 'unexpected',
-			}),
-		).toBe(false)
-		expect(isManifestEntry(null)).toBe(false)
-		expect(isManifestEntry(['gitignore'])).toBe(false)
-	})
-
-	it('rejects unsafe storage and destination paths', () => {
-		for (const path of [
-			'/absolute',
-			'C:/absolute',
-			'../escape',
-			'agents/../escape',
-			'agents\\escape',
-			'agents//escape',
-			'agents/\0escape',
-		]) {
-			expect(
-				isManifestEntry({
-					storage: path,
-					destination: '.agents/skills/harden/SKILL.md',
-					executable: false,
-				}),
-			).toBe(false)
-			expect(
-				isManifestEntry({
-					storage: 'agents/skills/harden/SKILL.md',
-					destination: path,
-					executable: false,
-				}),
-			).toBe(false)
-		}
-	})
-
-	it('is total for hostile and revoked proxy entries', () => {
-		const hostile = new Proxy(
-			{},
-			{
-				ownKeys() {
-					throw new Error('hostile ownKeys')
-				},
-			},
-		)
-		const revoked = Proxy.revocable({}, {})
-		revoked.revoke()
-
-		expect(() => isManifestEntry(hostile)).not.toThrow()
-		expect(isManifestEntry(hostile)).toBe(false)
-		expect(() => isManifestEntry(revoked.proxy)).not.toThrow()
-		expect(isManifestEntry(revoked.proxy)).toBe(false)
-	})
-})
-
-describe('isHostManifest', () => {
-	it('accepts only the exact complete manifest shape', () => {
-		const manifest = hostManifestOf(
-			[{ storage: 'agents/a', destination: '.agents/a', executable: false }],
-			['.agents'],
-		)
-
-		expect(isHostManifest(manifest)).toBe(true)
-		expect(isHostManifest(manifest.entries)).toBe(false)
-		expect(isHostManifest({ ...manifest, extra: true })).toBe(false)
-		expect(
-			isHostManifest({ entries: manifest.entries, roots: ['../escape'], digest: manifest.digest }),
-		).toBe(false)
-	})
-
-	it('rejects symbol-extended records and oversized arrays without reading their elements', () => {
-		const digest = hostManifestOf([], []).digest
-		const entry = {
-			storage: 'agents/a',
-			destination: '.agents/a',
-			executable: false,
-			[Symbol('extra')]: true,
-		}
-		expect(isManifestEntry(entry)).toBe(false)
-		expect(isHostManifest({ entries: [], roots: [], digest, [Symbol('extra')]: true })).toBe(false)
-
-		const entries = new Array(MAX_HOST_ENTRIES + 1)
-		Object.defineProperty(entries, '0', {
-			get: () => {
-				throw new Error('oversized entries must not be traversed')
-			},
-		})
-		const roots = new Array(MAX_HOST_ENTRIES + 1)
-		Object.defineProperty(roots, '0', {
-			get: () => {
-				throw new Error('oversized roots must not be traversed')
-			},
-		})
-		expect(() => isHostManifest({ entries, roots: [], digest })).not.toThrow()
-		expect(isHostManifest({ entries, roots: [], digest })).toBe(false)
-		expect(() => isHostManifest({ entries: [], roots, digest })).not.toThrow()
-		expect(isHostManifest({ entries: [], roots, digest })).toBe(false)
-	})
-
-	it('rejects caller-owned array methods, symbols, sparse indices, and invalid elements', () => {
-		const digest = hostManifestOf([], []).digest
-		const entries: unknown[] = [{ invalid: true }]
-		Object.defineProperty(entries, 'every', {
-			value: () => true,
-		})
-		const roots = ['.agents']
-		Object.defineProperty(roots, Symbol('extra'), {
-			value: true,
-		})
-		expect(isHostManifest({ entries, roots: [], digest })).toBe(false)
-		expect(isHostManifest({ entries: [], roots, digest })).toBe(false)
-		expect(isHostManifest({ entries: new Array(1), roots: [], digest })).toBe(false)
-	})
-
-	it('is total for hostile getters and revoked proxy manifests', () => {
-		const hostile = {
-			get entries(): readonly never[] {
-				throw new Error('hostile get')
-			},
-			roots: [],
-		}
-		const revoked = Proxy.revocable({}, {})
-		revoked.revoke()
-
-		expect(() => isHostManifest(hostile)).not.toThrow()
-		expect(isHostManifest(hostile)).toBe(false)
-		expect(() => isHostManifest(revoked.proxy)).not.toThrow()
-		expect(isHostManifest(revoked.proxy)).toBe(false)
+	it('bounds a target inventory far above that ceiling instead', () => {
+		const beyondCollection = Array.from({ length: MAX_COLLECTION_ITEMS + 1 }, () => 'AGENTS.md')
+		expect(MAX_INVENTORY_PATHS).toBeGreaterThan(MAX_COLLECTION_ITEMS)
+		expect(isDependencyNames(beyondCollection)).toBe(false)
+		expect(isRepository({ tracked: beyondCollection, dirty: [] })).toBe(true)
 	})
 })

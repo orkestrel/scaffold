@@ -1,462 +1,525 @@
 import type { Guard } from '@orkestrel/contract'
-import type { EmitterErrorHandler, EmitterHooks } from '@orkestrel/emitter'
+import type { EmitterHooks } from '@orkestrel/emitter'
 import type {
 	Artifact,
 	Audit,
 	Blueprint,
+	CatalogEntry,
 	CompilerEventMap,
+	CompilerOptions,
 	Dependency,
-	Member,
+	Environment,
+	Finding,
+	Group,
+	Mirror,
 	Override,
 	Plan,
-	PlanManagerEventMap,
 	Question,
 	Snapshot,
-	SyncReport,
-	Validation,
 } from './types.js'
-import { andOf, attempt, createContract, isFunction, isRecord, isString } from '@orkestrel/contract'
 import {
+	andOf,
+	arrayOf,
+	enumerableKeys,
+	holds,
+	isArray,
+	isBoolean,
+	isFunction,
+	isRecord,
+	isString,
+	literalOf,
+	recordOf,
+	stringOf,
+	unionOf,
+} from '@orkestrel/contract'
+import {
+	CONTROL_CHARACTER_PATTERN,
+	DEPENDENCY_NAME_PATTERN,
+	ENVIRONMENTS,
+	GROUPS,
 	HEX_PATTERN,
+	INVALID_PATH_CHARACTER_PATTERN,
 	MAX_ARTIFACT_BYTES,
+	MAX_ARTIFACT_HEX_LENGTH,
 	MAX_COLLECTION_ITEMS,
-	MAX_DATA_GRAPH_KEYS,
-	MAX_DATA_GRAPH_NODES,
+	MAX_DEPENDENCY_NAME_LENGTH,
 	MAX_NAME_LENGTH,
-	MAX_TOTAL_ARTIFACT_BYTES,
-	NAME_PATTERN,
+	MAX_PATH_LENGTH,
+	MAX_RANGE_LENGTH,
 } from './constants.js'
-import { contentByteLength, validateBlueprint } from './helpers.js'
-import {
-	artifactShape,
-	blueprintShape,
-	dependencyShape,
-	memberShape,
-	overrideShape,
-	planShape,
-	syncReportShape,
-} from './shapers.js'
 
 /**
- * Narrow a value to a `Dependency` — `name` and `range` non-empty strings.
+ * Narrow a value to a portable target-relative path.
+ *
+ * @param value - The candidate path.
+ * @returns `true` for a bounded relative path with no traversal, empty segment,
+ * control character, or non-portable visible character.
  *
  * @remarks
- * Compiled from {@link dependencyShape} via `createContract` (AGENTS §14) — a
- * total `Guard`, adversarial input returns `false`, never throws.
- */
-export const isDependency: Guard<Dependency> = createContract(dependencyShape()).is
-
-/**
- * Narrow a value to an `Override` — `path` and `content` non-empty strings.
- *
- * @remarks
- * Compiled from {@link overrideShape} via `createContract` (AGENTS §14) — a
- * total `Guard`, adversarial input returns `false`, never throws.
- */
-export const isOverride: Guard<Override> = andOf(
-	createContract(overrideShape()).is,
-	hasValidOverrideBytes,
-)
-
-/** Determine whether one override fits the public UTF-8 artifact byte limit. */
-export function hasValidOverrideBytes(override: Override): boolean {
-	const result = attempt(() => contentByteLength(override.content) <= MAX_ARTIFACT_BYTES)
-	return result.success && result.value
-}
-
-/**
- * Narrow a value to the bounded bare name accepted by a workspace blueprint.
- *
- * @param value - The candidate workspace name.
- * @returns `true` only for a `NAME_PATTERN` string no longer than `MAX_NAME_LENGTH`.
- */
-export function isWorkspaceName(value: unknown): value is string {
-	return isString(value) && value.length <= MAX_NAME_LENGTH && NAME_PATTERN.test(value)
-}
-
-/**
- * Determine whether a structured boundary contains data properties only.
- *
- * @param value - The candidate record/array graph.
- * @returns `true` when copying the graph cannot invoke a user-defined accessor.
- */
-export function hasOnlyDataProperties(value: unknown): boolean {
-	const result = attempt(() => {
-		const pending: unknown[] = [value]
-		const visited = new WeakSet<object>()
-		let nodes = 0
-		let keys = 0
-		while (pending.length > 0) {
-			const current = pending.pop()
-			if (!isRecord(current) && !Array.isArray(current)) continue
-			if (visited.has(current)) continue
-			visited.add(current)
-			nodes += 1
-			if (nodes > MAX_DATA_GRAPH_NODES) return false
-			const ownKeys = Reflect.ownKeys(current)
-			keys += ownKeys.length
-			if (keys > MAX_DATA_GRAPH_KEYS) return false
-			for (const key of ownKeys) {
-				const descriptor = Reflect.getOwnPropertyDescriptor(current, key)
-				if (descriptor === undefined || !Reflect.has(descriptor, 'value')) return false
-				if (isRecord(descriptor.value) || Array.isArray(descriptor.value)) {
-					pending.push(descriptor.value)
-				}
-			}
-		}
-		return true
-	})
-	return result.success && result.value
-}
-
-/**
- * Narrow a value to a bounded dense array with index data properties only.
- *
- * @param value - The candidate array.
- * @param limit - Maximum item count.
- * @param guard - The item contract.
- * @returns `true` only when no custom iterator, method, symbol, accessor, or sparse index exists.
- */
-export function isDenseDataArray<T>(
-	value: unknown,
-	limit: number,
-	guard: Guard<T>,
-): value is readonly T[] {
-	const result = attempt(() => {
-		if (!Number.isSafeInteger(limit) || limit < 0 || !Array.isArray(value)) return false
-		const lengthDescriptor = Reflect.getOwnPropertyDescriptor(value, 'length')
-		const length = lengthDescriptor?.value
-		if (
-			lengthDescriptor === undefined ||
-			!Reflect.has(lengthDescriptor, 'value') ||
-			typeof length !== 'number' ||
-			!Number.isSafeInteger(length) ||
-			length < 0 ||
-			length > limit
-		) {
-			return false
-		}
-		const keys = Reflect.ownKeys(value)
-		if (keys.length !== length + 1 || !keys.includes('length')) return false
-		for (let index = 0; index < length; index += 1) {
-			const descriptor = Reflect.getOwnPropertyDescriptor(value, String(index))
-			if (
-				descriptor === undefined ||
-				!Reflect.has(descriptor, 'value') ||
-				!guard(descriptor.value)
-			) {
-				return false
-			}
-		}
-		return true
-	})
-	return result.success && result.value
-}
-
-/** Narrow a listener-error handler accepted by the shared emitter. */
-export function isEmitterErrorHandler(value: unknown): value is EmitterErrorHandler {
-	return isFunction(value)
-}
-
-/** Narrow an exact initial-listener record for `Compiler`. */
-export function isCompilerEventHooks(value: unknown): value is EmitterHooks<CompilerEventMap> {
-	const result = attempt(() => {
-		if (!isRecord(value)) return false
-		const keys = Reflect.ownKeys(value)
-		if (
-			keys.some(
-				(key) =>
-					key !== 'compile' &&
-					key !== 'block' &&
-					key !== 'audit' &&
-					key !== 'error' &&
-					key !== 'destroy',
-			)
-		) {
-			return false
-		}
-		return keys.every((key) => {
-			const descriptor = Reflect.getOwnPropertyDescriptor(value, key)
-			return (
-				descriptor !== undefined && Reflect.has(descriptor, 'value') && isFunction(descriptor.value)
-			)
-		})
-	})
-	return result.success && result.value
-}
-
-/** Narrow an exact initial-listener record for `PlanManager`. */
-export function isPlanManagerEventHooks(
-	value: unknown,
-): value is EmitterHooks<PlanManagerEventMap> {
-	const result = attempt(() => {
-		if (!isRecord(value)) return false
-		const keys = Reflect.ownKeys(value)
-		if (keys.some((key) => key !== 'add' && key !== 'remove' && key !== 'destroy')) return false
-		return keys.every((key) => {
-			const descriptor = Reflect.getOwnPropertyDescriptor(value, key)
-			return (
-				descriptor !== undefined && Reflect.has(descriptor, 'value') && isFunction(descriptor.value)
-			)
-		})
-	})
-	return result.success && result.value
-}
-
-/**
- * Whether a structurally valid blueprint selects at least one source or app environment.
- *
- * @param blueprint - The structurally valid blueprint to inspect.
- * @returns `true` when `src` or `app` is non-empty.
- */
-export function hasBlueprintEnvironment(blueprint: Blueprint): boolean {
-	return blueprint.src.length > 0 || blueprint.app.length > 0
-}
-
-/** Determine whether blueprint-authored text fits the per-item and aggregate byte limits. */
-export function hasValidBlueprintBytes(blueprint: Blueprint): boolean {
-	const result = attempt(() => {
-		let total = blueprint.description === undefined ? 0 : contentByteLength(blueprint.description)
-		if (total > MAX_ARTIFACT_BYTES) return false
-		for (const override of blueprint.overrides) {
-			const bytes = contentByteLength(override.content)
-			if (bytes > MAX_ARTIFACT_BYTES) return false
-			total += bytes
-			if (total > MAX_TOTAL_ARTIFACT_BYTES) return false
-		}
-		return true
-	})
-	return result.success && result.value
-}
-
-/**
- * Narrow a value to a `Blueprint` with at least one source or application environment.
- *
- * @remarks
- * Compiled from {@link blueprintShape} via `createContract` and refined by
- * {@link hasBlueprintEnvironment}. The `NAME_PATTERN` law remains in the semantic
- * pass; this total guard returns `false` for adversarial input and never throws.
- */
-export const isBlueprint: Guard<Blueprint> = andOf(
-	andOf(createContract(blueprintShape()).is, hasBlueprintEnvironment),
-	hasValidBlueprintBytes,
-)
-
-/**
- * Narrow a value to a `Member` — `category` and `environment` on-vocabulary.
- *
- * @remarks
- * Compiled from {@link memberShape} via `createContract` (AGENTS §14) — a
- * total `Guard`, adversarial input returns `false`, never throws.
- */
-export const isMember: Guard<Member> = createContract(memberShape()).is
-
-/**
- * Apply the semantic lowercase byte-pair law to an artifact's optional hex.
- *
- * @param artifact - The structurally valid artifact to inspect.
- * @returns `true` when `hex` is absent or encodes whole lowercase bytes.
- */
-export function hasValidArtifactHex(artifact: Artifact): boolean {
-	const result = attempt(() => artifact.hex === undefined || HEX_PATTERN.test(artifact.hex))
-	return result.success && result.value
-}
-
-/** Determine whether one artifact fits the public physical-byte limit. */
-export function hasValidArtifactBytes(artifact: Artifact): boolean {
-	const result = attempt(() =>
-		artifact.origin === 'host'
-			? artifact.hex === undefined || artifact.hex.length / 2 <= MAX_ARTIFACT_BYTES
-			: contentByteLength(artifact.content) <= MAX_ARTIFACT_BYTES,
-	)
-	return result.success && result.value
-}
-
-/**
- * Apply the artifact byte law to every nested artifact in a `Plan`.
- *
- * @param plan - The structurally valid plan to inspect.
- * @returns `true` when every artifact has absent or valid lowercase byte hex.
- */
-export function hasValidPlanHex(plan: Plan): boolean {
-	const result = attempt(() => plan.artifacts.every(hasValidArtifactHex))
-	return result.success && result.value
-}
-
-/** Determine whether a plan fits the aggregate retained-artifact byte limit. */
-export function hasValidPlanBytes(plan: Plan): boolean {
-	const result = attempt(() => {
-		let total = 0
-		for (const artifact of plan.artifacts) {
-			const bytes =
-				artifact.origin === 'host'
-					? artifact.hex === undefined
-						? 0
-						: artifact.hex.length / 2
-					: contentByteLength(artifact.content)
-			if (bytes > MAX_ARTIFACT_BYTES) return false
-			total += bytes
-			if (total > MAX_TOTAL_ARTIFACT_BYTES) return false
-		}
-		return hasValidBlueprintBytes(plan.blueprint)
-	})
-	return result.success && result.value
-}
-
-/** Determine whether an audit snapshot fits the aggregate retained-byte limit. */
-export function hasValidAuditBytes(audit: Audit): boolean {
-	const result = attempt(() => {
-		if (audit.findings.length > MAX_COLLECTION_ITEMS) return false
-		let total = 0
-		for (const finding of audit.findings) {
-			if (finding.observed === undefined) continue
-			if (!HEX_PATTERN.test(finding.observed)) return false
-			const bytes = finding.observed.length / 2
-			if (bytes > MAX_ARTIFACT_BYTES) return false
-			total += bytes
-			if (total > MAX_TOTAL_ARTIFACT_BYTES) return false
-		}
-		return true
-	})
-	return result.success && result.value
-}
-
-/** Determine whether a target snapshot is a bounded exact-byte record. */
-export function hasValidSnapshotBytes(snapshot: Snapshot): boolean {
-	const result = attempt(() => {
-		if (!isRecord(snapshot)) return false
-		const keys = Reflect.ownKeys(snapshot)
-		if (keys.length > MAX_COLLECTION_ITEMS || keys.some((key) => typeof key !== 'string'))
-			return false
-		let total = 0
-		for (const key of keys) {
-			const descriptor = Reflect.getOwnPropertyDescriptor(snapshot, key)
-			if (descriptor === undefined || !Reflect.has(descriptor, 'value')) return false
-			const hex = descriptor.value
-			if (typeof hex !== 'string' || !HEX_PATTERN.test(hex)) return false
-			const bytes = hex.length / 2
-			if (bytes > MAX_ARTIFACT_BYTES) return false
-			total += bytes
-			if (total > MAX_TOTAL_ARTIFACT_BYTES) return false
-		}
-		return true
-	})
-	return result.success && result.value
-}
-
-/**
- * Narrow a value to an origin-discriminated `Artifact`.
- *
- * @remarks
- * Compiled from {@link artifactShape} and refined by
- * {@link hasValidArtifactHex}; total for adversarial input.
- */
-export const isArtifact: Guard<Artifact> = andOf(
-	andOf(createContract(artifactShape()).is, hasValidArtifactHex),
-	hasValidArtifactBytes,
-)
-
-/**
- * Narrow a value to a `Plan` — the whole exact-record contract, section
- * guards composed.
- *
- * @remarks
- * Compiled from {@link planShape} via `createContract` (AGENTS §14) — a
- * total `Guard`, adversarial input returns `false`, never throws.
- */
-export const isPlan: Guard<Plan> = andOf(
-	andOf(createContract(planShape()).is, hasValidPlanHex),
-	hasValidPlanBytes,
-)
-
-/**
- * Validate both a plan's blueprint semantics and every override against the
- * exact artifact set the plan would materialize.
- *
- * @param plan - The structurally valid plan to validate before mutation.
- * @returns A total validation whose blocking questions include missing,
- * host-owned, and publication-boundary override targets.
+ * Every path this package reads or writes passes here, so one law covers a
+ * planned artifact, an override target, an audit finding, a guide mirror, and a
+ * snapshot key. Rejecting `..`, a leading `/`, and a backslash at the guard is
+ * what stops a caller-supplied path from naming a destination outside the
+ * target, and rejecting the non-portable visible characters is what keeps a
+ * generated workspace checkable out on every supported filesystem.
  *
  * @example
  * ```ts
- * import { blueprint, blueprintToPlan, validatePlan } from '@orkestrel/scaffold'
+ * import { isPath } from '@orkestrel/scaffold'
  *
- * const plan = blueprintToPlan(blueprint('router', { src: ['core'] }))
- *
- * validatePlan(plan).valid // true
+ * isPath('configs/src/tsconfig.core.json') // true
+ * isPath('../secrets') // false
  * ```
  */
-export function validatePlan(plan: Plan): Validation {
-	const blueprintValidation = validateBlueprint(plan.blueprint)
-	const questions: Question[] = [...blueprintValidation.questions]
-	const warnings = [...blueprintValidation.warnings]
-	if (!hasValidPlanBytes(plan)) {
-		questions.push({
-			field: 'artifacts',
-			text: 'Plan artifact content exceeds the retained byte limits',
-			blocking: true,
-		})
-	}
-	const artifacts = new Map(plan.artifacts.map((artifact) => [artifact.path, artifact]))
-	for (const item of plan.blueprint.overrides) {
-		const artifact = artifacts.get(item.path)
-		if (artifact === undefined) {
-			questions.push({
-				field: 'overrides',
-				text: `Override path "${item.path}" matches no planned artifact`,
-				blocking: true,
-			})
-			continue
-		}
-		if (artifact.origin === 'host') {
-			questions.push({
-				field: 'overrides',
-				text: `Override path "${item.path}" targets a host-origin artifact`,
-				blocking: true,
-			})
-			continue
-		}
-		if (artifact.path === 'package.json') {
-			questions.push({
-				field: 'overrides',
-				text: 'Override path "package.json" targets the blueprint-owned publication boundary',
-				blocking: true,
-			})
-			continue
-		}
-		warnings.push(`Override path "${item.path}" replaces its planned artifact content`)
-	}
-	return {
-		valid: questions.length === 0,
-		questions,
-		warnings,
-	}
-}
-
-/** Determine whether every guide body fits the public UTF-8 artifact byte limit. */
-export function hasValidSyncReportBytes(report: SyncReport): boolean {
-	const result = attempt(() => {
-		let total = 0
-		for (const guide of report.guides) {
-			const bytes = contentByteLength(guide.content)
-			if (bytes > MAX_ARTIFACT_BYTES) return false
-			total += bytes
-			if (total > MAX_TOTAL_ARTIFACT_BYTES) return false
+export function isPath(value: unknown): value is string {
+	return holds(() => {
+		if (!isString(value) || value.length === 0 || value.length > MAX_PATH_LENGTH) return false
+		if (CONTROL_CHARACTER_PATTERN.test(value)) return false
+		if (INVALID_PATH_CHARACTER_PATTERN.test(value)) return false
+		for (const segment of value.split('/')) {
+			if (segment === '' || segment === '.' || segment === '..') return false
 		}
 		return true
 	})
-	return result.success && result.value
 }
 
 /**
- * Narrow a value to a `SyncReport` — the whole exact-record sync contract,
- * `guide` / `version` sections composed.
+ * Narrow a value to exact lowercase hexadecimal bytes within one artifact's limit.
  *
  * @remarks
- * Compiled from {@link syncReportShape} via `createContract` and refined by
- * {@link hasValidSyncReportBytes}; total for adversarial input.
+ * Two digits per byte, so an odd length is refused and empty content is valid.
+ * The bound is exact rather than approximate: the encoding is ASCII, so the
+ * string's length is twice the byte count it stands for.
+ *
+ * @example
+ * ```ts
+ * import { isHex } from '@orkestrel/scaffold'
+ *
+ * isHex('68690a') // true
+ * isHex('68690A') // false
+ * ```
  */
-export const isSyncReport: Guard<SyncReport> = andOf(
-	createContract(syncReportShape()).is,
-	hasValidSyncReportBytes,
+export const isHex: Guard<string> = stringOf({
+	max: MAX_ARTIFACT_HEX_LENGTH,
+	pattern: HEX_PATTERN,
+})
+
+/**
+ * Narrow a value to text this package will accept as one artifact's content.
+ *
+ * @remarks
+ * The bound is a code-unit ceiling rather than a byte count, because a string
+ * of more code units than {@link MAX_ARTIFACT_BYTES} cannot encode within that
+ * budget under any encoding this package writes. The exact UTF-8 measurement
+ * belongs to the compiler and the writer, which are the two places the bytes
+ * are actually produced.
+ */
+export const isContent: Guard<string> = stringOf({ max: MAX_ARTIFACT_BYTES })
+
+/**
+ * Narrow a value to an array within the limit one public collection accepts.
+ *
+ * @param value - The candidate collection.
+ * @returns `true` for an array of no more than `MAX_COLLECTION_ITEMS` items.
+ *
+ * @remarks
+ * Compose this ahead of an element guard so the item count is settled before
+ * anything walks the items. A hostile `length` accessor answers `false` here
+ * rather than escaping as a thrown error.
+ *
+ * @example
+ * ```ts
+ * import { isCollection } from '@orkestrel/scaffold'
+ *
+ * isCollection(['manifest']) // true
+ * isCollection('manifest') // false
+ * ```
+ */
+export function isCollection(value: unknown): value is readonly unknown[] {
+	return holds(() => isArray(value) && value.length <= MAX_COLLECTION_ITEMS)
+}
+
+/**
+ * Narrow a value to one {@link Environment} a workspace may select.
+ *
+ * @example
+ * ```ts
+ * import { isEnvironment } from '@orkestrel/scaffold'
+ *
+ * isEnvironment('browser') // true
+ * isEnvironment('worker') // false
+ * ```
+ */
+export const isEnvironment: Guard<Environment> = literalOf(ENVIRONMENTS)
+
+/**
+ * Narrow a value to one {@link Group} a plan selects over.
+ *
+ * @example
+ * ```ts
+ * import { isGroup } from '@orkestrel/scaffold'
+ *
+ * isGroup('manifest') // true
+ * isGroup('readme') // false
+ * ```
+ */
+export const isGroup: Guard<Group> = literalOf(GROUPS)
+
+/** Narrow a value to a bounded group selection. */
+export const isGroups: Guard<readonly Group[]> = andOf(isCollection, arrayOf(isGroup))
+
+/**
+ * Narrow a value to the scoped package name a runtime dependency carries.
+ *
+ * @remarks
+ * A dependency name reaches a path, because a workspace's guide mirror is
+ * derived from it. Fixing the scope and admitting nothing but a bare name after
+ * it is what keeps that derivation inside the directory the mirror belongs in.
+ * A blueprint's development extras are deliberately wider and are measured by
+ * the gate instead, which is why {@link isDependency} does not apply this.
+ *
+ * @example
+ * ```ts
+ * import { isDependencyName } from '@orkestrel/scaffold'
+ *
+ * isDependencyName('@orkestrel/router') // true
+ * isDependencyName('@orkestrel/../etc') // false
+ * ```
+ */
+export const isDependencyName: Guard<string> = stringOf({
+	max: MAX_DEPENDENCY_NAME_LENGTH,
+	pattern: DEPENDENCY_NAME_PATTERN,
+})
+
+/**
+ * Narrow a value to a {@link Dependency}.
+ *
+ * @remarks
+ * Structural and bounded: which names and ranges a blueprint may declare is a
+ * gate law, reported as a {@link Question} carrying its accepted candidates, so
+ * refusing it here would replace an answerable question with a bare `false`.
+ *
+ * @example
+ * ```ts
+ * import { isDependency } from '@orkestrel/scaffold'
+ *
+ * isDependency({ name: '@orkestrel/emitter', range: '^0.0.5' }) // true
+ * isDependency({ name: '@orkestrel/emitter' }) // false
+ * ```
+ */
+export const isDependency: Guard<Dependency> = recordOf(
+	{
+		name: stringOf({ min: 1, max: MAX_DEPENDENCY_NAME_LENGTH }),
+		range: stringOf({ min: 1, max: MAX_RANGE_LENGTH }),
+		optional: isBoolean,
+	},
+	['optional'],
+)
+
+/**
+ * Narrow a value to an {@link Override}.
+ *
+ * @remarks
+ * Whether the path names a planned artifact is a gate law; whether it names a
+ * destination at all is this guard's.
+ *
+ * @example
+ * ```ts
+ * import { isOverride } from '@orkestrel/scaffold'
+ *
+ * isOverride({ path: 'README.md', content: '# Title\n' }) // true
+ * ```
+ */
+export const isOverride: Guard<Override> = recordOf({ path: isPath, content: isContent })
+
+/**
+ * Narrow a value to a {@link Blueprint}.
+ *
+ * @remarks
+ * The whole closed record, its literal axes, and the count and length bounds
+ * this package admits. The syntactic laws over a name, a version, a range, and
+ * an engines floor stay with the gate, which reports each one as a
+ * {@link Question} instead of refusing the value outright.
+ *
+ * @example
+ * ```ts
+ * import { isBlueprint } from '@orkestrel/scaffold'
+ *
+ * isBlueprint({ name: 'router', src: ['core'] }) // false — not the whole record
+ * ```
+ */
+export const isBlueprint: Guard<Blueprint> = recordOf(
+	{
+		name: stringOf({ min: 1, max: MAX_NAME_LENGTH }),
+		description: isString,
+		keywords: andOf(isCollection, arrayOf(isString)),
+		src: andOf(isCollection, arrayOf(isEnvironment)),
+		app: andOf(isCollection, arrayOf(isEnvironment)),
+		dependencies: andOf(isCollection, arrayOf(isDependency)),
+		peers: andOf(isCollection, arrayOf(isDependency)),
+		extras: andOf(isCollection, arrayOf(isDependency)),
+		version: isString,
+		engines: isString,
+		overrides: andOf(isCollection, arrayOf(isOverride)),
+		bin: isBoolean,
+		integration: isBoolean,
+		services: andOf(isCollection, arrayOf(isString)),
+		global: isBoolean,
+		showcase: isBoolean,
+	},
+	['description'],
+)
+
+/**
+ * Narrow a value to an {@link Artifact}.
+ *
+ * @remarks
+ * One branch per way content is produced, discriminated by `origin` and
+ * narrowed by `ownership`. Each branch declares only the keys its branch has,
+ * so a host artifact carrying `content`, a hydrated artifact carrying anything
+ * but `content` ownership, and a template artifact carrying `hex` are all
+ * refused rather than admitted to the wrong branch.
+ *
+ * @example
+ * ```ts
+ * import { isArtifact } from '@orkestrel/scaffold'
+ *
+ * isArtifact({ path: 'AGENTS.md', group: 'docs', ownership: 'presence', origin: 'host' }) // true
+ * ```
+ */
+export const isArtifact: Guard<Artifact> = unionOf(
+	recordOf(
+		{
+			path: isPath,
+			group: isGroup,
+			ownership: literalOf('presence', 'birth'),
+			environment: isEnvironment,
+			origin: literalOf('host'),
+			source: isPath,
+		},
+		['environment', 'source'],
+	),
+	recordOf(
+		{
+			path: isPath,
+			group: isGroup,
+			ownership: literalOf('content'),
+			environment: isEnvironment,
+			origin: literalOf('host'),
+			source: isPath,
+			hex: isHex,
+		},
+		['environment', 'source'],
+	),
+	recordOf(
+		{
+			path: isPath,
+			group: isGroup,
+			ownership: literalOf('content', 'presence', 'birth'),
+			environment: isEnvironment,
+			origin: literalOf('template', 'computed'),
+			content: isContent,
+		},
+		['environment'],
+	),
+)
+
+/**
+ * Narrow a value to a {@link Plan}.
+ *
+ * @remarks
+ * A plan reaches the writer, and the writer has no question channel, so this
+ * carries the whole law of the value: every artifact path, every claimed byte,
+ * and the blueprint it was compiled from.
+ */
+export const isPlan: Guard<Plan> = recordOf(
+	{
+		blueprint: isBlueprint,
+		groups: isGroups,
+		artifacts: andOf(isCollection, arrayOf(isArtifact)),
+		hash: isHex,
+	},
+	['hash'],
+)
+
+/**
+ * Narrow a value to a {@link Question}.
+ *
+ * @example
+ * ```ts
+ * import { isQuestion } from '@orkestrel/scaffold'
+ *
+ * isQuestion({ field: 'src', message: 'Unknown environment', blocking: true }) // true
+ * ```
+ */
+export const isQuestion: Guard<Question> = recordOf(
+	{
+		field: isString,
+		message: isString,
+		blocking: isBoolean,
+		candidates: andOf(isCollection, arrayOf(isString)),
+	},
+	['candidates'],
+)
+
+/**
+ * Narrow a value to a {@link Finding}.
+ *
+ * @remarks
+ * `observed` is required exactly where the mutation it precedes is held to it,
+ * absent where the destination had no bytes to record, and optional where the
+ * comparison may not have been made.
+ */
+export const isFinding: Guard<Finding> = unionOf(
+	recordOf({
+		path: isPath,
+		group: isGroup,
+		drift: literalOf('stale', 'foreign'),
+		observed: isHex,
+	}),
+	recordOf({
+		path: isPath,
+		group: isGroup,
+		drift: literalOf('missing'),
+	}),
+	recordOf(
+		{
+			path: isPath,
+			group: isGroup,
+			drift: literalOf('aligned'),
+			observed: isHex,
+		},
+		['observed'],
+	),
+)
+
+/**
+ * Narrow a value to an {@link Audit}.
+ *
+ * @remarks
+ * An audit reaches the writer and the destructive verb, so it is guarded as
+ * strictly as the plan beside it.
+ */
+export const isAudit: Guard<Audit> = recordOf({
+	findings: andOf(isCollection, arrayOf(isFinding)),
+	questions: andOf(isCollection, arrayOf(isQuestion)),
+})
+
+/**
+ * Narrow a value to a {@link Mirror}.
+ *
+ * @remarks
+ * `content` is the fetched guide text and `observed` is the local mirror's
+ * exact bytes, so the two carry different laws: one is content this package
+ * writes, the other is the precondition that write is held to.
+ */
+export const isMirror: Guard<Mirror> = unionOf(
+	recordOf(
+		{
+			name: isDependencyName,
+			path: isPath,
+			lookup: literalOf('found'),
+			content: isContent,
+			observed: isHex,
+		},
+		['observed'],
+	),
+	recordOf(
+		{
+			name: isDependencyName,
+			path: isPath,
+			lookup: literalOf('missing', 'failed'),
+			note: isString,
+			observed: isHex,
+		},
+		['observed'],
+	),
+)
+
+/**
+ * Narrow a value to a {@link CatalogEntry}.
+ *
+ * @remarks
+ * A row that found no version carries the cause instead, and neither branch may
+ * carry the other's field.
+ */
+export const isCatalogEntry: Guard<CatalogEntry> = unionOf(
+	recordOf({
+		name: isDependencyName,
+		lookup: literalOf('found'),
+		version: isString,
+	}),
+	recordOf({
+		name: isDependencyName,
+		lookup: literalOf('missing', 'failed'),
+		note: isString,
+	}),
+)
+
+/**
+ * Narrow a value to a {@link Snapshot}.
+ *
+ * @param value - The candidate target snapshot.
+ * @returns `true` for a bounded plain record whose every key is a path and
+ * whose every value is exact lowercase hexadecimal bytes.
+ *
+ * @remarks
+ * Read through the shared total key lens, so a hostile `ownKeys` trap and a
+ * throwing accessor both answer `false` rather than escaping. There is no
+ * dictionary combinator upstream to compose this from: the key law and the
+ * value law are both this package's own.
+ *
+ * @example
+ * ```ts
+ * import { isSnapshot } from '@orkestrel/scaffold'
+ *
+ * isSnapshot({ 'AGENTS.md': '68690a' }) // true
+ * isSnapshot({ 'AGENTS.md': 'hi' }) // false
+ * ```
+ */
+export function isSnapshot(value: unknown): value is Snapshot {
+	return holds(() => {
+		if (!isRecord(value)) return false
+		const keys = enumerableKeys(value)
+		if (keys === undefined || keys.length > MAX_COLLECTION_ITEMS) return false
+		for (const key of keys) {
+			if (!isPath(key) || !isHex(value[key])) return false
+		}
+		return true
+	})
+}
+
+/**
+ * Narrow a value to the compiler's initial listener record.
+ *
+ * @remarks
+ * Every event is optional and every declared value is a function. A key outside
+ * the compiler's event map is refused, so a listener wired to a misspelled
+ * event fails at construction instead of never firing.
+ */
+export const isCompilerHooks: Guard<EmitterHooks<CompilerEventMap>> = recordOf(
+	{
+		compile: isFunction,
+		audit: isFunction,
+		block: isFunction,
+		error: isFunction,
+		destroy: isFunction,
+	},
+	true,
+)
+
+/**
+ * Narrow a value to {@link CompilerOptions}.
+ *
+ * @example
+ * ```ts
+ * import { isCompilerOptions } from '@orkestrel/scaffold'
+ *
+ * isCompilerOptions({}) // true
+ * isCompilerOptions({ retries: 2 }) // false
+ * ```
+ */
+export const isCompilerOptions: Guard<CompilerOptions> = recordOf(
+	{ on: isCompilerHooks, error: isFunction },
+	true,
 )

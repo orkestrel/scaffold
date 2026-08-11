@@ -1,178 +1,46 @@
-import { globSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { isBrowserVuePath } from './setup.js'
 import {
-	derivePolicyTokens,
-	inspectCodingLaw,
-	inspectCodingWorkspace,
-	inspectPolicyPurity,
+	FUNCTION_SOURCE_FILES,
+	GENERIC_POLICY_SOURCES,
+	inspectPolicyControl,
+	inspectPolicyMirrorPaths,
+	inspectPolicySources,
 	inspectPolicyWorkspace,
-	isFunctionDomainPath,
-	POLICY_SOURCE_ENVIRONMENTS,
-	readPackageName,
+	POLICY_CONTROLS,
 } from './setupPolicy.js'
 
-const POLICY_PLANTED_PATH = 'tests/setupPolicy.ts'
-const POLICY_TOKENS = derivePolicyTokens(readPackageName(process.cwd()))
-const FUNCTION_MODULE_PATH = 'app/browser/composables/useTheme.ts'
-const FUNCTION_MODULE_VIOLATION =
-	FUNCTION_MODULE_PATH + ' declarations do not form one matching exported function implementation'
-const FUNCTION_DOMAIN_FILE_PATH = 'app/server/composables.ts'
-const FUNCTION_DOMAIN_FILE_VIOLATION =
-	FUNCTION_DOMAIN_FILE_PATH +
-	' names a function domain, which belongs in a folder rather than a file'
-
-describe('repository coding law', () => {
-	it('keeps Vue single-file components exclusively in browser environments', () => {
-		const files = globSync('{app,src}/**/*.vue')
-
-		expect(files.every(isBrowserVuePath)).toBe(true)
+describe('fleet policy register', () => {
+	it('keeps handlers in the function set and routes out', () => {
+		expect(FUNCTION_SOURCE_FILES).toContain('handlers.ts')
+		expect(FUNCTION_SOURCE_FILES).not.toContain('routes.ts')
 	})
 
-	it('enforces source placement, exports, readonly contracts, and syntax law', () => {
-		expect(inspectCodingWorkspace(process.cwd())).toEqual([])
+	it('accepts a differently shaped workspace without a core environment', () => {
+		expect(inspectPolicySources(GENERIC_POLICY_SOURCES)).toEqual([])
 	})
 
-	it('accepts one matching exported function in a registered domain', () => {
-		expect(
-			inspectCodingLaw(
-				FUNCTION_MODULE_PATH,
-				"import type { Ref } from 'vue'\nexport function useTheme(): Ref<undefined> { throw new Error() }",
-			),
-		).toEqual([])
-	})
-
-	it('accepts one matching exported generator in a registered domain', () => {
-		expect(
-			inspectCodingLaw(FUNCTION_MODULE_PATH, 'export function* useTheme(): Generator<void> {}'),
-		).toEqual([])
-	})
-
-	it('accepts overload signatures beside one matching implementation', () => {
-		expect(
-			inspectCodingLaw(
-				FUNCTION_MODULE_PATH,
-				'export function useTheme(): void\nexport function useTheme(mode: string): void\nexport function useTheme(_mode?: string): void {}',
-			),
-		).toEqual([])
-	})
-
-	it('rejects a bodyless function-domain declaration', () => {
-		expect(
-			inspectCodingLaw(FUNCTION_MODULE_PATH, 'export declare function useTheme(): void'),
-		).toEqual([FUNCTION_MODULE_VIOLATION])
-	})
-
-	it('rejects a mismatched bodyless declaration beside one implementation', () => {
-		expect(
-			inspectCodingLaw(
-				FUNCTION_MODULE_PATH,
-				'declare function smuggled(secret: string): void\nexport function useTheme(): void {}',
-			),
-		).toEqual([FUNCTION_MODULE_VIOLATION])
-	})
-
-	it('rejects two exported functions in a function module', () => {
-		expect(
-			inspectCodingLaw(
-				FUNCTION_MODULE_PATH,
-				'export function useTheme(): void {}\nexport function useMode(): void {}',
-			),
-		).toEqual([FUNCTION_MODULE_VIOLATION])
-	})
-
-	it('rejects module data beside a function-domain export', () => {
-		expect(
-			inspectCodingLaw(
-				FUNCTION_MODULE_PATH,
-				"const THEME = 'dark'\nexport function useTheme(): string { return THEME }",
-			),
-		).toEqual([FUNCTION_MODULE_VIOLATION])
-	})
-
-	it('rejects a function whose name differs from its filename', () => {
-		expect(inspectCodingLaw(FUNCTION_MODULE_PATH, 'export function useMode(): void {}')).toEqual([
-			FUNCTION_MODULE_VIOLATION,
-		])
-	})
-
-	it('rejects a non-exported function-domain declaration', () => {
-		expect(inspectCodingLaw(FUNCTION_MODULE_PATH, 'function useTheme(): void {}')).toEqual([
-			FUNCTION_MODULE_VIOLATION,
-		])
-	})
-
-	it('rejects a default function-domain export', () => {
-		expect(
-			inspectCodingLaw(FUNCTION_MODULE_PATH, 'export default function useTheme(): void {}'),
-		).toEqual([FUNCTION_MODULE_VIOLATION])
-	})
-
-	it('keeps index modules outside the function-domain shape', () => {
-		const path = 'app/browser/composables/index.ts'
-
-		expect(isFunctionDomainPath(path)).toBe(false)
-		expect(inspectCodingLaw(path, 'export function index(): void {}')).toContain(
-			path + ' places module functions in their centralized kind file',
-		)
-	})
-
-	it('keeps main modules outside the function-domain shape', () => {
-		const path = 'app/browser/composables/main.ts'
-
-		expect(isFunctionDomainPath(path)).toBe(false)
-		expect(inspectCodingLaw(path, 'export function main(): void {}')).toContain(
-			path + ' places module functions in their centralized kind file',
-		)
-	})
-
-	it('rejects a file named for a registered function domain', () => {
-		const content =
-			"import { parentPort } from 'node:worker_threads'\nexport function start(): void { parentPort?.close() }"
-
-		expect(inspectCodingLaw(FUNCTION_DOMAIN_FILE_PATH, content)).toEqual([
-			FUNCTION_DOMAIN_FILE_VIOLATION,
-		])
-	})
-
-	it('keeps camelCase modules in unregistered domains under centralized placement', () => {
-		const path = 'app/browser/services/normalizePath.ts'
-
-		expect(isFunctionDomainPath(path)).toBe(false)
-		expect(inspectCodingLaw(path, 'export function normalizePath(): void {}')).toEqual([
-			path + ' places module functions in their centralized kind file',
-		])
-	})
-
-	it('preserves the self-contained Node runtime exemption', () => {
-		const path = 'app/server/worker.ts'
-		const content =
-			"import { parentPort } from 'node:worker_threads'\nconst port = parentPort\nexport function start(): void { port?.close() }"
-
-		expect(inspectCodingLaw(path, content)).toEqual([])
+	it('accepts matching mirrors across arbitrary axes and environments', () => {
+		const tests = [
+			'tests/src/worker/Worker.test.ts',
+			'tests/app/browser/routes.test.ts',
+			'tests/app/edge/deep/integration.test.ts',
+		]
+		const sources = new Set(['src/worker/Worker.ts', 'app/browser/routes.ts'])
+		expect(inspectPolicyMirrorPaths(tests, sources)).toEqual([])
 	})
 })
 
-describe('fleet policy purity', () => {
-	it('keeps fleet policy files free of this package architecture', () => {
+describe('instrument negative controls', () => {
+	for (const control of POLICY_CONTROLS) {
+		it(`${control.label} [membership: ${control.membership}]`, () => {
+			const violations = inspectPolicyControl(control)
+			expect(violations.some((violation) => violation.rule === control.rule)).toBe(true)
+		})
+	}
+})
+
+describe('repository policy', () => {
+	it('enforces placement and mirrors over the real workspace', () => {
 		expect(inspectPolicyWorkspace(process.cwd())).toEqual([])
-	})
-
-	it('reports planted package architecture, so a clean sweep is evidence', () => {
-		const token = POLICY_TOKENS[0]
-		const environment = POLICY_SOURCE_ENVIRONMENTS[0]
-		if (token === undefined || environment === undefined) {
-			throw new Error('The package manifest derived no policy token to plant')
-		}
-		const planted = [
-			'export const ' + token + '_PATH = []',
-			"export const path = 'src/" + environment + "/index.ts'",
-			'',
-		].join('\n')
-
-		expect(inspectPolicyPurity(POLICY_PLANTED_PATH, planted, POLICY_TOKENS)).toEqual([
-			POLICY_PLANTED_PATH + ':1:14 forbids the ' + token + ' package token',
-			POLICY_PLANTED_PATH + ':2:21 forbids a source-environment path literal',
-		])
 	})
 })

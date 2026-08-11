@@ -1,8 +1,9 @@
+import type { Parser } from '@orkestrel/contract'
+import type { EmitterInterface } from '@orkestrel/emitter'
 import type {
 	Artifact,
 	Audit,
 	Blueprint,
-	CompileFailure,
 	CompileRecord,
 	CompilerEventMap,
 	CompilerInterface,
@@ -10,142 +11,197 @@ import type {
 	Group,
 	Plan,
 	Question,
+	ScaffoldErrorCode,
 	Scaffolding,
+	Snapshot,
 } from './types.js'
-import type { EmitterInterface } from '@orkestrel/emitter'
 import { Emitter } from '@orkestrel/emitter'
-import { blueprintToPlan } from './compilers.js'
-import { HOST_PATHS } from './constants.js'
-import { diffPlan, pinPlan } from './helpers.js'
-import { validatePlan } from './validators.js'
+import { cloneValue } from './cloners.js'
+import {
+	applyOverrides,
+	artifactsToQuestions,
+	blueprintToConfigArtifacts,
+	blueprintToDocumentArtifacts,
+	blueprintToGuideArtifacts,
+	blueprintToManifest,
+	blueprintToOrchestrationArtifacts,
+	blueprintToQuestions,
+	blueprintToSourceArtifacts,
+	blueprintToTestArtifacts,
+	nameToHostArtifacts,
+	overridesToQuestions,
+	planToFindings,
+	planToHash,
+} from './compilers.js'
+import { GROUPS } from './constants.js'
 import { ScaffoldError } from './errors.js'
-import { parseCompilerOptions } from './parsers.js'
+import { selectGroups } from './helpers.js'
+import { parseBlueprint, parseCompilerOptions, parseGroups, parseSnapshot } from './parsers.js'
 
 /**
- * The compilation orchestrator — runs the fixed three-stage `[draft, gate,
- * pin]` pipeline over a `Blueprint` and the pure `audit` projection, owning a
- * typed `emitter` (AGENTS §13).
+ * The compile spine: draft, gate, pin, run in that order over a blueprint.
  *
  * @remarks
- * `compile` and `audit` are genuinely synchronous and pure; the gate fails
- * CLOSED — a blueprint failing `validateBlueprint`, or carrying an override
- * that matches no planned artifact or targets a `host`-origin path, yields a
- * visible incomplete `Scaffolding` (`plan` absent, `questions` populated)
- * rather than throwing. A dependency outside the vendored guide set src
- * a non-blocking `Question` and a `host`-origin pointer artifact instead of a
- * fabricated mirror. `compile` emits `compile` only for a complete
- * compilation and `block` for a gated one; `audit` emits `block` (when gated)
- * then `audit`, never `compile`. After `destroy()` every method but the
- * getter and `destroy` itself throws `ScaffoldError('DESTROYED', …)`.
+ * The draft stage assembles the artifacts the selected groups cover. The gate
+ * stage measures the blueprint, its overrides, and the drafted artifacts, and
+ * refuses on a blocking question. The pin stage gives the plan its content
+ * identity. Every stage records its input and its output, and a failed stage
+ * records the coded reason beside them; the stages after a failed one never run,
+ * so the records stop where the compile stopped.
+ *
+ * The compile fails closed on one rule: a scaffolding carries a plan exactly
+ * when no question blocks. A refused blueprint is answered rather than raised,
+ * so a caller reads the refusal from the value it asked for.
+ *
+ * Both entry points snapshot each caller-supplied value and then guard the
+ * snapshot, which is the order `cloneValue` fixes. A value that is not the exact
+ * shape is off-contract input rather than an answerable question, so it raises
+ * `INVALID`. Structure raises; the laws a well-formed blueprint can still break
+ * are the gate's, and they answer with questions.
+ *
+ * Two consequences of that order are worth stating, because they are the ones a
+ * JavaScript caller meets first. A property backed by an accessor is refused
+ * rather than read, which is what closes the race a guard cannot close from
+ * inside; the accessor never runs. And an optional field present with the value
+ * `undefined` is not the exact shape either, which is the same law
+ * `exactOptionalPropertyTypes` already states at compile time.
+ *
+ * Every error this compiler raises is emitted on `error` immediately before it
+ * is thrown, so an observer sees a refusal even where the caller catches it.
  *
  * @example
  * ```ts
- * import { blueprint, Compiler } from '@src/core'
+ * import { createBlueprint, Compiler } from '@orkestrel/scaffold'
  *
  * const compiler = new Compiler()
- * const scaffolding = compiler.compile(blueprint('router', { src: ['core'] }))
- * scaffolding.complete // true
+ * const scaffolding = compiler.compile(createBlueprint('router', { src: ['core'] }))
+ * scaffolding.plan?.hash?.length // 16
  * compiler.destroy()
  * ```
  */
 export class Compiler implements CompilerInterface {
-	// The six runtime `@orkestrel/*` dependencies (plus `guide`) this package
-	// vendors a byte-identical `guides/src/<dep>.md` mirror for (Contract
-	// invariant 7). Any other dependency yields no fabricated mirror — a
-	// `host`-origin pointer artifact plus a non-blocking `Question` instead.
-	static readonly #vendored: readonly string[] = Object.freeze([
-		'@orkestrel/contract',
-		'@orkestrel/emitter',
-		'@orkestrel/markdown',
-		'@orkestrel/template',
-		'@orkestrel/terminal',
-		'@orkestrel/console',
-		'@orkestrel/guide',
-	])
-
 	readonly #emitter: Emitter<CompilerEventMap>
 	#destroyed = false
 
+	/**
+	 * Construct a compiler.
+	 *
+	 * @param options - The initial listeners and the listener-error handler.
+	 * @throws {@link ScaffoldError} coded `INVALID` when `options` is present but
+	 * is not an option bag this compiler accepts.
+	 *
+	 * @remarks
+	 * The options are guarded and never snapshotted: they carry listeners, and a
+	 * function is not data a snapshot can take ownership of. A key outside the
+	 * event map is refused here, so a listener wired to a misspelled event fails
+	 * at construction instead of never firing.
+	 */
 	constructor(options?: CompilerOptions) {
-		const parsed = parseCompilerOptions(options)
+		const accepted = parseCompilerOptions(options)
+		if (options !== undefined && accepted === undefined) {
+			throw new ScaffoldError(
+				'INVALID',
+				'The options argument is not the exact shape this compiler accepts.',
+				{ field: 'options' },
+			)
+		}
 		this.#emitter = new Emitter<CompilerEventMap>({
-			...(parsed.on === undefined ? {} : { on: parsed.on }),
-			...(parsed.error === undefined ? {} : { error: parsed.error }),
+			...(accepted?.on === undefined ? {} : { on: accepted.on }),
+			...(accepted?.error === undefined ? {} : { error: accepted.error }),
 		})
 	}
 
+	/** The compiler's observation channel. */
 	get emitter(): EmitterInterface<CompilerEventMap> {
 		return this.#emitter
 	}
 
 	/**
-	 * Run the three-stage pipeline over a `Blueprint`, returning a complete or
-	 * visible-incomplete `Scaffolding`.
+	 * Compile a blueprint into a plan through the draft, gate, and pin stages.
 	 *
-	 * @param blueprint - The `Blueprint` to compile.
-	 * @param groups - Optional `Group` selection scoping the plan to those
-	 * artifact groups; absent means the full plan.
-	 * @returns The `Scaffolding` outcome of this compile.
+	 * @param blueprint - The workspace specification to compile.
+	 * @param groups - The artifact groups to cover; every group when absent.
+	 * @returns The scaffolding, carrying a plan only when the gate passed.
+	 * @throws {@link ScaffoldError} coded `INVALID` when an argument is not the
+	 * exact shape, and `DESTROYED` when the compiler has been torn down.
+	 *
+	 * @remarks
+	 * Emits `block` with the questions that closed the gate when the compile
+	 * carries no plan, then `compile` with the whole outcome either way, so an
+	 * observer reads every compile from one event and the refusals from the other.
 	 *
 	 * @example
 	 * ```ts
-	 * const scaffolding = compiler.compile(blueprint('timeout', { src: ['core'] }))
-	 * scaffolding.stages.map((record) => record.stage) // ['draft', 'gate', 'pin']
+	 * import type { Blueprint } from '@orkestrel/scaffold'
+	 * import { createCompiler } from '@orkestrel/scaffold'
+	 *
+	 * declare const blueprint: Blueprint
+	 *
+	 * createCompiler().compile(blueprint, ['manifest']).plan?.artifacts.length // 1
 	 * ```
 	 */
 	compile(blueprint: Blueprint, groups?: readonly Group[]): Scaffolding {
 		this.#assertAlive()
-		const scaffolding = this.#run(blueprint, groups)
-		if (scaffolding.complete) this.#emitter.emit('compile', scaffolding)
-		else this.#emitter.emit('block', scaffolding.questions)
+		const accepted = this.#accept(blueprint, parseBlueprint, 'blueprint')
+		const scaffolding = this.#scaffold(accepted, this.#select(groups))
+		if (scaffolding.plan === undefined) this.#emitter.emit('block', scaffolding.questions)
+		this.#emitter.emit('compile', scaffolding)
 		return scaffolding
 	}
 
 	/**
-	 * Compile the blueprint, then diff the resulting plan against the
-	 * caller-supplied current target content.
+	 * Compile a blueprint and compare its plan to a target's current content.
 	 *
-	 * @param blueprint - The `Blueprint` to compile and audit.
-	 * @param current - The target's current content, keyed by artifact path.
-	 * @param groups - Optional `Group` selection scoping the audit to those
-	 * artifact groups; absent means the full plan.
-	 * @returns The `Audit` outcome — a gated blueprint returns `complete: false`
-	 * with the gate's blocking `questions` and zero findings.
+	 * @param blueprint - The workspace specification to compile.
+	 * @param current - The target's exact bytes, keyed by artifact-relative path.
+	 * @param groups - The artifact groups to cover; every group when absent.
+	 * @returns The audit; empty findings and blocking questions when the gate refused.
+	 * @throws {@link ScaffoldError} coded `INVALID` when an argument is not the
+	 * exact shape, and `DESTROYED` when the compiler has been torn down.
+	 *
+	 * @remarks
+	 * A compile that carries no plan says nothing about the target, so the audit
+	 * reports no findings and carries the questions instead. Emits `block` in that
+	 * case, then `audit` with the verdict either way.
 	 *
 	 * @example
 	 * ```ts
-	 * const audit = compiler.audit(blueprint('timeout', { src: ['core'] }), {})
-	 * audit.missing // every artifact — nothing exists at the target yet
+	 * import type { Blueprint } from '@orkestrel/scaffold'
+	 * import { createCompiler } from '@orkestrel/scaffold'
+	 *
+	 * declare const blueprint: Blueprint
+	 *
+	 * createCompiler().audit(blueprint, {}).findings.every(({ drift }) => drift === 'missing') // true
 	 * ```
 	 */
-	audit(
-		blueprint: Blueprint,
-		current: Readonly<Record<string, string>>,
-		groups?: readonly Group[],
-	): Audit {
+	audit(blueprint: Blueprint, current: Snapshot, groups?: readonly Group[]): Audit {
 		this.#assertAlive()
-		const scaffolding = this.#run(blueprint, groups)
-		if (!scaffolding.complete || scaffolding.plan === undefined) {
-			this.#emitter.emit('block', scaffolding.questions)
-			const result: Audit = {
-				findings: [],
-				clean: false,
-				complete: false,
-				questions: scaffolding.questions,
-				drifted: 0,
-				missing: 0,
-				foreign: 0,
-			}
-			this.#emitter.emit('audit', result)
-			return result
+		const accepted = this.#accept(blueprint, parseBlueprint, 'blueprint')
+		const observed = this.#accept(current, parseSnapshot, 'current')
+		const scaffolding = this.#scaffold(accepted, this.#select(groups))
+		if (scaffolding.plan === undefined) this.#emitter.emit('block', scaffolding.questions)
+		const result: Audit = {
+			findings: scaffolding.plan === undefined ? [] : planToFindings(scaffolding.plan, observed),
+			questions: scaffolding.questions,
 		}
-		const diff = diffPlan(scaffolding.plan, current)
-		const result = { ...diff, questions: [...scaffolding.questions, ...diff.questions] }
 		this.#emitter.emit('audit', result)
 		return result
 	}
 
-	/** Idempotent teardown — emits `destroy`, then destroys the emitter LAST. */
+	/**
+	 * Tear the compiler down. Every later call throws, and teardown is idempotent.
+	 *
+	 * @returns Nothing.
+	 *
+	 * @example
+	 * ```ts
+	 * import { createCompiler } from '@orkestrel/scaffold'
+	 *
+	 * const compiler = createCompiler()
+	 * compiler.destroy()
+	 * compiler.emitter.destroyed // true
+	 * ```
+	 */
 	destroy(): void {
 		if (this.#destroyed) return
 		this.#destroyed = true
@@ -153,132 +209,125 @@ export class Compiler implements CompilerInterface {
 		this.#emitter.destroy()
 	}
 
-	// The shared pipeline behind `compile` / `audit` — computes the `Scaffolding`
-	// WITHOUT choreographing the `compile` / `block` / `audit` events, since the
-	// two public methods each own a different emission sequence.
-	#run(blueprint: Blueprint, groups?: readonly Group[]): Scaffolding {
+	// The three stages in order, recording each one and stopping at the first
+	// failure. Both public methods run this and choreograph their own events, so
+	// an audit never emits a compile's completion.
+	#scaffold(blueprint: Blueprint, groups: readonly Group[]): Scaffolding {
 		const stages: CompileRecord[] = []
-		const failures: CompileFailure[] = []
-
-		let draft: Plan | undefined
-		try {
-			draft = blueprintToPlan(blueprint, groups)
-			stages.push({ stage: 'draft', input: blueprint, output: draft, failed: false })
-		} catch (error) {
-			const message = error instanceof Error ? error.message : String(error)
-			stages.push({
-				stage: 'draft',
-				input: blueprint,
-				output: undefined,
-				failed: true,
-				error: message,
-			})
-			failures.push({ stage: 'draft', code: 'INVALID', message })
-			this.#emitter.emit('error', error)
+		const artifacts = this.#draft(blueprint, groups)
+		stages.push({ stage: 'draft', input: { blueprint, groups }, output: artifacts })
+		const questions = this.#gate(blueprint, artifacts)
+		const blocking = questions.filter((question) => question.blocking)
+		if (blocking.length > 0) {
 			stages.push({
 				stage: 'gate',
-				input: undefined,
-				output: undefined,
-				failed: true,
-				error: 'Skipped: draft failed',
+				input: { blueprint, artifacts },
+				output: questions,
+				failure: {
+					code: 'BLOCKED',
+					message: `The gate refused this blueprint on ${blocking.length} blocking question${blocking.length === 1 ? '' : 's'}.`,
+				},
 			})
+			return { questions, stages }
+		}
+		stages.push({ stage: 'gate', input: { blueprint, artifacts }, output: questions })
+		const drafted: Plan = { blueprint, groups, artifacts }
+		const hash = planToHash(drafted)
+		if (hash === undefined) {
+			// An unidentifiable plan is a question raised against the plan, so the
+			// one fail-closed rule still decides it: no plan travels with a blocking
+			// question beside it.
+			const refusal: Question = {
+				field: 'plan',
+				message: 'The plan carries a value that cannot be encoded, so it has no identity.',
+				blocking: true,
+			}
 			stages.push({
 				stage: 'pin',
-				input: undefined,
+				input: drafted,
 				output: undefined,
-				failed: true,
-				error: 'Skipped: draft failed',
+				failure: { code: 'INVALID', message: refusal.message },
 			})
-			return {
-				blueprint,
-				questions: [],
-				stages,
-				failures,
-				complete: false,
-				digest: '',
-			}
+			return { questions: [...questions, refusal], stages }
 		}
-
-		const validation = validatePlan(draft)
-		const dependencyQuestions = this.#dependencyQuestions(blueprint)
-		const blocking = [...validation.questions]
-		const warningQuestions: Question[] = validation.warnings.map((text) => ({
-			field: 'overrides',
-			text,
-			blocking: false,
-		}))
-		const questions: Question[] = [...blocking, ...warningQuestions, ...dependencyQuestions]
-		stages.push({
-			stage: 'gate',
-			input: draft,
-			output: { blocking: blocking.length, questions },
-			failed: blocking.length > 0,
-		})
-
-		if (blocking.length > 0) {
-			const message = `${blocking.length} blocking question${blocking.length === 1 ? '' : 's'}`
-			failures.push({ stage: 'gate', code: 'BLOCKED', message })
-			stages.push({
-				stage: 'pin',
-				input: undefined,
-				output: undefined,
-				failed: true,
-				error: 'Skipped: gate blocked',
-			})
-			return { blueprint, questions, stages, failures, complete: false, digest: '' }
-		}
-
-		try {
-			const pointers = this.#pointerArtifacts(blueprint)
-			const plan = pinPlan({ ...draft, artifacts: [...draft.artifacts, ...pointers] })
-			stages.push({ stage: 'pin', input: draft, output: plan, failed: false })
-			return {
-				blueprint,
-				plan,
-				questions,
-				stages,
-				failures,
-				complete: true,
-				digest: plan.hash ?? '',
-			}
-		} catch (error) {
-			const message = error instanceof Error ? error.message : String(error)
-			stages.push({ stage: 'pin', input: draft, output: undefined, failed: true, error: message })
-			failures.push({ stage: 'pin', code: 'INVALID', message })
-			this.#emitter.emit('error', error)
-			return { blueprint, questions, stages, failures, complete: false, digest: '' }
-		}
+		const plan: Plan = { ...drafted, hash }
+		stages.push({ stage: 'pin', input: drafted, output: plan })
+		return { plan, questions, stages }
 	}
 
-	// Non-blocking questions for a dependency outside the vendored guide set.
-	#dependencyQuestions(blueprint: Blueprint): readonly Question[] {
-		const questions: Question[] = []
-		for (const item of blueprint.dependencies) {
-			if (Compiler.#vendored.includes(item.name)) continue
-			questions.push({
-				field: 'dependencies',
-				text: `Dependency "${item.name}" is not vendored — sync its guides/src mirror from that repo at HEAD`,
-				blocking: false,
-			})
+	// The drafted artifacts, in plan order. The manifest is the one artifact this
+	// package's own fields decide, and it is claimed by birth because a workspace
+	// owns its manifest once it exists. Every other drafted path is vendored.
+	// Overrides land here rather than after the gate, so the bytes the gate
+	// measures are the bytes the plan carries.
+	#draft(blueprint: Blueprint, groups: readonly Group[]): readonly Artifact[] {
+		const drafted: readonly Artifact[] = [
+			{
+				path: 'package.json',
+				group: 'manifest',
+				ownership: 'birth',
+				origin: 'computed',
+				content: blueprintToManifest(blueprint),
+			},
+			...blueprintToConfigArtifacts(blueprint),
+			...blueprintToSourceArtifacts(blueprint),
+			...blueprintToTestArtifacts(blueprint),
+			...blueprintToGuideArtifacts(blueprint),
+			...blueprintToDocumentArtifacts(blueprint),
+			...blueprintToOrchestrationArtifacts(blueprint),
+			...nameToHostArtifacts(blueprint.name),
+		]
+		const covered: Artifact[] = []
+		for (const group of groups) {
+			for (const artifact of drafted) {
+				if (artifact.group === group) covered.push(artifact)
+			}
 		}
-		return questions
+		return applyOverrides(covered, blueprint.overrides)
 	}
 
-	// A host-origin pointer artifact per non-vendored dependency (Contract invariant 7).
-	#pointerArtifacts(blueprint: Blueprint): readonly Artifact[] {
-		const artifacts: Artifact[] = []
-		const guidePath = `guides/src/${blueprint.name}.md`
-		for (const item of blueprint.dependencies) {
-			if (Compiler.#vendored.includes(item.name)) continue
-			const short = item.name.replace('@orkestrel/', '')
-			const path = `guides/src/${short}.md`
-			if (path === guidePath || HOST_PATHS.includes(path)) continue
-			artifacts.push({ path, group: 'guides', origin: 'host', source: path })
-		}
-		return artifacts
+	// Every law measured against one drafted plan. An override is measured against
+	// the artifacts it has already been applied to, which answers identically:
+	// applying one replaces content alone and leaves every path, origin, and group
+	// the refusal reads untouched.
+	#gate(blueprint: Blueprint, artifacts: readonly Artifact[]): readonly Question[] {
+		return [
+			...blueprintToQuestions(blueprint),
+			...overridesToQuestions(blueprint.overrides, artifacts),
+			...artifactsToQuestions(artifacts),
+		]
+	}
+
+	// The groups boundary: absence covers every group, a selection is refused
+	// unless it is one, and what survives is read as membership against `GROUPS`.
+	#select(groups: readonly Group[] | undefined): readonly Group[] {
+		const selection =
+			groups === undefined ? undefined : this.#accept(groups, parseGroups, 'groups', GROUPS)
+		return selectGroups(selection)
+	}
+
+	// Snapshot the caller's value, then guard the snapshot. The snapshot is what
+	// closes the guard/use race: a property backed by an accessor never reaches
+	// the guard, so what the guard measured is what every later read returns.
+	#accept<T>(value: unknown, parse: Parser<T>, field: string, candidates?: readonly string[]): T {
+		const accepted = parse(cloneValue(value))
+		if (accepted !== undefined) return accepted
+		throw this.#error(
+			'INVALID',
+			`The ${field} argument is not the exact shape this compiler accepts.`,
+			candidates === undefined ? { field } : { field, candidates },
+		)
 	}
 
 	#assertAlive(): void {
-		if (this.#destroyed) throw new ScaffoldError('DESTROYED', 'Compiler has been destroyed')
+		if (this.#destroyed) throw this.#error('DESTROYED', 'This compiler has been destroyed.')
+	}
+
+	// Publish the failure on the observation channel, then hand it back to be
+	// thrown at the site that decided it.
+	#error(code: ScaffoldErrorCode, message: string, context?: unknown): ScaffoldError {
+		const error = new ScaffoldError(code, message, context)
+		this.#emitter.emit('error', error)
+		return error
 	}
 }

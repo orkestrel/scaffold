@@ -1,11 +1,7 @@
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
-import {
-	environmentBoundary,
-	outputBoundary,
-	srcCore,
-	resolveWorkspacePath,
-} from '../../vite.config.ts'
+import { environmentBoundary, outputBoundary } from '../helpers.js'
+import { srcCore, resolveWorkspacePath } from '../../vite.config.ts'
 
 export default defineConfig(
 	srcCore({

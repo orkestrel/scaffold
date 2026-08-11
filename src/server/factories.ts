@@ -1,24 +1,26 @@
 import type {
 	MaterializerInterface,
 	MaterializerOptions,
-	SyncInterface,
-	SyncOptions,
+	UpstreamInterface,
+	UpstreamOptions,
 } from './types.js'
 import { Materializer } from './Materializer.js'
-import { Sync } from './Sync.js'
+import { Upstream } from './Upstream.js'
 
 /**
- * Create a `MaterializerInterface` (server) — the materialization entity,
- * seeded from `MaterializerOptions`.
+ * Construct a {@link Materializer}.
  *
- * @param options - Optional `host` root override, emitter hooks, and error handler
- * @returns A {@link MaterializerInterface}
+ * @param options - The vendored host root, the initial listeners, and the listener-error handler.
+ * @returns The materializer, typed as the contract consumers program against.
+ * @throws {@link ScaffoldError} coded `INVALID` when `options` is present but is
+ * not an option bag the materializer accepts, and `TARGET` when the host carries
+ * a manifest that cannot be read or does not match what it stores.
  *
  * @example
  * ```ts
  * import { createMaterializer } from '@orkestrel/scaffold/server'
  *
- * const materializer = createMaterializer()
+ * const materializer = createMaterializer({ host: './dist/host' })
  * materializer.destroy()
  * ```
  */
@@ -27,20 +29,23 @@ export function createMaterializer(options?: MaterializerOptions): MaterializerI
 }
 
 /**
- * Create a `SyncInterface` (server) — the upstream-synchronization entity,
- * seeded from `SyncOptions`.
+ * Construct an {@link Upstream}.
  *
- * @param options - Optional endpoint bases/branch, concurrency, retries, strict, emitter hooks, and error handler
- * @returns A {@link SyncInterface}
+ * @param options - The two endpoints, the request bounds, the initial listeners,
+ * and the listener-error handler.
+ * @returns The reader, typed as the contract consumers program against.
+ * @throws {@link ScaffoldError} coded `INVALID` when `options` is present but is
+ * not an option bag the reader accepts, or when either endpoint names a scheme,
+ * host, or form the reader will not request.
  *
  * @example
  * ```ts
- * import { createSync } from '@orkestrel/scaffold/server'
+ * import { createUpstream } from '@orkestrel/scaffold/server'
  *
- * const sync = createSync()
- * sync.destroy()
+ * const upstream = createUpstream({ guides: { branch: 'main' } })
+ * upstream.destroy()
  * ```
  */
-export function createSync(options?: SyncOptions): SyncInterface {
-	return new Sync(options)
+export function createUpstream(options?: UpstreamOptions): UpstreamInterface {
+	return new Upstream(options)
 }

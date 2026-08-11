@@ -1,83 +1,36 @@
 import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkestrel/emitter'
 
-/** One core, browser, or server environment in the scaffolded workspace. */
+/** One environment a generated workspace selects on its `src` or `app` axis. */
 export type Environment = 'core' | 'browser' | 'server'
 
-/** One supported library-output module format. */
+/** One module format a published library environment builds. */
 export type BuildFormat = 'es' | 'cjs'
 
-/** The deterministic build and export settings for one source environment. */
-export interface SrcDefinition {
-	readonly configs: readonly string[]
-	readonly project: string
-	readonly path: string
-	readonly formats: readonly BuildFormat[]
-}
-
-/** The deterministic config, test-project, and runtime-entry settings for one application environment. */
-export interface AppDefinition {
-	readonly configs: readonly string[]
-	readonly project: string
-	readonly entry?: string
-}
-
 /**
- * Which host-specific machinery a generated root `vite.config.ts` carries.
+ * How an artifact's content is produced.
  *
  * @remarks
- * The boundary GUARANTEES never vary by blueprint: every generated
- * configuration emits the environment-boundary plugin, its module-graph AST
- * audit, and stylesheet rejection, because those enforce owner-independent
- * laws. Only the host-specific pipelines below are selected by the declared
- * environments. `browser` selects the shared root machinery a declared
- * browser environment needs: CSS analysis and the Playwright-backed browser
- * test project. Individual `css` configuration belongs only to the
- * `srcBrowser` and `appBrowser` factories; core and server factories never
- * inherit it. `vue` adds the single-file-component, HTML, and
- * development-server machinery an application browser environment needs;
- * `output` adds build output containment, which an application of `core`
- * alone never builds.
- */
-export interface ViteMachinery {
-	readonly browser: boolean
-	readonly vue: boolean
-	readonly output: boolean
-	readonly showcase: boolean
-}
-
-/**
- * Optional structural facts consumed by a generated root Vite configuration.
- *
- * @remarks
- * `bin` and `integration` select their matching projects. `services` is the
- * sorted list of vendor projects derived from `tests/service/<name>` directories.
- * `global` records the physical `tests/setupGlobal.ts` module and wires it
- * into every selected project that consumes that shared setup. `showcase`
- * records the physical app showcase wrapper and selects its browser machinery.
- */
-export interface ViteFacts {
-	readonly bin?: boolean
-	readonly integration?: boolean
-	readonly services?: readonly string[]
-	readonly global?: boolean
-	readonly showcase?: boolean
-}
-
-/** One generated Vitest project factory and its optional browser-project label. */
-export interface ViteProjectRegistration {
-	readonly project: string
-	readonly browser?: string
-}
-
-/**
- * How an `Artifact`'s content is produced: `host` byte-copied from the vendored
- * data root, `template` filled from a frozen `TemplateDefinition` by
- * `@orkestrel/template`'s pure fill engine, `computed` derived by the core's
- * own combination logic.
+ * `host` is byte-copied from this package's vendored data root. `template` is
+ * filled from a frozen template definition. `computed` is derived by this
+ * package's own combination logic. Origin says nothing about what scaffold
+ * claims at the path; {@link Ownership} says that.
  */
 export type Origin = 'host' | 'template' | 'computed'
 
-/** The closed artifact-group vocabulary a plan selects over. */
+/**
+ * What scaffold claims at an artifact's path.
+ *
+ * @remarks
+ * `content` claims the bytes: audit compares them, and a write restores a
+ * missing file and replaces a stale one. `presence` claims only that the file
+ * exists: audit compares existence, and a write restores an absent file and
+ * never touches present bytes. `birth` claims only the file's creation: audit
+ * never compares it and always reports it aligned, and a write creates it only
+ * while it is absent.
+ */
+export type Ownership = 'content' | 'presence' | 'birth'
+
+/** The artifact group a plan selects over. */
 export type Group =
 	| 'manifest'
 	| 'configs'
@@ -87,63 +40,78 @@ export type Group =
 	| 'docs'
 	| 'orchestration'
 
-/** What a declared public `Member` is in the scaffolded environment. */
-export type Category =
-	| 'type'
-	| 'alias'
-	| 'constant'
-	| 'factory'
-	| 'entity'
-	| 'parser'
-	| 'guard'
-	| 'handler'
-	| 'error'
-
 /**
- * One fleet package's catalog row — the `orkestrel` agent's package-catalog
- * section, derived rather than hand-maintained.
+ * How one target path compares to the artifact planned for it.
  *
  * @remarks
- * `description` is the flattened text of the package's own guide's FIRST
- * blockquote; empty (`''`) when that guide is missing, unreadable, or
- * carries no blockquote — never a placeholder string.
+ * `foreign` is a path the plan does not own at all. It is also the set
+ * `overwrite` deletes from, narrowed by the paths no verb may remove and by
+ * what git tracks.
  */
-export interface CatalogEntry {
-	readonly name: string
-	readonly version: string
-	readonly description: string
-}
-
-/** One `Finding`'s verdict against the target's current content. */
 export type Drift = 'aligned' | 'stale' | 'missing' | 'foreign'
 
 /**
- * One `GuideSync` / `VersionSync`'s currency against upstream.
+ * Whether an upstream lookup produced an answer.
  *
  * @remarks
- * `missing` is an upstream `404`; `failed` is a transport fault.
+ * `found` carries the answer. `missing` is an upstream `404`, which is a
+ * definite answer that the package is not published there. `failed` is a
+ * transport fault, which is no answer at all and may succeed on a later run.
+ * Holding these apart from how a local copy compares is what lets a verdict
+ * omit the value it never received instead of inventing an empty one.
  */
-export type Freshness = 'current' | 'behind' | 'missing' | 'failed'
+export type Lookup = 'found' | 'missing' | 'failed'
 
-/** The three fixed pipeline phases, in order. */
+/** The three compile phases, in the order they run. */
 export type CompileStage = 'draft' | 'gate' | 'pin'
 
-/** Coded `ScaffoldError` reasons. */
+/** The coded reasons a scaffold error is raised. */
 export type ScaffoldErrorCode = 'INVALID' | 'BLOCKED' | 'DESTROYED' | 'TARGET' | 'WRITE' | 'FETCH'
 
+/** The build and export settings one published `src` environment contributes. */
+export interface SrcDefinition {
+	readonly configs: readonly string[]
+	readonly project: string
+	readonly path: string
+	readonly formats: readonly BuildFormat[]
+}
+
+/** The configuration and runtime-entry settings one private `app` environment contributes. */
+export interface AppDefinition {
+	readonly configs: readonly string[]
+	readonly project: string
+	readonly entry?: string
+}
+
 /**
- * One runtime `@orkestrel/*` dependency.
+ * Which host-specific pipelines a generated root Vite configuration carries.
  *
  * @remarks
- * Drives its `package.json` entry, the build externals, and its
- * `guides/src/<dep>.md` mirror — byte-correct for a dep this package vendors
- * (contract / emitter / markdown / template / terminal / console / guide),
- * a `host`-origin pointer the caller syncs otherwise.
+ * Boundary guarantees never vary by blueprint, so they are not selected here:
+ * every generated configuration emits the environment-boundary plugin, its
+ * module-graph audit, and stylesheet rejection. `browser` selects the shared
+ * root CSS analysis and real-browser test machinery. `vue` selects the
+ * single-file-component, HTML, and development-server machinery an application
+ * browser environment needs. `output` selects build-output containment.
+ * `showcase` selects the optional single-file application-browser projection.
+ */
+export interface ViteMachinery {
+	readonly browser: boolean
+	readonly vue: boolean
+	readonly output: boolean
+	readonly showcase: boolean
+}
+
+/**
+ * One runtime `@orkestrel/*` dependency of a generated workspace.
+ *
+ * @remarks
+ * `optional` is meaningful only on a blueprint's `peers`, where it emits a
+ * `peerDependenciesMeta` entry beside the peer.
  */
 export interface Dependency {
 	readonly name: string
 	readonly range: string
-	/** Meaningful only when this `Dependency` appears in a `Blueprint`'s `peers` — `true` emits a `peerDependenciesMeta` `{ optional: true }` entry alongside it. */
 	readonly optional?: boolean
 }
 
@@ -151,70 +119,177 @@ export interface Dependency {
  * One artifact override.
  *
  * @remarks
- * `content` REPLACES the rendered artifact at `path`, never partially merges.
- * An override whose `path` matches no planned artifact, targets a
- * `host`-origin path, or targets `package.json` is a BLOCKING question.
- * Accepted overrides surface as retained non-blocking advisories.
+ * `content` replaces the rendered artifact at `path` and never partially
+ * merges it. An override that matches no planned artifact, that targets a
+ * host-origin artifact, or that targets the manifest is a blocking question
+ * rather than a silent no-op.
  */
 export interface Override {
 	readonly path: string
 	readonly content: string
 }
 
-/** The closed, JSON-serializable source/application workspace spec. */
+/**
+ * The closed, JSON-serializable workspace specification.
+ *
+ * @remarks
+ * `src` selects published library environments and `app` selects private
+ * runtime environments. The two axes are independent, so library-only,
+ * application-only, and mixed workspaces are all first class. `dependencies`
+ * and `peers` are runtime `@orkestrel/*` packages; `extras` are
+ * package-specific development dependencies and may carry any valid npm name.
+ * `bin`, `integration`, `services`, `global`, and `showcase` are structural
+ * facts: each is set only when the workspace physically ships the directory or
+ * exact-case file that defines it, never because of the workspace's name and
+ * never because a sibling fact is set.
+ */
 export interface Blueprint {
 	readonly name: string
 	readonly description?: string
 	readonly keywords: readonly string[]
-	/** Published library environments under `src`; empty for an application-only workspace. */
 	readonly src: readonly Environment[]
-	/** Private runtime environments under `app`; empty for a library-only workspace. */
 	readonly app: readonly Environment[]
 	readonly dependencies: readonly Dependency[]
-	/** Runtime `@orkestrel/*` peers, emitted as `peerDependencies` — a peer flagged `optional` also gets a `peerDependenciesMeta` entry. */
 	readonly peers: readonly Dependency[]
-	/** Package-specific `devDependencies` merged into the generated uniform baseline — the middleware pattern of shipping `@orkestrel/{database,router,server}` for its tests. */
 	readonly extras: readonly Dependency[]
 	readonly version: string
 	readonly engines: string
 	readonly overrides: readonly Override[]
-	/** Structural: `true` only for a repo that ships its own `src/bin` — the self-hosting tax (the manifest's `bin` entry, the `scaffold` script invoking `dist/bin/scaffold.js` directly, the `check/test/build:src:bin` scripts, `build:host`, the `srcBin` vite project) applies ONLY when `true`, never by name. */
 	readonly bin: boolean
-	/** Structural: `true` only for a repo that ships `tests/integration` — a slow, opt-in proof project over the repo's own built output, outside the default run, never by name. */
 	readonly integration: boolean
-	/** Structural vendor names derived from non-empty `tests/service/<name>` directories, sorted in code-unit order. Each vendor owns `tests/service/<name>/setup.ts`; the workspace owns `scripts/service.sh`. */
 	readonly services: readonly string[]
-	/** Structural: `true` only for a repo that carries the physical, exact-case `tests/setupGlobal.ts` module — integration and `srcBrowser` projects consume that shared global setup only under their own additional structural conditions. */
 	readonly global: boolean
-	/** Structural: `true` only for a repo that carries the physical, exact-case `configs/app/vite.showcase.config.ts` regular file; valid only with `app/browser`. */
 	readonly showcase: boolean
 }
 
-/** One declared public export of the scaffolded package; derived by `blueprintToMembers`, never authored. */
-export interface Member {
-	readonly name: string
-	readonly category: Category
-	readonly summary: string
-	readonly environment: Environment
-}
+/**
+ * One package row of the fleet catalog.
+ *
+ * @remarks
+ * A row whose lookup did not find a version carries the cause instead. It is
+ * still a row: dropping it would hide a package the organization publishes
+ * behind one failed request, and inventing a version would state something
+ * upstream never said.
+ */
+export type CatalogEntry =
+	| {
+			readonly name: string
+			readonly lookup: 'found'
+			readonly version: string
+			readonly note?: never
+	  }
+	| {
+			readonly name: string
+			readonly lookup: 'missing' | 'failed'
+			readonly note: string
+			readonly version?: never
+	  }
 
-/** Fields shared by every file in a `Plan`. */
+/**
+ * One declared dependency range measured against the registry's latest release.
+ *
+ * @remarks
+ * A found lookup carries the version upstream reported; one that produced no
+ * answer carries the cause and no version. Whether the declared range already
+ * admits that version is not recorded, because it is a deterministic function
+ * of `range` and `latest`: a stored answer could only disagree with the two
+ * fields beside it. One centralized helper decides it, and every caller reads
+ * the same decision.
+ */
+export type Release =
+	| {
+			readonly name: string
+			readonly range: string
+			readonly lookup: 'found'
+			readonly latest: string
+			readonly note?: never
+	  }
+	| {
+			readonly name: string
+			readonly range: string
+			readonly lookup: 'missing' | 'failed'
+			readonly note: string
+			readonly latest?: never
+	  }
+
+/**
+ * One dependency guide fetched from upstream, beside the local mirror it answers for.
+ *
+ * @remarks
+ * A found lookup carries the fetched bytes; one that produced no answer carries
+ * the cause and no bytes. Either way `observed` is the local mirror's exact
+ * bytes as they stood when the fetch was made, and is absent when the mirror
+ * was not there; it is the precondition the write is held to, exactly as
+ * {@link Finding.observed} is. Whether the mirror is behind is not recorded,
+ * because it is `content` against `observed` and a stored answer could only
+ * disagree with them. These bytes belong to the catalog verb, which is why a
+ * guide mirror is presence-owned: repair restores one that is absent and never
+ * replaces one that is present.
+ */
+export type Mirror =
+	| {
+			readonly name: string
+			readonly path: string
+			readonly lookup: 'found'
+			readonly content: string
+			readonly observed?: string
+			readonly note?: never
+	  }
+	| {
+			readonly name: string
+			readonly path: string
+			readonly lookup: 'missing' | 'failed'
+			readonly note: string
+			readonly observed?: string
+			readonly content?: never
+	  }
+
+/** The fields every planned file carries. */
 export interface ArtifactBase {
 	readonly path: string
 	readonly group: Group
+	readonly ownership: Ownership
 	readonly environment?: Environment
 }
 
-/** A byte-copied host artifact; `source` falls back to `path` when absent. */
+/**
+ * A file byte-copied from the vendored data root, planned before its bytes are read.
+ *
+ * @remarks
+ * `source` falls back to `path` when absent. The pure core face cannot read the
+ * vendored root, so a plan it compiles alone claims only that these files
+ * exist. That is why the ownership here is narrowed away from `content`: a
+ * claim over bytes nobody has read is a claim that cannot be checked. Reading
+ * the vendored root turns the ones scaffold owns the bytes of into
+ * {@link HydratedArtifact}.
+ */
 export interface HostArtifact extends ArtifactBase {
 	readonly origin: 'host'
-	/** Exact lowercase hexadecimal bytes used for byte-safe host auditing. */
-	readonly hex?: string
+	readonly ownership: 'presence' | 'birth'
 	readonly source?: string
+	readonly hex?: never
 	readonly content?: never
 }
 
-/** A text artifact produced by the template or computed compilation path. */
+/**
+ * A vendored file whose exact bytes have been read, so its content can be compared.
+ *
+ * @remarks
+ * `hex` is the canonical lowercase byte pairs of the vendored source. It is
+ * required, which is what makes content ownership honest: every artifact
+ * claiming a byte comparison carries the bytes that comparison needs. Hydration
+ * leaves a guide-mirror pointer and the catalog agent as plain host artifacts,
+ * because another verb owns those bytes.
+ */
+export interface HydratedArtifact extends ArtifactBase {
+	readonly origin: 'host'
+	readonly ownership: 'content'
+	readonly source?: string
+	readonly hex: string
+	readonly content?: never
+}
+
+/** A text file produced by the template or computed compilation path. */
 export interface ContentArtifact extends ArtifactBase {
 	readonly origin: 'template' | 'computed'
 	readonly content: string
@@ -222,174 +297,144 @@ export interface ContentArtifact extends ArtifactBase {
 	readonly source?: never
 }
 
-/** One origin-discriminated file in a `Plan`. */
-export type Artifact = HostArtifact | ContentArtifact
+/**
+ * One file in a plan, discriminated by how its content is produced and what scaffold claims of it.
+ *
+ * @remarks
+ * Every branch that claims `content` ownership carries the bytes to back it:
+ * a hydrated artifact through `hex`, a template or computed artifact through
+ * `content`. No branch can claim a byte comparison it cannot perform.
+ */
+export type Artifact = HostArtifact | HydratedArtifact | ContentArtifact
 
 /** Exact lowercase hexadecimal target bytes keyed by artifact-relative path. */
 export type Snapshot = Readonly<Record<string, string>>
 
 /**
- * The compiled, ordered artifact list plus the independent source/application selection it covers.
+ * The compiled, ordered artifact list and the selection it covers.
  *
  * @remarks
- * `pinPlan` fills `trace` with explicit `src:` and `app:` axes and fills
- * `hash` from the plan's identity payload.
+ * `hash` is the plan's content identity and is absent until the pin stage
+ * fills it.
  */
 export interface Plan {
 	readonly blueprint: Blueprint
 	readonly groups: readonly Group[]
 	readonly artifacts: readonly Artifact[]
-	readonly trace?: string
 	readonly hash?: string
 }
 
-/** One audit drift result. */
-export interface Finding {
-	readonly path: string
-	readonly group: Group
-	readonly drift: Drift
-	/** Exact bounded observed bytes for a stale destination, used as the repair precondition. */
-	readonly observed?: string
-}
-
 /**
- * The whole diff of a plan against a target's current content.
+ * One drift verdict against a target path.
  *
  * @remarks
- * A `Compiler.audit` over a gate-failing blueprint sets `complete: false` with
- * the gate's `questions` and zero findings. `diffPlan` over an existing plan
- * is always complete; a host artifact without `hex` is presence-owned.
+ * `observed` carries the destination's exact bytes and is the precondition the
+ * mutation is held to: a write that replaces stale bytes and a deletion that
+ * removes a foreign file each fail when the destination no longer matches what
+ * the finding recorded. Both therefore require it, and the requirement is in
+ * the type rather than in prose, because a deletion that cannot bind to what
+ * the audit showed is the one thing the destructive verb must never do. A
+ * missing destination has no bytes to record. An aligned one may have gone
+ * uncompared, which is what a birth-owned path always does, so it records
+ * bytes only where they were actually read.
+ */
+export type Finding =
+	| {
+			readonly path: string
+			readonly group: Group
+			readonly drift: 'stale' | 'foreign'
+			readonly observed: string
+	  }
+	| {
+			readonly path: string
+			readonly group: Group
+			readonly drift: 'missing'
+			readonly observed?: never
+	  }
+	| {
+			readonly path: string
+			readonly group: Group
+			readonly drift: 'aligned'
+			readonly observed?: string
+	  }
+
+/**
+ * The whole comparison of a plan against a target's current content.
+ *
+ * @remarks
+ * A blocking question means the gate refused the blueprint, so `findings` is
+ * empty and says nothing about the target. Tallies are not stored: count
+ * `findings` by `drift`.
  */
 export interface Audit {
 	readonly findings: readonly Finding[]
-	readonly clean: boolean
-	readonly complete: boolean
 	readonly questions: readonly Question[]
-	readonly drifted: number
-	readonly missing: number
-	readonly foreign: number
 }
 
 /**
- * One validation issue.
+ * One validation issue raised against a blueprint or a plan.
  *
  * @remarks
- * `blocking: true` fails the gate closed, `false` is an advisory that rides a
- * complete result.
+ * A blocking question fails the gate closed. A non-blocking question is an
+ * advisory that rides a complete result. `candidates` names the accepted
+ * values when the issue is a rejected choice.
  */
 export interface Question {
 	readonly field: string
-	readonly text: string
+	readonly message: string
 	readonly blocking: boolean
 	readonly candidates?: readonly string[]
 }
 
-/** The semantic pass over a blueprint; returns, never throws. */
-export interface Validation {
-	readonly valid: boolean
-	readonly questions: readonly Question[]
-	readonly warnings: readonly string[]
-}
-
-/**
- * One dependency guide fetched from upstream at its `path`, plus its
- * `freshness` verdict against the local mirror.
- *
- * @remarks
- * `note` carries the failure/anomaly CAUSE — a transport error message, an
- * `HTTP <status>`, `redirected (redirect following is disabled)`, or a
- * `response exceeded limit (<n> bytes)` — present on every non-`current`
- * outcome that has a discoverable cause; absent on `current` and on `behind`
- * (both are clean outcomes with nothing to explain).
- */
-export interface GuideSync {
-	readonly name: string
-	readonly path: string
-	readonly content: string
-	readonly freshness: Freshness
-	readonly note?: string
-	/** SHA-256 of the observed local mirror, or `absent`; omitted outside target-aware synchronization. */
-	readonly baseline?: string
-}
-
-/**
- * One dependency's declared `range` against the registry `latest`, plus its
- * `freshness` verdict.
- *
- * @remarks
- * `note` carries the failure/anomaly CAUSE — see {@link GuideSync.note}.
- */
-export interface VersionSync {
-	readonly name: string
-	readonly range: string
-	readonly latest: string
-	readonly freshness: Freshness
-	readonly note?: string
-}
-
-/**
- * The whole outcome of a `Sync.pull` or `Sync.mirror` synchronization.
- *
- * @remarks
- * `clean` is `true` iff no drift AND no failures; `failed` is the count of
- * guide/version fetches that came back `missing` or `failed`.
- */
-export interface SyncReport {
-	readonly target: string
-	readonly guides: readonly GuideSync[]
-	readonly versions: readonly VersionSync[]
-	readonly clean: boolean
-	readonly failed: number
-}
-
-/** The dry-run tally, including the independent source and application environment selections. */
+/** The tally of one plan by artifact origin. */
 export interface PlanSummary {
 	readonly name: string
 	readonly src: readonly Environment[]
 	readonly app: readonly Environment[]
 	readonly groups: readonly Group[]
-	readonly artifacts: number
 	readonly host: number
 	readonly template: number
 	readonly computed: number
 }
 
-/** A structured input/output snapshot of one pipeline phase. */
-export interface CompileRecord {
-	readonly stage: CompileStage
-	readonly input: unknown
-	readonly output: unknown
-	readonly failed: boolean
-	readonly error?: string
-}
-
-/** A visible marker for a stage that failed. */
+/** The coded reason one compile stage failed. */
 export interface CompileFailure {
-	readonly stage: CompileStage
 	readonly code: ScaffoldErrorCode
 	readonly message: string
 }
 
-/** The full, replayable outcome of one `compile()` call. */
+/**
+ * The input and output snapshot of one compile stage.
+ *
+ * @remarks
+ * `failure` is present exactly when the stage failed.
+ */
+export interface CompileRecord {
+	readonly stage: CompileStage
+	readonly input: unknown
+	readonly output: unknown
+	readonly failure?: CompileFailure
+}
+
+/**
+ * The replayable outcome of one compile.
+ *
+ * @remarks
+ * `plan` is present exactly when the compile completed, so it is also the
+ * completeness test, and it carries the blueprint it was compiled from. A
+ * gated compile returns the questions that closed the gate and the stage
+ * records up to it, and no plan; the caller still holds the blueprint it
+ * passed in, so repeating it here would be one fact stored twice and free to
+ * disagree with itself.
+ */
 export interface Scaffolding {
-	readonly blueprint: Blueprint
 	readonly plan?: Plan
 	readonly questions: readonly Question[]
 	readonly stages: readonly CompileRecord[]
-	readonly failures: readonly CompileFailure[]
-	readonly complete: boolean
-	readonly digest: string
+	readonly blueprint?: never
 }
 
-/** A versioned, content-hashed `Plan` inside a `PlanManager`. */
-export interface PlanRecord {
-	readonly id: string
-	readonly plan: Plan
-	readonly version: number
-	readonly hash: string
-}
-
-/** `Compiler`'s push observation channel (AGENTS §13). */
+/** The compiler's observation channel. */
 export type CompilerEventMap = {
 	readonly compile: readonly [scaffolding: Scaffolding]
 	readonly audit: readonly [audit: Audit]
@@ -398,48 +443,36 @@ export type CompilerEventMap = {
 	readonly destroy: readonly []
 }
 
-/** Options for `createCompiler` / the `Compiler` constructor. */
+/** Options for the compiler. */
 export interface CompilerOptions {
 	readonly on?: EmitterHooks<CompilerEventMap>
 	readonly error?: EmitterErrorHandler
 }
 
-/** The compilation orchestrator contract. */
+/** The compilation contract: pure, synchronous, and host-independent. */
 export interface CompilerInterface {
 	readonly emitter: EmitterInterface<CompilerEventMap>
+	/**
+	 * Compile a blueprint into a plan through the draft, gate, and pin stages.
+	 *
+	 * @param blueprint - The workspace specification to compile.
+	 * @param groups - The artifact groups to cover; every group when absent.
+	 * @returns The scaffolding, carrying a plan only when the gate passed.
+	 */
 	compile(blueprint: Blueprint, groups?: readonly Group[]): Scaffolding
-	audit(
-		blueprint: Blueprint,
-		current: Readonly<Record<string, string>>,
-		groups?: readonly Group[],
-	): Audit
-	destroy(): void
-}
-
-/** `PlanManager`'s push observation channel (AGENTS §13). */
-export type PlanManagerEventMap = {
-	readonly add: readonly [id: string]
-	readonly remove: readonly [id: string]
-	readonly destroy: readonly []
-}
-
-/** Options for `createPlanManager` / the `PlanManager` constructor. */
-export interface PlanManagerOptions {
-	readonly plans?: readonly Plan[]
-	readonly on?: EmitterHooks<PlanManagerEventMap>
-	readonly error?: EmitterErrorHandler
-}
-
-/** The plan registry contract (AGENTS §9). */
-export interface PlanManagerInterface {
-	readonly emitter: EmitterInterface<PlanManagerEventMap>
-	readonly size: number
-	has(id: string): boolean
-	plan(id: string): PlanRecord | undefined
-	plans(): readonly PlanRecord[]
-	add(plan: Plan): PlanRecord
-	remove(ids: readonly string[]): boolean
-	remove(id: string): boolean
-	remove(): void
+	/**
+	 * Compile a blueprint and compare its plan to a target's current content.
+	 *
+	 * @param blueprint - The workspace specification to compile.
+	 * @param current - The target's exact bytes, keyed by artifact-relative path.
+	 * @param groups - The artifact groups to cover; every group when absent.
+	 * @returns The audit; empty findings and blocking questions when the gate refused.
+	 */
+	audit(blueprint: Blueprint, current: Snapshot, groups?: readonly Group[]): Audit
+	/**
+	 * Tear the compiler down. Every later call throws, and teardown is idempotent.
+	 *
+	 * @returns Nothing.
+	 */
 	destroy(): void
 }

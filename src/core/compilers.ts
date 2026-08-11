@@ -1,450 +1,364 @@
 import type {
 	Artifact,
+	BuildFormat,
 	Blueprint,
-	Group,
-	Member,
-	Plan,
+	ContentArtifact,
+	Dependency,
 	Environment,
-	ViteFacts,
+	Finding,
+	Override,
+	Plan,
+	Question,
+	Snapshot,
 	ViteMachinery,
-	ViteProjectRegistration,
 } from './types.js'
+import { attempt, canonicalStringify, compareValues, sortValues } from '@orkestrel/contract'
 import { fillTemplate } from '@orkestrel/template'
 import {
-	APP_MATRIX,
 	APP_BROWSER_DEV_DEPENDENCIES,
 	APP_DEV_DEPENDENCIES,
+	APP_MATRIX,
 	APP_SERVER_DEV_DEPENDENCIES,
 	BASE_DEV_DEPENDENCIES,
 	BIN_CONFIGS,
-	CHECKOUT_ACTION_SHA,
-	CONST_KEYWORD,
-	EXPORT_KEYWORD,
-	FUNCTION_KEYWORD,
-	GROUPS,
-	HOST_PATHS,
+	DEPENDENCY_NAME_PATTERN,
 	ENVIRONMENTS,
+	EXTRA_NAME_PATTERN,
+	EXTRA_RANGE_PATTERN,
 	GLOBAL_SETUP_PATH,
-	MAX_NAME_LENGTH,
+	HOST_PATHS,
+	MAX_ARTIFACT_BYTES,
+	MAX_COLLECTION_ITEMS,
+	MAX_TOTAL_ARTIFACT_BYTES,
 	NAME_PATTERN,
+	ORKESTREL_RANGE_PATTERN,
 	SERVICE_SCRIPT_PATH,
 	SHOWCASE_CONFIG_PATH,
+	SHOWCASE_DEV_DEPENDENCIES,
 	SOURCE_BROWSER_DEV_DEPENDENCIES,
-	SETUP_NODE_ACTION_SHA,
 	SRC_MATRIX,
-	TYPESCRIPT_EXTENSIONS,
+	VERSION_PATTERN,
 } from './constants.js'
 import {
-	alignTable,
-	blueprintToMembers,
-	escapeHtmlText,
-	fitsPrintWidth,
-	formatJson,
-	hasApplicationBoundary,
-	hasApplicationShowcase,
-	matchesOrchestrationPath,
-	pascalCase,
-	pinPlan,
-	renderStringArray,
-	selectHostPaths,
+	computeBytes,
+	computeHash,
+	inferDrift,
+	inferGroup,
+	matchesEngines,
 	serializeTypeScriptString,
+	selectHostPaths,
 } from './helpers.js'
-import { TEMPLATES } from './templates.js'
+import { ARTIFACT_TEMPLATES, CONFIG_TEMPLATES } from './templates.js'
 
 /**
- * Resolve the `Group` a byte-copied `HOST_PATHS` entry belongs to.
+ * Select the single published environment a package root points at.
  *
- * @param path - A `HOST_PATHS` entry.
- * @returns The owning `Group`.
- *
- * @example
- * ```ts
- * hostGroup('AGENTS.md') // 'docs'
- * hostGroup('.agents/orchestration.md') // 'orchestration'
- * hostGroup('.claude/rules') // 'orchestration'
- * hostGroup('.cursor/rules') // 'orchestration'
- * hostGroup('.mcp.json') // 'orchestration'
- * hostGroup('.oxlintrc.json') // 'configs'
- * ```
+ * @param src - The declared published environments.
+ * @returns That environment, or `undefined` when the selection declares none or
+ * several.
  *
  * @remarks
- * Takes a `HOST_PATHS` entry, so every example above is one. A bare directory
- * name is not: `ORCHESTRATION_PATH_PREFIXES` entries carry a trailing slash, so
- * `hostGroup('.cursor')` is `configs`, and no vendored entry has that form.
- *
- * Below the `docs` branch the split is by what a path governs rather than where
- * it sits, which is why both MCP registrations — `.mcp.json` and
- * `.cursor/mcp.json` — group with the harness bridges instead of with the root
- * dotfiles beside them. The `docs` branch is checked first and is deliberately
- * positional: `AGENTS.md`, `CLAUDE.md`, and `LICENSE` are the root documents, and
- * `CLAUDE.md` stays there as a root document even though it is also a harness
- * bridge. A plan selecting `orchestration` therefore carries two of the three
- * bridges; a plan selecting `docs` carries the third.
- */
-export function hostGroup(path: string): Group {
-	if (path === 'AGENTS.md' || path === 'CLAUDE.md' || path === 'LICENSE') {
-		return 'docs'
-	}
-	if (matchesOrchestrationPath(path)) return 'orchestration'
-	if (path.startsWith('tests/')) return 'tests'
-	if (path === 'guides/src/guide.md' || path === 'guides/src/scaffold.md') return 'guides'
-	return 'configs'
-}
-
-/**
- * Fill one `TEMPLATES` entry into a `template`-origin `Artifact`, optionally
- * tagged with the owning `Environment` (source/tests artifacts that live under a
- * declared environment's tree).
- *
- * @param path - The artifact's output path.
- * @param group - The artifact's `Group`.
- * @param id - The `TEMPLATES` entry id to fill.
- * @param values - The placeholder values to fill the template with.
- * @param environment - The owning `Environment`, when the artifact lives under a declared environment's tree.
- * @returns The filled `template`-origin `Artifact`.
+ * A workspace publishing exactly one environment puts it at the package root,
+ * so its entry fields and its `'.'` export condition both name that
+ * environment's build. A workspace publishing several puts core at the root and
+ * gives every other environment a subpath, so there is no single root to name.
+ * Both callers read the same answer, which is why the branch is decided once
+ * here rather than twice.
  *
  * @example
  * ```ts
- * fillArtifact('README.md', 'docs', 'readme', { name: 'router', pascal: 'Router' })
- * // { path: 'README.md', group: 'docs', origin: 'template', content: '# router\n…' }
+ * import { srcToRoot } from '@orkestrel/scaffold'
+ *
+ * srcToRoot(['browser']) // 'browser'
+ * srcToRoot(['core', 'server']) // undefined
  * ```
  */
-export function fillArtifact(
+export function srcToRoot(src: readonly Environment[]): Environment | undefined {
+	if (src.length !== 1) return undefined
+	return src[0]
+}
+
+/**
+ * Build one `exports` condition block for a built environment.
+ *
+ * @param path - The extensionless `dist` path both conditions point at.
+ * @param formats - The module formats that environment builds.
+ * @returns The condition block: an `import` condition always, and a `require`
+ * condition only where a CommonJS build exists.
+ *
+ * @remarks
+ * The formats decide the shape, so no caller repeats the rule. An environment
+ * that builds ES only publishes an `import` condition alone rather than a
+ * `default` one, because a `default` condition answers `require` too and would
+ * hand a CommonJS consumer a module its loader cannot read.
+ *
+ * @example
+ * ```ts
+ * import { pathToCondition } from '@orkestrel/scaffold'
+ *
+ * pathToCondition('./dist/src/browser/index', ['es'])
+ * // { import: { types: './dist/src/browser/index.d.ts', default: './dist/src/browser/index.js' } }
+ * ```
+ */
+export function pathToCondition(
 	path: string,
-	group: Group,
-	id: string,
-	values: Readonly<Record<string, unknown>>,
-	environment?: Environment,
-): Artifact {
-	const definition = TEMPLATES[id]
-	if (!definition) throw new Error(`Unknown template id: ${id}`)
-	const content = fillTemplate(definition.content, values, {
-		missing: 'error',
-		placeholders: definition.placeholders,
-	})
-	return environment === undefined
-		? { path, group, origin: 'template', content }
-		: { path, group, origin: 'template', environment, content }
+	formats: readonly BuildFormat[],
+): Readonly<Record<string, unknown>> {
+	const module = { types: `${path}.d.ts`, default: `${path}.js` }
+	if (!formats.includes('cjs')) return { import: module }
+	return { import: module, require: { types: `${path}.d.cts`, default: `${path}.cjs` } }
 }
 
 /**
- * Classify a blueprint's src into the manifest/exports variant class.
+ * Project a published selection into the manifest's entry fields.
  *
- * @param src - The declared `Environment[]`.
- * @returns The sole declared `Environment`, or `'multi'` when two or more are declared.
+ * @param src - The declared published environments.
+ * @returns The `main` and `module` fields, plus `types` when one environment
+ * owns the package root.
  *
- * @example
- * ```ts
- * srcVariant(['core']) // 'core'
- * srcVariant(['core', 'server']) // 'multi'
- * ```
- */
-export function srcVariant(src: readonly Environment[]): Environment | 'multi' {
-	if (src.length > 1) return 'multi'
-	const [only] = src
-	return only ?? 'core'
-}
-
-/**
- * Build the `main` / `module` / top-level `types` entry fields.
- *
- * @param src - The declared `Environment[]`.
- * @returns The `package.json` `main` / `module` / optional `types` fields.
+ * @remarks
+ * `main` follows the root environment's own formats, so an environment that
+ * builds ES only points both fields at the same file rather than promising a
+ * CommonJS build that never runs. A selection with several environments carries
+ * no top-level `types`, because each environment declares its own under its
+ * subpath and a single top-level field could only name one of them.
  *
  * @example
  * ```ts
- * entryFields(['browser']).main // './dist/src/browser/index.js'
+ * import { srcToEntry } from '@orkestrel/scaffold'
+ *
+ * srcToEntry(['core']).main // './dist/src/core/index.cjs'
+ * srcToEntry(['browser']).main // './dist/src/browser/index.js'
  * ```
  */
-export function entryFields(src: readonly Environment[]): {
+export function srcToEntry(src: readonly Environment[]): {
 	readonly main: string
 	readonly module: string
 	readonly types?: string
 } {
-	const variant = srcVariant(src)
-	if (variant === 'multi') {
-		return { main: './dist/src/core/index.cjs', module: './dist/src/core/index.js' }
-	}
-	const root: Environment = variant
-	if (root === 'browser') {
-		return {
-			main: './dist/src/browser/index.js',
-			module: './dist/src/browser/index.js',
-			types: './dist/src/browser/index.d.ts',
-		}
-	}
-	if (root === 'server') {
-		return {
-			main: './dist/src/server/index.cjs',
-			module: './dist/src/server/index.js',
-			types: './dist/src/server/index.d.ts',
-		}
-	}
-	return {
-		main: './dist/src/core/index.cjs',
-		module: './dist/src/core/index.js',
-		types: './dist/src/core/index.d.ts',
-	}
+	const root = srcToRoot(src)
+	const environment = root ?? 'core'
+	const base = `./dist/src/${environment}/index`
+	const main = SRC_MATRIX[environment].formats.includes('cjs') ? `${base}.cjs` : `${base}.js`
+	if (root === undefined) return { main, module: `${base}.js` }
+	return { main, module: `${base}.js`, types: `${base}.d.ts` }
 }
 
 /**
- * One dual-format (`import` + `require`) `exports` condition block.
+ * Project a published selection into the manifest's `exports` map.
  *
- * @param path - The extensionless dist path to point both conditions at.
- * @returns The dual `import`/`require` exports condition object.
+ * @param src - The declared published environments.
+ * @returns The map, keyed by subpath in `ENVIRONMENTS` order.
  *
- * @example
- * ```ts
- * dualCondition('./dist/src/core/index')
- * // { import: { types: '….d.ts', default: '….js' }, require: { types: '….d.cts', default: '….cjs' } }
- * ```
- */
-export function dualCondition(path: string): Readonly<Record<string, unknown>> {
-	return {
-		import: { types: `${path}.d.ts`, default: `${path}.js` },
-		require: { types: `${path}.d.cts`, default: `${path}.cjs` },
-	}
-}
-
-/**
- * Build the `package.json` `exports` map.
- *
- * @param src - The declared `Environment[]`.
- * @returns The `package.json` `exports` map.
+ * @remarks
+ * One environment owns the package root and every other declared environment
+ * takes the subpath its `SRC_MATRIX` row names, so the map never invents a
+ * subpath. `./package.json` is published alongside, which is what lets a
+ * consumer's tooling read the manifest of a package whose exports are otherwise
+ * closed. A selection publishing nothing answers an empty map rather than a
+ * core-rooted one, because a workspace with no published environment declares
+ * no exports at all.
  *
  * @example
  * ```ts
- * exportsMap(['core'])['.'] // dual import/require condition block
+ * import { srcToExports } from '@orkestrel/scaffold'
+ *
+ * Object.keys(srcToExports(['core', 'server'])) // ['.', './server', './package.json']
+ * srcToExports([]) // {}
  * ```
  */
-export function exportsMap(src: readonly Environment[]): Readonly<Record<string, unknown>> {
-	const variant = srcVariant(src)
-	if (variant === 'browser') {
-		return {
-			'.': {
-				types: './dist/src/browser/index.d.ts',
-				import: './dist/src/browser/index.js',
-				default: './dist/src/browser/index.js',
-			},
-			'./package.json': './package.json',
+export function srcToExports(src: readonly Environment[]): Readonly<Record<string, unknown>> {
+	if (src.length === 0) return {}
+	const map: Record<string, unknown> = {}
+	const root = srcToRoot(src)
+	const environment = root ?? 'core'
+	map['.'] = pathToCondition(`./dist/src/${environment}/index`, SRC_MATRIX[environment].formats)
+	if (root === undefined) {
+		for (const declared of ENVIRONMENTS) {
+			if (declared === 'core' || !src.includes(declared)) continue
+			const row = SRC_MATRIX[declared]
+			map[row.path] = pathToCondition(`./dist/src/${declared}/index`, row.formats)
 		}
-	}
-	if (variant === 'server') {
-		return { '.': dualCondition('./dist/src/server/index'), './package.json': './package.json' }
-	}
-	if (variant === 'core') {
-		return { '.': dualCondition('./dist/src/core/index'), './package.json': './package.json' }
-	}
-	const map: Record<string, unknown> = { '.': dualCondition('./dist/src/core/index') }
-	for (const environment of src) {
-		if (environment === 'core') continue
-		const row = SRC_MATRIX[environment]
-		if (environment === 'browser') {
-			map[row.path] = {
-				import: {
-					types: './dist/src/browser/index.d.ts',
-					default: './dist/src/browser/index.js',
-				},
-			}
-			continue
-		}
-		map[row.path] = dualCondition(`./dist/src/${environment}/index`)
 	}
 	map['./package.json'] = './package.json'
 	return map
 }
 
 /**
- * A code-unit (not locale-sensitive) comparator — matches the `keywords` sort
- * and keeps ordering stable across locales/environments.
+ * Project a blueprint into the development dependencies its manifest declares.
  *
- * @param a - The first string.
- * @param b - The second string.
- * @returns `-1` / `0` / `1` per code-unit order.
+ * @param blueprint - The workspace specification.
+ * @returns The merged set, sorted by package name.
+ *
+ * @remarks
+ * The shared toolchain is the baseline every generated workspace carries, and
+ * each declared axis adds the set its host needs. A declared extra or peer is
+ * applied after those, so a workspace that pins a range for a package the
+ * conditional sets also name gets the range it declared. An extra that restates
+ * a shared toolchain pin never reaches here, because the gate refuses it.
+ *
+ * A peer is declared here as well as under `peerDependencies`, because a peer is
+ * not installed by the workspace that declares it and developing against one
+ * requires it present. A runtime dependency is the opposite case and is removed:
+ * it is already installed, so a second declaration would state one fact twice
+ * and the two ranges would be free to disagree.
+ *
+ * A workspace never declares itself, so its own package name is removed. That
+ * matters for a workspace named after a package the baseline already carries:
+ * the baseline is a list of what a workspace consumes, and a workspace does not
+ * consume itself.
  *
  * @example
  * ```ts
- * [...['b', 'a']].sort(compareCodeUnit) // ['a', 'b']
+ * import type { Blueprint } from '@orkestrel/scaffold'
+ * import { blueprintToDevDependencies } from '@orkestrel/scaffold'
+ *
+ * declare const blueprint: Blueprint
+ *
+ * blueprintToDevDependencies(blueprint).typescript // the shared TypeScript pin
  * ```
  */
-export function compareCodeUnit(a: string, b: string): number {
-	return a < b ? -1 : a > b ? 1 : 0
-}
-
-/**
- * The complete development dependency set one blueprint emits. The shared
- * baseline is extended by package extras, dev-installed peers, selected
- * browser environments, and the bin axis's browser test provider.
- *
- * @param spec - The blueprint whose development dependencies are required.
- * @returns The merged `devDependencies` record.
- *
- * @example
- * ```ts
- * devDependenciesFor(blueprint('router'))['typescript'] // '^6.0.3'
- * ```
- */
-export function devDependenciesFor(spec: Blueprint): Readonly<Record<string, string>> {
-	const dependencies: Record<string, string> = {
+export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Record<string, string>> {
+	const merged: Record<string, string> = {
 		...BASE_DEV_DEPENDENCIES,
+		...(blueprint.src.includes('browser') ? SOURCE_BROWSER_DEV_DEPENDENCIES : {}),
+		...(blueprint.app.length > 0 ? APP_DEV_DEPENDENCIES : {}),
+		...(blueprint.app.includes('browser') ? APP_BROWSER_DEV_DEPENDENCIES : {}),
+		...(blueprint.showcase ? SHOWCASE_DEV_DEPENDENCIES : {}),
+		...(blueprint.app.includes('server') ? APP_SERVER_DEV_DEPENDENCIES : {}),
 	}
-	for (const extra of [...spec.extras].sort((a, b) => compareCodeUnit(a.name, b.name))) {
-		dependencies[extra.name] = extra.range
-	}
-	for (const peer of [...spec.peers].sort((a, b) => compareCodeUnit(a.name, b.name))) {
-		dependencies[peer.name] = peer.range
-	}
-	return {
-		...dependencies,
-		...(spec.src.includes('browser') ? SOURCE_BROWSER_DEV_DEPENDENCIES : {}),
-		...(spec.app.length > 0 ? APP_DEV_DEPENDENCIES : {}),
-		...(spec.app.includes('browser') ? APP_BROWSER_DEV_DEPENDENCIES : {}),
-		...(spec.app.includes('server') ? APP_SERVER_DEV_DEPENDENCIES : {}),
-		...(spec.showcase ? { 'vite-plugin-singlefile': '^2.3.3' } : {}),
-		...(spec.bin
-			? {
-					'@vitest/browser-playwright':
-						SOURCE_BROWSER_DEV_DEPENDENCIES['@vitest/browser-playwright'],
-				}
-			: {}),
-	}
+	for (const extra of blueprint.extras) merged[extra.name] = extra.range
+	for (const peer of blueprint.peers) merged[peer.name] = peer.range
+	const own = blueprint.src.length > 0 ? `@orkestrel/${blueprint.name}` : blueprint.name
+	const runtime = new Set(blueprint.dependencies.map((dependency) => dependency.name))
+	return Object.fromEntries(
+		Object.entries(merged)
+			.filter(([name]) => name !== own && !runtime.has(name))
+			.sort(([left], [right]) => compareValues(left, right)),
+	)
 }
 
 /**
- * Compute the `package.json` artifact's `content`, applying the manifest and
- * exports combination rules over a blueprint's src — grounded against the
- * live @orkestrel/middleware (core+server) and @orkestrel/router
- * (core+browser+server) exemplars.
+ * Project a blueprint into the scripts its manifest declares.
  *
- * @param spec - The `Blueprint` to derive the manifest from.
- * @returns The `package.json` file content, newline-terminated.
+ * @param blueprint - The workspace specification.
+ * @returns The scripts, in the order the manifest lists them.
+ *
+ * @remarks
+ * Each script is the workspace-level contract the repository rules fix, narrowed
+ * to the axes the blueprint declares: a check and a test script per declared
+ * environment, an aggregate over each axis, the policy and configuration
+ * proofs every workspace can pass before it has a public API, and one build per
+ * target that actually builds. The isolated installed-package integration
+ * proof stays out of `test` and runs from `prepublishOnly` instead.
+ *
+ * The configuration paths interpolated here are the same ones `SRC_MATRIX` and
+ * `APP_MATRIX` list as each environment's configuration files, so a rename in
+ * either matrix is a rename in both places.
  *
  * @example
  * ```ts
- * packageManifest(blueprint('router')) // '{\n\t"name": "@orkestrel/router",\n…}\n'
+ * import type { Blueprint } from '@orkestrel/scaffold'
+ * import { blueprintToScripts } from '@orkestrel/scaffold'
+ *
+ * declare const blueprint: Blueprint
+ *
+ * blueprintToScripts(blueprint)['format:check'] // 'oxfmt --config .oxfmtrc.json --check .'
  * ```
  */
-export function packageManifest(spec: Blueprint): string {
-	const hasSource = spec.src.length > 0
-	const entry = hasSource ? entryFields(spec.src) : undefined
-	const dependencies: Record<string, string> = {}
-	for (const dep of [...spec.dependencies].sort((a, b) => compareCodeUnit(a.name, b.name))) {
-		dependencies[dep.name] = dep.range
-	}
-	const peerDependencies: Record<string, string> = {}
-	for (const peer of [...spec.peers].sort((a, b) => compareCodeUnit(a.name, b.name))) {
-		peerDependencies[peer.name] = peer.range
-	}
-	const peerDependenciesMeta: Record<string, { readonly optional: true }> = {}
-	for (const peer of spec.peers) {
-		if (peer.optional === true) peerDependenciesMeta[peer.name] = { optional: true }
-	}
-	// Scripts are built by sequential assignment so aggregate + per-environment
-	// keys interleave in the exact live-package insertion order (`check:src`
-	// immediately followed by each `check:src:<environment>`, and so on).
+export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string, string>> {
+	const publishes = blueprint.src.length > 0
+	const integrates = publishes && blueprint.integration
+	const compiles = publishes || blueprint.bin
+	const runtime = blueprint.app.filter((environment) => environment !== 'core')
+	const vitest = 'vitest run --config vite.config.ts --no-cache --reporter=dot'
 	const scripts: Record<string, string> = {
 		clean: "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
 		copy: "node -e \"const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)\"",
-		scaffold: spec.bin ? 'node ./dist/bin/scaffold.js' : 'scaffold',
-		lint: 'oxlint --config .oxlintrc.json --fix --deny-warnings .',
+		format: 'oxfmt --config .oxfmtrc.json --write .',
+		'format:check': 'oxfmt --config .oxfmtrc.json --check .',
+		lint: 'oxlint --config .oxlintrc.json --fix .',
+		'lint:check': 'oxlint --config .oxlintrc.json --deny-warnings .',
 		check: [
 			'tsc --noEmit --project tsconfig.json',
-			...(hasSource || spec.bin ? ['npm run check:src'] : []),
-			...(spec.app.length > 0 ? ['npm run check:app'] : []),
+			...(compiles ? ['npm run check:src'] : []),
+			...(blueprint.app.length > 0 ? ['npm run check:app'] : []),
 		].join(' && '),
 	}
-	if (hasSource || spec.bin) {
-		scripts['check:src'] =
-			spec.src.map((environment) => `npm run check:src:${environment}`).join(' && ') +
-			(spec.bin ? `${spec.src.length > 0 ? ' && ' : ''}npm run check:src:bin` : '')
-		for (const environment of spec.src) {
+	if (compiles) {
+		scripts['check:src'] = [
+			...blueprint.src.map((environment) => `npm run check:src:${environment}`),
+			...(blueprint.bin ? ['npm run check:src:bin'] : []),
+		].join(' && ')
+		for (const environment of blueprint.src) {
 			scripts[`check:src:${environment}`] =
 				`tsc --noEmit -p configs/src/tsconfig.${environment}.json`
 		}
+		if (blueprint.bin) scripts['check:src:bin'] = 'tsc --noEmit -p configs/src/tsconfig.bin.json'
 	}
-	if (spec.bin) scripts['check:src:bin'] = 'tsc --noEmit -p configs/src/tsconfig.bin.json'
-	if (spec.app.length > 0) {
-		scripts['check:app'] = spec.app
+	if (blueprint.app.length > 0) {
+		scripts['check:app'] = blueprint.app
 			.map((environment) => `npm run check:app:${environment}`)
 			.join(' && ')
-		for (const environment of spec.app) {
+		for (const environment of blueprint.app) {
 			scripts[`check:app:${environment}`] =
 				environment === 'browser'
 					? 'vue-tsc --noEmit -p configs/app/tsconfig.browser.json'
 					: `tsc --noEmit -p configs/app/tsconfig.${environment}.json`
 		}
 	}
-	scripts.format = 'oxfmt --config .oxfmtrc.json --write .'
-	scripts['format:check'] = 'oxfmt --config .oxfmtrc.json --check .'
-	scripts['lint:check'] = 'oxlint --config .oxlintrc.json --deny-warnings .'
 	scripts.test = [
-		...(hasSource || spec.bin ? ['npm run test:src'] : []),
-		...(spec.app.length > 0 ? ['npm run test:app'] : []),
+		...(compiles ? ['npm run test:src'] : []),
+		...(blueprint.app.length > 0 ? ['npm run test:app'] : []),
 		'npm run test:policy',
 		'npm run test:config',
-		'npm run test:guides',
 	].join(' && ')
-	if (hasSource || spec.bin) {
-		scripts['test:src'] =
-			'vitest run --config vite.config.ts --no-cache --reporter=dot ' +
-			spec.src.map((environment) => `--project src:${environment}`).join(' ') +
-			(spec.bin ? `${spec.src.length > 0 ? ' ' : ''}--project src:bin` : '')
-		for (const environment of spec.src) {
-			scripts[`test:src:${environment}`] =
-				`vitest run --config vite.config.ts --no-cache --reporter=dot --project src:${environment}`
+	if (compiles) {
+		scripts['test:src'] = [
+			vitest,
+			...blueprint.src.map((environment) => `--project ${SRC_MATRIX[environment].project}`),
+			...(blueprint.bin ? ['--project src:bin'] : []),
+		].join(' ')
+		for (const environment of blueprint.src) {
+			scripts[`test:src:${environment}`] = `${vitest} --project ${SRC_MATRIX[environment].project}`
+		}
+		if (blueprint.bin) scripts['test:src:bin'] = `${vitest} --project src:bin`
+	}
+	if (blueprint.app.length > 0) {
+		scripts['test:app'] = [
+			vitest,
+			...blueprint.app.map((environment) => `--project ${APP_MATRIX[environment].project}`),
+		].join(' ')
+		for (const environment of blueprint.app) {
+			scripts[`test:app:${environment}`] = `${vitest} --project ${APP_MATRIX[environment].project}`
 		}
 	}
-	if (spec.bin)
-		scripts['test:src:bin'] =
-			'vitest run --config vite.config.ts --no-cache --reporter=dot --project src:bin'
-	if (spec.integration)
-		scripts['test:integration'] =
-			'vitest run --config vite.config.ts --no-cache --reporter=dot --project integration'
-	if (spec.bin && spec.integration)
-		scripts['test:equivalence'] =
-			"node -e \"const c=require('node:child_process'),p=process.env.npm_execpath;if(p===undefined)process.exit(1);const r=c.spawnSync(process.execPath,[p,'run','test:integration'],{stdio:'inherit',env:{...process.env,SCAFFOLD_BOUNDARY_EQUIVALENCE:'1'}});process.exit(r.status??1)\""
-	if (spec.services.length > 0) {
-		scripts['test:service'] =
-			'vitest run --config vite.config.ts --no-cache --reporter=dot ' +
-			spec.services.map((service) => `--project service:${service}`).join(' ')
-		for (const service of spec.services) {
-			scripts[`test:service:${service}`] =
-				`vitest run --config vite.config.ts --no-cache --reporter=dot --project service:${service}`
-		}
-	}
-	if (spec.app.length > 0) {
-		scripts['test:app'] =
-			'vitest run --config vite.config.ts --no-cache --reporter=dot ' +
-			spec.app.map((environment) => `--project ${APP_MATRIX[environment].project}`).join(' ')
-		for (const environment of spec.app) {
-			scripts[`test:app:${environment}`] =
-				`vitest run --config vite.config.ts --no-cache --reporter=dot --project ${APP_MATRIX[environment].project}`
-		}
-	}
-	scripts['test:policy'] =
-		'vitest run --config vite.config.ts --no-cache --reporter=dot --project policy'
-	scripts['test:config'] =
-		'vitest run --config vite.config.ts --no-cache --reporter=dot --project config'
-	scripts['test:guides'] = 'vitest run --config vite.config.ts --reporter=dot --project guides'
+	scripts['test:policy'] = `${vitest} --project policy`
+	scripts['test:config'] = `${vitest} --project config`
+	scripts['test:probe'] =
+		'vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe'
+	if (integrates) scripts['test:integration'] = `${vitest} --project integration`
 	scripts.build = [
 		'npm run clean',
-		...(hasSource || spec.bin ? ['npm run build:src'] : []),
-		...(spec.app.length > 0 ? ['npm run build:app'] : []),
-		...(spec.bin ? ['npm run build:host'] : []),
+		...(compiles ? ['npm run build:src'] : []),
+		...(blueprint.app.length > 0 ? ['npm run build:app'] : []),
 	].join(' && ')
-	if (hasSource || spec.bin) {
-		scripts['build:src'] =
-			spec.src.map((environment) => `npm run build:src:${environment}`).join(' && ') +
-			(spec.bin ? `${spec.src.length > 0 ? ' && ' : ''}npm run build:src:bin` : '')
-		for (const environment of spec.src) {
-			scripts[`build:src:${environment}`] =
-				environment === 'browser'
-					? `vite build --config configs/src/vite.${environment}.config.ts`
-					: `vite build --config configs/src/vite.${environment}.config.ts && npm run copy dist/src/${environment}/index.d.ts dist/src/${environment}/index.d.cts`
+	if (compiles) {
+		scripts['build:src'] = [
+			...blueprint.src.map((environment) => `npm run build:src:${environment}`),
+			...(blueprint.bin ? ['npm run build:src:bin'] : []),
+		].join(' && ')
+		for (const environment of blueprint.src) {
+			const build = `vite build --config configs/src/vite.${environment}.config.ts`
+			scripts[`build:src:${environment}`] = SRC_MATRIX[environment].formats.includes('cjs')
+				? `${build} && npm run copy dist/src/${environment}/index.d.ts dist/src/${environment}/index.d.cts`
+				: build
+		}
+		if (blueprint.bin) {
+			scripts['build:src:bin'] = 'vite build --config configs/src/vite.bin.config.ts'
 		}
 	}
-	if (spec.app.length > 0) {
-		const runtime = spec.app.filter((environment) => environment !== 'core')
+	if (blueprint.app.length > 0) {
 		scripts['build:app'] =
 			runtime.length > 0
 				? runtime.map((environment) => `npm run build:app:${environment}`).join(' && ')
@@ -453,2838 +367,265 @@ export function packageManifest(spec: Blueprint): string {
 			scripts[`build:app:${environment}`] =
 				`vite build --config configs/app/vite.${environment}.config.ts`
 		}
-		if (spec.app.includes('browser')) {
-			scripts.dev = 'vite --config configs/app/vite.browser.config.ts'
-			if (spec.showcase) {
-				scripts.showcase = `vite --config ${SHOWCASE_CONFIG_PATH}`
-				scripts['build:showcase'] = `vite build --config ${SHOWCASE_CONFIG_PATH}`
-				scripts.show =
-					'npm run format && npm run build:showcase && npm run copy dist/showcase/index.html demo/showcase.html'
-			}
-		}
-		if (spec.app.includes('server')) {
-			scripts.serve = 'node dist/app/server/main.cjs'
-			scripts['serve:build'] = 'npm run build:app:server && npm run serve'
+	}
+	if (blueprint.app.includes('browser')) {
+		scripts.dev = 'vite --config configs/app/vite.browser.config.ts'
+		if (blueprint.showcase) {
+			scripts.showcase = `vite --config ${SHOWCASE_CONFIG_PATH}`
+			scripts['build:showcase'] = `vite build --config ${SHOWCASE_CONFIG_PATH}`
+			scripts.show =
+				'npm run format && npm run build:showcase && npm run copy dist/showcase/index.html demo/showcase.html'
 		}
 	}
-	if (spec.bin) {
-		scripts['build:src:bin'] = 'vite build --config configs/src/vite.bin.config.ts'
-		scripts['build:host'] =
-			"node -e \"import('./dist/src/server/index.js').then((m)=>{const n=m.stageHost(process.cwd(),'dist/host').length;console.log('build-host: staged '+n+' file(s) into dist/host')})\""
+	if (blueprint.app.includes('server')) {
+		scripts.serve = 'node dist/app/server/main.cjs'
+		scripts['serve:build'] = 'npm run build:app:server && npm run serve'
 	}
-	scripts.prepublishOnly =
-		'npm run format:check && npm run lint:check && npm run check && npm run build && npm test' +
-		(spec.integration ? ' && npm run test:integration' : '') +
-		(spec.services.length > 0 ? ' && npm run test:service' : '')
+	scripts.prepublishOnly = [
+		'npm run format:check && npm run lint:check && npm run check && npm run build && npm test',
+		...(integrates ? ['npm run test:integration'] : []),
+	].join(' && ')
+	return scripts
+}
 
-	const devDependencies = devDependenciesFor(spec)
+/**
+ * Compile a blueprint into its `package.json` content.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns The manifest text, newline-terminated.
+ *
+ * @remarks
+ * A workspace declaring a published environment is scoped and public; one
+ * declaring none is a private application and carries neither a scope, a
+ * publication block, nor a repository. Declared dependencies and peers are
+ * emitted in name order so the same blueprint answers the same bytes, and
+ * `peerDependenciesMeta` carries only the peers marked optional.
+ *
+ * The text is `JSON.stringify` at tab indentation with a trailing newline,
+ * which is the formatter's own fixed point for a manifest: `oxfmt` keeps every
+ * `package.json` array expanded, so no width-aware collapse applies here. That
+ * is not true of the workspace's other JSON, which is why this is the one JSON
+ * artifact serialized directly.
+ *
+ * The artifact carrying this text is claimed by birth. A workspace owns its own
+ * manifest once it exists: its description, its keywords, and any script it
+ * added are the consumer's, so a repair that replaced the file would take them.
+ * The one part scaffold keeps current afterwards is the declared `@orkestrel/*`
+ * range set, and that is a region with its own writer rather than a claim over
+ * the file's bytes.
+ *
+ * @example
+ * ```ts
+ * import type { Blueprint } from '@orkestrel/scaffold'
+ * import { blueprintToManifest } from '@orkestrel/scaffold'
+ *
+ * declare const blueprint: Blueprint
+ *
+ * blueprintToManifest(blueprint).endsWith('}\n') // true
+ * ```
+ */
+export function blueprintToManifest(blueprint: Blueprint): string {
+	const publishes = blueprint.src.length > 0
+	const name = publishes ? `@orkestrel/${blueprint.name}` : blueprint.name
+	const dependencies: Record<string, string> = {}
+	for (const dependency of [...blueprint.dependencies].sort((left, right) =>
+		compareValues(left.name, right.name),
+	)) {
+		dependencies[dependency.name] = dependency.range
+	}
+	const peerDependencies: Record<string, string> = {}
+	const peerDependenciesMeta: Record<string, { readonly optional: true }> = {}
+	for (const peer of [...blueprint.peers].sort((left, right) =>
+		compareValues(left.name, right.name),
+	)) {
+		peerDependencies[peer.name] = peer.range
+		if (peer.optional === true) peerDependenciesMeta[peer.name] = { optional: true }
+	}
+	const entry = srcToEntry(blueprint.src)
 	const manifest: Record<string, unknown> = {
-		name: hasSource ? `@orkestrel/${spec.name}` : spec.name,
-		version: spec.version,
-		...(hasSource ? {} : { private: true }),
+		name,
+		version: blueprint.version,
+		...(publishes ? {} : { private: true }),
 		description:
-			spec.description ??
-			(hasSource ? `The @orkestrel/${spec.name} package.` : `The ${spec.name} application.`),
-		keywords: [...spec.keywords].sort(),
-		...(hasSource
+			blueprint.description ??
+			(publishes ? `The ${name} package.` : `The ${blueprint.name} application.`),
+		keywords: sortValues(blueprint.keywords),
+		...(publishes
 			? {
-					homepage: `https://github.com/orkestrel/${spec.name}#readme`,
-					bugs: `https://github.com/orkestrel/${spec.name}/issues`,
+					homepage: `https://github.com/orkestrel/${blueprint.name}#readme`,
+					bugs: `https://github.com/orkestrel/${blueprint.name}/issues`,
 				}
 			: {}),
 		license: 'MIT',
-		...(hasSource
+		...(publishes
 			? {
 					repository: {
 						type: 'git',
-						url: `git+https://github.com/orkestrel/${spec.name}.git`,
+						url: `git+https://github.com/orkestrel/${blueprint.name}.git`,
 					},
 				}
 			: {}),
-		...(spec.bin ? { bin: { scaffold: './dist/bin/scaffold.js' } } : {}),
-		files: spec.bin
-			? ['dist/src', 'dist/bin', 'dist/host', 'README.md']
-			: hasSource
+		...(blueprint.bin ? { bin: { [blueprint.name]: `./dist/bin/${blueprint.name}.js` } } : {}),
+		files: blueprint.bin
+			? ['dist/src', 'dist/bin', 'README.md']
+			: publishes
 				? ['dist/src', 'README.md']
 				: ['dist/app', 'README.md'],
 		type: 'module',
-		...(hasSource
+		...(publishes
 			? {
-					sideEffects: spec.bin ? ['./src/bin/scaffold.ts', './dist/bin/scaffold.js'] : false,
-				}
-			: {}),
-		...(entry === undefined
-			? {}
-			: {
+					sideEffects: blueprint.bin
+						? [`./src/bin/${blueprint.name}.ts`, `./dist/bin/${blueprint.name}.js`]
+						: false,
 					main: entry.main,
 					module: entry.module,
-					...(entry.types ? { types: entry.types } : {}),
-					exports: exportsMap(spec.src),
+					...(entry.types === undefined ? {} : { types: entry.types }),
+					exports: srcToExports(blueprint.src),
 					publishConfig: { access: 'public' },
-				}),
-		scripts,
+				}
+			: {}),
+		scripts: blueprintToScripts(blueprint),
 		dependencies,
-		devDependencies: Object.fromEntries(
-			Object.entries(devDependencies)
-				.filter(([depName]) => !spec.bin || depName !== '@orkestrel/scaffold')
-				.filter(
-					([depName]) =>
-						hasSource || (depName !== '@microsoft/api-extractor' && depName !== 'vite-plugin-dts'),
-				)
-				.filter(
-					([depName]) =>
-						hasSource || spec.app.includes('browser') || depName !== '@vitest/browser-playwright',
-				)
-				.sort(([a], [b]) => compareCodeUnit(a, b)),
-		),
+		devDependencies: blueprintToDevDependencies(blueprint),
 		...(Object.keys(peerDependencies).length > 0 ? { peerDependencies } : {}),
 		...(Object.keys(peerDependenciesMeta).length > 0 ? { peerDependenciesMeta } : {}),
-		engines: { node: spec.engines },
+		engines: { node: blueprint.engines },
 	}
-	// Deliberately `JSON.stringify(…, '\t')`, NOT `formatJson`: `oxfmt --check`
-	// proved this exact array-always-broken form is `package.json`'s own fixed
-	// point (unlike the width-collapsed tsconfig arrays), so routing the
-	// manifest through `formatJson` would collapse an array `oxfmt` keeps
-	// broken and reintroduce drift. Keep this call as-is — the tsconfig
-	// emitters (`rootTsconfig` / `coreTsconfig` / `srcTsconfig`) are the
-	// ones that need `formatJson`'s width-aware array collapse.
 	return `${JSON.stringify(manifest, undefined, '\t')}\n`
 }
 
 /**
- * The root `tsconfig.json` — one `@src/<environment>` path alias per declared
- * environment, in declared order.
+ * Derive the host-specific machinery a generated root Vite configuration carries.
  *
- * @param src - The declared `Environment[]`.
- * @param app - The declared application environments, defaulting to none.
- * @returns The root `tsconfig.json` file content, newline-terminated.
- *
- * @example
- * ```ts
- * rootTsconfig(['core']) // '{\n\t"compilerOptions": {…}\n}\n'
- * ```
- */
-export function rootTsconfig(
-	src: readonly Environment[],
-	app: readonly Environment[] = [],
-): string {
-	const paths: Record<string, readonly string[]> = {}
-	for (const environment of src) paths[`@src/${environment}`] = [`./src/${environment}/index.ts`]
-	for (const environment of app) paths[`@app/${environment}`] = [`./app/${environment}/index.ts`]
-	const config = {
-		compilerOptions: {
-			target: 'ESNext',
-			module: 'ESNext',
-			moduleResolution: 'bundler',
-			allowImportingTsExtensions: true,
-			lib: ['ESNext', 'DOM', 'DOM.Iterable'],
-			types: ['node', 'vite/client', 'vitest/globals'],
-			moduleDetection: 'force',
-			resolveJsonModule: true,
-			strict: true,
-			verbatimModuleSyntax: true,
-			noUncheckedIndexedAccess: true,
-			noUncheckedSideEffectImports: true,
-			exactOptionalPropertyTypes: true,
-			noImplicitOverride: true,
-			noFallthroughCasesInSwitch: true,
-			forceConsistentCasingInFileNames: true,
-			skipLibCheck: true,
-			noEmit: true,
-			paths,
-		},
-		exclude: ['node_modules', 'dist', 'tmp'],
-	}
-	return formatJson(config)
-}
-
-/**
- * Derive which host-specific machinery a workspace's generated root
- * `vite.config.ts` carries from its declared environments.
+ * @param blueprint - The workspace specification.
+ * @returns The four pipelines the generated configuration selects.
  *
  * @remarks
- * This is the SOLE derivation of that set; `rootViteConfig`,
- * `singleSrcViteConfig`, `applicationViteConfig`, and `configArtifacts` all
- * read it rather than recomputing an axis of their own. Nothing here selects
- * a boundary GUARANTEE — the environment-boundary plugin, its module-graph
- * AST audit, and stylesheet rejection ship in every shape.
+ * The sole derivation of that set: every renderer reads it rather than
+ * recomputing an axis of its own. Nothing here selects a boundary guarantee,
+ * because the environment-boundary plugin, its module-graph audit, and
+ * stylesheet rejection ship in every shape.
  *
- * @param src - The declared published `Environment[]`.
- * @param app - The declared application `Environment[]`, defaulting to none.
- * @param bin - Whether the workspace also builds its own executable.
- * @param showcase - Whether the workspace carries its optional app showcase.
- * @returns The machinery set the generated header renders.
+ * `output` is the one derived fact rather than a declared one. A workspace
+ * builds when it publishes a library, ships an executable, or runs an
+ * application host, and only a workspace that builds has an output directory to
+ * contain. `showcase` requires the browser application it projects, so the
+ * declared flag alone never selects it.
  *
  * @example
  * ```ts
- * viteMachinery(['core']) // { browser: false, vue: false, output: true, showcase: false }
- * viteMachinery([], ['core']) // { browser: false, vue: false, output: false, showcase: false }
+ * import type { Blueprint } from '@orkestrel/scaffold'
+ * import { blueprintToMachinery } from '@orkestrel/scaffold'
+ *
+ * declare const blueprint: Blueprint
+ *
+ * blueprintToMachinery(blueprint).vue // true when the app declares browser
  * ```
  */
-export function viteMachinery(
-	src: readonly Environment[],
-	app: readonly Environment[] = [],
-	bin = false,
-	showcase = false,
-): ViteMachinery {
-	// An application of `core` alone compiles but never builds: it declares no
-	// published library target, no runtime application target, and no bin
-	// executable, so there is no output directory to contain. `app.length > 0`
-	// guards the degenerate empty blueprint, which `hasBlueprintEnvironment`
-	// already rejects.
-	const unbuilt =
-		src.length === 0 && app.length > 0 && !bin && app.every((environment) => environment === 'core')
+export function blueprintToMachinery(blueprint: Blueprint): ViteMachinery {
+	const hosted = blueprint.app.some((environment) => environment !== 'core')
 	return {
-		browser: src.includes('browser') || app.includes('browser'),
-		vue: app.includes('browser'),
-		output: !unbuilt,
-		showcase: showcase && app.includes('browser'),
+		browser: blueprint.src.includes('browser') || blueprint.app.includes('browser'),
+		vue: blueprint.app.includes('browser'),
+		output: blueprint.src.length > 0 || blueprint.bin || hosted,
+		showcase: blueprint.showcase && blueprint.app.includes('browser'),
 	}
 }
 
 /**
- * Derive the one ordered Vitest project registration list shared by every
- * generated root configuration shape.
+ * Compile the root TypeScript configuration for a blueprint.
  *
- * @param src - The declared published environments.
- * @param app - The declared application environments.
- * @param facts - Optional structural facts.
- * @returns Source projects, application projects, proof projects, then optional axis projects.
+ * @param blueprint - The workspace specification.
+ * @returns Formatter-stable `tsconfig.json` text.
  *
  * @example
  * ```ts
- * viteProjectRegistrations(['core'], [], { integration: true })
- * // [{ project: 'srcCore' }, { project: 'policy' }, { project: 'config' }, { project: 'guides' }, { project: 'integration' }]
+ * import type { Blueprint } from '@orkestrel/scaffold'
+ * import { blueprintToRootTsconfig } from '@orkestrel/scaffold'
+ *
+ * declare const blueprint: Blueprint
+ *
+ * blueprintToRootTsconfig(blueprint).startsWith('{') // true
  * ```
  */
-export function viteProjectRegistrations(
-	src: readonly Environment[],
-	app: readonly Environment[] = [],
-	facts: ViteFacts = {},
-): readonly ViteProjectRegistration[] {
-	const registrations: ViteProjectRegistration[] = []
+export function blueprintToRootTsconfig(blueprint: Blueprint): string {
+	const aliases: string[] = []
 	for (const environment of ENVIRONMENTS) {
-		if (!src.includes(environment)) continue
-		if (environment === 'core') registrations.push({ project: 'srcCore' })
-		if (environment === 'browser') {
-			registrations.push({ project: 'srcBrowser', browser: SRC_MATRIX.browser.project })
+		if (blueprint.src.includes(environment)) {
+			aliases.push(`"@src/${environment}": ["./src/${environment}/index.ts"]`)
 		}
-		if (environment === 'server') registrations.push({ project: 'srcServer' })
 	}
 	for (const environment of ENVIRONMENTS) {
-		if (!app.includes(environment)) continue
-		if (environment === 'core') registrations.push({ project: 'appCore' })
-		if (environment === 'browser') {
-			registrations.push({ project: 'appBrowser', browser: APP_MATRIX.browser.project })
+		if (blueprint.app.includes(environment)) {
+			aliases.push(`"@app/${environment}": ["./app/${environment}/index.ts"]`)
 		}
-		if (environment === 'server') registrations.push({ project: 'appServer' })
 	}
-	registrations.push({ project: 'policy' }, { project: 'config' }, { project: 'guides' })
-	if (facts.bin === true) registrations.push({ project: 'srcBin' })
-	if (facts.integration === true) registrations.push({ project: 'integration' })
-	for (const service of facts.services ?? []) {
-		registrations.push({ project: `service${pascalCase(service)}` })
-	}
-	return registrations
+	const paths = aliases
+		.map((alias, index) => `\t\t\t${alias}${index === aliases.length - 1 ? '' : ','}`)
+		.join('\n')
+	return fillTemplate(CONFIG_TEMPLATES.root.tsconfig, { paths })
 }
 
 /**
- * Render the one ordered proof and structural-axis project definition block.
+ * Compile the root Vite and Vitest configuration for a blueprint.
  *
- * @param facts - Optional structural facts.
- * @returns Policy, config, guides, then selected axis project definitions, separated by one blank line.
- *
- * @example
- * ```ts
- * viteProjectDefinitions({ bin: true }).includes('export const srcBin =') // true
- * ```
- */
-export function viteProjectDefinitions(facts: ViteFacts = {}): string {
-	const definitions = [policyViteProject(), configViteProject(), guidesViteProject()]
-	if (facts.bin === true) definitions.push(binViteProject())
-	if (facts.integration === true) definitions.push(integrationViteProject(facts))
-	for (const service of facts.services ?? []) definitions.push(serviceViteProject(service))
-	return definitions.join('\n')
-}
-
-/**
- * Render the root Vitest project registration, preserving browser ownership
- * supplied by the caller.
- *
- * @param registrations - Ordered project factory identifiers with optional browser labels.
- * @param browser - Whether the generated configuration carries browser machinery.
- * @returns The rendered root `test` property.
- *
- * @example
- * ```ts
- * renderViteTest([{ project: 'srcCore' }], false)
- * // '\ttest: {\n\t\tprojects: [srcCore],\n\t},'
- * ```
- */
-export function renderViteTest(
-	registrations: readonly ViteProjectRegistration[],
-	browser: boolean,
-): string {
-	const projects = registrations.map((registration) => registration.project)
-	const inlineProjects = `		projects: [${projects.join(', ')}],`
-	const renderedProjects = fitsPrintWidth(inlineProjects)
-		? inlineProjects
-		: `		projects: [
-${projects.map((project) => `			${project},`).join('\n')}
-		],`
-	if (!browser) {
-		return `	test: {
-${renderedProjects}
-	},`
-	}
-	const renderedRegistrations = registrations.map((registration) =>
-		registration.browser === undefined
-			? `{ project: ${registration.project} }`
-			: `{ project: ${registration.project}, browser: ${serializeTypeScriptString(registration.browser)} }`,
-	)
-	const inlineRegistrations = `		[${renderedRegistrations.join(', ')}],`
-	const renderedRegistrationArray = fitsPrintWidth(inlineRegistrations)
-		? inlineRegistrations
-		: `		[
-${renderedRegistrations.map((registration) => `			${registration},`).join('\n')}
-		],`
-	return `	test: gateBrowserProjects(
-${renderedRegistrationArray}
-		browserOptions !== undefined,
-		process.argv,
-	),`
-}
-
-/**
- * The rendered import / `resolve` header block every `rootViteConfig` shape
- * prefixes — the environment boundary and every guarantee it enforces ship
- * unconditionally; `machinery` selects only the host-specific pipelines layered
- * over them, per the three grounded `rootViteConfig` shapes: browser machinery
- * unconditional for a multi-environment blueprint carrying `browser`,
- * conditional on the sole environment being `'browser'` for a single non-`core`
- * environment, absent for `core`-only.
- *
- * @param machinery - The host-specific machinery this shape carries, from `viteMachinery`.
- * @returns The rendered header block, newline-terminated.
- *
- * @example
- * ```ts
- * viteHeader(viteMachinery(['core'])).includes('@vitest/browser-playwright') // false
- * viteHeader(viteMachinery(['core', 'browser'])).includes('@vitest/browser-playwright') // true
- * ```
- */
-export function viteHeader(machinery: ViteMachinery): string {
-	const {
-		browser: needsBrowser,
-		vue: needsVue,
-		output: needsOutput,
-		showcase: needsShowcase,
-	} = machinery
-	// Rendered blocks below are generated FILE TEXT, so every embedded
-	// declaration keyword is interpolated rather than typed literally at
-	// column 0 — the doc↔source parity scan (AGENTS §22) reads this file's
-	// own source lines, and a flush-left `export const foo` inside a
-	// template string is indistinguishable from a real module-scope export
-	// to that line-based scan; interpolating the keyword keeps the emitted
-	// bytes identical while keeping this file's own declaration environment
-	// exactly the one export it documents.
-	// The official Playwright provider import is present only when needed.
-	const playwrightTypeImports = needsBrowser
-		? `import type { PlaywrightProviderOptions } from '@vitest/browser-playwright'
-`
-		: ''
-	const playwrightImports = needsBrowser
-		? `import { playwright } from '@vitest/browser-playwright'
-import { chromium } from 'playwright'
-`
-		: ''
-	const vueImports = needsVue
-		? `import vue from '@vitejs/plugin-vue'
-import { parse as parseVue } from 'vue/compiler-sfc'
-import { parseStartTag } from '@orkestrel/html'
-`
-		: ''
-	const showcaseImports = needsShowcase
-		? `import { viteSingleFile } from 'vite-plugin-singlefile'
-`
-		: ''
-	const showcaseHashImport = needsShowcase ? "import { createHash } from 'node:crypto'\n" : ''
-	const viteTypeImports = needsVue
-		? `import type {
-	CSSOptions,
-	HtmlAssetSource,
-	HTMLOptions,
-	Plugin,
-	ResolvedConfig,
-	UserConfig,
-} from 'vite'`
-		: needsBrowser
-			? `import type { CSSOptions, Plugin, ResolvedConfig, UserConfig } from 'vite'`
-			: `import type { Plugin, UserConfig } from 'vite'`
-	const vueBoundary = needsVue
-		? `,
-		transform: {
-			order: 'pre',
-			async handler(code, id) {
-				if (!isWorkspaceBoundaryModule(id)) return null
-				const restored = /[?&]html-proxy(?:[=&]|$)/.test(id) ? restoreIgnoredHtml(code) : code
-				const target = workspacePath(id)
-				const physicalImporter = physicalPath(id)
-				const importerPackageRoot = trustedPackageRootFor(physicalImporter, trustedPackageRoots)
-				if (target === undefined) {
-					if (isOutsideWorkspacePath(id) && importerPackageRoot === undefined) {
-						this.error('Environment modules cannot import files outside the workspace')
-					}
-				} else {
-					const pathError = environmentPathError(owner, target)
-					if (pathError !== undefined) this.error(pathError)
-				}
-				const environmentModule =
-					target !== undefined && /^(?:app|src)\\/(?:core|browser|server)\\//.test(target)
-				if (environmentModule || importerPackageRoot !== undefined) {
-					if (isCSSRequest(id)) {
-						const config = resolvedConfig
-						if (config === undefined) {
-							return this.error('Environment boundary requires resolved Vite configuration')
-						}
-						const stylesheet = await preprocessCSS(restored, id, config)
-						for (const dependency of stylesheet.deps ?? []) {
-							const physicalDependency = physicalPath(dependency)
-							const dependencyTarget = workspacePath(physicalDependency)
-							if (dependencyTarget === undefined) {
-								if (trustedPackageRootFor(physicalDependency, trustedPackageRoots) === undefined) {
-									this.error('Environment modules cannot import files outside the workspace')
-								}
-								continue
-							}
-							const dependencyError = environmentPathError(owner, dependencyTarget)
-							if (dependencyError !== undefined) this.error(dependencyError)
-						}
-					}
-					for (const source of await environmentAssetSources(restored, id)) {
-						const normalizedSource = source.replaceAll('\\\\', '/')
-						const sourceError = environmentSourceError(owner, normalizedSource)
-						if (sourceError !== undefined) this.error(sourceError)
-						const [sourcePath] = normalizedSource.split(/[?#]/)
-						if (sourcePath !== undefined && isBuiltin(sourcePath)) continue
-						const resolution = await this.resolve(normalizedSource, id, { skipSelf: true })
-						const fallbackSource = sourceFallback(physicalImporter, normalizedSource)
-						const physicalSource = physicalPath(resolution?.id ?? fallbackSource)
-						if (importerPackageRoot !== undefined) {
-							const pathLike =
-								normalizedSource.startsWith('.') ||
-								normalizedSource.startsWith('/') ||
-								/^file:/i.test(normalizedSource) ||
-								/^[A-Za-z]:[\\\\/]/.test(normalizedSource)
-							if (pathLike && !containedPath(importerPackageRoot, physicalSource)) {
-								this.error(
-									'Dependency modules cannot import files outside their physical package root',
-								)
-							}
-							if (!pathLike && !containedPath(importerPackageRoot, physicalSource)) {
-								const packageName = packageNameOf(normalizedSource)
-								const packageRoot = normalizedSource.startsWith('#')
-									? workspacePath(physicalSource) === undefined
-										? packageRootForResolved(physicalSource)
-										: undefined
-									: packageName === undefined
-										? undefined
-										: packageRootOf(packageName, physicalSource)
-								if (packageRoot === undefined || !containedPath(packageRoot, physicalSource)) {
-									return this.error(
-										'Resolved dependencies must remain inside their physical package root',
-									)
-								}
-								trustedPackageRoots.add(packageRoot)
-							}
-							continue
-						}
-						const resolvedSource = workspacePath(physicalSource)
-						if (resolvedSource === undefined) {
-							return this.error('Environment modules cannot import files outside the workspace')
-						}
-						const assetError = environmentPathError(owner, resolvedSource)
-						if (assetError !== undefined) this.error(assetError)
-					}
-				}
-				if (id.includes('?')) return restored === code ? null : restored
-				const componentPath = workspacePath(id)
-				if (componentPath?.startsWith('app/browser/') !== true || !componentPath.endsWith('.vue')) {
-					return restored === code ? null : restored
-				}
-				const parsed = parseVue(restored, { filename: componentPath })
-				if (parsed.errors.length > 0) this.error('Vue component could not be parsed')
-				for (const script of [parsed.descriptor.script, parsed.descriptor.scriptSetup]) {
-					if (script === null) continue
-					for (const source of await environmentAssetSources(
-						script.content,
-						\`\${componentPath}.\${script.lang ?? 'js'}\`,
-					)) {
-						const normalizedSource = source.replaceAll('\\\\', '/')
-						const sourceError = environmentSourceError('app/browser', normalizedSource)
-						if (sourceError !== undefined) this.error(sourceError)
-						const resolution = await this.resolve(normalizedSource, id, { skipSelf: true })
-						const fallbackSource = sourceFallback(
-							resolvePath(WORKSPACE_ROOT, componentPath),
-							normalizedSource,
-						)
-						const resolvedSource = workspacePath(resolution?.id ?? fallbackSource)
-						if (resolvedSource === undefined) {
-							return this.error('Environment modules cannot import files outside the workspace')
-						}
-						const pathError = environmentPathError('app/browser', resolvedSource)
-						if (pathError !== undefined) this.error(pathError)
-					}
-				}
-				const blocks = [
-					parsed.descriptor.template,
-					parsed.descriptor.script,
-					parsed.descriptor.scriptSetup,
-					...parsed.descriptor.styles,
-					...parsed.descriptor.customBlocks,
-				]
-				for (const block of blocks) {
-					const source = block?.src
-					if (source === undefined) continue
-					const decodedSource = decodeAssetSource(source)
-					if (decodedSource === undefined) {
-						return this.error('Vue block URLs must use valid URI encoding')
-					}
-					const normalizedSource = decodedSource.replaceAll('\\\\', '/')
-					const sourceError = environmentSourceError('app/browser', normalizedSource)
-					if (sourceError !== undefined) this.error(sourceError)
-					const [sourcePath] = normalizedSource.split(/[?#]/)
-					const pathLike =
-						normalizedSource.startsWith('.') ||
-						normalizedSource.startsWith('/') ||
-						/^file:/i.test(normalizedSource) ||
-						/^[A-Za-z]:[\\\\/]/.test(normalizedSource)
-					const resolution = await this.resolve(normalizedSource, id, { skipSelf: true })
-					const fallbackSource = sourceFallback(
-						resolvePath(WORKSPACE_ROOT, componentPath),
-						normalizedSource,
-					)
-					const resolvedSource = workspacePath(resolution?.id ?? fallbackSource)
-					if (pathLike && resolvedSource === undefined) {
-						this.error('Environment modules cannot import files outside the workspace')
-					}
-					const pathError =
-						resolvedSource === undefined
-							? undefined
-							: environmentPathError('app/browser', resolvedSource)
-					if (pathError !== undefined) this.error(pathError)
-					if (
-						(sourcePath !== undefined && isBuiltin(sourcePath)) ||
-						/^(?:@(?:app|src)\\/server(?:[/?#]|$)|@orkestrel\\/[^/]+\\/server(?:[/?#]|$))/.test(
-							normalizedSource,
-						)
-					) {
-						this.error('Browser modules cannot depend on Node or server-only modules')
-					}
-				}
-				return restored === code ? null : restored
-			},
-		}`
-		: needsBrowser
-			? `,
-		transform: {
-			order: 'pre',
-			async handler(code, id) {
-				if (!isWorkspaceBoundaryModule(id)) return null
-				const target = workspacePath(id)
-				const physicalImporter = physicalPath(id)
-				const importerPackageRoot = trustedPackageRootFor(physicalImporter, trustedPackageRoots)
-				if (target === undefined) {
-					if (isOutsideWorkspacePath(id) && importerPackageRoot === undefined) {
-						this.error('Environment modules cannot import files outside the workspace')
-					}
-				} else {
-					const pathError = environmentPathError(owner, target)
-					if (pathError !== undefined) this.error(pathError)
-				}
-				const environmentModule =
-					target !== undefined && /^(?:app|src)\\/(?:core|browser|server)\\//.test(target)
-				if (!environmentModule && importerPackageRoot === undefined) return null
-				if (isCSSRequest(id)) {
-					const config = resolvedConfig
-					if (config === undefined) {
-						return this.error('Environment boundary requires resolved Vite configuration')
-					}
-					const stylesheet = await preprocessCSS(code, id, config)
-					for (const dependency of stylesheet.deps ?? []) {
-						const physicalDependency = physicalPath(dependency)
-						const dependencyTarget = workspacePath(physicalDependency)
-						if (dependencyTarget === undefined) {
-							if (trustedPackageRootFor(physicalDependency, trustedPackageRoots) === undefined) {
-								this.error('Environment modules cannot import files outside the workspace')
-							}
-							continue
-						}
-						const dependencyError = environmentPathError(owner, dependencyTarget)
-						if (dependencyError !== undefined) this.error(dependencyError)
-					}
-				}
-				for (const source of await environmentAssetSources(code, id)) {
-					const normalizedSource = source.replaceAll('\\\\', '/')
-					const sourceError = environmentSourceError(owner, normalizedSource)
-					if (sourceError !== undefined) this.error(sourceError)
-					const [sourcePath] = normalizedSource.split(/[?#]/)
-					if (sourcePath !== undefined && isBuiltin(sourcePath)) continue
-					const resolution = await this.resolve(normalizedSource, id, { skipSelf: true })
-					const fallbackSource = sourceFallback(physicalImporter, normalizedSource)
-					const physicalSource = physicalPath(resolution?.id ?? fallbackSource)
-					if (importerPackageRoot !== undefined) {
-						const pathLike =
-							normalizedSource.startsWith('.') ||
-							normalizedSource.startsWith('/') ||
-							/^file:/i.test(normalizedSource) ||
-							/^[A-Za-z]:[\\\\/]/.test(normalizedSource)
-						if (pathLike && !containedPath(importerPackageRoot, physicalSource)) {
-							this.error(
-								'Dependency modules cannot import files outside their physical package root',
-							)
-						}
-						if (!pathLike && !containedPath(importerPackageRoot, physicalSource)) {
-							const packageName = packageNameOf(normalizedSource)
-							const packageRoot = normalizedSource.startsWith('#')
-								? workspacePath(physicalSource) === undefined
-									? packageRootForResolved(physicalSource)
-									: undefined
-								: packageName === undefined
-									? undefined
-									: packageRootOf(packageName, physicalSource)
-							if (packageRoot === undefined || !containedPath(packageRoot, physicalSource)) {
-								return this.error(
-									'Resolved dependencies must remain inside their physical package root',
-								)
-							}
-							trustedPackageRoots.add(packageRoot)
-						}
-						continue
-					}
-					const resolvedSource = workspacePath(physicalSource)
-					if (resolvedSource === undefined) {
-						return this.error('Environment modules cannot import files outside the workspace')
-					}
-					const assetError = environmentPathError(owner, resolvedSource)
-					if (assetError !== undefined) this.error(assetError)
-				}
-				return null
-			},
-		}`
-			: `,
-		transform: {
-			order: 'pre',
-			async handler(code, id) {
-				if (!isWorkspaceBoundaryModule(id)) return null
-				const target = workspacePath(id)
-				const physicalImporter = physicalPath(id)
-				const importerPackageRoot = trustedPackageRootFor(physicalImporter, trustedPackageRoots)
-				if (target === undefined) {
-					if (isOutsideWorkspacePath(id) && importerPackageRoot === undefined) {
-						this.error('Environment modules cannot import files outside the workspace')
-					}
-				} else {
-					const pathError = environmentPathError(owner, target)
-					if (pathError !== undefined) this.error(pathError)
-				}
-				const environmentModule =
-					target !== undefined && /^(?:app|src)\\/(?:core|browser|server)\\//.test(target)
-				if (!environmentModule && importerPackageRoot === undefined) return null
-				for (const source of await environmentAssetSources(code, id)) {
-					const normalizedSource = source.replaceAll('\\\\', '/')
-					const sourceError = environmentSourceError(owner, normalizedSource)
-					if (sourceError !== undefined) this.error(sourceError)
-					const [sourcePath] = normalizedSource.split(/[?#]/)
-					if (sourcePath !== undefined && isBuiltin(sourcePath)) continue
-					const resolution = await this.resolve(normalizedSource, id, { skipSelf: true })
-					const fallbackSource = sourceFallback(physicalImporter, normalizedSource)
-					const physicalSource = physicalPath(resolution?.id ?? fallbackSource)
-					if (importerPackageRoot !== undefined) {
-						const pathLike =
-							normalizedSource.startsWith('.') ||
-							normalizedSource.startsWith('/') ||
-							/^file:/i.test(normalizedSource) ||
-							/^[A-Za-z]:[\\\\/]/.test(normalizedSource)
-						if (pathLike && !containedPath(importerPackageRoot, physicalSource)) {
-							this.error(
-								'Dependency modules cannot import files outside their physical package root',
-							)
-						}
-						if (!pathLike && !containedPath(importerPackageRoot, physicalSource)) {
-							const packageName = packageNameOf(normalizedSource)
-							const packageRoot = normalizedSource.startsWith('#')
-								? workspacePath(physicalSource) === undefined
-									? packageRootForResolved(physicalSource)
-									: undefined
-								: packageName === undefined
-									? undefined
-									: packageRootOf(packageName, physicalSource)
-							if (packageRoot === undefined || !containedPath(packageRoot, physicalSource)) {
-								return this.error(
-									'Resolved dependencies must remain inside their physical package root',
-								)
-							}
-							trustedPackageRoots.add(packageRoot)
-						}
-						continue
-					}
-					const resolvedSource = workspacePath(physicalSource)
-					if (resolvedSource === undefined) {
-						return this.error('Environment modules cannot import files outside the workspace')
-					}
-					const assetError = environmentPathError(owner, resolvedSource)
-					if (assetError !== undefined) this.error(assetError)
-				}
-				return null
-			},
-		}`
-	const environmentBoundary = `
-${CONST_KEYWORD} WORKSPACE_ROOT = realpathSync.native(dirname(fileURLToPath(import.meta.url)))${needsVue ? `\n${EXPORT_KEYWORD} ${CONST_KEYWORD} IMPORT_META_ENV_PREFIX = 'import.meta.env.'` : ''}
-
-${EXPORT_KEYWORD} function fileSystemPath(pathname: string): string {
-	if (!pathname.startsWith('/@fs/')) return pathname
-	const candidate = pathname.slice('/@fs/'.length)
-	// Vite URL normalization can collapse the leading slash of a POSIX absolute path.
-	return candidate.startsWith('/') || /^[A-Za-z]:[\\\\/]/.test(candidate)
-		? candidate
-		: \`/\${candidate}\`
-}
-
-${EXPORT_KEYWORD} function physicalPath(path: string): string {
-	const [pathWithoutQuery] = path.split('?')
-	const candidate = fileSystemPath(pathWithoutQuery ?? path)
-	const physicalCandidate = /^file:/i.test(candidate) ? fileURLToPath(candidate) : candidate
-	const absoluteCandidate =
-		physicalCandidate.length === 0
-			? WORKSPACE_ROOT
-			: isAbsolute(physicalCandidate)
-				? physicalCandidate
-				: resolvePath(WORKSPACE_ROOT, physicalCandidate)
-	return existsSync(absoluteCandidate) ? realpathSync.native(absoluteCandidate) : absoluteCandidate
-}
-
-${EXPORT_KEYWORD} function sourceFallback(importer: string, source: string): string {
-	return /^file:/i.test(source) ? fileURLToPath(source) : resolvePath(dirname(importer), source)
-}
-
-${EXPORT_KEYWORD} function workspacePath(path: string): string | undefined {
-	const relativePath = relative(WORKSPACE_ROOT, physicalPath(path)).replaceAll('\\\\', '/')
-	if (relativePath === '..' || relativePath.startsWith('../') || isAbsolute(relativePath)) {
-		return undefined
-	}
-	return relativePath
-}
-
-${EXPORT_KEYWORD} function isBoundaryExemptModule(id: string): boolean {
-	const normalizedId = id.replaceAll('\\\\', '/')
-	const [path] = normalizedId.split(/[?#]/)
-	if (
-		path === undefined ||
-		normalizedId.startsWith('\\0') ||
-		normalizedId.includes('virtual:') ||
-		normalizedId === '@vite/client' ||
-		normalizedId === '@vite/env' ||
-		normalizedId.startsWith('/@id/') ||
-		normalizedId.startsWith('/@vite/') ||
-		normalizedId.startsWith('/__vite') ||
-		normalizedId.startsWith('/__vitest') ||
-		normalizedId.startsWith('@vitest/browser') ||
-		normalizedId.includes('/@vitest/browser/')
-	) {
-		return true
-	}
-	let physicalId: string | undefined
-	try {
-		physicalId = physicalPath(id).replaceAll('\\\\', '/')
-	} catch {
-		physicalId = undefined
-	}
-	for (const candidate of physicalId === undefined ? [path] : [path, physicalId]) {
-		if (candidate.split('/').some((segment) => segment.toLowerCase() === 'node_modules')) {
-			return true
-		}
-	}
-	return false
-}
-
-${EXPORT_KEYWORD} function isWorkspaceBoundaryModule(id: string): boolean {
-	if (isBoundaryExemptModule(id)) return false
-	const normalizedId = id.replaceAll('\\\\', '/')
-	const [path] = normalizedId.split(/[?#]/)
-	if (path === undefined) return false
-	let candidate = fileSystemPath(path)
-	try {
-		if (/^file:/i.test(candidate)) candidate = fileURLToPath(candidate)
-	} catch {
-		return false
-	}
-	const rootRelative = /^\\/(?:app|src)\\/(?:core|browser|server)\\//.test(candidate)
-	const absoluteCandidate = rootRelative
-		? resolvePath(WORKSPACE_ROOT, candidate.slice(1))
-		: isAbsolute(candidate)
-			? candidate
-			: resolvePath(WORKSPACE_ROOT, candidate)
-	const relativeId = relative(WORKSPACE_ROOT, absoluteCandidate).replaceAll('\\\\', '/')
-	return (
-		relativeId !== '..' &&
-		!relativeId.startsWith('../') &&
-		!isAbsolute(relativeId) &&
-		/^(?:app|src)\\/(?:core|browser|server)\\//.test(relativeId)
-	)
-}
-
-${EXPORT_KEYWORD} function isOutsideWorkspacePath(path: string): boolean {
-	const [pathWithoutQuery] = path.split('?')
-	if (pathWithoutQuery === undefined) return false
-	return isAbsolute(fileSystemPath(pathWithoutQuery))
-}
-
-${EXPORT_KEYWORD} function containedPath(root: string, target: string): boolean {
-	const relativePath = relative(root, target)
-	return (
-		relativePath === '' ||
-		(relativePath !== '..' && !relativePath.startsWith(\`..\${sep}\`) && !isAbsolute(relativePath))
-	)
-}${
-		needsVue
-			? `
-
-${EXPORT_KEYWORD} function browserServerRoots(): readonly string[] {
-	const roots: string[] = []
-	for (const path of [
-		'app/browser',
-		'app/core',
-		'src/browser',
-		'src/core',
-		'node_modules',
-		'tests/app/browser',
-		'tests/setup.ts',
-		'tests/setupBrowser.ts',
-	]) {
-		const logical = resolvePath(WORKSPACE_ROOT, path)
-		const physical = physicalPath(logical)
-		if (
-			!containedPath(WORKSPACE_ROOT, logical) ||
-			!containedPath(WORKSPACE_ROOT, physical) ||
-			!containedPath(logical, physical) ||
-			!containedPath(physical, logical)
-		) {
-			throw new Error(
-				'[orkestrel-environment-boundary] Browser development roots must remain inside the physical workspace',
-			)
-		}
-		roots.push(physical)
-	}
-	return Object.freeze(roots)
-}
-
-${EXPORT_KEYWORD} function browserServerPath(
-	url: string | undefined,
-	root: string,
-): string | null | undefined {
-	if (url === undefined) return undefined
-	const [pathname] = url.split(/[?#]/)
-	if (pathname === undefined) return undefined
-	try {
-		const decoded = decodeURIComponent(pathname)
-		if (decoded.startsWith('/@fs/')) {
-			const candidate = fileSystemPath(decoded)
-			if (candidate.length === 0) return null
-			return physicalPath(candidate)
-		}
-		if (decoded.startsWith('/@id/')) {
-			const source = decoded.slice('/@id/'.length)
-			if (
-				(/^@(?:app|src)\\//.test(source) &&
-					!['@app/core', '@app/browser', '@src/core', '@src/browser'].includes(source)) ||
-				environmentSourceError('app/browser', source) !== undefined
-			) {
-				return null
-			}
-			return undefined
-		}
-		if (decoded.startsWith('/@vite/') || decoded.startsWith('/__vite')) {
-			return undefined
-		}
-		if (/^\\/@(?:app|src)\\//.test(decoded)) return null
-		// Vite owns the app root request, while Vitest owns its in-memory tester root request.
-		if (decoded === '/') return undefined
-		if (!decoded.startsWith('/')) return null
-		const candidate = physicalPath(resolvePath(root, decoded.slice(1)))
-		if (existsSync(candidate) || !existsSync(decoded)) return candidate
-		// An absolute module URL denotes itself; browserServerRoots still bounds it.
-		return physicalPath(decoded)
-	} catch {
-		return null
-	}
-}
-
-${EXPORT_KEYWORD} function isBrowserServerPathAllowed(
-	path: string | null | undefined,
-	roots: readonly string[],
-): boolean {
-	if (path === undefined) return true
-	return path !== null && roots.some((root) => containedPath(root, path))
-}`
-			: ''
-	}
-
-${EXPORT_KEYWORD} function packageNameOf(source: string): string | undefined {
-	const [sourcePath] = source.replaceAll('\\\\', '/').split(/[?#]/)
-	if (
-		sourcePath === undefined ||
-		sourcePath.length === 0 ||
-		sourcePath.startsWith('.') ||
-		sourcePath.startsWith('/') ||
-		sourcePath.startsWith('#') ||
-		sourcePath.startsWith('file:') ||
-		/^[A-Za-z]:\\//.test(sourcePath) ||
-		isBuiltin(sourcePath)
-	) {
-		return undefined
-	}
-	const segments = sourcePath.split('/')
-	if (sourcePath.startsWith('@')) {
-		const [scope, name] = segments
-		return scope === undefined || name === undefined ? undefined : \`\${scope}/\${name}\`
-	}
-	return segments[0]
-}
-
-${EXPORT_KEYWORD} function readBoundedFile(path: string, limit: number): string | undefined {
-	if (!existsSync(path)) return undefined
-	try {
-		const status = lstatSync(path)
-		if (!status.isFile() || status.isSymbolicLink() || status.nlink !== 1 || status.size > limit) {
-			return undefined
-		}
-		const handle = openSync(path, FS_CONSTANTS.O_RDONLY | FS_CONSTANTS.O_NOFOLLOW)
-		try {
-			const current = fstatSync(handle)
-			if (
-				!current.isFile() ||
-				current.nlink !== 1 ||
-				current.dev !== status.dev ||
-				current.ino !== status.ino ||
-				current.size !== status.size ||
-				current.mtimeMs !== status.mtimeMs ||
-				current.ctimeMs !== status.ctimeMs
-			) {
-				return undefined
-			}
-			const bytes = Buffer.allocUnsafe(current.size + 1)
-			let offset = 0
-			for (;;) {
-				const count = readSync(handle, bytes, offset, bytes.length - offset, null)
-				if (count === 0) break
-				offset += count
-				if (offset > current.size) return undefined
-			}
-			const final = fstatSync(handle)
-			if (
-				!final.isFile() ||
-				final.nlink !== 1 ||
-				final.dev !== current.dev ||
-				final.ino !== current.ino ||
-				final.size !== current.size ||
-				final.size !== offset ||
-				final.mtimeMs !== current.mtimeMs ||
-				final.ctimeMs !== current.ctimeMs
-			) {
-				return undefined
-			}
-			return bytes.toString('utf8', 0, offset)
-		} finally {
-			closeSync(handle)
-		}
-	} catch {
-		return undefined
-	}
-}
-
-${EXPORT_KEYWORD} function packageManifestName(directory: string): string | undefined {
-	const content = readBoundedFile(resolvePath(directory, 'package.json'), PACKAGE_MANIFEST_BYTES)
-	if (content === undefined) return undefined
-	try {
-		const manifest: unknown = JSON.parse(content)
-		if (typeof manifest !== 'object' || manifest === null) return undefined
-		const manifestName = Object.getOwnPropertyDescriptor(manifest, 'name')?.value
-		return typeof manifestName === 'string' && packageNameOf(manifestName) === manifestName
-			? manifestName
-			: undefined
-	} catch {
-		return undefined
-	}
-}
-
-${EXPORT_KEYWORD} function isPackageBoundary(directory: string): boolean {
-	const segments = directory.replaceAll('\\\\', '/').split('/')
-	let nodeModules = -1
-	for (const [index, segment] of segments.entries()) {
-		if (segment.toLowerCase() === 'node_modules') nodeModules = index
-	}
-	if (nodeModules < 0) return false
-	const packageSegments = segments.slice(nodeModules + 1)
-	return (
-		(packageSegments.length === 1 && packageSegments[0]?.startsWith('@') === false) ||
-		(packageSegments.length === 2 &&
-			packageSegments[0]?.startsWith('@') === true &&
-			packageSegments[1]?.length !== 0)
-	)
-}
-
-${EXPORT_KEYWORD} function packageRootOf(packageName: string, resolvedPath: string): string | undefined {
-	const physical = physicalPath(resolvedPath)
-	let current =
-		existsSync(physical) && lstatSync(physical).isDirectory() ? physical : dirname(physical)
-	for (;;) {
-		const boundary = isPackageBoundary(current)
-		const manifest = resolvePath(current, 'package.json')
-		if (boundary || existsSync(manifest)) {
-			return packageManifestName(current) === packageName ? realpathSync.native(current) : undefined
-		}
-		const parent = dirname(current)
-		if (parent === current) return undefined
-		current = parent
-	}
-}
-
-${EXPORT_KEYWORD} function packageRootForResolved(resolvedPath: string): string | undefined {
-	const physical = physicalPath(resolvedPath)
-	let current =
-		existsSync(physical) && lstatSync(physical).isDirectory() ? physical : dirname(physical)
-	for (;;) {
-		const boundary = isPackageBoundary(current)
-		const manifest = resolvePath(current, 'package.json')
-		if (boundary || existsSync(manifest)) {
-			return packageManifestName(current) === undefined ? undefined : realpathSync.native(current)
-		}
-		const parent = dirname(current)
-		if (parent === current) return undefined
-		current = parent
-	}
-}
-
-${EXPORT_KEYWORD} function trustedPackageRootFor(
-	target: string,
-	trustedPackageRoots: ReadonlySet<string>,
-): string | undefined {
-	const physical = physicalPath(target)
-	for (const root of trustedPackageRoots) {
-		if (containedPath(root, physical)) return root
-	}
-	return undefined
-}
-
-${EXPORT_KEYWORD} function isStylesheetPath(path: string): boolean {
-	return /\\.(?:css|less|sass|scss|styl|stylus|pcss|postcss|sss)(?:[?#]|$)/.test(path)
-}
-
-${EXPORT_KEYWORD} function environmentPathError(owner: string, target: string): string | undefined {
-	const targetApplication = target.startsWith('app/')
-	const targetBrowser = target.startsWith('app/browser/') || target.startsWith('src/browser/')
-	const targetServer = target.startsWith('app/server/') || target.startsWith('src/server/')
-	const stylesheet = isStylesheetPath(target)
-	if (owner.startsWith('src/') && targetApplication) {
-		return 'Published modules cannot depend on private application modules'
-	}
-	if (owner.endsWith('/core') && (stylesheet || targetBrowser || targetServer)) {
-		return 'Core modules must remain host-independent'
-	}
-	if (owner.endsWith('/browser') && targetServer) {
-		return 'Browser modules cannot depend on Node or server-only modules'
-	}
-	if (owner.endsWith('/server') && (stylesheet || targetBrowser)) {
-		return 'Server modules cannot depend on Vue or browser-only modules'
-	}
-	return undefined
-}
-
-${EXPORT_KEYWORD} function environmentSourceError(owner: string, source: string): string | undefined {
-	const normalizedSource = source.replaceAll('\\\\', '/')
-	if (hasAsciiUrlControl(normalizedSource)) {
-		return 'Environment module URLs cannot contain ASCII controls'
-	}
-	const [sourcePath] = normalizedSource.split(/[?#]/)
-	const builtin = sourcePath !== undefined && isBuiltin(sourcePath)
-	const unsupportedScheme =
-		sourcePath !== undefined &&
-		/^[A-Za-z][A-Za-z0-9+.-]*:/.test(sourcePath) &&
-		!builtin &&
-		!/^file:/i.test(sourcePath) &&
-		!/^[A-Za-z]:\\//.test(sourcePath)
-	const browserPackage =
-		/^(?:(?:vue|vite)(?:[/?#]|$)|@(?:vue|vitejs)\\/|@(?:app|src)\\/browser(?:[/?#]|$)|@orkestrel\\/[^/]+\\/browser(?:[/?#]|$))/.test(
-			normalizedSource,
-		)
-	const serverPackage =
-		/^(?:@(?:app|src)\\/server(?:[/?#]|$)|@orkestrel\\/[^/]+\\/server(?:[/?#]|$))/.test(
-			normalizedSource,
-		)
-	const stylesheet = isStylesheetPath(normalizedSource)
-	if (unsupportedScheme) return 'Environment modules cannot import non-Node URL schemes'
-	if (owner.startsWith('src/') && /^@app(?:[/?#]|$)/.test(normalizedSource)) {
-		return 'Published modules cannot depend on private application modules'
-	}
-	if (owner.endsWith('/core') && (builtin || browserPackage || serverPackage || stylesheet)) {
-		return 'Core modules must remain host-independent'
-	}
-	if (owner.endsWith('/browser') && (builtin || serverPackage)) {
-		return 'Browser modules cannot depend on Node or server-only modules'
-	}
-	if (owner.endsWith('/server') && (browserPackage || stylesheet)) {
-		return 'Server modules cannot depend on Vue or browser-only modules'
-	}
-	return undefined
-}
-
-${
-	needsBrowser
-		? `${EXPORT_KEYWORD} function stylesheetAssetError(
-	source: string | undefined,
-	value: string,
-): string | undefined {
-	if (source === undefined) return 'Stylesheet asset source could not be resolved'
-	const decoded = decodeAssetSource(value)
-	if (decoded === undefined) return 'Stylesheet asset URLs must use valid URI encoding'
-	if (decoded.includes('\\\\')) return 'Stylesheet asset URLs must use forward slashes'
-	const [assetPath] = decoded.split(/[?#]/)
-	if (
-		assetPath === undefined ||
-		assetPath.length === 0 ||
-		decoded.startsWith('#') ||
-		decoded.startsWith('//') ||
-		(assetPath.startsWith('/') && !/^[A-Za-z]:[\\\\/]/.test(assetPath))
-	) {
-		return undefined
-	}
-	const scheme = /^[A-Za-z][A-Za-z0-9+.-]*:/.test(assetPath)
-	const fileScheme = /^file:/i.test(assetPath)
-	if (scheme && !fileScheme && !/^[A-Za-z]:[\\\\/]/.test(assetPath)) {
-		return undefined
-	}
-	let physicalAsset: string
-	try {
-		physicalAsset = physicalPath(
-			fileScheme ? fileURLToPath(assetPath) : resolvePath(dirname(physicalPath(source)), assetPath),
-		)
-	} catch {
-		return 'Stylesheet asset URLs must use valid local paths'
-	}
-	const sourceTarget = workspacePath(source)
-	const assetTarget = workspacePath(physicalAsset)
-	if (sourceTarget !== undefined) {
-		if (assetTarget === undefined) {
-			return 'Environment modules cannot import files outside the workspace'
-		}
-		const [layer, environment] = sourceTarget.split('/')
-		return environmentPathError(\`\${layer}/\${environment}\`, assetTarget)
-	}
-	const packageRoot = packageRootForResolved(source)
-	if (packageRoot === undefined || !containedPath(packageRoot, physicalAsset)) {
-		return 'Dependency modules cannot import files outside their physical package root'
-	}
-	return undefined
-}
-
-`
-		: ''
-}${
-		needsOutput
-			? `${EXPORT_KEYWORD} function enforceOutputPath(configured: string, expected: string): void {
-	if (relative(expected, configured) !== '') {
-		throw new Error(
-			'[orkestrel-output-boundary] Build output must use its exact configured workspace directory',
-		)
-	}
-	const workspaceRelative = relative(WORKSPACE_ROOT, expected)
-	if (
-		workspaceRelative === '..' ||
-		workspaceRelative.startsWith(\`..\${sep}\`) ||
-		isAbsolute(workspaceRelative)
-	) {
-		throw new Error('[orkestrel-output-boundary] Build output must remain inside the workspace')
-	}
-	let current = WORKSPACE_ROOT
-	for (const segment of workspaceRelative.split(sep)) {
-		if (segment.length === 0) continue
-		current = resolvePath(current, segment)
-		if (!existsSync(current)) continue
-		const status = lstatSync(current)
-		if (status.isSymbolicLink() || !status.isDirectory()) {
-			throw new Error(
-				'[orkestrel-output-boundary] Build output and its existing parents must be real directories',
-			)
-		}
-		if (workspacePath(realpathSync.native(current)) === undefined) {
-			throw new Error('[orkestrel-output-boundary] Build output must remain inside the workspace')
-		}
-	}
-}
-
-${EXPORT_KEYWORD} function outputBoundary(output: string): Plugin {
-	const expected = resolvePath(WORKSPACE_ROOT, output)
-	let configured = expected
-	let build = false
-	return {
-		name: 'orkestrel-output-boundary',
-		enforce: 'pre',
-		configResolved(config) {
-			if (config.publicDir !== '') {
-				throw new Error(
-					'[orkestrel-output-boundary] Public directories are disabled; every output must come from the audited graph',
-				)
-			}
-			if (
-				output.endsWith('/browser') &&
-				config.build.lib === false &&
-				config.build.assetsInlineLimit !== 0
-			) {
-				throw new Error(
-					'[orkestrel-output-boundary] Browser assets must remain external for output auditing',
-				)
-			}
-			const outputOptions = config.build.rolldownOptions.output
-			const outputs = Array.isArray(outputOptions) ? outputOptions : [outputOptions]
-			for (const options of outputs) {
-				if (options?.dir !== undefined || options?.file !== undefined) {
-					throw new Error(
-						'[orkestrel-output-boundary] Rolldown output directories and files cannot override the configured output',
-					)
-				}
-			}
-			build = config.command === 'build'
-			configured = resolvePath(config.root, config.build.outDir)
-		},
-		buildStart() {
-			if (build) enforceOutputPath(configured, expected)
-		},
-	}
-}
-
-`
-			: ''
-	}${EXPORT_KEYWORD} function decodeAssetSource(source: string): string | undefined {
-	try {
-		return decodeURI(source)
-	} catch {
-		return undefined
-	}
-}
-
-${
-	needsVue
-		? `${EXPORT_KEYWORD} function filterHtmlAssetSource(
-	data: Parameters<NonNullable<HtmlAssetSource['filter']>>[0],
-): boolean {
-	const decoded = decodeAssetSource(data.value)
-	if (decoded === undefined) {
-		throw new Error('[orkestrel-environment-boundary] HTML asset URLs must use valid URI encoding')
-	}
-	if (decoded.includes('\\\\')) {
-		throw new Error('[orkestrel-environment-boundary] HTML asset URLs must use forward slashes')
-	}
-	if (/[?&]inline\\b/.test(decoded)) {
-		throw new Error(
-			'[orkestrel-environment-boundary] HTML asset URLs cannot force inlining outside the auditable output graph',
-		)
-	}
-	return false
-}
-
-${EXPORT_KEYWORD} function filterHtmlScriptSource(
-	data: Parameters<NonNullable<HtmlAssetSource['filter']>>[0],
-): boolean {
-	filterHtmlAssetSource(data)
-	if (data.attributes.type !== 'module') {
-		throw new Error(
-			'[orkestrel-environment-boundary] Classic external scripts are not permitted; use a module script',
-		)
-	}
-	const decoded = decodeAssetSource(data.value)
-	const source = decoded?.trim()
-	if (source !== undefined && hasAsciiUrlControl(source)) {
-		throw new Error(
-			'[orkestrel-environment-boundary] Environment module URLs cannot contain ASCII controls',
-		)
-	}
-	if (
-		source === undefined ||
-		source.length === 0 ||
-		source !== decoded ||
-		/&#(?:[0-9]+|[xX][0-9A-Fa-f]+);?/u.test(source) ||
-		/&[A-Za-z][A-Za-z0-9]+;/u.test(source) ||
-		source.includes('\\t') ||
-		source.includes('\\n') ||
-		source.includes('\\r') ||
-		source.startsWith('#') ||
-		source.startsWith('//') ||
-		/^[A-Za-z][A-Za-z0-9+.-]*:/u.test(source)
-	) {
-		throw new Error(
-			'[orkestrel-environment-boundary] Module script URLs must remain in the local Vite graph',
-		)
-	}
-	return false
-}
-
-${EXPORT_KEYWORD} function filterHtmlMetaSource(
-	data: Parameters<NonNullable<HtmlAssetSource['filter']>>[0],
-): boolean {
-	const name = data.attributes.name?.trim().toLowerCase()
-	const property = data.attributes.property?.trim().toLowerCase()
-	const asset =
-		name === 'msapplication-tileimage' ||
-		name === 'msapplication-square70x70logo' ||
-		name === 'msapplication-square150x150logo' ||
-		name === 'msapplication-wide310x150logo' ||
-		name === 'msapplication-square310x310logo' ||
-		name === 'msapplication-config' ||
-		name === 'twitter:image' ||
-		property === 'og:image' ||
-		property === 'og:image:url' ||
-		property === 'og:image:secure_url' ||
-		property === 'og:audio' ||
-		property === 'og:audio:secure_url' ||
-		property === 'og:video' ||
-		property === 'og:video:secure_url'
-	return asset ? filterHtmlAssetSource(data) : false
-}
-
-${EXPORT_KEYWORD} function environmentHtml(): HTMLOptions {
-	return {
-		additionalAssetSources: {
-			audio: { srcAttributes: ['src'], filter: filterHtmlAssetSource },
-			embed: { srcAttributes: ['src'], filter: filterHtmlAssetSource },
-			image: { srcAttributes: ['href', 'xlink:href'], filter: filterHtmlAssetSource },
-			img: {
-				srcAttributes: ['src'],
-				srcsetAttributes: ['srcset'],
-				filter: filterHtmlAssetSource,
-			},
-			input: { srcAttributes: ['src'], filter: filterHtmlAssetSource },
-			link: {
-				srcAttributes: ['href'],
-				srcsetAttributes: ['imagesrcset'],
-				filter: filterHtmlAssetSource,
-			},
-			meta: { srcAttributes: ['content'], filter: filterHtmlMetaSource },
-			object: { srcAttributes: ['data'], filter: filterHtmlAssetSource },
-			script: {
-				srcAttributes: ['href', 'src', 'xlink:href'],
-				filter: filterHtmlScriptSource,
-			},
-			source: {
-				srcAttributes: ['src'],
-				srcsetAttributes: ['srcset'],
-				filter: filterHtmlAssetSource,
-			},
-			track: { srcAttributes: ['src'], filter: filterHtmlAssetSource },
-			use: { srcAttributes: ['href', 'xlink:href'], filter: filterHtmlAssetSource },
-			video: { srcAttributes: ['src', 'poster'], filter: filterHtmlAssetSource },
-		},
-	}
-}
-
-${EXPORT_KEYWORD} ${CONST_KEYWORD} HTML_SECURITY_POLICY =
-	"base-uri 'none'; object-src 'none'; script-src 'self'; script-src-attr 'none'"
-${EXPORT_KEYWORD} ${CONST_KEYWORD} HTML_SECURITY_META =
-	'<meta\\n\\t\\t\\thttp-equiv="Content-Security-Policy"\\n\\t\\t\\tcontent="' +
-	HTML_SECURITY_POLICY +
-	'"\\n\\t\\t/>'${
-		needsShowcase
-			? `
-${EXPORT_KEYWORD} ${CONST_KEYWORD} SHOWCASE_SECURITY_POLICY =
-	"default-src 'none'; base-uri 'none'; object-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src data:; font-src data:; script-src-attr 'none'"
-${EXPORT_KEYWORD} ${CONST_KEYWORD} SHOWCASE_SECURITY_META =
-	'<meta\\n\\t\\t\\thttp-equiv="Content-Security-Policy"\\n\\t\\t\\tcontent="' +
-	SHOWCASE_SECURITY_POLICY +
-	'"\\n\\t\\t/>'
-${EXPORT_KEYWORD} ${CONST_KEYWORD} SHOWCASE_BUILD_SECURITY_POLICY =
-	"default-src 'none'; base-uri 'none'; object-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; font-src data:; script-src-attr 'none'"
-${EXPORT_KEYWORD} ${CONST_KEYWORD} SHOWCASE_BUILD_SECURITY_META =
-	'<meta\\n\\t\\t\\thttp-equiv="Content-Security-Policy"\\n\\t\\t\\tcontent="' +
-	SHOWCASE_BUILD_SECURITY_POLICY +
-	'"\\n\\t\\t/>'
-`
-			: ''
-	}
-
-${EXPORT_KEYWORD} function hasSecurityPrologue(html: string, security: string): boolean {
-	const normalized = html.replaceAll('\\r\\n', '\\n')
-	const doctype = '<!doctype html>\\n'
-	if (!normalized.startsWith(doctype)) return false
-	const root = parseStartTag(normalized, doctype.length)
-	return (
-		root !== undefined &&
-		root.name === 'html' &&
-		!root.slashed &&
-		normalized.startsWith('\\n\\t<head>\\n\\t\\t' + security + '\\n', root.next)
-	)
-}
-
-${EXPORT_KEYWORD} function maskIgnoredHtml(
-	environmentKeys: ReadonlySet<string>,
-	html: string,
-	security: string,
-): string {
-	if (!hasSecurityPrologue(html, security)) {
-		throw new Error(
-			'[orkestrel-environment-boundary] Browser HTML must preserve the generated security prologue',
-		)
-	}
-	for (const match of html.matchAll(/%(\\S+?)%/gu)) {
-		const key = match[1]
-		if (key !== undefined && environmentKeys.has(key)) {
-			throw new Error(
-				'[orkestrel-environment-boundary] HTML environment substitution is not permitted; import environment values from a module',
-			)
-		}
-	}
-	const escaped = html.replace(
-		/(?<prefix>[vV][iI][tT][eE])&#(?<zeros>0*)45;(?<suffix>[iI][gG][nN][oO][rR][eE])/gu,
-		'$<prefix>&#0$<zeros>45;$<suffix>',
-	)
-	return escaped.replace(
-		/(?<prefix>[vV][iI][tT][eE])-(?<suffix>[iI][gG][nN][oO][rR][eE])/gu,
-		'$<prefix>&#45;$<suffix>',
-	)
-}
-
-`
-		: ''
-}${
-		needsVue
-			? `${EXPORT_KEYWORD} function restoreIgnoredHtml(code: string): string {
-	const literals = code.replace(
-		/(?<prefix>[vV][iI][tT][eE])&#45;(?<suffix>[iI][gG][nN][oO][rR][eE])/gu,
-		'$<prefix>-$<suffix>',
-	)
-	return literals.replace(
-		/(?<prefix>[vV][iI][tT][eE])&#0(?<zeros>0*)45;(?<suffix>[iI][gG][nN][oO][rR][eE])/gu,
-		'$<prefix>&#$<zeros>45;$<suffix>',
-	)
-}
-
-${
-	needsShowcase
-		? `${EXPORT_KEYWORD} function isShowcaseHtmlEntry(filename: string): boolean {
-	return (
-		physicalPath(filename) ===
-		physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/showcase.html'))
-	)
-}
-
-`
-		: ''
-}${EXPORT_KEYWORD} function isBrowserHtmlEntry(filename: string): boolean {
-	${
-		needsShowcase
-			? `return (
-		isShowcaseHtmlEntry(filename) ||
-		physicalPath(filename) === physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/index.html'))
-	)`
-			: `return (
-		physicalPath(filename) === physicalPath(resolvePath(WORKSPACE_ROOT, 'app/browser/index.html'))
-	)`
-	}
-}${
-					needsShowcase
-						? `
-${EXPORT_KEYWORD} function browserHtmlSecurityMeta(filename: string, built: boolean): string | undefined {
-	if (!isBrowserHtmlEntry(filename)) return undefined
-	if (!isShowcaseHtmlEntry(filename)) return HTML_SECURITY_META
-	return built ? SHOWCASE_BUILD_SECURITY_META : SHOWCASE_SECURITY_META
-}`
-						: ''
-				}
-
-${EXPORT_KEYWORD} function prepareHtml(): Plugin {
-	const environmentKeys = new Set<string>()
-	return {
-		name: 'orkestrel-html-boundary-prepare',
-		enforce: 'post',
-		configResolved(config) {
-			for (const key of Object.keys(config.env)) environmentKeys.add(key)
-			for (const key of Object.keys(config.define ?? {})) {
-				if (key.startsWith(IMPORT_META_ENV_PREFIX)) {
-					environmentKeys.add(key.slice(IMPORT_META_ENV_PREFIX.length))
-				}
-			}
-		},
-		transformIndexHtml: {
-			order: 'pre',
-			handler(html, context) {
-				${
-					needsShowcase
-						? `const security = browserHtmlSecurityMeta(context.filename, false)
-				if (security === undefined) return undefined
-				return maskIgnoredHtml(environmentKeys, html, security)`
-						: `if (!isBrowserHtmlEntry(context.filename)) return undefined
-				return maskIgnoredHtml(environmentKeys, html, HTML_SECURITY_META)`
-				}
-			},
-		},
-	}
-}
-
-${EXPORT_KEYWORD} function restoreHtml(): Plugin {
-	return {
-		name: 'orkestrel-html-boundary-restore',
-		enforce: 'pre',
-		transformIndexHtml(html, context) {
-			if (!isBrowserHtmlEntry(context.filename)) return undefined
-			return restoreIgnoredHtml(html)
-		},
-	}
-}
-
-${EXPORT_KEYWORD} function finalizeHtml(): Plugin {
-	return {
-		name: 'orkestrel-html-boundary-finalize',
-		enforce: 'post',
-		transformIndexHtml: {
-			order: 'post',
-			handler(html, context) {
-				${
-					needsShowcase
-						? `const security = browserHtmlSecurityMeta(
-					context.filename,
-					context.bundle !== undefined,
-				)
-				if (security === undefined) return undefined
-				if (!html.includes(security)) {`
-						: `if (!isBrowserHtmlEntry(context.filename)) return undefined
-				if (!html.includes(HTML_SECURITY_META)) {`
-				}
-					throw new Error(
-						'[orkestrel-environment-boundary] Browser HTML must retain its security policy',
-					)
-				}
-			},
-		},
-	}
-}
-
-`
-			: ''
-	}${
-		needsShowcase
-			? `${EXPORT_KEYWORD} function showcaseHtml(): Plugin {
-	return {
-		name: 'orkestrel-showcase-html',
-		transformIndexHtml: {
-			order: 'post',
-			handler(html, context) {
-				if (!isShowcaseHtmlEntry(context.filename) || context.bundle === undefined) {
-					return undefined
-				}
-				if (!html.includes(SHOWCASE_SECURITY_META)) {
-					throw new Error(
-						'[orkestrel-showcase-html] Showcase build did not retain its development security policy',
-					)
-				}
-				const secured = html.replace(SHOWCASE_SECURITY_META, SHOWCASE_BUILD_SECURITY_META)
-				const build = createHash('sha256').update(secured).digest('hex')
-				return {
-					html: secured,
-					tags: [
-						{
-							tag: 'meta',
-							attrs: { name: 'build-id', content: build },
-							injectTo: 'head',
-						},
-					],
-				}
-			},
-		},
-		generateBundle: {
-			order: 'post',
-			handler(_options, bundle) {
-				let html: (typeof bundle)[string] | undefined
-				for (const output of Object.values(bundle)) {
-					if (!output.fileName.endsWith('.html')) continue
-					if (html !== undefined) {
-						this.error('[orkestrel-showcase-html] Showcase build emitted multiple HTML entries')
-					}
-					html = output
-				}
-				if (html === undefined) {
-					this.error('[orkestrel-showcase-html] Showcase build did not emit an HTML entry')
-				}
-				html.fileName = 'index.html'
-			},
-		},
-	}
-}
-
-`
-			: ''
-	}${EXPORT_KEYWORD} async function environmentAssetSources(
-	code: string,
-	id: string,
-	emitted = false,
-): Promise<readonly string[]> {
-	const [path] = id.split('?')
-	if (
-		path === undefined ||
-		(!/\\.[cm]?[jt]sx?$/.test(path) && !/[?&]html-proxy(?:[=&]|$)/.test(id))
-	) {
-		return []
-	}
-	const sources: string[] = []
-	const transformed = await transformWithOxc(code, path)
-	const visitor = new Visitor({
-		ImportExpression(node) {
-			if (emitted) return
-			let value: string | undefined
-			if (node.source.type === 'Literal' && typeof node.source.value === 'string') {
-				value = node.source.value
-			} else if (node.source.type === 'TemplateLiteral' && node.source.expressions.length === 0) {
-				value = node.source.quasis.map((quasi) => quasi.value.cooked ?? quasi.value.raw).join('')
-			} else {
-				throw new Error(
-					'[orkestrel-environment-boundary] Dynamic imports must use static string values',
-				)
-			}
-			const decoded = decodeAssetSource(value)
-			if (decoded === undefined) {
-				throw new Error('[orkestrel-environment-boundary] Module URLs must use valid URI encoding')
-			}
-			sources.push(decoded)
-		},
-		NewExpression(node) {
-			if (emitted) return
-			const [source, base] = node.arguments
-			if (
-				node.callee.type !== 'Identifier' ||
-				node.callee.name !== 'URL' ||
-				base?.type !== 'MemberExpression' ||
-				base.object.type !== 'MetaProperty' ||
-				base.object.meta.name !== 'import' ||
-				base.object.property.name !== 'meta' ||
-				base.property.type !== 'Identifier' ||
-				base.property.name !== 'url'
-			) {
-				return
-			}
-			let value: string | undefined
-			if (source?.type === 'Literal' && typeof source.value === 'string') {
-				const decoded = decodeAssetSource(source.value)
-				if (decoded === undefined) {
-					throw new Error('[orkestrel-environment-boundary] Asset URLs must use valid URI encoding')
-				}
-				value = decoded
-			} else if (source?.type === 'TemplateLiteral') {
-				const decodedQuasis: string[] = []
-				for (const quasi of source.quasis) {
-					const decoded = decodeAssetSource(quasi.value.cooked ?? quasi.value.raw)
-					if (decoded === undefined) {
-						throw new Error(
-							'[orkestrel-environment-boundary] Asset URLs must use valid URI encoding',
-						)
-					}
-					decodedQuasis.push(decoded)
-				}
-				if (source.expressions.length > 0) {
-					throw new Error(
-						'[orkestrel-environment-boundary] Asset URLs must use static string values',
-					)
-				}
-				value = decodedQuasis.join('__orkestrel__')
-			} else {
-				throw new Error('[orkestrel-environment-boundary] Asset URLs must use static string values')
-			}
-			if (value === undefined) return
-			if (
-				value.startsWith('.') ||
-				value.startsWith('/') ||
-				/^file:/i.test(value) ||
-				/^[A-Za-z]:[\\\\/]/.test(value)
-			) {
-				sources.push(value)
-			}
-		},
-	})
-	visitor.visit(parseSync(path, transformed.code).program)
-	return sources
-}
-
-${EXPORT_KEYWORD} function environmentBoundary(
-	owner: 'src/core' | 'src/browser' | 'src/server' | 'app/core' | 'app/browser' | 'app/server',
-): Plugin {
-	const trustedPackageRoots = new Set<string>()${
-		needsOutput ? '\n\tlet environmentRoot = WORKSPACE_ROOT' : ''
-	}${needsBrowser ? '\n\tlet resolvedConfig: ResolvedConfig | undefined' : ''}
-	return {
-		name: 'orkestrel-environment-boundary',
-		enforce: 'pre',${
-			needsOutput || needsBrowser
-				? `
-		configResolved(config) {${
-			needsOutput ? '\n\t\t\tenvironmentRoot = physicalPath(config.root)' : ''
-		}${needsBrowser ? '\n\t\t\tresolvedConfig = config' : ''}
-		},`
-				: ''
-		}
-${
-	needsVue
-		? `		configureServer(server) {
-			if (owner !== 'app/browser') return
-			const roots = browserServerRoots()
-			server.middlewares.use((request, response, next) => {
-				const path = browserServerPath(request.url, environmentRoot)
-				if (isBrowserServerPathAllowed(path, roots)) {
-					next()
-					return
-				}
-				response.statusCode = 403
-				response.setHeader('cache-control', 'no-store')
-				response.setHeader('content-type', 'text/plain; charset=utf-8')
-				response.end(request.method === 'HEAD' ? undefined : 'Forbidden\\n')
-			})
-		},
-`
-		: ''
-}		async resolveId(source, importer) {
-			if (importer === undefined || !isWorkspaceBoundaryModule(importer)) return null
-			if (isBoundaryExemptModule(source)) return null
-			const normalizedSource = source.replaceAll('\\\\', '/')
-			const sourceError = environmentSourceError(owner, normalizedSource)
-			if (sourceError !== undefined) this.error(sourceError)
-			const importerPath = workspacePath(importer)
-			const physicalImporter = physicalPath(importer)
-			const importerPackageRoot = trustedPackageRootFor(physicalImporter, trustedPackageRoots)
-			if (importerPath === undefined && importerPackageRoot === undefined) return null
-			const [layer, environment] = importerPath?.split('/') ?? []
-			if (
-				importerPackageRoot === undefined &&
-				((layer !== 'app' && layer !== 'src') ||
-					(environment !== 'core' && environment !== 'browser' && environment !== 'server'))
-			) {
-				return null
-			}
-			const pathLike =
-				normalizedSource.startsWith('.') ||
-				normalizedSource.startsWith('/') ||
-				/^file:/i.test(normalizedSource) ||
-				/^[A-Za-z]:[\\\\/]/.test(normalizedSource)
-			const fallbackSource =
-				normalizedSource.startsWith('.') ||
-				normalizedSource.startsWith('/') ||
-				/^file:/i.test(normalizedSource)
-					? sourceFallback(physicalImporter, normalizedSource)
-					: ''
-			const resolution = await this.resolve(source, importer, { skipSelf: true })
-			const [resolvedId] = resolution?.id.split('?') ?? []
-			const physicalResolution = resolvedId === undefined ? undefined : physicalPath(resolvedId)
-			if (
-				importerPackageRoot !== undefined &&
-				(pathLike || normalizedSource.startsWith('#')) &&
-				physicalResolution !== undefined &&
-				!containedPath(importerPackageRoot, physicalResolution)
-			) {
-				if (normalizedSource.startsWith('#')) {
-					const mappedPackageRoot =
-						workspacePath(physicalResolution) === undefined
-							? packageRootForResolved(physicalResolution)
-							: undefined
-					if (mappedPackageRoot === undefined) {
-						return this.error(
-							'Dependency package imports must resolve inside an exact physical package root',
-						)
-					}
-					trustedPackageRoots.add(mappedPackageRoot)
-				} else {
-					this.error('Dependency modules cannot import files outside their physical package root')
-				}
-			}
-			if (
-				!pathLike &&
-				!normalizedSource.startsWith('#') &&
-				physicalResolution !== undefined &&
-				workspacePath(physicalResolution) === undefined
-			) {
-				const packageName = packageNameOf(normalizedSource)
-				const packageRoot =
-					packageName === undefined ? undefined : packageRootOf(packageName, physicalResolution)
-				if (packageRoot === undefined || !containedPath(packageRoot, physicalResolution)) {
-					return this.error('Resolved dependencies must remain inside their physical package root')
-				}
-				trustedPackageRoots.add(packageRoot)
-			}
-			const resolvedSource = workspacePath(resolution?.id ?? fallbackSource)
-			if (pathLike && resolvedSource === undefined && importerPackageRoot === undefined) {
-				this.error('Environment modules cannot import files outside the workspace')
-			}
-			const pathError =
-				resolvedSource === undefined
-					? undefined
-					: environmentPathError(\`\${layer}/\${environment}\`, resolvedSource)
-			if (pathError !== undefined) this.error(pathError)
-			return null
-		},
-		async load(id) {
-			if (!isWorkspaceBoundaryModule(id)) return null
-			const physicalImporter = physicalPath(id)
-			const trustedPackageRoot = trustedPackageRootFor(physicalImporter, trustedPackageRoots)
-			const inferredPackageRoot =
-				trustedPackageRoot === undefined ? packageRootForResolved(physicalImporter) : undefined
-			const packageRoot =
-				trustedPackageRoot ??
-				(inferredPackageRoot !== undefined && isPackageBoundary(inferredPackageRoot)
-					? inferredPackageRoot
-					: undefined)
-			if (packageRoot === undefined || !/\\.[cm]?[jt]sx?$/.test(physicalImporter)) {
-				return null
-			}
-			const code = readBoundedFile(physicalImporter, ENVIRONMENT_MODULE_BYTES)
-			if (code === undefined) {
-				return this.error('Dependency module source must be a bounded regular file')
-			}
-			for (const source of await environmentAssetSources(code, id)) {
-				const normalizedSource = source.replaceAll('\\\\', '/')
-				const sourceError = environmentSourceError(owner, normalizedSource)
-				if (sourceError !== undefined) this.error(sourceError)
-				const sourcePathError = environmentPathError(owner, normalizedSource)
-				if (sourcePathError !== undefined) this.error(sourcePathError)
-				const pathLike =
-					normalizedSource.startsWith('.') ||
-					normalizedSource.startsWith('/') ||
-					/^file:/i.test(normalizedSource) ||
-					/^[A-Za-z]:[\\\\/]/.test(normalizedSource)
-				if (
-					pathLike &&
-					!containedPath(
-						packageRoot,
-						physicalPath(sourceFallback(physicalImporter, normalizedSource)),
-					)
-				) {
-					this.error('Dependency modules cannot import files outside their physical package root')
-				}
-			}
-			return null
-		},${
-			needsOutput
-				? `
-		async generateBundle(_options, bundle) {
-			for (const output of Object.values(bundle)) {
-				if (output.type === 'chunk') {
-					for (const source of await environmentAssetSources(
-						output.code,
-						output.fileName.endsWith('.js') ? output.fileName : \`\${output.fileName}.js\`,
-						true,
-					)) {
-						const normalizedSource = source.replaceAll('\\\\', '/')
-						const sourceError = environmentSourceError(owner, normalizedSource)
-						if (sourceError !== undefined) this.error(sourceError)
-					}
-					continue
-				}
-				for (const original of output.originalFileNames) {
-					const physical = physicalPath(
-						isAbsolute(original) ? original : resolvePath(environmentRoot, original),
-					)
-					if (isBoundaryExemptModule(original) || isBoundaryExemptModule(physical)) continue
-					const target = workspacePath(physical)
-					if (target === undefined) {
-						if (trustedPackageRootFor(physical, trustedPackageRoots) === undefined) {
-							this.error('Environment modules cannot import files outside the workspace')
-						}
-						continue
-					}
-					const pathError = environmentPathError(owner, target)
-					if (pathError !== undefined) this.error(pathError)
-				}
-			}
-		},`
-				: ''
-		}
-		buildEnd(error) {
-			if (error !== undefined) return
-			for (const id of this.getModuleIds()) {
-				if (!isWorkspaceBoundaryModule(id)) continue
-				const target = workspacePath(id)
-				if (target === undefined) {
-					if (
-						isOutsideWorkspacePath(id) &&
-						trustedPackageRootFor(physicalPath(id), trustedPackageRoots) === undefined
-					) {
-						this.error('Environment modules cannot import files outside the workspace')
-					}
-					continue
-				}
-				const pathError = environmentPathError(owner, target)
-				if (pathError !== undefined) this.error(pathError)
-			}
-		}${vueBoundary},
-	}
-}
-`
-	const viteImports = needsBrowser
-		? `import { isCSSRequest, parseSync, preprocessCSS, transformWithOxc, Visitor } from 'vite'
-`
-		: `import { parseSync, transformWithOxc, Visitor } from 'vite'
-`
-	return `${playwrightTypeImports}${viteTypeImports}
-${viteImports}import { defineConfig, mergeConfig } from 'vitest/config'
-import tsconfig from './tsconfig.json' with { type: 'json' }
-import { fileURLToPath, URL } from 'node:url'
-${showcaseHashImport}import { isBuiltin } from 'node:module'
-import {
-${needsBrowser ? '\taccessSync,\n' : ''}	closeSync,
-	constants as FS_CONSTANTS,
-	existsSync,
-	fstatSync,
-	lstatSync,
-	openSync,
-${needsBrowser ? '\treaddirSync,\n' : ''}	readSync,
-	realpathSync,
-${needsBrowser ? '\tstatSync,\n' : ''}} from 'node:fs'
-${
-	needsBrowser
-		? `import {
-	basename,
-	join,
-	dirname,
-	isAbsolute,
-	relative,
-	resolve as resolvePath,
-	sep,
-} from 'node:path'`
-		: `import { dirname, isAbsolute, relative, resolve as resolvePath, sep } from 'node:path'`
-}
-${playwrightImports}${vueImports}${showcaseImports}${
-		needsBrowser
-			? `\n/** Chromium executable layouts inside a \`chromium-<revision>\` browsers-directory entry, per platform. */
-${EXPORT_KEYWORD} ${CONST_KEYWORD} CHROMIUM_LAYOUTS = Object.freeze([
-	'chrome-linux/chrome',
-	'chrome-linux64/chrome',
-	'chrome-win/chrome.exe',
-	'chrome-win64/chrome.exe',
-	'chrome-mac/Chromium.app/Contents/MacOS/Chromium',
-	'chrome-mac-arm64/Chromium.app/Contents/MacOS/Chromium',
-])
-
-/** Stable Playwright Chromium channels and their standard executable layouts. */
-${EXPORT_KEYWORD} ${CONST_KEYWORD} SYSTEM_BROWSER_CHANNELS = Object.freeze([
-	Object.freeze({
-		channel: 'chrome',
-		layouts: Object.freeze({
-			linux: '/opt/google/chrome/chrome',
-			darwin: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-			win32: Object.freeze(['Google', 'Chrome', 'Application', 'chrome.exe']),
-		}),
-	}),
-	Object.freeze({
-		channel: 'msedge',
-		layouts: Object.freeze({
-			linux: '/opt/microsoft/msedge/msedge',
-			darwin: '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
-			win32: Object.freeze(['Microsoft', 'Edge', 'Application', 'msedge.exe']),
-		}),
-	}),
-])
-
-/**
- * Determine whether a path identifies an executable regular file.
- *
- * @param path - The filesystem path to inspect.
- * @returns Whether the path is a regular file with execute access.
- *
- * @example
- * \`\`\`ts
- * isBrowserExecutable('/opt/google/chrome/chrome')
- * \`\`\`
- */
-${EXPORT_KEYWORD} function isBrowserExecutable(path: string): boolean {
-	try {
-		if (!statSync(path).isFile()) return false
-		accessSync(path, FS_CONSTANTS.X_OK)
-		return true
-	} catch {
-		return false
-	}
-}
-
-/**
- * Resolve a launchable Playwright-managed Chromium executable: the pinned revision when installed,
- * otherwise a \`chromium\` / \`chromium.exe\` alias or any other \`chromium-*\`
- * revision under the same Playwright browsers directory. A pinned-revision miss
- * is not Chromium absence — managed containers ship one usable build (often
- * behind a revision-agnostic alias) for many Playwright versions.
- *
- * @param pinned - The executable path for Playwright's pinned Chromium revision.
- * @returns The managed executable path, or \`undefined\` when none is executable.
- *
- * @example
- * \`\`\`ts
- * resolveManagedBrowser(chromium.executablePath())
- * \`\`\`
- */
-${EXPORT_KEYWORD} function resolveManagedBrowser(pinned: string): string | undefined {
-	if (isBrowserExecutable(pinned)) return pinned
-	let revisionRoot = dirname(pinned)
-	for (;;) {
-		if (/^chromium-\\d+$/.test(basename(revisionRoot))) break
-		const parent = dirname(revisionRoot)
-		if (parent === revisionRoot) return undefined
-		revisionRoot = parent
-	}
-	const browsersRoot = dirname(revisionRoot)
-	for (const alias of ['chromium', 'chromium.exe']) {
-		const candidate = resolvePath(browsersRoot, alias)
-		if (isBrowserExecutable(candidate)) return candidate
-	}
-	let entries: readonly string[]
-	try {
-		entries = readdirSync(browsersRoot)
-	} catch {
-		return undefined
-	}
-	const revisions = entries
-		.filter((entry) => /^chromium-\\d+$/.test(entry))
-		.sort((a, b) => Number(b.slice('chromium-'.length)) - Number(a.slice('chromium-'.length)))
-	for (const revision of revisions) {
-		for (const layout of CHROMIUM_LAYOUTS) {
-			const candidate = resolvePath(browsersRoot, revision, layout)
-			if (isBrowserExecutable(candidate)) return candidate
-		}
-	}
-	return undefined
-}
-
-/**
- * Resolve the first installed stable system Chromium channel.
- *
- * @param platform - The Node platform whose standard layouts should be probed.
- * @param environment - The process environment supplying Windows installation roots.
- * @returns \`chrome\`, then \`msedge\`, or \`undefined\` when neither is executable.
- *
- * @example
- * \`\`\`ts
- * resolveSystemBrowser(process.platform, process.env)
- * \`\`\`
- */
-${EXPORT_KEYWORD} function resolveSystemBrowser(
-	platform: NodeJS.Platform,
-	environment: NodeJS.ProcessEnv,
-): string | undefined {
-	if (platform !== 'linux' && platform !== 'darwin' && platform !== 'win32') return undefined
-	const roots = new Set<string>()
-	if (platform === 'win32') {
-		for (const root of [
-			environment.LOCALAPPDATA,
-			environment.PROGRAMFILES,
-			environment['PROGRAMFILES(X86)'],
-		]) {
-			if (root !== undefined && root.length > 0) roots.add(root)
-		}
-		const homeDrive = environment.HOMEDRIVE
-		if (homeDrive !== undefined && homeDrive.length > 0) {
-			roots.add(join(homeDrive, 'Program Files'))
-			roots.add(join(homeDrive, 'Program Files (x86)'))
-		}
-	}
-	for (const browser of SYSTEM_BROWSER_CHANNELS) {
-		if (platform === 'win32') {
-			for (const root of roots) {
-				if (isBrowserExecutable(join(root, ...browser.layouts.win32))) return browser.channel
-			}
-			continue
-		}
-		if (isBrowserExecutable(browser.layouts[platform])) return browser.channel
-	}
-	return undefined
-}
-
-/**
- * Resolve launch options for a managed Chromium or stable system browser.
- *
- * @param pinned - The executable path for Playwright's pinned Chromium revision.
- * @param platform - The Node platform whose standard system layouts should be probed.
- * @param environment - The process environment supplying Windows installation roots.
- * @returns Provider options for managed Chromium, Chrome, or Edge, or \`undefined\`.
+ * @param blueprint - The workspace specification.
+ * @returns Formatter-stable `vite.config.ts` text.
  *
  * @remarks
- * An installed pinned revision returns an empty object so Playwright retains
- * its default launch semantics. A different managed executable is selected by
- * path; a system browser is selected by its stable Playwright channel.
- *
- * @example
- * \`\`\`ts
- * resolveBrowser(chromium.executablePath(), process.platform, process.env)
- * \`\`\`
- */
-${EXPORT_KEYWORD} function resolveBrowser(
-	pinned: string,
-	platform: NodeJS.Platform,
-	environment: NodeJS.ProcessEnv,
-): PlaywrightProviderOptions | undefined {
-	const managed = resolveManagedBrowser(pinned)
-	if (managed !== undefined) {
-		return managed === pinned ? {} : { launchOptions: { executablePath: managed } }
-	}
-	const channel = resolveSystemBrowser(platform, environment)
-	return channel === undefined ? undefined : { launchOptions: { channel } }
-}
-
-${CONST_KEYWORD} browserPinned = chromium.executablePath()
-${CONST_KEYWORD} browserOptions = resolveBrowser(browserPinned, process.platform, process.env)
-`
-			: ''
-	}
-${EXPORT_KEYWORD} function resolveWorkspacePath(relativePath: string): string {
-	return fileURLToPath(new URL(relativePath, import.meta.url))
-}
-
-${EXPORT_KEYWORD} function hasAsciiUrlControl(value: string): boolean {
-	for (const character of value) {
-		const code = character.codePointAt(0)
-		if (code !== undefined && (code <= 0x1f || code === 0x7f)) return true
-	}
-	return false
-}
-
-${CONST_KEYWORD} resolve = {
-	alias: Object.entries(tsconfig.compilerOptions.paths).reduce((a, [k, v]) => {
-		const [path] = v
-		if (path === undefined) throw new Error(\`tsconfig path alias \${k} has no target\`)
-		return Object.assign(a, { [k]: resolveWorkspacePath(path) })
-	}, {}),
-}
-
-${
-	needsBrowser
-		? `${EXPORT_KEYWORD} function gateBrowserProjects(
-	registrations: readonly {
-		readonly project: () => UserConfig
-		readonly browser?: string
-	}[],
-	available: boolean,
-	argv: readonly string[],
-): NonNullable<UserConfig['test']> {
-	const projects: UserConfig[] = []
-	const gated: string[] = []
-	for (const registration of registrations) {
-		if (registration.browser !== undefined && !available) {
-			gated.push(registration.browser)
-			projects.push({
-				resolve,
-				test: {
-					name: { label: registration.browser, color: 'yellow' },
-					include: [],
-					environment: 'node',
-					browser: { enabled: false },
-				},
-			})
-			continue
-		}
-		projects.push(registration.project())
-	}
-	if (gated.length === 0) return { projects }
-	console.warn(
-		\`browser projects skipped: no Playwright Chromium, Chrome, or Edge found (\${gated.join(', ')})\`,
-	)
-	const filters: string[] = []
-	let readable = true
-	for (let index = 0; index < argv.length; index += 1) {
-		const argument = argv[index]
-		if (argument === '--project') {
-			const filter = argv[index + 1]
-			if (filter === undefined) {
-				readable = false
-				continue
-			}
-			filters.push(filter)
-			index += 1
-			continue
-		}
-		if (argument?.startsWith('--project=') === true) {
-			filters.push(argument.slice('--project='.length))
-		}
-	}
-	return readable && filters.length > 0 && filters.every((filter) => gated.includes(filter))
-		? { passWithNoTests: true, projects }
-		: { projects }
-}
-
-${EXPORT_KEYWORD} ${CONST_KEYWORD} ENVIRONMENT_CSS = Object.freeze({
-	transformer: 'lightningcss',
-	lightningcss: {
-		visitor: () => {
-			let sources: readonly string[] = []
-			let source: string | undefined
-			return {
-				StyleSheet(stylesheet) {
-					sources = stylesheet.sources
-				},
-				Rule(rule) {
-					source =
-						'value' in rule && rule.value !== null && 'loc' in rule.value
-							? sources[rule.value.loc.source_index]
-							: undefined
-					if (rule.type !== 'import' || rule.value === null) return
-					const error = stylesheetAssetError(source, rule.value.url)
-					if (error !== undefined) {
-						throw new Error(\`[orkestrel-environment-boundary] \${error}\`)
-					}
-				},
-				Url(asset) {
-					const error = stylesheetAssetError(source, asset.url)
-					if (error !== undefined) {
-						throw new Error(\`[orkestrel-environment-boundary] \${error}\`)
-					}
-				},
-			}
-		},
-	},
-} satisfies CSSOptions)
-
-/** Prevent the Vitest browser mid-run "optimized dependencies changed, reloading" stall. */
-${EXPORT_KEYWORD} ${CONST_KEYWORD} BROWSER_TEST_DEPENDENCIES = Object.freeze([
-	'@vitest/browser/client',
-	'vitest/browser',
-	'vitest/internal/browser',
-	'vitest',
-])
-`
-		: ''
-}${EXPORT_KEYWORD} ${CONST_KEYWORD} PACKAGE_MANIFEST_BYTES = 1_048_576
-${EXPORT_KEYWORD} ${CONST_KEYWORD} ENVIRONMENT_MODULE_BYTES = 8_388_608
-${environmentBoundary}`
-}
-
-/**
- * Build the dedicated standalone Node-only repository-policy Vitest project.
- *
- * @returns The emitted `policy` project definition.
+ * The static root skeleton and each project factory are template data. This
+ * function computes only selection, fixed conditional blocks, escaped
+ * blueprint strings, and the formatter-measured project-array layout.
  *
  * @example
  * ```ts
- * policyViteProject().includes("label: 'policy'") // true
+ * import type { Blueprint } from '@orkestrel/scaffold'
+ * import { blueprintToRootVite } from '@orkestrel/scaffold'
+ *
+ * declare const blueprint: Blueprint
+ *
+ * blueprintToRootVite(blueprint).includes('defineConfig') // true
  * ```
  */
-export function policyViteProject(): string {
-	return `${EXPORT_KEYWORD} const policy = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			test: {
-				name: { label: 'policy', color: 'white' },
-				include: ['tests/policy.test.ts'],
-				setupFiles: ['./tests/setup.ts'],
-				environment: 'node',
-				browser: { enabled: false },
-			},
-		},
-		options ?? {},
-	)
-`
-}
+export function blueprintToRootVite(blueprint: Blueprint): string {
+	const machinery = blueprintToMachinery(blueprint)
+	const imports: string[] = []
+	if (machinery.browser) imports.push("import { playwright } from '@vitest/browser-playwright'")
+	if (machinery.vue) imports.push("import vue from '@vitejs/plugin-vue'")
+	if (machinery.showcase) imports.push("import { viteSingleFile } from 'vite-plugin-singlefile'")
 
-/**
- * Build the standalone Node-only root-configuration Vitest project.
- *
- * @returns The emitted `config` project definition.
- *
- * @example
- * ```ts
- * configViteProject().includes("label: 'config'") // true
- * ```
- */
-export function configViteProject(): string {
-	return `${EXPORT_KEYWORD} const config = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			test: {
-				name: { label: 'config', color: 'yellow' },
-				include: ['tests/config/**/*.test.ts'],
-				setupFiles: ['./tests/setup.ts'],
-				environment: 'node',
-				browser: { enabled: false },
-			},
-		},
-		options ?? {},
-	)
-`
-}
-
-/**
- * Build the standalone Node-only guide-parity Vitest project.
- *
- * @returns The emitted `guides` project definition.
- *
- * @example
- * ```ts
- * guidesViteProject().includes("label: 'guides'") // true
- * ```
- */
-export function guidesViteProject(): string {
-	return `${EXPORT_KEYWORD} const guides = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			test: {
-				name: { label: 'guides', color: 'green' },
-				include: ['tests/guides/**/*.test.ts'],
-				exclude: ['tests/src/**/*.test.ts', 'tests/app/**/*.test.ts', 'tests/setup.test.ts'],
-				setupFiles: ['./tests/setup.ts'],
-				environment: 'node',
-				browser: { enabled: false },
-			},
-		},
-		options ?? {},
-	)
-`
-}
-
-/**
- * Build the executable's dedicated Node-only build and test project.
- *
- * @returns The emitted `srcBin` project definition.
- *
- * @example
- * ```ts
- * binViteProject().includes("label: 'src:bin'") // true
- * ```
- */
-export function binViteProject(): string {
-	return `${EXPORT_KEYWORD} const srcBin = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			publicDir: false,
-			plugins: [outputBoundary('dist/bin')],
-			build: {
-				emptyOutDir: true,
-				sourcemap: true,
-				minify: false,
-				lib: {
-					entry: resolveWorkspacePath('src/bin/scaffold.ts'),
-					formats: ['es'],
-					fileName: () => 'scaffold.js',
-				},
-				outDir: 'dist/bin',
-				target: 'node22',
-				rolldownOptions: { external: [/^node:/, /^@orkestrel\\//, /^@src\\//] },
-			},
-			test: {
-				name: { label: 'src:bin', color: 'yellow' },
-				include: ['tests/src/bin/**/*.test.ts'],
-				setupFiles: ['./tests/setup.ts', './tests/setupServer.ts'],
-				environment: 'node',
-				browser: { enabled: false },
-			},
-		},
-		options ?? {},
-	)
-`
-}
-
-/**
- * Build the standalone Node-only installed-consumer integration proof project.
- *
- * @param facts - Optional structural facts controlling the shared global setup.
- * @returns The emitted `integration` project definition.
- *
- * @example
- * ```ts
- * integrationViteProject({ bin: true, integration: true, global: true }).includes(
- *   "globalSetup: ['./tests/setupGlobal.ts']",
- * ) // true
- * ```
- */
-export function integrationViteProject(facts: ViteFacts = {}): string {
-	const registrySetup =
-		facts.bin === true && facts.integration === true && facts.global === true
-			? `				// Wire the template registry for the generated-consumer proof.
-				globalSetup: ['./${GLOBAL_SETUP_PATH}'],
-`
-			: ''
-	return `${EXPORT_KEYWORD} const integration = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			test: {
-				name: { label: 'integration', color: 'blue' },
-				include: ['tests/integration/**/*.test.ts'],
-				setupFiles: ['./tests/setup.ts'],
-${registrySetup}				environment: 'node',
-				browser: { enabled: false },
-				testTimeout: 120_000,
-				hookTimeout: 120_000,
-				fileParallelism: false,
-			},
-		},
-		options ?? {},
-	)
-`
-}
-
-/**
- * Build one standalone Node-only live-service vendor proof project.
- *
- * @param name - The bounded vendor directory name.
- * @returns The emitted `service:<name>` project definition.
- *
- * @example
- * ```ts
- * serviceViteProject('claude').includes("label: 'service:claude'") // true
- * ```
- */
-export function serviceViteProject(name: string): string {
-	if (!NAME_PATTERN.test(name) || name.length > MAX_NAME_LENGTH) {
-		throw new Error('Service project name must be a bounded lowercase directory name')
+	const factories: string[] = []
+	const projects: string[] = []
+	if (blueprint.src.includes('core')) {
+		factories.push(CONFIG_TEMPLATES.factories.src.core)
+		projects.push('srcCore')
 	}
-	const identifier = `service${pascalCase(name)}`
-	const label = serializeTypeScriptString(`service:${name}`)
-	const include = serializeTypeScriptString(`tests/service/${name}/**/*.test.ts`)
-	const setup = serializeTypeScriptString(`./tests/service/${name}/setup.ts`)
-	return `${EXPORT_KEYWORD} const ${identifier} = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			plugins: [environmentBoundary('app/server')],
-			test: {
-				name: { label: ${label}, color: 'red' },
-				include: [${include}],
-				setupFiles: ['./tests/setup.ts', './tests/setupServer.ts', ${setup}],
-				environment: 'node',
-				browser: { enabled: false },
-				testTimeout: 120_000,
-				hookTimeout: 120_000,
-				fileParallelism: false,
-			},
-		},
-		options ?? {},
-	)
-`
-}
-
-/**
- * The single non-`core` environment's factory IS the base (Shape 3 of
- * `rootViteConfig`) — the environment's own `viteHeader` (Playwright only when
- * `environment === 'browser'`, per the live sqlite/indexeddb exemplars) prefixes
- * the environment-specific `srcBrowser` / `srcServer` project, followed by the
- * standalone policy and guides proof projects and any selected structural-axis
- * projects.
- *
- * @param environment - The sole declared non-`core` environment.
- * @param facts - Optional structural facts.
- * @returns The root `vite.config.ts` file content for a single non-`core` environment, newline-terminated.
- *
- * @example
- * ```ts
- * singleSrcViteConfig('server').includes('srcServer') // true
- * ```
- */
-export function singleSrcViteConfig(
-	environment: 'browser' | 'server',
-	facts: ViteFacts = {},
-): string {
-	// Rendered blocks below are generated FILE TEXT, so every embedded
-	// declaration keyword is interpolated rather than typed literally at
-	// column 0 — the doc↔source parity scan (AGENTS §22) reads this file's
-	// own source lines, and a flush-left `export const foo` inside a
-	// template string is indistinguishable from a real module-scope export
-	// to that line-based scan; interpolating the keyword keeps the emitted
-	// bytes identical while keeping this file's own declaration environment
-	// exactly the one export it documents.
-	const machinery = viteMachinery([environment])
-	const header = viteHeader(machinery)
-	const registrations = viteProjectRegistrations([environment], [], facts)
-	const renderedTest = renderViteTest(registrations, machinery.browser)
-	const definitions = viteProjectDefinitions(facts)
-	if (environment === 'browser') {
-		return `${header}
-${EXPORT_KEYWORD} const srcBrowser = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			css: ENVIRONMENT_CSS,
-			publicDir: false,
-			plugins: [outputBoundary('dist/src/browser'), environmentBoundary('src/browser')],
-			build: {
-				emptyOutDir: true,
-				sourcemap: true,
-				minify: false,
-				lib: {
-					entry: resolveWorkspacePath('src/browser/index.ts'),
-					formats: ['es'],
-					fileName: () => 'index.js',
-				},
-				outDir: 'dist/src/browser',
-				rolldownOptions: {
-					external: (id: string) => id.startsWith('@orkestrel/'),
-				},
-			},
-			test: {
-				name: { label: 'src:browser', color: 'yellow' },
-				include: ['tests/src/browser/**/*.test.ts'],
-				${facts.global === true ? `globalSetup: ['./${GLOBAL_SETUP_PATH}'],\n\t\t\t\t` : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
-				...(options?.test?.browser?.enabled === false
-					? {}
-					: {
-							deps: {
-								optimizer: {
-									client: {
-										enabled: true,
-										include: [...BROWSER_TEST_DEPENDENCIES],
-									},
-								},
-							},
-						}),
-				browser: {
-					enabled: true,
-					provider: playwright(browserOptions),
-					instances: [{ browser: 'chromium', headless: true }],
-				},
-				fileParallelism: false,
-			},
-		},
-		options ?? {},
-	)
-
-${definitions}
-export default defineConfig({
-	resolve,
-${renderedTest}
-})
-`
+	if (blueprint.src.includes('browser')) {
+		const core = blueprint.src.includes('core')
+		factories.push(
+			fillTemplate(CONFIG_TEMPLATES.factories.src.browser, {
+				external: core
+					? "external: (id: string) => id === '@src/core' || id.startsWith('@orkestrel/'),"
+					: "external: (id: string) => id.startsWith('@orkestrel/'),",
+				output: core
+					? "\t\t\t\t\toutput: { paths: { '@src/core': '../core/index.js' } },"
+					: '\t\t\t\t\toutput: {},',
+				exclude: core ? "\t\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" : '',
+			}),
+		)
+		projects.push('srcBrowser')
 	}
-	return `${header}
-${EXPORT_KEYWORD} const srcServer = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			publicDir: false,
-			plugins: [outputBoundary('dist/src/server'), environmentBoundary('src/server')],
-			build: {
-				emptyOutDir: true,
-				sourcemap: true,
-				minify: false,
-				lib: {
-					entry: resolveWorkspacePath('src/server/index.ts'),
-					formats: ['es', 'cjs'],
-					fileName: (format: string) => (format === 'es' ? 'index.js' : 'index.cjs'),
-				},
-				outDir: 'dist/src/server',
-				target: 'node22',
-				rolldownOptions: {
-					platform: 'node',
-					external: (id: string) => id.startsWith('node:') || id.startsWith('@orkestrel/'),
-				},
-			},
-			test: {
-				name: { label: 'src:server', color: 'red' },
-				include: ['tests/src/server/**/*.test.ts'],
-				setupFiles: ['./tests/setup.ts', './tests/setupServer.ts'],
-				environment: 'node',
-				browser: { enabled: false },
-			},
-		},
-		options ?? {},
-	)
-
-${definitions}
-export default defineConfig({
-	resolve,
-${renderedTest}
-})
-`
-}
-
-/**
- * The root `vite.config.ts` — three grounded shapes, chosen by a blueprint's
- * `src`:
- *   1. `core`-only — `srcCore` + standalone policy/guides proof projects, no
- *      Playwright at all (the live
- *      timeout exemplar: no browser project exists anywhere in the file).
- *   2. Multi-environment (2+ src, always including `core` per the live
- *      middleware/router exemplars) — `srcCore` is the shared base;
- *      `srcBrowser` / `srcServer` extend it and externalize `@src/core` to
- *      the sibling build. Playwright ships UNCONDITIONALLY (middleware
- *      carries it with no browser environment — grounded, not conditional).
- *   3. A single non-`core` environment (`browser`-only / `server`-only) — the
- *      environment factory itself IS the base (no `srcCore` to extend, so no
- *      dead `@src/core` externalize/remap either — there is no sibling
- *      core build), per the live sqlite (server-only) / indexeddb
- *      (browser-only) exemplars. Playwright ships only when the sole
- *      environment is `browser` (it must run its own tests in a real browser).
- *
- * @param src - The declared `Environment[]`.
- * @param facts - Optional structural facts. `bin` appends the standalone executable
- *   build-and-test project; `integration` and `services` append their standalone
- *   proof projects; `global` wires the shared global-setup module.
- * @returns The root `vite.config.ts` file content, newline-terminated.
- *
- * @example
- * ```ts
- * rootViteConfig(['core']).includes('srcCore') // true
- * ```
- */
-export function rootViteConfig(src: readonly Environment[], facts: ViteFacts = {}): string {
-	// Rendered blocks below are generated FILE TEXT, so every embedded
-	// declaration keyword is interpolated rather than typed literally at
-	// column 0 — the doc↔source parity scan (AGENTS §22) reads this file's
-	// own source lines, and a flush-left `export const foo` inside a
-	// template string is indistinguishable from a real module-scope export
-	// to that line-based scan; interpolating the keyword keeps the emitted
-	// bytes identical while keeping this file's own declaration environment
-	// exactly the one export it documents.
-	const hasCore = src.includes('core')
-	const nonCore = ENVIRONMENTS.filter(
-		(environment) => environment !== 'core' && src.includes(environment),
-	)
-	const machinery = viteMachinery(src)
-	const header = viteHeader(machinery)
-
-	if (!hasCore) {
-		const [onlyEnvironment] = nonCore
-		if (onlyEnvironment === 'browser' || onlyEnvironment === 'server') {
-			return singleSrcViteConfig(onlyEnvironment, facts)
-		}
-	}
-
-	// Shape 1 (no `nonCore` entries) / Shape 2 (1-2 `nonCore` entries) —
-	// `srcCore` is always the shared base; `srcBrowser` / `srcServer` extend
-	// it and externalize `@src/core` to the sibling build.
-	const browserBlock = `
-${EXPORT_KEYWORD} const srcBrowser = (options?: UserConfig): UserConfig =>
-	srcCore(
-		mergeConfig(
-			{
-				css: ENVIRONMENT_CSS,
-				publicDir: false,
-				plugins: [outputBoundary('dist/src/browser'), environmentBoundary('src/browser')],
-				build: {
-					lib: {
-						entry: resolveWorkspacePath('src/browser/index.ts'),
-						formats: ['es'],
-						fileName: () => 'index.js',
-					},
-					outDir: 'dist/src/browser',
-					rolldownOptions: {
-						external: (id: string) => id === '@src/core' || id.startsWith('@orkestrel/'),
-						output: { paths: { '@src/core': '../core/index.js' } },
-					},
-				},
-				test: {
-					name: { label: 'src:browser', color: 'yellow' },
-					include: ['tests/src/browser/**/*.test.ts'],
-					exclude: ['tests/src/core/**/*.test.ts'],
-					${facts.global === true ? `globalSetup: ['./${GLOBAL_SETUP_PATH}'],\n\t\t\t\t\t` : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
-					...(options?.test?.browser?.enabled === false
-						? {}
-						: {
-								deps: {
-									optimizer: {
-										client: {
-											enabled: true,
-											include: [...BROWSER_TEST_DEPENDENCIES],
-										},
-									},
-								},
-							}),
-					browser: {
-						enabled: true,
-						provider: playwright(browserOptions),
-						instances: [{ browser: 'chromium', headless: true }],
-					},
-					fileParallelism: false,
-				},
-			},
-			options ?? {},
-		),
-	)
-`
-	const serverBlock = `
-${EXPORT_KEYWORD} const srcServer = (options?: UserConfig): UserConfig =>
-	srcCore(
-		mergeConfig(
-			{
-				publicDir: false,
-				plugins: [outputBoundary('dist/src/server'), environmentBoundary('src/server')],
-				build: {
-					lib: {
-						entry: resolveWorkspacePath('src/server/index.ts'),
-						fileName: (format: string) => (format === 'es' ? 'index.js' : 'index.cjs'),
-					},
-					outDir: 'dist/src/server',
-					target: 'node22',
-					rolldownOptions: {
-						platform: 'node',
-						external: (id: string) =>
-							id === '@src/core' || id.startsWith('node:') || id.startsWith('@orkestrel/'),
-						output: [
-							{
-								format: 'es',
-								entryFileNames: 'index.js',
-								paths: { '@src/core': '../core/index.js' },
-							},
-							{
-								format: 'cjs',
-								entryFileNames: 'index.cjs',
-								paths: { '@src/core': '../core/index.cjs' },
-							},
-						],
-					},
-				},
-				test: {
-					name: { label: 'src:server', color: 'red' },
-					include: ['tests/src/server/**/*.test.ts'],
-					exclude: ['tests/src/core/**/*.test.ts'],
-					setupFiles: ['./tests/setup.ts', './tests/setupServer.ts'],
-				},
-			},
-			options ?? {},
-		),
-	)
-`
-	const blocks = nonCore
-		.map((environment) => (environment === 'browser' ? browserBlock : serverBlock))
-		.join('')
-	const registrations = viteProjectRegistrations(src, [], facts)
-	const renderedTest = renderViteTest(registrations, machinery.browser)
-	const definitions = viteProjectDefinitions(facts)
-	return `${header}
-${EXPORT_KEYWORD} const srcCore = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			publicDir: false,
-			build: {
-				emptyOutDir: true,
-				sourcemap: true,
-				minify: false,
-			},
-			test: {
-				name: { label: 'src:core', color: 'magenta' },
-				include: ['tests/src/core/**/*.test.ts'],
-				setupFiles: ['./tests/setup.ts'],
-				environment: 'node',
-				browser: { enabled: false },
-			},
-		},
-		options ?? {},
-	)
-${blocks}
-${definitions}
-export default defineConfig({
-	resolve,
-${renderedTest}
-})
-`
-}
-
-/**
- * Build the root Vite/Vitest configuration for a workspace that includes
- * app environments, optionally alongside published src environments.
- *
- * @param src - Published src environments.
- * @param app - Private app environments.
- * @param facts - Optional structural facts.
- * @returns The root `vite.config.ts` content.
- *
- * @example
- * ```ts
- * applicationViteConfig([], ['core', 'server']).includes('appServer') // true
- * ```
- */
-export function applicationViteConfig(
-	src: readonly Environment[],
-	app: readonly Environment[],
-	facts: ViteFacts = {},
-): string {
-	const hasSourceCore = src.includes('core')
-	const machinery = viteMachinery(src, app, facts.bin === true, facts.showcase === true)
-	const header = viteHeader(machinery)
-	const blocks: string[] = []
-
-	if (src.includes('core')) {
-		blocks.push(`
-${EXPORT_KEYWORD} const srcCore = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			publicDir: false,
-			plugins: [environmentBoundary('src/core')],
-			build: { emptyOutDir: true, sourcemap: true, minify: false },
-			test: {
-				name: { label: 'src:core', color: 'magenta' },
-				include: ['tests/src/core/**/*.test.ts'],
-				setupFiles: ['./tests/setup.ts'],
-				environment: 'node',
-				browser: { enabled: false },
-			},
-		},
-		options ?? {},
-	)
-`)
-	}
-	if (src.includes('browser')) {
-		const coreOutput = hasSourceCore
-			? `
-					output: { paths: { '@src/core': '../core/index.js' } },`
-			: ''
-		const coreExternal = hasSourceCore ? `id === '@src/core' || ` : ''
-		blocks.push(`
-${EXPORT_KEYWORD} const srcBrowser = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			css: ENVIRONMENT_CSS,
-			publicDir: false,
-			plugins: [outputBoundary('dist/src/browser'), environmentBoundary('src/browser')],
-			build: {
-				emptyOutDir: true,
-				sourcemap: true,
-				minify: false,
-				lib: {
-					entry: resolveWorkspacePath('src/browser/index.ts'),
-					formats: ['es'],
-					fileName: () => 'index.js',
-				},
-				outDir: 'dist/src/browser',
-				rolldownOptions: {
-					external: (id: string) => ${coreExternal}id.startsWith('@orkestrel/'),${coreOutput}
-				},
-			},
-			test: {
-				name: { label: 'src:browser', color: 'yellow' },
-				include: ['tests/src/browser/**/*.test.ts'],
-				${hasSourceCore ? "exclude: ['tests/src/core/**/*.test.ts'],\n\t\t\t\t" : ''}${facts.global === true ? `globalSetup: ['./${GLOBAL_SETUP_PATH}'],\n\t\t\t\t` : ''}setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
-				...(options?.test?.browser?.enabled === false
-					? {}
-					: {
-							deps: {
-								optimizer: {
-									client: {
-										enabled: true,
-										include: [...BROWSER_TEST_DEPENDENCIES],
-									},
-								},
-							},
-						}),
-				browser: {
-					enabled: true,
-					provider: playwright(browserOptions),
-					instances: [{ browser: 'chromium', headless: true }],
-				},
-				fileParallelism: false,
-			},
-		},
-		options ?? {},
-	)
-`)
-	}
-	if (src.includes('server')) {
-		const coreOutput = hasSourceCore
-			? `
-					output: [
+	if (blueprint.src.includes('server')) {
+		const core = blueprint.src.includes('core')
+		factories.push(
+			fillTemplate(CONFIG_TEMPLATES.factories.src.server, {
+				external: core
+					? `external: (id: string) =>
+						id === '@src/core' || id.startsWith('node:') || id.startsWith('@orkestrel/'),`
+					: `external: (id: string) =>
+						id.startsWith('node:') || id.startsWith('@orkestrel/'),`,
+				output: core
+					? `\t\t\t\t\toutput: [
 						{
 							format: 'es',
 							entryFileNames: 'index.js',
@@ -3296,2193 +637,1160 @@ ${EXPORT_KEYWORD} const srcBrowser = (options?: UserConfig): UserConfig =>
 							paths: { '@src/core': '../core/index.cjs' },
 						},
 					],`
-			: ''
-		const coreExternal = hasSourceCore ? `id === '@src/core' || ` : ''
-		const formats = hasSourceCore ? '' : "\n\t\t\t\t\tformats: ['es', 'cjs'],"
-		blocks.push(`
-${EXPORT_KEYWORD} const srcServer = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			publicDir: false,
-			plugins: [outputBoundary('dist/src/server'), environmentBoundary('src/server')],
-			build: {
-				emptyOutDir: true,
-				sourcemap: true,
-				minify: false,
-				lib: {
-					entry: resolveWorkspacePath('src/server/index.ts'),${formats}
-					fileName: (format: string) => (format === 'es' ? 'index.js' : 'index.cjs'),
-				},
-				outDir: 'dist/src/server',
-				target: 'node22',
-				rolldownOptions: {
-					platform: 'node',
-					external: (id: string) =>
-						${coreExternal}id.startsWith('node:') || id.startsWith('@orkestrel/'),${coreOutput}
-				},
-			},
-			test: {
-				name: { label: 'src:server', color: 'red' },
-				include: ['tests/src/server/**/*.test.ts'],
-				${hasSourceCore ? "exclude: ['tests/src/core/**/*.test.ts'],\n\t\t\t\t" : ''}setupFiles: ['./tests/setup.ts', './tests/setupServer.ts'],
-				environment: 'node',
-				browser: { enabled: false },
-			},
-		},
-		options ?? {},
-	)
-`)
-	}
-	if (app.includes('core')) {
-		blocks.push(`
-${EXPORT_KEYWORD} const appCore = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			publicDir: false,
-			plugins: [environmentBoundary('app/core')],
-			test: {
-				name: { label: '${APP_MATRIX.core.project}', color: 'cyan' },
-				include: ['tests/app/core/**/*.test.ts'],
-				setupFiles: ['./tests/setup.ts'],
-				environment: 'node',
-				browser: { enabled: false },
-			},
-		},
-		options ?? {},
-	)
-`)
-	}
-	if (app.includes('browser')) {
-		blocks.push(
-			facts.showcase === true
-				? `
-${EXPORT_KEYWORD} function appBrowser(...config: never[]): UserConfig {
-	if (config.length > 0) {
-		throw new Error(
-			'[orkestrel-environment-boundary] Browser configuration overrides are not permitted by the generated boundary',
-		)
-	}
-	return {
-		resolve,
-		css: ENVIRONMENT_CSS,
-		html: environmentHtml(),
-		plugins: [
-			restoreHtml(),
-			outputBoundary('dist/app/browser'),
-			environmentBoundary('app/browser'),
-			vue(),
-			prepareHtml(),
-			finalizeHtml(),
-		],
-		root: resolveWorkspacePath('app/browser'),
-		publicDir: false,
-		server: {
-			fs: {
-				strict: true,
-				allow: [...browserServerRoots()],
-			},
-		},
-		build: {
-			assetsInlineLimit: 0,
-			emptyOutDir: true,
-			outDir: resolveWorkspacePath('dist/app/browser'),
-			rolldownOptions: {
-				input: resolveWorkspacePath('${APP_MATRIX.browser.entry}'),
-			},
-		},
-		test: {
-			name: { label: '${APP_MATRIX.browser.project}', color: 'blue' },
-			root: resolveWorkspacePath('.'),
-			dir: resolveWorkspacePath('.'),
-			include: ['tests/app/browser/**/*.test.ts'],
-			setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
-			deps: {
-				optimizer: {
-					client: {
-						enabled: true,
-						include: ['vue', ...BROWSER_TEST_DEPENDENCIES],
-					},
-				},
-			},
-			browser: {
-				enabled: true,
-				provider: playwright(browserOptions),
-				instances: [{ browser: 'chromium', headless: true }],
-			},
-			fileParallelism: false,
-		},
-	}
-}
-
-${EXPORT_KEYWORD} function appShowcase(...config: never[]): UserConfig {
-	if (config.length > 0) {
-		throw new Error(
-			'[orkestrel-environment-boundary] Showcase configuration overrides are not permitted by the generated boundary',
-		)
-	}
-	return {
-		base: './',
-		resolve,
-		css: ENVIRONMENT_CSS,
-		html: environmentHtml(),
-		plugins: [
-			restoreHtml(),
-			outputBoundary('dist/showcase'),
-			environmentBoundary('app/browser'),
-			vue(),
-			prepareHtml(),
-			showcaseHtml(),
-			viteSingleFile({
-				removeViteModuleLoader: true,
-				useRecommendedBuildConfig: true,
+					: '\t\t\t\t\toutput: {},',
+				exclude: core ? "\t\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" : '',
 			}),
-			finalizeHtml(),
-		],
-		root: resolveWorkspacePath('app/browser'),
-		publicDir: false,
-		server: {
-			open: '/showcase.html',
-			fs: {
-				strict: true,
-				allow: [...browserServerRoots()],
-			},
-		},
-		build: {
-			assetsInlineLimit: Number.MAX_SAFE_INTEGER,
-			cssMinify: 'lightningcss',
-			emptyOutDir: true,
-			minify: 'oxc',
-			modulePreload: false,
-			outDir: resolveWorkspacePath('dist/showcase'),
-			reportCompressedSize: false,
-			rolldownOptions: {
-				input: resolveWorkspacePath('app/browser/showcase.html'),
-			},
-			sourcemap: false,
-			target: 'esnext',
-		},
-	}
-}
-`
-				: `
-${EXPORT_KEYWORD} function appBrowser(...config: never[]): UserConfig {
-	if (config.length > 0) {
-		throw new Error(
-			'[orkestrel-environment-boundary] Browser configuration overrides are not permitted by the generated boundary',
 		)
+		projects.push('srcServer')
 	}
-	return {
-		resolve,
-		css: ENVIRONMENT_CSS,
-		html: environmentHtml(),
-		plugins: [
-			restoreHtml(),
-			outputBoundary('dist/app/browser'),
-			environmentBoundary('app/browser'),
-			vue(),
-			prepareHtml(),
-			finalizeHtml(),
-		],
-		root: resolveWorkspacePath('app/browser'),
-		publicDir: false,
-		server: {
-			fs: {
-				strict: true,
-				allow: [...browserServerRoots()],
-			},
-		},
-		build: {
-			assetsInlineLimit: 0,
-			emptyOutDir: true,
-			outDir: resolveWorkspacePath('dist/app/browser'),
-			rolldownOptions: {
-				input: resolveWorkspacePath('${APP_MATRIX.browser.entry}'),
-			},
-		},
-		test: {
-			name: { label: '${APP_MATRIX.browser.project}', color: 'blue' },
-			root: resolveWorkspacePath('.'),
-			dir: resolveWorkspacePath('.'),
-			include: ['tests/app/browser/**/*.test.ts'],
-			setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
-			deps: {
-				optimizer: {
-					client: {
-						enabled: true,
-						include: ['vue', ...BROWSER_TEST_DEPENDENCIES],
-					},
-				},
-			},
-			browser: {
-				enabled: true,
-				provider: playwright(browserOptions),
-				instances: [{ browser: 'chromium', headless: true }],
-			},
-			fileParallelism: false,
-		},
-	}
-}
-`,
+	if (blueprint.bin) {
+		const entry = serializeTypeScriptString(`src/bin/${blueprint.name}.ts`)
+		const file = serializeTypeScriptString(`${blueprint.name}.js`)
+		factories.push(
+			fillTemplate(CONFIG_TEMPLATES.factories.src.bin, {
+				entry:
+					entry.length <= 58
+						? `entry: resolveWorkspacePath(${entry}),`
+						: `entry: resolveWorkspacePath(
+						${entry},
+					),`,
+				file:
+					file.length <= 70
+						? `fileName: () => ${file},`
+						: `fileName: () =>
+						${file},`,
+			}),
 		)
+		projects.push('srcBin')
 	}
-	if (app.includes('server')) {
-		blocks.push(`
-${EXPORT_KEYWORD} const appServer = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			publicDir: false,
-			plugins: [outputBoundary('dist/app/server'), environmentBoundary('app/server')],
-			build: {
-				emptyOutDir: true,
-				lib: {
-					entry: resolveWorkspacePath('${APP_MATRIX.server.entry}'),
-					formats: ['cjs'],
-					fileName: () => 'main.cjs',
-				},
-				outDir: resolveWorkspacePath('dist/app/server'),
-				target: 'node22',
-				rolldownOptions: {
-					external: (id: string) => id.startsWith('node:'),
-				},
-			},
-			test: {
-				name: { label: '${APP_MATRIX.server.project}', color: 'green' },
-				include: ['tests/app/server/**/*.test.ts'],
-				setupFiles: ['./tests/setup.ts', './tests/setupServer.ts'],
-				environment: 'node',
-				browser: { enabled: false },
-			},
-		},
-		options ?? {},
-	)
-`)
+	if (blueprint.app.includes('core')) {
+		factories.push(CONFIG_TEMPLATES.factories.app.core)
+		projects.push('appCore')
 	}
-	const registrations = viteProjectRegistrations(src, app, facts)
-	const renderedTest = renderViteTest(registrations, machinery.browser)
-	const definitions = viteProjectDefinitions(facts)
-	return `${header}${blocks.join('')}
-${definitions}
-export default defineConfig({
-	resolve,
-${renderedTest}
-})
-`
-}
-
-/**
- * `configs/src/tsconfig.core.json` — host-neutral core with web interop declarations.
- *
- * @returns The core environment `tsconfig` file content, newline-terminated.
- *
- * @example
- * ```ts
- * coreTsconfig().includes('"rootDir": "../../src/core"') // true
- * ```
- */
-export function coreTsconfig(): string {
-	const config = {
-		extends: '../../tsconfig.json',
-		compilerOptions: {
-			lib: ['ESNext', 'WebWorker'],
-			types: [],
-			noEmit: false,
-			declaration: true,
-			emitDeclarationOnly: true,
-			rootDir: '../../src/core',
-			outDir: '../../dist/src/core',
-		},
-		include: TYPESCRIPT_EXTENSIONS.map((extension) => `../../src/core/**/*.${extension}`),
-	}
-	return formatJson(config)
-}
-
-/**
- * `configs/src/vite.core.config.ts` — inlines its own `build.lib` /
- * `rolldownOptions` (core's `srcCore` root export carries no build.lib).
- *
- * @returns The core environment `vite.config.ts` file content, newline-terminated.
- *
- * @example
- * ```ts
- * coreViteConfig().includes('srcCore(') // true
- * ```
- */
-export function coreViteConfig(): string {
-	return `import { defineConfig } from 'vite'
-import dts from 'vite-plugin-dts'
-import {
-	environmentBoundary,
-	outputBoundary,
-	srcCore,
-	resolveWorkspacePath,
-} from '../../vite.config.ts'
-
-export default defineConfig(
-	srcCore({
-		publicDir: false,
-		plugins: [
-			outputBoundary('dist/src/core'),
-			environmentBoundary('src/core'),
-			dts({
-				tsconfigPath: resolveWorkspacePath('configs/src/tsconfig.core.json'),
-				bundleTypes: {
-					extractorConfig: {
-						compiler: {
-							overrideTsconfig: {
-								compilerOptions: { types: ['node'] },
+	if (blueprint.app.includes('browser')) {
+		const showcasePlugin = machinery.showcase
+			? `\t\t\t...(showcase
+				? [
+						viteSingleFile({
+							removeViteModuleLoader: true,
+							useRecommendedBuildConfig: true,
+						}),
+						{
+							name: 'orkestrel-showcase-html',
+							transformIndexHtml: {
+								order: 'post',
+								handler(html) {
+									const stamp = new Date().toISOString()
+									return html.replace(
+										'</head>',
+										'\t\t<meta name="build-id" content="' + stamp + '" />\\n\t</head>',
+									)
+								},
 							},
 						},
-					},
-				},
-			}),
-		],
-		build: {
-			lib: {
-				entry: resolveWorkspacePath('src/core/index.ts'),
-				formats: ['es', 'cjs'],
-				fileName: (format) => (format === 'es' ? 'index.js' : 'index.cjs'),
-			},
-			outDir: 'dist/src/core',
-			rolldownOptions: {
-				external: [/^node:/, /^@orkestrel\\//],
-			},
-		},
-	}),
-)
-`
-}
-
-/**
- * `configs/src/tsconfig.<browser|server>.json` — `rootDir`/`outDir` point at
- * the whole `src`/`dist/src` tree (not a per-environment subfolder), per the live
- * middleware/router exemplars.
- *
- * @param environment - The non-`core` environment to derive the `tsconfig` for.
- * @returns The environment `tsconfig` file content, newline-terminated.
- *
- * @example
- * ```ts
- * srcTsconfig('server').includes('"rootDir": "../../src"') // true
- * ```
- */
-export function srcTsconfig(environment: 'browser' | 'server'): string {
-	const config = {
-		extends: '../../tsconfig.json',
-		compilerOptions: {
-			lib: environment === 'browser' ? ['ESNext', 'DOM', 'DOM.Iterable'] : ['ESNext'],
-			types: environment === 'browser' ? ['vite/client'] : ['node'],
-			noEmit: false,
-			declaration: true,
-			emitDeclarationOnly: true,
-			rootDir: '../../src',
-			outDir: '../../dist/src',
-		},
-		include: TYPESCRIPT_EXTENSIONS.map((extension) => `../../src/${environment}/**/*.${extension}`),
-	}
-	return formatJson(config)
-}
-
-/**
- * `configs/src/vite.<browser|server>.config.ts` — a thin `dts`-only wrapper;
- * `build.lib` / externals live in the root `srcBrowser` / `srcServer` export
- * instead (per the live exemplars).
- *
- * @remarks
- * `bundleTypes` rolls the face up through API Extractor, which leaves every
- * `src/core` re-export behind a relative `../core/index.ts` specifier — a path no
- * published tarball carries. A workspace that also declares `core` therefore emits
- * a `beforeWriteFile` rewrite turning that specifier into `@orkestrel/<name>`, the
- * package's own published root export. The rewrite is narrowed to the FINAL face
- * roll-up: applying it to the intermediate declarations makes API Extractor analyse
- * `src/core`'s own source and abort. A workspace with no `core` emits no rewrite,
- * because it has no cross-environment specifier to externalize.
- *
- * @param environment - The non-`core` environment to derive the `vite.config.ts` for.
- * @param spec - The blueprint slice naming the package and its declared source environments.
- * @returns The environment `vite.config.ts` file content, newline-terminated.
- *
- * @example
- * ```ts
- * srcViteConfig('browser', { name: 'router', src: ['core', 'browser'] }).includes('srcBrowser')
- * ```
- */
-export function srcViteConfig(
-	environment: 'browser' | 'server',
-	spec: Pick<Blueprint, 'name' | 'src'>,
-): string {
-	const anchor = environment === 'browser' ? 'srcBrowser' : 'srcServer'
-	const specifier = `'@orkestrel/${spec.name}'`
-	const pattern = '/(?:\\.\\.\\/)+core\\/index\\.ts/g'
-	const inlineCall = `\t\t\t\t\t\t? content.replaceAll(${pattern}, ${specifier})`
-	// Both call shapes below are `oxfmt` fixed points, so the generated package
-	// passes its own `format:check` at either end of the legal name length.
-	const call = fitsPrintWidth(inlineCall)
-		? [inlineCall]
-		: [
-				'\t\t\t\t\t\t? content.replaceAll(',
-				`\t\t\t\t\t\t\t\t${pattern},`,
-				`\t\t\t\t\t\t\t\t${specifier},`,
-				'\t\t\t\t\t\t\t)',
-			]
-	const face = `/[\\\\/]dist[\\\\/]src[\\\\/]${environment}[\\\\/]index\\.d\\.ts$/`
-	const external = spec.src.includes('core')
-	const rewrite = external
-		? `\n${[
-				'\t\t\t\tbeforeWriteFile: (path, content) => ({',
-				`\t\t\t\t\tcontent: ${face}.test(path)`,
-				...call,
-				'\t\t\t\t\t\t: content,',
-				'\t\t\t\t}),',
-			].join('\n')}`
-		: ''
-	const note = external
-		? `// vite-plugin-dts rolls this face into one declaration, and the roll-up reaches
-// src/core through a relative source path the tarball does not carry. The rewrite
-// below externalizes core through the package's own published root export, on the
-// final roll-up only.`
-		: `// vite-plugin-dts rolls this face into one declaration. This workspace declares no
-// src/core, so the roll-up has no cross-environment specifier to externalize.`
-	return `import { defineConfig } from 'vite'
-import dts from 'vite-plugin-dts'
-import { ${anchor}, resolveWorkspacePath } from '../../vite.config.ts'
-
-${note}
-export default defineConfig(
-	${anchor}({
-		plugins: [
-			dts({
-				tsconfigPath: resolveWorkspacePath('configs/src/tsconfig.${environment}.json'),
-				bundleTypes: true,${rewrite}
-			}),
-		],
-	}),
-)
-`
-}
-
-/**
- * Build the executable's declaration-only `configs/src/tsconfig.bin.json`.
- *
- * @returns The executable `tsconfig` file content, newline-terminated.
- *
- * @example
- * ```ts
- * binTsconfig().includes('"outDir": "../../dist/bin"') // true
- * ```
- */
-export function binTsconfig(): string {
-	const config = {
-		extends: '../../tsconfig.json',
-		compilerOptions: {
-			lib: ['ESNext'],
-			types: ['node'],
-			noEmit: false,
-			declaration: true,
-			emitDeclarationOnly: true,
-			rootDir: '../../src',
-			outDir: '../../dist/bin',
-		},
-		include: TYPESCRIPT_EXTENSIONS.map((extension) => `../../src/bin/**/*.${extension}`),
-	}
-	return formatJson(config)
-}
-
-/**
- * Build the executable's `configs/src/vite.bin.config.ts` wrapper.
- *
- * @returns The executable Vite configuration content, newline-terminated.
- *
- * @example
- * ```ts
- * binViteConfig().includes("banner: '#!/usr/bin/env node'") // true
- * ```
- */
-export function binViteConfig(): string {
-	return `import { defineConfig } from 'vite'
-import { srcBin } from '../../vite.config.ts'
-
-// The \`scaffold\` executable build — a single ESM lib file, no declarations (an
-// executable ships no types), with the \`#!/usr/bin/env node\` shebang re-emitted via
-// \`output.banner\` (rolldown strips shebangs from source during bundling), and
-// \`output.paths\` rewriting the externalized \`@src/*\` specifiers to the built sibling
-// src environments (relative to \`dist/bin/\`), so the emitted bin resolves at runtime.
-export default defineConfig(
-	srcBin({
-		build: {
-			rolldownOptions: {
-				output: {
-					banner: '#!/usr/bin/env node',
-					paths: {
-						'@src/core': '../src/core/index.js',
-						'@src/server': '../src/server/index.js',
-					},
-				},
-			},
-		},
-	}),
-)
-`
-}
-
-/**
- * Build one `configs/app/tsconfig.<environment>.json` check-only configuration.
- *
- * @param environment - The application environment.
- * @param hasCore - Whether `app/core` is part of the same workspace.
- * @returns The application environment tsconfig content.
- *
- * @example
- * ```ts
- * appTsconfig('browser', true).includes('../../app/core') // true
- * ```
- */
-export function appTsconfig(environment: Environment, hasCore: boolean): string {
-	const include = TYPESCRIPT_EXTENSIONS.map(
-		(extension) => `../../app/${environment}/**/*.${extension}`,
-	)
-	if (environment === 'browser') include.push(`../../app/${environment}/**/*.vue`)
-	if (environment !== 'core' && hasCore) {
-		include.push(...TYPESCRIPT_EXTENSIONS.map((extension) => `../../app/core/**/*.${extension}`))
-	}
-	include.push(
-		...TYPESCRIPT_EXTENSIONS.map((extension) => `../../tests/app/${environment}/**/*.${extension}`),
-	)
-	include.push(
-		environment === 'browser'
-			? '../../tests/setupBrowser.ts'
-			: environment === 'server'
-				? '../../tests/setupServer.ts'
-				: '../../tests/setup.ts',
-	)
-	const config = {
-		extends: '../../tsconfig.json',
-		compilerOptions: {
-			lib:
-				environment === 'browser'
-					? ['ESNext', 'DOM', 'DOM.Iterable']
-					: environment === 'core'
-						? ['ESNext', 'WebWorker']
-						: ['ESNext'],
-			types:
-				environment === 'browser'
-					? ['vite/client', 'vue']
-					: environment === 'server'
-						? ['node']
-						: [],
-		},
-		include,
-	}
-	return formatJson(config)
-}
-
-/**
- * Build one thin executable application Vite config.
- *
- * @param environment - The executable browser or server environment.
- * @returns The `configs/app/vite.<environment>.config.ts` content.
- *
- * @example
- * ```ts
- * appViteConfig('server').includes('appServer') // true
- * ```
- */
-export function appViteConfig(environment: 'browser' | 'server'): string {
-	const anchor = environment === 'browser' ? 'appBrowser' : 'appServer'
-	return `import { defineConfig } from 'vite'
-import { ${anchor} } from '../../vite.config.ts'
-
-export default defineConfig(${anchor}())
-`
-}
-
-/**
- * Build selection-aware GitHub CI, provisioning the declared foreign service before its proof.
- *
- * @param spec - The workspace blueprint.
- * @returns The complete `.github/workflows/ci.yml` content.
- */
-export function ciWorkflow(spec: Blueprint): string {
-	const browser =
-		spec.bin || spec.src.includes('browser') || spec.app.includes('browser')
-			? `
-      - name: Install Playwright browsers
-        run: npx --no-install playwright install --with-deps chromium
+					]
+				: []),
 `
 			: ''
-	const tail: string[] = []
-	if (spec.integration) {
-		tail.push(`      - name: Run live consumer integration
-        run: npm run test:integration`)
-	}
-	if (spec.services.length > 0) {
-		tail.push(`      - name: Provision live service
-        run: bash ${SERVICE_SCRIPT_PATH}`)
-		tail.push(`      - name: Run live service tests
-        run: npm run test:service`)
-	}
-	const workflowTail = tail.length === 0 ? '' : `\n\n${tail.join('\n\n')}`
-	return `name: ci.yml
-
-on:
-  push:
-  pull_request:
-
-jobs:
-  ci:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    permissions:
-      contents: read
-    strategy:
-      fail-fast: false
-      matrix:
-        node: ['22.12.0', '26']
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@${CHECKOUT_ACTION_SHA} # v6.0.2
-        with:
-          persist-credentials: false
-
-      - name: Set up Node.js
-        uses: actions/setup-node@${SETUP_NODE_ACTION_SHA} # v6.4.0
-        with:
-          node-version: \${{ matrix.node }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci --ignore-scripts
-${browser}
-      - name: Check formatting
-        run: npm run format:check
-
-      - name: Lint
-        run: npm run lint:check
-
-      - name: Typecheck
-        run: npm run check
-
-      - name: Build
-        run: npm run build
-
-      - name: Run tests
-        run: npm test${workflowTail}
+		const showcaseBuild = machinery.showcase
+			? `\t\t\t...(showcase
+				? {
+						cssMinify: 'lightningcss',
+						minify: 'oxc',
+						modulePreload: false,
+						reportCompressedSize: false,
+						sourcemap: false,
+						target: 'esnext',
+					}
+				: { assetsInlineLimit: 0 }),
 `
+			: '\t\t\tassetsInlineLimit: 0,\n'
+		const showcaseFactory = machinery.showcase
+			? `
+export function appShowcase(...options: never[]): UserConfig {
+	if (options.length > 0) throw new Error('Showcase configuration overrides are not permitted')
+	return applicationBrowser(true)
+}
+`
+			: ''
+		factories.push(
+			fillTemplate(CONFIG_TEMPLATES.factories.app.browser, {
+				showcasePlugin,
+				showcaseBuild,
+				showcaseFactory,
+			}),
+		)
+		projects.push('appBrowser')
+	}
+	if (blueprint.app.includes('server')) {
+		factories.push(CONFIG_TEMPLATES.factories.app.server)
+		projects.push('appServer')
+	}
+	factories.push(CONFIG_TEMPLATES.factories.policy)
+	projects.push('policy')
+	factories.push(CONFIG_TEMPLATES.factories.config)
+	projects.push('config')
+	if (blueprint.src.length > 0 && blueprint.integration) {
+		factories.push(
+			fillTemplate(CONFIG_TEMPLATES.factories.integration, {
+				global: blueprint.global ? "\t\t\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : '',
+			}),
+		)
+		projects.push('integration')
+	}
+	factories.push(CONFIG_TEMPLATES.factories.probe)
+	projects.push('probe')
+
+	const inline = `\t\tprojects: [${projects.join(', ')}],`
+	const projectRows =
+		inline.length <= 98
+			? inline
+			: `\t\tprojects: [
+${projects.map((project) => `\t\t\t${project},`).join('\n')}
+	\t],`
+	return fillTemplate(CONFIG_TEMPLATES.root.vite, {
+		imports: imports.length === 0 ? '' : `${imports.join('\n')}\n`,
+		factories: `${factories.join('\n')}\n`,
+		projects: projectRows,
+	})
 }
 
 /**
- * Draft the `configs` group's `computed` artifacts — the root
- * `tsconfig.json` / `vite.config.ts` plus each declared environment's
- * `configs/src/*` pair, grounded against the live middleware (core+server)
- * and router (core+browser+server) exemplars.
+ * Compile every artifact in the `configs` group.
  *
- * @param spec - The `Blueprint` to derive config artifacts from.
- * @returns The `configs` group's `Artifact[]`.
+ * @param blueprint - The workspace specification.
+ * @returns Root and selected wrapper artifacts in matrix order.
  *
  * @example
  * ```ts
- * configArtifacts(blueprint('router')).length // 4
+ * import type { Blueprint } from '@orkestrel/scaffold'
+ * import { blueprintToConfigArtifacts } from '@orkestrel/scaffold'
+ *
+ * declare const blueprint: Blueprint
+ *
+ * blueprintToConfigArtifacts(blueprint)[0]?.path // 'tsconfig.json'
  * ```
  */
-export function configArtifacts(spec: Blueprint): readonly Artifact[] {
+export function blueprintToConfigArtifacts(blueprint: Blueprint): readonly Artifact[] {
 	const artifacts: Artifact[] = [
 		{
 			path: 'tsconfig.json',
 			group: 'configs',
-			origin: 'computed',
-			content: rootTsconfig(spec.src, spec.app),
+			ownership: 'content',
+			origin: 'template',
+			content: blueprintToRootTsconfig(blueprint),
 		},
 		{
 			path: 'vite.config.ts',
 			group: 'configs',
-			origin: 'computed',
-			content:
-				spec.app.length > 0
-					? applicationViteConfig(spec.src, spec.app, spec)
-					: rootViteConfig(spec.src, spec),
+			ownership: 'content',
+			origin: 'template',
+			content: blueprintToRootVite(blueprint),
 		},
 	]
-	for (const environment of spec.src) {
-		const row = SRC_MATRIX[environment]
-		for (const path of row.configs) {
-			const isTsconfig = path.endsWith('.json')
-			const content =
-				environment === 'core'
-					? isTsconfig
-						? coreTsconfig()
-						: coreViteConfig()
-					: isTsconfig
-						? srcTsconfig(environment)
-						: srcViteConfig(environment, spec)
-			artifacts.push({ path, group: 'configs', origin: 'computed', environment, content })
+	for (const environment of blueprint.src) {
+		for (const path of SRC_MATRIX[environment].configs) {
+			let content: string = CONFIG_TEMPLATES.vites.src.core
+			if (path === 'configs/src/tsconfig.core.json') content = CONFIG_TEMPLATES.tsconfigs.src.core
+			else if (path === 'configs/src/vite.browser.config.ts') {
+				content = CONFIG_TEMPLATES.vites.src.browser
+			} else if (path === 'configs/src/tsconfig.browser.json') {
+				content = CONFIG_TEMPLATES.tsconfigs.src.browser
+			} else if (path === 'configs/src/vite.server.config.ts') {
+				const packageName = serializeTypeScriptString(`@orkestrel/${blueprint.name}`)
+				const replacement =
+					packageName.length <= 36
+						? `\t\t\t\t\t\t? content.replaceAll(/(?:\\.\\.\\/)+core\\/index\\.ts/g, ${packageName})`
+						: [
+								'\t\t\t\t\t\t? content.replaceAll(',
+								'\t\t\t\t\t\t\t\t/(?:\\.\\.\\/)+core\\/index\\.ts/g,',
+								`\t\t\t\t\t\t\t\t${packageName},`,
+								'\t\t\t\t\t\t\t)',
+							].join('\n')
+				content = fillTemplate(CONFIG_TEMPLATES.vites.src.server, {
+					replacement,
+				})
+			} else if (path === 'configs/src/tsconfig.server.json') {
+				content = CONFIG_TEMPLATES.tsconfigs.src.server
+			}
+			artifacts.push({
+				path,
+				group: 'configs',
+				ownership: 'content',
+				origin: 'template',
+				environment,
+				content,
+			})
 		}
 	}
-	if (spec.bin) {
+	if (blueprint.bin) {
+		const paths = blueprint.src.map(
+			(environment) => `\t\t\t\t\t\t'@src/${environment}': '../src/${environment}/index.js',`,
+		)
+		const renderedPaths =
+			paths.length === 0
+				? '\t\t\t\t\tpaths: {},'
+				: `\t\t\t\t\tpaths: {
+${paths.join('\n')}
+					},`
 		for (const path of BIN_CONFIGS) {
 			artifacts.push({
 				path,
 				group: 'configs',
-				origin: 'computed',
-				content: path.endsWith('.json') ? binTsconfig() : binViteConfig(),
+				ownership: 'content',
+				origin: 'template',
+				content:
+					path === 'configs/src/tsconfig.bin.json'
+						? CONFIG_TEMPLATES.tsconfigs.bin
+						: fillTemplate(CONFIG_TEMPLATES.vites.bin, { paths: renderedPaths }),
 			})
 		}
 	}
-	for (const environment of spec.app) {
-		const row = APP_MATRIX[environment]
-		for (const path of row.configs) {
-			const content = path.endsWith('.json')
-				? appTsconfig(environment, spec.app.includes('core'))
-				: appViteConfig(environment === 'browser' ? 'browser' : 'server')
-			artifacts.push({ path, group: 'configs', origin: 'computed', environment, content })
+	for (const environment of blueprint.app) {
+		for (const path of APP_MATRIX[environment].configs) {
+			let content: string = CONFIG_TEMPLATES.tsconfigs.app.core
+			if (path === 'configs/app/vite.browser.config.ts') {
+				content = CONFIG_TEMPLATES.vites.app.browser
+			} else if (path === 'configs/app/tsconfig.browser.json') {
+				const include = [
+					'../../app/browser/**/*.cts',
+					'../../app/browser/**/*.mts',
+					'../../app/browser/**/*.ts',
+					'../../app/browser/**/*.tsx',
+					'../../app/browser/**/*.vue',
+				]
+				if (blueprint.app.includes('core')) {
+					include.push(
+						'../../app/core/**/*.cts',
+						'../../app/core/**/*.mts',
+						'../../app/core/**/*.ts',
+						'../../app/core/**/*.tsx',
+					)
+				}
+				content = fillTemplate(CONFIG_TEMPLATES.tsconfigs.app.browser, {
+					include: include
+						.map(
+							(entry, index) =>
+								`\t\t${JSON.stringify(entry)}${index === include.length - 1 ? '' : ','}`,
+						)
+						.join('\n'),
+				})
+			} else if (path === 'configs/app/vite.server.config.ts') {
+				content = CONFIG_TEMPLATES.vites.app.server
+			} else if (path === 'configs/app/tsconfig.server.json') {
+				const include = [
+					'../../app/server/**/*.cts',
+					'../../app/server/**/*.mts',
+					'../../app/server/**/*.ts',
+					'../../app/server/**/*.tsx',
+				]
+				if (blueprint.app.includes('core')) {
+					include.push(
+						'../../app/core/**/*.cts',
+						'../../app/core/**/*.mts',
+						'../../app/core/**/*.ts',
+						'../../app/core/**/*.tsx',
+					)
+				}
+				content = fillTemplate(CONFIG_TEMPLATES.tsconfigs.app.server, {
+					include: include
+						.map(
+							(entry, index) =>
+								`\t\t${JSON.stringify(entry)}${index === include.length - 1 ? '' : ','}`,
+						)
+						.join('\n'),
+				})
+			}
+			artifacts.push({
+				path,
+				group: 'configs',
+				ownership: 'content',
+				origin: 'template',
+				environment,
+				content,
+			})
 		}
 	}
-	if (spec.showcase) {
+	if (blueprint.showcase) {
 		artifacts.push({
 			path: SHOWCASE_CONFIG_PATH,
 			group: 'configs',
-			origin: 'computed',
+			ownership: 'content',
+			origin: 'template',
 			environment: 'browser',
-			content: `import { defineConfig } from 'vite'
-import { appShowcase } from '../../vite.config.ts'
-
-export default defineConfig(appShowcase())
-`,
+			content: CONFIG_TEMPLATES.vites.app.showcase,
 		})
 	}
 	return artifacts
 }
 
 /**
- * Draft the `source` group's `template` artifacts — the generated-minimal
- * `src/<environment>/*` stubs, one full {types, <Pascal>, factories, index} set
- * PER declared environment (never assuming `core`), filled from `TEMPLATES` with
- * `missing: 'error'`. `blueprintToMembers` already declares a full entity +
- * factory per environment (AGENTS §5's per-environment centralized-file pattern), so
- * every environment gets the same uniform stub shape.
+ * Compile every artifact in the `source` group.
  *
- * @param spec - The blueprint carrying the declared source environment set.
- * @param pascal - The package's PascalCase entity name.
- * @returns The `source` group's `Artifact[]`.
- *
- * @example
- * ```ts
- * sourceArtifacts(blueprint('router'), 'Router').length // 4
- * ```
- */
-export function sourceArtifacts(spec: Pick<Blueprint, 'src'>, pascal: string): readonly Artifact[] {
-	const inlineTypeImport = `import type { ${pascal}Interface, ${pascal}Options } from './types.js'`
-	const typeImport = fitsPrintWidth(inlineTypeImport)
-		? inlineTypeImport
-		: `import type {
-	${pascal}Interface,
-	${pascal}Options,
-} from './types.js'`
-	const entityImport = `import { ${pascal} } from './${pascal}.js'`
-	const inlineSignature = `function create${pascal}(options: ${pascal}Options): ${pascal}Interface`
-	const signature = fitsPrintWidth(`${EXPORT_KEYWORD} ${inlineSignature} {`)
-		? inlineSignature
-		: `function create${pascal}(
-	options: ${pascal}Options,
-): ${pascal}Interface`
-	const values = { pascal, signature, typeImport, entityImport }
-	const artifacts: Artifact[] = []
-	for (const environment of spec.src) {
-		artifacts.push(
-			fillArtifact(`src/${environment}/types.ts`, 'source', 'types', values, environment),
-			fillArtifact(`src/${environment}/${pascal}.ts`, 'source', 'entity', values, environment),
-			fillArtifact(`src/${environment}/factories.ts`, 'source', 'factories', values, environment),
-			fillArtifact(`src/${environment}/index.ts`, 'source', 'index', values, environment),
-		)
-	}
-	return artifacts
-}
-
-/**
- * Draft the application source artifacts for every selected app environment.
- *
- * @param spec - The blueprint carrying the application environment set.
- * @remarks
- * Two conditional shapes layer over the per-environment set. The health contract —
- * record, route constants, guard, and the one unknown-to-typed read — is declared by
- * `app/server` while the server alone reads it and RELOCATES to `app/core` the moment
- * the browser reads it too, because a contract two hosts share belongs to neither of
- * them. The showcase entry pair, its seeder, and its factory appear only for a
- * blueprint that declares the physical showcase wrapper alongside `app/browser`.
- * @returns Complete, runnable app/core, app/browser, and app/server artifacts.
- */
-export function applicationArtifacts(
-	spec: Pick<Blueprint, 'name' | 'app' | 'showcase'>,
-): readonly Artifact[] {
-	const artifacts: Artifact[] = []
-	const hasCore = spec.app.includes('core')
-	const hasBrowser = spec.app.includes('browser')
-	const hasBoundary = hasApplicationBoundary(spec)
-	const hasShowcase = hasApplicationShowcase(spec)
-	const showcaseSource = hasBoundary ? 'its running server' : 'its own configuration'
-	const nameLiteral = serializeTypeScriptString(spec.name)
-	const sharedRecord = `
-/** The application record both hosts read at the health route. */
-${EXPORT_KEYWORD} interface ApplicationRecord {
-	readonly name: string
-	readonly status: 'ok'
-}
-`
-	const healthConstants = `
-/** The only HTTP method owned by the application health route. */
-${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_HEALTH_METHOD = 'GET'
-
-/** The only HTTP path owned by the generated application server. */
-${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_HEALTH_PATH = '/health'
-`
-	if (hasCore) {
-		artifacts.push(
-			fillArtifact(
-				'app/core/types.ts',
-				'source',
-				'appCoreTypes',
-				{ record: hasBoundary ? sharedRecord : '' },
-				'core',
-			),
-			fillArtifact(
-				'app/core/constants.ts',
-				'source',
-				'appCoreConstants',
-				{
-					nameLiteral,
-					health: hasBoundary
-						? `${healthConstants}
-/** Milliseconds allowed for one shared application health read. */
-${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_HEALTH_TIMEOUT = 5_000
-`
-						: '',
-				},
-				'core',
-			),
-			fillArtifact('app/core/errors.ts', 'source', 'appCoreErrors', {}, 'core'),
-			fillArtifact('app/core/parsers.ts', 'source', 'appCoreParsers', {}, 'core'),
-			fillArtifact('app/core/factories.ts', 'source', 'appCoreFactories', {}, 'core'),
-			fillArtifact(
-				'app/core/index.ts',
-				'source',
-				'appCoreIndex',
-				{
-					validators: hasBoundary ? "export * from './validators.js'\n" : '',
-					handlers: hasBoundary ? "export * from './handlers.js'\n" : '',
-				},
-				'core',
-			),
-		)
-		if (hasBoundary) {
-			artifacts.push(
-				fillArtifact('app/core/validators.ts', 'source', 'appCoreValidators', {}, 'core'),
-				fillArtifact('app/core/handlers.ts', 'source', 'appCoreHandlers', {}, 'core'),
-			)
-		}
-	}
-	if (hasBrowser) {
-		const nameImport = hasCore
-			? "import { APP_NAME } from '@app/core'"
-			: "import { APP_NAME } from './constants.js'"
-		const nameConstant = hasCore
-			? ''
-			: `/** The browser-only application name. */
-${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_NAME = ${nameLiteral}
-
-`
-		artifacts.push(
-			fillArtifact(
-				'app/browser/types.ts',
-				'source',
-				'appBrowserTypes',
-				{
-					application:
-						hasShowcase && !hasCore
-							? `
-/** The identity the root view renders. */
-${EXPORT_KEYWORD} interface Application {
-	readonly name: string
-}
-`
-							: '',
-				},
-				'browser',
-			),
-			fillArtifact(
-				'app/browser/constants.ts',
-				'source',
-				'appBrowserConstants',
-				{ nameConstant },
-				'browser',
-			),
-			fillArtifact('app/browser/errors.ts', 'source', 'appBrowserErrors', {}, 'browser'),
-			fillArtifact('app/browser/parsers.ts', 'source', 'appBrowserParsers', {}, 'browser'),
-			fillArtifact(
-				'app/browser/factories.ts',
-				'source',
-				'appBrowserFactories',
-				{
-					nameImport: hasBoundary
-						? "import { APP_NAME, readApplicationHealth } from '@app/core'"
-						: nameImport,
-					seedImport: hasShowcase ? "import { seedApplication } from './seeders.js'\n" : '',
-					showcase: hasShowcase
-						? `
-/**
- * Mount the showcase over its seeded, inert identity.
- *
- * @param target - The browser element or selector that receives the showcase.
- * @returns The mounted Vue application.
+ * @param blueprint - The workspace specification.
+ * @returns Empty published barrels, selected application entries, and the optional bin entry.
  *
  * @remarks
- * The showcase mounts the same {@link createBrowserApplication} root the shipped entry
- * mounts, so the two differ in exactly one expression — where the props come from. This
- * one reads {@link seedApplication}; the application reads ${showcaseSource}.
- *
- * @example
- * \`\`\`ts
- * import { mountShowcaseApplication } from '@app/browser'
- *
- * mountShowcaseApplication('#app')
- * \`\`\`
- */
-${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} mountShowcaseApplication(target: string | Element): App<Element> {
-	const seed = seedApplication()
-	const application = createBrowserApplication({ name: seed.name })
-	application.mount(target)
-	return application
-}
-`
-						: '',
-					boundary: hasBoundary
-						? `
-/**
- * Mount the application over its real server boundary.
- *
- * @param target - The browser element or selector that receives the application.
- * @returns The mounted Vue application, after one health read settles.
- *
- * @remarks
- * One health read runs before the mount, so the root view renders the identity the
- * running server reported. An unreachable or off-contract boundary yields \`undefined\`
- * and the application falls back to its own configuration rather than failing to mount.
- *
- * @example
- * \`\`\`ts
- * import { mountBrowserApplication } from '@app/browser'
- *
- * await mountBrowserApplication('#app')
- * \`\`\`
- */
-${EXPORT_KEYWORD} async ${FUNCTION_KEYWORD} mountBrowserApplication(target: string | Element): Promise<App<Element>> {
-	const seed = (await readApplicationHealth(window.location.origin)) ?? { name: APP_NAME }
-	const application = createBrowserApplication({ name: seed.name })
-	application.mount(target)
-	return application
-}
-`
-						: '',
-				},
-				'browser',
-			),
-			fillArtifact(
-				'app/browser/index.ts',
-				'source',
-				'appBrowserIndex',
-				{ seeders: hasShowcase ? "export * from './seeders.js'\n" : '' },
-				'browser',
-			),
-			fillArtifact(
-				'app/browser/main.ts',
-				'source',
-				'appBrowserMain',
-				hasBoundary
-					? {
-							factory: 'mountBrowserApplication',
-							mount: `void mountBrowserApplication('#app').catch(() => {
-	console.error('[ERROR] Browser application failed')
-})`,
-						}
-					: {
-							factory: 'createBrowserApplication',
-							mount: "createBrowserApplication().mount('#app')",
-						},
-				'browser',
-			),
-			fillArtifact('app/browser/ApplicationView.vue', 'source', 'appBrowserView', {}, 'browser'),
-			fillArtifact(
-				'app/browser/index.html',
-				'source',
-				'appBrowserHtml',
-				{ name: escapeHtmlText(spec.name) },
-				'browser',
-			),
-			fillArtifact('app/browser/env.d.ts', 'source', 'appBrowserEnv', {}, 'browser'),
-		)
-		if (hasShowcase) {
-			artifacts.push(
-				fillArtifact(
-					'app/browser/seeders.ts',
-					'source',
-					'appBrowserSeeders',
-					{
-						applicationImport: hasCore
-							? "import type { Application } from '@app/core'"
-							: "import type { Application } from './types.js'",
-						nameImport,
-					},
-					'browser',
-				),
-				fillArtifact('app/browser/showcase.ts', 'source', 'appBrowserShowcase', {}, 'browser'),
-				fillArtifact(
-					'app/browser/showcase.html',
-					'source',
-					'appBrowserShowcaseHtml',
-					{ name: escapeHtmlText(spec.name) },
-					'browser',
-				),
-			)
-		}
-	}
-	if (spec.app.includes('server')) {
-		const nameImport = hasCore
-			? "import { APP_NAME } from '@app/core'"
-			: "import { APP_NAME } from './constants.js'"
-		const nameConstant = hasCore
-			? ''
-			: `/** The server-only application name. */
-${EXPORT_KEYWORD} ${CONST_KEYWORD} APP_NAME = ${nameLiteral}
-
-`
-		artifacts.push(
-			fillArtifact(
-				'app/server/types.ts',
-				'source',
-				'appServerTypes',
-				{
-					record: hasBoundary
-						? ''
-						: `/** The application record returned by the health route. */
-${EXPORT_KEYWORD} interface ApplicationRecord {
-	readonly name: string
-	readonly status: 'ok'
-}
-
-`,
-				},
-				'server',
-			),
-			fillArtifact(
-				'app/server/constants.ts',
-				'source',
-				'appServerConstants',
-				{ nameConstant, health: hasBoundary ? '' : healthConstants },
-				'server',
-			),
-			fillArtifact('app/server/errors.ts', 'source', 'appServerErrors', {}, 'server'),
-			fillArtifact('app/server/parsers.ts', 'source', 'appServerParsers', {}, 'server'),
-			fillArtifact(
-				'app/server/routes.ts',
-				'source',
-				'appServerRoutes',
-				{
-					healthImport: hasBoundary
-						? "import { APP_HEALTH_METHOD, APP_HEALTH_PATH } from '@app/core'"
-						: "import { APP_HEALTH_METHOD, APP_HEALTH_PATH } from './constants.js'",
-				},
-				'server',
-			),
-			fillArtifact(
-				'app/server/handlers.ts',
-				'source',
-				'appServerHandlers',
-				{
-					recordImport: hasBoundary
-						? "import type { ApplicationRecord } from '@app/core'"
-						: "import type { ApplicationRecord } from './types.js'",
-					nameImport,
-				},
-				'server',
-			),
-			fillArtifact('app/server/ApplicationServer.ts', 'source', 'appServerEntity', {}, 'server'),
-			fillArtifact('app/server/factories.ts', 'source', 'appServerFactories', {}, 'server'),
-			fillArtifact(
-				'app/server/ApplicationServerRunner.ts',
-				'source',
-				'appServerRunner',
-				{ nameImport },
-				'server',
-			),
-			fillArtifact('app/server/index.ts', 'source', 'appServerIndex', {}, 'server'),
-			fillArtifact('app/server/main.ts', 'source', 'appServerMain', {}, 'server'),
-		)
-	}
-	return artifacts
-}
-
-/**
- * Build the computed `SELF_SPECIFIERS` / `SPECIFIER_MODULES` / `exportsFor`
- * block the `parityTest` template's `{{specifiers}}` placeholder fills —
- * ONE shape for every environment count (grounded against the live single-environment
- * websocket/indexeddb and multi-environment router/middleware exemplars, which
- * both resolve a fence's specifier through a `SPECIFIER_MODULES` map rather
- * than a single-module lookup). The bare `@orkestrel/<name>` specifier
- * resolves to the PRIMARY environment — `core` when declared, else the sole
- * declared environment.
- *
- * @param spec - The `Blueprint` to derive the parity specifiers block from.
- * @returns The computed `parityTest` `{{specifiers}}` block content.
+ * The barrels and bin entry intentionally export nothing. A generated sample
+ * entity is too easy to mistake for package implementation, so the scaffold
+ * establishes only the selected environment boundaries.
  *
  * @example
  * ```ts
- * paritySpecifiers(blueprint('router')).includes('SELF_SPECIFIERS') // true
+ * import type { Blueprint } from '@orkestrel/scaffold'
+ * import { blueprintToSourceArtifacts } from '@orkestrel/scaffold'
+ *
+ * declare const blueprint: Blueprint
+ *
+ * blueprintToSourceArtifacts(blueprint).every(({ group }) => group === 'source') // true
  * ```
  */
-export function paritySpecifiers(spec: Blueprint): string {
-	// Keyword tokens keep the emitted declarations out of column 0 of THIS
-	// file's raw text, which the guides-parity scanner reads.
-	const packageSpecifier = `@orkestrel/${spec.name}`
-	const primary: Environment | undefined = spec.src.includes('core') ? 'core' : spec.src[0]
-	const publishedSpecifiers = spec.src.map((environment) =>
-		environment === primary ? packageSpecifier : `${packageSpecifier}/${environment}`,
-	)
-	const selfSpecifiers = [
-		...publishedSpecifiers,
-		...spec.src.map((environment) => `@src/${environment}`),
-		...spec.app.map((environment) => `@app/${environment}`),
-	]
-	const modules: Record<string, string> = {}
-	if (primary !== undefined) {
-		for (const environment of spec.src) {
-			const specifier =
-				environment === primary ? packageSpecifier : `${packageSpecifier}/${environment}`
-			modules[specifier] = `src/${environment}`
-		}
-	}
-	for (const environment of spec.src) modules[`@src/${environment}`] = `src/${environment}`
-	for (const environment of spec.app) modules[`@app/${environment}`] = `app/${environment}`
-	const specifierItems = selfSpecifiers.map((specifier) => `'${specifier}'`)
-	const inlineSpecifierList = `[${specifierItems.join(', ')}]`
-	const lines = fitsPrintWidth(`${CONST_KEYWORD} SELF_SPECIFIERS = ${inlineSpecifierList}`)
-		? [`${EXPORT_KEYWORD} ${CONST_KEYWORD} SELF_SPECIFIERS = ${inlineSpecifierList}`]
-		: [
-				`${EXPORT_KEYWORD} ${CONST_KEYWORD} SELF_SPECIFIERS = [`,
-				...specifierItems.map((specifier) => `\t${specifier},`),
-				']',
-			]
-	lines.push(
-		'',
-		[
-			EXPORT_KEYWORD,
-			CONST_KEYWORD,
-			'SPECIFIER_MODULES:',
-			'Readonly<Record<string, string>>',
-			'=',
-			'{',
-		].join(' '),
-		...Object.entries(modules).map(([specifier, module]) => `\t'${specifier}': '${module}',`),
-		'}',
-		`${EXPORT_KEYWORD} ${CONST_KEYWORD} SPECIFIER_SOURCES = new Map<string, ReturnType<typeof createSource>>()`,
-		`${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} exportsFor(specifier: string): readonly string[] {`,
-		'\tconst module = SPECIFIER_MODULES[specifier]',
-		'\tif (module === undefined) return []',
-		'\tlet source = SPECIFIER_SOURCES.get(module)',
-		'\tif (source === undefined) {',
-		'\t\tsource = createSource({ files: GUIDE_FILES, module })',
-		'\t\tSPECIFIER_SOURCES.set(module, source)',
-		'\t}',
-		'\treturn source.exports().map((symbol) => symbol.name)',
-		'}',
-	)
-	return lines.join('\n')
-}
-
-/**
- * Draft the `tests` group's `template` artifacts — the shared recorder
- * setup, one environment-specific setup file per non-`core` environment
- * (`setupServer.ts` / `setupBrowser.ts`, grounded against the live
- * exemplars' setup-file naming), the generated-minimal entity / factory test
- * stubs PER declared environment, and the environment-aware guides-parity drop-in.
- *
- * @param spec - The `Blueprint` to derive test stubs from.
- * @param pascal - The package's PascalCase entity name.
- * @returns The `tests` group's `Artifact[]`.
- *
- * @example
- * ```ts
- * testArtifacts(blueprint('router'), 'Router').length // 3
- * ```
- */
-export function testArtifacts(spec: Blueprint, pascal: string): readonly Artifact[] {
-	const hasBrowser = spec.src.includes('browser') || spec.app.includes('browser')
-	const hasVue = spec.app.includes('browser')
-	const machinery = viteMachinery(spec.src, spec.app, spec.bin, spec.showcase)
-	const vuePolicyImport = hasVue ? "\nimport { parse as parseVue } from 'vue/compiler-sfc'" : ''
-	const workspacePolicyAssertion = hasVue
-		? `expect(
-			inspectCodingWorkspace(process.cwd(), (path, content) => {
-				const parsed = parseVue(content, { filename: path })
-				if (parsed.errors.length > 0) throw new Error(\`\${path} could not be parsed as a Vue SFC\`)
-				return [parsed.descriptor.script, parsed.descriptor.scriptSetup].filter(
-					(block) => block !== null,
-				)
-			}),
-		).toEqual([])`
-		: 'expect(inspectCodingWorkspace(process.cwd())).toEqual([])'
-	const configNames = [
-		'containedPath',
-		'environmentPathError',
-		'environmentSourceError',
-		'resolveWorkspacePath',
-		'workspacePath',
-	]
-	if (machinery.output) configNames.push('enforceOutputPath')
-	if (hasBrowser) {
-		configNames.push(
-			'isBrowserExecutable',
-			'resolveBrowser',
-			'resolveManagedBrowser',
-			'resolveSystemBrowser',
-			'SYSTEM_BROWSER_CHANNELS',
-		)
-	}
-	if (hasVue) {
-		configNames.push('hasSecurityPrologue', 'HTML_SECURITY_META', 'HTML_SECURITY_POLICY')
-	}
-	const configImports = [
-		...(hasVue ? ["import { readFileSync } from 'node:fs'"] : []),
-		...(hasBrowser ? ["import { chromium } from 'playwright'"] : []),
-		"import { describe, expect, it } from 'vitest'",
-		'import {',
-		...configNames.map((name) => `\t${name},`),
-		"} from '../../vite.config.js'",
-	].join('\n')
-	const configCases: string[] = []
-	if (machinery.output) {
-		configCases.push(`
-
-	it('contains build output in its exact workspace directory', () => {
-		const expected = resolveWorkspacePath('dist/config-proof')
-
-		expect(() => enforceOutputPath(expected, expected)).not.toThrow()
-		expect(() => enforceOutputPath(resolveWorkspacePath('dist/other'), expected)).toThrow(
-			'exact configured workspace directory',
-		)
-		expect(() =>
-			enforceOutputPath(
-				resolveWorkspacePath('../config-proof'),
-				resolveWorkspacePath('../config-proof'),
-			),
-		).toThrow('remain inside the workspace')
-	})`)
-	}
-	if (hasBrowser) {
-		configCases.push(`
-
-	it('resolves only a real managed executable or stable system browser channel', () => {
-		const pinned = chromium.executablePath()
-		const managed = resolveManagedBrowser(pinned)
-		const channel = resolveSystemBrowser(process.platform, process.env)
-		const options = resolveBrowser(pinned, process.platform, process.env)
-		const expected =
-			managed === undefined
-				? channel === undefined
-					? undefined
-					: { launchOptions: { channel } }
-				: managed === pinned
-					? {}
-					: { launchOptions: { executablePath: managed } }
-		const executable = managed === undefined || isBrowserExecutable(managed)
-		const stable =
-			managed !== undefined ||
-			channel === undefined ||
-			SYSTEM_BROWSER_CHANNELS.some((browser) => browser.channel === channel)
-
-		expect(options).toEqual(expected)
-		expect(executable).toBe(true)
-		expect(stable).toBe(true)
-	})`)
-	}
-	if (hasVue) {
-		configCases.push(`
-
-	it('preserves the generated browser security prologue', () => {
-		const document = readFileSync(resolveWorkspacePath('app/browser/index.html'), 'utf8')
-
-		expect(hasSecurityPrologue(document, HTML_SECURITY_META)).toBe(true)
-		expect(HTML_SECURITY_META).toContain(HTML_SECURITY_POLICY)
-	})`)
-	}
-	const artifacts: Artifact[] = [
-		fillArtifact('tests/setup.ts', 'tests', 'setup', {
-			eventImport: spec.app.includes('server')
-				? "import type { EmitterInterface, EventMap } from '@orkestrel/emitter'\n\n"
-				: '',
-			eventHelper: spec.app.includes('server')
-				? `
-/** Wait for one typed event occurrence and return its argument tuple. */
-${EXPORT_KEYWORD} ${FUNCTION_KEYWORD} waitForEvent<TMap extends EventMap, K extends keyof TMap>(
-	emitter: EmitterInterface<TMap>,
-	event: K,
-): Promise<TMap[K]> {
-	return new Promise((resolvePromise) => emitter.once(event, (...args) => resolvePromise(args)))
-}
-`
-				: '',
-		}),
-		fillArtifact('tests/policy.test.ts', 'tests', 'policyTest', {
-			vuePolicyImport,
-			workspacePolicyAssertion,
-		}),
-		fillArtifact('tests/config/vite.test.ts', 'tests', 'configTest', {
-			imports: configImports,
-			cases: configCases.join(''),
-		}),
-	]
-	if (spec.src.includes('server') || spec.app.includes('server') || spec.services.length > 0) {
-		artifacts.push(fillArtifact('tests/setupServer.ts', 'tests', 'setupServer', {}, 'server'))
-	}
-	if (spec.services.length > 0) {
-		artifacts.push(
-			fillArtifact(
-				'tests/config/services.test.ts',
-				'tests',
-				'serviceConformance',
-				{ services: renderStringArray(spec.services, '\t\t', 'const declared = ', '') },
-				'server',
-			),
-		)
-	}
-	if (spec.src.includes('browser') || spec.app.includes('browser')) {
-		artifacts.push(fillArtifact('tests/setupBrowser.ts', 'tests', 'setupBrowser', {}, 'browser'))
-	}
-	const hasBoundary = hasApplicationBoundary(spec)
-	const hasShowcase = hasApplicationShowcase(spec)
-	if (spec.app.includes('core')) {
-		artifacts.push(
-			fillArtifact(
-				'tests/app/core/factories.test.ts',
-				'tests',
-				'appCoreTest',
-				{
-					guardImport: hasBoundary ? '\tisApplicationRecord,\n' : '',
-					readImport: hasBoundary ? '\treadApplicationHealth,\n' : '',
-					boundary: hasBoundary
-						? `
-
-describe('shared application health boundary', () => {
-	it('accepts the shared record and refuses every off-contract value', () => {
-		expect(isApplicationRecord({ name: APP_NAME, status: 'ok' })).toBe(true)
-		expect(isApplicationRecord({ name: ' ', status: 'ok' })).toBe(true)
-		for (const value of [
-			null,
-			[],
-			'ok',
-			{ name: APP_NAME },
-			{ name: '', status: 'ok' },
-			{ name: 1, status: 'ok' },
-			{ name: APP_NAME, status: 'down' },
-		]) {
-			expect(isApplicationRecord(value)).toBe(false)
-		}
-		const revocable = Proxy.revocable({}, {})
-		revocable.revoke()
-		expect(isApplicationRecord(revocable.proxy)).toBe(false)
-	})
-
-	it('refuses a malformed origin before reaching the network', async () => {
-		expect(await readApplicationHealth('not-an-origin')).toBeUndefined()
-	})
-})`
-						: '',
-				},
-				'core',
-			),
-		)
-	}
-	if (spec.app.includes('browser')) {
-		const browserTestNameImport = spec.app.includes('core')
-			? "import { APP_NAME } from '@app/core'"
-			: "import { APP_NAME } from '@app/browser'"
-		artifacts.push(
-			fillArtifact(
-				'tests/app/browser/factories.test.ts',
-				'tests',
-				'appBrowserTest',
-				{
-					browserTestNameImport,
-					showcaseImport: hasShowcase ? '\tmountShowcaseApplication,\n' : '',
-					entryImport: `${hasShowcase ? '\tseedApplication,\n' : ''}${
-						hasBoundary ? '\tmountBrowserApplication,\n' : ''
-					}`,
-					showcase: hasShowcase
-						? `
-
-describe('mountShowcaseApplication', () => {
-	it('mounts the shipped root view over one frozen, inert seed', () => {
-		const element = buildElement()
-		const seeded = seedApplication()
-		const application = mountShowcaseApplication(element)
-		try {
-			expect(element.textContent).toContain(seeded.name)
-			expect(seeded).toEqual(seedApplication())
-			expect(seeded).not.toBe(seedApplication())
-			expect(Object.isFrozen(seeded)).toBe(true)
-		} finally {
-			application.unmount()
-			element.remove()
-		}
-	})
-})`
-						: '',
-					boundary: hasBoundary
-						? `
-
-describe('mountBrowserApplication', () => {
-	it('mounts the configured identity when the boundary answers off-contract', async () => {
-		const element = buildElement()
-		const application = await mountBrowserApplication(element)
-		try {
-			expect(element.textContent).toContain(APP_NAME)
-		} finally {
-			application.unmount()
-			element.remove()
-		}
-	})
-})`
-						: '',
-				},
-				'browser',
-			),
-		)
-	}
-	if (spec.app.includes('server')) {
-		const testNameImport = hasBoundary
-			? `import {
-	APP_HEALTH_METHOD,
-	APP_HEALTH_PATH,
-	APP_NAME,
-	isApplicationRecord,
-	readApplicationHealth,
-} from '@app/core'`
-			: spec.app.includes('core')
-				? "import { APP_NAME } from '@app/core'"
-				: "import { APP_NAME } from '@app/server'"
-		const serverImport = hasBoundary
-			? `import {
-	ApplicationServerRunner,
-	createApplicationDispatcher,
-	createApplicationServer,
-} from '@app/server'`
-			: `import {
-	APP_HEALTH_METHOD,
-	APP_HEALTH_PATH,
-	ApplicationServerRunner,
-	createApplicationDispatcher,
-	createApplicationServer,
-} from '@app/server'`
-		artifacts.push(
-			fillArtifact(
-				'tests/app/server/ApplicationServer.test.ts',
-				'tests',
-				'appServerTest',
-				{
-					testNameImport,
-					serverImport,
-					boundary: hasBoundary
-						? `
-
-describe('shared application boundary', () => {
-	it('answers the shared record and translates it into the shared identity', async () => {
-		const server = createApplicationServer({ server: { host: '127.0.0.1', port: 0 } })
-		try {
-			await server.start()
-			const url = server.url
-			if (url === undefined) throw new Error('Expected a bound application URL')
-			const response = await fetch(\`\${url}\${APP_HEALTH_PATH}\`)
-			const record: unknown = await response.json()
-
-			expect(isApplicationRecord(record)).toBe(true)
-			expect(await readApplicationHealth(url)).toEqual({ name: APP_NAME })
-		} finally {
-			await server.destroy()
-		}
-	})
-
-	it('reads undefined from a released loopback port', async () => {
-		const port = await reserveLoopbackPort()
-
-		expect(await readApplicationHealth(\`http://127.0.0.1:\${port}\`)).toBeUndefined()
-	})
-})`
-						: '',
-				},
-				'server',
-			),
-			fillArtifact(
-				'tests/app/server/parsers.test.ts',
-				'tests',
-				'appServerParsersTest',
-				{},
-				'server',
-			),
-		)
-	}
-	const inlineExplicitInstance = `instance: ${pascal}Interface = new ${pascal}({ id: 'example' })`
-	const multilineExplicitInstance = `instance: ${pascal}Interface = new ${pascal}({
-			id: 'example',
-		})`
-	const explicitInstance = fitsPrintWidth(`\t\t${CONST_KEYWORD} ${inlineExplicitInstance}`)
-		? inlineExplicitInstance
-		: fitsPrintWidth(`\t\t${CONST_KEYWORD} instance: ${pascal}Interface = new ${pascal}({`)
-			? multilineExplicitInstance
-			: `instance: ${pascal}Interface =
-			new ${pascal}({
-				id: 'example',
-			})`
-	const inlineValueImport = `import { create${pascal}, ${pascal} } from '@src/core'`
-	const valueImport = fitsPrintWidth(inlineValueImport)
-		? inlineValueImport
-		: `import {
-	create${pascal},
-	${pascal},
-} from '@src/core'`
-	const inlineTestTypeImport = `import type { ${pascal}Interface } from '@src/core'`
-	const testTypeImport = fitsPrintWidth(inlineTestTypeImport)
-		? inlineTestTypeImport
-		: `import type {
-	${pascal}Interface,
-} from '@src/core'`
-	const inlineFactoryInstance = `instance = create${pascal}({ id: 'example' })`
-	const factoryInstance = fitsPrintWidth(`\t\t${CONST_KEYWORD} ${inlineFactoryInstance}`)
-		? inlineFactoryInstance
-		: `instance = create${pascal}({
-			id: 'example',
-		})`
-	const inlineTypeExpectation = `expectTypeOf(create${pascal}({ id: 'example' })).toEqualTypeOf<${pascal}Interface>()`
-	const typeExpectation = fitsPrintWidth(`\t\t${inlineTypeExpectation}`)
-		? inlineTypeExpectation
-		: `expectTypeOf(
-			create${pascal}({ id: 'example' }),
-		).toEqualTypeOf<${pascal}Interface>()`
-	for (const environment of spec.src) {
-		const environmentValueImport = valueImport.replaceAll('@src/core', `@src/${environment}`)
-		const environmentTypeImport = testTypeImport.replaceAll('@src/core', `@src/${environment}`)
-		const values = {
-			pascal,
-			environment,
-			explicitInstance,
-			entityTestTypeImport: environmentTypeImport,
-			valueImport: environmentValueImport,
-			testTypeImport: environmentTypeImport,
-			factoryInstance,
-			typeExpectation,
-		}
-		artifacts.push(
-			fillArtifact(
-				`tests/src/${environment}/${pascal}.test.ts`,
-				'tests',
-				'entityTest',
-				values,
-				environment,
-			),
-			fillArtifact(
-				`tests/src/${environment}/factories.test.ts`,
-				'tests',
-				'factoriesTest',
-				values,
-				environment,
-			),
-		)
-	}
-	artifacts.push(
-		fillArtifact('tests/setupGuides.ts', 'tests', 'setupGuides', {
-			specifiers: paritySpecifiers(spec),
-			walkDirs: renderStringArray(
-				[
-					...(spec.src.length > 0 ? ['src'] : []),
-					...(spec.app.length > 0 ? ['app'] : []),
-					'guides',
-					'tests',
-				],
-				'',
-				'export const GUIDE_WALK_DIRECTORIES: readonly string[] = Object.freeze(',
-				')',
-			),
-		}),
-		fillArtifact('tests/guides/src/parity.test.ts', 'tests', 'parityTest', {
-			name: spec.name,
-		}),
-	)
-	return artifacts
-}
-
-/**
- * Build an `alignTable` markdown table over a member category's rows, deduped
- * by name — `blueprintToMembers` declares one full member set PER environment, so
- * a multi-environment blueprint carries byte-identical name/summary rows once per
- * environment; the one guide (AGENTS §22) lists each declared member once,
- * grouped across its src.
- *
- * @param category - The `Member['category']` to filter rows by.
- * @param members - The blueprint's derived `Member[]` (previously closed over by the caller).
- * @returns The aligned markdown table for the category's deduped members.
- *
- * @example
- * ```ts
- * guideMemberTable('entity', blueprintToMembers(blueprint('router'))).includes('Router') // true
- * ```
- */
-export function guideMemberTable(category: Member['category'], members: readonly Member[]): string {
-	const seen = new Set<string>()
-	const rows: string[][] = []
-	const kind =
-		category === 'type'
-			? 'interface'
-			: category === 'alias'
-				? 'type'
-				: category === 'constant'
-					? 'const'
-					: category === 'entity' || category === 'error'
-						? 'class'
-						: 'function'
-	for (const item of members) {
-		if (item.category !== category) continue
-		if (seen.has(item.name)) continue
-		seen.add(item.name)
-		rows.push([`\`${item.name}\``, kind, item.summary])
-	}
-	return alignTable(['Name', 'Kind', 'Summary'], rows)
-}
-
-/**
- * Build complete guide examples for every generated public function.
- *
- * @param spec - The workspace blueprint.
- * @param pascal - The source entity name.
- * @returns TypeScript fences covering each selected source and app environment.
- */
-export function guideUsage(spec: Blueprint, pascal: string): string {
-	const examples: string[] = []
-	const hasBoundary = hasApplicationBoundary(spec)
-	const hasShowcase = hasApplicationShowcase(spec)
-	if (spec.src.length > 0) {
-		examples.push(`\`\`\`ts
-import { create${pascal} } from '@orkestrel/${spec.name}'
-
-${CONST_KEYWORD} instance = create${pascal}({ id: 'example' })
-\`\`\``)
-	}
-	if (spec.app.includes('core')) {
-		examples.push(`\`\`\`ts
-import {
-	ApplicationError,
-	createApplication,
-	isApplicationError,
-	parseApplicationName,
-} from '@app/core'
-
-${CONST_KEYWORD} name = parseApplicationName(' ${spec.name} ')
-${CONST_KEYWORD} application = createApplication(name)
-isApplicationError(new ApplicationError('CONFIG', 'invalid')) // true
-\`\`\``)
-	}
-	if (hasBoundary) {
-		examples.push(`\`\`\`ts
-import type { ApplicationRecord } from '@app/core'
-import {
-	APP_HEALTH_METHOD,
-	APP_HEALTH_PATH,
-	APP_HEALTH_TIMEOUT,
-	isApplicationRecord,
-	readApplicationHealth,
-} from '@app/core'
-
-APP_HEALTH_METHOD // 'GET'
-APP_HEALTH_PATH // '/health'
-APP_HEALTH_TIMEOUT // 5000
-${CONST_KEYWORD} healthy: ApplicationRecord = { name: '${spec.name}', status: 'ok' }
-isApplicationRecord(healthy) // true
-isApplicationRecord({ name: '${spec.name}', status: 'down' }) // false
-await readApplicationHealth('http://127.0.0.1:3000') // { name: '${spec.name}' } or undefined
-\`\`\``)
-	}
-	if (spec.app.includes('browser')) {
-		examples.push(`\`\`\`ts
-import {
-	BrowserApplicationError,
-	createBrowserApplication,
-	isBrowserApplicationError,
-	parseBrowserApplicationOptions,
-} from '@app/browser'
-
-${CONST_KEYWORD} browserOptions = parseBrowserApplicationOptions({
-	name: '${spec.name}',
-})
-${CONST_KEYWORD} browser = createBrowserApplication(browserOptions)
-browser.mount('#app')
-isBrowserApplicationError(new BrowserApplicationError('CONFIG', 'invalid')) // true
-\`\`\``)
-	}
-	if (hasShowcase) {
-		examples.push(`\`\`\`ts
-import { mountShowcaseApplication, seedApplication } from '@app/browser'
-
-${CONST_KEYWORD} seed = seedApplication()
-${CONST_KEYWORD} showcase = mountShowcaseApplication('#app')
-seed.name // '${spec.name} showcase'
-showcase.unmount()
-\`\`\``)
-	}
-	if (hasBoundary) {
-		examples.push(`\`\`\`ts
-import { mountBrowserApplication } from '@app/browser'
-
-${CONST_KEYWORD} application = await mountBrowserApplication('#app')
-application.unmount()
-\`\`\``)
-	}
-	if (spec.app.includes('server')) {
-		examples.push(`\`\`\`ts
-${
-	hasBoundary
-		? `import type { ApplicationRecord } from '@app/core'
-import type { ApplicationState } from '@app/server'
-import { APP_HEALTH_METHOD, APP_HEALTH_PATH, isApplicationRecord } from '@app/core'`
-		: "import type { ApplicationRecord, ApplicationState } from '@app/server'"
-}
-import {
-${
-	hasBoundary
-		? ''
-		: `	APP_HEALTH_METHOD,
-	APP_HEALTH_PATH,
-`
-}	APP_HOST_LABEL_PATTERN,
-	APP_NUMERIC_HOST_PATTERN,
-	ApplicationServerError,
-	DEFAULT_APP_START_TIMEOUT,
-	MAX_APP_START_TIMEOUT,
-	createApplicationDispatcher,
-	createApplicationServer,
-	handleApplicationHealth,
-	isApplicationServerError,
-	parseApplicationHost,
-	parseApplicationPort,
-	parseApplicationServerOptions,
-	parseApplicationStartTimeout,
-	reportApplicationServerError,
-} from '@app/server'
-
-${CONST_KEYWORD} host = parseApplicationHost('127.0.0.1')
-${CONST_KEYWORD} port = parseApplicationPort('0')
-${CONST_KEYWORD} timeout = parseApplicationStartTimeout('5000')
-${CONST_KEYWORD} options = parseApplicationServerOptions({ server: { host, port, timeout } })
-parseApplicationStartTimeout(String(DEFAULT_APP_START_TIMEOUT)) // 10000
-MAX_APP_START_TIMEOUT // 300000
-APP_HOST_LABEL_PATTERN.test('api') // true
-APP_NUMERIC_HOST_PATTERN.test('999.999.999.999') // true (and therefore rejected as a host)
-${CONST_KEYWORD} state: ApplicationState = { connection: { encrypted: false } }
-${CONST_KEYWORD} record: ApplicationRecord = { name: '${spec.name}', status: 'ok' }
-${CONST_KEYWORD} dispatcher = createApplicationDispatcher()
-try {
-	${CONST_KEYWORD} response = await dispatcher.handle(
-		new Request(\`http://application.test\${APP_HEALTH_PATH}\`, { method: APP_HEALTH_METHOD }),
-		state,
-	)
-	${CONST_KEYWORD} health = handleApplicationHealth()
-	${CONST_KEYWORD} encoded = Response.json(record)
-	${
-		hasBoundary
-			? `${CONST_KEYWORD} value: unknown = await health.clone().json()
-	isApplicationRecord(value) // true
-	`
-			: ''
-	}if (!response.ok || !health.ok || !encoded.ok) throw new Error('Application health failed')
-} finally {
-	dispatcher.destroy()
-}
-
-${CONST_KEYWORD} failure: unknown = new ApplicationServerError('CONFIG', 'invalid')
-if (isApplicationServerError(failure)) {
-	reportApplicationServerError(failure) // writes only a stable CONFIG diagnostic
-}
-
-${CONST_KEYWORD} server = createApplicationServer(options)
-${CONST_KEYWORD} controller = new AbortController()
-await server.start(controller.signal)
-await server.stop()
-await server.destroy()
-\`\`\`
-
-\`\`\`ts
-import type { ApplicationServerRunnerEventMap, ApplicationServerRunnerOptions } from '@app/server'
-import { ApplicationServerRunner, createApplicationServer } from '@app/server'
-
-${CONST_KEYWORD} event: keyof ApplicationServerRunnerEventMap = 'ready'
-${CONST_KEYWORD} observe: ApplicationServerRunnerOptions = { on: { fail: () => undefined } }
-${CONST_KEYWORD} runner = new ApplicationServerRunner(
-	createApplicationServer({ server: { port: 0 } }),
-	observe,
-)
-runner.emitter.once(event, (url) => console.log(url))
-runner.start() // process owns shutdown signals
-await runner.stop()
-\`\`\`
-
-\`\`\`ts
-import { startApplicationServer } from '@app/server'
-
-${CONST_KEYWORD} processRunner = startApplicationServer({ server: { port: 0 } })
-await processRunner.stop()
-\`\`\``)
-	}
-	return examples.join('\n\n')
-}
-
-/**
- * Build the generated application server's method contract section.
- *
- * @param spec - The workspace blueprint.
- * @returns A Methods section when app/server is selected, otherwise an empty string.
- */
-export function guideMethods(spec: Blueprint): string {
-	if (!spec.app.includes('server')) return ''
-	const methods = alignTable(
-		['Method', 'Returns', 'Behavior'],
-		[
-			[
-				'`start`',
-				'`Promise<void>`',
-				'Bind the installed `@orkestrel/server` substrate when idle or stopped. The optional `AbortSignal` and bounded startup timeout cancel pending binding. Rejects with `ApplicationServerError` code `LIFECYCLE` when startup fails, times out, or the caller aborts.',
-			],
-			[
-				'`stop`',
-				'`Promise<void>`',
-				'Drain and stop the installed server; repeated calls while stopped are safe. Rejects with `ApplicationServerError` code `LIFECYCLE` when closing fails.',
-			],
-			[
-				'`destroy`',
-				'`Promise<void>`',
-				'Perform terminal idempotent teardown through the installed server lifecycle, then destroy its owned dispatcher. Rejects with `ApplicationServerError` code `LIFECYCLE` when server teardown fails.',
-			],
-		],
-	)
-	const runnerMethods = alignTable(
-		['Method', 'Returns', 'Behavior'],
-		[
-			[
-				'`start`',
-				'`void`',
-				'Register one generation-owned set of SIGINT/SIGTERM cleanup listeners, queue the substrate start behind any shutdown already in flight, emit `ready` after binding, and emit `fail` for a current lifecycle failure.',
-			],
-			[
-				'`stop`',
-				'`Promise<void>`',
-				'Abort a startup still in flight and release both process listeners, then wait for that startup to settle before stopping the server; concurrent calls join one substrate stop, and lifecycle failures emit `fail` and reject.',
-			],
-		],
-	)
-	return `
-
-## Methods
-
-#### \`ApplicationServerInterface\`
-
-${methods}
-
-#### \`ApplicationServerRunnerInterface\`
-
-${runnerMethods}
-
-The runner exposes its readonly \`emitter\`. \`ApplicationServerRunnerEventMap\` emits \`ready\` with the bound URL and \`fail\` with an \`unknown\` error. \`ApplicationServerRunnerOptions\` accepts initial \`on\` hooks and an emitter \`error\` handler; initial hooks run before the runner's own announcement and reporting listeners, so when no earlier failure set an exit code, a synchronous \`fail\` hook sees \`process.exitCode === undefined\` before the default reporter sets it to \`1\`. The default listeners preserve one exact \`[READY] <name> <url>\` stderr line and the stable redacted failure diagnostics. In-process consumers and tests park on runner events; a child process still observes the \`[READY]\` line because that byte stream is its process-boundary channel.
-
-The application server constructor validates grouped direct options plus \`APP_HOST\`, \`APP_PORT\`, and
-\`APP_START_TIMEOUT\` before binding. Direct options must be an exact plain own-key data record containing only a
-\`server\` record with \`host\`, \`port\`, and/or \`timeout\`; inherited properties, accessors, symbols, instances, proxies that
-throw during reflection, and unknown keys fail closed. Invalid values throw
-\`ApplicationServerError\` code \`CONFIG\`; the default host is loopback and port \`0\` is
-supported for collision-free ephemeral allocation. Startup defaults to 10 seconds and accepts
-only integer timeouts from 1 through 300,000 milliseconds. Lifecycle failures use code
-\`LIFECYCLE\`; both may carry \`context.cause\` or \`context.value\`. Narrow caught values with
-\`isApplicationServerError\` before reading either field.
-
-Before binding, \`url\` is \`undefined\`; after a successful start it reflects the real bound port,
-and it returns to \`undefined\` after stop or destroy. \`ApplicationState\` extends middleware's
-\`IdentifierState\` and adds only its \`connection\` property; there is no redundant \`listening\` member.
-
-Each \`createApplicationDispatcher()\` call returns a fresh dispatcher that owns exactly \`GET /health\`
-and serializes the shared \`ApplicationRecord\` shape \`{ name: APP_NAME, status: 'ok' }\` as JSON. The
-server composes \`createBoundary()\`, \`createSecurity()\`, then \`createDeadline({ ms: timeout })\`
-around that owned dispatcher; standalone callers destroy theirs after use. Every other path returns
-\`404\`, and every unsupported method returns \`405\` with \`Allow: GET\`.`
-}
-
-/**
- * Build links to every generated source and application test file.
- *
- * @param spec - The workspace blueprint.
- * @param pascal - The source entity name.
- * @returns A newline-separated Markdown test inventory.
- */
-export function guideTests(spec: Blueprint, pascal: string): string {
-	const tests: string[] = [
-		'- [`tests/policy.test.ts`](../../tests/policy.test.ts) — repository coding law and filename placement.',
-		'- [`tests/config/vite.test.ts`](../../tests/config/vite.test.ts) — executable root Vite invariants and conditional browser capability.',
-	]
-	for (const environment of spec.src) {
-		tests.push(
-			`- [\`tests/src/${environment}/${pascal}.test.ts\`](../../tests/src/${environment}/${pascal}.test.ts) — entity boundaries.`,
-			`- [\`tests/src/${environment}/factories.test.ts\`](../../tests/src/${environment}/factories.test.ts) — factory behavior.`,
-		)
-	}
-	if (spec.app.includes('core')) {
-		tests.push(
-			'- [`tests/app/core/factories.test.ts`](../../tests/app/core/factories.test.ts) — host-independent identity behavior.',
-		)
-	}
-	if (spec.app.includes('browser')) {
-		tests.push(
-			'- [`tests/app/browser/factories.test.ts`](../../tests/app/browser/factories.test.ts) — real-browser mount and cleanup.',
-		)
-	}
-	if (spec.app.includes('server')) {
-		tests.push(
-			'- [`tests/app/server/ApplicationServer.test.ts`](../../tests/app/server/ApplicationServer.test.ts) — real loopback lifecycle and protocol behavior.',
-			'- [`tests/app/server/parsers.test.ts`](../../tests/app/server/parsers.test.ts) — hostile environment boundaries.',
-		)
-	}
-	return tests.join('\n')
-}
-
-/**
- * Draft the `guides` group's artifacts — the package's own filled guide stub,
- * the guides index, and vendored dependency guide mirrors whose paths are
- * neither the package's own guide nor already carried by the selected host
- * set.
- *
- * @param spec - The `Blueprint` to derive guide artifacts from.
- * @param pascal - The package's PascalCase entity name.
- * @param members - The blueprint's derived `Member[]`.
- * @returns The `guides` group's `Artifact[]`, with one contributor per guide
- * path.
- *
- * @example
- * ```ts
- * guideArtifacts(blueprint('router'), 'Router', blueprintToMembers(blueprint('router'))).length // 2
- * ```
- */
-export function guideArtifacts(
-	spec: Blueprint,
-	pascal: string,
-	members: readonly Member[],
-): readonly Artifact[] {
-	// The seven runtime `@orkestrel/*` guide mirrors this repo itself vendors
-	// byte-identically (this guide's Contract invariant 7) —
-	// the only dependency names a scaffolded package's `guides/src/<dep>.md`
-	// mirror can be a `host`-origin byte copy for.
-	const vendoredGuides: readonly string[] = [
-		'@orkestrel/contract',
-		'@orkestrel/emitter',
-		'@orkestrel/markdown',
-		'@orkestrel/template',
-		'@orkestrel/terminal',
-		'@orkestrel/console',
-		'@orkestrel/guide',
-	]
-
-	const sourceDirectories = [
-		...spec.src.map((environment) => `src/${environment}`),
-		...spec.app.map((environment) => `app/${environment}`),
-	]
-	const source = sourceDirectories
-		.map((directory) => `[\`${directory}\`](../../${directory})`)
-		.join(', ')
-	const aliases = [
-		...spec.src.map((environment) => `\`@src/${environment}\``),
-		...spec.app.map((environment) => `\`@app/${environment}\``),
-	]
-	const barrel =
-		spec.src.length > 0
-			? `Published through \`@orkestrel/${spec.name}\`; workspace barrels: ${aliases.join(', ')}.`
-			: `Private application workspace barrels: ${aliases.join(', ')}.`
-
-	const artifacts: Artifact[] = [
-		fillArtifact(`guides/src/${spec.name}.md`, 'guides', 'guide', {
-			name: spec.name,
-			pascal,
-			description:
-				spec.description ??
-				(spec.src.length > 0
-					? `A complete ${pascal} library workspace.`
-					: `A complete ${pascal} application workspace.`),
-			source,
-			barrel,
-			usage: guideUsage(spec, pascal),
-			tests: guideTests(spec, pascal),
-			factories: guideMemberTable('factory', members),
-			entities: guideMemberTable('entity', members),
-			parsers: guideMemberTable('parser', members),
-			guards: guideMemberTable('guard', members),
-			handlers: guideMemberTable('handler', members),
-			errors: guideMemberTable('error', members),
-			types: guideMemberTable('type', members),
-			aliases: guideMemberTable('alias', members),
-			constants: guideMemberTable('constant', members),
-			methods: guideMethods(spec),
-		}),
-		fillArtifact('guides/README.md', 'guides', 'guidesReadme', {
-			concept: alignTable(
-				['Concept', 'Spec', 'Source', 'Tests'],
-				[
-					[
-						pascal,
-						`[\`${spec.name}.md\`](src/${spec.name}.md)`,
-						sourceDirectories.map((directory) => `[\`${directory}\`](../${directory})`).join(', '),
-						[
-							...spec.src.map((environment) => `tests/src/${environment}`),
-							...spec.app.map((environment) => `tests/app/${environment}`),
-						]
-							.map((directory) => `[\`${directory}\`](../${directory})`)
-							.join(', '),
-					],
-				],
-			),
-			directory: alignTable(
-				['Directory', 'Guide'],
-				sourceDirectories.map((directory) => [
-					directory,
-					`[\`${spec.name}.md\`](src/${spec.name}.md)`,
-				]),
-			),
-		}),
-	]
-	const guidePath = `guides/src/${spec.name}.md`
-	for (const dep of spec.dependencies) {
-		if (!vendoredGuides.includes(dep.name)) continue
-		const short = dep.name.replace('@orkestrel/', '')
-		const path = `guides/src/${short}.md`
-		if (HOST_PATHS.includes(path) || path === guidePath) continue
+export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly ContentArtifact[] {
+	const artifacts: ContentArtifact[] = []
+	for (const environment of blueprint.src) {
 		artifacts.push({
-			path,
-			group: 'guides',
-			origin: 'host',
-			source: path,
+			path: `src/${environment}/index.ts`,
+			group: 'source',
+			ownership: 'birth',
+			origin: 'template',
+			environment,
+			content: ARTIFACT_TEMPLATES.source.empty,
+		})
+	}
+	for (const environment of blueprint.app) {
+		artifacts.push({
+			path: `app/${environment}/index.ts`,
+			group: 'source',
+			ownership: 'birth',
+			origin: 'template',
+			environment,
+			content: ARTIFACT_TEMPLATES.source.empty,
+		})
+		if (environment === 'browser') {
+			artifacts.push(
+				{
+					path: 'app/browser/main.ts',
+					group: 'source',
+					ownership: 'birth',
+					origin: 'template',
+					environment,
+					content: ARTIFACT_TEMPLATES.source.main,
+				},
+				{
+					path: 'app/browser/index.html',
+					group: 'source',
+					ownership: 'birth',
+					origin: 'template',
+					environment,
+					content: ARTIFACT_TEMPLATES.source.browser,
+				},
+			)
+		} else if (environment === 'server') {
+			artifacts.push({
+				path: 'app/server/main.ts',
+				group: 'source',
+				ownership: 'birth',
+				origin: 'template',
+				environment,
+				content: ARTIFACT_TEMPLATES.source.main,
+			})
+		}
+	}
+	if (blueprint.bin) {
+		artifacts.push({
+			path: `src/bin/${blueprint.name}.ts`,
+			group: 'source',
+			ownership: 'birth',
+			origin: 'template',
+			content: ARTIFACT_TEMPLATES.source.empty,
 		})
 	}
 	return artifacts
 }
 
 /**
- * Apply a blueprint's `overrides` over a drafted artifact list — an override
- * REPLACES the matching artifact's `content` in place; an override matching
- * no planned artifact, targeting a `host`-origin path, or targeting the
- * blueprint-owned `package.json` publication boundary is left unapplied here
- * (the gate stage reports it as a blocking question).
+ * Compile every artifact in the `tests` group that is not vendored from the host.
  *
- * @param artifacts - The drafted `Artifact[]`.
- * @param overrides - The blueprint's `overrides`.
- * @returns The artifact list with matching overrides applied.
+ * @param blueprint - The workspace specification.
+ * @returns Shared setup modules, axis tests, and the optional install proof.
+ *
+ * @remarks
+ * `tests/setupPolicy.ts`, `tests/policy.test.ts`, and `tests/config.test.ts` are
+ * fleet-invariant host artifacts and therefore do not appear here. A guide
+ * proof is not emitted while the workspace intentionally has empty barrels and
+ * no package guide. The install proof is meaningful only for a published
+ * workspace and therefore follows the `src` axis as well as its structural
+ * flag.
  *
  * @example
  * ```ts
- * applyOverrides(artifacts, [override('README.md', '# custom')])[0].content // '# custom'
+ * import type { Blueprint } from '@orkestrel/scaffold'
+ * import { blueprintToTestArtifacts } from '@orkestrel/scaffold'
+ *
+ * declare const blueprint: Blueprint
+ *
+ * blueprintToTestArtifacts(blueprint)[0]?.path // 'tests/setup.ts'
+ * ```
+ */
+export function blueprintToTestArtifacts(blueprint: Blueprint): readonly ContentArtifact[] {
+	const artifacts: ContentArtifact[] = [
+		{
+			path: 'tests/setup.ts',
+			group: 'tests',
+			ownership: 'birth',
+			origin: 'template',
+			content: ARTIFACT_TEMPLATES.tests.setup,
+		},
+	]
+	if (blueprint.src.includes('browser') || blueprint.app.includes('browser')) {
+		artifacts.push({
+			path: 'tests/setupBrowser.ts',
+			group: 'tests',
+			ownership: 'birth',
+			origin: 'template',
+			environment: 'browser',
+			content: ARTIFACT_TEMPLATES.tests.setup,
+		})
+	}
+	if (blueprint.src.includes('server') || blueprint.app.includes('server') || blueprint.bin) {
+		artifacts.push({
+			path: 'tests/setupServer.ts',
+			group: 'tests',
+			ownership: 'birth',
+			origin: 'template',
+			environment: 'server',
+			content: ARTIFACT_TEMPLATES.tests.setup,
+		})
+	}
+	if (blueprint.global) {
+		artifacts.push({
+			path: GLOBAL_SETUP_PATH,
+			group: 'tests',
+			ownership: 'birth',
+			origin: 'template',
+			content: ARTIFACT_TEMPLATES.tests.global,
+		})
+	}
+	for (const environment of blueprint.src) {
+		artifacts.push({
+			path: `tests/src/${environment}/index.test.ts`,
+			group: 'tests',
+			ownership: 'birth',
+			origin: 'template',
+			environment,
+			content: fillTemplate(ARTIFACT_TEMPLATES.tests.entry, {
+				specifier: serializeTypeScriptString(`@src/${environment}`),
+				label: serializeTypeScriptString(`src ${environment} entry`),
+			}),
+		})
+	}
+	if (blueprint.bin) {
+		const specifier = serializeTypeScriptString(`../../../src/bin/${blueprint.name}.js`)
+		const statement =
+			specifier.length <= 68
+				? `\t\tconst entry = await import(${specifier})`
+				: `\t\tconst entry =\n\t\t\tawait import(${specifier})`
+		artifacts.push({
+			path: `tests/src/bin/${blueprint.name}.test.ts`,
+			group: 'tests',
+			ownership: 'birth',
+			origin: 'template',
+			content: fillTemplate(ARTIFACT_TEMPLATES.tests.bin, { import: statement }),
+		})
+	}
+	for (const environment of blueprint.app) {
+		artifacts.push({
+			path: `tests/app/${environment}/index.test.ts`,
+			group: 'tests',
+			ownership: 'birth',
+			origin: 'template',
+			environment,
+			content: fillTemplate(ARTIFACT_TEMPLATES.tests.entry, {
+				specifier: serializeTypeScriptString(`@app/${environment}`),
+				label: serializeTypeScriptString(`app ${environment} entry`),
+			}),
+		})
+	}
+	if (blueprint.src.length > 0 && blueprint.integration) {
+		artifacts.push({
+			path: 'tests/integration.test.ts',
+			group: 'tests',
+			ownership: 'birth',
+			origin: 'template',
+			content: ARTIFACT_TEMPLATES.tests.integration,
+		})
+	}
+	return artifacts
+}
+
+/**
+ * Compile the generated workspace's guide index.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns One birth-owned guide index carrying the concept and directory views.
+ */
+export function blueprintToGuideArtifacts(blueprint: Blueprint): readonly ContentArtifact[] {
+	const source: string[] = []
+	const tests: string[] = []
+	const directories: string[] = []
+	const guide = `guides/${blueprint.name}.md`
+	for (const environment of blueprint.src) {
+		source.push(`    - [\`src/${environment}\`](../src/${environment})`)
+		tests.push(`    - [\`tests/src/${environment}\`](../tests/src/${environment})`)
+		directories.push(
+			`- [\`src/${environment}\`](../src/${environment})\n  - Guide: Not created. Create this file when the workspace has a public surface:\n    \`${guide}\`\n  - Tests: [\`tests/src/${environment}\`](../tests/src/${environment})`,
+		)
+	}
+	if (blueprint.bin) {
+		source.push('    - [`src/bin`](../src/bin)')
+		tests.push('    - [`tests/src/bin`](../tests/src/bin)')
+		directories.push(
+			`- [\`src/bin\`](../src/bin)\n  - Guide: Not created. Create this file when the workspace has a public surface:\n    \`${guide}\`\n  - Tests: [\`tests/src/bin\`](../tests/src/bin)`,
+		)
+	}
+	for (const environment of blueprint.app) {
+		source.push(`    - [\`app/${environment}\`](../app/${environment})`)
+		tests.push(`    - [\`tests/app/${environment}\`](../tests/app/${environment})`)
+		directories.push(
+			`- [\`app/${environment}\`](../app/${environment})\n  - Guide: Not created. Create this file when the workspace has a public surface:\n    \`${guide}\`\n  - Tests: [\`tests/app/${environment}\`](../tests/app/${environment})`,
+		)
+	}
+	return [
+		{
+			path: 'guides/README.md',
+			group: 'guides',
+			ownership: 'birth',
+			origin: 'template',
+			content: fillTemplate(ARTIFACT_TEMPLATES.guides.readme, {
+				source: source.join('\n'),
+				tests: tests.join('\n'),
+				directories: directories.join('\n'),
+				guide: blueprint.name,
+			}),
+		},
+	]
+}
+
+/**
+ * Compile the generated workspace's root documentation.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns One birth-owned package front page.
+ */
+export function blueprintToDocumentArtifacts(blueprint: Blueprint): readonly ContentArtifact[] {
+	const publishes = blueprint.src.length > 0
+	const name = publishes ? `@orkestrel/${blueprint.name}` : blueprint.name
+	const description =
+		blueprint.description ?? (publishes ? `The ${name} package.` : `The ${name} application.`)
+	return [
+		{
+			path: 'README.md',
+			group: 'docs',
+			ownership: 'birth',
+			origin: 'template',
+			content: fillTemplate(ARTIFACT_TEMPLATES.docs.readme, {
+				package: name,
+				description,
+			}),
+		},
+	]
+}
+
+/**
+ * Compile the blueprint-dependent orchestration artifacts.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns A service inventory script when services are declared, otherwise none.
+ *
+ * @remarks
+ * A service name does not describe startup, readiness, or cleanup. The script
+ * therefore records only the declared inventory and does not invent a service
+ * runner or test project.
+ */
+export function blueprintToOrchestrationArtifacts(
+	blueprint: Blueprint,
+): readonly ContentArtifact[] {
+	if (blueprint.services.length === 0) return []
+	const services = blueprint.services
+		.map(
+			(service, index) => `\t'${service}'${index === blueprint.services.length - 1 ? '' : ' \\'}`,
+		)
+		.join('\n')
+	return [
+		{
+			path: SERVICE_SCRIPT_PATH,
+			group: 'orchestration',
+			ownership: 'birth',
+			origin: 'template',
+			content: fillTemplate(ARTIFACT_TEMPLATES.orchestration.service, { services }),
+		},
+	]
+}
+
+/**
+ * Compile the vendored host artifacts a named workspace plans.
+ *
+ * @param name - The target workspace's own bare package name.
+ * @returns One artifact per vendored path, in `HOST_PATHS` order.
+ *
+ * @remarks
+ * Every artifact is claimed by presence, which is the strongest claim a pure
+ * compile can make: core cannot read the vendored data root, so it cannot carry
+ * the bytes a content claim would have to be checked against. Reading that root
+ * is what promotes the ones scaffold owns the bytes of.
+ *
+ * `source` is left absent because it falls back to `path`, and every vendored
+ * path is stored under the name it is written to. The group comes from
+ * {@link inferGroup}, so a vendored path and a foreign path found in a target
+ * are classified by one rule and a plan never disagrees with the audit beside
+ * it.
+ *
+ * @example
+ * ```ts
+ * import { nameToHostArtifacts } from '@orkestrel/scaffold'
+ *
+ * nameToHostArtifacts('router').some((artifact) => artifact.path === 'AGENTS.md') // true
+ * nameToHostArtifacts('router').some((artifact) => artifact.path === 'guides/router.md') // false
+ * ```
+ */
+export function nameToHostArtifacts(name: string): readonly Artifact[] {
+	return selectHostPaths(HOST_PATHS, name).map((path): Artifact => ({
+		path,
+		group: inferGroup(path),
+		ownership: 'presence',
+		origin: 'host',
+	}))
+}
+
+/**
+ * Replace the content of every drafted artifact an override names.
+ *
+ * @param artifacts - The drafted artifacts.
+ * @param overrides - The blueprint's overrides.
+ * @returns The artifacts with each matching override applied, in input order.
+ *
+ * @remarks
+ * An override replaces an artifact's whole content and never merges into it.
+ * A host-origin artifact carries no content to replace, so it passes through
+ * untouched; which overrides are legal at all is
+ * {@link overridesToQuestions}'s answer, so an illegal one is reported rather
+ * than silently dropped here.
+ *
+ * @example
+ * ```ts
+ * import type { Artifact } from '@orkestrel/scaffold'
+ * import { applyOverrides } from '@orkestrel/scaffold'
+ *
+ * declare const artifacts: readonly Artifact[]
+ *
+ * applyOverrides(artifacts, [{ path: 'README.md', content: '# Title\n' }])
  * ```
  */
 export function applyOverrides(
 	artifacts: readonly Artifact[],
-	overrides: Blueprint['overrides'],
+	overrides: readonly Override[],
 ): readonly Artifact[] {
 	if (overrides.length === 0) return artifacts
-	const byPath = new Map(overrides.map((override) => [override.path, override.content]))
+	const replacements = new Map(overrides.map((override) => [override.path, override.content]))
 	return artifacts.map((artifact) => {
-		if (artifact.origin === 'host' || artifact.path === 'package.json') return artifact
-		const content = byPath.get(artifact.path)
+		if (artifact.origin === 'host') return artifact
+		const content = replacements.get(artifact.path)
 		return content === undefined ? artifact : { ...artifact, content }
 	})
 }
 
 /**
- * The full pure compilation: draft a blueprint's artifacts — the manifest and
- * exports combination rules over the per-environment `SRC_MATRIX` rows, plus
- * the `selectHostPaths` selection of `HOST_PATHS` and `overrides` — then pin.
+ * Compute a plan's content identity.
  *
- * @param blueprint - The `Blueprint` to compile.
- * @param groups - An optional `Group[]` selection (default: all groups).
- * @returns The drafted, pinned `Plan`.
+ * @param plan - The plan to identify.
+ * @returns Sixteen lowercase hexadecimal digits, or `undefined` when the plan
+ * carries a value JSON cannot encode.
+ *
+ * @remarks
+ * The identity covers the blueprint the plan was compiled from, the groups it
+ * covers, and its ordered artifacts. It deliberately excludes `hash` itself,
+ * which is what lets a pinned plan be re-identified and compared without
+ * stripping a field first.
+ *
+ * The projection is canonical, so two plans that differ only in key order
+ * answer the same digits. Nothing here reads a clock or randomness, and the
+ * refusal is total: a value that cannot be read answers `undefined` rather than
+ * escaping as a thrown error, and a caller decides what an unidentifiable plan
+ * means.
  *
  * @example
  * ```ts
- * const plan = blueprintToPlan(blueprint('router', { src: ['core'] }))
- * plan.artifacts.length // every file the package needs
+ * import type { Plan } from '@orkestrel/scaffold'
+ * import { planToHash } from '@orkestrel/scaffold'
+ *
+ * declare const plan: Plan
+ *
+ * planToHash(plan)?.length // 16
  * ```
  */
-export function blueprintToPlan(blueprint: Blueprint, groups?: readonly Group[]): Plan {
-	const selected = groups && groups.length > 0 ? groups : GROUPS
-	const pascal = pascalCase(blueprint.name)
-	const members = blueprintToMembers(blueprint)
-	const artifacts: Artifact[] = []
+export function planToHash(plan: Plan): string | undefined {
+	const outcome = attempt(() =>
+		canonicalStringify({
+			blueprint: plan.blueprint,
+			groups: plan.groups,
+			artifacts: plan.artifacts,
+		}),
+	)
+	if (!outcome.success || outcome.value === undefined) return undefined
+	return computeHash(outcome.value)
+}
 
-	if (selected.includes('manifest')) {
-		artifacts.push({
-			path: 'package.json',
-			group: 'manifest',
-			origin: 'computed',
-			content: packageManifest(blueprint),
-		})
+/**
+ * Project one planned artifact and the bytes found at its path into a verdict.
+ *
+ * @param artifact - The planned artifact.
+ * @param observed - The destination's exact bytes as hexadecimal; absent when
+ * the destination holds no file.
+ * @returns The finding, carrying `observed` exactly where bytes were read.
+ *
+ * @remarks
+ * The comparison itself is {@link inferDrift}'s, so ownership decides it here
+ * exactly as it does everywhere else. This adds only the shape: a missing
+ * destination has no bytes to record, and every other verdict records the bytes
+ * it was given, which is the precondition the mutation that follows is held to.
+ *
+ * `foreign` is not answerable here, because it describes a path no artifact was
+ * planned for.
+ *
+ * @example
+ * ```ts
+ * import { artifactToFinding } from '@orkestrel/scaffold'
+ *
+ * artifactToFinding(
+ * 	{ path: 'README.md', group: 'docs', ownership: 'content', origin: 'computed', content: 'hi\n' },
+ * 	'6279650a',
+ * ) // { path: 'README.md', group: 'docs', drift: 'stale', observed: '6279650a' }
+ * ```
+ */
+export function artifactToFinding(artifact: Artifact, observed?: string): Finding {
+	const path = artifact.path
+	const group = artifact.group
+	if (observed === undefined) {
+		return inferDrift(artifact) === 'aligned'
+			? { path, group, drift: 'aligned' }
+			: { path, group, drift: 'missing' }
 	}
-	if (selected.includes('configs')) artifacts.push(...configArtifacts(blueprint))
-	if (selected.includes('source')) {
-		artifacts.push(...sourceArtifacts(blueprint, pascal), ...applicationArtifacts(blueprint))
-	}
-	if (selected.includes('tests')) artifacts.push(...testArtifacts(blueprint, pascal))
-	if (selected.includes('guides')) artifacts.push(...guideArtifacts(blueprint, pascal, members))
-	if (selected.includes('docs')) {
-		artifacts.push(
-			fillArtifact('README.md', 'docs', 'readme', {
-				name: blueprint.name,
-				title: blueprint.src.length > 0 ? `@orkestrel/${blueprint.name}` : blueprint.name,
-				description:
-					blueprint.description ??
-					(blueprint.src.length > 0
-						? `The @orkestrel/${blueprint.name} package.`
-						: `The ${blueprint.name} application.`),
-				install:
-					blueprint.src.length > 0
-						? `## Install
+	return inferDrift(artifact, observed) === 'stale'
+		? { path, group, drift: 'stale', observed }
+		: { path, group, drift: 'aligned', observed }
+}
 
-\`\`\`sh
-npm install @orkestrel/${blueprint.name}
-\`\`\``
-						: 'This is a private application workspace and is not published to npm.',
-				usage: guideUsage(blueprint, pascal),
-			}),
-		)
+/**
+ * Compare a plan against a target's current content.
+ *
+ * @param plan - The compiled plan.
+ * @param current - The target's exact bytes, keyed by artifact-relative path.
+ * @returns One finding per planned artifact in plan order, then one `foreign`
+ * finding per unplanned path in snapshot order.
+ *
+ * @remarks
+ * The sweep is bounded by the plan's own selection: a path the plan does not own
+ * is reported as foreign only when its group is one the plan covers, so a
+ * compile narrowed to a few groups never reports the rest of the workspace as
+ * unowned. Within a covered group the report is deliberately wide, because
+ * `foreign` is the set the destructive verb draws from and the narrowing that
+ * set needs — the paths no verb may remove, and what git tracks — belongs to
+ * that verb rather than to the comparison.
+ *
+ * @example
+ * ```ts
+ * import type { Plan } from '@orkestrel/scaffold'
+ * import { planToFindings } from '@orkestrel/scaffold'
+ *
+ * declare const plan: Plan
+ *
+ * planToFindings(plan, { 'AGENTS.md': '68690a' })
+ * ```
+ */
+export function planToFindings(plan: Plan, current: Snapshot): readonly Finding[] {
+	const findings: Finding[] = []
+	const planned = new Set<string>()
+	for (const artifact of plan.artifacts) {
+		planned.add(artifact.path)
+		findings.push(artifactToFinding(artifact, current[artifact.path]))
 	}
-	if (selected.includes('orchestration')) {
-		artifacts.push({
-			path: '.github/workflows/ci.yml',
-			group: 'orchestration',
-			origin: 'computed',
-			content: ciWorkflow(blueprint),
-		})
-		if (blueprint.services.length > 0) {
-			artifacts.push(fillArtifact(SERVICE_SCRIPT_PATH, 'orchestration', 'serviceProvisioner', {}))
+	for (const [path, observed] of Object.entries(current)) {
+		if (planned.has(path)) continue
+		const group = inferGroup(path)
+		if (!plan.groups.includes(group)) continue
+		findings.push({ path, group, drift: 'foreign', observed })
+	}
+	return findings
+}
+
+/**
+ * Measure one declared package list against the name and range syntax it accepts.
+ *
+ * @param dependencies - The declared list.
+ * @param field - The blueprint field the list came from, reported on each question.
+ * @param name - The package-name syntax the field accepts.
+ * @param range - The range syntax the field accepts.
+ * @returns One blocking question per rejected name, repeated name, and rejected
+ * range, in list order.
+ *
+ * @remarks
+ * The three declared lists differ only in the two syntaxes they accept, so the
+ * rules live here once and each caller supplies its own patterns. A runtime
+ * dependency name reaches a path through its guide mirror and is fixed to the
+ * `@orkestrel` scope; a development extra never reaches a path and admits any
+ * valid npm name.
+ *
+ * Both patterns must be stateless. A global or sticky pattern carries a
+ * `lastIndex` between calls, so it would answer differently for the same input
+ * depending on what was tested before it.
+ *
+ * @example
+ * ```ts
+ * import { DEPENDENCY_NAME_PATTERN, ORKESTREL_RANGE_PATTERN } from '@orkestrel/scaffold'
+ * import { dependenciesToQuestions } from '@orkestrel/scaffold'
+ *
+ * dependenciesToQuestions(
+ * 	[{ name: '@orkestrel/router', range: '0.0.8' }],
+ * 	'dependencies',
+ * 	DEPENDENCY_NAME_PATTERN,
+ * 	ORKESTREL_RANGE_PATTERN,
+ * ).length // 1 — the range is not caret-pinned
+ * ```
+ */
+export function dependenciesToQuestions(
+	dependencies: readonly Dependency[],
+	field: string,
+	name: RegExp,
+	range: RegExp,
+): readonly Question[] {
+	const questions: Question[] = []
+	const seen = new Set<string>()
+	for (const dependency of dependencies) {
+		if (!name.test(dependency.name)) {
+			questions.push({
+				field,
+				message: `${dependency.name} is not a package name ${field} accepts.`,
+				blocking: true,
+			})
+		} else if (seen.has(dependency.name)) {
+			questions.push({
+				field,
+				message: `${dependency.name} is declared more than once on ${field}.`,
+				blocking: true,
+			})
+		}
+		seen.add(dependency.name)
+		if (!range.test(dependency.range)) {
+			questions.push({
+				field,
+				message: `${dependency.name} declares the range ${dependency.range}, which ${field} does not accept.`,
+				blocking: true,
+			})
 		}
 	}
+	return questions
+}
 
-	for (const path of selectHostPaths(HOST_PATHS, blueprint.name)) {
-		const group = hostGroup(path)
-		if (!selected.includes(group)) continue
-		artifacts.push({ path, group, origin: 'host', source: path })
+/**
+ * Measure a blueprint against every law its own fields decide.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns One blocking question per rejected field, in blueprint field order,
+ * with the rules that span several fields last.
+ *
+ * @remarks
+ * Only the laws a blueprint answers alone are here. The structural record and
+ * its bounds are already settled by `isBlueprint`, which refuses a value that is
+ * not a blueprint at all; what remains is the syntax of a name, a version, a
+ * range, and an engines floor, the combinations the two environment axes admit,
+ * and the overlaps between the three declared package lists. The laws that need
+ * a drafted plan belong to {@link artifactsToQuestions} and
+ * {@link overridesToQuestions}.
+ *
+ * Every question is blocking, because each one describes a workspace this
+ * package cannot generate rather than one it can generate imperfectly. An
+ * environment question carries `ENVIRONMENTS` as its candidates, so a caller
+ * reads the accepted values from the refusal instead of from the documentation.
+ *
+ * @example
+ * ```ts
+ * import type { Blueprint } from '@orkestrel/scaffold'
+ * import { blueprintToQuestions } from '@orkestrel/scaffold'
+ *
+ * declare const blueprint: Blueprint
+ *
+ * blueprintToQuestions(blueprint).length === 0 // true when the gate passes
+ * ```
+ */
+export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] {
+	const questions: Question[] = []
+	if (!NAME_PATTERN.test(blueprint.name)) {
+		questions.push({
+			field: 'name',
+			message: `${blueprint.name} is not a lowercase alphanumeric name starting with a letter.`,
+			blocking: true,
+		})
 	}
+	if (!VERSION_PATTERN.test(blueprint.version)) {
+		questions.push({
+			field: 'version',
+			message: `${blueprint.version} is not an exact three-component version.`,
+			blocking: true,
+		})
+	}
+	if (!matchesEngines(blueprint.engines)) {
+		questions.push({
+			field: 'engines',
+			message: `${blueprint.engines} is not a supported minimum-Node floor.`,
+			blocking: true,
+		})
+	}
+	if (blueprint.src.length === 0 && blueprint.app.length === 0) {
+		questions.push({
+			field: 'src',
+			message: 'A workspace declares at least one environment on src or app.',
+			blocking: true,
+			candidates: ENVIRONMENTS,
+		})
+	}
+	for (const environment of ENVIRONMENTS) {
+		if (blueprint.src.filter((declared) => declared === environment).length > 1) {
+			questions.push({
+				field: 'src',
+				message: `src declares ${environment} more than once.`,
+				blocking: true,
+				candidates: ENVIRONMENTS,
+			})
+		}
+		if (blueprint.app.filter((declared) => declared === environment).length > 1) {
+			questions.push({
+				field: 'app',
+				message: `app declares ${environment} more than once.`,
+				blocking: true,
+				candidates: ENVIRONMENTS,
+			})
+		}
+	}
+	if (blueprint.showcase && !blueprint.app.includes('browser')) {
+		questions.push({
+			field: 'showcase',
+			message: 'A showcase projects the browser application, which app does not declare.',
+			blocking: true,
+			candidates: ENVIRONMENTS,
+		})
+	}
+	const services = new Set<string>()
+	for (const service of blueprint.services) {
+		if (!NAME_PATTERN.test(service)) {
+			questions.push({
+				field: 'services',
+				message: `${service} is not a lowercase alphanumeric service name starting with a letter.`,
+				blocking: true,
+			})
+		} else if (services.has(service)) {
+			questions.push({
+				field: 'services',
+				message: `${service} is declared more than once on services.`,
+				blocking: true,
+			})
+		}
+		services.add(service)
+	}
+	questions.push(
+		...dependenciesToQuestions(
+			blueprint.dependencies,
+			'dependencies',
+			DEPENDENCY_NAME_PATTERN,
+			ORKESTREL_RANGE_PATTERN,
+		),
+		...dependenciesToQuestions(
+			blueprint.peers,
+			'peers',
+			DEPENDENCY_NAME_PATTERN,
+			ORKESTREL_RANGE_PATTERN,
+		),
+		...dependenciesToQuestions(blueprint.extras, 'extras', EXTRA_NAME_PATTERN, EXTRA_RANGE_PATTERN),
+	)
+	const lists: ReadonlyArray<readonly [field: string, list: readonly Dependency[]]> = [
+		['dependencies', blueprint.dependencies],
+		['peers', blueprint.peers],
+		['extras', blueprint.extras],
+	]
+	const declared = new Map<string, string>()
+	const own = `@orkestrel/${blueprint.name}`
+	for (const [field, list] of lists) {
+		for (const dependency of list) {
+			if (dependency.name === own || dependency.name === blueprint.name) {
+				questions.push({
+					field,
+					message: `${dependency.name} is the workspace itself.`,
+					blocking: true,
+				})
+			}
+			const first = declared.get(dependency.name)
+			if (first === undefined) declared.set(dependency.name, field)
+			else if (first !== field) {
+				questions.push({
+					field,
+					message: `${dependency.name} is declared on both ${first} and ${field}.`,
+					blocking: true,
+				})
+			}
+		}
+	}
+	for (const extra of blueprint.extras) {
+		if (Object.hasOwn(BASE_DEV_DEPENDENCIES, extra.name)) {
+			questions.push({
+				field: 'extras',
+				message: `${extra.name} is pinned by the shared toolchain, which every workspace carries at one version.`,
+				blocking: true,
+			})
+		}
+	}
+	return questions
+}
 
-	const draft: Plan = {
-		blueprint,
-		groups: [...selected],
-		artifacts: applyOverrides(artifacts, blueprint.overrides),
+/**
+ * Measure a drafted artifact list against the laws a whole plan decides.
+ *
+ * @param artifacts - The drafted artifacts.
+ * @returns One blocking question per colliding path and per exceeded ceiling.
+ *
+ * @remarks
+ * Two artifacts claiming one path is a compilation defect rather than a caller's
+ * mistake: whichever is written last silently wins, so the plan is refused
+ * instead. The ceilings are the ones the plan has to survive being read back
+ * through — one artifact's bytes, the count of artifacts one collection admits,
+ * and the bytes retained across a whole plan — so a plan that would fail its own
+ * guard is refused while the failure can still name the artifact that caused it.
+ *
+ * A host artifact planned before its bytes are read contributes nothing to the
+ * budget, because it claims no bytes to retain.
+ *
+ * @example
+ * ```ts
+ * import type { Artifact } from '@orkestrel/scaffold'
+ * import { artifactsToQuestions } from '@orkestrel/scaffold'
+ *
+ * declare const artifacts: readonly Artifact[]
+ *
+ * artifactsToQuestions(artifacts).length === 0 // true when the draft is sound
+ * ```
+ */
+export function artifactsToQuestions(artifacts: readonly Artifact[]): readonly Question[] {
+	const questions: Question[] = []
+	const claimed = new Set<string>()
+	let total = 0
+	for (const artifact of artifacts) {
+		if (claimed.has(artifact.path)) {
+			questions.push({
+				field: 'artifacts',
+				message: `Two artifacts claim ${artifact.path}.`,
+				blocking: true,
+			})
+		}
+		claimed.add(artifact.path)
+		const bytes =
+			artifact.origin === 'host'
+				? artifact.hex === undefined
+					? 0
+					: artifact.hex.length / 2
+				: computeBytes(artifact.content)
+		if (bytes > MAX_ARTIFACT_BYTES) {
+			questions.push({
+				field: 'artifacts',
+				message: `${artifact.path} carries ${bytes} bytes, above the ${MAX_ARTIFACT_BYTES} one artifact admits.`,
+				blocking: true,
+			})
+		}
+		total += bytes
 	}
-	return pinPlan(draft)
+	if (artifacts.length > MAX_COLLECTION_ITEMS) {
+		questions.push({
+			field: 'artifacts',
+			message: `A plan of ${artifacts.length} artifacts is above the ${MAX_COLLECTION_ITEMS} one collection admits.`,
+			blocking: true,
+		})
+	}
+	if (total > MAX_TOTAL_ARTIFACT_BYTES) {
+		questions.push({
+			field: 'artifacts',
+			message: `A plan of ${total} bytes is above the ${MAX_TOTAL_ARTIFACT_BYTES} one plan retains.`,
+			blocking: true,
+		})
+	}
+	return questions
+}
+
+/**
+ * Measure a blueprint's overrides against the artifacts drafted for it.
+ *
+ * @param overrides - The blueprint's overrides.
+ * @param artifacts - The drafted artifacts, before overrides are applied.
+ * @returns One blocking question per override the draft cannot accept.
+ *
+ * @remarks
+ * An override that matches no planned artifact is a caller expecting a file that
+ * does not exist, and applying nothing would leave that expectation
+ * unanswered. An override on a host-origin artifact asks this package to
+ * rewrite a file it byte-copies from the vendored data root, which it never
+ * does. An override on the manifest asks it to rewrite the one artifact the
+ * blueprint's own fields decide, so the fields would no longer describe the
+ * workspace they generated. Each is refused rather than dropped.
+ *
+ * @example
+ * ```ts
+ * import type { Artifact } from '@orkestrel/scaffold'
+ * import { overridesToQuestions } from '@orkestrel/scaffold'
+ *
+ * declare const artifacts: readonly Artifact[]
+ *
+ * overridesToQuestions([{ path: 'package.json', content: '{}\n' }], artifacts).length // 1
+ * ```
+ */
+export function overridesToQuestions(
+	overrides: readonly Override[],
+	artifacts: readonly Artifact[],
+): readonly Question[] {
+	const questions: Question[] = []
+	const planned = new Map<string, Artifact>()
+	for (const artifact of artifacts) {
+		if (!planned.has(artifact.path)) planned.set(artifact.path, artifact)
+	}
+	const seen = new Set<string>()
+	for (const override of overrides) {
+		if (seen.has(override.path)) {
+			questions.push({
+				field: 'overrides',
+				message: `${override.path} is overridden more than once.`,
+				blocking: true,
+			})
+		}
+		seen.add(override.path)
+		const artifact = planned.get(override.path)
+		if (artifact === undefined) {
+			questions.push({
+				field: 'overrides',
+				message: `${override.path} is not a path this plan carries.`,
+				blocking: true,
+			})
+			continue
+		}
+		if (artifact.origin === 'host') {
+			questions.push({
+				field: 'overrides',
+				message: `${override.path} is byte-copied from the vendored data root.`,
+				blocking: true,
+			})
+			continue
+		}
+		if (artifact.group === 'manifest') {
+			questions.push({
+				field: 'overrides',
+				message: `${override.path} is the manifest, which the blueprint's own fields decide.`,
+				blocking: true,
+			})
+		}
+	}
+	return questions
 }

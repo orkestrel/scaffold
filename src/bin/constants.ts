@@ -1,221 +1,168 @@
-import type { Drift, Origin } from '@src/core'
-import type { CheckboxChoice } from '@orkestrel/terminal'
+import type { ParseArgsOptionsConfig } from 'node:util'
 import type { Verb } from './types.js'
 
-/** The command-line interface's closed command vocabulary. */
-export const KNOWN_VERBS: readonly Verb[] = Object.freeze([
+/**
+ * The name the executable installs as.
+ *
+ * @remarks
+ * `package.json`'s `bin` field is the authority for what the command is called;
+ * this is the same word, so every usage line the executable prints is a command
+ * a reader can paste back.
+ */
+export const EXECUTABLE_NAME = 'scaffold'
+
+/**
+ * The five {@link Verb} values in usage order, frozen.
+ *
+ * @remarks
+ * The order the type declares them in, which is also the order usage lists them:
+ * the verb that creates a workspace, then the one that only reads it, then the
+ * three that write to one that already exists, widest last.
+ */
+export const VERBS: readonly Verb[] = Object.freeze([
 	'new',
-	'pull',
-	'mirror',
 	'audit',
 	'repair',
-	'fleet',
 	'catalog',
+	'overwrite',
 ])
 
-/** Internal artifact origins translated into user-facing labels. */
-export const ORIGIN_LABEL: Readonly<Record<Origin, string>> = Object.freeze({
-	host: 'host-owned',
-	template: 'starter',
-	computed: 'generated',
+/** The exit code reporting that the target matched its plan and every step completed. */
+export const EXIT_CLEAN = 0
+
+/** The exit code reporting that the target drifted, or that a step failed. */
+export const EXIT_DRIFT = 1
+
+/** The exit code reporting that the command line was not a command. */
+export const EXIT_USAGE = 2
+
+/**
+ * What each exit code means, frozen.
+ *
+ * @remarks
+ * Keyed by the three code constants rather than by literals, so the usage block
+ * cannot document a code the executable does not return.
+ */
+export const EXIT_SUMMARY: Readonly<Record<number, string>> = Object.freeze({
+	[EXIT_CLEAN]: 'clean',
+	[EXIT_DRIFT]: 'drift or failure',
+	[EXIT_USAGE]: 'usage error',
 })
 
-/** Internal drift states translated into user-facing labels. */
-export const DRIFT_LABEL: Readonly<Record<Drift, string>> = Object.freeze({
-	aligned: 'unchanged',
-	stale: 'drifted',
-	missing: 'missing',
-	foreign: 'unexpected file',
+/**
+ * The machine-readable code a malformed command line reports.
+ *
+ * @remarks
+ * The executable contributes its own codes to the failure envelope, which is why
+ * that envelope's `code` is a plain string rather than a `ScaffoldErrorCode`: a
+ * command line that never became a command failed before any coded package
+ * operation could.
+ */
+export const USAGE_CODE = 'USAGE'
+
+/** The machine-readable code a failure carrying no code of its own reports. */
+export const FAILED_CODE = 'FAILED'
+
+/** What the failure envelope says when the raised value carried no message. */
+export const FAILED_MESSAGE = 'The command failed for an unrecognized reason'
+
+/**
+ * The positional argument `new` alone takes, as usage writes it.
+ *
+ * @remarks
+ * The workspace name is the only positional argument any verb takes, so it is
+ * one value rather than a per-verb table with four holes in it.
+ */
+export const NAME_ARGUMENT = '<name>'
+
+/**
+ * Every option the executable accepts, as `node:util` parses them, frozen.
+ *
+ * @remarks
+ * One table for every verb rather than one per verb, because the verb an option
+ * belongs to is a domain fact the command union already fixes: parsing decides
+ * only whether the word is an option at all, and {@link VERB_OPTIONS} decides
+ * whether this verb takes it. No option declares a default, so the parsed keys
+ * are exactly the options the caller supplied, which is what makes an option
+ * offered to the wrong verb visible rather than silently absorbed. `from`
+ * collects repeats because `catalog` may draw on more than one local source; a
+ * verb that takes it once refuses the second.
+ */
+export const COMMAND_OPTIONS: ParseArgsOptionsConfig = Object.freeze({
+	src: Object.freeze({ type: 'string' }),
+	app: Object.freeze({ type: 'string' }),
+	deps: Object.freeze({ type: 'string' }),
+	groups: Object.freeze({ type: 'string' }),
+	all: Object.freeze({ type: 'boolean' }),
+	dirty: Object.freeze({ type: 'boolean' }),
+	from: Object.freeze({ type: 'string', multiple: true }),
+	target: Object.freeze({ type: 'string' }),
+	json: Object.freeze({ type: 'boolean' }),
 })
 
-/** Dependency freshness states translated into user-facing labels. */
-export const FRESHNESS_LABEL: Readonly<Record<string, string>> = Object.freeze({
-	current: 'unchanged',
-	behind: 'behind',
-	missing: 'missing upstream',
-	failed: 'fetch failed',
+/**
+ * What each option does, keyed by the token usage prints, frozen.
+ *
+ * @remarks
+ * The key order is the glossary order. A key is the whole displayed token,
+ * value placeholder included, because that token is what a reader copies and
+ * what {@link VERB_OPTIONS} lists.
+ */
+export const OPTION_SUMMARY: Readonly<Record<string, string>> = Object.freeze({
+	'--src <list>': 'the published library environments to build: core, browser, server',
+	'--app <list>': 'the private application environments to build: core, browser, server',
+	'--deps <list>': 'the @orkestrel/* packages the workspace depends on',
+	'--groups <list>': 'the artifact groups to cover; every group when absent',
+	'--all': 'fetch a guide for every package the organization publishes, not just the declared ones',
+	'--dirty': 'delete from a tree carrying uncommitted changes',
+	'--from <path>':
+		'read the data root from a local path instead of the bundled one; catalog alone accepts it more than once',
+	'--target <path>': 'the directory the verb operates on; the working directory when absent',
+	'--json': 'emit one machine-readable value instead of a report',
 })
 
-/** Materializer actions translated into user-facing labels. */
-export const ACTION_LABEL: Readonly<Record<string, string>> = Object.freeze({
-	written: 'wrote',
-	copied: 'wrote',
-	skipped: 'unchanged',
-	removed: 'removed',
+/**
+ * The options each verb takes, in usage order, frozen.
+ *
+ * @remarks
+ * The executable's half of the frozen command union: every option a branch
+ * declares is listed against its verb, and every option a branch excludes is
+ * absent from it. An option a verb does not list is refused by name rather than
+ * parsed and ignored.
+ */
+export const VERB_OPTIONS: Readonly<Record<Verb, readonly string[]>> = Object.freeze({
+	new: Object.freeze([
+		'--src <list>',
+		'--app <list>',
+		'--deps <list>',
+		'--from <path>',
+		'--target <path>',
+		'--json',
+	]),
+	audit: Object.freeze(['--groups <list>', '--from <path>', '--target <path>', '--json']),
+	repair: Object.freeze(['--groups <list>', '--from <path>', '--target <path>', '--json']),
+	catalog: Object.freeze(['--all', '--from <path>', '--target <path>', '--json']),
+	overwrite: Object.freeze([
+		'--groups <list>',
+		'--dirty',
+		'--from <path>',
+		'--target <path>',
+		'--json',
+	]),
 })
 
-/** The deliberately limited ownership boundary every write verb repairs within. */
-export const REPAIR_SCOPE =
-	'shared host-owned artifacts and absent service seams — missing files are restored; drifted files change only with --replace, which discards local changes; present starter and generated files are never touched'
-
-/** The opt-in generated-canon ownership boundary `--generated` widens that write to. */
-export const REPAIR_GENERATED_SCOPE =
-	'shared host-owned and generated artifacts plus service manifest scripts — missing files are restored; drifted files change only with --replace, which discards local changes; present starter files and package publication metadata are never touched'
-
-/** The dry-run note for `new`. */
-export const NEW_DRY_RUN_NOTE = 'dry run — pass --apply to write'
-
-/** The fallback message for a malformed command line without an error message. */
-export const INVALID_ARGUMENTS_MESSAGE = 'invalid arguments'
-
-/** Shared prompt-cancellation message. */
-export const CANCELLED_MESSAGE = 'cancelled — nothing written'
-
-/** Terminal choices for a new workspace's src and app environments. */
-export const ENVIRONMENT_CHOICES: readonly CheckboxChoice[] = Object.freeze([
-	{ name: 'core', value: 'core', description: 'the pure engine' },
-	{ name: 'browser', value: 'browser', description: 'DOM-facing environment' },
-	{ name: 'server', value: 'server', description: 'node-facing environment' },
-])
-
-/** The safety model included in full help. */
-export const SAFETY_BANNER = [
-	'safety: every verb is a dry run by default.',
-	'on a terminal, a write prompts for confirmation; in a script, pass --apply (and --yes to skip the confirm).',
-	'every write is confined to the current working directory — cd there first.',
-	'when Node exposes system-CA controls, TLS adds the OS certificate store; earlier supported Node 22 releases use default roots. NODE_EXTRA_CA_CERTS adds custom PEMs.',
-].join('\n')
-
-/** Stable command exit-code meanings. */
-export const EXIT_CODES: readonly (readonly [string, string])[] = Object.freeze([
-	['0', 'clean / success'],
-	['1', 'drift or failure'],
-	['2', 'usage error'],
-])
-
-/** One-line command summaries. */
+/**
+ * What each verb does, in one line, frozen.
+ *
+ * @remarks
+ * Each line names what the verb writes, because authority is the verb's: a
+ * reader deciding which one to run is deciding what they are authorizing.
+ */
 export const VERB_SUMMARY: Readonly<Record<Verb, string>> = Object.freeze({
-	new: 'scaffold a workspace into ./<name>',
-	pull: 'refresh vendored guides/versions, report drift',
-	mirror: 'refresh every published Orkestrel package guide',
-	audit: 'whole-plan conformance report',
-	repair: 'restore missing host-owned files; replace drifted bytes only with --replace',
-	fleet: "audit/repair every workspace under the cwd's immediate children",
-	catalog: 'regenerate the fleet package-catalog table',
+	new: 'scaffold a workspace',
+	audit: 'report how the target compares to its plan, writing nothing',
+	repair: 'write each planned path the target is missing or has let drift',
+	catalog: 'regenerate the package table and refresh the guide mirrors',
+	overwrite:
+		'do everything repair and catalog do, then delete what the plan does not own and re-declare the dependency ranges',
 })
-
-/** Compact command flag references. */
-export const VERB_FLAGS: Readonly<Record<Verb, string>> = Object.freeze({
-	new: '--src a,b --app a,b --deps x,y --apply --yes --target <path> --from <path>',
-	pull: '--target . --deps x,y --apply --yes --strict',
-	mirror: '--target . --apply --yes --strict',
-	audit: '--target . --live --generated --replace --from <path> --groups a,b',
-	repair: '--target . --generated --replace --apply --yes --prune --from <path>',
-	fleet: '--generated --replace --apply --yes --prune --from <path>',
-	catalog: '--from <path> ... --target <repo> --offline --apply --yes',
-})
-
-/** Plain-language command flag descriptions. */
-export const VERB_FLAG_HELP: Readonly<Record<Verb, readonly (readonly [string, string])[]>> =
-	Object.freeze({
-		new: [
-			['--src a,b', 'which src environments to include (core, browser, server)'],
-			['--app a,b', 'which app environments to include (core, browser, server)'],
-			['--deps x,y', '@orkestrel/* dependencies to add (installed as dependencies)'],
-			['--apply', 'write the files (default is a dry run)'],
-			['--yes', 'skip the confirmation question'],
-			['--target <path>', 'destination directory (default: ./<name>)'],
-			['--from <path>', 'read the template from a local path instead of the bundled one'],
-		],
-		pull: [
-			['--target .', 'directory to refresh (default: current directory)'],
-			['--deps x,y', 'limit the refresh to these dependencies'],
-			['--apply', 'write the refreshed files (default is a dry run)'],
-			['--yes', 'skip the confirmation question'],
-			['--strict', 'fail (exit 1) on any drift, even non-fatal'],
-		],
-		mirror: [
-			['--target .', 'directory whose guide mirror is refreshed (default: current directory)'],
-			['--apply', 'write the refreshed guides (default is a dry run)'],
-			['--yes', 'skip the confirmation question'],
-			['--strict', 'fail immediately when an upstream guide cannot be fetched'],
-		],
-		audit: [
-			['--target .', 'directory to audit (default: current directory)'],
-			['--live', 'also check upstream freshness over the network'],
-			['--generated', 'widen an accepted repair hand-off to generated files'],
-			['--replace', 'let the repair hand-off discard local changes in the drifted files it names'],
-			['--from <path>', 'read the template from a local path instead of the bundled one'],
-			['--groups a,b', 'limit the audit to these artifact groups'],
-		],
-		repair: [
-			['--target .', 'directory to repair (default: current directory)'],
-			['--generated', 'widen the scope to generated files, except package.json'],
-			['--replace', 'discard local changes in the drifted files named by the repair report'],
-			['--apply', 'write the fixes (default is a dry run)'],
-			['--yes', 'skip the confirmation question'],
-			['--prune', 'also DELETE unexpected files under .claude/agents, .codex/agents, and scripts'],
-			['--from <path>', 'read the template from a local path instead of the bundled one'],
-		],
-		fleet: [
-			['--generated', 'widen the scope to generated files in every package, except package.json'],
-			['--replace', 'discard local changes in the drifted files named in each package'],
-			['--apply', 'write fixes across every package (default is a dry run)'],
-			['--yes', 'skip the confirmation question'],
-			[
-				'--prune',
-				'also DELETE unexpected files under .claude/agents, .codex/agents, and scripts, per package',
-			],
-			['--from <path>', 'read the template from a local path instead of the bundled one'],
-		],
-		catalog: [
-			['--from <path> ...', 'one or more local package paths to include'],
-			['--target <repo>', 'the repository whose Orkestrel agent catalog table gets updated'],
-			['--offline', 'skip network lookups (npm registry) for package descriptions'],
-			['--apply', 'write the updated table (default is a dry run)'],
-			['--yes', 'skip the confirmation question'],
-		],
-	})
-
-/** Dry-run and confirmation notes per command. */
-export const VERB_DRY_RUN_NOTE: Readonly<Record<Verb, string>> = Object.freeze({
-	new: 'dry run by default — add --apply to write the files, --yes to skip the question',
-	pull: 'dry run by default — add --apply to write the refreshed files, --yes to skip the question',
-	mirror:
-		'dry run by default — add --apply to write every published package guide, --yes to skip the question',
-	audit: 'read-only — audit never writes; pass --live to also check upstream freshness',
-	repair: 'dry run by default — add --apply to write, --yes to skip the question',
-	fleet:
-		'dry run by default — add --apply to write across every package, --yes to skip the question',
-	catalog: 'dry run by default — add --apply to write, --yes to skip the question',
-})
-
-/** One concrete invocation per command. */
-export const VERB_EXAMPLE: Readonly<Record<Verb, string>> = Object.freeze({
-	new: 'example: scaffold new widget --src core,server --app core,browser --apply',
-	pull: 'example: scaffold pull --apply',
-	mirror: 'example: scaffold mirror --apply --yes',
-	audit: 'example: scaffold audit --live',
-	repair: 'example: scaffold repair --apply',
-	fleet: 'example: scaffold fleet --apply --yes',
-	catalog: 'example: scaffold catalog --apply',
-})
-
-/** Message used when a prune scan has no candidates. */
-export const PRUNE_EMPTY = 'no unexpected files to delete'
-
-/** Guidance for unexpected files outside a non-pruning repair handoff. */
-export const FOREIGN_HINT =
-	"unexpected files are never deleted by default — run 'scaffold repair --prune --apply' to delete them; a file you added yourself is unexpected too, so check the paths above first"
-
-/** Interactive dependency prompt. */
-export const ORKESTREL_DEPS_PROMPT =
-	'@orkestrel dependencies (comma-separated short names, e.g. contract, emitter — installed as dependencies)'
-
-/** Catalog-degraded validation note. */
-export const CATALOG_UNRESOLVED_NOTE =
-	"couldn't resolve the vendored @orkestrel catalog — validating names by shape only"
-
-/** Opening marker for the generated package catalog block. */
-export const CATALOG_START_MARKER = '<!-- catalog:start -->'
-
-/** Closing marker for the generated package catalog block. */
-export const CATALOG_END_MARKER = '<!-- catalog:end -->'
-
-/** Non-terminal prune safety note. */
-export const PRUNE_SKIPPED =
-	'prune skipped — pass --apply to authorize deletion; --yes only skips confirmation'
-
-/** Degraded unexpected-file scan note. */
-export const SCAN_SKIPPED =
-	"unexpected-file scanning skipped — couldn't establish the template source"
