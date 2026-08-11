@@ -163,6 +163,12 @@ export interface MaterializerInterface {
 	 * @param audit - The preview returned by this materializer's `audit` method.
 	 * @param target - The directory to write into.
 	 * @returns The paths written and skipped, each decided by its artifact's ownership.
+	 *
+	 * @remarks
+	 * The audit is checked for agreement rather than for plausibility, so a verdict
+	 * the comparison could not have produced — a birth-owned path reported stale,
+	 * which the `Finding` shape admits — disagrees with the derived one and is
+	 * refused.
 	 */
 	repair(plan: Plan, audit: Audit, target: string): MaterializeResult
 	/**

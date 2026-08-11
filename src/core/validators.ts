@@ -370,6 +370,11 @@ export const isQuestion: Guard<Question> = recordOf(
  * absent where the destination had no bytes to record, and optional where the
  * comparison may not have been made. Planned findings require `ownership`;
  * foreign findings forbid it because no artifact was planned for their path.
+ *
+ * That is the whole claim. This guard proves the shape a reader may destructure
+ * and nothing about whether the verdict is one an audit could have reached: the
+ * correlation between `ownership`, `drift`, and `observed` belongs to
+ * {@link inferDrift}, and it is re-derived at the verb that acts on the finding.
  */
 export const isFinding: Guard<Finding> = unionOf(
 	recordOf({

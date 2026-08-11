@@ -10,6 +10,7 @@ import type {
 	HostArtifact,
 	HydratedArtifact,
 	Mirror,
+	Ownership,
 	Plan,
 	ScaffoldErrorCode,
 } from '@src/core'
@@ -238,10 +239,13 @@ export class Materializer implements MaterializerInterface {
 	 * The audit is a preview, not an instruction. The plan is hydrated and
 	 * compared against the target again here, and the verdicts that produces must
 	 * match the ones the audit carried for every path the plan owns; anything else
-	 * means the target moved, and the whole call is refused. A missing destination
-	 * is restored whatever its ownership; a stale one is replaced only where the
-	 * artifact claims its bytes, which is what leaves a presence-owned file a
-	 * consumer has edited exactly as it is.
+	 * means the target moved, and the whole call is refused. The audit is checked
+	 * for agreement rather than for plausibility, so a verdict the comparison could
+	 * not have produced — a birth-owned path reported stale, which the `Finding`
+	 * shape admits — disagrees with the derived one and is refused. A missing
+	 * destination is restored whatever its ownership; a stale one is replaced only
+	 * where the artifact claims its bytes, which is what leaves a presence-owned
+	 * file a consumer has edited exactly as it is.
 	 */
 	repair(plan: Plan, audit: Audit, target: string): MaterializeResult {
 		this.#assertAlive()
@@ -724,11 +728,31 @@ export class Materializer implements MaterializerInterface {
 				})
 			}
 			if (other.drift === finding.drift && other.observed === finding.observed) continue
+			if (!this.#reachable(finding.ownership, other)) {
+				throw this.#error(
+					'TARGET',
+					`The path ${finding.path} carries an audit verdict this plan could not produce.`,
+					{ target, path: finding.path, ownership: finding.ownership, drift: other.drift },
+				)
+			}
 			throw this.#error('TARGET', `The path ${finding.path} moved since its audit.`, {
 				target,
 				path: finding.path,
 			})
 		}
+	}
+
+	// Whether the comparison could have reached this verdict for a path scaffold
+	// owns this way. A birth-owned path is never compared, so it is always aligned
+	// and never missing; a presence-owned path compares existence, so it is never
+	// stale; and bytes are recorded exactly where they were read, so an aligned
+	// verdict carrying none describes a destination that held no file. A verdict
+	// outside that law never described this target, so it is refused as an
+	// impossible verdict rather than reported as movement.
+	#reachable(ownership: Ownership, finding: Finding): boolean {
+		if (finding.drift === 'aligned') return ownership === 'birth' || finding.observed !== undefined
+		if (finding.drift === 'missing') return ownership !== 'birth'
+		return finding.drift === 'stale' && ownership === 'content'
 	}
 
 	// Bind one destination to what this call just observed at it. The digest is

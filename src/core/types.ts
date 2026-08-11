@@ -340,6 +340,18 @@ export interface Plan {
  * artifact's {@link Ownership}, so a consumer reads what scaffold claims at the
  * path from the finding itself. A foreign finding has no planned artifact and
  * therefore no ownership.
+ *
+ * Which combinations of `ownership`, `drift`, and `observed` a real audit
+ * produces is {@link inferDrift}'s law, not this type's. A birth-owned path is
+ * never compared and is always aligned, a presence-owned path compares existence
+ * only, and bytes are recorded only where they were read. This shape therefore
+ * admits a combination that law never produces — a birth-owned path reported
+ * stale is the plainest one — and it admits it deliberately: restating the
+ * comparison's case analysis here would be a second copy of it, able to disagree
+ * with the one that decides. What closes the gap is the writer: `repair` and
+ * `remove` re-derive every verdict themselves and refuse a caller's audit that
+ * does not match, so a verdict the comparison could not have reached is refused
+ * rather than acted on.
  */
 export type Finding =
 	| {

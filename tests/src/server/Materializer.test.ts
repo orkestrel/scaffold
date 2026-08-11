@@ -2,7 +2,7 @@ import type { Audit, CatalogEntry } from '@src/core'
 import type { MaterializeResult } from '@src/server'
 import { readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { Compiler, contentToHex } from '@src/core'
+import { Compiler, contentToHex, isFinding } from '@src/core'
 import { listFiles, Materializer, readFileHex, readHostManifest, readSnapshot } from '@src/server'
 import { describe, expect, it } from 'vitest'
 import { buildBlueprint, createRecorder } from '../../setup.js'
@@ -578,6 +578,67 @@ describe('Materializer repair', () => {
 					'moved since its audit',
 				)
 				expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).toBe('# Second stale value\n')
+			} finally {
+				materializer.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('tells a verdict the plan could not produce apart from a target that moved', () => {
+		const workspace = createWorkspace()
+		try {
+			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
+			const target = join(workspace.path, 'project')
+			const materializer = new Materializer({ host })
+			try {
+				materializer.materialize(buildVendoredPlan(), target)
+				const audit = materializer.audit(buildVendoredPlan(), target)
+				const manifest = audit.findings.find((finding) => finding.path === 'package.json')
+				// `package.json` is this plan's one birth-owned path, and birth ownership is
+				// never compared, so `stale` is a verdict no audit of this plan could have
+				// reached for it. The guard admits it anyway, which is why the refusal has to
+				// tell an impossible verdict apart from a target that moved.
+				expect(manifest?.ownership).toBe('birth')
+				expect(manifest?.drift).toBe('aligned')
+				expect(manifest?.observed).not.toBe(undefined)
+				const unreachable: Audit = {
+					findings: audit.findings.map((finding) =>
+						finding.path === 'package.json' && finding.observed !== undefined
+							? {
+									path: finding.path,
+									group: finding.group,
+									ownership: 'birth',
+									drift: 'stale',
+									observed: finding.observed,
+								}
+							: finding,
+					),
+					questions: [],
+				}
+				expect(unreachable.findings.every((finding) => isFinding(finding))).toBe(true)
+				expect(
+					readErrorCode(() => materializer.repair(buildVendoredPlan(), unreachable, target)),
+				).toBe('TARGET')
+				const impossible = readErrorMessage(() =>
+					materializer.repair(buildVendoredPlan(), unreachable, target),
+				)
+				expect(impossible).toContain('could not produce')
+				expect(impossible).not.toContain('moved since its audit')
+
+				// The same code, for a verdict the comparison could have produced and no
+				// longer does. Nothing was written by either refusal.
+				writeFileSync(join(target, 'AGENTS.md'), '# Moved after the audit\n', 'utf8')
+				expect(readErrorCode(() => materializer.repair(buildVendoredPlan(), audit, target))).toBe(
+					'TARGET',
+				)
+				const moved = readErrorMessage(() =>
+					materializer.repair(buildVendoredPlan(), audit, target),
+				)
+				expect(moved).toContain('moved since its audit')
+				expect(moved).not.toContain('could not produce')
+				expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).toBe('# Moved after the audit\n')
 			} finally {
 				materializer.destroy()
 			}

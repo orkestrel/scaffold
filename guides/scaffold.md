@@ -646,6 +646,16 @@ removes a foreign file each fail when the destination no longer matches what the
 The requirement sits in the type rather than in prose, because a deletion that cannot bind to what
 the audit showed is the one thing the destructive verb must never do.
 
+The shape a `Finding` admits is wider than the set an audit produces. Which combinations of
+`ownership`, `drift`, and `observed` a real comparison reaches is `inferDrift`'s law — birth is
+always aligned, presence compares existence only, and bytes are recorded only where they were
+read — so the shape admits a birth-owned path reported stale, which no audit produces. That is
+deliberate: restating the comparison's case analysis in the type would be a second copy of it, able
+to disagree with the one that decides. `isFinding` proves the shape a reader may destructure and
+nothing about whether the verdict is one an audit could have reached. `repair` and `remove`
+re-derive every verdict themselves and act only on what they derived, so a verdict the comparison
+could not have produced is refused by name rather than acted on.
+
 ## Vendored data root
 
 The vendored data root is the shared file set, staged into the published package as plain data. It
