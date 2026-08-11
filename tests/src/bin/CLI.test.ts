@@ -309,6 +309,68 @@ describe('CLI new', () => {
 			workspace.destroy()
 		}
 	})
+
+	// The gate answers this shape with an advisory, because the verbs that read an
+	// existing workspace need the plan it used to refuse. `new` is the verb that
+	// chooses the shape, so it is the one that refuses: the manifest it would write
+	// names a core build the workspace never runs.
+	it('refuses to create a published axis of several environments without core', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			const fresh = workspace.directory('refused-shape')
+			const sink = createSink()
+			const code = await new CLI(sink.options).execute([
+				'new',
+				'widget',
+				'--src',
+				'browser,server',
+				'--from',
+				fleet.host,
+				'--target',
+				fresh,
+			])
+			expect(code).toBe(EXIT_DRIFT)
+			expect(sink.output).toStrictEqual([])
+			expect(sink.diagnostic.join('\n')).toContain('BLOCKED')
+			expect(sink.diagnostic.join('\n')).toContain('core at the package root')
+			expect(readFileHex(fresh, 'package.json')).toBeUndefined()
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	// `#derive` reconstructs `src` from the directories on disk, so a workspace
+	// publishing browser and server without core is a shape the reading verbs meet
+	// whatever `new` will create. While the gate refused it, `audit` compared
+	// nothing and `repair` could not reach the paths that needed repairing.
+	it('compares a target whose published axis lacks core', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			const lacking = workspace.directory('lacking')
+			workspace.write('lacking/package.json', TARGET_MANIFEST_TEXT)
+			workspace.directory('lacking/src/browser')
+			workspace.directory('lacking/src/server')
+			const sink = createSink()
+			const code = await new CLI(sink.options).execute([
+				'audit',
+				'--from',
+				fleet.host,
+				'--target',
+				lacking,
+				'--json',
+			])
+			expect(code).toBe(EXIT_DRIFT)
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.findings.length).toBeGreaterThan(20)
+			expect(audit.findings.some(({ drift }) => drift === 'missing')).toBe(true)
+			expect(audit.questions.every(({ blocking }) => !blocking)).toBe(true)
+			expect(audit.questions.some(({ field }) => field === 'src')).toBe(true)
+		} finally {
+			workspace.destroy()
+		}
+	})
 })
 
 describe('CLI audit', () => {

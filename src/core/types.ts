@@ -142,9 +142,11 @@ export interface Override {
  * `bin`, `integration`, `services`, `global`, and `showcase` are structural
  * facts: each is set only when the workspace physically ships the directory or
  * exact-case file that defines it, never because of the workspace's name and
- * never because a sibling fact is set. An axis-dependent fact is inert when its
- * required axis is absent: `integration` projects only a published `src`, and
- * `showcase` projects only a browser `app`.
+ * never because a sibling fact is set. An axis-dependent fact projects nothing
+ * when its required axis is absent: `integration` projects only a published
+ * `src`, and `showcase` projects only a browser `app`. The gate answers that case
+ * with a non-blocking question, so a caller that set the flag learns it emitted
+ * nothing and the compile still completes.
  */
 export interface Blueprint {
 	readonly name: string

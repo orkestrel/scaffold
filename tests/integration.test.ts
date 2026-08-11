@@ -23,7 +23,52 @@ const registry =
 		windowsHide: true,
 	}).status === 0
 
+// One shipped `@example` claim about `isFilesystemPath`: the argument it names
+// and the verdict it prints beside it. The pattern reads the built declaration,
+// which is the text a consumer's editor prints on hover, so what is measured is
+// what the package hands out rather than a comment beside the source.
+const SHIPPED_EXAMPLE = /isFilesystemPath\('(?<value>[^']*)'\) \/\/ (?<verdict>true|false)/gu
+
 describe('installed package consumer', () => {
+	it('answers every example its shipped declaration prints exactly as printed', () => {
+		const declaration = readFileSync(resolve(root, 'dist/src/server/index.d.ts'), 'utf8')
+		const examples = [...declaration.matchAll(SHIPPED_EXAMPLE)].map((match) => ({
+			value: match.groups?.value ?? '',
+			expected: match.groups?.verdict === 'true',
+		}))
+		// The instrument reads text, so it reports nothing where it matches nothing.
+		// This is its membership rule, stated before the verdict it produces.
+		expect(examples.map(({ value }) => value)).toStrictEqual([
+			'C:/Users/sample/project',
+			'../sibling',
+			'project/',
+			'project//src',
+			'project/nul',
+		])
+		const server = pathToFileURL(resolve(root, 'dist/src/server/index.js')).href
+		const source = [
+			`const server = await import(${JSON.stringify(server)})`,
+			`const examples = ${JSON.stringify(examples.map(({ value }) => value))}`,
+			'const answers = examples.map((value) => server.isFilesystemPath(value))',
+			'process.stdout.write(JSON.stringify(answers))',
+		].join('\n')
+		const driven = spawnSync(process.execPath, ['--input-type=module', '--eval', source], {
+			cwd: root,
+			encoding: 'utf8',
+			windowsHide: true,
+		})
+		expect(driven.status).toBe(0)
+		expect(JSON.parse(driven.stdout)).toStrictEqual(examples.map(({ expected }) => expected))
+		// The control is the line this package shipped before the correction. It is
+		// outside the declaration's present population, and the extraction reads a
+		// verdict from it that the run above contradicts, so a clean pass cannot be
+		// an instrument that matched nothing.
+		const control = [..."isFilesystemPath('project/') // false".matchAll(SHIPPED_EXAMPLE)]
+		expect(control).toHaveLength(1)
+		expect(control[0]?.groups?.verdict).toBe('false')
+		expect(examples.find(({ value }) => value === 'project/')?.expected).toBe(true)
+	})
+
 	it('drives the built compiler from outside the checkout without a network install', () => {
 		const workspace = mkdtempSync(join(tmpdir(), 'scaffold-e4-driver-'))
 		const target = join(workspace, 'generated')

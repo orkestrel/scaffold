@@ -102,6 +102,26 @@ describe('Compiler artifacts', () => {
 		)
 	})
 
+	// `CLI.#derive` reconstructs `src` from the directories a target ships, so a
+	// workspace publishing browser and server without core is a real shape the
+	// reading verbs meet. While the gate refused it, `audit` reported nothing about
+	// such a target and `repair` could not reach the paths that needed repairing.
+	it('describes an existing workspace whose published axis lacks core', () => {
+		const compiler = createCompiler()
+		const blueprint = createBlueprint('widget', { src: ['browser', 'server'] })
+		const scaffolding = compiler.compile(blueprint)
+		const audit = compiler.audit(blueprint, {})
+		compiler.destroy()
+
+		expect(scaffolding.questions.every(({ blocking }) => !blocking)).toBe(true)
+		expect(scaffolding.questions.map(({ field }) => field)).toStrictEqual(['src'])
+		expect(scaffolding.plan?.artifacts.length).toBeGreaterThan(20)
+		expect(audit.findings.length).toBe(scaffolding.plan?.artifacts.length)
+		expect(audit.findings.every(({ drift }) => drift === 'missing' || drift === 'aligned')).toBe(
+			true,
+		)
+	})
+
 	it('accepts an override outside a narrowed group selection', () => {
 		const compiler = createCompiler()
 		const blueprint = createBlueprint('widget', {

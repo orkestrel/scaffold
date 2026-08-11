@@ -546,9 +546,11 @@ first class. `dependencies` and `peers` are runtime `@orkestrel/*` packages; `ex
 development dependencies and may carry any valid npm name.
 
 One published environment owns the package root directly. Several published environments require
-`core`, which owns that root while each other environment keeps its subpath. The gate blocks a
-multi-environment `src` selection without `core` instead of emitting entry fields for a build the
-workspace does not run.
+`core`, which owns that root while each other environment keeps its subpath. A multi-environment
+`src` selection without `core` therefore emits entry fields naming a `core` build the workspace
+never runs. The gate reports that as a non-blocking `src` question rather than refusing the compile,
+because the shape is chosen once and read afterwards: `new` refuses the advisory, while `audit` and
+`repair` need the plan to describe and restore a target that already has that shape.
 
 `bin`, `integration`, `services`, `global`, and `showcase` are structural facts. Each is set only
 when the workspace physically ships the directory or exact-case file that defines it, never because
@@ -556,8 +558,9 @@ of the workspace's name and never because a sibling fact is set.
 
 An axis-dependent structural fact projects only when its required axis exists. `integration`
 projects a published `src`, and `showcase` projects the browser `app` environment. When that axis is
-absent, the flag is inert: it adds no artifact, configuration, script, or dependency, and it does not
-block the rest of the workspace. The same rule applies to both facts.
+absent the flag adds no artifact, configuration, script, or dependency, and the gate reports a
+non-blocking question on that field so the caller who set it learns it emitted nothing. The same
+rule applies to both facts.
 
 `createBlueprint` enforces shape only. Whether the name is a name, the version a version, and the
 axis combination one this package can generate are the gate's laws, and the gate answers them with
@@ -878,12 +881,13 @@ vendored-root locations on the host.
 configuration, and its Vitest project by hand. `.claude/rules/workspace.md` describes styles as an
 environment because the fleet has one; scaffold simply does not generate it.
 
-**No host path is normalized before it is guarded.** `isFilesystemPath` refuses an empty segment,
-and a trailing separator and a doubled separator each produce one, so `./packages/router/` and
-`packages//router` are off contract while `./packages/router` and `packages/router` are the same
-locations spelled inside it. Every server entry point and the `--target` option guard the text they
-were handed and resolve it afterwards, so a directory taken from a shell completion arrives with the
-separator the shell appended and is refused with a coded `INVALID` failure. Strip it before calling.
+**No host path is normalized before it is guarded.** `isFilesystemPath` refuses an empty segment, so
+`packages//router` is off contract. A trailing separator does not produce one: it terminates a
+directory rather than opening a segment, and every Node path API reads `./packages/router/` and
+`./packages/router` as one location, so both are admitted. Every server entry point and the
+`--target` option guard the text they were handed and resolve it afterwards, so a directory taken
+from a shell completion arrives carrying the separator the shell appended and names the directory it
+appears to name.
 
 **A generated workspace has empty barrels and no starter entity.** Every emitted `index.ts` exports
 nothing. This is deliberate: a generated sample entity is repeatedly mistaken for real

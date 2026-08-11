@@ -716,7 +716,12 @@ export function appShowcase(...options: never[]): UserConfig {
 				showcaseFactory,
 			}),
 		)
-		projects.push('appBrowser')
+		// Every other factory takes an optional override, which is the shape Vitest's
+		// own project type reads as a configuration function and calls with a
+		// `ConfigEnv`. This one refuses overrides, so it is neither: the row carries
+		// the configuration it returns instead of the factory itself, and the refusal
+		// still stands wherever a wrapper calls it.
+		projects.push('appBrowser()')
 	}
 	if (blueprint.app.includes('server')) {
 		factories.push(CONFIG_TEMPLATES.factories.app.server)
@@ -1531,8 +1536,8 @@ export function dependenciesToQuestions(
  * Measure a blueprint against every law its own fields decide.
  *
  * @param blueprint - The workspace specification.
- * @returns One blocking question per rejected field, in blueprint field order,
- * with the rules that span several fields last.
+ * @returns One question per rejected field, in blueprint field order, with the
+ * rules that span several fields last.
  *
  * @remarks
  * Only the laws a blueprint answers alone are here. The structural record and
@@ -1543,10 +1548,17 @@ export function dependenciesToQuestions(
  * a drafted plan belong to {@link artifactsToQuestions} and
  * {@link overridesToQuestions}.
  *
- * Every question is blocking, because each one describes a workspace this
- * package cannot generate rather than one it can generate imperfectly. An
- * environment question carries `ENVIRONMENTS` as its candidates, so a caller
- * reads the accepted values from the refusal instead of from the documentation.
+ * A question blocks when it describes a workspace this package cannot generate.
+ * Three do not, because each describes a workspace it can describe honestly and
+ * should not create: a published axis of several environments without core, whose
+ * manifest names a core build the workspace never runs, and a structural flag
+ * whose required axis is absent, which emits nothing. Blocking those closed the
+ * gate for every verb, and the verbs that read an existing workspace need the
+ * plan the gate refused. The caller that chooses the shape refuses the advisory;
+ * the callers that read one report it.
+ *
+ * An environment question carries `ENVIRONMENTS` as its candidates, so a caller
+ * reads the accepted values from the question instead of from the documentation.
  *
  * @example
  * ```ts
@@ -1592,8 +1604,9 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 	if (blueprint.src.length > 1 && !blueprint.src.includes('core')) {
 		questions.push({
 			field: 'src',
-			message: 'Several published environments require core at the package root.',
-			blocking: true,
+			message:
+				'Several published environments put core at the package root, so this manifest names a core build the workspace never runs. Declare core on src, or publish one environment.',
+			blocking: false,
 			candidates: ENVIRONMENTS,
 		})
 	}
@@ -1615,6 +1628,14 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 			})
 		}
 	}
+	if (blueprint.integration && blueprint.src.length === 0) {
+		questions.push({
+			field: 'integration',
+			message:
+				'integration projects a published src, and this workspace declares none, so it emits nothing.',
+			blocking: false,
+		})
+	}
 	const services = new Set<string>()
 	for (const service of blueprint.services) {
 		if (!NAME_PATTERN.test(service)) {
@@ -1631,6 +1652,14 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 			})
 		}
 		services.add(service)
+	}
+	if (blueprint.showcase && !blueprint.app.includes('browser')) {
+		questions.push({
+			field: 'showcase',
+			message:
+				'showcase projects a browser app, and this workspace declares none, so it emits nothing.',
+			blocking: false,
+		})
 	}
 	questions.push(
 		...dependenciesToQuestions(

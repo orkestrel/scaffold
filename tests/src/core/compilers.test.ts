@@ -78,31 +78,61 @@ describe('blueprintToScripts config projects', () => {
 })
 
 describe('blueprint gate laws', () => {
-	it('blocks a multi-environment published axis without core', () => {
+	// The shape is chosen once, when the workspace is created, and read by every
+	// verb afterwards. A refusal here left an existing workspace of that shape
+	// undescribable by the verbs whose whole job is to describe and repair it, so
+	// the gate advises and the creating verb refuses the advisory.
+	it('advises a multi-environment published axis without core rather than refusing it', () => {
 		const questions = blueprintToQuestions(buildBlueprint({ src: ['browser', 'server'] }))
-		expect(questions).toContainEqual({
-			field: 'src',
-			message: 'Several published environments require core at the package root.',
-			blocking: true,
-			candidates: ['core', 'browser', 'server'],
-		})
+		expect(questions).toStrictEqual([
+			{
+				field: 'src',
+				message:
+					'Several published environments put core at the package root, so this manifest names a core build the workspace never runs. Declare core on src, or publish one environment.',
+				blocking: false,
+				candidates: ['core', 'browser', 'server'],
+			},
+		])
 	})
 
-	it('drops axis-dependent structural flags when their required axes are absent', () => {
+	it('advises a structural flag whose axis is absent instead of dropping it silently', () => {
 		const integration = buildBlueprint({ src: [], app: ['server'], integration: true })
 		const showcase = buildBlueprint({ src: ['core'], app: [], showcase: true })
 
-		expect(blueprintToQuestions(integration)).toStrictEqual([])
+		expect(blueprintToQuestions(integration)).toStrictEqual([
+			{
+				field: 'integration',
+				message:
+					'integration projects a published src, and this workspace declares none, so it emits nothing.',
+				blocking: false,
+			},
+		])
 		expect(blueprintToTestArtifacts(integration).map(({ path }) => path)).not.toContain(
 			'tests/integration.test.ts',
 		)
 		expect(blueprintToScripts(integration)['test:integration']).toBeUndefined()
-		expect(blueprintToQuestions(showcase)).toStrictEqual([])
+		expect(blueprintToQuestions(showcase)).toStrictEqual([
+			{
+				field: 'showcase',
+				message:
+					'showcase projects a browser app, and this workspace declares none, so it emits nothing.',
+				blocking: false,
+			},
+		])
 		expect(blueprintToConfigArtifacts(showcase).map(({ path }) => path)).not.toContain(
 			'configs/app/vite.showcase.config.ts',
 		)
 		expect(blueprintToScripts(showcase).showcase).toBeUndefined()
 		expect(blueprintToDevDependencies(showcase)['vite-plugin-singlefile']).toBeUndefined()
+	})
+
+	it('raises no question for a structural flag whose axis is present', () => {
+		expect(
+			blueprintToQuestions(buildBlueprint({ src: ['core'], integration: true })),
+		).toStrictEqual([])
+		expect(
+			blueprintToQuestions(buildBlueprint({ app: ['browser'], showcase: true })),
+		).toStrictEqual([])
 	})
 })
 

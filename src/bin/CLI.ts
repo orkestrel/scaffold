@@ -463,18 +463,23 @@ export class CLI implements CLIInterface {
 	}
 
 	// Compile a blueprint into the plan it describes, or refuse with the questions
-	// that closed the gate.
+	// the gate raised.
+	//
+	// `new` is the only caller, and it chooses the shape rather than reading one, so
+	// it refuses every question the gate raises, advisory or not: an advisory names
+	// a workspace this package can describe honestly and should not create, and this
+	// is the last moment the caller can pick a different shape. `#survey` is the
+	// reading counterpart, and it carries the same advisories through instead.
 	#compile(blueprint: Blueprint, groups?: readonly Group[]): Plan {
 		const compiler = createCompiler()
 		try {
 			const scaffolding = compiler.compile(blueprint, groups)
-			if (scaffolding.plan !== undefined) return scaffolding.plan
+			if (scaffolding.plan !== undefined && scaffolding.questions.length === 0) {
+				return scaffolding.plan
+			}
 			throw new ScaffoldError(
 				'BLOCKED',
-				scaffolding.questions
-					.filter((question) => question.blocking)
-					.map((question) => `${question.field}: ${question.message}`)
-					.join(' '),
+				scaffolding.questions.map((question) => `${question.field}: ${question.message}`).join(' '),
 				{ questions: scaffolding.questions.length },
 			)
 		} finally {
@@ -505,7 +510,15 @@ export class CLI implements CLIInterface {
 		try {
 			const scaffolding = compiler.compile(blueprint, groups)
 			if (scaffolding.plan === undefined) return [compiler.audit(blueprint, {}, groups), undefined]
-			return [materializer.audit(scaffolding.plan, target), scaffolding.plan]
+			// The materializer answers for the target and the gate answers for the
+			// blueprint, so an advisory the gate raised rides the comparison rather
+			// than being dropped between them. It is non-blocking, so it changes no
+			// exit code and never makes an aligned target drift.
+			const measured = materializer.audit(scaffolding.plan, target)
+			return [
+				{ ...measured, questions: [...measured.questions, ...scaffolding.questions] },
+				scaffolding.plan,
+			]
 		} finally {
 			compiler.destroy()
 		}

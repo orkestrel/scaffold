@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
+import { isString } from '@orkestrel/contract'
 import { fillTemplate, isTemplateError } from '@orkestrel/template'
 import {
 	ARTIFACT_TEMPLATES,
@@ -25,6 +26,18 @@ const PRINT_WIDTH = 100
 const TAB_COLUMNS = '  '
 // The specifiers the vendored `import/no-unassigned-import` rule exempts.
 const STYLE_IMPORT = /^import\s+'[^']+\.(?:css|less|sass|scss|styl|stylus|pcss|postcss|sss)'/u
+// `@vitejs/plugin-vue` is the one specifier an emitted browser configuration names
+// that this repository does not install, because scaffold generates a Vue
+// application without being one. Declaring its shape lets the typecheck reach the
+// question asked here, which is about the project array and never about the
+// plugin; the control below is the exact defect, so a clean run cannot be a
+// typecheck that resolved nothing.
+const VUE_DECLARATION = `declare module '@vitejs/plugin-vue' {
+	import type { PluginOption } from 'vite'
+	const plugin: (...options: never[]) => PluginOption
+	export default plugin
+}
+`
 const SELECTIONS: ReadonlyArray<readonly Environment[]> = [
 	[],
 	['core'],
@@ -80,6 +93,46 @@ function measureWidth(line: string): number {
 	return line.replaceAll('\t', TAB_COLUMNS).length
 }
 
+// The emitted root configuration and the two files a typecheck of it has to
+// resolve: the vendored boundary helpers, copied from this checkout because a
+// generated workspace receives those exact bytes, and the plugin declaration
+// above. Everything else the configuration names is installed here.
+function stageRootConfig(blueprint: Blueprint, root: string): void {
+	mkdirSync(join(root, 'configs'), { recursive: true })
+	for (const artifact of blueprintToConfigArtifacts(blueprint)) {
+		if (artifact.origin === 'host') continue
+		if (artifact.path !== 'vite.config.ts' && artifact.path !== 'tsconfig.json') continue
+		writeFileSync(join(root, artifact.path), artifact.content)
+	}
+	writeFileSync(
+		join(root, 'configs/helpers.ts'),
+		readFileSync(resolve('configs/helpers.ts'), 'utf8'),
+	)
+	writeFileSync(join(root, 'vue.d.ts'), VUE_DECLARATION)
+}
+
+// The `check` script a generated workspace vendors, run over one staged
+// directory. `tsc` reports through its exit code, so its diagnostics are returned
+// either way and the caller reads the text rather than a thrown process error.
+function checkTypes(root: string): string {
+	try {
+		execFileSync(
+			process.execPath,
+			[
+				resolve('node_modules/typescript/bin/tsc'),
+				'--noEmit',
+				'--project',
+				join(root, 'tsconfig.json'),
+			],
+			{ stdio: 'pipe', encoding: 'utf8' },
+		)
+		return ''
+	} catch (error) {
+		const output = error instanceof Error && 'stdout' in error ? error.stdout : undefined
+		return isString(output) && output.length > 0 ? output : String(error)
+	}
+}
+
 // The identifiers one import clause binds, aliases resolved to the bound name.
 function extractBindings(clause: string): readonly string[] {
 	const inner = clause.replace(/^type\s+/u, '').trim()
@@ -96,13 +149,26 @@ function extractBindings(clause: string): readonly string[] {
 	return inner.length === 0 ? [] : [inner]
 }
 
+// Every import statement in a module, whole. The vendored formatter breaks an
+// import whose bindings pass the print width across lines, so a rule that reads
+// one line reads a fragment of the statement and every binding below the first
+// line is invisible to it. An import clause carries no quote, which is what lets
+// the span reach its specifier across as many lines as the formatter used and
+// stop there.
+function extractImports(content: string): readonly string[] {
+	return content.match(/^import\s+(?:[^']*?\s+from\s+)?'[^']*'/gmu) ?? []
+}
+
 // What the vendored `no-unused-vars` rule reports on an import: a bound name the
-// module never mentions below its import block.
+// module never mentions outside its import statements.
 function findStrays(content: string): readonly string[] {
-	const tokens = new Set(content.replace(/^import .*$/gmu, '').split(/[^\w$]+/u))
+	const statements = extractImports(content)
+	let body = content
+	for (const statement of statements) body = body.replace(statement, '')
+	const tokens = new Set(body.split(/[^\w$]+/u))
 	const strays: string[] = []
-	for (const line of content.split('\n')) {
-		const match = /^import\s+(?<clause>.*?)\s+from\s+'[^']+'/u.exec(line)
+	for (const statement of statements) {
+		const match = /^import\s+(?<clause>[^']*?)\s+from\s+'[^']*'$/u.exec(statement)
 		if (match?.groups?.clause === undefined) continue
 		for (const binding of extractBindings(match.groups.clause)) {
 			if (!tokens.has(binding)) strays.push(binding)
@@ -277,6 +343,18 @@ describe('emitted workspaces under their own gates', () => {
 			'unused',
 		])
 		expect(findStrays("import { used } from 'x'\nexport const value = used\n")).toStrictEqual([])
+		// The population is every module the matrix emits, and each of those prints
+		// every import on one line. The control is therefore an import the formatter
+		// broke across lines: one more binding in a filled span produces it, and a
+		// rule that reads a line reads a fragment of it. Both verdicts are drawn from
+		// outside the population, so the instrument is exercised where it has never
+		// been asked to report rather than only among the shapes it already handles.
+		expect(
+			findStrays("import {\n\tused,\n\tunused,\n} from 'x'\nexport const value = used\n"),
+		).toStrictEqual(['unused'])
+		expect(
+			findStrays("import {\n\tused,\n\talso,\n} from 'x'\nexport const value = used + also\n"),
+		).toStrictEqual([])
 
 		const strays: string[] = []
 		for (const blueprint of buildSelections()) {
@@ -307,6 +385,32 @@ describe('emitted workspaces under their own gates', () => {
 		)
 		expect(application.get('app/browser/main.ts')).toBe('')
 		expect(application.get('app/server/main.ts')).toBe('')
+	})
+
+	// A generated workspace's own `check` script runs `tsc` over the configuration
+	// `new` just wrote, so the emitted project array is measured against Vitest's
+	// real published type here rather than against a description of it.
+	it('emits a browser project entry Vitest accepts', () => {
+		mkdirSync(resolve('tmp'), { recursive: true })
+		const root = mkdtempSync(join(resolve('tmp'), 'scaffold-e2-types-'))
+		try {
+			stageRootConfig(createBlueprint('sample', { app: ['browser'] }), root)
+			const emitted = readFileSync(join(root, 'vite.config.ts'), 'utf8')
+			expect(checkTypes(root)).toBe('')
+
+			// The control is the row this compiler emitted before the fix: a bare
+			// factory reference, which Vitest reads as a `UserProjectConfigFn` and
+			// calls with a `ConfigEnv` the factory refuses. It is outside the emitted
+			// population, because no selection emits it any more.
+			expect(emitted).toContain('\t\t\tappBrowser(),')
+			writeFileSync(
+				join(root, 'vite.config.ts'),
+				emitted.replace('\t\t\tappBrowser(),', '\t\t\tappBrowser,'),
+			)
+			expect(checkTypes(root)).toContain("is not assignable to type 'TestProjectConfiguration'")
+		} finally {
+			rmSync(root, { recursive: true, force: true })
+		}
 	})
 
 	it('prints no line past the vendored width the formatter could have broken', () => {

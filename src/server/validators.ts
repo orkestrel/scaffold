@@ -73,16 +73,14 @@ import {
  * the byte ceiling. The character ceiling is read first so an oversized string is
  * refused before it is split.
  *
- * The empty-segment rule reaches two spellings a filesystem would have accepted.
- * A trailing separator and a doubled separator each split into an empty segment
- * and are refused, so `project/` and `project//src` are both off contract while
- * `project` and `project/src` are the same locations spelled inside it. Nothing
- * normalizes the argument first — every server entry point guards the caller's
- * text and resolves it afterwards — so a directory taken from a shell completion
- * arrives with the separator a shell appends and is refused. Strip it before
- * calling. The law is exact rather than forgiving because it is the only
- * statement of what these functions accept, and one that silently repaired two
- * spellings would have to say which.
+ * The two spellings of an empty segment are answered differently. A trailing
+ * separator terminates a directory rather than opening a segment, and every
+ * supported filesystem and every Node path API reads `project/` and `project` as
+ * one location, so it is admitted. A doubled separator is a genuine empty
+ * segment, so `project//src` is refused. Nothing normalizes the argument first —
+ * every server entry point guards the caller's text and resolves it afterwards —
+ * so a directory taken from a shell completion arrives carrying the separator the
+ * shell appended and names the directory it appears to name.
  *
  * @example
  * ```ts
@@ -90,8 +88,9 @@ import {
  *
  * isFilesystemPath('C:/Users/sample/project') // true
  * isFilesystemPath('../sibling') // true
+ * isFilesystemPath('project/') // true
+ * isFilesystemPath('project//src') // false
  * isFilesystemPath('project/nul') // false
- * isFilesystemPath('project/') // false
  * ```
  */
 export function isFilesystemPath(value: unknown): value is string {
