@@ -90,11 +90,14 @@ The campaign addresses the 41 published packages and nothing else.
 
 ## Decisions
 
-| Date       | Decision                                                                                          | Basis                                                                                |
-| ---------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| 2026-08-11 | Campaign proceeds in publish-layer order, L0 first.                                               | Pin law forces a dependent re-publish cascade on every bump.                         |
-| 2026-08-11 | Republish a package when its `src/` or `configs/` is touched, not on shared-artifact churn alone. | User ruling. The toolchain bump is expected to reach source in most packages anyway. |
-| 2026-08-11 | `supervisor` and `brief` excluded.                                                                | User ruling.                                                                         |
+| Date       | Decision                                                                                            | Basis                                                                                                 |
+| ---------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| 2026-08-11 | Campaign proceeds in publish-layer order, L0 first.                                                 | Pin law forces a dependent re-publish cascade on every bump.                                          |
+| 2026-08-11 | Republish a package when its `src/` or `configs/` is touched, not on shared-artifact churn alone.   | User ruling. The toolchain bump is expected to reach source in most packages anyway.                  |
+| 2026-08-11 | `supervisor` and `brief` excluded.                                                                  | User ruling.                                                                                          |
+| 2026-08-11 | TypeScript holds at `^6.0.3` for this campaign.                                                     | User ruling. TypeScript 7 gets its own pass, so no diff mixes formatter churn with type breakage.     |
+| 2026-08-11 | Scaffold's `audit` blindness is fixed before the fleet run.                                         | User ruling. Audit is the instrument pointed at 41 repos.                                             |
+| 2026-08-11 | Guide mirrors pulled once from `guides/src/<name>.md`; the engine is not changed to read that path. | User ruling. The path is correct after each repo is overwritten, so the old path is a one-time fetch. |
 
 ## Findings
 
@@ -113,14 +116,26 @@ Each is evidence for a unit, not a unit itself.
 differ` immediately before `scaffold catalog --all` produced a real diff in a planned path. The
    audit verb does not compare generated-block content.
 4. **Toolchain drift, fleet-wide.** Declared here and in `contract`: `oxfmt ^0.62.0` (latest
-   `0.63.0`), `oxlint ^1.77.0` (latest `1.78.0`), `vite ~8.2.0` here against `^8.2.1` in `contract`,
-   and `typescript ^6.0.3` against a published `7.0.2`. The TypeScript gap is a major-version
-   decision, not a routine bump, and is the user's call.
+   `0.63.0`), `oxlint ^1.77.0` (latest `1.78.0`), and `vite ~8.2.0` here against `^8.2.1` in
+   `contract`. TypeScript holds at `^6.0.3` by ruling, against a published `7.0.2`.
+5. **Published scaffold 0.0.24 cannot reach green on a case-sensitive filesystem.** Three tests fail
+   in the `src:server` project: `Materializer.test.ts:99`, `helpers.test.ts:191`, and
+   `helpers.test.ts:1198`. Proven pre-existing — `git diff 25af21c HEAD` over `src`, `tests`,
+   `configs`, and every build config is empty, and `25af21c` is the commit published as `v0.0.24`.
+   The host is `ext4`, verified case-sensitive. `npm test` chains with `&&`, so this failure hides
+   the four projects behind it. Diagnosis dispatched to Sol.
+6. **The prescribed bench-liveness probe cannot detect an unauthenticated bench.**
+   `.agents/orchestration.md` names `codex --version` as the session-start probe. It returned
+   `codex-cli 0.147.0` against a bench with no credentials, and the first real exec failed
+   `401 Unauthorized`. A version string proves the binary is installed and nothing else. The probe
+   must make a model call, or read auth state, before a bench is recorded live.
 
 ## Bench state
 
-Probed 2026-08-11. `codex-cli 0.147.0` — Sol reachable. `cursor-agent 2026.08.04` — Grok reachable.
-Three-engine routing available; no lane substitution in force.
+Probed 2026-08-11. `cursor-agent 2026.08.04` — Grok live, authentication verified by the session's
+own `cursor.sh` hook. Codex was dark on arrival and recovered mid-session by
+`codex login --device-auth`; Sol confirmed live by a round-tripped model call, not by a version
+string. Three-engine routing available; no lane substitution in force.
 
 ## Push state
 
