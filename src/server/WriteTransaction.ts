@@ -186,7 +186,7 @@ export class WriteTransaction {
 		this.#stage = join(this.#root, 'stage')
 		this.#backup = join(this.#root, 'backup')
 		const opened = attempt(() => {
-			this.#created.push(...this.#establish(parent).created)
+			this.#establish(parent)
 			for (const directory of [this.#root, this.#stage, this.#backup]) {
 				mkdirSync(directory, { mode: 0o700 })
 				if (readAnchor(directory) === undefined) {
@@ -292,7 +292,7 @@ export class WriteTransaction {
 		const staged = this.#stagePath(path)
 		const copied = attempt(() => {
 			copyFileSync(source, staged, constants.COPYFILE_EXCL)
-			if (executable) chmodSync(staged, 0o755)
+			chmodSync(staged, executable ? 0o755 : 0o644)
 		})
 		if (!copied.success) {
 			throw new ScaffoldError('WRITE', `The staged copy at ${path} could not be made.`, {
@@ -336,8 +336,14 @@ export class WriteTransaction {
 		if (expectation.shape === 'file') {
 			throw new ScaffoldError('TARGET', `The destination at ${path} holds a file.`, { path })
 		}
-		const result = this.#establish(this.#resolve(this.#target, path))
-		this.#created.push(...result.created)
+		const established = attempt(() => this.#establish(this.#resolve(this.#target, path)))
+		if (!established.success) {
+			throw new ScaffoldError('WRITE', `The directory at ${path} could not be established.`, {
+				path,
+				error: established.error,
+			})
+		}
+		const result = established.value
 		if (result.created.length > 0 && !this.#established.includes(path)) this.#established.push(path)
 		return result
 	}
@@ -538,6 +544,7 @@ export class WriteTransaction {
 				})
 			}
 			anchor = established
+			this.#created.push(established)
 			created.push(established)
 		}
 		return { anchor, created }
@@ -588,7 +595,7 @@ export class WriteTransaction {
 		}
 		const staged = this.#resolve(this.#stage, path)
 		if (expectation.shape === 'absent') {
-			this.#created.push(...this.#establish(dirname(expectation.path)).created)
+			this.#establish(dirname(expectation.path))
 		} else {
 			const backup = this.#resolve(this.#backup, path)
 			mkdirSync(dirname(backup), { recursive: true })

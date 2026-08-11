@@ -389,7 +389,7 @@ no interface and is documented directly.
 | Method      | Summary                                                                            |
 | ----------- | ---------------------------------------------------------------------------------- |
 | `write`     | Stage one text file.                                                               |
-| `copy`      | Stage one byte-for-byte copy of a file that already exists on this host.           |
+| `copy`      | Stage one byte-for-byte copy in executable or non-executable destination mode.     |
 | `directory` | Establish one directory inside the target, one segment at a time.                  |
 | `remove`    | Mark one file for deletion at commit.                                              |
 | `commit`    | Promote every staged file and take every marked file, or roll the whole call back. |

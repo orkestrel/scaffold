@@ -1,5 +1,15 @@
-import { lstatSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import {
+	chmodSync,
+	existsSync,
+	lstatSync,
+	mkdirSync,
+	readdirSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs'
 import { join } from 'node:path'
+import { isScaffoldError } from '@src/core'
 import { computeDigest, listFiles, readExpectation, WriteTransaction } from '@src/server'
 import { describe, expect, it } from 'vitest'
 import { createWorkspace, readErrorCode } from '../../setupServer.js'
@@ -207,6 +217,27 @@ describe('WriteTransaction staging', () => {
 			workspace.destroy()
 		}
 	})
+
+	it.skipIf(process.platform === 'win32')('clears the executable bit when not asked', () => {
+		// NTFS exposes no POSIX executable bit to clear, so the mode assertion
+		// cannot distinguish the false branch from an unchanged source there.
+		const workspace = createWorkspace()
+		try {
+			const target = join(workspace.path, 'project')
+			const source = workspace.write('host/codex.sh', '#!/bin/sh\n')
+			chmodSync(source, 0o755)
+			const transaction = new WriteTransaction(target, ['scripts/codex.sh'])
+			try {
+				transaction.copy('scripts/codex.sh', source, false)
+				transaction.commit()
+				expect(lstatSync(join(target, 'scripts/codex.sh')).mode & 0o111).toBe(0)
+			} finally {
+				transaction.discard()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
 })
 
 describe('WriteTransaction directories', () => {
@@ -260,6 +291,77 @@ describe('WriteTransaction directories', () => {
 			expect(lstatSync(join(target, '.claude/skills')).isDirectory()).toBe(true)
 			transaction.discard()
 			expect(readdirSync(workspace.path)).toEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('wraps a mid-creation refusal and discards every segment it created', () => {
+		const workspace = createWorkspace()
+		try {
+			const target = workspace.directory('project')
+			const control = workspace.directory('control')
+			const child = join(control, 'child')
+			chmodSync(control, 0o477)
+			let controlRefusal: unknown
+			try {
+				mkdirSync(child)
+			} catch (error) {
+				controlRefusal = error
+			} finally {
+				chmodSync(control, 0o700)
+			}
+			const transaction = new WriteTransaction(target, ['a/b'])
+			const previous = process.umask(0o300)
+			let refusal: unknown
+			try {
+				transaction.directory('a/b')
+			} catch (error) {
+				refusal = error
+			} finally {
+				process.umask(previous)
+			}
+			try {
+				const enforced = controlRefusal !== undefined
+				const accessError = expect.objectContaining({ code: 'EACCES' })
+				const wrappedContext = expect.objectContaining({ error: accessError })
+				const nested = existsSync(join(target, 'a/b'))
+				transaction.discard()
+				const actual = {
+					enforced,
+					control: controlRefusal,
+					controlCreated: existsSync(child),
+					code: isScaffoldError(refusal) ? refusal.code : undefined,
+					context: isScaffoldError(refusal) ? refusal.context : undefined,
+					refused: refusal !== undefined,
+					nested,
+					residue: existsSync(join(target, 'a')),
+				}
+				const expected = enforced
+					? {
+							enforced: true,
+							control: accessError,
+							controlCreated: false,
+							code: 'WRITE',
+							context: wrappedContext,
+							refused: true,
+							nested: false,
+							residue: false,
+						}
+					: {
+							enforced: false,
+							control: undefined,
+							controlCreated: true,
+							code: undefined,
+							context: undefined,
+							refused: false,
+							nested: true,
+							residue: false,
+						}
+				expect(actual).toEqual(expected)
+			} finally {
+				if (transaction.open) transaction.discard()
+			}
 		} finally {
 			workspace.destroy()
 		}
