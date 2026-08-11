@@ -223,9 +223,9 @@ At session start, before planning, probe bench liveness and plan routing against
 each CLI first (`codex --version`; `agent --version`, falling back to `agent.cmd --version`), then
 record a bench live only on evidence it can execute: its authentication-state check, or a bounded
 round-tripped model call where it exposes none. A version string proves the binary is installed and
-proves nothing about whether the bench can run a model. The role file owns each bench's exact probe.
-Probes are read-only. A bench that resolves but cannot execute is dark: record it with its fallback
-and the lane substitution it forces, and never absorb it silently.
+proves nothing about whether the bench can run a model. Probes are read-only. A bench that resolves
+but cannot execute is dark: record it with its fallback and the lane substitution it forces, and
+never absorb it silently.
 
 1. **Absorb.** Dispatch `grok` for terrain, prior art, and the reading the decision needs. In an
    Orkestrel repo dispatch `orkestrel` alongside it for live package state. Skip only when the

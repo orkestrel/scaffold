@@ -40,7 +40,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `CompilerEventMap`  | type | The compiler's observation channel.                                                              |
 | `Drift`             | type | How one target path compares to the artifact planned for it.                                     |
 | `Environment`       | type | One environment a generated workspace selects on its `src` or `app` axis.                        |
-| `Finding`           | type | One drift verdict against a target path, with ownership on every planned path.                   |
+| `Finding`           | type | One drift verdict against a target path.                                                         |
 | `Group`             | type | The artifact group a plan selects over.                                                          |
 | `Lookup`            | type | Whether an upstream lookup produced an answer.                                                   |
 | `Mirror`            | type | One dependency guide fetched from upstream, beside the local mirror it answers for.              |
@@ -629,9 +629,9 @@ project set.
 
 An audit reports one `Finding` per planned path, followed by any foreign path beneath the groups
 the plan covers. Every planned finding carries its artifact's `ownership`. A foreign finding has
-no ownership because no artifact was planned for its path. Consumers can therefore count findings
-by ownership to tell which paths had bytes compared, which had only existence checked, and which
-were not checked. The audit stores no aggregate tally.
+no ownership because no artifact was planned for its path. Counting the planned findings by
+`content`, `presence`, and `birth` therefore says what the audit compared at each path, and the
+foreign findings are exactly the ones no tier accounts for. The audit stores no aggregate tally.
 
 | `Drift`   | Means                                 |
 | --------- | ------------------------------------- |

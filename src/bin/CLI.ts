@@ -847,16 +847,22 @@ export class CLI implements CLIInterface {
 	}
 
 	// The audit as a person reads it: every advisory first, then one row per path
-	// that differs, then the count. An aligned path is not listed, because a
+	// that differs, then the summary. An aligned path is not listed, because a
 	// report of everything that is fine is a report nobody reads.
 	#present(audit: Audit): void {
 		for (const question of audit.questions) this.#warn(`${question.field}: ${question.message}`)
 		const rows = audit.findings
 			.filter((finding) => finding.drift !== 'aligned')
 			.map((finding) => [finding.path, finding.group, finding.drift])
-		const content = audit.findings.filter((finding) => finding.ownership === 'content').length
-		const presence = audit.findings.filter((finding) => finding.ownership === 'presence').length
-		const birth = audit.findings.filter((finding) => finding.ownership === 'birth').length
+		// Two populations, counted apart. A foreign path is planned by nothing, so
+		// it carries no ownership and no tier can account for it. Counting it under
+		// the same word as the planned paths is what makes the numbers disagree.
+		const planned = audit.findings.filter((finding) => finding.drift !== 'foreign')
+		const drifted = planned.filter((finding) => finding.drift !== 'aligned').length
+		const content = planned.filter((finding) => finding.ownership === 'content').length
+		const presence = planned.filter((finding) => finding.ownership === 'presence').length
+		const birth = planned.filter((finding) => finding.ownership === 'birth').length
+		const foreign = audit.findings.length - planned.length
 		if (rows.length > 0) {
 			const table = renderTable({
 				columns: [{ label: 'path' }, { label: 'group' }, { label: 'drift' }],
@@ -864,8 +870,11 @@ export class CLI implements CLIInterface {
 			})
 			for (const line of table.split('\n')) this.#say(line)
 		}
+		const summary = `${String(drifted)} of ${String(planned.length)} planned path${planned.length === 1 ? '' : 's'} differ${drifted === 1 ? 's' : ''} from the plan. Of those, audit compared the bytes of ${String(content)}, existence only for ${String(presence)}, and nothing for ${String(birth)}.`
 		this.#say(
-			`${String(rows.length)} of ${String(audit.findings.length)} planned path${audit.findings.length === 1 ? '' : 's'} differ from the plan. Audit compared bytes for ${String(content)} planned paths, checked only existence for ${String(presence)}, and did not check ${String(birth)}.`,
+			foreign === 0
+				? summary
+				: `${summary} The plan does not own ${String(foreign)} further path${foreign === 1 ? '' : 's'} beneath its groups.`,
 		)
 	}
 

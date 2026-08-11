@@ -336,10 +336,10 @@ export interface Plan {
  * the audit showed is the one thing the destructive verb must never do. A
  * missing destination has no bytes to record. An aligned one may have gone
  * uncompared, which is what a birth-owned path always does, so it records
- * bytes only where they were actually read. Every planned finding carries the
- * artifact's `ownership`, which lets consumers tell whether audit compared
- * bytes, checked existence alone, or made no comparison. A foreign finding has
- * no planned artifact and therefore no ownership.
+ * bytes only where they were actually read. Every planned finding carries its
+ * artifact's {@link Ownership}, so a consumer reads what scaffold claims at the
+ * path from the finding itself. A foreign finding has no planned artifact and
+ * therefore no ownership.
  */
 export type Finding =
 	| {

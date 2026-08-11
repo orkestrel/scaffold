@@ -475,8 +475,28 @@ describe('CLI audit', () => {
 					fleet.target,
 				]),
 			).toBe(EXIT_CLEAN)
-			expect(sink.output.at(-1)).toContain(
-				`0 of ${String(FLEET_ARTIFACT_COUNT)} planned paths differ from the plan.`,
+			const json = createSink()
+			expect(
+				await new CLI(json.options).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const audit: Audit = JSON.parse(json.output[0] ?? '')
+			const content = audit.findings.filter((finding) => finding.ownership === 'content').length
+			const presence = audit.findings.filter((finding) => finding.ownership === 'presence').length
+			const birth = audit.findings.filter((finding) => finding.ownership === 'birth').length
+			// The membership the three counts are drawn from: every finding names a
+			// tier, all three are named, and none is proven by an empty population.
+			expect([...new Set(audit.findings.map((finding) => finding.ownership))].sort()).toStrictEqual(
+				['birth', 'content', 'presence'],
+			)
+			expect(sink.output.at(-1)).toBe(
+				`0 of ${String(FLEET_ARTIFACT_COUNT)} planned paths differ from the plan. Of those, audit compared the bytes of ${String(content)}, existence only for ${String(presence)}, and nothing for ${String(birth)}.`,
 			)
 			expect(sink.diagnostic).toHaveLength(1)
 		} finally {
@@ -565,13 +585,147 @@ describe('CLI audit', () => {
 			const content = audit.findings.filter((finding) => finding.ownership === 'content').length
 			const presence = audit.findings.filter((finding) => finding.ownership === 'presence').length
 			const birth = audit.findings.filter((finding) => finding.ownership === 'birth').length
-			expect(report.output.at(-1)).toBe(
-				`${String(drift)} of ${String(audit.findings.length)} planned paths differ from the plan. Audit compared bytes for ${String(content)} planned paths, checked only existence for ${String(presence)}, and did not check ${String(birth)}.`,
+			// The membership the three counts are drawn from: every finding names a
+			// tier, all three are named, and none is proven by an empty population.
+			expect([...new Set(audit.findings.map((finding) => finding.ownership))].sort()).toStrictEqual(
+				['birth', 'content', 'presence'],
 			)
-			expect(content).toBeGreaterThan(0)
-			expect(presence).toBeGreaterThan(0)
-			expect(birth).toBeGreaterThan(0)
-			expect(content + presence + birth).toBe(audit.findings.length)
+			expect(report.output.at(-1)).toBe(
+				`${String(drift)} of ${String(audit.findings.length)} planned paths differ from the plan. Of those, audit compared the bytes of ${String(content)}, existence only for ${String(presence)}, and nothing for ${String(birth)}.`,
+			)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('counts a foreign path apart from the planned paths it reports on', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			expect(
+				await new CLI(createSink().options).execute([
+					'repair',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				]),
+			).toBe(EXIT_CLEAN)
+			workspace.write('target/.claude/agents/stray.md', 'stray\n')
+			const report = createSink()
+			expect(
+				await new CLI(report.options).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				]),
+			).toBe(EXIT_DRIFT)
+			const json = createSink()
+			expect(
+				await new CLI(json.options).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const audit: Audit = JSON.parse(json.output[0] ?? '')
+			const planned = audit.findings.filter((finding) => finding.drift !== 'foreign')
+			const content = planned.filter((finding) => finding.ownership === 'content').length
+			const presence = planned.filter((finding) => finding.ownership === 'presence').length
+			const birth = planned.filter((finding) => finding.ownership === 'birth').length
+			// The two populations by membership rather than by arithmetic: the
+			// findings carrying no tier are exactly the foreign ones, and every
+			// remaining finding names one of the three the counts are drawn from.
+			expect(
+				audit.findings
+					.filter((finding) => finding.ownership === undefined)
+					.map((finding) => finding.path),
+			).toStrictEqual(['.claude/agents/stray.md'])
+			expect([...new Set(planned.map((finding) => finding.ownership))].sort()).toStrictEqual([
+				'birth',
+				'content',
+				'presence',
+			])
+			expect(planned).toHaveLength(FLEET_ARTIFACT_COUNT)
+			expect(report.output.at(-1)).toBe(
+				`0 of ${String(FLEET_ARTIFACT_COUNT)} planned paths differ from the plan. Of those, audit compared the bytes of ${String(content)}, existence only for ${String(presence)}, and nothing for ${String(birth)}. The plan does not own 1 further path beneath its groups.`,
+			)
+			workspace.write('target/.codex/agents/stray.md', 'stray\n')
+			const second = createSink()
+			expect(
+				await new CLI(second.options).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				]),
+			).toBe(EXIT_DRIFT)
+			expect(second.output.at(-1) ?? '').toContain(
+				'The plan does not own 2 further paths beneath its groups.',
+			)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('agrees with itself about one differing path, count and verb alike', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			expect(
+				await new CLI(createSink().options).execute([
+					'repair',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				]),
+			).toBe(EXIT_CLEAN)
+			workspace.remove('target/.editorconfig')
+			const report = createSink()
+			expect(
+				await new CLI(report.options).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--groups',
+					'configs',
+				]),
+			).toBe(EXIT_DRIFT)
+			const json = createSink()
+			expect(
+				await new CLI(json.options).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--groups',
+					'configs',
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const audit: Audit = JSON.parse(json.output[0] ?? '')
+			const content = audit.findings.filter((finding) => finding.ownership === 'content').length
+			expect(
+				audit.findings
+					.filter((finding) => finding.drift !== 'aligned')
+					.map((finding) => finding.path),
+			).toStrictEqual(['.editorconfig'])
+			expect([...new Set(audit.findings.map((finding) => finding.ownership))]).toStrictEqual([
+				'content',
+			])
+			expect(report.output.at(-1)).toBe(
+				`1 of ${String(content)} planned paths differs from the plan. Of those, audit compared the bytes of ${String(content)}, existence only for 0, and nothing for 0.`,
+			)
 		} finally {
 			workspace.destroy()
 		}

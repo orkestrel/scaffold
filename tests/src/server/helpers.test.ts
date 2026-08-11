@@ -189,9 +189,19 @@ describe('physical shape', () => {
 		try {
 			const exact = workspace.write('src/bin/main.ts', 'export {}\n')
 			const folded = join(workspace.path, 'src/bin/Main.ts')
+			const absent = join(workspace.path, 'src/bin/absent.ts')
 			expect(existsSync(exact)).toBe(true)
 			expect(isExactCaseFile(exact)).toBe(true)
 			expect(isExactCaseFile(folded)).toBe(false)
+			expect(isExactCaseFile(absent)).toBe(false)
+			// The limit, executable rather than stated in prose. This filesystem does
+			// not resolve the recased name, so the guard's refusal of it and its
+			// refusal of a plainly absent path are one condition: nothing here tells
+			// a case verdict apart from an existence check, and the assertions above
+			// would also hold for a guard that only called `existsSync`. A
+			// case-insensitive host resolves the recased name and fails this line,
+			// which is where the case verdict becomes provable directly.
+			expect(existsSync(folded)).toBe(existsSync(absent))
 		} finally {
 			workspace.destroy()
 		}
@@ -1194,6 +1204,10 @@ describe('write anchors', () => {
 			const anchor = readAnchor(target)
 			expect(anchor).toBeDefined()
 			if (anchor === undefined) return
+			// The rename keeps the original directory allocated, so the filesystem
+			// cannot hand its inode back to the directory created next. Removing it
+			// instead frees the inode for immediate reuse, and the anchor would then
+			// match the replacement it never captured.
 			renameSync(target, join(workspace.path, 'original'))
 			mkdirSync(target)
 			expect(matchesAnchor(anchor)).toBe(false)

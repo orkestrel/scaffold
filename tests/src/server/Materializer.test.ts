@@ -96,6 +96,13 @@ describe('Materializer construction', () => {
 			// The control: the host stores the exact name the manifest recases, so
 			// absence cannot explain the case-only difference between the two names.
 			expect(readFileHex(host, 'AGENTS.md')).not.toBe(undefined)
+			// The limit, executable rather than stated in prose. This filesystem does
+			// not resolve the recased storage name, so the refusal below could equally
+			// be a refusal of a name the host does not store: nothing here tells a case
+			// verdict apart from a membership verdict. A case-insensitive host resolves
+			// the recased name and fails this line, which is where the case verdict
+			// becomes provable directly.
+			expect(readFileHex(host, 'agents.md')).toBe(undefined)
 			expect(readHostManifest(host)?.digest).toBe(recased.digest)
 			expect(readErrorCode(() => new Materializer({ host }))).toBe('TARGET')
 		} finally {
