@@ -418,6 +418,31 @@ describe('resolveContainedPath', () => {
 		}
 	})
 
+	it('refuses a dangling link whose target crosses a link with parent traversal', () => {
+		const outside = createWorkspace()
+		const workspace = createWorkspace()
+		try {
+			workspace.link('hop', outside.directory('deep'))
+			workspace.link('link', 'hop/../secret')
+			const admitted = resolveContainedPath(workspace.path, 'link')
+			if (admitted !== undefined) writeFileSync(admitted, 'escaped\n')
+			expect({
+				admitted,
+				inside: existsSync(join(workspace.path, 'secret')),
+				outside: existsSync(join(outside.path, 'secret')),
+				bytes: existsSync(join(outside.path, 'secret')) ? outside.read('secret') : undefined,
+			}).toEqual({ admitted: undefined, inside: false, outside: false, bytes: undefined })
+
+			workspace.link('straight', join(outside.path, 'absent'))
+			expect(resolveContainedPath(workspace.path, 'straight')).toBeUndefined()
+			workspace.link('future', join(workspace.path, 'inside/future.md'))
+			expect(resolveContainedPath(workspace.path, 'future')).toBe(join(workspace.path, 'future'))
+		} finally {
+			workspace.destroy()
+			outside.destroy()
+		}
+	})
+
 	it('admits a real link that stays inside the root', () => {
 		const workspace = createWorkspace()
 		try {

@@ -792,6 +792,12 @@ result.written // every path created
 materializer.destroy()
 ```
 
+`resolveContainedPath` refuses a lexical escape, a physical link out of the root, and a dangling
+link whose raw target contains a `..` segment. It returns the root-relative lexical path after
+checking the namespace, not an open filesystem handle. Its contract therefore excludes a concurrent
+rename or link swap during the check or before the caller finishes using that path. A caller that
+admits hostile concurrent namespace mutation needs a handle-bound operation instead.
+
 Read the registry and the guide host:
 
 ```ts

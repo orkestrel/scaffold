@@ -393,7 +393,8 @@ export function computeFileDigest(path: string): string | undefined {
  * @param path - The absolute or relative host path to resolve.
  * @returns The path with its existing prefix resolved through every link, or
  * `undefined` when the text is not a host path, no bounded existing ancestor
- * resolves, a link target cannot be read, or an ancestor cannot be read.
+ * resolves, a link target cannot be read, a link target contains parent
+ * traversal, or an ancestor cannot be read.
  *
  * @remarks
  * A containment decision has to be made about a destination that does not exist
@@ -406,7 +407,10 @@ export function computeFileDigest(path: string): string | undefined {
  * `realpath` answers `ENOENT` both for a name that is not there and for a link
  * whose target is not there. The name is therefore inspected without following
  * it: a dangling link redirects the walk to its target, while a genuinely absent
- * name is retained as one segment of the unresolved suffix.
+ * name is retained as one segment of the unresolved suffix. A dangling link
+ * target containing a `..` segment is refused. Resolving that target as one
+ * lexical string could discard a preceding link before the filesystem gives
+ * `..` its physical meaning.
  *
  * @example
  * ```ts
@@ -432,6 +436,7 @@ export function resolveRealPath(path: string): string | undefined {
 			if (!status.value.isSymbolicLink()) return undefined
 			const target = attempt(() => readlinkSync(current))
 			if (!target.success) return undefined
+			if (target.value.split(/[\\/]/u).includes('..')) return undefined
 			current = resolve(dirname(current), target.value)
 			continue
 		}
@@ -454,21 +459,21 @@ export function resolveRealPath(path: string): string | undefined {
  *
  * @remarks
  * The containment law, and the one door every read in this module goes through.
- * Both sides are resolved through the real filesystem before they are compared,
- * so a link planted inside the root cannot smuggle a destination out of it,
- * whether or not that link resolves; the answer is then the lexical join, so the
- * caller operates on the path it named rather than on a resolved form the target
- * may not recognize.
+ * Both sides are resolved through the real filesystem before they are compared.
+ * A dangling link is followed only when its raw target contains no parent
+ * traversal. The answer is then the lexical join, so the caller operates on the
+ * path it named rather than on a resolved form the target may not recognize.
  *
  * Comparison is exact text, which fails closed on a case-insensitive
  * filesystem: a root and a path spelled with different case resolve to
  * different strings there and are refused, never wrongly admitted.
  *
- * The answer describes the tree as it was read. A link planted between this call
- * and the write that follows it is a continuity failure rather than a
- * containment one, and it is caught where the write happens — by the exclusive
- * creation modes {@link stageHost} opens with, and by the anchors a
- * `WriteTransaction` holds across its call.
+ * The answer describes the namespace this call read. The contract excludes a
+ * concurrent rename or link swap during the call or before the caller finishes
+ * using the returned path. This helper returns a string, not a filesystem
+ * handle, so it cannot bind its containment check to a later operation. A caller
+ * that admits hostile concurrent namespace mutation needs a handle-bound
+ * operation instead.
  *
  * @example
  * ```ts

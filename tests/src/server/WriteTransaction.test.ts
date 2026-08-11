@@ -5,14 +5,16 @@ import {
 	mkdirSync,
 	readdirSync,
 	readFileSync,
+	renameSync,
 	rmSync,
 	writeFileSync,
 } from 'node:fs'
 import { join } from 'node:path'
+import { Worker } from 'node:worker_threads'
 import { isScaffoldError } from '@src/core'
 import { computeDigest, listFiles, readExpectation, WriteTransaction } from '@src/server'
 import { describe, expect, it } from 'vitest'
-import { createWorkspace, readErrorCode, WORKSPACE_ROOT } from '../../setupServer.js'
+import { createWorkspace, readErrorCode } from '../../setupServer.js'
 
 describe('WriteTransaction construction', () => {
 	it('refuses a target, a path list, and a repeated path that are off contract', () => {
@@ -241,14 +243,69 @@ describe('WriteTransaction staging', () => {
 })
 
 describe('WriteTransaction directories', () => {
-	it('records a created segment before the read that can refuse it', () => {
-		const source = readFileSync(join(WORKSPACE_ROOT, 'src/server/WriteTransaction.ts'), 'utf8')
-		const creation = source.indexOf('\t\t\tmkdirSync(segment)')
-		const recording = source.indexOf('\t\t\tthis.#created.push(segment)', creation)
-		const inspection = source.indexOf('\t\t\tconst established = readAnchor(segment)', creation)
-		expect(creation).toBeGreaterThan(-1)
-		expect(recording).toBeGreaterThan(creation)
-		expect(recording).toBeLessThan(inspection)
+	it('discards a created segment whose anchor read refuses it', async () => {
+		const workspace = createWorkspace()
+		const target = workspace.directory('project')
+		const segment = join(target, 'a')
+		const holding = join(target, 'holding')
+		const state = new Int32Array(new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT))
+		const attacker = new Worker(
+			`const { existsSync, renameSync, writeFileSync } = require('node:fs')
+const { workerData } = require('node:worker_threads')
+const state = new Int32Array(workerData.state)
+Atomics.store(state, 0, 1)
+Atomics.notify(state, 0)
+for (;;) {
+	Atomics.wait(state, 0, 1)
+	const command = Atomics.load(state, 0)
+	if (command === 4) break
+	if (command !== 2) continue
+	while (Atomics.load(state, 0) === 2) {
+		if (!existsSync(workerData.segment)) continue
+		try {
+			renameSync(workerData.segment, workerData.holding)
+			writeFileSync(workerData.segment, 'replacement\\n')
+			Atomics.store(state, 0, 3)
+			Atomics.notify(state, 0)
+		} catch {}
+	}
+}`,
+			{ eval: true, workerData: { state: state.buffer, segment, holding } },
+		)
+		try {
+			Atomics.wait(state, 0, 0)
+			let observed = false
+			for (let attempt = 0; attempt < 4_096 && !observed; attempt += 1) {
+				const transaction = new WriteTransaction(target, ['a'])
+				Atomics.store(state, 0, 2)
+				Atomics.notify(state, 0)
+				let refusal: unknown
+				try {
+					transaction.directory('a')
+				} catch (error) {
+					refusal = error
+				}
+				Atomics.wait(state, 0, 2)
+				expect(lstatSync(segment).isFile()).toBe(true)
+				expect(lstatSync(holding).isDirectory()).toBe(true)
+				rmSync(segment)
+				renameSync(holding, segment)
+				transaction.discard()
+				expect(existsSync(segment)).toBe(false)
+				observed = refusal !== undefined
+				expect(isScaffoldError(refusal) ? refusal.code : undefined).toBe(
+					observed ? 'WRITE' : undefined,
+				)
+				Atomics.store(state, 0, 1)
+				Atomics.notify(state, 0)
+			}
+			expect(observed).toBe(true)
+		} finally {
+			Atomics.store(state, 0, 4)
+			Atomics.notify(state, 0)
+			await attacker.terminate()
+			workspace.destroy()
+		}
 	})
 
 	it('establishes a nested directory segment by segment and reports what it created', () => {
