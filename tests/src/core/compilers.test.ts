@@ -185,16 +185,17 @@ describe('blueprintToRootVite fixed proofs', () => {
 		expect(blueprintToRootVite(buildBlueprint({ src: ['core', 'server'] }))).toContain(
 			"\t\t\t\t\texternal: (id: string) =>\n\t\t\t\t\t\tid === '@src/core' || id.startsWith('node:') || id.startsWith('@orkestrel/'),\n",
 		)
-		// The browser plugin array is held open by the showcase spread and by
-		// nothing else, so without a showcase it is emitted joined.
+		// The browser plugin array has no conditional tail without a showcase, so
+		// the formatter emits its three fixed entries joined.
 		expect(blueprintToRootVite(buildBlueprint({ app: ['browser'] }))).toContain(
 			"\t\tplugins: [outputBoundary(output), environmentBoundary('app/browser'), vue()],\n",
 		)
 		const showcase = blueprintToRootVite(buildBlueprint({ app: ['browser'], showcase: true }))
+		expect(showcase).toContain('\tconst showcasePlugins: PluginOption[] = showcase\n\t\t? [\n')
 		expect(showcase).toContain(
-			"\t\tplugins: [\n\t\t\toutputBoundary(output),\n\t\t\tenvironmentBoundary('app/browser'),\n\t\t\tvue(),\n\t\t\t...(showcase\n",
+			"\t\tplugins: [\n\t\t\toutputBoundary(output),\n\t\t\tenvironmentBoundary('app/browser'),\n\t\t\tvue(),\n\t\t\t...showcasePlugins,\n",
 		)
-		expect(showcase).toContain('\t\t\t\t: []),\n\t\t],\n')
+		expect(showcase).toContain('\t\t: []\n\treturn {\n')
 	})
 
 	it('explains the server declaration rewrite in every emitted workspace', () => {

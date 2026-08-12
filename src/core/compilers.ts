@@ -651,34 +651,38 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 	}
 	if (blueprint.app.includes('browser')) {
 		// The formatter reprints an array from its syntax tree and joins one that
-		// fits the vendored width, so the plugin array is emitted joined wherever
-		// the showcase spread is not there to hold it open.
+		// fits the vendored width, so the base plugin array is emitted joined when
+		// the showcase plugins are absent.
+		const showcasePlugins = machinery.showcase
+			? `	const showcasePlugins: PluginOption[] = showcase
+		? [
+				viteSingleFile({
+					removeViteModuleLoader: true,
+					useRecommendedBuildConfig: true,
+				}),
+				{
+					name: 'orkestrel-showcase-html',
+					transformIndexHtml: {
+						order: 'post',
+						handler(html) {
+							const stamp = new Date().toISOString()
+							return html.replace(
+								'</head>',
+								'\t\t<meta name="build-id" content="' + stamp + '" />\\n\t</head>',
+							)
+						},
+					},
+				},
+			]
+		: []
+`
+			: ''
 		const plugins = machinery.showcase
 			? `\t\tplugins: [
 			outputBoundary(output),
 			environmentBoundary('app/browser'),
 			vue(),
-			...(showcase
-				? [
-						viteSingleFile({
-							removeViteModuleLoader: true,
-							useRecommendedBuildConfig: true,
-						}),
-						{
-							name: 'orkestrel-showcase-html',
-							transformIndexHtml: {
-								order: 'post',
-								handler(html) {
-									const stamp = new Date().toISOString()
-									return html.replace(
-										'</head>',
-										'\t\t<meta name="build-id" content="' + stamp + '" />\\n\t</head>',
-									)
-								},
-							},
-						},
-					]
-				: []),
+			...showcasePlugins,
 		],
 `
 			: "\t\tplugins: [outputBoundary(output), environmentBoundary('app/browser'), vue()],\n"
@@ -706,6 +710,7 @@ export function appShowcase(...options: never[]): UserConfig {
 		factories.push(
 			fillTemplate(CONFIG_TEMPLATES.factories.app.browser, {
 				plugins,
+				showcasePlugins,
 				showcaseBuild,
 				showcaseFactory,
 			}),
@@ -750,6 +755,7 @@ ${projects.map((project) => `\t\t\t${project},`).join('\n')}
 		body.includes(boundary),
 	)
 	return fillTemplate(CONFIG_TEMPLATES.root.vite, {
+		viteTypes: machinery.showcase ? 'PluginOption, UserConfig' : 'UserConfig',
 		imports: imports.length === 0 ? '' : `${imports.join('\n')}\n`,
 		helpers:
 			boundaries.length === 0

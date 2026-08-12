@@ -49,7 +49,7 @@ export const CONFIG_TEMPLATES = Object.freeze({
 	"exclude": ["node_modules", "dist", "tmp"]
 }
 `,
-		vite: `import type { UserConfig } from 'vite'
+		vite: `import type { {{viteTypes}} } from 'vite'
 {{imports}}import { defineConfig, mergeConfig } from 'vitest/config'
 import tsconfig from './tsconfig.json' with { type: 'json' }
 {{helpers}}import { lstatSync, readdirSync, realpathSync } from 'node:fs'
@@ -244,7 +244,7 @@ const resolve = {
 `,
 			browser: `function applicationBrowser(showcase: boolean): UserConfig {
 	const output = showcase ? 'dist/showcase' : 'dist/app/browser'
-	return {
+{{showcasePlugins}}	return {
 		resolve,
 {{plugins}}		root: resolveWorkspacePath('app/browser'),
 		publicDir: false,

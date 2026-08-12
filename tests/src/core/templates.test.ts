@@ -26,16 +26,20 @@ const PRINT_WIDTH = 100
 const TAB_COLUMNS = '  '
 // The specifiers the vendored `import/no-unassigned-import` rule exempts.
 const STYLE_IMPORT = /^import\s+'[^']+\.(?:css|less|sass|scss|styl|stylus|pcss|postcss|sss)'/u
-// `@vitejs/plugin-vue` is the one specifier an emitted browser configuration names
-// that this repository does not install, because scaffold generates a Vue
-// application without being one. Declaring its shape lets the typecheck reach the
-// question asked here, which is about the project array and never about the
-// plugin; the control below is the exact defect, so a clean run cannot be a
-// typecheck that resolved nothing.
-const VUE_DECLARATION = `declare module '@vitejs/plugin-vue' {
+// These are the two specifiers an emitted browser configuration names that this
+// repository does not install, because scaffold generates a Vue application
+// without being one. Declaring their Vite-facing shapes lets the typecheck reach
+// the emitted configuration itself; the controls below prove a clean run cannot
+// be a typecheck that resolved nothing.
+const BROWSER_PLUGIN_DECLARATIONS = `declare module '@vitejs/plugin-vue' {
 	import type { PluginOption } from 'vite'
 	const plugin: (...options: never[]) => PluginOption
 	export default plugin
+}
+
+declare module 'vite-plugin-singlefile' {
+	import type { PluginOption } from 'vite'
+	export function viteSingleFile(options?: unknown): PluginOption
 }
 `
 const SELECTIONS: ReadonlyArray<readonly Environment[]> = [
@@ -158,7 +162,7 @@ function stageRootConfig(blueprint: Blueprint, root: string): void {
 		join(root, 'configs/helpers.ts'),
 		readFileSync(resolve('configs/helpers.ts'), 'utf8'),
 	)
-	writeFileSync(join(root, 'vue.d.ts'), VUE_DECLARATION)
+	writeFileSync(join(root, 'plugins.d.ts'), BROWSER_PLUGIN_DECLARATIONS)
 }
 
 // The `check` script a generated workspace vendors, run over one staged
@@ -466,35 +470,60 @@ describe('emitted workspaces under their own gates', () => {
 	})
 
 	// A generated workspace's own `check` script runs `tsc` over the configuration
-	// `new` just wrote, so the emitted project array is measured against Vitest's
-	// real published type here rather than against a description of it.
-	it('emits a browser project entry Vitest accepts', () => {
+	// `new` just wrote, so both browser masks are measured against Vite and
+	// Vitest's real published types rather than against a description of them.
+	it('emits browser configurations their own typecheck accepts', () => {
 		mkdirSync(resolve('tmp'), { recursive: true })
 		const root = mkdtempSync(join(resolve('tmp'), 'scaffold-e2-types-'))
+		const applicationRoot = join(root, 'application')
+		const showcaseRoot = join(root, 'showcase')
 		try {
-			stageRootConfig(createBlueprint('sample', { app: ['browser'] }), root)
-			const emitted = readFileSync(join(root, 'vite.config.ts'), 'utf8')
-			expect(checkTypes(root)).toBe('')
+			stageRootConfig(createBlueprint('sample', { app: ['browser'] }), applicationRoot)
+			stageRootConfig(createBlueprint('sample', { app: ['browser'], showcase: true }), showcaseRoot)
+			const application = readFileSync(join(applicationRoot, 'vite.config.ts'), 'utf8')
+			const showcase = readFileSync(join(showcaseRoot, 'vite.config.ts'), 'utf8')
+			expect(checkTypes(applicationRoot)).toBe('')
+			expect(checkTypes(showcaseRoot)).toBe('')
 
 			// The control is the row this compiler emitted before the fix: a bare
 			// factory reference, which Vitest reads as a `UserProjectConfigFn` and
 			// calls with a `ConfigEnv` the factory refuses. It is outside the emitted
 			// population, because no selection emits it any more.
-			expect(emitted).toContain('\t\t\tappBrowser(),')
+			expect(application).toContain('\t\t\tappBrowser(),')
 			// The evaluated row carries no function name, so the vendored `config`
 			// proof finds it by the label instead. That label is emitted here, and the
 			// two have to agree or a generated browser workspace fails its own `test`
 			// script while passing its `check` script.
-			expect(emitted).toContain("name: { label: 'app:browser', color: 'blue' }")
+			expect(application).toContain("name: { label: 'app:browser', color: 'blue' }")
 			writeFileSync(
-				join(root, 'vite.config.ts'),
-				emitted.replace('\t\t\tappBrowser(),', '\t\t\tappBrowser,'),
+				join(applicationRoot, 'vite.config.ts'),
+				application.replace('\t\t\tappBrowser(),', '\t\t\tappBrowser,'),
 			)
-			expect(checkTypes(root)).toContain("is not assignable to type 'TestProjectConfiguration'")
+			expect(checkTypes(applicationRoot)).toContain(
+				"is not assignable to type 'TestProjectConfiguration'",
+			)
+
+			// The showcase-only control removes the contextual type from the
+			// conditional plugin array. It recreates the widening that made the
+			// emitted workspace fail even though the runtime plugin list is unchanged.
+			expect(showcase).toContain('const showcasePlugins: PluginOption[] = showcase')
+			const control = showcase
+				.replace(
+					"import type { PluginOption, UserConfig } from 'vite'",
+					"import type { UserConfig } from 'vite'",
+				)
+				.replace(
+					'const showcasePlugins: PluginOption[] = showcase',
+					'const showcasePlugins = showcase',
+				)
+			expect(control).not.toBe(showcase)
+			writeFileSync(join(showcaseRoot, 'vite.config.ts'), control)
+			const diagnostics = checkTypes(showcaseRoot)
+			expect(diagnostics).toContain("Parameter 'html' implicitly has an 'any' type")
 		} finally {
 			rmSync(root, { recursive: true, force: true })
 		}
-	})
+	}, 10_000)
 
 	it('prints no line past the vendored width the formatter could have broken', () => {
 		// Three tabs print as six columns, so the first control is one column past
