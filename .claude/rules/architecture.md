@@ -67,6 +67,10 @@ Use only the centralized files an environment needs.
   creates a directory rather than an entity and `isVacant` is a predicate rather than a `Guard<T>`,
   so both stay in `helpers.ts`. Placement follows what the function is; the name form follows
   placement.
+- Repair a violation of those forms by moving the declaration, never by renaming it. A `scan*` in
+  `parsers.ts` is misplaced, not misnamed, and the barrel star-exports both files, so the move leaves
+  the published surface identical while a rename moves it and earns the package a version bump.
+  Update every import in the same change and leave no re-export behind.
 - `templates.ts` and `contracts.ts` hold data only — shipped template definitions and compiled
   contracts. A function that builds either belongs in the kind file for what it builds.
 - `handlers.ts` holds request handlers, which are functions. `routes.ts` holds data only: a route is

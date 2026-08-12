@@ -217,6 +217,13 @@ clobbered edits, formatter and build races, cache phantoms, and validation cross
    sharing one working tree contaminate each other's readings in both directions.
 6. After integration, clear shared caches if needed, then have one independent `verifier` run the
    authoritative tree-wide sweep. A writer's self-report never establishes green.
+7. The Orchestrator's own sweep is a writing dispatch and queues behind the units that own those
+   files. A script that fixes one thing across every target is the easiest way to break rule 1,
+   because it does not feel like a dispatch — nobody was named, no brief was written, and it
+   finishes in seconds. It still writes into trees a live unit owns, and a unit whose brief it
+   invalidates will repair the same drift the other way and report a state that is already false.
+   Run it before the units, or after them, or send the decision to every unit in flight per the
+   mid-campaign rule under **Dispatch anatomy**. Never beside them.
 
 ## Execution loop
 

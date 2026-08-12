@@ -193,6 +193,14 @@ Coverage rules:
 Before acceptance:
 
 - prove every intended test file is discovered by the correct project;
+- prove every declared project is reachable from a gate. A project registered in the root
+  configuration with no script, or with a script no chain runs, is a proof that never executes — and
+  because it never executes it never fails, so the suite reports green while carrying it. Read the
+  chain, not the exit code: run each project directly once and compare that list against what `test`
+  actually invokes. The gate that would report this gap is the gate that is missing.
+- prove a declared project's include resolves to a real file. An empty project is not a passing
+  project: Vitest exits non-zero on "no test files found", so a project aimed at a path that was
+  never created stays invisible until something finally runs it.
 - inspect actual test counts and environments;
 - audit `.todo`, `.skip`, conditional skips, retries, and inflated timeouts;
 - confirm each assertion would fail for the defect it claims to catch, and that it fails rather than passes when its population is empty;
