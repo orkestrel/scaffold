@@ -106,6 +106,12 @@ publishes only after every layer before it is on the registry. A row with no lay
 a cycle and cannot be placed in a round at all. Two packages in one layer are independent
 of each other and may publish in any order within it.
 
+Report a disagreeing pin as a defect, never as drift to tidy later. When two packages in
+one install graph pin different versions of a third, npm installs both copies, and the
+compiler reads the two copies as two distinct types. The symptom is a type error naming
+one type as not assignable to itself. `npm ls @orkestrel/<name>` is the evidence: one line
+is sound, and nesting is the finding.
+
 ## Evidence workflow
 
 1. Map the package and direct dependency edges from manifests and lockfiles.
