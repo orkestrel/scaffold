@@ -527,7 +527,7 @@ export function resolveRealPath(path: string): string | undefined {
  * ```ts
  * import { resolveContainedPath } from '@orkestrel/scaffold/server'
  *
- * resolveContainedPath('/tmp/project', 'guides/router.md') // '/tmp/project/guides/router.md'
+ * resolveContainedPath('/tmp/project', 'guides/router.md')?.endsWith('router.md') // true
  * resolveContainedPath('/tmp/project', '../secrets') // undefined
  * ```
  */
