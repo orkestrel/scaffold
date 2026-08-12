@@ -12,6 +12,10 @@ does not work. Scaffold makes the shared set data — a vendored data root shipp
 — and gives it three verbs: create a workspace from it, report how a workspace differs from it, and
 write the difference back.
 
+Every code fence below is illustrative. Nothing runs one, so a trailing `// value` comment inside a
+fence is this guide's claim rather than a measured answer; the driven examples are the ones the
+shipped declarations print. Limits states what that leaves unproven and what covers it instead.
+
 ```sh
 npm install --save-dev @orkestrel/scaffold
 ```
@@ -608,12 +612,14 @@ const compiler = createCompiler()
 const scaffolding = compiler.compile(createBlueprint('router', { src: ['browser', 'server'] }))
 
 scaffolding.plan === undefined || scaffolding.questions.length > 0 // true — do not write this shape
+compiler.destroy()
 ```
 
-`materialize` does not apply that rule for you. It refuses what only a writer can see — a target
-that is not vacant — and writes the plan it is given otherwise. Choosing a shape is a policy about
-which workspace to want, the plan has already answered whether that workspace can be built, and the
-questions are where the package says what it thinks of the choice. That is the same line
+`materialize` does not apply that rule for you, and it could not: `compile` returns `questions`
+beside `plan`, and the writer receives the plan alone. It refuses what only a writer can see — a
+target that is not vacant — and writes the plan it is given otherwise. Choosing a shape is a policy
+about which workspace to want, the plan has already answered whether that workspace can be built,
+and the questions are where the package says what it thinks of the choice. That is the same line
 `createBlueprint` draws when it constructs a blueprint the gate will refuse: one law lives in one
 place, and the caller that picked the shape is the one holding it.
 
@@ -818,10 +824,17 @@ materializer.destroy()
 ```
 
 `resolveContainedPath` refuses a lexical escape, a physical link out of the root, and a dangling
-link whose raw target contains a `..` segment. It returns the root-relative lexical path after
-checking the namespace, not an open filesystem handle. Its contract therefore excludes a concurrent
-rename or link swap during the check or before the caller finishes using that path. A caller that
-admits hostile concurrent namespace mutation needs a handle-bound operation instead.
+link whose raw target contains a `..` segment. It returns the lexical join of `root` and `path` — an
+absolute path under `root`, which is what its shipped example prints — after checking the namespace,
+not an open filesystem handle. Its contract therefore excludes a concurrent rename or link swap
+during the check or before the caller finishes using that path. A caller that admits hostile
+concurrent namespace mutation needs a handle-bound operation instead.
+
+`resolveRealPath` answers the caller's own text collapsed lexically, then resolved through every link
+in what survives that collapse. A `..` the caller wrote cancels the segment before it as text, so
+`<root>/hop/..` answers `<root>` even where `hop` links elsewhere, rather than the directory holding
+what `hop` points at. The collapse only ever shortens the path, so nothing reaches outside it this
+way; the answer is a lexical location resolved through links, not a physical one.
 
 Read the registry and the guide host:
 
@@ -904,14 +917,27 @@ are thrown, so an observer sees a refusal even where the caller catches it.
 
 ## Limits
 
-Five things a reader will look for and not find.
+Six things a reader will look for and not find.
+
+**A code fence in this guide is unverified.** [`tests/guides.test.ts`](../tests/guides.test.ts)
+proves that every fence imports only real exports of the two barrels, and that every backticked name
+in this file resolves to one. It neither runs a fence nor typechecks one, so a trailing `// value`
+comment inside a fence states what this guide claims rather than what the build answered. The
+verdicts that are measured are the ones a consumer hovers:
+[`tests/integration.test.ts`](../tests/integration.test.ts) drives every `@example` the built
+declarations print against the installed package, scores each verdict it can read as a value, and
+names exactly the ones it cannot. Fences are not added to that instrument, because most of them
+cannot be run: several declare an ambient value that has no runtime, and several write to a
+directory or read the network, so executing them would be a mutation rather than a check.
 
 **The library does not enforce the creating verb's policy.** `new` refuses a blueprint carrying any
 question, and `materialize` writes any plan into any vacant target. A workspace of several published
 `src` environments without `core` is therefore constructible, compilable, and writable through the
 library, and its manifest names a `core` build the workspace never runs — which is exactly what the
-advisory said. The refusal lives in the verb that chose the shape because only that verb knows a
-shape was being chosen; the Compile section states the rule a library caller applies in its place.
+advisory said. The refusal lives in the verb that chose the shape because that verb is the only one
+holding the advice: `compile` returns `questions` beside `plan`, and `materialize` receives the plan
+alone, so it has nothing to refuse on. The Compile section states the rule a library caller applies
+in its place.
 
 **`isPath` does not prove host portability.** It proves bounded target-relative syntax and rejects
 traversal, separators, controls, and reserved syntax characters. It deliberately admits host-specific
@@ -919,7 +945,11 @@ segment spellings such as a Windows device name, a trailing dot or space, and a 
 filesystem's byte ceiling. The compiler emits none of those names. A caller-supplied plan may carry
 one, and the writer reports the host's refusal rather than treating logical path syntax as a promise
 that every filesystem can create it. `isFilesystemPath` is the separate server guard for target and
-vendored-root locations on the host.
+vendored-root locations on the host. Both `/` and `\` are separators to every reading in this
+package, on every host, including the server's reading of a raw symbolic-link target. A POSIX
+filename that legally contains a backslash — `weird\..\name` — is therefore refused as three
+segments rather than admitted as one name. That is one separator law with a conservative side, not a
+host-dependent second one.
 
 **Scaffold emits no styles axis.** `SRC_MATRIX` is exactly `core`, `browser`, and `server`, and
 `Blueprint` carries no styles field. A workspace that needs `src/styles/` adds the directory, its

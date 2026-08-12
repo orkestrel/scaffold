@@ -91,8 +91,13 @@ const compiler = createCompiler()
 const scaffolding = compiler.compile(createBlueprint('router', { src: ['core', 'server'] }))
 
 scaffolding.plan?.artifacts // every planned file, in group order
+scaffolding.questions // the advice the compile could not settle
 compiler.destroy()
 ```
+
+A plan says the workspace can be built. It does not say the workspace should be created: a caller
+creating a fresh workspace refuses on any question beside the plan, blocking or not, exactly as
+`new` does. [`guides/scaffold.md`](guides/scaffold.md) states that rule and what it covers.
 
 `@orkestrel/scaffold/server` is Node-only and holds everything that touches the filesystem or the
 network: `createMaterializer` writes a plan into a target, `createUpstream` reads the registry and

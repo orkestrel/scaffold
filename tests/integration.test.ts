@@ -28,10 +28,15 @@ const registry =
 // is shipped by whichever declaration prints it and a reader hovers over either.
 // Each carries controls of its own, and none of them is in either built
 // declaration, so every one lies outside the population the instrument covers.
-// Two kinds, because the instrument has two ways to say nothing. A false claim
-// must be scored a mismatch, which is the proof the comparison can fail at all.
-// A claim the membership rule excludes must be named in the undriven set, which
-// is the proof the rule reports what it cannot reach instead of dropping it.
+// One control per outcome the rule below can reach, because the instrument has
+// one way to report and three ways to say nothing. A false claim must be scored
+// a mismatch, which is the proof the comparison can fail at all. A claim the
+// rule excludes must be named in the set that excluded it — undriven, glossed,
+// or elided — which is the proof the rule reports what it cannot reach instead
+// of dropping it. The two false controls in the excluded spellings are the ones
+// the previous instrument dropped silently: it named the statement kind alone,
+// so a corrected example rewritten with a gloss or an elision left every list
+// where it was.
 const DECLARATIONS = [
 	{
 		types: 'dist/src/core/index.d.ts',
@@ -51,14 +56,20 @@ const DECLARATIONS = [
 	{
 		types: 'dist/src/server/index.d.ts',
 		module: 'dist/src/server/index.js',
-		controls: ["isBranch('main') // false"],
+		controls: [
+			"isBranch('main') // false",
+			"isBranch('main') // false — a branch name is not a branch",
+			"listFiles('./dist/host') // ['definitely-not-a-file', …]",
+		],
 	},
 ] as const
 
 // A claim is a line inside a fenced `ts` example whose trailing comment states a
-// verdict. The membership rule the driven set adds to that is stated where the
-// set is built: the verdict parses as a literal, the expression the comment sits
-// on closes its own brackets, and it is an expression rather than a statement.
+// verdict. That is the population, and every line in it lands in exactly one of
+// four sets. It is driven when the verdict parses as a literal and the
+// expression the comment sits on closes its own brackets and is an expression
+// rather than a statement. Otherwise it is elided, glossed, or undriven, and
+// each of those three is asserted as the exact list of lines it holds.
 const EXAMPLE = /```ts\n(?<body>[\s\S]*?)```/gu
 const CLAIM = /^(?<expression>\S.*?) \/\/ (?<verdict>.+)$/u
 const PREFIX = /^\s*\*( |$)/u
@@ -86,8 +97,9 @@ const KEYWORDS = [
 	'var',
 	'while',
 ]
-// A verdict this instrument declines to read as a literal. An elided value is a
-// shape rather than a claim, so it is excluded before it can be scored false.
+// A verdict this instrument declines to read as a literal. An elided value shows
+// a prefix of a shape rather than the whole of one, so there is nothing to
+// compare a run against and the line is named rather than scored.
 const ELISION = '…'
 const ABSENT = '\u0000undefined'
 
@@ -131,7 +143,10 @@ describe('installed package consumer', () => {
 		try {
 			const driven: string[] = []
 			const undriven: string[] = []
+			const elided: string[] = []
+			const glossed: string[] = []
 			const mismatched: string[] = []
+			let shaped = 0
 			for (const declaration of DECLARATIONS) {
 				const text = readFileSync(resolve(root, declaration.types), 'utf8')
 				const bodies = [
@@ -160,7 +175,12 @@ describe('installed package consumer', () => {
 						const expression = match?.groups?.expression
 						const verdict = match?.groups?.verdict
 						if (expression === undefined || verdict === undefined) continue
-						if (verdict.includes(ELISION)) continue
+						shaped += 1
+						const stated = `${declaration.types}: ${expression} // ${verdict}`
+						if (verdict.includes(ELISION)) {
+							elided.push(stated)
+							continue
+						}
 						let encoded: string | undefined
 						if (verdict === 'undefined') encoded = ABSENT
 						else {
@@ -176,7 +196,10 @@ describe('installed package consumer', () => {
 								encoded = undefined
 							}
 						}
-						if (encoded === undefined) continue
+						if (encoded === undefined) {
+							glossed.push(stated)
+							continue
+						}
 						// The statement the comment sits on is the shortest run of lines
 						// ending here that closes every bracket it opens, so a claim printed
 						// across several lines is driven as the one expression it is.
@@ -204,12 +227,15 @@ describe('installed package consumer', () => {
 							opening = start
 							break
 						}
-						const id = claims.length
-						claims.push({ text: expression, encoded })
 						if (opening === undefined) {
 							undriven.push(`${declaration.types}: ${expression}`)
 							continue
 						}
+						// Recorded only once it has a span, so the claim list holds exactly the
+						// claims the driver is asked to answer and an unanswered id below is a
+						// claim the block reached past rather than one already named here.
+						const id = claims.length
+						claims.push({ text: expression, encoded })
 						spans.push({ start: opening, end: index, id })
 					}
 					if (spans.length === 0) continue
@@ -254,7 +280,14 @@ describe('installed package consumer', () => {
 				}
 				for (const [index, claim] of claims.entries()) {
 					const outcome: unknown = Object.getOwnPropertyDescriptor(outcomes, String(index))?.value
-					if (typeof outcome !== 'object' || outcome === null) continue
+					// The driver answers for every claim in a block it ran, so a claim with
+					// no outcome at all is one the block reached past rather than one the
+					// module contradicted. It is undriven for the same reason a statement
+					// is, and naming it here is what keeps the four sets a partition.
+					if (typeof outcome !== 'object' || outcome === null) {
+						undriven.push(`${declaration.types}: ${claim.text}`)
+						continue
+					}
 					const encoded: unknown = Object.getOwnPropertyDescriptor(outcome, 'encoded')?.value
 					if (typeof encoded !== 'string') {
 						undriven.push(`${declaration.types}: ${claim.text}`)
@@ -267,6 +300,13 @@ describe('installed package consumer', () => {
 				}
 			}
 
+			// The four sets partition the population rather than sampling it, so no
+			// claim-shaped line can leave the rule without arriving in a list below.
+			// This is the assertion the lists are exact against: a shipped example
+			// that changes spelling moves between two of them and both move.
+			expect(driven.length + undriven.length + glossed.length + elided.length).toBe(shaped)
+			expect(shaped).toBe(165)
+
 			// Every claim scored false is a control, and nothing the package ships is.
 			// This establishes that a driven claim the module contradicts is reported,
 			// in both declarations and through the binding the retired claim needed. It
@@ -275,12 +315,48 @@ describe('installed package consumer', () => {
 				"createCompiler().audit(blueprint, {}).findings.every(({ drift }) => drift === 'missing') // true answered false",
 				"isBranch('main') // false answered true",
 			])
-			// The membership rule, stated as the exact set it leaves out. A claim is
-			// driven unless its verdict is not a literal, its expression is a statement
-			// rather than an expression, or the block carrying it refused to compile or
-			// threw. Every excluded claim is named here, the last of them a control, so
-			// the rule reports what it cannot reach instead of dropping it and cannot
-			// widen without this list moving.
+			// The membership rule, stated as the three exact sets it leaves out. A
+			// claim is glossed when its verdict is prose, elided when its verdict shows
+			// a prefix of a value, and undriven when the expression the comment sits on
+			// is a statement or the block carrying it refused to compile or threw. Each
+			// list ends with a control excluded for that list's reason, and each of
+			// those controls is false against the build, so no shipped example can
+			// change spelling and no exclusion can widen without the list that gains
+			// the line moving with it. The lists are long because most shipped verdicts
+			// are prose, and reporting that is the point of naming them.
+			expect(glossed).toStrictEqual([
+				"dist/src/core/index.d.ts: ) // { path: 'README.md', group: 'docs', ownership: 'content', drift: 'stale', observed: '6279650a' }",
+				'dist/src/core/index.d.ts: blueprintToDevDependencies(blueprint).typescript // the shared TypeScript pin',
+				"dist/src/core/index.d.ts: createBlueprint('Router').name // 'Router' — the gate refuses it, this does not",
+				'dist/src/core/index.d.ts: ).length // 1 — the range is not caret-pinned',
+				"dist/src/core/index.d.ts: isBlueprint({ name: 'router', src: ['core'] }) // false — not the whole record",
+				'dist/src/core/index.d.ts: parseCompilerOptions({ on: { compile: () => {} } }) // the same record',
+				'dist/src/core/index.d.ts: planToSummary(plan).computed // the number of computed artifacts',
+				'dist/src/core/index.d.ts: selectGroups() // every group, in plan order',
+				"dist/src/core/index.d.ts: serializeTypeScriptString(\"it's\") // `'it\\\\'s'`",
+				"dist/src/server/index.d.ts: computeFileDigest('/tmp/project/AGENTS.md') // the file's SHA-256",
+				'dist/src/server/index.d.ts: computeManifestDigest([], []) // the digest of the empty membership',
+				"dist/src/server/index.d.ts: isExactCaseFile('/tmp/project/src/bin/main.ts') // true only for that exact spelling",
+				"dist/src/server/index.d.ts: isPhysicalDirectory('/tmp/project') // true for a plain directory",
+				"dist/src/server/index.d.ts: isPhysicalFile('/tmp/project/AGENTS.md') // true for a plain file",
+				"dist/src/server/index.d.ts: isVacant('./packages/router-new') // true when absent, empty, or `.git` only",
+				'dist/src/server/index.d.ts: anchor !== undefined && matchesAnchor(anchor) // true while it is untouched',
+				'dist/src/server/index.d.ts: expectation !== undefined && matchesExpectation(expectation) // true while untouched',
+				"dist/src/server/index.d.ts: matchesPrecondition({ path: '/tmp/project/new.md', shape: 'absent' }) // true while absent",
+				"dist/src/server/index.d.ts: readAnchor('/tmp/project') // { path: '/tmp/project', device: 1, inode: 2 }",
+				"dist/src/server/index.d.ts: readHostManifest('./dist/host') // the manifest, or undefined for a raw root",
+				"dist/src/server/index.d.ts: resolveRealPath('./packages/new/src') // the real path of `packages`, plus `new/src`",
+				"dist/src/server/index.d.ts: stageHost(process.cwd(), 'dist/host').length // the files staged",
+				"dist/src/server/index.d.ts: isBranch('main') // false — a branch name is not a branch",
+			])
+			expect(elided).toStrictEqual([
+				"dist/src/server/index.d.ts: listDirectories('./.claude') // ['agents', 'rules', 'skills', …]",
+				"dist/src/server/index.d.ts: listFiles('./dist/host') // ['AGENTS.md', 'CLAUDE.md', 'LICENSE', …]",
+				"dist/src/server/index.d.ts: readExpectation('/tmp/project/absent.md') // { path: …, shape: 'absent' }",
+				"dist/src/server/index.d.ts: readFileHex('/tmp/project', 'AGENTS.md') // '2320416765…'",
+				"dist/src/server/index.d.ts: readFileText('/tmp/project', 'package.json') // '{ \"name\": \"@orkestrel/router\", … }'",
+				"dist/src/server/index.d.ts: listFiles('./dist/host') // ['definitely-not-a-file', …]",
+			])
 			expect(undriven).toStrictEqual([
 				'dist/src/core/index.d.ts: if (isScaffoldError(error)) error.code',
 				"dist/src/core/index.d.ts: if (isGroup('manifest')) inferGroup('AGENTS.md')",

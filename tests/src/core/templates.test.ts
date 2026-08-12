@@ -48,42 +48,45 @@ const SELECTIONS: ReadonlyArray<readonly Environment[]> = [
 	['browser', 'server'],
 	['core', 'browser', 'server'],
 ]
-// Every distinct module path the selection matrix emits. Each sweep below reports
-// its finding as an empty list, and an empty population produces the same empty
-// list, so each one asserts the set it actually walked before the verdict it drew
-// from it. A selection that stops emitting a module fails here rather than
-// quietly narrowing three sweeps at once.
-const MODULE_PATHS: readonly string[] = Object.freeze([
-	'app/browser/index.ts',
-	'app/browser/main.ts',
-	'app/core/index.ts',
-	'app/server/index.ts',
-	'app/server/main.ts',
-	'configs/app/vite.browser.config.ts',
-	'configs/app/vite.server.config.ts',
-	'configs/app/vite.showcase.config.ts',
-	'configs/src/vite.bin.config.ts',
-	'configs/src/vite.browser.config.ts',
-	'configs/src/vite.core.config.ts',
-	'configs/src/vite.server.config.ts',
-	'src/bin/main.ts',
-	'src/browser/index.ts',
-	'src/core/index.ts',
-	'src/server/index.ts',
-	'tests/app/browser/index.test.ts',
-	'tests/app/core/index.test.ts',
-	'tests/app/server/index.test.ts',
-	'tests/integration.test.ts',
-	'tests/setup.ts',
-	'tests/setupBrowser.ts',
-	'tests/setupGlobal.ts',
-	'tests/setupServer.ts',
-	'tests/src/bin/main.test.ts',
-	'tests/src/browser/index.test.ts',
-	'tests/src/core/index.test.ts',
-	'tests/src/server/index.test.ts',
-	'vite.config.ts',
-])
+// The population the three sweeps below walk, stated as the relation it actually
+// is: one entry per (blueprint, module path) pair the selection matrix emits,
+// projected onto the path as the number of the 126 blueprints that emit it. The
+// union of those paths is a weaker claim and does not stand in for this one. One
+// maximal blueprint emits all 29 paths by itself, so under a union assertion 125
+// of the 126 could emit nothing and nothing would move; the counts move for any
+// selection that stops emitting anything. The control beside the first sweep
+// runs that exact narrowing.
+const MODULE_EMITTERS: Readonly<Record<string, number>> = Object.freeze({
+	'app/browser/index.ts': 64,
+	'app/browser/main.ts': 64,
+	'app/core/index.ts': 64,
+	'app/server/index.ts': 64,
+	'app/server/main.ts': 64,
+	'configs/app/vite.browser.config.ts': 64,
+	'configs/app/vite.server.config.ts': 64,
+	'configs/app/vite.showcase.config.ts': 32,
+	'configs/src/vite.bin.config.ts': 63,
+	'configs/src/vite.browser.config.ts': 64,
+	'configs/src/vite.core.config.ts': 64,
+	'configs/src/vite.server.config.ts': 64,
+	'src/bin/main.ts': 63,
+	'src/browser/index.ts': 64,
+	'src/core/index.ts': 64,
+	'src/server/index.ts': 64,
+	'tests/app/browser/index.test.ts': 64,
+	'tests/app/core/index.test.ts': 64,
+	'tests/app/server/index.test.ts': 64,
+	'tests/integration.test.ts': 56,
+	'tests/setup.ts': 126,
+	'tests/setupBrowser.ts': 96,
+	'tests/setupGlobal.ts': 63,
+	'tests/setupServer.ts': 111,
+	'tests/src/bin/main.test.ts': 63,
+	'tests/src/browser/index.test.ts': 64,
+	'tests/src/core/index.test.ts': 64,
+	'tests/src/server/index.test.ts': 64,
+	'vite.config.ts': 126,
+})
 
 // Every selection the compiler accepts, in both structural states it branches on.
 // A shape is emitted for each of the 63 non-empty `src` x `app` pairs twice: once
@@ -123,6 +126,17 @@ function buildModules(blueprint: Blueprint): ReadonlyMap<string, string> {
 		modules.set(artifact.path, artifact.content)
 	}
 	return modules
+}
+
+// The emitter relation over one corpus, for a walk that reads nothing else. Each
+// sweep counts its own pairs while it reads content, so this is the shape both
+// halves compare in rather than a second way of deriving it.
+function countEmitters(blueprints: readonly Blueprint[]): Readonly<Record<string, number>> {
+	const counts = new Map<string, number>()
+	for (const blueprint of blueprints) {
+		for (const path of buildModules(blueprint).keys()) counts.set(path, (counts.get(path) ?? 0) + 1)
+	}
+	return Object.fromEntries(counts)
 }
 
 function measureWidth(line: string): number {
@@ -369,11 +383,33 @@ describe('configuration templates', () => {
 
 // A generated workspace vendors `format:check` and `lint:check` and runs both on
 // the bytes `new` just wrote, so the emitted text is measured against the vendored
-// rules directly here. Each instrument's population is every TypeScript module the
-// matrix emits, and each carries a control drawn from outside that population,
-// because an instrument that has never reported is not evidence that the corpus is
-// clean.
+// rules directly here. Each instrument's population is every (blueprint, module)
+// pair the matrix emits — 2015 of them over 126 blueprints — and each sweep states
+// that population as `MODULE_EMITTERS` before the empty finding it draws from it,
+// because an empty corpus reports the same empty finding as a clean one. Each rule
+// carries a control drawn from outside the emitted population as well, because an
+// instrument that has never reported is not evidence that the corpus is clean.
 describe('emitted workspaces under their own gates', () => {
+	it('counts every selection that emits each module', () => {
+		expect(countEmitters(buildSelections())).toStrictEqual(MODULE_EMITTERS)
+
+		// The control is the matrix one selection short, which is outside the
+		// population `MODULE_EMITTERS` covers because that population is the pairs
+		// all 126 blueprints emit. `browser+server` is the selection every one of
+		// whose modules another selection also emits, so the union of paths is
+		// bit-identical without it — the assertion these sweeps used to make passes
+		// on a corpus missing 30 blueprints. The relation is what moves.
+		const narrowed = buildSelections().filter(
+			(blueprint) =>
+				blueprint.src.join('+') !== 'browser+server' &&
+				blueprint.app.join('+') !== 'browser+server',
+		)
+		const emitters = countEmitters(narrowed)
+		expect(narrowed).toHaveLength(96)
+		expect(Object.keys(emitters).sort()).toStrictEqual(Object.keys(MODULE_EMITTERS).sort())
+		expect(emitters).not.toStrictEqual(MODULE_EMITTERS)
+	})
+
 	it('imports no symbol a generated module does not use', () => {
 		expect(findStrays("import { unused } from 'x'\nexport const value = 1\n")).toStrictEqual([
 			'unused',
@@ -392,17 +428,17 @@ describe('emitted workspaces under their own gates', () => {
 			findStrays("import {\n\tused,\n\talso,\n} from 'x'\nexport const value = used + also\n"),
 		).toStrictEqual([])
 
-		const inspected = new Set<string>()
+		const inspected = new Map<string, number>()
 		const strays: string[] = []
 		for (const blueprint of buildSelections()) {
 			for (const [path, content] of buildModules(blueprint)) {
-				inspected.add(path)
+				inspected.set(path, (inspected.get(path) ?? 0) + 1)
 				for (const binding of findStrays(content)) {
 					strays.push(`${blueprint.src.join('+')}/${blueprint.app.join('+')} ${path} ${binding}`)
 				}
 			}
 		}
-		expect([...inspected].sort()).toStrictEqual([...MODULE_PATHS])
+		expect(Object.fromEntries(inspected)).toStrictEqual(MODULE_EMITTERS)
 		expect(strays).toStrictEqual([])
 	})
 
@@ -410,17 +446,17 @@ describe('emitted workspaces under their own gates', () => {
 		expect(findUnassigned("import './index.js'\n")).toStrictEqual(["import './index.js'"])
 		expect(findUnassigned("import './index.scss'\n")).toStrictEqual([])
 
-		const inspected = new Set<string>()
+		const inspected = new Map<string, number>()
 		const unassigned: string[] = []
 		for (const blueprint of buildSelections()) {
 			for (const [path, content] of buildModules(blueprint)) {
-				inspected.add(path)
+				inspected.set(path, (inspected.get(path) ?? 0) + 1)
 				for (const line of findUnassigned(content)) {
 					unassigned.push(`${path} ${line}`)
 				}
 			}
 		}
-		expect([...inspected].sort()).toStrictEqual([...MODULE_PATHS])
+		expect(Object.fromEntries(inspected)).toStrictEqual(MODULE_EMITTERS)
 		expect(unassigned).toStrictEqual([])
 		const application = buildModules(
 			createBlueprint('sample', { app: ['core', 'browser', 'server'] }),
@@ -469,15 +505,15 @@ describe('emitted workspaces under their own gates', () => {
 		expect(findWide(`\t\t\t${'a'.repeat(88)} = '_'`)).toStrictEqual([])
 		expect(findWide(`\t\t\t\t'${'a'.repeat(120)}',`)).toStrictEqual([])
 
-		const inspected = new Set<string>()
+		const inspected = new Map<string, number>()
 		const wide: string[] = []
 		for (const blueprint of buildSelections()) {
 			for (const [path, content] of buildModules(blueprint)) {
-				inspected.add(path)
+				inspected.set(path, (inspected.get(path) ?? 0) + 1)
 				for (const line of findWide(content)) wide.push(`${path} ${line.trim()}`)
 			}
 		}
-		expect([...inspected].sort()).toStrictEqual([...MODULE_PATHS])
+		expect(Object.fromEntries(inspected)).toStrictEqual(MODULE_EMITTERS)
 		// The workspace name reaches the emitted declaration rewrite, so its width is
 		// swept over every length the gate admits rather than at one sample: the
 		// joined call fits up to a point this matrix crosses, and one name on either

@@ -391,10 +391,10 @@ export function computeFileDigest(path: string): string | undefined {
  * Resolve a path through the real filesystem, keeping the part that does not exist yet.
  *
  * @param path - The absolute or relative host path to resolve.
- * @returns The path with its existing prefix resolved through every link, or
- * `undefined` when the text is not a host path, no bounded existing ancestor
- * resolves, a link target cannot be read, a link target contains parent
- * traversal, or an ancestor cannot be read.
+ * @returns The lexical resolution of `path`, with its existing prefix then
+ * resolved through every link, or `undefined` when the text is not a host path,
+ * no bounded existing ancestor resolves, a link target cannot be read, a link
+ * target carries a `..` segment, or an ancestor cannot be read.
  *
  * @remarks
  * A containment decision has to be made about a destination that does not exist
@@ -404,6 +404,16 @@ export function computeFileDigest(path: string): string | undefined {
  * it. The climb is bounded by the path-depth ceiling, so an adversarial path
  * cannot make it walk indefinitely.
  *
+ * The caller's own text is collapsed first, which is what `resolve` does with a
+ * `..` the caller wrote: it cancels the segment before it as text, before any
+ * link in that segment is read. So `<root>/hop/..` answers `<root>` even where
+ * `hop` links elsewhere, rather than the directory holding what `hop` points at.
+ * The collapse only ever shortens the caller's path, so nothing reaches outside
+ * it by this; the answer is that lexical location resolved through links, not
+ * the physical location the links lead to. {@link resolveContainedPath} passes
+ * its `root` through here, so a root written with a parent segment is contained
+ * against its collapsed spelling.
+ *
  * `realpath` answers `ENOENT` both for a name that is not there and for a link
  * whose target is not there. The name is therefore inspected without following
  * it: a dangling link redirects the walk to its target, while a genuinely absent
@@ -411,6 +421,12 @@ export function computeFileDigest(path: string): string | undefined {
  * target containing a `..` segment is refused. Resolving that target as one
  * lexical string could discard a preceding link before the filesystem gives
  * `..` its physical meaning.
+ *
+ * That target is split on both separators on every host, which is the reading
+ * `isPath` already gives a planned path. A POSIX filename legally containing a
+ * backslash is therefore refused with it: `weird\..\name` is one name to the
+ * host and three segments here. The package keeps one separator law rather than
+ * a host-dependent second one, and this is the conservative side of it.
  *
  * @example
  * ```ts
@@ -461,8 +477,12 @@ export function resolveRealPath(path: string): string | undefined {
  * The containment law, and the one door every read in this module goes through.
  * Both sides are resolved through the real filesystem before they are compared.
  * A dangling link is followed only when its raw target contains no parent
- * traversal. The answer is then the lexical join, so the caller operates on the
- * path it named rather than on a resolved form the target may not recognize.
+ * traversal. The answer is then the lexical join of `root` and `path` — an
+ * absolute path under `root`, not a root-relative one — so the caller operates
+ * on the path it named rather than on a resolved form the target may not
+ * recognize. A `root` written with a parent segment is collapsed by that
+ * resolution before anything is read, so containment is measured against the
+ * directory the caller's text names.
  *
  * Comparison is exact text, which fails closed on a case-insensitive
  * filesystem: a root and a path spelled with different case resolve to
@@ -558,7 +578,7 @@ export function isVacant(target: string): boolean {
  * ```ts
  * import { listFiles } from '@orkestrel/scaffold/server'
  *
- * listFiles('./dist/host') // ['AGENTS.md', 'claude/rules/names.md', …]
+ * listFiles('./dist/host') // ['AGENTS.md', 'CLAUDE.md', 'LICENSE', …]
  * ```
  */
 export function listFiles(root: string): readonly string[] {
