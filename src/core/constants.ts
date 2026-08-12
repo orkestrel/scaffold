@@ -312,7 +312,7 @@ export const DEFAULT_ENGINES = `>=${MINIMUM_NODE_VERSION}`
 export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@microsoft/api-extractor': '^7.58.12',
 	'@orkestrel/guide': '^0.0.9',
-	'@orkestrel/scaffold': '^0.0.25',
+	'@orkestrel/scaffold': '^0.0.26',
 	'@types/node': '^26.2.0',
 	oxfmt: '^0.62.0',
 	oxlint: '^1.77.0',

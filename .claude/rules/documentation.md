@@ -2,7 +2,7 @@
 paths:
   - '*.md'
   - 'guides/**/*.md'
-  - 'tests/guides/**/*.ts'
+  - 'tests/guides.test.ts'
   - 'src/**/types.ts'
   - 'src/**/index.ts'
   - 'app/**/types.ts'
