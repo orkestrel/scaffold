@@ -331,8 +331,8 @@ export const DEFAULT_ENGINES = `>=${MINIMUM_NODE_VERSION}`
 /** The tooling versions scaffold and every generated workspace share. */
 export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@microsoft/api-extractor': '^7.58.12',
-	'@orkestrel/guide': '^0.0.9',
-	'@orkestrel/scaffold': '^0.0.26',
+	'@orkestrel/guide': '^0.0.10',
+	'@orkestrel/scaffold': '^0.0.27',
 	'@types/node': '^26.2.0',
 	oxfmt: '^0.62.0',
 	oxlint: '^1.77.0',
@@ -350,13 +350,13 @@ export const SOURCE_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> =
 
 /** The development dependency every private `app` environment adds. */
 export const APP_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
-	'@orkestrel/contract': '^0.0.10',
+	'@orkestrel/contract': '^0.0.11',
 })
 
 /** The development dependencies a private Vue browser application adds. */
 export const APP_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	...SOURCE_BROWSER_DEV_DEPENDENCIES,
-	'@orkestrel/html': '^0.0.2',
+	'@orkestrel/html': '^0.0.3',
 	'@vitejs/plugin-vue': '^6.0.8',
 	vue: '^3.5.40',
 	'vue-tsc': '^3.3.7',
@@ -378,8 +378,8 @@ export const SHOWCASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Objec
 
 /** The development dependencies a private server application adds. */
 export const APP_SERVER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
-	'@orkestrel/emitter': '^0.0.5',
-	'@orkestrel/middleware': '^0.0.9',
-	'@orkestrel/router': '^0.0.8',
-	'@orkestrel/server': '^0.0.10',
+	'@orkestrel/emitter': '^0.0.6',
+	'@orkestrel/middleware': '^0.0.10',
+	'@orkestrel/router': '^0.0.9',
+	'@orkestrel/server': '^0.0.11',
 })

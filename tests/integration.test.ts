@@ -305,7 +305,7 @@ describe('installed package consumer', () => {
 			// This is the assertion the lists are exact against: a shipped example
 			// that changes spelling moves between two of them and both move.
 			expect(driven.length + undriven.length + glossed.length + elided.length).toBe(shaped)
-			expect(shaped).toBe(168)
+			expect(shaped).toBe(169)
 
 			// Every claim scored false is a control, and nothing the package ships is.
 			// This establishes that a driven claim the module contradicts is reported,
@@ -327,6 +327,7 @@ describe('installed package consumer', () => {
 			expect(glossed).toStrictEqual([
 				"dist/src/core/index.d.ts: ) // { path: 'README.md', group: 'docs', ownership: 'content', drift: 'stale', observed: '6279650a' }",
 				'dist/src/core/index.d.ts: blueprintToDevDependencies(blueprint).typescript // the shared TypeScript pin',
+				'dist/src/core/index.d.ts: catalogToLayers(entries)[0] // the names that depend on nothing in the fleet',
 				"dist/src/core/index.d.ts: createBlueprint('Router').name // 'Router' — the gate refuses it, this does not",
 				'dist/src/core/index.d.ts: ).length // 1 — the range is not caret-pinned',
 				"dist/src/core/index.d.ts: isBlueprint({ name: 'router', src: ['core'] }) // false — not the whole record",
