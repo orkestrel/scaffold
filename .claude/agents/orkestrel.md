@@ -89,11 +89,22 @@ range as a pin, never as a range. A dependent stays on its pinned version until 
 rewrites the dependent's own declared range and re-publishes the dependent. Publishing a
 new version reaches no consumer on its own.
 
-A bump therefore obliges a re-publish of every package downstream of it, in dependency
-order. Report that cascade whenever you sequence cross-package work or state blast
-radius: name each downstream package, its declared range, and its position in the order.
-A package whose pin names an older version runs that older version, whatever the registry
-holds.
+A **runtime** bump therefore obliges a re-publish of every package downstream of it, in
+layer order. Report that cascade whenever you sequence cross-package work or state blast
+radius: name each downstream package, its declared range, and its layer. A package whose
+pin names an older version runs that older version, whatever the registry holds.
+
+A **development** bump obliges nothing. A `devDependencies` range reaches no consumer of
+the published package, so re-pin it, prove the gates still green, and stop. Never report a
+development bump as a cascade. It becomes one only if it forces a change to `src` or
+`app`, because then the published types or runtime moved and the package bumps on that
+account rather than on the dependency's.
+
+The `Layer` column above is the publish round, derived from the runtime edges in the same
+row. `L0` depends on nothing else in the fleet and publishes first; each later layer
+publishes only after every layer before it is on the registry. A row with no layer sits in
+a cycle and cannot be placed in a round at all. Two packages in one layer are independent
+of each other and may publish in any order within it.
 
 ## Evidence workflow
 
