@@ -9,7 +9,7 @@ import {
 	writeFileSync,
 } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import ts from 'typescript'
 import { describe, expect, it } from 'vitest'
@@ -432,13 +432,16 @@ describe('installed package consumer', () => {
 			const packed = join(workspace, 'packed')
 			const consumer = join(workspace, 'consumer')
 			const target = join(workspace, 'generated')
+			const cache = join(workspace, 'cache')
+			const environment = { ...process.env, npm_config_cache: cache }
 			try {
 				mkdirSync(packed, { recursive: true })
 				mkdirSync(consumer, { recursive: true })
+				mkdirSync(cache, { recursive: true })
 				const pack = spawnSync(
 					npm,
 					['pack', '--json', '--ignore-scripts', '--pack-destination', packed],
-					{ cwd: root, encoding: 'utf8', windowsHide: true },
+					{ cwd: root, encoding: 'utf8', env: environment, windowsHide: true },
 				)
 				expect(pack.status).toBe(0)
 				const archives = globSync('*.tgz', { cwd: packed })
@@ -452,7 +455,7 @@ describe('installed package consumer', () => {
 				const install = spawnSync(
 					npm,
 					['install', '--ignore-scripts', '--no-audit', '--no-fund', join(packed, archive)],
-					{ cwd: consumer, encoding: 'utf8', windowsHide: true },
+					{ cwd: consumer, encoding: 'utf8', env: environment, windowsHide: true },
 				)
 				expect(install.status).toBe(0)
 				writeFileSync(
@@ -476,15 +479,66 @@ describe('installed package consumer', () => {
 					windowsHide: true,
 				})
 				expect(generate.status).toBe(0)
+				const sourceManifest: unknown = JSON.parse(
+					readFileSync(resolve(root, 'package.json'), 'utf8'),
+				)
+				if (typeof sourceManifest !== 'object' || sourceManifest === null) {
+					throw new Error('The scaffold manifest is not a record')
+				}
+				const version: unknown = Object.getOwnPropertyDescriptor(sourceManifest, 'version')?.value
+				if (typeof version !== 'string') throw new Error('The scaffold manifest carries no version')
+				const targetManifestPath = join(target, 'package.json')
+				const targetManifest: unknown = JSON.parse(readFileSync(targetManifestPath, 'utf8'))
+				if (typeof targetManifest !== 'object' || targetManifest === null) {
+					throw new Error('The generated manifest is not a record')
+				}
+				const devDependencies: unknown = Object.getOwnPropertyDescriptor(
+					targetManifest,
+					'devDependencies',
+				)?.value
+				if (typeof devDependencies !== 'object' || devDependencies === null) {
+					throw new Error('The generated manifest carries no development dependencies')
+				}
+				const emitted: unknown = Object.getOwnPropertyDescriptor(
+					devDependencies,
+					'@orkestrel/scaffold',
+				)?.value
+				expect(emitted).toBe(`^${version}`)
+				const specifier = `file:${relative(target, join(packed, archive)).replaceAll('\\', '/')}`
+				Object.defineProperty(devDependencies, '@orkestrel/scaffold', {
+					value: specifier,
+					writable: true,
+					enumerable: true,
+					configurable: true,
+				})
+				writeFileSync(targetManifestPath, `${JSON.stringify(targetManifest, undefined, '\t')}\n`)
 				const dependencies = spawnSync(
 					npm,
 					['install', '--ignore-scripts', '--no-audit', '--no-fund'],
-					{ cwd: target, encoding: 'utf8', windowsHide: true },
+					{ cwd: target, encoding: 'utf8', env: environment, windowsHide: true },
 				)
 				expect(dependencies.status).toBe(0)
+				const lock: unknown = JSON.parse(readFileSync(join(target, 'package-lock.json'), 'utf8'))
+				if (typeof lock !== 'object' || lock === null) {
+					throw new Error('The generated lockfile is not a record')
+				}
+				const packages: unknown = Object.getOwnPropertyDescriptor(lock, 'packages')?.value
+				if (typeof packages !== 'object' || packages === null) {
+					throw new Error('The generated lockfile carries no packages')
+				}
+				const scaffold: unknown = Object.getOwnPropertyDescriptor(
+					packages,
+					'node_modules/@orkestrel/scaffold',
+				)?.value
+				if (typeof scaffold !== 'object' || scaffold === null) {
+					throw new Error('The generated lockfile carries no installed scaffold')
+				}
+				const resolved: unknown = Object.getOwnPropertyDescriptor(scaffold, 'resolved')?.value
+				expect(resolved).toBe(specifier)
 				const gates = spawnSync(npm, ['run', 'prepublishOnly'], {
 					cwd: target,
 					encoding: 'utf8',
+					env: environment,
 					windowsHide: true,
 				})
 				expect(gates.status).toBe(0)
