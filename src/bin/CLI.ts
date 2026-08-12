@@ -38,6 +38,7 @@ import {
 	CATALOG_AGENT_PATH,
 	BIN_ENTRY_PATH,
 	blueprintToRootVite,
+	CONFORMANCE_TEST_PATH,
 	createBlueprint,
 	createCompiler,
 	DEPENDENCY_NAME_PATTERN,
@@ -51,6 +52,7 @@ import {
 	MAX_MANIFEST_BYTES,
 	nameToGuide,
 	ScaffoldError,
+	SERVICE_SETUP_PATH,
 	SHOWCASE_CONFIG_PATH,
 } from '@src/core'
 import {
@@ -532,6 +534,8 @@ export class CLI implements CLIInterface {
 	// The blueprint a target describes about itself: manifest identity and fleet
 	// packages, environment directories, and exact structural files. Services stay
 	// unknown because their birth-owned script is not a declaration of its list.
+	// The live-service project does not wait on that list: it follows its own
+	// readiness module, which the root configuration names by path.
 	#derive(target: string): Blueprint {
 		const manifest = this.#manifest(target)
 		const declared = manifestToName(manifest)
@@ -542,6 +546,8 @@ export class CLI implements CLIInterface {
 		}
 		const bin = resolveContainedPath(target, BIN_ENTRY_PATH)
 		const integration = resolveContainedPath(target, INTEGRATION_TEST_PATH)
+		const conformance = resolveContainedPath(target, CONFORMANCE_TEST_PATH)
+		const service = resolveContainedPath(target, SERVICE_SETUP_PATH)
 		const global = resolveContainedPath(target, GLOBAL_SETUP_PATH)
 		const showcase = resolveContainedPath(target, SHOWCASE_CONFIG_PATH)
 		return createBlueprint(declared.slice(declared.lastIndexOf('/') + 1), {
@@ -550,6 +556,8 @@ export class CLI implements CLIInterface {
 			dependencies: manifestToDependencies(manifest),
 			bin: bin !== undefined && isExactCaseFile(bin),
 			integration: integration !== undefined && isExactCaseFile(integration),
+			conformance: conformance !== undefined && isExactCaseFile(conformance),
+			service: service !== undefined && isExactCaseFile(service),
 			global: global !== undefined && isExactCaseFile(global),
 			showcase: showcase !== undefined && isExactCaseFile(showcase),
 		})

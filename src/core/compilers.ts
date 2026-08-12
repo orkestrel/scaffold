@@ -36,6 +36,7 @@ import {
 	NAME_PATTERN,
 	ORKESTREL_RANGE_PATTERN,
 	SERVICE_SCRIPT_PATH,
+	SERVICE_SETUP_PATH,
 	SHOWCASE_CONFIG_PATH,
 	SHOWCASE_DEV_DEPENDENCIES,
 	SOURCE_BROWSER_DEV_DEPENDENCIES,
@@ -251,8 +252,13 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
  * to the axes the blueprint declares: a check and a test script per declared
  * environment, an aggregate over each axis, the policy and configuration
  * proofs every workspace can pass before it has a public API, and one build per
- * target that actually builds. The isolated installed-package integration
- * proof stays out of `test` and runs from `prepublishOnly` instead.
+ * target that actually builds.
+ *
+ * A proof leaves `test` when a real service or a real install answers it. The
+ * installed-package integration proof and the live-service proof therefore run
+ * from `prepublishOnly` instead. The conformance proof stays in `test`, because
+ * it measures this package against official tooling rather than driving
+ * anything, so it costs a hermetic run.
  *
  * The configuration paths interpolated here are the same ones `SRC_MATRIX` and
  * `APP_MATRIX` list as each environment's configuration files, so a rename in
@@ -313,6 +319,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		...(blueprint.app.length > 0 ? ['npm run test:app'] : []),
 		'npm run test:policy',
 		'npm run test:config',
+		...(blueprint.conformance ? ['npm run test:conformance'] : []),
 	].join(' && ')
 	if (compiles) {
 		scripts['test:src'] = [
@@ -336,9 +343,11 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 	}
 	scripts['test:policy'] = `${vitest} --project policy`
 	scripts['test:config'] = `${vitest} --project config`
+	if (blueprint.conformance) scripts['test:conformance'] = `${vitest} --project conformance`
 	scripts['test:probe'] =
 		'vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe'
 	if (integrates) scripts['test:integration'] = `${vitest} --project integration`
+	if (blueprint.service) scripts['test:service'] = `${vitest} --project service`
 	scripts.build = [
 		'npm run clean',
 		...(compiles ? ['npm run build:src'] : []),
@@ -385,6 +394,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 	scripts.prepublishOnly = [
 		'npm run format:check && npm run lint:check && npm run check && npm run build && npm test',
 		...(integrates ? ['npm run test:integration'] : []),
+		...(blueprint.service ? ['npm run test:service'] : []),
 	].join(' && ')
 	return scripts
 }
@@ -732,6 +742,14 @@ export function appShowcase(...options: never[]): UserConfig {
 	projects.push('config')
 	factories.push(CONFIG_TEMPLATES.factories.guides)
 	projects.push(`...(isExactCaseFile(resolveWorkspacePath('${GUIDES_TEST_PATH}')) ? [guides] : [])`)
+	if (blueprint.conformance) {
+		factories.push(CONFIG_TEMPLATES.factories.conformance)
+		projects.push('conformance')
+	}
+	if (blueprint.service) {
+		factories.push(CONFIG_TEMPLATES.factories.service)
+		projects.push('service')
+	}
 	if (blueprint.src.length > 0 && blueprint.integration) {
 		factories.push(
 			fillTemplate(CONFIG_TEMPLATES.factories.integration, {
@@ -1057,6 +1075,12 @@ export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly Conte
  * workspace and therefore follows the `src` axis as well as its structural
  * flag.
  *
+ * The conformance proof is not emitted either, for the reason the guide proof
+ * is not: it names an official artifact only the package knows, so a generated
+ * placeholder would read as a proof while measuring nothing. `service` emits its
+ * readiness setup alone, because the root configuration names that module by
+ * path.
+ *
  * @example
  * ```ts
  * import { blueprintToTestArtifacts, createBlueprint } from '@orkestrel/scaffold'
@@ -1093,6 +1117,19 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 			ownership: 'birth',
 			origin: 'template',
 			environment: 'server',
+			content: ARTIFACT_TEMPLATES.tests.setup,
+		})
+	}
+	// The live-service project names this module in `setupFiles`, so a registered
+	// project whose setup module is absent fails to load at all. The suite beneath
+	// `tests/service` is not emitted beside it: what a live proof drives is the
+	// package's own service, which this package cannot write for it.
+	if (blueprint.service) {
+		artifacts.push({
+			path: SERVICE_SETUP_PATH,
+			group: 'tests',
+			ownership: 'birth',
+			origin: 'template',
 			content: ARTIFACT_TEMPLATES.tests.setup,
 		})
 	}

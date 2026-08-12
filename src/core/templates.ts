@@ -1,4 +1,10 @@
-import { BIN_ENTRY_PATH, GUIDES_TEST_PATH, INTEGRATION_TEST_PATH } from './constants.js'
+import {
+	BIN_ENTRY_PATH,
+	CONFORMANCE_TEST_PATH,
+	GUIDES_TEST_PATH,
+	INTEGRATION_TEST_PATH,
+	SERVICE_TEST_INCLUDE,
+} from './constants.js'
 
 /**
  * Formatter-stable template text for every configuration artifact.
@@ -344,6 +350,44 @@ export function appBrowser(...options: never[]): UserConfig {
 				setupFiles: ['./tests/setup.ts'],
 				environment: 'node',
 				browser: { enabled: false },
+			},
+		},
+		options ?? {},
+	)
+`,
+		conformance: `// Where this package drifts from the official tooling it stays compatible with.
+// The subject is this package, so the proof is hermetic and stays in \`npm test\`.
+export const conformance = (options?: UserConfig): UserConfig =>
+	mergeConfig(
+		{
+			resolve,
+			test: {
+				name: { label: 'conformance', color: 'magenta' },
+				include: ['${CONFORMANCE_TEST_PATH}'],
+				setupFiles: ['./tests/setup.ts'],
+				environment: 'node',
+				browser: { enabled: false },
+			},
+		},
+		options ?? {},
+	)
+`,
+		service: `// The live external services this package drives. It starts nothing itself:
+// \`scripts/service.sh\` provisions, \`tests/setupService.ts\` proves readiness, and
+// the project stays out of \`npm test\` because a real service answers it.
+export const service = (options?: UserConfig): UserConfig =>
+	mergeConfig(
+		{
+			resolve,
+			test: {
+				name: { label: 'service', color: 'red' },
+				include: ['${SERVICE_TEST_INCLUDE}'],
+				setupFiles: ['./tests/setup.ts', './tests/setupService.ts'],
+				environment: 'node',
+				browser: { enabled: false },
+				testTimeout: 120_000,
+				hookTimeout: 120_000,
+				fileParallelism: false,
 			},
 		},
 		options ?? {},

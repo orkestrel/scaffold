@@ -232,6 +232,8 @@ export function buildBlueprint(fields?: Partial<Blueprint>): Blueprint {
 		overrides: [],
 		bin: false,
 		integration: false,
+		conformance: false,
+		service: false,
 		services: [],
 		global: false,
 		showcase: false,

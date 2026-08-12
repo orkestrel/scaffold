@@ -43,6 +43,56 @@ Three documentation commits, no surface change, so no bump is owed under the rul
   one limit with one cause rather than two;
 - a catalog-table refresh, because scaffold's own row still read `0.0.26` with pre-re-pin ranges.
 
+### Unpublished, owed a bump: the `conformance` and `service` projects
+
+This closes 3.1 below. The limit those two commits documented is now implemented, so the surface
+moves and scaffold owes **0.0.28**.
+
+| Added                                                                                                | Where                     |
+| ---------------------------------------------------------------------------------------------------- | ------------------------- |
+| `conformance: boolean`, `service: boolean` — two **required** fields                                 | `Blueprint` in `types.ts` |
+| `CONFORMANCE_TEST_PATH`, `SERVICE_SETUP_PATH`, `SERVICE_TEST_INCLUDE`                                | `constants.ts`            |
+| `conformance` and `service` keys on the frozen `CONFIG_TEMPLATES.factories`                          | `templates.ts`            |
+| The matching branches in `blueprintToScripts`, `blueprintToRootVite`, and `blueprintToTestArtifacts` | `compilers.ts`            |
+
+**The two `Blueprint` fields are required, so any caller building a blueprint literal must add
+both.** `createBlueprint` defaults both to `false`, and every reading verb derives them, so only a
+hand-built literal is affected.
+
+Detection follows `integration` exactly — the proof file is the structural fact:
+
+- exact-case `tests/conformance.test.ts` → `conformance`. Registers the project over that one file,
+  emits `test:conformance`, and puts it **in** `test`. It measures the package against official
+  tooling and starts nothing, so it costs a hermetic run.
+- exact-case `tests/setupService.ts` → `service`. Registers the project over
+  `tests/service/**/*.test.ts` with 120s timeouts and `fileParallelism: false`, emits
+  `test:service`, keeps it **out of** `test`, and requires it in `prepublishOnly`.
+
+`service` keys on the readiness module rather than on `services`, and that was the load-bearing
+decision. `scripts/service.sh` is birth-owned and is not a declaration — `/workspace/ollama` has
+replaced its copy with a real Ollama provisioner carrying no recoverable inventory — so keying the
+project on `services.length > 0` would have left every live-service workspace unplannable, which is
+the exact refusal this change removes. The two facts now stay separate and the guide says so:
+`service` is _the workspace runs a live suite_, `services` is _these are the vendors it drives_.
+Neither is derivable from the other.
+
+Neither proof is seeded. The conformance file and the service suite both name something only the
+package knows, and a placeholder would read as a proof while measuring nothing. The one artifact that
+is emitted is `tests/setupService.ts`, birth-owned and empty like every other setup module, because
+the root configuration names it by path and a project whose setup module is missing fails to load at
+all.
+
+Worth knowing before you debug one: a Vitest project whose include resolves to nothing **exits 1**
+with `No test files found, exiting with code 1`. Measured, not assumed. So an unseeded project is
+loud rather than silently green — which is the right failure, and the opposite of 3.3.
+
+**What this costs the fleet.** Three vendored files moved with it — `tests/config.test.ts`,
+`.claude/rules/workspace.md`, and `.claude/rules/tests.md` — and all three are content-checked. So
+once 0.0.28 publishes, **every repository in the fleet reads `stale` on those three paths** and owes
+a re-pin plus a `repair` pass. That is a propagation cascade, not a publish cascade: `scaffold` is a
+development dependency of every package, so under the bump rule below nothing downstream bumps or
+republishes unless its own surface moves.
+
 ## 2. The bump rule this session operated under
 
 The owner's ruling, and it decided every version question here: **a package bumps only if its
@@ -75,6 +125,9 @@ Ordered by how likely each is to bite an app-layer target.
 
 ### 3.1 A writing verb refuses a workspace needing a project scaffold does not register
 
+**Closed.** Fixed in the unpublished 0.0.28 above; kept here because the diagnosis is what an
+app-layer target will recognise, and because the fix covers two projects rather than every project.
+
 The registered project set is fixed: the environment projects the axes select, plus `policy`,
 `config`, `probe`, `guides`, and `integration` when `tests/integration.test.ts` exists.
 `Blueprint.services` does **not** add one — measured by compiling a blueprint carrying
@@ -91,8 +144,23 @@ writing verbs accept them.
 
 **App cross-check.** An app-layer target is more likely to carry a custom project, not less — a
 browser app driving Playwright, a server app driving a real database. If the other session sees this
-refusal, it is this defect and not a target-specific one. The fix belongs to scaffold's
-project-registration capability: `services` carries the names already and stops at the script.
+refusal, it is this defect and not a target-specific one.
+
+The 0.0.28 fix registers exactly two more fixed projects, each keyed to an exact-case path. It does
+**not** make the project set open. A target carrying a project outside
+`policy / config / guides / conformance / integration / service / probe` plus its environment
+projects still gets the same refusal, and the route through is unchanged: reconcile against `audit`,
+hand-merge the one configuration file that carries the project, or fold the project onto one of the
+fixed paths. Two repositories in this fleet turned out to need the third option rather than a fix —
+`sea` and `websocket` kept a `tests/integration/` directory of named proofs where scaffold detects
+the reserved single file, and consolidating onto `tests/integration.test.ts` closed their drift
+completely.
+
+If the other session finds an app-layer project that genuinely deserves to be fixed rather than
+folded, the shape to copy is in `blueprintToRootVite`: a constant for the exact-case path, a required
+`Blueprint` boolean, detection in `CLI.#derive`, a `CONFIG_TEMPLATES.factories` key, and a decision
+about whether it belongs in `test`. Answer that last one by what the proof drives, not by how slow it
+is: hermetic stays in `test`, a real service or a real install leaves it.
 
 ### 3.2 `guides/README.md` is emitted by `new` and never written by `repair`
 
@@ -163,18 +231,112 @@ What the fleet needed, per target, in order. Steps 2 and 3 are the ones scaffold
    actually points at a proof that exists**. One repository had a `config` project aimed at a
    directory that was never created, so adding the script made a dead project run and exit 1.
 7. Repair what is left. On this fleet that was the policy sweep's name forms: `parsers.ts` exports
-   only `parse*`, `factories.ts` only `create*`. **A violation is a misplacement, not a misnaming** —
-   move the declaration to its kind file; the barrel star-exports both, so the surface is unchanged.
-   Renaming would move the surface and earn a bump.
+   only `parse*`, `factories.ts` only `create*`. **Decide what the function is before choosing the
+   repair, and read `.claude/rules/architecture.md` first** — the ruling this session shipped in the
+   middle of the fleet pass was wrong and was corrected. Both repairs exist:
+   - wrong file, right name → move it. A `scan*` in `parsers.ts` is a pure lexical leaf and belongs
+     in `helpers.ts`; the barrel star-exports both, so the surface is unchanged and nothing bumps.
+   - right file, wrong name → rename it in place. A function returning a live entity is an entity
+     factory whatever it is called, so `restoreThing` in `factories.ts` is misnamed, not misplaced.
+     The rename moves the published surface and earns a bump. **That is the correct cost to pay.**
 
-## 5. Open, not closed by this session
+   Never let the name choose. The wrong branch is cheap to take and expensive to hold: relocating a
+   correctly-placed entity factory into `helpers.ts` to escape a rename drags its dependencies with
+   it, and a leaf file that imports an implementation class stops being a leaf for every module
+   beneath it. `workflow` followed the wrong ruling and went from 1 import cycle in `src/core` to 11;
+   the corrected repair took it to 2, of which 1 is the sanctioned `helpers ↔ validators` pair and 1
+   is pre-existing. Section 6.1 has the case.
 
-- **Scaffold registers no custom Vitest project.** Recorded as a limit in `guides/scaffold.md`.
-  Completing `Blueprint.services` into a registered project is the obvious first half.
-- **`mcp` has no config proof.** Its `config` project points at a directory that does not exist.
-  Supplying the real proof needs `configs/helpers.ts` and a `probe` project, and its `vite.config.ts`
-  builds projects through its own registration loop rather than the generated exports the proof
-  reads. A scoped unit, not a copy.
+## 5. Three targets closed after the fleet pass
+
+These ran after the 40-repository sweep, against the same scaffold working tree. None is committed
+to `main` at the time of writing; each is on `claude/orkestrel-fleet-orchestration-cv30e8` in its own
+repository.
+
+### 5.1 `workflow` — the repair the wrong ruling caused, undone
+
+The case behind step 7 above. Under the wrong ruling, `restoreWorkflow` and `recoverWorkflow` were
+moved out of `factories.ts` into `helpers.ts` to avoid renaming them, and `assertSnapshot` stayed in
+`validators.ts`. Both functions return a live `WorkflowInterface`, so `helpers.ts` began importing
+implementation classes and stopped being a leaf. **`src/core` went from 1 import cycle to 11.**
+
+The corrected repair renamed them in place — `createRestoredWorkflow` and `createRecoveredWorkflow`
+in `factories.ts` — and moved the four declarations that really were misplaced the other way:
+`matchesDescription`, `isTaskResult`, `hasWorkflowHandlers`, and `workflowSnapshotContext` are
+predicates or lookups, not total single-argument guards, so they belong in `helpers.ts`.
+`validators.ts` now holds exactly six total `Guard<T>` predicates. `assertSnapshot` was deleted
+outright: its whole body was `cloneWorkflowSnapshot(snapshot)` with the result discarded, which fails
+the wrapper test, and the clone already throws the identical `RESTORE WorkflowError`.
+
+**Cycles: 11 → 2.** One is the sanctioned class-free `helpers ↔ validators` leaf pair, which
+`.claude/rules/architecture.md` now blesses explicitly and which `@orkestrel/contract` also has. One
+is `WorkflowManager → factories`, pre-existing and out of scope. 845 tests before and after.
+
+The surface moves — `createRecoveredWorkflow` and `createRestoredWorkflow` added,
+`assertSnapshot`, `recoverWorkflow` and `restoreWorkflow` removed — so **`workflow` owes a bump from
+0.0.11**, not yet applied.
+
+Two follow-ups were named and deliberately not ridden along: `isTaskResult` keeps an `is*` name in
+`helpers.ts` though it is a four-argument contextual predicate rather than a total `Guard<T>`, and
+`createDeferred` builds an entity from `helpers.ts`. Test blocks also did not follow their subjects
+between test files; the mirror rule is mechanically satisfied and nothing is red.
+
+**App cross-check.** `@orkestrel/contract` is the reference implementation of this layering and is
+worth reading before repairing an app-layer target: its `helpers.ts` and `validators.ts` import types,
+constants, errors and each other and nothing else, and every file that constructs or drives a class
+sits above them.
+
+### 5.2 `mcp` — the config proof, and the conformance runner in a gate
+
+`mcp`'s `config` project pointed at `tests/config/**`, a directory that never existed: declared,
+empty, and selected by nothing. It now has the real proof — `configs/helpers.ts` and
+`tests/config.test.ts`, both written by the scaffold binary rather than by hand — and `npm test`
+actually invokes it.
+
+Two places the plan is wrong for that repository, both found by running rather than reading, and both
+reverted to `mcp`'s version:
+
+- **`configs/src/vite.browser.config.ts`.** The plan drops the `beforeWriteFile` roll-up rewrite that
+  externalizes core in the browser declaration. Without it the next build emits
+  `dist/src/browser/index.d.ts` importing `'../../core/index.ts'` and the generated-consumer proof
+  goes red with four `TS2307`s. **This is a scaffold gap: the plan emits that rewrite for `server`
+  and not for `browser`.** An app-layer target with a browser environment will hit the same thing.
+- **`tests/setupPolicy.ts`.** The plan's `mirror` rule flags `tests/src/server/consumer.test.ts` as
+  a module test with no matching source module — but a generated-consumer proof is exactly what
+  `AGENTS.md` blesses, and it has no source module to mirror by construction. Where that proof lives
+  under the mirror rule is an open ruling, not a repair.
+
+One capability was dropped deliberately: `gateBrowserProjects`, which registered a browser project
+with an empty include when no Chromium was found. Nothing covered it, and it conflicts with the new
+proof head-on — a project whose include resolves to nothing is the defect the proof's gate block
+exists to catch.
+
+The conformance runner also moved into a gate. It resolves out of `node_modules` through
+`createRequire(...).resolve` and its socket is loopback, so the run is offline and belongs in `test`;
+three prose passages in `tests/conformance.test.ts`, `guides/mcp.md` and `README.md` claiming it
+"stays outside `npm test`" were false and are corrected, along with a `README.md` claim that it
+fetches the runner from the registry. Surface unmoved, version untouched at 0.0.14.
+
+### 5.3 `websocket` — a UTF-8 regression, and the guard that took three attempts
+
+The easy pass was not one. A multi-byte payload was being split across frame boundaries mid-codepoint.
+The fix is small; the guard is the part worth carrying. **The first two placements of the regression
+test passed by coincidence** — the assertion sat in a 2 MB case where the boundary happened to fall
+between codepoints — and only the third binds, proved by reapplying the exact regression and watching
+it go red. The guard now asserts its own instrument: that the payload is genuinely NFD and genuinely
+carries a combining codepoint, so a future normalization of the fixture cannot quietly turn the test
+into a tautology.
+
+## 6. Open, not closed by this session
+
+- **The project set is fixed, not open.** 0.0.28 adds two more fixed projects; it does not let a
+  workspace register its own. `ollama` still carries a hand-written `setup` project and `test:setup`
+  script that no plan registers, and that is still a refusal on that repository.
+- **`repair` emits the browser declaration roll-up for `server` but not for `browser`** (5.2). Any
+  target with a published browser environment loses it on repair and finds out at the next build.
+- **Where a generated-consumer proof lives under the policy sweep's mirror rule** is unruled (5.2).
+- **`workflow` owes a version bump** for the renames in 5.1, and the two placement follow-ups named
+  there are open.
 - **The restored guide mirrors predate the fleet cascade.** 98 mirrors were restored from git history
   across 31 repositories after a prep script deleted them; they carry pre-cascade content until a
   catalog pass refreshes them.

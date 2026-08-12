@@ -59,6 +59,38 @@ describe('blueprintToScripts config projects', () => {
 		expect(scripts.prepublishOnly).not.toContain('test:service')
 	})
 
+	// The vendor list and the live-service axis are two facts, so each is measured
+	// against the other's absence rather than only against its own presence.
+	it('gates the live-service proof on its readiness module rather than on a vendor list', () => {
+		const live = blueprintToScripts(buildBlueprint({ service: true }))
+		expect(live['test:service']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project service',
+		)
+		expect(live.test).not.toContain('test:service')
+		expect(live.prepublishOnly).toContain('npm run test:service')
+
+		const vendors = blueprintToScripts(buildBlueprint({ services: ['ollama'], service: false }))
+		expect(vendors['test:service']).toBeUndefined()
+		expect(vendors.prepublishOnly).not.toContain('test:service')
+	})
+
+	// The one proof that leaves `integration`'s gate rather than joining it: it
+	// measures this package against official tooling and starts nothing, so it
+	// costs a hermetic run and belongs to `test`.
+	it('runs the conformance proof from the default gate and never from the publish gate alone', () => {
+		const measured = blueprintToScripts(buildBlueprint({ conformance: true }))
+		expect(measured['test:conformance']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project conformance',
+		)
+		expect(measured.test).toContain('npm run test:conformance')
+		expect(measured.prepublishOnly).toContain('npm test')
+		expect(measured.prepublishOnly).not.toContain('npm run test:conformance')
+
+		const absent = blueprintToScripts(buildBlueprint())
+		expect(absent['test:conformance']).toBeUndefined()
+		expect(absent.test).not.toContain('test:conformance')
+	})
+
 	it('emits only proofs that can pass in a fresh workspace', () => {
 		const published = blueprintToScripts(buildBlueprint({ integration: true }))
 		expect(published.test).toContain('test:config')
@@ -146,6 +178,42 @@ describe('blueprintToRootVite fixed proofs', () => {
 			"...(isExactCaseFile(resolveWorkspacePath('tests/guides.test.ts')) ? [guides] : []),",
 		)
 		expect(configuration).not.toContain('projects: [guides]')
+	})
+
+	it('registers the conformance and live-service projects only when their fact is set', () => {
+		const bare = blueprintToRootVite(buildBlueprint())
+		expect(bare).not.toContain("name: { label: 'conformance',")
+		expect(bare).not.toContain("name: { label: 'service',")
+
+		const measured = blueprintToRootVite(buildBlueprint({ conformance: true }))
+		expect(measured).toContain(
+			'export const conformance = (options?: UserConfig): UserConfig =>\n\tmergeConfig(\n',
+		)
+		expect(measured).toContain("include: ['tests/conformance.test.ts']")
+		expect(measured).toContain("setupFiles: ['./tests/setup.ts'],\n\t\t\t\tenvironment: 'node',")
+		expect(measured).toContain('\t\t\tconformance,\n')
+
+		// The live project names its readiness module by path, so the registration
+		// and the emitted setup module have to agree on that exact path.
+		const live = blueprintToRootVite(buildBlueprint({ service: true }))
+		expect(live).toContain(
+			'export const service = (options?: UserConfig): UserConfig =>\n\tmergeConfig(\n',
+		)
+		expect(live).toContain("include: ['tests/service/**/*.test.ts']")
+		expect(live).toContain("setupFiles: ['./tests/setup.ts', './tests/setupService.ts'],")
+		expect(live).toContain('\t\t\t\tfileParallelism: false,\n')
+		expect(live).toContain('\t\t\tservice,\n')
+		expect(
+			blueprintToTestArtifacts(buildBlueprint({ service: true })).map(({ path }) => path),
+		).toContain('tests/setupService.ts')
+
+		// A vendor list is not the axis. It emits the provisioner and nothing that
+		// runs against it.
+		const vendors = blueprintToRootVite(buildBlueprint({ services: ['ollama'] }))
+		expect(vendors).not.toContain("name: { label: 'service',")
+		expect(
+			blueprintToTestArtifacts(buildBlueprint({ services: ['ollama'] })).map(({ path }) => path),
+		).not.toContain('tests/setupService.ts')
 	})
 
 	// A generated workspace runs the `lint:check` and `format:check` it was given on

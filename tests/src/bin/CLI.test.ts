@@ -423,6 +423,8 @@ describe('CLI audit', () => {
 			const absent = workspace.read('target/vite.config.ts')
 			expect(absent).not.toContain("label: 'src:bin'")
 			expect(absent).not.toContain("label: 'integration'")
+			expect(absent).not.toContain("label: 'conformance'")
+			expect(absent).not.toContain("label: 'service'")
 			expect(absent).not.toContain('globalSetup:')
 			expect(absent).not.toContain('appShowcase')
 
@@ -443,6 +445,8 @@ describe('CLI audit', () => {
 
 			workspace.write('target/src/bin/main.ts', 'export {}\n')
 			workspace.write('target/tests/integration.test.ts', 'export {}\n')
+			workspace.write('target/tests/conformance.test.ts', 'export {}\n')
+			workspace.write('target/tests/setupService.ts', 'export {}\n')
 			workspace.write('target/tests/setupGlobal.ts', 'export {}\n')
 			workspace.directory('target/app/browser')
 			workspace.write('target/configs/app/vite.showcase.config.ts', 'export {}\n')
@@ -460,6 +464,8 @@ describe('CLI audit', () => {
 			const present = workspace.read('target/vite.config.ts')
 			expect(present).toContain("label: 'src:bin'")
 			expect(present).toContain("label: 'integration'")
+			expect(present).toContain("label: 'conformance'")
+			expect(present).toContain("label: 'service'")
 			expect(present).toContain("globalSetup: ['./tests/setupGlobal.ts']")
 			expect(present).toContain('appShowcase')
 		} finally {
@@ -499,6 +505,65 @@ describe('CLI audit', () => {
 					blocking: false,
 				},
 			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	// The refusal these two scripts used to draw is what kept a workspace driving a
+	// live service or measuring official tooling out of every writing verb. Each
+	// direction is measured: the script alone still draws the question, and the
+	// structural file beside it clears the same script.
+	it('accepts the conformance and live-service scripts once their structural file is there', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			workspace.directory('target/tests')
+			workspace.write(
+				'target/package.json',
+				`${JSON.stringify({
+					name: '@orkestrel/sample',
+					scripts: {
+						test: 'vitest run --project conformance',
+						'test:service': 'vitest run --project service',
+					},
+				})}\n`,
+			)
+			const refused = createSink()
+			expect(
+				await new CLI(refused.options).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const before: Audit = JSON.parse(refused.output[0] ?? '')
+			expect(before.questions).toStrictEqual([
+				{
+					field: 'projects',
+					message: `The manifest at ${fleet.target} names Vitest projects the planned configuration does not register: conformance, service. Add each project to vite.config.ts or remove the scripts that name them.`,
+					blocking: false,
+				},
+			])
+
+			workspace.write('target/tests/conformance.test.ts', 'export {}\n')
+			workspace.write('target/tests/setupService.ts', 'export {}\n')
+			const accepted = createSink()
+			expect(
+				await new CLI(accepted.options).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const after: Audit = JSON.parse(accepted.output[0] ?? '')
+			expect(after.questions).toStrictEqual([])
 		} finally {
 			workspace.destroy()
 		}

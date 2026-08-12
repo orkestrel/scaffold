@@ -224,6 +224,15 @@ export const GUIDES_TEST_PATH = 'tests/guides.test.ts'
 /** The installed-package proof whose presence makes a workspace `integration`. */
 export const INTEGRATION_TEST_PATH = 'tests/integration.test.ts'
 
+/** The official-tooling drift proof whose presence makes a workspace `conformance`. */
+export const CONFORMANCE_TEST_PATH = 'tests/conformance.test.ts'
+
+/** The live-service readiness module whose presence makes a workspace `service`. */
+export const SERVICE_SETUP_PATH = 'tests/setupService.ts'
+
+/** The include the live-service project covers, which is a directory rather than one proof. */
+export const SERVICE_TEST_INCLUDE = 'tests/service/**/*.test.ts'
+
 /** The Vite wrapper whose presence makes a workspace `showcase`. */
 export const SHOWCASE_CONFIG_PATH = 'configs/app/vite.showcase.config.ts'
 
