@@ -585,6 +585,12 @@ regenerates from the registry. Its `Layer` column is the publish round. Regenera
 sequencing a cascade rather than trusting the copy in the tree, and never write a second order down
 somewhere else.
 
+The tooling packages sit outside that order because nothing depends on them at runtime. `scaffold`
+is a development dependency of every package, including packages it depends on itself, so a runtime
+layering would report a cycle that does not exist. Each package builds against the already-published
+`scaffold`, never against an unpublished one, and a `scaffold` release therefore publishes on its own
+and propagates as files rather than as a cascade.
+
 ### Preparing
 
 1. **Bump from what the registry serves, not from the local manifest.** A repository's `version`
