@@ -28,6 +28,7 @@ import { fileURLToPath } from 'node:url'
 import { attempt } from '@orkestrel/contract'
 import { Emitter } from '@orkestrel/emitter'
 import {
+	catalogToLayers,
 	CATALOG_AGENT_PATH,
 	cloneValue,
 	computeBytes,
@@ -882,11 +883,27 @@ export class Materializer implements MaterializerInterface {
 
 	// The catalog table, rendered between the markers that bound it.
 	#recatalog(entries: readonly CatalogEntry[]): (text: string) => string {
-		const rows = entries.map(
-			(entry) =>
-				`| \`${entry.name}\` | ${entry.lookup === 'found' ? `\`${entry.version}\`` : this.#cell(entry.note)} |`,
-		)
-		const table = ['| Package | Version |', '| --- | --- |', ...rows].join('\n')
+		// The layer is computed from the edges in the same call that writes them, so
+		// the two cannot disagree. A name absent from every layer sits in a cycle and
+		// carries no layer cell rather than a guessed one.
+		const layers = catalogToLayers(entries)
+		const placed = new Map<string, number>()
+		for (const [index, layer] of layers.entries()) for (const name of layer) placed.set(name, index)
+		const rows = entries.map((entry) => {
+			if (entry.lookup !== 'found') {
+				return `| \`${entry.name}\` | ${this.#cell(entry.note)} | | |`
+			}
+			const layer = placed.get(entry.name)
+			const edges = entry.dependencies
+				.map((dependency) => `\`${dependency.name}\` \`${dependency.range}\``)
+				.join(', ')
+			return `| \`${entry.name}\` | \`${entry.version}\` | ${layer === undefined ? '' : `L${String(layer)}`} | ${edges} |`
+		})
+		const table = [
+			'| Package | Version | Layer | Runtime dependencies |',
+			'| --- | --- | --- | --- |',
+			...rows,
+		].join('\n')
 		return (text: string) => {
 			const opening = text.indexOf(Materializer.#opening)
 			const closing = text.indexOf(Materializer.#closing, opening + Materializer.#opening.length)

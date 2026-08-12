@@ -446,9 +446,95 @@ describe('Upstream catalog', () => {
 		const upstream = new Upstream({ registry: { base: server.base } })
 		try {
 			expect(await upstream.catalog()).toStrictEqual([
-				{ name: '@orkestrel/console', lookup: 'found', version: '0.0.4' },
-				{ name: '@orkestrel/emitter', lookup: 'found', version: '0.0.5' },
-				{ name: '@orkestrel/router', lookup: 'found', version: '0.0.8' },
+				{ name: '@orkestrel/console', lookup: 'found', version: '0.0.4', dependencies: [] },
+				{ name: '@orkestrel/emitter', lookup: 'found', version: '0.0.5', dependencies: [] },
+				{ name: '@orkestrel/router', lookup: 'found', version: '0.0.8', dependencies: [] },
+			])
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('reads the runtime edges and leaves the development edges where they are', async () => {
+		// A development edge reaches no consumer, so it constrains nothing a publish
+		// order decides. The fixture declares one of each under the same version, so
+		// a reader that took `devDependencies` — or took both — is caught here rather
+		// than after it has ordered a round wrongly. `zod` is the control on the other
+		// axis: a runtime edge that leaves the fleet is still a runtime edge and is
+		// reported, because deciding what to do with it belongs to the caller.
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.organization]: {
+				status: 200,
+				body: buildOrganization(['@orkestrel/router']),
+			},
+			[UPSTREAM_PATHS.router]: {
+				status: 200,
+				body: buildPackument('0.0.8', {
+					dependencies: { '@orkestrel/emitter': '^0.0.5', zod: '^3.0.0' },
+					development: { '@orkestrel/scaffold': '^0.0.26', vitest: '^4.1.10' },
+				}),
+			},
+		})
+		const upstream = new Upstream({ registry: { base: server.base } })
+		try {
+			expect(await upstream.catalog()).toStrictEqual([
+				{
+					name: '@orkestrel/router',
+					lookup: 'found',
+					version: '0.0.8',
+					dependencies: [
+						{ name: '@orkestrel/emitter', range: '^0.0.5' },
+						{ name: 'zod', range: '^3.0.0' },
+					],
+				},
+			])
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('answers no edge for a packument whose declared set it cannot read', async () => {
+		// A version absent from the `versions` map, a range that is not text, an empty
+		// range, and a name or range carrying a control character are each dropped
+		// rather than failing the row: the version is what the row promises, and a
+		// package with no dependencies and one whose edges could not be read both
+		// publish first.
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.organization]: {
+				status: 200,
+				body: buildOrganization(['@orkestrel/router', '@orkestrel/console']),
+			},
+			[UPSTREAM_PATHS.router]: {
+				status: 200,
+				body: JSON.stringify({
+					'dist-tags': { latest: '0.0.8' },
+					name: '@orkestrel/sample',
+					versions: { '0.0.7': { dependencies: { '@orkestrel/emitter': '^0.0.5' } } },
+				}),
+			},
+			[UPSTREAM_PATHS.console]: {
+				status: 200,
+				body: buildPackument('0.0.4', {
+					dependencies: {
+						'@orkestrel/emitter': '',
+						'@orkestrel/queue': '^0.0.8\n',
+						'@orkestrel/router': '^0.0.8',
+					},
+				}),
+			},
+		})
+		const upstream = new Upstream({ registry: { base: server.base } })
+		try {
+			expect(await upstream.catalog()).toStrictEqual([
+				{
+					name: '@orkestrel/console',
+					lookup: 'found',
+					version: '0.0.4',
+					dependencies: [{ name: '@orkestrel/router', range: '^0.0.8' }],
+				},
+				{ name: '@orkestrel/router', lookup: 'found', version: '0.0.8', dependencies: [] },
 			])
 		} finally {
 			upstream.destroy()
@@ -471,7 +557,7 @@ describe('Upstream catalog', () => {
 			expect(await upstream.catalog()).toStrictEqual([
 				{ name: '@orkestrel/console', lookup: 'missing', note: 'HTTP 404' },
 				{ name: '@orkestrel/emitter', lookup: 'failed', note: 'HTTP 502' },
-				{ name: '@orkestrel/router', lookup: 'found', version: '0.0.8' },
+				{ name: '@orkestrel/router', lookup: 'found', version: '0.0.8', dependencies: [] },
 			])
 		} finally {
 			upstream.destroy()
@@ -522,7 +608,12 @@ describe('Upstream catalog', () => {
 
 describe('Upstream bounds', () => {
 	it('admits a gzip body whose wire length exceeds its decoded limit', async () => {
-		const body = buildPackument('0.0.8')
+		// Written short and inline rather than through `buildPackument`, because the
+		// property under test is that gzip made the body BIGGER, and only a body too
+		// short to compress does that. The assertion below is the control: it fails if
+		// the body ever grows past the point where gzip starts paying off, so this
+		// test can never quietly stop measuring what it names.
+		const body = '{"dist-tags":{"latest":"0.0.8"},"name":"@orkestrel/sample"}'
 		const server = await createUpstreamServer({
 			[UPSTREAM_PATHS.router]: { status: 200, body, encoding: 'gzip' },
 			[UPSTREAM_PATHS.emitter]: { status: 200, body },

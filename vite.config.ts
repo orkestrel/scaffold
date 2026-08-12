@@ -136,6 +136,12 @@ export const srcBin = (options?: UserConfig): UserConfig =>
 				setupFiles: ['./tests/setup.ts', './tests/setupServer.ts'],
 				environment: 'node',
 				browser: { enabled: false },
+				// Every test here drives the real executable over a real temporary
+				// repository and a real loopback registry, so the slowest measures about
+				// three and a half seconds alone. Vitest's five-second default clears
+				// that alone and reports a timeout under a full suite run, which is a red
+				// gate carrying no diagnostic about the code.
+				testTimeout: 15_000,
 			},
 		},
 		options ?? {},

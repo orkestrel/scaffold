@@ -175,12 +175,21 @@ export interface Blueprint {
  * still a row: dropping it would hide a package the organization publishes
  * behind one failed request, and inventing a version would state something
  * upstream never said.
+ *
+ * `dependencies` are the RUNTIME edges the published version declares, which is
+ * what a publish order is computed over: a runtime bump obliges every dependent
+ * to re-pin and republish, while a development bump obliges nothing beyond the
+ * repository that declares it. No layer is recorded here, because a layer is a
+ * deterministic function of these edges across the whole catalog — a stored one
+ * could only disagree with the rows it was derived from. Read it through
+ * {@link catalogToLayers}.
  */
 export type CatalogEntry =
 	| {
 			readonly name: string
 			readonly lookup: 'found'
 			readonly version: string
+			readonly dependencies: readonly Dependency[]
 			readonly note?: never
 	  }
 	| {
@@ -188,6 +197,7 @@ export type CatalogEntry =
 			readonly lookup: 'missing' | 'failed'
 			readonly note: string
 			readonly version?: never
+			readonly dependencies?: never
 	  }
 
 /**

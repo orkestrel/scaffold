@@ -19,6 +19,8 @@ import {
 	isDependencyName,
 	isSnapshot,
 	MAX_ARTIFACT_BYTES,
+	MAX_COLLECTION_ITEMS,
+	MAX_DEPENDENCY_NAME_LENGTH,
 	MAX_RANGE_LENGTH,
 	nameToGuide,
 	ScaffoldError,
@@ -369,12 +371,43 @@ export class Upstream implements UpstreamInterface {
 			Upstream.#packument,
 		)
 		const version = outcome.lookup === 'found' ? this.#latest(outcome.content) : undefined
-		if (version !== undefined) return { name, lookup: 'found', version }
+		if (version !== undefined) {
+			return { name, lookup: 'found', version, dependencies: this.#edges(outcome.content, version) }
+		}
 		return {
 			name,
 			lookup: outcome.lookup === 'missing' ? 'missing' : 'failed',
 			note: outcome.lookup === 'found' ? Upstream.#unreadable : outcome.note,
 		}
+	}
+
+	// The runtime edges the published version declares, read from the same
+	// abbreviated packument the version came from rather than from a second
+	// request. Development edges are deliberately not read: they reach no
+	// consumer, so they constrain nothing a publish order decides. A packument
+	// that carries no readable edges answers none rather than failing the row,
+	// because a package with no dependencies and a package whose manifest could
+	// not be read both publish first, and the version is what the row promises.
+	#edges(content: string, version: string): readonly Dependency[] {
+		const parsed = parseJSON(content)
+		if (!isRecord(parsed)) return []
+		const versions = parsed.versions
+		if (!isRecord(versions)) return []
+		const manifest = versions[version]
+		if (!isRecord(manifest)) return []
+		const declared = manifest.dependencies
+		if (!isRecord(declared)) return []
+		const edges: Dependency[] = []
+		for (const [name, range] of Object.entries(declared)) {
+			if (edges.length >= MAX_COLLECTION_ITEMS) break
+			if (typeof range !== 'string' || range.length === 0 || range.length > MAX_RANGE_LENGTH) {
+				continue
+			}
+			if (CONTROL_CHARACTER_PATTERN.test(name) || CONTROL_CHARACTER_PATTERN.test(range)) continue
+			if (name.length === 0 || name.length > MAX_DEPENDENCY_NAME_LENGTH) continue
+			edges.push({ name, range })
+		}
+		return edges
 	}
 
 	// The registry's exact organization membership, which is a flat name-to-access

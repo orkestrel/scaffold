@@ -470,6 +470,7 @@ export const isCatalogEntry: Guard<CatalogEntry> = unionOf(
 		name: isDependencyName,
 		lookup: literalOf('found'),
 		version: isString,
+		dependencies: andOf(isCollection, arrayOf(isDependency)),
 	}),
 	recordOf({
 		name: isDependencyName,

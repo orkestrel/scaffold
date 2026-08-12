@@ -773,7 +773,13 @@ describe('Materializer catalog', () => {
 			try {
 				const result = materializer.catalog(
 					[
-						{ name: '@orkestrel/router', lookup: 'found', version: '0.0.8' },
+						{
+							name: '@orkestrel/kernel',
+							lookup: 'found',
+							version: '0.0.4',
+							dependencies: [{ name: '@orkestrel/router', range: '^0.0.8' }],
+						},
+						{ name: '@orkestrel/router', lookup: 'found', version: '0.0.8', dependencies: [] },
 						{ name: '@orkestrel/queue', lookup: 'missing', note: 'Not\npublished yet.' },
 					],
 					target,
@@ -782,8 +788,14 @@ describe('Materializer catalog', () => {
 				const text = workspace.read('project/.claude/agents/orkestrel.md')
 				expect(text).toContain('Prose a consumer wrote above the table.')
 				expect(text).toContain('Prose a consumer wrote below the table.')
-				expect(text).toContain('| `@orkestrel/router` | `0.0.8` |')
-				expect(text).toContain('| `@orkestrel/queue` | Not published yet. |')
+				// The dependent renders one layer later than what it depends on, in the
+				// same call that wrote the edge, so the order is derived rather than
+				// asserted by whoever supplied the rows.
+				expect(text).toContain('| `@orkestrel/router` | `0.0.8` | L0 |  |')
+				expect(text).toContain(
+					'| `@orkestrel/kernel` | `0.0.4` | L1 | `@orkestrel/router` `^0.0.8` |',
+				)
+				expect(text).toContain('| `@orkestrel/queue` | Not published yet. | | |')
 			} finally {
 				materializer.destroy()
 			}
@@ -801,7 +813,7 @@ describe('Materializer catalog', () => {
 			const materializer = new Materializer({ host })
 			try {
 				const entries: readonly CatalogEntry[] = [
-					{ name: '@orkestrel/router', lookup: 'found', version: '0.0.8' },
+					{ name: '@orkestrel/router', lookup: 'found', version: '0.0.8', dependencies: [] },
 				]
 				materializer.catalog(entries, target)
 				const result = materializer.catalog(entries, target)

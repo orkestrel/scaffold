@@ -198,6 +198,20 @@ export interface TestUpstreamReply {
 }
 
 /**
+ * The two declared range sets a published version carries in a packument.
+ *
+ * @remarks
+ * Named for the manifest keys the registry serves rather than for what a reader
+ * does with them, so a fixture can declare a development edge the reader is
+ * required to ignore. Each map is name to range, exactly as the manifest
+ * declares it.
+ */
+export interface TestPackumentEdges {
+	readonly dependencies?: Readonly<Record<string, string>>
+	readonly development?: Readonly<Record<string, string>>
+}
+
+/**
  * A real HTTP server on loopback, scripted per path.
  *
  * @remarks
@@ -505,7 +519,18 @@ export function buildServerGuardCases(): readonly TestGuardCase[] {
 		{
 			name: 'isCatalogEntries',
 			guard: isCatalogEntries,
-			accepted: [[], [{ name: '@orkestrel/router', lookup: 'found', version: '0.0.8' }]],
+			accepted: [
+				[],
+				[{ name: '@orkestrel/router', lookup: 'found', version: '0.0.8', dependencies: [] }],
+				[
+					{
+						name: '@orkestrel/agent',
+						lookup: 'found',
+						version: '0.0.15',
+						dependencies: [{ name: '@orkestrel/tool', range: '^0.0.10' }],
+					},
+				],
+			],
 			admits: [],
 		},
 		{
@@ -1582,16 +1607,33 @@ export const UPSTREAM_ENDPOINT_CASES: readonly TestEndpointCase[] = [
  * Build the registry packument text a version lookup reads.
  *
  * @param version - The version to publish under `dist-tags.latest`.
- * @returns The response body, as the full packument form the registry serves.
+ * @param edges - The declared ranges the published version carries; omitted for
+ * a packument that declares none.
+ * @returns The response body, as the abbreviated packument form the registry
+ * serves for `application/vnd.npm.install-v1+json`.
  *
  * @remarks
- * The full form rather than the abbreviated one, because only the full form
- * carries `dist-tags`. Written here as literal registry JSON rather than derived
- * from anything the reader owns, so the reader is measured against the upstream
- * contract instead of against itself.
+ * Written here as literal registry JSON rather than derived from anything the
+ * reader owns, so the reader is measured against the upstream contract instead
+ * of against itself. The abbreviated form carries `dist-tags` and a `versions`
+ * map whose per-version record holds `dependencies` and `devDependencies`
+ * alongside `dist`, `engines`, `name`, and `version` — verified against
+ * `registry.npmjs.org` — so both edge kinds are writable here and a reader that
+ * reads the wrong one is caught.
  */
-export function buildPackument(version: string): string {
-	return JSON.stringify({ 'dist-tags': { latest: version }, name: '@orkestrel/sample' })
+export function buildPackument(version: string, edges?: TestPackumentEdges): string {
+	return JSON.stringify({
+		'dist-tags': { latest: version },
+		name: '@orkestrel/sample',
+		versions: {
+			[version]: {
+				name: '@orkestrel/sample',
+				version,
+				...(edges?.dependencies === undefined ? {} : { dependencies: edges.dependencies }),
+				...(edges?.development === undefined ? {} : { devDependencies: edges.development }),
+			},
+		},
+	})
 }
 
 /**

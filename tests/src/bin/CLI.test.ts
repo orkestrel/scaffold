@@ -2012,7 +2012,16 @@ describe('CLI catalog', () => {
 				body: buildOrganization(['@orkestrel/emitter', '@orkestrel/guide']),
 			},
 			[FLEET_UPSTREAM_PATHS.packages.emitter]: { status: 200, body: buildPackument('0.0.6') },
-			[FLEET_UPSTREAM_PATHS.packages.guide]: { status: 200, body: buildPackument('0.1.0') },
+			[FLEET_UPSTREAM_PATHS.packages.guide]: {
+				status: 200,
+				// One runtime edge inside the fleet and one development edge, so the
+				// order the table prints is proven end to end through the real registry
+				// reader rather than only against the helper that derives it.
+				body: buildPackument('0.1.0', {
+					dependencies: { '@orkestrel/emitter': '^0.0.6' },
+					development: { '@orkestrel/scaffold': '^0.0.26' },
+				}),
+			},
 			[FLEET_UPSTREAM_PATHS.mirrors.emitter]: {
 				status: 200,
 				body: '# Emitter\n',
@@ -2034,8 +2043,13 @@ describe('CLI catalog', () => {
 			expect(code).toBe(EXIT_CLEAN)
 			const result: CatalogResult = JSON.parse(sink.output[0] ?? '')
 			expect(result.entries).toStrictEqual([
-				{ name: '@orkestrel/emitter', lookup: 'found', version: '0.0.6' },
-				{ name: '@orkestrel/guide', lookup: 'found', version: '0.1.0' },
+				{ name: '@orkestrel/emitter', lookup: 'found', version: '0.0.6', dependencies: [] },
+				{
+					name: '@orkestrel/guide',
+					lookup: 'found',
+					version: '0.1.0',
+					dependencies: [{ name: '@orkestrel/emitter', range: '^0.0.6' }],
+				},
 			])
 			expect(result.mirrors.map((mirror) => mirror.path)).toStrictEqual([
 				'guides/emitter.md',
@@ -2044,8 +2058,10 @@ describe('CLI catalog', () => {
 			expect(result.dropped).toStrictEqual([])
 			expect(workspace.read('target/guides/emitter.md')).toBe('# Emitter\n')
 			const agent = workspace.read(`target/${CATALOG_AGENT_PATH}`)
-			expect(agent).toContain('| `@orkestrel/emitter` | `0.0.6` |')
-			expect(agent).toContain('| `@orkestrel/guide` | `0.1.0` |')
+			expect(agent).toContain('| `@orkestrel/emitter` | `0.0.6` | L0 |  |')
+			expect(agent).toContain(
+				'| `@orkestrel/guide` | `0.1.0` | L1 | `@orkestrel/emitter` `^0.0.6` |',
+			)
 			// Only the marked region moved, so every word a consumer wrote around
 			// the table is still there.
 			expect(agent).toContain('Prose a consumer wrote above the table.')

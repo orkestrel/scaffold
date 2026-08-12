@@ -1,5 +1,6 @@
 import type {
 	Artifact,
+	CatalogEntry,
 	Dependency,
 	Drift,
 	Finding,
@@ -406,6 +407,59 @@ export function matchesDriftReachability(ownership: Ownership, finding: Finding)
 	if (finding.drift === 'aligned') return ownership === 'birth' || finding.observed !== undefined
 	if (finding.drift === 'missing') return ownership !== 'birth'
 	return finding.drift === 'stale' && ownership === 'content'
+}
+
+/**
+ * Project a catalog into the layers it publishes in.
+ *
+ * @param entries - The catalog rows to order.
+ * @returns One layer per round, each holding the names publishable together,
+ * sorted within the layer; a name whose edges never resolve is omitted.
+ *
+ * @remarks
+ * A layer is a deterministic function of the catalog's own edges, so it is
+ * computed here rather than stored on a row that could disagree with them.
+ * Only RUNTIME edges between catalogued packages count: a development
+ * dependency reaches no consumer, so it constrains nothing about publish order,
+ * and an edge leaving the fleet is a package this catalog does not publish.
+ *
+ * The order matters because these packages are `0.0.x`, where a caret pins one
+ * exact release. Publishing a dependent before its dependency leaves the
+ * dependent pinned to the older release, and two ranges that disagree install
+ * two copies of one package that the compiler reads as two distinct types.
+ *
+ * A cycle cannot be published in rounds, so its members are omitted rather than
+ * placed in an order that would be wrong. An absent name is the report: compare
+ * the returned names against the catalog to find one.
+ *
+ * @example
+ * ```ts
+ * import { catalogToLayers } from '@orkestrel/scaffold'
+ *
+ * catalogToLayers(entries)[0] // the names that depend on nothing in the fleet
+ * ```
+ */
+export function catalogToLayers(
+	entries: readonly CatalogEntry[],
+): ReadonlyArray<readonly string[]> {
+	const published = new Set(
+		entries.filter((entry) => entry.lookup === 'found').map((entry) => entry.name),
+	)
+	const pending = new Map<string, Set<string>>()
+	for (const entry of entries) {
+		if (entry.lookup !== 'found') continue
+		const edges = entry.dependencies.map((dependency) => dependency.name)
+		pending.set(entry.name, new Set(edges.filter((name) => published.has(name))))
+	}
+	const layers: string[][] = []
+	while (pending.size > 0) {
+		const ready = [...pending].filter(([, edges]) => edges.size === 0).map(([name]) => name)
+		if (ready.length === 0) break
+		for (const name of ready) pending.delete(name)
+		for (const edges of pending.values()) for (const name of ready) edges.delete(name)
+		layers.push(ready.sort())
+	}
+	return layers
 }
 
 /**

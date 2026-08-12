@@ -172,6 +172,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | --------------------------- | -------- | ----------------------------------------------------------------------------- |
 | `artifactToHex`             | function | Project an artifact to the exact bytes it claims, as hexadecimal.             |
 | `bytesToHex`                | function | Encode bytes as exact lowercase hexadecimal text.                             |
+| `catalogToLayers`           | function | Project a catalog into the layers it publishes in.                            |
 | `cloneValue`                | function | Snapshot an untrusted value into exact JSON data the caller owns.             |
 | `compareVersions`           | function | Compare two versions by their numeric components.                             |
 | `computeBytes`              | function | Count the UTF-8 bytes text encodes to.                                        |
@@ -722,6 +723,46 @@ only on foreign findings, which never carried ownership, but the guard reads eve
 older planned finding refuses that call too. Take a fresh audit rather than replaying a stored one:
 a stored audit records what a target looked like then, and both verbs bind their writes to what a
 target holds now. The refusal is deliberate at `0.0.x` and there is no migration path.
+
+## Fleet catalog
+
+`catalog` rewrites one marker-bounded region in `CATALOG_AGENT_PATH` and nothing else in that file.
+The region holds a table with four columns:
+
+| Column                 | Content                                                                    |
+| ---------------------- | -------------------------------------------------------------------------- |
+| `Package`              | The published package name                                                 |
+| `Version`              | The registry's `dist-tags.latest`, or the cause when the lookup found none |
+| `Layer`                | The publish round the edges place the package in, as `L0`, `L1`, …         |
+| `Runtime dependencies` | Each declared runtime edge, as name and range                              |
+
+Both edge-bearing columns come from the same abbreviated packument the version came from, so a
+catalog costs one request per package and no more. Only `dependencies` is read. `devDependencies`
+reaches no consumer of the published package, so it constrains nothing about publish order, and
+reading it would place packages in rounds that do not exist.
+
+The layer is not stored on a row. `catalogToLayers` derives it from the rows' own edges, in the same
+call that writes them, so the two cannot disagree:
+
+```ts
+import { catalogToLayers } from '@orkestrel/scaffold'
+
+const layers = catalogToLayers(entries)
+layers[0] // the names that depend on nothing else in the fleet
+```
+
+An edge counts only when it names a package this catalog publishes. An edge leaving the fleet and an
+edge to a row that found no version each constrain nothing, so neither holds its dependent back.
+
+The order is load-bearing because these packages are `0.0.x`, where a caret pins one exact release.
+A dependent sees a new dependency version only after the dependent re-pins and republishes, so
+publishing a dependent before its dependency leaves the dependent pinned to the older release. Two
+ranges that disagree install two copies of one package, and the compiler reads those copies as two
+distinct types.
+
+A cycle cannot be published in rounds. `catalogToLayers` omits its members rather than placing them
+in an order that would be wrong, and their rows carry no layer cell. An absent name is the report:
+compare the returned names against the catalog to find one.
 
 ## Vendored data root
 

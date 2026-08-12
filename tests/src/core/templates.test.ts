@@ -523,7 +523,11 @@ describe('emitted workspaces under their own gates', () => {
 		} finally {
 			rmSync(root, { recursive: true, force: true })
 		}
-	}, 10_000)
+		// Four real `tsc` invocations, measured at about nine seconds alone. The
+		// budget carries slack over that because the cost is contention, not work:
+		// the previous ten-second budget passed alone and reported a timeout under a
+		// full suite run, which is a red gate carrying no diagnostic.
+	}, 30_000)
 
 	it('prints no line past the vendored width the formatter could have broken', () => {
 		// Three tabs print as six columns, so the first control is one column past

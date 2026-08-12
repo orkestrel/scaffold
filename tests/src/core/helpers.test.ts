@@ -1,8 +1,9 @@
-import type { Finding, Group, Ownership } from '@src/core'
+import type { CatalogEntry, Finding, Group, Ownership } from '@src/core'
 import { describe, expect, it } from 'vitest'
 import {
 	artifactToHex,
 	bytesToHex,
+	catalogToLayers,
 	compareVersions,
 	computeBytes,
 	computeHash,
@@ -224,6 +225,80 @@ describe('inferDrift', () => {
 			observed: contentToHex('# Stale\n'),
 		}
 		expect(matchesDriftReachability('birth', unreachable)).toBe(false)
+	})
+})
+
+describe('catalogToLayers', () => {
+	it('orders the rounds by the edges rather than by the order it was handed', () => {
+		// The rows arrive in reverse publish order on purpose. An implementation that
+		// returned its input grouped by arrival would pass a forward-ordered fixture
+		// and fail this one, so the assertion is about the edges and not the array.
+		const entries: readonly CatalogEntry[] = [
+			{
+				name: '@orkestrel/agent',
+				lookup: 'found',
+				version: '0.0.3',
+				dependencies: [{ name: '@orkestrel/tool', range: '^0.0.2' }],
+			},
+			{
+				name: '@orkestrel/tool',
+				lookup: 'found',
+				version: '0.0.2',
+				dependencies: [{ name: '@orkestrel/contract', range: '^0.0.1' }],
+			},
+			{ name: '@orkestrel/contract', lookup: 'found', version: '0.0.1', dependencies: [] },
+			{ name: '@orkestrel/reason', lookup: 'found', version: '0.0.5', dependencies: [] },
+		]
+		expect(catalogToLayers(entries)).toStrictEqual([
+			['@orkestrel/contract', '@orkestrel/reason'],
+			['@orkestrel/tool'],
+			['@orkestrel/agent'],
+		])
+	})
+
+	it('omits a cycle instead of ordering it', () => {
+		// The negative control. Two packages that depend on each other cannot be
+		// published in rounds, and an instrument that always answers with every name
+		// would report an order here. Absence is the report.
+		const entries: readonly CatalogEntry[] = [
+			{
+				name: '@orkestrel/left',
+				lookup: 'found',
+				version: '0.0.1',
+				dependencies: [{ name: '@orkestrel/right', range: '^0.0.1' }],
+			},
+			{
+				name: '@orkestrel/right',
+				lookup: 'found',
+				version: '0.0.1',
+				dependencies: [{ name: '@orkestrel/left', range: '^0.0.1' }],
+			},
+			{ name: '@orkestrel/free', lookup: 'found', version: '0.0.1', dependencies: [] },
+		]
+		expect(catalogToLayers(entries)).toStrictEqual([['@orkestrel/free']])
+	})
+
+	it('counts only an edge to a package this catalog publishes', () => {
+		// An edge leaving the fleet and an edge to a row that found no version both
+		// constrain nothing, so neither delays its dependent past the first round.
+		const entries: readonly CatalogEntry[] = [
+			{
+				name: '@orkestrel/agent',
+				lookup: 'found',
+				version: '0.0.3',
+				dependencies: [
+					{ name: 'zod', range: '^3.0.0' },
+					{ name: '@orkestrel/queue', range: '^0.0.1' },
+				],
+			},
+			{ name: '@orkestrel/queue', lookup: 'missing', note: 'The package is not published.' },
+			{ name: '@orkestrel/router', lookup: 'failed', note: 'The registry did not answer.' },
+		]
+		expect(catalogToLayers(entries)).toStrictEqual([['@orkestrel/agent']])
+	})
+
+	it('answers with no layer for no catalog', () => {
+		expect(catalogToLayers([])).toStrictEqual([])
 	})
 })
 
