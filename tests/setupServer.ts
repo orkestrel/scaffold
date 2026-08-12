@@ -10,7 +10,15 @@ import type { CLICommand, CLIOptions, Verb } from '../src/bin/types.js'
 import type { TestGuardCase, TestPathCase } from './setup.js'
 import type { ServerResponse } from 'node:http'
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import {
+	existsSync,
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	symlinkSync,
+	writeFileSync,
+} from 'node:fs'
 import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
@@ -49,6 +57,7 @@ import {
 	MAX_BRANCH_LENGTH,
 	MAX_ENDPOINT_LENGTH,
 	MAX_INVENTORY_PATHS,
+	matchesExecutablePath,
 	MAX_PATH_DEPTH,
 	MAX_PATH_SEGMENT_BYTES,
 	MAX_UPSTREAM_CONCURRENCY,
@@ -219,6 +228,77 @@ export interface TestUpstreamInterface {
  * produced, so a test can measure the host-path law against it.
  */
 export const WORKSPACE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+
+/**
+ * Determine whether the temporary directory a workspace lands in resolves a
+ * recased name.
+ *
+ * @returns True when the directory resolves a name whose case it does not store
+ *
+ * @remarks
+ * Measured against a real directory rather than read off `process.platform`,
+ * because the platform name does not decide it: Windows resolves case-insensitively
+ * by default but can mark a single directory sensitive, and macOS ships either
+ * formatting. The directory a test actually writes to is the only scope whose answer
+ * binds that test.
+ *
+ * @example
+ * ```ts
+ * detectCaseFolding() // false on ext4, true on default NTFS
+ * ```
+ */
+export function detectCaseFolding(): boolean {
+	const probe = mkdtempSync(join(tmpdir(), 'orkestrel-scaffold-case-'))
+	try {
+		writeFileSync(join(probe, 'case.probe'), '', 'utf8')
+		return existsSync(join(probe, 'CASE.PROBE'))
+	} finally {
+		rmSync(probe, { recursive: true, force: true })
+	}
+}
+
+/**
+ * List the tracked paths this repository records as executable.
+ *
+ * @returns The repository-relative paths git holds at mode `100755`, sorted.
+ *
+ * @remarks
+ * Read from git's index rather than from the working tree, because the index
+ * carries the bit on every host while the working tree does not: a Windows
+ * checkout reports no executable bit at all. That is what lets one assertion
+ * about the declared set hold wherever the suite runs.
+ *
+ * @example
+ * ```ts
+ * listExecutablePaths() // ['scripts/codex.sh', 'scripts/cursor.sh', …]
+ * ```
+ */
+export function listExecutablePaths(): readonly string[] {
+	const listing = execFileSync('git', ['ls-files', '--stage'], {
+		cwd: WORKSPACE_ROOT,
+		encoding: 'utf8',
+		maxBuffer: 1024 * 1024 * 32,
+	})
+	const paths: string[] = []
+	for (const line of listing.split('\n')) {
+		if (!line.startsWith('100755 ')) continue
+		const tab = line.indexOf('\t')
+		if (tab === -1) continue
+		paths.push(line.slice(tab + 1))
+	}
+	return paths.sort()
+}
+
+/**
+ * Whether this run's temporary directories resolve a recased name.
+ *
+ * @remarks
+ * Measured once through {@link detectCaseFolding}. A suite proving a case verdict
+ * asserts against this rather than assuming the host it was written on: where the
+ * host folds case the recased name resolves, so a refusal is a case verdict no
+ * existence check could produce, and where it does not the two refusals coincide.
+ */
+export const CASE_FOLDING: boolean = detectCaseFolding()
 
 /**
  * Create a real temporary directory for one test.
@@ -1139,13 +1219,25 @@ export function buildCheckoutManifest(): HostManifest {
 	const roots: string[] = []
 	for (const path of HOST_PATHS) {
 		if (!HOST_DIRECTORY_PATHS.includes(path)) {
-			entries.push(buildManifestEntry({ storage: pathToStorage(path), destination: path }))
+			entries.push(
+				buildManifestEntry({
+					storage: pathToStorage(path),
+					destination: path,
+					executable: matchesExecutablePath(path),
+				}),
+			)
 			continue
 		}
 		roots.push(path)
 		if (path === '.claude/skills') continue
 		const destination = `${path}/sample.md`
-		entries.push(buildManifestEntry({ storage: pathToStorage(destination), destination }))
+		entries.push(
+			buildManifestEntry({
+				storage: pathToStorage(destination),
+				destination,
+				executable: matchesExecutablePath(destination),
+			}),
+		)
 	}
 	const membership = {
 		entries: [...entries].sort((first, second) => (first.storage < second.storage ? -1 : 1)),

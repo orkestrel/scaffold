@@ -8,7 +8,7 @@ import {
 	writeFileSync,
 } from 'node:fs'
 import { join } from 'node:path'
-import { MAX_ARTIFACT_BYTES, MAX_COLLECTION_ITEMS } from '@src/core'
+import { EXECUTABLE_PATHS, HOST_PATHS, MAX_ARTIFACT_BYTES, MAX_COLLECTION_ITEMS } from '@src/core'
 import {
 	computeDigest,
 	computeFileDigest,
@@ -25,6 +25,7 @@ import {
 	matchesGitPath,
 	matchesMissingPath,
 	matchesPrecondition,
+	matchesExecutablePath,
 	matchesProtectedPath,
 	matchesSensitivePath,
 	MAX_PATH_DEPTH,
@@ -46,11 +47,13 @@ import {
 	buildCheckoutManifest,
 	buildManifestEntry,
 	buildStagedManifest,
+	CASE_FOLDING,
 	createCheckout,
 	createHostRoot,
 	createWorkspace,
 	DIGEST_CASES,
 	GIT_PATH_CASES,
+	listExecutablePaths,
 	PROTECTED_PATH_CASES,
 	readErrorCode,
 	SENSITIVE_PATH_CASES,
@@ -107,6 +110,35 @@ describe('path classification', () => {
 			expect(matchesProtectedPath(path)).toBe(false)
 			expect(matchesSensitivePath(path)).toBe(false)
 		}
+	})
+})
+
+describe('matchesExecutablePath', () => {
+	it('answers true for a declared path under either separator', () => {
+		for (const path of EXECUTABLE_PATHS) {
+			expect(matchesExecutablePath(path)).toBe(true)
+			expect(matchesExecutablePath(path.replaceAll('/', '\\'))).toBe(true)
+		}
+	})
+
+	it('answers false for every path the declaration does not name', () => {
+		// Drawn from outside the declared set, including the shapes a predicate that
+		// guessed from the directory or the extension would admit.
+		for (const path of ['AGENTS.md', 'scripts', 'scripts/plain.sh', 'scripts/codex.sh.bak', '']) {
+			expect(matchesExecutablePath(path)).toBe(false)
+		}
+	})
+
+	it('declares exactly the vendored paths this repository records as executable', () => {
+		// The drift guard. A new hook vendored without a declaration ships at 0644
+		// into every target and dies when the target invokes it, which is the defect
+		// this declaration exists to stop. Read from git's index, so the assertion
+		// holds on a host that carries no executable bit as well as on one that does.
+		const tracked = listExecutablePaths().filter((path) =>
+			HOST_PATHS.some((vendored) => path === vendored || path.startsWith(`${vendored}/`)),
+		)
+		expect(tracked).toEqual([...EXECUTABLE_PATHS].sort())
+		expect(tracked.length).toBeGreaterThan(0)
 	})
 })
 
@@ -193,14 +225,15 @@ describe('physical shape', () => {
 			expect(isExactCaseFile(exact)).toBe(true)
 			expect(isExactCaseFile(folded)).toBe(false)
 			expect(isExactCaseFile(absent)).toBe(false)
-			// The limit, executable rather than stated in prose. This filesystem does
-			// not resolve the recased name, so the guard's refusal of it and its
-			// refusal of a plainly absent path are one condition: nothing here tells
-			// a case verdict apart from an existence check, and the assertions above
-			// would also hold for a guard that only called `existsSync`. A
-			// case-insensitive host resolves the recased name and fails this line,
-			// which is where the case verdict becomes provable directly.
-			expect(existsSync(folded)).toBe(existsSync(absent))
+			// The limit, executable rather than stated in prose, and stated against the
+			// host this run measured rather than the host the suite was written on.
+			// Where the directory folds case the recased name resolves, so the refusal
+			// above is a case verdict no existence check could produce. Where it does
+			// not, that name is simply absent, the two refusals are one condition, and
+			// the assertions above would equally hold for a guard that only called
+			// `existsSync` — the gap a case-folding host closes.
+			expect(existsSync(folded)).toBe(CASE_FOLDING)
+			expect(existsSync(absent)).toBe(false)
 		} finally {
 			workspace.destroy()
 		}
@@ -418,21 +451,40 @@ describe('resolveContainedPath', () => {
 		}
 	})
 
-	it('refuses a dangling link whose target crosses a link with parent traversal', () => {
+	// A relative link target is the one vector this suite cannot build on Windows.
+	// Node resolves a junction's target with `path.resolve(linkPath, '..', target)`
+	// and that collapse is lexical: it eats `..` as a string without following the
+	// link the segment sits behind. `hop/../secret` therefore names a sibling of the
+	// link on Windows and the traversal never crosses `hop` at all, so the escape
+	// this refusal answers cannot be expressed there. The containment law itself is
+	// measured on every host by the test below it.
+	it.skipIf(process.platform === 'win32')(
+		'refuses a dangling link whose target crosses a link with parent traversal',
+		() => {
+			const outside = createWorkspace()
+			const workspace = createWorkspace()
+			try {
+				workspace.link('hop', outside.directory('deep'))
+				workspace.link('link', 'hop/../secret')
+				const admitted = resolveContainedPath(workspace.path, 'link')
+				if (admitted !== undefined) writeFileSync(admitted, 'escaped\n')
+				expect({
+					admitted,
+					inside: existsSync(join(workspace.path, 'secret')),
+					outside: existsSync(join(outside.path, 'secret')),
+					bytes: existsSync(join(outside.path, 'secret')) ? outside.read('secret') : undefined,
+				}).toEqual({ admitted: undefined, inside: false, outside: false, bytes: undefined })
+			} finally {
+				workspace.destroy()
+				outside.destroy()
+			}
+		},
+	)
+
+	it('refuses a dangling link that leaves the root and admits one that stays inside', () => {
 		const outside = createWorkspace()
 		const workspace = createWorkspace()
 		try {
-			workspace.link('hop', outside.directory('deep'))
-			workspace.link('link', 'hop/../secret')
-			const admitted = resolveContainedPath(workspace.path, 'link')
-			if (admitted !== undefined) writeFileSync(admitted, 'escaped\n')
-			expect({
-				admitted,
-				inside: existsSync(join(workspace.path, 'secret')),
-				outside: existsSync(join(outside.path, 'secret')),
-				bytes: existsSync(join(outside.path, 'secret')) ? outside.read('secret') : undefined,
-			}).toEqual({ admitted: undefined, inside: false, outside: false, bytes: undefined })
-
 			workspace.link('straight', join(outside.path, 'absent'))
 			expect(resolveContainedPath(workspace.path, 'straight')).toBeUndefined()
 			workspace.link('future', join(workspace.path, 'inside/future.md'))
@@ -934,7 +986,7 @@ describe('readHostManifest', () => {
 })
 
 describe('readManifestEntry', () => {
-	it('maps a destination to its storage name and the mode the host reports', () => {
+	it('maps a destination to its storage name and its declared executable bit', () => {
 		const workspace = createWorkspace()
 		try {
 			const source = workspace.write('.gitignore', 'dist\n')
@@ -948,21 +1000,39 @@ describe('readManifestEntry', () => {
 		}
 	})
 
-	it('reads the executable bit from the file rather than from its name', () => {
+	it('reads the executable bit from the declaration rather than from the host mode', () => {
 		const workspace = createWorkspace()
 		try {
-			const plain = workspace.write('scripts/plain.sh', '#!/bin/sh\n')
-			// The control: a script that was never marked executable must answer
-			// false, so an implementation reading the extension instead of the mode
-			// fails here.
-			expect(readManifestEntry('scripts/plain.sh', plain)?.executable).toBe(false)
-			const marked = workspace.write('scripts/codex.sh', '#!/bin/sh\n')
-			chmodSync(marked, 0o755)
-			// Windows reports no executable bit at all, so the claim is that the
-			// helper answers whatever this host actually records.
-			expect(readManifestEntry('scripts/codex.sh', marked)?.executable).toBe(
-				(lstatSync(marked).mode & 0o111) !== 0,
-			)
+			// A declared path staged from a source carrying no executable bit still
+			// answers true. This is the Windows publish, where every mode reads 0644:
+			// reading the mode here declared four dead hooks and shipped them.
+			const declared = workspace.write('scripts/codex.sh', '#!/bin/sh\n')
+			chmodSync(declared, 0o644)
+			expect((lstatSync(declared).mode & 0o111) !== 0).toBe(false)
+			expect(readManifestEntry('scripts/codex.sh', declared)?.executable).toBe(true)
+			// The control, drawn from outside the declared set rather than from
+			// another declared path: an undeclared script carrying the bit answers
+			// false, so the helper is reading the declaration and not the extension,
+			// the directory, or the mode.
+			const undeclared = workspace.write('scripts/plain.sh', '#!/bin/sh\n')
+			chmodSync(undeclared, 0o755)
+			expect(readManifestEntry('scripts/plain.sh', undeclared)?.executable).toBe(false)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('answers the same entry for one path on every host', () => {
+		const workspace = createWorkspace()
+		try {
+			const source = workspace.write('scripts/deps.sh', '#!/bin/sh\n')
+			chmodSync(source, 0o644)
+			const restrictive = readManifestEntry('scripts/deps.sh', source)
+			chmodSync(source, 0o755)
+			// The entry a checkout stages is a function of the path alone, so the same
+			// checkout produces the same manifest on a host with executable bits and
+			// on one without. Nothing below the mode changed between these two reads.
+			expect(readManifestEntry('scripts/deps.sh', source)).toEqual(restrictive)
 		} finally {
 			workspace.destroy()
 		}
@@ -1276,6 +1346,12 @@ describe('write anchors', () => {
 			expect(
 				replacementAnchor.device === anchor.device && replacementAnchor.inode === anchor.inode,
 			).toBe(false)
+			// The original moves aside rather than being replaced in place. Windows
+			// refuses a rename onto an existing directory, and holding the original
+			// allocated elsewhere also stops the filesystem reissuing its inode to the
+			// replacement, which ext4 does and which would make the anchor match again
+			// for a reason that has nothing to do with the swap.
+			renameSync(target, join(workspace.path, 'retired'))
 			renameSync(replacement, target)
 			expect(matchesAnchor(anchor)).toBe(false)
 		} finally {

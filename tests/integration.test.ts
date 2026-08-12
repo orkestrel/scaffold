@@ -305,7 +305,7 @@ describe('installed package consumer', () => {
 			// This is the assertion the lists are exact against: a shipped example
 			// that changes spelling moves between two of them and both move.
 			expect(driven.length + undriven.length + glossed.length + elided.length).toBe(shaped)
-			expect(shaped).toBe(165)
+			expect(shaped).toBe(168)
 
 			// Every claim scored false is a control, and nothing the package ships is.
 			// This establishes that a driven claim the module contradicts is reported,

@@ -27,6 +27,7 @@ import { basename, dirname, join, parse, relative, resolve, sep } from 'node:pat
 import { attempt, holds, isError, parseJSONAs } from '@orkestrel/contract'
 import {
 	bytesToHex,
+	EXECUTABLE_PATHS,
 	HOST_PATHS,
 	isCollection,
 	isPath,
@@ -149,6 +150,33 @@ export function matchesSensitivePath(path: string): boolean {
 	return /(?:^|\/)(?:(?:\.ssh|\.aws|\.azure|\.docker|\.kube|\.gnupg|\.env(?:\.[^/]*)?)(?:\/|$)|(?:\.npmrc|\.pypirc|\.netrc|\.git-credentials|settings\.local\.json|auth\.json|credentials(?:\.json)?|application_default_credentials\.json|id_rsa|id_ed25519|kubeconfig)$|\.config\/(?:gh|gcloud)(?:\/|$)|\.local\/share\/keyrings(?:\/|$)|[^/]*service-account[^/]*\.json$|[^/]*\.(?:jks|key|p12|pem|pfx|pkcs12)$)/i.test(
 		normalized,
 	)
+}
+
+/**
+ * Test whether a vendored path is one a target receives executable.
+ *
+ * @param path - The target-relative path to classify; either separator is read.
+ * @returns `true` when the path is declared in {@link EXECUTABLE_PATHS}.
+ *
+ * @remarks
+ * The declaration is the whole answer, and deliberately so. Reading the staging
+ * host's mode instead makes the manifest depend on where the package was built:
+ * Windows carries no executable bit, so a host staged there declares every entry
+ * non-executable and every target it later fills receives hooks at `0644`. One
+ * checkout stages one manifest on every host because this predicate never
+ * consults the filesystem.
+ *
+ * @example
+ * ```ts
+ * import { matchesExecutablePath } from '@orkestrel/scaffold/server'
+ *
+ * matchesExecutablePath('scripts/codex.sh') // true
+ * matchesExecutablePath('scripts\\deps.sh') // true
+ * matchesExecutablePath('AGENTS.md') // false
+ * ```
+ */
+export function matchesExecutablePath(path: string): boolean {
+	return EXECUTABLE_PATHS.includes(path.replaceAll('\\', '/'))
 }
 
 /**
@@ -1026,14 +1054,14 @@ export function readHostManifest(host: string): HostManifest | undefined {
  *
  * @remarks
  * The one place the three declared fields are decided together, because they are
- * three readings of one file: {@link pathToStorage} decides where it is stored,
- * the destination is the path it answers for, and the executable bit is read
- * from the source's own mode.
+ * three readings of one path: {@link pathToStorage} decides where it is stored,
+ * the destination is the path it answers for, and {@link matchesExecutablePath}
+ * decides whether a target receives it executable.
  *
- * That mode is the honest limit of this reading. A Windows host reports no
- * executable bit at all, so a host staged there declares every entry
- * non-executable and a consumer receives scripts without it. Staging on a POSIX
- * host is what carries the bit through.
+ * The bit is read from that declaration rather than from the source's mode, so
+ * the entry does not depend on where the package was staged. A Windows host
+ * reports no executable bit at all, and reading the mode there declared every
+ * entry non-executable and shipped consumers hooks they could not run.
  *
  * @example
  * ```ts
@@ -1050,7 +1078,7 @@ export function readManifestEntry(destination: string, source: string): Manifest
 	return {
 		storage: pathToStorage(destination),
 		destination,
-		executable: (status.value.mode & 0o111) !== 0,
+		executable: matchesExecutablePath(destination),
 	}
 }
 

@@ -14,6 +14,7 @@ import {
 	buildTargetAudit,
 	buildVendoredManifest,
 	buildVendoredPlan,
+	CASE_FOLDING,
 	CATALOG_AGENT_TEXT,
 	createHostRoot,
 	createWorkspace,
@@ -96,13 +97,15 @@ describe('Materializer construction', () => {
 			// The control: the host stores the exact name the manifest recases, so
 			// absence cannot explain the case-only difference between the two names.
 			expect(readFileHex(host, 'AGENTS.md')).not.toBe(undefined)
-			// The limit, executable rather than stated in prose. This filesystem does
-			// not resolve the recased storage name, so the refusal below could equally
-			// be a refusal of a name the host does not store: nothing here tells a case
-			// verdict apart from a membership verdict. A case-insensitive host resolves
-			// the recased name and fails this line, which is where the case verdict
-			// becomes provable directly.
-			expect(readFileHex(host, 'agents.md')).toBe(undefined)
+			// The limit, executable rather than stated in prose, and stated against the
+			// host this run measured rather than the host the suite was written on.
+			// Where the directory folds case the recased storage name resolves to the
+			// stored bytes, so the refusal below is a case verdict no membership check
+			// could produce. Where it does not, that name is simply one the host does
+			// not store, and the two verdicts coincide.
+			expect(readFileHex(host, 'agents.md')).toBe(
+				CASE_FOLDING ? readFileHex(host, 'AGENTS.md') : undefined,
+			)
 			expect(readHostManifest(host)?.digest).toBe(recased.digest)
 			expect(readErrorCode(() => new Materializer({ host }))).toBe('TARGET')
 		} finally {

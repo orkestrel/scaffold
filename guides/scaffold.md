@@ -102,6 +102,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `EXTRA_RANGE_PATTERN`             | const | The registry-only semver subset accepted for a development extra's range.                        |
 | `GLOBAL_SETUP_PATH`               | const | The shared Vitest global-setup module whose presence makes a workspace `global`.                 |
 | `GUIDES_TEST_PATH`                | const | The guide-parity proof whose physical file selects the fixed `guides` project.                   |
+| `EXECUTABLE_PATHS`                | const | The vendored paths a target receives with its executable bit set, frozen.                        |
 | `GROUPS`                          | const | The seven `Group` values in plan order, frozen.                                                  |
 | `HEX_PATTERN`                     | const | Exact lowercase hexadecimal bytes: two digits per byte, and empty content is valid.              |
 | `HOST_PATHS`                      | const | The paths byte-copied from the vendored data root, frozen.                                       |
@@ -319,6 +320,7 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 | `listDirectories`       | function | List a directory's descendant directories as sorted root-relative paths.              |
 | `listFiles`             | function | List a directory's files as sorted root-relative paths.                               |
 | `matchesAnchor`         | function | Test whether a captured directory is still the same directory.                        |
+| `matchesExecutablePath` | function | Test whether a vendored path is one a target receives executable.                     |
 | `matchesExpectation`    | function | Test whether a destination still holds what was captured of it.                       |
 | `matchesGitPath`        | function | Test whether a path addresses a target's own repository metadata.                     |
 | `matchesMissingPath`    | function | Test whether a caught filesystem error reports an absent path.                        |

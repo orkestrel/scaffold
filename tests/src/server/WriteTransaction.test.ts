@@ -243,14 +243,22 @@ describe('WriteTransaction staging', () => {
 })
 
 describe('WriteTransaction directories', () => {
-	it('discards a created segment whose anchor read refuses it', async () => {
-		const workspace = createWorkspace()
-		const target = workspace.directory('project')
-		const segment = join(target, 'a')
-		const holding = join(target, 'holding')
-		const state = new Int32Array(new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT))
-		const attacker = new Worker(
-			`const { existsSync, renameSync, writeFileSync } = require('node:fs')
+	// The interleaving needs the attacker to rename a directory the transaction is
+	// mid-way through establishing. POSIX renames a directory freely while another
+	// thread holds it; Windows has no directory-replacing rename and denies the move
+	// while a handle is open, so the swap never lands there and the vector cannot be
+	// built. Every wait below is bounded regardless, because a test that parks on a
+	// signal a host will never send reports a timeout instead of a verdict.
+	it.skipIf(process.platform === 'win32')(
+		'discards a created segment whose anchor read refuses it',
+		async () => {
+			const workspace = createWorkspace()
+			const target = workspace.directory('project')
+			const segment = join(target, 'a')
+			const holding = join(target, 'holding')
+			const state = new Int32Array(new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT))
+			const attacker = new Worker(
+				`const { existsSync, renameSync, writeFileSync } = require('node:fs')
 const { workerData } = require('node:worker_threads')
 const state = new Int32Array(workerData.state)
 Atomics.store(state, 0, 1)
@@ -270,43 +278,49 @@ for (;;) {
 		} catch {}
 	}
 }`,
-			{ eval: true, workerData: { state: state.buffer, segment, holding } },
-		)
-		try {
-			Atomics.wait(state, 0, 0)
-			let observed = false
-			for (let attempt = 0; attempt < 4_096 && !observed; attempt += 1) {
-				const transaction = new WriteTransaction(target, ['a'])
-				Atomics.store(state, 0, 2)
-				Atomics.notify(state, 0)
-				let refusal: unknown
-				try {
-					transaction.directory('a')
-				} catch (error) {
-					refusal = error
+				{ eval: true, workerData: { state: state.buffer, segment, holding } },
+			)
+			try {
+				Atomics.wait(state, 0, 0, 10_000)
+				let observed = false
+				for (let attempt = 0; attempt < 4_096 && !observed; attempt += 1) {
+					const transaction = new WriteTransaction(target, ['a'])
+					Atomics.store(state, 0, 2)
+					Atomics.notify(state, 0)
+					let refusal: unknown
+					try {
+						transaction.directory('a')
+					} catch (error) {
+						refusal = error
+					}
+					if (Atomics.wait(state, 0, 2, 10_000) === 'timed-out') {
+						Atomics.store(state, 0, 1)
+						Atomics.notify(state, 0)
+						transaction.discard()
+						break
+					}
+					expect(lstatSync(segment).isFile()).toBe(true)
+					expect(lstatSync(holding).isDirectory()).toBe(true)
+					rmSync(segment)
+					renameSync(holding, segment)
+					transaction.discard()
+					expect(existsSync(segment)).toBe(false)
+					observed = refusal !== undefined
+					expect(isScaffoldError(refusal) ? refusal.code : undefined).toBe(
+						observed ? 'WRITE' : undefined,
+					)
+					Atomics.store(state, 0, 1)
+					Atomics.notify(state, 0)
 				}
-				Atomics.wait(state, 0, 2)
-				expect(lstatSync(segment).isFile()).toBe(true)
-				expect(lstatSync(holding).isDirectory()).toBe(true)
-				rmSync(segment)
-				renameSync(holding, segment)
-				transaction.discard()
-				expect(existsSync(segment)).toBe(false)
-				observed = refusal !== undefined
-				expect(isScaffoldError(refusal) ? refusal.code : undefined).toBe(
-					observed ? 'WRITE' : undefined,
-				)
-				Atomics.store(state, 0, 1)
+				expect(observed).toBe(true)
+			} finally {
+				Atomics.store(state, 0, 4)
 				Atomics.notify(state, 0)
+				await attacker.terminate()
+				workspace.destroy()
 			}
-			expect(observed).toBe(true)
-		} finally {
-			Atomics.store(state, 0, 4)
-			Atomics.notify(state, 0)
-			await attacker.terminate()
-			workspace.destroy()
-		}
-	})
+		},
+	)
 
 	it('establishes a nested directory segment by segment and reports what it created', () => {
 		const workspace = createWorkspace()

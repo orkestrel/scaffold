@@ -155,6 +155,26 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
 ])
 
 /**
+ * The vendored paths a target receives with its executable bit set, frozen.
+ *
+ * @remarks
+ * Declared rather than read from the staging host's filesystem, because that
+ * reading is not portable: Windows carries no executable bit, so a host staged
+ * there reports every file non-executable and every target receives hooks it
+ * cannot run. Declaring the set here makes one checkout stage one manifest on
+ * every host.
+ *
+ * Every entry is also a {@link HOST_PATHS} member or sits beneath one. A file
+ * that must run when a target invokes it belongs here the moment it is vendored.
+ */
+export const EXECUTABLE_PATHS: readonly string[] = Object.freeze([
+	'scripts/codex.sh',
+	'scripts/cursor.sh',
+	'scripts/deps.sh',
+	'scripts/ollama.sh',
+])
+
+/**
  * The path prefixes whose contents instruct or wire an agent, frozen.
  *
  * @remarks
