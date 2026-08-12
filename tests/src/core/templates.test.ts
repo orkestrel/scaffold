@@ -327,7 +327,7 @@ describe('configuration templates', () => {
 				createBlueprint('published', {
 					src: ['core', 'browser', 'server'],
 					bin: true,
-					services: ['ollama'],
+					vendors: ['ollama'],
 				}),
 				createBlueprint('server-only', { src: ['server'] }),
 				createBlueprint('application', {
@@ -346,7 +346,7 @@ describe('configuration templates', () => {
 					integration: true,
 					global: true,
 					showcase: true,
-					services: ['ollama', 'postgres'],
+					vendors: ['ollama', 'postgres'],
 				}),
 			]
 			const expected = new Map<string, string>()

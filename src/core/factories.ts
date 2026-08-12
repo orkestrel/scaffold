@@ -15,8 +15,8 @@ import { parseBlueprint } from './parsers.js'
  * blueprint.
  *
  * @remarks
- * A blueprint is a closed record of sixteen fields, and most of them have one
- * sensible starting value: an empty list, a cleared flag, `DEFAULT_VERSION`, and
+ * A blueprint is a closed record, and most of its fields have one sensible
+ * starting value: an empty list, a cleared flag, `DEFAULT_VERSION`, and
  * `DEFAULT_ENGINES`. Filling them here is what lets a caller state only what its
  * workspace actually declares.
  *
@@ -59,7 +59,7 @@ export function createBlueprint(name: string, input?: Partial<Omit<Blueprint, 'n
 		integration: input?.integration ?? false,
 		conformance: input?.conformance ?? false,
 		service: input?.service ?? false,
-		services: input?.services ?? [],
+		vendors: input?.vendors ?? [],
 		global: input?.global ?? false,
 		showcase: input?.showcase ?? false,
 	}

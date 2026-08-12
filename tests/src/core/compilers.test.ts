@@ -52,8 +52,8 @@ describe('blueprintToScripts config projects', () => {
 		expect(scripts.prepublishOnly).not.toContain('test:probe')
 	})
 
-	it('does not invent test projects from service names alone', () => {
-		const scripts = blueprintToScripts(buildBlueprint({ services: ['ollama'] }))
+	it('does not invent test projects from vendor names alone', () => {
+		const scripts = blueprintToScripts(buildBlueprint({ vendors: ['ollama'] }))
 		expect(scripts['test:service']).toBeUndefined()
 		expect(scripts['test:service:ollama']).toBeUndefined()
 		expect(scripts.prepublishOnly).not.toContain('test:service')
@@ -69,14 +69,14 @@ describe('blueprintToScripts config projects', () => {
 		expect(live.test).not.toContain('test:service')
 		expect(live.prepublishOnly).toContain('npm run test:service')
 
-		const vendors = blueprintToScripts(buildBlueprint({ services: ['ollama'], service: false }))
+		const vendors = blueprintToScripts(buildBlueprint({ vendors: ['ollama'], service: false }))
 		expect(vendors['test:service']).toBeUndefined()
 		expect(vendors.prepublishOnly).not.toContain('test:service')
 	})
 
 	// The one proof that leaves `integration`'s gate rather than joining it: it
-	// measures this package against official tooling and starts nothing, so it
-	// costs a hermetic run and belongs to `test`.
+	// measures this package against official tooling and drives nothing external,
+	// so it costs a hermetic run and belongs to `test`.
 	it('runs the conformance proof from the default gate and never from the publish gate alone', () => {
 		const measured = blueprintToScripts(buildBlueprint({ conformance: true }))
 		expect(measured['test:conformance']).toBe(
@@ -209,10 +209,10 @@ describe('blueprintToRootVite fixed proofs', () => {
 
 		// A vendor list is not the axis. It emits the provisioner and nothing that
 		// runs against it.
-		const vendors = blueprintToRootVite(buildBlueprint({ services: ['ollama'] }))
+		const vendors = blueprintToRootVite(buildBlueprint({ vendors: ['ollama'] }))
 		expect(vendors).not.toContain("name: { label: 'service',")
 		expect(
-			blueprintToTestArtifacts(buildBlueprint({ services: ['ollama'] })).map(({ path }) => path),
+			blueprintToTestArtifacts(buildBlueprint({ vendors: ['ollama'] })).map(({ path }) => path),
 		).not.toContain('tests/setupService.ts')
 	})
 
@@ -583,10 +583,10 @@ describe('content artifact compilers', () => {
 		expect(guide?.content).not.toContain('[package-guide]')
 	})
 
-	it('emits only the honest service inventory skeleton when services are declared', () => {
+	it('emits only the honest vendor inventory skeleton when vendors are declared', () => {
 		expect(blueprintToOrchestrationArtifacts(buildBlueprint())).toStrictEqual([])
 		const [artifact] = blueprintToOrchestrationArtifacts(
-			buildBlueprint({ services: ['ollama', 'postgres'] }),
+			buildBlueprint({ vendors: ['ollama', 'postgres'] }),
 		)
 		expect(artifact?.path).toBe('scripts/service.sh')
 		expect(artifact?.content).toContain("'ollama'")

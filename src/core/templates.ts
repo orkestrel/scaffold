@@ -872,7 +872,7 @@ npm test
 set -eu
 
 printf '%s\\n' \\
-{{services}}
+{{vendors}}
 `,
 	}),
 })

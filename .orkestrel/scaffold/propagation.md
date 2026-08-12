@@ -39,7 +39,7 @@ full suite run.
 Three documentation commits, no surface change, so no bump is owed under the rule below:
 
 - the writing-verb refusal for an unregistered Vitest project, stated as a limit;
-- a correction to that limit — `Blueprint.services` registers no project, so the two fleet cases are
+- a correction to that limit — the vendor list registers no project, so the two fleet cases are
   one limit with one cause rather than two;
 - a catalog-table refresh, because scaffold's own row still read `0.0.26` with pre-re-pin ranges.
 
@@ -63,18 +63,33 @@ Detection follows `integration` exactly — the proof file is the structural fac
 
 - exact-case `tests/conformance.test.ts` → `conformance`. Registers the project over that one file,
   emits `test:conformance`, and puts it **in** `test`. It measures the package against official
-  tooling and starts nothing, so it costs a hermetic run.
+  tooling and drives nothing external: a conformance run may start a server, but it starts its own
+  and reaches it over loopback, so the run stays hermetic. Say it that way — the earlier wording,
+  "starts nothing", is false of the only conformance project in the fleet and was corrected in the
+  source TSDoc during this release.
 - exact-case `tests/setupService.ts` → `service`. Registers the project over
   `tests/service/**/*.test.ts` with 120s timeouts and `fileParallelism: false`, emits
   `test:service`, keeps it **out of** `test`, and requires it in `prepublishOnly`.
 
-`service` keys on the readiness module rather than on `services`, and that was the load-bearing
+`service` keys on the readiness module rather than on the vendor list, and that was the load-bearing
 decision. `scripts/service.sh` is birth-owned and is not a declaration — `/workspace/ollama` has
 replaced its copy with a real Ollama provisioner carrying no recoverable inventory — so keying the
-project on `services.length > 0` would have left every live-service workspace unplannable, which is
-the exact refusal this change removes. The two facts now stay separate and the guide says so:
-`service` is _the workspace runs a live suite_, `services` is _these are the vendors it drives_.
-Neither is derivable from the other.
+project on a non-empty vendor list would have left every live-service workspace unplannable, which
+is the exact refusal this change removes. The two facts stay separate: `service` is _the workspace
+runs a live suite_, `vendors` is _these are the external services it drives_. Neither is derivable
+from the other.
+
+**`Blueprint.services` is renamed to `Blueprint.vendors` in the same release, and that is a second
+breaking change to `Blueprint` an app-layer caller must take.** Adding `Blueprint.service` put a
+singular beside the existing plural meaning something unrelated, and every other plural on
+`Blueprint` — `keywords`, `dependencies`, `peers`, `extras`, `overrides` — has no singular sibling.
+`.claude/rules/patterns.md` fixes the opposite meaning for that shape, so a reader who knows this
+codebase reads `service` as derived from `services` and is wrong. The package had already conceded
+the point in prose: four places glossed the field as _vendors_, and two test files had named their
+own local const `vendors`. It rides this release because 0.0.28 is already breaking for a
+literal-building caller, and because no blueprint is ever persisted, so a generated workspace
+migrates at zero cost. `SERVICE_SCRIPT_PATH` stays `scripts/service.sh` — a shell filename is not an
+API identifier, and the script starts services while the field names the vendors.
 
 Neither proof is seeded. The conformance file and the service suite both name something only the
 package knows, and a placeholder would read as a proof while measuring nothing. The one artifact that
@@ -130,8 +145,8 @@ app-layer target will recognise, and because the fix covers two projects rather 
 
 The registered project set is fixed: the environment projects the axes select, plus `policy`,
 `config`, `probe`, `guides`, and `integration` when `tests/integration.test.ts` exists.
-`Blueprint.services` does **not** add one — measured by compiling a blueprint carrying
-`services: ['ollama']` and reading the project list in the tree it materialized: it emits
+The vendor list does **not** add one — measured by compiling a blueprint carrying
+`vendors: ['ollama']` and reading the project list in the tree it materialized: it emits
 `scripts/service.sh` and nothing else. A workspace whose manifest names a project the plan omits gets
 "the manifest names a Vitest project the planned configuration does not register", and the refusal
 runs **before group selection**, so `--groups` does not narrow past it.

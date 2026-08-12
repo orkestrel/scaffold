@@ -532,7 +532,7 @@ export class CLI implements CLIInterface {
 	}
 
 	// The blueprint a target describes about itself: manifest identity and fleet
-	// packages, environment directories, and exact structural files. Services stay
+	// packages, environment directories, and exact structural files. Vendors stay
 	// unknown because their birth-owned script is not a declaration of its list.
 	// The live-service project does not wait on that list: it follows its own
 	// readiness module, which the root configuration names by path.

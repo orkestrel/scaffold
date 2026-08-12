@@ -462,8 +462,8 @@ The other structural facts do not need creation flags. Add `tests/integration.te
 `integration`, `tests/conformance.test.ts` for `conformance`, `tests/setupService.ts` for `service`,
 `tests/setupGlobal.ts` for `global`, and `configs/app/vite.showcase.config.ts` for `showcase`;
 reading verbs detect each exact-case file and register its fixed machinery. Add `scripts/service.sh`
-for `services`. Reading verbs preserve and protect that birth-owned script, but do not infer its
-service list from edited text.
+for `vendors`. Reading verbs preserve and protect that birth-owned script, but do not infer its
+vendor list from edited text.
 
 ### Reading a target
 
@@ -476,12 +476,12 @@ beside it could disagree. Six more facts come from exact-case files: `src/bin/ma
 and `configs/app/vite.showcase.config.ts` selects `showcase`. A containing directory does not select
 the fact by itself.
 
-`services` is not reconstructed. Its only artifact, `scripts/service.sh`, is birth-owned, so edited
-script text is not a trustworthy declaration of a service list. A present script remains in the
+`vendors` is not reconstructed. Its only artifact, `scripts/service.sh`, is birth-owned, so edited
+script text is not a trustworthy declaration of a vendor list. A present script remains in the
 target and remains protected from deletion through the owned scripts inventory, but a reading verb
-does not infer services from it.
+does not infer vendors from it.
 
-That is why the live-service project follows `service` rather than `services`. A reading verb has to
+That is why the live-service project follows `service` rather than `vendors`. A reading verb has to
 plan the project before it can say anything about a target that runs one, and a vendor list it
 cannot recover would leave every such workspace unplannable. `tests/setupService.ts` is recoverable,
 is the module the root configuration names by path, and is what a live proof needs anyway, so it
@@ -571,17 +571,16 @@ because the shape is chosen once and read afterwards: `new` refuses the advisory
 `repair` need the plan to describe and restore a target that already has that shape. A library
 caller creating a workspace holds the same refusal, and the Compile section below states it.
 
-`bin`, `integration`, `conformance`, `service`, `services`, `global`, and `showcase` are structural
+`bin`, `integration`, `conformance`, `service`, `vendors`, `global`, and `showcase` are structural
 facts. Each is set only when the workspace physically ships the directory or exact-case file that
 defines it, never because of the workspace's name and never because a sibling fact is set.
 
-`service` and `services` are two facts about one domain word and never stand in for each other.
 `service` says the workspace runs a live-service Vitest project over `tests/service`, and it alone
 registers that project, its `test:service` script, and the `tests/setupService.ts` readiness module
-the project names. `services` names the external vendors the workspace drives and emits
-`scripts/service.sh`, the provisioner that starts them. A workspace may declare vendors before it
-writes a suite, and a suite may drive a service the skeleton does not start, so neither is derivable
-from the other.
+the project names. `vendors` names each external service the workspace drives and emits
+`scripts/service.sh`, the provisioner that starts them. Neither is derivable from the other: a
+workspace may declare vendors before it writes a suite, and a suite may drive a service the skeleton
+does not start.
 
 An axis-dependent structural fact projects only when its required axis exists. `integration`
 projects a published `src`, and `showcase` projects the browser `app` environment. When that axis is
@@ -1050,10 +1049,11 @@ neither is silent.
 Neither project folds into `integration`, which means something narrower: the built package works
 when installed and driven from outside. Two fleet packages hold the distinction. `@orkestrel/ollama`
 drives a real Ollama daemon through a `service` project, so a real service answers it and it runs
-from `prepublishOnly`. `@orkestrel/mcp` measures its server against `@modelcontextprotocol/`
-`conformance` through a `conformance` project — the specification's own runner, fetched at run time
-and deliberately not a dependency, so the package proves compatibility without taking on the
-coupling.
+from `prepublishOnly`. `@orkestrel/mcp` measures its server against the specification's own runner,
+`@modelcontextprotocol/conformance`, through a `conformance` project. It pins that runner as a
+development dependency and resolves it out of `node_modules`, and the server the runner drives is
+one the fixture starts itself on a loopback port, so the run drives nothing external and stays in
+`test`.
 
 ## Tests
 

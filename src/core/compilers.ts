@@ -257,8 +257,9 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
  * A proof leaves `test` when a real service or a real install answers it. The
  * installed-package integration proof and the live-service proof therefore run
  * from `prepublishOnly` instead. The conformance proof stays in `test`, because
- * it measures this package against official tooling rather than driving
- * anything, so it costs a hermetic run.
+ * it measures this package against official tooling and drives nothing external:
+ * a conformance run may start a server, but it starts its own and reaches it
+ * over loopback, so the run stays hermetic.
  *
  * The configuration paths interpolated here are the same ones `SRC_MATRIX` and
  * `APP_MATRIX` list as each environment's configuration files, so a rename in
@@ -1271,21 +1272,19 @@ export function blueprintToDocumentArtifacts(blueprint: Blueprint): readonly Con
  * Compile the blueprint-dependent orchestration artifacts.
  *
  * @param blueprint - The workspace specification.
- * @returns A service inventory script when services are declared, otherwise none.
+ * @returns A vendor inventory script when vendors are declared, otherwise none.
  *
  * @remarks
- * A service name does not describe startup, readiness, or cleanup. The script
+ * A vendor name does not describe startup, readiness, or cleanup. The script
  * therefore records only the declared inventory and does not invent a service
  * runner or test project.
  */
 export function blueprintToOrchestrationArtifacts(
 	blueprint: Blueprint,
 ): readonly ContentArtifact[] {
-	if (blueprint.services.length === 0) return []
-	const services = blueprint.services
-		.map(
-			(service, index) => `\t'${service}'${index === blueprint.services.length - 1 ? '' : ' \\'}`,
-		)
+	if (blueprint.vendors.length === 0) return []
+	const vendors = blueprint.vendors
+		.map((vendor, index) => `\t'${vendor}'${index === blueprint.vendors.length - 1 ? '' : ' \\'}`)
 		.join('\n')
 	return [
 		{
@@ -1293,7 +1292,7 @@ export function blueprintToOrchestrationArtifacts(
 			group: 'orchestration',
 			ownership: 'birth',
 			origin: 'template',
-			content: fillTemplate(ARTIFACT_TEMPLATES.orchestration.service, { services }),
+			content: fillTemplate(ARTIFACT_TEMPLATES.orchestration.service, { vendors }),
 		},
 	]
 }
@@ -1666,22 +1665,22 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 			blocking: false,
 		})
 	}
-	const services = new Set<string>()
-	for (const service of blueprint.services) {
-		if (!NAME_PATTERN.test(service)) {
+	const vendors = new Set<string>()
+	for (const vendor of blueprint.vendors) {
+		if (!NAME_PATTERN.test(vendor)) {
 			questions.push({
-				field: 'services',
-				message: `${service} is not a lowercase alphanumeric service name starting with a letter.`,
+				field: 'vendors',
+				message: `${vendor} is not a lowercase alphanumeric vendor name starting with a letter.`,
 				blocking: true,
 			})
-		} else if (services.has(service)) {
+		} else if (vendors.has(vendor)) {
 			questions.push({
-				field: 'services',
-				message: `${service} is declared more than once on services.`,
+				field: 'vendors',
+				message: `${vendor} is declared more than once on vendors.`,
 				blocking: true,
 			})
 		}
-		services.add(service)
+		vendors.add(vendor)
 	}
 	if (blueprint.showcase && !blueprint.app.includes('browser')) {
 		questions.push({

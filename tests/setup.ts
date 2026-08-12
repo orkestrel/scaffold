@@ -234,7 +234,7 @@ export function buildBlueprint(fields?: Partial<Blueprint>): Blueprint {
 		integration: false,
 		conformance: false,
 		service: false,
-		services: [],
+		vendors: [],
 		global: false,
 		showcase: false,
 		...fields,

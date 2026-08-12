@@ -139,7 +139,7 @@ export interface Override {
  * application-only, and mixed workspaces are all first class. `dependencies`
  * and `peers` are runtime `@orkestrel/*` packages; `extras` are
  * package-specific development dependencies and may carry any valid npm name.
- * `bin`, `integration`, `conformance`, `service`, `services`, `global`, and
+ * `bin`, `integration`, `conformance`, `service`, `vendors`, `global`, and
  * `showcase` are structural facts: each is set only when the workspace
  * physically ships the directory or exact-case file that defines it, never
  * because of the workspace's name and never because a sibling fact is set. An
@@ -149,13 +149,12 @@ export interface Override {
  * caller that set the flag learns it emitted nothing and the compile still
  * completes.
  *
- * `service` and `services` are two facts about one domain word and never stand
- * in for each other. `service` says the workspace runs a live-service Vitest
- * project over `tests/service`, and it alone registers that project. `services`
- * names the external vendors the workspace drives and emits the provisioner
- * skeleton that starts them. A workspace may declare vendors before it writes a
- * suite, and a suite may drive a service the skeleton does not start, so neither
- * is derivable from the other.
+ * `service` says the workspace runs a live-service Vitest project over
+ * `tests/service`, and it alone registers that project. `vendors` names each
+ * external service the workspace drives and emits the provisioner skeleton that
+ * starts them. Neither is derivable from the other: a workspace may declare
+ * vendors before it writes a suite, and a suite may drive a service the skeleton
+ * does not start.
  */
 export interface Blueprint {
 	readonly name: string
@@ -173,7 +172,7 @@ export interface Blueprint {
 	readonly integration: boolean
 	readonly conformance: boolean
 	readonly service: boolean
-	readonly services: readonly string[]
+	readonly vendors: readonly string[]
 	readonly global: boolean
 	readonly showcase: boolean
 }
