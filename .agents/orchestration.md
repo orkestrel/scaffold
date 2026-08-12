@@ -518,6 +518,56 @@ nothing.
 - Follow the deviation ladder for a stalled journal or a cap-killed exec, using the session id from
   the journal head as the recovery handle.
 
+## Publishing the fleet
+
+Publishing is the user's decision and the user's credential. The Orchestrator prepares, surfaces
+the approval, and runs the publishes the user asked for. It never substitutes an API key, an access
+token, a copied auth file, or another login flow, and it never asks the user to paste a token into
+the conversation.
+
+Every package is `0.0.x`, where a caret pins one exact release. A dependent therefore sees a new
+version only after it re-pins and republishes, so the fleet publishes in topological layer order
+derived from runtime `dependencies` alone. Layers exist for a reason a flat pass cannot fix: two
+ranges that disagree install two copies of the same package, and the compiler reads them as two
+distinct types.
+
+1. **Prepare a whole layer before authenticating.** Bump each version, re-pin every `@orkestrel`
+   range to what the registry serves now, install, and run the package's own `prepublishOnly` to
+   green. Move any self-pin in source with the manifest. Commit and push before the window opens.
+2. **Publish with `--ignore-scripts`,** against the built artifact those gates just proved. Leave
+   `dist/` in place; the flag is what stops the gate chain running twice.
+3. **Prepare the next layer only after this one is on the registry.** A dependent's new pin cannot
+   install until the version it names exists, so preparation and publication interleave and cannot
+   be batched ahead.
+
+### Reaching the approval
+
+- npm offers its browser approval only when it sees a TTY. Without one it fails `EOTP` and there is
+  no way to answer it. Run the first publish of a layer under `script`, reading stdin from a fifo a
+  long `sleep` holds open, and capture the log.
+- npm prints `Press ENTER to open in the browser` and does not begin polling until that is
+  acknowledged. Send a newline into the fifo. The browser it tries to open does not exist in a
+  headless container, which is harmless.
+- Surface the approval URL to the user the moment it appears in the log, and say that the
+  five-minute box covers the rest of the layer.
+- `npm login` follows the same shape and the same failure: backgrounded with stdin at EOF it falls
+  through to a legacy `Username:` prompt and exits **zero** without authenticating. Confirm with
+  `npm whoami` rather than an exit code.
+
+### Spending the window
+
+- The window opens when the user approves, not when the first publish starts. Chain every remaining
+  publish inside the same process as the gate package, so no human turn sits inside it.
+- Publish serially. Concurrent publishes collide on the auth handshake and fail each other.
+- `EOTP` inside the window is intermittent contention rather than the window closing. Retry each
+  package about three times before recording it failed, and retry a failed set once the layer ends;
+  packages have landed on the third attempt and on a later pass with no new approval.
+- Expect a large layer to outlast one window. Size batches to what uploads in five minutes and tell
+  the user how many approvals to expect, rather than discovering it mid-run.
+- Read the result from the registry, not from an exit code: a piped `npm publish` reports the exit
+  status of the pipeline, and a CDN read straight after a publish can still serve the previous
+  version.
+
 ## Acceptance laws
 
 - No writer's and no external engine's self-assessment is authoritative.
