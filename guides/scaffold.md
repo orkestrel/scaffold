@@ -960,7 +960,7 @@ are thrown, so an observer sees a refusal even where the caller catches it.
 
 ## Limits
 
-Six things a reader will look for and not find.
+Seven things a reader will look for and not find.
 
 **A code fence in this guide is unverified.** [`tests/guides.test.ts`](../tests/guides.test.ts)
 proves that every fence imports only real exports of the two barrels, and that every backticked name
@@ -1011,6 +1011,16 @@ appears to name.
 nothing. This is deliberate: a generated sample entity is repeatedly mistaken for real
 implementation. What a consumer does first is write the module's `types.ts`, then the
 implementation that conforms to it, then export both from the barrel — the order `AGENTS.md` fixes.
+
+**A writing verb refuses a workspace whose manifest names a Vitest project the plan does not
+register.** The refusal names the project and stops the whole call, so `--groups` does not narrow
+past it. Two shapes reach it. One is a workspace carrying a service project: `services` is not
+reconstructed, as Reading a target states, so a target shipping `scripts/service.sh` and a
+`test:service` script plans a configuration without that project and refuses. The other is a
+workspace carrying a project this package models no field for at all, such as a protocol-conformance
+project. Reading verbs are unaffected — `audit` reports drift on both — so the supported route is to
+compare with `audit` and reconcile the configuration by hand. Removing the script that names the
+project is the other way through, and it removes the capability with it.
 
 ## Tests
 
