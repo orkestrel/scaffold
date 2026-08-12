@@ -1012,15 +1012,18 @@ nothing. This is deliberate: a generated sample entity is repeatedly mistaken fo
 implementation. What a consumer does first is write the module's `types.ts`, then the
 implementation that conforms to it, then export both from the barrel — the order `AGENTS.md` fixes.
 
-**A writing verb refuses a workspace whose manifest names a Vitest project the plan does not
-register.** The refusal names the project and stops the whole call, so `--groups` does not narrow
-past it. Two shapes reach it. One is a workspace carrying a service project: `services` is not
-reconstructed, as Reading a target states, so a target shipping `scripts/service.sh` and a
-`test:service` script plans a configuration without that project and refuses. The other is a
-workspace carrying a project this package models no field for at all, such as a protocol-conformance
-project. Reading verbs are unaffected — `audit` reports drift on both — so the supported route is to
-compare with `audit` and reconcile the configuration by hand. Removing the script that names the
-project is the other way through, and it removes the capability with it.
+**Scaffold registers no custom Vitest project, and a writing verb refuses a workspace that needs
+one.** The project set a plan registers is fixed: the environment projects its axes select, plus
+`policy`, `config`, `probe`, and `guides`. `Blueprint.services` does not add one — it emits
+`scripts/service.sh`, a service inventory script, and nothing else. So a workspace whose manifest
+names a `service` or `conformance` project has no field that models it, the planned configuration
+omits it, and every writing verb refuses by name: "the manifest names a Vitest project the planned
+configuration does not register". The refusal stops the whole call, so `--groups` does not narrow
+past it. This is the same shape as the styles axis above — `.claude/rules/workspace.md` describes a
+live-service project as the fifth kind because the fleet has them, and scaffold does not generate
+one. Reading verbs are unaffected, so the route through is to compare with `audit`, which reports
+byte-level drift per path, and reconcile by hand. Deleting the script that names the project is the
+other way through, and it deletes the capability with it.
 
 ## Tests
 
