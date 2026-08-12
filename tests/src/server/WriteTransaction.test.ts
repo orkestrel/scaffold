@@ -243,12 +243,17 @@ describe('WriteTransaction staging', () => {
 })
 
 describe('WriteTransaction directories', () => {
-	// The interleaving needs the attacker to rename a directory the transaction is
-	// mid-way through establishing. POSIX renames a directory freely while another
-	// thread holds it; Windows has no directory-replacing rename and denies the move
-	// while a handle is open, so the swap never lands there and the vector cannot be
-	// built. Every wait below is bounded regardless, because a test that parks on a
-	// signal a host will never send reports a timeout instead of a verdict.
+	// Skipped on Windows because the attacker cannot retry there, not because the
+	// interleaving is impossible: no documented Windows rule forbids a rename landing
+	// between `mkdirSync` and the anchor read, since the new directory is empty and
+	// neither call retains a blocking handle. What does not survive is the retry loop.
+	// The worker renames onto `holding`, and `renameSync` is `MoveFileExW` with
+	// `MOVEFILE_REPLACE_EXISTING`, which is documented to reject an existing directory
+	// destination — so one leftover `holding` makes every later attempt fail for good,
+	// the worker's `catch` swallows it, and the loop spins without ever signalling.
+	// The claim here is therefore unverified on Windows rather than inapplicable.
+	// Every wait is bounded regardless, because a test that parks on a signal a host
+	// will never send reports a timeout instead of a verdict.
 	it.skipIf(process.platform === 'win32')(
 		'discards a created segment whose anchor read refuses it',
 		async () => {
