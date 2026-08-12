@@ -211,3 +211,4 @@ Run `show` only **after** formatting. The committed `demo/showcase.html` is gene
 - Store text as UTF-8.
 - Before accepting broad generated or migrated edits, scan changed text for replacement characters, mojibake, unintended control characters, and accidental trailing debris.
 - Preserve intentional Unicode punctuation and symbols; do not “clean” valid text merely because it is non-ASCII.
+- Never renormalize Unicode while rewriting a file. Retyping a line can silently fold a decomposed sequence into its precomposed form — `e` + U+0301 becoming U+00E9 — and the two render identically, so the diff reads as a no-op and review sees nothing. Where the exact code points are the subject, as in an encoding or transport proof, that fold deletes the case the test exists for while leaving it green and named. Move such a line rather than retyping it, and compare bytes with `od -c` or a code-point dump rather than by eye.
