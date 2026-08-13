@@ -83,6 +83,43 @@ and `search`/`replace` assume parsed text, and `count` assumes a closed set — 
 open and mutable underneath. The design round rules row by row rather than adopting the interface
 wholesale, and says for each row why it is on disk or why it is not.
 
+#### What the reference sandbox actually teaches
+
+Distilled from `/tmp/sandbox-ref/scsr-main/`, journal `tmp/cursor/sandbox-salvage.log`.
+
+**Its containment is weaker than what `@orkestrel/test` already ships.** Lexical prefix check only —
+no realpath, no handle registry, and `lstat`/`realpath`/`isSymbolicLink` appear nowhere in
+`src/server/sandbox/`. Its default `symlinkNodeModules` behaviour **plants a link pointing out of the
+sandbox**, and `execute` is not path-jailed at all: the child process inherits the full filesystem
+access of the user. `readInventory` already refuses symlinked roots and requested directories and
+skips a symlink met while walking, so there is nothing to salvage on the containment side.
+
+**Two things the owner remembered are not in that code.** There is no on/off switch — `contained` is
+hardcoded `true` at construction and `#destroyed` is one-way. And `Sandbox` does not capture the
+parent process's console; it captures the **child's** stdout and stderr from `spawn` pipes, which is
+a different capability.
+
+**Its own guide diverges from its implementation** in at least four places — a documented directory
+that is not where the code lives, a `createWorkspace` factory that does not exist there, a declared
+`error` event never emitted, and snapshot/restore documented as execute-rollback. Read the code, not
+that guide.
+
+**The scout disagrees with the framing, and the disagreement is load-bearing.** Borrowing
+`WorkspaceInterface` wholesale as a filesystem contract is contradictory: it is a *larger*
+editor/registry surface that simultaneously **lacks the disk words a test needs** — no directory
+creation, no copy, no directory listing, no recursive teardown — while carrying words with no disk
+meaning: `Range`, `FileState`, the `FileContent` tagged union, `id`, an emitter, and a `snapshot()`
+that returns a new object rather than a tree checkpoint.
+
+**One concrete trap.** `has(paths)` means **ANY** in `@orkestrel/workspace` and **ALL** in the
+reference. Same name, opposite batch semantics. Whatever `ScratchInterface` adopts must state which
+it is and test it, or a reader who knows one package will be wrong about the other.
+
+**So T4's ruling is a row-by-row adoption, not an interface copy.** Take the verbs and the batch
+shape where they have disk meaning — `has`, `read`, `write`, `remove`, `move`, `files` — and add the
+disk words `workspace` has no reason to carry. Reject the editor vocabulary outright. The design
+round states, per row, why it is on disk or why it is not.
+
 Sequenced after `@orkestrel/guide` publishes. It is a `@orkestrel/test` `0.0.2`, and the fleet pass
 adopts whatever it lands.
 
