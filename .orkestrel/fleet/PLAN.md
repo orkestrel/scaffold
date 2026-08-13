@@ -654,3 +654,38 @@ proves a name resolves; it never proves the sentence beside it is true.
 batch shape — ALL in `template` and `program`, ANY in `workflow` and `workspace`, per-item results in
 a `database` guide. `patterns.md` says ALL and two published packages contradict it. That is a
 fleet-canon question and this package is not the vehicle for settling it.
+
+## T5 — the demand survey
+
+**The creation gate was applied to the wrong population.** T4 read "no package imports
+`createScratch`" as "the proposed rows are speculative." Those are different claims. `createScratch`
+is a new capability, so nothing imports it by construction; the demand for it is the hand-rolled
+temp-directory code it exists to replace. That code is an indirect consumer until it adopts the
+package. The instrument is not "who imports it" but "what do the fixtures being replaced actually
+do" — the same instrument that justified the package in the first place, when 32 packages
+hand-rolled `createRecorder`.
+
+**Codex bench DARK.** `codex --version` resolves (`codex-cli 0.147.0`) and `codex login status`
+reports `Logged in using ChatGPT`, but two bounded round-trip probes returned nothing within 180s
+and 300s. Not an auth failure, so the login ladder does not apply. Lane substitution for this
+round: Opus 5 runs both adversarial lanes, in separate clean contexts, blind to each other. Cursor
+Grok probed live (`GROK-OK cursor-grok-4.6-high`) and carries the reading.
+
+**The population is measured, not assumed.** Grouping every package by which of its test files match
+`mkdtemp|tmpdir\(|mkdirSync|rmSync|renameSync|symlinkSync|cpSync|copyFileSync`:
+
+```
+34  tests/config.test.ts + tests/setupPolicy.ts, and nothing else
+ 2  + setupServer.ts                                   (database, worker)
+ 1  + src/server/{SQLiteDatabase,helpers}.test.ts      (sqlite)
+ 1  + setupServer.ts, src/server/middlewares.test.ts   (middleware)
+ 1  + setupServer.ts, src/server/{helpers,seals/SEA}.test.ts        (sea)
+ 1  + setupServer.ts, src/server/{factories,helpers}.test.ts        (browser)
+ 1  + setupServer.ts, integration.test.ts, src/core/templates.test.ts,
+      src/server/{Materializer,WriteTransaction,helpers}.test.ts    (scaffold)
+```
+
+`md5sum */tests/setupPolicy.ts` returns one hash for all 41; `md5sum */tests/config.test.ts` returns
+one hash for 40 and a second for `ollama`. So the fleet's temp-fixture population is one shared
+template plus eight packages, not 41 independent fixtures. That search covers nine tokens and proves
+nothing about a temp path built some other way; the slices are told to report one if they find it.
