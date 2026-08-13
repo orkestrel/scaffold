@@ -1127,3 +1127,33 @@ Two rules, taken now rather than after a third round:
 The parity suite proves a name resolves. Nothing proves a sentence, so a universal is the one shape
 of prose defect that is guaranteed to survive review — which is why the rule has to be about the
 shape rather than about trying harder.
+
+### A contract decision the fix unit correctly refused to make
+
+FIX-4's brief named one unknown and told the unit to stop rather than answer it. It did. The probe:
+
+```
+roundTripJSON<{ readonly a?: string | undefined }>({ a: undefined })   TS2379, refused
+roundTripJSON<{ readonly a?: string }>({ a: 'x' })                     accepted (control)
+```
+
+An audit lane had called `readonly a?: string | undefined` "the ordinary fleet spelling". Measured
+across all 41 packages' `src/**/types.ts`:
+
+```
+optional members total           : 1663
+of those with explicit |undefined: 0
+packages enabling exactOptionalPropertyTypes: 41
+```
+
+**Zero.** The flag is on fleet-wide, which is the reason: under it `a?: string` already means
+absent-or-string, and the explicit `| undefined` opts into a value this fleet never writes.
+
+**Ruled: `JSONSafe` stays.** Adding optional-member detection to accept a spelling with no
+occurrences is speculative machinery the creation gate forbids. The edge is real and gets one
+documented sentence instead.
+
+The lane's claim was an unverified assertion presented as fleet fact, and it would have bought a
+`Pick`-based optionality branch in a published type. The same discipline that caught my own errors
+this round caught it: measure the population before building for it. Auditors are held to the
+standard they apply.
