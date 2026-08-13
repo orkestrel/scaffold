@@ -324,6 +324,52 @@ vendored leaf may not take a dependency a core-only workspace does not declare.
 suite passed 199/199 with a bare `playwright()` on a host whose pinned revision is absent. The
 resolver makes provider selection deterministic and host-independent; it did not repair a failure.
 
+### 3.7c What an integration test is, and the mistake that made the rule say otherwise
+
+**The canon was wrong and is corrected on `main`.** Both `.claude/rules/tests.md` and
+`.claude/rules/workspace.md` described `tests/integration.test.ts` as "The built package works when
+installed and driven from outside". That is not what an integration test is here.
+
+The owner's ruling, and the definition to work from:
+
+> An integration test is simply an end-to-end test: being able to put all features of a package
+> together. It can be features within an environment, which is what the nested integration tests are
+> for, and across environments, which is what the top-level integration test is for. It is not for
+> checking the packed distributed package.
+
+So `tests/integration.test.ts` composes features **across** environments, a nested
+`tests/src/<environment>/integration.test.ts` composes them **within** one, and neither is a
+packaging check. Both rule files now say that.
+
+**How this went wrong is worth carrying, because the same trap is open in any repository.** A
+placement sweep flagged a misplaced test; the response was to widen the rule so the test passed,
+without reading the test. The test was wrong, not the rule — it was an integration proof named
+`consumer.test.ts`, sitting under `tests/src/server/`, running in a unit project with an inline 120s
+timeout. The rule now states the general form: **a test the mirror rule flags is a misplaced test
+until its placement is checked; move it, never widen the rule to accept it.**
+
+**App cross-check.** An app-layer target has more environments to compose, so its top-level
+integration test has more to do, not less. If a target carries an integration proof that never
+crosses an environment boundary, it is a unit test at the wrong path.
+
+### 3.7d Testing what a package distributes — proposal, not convention
+
+`.orkestrel/scaffold/packaging/` holds a working prototype and its notes. **It is deliberately not a
+convention and scaffold does not propagate it.** Read that folder's `README.md` before implementing.
+
+The short version: what you develop and what you ship are different file sets, and no ordinary test
+sees the gap. `@orkestrel/database@0.0.8` shipped a browser declaration importing a path outside its
+own tarball; all 1010 of its tests passed and a consumer got eight `TS2307`s. A proof that packs and
+installs catches that class before publication.
+
+The one rule that makes such a proof real: **install the packed tarball, never link the workspace
+root.** A link resolves the whole repository, so every path `files` excludes still answers. The
+prototype originally linked while its comment claimed to pack, which made it incapable of finding the
+exact defect it was best placed to find.
+
+Every source file in that folder carries a trailing `.txt` so the sweeps ignore it. Strip the
+extension when adopting.
+
 ### 3.8 The bump rule has no clause for the vendored payload
 
 Scaffold's product is not only its types. `package.json` ships `dist/host`, the vendored file set
