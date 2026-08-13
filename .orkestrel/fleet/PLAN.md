@@ -560,3 +560,46 @@ Recorded so the next reader does not trust the superseded numbers.
   four projectors, above.
 - "4 packages build the corpus in a setup file" was wrong. It is **3** — `html`, `guide`, `mcp`.
   `database` walks inline; its setup file holds the compiler surface, not the corpus.
+
+## Placement-forced classes — ruled and shipped
+
+`architecture.md` under-determined where a class belongs when one-class-per-file evicts it from its
+only caller. Twelve classes across the fleet had been decided package by package, seven barrelled and
+five interned, with no rule to appeal to.
+
+Measured 216 implementation classes. An earlier cut of the instrument tested for a same-named
+`XInterface` and reported 55 in the population; it was wrong, because `MemorySessionStore` implements
+`SessionStoreInterface`. Testing the `implements` clause gives 12, and a third category the first
+framing missed: five classes implementing a documented interface while deliberately staying out of
+the barrel, which is coherent and untouched.
+
+Two lanes on one brief broke five of six claims, including both that favoured the cheap answer. They
+split on three classes and the split was the ruling: Sol asked whether a class is necessary given its
+factory, the reviewer asked whether it is usable given its constructor. Usability wins, because the
+canon says exposure is never gated on current consumer need. `createStyler` returning
+`new Styler(...).surface` decided `Styler` against the reviewer's inclination — the public value is a
+projection, not the instance.
+
+The rule is in **Barrel exports**, vendored to all 41. It reproduces thirteen of fifteen existing
+decisions, so it describes the fleet's judgment rather than reversing it.
+
+Two packages moved, both breaking, both published with their cascade:
+
+| Package    | Change                                         | Version  |
+| ---------- | ---------------------------------------------- | -------- |
+| `console`  | intern `Styler`                                | `0.0.6`  |
+| `terminal` | re-pin `console`                               | `0.0.7`  |
+| `scaffold` | re-pin `console`, move the self-pin            | `0.0.31` |
+| `toolbox`  | intern `TerminalConnection`, re-pin `terminal` | `0.0.6`  |
+
+`TerminalConnection`'s `@example` and its guide fence both constructed it from `accepts` and
+`stream`, which only `TerminalRoutes` can build; both typechecked without being runnable. A barrel row
+obliges a runnable example, and that obligation is what the row could not meet.
+
+Proved against a real consumer install of `toolbox@0.0.6`: one `console@0.0.6`, one
+`terminal@0.0.7`, no duplicates. That is what the cascade bought.
+
+**Open, publish-free:** every package still pins `@orkestrel/scaffold@^0.0.30` as a devDependency,
+and `BASE_DEV_DEPENDENCIES` pins `@orkestrel/guide@^0.0.10` and omits `@orkestrel/test`, so a newly
+generated workspace starts inconsistent with all 41. A devDependency bump reaches nobody: re-pin,
+prove the gates, commit to `main`, do not publish.
