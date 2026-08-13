@@ -357,6 +357,31 @@ one in the fleet, and the user directed its removal.
 Nothing is promoted and nothing is copied. The fleet pass carries no item from this finding, and
 `@orkestrel/test` gains no helper for it. `pool`'s `guides` project drops from 10 tests to 9.
 
+## `@orkestrel/test@0.0.2` — defects the fleet pass surfaced
+
+Two API defects, both found by real adoption rather than by review, both reproduced here. They join
+T4's `ScratchInterface` alignment in the next release.
+
+**`roundTripJSON` cannot accept an interface-typed value.** Its `JSONValue` constraint has an object
+arm of `{ readonly [key: string]: JSONValue }`, and TypeScript gives an implicit index signature to a
+type alias but never to an interface. Reproduced with `tsc --strict`:
+
+```text
+error TS2345: Argument of type 'SnapshotInterface' is not assignable to parameter of type 'JSONValue'.
+  Index signature for type 'string' is missing in type 'SnapshotInterface'.
+```
+
+The identical shape written as a type alias compiles clean. `AGENTS.md` requires every reusable and
+public type to be an interface in `*/types.ts`, so the constraint contradicts the fleet's own type
+conventions and the helper is unusable for exactly the values it exists to round-trip. `workspace`
+hit this on `WorkspaceSnapshot`, correctly refused the adoption under its deviation contract, and
+kept its local copy. Fix the constraint; do not ask consumers to reshape their types.
+
+**`readInventory` cannot reach a root-level file.** It walks directories, so a guide linking to
+`../AGENTS.md` needs a separate `node:fs` read. Every adopting package now carries a `ROOT_FILES`
+constant and one `readFileSync` loop to cover it. That is a workaround in 41 places for a missing
+option.
+
 ## Template ruling — check A stays, and the canon hole gets a mechanism
 
 Two lanes on one brief. Subjective: `reviewer`, Opus 5. Objective: `analyst` → re-run on GPT-5.6 Sol
