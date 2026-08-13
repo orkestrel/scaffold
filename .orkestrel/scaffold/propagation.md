@@ -34,19 +34,22 @@ typecheck spawns four real `tsc` runs against a ten-second budget, and every `sr
 real executable against Vitest's five-second default. Both passed alone and reported timeouts under a
 full suite run.
 
-### On `main`, unpublished at the time of writing
+### Three documentation commits, carried into 0.0.28
 
-Three documentation commits, no surface change, so no bump is owed under the rule below:
+No surface change of their own, so no bump was owed for them under the rule below; they shipped with
+the release that follows:
 
 - the writing-verb refusal for an unregistered Vitest project, stated as a limit;
 - a correction to that limit — the vendor list registers no project, so the two fleet cases are
   one limit with one cause rather than two;
 - a catalog-table refresh, because scaffold's own row still read `0.0.26` with pre-re-pin ranges.
 
-### Unpublished, owed a bump: the `conformance` and `service` projects
+### Published: 0.0.27 → 0.0.28, the `conformance` and `service` projects
 
-This closes 3.1 below. The limit those two commits documented is now implemented, so the surface
-moves and scaffold owes **0.0.28**.
+This closes 3.1 below. The limit those two commits documented is now implemented, the surface moved,
+and **0.0.28 is on the registry**. Verified by installing it from the registry: the self-pin reports
+`^0.0.28`, `createBlueprint` returns a `vendors` key and no `services` key, and the three new path
+constants resolve.
 
 | Added                                                                                                | Where                     |
 | ---------------------------------------------------------------------------------------------------- | ------------------------- |
@@ -226,6 +229,98 @@ Confirmed again this session: `#deferred` covers every `guides/**.md`, so a stal
 `overwrite` and its `removed` list stays empty. Combined with 3.2, a target's `guides/` directory is
 effectively hand-maintained.
 
+### 3.7 The browser face ships a declaration that resolves outside its own tarball
+
+**This is the most serious defect in this file, it is live on the registry now, and it is the one to
+fix first.** Found after the 0.0.28 publish; not fixed, because the container restarted mid-unit.
+
+`vite-plugin-dts` rolls each published face into one declaration and preserves the **source** file's
+relative depth in every emitted import. The generated `configs/src/vite.server.config.ts` corrects
+for this with a `beforeWriteFile` rewrite that externalizes core through the package's own published
+specifier. The generated `configs/src/vite.browser.config.ts` has no such rewrite.
+
+So a browser source at `src/browser/X.ts` importing core emits `from '../core/index.ts'`, which
+resolves from `dist/src/browser/` to `dist/src/core/index.d.ts` and works. A browser source at
+`src/browser/stores/X.ts` emits `from '../../core/index.ts'`, which resolves to `dist/core/index.ts`
+— a path that does not exist and is not in the tarball.
+
+**Proved against the published artifact, not the local build.** `@orkestrel/database@0.0.8`, installed
+from the registry and driven by a real consumer with `skipLibCheck` off:
+
+```
+node_modules/@orkestrel/database/dist/src/browser/index.d.ts(4,33):
+  error TS2307: Cannot find module '../../core/index.ts' or its corresponding type declarations.
+```
+
+Eight of them, on the browser entry point. The published tarball carries 8 two-level refs and 6
+one-level refs; only the two-level ones fail.
+
+`database` is fully aligned with the plan — `scaffold audit` reports `0 of 119 planned paths drifted`
+— so this is the plan's own output rather than local drift. Rebuild it and the browser face still
+emits the bad ref while the server face emits none.
+
+Six repositories ship a browser environment: `console`, `database`, `indexeddb`, `mcp`, `router`,
+`workflow`. Only `database` is broken today, and only because it is the one importing core from a
+nested browser directory. `console`, `router` and `workflow` import core at depth 1, so their refs
+resolve **by luck rather than by design** — any of them breaks the moment a browser file is nested.
+`mcp` escapes because it hand-restored the rewrite its repair had removed (5.2).
+
+**The fix.** Give `CONFIG_TEMPLATES.vites.src.browser` a `beforeWriteFile` rewrite matching the
+server template's, targeting `dist/src/browser/index.d.ts`, and fill its `{{replacement}}` token in
+`blueprintToConfigArtifacts` the way the `configs/src/vite.server.config.ts` branch already does
+(`src/core/compilers.ts`, around lines 823–848). The server branch measures a candidate line to
+decide whether the formatter keeps the `content.replaceAll(...)` call on one line; once browser needs
+the same decision that logic is a pattern repeated twice, so extract it to one exported, tested
+helper in `helpers.ts` rather than copying it.
+
+**Prove it with a control.** Materialize a workspace, add a browser file in a nested directory that
+imports core, build, and resolve every emitted core reference against the filesystem. Run the same
+check against the pre-change template — it must report the unresolvable ref. A check whose control
+comes back clean has measured nothing.
+
+**This change moves the published surface.** `CONFIG_TEMPLATES` is declared with string-literal types
+in the emitted `.d.ts`, so any template text change moves it. Confirm with:
+`sed -n "$(grep -n 'declare const CONFIG_TEMPLATES' dist/src/core/index.d.ts | cut -d: -f1),+3p" dist/src/core/index.d.ts`.
+
+**`database` then owes a republish.** Its browser face is genuinely broken on the registry, so the
+repair is a functional surface change and earns `0.0.9`. The other browser repos only change an
+import spelling that already resolved, which under the bump rule in section 2 is not a move.
+
+### 3.8 The bump rule has no clause for the vendored payload
+
+Scaffold's product is not only its types. `package.json` ships `dist/host`, the vendored file set
+every target receives through `repair` — `AGENTS.md`, `.claude/rules/*`, `.agents/orchestration.md`,
+`tests/config.test.ts`, and the rest.
+
+A pure canon edit therefore changes what every consumer receives while no type moves. The rule in
+section 2 says a package bumps only if its published surface moves, so read literally it says do not
+bump — and a vendored change that cannot bump can never reach the fleet, because the registry will
+not accept a second upload at the same version.
+
+Not blocking today: `0.0.29` is earned by 3.7 regardless, and the canon edits ride along. But the
+rule needs an explicit clause, and the owner should write it rather than an agent widening it
+quietly. The natural shape: for `scaffold` alone, the published surface includes `dist/host`, so a
+vendored-canon change bumps on its own account.
+
+### 3.9 `npm publish` never opens the browser approval
+
+Three failed publish attempts before `0.0.28` landed, all from the same wrong model of npm's auth.
+Corrected in `.agents/orchestration.md`; repeated here because an app-layer session publishing for
+the first time will hit all three. Measured on npm 10.9.7.
+
+- `npm login` and `npm publish` do **not** reach the same approval. They are separate authorizations
+  with separate URLs, and the publish one — `npmjs.com/auth/cli/<id>` — is what opens the window.
+- `npm publish` does not open the browser flow at all. Unauthenticated it returns `E404` on `PUT`,
+  which reads as a missing package rather than a missing credential and sends you looking in the
+  wrong place entirely.
+- Answering `Press ENTER to open in the browser...` with a newline is what causes the legacy
+  `Username:` fallthrough: the web flow consumes that newline on a later read, drops to the legacy
+  prompt, and exits **zero** without authenticating. Pass `--browser=false` and write nothing to
+  stdin.
+
+A stored credential also expires mid-session. `npm whoami` returned the user at one launch and
+`E401` ninety minutes later, so re-probe it immediately before opening a window.
+
 ## 4. Migration shape, if the other session runs one
 
 What the fleet needed, per target, in order. Steps 2 and 3 are the ones scaffold does not do for you.
@@ -260,13 +355,12 @@ What the fleet needed, per target, in order. Steps 2 and 3 are the ones scaffold
    it, and a leaf file that imports an implementation class stops being a leaf for every module
    beneath it. `workflow` followed the wrong ruling and went from 1 import cycle in `src/core` to 11;
    the corrected repair took it to 2, of which 1 is the sanctioned `helpers ↔ validators` pair and 1
-   is pre-existing. Section 6.1 has the case.
+   is pre-existing. Section 5.1 has the case.
 
 ## 5. Three targets closed after the fleet pass
 
-These ran after the 40-repository sweep, against the same scaffold working tree. None is committed
-to `main` at the time of writing; each is on `claude/orkestrel-fleet-orchestration-cv30e8` in its own
-repository.
+These ran after the 40-repository sweep, against the same scaffold working tree. All three are now
+committed and pushed to `main` in their own repositories.
 
 ### 5.1 `workflow` — the repair the wrong ruling caused, undone
 
@@ -287,9 +381,14 @@ the wrapper test, and the clone already throws the identical `RESTORE WorkflowEr
 `.claude/rules/architecture.md` now blesses explicitly and which `@orkestrel/contract` also has. One
 is `WorkflowManager → factories`, pre-existing and out of scope. 845 tests before and after.
 
-The surface moves — `createRecoveredWorkflow` and `createRestoredWorkflow` added,
-`assertSnapshot`, `recoverWorkflow` and `restoreWorkflow` removed — so **`workflow` owes a bump from
-0.0.11**, not yet applied.
+The surface moved — `createRecoveredWorkflow` and `createRestoredWorkflow` added, `assertSnapshot`,
+`recoverWorkflow` and `restoreWorkflow` removed — so **`workflow` published `0.0.12`**. The delta was
+confirmed against the `0.0.11` tarball rather than a commit, by an instrument carrying a negative
+control that reported a real difference: 139 retained exports, none retyped, `browser` byte-identical,
+and both shipped formats loading at module-init with 75 runtime exports each.
+
+No dependent re-pinned. A caret pins one exact release, so `agent` and `toolbox` keep resolving
+`0.0.11` until they choose to move, and neither imports a removed name.
 
 Two follow-ups were named and deliberately not ridden along: `isTaskResult` keeps an `is*` name in
 `helpers.ts` though it is a four-argument contextual predicate rather than a total `Guard<T>`, and
@@ -344,14 +443,36 @@ into a tautology.
 
 ## 6. Open, not closed by this session
 
+Ordered. The first three are one chain and nothing else should start until it closes.
+
+1. **Fix the browser declaration roll-up** (3.7). Live defect, currently shipping. The fix, its
+   required control, and the surface consequence are all in 3.7.
+2. **Release and publish scaffold `0.0.29`.** Carries 3.7 plus the vendored canon edits already on
+   `main` — `AGENTS.md` gained an instruction-file writing contract, `.agents/orchestration.md` got
+   the corrected publish canon from 3.9 and a rule that a lane returning no verdicts did not run.
+   Move `package.json` and the `BASE_DEV_DEPENDENCIES` self-pin in **one** commit; a
+   `tests/src/core/constants.test.ts` case asserts they match.
+3. **Propagate `0.0.29` to all 39 repositories.** Re-pin, install, `repair`, gates, commit, push.
+   Trees are disjoint so this parallelizes, but every repository is currently pinned `^0.0.27` and
+   none pre-empted the bump, so nothing is partially migrated. No package bumps: `scaffold` is a
+   development dependency everywhere. Watch the six browser repositories, whose
+   `configs/src/vite.browser.config.ts` changes.
+4. **Republish `database` as `0.0.9`** once 3 lands (3.7). Verify by driving a real consumer against
+   the published tarball, not the local build.
+
+Independent of that chain:
+
+- **The bump rule needs a vendored-payload clause** (3.8). Owner's ruling, not an agent's.
 - **The project set is fixed, not open.** 0.0.28 adds two more fixed projects; it does not let a
   workspace register its own. `ollama` still carries a hand-written `setup` project and `test:setup`
   script that no plan registers, and that is still a refusal on that repository.
-- **`repair` emits the browser declaration roll-up for `server` but not for `browser`** (5.2). Any
-  target with a published browser environment loses it on repair and finds out at the next build.
 - **Where a generated-consumer proof lives under the policy sweep's mirror rule** is unruled (5.2).
-- **`workflow` owes a version bump** for the renames in 5.1, and the two placement follow-ups named
-  there are open.
+  The plan's `setupPolicy.ts` flags `tests/src/server/consumer.test.ts` as a module test with no
+  matching source module, but a generated-consumer proof has no source to mirror by construction.
+- **Three `workflow` follow-ups** from 5.1: `isTaskResult` keeps an `is*` name in `helpers.ts` though
+  it is a four-argument contextual predicate rather than a total `Guard<T>`; `createDeferred` builds
+  an entity from `helpers.ts`; and test blocks did not follow their subjects between test files.
+  `workflow` published `0.0.12`, so the bump that section called for is done.
 - **The restored guide mirrors predate the fleet cascade.** 98 mirrors were restored from git history
   across 31 repositories after a prep script deleted them; they carry pre-cascade content until a
   catalog pass refreshes them.
