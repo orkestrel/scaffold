@@ -99,6 +99,45 @@ difference — the first empties an already-captured `calls` reference and the s
 That table is a floor. It finds a helper two packages spell the same way and cannot find one they
 spell differently and implement identically, which is what the fleet-wide lens lanes exist to find.
 
+## The self-reference question, settled by measurement
+
+A package that becomes a `devDependency` of all 41 packages is installed into the repository of any
+package it itself depends on. The question is whether that breaks the consumer's own types.
+
+It does not break on its own, and the fleet already proves it. `@orkestrel/scaffold` is a
+development dependency of every package and runtime-depends on `emitter`, so `emitter`'s own
+lockfile already installs `node_modules/@orkestrel/emitter@0.0.6` as a dev-tree copy beside the
+`src/` that produces that same version. The fleet's gates are green with that in place.
+
+So the rule is narrower than "declare no dependency":
+
+> A second filesystem copy of a package inside its own repository is survivable. What breaks is a
+> helper whose **public signature mentions a type imported from an `@orkestrel/*` package**, because
+> the consumer's local `src/` type and the helper's imported type are then two distinct types.
+
+`scaffold` is safe because it consumes `emitter` internally and never hands an `EmitterInterface`
+back to `emitter`'s tests. A test helper hands its types straight into the consumer's assertions, so
+it does not get that exemption.
+
+Evidence: `/home/user/packages/emitter/package-lock.json`, entries `node_modules/@orkestrel/emitter`
+(`version 0.0.6`, `dev: true`) and `node_modules/@orkestrel/scaffold` (`version 0.0.30`, runtime
+dependency on `@orkestrel/emitter ^0.0.6`), against `/home/user/packages/emitter/package.json`
+`version 0.0.6`.
+
+## Findings outside this campaign's scope
+
+Recorded against the row that owns them, for the next campaign. Not reopened here.
+
+- **Nine packages pin `@orkestrel/database ^0.0.8` while the registry serves `0.0.9`**: `agent`,
+  `middleware`, `queue`, `relation`, `terminal`, `toolbox`, `workflow`, `worker`, `workspace`. A
+  disagreeing pin is a defect, not drift to tidy later.
+- **`ollama` pins `@orkestrel/server ^0.0.11` in development while the registry serves `0.0.12`.**
+- **`@orkestrel/server` publishes `isAddressInfo` from its barrel, and three packages reimplement it
+  in their tests** — `server` itself, `router`, and `middleware`.
+- **`workflow` publishes `createDeferred` and its own tests reimplement it as `createGate`.**
+- **`mcp`'s test `waitForAbort` duplicates published `@orkestrel/workflow` `parkSignal`.**
+- **`toolbox` carries `createFakeTimer`, an unexported duplicate of its own `createTestTimer`.**
+
 ## Verified toolchain facts
 
 - `scaffold new <name> --src <list> --deps <list>` requires **scope-qualified** dependency names.
