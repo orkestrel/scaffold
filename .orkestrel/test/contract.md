@@ -95,18 +95,39 @@ that 5 packages want it. Rejection is not the fix; the signature is. Ship it con
 declared `JSONValue`, so the claim it makes is true. JSON is a spec-level shape, not one package's
 contract, so declaring it here is legitimate under the structural-shape rule below.
 
-### 7. `createRecorderMap` — Opus, on measured evidence
+### 7. `createRecorderMap` — REVERSED. It does not ship.
 
-Sol rejected it because an exact contract crosses the consumer-local emitter boundary and "a weakened
-structural signature loses event-map inference and tuple precision." That is a derivation, and the
-four-arm probe measured the opposite: arm 4 keeps full `TMap[TName]` tuple precision across both
-copies. A measurement beats an argument until the measurement is shown broken.
+This item was first ruled the other way, on an Orchestrator error. The four-arm probe was read as
+proving that a structural signature preserves inference. It does not: that probe passed both type
+arguments explicitly, so it proved **assignability** across two copies and nothing about inference.
+`TMap` appears only as `TMap[TName]`, and an indexed access is not an inference site, so no source
+shape can drive it. Sol's original objection — that a structural signature loses event-map inference
+— was correct.
 
-**Ship it**, with the arm-4 signature and the probe adopted as its regression test. `isTotal` ships
-with it (13 packages).
+A second two-lane pass ruled the corrected question. Sol ruled ship-with-explicit-type-arguments on
+centralization grounds. Opus ruled do-not-ship, and Opus is right on three grounds, all verified by
+the Orchestrator against source:
 
-Opus's `SubscriberInterface` is corrected: its `on` was generic, which is arm 3 and fails inference
-for both copies. Inference is driven from the `events` array instead.
+1. **The constraint does not bind any consumer.** The two-copies rejection holds inside `emitter`'s
+   own repository. `emitter` has **zero** uses of `recordEmitterEvents` or `EmitterRecorders`, and
+   all 13 real consumers declare `@orkestrel/emitter` `^0.0.6` as a **runtime dependency**, none as a
+   development one. Each therefore resolves exactly one copy and its local helper infers cleanly.
+   The weakened signature would tax 13 repositories to satisfy a constraint belonging to a
+   fourteenth that will never call it.
+2. **`RecorderEventMap` restates `@orkestrel/emitter`'s published contract.** Both are
+   `Record<string, readonly unknown[]>`, byte for byte. That is the exact ground on which item 8
+   rejected a structural `TimerHandler`. The doctrine below was satisfied only by renaming the
+   symbol, which decided items 7 and 8 in opposite directions for no real reason.
+3. **Option A moves the foreign-type import from 13 setup files to every call site.** There are 219
+   call sites by the Orchestrator's count and 232 by Opus's text scan. A call site that does not
+   import its own event map today would have to. That is the opposite of what the structural shape
+   existed to achieve. **18** sites read a property off a call argument and would hard-error under
+   degraded tuples with `as` and `!` banned.
+
+**Struck from the contract**: `createRecorderMap`, `isTotal`, `SubscriberInterface`, `RecorderMap`,
+`RecorderEventMap`. `createRecorder` still ships and is the kernel all 13 local copies are built
+from, so the largest part of this cluster — 32 members — is still centralized. What stays local is a
+15-line loop and one guard.
 
 ### 8. `createManualTimer` — Opus
 
@@ -162,25 +183,27 @@ Adopted from Opus, because it is the sharpest line either lane drew, and it gene
 > shape — `on`, `() => number`, `AbortSignal`, `ReadableStream`, JSON. It is illegitimate when it
 > restates **one package's published contract**, because that is a silent second declaration that
 > drifts the moment the owner changes it.
+>
+> **Second clause, added after item 7 was reversed:** a structural shape is legitimate only when the
+> type information the caller needs **survives** it. A shape that is assignable but drops the type
+> parameter it exists to carry restates the owner's contract without its value.
 
-`SubscriberInterface` passes. A structural `TimerHandler` fails. That single rule decides items 7 and
-8 in opposite directions and is why they are not inconsistent.
+The second clause is what the first was missing. Without it the doctrine was satisfied by renaming
+`EventMap` to `RecorderEventMap`, and it decided items 7 and 8 oppositely for no real reason. With
+it, `SubscriberInterface` and `RecorderEventMap` are rejected and `createClock`, `collect`,
+`collectStream` and `roundTripJSON` still stand.
 
 ## The contract
 
-Zero runtime dependencies. Two environments. 18 value exports and 8 types.
+Zero runtime dependencies. Two environments. **11 value exports and 6 types.**
 
 ### `src/core`
 
 | Export | File | Signature | Members |
 | --- | --- | --- | --- |
 | `RecorderInterface` | `types.ts` | `<TArgs extends readonly unknown[]> { readonly calls: readonly TArgs[]; readonly count: number; readonly handler: (...args: TArgs) => void; clear(): void }` | 32 |
-| `RecorderEventMap` | `types.ts` | `Record<string, readonly unknown[]>` | — |
-| `SubscriberInterface` | `types.ts` | `<TMap, TName extends keyof TMap> { on(event: TName, handler: (...args: TMap[TName]) => void): void }` | — |
-| `RecorderMap` | `types.ts` | `<TMap, TName extends keyof TMap> = Readonly<{ [K in TName]: RecorderInterface<TMap[K]> }>` | 13 |
 | `ClockInterface` | `types.ts` | `{ readonly now: () => number; advance(ms: number): void; set(value: number): void }` | 2 |
 | `JSONValue` | `types.ts` | the recursive JSON value union | — |
-| `isTotal` | `validators.ts` | narrows `Partial<RecorderMap>` to `RecorderMap` over an event list | 13 |
 | `waitForDelay` | `helpers.ts` | `(ms?: number) => Promise<void>` | 17 |
 | `captureError` | `helpers.ts` | `(thunk: () => unknown) => unknown` | 12 |
 | `requireValue` | `helpers.ts` | `<T>(value: T \| null \| undefined, message?: string) => T` | 6 |
@@ -189,7 +212,6 @@ Zero runtime dependencies. Two environments. 18 value exports and 8 types.
 | `roundTripJSON` | `helpers.ts` | `<T extends JSONValue>(value: T) => T` | 5 |
 | `resolveRoot` | `helpers.ts` | `(meta: ImportMeta) => URL` | 40 |
 | `createRecorder` | `factories.ts` | `<TArgs extends readonly unknown[]>() => RecorderInterface<TArgs>` | 32 |
-| `createRecorderMap` | `factories.ts` | arm-4 signature, inference driven by `events` | 13 |
 | `createClock` | `factories.ts` | `(start?: number) => ClockInterface` | 2 |
 
 `resolveRoot` sits in core deliberately: `import.meta` and `URL` are universal, and `fileURLToPath`
@@ -216,12 +238,10 @@ import in either direction, so the package stays clean even inside `guide`'s own
 - `readInventory` returns sorted root-relative `/`-separated keys, refuses a symlinked root or
   requested directory, skips descendant links, and refuses paths outside the root.
 - `roundTripJSON` is constrained to `JSONValue`, so its identity claim is true.
-- `createRecorderMap` accepts both an installed and a local-source emitter — the arm-4 probe,
-  adopted with its negative control.
 
 ## Intentionally excluded from 0.0.1, on evidence
 
-`createFixtureServer` (3, cluster, forces a 6-package dependency) · all browser helpers (2 each, one
+`createRecorderMap` and its four supporting declarations (13 members, but the shared signature cannot import `EventMap` and so cannot infer it; ~219 call sites would each carry two type arguments and 18 would hard-error; the constraint forcing the weakened shape binds `emitter`, which is not a consumer) · `isTotal` (13, exists only to serve it) · `createFixtureServer` (3, cluster, forces a 6-package dependency) · all browser helpers (2 each, one
 a cluster) · `createManualTimer` (2, cluster, restates terminal's contract) · required-variant
 `captureError` (1) · `requireMatch` (1) · `requireElement` (2) · `requireText` (2) ·
 `createErrorRecorder` (11, but a 5-line delegate to `createRecorder` in 10 of them) · `createGate`
