@@ -371,7 +371,16 @@ error TS2345: Argument of type 'SnapshotInterface' is not assignable to paramete
   Index signature for type 'string' is missing in type 'SnapshotInterface'.
 ```
 
-The identical shape written as a type alias compiles clean. `AGENTS.md` requires every reusable and
+The identical shape written as a type alias compiles clean.
+
+**Ruled during the pass: `roundTripJSON` is adopted nowhere.** Three packages hit this
+independently — `workspace` refused it under its deviation contract, `agent` stopped on it, and
+`workflow` adopted it and went red on `WorkflowSnapshot`. Three appearances of one defect class is
+the escalation budget, so the ruling is on the design rather than on a third repair. All five
+packages that hand-rolled it keep their local `roundTripJSON<T>(value: T): T`, each carrying a
+comment naming the constraint and the condition that retires it. Neither unit reached for `as` or
+reshaped a source type to force the adoption, which is the outcome the deviation contract exists to
+produce. `AGENTS.md` requires every reusable and
 public type to be an interface in `*/types.ts`, so the constraint contradicts the fleet's own type
 conventions and the helper is unusable for exactly the values it exists to round-trip. `workspace`
 hit this on `WorkspaceSnapshot`, correctly refused the adoption under its deviation contract, and
