@@ -52,8 +52,11 @@ It is still the wrong trade. That dependency drags a six-package closure — `ab
 and `ollama` already pins `server ^0.0.11` in development against a registry serving `0.0.12`, so
 adding it installs two copies there on day one.
 
-So `createFixtureServer` is **excluded from 0.0.1** rather than reimplemented. Its three members
-(`server`, `router`, `middleware`) are a cluster, and the two packages that need the guard should
+So `createFixtureServer` is **excluded from 0.0.1** rather than reimplemented, and the reason is the
+closure alone. **Correction, found while auditing the fix round:** this ruling originally called its
+three members a cluster. They are not. `middleware`'s runtime dependencies are `abort`, `budget`,
+`contract` and `timeout`, reaching neither `router` nor `server`, so the group **clears** the
+membership threshold and is excluded solely on cost. The two packages that need the guard should
 import `isAddressInfo` from `@orkestrel/server`, which already publishes it. Zero dependencies is
 load-bearing: it is what makes this package incapable of causing a duplicate-copy failure for
 anyone, ever.
