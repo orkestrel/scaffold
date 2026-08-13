@@ -689,3 +689,44 @@ Grok probed live (`GROK-OK cursor-grok-4.6-high`) and carries the reading.
 one hash for 40 and a second for `ollama`. So the fleet's temp-fixture population is one shared
 template plus eight packages, not 41 independent fixtures. That search covers nine tokens and proves
 nothing about a temp path built some other way; the slices are told to report one if they find it.
+
+**Bench liveness corrected.** Codex round-tripped on a third probe at a 240s cap (`SOL-OK`). The
+first two probes were slow, not dead. Both engines therefore take their default lanes for T5: Opus 5
+subjective via native subagent, Sol objective via journaled `codex exec`. Record the reversal so the
+earlier dark reading is not read as standing.
+
+### What the fixtures actually do
+
+Three read-only Grok slices covered `scaffold`; `sea`/`browser`/`sqlite`;
+`middleware`/`database`/`worker`/`ollama` plus the shared template. The demand overturns three T4
+rejections, each on evidence T4 did not have:
+
+- **Empty-directory creation.** Seven sites across four packages create a directory with no file
+  beneath it, and `scaffold` promoted it to a named fixture method (`tests/setupServer.ts:353`).
+  `write` cannot express it.
+- **Removing a selected entry.** Twelve-plus sites across five packages, and again a named
+  `scaffold` fixture method (`tests/setupServer.ts:363`). `destroy` does not cover it.
+- **Listing.** Fifteen-plus sites, including ten `readdirSync(workspace.path)` calls in one file and
+  a `globSync` in the ×41 template. Two operations wear one heading: a one-level name list and a
+  recursive pattern match.
+
+Confirmed rather than overturned: `prefix`, `files` seeding, the absolute `path`, parent creation on
+`write`, and the ruling that no batch overload ships — the survey found no site that collapses
+several existence checks, and `integration.test.ts:417-419` deliberately keeps three apart.
+
+Rejected on the creation gate, each confined to one package testing an SUT that owns that exact
+behavior: `rename`, `chmod`, hard link, file-descriptor access. No `copyFileSync` or `cpSync` exists
+anywhere in the slices read.
+
+### `createScratch` cannot allocate outside `tmpdir()`
+
+`src/server/factories.ts:23-26` resolves the prefix against `tmpdir()` and throws when its parent is
+anything else. Probed against the real code with a control that fires: a bare prefix lands under
+`tmpdir()`, `resolve('tmp','probe-parent-')` throws, `'nested/probe-'` throws.
+
+Seven sites allocate outside `tmpdir()` — five in `scaffold/tests/src/core/templates.test.ts`, one in
+`database/tests/setupServer.ts:117-119`, and one in the forty-copy `config.test.ts:578`. Each does so
+because a real `tsc --project`, a real oxfmt run, or a real Vite `build` with `entry` inside the
+fixture needs it inside the package tree to resolve. Those sites are structurally unable to migrate,
+not merely inconvenienced. That probe becomes a test in the implementation unit; a verification that
+runs once is a rehearsal.
