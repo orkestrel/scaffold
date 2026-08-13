@@ -101,3 +101,29 @@ The design question it raises is genuinely hard and is not settled here:
 
 That combination goes to an adversarial design pass rather than being settled by the Orchestrator,
 who has already been wrong once on precisely this question.
+
+## Finding 5 — table-driven iteration is universal and needs nothing
+
+All 41 packages drive tests from a literal table in their own non-vendored tests — `contract` 119
+times, `scaffold` 54, `workflow` and `mcp` 28 each. Measured with the vendored `config.test.ts` and
+`policy.test.ts` excluded; including them produced counts of exactly 41 and 123, which were scaffold's
+own vendored code being reported as a fleet pattern. That is the same trap as Finding 1's exclusion
+list and it was caught by noticing the counts were suspiciously round.
+
+The mechanism is nonetheless **not shippable**. The shape is `for (const case of TABLE) { it(...) }`
+— plain iteration over a literal. A helper wrapping it would be a wrapper around a semantically
+identical language construct, which `.claude/rules/architecture.md`'s wrapper test deletes outright,
+and the tables themselves are domain-specific by Finding 3.
+
+Recorded as a negative result. The angle was searched and it yields nothing, which is a different
+statement from not having looked.
+
+## Summary — what the five angles leave
+
+| Angle | Measured | Actionable for `@orkestrel/test` |
+| --- | --- | --- |
+| Extracted setup helpers | 384 clusters, max 32 packages | Already shipped |
+| Un-extracted cross-package | `guides.test.ts`, 39 packages, ~1,600 lines | **Yes — one candidate** |
+| Inside test bodies, cross-package | max 4 packages | No, below the rule |
+| Within a single package | 1,574 blocks, 36 packages, worst 42× | No — domain case matrices, per-package repair |
+| Table-driven iteration | 41 packages | No — wrapping a language construct |
