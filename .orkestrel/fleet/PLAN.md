@@ -1073,3 +1073,57 @@ dropped, and this one contradicts the record.
 The symlink-traversal ruling survived attack through an intermediate link, including `link` creating
 a further entry beyond one. No guide sentence promises physical containment and no newly harmed
 consumer was identified.
+
+### Round 2 subjective lane, and the design ruling the seam has earned
+
+Every finding below was reproduced by the Orchestrator with a probe before being accepted.
+
+- **The six-member traversal universal is false for two of six.** `has` uses `lstatSync` and reports
+  on the link rather than its destination; `link` refuses an occupied final segment with `EEXIST`.
+  The sentence "all six act on what the link points at" appears in **four** places, and my own FIX-3
+  brief asked for it.
+- **`src/core/types.ts` claims `unknown` values "are checked at runtime". No such check exists.**
+  Only non-finite numbers are refused, so a `Date` under an `unknown` member silently becomes a
+  string and a `Map` becomes `{}`. This sentence ships inside the published `.d.ts`, where it reaches
+  every consumer's editor tooltip with no guide to correct it. It is the sharpest finding of the
+  round.
+- **Three more exclusion spellings silently match nothing:** a trailing separator, a `./` prefix, and
+  `'.'` — which is how `targets` spells the root, while `exclude` spells it `''`. One function, two
+  spellings for one concept.
+- **Rule 8's summary contradicts its own enumeration.** "The two members that ask answer, and the
+  four that act refuse" — `names` asks. The criterion in the preceding sentence is the true one: a
+  member whose return type carries absence answers with it; one whose type does not, refuses.
+- **The Limits paragraph asserts a completeness it does not have.** `write`, `read`, `destroy`, and
+  `path` carry no count, and `remove` is called a member of `ScratchInterface` when it is an excluded
+  candidate.
+
+### I yield on the centralization ruling
+
+I ruled the duplicated exclusion predicate stays inline. Both lanes broke it, and the subjective
+lane's third argument is the one that decides it: `resolveContained` is already exported in this same
+guide on an explicitly speculative rationale — "a consumer writing its own filesystem fixture needs
+the same check and would otherwise write another copy of it". A consumer writing its own inventory
+walk needs the exclusion rule for the same reason. My ruling applied a standard the package does not
+apply to that predicate's sibling. Extract it, export it, test it, document it.
+
+### The design ruling: prose universals and four copies of one ruling
+
+Two rounds have now landed at the prose seam, and the second was **caused** by the first: FIX-3's
+subject was making prose true, and it wrote four new false universals doing it — the six-member
+traversal claim, "two ask and four act", "no name population here", and "every member carries its
+count". The escalation law says repeated rounds at one seam are evidence about the design rather than
+evidence of diligence, and the structural cause is visible in the findings themselves.
+
+Two rules, taken now rather than after a third round:
+
+1. **One home per ruling.** The threat-model traversal ruling exists in four places. This round had to
+   edit all four, and put the same over-generalization into all four. Each ruling gets one home; every
+   other site points at it.
+2. **No universal in prose that no gate can check.** "All six", "no population", "every member" — each
+   of these was written for balance and is false. State the bounded fact instead: which members, which
+   populations were tried, which members were ruled. `guides/test.md` already does this correctly for
+   the POSIX `0700` mode, which names exactly what the suite asserts and what it does not.
+
+The parity suite proves a name resolves. Nothing proves a sentence, so a universal is the one shape
+of prose defect that is guaranteed to survive review — which is why the rule has to be about the
+shape rather than about trying harder.
