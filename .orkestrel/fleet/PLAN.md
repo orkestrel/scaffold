@@ -357,6 +357,54 @@ one in the fleet, and the user directed its removal.
 Nothing is promoted and nothing is copied. The fleet pass carries no item from this finding, and
 `@orkestrel/test` gains no helper for it. `pool`'s `guides` project drops from 10 tests to 9.
 
+## Template ruling — check A stays, and the canon hole gets a mechanism
+
+Two lanes on one brief. Subjective: `reviewer`, Opus 5. Objective: `analyst` → re-run on GPT-5.6 Sol
+after the first driver returned an analysis without reaching the bench; the bench probed **live**
+(`SOL-PROBE-OK GPT-5.6-SOL`), so that was a driver fault, not a dark bench, and the lane was re-run
+journaled rather than substituted.
+
+Both lanes broke claims 4 and 5. Both confirmed claim 1. They split on claim 3 because they answered
+different questions, and the split is the ruling.
+
+**Check A — `missingSymbols(exports, surface)` must be empty — stays in the fleet template.** It is
+the only check that reads declarations → barrel. B reads barrel → declarations; C and D both read
+guide ↔ barrel. Drop A and a new capability whose barrel row was forgotten is invisible to every
+remaining check while `check`, `build`, and `test` all pass, because internal consumers import
+relatively. Guide and barrel then agree perfectly on a surface that omits the capability, and the
+suite reports that agreement as health. Dropping A also strands the `hidden()` check beside it,
+which compels the `export` keyword and would then require the symbol to arrive nowhere.
+
+**Canon under-determines exactly one case.** A declaration in a centralized file must be exported and
+must be barrelled, so A is canon for helpers, validators, factories, constants, errors, and types.
+For a class, `architecture.md` offers three terminal states — barrel it, make it a true local or
+runtime-private detail, or remove the capability. The middle state is structurally unavailable to a
+class that one-class-per-file evicted from its single consumer, and the prohibition that would force
+the first is conditioned on "intentional **reusable**". That is the hole. It is a hole in
+`architecture.md`, not a defect in the three packages.
+
+**The fleet has already ruled it twice, opposite ways, and wrote neither ruling down.**
+`agent/src/core/index.ts:7` barrels `Channel` — `export class Channel<T>` with no interface and no
+`types.ts` entry, pure plumbing — and documents it. `middleware/guides/middleware.md:228` declares
+its mirror-image class internal in prose. A prose exemption is enforced by nothing, which is why this
+question was still open.
+
+**Mechanism, applied per package in its own `tests/guides.test.ts`:** a frozen `INTERNAL` list of
+symbol keys, carrying two assertions — A minus `INTERNAL` is empty, and every name in `INTERNAL` is
+genuinely stranded. The second half is what keeps the list honest; a stale entry turns the suite red.
+`INTERNAL` is `[]` in 38 packages, 9 in `database`, 3 in `worker`, 1 in `middleware`. This preserves
+A's protection, keeps placement-forced machinery out of the published vocabulary, and puts the
+exemption where a test enforces it instead of where prose asserts it.
+
+**`middleware` repairs by deletion, not by barrelling.** Its `MultipartParser` Surface row breaks D
+and breaks "every backticked API in a guide resolves to a real public export". The row leaves the
+`## Surface` table; the internal description stays as prose outside it; the symbol joins `INTERNAL`.
+Guide and test only — **no `src` change, so F3 is struck entirely and the fleet publishes nothing.**
+
+**Recorded for the next matrix, not this one:** `agent`'s `Channel` and `middleware`'s
+`MultipartParser` are the same species with opposite rulings. Reconciling them is a canon decision
+outside this campaign's exit criterion.
+
 ## Track F — the fleet pass, last and once
 
 Gated on `@orkestrel/test` and `@orkestrel/guide` both published.
