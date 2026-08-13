@@ -63,3 +63,46 @@ Verdict: **adopt the lane's design, correct its `SubscriberInterface` to the arm
 `middleware/tests/setupServer.ts:375` declares `async function cleanup()` nested inside
 `buildTempDirectory`. `.claude/rules/architecture.md` bans a function declaration inside another
 function body. Recorded against `middleware` for the adoption campaign; not repaired here.
+
+## Second verification pass — the creation gate
+
+Counts of each proposed export, measured as exported symbols in `tests/setup*.ts` (excluding the
+vendored `setupPolicy.ts`), then widened to include unexported copies inside `tests/**/*.test.ts`.
+
+| Export | Exported in | Incl. unexported copies | Verdict |
+| --- | --- | --- | --- |
+| `createRecorder` | 32 | 32 | strong |
+| `waitForDelay` | 17 | 17 | strong |
+| `isTotal` | 13 | 13 | strong |
+| `captureError` | 12 | 13 (csv has a file-local copy) | strong |
+| `requireValue` | 4 + `expectDefined` 2 | 6 under two names | confirmed as reported |
+| `roundTripJSON` | 5 | 5 | moderate |
+| `collect` | 3 | 3 | moderate |
+| `invokeRaw` | 3 | 3 | moderate |
+| `EXTREME_NUMBERS` | 3 | 3 | moderate |
+| `collectStream` | 1 | 3 — `csv`, `html`, `markdown` | confirmed as reported |
+| `createRevokedProxy` | 2 | 2 — `contract`, `workspace` | weak but real |
+| `deepFreeze` | 2 | 2 — `rater`, `reason` | weak but real |
+| `HOSTILE_KEYS` / `TRICKY_KEYS` | 2 | 2 — `interpret`, `reason` | weak but real |
+| `createThrowingGetter` | 1 | 2 — `contract`, plus `workspace`'s `createThrowingGetterRecord` | confirmed as reported |
+| `createCyclicRecord` | 2 (as `buildCyclicRecord`) | 2 — `contract`, `qualifier` | weak but real |
+
+### Correction — `createDeepRecord` is a 2, not a 3
+
+The lane cited `qualifier:62`, `contract:2627` and `mcp:559` as one group. They are not one group.
+
+- `qualifier`'s `buildDeepRecord` and `mcp`'s `buildNestedRecord` both nest plain records.
+- `contract`'s `buildDeepNest` alternates array and object layers —
+  `value = layer % 2 === 0 ? [value] : { value }` (`contract/tests/setup.ts:2627`).
+
+Alternating containers is a different fixture for a different purpose. So the shared behaviour has
+**two** members, and `contract`'s helper stays in `contract`. Any general form that claimed to cover
+all three would have to take a mode argument, which the behaviour-splitting law forbids.
+
+### What this changes
+
+Nothing ships or fails on these counts alone, but the guide must state the real count behind each
+export, and three exports rest on exactly two members: `createRevokedProxy`, `deepFreeze`,
+`HOSTILE_KEYS`, `createCyclicRecord`, `createDeepRecord`. Two independent members is a genuine
+duplicate under the "centralize any pattern repeated twice" law, and it is the weakest evidence in
+the set. Record it as such rather than presenting every export as equally earned.
