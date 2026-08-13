@@ -1,7 +1,11 @@
-# Testing what a package actually distributes
+# `tests/distribution.test.ts` — proving what a package actually ships
 
-A proposal and a working prototype. **This is not a convention yet and scaffold does not propagate
-it.** It is kept here so the idea and the code survive the campaign that produced them.
+A working prototype and the notes for landing it, kept so the idea and the code survive the campaign
+that produced them.
+
+Confirm what scaffold already emits before building anything from this folder: `scaffold new` a
+throwaway workspace and look for `tests/distribution.test.ts` and a `test:distribution` script. If
+they are there, adopt the emitted shape and treat this folder as history.
 
 Every `.ts`, `.mjs` and `.cjs` file in this folder carries a trailing `.txt`, so the workspace's
 typecheck, lint, format and placement sweeps ignore it. Strip the extension when adopting.
@@ -68,21 +72,21 @@ features composed and driven together, across environments at the top level and 
 environment for a nested one. What the tarball contains is a different question, and putting it at
 the canonical integration path is what produced the mistake this folder documents.
 
-If adopted, it needs its own name, its own project, and its own row in the cross-cutting proof table
-— out of the default run, required by `prepublishOnly`, because it packs and installs and costs
-seconds.
+The name is settled: **`tests/distribution.test.ts`**, its own project, its own row in the
+cross-cutting proof table — out of the default run and required by `prepublishOnly`, the way the
+integration proof is, because it packs and installs and costs seconds.
 
 ## Files here
 
-| File                      | Was                                                                                                                  |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `packaging.test.ts.txt`   | the proof itself, five cases                                                                                         |
-| `setupPackaging.ts.txt`   | the machinery: `packWorkspace`, `createConsumer`, `runConsumer`, `compileConsumer`, `readRange`, and their constants |
-| `consumerImport.mjs.txt`  | ESM consumer program                                                                                                 |
-| `consumerRequire.cjs.txt` | CommonJS consumer program                                                                                            |
-| `consumerSubpath.mjs.txt` | undeclared-subpath control                                                                                           |
-| `consumerTypes.ts.txt`    | strict typed consumer                                                                                                |
-| `consumerError.ts.txt`    | deliberate-error control                                                                                             |
+| File                       | Was                                                                                                                  |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `distribution.test.ts.txt` | the proof itself, five cases                                                                                         |
+| `setupDistribution.ts.txt` | the machinery: `packWorkspace`, `createConsumer`, `runConsumer`, `compileConsumer`, `readRange`, and their constants |
+| `consumerImport.mjs.txt`   | ESM consumer program                                                                                                 |
+| `consumerRequire.cjs.txt`  | CommonJS consumer program                                                                                            |
+| `consumerSubpath.mjs.txt`  | undeclared-subpath control                                                                                           |
+| `consumerTypes.ts.txt`     | strict typed consumer                                                                                                |
+| `consumerError.ts.txt`     | deliberate-error control                                                                                             |
 
 ## Notes for whoever implements it
 

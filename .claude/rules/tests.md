@@ -55,8 +55,7 @@ its own:
   another. A nested `tests/src/<environment>/integration.test.ts` drives features **within** that one
   environment.
 - Do not put a packaging, install, or distribution check in an integration test. What the tarball
-  contains is a different question from whether the features work together, and this repository has
-  no convention for it yet.
+  contains is a different question from whether the features compose.
 - A test the mirror rule flags is a misplaced test until its placement is checked. Move it to the
   location its scope names. Never widen the rule to accept it.
 - Give every nested `integration.test.ts` its own exact-path project entry. A glob such as

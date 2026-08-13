@@ -352,10 +352,12 @@ until its placement is checked; move it, never widen the rule to accept it.**
 integration test has more to do, not less. If a target carries an integration proof that never
 crosses an environment boundary, it is a unit test at the wrong path.
 
-### 3.7d Testing what a package distributes — proposal, not convention
+### 3.7d `tests/distribution.test.ts` — a prototype and how to adopt it
 
-`.orkestrel/scaffold/packaging/` holds a working prototype and its notes. **It is deliberately not a
-convention and scaffold does not propagate it.** Read that folder's `README.md` before implementing.
+`.orkestrel/scaffold/distribution/` holds a working prototype of `tests/distribution.test.ts` and the
+notes for landing it. Read that folder's `README.md` before implementing. Check whether scaffold
+already emits the project before building it: `scaffold new` a throwaway workspace and look for
+`tests/distribution.test.ts` and a `test:distribution` script.
 
 The short version: what you develop and what you ship are different file sets, and no ordinary test
 sees the gap. `@orkestrel/database@0.0.8` shipped a browser declaration importing a path outside its
