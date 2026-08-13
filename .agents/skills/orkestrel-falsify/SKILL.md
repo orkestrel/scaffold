@@ -147,6 +147,10 @@ Follow `references/reconcile.md`. The obligations that are not delegable:
 
 - **Reproduce every sharp finding yourself** before acting on it. An auditor's finding is a
   hypothesis until the orchestrator has run it.
+- **Build before you pack.** `npm pack` runs no build, so it ships whatever `dist/` is on disk. An
+  auditor who packs an artifact to inspect it is reading the last build, not the current source, and
+  will report deleted exports as still shipping. Run the package's build first, and say in the brief
+  that the tarball was built from the commit under audit.
 - **Check the subject before acting on a finding, not only the reasoning.** A brief that names attack
   vectors teaches the lane those vectors matter, and a lane can hand back the brief's own questions as
   the subject's claims — demanding coverage for a property the subject never documented. Grep the

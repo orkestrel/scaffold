@@ -301,20 +301,69 @@ Three defects, then two bounded gaps, then one deep limit. `guide` is at `0.0.10
 
 G6 gets its own adversarial design pass and may close with no code change. Do not patch it.
 
-## Track S — `@orkestrel/scaffold` and fleet convention
+## Track S ruling — the three fleet-wide findings
 
-| # | Item | Evidence |
-| --- | --- | --- |
-| S1 | No package has `prepack` or `prepare`, so `npm pack` ships whatever stale `dist/` is on disk. Publication is safe because `prepublishOnly` runs `clean && build`, but anyone inspecting an artifact reads stale code. Cost one audit round in the `test` campaign. Proposed shape: `prepack` builds, `prepublishOnly` keeps the gates and drops its build, so neither doubles. | 0 of 41 have either script. |
-| S2 | All 41 READMEs link into `guides/`, and `files` ships `dist/src` and `README.md` only. **Every published README has a dead link.** | 41 of 41. |
-| S3 | All 41 CI workflows are `ubuntu-latest` only, so any permission-bit or path-separator assertion is proven on POSIX and nowhere else. | 41 of 41. Likely intentional; **decide and record**, do not change silently. |
+**S1 — `npm pack` ships stale `dist`. Ruled: fix the process, not 41 manifests.**
 
-## Track P — individual packages
+0 of 41 packages have `prepack` or `prepare`, so `npm pack` ships whatever `dist/` is on disk. That
+cost one audit round: an auditor packed a stale build and reported the package shipping a deleted
+export.
 
-| # | Item | Evidence |
-| --- | --- | --- |
-| P1 | `html` test title says `documents an example for every API Surface function` while its guide heading is `## Surface`. | `html/tests/guides.test.ts:68` against `html/guides/html.md:9`. |
-| P2 | `pool` carries a README-against-`package.json` engines/exports check no other package has. Decide whether it is fleet convention. | `pool/tests/guides.test.ts:49-79`. |
+Adding `prepack` would not change how this fleet publishes at all — `npm publish --ignore-scripts` is
+the documented flow here and skips every script, so the artifact is built beforehand either way. The
+only thing `prepack` buys is an honest `npm pack` for someone inspecting, at the cost of 41 manifest
+edits plus a scaffold generator change.
+
+The failure was an auditor drawing a conclusion from an artifact nobody had rebuilt. That is an
+evidence-discipline defect, and it is fixed where evidence discipline lives — one line in
+`orkestrel-falsify` — rather than by 41 edits. The manifest option is recorded as the user's call, not
+taken silently.
+
+**S2 — every published README links into `guides/`, which never ships. Ruled: UNVERIFIED, do not act.**
+
+All 41 READMEs carry a relative link into `guides/`, and `files` ships `dist/src` and `README.md`
+only. But **npm rewrites relative README links against the `repository` field**, which every package
+sets — `emitter` declares `git+https://github.com/orkestrel/emitter.git` and a `homepage`. If that
+rewrite happens, the link resolves on the package page and there is no defect at all.
+
+I could not verify it here: `npmjs.com` returns `403` to both the fetcher and `curl` from this
+container. Asserting it either way would be a guess, and 41 edits against a guess is the wrong trade.
+
+**This is a five-second browser check for the user:** open
+`https://www.npmjs.com/package/@orkestrel/test`, click the `guides/test.md` link in the rendered
+README, and see whether it lands on GitHub or 404s. If it 404s, the fix is one absolute URL per
+README and it joins the fleet pass. If it resolves, strike the finding.
+
+**S3 — CI is `ubuntu-latest` only across all 41. Ruled: intentional, retained, with its consequence
+recorded.**
+
+The consequence is not nothing: every host-varying assertion in the fleet — permission bits, path
+separators, filesystem case folding, rename semantics — is proven on POSIX and nowhere else. That is
+a legitimate scope for a fleet whose consumers are Node services, and adding a Windows runner would
+redden assertions that were never written for it.
+
+What it obliges is honesty in prose, which `@orkestrel/test` now demonstrates: its mode and separator
+claims are qualified to POSIX and say what the suite therefore proves. Any package asserting a
+host-varying property states its scope the same way.
+
+## Track P ruling
+
+**P1 — `html`'s test title says "API Surface function" while its guide heading is `## Surface`.**
+A one-word edit in a file the fleet pass already opens. Folded into Track F rather than given its own
+visit.
+
+**P2 — `pool`'s README-against-manifest check. Ruled: stays in `pool`.**
+
+The check is sound: it proves the README's stated Node version matches `engines.node` and that its
+"ESM and CommonJS builds" claim matches a root export carrying both `import` and `require`. Every
+package has both fields, so it would apply anywhere.
+
+It is still **one member**. Copying ~30 lines of hand-rolled narrowing into 41 test files is the
+duplication this campaign exists to remove, and promoting it to a shared helper now would add API
+with no second consumer, which the creation gate forbids. One member is one member however good the
+idea is.
+
+Recorded for the moment a second package wants it. At two the argument changes; at three it ships.
 
 ## Track F — the fleet pass, last and once
 
