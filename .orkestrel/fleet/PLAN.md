@@ -89,6 +89,33 @@ export belongs in the barrel and a non-public declaration should be a true priva
 packages sitting between those two rules is a design question for `scaffold`'s rule set, not a defect
 in any one package. Recorded, not fixed here.
 
+## G7 — the finding the probes actually produced
+
+Three packages built three different workarounds and two were unnecessary:
+
+| Package | Workaround | Needed? |
+| --- | --- | --- |
+| `worker` | `INTERNAL_EXPORTS` denylist over `exports()` | No — `surface()` excludes exactly those |
+| `database` | a TypeScript compiler surface via `deriveEntrySurfaces` | No — `surface()` is an exact bijection with its documented surface |
+| `middleware` | silence; `MultipartParser` simply sits in `exports()` | No — same |
+
+The common cause is not a missing capability. It is that **neither `exports()` nor `surface()` says
+in its name or its row which question it answers**, so each package guessed and built machinery
+around the guess.
+
+- `exports()` — every direct declaration under the selected modules. Includes a class that carries
+  `export` only because the policy sweep requires it.
+- `surface()` — every declaration reachable through the barrels. This is what a consumer can import,
+  and therefore what a documented surface should be checked against.
+
+**The repair is documentation, not API.** `guides/guide.md` must state which projector a parity test
+should use for its documented-surface population, and why: a guide documents what a consumer can
+import, so `surface()` is the default and `exports()` answers a different question — what the package
+declares. Both rows exist; neither says this today.
+
+That repair is cheaper than either API addition it replaces, and it prevents the fourth package from
+inventing a fourth workaround. It ships with the G5 change in the same `guide` release.
+
 ## Track W — a sandbox capability for `@orkestrel/test`
 
 `createScratch` is one half of a sandbox that already existed in this fleet's history: filesystem
