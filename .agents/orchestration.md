@@ -230,6 +230,16 @@ clobbered edits, formatter and build races, cache phantoms, and validation cross
    invalidates will repair the same drift the other way and report a state that is already false.
    Run it before the units, or after them, or send the decision to every unit in flight per the
    mid-campaign rule under **Dispatch anatomy**. Never beside them.
+8. A fleet pass that records a per-target status commits only the targets it recorded green. Reading
+   "is the tree dirty" instead of "did this target pass" pushes a red target the moment one exists,
+   and a flake makes that look like it worked. Refuse the failed row, name it, and re-run it alone
+   before deciding what it was.
+9. Run a fleet pass in slices that report as they finish, never as one block. A block hides its first
+   failure behind every target that follows, so the failure surfaces after the work it should have
+   stopped. A slice hands control back while most of the fleet is still unstarted.
+10. Re-run a timing or resource failure alone before believing it. Concurrent slices, builds, and
+    suites make a container miss deadlines it meets when idle, so a red result under load is a
+    question rather than an answer.
 
 ## Execution loop
 
@@ -641,17 +651,30 @@ flag is what stops the gate chain running a second time inside the five minutes.
   zero.
 - Re-probe `whoami` immediately before opening the window. A stored credential expires mid-session,
   so a session-start answer does not hold.
-- Surface each approval URL the moment it appears in the log. Say that approving the publish one
-  opens a five-minute window covering the rest of the layer.
+- Surface each approval URL the moment it appears in the log, and take the **last** one in log order.
+  npm mints a new URL whenever an attempt restarts, and the log accumulates every one, so a URL
+  chosen by sorting rather than by position is already dead when the user opens it.
+- Re-read the log before treating an approval as failed. The chain is usually still alive on a newer
+  URL, so surface that one rather than relaunching.
+- A `404` on an approval URL usually means the publish already succeeded and consumed it. Read the
+  registry before calling it a failure.
+- Say that approving the publish one opens a five-minute window covering the rest of the layer.
 
 ### Spending the window
 
 - The window opens when the user approves, not when the first publish starts. Chain every remaining
   publish inside the same process as the gate package, so no human turn sits inside it.
 - Publish serially. Concurrent publishes collide on the auth handshake and fail each other.
-- `EOTP` inside the window is intermittent contention rather than the window closing. Retry each
-  package about three times before recording it failed, and retry a failed set once the layer ends;
-  packages have landed on the third attempt and on a later pass with no new approval.
+- **Never retry a publish that is still waiting for its authorization.** Each `npm publish` attempt
+  mints a new `authId` and invalidates the previous one, so a retry loop makes the URL a moving
+  target the user cannot approve in time. The abandoned poll then reports
+  `403 Forbidden - GET /-/v1/done?authId=…`, which reads as a permissions problem and is two attempts
+  colliding. Publish the first package of a layer with exactly one attempt.
+- Retry only an upload that failed **inside** an already-open window. `EOTP` there is intermittent
+  contention rather than the window closing: retry about three times, and retry a failed set once the
+  layer ends. Packages have landed on the third attempt and on a later pass with no new approval.
+  These are two different failures wearing similar codes; a retry fixes the second and causes the
+  first.
 - Expect a large layer to outlast one window. Size batches to what uploads in five minutes and tell
   the user how many approvals to expect, rather than discovering it mid-run.
 - Read the result from the registry, not from an exit code: a piped `npm publish` reports the exit
