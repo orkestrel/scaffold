@@ -850,13 +850,13 @@ recorded in advance, not a bench failure.
 Five read-only lenses over all 41 packages, each required to state its search commands and match
 counts so coverage is a fact rather than an assumption.
 
-| Lens | Members | Effect |
-| --- | --- | --- |
-| remove | 2 — `scaffold` 23 sites, `database` 8 | rejected; Sol right, subjective lane wrong |
-| link | 3 — `sea`, `scaffold`, `middleware`, mutually independent | ships; Sol right |
-| listing | 4 — `middleware` 14, `scaffold` 11, `database` 5, `sea` 2 | ships |
-| directory creation | 5 genuine (41 counting the byte-identical template) | ships |
-| missed population | 0 packages missed | **corrects the Orchestrator** |
+| Lens               | Members                                                   | Effect                                     |
+| ------------------ | --------------------------------------------------------- | ------------------------------------------ |
+| remove             | 2 — `scaffold` 23 sites, `database` 8                     | rejected; Sol right, subjective lane wrong |
+| link               | 3 — `sea`, `scaffold`, `middleware`, mutually independent | ships; Sol right                           |
+| listing            | 4 — `middleware` 14, `scaffold` 11, `database` 5, `sea` 2 | ships                                      |
+| directory creation | 5 genuine (41 counting the byte-identical template)       | ships                                      |
+| missed population  | 0 packages missed                                         | **corrects the Orchestrator**              |
 
 **The population was overstated, not understated. Seven packages, not eight.** `ollama` carries no
 temp fixture. Two things misled the survey: its `config.test.ts` is the one copy of 41 that is not
@@ -945,16 +945,16 @@ read-only role with an execution instruction it cannot honour.
 
 ### Confirmed by reproduction
 
-| # | Finding | Evidence |
-| --- | --- | --- |
-| A | `ensure` creates **outside** the allocation through a link, and returns a path that looks contained. `names` lists foreign entries. | `inside.link('portal', outside.path)` then `ensure('portal/made')` creates under `outside.path`. Control: a direct `../` escape still throws. |
-| B | `readInventory`'s exclusion does not apply to a **named** target below an excluded directory. | `readInventory(root, ['excluded/file.ts'], { exclude: ['excluded'] })` returns the file. Control: the same exclusion works when reached by walking. |
-| C | `prefix` rejects `..` as a substring, refusing the legitimate `release-0..2-`. | Reproduced. A separator-free `..` cannot traverse, because `mkdtemp` appends to it — the separator check alone is sufficient and correct. |
-| D | `JSONSafe` admits `undefined` and rejects `Record<string, unknown>`. | `{ a: undefined }` copies to `{}` while the return type says `a` survives; `(number \| undefined)[]` copies to `[1, null, 3]`. `Record<string, unknown>` fails `TS2345` while a `Record<string, string>` control compiles. |
-| E | The instruments do not bind. Deleting the root guard from `names`, `ensure`, or `link`, or the backslash check from `prefix`, leaves all 46 tests green. | The `ensure` case is the worst: `mkdirSync(..., { recursive: true })` would silently **resurrect a destroyed allocation**. |
-| F | `write('')` reaches the host raw and surfaces `EISDIR` rather than any documented outcome. | Reproduced. |
-| G | Use-after-destroy gives three answers across six members: `read` returns `undefined`, `has` returns `false`, the other four throw. | Reproduced. |
-| H | The `names` sort assertion is vacuous on this host. | Both lanes and the writer agree; Sol's 128-name control still came back sorted. |
+| #   | Finding                                                                                                                                                  | Evidence                                                                                                                                                                                                                   |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A   | `ensure` creates **outside** the allocation through a link, and returns a path that looks contained. `names` lists foreign entries.                      | `inside.link('portal', outside.path)` then `ensure('portal/made')` creates under `outside.path`. Control: a direct `../` escape still throws.                                                                              |
+| B   | `readInventory`'s exclusion does not apply to a **named** target below an excluded directory.                                                            | `readInventory(root, ['excluded/file.ts'], { exclude: ['excluded'] })` returns the file. Control: the same exclusion works when reached by walking.                                                                        |
+| C   | `prefix` rejects `..` as a substring, refusing the legitimate `release-0..2-`.                                                                           | Reproduced. A separator-free `..` cannot traverse, because `mkdtemp` appends to it — the separator check alone is sufficient and correct.                                                                                  |
+| D   | `JSONSafe` admits `undefined` and rejects `Record<string, unknown>`.                                                                                     | `{ a: undefined }` copies to `{}` while the return type says `a` survives; `(number \| undefined)[]` copies to `[1, null, 3]`. `Record<string, unknown>` fails `TS2345` while a `Record<string, string>` control compiles. |
+| E   | The instruments do not bind. Deleting the root guard from `names`, `ensure`, or `link`, or the backslash check from `prefix`, leaves all 46 tests green. | The `ensure` case is the worst: `mkdirSync(..., { recursive: true })` would silently **resurrect a destroyed allocation**.                                                                                                 |
+| F   | `write('')` reaches the host raw and surfaces `EISDIR` rather than any documented outcome.                                                               | Reproduced.                                                                                                                                                                                                                |
+| G   | Use-after-destroy gives three answers across six members: `read` returns `undefined`, `has` returns `false`, the other four throw.                       | Reproduced.                                                                                                                                                                                                                |
+| H   | The `names` sort assertion is vacuous on this host.                                                                                                      | Both lanes and the writer agree; Sol's 128-name control still came back sorted.                                                                                                                                            |
 
 ### Ruled: what is fixed in code, and what is bounded instead
 

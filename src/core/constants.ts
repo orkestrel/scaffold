@@ -342,7 +342,7 @@ export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.fr
 	'@microsoft/api-extractor': '^7.58.12',
 	'@orkestrel/guide': '^0.0.11',
 	'@orkestrel/scaffold': '^0.0.31',
-	'@orkestrel/test': '^0.0.1',
+	'@orkestrel/test': '^0.0.2',
 	'@types/node': '^26.2.0',
 	oxfmt: '^0.62.0',
 	oxlint: '^1.77.0',
