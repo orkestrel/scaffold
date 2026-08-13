@@ -878,3 +878,21 @@ every fixture's home and none of its use.
 does not exist; the file is under `injectors/`. Sol also undercounted its own `middleware` listing
 citation at ten sites when there are fourteen. Neither error changed its ruling, and both are
 recorded because a citation that survives into a brief becomes a fact for every unit downstream.
+
+### Two process failures from this phase, recorded because each is cheap to prevent
+
+**A commit hash from the wrong repository stopped a writing unit before it started.** The
+`u-scratch-src` brief named the baseline as `32496b9`, which is the commit in the **orchestrator's**
+repository where the T5 ruling was recorded. `/home/user/test` was at `b0c7554`. The executor
+refused to start, reported expected-versus-found with the exact evidence, and wrote nothing. It was
+right to, and the whole dispatch cycle produced no work. This is the pre-send check that says paste
+the command and its output for every factual claim: the hash was written from memory of a repository
+the unit was not working in. A campaign spanning two repositories makes every bare hash ambiguous,
+so a brief naming one states the repository beside it.
+
+**A watcher built on `pgrep -f` matched its own command line and looped forever.** The until-loop
+`until ! pgrep -f "codex exec --sandbox read-only"; do sleep 20; done` runs inside a shell whose own
+argv contains that exact string, so the pattern always matched and the condition never became true.
+Its subject had finished minutes earlier. It was killed by process id, per the standing rule never
+to kill by pattern — the same self-match that traps the watcher would trap the cleanup. Prefer
+waiting on a process id captured at launch over matching a pattern at poll time.
