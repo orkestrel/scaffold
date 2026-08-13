@@ -124,6 +124,39 @@ Evidence: `/home/user/packages/emitter/package-lock.json`, entries `node_modules
 dependency on `@orkestrel/emitter ^0.0.6`), against `/home/user/packages/emitter/package.json`
 `version 0.0.6`.
 
+## The signature rule, proved with a four-arm instrument
+
+Run at `/tmp/typeprobe` against the real published `@orkestrel/emitter@0.0.6` installed beside a
+copy of `emitter`'s own `src/core` — the exact situation inside the `emitter` repository once
+`@orkestrel/test` is its devDependency. TypeScript 6, `strict`, `skipLibCheck: false`.
+
+| Arm | Helper signature                                            | Copies reachable   | Result        |
+| --- | ----------------------------------------------------------- | ------------------ | ------------- |
+| 1   | imported `EmitterInterface<TMap>`                           | installed only     | pass          |
+| 2   | imported `EmitterInterface<TMap>`                           | installed + local  | **fail** TS2345 |
+| 3   | locally declared shape, generic `on<K extends keyof TMap>`  | installed + local  | **fail** TS2345 |
+| 4   | locally declared shape, non-generic `on`, inference from `events` | installed + local | pass    |
+
+Arm 1 is the control: the identical helper and call pass when only one copy is reachable, so arm 2's
+failure is attributable to the second copy rather than to the signature.
+
+Arm 3 is the finding that costs a cycle if it is not known in advance. Making the parameter
+structural is **not** sufficient on its own. `TMap` cannot be inferred from a generic `on<K>` method,
+so it falls back to its constraint and both copies are rejected — including the installed one. The
+failure reads like a two-copies failure and is not one.
+
+Three rules follow, and they bind every helper this package publishes:
+
+1. **No `@orkestrel/*` type appears in a published helper's signature.** It rejects the consumer's
+   own local source value in the consumer's own repository.
+2. **Declare the minimal shape locally**, in this package's `types.ts`.
+3. **Drive inference from a non-generic position** — a plain parameter such as the event-name array
+   — never from a generic method on the shape.
+
+Arm 4 is the proven form. Per `.claude/rules/tests.md`, an instrument that settled a claim becomes
+that claim's regression guard, so this probe is adopted as a test in the package rather than
+discarded.
+
 ## Findings outside this campaign's scope
 
 Recorded against the row that owns them, for the next campaign. Not reopened here.
