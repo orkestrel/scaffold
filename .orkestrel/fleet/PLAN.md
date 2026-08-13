@@ -43,6 +43,49 @@ Everything else the guide tests repeat — `SELF_SPECIFIERS`, `SPECIFIER_MODULES
 Adding capability now with no consumer would violate the creation gate in `AGENTS.md`. The real
 consumers arrive in Track F, and what they need is recorded in T2 as it appears.
 
+### T4 — align `ScratchInterface` with the `workspace` surface
+
+**Owner instruction, binding:** `createScratch` and anything built beside it follow the
+`@orkestrel/workspace` surface vocabulary for files and operations, because it is simpler than
+`node:fs`. Borrow the *shape* only — `@orkestrel/test` keeps zero runtime dependencies, so nothing is
+imported from `workspace`.
+
+Measured gap. `WorkspaceInterface` (`workspace/src/core/types.ts:142-167`) against
+`ScratchInterface` (`test/src/server/types.ts`):
+
+| Operation | `workspace` | `ScratchInterface` today |
+| --- | --- | --- |
+| read one | `read(path)` | `read(target)` — matches |
+| read a range | `read(path, range)` | none |
+| read many | `read(paths)` | none |
+| write one | `write(path, content)` | `write(target, text)` — matches |
+| write into a range | `write(path, content, range)` | none |
+| write many | `write(files)` | seeding only, at construction |
+| existence | **`has(path)` / `has(paths)`** | **`exists(target)`** — wrong word |
+| enumerate | `file(path)` / `files()` | none |
+| append / prepend | `append`, `prepend` | none |
+| move | `move(from, to)` / `move(mapping)` | none |
+| remove | `remove(path)` / `remove(paths)` | none |
+| reset contents | `clear()` | none |
+| capture state | `snapshot()` | none |
+| tear down | `destroy()` | `destroy()` — matches |
+| size | `count` | none |
+
+Two findings fall out immediately:
+
+1. **`exists` violates one-concept-one-term.** The fleet's word for this is `has`. That is a rename
+   in a published package and therefore a version bump, and it is correct.
+2. **The batch overloads are the fleet's `patterns.md` manager shape** — one single-word verb
+   carrying the one-item and many-item forms. `ScratchInterface` has none of them.
+
+Not every row belongs on disk. `snapshot()` returns an immutable in-memory record, `read(path, range)`
+and `search`/`replace` assume parsed text, and `count` assumes a closed set — a real directory is
+open and mutable underneath. The design round rules row by row rather than adopting the interface
+wholesale, and says for each row why it is on disk or why it is not.
+
+Sequenced after `@orkestrel/guide` publishes. It is a `@orkestrel/test` `0.0.2`, and the fleet pass
+adopts whatever it lands.
+
 ### T2 — running ledger
 
 Append here the moment something is found; do not carry it in context.
