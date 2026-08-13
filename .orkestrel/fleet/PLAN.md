@@ -844,3 +844,37 @@ Opus `implementer` rather than Sol, per the recorded exclusion in `.claude/agent
 that authors escape constructs to prove a guard refuses them trips the provider's content filter
 mid-run. Containment-escape and symlink-escape tests are exactly that. This is a routing fact
 recorded in advance, not a bench failure.
+
+### The recount, and what it corrected in each direction
+
+Five read-only lenses over all 41 packages, each required to state its search commands and match
+counts so coverage is a fact rather than an assumption.
+
+| Lens | Members | Effect |
+| --- | --- | --- |
+| remove | 2 — `scaffold` 23 sites, `database` 8 | rejected; Sol right, subjective lane wrong |
+| link | 3 — `sea`, `scaffold`, `middleware`, mutually independent | ships; Sol right |
+| listing | 4 — `middleware` 14, `scaffold` 11, `database` 5, `sea` 2 | ships |
+| directory creation | 5 genuine (41 counting the byte-identical template) | ships |
+| missed population | 0 packages missed | **corrects the Orchestrator** |
+
+**The population was overstated, not understated. Seven packages, not eight.** `ollama` carries no
+temp fixture. Two things misled the survey: its `config.test.ts` is the one copy of 41 that is not
+byte-identical, and it is a stale shorter variant rather than a fixture; and
+`ollama/tests/setup.test.ts:319` calls `createWorkspace()`, which is `@orkestrel/workspace`'s
+**in-memory** snapshot store — `workspace/src/` imports no `node:fs` at all. The confirmed
+population is `browser`, `database`, `middleware`, `scaffold`, `sea`, `sqlite`, `worker`.
+
+**No package was missed, but four fixture files were**, in three packages:
+`database/tests/src/server/drivers/JSONDriver.test.ts`,
+`middleware/tests/src/server/helpers.test.ts`, `sea/tests/src/server/factories.test.ts`, and
+`sea/tests/src/server/injectors/Injector.test.ts`. Each scores zero on the nine tokens. The pattern
+is exact and worth carrying: the fixture-**allocating** helper lives in `tests/setupServer.ts` and
+uses `mkdtempSync`/`tmpdir`, which the tokens see, while the fixture-**consuming** test file uses
+only `writeFile`, `writeFileSync`, or `mkdir`, which they do not. A search for allocation finds
+every fixture's home and none of its use.
+
+**Sol's own citation was wrong in the same round.** `sea/tests/src/server/seals/Injector.test.ts:215`
+does not exist; the file is under `injectors/`. Sol also undercounted its own `middleware` listing
+citation at ten sites when there are fourteen. Neither error changed its ruling, and both are
+recorded because a citation that survives into a brief becomes a fact for every unit downstream.
