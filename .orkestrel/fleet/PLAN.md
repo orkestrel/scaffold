@@ -158,27 +158,52 @@ Already verified so no unit re-derives it: `@orkestrel/guide` is a devDependency
 and a runtime dependency in **0**, so this is 40 re-pins and zero republishes — no cascade, no layer
 ordering, no publish window beyond `guide`'s own.
 
-## Track W — a sandbox capability for `@orkestrel/test`
+## Track W ruling — the sandbox halves
 
-`createScratch` is one half of a sandbox that already existed in this fleet's history: filesystem
-work constrained to a temporary directory, set up, tracked, and cleaned up. The other half captured
-and controlled the process's console and its `stdin`/`stdout`/`stderr`, also set up, tracked, and
-cleaned up, and switchable on and off.
+Scouted `@orkestrel/workspace`, `@orkestrel/console` and `@orkestrel/terminal` before designing.
+Journal: `tmp/cursor/sandbox-scout.log`, `cursor-grok-4.6-high`.
 
-**Research and rule, do not implement on sight.** The question is what the smallest honest mechanism
-is for `@orkestrel/test` to offer both halves, given a hard constraint:
+**The premise needs correcting first. `@orkestrel/workspace` is not a filesystem sandbox.** It is an
+in-memory immutable file map — no disk, no lexical or realpath jail, no open-handle registry. It
+tracks files in a `Map` (`workspace/src/core/Workspace.ts:47`) and its `destroy()` tears down only its
+emitter without clearing that map (`:246-248`). It shares vocabulary with `createScratch` — `write`,
+`read`, `destroy`, `path` — and almost no behaviour. So `createScratch` is **not** duplicating it, and
+the filesystem half is already shipped and correctly placed.
 
-- **Zero runtime dependencies stay zero.** `@orkestrel/workspace`, `@orkestrel/console` and
-  `@orkestrel/terminal` must not become dependencies of a package installed by all 41.
-- `AGENTS.md` forbids reimplementing or rename-wrapping a declared package primitive. So the ruling
-  must separate what those packages own from what a test-scoped sandbox genuinely owns, and prove the
-  difference rather than assert it.
-- The capture half touches process-global state, so its contract must say what happens on nested
-  use, on a throw mid-capture, and on a test that never restores.
+**The capture half fails the membership rule outright.** Counted across all 41 packages' tests:
 
-Read `@orkestrel/workspace`, `@orkestrel/console` and `@orkestrel/terminal` first, then run the
-two-lane design pass. An outcome of "this belongs in those packages and `@orkestrel/test` composes
-nothing" is a legitimate result and closes the item.
+| Shape | Packages |
+| --- | --- |
+| Direct assignment to `console.*` or `process.std*.write` | **1** — `console` itself |
+| Injected fakes instead of touching the process (`createFakeTTY`, `PassThrough`) | 2 — `terminal`, `mcp` |
+| Collecting a **child** process's stdout, which is product I/O rather than capture | 2 — `sea`, `mcp` |
+| No stream or console capture at all | **36** |
+| `vi.spyOn(console\|process)` | **0** |
+
+One package captures streams in its own tests. The rule requires three independent members or five
+regardless. **Ship nothing.**
+
+**Depending on the existing packages was never available either.** Transitive `@orkestrel` closures:
+`console` 3, `workspace` 6, `terminal` 8. Any of them ends zero-dependency for all 41.
+
+**What the capture half would cost if built anyway.** `console` already implements it correctly —
+`Capture` for `console.*` and `ProcessCapture` for `process.stdout/stderr.write`, exact-reference
+restore, start/stop switchable. Rebuilding that in `@orkestrel/test` is the reimplementation
+`AGENTS.md` forbids, and three properties are documented but unproven even there:
+
+- **Non-reentrancy** is stated (`console/src/core/types.ts:753-756`) and no test constructs two
+  overlapping captures.
+- **Restore-on-abandon** is a test-harness `afterEach` guarantee, not a product one.
+- **Vitest's own output interception** is untested against; the suites avoid a real TTY with write
+  probes rather than proving compatibility.
+- Neither API touches `process.stdin` at all, so the "control stdin" half of the original sandbox
+  exists nowhere in the fleet.
+
+**Ruling: `@orkestrel/test` ships nothing for capture, and `createScratch` stands as the filesystem
+half.** Reopen when a third package independently needs stream capture in its own tests, or when the
+user decides the capability is worth building on product grounds rather than duplication grounds — in
+which case its home is `@orkestrel/console`, which already owns the mechanism, and the open questions
+above are what that work would have to close first.
 
 ## Track G — `@orkestrel/guide`
 
