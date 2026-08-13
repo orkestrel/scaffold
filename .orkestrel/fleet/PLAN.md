@@ -319,20 +319,16 @@ evidence-discipline defect, and it is fixed where evidence discipline lives — 
 `orkestrel-falsify` — rather than by 41 edits. The manifest option is recorded as the user's call, not
 taken silently.
 
-**S2 — every published README links into `guides/`, which never ships. Ruled: UNVERIFIED, do not act.**
+**S2 — every published README links into `guides/`, which never ships. Ruled: NOT A DEFECT, struck.**
 
 All 41 READMEs carry a relative link into `guides/`, and `files` ships `dist/src` and `README.md`
-only. But **npm rewrites relative README links against the `repository` field**, which every package
-sets — `emitter` declares `git+https://github.com/orkestrel/emitter.git` and a `homepage`. If that
-rewrite happens, the link resolves on the package page and there is no defect at all.
+only. npm rewrites those relative links against the `repository` field, which every package sets, so
+they resolve on GitHub rather than inside the tarball.
 
-I could not verify it here: `npmjs.com` returns `403` to both the fetcher and `curl` from this
-container. Asserting it either way would be a guess, and 41 edits against a guess is the wrong trade.
-
-**This is a five-second browser check for the user:** open
-`https://www.npmjs.com/package/@orkestrel/test`, click the `guides/test.md` link in the rendered
-README, and see whether it lands on GitHub or 404s. If it 404s, the fix is one absolute URL per
-README and it joins the fleet pass. If it resolves, strike the finding.
+Verified in a browser against the published `@orkestrel/test`: the `guides/test.md` link renders the
+guide at `orkestrel/test` blob `07796f1`, the commit `main` points at and the commit `0.0.1` was
+published from. Keep the links relative. The rewrite pins each reader to the release they installed,
+which an absolute `main` URL would break by showing documentation for code they do not have.
 
 **S3 — CI is `ubuntu-latest` only across all 41. Ruled: intentional, retained, with its consequence
 recorded.**
@@ -352,18 +348,14 @@ host-varying property states its scope the same way.
 A one-word edit in a file the fleet pass already opens. Folded into Track F rather than given its own
 visit.
 
-**P2 — `pool`'s README-against-manifest check. Ruled: stays in `pool`.**
+**P2 — `pool`'s README-against-manifest check. Ruled: removed from `pool`.**
 
-The check is sound: it proves the README's stated Node version matches `engines.node` and that its
-"ESM and CommonJS builds" claim matches a root export carrying both `import` and `require`. Every
-package has both fields, so it would apply anywhere.
+The check proved the README's stated Node version matched `engines.node` and that its "ESM and
+CommonJS builds" claim matched a root export carrying both `import` and `require`. It was the only
+one in the fleet, and the user directed its removal.
 
-It is still **one member**. Copying ~30 lines of hand-rolled narrowing into 41 test files is the
-duplication this campaign exists to remove, and promoting it to a shared helper now would add API
-with no second consumer, which the creation gate forbids. One member is one member however good the
-idea is.
-
-Recorded for the moment a second package wants it. At two the argument changes; at three it ships.
+Nothing is promoted and nothing is copied. The fleet pass carries no item from this finding, and
+`@orkestrel/test` gains no helper for it. `pool`'s `guides` project drops from 10 tests to 9.
 
 ## Track F — the fleet pass, last and once
 
