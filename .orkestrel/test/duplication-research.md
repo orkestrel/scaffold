@@ -127,3 +127,37 @@ statement from not having looked.
 | Inside test bodies, cross-package | max 4 packages | No, below the rule |
 | Within a single package | 1,574 blocks, 36 packages, worst 42× | No — domain case matrices, per-package repair |
 | Table-driven iteration | 41 packages | No — wrapping a language construct |
+
+## Finding 6 — the parity files share a region, not a shape
+
+Run because the subjective design lane named this measurement as the one that would overturn its own
+ruling: if the 39 files' divergence is accidental rather than essential, `guides.test.ts` is a fourth
+member of the vendored family beside `policy.test.ts`, `config.test.ts` and `setupPolicy.ts`, and the
+question belongs to `scaffold` rather than to `@orkestrel/test`.
+
+Whole-file normalization — comments stripped, blank lines dropped, whitespace collapsed — across all
+41 `tests/guides.test.ts`:
+
+```text
+41 distinct equivalence classes across 41 files
+```
+
+**No two are identical.** Both facts hold at once and they are not in tension: the 43-line proof
+*region* is shared, measured by the window detector, while the *files* differ in corpus directories,
+self-specifier lists, whether `AGENTS.md` joins the corpus, and how many extra rows each package
+adds.
+
+Two divergences are load-bearing rather than cosmetic:
+
+| Divergence | Split |
+| --- | --- |
+| The population the proof compares | **37 packages** assert against `source.exports()`; **3** assert against `source.surface()` |
+| Where the corpus is built | **37** walk inline; **4** already use a setup file — `database`, `guide`, `html`, `mcp` |
+
+`exports()` and `surface()` are different claims — every source export documented, versus every
+barrel export documented — carried under the same test names. Vendoring one file would impose one of
+them on all 41 or grow a mode switch.
+
+So vendoring is not viable, and the subjective lane's strongest counter-argument fails on the
+instrument it nominated. Recorded because a counter-argument that survives unmeasured is worth less
+than one that was measured and lost.
