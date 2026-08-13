@@ -16,10 +16,10 @@ Require a bounded question and an exact scope.
 ## Model
 
 ```text
-CURSOR_GROK_MODEL=cursor-grok-4.5-high
+CURSOR_GROK_MODEL=cursor-grok-4.6-high
 ```
 
-That id was read from `agent models` on 2026-08-09. Resolve the model from the variable at
+That id was read from `agent models` on 2026-08-13. Resolve the model from the variable at
 dispatch. Re-read `agent models` and update this line when the id changes. Never guess or
 substitute a model id.
 
