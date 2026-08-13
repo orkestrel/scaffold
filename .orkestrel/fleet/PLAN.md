@@ -1213,3 +1213,49 @@ There is no round 4. These findings are small, independently verifiable, and eve
 reproduced here with a control. Two fix units close them, the Orchestrator verifies each against the
 same probes, and acceptance rests on that evidence plus the gates — not on another adversarial pass,
 which at this point would be the auditor's remaining appetite rather than the subject's risk.
+
+## 0.0.2 accepted
+
+Exit criterion met. The ruled surface ships, every substantiated audit finding is closed, and the
+gates are green at `53547e8`: `format:check`, `lint:check`, `check`, `build`, `test` — **136 tests**
+across 7 files, from 92 at the start of this work.
+
+Eight fix units across three adversarial rounds. What the rounds actually bought, beyond green gates:
+
+- **A path traversal that no test bound.** `readInventory`'s post-`realpath` check was the only
+  refusal for a named target whose intermediate segment links outside the root, and deleting it left
+  every test green. It now fails a named test. That is the finding that justified running three
+  rounds.
+- **Two type-soundness holes in a published helper.** A member declared `object` returned a string; a
+  symbol-keyed member vanished while its type claimed it. Both refused now, on the line already
+  ruled: a dropped or off-type value lies about `T`, a value reshaped under `unknown` does not.
+- **A false claim inside the published `.d.ts`.** "its values are checked at runtime" reached every
+  consumer's editor tooltip with no guide to correct it.
+- **Instruments that did not bind.** Seven guards were deletable with the suite green across the
+  rounds — the root guard at three doors, the prefix backslash, `device`, `inode`, and the traversal
+  refusal. Each now fails a named test, verified by deleting it and watching it fail.
+
+Three of my own rulings were overturned by evidence and are recorded where they fell: the sort limit
+was not inherent, the duplicated predicate should have been extracted, and the prose rule had to bind
+the document rather than a defect list. One finding was dropped on the record after a probe
+vindicated the code — enumeration follows bytes, not creation order.
+
+### Recorded for the next change, not this one
+
+The guide gives three numbers for the local-recorder population: 32 at contract rule 2, 13 in Limits,
+while 28 packages import `createRecorder` today. Settling it needs pre-adoption fleet counts this
+session does not hold. It is pre-existing 0.0.1 prose, no audit round raised it, and
+`.claude/rules/quality.md` fixes the enumerated scope when work begins — so it is recorded against
+the row that owns it rather than reopened here.
+
+### What publishing needs
+
+`0.0.1 → 0.0.2`, read from the registry. **One package, no cascade**: 40 of the 41 fleet packages
+pin it as a **devDependency**, which reaches no downstream consumer, so each re-pins, proves its
+gates, and commits to `main` without bumping or republishing. `scaffold`'s `BASE_DEV_DEPENDENCIES`
+pin stays parked for the user's other session, since it is published barrelled API and moving it
+obliges a `scaffold` release.
+
+Publishing is the user's decision and the user's credential. Two browser approvals are required —
+`npmjs.com/login/cli/<id>` authenticates the session and `npmjs.com/auth/cli/<id>` authorizes the
+publish — and the Orchestrator never substitutes a token or another login flow.
