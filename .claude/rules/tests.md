@@ -46,8 +46,12 @@ its own:
 | `tests/service/**/*.test.ts` | The live external services this package drives, driven for real |
 
 - `.claude/rules/workspace.md` names the Vitest project each location belongs to.
-- `integration.test.ts` is a reserved filename at any level. It names a scope rather than a module,
-  so the mirror rule does not reach it; its scope is the directory it sits in.
+- `integration.test.ts` and `consumer.test.ts` are reserved filenames at any level. Each names a
+  scope rather than a module, so the mirror rule does not reach either; the scope is the directory it
+  sits in.
+- Put a generated-consumer proof in `consumer.test.ts` under the environment it drives. It installs
+  or links the built package and drives it from outside, so it has no source module to mirror by
+  construction. Never add a source module to satisfy the mirror rule.
 - Give every nested `integration.test.ts` its own exact-path project entry. A glob such as
   `tests/src/**/integration.test.ts` double-claims a file another project already owns.
 

@@ -618,6 +618,10 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 					? "\t\t\t\t\toutput: { paths: { '@src/core': '../core/index.js' } },"
 					: '\t\t\t\t\toutput: {},',
 				exclude: core ? "\t\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" : '',
+				// A browser test runs in the browser, so it cannot start a Node fixture
+				// for itself. That is the case a global setup exists for, and it is why
+				// this project takes the same span the integration project does.
+				global: blueprint.global ? "\t\t\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : '',
 			}),
 		)
 		projects.push('srcBrowser')

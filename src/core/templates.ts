@@ -154,6 +154,7 @@ const resolve = {
 				name: { label: 'src:browser', color: 'yellow' },
 				include: ['tests/src/browser/**/*.test.ts'],
 {{exclude}}				setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+{{global}}
 				browser: {
 					enabled: true,
 					provider: playwright(browserOptions),
