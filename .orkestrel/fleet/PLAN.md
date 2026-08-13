@@ -116,6 +116,48 @@ declares. Both rows exist; neither says this today.
 That repair is cheaper than either API addition it replaces, and it prevents the fourth package from
 inventing a fourth workaround. It ships with the G5 change in the same `guide` release.
 
+## G5 ruling — ship `SourceManager`, and switch the fleet to `surface()`
+
+Both lanes ran one brief, blind, and **converged on shape B**: a resolver whose specifier→module map
+stays in the consumer. They differed on the return type and the name. Both, unprompted, also reached
+G7 — the objective lane wrote "the resolver must use `Source.surface()`, not `Source.exports()`", and
+the subjective lane wrote that the divergence "is the real finding, and one could close that with
+forty one-word edits and ship nothing at all."
+
+**The decisive measurement, taken before ruling.** The subjective lane named its own load-bearing
+risk: switching consumers to `surface()` could redden any package whose fence imports a symbol
+declared but not barrel-exported. Measured across all 41 packages:
+
+```text
+ts fences: 552    import rows: 718
+imports that would newly fail under surface(): 0
+```
+
+The switch is free. That kills the risk, and it makes G7 sufficient on its own to close the
+divergence.
+
+**Ruled: ship it, in the subjective lane's shape and name, with the objective lane's population rule
+moved into documentation rather than into the return type.**
+
+- `createSourceManager({ files, modules })` → `SourceManagerInterface` with `source(specifier)`
+  returning `SourceInterface | undefined`.
+- **Entity, not names.** A manager returns entities; returning `readonly string[]` would make it not
+  a manager, and it would foreclose consumers that legitimately need more than names — `mcp` uses
+  `surface()` inside its own import check and `database` uses `methods(...)`. Those are present
+  consumers, not hypotheticals.
+- **`SourceManager`, not `Faces`.** `face` appears nowhere in the package; `module` is the existing
+  word, and `Source` + `SourceManager` falls straight out of the entity-plus-manager naming rule.
+- `undefined` absorbs `SELF_SPECIFIERS`: a mapped specifier is local, absence is the skip signal.
+  That removes one fact written twice in every multi-face package.
+
+**Preserve every map verbatim in the rollout.** `ollama` deliberately omits its own published
+specifier from its filter. A rollout that normalizes the maps would break the very seam this design
+claims to protect.
+
+Already verified so no unit re-derives it: `@orkestrel/guide` is a devDependency in **40** packages
+and a runtime dependency in **0**, so this is 40 re-pins and zero republishes — no cascade, no layer
+ordering, no publish window beyond `guide`'s own.
+
 ## Track W — a sandbox capability for `@orkestrel/test`
 
 `createScratch` is one half of a sandbox that already existed in this fleet's history: filesystem
