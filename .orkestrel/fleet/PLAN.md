@@ -603,3 +603,54 @@ Proved against a real consumer install of `toolbox@0.0.6`: one `console@0.0.6`, 
 and `BASE_DEV_DEPENDENCIES` pins `@orkestrel/guide@^0.0.10` and omits `@orkestrel/test`, so a newly
 generated workspace starts inconsistent with all 41. A devDependency bump reaches nobody: re-pin,
 prove the gates, commit to `main`, do not publish.
+
+## T4 ruled — `@orkestrel/test@0.0.2`
+
+Two lanes on one brief, blind. Subjective `planner` Opus 5, objective Sol via journaled CLI. Six of
+seven claims broken between them. Three facts settled by probe rather than argument, and each
+overturned part of what a lane concluded.
+
+**`createScratch` has zero consumers.** All 46 `@orkestrel/test/server` imports across the fleet are
+`readInventory`. Sol found this; the subjective lane cited fleet call sites that are hand-rolled
+temp-directory fixtures, not `createScratch` calls. Under the creation gate, every proposed
+expansion is therefore speculative **as stated** — but the consumers exist unmigrated, in
+`browser`, `worker`, `database`, `sqlite`, `scaffold` and `sea`. The work is a migration that adds
+exactly the rows it proves necessary, never an expansion taken on faith.
+
+**`roundTripJSON`'s repair is neither lane's.** Sol ruled the bound should drop to plain `<T>`; that
+compiles and lies, returning a `string` typed as `Date`. The subjective lane kept a bound and
+proposed `<T extends JSONSafe<T>>`, which does not compile — `TS2313`, circular constraint — and it
+flagged itself unverified. The working form, probed with controls that fail for the right reason:
+
+```ts
+declare function roundTripJSON<T>(value: T & JSONSafe<T>): T
+```
+
+Accepts an interface-typed snapshot and a nested alias; rejects `Date`, `Map`, and a method-bearing
+interface with `TS2345`.
+
+**`has(paths)` is ALL if it ships, and it should not ship.** `@orkestrel/workspace` measured ANY;
+`patterns.md` says ALL. Both lanes ruled ALL. The subjective lane then showed the row should not
+exist: the two measured multi-path checks in the fleet deliberately keep results in named records,
+because a failure has to name which path was missing, and a collapsed boolean destroys exactly that.
+`read(paths)`, which omits absent keys, carries the diagnostic a batch `has` throws away.
+
+**`readInventory` widens its existing parameter rather than gaining an option.** Sol proposed an
+`InventoryOptions.files`; that collides with `ScratchOptions.files`, which already means paths mapped
+to contents to **write**, in the same barrel. `directories` becomes `targets` — a target is a file or
+a directory — matching `resolveContained`'s established use of the word. An explicitly named target
+is included regardless of `extensions`, and that sentence is tested.
+
+**Rejected on the creation gate, recorded as scope rather than correctness so a later consumer can
+reopen them:** `read(paths)`, `remove(paths)`, `write(files)` post-construction, `prepend`, `append`,
+`move`, `files()`, `clear()`, `count`. **Rejected on correctness:** `snapshot()`, `id`, `emitter`,
+`search`, `replace`, `range` — each names a foreign type or an entity the scratch does not have.
+
+**Carried to the implementation brief, or it ships as drift:** the `exists` → `has` rename touches
+four places in `guides/test.md`, and the `readInventory` widening invalidates three more. Parity
+proves a name resolves; it never proves the sentence beside it is true.
+
+**Routed out of this campaign:** the fleet holds three contradictory readings of the plural-boolean
+batch shape — ALL in `template` and `program`, ANY in `workflow` and `workspace`, per-item results in
+a `database` guide. `patterns.md` says ALL and two published packages contradict it. That is a
+fleet-canon question and this package is not the vehicle for settling it.
