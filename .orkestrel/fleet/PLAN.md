@@ -365,9 +365,42 @@ Gated on `@orkestrel/test` and `@orkestrel/guide` both published.
 | --- | --- | --- |
 | F1 | Adopt `@orkestrel/test` in all 41: replace the corpus walk, `readText`, and every extracted helper it now ships. | 384 setup-file clusters, topping out at 32 packages for `createRecorder`. |
 | F2 | Extract per-package case matrices into each package's own setup file. **1,574 repeated five-line blocks across 36 packages**, counting only blocks repeated three or more times inside one package: `mcp` 208, `database` 200, `scaffold` 121, `workflow` 121, `contract` 111, `middleware` 99, `agent` 93. Worst single blocks are a 42× query-builder condition table in `database`, a 24× intrinsic-probe matrix in `contract`, an 18× `duplexPair` fixture in `websocket`. `tests.md` already rules: data tables and case matrices belong in a setup file at any size. | token-window clone detector over 483 files, 81,102 windows |
-| F3 | Republish cascade in catalog layer order for whatever the pass moves. | Read the order from the catalog table `scaffold catalog` regenerates. Never from a second written copy. |
+| F3 | Republish only the packages whose pass moves `src`. | Measured below: that set is `middleware` alone. |
 
 Visit each repository **once**, doing F1 and F2 together. Serialize writers per repository.
+
+### F3 re-baseline — the cascade is one package, not a fleet
+
+`@orkestrel/guide` is a **devDependency in all 40** packages that use it, never a runtime dependency,
+and `@orkestrel/test` joins them as one. The pass writes `tests/`, `devDependencies`, and `guides/`,
+and `files` ships `dist/src` and `README.md`. A development bump reaches nobody, so each package
+re-pins, proves its gates, and commits to `main` with no version bump and no publish.
+
+The exception is the rule's own: a development bump that forces a `src` change is not a development
+bump. Exactly one package hits it.
+
+Measured across all 41 manifests with `@orkestrel/guide@0.0.11`, comparing each documented surface
+against `exports()` and against `surface()`:
+
+| Package      | Under `exports()`       | Under `surface()` | Ruling                                       |
+| ------------ | ----------------------- | ----------------- | -------------------------------------------- |
+| `database`   | 9 undocumented          | clean             | switch repairs it; delete the compiler surface |
+| `worker`     | 3 undocumented          | clean             | switch repairs it; delete `INTERNAL_EXPORTS` |
+| `middleware` | clean (155 = 155)       | 1 documented symbol absent | add the missing barrel row |
+| other 38     | clean                   | clean             | switch is inert |
+
+`database` and `worker` built their workarounds against a failure the switch removes, which is the
+G7 ruling landing exactly where it was predicted to.
+
+`middleware` is the only `src` change. `src/server/MultipartParser.ts` declares `export class
+MultipartParser`, `guides/middleware.md` documents it, and `src/server/index.ts` carries no row for
+it. The barrel rule is not optional here — a documented, intentional, reusable export is never left
+stranded — so the repair is the barrel row, not a guide deletion. That moves the published surface,
+so `middleware` bumps and publishes. It has **zero runtime dependents in the fleet**, so it publishes
+alone and starts no cascade.
+
+Its file placement is a separate finding recorded against the row that owns it: `MultipartParser.ts`
+sits at the environment root rather than in a domain folder. Not this pass.
 
 ## G1 ruling — `patterns()` becomes `fences()`
 
