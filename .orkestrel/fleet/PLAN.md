@@ -60,6 +60,57 @@ Append here the moment something is found; do not carry it in context.
 - A shared corpus-walk helper — `readInventory` already is it, proved by equivalence.
 - A `readText` helper — `requireValue` composes it in one line.
 
+## Track V — verify every claim before designing against it
+
+**No comment in a consumer's `tests/guides.test.ts` is evidence.** Each one states a reason for a
+workaround, and each reason is a claim to probe. `.claude/rules/quality.md` already says a code
+comment is not evidence; this track makes that a gate rather than a habit.
+
+Nothing in Track G designs against a claim this track has not tested.
+
+| # | Claim, as the comment states it | Verdict |
+| --- | --- | --- |
+| V1 | `worker`: "Source exports have no file/barrel attribution, so exclude the exact internal class names" | **FALSE.** Measured: `source.surface()` already excludes exactly the internal classes and nothing else — `worker` `exports()` 13 / `surface()` 10 with `Dispatch`, `NodeWorker`, `Thread` present in the first and absent from the second; `middleware` 50 / 49 with `MultipartParser` the only difference. Barrel attribution exists and is named `surface()`. The denylist works around a shipped capability. |
+| V2 | The remembered reason for `worker`'s locals: a file run in a new thread cannot import the rest of the package, especially core | **Does not apply to these three classes.** `src/server/NodeWorker.ts:5` is `import { createWorker } from '@src/core'` — the class imports core directly. `Thread` holds `readonly #script: string \| URL`, so the file that runs in the new thread is the **consumer's** script, not these classes, which run on the main thread. The constraint is real for a consumer's worker entry and irrelevant here. |
+| V3 | `toolbox` and 16 others: one `Source` cannot answer a fence importing another face, so a specifier→module map plus an `exportsFor` cache is needed | Untested. Probe before G5 designs anything. |
+| V4 | `database`: lexical `Source` cannot express its public surface, so a TypeScript compiler surface is required | Untested. Probe before G6 rules. |
+| V5 | `mcp`: `fenceImports` misses mixed `import Default, { named }`, and a slash after a bare `}` swallows the rest of a fence | Partly corroborated by `Source`'s own TSDoc. Probe both against the real parser. |
+| V6 | `html`: the walker must skip `app/browser/main.ts` and `app/server/main.ts` | Untested. Probe whether gates stay green without the skip. |
+
+**V1 changes Track G.** G4 asked for a capability that already exists, so it is struck as a guide
+change and becomes a per-package correction: `worker`, `middleware` and any package in the same shape
+either adopt `surface()` as their documented-surface population or record why `surface()` does not
+fit. That correction belongs to Track F, in the same single visit.
+
+There is a second, separate question V1 exposes and does not answer: 13 implementation classes across
+`database` (9), `worker` (3) and `middleware` (1) carry `export` for the policy sweep while being
+deliberately absent from their barrel. `.claude/rules/architecture.md` says an intentional reusable
+export belongs in the barrel and a non-public declaration should be a true private detail. Three
+packages sitting between those two rules is a design question for `scaffold`'s rule set, not a defect
+in any one package. Recorded, not fixed here.
+
+## Track W — a sandbox capability for `@orkestrel/test`
+
+`createScratch` is one half of a sandbox that already existed in this fleet's history: filesystem
+work constrained to a temporary directory, set up, tracked, and cleaned up. The other half captured
+and controlled the process's console and its `stdin`/`stdout`/`stderr`, also set up, tracked, and
+cleaned up, and switchable on and off.
+
+**Research and rule, do not implement on sight.** The question is what the smallest honest mechanism
+is for `@orkestrel/test` to offer both halves, given a hard constraint:
+
+- **Zero runtime dependencies stay zero.** `@orkestrel/workspace`, `@orkestrel/console` and
+  `@orkestrel/terminal` must not become dependencies of a package installed by all 41.
+- `AGENTS.md` forbids reimplementing or rename-wrapping a declared package primitive. So the ruling
+  must separate what those packages own from what a test-scoped sandbox genuinely owns, and prove the
+  difference rather than assert it.
+- The capture half touches process-global state, so its contract must say what happens on nested
+  use, on a throw mid-capture, and on a test that never restores.
+
+Read `@orkestrel/workspace`, `@orkestrel/console` and `@orkestrel/terminal` first, then run the
+two-lane design pass. An outcome of "this belongs in those packages and `@orkestrel/test` composes
+nothing" is a legitimate result and closes the item.
+
 ## Track G — `@orkestrel/guide`
 
 Three defects, then two bounded gaps, then one deep limit. `guide` is at `0.0.10` and depends on
