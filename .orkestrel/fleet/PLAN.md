@@ -928,3 +928,61 @@ Sequence, once the audit passes and the user approves:
 
 Publishing is the user's decision and the user's credential. The Orchestrator prepares, surfaces the
 approval, and never substitutes a token or another login flow.
+
+## Audit round on 0.0.2 — both lanes FAIL, and the round earned its cost
+
+Objective Sol via journaled `codex exec`: `10 broken`. Subjective Opus 5 native: `6 broken, 4
+unresolved, 3 findings outside the claims`. Every sharp finding was reproduced by the Orchestrator
+before being acted on, each with a control that fires.
+
+**A dispatch deviation against me, reported by the subjective lane.** The `reviewer` role's tool
+allowlist is `Read, Grep, Glob`. I told it to write and run a probe. A dispatch cannot widen a
+role's read-only floor — that allowlist is what makes the floor real — so the lane had no way to
+execute and correctly labelled every verdict source-derived, marking four `UNRESOLVED` with the exact
+command that settles each. The lesson is a routing one: behavioural claims go to a lane that can
+execute, and the subjective lane gets claims that reading can settle. Do not re-dispatch a
+read-only role with an execution instruction it cannot honour.
+
+### Confirmed by reproduction
+
+| # | Finding | Evidence |
+| --- | --- | --- |
+| A | `ensure` creates **outside** the allocation through a link, and returns a path that looks contained. `names` lists foreign entries. | `inside.link('portal', outside.path)` then `ensure('portal/made')` creates under `outside.path`. Control: a direct `../` escape still throws. |
+| B | `readInventory`'s exclusion does not apply to a **named** target below an excluded directory. | `readInventory(root, ['excluded/file.ts'], { exclude: ['excluded'] })` returns the file. Control: the same exclusion works when reached by walking. |
+| C | `prefix` rejects `..` as a substring, refusing the legitimate `release-0..2-`. | Reproduced. A separator-free `..` cannot traverse, because `mkdtemp` appends to it — the separator check alone is sufficient and correct. |
+| D | `JSONSafe` admits `undefined` and rejects `Record<string, unknown>`. | `{ a: undefined }` copies to `{}` while the return type says `a` survives; `(number \| undefined)[]` copies to `[1, null, 3]`. `Record<string, unknown>` fails `TS2345` while a `Record<string, string>` control compiles. |
+| E | The instruments do not bind. Deleting the root guard from `names`, `ensure`, or `link`, or the backslash check from `prefix`, leaves all 46 tests green. | The `ensure` case is the worst: `mkdirSync(..., { recursive: true })` would silently **resurrect a destroyed allocation**. |
+| F | `write('')` reaches the host raw and surfaces `EISDIR` rather than any documented outcome. | Reproduced. |
+| G | Use-after-destroy gives three answers across six members: `read` returns `undefined`, `has` returns `false`, the other four throw. | Reproduced. |
+| H | The `names` sort assertion is vacuous on this host. | Both lanes and the writer agree; Sol's 128-name control still came back sorted. |
+
+### Ruled: what is fixed in code, and what is bounded instead
+
+**A is documentation, not code, and over-correcting would break the row's purpose.** The package's
+shipped contract is lexical containment, explicitly "not a sandbox", and `write`/`read` already
+follow a link outward by design. Making `ensure` and `names` physically contained would give them a
+guarantee `write` and `read` do not have, and would break the exact fixture pattern `link` exists
+for — planting a link and driving the code under test through it. The defect is that the guide's
+enumeration names only `write` and `read`, while `guides/test.md` separately promises `ensure`
+"Creates a contained directory". Those two cannot both be true now that `link` ships. Fix the prose;
+keep the behaviour.
+
+**E is code and is the one genuine bug inside A's neighbourhood.** `ensure` recreating a destroyed
+allocation root is not lexical-containment policy, it is a use-after-destroy defect.
+
+**B, C, D are code.** B matches ancestor keys for a named target. C rejects separators only. D drops
+`undefined` from the projection and adds an `unknown` passthrough, because `Record<string, unknown>`
+is the ban-safe spelling of an arbitrary JSON object where `any` is forbidden.
+
+**H is an inherent limit on this host and belongs in documentation.** No name population on this
+filesystem discriminates `readdirSync` from `readdirSync().sort()`; Sol's 128-name control confirmed
+it. `.claude/rules/quality.md` allows exactly this outcome — "the honest answer is that the limit is
+inherent and belongs in documentation rather than in code" — and the guide already states a limit of
+this shape for the POSIX `0700` mode. State it the same way, name the mechanism that would close it,
+and keep the strongest available assertion.
+
+**`destroy()`'s race is bounded, not built against.** Sol's check-then-use window needs an adversarial
+same-uid process, and the shipped threat model already declines to defend against a sibling worker or
+the code under test. Narrow the sentence rather than building coordination machinery. The subjective
+lane's separate point — that `birthtimeMs` falls back to `ctime` where the host has no birth time,
+which a seeded write then changes — is a real portability question and gets measured on this host.
