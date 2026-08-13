@@ -103,6 +103,59 @@ Gated on `@orkestrel/test` and `@orkestrel/guide` both published.
 
 Visit each repository **once**, doing F1 and F2 together. Serialize writers per repository.
 
+## G1 ruling — `patterns()` becomes `fences()`
+
+Both lanes ran one brief, blind. The objective lane chose **B**: keep `patterns()` and add a
+reporting window, `extractFenceLanguages` plus `GuideInterface.languages()`. The subjective lane
+chose **D**: make the projection total — `fences(): readonly GuideFence[]` carrying
+`{ language, code }` — delete `extractPatterns`, and ship one comparison leaf `findUnlisted`.
+
+**Ruled: D.** Three grounds, in order.
+
+1. **The filter is the defect, not the literal.** Five of six `GuideInterface` members are total over
+   a stated scope. `patterns()` is the only one that discards document content by a criterion its own
+   name does not state, and its TSDoc at `guide/src/core/types.ts:99` says "whole document" while the
+   population is filtered. B leaves that in place and adds a second member to narrate what the first
+   threw away.
+2. **D widens the seam; B only reports on it.** Under B a package documenting `sql` or `sh` examples
+   still cannot make those fences feed the example or import checks, because `guide` already decided
+   `ts`. Under D the package writes that predicate in its own file. That is what the per-package copy
+   exists for.
+3. **The objective lane costed D against a fleet visit that is already scheduled.** It rejected D as
+   breaking 40 consumers. Measured: 40 of 41 call `.patterns()`, and `@orkestrel/guide` is a
+   **devDependency in 40 packages and a runtime dependency in 0**. A development bump reaches nobody,
+   so consumers re-pin, prove gates and commit with no version bump and no cascade — and Track F is
+   already visiting every repository once. The marginal cost of D is near zero.
+
+Verified before ruling rather than taken on trust: `CodeBlockNode.lang` is `readonly lang?: string`
+at `markdown/src/core/types.ts:183-189`, and `markdown` is at `0.0.8` matching guide's `^0.0.8` pin.
+So `string | undefined` needs no sentinel, which is what lets an untagged fence be reported honestly.
+
+**The risk D carries, and its settling check.** D's language assertion is opt-in, so a batched fleet
+edit could emit 41 identical `.filter(f => f.language === 'ts')` lines, add no assertion, and report
+green from exactly where we started. The subjective lane raised this against its own decision. It is
+a hard acceptance criterion on Track F, not a note:
+
+```text
+grep -l findUnlisted /home/user/packages/*/tests/guides.test.ts | wc -l   # must equal 41
+```
+
+Each Track F slice measures its own package's fence languages first and lists second. It never
+inherits `['ts', 'text', 'sh']` from this ruling — that set was measured across shipped top-level
+`guides/` only, in column-zero lowercase form, and an uppercase tag or a fixture fence is outside it.
+
+### G1 units
+
+| Unit | Owns | Engine |
+| --- | --- | --- |
+| U1 | `src/core/types.ts`, `src/core/helpers.ts`, `src/core/Guide.ts` | Opus `implementer` |
+| U2 | `tests/src/core/*.test.ts`, `tests/guides.test.ts` | Sol `implementer` |
+| U3 | `guides/guide.md` | Opus `implementer` |
+| U4 | each consumer's `tests/guides.test.ts` and pin | folded into Track F, gated on `guide` publishing |
+
+U2 needs a negative control: a fixture guide carrying a `typescript` fence that `findUnlisted` must
+report. Without it the check passes everywhere on day one and has never been red.
+
 ## Rulings already taken, so they are not relitigated
 
 - **`guides.test.ts` stays per-package.** The copy is the customization seam: it lets a package make
