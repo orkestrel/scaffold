@@ -1019,3 +1019,57 @@ libuv substitutes `ctime`, a seeded write then changes it, and `destroy()` takes
 leaking the allocation silently, because `destroy()` returns `void` and a refusal is
 indistinguishable from success. That belongs in the guide beside the POSIX-mode limit, stated as a
 host dependence rather than as a defect.
+
+## Audit round 2 — attacking the rulings, and two of mine fell
+
+Round 1 attacked the diff. Round 2 attacked the **rulings taken in response to it**, three of which
+were mine. Objective Sol returned `9 broken`. Every claim was reproduced by the Orchestrator before
+being accepted or dropped.
+
+### My "inherent host limit" ruling was wrong, and a probe falsified it
+
+I ruled that no name population on this filesystem discriminates `readdirSync` from
+`readdirSync().sort()`, after two agents reported none, and documented it as an inherent limit. Sol
+found the vector. Reproduced:
+
+```
+native readdir : ["�a","é"]
+code-unit sort : ["é","�a"]
+DIFFER         : true
+```
+
+Filenames written from raw bytes rather than JS strings. `0x80` is an invalid UTF-8 lead byte and
+decodes to `U+FFFD`, which sorts after `é` (`U+00E9`); on disk `0x80 < 0xc3`, so the native order is
+the reverse. `.claude/rules/quality.md` is explicit that a gap between what an instrument checks and
+what it matches is a defect in the instrument rather than a documented limit, and it was right. The
+sort assertion gets a real control and the guide sentence claiming the limit is inherent comes out.
+
+### Confirmed by reproduction
+
+- **`exclude: ['']` disagrees across the two doors.** Walked: returns `{}`. Named: keeps the
+  descendant. The empty string is the root key, so the stated ancestor rule requires both to agree.
+- **`Record<string, unknown>` permits silent loss.** `{ kept: true, lost: undefined }` returns
+  `{ kept: true }` while the return type still says `lost` survives. The runtime walk checks only
+  non-finite numbers, so nothing catches it.
+- **The `dev` field of `destroy()`'s identity check is unbound.** A same-path replacement keeps the
+  same device on this host, so no test can discriminate that field; removing it stays green.
+- **`destroy()`'s "same uid" framing is too narrow, because of `parent`.** `tmpdir()` is mode `777`
+  **with the sticky bit set**, so only the owner may swap an entry there. A caller-supplied
+  world-writable non-sticky `parent` has no such protection. The feature this round added is exactly
+  what widens the condition, and the prose does not say so.
+
+### Dropped on the record: claim 2 is refuted twice
+
+Sol argued the exclusion fix regressed a documented caller pattern, on the premise that "at
+`153eed0`, exclusions were documented as exact-path matches". The opposite is what shipped —
+`git show 153eed0:src/server/types.ts` reads "The root-relative path keys to exclude. **A directory
+key also excludes its descendants.**" The fix brought the code to the documentation rather than away
+from it. And the named-target door is **unreleased**: 0.0.1 shipped only `directories`, so no
+published consumer can have depended on its behaviour. A finding neither engine can substantiate is
+dropped, and this one contradicts the record.
+
+### Claim 1 held
+
+The symlink-traversal ruling survived attack through an intermediate link, including `link` creating
+a further entry beyond one. No guide sentence promises physical containment and no newly harmed
+consumer was identified.
