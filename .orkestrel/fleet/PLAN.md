@@ -1157,3 +1157,59 @@ The lane's claim was an unverified assertion presented as fleet fact, and it wou
 `Pick`-based optionality branch in a published type. The same discipline that caught my own errors
 this round caught it: measure the population before building for it. Auditors are held to the
 standard they apply.
+
+## Audit round 3 — the budget round, and the finding that justified it
+
+Objective Sol `6 broken`; subjective Opus `5 broken`. Three of my rulings were attacked and held:
+`JSONSafe` stays, both POSIX-dead guards are correctly kept, and the three extractions each earn
+their published row. Every finding below was reproduced by the Orchestrator with a control.
+
+### The finding that mattered, and it is not prose
+
+`src/server/helpers.ts` keeps a post-`realpath` containment check that is **live, load-bearing, and
+bound by no test**. With `root/link -> /outside`, `readInventory(root, ['link/file.txt'])` passes the
+final-segment check — `lstat` sees no link at the final component, because the link is an
+**intermediate** segment — then realpaths outside the root, and only that check refuses it.
+
+Reproduced: the call throws `Target outside root`. Control: the same link pointing **inside** the
+root resolves and is keyed by its **real** path, `real/file.txt` rather than `link/file.txt`, which
+is itself undocumented.
+
+The subjective lane stated its coverage: `readInventory` is called from exactly two test files, it
+read both in full, and every symlink fixture places the link at a target's **final** component or
+inside the walked tree. None puts one in the middle of a named target. So deleting that check opens a
+path traversal and leaves all 132 tests green. FIX-4 gave recorded gaps to the two branches that
+cannot fire on this host and gave this one — which can — neither a test nor a comment.
+
+### Dropped on the record: the sort causation claim is true
+
+The subjective lane suspected the guide's mechanism — "on disk `0x80` sorts before `0xc3`, so the
+host enumerates them in the reverse of sorted order" — was a mechanism nothing checks, and that ext4
+hash order or tmpfs creation order might be doing the work, since the `0x80` name happened to be
+written first. Referred to a run. Reversing the creation order, writing `é` first and the `0x80` name
+second, still enumerates `0x80` first. Enumeration follows bytes. The prose is correct and stands.
+
+### Also confirmed
+
+The opening blockquote of the guide and the README's first sentence both claim **every** package
+hand-rolls four helpers, while the same guide measures the widest shipped group at 13 and the
+temporary-directory family at 5, 4, and 3. A member declared `object` accepts a `Date` and returns a
+string, because `JSONSafe` maps over `keyof object`, which is empty. `exclude: ['src//']` matches
+nothing. Duplicating `captureError`'s `thunk()` call evades all 132 tests. The guide says
+`readInventory` keeps three refusals; the code keeps four. A symbol-keyed member is dropped silently,
+because `JSON.stringify` enumerates string keys only.
+
+### The escalation ruling
+
+This is the third round and the budget is spent. The design ruling the budget calls for was taken at
+round 2, and round 3 shows it did not fail — its **application** was too narrow. FIX-6's brief listed
+specific sites, so the unit fixed those and never re-read the opening blockquote. The refinement:
+
+**A prose rule binds the document, not a defect list.** A prose unit's acceptance criterion is that
+no uncheckable universal remains anywhere in its owned files, verified by re-reading the whole file
+rather than the diff.
+
+There is no round 4. These findings are small, independently verifiable, and every one has been
+reproduced here with a control. Two fix units close them, the Orchestrator verifies each against the
+same probes, and acceptance rests on that evidence plus the gates — not on another adversarial pass,
+which at this point would be the auditor's remaining appetite rather than the subject's risk.
