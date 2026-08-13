@@ -45,7 +45,8 @@ a mode switch. The alternative fails on its own nominated instrument.
 
 ## The ruling
 
-1. **`@orkestrel/test` ships nothing further.** The surface stays at 5 types and 12 values. The
+1. **`@orkestrel/test` ships nothing further.** The surface stays where the audit rounds leave it —
+   5 types and 11 values, once round 2 struck `hasSymbolicLink`. The
    research phase closes having added no export, which is the correct outcome when the evidence says
    so.
 2. **The per-package corpus split is adoption work.** Moving each package's corpus into its own
