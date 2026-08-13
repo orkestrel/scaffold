@@ -896,3 +896,35 @@ argv contains that exact string, so the pattern always matched and the condition
 Its subject had finished minutes earlier. It was killed by process id, per the standing rule never
 to kill by pattern — the same self-match that traps the watcher would trap the cleanup. Prefer
 waiting on a process id captured at launch over matching a pattern at poll time.
+
+## The 0.0.2 publish, planned before the audit rules
+
+Read from the registry rather than the local manifest, per the preparation rule:
+
+```
+$ npm view @orkestrel/test version
+0.0.1
+```
+
+Local manifest also `0.0.1`, so the bump is `0.0.1 → 0.0.2` with no risk of colliding with a version
+the registry already holds.
+
+**Blast radius is one package, not a cascade.** `@orkestrel/test` is a **devDependency**, and 40 of
+the 41 fleet packages pin it — all at `^0.0.1`, verified by reading each `package.json`. A
+devDependency bump reaches no consumer of those packages, so each one re-pins to `^0.0.2`, proves its
+gates green, and commits to `main`. **No package bumps its own version and none republishes.** The
+runtime rule does not apply because nothing in any package's `src` or `app` moves.
+
+Sequence, once the audit passes and the user approves:
+
+1. Bump `@orkestrel/test` to `0.0.2`, run its own `prepublishOnly` to green, commit, push.
+2. Publish it. One package, one approval — not a layered cascade.
+3. Re-pin 40 packages from `^0.0.1` to `^0.0.2`, install, gate, commit to `main`, in slices that
+   report as they finish. Refuse any target that does not record green and re-run it alone.
+4. **Parked on the user's instruction:** `scaffold`'s `BASE_DEV_DEPENDENCIES` pins
+   `@orkestrel/test: '^0.0.1'` in `src/core/constants.ts`. That is published, barrelled API, so
+   changing it moves `scaffold`'s own surface and obliges a `scaffold` bump and publish. The user is
+   working on `scaffold` in another session and asked to hold it. It resumes when they bring it back.
+
+Publishing is the user's decision and the user's credential. The Orchestrator prepares, surfaces the
+approval, and never substitutes a token or another login flow.
