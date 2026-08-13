@@ -1,4 +1,7 @@
 import type { CatalogEntry, Finding, Group, Ownership } from '@src/core'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { isNumber, isRecord } from '@orkestrel/contract'
 import { describe, expect, it } from 'vitest'
 import {
 	artifactToHex,
@@ -22,7 +25,9 @@ import {
 	matchesOrchestrationPath,
 	matchesRange,
 	MAX_MANIFEST_BYTES,
+	MAX_NAME_LENGTH,
 	nameToGuide,
+	nameToRewrite,
 	planToSummary,
 	selectGroups,
 	selectHostPaths,
@@ -129,6 +134,91 @@ describe('nameToGuide', () => {
 	it('derives one mirror path per name', () => {
 		expect(nameToGuide('@orkestrel/router')).toBe('guides/router.md')
 		expect(nameToGuide('scaffold')).toBe('guides/scaffold.md')
+	})
+})
+
+describe('nameToRewrite', () => {
+	// The rewrite is emitted text, so the regex it carries is measured by running
+	// it rather than by reading it: the two spellings a published face's roll-up
+	// actually prints, and a control the rewrite must leave alone.
+	it('rewrites every relative core path the roll-up prints, and nothing else', () => {
+		const source = /content\.replaceAll\(\s*(?<pattern>\/.+\/)g,\s*'(?<specifier>[^']+)'/su.exec(
+			nameToRewrite('router'),
+		)
+		expect(source?.groups?.specifier).toBe('@orkestrel/router')
+		const pattern = source?.groups?.pattern
+		if (pattern === undefined) throw new Error('Expected an emitted replaceAll pattern')
+		const rewrite = new RegExp(pattern.slice(1, -1), 'g')
+		expect("import { A } from '../core/index.ts'".replace(rewrite, 'X')).toBe(
+			"import { A } from 'X'",
+		)
+		expect("import { A } from '../../core/index.ts'".replace(rewrite, 'X')).toBe(
+			"import { A } from 'X'",
+		)
+		expect("import { A } from '../../core/index.js'".replace(rewrite, 'X')).toBe(
+			"import { A } from 'X'",
+		)
+		// The control is a specifier from outside the population the rewrite covers:
+		// a sibling face's own module, which resolves inside dist/src already and
+		// which a rewrite reaching it would break.
+		expect("import { A } from './drivers/Driver.js'".replace(rewrite, 'X')).toBe(
+			"import { A } from './drivers/Driver.js'",
+		)
+		expect("import { A } from '@orkestrel/contract'".replace(rewrite, 'X')).toBe(
+			"import { A } from '@orkestrel/contract'",
+		)
+	})
+
+	// The width the branch is decided against is the vendored formatter's own
+	// `printWidth`, read from the configuration a generated workspace receives, so
+	// the boundary is measured against that file rather than against a number this
+	// test also chose.
+	it('joins the call only while the line it prints fits the vendored width', () => {
+		const vendored: unknown = JSON.parse(readFileSync(resolve('.oxfmtrc.json'), 'utf8'))
+		if (!isRecord(vendored)) throw new Error('Expected the vendored formatter configuration')
+		const width = vendored.printWidth
+		const columns = vendored.tabWidth
+		if (!isNumber(width) || !isNumber(columns)) throw new Error('Expected a width and a tab width')
+		// Every name the gate admits, sorted by the shape its rewrite takes, so the
+		// boundary is the population's own edge rather than a length this test picked.
+		const joined = new Map<number, number>()
+		const wrapped: number[] = []
+		for (let length = 1; length <= MAX_NAME_LENGTH; length += 1) {
+			const rewrite = nameToRewrite('a'.repeat(length))
+			const printed = rewrite.replaceAll('\t', ' '.repeat(columns)).length
+			if (rewrite.includes('\n')) wrapped.push(length)
+			else joined.set(length, printed)
+		}
+		const boundary = Math.max(...joined.keys())
+		expect([...joined].filter(([, printed]) => printed > width)).toStrictEqual([])
+		expect([...joined.keys()]).toStrictEqual(
+			Array.from({ length: boundary }, (_unused, index) => index + 1),
+		)
+		expect(wrapped.at(0)).toBe(boundary + 1)
+		expect(wrapped).toHaveLength(MAX_NAME_LENGTH - boundary)
+		expect(boundary).toBe(19)
+		// The longest joined name prints exactly on the width, so the branch sits on
+		// the edge rather than short of it.
+		expect(joined.get(boundary)).toBe(width)
+		expect(nameToRewrite('a'.repeat(boundary))).toBe(
+			`\t\t\t\t\t\t? content.replaceAll(/(?:\\.\\.\\/)+core\\/index\\.[jt]s/g, '@orkestrel/${'a'.repeat(19)}')`,
+		)
+		expect(nameToRewrite('a'.repeat(boundary + 1))).toBe(
+			[
+				'\t\t\t\t\t\t? content.replaceAll(',
+				'\t\t\t\t\t\t\t\t/(?:\\.\\.\\/)+core\\/index\\.[jt]s/g,',
+				`\t\t\t\t\t\t\t\t'@orkestrel/${'a'.repeat(20)}',`,
+				'\t\t\t\t\t\t\t)',
+			].join('\n'),
+		)
+	})
+
+	it('escapes a name through the one TypeScript string boundary', () => {
+		expect(nameToRewrite("it's")).toContain("'@orkestrel/it\\'s'")
+	})
+
+	it('repeats its answer and leaves its input untouched', () => {
+		expect(nameToRewrite('router')).toBe(nameToRewrite('router'))
 	})
 })
 

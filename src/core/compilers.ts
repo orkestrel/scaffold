@@ -49,6 +49,7 @@ import {
 	inferDrift,
 	inferGroup,
 	matchesEngines,
+	nameToRewrite,
 	serializeTypeScriptString,
 	selectHostPaths,
 } from './helpers.js'
@@ -780,6 +781,14 @@ ${projects.map((project) => `\t\t\t${project},`).join('\n')}
 			boundaries.length === 0
 				? ''
 				: `import { ${boundaries.join(', ')} } from './configs/helpers.js'\n`,
+		// The provider options are resolved once for the whole configuration, and
+		// only a selection that emits `configs/browsers.ts` can name them.
+		browsers: machinery.browser
+			? "import { resolveBrowser, resolvePinnedBrowser } from './configs/browsers.js'\n"
+			: '',
+		options: machinery.browser
+			? 'const browserOptions = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)\n\n'
+			: '',
 		factories: body,
 		projects: projectRows,
 	})
@@ -817,33 +826,31 @@ export function blueprintToConfigArtifacts(blueprint: Blueprint): readonly Artif
 			content: blueprintToRootVite(blueprint),
 		},
 	]
+	// The browser resolver is its own leaf rather than a block inside the vendored
+	// `configs/helpers.ts`, because that file is byte-identical in every workspace
+	// and only a browser selection declares the `playwright` it imports.
+	if (blueprintToMachinery(blueprint).browser) {
+		artifacts.push({
+			path: 'configs/browsers.ts',
+			group: 'configs',
+			ownership: 'content',
+			origin: 'template',
+			content: CONFIG_TEMPLATES.browsers,
+		})
+	}
 	for (const environment of blueprint.src) {
 		for (const path of SRC_MATRIX[environment].configs) {
 			let content: string = CONFIG_TEMPLATES.vites.src.core
 			if (path === 'configs/src/tsconfig.core.json') content = CONFIG_TEMPLATES.tsconfigs.src.core
 			else if (path === 'configs/src/vite.browser.config.ts') {
-				content = CONFIG_TEMPLATES.vites.src.browser
+				content = fillTemplate(CONFIG_TEMPLATES.vites.src.browser, {
+					replacement: nameToRewrite(blueprint.name),
+				})
 			} else if (path === 'configs/src/tsconfig.browser.json') {
 				content = CONFIG_TEMPLATES.tsconfigs.src.browser
 			} else if (path === 'configs/src/vite.server.config.ts') {
-				const packageName = serializeTypeScriptString(`@orkestrel/${blueprint.name}`)
-				// The formatter keeps this call on one line only while the line it
-				// would print measures inside the vendored width, and the workspace
-				// name is what varies, so the branch is decided by measuring the
-				// candidate line: a tab prints as the vendored two columns, and the
-				// gate admits a name long enough to push the joined call past 100.
-				const joined = `\t\t\t\t\t\t? content.replaceAll(/(?:\\.\\.\\/)+core\\/index\\.ts/g, ${packageName})`
-				const replacement =
-					joined.replaceAll('\t', '  ').length <= 100
-						? joined
-						: [
-								'\t\t\t\t\t\t? content.replaceAll(',
-								'\t\t\t\t\t\t\t\t/(?:\\.\\.\\/)+core\\/index\\.ts/g,',
-								`\t\t\t\t\t\t\t\t${packageName},`,
-								'\t\t\t\t\t\t\t)',
-							].join('\n')
 				content = fillTemplate(CONFIG_TEMPLATES.vites.src.server, {
-					replacement,
+					replacement: nameToRewrite(blueprint.name),
 				})
 			} else if (path === 'configs/src/tsconfig.server.json') {
 				content = CONFIG_TEMPLATES.tsconfigs.src.server

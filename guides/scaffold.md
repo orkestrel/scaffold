@@ -191,6 +191,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `matchesOrchestrationPath`  | function | Test whether a path instructs or wires an agent rather than the toolchain.    |
 | `matchesRange`              | function | Test whether a declared range already admits a published version.             |
 | `nameToGuide`               | function | Derive the guide mirror path a package name answers for.                      |
+| `nameToRewrite`             | function | Derive the declaration rewrite a published face roll-up applies.              |
 | `planToSummary`             | function | Project a plan into its tally by artifact origin.                             |
 | `selectGroups`              | function | Select the groups a compile covers, in plan order.                            |
 | `selectHostPaths`           | function | Select the host paths a named workspace vendors.                              |
@@ -826,6 +827,17 @@ except the manifest.
 - One template artifact per configuration file the selection needs: the root `tsconfig.json` and
   `vite.config.ts`, plus a Vite config and a scoped TypeScript config per selected environment, and
   two more when `bin` is set.
+- One template artifact, `configs/browsers.ts`, for a workspace selecting `browser` on either axis.
+  It resolves the Chromium the Playwright provider launches, and the root `vite.config.ts` calls it
+  once into `browserOptions` and passes that to every `playwright()` provider it configures. The
+  precedence is `PLAYWRIGHT_EXECUTABLE_PATH`, `PLAYWRIGHT_WS_ENDPOINT`, `PLAYWRIGHT_CHANNEL`, the
+  managed Playwright Chromium, the container's bundled Chromium, a verified system channel, then the
+  platform default. An installed pinned revision returns empty options, so Playwright keeps its own
+  launch defaults. A pinned revision that is not installed falls through to a `chromium` alias or a
+  sibling `chromium-*` revision under the same browsers directory, because a managed container ships
+  one usable build for many Playwright versions. It is its own file rather than a block in the
+  vendored `configs/helpers.ts`, which every workspace receives byte-identical while only a browser
+  selection declares the `playwright` this module imports.
 - One template artifact per source and test file the selection needs: an `index.ts` barrel per
   selected environment, `main.ts` and `index.html` for an application browser, `tests/setup.ts`
   plus the host setup modules the selection reaches, and one entry test per axis project.

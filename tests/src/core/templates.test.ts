@@ -1,8 +1,9 @@
 import type { Blueprint, Environment } from '@src/core'
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { isString } from '@orkestrel/contract'
 import { fillTemplate, isTemplateError } from '@orkestrel/template'
 import {
@@ -16,6 +17,7 @@ import {
 	createCompiler,
 	MAX_NAME_LENGTH,
 } from '@src/core'
+import { BROWSER_RESOLVER_EXPORTS } from '../../setup.js'
 import { describe, expect, it } from 'vitest'
 
 // The vendored `.oxfmtrc.json` a generated workspace receives: a tab prints as two
@@ -69,6 +71,7 @@ const MODULE_EMITTERS: Readonly<Record<string, number>> = Object.freeze({
 	'configs/app/vite.browser.config.ts': 64,
 	'configs/app/vite.server.config.ts': 64,
 	'configs/app/vite.showcase.config.ts': 32,
+	'configs/browsers.ts': 96,
 	'configs/src/vite.bin.config.ts': 63,
 	'configs/src/vite.browser.config.ts': 64,
 	'configs/src/vite.core.config.ts': 64,
@@ -147,15 +150,22 @@ function measureWidth(line: string): number {
 	return line.replaceAll('\t', TAB_COLUMNS).length
 }
 
-// The emitted root configuration and the two files a typecheck of it has to
-// resolve: the vendored boundary helpers, copied from this checkout because a
-// generated workspace receives those exact bytes, and the plugin declaration
-// above. Everything else the configuration names is installed here.
+// The emitted root configuration and the files a typecheck of it has to resolve:
+// the emitted browser resolver a browser selection also writes, the vendored
+// boundary helpers, copied from this checkout because a generated workspace
+// receives those exact bytes, and the plugin declaration above. Everything else
+// the configuration names is installed here.
 function stageRootConfig(blueprint: Blueprint, root: string): void {
 	mkdirSync(join(root, 'configs'), { recursive: true })
 	for (const artifact of blueprintToConfigArtifacts(blueprint)) {
 		if (artifact.origin === 'host') continue
-		if (artifact.path !== 'vite.config.ts' && artifact.path !== 'tsconfig.json') continue
+		if (
+			artifact.path !== 'vite.config.ts' &&
+			artifact.path !== 'tsconfig.json' &&
+			artifact.path !== 'configs/browsers.ts'
+		) {
+			continue
+		}
 		writeFileSync(join(root, artifact.path), artifact.content)
 	}
 	writeFileSync(
@@ -185,6 +195,61 @@ function checkTypes(root: string): string {
 		const output = error instanceof Error && 'stdout' in error ? error.stdout : undefined
 		return isString(output) && output.length > 0 ? output : String(error)
 	}
+}
+
+// The emitted browser resolver, written where a real Node process can load it.
+// The file sits inside this checkout so its own `playwright` import resolves
+// through the workspace's `node_modules`, which is what makes the loaded module
+// the real one rather than a re-derivation of it.
+function stageResolver(root: string): string {
+	const file = join(root, 'browsers.ts')
+	writeFileSync(file, CONFIG_TEMPLATES.browsers)
+	return file
+}
+
+// One or more expressions evaluated against the loaded resolver, in a real Node
+// process that strips the module's types and runs it. `undefined` is not JSON, so
+// an absent answer arrives as `null` and every assertion below reads it that way.
+function driveResolver(file: string, calls: readonly string[]): readonly unknown[] {
+	const script = [
+		`const resolver = await import(${JSON.stringify(pathToFileURL(file).href)})`,
+		`console.log(JSON.stringify([${calls.join(', ')}]))`,
+	].join('\n')
+	const output = execFileSync(
+		process.execPath,
+		['--experimental-strip-types', '--input-type=module', '--eval', script],
+		{ stdio: 'pipe', encoding: 'utf8' },
+	)
+	const answers: unknown = JSON.parse(output)
+	if (!Array.isArray(answers)) throw new Error('The resolver driver printed no answer list')
+	return answers
+}
+
+// One `resolveBrowser` call, written as the driver evaluates it. The platform is
+// fixed so the answer is a property of the fixture rather than of this host.
+function buildResolveCall(
+	pinned: string | undefined,
+	environment: Readonly<Record<string, string>>,
+	root: string,
+): string {
+	const target = pinned === undefined ? 'undefined' : JSON.stringify(pinned)
+	const settings = JSON.stringify(environment)
+	return `resolver.resolveBrowser(${target}, 'linux', ${settings}, ${JSON.stringify(root)})`
+}
+
+// One managed Playwright browsers directory, built from the entries named. Each
+// entry is a real executable file, because the resolver reads the filesystem and
+// a described layout would prove nothing about what it finds.
+function buildBrowsersRoot(root: string, entries: readonly string[]): string {
+	const browsers = join(root, 'browsers')
+	for (const entry of entries) {
+		const path = join(browsers, entry)
+		mkdirSync(dirname(path), { recursive: true })
+		writeFileSync(path, '')
+		chmodSync(path, 0o755)
+	}
+	mkdirSync(browsers, { recursive: true })
+	return browsers
 }
 
 // The identifiers one import clause binds, aliases resolved to the bound name.
@@ -275,7 +340,7 @@ describe('configuration templates', () => {
 			showcase: true,
 		})
 		const artifacts = blueprintToConfigArtifacts(blueprint)
-		expect(artifacts).toHaveLength(16)
+		expect(artifacts).toHaveLength(17)
 		for (const artifact of artifacts) {
 			expect(artifact.origin).toBe('template')
 			if (artifact.origin === 'host') throw new Error('Expected a content artifact')
@@ -330,6 +395,7 @@ describe('configuration templates', () => {
 					vendors: ['ollama'],
 				}),
 				createBlueprint('server-only', { src: ['server'] }),
+				createBlueprint('browser-only', { src: ['browser'] }),
 				createBlueprint('application', {
 					app: ['core', 'browser', 'server'],
 					integration: true,
@@ -337,10 +403,10 @@ describe('configuration templates', () => {
 					showcase: true,
 				}),
 				createBlueprint('unshowcased', { app: ['core', 'browser', 'server'] }),
-				createBlueprint('a'.repeat(22), { src: ['core', 'server'] }),
-				createBlueprint('a'.repeat(23), { src: ['core', 'server'] }),
+				createBlueprint('a'.repeat(19), { src: ['core', 'browser', 'server'] }),
+				createBlueprint('a'.repeat(20), { src: ['core', 'browser', 'server'] }),
 				createBlueprint('a'.repeat(MAX_NAME_LENGTH), {
-					src: ['core', 'server'],
+					src: ['core', 'browser', 'server'],
 					app: ['core', 'browser', 'server'],
 					bin: true,
 					integration: true,
@@ -562,4 +628,155 @@ describe('emitted workspaces under their own gates', () => {
 		}
 		expect(wide).toStrictEqual([])
 	})
+})
+
+// The emitted `configs/browsers.ts` decides which Chromium a generated browser
+// workspace launches, so it is loaded and driven rather than read. Every fixture
+// below is a real directory of real executable files, and every answer comes back
+// from a Node process that imported the emitted module.
+describe('emitted browser resolver', () => {
+	it('publishes every name the emitted root configuration is built on', () => {
+		mkdirSync(resolve('tmp'), { recursive: true })
+		const root = mkdtempSync(join(resolve('tmp'), 'scaffold-e2-resolver-names-'))
+		try {
+			const file = stageResolver(root)
+			const [names, bundled] = driveResolver(file, [
+				'Object.keys(resolver)',
+				'resolver.BUNDLED_BROWSERS_ROOT',
+			])
+			// A module namespace orders its keys by code unit, so the loaded surface is
+			// compared as a multiset against the emission order the constant records.
+			expect(names).toStrictEqual([...BROWSER_RESOLVER_EXPORTS].sort())
+			// The control on the driver itself: a value this test never supplies comes
+			// back from the loaded module, so an answer below is that module's and not
+			// an echo of the expression that asked for it.
+			expect(bundled).toBe('/opt/pw-browsers')
+		} finally {
+			rmSync(root, { recursive: true, force: true })
+		}
+	}, 20_000)
+
+	it('ranks an operator override above every browser it could discover', () => {
+		mkdirSync(resolve('tmp'), { recursive: true })
+		const root = mkdtempSync(join(resolve('tmp'), 'scaffold-e2-resolver-override-'))
+		try {
+			const file = stageResolver(root)
+			const browsers = buildBrowsersRoot(root, ['chromium'])
+			const pinned = join(browsers, 'chromium-1234/chrome-linux64/chrome')
+			const alias = join(browsers, 'chromium')
+			const [discovered, executable, endpoint, channel, ranked, empty] = driveResolver(file, [
+				buildResolveCall(pinned, {}, browsers),
+				buildResolveCall(pinned, { PLAYWRIGHT_EXECUTABLE_PATH: '/operator/chrome' }, browsers),
+				buildResolveCall(
+					pinned,
+					{ PLAYWRIGHT_WS_ENDPOINT: 'ws://operator:9222/session' },
+					browsers,
+				),
+				buildResolveCall(pinned, { PLAYWRIGHT_CHANNEL: 'msedge' }, browsers),
+				buildResolveCall(
+					pinned,
+					{
+						PLAYWRIGHT_EXECUTABLE_PATH: '/operator/chrome',
+						PLAYWRIGHT_WS_ENDPOINT: 'ws://operator:9222/session',
+						PLAYWRIGHT_CHANNEL: 'msedge',
+					},
+					browsers,
+				),
+				buildResolveCall(pinned, { PLAYWRIGHT_EXECUTABLE_PATH: '' }, browsers),
+			])
+
+			// The control: with no override the same call discovers a real executable in
+			// the fixture, so each override below outranks an answer that exists.
+			expect(discovered).toStrictEqual({ launchOptions: { executablePath: alias } })
+			// `/operator/chrome` is not on this host, which is the point: an override is
+			// returned exactly as given rather than checked against the filesystem.
+			expect(executable).toStrictEqual({ launchOptions: { executablePath: '/operator/chrome' } })
+			expect(endpoint).toStrictEqual({
+				connectOptions: { wsEndpoint: 'ws://operator:9222/session' },
+			})
+			expect(channel).toStrictEqual({ launchOptions: { channel: 'msedge' } })
+			expect(ranked).toStrictEqual({ launchOptions: { executablePath: '/operator/chrome' } })
+			// An empty value is absence rather than an override, so discovery answers.
+			expect(empty).toStrictEqual({ launchOptions: { executablePath: alias } })
+		} finally {
+			rmSync(root, { recursive: true, force: true })
+		}
+	}, 20_000)
+
+	it('reads a pinned-revision miss as a fallthrough rather than as absence', () => {
+		mkdirSync(resolve('tmp'), { recursive: true })
+		const root = mkdtempSync(join(resolve('tmp'), 'scaffold-e2-resolver-managed-'))
+		try {
+			const file = stageResolver(root)
+			// `chromium-999` sorts above `chromium-1194` by name and below it by
+			// revision, so the entry the sweep picks says which of the two orders ran.
+			const browsers = buildBrowsersRoot(root, [
+				'chromium',
+				'chromium-1194/chrome-linux64/chrome',
+				'chromium-999/chrome-linux/chrome',
+			])
+			const pinned = join(browsers, 'chromium-1234/chrome-linux64/chrome')
+			const alias = join(browsers, 'chromium')
+			const highest = join(browsers, 'chromium-1194/chrome-linux64/chrome')
+			const lowest = join(browsers, 'chromium-999/chrome-linux/chrome')
+			const call = `resolver.resolveManagedBrowser(${JSON.stringify(pinned)})`
+
+			const [aliased, missing, directory] = driveResolver(file, [
+				call,
+				`resolver.isBrowserExecutable(${JSON.stringify(pinned)})`,
+				`resolver.isBrowserExecutable(${JSON.stringify(browsers)})`,
+			])
+			expect(missing).toBe(false)
+			// The executable check answers on shape, not on the permission bit alone: a
+			// directory is never a browser, on any host.
+			expect(directory).toBe(false)
+			expect(aliased).toBe(alias)
+
+			rmSync(alias)
+			const [byRevision] = driveResolver(file, [call])
+			expect(byRevision).toBe(highest)
+
+			rmSync(join(browsers, 'chromium-1194'), { recursive: true })
+			const [remaining] = driveResolver(file, [call])
+			expect(remaining).toBe(lowest)
+
+			// The control the ladder needs: with nothing installed the same call reports
+			// absence, so each answer above is a resolution rather than a constant.
+			rmSync(join(browsers, 'chromium-999'), { recursive: true })
+			const [absent] = driveResolver(file, [call])
+			expect(absent).toBeNull()
+		} finally {
+			rmSync(root, { recursive: true, force: true })
+		}
+	}, 30_000)
+
+	it('keeps Playwright launch defaults when the pinned revision is installed', () => {
+		mkdirSync(resolve('tmp'), { recursive: true })
+		const root = mkdtempSync(join(resolve('tmp'), 'scaffold-e2-resolver-pinned-'))
+		try {
+			const file = stageResolver(root)
+			const browsers = buildBrowsersRoot(root, ['chromium-1234/chrome-linux64/chrome'])
+			const pinned = join(browsers, 'chromium-1234/chrome-linux64/chrome')
+			const bare = join(root, 'bare')
+			mkdirSync(bare, { recursive: true })
+			const [installed, bundled, channel] = driveResolver(file, [
+				buildResolveCall(pinned, {}, browsers),
+				buildResolveCall(undefined, {}, browsers),
+				buildResolveCall(undefined, {}, bare),
+			])
+
+			expect(installed).toStrictEqual({})
+			// The control against that empty answer: the same host, the same directory,
+			// and no pinned revision names the bundled executable instead.
+			expect(bundled).toStrictEqual({ launchOptions: { executablePath: pinned } })
+			// With nothing to find the resolver names a channel. Which channel it names
+			// is a property of this host, so the assertion is the set it comes from.
+			expect([
+				{ launchOptions: { channel: 'chrome' } },
+				{ launchOptions: { channel: 'msedge' } },
+			]).toContainEqual(channel)
+		} finally {
+			rmSync(root, { recursive: true, force: true })
+		}
+	}, 20_000)
 })

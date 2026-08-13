@@ -269,6 +269,47 @@ export function nameToGuide(name: string): string {
 }
 
 /**
+ * Derive the declaration rewrite a published face's `beforeWriteFile` applies.
+ *
+ * @param name - The workspace's own bare package name.
+ * @returns The ternary consequent an emitted `vite.{browser,server}.config.ts`
+ * fills its `{{replacement}}` span with, indented for that span.
+ *
+ * @remarks
+ * `vite-plugin-dts` rolls a face into one declaration and keeps each source
+ * module's own relative depth, so a nested module emits a path that escapes
+ * `dist/src` and a flat one resolves only by luck. Both faces rewrite the same
+ * relative core path to the package's published root export, so the branch is
+ * derived once here. The extension alternation is what the two permitted import
+ * spellings produce: an `@src/core` alias resolves to the core source module and
+ * prints `.ts`, while a relative import prints the `.js` specifier it was
+ * written with. The formatter keeps the call on one line only while the line it
+ * prints measures inside the vendored width, and the workspace name is what
+ * varies, so the shape is chosen by measuring the candidate: a tab prints as the
+ * vendored two columns, and the gate admits a name long enough to push the
+ * joined call past 100.
+ *
+ * @example
+ * ```ts
+ * import { nameToRewrite } from '@orkestrel/scaffold'
+ *
+ * nameToRewrite('router').includes("'@orkestrel/router'") // true
+ * ```
+ */
+export function nameToRewrite(name: string): string {
+	const specifier = serializeTypeScriptString(`@orkestrel/${name}`)
+	const pattern = '/(?:\\.\\.\\/)+core\\/index\\.[jt]s/g'
+	const joined = `\t\t\t\t\t\t? content.replaceAll(${pattern}, ${specifier})`
+	if (joined.replaceAll('\t', '  ').length <= 100) return joined
+	return [
+		'\t\t\t\t\t\t? content.replaceAll(',
+		`\t\t\t\t\t\t\t\t${pattern},`,
+		`\t\t\t\t\t\t\t\t${specifier},`,
+		'\t\t\t\t\t\t\t)',
+	].join('\n')
+}
+
+/**
  * Select the host paths a named workspace vendors.
  *
  * @param paths - The candidate host paths, in their declared order.

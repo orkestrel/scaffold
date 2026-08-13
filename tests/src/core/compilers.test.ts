@@ -243,6 +243,57 @@ describe('blueprintToRootVite fixed proofs', () => {
 		)
 	})
 
+	// A generated workspace launches Chromium through the resolver it was given, so
+	// the emission and the two spans that reach it are pinned beside the selections
+	// that produce them. The membership is a browser on either axis.
+	it('emits the browser resolver for exactly the selections that launch one', () => {
+		for (const blueprint of [
+			buildBlueprint({ src: ['core', 'browser'] }),
+			buildBlueprint({ src: [], app: ['browser'] }),
+			buildBlueprint({ src: ['browser'], app: ['browser'] }),
+		]) {
+			expect(blueprintToConfigArtifacts(blueprint).map(({ path }) => path)).toContain(
+				'configs/browsers.ts',
+			)
+		}
+		for (const blueprint of [
+			buildBlueprint({ src: ['core'] }),
+			buildBlueprint({ src: ['core', 'server'], bin: true }),
+			buildBlueprint({ src: [], app: ['core', 'server'] }),
+		]) {
+			const artifacts = blueprintToConfigArtifacts(blueprint)
+			expect(artifacts.map(({ path }) => path)).not.toContain('configs/browsers.ts')
+			// A workspace with no browser declares no `playwright`, so no configuration
+			// it receives may name one either.
+			for (const artifact of artifacts) {
+				if (artifact.origin === 'host') throw new Error('Expected configuration content')
+				expect(artifact.content).not.toContain('playwright')
+			}
+		}
+	})
+
+	it('wires the emitted root configuration to the resolver beside it', () => {
+		const published = blueprintToRootVite(buildBlueprint({ src: ['core', 'browser'] }))
+		const application = blueprintToRootVite(buildBlueprint({ src: [], app: ['browser'] }))
+		for (const content of [published, application]) {
+			expect(content).toContain(
+				"import { resolveBrowser, resolvePinnedBrowser } from './configs/browsers.js'\n",
+			)
+			// Resolved once, above every factory that reads it, because a provider
+			// resolved per project would probe the filesystem once per project.
+			expect(content).toContain(
+				'\nconst browserOptions = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)\n\n',
+			)
+		}
+		expect(published).toContain('\t\t\t\t\tprovider: playwright(browserOptions),\n')
+		expect(application).toContain('\t\t\t\tprovider: playwright(browserOptions),\n')
+		// The control: neither span is part of the skeleton, so a selection that emits
+		// no resolver names nothing that would fail to resolve.
+		const core = blueprintToRootVite(buildBlueprint({ src: ['core'] }))
+		expect(core).not.toContain('./configs/browsers.js')
+		expect(core).not.toContain('browserOptions')
+	})
+
 	it('writes each selection-dependent span the way the formatter leaves it', () => {
 		// The server predicate carries a third test with core beside it and passes
 		// the vendored width; without core it fits the line it starts on, and a
@@ -266,33 +317,65 @@ describe('blueprintToRootVite fixed proofs', () => {
 		expect(showcase).toContain('\t\t: []\n\treturn {\n')
 	})
 
-	it('explains the server declaration rewrite in every emitted workspace', () => {
-		const server = blueprintToConfigArtifacts(buildBlueprint({ src: ['server'] })).find(
+	// Both published faces are rolled up by vite-plugin-dts and both reach core
+	// through a relative source path, so each carries the rewrite and each explains
+	// it where a reader of that file meets it.
+	it('explains the declaration rewrite in every emitted published face', () => {
+		const artifacts = blueprintToConfigArtifacts(
+			buildBlueprint({ src: ['core', 'browser', 'server'] }),
+		)
+		for (const path of [
+			'configs/src/vite.browser.config.ts',
+			'configs/src/vite.server.config.ts',
+		]) {
+			const face = artifacts.find((artifact) => artifact.path === path)
+			expect(face?.content).toContain(
+				'vite-plugin-dts rolls this face into one declaration, and the roll-up reaches',
+			)
+			expect(face?.content).toContain('final roll-up only')
+			expect(face?.content).toContain('beforeWriteFile: (path, content) => ({')
+		}
+		const browser = artifacts.find(
+			({ path }) => path === 'configs/src/vite.browser.config.ts',
+		)?.content
+		const server = artifacts.find(
 			({ path }) => path === 'configs/src/vite.server.config.ts',
+		)?.content
+		// Each face guards its own roll-up, so neither rewrite can fire on the other's
+		// declaration. The browser comment names the nested case as well, because a
+		// browser subfolder is where the escaping path actually comes from.
+		expect(browser).toContain(
+			'content: /[\\\\/]dist[\\\\/]src[\\\\/]browser[\\\\/]index\\.d\\.ts$/.test(path)\n',
 		)
-		expect(server?.content).toContain(
-			'vite-plugin-dts rolls this face into one declaration, and the roll-up reaches',
+		expect(server).toContain(
+			'content: /[\\\\/]dist[\\\\/]src[\\\\/]server[\\\\/]index\\.d\\.ts$/.test(path)\n',
 		)
-		expect(server?.content).toContain('final roll-up only')
+		expect(browser).toContain('a module in a browser subfolder emits')
 	})
 
 	it('joins the declaration rewrite only while the line it prints fits the width', () => {
-		// The two names either side of the width: at 22 characters the joined call
-		// prints exactly on the vendored 100 columns and at 23 it prints one past, so
+		// The two names either side of the width: at 19 characters the joined call
+		// prints exactly on the vendored 100 columns and at 20 it prints one past, so
 		// the branch is observable only at that pair. Every longer name the gate
-		// admits, up to `MAX_NAME_LENGTH`, takes the wrapped form.
-		const fitted = blueprintToConfigArtifacts(
-			buildBlueprint({ name: 'a'.repeat(22), src: ['core', 'server'] }),
-		).find(({ path }) => path === 'configs/src/vite.server.config.ts')
-		expect(fitted?.content).toContain(
-			`\t\t\t\t\t\t? content.replaceAll(/(?:\\.\\.\\/)+core\\/index\\.ts/g, '@orkestrel/${'a'.repeat(22)}')\n`,
-		)
-		const wrapped = blueprintToConfigArtifacts(
-			buildBlueprint({ name: 'a'.repeat(23), src: ['core', 'server'] }),
-		).find(({ path }) => path === 'configs/src/vite.server.config.ts')
-		expect(wrapped?.content).toContain(
-			`\t\t\t\t\t\t? content.replaceAll(\n\t\t\t\t\t\t\t\t/(?:\\.\\.\\/)+core\\/index\\.ts/g,\n\t\t\t\t\t\t\t\t'@orkestrel/${'a'.repeat(23)}',\n\t\t\t\t\t\t\t)\n`,
-		)
+		// admits, up to `MAX_NAME_LENGTH`, takes the wrapped form. Both faces fill the
+		// same span from one derivation, so the pair is asserted on both.
+		for (const path of [
+			'configs/src/vite.browser.config.ts',
+			'configs/src/vite.server.config.ts',
+		]) {
+			const fitted = blueprintToConfigArtifacts(
+				buildBlueprint({ name: 'a'.repeat(19), src: ['core', 'browser', 'server'] }),
+			).find((artifact) => artifact.path === path)
+			expect(fitted?.content).toContain(
+				`\t\t\t\t\t\t? content.replaceAll(/(?:\\.\\.\\/)+core\\/index\\.[jt]s/g, '@orkestrel/${'a'.repeat(19)}')\n`,
+			)
+			const wrapped = blueprintToConfigArtifacts(
+				buildBlueprint({ name: 'a'.repeat(20), src: ['core', 'browser', 'server'] }),
+			).find((artifact) => artifact.path === path)
+			expect(wrapped?.content).toContain(
+				`\t\t\t\t\t\t? content.replaceAll(\n\t\t\t\t\t\t\t\t/(?:\\.\\.\\/)+core\\/index\\.[jt]s/g,\n\t\t\t\t\t\t\t\t'@orkestrel/${'a'.repeat(20)}',\n\t\t\t\t\t\t\t)\n`,
+			)
+		}
 	})
 
 	it('explains the executable build in every emitted bin workspace', () => {
@@ -352,6 +435,7 @@ describe('blueprintToConfigArtifacts app matrix', () => {
 		).toStrictEqual([
 			'tsconfig.json',
 			'vite.config.ts',
+			'configs/browsers.ts',
 			'configs/app/tsconfig.core.json',
 			'configs/app/vite.browser.config.ts',
 			'configs/app/tsconfig.browser.json',

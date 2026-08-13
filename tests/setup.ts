@@ -414,6 +414,31 @@ export const BENIGN_ACCESSOR_DESCRIPTOR: PropertyDescriptor = {
 	},
 }
 
+/**
+ * Every name the emitted `configs/browsers.ts` publishes, in emission order.
+ *
+ * @remarks
+ * The emitted root configuration reaches two of them, and the rest are the
+ * precedence ladder those two are built from. A generated workspace owns the
+ * file, so the whole surface is stated here and compared against the module a
+ * runtime actually loaded rather than against the template text.
+ */
+export const BROWSER_RESOLVER_EXPORTS: readonly string[] = Object.freeze([
+	'CHROMIUM_LAYOUTS',
+	'CHROMIUM_ENTRY_PATTERN',
+	'CHROMIUM_REVISION_PATTERN',
+	'BUNDLED_BROWSERS_ROOT',
+	'BUNDLED_CHROMIUM_LAYOUTS',
+	'SYSTEM_BROWSER_CHANNELS',
+	'isBrowserExecutable',
+	'compareRevisions',
+	'resolvePinnedBrowser',
+	'resolveManagedBrowser',
+	'resolveBundledBrowser',
+	'resolveSystemBrowser',
+	'resolveBrowser',
+])
+
 /** A package manifest declaring one fleet package per section, and one foreign name. */
 export const MANIFEST_SAMPLE =
 	'{"name":"@orkestrel/sample","dependencies":{"@orkestrel/emitter":"^0.0.5","vite":"~8.2.0"},"devDependencies":{"@orkestrel/emitter":"^9.9.9","@orkestrel/guide":"^0.0.9"}}'
