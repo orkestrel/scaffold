@@ -3,7 +3,8 @@ import { gzipSync } from 'node:zlib'
 import { contentToHex, MAX_COLLECTION_ITEMS } from '@src/core'
 import { Upstream } from '@src/server'
 import { describe, expect, it } from 'vitest'
-import { buildDependency, createRecorder } from '../../setup.js'
+import { createRecorder } from '@orkestrel/test'
+import { buildDependency } from '../../setup.js'
 import {
 	buildOrganization,
 	buildPackument,

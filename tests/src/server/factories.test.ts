@@ -1,6 +1,6 @@
 import { createMaterializer, createUpstream, Materializer, Upstream } from '@src/server'
 import { describe, expect, it } from 'vitest'
-import { createRecorder } from '../../setup.js'
+import { createRecorder } from '@orkestrel/test'
 import {
 	buildPackument,
 	createUpstreamServer,

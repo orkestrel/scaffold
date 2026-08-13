@@ -68,6 +68,7 @@ import {
 	stageHost,
 } from '@src/server'
 import { optionToName } from '../src/bin/helpers.js'
+import { createRecorder } from '@orkestrel/test'
 import {
 	buildBlueprint,
 	buildContentArtifact,
@@ -75,7 +76,6 @@ import {
 	buildHostArtifact,
 	buildPlan,
 	buildQuestion,
-	createRecorder,
 } from './setup.js'
 
 /**

@@ -42,8 +42,8 @@ import {
 	buildPurityCases,
 	MANIFEST_SAMPLE,
 	RANGE_CASES,
-	waitForDelay,
 } from '../../setup.js'
+import { waitForDelay } from '@orkestrel/test'
 
 describe('purity', () => {
 	for (const purityCase of buildPurityCases()) {

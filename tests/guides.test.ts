@@ -3,6 +3,7 @@ import {
 	createSource,
 	fenceImports,
 	findMissing,
+	findUnlisted,
 	isExternalLink,
 	METHODS,
 	missingSymbols,
@@ -21,6 +22,11 @@ import { describe, expect, it } from 'vitest'
 // from the process, so the reading does not depend on where the runner started.
 // Keys are root-relative with forward slashes, because that is the shape module
 // scoping, link resolution, and the existence check all read.
+// This repository's guides carry shell and plain-text fences beside the TypeScript ones,
+// so the language list is wider than the fleet's usual `['ts']` and only `ts` fences carry
+// imports worth checking.
+const FENCE_LANGUAGES = Object.freeze(['sh', 'text', 'ts'])
+const EXAMPLE_LANGUAGE = 'ts'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const files: Record<string, string> = {}
 for (const key of globSync(['src/**/*.ts', 'tests/**/*.ts', 'guides/*.md', '*.md'], {
@@ -63,7 +69,11 @@ describe('guides', () => {
 			if (guide.surface().length === 0) vacant.push(`${entry.spec}: the surface section is empty`)
 			if (guide.methods().length === 0) vacant.push(`${entry.spec}: the methods section is empty`)
 			if (guide.tests().length === 0) vacant.push(`${entry.spec}: the tests section is empty`)
-			if (guide.patterns().length === 0) vacant.push(`${entry.spec}: no code fence`)
+			const examples = guide.fences().filter((fence) => fence.language === EXAMPLE_LANGUAGE)
+			if (examples.length === 0) vacant.push(`${entry.spec}: no code fence`)
+			for (const language of findUnlisted(guide.fences(), FENCE_LANGUAGES)) {
+				vacant.push(`${entry.spec}: unlisted fence language ${language}`)
+			}
 		}
 		expect(vacant).toEqual([])
 	})
@@ -137,8 +147,9 @@ describe('guides', () => {
 		const undeclared: string[] = []
 		for (const { entry, guide, source } of inspected) {
 			const names = source.surface().map((symbol) => symbol.name)
-			for (const fence of guide.patterns()) {
-				for (const statement of fenceImports(fence)) {
+			for (const fence of guide.fences()) {
+				if (fence.language !== EXAMPLE_LANGUAGE) continue
+				for (const statement of fenceImports(fence.code)) {
 					if (!statement.specifier.startsWith('@orkestrel/scaffold')) continue
 					for (const name of findMissing(statement.names, names)) {
 						undeclared.push(`${entry.spec}: ${statement.specifier} exports no ${name}`)

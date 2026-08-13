@@ -1,3 +1,4 @@
+import { createRecorder } from '@orkestrel/test'
 import type { EmitterHooks } from '@orkestrel/emitter'
 import type {
 	Audit,
@@ -68,21 +69,6 @@ import {
 	selectGroups,
 	selectHostPaths,
 } from '@src/core'
-
-/**
- * A real call-recording callback over an argument tuple.
- *
- * @remarks
- * Use this instead of a framework spy wherever a test only needs to know that
- * something fired and with what. `handler` is a genuine listener, and `calls`
- * is each invocation's argument tuple in order.
- */
-export interface TestRecorderInterface<TArgs extends readonly unknown[]> {
-	readonly calls: readonly TArgs[]
-	readonly count: number
-	readonly handler: (...args: TArgs) => void
-	clear(): void
-}
 
 /**
  * One adversarial value every total guard, parser, and cloner must survive.
@@ -167,36 +153,6 @@ export interface TestRangeCase {
  */
 export class TestSample {
 	readonly hostile = 'x'
-}
-
-/**
- * Create a recorder whose `handler` records every invocation's arguments.
- *
- * @typeParam TArgs - The argument tuple the recorded handler receives.
- * @returns A recorder reporting the recorded calls and their count.
- *
- * @example
- * ```ts
- * const recorder = createRecorder<readonly [Scaffolding]>()
- * const compiler = new Compiler({ on: { compile: recorder.handler } })
- * ```
- */
-export function createRecorder<TArgs extends readonly unknown[]>(): TestRecorderInterface<TArgs> {
-	const calls: TArgs[] = []
-	return {
-		get calls() {
-			return calls
-		},
-		get count() {
-			return calls.length
-		},
-		handler(...args: TArgs) {
-			calls.push(args)
-		},
-		clear() {
-			calls.length = 0
-		},
-	}
 }
 
 /**
@@ -926,13 +882,3 @@ export const RANGE_CASES: readonly TestRangeCase[] = [
 	{ range: '^1.2', latest: '1.2', satisfied: false },
 	{ range: '^01.2.3', latest: '01.2.3', satisfied: false },
 ]
-
-/**
- * Wait for a real elapsed delay.
- *
- * @param ms - The milliseconds to wait.
- * @returns A promise that settles once the host timer fires.
- */
-export function waitForDelay(ms = 0): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, ms))
-}

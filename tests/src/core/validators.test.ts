@@ -14,11 +14,11 @@ import {
 	MAX_AUDIT_FINDINGS,
 	MAX_COLLECTION_ITEMS,
 } from '@src/core'
+import { createRecorder } from '@orkestrel/test'
 import {
 	buildGuardCases,
 	buildHostileCases,
 	buildUnionCases,
-	createRecorder,
 	PATH_CASES,
 	readKeyCount,
 	selectHostileCase,

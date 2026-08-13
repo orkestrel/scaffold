@@ -19,11 +19,11 @@ of appetite.
 
 ## Track T — `@orkestrel/test`
 
-| # | Item | State |
-| --- | --- | --- |
-| T1 | Surface for `0.0.1` | **Ruled: ship as-is.** No new export is warranted. |
-| T2 | Additions and issues ledger | Open for the campaign's life. Section below. |
-| T3 | Publish `0.0.1` | Blocked on the user's credential and decision. |
+| #   | Item                        | State                                              |
+| --- | --------------------------- | -------------------------------------------------- |
+| T1  | Surface for `0.0.1`         | **Ruled: ship as-is.** No new export is warranted. |
+| T2  | Additions and issues ledger | Open for the campaign's life. Section below.       |
+| T3  | Publish `0.0.1`             | Blocked on the user's credential and decision.     |
 
 **T1 ruling, on evidence.** The 41-package guide-parity duplication needs nothing new from this
 package. Measured:
@@ -47,29 +47,29 @@ consumers arrive in Track F, and what they need is recorded in T2 as it appears.
 
 **Owner instruction, binding:** `createScratch` and anything built beside it follow the
 `@orkestrel/workspace` surface vocabulary for files and operations, because it is simpler than
-`node:fs`. Borrow the *shape* only — `@orkestrel/test` keeps zero runtime dependencies, so nothing is
+`node:fs`. Borrow the _shape_ only — `@orkestrel/test` keeps zero runtime dependencies, so nothing is
 imported from `workspace`.
 
 Measured gap. `WorkspaceInterface` (`workspace/src/core/types.ts:142-167`) against
 `ScratchInterface` (`test/src/server/types.ts`):
 
-| Operation | `workspace` | `ScratchInterface` today |
-| --- | --- | --- |
-| read one | `read(path)` | `read(target)` — matches |
-| read a range | `read(path, range)` | none |
-| read many | `read(paths)` | none |
-| write one | `write(path, content)` | `write(target, text)` — matches |
-| write into a range | `write(path, content, range)` | none |
-| write many | `write(files)` | seeding only, at construction |
-| existence | **`has(path)` / `has(paths)`** | **`exists(target)`** — wrong word |
-| enumerate | `file(path)` / `files()` | none |
-| append / prepend | `append`, `prepend` | none |
-| move | `move(from, to)` / `move(mapping)` | none |
-| remove | `remove(path)` / `remove(paths)` | none |
-| reset contents | `clear()` | none |
-| capture state | `snapshot()` | none |
-| tear down | `destroy()` | `destroy()` — matches |
-| size | `count` | none |
+| Operation          | `workspace`                        | `ScratchInterface` today          |
+| ------------------ | ---------------------------------- | --------------------------------- |
+| read one           | `read(path)`                       | `read(target)` — matches          |
+| read a range       | `read(path, range)`                | none                              |
+| read many          | `read(paths)`                      | none                              |
+| write one          | `write(path, content)`             | `write(target, text)` — matches   |
+| write into a range | `write(path, content, range)`      | none                              |
+| write many         | `write(files)`                     | seeding only, at construction     |
+| existence          | **`has(path)` / `has(paths)`**     | **`exists(target)`** — wrong word |
+| enumerate          | `file(path)` / `files()`           | none                              |
+| append / prepend   | `append`, `prepend`                | none                              |
+| move               | `move(from, to)` / `move(mapping)` | none                              |
+| remove             | `remove(path)` / `remove(paths)`   | none                              |
+| reset contents     | `clear()`                          | none                              |
+| capture state      | `snapshot()`                       | none                              |
+| tear down          | `destroy()`                        | `destroy()` — matches             |
+| size               | `count`                            | none                              |
 
 Two findings fall out immediately:
 
@@ -105,7 +105,7 @@ that is not where the code lives, a `createWorkspace` factory that does not exis
 that guide.
 
 **The scout disagrees with the framing, and the disagreement is load-bearing.** Borrowing
-`WorkspaceInterface` wholesale as a filesystem contract is contradictory: it is a *larger*
+`WorkspaceInterface` wholesale as a filesystem contract is contradictory: it is a _larger_
 editor/registry surface that simultaneously **lacks the disk words a test needs** — no directory
 creation, no copy, no directory listing, no recursive teardown — while carrying words with no disk
 meaning: `Range`, `FileState`, the `FileContent` tagged union, `id`, an emitter, and a `snapshot()`
@@ -148,14 +148,14 @@ comment is not evidence; this track makes that a gate rather than a habit.
 
 Nothing in Track G designs against a claim this track has not tested.
 
-| # | Claim, as the comment states it | Verdict |
-| --- | --- | --- |
-| V1 | `worker`: "Source exports have no file/barrel attribution, so exclude the exact internal class names" | **FALSE.** Measured: `source.surface()` already excludes exactly the internal classes and nothing else — `worker` `exports()` 13 / `surface()` 10 with `Dispatch`, `NodeWorker`, `Thread` present in the first and absent from the second; `middleware` 50 / 49 with `MultipartParser` the only difference. Barrel attribution exists and is named `surface()`. The denylist works around a shipped capability. |
-| V2 | The remembered reason for `worker`'s locals: a file run in a new thread cannot import the rest of the package, especially core | **Does not apply to these three classes.** `src/server/NodeWorker.ts:5` is `import { createWorker } from '@src/core'` — the class imports core directly. `Thread` holds `readonly #script: string \| URL`, so the file that runs in the new thread is the **consumer's** script, not these classes, which run on the main thread. The constraint is real for a consumer's worker entry and irrelevant here. |
-| V3 | `toolbox` and 16 others: one `Source` cannot answer a fence importing another face, so a specifier→module map plus an `exportsFor` cache is needed | **TRUE.** Measured on `toolbox`: core surface 141 names, server surface 10, **overlap 0**. No server name — `TerminalRoutes`, `TerminalConnection`, `Method` — appears in the core surface, so a core `Source` cannot answer a fence importing the server face. G5 is real work. |
-| V4 | `database`: lexical `Source` cannot express its public surface, so a TypeScript compiler surface is required | **FALSE.** Re-probed at the scope `database`'s own manifest declares — `["src/core","src/browser","src/server"]`, not the single module the first probe used. `source.surface()` is an **exact bijection** with the documented surface: documented 129, `surface()` 129, **nothing documented missing from `surface()` and nothing in `surface()` undocumented**. `exports()` returns 138, the 9 extra being exactly the internal classes. Lexical `Source` expresses this package's public surface precisely; the compiler surface is not needed for parity. The first probe's "missing drivers" reading was its own scope artifact, now corrected. |
-| V5 | `mcp`: `fenceImports` misses mixed `import Default, { named }`, and a slash after a bare `}` swallows the rest of a fence | **Mixed import TRUE**, measured: `fenceImports("import D, { a } from '@x/y'")` returns `[]` while the brace and `import type` forms both resolve. **Slash-after-brace did not reproduce** on the Orchestrator's vector, which returned the import normally — so that half is open, and `mcp`'s exact vector is owed before ruling either way. A failed reproduction is evidence about the vector first. |
-| V6 | `html`: the walker must skip `app/browser/main.ts` and `app/server/main.ts` | Untested. Probe whether gates stay green without the skip. |
+| #   | Claim, as the comment states it                                                                                                                    | Verdict                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| V1  | `worker`: "Source exports have no file/barrel attribution, so exclude the exact internal class names"                                              | **FALSE.** Measured: `source.surface()` already excludes exactly the internal classes and nothing else — `worker` `exports()` 13 / `surface()` 10 with `Dispatch`, `NodeWorker`, `Thread` present in the first and absent from the second; `middleware` 50 / 49 with `MultipartParser` the only difference. Barrel attribution exists and is named `surface()`. The denylist works around a shipped capability.                                                                                                                                                                                                                                      |
+| V2  | The remembered reason for `worker`'s locals: a file run in a new thread cannot import the rest of the package, especially core                     | **Does not apply to these three classes.** `src/server/NodeWorker.ts:5` is `import { createWorker } from '@src/core'` — the class imports core directly. `Thread` holds `readonly #script: string \| URL`, so the file that runs in the new thread is the **consumer's** script, not these classes, which run on the main thread. The constraint is real for a consumer's worker entry and irrelevant here.                                                                                                                                                                                                                                          |
+| V3  | `toolbox` and 16 others: one `Source` cannot answer a fence importing another face, so a specifier→module map plus an `exportsFor` cache is needed | **TRUE.** Measured on `toolbox`: core surface 141 names, server surface 10, **overlap 0**. No server name — `TerminalRoutes`, `TerminalConnection`, `Method` — appears in the core surface, so a core `Source` cannot answer a fence importing the server face. G5 is real work.                                                                                                                                                                                                                                                                                                                                                                     |
+| V4  | `database`: lexical `Source` cannot express its public surface, so a TypeScript compiler surface is required                                       | **FALSE.** Re-probed at the scope `database`'s own manifest declares — `["src/core","src/browser","src/server"]`, not the single module the first probe used. `source.surface()` is an **exact bijection** with the documented surface: documented 129, `surface()` 129, **nothing documented missing from `surface()` and nothing in `surface()` undocumented**. `exports()` returns 138, the 9 extra being exactly the internal classes. Lexical `Source` expresses this package's public surface precisely; the compiler surface is not needed for parity. The first probe's "missing drivers" reading was its own scope artifact, now corrected. |
+| V5  | `mcp`: `fenceImports` misses mixed `import Default, { named }`, and a slash after a bare `}` swallows the rest of a fence                          | **Mixed import TRUE**, measured: `fenceImports("import D, { a } from '@x/y'")` returns `[]` while the brace and `import type` forms both resolve. **Slash-after-brace did not reproduce** on the Orchestrator's vector, which returned the import normally — so that half is open, and `mcp`'s exact vector is owed before ruling either way. A failed reproduction is evidence about the vector first.                                                                                                                                                                                                                                              |
+| V6  | `html`: the walker must skip `app/browser/main.ts` and `app/server/main.ts`                                                                        | Untested. Probe whether gates stay green without the skip.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
 **V1 changes Track G.** G4 asked for a capability that already exists, so it is struck as a guide
 change and becomes a per-package correction: `worker`, `middleware` and any package in the same shape
@@ -173,11 +173,11 @@ in any one package. Recorded, not fixed here.
 
 Three packages built three different workarounds and two were unnecessary:
 
-| Package | Workaround | Needed? |
-| --- | --- | --- |
-| `worker` | `INTERNAL_EXPORTS` denylist over `exports()` | No — `surface()` excludes exactly those |
-| `database` | a TypeScript compiler surface via `deriveEntrySurfaces` | No — `surface()` is an exact bijection with its documented surface |
-| `middleware` | silence; `MultipartParser` simply sits in `exports()` | No — same |
+| Package      | Workaround                                              | Needed?                                                            |
+| ------------ | ------------------------------------------------------- | ------------------------------------------------------------------ |
+| `worker`     | `INTERNAL_EXPORTS` denylist over `exports()`            | No — `surface()` excludes exactly those                            |
+| `database`   | a TypeScript compiler surface via `deriveEntrySurfaces` | No — `surface()` is an exact bijection with its documented surface |
+| `middleware` | silence; `MultipartParser` simply sits in `exports()`   | No — same                                                          |
 
 The common cause is not a missing capability. It is that **neither `exports()` nor `surface()` says
 in its name or its row which question it answers**, so each package guessed and built machinery
@@ -252,13 +252,13 @@ the filesystem half is already shipped and correctly placed.
 
 **The capture half fails the membership rule outright.** Counted across all 41 packages' tests:
 
-| Shape | Packages |
-| --- | --- |
-| Direct assignment to `console.*` or `process.std*.write` | **1** — `console` itself |
-| Injected fakes instead of touching the process (`createFakeTTY`, `PassThrough`) | 2 — `terminal`, `mcp` |
-| Collecting a **child** process's stdout, which is product I/O rather than capture | 2 — `sea`, `mcp` |
-| No stream or console capture at all | **36** |
-| `vi.spyOn(console\|process)` | **0** |
+| Shape                                                                             | Packages                 |
+| --------------------------------------------------------------------------------- | ------------------------ |
+| Direct assignment to `console.*` or `process.std*.write`                          | **1** — `console` itself |
+| Injected fakes instead of touching the process (`createFakeTTY`, `PassThrough`)   | 2 — `terminal`, `mcp`    |
+| Collecting a **child** process's stdout, which is product I/O rather than capture | 2 — `sea`, `mcp`         |
+| No stream or console capture at all                                               | **36**                   |
+| `vi.spyOn(console\|process)`                                                      | **0**                    |
 
 One package captures streams in its own tests. The rule requires three independent members or five
 regardless. **Ship nothing.**
@@ -290,14 +290,14 @@ above are what that work would have to close first.
 Three defects, then two bounded gaps, then one deep limit. `guide` is at `0.0.10` and depends on
 `@orkestrel/contract@^0.0.11` and `@orkestrel/markdown@^0.0.8`.
 
-| # | Item | Size | Evidence |
-| --- | --- | --- | --- |
-| G1 | `extractPatterns` silently drops every fence that is not ```` ```ts ````. Fail loudly on an unrecognized fence language instead. | small | `guide/src/core/helpers.ts:1455`. Latent, not live: across all 41 guides there are 3581 ```` ```ts ````, 102 ```` ```text ````, 82 ```` ```sh ````, and zero ```` ```typescript ````. The first person to write ```` ```typescript ```` loses their fence checks while parity stays green. |
-| G2 | `firstCode`'s guide text omits `image`. | one line | `guide/guides/guide.md:88` says it descends `emphasis` and `link`; `helpers.ts:850` also descends `isImageNode`. A parity defect in the parity package. |
-| G3 | `fenceImports`' guide table does not name the import forms it excludes. | one line | `guide.md:93`. `mcp` works around the mixed `import Default, { named }` case at `mcp/tests/guides.test.ts:148-162`. |
-| G4 | `exports()` carries no barrel attribution, so a package cannot express "declared but not public". | bounded design | `worker` maintains `INTERNAL_EXPORTS` for exactly this — `worker/tests/guides.test.ts:27-31, 99`. Coding law requires `export` on classes deliberately absent from the barrel. |
-| G5 | No specifier-to-face resolution. One `Source` cannot answer a fence importing another face of the same package. | bounded design | 38 packages carry a `SELF_SPECIFIERS` allowlist; 17 carry a `SPECIFIER_MODULES` map plus a hand-rolled `exportsFor` cache. `fenceImports` parses imports and has no concept of "self". |
-| G6 | **CLOSED — retained on evidence.** `Source` stays lexical. Both cited reasons for exceeding it are falsified: V1 shows `worker`'s denylist works around `surface()`, and V4 shows `surface()` is an exact bijection with `database`'s documented surface at its real manifest scope. No reachable parity defect motivates a parser. Reopen only on a measured case where `surface()` cannot express a package's public surface — a named re-export or `export type {}` form that a package actually ships and that parity therefore misses. Until such a case exists, this is a documented limit rather than a defect, and `.claude/rules/quality.md` says to document the obligation rather than build machinery against a requirement nobody wrote down. | ruled | `Source` sees only column-zero `export …` and `export * from './x.js'` barrels. Named re-exports, `export type {…}` and collisions fall outside the grammar. Root cause of both G4's workaround and `database`'s compiler surface at `database/tests/setupServer.ts:274`. Documented as deliberate at `guide/src/core/types.ts:128-154`. May legitimately end as "retained on evidence". |
+| #   | Item                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Size           | Evidence                                                                                                                                                                                                                                                                                                                                                                                 |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| G1  | `extractPatterns` silently drops every fence that is not ` ```ts `. Fail loudly on an unrecognized fence language instead.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | small          | `guide/src/core/helpers.ts:1455`. Latent, not live: across all 41 guides there are 3581 ` ```ts `, 102 ` ```text `, 82 ` ```sh `, and zero ` ```typescript `. The first person to write ` ```typescript ` loses their fence checks while parity stays green.                                                                                                                             |
+| G2  | `firstCode`'s guide text omits `image`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | one line       | `guide/guides/guide.md:88` says it descends `emphasis` and `link`; `helpers.ts:850` also descends `isImageNode`. A parity defect in the parity package.                                                                                                                                                                                                                                  |
+| G3  | `fenceImports`' guide table does not name the import forms it excludes.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | one line       | `guide.md:93`. `mcp` works around the mixed `import Default, { named }` case at `mcp/tests/guides.test.ts:148-162`.                                                                                                                                                                                                                                                                      |
+| G4  | `exports()` carries no barrel attribution, so a package cannot express "declared but not public".                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | bounded design | `worker` maintains `INTERNAL_EXPORTS` for exactly this — `worker/tests/guides.test.ts:27-31, 99`. Coding law requires `export` on classes deliberately absent from the barrel.                                                                                                                                                                                                           |
+| G5  | No specifier-to-face resolution. One `Source` cannot answer a fence importing another face of the same package.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | bounded design | 38 packages carry a `SELF_SPECIFIERS` allowlist; 17 carry a `SPECIFIER_MODULES` map plus a hand-rolled `exportsFor` cache. `fenceImports` parses imports and has no concept of "self".                                                                                                                                                                                                   |
+| G6  | **CLOSED — retained on evidence.** `Source` stays lexical. Both cited reasons for exceeding it are falsified: V1 shows `worker`'s denylist works around `surface()`, and V4 shows `surface()` is an exact bijection with `database`'s documented surface at its real manifest scope. No reachable parity defect motivates a parser. Reopen only on a measured case where `surface()` cannot express a package's public surface — a named re-export or `export type {}` form that a package actually ships and that parity therefore misses. Until such a case exists, this is a documented limit rather than a defect, and `.claude/rules/quality.md` says to document the obligation rather than build machinery against a requirement nobody wrote down. | ruled          | `Source` sees only column-zero `export …` and `export * from './x.js'` barrels. Named re-exports, `export type {…}` and collisions fall outside the grammar. Root cause of both G4's workaround and `database`'s compiler surface at `database/tests/setupServer.ts:274`. Documented as deliberate at `guide/src/core/types.ts:128-154`. May legitimately end as "retained on evidence". |
 
 G6 gets its own adversarial design pass and may close with no code change. Do not patch it.
 
@@ -443,11 +443,11 @@ outside this campaign's exit criterion.
 
 Gated on `@orkestrel/test` and `@orkestrel/guide` both published.
 
-| # | Item | Evidence |
-| --- | --- | --- |
-| F1 | Adopt `@orkestrel/test` in all 41: replace the corpus walk, `readText`, and every extracted helper it now ships. | 384 setup-file clusters, topping out at 32 packages for `createRecorder`. |
-| F2 | Extract per-package case matrices into each package's own setup file. **1,574 repeated five-line blocks across 36 packages**, counting only blocks repeated three or more times inside one package: `mcp` 208, `database` 200, `scaffold` 121, `workflow` 121, `contract` 111, `middleware` 99, `agent` 93. Worst single blocks are a 42× query-builder condition table in `database`, a 24× intrinsic-probe matrix in `contract`, an 18× `duplexPair` fixture in `websocket`. `tests.md` already rules: data tables and case matrices belong in a setup file at any size. | token-window clone detector over 483 files, 81,102 windows |
-| F3 | Republish only the packages whose pass moves `src`. | Measured below: that set is `middleware` alone. |
+| #   | Item                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Evidence                                                                  |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| F1  | Adopt `@orkestrel/test` in all 41: replace the corpus walk, `readText`, and every extracted helper it now ships.                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 384 setup-file clusters, topping out at 32 packages for `createRecorder`. |
+| F2  | Extract per-package case matrices into each package's own setup file. **1,574 repeated five-line blocks across 36 packages**, counting only blocks repeated three or more times inside one package: `mcp` 208, `database` 200, `scaffold` 121, `workflow` 121, `contract` 111, `middleware` 99, `agent` 93. Worst single blocks are a 42× query-builder condition table in `database`, a 24× intrinsic-probe matrix in `contract`, an 18× `duplexPair` fixture in `websocket`. `tests.md` already rules: data tables and case matrices belong in a setup file at any size. | token-window clone detector over 483 files, 81,102 windows                |
+| F3  | Republish only the packages whose pass moves `src`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Measured below: that set is `middleware` alone.                           |
 
 Visit each repository **once**, doing F1 and F2 together. Serialize writers per repository.
 
@@ -464,12 +464,12 @@ bump. Exactly one package hits it.
 Measured across all 41 manifests with `@orkestrel/guide@0.0.11`, comparing each documented surface
 against `exports()` and against `surface()`:
 
-| Package      | Under `exports()`       | Under `surface()` | Ruling                                       |
-| ------------ | ----------------------- | ----------------- | -------------------------------------------- |
-| `database`   | 9 undocumented          | clean             | switch repairs it; delete the compiler surface |
-| `worker`     | 3 undocumented          | clean             | switch repairs it; delete `INTERNAL_EXPORTS` |
-| `middleware` | clean (155 = 155)       | 1 documented symbol absent | add the missing barrel row |
-| other 38     | clean                   | clean             | switch is inert |
+| Package      | Under `exports()` | Under `surface()`          | Ruling                                         |
+| ------------ | ----------------- | -------------------------- | ---------------------------------------------- |
+| `database`   | 9 undocumented    | clean                      | switch repairs it; delete the compiler surface |
+| `worker`     | 3 undocumented    | clean                      | switch repairs it; delete `INTERNAL_EXPORTS`   |
+| `middleware` | clean (155 = 155) | 1 documented symbol absent | add the missing barrel row                     |
+| other 38     | clean             | clean                      | switch is inert                                |
 
 `database` and `worker` built their workarounds against a failure the switch removes, which is the
 G7 ruling landing exactly where it was predicted to.
@@ -527,12 +527,12 @@ inherits `['ts', 'text', 'sh']` from this ruling — that set was measured acros
 
 ### G1 units
 
-| Unit | Owns | Engine |
-| --- | --- | --- |
-| U1 | `src/core/types.ts`, `src/core/helpers.ts`, `src/core/Guide.ts` | Opus `implementer` |
-| U2 | `tests/src/core/*.test.ts`, `tests/guides.test.ts` | Sol `implementer` |
-| U3 | `guides/guide.md` | Opus `implementer` |
-| U4 | each consumer's `tests/guides.test.ts` and pin | folded into Track F, gated on `guide` publishing |
+| Unit | Owns                                                            | Engine                                           |
+| ---- | --------------------------------------------------------------- | ------------------------------------------------ |
+| U1   | `src/core/types.ts`, `src/core/helpers.ts`, `src/core/Guide.ts` | Opus `implementer`                               |
+| U2   | `tests/src/core/*.test.ts`, `tests/guides.test.ts`              | Sol `implementer`                                |
+| U3   | `guides/guide.md`                                               | Opus `implementer`                               |
+| U4   | each consumer's `tests/guides.test.ts` and pin                  | folded into Track F, gated on `guide` publishing |
 
 U2 needs a negative control: a fixture guide carrying a `typescript` fence that `findUnlisted` must
 report. Without it the check passes everywhere on day one and has never been red.

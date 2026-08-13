@@ -5,7 +5,8 @@ import { join } from 'node:path'
 import { Compiler, contentToHex, isFinding } from '@src/core'
 import { listFiles, Materializer, readFileHex, readHostManifest, readSnapshot } from '@src/server'
 import { describe, expect, it } from 'vitest'
-import { buildBlueprint, createRecorder } from '../../setup.js'
+import { createRecorder } from '@orkestrel/test'
+import { buildBlueprint } from '../../setup.js'
 import {
 	buildHostManifest,
 	buildCompiledPlan,

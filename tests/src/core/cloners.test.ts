@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { isRecord } from '@orkestrel/contract'
 import { cloneValue, parseBlueprint, parseSnapshot } from '@src/core'
+import { createRecorder } from '@orkestrel/test'
 import {
 	BENIGN_ACCESSOR_DESCRIPTOR,
 	buildBlueprint,
 	buildHostileCases,
 	buildSnapshot,
-	createRecorder,
 	selectHostileCase,
 	THROWING_ACCESSOR_DESCRIPTOR,
 } from '../../setup.js'
