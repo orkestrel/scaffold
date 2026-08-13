@@ -372,6 +372,23 @@ exact defect it was best placed to find.
 Every source file in that folder carries a trailing `.txt` so the sweeps ignore it. Strip the
 extension when adopting.
 
+### 3.7e `catalog` writes a file that fails `format:check`
+
+Reproduced while releasing a package: `scaffold catalog` rewrites
+`.claude/agents/orkestrel.md` in a form the workspace formatter rejects, so the very
+next gate fails on a file no human touched.
+
+```
+> oxfmt --config .oxfmtrc.json --check .
+.claude/agents/orkestrel.md (81ms)
+Format issues found in above 1 files.
+```
+
+Any repository that runs `catalog` before a gate chain hits this, and in a release it
+fails `prepublishOnly` after every other gate has already passed. Run `npm run format`
+after `catalog` until the emitted table is formatter-stable at the vendored width, the
+way `CONFIG_TEMPLATES` already is.
+
 ### 3.8 The bump rule has no clause for the vendored payload
 
 Scaffold's product is not only its types. `package.json` ships `dist/host`, the vendored file set
