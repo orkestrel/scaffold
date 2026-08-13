@@ -231,8 +231,18 @@ effectively hand-maintained.
 
 ### 3.7 The browser face ships a declaration that resolves outside its own tarball
 
-**This is the most serious defect in this file, it is live on the registry now, and it is the one to
-fix first.** Found after the 0.0.28 publish; not fixed, because the container restarted mid-unit.
+**Fixed on `main`, unpublished.** Ships in 0.0.29. `database` is repaired and pushed; every other
+browser repository picks the fix up through the propagation. Kept in full because the mechanism is
+what an app-layer target needs to recognise, and because `app/browser` has the same shape.
+
+The fix widened one thing the original diagnosis missed. `vite-plugin-dts` prints `core/index.ts`
+when a source reaches core through the `@src/core` alias and prints the `.js` specifier verbatim when
+it uses a relative import, and nothing forbids the second, so the rewrite pattern covers
+`core/index.[jt]s` rather than `.ts` alone. **That moves the emitted bytes of
+`configs/src/vite.server.config.ts` as well as the browser one**, so the propagation touches both
+files in every repository with either face. Both faces now derive the branch from one exported
+`nameToRewrite`, which also owns the width measurement deciding whether the formatter keeps the call
+on one line; that boundary moved from a 22-character package name to 19.
 
 `vite-plugin-dts` rolls each published face into one declaration and preserves the **source** file's
 relative depth in every emitted import. The generated `configs/src/vite.server.config.ts` corrects
@@ -285,6 +295,34 @@ in the emitted `.d.ts`, so any template text change moves it. Confirm with:
 **`database` then owes a republish.** Its browser face is genuinely broken on the registry, so the
 repair is a functional surface change and earns `0.0.9`. The other browser repos only change an
 import spelling that already resolved, which under the bump rule in section 2 is not a move.
+
+### 3.7b `configs/browsers.ts`, and why the vendored leaf could not take it
+
+New capability shipping in 0.0.29, and the constraint behind it is the part worth carrying.
+
+A browser workspace now gets a generated `configs/browsers.ts` that resolves which Chromium the
+Playwright provider should launch. The emitted root config computes
+`resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)` once and passes it to
+`playwright(browserOptions)`. Precedence: `PLAYWRIGHT_EXECUTABLE_PATH`, `PLAYWRIGHT_WS_ENDPOINT`,
+`PLAYWRIGHT_CHANNEL`, the managed Playwright Chromium, a container's bundled Chromium, a verified
+system channel, then the platform default. An installed pinned revision returns **empty** options so
+Playwright keeps its own launch defaults, and a pinned-revision miss falls through to a sibling
+revision or a revision-agnostic alias rather than reading as Chromium absence.
+
+**It is a separate file, and it has to be.** `configs/helpers.ts` is vendored **byte-identical** to
+every workspace — `md5 20d26a3b9a678df7ad539ee35c2e7e41` across all 39 — and only six repositories
+(`console`, `database`, `indexeddb`, `mcp`, `router`, `workflow`) declare `playwright`. An
+`import { chromium } from 'playwright'` in that leaf breaks the typecheck of the other 33. Check this
+before adding anything to that file: it is shared with core-only packages, and nothing in the file
+itself says so.
+
+`.claude/rules/workspace.md` previously called `configs/helpers.ts` "the one permitted leaf under
+`configs/`". That sentence is now false and moved with the change; it also gained the rule that the
+vendored leaf may not take a dependency a core-only workspace does not declare.
+
+**This is not a fix for a broken test.** Measured before changing anything: `database`'s browser
+suite passed 199/199 with a bare `playwright()` on a host whose pinned revision is absent. The
+resolver makes provider selection deterministic and host-independent; it did not repair a failure.
 
 ### 3.8 The bump rule has no clause for the vendored payload
 
@@ -445,8 +483,9 @@ into a tautology.
 
 Ordered. The first three are one chain and nothing else should start until it closes.
 
-1. **Fix the browser declaration roll-up** (3.7). Live defect, currently shipping. The fix, its
-   required control, and the surface consequence are all in 3.7.
+1. ~~Fix the browser declaration roll-up~~ (3.7). **Done and on `main`, unpublished.** `database` is
+   repaired, its consumer proof goes from 8 TS2307 to 0, and `configs/browsers.ts` landed with it
+   (3.7b).
 2. **Release and publish scaffold `0.0.29`.** Carries 3.7 plus the vendored canon edits already on
    `main` — `AGENTS.md` gained an instruction-file writing contract, `.agents/orchestration.md` got
    the corrected publish canon from 3.9 and a rule that a lane returning no verdicts did not run.
