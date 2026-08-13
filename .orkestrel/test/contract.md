@@ -195,24 +195,28 @@ it, `SubscriberInterface` and `RecorderEventMap` are rejected and `createClock`,
 
 ## The contract
 
-Zero runtime dependencies. Two environments. **11 value exports and 6 types.**
+Zero runtime dependencies. Two environments. **12 value exports and 5 types.**
+
+> **Amended by audit round 1.** `createClock` and `ClockInterface` are struck for shipping with two
+> members where the membership rule requires three. `resolveContained` and `hasSymbolicLink` are
+> added: centralizing the containment predicate that had been written seven times across two files
+> made them declarations in a centralized module, which the architecture rule requires be exported.
+> See `audit-round-1.md`.
 
 ### `src/core`
 
 | Export | File | Signature | Members |
 | --- | --- | --- | --- |
 | `RecorderInterface` | `types.ts` | `<TArgs extends readonly unknown[]> { readonly calls: readonly TArgs[]; readonly count: number; readonly handler: (...args: TArgs) => void; clear(): void }` | 32 |
-| `ClockInterface` | `types.ts` | `{ readonly now: () => number; advance(ms: number): void; set(value: number): void }` | 2 |
 | `JSONValue` | `types.ts` | the recursive JSON value union | — |
 | `waitForDelay` | `helpers.ts` | `(ms?: number) => Promise<void>` | 17 |
 | `captureError` | `helpers.ts` | `(thunk: () => unknown) => unknown` | 12 |
 | `requireValue` | `helpers.ts` | `<T>(value: T \| null \| undefined, message?: string) => T` | 6 |
 | `collect` | `helpers.ts` | `<T>(source: AsyncIterable<T>) => Promise<readonly T[]>` | 4 |
 | `collectStream` | `helpers.ts` | `<T>(stream: ReadableStream<T>) => Promise<readonly T[]>` | 3 |
-| `roundTripJSON` | `helpers.ts` | `<T extends JSONValue>(value: T) => T` | 5 |
+| `roundTripJSON` | `helpers.ts` | `<T extends JSONValue>(value: T) => T` — throws on a non-finite number at any depth | 5 |
 | `resolveRoot` | `helpers.ts` | `(meta: ImportMeta) => URL` | 40 |
 | `createRecorder` | `factories.ts` | `<TArgs extends readonly unknown[]>() => RecorderInterface<TArgs>` | 32 |
-| `createClock` | `factories.ts` | `(start?: number) => ClockInterface` | 2 |
 
 `resolveRoot` sits in core deliberately: `import.meta` and `URL` are universal, and `fileURLToPath`
 is what would have forced it into server.
@@ -226,6 +230,8 @@ is what would have forced it into server.
 | `InventoryOptions` | `types.ts` | `{ readonly extensions?: readonly string[]; readonly exclude?: readonly string[] }` | — |
 | `readInventory` | `helpers.ts` | `(root: URL \| string, directories: readonly string[], options?: InventoryOptions) => Readonly<Record<string, string>>` | 39 |
 | `createScratch` | `factories.ts` | `(options?: ScratchOptions) => ScratchInterface` | 7 |
+| `resolveContained` | `helpers.ts` | `(root: string, target: string) => string \| undefined` | 7 copies centralized |
+| `hasSymbolicLink` | `helpers.ts` | `(root: string, target: string) => boolean` | 4 copies centralized |
 
 `readInventory` takes the symlink-refusing form that `guide` and `mcp` already share, and returns
 exactly the map `@orkestrel/guide`'s `SourceOptions.files` accepts — a structural match needing no
