@@ -986,3 +986,36 @@ same-uid process, and the shipped threat model already declines to defend agains
 the code under test. Narrow the sentence rather than building coordination machinery. The subjective
 lane's separate point — that `birthtimeMs` falls back to `ctime` where the host has no birth time,
 which a seeded write then changes — is a real portability question and gets measured on this host.
+
+### A routing violation of my own: Sol audited Sol's work
+
+`u-scratch-src` was written by Sol. The objective audit lane on that same code was also Sol.
+`.agents/orchestration.md` is explicit — "In a fix round the auditor is an engine that did not write
+it" — and I broke it. The round still produced ten findings against its own output, so the damage
+here was nil, but the rule does not depend on an engine being self-critical enough on the day.
+
+Corrected for the fix round: **Opus writes all three fix units, Sol audits.** The subjective lane
+shares the writer's engine, which the rules permit because it is a separate subagent with a clean
+context; the objective lane is the engine that did not write it, which is what the rule actually
+requires. Check the writer's engine against the auditor's before dispatching a fix round, not after.
+
+### `destroy()`'s birth-time dependence, measured on this host
+
+The subjective lane raised it and could not run it. Measured directly:
+
+```
+birthtimeMs at allocation : 1786656875922.9824
+birthtimeMs after writes  : 1786656875922.9824    unchanged
+ctimeMs     at allocation : 1786656875922.9824
+ctimeMs     after writes  : 1786656875927.0942    changed
+```
+
+`birthtime` did not follow `ctime` when `ctime` moved, so this host supplies a real birth time and
+`destroy()` is sound here. The equality at allocation is what a freshly created directory looks like
+either way and is not the fallback signature the lane suspected.
+
+The portability limit is real and unproven rather than refuted: where a host has no birth time,
+libuv substitutes `ctime`, a seeded write then changes it, and `destroy()` takes its early return —
+leaking the allocation silently, because `destroy()` returns `void` and a refusal is
+indistinguishable from success. That belongs in the guide beside the POSIX-mode limit, stated as a
+host dependence rather than as a defect.
