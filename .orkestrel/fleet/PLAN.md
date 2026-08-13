@@ -730,3 +730,117 @@ because a real `tsc --project`, a real oxfmt run, or a real Vite `build` with `e
 fixture needs it inside the package tree to resolve. Those sites are structurally unable to migrate,
 not merely inconvenienced. That probe becomes a test in the implementation unit; a verification that
 runs once is a rehearsal.
+
+## T5 ruled — `ScratchInterface` for `@orkestrel/test@0.0.2`
+
+Two lanes, one brief, blind. Subjective `planner` Opus 5 native; objective Sol via journaled
+`codex exec` (`tmp/codex/t5-analyst.log`, `EXIT=0`). The lanes split on four rows. Every split was
+settled by counting, never by weighing the two arguments.
+
+### The ruled surface
+
+```ts
+export interface ScratchInterface {
+	readonly path: string
+	write(target: string, text: string): void
+	read(target: string): string | undefined
+	has(target: string): boolean
+	names(target?: string): readonly string[]
+	ensure(target: string): string
+	link(target: string, source: string): void
+	destroy(): void
+}
+
+export interface ScratchOptions {
+	readonly parent?: string
+	readonly prefix?: string
+	readonly files?: Readonly<Record<string, string>>
+}
+```
+
+### How each disputed row was settled
+
+**`remove` is rejected — Sol was right, the subjective lane was wrong.** The subjective lane claimed
+twelve-plus sites across five packages. A recount over all 41 packages found **two** members:
+`scaffold` (23 sites) and `database` (8). `sqlite/tests/src/server/helpers.test.ts:60` was adjudicated
+out on evidence: `nativeBusyError` allocates a single `.db` file with no enclosing directory, so that
+file **is** the whole fixture and `rmSync(path, { force: true })` is `destroy`, not `remove`. Two
+independent members is below the threshold. This is the row with the largest measured usage that
+still fails, so it goes in the guide's Limits table with its count and is revisited when a third
+member appears.
+
+**`link` ships — Sol was right, on both of the subjective lane's arguments.** The contract argument
+dies at `guides/test.md:216-223`, which names the creator: "a link inside the allocation was created
+by the test process or by the code the test drives, and handing `scratch.path` to the code under test
+is the ordinary use of this helper." The threat model anticipates this row rather than forbidding it.
+The implementability argument dies too: `link(target, source)` contains only the link's **location**,
+while `source` is an arbitrary absolute path — exactly the shipped fleet signature
+`workspace.link('project/linked', outside)`. Three independent members: `sea`, `scaffold`,
+`middleware`.
+
+**Naming splits, and each half follows the same rule.** `names.md` requires methods to be verbs and
+permits accessors to be bare nouns. So the read-only listing takes Sol's bare noun `names` — and it
+is the honest word, because the return is `readonly string[]`, names rather than `Dirent` entries.
+The mutator takes Sol's verb `ensure` over the subjective lane's noun `directory`; `ensure` also
+states the idempotence the row needs.
+
+**`ensure` returns the created path, against both lanes.** Both ruled `void`; the subjective lane
+reasoned from "one measured site". Measured with a stated membership rule — `workspace.directory(`
+and `outside.directory(`, excluding the eight `transaction.directory(` calls that belong to the code
+under test — there are 111 fixture calls, of which **85 consume the return** (76 assigned, 9 passed
+as an argument). `void` would put a `join(scratch.path, target)` at 85 sites.
+
+**`write` and `link` stay `void`, and the asymmetry is measured rather than invented.** The fleet
+fixture returns a path from all three. Consumption is `ensure` 85/111 (77%), `write` 30/151 (20%),
+`link` 4/20 (20%). The purposes differ: `ensure` exists to bring a directory into being so something
+else can be pointed at it — a subprocess cwd, an SUT root — while `write` and `link` create a thing
+whose location the caller already named. A fourfold difference in consumption is the line.
+
+**`parent` ships and its containment guarantee is proven, not argued.** `src/server/factories.ts:23-26`
+resolves the prefix against `tmpdir()` and throws for any other parent, so seven sites — five in
+`scaffold/tests/src/core/templates.test.ts`, one in `database`, one in the forty-copy
+`config.test.ts:578` — cannot migrate at all. Each allocates in-tree because a real `tsc --project`,
+oxfmt, or Vite `build` with `entry` inside the fixture needs it there to resolve. The guard being
+relaxed is not what makes `destroy()` safe: `factories.ts:80-90` compares `dev`, `ino`, and
+`birthtimeMs`, and a probe with a control confirms it — `destroy` removes an allocation it owns and
+walks away from a foreign directory swapped onto the same path. That check never references
+`tmpdir()`, so it holds identically under `parent`. `parent` additionally refuses a missing path, a
+non-directory, and a final-segment symbolic link.
+
+**`prefix` narrows to a name fragment** with no separator and no `..`, which is safe: the entire
+suite passes one prefix, `tests/src/server/factories.test.ts:31`.
+
+### Rejected, with the reason each is rejected for
+
+Scope, revisitable when a count changes: `remove` (2 members), recursive pattern matching (the ×41
+`setupPolicy.ts` glob is run by the code under test over a handed-in path, so it demands `path`; the
+one fixture-performed glob is single-level), batch overloads (no site collapses several existence
+checks — `scaffold/tests/integration.test.ts:417-419` deliberately keeps three apart).
+
+Correctness or count: `rename` (1 package), `chmod` (2), hard link (1), file-descriptor access (1),
+`copy` (no site anywhere), `snapshot` / `id` / `emitter` / `search` / `replace` / `range` (each names
+a foreign type or an entity the scratch does not have), `clear` (no site, and it competes with
+`destroy`).
+
+### An instrument defect in my own survey, recorded because it nearly shipped a row
+
+The survey searched nine tokens and omitted `readdirSync`, `existsSync`, `writeFileSync`,
+`readFileSync`, and every `node:fs/promises` spelling, so a file that only lists or reads a fixture
+allocated elsewhere never matched. Sol caught it. The recount re-ran each disputed row over all 41
+packages rather than the eight my grouping named, so the rulings above rest on the wider search. The
+lesson is the stated one in `quality.md`: a conclusion inherits the instrument's scope, and an
+unstated coverage claim is read as complete.
+
+The subjective lane's F1 was itself half wrong in the same way, and I verified rather than accepted
+it: it said the ×41 `setupPolicy.ts` glob never touches a scratch, which is true of
+`policy.test.ts:44` and false of `policy.test.ts:36`, where `inspectPolicyControl` allocates a
+scratch at `setupPolicy.ts:585` and globs it at `:592`. Its conclusion survived on a corrected
+reason.
+
+### Routing
+
+`link`, `ensure`, `names`, and `parent` all land in source. The **test** unit is routed to the native
+Opus `implementer` rather than Sol, per the recorded exclusion in `.claude/agents/codex.md`: a unit
+that authors escape constructs to prove a guard refuses them trips the provider's content filter
+mid-run. Containment-escape and symlink-escape tests are exactly that. This is a routing fact
+recorded in advance, not a bench failure.
