@@ -17,7 +17,7 @@
 		"url": "git+https://github.com/orkestrel/scaffold.git"
 	},
 	"bin": {
-		"scaffold": "./dist/bin/main.js"
+		"scaffold": "dist/bin/main.js"
 	},
 	"files": [
 		"dist/src",
