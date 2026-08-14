@@ -99,6 +99,16 @@ real property is promoted into the permanent suite — mirrored unit file, or th
 when the property spans the real server — named for what it proves, never discarded with the
 verdict.
 
+Standing owner instruction for every surface unit (U4/U5/U6 fixes, H5/H6, U7): beside the
+component proofs, land at least one HUMAN-INTERACTION journey in the integration files — real
+keystrokes (`page.keyboard`/`fill`/`press`), real clicks, Tab/Enter reachability — through the
+composed application against the real server, proving the surface's primary flow the way a human
+drives it. The existing stack (Vitest browser mode on the Playwright provider + the Node-side
+Playwright harness) is the vehicle; no new dependency. Not every behavior needs this class, but
+each primary flow does: login type-refuse-retype-succeed (U6 fix), click-a-rail-row-to-open and
+keyboard-open (U5, once the rail is composed), History load-older/prefix-typing/open-historical
+(H6), and the restart journey (U7).
+
 ## Exit criterion
 
 1. Login per rulings — capture-proved (refused state marks neither field, one alert, five text
