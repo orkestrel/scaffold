@@ -360,7 +360,7 @@ export const DEFAULT_ENGINES = `>=${MINIMUM_NODE_VERSION}`
 /** The tooling versions scaffold and every generated workspace share. */
 export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@orkestrel/guide': '^0.0.11',
-	'@orkestrel/scaffold': '^0.0.34',
+	'@orkestrel/scaffold': '^0.0.35',
 	'@orkestrel/test': '^0.0.3',
 	'@types/node': '^26.2.0',
 	oxfmt: '^0.62.0',
