@@ -1,10 +1,12 @@
 import type { Blueprint, Environment } from '@src/core'
+import type { ScratchInterface } from '@orkestrel/test/server'
 import { execFileSync } from 'node:child_process'
-import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { dirname, join, resolve } from 'node:path'
+import { chmodSync, mkdirSync, readFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { isString } from '@orkestrel/contract'
+import { requireValue } from '@orkestrel/test'
+import { createScratch } from '@orkestrel/test/server'
 import { fillTemplate, isTemplateError } from '@orkestrel/template'
 import {
 	ARTIFACT_TEMPLATES,
@@ -152,13 +154,19 @@ function measureWidth(line: string): number {
 	return line.replaceAll('\t', TAB_COLUMNS).length
 }
 
+// The persistent directory every scratch allocation below lands inside, created
+// once per test because `createScratch` throws when its `parent` is missing.
+function ensureTmpRoot(): string {
+	mkdirSync(resolve('tmp'), { recursive: true })
+	return resolve('tmp')
+}
+
 // The emitted root configuration and the files a typecheck of it has to resolve:
 // the emitted browser resolver a browser selection also writes, the vendored
 // boundary helpers, copied from this checkout because a generated workspace
 // receives those exact bytes, and the plugin declaration above. Everything else
 // the configuration names is installed here.
-function stageRootConfig(blueprint: Blueprint, root: string): void {
-	mkdirSync(join(root, 'configs'), { recursive: true })
+function stageRootConfig(blueprint: Blueprint, workspace: ScratchInterface, prefix: string): void {
 	for (const artifact of blueprintToConfigArtifacts(blueprint)) {
 		if (artifact.origin === 'host') continue
 		if (
@@ -168,13 +176,13 @@ function stageRootConfig(blueprint: Blueprint, root: string): void {
 		) {
 			continue
 		}
-		writeFileSync(join(root, artifact.path), artifact.content)
+		workspace.write(`${prefix}/${artifact.path}`, artifact.content)
 	}
-	writeFileSync(
-		join(root, 'configs/helpers.ts'),
+	workspace.write(
+		`${prefix}/configs/helpers.ts`,
 		readFileSync(resolve('configs/helpers.ts'), 'utf8'),
 	)
-	writeFileSync(join(root, 'plugins.d.ts'), BROWSER_PLUGIN_DECLARATIONS)
+	workspace.write(`${prefix}/plugins.d.ts`, BROWSER_PLUGIN_DECLARATIONS)
 }
 
 // The `check` script a generated workspace vendors, run over one staged
@@ -203,10 +211,9 @@ function checkTypes(root: string): string {
 // The file sits inside this checkout so its own `playwright` import resolves
 // through the workspace's `node_modules`, which is what makes the loaded module
 // the real one rather than a re-derivation of it.
-function stageResolver(root: string): string {
-	const file = join(root, 'browsers.ts')
-	writeFileSync(file, CONFIG_TEMPLATES.browsers)
-	return file
+function stageResolver(workspace: ScratchInterface): string {
+	workspace.write('browsers.ts', CONFIG_TEMPLATES.browsers)
+	return join(workspace.path, 'browsers.ts')
 }
 
 // One or more expressions evaluated against the loaded resolver, in a real Node
@@ -241,17 +248,15 @@ function buildResolveCall(
 
 // One managed Playwright browsers directory, built from the entries named. Each
 // entry is a real executable file, because the resolver reads the filesystem and
-// a described layout would prove nothing about what it finds.
-function buildBrowsersRoot(root: string, entries: readonly string[]): string {
-	const browsers = join(root, 'browsers')
+// a described layout would prove nothing about what it finds. `chmodSync` sets a
+// permission bit `ScratchInterface` does not expose, so it stays on `node:fs`.
+function buildBrowsersRoot(workspace: ScratchInterface, entries: readonly string[]): string {
 	for (const entry of entries) {
-		const path = join(browsers, entry)
-		mkdirSync(dirname(path), { recursive: true })
-		writeFileSync(path, '')
-		chmodSync(path, 0o755)
+		const target = `browsers/${entry}`
+		workspace.write(target, '')
+		chmodSync(join(workspace.path, target), 0o755)
 	}
-	mkdirSync(browsers, { recursive: true })
-	return browsers
+	return workspace.ensure('browsers')
 }
 
 // The identifiers one import clause binds, aliases resolved to the bound name.
@@ -367,20 +372,19 @@ describe('configuration templates', () => {
 	})
 
 	it('is an oxfmt fixed point across the emitted content corpus', () => {
-		const root = mkdtempSync(join(tmpdir(), 'scaffold-e2-format-'))
-		const control = join(root, 'control')
-		const corpus = join(root, 'corpus')
+		const workspace = createScratch({ prefix: 'scaffold-e2-format-' })
 		const formatter = resolve('node_modules/oxfmt/bin/oxfmt')
 		const config = resolve('.oxfmtrc.json')
 		try {
-			mkdirSync(control, { recursive: true })
-			const controlPath = join(control, 'outside-emitted-population.ts')
+			const controlPath = 'control/outside-emitted-population.ts'
 			const controlBefore = 'export const projects = [\n\tone,\n]\n'
-			writeFileSync(controlPath, controlBefore)
-			execFileSync(process.execPath, [formatter, '--config', config, '--write', control], {
-				stdio: 'pipe',
-			})
-			expect(readFileSync(controlPath, 'utf8')).not.toBe(controlBefore)
+			workspace.write(controlPath, controlBefore)
+			execFileSync(
+				process.execPath,
+				[formatter, '--config', config, '--write', workspace.ensure('control')],
+				{ stdio: 'pipe' },
+			)
+			expect(workspace.read(controlPath)).not.toBe(controlBefore)
 
 			// The corpus covers each span whose emitted shape the formatter would
 			// decide differently: a published face with core beside it and the same
@@ -426,29 +430,29 @@ describe('configuration templates', () => {
 				for (const artifact of plan.artifacts) {
 					if (artifact.origin === 'host') continue
 					expect(artifact.content).not.toMatch(/\{\{[^{}]+\}\}/u)
-					const path = join(corpus, String(index), artifact.path)
-					mkdirSync(dirname(path), { recursive: true })
-					writeFileSync(path, artifact.content)
-					expected.set(path, artifact.content)
+					const target = `corpus/${String(index)}/${artifact.path}`
+					workspace.write(target, artifact.content)
+					expected.set(target, artifact.content)
 				}
 			}
 			for (const length of [46, 47]) {
 				const blueprint = createBlueprint('a'.repeat(length), { src: ['core'], bin: true })
 				for (const artifact of blueprintToTestArtifacts(blueprint)) {
-					const path = join(corpus, `bin-boundary-${length}`, artifact.path)
-					mkdirSync(dirname(path), { recursive: true })
-					writeFileSync(path, artifact.content)
-					expected.set(path, artifact.content)
+					const target = `corpus/bin-boundary-${length}/${artifact.path}`
+					workspace.write(target, artifact.content)
+					expected.set(target, artifact.content)
 				}
 			}
-			execFileSync(process.execPath, [formatter, '--config', config, '--write', corpus], {
-				stdio: 'pipe',
-			})
-			for (const [path, content] of expected) {
-				expect(readFileSync(path, 'utf8')).toBe(content)
+			execFileSync(
+				process.execPath,
+				[formatter, '--config', config, '--write', join(workspace.path, 'corpus')],
+				{ stdio: 'pipe' },
+			)
+			for (const [target, content] of expected) {
+				expect(workspace.read(target)).toBe(content)
 			}
 		} finally {
-			rmSync(root, { recursive: true, force: true })
+			workspace.destroy()
 		}
 	})
 })
@@ -541,15 +545,18 @@ describe('emitted workspaces under their own gates', () => {
 	// `new` just wrote, so both browser masks are measured against Vite and
 	// Vitest's real published types rather than against a description of them.
 	it('emits browser configurations their own typecheck accepts', () => {
-		mkdirSync(resolve('tmp'), { recursive: true })
-		const root = mkdtempSync(join(resolve('tmp'), 'scaffold-e2-types-'))
-		const applicationRoot = join(root, 'application')
-		const showcaseRoot = join(root, 'showcase')
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-e2-types-' })
+		const applicationRoot = workspace.ensure('application')
+		const showcaseRoot = workspace.ensure('showcase')
 		try {
-			stageRootConfig(createBlueprint('sample', { app: ['browser'] }), applicationRoot)
-			stageRootConfig(createBlueprint('sample', { app: ['browser'], showcase: true }), showcaseRoot)
-			const application = readFileSync(join(applicationRoot, 'vite.config.ts'), 'utf8')
-			const showcase = readFileSync(join(showcaseRoot, 'vite.config.ts'), 'utf8')
+			stageRootConfig(createBlueprint('sample', { app: ['browser'] }), workspace, 'application')
+			stageRootConfig(
+				createBlueprint('sample', { app: ['browser'], showcase: true }),
+				workspace,
+				'showcase',
+			)
+			const application = requireValue(workspace.read('application/vite.config.ts'))
+			const showcase = requireValue(workspace.read('showcase/vite.config.ts'))
 			expect(checkTypes(applicationRoot)).toBe('')
 			expect(checkTypes(showcaseRoot)).toBe('')
 
@@ -561,8 +568,8 @@ describe('emitted workspaces under their own gates', () => {
 			// two have to agree or a generated browser workspace fails its own `test`
 			// script while passing its `check` script.
 			expect(application).toContain("name: { label: 'app:browser', color: 'blue' }")
-			writeFileSync(
-				join(applicationRoot, 'vite.config.ts'),
+			workspace.write(
+				'application/vite.config.ts',
 				application.replace('projects: [appBrowser(),', 'projects: [appBrowser({}),'),
 			)
 			expect(checkTypes(applicationRoot)).toContain('Expected 0 arguments, but got 1.')
@@ -587,11 +594,11 @@ describe('emitted workspaces under their own gates', () => {
 					'const showcasePlugins = showcase',
 				)
 			expect(control).not.toBe(showcase)
-			writeFileSync(join(showcaseRoot, 'vite.config.ts'), control)
+			workspace.write('showcase/vite.config.ts', control)
 			const diagnostics = checkTypes(showcaseRoot)
 			expect(diagnostics).toContain("Parameter 'html' implicitly has an 'any' type")
 		} finally {
-			rmSync(root, { recursive: true, force: true })
+			workspace.destroy()
 		}
 		// Four real `tsc` invocations, measured at about nine seconds alone. The
 		// budget carries slack over that because the cost is contention, not work:
@@ -640,10 +647,12 @@ describe('emitted workspaces under their own gates', () => {
 // from a Node process that imported the emitted module.
 describe('emitted browser resolver', () => {
 	it('publishes every name the emitted root configuration is built on', () => {
-		mkdirSync(resolve('tmp'), { recursive: true })
-		const root = mkdtempSync(join(resolve('tmp'), 'scaffold-e2-resolver-names-'))
+		const workspace = createScratch({
+			parent: ensureTmpRoot(),
+			prefix: 'scaffold-e2-resolver-names-',
+		})
 		try {
-			const file = stageResolver(root)
+			const file = stageResolver(workspace)
 			const [names, bundled] = driveResolver(file, [
 				'Object.keys(resolver)',
 				'resolver.BUNDLED_BROWSERS_ROOT',
@@ -656,16 +665,18 @@ describe('emitted browser resolver', () => {
 			// an echo of the expression that asked for it.
 			expect(bundled).toBe('/opt/pw-browsers')
 		} finally {
-			rmSync(root, { recursive: true, force: true })
+			workspace.destroy()
 		}
 	}, 20_000)
 
 	it('ranks an operator override above every browser it could discover', () => {
-		mkdirSync(resolve('tmp'), { recursive: true })
-		const root = mkdtempSync(join(resolve('tmp'), 'scaffold-e2-resolver-override-'))
+		const workspace = createScratch({
+			parent: ensureTmpRoot(),
+			prefix: 'scaffold-e2-resolver-override-',
+		})
 		try {
-			const file = stageResolver(root)
-			const browsers = buildBrowsersRoot(root, ['chromium'])
+			const file = stageResolver(workspace)
+			const browsers = buildBrowsersRoot(workspace, ['chromium'])
 			const pinned = join(browsers, 'chromium-1234/chrome-linux64/chrome')
 			const alias = join(browsers, 'chromium')
 			const [discovered, executable, endpoint, channel, ranked, empty] = driveResolver(file, [
@@ -703,18 +714,20 @@ describe('emitted browser resolver', () => {
 			// An empty value is absence rather than an override, so discovery answers.
 			expect(empty).toStrictEqual({ launchOptions: { executablePath: alias } })
 		} finally {
-			rmSync(root, { recursive: true, force: true })
+			workspace.destroy()
 		}
 	}, 20_000)
 
 	it('reads a pinned-revision miss as a fallthrough rather than as absence', () => {
-		mkdirSync(resolve('tmp'), { recursive: true })
-		const root = mkdtempSync(join(resolve('tmp'), 'scaffold-e2-resolver-managed-'))
+		const workspace = createScratch({
+			parent: ensureTmpRoot(),
+			prefix: 'scaffold-e2-resolver-managed-',
+		})
 		try {
-			const file = stageResolver(root)
+			const file = stageResolver(workspace)
 			// `chromium-999` sorts above `chromium-1194` by name and below it by
 			// revision, so the entry the sweep picks says which of the two orders ran.
-			const browsers = buildBrowsersRoot(root, [
+			const browsers = buildBrowsersRoot(workspace, [
 				'chromium',
 				'chromium-1194/chrome-linux64/chrome',
 				'chromium-999/chrome-linux/chrome',
@@ -736,33 +749,34 @@ describe('emitted browser resolver', () => {
 			expect(directory).toBe(false)
 			expect(aliased).toBe(alias)
 
-			rmSync(alias)
+			workspace.remove('browsers/chromium')
 			const [byRevision] = driveResolver(file, [call])
 			expect(byRevision).toBe(highest)
 
-			rmSync(join(browsers, 'chromium-1194'), { recursive: true })
+			workspace.remove('browsers/chromium-1194')
 			const [remaining] = driveResolver(file, [call])
 			expect(remaining).toBe(lowest)
 
 			// The control the ladder needs: with nothing installed the same call reports
 			// absence, so each answer above is a resolution rather than a constant.
-			rmSync(join(browsers, 'chromium-999'), { recursive: true })
+			workspace.remove('browsers/chromium-999')
 			const [absent] = driveResolver(file, [call])
 			expect(absent).toBeNull()
 		} finally {
-			rmSync(root, { recursive: true, force: true })
+			workspace.destroy()
 		}
 	}, 30_000)
 
 	it('keeps Playwright launch defaults when the pinned revision is installed', () => {
-		mkdirSync(resolve('tmp'), { recursive: true })
-		const root = mkdtempSync(join(resolve('tmp'), 'scaffold-e2-resolver-pinned-'))
+		const workspace = createScratch({
+			parent: ensureTmpRoot(),
+			prefix: 'scaffold-e2-resolver-pinned-',
+		})
 		try {
-			const file = stageResolver(root)
-			const browsers = buildBrowsersRoot(root, ['chromium-1234/chrome-linux64/chrome'])
+			const file = stageResolver(workspace)
+			const browsers = buildBrowsersRoot(workspace, ['chromium-1234/chrome-linux64/chrome'])
 			const pinned = join(browsers, 'chromium-1234/chrome-linux64/chrome')
-			const bare = join(root, 'bare')
-			mkdirSync(bare, { recursive: true })
+			const bare = workspace.ensure('bare')
 			const [installed, bundled, channel] = driveResolver(file, [
 				buildResolveCall(pinned, {}, browsers),
 				buildResolveCall(undefined, {}, browsers),
@@ -780,7 +794,7 @@ describe('emitted browser resolver', () => {
 				{ launchOptions: { channel: 'msedge' } },
 			]).toContainEqual(channel)
 		} finally {
-			rmSync(root, { recursive: true, force: true })
+			workspace.destroy()
 		}
 	}, 20_000)
 })

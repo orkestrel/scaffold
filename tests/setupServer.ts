@@ -10,17 +10,8 @@ import type { CLICommand, CLIOptions, Verb } from '../src/bin/types.js'
 import type { TestGuardCase, TestPathCase } from './setup.js'
 import type { ServerResponse } from 'node:http'
 import { execFileSync } from 'node:child_process'
-import {
-	existsSync,
-	mkdirSync,
-	mkdtempSync,
-	readFileSync,
-	rmSync,
-	symlinkSync,
-	writeFileSync,
-} from 'node:fs'
+import { mkdirSync, symlinkSync } from 'node:fs'
 import { createServer } from 'node:http'
-import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { gzipSync } from 'node:zlib'
@@ -70,7 +61,8 @@ import {
 	stageHost,
 } from '@src/server'
 import { optionToName } from '../src/bin/helpers.js'
-import { createRecorder } from '@orkestrel/test'
+import { createRecorder, requireValue } from '@orkestrel/test'
+import { createScratch } from '@orkestrel/test/server'
 import {
 	buildBlueprint,
 	buildContentArtifact,
@@ -264,12 +256,12 @@ export const WORKSPACE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '
  * ```
  */
 export function detectCaseFolding(): boolean {
-	const probe = mkdtempSync(join(tmpdir(), 'orkestrel-scaffold-case-'))
+	const probe = createScratch({ prefix: 'orkestrel-scaffold-case-' })
 	try {
-		writeFileSync(join(probe, 'case.probe'), '', 'utf8')
-		return existsSync(join(probe, 'CASE.PROBE'))
+		probe.write('case.probe', '')
+		return probe.has('CASE.PROBE')
 	} finally {
-		rmSync(probe, { recursive: true, force: true })
+		probe.destroy()
 	}
 }
 
@@ -338,34 +330,33 @@ export const CASE_FOLDING: boolean = detectCaseFolding()
  * ```
  */
 export function createWorkspace(): TestWorkspaceInterface {
-	const path = mkdtempSync(join(tmpdir(), 'orkestrel-scaffold-'))
+	const scratch = createScratch({ prefix: 'orkestrel-scaffold-' })
+	const path = scratch.path
 	return {
 		path,
 		write(relative: string, content: string) {
-			const destination = join(path, relative)
-			mkdirSync(dirname(destination), { recursive: true })
-			writeFileSync(destination, content, 'utf8')
-			return destination
+			scratch.write(relative, content)
+			return join(path, relative)
 		},
 		read(relative: string) {
-			return readFileSync(join(path, relative), 'utf8')
+			return requireValue(scratch.read(relative))
 		},
 		directory(relative: string) {
-			const destination = join(path, relative)
-			mkdirSync(destination, { recursive: true })
-			return destination
+			return scratch.ensure(relative)
 		},
 		link(relative: string, target: string) {
+			// `symlinkSync`'s `'junction'` type is not an option `ScratchInterface.link`
+			// takes, so this call site stays on `node:fs` rather than the scratch.
 			const destination = join(path, relative)
 			mkdirSync(dirname(destination), { recursive: true })
 			symlinkSync(target, destination, 'junction')
 			return destination
 		},
 		remove(relative: string) {
-			rmSync(join(path, relative), { recursive: true, force: true })
+			scratch.remove(relative)
 		},
 		destroy() {
-			rmSync(path, { recursive: true, force: true })
+			scratch.destroy()
 		},
 	}
 }

@@ -1,16 +1,9 @@
 import { spawnSync } from 'node:child_process'
-import {
-	existsSync,
-	globSync,
-	mkdtempSync,
-	mkdirSync,
-	readFileSync,
-	rmSync,
-	writeFileSync,
-} from 'node:fs'
-import { tmpdir } from 'node:os'
+import { globSync, readFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { requireValue } from '@orkestrel/test'
+import { createScratch } from '@orkestrel/test/server'
 import ts from 'typescript'
 import { describe, expect, it } from 'vitest'
 
@@ -149,7 +142,7 @@ const DRIVER = [
 
 describe('installed package consumer', () => {
 	it('answers every example its shipped declarations print exactly as printed', () => {
-		const workspace = mkdtempSync(join(tmpdir(), 'scaffold-e4-examples-'))
+		const workspace = createScratch({ prefix: 'scaffold-e4-examples-' })
 		try {
 			const driven: string[] = []
 			const undriven: string[] = []
@@ -273,7 +266,7 @@ describe('installed package consumer', () => {
 					})
 				}
 				const answered = spawnSync(process.execPath, ['--input-type=module', '--eval', DRIVER], {
-					cwd: workspace,
+					cwd: workspace.path,
 					encoding: 'utf8',
 					input: JSON.stringify({
 						module: pathToFileURL(resolve(root, declaration.module)).href,
@@ -385,13 +378,13 @@ describe('installed package consumer', () => {
 				40,
 			)
 		} finally {
-			rmSync(workspace, { recursive: true, force: true })
+			workspace.destroy()
 		}
 	})
 
 	it('drives the built compiler from outside the checkout without a network install', () => {
-		const workspace = mkdtempSync(join(tmpdir(), 'scaffold-e4-driver-'))
-		const target = join(workspace, 'generated')
+		const workspace = createScratch({ prefix: 'scaffold-e4-driver-' })
+		const target = join(workspace.path, 'generated')
 		const core = pathToFileURL(resolve(root, 'dist/src/core/index.js')).href
 		const server = pathToFileURL(resolve(root, 'dist/src/server/index.js')).href
 		const missing = pathToFileURL(resolve(root, 'dist/outside-integration-control.js')).href
@@ -399,7 +392,7 @@ describe('installed package consumer', () => {
 			const control = spawnSync(
 				process.execPath,
 				['--input-type=module', '--eval', `await import(${JSON.stringify(missing)})`],
-				{ cwd: workspace, encoding: 'utf8', windowsHide: true },
+				{ cwd: workspace.path, encoding: 'utf8', windowsHide: true },
 			)
 			expect(control.status).not.toBe(0)
 
@@ -417,22 +410,22 @@ describe('installed package consumer', () => {
 				'process.stdout.write(String(result.written.length))',
 			].join('\n')
 			const driven = spawnSync(process.execPath, ['--input-type=module', '--eval', source], {
-				cwd: workspace,
+				cwd: workspace.path,
 				encoding: 'utf8',
 				windowsHide: true,
 			})
 			expect(driven.status).toBe(0)
 			expect(driven.stderr).toBe('')
 			expect(Number(driven.stdout)).toBeGreaterThan(0)
-			expect(existsSync(join(target, 'tests/config.test.ts'))).toBe(true)
-			expect(existsSync(join(target, 'tests/integration.test.ts'))).toBe(true)
-			expect(existsSync(join(target, 'tests/guides.test.ts'))).toBe(false)
-			const manifest = readFileSync(join(target, 'package.json'), 'utf8')
+			expect(workspace.has('generated/tests/config.test.ts')).toBe(true)
+			expect(workspace.has('generated/tests/integration.test.ts')).toBe(true)
+			expect(workspace.has('generated/tests/guides.test.ts')).toBe(false)
+			const manifest = requireValue(workspace.read('generated/package.json'))
 			expect(manifest).toContain('"test:config"')
 			expect(manifest).toContain('"test:integration"')
 			expect(manifest).not.toContain('"test:guides"')
 		} finally {
-			rmSync(workspace, { recursive: true, force: true })
+			workspace.destroy()
 		}
 	})
 
@@ -442,16 +435,13 @@ describe('installed package consumer', () => {
 			if (!registry) {
 				throw new Error('The distribution release gate requires a reachable npm registry.')
 			}
-			const workspace = mkdtempSync(join(tmpdir(), 'scaffold-e4-install-'))
-			const packed = join(workspace, 'packed')
-			const consumer = join(workspace, 'consumer')
-			const target = join(workspace, 'generated')
-			const cache = join(workspace, 'cache')
+			const workspace = createScratch({ prefix: 'scaffold-e4-install-' })
+			const packed = workspace.ensure('packed')
+			const consumer = workspace.ensure('consumer')
+			const target = join(workspace.path, 'generated')
+			const cache = workspace.ensure('cache')
 			const environment = { ...process.env, npm_config_cache: cache }
 			try {
-				mkdirSync(packed, { recursive: true })
-				mkdirSync(consumer, { recursive: true })
-				mkdirSync(cache, { recursive: true })
 				const pack = spawnSync(
 					npm,
 					['pack', '--json', '--ignore-scripts', '--pack-destination', packed],
@@ -462,8 +452,8 @@ describe('installed package consumer', () => {
 				expect(archives).toHaveLength(1)
 				const archive = archives[0]
 				if (archive === undefined) throw new Error('The package archive was not written')
-				writeFileSync(
-					join(consumer, 'package.json'),
+				workspace.write(
+					'consumer/package.json',
 					'{"name":"scaffold-install-consumer","private":true,"type":"module"}\n',
 				)
 				const install = spawnSync(
@@ -472,8 +462,8 @@ describe('installed package consumer', () => {
 					{ cwd: consumer, encoding: 'utf8', env: environment, windowsHide: true, shell },
 				)
 				expect(install.status).toBe(0)
-				writeFileSync(
-					join(consumer, 'generate.mjs'),
+				workspace.write(
+					'consumer/generate.mjs',
 					[
 						"import { createBlueprint, createCompiler } from '@orkestrel/scaffold'",
 						"import { createMaterializer } from '@orkestrel/scaffold/server'",
@@ -501,8 +491,9 @@ describe('installed package consumer', () => {
 				}
 				const version: unknown = Object.getOwnPropertyDescriptor(sourceManifest, 'version')?.value
 				if (typeof version !== 'string') throw new Error('The scaffold manifest carries no version')
-				const targetManifestPath = join(target, 'package.json')
-				const targetManifest: unknown = JSON.parse(readFileSync(targetManifestPath, 'utf8'))
+				const targetManifest: unknown = JSON.parse(
+					requireValue(workspace.read('generated/package.json')),
+				)
 				if (typeof targetManifest !== 'object' || targetManifest === null) {
 					throw new Error('The generated manifest is not a record')
 				}
@@ -525,14 +516,19 @@ describe('installed package consumer', () => {
 					enumerable: true,
 					configurable: true,
 				})
-				writeFileSync(targetManifestPath, `${JSON.stringify(targetManifest, undefined, '\t')}\n`)
+				workspace.write(
+					'generated/package.json',
+					`${JSON.stringify(targetManifest, undefined, '\t')}\n`,
+				)
 				const dependencies = spawnSync(
 					npm,
 					['install', '--ignore-scripts', '--no-audit', '--no-fund'],
 					{ cwd: target, encoding: 'utf8', env: environment, windowsHide: true, shell },
 				)
 				expect(dependencies.status).toBe(0)
-				const lock: unknown = JSON.parse(readFileSync(join(target, 'package-lock.json'), 'utf8'))
+				const lock: unknown = JSON.parse(
+					requireValue(workspace.read('generated/package-lock.json')),
+				)
 				if (typeof lock !== 'object' || lock === null) {
 					throw new Error('The generated lockfile is not a record')
 				}
@@ -558,7 +554,7 @@ describe('installed package consumer', () => {
 				})
 				expect(gates.status).toBe(0)
 			} finally {
-				rmSync(workspace, { recursive: true, force: true })
+				workspace.destroy()
 			}
 		},
 		1_200_000,
