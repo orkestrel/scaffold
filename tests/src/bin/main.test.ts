@@ -23,7 +23,7 @@ describe('scaffold', () => {
 		const workspace = createWorkspace()
 		try {
 			const host = createStagedHost(workspace)
-			const target = workspace.directory('fresh')
+			const target = workspace.ensure('fresh')
 			const created = spawnSync(
 				process.execPath,
 				[

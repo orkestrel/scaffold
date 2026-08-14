@@ -85,7 +85,7 @@ export interface TestWorkspaceInterface {
 	readonly path: string
 	write(relative: string, content: string): string
 	read(relative: string): string
-	directory(relative: string): string
+	ensure(relative: string): string
 	link(relative: string, target: string): string
 	remove(relative: string): void
 	destroy(): void
@@ -341,7 +341,7 @@ export function createWorkspace(): TestWorkspaceInterface {
 		read(relative: string) {
 			return requireValue(scratch.read(relative))
 		},
-		directory(relative: string) {
+		ensure(relative: string) {
 			return scratch.ensure(relative)
 		},
 		link(relative: string, target: string) {
@@ -910,7 +910,7 @@ export function createHostRoot(
 	relative: string,
 	manifest: HostManifest,
 ): string {
-	const root = workspace.directory(relative)
+	const root = workspace.ensure(relative)
 	for (const entry of manifest.entries) {
 		workspace.write(`${relative}/${entry.storage}`, `${entry.destination}\n`)
 	}
@@ -930,7 +930,7 @@ export function createHostRoot(
  * subject of a command-line regression.
  */
 export function createStagedHost(workspace: TestWorkspaceInterface): string {
-	const root = workspace.directory('host')
+	const root = workspace.ensure('host')
 	stageHost(WORKSPACE_ROOT, root)
 	return root
 }
@@ -1207,13 +1207,13 @@ export function buildFleetManifest(): HostManifest {
  * to declare.
  */
 export function createCheckout(workspace: TestWorkspaceInterface, relative: string): string {
-	const root = workspace.directory(relative)
+	const root = workspace.ensure(relative)
 	for (const path of HOST_PATHS) {
 		if (!HOST_DIRECTORY_PATHS.includes(path)) {
 			workspace.write(`${relative}/${path}`, `${path}\n`)
 			continue
 		}
-		workspace.directory(`${relative}/${path}`)
+		workspace.ensure(`${relative}/${path}`)
 		if (path === '.claude/skills') continue
 		workspace.write(`${relative}/${path}/sample.md`, `${path}/sample.md\n`)
 	}
@@ -1282,9 +1282,9 @@ export function createFleet(workspace: TestWorkspaceInterface): {
 	readonly target: string
 } {
 	const host = createHostRoot(workspace, 'host', buildFleetManifest())
-	const target = workspace.directory('target')
+	const target = workspace.ensure('target')
 	workspace.write('target/package.json', TARGET_MANIFEST_TEXT)
-	workspace.directory('target/src/core')
+	workspace.ensure('target/src/core')
 	return { host, target }
 }
 

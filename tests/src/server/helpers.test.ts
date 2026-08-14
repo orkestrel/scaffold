@@ -243,7 +243,7 @@ describe('physical shape', () => {
 		const workspace = createWorkspace()
 		try {
 			const file = workspace.write('AGENTS.md', 'hi\n')
-			const directory = workspace.directory('guides')
+			const directory = workspace.ensure('guides')
 			expect(isPhysicalFile(file)).toBe(true)
 			expect(isPhysicalDirectory(file)).toBe(false)
 			expect(isPhysicalDirectory(directory)).toBe(true)
@@ -279,7 +279,7 @@ describe('physical shape', () => {
 	it('refuses a redirected directory rather than following it', () => {
 		const workspace = createWorkspace()
 		try {
-			const real = workspace.directory('guides')
+			const real = workspace.ensure('guides')
 			const link = workspace.link('mirror', real)
 			expect(isPhysicalDirectory(real)).toBe(true)
 			expect(isPhysicalDirectory(link)).toBe(false)
@@ -304,7 +304,7 @@ describe('computeFileDigest', () => {
 		const workspace = createWorkspace()
 		try {
 			expect(computeFileDigest(join(workspace.path, 'absent.md'))).toBeUndefined()
-			expect(computeFileDigest(workspace.directory('guides'))).toBeUndefined()
+			expect(computeFileDigest(workspace.ensure('guides'))).toBeUndefined()
 			const file = workspace.write('AGENTS.md', 'hi\n')
 			linkSync(file, join(workspace.path, 'CLAUDE.md'))
 			expect(computeFileDigest(file)).toBeUndefined()
@@ -351,7 +351,7 @@ describe('resolveRealPath', () => {
 	it('follows a link in the existing prefix to where it really points', () => {
 		const workspace = createWorkspace()
 		try {
-			const real = workspace.directory('real')
+			const real = workspace.ensure('real')
 			workspace.link('mirror', real)
 			expect(resolveRealPath(join(workspace.path, 'mirror', 'new.md'))).toBe(
 				join(resolveRealPath(real) ?? '', 'new.md'),
@@ -464,7 +464,7 @@ describe('resolveContainedPath', () => {
 			const outside = createWorkspace()
 			const workspace = createWorkspace()
 			try {
-				workspace.link('hop', outside.directory('deep'))
+				workspace.link('hop', outside.ensure('deep'))
 				workspace.link('link', 'hop/../secret')
 				const admitted = resolveContainedPath(workspace.path, 'link')
 				if (admitted !== undefined) writeFileSync(admitted, 'escaped\n')
@@ -498,7 +498,7 @@ describe('resolveContainedPath', () => {
 	it('admits a real link that stays inside the root', () => {
 		const workspace = createWorkspace()
 		try {
-			const real = workspace.directory('real')
+			const real = workspace.ensure('real')
 			workspace.link('mirror', real)
 			workspace.write('real/router.md', '# Router\n')
 			expect(resolveContainedPath(workspace.path, 'mirror/router.md')).toBe(
@@ -515,7 +515,7 @@ describe('isVacant', () => {
 		const workspace = createWorkspace()
 		try {
 			expect(isVacant(join(workspace.path, 'absent'))).toBe(true)
-			expect(isVacant(workspace.directory('empty'))).toBe(true)
+			expect(isVacant(workspace.ensure('empty'))).toBe(true)
 		} finally {
 			workspace.destroy()
 		}
@@ -524,8 +524,8 @@ describe('isVacant', () => {
 	it('accepts a target holding nothing but its own repository metadata', () => {
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('checkout')
-			workspace.directory('checkout/.git')
+			const target = workspace.ensure('checkout')
+			workspace.ensure('checkout/.git')
 			expect(isVacant(target)).toBe(true)
 			workspace.write('checkout/README.md', '# Sample\n')
 			expect(isVacant(target)).toBe(false)
@@ -537,8 +537,8 @@ describe('isVacant', () => {
 	it('refuses a target holding one unrelated dotted entry', () => {
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('checkout')
-			workspace.directory('checkout/.github')
+			const target = workspace.ensure('checkout')
+			workspace.ensure('checkout/.github')
 			expect(isVacant(target)).toBe(false)
 		} finally {
 			workspace.destroy()
@@ -548,7 +548,7 @@ describe('isVacant', () => {
 	it('refuses a metadata name that is a file rather than a directory', () => {
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('checkout')
+			const target = workspace.ensure('checkout')
 			workspace.write('checkout/.git', 'gitdir: elsewhere\n')
 			expect(isVacant(target)).toBe(false)
 		} finally {
@@ -560,7 +560,7 @@ describe('isVacant', () => {
 		const workspace = createWorkspace()
 		try {
 			expect(isVacant(workspace.write('AGENTS.md', 'hi\n'))).toBe(false)
-			expect(isVacant(workspace.link('mirror', workspace.directory('empty')))).toBe(false)
+			expect(isVacant(workspace.link('mirror', workspace.ensure('empty')))).toBe(false)
 			expect(isVacant('')).toBe(false)
 			expect(isVacant('project/nul')).toBe(false)
 		} finally {
@@ -576,7 +576,7 @@ describe('listFiles', () => {
 			workspace.write('b.md', 'b\n')
 			workspace.write('a/deep/c.md', 'c\n')
 			workspace.write('a/b.md', 'b\n')
-			workspace.directory('empty')
+			workspace.ensure('empty')
 			expect(listFiles(workspace.path)).toEqual(['a/b.md', 'a/deep/c.md', 'b.md'])
 		} finally {
 			workspace.destroy()
@@ -595,7 +595,7 @@ describe('listFiles', () => {
 	it('answers an existing empty root with the empty list', () => {
 		const workspace = createWorkspace()
 		try {
-			expect(listFiles(workspace.directory('empty'))).toEqual([])
+			expect(listFiles(workspace.ensure('empty'))).toEqual([])
 		} finally {
 			workspace.destroy()
 		}
@@ -631,7 +631,7 @@ describe('listFiles', () => {
 	it('lists a redirected directory as one entry rather than walking through it', () => {
 		const workspace = createWorkspace()
 		try {
-			const real = workspace.directory('real')
+			const real = workspace.ensure('real')
 			workspace.write('real/router.md', '# Router\n')
 			workspace.link('mirror', real)
 			expect(listFiles(workspace.path)).toEqual(['mirror', 'real/router.md'])
@@ -646,7 +646,7 @@ describe('listDirectories', () => {
 		const workspace = createWorkspace()
 		try {
 			workspace.write('b/leaf.md', 'leaf\n')
-			workspace.directory('a/deep/deeper')
+			workspace.ensure('a/deep/deeper')
 			workspace.write('root.md', 'root\n')
 			expect(listDirectories(workspace.path)).toEqual(['a', 'a/deep', 'a/deep/deeper', 'b'])
 		} finally {
@@ -658,7 +658,7 @@ describe('listDirectories', () => {
 		const workspace = createWorkspace()
 		try {
 			workspace.write('filled/leaf.md', 'leaf\n')
-			workspace.directory('empty')
+			workspace.ensure('empty')
 			// The bijection: a file inventory reports only the filled branch, so the
 			// empty one exists in the tree and nowhere in `listFiles`.
 			expect(listFiles(workspace.path)).toEqual(['filled/leaf.md'])
@@ -672,7 +672,7 @@ describe('listDirectories', () => {
 		const workspace = createWorkspace()
 		try {
 			expect(listDirectories(join(workspace.path, 'absent'))).toEqual([])
-			expect(listDirectories(workspace.directory('empty'))).toEqual([])
+			expect(listDirectories(workspace.ensure('empty'))).toEqual([])
 		} finally {
 			workspace.destroy()
 		}
@@ -696,9 +696,9 @@ describe('listDirectories', () => {
 		const workspace = createWorkspace()
 		try {
 			const shallow = Array.from({ length: MAX_PATH_DEPTH - 2 }, () => 'a').join('/')
-			workspace.directory(shallow)
+			workspace.ensure(shallow)
 			expect(listDirectories(workspace.path).length).toBe(MAX_PATH_DEPTH - 2)
-			workspace.directory(`${shallow}/a/a/a`)
+			workspace.ensure(`${shallow}/a/a/a`)
 			expect(readErrorCode(() => listDirectories(workspace.path))).toBe('TARGET')
 		} finally {
 			workspace.destroy()
@@ -708,8 +708,8 @@ describe('listDirectories', () => {
 	it('neither lists nor walks a redirected directory', () => {
 		const workspace = createWorkspace()
 		try {
-			const real = workspace.directory('real')
-			workspace.directory('real/nested')
+			const real = workspace.ensure('real')
+			workspace.ensure('real/nested')
 			workspace.link('mirror', real)
 			// The control: the same directories read perfectly well through the path
 			// they really sit at, so the omission is the link rather than an unread
@@ -758,7 +758,7 @@ describe('readFileHex and readFileText', () => {
 	it('answers undefined for an absent path, a directory, and a linked file', () => {
 		const workspace = createWorkspace()
 		try {
-			workspace.directory('guides')
+			workspace.ensure('guides')
 			const file = workspace.write('AGENTS.md', 'hi\n')
 			linkSync(file, join(workspace.path, 'CLAUDE.md'))
 			expect(readFileHex(workspace.path, 'absent.md')).toBeUndefined()
@@ -814,7 +814,7 @@ describe('readSnapshot', () => {
 		const workspace = createWorkspace()
 		try {
 			workspace.write('AGENTS.md', 'hi\n')
-			workspace.directory('guides')
+			workspace.ensure('guides')
 			expect(readSnapshot(workspace.path, ['AGENTS.md', 'guides', 'absent.md'])).toEqual({
 				'AGENTS.md': '68690a',
 				guides: '',
@@ -1042,7 +1042,7 @@ describe('readManifestEntry', () => {
 		const workspace = createWorkspace()
 		try {
 			expect(readManifestEntry('absent.md', join(workspace.path, 'absent.md'))).toBeUndefined()
-			expect(readManifestEntry('guides', workspace.directory('guides'))).toBeUndefined()
+			expect(readManifestEntry('guides', workspace.ensure('guides'))).toBeUndefined()
 			const source = workspace.write('AGENTS.md', 'hi\n')
 			linkSync(source, join(workspace.path, 'CLAUDE.md'))
 			expect(readManifestEntry('AGENTS.md', source)).toBeUndefined()
@@ -1118,7 +1118,7 @@ describe('stageHost', () => {
 		const workspace = createWorkspace()
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
-			workspace.directory('checkout/.claude/skills/orkestrel-falsify/references')
+			workspace.ensure('checkout/.claude/skills/orkestrel-falsify/references')
 			const host = join(workspace.path, 'host')
 			stageHost(checkout, host)
 			expect(readHostManifest(host)?.roots).toEqual(
@@ -1171,7 +1171,7 @@ describe('stageHost', () => {
 		const workspace = createWorkspace()
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
-			const host = workspace.directory('host')
+			const host = workspace.ensure('host')
 			workspace.write('host/existing.md', 'existing\n')
 			expect(readErrorCode(() => stageHost(checkout, host))).toBe('TARGET')
 			expect(listFiles(host)).toEqual(['existing.md'])
@@ -1312,7 +1312,7 @@ describe('write anchors', () => {
 	it('captures a directory identity and matches it while it is untouched', () => {
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			const anchor = readAnchor(target)
 			expect(anchor?.path).toBe(target)
 			expect(anchor !== undefined && matchesAnchor(anchor)).toBe(true)
@@ -1326,7 +1326,7 @@ describe('write anchors', () => {
 		try {
 			expect(readAnchor(workspace.write('AGENTS.md', 'hi\n'))).toBeUndefined()
 			expect(readAnchor(join(workspace.path, 'absent'))).toBeUndefined()
-			expect(readAnchor(workspace.link('mirror', workspace.directory('real')))).toBeUndefined()
+			expect(readAnchor(workspace.link('mirror', workspace.ensure('real')))).toBeUndefined()
 		} finally {
 			workspace.destroy()
 		}
@@ -1335,11 +1335,11 @@ describe('write anchors', () => {
 	it('reports a directory swapped in by rename', () => {
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			const anchor = readAnchor(target)
 			expect(anchor).toBeDefined()
 			if (anchor === undefined) return
-			const replacement = workspace.directory('replacement')
+			const replacement = workspace.ensure('replacement')
 			const replacementAnchor = readAnchor(replacement)
 			expect(replacementAnchor).toBeDefined()
 			if (replacementAnchor === undefined) return
@@ -1362,11 +1362,11 @@ describe('write anchors', () => {
 	it('reports a path replaced by a symlink to a directory', () => {
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			const anchor = readAnchor(target)
 			expect(anchor).toBeDefined()
 			if (anchor === undefined) return
-			const replacement = workspace.directory('replacement')
+			const replacement = workspace.ensure('replacement')
 			rmSync(target, { recursive: true })
 			workspace.link('project', replacement)
 			expect(lstatSync(target).isSymbolicLink()).toBe(true)
@@ -1379,7 +1379,7 @@ describe('write anchors', () => {
 	it('reports a directory that is gone', () => {
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			const anchor = readAnchor(target)
 			expect(anchor).toBeDefined()
 			if (anchor === undefined) return
@@ -1420,7 +1420,7 @@ describe('write expectations', () => {
 	it('captures a directory without claiming bytes it never read', () => {
 		const workspace = createWorkspace()
 		try {
-			const path = workspace.directory('guides')
+			const path = workspace.ensure('guides')
 			const expectation = readExpectation(path)
 			expect(expectation?.shape).toBe('directory')
 			expect(expectation?.digest).toBeUndefined()
@@ -1465,7 +1465,7 @@ describe('write expectations', () => {
 			const file = workspace.write('AGENTS.md', 'hi\n')
 			linkSync(file, join(workspace.path, 'CLAUDE.md'))
 			expect(readExpectation(file)).toBeUndefined()
-			expect(readExpectation(workspace.link('mirror', workspace.directory('real')))).toBeUndefined()
+			expect(readExpectation(workspace.link('mirror', workspace.ensure('real')))).toBeUndefined()
 		} finally {
 			workspace.destroy()
 		}
@@ -1518,7 +1518,7 @@ describe('write preconditions', () => {
 	it('refuses a destination whose shape is not the one stated', () => {
 		const workspace = createWorkspace()
 		try {
-			const directory = workspace.directory('guides')
+			const directory = workspace.ensure('guides')
 			expect(matchesPrecondition({ path: directory, shape: 'file' })).toBe(false)
 			expect(matchesPrecondition({ path: directory, shape: 'absent' })).toBe(false)
 		} finally {

@@ -46,7 +46,7 @@ describe('Materializer construction', () => {
 	it('accepts a host with no manifest at all, including the default one', () => {
 		const workspace = createWorkspace()
 		try {
-			const raw = workspace.directory('raw')
+			const raw = workspace.ensure('raw')
 			const materializer = new Materializer({ host: raw })
 			expect(materializer.emitter.destroyed).toBe(false)
 			materializer.destroy()
@@ -220,7 +220,7 @@ describe('Materializer materialize', () => {
 		const workspace = createWorkspace()
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			workspace.write('project/README.md', '# Sample\n')
 			const materializer = new Materializer({ host })
 			try {
@@ -298,7 +298,7 @@ describe('Materializer materialize', () => {
 		try {
 			workspace.write('raw/AGENTS.md', '# Raw agents\n')
 			workspace.write('raw/.claude/rules/names.md', '# Raw names\n')
-			const host = workspace.directory('raw')
+			const host = workspace.ensure('raw')
 			const target = join(workspace.path, 'project')
 			const materializer = new Materializer({ host })
 			try {
@@ -351,7 +351,7 @@ describe('Materializer audit', () => {
 		const workspace = createWorkspace()
 		try {
 			const host = createHostRoot(workspace, 'host', buildFleetManifest())
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			workspace.write('project/.gitignore', 'dist\nlocal-cache\n')
 			workspace.write('project/.oxlintrc.json', '{ "rules": {} }\n')
 			const plan = buildCompiledPlan()
@@ -381,7 +381,7 @@ describe('Materializer audit', () => {
 		const workspace = createWorkspace()
 		try {
 			const host = createHostRoot(workspace, 'host', buildFleetManifest())
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			const plan = buildCompiledPlan()
 			const materializer = new Materializer({ host })
 			try {
@@ -411,9 +411,9 @@ describe('Materializer audit', () => {
 					{ path: '.gitignore', group: 'configs', ownership: 'presence', origin: 'host' },
 				],
 			})
-			const materializer = new Materializer({ host: workspace.directory('raw') })
+			const materializer = new Materializer({ host: workspace.ensure('raw') })
 			try {
-				const audit = materializer.audit(plan, workspace.directory('project'))
+				const audit = materializer.audit(plan, workspace.ensure('project'))
 				expect(audit.findings).toHaveLength(1)
 				expect(audit.findings[0]).toMatchObject({
 					path: '.gitignore',
@@ -421,7 +421,7 @@ describe('Materializer audit', () => {
 					ownership: 'presence',
 					drift: 'aligned',
 				})
-				const result = materializer.repair(plan, audit, workspace.directory('project'))
+				const result = materializer.repair(plan, audit, workspace.ensure('project'))
 				expect(result.written).toStrictEqual([])
 				expect(workspace.read('project/.gitignore')).toBe('dist\nlocal-cache\n')
 			} finally {
@@ -505,7 +505,7 @@ describe('Materializer audit', () => {
 		const workspace = createWorkspace()
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			const plan = buildVendoredPlan()
 			const materializer = new Materializer({ host })
 			try {
@@ -534,7 +534,7 @@ describe('Materializer audit', () => {
 		const workspace = createWorkspace()
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			workspace.write('project/AGENTS.md', 'AGENTS.md\n')
 			workspace.write('project/.claude/rules/foreign.md', '# Foreign rule\n')
 			const plan = buildVendoredPlan({
@@ -617,7 +617,7 @@ describe('Materializer repair', () => {
 		const workspace = createWorkspace()
 		try {
 			workspace.write('raw/.claude/rules/names.md', '# Names\n')
-			const host = workspace.directory('raw')
+			const host = workspace.ensure('raw')
 			const target = join(workspace.path, 'project')
 			const plan = buildVendoredPlan({
 				groups: ['orchestration'],
@@ -762,7 +762,7 @@ describe('Materializer mirror', () => {
 		const workspace = createWorkspace()
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			workspace.write('project/guides/router.md', '# Old router\n')
 			workspace.write('project/guides/emitter.md', '# Emitter\n')
 			const materializer = new Materializer({ host })
@@ -807,7 +807,7 @@ describe('Materializer mirror', () => {
 		const workspace = createWorkspace()
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			const materializer = new Materializer({ host })
 			try {
 				const created = materializer.mirror(
@@ -853,7 +853,7 @@ describe('Materializer catalog', () => {
 		const workspace = createWorkspace()
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			workspace.write('project/.claude/agents/orkestrel.md', CATALOG_AGENT_TEXT)
 			const materializer = new Materializer({ host })
 			try {
@@ -894,7 +894,7 @@ describe('Materializer catalog', () => {
 		const workspace = createWorkspace()
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			workspace.write('project/.claude/agents/orkestrel.md', CATALOG_AGENT_TEXT)
 			const materializer = new Materializer({ host })
 			try {
@@ -921,7 +921,7 @@ describe('Materializer declare', () => {
 		const workspace = createWorkspace()
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			workspace.write('project/package.json', TARGET_MANIFEST_TEXT)
 			const materializer = new Materializer({ host })
 			try {
@@ -954,7 +954,7 @@ describe('Materializer declare', () => {
 		const workspace = createWorkspace()
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			workspace.write('project/package.json', TARGET_MANIFEST_TEXT)
 			const materializer = new Materializer({ host })
 			try {
@@ -984,7 +984,7 @@ describe('Materializer remove', () => {
 		const workspace = createWorkspace()
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			workspace.write('project/foreign.md', '# Foreign\n')
 			workspace.write('project/untracked.md', '# Untracked\n')
 			workspace.write('project/src/core/index.ts', 'export {}\n')
@@ -1020,7 +1020,7 @@ describe('Materializer remove', () => {
 		const workspace = createWorkspace()
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			workspace.write('project/foreign.md', '# Foreign\n')
 			const materializer = new Materializer({ host })
 			try {
@@ -1059,7 +1059,7 @@ describe('Materializer remove', () => {
 		const workspace = createWorkspace()
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			workspace.write('project/foreign.md', '# Foreign\n')
 			const removals = createRecorder<readonly [string]>()
 			const materializer = new Materializer({ host, on: { remove: removals.handler } })

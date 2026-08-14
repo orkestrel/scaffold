@@ -197,7 +197,7 @@ describe('CLI new', () => {
 		const workspace = createWorkspace()
 		try {
 			const fleet = createFleet(workspace)
-			const fresh = workspace.directory('fresh')
+			const fresh = workspace.ensure('fresh')
 			const created = createSink()
 			expect(
 				await new CLI(created.options).execute([
@@ -239,7 +239,7 @@ describe('CLI new', () => {
 		const workspace = createWorkspace()
 		try {
 			const fleet = createFleet(workspace)
-			const fresh = workspace.directory('fresh')
+			const fresh = workspace.ensure('fresh')
 			const sink = createSink()
 			const code = await new CLI(sink.options).execute([
 				'new',
@@ -264,7 +264,7 @@ describe('CLI new', () => {
 		const workspace = createWorkspace()
 		try {
 			const fleet = createFleet(workspace)
-			const fresh = workspace.directory('fresh')
+			const fresh = workspace.ensure('fresh')
 			const sink = createSink()
 			const code = await new CLI(sink.options).execute([
 				'new',
@@ -330,7 +330,7 @@ describe('CLI new', () => {
 		const workspace = createWorkspace()
 		try {
 			const fleet = createFleet(workspace)
-			const fresh = workspace.directory('refused-shape')
+			const fresh = workspace.ensure('refused-shape')
 			const sink = createSink()
 			const code = await new CLI(sink.options).execute([
 				'new',
@@ -369,7 +369,7 @@ describe('CLI new', () => {
 				'--from',
 				fleet.host,
 				'--target',
-				workspace.directory('refused-name'),
+				workspace.ensure('refused-name'),
 			])
 
 			expect(code).toBe(EXIT_DRIFT)
@@ -388,10 +388,10 @@ describe('CLI new', () => {
 		const workspace = createWorkspace()
 		try {
 			const fleet = createFleet(workspace)
-			const lacking = workspace.directory('lacking')
+			const lacking = workspace.ensure('lacking')
 			workspace.write('lacking/package.json', TARGET_MANIFEST_TEXT)
-			workspace.directory('lacking/src/browser')
-			workspace.directory('lacking/src/server')
+			workspace.ensure('lacking/src/browser')
+			workspace.ensure('lacking/src/server')
 			const sink = createSink()
 			const code = await new CLI(sink.options).execute([
 				'audit',
@@ -440,10 +440,10 @@ describe('CLI audit', () => {
 		const workspace = createWorkspace()
 		try {
 			const host = createHostRoot(workspace, 'host', buildFleetManifest())
-			const target = workspace.directory('target')
+			const target = workspace.ensure('target')
 			const blueprint = createBlueprint('sample', { src: [], app: ['core', 'browser'] })
-			workspace.directory('target/app/core')
-			workspace.directory('target/app/browser')
+			workspace.ensure('target/app/core')
+			workspace.ensure('target/app/browser')
 			workspace.write(
 				'target/package.json',
 				buildTargetManifest(
@@ -481,10 +481,10 @@ describe('CLI audit', () => {
 		const workspace = createWorkspace()
 		try {
 			const host = createHostRoot(workspace, 'host', buildFleetManifest())
-			const target = workspace.directory('target')
+			const target = workspace.ensure('target')
 			const blueprint = createBlueprint('sample', { src: [], app: ['core', 'browser'] })
-			workspace.directory('target/app/core')
-			workspace.directory('target/app/browser')
+			workspace.ensure('target/app/core')
+			workspace.ensure('target/app/browser')
 			workspace.write(
 				'target/package.json',
 				buildTargetManifest(
@@ -759,8 +759,8 @@ describe('CLI audit', () => {
 		const workspace = createWorkspace()
 		try {
 			const fleet = createFleet(workspace)
-			workspace.directory('target/src/bin')
-			workspace.directory('target/tests')
+			workspace.ensure('target/src/bin')
+			workspace.ensure('target/tests')
 			workspace.write('target/configs/app/other.config.ts', 'export {}\n')
 			expect(
 				await new CLI(createSink().options).execute([
@@ -806,7 +806,7 @@ describe('CLI audit', () => {
 			workspace.write('target/tests/conformance.test.ts', 'export {}\n')
 			workspace.write('target/tests/setupService.ts', 'export {}\n')
 			workspace.write('target/tests/setupGlobal.ts', 'export {}\n')
-			workspace.directory('target/app/browser')
+			workspace.ensure('target/app/browser')
 			workspace.write('target/configs/app/vite.showcase.config.ts', 'export {}\n')
 			const blueprint = createBlueprint('sample', {
 				src: ['core'],
@@ -848,7 +848,7 @@ describe('CLI audit', () => {
 		const workspace = createWorkspace()
 		try {
 			const fleet = createFleet(workspace)
-			workspace.directory('target/tests')
+			workspace.ensure('target/tests')
 			workspace.write('target/tests/Distribution.test.ts', 'export {}\n')
 			expect(
 				await new CLI(createSink().options).execute([
@@ -1019,7 +1019,7 @@ describe('CLI audit', () => {
 				distribution: true,
 			})
 			privateWorkspace.remove('target/src/core')
-			privateWorkspace.directory('target/app/core')
+			privateWorkspace.ensure('target/app/core')
 			privateWorkspace.write('target/tests/distribution.test.ts', 'export {}\n')
 			privateWorkspace.write('target/tests/setupService.ts', 'export {}\n')
 			privateWorkspace.write('target/package.json', blueprintToManifest(blueprint))
@@ -1099,7 +1099,7 @@ describe('CLI audit', () => {
 				'"name": "sample",\n\t"private": true,',
 			)
 			workspace.remove('target/src/core')
-			workspace.directory('target/app/core')
+			workspace.ensure('target/app/core')
 			workspace.write('target/tests/setupService.ts', 'export {}\n')
 			workspace.write('target/package.json', manifest)
 			const sink = createSink()
@@ -1151,7 +1151,7 @@ describe('CLI audit', () => {
 				'"name": "sample",\n\t"private": true,',
 			)
 			workspace.remove('target/src/core')
-			workspace.directory('target/app/core')
+			workspace.ensure('target/app/core')
 			workspace.write('target/tests/setupService.ts', 'export {}\n')
 			workspace.write('target/package.json', manifest)
 			const sink = createSink()
@@ -1231,7 +1231,7 @@ describe('CLI audit', () => {
 		const workspace = createWorkspace()
 		try {
 			const fleet = createFleet(workspace)
-			workspace.directory('target/tests')
+			workspace.ensure('target/tests')
 			const scripts = blueprintToScripts(
 				createBlueprint('sample', { src: ['core'], conformance: true, service: true }),
 			)
@@ -1404,7 +1404,7 @@ describe('CLI audit', () => {
 		const workspace = createWorkspace()
 		try {
 			const host = createStagedHost(workspace)
-			const target = workspace.directory('fresh')
+			const target = workspace.ensure('fresh')
 			expect(
 				await new CLI(createSink().options).execute([
 					'new',
@@ -1500,9 +1500,9 @@ describe('CLI audit', () => {
 		const workspace = createWorkspace()
 		try {
 			const host = createStagedHost(workspace)
-			const target = workspace.directory('target')
+			const target = workspace.ensure('target')
 			workspace.write('target/package.json', TARGET_MANIFEST_TEXT)
-			workspace.directory('target/src/core')
+			workspace.ensure('target/src/core')
 			const report = createSink()
 			expect(
 				await new CLI(report.options).execute(['audit', '--from', host, '--target', target]),
@@ -1716,7 +1716,7 @@ describe('CLI audit', () => {
 		const workspace = createWorkspace()
 		try {
 			const host = createStagedHost(workspace)
-			const target = workspace.directory('fresh')
+			const target = workspace.ensure('fresh')
 			expect(
 				await new CLI(createSink().options).execute([
 					'new',
@@ -1846,7 +1846,7 @@ describe('CLI audit', () => {
 		const workspace = createWorkspace()
 		try {
 			const fleet = createFleet(workspace)
-			const fresh = workspace.directory('fresh')
+			const fresh = workspace.ensure('fresh')
 			await new CLI(createSink().options).execute([
 				'new',
 				'widget',
@@ -1857,7 +1857,7 @@ describe('CLI audit', () => {
 				'--target',
 				fresh,
 			])
-			workspace.directory('fresh/src/core')
+			workspace.ensure('fresh/src/core')
 			const sink = createSink()
 			const code = await new CLI(sink.options).execute([
 				'audit',
@@ -2011,7 +2011,7 @@ describe('CLI audit', () => {
 	it('refuses a target that carries no manifest to read itself out of', async () => {
 		const workspace = createWorkspace()
 		try {
-			const bare = workspace.directory('bare')
+			const bare = workspace.ensure('bare')
 			const sink = createSink()
 			expect(await new CLI(sink.options).execute(['audit', '--target', bare])).toBe(EXIT_DRIFT)
 			expect(sink.diagnostic[0] ?? '').toContain('TARGET')
@@ -2045,7 +2045,7 @@ describe('CLI audit', () => {
 		const workspace = createWorkspace()
 		try {
 			const fleet = createFleet(workspace)
-			const refused = workspace.directory('refused')
+			const refused = workspace.ensure('refused')
 			workspace.write('refused/package.json', REFUSED_MANIFEST_TEXT)
 			const sink = createSink()
 			const code = await new CLI(sink.options).execute([
@@ -2427,7 +2427,7 @@ describe('CLI repair', () => {
 		const workspace = createWorkspace()
 		try {
 			const fleet = createFleet(workspace)
-			const refused = workspace.directory('refused')
+			const refused = workspace.ensure('refused')
 			workspace.write('refused/package.json', REFUSED_MANIFEST_TEXT)
 			const sink = createSink()
 			const code = await new CLI(sink.options).execute([
@@ -2574,7 +2574,7 @@ describe('CLI overwrite', () => {
 		})
 		try {
 			const host = createStagedHost(workspace)
-			const target = workspace.directory('fresh')
+			const target = workspace.ensure('fresh')
 			const created = createSink()
 			expect(
 				await new CLI(buildCLIOptions(created, server.base)).execute([
@@ -2605,7 +2605,7 @@ describe('CLI overwrite', () => {
 			const result: OverwriteResult = JSON.parse(overwritten.output[0] ?? '')
 			expect(result.removed).toStrictEqual([])
 
-			const controlTarget = workspace.directory('control')
+			const controlTarget = workspace.ensure('control')
 			const controlCreated = createSink()
 			expect(
 				await new CLI(buildCLIOptions(controlCreated, server.base)).execute([
@@ -2886,7 +2886,7 @@ describe('CLI catalog', () => {
 		})
 		try {
 			const host = createStagedHost(workspace)
-			const target = workspace.directory('fresh')
+			const target = workspace.ensure('fresh')
 			const created = createSink()
 			expect(
 				await new CLI(buildCLIOptions(created, server.base)).execute([
@@ -3167,7 +3167,7 @@ describe('CLI new dependencies', () => {
 		})
 		try {
 			const fleet = createFleet(workspace)
-			const fresh = workspace.directory('fresh')
+			const fresh = workspace.ensure('fresh')
 			const sink = createSink()
 			const code = await new CLI(buildCLIOptions(sink, server.base)).execute([
 				'new',
@@ -3202,7 +3202,7 @@ describe('CLI new dependencies', () => {
 		})
 		try {
 			const fleet = createFleet(workspace)
-			const fresh = workspace.directory('fresh')
+			const fresh = workspace.ensure('fresh')
 			const sink = createSink()
 			const code = await new CLI(buildCLIOptions(sink, server.base)).execute([
 				'new',

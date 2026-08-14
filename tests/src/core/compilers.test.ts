@@ -95,7 +95,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 
 		// The digest covers the self-pin, so a release moves it. Update it with the
 		// version bump in the same change; it is the tripwire for every other byte.
-		expect(hex).toBe('a1b21700f679d92d8591ebd9a81d73d392602d54d5b5936d3444346067c78d8b')
+		expect(hex).toBe('053faecc081367b320c2bd09e3f58a748466b2cb4dfe4091ac57b900d87a0891')
 	})
 })
 

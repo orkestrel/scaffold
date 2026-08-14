@@ -13,7 +13,7 @@ describe('createMaterializer', () => {
 	it('constructs the entity over the host it was given', () => {
 		const workspace = createWorkspace()
 		try {
-			const materializer = createMaterializer({ host: workspace.directory('raw') })
+			const materializer = createMaterializer({ host: workspace.ensure('raw') })
 			expect(materializer).toBeInstanceOf(Materializer)
 			expect(materializer.emitter.destroyed).toBe(false)
 			materializer.destroy()

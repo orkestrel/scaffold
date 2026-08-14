@@ -33,8 +33,8 @@ describe('WriteTransaction construction', () => {
 	it('refuses a link that leaves the target rather than following it', () => {
 		const workspace = createWorkspace()
 		try {
-			const outside = workspace.directory('outside')
-			workspace.directory('project')
+			const outside = workspace.ensure('outside')
+			workspace.ensure('project')
 			workspace.link('project/linked', outside)
 			const code = readErrorCode(
 				() => new WriteTransaction(join(workspace.path, 'project'), ['linked/names.md']),
@@ -50,8 +50,8 @@ describe('WriteTransaction construction', () => {
 	it('refuses a link that stays inside the target, which containment alone admits', () => {
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('project')
-			const real = workspace.directory('project/real')
+			const target = workspace.ensure('project')
+			const real = workspace.ensure('project/real')
 			workspace.link('project/rules', real)
 			// The redirected destination is still inside the target, so containment
 			// passes and only the ancestor law can refuse it. That is the whole reason
@@ -80,7 +80,7 @@ describe('WriteTransaction construction', () => {
 	it('refuses a precondition that names no destination and one that no longer holds', () => {
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			workspace.write('project/AGENTS.md', '# Agents\n')
 			const destination = join(target, 'AGENTS.md')
 			expect(
@@ -113,7 +113,7 @@ describe('WriteTransaction construction', () => {
 	it('accepts a precondition that still holds and closes cleanly', () => {
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			workspace.write('project/AGENTS.md', '# Agents\n')
 			const transaction = new WriteTransaction(
 				target,
@@ -160,8 +160,8 @@ describe('WriteTransaction staging', () => {
 	it('refuses an unopened path, a second claim, and a directory destination', () => {
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('project')
-			workspace.directory('project/rules')
+			const target = workspace.ensure('project')
+			workspace.ensure('project/rules')
 			const transaction = new WriteTransaction(target, ['AGENTS.md', 'rules'])
 			try {
 				expect(readErrorCode(() => transaction.write('LICENSE', 'MIT\n'))).toBe('INVALID')
@@ -258,7 +258,7 @@ describe('WriteTransaction directories', () => {
 		'discards a created segment whose anchor read refuses it',
 		async () => {
 			const workspace = createWorkspace()
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			const segment = join(target, 'a')
 			const holding = join(target, 'holding')
 			const state = new Int32Array(new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT))
@@ -330,7 +330,7 @@ for (;;) {
 	it('establishes a nested directory segment by segment and reports what it created', () => {
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			const transaction = new WriteTransaction(target, ['.claude/skills'])
 			try {
 				const result = transaction.directory('.claude/skills')
@@ -352,8 +352,8 @@ for (;;) {
 	it('creates nothing for a directory already there and refuses one holding a file', () => {
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('project')
-			workspace.directory('project/rules')
+			const target = workspace.ensure('project')
+			workspace.ensure('project/rules')
 			workspace.write('project/AGENTS.md', '# Agents\n')
 			const transaction = new WriteTransaction(target, ['rules', 'AGENTS.md'])
 			try {
@@ -385,8 +385,8 @@ for (;;) {
 	it('wraps a mid-creation refusal and discards every segment it created', () => {
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('project')
-			const control = workspace.directory('control')
+			const target = workspace.ensure('project')
+			const control = workspace.ensure('control')
 			const child = join(control, 'child')
 			chmodSync(control, 0o477)
 			let controlRefusal: unknown
@@ -458,7 +458,7 @@ describe('WriteTransaction commit', () => {
 	it('replaces existing bytes and leaves no private residue beside the target', () => {
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			workspace.write('project/AGENTS.md', '# Old\n')
 			const transaction = new WriteTransaction(target, ['AGENTS.md'])
 			try {
@@ -478,7 +478,7 @@ describe('WriteTransaction commit', () => {
 	it('restores a destination it already promoted when a later promotion fails', () => {
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			workspace.write('project/first.md', '# First\n')
 			const transaction = new WriteTransaction(target, ['first.md', 'deep/b.md'])
 			transaction.write('first.md', '# First written\n')
@@ -500,7 +500,7 @@ describe('WriteTransaction commit', () => {
 	it('moves nothing at all when a destination moved before the first promotion', () => {
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			workspace.write('project/first.md', '# First\n')
 			workspace.write('project/second.md', '# Second\n')
 			const transaction = new WriteTransaction(target, ['first.md', 'second.md'])
@@ -525,7 +525,7 @@ describe('WriteTransaction commit', () => {
 		// back. A rollback assertion that passes here as well is measuring nothing.
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			workspace.write('project/first.md', '# First\n')
 			workspace.write('project/second.md', '# Second\n')
 			writeFileSync(join(target, 'first.md'), '# First written\n', 'utf8')
@@ -557,7 +557,7 @@ describe('WriteTransaction commit', () => {
 	it('takes a marked file at commit and refuses one that holds no file', () => {
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			workspace.write('project/foreign.md', '# Foreign\n')
 			const transaction = new WriteTransaction(target, ['foreign.md', 'absent.md'])
 			try {
@@ -578,7 +578,7 @@ describe('WriteTransaction commit', () => {
 	it('puts back every file it already took when a later one moved', () => {
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			workspace.write('project/first.md', '# First\n')
 			workspace.write('project/second.md', '# Second\n')
 			const transaction = new WriteTransaction(target, ['first.md', 'second.md'])
@@ -596,7 +596,7 @@ describe('WriteTransaction commit', () => {
 	it('closes after a commit, so a second commit and a later discard both stop', () => {
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			const transaction = new WriteTransaction(target, ['AGENTS.md'])
 			transaction.write('AGENTS.md', '# Agents\n')
 			transaction.commit()
@@ -614,7 +614,7 @@ describe('WriteTransaction commit', () => {
 	it('reports promotions, establishments, and removals in that order', () => {
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			workspace.write('project/foreign.md', '# Foreign\n')
 			const transaction = new WriteTransaction(target, [
 				'AGENTS.md',
@@ -635,7 +635,7 @@ describe('WriteTransaction discard', () => {
 	it('clears its private root even after a staged write', () => {
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			const transaction = new WriteTransaction(target, ['AGENTS.md'])
 			transaction.write('AGENTS.md', '# Agents\n')
 			expect(readdirSync(workspace.path).length).toBe(2)
@@ -650,7 +650,7 @@ describe('WriteTransaction discard', () => {
 	it('reports residue rather than swallowing it', () => {
 		const workspace = createWorkspace()
 		try {
-			const target = workspace.directory('project')
+			const target = workspace.ensure('project')
 			const transaction = new WriteTransaction(target, ['.claude/skills'])
 			transaction.directory('.claude/skills')
 			// A file planted inside a directory this transaction created stops the
