@@ -47,13 +47,34 @@ planner (Opus, subjective) and analyst (Sol via codex, journal `tmp/codex/design
 | Signature motion: one `spinner-grow` for waiting (planner) vs none (Sol) | **No continuous motion anywhere.** The signature readout derives from `status`/`paused` facts only — the waiting badge is struck with the `waiting` field (no data source ships) | Sol's refusal + planner's own R5; resolves reduced-motion by construction. U4/U5 must not design a waiting indicator |
 | Refusal focus: password-selected (planner) vs username (Sol + research inference) | **Password, contents selected** | Fastest correct retry with values preserved; research's own label was "adapted inference"; to be validated in capture round A |
 
-## History (added by owner correction)
+## History (added by owner correction; two-lane design reconciled)
 
-Completed runs accumulate and must be discoverable without knowing ids. Requires: enumeration on
-`SupervisorStoreInterface` (src surface — package unpublished, so no external blast radius), an
-authorized paged endpoint, and a History surface reachable from the rail. Gets its own two-lane
-design round (H-DESIGN) before implementation; neither lane designed it and improvising it would
-be unreviewed design.
+Lanes: planner (`tmp/redesign/history-planner.md`) and Sol analyst (`history-analyst.md`, thread
+01a000d5), same brief, blind. Convergent on: store member `list` on `SupervisorStoreInterface`
+with cursor paging over a first-page watermark (`(updated, id)` descending, exclusive boundary,
+no totals); a transactional catalog record (`RunRecord`: id/created/updated/released?; takeover
+preserves `created`, `renew` never reorders); join-not-denormalize — workflow store stays the one
+authority for name/terminal status, one bounded **sequential** snapshot lookup per candidate
+(SQLite shared-driver constraint); authorization before paging (named grants via
+`RunListOptions.runs`, no unauthorized id in any response or cursor); id-prefix search only in
+v1; no retention in v1 (append-only, limit stated under the History heading and in the guide;
+coordinated deletion is a separate design); H3→H4→H5→H6 serial after U5.
+
+Orchestrator rulings on the splits:
+
+| Split | Ruling |
+| --- | --- |
+| Route + vocabulary: `GET /workflows` + "All runs"/catalog (planner) vs `GET /history` + completed-only (Sol) | **`GET /history`, completed-only.** The rail already owns live runs; a combined list re-blurs the boundary the design labors to communicate, and `catalog` collides with the ecosystem's package-catalog term. Rail header "Live runs", History heading "Completed history", overlap during decay labelled |
+| Search interaction | **Compose both:** server-side case-sensitive prefix (both lanes), Sol's copy ("Filter by run ID"), planner's browser mechanics (debounced ~250ms, AbortController, cursor reset on change) |
+| Placement | Sol's fully specified shape: first-class content-area destination from the rail footer; open run's state/subscription intact; "Back to run"; mobile full-width, drawer closes |
+| Open-by-id door | Folds INTO History as the collapsed technical disclosure (satisfies the owner's never-primary ruling); History's empty state routes back to live runs |
+| Terminal-open fact | `ApplicationTail.terminal` is computed server-side and discarded by handler+client today — H5 must surface it: a historical terminal run opens read-only with no live subscription |
+
+Sol's closing question (a legal/operational retention deadline) is answered from the owner brief:
+none stated; append-only v1 stands. Planner's (compare vs find-and-open): find-and-open, per the
+one-run operator model. H3/H4/H5 route objective → Sol; H6 subjective → Opus; U7 gains the
+History five-state × two-viewport × two-theme capture matrix plus a real restart journey
+(process A creates, process B discovers and opens).
 
 ## Routing ledger
 
