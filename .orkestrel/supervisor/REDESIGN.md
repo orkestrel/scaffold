@@ -109,6 +109,14 @@ each primary flow does: login type-refuse-retype-succeed (U6 fix), click-a-rail-
 keyboard-open (U5, once the rail is composed), History load-older/prefix-typing/open-historical
 (H6), and the restart journey (U7).
 
+Owner refinement: a human journey interacts ONLY with what is visible and reachable for a human —
+elements targeted by role/label as rendered, real typing and clicks, the user's freedoms AND
+restrictions; it never reaches into JS objects, transports, or copied credentials. Transport-level
+integration proofs remain a separate, declared class — and on the live wire their assertions are
+CONVERGENCE-based (poll the fact until it contains/equals the expected state), never identity with
+a captured frame: complete-snapshot semantics emit successive frames (pending→running in
+milliseconds), so two observers of one stream legitimately differ by a frame at any instant.
+
 ## Exit criterion
 
 1. Login per rulings — capture-proved (refused state marks neither field, one alert, five text
