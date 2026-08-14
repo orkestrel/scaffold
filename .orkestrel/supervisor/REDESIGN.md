@@ -217,6 +217,23 @@ button or a search bar for the door.
   door-into-search fold and the local fault-echo removal.
 - Serial order stands: micro round → U5c (toasts) → U5d (footer) → J1.
 
+### U5c closed (92509bb + fix 995c30a)
+
+- Both lanes confirmed the toast surface: no-reflow proved by frame comparison against the
+  pre-toast portfolio; dismissal drift-proof (fact-object identity + pre-render watcher flush,
+  verified in the installed runtime); layering from the shipped cascade
+  (halfmoon.css:8307/8323 — the reviewer's pointer-events referral closed by Sol's evidence);
+  no timers, no live region; `Dismiss` vs the drawer's `Close` a ruled distinction.
+- Fix round closed the three findings: the below-lg count renders beside the live mark
+  (`≡ ● 2 ⏸ ⚠` — the trailing count read as counting marks it never counted, reviewer, on
+  film); the dismissal record is `dismissed` (one word per concept; `clear` is the operator's);
+  the keyboard-reach proof walks a real bounded Tab from a real press.
+- On film after the fix: a killed server raises the run tail's own fault toast ("Live stream
+  failed") beside the roster channel's signature mark and stale line — each surface speaks for
+  its own channel. U8 reviews the fault-voice inventory under multi-channel failure.
+- U5 round-1 claim 2 (signature honesty) closes with the drawer-closed mobile frames plus this
+  fix; the words-in-aria-label acceptance and U8's 390px glyph-legibility obligation stand.
+
 ## Exit criterion
 
 1. Login per rulings — capture-proved (refused state marks neither field, one alert, five text
