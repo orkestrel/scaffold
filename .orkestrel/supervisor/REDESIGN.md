@@ -89,7 +89,7 @@ History five-state × two-viewport × two-theme capture matrix plus a real resta
 | H1/H2 | History design lanes (parallel with U1–U3, read-only) | `planner` · Opus + `analyst` · Sol | — |
 | H3+ | History implementation | routed after H reconciliation | `src/core` store contract, `app/*` |
 | U7 | Guides, parity, seeders/showcase, capture harness | `builder` · Sonnet | `guides/**`, fixtures, `README.md` (route table + Live feed section gained `GET /roster/live`; guide example `supervisor.md:2139` and method tables move to the `client.roster` sub-entity; parity set at U1 close is 20 exports + 3 phantom rows incl. inherited `ViewerInterface.destroy` placement; regenerate the committed `demo/showcase.html` via `npm run show` — it still mounts the pre-U1 `client.roster()` call) |
-| U8/U9 | Capture review rounds A/B (`orkestrel-polish-surface`) | `reviewer` · Opus + `analyst` · Sol + `checker` | read-only; portfolio is the review input |
+| U8/U9 | Capture review rounds A/B (`orkestrel-polish-surface`) | `reviewer` · Opus + `analyst` · Sol + `checker` | read-only; portfolio is the review input. Capture harness law post-U1: an authenticated page holds a permanently open roster SSE stream, so Playwright `networkidle` never fires — every wait is a concrete locator/UI condition |
 
 Writers strictly serialized in `/workspace/supervisor`, committed checkpoint between units.
 Serial order: U1 → U2 → U3 → U6 → U4 → U5 → (H3+) → U7 → U8 → fixes → U9 → gates.
