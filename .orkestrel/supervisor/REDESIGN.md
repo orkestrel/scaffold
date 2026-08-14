@@ -94,6 +94,11 @@ History five-state × two-viewport × two-theme capture matrix plus a real resta
 Writers strictly serialized in `/workspace/supervisor`, committed checkpoint between units.
 Serial order: U1 → U2 → U3 → U6 → U4 → U5 → (H3+) → U7 → U8 → fixes → U9 → gates.
 
+Standing owner instruction for every remaining fix round: an audit's executed probe that proved a
+real property is promoted into the permanent suite — mirrored unit file, or the integration files
+when the property spans the real server — named for what it proves, never discarded with the
+verdict.
+
 ## Exit criterion
 
 1. Login per rulings — capture-proved (refused state marks neither field, one alert, five text
