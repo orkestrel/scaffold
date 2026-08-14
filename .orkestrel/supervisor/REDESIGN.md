@@ -21,8 +21,14 @@ planner (Opus, subjective) and analyst (Sol via codex, journal `tmp/codex/design
 - Login: uniform refusal marks **neither** field; one `role="alert"` region; values preserved for
   retry; autofill-only (`autocomplete` tokens already correct in code); no app-level username
   cache; help text cut to "This browser never stores your password."
-- "Open by id" survives, demoted to a collapsed disclosure — the door to retained ended runs —
-  primary only in the empty state, help text "For a run that has already ended."
+- "Open by id" survives only as a collapsed technical disclosure, never primary anywhere — not
+  even in the empty state (owner correction mid-campaign, on the baseline mobile captures: typing
+  or recalling an id is never the normal experience; ids travel server↔browser on their own, and
+  the "no durable record" refusal must be unreachable in the normal flow). The empty state shows
+  the rail's own empty message; History is the discovery path for ended runs. Help text "For a run
+  that has already ended." The H reconciliation rules whether the door folds into the History
+  surface entirely. Row labels still display the run's name — display is fine, typing is the
+  defect.
 - Ended runs **decay in place** (never vanish); the open run's row is pinned while open; selection
   and detail pane survive the run ending; no auto-open, no auto-scroll, no reorder under the user.
 - No polling, no timed reconnect — partial/error states offer keyboard-reachable Retry.
