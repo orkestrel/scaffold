@@ -1,6 +1,6 @@
 {
 	"name": "@orkestrel/scaffold",
-	"version": "0.0.34",
+	"version": "0.0.35",
 	"description": "Scaffold workspaces with five commands: new, audit, repair, catalog, and overwrite.",
 	"keywords": [
 		"audit",
@@ -17,7 +17,7 @@
 		"url": "git+https://github.com/orkestrel/scaffold.git"
 	},
 	"bin": {
-		"scaffold": "./dist/bin/main.js"
+		"scaffold": "dist/bin/main.js"
 	},
 	"files": [
 		"dist/src",

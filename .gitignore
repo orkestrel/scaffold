@@ -13,6 +13,9 @@ dist
 dist-ssr
 *.local
 
+# Per-operator Claude permissions; the vendored settings.json is fleet-uniform
+.claude/settings.local.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
