@@ -167,6 +167,56 @@ findings. Claims 1 (one rail/one region) and 5 (journey doctrine) confirmed by b
   first heading, stale line below it) need one visible order — the fix round records its choice;
   `renderFleet` stays a local single-use helper, J1 sweep candidate.
 
+### U5 closing rounds (fix at 419aafb; toasts ruled by the user)
+
+Fix round landed at 419aafb (real userEvent throughout the shell suite, StackList copy, the
+`operator.fault` rail line, convergence count reads); full chain green — only the declared U7
+parity four red, membership unchanged.
+
+- **Sol closing audit:** claims 2–4 CONFIRMED; claim 1 BROKEN — two Escape proofs seed state
+  through `attached?.open()`/`select()` instead of row presses → micro round (`u5-brief-3`,
+  builder). Claim 5's provenance UNRESOLVED closed on the Orchestrator's own session record:
+  the Orchestrator ran the commit; the writer's report states nothing committed.
+- **Reviewer portfolio re-rule (nine new frames):** claim 3 CONFIRMED — notice and fault
+  surface, voice/placement/order all hold; claim 8's StackList repair CONFIRMED in every frame;
+  claim 2 one state short — closed by two further frames (mobile, drawer closed, signature
+  showing paused and fault marks as bare glyphs + count), final reviewer pass rides with the
+  post-toast recapture. U8 must read pause/warning glyph distinguishability at 390px.
+- **USER RULING (binding, overrules the rail-top stacking call):** the restore notice and fault
+  line must not reflow the rail — they become overlay toasts that stack. Unit **U5c** added:
+  Opus `implementer`, owns `ApplicationView.vue` + its test; no timers (no auto-dismiss —
+  facts clear reactively, plus a real dismiss control), no live region (standing), Vue-owned
+  visibility, no-reflow proved. RunList's stale-updates state line stays in place (list state
+  with Retry, not a notification). Serial order: micro round → U5c → J1.
+- **Referral answered (Orchestrator, from source):** fault-without-notice IS reachable
+  (`#capture` command failures; a failed logout cleanup). The standalone copy stands — as a
+  toast the deictic gains its antecedent temporally, appearing when the action fails.
+- **H6 addition (reviewer, out-of-claims, verified):** `OpenPanel.vue:28`'s grant-list branch
+  drops its noun — "Authorized for unused." H6's OpenPanel patch must cover that branch with a
+  number-agreeing noun ("Authorized for workflow 'unused'."), named explicitly.
+- **Polish-round candidates:** triple "updates stopped" on one desktop screen (header mark,
+  rail notice head, status-line tail) → U8; the run pane's Address field renders a raw JSON
+  array (`["build-a"]`) → U8; the stacked "That…" openers tighten only if U5c's design finds
+  it free.
+
+### The rail footer (user ruling; unit U5d)
+
+USER RULING (binding): the rail's bottom-left cluster — the "Logged in as… Authorized for…"
+sentences, the "Open by id" disclosure, and its help line — feels out of place; the surface
+should feel like a usual admin dashboard, with creative latitude. The user offered a plus-icon
+button or a search bar for the door.
+
+- **Ruling split (Orchestrator):** the search bar is H6's form — History's surface already
+  carries prefix search over completed runs, so the door's terminal shape is a search field over
+  discoverable runs, now user-endorsed; U5d must not build an interim search H6 replaces.
+- **Unit U5d** (Opus `implementer`, after U5c, before J1): session identity leaves the rail
+  footer for the banner (the dashboard idiom, near Logout); the door compacts to an icon-button
+  disclosure (never primary, unchanged ruling); the grant sentences are repaired with the file
+  in hand — the H6 noun carriers move here: every "workflow" noun in OpenPanel's reader-facing
+  copy, and the `OpenPanel.vue:28` missing-noun branch with number agreement. H6 keeps the
+  door-into-search fold and the local fault-echo removal.
+- Serial order stands: micro round → U5c (toasts) → U5d (footer) → J1.
+
 ## Exit criterion
 
 1. Login per rulings — capture-proved (refused state marks neither field, one alert, five text
