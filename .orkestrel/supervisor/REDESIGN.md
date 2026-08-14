@@ -39,12 +39,12 @@ planner (Opus, subjective) and analyst (Sol via codex, journal `tmp/codex/design
 
 | Split | Ruling | Why |
 | --- | --- | --- |
-| Wire: delta events + rich entries (planner) vs complete snapshot of bare ids (Sol) | **Complete snapshot of rich entries.** Snapshot semantics from Sol; entry widened from bare id to `{ id, status, paused, started, updated, waiting? }` | Bare ids force N inspect fetches to paint rows — objectively worse than a wider entry. `waiting` is admitted only if U1's first step prices it cheap from in-memory state; if it needs journal reads per event it drops, and the design is told |
+| Wire: delta events + rich entries (planner) vs complete snapshot of bare ids (Sol) | **Complete snapshot of rich entries.** Snapshot semantics from Sol; entry widened from bare id to `{ id, status, paused, created, updated }` | Bare ids force N inspect fetches to paint rows. `waiting` was priced by U1 (`HumanLedger` full-table ticket scan per publish, no in-memory count) and **dropped** — no unit may design against it. Timestamps mirror the snapshot's own names: the field is `created` (U1 audit: `started` asserted a fact the value does not carry) |
 | Rail: permanent (planner) vs collapse-after-open (Sol) | **Permanent rail ≥ lg** (Runs above Stack, `offcanvas-lg` drawer below), Sol's mobile behaviours (initial authed view = roster; closes on open) | At ≤5 active the rail is cheap and delivers the owner's literal ask — "see them as they come up" — with nothing to press |
 | Insertion: newest-first top + queue-and-notify (planner) vs append-bottom acquisition order (Sol) | **Append-bottom, acquisition order, no queue mechanism** | At ≤5 rows everything is on screen; stability beats recency; planner conceded the queue is dead weight at this size |
 | aria-live on the list (Sol) vs dedicated status line (planner) | **Dedicated visible `role="status"` line; list carries no aria-live** | Deterministically serves the anti-spam constraint; sighted users get the same coalesced fact |
 | Reload: land on roster (Sol) vs restore last-open run (planner) | **Restore last-open run** when live/retained, else land on rail with stated reason; pointer cleared on logout | Zero-step resume is the strongest reading of "automated"; the rail is visible beside the restored run, so the primary surface is not bypassed |
-| Signature motion: one `spinner-grow` for waiting (planner) vs none (Sol) | **No continuous motion anywhere.** Waiting is a static warning badge + words | Sol's refusal + planner's own R5; resolves reduced-motion by construction |
+| Signature motion: one `spinner-grow` for waiting (planner) vs none (Sol) | **No continuous motion anywhere.** The signature readout derives from `status`/`paused` facts only — the waiting badge is struck with the `waiting` field (no data source ships) | Sol's refusal + planner's own R5; resolves reduced-motion by construction. U4/U5 must not design a waiting indicator |
 | Refusal focus: password-selected (planner) vs username (Sol + research inference) | **Password, contents selected** | Fastest correct retry with values preserved; research's own label was "adapted inference"; to be validated in capture round A |
 
 ## History (added by owner correction)
@@ -67,7 +67,7 @@ be unreviewed design.
 | U5 | Shell recomposition + signature | `implementer` · Opus | `ApplicationView.vue`, tests |
 | H1/H2 | History design lanes (parallel with U1–U3, read-only) | `planner` · Opus + `analyst` · Sol | — |
 | H3+ | History implementation | routed after H reconciliation | `src/core` store contract, `app/*` |
-| U7 | Guides, parity, seeders/showcase, capture harness | `builder` · Sonnet | `guides/**`, fixtures |
+| U7 | Guides, parity, seeders/showcase, capture harness | `builder` · Sonnet | `guides/**`, fixtures, `README.md` (route table + Live feed section gained `GET /roster/live`; guide example `supervisor.md:2139` and method tables move to the `client.roster` sub-entity) |
 | U8/U9 | Capture review rounds A/B (`orkestrel-polish-surface`) | `reviewer` · Opus + `analyst` · Sol + `checker` | read-only; portfolio is the review input |
 
 Writers strictly serialized in `/workspace/supervisor`, committed checkpoint between units.
