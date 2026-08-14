@@ -109,13 +109,32 @@ each primary flow does: login type-refuse-retype-succeed (U6 fix), click-a-rail-
 keyboard-open (U5, once the rail is composed), History load-older/prefix-typing/open-historical
 (H6), and the restart journey (U7).
 
-Owner refinement: a human journey interacts ONLY with what is visible and reachable for a human —
-elements targeted by role/label as rendered, real typing and clicks, the user's freedoms AND
-restrictions; it never reaches into JS objects, transports, or copied credentials. Transport-level
-integration proofs remain a separate, declared class — and on the live wire their assertions are
-CONVERGENCE-based (poll the fact until it contains/equals the expected state), never identity with
-a captured frame: complete-snapshot semantics emit successive frames (pending→running in
-milliseconds), so two observers of one stream legitimately differ by a frame at any instant.
+Owner doctrine (final form, adopted from the owner's parallel project and adapted to this repo's
+paths — adapt, never import): journey tests simulate a person, not a script. Trusted input only —
+Vitest Browser Mode's `userEvent` on the Playwright provider for in-browser tests, Playwright's
+real keyboard/mouse for the Node-side harness; never programmatic `dispatchEvent`/`.click()`
+shortcuts, never direct session or transport calls inside a journey. Interactions are limited to
+what a human can actually see and reach: a journey layer in `tests/setupBrowser.ts` resolves
+targets ONLY among currently visible, focus-reachable elements by their accessible names, and
+REFUSES anything else — a test structurally cannot cheat past the interface's own freedoms and
+restrictions. Journey assertions read perception — visible text, focus, announcements — never
+session refs or store internals. Journeys live in the reserved end-to-end scope
+(`tests/app/browser/integration/`); the polish rounds reuse the same journeys as their capture
+instrument, stepping screenshots out of each journey state. Transport-level integration proofs
+remain a SEPARATE, DECLARED class, and every observation of async state — live wire, storage
+round trips — awaits the visible outcome or polls to convergence; never one-shot identity against
+a moment (complete-snapshot semantics emit successive frames within milliseconds, so two
+observers of one stream legitimately differ by a frame at any instant).
+
+Two units join the ledger from this doctrine:
+
+| # | Unit | Role · Engine | Owns |
+| --- | --- | --- | --- |
+| J1 | The journey layer + first journey set (after U5): the visibility/reachability resolver in `tests/setupBrowser.ts`-adjacent journey infrastructure, retrofit of the U6 login journey onto it, rail click-open and keyboard-only open journeys | `codex`→implementer · Sol (precision layer, fixed doctrine) | journey infra + integration journey files |
+| SK1 | After the polish rounds: author `.agents/skills/orkestrel-human-journey/` (SKILL.md + one-level `references/` + `agents/openai.yaml`) with the `.claude/skills/orkestrel-human-journey/SKILL.md` bridge, in the supervisor repo, matching house skill structure and voice, written per the instruction-file laws — every line a directive with its observable trigger, no persuasion, no history. It carries ONLY what this campaign proved, each canonized finding backed by a recorded experience: the resolver design, trusted-input requirements, the purity boundary, the convergence law, the journey/transport class separation, and the failure modes J1 and the polish rounds actually hit | `implementer` · Opus (instruction voice), audited like every unit | the skill files |
+
+SK1 is a candidate for upstream promotion into the scaffold host at the debrief; until the fleet
+canon absorbs it, `scaffold audit` reads it as a foreign path — expected and recorded.
 
 ## Exit criterion
 
