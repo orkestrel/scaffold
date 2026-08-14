@@ -42,6 +42,7 @@ import {
 	matchesDriftReachability,
 	planToFindings,
 	ScaffoldError,
+	WORKSPACE_OWNED_PATHS,
 } from '@src/core'
 import {
 	computeFileDigest,
@@ -572,6 +573,10 @@ export class Materializer implements MaterializerInterface {
 		let budget = remaining
 		for (const entry of matched) {
 			const path = this.#remap(artifact, entry.destination)
+			if (WORKSPACE_OWNED_PATHS.includes(path)) {
+				expanded.push(this.#presence(artifact, path, entry.destination))
+				continue
+			}
 			if (this.#deferred(path)) {
 				expanded.push(this.#presence(artifact, path, entry.destination))
 				continue
@@ -598,11 +603,13 @@ export class Materializer implements MaterializerInterface {
 			})
 		}
 		if (isPhysicalFile(full)) {
-			return [
-				this.#deferred(artifact.path)
-					? this.#presence(artifact, artifact.path, source)
-					: this.#hydrated(artifact, artifact.path, source, this.#read(source, remaining)),
-			]
+			if (WORKSPACE_OWNED_PATHS.includes(artifact.path)) {
+				return [this.#presence(artifact, artifact.path, source)]
+			}
+			if (this.#deferred(artifact.path)) {
+				return [this.#presence(artifact, artifact.path, source)]
+			}
+			return [this.#hydrated(artifact, artifact.path, source, this.#read(source, remaining))]
 		}
 		if (!isPhysicalDirectory(full)) {
 			throw this.#error('TARGET', `The host source at ${source} is not a readable file.`, {
@@ -615,6 +622,10 @@ export class Materializer implements MaterializerInterface {
 		for (const name of listFiles(full)) {
 			const path = `${artifact.path}/${name}`
 			const destination = `${source}/${name}`
+			if (WORKSPACE_OWNED_PATHS.includes(path)) {
+				expanded.push(this.#presence(artifact, path, destination))
+				continue
+			}
 			if (this.#deferred(path)) {
 				expanded.push(this.#presence(artifact, path, destination))
 				continue

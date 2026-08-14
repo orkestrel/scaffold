@@ -5,7 +5,7 @@ import type {
 	Repository,
 	UpstreamOptions,
 } from '@src/server'
-import type { Audit, Finding, Plan, ScaffoldErrorCode } from '@src/core'
+import type { Audit, Blueprint, Finding, Plan, ScaffoldErrorCode } from '@src/core'
 import type { CLICommand, CLIOptions, Verb } from '../src/bin/types.js'
 import type { TestGuardCase, TestPathCase } from './setup.js'
 import type { ServerResponse } from 'node:http'
@@ -26,6 +26,8 @@ import { fileURLToPath } from 'node:url'
 import { gzipSync } from 'node:zlib'
 import {
 	CATALOG_AGENT_PATH,
+	blueprintToDevDependencies,
+	blueprintToScripts,
 	Compiler,
 	createBlueprint,
 	HOST_PATHS,
@@ -1530,21 +1532,65 @@ export const CATALOG_AGENT_TEXT = [
 	'',
 ].join('\n')
 
-/** A target manifest declaring two fleet packages and one foreign one. */
-export const TARGET_MANIFEST_TEXT = [
-	'{',
-	'\t"name": "@orkestrel/sample",',
-	'\t"description": "A sample workspace.",',
-	'\t"dependencies": {',
-	'\t\t"@orkestrel/emitter": "^0.0.5",',
-	'\t\t"vite": "~8.2.0"',
-	'\t},',
-	'\t"devDependencies": {',
-	'\t\t"@orkestrel/guide": "^0.0.9"',
-	'\t}',
-	'}',
-	'',
-].join('\n')
+/** The development dependencies planned for the fixture's published core environment. */
+export const TARGET_DEV_DEPENDENCIES = blueprintToDevDependencies(
+	createBlueprint('sample', { src: ['core'] }),
+)
+
+/**
+ * Build a target manifest with focused dependency-section replacements.
+ *
+ * @param blueprint - The workspace shape whose scripts and tools are planned.
+ * @param dependencies - The value to place at `dependencies`.
+ * @param development - The value to place at `devDependencies`.
+ * @param scripts - The value to place at `scripts`.
+ * @returns A sample target manifest carrying the fixture's planned scripts.
+ */
+export function buildTargetManifest(
+	blueprint: Blueprint = createBlueprint('sample', { src: ['core'] }),
+	dependencies: unknown = {
+		'@orkestrel/emitter': '^0.0.5',
+		vite: '~8.2.0',
+	},
+	development: unknown = blueprintToDevDependencies(blueprint),
+	scripts: unknown = blueprintToScripts(blueprint),
+): string {
+	return `${JSON.stringify(
+		{
+			name: '@orkestrel/sample',
+			description: 'A sample workspace.',
+			scripts,
+			dependencies,
+			devDependencies: development,
+		},
+		undefined,
+		'\t',
+	)}\n`
+}
+
+/**
+ * Remove selected dependency names from an inert manifest section.
+ *
+ * @param dependencies - The section to copy.
+ * @param names - The names to omit.
+ * @returns A copy without the selected names.
+ */
+export function omitDependencies(
+	dependencies: Readonly<Record<string, string>>,
+	names: readonly string[],
+): Readonly<Record<string, string>> {
+	return Object.fromEntries(Object.entries(dependencies).filter(([name]) => !names.includes(name)))
+}
+
+/** A target manifest declaring its planned scripts, tools, two fleet packages, and one extra. */
+export const TARGET_MANIFEST_TEXT = buildTargetManifest(
+	undefined,
+	{
+		'@orkestrel/emitter': '^0.0.5',
+		vite: '~8.2.0',
+	},
+	{ ...TARGET_DEV_DEPENDENCIES, '@orkestrel/guide': '^0.0.9' },
+)
 
 /**
  * A target manifest whose own name the compile gate refuses.
@@ -1554,7 +1600,15 @@ export const TARGET_MANIFEST_TEXT = [
  * one way a reading verb meets a refused blueprint. The capital is the whole
  * defect: a published package name is lowercase.
  */
-export const REFUSED_MANIFEST_TEXT = ['{', '\t"name": "@orkestrel/Sample"', '}', ''].join('\n')
+export const REFUSED_MANIFEST_TEXT = `${JSON.stringify(
+	{
+		name: '@orkestrel/Sample',
+		scripts: blueprintToScripts(createBlueprint('Sample')),
+		devDependencies: blueprintToDevDependencies(createBlueprint('Sample')),
+	},
+	undefined,
+	'\t',
+)}\n`
 
 /**
  * Every caller-supplied endpoint the reader's scheme and host law decides.
@@ -1795,11 +1849,15 @@ export const FLEET_UPSTREAM_PATHS = Object.freeze({
 		guide: '/@orkestrel%2Fguide',
 		router: '/@orkestrel%2Frouter',
 		sample: '/@orkestrel%2Fsample',
+		scaffold: '/@orkestrel%2Fscaffold',
+		test: '/@orkestrel%2Ftest',
 	}),
 	mirrors: Object.freeze({
 		emitter: '/orkestrel/emitter/refs/heads/main/guides/emitter.md',
 		guide: '/orkestrel/guide/refs/heads/main/guides/guide.md',
 		router: '/orkestrel/router/refs/heads/main/guides/router.md',
+		scaffold: '/orkestrel/scaffold/refs/heads/main/guides/scaffold.md',
+		test: '/orkestrel/test/refs/heads/main/guides/test.md',
 	}),
 })
 

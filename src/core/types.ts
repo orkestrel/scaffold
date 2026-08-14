@@ -139,15 +139,14 @@ export interface Override {
  * application-only, and mixed workspaces are all first class. `dependencies`
  * and `peers` are runtime `@orkestrel/*` packages; `extras` are
  * package-specific development dependencies and may carry any valid npm name.
- * `bin`, `integration`, `conformance`, `service`, `vendors`, `global`, and
- * `showcase` are structural facts: each is set only when the workspace
- * physically ships the directory or exact-case file that defines it, never
- * because of the workspace's name and never because a sibling fact is set. An
- * axis-dependent fact projects nothing when its required axis is absent:
- * `integration` projects only a published `src`, and `showcase` projects only a
- * browser `app`. The gate answers that case with a non-blocking question, so a
- * caller that set the flag learns it emitted nothing and the compile still
- * completes.
+ * `bin`, `guides`, `distribution`, `integration`, `conformance`, `service`,
+ * `vendors`, `global`, and `showcase` are structural facts: each is set only
+ * when the workspace physically ships the directory or exact-case file that
+ * defines it, never because of the workspace's name and never because a sibling
+ * fact is set.
+ * `showcase` projects only a browser `app`. The gate answers an absent browser
+ * axis with a non-blocking question, so a caller that set the flag learns it
+ * emitted nothing and the compile still completes.
  *
  * `service` says the workspace runs a live-service Vitest project over
  * `tests/service`, and it alone registers that project. `vendors` names each
@@ -169,6 +168,8 @@ export interface Blueprint {
 	readonly engines: string
 	readonly overrides: readonly Override[]
 	readonly bin: boolean
+	readonly guides: boolean
+	readonly distribution: boolean
 	readonly integration: boolean
 	readonly conformance: boolean
 	readonly service: boolean
@@ -286,7 +287,9 @@ export interface ArtifactBase {
  * exist. That is why the ownership here is narrowed away from `content`: a
  * claim over bytes nobody has read is a claim that cannot be checked. Reading
  * the vendored root turns the ones scaffold owns the bytes of into
- * {@link HydratedArtifact}.
+ * {@link HydratedArtifact}. Workspace-owned paths and paths whose bytes belong
+ * to another verb stay plain host artifacts, because this writer claims only
+ * their presence.
  */
 export interface HostArtifact extends ArtifactBase {
 	readonly origin: 'host'

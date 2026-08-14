@@ -16,16 +16,18 @@ import {
 	createBlueprint,
 	createCompiler,
 	MAX_NAME_LENGTH,
+	PRINT_WIDTH,
+	TAB_WIDTH,
 } from '@src/core'
 import { BROWSER_RESOLVER_EXPORTS } from '../../setup.js'
 import { describe, expect, it } from 'vitest'
 
-// The vendored `.oxfmtrc.json` a generated workspace receives: a tab prints as two
-// columns and a line is printed to fit one hundred of them. The emitted text
-// conforms to those bytes, never the reverse, so every width here is measured
-// against them rather than against a width this package would prefer.
-const PRINT_WIDTH = 100
-const TAB_COLUMNS = '  '
+// The vendored `.oxfmtrc.json` a generated workspace receives: a tab prints as
+// `TAB_WIDTH` columns and a line is printed to fit `PRINT_WIDTH` of them. The
+// emitted text conforms to those bytes, never the reverse, so every width here is
+// measured against the same two constants the emitters measure against, which
+// `tests/src/core/helpers.test.ts` asserts against the vendored file itself.
+const TAB_COLUMNS = ' '.repeat(TAB_WIDTH)
 // The specifiers the vendored `import/no-unassigned-import` rule exempts.
 const STYLE_IMPORT = /^import\s+'[^']+\.(?:css|less|sass|scss|styl|stylus|pcss|postcss|sss)'/u
 // These are the two specifiers an emitted browser configuration names that this
@@ -83,7 +85,7 @@ const MODULE_EMITTERS: Readonly<Record<string, number>> = Object.freeze({
 	'tests/app/browser/index.test.ts': 64,
 	'tests/app/core/index.test.ts': 64,
 	'tests/app/server/index.test.ts': 64,
-	'tests/integration.test.ts': 56,
+	'tests/integration.test.ts': 63,
 	'tests/setup.ts': 126,
 	'tests/setupBrowser.ts': 96,
 	'tests/setupGlobal.ts': 63,
@@ -551,11 +553,9 @@ describe('emitted workspaces under their own gates', () => {
 			expect(checkTypes(applicationRoot)).toBe('')
 			expect(checkTypes(showcaseRoot)).toBe('')
 
-			// The control is the row this compiler emitted before the fix: a bare
-			// factory reference, which Vitest reads as a `UserProjectConfigFn` and
-			// calls with a `ConfigEnv` the factory refuses. It is outside the emitted
-			// population, because no selection emits it any more.
-			expect(application).toContain('\t\t\tappBrowser(),')
+			// The project row calls the sealed factory with no argument, so the
+			// generated configuration receives the `UserConfig` it returns.
+			expect(application).toContain('projects: [appBrowser(), policy, config, probe]')
 			// The evaluated row carries no function name, so the vendored `config`
 			// proof finds it by the label instead. That label is emitted here, and the
 			// two have to agree or a generated browser workspace fails its own `test`
@@ -563,12 +563,16 @@ describe('emitted workspaces under their own gates', () => {
 			expect(application).toContain("name: { label: 'app:browser', color: 'blue' }")
 			writeFileSync(
 				join(applicationRoot, 'vite.config.ts'),
-				application.replace('\t\t\tappBrowser(),', '\t\t\tappBrowser,'),
+				application.replace('projects: [appBrowser(),', 'projects: [appBrowser({}),'),
 			)
-			expect(checkTypes(applicationRoot)).toContain(
-				"is not assignable to type 'TestProjectConfiguration'",
+			expect(checkTypes(applicationRoot)).toContain('Expected 0 arguments, but got 1.')
+			expect(CONFIG_TEMPLATES.factories.app.browser).toContain(
+				'export function appBrowser(): UserConfig',
 			)
-
+			expect(CONFIG_TEMPLATES.factories.app.browser).not.toContain('...options: never[]')
+			expect(CONFIG_TEMPLATES.factories.app.browser).not.toContain(
+				'Browser configuration overrides are not permitted',
+			)
 			// The showcase-only control removes the contextual type from the
 			// conditional plugin array. It recreates the widening that made the
 			// emitted workspace fail even though the runtime plugin list is unchanged.

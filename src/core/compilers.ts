@@ -22,12 +22,12 @@ import {
 	BASE_DEV_DEPENDENCIES,
 	BIN_CONFIGS,
 	BIN_ENTRY_PATH,
+	DECLARATION_DEV_DEPENDENCIES,
 	DEPENDENCY_NAME_PATTERN,
 	ENVIRONMENTS,
 	EXTRA_NAME_PATTERN,
 	EXTRA_RANGE_PATTERN,
 	GLOBAL_SETUP_PATH,
-	GUIDES_TEST_PATH,
 	HOST_PATHS,
 	INTEGRATION_TEST_PATH,
 	MAX_ARTIFACT_BYTES,
@@ -49,6 +49,7 @@ import {
 	inferDrift,
 	inferGroup,
 	matchesEngines,
+	matchesPrintWidth,
 	nameToRewrite,
 	serializeTypeScriptString,
 	selectHostPaths,
@@ -225,6 +226,7 @@ export function srcToExports(src: readonly Environment[]): Readonly<Record<strin
 export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Record<string, string>> {
 	const merged: Record<string, string> = {
 		...BASE_DEV_DEPENDENCIES,
+		...(blueprint.src.length > 0 || blueprint.bin ? DECLARATION_DEV_DEPENDENCIES : {}),
 		...(blueprint.src.includes('browser') ? SOURCE_BROWSER_DEV_DEPENDENCIES : {}),
 		...(blueprint.app.length > 0 ? APP_DEV_DEPENDENCIES : {}),
 		...(blueprint.app.includes('browser') ? APP_BROWSER_DEV_DEPENDENCIES : {}),
@@ -255,12 +257,13 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
  * proofs every workspace can pass before it has a public API, and one build per
  * target that actually builds.
  *
- * A proof leaves `test` when a real service or a real install answers it. The
- * installed-package integration proof and the live-service proof therefore run
- * from `prepublishOnly` instead. The conformance proof stays in `test`, because
- * it measures this package against official tooling and drives nothing external:
- * a conformance run may start a server, but it starts its own and reaches it
- * over loopback, so the run stays hermetic.
+ * A publishing workspace isolates distribution and live-service proofs from
+ * `test` and runs them from `prepublishOnly` instead. A private workspace has
+ * no publish lifecycle, so it omits distribution and runs a live-service proof
+ * from `test`. Integration and conformance stay in `test` because they neither
+ * pack nor install the workspace and drive no external service. A conformance
+ * run may start a server, but it starts its own and reaches it over loopback,
+ * so the run stays hermetic.
  *
  * The configuration paths interpolated here are the same ones `SRC_MATRIX` and
  * `APP_MATRIX` list as each environment's configuration files, so a rename in
@@ -277,7 +280,10 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
  */
 export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string, string>> {
 	const publishes = blueprint.src.length > 0
-	const integrates = publishes && blueprint.integration
+	// Distribution requires the published source it packs, so the declared flag
+	// alone never selects it.
+	const distributes = blueprint.distribution && publishes
+	const integrates = blueprint.integration
 	const compiles = publishes || blueprint.bin
 	const runtime = blueprint.app.filter((environment) => environment !== 'core')
 	const vitest = 'vitest run --config vite.config.ts --no-cache --reporter=dot'
@@ -321,7 +327,10 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		...(blueprint.app.length > 0 ? ['npm run test:app'] : []),
 		'npm run test:policy',
 		'npm run test:config',
+		...(blueprint.guides ? ['npm run test:guides'] : []),
 		...(blueprint.conformance ? ['npm run test:conformance'] : []),
+		...(integrates ? ['npm run test:integration'] : []),
+		...(!publishes && blueprint.service ? ['npm run test:service'] : []),
 	].join(' && ')
 	if (compiles) {
 		scripts['test:src'] = [
@@ -345,9 +354,11 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 	}
 	scripts['test:policy'] = `${vitest} --project policy`
 	scripts['test:config'] = `${vitest} --project config`
+	if (blueprint.guides) scripts['test:guides'] = `${vitest} --project guides`
 	if (blueprint.conformance) scripts['test:conformance'] = `${vitest} --project conformance`
 	scripts['test:probe'] =
 		'vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe'
+	if (distributes) scripts['test:distribution'] = `${vitest} --project distribution`
 	if (integrates) scripts['test:integration'] = `${vitest} --project integration`
 	if (blueprint.service) scripts['test:service'] = `${vitest} --project service`
 	scripts.build = [
@@ -393,11 +404,13 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		scripts.serve = 'node dist/app/server/main.cjs'
 		scripts['serve:build'] = 'npm run build:app:server && npm run serve'
 	}
-	scripts.prepublishOnly = [
-		'npm run format:check && npm run lint:check && npm run check && npm run build && npm test',
-		...(integrates ? ['npm run test:integration'] : []),
-		...(blueprint.service ? ['npm run test:service'] : []),
-	].join(' && ')
+	if (publishes) {
+		scripts.prepublishOnly = [
+			'npm run format:check && npm run lint:check && npm run check && npm run build && npm test',
+			...(distributes ? ['npm run test:distribution -- --mode release'] : []),
+			...(blueprint.service ? ['npm run test:service'] : []),
+		].join(' && ')
+	}
 	return scripts
 }
 
@@ -596,6 +609,10 @@ export function blueprintToRootTsconfig(blueprint: Blueprint): string {
  */
 export function blueprintToRootVite(blueprint: Blueprint): string {
 	const machinery = blueprintToMachinery(blueprint)
+	const publishes = blueprint.src.length > 0
+	// Distribution requires the published source it packs, so the declared flag
+	// alone never selects it.
+	const distributes = blueprint.distribution && publishes
 	const imports: string[] = []
 	if (machinery.browser) imports.push("import { playwright } from '@vitest/browser-playwright'")
 	if (machinery.vue) imports.push("import vue from '@vitejs/plugin-vue'")
@@ -717,8 +734,7 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 			: '\t\t\tassetsInlineLimit: 0,\n'
 		const showcaseFactory = machinery.showcase
 			? `
-export function appShowcase(...options: never[]): UserConfig {
-	if (options.length > 0) throw new Error('Showcase configuration overrides are not permitted')
+export function appShowcase(): UserConfig {
 	return applicationBrowser(true)
 }
 `
@@ -733,9 +749,8 @@ export function appShowcase(...options: never[]): UserConfig {
 		)
 		// Every other factory takes an optional override, which is the shape Vitest's
 		// own project type reads as a configuration function and calls with a
-		// `ConfigEnv`. This one refuses overrides, so it is neither: the row carries
-		// the configuration it returns instead of the factory itself, and the refusal
-		// still stands wherever a wrapper calls it.
+		// `ConfigEnv`. This one takes no argument, so it is neither: the row carries
+		// the configuration it returns rather than the factory itself.
 		projects.push('appBrowser()')
 	}
 	if (blueprint.app.includes('server')) {
@@ -746,8 +761,10 @@ export function appShowcase(...options: never[]): UserConfig {
 	projects.push('policy')
 	factories.push(CONFIG_TEMPLATES.factories.config)
 	projects.push('config')
-	factories.push(CONFIG_TEMPLATES.factories.guides)
-	projects.push(`...(isExactCaseFile(resolveWorkspacePath('${GUIDES_TEST_PATH}')) ? [guides] : [])`)
+	if (blueprint.guides) {
+		factories.push(CONFIG_TEMPLATES.factories.guides)
+		projects.push('guides')
+	}
 	if (blueprint.conformance) {
 		factories.push(CONFIG_TEMPLATES.factories.conformance)
 		projects.push('conformance')
@@ -756,7 +773,11 @@ export function appShowcase(...options: never[]): UserConfig {
 		factories.push(CONFIG_TEMPLATES.factories.service)
 		projects.push('service')
 	}
-	if (blueprint.src.length > 0 && blueprint.integration) {
+	if (distributes) {
+		factories.push(CONFIG_TEMPLATES.factories.distribution)
+		projects.push('distribution')
+	}
+	if (blueprint.integration) {
 		factories.push(
 			fillTemplate(CONFIG_TEMPLATES.factories.integration, {
 				global: blueprint.global ? "\t\t\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : '',
@@ -767,7 +788,10 @@ export function appShowcase(...options: never[]): UserConfig {
 	factories.push(CONFIG_TEMPLATES.factories.probe)
 	projects.push('probe')
 
-	const projectRows = `\t\tprojects: [
+	const joinedProjects = `\t\tprojects: [${projects.join(', ')}],`
+	const projectRows = matchesPrintWidth(joinedProjects)
+		? joinedProjects
+		: `\t\tprojects: [
 ${projects.map((project) => `\t\t\t${project},`).join('\n')}
 	\t],`
 	// The boundary plugins a selection reaches are read off the factories it
@@ -1077,15 +1101,14 @@ export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly Conte
  * Compile every artifact in the `tests` group that is not vendored from the host.
  *
  * @param blueprint - The workspace specification.
- * @returns Shared setup modules, axis tests, and the optional install proof.
+ * @returns Shared setup modules, axis tests, and the optional integration seed.
  *
  * @remarks
  * `tests/setupPolicy.ts`, `tests/policy.test.ts`, and `tests/config.test.ts` are
  * fleet-invariant host artifacts and therefore do not appear here. A guide
  * proof is not emitted while the workspace intentionally has empty barrels and
- * no package guide. The install proof is meaningful only for a published
- * workspace and therefore follows the `src` axis as well as its structural
- * flag.
+ * no package guide. The integration seed follows its structural flag and loads
+ * every selected environment through its public barrel.
  *
  * The conformance proof is not emitted either, for the reason the guide proof
  * is not: it names an official artifact only the package knows, so a generated
@@ -1169,10 +1192,10 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 	}
 	if (blueprint.bin) {
 		const specifier = serializeTypeScriptString('../../../src/bin/main.js')
-		const statement =
-			specifier.length <= 68
-				? `\t\tconst entry = await import(${specifier})`
-				: `\t\tconst entry =\n\t\t\tawait import(${specifier})`
+		const joined = `\t\tconst entry = await import(${specifier})`
+		const statement = matchesPrintWidth(joined)
+			? joined
+			: `\t\tconst entry =\n\t\t\tawait import(${specifier})`
 		artifacts.push({
 			path: 'tests/src/bin/main.test.ts',
 			group: 'tests',
@@ -1194,13 +1217,40 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 			}),
 		})
 	}
-	if (blueprint.src.length > 0 && blueprint.integration) {
+	if (blueprint.integration) {
+		const imports: string[] = []
+		const entries: string[] = []
+		for (const environment of blueprint.src) {
+			const entry =
+				environment === 'core' ? 'srcCore' : environment === 'browser' ? 'srcBrowser' : 'srcServer'
+			imports.push(`import * as ${entry} from '@src/${environment}'`)
+			entries.push(entry)
+		}
+		for (const environment of blueprint.app) {
+			const entry =
+				environment === 'core' ? 'appCore' : environment === 'browser' ? 'appBrowser' : 'appServer'
+			imports.push(`import * as ${entry} from '@app/${environment}'`)
+			entries.push(entry)
+		}
+		const joined = `expect([${entries.map((entry) => `Object.keys(${entry})`).join(', ')}]).toStrictEqual(`
+		const actual = matchesPrintWidth(`\t\t${joined}[`)
+			? joined
+			: `expect([\n${entries.map((entry) => `\t\t\tObject.keys(${entry}),`).join('\n')}\n\t\t]).toStrictEqual(`
+		const expectedInline = `[${entries.map(() => '[]').join(', ')}]`
+		const expected =
+			actual !== joined || matchesPrintWidth(`\t\t${joined}${expectedInline})`)
+				? expectedInline
+				: `[\n${entries.map(() => '\t\t\t[],').join('\n')}\n\t\t]`
 		artifacts.push({
 			path: INTEGRATION_TEST_PATH,
 			group: 'tests',
 			ownership: 'birth',
 			origin: 'template',
-			content: ARTIFACT_TEMPLATES.tests.integration,
+			content: fillTemplate(ARTIFACT_TEMPLATES.tests.integration, {
+				imports: `${imports.join('\n')}\n`,
+				actual,
+				expected,
+			}),
 		})
 	}
 	return artifacts
@@ -1591,12 +1641,19 @@ export function dependenciesToQuestions(
  *
  * A question blocks when it describes a workspace this package cannot generate.
  * Three do not, because each describes a workspace it can describe honestly and
- * should not create: a published axis of several environments without core, whose
- * manifest names a core build the workspace never runs, and a structural flag
- * whose required axis is absent, which emits nothing. Blocking those closed the
- * gate for every verb, and the verbs that read an existing workspace need the
- * plan the gate refused. The caller that chooses the shape refuses the advisory;
- * the callers that read one report it.
+ * should not create: a published axis of several environments without core,
+ * whose manifest names a core build the workspace never runs; a showcase flag
+ * whose required browser axis is absent, which emits nothing; and an
+ * integration flag over fewer than two environments, whose seed does emit and
+ * has nothing to compose across. Blocking any of them closed the gate for every
+ * verb. The verbs that read an existing workspace need the plan the gate
+ * refused. The caller that chooses the shape refuses the advisory; the callers
+ * that read one report it.
+ *
+ * The integration advisory counts both axes together, because the proof it
+ * seeds spans environments rather than published ones: an application of two
+ * environments composes, and a package publishing one does not. Reading either
+ * axis alone withdrew the proof from a workspace that does compose.
  *
  * An environment question carries `ENVIRONMENTS` as its candidates, so a caller
  * reads the accepted values from the question instead of from the documentation.
@@ -1668,11 +1725,11 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 			})
 		}
 	}
-	if (blueprint.integration && blueprint.src.length === 0) {
+	if (blueprint.integration && blueprint.src.length + blueprint.app.length < 2) {
 		questions.push({
 			field: 'integration',
 			message:
-				'integration projects a published src, and this workspace declares none, so it emits nothing.',
+				'integration drives features across environments, and this workspace declares fewer than two, so its seed composes nothing.',
 			blocking: false,
 		})
 	}
@@ -1692,6 +1749,14 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 			})
 		}
 		vendors.add(vendor)
+	}
+	if (blueprint.distribution && blueprint.src.length === 0) {
+		questions.push({
+			field: 'distribution',
+			message:
+				'distribution packs the published source, and this workspace declares none, so it emits nothing.',
+			blocking: false,
+		})
 	}
 	if (blueprint.showcase && !blueprint.app.includes('browser')) {
 		questions.push({

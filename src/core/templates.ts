@@ -1,6 +1,7 @@
 import {
 	BIN_ENTRY_PATH,
 	CONFORMANCE_TEST_PATH,
+	DISTRIBUTION_TEST_PATH,
 	GUIDES_TEST_PATH,
 	INTEGRATION_TEST_PATH,
 	SERVICE_TEST_INCLUDE,
@@ -58,36 +59,10 @@ export const CONFIG_TEMPLATES = Object.freeze({
 		vite: `import type { {{viteTypes}} } from 'vite'
 {{imports}}import { defineConfig, mergeConfig } from 'vitest/config'
 import tsconfig from './tsconfig.json' with { type: 'json' }
-{{helpers}}{{browsers}}import { lstatSync, readdirSync, realpathSync } from 'node:fs'
-import { basename, join, parse, relative, resolve as resolvePath, sep } from 'node:path'
-import { fileURLToPath, URL } from 'node:url'
+{{helpers}}{{browsers}}import { fileURLToPath, URL } from 'node:url'
 
 {{options}}export function resolveWorkspacePath(relativePath: string): string {
 	return fileURLToPath(new URL(relativePath, import.meta.url))
-}
-
-// A generated root config must classify its own fixed proof without importing
-// package source, so the exact-case check stays self-contained over Node APIs.
-function isExactCaseFile(path: string): boolean {
-	const full = resolvePath(path)
-	try {
-		const status = lstatSync(full)
-		if (!status.isFile() || status.isSymbolicLink() || status.nlink !== 1) return false
-		const root = parse(full).root
-		const segments = relative(root, full).split(sep)
-		let parent = root
-		for (const segment of segments) {
-			try {
-				if (!readdirSync(parent).includes(segment)) return false
-			} catch {
-				if (basename(realpathSync.native(join(parent, segment))) !== segment) return false
-			}
-			parent = join(parent, segment)
-		}
-		return true
-	} catch {
-		return false
-	}
 }
 
 const resolve = {
@@ -225,6 +200,10 @@ const resolve = {
 				setupFiles: ['./tests/setup.ts', './tests/setupServer.ts'],
 				environment: 'node',
 				browser: { enabled: false },
+				// A bin test drives the real executable over a real temporary repository, so it
+				// spends seconds in process startup and filesystem work rather than milliseconds.
+				// Vitest's five-second default clears one alone and times out under a full suite.
+				testTimeout: 15_000,
 			},
 		},
 		options ?? {},
@@ -276,8 +255,7 @@ const resolve = {
 	}
 }
 
-export function appBrowser(...options: never[]): UserConfig {
-	if (options.length > 0) throw new Error('Browser configuration overrides are not permitted')
+export function appBrowser(): UserConfig {
 	return applicationBrowser(false)
 }
 {{showcaseFactory}}`,
@@ -394,6 +372,23 @@ export const service = (options?: UserConfig): UserConfig =>
 		options ?? {},
 	)
 `,
+		distribution: `export const distribution = (options?: UserConfig): UserConfig =>
+	mergeConfig(
+		{
+			resolve,
+			test: {
+				name: { label: 'distribution', color: 'cyan' },
+				include: ['${DISTRIBUTION_TEST_PATH}'],
+				setupFiles: ['./tests/setup.ts'],
+				environment: 'node',
+				testTimeout: 120_000,
+				hookTimeout: 120_000,
+				fileParallelism: false,
+			},
+		},
+		options ?? {},
+	)
+`,
 		probe: `// A workbench, not a proof. No gate selects this project.
 export const probe = (options?: UserConfig): UserConfig =>
 	mergeConfig(
@@ -419,9 +414,6 @@ export const probe = (options?: UserConfig): UserConfig =>
 				include: ['${INTEGRATION_TEST_PATH}'],
 				setupFiles: ['./tests/setup.ts'],
 {{global}}				environment: 'node',
-				testTimeout: 120_000,
-				hookTimeout: 120_000,
-				fileParallelism: false,
 			},
 		},
 		options ?? {},
@@ -1050,112 +1042,14 @@ describe('bin entry', () => {
 	})
 })
 `,
-		integration: `import { spawnSync } from 'node:child_process'
-import { globSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { dirname, join, resolve } from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
-import { describe, expect, it } from 'vitest'
+		integration: `{{imports}}import { describe, expect, it } from 'vitest'
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm'
-const registry =
-	spawnSync(npm, ['ping', '--fetch-retries=0', '--fetch-timeout=1000', '--loglevel=silent'], {
-		cwd: root,
-		stdio: 'ignore',
-		timeout: 5_000,
-		windowsHide: true,
-	}).status === 0
-
-describe('installed package consumer', () => {
-	it('loads the built package from a process outside the workspace', () => {
-		const workspace = mkdtempSync(join(tmpdir(), 'orkestrel-integration-driver-'))
-		try {
-			const manifest: unknown = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8'))
-			if (typeof manifest !== 'object' || manifest === null) {
-				throw new Error('The package manifest is not a record')
-			}
-			const module: unknown = Object.getOwnPropertyDescriptor(manifest, 'module')?.value
-			if (typeof module !== 'string')
-				throw new Error('The package manifest carries no module entry')
-			const entry = pathToFileURL(resolve(root, module)).href
-			const missing = pathToFileURL(resolve(root, 'dist/outside-integration-control.js')).href
-			const control = spawnSync(
-				process.execPath,
-				['--input-type=module', '--eval', 'await import(' + JSON.stringify(missing) + ')'],
-				{ cwd: workspace, encoding: 'utf8', windowsHide: true },
-			)
-			expect(control.status).not.toBe(0)
-			const driven = spawnSync(
-				process.execPath,
-				['--input-type=module', '--eval', 'await import(' + JSON.stringify(entry) + ')'],
-				{ cwd: workspace, encoding: 'utf8', windowsHide: true },
-			)
-			expect(driven.status).toBe(0)
-			expect(driven.stderr).toBe('')
-		} finally {
-			rmSync(workspace, { recursive: true, force: true })
-		}
+describe('workspace integration', () => {
+	it('loads every selected public barrel together as a composition seed', () => {
+		// Replace this empty-barrel seed with one observable flow that passes one
+		// environment's public result into another.
+		{{actual}}{{expected}})
 	})
-
-	it.skipIf(!registry)(
-		'installs the packed package into an outside consumer [requires a reachable npm registry]',
-		() => {
-			const workspace = mkdtempSync(join(tmpdir(), 'orkestrel-integration-install-'))
-			const packed = join(workspace, 'packed')
-			const consumer = join(workspace, 'consumer')
-			try {
-				mkdirSync(packed, { recursive: true })
-				mkdirSync(consumer, { recursive: true })
-				const pack = spawnSync(
-					npm,
-					['pack', '--json', '--ignore-scripts', '--pack-destination', packed],
-					{ cwd: root, encoding: 'utf8', windowsHide: true },
-				)
-				expect(pack.status).toBe(0)
-				const archives = globSync('*.tgz', { cwd: packed })
-				expect(archives).toHaveLength(1)
-				const archive = archives[0]
-				if (archive === undefined) throw new Error('The package archive was not written')
-				writeFileSync(
-					join(consumer, 'package.json'),
-					'{"name":"outside-consumer","private":true,"type":"module"}\\n',
-				)
-				const install = spawnSync(
-					npm,
-					['install', '--ignore-scripts', '--no-audit', '--no-fund', join(packed, archive)],
-					{ cwd: consumer, encoding: 'utf8', windowsHide: true },
-				)
-				expect(install.status).toBe(0)
-				const manifest: unknown = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8'))
-				if (typeof manifest !== 'object' || manifest === null) {
-					throw new Error('The package manifest is not a record')
-				}
-				const name: unknown = Object.getOwnPropertyDescriptor(manifest, 'name')?.value
-				if (typeof name !== 'string') throw new Error('The package manifest carries no name')
-				const control = spawnSync(
-					process.execPath,
-					[
-						'--input-type=module',
-						'--eval',
-						'await import(' + JSON.stringify(name + '/outside-integration-control') + ')',
-					],
-					{ cwd: consumer, encoding: 'utf8', windowsHide: true },
-				)
-				expect(control.status).not.toBe(0)
-				const driven = spawnSync(
-					process.execPath,
-					['--input-type=module', '--eval', 'await import(' + JSON.stringify(name) + ')'],
-					{ cwd: consumer, encoding: 'utf8', windowsHide: true },
-				)
-				expect(driven.status).toBe(0)
-				expect(driven.stderr).toBe('')
-			} finally {
-				rmSync(workspace, { recursive: true, force: true })
-			}
-		},
-		300_000,
-	)
 })
 `,
 	}),

@@ -421,7 +421,7 @@ The harness bridge names the concrete mechanism for each of these.
 
 ### Check the brief before you send it
 
-Run these seven checks on every brief. Each is cheap, and skipping one costs a full dispatch cycle
+Run these nine checks on every brief. Each is cheap, and skipping one costs a full dispatch cycle
 that produces no work, because a unit given a brief that is internally consistent and factually
 wrong is right to stop.
 
@@ -449,9 +449,18 @@ wrong is right to stop.
 - Ask what the change will do to the facts you just measured. A criterion fixed to a measured set is
   unreachable if the change alters that set, and a file marked off-limits is wrong if the change
   writes to it. Measure the state the unit will finish in, not only the state it starts from.
+- Grant both halves of a template change where the package generates the configuration it runs on.
+  The template and the repository's own materialized copy of that template's output are one change:
+  adding a fixed Vitest project moves the template, `vite.config.ts`, `package.json`, and the proof
+  file that project includes. Withhold either half and no edit to the owned files can reach the
+  gates the brief requires.
 - Name the property the unit must change, and stop. A consequence you expect to follow from it is an
   observation for the report, not a criterion. Bundled together, the unit can satisfy neither and
   cannot tell which half you meant.
+- Keep the brief's control identifiers inside the brief. Label controls so the brief's own table can
+  be read, and say in the brief that a test is named for what it proves, never for the control that
+  specified it. An implementer writing one test per control otherwise takes the label as the obvious
+  name, and a private brief vocabulary becomes a permanent test name.
 
 ### Carry every finding
 
@@ -613,6 +622,16 @@ is a development dependency of every package, including packages it depends on i
 layering would report a cycle that does not exist. Each package builds against the already-published
 `scaffold`, never against an unpublished one, and a `scaffold` release therefore publishes on its own
 and propagates as files rather than as a cascade.
+
+`scaffold` also carries a second published surface beside `dist/src`: `package.json` ships
+`dist/host`, the vendored file set every target receives through `repair`.
+
+- Bump and publish `scaffold` when any vendored byte changes, or when the set of vendored paths
+  changes. That surface moved on its own account, and `dist/src` need not move with it.
+- Re-pin `@orkestrel/scaffold` in each target after a vendored-only release, run `repair` there, and
+  prove that target's gates still green. `repair` restores `tests/setupPolicy.ts` and
+  `tests/policy.test.ts`, so a vendored-only release can turn a green target red. A target bumps
+  only when its own published surface moved.
 
 ### Preparing
 

@@ -187,6 +187,8 @@ export function buildBlueprint(fields?: Partial<Blueprint>): Blueprint {
 		engines: DEFAULT_ENGINES,
 		overrides: [],
 		bin: false,
+		guides: false,
+		distribution: false,
 		integration: false,
 		conformance: false,
 		service: false,

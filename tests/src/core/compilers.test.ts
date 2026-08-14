@@ -1,17 +1,24 @@
 import type { Ownership } from '@src/core'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import {
+	APP_BROWSER_DEV_DEPENDENCIES,
 	artifactToFinding,
+	BASE_DEV_DEPENDENCIES,
 	blueprintToConfigArtifacts,
 	blueprintToDevDependencies,
 	blueprintToDocumentArtifacts,
 	blueprintToGuideArtifacts,
+	blueprintToManifest,
 	blueprintToOrchestrationArtifacts,
 	blueprintToQuestions,
 	blueprintToRootVite,
 	blueprintToScripts,
 	blueprintToSourceArtifacts,
 	blueprintToTestArtifacts,
+	CONFIG_TEMPLATES,
 	contentToHex,
+	createBlueprint,
 	isFinding,
 	ORKESTREL_RANGE_PATTERN,
 } from '@src/core'
@@ -39,6 +46,56 @@ describe('ORKESTREL_RANGE_PATTERN', () => {
 		expect(ORKESTREL_RANGE_PATTERN.test('~0.1.0')).toBe(false)
 		expect(ORKESTREL_RANGE_PATTERN.test('0.1.0')).toBe(false)
 		expect(ORKESTREL_RANGE_PATTERN.test('^0.1')).toBe(false)
+	})
+})
+
+describe('blueprintToDevDependencies compile tooling', () => {
+	it('keeps library publishing tools in a source workspace', () => {
+		const planned = blueprintToDevDependencies(buildBlueprint({ src: ['core'], app: [] }))
+
+		expect(planned['@microsoft/api-extractor']).toBe('^7.58.12')
+		expect(planned['vite-plugin-dts']).toBe('^5.0.3')
+	})
+
+	it('omits library publishing tools from an app-only workspace', () => {
+		const planned = blueprintToDevDependencies(
+			buildBlueprint({ src: [], app: ['core', 'browser'], bin: false }),
+		)
+
+		expect(planned['@microsoft/api-extractor']).toBeUndefined()
+		expect(planned['vite-plugin-dts']).toBeUndefined()
+	})
+
+	it('keeps library publishing tools in an executable workspace', () => {
+		const planned = blueprintToDevDependencies(buildBlueprint({ src: [], app: [], bin: true }))
+
+		expect(planned['@microsoft/api-extractor']).toBe('^7.58.12')
+		expect(planned['vite-plugin-dts']).toBe('^5.0.3')
+	})
+
+	it('keeps the browser application toolchain in an app-only workspace', () => {
+		const planned = blueprintToDevDependencies(
+			buildBlueprint({ src: [], app: ['core', 'browser'], bin: false }),
+		)
+
+		// The claim is membership: an app-only workspace keeps the browser toolchain
+		// and the shared base. Each range is compared with the declaration that owns
+		// it rather than with a literal, which a fleet bump silently invalidates.
+		expect(planned['@orkestrel/html']).toBe(APP_BROWSER_DEV_DEPENDENCIES['@orkestrel/html'])
+		expect(planned.vue).toBe(APP_BROWSER_DEV_DEPENDENCIES.vue)
+		expect(planned['@orkestrel/test']).toBe(BASE_DEV_DEPENDENCIES['@orkestrel/test'])
+	})
+
+	it('keeps a generated source workspace manifest byte-stable', async () => {
+		const manifest = blueprintToManifest(createBlueprint('sample', { src: ['core'] }))
+		const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(manifest))
+		const hex = [...new Uint8Array(digest)]
+			.map((byte) => byte.toString(16).padStart(2, '0'))
+			.join('')
+
+		// The digest covers the self-pin, so a release moves it. Update it with the
+		// version bump in the same change; it is the tripwire for every other byte.
+		expect(hex).toBe('a1b21700f679d92d8591ebd9a81d73d392602d54d5b5936d3444346067c78d8b')
 	})
 })
 
@@ -91,21 +148,170 @@ describe('blueprintToScripts config projects', () => {
 		expect(absent.test).not.toContain('test:conformance')
 	})
 
-	it('emits only proofs that can pass in a fresh workspace', () => {
-		const published = blueprintToScripts(buildBlueprint({ integration: true }))
-		expect(published.test).toContain('test:config')
-		expect(published['test:config']).toContain('--project config')
-		expect(published['test:guides']).toBeUndefined()
-		expect(published.test).not.toContain('test:guides')
-		expect(published['test:integration']).toContain('--project integration')
-		expect(published.test).not.toContain('test:integration')
-		expect(published.prepublishOnly).toContain('test:integration')
+	it('registers and gates the planned guides proof', () => {
+		const blueprint = buildBlueprint({ guides: true })
+		const configuration = blueprintToRootVite(blueprint)
+		const scripts = blueprintToScripts(blueprint)
 
-		const application = blueprintToScripts(
-			buildBlueprint({ src: [], app: ['core'], integration: true }),
+		expect(configuration).toContain('export const guides = (options?: UserConfig): UserConfig =>')
+		expect(configuration).toContain("include: ['tests/guides.test.ts']")
+		expect(configuration).toContain('projects: [srcCore, policy, config, guides, probe]')
+		expect(configuration).not.toContain('isExactCaseFile')
+		expect(scripts['test:guides']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project guides',
 		)
-		expect(application['test:integration']).toBeUndefined()
-		expect(application.prepublishOnly).not.toContain('test:integration')
+		expect(scripts.test).toContain('npm run test:guides')
+	})
+
+	it('omits the unplanned guides proof', () => {
+		const blueprint = createBlueprint('sample', { src: ['core'] })
+		const configuration = blueprintToRootVite(blueprint)
+		const scripts = blueprintToScripts(blueprint)
+
+		expect(blueprint.guides).toBe(false)
+		expect(configuration).not.toContain("name: { label: 'guides',")
+		expect(scripts['test:guides']).toBeUndefined()
+		expect(scripts.test).not.toContain('test:guides')
+	})
+
+	it('registers the distribution proof only in the release-mode publish gate', () => {
+		const blueprint = buildBlueprint({ distribution: true })
+		const configuration = blueprintToRootVite(blueprint)
+		const scripts = blueprintToScripts(blueprint)
+
+		expect(configuration).toContain(
+			'export const distribution = (options?: UserConfig): UserConfig =>',
+		)
+		expect(configuration).toContain("include: ['tests/distribution.test.ts']")
+		expect(configuration).toContain('projects: [srcCore, policy, config, distribution, probe]')
+		expect(scripts['test:distribution']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution',
+		)
+		expect(scripts.test).not.toContain('test:distribution')
+		expect(scripts.prepublishOnly).toContain('npm run test:distribution -- --mode release')
+	})
+
+	it('withholds publish-only machinery from a private workspace', () => {
+		const blueprint = createBlueprint('demo', {
+			app: ['core'],
+			service: true,
+			distribution: true,
+		})
+		const configuration = blueprintToRootVite(blueprint)
+		const scripts = blueprintToScripts(blueprint)
+
+		expect(configuration).toContain("name: { label: 'service', color: 'red' }")
+		expect(configuration).not.toContain("name: { label: 'distribution',")
+		expect(scripts).not.toHaveProperty('prepublishOnly')
+		expect(scripts).not.toHaveProperty('test:distribution')
+		expect(scripts.test).toContain('npm run test:service')
+		expect(scripts['test:service']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project service',
+		)
+	})
+
+	it('keeps publish proofs in the publish gate for a source workspace', () => {
+		const blueprint = createBlueprint('demo', {
+			src: ['core'],
+			service: true,
+			distribution: true,
+		})
+		const configuration = blueprintToRootVite(blueprint)
+		const scripts = blueprintToScripts(blueprint)
+
+		expect(configuration).toContain("name: { label: 'distribution', color: 'cyan' }")
+		expect(scripts.test).not.toContain('test:service')
+		expect(scripts.prepublishOnly).toContain('npm run test:distribution -- --mode release')
+		expect(scripts.prepublishOnly).toContain('npm run test:service')
+	})
+
+	it('omits the unplanned distribution proof', () => {
+		const blueprint = buildBlueprint({ distribution: false })
+		const configuration = blueprintToRootVite(blueprint)
+		const scripts = blueprintToScripts(blueprint)
+
+		expect(configuration).not.toContain("name: { label: 'distribution',")
+		expect(scripts['test:distribution']).toBeUndefined()
+		expect(scripts.test).not.toContain('test:distribution')
+		expect(scripts.prepublishOnly).not.toContain('test:distribution')
+	})
+
+	it('registers an application-only integration proof in the default test gate', () => {
+		const blueprint = buildBlueprint({
+			src: [],
+			app: ['core', 'browser', 'server'],
+			integration: true,
+		})
+		const scripts = blueprintToScripts(blueprint)
+		const integration = blueprintToTestArtifacts(blueprint).find(
+			({ path }) => path === 'tests/integration.test.ts',
+		)
+
+		expect(blueprintToRootVite(blueprint)).toContain(
+			'projects: [appCore, appBrowser(), appServer, policy, config, integration, probe]',
+		)
+		expect(integration?.content).toContain("import * as appCore from '@app/core'")
+		expect(integration?.content).toContain("import * as appBrowser from '@app/browser'")
+		expect(integration?.content).toContain("import * as appServer from '@app/server'")
+		expect(integration?.content).toContain('Object.keys(appCore)')
+		expect(integration?.content).not.toContain('spawnSync')
+		expect(integration?.content).not.toContain('install')
+		expect(integration?.content).not.toContain('tarball')
+		expect(scripts['test:integration']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project integration',
+		)
+		expect(scripts.test).toContain('npm run test:integration')
+		expect(scripts).not.toHaveProperty('prepublishOnly')
+	})
+
+	it('runs a published integration project in the default test gate', () => {
+		const blueprint = buildBlueprint({ src: ['core'], integration: true })
+		const configuration = blueprintToRootVite(blueprint)
+		const scripts = blueprintToScripts(blueprint)
+
+		expect(configuration).toContain("name: { label: 'integration', color: 'blue' }")
+		expect(configuration).toContain("include: ['tests/integration.test.ts']")
+		expect(configuration).toContain('projects: [srcCore, policy, config, integration, probe]')
+		expect(scripts['test:integration']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project integration',
+		)
+		expect(scripts.test).toContain('npm run test:integration')
+		expect(scripts.prepublishOnly).not.toContain('npm run test:integration')
+	})
+
+	it('emits a cross-environment composition seed without a packaging process', () => {
+		const artifacts = blueprintToTestArtifacts(
+			buildBlueprint({ src: [], app: ['core', 'browser', 'server'], integration: true }),
+		)
+		const proof = artifacts.find(({ path }) => path === 'tests/integration.test.ts')
+
+		expect(artifacts.map(({ path }) => path)).toContain('tests/integration.test.ts')
+		expect(proof?.content).toContain("import * as appCore from '@app/core'")
+		expect(proof?.content).toContain("import * as appBrowser from '@app/browser'")
+		expect(proof?.content).toContain("import * as appServer from '@app/server'")
+		expect(proof?.content).toContain('Object.keys(appCore)')
+		expect(proof?.content).not.toContain('spawnSync')
+		expect(proof?.content).not.toContain('install')
+		expect(proof?.content).not.toContain('tarball')
+	})
+
+	it('registers an app-core-only integration seed in the default test gate', () => {
+		const blueprint = buildBlueprint({ src: [], app: ['core'], integration: true })
+		const scripts = blueprintToScripts(blueprint)
+		const integration = blueprintToTestArtifacts(blueprint).find(
+			({ path }) => path === 'tests/integration.test.ts',
+		)
+
+		expect(integration?.content).toContain("import * as appCore from '@app/core'")
+		expect(integration?.content).toContain('expect([Object.keys(appCore)]).toStrictEqual([[]])')
+		expect(integration?.content).not.toContain('@src/')
+		expect(integration?.content).not.toContain('@app/browser')
+		expect(integration?.content).not.toContain('@app/server')
+		expect(scripts['test:integration']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project integration',
+		)
+		expect(scripts.test).toContain('npm run test:integration')
+		expect(scripts).not.toHaveProperty('prepublishOnly')
 	})
 })
 
@@ -127,22 +333,15 @@ describe('blueprint gate laws', () => {
 		])
 	})
 
-	it('advises a structural flag whose axis is absent instead of dropping it silently', () => {
-		const integration = buildBlueprint({ src: [], app: ['server'], integration: true })
+	it('projects integration on either workspace axis and advises only an absent showcase axis', () => {
+		const integration = buildBlueprint({ src: [], app: ['core', 'server'], integration: true })
 		const showcase = buildBlueprint({ src: ['core'], app: [], showcase: true })
 
-		expect(blueprintToQuestions(integration)).toStrictEqual([
-			{
-				field: 'integration',
-				message:
-					'integration projects a published src, and this workspace declares none, so it emits nothing.',
-				blocking: false,
-			},
-		])
-		expect(blueprintToTestArtifacts(integration).map(({ path }) => path)).not.toContain(
+		expect(blueprintToQuestions(integration)).toStrictEqual([])
+		expect(blueprintToTestArtifacts(integration).map(({ path }) => path)).toContain(
 			'tests/integration.test.ts',
 		)
-		expect(blueprintToScripts(integration)['test:integration']).toBeUndefined()
+		expect(blueprintToScripts(integration)['test:integration']).toContain('--project integration')
 		expect(blueprintToQuestions(showcase)).toStrictEqual([
 			{
 				field: 'showcase',
@@ -158,26 +357,108 @@ describe('blueprint gate laws', () => {
 		expect(blueprintToDevDependencies(showcase)['vite-plugin-singlefile']).toBeUndefined()
 	})
 
-	it('raises no question for a structural flag whose axis is present', () => {
-		expect(
-			blueprintToQuestions(buildBlueprint({ src: ['core'], integration: true })),
-		).toStrictEqual([])
+	it('raises no showcase question once the browser axis is present', () => {
 		expect(
 			blueprintToQuestions(buildBlueprint({ app: ['browser'], showcase: true })),
 		).toStrictEqual([])
 	})
+
+	// Both sealed factories take nothing, and the seal is the signature rather than a
+	// runtime refusal beside it. `appShowcase` is generated inline here while
+	// `appBrowser` comes from the template, so one spelling drifting from the other is
+	// the failure this catches.
+	it('seals both argument-free factories through their signatures alone', () => {
+		const config = blueprintToRootVite(buildBlueprint({ app: ['browser'], showcase: true }))
+		expect(config).toContain('export function appShowcase(): UserConfig {')
+		expect(config).toContain('export function appBrowser(): UserConfig {')
+		expect(config).not.toContain('never[]')
+		expect(config).not.toContain('overrides are not permitted')
+	})
+
+	// The seed loads every declared environment through its public barrel, so one
+	// declared environment buys a proof with nothing to compose across. The flag
+	// still registers its project, its script, and its place in the publish chain,
+	// because workspaces of exactly that shape already ship: this reports what the
+	// flag bought and refuses nothing.
+	it('advises an integration flag that has fewer than two environments to compose across', () => {
+		const advisory = {
+			field: 'integration',
+			message:
+				'integration drives features across environments, and this workspace declares fewer than two, so its seed composes nothing.',
+			blocking: false,
+		}
+		const published = buildBlueprint({ src: ['core'], app: [], integration: true })
+		const applied = buildBlueprint({ src: [], app: ['core'], integration: true })
+
+		expect(blueprintToQuestions(published)).toStrictEqual([advisory])
+		expect(blueprintToQuestions(applied)).toStrictEqual([advisory])
+		expect(blueprintToQuestions(buildBlueprint({ src: [], app: ['core'] }))).toStrictEqual([])
+	})
+
+	// The advisory counts both axes together. Reading either one alone withdraws
+	// the proof from a workspace that does compose across environments, which is
+	// the refusal this gate was corrected to stop making.
+	it('raises no integration question once two environments are there to compose across', () => {
+		const applied = buildBlueprint({ src: [], app: ['core', 'browser'], integration: true })
+		const spanning = buildBlueprint({ src: ['core'], app: ['core'], integration: true })
+		const published = buildBlueprint({ src: ['core', 'server'], integration: true })
+
+		expect(blueprintToQuestions(applied)).toStrictEqual([])
+		expect(blueprintToQuestions(spanning)).toStrictEqual([])
+		expect(blueprintToQuestions(published)).toStrictEqual([])
+		expect(blueprintToRootVite(applied)).toContain("name: { label: 'integration', color: 'blue' }")
+		expect(blueprintToScripts(applied)['test:integration']).toContain('--project integration')
+		expect(blueprintToScripts(applied).test).toContain('npm run test:integration')
+		expect(blueprintToScripts(applied)).not.toHaveProperty('prepublishOnly')
+		expect(blueprintToTestArtifacts(applied).map(({ path }) => path)).toContain(
+			'tests/integration.test.ts',
+		)
+	})
 })
 
 describe('blueprintToRootVite fixed proofs', () => {
-	it('selects guides only when its exact proof path exists', () => {
-		const configuration = blueprintToRootVite(buildBlueprint())
-		expect(configuration).toContain('export const guides = (options?: UserConfig): UserConfig =>')
-		expect(configuration).toContain("include: ['tests/guides.test.ts']")
-		expect(configuration).toContain('function isExactCaseFile(path: string): boolean')
-		expect(configuration).toContain(
-			"...(isExactCaseFile(resolveWorkspacePath('tests/guides.test.ts')) ? [guides] : []),",
+	it('gives every bin project its contended-suite timeout and reason', () => {
+		const configuration = blueprintToRootVite(buildBlueprint({ bin: true }))
+		const start = configuration.indexOf('export const srcBin')
+		const end = configuration.indexOf('export const policy')
+		const bin = configuration.slice(start, end)
+
+		expect(start).toBeGreaterThan(-1)
+		expect(end).toBeGreaterThan(start)
+		expect(bin).toContain("name: { label: 'src:bin', color: 'yellow' }")
+		expect(bin).toContain('testTimeout: 15_000,')
+		expect(bin).toContain('spends seconds in process startup and filesystem work')
+		expect(bin).toContain("Vitest's five-second default")
+	})
+
+	it('keeps only packing and live-service proofs on expensive-project budgets', () => {
+		const integration = CONFIG_TEMPLATES.factories.integration
+		const distribution = CONFIG_TEMPLATES.factories.distribution
+		const service = CONFIG_TEMPLATES.factories.service
+
+		expect(integration).not.toContain('testTimeout')
+		expect(integration).not.toContain('hookTimeout')
+		expect(integration).not.toContain('fileParallelism')
+		for (const isolated of [distribution, service]) {
+			expect(isolated).toContain('testTimeout: 120_000,')
+			expect(isolated).toContain('hookTimeout: 120_000,')
+			expect(isolated).toContain('fileParallelism: false,')
+		}
+	})
+
+	it('keeps this repository root config byte-identical to its generated form', () => {
+		const current = readFileSync(resolve('vite.config.ts'), 'utf8')
+		const blueprint = createBlueprint('scaffold', {
+			src: ['core', 'server'],
+			bin: true,
+			guides: true,
+			distribution: true,
+		})
+
+		expect(current).toBe(blueprintToRootVite(blueprint))
+		expect(current).not.toBe(
+			blueprintToRootVite(createBlueprint('scaffold', { src: ['core', 'server'] })),
 		)
-		expect(configuration).not.toContain('projects: [guides]')
 	})
 
 	it('registers the conformance and live-service projects only when their fact is set', () => {
@@ -191,7 +472,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 		)
 		expect(measured).toContain("include: ['tests/conformance.test.ts']")
 		expect(measured).toContain("setupFiles: ['./tests/setup.ts'],\n\t\t\t\tenvironment: 'node',")
-		expect(measured).toContain('\t\t\tconformance,\n')
+		expect(measured).toContain('projects: [srcCore, policy, config, conformance, probe]')
 
 		// The live project names its readiness module by path, so the registration
 		// and the emitted setup module have to agree on that exact path.
@@ -202,7 +483,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 		expect(live).toContain("include: ['tests/service/**/*.test.ts']")
 		expect(live).toContain("setupFiles: ['./tests/setup.ts', './tests/setupService.ts'],")
 		expect(live).toContain('\t\t\t\tfileParallelism: false,\n')
-		expect(live).toContain('\t\t\tservice,\n')
+		expect(live).toContain('projects: [srcCore, policy, config, service, probe]')
 		expect(
 			blueprintToTestArtifacts(buildBlueprint({ service: true })).map(({ path }) => path),
 		).toContain('tests/setupService.ts')
@@ -236,10 +517,10 @@ describe('blueprintToRootVite fixed proofs', () => {
 		expect(blueprintToRootVite(buildBlueprint({ src: ['core', 'server'] }))).toContain(
 			"import { environmentBoundary, outputBoundary } from './configs/helpers.js'\n",
 		)
-		// The unused import sat between two imports the config always makes, so the
-		// span it left behind is pinned too.
+		// The removed runtime filesystem classifier leaves the URL import directly
+		// after the three imports every root configuration makes.
 		expect(blueprintToRootVite(buildBlueprint({ src: ['core'] }))).toContain(
-			"import type { UserConfig } from 'vite'\nimport { defineConfig, mergeConfig } from 'vitest/config'\nimport tsconfig from './tsconfig.json' with { type: 'json' }\nimport { lstatSync",
+			"import type { UserConfig } from 'vite'\nimport { defineConfig, mergeConfig } from 'vitest/config'\nimport tsconfig from './tsconfig.json' with { type: 'json' }\nimport { fileURLToPath, URL } from 'node:url'",
 		)
 	})
 
@@ -633,7 +914,9 @@ describe('content artifact compilers', () => {
 			expect(artifact.content).toContain('Object.keys(entry)')
 			expect(artifact.content).toContain('toStrictEqual([])')
 		}
-		expect(tests.at(-1)?.content).toContain('outside consumer')
+		expect(tests.at(-1)?.content).toContain('workspace integration')
+		expect(tests.at(-1)?.content).toContain('Object.keys(srcCore)')
+		expect(tests.at(-1)?.content).not.toContain('spawnSync')
 	})
 
 	it('emits the package front page and both required guide indexes', () => {

@@ -3,10 +3,8 @@ import { spawn, spawnSync } from 'node:child_process'
 import { resolve } from 'node:path'
 import { CATALOG_AGENT_PATH } from '@src/core'
 import { EXIT_CLEAN } from '../../../src/bin/constants.js'
-import { CLI } from '../../../src/bin/CLI.js'
 import {
 	createFleet,
-	createSink,
 	createStagedHost,
 	createWorkspace,
 	WORKSPACE_ROOT,
@@ -26,8 +24,10 @@ describe('scaffold', () => {
 		try {
 			const host = createStagedHost(workspace)
 			const target = workspace.directory('fresh')
-			expect(
-				await new CLI(createSink().options).execute([
+			const created = spawnSync(
+				process.execPath,
+				[
+					resolve(WORKSPACE_ROOT, 'dist/bin/main.js'),
 					'new',
 					'widget',
 					'--src',
@@ -36,8 +36,10 @@ describe('scaffold', () => {
 					host,
 					'--target',
 					target,
-				]),
-			).toBe(EXIT_CLEAN)
+				],
+				{ encoding: 'utf8', windowsHide: true },
+			)
+			expect(created.status).toBe(EXIT_CLEAN)
 			workspace.write(`fresh/${CATALOG_AGENT_PATH}`, 'x'.repeat(262_144))
 			const child = spawn(
 				process.execPath,

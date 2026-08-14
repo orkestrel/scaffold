@@ -1,38 +1,11 @@
 import type { UserConfig } from 'vite'
-
 import { defineConfig, mergeConfig } from 'vitest/config'
 import tsconfig from './tsconfig.json' with { type: 'json' }
 import { environmentBoundary, outputBoundary } from './configs/helpers.js'
-import { lstatSync, readdirSync, realpathSync } from 'node:fs'
-import { basename, join, parse, relative, resolve as resolvePath, sep } from 'node:path'
 import { fileURLToPath, URL } from 'node:url'
 
 export function resolveWorkspacePath(relativePath: string): string {
 	return fileURLToPath(new URL(relativePath, import.meta.url))
-}
-
-// A generated root config must classify its own fixed proof without importing
-// package source, so the exact-case check stays self-contained over Node APIs.
-function isExactCaseFile(path: string): boolean {
-	const full = resolvePath(path)
-	try {
-		const status = lstatSync(full)
-		if (!status.isFile() || status.isSymbolicLink() || status.nlink !== 1) return false
-		const root = parse(full).root
-		const segments = relative(root, full).split(sep)
-		let parent = root
-		for (const segment of segments) {
-			try {
-				if (!readdirSync(parent).includes(segment)) return false
-			} catch {
-				if (basename(realpathSync.native(join(parent, segment))) !== segment) return false
-			}
-			parent = join(parent, segment)
-		}
-		return true
-	} catch {
-		return false
-	}
 }
 
 const resolve = {
@@ -136,11 +109,9 @@ export const srcBin = (options?: UserConfig): UserConfig =>
 				setupFiles: ['./tests/setup.ts', './tests/setupServer.ts'],
 				environment: 'node',
 				browser: { enabled: false },
-				// Every test here drives the real executable over a real temporary
-				// repository and a real loopback registry, so the slowest measures about
-				// three and a half seconds alone. Vitest's five-second default clears
-				// that alone and reports a timeout under a full suite run, which is a red
-				// gate carrying no diagnostic about the code.
+				// A bin test drives the real executable over a real temporary repository, so it
+				// spends seconds in process startup and filesystem work rather than milliseconds.
+				// Vitest's five-second default clears one alone and times out under a full suite.
 				testTimeout: 15_000,
 			},
 		},
@@ -193,13 +164,13 @@ export const guides = (options?: UserConfig): UserConfig =>
 		options ?? {},
 	)
 
-export const integration = (options?: UserConfig): UserConfig =>
+export const distribution = (options?: UserConfig): UserConfig =>
 	mergeConfig(
 		{
 			resolve,
 			test: {
-				name: { label: 'integration', color: 'blue' },
-				include: ['tests/integration.test.ts'],
+				name: { label: 'distribution', color: 'cyan' },
+				include: ['tests/distribution.test.ts'],
 				setupFiles: ['./tests/setup.ts'],
 				environment: 'node',
 				testTimeout: 120_000,
@@ -229,15 +200,6 @@ export const probe = (options?: UserConfig): UserConfig =>
 export default defineConfig({
 	resolve,
 	test: {
-		projects: [
-			srcCore,
-			srcServer,
-			srcBin,
-			policy,
-			config,
-			...(isExactCaseFile(resolveWorkspacePath('tests/guides.test.ts')) ? [guides] : []),
-			integration,
-			probe,
-		],
+		projects: [srcCore, srcServer, srcBin, policy, config, guides, distribution, probe],
 	},
 })

@@ -23,15 +23,18 @@ import {
 	matchesDriftReachability,
 	matchesEngines,
 	matchesOrchestrationPath,
+	matchesPrintWidth,
 	matchesRange,
 	MAX_MANIFEST_BYTES,
 	MAX_NAME_LENGTH,
 	nameToGuide,
 	nameToRewrite,
 	planToSummary,
+	PRINT_WIDTH,
 	selectGroups,
 	selectHostPaths,
 	serializeTypeScriptString,
+	TAB_WIDTH,
 } from '@src/core'
 import {
 	buildBlueprint,
@@ -134,6 +137,33 @@ describe('nameToGuide', () => {
 	it('derives one mirror path per name', () => {
 		expect(nameToGuide('@orkestrel/router')).toBe('guides/router.md')
 		expect(nameToGuide('scaffold')).toBe('guides/scaffold.md')
+	})
+})
+
+describe('matchesPrintWidth', () => {
+	// The formatter counts a tab as its own configured width, so the predicate is
+	// measured against lines whose character count and column count disagree.
+	it('measures columns rather than characters, at the boundary', () => {
+		const fits = '\t'.repeat(4) + 'a'.repeat(PRINT_WIDTH - 4 * TAB_WIDTH)
+		expect(fits).toHaveLength(PRINT_WIDTH - 4 * TAB_WIDTH + 4)
+		expect(matchesPrintWidth(fits)).toBe(true)
+		expect(matchesPrintWidth(`${fits}a`)).toBe(false)
+	})
+
+	it('accepts an empty line and rejects one that is only tabs', () => {
+		expect(matchesPrintWidth('')).toBe(true)
+		expect(matchesPrintWidth('\t'.repeat(PRINT_WIDTH / TAB_WIDTH))).toBe(true)
+		expect(matchesPrintWidth('\t'.repeat(PRINT_WIDTH / TAB_WIDTH + 1))).toBe(false)
+	})
+
+	// The constants exist so four emitters measure one width. They are a second
+	// copy of a fact the vendored formatter already holds, so the copy is checked
+	// against the original rather than trusted.
+	it('carries the width the vendored formatter is configured with', () => {
+		const vendored: unknown = JSON.parse(readFileSync(resolve('.oxfmtrc.json'), 'utf8'))
+		if (!isRecord(vendored)) throw new Error('Expected the vendored formatter configuration')
+		expect(vendored.printWidth).toBe(PRINT_WIDTH)
+		expect(vendored.tabWidth).toBe(TAB_WIDTH)
 	})
 })
 

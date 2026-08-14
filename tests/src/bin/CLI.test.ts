@@ -2,7 +2,16 @@ import type { Audit, Group } from '@src/core'
 import type { MaterializeResult } from '@src/server'
 import type { CatalogResult, OverwriteResult, RepairResult } from '../../../src/bin/types.js'
 import { describe, expect, it } from 'vitest'
-import { CATALOG_AGENT_PATH, GROUPS } from '@src/core'
+import {
+	APP_BROWSER_DEV_DEPENDENCIES,
+	APP_DEV_DEPENDENCIES,
+	BASE_DEV_DEPENDENCIES,
+	blueprintToManifest,
+	blueprintToScripts,
+	CATALOG_AGENT_PATH,
+	createBlueprint,
+	GROUPS,
+} from '@src/core'
 import { readFileHex } from '@src/server'
 import {
 	EXIT_CLEAN,
@@ -20,6 +29,7 @@ import {
 	buildHostManifest,
 	buildOrganization,
 	buildPackument,
+	buildTargetManifest,
 	createCatalogFleet,
 	createFleet,
 	createHostRoot,
@@ -35,7 +45,9 @@ import {
 	FLEET_UPSTREAM_PATHS,
 	HOSTILE_ARGUMENT,
 	HOSTILE_BYTES,
+	omitDependencies,
 	REFUSED_MANIFEST_TEXT,
+	TARGET_DEV_DEPENDENCIES,
 	TARGET_MANIFEST_TEXT,
 	trackFiles,
 	USAGE_CASES,
@@ -402,7 +414,348 @@ describe('CLI new', () => {
 })
 
 describe('CLI audit', () => {
-	it('derives every exact structural fact in both directions', async () => {
+	it('reports no dependency question when the manifest declares every planned dependency', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions).toStrictEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reports no dependency question for library tools omitted by an app-only workspace', async () => {
+		const workspace = createWorkspace()
+		try {
+			const host = createHostRoot(workspace, 'host', buildFleetManifest())
+			const target = workspace.directory('target')
+			const blueprint = createBlueprint('sample', { src: [], app: ['core', 'browser'] })
+			workspace.directory('target/app/core')
+			workspace.directory('target/app/browser')
+			workspace.write(
+				'target/package.json',
+				buildTargetManifest(
+					blueprint,
+					undefined,
+					omitDependencies(
+						{
+							...TARGET_DEV_DEPENDENCIES,
+							...APP_DEV_DEPENDENCIES,
+							...APP_BROWSER_DEV_DEPENDENCIES,
+						},
+						['@microsoft/api-extractor', 'vite-plugin-dts'],
+					),
+				),
+			)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'audit',
+					'--from',
+					host,
+					'--target',
+					target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions.filter(({ field }) => field === 'dependencies')).toStrictEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reports only the missing shared test tool for an app-only workspace', async () => {
+		const workspace = createWorkspace()
+		try {
+			const host = createHostRoot(workspace, 'host', buildFleetManifest())
+			const target = workspace.directory('target')
+			const blueprint = createBlueprint('sample', { src: [], app: ['core', 'browser'] })
+			workspace.directory('target/app/core')
+			workspace.directory('target/app/browser')
+			workspace.write(
+				'target/package.json',
+				buildTargetManifest(
+					blueprint,
+					undefined,
+					omitDependencies(
+						{
+							...TARGET_DEV_DEPENDENCIES,
+							...APP_DEV_DEPENDENCIES,
+							...APP_BROWSER_DEV_DEPENDENCIES,
+						},
+						['@microsoft/api-extractor', '@orkestrel/test', 'vite-plugin-dts'],
+					),
+				),
+			)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'audit',
+					'--from',
+					host,
+					'--target',
+					target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions.filter(({ field }) => field === 'dependencies')).toStrictEqual([
+				{
+					field: 'dependencies',
+					// The range quoted back is the planned one, so it is read from the
+					// declaration rather than restated: a fleet bump moves the message.
+					message: `The manifest at ${target} does not declare a planned dependency: @orkestrel/test. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/test": "${BASE_DEV_DEPENDENCIES['@orkestrel/test']}",`,
+					blocking: false,
+				},
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reports one missing planned dependency and its exact manifest line', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			expect(
+				await new CLI(createSink().options).execute([
+					'repair',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				]),
+			).toBe(EXIT_CLEAN)
+			workspace.write(
+				'target/package.json',
+				buildTargetManifest(
+					undefined,
+					undefined,
+					omitDependencies(TARGET_DEV_DEPENDENCIES, ['typescript']),
+				),
+			)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions).toStrictEqual([
+				{
+					field: 'dependencies',
+					message: `The manifest at ${fleet.target} does not declare a planned dependency: typescript. Add this exact dependency line to dependencies or devDependencies in package.json: "typescript": "^6.0.3",`,
+					blocking: false,
+				},
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reports three missing planned dependencies in stable order', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			workspace.write(
+				'target/package.json',
+				buildTargetManifest(
+					undefined,
+					{ '@orkestrel/emitter': '^0.0.5' },
+					omitDependencies(TARGET_DEV_DEPENDENCIES, ['vitest', 'typescript', 'vite']),
+				),
+			)
+			const sink = createSink()
+			await new CLI(sink.options).execute([
+				'audit',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions).toStrictEqual([
+				{
+					field: 'dependencies',
+					message: `The manifest at ${fleet.target} does not declare planned dependencies: typescript, vite, vitest. Add these exact dependency lines to dependencies or devDependencies in package.json: "typescript": "^6.0.3", "vite": "~8.2.0", "vitest": "^4.1.10",`,
+					blocking: false,
+				},
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('ignores a planned dependency range difference', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			workspace.write(
+				'target/package.json',
+				buildTargetManifest(undefined, undefined, {
+					...TARGET_DEV_DEPENDENCIES,
+					typescript: '0.0.0',
+				}),
+			)
+			const sink = createSink()
+			await new CLI(sink.options).execute([
+				'audit',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions).toStrictEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('ignores dependencies the workspace owns beyond the planned set', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			workspace.write(
+				'target/package.json',
+				buildTargetManifest(undefined, undefined, {
+					...TARGET_DEV_DEPENDENCIES,
+					leftpad: '^1.0.0',
+				}),
+			)
+			const sink = createSink()
+			await new CLI(sink.options).execute([
+				'audit',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions).toStrictEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('accepts a planned tool declared in dependencies instead of devDependencies', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			workspace.write(
+				'target/package.json',
+				buildTargetManifest(
+					undefined,
+					{ typescript: '0.0.0' },
+					omitDependencies(TARGET_DEV_DEPENDENCIES, ['typescript']),
+				),
+			)
+			const sink = createSink()
+			await new CLI(sink.options).execute([
+				'audit',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions).toStrictEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reports a non-object devDependencies section instead of crashing', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			workspace.write('target/package.json', buildTargetManifest(undefined, undefined, 'invalid'))
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions).toStrictEqual([
+				{
+					field: 'dependencies',
+					message: `The manifest at ${fleet.target} declares devDependencies as a value that is not an object. Replace it with an object before relying on the planned dependency set.`,
+					blocking: false,
+				},
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses repair before it writes the manifest or configuration', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			workspace.write(
+				'target/package.json',
+				buildTargetManifest(
+					undefined,
+					undefined,
+					omitDependencies(TARGET_DEV_DEPENDENCIES, ['typescript']),
+				),
+			)
+			workspace.write('target/vite.config.ts', 'configuration marker\n')
+			const manifest = workspace.read('target/package.json')
+			const configuration = workspace.read('target/vite.config.ts')
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'repair',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			expect(JSON.parse(sink.output[0] ?? '')).toStrictEqual({
+				error: {
+					code: 'TARGET',
+					message: `The manifest at ${fleet.target} does not declare a planned dependency: typescript. To continue, add this exact dependency line to dependencies or devDependencies in package.json: "typescript": "^6.0.3",`,
+				},
+			})
+			expect(workspace.read('target/package.json')).toBe(manifest)
+			expect(workspace.read('target/vite.config.ts')).toBe(configuration)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('rejects wrong-case structural paths while deriving every exact fact', async () => {
 		const workspace = createWorkspace()
 		try {
 			const fleet = createFleet(workspace)
@@ -422,6 +775,7 @@ describe('CLI audit', () => {
 			).toBe(EXIT_CLEAN)
 			const absent = workspace.read('target/vite.config.ts')
 			expect(absent).not.toContain("label: 'src:bin'")
+			expect(absent).not.toContain("label: 'guides'")
 			expect(absent).not.toContain("label: 'integration'")
 			expect(absent).not.toContain("label: 'conformance'")
 			expect(absent).not.toContain("label: 'service'")
@@ -429,6 +783,7 @@ describe('CLI audit', () => {
 			expect(absent).not.toContain('appShowcase')
 
 			workspace.write('target/src/bin/Main.ts', 'export {}\n')
+			workspace.write('target/tests/Guides.test.ts', 'export {}\n')
 			expect(
 				await new CLI(createSink().options).execute([
 					'repair',
@@ -441,15 +796,30 @@ describe('CLI audit', () => {
 				]),
 			).toBe(EXIT_CLEAN)
 			expect(workspace.read('target/vite.config.ts')).not.toContain("label: 'src:bin'")
+			expect(workspace.read('target/vite.config.ts')).not.toContain("label: 'guides'")
 			workspace.remove('target/src/bin/Main.ts')
+			workspace.remove('target/tests/Guides.test.ts')
 
 			workspace.write('target/src/bin/main.ts', 'export {}\n')
+			workspace.write('target/tests/guides.test.ts', 'export {}\n')
 			workspace.write('target/tests/integration.test.ts', 'export {}\n')
 			workspace.write('target/tests/conformance.test.ts', 'export {}\n')
 			workspace.write('target/tests/setupService.ts', 'export {}\n')
 			workspace.write('target/tests/setupGlobal.ts', 'export {}\n')
 			workspace.directory('target/app/browser')
 			workspace.write('target/configs/app/vite.showcase.config.ts', 'export {}\n')
+			const blueprint = createBlueprint('sample', {
+				src: ['core'],
+				app: ['browser'],
+				bin: true,
+				guides: true,
+				integration: true,
+				conformance: true,
+				service: true,
+				global: true,
+				showcase: true,
+			})
+			workspace.write('target/package.json', buildTargetManifest(blueprint))
 			expect(
 				await new CLI(createSink().options).execute([
 					'repair',
@@ -463,11 +833,61 @@ describe('CLI audit', () => {
 			).toBe(EXIT_CLEAN)
 			const present = workspace.read('target/vite.config.ts')
 			expect(present).toContain("label: 'src:bin'")
+			expect(present).toContain("label: 'guides'")
 			expect(present).toContain("label: 'integration'")
 			expect(present).toContain("label: 'conformance'")
 			expect(present).toContain("label: 'service'")
 			expect(present).toContain("globalSetup: ['./tests/setupGlobal.ts']")
 			expect(present).toContain('appShowcase')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('does not derive distribution from a wrong-case proof path', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			workspace.directory('target/tests')
+			workspace.write('target/tests/Distribution.test.ts', 'export {}\n')
+			expect(
+				await new CLI(createSink().options).execute([
+					'repair',
+					'--groups',
+					'configs',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				]),
+			).toBe(EXIT_CLEAN)
+			expect(workspace.read('target/vite.config.ts')).not.toContain("label: 'distribution'")
+			const manifest: unknown = JSON.parse(workspace.read('target/package.json'))
+			expect(manifest).not.toHaveProperty('scripts.test:distribution')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('derives distribution from the exact proof path', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			workspace.write('target/tests/distribution.test.ts', 'export {}\n')
+			const blueprint = createBlueprint('sample', { src: ['core'], distribution: true })
+			workspace.write('target/package.json', buildTargetManifest(blueprint))
+			expect(
+				await new CLI(createSink().options).execute([
+					'repair',
+					'--groups',
+					'configs',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				]),
+			).toBe(EXIT_CLEAN)
+			expect(workspace.read('target/vite.config.ts')).toContain("label: 'distribution'")
 		} finally {
 			workspace.destroy()
 		}
@@ -479,12 +899,9 @@ describe('CLI audit', () => {
 			const fleet = createFleet(workspace)
 			workspace.write(
 				'target/package.json',
-				`${JSON.stringify({
-					name: '@orkestrel/sample',
-					scripts: {
-						test: 'vitest run --project src:core "--project=missing"',
-					},
-				})}\n`,
+				buildTargetManifest(undefined, undefined, undefined, {
+					test: 'vitest run --project src:core "--project=missing"',
+				}),
 			)
 			const sink = createSink()
 			const code = await new CLI(sink.options).execute([
@@ -510,6 +927,302 @@ describe('CLI audit', () => {
 		}
 	})
 
+	it('reports a planned project missing from the manifest with the exact script line', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			const scripts = { ...blueprintToScripts(createBlueprint('sample', { src: ['core'] })) }
+			delete scripts['test:config']
+			workspace.write(
+				'target/package.json',
+				buildTargetManifest(undefined, undefined, undefined, scripts),
+			)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions).toHaveLength(1)
+			expect(audit.questions[0]).toMatchObject({ field: 'projects', blocking: false })
+			expect(audit.questions[0]?.message).toContain('test:config')
+			expect(audit.questions[0]?.message).toContain(
+				'"test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",',
+			)
+			workspace.write('target/vite.config.ts', 'marker\n')
+			const refused = createSink()
+			expect(
+				await new CLI(refused.options).execute([
+					'repair',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const refusal: unknown = JSON.parse(refused.output[0] ?? '')
+			expect(refusal).toHaveProperty('error.code', 'TARGET')
+			expect(refusal).toHaveProperty('error.message', expect.stringContaining('test:config'))
+			expect(refusal).toHaveProperty(
+				'error.message',
+				expect.stringContaining(
+					'"test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",',
+				),
+			)
+			expect(workspace.read('target/vite.config.ts')).toBe('marker\n')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('accepts every planned project when each is reachable from a gate', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			const scripts = blueprintToScripts(createBlueprint('sample', { src: ['core'] }))
+			workspace.write(
+				'target/package.json',
+				buildTargetManifest(undefined, undefined, undefined, scripts),
+			)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions).toStrictEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('uses only gates the target manifest can run for project reachability', async () => {
+		const privateWorkspace = createWorkspace()
+		try {
+			const fleet = createFleet(privateWorkspace)
+			const blueprint = createBlueprint('sample', {
+				app: ['core'],
+				service: true,
+				distribution: true,
+			})
+			privateWorkspace.remove('target/src/core')
+			privateWorkspace.directory('target/app/core')
+			privateWorkspace.write('target/tests/distribution.test.ts', 'export {}\n')
+			privateWorkspace.write('target/tests/setupService.ts', 'export {}\n')
+			privateWorkspace.write('target/package.json', blueprintToManifest(blueprint))
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			// Reachability is silent, which is the subject here. The one question is
+			// the distribution advisory: this blueprint sets the flag with no `src`,
+			// so the flag selects nothing, and saying so is what the sibling
+			// structural facts already do.
+			expect(audit.questions.filter((question) => question.field === 'projects')).toStrictEqual([])
+			expect(audit.questions).toStrictEqual([
+				{
+					field: 'distribution',
+					message:
+						'distribution packs the published source, and this workspace declares none, so it emits nothing.',
+					blocking: false,
+				},
+			])
+		} finally {
+			privateWorkspace.destroy()
+		}
+
+		const publishedWorkspace = createWorkspace()
+		try {
+			const fleet = createFleet(publishedWorkspace)
+			const blueprint = createBlueprint('sample', {
+				src: ['core'],
+				service: true,
+				distribution: true,
+			})
+			publishedWorkspace.write('target/tests/distribution.test.ts', 'export {}\n')
+			publishedWorkspace.write('target/tests/setupService.ts', 'export {}\n')
+			publishedWorkspace.write('target/package.json', blueprintToManifest(blueprint))
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions).toStrictEqual([])
+		} finally {
+			publishedWorkspace.destroy()
+		}
+	})
+
+	it('reports a private project reached only from a dead publish lifecycle', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			const blueprint = createBlueprint('sample', { app: ['core'], service: true })
+			const planned = blueprintToScripts(blueprint)
+			const test = planned.test
+			if (test === undefined) throw new Error('The private workspace carries no test gate')
+			const scripts = {
+				...planned,
+				test: test.replace(' && npm run test:service', ''),
+				prepublishOnly: 'npm run test:service',
+			}
+			const manifest = buildTargetManifest(blueprint, undefined, undefined, scripts).replace(
+				'"name": "@orkestrel/sample",',
+				'"name": "sample",\n\t"private": true,',
+			)
+			workspace.remove('target/src/core')
+			workspace.directory('target/app/core')
+			workspace.write('target/tests/setupService.ts', 'export {}\n')
+			workspace.write('target/package.json', manifest)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions).toHaveLength(1)
+			expect(audit.questions[0]).toMatchObject({ field: 'projects', blocking: false })
+			expect(audit.questions[0]?.message).toContain(
+				'does not reach a Vitest project the planned configuration registers: service. No chain from test invokes it.',
+			)
+			// The remedy is the half that has to be right. This manifest already
+			// declares `test:service`, so prescribing that script line would name a
+			// line already present and leave the question firing forever.
+			expect(audit.questions[0]?.message).toContain(
+				'test:service is already declared, so the gate is missing rather than the script: invoke it by name from the test chain.',
+			)
+			expect(audit.questions[0]?.message).not.toContain('exact script line')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('prescribes the script line when the target declares no direct script', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			const blueprint = createBlueprint('sample', { app: ['core'], service: true })
+			const planned = blueprintToScripts(blueprint)
+			const test = planned.test
+			if (test === undefined) throw new Error('The private workspace carries no test gate')
+			// The opposite state from the case above: the direct script is gone
+			// entirely, so the script line is the repair that closes it.
+			const scripts: Record<string, string> = {
+				...planned,
+				test: test.replace(' && npm run test:service', ''),
+			}
+			delete scripts['test:service']
+			const manifest = buildTargetManifest(blueprint, undefined, undefined, scripts).replace(
+				'"name": "@orkestrel/sample",',
+				'"name": "sample",\n\t"private": true,',
+			)
+			workspace.remove('target/src/core')
+			workspace.directory('target/app/core')
+			workspace.write('target/tests/setupService.ts', 'export {}\n')
+			workspace.write('target/package.json', manifest)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions).toHaveLength(1)
+			expect(audit.questions[0]?.message).toContain('this exact script line to package.json:')
+			expect(audit.questions[0]?.message).toContain('"test:service":')
+			expect(audit.questions[0]?.message).not.toContain('already declared')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('accepts an integration project reached by the default test chain', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			workspace.write('target/tests/integration.test.ts', 'export {}\n')
+			const scripts = blueprintToScripts(
+				createBlueprint('sample', { src: ['core'], integration: true }),
+			)
+			workspace.write(
+				'target/package.json',
+				buildTargetManifest(
+					createBlueprint('sample', { src: ['core'], integration: true }),
+					undefined,
+					undefined,
+					scripts,
+				),
+			)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			// The target publishes one environment, so the seed this flag registers has
+			// nothing to compose across. The gate says so, and the audit still reports
+			// drift rather than refusing: the advisory rides the comparison without
+			// reaching the exit code.
+			expect(audit.questions).toStrictEqual([
+				{
+					field: 'integration',
+					message:
+						'integration drives features across environments, and this workspace declares fewer than two, so its seed composes nothing.',
+					blocking: false,
+				},
+			])
+			expect(scripts.test).toContain('npm run test:integration')
+			expect(scripts.prepublishOnly).not.toContain('npm run test:integration')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	// The refusal these two scripts used to draw is what kept a workspace driving a
 	// live service or measuring official tooling out of every writing verb. Each
 	// direction is measured: the script alone still draws the question, and the
@@ -519,15 +1232,17 @@ describe('CLI audit', () => {
 		try {
 			const fleet = createFleet(workspace)
 			workspace.directory('target/tests')
+			const scripts = blueprintToScripts(
+				createBlueprint('sample', { src: ['core'], conformance: true, service: true }),
+			)
 			workspace.write(
 				'target/package.json',
-				`${JSON.stringify({
-					name: '@orkestrel/sample',
-					scripts: {
-						test: 'vitest run --project conformance',
-						'test:service': 'vitest run --project service',
-					},
-				})}\n`,
+				buildTargetManifest(
+					createBlueprint('sample', { src: ['core'], conformance: true, service: true }),
+					undefined,
+					undefined,
+					scripts,
+				),
 			)
 			const refused = createSink()
 			expect(
@@ -575,12 +1290,9 @@ describe('CLI audit', () => {
 			const fleet = createFleet(workspace)
 			workspace.write(
 				'target/package.json',
-				`${JSON.stringify({
-					name: '@orkestrel/sample',
-					scripts: {
-						test: 'vitest run --project=missing --project "absent"',
-					},
-				})}\n`,
+				buildTargetManifest(undefined, undefined, undefined, {
+					test: 'vitest run --project=missing --project "absent"',
+				}),
 			)
 			const sink = createSink()
 			const code = await new CLI(sink.options).execute([
@@ -616,10 +1328,9 @@ describe('CLI audit', () => {
 			).toBe(EXIT_CLEAN)
 			workspace.write(
 				'target/package.json',
-				`${JSON.stringify({
-					name: '@orkestrel/sample',
-					scripts: { test: 'vitest run --project missing' },
-				})}\n`,
+				buildTargetManifest(undefined, undefined, undefined, {
+					test: 'vitest run --project missing',
+				}),
 			)
 			const sink = createSink()
 			expect(
@@ -985,7 +1696,13 @@ describe('CLI audit', () => {
 			).toStrictEqual(['.editorconfig'])
 			expect([...new Set(audit.findings.map((finding) => finding.ownership))]).toStrictEqual([
 				'content',
+				'presence',
 			])
+			expect(
+				planned
+					.filter((finding) => finding.ownership === 'presence')
+					.map((finding) => finding.path),
+			).toStrictEqual(['.gitignore'])
 			expect(bytes.length + existence.length + nothing.length).toBe(planned.length)
 			expect(report.output.at(-1)).toBe(
 				`${String(drifted.length)} of ${String(planned.length)} planned paths drifted from the plan. Audit compared bytes at ${String(bytes.length)}, existence at ${String(existence.length)}, and nothing at ${String(nothing.length)}.`,
@@ -1383,10 +2100,9 @@ describe('CLI repair', () => {
 			const fleet = createFleet(workspace)
 			workspace.write(
 				'target/package.json',
-				`${JSON.stringify({
-					name: '@orkestrel/sample',
-					scripts: { test: 'vitest run "--project=missing"' },
-				})}\n`,
+				buildTargetManifest(undefined, undefined, undefined, {
+					test: 'vitest run "--project=missing"',
+				}),
 			)
 			workspace.write('target/vite.config.ts', 'marker\n')
 			const sink = createSink()
@@ -1420,10 +2136,9 @@ describe('CLI repair', () => {
 			const fleet = createFleet(workspace)
 			workspace.write(
 				'target/package.json',
-				`${JSON.stringify({
-					name: '@orkestrel/sample',
-					scripts: { test: 'vitest run "--project=$ROGUE"' },
-				})}\n`,
+				buildTargetManifest(undefined, undefined, undefined, {
+					test: 'vitest run "--project=$ROGUE"',
+				}),
 			)
 			workspace.write('target/vite.config.ts', 'marker\n')
 			const sink = createSink()
@@ -1470,10 +2185,9 @@ describe('CLI repair', () => {
 			const fleet = createFleet(workspace)
 			workspace.write(
 				'target/package.json',
-				`${JSON.stringify({
-					name: '@orkestrel/sample',
-					scripts: { test: 'vitest --project missing' },
-				})}\n`,
+				buildTargetManifest(undefined, undefined, undefined, {
+					test: 'vitest --project missing',
+				}),
 			)
 			const sink = createSink()
 			expect(
@@ -1615,6 +2329,73 @@ describe('CLI repair', () => {
 		}
 	})
 
+	it('reports a stale content-owned file as replaced with its line delta', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			await new CLI(createSink().options).execute([
+				'repair',
+				'--groups',
+				'docs',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+			])
+			workspace.write('target/AGENTS.md', 'A consumer line.\nA second consumer line.\n')
+			const sink = createSink()
+
+			expect(
+				await new CLI(sink.options).execute([
+					'repair',
+					'--groups',
+					'docs',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				]),
+			).toBe(EXIT_CLEAN)
+			expect(sink.output).toContain('AGENTS.md replaced (1 line removed).')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reports a missing content-owned file as created rather than replaced', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			await new CLI(createSink().options).execute([
+				'repair',
+				'--groups',
+				'docs',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+			])
+			workspace.remove('target/AGENTS.md')
+			const sink = createSink()
+
+			expect(
+				await new CLI(sink.options).execute([
+					'repair',
+					'--groups',
+					'docs',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				]),
+			).toBe(EXIT_CLEAN)
+			expect(sink.output.some((line) => line.includes('AGENTS.md replaced'))).toBe(false)
+			expect(sink.output.at(-1) ?? '').toContain('written')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('repairs at its default selection and earns a clean exit, vendored directories included', async () => {
 		const workspace = createWorkspace()
 		try {
@@ -1700,16 +2481,57 @@ describe('CLI repair', () => {
 })
 
 describe('CLI overwrite', () => {
+	it('reports replacements, creations, and file deletions as distinct outcomes', async () => {
+		const workspace = createWorkspace()
+		const server = await createUpstreamServer({})
+		try {
+			const fleet = createCatalogFleet(workspace)
+			await new CLI(createSink().options).execute([
+				'repair',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+			])
+			const previous = '# Custom configuration\n'.repeat(500)
+			workspace.write('target/vite.config.ts', previous)
+			workspace.remove('target/.oxlintrc.json')
+			workspace.write('target/.claude/rules/stray.md', '# Stray\n')
+			createRepository(fleet.target)
+			trackFiles(fleet.target)
+
+			const sink = createSink()
+			await new CLI(buildCLIOptions(sink, server.base)).execute([
+				'overwrite',
+				'--dirty',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+			])
+
+			const current = workspace.read('target/vite.config.ts')
+			const removed = previous.split('\n').length - current.split('\n').length
+			expect(sink.output.some((line) => line.includes('.oxlintrc.json replaced'))).toBe(false)
+			expect(workspace.read('target/.oxlintrc.json')).toBe('.oxlintrc.json\n')
+			expect(sink.output.some((line) => line.includes('1 removed in'))).toBe(true)
+			expect(readFileHex(fleet.target, '.claude/rules/stray.md')).toBeUndefined()
+			expect(sink.output).toContain(`vite.config.ts replaced (${String(removed)} lines removed).`)
+		} finally {
+			await server.destroy()
+			workspace.destroy()
+		}
+	})
+
 	it('refuses to write when a manifest script names an unregistered project', async () => {
 		const workspace = createWorkspace()
 		try {
 			const fleet = createFleet(workspace)
 			workspace.write(
 				'target/package.json',
-				`${JSON.stringify({
-					name: '@orkestrel/sample',
-					scripts: { test: 'vitest run "--project=missing"' },
-				})}\n`,
+				buildTargetManifest(undefined, undefined, undefined, {
+					test: 'vitest run "--project=missing"',
+				}),
 			)
 			const sink = createSink()
 			expect(
@@ -1893,12 +2715,21 @@ describe('CLI overwrite', () => {
 			},
 			[FLEET_UPSTREAM_PATHS.packages.emitter]: { status: 200, body: buildPackument('0.0.6') },
 			[FLEET_UPSTREAM_PATHS.packages.guide]: { status: 200, body: buildPackument('0.1.0') },
+			[FLEET_UPSTREAM_PATHS.packages.scaffold]: {
+				status: 200,
+				body: buildPackument('0.0.31'),
+			},
 			[FLEET_UPSTREAM_PATHS.mirrors.emitter]: {
 				status: 200,
 				body: '# Emitter\n',
 				type: 'text/plain',
 			},
 			[FLEET_UPSTREAM_PATHS.mirrors.guide]: { status: 200, body: '# Guide\n', type: 'text/plain' },
+			[FLEET_UPSTREAM_PATHS.mirrors.scaffold]: {
+				status: 200,
+				body: '# Scaffold\n',
+				type: 'text/plain',
+			},
 		})
 		try {
 			const fleet = createCatalogFleet(workspace)
@@ -1934,6 +2765,17 @@ describe('CLI overwrite', () => {
 	})
 
 	it('rewrites each declared range to the release the registry it was given names', async () => {
+		// Two rows carry ranges this repository itself declares, so a fleet bump moves
+		// them. The registry here is a fixture, and a rewrite only needs the published
+		// release to be greater than the declared one, so both rows are served a
+		// version above every pin and compared against the declaration that owns them.
+		// A literal on either side turns an ordinary version bump into a red gate.
+		const published = '9.9.9'
+		const pinnedScaffold = BASE_DEV_DEPENDENCIES['@orkestrel/scaffold']
+		const pinnedTest = BASE_DEV_DEPENDENCIES['@orkestrel/test']
+		if (pinnedScaffold === undefined || pinnedTest === undefined) {
+			throw new Error('The base development dependencies carry no scaffold or test pin')
+		}
 		const workspace = createWorkspace()
 		const server = await createUpstreamServer({
 			[FLEET_UPSTREAM_PATHS.organization]: {
@@ -1942,12 +2784,23 @@ describe('CLI overwrite', () => {
 			},
 			[FLEET_UPSTREAM_PATHS.packages.emitter]: { status: 200, body: buildPackument('0.0.6') },
 			[FLEET_UPSTREAM_PATHS.packages.guide]: { status: 200, body: buildPackument('0.1.0') },
+			[FLEET_UPSTREAM_PATHS.packages.scaffold]: {
+				status: 200,
+				body: buildPackument(published),
+			},
 			[FLEET_UPSTREAM_PATHS.mirrors.emitter]: {
 				status: 200,
 				body: '# Emitter\n',
 				type: 'text/plain',
 			},
 			[FLEET_UPSTREAM_PATHS.mirrors.guide]: { status: 200, body: '# Guide\n', type: 'text/plain' },
+			[FLEET_UPSTREAM_PATHS.mirrors.scaffold]: {
+				status: 200,
+				body: '# Scaffold\n',
+				type: 'text/plain',
+			},
+			[FLEET_UPSTREAM_PATHS.packages.test]: { status: 200, body: buildPackument(published) },
+			[FLEET_UPSTREAM_PATHS.mirrors.test]: { status: 200, body: '# Test\n', type: 'text/plain' },
 		})
 		try {
 			const fleet = createCatalogFleet(workspace)
@@ -1968,10 +2821,13 @@ describe('CLI overwrite', () => {
 			expect(result.releases).toStrictEqual([
 				{ name: '@orkestrel/emitter', range: '^0.0.5', lookup: 'found', latest: '0.0.6' },
 				{ name: '@orkestrel/guide', range: '^0.0.9', lookup: 'found', latest: '0.1.0' },
+				{ name: '@orkestrel/scaffold', range: pinnedScaffold, lookup: 'found', latest: published },
+				{ name: '@orkestrel/test', range: pinnedTest, lookup: 'found', latest: published },
 			])
 			const manifest = workspace.read('target/package.json')
 			expect(manifest).toContain('"@orkestrel/emitter": "^0.0.6"')
 			expect(manifest).toContain('"@orkestrel/guide": "^0.1.0"')
+			expect(manifest).toContain(`"@orkestrel/scaffold": "^${published}"`)
 			// Nothing else in the manifest moved, which is the whole promise of
 			// rewriting a range in place rather than re-serializing the file.
 			expect(manifest).toContain('"vite": "~8.2.0"')
@@ -2093,6 +2949,13 @@ describe('CLI catalog', () => {
 				type: 'text/plain',
 			},
 			[FLEET_UPSTREAM_PATHS.mirrors.guide]: { status: 200, body: '# Guide\n', type: 'text/plain' },
+			[FLEET_UPSTREAM_PATHS.mirrors.scaffold]: {
+				status: 200,
+				body: '# Scaffold\n',
+				type: 'text/plain',
+			},
+			[FLEET_UPSTREAM_PATHS.packages.test]: { status: 200, body: buildPackument('0.0.2') },
+			[FLEET_UPSTREAM_PATHS.mirrors.test]: { status: 200, body: '# Test\n', type: 'text/plain' },
 		})
 		try {
 			const fleet = createCatalogFleet(workspace)
@@ -2119,9 +2982,12 @@ describe('CLI catalog', () => {
 			expect(result.mirrors.map((mirror) => mirror.path)).toStrictEqual([
 				'guides/emitter.md',
 				'guides/guide.md',
+				'guides/scaffold.md',
+				'guides/test.md',
 			])
 			expect(result.dropped).toStrictEqual([])
 			expect(workspace.read('target/guides/emitter.md')).toBe('# Emitter\n')
+			expect(workspace.read('target/guides/scaffold.md')).toBe('# Scaffold\n')
 			const agent = workspace.read(`target/${CATALOG_AGENT_PATH}`)
 			expect(agent).toContain('| `@orkestrel/emitter` | `0.0.6` | L0 |  |')
 			expect(agent).toContain(

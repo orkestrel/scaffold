@@ -37,8 +37,11 @@ import { createMarkdown, flattenText, isTableNode } from '@orkestrel/markdown'
 import {
 	CATALOG_AGENT_PATH,
 	BIN_ENTRY_PATH,
+	blueprintToDevDependencies,
 	blueprintToRootVite,
+	blueprintToScripts,
 	CONFORMANCE_TEST_PATH,
+	DISTRIBUTION_TEST_PATH,
 	createBlueprint,
 	createCompiler,
 	DEPENDENCY_NAME_PATTERN,
@@ -227,16 +230,16 @@ export class CLI implements CLIInterface {
 	#inspect(command: AuditCommand): number {
 		const target = command.target ?? '.'
 		const blueprint = this.#derive(target)
-		const question = this.#projectQuestion(target, blueprint)
+		const questions = this.#targetQuestions(target, blueprint)
 		const materializer = createMaterializer(
 			command.from === undefined ? undefined : { host: command.from },
 		)
 		try {
 			const [measured] = this.#survey(materializer, blueprint, target, this.#groups(command.groups))
 			const audit: Audit =
-				question === undefined
+				questions.length === 0
 					? measured
-					: { ...measured, questions: [...measured.questions, question] }
+					: { ...measured, questions: [...measured.questions, ...questions] }
 			if (command.json === true) this.#report(audit)
 			else this.#present(audit)
 			return auditToExit(audit)
@@ -254,7 +257,7 @@ export class CLI implements CLIInterface {
 		const target = command.target ?? '.'
 		const groups = this.#groups(command.groups)
 		const blueprint = this.#derive(target)
-		this.#assertProjects(target, blueprint)
+		this.#assertTarget(target, blueprint)
 		const materializer = createMaterializer(
 			command.from === undefined ? undefined : { host: command.from },
 		)
@@ -271,6 +274,7 @@ export class CLI implements CLIInterface {
 			if (command.json === true) this.#report(outcome)
 			else {
 				this.#present(terminal)
+				this.#reportReplacements(audit, terminal)
 				this.#say(this.#tally(result))
 			}
 			return auditToExit(terminal)
@@ -317,7 +321,7 @@ export class CLI implements CLIInterface {
 		const target = command.target ?? '.'
 		const groups = this.#groups(command.groups)
 		const blueprint = this.#derive(target)
-		this.#assertProjects(target, blueprint)
+		this.#assertTarget(target, blueprint)
 		const repository = this.#repository(target)
 		if (repository.dirty.length > 0 && command.dirty !== true) {
 			throw new ScaffoldError(
@@ -359,6 +363,7 @@ export class CLI implements CLIInterface {
 			if (command.json === true) this.#report(outcome)
 			else {
 				this.#present(terminal)
+				this.#reportReplacements(audit, terminal)
 				this.#recount(outcome)
 				if (online.note !== undefined) this.#warn(online.note)
 			}
@@ -545,6 +550,8 @@ export class CLI implements CLIInterface {
 			})
 		}
 		const bin = resolveContainedPath(target, BIN_ENTRY_PATH)
+		const guides = resolveContainedPath(target, GUIDES_TEST_PATH)
+		const distribution = resolveContainedPath(target, DISTRIBUTION_TEST_PATH)
 		const integration = resolveContainedPath(target, INTEGRATION_TEST_PATH)
 		const conformance = resolveContainedPath(target, CONFORMANCE_TEST_PATH)
 		const service = resolveContainedPath(target, SERVICE_SETUP_PATH)
@@ -555,6 +562,8 @@ export class CLI implements CLIInterface {
 			app: this.#probe(target, 'app'),
 			dependencies: manifestToDependencies(manifest),
 			bin: bin !== undefined && isExactCaseFile(bin),
+			guides: guides !== undefined && isExactCaseFile(guides),
+			distribution: distribution !== undefined && isExactCaseFile(distribution),
 			integration: integration !== undefined && isExactCaseFile(integration),
 			conformance: conformance !== undefined && isExactCaseFile(conformance),
 			service: service !== undefined && isExactCaseFile(service),
@@ -563,10 +572,13 @@ export class CLI implements CLIInterface {
 		})
 	}
 
-	// Read literal Vitest project values from one shell command. Quotes group a
-	// token but do not hide the option, while shell expansions make its value
-	// unresolved and therefore refuse the write that asked the question.
-	#scriptProjects(script: string): readonly string[] | undefined {
+	// Read the literal Vitest projects and npm run scripts one shell command
+	// invokes. Quotes group a token but do not hide the option, while shell
+	// expansions make its value unresolved and therefore refuse the write that
+	// asked the question.
+	#invocations(
+		script: string,
+	): { readonly projects: readonly string[]; readonly scripts: readonly string[] } | undefined {
 		const tokens: Array<{ value: string; resolved: boolean }> = []
 		let value = ''
 		let resolved = true
@@ -632,9 +644,23 @@ export class CLI implements CLIInterface {
 		if (started) tokens.push({ value, resolved })
 
 		const projects: string[] = []
+		const scripts: string[] = []
 		for (let index = 0; index < tokens.length; index += 1) {
 			const token = tokens[index]
 			if (token === undefined) return undefined
+			if (token.value === 'npm' && tokens[index + 1]?.value === 'run') {
+				const name = tokens[index + 2]
+				if (
+					name === undefined ||
+					!name.resolved ||
+					name.value.length === 0 ||
+					['&&', '||', ';', '|', '&', '(', ')'].includes(name.value)
+				)
+					return undefined
+				scripts.push(name.value)
+				index += 2
+				continue
+			}
 			if (token.value === '--project') {
 				const project = tokens[index + 1]
 				if (
@@ -656,41 +682,33 @@ export class CLI implements CLIInterface {
 			}
 			if (!token.resolved && token.value.includes('--project')) return undefined
 		}
-		return projects
+		return { projects, scripts }
 	}
 
-	// Report the manifest's Vitest calls that the planned root configuration
-	// cannot register. Audit carries the advisory; writing verbs turn it into the
-	// hard boundary that keeps a birth-owned script from pointing at a project
-	// their content-owned configuration removed.
+	// Report either side of the planned-project invariant. Audit carries the
+	// advisory; writing verbs turn it into the hard boundary that keeps a
+	// birth-owned manifest from disagreeing with content-owned configuration.
 	#projectQuestion(target: string, blueprint: Blueprint, writing = false): Question | undefined {
 		const manifest = this.#manifest(target)
-		const guides = resolveContainedPath(target, GUIDES_TEST_PATH)
 		const planned = blueprintToRootVite(blueprint)
 		const parsed = parseJSON(manifest)
-		const scripts = isRecord(parsed) && isRecord(parsed.scripts) ? parsed.scripts : undefined
+		const scripts = isRecord(parsed) && isRecord(parsed.scripts) ? parsed.scripts : {}
+		const publishes = !isRecord(parsed) || parsed.private !== true
+		const gates = publishes ? ['test', 'prepublishOnly'] : ['test']
+		const gateNames = gates.join(' or ')
 		const absent = new Set<string>()
 		let unresolved = false
-		if (scripts !== undefined) {
-			for (const script of Object.values(scripts)) {
-				if (!isString(script) || !script.includes('vitest')) continue
-				const projects = this.#scriptProjects(script)
-				if (projects === undefined) {
-					unresolved = true
-					continue
-				}
-				for (const project of projects) {
-					const guide = project === 'guides' && guides !== undefined && isExactCaseFile(guides)
-					if (
-						!planned.includes(`name: { label: '${project}',`) ||
-						(project === 'guides' && !guide)
-					) {
-						absent.add(project)
-					}
-				}
+		for (const script of Object.values(scripts)) {
+			if (!isString(script) || !script.includes('vitest')) continue
+			const invoked = this.#invocations(script)
+			if (invoked === undefined) {
+				unresolved = true
+				continue
+			}
+			for (const project of invoked.projects) {
+				if (!planned.includes(`name: { label: '${project}',`)) absent.add(project)
 			}
 		}
-		if (absent.size === 0 && !unresolved) return undefined
 		const projects = [...absent].sort()
 		if (unresolved) {
 			return {
@@ -699,21 +717,143 @@ export class CLI implements CLIInterface {
 				blocking: false,
 			}
 		}
+		if (projects.length > 0) {
+			return {
+				field: 'projects',
+				message: writing
+					? `The manifest at ${target} names ${projects.length === 1 ? 'a Vitest project' : 'Vitest projects'} the planned configuration does not register: ${projects.join(', ')}. To continue, remove the ${projects.length === 1 ? 'script that names it' : 'scripts that name them'} or do not use scaffold writing verbs on a workspace that needs ${projects.length === 1 ? 'a custom Vitest project' : 'custom Vitest projects'}.`
+					: `The manifest at ${target} names ${projects.length === 1 ? 'a Vitest project' : 'Vitest projects'} the planned configuration does not register: ${projects.join(', ')}. Add ${projects.length === 1 ? 'the project' : 'each project'} to vite.config.ts or remove the ${projects.length === 1 ? 'script that names it' : 'scripts that name them'}.`,
+				blocking: false,
+			}
+		}
+		const expected = blueprintToScripts(blueprint)
+		const expectedLines = new Map<string, string>()
+		for (const [name, script] of Object.entries(expected)) {
+			if (!name.startsWith('test:') || name === 'test:probe') continue
+			const invoked = this.#invocations(script)
+			if (invoked === undefined) continue
+			for (const project of invoked.projects) {
+				if (project === 'probe') continue
+				const direct = `test:${project}`
+				const command = expected[direct]
+				if (command !== undefined) {
+					expectedLines.set(project, `"${direct}": ${JSON.stringify(command)},`)
+				}
+			}
+		}
+
+		const reachable = new Set<string>()
+		const visited = new Set<string>()
+		const pending = [...gates]
+		while (pending.length > 0) {
+			const name = pending.shift()
+			if (name === undefined || visited.has(name)) continue
+			visited.add(name)
+			const script = scripts[name]
+			if (!isString(script)) continue
+			const invoked = this.#invocations(script)
+			if (invoked === undefined) {
+				unresolved = true
+				continue
+			}
+			for (const project of invoked.projects) reachable.add(project)
+			for (const called of invoked.scripts) {
+				if (!visited.has(called)) pending.push(called)
+			}
+		}
+		if (unresolved) {
+			return {
+				field: 'projects',
+				message: `The manifest at ${target} contains a ${gateNames} chain that cannot be resolved statically. ${writing ? 'Replace it with literal npm run script names before using a scaffold writing verb.' : 'Replace it with literal npm run script names before relying on the planned configuration.'}`,
+				blocking: false,
+			}
+		}
+		const missing = [...expectedLines]
+			.filter(([project]) => !reachable.has(project))
+			.sort(([left], [right]) => left.localeCompare(right))
+		if (missing.length === 0) return undefined
+		const names = missing.map(([project]) => project)
+		// A project goes unreached for one of two reasons, and they take opposite
+		// repairs. Where the direct script is absent, the script is what is missing.
+		// Where the target already declares it, adding that line again changes
+		// nothing and the gate chain is what is missing.
+		const unscripted = missing.filter(([project]) => !isString(scripts[`test:${project}`]))
+		const ungated = missing.filter(([project]) => isString(scripts[`test:${project}`]))
+		// The script lines are meant to be pasted and end in a trailing comma, so
+		// they go last. Any prose after them reads as part of the paste.
+		const remedies: string[] = []
+		if (ungated.length > 0) {
+			const declared = ungated.map(([project]) => `test:${project}`)
+			remedies.push(
+				`${declared.join(', ')} ${declared.length === 1 ? 'is' : 'are'} already declared, so the gate is missing rather than the script: invoke ${declared.length === 1 ? 'it' : 'each of them'} by name from the ${gateNames} chain.`,
+			)
+		}
+		if (unscripted.length > 0) {
+			const lines = unscripted.map(([, line]) => line)
+			remedies.push(
+				`${writing ? 'To continue, add' : 'Add'} ${lines.length === 1 ? 'this exact script line' : 'these exact script lines'} to package.json: ${lines.join(' ')}`,
+			)
+		}
 		return {
 			field: 'projects',
-			message: writing
-				? `The manifest at ${target} names ${projects.length === 1 ? 'a Vitest project' : 'Vitest projects'} the planned configuration does not register: ${projects.join(', ')}. To continue, remove the ${projects.length === 1 ? 'script that names it' : 'scripts that name them'} or do not use scaffold writing verbs on a workspace that needs ${projects.length === 1 ? 'a custom Vitest project' : 'custom Vitest projects'}.`
-				: `The manifest at ${target} names ${projects.length === 1 ? 'a Vitest project' : 'Vitest projects'} the planned configuration does not register: ${projects.join(', ')}. Add ${projects.length === 1 ? 'the project' : 'each project'} to vite.config.ts or remove the ${projects.length === 1 ? 'script that names it' : 'scripts that name them'}.`,
+			message: `The manifest at ${target} does not reach ${names.length === 1 ? 'a Vitest project' : 'Vitest projects'} the planned configuration registers: ${names.join(', ')}. No chain from ${gateNames} invokes ${names.length === 1 ? 'it' : 'them'}. ${remedies.join(' ')}`,
 			blocking: false,
 		}
 	}
 
-	// Writing verbs refuse the advisory because their next step would replace the
-	// configuration. Audit alone may report it without changing the target.
-	#assertProjects(target: string, blueprint: Blueprint): void {
-		const question = this.#projectQuestion(target, blueprint, true)
-		if (question === undefined) return
-		throw new ScaffoldError('TARGET', question.message, { target })
+	// Compare planned tooling by membership alone. Ranges are deliberately out of
+	// scope: overwrite already re-pins declared fleet packages, and a workspace may
+	// deliberately pin any other tool. Either manifest section may carry a planned
+	// tool, and workspace-owned extras are not part of the comparison.
+	#dependencyQuestion(target: string, blueprint: Blueprint, writing = false): Question | undefined {
+		const parsed = parseJSON(this.#manifest(target))
+		if (!isRecord(parsed)) return undefined
+		const malformed = ['dependencies', 'devDependencies'].filter(
+			(section) => parsed[section] !== undefined && !isRecord(parsed[section]),
+		)
+		if (malformed.length > 0) {
+			return {
+				field: 'dependencies',
+				message: `The manifest at ${target} declares ${malformed.join(' and ')} as ${malformed.length === 1 ? 'a value' : 'values'} that ${malformed.length === 1 ? 'is' : 'are'} not ${malformed.length === 1 ? 'an object' : 'objects'}. Replace ${malformed.length === 1 ? 'it' : 'them'} with ${malformed.length === 1 ? 'an object' : 'objects'} before ${writing ? 'using a scaffold writing verb' : 'relying on the planned dependency set'}.`,
+				blocking: false,
+			}
+		}
+		const dependencies = isRecord(parsed.dependencies) ? parsed.dependencies : {}
+		const development = isRecord(parsed.devDependencies) ? parsed.devDependencies : {}
+		const missing = Object.entries(blueprintToDevDependencies(blueprint))
+			.filter(([name]) => !Object.hasOwn(dependencies, name) && !Object.hasOwn(development, name))
+			.sort(([left], [right]) => left.localeCompare(right))
+		if (missing.length === 0) return undefined
+		const names = missing.map(([name]) => name)
+		const lines = missing.map(
+			([name, range]) => `${JSON.stringify(name)}: ${JSON.stringify(range)},`,
+		)
+		return {
+			field: 'dependencies',
+			message: `The manifest at ${target} does not declare ${names.length === 1 ? 'a planned dependency' : 'planned dependencies'}: ${names.join(', ')}. ${writing ? 'To continue, add' : 'Add'} ${lines.length === 1 ? 'this exact dependency line' : 'these exact dependency lines'} to dependencies or devDependencies in package.json: ${lines.join(' ')}`,
+			blocking: false,
+		}
+	}
+
+	// Collect the target questions in a fixed order so audit reports every
+	// independent advisory and writing verbs refuse the same complete answer.
+	#targetQuestions(target: string, blueprint: Blueprint, writing = false): readonly Question[] {
+		const questions: Question[] = []
+		const project = this.#projectQuestion(target, blueprint, writing)
+		if (project !== undefined) questions.push(project)
+		const dependency = this.#dependencyQuestion(target, blueprint, writing)
+		if (dependency !== undefined) questions.push(dependency)
+		return questions
+	}
+
+	// Writing verbs refuse the advisories because their next step would replace
+	// planned configuration. Audit alone reports them without changing the target.
+	#assertTarget(target: string, blueprint: Blueprint): void {
+		const questions = this.#targetQuestions(target, blueprint, true)
+		if (questions.length === 0) return
+		throw new ScaffoldError('TARGET', questions.map((question) => question.message).join(' '), {
+			target,
+		})
 	}
 
 	// A target's manifest text, which every reading verb needs before it can say
@@ -894,6 +1034,33 @@ export class CLI implements CLIInterface {
 			for (const line of table.split('\n')) this.#say(line)
 		}
 		this.#say(auditToSummary(audit))
+	}
+
+	// Name each stale content path the verb replaced, beside the line-count
+	// difference between the bytes it audited and the bytes its terminal audit
+	// read back. Missing paths are creations and never enter this report.
+	#reportReplacements(before: Audit, after: Audit): void {
+		const terminal = new Map(after.findings.map((finding) => [finding.path, finding]))
+		for (const finding of before.findings) {
+			if (finding.drift !== 'stale') continue
+			const current = terminal.get(finding.path)
+			if (current?.drift !== 'aligned' || current.observed === undefined) continue
+			const previousLines = Buffer.from(finding.observed, 'hex')
+				.toString('utf8')
+				.split(/\r\n|\r|\n/u).length
+			const currentLines = Buffer.from(current.observed, 'hex')
+				.toString('utf8')
+				.split(/\r\n|\r|\n/u).length
+			const delta = currentLines - previousLines
+			if (delta === 0) {
+				this.#say(`${finding.path} replaced (0-line delta).`)
+				continue
+			}
+			const count = Math.abs(delta)
+			this.#say(
+				`${finding.path} replaced (${String(count)} line${count === 1 ? '' : 's'} ${delta > 0 ? 'added' : 'removed'}).`,
+			)
+		}
 	}
 
 	// The catalog outcome as a person reads it.

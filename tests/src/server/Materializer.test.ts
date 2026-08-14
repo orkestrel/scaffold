@@ -2,7 +2,7 @@ import type { Audit, CatalogEntry } from '@src/core'
 import type { MaterializeResult } from '@src/server'
 import { readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { Compiler, contentToHex, isFinding } from '@src/core'
+import { Compiler, contentToHex, isFinding, WORKSPACE_OWNED_PATHS } from '@src/core'
 import { listFiles, Materializer, readFileHex, readHostManifest, readSnapshot } from '@src/server'
 import { describe, expect, it } from 'vitest'
 import { createRecorder } from '@orkestrel/test'
@@ -347,6 +347,91 @@ describe('Materializer materialize', () => {
 })
 
 describe('Materializer audit', () => {
+	it('preserves workspace-owned ignore bytes while detecting other vendored drift', () => {
+		const workspace = createWorkspace()
+		try {
+			const host = createHostRoot(workspace, 'host', buildFleetManifest())
+			const target = workspace.directory('project')
+			workspace.write('project/.gitignore', 'dist\nlocal-cache\n')
+			workspace.write('project/.oxlintrc.json', '{ "rules": {} }\n')
+			const plan = buildCompiledPlan()
+			const materializer = new Materializer({ host })
+			try {
+				expect(WORKSPACE_OWNED_PATHS).toStrictEqual(['.gitignore'])
+				const audit = materializer.audit(plan, target)
+				const ignore = audit.findings.find((finding) => finding.path === '.gitignore')
+				const lint = audit.findings.find((finding) => finding.path === '.oxlintrc.json')
+				expect(lint).toMatchObject({ ownership: 'content', drift: 'stale' })
+				expect(ignore).toMatchObject({ ownership: 'presence', drift: 'aligned' })
+
+				const result = materializer.repair(plan, audit, target)
+				expect(result.written).not.toContain('.gitignore')
+				expect(result.written).toContain('.oxlintrc.json')
+				expect(workspace.read('project/.gitignore')).toBe('dist\nlocal-cache\n')
+				expect(workspace.read('project/.oxlintrc.json')).toBe('.oxlintrc.json\n')
+			} finally {
+				materializer.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('restores an absent workspace-owned ignore file', () => {
+		const workspace = createWorkspace()
+		try {
+			const host = createHostRoot(workspace, 'host', buildFleetManifest())
+			const target = workspace.directory('project')
+			const plan = buildCompiledPlan()
+			const materializer = new Materializer({ host })
+			try {
+				const audit = materializer.audit(plan, target)
+				expect(audit.findings.find((finding) => finding.path === '.gitignore')?.drift).toBe(
+					'missing',
+				)
+				const result = materializer.repair(plan, audit, target)
+				expect(result.written).toContain('.gitignore')
+				expect(workspace.read('project/.gitignore')).toBe('.gitignore\n')
+			} finally {
+				materializer.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('preserves workspace-owned ignore bytes through a raw vendored root', () => {
+		const workspace = createWorkspace()
+		try {
+			workspace.write('raw/.gitignore', 'dist\n')
+			workspace.write('project/.gitignore', 'dist\nlocal-cache\n')
+			const plan = buildVendoredPlan({
+				groups: ['configs'],
+				artifacts: [
+					{ path: '.gitignore', group: 'configs', ownership: 'presence', origin: 'host' },
+				],
+			})
+			const materializer = new Materializer({ host: workspace.directory('raw') })
+			try {
+				const audit = materializer.audit(plan, workspace.directory('project'))
+				expect(audit.findings).toHaveLength(1)
+				expect(audit.findings[0]).toMatchObject({
+					path: '.gitignore',
+					group: 'configs',
+					ownership: 'presence',
+					drift: 'aligned',
+				})
+				const result = materializer.repair(plan, audit, workspace.directory('project'))
+				expect(result.written).toStrictEqual([])
+				expect(workspace.read('project/.gitignore')).toBe('dist\nlocal-cache\n')
+			} finally {
+				materializer.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('shares one hydrated reading with a full-selection repair and bounds foreign files by owned roots', () => {
 		const workspace = createWorkspace()
 		try {

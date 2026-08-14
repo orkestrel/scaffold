@@ -16,13 +16,23 @@ import { describe, expect, it } from 'vitest'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+// Windows needs a shell to launch a `.cmd`: Node refuses one directly since the
+// batch-argument hardening, and `spawnSync` returns `EINVAL` with a null status
+// rather than an exit code the caller can read. Every npm call in this file takes
+// it. Without it the registry probe below is false on every Windows host, so the
+// install case never runs there — in `prepublishOnly` included — and the failure
+// reads as "no registry" instead of "this proof cannot launch npm". Every argument
+// here is a literal or a path this file built, so the shell has nothing to escape.
+const shell = process.platform === 'win32'
 const registry =
 	spawnSync(npm, ['ping', '--fetch-retries=0', '--fetch-timeout=1000', '--loglevel=silent'], {
 		cwd: root,
 		stdio: 'ignore',
 		timeout: 5_000,
 		windowsHide: true,
+		shell,
 	}).status === 0
+const release = import.meta.env.MODE === 'release'
 
 // The two declarations a consumer installs. Both are read, because an example
 // is shipped by whichever declaration prints it and a reader hovers over either.
@@ -305,7 +315,7 @@ describe('installed package consumer', () => {
 			// This is the assertion the lists are exact against: a shipped example
 			// that changes spelling moves between two of them and both move.
 			expect(driven.length + undriven.length + glossed.length + elided.length).toBe(shaped)
-			expect(shaped).toBe(170)
+			expect(shaped).toBe(171)
 
 			// Every claim scored false is a control, and nothing the package ships is.
 			// This establishes that a driven claim the module contradicts is reported,
@@ -426,9 +436,12 @@ describe('installed package consumer', () => {
 		}
 	})
 
-	it.skipIf(!registry)(
+	it.skipIf(!registry && !release)(
 		'installs the packed scaffold and passes one generated core/server workspace through prepublish [requires a reachable npm registry]',
 		() => {
+			if (!registry) {
+				throw new Error('The distribution release gate requires a reachable npm registry.')
+			}
 			const workspace = mkdtempSync(join(tmpdir(), 'scaffold-e4-install-'))
 			const packed = join(workspace, 'packed')
 			const consumer = join(workspace, 'consumer')
@@ -442,7 +455,7 @@ describe('installed package consumer', () => {
 				const pack = spawnSync(
 					npm,
 					['pack', '--json', '--ignore-scripts', '--pack-destination', packed],
-					{ cwd: root, encoding: 'utf8', env: environment, windowsHide: true },
+					{ cwd: root, encoding: 'utf8', env: environment, windowsHide: true, shell },
 				)
 				expect(pack.status).toBe(0)
 				const archives = globSync('*.tgz', { cwd: packed })
@@ -456,7 +469,7 @@ describe('installed package consumer', () => {
 				const install = spawnSync(
 					npm,
 					['install', '--ignore-scripts', '--no-audit', '--no-fund', join(packed, archive)],
-					{ cwd: consumer, encoding: 'utf8', env: environment, windowsHide: true },
+					{ cwd: consumer, encoding: 'utf8', env: environment, windowsHide: true, shell },
 				)
 				expect(install.status).toBe(0)
 				writeFileSync(
@@ -516,7 +529,7 @@ describe('installed package consumer', () => {
 				const dependencies = spawnSync(
 					npm,
 					['install', '--ignore-scripts', '--no-audit', '--no-fund'],
-					{ cwd: target, encoding: 'utf8', env: environment, windowsHide: true },
+					{ cwd: target, encoding: 'utf8', env: environment, windowsHide: true, shell },
 				)
 				expect(dependencies.status).toBe(0)
 				const lock: unknown = JSON.parse(readFileSync(join(target, 'package-lock.json'), 'utf8'))
@@ -541,6 +554,7 @@ describe('installed package consumer', () => {
 					encoding: 'utf8',
 					env: environment,
 					windowsHide: true,
+					shell,
 				})
 				expect(gates.status).toBe(0)
 			} finally {

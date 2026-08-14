@@ -155,6 +155,17 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
 ])
 
 /**
+ * The vendored paths whose present bytes belong to each workspace, frozen.
+ *
+ * @remarks
+ * These paths are copied into a workspace when absent and are never compared
+ * or replaced while present. A workspace therefore stops receiving later
+ * canonical updates to them. `.gitignore` takes that trade because its correct
+ * rules differ by workspace, so scaffold cannot own its bytes.
+ */
+export const WORKSPACE_OWNED_PATHS: readonly string[] = Object.freeze(['.gitignore'])
+
+/**
  * The vendored paths a target receives with its executable bit set, frozen.
  *
  * @remarks
@@ -218,10 +229,13 @@ export const SERVICE_SCRIPT_PATH = 'scripts/service.sh'
 /** The shared Vitest global-setup module whose presence makes a workspace `global`. */
 export const GLOBAL_SETUP_PATH = 'tests/setupGlobal.ts'
 
-/** The guide-parity proof whose physical file selects the fixed `guides` project. */
+/** The guide-parity proof whose presence selects the planned `guides` project. */
 export const GUIDES_TEST_PATH = 'tests/guides.test.ts'
 
-/** The installed-package proof whose presence makes a workspace `integration`. */
+/** The packed-package proof whose presence makes a workspace `distribution`. */
+export const DISTRIBUTION_TEST_PATH = 'tests/distribution.test.ts'
+
+/** The cross-environment composition proof whose presence makes a workspace `integration`. */
 export const INTEGRATION_TEST_PATH = 'tests/integration.test.ts'
 
 /** The official-tooling drift proof whose presence makes a workspace `conformance`. */
@@ -313,6 +327,12 @@ export const MAX_PATH_LENGTH = 32_767
 /** Maximum items accepted in one public collection. */
 export const MAX_COLLECTION_ITEMS = 1_000
 
+/** Columns one emitted line may occupy, matching `printWidth` in `.oxfmtrc.json`. */
+export const PRINT_WIDTH = 100
+
+/** Columns one tab occupies when the formatter measures a line, matching `tabWidth`. */
+export const TAB_WIDTH = 2
+
 /** Maximum findings one audit can produce from a bounded plan and snapshot. */
 export const MAX_AUDIT_FINDINGS = MAX_COLLECTION_ITEMS * 2
 
@@ -339,17 +359,21 @@ export const DEFAULT_ENGINES = `>=${MINIMUM_NODE_VERSION}`
 
 /** The tooling versions scaffold and every generated workspace share. */
 export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
-	'@microsoft/api-extractor': '^7.58.12',
 	'@orkestrel/guide': '^0.0.11',
-	'@orkestrel/scaffold': '^0.0.31',
+	'@orkestrel/scaffold': '^0.0.32',
 	'@orkestrel/test': '^0.0.2',
 	'@types/node': '^26.2.0',
 	oxfmt: '^0.62.0',
 	oxlint: '^1.77.0',
 	typescript: '^6.0.3',
 	vite: '~8.2.0',
-	'vite-plugin-dts': '^5.0.3',
 	vitest: '^4.1.10',
+})
+
+/** The development dependencies that emit declarations for published source or an executable. */
+export const DECLARATION_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
+	'@microsoft/api-extractor': '^7.58.12',
+	'vite-plugin-dts': '^5.0.3',
 })
 
 /** The development dependencies a published browser `src` environment adds. */

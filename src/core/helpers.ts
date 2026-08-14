@@ -22,6 +22,8 @@ import {
 	MINIMUM_NODE_VERSION,
 	ORCHESTRATION_PATH_NAMES,
 	ORCHESTRATION_PATH_PREFIXES,
+	PRINT_WIDTH,
+	TAB_WIDTH,
 	VERSION_PATTERN,
 } from './constants.js'
 
@@ -269,6 +271,31 @@ export function nameToGuide(name: string): string {
 }
 
 /**
+ * Test whether one emitted line fits the vendored formatter width.
+ *
+ * @param line - One emitted line, leading tabs included.
+ * @returns `true` when the expanded line fits.
+ *
+ * @remarks
+ * A generator writes source the formatter then reads back, so a line packed
+ * past the vendored width is rewrapped on the next `format` run and the emitted
+ * bytes stop matching the plan the audit compares against. The generator
+ * therefore measures a candidate line and chooses the shape the formatter would
+ * have chosen. Tabs are expanded first because the formatter counts them as
+ * `TAB_WIDTH` columns rather than as one character.
+ *
+ * @example
+ * ```ts
+ * import { matchesPrintWidth } from '@orkestrel/scaffold'
+ *
+ * matchesPrintWidth('\t\tprojects: [core],') // true
+ * ```
+ */
+export function matchesPrintWidth(line: string): boolean {
+	return line.replaceAll('\t', ' '.repeat(TAB_WIDTH)).length <= PRINT_WIDTH
+}
+
+/**
  * Derive the declaration rewrite a published face's `beforeWriteFile` applies.
  *
  * @param name - The workspace's own bare package name.
@@ -300,7 +327,7 @@ export function nameToRewrite(name: string): string {
 	const specifier = serializeTypeScriptString(`@orkestrel/${name}`)
 	const pattern = '/(?:\\.\\.\\/)+core\\/index\\.[jt]s/g'
 	const joined = `\t\t\t\t\t\t? content.replaceAll(${pattern}, ${specifier})`
-	if (joined.replaceAll('\t', '  ').length <= 100) return joined
+	if (matchesPrintWidth(joined)) return joined
 	return [
 		'\t\t\t\t\t\t? content.replaceAll(',
 		`\t\t\t\t\t\t\t\t${pattern},`,
