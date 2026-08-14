@@ -130,11 +130,42 @@ Two units join the ledger from this doctrine:
 
 | # | Unit | Role · Engine | Owns |
 | --- | --- | --- | --- |
-| J1 | The journey layer + first journey set (after U5): the visibility/reachability resolver in `tests/setupBrowser.ts`-adjacent journey infrastructure, retrofit of the U6 login journey onto it (its recorded doctrine violations, from the U6 closing audit: CSS-ID targeting, `state: 'attached'` waits, `.is-invalid` internal reads instead of perception — each must die in the retrofit), rail click-open and keyboard-only open journeys | `codex`→implementer · Sol (precision layer, fixed doctrine) | journey infra + integration journey files |
+| J1 | The journey layer + first journey set (after U5): the visibility/reachability resolver in `tests/setupBrowser.ts`-adjacent journey infrastructure, retrofit of the U6 login journey onto it (its recorded doctrine violations, from the U6 closing audit: CSS-ID targeting, `state: 'attached'` waits, `.is-invalid` internal reads instead of perception — each must die in the retrofit), rail click-open and keyboard-only open journeys. CARRIES from U5 audit: move the `halfmoon/css/halfmoon.min.css` import from `tests/app/browser/ApplicationView.test.ts` into `tests/setupBrowser.ts` per `tests.md` placement, rerun the whole browser project, and repair every component suite whose visibility assumptions become truthful — J1's owned list must grant those component test files, and the carry must be named in its brief or it becomes a permanent per-file idiom | `codex`→implementer · Sol (precision layer, fixed doctrine) | journey infra + integration journey files + component test files for cascade-truth repairs |
 | SK1 | After the polish rounds: author `.agents/skills/orkestrel-human-journey/` (SKILL.md + one-level `references/` + `agents/openai.yaml`) with the `.claude/skills/orkestrel-human-journey/SKILL.md` bridge, in the supervisor repo, matching house skill structure and voice, written per the instruction-file laws — every line a directive with its observable trigger, no persuasion, no history. It carries ONLY what this campaign proved, each canonized finding backed by a recorded experience: the resolver design, trusted-input requirements, the purity boundary, the convergence law, the journey/transport class separation, and the failure modes J1 and the polish rounds actually hit | `implementer` · Opus (instruction voice), audited like every unit | the skill files |
 
 SK1 is a candidate for upstream promotion into the scaffold host at the debrief; until the fleet
 canon absorbs it, `scaffold audit` reads it as a foreign path — expected and recorded.
+
+### U5 rulings (audit round 1, subject 7c0ddd3)
+
+Verdicts: reviewer FAIL (2 broken, 2 not-evidenced), Sol FAIL (3 broken), checker 4 judgment
+findings. Claims 1 (one rail/one region) and 5 (journey doctrine) confirmed by both engines.
+
+- **Fix round (u5-brief-2, Opus writer, Sol closes):** rewrite the shell's drawer/Escape/focus
+  proofs onto real `userEvent` (both engines broke the claim; `dispatchEvent`/bare `.click()`
+  verified at ApplicationView.test.ts:311-539); apply the writer's StackList empty-state patch —
+  four frames rendered "Open one from Workflow above" against a control the same commit deleted,
+  an invalid deferral; render `operator.fault` in the authenticated shell (non-ABSENT restore
+  failures retain a fault nothing shows; both lanes routed it here); convert the integration
+  stack-count one-shot to a convergence wait; probe-and-report the drawer's Tab-escape path.
+- **Ratified:** the `seeders.test.ts` out-of-owned edit (3 assertions). Revert ships a red
+  project and splits one change across two commits; the replacements assert shell behavior the
+  old badge check never covered. Breach recorded here.
+- **Retained:** the restore notice renders with NO live region — not alert-styled, same
+  stated-fact idiom as RunList's stale line; one voice for "a fact, not an emergency", and the
+  status-line ruling forbids two regions speaking at one arrival.
+- **Accepted:** the below-lg signature caption is the bare count with words in `aria-label`
+  (menu-with-count idiom; the caption sweep's containment holds). U8 must read pause/warning
+  glyph distinguishability at 390px without their words.
+- **Capture debt before U8:** claims 2 and 3 are code-confirmed but NOT-EVIDENCED on the capture
+  law. The portfolio must add: a paused-run rail (desktop light+dark, mobile), a
+  roster-stream-fault rail with the "updates stopped" mark (desktop light+dark), and the restore
+  notice in both states (gone, refused) at both widths — after the fix round lands, so no frame
+  memorializes the StackList drift.
+- **Advisories carried:** rail `aria-labelledby="runs"` names a region also holding Stack and
+  the door → H6; OpenPanel's "workflow" nouns → H6; stacked stated-fact lines (notice above the
+  first heading, stale line below it) need one visible order — the fix round records its choice;
+  `renderFleet` stays a local single-use helper, J1 sweep candidate.
 
 ## Exit criterion
 
