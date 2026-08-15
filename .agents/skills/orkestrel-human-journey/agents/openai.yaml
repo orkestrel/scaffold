@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Human Journey Proof'
+  short_description: 'Prove a browser flow the way a person reaches it'
+  default_prompt: 'Use $orkestrel-human-journey to write or review journey tests: role-and-name resolution that refuses hidden or ambiguous targets, keyboard-first entry, perception assertions, convergence waits, and a strict boundary against transport-class instruments.'
