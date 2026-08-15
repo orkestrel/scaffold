@@ -420,6 +420,55 @@ the catalog row correct — the second site), green.
 - **H5 carriers:** the client reads cursor presence, never page fullness; the wire vocabulary
   is the catalog's own (`limit`/`cursor`/`prefix`; `{ runs, cursor? }`).
 
+### H5 CLOSED (b66edc0 + Orchestrator 01b4fa7 + fixes ce3ad45, 4e2263d)
+
+The browser can now read completed history as facts, nothing rendered: `client.history` (one
+`GET /history` read, wire names verbatim, cursor opaque, refusals on the established fault
+path, the response behind named guards); `HistoryManager` (rows/cursor/prefix/loading as
+facts, five states derived only, `load(prefix?)`/`older()`/`retry()`/`clear()`, continuation
+is cursor presence); the operator seam with roster-matching lifecycle; and
+`operator.terminal` — the wire renders `{ tail, terminal }` so a finished run's story reads
+as complete. Rounds: blind pair (Sol 2-broken, reviewer 3-broken+3) → fix → Opus closing
+(3-broken) → fix → Opus confirm PASS 5/5. Acceptance at close: 215/215 server, 386/386
+browser, 10/10 integration, 251/251 src, 100/100 core, 17/17 policy; guides at the recorded
+8-failure U7 ledger exactly.
+
+- **The raw-client seam law (ruled):** operator-owned managers take the RAW client plus an
+  explicit handler (`RosterExpiryHandler`/`HistoryRefusalHandler`) invoked only after the
+  manager's own generation check; only the exposed `operator.client` surface is decorated. A
+  manager on the decorated client re-creates the held-response race (a stale `AUTH` refusal
+  expiring the session adopted after it). And the class only closes when EVERY session-ending
+  path clears every manager — the signed-out `identify()` and `#expire()` were the two doors
+  the first fix's three regressions did not cover; audit transition SETS, not the transitions
+  already tested.
+- **`changed` is a content key (ruled):** the roster runs' ordered `(id, updated)` sequence
+  against a first-page baseline; `undefined` baseline (roster not yet arrived) reports false;
+  `status`/`paused` deliberately excluded. H6's "History changed — Refresh" renders from an
+  honest word.
+- **One wire shape, one home:** `ApplicationTail` lives in `app/core/types.ts`; `ClientTail`
+  deleted with every consumer moved; the guide row moved to the application-role table.
+- **Proof discipline (two lessons recorded):** a proof that never ran red does not bind — the
+  re-delivery proof waited on a predicate `structuredClone` made always-true, and was rewired
+  to observe the second delivery with a recorded red/green pair; and never narrow a proof
+  while widening a requirement — the cursor round-trip carries BOTH encodings (space/plus and
+  colon/percent) as named cases.
+- **Orchestrator process finding (mine):** the first acceptance chain omitted `test:policy`
+  and `test:guides` — an acceptance log that skips projects overstates "all gates green"; the
+  chain now runs all seven.
+- **U7 additions:** `ClientHistory`, `ClientHistoryInterface`, `HistoryManager`,
+  `HistoryManagerInterface`, `HistoryOptions`, `HistoryState`, `HistoryRefusalHandler`,
+  `isHistoryRun`, `isHistoryPage`; `ClientInterface.tail` returns `ApplicationTail`;
+  `OperatorInterface.history` and `.terminal`.
+- **Retained advisories (confirm pass, non-blocking):** the `#rosterKey` comment's
+  "Completion notices" opener names a concept that exists nowhere else — name `changed`
+  instead; `HistoryRefusalHandler`'s doc could state the signed-out outcome
+  (`operator.fault`) in one clause; the six clearing paths order
+  `#invalidate`/`#history.clear`/`#roster.abort` in two different sequences — one order would
+  read as one decision.
+- **H6 carriers:** render from `history.state`/`changed`/`operator.terminal`; the showcase
+  seeder answers only the empty page — seed a completed page so the showcase demonstrates the
+  ideal state (h6-brief item 10).
+
 ## Exit criterion
 
 1. Login per rulings — capture-proved (refused state marks neither field, one alert, five text
