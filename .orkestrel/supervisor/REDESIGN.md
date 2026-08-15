@@ -318,6 +318,26 @@ corrections.
   (that file loads in the browser realm and cannot own Playwright types). Add the boundary
   sentence and both stances to SK1's carried findings.
 
+### J1 CLOSED (fixes 4ba9e7d + 086573c)
+
+Two fix rounds closed the audit: the resolver reads roles as assistive technology does
+(searchbox refused as textbox; aria-hidden refused with its own sentence; disabled in its own
+words; `name: string`), `driveApplication` is a variadic phase driver over one retained page so
+journey and fixture phases compose at the test level with no nesting and no transport inside a
+journey body (final confirm item 1 CONFIRMED, boundary sentence true), `completeJourneyLogin`
+converges on autofocus before any Tab, one preamble serves both rail journeys, the refusal
+probe is housed as the layer's own proof with its viewport fact stated, and both component
+comments tell the styled truth. Integration 10/10 and static gates green at close.
+
+- **Orchestrator ruling on the final confirm's item 2 (recorded):** Sol correctly broke the
+  criterion as written — a 501ms autofocus can still land between the expired poll and the
+  first Tab. The criterion over-specified: it banned a harmless transient rather than naming
+  the property. The harmful outcome is unreachable — the walk's condition re-checks focus
+  before EVERY press and exits only on username-focused, the login page's tabbables wrap well
+  inside the 24-press bound, and typing begins only after that exit; the transient
+  double-advance self-heals on wrap-around in every interleaving. Closed on structure, with
+  the brief-check lesson re-learned: name the property, not the intermediate.
+
 ## Exit criterion
 
 1. Login per rulings — capture-proved (refused state marks neither field, one alert, five text
