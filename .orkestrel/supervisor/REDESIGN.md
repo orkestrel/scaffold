@@ -554,6 +554,29 @@ and the zero-network showcase film all delivered.
 - **U8 polish carriers:** quoting the interpolated filter term in the phrase; the
   Clear-button column resize; the "run ID/id" casing consistency (inherited from H6).
 
+### U7 CLOSED (4d452ca) — the guide in parity, the first fully green chain
+
+925 insertions bring the guide into parity with everything H3-H7 built. The parity suite grew
+304 → 374 (documenting new interfaces adds their method assertions — ratified) and every one
+passes. Every fence typechecked externally against real source (three live drifts caught and
+closed); every example value ran through the real guards (one seeded lie caught pre-ship); the
+case-folding sentence was run, not reasoned (`matchesRunName('straße','STRASSE') === false`).
+Two more ratified deviations: the LiveViewer table keys on the class (interface keying jointly
+unsatisfiable without off-limits source edits, explained in place); `roster` documents as the
+readonly sub-entity it is, correcting the brief against the parity output. Acceptance: ALL
+SEVEN projects green — 216/216, 417/417, 12/12, 251/251, 106/106, 17/17, guides 374/374 — the
+campaign's first fully green chain.
+
+### SK1 COMPLETE (scaffold af19ecb) — the journey skill, twice-authored and reconciled
+
+Authored blind from this campaign's J1 record, reviewed against the instruction-file law (14
+findings, all applied), then reconciled with the version another session published in scaffold
+0.0.36 per the user's contract: the published version is the base (five conformance rounds,
+references layer, Accept contract); four laws only the blind sibling carried grafted in — the
+binding-predicate rule, name-the-property, trusted-input-only, capture-outranks-fixture. Full
+scaffold suite green including the incoming skill-family gate; scaffold main synced at that
+sanctioned moment.
+
 ## Exit criterion
 
 1. Login per rulings — capture-proved (refused state marks neither field, one alert, five text
