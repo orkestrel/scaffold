@@ -33,3 +33,23 @@ Outside-claim findings, each with its carrier:
 Every retained finding names its carrier in `u8-fix-brief.md`; no finding dropped. Fix writer:
 native Opus implementer (the capture-harness work needs listeners Sol's sandbox denies); the fix
 round's audit therefore goes to Sol, an engine that did not write it.
+
+## Fix-round audit (Sol, thread 01a005a1-2c09-7213-9229-ad4dcfd4cbae) and its settlement
+
+Sol returned FAIL: claims 4/6/7/8 CONFIRMED, 1/2 UNRESOLVED (writer-only red runs), 3/5 BROKEN,
+one outside finding. Settled:
+
+- Claim 1 CONFIRMED by Orchestrator probes: orphan file → exit 1
+  (`expected [ 'orphan-narrow-dark.png' ] to deeply equal []`), zero-byte frame → exit 1
+  (`expected [ 'login-narrow-dark.png' ] …`), restored → 21/21. Logs:
+  `u8-fix-red1-orphan.log`, `u8-fix-red2-empty.log`, `u8-fix-green-restored.log` (tmp, swept at
+  acceptance).
+- Claim 2 CONFIRMED by Orchestrator probe: worktree at 6b89ba7 with focus.css reverted to
+  d184856 fails the register-filter readings at 2.2470/1.9315 (writer claimed 2.25/1.93). Log:
+  `u8-fix-red3-ring.log`.
+- Claim 3 closed by Orchestrator direct fix (one TSDoc sentence), commit 4a78ccd.
+- Claim 5 (TH scope → rowheader; a bypassed drive in the open journal) and the outside finding
+  (function assignments inside Journal.watch/release) verified at source and carried to the micro
+  round: `u8-micro-brief.md`. Sol's file citation `open-wide-light-steps.txt` does not exist —
+  the journal is per-scenario `open-steps.txt` — recorded as a citation defect; the substance
+  held at the real file.
