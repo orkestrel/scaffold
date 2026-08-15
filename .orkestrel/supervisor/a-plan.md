@@ -88,3 +88,13 @@ mtimes against the baseline — a foreign write there means the "dark" unit is e
 substitute Opus writer's deviation-stop (wrote nothing, reported the foreign edits with
 timestamps and the live PID) is the behavior that contained this; A3's product was verified
 against its own criteria and adopted at 156c808 with two findings carried.
+
+## Process lesson: npm login URLs expire unclicked (~10-15 min)
+
+An `npm login --browser=false` chain left polling falls back to the legacy `Username:` prompt
+when its URL expires unclicked — with stdin held open it wedges there silently; with stdin
+EOF it exits zero or one without authenticating. Two chains died this way this session.
+Launch a login chain only when the user has signalled they are at the keyboard and will click
+within ten minutes. Surface the URL in the same turn the chain launches. Treat a login log
+showing the spinner then `Username:` as an expired attempt: kill the chain by PID and mint a
+fresh one at the user's signal, never relaunch ahead of it.
