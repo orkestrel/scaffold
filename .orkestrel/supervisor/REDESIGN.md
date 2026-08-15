@@ -338,6 +338,35 @@ comments tell the styled truth. Integration 10/10 and static gates green at clos
   double-advance self-heals on wrap-around in every interleaving. Closed on structure, with
   the brief-check lesson re-learned: name the property, not the intermediate.
 
+### H3 landed (c0ab2fe), its audit, and the watermark ruling
+
+H3 (the run catalog: `list` with RunRecord/RunCursor/RunListOptions/RunPage, transactional
+catalog riding the store's own operations, memory/SQLite parity matrix) landed after one
+correct deviation stop — the owned list was scoped by the declaration, and the two fixture
+IMPLEMENTATIONS of the store interface had to be granted (the scope-by-consumers brief-check,
+relearned on an interface: consumers include implementors). The bench's 20 provider-suite reds
+were a sandbox artifact (fixture CLIs cannot spawn there); native `test:src` 241/241 green.
+
+Audit: Sol claims 2/5 CONFIRMED (the trigger-forced rollback genuinely binds unit and catalog
+writes; the fixtures stay honest), 1/3/4 BROKEN; reviewer claim 5 CONFIRMED, claim 4 BROKEN
+(R1-R3) + F1 + two referrals.
+
+- **DESIGN RULING (binding; overrules the reconciled design's no-skip wording):** Sol
+  reproduced the skip — release of an unseen run mid-traversal moves its `updated` above the
+  watermark and the continuation loses it; a single mutable row cannot hold the ruled no-skip.
+  RULED: no versioned catalog (an operational index, not an audit log; versioning buys a
+  snapshot guarantee no recorded consumer needs). The invariant restates honestly: an
+  UNCHANGED traversal never duplicates or skips; a mutated record leaves the traversal and
+  reappears atop a fresh first page; membership follows the mutation. The promise is scoped to
+  one instance's serialized reads (instances share stores — that is what leases are for), and
+  catalog order rides the instants the supervisor stamps (skew skews order; documented, not
+  clamped). Both reviewer referrals close under the same honesty.
+- **Fix round (h3-brief-4, Sol on the resumed thread; Opus reviewer closes):** the honest law
+  in TSDoc and proofs both ways; `released: false` becomes the complementary held-only filter;
+  shared empty-id refusal on both backends; the ratchet/watermark arithmetic centralized as
+  tested leaves; catalog error factories in `errors.ts`; the page projection renamed off the
+  factory form; the decorative `RecoveryStep` member dies (H4 adds it with its proof).
+
 ## Exit criterion
 
 1. Login per rulings — capture-proved (refused state marks neither field, one alert, five text
