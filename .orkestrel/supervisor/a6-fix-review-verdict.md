@@ -29,3 +29,8 @@ Analyst referrals, ruled by the Orchestrator:
 
 A6 unit chain: bdb5d7c (unit + integration) → 6f9423f (drain fix) → 8d9c325 (micro round).
 Sol audit FAIL 1,7 → fix → Opus REVIEW: PASS → micro round → A6 ACCEPTED.
+
+Mutation probe for referral (b), run at 8d9c325: with the post-drain re-check removed,
+`npx vitest run … Operator.test.ts -t "asks nothing after the drain"` fails —
+`expected [ 'build', 'build', 'build' ] to deeply equal [ 'build', 'build' ]`, 1 failed —
+and passes with the line restored. The negative binds to the exact line it guards.
