@@ -469,6 +469,55 @@ browser, 10/10 integration, 251/251 src, 100/100 core, 17/17 policy; guides at t
   seeder answers only the empty page — seed a completed page so the showcase demonstrates the
   ideal state (h6-brief item 10).
 
+### H6 CLOSED (7ebb93d + fix d14e1e2 + micro fcd9949)
+
+The History surface, on film at every state: the rail's door strip gains History beside the
+typed-id door ("Live runs" headed, "Completed runs" supporting); "Completed history" renders
+the five states from `history.state` alone; "Filter by run ID" does exactly what it says;
+the typed-id door folds into the view as a captioned collapsed disclosure; a finished run
+says "Run finished" and its feed stops telling the reader to wait; the showcase seeds all
+four terminal statuses. Rounds: blind pair (Sol 3-broken — the `changed` mechanism pinned to
+the roster's departure memory, the decay copy falsified, the trimming filter; reviewer
+1-broken/2-not-evidenced with the capture portfolio as primary input — the nameless
+disclosure, the missing loading/Back frames, and Back re-creating the pane) → fix round
+(six reconciled items) → closing pass (0 broken; one contradiction found outside, one scroll
+half unproven) → micro round. Acceptance at close: 412/412 browser, all seven projects,
+guides at the 8-failure U7 ledger. Captures delivered in three batches, including the honest
+changed frame and the measured Back journey.
+
+- **The departure-memory ruling:** `changed` derives from `roster.departed`'s ordered
+  `(id, updated)` key against a first-page baseline — the wire roster lists only live
+  workflows and completion publishes a REMOVAL, so the live-set content key collapses back
+  when the interesting thing happens; the departure memory is the fact that survives. A
+  start flips nothing, a reconnect flips nothing, a departure latches until a successful
+  current-generation first-page read; `older()` never re-baselines. The sentence names the
+  event: "A run has finished since this list was read."
+- **A staleness sentence needs a listed page:** the affordance renders only beside retained
+  rows, so a failed Refresh cannot claim a page changed above "No page has been listed yet".
+- **Two capture-instrument lessons:** a fixture that never removes a run cannot run red
+  against a departure defect; and filming caught what the green component suite could not —
+  the defect frame (`h6-changed-MISSING`) is the campaign's clearest argument for the
+  captures-as-review-input law.
+- **Scroll restoration proved by probe then by film:** Chromium restores a column's
+  `scrollTop` across a `display:none` round trip (500→0 hidden→500), and the composed app
+  returns the reader's pane at the same offset (694→694 measured on a 20-step run).
+- **User rulings landed:** the rail stream-fault notice is one aligned block (photo
+  instruction); the door-strip deviation accepted (the toast surface owns the bottom edge —
+  §3's "footer" predates U5d's landed composition).
+- **Orchestrator brief defects recorded:** item 9's off-limits line contradicted its own
+  criterion (ratified in the criterion's favor); the micro brief mis-located the rail notice
+  (builder deviation-stopped correctly; amended and granted).
+- **U7 additions:** `seedHistory` (row + example fence + showcase paragraph sentence);
+  the History surface prose (destination, five states, prefix search, refresh affordance,
+  retention sentence); `HistoryView` in the component inventory; `OpenPanel`'s corrected
+  description; `HistoryManager`'s departure semantics and `older()` non-rebaseline rule.
+- **User rescopes opened at H6's close:** H7 — name filter with simple fuzzy search (design
+  pair in flight; reopens §4 by the user's instruction, the honesty law intact); E1 — real
+  scenarios on the cheapest models (Qwen/ollama, Haiku, Luna, Composer) after UI
+  convergence, carrying the content-pane reply/feed story; SK1 — blind-author the
+  human-journey skill, then reconcile against scaffold 0.0.36's published version, house
+  instruction-file voice as the bar.
+
 ## Exit criterion
 
 1. Login per rulings — capture-proved (refused state marks neither field, one alert, five text
