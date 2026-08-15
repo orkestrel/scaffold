@@ -289,6 +289,35 @@ changes.
   enumeration; the banner's count defers to a surface that does not exist yet. Not in this
   campaign's exit criterion.
 
+### J1 landed (87e2dc9) and its audit round
+
+The unit ran on the Sol bench; its sandbox denies loopback listeners (standing condition the
+brief failed to restate — future bench briefs name it), so the Orchestrator ran the
+listener-dependent acceptance: browser 33/363 green (the cascade move broke nothing beyond the
+unit's two static repairs), integration 10/10 green including the new refusal probe.
+
+Audit: Sol 4 broken + claim 2 CONFIRMED; reviewer 2 broken, claims 2-4 CONFIRMED, 3 findings
+outside. Reconciliations: Sol's keyboard-click finding stands over the reviewer's CONFIRMED
+(pointer act verified at journey.test.ts:128 inside "from the keyboard alone"); Sol's cascade
+reading stands on the RunList comment (halfmoon authors no list-group focus ring — the asserted
+outline is the browser default). All retained findings carry in the fix round (j1-brief-2,
+builder): the resolver's three admission repairs (searchbox-as-textbox; aria-hidden admission
+with no AT-tree check; the conflated disabled/focus-reachable refusal), the string narrowing
+(RegExp arm had no consumer), the pure journey bodies (bearer seeding out of the callbacks into
+declared fixture steps between phases — the pointer journey still watches its run arrive), the
+single login preamble with the journey/transport boundary declared in the layer's file, the
+rehoused refusal probe with its viewport fact stated, and the two component-test truth
+corrections.
+
+- **Design retained on the record:** the resolver refuses a present-but-hidden target
+  instantly rather than converging (documented fast-refusal tension); recorded as the first
+  suspect if a journey ever flakes on resolution.
+- **SK1 canonization stances (recorded for its brief):** ambiguity is counted over hidden
+  candidates too — deliberate over-refusal, right for the one-rail ruling; the layer's home is
+  the journey project's own setup file, not the doctrine's literal `tests/setupBrowser.ts`
+  (that file loads in the browser realm and cannot own Playwright types). Add the boundary
+  sentence and both stances to SK1's carried findings.
+
 ## Exit criterion
 
 1. Login per rulings — capture-proved (refused state marks neither field, one alert, five text
