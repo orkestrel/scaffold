@@ -1,0 +1,15 @@
+1. **BROKEN** — weight 4/5. A failed `gone` restore leaves an unconsumed notice; a later successful `open()` followed by successful `identify()` does not clear it. Executed result: `consume()` still returned `{"workflow":"gone","reason":"gone"}` after successful restore. Smallest fix: clear or supersede `#notice` when a new restore begins or succeeds.
+
+2. **BROKEN** — weight 5/5. With pointer `build`, successful inspect, then a `REQUEST` refusal from `tail()`, restore ended with `fault:"REQUEST"`, pointer `"build"`, `live:false`, and no notice. `#armed` is set before tail succeeds, so `#restoreOpen()` mistakes this incomplete open for success. Smallest fix: distinguish completed/ended/failed open outcomes, or clear `#armed` on non-AUTH tail failure before fallback evaluation.
+
+3. **BROKEN** — weight 5/5. A storage implementation where reads succeed but `removeItem()` refuses leaves the pointer durable; executed logout then login inspected `["build","build"]`, with pointer still `"build"`. The swallowed removal failure makes the asserted logout boundary impossible to guarantee. Smallest fix: make durable removal failure observable and prevent the next login from consulting a pointer not verified absent; otherwise weaken and document the guarantee.
+
+4. **CONFIRMED** — weight 5/5. Failed attacks: the only colliding suffix is `""`, which is not a permitted workflow id (`APP_WORKFLOW_LENGTH` requires 1–255 characters); valid view keys therefore cannot equal `VIEW_PREFIX`. Over-bound values are likewise outside the workflow contract. An unpaired-surrogate pointer produced a typed `CONFIG` result rather than throwing, while load/rejection paths are caught.
+
+5. **BROKEN** — weight 3/5. Four implementers exist: `StorageOperatorStore`, `MemoryOperatorStore`, `RecordingOperatorStore`, and `RejectingOperatorStore`. Only the first two implement `load`/`save`/`remove`; neither test implementation is incapable of implementing them as no-ops or recorders. Optionality is therefore a greenfield shim. Smallest fix: require all three members and update both test stores and Operator calls accordingly.
+
+6. **CONFIRMED** — weight 3/5. Failed attacks: the baseline diff contains exactly the eight owned files; `git diff --check` passed; no timers, polling, forbidden suppressions, assertions, TODOs, skips, or out-of-scope edits were introduced. Contracts and TSDoc are centralized in `types.ts`; `consume`, `load`, `save`, and `remove` satisfy the applicable naming vocabulary.
+
+7. **BROKEN** — weight 5/5. U5/U6 cannot ship exit criterion 3 while tail refusal produces no consumable fact and logout can retain the pointer. Additionally, the notice is non-reactive: an executed session watcher consumed `undefined` before restore completed, while the actual notice appeared later without an observable notice transition. Smallest fix: close claims 2–3 and expose a reactive restore outcome or return it from the operation that completes restore.
+
+VERDICT: FAIL — 5 broken, 0 unresolved, 0 not-evidenced, 0 findings outside the claims
