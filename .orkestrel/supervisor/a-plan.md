@@ -76,3 +76,15 @@ the E1 report.
    still-running answer there is a stop-and-report, never a retry loop.
 3. Real-service timing: cold loads and CLIs are slower than fixtures; caps sized from observed
    high marks with stated slack.
+
+## Process lesson — the out-of-lifecycle A3 landing (2026-08-15T16:53Z)
+
+A killed `codex exec` is not dead until its process TREE is dead: the `codex-code-mode-host`
+child survives a parent kill under a different name, keeps executing with its journal pipe
+severed, and the journal frozen at its header reads as a launch that never started. Two rules
+bind from here: kill a codex exec by walking its children (`ps --ppid`) and confirming
+`code-mode-host` is gone; and before dispatching a substitute writer, check the owned files'
+mtimes against the baseline — a foreign write there means the "dark" unit is executing. The
+substitute Opus writer's deviation-stop (wrote nothing, reported the foreign edits with
+timestamps and the live PID) is the behavior that contained this; A3's product was verified
+against its own criteria and adopted at 156c808 with two findings carried.
