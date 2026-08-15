@@ -4,7 +4,7 @@
 > process, and copy guidance — use when setting visual direction.
 > Operate layer: [SKILL.md](../SKILL.md).
 
-Approach this as the design lead at a small studio known for giving every client a visual identity that could not be mistaken for anyone else's. This client has already rejected proposals that felt templated, and is paying for a distinctive point of view: make deliberate, opinionated choices about palette, typography, and layout that are specific to this brief, and take one real aesthetic risk you can justify.
+Give the surface a visual identity that could not be mistaken for anyone else's, and reject any direction that reads as templated. Make deliberate, opinionated choices about palette, typography, and layout that are specific to this brief, and take one real aesthetic risk you can justify.
 
 ## Ground it in the subject
 
@@ -42,7 +42,7 @@ Do a lot of this planning and iteration in your thinking, and only show ideas to
 
 ## Restraint and self-critique
 
-Spend your boldness in one place. Let the signature element be the one memorable thing, keep everything around it quiet and disciplined, and cut any decoration that does not serve the brief. Not taking a risk can be a risk itself! Build to a quality floor without announcing it: responsive down to mobile, visible keyboard focus, reduced motion respected. Critique your own work as you build, taking screenshots if your environment supports it — a picture is worth 1000 tokens, and it is the only thing that can tell you whether the design you wrote is the design that rendered. Look at both themes and both the wide and the narrow viewport; a treatment that only exists in the markup is not a treatment yet. Consider Chanel's advice: before leaving the house, look in the mirror and remove one accessory. Human creators have memory and always try to do something new; if you have a place to jot down notes about what you've tried, it will help future passes.
+Spend your boldness in one place. Let the signature element be the one memorable thing, keep everything around it quiet and disciplined, and cut any decoration that does not serve the brief. Treat a surface with no deliberate risk as failing the distinctiveness mandate. Build to a quality floor without announcing it: responsive down to mobile, visible keyboard focus, reduced motion respected. Critique your own work as you build, taking screenshots if your environment supports it — a screenshot is the only evidence that the design you wrote is the design that rendered. Look at both themes and both the wide and the narrow viewport; a treatment that only exists in the markup is not a treatment yet. Before shipping, remove one accessory: cut the least-necessary decorative element, and restore it only if the surface demonstrably loses information without it. Where notes persist across passes, record what you tried so the next pass reads it.
 
 ## More on writing in design
 
