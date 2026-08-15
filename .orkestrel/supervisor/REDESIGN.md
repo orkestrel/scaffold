@@ -265,6 +265,30 @@ changes.
   a below-`sm` drawer-closed frame. The many-grants break-length frame is struck — the count
   form removes the unbounded input it would have measured.
 
+### U5d closed (990027d + fix 4e87315 + comment corrections 2b5bbe4)
+
+- Fix round Sol-confirmed on both substantive items: every submission travels through real
+  presses and the re-entrancy proof asserts the restriction (disabled in flight, exactly one
+  recorded transport call); the count form is correct with the singular exception sound under
+  `noUncheckedIndexedAccess`. Reviewer confirmed the degradation on film — three whole-piece
+  sheds, no orphan glyph, no ellipsis, the Logout caption dropping to its glyph in the same
+  `sm` move — and the count form as bounded against every server input, subordinate, honest.
+- Comment corrections taken directly by the Orchestrator (one-line class): the template note is
+  a pure pointer, and the consolidated rationale now names both shed steps distinctly — the
+  sentence leaves below `lg`, the identity below `sm` (the consolidation had folded them into
+  one wrong token; the 700px frame falsified it). Process note, recorded: the first comment
+  trim was edited while the reviewer's confirm lane still read the tree — a letter breach of
+  writer serialization with zero rendered effect.
+- The "nothing duplicated into accessible names" half of the below-`sm` limit rests on the
+  green assertion in the shell suite (narrow-width aria-label sweep), not on film — a markup
+  fact; recorded as the evidence.
+- **U7 carriers added:** `guides/src/supervisor.md:2268` component table — the identity clause
+  moves to the `ApplicationView` row naming granted **workflows** (with the count-form note),
+  `OpenPanel`'s row keeps the Workflow field alone; the "granted runs" noun corrected.
+- **Recorded capability obligation (post-campaign):** an account surface owns grant
+  enumeration; the banner's count defers to a surface that does not exist yet. Not in this
+  campaign's exit criterion.
+
 ## Exit criterion
 
 1. Login per rulings — capture-proved (refused state marks neither field, one alert, five text
