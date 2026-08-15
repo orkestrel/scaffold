@@ -367,6 +367,23 @@ writes; the fixtures stay honest), 1/3/4 BROKEN; reviewer claim 5 CONFIRMED, cla
   tested leaves; catalog error factories in `errors.ts`; the page projection renamed off the
   factory form; the decorative `RecoveryStep` member dies (H4 adds it with its proof).
 
+### H3 CLOSED (c0ab2fe + fix d81b4b9 + prose de27a61)
+
+The reviewer's closing pass confirmed seven of eight items and that the fix implements the
+ruling without contradicting it; the eighth (a `@throws` claiming a fault the memory store
+cannot produce) plus the stale defaulting prose and the interface's three-way refusal
+vocabulary were comment-class and taken directly by the Orchestrator (de27a61; scoped checks
+and 176 core tests green). Native `test:src` 243/243 at the fix commit.
+
+- **H4 carriers, named:** bind the top-of-fresh-page property with an unfiltered `limit: 1`
+  assertion (both mutation proofs currently reduce the candidate set so ordering is
+  unobserved); answer whether a sibling instance's low stamp can DUPLICATE a record within one
+  traversal and cover the sentence if so; extend the `computeRunUpdated` leaf tests to the
+  `instant`, `record.updated + 1`, and first-acquire branches; rename `createRunListError` to
+  the subject form (`createRunOptionsError`) with its consumers; document both `release`
+  methods' `@throws`; add the `list` recovery boundary WITH the proof that observes it.
+- **U8 note:** none — no rendered surface.
+
 ## Exit criterion
 
 1. Login per rulings — capture-proved (refused state marks neither field, one alert, five text
