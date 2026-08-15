@@ -384,6 +384,42 @@ and 176 core tests green). Native `test:src` 243/243 at the fix commit.
   methods' `@throws`; add the `list` recovery boundary WITH the proof that observes it.
 - **U8 note:** none — no rendered surface.
 
+### H4 CLOSED (59276a7 + fixes 72cb64a, 42652bf)
+
+`GET /history` serves released-only, grant-filtered pages with `limit`/`cursor`/`prefix`; all
+six H3 carriers closed (the two-driver probe: no duplicate is possible — the ratchet places any
+re-stamp above the exclusive boundary, documented in `RunPage`). Landing it surfaced a disease
+older than the endpoint: three database contexts over one SQLite driver, each caching readiness
+while the driver held one schema — `inspect`, `tail`, and `#available` were latently unsafe
+before H4 existed. `ApplicationPersistence` replaced them under an Orchestrator grant and
+merged-context ruling: one driver, one merged five-table schema, one Lane admitting every
+durable operation including shutdown; all nine read paths re-ruled safe with overlap proved on
+real SQLite. Three acceptance runs told the story: red (first start 500), red (history 500 with
+the catalog row correct — the second site), green.
+
+- Audit: Sol confirmed the endpoint under grant attacks, the spine under overlap, and the Lane
+  adapters as genuine boundaries; broke the saturation edge (`updated` at the integer ceiling
+  stalls the ratchet) and the Orchestrator's own `tmp/probe` residue (swept directly). The
+  reviewer broke the schema triplication (a third verbatim copy recreating the cured disease a
+  layer up), the constants' missing `APP_` qualifier, the terminal-set re-declaration, and the
+  recorder's unconsumed vocabulary.
+- Fixes: `SUPERVISOR_TABLES`/`SUPERVISOR_INDEXES` declared once and composed at three sites;
+  saturation refused through `validateRunEvent` (the package's own `validate*` Result form) at
+  the head of `set` on both backends — refusal precedence identical by construction, proved;
+  `TerminalStatus` derives through the workflow package's own `isTerminalStatus`; the recorder
+  union says what it records with the proof rehomed; short pages stated (the cursor alone
+  signals continuation — H5's client reads cursor presence, never page fullness); driver
+  closure answered with executed evidence; the guide names all three schema routes, the
+  five-table truth, and the one-database-one-lane spine.
+- Ratified builder flags: the `SupervisorApplication` consumer touch (rename-forced, typecheck-
+  proved) and the retained clone-guard `try` (never the named adapter; deleting it was
+  unauthorized scope — the criterion's literal text over-asked).
+- **U7 additions:** the parity delta now includes the history names, `ApplicationInterface.history`,
+  `SUPERVISOR_TABLES`, `SUPERVISOR_INDEXES`, and the renames (all enumerated in the unit
+  reports).
+- **H5 carriers:** the client reads cursor presence, never page fullness; the wire vocabulary
+  is the catalog's own (`limit`/`cursor`/`prefix`; `{ runs, cursor? }`).
+
 ## Exit criterion
 
 1. Login per rulings — capture-proved (refused state marks neither field, one alert, five text
