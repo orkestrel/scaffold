@@ -577,6 +577,43 @@ binding-predicate rule, name-the-property, trusted-input-only, capture-outranks-
 scaffold suite green including the incoming skill-family gate; scaffold main synced at that
 sanctioned moment.
 
+### U8+U8b CLOSED (92c5504) — the portfolio converged, the bar paid, the instrument truthful
+
+The polish convergence and the application's first stylesheet, closed through three audit
+rounds (blind Sol+reviewer pair, fix round, micro round + round-3 settlement).
+
+- **The portfolio:** 20 states × 2 themes × 2 viewports, generated from acceptance journeys,
+  with full artifact retention per the polish-surface skill — 182 files: 80 frames, 68
+  accessibility trees, 17 step journals, 17 console logs. The membership proof enumerates the
+  real directory (an orphan and a zero-byte frame each fail it — proved red under the
+  Orchestrator's own hand). Step journals are produced by the drives themselves; `TH` roles
+  resolve from `scope` (the tree that said `columnheader "Attempt 1"` now says `rowheader`).
+- **The bar:** 30 readings per theme, all at or above 4.5:1 text / 3:1 marks, measured by a
+  Tab-driven `:focus-visible` instrument that was falsified before it was trusted. The
+  application's first stylesheet (`app/browser/styles/`: tokens, one partial, one barrel) draws
+  an opaque outline from `--bs-emphasis-color` — theme-following, no `@layer` (Halfmoon
+  declares none; an unlayered rule outranks every layered one), no `!important`. The register
+  filters' visible label sits under Halfmoon's (0,3,0) `.btn-check:focus-visible+.btn`, so the
+  stylesheet pairs it explicitly and the label reading (2.25/1.93 red before) measures
+  4.34/4.83 after. Worst pre-fix ring: drawer 1.59:1 dark; now 7.23:1.
+- **The proof discipline held under audit pressure:** every "prove it red" demand across three
+  rounds ended with an Orchestrator-executed run — the withheld-stylesheet worktree (drawer
+  1.5892, filter 2.2398, matching the writer to the digit), the reverted-ring worktree
+  (2.2470/1.9315), the neutered-scope worktree, the planted orphan, the truncated frame.
+- **One name, one concept:** the app-side `deriveAddress` → `deriveLineage` (the core symbol
+  keeps its name); guide surface row, import, and fence moved with it; parity 374/374.
+- **Process rulings recorded:** report-only guide patches applied serially by the Orchestrator
+  are the integration protocol, not a scope breach (ruled against Sol's re-land, with the
+  reviewer); one snapshot format portfolio-wide, so the journey capture half keeps frames only
+  (execution-boundary limit, named where the membership proof enforces it); the auditor's own
+  smallest fix applied verbatim closes a round-3 finding inside the three-round budget
+  (`recordArrival`/`driveArrival` take direct callback parameters).
+- **Standing findings for the next revision, not this campaign:** `.focus-ring:focus` outranks
+  the app ring while no control wears the class; the polish-surface skill owes Playwright-driven
+  scenarios an artifact-parity answer; `@orkestrel/test`'s guide fetch 404s in `scaffold
+  catalog`; a transient bench wedge (journal never past header, killed by PID, relaunch clean)
+  is a service fault signature worth knowing.
+
 ## Exit criterion
 
 1. Login per rulings — capture-proved (refused state marks neither field, one alert, five text
