@@ -234,6 +234,37 @@ button or a search bar for the door.
 - U5 round-1 claim 2 (signature honesty) closes with the drawer-closed mobile frames plus this
   fix; the words-in-aria-label acceptance and U8's 390px glyph-legibility obligation stand.
 
+### U5d audit round 1 (990027d) and its rulings
+
+Sol: claims 1-3 CONFIRMED (identity moved honestly with all four grant branches; the door is the
+same door, integration untouched and green through the aria-label; one fault surface). Reviewer:
+complaint closed, door CONFIRMED (`bi-search` over plus-reads-create and over the Logout-glyph
+mirror; toolbar band above the roster closes the toast-footprint advisory on rect evidence),
+vocabulary CONFIRMED (grant-domain ruling coherent; the door monolingual in "run"); no required
+changes.
+
+- **Fix round (u5d-brief-2, builder):** the OpenPanel re-entrancy proof drops its synthetic
+  SubmitEvent — Sol ruled it a doctrine breach, not transport evidence: the synthetic submit
+  exists precisely because a person cannot press a disabled control, so the proof asserts the
+  restriction (disabled in flight, one transport call) instead of simulating its violation. The
+  multi-grant identity sentence becomes the bounded count form ("Authorized for 2 workflows."),
+  singular keeps its name — both lanes converged (unbounded prose in a control strip; Sol's
+  shrink referral: a long grant list can crush the wordmark under proportional flex shrink). The
+  duplicated identity rationale collapses to one comment home.
+- **Carried to U7:** `demo/showcase.html` is stale generated output (pre-dates U5d; bundles the
+  old door copy and now the old `open-workflow` ids) — the regeneration carrier explicitly
+  includes the `open-run` rename. The workflow/run noun split (grants name workflows, the rail
+  names runs, same tokens one screen apart) is documented in the guide as the domain's two
+  nouns, not repainted in code.
+- **Carried to U8:** the mobile adjacency of the drawer's close control and the door's glyph
+  (~35px apart, right-aligned — mis-tap risk read at capture); banner shrink behavior at narrow
+  widths (theoretical once the count form bounds the identity div).
+- **Retained:** the structural `nav > div > span` identity selectors in the shell tests
+  (acceptable coupling in a stable region; J1's resolver work may revisit).
+- **Capture debt after the fix round:** the ~700px step (grant sentence gone, name present) and
+  a below-`sm` drawer-closed frame. The many-grants break-length frame is struck — the count
+  form removes the unbounded input it would have measured.
+
 ## Exit criterion
 
 1. Login per rulings — capture-proved (refused state marks neither field, one alert, five text
