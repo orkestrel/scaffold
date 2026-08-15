@@ -53,3 +53,26 @@ one outside finding. Settled:
   round: `u8-micro-brief.md`. Sol's file citation `open-wide-light-steps.txt` does not exist —
   the journal is per-scenario `open-steps.txt` — recorded as a citation defect; the substance
   held at the real file.
+
+## Round 3 (Sol, thread 01a005d4-582c-7761-8a22-9e7c832bdda6) and seam closure
+
+Sol's round-3 confirm: claims 2 (journal coverage) and 4 (scope + byte-identity + gates)
+CONFIRMED; claim 1 UNRESOLVED; claim 3 BROKEN. The first launch of this round wedged at its
+journal header for five minutes and was killed by PID; the bench re-probed live and the relaunch
+completed normally — recorded as a transient service fault, not a dark bench.
+
+- Claim 1 CONFIRMED by Orchestrator probe: the scope branch neutered in a worktree at 900c194
+  fails the discriminating test (tree prints `columnheader "Attempt 2"`, sibling
+  `columnheader "Attempt"` assertion stays green, exit 1). Log: `u8-micro-red1-scope.log`.
+- Claim 3 closed by the Orchestrator applying the auditor's own named smallest fix verbatim:
+  `recordArrival`/`driveArrival` take `action`, `trigger`, `arrive`, `settled` as direct
+  parameters; the `Arrival`/`Drive` records deleted with every consumer updated; commit 92c5504
+  with format/lint/check/full-browser green.
+
+Three audit rounds is the seam's budget. The seam closes at 92c5504: every claim across the
+three rounds ends CONFIRMED, settled by Orchestrator-executed evidence, or repaired with the
+repair's gates green. Standing findings recorded for the next revision, not this campaign:
+`.focus-ring:focus` outranks the app ring while unused; the journey capture half keeps frames
+only (one snapshot format portfolio-wide); the polish-surface skill owes Playwright-driven
+scenarios an artifact-parity answer; the `@orkestrel/test` guide fetch 404s in `scaffold
+catalog`.
