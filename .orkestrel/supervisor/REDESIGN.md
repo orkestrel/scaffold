@@ -518,6 +518,42 @@ changed frame and the measured Back journey.
   human-journey skill, then reconcile against scaffold 0.0.36's published version, house
   instruction-file voice as the bar.
 
+### H7 CLOSED (b769627 + 7f84886 + fix 258d2bf) — the name filter, by user rescope
+
+The user reopened §4's id-prefix-only ruling: "we should be able to filter by name, a simple
+fuzzy search would be good." Blind design pair split on the central question — the analyst
+ruled client-side over loaded rows on a scan-cost premise; the planner ruled server-side at
+the join. The Orchestrator falsified the analyst's premise at source
+(`SupervisorApplication.ts:90` already reads a snapshot per candidate to qualify terminal
+status) and adopted the planner's design with the analyst's controls folded. Rounds: design
+pair → Sol H7a-c → Opus H7d (failing-first: 11 red at the stashed baseline) → blind audit
+pair (Sol 0-broken/1-NE — the stale showcase bundle; reviewer 1-broken — the scope line's
+per-press claim and one verb — plus a false seeder TSDoc) → fix round → films closing every
+NE. Acceptance at close: 216/216 server, 417/417 browser, 12/12 integration, all seven
+projects; guides at the recorded ledger. Filter frames, degraded-state-under-filter frames,
+and the zero-network showcase film all delivered.
+
+- **The design rulings:** the name predicate lives in the join's existing qualification
+  guard — one string compare on a snapshot already in hand, one store page per press, no
+  drain loop; the id prefix stays at the store; two labelled fields (name first, as the rows
+  print them) combine with AND; "simple fuzzy" is case-insensitive contiguous substring — a
+  gapped subsequence never matches, and the word "fuzzy" appears nowhere in operator copy.
+- **The honesty rulings:** the scope line claims what both halves deliver ("search completed
+  history, not only the runs listed here"); three empty sentences split on filter and cursor
+  presence ("in the pages read so far" vs the exhausted claim); one derived phrase feeds the
+  empty sentence and the status line so they cannot disagree; "read" is the reader's act,
+  "load" is the machine's.
+- **`src/core` untouched** by the whole capability — `RunListOptions` never learned about
+  names; no second name authority exists.
+- **Recorded without change:** the parser's whitespace asymmetry (a blank name is absence; a
+  prefix travels exactly as typed); `matchesRunName` total behind its validated boundary;
+  the id-length bound reuse for names; simple case folding's non-ASCII limit (guide
+  carrier).
+- **U7 additions:** `HistoryFilter`, `matchesRunName`, `HistoryQuery.name`, the two-field
+  control's match rules, the AND/one-page-per-press law, the three empty sentences.
+- **U8 polish carriers:** quoting the interpolated filter term in the phrase; the
+  Clear-button column resize; the "run ID/id" casing consistency (inherited from H6).
+
 ## Exit criterion
 
 1. Login per rulings — capture-proved (refused state marks neither field, one alert, five text
