@@ -1,89 +1,132 @@
 ---
 name: orkestrel-human-journey
-description: Prove a browser surface the way a person reaches it — role-and-name resolution that refuses hidden or ambiguous targets, keyboard-first entry, perception-level assertions, and convergence waits — and keep those journey tests strictly separated from transport-class suites. Use when writing or reviewing browser tests that claim a human can complete a flow, when a surface change needs proof a person can still operate it, or when a capture of a rendered surface must be driven honestly.
+description: Prove a browser application the way a person uses it — real keystrokes, clicks, and Tab/Enter against only what is visible and reachable — and generate the capture portfolio from those same journeys. Use when accepting a UI build, proving an application end to end, deciding whether a surface is reachable by keyboard alone, proving what a screen refuses as well as what it does, auditing whether the interface speaks the user's vocabulary rather than the engine's, producing the screenshots a design review judges, or whenever the only evidence a screen works is a test that drove it through JavaScript instead of through the interface.
 ---
 
-# Human journey
-
-A journey test claims a person can complete a flow. Its instruments must therefore be limited to
-what a person has: what is visible, what is reachable, what the page announces. A test that reaches
-the goal through a selector a person cannot see proves the wrong claim and stays green while the
-surface breaks.
+# Prove an application through human journeys
 
 ## Load authority
 
-1. `AGENTS.md`; `.claude/rules/tests.md` and `.claude/rules/browser.md`.
-2. `tests/setupBrowser.ts`, or the setup file of the Vitest project that runs the journeys where
-   the workspace declares a separate one (`.claude/rules/workspace.md`, test project matrix) — the
-   journey layer's one home. Read its boundary comment before writing a journey.
-3. The governing guide for the surface under test.
+Read the current files in this order:
 
-## The two classes
+1. `AGENTS.md`.
+2. `.claude/rules/tests.md` for test law, real implementations, and shared test infrastructure;
+   `.claude/rules/browser.md` for browser and Vue usage; `.claude/rules/application.md` for app
+   composition and entries; `.claude/rules/documentation.md` for parity. Those rules are the
+   contract; this skill is the workflow.
+3. [layer.md](references/layer.md) before building, extending, or debugging the journey layer.
+4. [captures.md](references/captures.md) before registering a state or placing a capture.
+5. `guides/README.md`, the governing guide for the surface, and `ROADMAP.md` when present.
+6. The `*/types.ts` of every environment the journeys drive, plus the application's root component,
+   route entry, and store contract.
 
-- **Journey class**: drives the surface as a person — role and accessible name, keyboard, visible
-  text. Asserts perception: what the operator can see, read, and reach.
-- **Transport class**: drives the wire — login helpers, workflow starters, direct client calls.
-  Asserts protocol: requests, payloads, states.
+## Apply the journey laws
 
-Declare a test's class in its own name, and check the instruments it calls against the boundary
-comment in the layer's setup file. A journey lives in the reserved end-to-end scope for its
-environment (`integration.test.ts` or an `integration/` directory beneath it, per
-`.claude/rules/tests.md`), never in a module-mirrored test file.
+1. **Drive only what a person can see and reach.** Target every control by its ARIA role and its
+   accessible name as rendered. Never reach into a component instance, a store, a transport, a
+   copied credential, or a test-only hook to make a step succeed. Report a step that cannot be
+   performed through the interface as a finding about the interface.
+2. **Assert what is seen.** Quote the rendered text a person reads, which is `innerText` — a label
+   under `text-uppercase` asserts as `TRACE` where the source says `Trace`. Never let a state read
+   replace a perception assertion; it may only corroborate one, and `.claude/rules/tests.md` fixes
+   which state a test may read at all.
+3. **Assert what the interface withholds.** Assert every refusal through the resolver's exact
+   failure voice, and distinguish an absent control from a present but humanly unreachable one.
+4. **Keep transport and persistence proofs in their own declared block,** never inside a journey.
+   Assert every live or asynchronous fact by convergence — poll until it contains or equals — never
+   by an identity read of one frame.
+5. **Generate the portfolio from the acceptance journeys.** Place each registered state inside the
+   journey that reaches it, and never register a state no journey reaches.
+6. **Commit a value through an act a person performs:** Enter, Tab away, or a named button. Report a
+   surface that commits on a timer, on an unpredictable event, or only after work the person cannot
+   observe as a surface finding, and never work around it in the layer.
+7. **Type only what a person would.** Journeys carry trusted input; adversarial payloads belong to
+   the transport family and the parser suites.
 
-One test never mixes classes inside its body. Transport helpers may run OUTSIDE a journey callback
-to seed fixtures; inside one they are forbidden. A journey that needs data uses the transport class
-to seed it first, then enters the surface as a person who found it that way.
+## Build or verify the journey layer
 
-## Journey instruments
+- Build the layer as shared browser test infrastructure under `.claude/rules/tests.md`: it lives in
+  the workspace's browser test setup module, exports every helper from there, and adds a journey
+  helper only where `@orkestrel/test` publishes none. Never declare a resolver inside a test file.
+- Give the layer every capability [layer.md](references/layer.md) fixes: the role-scoped resolver
+  and its distinct failure voices, region-scoped resolution, the input and traversal verbs, the
+  perception readers, and the capture hook.
+- Drive every step through the browser provider's user-event API, and never dispatch a constructed
+  event ([layer.md](references/layer.md) → What it drives).
+- Re-verify the layer against what the application renders now whenever markup changes
+  ([layer.md](references/layer.md) → Role vocabulary).
 
-The layer exports exactly these instrument kinds, and a journey body calls nothing else:
+## Derive journeys from intents
 
-- **The resolver** — locate a target by role and accessible name. It REFUSES, with a readable
-  failure naming the reason: a hidden or `aria-hidden` target, an ambiguous name (two or more
-  matches), a disabled target, an unreachable one. A journey that cannot find its target the human
-  way must fail loudly, never fall through to a selector.
-- **The focus probe** — answer whether a target holds focus, for keyboard-flow assertions.
-- **The entry helper** — complete login keyboard-first: wait for the autofocus convergence, and
-  only then fall back to a bounded Tab walk that re-checks focus before EVERY press and wraps
-  within its bound. Never an unbounded loop; never a click where the flow claims keyboard.
-- **The phase driver** — compose a journey as ordered phases passed directly as anonymous
-  callbacks: journey phases and fixture phases alternate, each phase's class declared by position.
+Write one journey per user intent, named for what the person achieves rather than for the
+components it passes through. Place them in the browser environment's `integration.test.ts`, whose
+placement and scope `.claude/rules/tests.md` fixes.
 
-Extend the layer only in its setup file.
+- Enter through the real entry: mount the shipped root component with a real store and the route a
+  person lands on, and let the application load itself.
+- Reach each surface's own controls through forward Tab traversal in at least one journey.
+- Type keystroke by keystroke where the keystrokes are the subject; fill in one operation where the
+  text is only a payload the person pastes.
+- Poll every fact the application produces asynchronously until it converges. Never assert one from
+  a single read after the action. A poll's predicate must be able to go false-to-true after the
+  action it observes; a predicate already true when the poll starts binds nothing.
+- Assert the state the flow must reach, never the transient path taken to it. A criterion that bans
+  a harmless transient over-refuses and breaks on the next honest implementation.
+- Assert the negative beside the positive whenever a value replaces another: the new sentence is
+  present **and** the old one is gone.
+- After a confirmed destructive action, assert through trusted input that focus landed on a visible,
+  announced location.
+- Assert the whole page's perception never matches the vocabulary the product does not speak —
+  engine, schema, and implementation words the interface is supposed to translate.
+- Report a bare accessible name that answers for two reachable elements on one screen as a surface
+  finding, and target through role or region until the surface is fixed.
 
-## Assertion law
+## Prove the refusals
 
-- Inside a journey body, assert perception: the text an operator reads, the state a control shows,
-  the focus a keyboard user holds. Class, attribute, and DOM-state assertions stay in the transport
-  class and the component tests, where `.claude/rules/tests.md` directs them.
-- Every asynchronous observation gets a convergence wait with a bound. A bare read of async state
-  is a race admitted into the suite.
-- A wait's predicate must be able to go false-to-true AFTER the action it observes. A predicate
-  already true when the wait starts binds nothing.
-- Name the property, not the intermediate. Assert the state the flow must reach, never the
-  transient path taken to it — a criterion that bans a harmless transient over-refuses and breaks
-  on the next honest implementation.
-- Trusted input only: journeys type the values a person would, never adversarial payloads — attack
-  input belongs to the transport class and the parser suites.
+- Give every surface a refusal family: the controls a person must not reach in the state the
+  journey has put the surface in.
+- Assert the exact failure voice the case means. Never write an assertion that accepts either of
+  two voices.
+- Cover the restrictions the interface imposes on itself: a collapsed panel's field, a verb
+  belonging to another kind of object, a control disabled until its precondition lands.
+- When a refusal changes voice after a markup change, read it as a role or reachability change
+  before treating the element as missing
+  ([layer.md](references/layer.md) → Role vocabulary).
 
-## Drive captures through journeys
+## Declare the transport family
 
-Where `orkestrel-polish-surface` drives a capture, the journey instruments are the entry path:
-arrive, act, converge, then capture.
+- Name the block for what it proves — persistence, restart, storage failure.
+- Drive it through the application's real session and store contracts. Build a store that stalls a
+  read, fails a fixed number of reads, or fails a write as an inert configurable implementation of
+  the published interface, under the real-implementation law in `AGENTS.md`.
+- Prove the visible half in a journey: the failure sentence a person reads, and the retry control
+  that clears it.
+- Assert restart by starting a second session over the same store and polling the restored value.
 
-- Capture every terminal state the claim names, not only the happy path: the failure states are
-  the captures a reviewer needs most.
-- When a capture and a green suite disagree, the capture is the evidence and the fixture is the
-  defect.
+## Generate the portfolio
 
-## Review gate
+Follow [captures.md](references/captures.md) for the state registry and its placement rules, the
+theme-and-viewport variant matrix, the always-on filename proof, the capture-run membership proof,
+and how a state that exists only during an activation is captured.
 
-Reviewing a journey test, refuse it when:
+When a capture and a green suite disagree, the capture is the evidence and the fixture is the
+defect.
 
-- any instrument inside the journey body is not journey-class;
-- a selector, test id, or DOM traversal substitutes for role-and-name resolution;
-- an assertion names implementation instead of perception;
-- an async observation has no bounded convergence wait, or its predicate cannot bind.
+Route review of the portfolio to the `orkestrel-polish-surface` campaign. Do not judge it here.
 
-Return the verdict in the shape the dispatched skill fixes: `orkestrel-polish-surface` for a
-capture round, `orkestrel-falsify` for an audit round.
+## Accept
+
+Completion requires all of:
+
+- every in-scope user intent reaching its outcome through the interface, with no step that reaches
+  past it;
+- keyboard-only reachability proven on every surface the journeys cover;
+- a refusal family per surface, each asserting one exact failure voice;
+- the transport family declared separately, driven through real implementations, and convergent;
+- the registry-times-variants filename proof and the state-placement proof green in an ordinary run;
+- one capture run per variant writing every registered file, each read back non-empty;
+- perception assertions quoting rendered text, and the vocabulary sweep green on the whole page;
+- the repository gates green, under the independent-verification law in `.agents/orchestration.md`.
+
+Report each journey by the intent it proves, the refusals it establishes, the states it placed, and
+every surface finding the layer's refusals exposed.

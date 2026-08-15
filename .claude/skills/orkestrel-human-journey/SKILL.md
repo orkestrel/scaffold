@@ -1,10 +1,10 @@
 ---
 name: orkestrel-human-journey
-description: Prove a browser surface the way a person reaches it — role-and-name resolution that refuses hidden or ambiguous targets, keyboard-first entry, perception-level assertions, and convergence waits — and keep those journey tests strictly separated from transport-class suites. Use when writing or reviewing browser tests that claim a human can complete a flow, when a surface change needs proof a person can still operate it, or when a capture of a rendered surface must be driven honestly.
+description: Prove a browser application the way a person uses it — real keystrokes, clicks, and Tab/Enter against only what is visible and reachable — and generate the capture portfolio from those same journeys. Use when accepting a UI build, proving an application end to end, deciding whether a surface is reachable by keyboard alone, proving what a screen refuses as well as what it does, auditing whether the interface speaks the user's vocabulary rather than the engine's, producing the screenshots a design review judges, or whenever the only evidence a screen works is a test that drove it through JavaScript instead of through the interface.
 ---
 
 # Load the canonical workflow
 
-Read `.agents/skills/orkestrel-human-journey/SKILL.md` completely. Follow that canonical workflow before acting.
+Read `.agents/skills/orkestrel-human-journey/SKILL.md` completely, then read every reference it requires. Follow that canonical workflow before acting.
 
 This bridge contains no independent process. `AGENTS.md`, applicable rules, the canonical skill, and the governing guide/spec remain authoritative in that order.
