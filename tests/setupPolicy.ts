@@ -823,6 +823,25 @@ export function parseSkillPrompt(content: string): string | undefined {
 }
 
 /**
+ * Test whether a default prompt names one skill's token in complete form.
+ *
+ * A skill directory name is lowercase letters and hyphens, so a match followed by either continues
+ * a longer name and names a different skill.
+ *
+ * @param prompt - The default prompt scalar as written.
+ * @param name - The discovered skill directory name.
+ * @returns True when the prompt carries `$name` as a complete token.
+ */
+export function matchesSkillToken(prompt: string, name: string): boolean {
+	const token = `$${name}`
+	for (let index = prompt.indexOf(token); index !== -1; index = prompt.indexOf(token, index + 1)) {
+		const next = prompt.charAt(index + token.length)
+		if (next === '' || !/[a-z-]/u.test(next)) return true
+	}
+	return false
+}
+
+/**
  * Extract the direct Markdown reference paths named in one skill document.
  *
  * @param content - The raw SKILL.md text.
@@ -873,12 +892,12 @@ export function inspectSkill(root: string, name: string): readonly PolicyViolati
 					'agents/openai.yaml matches the canonical four-line interface schema',
 				),
 			)
-		} else if (!prompt.includes(`$${name}`)) {
+		} else if (!matchesSkillToken(prompt, name)) {
 			violations.push(
 				createPolicyViolation(
 					'skill',
 					metadata,
-					`agents/openai.yaml default_prompt contains $${name}`,
+					`agents/openai.yaml default_prompt contains the complete token $${name}`,
 				),
 			)
 		}
@@ -1216,6 +1235,18 @@ export const SKILL_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 		files: [
 			{ path: '.agents/skills/sample/SKILL.md', content: SKILL_POLICY_TEXT },
 			{ path: '.agents/skills/sample/agents/openai.yaml', content: createSkillMetadata('other') },
+		],
+	},
+	{
+		label: 'rejects a default prompt whose token extends the skill name',
+		membership: 'immediate directories beneath .agents/skills',
+		rule: 'skill',
+		files: [
+			{ path: '.agents/skills/sample/SKILL.md', content: SKILL_POLICY_TEXT },
+			{
+				path: '.agents/skills/sample/agents/openai.yaml',
+				content: createSkillMetadata('samplex'),
+			},
 		],
 	},
 	{

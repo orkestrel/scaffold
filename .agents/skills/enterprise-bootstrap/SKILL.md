@@ -20,7 +20,10 @@ every claim about the result from what renders.
 Open the reference that owns a subject before writing markup. Never guess a class name: an invented
 utility (`.vw-50`, `.pointer-events-none`) has no rule in the shipped CSS and fails silently. Pick
 components from [components.md](references/components.md) → Choosing components, take their markup
-from the same file, and take fine layout from [utilities.md](references/utilities.md).
+from the same file, and take fine layout from [utilities.md](references/utilities.md). Where
+Bootstrap ships no component for the need — combobox, date picker, tags input, data grid, tree —
+work the native-first ladder in [bootstrap-reference.md](references/bootstrap-reference.md) → When
+not to hand-roll before building one.
 
 | Layer          | File                                                        | Holds                                                                             |
 | -------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------- |
@@ -67,15 +70,18 @@ setting a direction. The loop:
 4. **Build** — compose Bootstrap components and utilities; map the plan's tokens onto theme variables or a thin skin, with no scattered one-off hex ([bootstrap-reference.md](references/bootstrap-reference.md) → Theming & design tokens). Watch selector specificity: a utility and a custom rule that cancel each other show up as padding and margin bugs.
 5. **Critique the render** — remove one accessory. Check contrast, focus, `prefers-reduced-motion`, mobile, and all five states. Critique what rendered, not the markup.
 
-Brainstorm privately; show only the higher-confidence directions.
+Brainstorm privately; show a direction only once it satisfies the brief and the quality floor
+([frontend-design.md](references/frontend-design.md) → Process).
 
-**Rendered proof.** Settle every claim about a screen under the rendered-surface evidence law in
-`.agents/orchestration.md`. The review input here is captures at both viewports and both themes plus
-an accessibility snapshot; source only corroborates the mechanism. For a full review-round campaign
-built on that evidence, use the `orkestrel-polish-surface` skill instead of improvising one here.
+**Rendered proof.** Settle every claim about a screen from a capture, never from source alone;
+`.agents/orchestration.md` owns this law where it is present. The review input here is captures at
+both viewports and both themes plus an accessibility snapshot; source only corroborates the
+mechanism. For a full review-round campaign built on that evidence, use the
+`orkestrel-polish-surface` skill instead of improvising one here.
 
-**Mechanical proof.** Three instruments settle what a capture cannot. Control each one under the
-instrument law in `.claude/rules/quality.md`:
+**Mechanical proof.** Three instruments settle what a capture cannot. Pair each one with a negative
+control drawn from outside the population it covers, and treat an instrument whose control passes as
+broken; `.claude/rules/quality.md` owns this law where it is present:
 
 - **Contrast, composited.** Read every pairing through a reader that composites the painted layers, in both themes ([bootstrap-reference.md](references/bootstrap-reference.md) → Measuring the bars).
 - **Authored classes against the shipped cascade.** Extract every class authored in the templates and components, and fail the run on one that has no rule in the compiled CSS the page loads. Assert a population floor so an extractor that quietly matched nothing cannot pass, and control it with a class you know is absent.

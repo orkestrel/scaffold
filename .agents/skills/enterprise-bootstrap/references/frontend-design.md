@@ -19,10 +19,11 @@ throughout.
 
 ## Design principles
 
-Open a web design's hero with the most characteristic thing in the subject's world, in whatever form
-suits it: a headline, an image, an animation, a live demo, an interactive moment. Choose that
-opening deliberately — a big number with a small label, supporting stats, and a gradient accent is
-the template answer, so take it only where it is genuinely the best option.
+Open a web design's hero with the subject's thesis — the one claim the page makes — carried by the
+most characteristic thing in the subject's world, in whatever form suits it: a headline, an image,
+an animation, a live demo, an interactive moment. Choose that opening deliberately — a big number
+with a small label, supporting stats, and a gradient accent is the template answer, so take it only
+where it is genuinely the best option.
 
 Set the typography as a decision rather than a default. Pair the display and body faces
 deliberately, and not the families you would reach for on any other project. Set a clear type scale
@@ -32,7 +33,7 @@ is remembered by.
 Make every structural device — numbering, eyebrows, dividers, labels — encode something true about
 the content rather than decorate it. Use numbered markers (01 / 02 / 03) only where the content is
 a sequence: a real process, or a typed timeline whose order carries information the reader needs.
-Check that a device earns its place before adding it.
+Before adding a device, check that it encodes something the reader needs.
 
 Decide where and whether animation serves the subject: a page-load sequence, a scroll-triggered
 reveal, hover micro-interactions, ambient atmosphere. Prefer one orchestrated moment to scattered
@@ -49,20 +50,20 @@ copy makes a surface read as templated as a templated layout does. Follow the wr
 
 Apply the same craft to dense, authenticated tools, and move the signature. In an admin screen or
 dashboard the data is the content: keep it quiet, legible, and fast to scan, and never spend the
-aesthetic risk on the table itself, which taxes every user on every visit. Put the point of view in
-the chrome — the navigation and header treatment, the type pairing, the empty states, the handling
-of status and density. Make the frame impossible to mistake for another product's, and keep the
-data surfaces disciplined and conventional enough to read without effort.
+aesthetic risk on the table itself, which adds scan time for every user on every visit. Put the
+point of view in the chrome — the navigation and header treatment, the type pairing, the empty
+states, the handling of status and density. Make the frame impossible to mistake for another
+product's, and keep the data surfaces disciplined and conventional enough to read without effort.
 
 ## Process: brainstorm, explore, plan, critique, build, critique again
 
 Calibrate against the three looks AI-generated design currently clusters around: (1) a warm cream
 background (near #F4F1EA) with a high-contrast serif display and a terracotta accent; (2) a
 near-black background with a single bright acid-green or vermilion accent; (3) a broadsheet-style
-layout with hairline rules, zero border-radius, and dense newspaper-like columns. Each is legitimate
-for some brief, but each is a default rather than a choice, and each appears regardless of subject.
-Follow the brief exactly where it pins a visual direction — the brief's own words always win,
-including when they ask for one of these looks. Where the brief leaves an axis free, spend that
+layout with hairline rules, zero border-radius, and dense newspaper-like columns. All three are
+legitimate for some briefs; they are defaults rather than choices, and they appear regardless of
+subject. Follow the brief exactly where it pins a visual direction — the brief's own words always
+win, including when they ask for one of these looks. Where the brief leaves an axis free, spend that
 freedom somewhere other than these defaults. Balance the moves you have already proven against
 experimenting where the brief invites it.
 
@@ -89,20 +90,22 @@ the brief and the quality floor below.
 ## Restraint and self-critique
 
 Spend the boldness in one place. Let the signature element be the one memorable thing, keep
-everything around it quiet and disciplined, and cut any decoration that does not serve the brief.
-Treat a surface with no deliberate risk as failing the distinctiveness mandate. Meet the quality
-floor without announcing it: responsive down to mobile, visible keyboard focus, reduced motion
-respected. Critique your own work as you build, and take screenshots where the environment supports
-it. Read both themes and both the wide and the narrow viewport from those captures, not the markup.
-Before shipping, remove one accessory: cut the least-necessary decorative element, and restore it
-only where the surface demonstrably loses information without it. Where notes persist across passes,
-record what you tried so the next pass reads it.
+everything around it quiet and disciplined, and cut any decoration that does not serve the brief —
+decorative emoji as UI, pill soup, glow effects, and gradient-on-everything are the usual instances
+of decoration with no reason in the subject. Treat a surface with no deliberate risk as failing the
+distinctiveness mandate. Meet the quality floor without announcing it: responsive down to mobile,
+visible keyboard focus, reduced motion respected. Critique your own work as you build, and take
+screenshots where the environment supports it. Read both themes and both the wide and the narrow
+viewport from those captures, not the markup. Before shipping, remove one accessory: cut the
+least-necessary decorative element, and restore it only where the surface demonstrably loses
+information without it. Where notes persist across passes, record what you tried so the next pass
+reads it.
 
 ## Writing in design
 
-Make every word earn its place by making the design easier to understand, and therefore easier to
-use. Bring the same intentionality to copy as to spacing and color. Before writing anything, decide
-what the design needs to say, and how to say it so the person can navigate the experience.
+Keep a word only where it makes the design easier to understand, and therefore easier to use. Bring
+the same intentionality to copy as to spacing and color. Before writing anything, decide what the
+design needs to say, and how to say it so the person can navigate the experience.
 
 Write from the end user's side of the screen. Name things by what people control and recognize,
 never by how the system is built: a person manages notifications, not webhook config. Describe what
