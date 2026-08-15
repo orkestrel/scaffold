@@ -45,7 +45,6 @@ export interface PolicyControl {
 	readonly membership: string
 	readonly rule: PolicyRule
 	readonly files: readonly PolicySource[]
-	readonly family?: boolean
 }
 
 /** The directory whose immediate child directories form the complete skill family. */
@@ -56,6 +55,12 @@ export const SKILL_POLICY_TEXT = '# Skill\n'
 
 /** Skill text naming one reference for physical family controls. */
 export const SKILL_REFERENCE_TEXT = '# Skill\n\nRead references/example.md.\n'
+
+/** Canonical skill metadata whose three values each carry YAML's escaped apostrophe. */
+export const SKILL_APOSTROPHE_METADATA =
+	"interface:\n  display_name: 'Owner''s Fixture'\n" +
+	"  short_description: 'Exercise the family''s apostrophe rule'\n" +
+	"  default_prompt: 'Use $sample for this fixture''s value.'\n"
 
 /** Every centralized module named by the architecture kind table. */
 export const CENTRAL_SOURCE_FILES: readonly string[] = Object.freeze([
@@ -786,27 +791,31 @@ export function readSkillFamily(root: string): readonly string[] {
  * @returns Canonical skill interface metadata ending in one newline.
  */
 export function createSkillMetadata(name: string): string {
-	return [
-		'interface:',
-		"  display_name: 'Fixture Skill'",
-		"  short_description: 'Exercise the skill family policy'",
-		`  default_prompt: 'Use $${name} for this fixture.'`,
-	].join('\n') + '\n'
+	return (
+		[
+			'interface:',
+			"  display_name: 'Fixture Skill'",
+			"  short_description: 'Exercise the skill family policy'",
+			`  default_prompt: 'Use $${name} for this fixture.'`,
+		].join('\n') + '\n'
+	)
 }
 
 /**
  * Parse the default prompt from the canonical four-line skill interface shape.
  *
+ * Each value is a non-empty single-quoted scalar in which `''` carries an apostrophe.
+ *
  * @param content - The raw agents/openai.yaml text.
- * @returns The non-empty default prompt, or `undefined` when any structural rule fails.
+ * @returns The default prompt scalar as written, or `undefined` when any structural rule fails.
  */
 export function parseSkillPrompt(content: string): string | undefined {
 	const normalized = content.replaceAll('\r\n', '\n')
 	const lines = (normalized.endsWith('\n') ? normalized.slice(0, -1) : normalized).split('\n')
 	if (lines.length !== 4 || lines[0] !== 'interface:') return undefined
-	const display = lines[1]?.match(/^  display_name: '([^']+)'$/u)
-	const description = lines[2]?.match(/^  short_description: '([^']+)'$/u)
-	const prompt = lines[3]?.match(/^  default_prompt: '([^']+)'$/u)
+	const display = lines[1]?.match(/^  display_name: '((?:[^']|'')+)'$/u)
+	const description = lines[2]?.match(/^  short_description: '((?:[^']|'')+)'$/u)
+	const prompt = lines[3]?.match(/^  default_prompt: '((?:[^']|'')+)'$/u)
 	if (display?.[1] === undefined || description?.[1] === undefined || prompt?.[1] === undefined) {
 		return undefined
 	}
@@ -916,6 +925,9 @@ export function inspectPolicyWorkspace(root: string): readonly PolicyViolation[]
 /**
  * Write a control to a real temporary workspace and run the production sweep over it.
  *
+ * The control's rule selects the sweep: `skill` inspects the family, every other rule inspects
+ * source placement and mirrors.
+ *
  * @param control - The physical fixture and expected rule boundary.
  * @returns Every violation reported through the production workspace route.
  */
@@ -927,7 +939,7 @@ export function inspectPolicyControl(control: PolicyControl): readonly PolicyVio
 			mkdirSync(dirname(path), { recursive: true })
 			writeFileSync(path, file.content, 'utf8')
 		}
-		return control.family === true ? inspectSkillFamily(root) : inspectPolicyWorkspace(root)
+		return control.rule === 'skill' ? inspectSkillFamily(root) : inspectPolicyWorkspace(root)
 	} finally {
 		rmSync(root, { recursive: true, force: true })
 	}
@@ -1165,7 +1177,6 @@ export const SKILL_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 		label: 'rejects a missing exact-case SKILL.md',
 		membership: 'immediate directories beneath .agents/skills',
 		rule: 'skill',
-		family: true,
 		files: [
 			{ path: '.agents/skills/sample/skill.md', content: SKILL_POLICY_TEXT },
 			{ path: '.agents/skills/sample/agents/openai.yaml', content: createSkillMetadata('sample') },
@@ -1175,7 +1186,6 @@ export const SKILL_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 		label: 'rejects a missing exact-case agents/openai.yaml',
 		membership: 'immediate directories beneath .agents/skills',
 		rule: 'skill',
-		family: true,
 		files: [
 			{ path: '.agents/skills/sample/SKILL.md', content: SKILL_POLICY_TEXT },
 			{ path: '.agents/skills/sample/agents/OpenAI.yaml', content: createSkillMetadata('sample') },
@@ -1185,7 +1195,6 @@ export const SKILL_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 		label: 'rejects a non-regular SKILL.md',
 		membership: 'immediate directories beneath .agents/skills',
 		rule: 'skill',
-		family: true,
 		files: [
 			{ path: '.agents/skills/sample/SKILL.md/child.txt', content: '' },
 			{ path: '.agents/skills/sample/agents/openai.yaml', content: createSkillMetadata('sample') },
@@ -1195,7 +1204,6 @@ export const SKILL_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 		label: 'rejects malformed agents/openai.yaml metadata',
 		membership: 'immediate directories beneath .agents/skills',
 		rule: 'skill',
-		family: true,
 		files: [
 			{ path: '.agents/skills/sample/SKILL.md', content: SKILL_POLICY_TEXT },
 			{ path: '.agents/skills/sample/agents/openai.yaml', content: 'interface: {}\n' },
@@ -1205,7 +1213,6 @@ export const SKILL_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 		label: 'rejects a default prompt with the wrong skill token',
 		membership: 'immediate directories beneath .agents/skills',
 		rule: 'skill',
-		family: true,
 		files: [
 			{ path: '.agents/skills/sample/SKILL.md', content: SKILL_POLICY_TEXT },
 			{ path: '.agents/skills/sample/agents/openai.yaml', content: createSkillMetadata('other') },
@@ -1215,7 +1222,6 @@ export const SKILL_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 		label: 'rejects a dangling exact-case SKILL.md reference',
 		membership: 'immediate directories beneath .agents/skills',
 		rule: 'skill',
-		family: true,
 		files: [
 			{ path: '.agents/skills/sample/SKILL.md', content: SKILL_REFERENCE_TEXT },
 			{ path: '.agents/skills/sample/agents/openai.yaml', content: createSkillMetadata('sample') },
@@ -1224,12 +1230,22 @@ export const SKILL_POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 	},
 ])
 
+/** An in-family skill whose metadata values carry escaped apostrophes, proving they parse. */
+export const SKILL_POLICY_APOSTROPHE: PolicyControl = Object.freeze({
+	label: 'accepts escaped apostrophes in agents/openai.yaml values',
+	membership: 'immediate directories beneath .agents/skills',
+	rule: 'skill',
+	files: [
+		{ path: '.agents/skills/sample/SKILL.md', content: SKILL_POLICY_TEXT },
+		{ path: '.agents/skills/sample/agents/openai.yaml', content: SKILL_APOSTROPHE_METADATA },
+	],
+})
+
 /** A bridge skill outside the discovered family, used to prove the membership boundary. */
 export const SKILL_POLICY_EXCLUSION: PolicyControl = Object.freeze({
 	label: 'excludes .claude/skills from the skill family',
 	membership: 'directories outside .agents/skills',
 	rule: 'skill',
-	family: true,
 	files: [{ path: '.claude/skills/bridge/SKILL.md', content: SKILL_POLICY_TEXT }],
 })
 

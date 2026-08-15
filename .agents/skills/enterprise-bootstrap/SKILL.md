@@ -46,8 +46,8 @@ from the same file, and take fine layout from [utilities.md](references/utilitie
 
 ## Dual mandate
 
-1. **Design lead** — take a point of view rooted in the _subject_ (audience, job-to-be-done, vernacular). Take one justified aesthetic risk, in one place.
-2. **Bootstrap engineer** — components and utilities first; custom CSS only when the system cannot express the need; paint through `--bs-*` so light and dark both survive.
+1. **Design direction** — take a point of view rooted in the _subject_ (audience, job-to-be-done, vernacular). Take one justified aesthetic risk, in one place.
+2. **Bootstrap execution** — components and utilities first; custom CSS only when the system cannot express the need; paint through `--bs-*` so light and dark both survive.
 
 Match the density to the context: a marketing page may open with a thesis-hero, an authenticated
 tool opens with clarity and scan paths. In product UI put the signature in the chrome, never in the
@@ -69,14 +69,13 @@ setting a direction. The loop:
 
 Brainstorm privately; show only the higher-confidence directions.
 
-**Rendered proof.** Settle a claim about a screen with what the browser painted, never with the
-markup — source-reading review passes a component that renders nothing. The review input is captures
-at both viewports and both themes plus an accessibility snapshot; source only corroborates the
-mechanism. For a full review-round campaign built on that evidence, use the
-`orkestrel-polish-surface` skill instead of improvising one here.
+**Rendered proof.** Settle every claim about a screen under the rendered-surface evidence law in
+`.agents/orchestration.md`. The review input here is captures at both viewports and both themes plus
+an accessibility snapshot; source only corroborates the mechanism. For a full review-round campaign
+built on that evidence, use the `orkestrel-polish-surface` skill instead of improvising one here.
 
-**Mechanical proof.** Three instruments settle what a capture cannot. Give each one a negative
-control — an input it must report as failing — and void any run whose control passes:
+**Mechanical proof.** Three instruments settle what a capture cannot. Control each one under the
+instrument law in `.claude/rules/quality.md`:
 
 - **Contrast, composited.** Read every pairing through a reader that composites the painted layers, in both themes ([bootstrap-reference.md](references/bootstrap-reference.md) → Measuring the bars).
 - **Authored classes against the shipped cascade.** Extract every class authored in the templates and components, and fail the run on one that has no rule in the compiled CSS the page loads. Assert a population floor so an extractor that quietly matched nothing cannot pass, and control it with a class you know is absent.
@@ -127,8 +126,9 @@ whatever surface they sit on and their contrast is surface- and theme-dependent 
 against stock Bootstrap the whole `btn-outline-*` family misses 4.5:1 across the dark theme and on
 light tinted surfaces — cards, subtle alerts. Give any action that carries information or
 consequence the solid variant. Solid variants paint their own background and measure identically on
-every surface, and they carry no margin: re-measure whenever anything layers over one — an
-`opacity-*` utility, a translucent overlay, a skin's own tint.
+every surface, and the stock fills sit at the 4.5:1 bar with nothing to spare. Re-measure a solid
+variant whenever anything layers over it — an `opacity-*` utility, a translucent overlay, a skin's
+own tint.
 
 A status mark with **no text** is an icon glyph, never a `badge`
 ([components.md](references/components.md) → Badge).
@@ -182,11 +182,6 @@ When the developer authorizes it:
 - Use logical properties (`margin-inline-start`, not `margin-left`) so RTL works.
 - Keep the surface area minimal and document why.
 - Write a stylesheet rule, never a `style` attribute or a `<style>` block.
-
-### Anti-patterns
-
-- Decoration with no reason in the subject — purple gradients, glows, emoji, pill soup.
-- A faux widget: a `div` posing as a select, grid, or tab, or a hand-rolled combobox, date picker, or data grid where a native element or an accessible library exists ([bootstrap-reference.md](references/bootstrap-reference.md) → When not to hand-roll).
 
 ---
 

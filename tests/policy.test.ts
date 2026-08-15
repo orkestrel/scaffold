@@ -9,6 +9,7 @@ import {
 	inspectSkillFamily,
 	POLICY_CONTROLS,
 	readSkillFamily,
+	SKILL_POLICY_APOSTROPHE,
 	SKILL_POLICY_CONTROLS,
 	SKILL_POLICY_EXCLUSION,
 	stemToPolicyCandidates,
@@ -313,6 +314,10 @@ describe('skill family policy', () => {
 			expect(violations[0]?.rule).toBe(control.rule)
 		})
 	}
+
+	it(`${SKILL_POLICY_APOSTROPHE.label} [membership: ${SKILL_POLICY_APOSTROPHE.membership}]`, () => {
+		expect(inspectPolicyControl(SKILL_POLICY_APOSTROPHE)).toEqual([])
+	})
 
 	it(`${SKILL_POLICY_EXCLUSION.label} [membership: ${SKILL_POLICY_EXCLUSION.membership}]`, () => {
 		expect(inspectPolicyControl(SKILL_POLICY_EXCLUSION)).toEqual([])

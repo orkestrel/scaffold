@@ -67,9 +67,8 @@ never after the click returns.
 
 ## Hygiene
 
-- Keep the portfolio out of version control, and regenerate it from the journeys whenever the
-  surface changes.
-- Regenerate the whole matrix after any surface change. Never judge a round against a portfolio
-  that is part old and part new.
+- Keep the portfolio out of version control.
+- Regenerate the whole matrix from the journeys after any surface change. Never judge a round
+  against a portfolio that is part old and part new.
 - Route review of the portfolio to the `orkestrel-polish-surface` campaign, which owns preflight,
   verdicts, and reconciliation. This reference owns only how the journeys generate it.
