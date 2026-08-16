@@ -40,7 +40,7 @@ so network-controlled descriptions never enter agent instruction context.
 | `@orkestrel/brief` | `0.0.1` | L4 | `@orkestrel/contract` `^0.0.11`, `@orkestrel/emitter` `^0.0.6`, `@orkestrel/interpret` `^0.0.8`, `@orkestrel/reason` `^0.0.5` |
 | `@orkestrel/browser` | `0.0.9` | L3 | `@orkestrel/contract` `^0.0.11`, `@orkestrel/emitter` `^0.0.6`, `@orkestrel/html` `^0.0.3`, `@orkestrel/websocket` `^0.0.8` |
 | `@orkestrel/budget` | `0.0.6` | L1 | `@orkestrel/contract` `^0.0.11` |
-| `@orkestrel/console` | `0.0.6` | L2 | `@orkestrel/contract` `^0.0.11`, `@orkestrel/emitter` `^0.0.6` |
+| `@orkestrel/console` | `0.0.7` | L2 | `@orkestrel/contract` `^0.0.11`, `@orkestrel/emitter` `^0.0.6` |
 | `@orkestrel/contract` | `0.0.11` | L0 |  |
 | `@orkestrel/csv` | `0.0.3` | L1 | `@orkestrel/contract` `^0.0.11` |
 | `@orkestrel/database` | `0.0.9` | L2 | `@orkestrel/contract` `^0.0.11`, `@orkestrel/emitter` `^0.0.6`, `@orkestrel/indexeddb` `^0.0.7`, `@orkestrel/sqlite` `^0.0.7` |
@@ -51,7 +51,7 @@ so network-controlled descriptions never enter agent instruction context.
 | `@orkestrel/interpret` | `0.0.8` | L3 | `@orkestrel/contract` `^0.0.11`, `@orkestrel/emitter` `^0.0.6`, `@orkestrel/reason` `^0.0.5`, `@orkestrel/template` `^0.0.3` |
 | `@orkestrel/markdown` | `0.0.8` | L2 | `@orkestrel/contract` `^0.0.11`, `@orkestrel/html` `^0.0.3` |
 | `@orkestrel/mcp` | `0.0.15` | L3 | `@orkestrel/contract` `^0.0.11`, `@orkestrel/emitter` `^0.0.6`, `@orkestrel/sse` `^0.0.5`, `@orkestrel/tool` `^0.0.10`, `@orkestrel/websocket` `^0.0.8` |
-| `@orkestrel/middleware` | `0.0.11` | L2 | `@orkestrel/abort` `^0.0.6`, `@orkestrel/budget` `^0.0.6`, `@orkestrel/contract` `^0.0.11`, `@orkestrel/timeout` `^0.0.6` |
+| `@orkestrel/middleware` | `0.0.12` | L2 | `@orkestrel/abort` `^0.0.6`, `@orkestrel/budget` `^0.0.6`, `@orkestrel/contract` `^0.0.11`, `@orkestrel/timeout` `^0.0.6` |
 | `@orkestrel/msg` | `0.0.6` | L0 |  |
 | `@orkestrel/ndjson` | `0.0.6` | L1 | `@orkestrel/contract` `^0.0.11` |
 | `@orkestrel/ollama` | `0.0.9` | L6 | `@orkestrel/agent` `^0.0.15`, `@orkestrel/budget` `^0.0.6`, `@orkestrel/contract` `^0.0.11`, `@orkestrel/ndjson` `^0.0.6`, `@orkestrel/timeout` `^0.0.6`, `@orkestrel/tool` `^0.0.10` |
@@ -68,8 +68,9 @@ so network-controlled descriptions never enter agent instruction context.
 | `@orkestrel/server` | `0.0.12` | L3 | `@orkestrel/abort` `^0.0.6`, `@orkestrel/contract` `^0.0.11`, `@orkestrel/emitter` `^0.0.6`, `@orkestrel/router` `^0.0.9`, `@orkestrel/timeout` `^0.0.6` |
 | `@orkestrel/sqlite` | `0.0.7` | L1 | `@orkestrel/contract` `^0.0.11` |
 | `@orkestrel/sse` | `0.0.5` | L0 |  |
+| `@orkestrel/supervisor` | `0.0.1` | L5 | `@orkestrel/contract` `^0.0.11`, `@orkestrel/database` `^0.0.9`, `@orkestrel/emitter` `^0.0.6`, `@orkestrel/workflow` `^0.0.12` |
 | `@orkestrel/template` | `0.0.3` | L2 | `@orkestrel/contract` `^0.0.11`, `@orkestrel/emitter` `^0.0.6` |
-| `@orkestrel/terminal` | `0.0.7` | L3 | `@orkestrel/console` `^0.0.6`, `@orkestrel/contract` `^0.0.11`, `@orkestrel/database` `^0.0.8`, `@orkestrel/emitter` `^0.0.6`, `@orkestrel/sse` `^0.0.5` |
+| `@orkestrel/terminal` | `0.0.8` | L3 | `@orkestrel/console` `^0.0.7`, `@orkestrel/contract` `^0.0.11`, `@orkestrel/database` `^0.0.9`, `@orkestrel/emitter` `^0.0.6`, `@orkestrel/sse` `^0.0.5` |
 | `@orkestrel/test` | `0.0.3` | L0 |  |
 | `@orkestrel/timeout` | `0.0.6` | L1 | `@orkestrel/contract` `^0.0.11` |
 | `@orkestrel/tool` | `0.0.10` | L1 | `@orkestrel/contract` `^0.0.11` |
