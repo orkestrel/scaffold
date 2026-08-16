@@ -55,18 +55,22 @@ step 6 merges their findings into this sequence.
 
 - **F1 — orphaned bench process tree.** A killed `codex exec` is not dead until its
   process tree is dead. Evidence: `record/a-plan.md:82` "A killed `codex exec` is not dead
-  until its process TREE is dead: the `codex-code-mode-host`" (continues: check it is gone
-  before dispatching a substitute writer). Canon today: orchestration.md "Confirm dead
-  before relaunching" names processes and kill-by-PID but not the surviving child tree of
-  a killed exec. Provisional bucket: process refinement (orchestration contract, one
-  sentence in "Confirm dead before relaunching").
+  until its process TREE is dead: the `codex-code-mode-host`"; the containment that
+  worked: `record/a-plan.md:88` "The substitute Opus writer's deviation-stop (wrote
+  nothing, reported the foreign edits with timestamps and the live PID) is the behavior
+  that contained this". Canon today: orchestration.md "Confirm dead before relaunching"
+  names processes and kill-by-PID but not the surviving child tree of a killed exec.
+  Provisional bucket: process refinement (orchestration contract, one sentence in
+  "Confirm dead before relaunching").
 - **F2 — login launched before the approver is present.** The supervisor publish's first
   login/authorization chain sat unclicked overnight; the authorization 404'd and the
   session credential expired (`npm whoami` → E401); a fresh two-click flow succeeded next
-  day. Canon today covers credential re-probe ("Re-probe `whoami` immediately before
+  day. The campaign itself recorded the lifetime: `record/a-plan.md:92` "npm login URLs
+  expire unclicked (~10-15 min)" and `record/a-plan.md:98` "will click within ten
+  minutes." Canon today covers credential re-probe ("Re-probe `whoami` immediately before
   opening the window") and last-URL-in-log-order, but no law says to launch the login only
-  when the user has said they are ready to click. Provisional bucket: process refinement
-  (orchestration contract, "Reaching the approval").
+  on the user's stated readiness to click within the URL's lifetime. Provisional bucket:
+  process refinement (orchestration contract, "Reaching the approval").
 - **F3 — bench sandbox denies loopback binds; test address family.** Evidence:
   `record/a10-brief.md:85` "The codex sandbox denies network beyond localhost; everything
   here is localhost." versus `record/a10-report.md:7-9` "the codex sandbox denied
@@ -77,14 +81,20 @@ step 6 merges their findings into this sequence.
   address-family law — bind test fixtures to `127.0.0.1` on an ephemeral port, never `::1`
   and never a fixed port. Provisional buckets: charter refinement + rule addition.
 - **F4 — pipeline masking of gate output.** `cmd | tail` reports the pipeline's last exit
-  and hides the failure lines; bit twice in one campaign (a node|grep probe
-  pre-compaction; `format:check | tail -1` at the A10 fix, caught by the independent
-  verifier as GATES: RED 1). Provisional bucket: rule addition (quality.md, one law: read
-  a gate from its own exit code and complete output, never through a truncating pipe).
+  and hides the failure lines; bit twice in one campaign. Evidence:
+  `record/a11-gate-sweep.md:6` "the writer's own pre-commit gate read piped format:check
+  through tail -1 and saw only the timing line — the pipeline-masking failure this
+  campaign already recorded once." Caught by the independent verifier as
+  `record/a11-gate-sweep.md:3` "GATES: RED 1." Provisional bucket: rule addition
+  (quality.md, one law: read a gate from its own exit code and complete output, never
+  through a truncating pipe).
 - **F5 — harness foreground cap.** Foreground Bash in this harness is hard-capped at 10
-  minutes regardless of the timeout parameter; bench execs and other long commands must be
-  background-launched. Provisional bucket: harness bridge (CLAUDE.md), since the cap is
-  Claude-Code-specific.
+  minutes regardless of the timeout parameter; long commands must be background-launched.
+  Evidence: `record/a6-audit-verdict.md:5` — the first A6 audit exec "was cap-killed at
+  the Bash tool's 10-minute foreground ceiling mid-read"; ruled there "a transport
+  mistake, not a dark bench; one relaunch via background task completed cleanly"
+  (`record/a6-audit-verdict.md:6`). Provisional bucket: harness bridge (CLAUDE.md), since
+  the cap is Claude-Code-specific.
 - **F6 — mutation probe binds a prescription-verbatim fix.** Used three times (A6
   re-check, A9 trim pin, A10 keepAlive): when a fix follows the auditor's prescription
   verbatim, a mutation probe (revert the load-bearing line, watch the pin fail, restore)
@@ -99,22 +109,32 @@ step 6 merges their findings into this sequence.
   manufactured findings, no churned rounds. Provisional bucket: stays as-is with reason
   (the Falsification law and `orkestrel-falsify` shapes are doing their job); record the
   success.
-- **F9 — capture instruments are session-ephemeral.** Evidence:
-  `record/a11-refilm-record.md:6` "13 frames under the session scratchpad (e1r-*)." The
-  re-film script and frames live outside the record; the unit cannot be re-run from its
-  recorded brief alone. Provisional bucket: process refinement (the record keeps, or
-  names the durable home of, the instrument a capture claim rests on) — route per the
-  third question in instruction-audit.md.
+- **F9 — capture instruments are session-ephemeral; A11 has no brief.** Evidence:
+  `record/a11-refilm-record.md:6` "13 frames under the session scratchpad (e1r-*)"; the
+  sweep's re-runnability table: A6-A10 each have their brief/report/verdict triad under
+  `record/`, A11 has "none" — no `a11-brief`, no named report, no verdict
+  (`sweep-distillate.md` §6). The re-film script and frames live only in the session
+  scratchpad and tmp; the unit cannot be re-run from the record alone. The same class
+  covers `tmp/a9/frames-*.jsonl` cited by `record/a9-audit-brief.md:17`. Provisional
+  bucket: process refinement — a capture unit's instrument (the script that produced the
+  portfolio) is acceptance evidence and is committed with the record; frames may stay
+  ephemeral once the record transcribes them, because the committed instrument re-produces
+  the film. Route per the third question in instruction-audit.md.
 - **F10 — unverified brief claim inverted by the unit.** A10's brief asserted loopback was
   permitted (quote under F3) — an Orchestrator assumption stated as fact; the existing
   "take every measurement under the conditions the unit will run in" check was violated,
   not missing. Provisional bucket: stays as-is (law exists; F3 lands the fact so no future
   brief needs to re-measure it); the violation is recorded here.
-- **F11 — retained product findings from the campaign.** The acceptance record carries
-  findings deferred to future design rounds (ollama agent lane emits no settlement
-  observation and no transcript frames; surrogate-pair cut nick; S7 live-stream deadline
-  proof; S3 keep grammar unvalidated). Provisional bucket: roadmap/guide truth in the
-  supervisor repository. Exact rows and quotes from the Grok sweep at reconciliation.
+- **F11 — retained product findings from the campaign.** Evidence:
+  `record/a-acceptance.md:25` "Findings ledger for future rounds: agent lane emits no
+  settlement observation; Failed/Quarantined bounded at the card but surrogate-pair cut
+  nick remains; live-stream-based deadline proof (S7); keep duration grammar unvalidated
+  (S3)." Plus two rows the sweep found with no named capability:
+  `record/a7-audit-brief.md:34` (settled/FINISHED fixture consolidation micro) and
+  `record/a8-report.md:17` (contrast reading "recorded as a later-change candidate").
+  Carrier: supervisor keeps `ROADMAP.md` — these rows land there, each named to the
+  capability that owns it (settlement-card capability for the first three; the two
+  unnamed rows get their capability named as they land). Provisional bucket: roadmap.
 
 ## Step 3 — artifact audits (layer/boundary/promotion)
 
@@ -140,6 +160,38 @@ Rows over what the A-campaign touched. Each ends implement, repair, retain, or e
   different semantics — a shared helper would either rename one shape or force both
   through the wrong one. **Retain locally; re-open only if a third package needs the
   reserve-then-release shape.**
+
+## Step 4 — process retrospective
+
+Source: `sweep-distillate.md` (Grok absorption over all 35 record files, dispatched on a
+live-probed bench; brief at `sweep-brief.md`). Rulings are the Orchestrator's.
+
+- **Deviation protocol worked every time it fired.** A6's writer stop-reported an unowned
+  red instead of widening scope ("I did not edit it: unowned files are report-only",
+  `record/a6-report.md:133`); A3's substitute writer stopped on foreign edits from the
+  orphaned exec (`record/a-plan.md:88`); A10's Sol stop-reported the sandbox block
+  honestly and the Orchestrator ran the network proofs (`record/a10-report.md:12`).
+  Success: the protocol as written contained every divergence. No canon change.
+- **Audit rounds were all substantive.** Three FAIL verdicts (A6 1,7; A9 2,3,5; A10 3,4)
+  each named real defects the fix rounds confirmed and closed; the two PASS rounds
+  (A7, A8) carried per-claim evidence; the one all-confirmed round (A8) had falsifiable
+  behavioral claims backed by an earlier probe verdict. Zero churned rounds, zero
+  manufactured findings (carries F8).
+- **Cap and estimate law held.** A10's 360_000ms default came from the censored >120s
+  loaded-cold bound, above the brief's 300_000ms floor (`record/a10-report.md:9`,
+  `record/a10-brief.md:47`); the deadline proof asserted its committed window
+  (`record/a10-evidence.md:550`). No estimate-only cap in the record. No canon change.
+- **Instruction friction at the wording level: none.** The sweep's negative result,
+  verbatim: "No sentence in the 35 files names the wording of a rule, role charter,
+  skill, or the orchestration contract as the cause of lost time, a failed dispatch, or a
+  wrong turn." Every loss traced to environment facts and mechanics — the sandbox bind
+  denial (F3), the pipeline mask (F4), the 10-minute foreground cap (F5), the orphaned
+  process tree (F1) — not to instruction text. The blind lanes rule on the instruction
+  set independently.
+- **Absorbed versus dispatched.** The Orchestrator absorbed A10's dynamic proofs after
+  the sandbox block — correct under the network-work law; the error was upstream, the
+  brief's unverified environment claim (F10). Nothing dispatched should have been owned,
+  and nothing owned should have been dispatched, on this record.
 
 ## Step 6 — reconciliation
 
