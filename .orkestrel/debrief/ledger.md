@@ -118,7 +118,28 @@ step 6 merges their findings into this sequence.
 
 ## Step 3 — artifact audits (layer/boundary/promotion)
 
-Pending: rows land after the sweep and lanes return.
+Rows over what the A-campaign touched. Each ends implement, repair, retain, or exclude.
+
+- **L1 — agent policy knobs sit in the app layer.** `APP_AGENT_URL/TIMEOUT/KEEP` are
+  parsed in `app/core` policy and translated at composition
+  (`app/server/ApplicationRuntime.ts:161-171` spreads `url` and maps `keep` → `keepAlive`
+  onto `@orkestrel/ollama`'s `createOllama`). Policy above, mechanism below; no src edit
+  was needed. **Retain.**
+- **L2 — campaign UI fixes stayed in `app/browser`.** A6's drain fix lives in
+  `app/browser/controllers/Operator.ts`; nothing product-shaped leaked into published
+  `src`. Field pass confirms the published entry points expose only `src/core` and
+  `src/server` (71 + 15 exports). **Retain.**
+- **L3 — no ecosystem duplication introduced.** The runtime composes
+  `@orkestrel/database`, `@orkestrel/middleware`, `@orkestrel/workflow`,
+  `@orkestrel/ollama` primitives directly (`ApplicationRuntime.ts:16-22` imports); the
+  keep→keepAlive rename is a boundary translation, not a wrapper. **Retain.**
+- **P1 — loopback-port helper promotion candidate.** Supervisor exports
+  `reserveLoopbackPort` (`tests/setupApplicationServer.ts:65`, reserve-then-release for a
+  child process); middleware binds-and-keeps inline (`tests/setupServer.ts:390`,
+  `server.listen(0, '127.0.0.1', …)` inside its fixture server). Two consumers, two
+  different semantics — a shared helper would either rename one shape or force both
+  through the wrong one. **Retain locally; re-open only if a third package needs the
+  reserve-then-release shape.**
 
 ## Step 6 — reconciliation
 
