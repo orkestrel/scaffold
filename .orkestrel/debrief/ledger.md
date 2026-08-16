@@ -195,7 +195,101 @@ live-probed bench; brief at `sweep-brief.md`). Rulings are the Orchestrator's.
 
 ## Step 6 — reconciliation
 
-Pending.
+Inputs: candidate rows F1-F11 (above), Sol objective lane 9 findings
+(`instr-audit-objective-verdict.md`), Opus subjective lane 12 findings
+(`instr-audit-subjective-verdict.md`), sweep evidence (`sweep-distillate.md`). Both lanes
+ran blind on one brief; every load-bearing quote was re-verified against sources before
+these rulings. R-rows are final; each names its carrier.
+
+- **R1 (Opus-1 + Sol-1) — audit lanes collapsed; checker never dispatched.** Convergent
+  finding; divergent fixes (Sol: enforce three artifacts; Opus: triggered second lane).
+  RULED for the triggered shape: five consecutive units ran one non-writing lane plus
+  cross-engine fix rounds, caught three real FAIL verdicts, and lost nothing — the
+  record falsifies the universal mandate's fit, not the units. Carrier: orchestration.md
+  step 5 rewrite + adversarial-pass scope sentences + checker.md trigger. Land.
+- **R2 (Sol-2 + Opus-7 + F1) — process-tree death.** Convergent. Carrier: orchestration.md
+  "Confirm dead before relaunching" gains the `ps --ppid` walk, the
+  `codex-code-mode-host` check, and the owned-file-mtime check before a substitute
+  writer. Land.
+- **R3 (Opus-4 + Sol-3 + F3a) — codex sandbox loopback ambiguity.** Convergent. Carrier:
+  codex.md sandbox section, Opus's two-sentence fix (own loopback, EPERM binds, no IPv6).
+  Land.
+- **R4 (F3b) — test address family.** Carrier: tests.md one law — fixtures bind
+  `127.0.0.1` ephemeral, never `::1`, never a fixed port. Land.
+- **R5 (Opus-5 + Sol-4) — integration became unbriefed implementation.** Convergent,
+  complementary fixes merged: integration limited to exact patches and mechanical
+  conflict resolution; network-work sentence names the native `implementer`/`builder`;
+  acceptance law — an Orchestrator-written part is briefed, owned, and audited by the
+  engine it does not share. Carrier: orchestration.md steps 3-4 + Launching + Acceptance
+  laws. Land.
+- **R6 (Opus-6 + Sol-5 + F9) — retention has no owner for non-bench units.** Convergent.
+  Carrier: orchestration.md Dispatch anatomy owns uniform retention (brief, report,
+  verdict, executed instrument, acceptance evidence, every unit, every engine); Bench
+  laws rule 4 keeps journals and points here. Re-proof this round: A11's film script
+  promoted into the record as `record/a11-refilm-script.mjs`. Land.
+- **R7 (Opus-7 + F2) — mid-campaign rules never reached canon.** Carrier: orchestration.md
+  "Reaching the approval" gains the at-the-keyboard launch law and the
+  spinner-then-`Username:` expiry law; Dispatch anatomy gains the meta-law (a binding
+  mid-campaign rule lands in the owning file in the same commit). Land.
+- **R8 (Opus-8) — lane-swap residue in planner/reviewer.** Carrier: planner.md Tensions
+  line, reviewer.md referral wording, mirrored in the slimmed tomls. Land.
+- **R9 (Opus-9 + Sol-9) — Grok model id, two homes, drifted.** RULED for Opus's smaller
+  fix over Sol's derive-at-dispatch: grok.md owns the pin (4.6-high — today's live probe
+  answered on it), grok.toml references the owner. Land.
+- **R10 (Opus-3 + Sol-7) — no Codex transport contract; roster-mirror wording.**
+  Convergent-adjacent, merged: create `.codex/agents/claude.toml` as the Claude transport
+  contract; slim planner/reviewer/opus tomls to route + binding reference; orchestration
+  Roles gains the symmetry-by-work-class sentence naming the two transport contracts.
+  Land.
+- **R11 (Opus-2) — verdict shape optional and fragmented.** Carrier: analyst.md,
+  reviewer.md, codex.md analyst-route paragraph, analyst.toml, reviewer.toml default the
+  `orkestrel-falsify` shape unconditionally; reviewer.md's rival output contract replaced.
+  The campaign's AUDIT:/REVIEW:/REVERIFY: vocabulary dies. Land.
+- **R12 (Sol-6) — A11 field pass without scoreboard.** One-lane finding, adopted reduced:
+  field-testing.md states a re-film is a field pass and carries the scoreboard and
+  journal paths. Land.
+- **R13 (Opus-11) — subjective lane unarmed; round shape unfixed.** Self-demonstrated by
+  this round. Carrier: instruction-audit.md gains the subjective lens list and the
+  `INSTRAUDIT <LANE>: <n> findings` terminal line. Land.
+- **R14 (Opus-12) — brief-check trigger too narrow for A6's state narrowing.** Carrier:
+  orchestration.md check widened to states/fixture shapes made unreachable + unscoped-file
+  clause. Land.
+- **R15 (F4) — pipeline masking.** Carrier: quality.md diagnose-from-the-artifact law
+  gains the truncating-pipe sentence. Land.
+- **R16 (F5) — 10-minute foreground cap.** Carrier: CLAUDE.md bridge, one line
+  (harness-specific). Land.
+- **R17 (F6) — mutation probe binds prescription-verbatim fixes.** Used three times,
+  zero regressions. Carrier: quality.md Falsification rounds section, one law. Land.
+- **R18 (F7) — npm pkg set wrote the wrong section.** DROPPED on the record: single
+  occurrence, caught in the same turn by the existing blast-radius check; neither lane
+  raised it; no instruction gap identified.
+- **R19 (F8 + both lanes' vindications) — successes.** Stays as-is, recorded:
+  falsifiable-claims briefs (zero churn), probe-before-brief (a8 probe struck a planned
+  unit), conditional rulings inside briefs (A6), cross-engine fix rounds, two-lane
+  design with named reconciliation rulings.
+- **R20 (F10) — unverified brief claim.** Stays as-is: the measure-under-unit-conditions
+  check existed and was violated; R3 lands the fact so no future brief re-measures it.
+- **R21 (F11) — retained product findings.** Carrier: supervisor `ROADMAP.md` "Open,
+  recorded" rows (settlement observation design question; surrogate-pair cut;
+  S7 live-stream proof; S3 keep grammar; fixture consolidation micro; contrast reading),
+  plus striking the now-satisfied Sol-implementer-route row there (canon closed it:
+  `.claude/agents/sol.md` exists and binds `codex.md` by reference). Land (unit D2).
+- **R22 (Opus-10) — Sol driver return contract spans two turns.** Carrier: analyst.md and
+  sol.md return sections — driver returns brief path, resolved command, journal path,
+  nothing else; the Orchestrator launches and reads the answer. Land.
+- **R23 (Sol-8) — grok.md fallback contradicts the root ladder.** Carrier: grok.md dark-
+  bench sentence replaced with the root ladder (Luna, then Sonnet; never Orchestrator,
+  planner, or analyst). Land.
+
+Carrier walk: F1→R2/R7, F2→R7, F3→R3/R4, F4→R15, F5→R16, F6→R17, F7→R18 (dropped,
+reason recorded), F8→R19, F9→R6, F10→R20, F11→R21; Sol 1-9 → R1, R2, R3, R5, R6, R12,
+R10, R23, R9; Opus 1-12 → R1, R11, R10, R3, R5, R6, R7, R8, R9, R22, R13, R14. No
+finding without a carrier.
+
+Routing ledger for the landing: D1 (canon edits, all Land rows except R21) → Opus 5
+`implementer`, sole writer in the scaffold checkout; conformance check on the diff →
+`checker` (its own refined trigger: acceptance criteria are mechanical); gates →
+`verifier`; D2 (supervisor ROADMAP rows) → `builder`, disjoint repository, parallel.
 
 ## Disposition map
 
