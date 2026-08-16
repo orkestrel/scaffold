@@ -1,0 +1,655 @@
+diff --git a/.agents/orchestration.md b/.agents/orchestration.md
+index 601d4a5..88552eb 100644
+--- a/.agents/orchestration.md
++++ b/.agents/orchestration.md
+@@ -54,15 +54,16 @@ reasoning effort.
+ 
+ ## The adversarial pass
+ 
+-Two lanes run on every design round and every audit round.
++Two lanes run on every design round; an audit round runs the lanes the execution loop's step 5
++names, on the same clean-context terms.
+ 
+ | Lane           | Argues                                                                      |
+ | -------------- | --------------------------------------------------------------------------- |
+ | **Subjective** | Shape, taste, naming, ergonomics, design fit, what the API should feel like |
+ | **Objective**  | Correctness, constraints, and what the code and contracts actually permit   |
+ 
+-**Both lanes always run.** Never collapse them into one. Never let an engine's absence stand in for
+-a lane.
++**A required lane always runs.** Never collapse two required lanes into one. Never let an engine's
++absence stand in for a required lane.
+ 
+ ### Clean contexts
+ 
+@@ -162,6 +163,9 @@ when the role file already pins it.
+   job to a bench means shipping that catalog across, which costs more than the bench saves.
+ - `codex` is the shared Sol transport contract, not a route. `analyst` and `sol` are the named
+   bridges; both bind that contract by reference and pin only their route and sandbox.
++- Mirroring is by work class, not filename. A transport contract is provider-specific:
++  `.claude/agents/codex.md` carries the Sol transport on the Claude side, `.codex/agents/claude.toml`
++  the Opus transport on the Codex side, and each side's bridges bind their own by reference.
+ - Opus and Sol roles use high effort. Native cheap-tier roles use low or medium. Bridge drivers use
+   the cheapest tier that can run a CLI.
+ - Never route orchestration or acceptance across a bridge.
+@@ -284,18 +288,23 @@ lane instead of re-dispatching against a session-start answer that no longer hol
+    fully specified taste-free unit to `builder`. Never route implementation to an engine the unit's
+    judgment load exceeds.
+ 4. **Integrate.** Evaluate each distillate against its acceptance criteria, apply shared-file
+-   patches serially, and route cross-cutting findings.
+-5. **Audit adversarially.** Run the two-lane adversarial pass on every nontrivial implementation:
+-   `reviewer` for the subjective lane and `analyst` for the objective lane, plus `checker` for
+-   mechanical conformance.
++   patches serially, and route cross-cutting findings. Integration applies exact returned patches
++   and mechanical conflict resolution only. A new type, mechanism, behavior, or acceptance
++   criterion discovered at integration is a successor brief routed to a writer, never an
++   integration edit.
++5. **Audit adversarially.** Audit every nontrivial implementation with at least one lane whose
++   engine did not write it. Run the second lane when the first returns FAIL, when the subject is a
++   rendered or externally driven surface, or when the unit's claims span both correctness and
++   shape. Dispatch `checker` when the acceptance criteria are mechanical — counts, paths, parity
++   rows, scope honesty. Record in the round's verdict file when a lane or the checker did not run.
+    - State the audit's subject as numbered falsifiable claims and require per-claim verdicts with
+-     evidence, per the Falsification law in `.claude/rules/quality.md` and the value set the
+-     dispatch-named skill fixes.
++     evidence, per the Falsification law in `.claude/rules/quality.md` and the `orkestrel-falsify`
++     value set, unless the dispatch names a different skill that fixes another.
+    - In a fix round, give the unit to an auditor engine that did not write it.
+    - Run the `orkestrel-falsify` skill for multi-round audits. It owns the brief anatomy, the
+      successor-brief rule, the verdict shape and its single terminal line, and the reconciliation
+      discipline.
+-   - Reconcile their evidence. Drop, on the record, any finding neither engine can substantiate.
++   - Reconcile the lanes that ran. Drop, on the record, any finding no lane can substantiate.
+ 6. **Verify.** Have one independent `verifier` run the authoritative gates.
+ 7. **Re-baseline.** Reconcile the remaining plan against what the phase revealed, before dispatching
+    the next one.
+@@ -369,11 +378,18 @@ The harness bridge names the concrete mechanism for each of these.
+ - Send a decision taken mid-campaign to every unit already in flight whose brief it invalidates. An
+   executor cannot see a change made after it was dispatched, so it writes the state its brief
+   described and the defect surfaces as its own.
+-- Treat the `tmp/` brief and report pair as ephemeral launch copies. **Bench laws** rule 4 owns
+-  what is kept and what is swept; follow it there rather than deciding here.
++- Retention is uniform for every unit, whatever engine ran it, including an Orchestrator-owned
++  integration, fix, probe, or capture unit: copy the brief, the returned report or distillate, the
++  audit verdict, the exact executed script or instrument, and the acceptance evidence into
++  `.orkestrel/<package>/` as the unit is dispatched and as it returns, then sweep only the `tmp/`
++  launch copies. A capture claim's instrument is acceptance evidence; the frames may be swept once
++  the record transcribes them, because the committed instrument re-produces the film. **Bench
++  laws** rule 4 owns journals and points here for everything durable.
+ - Promote anything that must outlive the campaign into a durable artifact before the sweep — a
+   commit message, a guide, a rule, a retrospective. What is only in a swept file did not survive,
+   and a debrief that must quote the record verbatim has nothing to quote.
++- Land a process rule stated as binding mid-campaign in the owning rule or contract file in the
++  same commit that states it. A campaign artifact is evidence, never a rule's home.
+ 
+ ### Where campaign artifacts live
+ 
+@@ -447,7 +463,8 @@ wrong is right to stop.
+   fix the criterion to the property you want rather than to the number you saw.
+ - Read the acceptance criteria against the off-limits list, line by line. Every criterion closes
+   using owned files alone. A criterion that needs an off-limits file gets that file granted or gets
+-  struck.
++  struck. A file the change will break that appears in neither list is an unscoped file; grant it or
++  strike the criterion.
+ - Give a small unrelated obligation its own unit. Ride it along in a large one and its scope error
+   blocks the primary work, which is a whole unit lost to a detail.
+ - Ask what the change will do to the facts you just measured. A criterion fixed to a measured set is
+@@ -471,9 +488,10 @@ wrong is right to stop.
+   already settled. Where a read-only lane needs executed evidence, produce it separately and hand it
+   over: the Orchestrator supplies the evidence and the lane rules on it.
+ - Scope a fleet-wide refactor by the files that **consume** a symbol, not by the files that declare
+-  it. A criterion to delete or rename anything closes only when every importer is owned, so a brief
+-  scoped to the declaration alone sends the unit into a typecheck break in a file it cannot edit.
+-  Count the importers before writing the owned list.
++  it. A criterion that removes a symbol, or that makes an existing state or fixture shape
++  unreachable, closes only when every consumer that exercises it is owned, so a brief scoped to the
++  declaration alone sends the unit into a typecheck break in a file it cannot edit. Count the
++  importers before writing the owned list.
+ 
+ ### Carry every finding
+ 
+@@ -513,8 +531,9 @@ command that outlives the turn that started it. Every law here binds all of them
+   launch whose tail is the evidence.
+ - Keep network-dependent work out of sandboxed bench execs. Bench sandboxes deny network, so
+   lockfile generation, real installs, and live fetches belong to the Orchestrator's own tracked
+-  commands or a network-capable native agent. A bench exec hanging on `npm` until its cap fires is
+-  the signature of this misroute, not of a slow bench.
++  commands or to the native `implementer` or `builder` as an ordinary dispatched writing unit. A
++  bench exec hanging on `npm` until its cap fires is the signature of this misroute, not of a slow
++  bench.
+ - A Workflow journals identically and dies identically, so give it the same watch — with one
+   correction. A workflow journal writes only at agent start and result, so its mtime goes quiet for
+   minutes during healthy work, and the liveness signal is the newest subagent transcript instead. A
+@@ -546,6 +565,10 @@ nothing.
+ - Kill by process id, never by pattern. `pkill -f` matches the relaunch that is already starting, so
+   the pattern that cleans up the old run kills the new one and the cleanup reads as a launch
+   failure.
++- A killed `codex exec` is dead only when its process tree is dead: walk the children with
++  `ps --ppid` and confirm the `codex-code-mode-host` child is gone. Before dispatching a substitute
++  writer, check the owned files' modification times against the baseline — a live orphan is still
++  writing the tree the substitute is about to own.
+ - Read a failure against what was running when it happened, not against what you believe was
+   running. The check costs one command and is the only thing that separates a real failure from
+   self-inflicted contention.
+@@ -584,12 +607,9 @@ transport.
+    running" always has a first-class answer instead of a recollection of a command.
+ 4. **Ephemeral streams, durable records.** A journal proves a bench is alive and recovers an
+    interrupted session. Keep journals under `tmp/`, never commit them, and sweep them at acceptance
+-   after the final gate evidence is recorded. The **brief**, the returned **distillate**, the
+-   **audit verdict**, and the **acceptance evidence** are not streams. Copy each into
+-   `.orkestrel/<package>/` and commit it as its unit is dispatched and as it returns, then sweep
+-   only the `tmp/` copy. None of it is reproducible from the diff, and a debrief has no primary
+-   source without it. This rule owns retention for the whole contract; **Dispatch anatomy**
+-   points here rather than answering it.
++   after the final gate evidence is recorded. Durable retention — brief, distillate, verdict,
++   instrument, acceptance evidence — is owned by **Dispatch anatomy**; this rule owns only the
++   journal stream.
+ 
+ ### Recovering a dark bench
+ 
+@@ -682,6 +702,9 @@ flag is what stops the gate chain running a second time inside the five minutes.
+ 
+ ### Reaching the approval
+ 
++- Launch the login chain only when the user has signalled they are at the keyboard and will click
++  within ten minutes. An approval URL expires unclicked in about ten to fifteen minutes, and an
++  overnight gap expires the session credential with it.
+ - Run `npm login` before any publish. `npm publish` does not open the browser flow: unauthenticated
+   it returns `E404` on `PUT`, which reads as a missing package rather than a missing credential.
+ - Pass `--browser=false` to `npm login` and to every `npm publish`. Without it npm prints
+@@ -691,6 +714,8 @@ flag is what stops the gate chain running a second time inside the five minutes.
+   untouched.
+ - Hold stdin open and write nothing to it. Use a fifo held open by a long `sleep`. EOF drops npm to
+   the same legacy prompt a stray newline does.
++- A login log showing the spinner and then a legacy `Username:` prompt is an expired attempt, not a
++  prompt to answer: kill it by process id and mint a fresh flow.
+ - Run the login and every publish under `script -qfc '<command>' <log>`. npm offers the approval only
+   when it sees a TTY; without one it fails `EOTP` with no way to answer.
+ - Expect two approvals. `npmjs.com/login/cli/<id>` authenticates the session; `npmjs.com/auth/cli/<id>`
+@@ -749,6 +774,8 @@ flag is what stops the gate chain running a second time inside the five minutes.
+   implicit engines, fixed Claude model IDs, or verbose completed-work residue.
+ - Evidence a claim about a rendered or externally driven surface with its capture or a real foreign
+   client driving it, never with source alone. Where no such surface exists this law is inert.
++- When the Orchestrator writes any part of a unit, that part is briefed, owned, and audited like any
++  other part, and its auditor is an engine the Orchestrator does not share.
+ - Final acceptance belongs only to the Orchestrator, after independent audit and gate evidence.
+ - Accept when the plan's exit criterion is met and the gates are green, not when the last engine
+   runs out of appetite. Reopening an accepted criterion is the user's instruction, not an auditor's
+diff --git a/.agents/skills/orkestrel-debrief/references/field-testing.md b/.agents/skills/orkestrel-debrief/references/field-testing.md
+index 75f86f5..8a4d13b 100644
+--- a/.agents/skills/orkestrel-debrief/references/field-testing.md
++++ b/.agents/skills/orkestrel-debrief/references/field-testing.md
+@@ -73,3 +73,6 @@ delta from the prior round. A tier passes when its models complete the goal with
+ failed calls and no out-of-band reading (no source excavation, no filesystem search —
+ watch for it in the transcript; it means the surface leaked its teaching job to the
+ repository).
++
++A re-film that drives the surface with live models is a field pass: it carries the
++scoreboard and each lane's journal path like any other round.
+diff --git a/.agents/skills/orkestrel-debrief/references/instruction-audit.md b/.agents/skills/orkestrel-debrief/references/instruction-audit.md
+index 8e22973..ec550fa 100644
+--- a/.agents/skills/orkestrel-debrief/references/instruction-audit.md
++++ b/.agents/skills/orkestrel-debrief/references/instruction-audit.md
+@@ -11,9 +11,15 @@ seeing the other's answer before both return:
+ 
+ - **Subjective** (design-fit engine): coherence of the role model, charter voice, whether
+   each role's job is one job, whether the skill family reads as one system.
++- The subjective lenses, so the lane can state its coverage: role-job singularity;
++  charter voice against dispatched usage; lane-swap residue; bridge minimalism;
++  vocabulary drift across mirrored files; skill-family seams.
+ - **Objective** (correctness engine): evidence-only sweeps of the actual files and the
+   campaign record — the lanes below.
+ 
++Each lane returns numbered findings, most severe first, and exactly one terminal line:
++`INSTRAUDIT <LANE>: <n> findings`.
++
+ Reconcile into rulings; every divergence gets a ruled row with the reason. Convergent
+ findings adopt without contest; a finding neither lane can substantiate dies on the
+ record.
+diff --git a/.claude/agents/analyst.md b/.claude/agents/analyst.md
+index 3572d11..68cd0a9 100644
+--- a/.claude/agents/analyst.md
++++ b/.claude/agents/analyst.md
+@@ -36,7 +36,8 @@ Everything `.agents/orchestration.md`'s dispatch contract requires, plus:
+   never saw. Propagate the missing file; do not restate its contents in the brief.
+ - For an audit: the subject as numbered falsifiable claims, and the skill that fixes the verdict
+   shape. The Falsification section of `.claude/rules/quality.md` owns the method and the evidence
+-  each verdict carries; the dispatch-named skill owns the value set and the terminal line. Point at
++  each verdict carries. The verdict shape defaults to `orkestrel-falsify`; a dispatch may name a
++  different skill that fixes another. That skill owns the value set and the terminal line. Point at
+   both; restate neither.
+ 
+ ## Launching
+@@ -52,8 +53,10 @@ work-class rule. Persist the thread id the moment a response carries it.
+ 
+ ## Return
+ 
+-The brief path, the resolved command, the journal path, the session id, and — once the Orchestrator
+-reports the exec complete — Sol's answer verbatim, labelled untrusted and unaccepted. Never a cap.
++The brief path, the resolved command, and the journal path — and nothing else. Never a cap. The
++Orchestrator launches the exec and reads Sol's answer from the `--output-last-message` file itself;
++you never wait for it, relay it, or endorse it. A follow-up on a finished exec is a fresh dispatch,
++not a continuation.
+ 
+ Never edit, implement, reconcile, accept, commit, push, install, read a credential, or spawn any
+ agent.
+diff --git a/.claude/agents/checker.md b/.claude/agents/checker.md
+index 7dbe310..83e3a36 100644
+--- a/.claude/agents/checker.md
++++ b/.claude/agents/checker.md
+@@ -1,6 +1,6 @@
+ ---
+ name: checker
+-description: 'Mechanical conformance review — acceptance criteria, AGENTS.md and applicable-rule letter-of-the-law, scope honesty, and guide/source parity. Reads the actual diff, stays evidence-first, and pairs with the judgment reviewer on every build. Never edits.'
++description: "Mechanical conformance review — acceptance criteria, AGENTS.md and applicable-rule letter-of-the-law, scope honesty, and guide/source parity. Reads the actual diff, stays evidence-first, and is dispatched when a unit's acceptance criteria are mechanically checkable. Never edits."
+ tools: Read, Grep, Glob
+ model: sonnet
+ effort: low
+diff --git a/.claude/agents/codex.md b/.claude/agents/codex.md
+index 7a4861e..d1ee04f 100644
+--- a/.claude/agents/codex.md
++++ b/.claude/agents/codex.md
+@@ -62,9 +62,9 @@ never travel as shell arguments. Return the exact resolved command with a pointe
+   repository, and `--output-schema <file>` when the Orchestrator supplies one.
+ - The journal at `tmp/codex/<unit>.jsonl` is the live progress record and its mtime is
+   the liveness signal the Orchestrator watches. Never re-print the stream into your report.
+-- When the Orchestrator hands back a finished exec, read Sol's answer from the
+-  `--output-last-message` file rather than stdout, and record the session id (`thread_id`
+-  in the journal's opening events) in every report.
++- The Orchestrator reads Sol's answer from the `--output-last-message` file rather than
++  stdout, and records the session id (`thread_id` in the journal's opening events)
++  beside the result; a follow-up on a finished exec is a fresh dispatch.
+ 
+ ## The exec sandbox denies network
+ 
+@@ -73,6 +73,10 @@ endpoint — lockfile generation, real installs, live fetches — belongs to the
+ Orchestrator's own tracked commands or a network-capable native agent. Never put it in a
+ brief. A Sol exec hanging on `npm` until its cap fires is this misroute, not a slow bench.
+ 
++The namespace has its own loopback, so a host daemon on `127.0.0.1` is unreachable and a bind can
++fail `EPERM`. It has no IPv6, so `::1` fails `EAFNOSUPPORT`. Any proof that must reach a daemon,
++bind a port, or drive a built server belongs outside the exec.
++
+ ## The exec sandbox mounts `.git` read-only
+ 
+ A `workspace-write` exec can write the working tree and cannot write `.git`. Every command
+@@ -107,9 +111,9 @@ and after. Require evidence for every claim and return unsupported claims as dro
+ 
+ An audit brief states its subject as a numbered list of falsifiable claims rather than a
+ diff to read, and requires Sol to attempt refutation. The Falsification section of
+-`.claude/rules/quality.md` owns the method and the evidence each verdict carries. When the
+-dispatch names a skill that fixes the verdict shape, that skill owns the value set and the
+-terminal line. Point the brief at both; restate neither.
++`.claude/rules/quality.md` owns the method and the evidence each verdict carries. The verdict shape
++defaults to `orkestrel-falsify`; a dispatch may name a different skill that fixes another. That
++skill owns the value set and the terminal line. Point the brief at both; restate neither.
+ 
+ ## Implementer route
+ 
+@@ -118,9 +122,9 @@ baseline, with owned files, off-limits files, and a deviation contract. The brie
+ dependency installation, commits, pushes, publishing, credentials, destructive commands,
+ shared-file edits, and tree-wide mutating gates.
+ 
+-When the Orchestrator hands the finished exec back, verify the result with direct evidence
+-(git status, diff, scoped validation) and report once, completely: touched files,
+-diffstat, scoped validation, and deviation state, for independent integration and review.
++The Orchestrator verifies the finished exec with direct evidence — git status, the diff,
++scoped validation — and carries touched files, diffstat, and deviation state into
++integration and review.
+ 
+ ## Routing exclusion — defensive negative-test units
+ 
+diff --git a/.claude/agents/grok.md b/.claude/agents/grok.md
+index 6d571fc..033d21e 100644
+--- a/.claude/agents/grok.md
++++ b/.claude/agents/grok.md
+@@ -40,8 +40,9 @@ that never happened. The versioned entry has no console dependency and no such f
+ 
+ Read an empty shim run as a launch failure until its log is checked for that trace.
+ 
+-If nothing responds the bench is dark. Stop with a deviation naming the fallback: hand the
+-reading to the Orchestrator, `planner`, or `analyst` directly. Never install or authenticate.
++If nothing responds the bench is dark. Stop with a deviation naming the fallback from the root
++tedious-work ladder — Luna, then Sonnet. Never hand the reading to the Orchestrator, `planner`, or
++`analyst`. Never install or authenticate.
+ 
+ Create `tmp/cursor/` first. Write any brief longer than a couple of sentences to
+ `tmp/cursor/<unit>-brief.md` and make the prompt a pointer to it; briefs never travel as
+diff --git a/.claude/agents/planner.md b/.claude/agents/planner.md
+index 13295e8..a416eea 100644
+--- a/.claude/agents/planner.md
++++ b/.claude/agents/planner.md
+@@ -24,7 +24,8 @@ Return only:
+ - `Alternatives`: at most two real alternatives and why the design wins.
+ - `Units`: bounded work, each naming its role AND engine so the routing ledger is
+   derivable, with ownership, dependencies, and acceptance criteria.
+-- `Tensions`: subjective choices that Sol should challenge objectively.
++- `Tensions`: the choices your lane made on judgment, named for the other lane to
++  challenge — or, when you hold both lanes, for the Orchestrator to rule.
+ - `Risks`: design-fit risks and the evidence needed to settle them.
+ 
+ Your proposal is input to the Orchestrator, never the final decision.
+diff --git a/.claude/agents/reviewer.md b/.claude/agents/reviewer.md
+index 74bcd59..27bc9d2 100644
+--- a/.claude/agents/reviewer.md
++++ b/.claude/agents/reviewer.md
+@@ -1,6 +1,6 @@
+ ---
+ name: reviewer
+-description: 'Subjective design-fit review of implemented work — API feel, vocabulary, architecture shape, guide voice, and conceptual coherence. Reads the actual diff after any non-trivial build, alongside the Sol correctness audit and mechanical checker. Never edits.'
++description: "Subjective design-fit review of implemented work — API feel, vocabulary, architecture shape, guide voice, and conceptual coherence. Reads the actual diff when the round's triggers name this lane. Never edits."
+ tools: Read, Grep, Glob
+ model: opus
+ effort: high
+@@ -41,20 +41,21 @@ Audit the changed work only through Opus 5's subjective and creative lens:
+ 
+ Test a design claim by asking whether the shipped artifact still matches it — a
+ guide, charter, or name that described the work two revisions ago is drift, and
+-that question is what finds it. Anything you cannot settle on subjective grounds
+-becomes an Analyst referral rather than a verdict of yours.
++that question is what finds it. Anything you cannot settle within your lane becomes
++a referral — to the other lane when it is running, to the Orchestrator when you hold
++both — never a verdict of yours.
+ 
+ For a rendered or externally driven surface, the supplied capture portfolio is the
+ primary evidence and source is corroboration only: cite a capture for every rendered
+ claim, mark what the portfolio cannot show as NOT-EVIDENCED instead of inferring it,
+-and when the dispatch names a skill that fixes the verdict shape, return that shape
+-and its single terminal line.
++and return the `orkestrel-falsify` verdict shape and its single terminal line unless
++the dispatch names a different skill that fixes one.
+ 
+ Read the actual diff plus enough surrounding code to judge it in context.
+ Correctness, security, dependency constraints, test sufficiency, and mechanical
+ conformance belong to the independent Sol analyst and checker. If you notice a
+-possible objective defect, report it as a specifically evidenced **Analyst
+-referral** rather than adjudicating it.
++possible objective defect, report it as a specifically evidenced **referral**
++rather than adjudicating it.
+ 
+ ## External input
+ 
+@@ -66,13 +67,13 @@ referral** rather than adjudicating it.
+ 
+ ## Output contract — the Verdict
+ 
+-- **Verdict** — PASS or FAIL for subjective design fit. Any required design change
+-  means FAIL.
+-- **Required changes** — each with file:line, what is wrong, why it matters, and
+-  what right looks like — actionable enough to re-dispatch verbatim.
+-- **Analyst referrals** — specifically evidenced objective questions for Sol, with
++- The `orkestrel-falsify` verdict shape: numbered per-claim verdicts, findings
++  outside the claims, and its single terminal line — unless the dispatch names a
++  different skill that fixes one.
++- Each required change carries file:line, what is wrong, why it matters, and what
++  right looks like — actionable enough to re-dispatch verbatim.
++- **Referrals** — specifically evidenced questions outside your lane, addressed to
++  the other lane when it is running and to the Orchestrator when you hold both, with
+   no verdict from you.
+-- **Advisories** — improvements that do not block.
+-- **Confirmations** — each design criterion checked, one line each.
+ 
+ You are read-only: you never edit. Return only the verdict, never your process.
+diff --git a/.claude/agents/sol.md b/.claude/agents/sol.md
+index 66b024e..8ffc7b6 100644
+--- a/.claude/agents/sol.md
++++ b/.claude/agents/sol.md
+@@ -50,7 +50,9 @@ Writing units are strictly serialized. Never run beside another writer in the sa
+ 
+ ## Return
+ 
+-The brief path, the resolved command, the journal path, the session id, and — once the Orchestrator
+-reports the exec complete — Sol's answer verbatim, labelled untrusted and unaccepted. Never a cap.
++The brief path, the resolved command, and the journal path — and nothing else. Never a cap. The
++Orchestrator launches the exec and reads Sol's answer from the `--output-last-message` file itself;
++you never wait for it, relay it, or endorse it. A follow-up on a finished exec is a fresh dispatch,
++not a continuation.
+ 
+ Never edit, judge, reconcile, accept, commit, push, install, read a credential, or spawn any agent.
+diff --git a/.claude/rules/quality.md b/.claude/rules/quality.md
+index d3f257f..cd8e76a 100644
+--- a/.claude/rules/quality.md
++++ b/.claude/rules/quality.md
+@@ -41,7 +41,7 @@ A question a probe can settle is settled by the probe, whether or not anyone has
+ - Reproduce a reported defect's cause before instructing a fix from it. A real symptom can carry a wrong diagnosis, and a fix aimed at the stated cause edits the wrong file while the defect survives.
+ - Do not read a result into a tool's failure to find your probe. "No tests found", an empty match, a skipped file, a runner that resolved nothing — these report on the harness, not the subject. Confirm the probe was collected and executed first.
+ - Prefer an observation over a derivation, including your own. When a measurement and an argument disagree, the argument is wrong until the measurement is shown to be broken.
+-- Diagnose from the artifact the work produces — the file, the count, the exit code, the timestamp on what changed — never from a wrapper or a proxy signal that merely correlates with progress.
++- Diagnose from the artifact the work produces — the file, the count, the exit code, the timestamp on what changed — never from a wrapper or a proxy signal that merely correlates with progress. Read a gate bare: a pipeline stage after it (`| tail`, `| grep`) reports the stage's exit status and hides the gate's failing lines.
+ - Verify a comment or an agent's report against the call sites before relying on it. A code comment is not evidence. When two lanes disagree about whether a path is live, count the callers rather than weighing the prose.
+ - What a round proves is what it ran. A conclusion carried from one door to another is a hypothesis at the second door. Re-run it there.
+ 
+@@ -77,6 +77,7 @@ A review that reads a diff finds what the diff shows. A review that tries to bre
+ - Name the claims you could not break either way, so the next round knows what has already been attacked.
+ - Never tell an auditor that a clean round means it did not try. That instructs it to manufacture a finding, and a manufactured finding costs a fix unit, an argument, and the credibility of the true findings beside it.
+ - Treat a repaired claim as a new claim, not a settled one. Re-ask it at every entry point that reaches the same rule, not only the door the defect arrived through. The engine that wrote the fix is least able to see this, because re-verifying where the fix is feels like verifying the fix.
++- A fix that adopts the auditor's prescription verbatim may close with a mutation probe in place of a fresh audit round: disable the load-bearing line, watch the adopted pin fail, restore it, and commit the pin as the regression guard. A fix that departs from the prescription gets the cross-engine round.
+ - Let reachability bound the fix. A defect reachable through the package's own shipped code or a documented extension seam falsifies its claim and is repaired now.
+ - Document the obligation instead when a defect is reachable only through a hypothetical foreign implementation of a contract this package publishes. State it on the interface that owns it and prove the documentation. Do not build coordination machinery against a requirement nobody wrote down. Attacks are unlimited; reachable ones are not, and only the reachable set is a work list.
+ - **Three rounds at one seam is the budget.** Repeated rounds against one seam are evidence about the design, not evidence of diligence. At the third round the next unit is a ruling — on the threat model, the mechanism, or the boundary — taken with the same adversarial pass a design gets, not a fourth repair.
+diff --git a/.claude/rules/tests.md b/.claude/rules/tests.md
+index b8bf744..fd0c96d 100644
+--- a/.claude/rules/tests.md
++++ b/.claude/rules/tests.md
+@@ -26,6 +26,7 @@ paths:
+ - Use recorders for calls/events, temporary resources for stateful boundaries, protocol-faithful fixture servers for deterministic network peers, and the real external service when its behavior is the claim.
+ - Prefer inert customizable data and input stubs.
+ - Allow a scripted boundary stub only when it implements the real interface or protocol minimally, to drive the system under test. It never reimplements project-owned behavior and never stands in for the integration being claimed.
++- Bind a test fixture server to `127.0.0.1` on an ephemeral port (`listen(0)`), never to `::1` and never to a fixed port: a host without IPv6 fails `EAFNOSUPPORT`, and a fixed port flakes on occupancy.
+ - Cover happy paths, error paths, empty input, boundary values, `NaN`, positive/negative zero, cycles, and Map/Set order where relevant.
+ - Test observable behavior, not implementation details.
+ - Assert the membership a discovered or globbed set should have, not a total that a partly empty population satisfies. A glob spanning two locations passes a size check while one of them matches nothing.
+diff --git a/.codex/agents/analyst.toml b/.codex/agents/analyst.toml
+index 3041e77..c9aa7de 100644
+--- a/.codex/agents/analyst.toml
++++ b/.codex/agents/analyst.toml
+@@ -18,11 +18,11 @@ read the actual diff and examine correctness, security, concurrency, failure mod
+ dependency reuse, boundary behavior, tests, cleanup, and guide parity. Require
+ file:line evidence and drop unsupported claims. When the brief states its subject as
+ numbered falsifiable claims, attempt refutation rather than confirmation and return
+-each claim per the Falsification section of .claude/rules/quality.md. When the
+-dispatch names a skill that fixes the verdict shape, return that shape and its
+-single terminal line — it may carry values beyond CONFIRMED and BROKEN, and a claim
+-you cannot decide belongs in the one it provides rather than being forced into
+-BROKEN. For a rendered or externally driven
++each claim per the Falsification section of .claude/rules/quality.md. The verdict
++shape defaults to orkestrel-falsify; a dispatch may name a different skill that fixes
++another. That skill owns the value set and the terminal line — it may carry values
++beyond CONFIRMED and BROKEN, and a claim you cannot decide belongs in the one it
++provides rather than being forced into BROKEN. For a rendered or externally driven
+ surface, the supplied capture portfolio is primary evidence and source is
+ corroboration; mark a claim the portfolio cannot show NOT-EVIDENCED rather than
+ inferring it from source. Never edit, implement, reconcile, accept, or spawn. Return
+diff --git a/.codex/agents/claude.toml b/.codex/agents/claude.toml
+new file mode 100644
+index 0000000..d64c261
+--- /dev/null
++++ b/.codex/agents/claude.toml
+@@ -0,0 +1,34 @@
++name = "claude"
++description = "The Claude Opus 5 transport contract every Codex-side bridge follows: invocation, journalling, session ids, availability, and recovery. Reach a route by its own name — `planner`, `reviewer`, `opus`. Never dispatched directly for work."
++model = "gpt-5.6-terra"
++model_reasoning_effort = "low"
++sandbox_mode = "read-only"
++developer_instructions = """
++Read .agents/orchestration.md first. You dispatch the external Claude Opus 5 bench.
++Every Codex-side bridge — planner, reviewer, opus — binds this contract by reference
++and pins only its own route, permission mode, and brief shape.
++
++Invocation:
++claude -p "<brief or pointer>" --model opus --effort high
++with the permission mode the route pins. Never substitute a fixed Claude model id.
++
++Verify that the `claude` CLI resolves and is authenticated before first use. On either
++failure return it immediately with the fallback named, so the Sol main session records
++Opus unavailable for the round. Never install, authenticate, or substitute an API key,
++access token, or copied auth file.
++
++Journal every run: redirect --output-format stream-json to tmp/claude/<unit>.jsonl,
++which is gitignored, and record the session id. A bench unit with no journal ran on its
++driver's engine, however normal its answer reads.
++
++Briefs never travel as shell arguments. Write the brief to tmp/claude/<unit>-brief.md
++and pass a pointer to it.
++
++Long work is not launched by this bridge. Return the brief path, the exact resolved
++command, and the journal path, and let the Orchestrator launch it under a cap it owns.
++Never recommend a cap; you hold no record of prior runs. Never detach, poll, restart,
++or kill a run.
++
++Never route orchestration or acceptance across this bridge. Never read credentials,
++edit, or spawn another agent.
++"""
+diff --git a/.codex/agents/grok.toml b/.codex/agents/grok.toml
+index 1a1fbcb..bdd86d8 100644
+--- a/.codex/agents/grok.toml
++++ b/.codex/agents/grok.toml
+@@ -6,9 +6,9 @@ sandbox_mode = "read-only"
+ developer_instructions = """
+ Act only as a cheap bridge to Cursor Grok. Read AGENTS.md, applicable rules, the
+ dispatch-named skill and references, and the governing guide/spec. Require a bounded
+-question and scope. Resolve the exact model from CURSOR_GROK_MODEL, currently
+-cursor-grok-4.5-high; re-read `agent models` if it fails and never guess or
+-substitute. Invoke Cursor in ask mode only for a short bounded ask:
++question and scope. Resolve the exact model from CURSOR_GROK_MODEL;
++`.claude/agents/grok.md` owns the current pin and the re-read rule. Never guess or
++substitute a model id. Invoke Cursor in ask mode only for a short bounded ask:
+ agent -p --trust --mode=ask --model "$CURSOR_GROK_MODEL" "<brief>"
+ For longer work do not launch anything: return the brief path, the exact resolved
+ command, and the journal path for the Orchestrator to launch under a cap it owns.
+diff --git a/.codex/agents/opus.toml b/.codex/agents/opus.toml
+index 8f9a8be..9719289 100644
+--- a/.codex/agents/opus.toml
++++ b/.codex/agents/opus.toml
+@@ -4,24 +4,20 @@ model = "gpt-5.6-terra"
+ model_reasoning_effort = "low"
+ sandbox_mode = "workspace-write"
+ developer_instructions = """
+-Act only as a cheap bridge to Claude Opus 5. Read AGENTS.md, applicable rules, the
+-dispatch-named skill and references, and the governing guide/spec. Pass the exact
+-bounded implementation brief to:
+-claude -p "<brief>" --model opus --effort high --permission-mode acceptEdits
+-in the main checkout as the sole serial writer from a clean committed baseline.
+-Journal progress where the CLI supports it (--output-format stream-json redirected
+-to tmp/claude/<unit>.jsonl, gitignored) and record the session id so follow-ups
+-can continue the same session via --resume with context intact.
+-Verify the `claude` CLI is available before dispatch; if it is absent or the
+-dispatch fails, return the failure immediately so the unit can route to the Sol
+-implementer instead. An implementation unit is long work: do not launch it. Return
+-the brief path, the exact resolved command, and the journal path, and let the
+-Orchestrator launch it as a tracked background command under a cap it owns. Never
+-recommend a cap; you hold no record of prior runs. Never detach a run, poll, restart, or kill one. The brief requires
+-owned files, off-limits files, acceptance criteria, TTTDD, and a deviation contract; it
+-forbids dependency installation, commits, pushes, publishing, credentials,
+-destructive commands, shared-file edits, and tree-wide mutating gates. After it
+-returns, verify with git status, the diff, and scoped validation, then return
+-touched files, diffstat, validation evidence, and deviation state labeled
+-untrusted. Never route orchestration or acceptance across this bridge. Never read credentials or spawn another agent.
++`.codex/agents/claude.toml` owns the Claude transport contract in full; read it and
++follow it.
++
++This route pins `--permission-mode acceptEdits`, in the main checkout, as the sole
++serial writer from a clean committed baseline.
++
++The brief requires owned files, off-limits files, acceptance criteria, TTTDD, and a
++deviation contract. It forbids dependency installation, commits, pushes, publishing,
++credentials, destructive commands, shared-file edits, and tree-wide mutating gates.
++
++If the CLI is absent or the dispatch fails, return the failure immediately so the unit
++can route to the Sol implementer instead.
++
++After the run returns, verify it with git status, the diff, and scoped validation, then
++return touched files, diffstat, validation evidence, and deviation state labeled
++untrusted, plus any CLI/auth deviation.
+ """
+diff --git a/.codex/agents/planner.toml b/.codex/agents/planner.toml
+index 5e329a0..aa77772 100644
+--- a/.codex/agents/planner.toml
++++ b/.codex/agents/planner.toml
+@@ -4,21 +4,16 @@ model = "gpt-5.6-terra"
+ model_reasoning_effort = "low"
+ sandbox_mode = "read-only"
+ developer_instructions = """
+-Act only as a cheap bridge to Claude Opus 5. Read AGENTS.md, applicable rules, the
+-dispatch-named skill and references, the governing guide/spec, and the distilled
+-Grok evidence. Pass the exact design brief independently shared with the Sol analyst
+-to:
+-claude -p "<brief>" --model opus --effort high --permission-mode plan
+-Run that yourself only for a short bounded design pass; for longer work return the
+-brief path, the exact resolved command, and the journal path
+-for the Orchestrator to launch.
+-Verify that the `claude` CLI is available before dispatch. If it is absent or the
+-dispatch fails, return the failure immediately so the Sol main session can run the
+-design pass itself and record that Opus was unavailable for this round.
+-The brief asks for coherent API shape, vocabulary, ergonomics, at most two
+-alternatives, bounded units that each name their role and engine, subjective tensions,
+-and risks. It forbids edits, commands, reconciliation with Sol, orchestration, and
+-acceptance. Never route orchestration or acceptance across this bridge,
+-read credentials, edit, or spawn. Return the Opus proposal labeled untrusted plus
+-any CLI/auth deviation.
++`.codex/agents/claude.toml` owns the Claude transport contract in full; read it and
++follow it.
++
++This route pins `--permission-mode plan`.
++
++The brief asks for coherent API shape, vocabulary, and ergonomics; at most two
++alternatives; bounded units that each name their role and engine; tensions named for
++the other lane to challenge, or for the Orchestrator to rule when one engine holds
++both lanes; and risks. It forbids edits, commands, reconciliation, orchestration, and
++acceptance.
++
++Return the Opus proposal labeled untrusted plus any CLI/auth deviation.
+ """
+diff --git a/.codex/agents/reviewer.toml b/.codex/agents/reviewer.toml
+index 05d53f8..0922014 100644
+--- a/.codex/agents/reviewer.toml
++++ b/.codex/agents/reviewer.toml
+@@ -4,22 +4,17 @@ model = "gpt-5.6-terra"
+ model_reasoning_effort = "low"
+ sandbox_mode = "read-only"
+ developer_instructions = """
+-Act only as a cheap bridge to Claude Opus 5. Read AGENTS.md, applicable rules, the
+-dispatch-named skill and references, the governing guide/spec, and the actual diff.
+-Pass a bounded design-review brief to:
+-claude -p "<brief>" --model opus --effort high --permission-mode plan
+-Run that yourself only for a short bounded review; for longer work return the brief
+-path, the exact resolved command, and the journal path for the
+-Orchestrator to launch.
+-Verify that the `claude` CLI is available before dispatch. If it is absent or the
+-dispatch fails, return the failure immediately so the Sol main session can run the
+-design-audit pass itself and record that Opus was unavailable for this round.
+-Require PASS/FAIL, design-fit blockers with file:line evidence, nonblocking
+-advisories, and acceptance-criterion confirmations. Require each design claim to be
+-tested by asking whether the shipped artifact still matches it, and anything not
+-settleable on subjective grounds to come back as an Analyst referral. For a rendered or externally
+-driven surface, require capture citations as primary evidence and the verdict shape
+-of the dispatch-named skill. Forbid edits, commands, orchestration, reconciliation,
+-and acceptance. Never route orchestration or acceptance across this bridge, read credentials,
+-edit, or spawn. Return the Opus audit labeled untrusted plus any CLI/auth deviation.
++`.codex/agents/claude.toml` owns the Claude transport contract in full; read it and
++follow it.
++
++This route pins `--permission-mode plan`.
++
++The brief requires the `orkestrel-falsify` verdict shape and its single terminal line,
++unless the dispatch names a different skill that fixes one; file:line evidence on every
++required change; out-of-lane questions returned as referrals rather than verdicts; and,
++for a rendered or externally driven surface, the capture portfolio as primary evidence
++with source as corroboration. It forbids edits, commands, orchestration, reconciliation,
++and acceptance.
++
++Return the Opus audit labeled untrusted plus any CLI/auth deviation.
+ """
+diff --git a/CLAUDE.md b/CLAUDE.md
+index 997d144..9950915 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -11,6 +11,8 @@ follows it. This file adds only what Claude Code does differently, and cannot we
+ - Use the Agent tool for a single dispatch, including when later control flow depends on its result.
+ - Use a Workflow for a deterministic fan-out, staged pipeline, or loop. Serialize writing nodes.
+ - Recover an interrupted Workflow with `resumeFromRunId`.
++- Foreground Bash is hard-capped at 10 minutes regardless of its timeout parameter. Launch anything
++  that can exceed it as a harness-tracked background command.
+ - Never dispatch an adversarial lane with a context-inheriting subagent type such as `fork`. A lane
+   must start clean, or it inherits the Orchestrator's framing and stops being independent.
+ 
