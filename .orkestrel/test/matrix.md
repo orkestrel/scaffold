@@ -88,3 +88,15 @@ contract rules), gated green, and guide-parity complete in `/home/user/test`; th
 table carries every moved/added row per M5/M6/M20; the matrix, verdicts, and briefs are
 committed; and the release + fleet sweep decisions are surfaced to the user. The fleet
 sweeps and scaffold successor are their own campaigns.
+
+## T6a acceptance record (updated at release prep)
+
+Chain: 0e47c0d types → 9d25047 implementations + suites (core 38/38, server 83/83) →
+dea8445 guide (11/11) → audit round: analyst FAIL 7,8,10 (journal session
+01a00be8-9857-7010-970d-33e9a818ba5e) and reviewer FAIL 7,8,10 blind-convergent →
+9b1f1e2 fix round on verbatim prescriptions with the failing-first identity proof
+(red 1/84 at baseline, green 84/84 fixed) → verifier GATES: GREEN (161 tests) →
+2ff0e4f Release 0.0.4, prepublishOnly exit 0. Publish awaits the owner's clicks.
+Deferred on the record: rule-11 prose for the already-listening refusal (successor
+brief candidate, noted by the fix unit); API Extractor TS-version notice (verifier
+anomaly, informational).
