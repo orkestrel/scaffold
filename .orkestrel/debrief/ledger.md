@@ -314,6 +314,62 @@ Routing ledger for the landing: D1 (canon edits, all Land rows except R21) → O
 - **R6 re-proof:** `record/a11-refilm-script.mjs` committed — the A11 capture unit's
   instrument is now in the record, so the film is re-producible from the record alone.
 
+## Step 8 — propagation evidence
+
+- Checker (D1c): `VERDICT: PASS — all 30 claims CONFIRMED` (`d1-check-verdict.md`).
+- Verifier at `6dfb531`: `GATES: GREEN` — format:check 246 files clean; lint:check
+  clean; check clean; build staged 107 files into `dist/host`; 890/890 tests green
+  (core 293, server 356, bin 167, policy 57, config 10, guides 7). The refined canon is
+  the staged vendored surface, and the generated-workspace proofs held.
+- One anomaly recorded outside this round's scope, against the scaffold bin audit
+  capability for its next change: `test:src:bin` prints a passing-test diagnostic line
+  ("0 of 1 planned path drifted from the plan. Audit compared bytes at 0, existence at
+  0, and nothing at 1") — console noise from a green test, not a failure.
+
 ## Disposition map
 
-Pending: checker verdict, gate evidence, then the map and terminal line.
+Finding table: rows R1-R23 in Step 6, each with its carrier and ruling. Outcomes:
+R1-R17, R22, R23 LANDED (checker PASS 30/30; gates green); R18 DROPPED on the record;
+R19, R20 STAY-AS-IS with reasons recorded; R21 LANDED in supervisor (`18121d6`, branch
+and main).
+
+Canon delta by layer:
+
+- **Process** (`.agents/orchestration.md`): audit pass reshaped to a triggered second
+  lane with a checker trigger and a record-when-not-run clause; process-tree death law;
+  integration bounded to exact patches; network-work routed to named native writers;
+  Orchestrator-written-part acceptance law; uniform retention owned by Dispatch anatomy
+  with the capture-instrument clause; login-window timing and expired-attempt laws;
+  mid-campaign rule-landing law; mirroring-by-work-class; two brief-check tightenings.
+- **Agents**: `codex.md` (sandbox loopback facts; falsify default; Orchestrator-owned
+  exec handling), `grok.md` (root-ladder fallback), `planner.md` + `reviewer.md`
+  (lane-neutral wording; falsify-bound output), `analyst.md` + `sol.md` (launch-info-only
+  returns), `checker.md` (mechanical trigger); Codex side: `claude.toml` created as the
+  Opus transport contract, `planner/reviewer/opus.toml` slimmed to binding references,
+  `analyst.toml` falsify default, `grok.toml` pin delegated to its one home.
+- **Rules**: `quality.md` (bare-gate reading; mutation-probe closure), `tests.md`
+  (fixture address-family and ephemeral-port law).
+- **Skills**: `field-testing.md` (a re-film is a field pass), `instruction-audit.md`
+  (subjective lenses; fixed round terminal line).
+- **Bridge**: `CLAUDE.md` (foreground Bash 10-minute cap).
+- **Guide**: none owed. **Roadmap**: supervisor gains six open rows and loses one
+  satisfied row.
+
+Re-proof, by the evidence class that found each: the instruction-set findings close on
+the checker's per-claim confirmation and the gate chain over the staged host inventory;
+R6 closes on the promoted instrument (`record/a11-refilm-script.mjs`); R5's law was
+exercised in this very round (D1's integration observations became successor brief D1b
+instead of inline edits); the reshaped step 5 was exercised in this very round (checker
+dispatched on mechanical criteria, the not-run judgment lane recorded with its reason);
+the published-artifact findings class closes on the 8/8 field-pass probes.
+
+Open, awaiting the owner:
+
+1. **Scaffold vendored-surface release.** The canon edits moved published `dist/host`
+   bytes, which obliges a scaffold bump-and-publish and a fleet re-pin + `repair` for
+   existing targets to receive the refined canon. Publishing is the user's decision and
+   credential.
+2. **Ledger deletion.** This folder (`.orkestrel/debrief/`) is pruned in a commit only
+   on the owner's explicit go-ahead; the record stays recoverable by hash.
+
+DEBRIEF: FOLDED
