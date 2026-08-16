@@ -73,6 +73,10 @@ endpoint — lockfile generation, real installs, live fetches — belongs to the
 Orchestrator's own tracked commands or a network-capable native agent. Never put it in a
 brief. A Sol exec hanging on `npm` until its cap fires is this misroute, not a slow bench.
 
+The namespace has its own loopback, so a host daemon on `127.0.0.1` is unreachable and a bind can
+fail `EPERM`. It has no IPv6, so `::1` fails `EAFNOSUPPORT`. Any proof that must reach a daemon,
+bind a port, or drive a built server belongs outside the exec.
+
 ## The exec sandbox mounts `.git` read-only
 
 A `workspace-write` exec can write the working tree and cannot write `.git`. Every command
@@ -107,9 +111,9 @@ and after. Require evidence for every claim and return unsupported claims as dro
 
 An audit brief states its subject as a numbered list of falsifiable claims rather than a
 diff to read, and requires Sol to attempt refutation. The Falsification section of
-`.claude/rules/quality.md` owns the method and the evidence each verdict carries. When the
-dispatch names a skill that fixes the verdict shape, that skill owns the value set and the
-terminal line. Point the brief at both; restate neither.
+`.claude/rules/quality.md` owns the method and the evidence each verdict carries. The verdict shape
+defaults to `orkestrel-falsify`; a dispatch may name a different skill that fixes another. That
+skill owns the value set and the terminal line. Point the brief at both; restate neither.
 
 ## Implementer route
 
