@@ -20,7 +20,7 @@ Bounding both ways, deliberate: feed card bounds message+reason via describeValu
 A7's recorded nick); task tier stays unbounded as the detail destination.
 
 Proofs: red round A (1 failed WorkflowView proof + missing-export syntax fail), red round B
-(2 failed bounding proofs: 648 vs 169; 'Failed:   ' vs the words), then 109/109 scoped;
+(2 failed bounding proofs: 648 vs 169; 'Failed: ' vs the words), then 109/109 scoped;
 app:browser 480/480 (467→480); check green; scoped oxfmt/oxlint clean; no prohibited
 constructs (grep proof in report). Parity measured red 373/374 on describeFailures, closed
 by the three-part guide patch in integration → 374/374.

@@ -4,6 +4,7 @@ Range audited: adc8d11..2d68a77. Journal: tmp/codex/a8-audit.log (215,540 tokens
 completion, effort xhigh). AUDIT: PASS — all eight claims CONFIRMED with file:line evidence.
 
 Notable rulings inside the confirmations:
+
 - Claim 1: only status 'failed' suppresses the qualification; every other lifecycle status
   carries it; flattened phases + Intl.ListFormat produce the cross-phase plural join.
 - Claim 2: durable units are not an input — only the task snapshot's current status counts,

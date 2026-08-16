@@ -4,16 +4,16 @@ All edits predate the gate runs. Unit complete.
 
 ## Touched files
 
-| File | Change |
-| --- | --- |
-| `/workspace/supervisor/app/browser/controllers/Operator.ts` | `terminal` becomes a computed over `isTerminalStatus(snapshot.workflow.status)`; stored `#terminal` ref and its four writes deleted; a clean, current-generation, non-aborted stream end performs one authoritative `refresh()` |
-| `/workspace/supervisor/app/browser/types.ts` | `OperatorInterface.terminal` TSDoc restated as derived-from-snapshot |
-| `/workspace/supervisor/tests/app/server/SupervisorApplication.test.ts` | Closure-barrier proof: a self-completing run's viewer close precedes a terminal `inspect` |
-| `/workspace/supervisor/tests/app/browser/controllers/Operator.test.ts` | Three new proofs + `FINISHED` fixture; two existing tests re-vectored off the tail flag |
-| `/workspace/supervisor/tests/app/browser/integration/setup.ts` | `createApplicationCompletionInput` — human phase then `function` phase, so the run finishes itself |
-| `/workspace/supervisor/tests/app/browser/integration/journey.test.ts` | Completion journey: real self-completion under an open viewer, films `finished` |
-| `/workspace/supervisor/tests/app/browser/portfolio.ts` | Registered journey state `finished` |
-| `/workspace/supervisor/tests/app/browser/portfolio.test.ts` | `terminal` shell state seeded from a terminal snapshot, not a tail flag |
+| File                                                                   | Change                                                                                                                                                                                                                          |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/workspace/supervisor/app/browser/controllers/Operator.ts`            | `terminal` becomes a computed over `isTerminalStatus(snapshot.workflow.status)`; stored `#terminal` ref and its four writes deleted; a clean, current-generation, non-aborted stream end performs one authoritative `refresh()` |
+| `/workspace/supervisor/app/browser/types.ts`                           | `OperatorInterface.terminal` TSDoc restated as derived-from-snapshot                                                                                                                                                            |
+| `/workspace/supervisor/tests/app/server/SupervisorApplication.test.ts` | Closure-barrier proof: a self-completing run's viewer close precedes a terminal `inspect`                                                                                                                                       |
+| `/workspace/supervisor/tests/app/browser/controllers/Operator.test.ts` | Three new proofs + `FINISHED` fixture; two existing tests re-vectored off the tail flag                                                                                                                                         |
+| `/workspace/supervisor/tests/app/browser/integration/setup.ts`         | `createApplicationCompletionInput` — human phase then `function` phase, so the run finishes itself                                                                                                                              |
+| `/workspace/supervisor/tests/app/browser/integration/journey.test.ts`  | Completion journey: real self-completion under an open viewer, films `finished`                                                                                                                                                 |
+| `/workspace/supervisor/tests/app/browser/portfolio.ts`                 | Registered journey state `finished`                                                                                                                                                                                             |
+| `/workspace/supervisor/tests/app/browser/portfolio.test.ts`            | `terminal` shell state seeded from a terminal snapshot, not a tail flag                                                                                                                                                         |
 
 ```
  app/browser/controllers/Operator.ts            |  36 ++++--
@@ -32,6 +32,7 @@ All edits predate the gate runs. Unit complete.
 **Ruling taken: measured, NOT deleted.** `ApplicationTail.terminal` has consumers outside the owned list. Measured with `grep -rn --include='*.ts' --include='*.vue' --include='*.md' -e 'ApplicationTail' -e '\.terminal\b' app src tests guides demo scripts configs`:
 
 Unowned consumers (each would need editing to delete the field):
+
 - `app/server/MCPProjection.ts:137` — `projectObserverWatch(tail.frames, command.cursor, tail.terminal)`, which produces the MCP `observer/watch` `closed` fact
 - `app/server/helpers.ts:225,314` — the `terminal` parameter that `closed` is computed from
 - `app/server/ApplicationHandlers.ts:303` — the HTTP journal route's published `terminal` key
@@ -89,21 +90,23 @@ Item 5 first branch: `lets a vanished record answer the read the stream ending a
 **Criterion 3 — ruling executed.** See above: measured, exceeds owned list, stop-reported, field retained.
 
 **Criterion 4 — registered portfolio frame.** `finished` added to `JOURNEY_STATES`; four frames generated in the capture run:
+
 ```
 tests/app/browser/__screenshots__/portfolio/finished-{narrow,wide}-{light,dark}.png   (59.7–107.7 kB each)
 ```
+
 `finished-wide-light.png` shows the `Run finished` badge, header status `completed`, both phases completed, and the rail row reading "Last seen · completed" — the two surfaces the filmed defect showed disagreeing now agree. The journey's own registry audit (`leaves one frame for every registered journey state and variant, and no other`) passes at 16 frames.
 
 **Criterion 5 — gates.**
 
-| Command | Result |
-| --- | --- |
-| `npm run check` | green (all six projects) |
-| `npm run test:app:server` | **217 passed (217)** (baseline 216) |
-| `npx vitest run … --project app:browser:integration` | **15 passed (15)** (baseline 14) |
-| `npx vitest run … --project app:browser` | **2 failed \| 450 passed (452)** — both failures in the unowned `ContentPane.test.ts`; see deviation |
-| `npm run test:guides` / `test:policy` | 374 passed / 17 passed |
-| `oxfmt --check` + `oxlint --deny-warnings`, scoped to the 8 owned files | clean, exit 0 |
+| Command                                                                 | Result                                                                                               |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `npm run check`                                                         | green (all six projects)                                                                             |
+| `npm run test:app:server`                                               | **217 passed (217)** (baseline 216)                                                                  |
+| `npx vitest run … --project app:browser:integration`                    | **15 passed (15)** (baseline 14)                                                                     |
+| `npx vitest run … --project app:browser`                                | **2 failed \| 450 passed (452)** — both failures in the unowned `ContentPane.test.ts`; see deviation |
+| `npm run test:guides` / `test:policy`                                   | 374 passed / 17 passed                                                                               |
+| `oxfmt --check` + `oxlint --deny-warnings`, scoped to the 8 owned files | clean, exit 0                                                                                        |
 
 Baselines taken before any edit at 311c9b5: app:browser 449/449, integration 14/14, app:server 216/216 — all green, so every failure below is mine.
 
@@ -118,6 +121,7 @@ $ git status --porcelain
  M tests/app/browser/portfolio.ts
  M tests/app/server/SupervisorApplication.test.ts
 ```
+
 (`tests/**/__screenshots__/` is gitignored at `.gitignore:33`, so the frames do not appear.)
 
 ## Deviation: criterion 5 cannot close from the owned list
@@ -228,6 +232,7 @@ The `FINISHED` fixture text is identical to the one already compiling and runnin
 +				reach it.
 +			</p>
 ```
+
 Coupled assertions in the unowned `ContentPane.test.ts`: line 141 `toContain('This run finished before it was opened')` → `toContain('This run has finished')`; line 127 and line 158 `not.toContain('finished before it was opened')` → `not.toContain('This run has finished')`. Apply this only together with Patch A. The comment above that block ("A run reached from completed history was already finished when the interface asked for it") also needs re-voicing.
 
 **F2 — `guides/src/supervisor.md` prose drift** (parity gates stay green; no backticked name moved):

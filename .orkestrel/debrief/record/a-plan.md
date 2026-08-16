@@ -36,21 +36,21 @@ the E1 report.
 
 ## Units and routing ledger
 
-| Unit | Subject | Role / Engine | Depends |
-| --- | --- | --- | --- |
-| A1 | Middleware 0.0.12 prep (peer ^0.0.9, gates green) | builder / Sonnet | — (parallel, own repo) |
-| — | PUBLISH CHECKPOINT: user approves middleware 0.0.12 | Orchestrator + user | A1 |
-| A2 | Supervisor pin raise (middleware held ^0.0.9), install, lock | builder / Sonnet | — |
-| A3 | Source migrations: mcp JSONRPC split, workflow, contract Result audit, terminal AnswerResult | sol / GPT-5.6 Sol | A2 |
-| A4 | Test/guide migrations (fences, recovery, MCP fixtures, mirrors) | builder / Sonnet, stop-on-divergence | A3 |
-| A5 | @orkestrel/test adoption (recorder + delay, direct imports, hand-rolls deleted) | builder / Sonnet | A4 |
-| A6 | Viewer freshness: refresh on clean EOF, terminal derived, tail-field ruling | implementer / Opus 5, Sol audits | A5 |
-| A7 | Settlement voice: three sentences, bounded value | implementer / Opus 5 | A6 |
-| A8 | Failed-launch voice (browser); pre-probe gates the core-diagnostics unit | implementer / Opus 5 (probe: Orchestrator) | A6 |
-| A9 | Transcript progressive disclosure (verbatim retained, a11y criteria) | implementer / Opus 5 | A7 (FeedItem serialization) |
-| A10 | Agent deadline: ApplicationPolicy.agent{model,timeout,keep}, cold-load proof | sol / GPT-5.6 Sol | A2 (+after A8 for proof binding) |
-| A2b | Middleware raise in supervisor post-publish | builder / Sonnet | A1 + publish + A2 |
-| A11 | Integrated acceptance: real-stream journeys, captures, verifier gates both repos, four-lane re-film | implementer (journeys) + verifier + Orchestrator (film) | all |
+| Unit | Subject                                                                                             | Role / Engine                                           | Depends                          |
+| ---- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | -------------------------------- |
+| A1   | Middleware 0.0.12 prep (peer ^0.0.9, gates green)                                                   | builder / Sonnet                                        | — (parallel, own repo)           |
+| —    | PUBLISH CHECKPOINT: user approves middleware 0.0.12                                                 | Orchestrator + user                                     | A1                               |
+| A2   | Supervisor pin raise (middleware held ^0.0.9), install, lock                                        | builder / Sonnet                                        | —                                |
+| A3   | Source migrations: mcp JSONRPC split, workflow, contract Result audit, terminal AnswerResult        | sol / GPT-5.6 Sol                                       | A2                               |
+| A4   | Test/guide migrations (fences, recovery, MCP fixtures, mirrors)                                     | builder / Sonnet, stop-on-divergence                    | A3                               |
+| A5   | @orkestrel/test adoption (recorder + delay, direct imports, hand-rolls deleted)                     | builder / Sonnet                                        | A4                               |
+| A6   | Viewer freshness: refresh on clean EOF, terminal derived, tail-field ruling                         | implementer / Opus 5, Sol audits                        | A5                               |
+| A7   | Settlement voice: three sentences, bounded value                                                    | implementer / Opus 5                                    | A6                               |
+| A8   | Failed-launch voice (browser); pre-probe gates the core-diagnostics unit                            | implementer / Opus 5 (probe: Orchestrator)              | A6                               |
+| A9   | Transcript progressive disclosure (verbatim retained, a11y criteria)                                | implementer / Opus 5                                    | A7 (FeedItem serialization)      |
+| A10  | Agent deadline: ApplicationPolicy.agent{model,timeout,keep}, cold-load proof                        | sol / GPT-5.6 Sol                                       | A2 (+after A8 for proof binding) |
+| A2b  | Middleware raise in supervisor post-publish                                                         | builder / Sonnet                                        | A1 + publish + A2                |
+| A11  | Integrated acceptance: real-stream journeys, captures, verifier gates both repos, four-lane re-film | implementer (journeys) + verifier + Orchestrator (film) | all                              |
 
 ## Exit criterion (fixed now)
 

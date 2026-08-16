@@ -10,6 +10,7 @@ tarpit design also failed here on EAFNOSUPPORT (no IPv6). Chosen default 360_000
 the censored >120s loaded-cold bound.
 
 Orchestrator integration (network real):
+
 - agent.url endpoint knob: APP_AGENT_URL, parseApplicationURL (absolute http/https,
   bounded APP_AGENT_URL_INPUT=2048, trimmed; absence undefined via hoisted-narrowed
   spread under exactOptionalPropertyTypes), runtime conditional url pass-through, guide

@@ -3,15 +3,16 @@
 Probe: real built server (dist at 8d9c325+adc8d11), ollama daemon stopped, tarpit on
 127.0.0.1:11434 accepting POST /api/chat and never answering, one run:'agent' workflow.
 Timeline (probe task bpr14s6lj):
+
 - [10s]-[110s]: workflow running, task running, attempts 1.
 - [120s]: task 'failed', result {"success":false,"error":{"origin":"handler","message":
   "This operation was aborted"}}; workflow 'completed' (bail false). Delta from start
   ~120.5s — the @orkestrel/ollama default deadline (timeout: 120_000, constructed with no
   override at ApplicationRuntime.ts:162).
 - Tarpit log: exactly one held POST /api/chat.
-Control (earlier same session): warm daemon answers in <1s and settles success — the happy
-path through the same executor is sound. Fast-fail control (pre-compaction probe):
-daemon-down fails in ~30ms with message "fetch failed".
+  Control (earlier same session): warm daemon answers in <1s and settles success — the happy
+  path through the same executor is sound. Fast-fail control (pre-compaction probe):
+  daemon-down fails in ~30ms with message "fetch failed".
 
 ## Rulings
 

@@ -43,17 +43,19 @@ Versions checked: installed vs fleet-target as stated (budget `0.0.5→0.0.6`, e
 ## terminal `0.0.5` → `0.0.8`
 
 **Consumed (prompt vocabulary + related):**
-| Symbol | Sites |
-|--------|-------|
-| `PendingPrompt` | `app/core/validators.ts:8`; `app/server/types.ts:33`; `app/server/HumanPrompt.ts:4,36` |
-| `PromptType` / `PromptValue` | `app/core/types.ts:8`; `app/core/validators.ts:8`; `app/core/constants.ts:2`; `app/core/PromptCodec.ts:2`; `app/server/types.ts:34-35`; `app/server/HumanLedger.ts:1` |
-| `createPrompt` | `app/server/HumanPrompt.ts:9,26` |
-| `isPromptType` | `app/core/parsers.ts:14`; `app/server/parsers.ts:26`; `app/server/validators.ts:5` |
-| `isPendingPrompt` | `app/server/validators.ts:5` |
-| `OutputStreamInterface` (`@orkestrel/terminal/server`) | `tests/app/setup.ts:13`; `app/server/validators.ts:2`; `app/server/TerminalOutput.ts:1` |
-| Also imported: `AnswerResult`, `ParkRequest`, `Ticket`, `PromptInterface`, form option types | `app/server/types.ts:31-36,404`; `app/server/HumanPrompt.ts:1-7,40`; `app/core/parsers.ts:15-23,723+` |
+
+| Symbol                                                                                       | Sites                                                                                                                                                                 |
+| -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PendingPrompt`                                                                              | `app/core/validators.ts:8`; `app/server/types.ts:33`; `app/server/HumanPrompt.ts:4,36`                                                                                |
+| `PromptType` / `PromptValue`                                                                 | `app/core/types.ts:8`; `app/core/validators.ts:8`; `app/core/constants.ts:2`; `app/core/PromptCodec.ts:2`; `app/server/types.ts:34-35`; `app/server/HumanLedger.ts:1` |
+| `createPrompt`                                                                               | `app/server/HumanPrompt.ts:9,26`                                                                                                                                      |
+| `isPromptType`                                                                               | `app/core/parsers.ts:14`; `app/server/parsers.ts:26`; `app/server/validators.ts:5`                                                                                    |
+| `isPendingPrompt`                                                                            | `app/server/validators.ts:5`                                                                                                                                          |
+| `OutputStreamInterface` (`@orkestrel/terminal/server`)                                       | `tests/app/setup.ts:13`; `app/server/validators.ts:2`; `app/server/TerminalOutput.ts:1`                                                                               |
+| Also imported: `AnswerResult`, `ParkRequest`, `Ticket`, `PromptInterface`, form option types | `app/server/types.ts:31-36,404`; `app/server/HumanPrompt.ts:1-7,40`; `app/core/parsers.ts:15-23,723+`                                                                 |
 
 **Stable (vocabulary named in brief):**
+
 - `PendingPrompt` fields match (current `:828` / target `:942`)
 - `PromptType` / `PromptValue` match (`'input'|…|'editor'`; `string|boolean|readonly string[]`) — current `:1192/:1199`, target `:1373/:1380`
 - `createPrompt(options?: PromptOptions)` — current `:228`, target `:243`
@@ -61,8 +63,9 @@ Versions checked: installed vs fleet-target as stated (budget `0.0.5→0.0.6`, e
 - `OutputStreamInterface` — current/target server `:214` (`write`; optional `isTTY`)
 
 **Broken**
-| Symbol | Sites | Target replacement |
-|--------|-------|--------------------|
+
+| Symbol         | Sites                                                                                                                                                                                                                                                                     | Target replacement                                                                                                                                                                                                                                                                                                                          |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `AnswerResult` | import `app/server/types.ts:31`; `app/server/HumanPrompt.ts:2,40`; interface `app/server/types.ts:404`; uses `answered.success` in `HumanPrompt.ts:44`, `HumanExecutor.ts:103-104`; test expects `{ success: true, value }` at `tests/app/server/integration.test.ts:345` | **Removed.** `PromptInterface.answer` now returns `Result<unknown, AnswerError>` (target `:1005`, `:1256`). `AnswerError` remains (`'unknown'\|'rejected'`, target `:18`). Contract `Result` = `Success<T>\|Failure<E>` with same `{ success, value }` / `{ success, error }` shape (target contract `Success` `:6012`, `Failure` `:1697`). |
 
 Form option bags (`InputOptions`, `SelectOptions`, …) gained optional `hint?` / `theme?` only — additive; supervisor constructions in `app/core/parsers.ts:723+` remain assignable.
@@ -102,6 +105,7 @@ Form option bags (`InputOptions`, `SelectOptions`, …) gained optional `hint?` 
 **Consumed:** `createOllama` — `app/server/ApplicationRuntime.ts:20,162` (`{ model }`); `tests/service/ollama/AgentExecutor.test.ts:2,31-35` (`{ model, url, options }`).
 
 **`OllamaOptions` (composition fields — not imported today, still exported):** current and target `:160-168` identical:
+
 - `model: string` (required)
 - `keepAlive?: string | number`
 - `timeout?: number`
@@ -115,13 +119,13 @@ Form option bags (`InputOptions`, `SelectOptions`, …) gained optional `hint?` 
 
 ## Closing table
 
-| package | break count | severity |
-|---------|-------------|----------|
-| budget | 0 | none |
-| emitter | 0 | none |
-| sse | 0 | none |
-| terminal | 1 (`AnswerResult` → `Result<unknown, AnswerError>` on `answer`) | compile |
-| router | 0 | none |
-| sea | 0 | none |
-| ollama | 0 | none |
-=== delta exit 0 ===
+| package              | break count                                                     | severity |
+| -------------------- | --------------------------------------------------------------- | -------- |
+| budget               | 0                                                               | none     |
+| emitter              | 0                                                               | none     |
+| sse                  | 0                                                               | none     |
+| terminal             | 1 (`AnswerResult` → `Result<unknown, AnswerError>` on `answer`) | compile  |
+| router               | 0                                                               | none     |
+| sea                  | 0                                                               | none     |
+| ollama               | 0                                                               | none     |
+| === delta exit 0 === |

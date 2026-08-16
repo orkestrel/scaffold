@@ -5,7 +5,7 @@
 (clean tree; diff below is b6737f7..4f67735)
 ```
 
-```diff
+````diff
 diff --git a/app/core/constants.ts b/app/core/constants.ts
 index 7c32f7c..1e71d19 100644
 --- a/app/core/constants.ts
@@ -13,7 +13,7 @@ index 7c32f7c..1e71d19 100644
 @@ -152,6 +152,12 @@ export const APP_NUMBER_INPUT = 32
  /** Maximum raw environment characters accepted by the application model selector. */
  export const APP_MODEL_INPUT = 255
- 
+
 +/** Maximum raw environment characters accepted by the application agent keep duration. */
 +export const APP_AGENT_KEEP_INPUT = 255
 +
@@ -22,11 +22,11 @@ index 7c32f7c..1e71d19 100644
 +
  /** Maximum raw environment characters accepted by the principal roster. */
  export const APP_PRINCIPALS_INPUT = 65_536
- 
+
 @@ -170,6 +176,23 @@ export const APP_WORKFLOW_LENGTH = 255
  /** Default local inference model used by the application agent executor. */
  export const OLLAMA_MODEL = 'qwen3.5:2b-q4_K_M'
- 
+
 +/** Default model residency requested by the application agent executor. */
 +export const OLLAMA_KEEP = '5m'
 +
@@ -136,7 +136,7 @@ index ed564e4..d9398c9 100644
  	}
  	return value.trim()
  }
- 
+
 +/**
 + * Parse the application agent inference endpoint.
 + *
@@ -238,7 +238,7 @@ index 8026ef0..8474416 100644
 +controls model residency. Absence of a URL is `undefined` and keeps the provider's own default.
 +The runtime translates policy `keep` to the Ollama provider's `keepAlive` option at composition. Direct backend injection exists for trusted embedding and
  protocol-fixture composition, never on the HTTP wire.
- 
+
  The live broker subscribes to observations only after journal admission. It also receives provider
 @@ -1150,7 +1154,10 @@ terminal.write('visible to the terminal and the live workflow viewer')
  | `APP_CSRF_SECRET`       | Random per process   | Independent double-submit signing secret; required on the same condition.                                                                                                  |
@@ -251,7 +251,7 @@ index 8026ef0..8474416 100644
 +| `APP_AGENT_KEEP`        | `5m`                 | Non-empty Ollama model-residency duration translated to provider `keepAlive`.                                                                                              |
  | `APP_INFERENCE`         | Empty                | Comma-separated Claude, Codex, and Cursor deployment-policy roster.                                                                                                        |
  | `APP_HOST` / `APP_PORT` | `127.0.0.1` / `3000` | Loopback-safe network bind.                                                                                                                                                |
- 
+
 @@ -1193,6 +1200,8 @@ though it is bundled rather than published.
  | `APP_ASSETS_DIRECTORY`            | const     | Default browser-build directory.                                  |
  | `APP_NUMBER_INPUT`                | const     | Numeric environment input bound.                                  |
@@ -381,7 +381,7 @@ index 8948edd..7508e84 100644
 @@ -192,21 +213,45 @@ describe('application core composition', () => {
  		).toThrowError(expect.objectContaining({ code: 'CONFIG' }))
  	})
- 
+
 -	it.each(['', '   ', 'line\nbreak'])('rejects malformed APP_MODEL %s', (value) => {
 -		expect(() => parseApplicationPolicy({ ...POLICY_ENVIRONMENT, APP_MODEL: value })).toThrowError(
 -			expect.objectContaining({ code: 'CONFIG' }),
@@ -406,7 +406,7 @@ index 8948edd..7508e84 100644
 +			parseApplicationPolicy({ ...POLICY_ENVIRONMENT, APP_AGENT_KEEP: value }),
 +		).toThrowError(expect.objectContaining({ code: 'CONFIG' }))
  	})
- 
+
 -	it('bounds APP_MODEL before retaining it in policy', () => {
 +	it('bounds APP_AGENT_KEEP before retaining it in policy', () => {
  		expect(() =>
@@ -417,7 +417,7 @@ index 8948edd..7508e84 100644
  			}),
  		).toThrowError(expect.objectContaining({ code: 'CONFIG' }))
  	})
- 
+
 +	it.each(['0', '-1', '1.5', 'NaN', 'Infinity', '', '9007199254740992'])(
 +		'rejects malformed APP_AGENT_TIMEOUT %s',
 +		(value) => {
@@ -456,7 +456,7 @@ index aab9a01..15d161d 100644
  	ClaudeFixtureCLIBackend,
 @@ -12,13 +23,13 @@ import {
  } from '../setup.js'
- 
+
  describe('ApplicationRuntime', () => {
 -	it('mounts only configured CLI vendors with per-call scratch and without applying APP_MODEL', async () => {
 +	it('mounts only configured CLI vendors with per-call scratch and without applying APP_AGENT_MODEL', async () => {
@@ -576,4 +576,4 @@ index 896b148..5385e79 100644
  		states.push(element.parentElement.open ? 'expanded' : 'collapsed')
  	}
  	const pressed = element.getAttribute('aria-pressed')
-```
+````

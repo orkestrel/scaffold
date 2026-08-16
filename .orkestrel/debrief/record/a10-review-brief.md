@@ -12,11 +12,11 @@ lane's model, endpoint, deadline, and residency become the grouped
 `ApplicationPolicy.agent`, with a measured default deadline and a portable real-server
 proof. The full diff and status evidence is embedded at
 `/home/user/scaffold/tmp/alignment/a10-evidence.md` — read it first; you have no shell, so
-that file is your diff. Context to read directly: `app/core/types.ts` (~:166-180),
-`app/core/parsers.ts` (the agent group ~:452-475 and `parseApplicationURL` ~:625-670),
-`app/core/constants.ts` (~:150-200), `app/server/ApplicationRuntime.ts` (~:160-172),
-`tests/app/server/ApplicationRuntime.test.ts` (~:55-135),
-`tests/app/core/factories.test.ts` (~:60-125), `guides/src/supervisor.md` (~:896-905,
+that file is your diff. Context to read directly: `app/core/types.ts` (~~:166-180),
+`app/core/parsers.ts` (the agent group ~~:452-475 and `parseApplicationURL` ~~:625-670),
+`app/core/constants.ts` (~~:150-200), `app/server/ApplicationRuntime.ts` (~~:160-172),
+`tests/app/server/ApplicationRuntime.test.ts` (~~:55-135),
+`tests/app/core/factories.test.ts` (~~:60-125), `guides/src/supervisor.md` (~~:896-905,
 ~:1156-1162, ~:1200-1205, ~:1271-1277). The unit's history is in
 `.orkestrel/supervisor/a10-report.md` (Sol's sandbox-block deviation, the Orchestrator's
 integration rulings).

@@ -50,12 +50,12 @@ task, so the failure is honest — but a cold load must not be a failure at all.
 5. **The proof binds to the boundary.** Two integration-grade proofs through the real
    built server, red-first where a red is expressible:
    a. Deadline honored: with `APP_AGENT_TIMEOUT` set small (e.g. 2000) against a hanging
-      inference (tarpit pattern from `tmp/a8-probe/tarpit.mjs`, your own copy under
-      `tmp/a10/`), the task settles failed at ~that deadline, not at 120s. Red form: at
-      the current baseline the same env var changes nothing (assert the old behavior, then
-      the new).
+   inference (tarpit pattern from `tmp/a8-probe/tarpit.mjs`, your own copy under
+   `tmp/a10/`), the task settles failed at ~that deadline, not at 120s. Red form: at
+   the current baseline the same env var changes nothing (assert the old behavior, then
+   the new).
    b. Cold survival: a genuinely cold run (daemon restarted) under the new default
-      completes. Record its duration beside the assertion.
+   completes. Record its duration beside the assertion.
    Place durable versions of these where the repository's test taxonomy puts real-server
    proofs (read how `tests/app/server/` structures them); the scratch scripts are launch
    evidence, the committed tests are the proof. If a committed test cannot restart the
@@ -92,7 +92,7 @@ scratch under `tmp/a10/`. **Off-limits:** `src/**`, `node_modules`, `app/browser
 2. Proof 5a red/green with commands and tails; proof 5b's duration recorded.
 3. The default constant's TSDoc carries the cold/warm measurements.
 4. `npm run test:app:core` and `npm run test:app:server` green with counts; `npm run
-   test:guides` green with count.
+test:guides` green with count.
 5. The daemon is running and 11434 tarpit-free at the end (paste the version curl).
 
 ## Output

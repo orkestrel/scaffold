@@ -12,8 +12,9 @@
 **Consumed (representative):** `failure`/`success`, `WorkflowSnapshot`/`PhaseSnapshot`/`TaskSnapshot`/`LifecycleStatus`, `createMemoryWorkflowStore`/`DatabaseWorkflowStore`/`definitionToSnapshot`/`createWorkflow`/`createWorkflowRunner`/`isWorkflowSnapshot`/`isLifecycleStatus`/`isTerminalStatus`/`WORKFLOW_STATUSES`/`isTaskActivityInput`/`isTaskFailure`/`WorkflowFunction`/`WorkflowDefinition`/`WorkflowStatus`/`WorkflowStoreInterface`/`WorkflowInterface` — many sites under `src/`, `app/`, `tests/` (e.g. `src/core/helpers.ts:9-32`, `app/server/SupervisorApplication.ts:29`, `tests/setup.ts:22-31`).
 
 **Broken**
-| Symbol | Sites | Target replacement |
-|--------|-------|--------------------|
+
+| Symbol            | Sites                                                                                      | Target replacement                                                                         |
+| ----------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
 | `recoverWorkflow` | `tests/src/core/Run.test.ts:18,660,807`; `tests/src/server/integration.test.ts:18,234,511` | `createRecoveredWorkflow(snapshot, options?)` — `fleet-target/workflow/.../index.d.ts:333` |
 
 Also removed from the public surface (not imported by supervisor code): `restoreWorkflow` → `createRestoredWorkflow` (`:367`); `assertSnapshot` gone. `recoverWorkflowSnapshot` remains (`:1732`).
@@ -29,6 +30,7 @@ Also removed from the public surface (not imported by supervisor code): `restore
 **Exact JSON-RPC shape change (known break)**
 
 Current (`mcp 0.0.12`):
+
 ```947:954:node_modules/@orkestrel/mcp/dist/src/core/index.d.ts
 export declare interface JSONRPCRequest {
     readonly jsonrpc: '2.0';
@@ -37,9 +39,11 @@ export declare interface JSONRPCRequest {
     readonly params?: Readonly<Record<string, unknown>>;
 }
 ```
+
 Notifications were id-less `JSONRPCRequest`s. `JSONRPCResponse` was one interface with optional `result`/`error` and `id: string | number | null`.
 
 Target (`mcp 0.0.15`):
+
 - `JSONRPCId = string | number` (no `null`)
 - `JSONRPCRequest`: **`id: JSONRPCId` required**
 - `JSONRPCNotification`: `id?: never` (notifications are a distinct type)
@@ -49,13 +53,14 @@ Target (`mcp 0.0.15`):
 - `JSONRPCErrorResponse`: `id?: JSONRPCId`, `error: JSONRPCError` (`JSONRPCErrorData` renamed to `JSONRPCError`)
 
 **Broken / forced migrations**
-| Break | Evidence | Replacement / fix shape |
-|-------|----------|-------------------------|
-| `liveFrameToMCPNotification` typed as `JSONRPCRequest` without `id` | `app/server/helpers.ts:324-329` | Return `JSONRPCNotification` |
-| `MCPStream` yield was `JSONRPCRequest`; now `AsyncGenerator<JSONRPCNotification, JSONRPCResponse, unknown>` | `MCPProjection.ts:190` yields that helper; target `MCPStream` at `:3733` | Yield `JSONRPCNotification` |
-| `buildJSONRPCResult(id, result)` — `id` was `string \| number \| null`; now `JSONRPCId` only; `result` must be `MCPResult \| MCPLegacyResult` | `MCPProjection.ts:196-208` uses `request.id ?? null` and `{ state: 'closed' \| 'refused', ... }` | Drop `null`; result must satisfy modern `resultType` or legacy open object |
-| `MCPMethodHandler` options: `MCPDispatchOptions` (optional `signal`) → `MCPMethodOptions` (**required** `signal`) | `MCPProjection.ts:156-184` typed with `MCPDispatchOptions` | Use `MCPMethodOptions` for method handlers (`:2920`, `:3004-3008`) |
-| `createMCPRoutes` arg: `MCPServerInterface` → `MCPDispatcherInterface` | `ApplicationRoutes.ts:123` | Still OK if projection is `MCPServer` (`MCPServerInterface extends MCPDispatcherInterface`), but type imports may need `MCPDispatcherInterface` |
+
+| Break                                                                                                                                         | Evidence                                                                                         | Replacement / fix shape                                                                                                                         |
+| --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `liveFrameToMCPNotification` typed as `JSONRPCRequest` without `id`                                                                           | `app/server/helpers.ts:324-329`                                                                  | Return `JSONRPCNotification`                                                                                                                    |
+| `MCPStream` yield was `JSONRPCRequest`; now `AsyncGenerator<JSONRPCNotification, JSONRPCResponse, unknown>`                                   | `MCPProjection.ts:190` yields that helper; target `MCPStream` at `:3733`                         | Yield `JSONRPCNotification`                                                                                                                     |
+| `buildJSONRPCResult(id, result)` — `id` was `string \| number \| null`; now `JSONRPCId` only; `result` must be `MCPResult \| MCPLegacyResult` | `MCPProjection.ts:196-208` uses `request.id ?? null` and `{ state: 'closed' \| 'refused', ... }` | Drop `null`; result must satisfy modern `resultType` or legacy open object                                                                      |
+| `MCPMethodHandler` options: `MCPDispatchOptions` (optional `signal`) → `MCPMethodOptions` (**required** `signal`)                             | `MCPProjection.ts:156-184` typed with `MCPDispatchOptions`                                       | Use `MCPMethodOptions` for method handlers (`:2920`, `:3004-3008`)                                                                              |
+| `createMCPRoutes` arg: `MCPServerInterface` → `MCPDispatcherInterface`                                                                        | `ApplicationRoutes.ts:123`                                                                       | Still OK if projection is `MCPServer` (`MCPServerInterface extends MCPDispatcherInterface`), but type imports may need `MCPDispatcherInterface` |
 
 `createModernMCPRequest` already supplies `id` (`tests/app/setup.ts:371-383`) — likely fine.
 
@@ -68,11 +73,12 @@ Target (`mcp 0.0.15`):
 **Consumed:** `createGuide`, `createSource`, `fenceImports`, `findMissing`, `findUnexampled`, `isExternalLink`, `missingSymbols`, `resolveLink`, `symbolKey`, `parseManifest` — `tests/guides/src/parity.test.ts:5-15,69-92`; `tests/setupGuides.ts:4`.
 
 **Broken**
-| Symbol | Sites | Replacement |
-|--------|-------|-------------|
-| `GuideInterface.patterns(): readonly string[]` | `parity.test.ts:69,81,92` | `fences(): readonly GuideFence[]` (`GuideFence = { language?: string; code: string }`) at target `:472-521` |
-| `extractPatterns` (module helper) | not imported by supervisor | Removed; use `extractFences` / `guide.fences()` |
-| `moduleDirs` / `moduleKeys` | not imported | Renamed to `normalizeDirectories` / `selectModuleKeys` |
+
+| Symbol                                         | Sites                      | Replacement                                                                                                 |
+| ---------------------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `GuideInterface.patterns(): readonly string[]` | `parity.test.ts:69,81,92`  | `fences(): readonly GuideFence[]` (`GuideFence = { language?: string; code: string }`) at target `:472-521` |
+| `extractPatterns` (module helper)              | not imported by supervisor | Removed; use `extractFences` / `guide.fences()`                                                             |
+| `moduleDirs` / `moduleKeys`                    | not imported               | Renamed to `normalizeDirectories` / `selectModuleKeys`                                                      |
 
 `findUnexampled(names, fences: readonly string[], …)` still wants **string** fence bodies (`:412`) — after migration, pass `guide.fences().map(f => f.code)` (or equivalent), not raw `GuideFence` objects. `fenceImports(fence: string)` likewise needs `.code`.
 
@@ -100,10 +106,12 @@ Other parity APIs used (`surface`, `methods`, `links`, `tests`, `createSource`, 
 **Core export names for those:** match between current and target. **no consumed symbol moved.**
 
 **Published `peerDependencies` (middleware `0.0.11`):**
+
 ```json
 "@orkestrel/database": "^0.0.8",
 "@orkestrel/server": "^0.0.12"
 ```
+
 `peerDependenciesMeta`: `@orkestrel/database` `{ "optional": true }`.
 
 **Database peer conflict (precise):** supervisor today pins/installs `@orkestrel/database` `^0.0.7` / `0.0.7`. Middleware `0.0.11` requires `^0.0.8`. Fleet-target database is `0.0.9`. Keeping database at `0.0.7` while raising middleware fails the `^0.0.8` peer range (optional peer → warn/conflict at install, not a soft no-op). Server peer `^0.0.12` also forces the server raise in lockstep.
@@ -221,11 +229,11 @@ Target agent depends on `emitter ^0.0.6`.
 
 ## Adoption candidates — `@orkestrel/test` `0.0.3` (NEW)
 
-| test helper | Target export | Supervisor hand-roll | Overlap |
-|-------------|---------------|----------------------|---------|
-| `createRecorder` | `test/.../core/index.d.ts:33` → `RecorderInterface` | `tests/setup.ts:54-85` (`TestRecorderInterface` + `createRecorder`) | **Yes** — same API shape (`calls`, `count`, `handler`, `clear`) |
-| `waitForDelay` | `core/index.d.ts:126` | `tests/setup.ts:102-104` | **Yes** — identical `ms?: number` → `Promise<void>` |
-| `createScratch` | `test/.../server/index.d.ts:11` → sync `ScratchInterface` | `tests/setupServer.ts:628-637` `createTemporaryDirectory` (async `mkdtemp`/`rm`, destroy-only) | **Partial** — same job (owned temp dir), different API (sync scratch + write/read/link vs async path+destroy) |
+| test helper      | Target export                                             | Supervisor hand-roll                                                                           | Overlap                                                                                                       |
+| ---------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `createRecorder` | `test/.../core/index.d.ts:33` → `RecorderInterface`       | `tests/setup.ts:54-85` (`TestRecorderInterface` + `createRecorder`)                            | **Yes** — same API shape (`calls`, `count`, `handler`, `clear`)                                               |
+| `waitForDelay`   | `core/index.d.ts:126`                                     | `tests/setup.ts:102-104`                                                                       | **Yes** — identical `ms?: number` → `Promise<void>`                                                           |
+| `createScratch`  | `test/.../server/index.d.ts:11` → sync `ScratchInterface` | `tests/setupServer.ts:628-637` `createTemporaryDirectory` (async `mkdtemp`/`rm`, destroy-only) | **Partial** — same job (owned temp dir), different API (sync scratch + write/read/link vs async path+destroy) |
 
 Also exported by `@orkestrel/test` but not hand-rolled under the same names: `captureError`, `collect`, `collectStream`, `requireValue`, `resolveRoot`, `roundTripJSON`, `readInventory`.
 
@@ -233,23 +241,23 @@ Also exported by `@orkestrel/test` but not hand-rolled under the same names: `ca
 
 ## Closing table
 
-| package | break count | severity |
-|---------|-------------|----------|
-| workflow | 1 (`recoverWorkflow`) | compile |
-| mcp | 4+ (JSONRPC split, notification type, `buildJSONRPCResult`, method options/`MCPStream`) | compile |
-| guide | 1 (`patterns`→`fences`; + fence string adaptation) | compile |
-| agent | 0 | none |
-| middleware | 0 symbols; 1 peer conflict (`database ^0.0.8` vs installed `0.0.7`; also `server ^0.0.12`) | compile (install/peers) |
-| contract | 0 removals; 1 default-param shift (`Result` `E`) | compile (possible) / none if always explicit `E` |
-| server | 0 | none |
-| tool | 0 | none |
-| budget | 0 observed | none (target tree missing) |
-| emitter | 0 observed | none (target tree missing) |
-| sse | 0 observed | none (target tree missing) |
-| terminal | 0 observed | none (target tree missing) |
-| router | 0 observed | none (target tree missing) |
-| sea | 0 observed | none (target tree missing) |
-| ollama | 0 observed | none (target tree missing) |
-| scaffold | 0 | none |
-| test (new) | n/a | adoption only |
-=== absorb exit 0 ===
+| package               | break count                                                                                | severity                                         |
+| --------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------ |
+| workflow              | 1 (`recoverWorkflow`)                                                                      | compile                                          |
+| mcp                   | 4+ (JSONRPC split, notification type, `buildJSONRPCResult`, method options/`MCPStream`)    | compile                                          |
+| guide                 | 1 (`patterns`→`fences`; + fence string adaptation)                                         | compile                                          |
+| agent                 | 0                                                                                          | none                                             |
+| middleware            | 0 symbols; 1 peer conflict (`database ^0.0.8` vs installed `0.0.7`; also `server ^0.0.12`) | compile (install/peers)                          |
+| contract              | 0 removals; 1 default-param shift (`Result` `E`)                                           | compile (possible) / none if always explicit `E` |
+| server                | 0                                                                                          | none                                             |
+| tool                  | 0                                                                                          | none                                             |
+| budget                | 0 observed                                                                                 | none (target tree missing)                       |
+| emitter               | 0 observed                                                                                 | none (target tree missing)                       |
+| sse                   | 0 observed                                                                                 | none (target tree missing)                       |
+| terminal              | 0 observed                                                                                 | none (target tree missing)                       |
+| router                | 0 observed                                                                                 | none (target tree missing)                       |
+| sea                   | 0 observed                                                                                 | none (target tree missing)                       |
+| ollama                | 0 observed                                                                                 | none (target tree missing)                       |
+| scaffold              | 0                                                                                          | none                                             |
+| test (new)            | n/a                                                                                        | adoption only                                    |
+| === absorb exit 0 === |

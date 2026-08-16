@@ -85,7 +85,9 @@ async function arrive(page, origin) {
 	await page.locator('#login-name').fill(NAME)
 	await page.locator('#login-secret').fill(SECRET)
 	await page.getByRole('button', { name: 'Login with these credentials' }).click()
-	await page.getByRole('button', { name: 'Logout and clear this view' }).waitFor({ state: 'visible' })
+	await page
+		.getByRole('button', { name: 'Logout and clear this view' })
+		.waitFor({ state: 'visible' })
 }
 
 async function shot(page, name) {
@@ -153,7 +155,9 @@ try {
 		const row = page.getByRole('button', { name: new RegExp(`Open ${scenario.id}`) })
 		await row.waitFor({ state: 'visible', timeout: 30000 })
 		await row.click()
-		await page.getByRole('heading', { name: scenario.title }).waitFor({ state: 'visible', timeout: 15000 })
+		await page
+			.getByRole('heading', { name: scenario.title })
+			.waitFor({ state: 'visible', timeout: 15000 })
 		await shot(page, `${scenario.lane}-open`)
 		// A6 closed: the OPEN viewer's own badge is now the awaited terminal signal. E1's film had
 		// to trust the rail because the header lagged forever; the header is now the honest surface.

@@ -22,15 +22,15 @@ its prescribed substance (writer-recorded placement variance is allowed; substan
 variance is not). One claim per edit number.
 
 29. Every one of `d1b-harmonize-brief.md`'s four sentence replacements is present, and
-the two stale codex.md clauses, the reviewer.md every-build cadence clause, and step 5's
-"their evidence"/"the dispatch-named skill fixes" phrasings no longer exist anywhere in
-the landed files.
+    the two stale codex.md clauses, the reviewer.md every-build cadence clause, and step 5's
+    "their evidence"/"the dispatch-named skill fixes" phrasings no longer exist anywhere in
+    the landed files.
 
 30. The diff touches only the 19 owned files of D1 plus the three of D1b (16 overlap),
-and no landed sentence contradicts another landed edit (check specifically: retention now
-has exactly one owner; the falsify default appears consistently in analyst.md,
-reviewer.md, codex.md, analyst.toml, reviewer.toml; the audit-lane trigger reads the same
-in step 5 and the adversarial-pass section).
+    and no landed sentence contradicts another landed edit (check specifically: retention now
+    has exactly one owner; the falsify default appears consistently in analyst.md,
+    reviewer.md, codex.md, analyst.toml, reviewer.toml; the audit-lane trigger reads the same
+    in step 5 and the adversarial-pass section).
 
 ## Scope
 

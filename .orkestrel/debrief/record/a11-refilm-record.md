@@ -6,8 +6,9 @@ reverted and verified Sol-default after), composer (cursor CLI default). Real bu
 6780987, real browser, real keystrokes. 13 frames under the session scratchpad (e1r-*).
 
 Closures, each an assertion that E1's film could not have passed:
+
 - A6 (viewer freshness): the awaited terminal signal was the OPEN viewer's own `Run
-  finished` badge — E1's script had to trust the rail because the header lagged forever.
+finished` badge — E1's script had to trust the rail because the header lagged forever.
   Held on all four lanes.
 - A10 (deadline policy): the qwen lane ran against a genuinely cold daemon under the new
   360s default and finished on film; the former fixed 120s constant no longer exists.

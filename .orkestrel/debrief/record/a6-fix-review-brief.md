@@ -13,8 +13,8 @@ so the reporting inspect starts after the stream's end. The full diff and status
 is embedded at `/home/user/scaffold/tmp/alignment/a6-fix-evidence.md` — read it first; you
 have no shell, so that file is your diff. Read the touched files directly for surrounding
 context: `app/browser/controllers/Operator.ts` (the clean-end tail at ~:492-498, `refresh`
-at ~:316-329, `#reinspect` at ~:441-459, `#invalidate` at ~:578), `guides/src/supervisor.md`
-(~:1945-1975), `tests/app/browser/controllers/Operator.test.ts` (the new proof at ~:818-841
+at ~:316-329, `#reinspect` at ~:441-459, `#invalidate` at ~~:578), `guides/src/supervisor.md`
+(~~:1945-1975), `tests/app/browser/controllers/Operator.test.ts` (the new proof at ~:818-841
 and the released-subscription negative after it).
 
 Gate evidence (Orchestrator-run, for your context, not yours to re-prove): Operator scoped

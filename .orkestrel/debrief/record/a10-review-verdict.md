@@ -5,6 +5,7 @@ acronym and the provider's own option; parseApplicationURL airtight incl. the
 trimmed-not-href ruling preserving the operator's base string; diff hygiene clean).
 
 Refuted and fixed at 182408f, each on the reviewer's own prescription:
+
 - R3 (claim 3): keep_alive '5m' was simultaneously the policy default and the provider
   default, so the wire assertion could not bind the keep→keepAlive translation. Now 30m,
   and the mutation probe binds it: pass-through removed → wire carried 5m → assertion

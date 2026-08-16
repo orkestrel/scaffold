@@ -4,6 +4,7 @@ Range audited: 8d9c325..adc8d11. Journal: tmp/codex/a7-audit.log (191,509 tokens
 completion). AUDIT: PASS — all eight claims CONFIRMED with file:line evidence.
 
 Notable rulings inside the confirmations:
+
 - Claim 1: cutting an astral pair at the 160-unit boundary can leave a lone high surrogate
   rendering as a replacement glyph; within the explicitly code-unit-based criterion, so not
   a defect. RECORDED as a quality nick against the settlement-card capability, to travel

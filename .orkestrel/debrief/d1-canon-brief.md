@@ -173,11 +173,11 @@ no pushes, no tree-wide mutating gates.
     its own name — `planner`, `reviewer`, `opus`. Never dispatched directly for work.";
     model `gpt-5.6-terra`, effort low, sandbox read-only. Developer instructions must
     carry: read `.agents/orchestration.md` first; invocation `claude -p "<brief or
-    pointer>" --model opus --effort high` with the permission mode the route pins;
+pointer>" --model opus --effort high` with the permission mode the route pins;
     verify the `claude` CLI resolves and is authenticated before first use, and on
     failure return it immediately with the fallback named so the Sol main session
     records Opus unavailable for the round; journal every run with `--output-format
-    stream-json` redirected to `tmp/claude/<unit>.jsonl` (gitignored) and record the
+stream-json` redirected to `tmp/claude/<unit>.jsonl` (gitignored) and record the
     session id — a bench unit with no journal ran on its driver's engine, however
     normal its answer reads; briefs never travel as shell arguments (write to
     `tmp/claude/<unit>-brief.md`, pass a pointer); long work is not launched by the

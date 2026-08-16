@@ -12,13 +12,13 @@
 
 Findings 2, 3 and half of 5 are not three defects. They are one: **the open viewer's durable facts refresh on exactly one trigger, and that trigger cannot fire at the moment the run ends.**
 
-`/workspace/supervisor/app/browser/controllers/Operator.ts:465-480` re-inspects only when a frame is `source === 'observe' && observation.category === 'settlement'`. That settlement lands while the *workflow* is still running (the unit settles, then `createWorkflowFunction` returns, then the runner completes, then `SupervisorApplication.#release` runs at `app/server/SupervisorApplication.ts:302-314`). So the last re-inspect the browser ever performs is taken from a snapshot that still says `running`. The broker then closes the viewer (`LiveBroker.close`, `LiveViewer.close`), the browser's `for await` ends **normally**, the `finally` sets `live = false`, and nothing else happens. The header keeps the pre-terminal snapshot forever.
+`/workspace/supervisor/app/browser/controllers/Operator.ts:465-480` re-inspects only when a frame is `source === 'observe' && observation.category === 'settlement'`. That settlement lands while the _workflow_ is still running (the unit settles, then `createWorkflowFunction` returns, then the runner completes, then `SupervisorApplication.#release` runs at `app/server/SupervisorApplication.ts:302-314`). So the last re-inspect the browser ever performs is taken from a snapshot that still says `running`. The broker then closes the viewer (`LiveBroker.close`, `LiveViewer.close`), the browser's `for await` ends **normally**, the `finally` sets `live = false`, and nothing else happens. The header keeps the pre-terminal snapshot forever.
 
 The rail is right for an unrelated reason: it reads a different stream. `RosterManager.#retain` (`app/browser/controllers/RosterManager.ts:121-133`) computes departure from the roster snapshot that `#release` republishes. Two surfaces, two sources, one screen — which is exactly what the film shows.
 
-The seam to fix is therefore **the live stream's own clean end**, not the roster, and not a new frame type. Naming it: a roster stream that ends is a fault (`RosterManager` already says "ended unexpectedly"); a *run's* live stream that ends is the run finishing. Those are opposite meanings on the same mechanism, and the code must say so in both places.
+The seam to fix is therefore **the live stream's own clean end**, not the roster, and not a new frame type. Naming it: a roster stream that ends is a fault (`RosterManager` already says "ended unexpectedly"); a _run's_ live stream that ends is the run finishing. Those are opposite meanings on the same mechanism, and the code must say so in both places.
 
-Second claim, and the one I expect the objective lane to argue with: **`terminal` is a stored flag that can drift, and it should be derived.** `Operator.#terminal` is written once, from `ApplicationTail.terminal`, at open. But `open()` inspects *before* it tails, so the snapshot — which carries `workflow.status` — is always in hand first. `ApplicationTail.terminal` (`app/core/types.ts:202-208`) is a second copy of a fact the snapshot already holds. Delete the field, delete the ref, and expose `Operator.terminal` as a computed over `isTerminalStatus(snapshot.workflow.status)`. Then finding 3 cannot recur, because there is no second place for the fact to be stale in.
+Second claim, and the one I expect the objective lane to argue with: **`terminal` is a stored flag that can drift, and it should be derived.** `Operator.#terminal` is written once, from `ApplicationTail.terminal`, at open. But `open()` inspects _before_ it tails, so the snapshot — which carries `workflow.status` — is always in hand first. `ApplicationTail.terminal` (`app/core/types.ts:202-208`) is a second copy of a fact the snapshot already holds. Delete the field, delete the ref, and expose `Operator.terminal` as a computed over `isTerminalStatus(snapshot.workflow.status)`. Then finding 3 cannot recur, because there is no second place for the fact to be stale in.
 
 ### Operator voice — what the three fixes should feel like
 
@@ -30,7 +30,7 @@ These are the sentences, and they are the deliverable as much as the code is.
    - settled success with a value → render the value (bounded, monospace, same treatment as a transcript line);
    - settled success with no value → "This attempt completed and recorded no result.";
    - not settled and the run is over → "This attempt ended before it recorded an outcome."
-   
+
    "This attempt ended, but its result is not available" reads as a system fault to an operator who can see the answer on the screen above it. That sentence is the defect, independent of the freshness bug behind it.
 
 3. **Failed launch.** The operator learns within one refresh, in the pane they are already looking at, from the run's own facts: the task row goes `failed` and its `TaskSnapshot.result` message renders where the run's status lives. No new frame source, no new observation category, no server change — the refreshed snapshot already carries it. If the probe shows it does not, that is a deviation report, not a licence to edit `src/`.
@@ -41,11 +41,11 @@ These are the sentences, and they are the deliverable as much as the code is.
 
 ### Sequencing ruling: **alignment first, staged; then fixes; middleware runs beside both, never in front of them.**
 
-The reason is the failing-proof law, not merge cost. `AGENTS.md` requires a defect fix to record its proof red before the implementation. During the alignment the suites are red for `recoverWorkflow`, the JSON-RPC split, and `guide.patterns()` — so a proof written mid-alignment cannot be shown to have run red *for the defect it claims*. Fixes-first inverts the problem: every proof is then re-validated against a substrate that moved under it, and the mcp migration edits `app/server/MCPProjection.ts` and `helpers.ts` while the fixes edit `app/browser` and `app/core` — adjacent enough that a reviewer cannot tell which change caused which suite to move. Interleaved is worst: it breaks one-writer serialization and the proof discipline at once.
+The reason is the failing-proof law, not merge cost. `AGENTS.md` requires a defect fix to record its proof red before the implementation. During the alignment the suites are red for `recoverWorkflow`, the JSON-RPC split, and `guide.patterns()` — so a proof written mid-alignment cannot be shown to have run red _for the defect it claims_. Fixes-first inverts the problem: every proof is then re-validated against a substrate that moved under it, and the mcp migration edits `app/server/MCPProjection.ts` and `helpers.ts` while the fixes edit `app/browser` and `app/core` — adjacent enough that a reviewer cannot tell which change caused which suite to move. Interleaved is worst: it breaks one-writer serialization and the proof discipline at once.
 
-**Middleware is not a serial prerequisite, and the campaign must not wait on the user's approval.** Installed middleware `0.0.9` declares `peerDependencies: { "@orkestrel/database": ">=0.0.7", "@orkestrel/server": ">=0.0.10" }` (`/workspace/supervisor/node_modules/@orkestrel/middleware/package.json:105-108`) — **range peers, not carets**. Holding middleware at `0.0.9` while raising database to `0.0.9` and server to `0.0.12` satisfies both peers and installs cleanly. It is `0.0.11` that tightened them to `^0.0.8` / `^0.0.12` and created the conflict the brief describes. So the alignment lands complete-except-middleware, green, committed; the middleware raise becomes a two-line follow-on unit whenever `0.0.12` reaches the registry. If the user defers the approval indefinitely, the campaign still closes with middleware recorded as *intentionally excluded on evidence*.
+**Middleware is not a serial prerequisite, and the campaign must not wait on the user's approval.** Installed middleware `0.0.9` declares `peerDependencies: { "@orkestrel/database": ">=0.0.7", "@orkestrel/server": ">=0.0.10" }` (`/workspace/supervisor/node_modules/@orkestrel/middleware/package.json:105-108`) — **range peers, not carets**. Holding middleware at `0.0.9` while raising database to `0.0.9` and server to `0.0.12` satisfies both peers and installs cleanly. It is `0.0.11` that tightened them to `^0.0.8` / `^0.0.12` and created the conflict the brief describes. So the alignment lands complete-except-middleware, green, committed; the middleware raise becomes a two-line follow-on unit whenever `0.0.12` reaches the registry. If the user defers the approval indefinitely, the campaign still closes with middleware recorded as _intentionally excluded on evidence_.
 
-**Alignment is staged, not one unit** — but staged by *green tree*, not by task type. The pin raise and the four compile migrations are one unit because a partial raise does not typecheck, and a writer cannot be dispatched from a red baseline. The `@orkestrel/test` adoption is a second unit because it is 404 occurrences across 54 files of pure mechanical rewrite, which is the wrong work to hand an expensive engine and the wrong risk to bundle into a migration.
+**Alignment is staged, not one unit** — but staged by _green tree_, not by task type. The pin raise and the four compile migrations are one unit because a partial raise does not typecheck, and a writer cannot be dispatched from a red baseline. The `@orkestrel/test` adoption is a second unit because it is 404 occurrences across 54 files of pure mechanical rewrite, which is the wrong work to hand an expensive engine and the wrong risk to bundle into a migration.
 
 ### Campaign exit criterion
 
@@ -80,6 +80,7 @@ Routing ledger is derivable from each unit's **Role / Engine** line. Writers are
 ---
 
 **U1 — Middleware 0.0.12 preparation**
+
 - **Subject.** Raise `@orkestrel/middleware` to `0.0.12` with peer `@orkestrel/database ^0.0.9`, gates green, committed and pushed. Preparation only; the publish is the Orchestrator's and the user's.
 - **Owned.** `/workspace/middleware/package.json`, `/workspace/middleware/package-lock.json`, and `guides/middleware.md` only if it states the peer range in prose.
 - **Depends on.** Nothing. Runs first, in parallel with U2 (different repository, no shared file).
@@ -90,6 +91,7 @@ Routing ledger is derivable from each unit's **Role / Engine** line. Writers are
 ---
 
 **U2 — Supervisor pin raise and compile migrations**
+
 - **Subject.** Raise every `@orkestrel` pin except middleware to registry latest; adopt `@orkestrel/test ^0.0.3` as a devDep (declaration only, no consumers yet); migrate the four compile breaks.
 - **Owned.** `package.json`, `package-lock.json`; `app/server/MCPProjection.ts`, `app/server/helpers.ts`, `app/server/ApplicationRoutes.ts`, `app/server/factories.ts`; `tests/src/core/Run.test.ts`, `tests/src/server/integration.test.ts`, `tests/app/setup.ts`, `tests/app/server/MCPProjection.test.ts`, `tests/guides/src/parity.test.ts`, `tests/setupGuides.ts`. **Off-limits:** every `app/browser` file, `app/core/types.ts`, `tests/setup.ts`.
 - **Depends on.** Nothing.
@@ -100,8 +102,9 @@ Routing ledger is derivable from each unit's **Role / Engine** line. Writers are
 ---
 
 **U3 — `@orkestrel/test` adoption**
+
 - **Subject.** Delete `TestRecorderInterface`, `createRecorder`, and `waitForDelay` from `tests/setup.ts`; import `createRecorder`, `waitForDelay`, and `RecorderInterface` from `@orkestrel/test` at every consumer. Keep `waitForEvent`, `waitForRecorder`, `waitForAbort` in `tests/setup.ts`, retyped to `RecorderInterface`.
-- **Owned.** `tests/setup.ts` and all 54 files that reference those three symbols. Scope the owned list by *importers*, not declarations — 404 occurrences counted across 54 files.
+- **Owned.** `tests/setup.ts` and all 54 files that reference those three symbols. Scope the owned list by _importers_, not declarations — 404 occurrences counted across 54 files.
 - **Depends on.** U2 (the devDep must be installed).
 - **Role / Engine.** `builder` / Sonnet. Fully specified, taste-free, high-volume.
 - **Acceptance.** `rg "TestRecorderInterface"` returns nothing; no local `createRecorder`/`waitForDelay` definition survives; `npm run test:src` and `npm run test:app` green; no re-export barrel added in `tests/setup.ts` for the two adopted symbols.
@@ -111,16 +114,18 @@ Routing ledger is derivable from each unit's **Role / Engine** line. Writers are
 ---
 
 **U4 — Middleware raise in supervisor**
+
 - **Subject.** Once `@orkestrel/middleware@0.0.12` is on the registry, raise the pin and install.
 - **Owned.** `package.json`, `package-lock.json`.
-- **Depends on.** U1 *and* the user's publish approval *and* U2. If approval is deferred, this unit is recorded excluded and the campaign still closes.
+- **Depends on.** U1 _and_ the user's publish approval _and_ U2. If approval is deferred, this unit is recorded excluded and the campaign still closes.
 - **Role / Engine.** `builder` / Sonnet.
 - **Acceptance.** `@orkestrel/middleware` is `^0.0.12`; `npm ls` reports no unmet peer for database or server; `npm run test:app:server` green.
 - **Risks.** Registry/CDN lag makes a successful publish read as absent; re-read the registry before reporting failure.
 
 ---
 
-**U5 — Viewer freshness and terminal derivation** *(closes E1-3; unblocks the observable half of E1-2 and E1-5)*
+**U5 — Viewer freshness and terminal derivation** _(closes E1-3; unblocks the observable half of E1-2 and E1-5)_
+
 - **Subject.** Refresh once when the live subscription ends cleanly; derive `terminal` from the snapshot; remove `ApplicationTail.terminal` as the second home of that fact.
 - **Owned.** `app/browser/controllers/Operator.ts`; `app/core/types.ts` (`ApplicationTail`); `app/server/SupervisorApplication.ts` (`tail` only); `app/browser/services/Client.ts` and `app/browser/validators.ts` if they decode the tail shape; `tests/app/browser/controllers/Operator.test.ts`, `tests/app/server/SupervisorApplication.test.ts`, `tests/app/browser/portfolio.test.ts` + `portfolio.ts`. **Off-limits:** `app/browser/components/FeedItem.vue` (U6/U8 own it).
 - **Depends on.** U2, U3.
@@ -136,7 +141,8 @@ Routing ledger is derivable from each unit's **Role / Engine** line. Writers are
 
 ---
 
-**U6 — Settlement card voice** *(closes E1-5's rendering half)*
+**U6 — Settlement card voice** _(closes E1-5's rendering half)_
+
 - **Subject.** The settlement card states the attempt's real outcome, including its recorded value.
 - **Owned.** `app/browser/components/FeedItem.vue`, `app/browser/helpers.ts` (if the outcome derivation moves to an exported leaf), `tests/app/browser/components/FeedItem.test.ts`, `tests/app/browser/helpers.test.ts`, portfolio registration.
 - **Depends on.** U5 (its criterion is only observable against a refreshed snapshot). Serialized before U8 — both own `FeedItem.vue`.
@@ -151,7 +157,8 @@ Routing ledger is derivable from each unit's **Role / Engine** line. Writers are
 
 ---
 
-**U7 — Failed-launch voice** *(closes E1-2)*
+**U7 — Failed-launch voice** _(closes E1-2)_
+
 - **Subject.** A launch that fails before any unit observation reaches the operator within one refresh, naming what failed.
 - **First step, fixed in the brief.** Drive a real failing launch (an unreachable daemon URL — a real failure of a real component, no mock, no fake clock) and read what the refreshed `ApplicationSnapshot` actually carries. The mechanism follows the reading: if `TaskSnapshot.result` carries the failure, this is a browser rendering unit and nothing else; if it does not, the unit **stops and reports** rather than editing `src/core/factories.ts`, because that is the published library and a change there obliges a bump, a publish, and a re-pin.
 - **Owned.** `app/browser/components/ContentPane.vue`, `app/browser/components/PhaseView.vue`, `app/browser/components/TaskView.vue`, their tests, portfolio registration. **Off-limits:** all of `src/`.
@@ -162,7 +169,8 @@ Routing ledger is derivable from each unit's **Role / Engine** line. Writers are
 
 ---
 
-**U8 — Transcript register rendering** *(closes E1-4)*
+**U8 — Transcript register rendering** _(closes E1-4)_
+
 - **Subject.** Each transcript frame renders as one collapsed labelled row, disclosable to its verbatim text.
 - **Owned.** `app/browser/parsers.ts`, `app/browser/types.ts` (`TranscriptSummary`), `app/browser/components/FeedItem.vue`, `tests/app/browser/parsers.test.ts`, `tests/app/browser/components/FeedItem.test.ts`, portfolio registration.
 - **Depends on.** U6 (shared file `FeedItem.vue`; strictly serialized after it).
@@ -177,7 +185,8 @@ Routing ledger is derivable from each unit's **Role / Engine** line. Writers are
 
 ---
 
-**U9 — Agent-lane cold-load deadline** *(closes E1-1)*
+**U9 — Agent-lane cold-load deadline** _(closes E1-1)_
+
 - **Subject.** Regroup the agent lane's provider settings and pass a deadline that covers a cold model load, plus a residency setting so the second task does not pay it again.
 - **Owned.** `app/core/types.ts` (`ApplicationPolicy`), `app/core/parsers.ts`, `app/core/constants.ts`, `app/server/ApplicationRuntime.ts`, `tests/app/core/parsers.test.ts`, `tests/app/server/ApplicationRuntime.test.ts`, `tests/service/ollama/AgentExecutor.test.ts`, and the matching guide.
 - **Depends on.** U2 (the ollama raise). Sequenced **after** U7 deliberately: the fault voice must exist before the timeout changes, so the change is observable and so U7's proof still has a real failing launch to bind to.
@@ -188,6 +197,7 @@ Routing ledger is derivable from each unit's **Role / Engine** line. Writers are
 ---
 
 **U10 — Gates and portfolio acceptance**
+
 - **Subject.** One independent tree-wide gate sweep plus the four-lane re-film against the E1 protocol.
 - **Owned.** Nothing. Read-only.
 - **Depends on.** Every writing unit.
@@ -217,7 +227,7 @@ Where my lane chose on taste and Sol should rule objectively:
 
 ## Risks — the three highest
 
-1. **Six packages have no target declaration tree at all** — budget, emitter, sse, terminal, router, sea, ollama, scaffold. The absorb map records "none observed (target tree missing)", which is an absence of evidence recorded honestly, not evidence of absence. `createSSEParser`, `createDispatcher`, the terminal prompt vocabulary, and `createOllama` are all load-bearing, and `ollama` is the package U9 depends on. **Evidence needed:** fetch each target tree's `index.d.ts` and diff the consumed symbol set *before* U2 is dispatched, not during it. This is Grok's work, and it is cheap. A surprise here turns U2 from a migration into an unbounded redesign mid-unit.
+1. **Six packages have no target declaration tree at all** — budget, emitter, sse, terminal, router, sea, ollama, scaffold. The absorb map records "none observed (target tree missing)", which is an absence of evidence recorded honestly, not evidence of absence. `createSSEParser`, `createDispatcher`, the terminal prompt vocabulary, and `createOllama` are all load-bearing, and `ollama` is the package U9 depends on. **Evidence needed:** fetch each target tree's `index.d.ts` and diff the consumed symbol set _before_ U2 is dispatched, not during it. This is Grok's work, and it is cheap. A surprise here turns U2 from a migration into an unbounded redesign mid-unit.
 
 2. **U7 rests on a fact nobody has read.** Whether a launch that throws inside `createWorkflowFunction` leaves anything in `TaskSnapshot.result` decides whether E1-2 is a browser rendering unit or a change to the published library — and the second is a bump, a publish, and a fleet re-pin, which is not this campaign. **Evidence needed:** one real failing launch, driven against a real unreachable daemon, with the resulting `ApplicationSnapshot` printed. Run it before U7's brief is written, per the probe-before-brief rule.
 

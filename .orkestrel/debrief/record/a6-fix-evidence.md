@@ -19,7 +19,7 @@ index 58b767b..879a401 100644
 +		if (signal.aborted || generation !== this.#generation) return
  		await this.refresh()
  	}
- 
+
 diff --git a/guides/src/supervisor.md b/guides/src/supervisor.md
 index 6b815b9..ede432c 100644
 --- a/guides/src/supervisor.md
@@ -45,7 +45,7 @@ index 6b815b9..ede432c 100644
 +durable end, and the retained rows keep rendering as an ended run instead of reporting a workflow
 +that cannot be found. An `ABSENT` answer with no prior success is an ordinary refusal and is shown as
 +one.
- 
+
  `terminal` and `ended` are different facts and neither implies the other. `terminal` is read from the
  retained snapshot's own workflow status, so it follows every inspect the operator takes and no second
  copy of it can drift: a run whose snapshot is terminal attaches no live subscription, and the
@@ -64,7 +64,7 @@ index 6b815b9..ede432c 100644
 +been read. A run that finished normally is `terminal`; a run whose retained state was later removed
 +is `ended`; a run that was already terminal when it was opened is never reported missing on either
 +count.
- 
+
  The reader's session is one field, and the whole interface gates on its presence rather than on a
  companion boolean that could disagree with it. `identify` asks the server once as the interface
 diff --git a/tests/app/browser/controllers/Operator.test.ts b/tests/app/browser/controllers/Operator.test.ts
@@ -74,7 +74,7 @@ index ad78c82..727b3e0 100644
 @@ -815,6 +815,30 @@ describe('Operator', () => {
  		expect(operator.stack.rows()[0]?.id).toBe(WORKFLOW)
  	})
- 
+
 +	it('starts a post-close inspect after an in-flight pre-terminal read drains', async () => {
 +		const client = new ScriptedClient({
 +			answers: [

@@ -291,6 +291,29 @@ Routing ledger for the landing: D1 (canon edits, all Land rows except R21) → O
 `checker` (its own refined trigger: acceptance criteria are mechanical); gates →
 `verifier`; D2 (supervisor ROADMAP rows) → `builder`, disjoint repository, parallel.
 
+## Step 7 — landing record
+
+- **D1** (Opus `implementer`, sole writer): all 28 prescribed canon edits landed at
+  `8566281`; no deviations; scoped format check green; one Unknowns ruling (analyst.toml
+  kept its beyond-CONFIRMED/BROKEN substance under the new default — accepted); three
+  integration observations returned instead of being edited inline, per the newly landed
+  integration law.
+- **D1b** (builder, successor brief `d1b-harmonize-brief.md`): the three observations
+  landed as four sentence replacements at the D1b commit; one recorded ancillary fix
+  (oxfmt re-quoted reviewer.md's YAML description to hold an apostrophe).
+- **D2** (builder, disjoint supervisor checkout): six retained-finding rows added and the
+  satisfied Sol-implementer-route row struck; supervisor `18121d6`, pushed to branch and
+  main. Carries R21.
+- **Audit round for D1+D1b, routed per the refined step 5 and recorded here per its
+  record-when-not-run clause:** the mechanical lane ran — `checker` on 30 numbered
+  claims over the supplied diff (`d1-check-brief.md`, `d1-diff.patch`) — and the
+  independent `verifier` ran the five-gate chain. The second judgment lane did not run:
+  the landed substance is the two blind lanes' own reconciled prescriptions from this
+  round, so a judgment lane would re-audit its own authorship; transcription risk is the
+  checker's class.
+- **R6 re-proof:** `record/a11-refilm-script.mjs` committed — the A11 capture unit's
+  instrument is now in the record, so the film is re-producible from the record alone.
+
 ## Disposition map
 
-Pending.
+Pending: checker verdict, gate evidence, then the map and terminal line.

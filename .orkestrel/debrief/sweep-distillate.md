@@ -93,14 +93,14 @@ No sentence in the 35 files names the wording of a rule, role charter, skill, or
 
 ## 6. Re-runnability
 
-| Unit | Brief | Report | Verdict | Triad under `record/` |
-| --- | --- | --- | --- | --- |
-| A6 | `a6-brief.md` (+ `a6-fix-brief.md`, `a6-audit-brief.md`, `a6-fix-review-brief.md`) | `a6-report.md` (+ `a6-fix-evidence.md`) | `a6-audit-verdict.md`, `a6-fix-review-verdict.md` | yes |
-| A7 | `a7-brief.md` (+ `a7-audit-brief.md`) | `a7-report.md` | `a7-audit-verdict.md` | yes |
-| A8 | `a8-brief.md` (+ `a8-audit-brief.md`) | `a8-report.md` | `a8-audit-verdict.md` (+ `a8-probe-verdict.md`, no `AUDIT:`/`REVIEW:`/`REVERIFY:` line) | yes |
-| A9 | `a9-brief.md` (+ `a9-audit-brief.md`) | `a9-report.md` | `a9-audit-verdict.md` | yes |
-| A10 | `a10-brief.md` (+ `a10-review-brief.md`) | `a10-report.md` (+ `a10-evidence.md`) | `a10-review-verdict.md` | yes |
-| A11 | none | none named report (`a11-refilm-record.md`, `a11-gate-sweep.md` exist) | none | no |
+| Unit | Brief                                                                              | Report                                                                | Verdict                                                                                 | Triad under `record/` |
+| ---- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | --------------------- |
+| A6   | `a6-brief.md` (+ `a6-fix-brief.md`, `a6-audit-brief.md`, `a6-fix-review-brief.md`) | `a6-report.md` (+ `a6-fix-evidence.md`)                               | `a6-audit-verdict.md`, `a6-fix-review-verdict.md`                                       | yes                   |
+| A7   | `a7-brief.md` (+ `a7-audit-brief.md`)                                              | `a7-report.md`                                                        | `a7-audit-verdict.md`                                                                   | yes                   |
+| A8   | `a8-brief.md` (+ `a8-audit-brief.md`)                                              | `a8-report.md`                                                        | `a8-audit-verdict.md` (+ `a8-probe-verdict.md`, no `AUDIT:`/`REVIEW:`/`REVERIFY:` line) | yes                   |
+| A9   | `a9-brief.md` (+ `a9-audit-brief.md`)                                              | `a9-report.md`                                                        | `a9-audit-verdict.md`                                                                   | yes                   |
+| A10  | `a10-brief.md` (+ `a10-review-brief.md`)                                           | `a10-report.md` (+ `a10-evidence.md`)                                 | `a10-review-verdict.md`                                                                 | yes                   |
+| A11  | none                                                                               | none named report (`a11-refilm-record.md`, `a11-gate-sweep.md` exist) | none                                                                                    | no                    |
 
 Paths cited that are **not** under `.orkestrel/debrief/record/`:
 
