@@ -62,9 +62,9 @@ never travel as shell arguments. Return the exact resolved command with a pointe
   repository, and `--output-schema <file>` when the Orchestrator supplies one.
 - The journal at `tmp/codex/<unit>.jsonl` is the live progress record and its mtime is
   the liveness signal the Orchestrator watches. Never re-print the stream into your report.
-- When the Orchestrator hands back a finished exec, read Sol's answer from the
-  `--output-last-message` file rather than stdout, and record the session id (`thread_id`
-  in the journal's opening events) in every report.
+- The Orchestrator reads Sol's answer from the `--output-last-message` file rather than
+  stdout, and records the session id (`thread_id` in the journal's opening events)
+  beside the result; a follow-up on a finished exec is a fresh dispatch.
 
 ## The exec sandbox denies network
 
@@ -122,9 +122,9 @@ baseline, with owned files, off-limits files, and a deviation contract. The brie
 dependency installation, commits, pushes, publishing, credentials, destructive commands,
 shared-file edits, and tree-wide mutating gates.
 
-When the Orchestrator hands the finished exec back, verify the result with direct evidence
-(git status, diff, scoped validation) and report once, completely: touched files,
-diffstat, scoped validation, and deviation state, for independent integration and review.
+The Orchestrator verifies the finished exec with direct evidence — git status, the diff,
+scoped validation — and carries touched files, diffstat, and deviation state into
+integration and review.
 
 ## Routing exclusion — defensive negative-test units
 

@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: 'Subjective design-fit review of implemented work — API feel, vocabulary, architecture shape, guide voice, and conceptual coherence. Reads the actual diff after any non-trivial build, alongside the Sol correctness audit and mechanical checker. Never edits.'
+description: "Subjective design-fit review of implemented work — API feel, vocabulary, architecture shape, guide voice, and conceptual coherence. Reads the actual diff when the round's triggers name this lane. Never edits."
 tools: Read, Grep, Glob
 model: opus
 effort: high

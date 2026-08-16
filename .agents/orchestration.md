@@ -298,13 +298,13 @@ lane instead of re-dispatching against a session-start answer that no longer hol
    shape. Dispatch `checker` when the acceptance criteria are mechanical — counts, paths, parity
    rows, scope honesty. Record in the round's verdict file when a lane or the checker did not run.
    - State the audit's subject as numbered falsifiable claims and require per-claim verdicts with
-     evidence, per the Falsification law in `.claude/rules/quality.md` and the value set the
-     dispatch-named skill fixes.
+     evidence, per the Falsification law in `.claude/rules/quality.md` and the `orkestrel-falsify`
+     value set, unless the dispatch names a different skill that fixes another.
    - In a fix round, give the unit to an auditor engine that did not write it.
    - Run the `orkestrel-falsify` skill for multi-round audits. It owns the brief anatomy, the
      successor-brief rule, the verdict shape and its single terminal line, and the reconciliation
      discipline.
-   - Reconcile their evidence. Drop, on the record, any finding neither engine can substantiate.
+   - Reconcile the lanes that ran. Drop, on the record, any finding no lane can substantiate.
 6. **Verify.** Have one independent `verifier` run the authoritative gates.
 7. **Re-baseline.** Reconcile the remaining plan against what the phase revealed, before dispatching
    the next one.
