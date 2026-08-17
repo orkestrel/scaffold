@@ -176,3 +176,12 @@ previous approval, half minted their own; the relay flow absorbed both. L3 stand
 launched: browser, guide, mcp, queue, server, terminal, workspace + second rounds interpret,
 qualifier, rater. relation (B16 port) and scaffold (B17 + vendored rule edits, no overwrite)
 run as dedicated units.
+
+## L3 published and accepted (2026-08-17)
+
+Twelve confirmed from the registry on one approval window: browser 0.0.10, guide 0.0.12,
+mcp 0.0.16, queue 0.0.9, relation 0.0.9 (B16 hardening shipped), scaffold 0.0.39 (B17 clean
+catalog emitter + current-pin constants + the session's vendored rule edits, now propagating
+via repair/overwrite), server 0.0.13, terminal 0.0.10, workspace 0.0.5, interpret 0.0.10,
+qualifier 0.0.10, rater 0.0.11. L4 visits launched: worker, workflow + second rounds brief,
+program.
