@@ -2989,9 +2989,9 @@ describe('CLI catalog', () => {
 			expect(workspace.read('target/guides/emitter.md')).toBe('# Emitter\n')
 			expect(workspace.read('target/guides/scaffold.md')).toBe('# Scaffold\n')
 			const agent = workspace.read(`target/${CATALOG_AGENT_PATH}`)
-			expect(agent).toContain('| `@orkestrel/emitter` | `0.0.6` | L0 |  |')
+			expect(agent).toContain('| `@orkestrel/emitter` | `0.0.6` | L0    |                               |')
 			expect(agent).toContain(
-				'| `@orkestrel/guide` | `0.1.0` | L1 | `@orkestrel/emitter` `^0.0.6` |',
+				'| `@orkestrel/guide`   | `0.1.0` | L1    | `@orkestrel/emitter` `^0.0.6` |',
 			)
 			// Only the marked region moved, so every word a consumer wrote around
 			// the table is still there.

@@ -849,7 +849,7 @@ describe('Materializer mirror', () => {
 })
 
 describe('Materializer catalog', () => {
-	it('rewrites only the marked region and leaves every word around it', () => {
+	it('writes the oxfmt-padded table and leaves every word around it', () => {
 		const workspace = createWorkspace()
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
@@ -860,28 +860,42 @@ describe('Materializer catalog', () => {
 				const result = materializer.catalog(
 					[
 						{
-							name: '@orkestrel/kernel',
+							name: '@orkestrel/contract',
 							lookup: 'found',
-							version: '0.0.4',
-							dependencies: [{ name: '@orkestrel/router', range: '^0.0.8' }],
+							version: '0.0.11',
+							dependencies: [],
 						},
-						{ name: '@orkestrel/router', lookup: 'found', version: '0.0.8', dependencies: [] },
-						{ name: '@orkestrel/queue', lookup: 'missing', note: 'Not\npublished yet.' },
+						{
+							name: '@orkestrel/agent',
+							lookup: 'found',
+							version: '0.0.15',
+							dependencies: [
+								{ name: '@orkestrel/contract', range: '^0.0.11' },
+								{ name: '@orkestrel/workflow', range: '^0.0.11' },
+							],
+						},
+						{ name: '@orkestrel/queue', lookup: 'missing', note: 'No | release' },
 					],
 					target,
 				)
 				expect(result.written).toEqual(['.claude/agents/orkestrel.md'])
 				const text = workspace.read('project/.claude/agents/orkestrel.md')
-				expect(text).toContain('Prose a consumer wrote above the table.')
-				expect(text).toContain('Prose a consumer wrote below the table.')
-				// The dependent renders one layer later than what it depends on, in the
-				// same call that wrote the edge, so the order is derived rather than
-				// asserted by whoever supplied the rows.
-				expect(text).toContain('| `@orkestrel/router` | `0.0.8` | L0 |  |')
-				expect(text).toContain(
-					'| `@orkestrel/kernel` | `0.0.4` | L1 | `@orkestrel/router` `^0.0.8` |',
+				const paddedAgentRow =
+					'| `@orkestrel/agent`    | `0.0.15`      | L1    | `@orkestrel/contract` `^0.0.11`, `@orkestrel/workflow` `^0.0.11` |'
+				const table = [
+					'| Package               | Version       | Layer | Runtime dependencies                                             |',
+					'| --------------------- | ------------- | ----- | ---------------------------------------------------------------- |',
+					'| `@orkestrel/contract` | `0.0.11`      | L0    |                                                                  |',
+					paddedAgentRow,
+					'| `@orkestrel/queue`    | No \\| release |       |                                                                  |',
+				].join('\n')
+				expect(text).toBe(
+					CATALOG_AGENT_TEXT.replace('| Package | Version |\n| --- | --- |', `\n${table}\n`),
 				)
-				expect(text).toContain('| `@orkestrel/queue` | Not published yet. | | |')
+				const unpaddedAgentRow =
+					'| `@orkestrel/agent` | `0.0.15` | L1 | `@orkestrel/contract` `^0.0.11`, `@orkestrel/workflow` `^0.0.11` |'
+				expect(unpaddedAgentRow).not.toBe(paddedAgentRow)
+				expect(text).not.toContain(unpaddedAgentRow)
 			} finally {
 				materializer.destroy()
 			}

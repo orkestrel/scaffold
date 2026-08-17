@@ -50,15 +50,15 @@ Per-repo protocol unchanged (visit.sh): overwrite with current host → format c
 test ^0.0.6 dev. DEBRIEF guidance binds visits: guide Kind column distinguishes function/const;
 source TSDoc backticks only its own package's exports; dictionary leaves certify own members only.
 
-| Round | Work | Publishes |
-| ----- | ---- | --------- |
-| now | publish the prepared msg 0.0.7; sse dev-only re-pin (contract dev ^0.0.12, test ^0.0.6), no release expected | msg |
-| L1 | abort, budget, csv, emitter, html, indexeddb, ndjson, sqlite, timeout, tool — re-pin contract ^0.0.12, visit, bump | 10 |
-| L2 | console, database, form, markdown, middleware, pool, reason (defect repair rides here), router, sea, table, template, websocket | 12 |
-| L3 | browser, guide, mcp, queue, relation (+B16 hardening port), scaffold (+B17 catalog-format fix, vendored rule edits ship), server, terminal, workspace, plus second rounds: interpret, qualifier, rater (re-pin reason 0.0.7 and L1 bumps) | 12 |
-| L4 | worker, workflow, plus second rounds: brief, program | 4 |
-| L5 | agent | 1 |
-| L6 | ollama, toolbox | 2 |
+| Round | Work                                                                                                                                                                                                                                      | Publishes |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| now   | publish the prepared msg 0.0.7; sse dev-only re-pin (contract dev ^0.0.12, test ^0.0.6), no release expected                                                                                                                              | msg       |
+| L1    | abort, budget, csv, emitter, html, indexeddb, ndjson, sqlite, timeout, tool — re-pin contract ^0.0.12, visit, bump                                                                                                                        | 10        |
+| L2    | console, database, form, markdown, middleware, pool, reason (defect repair rides here), router, sea, table, template, websocket                                                                                                           | 12        |
+| L3    | browser, guide, mcp, queue, relation (+B16 hardening port), scaffold (+B17 catalog-format fix, vendored rule edits ship), server, terminal, workspace, plus second rounds: interpret, qualifier, rater (re-pin reason 0.0.7 and L1 bumps) | 12        |
+| L4    | worker, workflow, plus second rounds: brief, program                                                                                                                                                                                      | 4         |
+| L5    | agent                                                                                                                                                                                                                                     | 1         |
+| L6    | ollama, toolbox                                                                                                                                                                                                                           | 2         |
 
 Roughly 42 uploads across 7 windows. Each layer prepares only after the previous is on the
 registry. Publishing is the user's credential; windows on request.
@@ -70,8 +70,8 @@ supervisor work belongs to the user's own session and is not tracked here beyond
 
 ## Decision register (user)
 
-| # | Decision | State |
-| - | -------- | ----- |
-| D5 | Publish windows per layer round | user-run, on request; msg's window is ready now |
-| D6 | B3 prepack manifests | open, no default |
-| D8 | Branch cleanup script run (.orkestrel/fleet/branch-cleanup.sh, operator credentials) | with user |
+| #   | Decision                                                                             | State                                           |
+| --- | ------------------------------------------------------------------------------------ | ----------------------------------------------- |
+| D5  | Publish windows per layer round                                                      | user-run, on request; msg's window is ready now |
+| D6  | B3 prepack manifests                                                                 | open, no default                                |
+| D8  | Branch cleanup script run (.orkestrel/fleet/branch-cleanup.sh, operator credentials) | with user                                       |

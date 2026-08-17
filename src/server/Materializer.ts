@@ -900,21 +900,33 @@ export class Materializer implements MaterializerInterface {
 		const layers = catalogToLayers(entries)
 		const placed = new Map<string, number>()
 		for (const [index, layer] of layers.entries()) for (const name of layer) placed.set(name, index)
-		const rows = entries.map((entry) => {
+		const rows: string[][] = entries.map((entry) => {
 			if (entry.lookup !== 'found') {
-				return `| \`${entry.name}\` | ${this.#cell(entry.note)} | | |`
+				return [`\`${entry.name}\``, this.#cell(entry.note), '', '']
 			}
 			const layer = placed.get(entry.name)
 			const edges = entry.dependencies
 				.map((dependency) => `\`${dependency.name}\` \`${dependency.range}\``)
 				.join(', ')
-			return `| \`${entry.name}\` | \`${entry.version}\` | ${layer === undefined ? '' : `L${String(layer)}`} | ${edges} |`
+			return [
+				`\`${entry.name}\``,
+				`\`${entry.version}\``,
+				layer === undefined ? '' : `L${String(layer)}`,
+				edges,
+			]
 		})
-		const table = [
-			'| Package | Version | Layer | Runtime dependencies |',
-			'| --- | --- | --- | --- |',
-			...rows,
-		].join('\n')
+		const headers = ['Package', 'Version', 'Layer', 'Runtime dependencies']
+		const widths = headers.map((header, column) => {
+			let width = Math.max(3, header.length)
+			for (const row of rows) width = Math.max(width, row[column]?.length ?? 0)
+			return width
+		})
+		const table = [headers, widths.map((width) => '-'.repeat(width)), ...rows]
+			.map(
+				(row) =>
+					`| ${row.map((cell, column) => cell.padEnd(widths[column] ?? cell.length)).join(' | ')} |`,
+			)
+			.join('\n')
 		return (text: string) => {
 			const opening = text.indexOf(Materializer.#opening)
 			const closing = text.indexOf(Materializer.#closing, opening + Materializer.#opening.length)
@@ -923,7 +935,7 @@ export class Materializer implements MaterializerInterface {
 					path: CATALOG_AGENT_PATH,
 				})
 			}
-			return `${text.slice(0, opening + Materializer.#opening.length)}\n${table}\n${text.slice(closing)}`
+			return `${text.slice(0, opening + Materializer.#opening.length)}\n\n${table}\n\n${text.slice(closing)}`
 		}
 	}
 

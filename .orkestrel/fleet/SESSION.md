@@ -6,10 +6,10 @@ since moved to test@0.0.5 and scaffold@0.0.38 from other sessions).
 
 ## Bench ledger
 
-| Bench       | State | Evidence                                                              |
-| ----------- | ----- | --------------------------------------------------------------------- |
-| Cursor Grok | LIVE  | PONG round-trip, `cursor-grok-4.6-high`, `tmp/cursor/probe.log`       |
-| Codex Sol   | LIVE  | PONG round-trip after device-auth recovery, `tmp/codex/probe.jsonl`   |
+| Bench       | State | Evidence                                                            |
+| ----------- | ----- | ------------------------------------------------------------------- |
+| Cursor Grok | LIVE  | PONG round-trip, `cursor-grok-4.6-high`, `tmp/cursor/probe.log`     |
+| Codex Sol   | LIVE  | PONG round-trip after device-auth recovery, `tmp/codex/probe.jsonl` |
 
 Grok model pin `cursor-grok-4.6-high` re-verified against `agent models` 2026-08-17; still newest Grok line.
 Deviation recorded: grok subagent's inner cursor run hit its ~2-minute self-bound with an empty journal
