@@ -17,14 +17,17 @@ and handed the launch back; Orchestrator relaunched under its own cap and it com
 
 ## Fleet state (measured 2026-08-17, evidence in tmp/registry-state.json + tmp/fleet-facts.json)
 
-- 45 packages. 44 in the catalog table; `form@0.0.1` (L2: contract, emitter) is published and absent
-  from the catalog — regenerate via `scaffold catalog` during scaffold's campaign turn.
+- 46 packages. 44 in the catalog table; `form@0.0.1` and `table@0.0.1` (both L2: contract, emitter;
+  both private repos, user-confirmed new) are published and absent from the catalog — regenerate via
+  `scaffold catalog` during scaffold's campaign turn. The org repo list is fully accounted for: 46
+  repos, all attached and cloned.
 - Version parity: every local manifest equals its registry version. Nothing is behind its own publish.
 - Catalog table stale rows: scaffold 0.0.37→0.0.38, terminal 0.0.8→0.0.9, test 0.0.3→0.0.5, form missing.
 - Runtime pin drift: database 0.0.9 stale in agent, queue, relation, worker, workflow, workspace, toolbox;
   workflow 0.0.12 stale in agent, toolbox; terminal 0.0.9 stale in toolbox; console 0.0.7 stale in scaffold.
-- Dev pin drift fleet-wide: scaffold ^0.0.33 (test repo ^0.0.30, form ^0.0.37) vs 0.0.38; test ^0.0.3
-  (form ^0.0.4) vs 0.0.5; guide ^0.0.10 in test vs 0.0.11; server ^0.0.11 in ollama vs 0.0.12.
+- Dev pin drift fleet-wide: scaffold ^0.0.33 (test repo ^0.0.30, form/table ^0.0.37) vs 0.0.38; test
+  ^0.0.3 (form/table ^0.0.4) vs 0.0.5; guide ^0.0.10 in test vs 0.0.11; server ^0.0.11 in ollama vs
+  0.0.12. form and table join the dev-only re-pin set; their runtime pins are current.
 - Mirror drift: CLAUDE.md differs from scaffold's canonical copy in ~18 repos; AGENTS.md differs in
   ollama, supervisor, test. Overwrite/repair restores them; never hand-edit in targets.
 - Campaign artifacts: scaffold/.orkestrel (10 files incl. fleet/PLAN.md), brief/.orkestrel (34 files:
@@ -38,7 +41,7 @@ and handed the launch back; Orchestrator relaunched under its own cap and it com
 
 - L0: contract, msg, sse, test
 - L1: abort, budget, csv, emitter, html, indexeddb, ndjson, sqlite, timeout, tool
-- L2: console, database, form, markdown, middleware, pool, reason, router, sea, template, websocket
+- L2: console, database, form, markdown, middleware, pool, reason, router, sea, table, template, websocket
 - L3: browser, guide, interpret, mcp, qualifier, queue, rater, relation, scaffold, server, terminal, workspace
 - L4: brief, program, worker, workflow
 - L5: agent, supervisor
