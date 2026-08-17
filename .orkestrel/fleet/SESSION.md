@@ -54,9 +54,16 @@ and handed the launch back; Orchestrator relaunched under its own cap and it com
 - L5 round: agent (re-pin database, workflow, workspace, queue), supervisor (re-pin database, workflow).
 - L6 round: toolbox (re-pin database, terminal, workflow, agent, relation), ollama (re-pin agent).
 
-Dev-only re-pin, no bump, no publish (~18 packages): all others with stale scaffold/test/guide/server
-dev pins. Clean: brief, browser, console, csv, database, indexeddb, mcp, middleware, pool, rater,
-reason, router, sea, server, sqlite, sse, terminal, websocket.
+Dev-only re-pin, no bump, no publish (~20 packages incl. form, table): all others with stale
+scaffold/test/guide/server dev pins. Clean: brief, browser, console, csv, database, indexeddb, mcp,
+middleware, pool, rater, reason, router, sea, server, sqlite, sse, terminal, websocket.
+
+Dev-bump publish test (rule landed 2026-08-17 in `.agents/orchestration.md` and the orkestrel role
+file, vendored bytes riding scaffold's next release): after a dev re-pin and green gates, rebuild and
+compare `dist/` against the published tarball (`npm view @orkestrel/<name> dist.tarball`). Identical
+bytes: commit to main, no release. Changed bytes: the published surface moved (forced src/app edit or
+toolchain-changed emit), so bump + publish and the runtime cascade applies to its dependents. Manifest
+devDependency ranges are outside the comparison; they reach no consumer.
 
 ## Overwrite mechanism facts (from guides/scaffold.md absorption, tmp/cursor/scaffold-absorb.log)
 

@@ -99,9 +99,10 @@ pin names an older version runs that older version, whatever the registry holds.
 
 A **development** bump obliges nothing. A `devDependencies` range reaches no consumer of
 the published package, so re-pin it, prove the gates still green, and stop. Never report a
-development bump as a cascade. It becomes one only if it forces a change to `src` or
-`app`, because then the published types or runtime moved and the package bumps on that
-account rather than on the dependency's.
+development bump as a cascade. It becomes one only when the rebuilt `dist/` differs from
+the published artifact after the re-pin — the published surface moved, through a forced
+`src`/`app` edit or a changed toolchain emit — and the package then bumps on that account
+rather than on the dependency's.
 
 The `Layer` column above is the publish round, derived from the runtime edges in the same
 row. `L0` depends on nothing else in the fleet and publishes first; each later layer

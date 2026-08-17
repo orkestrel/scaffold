@@ -643,9 +643,12 @@ either publishes packages nobody needed to publish or leaves a consumer pinned t
   downstream of it re-pins, re-runs its gates, bumps, and republishes, in layer order.
 - A **development** `devDependencies` bump reaches nobody. Re-pin it, prove the gates still green,
   and commit to `main`. Do not bump the version and do not publish.
-- A development bump that forces a change to `src` or `app` is no longer a development bump. The
-  published types or runtime moved, so that package bumps and publishes on its own account, and
-  its own dependents follow the runtime rule above.
+- A development bump that moves the published artifact is no longer a development bump. Prove the
+  direction with the build, not the diff of sources: rebuild after the re-pin and compare `dist/`
+  against the published tarball. Identical bytes close it as development. Changed bytes mean the
+  published surface moved — a forced `src` or `app` edit and a toolchain-changed emit both surface
+  here — so that package bumps and publishes on its own account, and its own dependents follow the
+  runtime rule above.
 
 Every package is `0.0.x`, where a caret pins one exact release. A dependent therefore sees a new
 version only after it re-pins and republishes, so the fleet publishes in topological layer order
