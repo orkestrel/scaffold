@@ -136,3 +136,14 @@ devDependency ranges are outside the comparison; they reach no consumer.
 - supervisor removed from the workspace and every artifact per the user: theirs, other session.
 - msg 0.0.7 remains prepared and unpublished; sse owes a dev-only contract/test re-pin.
 - Wave reorganized: ~42 uploads over 7 windows (see PLAN.md). L1 = ten contract consumers.
+
+## L1 prepared (2026-08-17)
+
+- Eleven uploads staged: msg 0.0.7, abort 0.0.7, budget 0.0.7, csv 0.0.4, emitter 0.0.7,
+  html 0.0.4, indexeddb 0.0.8, ndjson 0.0.7, sqlite 0.0.8, timeout 0.0.7, tool 0.0.11.
+  sse sits out: dev-only moves, dist-identical, runtime set unchanged.
+- Visit defect found and repaired: overwrite's declare re-pins before the verify step, so
+  "did my step move a pin" under-counted; the bump test is now final-runtime-set vs published
+  packument (visit2.sh patched; abort, budget, timeout, sqlite repair-bumped).
+- Publish flow per user: first upload mints the approval, the user's click opens the
+  five-minute window, the rest chain with --ignore-scripts (tmp/publish-l1.sh).
