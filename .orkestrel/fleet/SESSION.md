@@ -166,3 +166,13 @@ Twelve uploads ready: console 0.0.8, database 0.0.10, form 0.0.2, markdown 0.0.9
 0.0.13, pool 0.0.8, reason 0.0.7 (contract ^0.0.12 + emitter ^0.0.7 repair), router 0.0.10,
 sea 0.0.7, table 0.0.2, template 0.0.4, websocket 0.0.9. Corrected bump test held: every
 runtime-set move bumped regardless of dist identity.
+
+## L2 published and accepted (2026-08-17)
+
+Twelve confirmed from the registry: console 0.0.8, database 0.0.10, form 0.0.2, markdown 0.0.9,
+middleware 0.0.13, pool 0.0.8, reason 0.0.7 (two-copy defect closed), router 0.0.10, sea 0.0.7,
+table 0.0.2, template 0.0.4, websocket 0.0.9. Window behavior: roughly half the uploads rode the
+previous approval, half minted their own; the relay flow absorbed both. L3 standard visits
+launched: browser, guide, mcp, queue, server, terminal, workspace + second rounds interpret,
+qualifier, rater. relation (B16 port) and scaffold (B17 + vendored rule edits, no overwrite)
+run as dedicated units.
