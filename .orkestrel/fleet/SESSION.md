@@ -159,3 +159,10 @@ devDependency ranges are outside the comparison; they reach no consumer.
   classes the publishing laws separate.
 - L2 visits launched: console, database, form, markdown, middleware, pool, reason (contract
   ^0.0.12 + emitter ^0.0.7 repair), router, sea, table, template, websocket.
+
+## L2 staged (2026-08-17)
+
+Twelve uploads ready: console 0.0.8, database 0.0.10, form 0.0.2, markdown 0.0.9, middleware
+0.0.13, pool 0.0.8, reason 0.0.7 (contract ^0.0.12 + emitter ^0.0.7 repair), router 0.0.10,
+sea 0.0.7, table 0.0.2, template 0.0.4, websocket 0.0.9. Corrected bump test held: every
+runtime-set move bumped regardless of dist identity.
