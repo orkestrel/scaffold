@@ -645,10 +645,12 @@ either publishes packages nobody needed to publish or leaves a consumer pinned t
   and commit to `main`. Do not bump the version and do not publish.
 - A development bump that moves the published artifact is no longer a development bump. Prove the
   direction with the build, not the diff of sources: rebuild after the re-pin and compare `dist/`
-  against the published tarball. Identical bytes close it as development. Changed bytes mean the
-  published surface moved — a forced `src` or `app` edit and a toolchain-changed emit both surface
-  here — so that package bumps and publishes on its own account, and its own dependents follow the
-  runtime rule above.
+  against the published tarball. Compare material content only — exclude sourcemaps and ignore
+  whitespace-only differences; a superfluous diff (formatting, blank lines, map noise) moves
+  nothing and obliges nothing. A material diff — tokens, declarations, logic — means the published
+  surface moved — a forced `src` or `app` edit and a toolchain-changed emit both surface here — so
+  that package bumps and publishes on its own account, and its own dependents follow the runtime
+  rule above.
 
 Every package is `0.0.x`, where a caret pins one exact release. A dependent therefore sees a new
 version only after it re-pins and republishes, so the fleet publishes in topological layer order
