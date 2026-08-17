@@ -87,9 +87,10 @@ devDependency ranges are outside the comparison; they reach no consumer.
 
 ## Tier-1 findings (2026-08-17, second half)
 
-- Dev re-pin sweep ran 18 repos: 17 green, 1 failed then repaired and re-run (test repo's
-  guides.test.ts still called guide 0.0.10's `patterns()`; migrated to `fences()` + `findUnlisted`
-  per the G1 ruling — the first live confirmation of backlog item B1's adoption debt).
+- Dev re-pin sweep closed 18/18 green. The one first-pass failure (test repo's guides.test.ts
+  still called guide 0.0.10's `patterns()`) was migrated to `fences()` + `findUnlisted` per the
+  G1 ruling — the first live confirmation of backlog item B1's adoption debt — and re-ran green,
+  dist-identical.
 - **11 of 17 rebuilt dists differ from their published tarballs**: contract, emitter, html,
   interpret, markdown, msg, ndjson, program, qualifier, template, tool. Probed cause: every one
   carries post-release src commits on main ("Satisfy the refreshed placement and parity gates"
