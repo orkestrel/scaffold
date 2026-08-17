@@ -147,3 +147,15 @@ devDependency ranges are outside the comparison; they reach no consumer.
   packument (visit2.sh patched; abort, budget, timeout, sqlite repair-bumped).
 - Publish flow per user: first upload mints the approval, the user's click opens the
   five-minute window, the rest chain with --ignore-scripts (tmp/publish-l1.sh).
+
+## L1 published and accepted (2026-08-17)
+
+- Eleven uploads confirmed from the registry: msg 0.0.7, abort 0.0.7, budget 0.0.7, csv 0.0.4,
+  emitter 0.0.7, html 0.0.4, indexeddb 0.0.8, ndjson 0.0.7, sqlite 0.0.8, timeout 0.0.7, tool 0.0.11.
+- Window reality on this account: most publishes mint their own approval; occasionally one
+  approval carries the next upload (budget rode abort's). The relay flow — monitor surfaces each
+  auth URL, the user clicks — is the working mechanism. Three first-pass approvals expired
+  (abort E404, budget/tool E403) and single clean retries landed them, exactly the two failure
+  classes the publishing laws separate.
+- L2 visits launched: console, database, form, markdown, middleware, pool, reason (contract
+  ^0.0.12 + emitter ^0.0.7 repair), router, sea, table, template, websocket.
