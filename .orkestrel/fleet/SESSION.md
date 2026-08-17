@@ -1,0 +1,86 @@
+# Session registry — fleet re-pin and cleanup campaign
+
+Session start: 2026-08-17. Orchestrator branch: `claude/orkestrel-fleet-orchestration-b0t5cy` (scaffold).
+Read `.orkestrel/fleet/PLAN.md` for the prior campaign's record (test@0.0.2, accepted; registry has
+since moved to test@0.0.5 and scaffold@0.0.38 from other sessions).
+
+## Bench ledger
+
+| Bench       | State | Evidence                                                              |
+| ----------- | ----- | --------------------------------------------------------------------- |
+| Cursor Grok | LIVE  | PONG round-trip, `cursor-grok-4.6-high`, `tmp/cursor/probe.log`       |
+| Codex Sol   | LIVE  | PONG round-trip after device-auth recovery, `tmp/codex/probe.jsonl`   |
+
+Grok model pin `cursor-grok-4.6-high` re-verified against `agent models` 2026-08-17; still newest Grok line.
+Deviation recorded: grok subagent's inner cursor run hit its ~2-minute self-bound with an empty journal
+and handed the launch back; Orchestrator relaunched under its own cap and it completed. Bench was never dark.
+
+## Fleet state (measured 2026-08-17, evidence in tmp/registry-state.json + tmp/fleet-facts.json)
+
+- 45 packages. 44 in the catalog table; `form@0.0.1` (L2: contract, emitter) is published and absent
+  from the catalog — regenerate via `scaffold catalog` during scaffold's campaign turn.
+- Version parity: every local manifest equals its registry version. Nothing is behind its own publish.
+- Catalog table stale rows: scaffold 0.0.37→0.0.38, terminal 0.0.8→0.0.9, test 0.0.3→0.0.5, form missing.
+- Runtime pin drift: database 0.0.9 stale in agent, queue, relation, worker, workflow, workspace, toolbox;
+  workflow 0.0.12 stale in agent, toolbox; terminal 0.0.9 stale in toolbox; console 0.0.7 stale in scaffold.
+- Dev pin drift fleet-wide: scaffold ^0.0.33 (test repo ^0.0.30, form ^0.0.37) vs 0.0.38; test ^0.0.3
+  (form ^0.0.4) vs 0.0.5; guide ^0.0.10 in test vs 0.0.11; server ^0.0.11 in ollama vs 0.0.12.
+- Mirror drift: CLAUDE.md differs from scaffold's canonical copy in ~18 repos; AGENTS.md differs in
+  ollama, supervisor, test. Overwrite/repair restores them; never hand-edit in targets.
+- Campaign artifacts: scaffold/.orkestrel (10 files incl. fleet/PLAN.md), brief/.orkestrel (34 files:
+  contract, reason, scaffold campaign records), supervisor/ROADMAP.md (2342 lines, live plan of record),
+  markdown/PROPOSAL.md (272 lines, marked shipped/historical).
+- supervisor anomalies: no guide, version 0.0.1, `rescue/pre-revert-app-server-work` remote branch,
+  both mirrors differ. Not safe to blind-overwrite before triage.
+- Every repo carries 2–12 stale `claude/*` remote branches; scaffold also `probe-push-isolate`, `s22-release`.
+
+## Publish order (derived from live registry runtime edges; catalog Layer column confirmed)
+
+- L0: contract, msg, sse, test
+- L1: abort, budget, csv, emitter, html, indexeddb, ndjson, sqlite, timeout, tool
+- L2: console, database, form, markdown, middleware, pool, reason, router, sea, template, websocket
+- L3: browser, guide, interpret, mcp, qualifier, queue, rater, relation, scaffold, server, terminal, workspace
+- L4: brief, program, worker, workflow
+- L5: agent, supervisor
+- L6: ollama, toolbox
+
+## Cascade the current drift obliges (bump + republish, 10 packages)
+
+- L3 round: workspace, queue, relation (re-pin database), scaffold (re-pin console).
+- L4 round: worker, workflow (re-pin database + bumped queue).
+- L5 round: agent (re-pin database, workflow, workspace, queue), supervisor (re-pin database, workflow).
+- L6 round: toolbox (re-pin database, terminal, workflow, agent, relation), ollama (re-pin agent).
+
+Dev-only re-pin, no bump, no publish (~18 packages): all others with stale scaffold/test/guide/server
+dev pins. Clean: brief, browser, console, csv, database, indexeddb, mcp, middleware, pool, rater,
+reason, router, sea, server, sqlite, sse, terminal, websocket.
+
+## Overwrite mechanism facts (from guides/scaffold.md absorption, tmp/cursor/scaffold-absorb.log)
+
+- `overwrite` = repair writes + catalog writes + delete tracked plan-foreign files + re-declare
+  `@orkestrel/*` ranges. Refuses dirty tree without `--dirty`; deletes only git-tracked paths;
+  preserves birth-owned files (package.json body, barrels, tests, README, guides/README, scripts/service.sh).
+- `.orkestrel/`, ROADMAP.md, PROPOSAL.md are plan-foreign: overwrite deletes them (tracked). Triage
+  before overwrite per repo; git diff is the walk-back.
+- Re-pin the target's `@orkestrel/scaffold` devDependency to latest BEFORE running overwrite, or the
+  verb runs the old vendored host surface.
+
+## Decisions taken this session
+
+1. Fleet sweep instrumentation ran as Orchestrator scripts (mechanical fact collection), with the
+   orkestrel role producing Health/Work-order from that evidence. Grok carried guide absorption.
+2. `form` attached and adopted into the fleet inventory as L2.
+3. register_repo_root deliberately not called for the 44 sibling clones: CLAUDE.md/AGENTS.md are
+   byte-verified mirrors of scaffold's (hash check in fleet-facts), and loading 44 identical copies
+   would spend the main context the mirrors exist to save. Divergent copies (ollama, supervisor, test,
+   +CLAUDE.md drift set) are vendored-drift findings for overwrite, not alternate instructions.
+
+## Awaiting user direction
+
+- Campaign order approval (L0→L6 overwrite+fix pass), supervisor ROADMAP disposition, markdown
+  PROPOSAL deletion, brief/.orkestrel triage destination, stale branch cleanup policy, publish windows.
+
+## Push state
+
+- scaffold `claude/orkestrel-fleet-orchestration-b0t5cy`: session registry committed and pushed.
+- All other repos: untouched, clean at origin default branch.
