@@ -75,3 +75,9 @@ supervisor work belongs to the user's own session and is not tracked here beyond
 | D5  | Publish windows per layer round                                                      | user-run, on request; msg's window is ready now |
 | D6  | B3 prepack manifests                                                                 | open, no default                                |
 | D8  | Branch cleanup script run (.orkestrel/fleet/branch-cleanup.sh, operator credentials) | with user                                       |
+
+## Pending: scaffold 0.0.40
+
+The release-wave procedure and the observed window mechanics landed in `.agents/orchestration.md`
+after 0.0.39 published. Vendored bytes moved, so scaffold owes 0.0.40; it rides the L4 or L5
+window and then propagates the doctrine fleet-wide through repair/overwrite.
