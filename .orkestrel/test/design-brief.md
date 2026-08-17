@@ -24,7 +24,7 @@ Together they cover 42 of the fleet's ~44 package trees; private form/table unre
 ## Probed standing facts (verified this round; trust them)
 
 1. Published `roundTripJSON` 0.0.3 accepts interface-typed values: a `tsc --strict
-   --noEmit` probe with an interface snapshot exits 0. The workflow/workspace/agent
+--noEmit` probe with an interface snapshot exits 0. The workflow/workspace/agent
    local copies and their comments rest on a stale belief.
 2. `Promise.withResolvers` is a native function on the fleet's Node and the test
    package's tsconfig targets ESNext with ESNext lib.

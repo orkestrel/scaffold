@@ -11,7 +11,9 @@
    	stop(): Promise<void>
    }
 
-   function createLoopbackServer(server: import('node:net').Server): Promise<LoopbackServerInterface>
+   function createLoopbackServer(
+   	server: import('node:net').Server,
+   ): Promise<LoopbackServerInterface>
    ```
 
    It binds the supplied unstarted server to `127.0.0.1:0`, reads the bound port, and keeps it listening until `stop()`. Consumers: router, websocket, terminal, scaffold, middleware; server has an unused copy; mcp has a different `@orkestrel/server` lifecycle. Router and middleware delete their address guards and manual listen/close promises. Websocket, terminal, and scaffold retain their protocol handlers but delete the common bind/address/close spine. Server deletes its unused helper. MCP keeps its local `start`/`stop`/`destroy` composition because it is not a native Node server.
@@ -43,9 +45,7 @@
    	execute(): Promise<void>
    }
 
-   function createTeardown<T>(
-   	dispose: (resource: T) => void | Promise<void>,
-   ): TeardownInterface<T>
+   function createTeardown<T>(dispose: (resource: T) => void | Promise<void>): TeardownInterface<T>
    ```
 
    Consumers: mcp and worker. `execute()` drains in reverse registration order, awaits each disposer sequentially, continues after failures, rethrows one failure by identity, and throws an `AggregateError` for several in disposal order. This preserves MCP’s resource dependency order while retaining worker’s all-failures guarantee. Concurrent `Promise.allSettled` is wrong for dependent resources; MCP’s current fail-fast loop can leak later resources. The helper must not import or call Vitest. Each consumer keeps one `afterEach(() => teardown.execute())` and deletes its registrar implementation. Database and indexeddb keep registration-order cleanup because their stated ordering differs.
@@ -79,10 +79,7 @@
     	parse(chunk: string): readonly T[]
     }
 
-    function feedChunks<T>(
-    	parser: ChunkParserInterface<T>,
-    	chunks: readonly string[],
-    ): readonly T[]
+    function feedChunks<T>(parser: ChunkParserInterface<T>, chunks: readonly string[]): readonly T[]
 
     function createChunkings(
     	text: string,

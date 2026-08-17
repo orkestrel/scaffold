@@ -18,7 +18,7 @@ nothing.
    `server.close(...)` as now; every call returns the stored promise. In
    `tests/src/server/factories.test.ts` add a pre-settlement identity assertion to the
    idempotence test: `const a = loopback.destroy(); const b = loopback.destroy();
-   expect(a).toBe(b)` before awaiting either.
+expect(a).toBe(b)` before awaiting either.
 2. **Claim 8 — three TSDoc sentences, reviewer's replacements verbatim.**
    - `src/server/types.ts` `url` doc: "The `http` origin for the assigned port, without
      a trailing slash. A TLS server answers on the same port under `https`."
