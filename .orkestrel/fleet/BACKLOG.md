@@ -23,6 +23,12 @@ were pruned are recoverable by the commit hash beside them.
 | B16 | **relation hardening port**: branch `claude/database-package-audit-6r4hsd` holds idempotent `link` (no duplicate junction row, no second event), atomic transactional `unlink`, cooperative cancellation, fail-fast relation validation, plus the proof suite — adversarially verified missing from main, which has since rewritten the query API, so this is a port, not a merge | relation | Port during relation's L3 wave visit; delete the branch only after the port lands green. |
 | B8 | **Catalog rows for form and table** enter via `scaffold catalog`; both packages carry the shared `claude/form-abstraction-audit-gex32w` branch with scaffold/supervisor/terminal/test | scaffold | Regeneration in flight this session; the shared branch joins B7. |
 
+## From the wave's visits
+
+| # | Item | Owner | Condition / next step |
+| - | ---- | ----- | --------------------- |
+| B17 | **`scaffold catalog` emits a table that fails the vendored format gate**: the generated compact markdown table in `CATALOG_AGENT_PATH` is not oxfmt-clean, so every catalog/overwrite run leaves the target red on `format:check` until a manual `format` converges it | scaffold | Fix the emitter to write oxfmt-clean output (or format the file as part of the verb); land in scaffold's L3 wave release. Found on contract's L0 visit; reproduced in scaffold's own tree. |
+
 ## From brief/.orkestrel triage (folder pruned this session; recoverable at brief's pruning commit)
 
 | # | Item | Owner | Condition / next step |
