@@ -203,3 +203,14 @@ chat before arming any watcher; (2) brief's first upload died on the stale-click
 solo retry landed it — one fresh attempt, never a retry against a live poll. brief was rebased
 onto the user's own `Delete DEBRIEF.md` main before its release; its commit carries pins only.
 L5 launched: agent's visit on the pre-pinned scaffold 0.0.40 host, post-L4 registry sweep.
+
+## B1/B4 probe returned; backlog re-baselined (2026-08-17)
+
+The adoption survey (briefs/b1-survey.md, report beside it) closes B1 without the contemplated
+fleet pass: 43/43 packages import @orkestrel/test, fences adoption is universal 44/44, and one
+duplicate helper exists fleet-wide. B4's counts are now exact (createRecorder 32/43,
+createScratch 40/43, waitForDelay 16/43). Residue is B21: guide prose correction, mcp's local
+createTeardown, and inline setTimeout waits in seven packages — each riding its package's next
+test-touching release. B16 and B17 rows marked closed by their L3 shipments. Routing note: the
+survey executor answered from its driver engine rather than the Cursor bench — recorded as a
+driver-engine substitution; evidence is verifiable grep output with file:line.
