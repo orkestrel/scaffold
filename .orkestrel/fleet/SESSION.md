@@ -185,3 +185,21 @@ catalog emitter + current-pin constants + the session's vendored rule edits, now
 via repair/overwrite), server 0.0.13, terminal 0.0.10, workspace 0.0.5, interpret 0.0.10,
 qualifier 0.0.10, rater 0.0.11. L4 visits launched: worker, workflow + second rounds brief,
 program.
+
+## L4 published and accepted (2026-08-17)
+
+Five confirmed from the registry: worker 0.0.8, workflow 0.0.13, brief 0.0.3, program 0.0.9,
+scaffold 0.0.40 (the doctrine release — release-wave procedure + window mechanics now in the
+vendored host, propagating fleet-wide via repair/overwrite). Deviation, user-directed: published
+before push. The container's git-proxy write lease expired server-side (~21:15) — fetch and the
+GitHub REST API work, git-receive-pack alone returns 401; GitHub's status API reported all
+operational throughout, so the block is environment-side and GitHub recovery cannot clear it.
+Preservation: all queued commits as verified patches on scaffold's rescue/proxy-outage-2026-08-17
+(via REST), plus a 6h push retrier probing every 60s to land branch + ff main on re-mint.
+
+Window findings, landed for the doctrine: (1) a Monitor-based URL relay can fail silently — the
+relay that works is reading the URL out of the journal in the foreground and surfacing it in
+chat before arming any watcher; (2) brief's first upload died on the stale-click 403 and a clean
+solo retry landed it — one fresh attempt, never a retry against a live poll. brief was rebased
+onto the user's own `Delete DEBRIEF.md` main before its release; its commit carries pins only.
+L5 launched: agent's visit on the pre-pinned scaffold 0.0.40 host, post-L4 registry sweep.
