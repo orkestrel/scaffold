@@ -116,3 +116,11 @@ devDependency ranges are outside the comparison; they reach no consumer.
 
 - scaffold `claude/orkestrel-fleet-orchestration-b0t5cy`: session registry committed and pushed.
 - All other repos: untouched, clean at origin default branch.
+
+## Wave progress
+
+- L0 prepared 2026-08-17: contract 0.0.12 (material), msg 0.0.7 (material) await the user's publish
+  window; sse and test proved dist-identical and stay at 0.0.5. All four host-aligned, gates green,
+  pushed, main fast-forwarded. L1 re-pins begin once contract and msg are on the registry.
+- Branch cleanup: ref deletion is proxy-refused (403) fleet-wide; the 337 approved deletions ship as
+  .orkestrel/fleet/branch-cleanup.sh for operator credentials. relation's hardening port is B16.
