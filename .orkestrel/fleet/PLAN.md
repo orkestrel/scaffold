@@ -17,8 +17,8 @@ in `BACKLOG.md`; the running ledger is `SESSION.md`.
 - **Branches: disregarded.** No deletions, merged or unmerged. The only branch question is whether
   main is behind — the main-behind audit (in flight) rules per unmerged branch which side is
   correct; its verdicts are informational unless main is missing real work.
-- **supervisor: end of campaign.** Its ROADMAP, rescue branch, mirrors, and missing guide are one
-  triage, taken after the wave completes. Its L5 re-pin/publish slot in the wave is deferred with it.
+- **supervisor: not ours.** The user works it in their own session at their own pace. Clone
+  removed, excluded from every sweep, plan, and script; its rescue branch travels with it.
 - **Materiality rule** for dist comparison landed in `.agents/orchestration.md` and the orkestrel
   role file: whitespace-only and sourcemap-only diffs are superfluous, never a republish trigger.
 
@@ -29,57 +29,49 @@ triaged and pruned (survivors: B9-B15). Three publishing findings landed in orch
 Dev re-pin sweep 18/18 green, pushed, main fast-forwarded everywhere; test repo's guides.test.ts
 migrated to guide 0.0.11 `fences()`/`findUnlisted` (first live B1 confirmation).
 
-## Tier 2 — the release wave (user-gated on publish only)
+## Completed by the user's result-guard session (2026-08-17, see brief/DEBRIEF.md)
 
-Material-dist verdicts (rebuilt vs published, material rule): **contract, emitter, html, markdown,
-msg, ndjson, program, qualifier, template, tool** owe a release — each carries post-release src
-commits on main. interpret collapsed to superfluous: no release owed. Runtime drift separately
-obliges: workspace, queue, relation, scaffold, worker, workflow, agent, toolbox, ollama (+supervisor,
-deferred).
+contract 0.0.12 (`objectOf` — closes B9's contract half), reason 0.0.6 (eleven result guards —
+closes B10), interpret 0.0.9, brief 0.0.2, rater 0.0.10, qualifier 0.0.9, program 0.0.8,
+test 0.0.6 (fences migration + browser journey layer). All published, mains current, clones synced.
 
-Because contract (L0) republishes, every consumer re-pins under the exit criterion and bumps in
-turn: the wave is effectively fleet-wide, layer by layer. Expected publish rounds:
+**One defect carried out of it:** reason 0.0.6 published pinning contract ^0.0.11 while its five
+consumers pin contract ^0.0.12 — two contract copies in one install graph. The repair is reason's
+L2 wave slot (one release re-pinning contract ^0.0.12 plus whatever L1 lands); the five consumers
+re-pin reason in their own second-round slots.
 
-- **L0**: contract, msg. (sse, test: publish only if their own dist proves material.)
-- **L1**: abort, budget, csv, emitter, html, indexeddb, ndjson, sqlite, timeout, tool.
-- **L2**: console, database, form, markdown, middleware, pool, reason, router, sea, table,
-  template, websocket.
-- **L3**: browser, guide, interpret, mcp, qualifier, queue, rater, relation, scaffold, server,
-  terminal, workspace.
-- **L4**: brief, program, worker, workflow.
-- **L5**: agent. (supervisor deferred.)
-- **L6**: ollama, toolbox.
+**supervisor is out of this campaign entirely** — user-owned session; clone removed, excluded from
+every sweep, plan, and script.
 
-Per-repo protocol, in layer order:
+## Tier 2 — the release wave, reorganized
 
-1. Re-pin `@orkestrel/scaffold` devDependency to latest and install (the overwrite must run the
-   current vendored host).
-2. `scaffold overwrite`; read the git diff; walk back real package affordances; residue deletions
-   stand.
-3. Re-pin runtime `@orkestrel/*` deps to the versions the registry serves now (overwrite's
-   `declare` performs this; verify it).
-4. Five gates. Expect and repair B1-class adoption debt (guide 0.0.11 fences API, test 0.0.5
-   helpers) as it surfaces, like the test repo.
-5. Material-dist check; bump when a runtime pin moved or the dist proves material.
-6. Commit, push branch, fast-forward main. The user publishes the layer's batch; a five-minute
-   window covers roughly 8-12 uploads, so expect several approvals across the wave.
-7. The next layer prepares only after this one is on the registry (pins must resolve).
+Per-repo protocol unchanged (visit.sh): overwrite with current host → format converge → five gates
+→ material-dist check → bump when owed → push branch + fast-forward main. Every visit also re-pins
+test ^0.0.6 dev. DEBRIEF guidance binds visits: guide Kind column distinguishes function/const;
+source TSDoc backticks only its own package's exports; dictionary leaves certify own members only.
 
-Scaffold's own release (console re-pin + this session's vendored rule edits) rides its L3 slot and
-then propagates the updated host fleet-wide through the later layers' overwrites.
+| Round | Work | Publishes |
+| ----- | ---- | --------- |
+| now | publish the prepared msg 0.0.7; sse dev-only re-pin (contract dev ^0.0.12, test ^0.0.6), no release expected | msg |
+| L1 | abort, budget, csv, emitter, html, indexeddb, ndjson, sqlite, timeout, tool — re-pin contract ^0.0.12, visit, bump | 10 |
+| L2 | console, database, form, markdown, middleware, pool, reason (defect repair rides here), router, sea, table, template, websocket | 12 |
+| L3 | browser, guide, mcp, queue, relation (+B16 hardening port), scaffold (+B17 catalog-format fix, vendored rule edits ship), server, terminal, workspace, plus second rounds: interpret, qualifier, rater (re-pin reason 0.0.7 and L1 bumps) | 12 |
+| L4 | worker, workflow, plus second rounds: brief, program | 4 |
+| L5 | agent | 1 |
+| L6 | ollama, toolbox | 2 |
+
+Roughly 42 uploads across 7 windows. Each layer prepares only after the previous is on the
+registry. Publishing is the user's credential; windows on request.
 
 ## After the wave
 
-- **supervisor** (D3): full triage — ROADMAP keep/extract, rescue branch, mirrors, guide — then its
-  own re-pin/bump/publish visit.
-- **Backlog design work** (BACKLOG.md): B1 residue not closed by the wave's visits, B2 canon
-  reconciliation, B3 prepack call, B9 contract combinator, B10 reason guards, B12-B15.
+Backlog design work: B1 residue, B2 canon reconciliation, B3 prepack call, B12-B15, B17-B20.
+supervisor work belongs to the user's own session and is not tracked here beyond B6's pointer.
 
 ## Decision register (user)
 
 | # | Decision | State |
 | - | -------- | ----- |
-| D3 | supervisor triage and its ROADMAP | deferred to campaign end, per ruling |
-| D5 | Publish windows for each wave layer | user-run, on request |
+| D5 | Publish windows per layer round | user-run, on request; msg's window is ready now |
 | D6 | B3 prepack manifests | open, no default |
-| D7 | Wave go/no-go: begin L0 preparation (contract, msg bumps + gates, no publish until approved) | awaiting ruling |
+| D8 | Branch cleanup script run (.orkestrel/fleet/branch-cleanup.sh, operator credentials) | with user |

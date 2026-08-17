@@ -33,8 +33,11 @@ were pruned are recoverable by the commit hash beside them.
 
 | # | Item | Owner | Condition / next step |
 | - | ---- | ----- | --------------------- |
-| B9 | **Open-record combinator** (`recordOf`-shape): contract publishes none; reason carries ten near-identical `whereOf(isObject, …)` bodies and brief carries successor guards awaiting it | contract, then reason + brief | A `contract` change outside prior campaigns' scope; migrate both consumers when it lands. |
-| B10 | **Result guards**: reason publishes no `isLogicalResult`/`isRuleResult` (extend to `isReasonResult`/`isQuantitativeResult` if the same argument holds); once published, `patterns.md` obliges brief to import them and delete its own | reason, then brief | A `reason` change outside the prior campaign's scope. |
+| B9 | ~~Open-record combinator~~ **CLOSED 2026-08-17**: contract 0.0.12 published `objectOf` + `readGuardShape`; brief 0.0.2 adopted and deleted its locals (user's result-guard session, brief/DEBRIEF.md) | — | Done. |
+| B10 | ~~Result guards~~ **CLOSED 2026-08-17**: reason 0.0.6 published eleven open result guards; brief, qualifier, rater, program adopted (same session) | — | Done. |
+| B18 | **Read-once ownership at guarded doors**: program's guards prove an instant, then the class re-reads the foreign object, so a per-read getter defeats containment; fix is one ownership ladder — clone → guard → seal live → refuse. The same follow-up is recorded at brief's gate/interpret engine doors | program, brief | From DEBRIEF standing facts; ride each package's next src-moving release. |
+| B19 | **program's three raw `validate`-path dereferences** in helpers.ts: `isQualificationValidationResult`/`isReasonValidationResult` are published and waiting | program | Small; fold into program's L4 second-round visit. |
+| B20 | **`Premise` publishes every member optional**, so `isPremise` accepts `{}` — whether `met`/`field` should be required is an open qualifier types.ts design question, deliberately undecided | qualifier | Needs a design round before any change. |
 | B11 | ~~Three publishing findings~~ **LANDED this session** in `.agents/orchestration.md`: Windows Git Bash operator-driven upload; first-publish 404-is-pending; pack-warning ruled by registry manifest | scaffold | Done — rides the next scaffold release. |
 | B12 | **settings.json vendoring design**: vendor `.claude/settings.json` for existence rather than bytes was recorded as a design decision, not taken | scaffold | Decide during the overwrite pass; today `repair` restores vendored bytes and operator grants belong in `settings.local.json`. |
 | B13 | **11-row ungated-orders survey** recorded for a future campaign at brief's acceptance | scaffold | Reopen when hardening scaffold's order gating. |

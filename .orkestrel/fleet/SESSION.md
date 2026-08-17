@@ -124,3 +124,15 @@ devDependency ranges are outside the comparison; they reach no consumer.
   pushed, main fast-forwarded. L1 re-pins begin once contract and msg are on the registry.
 - Branch cleanup: ref deletion is proxy-refused (403) fleet-wide; the 337 approved deletions ship as
   .orkestrel/fleet/branch-cleanup.sh for operator credentials. relation's hardening port is B16.
+
+## Result-guard wave absorbed (2026-08-17)
+
+- User's parallel session shipped contract 0.0.12 (objectOf — B9 closed), reason 0.0.6 (eleven
+  result guards — B10 closed), interpret 0.0.9, brief 0.0.2, rater 0.0.10, qualifier 0.0.9,
+  program 0.0.8, test 0.0.6. Record: brief/DEBRIEF.md. Clones synced to main; all fast-forwards.
+- Defect carried: reason 0.0.6 pins contract ^0.0.11 against consumers on ^0.0.12 (two-copy
+  defect); repair rides reason's L2 slot. New backlog from DEBRIEF: B18 read-once ownership,
+  B19 program validate-path dereferences, B20 Premise optionality.
+- supervisor removed from the workspace and every artifact per the user: theirs, other session.
+- msg 0.0.7 remains prepared and unpublished; sse owes a dev-only contract/test re-pin.
+- Wave reorganized: ~42 uploads over 7 windows (see PLAN.md). L1 = ten contract consumers.
