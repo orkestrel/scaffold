@@ -100,3 +100,45 @@ dea8445 guide (11/11) → audit round: analyst FAIL 7,8,10 (journal session
 Deferred on the record: rule-11 prose for the already-listening refusal (successor
 brief candidate, noted by the fix unit); API Extractor TS-version notice (verifier
 anomaly, informational).
+
+## T6b acceptance record
+
+Twenty-seven targets swept onto test 0.0.5 + scaffold 0.0.38, every one integrated to
+`main` with its full gate set green. Briefs and the shared row texts are retained under
+`t6b/` beside this file. Per-target commits carry each ruling; the cross-cutting record:
+
+- **Adoptions landed.** collect (database ×41, supervisor prior), collectStream (csv),
+  roundTripJSON (workspace, agent, reason partial), readInventory (brief, supervisor
+  prior), resolveRoot (sea, server, scaffold), requireValue (queue, sse, terminal-none),
+  createScratch (sqlite), createTeardown (worker, browser, database-deletion),
+  createLoopback bind spines (router, middleware, terminal, websocket, supervisor
+  tarpit, scaffold upstream), waitForDelay (ollama), Promise.withResolvers (pool ×32,
+  queue ×24, worker ×34, router ×4, agent ×15 — bare calls need explicit `<void>`, the
+  native API has no default type parameter).
+- **Authorized dependencies landed.** `@orkestrel/contract` seededRandom in sse and
+  websocket, both probe-proven sequence-identical under the tests' own seeds;
+  `@orkestrel/ndjson` 0.0.6 behind supervisor's NDJSONReader shell.
+- **Retentions on evidence.** indexeddb createCleanups (documented registration-order
+  invariant); mcp local createTeardown (typed-item shape, ~8 sites) and startServer
+  (the bind lives inside @orkestrel/server's ServerInterface); reason invokeRaw (~45
+  sites, never[]-typed bypass is the malformed-input test mechanism); rater's one
+  guardless invokeRaw site (needs a ReasonResult guard @orkestrel/reason does not
+  export); browser reservePort (CDP --remote-debugging-port must precede spawn);
+  supervisor reserveLoopbackPort (child-process port probe).
+- **Dead isBrowserVuePath** deleted in nineteen trees; kept in supervisor, whose
+  pre-0.0.38 vendored policy sweep still consumes it; absent in scaffold and brief.
+- **Repair-guard exceptions.** ollama (custom `setup` project) and supervisor (nine
+  custom projects) refuse `scaffold repair` writing verbs by design; both keep their
+  prior vendored files. Scaffold owes a custom-project-preserving repair path before
+  either can receive a vendored surface again.
+- **Type-bound skips.** JSONSafe refuses class instances (csv), `T | undefined`
+  members (browser, reason), and a site asserting undefined-key dropping (agent) —
+  each skip is the bound working as designed.
+- **Probe result carried.** Reflect.apply's untyped fallback overload compiles
+  malformed argument lists with no cast (rater, four sites) — this answers the
+  question reason's unit left open.
+
+Findings routed onward: @orkestrel/reason exports a ReasonResult guard and rules on
+invokeRaw (next reason round); scaffold repair preserves custom Vitest projects, then
+ollama and supervisor re-receive the vendored surface (next scaffold round); mcp rules
+on adopting the thunk teardown (next mcp round).
