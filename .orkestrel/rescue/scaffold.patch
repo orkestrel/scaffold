@@ -1,0 +1,146 @@
+diff --git a/.agents/orchestration.md b/.agents/orchestration.md
+index 888c2ff..fc5fcb6 100644
+--- a/.agents/orchestration.md
++++ b/.agents/orchestration.md
+@@ -688,6 +688,29 @@ and propagates as files rather than as a cascade.
+   target. Scope a fleet-wide refactor to the files each target owns, and record the vendored
+   exclusion in the brief rather than letting each unit rediscover it.
+ 
++### The release wave
++
++Close a fleet-wide "everything on latest" goal as a release wave in layer order: visit every repo
++once per round with one procedure, publish each layer in one window, and only then prepare the next.
++
++- The visit, in order: re-pin the target's `@orkestrel/scaffold` devDependency and install, so the
++  overwrite runs the current vendored host; `scaffold overwrite`; force-verify every `@orkestrel`
++  range against a registry sweep taken after the previous layer published; full install; mutating
++  `format` to converge generated writes; the five gates; the material-dist comparison against the
++  published tarball.
++- Bump on either trigger: the rebuilt dist differs materially from the published tarball, or the
++  final runtime dependency set differs from the published packument. Test the final set against the
++  packument, never "did my step move a pin" — overwrite's `declare` re-pins before any later check,
++  so the step-local reading reports nothing moved while the manifest surface did. A re-pinned
++  runtime range is published surface: without the bump a consumer installs two copies of the moved
++  dependency.
++- A dist built before the version bump is the release artifact; the bump edits no emitted byte.
++- Refresh the registry evidence between layers and derive each round's pins from it. A pin can only
++  name a version the registry already serves, so a dependency shipping in the same window keeps the
++  resolvable previous pin and takes its dev-only re-pin after the window closes.
++- Run visits in parallel slices of disjoint repos, each slice strictly serial inside itself,
++  reporting per-target. Refuse a failed target, name it, repair, and re-run it alone.
++
+ ### Preparing
+ 
+ 1. **Bump from what the registry serves, not from the local manifest.** A repository's `version`
+@@ -745,8 +768,16 @@ flag is what stops the gate chain running a second time inside the five minutes.
+ 
+ ### Spending the window
+ 
+-- The window opens when the user approves, not when the first publish starts. Chain every remaining
+-  publish inside the same process as the gate package, so no human turn sits inside it.
++- The window opens when the user approves, not when the first publish starts. Open each layer with
++  one package: publish it alone, surface its approval URL the moment the journal shows it, and
++  confirm the upload from the registry before starting the rest. Then chase the remaining uploads
++  back-to-back in one process with no gap — an upload started within seconds of an approval
++  frequently rides that approval, and each one that does not mints its own URL. Relay every new URL
++  to the user the moment it appears, through a journal watcher, and never pause the chain to wait
++  for a click: a poll outlives the relay.
++- A click on a superseded URL poisons the live attempt — the current poll fails
++  `403 Forbidden - GET /-/v1/done` mid-flight. Tell the user to click only the newest URL. After
++  any such 403, confirm no publish process is live, then mint one fresh attempt.
+ - Publish serially. Concurrent publishes collide on the auth handshake and fail each other.
+ - **Never retry a publish that is still waiting for its authorization.** Each `npm publish` attempt
+   mints a new `authId` and invalidates the previous one, so a retry loop makes the URL a moving
+diff --git a/.orkestrel/fleet/PLAN.md b/.orkestrel/fleet/PLAN.md
+index 3d31103..954a0ba 100644
+--- a/.orkestrel/fleet/PLAN.md
++++ b/.orkestrel/fleet/PLAN.md
+@@ -75,3 +75,9 @@ supervisor work belongs to the user's own session and is not tracked here beyond
+ | D5  | Publish windows per layer round                                                      | user-run, on request; msg's window is ready now |
+ | D6  | B3 prepack manifests                                                                 | open, no default                                |
+ | D8  | Branch cleanup script run (.orkestrel/fleet/branch-cleanup.sh, operator credentials) | with user                                       |
++
++## Pending: scaffold 0.0.40
++
++The release-wave procedure and the observed window mechanics landed in `.agents/orchestration.md`
++after 0.0.39 published. Vendored bytes moved, so scaffold owes 0.0.40; it rides the L4 or L5
++window and then propagates the doctrine fleet-wide through repair/overwrite.
+diff --git a/.orkestrel/fleet/SESSION.md b/.orkestrel/fleet/SESSION.md
+index 45b58dd..b6aa2be 100644
+--- a/.orkestrel/fleet/SESSION.md
++++ b/.orkestrel/fleet/SESSION.md
+@@ -176,3 +176,12 @@ previous approval, half minted their own; the relay flow absorbed both. L3 stand
+ launched: browser, guide, mcp, queue, server, terminal, workspace + second rounds interpret,
+ qualifier, rater. relation (B16 port) and scaffold (B17 + vendored rule edits, no overwrite)
+ run as dedicated units.
++
++## L3 published and accepted (2026-08-17)
++
++Twelve confirmed from the registry on one approval window: browser 0.0.10, guide 0.0.12,
++mcp 0.0.16, queue 0.0.9, relation 0.0.9 (B16 hardening shipped), scaffold 0.0.39 (B17 clean
++catalog emitter + current-pin constants + the session's vendored rule edits, now propagating
++via repair/overwrite), server 0.0.13, terminal 0.0.10, workspace 0.0.5, interpret 0.0.10,
++qualifier 0.0.10, rater 0.0.11. L4 visits launched: worker, workflow + second rounds brief,
++program.
+diff --git a/package.json b/package.json
+index 5047b5b..e46bacb 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+ 	"name": "@orkestrel/scaffold",
+-	"version": "0.0.39",
++	"version": "0.0.40",
+ 	"description": "Scaffold workspaces with five commands: new, audit, repair, catalog, and overwrite.",
+ 	"keywords": [
+ 		"audit",
+@@ -97,7 +97,7 @@
+ 	},
+ 	"devDependencies": {
+ 		"@microsoft/api-extractor": "^7.58.12",
+-		"@orkestrel/guide": "^0.0.11",
++		"@orkestrel/guide": "^0.0.12",
+ 		"@orkestrel/html": "^0.0.4",
+ 		"@orkestrel/test": "^0.0.6",
+ 		"@types/node": "^26.2.0",
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index c65866c..aa23a67 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -360,7 +360,7 @@ export const DEFAULT_ENGINES = `>=${MINIMUM_NODE_VERSION}`
+ /** The tooling versions scaffold and every generated workspace share. */
+ export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
+ 	'@orkestrel/guide': '^0.0.12',
+-	'@orkestrel/scaffold': '^0.0.39',
++	'@orkestrel/scaffold': '^0.0.40',
+ 	'@orkestrel/test': '^0.0.6',
+ 	'@types/node': '^26.2.0',
+ 	oxfmt: '^0.62.0',
+diff --git a/tests/src/bin/CLI.test.ts b/tests/src/bin/CLI.test.ts
+index 499aa95..0db14fb 100644
+--- a/tests/src/bin/CLI.test.ts
++++ b/tests/src/bin/CLI.test.ts
+@@ -2989,7 +2989,9 @@ describe('CLI catalog', () => {
+ 			expect(workspace.read('target/guides/emitter.md')).toBe('# Emitter\n')
+ 			expect(workspace.read('target/guides/scaffold.md')).toBe('# Scaffold\n')
+ 			const agent = workspace.read(`target/${CATALOG_AGENT_PATH}`)
+-			expect(agent).toContain('| `@orkestrel/emitter` | `0.0.6` | L0    |                               |')
++			expect(agent).toContain(
++				'| `@orkestrel/emitter` | `0.0.6` | L0    |                               |',
++			)
+ 			expect(agent).toContain(
+ 				'| `@orkestrel/guide`   | `0.1.0` | L1    | `@orkestrel/emitter` `^0.0.6` |',
+ 			)
+diff --git a/tests/src/core/compilers.test.ts b/tests/src/core/compilers.test.ts
+index 8a13e03..6de81ea 100644
+--- a/tests/src/core/compilers.test.ts
++++ b/tests/src/core/compilers.test.ts
+@@ -95,7 +95,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
+ 
+ 		// The digest covers the self-pin, so a release moves it. Update it with the
+ 		// version bump in the same change; it is the tripwire for every other byte.
+-		expect(hex).toBe('0b452b71dc0192bea347b35be0bc83e0a504f8afb0784949ac532bb0d734cc09')
++		expect(hex).toBe('99938e0f1f909679713950b6607d7ada333195702a691f75e4774873299efffd')
+ 	})
+ })
+ 
