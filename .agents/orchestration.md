@@ -721,6 +721,10 @@ flag is what stops the gate chain running a second time inside the five minutes.
   prompt to answer: kill it by process id and mint a fresh flow.
 - Run the login and every publish under `script -qfc '<command>' <log>`. npm offers the approval only
   when it sees a TTY; without one it fails `EOTP` with no way to answer.
+- Git Bash on Windows ships no `script` binary, so the upload step there is operator-driven: prepare
+  the layer, prove the gates, surface the exact `npm publish` command, and the operator runs it in a
+  real terminal. Everything before and after the upload — bumps, re-pins, gates, registry reads —
+  stays with the Orchestrator. The fifo stdin law still binds on that host.
 - Expect two approvals. `npmjs.com/login/cli/<id>` authenticates the session; `npmjs.com/auth/cli/<id>`
   authorizes the publish and opens the five-minute window. Tell the user both are coming, or the
   second link reads as the first having failed.
@@ -757,6 +761,11 @@ flag is what stops the gate chain running a second time inside the five minutes.
 - Read the result from the registry, not from an exit code: a piped `npm publish` reports the exit
   status of the pipeline, and a CDN read straight after a publish can still serve the previous
   version.
+- A first publish creates the packument and can serve 404 for minutes after success. For a package
+  with no prior version treat 404 as pending, not failed, and re-read on an interval before
+  reporting either way. A bump serving the old version is CDN lag, same rule.
+- Rule on a pack-time manifest-rewriting warning by fetching the registry's copy of the manifest,
+  never by the warning's own text.
 - Re-read the registry before telling the user a package failed. A chain still running, a retry that
   landed, and CDN lag all produce a failure reading that the registry contradicts, and a false
   failure report costs a needless approval and a needless republish.

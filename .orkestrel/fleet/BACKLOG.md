@@ -22,6 +22,14 @@ were pruned are recoverable by the commit hash beside them.
 | B7 | **Unmerged remote branches** left after the merged-branch sweep (11): scaffold `claude/agent-context-refactor-vils1l`, `claude/orkestrel-fleet-orchestration-cv30e8`, `claude/orkestrel-html-package-bwsp9p`, `claude/orkestrel-orchestration-tp0ez7`, `claude/s22-release`, `probe-push-isolate`; contract `claude/orkestrel-html-package-bwsp9p`; database `claude/workflow-enterprise-audit-f6zo2k`; mcp `claude/json-schema-opaque-parsing-a9dzcg`; relation `claude/database-package-audit-6r4hsd`; supervisor `rescue/pre-revert-app-server-work` | per repo | Per-branch decision: rescue, merge, or delete. |
 | B8 | **Catalog rows for form and table** enter via `scaffold catalog`; both packages carry the shared `claude/form-abstraction-audit-gex32w` branch with scaffold/supervisor/terminal/test | scaffold | Regeneration in flight this session; the shared branch joins B7. |
 
-## From brief/.orkestrel triage
+## From brief/.orkestrel triage (folder pruned this session; recoverable at brief's pruning commit)
 
-(appended when the distillate lands)
+| # | Item | Owner | Condition / next step |
+| - | ---- | ----- | --------------------- |
+| B9 | **Open-record combinator** (`recordOf`-shape): contract publishes none; reason carries ten near-identical `whereOf(isObject, …)` bodies and brief carries successor guards awaiting it | contract, then reason + brief | A `contract` change outside prior campaigns' scope; migrate both consumers when it lands. |
+| B10 | **Result guards**: reason publishes no `isLogicalResult`/`isRuleResult` (extend to `isReasonResult`/`isQuantitativeResult` if the same argument holds); once published, `patterns.md` obliges brief to import them and delete its own | reason, then brief | A `reason` change outside the prior campaign's scope. |
+| B11 | ~~Three publishing findings~~ **LANDED this session** in `.agents/orchestration.md`: Windows Git Bash operator-driven upload; first-publish 404-is-pending; pack-warning ruled by registry manifest | scaffold | Done — rides the next scaffold release. |
+| B12 | **settings.json vendoring design**: vendor `.claude/settings.json` for existence rather than bytes was recorded as a design decision, not taken | scaffold | Decide during the overwrite pass; today `repair` restores vendored bytes and operator grants belong in `settings.local.json`. |
+| B13 | **11-row ungated-orders survey** recorded for a future campaign at brief's acceptance | scaffold | Reopen when hardening scaffold's order gating. |
+| B14 | **`agents/openai.yaml` full external schema** remains open | scaffold (skills) | Research when a consumer needs more than the three-key mapping. |
+| B15 | **w3 unit acceptance never established**: the mandatory real-tree red proof was blocked by a read-only `.agents` policy in that harness | scaffold | Re-prove or strike whatever w3 shipped; consult the pruned `scaffold/units/w3-report.md` by hash. |
