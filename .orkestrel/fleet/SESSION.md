@@ -85,6 +85,27 @@ devDependency ranges are outside the comparison; they reach no consumer.
    would spend the main context the mirrors exist to save. Divergent copies (ollama, supervisor, test,
    +CLAUDE.md drift set) are vendored-drift findings for overwrite, not alternate instructions.
 
+## Tier-1 findings (2026-08-17, second half)
+
+- Dev re-pin sweep ran 18 repos: 17 green, 1 failed then repaired and re-run (test repo's
+  guides.test.ts still called guide 0.0.10's `patterns()`; migrated to `fences()` + `findUnlisted`
+  per the G1 ruling — the first live confirmation of backlog item B1's adoption debt).
+- **11 of 17 rebuilt dists differ from their published tarballs**: contract, emitter, html,
+  interpret, markdown, msg, ndjson, program, qualifier, template, tool. Probed cause: every one
+  carries post-release src commits on main ("Satisfy the refreshed placement and parity gates"
+  pass, plus siblings). The differences include `.d.ts` declarations and emitted logic, so the
+  registry serves older code than main. Per the dist rule these 11 owe a bump+publish.
+- Consequence: contract (L0) republishing re-pins into every consumer under the campaign goal, so
+  closing "everything on latest" is a near-full-fleet release wave in layer order, not the 10-package
+  cascade first measured. The wave folds the original cascade into it.
+- dist-identical (no release owed): abort, budget, form, guide, table, timeout — their re-pins are
+  complete and pushed to main.
+- Merged-branch deletion (~300, all ancestors of main) blocked by the permission classifier; awaiting
+  the user's approval or an allow rule. 11 unmerged branches recorded at B7.
+- brief/.orkestrel pruned after triage (survivors at B9-B15); scaffold/.orkestrel pruned (old plan
+  superseded, distribution prototype confirmed adopted); markdown PROPOSAL.md deleted. All pushed,
+  main fast-forwarded in markdown and brief.
+
 ## Awaiting user direction
 
 - Campaign order approval (L0→L6 overwrite+fix pass), supervisor ROADMAP disposition, markdown
