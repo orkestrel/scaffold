@@ -12,7 +12,7 @@ import type { ServerResponse } from 'node:http'
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, symlinkSync } from 'node:fs'
 import { createServer } from 'node:http'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { gzipSync } from 'node:zlib'
 import {
@@ -61,8 +61,8 @@ import {
 	stageHost,
 } from '@src/server'
 import { optionToName } from '../src/bin/helpers.js'
-import { createRecorder, requireValue } from '@orkestrel/test'
-import { createScratch } from '@orkestrel/test/server'
+import { createRecorder, requireValue, resolveRoot } from '@orkestrel/test'
+import { createLoopback, createScratch } from '@orkestrel/test/server'
 import {
 	buildBlueprint,
 	buildContentArtifact,
@@ -235,7 +235,7 @@ export interface TestUpstreamInterface {
  * happened to start in. It is also a real absolute host path this platform
  * produced, so a test can measure the host-path law against it.
  */
-export const WORKSPACE_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+export const WORKSPACE_ROOT = fileURLToPath(resolveRoot(import.meta))
 
 /**
  * Determine whether the temporary directory a workspace lands in resolves a
@@ -1773,11 +1773,9 @@ export async function createUpstreamServer(
 			if (!response.destroyed) writeUpstreamReply(response, reply)
 		}, reply.delay).unref()
 	})
-	await new Promise<void>((settle) => server.listen(0, '127.0.0.1', settle))
-	const address = server.address()
-	const port = typeof address === 'object' && address !== null ? address.port : 0
+	const loopback = await createLoopback(server)
 	return {
-		base: `http://127.0.0.1:${String(port)}`,
+		base: loopback.url,
 		get paths() {
 			return [...served]
 		},
@@ -1790,10 +1788,7 @@ export async function createUpstreamServer(
 		arrival(path: string) {
 			return arrivals.get(path) ?? Promise.resolve()
 		},
-		destroy() {
-			server.closeAllConnections()
-			return new Promise<void>((settle) => server.close(() => settle()))
-		},
+		destroy: loopback.destroy,
 	}
 }
 
