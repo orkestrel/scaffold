@@ -1,6 +1,7 @@
 # Developer-facing writing rules
 
-These rules govern prose a developer reads: chat replies, reports, guides, and commit messages.
+These rules govern prose a developer reads, including chat replies, reports, guides, README files,
+and commit messages.
 `AGENTS.md` § Writing governs prose everywhere, and this file does not restate it; this file adds
 only what a developer audience decides. An instruction file follows `AGENTS.md` § Instruction files
 first, and these rules wherever a rule here names no different form for it.
@@ -8,8 +9,8 @@ first, and these rules wherever a rule here names no different form for it.
 ## Voice and actor
 
 - Write `must` for a requirement, `can` for an option or an ability, and `might` for a possibility.
-  Use the imperative for an instruction or a recommendation. Never write `should`, and never soften a
-  recommendation into `We recommend`.
+  A recommendation takes the imperative, the same form `AGENTS.md` § Writing fixes for instructions.
+  Never write `should`, and never soften a recommendation into `We recommend`.
 - Address the developer as `you`. Name the software component that acts, and make it the subject of
   the sentence. Reserve `user` for someone using software the developer builds. Never write `we`,
   `our`, or `let's` about agent work.
@@ -59,8 +60,9 @@ first, and these rules wherever a rule here names no different form for it.
 
 - Keep a required fact in the main flow. A note or a notice carries only what the reader can skip,
   never a prerequisite, a step, or a warning the task depends on.
-- Introduce every list, table, and code fence with a complete sentence naming what follows. Number a
-  list only where order or rank matters. Use a table only for rows with comparable fields.
+- In a reply or a guide, introduce every list, table, and code fence with a complete sentence naming
+  what follows; a rule file's list sits bare under its heading. Number a list only where order or
+  rank matters. Use a table only for rows with comparable fields.
 - Write a heading in sentence case, verb first for a task and a noun phrase for a concept. Identity
   numbering — a claim, an audit verdict, a plan unit — is data rather than a heading style, and
   stays.
@@ -114,7 +116,7 @@ is exempt from every row.
 - Do not add conversational personality, warmth, or memorability to a reply; the prose stays plain.
 - Do not import a license to break these rules where a departure reads better; an exception exists
   only where a rule states it.
-- Do not write `We recommend`; the imperative carries a recommendation.
+- `We recommend` as a recommendation form — refused in § Voice and actor.
 - Do not apply a source guide's sample indentation or line-length chrome; the repository formatter
   and `.claude/rules/typescript.md` decide code presentation.
 - Do not write an unspaced em dash; this project spaces it.
