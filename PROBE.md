@@ -12,15 +12,17 @@ existing `tests/setupPolicy.ts` and `tests/policy.test.ts`, vendor both, and let
 socket, no daemon, and no new command, and it answers a probe with all three signals in a measured
 4244 ms against today's 3874 ms for one signal.
 
-Take residency later, and only through a Model Context Protocol (MCP) tool rather than a daemon of
-our own. A resident service answers in a measured 337 ms, which is worth having, but every hazard
-in this document exists because of residency, and a harness-started MCP server is the one form of
-residency whose lifetime this repository does not have to own. The transport measured 12 lines and
-a 0.32 ms round trip.
+Take residency through a Model Context Protocol (MCP) tool built on `@orkestrel/mcp`, never through
+a daemon of our own. A resident service answers in a measured 337 ms against the instrument pair's
+4244 ms, so residency is worth having; what makes the MCP form the right one is that the harness
+owns the process, so the endpoint, the startup race, the stale socket, the reaping, and the client
+process all stop being ours to write. Compose it as `createStdioServer(createMCPLegacy(mcp))`: the
+undecorated server answers a harness's `tools/list` with `Invalid params: malformed modern request
+metadata`, because the package dispatches by wire era.
 
-Do not build a one-shot command or a socket daemon. Both are dominated: the command buys one second
-over the instrument pair for a whole new surface, and the daemon costs a socket, a startup lock,
-and a reaping story that the MCP transport gets for free.
+Do not build a one-shot command or a socket daemon. The command buys one second over the instrument
+pair for a whole new surface, and the socket daemon is 40 ms slower per call than the MCP tool
+while carrying a lifetime the harness would have owned for free.
 
 Two warnings belong in the ruling rather than in a footnote, because each one sinks a design that
 does not account for it. A warm service returns confident wrong answers about freshly edited
@@ -449,8 +451,8 @@ much of it can fail.
 | --------------------------------- | --------- | ----- | ------------ | ------- | ---------------- |
 | 1. Vendored instrument pair       | 2         | 7     | 4244 ms      | none    | none             |
 | 2. One-shot runner command        | 2         | 8     | 3182–3459 ms | none    | none             |
-| 3. Resident service over a socket | ~6        | ~10   | ~2 s         | ~376 ms | ours to own      |
-| 4. MCP tool                       | ~3        | ~4    | ~1.5 s       | ~340 ms | the harness owns |
+| 3. Resident service over a socket | ~6        | ~10   | ~2 s         | ~380 ms | ours to own      |
+| 4. MCP tool on `@orkestrel/mcp`   | ~3        | ~5    | ~1.5 s       | ~340 ms | the harness owns |
 
 Every cold and warm figure for options 1 and 2 is measured. Option 3's warm figure adds the
 measured 337 ms service to the measured 38–43 ms client process boot and the measured 1.26 ms
@@ -519,6 +521,49 @@ measured 2779 ms against 2508 ms across three runs each, a saving of about 270 m
 is the uncontained infinite loop, which behaves exactly as it does today, because only a
 coordinator outside the Vitest process can hold that deadline.
 
+### The socket daemon and the MCP tool are one design, not two
+
+Options 3 and 4 differ in transport and in who owns the process. The engine is the same code and
+carries the same obligations: both are resident, so both implement all five laws, and neither is
+more accurate than the other. Choosing between them is choosing who runs the process.
+
+| Concern          | Socket daemon                                                            | MCP tool                       |
+| ---------------- | ------------------------------------------------------------------------ | ------------------------------ |
+| Process lifetime | ours: start, stop, reap, recover                                         | the harness starts and ends it |
+| Second caller    | a startup lock, or two services race                                     | the harness starts exactly one |
+| Endpoint         | a socket path, and a stale one to clean up                               | the process's own stdio        |
+| Client           | a Node process per call, measured 38–43 ms                               | none                           |
+| Agent's call     | a Bash command, with the quoting that implies                            | a tool call carrying JSON      |
+| Portability      | a Unix socket path does not bind on Windows, where Node uses named pipes | stdio everywhere               |
+| Warm transport   | 1.26 ms round trip, measured                                             | 3.08 ms round trip, measured   |
+| Warm total       | about 380 ms                                                             | about 340 ms                   |
+
+The socket is slower despite the faster wire, because its client pays process startup on every
+call and the MCP server is already running. It also has five failure modes the MCP tool does not
+have, and each one is code somebody writes and maintains.
+
+So the socket daemon is dominated on latency, on machinery, and on portability. Nothing measured
+here recommends it. Its only genuine advantage is reaching a caller with no MCP client at all, such
+as a plain terminal or a continuous-integration job — and the instrument pair already serves that
+caller through `npm run test:probe`, which is why the recommended pairing needs no socket.
+
+### Use the fleet's own MCP package, and wrap it in the legacy decorator
+
+`@orkestrel/mcp` version 0.0.17 publishes this capability, so building a second JSON-RPC
+implementation inside this package is the duplication `AGENTS.md` refuses. Two facts price the
+decision and one is a trap.
+
+- The weight is 10 `@orkestrel` packages and 6.3 MB, measured by installing it into an empty
+  project. It resolves with no unmet peer warning, because `router` and `server` are required peers
+  that npm installs. Declaring it is a dependency decision that belongs to the user.
+- The protocol overhead is 3.08 ms median warm, against 0.32 ms for a hand-written 12-line stdio
+  server. That difference is 0.8 percent of one probe and is not a reason to hand-write anything.
+- The trap: `createMCPServer` alone answers `tools/list` and `tools/call` with
+  `Invalid params: malformed modern request metadata`, because the package dispatches by wire era
+  and those are the dated revision. Compose `createStdioServer(createMCPLegacy(mcp))` and the same
+  calls answer correctly. A server built without the decorator looks finished and refuses every
+  request a harness makes.
+
 ### The upgrade path does not change the inspections
 
 Write the two inspections as exported functions in `tests/setupProbe.ts`. Option 1 calls them from
@@ -580,14 +625,16 @@ Each design below was considered and killed for the stated reason.
   one measured hazard it introduces is the class this document spends the most effort closing.
 - **A git worktree or container per probe.** Both discard residency, which is the entire
   performance argument.
-- **Hand-rolling a Model Context Protocol (MCP) server inside this package.** Not rejected for
-  being unreachable, which was an earlier and wrong reading: a working stdio server handling
-  `initialize`, `tools/list`, and `tools/call` was written in roughly 50 lines using only
-  `node:readline` and `node:crypto`. It is rejected because the fleet already publishes that
-  capability and `AGENTS.md` requires reusing a declared ecosystem primitive rather than
-  reimplementing it. Whether to declare that dependency is a decision for the user, not for this
-  document. The prize is real: `.mcp.json`, `.cursor/mcp.json`, and `.codex/config.toml` are all
-  vendored, so one registration reaches all three harnesses in 44 targets.
+- **Hand-rolling a Model Context Protocol (MCP) server inside this package.** Reachable, and still
+  refused. A working stdio server handling `initialize`, `tools/list`, and `tools/call` measured 12
+  lines and a 0.32 ms round trip using only `node:readline`, so the earlier reading that MCP was
+  unreachable was wrong. It is refused because `@orkestrel/mcp` publishes the capability and
+  `AGENTS.md` requires reusing a declared ecosystem primitive, and because the measured saving is
+  2.76 ms on a call that costs about 340 ms.
+- **A resident service over a Unix socket.** Dominated by the MCP tool on every axis measured:
+  40 ms slower per call because its client boots a process, five failure modes heavier because it
+  owns a lifetime the harness would otherwise own, and unable to bind on a Windows host where Node
+  uses named pipes rather than filesystem paths.
 - **A `scaffold` bin verb.** `src/bin/constants.ts:22-28` plus the type, options, parse, and
   dispatch sites make a new verb a five-file change for a mechanism that is not a workspace
   operation.
