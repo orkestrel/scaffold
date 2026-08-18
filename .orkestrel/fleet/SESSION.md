@@ -214,3 +214,15 @@ createTeardown, and inline setTimeout waits in seven packages — each riding it
 test-touching release. B16 and B17 rows marked closed by their L3 shipments. Routing note: the
 survey executor answered from its driver engine rather than the Cursor bench — recorded as a
 driver-engine substitution; evidence is verifiable grep output with file:line.
+
+## L5 and ollama published (2026-08-18)
+
+agent 0.0.16 and ollama 0.0.10 registry-confirmed. The corrected window flow (user-directed):
+fresh `npm login` per the doctrine before publishing — the stored session credential read green
+on whoami while its authorization flow was degraded, which is the exact authentication-state
+trap the execution loop names; three agent attempts failed on it before the fresh login landed
+the upload on its first try. Links are relayed as plain text; decorated links did not render
+for the user. toolbox failed its visit's check gate on real API drift (terminal 0.0.10 /
+workflow 0.0.13 renames and reshapes its consumers never adopted) — migration unit dispatched
+to Sol (bench verified live; journal tmp/codex/toolbox-migration.jsonl, thread 01a01241);
+its window closes the wave.
