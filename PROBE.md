@@ -486,14 +486,38 @@ ships.
 - `createPolicyScratch` at `tests/setupPolicy.ts:66` creates that scratch directory outside the
   repository. It is the mechanism that answers the gitignore refusal, and every target already has
   it.
+- `tests/setupPolicy.ts:12` already declares `import * as ts from 'typescript'`. The vendored
+  instrument already drives the TypeScript compiler, so the type stage has a precedent too.
 
-So the lint stage has a vendored precedent, the scratch mechanism is vendored, the Vitest project
-exists, and the command exists. What is missing is the type inspection and the file that runs both.
+So the lint stage has a vendored precedent, the type stage has a vendored precedent, the scratch
+mechanism is vendored, the Vitest project exists, and the command exists. What is missing is the
+type inspection over probe specimens and the file that runs both.
+
+### The engine cannot be published, which decides where it lives
+
+`typescript`, `vitest`, `oxlint`, and `vite` are declared only in `devDependencies`. Published code
+under `dist/src` that imported any of them would name a dependency the package does not ship, so
+the engine cannot live in `src/server` and be exported. `src/core` refuses it twice over, because
+`.oxlintrc.json` denies every `node:` specifier there to keep core host-independent.
+
+That leaves a vendored file, and the choice within vendoring matters. A vendored `.mjs` is
+typechecked by nothing and linted by nothing, and it would be the file carrying the most logic. A
+vendored `.ts` under `tests/` is typechecked by the root project, whose `tsconfig.json` declares no
+`include` and excludes only `node_modules`, `dist`, and `tmp`. The instrument pair therefore lands
+inside the gates rather than beside them, which is the same reason `tests/setupPolicy.ts` is a
+`.ts` file.
 
 The pair also escapes every law in this document except one. A fresh process cannot serve a stale
 dependency, cannot leak state between probes, needs no eviction, and needs no boot arming, because
 it has nothing warm to arm. Only the scoped-project law still binds. That is the whole minimalism
 case, and it is the reason to start here even though 4244 ms is not fast.
+
+Be honest about the two extra signals' price and about one hazard the pair leaves open. The two
+inspections cost roughly 370 ms on top of the run that already happens. Nearly all of that is
+refundable: `package.json:82` passes `--no-cache`, which a workbench does not need, and removing it
+measured 2779 ms against 2508 ms across three runs each, a saving of about 270 ms. The open hazard
+is the uncontained infinite loop, which behaves exactly as it does today, because only a
+coordinator outside the Vitest process can hold that deadline.
 
 ### The upgrade path does not change the inspections
 
@@ -523,6 +547,18 @@ Each edit names its file, and each sits at a point this repository already uses.
 
 Nothing in that list is a new mechanism. Items 3 through 6 are the same four points every vendored
 instrument already touches.
+
+Three further edits are needed only if the `--no-cache` refund is taken, and each one exists
+because the current command string is asserted rather than inferred.
+
+- `package.json:82` and `src/core/compilers.ts:361-362` carry the command itself.
+- `tests/src/core/compilers.test.ts:129-134` asserts the exact string, including `--no-cache`, and
+  asserts that `npm test` does not contain `test:probe`.
+- `src/bin/CLI.ts:744` and `:748` exempt `test:probe` and the `probe` project from the gate
+  reachability check, and that exemption stays: the workbench is still not a gate.
+
+`.claude/settings.json:72-73` already allows `npm run test:probe`, so the invocation needs no new
+permission.
 
 ## Rejected
 
