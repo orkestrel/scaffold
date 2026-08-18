@@ -55,10 +55,10 @@ describe('Compiler artifacts', () => {
 			'guides/README.md',
 			'README.md',
 		])
-		expect(plan.artifacts).toHaveLength(46)
+		expect(plan.artifacts).toHaveLength(47)
 		expect(plan.artifacts.filter(({ origin }) => origin === 'computed')).toHaveLength(1)
 		expect(plan.artifacts.filter(({ origin }) => origin === 'template')).toHaveLength(14)
-		expect(plan.artifacts.filter(({ origin }) => origin === 'host')).toHaveLength(31)
+		expect(plan.artifacts.filter(({ origin }) => origin === 'host')).toHaveLength(32)
 	})
 
 	it('emits every conditional config path exactly once', () => {

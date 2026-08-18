@@ -158,3 +158,35 @@ and recorded live on a bounded round trip; the MCP transport stayed dark all ses
 process predates the login). Probes: Orchestrator tracked commands (E1–E10). No lane saw the
 other's answer; both ran on one brief. Campaign artifacts stay in this folder until the follow-up
 implementation campaign closes; git history is the archive.
+
+---
+
+# Implementation addendum (accepted campaign, same branch)
+
+The user authorized implementation with spirit rulings where round 1 left decisions open. What
+landed, and where it corrected round-1 rulings:
+
+- Landed as designed: `configs/policy.ts` (plugin `policy`; zero imports; `no-mocking` with
+  messageIds mock/spy/clock/stub incl. computed literal and single-quasi template access;
+  `no-keyword-privacy` for `private`/`protected` incl. abstract variants), `.oxlintrc.json` wiring
+  plus built-ins `typescript/parameter-properties` and `typescript/explicit-member-accessibility`
+  (`no-public`), the `HOST_PATHS` row, the sweep's `'suppression'` rule with composed tokens and
+  in/out-of-population controls (root arm extensions equal to the directory arm), RuleTester cases
+  plus the real-binary wiring proof, and `inspectPolicyConfiguration` proving no override or
+  ignore pattern weakens the wiring (injected-override negative control).
+- Corrections to round-1 rulings, each taken with the user's spirit authorization and carried
+  through the adversarial audit: the privacy ban widened to all three accessibility modifiers and
+  parameter properties, homed in AGENTS.md's non-negotiable (superseding this report's
+  "protected and public stay legal" and open decision 3); the former readonly-parameters
+  non-negotiable folded into it as subsumed; `as const` ruled sanctioned in typescript.md
+  (open decision 2, sanction direction); campaign records under `.orkestrel/` exempted from the
+  format gate via `.prettierignore`.
+- Audit round: two blind lanes (Opus subjective, Sol objective), both FAIL on first pass; five
+  reproduced findings (wiring-instrument override blindness, root-arm suppression gap,
+  template-literal access escape, dead type exports, three prose drifts incl. a false routes.ts
+  identity claim and the stale root privacy line) all fixed with pinned regression proofs;
+  verdicts retained verbatim in this folder.
+- Still open, unchanged: fleet-wide violation counts are unmeasured; the release wave (scaffold
+  bump, publish, per-target re-pin + repair + gates) is the user's decision and follows the
+  release-wave law. Phase-2 candidate (nested-function body law as a third plugin rule) remains
+  unscheduled.
