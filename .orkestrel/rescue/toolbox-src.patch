@@ -1,0 +1,709 @@
+diff --git a/package.json b/package.json
+index f03ea2c..26bb51c 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+ 	"name": "@orkestrel/toolbox",
+-	"version": "0.0.6",
++	"version": "0.0.7",
+ 	"description": "Concrete LLM-callable tools for the @orkestrel line — workflow authoring, workspace editing, sub-agent delegation, and more, over the @orkestrel/tool runtime, with pluggable stores. Part of the @orkestrel line.",
+ 	"keywords": [
+ 		"agent",
+@@ -78,21 +78,22 @@
+ 		"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test"
+ 	},
+ 	"dependencies": {
+-		"@orkestrel/agent": "^0.0.15",
+-		"@orkestrel/contract": "^0.0.11",
+-		"@orkestrel/database": "^0.0.8",
+-		"@orkestrel/relation": "^0.0.8",
+-		"@orkestrel/server": "^0.0.12",
+-		"@orkestrel/terminal": "^0.0.7",
+-		"@orkestrel/tool": "^0.0.10",
+-		"@orkestrel/workflow": "^0.0.11",
+-		"@orkestrel/workspace": "^0.0.4"
++		"@orkestrel/agent": "^0.0.16",
++		"@orkestrel/contract": "^0.0.12",
++		"@orkestrel/database": "^0.0.10",
++		"@orkestrel/form": "^0.0.2",
++		"@orkestrel/relation": "^0.0.9",
++		"@orkestrel/server": "^0.0.13",
++		"@orkestrel/terminal": "^0.0.10",
++		"@orkestrel/tool": "^0.0.11",
++		"@orkestrel/workflow": "^0.0.13",
++		"@orkestrel/workspace": "^0.0.5"
+ 	},
+ 	"devDependencies": {
+ 		"@microsoft/api-extractor": "^7.58.12",
+-		"@orkestrel/guide": "^0.0.11",
+-		"@orkestrel/scaffold": "^0.0.38",
+-		"@orkestrel/test": "^0.0.5",
++		"@orkestrel/guide": "^0.0.12",
++		"@orkestrel/scaffold": "^0.0.40",
++		"@orkestrel/test": "^0.0.6",
+ 		"@types/node": "^26.1.2",
+ 		"@vitest/browser-playwright": "^4.1.10",
+ 		"oxfmt": "^0.62.0",
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index 133ccfc..c0836f1 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -261,21 +261,27 @@ export const PROMPT_TOOL_NAME = 'ask'
+  * {@link import('./factories.js').createDescribeTool}.
+  */
+ export const PROMPT_TOOL_SUMMARY =
+-	"Ask another terminal a question and BLOCK until it answers; the call resolves with the answered value. Call describe('ask') for the required fields."
++	"Ask another terminal a multi-field form and BLOCK until it answers; the call resolves with the values record. Call describe('ask') for the schema."
+ 
+-/** The full prompt protocol {@link import('./factories.js').createPromptTool} advertises. */
++/** The full form protocol {@link import('./factories.js').createPromptTool} advertises. */
+ export const PROMPT_TOOL_DESCRIPTION = [
+-	'Ask another terminal a question and block until it answers. This call does not return until the addressed terminal answers, or the prompt fails.',
++	'Ask another terminal a multi-field form and block until it answers. This call does not return until the addressed terminal answers, or the form expires.',
+ 	'',
+ 	'Required:',
+-	'  to      - the terminal name to ask.',
+-	'  form    - the prompt kind: one of "input", "password", "confirm", "select", "checkbox", "editor".',
+-	'  message - the question shown to the answering terminal.',
+-	'Optional:',
+-	'  options - form-specific options (e.g. choices for "select"/"checkbox").',
+-	'A cycle (two terminals asking each other) or an expired prompt fails the call with a typed error.',
++	'  to     - the terminal name to ask.',
++	'  schema - an @orkestrel/form schema: each field declares `control` and `name`, plus optional `label`, `rule`, `default`, and `choices`; `fields` is an ordered array and each `name` must be unique.',
++	'The result is one values object keyed by those field names. A cycle or expired form fails with a typed error.',
+ 	'Example:',
+-	JSON.stringify({ to: 'reviewer', form: 'confirm', message: 'Approve the release?' }),
++	JSON.stringify({
++		to: 'reviewer',
++		schema: {
++			label: 'Release review',
++			fields: [
++				{ control: 'confirm', name: 'approved', label: 'Approve the release?' },
++				{ control: 'editor', name: 'notes', label: 'Review notes' },
++			],
++		},
++	}),
+ ].join('\n')
+ 
+ /**
+@@ -292,19 +298,19 @@ export const ANSWER_TOOL_NAME = 'answer'
+  * {@link import('./factories.js').createDescribeTool}.
+  */
+ export const ANSWER_TOOL_SUMMARY =
+-	"List prompts addressed to this terminal, or answer one by id. Call describe('answer') for the required fields."
++	"List forms addressed to this terminal, or answer one by id with a values record. Call describe('answer') for the required fields."
+ 
+ /** The pending/answer protocol {@link import('./factories.js').createAnswerTool} advertises. */
+ export const ANSWER_TOOL_DESCRIPTION = [
+-	'List the prompts currently addressed to this terminal, or answer one of them by id. Every call is ONE operation, chosen by the "operation" field.',
++	'List the forms currently addressed to this terminal, or answer one of them by id. Every call is ONE operation, chosen by the "operation" field.',
+ 	'',
+ 	'Operations:',
+-	'- pending { "operation": "pending" } — list every prompt currently addressed to this terminal (id, form, message, options, time).',
+-	'- answer  { "operation": "answer", "id": "<prompt id>", "value": <answer value> } — answer the prompt with that id; "value" must match the prompt\'s form (a string for "input"/"password"/"editor", a boolean for "confirm", a choice for "select", an array of choices for "checkbox").',
+-	'Example — list pending prompts:',
++	'- pending { "operation": "pending" } — list every form currently addressed to this terminal (id, from, schema).',
++	'- answer  { "operation": "answer", "id": "<form id>", "values": { "<field name>": <field value> } } — answer every required field with the value its control accepts.',
++	'Example — list pending forms:',
+ 	JSON.stringify({ operation: 'pending' }),
+ 	'Example — answer one:',
+-	JSON.stringify({ operation: 'answer', id: 'abc123', value: true }),
++	JSON.stringify({ operation: 'answer', id: 'abc123', values: { approved: true, notes: 'Ready' } }),
+ ].join('\n')
+ 
+ /**
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 03d28df..08238c5 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -48,6 +48,7 @@ import {
+ 	stringShape,
+ } from '@orkestrel/contract'
+ import { isTerminalError } from '@orkestrel/terminal'
++import { createForm, isFormError, isFormValues, parseForm } from '@orkestrel/form'
+ import { createDatabase, createMemoryDriver } from '@orkestrel/database'
+ import { createWorkflowContract } from '@orkestrel/workflow'
+ import { MemoryDefinitionStore } from './stores/MemoryDefinitionStore.js'
+@@ -92,7 +93,6 @@ import { ToolboxError, isToolboxError } from './errors.js'
+ import {
+ 	agentTag,
+ 	clampQuery,
+-	coerceAnswer,
+ 	completeDraft,
+ 	deriveWorkflowDepth,
+ 	extendLineage,
+@@ -812,19 +812,18 @@ export function createDescribeTool(tools: ToolManagerInterface): ToolInterface {
+ }
+ 
+ /**
+- * Build an LLM-callable prompt tool — the ASK side of the terminal seam. Asks
+- * {@link import('./types.js').PromptToolOptions.to} a question and BLOCKS until it answers,
+- * returning the resolved answer value.
++ * Build an LLM-callable form tool — the ASK side of the terminal seam. Asks
++ * a multi-field form and BLOCKS until it answers, returning the resolved values record.
+  *
+  * @remarks
+  * The universal tool-handler contract (AGENTS §14): validates the call args against
+- * {@link import('./shapers.js').promptToolShape}, dispatches to the matching
+- * `TerminalManagerInterface.ask` overload (`@orkestrel/terminal`) for the call's `form`, and
+- * RETURNS the resolved answer on success. `from` is FIXED at construction
++ * {@link import('./shapers.js').promptToolShape}, parses the call's schema through
++ * `@orkestrel/form`, constructs the live form, and passes it to `TerminalManagerInterface.ask`.
++ * `from` is FIXED at construction
+  * ({@link import('./types.js').PromptToolOptions.from}) — never read from the model-supplied
+- * args — so a model cannot spoof which terminal is asking. A prompt CYCLE rejects with
++ * args — so a model cannot spoof which terminal is asking. A form CYCLE rejects with
+  * `TerminalError('DEADLOCK')`, re-surfaced as a typed `DEADLOCK`
+- * {@link import('./errors.js').ToolboxError}; an expired prompt re-surfaces as `EXPIRE`; an
++ * {@link import('./errors.js').ToolboxError}; an expired form re-surfaces as `EXPIRE`; an
+  * unknown `to` (or any other `TerminalError`) re-surfaces as `TOOL`, naming the unknown terminal
+  * plus the known ones (`manager.terminals()`).
+  *
+@@ -859,72 +858,43 @@ export function createPromptTool(options: PromptToolOptions): ToolInterface {
+ 			if (call === undefined) {
+ 				throw new ToolboxError('TOOL', 'malformed ask call', { args })
+ 			}
+-			if (
+-				(call.form === 'select' || call.form === 'checkbox') &&
+-				(call.choices ?? []).length === 0
+-			) {
+-				throw new ToolboxError('TOOL', 'select/checkbox requires at least one choice', {
+-					to: call.to,
+-					form: call.form,
+-				})
++			const schema = parseForm(call.schema)
++			if (schema === undefined) {
++				throw new ToolboxError('TOOL', 'malformed form schema', { schema: call.schema })
+ 			}
+-			try {
+-				switch (call.form) {
+-					case 'input':
+-						return await options.manager.ask(options.from, call.to, call.form, {
+-							message: call.message,
+-							...(call.default === undefined ? {} : { default: call.default }),
+-							...(call.validate === undefined ? {} : { validate: call.validate }),
+-						})
+-					case 'editor':
+-						return await options.manager.ask(options.from, call.to, call.form, {
+-							message: call.message,
+-							...(call.default === undefined ? {} : { default: call.default }),
+-							...(call.validate === undefined ? {} : { validate: call.validate }),
+-						})
+-					case 'password':
+-						return await options.manager.ask(options.from, call.to, call.form, {
+-							message: call.message,
+-							...(call.mask === undefined ? {} : { mask: call.mask }),
+-							...(call.validate === undefined ? {} : { validate: call.validate }),
+-						})
+-					case 'confirm':
+-						return await options.manager.ask(options.from, call.to, call.form, {
+-							message: call.message,
+-							...(call.default === undefined ? {} : { default: call.default === 'true' }),
+-						})
+-					case 'select':
+-						return await options.manager.ask(options.from, call.to, call.form, {
+-							message: call.message,
+-							choices: call.choices ?? [],
+-							...(call.default === undefined ? {} : { default: call.default }),
+-						})
+-					case 'checkbox':
+-						return await options.manager.ask(options.from, call.to, call.form, {
+-							message: call.message,
+-							choices: call.choices ?? [],
+-							...(call.min === undefined ? {} : { min: call.min }),
+-							...(call.max === undefined ? {} : { max: call.max }),
+-						})
++			for (const field of schema.fields) {
++				if (
++					(field.control === 'select' || field.control === 'checkbox') &&
++					!field.choices.some((choice) => choice.disabled !== true)
++				) {
++					throw new ToolboxError(
++						'TOOL',
++						`${field.control} field '${field.name}' has no enabled choices`,
++						{ control: field.control, field: field.name },
++					)
+ 				}
++			}
++			try {
++				return await options.manager.ask(options.from, call.to, createForm(schema))
+ 			} catch (error) {
++				if (isFormError(error) && error.code === 'ABANDONED') {
++					throw new ToolboxError('EXPIRE', `form to '${call.to}' expired before it was answered`, {
++						to: call.to,
++					})
++				}
+ 				const code = terminalToolCode(error)
+ 				if (code === undefined) throw error
+ 				if (code === 'DEADLOCK') {
+ 					throw new ToolboxError(
+ 						'DEADLOCK',
+-						`asking '${call.to}' would form a prompt cycle`,
++						`asking '${call.to}' would create a form cycle`,
+ 						isTerminalError(error) ? error.context : { from: options.from, to: call.to },
+ 					)
+ 				}
+ 				if (code === 'EXPIRE') {
+-					throw new ToolboxError(
+-						'EXPIRE',
+-						`prompt to '${call.to}' expired before it was answered`,
+-						{
+-							to: call.to,
+-						},
+-					)
++					throw new ToolboxError('EXPIRE', `form to '${call.to}' expired before it was answered`, {
++						to: call.to,
++					})
+ 				}
+ 				if (isTerminalError(error) && error.code === 'TARGET') {
+ 					throw new ToolboxError('TOOL', `unknown terminal '${call.to}'`, {
+@@ -939,24 +909,22 @@ export function createPromptTool(options: PromptToolOptions): ToolInterface {
+ }
+ 
+ /**
+- * Build an LLM-callable answer tool — the ANSWER side of the terminal seam. Lists the prompts
++ * Build an LLM-callable answer tool — the ANSWER side of the terminal seam. Lists the forms
+  * currently addressed to {@link import('./types.js').AnswerToolOptions.to}, or answers one of
+  * them by id.
+  *
+  * @remarks
+  * The universal tool-handler contract (AGENTS §14): validates the call args against
+  * {@link import('./shapers.js').answerToolShape} (discriminated by `operation`). `'pending'`
+- * returns a compact list (`{ id, from, form, message }`) of every prompt currently addressed to
+- * `to` (`TerminalManagerInterface.pending`, `@orkestrel/terminal`). `'answer'` looks the prompt
+- * up by `id` (an unknown id throws a typed `ANSWER` {@link import('./errors.js').ToolboxError}),
+- * normalizes the model-supplied `value` to the prompt's own form
+- * ({@link import('./helpers.js').coerceAnswer}), and applies it via
++ * returns a compact list (`{ id, from, schema }`) of every form currently addressed to `to`.
++ * `'answer'` looks the form up by `id`, narrows the supplied `values` through `@orkestrel/form`,
++ * and applies it via
+  * `TerminalManagerInterface.answer` — a rejected / unknown / unresolvable outcome
+  * (`TerminalAnswerResult.error`) re-surfaces as a typed `ANSWER` `ToolboxError`; success returns
+  * `{ answered: id }`. `to` is FIXED at construction
+  * ({@link import('./types.js').AnswerToolOptions.to}) — never read from the model-supplied args —
+  * so a model cannot spoof which terminal it is answering for. Concurrent answerers racing on one
+- * endpoint are FIRST-WRITE-WINS — a late answer to an already-settled prompt returns a typed
++ * endpoint are FIRST-WRITE-WINS — a late answer to an already-settled form returns a typed
+  * `ANSWER` `ToolboxError` (surfaced as a 422 over HTTP).
+  *
+  * @param options - The live manager, the fixed `to` identity, and advertised overrides (see
+@@ -973,7 +941,7 @@ export function createPromptTool(options: PromptToolOptions): ToolInterface {
+  * manager.add('reviewer')
+  * const tool = createAnswerTool({ manager, to: 'reviewer' })
+  * const tools = createToolManager()
+- * tools.add(tool) // the reviewer terminal can now list/answer prompts addressed to it
++ * tools.add(tool) // the reviewer terminal can now list/answer forms addressed to it
+  * ```
+  */
+ export function createAnswerTool(options: AnswerToolOptions): ToolInterface {
+@@ -990,27 +958,33 @@ export function createAnswerTool(options: AnswerToolOptions): ToolInterface {
+ 				throw new ToolboxError('TOOL', 'malformed answer call', { args })
+ 			}
+ 			if (call.operation === 'pending') {
+-				return options.manager.pending(options.to).map((prompt) => ({
+-					id: prompt.id,
+-					from: prompt.from,
+-					form: prompt.form,
+-					message: prompt.message,
++				return options.manager.pending(options.to).map((form) => ({
++					id: form.id,
++					from: form.from,
++					schema: form.schema,
+ 				}))
+ 			}
+-			const prompt = options.manager.pending(options.to).find((entry) => entry.id === call.id)
+-			if (prompt === undefined) {
+-				throw new ToolboxError('ANSWER', `unknown prompt '${call.id}'`, {
++			const form = options.manager.pending(options.to).find((entry) => entry.id === call.id)
++			if (form === undefined) {
++				throw new ToolboxError('ANSWER', `unknown form '${call.id}'`, {
+ 					id: call.id,
+ 					reason: 'unknown',
+ 				})
+ 			}
+-			const coerced = coerceAnswer(prompt.form, call.value)
+-			const result = options.manager.answer(options.to, call.id, coerced)
++			if (!isFormValues(call.values)) {
++				throw new ToolboxError('TOOL', 'malformed form values', { values: call.values })
++			}
++			const result = options.manager.answer(options.to, call.id, call.values)
+ 			if (!result.success) {
+-				throw new ToolboxError('ANSWER', `failed to answer prompt '${call.id}': ${result.error}`, {
+-					id: call.id,
+-					reason: result.error,
+-				})
++				throw new ToolboxError(
++					'ANSWER',
++					`failed to answer form '${call.id}': ${result.error.reason}`,
++					{
++						id: call.id,
++						reason: result.error.reason,
++						...(result.error.reason === 'rejected' ? { errors: result.error.errors } : {}),
++					},
++				)
+ 			}
+ 			return { answered: call.id }
+ 		},
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 7f1718e..2292628 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -1,5 +1,4 @@
+ import type { WorkflowDefinition, WorkflowResult } from '@orkestrel/workflow'
+-import type { PromptType } from '@orkestrel/terminal'
+ import type { TableMap } from '@orkestrel/database'
+ import type { DatabaseErrorCode } from '@orkestrel/database'
+ import type {
+@@ -288,55 +287,6 @@ export function expandSteps(flat: WorkflowSteps): WorkflowDefinition {
+ 	})
+ }
+ 
+-// === Terminal-tool answer coercion + error-code mapping (the tool's answer surface)
+-
+-/**
+- * Normalize an LLM-supplied answer `value` to the type {@link PromptType} `form` expects, so a
+- * caller that only ever emits strings can still answer a typed prompt.
+- *
+- * @remarks
+- * `'confirm'` coerces to a `boolean` — a `boolean` passes through, and the strings `'true'` /
+- * `'false'` (case-insensitively) map to it; any other string is truthy-coerced via
+- * `Boolean(value)`. `'checkbox'` coerces to `readonly string[]` — an array passes through
+- * (stringifying each entry), a comma-separated string splits + trims into one, and any other
+- * single (non-comma) string becomes a one-item array. Every other form (`'input'` / `'password'`
+- * / `'select'` / `'editor'`) coerces to a plain `string` — a string passes through verbatim; a
+- * non-string, non-object scalar (`number` / `boolean`) stringifies via `String(value)`; an
+- * object or array (no lossless string form) falls back to `''` rather than serializing garbage.
+- * Pure and total — never throws.
+- *
+- * @param form - The {@link PromptType} the answer is being coerced FOR
+- * @param value - The raw, LLM-supplied answer value
+- * @returns The coerced answer — `boolean` for `'confirm'`, `readonly string[]` for `'checkbox'`,
+- *   `string` otherwise
+- */
+-export function coerceAnswer(
+-	form: PromptType,
+-	value: unknown,
+-): string | boolean | readonly string[] {
+-	if (form === 'confirm') {
+-		if (typeof value === 'boolean') return value
+-		if (typeof value === 'string') {
+-			const lower = value.trim().toLowerCase()
+-			if (lower === 'true') return true
+-			if (lower === 'false') return false
+-		}
+-		return Boolean(value)
+-	}
+-	if (form === 'checkbox') {
+-		if (Array.isArray(value)) return value.map((entry) => String(entry))
+-		if (typeof value === 'string') {
+-			if (value.includes(',')) return value.split(',').map((entry) => entry.trim())
+-			return [value]
+-		}
+-		return [String(value)]
+-	}
+-	// The remaining text-shaped forms ('input'/'password'/'select'/'editor').
+-	if (typeof value === 'string') return value
+-	if (typeof value === 'object' && value !== null) return ''
+-	return String(value)
+-}
+-
+ /**
+  * Map a caught error to the {@link ToolboxErrorCode} the terminal-tool factory should throw
+  * with — the pure classification step of that factory's error handling.
+@@ -346,8 +296,8 @@ export function coerceAnswer(
+  * value returns `undefined`, telling the caller this mapper does not apply (rethrow / handle
+  * otherwise). For a genuine `TerminalError`, `'DEADLOCK'` maps to `'DEADLOCK'`, `'EXPIRE'` maps
+  * to `'EXPIRE'`, and every other {@link import('@orkestrel/terminal').TerminalErrorCode}
+- * (`'TARGET'`, `'CANCEL'`, `'DRIVER'`) maps to the generic `'TOOL'` code. The mapper only
+- * classifies — the factory performs the actual throw.
++ * (`'TARGET'`, `'LIMIT'`, `'CANCEL'`, `'DRIVER'`, `'DESTROYED'`) maps to the generic `'TOOL'`
++ * code. The mapper only classifies — the factory performs the actual throw.
+  *
+  * @param error - The value caught from a terminal-manager operation (`ask` / `answer` / …)
+  * @returns The mapped {@link ToolboxErrorCode}, or `undefined` if `error` is not a `TerminalError`
+diff --git a/src/core/shapers.ts b/src/core/shapers.ts
+index 1f6643c..ee61797 100644
+--- a/src/core/shapers.ts
++++ b/src/core/shapers.ts
+@@ -14,132 +14,42 @@ import {
+ import { MAX_TIMER_MS } from '@orkestrel/workflow'
+ 
+ // === Prompt / answer shapes (createPromptTool / createAnswerTool call args)
+-//
+-// `validate` is DECLARATIVE-ONLY here — a `Validator` is a function and cannot cross a JSON
+-// Schema / contract boundary, so `promptToolShape`'s inline `validate` field keeps only the
+-// primitive (`boolean` / `number` / `string`) rule fields `ValidationRules`
+-// (`@orkestrel/terminal`) accepts; `custom` (a bare `Validator`) is DROPPED — mirrors
+-// `serializeValidationRules`'s own function-stripping (`@orkestrel/terminal`).
+ 
+ /**
+- * The shape of {@link import('./factories.js').createPromptTool}'s call arguments — `to` (the
+- * terminal identity to address), `form` (which of the six {@link import('@orkestrel/terminal').PromptType}
+- * forms to ask), `message`, an optional `timeout` override, and every per-form optional field
+- * FLATTENED onto one object (mirrors `workspaceToolShape`'s flat-arm style, but a single shared
+- * shape rather than a discriminated union — `form` alone does not vary the REQUIRED fields, only
+- * which of the optional ones apply, so a flat shape stays faithful without duplicating `to` /
+- * `message` / `timeout` across six near-identical arms).
++ * The shape of {@link import('./factories.js').createPromptTool}'s call arguments — `to` names the
++ * terminal identity and `schema` carries the complete multi-field form document.
+  *
+  * @remarks
+- * `choices` backs `'select'` / `'checkbox'`; `default` backs `'input'` / `'confirm'` / `'select'`
+- * (a string for the first two forms' text default, `'true'`/`'false'` string for confirm — the
+- * contract layer cannot vary a field's type by a sibling field's value, so `default` stays a
+- * string and the handler coerces per form); `mask` backs `'password'`; `min` / `max` backs
+- * `'checkbox'`; `validate` (declarative only) backs the four text-shaped forms
+- * (`'input'` / `'password'` / `'confirm'` / `'editor'`).
++ * The contract first requires exact JSON. The handler then delegates schema parsing and semantic
++ * validation to `@orkestrel/form`'s `parseForm`, so Toolbox does not duplicate the form schema.
+  */
+ export const promptToolShape = objectShape({
+-	to: stringShape({ min: 1, description: 'The terminal identity to address the prompt to.' }),
+-	form: literalShape(['input', 'password', 'confirm', 'select', 'checkbox', 'editor'], {
+-		description: 'Which prompt form to ask.',
++	to: stringShape({ min: 1, description: 'The terminal identity to address the form to.' }),
++	schema: jsonShape({
++		description:
++			'The @orkestrel/form schema to ask, with form metadata and one or more typed fields.',
+ 	}),
+-	message: stringShape({ min: 1, description: "The prompt's question." }),
+-	default: optionalShape(
+-		stringShape({
+-			description:
+-				"The default answer if the responder submits blank — 'input' / 'editor' text, 'confirm' 'true'/'false', or a 'select' choice value.",
+-		}),
+-	),
+-	choices: optionalShape(
+-		arrayShape(
+-			objectShape({
+-				name: stringShape({
+-					min: 1,
+-					description: 'The choice label shown to the answering party.',
+-				}),
+-				value: stringShape({
+-					min: 1,
+-					description: 'The value submitted when this choice is picked.',
+-				}),
+-				description: optionalShape(
+-					stringShape({ description: 'An optional one-line elaboration.' }),
+-				),
+-			}),
+-			{ description: "The selectable choices for 'select' / 'checkbox'." },
+-		),
+-	),
+-	mask: optionalShape(
+-		stringShape({
+-			min: 1,
+-			description: "The mask character 'password' renders in place of input.",
+-		}),
+-	),
+-	min: optionalShape(
+-		integerShape({ min: 0, description: "The minimum number of 'checkbox' selections required." }),
+-	),
+-	max: optionalShape(
+-		integerShape({ min: 0, description: "The maximum number of 'checkbox' selections allowed." }),
+-	),
+-	validate: optionalShape(
+-		objectShape({
+-			required: optionalShape(booleanShape({ description: 'Reject an empty (trimmed) input.' })),
+-			minimum: optionalShape(
+-				integerShape({
+-					min: 0,
+-					description: 'Reject an input shorter than this many characters.',
+-				}),
+-			),
+-			maximum: optionalShape(
+-				integerShape({
+-					min: 0,
+-					description: 'Reject an input longer than this many characters.',
+-				}),
+-			),
+-			pattern: optionalShape(
+-				stringShape({
+-					description: 'Reject an input that fails this regular-expression source.',
+-				}),
+-			),
+-			email: optionalShape(booleanShape({ description: 'Require a valid email-address shape.' })),
+-			url: optionalShape(booleanShape({ description: 'Require a valid URL shape.' })),
+-			numeric: optionalShape(booleanShape({ description: 'Require a numeric value.' })),
+-			integer: optionalShape(booleanShape({ description: 'Require an integer value.' })),
+-			alphanumeric: optionalShape(
+-				booleanShape({ description: 'Require letters and digits only.' }),
+-			),
+-		}),
+-	),
+-	timeout: optionalShape(
+-		integerShape({ min: 0, description: 'Milliseconds to wait before the prompt expires.' }),
+-	),
+ })
+ 
+ /**
+  * The shape of {@link import('./factories.js').createAnswerTool}'s call arguments — discriminated
+- * by `operation`: `'pending'` lists the prompts addressed to this tool's terminal, `'answer'`
+- * resolves one by `id` with a `value`.
++ * by `operation`: `'pending'` lists the forms addressed to this tool's terminal, while `'answer'`
++ * resolves one by `id` with a complete `values` record.
+  *
+  * @remarks
+- * `value`'s type varies by the ORIGINAL prompt's form (`string` for `'input'` / `'password'` /
+- * `'select'` / `'editor'`, `boolean` for `'confirm'`, `readonly string[]` for `'checkbox'`) —
+- * `unionShape(stringShape(), booleanShape(), arrayShape(stringShape()))` expresses that
+- * union directly, so `value` is typed as the full `string | boolean | readonly string[]` union
+- * here (no lossy string-only fallback needed).
++ * `values` is first bounded to exact JSON. The handler then narrows it with the originating Form
++ * package's `isFormValues` guard before the terminal manager applies it to the parked live form.
+  */
+ export const answerToolShape = unionShape(
+ 	objectShape({
+ 		operation: literalShape(['pending'], {
+-			description: 'List the prompts currently addressed to this terminal.',
++			description: 'List the forms currently addressed to this terminal.',
+ 		}),
+ 	}),
+ 	objectShape({
+-		operation: literalShape(['answer'], { description: 'Answer one pending prompt by id.' }),
+-		id: stringShape({ min: 1, description: 'The id of the pending prompt to answer.' }),
+-		value: unionShape(
+-			stringShape({ description: 'A text / select / editor answer.' }),
+-			booleanShape({ description: 'A confirm answer.' }),
+-			arrayShape(stringShape(), { description: 'A checkbox answer — the checked values.' }),
+-		),
++		operation: literalShape(['answer'], { description: 'Answer one pending form by id.' }),
++		id: stringShape({ min: 1, description: 'The id of the pending form to answer.' }),
++		values: jsonShape({ description: 'The form answers keyed by field name.' }),
+ 	}),
+ )
+ 
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 1fd93cf..9b913ef 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -409,12 +409,12 @@ export interface DescribeToolArguments {
+  * `from`, and the advertised tool overrides.
+  *
+  * @remarks
+- * - `manager` — the terminal manager whose `ask(from, to, form, options)` the tool's handler
+- *   calls; BLOCKS the calling agent turn until the addressed terminal answers (or the ask
++ * - `manager` — the terminal manager whose `ask(from, to, form)` the tool's handler calls with a
++ *   live `@orkestrel/form` form; BLOCKS the calling agent turn until the addressed terminal answers (or the ask
+  *   rejects — a cycle throws `TerminalError('DEADLOCK')`, re-surfaced as a typed `DEADLOCK`
+  *   {@link import('./errors.js').ToolboxError}; an expired prompt re-surfaces as `EXPIRE`).
+  * - `from` — the terminal identity this tool asks AS; the model supplies the `to` target and the
+- *   prompt form per call.
++ *   complete form schema per call.
+  * - `name` / `description` — advertised tool overrides; default to
+  *   {@link import('./constants.js').PROMPT_TOOL_NAME} / {@link import('./constants.js').PROMPT_TOOL_DESCRIPTION}.
+  */
+@@ -431,9 +431,9 @@ export interface PromptToolOptions {
+  * terminal name `to`, and the advertised tool overrides.
+  *
+  * @remarks
+- * - `manager` — the terminal manager whose `pending(to)` / `answer(to, id, value)` the tool's
+- *   handler calls — `pending` lists the prompts currently addressed to `to`, `answer` resolves
+- *   one by `id`. A failed `answer` (`TerminalAnswerResult.error`) re-surfaces as a typed
++ * - `manager` — the terminal manager whose `pending(to)` / `answer(to, id, values)` the tool's
++ *   handler calls — `pending` lists the forms currently addressed to `to`, `answer` resolves
++ *   one by `id`. A failed `answer` (`TerminalAnswerError`) re-surfaces as a typed
+  *   `ANSWER` {@link import('./errors.js').ToolboxError}.
+  * - `to` — the terminal identity this tool lists / answers prompts FOR.
+  * - `name` / `description` — advertised tool overrides; default to
+diff --git a/src/server/routes/TerminalConnection.ts b/src/server/routes/TerminalConnection.ts
+index b82fbbb..09886e4 100644
+--- a/src/server/routes/TerminalConnection.ts
++++ b/src/server/routes/TerminalConnection.ts
+@@ -1,5 +1,5 @@
+ import type {
+-	PendingPrompt,
++	PendingForm,
+ 	TerminalManagerInterface,
+ 	TimerCancel,
+ 	TimerHandler,
+@@ -26,14 +26,14 @@ export class TerminalConnection {
+ 	readonly #presented: string | undefined
+ 	#cancel: TimerCancel | undefined
+ 	readonly #destroyHandler: () => void
+-	readonly #pendingHandler: (prompt: PendingPrompt) => void
++	readonly #pendingHandler: (form: PendingForm) => void
+ 	readonly #expireHandler: (to: string, id: string) => void
+ 	readonly #tickHandler: () => void
+ 
+ 	/**
+ 	 * Create a terminal stream connection.
+ 	 *
+-	 * @param manager - Terminal manager supplying pending prompts and lifecycle events
++	 * @param manager - Terminal manager supplying pending forms and lifecycle events
+ 	 * @param name - Terminal endpoint streamed by this connection
+ 	 * @param request - Request whose abort signal owns the connection lifetime
+ 	 * @param stream - Open SSE stream
+@@ -65,7 +65,7 @@ export class TerminalConnection {
+ 	}
+ 
+ 	/**
+-	 * Open the connection by replaying pending prompts, subscribing, and arming keepalive handling.
++	 * Open the connection by replaying pending forms, subscribing, and arming keepalive handling.
+ 	 *
+ 	 * @returns The SSE response
+ 	 */
+@@ -75,8 +75,8 @@ export class TerminalConnection {
+ 			return this.#stream.response
+ 		}
+ 		if (this.#cancel !== undefined) return this.#stream.response
+-		for (const prompt of this.#manager.pending(this.#name)) {
+-			this.#write(serializePending(prompt))
++		for (const form of this.#manager.pending(this.#name)) {
++			this.#write(serializePending(form))
+ 		}
+ 		this.#manager.emitter.on('pending', this.#pendingHandler)
+ 		this.#manager.emitter.on('expire', this.#expireHandler)
+@@ -93,13 +93,13 @@ export class TerminalConnection {
+ 		})
+ 	}
+ 
+-	#pending(prompt: PendingPrompt): void {
+-		if (prompt.to !== this.#name) return
++	#pending(form: PendingForm): void {
++		if (form.to !== this.#name) return
+ 		if (this.#stream.closed) {
+ 			this.#destroy()
+ 			return
+ 		}
+-		this.#write(serializePending(prompt))
++		this.#write(serializePending(form))
+ 	}
+ 
+ 	#expire(to: string, id: string): void {
+diff --git a/src/server/routes/TerminalRoutes.ts b/src/server/routes/TerminalRoutes.ts
+index 8709c06..12a76c5 100644
+--- a/src/server/routes/TerminalRoutes.ts
++++ b/src/server/routes/TerminalRoutes.ts
+@@ -5,7 +5,9 @@ import type {
+ 	TerminalRoutesOptions,
+ 	TerminalToken,
+ } from '../types.js'
+-import { defaultTimer, HEADER_TOKEN, isAnswerPayload } from '@orkestrel/terminal'
++import { defaultTimer, HEADER_TOKEN } from '@orkestrel/terminal'
++import { isFormValues } from '@orkestrel/form'
++import { isNonEmptyString, isRecord } from '@orkestrel/contract'
+ import {
+ 	collectRequestBody,
+ 	ContentTooLargeError,
+@@ -124,11 +126,13 @@ export class TerminalRoutes {
+ 		} catch {
+ 			return new Response(null, { status: 400 })
+ 		}
+-		if (!isAnswerPayload(body)) return new Response(null, { status: 422 })
++		if (!isRecord(body) || !isNonEmptyString(body.id) || !isFormValues(body.values)) {
++			return new Response(null, { status: 422 })
++		}
+ 
+-		const result = this.#manager.answer(name, body.id, body.value)
+-		if (result.success) return new Response(null, { status: 204 })
+-		if (result.error === 'terminal') return new Response(result.error, { status: 404 })
+-		return new Response(result.error, { status: 422 })
++		const result = this.#manager.answer(name, body.id, body.values)
++		if (result.success) return Response.json(result)
++		if (result.error.reason === 'terminal') return Response.json(result, { status: 404 })
++		return Response.json(result, { status: 422 })
+ 	}
+ }
