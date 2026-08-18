@@ -5,19 +5,22 @@
 
 ## Ruling
 
-Build a resident `prove` service that accepts a claim as text and returns type, lint, and runtime
-evidence in one synchronous call, and retire `tmp/probe/` and `test:probe` only afterwards, as a
-sequenced fleet change rather than a deletion. Hold a TypeScript
-`LanguageService` instance, an Oxlint Language Server Protocol (LSP) process, and a Vitest instance
-warm across calls. Keep the type and lint stages fully virtual, because both accept in-memory
-documents that never reach a filesystem. Give the runtime stage a real file, because three separate
-measurements prove Vitest cannot execute a specification that does not exist on disk. Derive the
-process exit code from the result, so the harness records the verdict without the agent composing
-prose about it.
+Add the two missing signals to the probe path this repository already has, as a vendored instrument
+pair that copies the policy sweep. Write `tests/setupProbe.ts` and `tests/probe.test.ts` beside the
+existing `tests/setupPolicy.ts` and `tests/policy.test.ts`, vendor both, and let the existing
+`probe` Vitest project run them. That costs 2 new files and 7 edits, needs no resident process, no
+socket, no daemon, and no new command, and it answers a probe with all three signals in a measured
+4244 ms against today's 3874 ms for one signal.
 
-Build the type and lint stages first as one diskless unit, and the runtime stage second. That order
-is the opposite of the intuition that runtime matters most, and the measurements later in this
-document are why.
+Take residency later, and only through a Model Context Protocol (MCP) tool rather than a daemon of
+our own. A resident service answers in a measured 337 ms, which is worth having, but every hazard
+in this document exists because of residency, and a harness-started MCP server is the one form of
+residency whose lifetime this repository does not have to own. The transport measured 12 lines and
+a 0.32 ms round trip.
+
+Do not build a one-shot command or a socket daemon. Both are dominated: the command buys one second
+over the instrument pair for a whole new surface, and the daemon costs a socket, a startup lock,
+and a reaping story that the MCP transport gets for free.
 
 Two warnings belong in the ruling rather than in a footnote, because each one sinks a design that
 does not account for it. A warm service returns confident wrong answers about freshly edited
@@ -329,6 +332,12 @@ intends to skip will skip.
 
 ## The surface
 
+This section describes the surface of the resident option, which is option 4 in the implementation
+costing that follows. The recommended first shipment needs none of it: an agent writes a specimen
+into `tmp/probe/` with its ordinary file tool and runs `npm run test:probe`, and the two new
+inspections report beside the run that already happens. The contracts below are what a claim looks
+like once a resident service answers it.
+
 The agent invokes one command, writes a claim to standard input, and reads a result from standard
 output.
 
@@ -401,6 +410,10 @@ mechanical rather than advisory. A probe that cannot state what would falsify it
 The recommendation is to build the type and lint stages first, together, and the runtime stage
 second. The intuition that runtime comes first is reasonable and the measurements contradict it.
 
+The recommended implementation is this order made concrete. The instrument pair adds exactly the
+type and lint inspections, and it adds them to a runtime path that already runs, so the first
+shipment is the diskless pair and nothing else is rebuilt to get it.
+
 Four facts decide the order.
 
 - The runtime stage is the only one that already works. Its gap is latency. The type and lint
@@ -425,6 +438,91 @@ part that cannot be silently wrong first.
 If a single stage must go first, choose type checking. It catches the contract errors that dominate
 in a types-first repository, and a probe whose types are wrong fails at runtime with a message
 worse than the diagnostic it should have received.
+
+## How simple is this to implement
+
+Four shapes were costed. Propagation across the fleet is not weighed, because vendoring is what
+this package exists to do; what is weighed is how much mechanism has to be written once and how
+much of it can fail.
+
+| Option                            | New files | Edits | Cold         | Warm    | Residency        |
+| --------------------------------- | --------- | ----- | ------------ | ------- | ---------------- |
+| 1. Vendored instrument pair       | 2         | 7     | 4244 ms      | none    | none             |
+| 2. One-shot runner command        | 2         | 8     | 3182–3459 ms | none    | none             |
+| 3. Resident service over a socket | ~6        | ~10   | ~2 s         | ~376 ms | ours to own      |
+| 4. MCP tool                       | ~3        | ~4    | ~1.5 s       | ~340 ms | the harness owns |
+
+Every cold and warm figure for options 1 and 2 is measured. Option 3's warm figure adds the
+measured 337 ms service to the measured 38–43 ms client process boot and the measured 1.26 ms
+socket round trip. Option 4's warm figure adds the measured 0.32 ms transport round trip to the
+same service, with no client process to boot. The two cold projections are derived from the
+measured initialization costs and are labelled as projections wherever they appear.
+
+Two options are dominated and neither belongs in the choice.
+
+Option 2 buys about one second over option 1 and costs a whole new command surface. It is also the
+option that propagates worst: a new npm script lands in `package.json`, which
+`src/core/Compiler.ts:174` treats as birth-owned, so `A birth-owned path is never compared` and the
+script reaches new workspaces while never reaching the 44 that exist.
+
+Option 3 is option 4 with more parts. Owning a socket means owning an endpoint path, a startup lock
+against two clients racing to spawn one service, stale-endpoint recovery, a reaping story, and a
+client process on every call. A harness-started MCP server has none of those, because the harness
+starts exactly one and ends it with the session.
+
+### Why the instrument pair is the recommendation
+
+The decisive argument is design fit rather than latency: this repository has already solved this
+exact problem once, and every hard part of the probe mechanism is a part the policy sweep already
+ships.
+
+- `tests/setupPolicy.ts` and `tests/policy.test.ts` are a vendored TypeScript instrument pair that
+  runs inside a Vitest project in every target, against that target's own installed tools. All
+  three instrument files are vendored at `src/core/constants.ts:142-144`.
+- `tests/config.test.ts:591-601` already resolves `node_modules/.bin/oxlint` and `.oxlintrc.json`,
+  spawns the binary with `--format json` against a scratch directory, and does it twice — once for
+  a violations case and once for a clean case. The lint stage is a copy of that, not an invention,
+  and it arrives with a control pair already written.
+- `createPolicyScratch` at `tests/setupPolicy.ts:66` creates that scratch directory outside the
+  repository. It is the mechanism that answers the gitignore refusal, and every target already has
+  it.
+
+So the lint stage has a vendored precedent, the scratch mechanism is vendored, the Vitest project
+exists, and the command exists. What is missing is the type inspection and the file that runs both.
+
+The pair also escapes every law in this document except one. A fresh process cannot serve a stale
+dependency, cannot leak state between probes, needs no eviction, and needs no boot arming, because
+it has nothing warm to arm. Only the scoped-project law still binds. That is the whole minimalism
+case, and it is the reason to start here even though 4244 ms is not fast.
+
+### The upgrade path does not change the inspections
+
+Write the two inspections as exported functions in `tests/setupProbe.ts`. Option 1 calls them from
+a test file. Option 4 calls the same functions from an MCP tool. Residency changes who holds them
+warm, not what they do, so choosing option 1 now does not spend work that option 4 discards.
+
+Take option 4 when a real journey shows agents avoiding a 4-second probe. That is the trigger, and
+it is observable rather than a matter of taste.
+
+### The edits, in order
+
+Each edit names its file, and each sits at a point this repository already uses.
+
+1. `tests/setupProbe.ts` — new. The two inspections plus their formatter, mirroring
+   `tests/setupPolicy.ts`.
+2. `tests/probe.test.ts` — new. Two control tests that must fail, then the population sweep over
+   the specimens.
+3. `src/core/constants.ts` — two `HOST_PATHS` rows, beside the three at lines 142-144.
+4. `src/core/templates.ts:433-447` — the `probe` factory gains the gate file in its `include`.
+5. `vite.config.ts` — the materialized copy of that template, which the `config` project compares.
+6. `tests/config.test.ts:131` — the vendored expectation for the `probe` project's shape.
+7. `.claude/rules/tests.md:92-117` — the probe law gains the two signals the path now carries.
+8. `.claude/rules/workspace.md:152-155` — the probe project paragraph, which states that no gate
+   selects the project.
+9. `guides/scaffold.md` — parity for anything newly exported.
+
+Nothing in that list is a new mechanism. Items 3 through 6 are the same four points every vendored
+instrument already touches.
 
 ## Rejected
 
