@@ -23,6 +23,7 @@ export type PolicyRule =
 	| 'mirror'
 	| 'parser'
 	| 'skill'
+	| 'suppression'
 	| 'type'
 
 /** One TypeScript source supplied to the placement instrument. */
@@ -171,6 +172,21 @@ export const POLICY_TESTS_MODULE_GLOB = `tests/**/${POLICY_TESTS_MODULE_PREFIX}*
 
 /** The mirrored module-test population inspected under either workspace axis. */
 export const POLICY_TEST_GLOB = 'tests/{app,src}/**/*.test.ts'
+
+// Compose suppression tokens so the instrument does not report its own definitions or controls.
+export const POLICY_SUPPRESSION_DIRECTIVE = ['oxlint', '-disable'].join('')
+
+/** Source, test, config, and script files inspected for lint suppression directives. */
+export const POLICY_SUPPRESSION_GLOB: readonly string[] = Object.freeze([
+	'{src,app,tests,configs,scripts}/**/*.{cjs,cts,js,jsx,mjs,mts,ts,tsx,vue}',
+	'*.{cjs,cts,js,mjs,mts,ts}',
+])
+
+/** Either lint suppression token the text sweep refuses. */
+export const POLICY_SUPPRESSION_PATTERN = new RegExp(
+	[['eslint', '-disable'].join(''), POLICY_SUPPRESSION_DIRECTIVE].join('|'),
+	'u',
+)
 
 /**
  * Normalize platform separators for stable matching and diagnostics.
@@ -732,6 +748,32 @@ export function inspectPolicyMirrors(root: string): readonly PolicyViolation[] {
 }
 
 /**
+ * Inspect code-shaped workspace files for lint suppression directives.
+ *
+ * @param root - The workspace root to inspect.
+ * @returns Every suppression occurrence in path and line order.
+ */
+export function inspectPolicySuppressions(root: string): readonly PolicyViolation[] {
+	const violations: PolicyViolation[] = []
+	const paths = globSync(POLICY_SUPPRESSION_GLOB, { cwd: root }).map(normalizePolicyPath).sort()
+	for (const path of paths) {
+		const lines = readFileSync(join(root, path), 'utf8').split('\n')
+		for (let index = 0; index < lines.length; index += 1) {
+			const line = lines[index]
+			if (line !== undefined && POLICY_SUPPRESSION_PATTERN.test(line)) {
+				violations.push({
+					rule: 'suppression',
+					path,
+					line: index + 1,
+					message: 'file carries a lint suppression directive',
+				})
+			}
+		}
+	}
+	return violations
+}
+
+/**
  * Resolve an exact-case directory beneath a physical root.
  *
  * @param root - The physical directory from which resolution starts.
@@ -938,7 +980,11 @@ export function inspectSkillFamily(root: string): readonly PolicyViolation[] {
  * @returns Every source-placement and mirror violation.
  */
 export function inspectPolicyWorkspace(root: string): readonly PolicyViolation[] {
-	return [...inspectPolicySources(readPolicySources(root)), ...inspectPolicyMirrors(root)]
+	return [
+		...inspectPolicySources(readPolicySources(root)),
+		...inspectPolicyMirrors(root),
+		...inspectPolicySuppressions(root),
+	]
 }
 
 /**
@@ -966,6 +1012,17 @@ export function inspectPolicyControl(control: PolicyControl): readonly PolicyVio
 
 /** Physical negative controls, one for each rule the instrument claims to enforce. */
 export const POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
+	{
+		label: 'rejects a suppression directive in a scanned source file',
+		membership: 'source, test, config, and script files in the suppression population',
+		rule: 'suppression',
+		files: [
+			{
+				path: 'scripts/control.ts',
+				content: `// ${POLICY_SUPPRESSION_DIRECTIVE}\ndebugger\n`,
+			},
+		],
+	},
 	{
 		label: 'rejects a type outside types.ts',
 		membership: 'top-level type declarations whose filename is not types.ts',

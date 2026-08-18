@@ -8,6 +8,7 @@ import {
 	inspectPolicyWorkspace,
 	inspectSkillFamily,
 	POLICY_CONTROLS,
+	POLICY_SUPPRESSION_DIRECTIVE,
 	readSkillFamily,
 	SKILL_POLICY_APOSTROPHE,
 	SKILL_POLICY_CONTROLS,
@@ -280,6 +281,22 @@ describe('policy population controls', () => {
 					{
 						path: 'app/browser/Panel.vue',
 						content: '<script setup lang="ts">\nexport interface PanelInterface {}\n</script>\n',
+					},
+				],
+			}),
+		).toEqual([])
+	})
+
+	it('excludes documentation from the suppression population', () => {
+		expect(
+			inspectPolicyControl({
+				label: 'excludes documentation from the suppression population',
+				membership: 'files outside source, test, config, and script code',
+				rule: 'suppression',
+				files: [
+					{
+						path: 'guides/sample.md',
+						content: `<!-- ${POLICY_SUPPRESSION_DIRECTIVE} -->\n`,
 					},
 				],
 			}),
