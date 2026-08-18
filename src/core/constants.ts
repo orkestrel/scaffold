@@ -143,6 +143,7 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
 	'tests/policy.test.ts',
 	'tests/config.test.ts',
 	'configs/helpers.ts',
+	'configs/policy.ts',
 	'.editorconfig',
 	'.gitattributes',
 	'.gitignore',
