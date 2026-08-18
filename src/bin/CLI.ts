@@ -64,6 +64,7 @@ import {
 	isExactCaseFile,
 	isPhysicalDirectory,
 	isRepository,
+	listFiles,
 	readFileText,
 	readSnapshot,
 	resolveContainedPath,
@@ -199,6 +200,7 @@ export class CLI implements CLIInterface {
 			src: this.#environments(command.src, 'src'),
 			app: this.#environments(command.app, 'app'),
 			bin: command.bin === true,
+			setup: false,
 			dependencies: await this.#resolve(this.#packages(command.dependencies)),
 		})
 		const plan = this.#compile(blueprint)
@@ -550,6 +552,7 @@ export class CLI implements CLIInterface {
 			})
 		}
 		const bin = resolveContainedPath(target, BIN_ENTRY_PATH)
+		const tests = resolveContainedPath(target, 'tests')
 		const guides = resolveContainedPath(target, GUIDES_TEST_PATH)
 		const distribution = resolveContainedPath(target, DISTRIBUTION_TEST_PATH)
 		const integration = resolveContainedPath(target, INTEGRATION_TEST_PATH)
@@ -562,6 +565,15 @@ export class CLI implements CLIInterface {
 			app: this.#probe(target, 'app'),
 			dependencies: manifestToDependencies(manifest),
 			bin: bin !== undefined && isExactCaseFile(bin),
+			setup:
+				tests !== undefined &&
+				listFiles(tests).some((path) => {
+					if (path.includes('/') || !path.startsWith('setup') || !path.endsWith('.test.ts')) {
+						return false
+					}
+					const proof = resolveContainedPath(tests, path)
+					return proof !== undefined && isExactCaseFile(proof)
+				}),
 			guides: guides !== undefined && isExactCaseFile(guides),
 			distribution: distribution !== undefined && isExactCaseFile(distribution),
 			integration: integration !== undefined && isExactCaseFile(integration),

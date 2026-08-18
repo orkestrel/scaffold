@@ -264,6 +264,7 @@ export const isBlueprint: Guard<Blueprint> = recordOf(
 		engines: isString,
 		overrides: andOf(isCollection, arrayOf(isOverride)),
 		bin: isBoolean,
+		setup: isBoolean,
 		guides: isBoolean,
 		distribution: isBoolean,
 		integration: isBoolean,

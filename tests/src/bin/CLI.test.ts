@@ -784,6 +784,8 @@ describe('CLI audit', () => {
 
 			workspace.write('target/src/bin/Main.ts', 'export {}\n')
 			workspace.write('target/tests/Guides.test.ts', 'export {}\n')
+			workspace.write('target/tests/Setup.test.ts', 'export {}\n')
+			workspace.write('target/tests/nested/setup.test.ts', 'export {}\n')
 			expect(
 				await new CLI(createSink().options).execute([
 					'repair',
@@ -797,10 +799,13 @@ describe('CLI audit', () => {
 			).toBe(EXIT_CLEAN)
 			expect(workspace.read('target/vite.config.ts')).not.toContain("label: 'src:bin'")
 			expect(workspace.read('target/vite.config.ts')).not.toContain("label: 'guides'")
+			expect(workspace.read('target/vite.config.ts')).not.toContain("label: 'setup'")
 			workspace.remove('target/src/bin/Main.ts')
 			workspace.remove('target/tests/Guides.test.ts')
+			workspace.remove('target/tests/Setup.test.ts')
 
 			workspace.write('target/src/bin/main.ts', 'export {}\n')
+			workspace.write('target/tests/setup.test.ts', 'export {}\n')
 			workspace.write('target/tests/guides.test.ts', 'export {}\n')
 			workspace.write('target/tests/integration.test.ts', 'export {}\n')
 			workspace.write('target/tests/conformance.test.ts', 'export {}\n')
@@ -812,6 +817,7 @@ describe('CLI audit', () => {
 				src: ['core'],
 				app: ['browser'],
 				bin: true,
+				setup: true,
 				guides: true,
 				integration: true,
 				conformance: true,
@@ -833,6 +839,7 @@ describe('CLI audit', () => {
 			).toBe(EXIT_CLEAN)
 			const present = workspace.read('target/vite.config.ts')
 			expect(present).toContain("label: 'src:bin'")
+			expect(present).toContain("label: 'setup'")
 			expect(present).toContain("label: 'guides'")
 			expect(present).toContain("label: 'integration'")
 			expect(present).toContain("label: 'conformance'")
@@ -922,6 +929,42 @@ describe('CLI audit', () => {
 					blocking: false,
 				},
 			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses a manifest setup project when no root setup proof selects it', async () => {
+		const workspace = createWorkspace()
+		try {
+			const fleet = createFleet(workspace)
+			workspace.write(
+				'target/package.json',
+				buildTargetManifest(undefined, undefined, undefined, {
+					test: 'npm run test:setup',
+					'test:setup':
+						'vitest run --config vite.config.ts --no-cache --reporter=dot --project setup',
+				}),
+			)
+			workspace.write('target/vite.config.ts', 'marker\n')
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'repair',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			expect(JSON.parse(sink.output[0] ?? '')).toStrictEqual({
+				error: {
+					code: 'TARGET',
+					message: `The manifest at ${fleet.target} names a Vitest project the planned configuration does not register: setup. To continue, remove the script that names it or do not use scaffold writing verbs on a workspace that needs a custom Vitest project.`,
+				},
+			})
+			expect(workspace.read('target/vite.config.ts')).toBe('marker\n')
 		} finally {
 			workspace.destroy()
 		}

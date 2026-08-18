@@ -321,6 +321,21 @@ export function appBrowser(): UserConfig {
 		options ?? {},
 	)
 `,
+		setup: `export const setup = (options?: UserConfig): UserConfig =>
+	mergeConfig(
+		{
+			resolve,
+			test: {
+				name: { label: 'setup', color: 'white' },
+				include: ['tests/setup*.test.ts'],
+				setupFiles: ['./tests/setup.ts'],
+				environment: 'node',
+				browser: { enabled: false },
+			},
+		},
+		options ?? {},
+	)
+`,
 		guides: `export const guides = (options?: UserConfig): UserConfig =>
 	mergeConfig(
 		{

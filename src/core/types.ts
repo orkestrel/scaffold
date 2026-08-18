@@ -139,11 +139,11 @@ export interface Override {
  * application-only, and mixed workspaces are all first class. `dependencies`
  * and `peers` are runtime `@orkestrel/*` packages; `extras` are
  * package-specific development dependencies and may carry any valid npm name.
- * `bin`, `guides`, `distribution`, `integration`, `conformance`, `service`,
- * `vendors`, `global`, and `showcase` are structural facts: each is set only
- * when the workspace physically ships the directory or exact-case file that
- * defines it, never because of the workspace's name and never because a sibling
- * fact is set.
+ * `bin`, `setup`, `guides`, `distribution`, `integration`, `conformance`,
+ * `service`, `vendors`, `global`, and `showcase` are structural facts: each is
+ * set only when the workspace physically ships the directory or exact-case file
+ * that defines it, never because of the workspace's name and never because a
+ * sibling fact is set.
  * `showcase` projects only a browser `app`. The gate answers an absent browser
  * axis with a non-blocking question, so a caller that set the flag learns it
  * emitted nothing and the compile still completes.
@@ -168,6 +168,7 @@ export interface Blueprint {
 	readonly engines: string
 	readonly overrides: readonly Override[]
 	readonly bin: boolean
+	readonly setup: boolean
 	readonly guides: boolean
 	readonly distribution: boolean
 	readonly integration: boolean

@@ -327,6 +327,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		...(blueprint.app.length > 0 ? ['npm run test:app'] : []),
 		'npm run test:policy',
 		'npm run test:config',
+		...(blueprint.setup ? ['npm run test:setup'] : []),
 		...(blueprint.guides ? ['npm run test:guides'] : []),
 		...(blueprint.conformance ? ['npm run test:conformance'] : []),
 		...(integrates ? ['npm run test:integration'] : []),
@@ -354,6 +355,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 	}
 	scripts['test:policy'] = `${vitest} --project policy`
 	scripts['test:config'] = `${vitest} --project config`
+	if (blueprint.setup) scripts['test:setup'] = `${vitest} --project setup`
 	if (blueprint.guides) scripts['test:guides'] = `${vitest} --project guides`
 	if (blueprint.conformance) scripts['test:conformance'] = `${vitest} --project conformance`
 	scripts['test:probe'] =
@@ -761,6 +763,10 @@ export function appShowcase(): UserConfig {
 	projects.push('policy')
 	factories.push(CONFIG_TEMPLATES.factories.config)
 	projects.push('config')
+	if (blueprint.setup) {
+		factories.push(CONFIG_TEMPLATES.factories.setup)
+		projects.push('setup')
+	}
 	if (blueprint.guides) {
 		factories.push(CONFIG_TEMPLATES.factories.guides)
 		projects.push('guides')

@@ -100,6 +100,32 @@ describe('blueprintToDevDependencies compile tooling', () => {
 })
 
 describe('blueprintToScripts config projects', () => {
+	it('registers and gates setup proofs only when the blueprint selects them', () => {
+		const fixture = readFileSync(
+			resolve('tests/src/core/fixtures/setup-false-manifest.txt'),
+			'utf8',
+		)
+		const absent = createBlueprint('sample', { src: ['core'], setup: false })
+		const present = createBlueprint('sample', { src: ['core'], setup: true })
+		const configuration = blueprintToRootVite(present)
+		const scripts = blueprintToScripts(present)
+
+		expect(blueprintToManifest(absent)).toBe(fixture)
+		expect(blueprintToRootVite(absent)).not.toContain("name: { label: 'setup',")
+		expect(blueprintToScripts(absent)).not.toHaveProperty('test:setup')
+		expect(blueprintToScripts(absent).test).not.toContain('test:setup')
+		expect(configuration).toContain('export const setup = (options?: UserConfig): UserConfig =>')
+		expect(configuration).toContain("name: { label: 'setup', color: 'white' }")
+		expect(configuration).toContain("include: ['tests/setup*.test.ts']")
+		expect(configuration).toContain("setupFiles: ['./tests/setup.ts']")
+		expect(configuration).toContain("environment: 'node'")
+		expect(configuration).toContain('browser: { enabled: false }')
+		expect(scripts['test:setup']).toBe(
+			'vitest run --config vite.config.ts --no-cache --reporter=dot --project setup',
+		)
+		expect(scripts.test).toContain('npm run test:setup')
+	})
+
 	it('emits the probe workbench outside every gate', () => {
 		const scripts = blueprintToScripts(buildBlueprint())
 		expect(scripts['test:probe']).toBe(
