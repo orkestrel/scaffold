@@ -73,6 +73,9 @@ Define aliases in `tsconfig.json` first. `vite.config.ts` derives from `compiler
   core-only one, so a module that imports nothing at all is the only form that resolves in all of
   them. Because it may import nothing, keep its own types, data, and functions in that one file: the
   centralized-kind placement in `.claude/rules/architecture.md` does not reach it.
+- When a file is vendored byte-identical, import nothing that fails to resolve in any target. Import
+  no `@orkestrel/*` package from it: every such package is itself a target and cannot depend on
+  itself.
 
 Environment rules:
 

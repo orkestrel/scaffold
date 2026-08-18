@@ -313,6 +313,10 @@ export function appBrowser(): UserConfig {
 				setupFiles: ['./tests/setup.ts'],
 				environment: 'node',
 				browser: { enabled: false },
+				// A config test validates every target wrapper and runs the real linter over a
+				// fixture tree, so it spends seconds in process startup and filesystem work.
+				// Vitest's five-second default clears one alone and times out under a full suite.
+				testTimeout: 30_000,
 			},
 		},
 		options ?? {},

@@ -50,6 +50,43 @@ export interface PolicyControl {
 	readonly message?: string
 }
 
+/** Describes a contained temporary directory owned by one vendored test. */
+export interface ScratchInterface {
+	readonly path: string
+	write(target: string, text: string): void
+	destroy(): void
+}
+
+/**
+ * Creates a contained temporary directory owned by one vendored test.
+ *
+ * @param options - The temporary directory name prefix.
+ * @returns The owned scratch directory.
+ */
+export function createScratch(options: { readonly prefix: string }): ScratchInterface {
+	const root = mkdtempSync(join(tmpdir(), options.prefix))
+	return {
+		path: root,
+		write(target, text) {
+			const normalized = normalizePolicyPath(target)
+			const segments = normalized.split('/')
+			if (
+				normalized === '' ||
+				normalized.startsWith('/') ||
+				segments.some((segment) => segment === '..')
+			) {
+				throw new Error('Scratch target must stay within its root')
+			}
+			const path = join(root, ...segments)
+			mkdirSync(dirname(path), { recursive: true })
+			writeFileSync(path, text, 'utf8')
+		},
+		destroy() {
+			rmSync(root, { recursive: true, force: true })
+		},
+	}
+}
+
 /** Parsed skill frontmatter and the exact scalar source used for bridge comparison. */
 export interface SkillFrontmatter {
 	readonly keys: readonly string[]
@@ -1437,18 +1474,16 @@ export function inspectPolicyWorkspace(root: string): readonly PolicyViolation[]
  * @returns Every violation reported through the production workspace route.
  */
 export function inspectPolicyControl(control: PolicyControl): readonly PolicyViolation[] {
-	const root = mkdtempSync(join(tmpdir(), 'orkestrel-policy-'))
+	const scratch = createScratch({ prefix: 'orkestrel-policy-' })
 	try {
 		for (const file of control.files) {
-			const path = join(root, ...normalizePolicyPath(file.path).split('/'))
-			mkdirSync(dirname(path), { recursive: true })
-			writeFileSync(path, file.content, 'utf8')
+			scratch.write(file.path, file.content)
 		}
-		if (control.rule === 'skill') return inspectSkillFamily(root)
-		if (control.rule === 'bridge') return inspectSkillBridges(root)
-		return inspectPolicyWorkspace(root)
+		if (control.rule === 'skill') return inspectSkillFamily(scratch.path)
+		if (control.rule === 'bridge') return inspectSkillBridges(scratch.path)
+		return inspectPolicyWorkspace(scratch.path)
 	} finally {
-		rmSync(root, { recursive: true, force: true })
+		scratch.destroy()
 	}
 }
 

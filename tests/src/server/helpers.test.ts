@@ -1,8 +1,10 @@
 import {
 	chmodSync,
 	existsSync,
+	globSync,
 	linkSync,
 	lstatSync,
+	readFileSync,
 	renameSync,
 	rmSync,
 	writeFileSync,
@@ -139,6 +141,27 @@ describe('matchesExecutablePath', () => {
 		)
 		expect(tracked).toEqual([...EXECUTABLE_PATHS].sort())
 		expect(tracked.length).toBeGreaterThan(0)
+	})
+})
+
+describe('vendored imports', () => {
+	it('keeps every vendored code file independent of Orkestrel packages', () => {
+		const paths = HOST_PATHS.flatMap((path) => {
+			const source = join(WORKSPACE_ROOT, path)
+			if (!existsSync(source)) return []
+			if (lstatSync(source).isDirectory()) {
+				return globSync('**/*.{ts,js,json}', { cwd: source }).map((nested) => join(path, nested))
+			}
+			return /\.(?:js|json|ts)$/u.test(path) ? [path] : []
+		}).sort()
+		const imported: string[] = []
+		expect(paths.length).toBeGreaterThan(0)
+		expect(paths).toContain('tests/config.test.ts')
+		for (const path of paths) {
+			const content = readFileSync(join(WORKSPACE_ROOT, path), 'utf8')
+			if (/['"]@orkestrel\/[^'"]+['"]/u.test(content)) imported.push(path)
+		}
+		expect(imported).toEqual([])
 	})
 })
 
