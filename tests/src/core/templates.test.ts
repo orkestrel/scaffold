@@ -4,11 +4,11 @@ import { execFileSync } from 'node:child_process'
 import { chmodSync, mkdirSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { isString } from '@orkestrel/contract'
+import { isRecord, isString } from '@orkestrel/contract'
 import { requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
 import { fillTemplate, isTemplateError } from '@orkestrel/template'
-import { loadConfigFromFile } from 'vite'
+import { build, loadConfigFromFile } from 'vite'
 import {
 	ARTIFACT_TEMPLATES,
 	blueprintToConfigArtifacts,
@@ -100,6 +100,22 @@ const MODULE_EMITTERS: Readonly<Record<string, number>> = Object.freeze({
 	'tests/src/server/index.test.ts': 64,
 	'vite.config.ts': 126,
 })
+
+// The two packages installed into the staged externalization workspace, each
+// exporting one token the emitted bundle either keeps as an import or inlines.
+// Only the first is declared as a peer, so the second is the control.
+const PEER_FIXTURE_PACKAGES: ReadonlyArray<readonly [name: string, token: string]> = Object.freeze([
+	['sample-peer', 'PEER_TOKEN'],
+	['sample-plain', 'PLAIN_TOKEN'],
+])
+// Each published face the externalization workspace builds, named by the root
+// factory that configures it and by the environment whose entry and bundle it
+// owns.
+const PUBLISHED_FACES: ReadonlyArray<readonly [factory: string, environment: string]> =
+	Object.freeze([
+		['srcBrowser', 'browser'],
+		['srcServer', 'server'],
+	])
 
 // Every selection the compiler accepts, in both structural states it branches on.
 // A shape is emitted for each of the 63 non-empty `src` x `app` pairs twice: once
@@ -483,6 +499,74 @@ describe('emitted workspaces under their own gates', () => {
 			workspace.destroy()
 		}
 	})
+
+	// A declared peer is only left alone if a real build leaves it alone, so both
+	// published faces are built for real against a staged workspace whose manifest
+	// declares one. The control is a second installed package the manifest does not
+	// declare: the same build inlines it, so the peer's survival is the predicate's
+	// doing rather than a build that resolved nothing.
+	it('leaves a declared peer external in a real build of each published face', async () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-e2-external-' })
+		const root = workspace.ensure('external')
+		try {
+			const blueprint = createBlueprint('sample', { src: ['browser', 'server'] })
+			stageRootConfig(blueprint, workspace, 'external')
+			const manifest: unknown = JSON.parse(blueprintToManifest(blueprint))
+			if (!isRecord(manifest)) throw new Error('Expected the emitted manifest to parse')
+			workspace.write(
+				'external/package.json',
+				JSON.stringify(
+					{ ...manifest, peerDependencies: { 'sample-peer': '^1.0.0' } },
+					undefined,
+					'\t',
+				),
+			)
+			for (const [name, token] of PEER_FIXTURE_PACKAGES) {
+				workspace.write(
+					`external/node_modules/${name}/package.json`,
+					`{ "name": "${name}", "version": "1.0.0", "type": "module", "main": "index.js" }\n`,
+				)
+				workspace.write(
+					`external/node_modules/${name}/index.js`,
+					`export const token = '${token}'\n`,
+				)
+			}
+			// Each face's entry, and beside it the configuration file that face is
+			// built from. An emitted `configs/src/vite.<environment>.config.ts` is that
+			// file plus its declaration plugin, and the plugin is another face's
+			// subject, so the build below defaults the root factory alone.
+			for (const [factory, environment] of PUBLISHED_FACES) {
+				workspace.write(
+					`external/src/${environment}/index.ts`,
+					"import { token as peer } from 'sample-peer'\nimport { token as plain } from 'sample-plain'\nexport const value = peer + plain\n",
+				)
+				workspace.write(
+					`external/vite.${environment}.face.ts`,
+					`import { ${factory} } from './vite.config.ts'\n\nexport default ${factory}()\n`,
+				)
+			}
+
+			for (const [, environment] of PUBLISHED_FACES) {
+				const loaded = await loadConfigFromFile(
+					{ command: 'build', mode: 'production' },
+					join(root, `vite.${environment}.face.ts`),
+					root,
+				)
+				if (loaded === null) throw new Error(`Expected the ${environment} face to load`)
+				await build({ ...loaded.config, root, configFile: false, logLevel: 'silent' })
+				const emitted = requireValue(workspace.read(`external/dist/src/${environment}/index.js`))
+				expect(emitted).toMatch(/from ["']sample-peer["']/u)
+				expect(emitted).not.toContain('PEER_TOKEN')
+				expect(emitted).toContain('PLAIN_TOKEN')
+				expect(emitted).not.toMatch(/from ["']sample-plain["']/u)
+			}
+		} finally {
+			workspace.destroy()
+		}
+		// Two real Rolldown builds, measured at about 1.3 seconds together. The budget
+		// carries slack over that because the cost under a full suite run is contention
+		// rather than work.
+	}, 30_000)
 
 	it('counts every selection that emits each module', () => {
 		expect(countEmitters(buildSelections())).toStrictEqual(MODULE_EMITTERS)

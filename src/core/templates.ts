@@ -56,6 +56,10 @@ export const CONFIG_TEMPLATES = Object.freeze({
 	"exclude": ["node_modules", "dist", "tmp"]
 }
 `,
+		// The manifest import and the `peers` derivation this template emits are
+		// fixed, where `{{imports}}`, `{{helpers}}`, and `{{browsers}}` are selected.
+		// One fixed block costs less than a fifth conditional span, and a workspace
+		// that builds nothing carries one export nothing reads.
 		vite: `import type { {{viteTypes}} } from 'vite'
 {{imports}}import { defineConfig, mergeConfig } from 'vitest/config'
 import manifest from './package.json' with { type: 'json' }

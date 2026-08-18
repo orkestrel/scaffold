@@ -472,22 +472,65 @@ describe('blueprintToRootVite fixed proofs', () => {
 		}
 	})
 
-	it('keeps this repository root config byte-identical to its generated form', () => {
-		const current = readFileSync(resolve('vite.config.ts'), 'utf8')
+	// Scaffold generates the configuration every target runs on, and it runs on its
+	// own generated copy. The root config alone leaves each `configs/src` face free
+	// to fall behind the template that emits it, which is a drift no other gate can
+	// see, so the comparison covers every configuration artifact this repository
+	// materializes rather than one of them.
+	it('keeps this repository byte-identical to every configuration it generates', () => {
 		const blueprint = createBlueprint('scaffold', {
 			src: ['core', 'server'],
 			bin: true,
 			guides: true,
 			distribution: true,
 		})
+		const artifacts = blueprintToConfigArtifacts(blueprint)
 
-		expect(current).toBe(blueprintToRootVite(blueprint))
-		expect(current).not.toBe(
+		// The population, stated before the comparison drawn from it, because an empty
+		// artifact list satisfies a loop of assertions in exactly the same way a clean
+		// one does.
+		expect(artifacts.map(({ path }) => path)).toStrictEqual([
+			'tsconfig.json',
+			'vite.config.ts',
+			'configs/src/vite.core.config.ts',
+			'configs/src/tsconfig.core.json',
+			'configs/src/vite.server.config.ts',
+			'configs/src/tsconfig.server.json',
+			'configs/src/vite.bin.config.ts',
+			'configs/src/tsconfig.bin.json',
+		])
+		const current = new Map<string, string>()
+		const generated = new Map<string, string>()
+		for (const artifact of artifacts) {
+			if (artifact.origin === 'host') throw new Error('Expected configuration content')
+			current.set(artifact.path, readFileSync(resolve(artifact.path), 'utf8'))
+			generated.set(artifact.path, artifact.content)
+		}
+		// Compared as one relation rather than file by file, so a failure names the
+		// path that drifted beside the bytes that moved.
+		expect(Object.fromEntries(current)).toStrictEqual(Object.fromEntries(generated))
+
+		// The control: the same repository compiled from a blueprint missing three of
+		// its facts emits a root configuration this checkout does not hold, so the
+		// comparison above discriminates rather than reporting agreement by shape.
+		expect(readFileSync(resolve('vite.config.ts'), 'utf8')).not.toBe(
 			blueprintToRootVite(createBlueprint('scaffold', { src: ['core', 'server'] })),
 		)
 	})
 
-	it('externalizes each package peer through every published build face', () => {
+	// This measures emitted text. That a build actually leaves a declared peer
+	// external is a different claim, and `tests/src/core/templates.test.ts` proves
+	// it by building both published faces of a staged workspace for real.
+	it('emits the peer clause in every published build face', () => {
+		// `blueprintToQuestions` validates `blueprint.peers` against
+		// `DEPENDENCY_NAME_PATTERN`, so a Blueprint can name no peer outside
+		// `@orkestrel/*` and the fixture has to sit inside a set the pre-existing
+		// `@orkestrel/` clause already externalizes. That is why the emitted
+		// configuration reads the live manifest instead of compiling a Blueprint
+		// fact: the manifest is the only place a `vitest` peer can be stated. A peer
+		// added there by hand survives `overwrite`, because the manifest artifact is
+		// `ownership: 'birth'` and `overwrite` rewrites only the `@orkestrel/*`
+		// range set.
 		const peer = { name: '@orkestrel/emitter', range: '^0.0.7' }
 		const selected = buildBlueprint({
 			src: ['core', 'browser', 'server'],
@@ -631,8 +674,16 @@ describe('blueprintToRootVite fixed proofs', () => {
 	})
 
 	it('writes each selection-dependent span the way the formatter leaves it', () => {
-		// The peer matcher holds both server predicates open, with the core alias
-		// present only when the selected source graph reaches it.
+		// The peer matcher holds all four published predicates open — the browser
+		// face and the server face, each with the core alias present only when the
+		// selected source graph reaches it. Both faces carry the clause on both
+		// sides of their own branch, so neither side can lose it unseen.
+		expect(blueprintToRootVite(buildBlueprint({ src: ['browser'] }))).toContain(
+			"\t\t\t\t\texternal: (id: string) =>\n\t\t\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
+		)
+		expect(blueprintToRootVite(buildBlueprint({ src: ['core', 'browser'] }))).toContain(
+			"\t\t\t\t\texternal: (id: string) =>\n\t\t\t\t\t\tid === '@src/core' ||\n\t\t\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
+		)
 		expect(blueprintToRootVite(buildBlueprint({ src: ['server'] }))).toContain(
 			"\t\t\t\t\texternal: (id: string) =>\n\t\t\t\t\t\tid.startsWith('node:') ||\n\t\t\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
 		)
