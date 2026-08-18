@@ -17,12 +17,23 @@ The non-negotiables and design laws in `AGENTS.md` apply without exception and a
 - Place `import type` declarations before value imports.
 - Do not place blank lines between consecutive imports of the same kind.
 - Narrow an accepted `unknown` with a total guard rather than a conditional access.
+- Write no accessibility modifier on a class member: `public` is the default, `protected` has no
+  sanctioned use, and with `private` banned a member's only privacy is a `#` field.
+- Declare no parameter property. A constructor parameter carrying `public`, `private`, `protected`,
+  or `readonly` declares a field as a side effect of a parameter; declare the `#` field and assign
+  it in the constructor body.
 
 ## Types
 
 - Put every reusable or public interface/type alias in the nearest authoritative `*/types.ts`.
 - Public collection properties and return types use `readonly T[]`, `ReadonlyMap<K, V>`, or `ReadonlySet<T>`.
 - Optional state is `T | undefined`; an optional lookup failure returns `undefined`.
+- `as const` is sanctioned. It annotates a literal with its own type and never overrides the
+  checker, so the assertion ban does not reach it. Use it where the value is the only place the
+  literal types exist: deriving a literal union from a value, and fixing a tuple's arity and element
+  types.
+- Do not write `as const` on a value whose contract is already declared. Annotate the declaration
+  and let the checker place the value against it.
 
 ## Immutability
 
