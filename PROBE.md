@@ -5,8 +5,9 @@
 
 ## Ruling
 
-Replace `tmp/probe/` and `test:probe` with a resident `prove` service that accepts a claim as text
-and returns type, lint, and runtime evidence in one synchronous call. Hold a TypeScript
+Build a resident `prove` service that accepts a claim as text and returns type, lint, and runtime
+evidence in one synchronous call, and retire `tmp/probe/` and `test:probe` only afterwards, as a
+sequenced fleet change rather than a deletion. Hold a TypeScript
 `LanguageService` instance, an Oxlint Language Server Protocol (LSP) process, and a Vitest instance
 warm across calls. Keep the type and lint stages fully virtual, because both accept in-memory
 documents that never reach a filesystem. Give the runtime stage a real file, because three separate
@@ -17,6 +18,14 @@ prose about it.
 Build the type and lint stages first as one diskless unit, and the runtime stage second. That order
 is the opposite of the intuition that runtime matters most, and the measurements later in this
 document are why.
+
+Two warnings belong in the ruling rather than in a footnote, because each one sinks a design that
+does not account for it. A warm service returns confident wrong answers about freshly edited
+source, in both the type stage and the runtime stage, until it is made to revalidate every
+dependency. And retiring the current probe project is a fleet campaign, not an edit: `src/core/compilers.ts:361-362`
+and `:801-802` emit `test:probe` and the `probe` project unconditionally into every generated
+workspace, and `tests/config.test.ts` uses `probe` as its own negative control at lines 131, 228,
+and 234-236 while being vendored to 44 targets from `src/core/constants.ts:144`.
 
 ## What is wrong today
 
@@ -113,10 +122,15 @@ Sustained load shows no degradation. Twenty sequential probes on one warm proces
 across the first five and 644 ms across the last five, a drift of 7 ms, with a resident set size of
 456 MB.
 
-## Warm residency forces three laws
+## Warm residency forces five laws
 
 Residency is the entire performance argument, and residency is also what creates every correctness
 hazard in this design. Each hazard below was reproduced, not predicted.
+
+The first law is the one that decides whether the mechanism is worth building. A probe exists to
+interrogate source the agent just edited, and a warm service answers about source it read earlier
+unless it is made to revalidate. That failure is silent, it reports green, and it appears in both
+the type stage and the runtime stage.
 
 ### Address every revision, and never reuse a path
 
@@ -126,10 +140,12 @@ A first measurement reused one file path and called `rerunFiles`. It reported 2�
 
 Use `runTestSpecifications` with a fresh identity per revision. Never use `rerunFiles`.
 
-### Invalidate imported modules, because a fresh test path is not enough
+### Revalidate every dependency, in both stages
 
-A fresh test path protects the test file and nothing it imports. The following sequence used a
-fresh test path every time and mutated one imported helper between runs.
+A fresh identity protects the probe and nothing it imports. Both warm stages were measured against
+a dependency mutated on disk between calls, and both returned a confident wrong answer.
+
+The runtime stage, using a fresh test path every time and mutating one imported helper:
 
 | Run | Helper content                 | Assertion          | Result | Reading             |
 | --- | ------------------------------ | ------------------ | ------ | ------------------- |
@@ -138,13 +154,30 @@ fresh test path every time and mutated one imported helper between runs.
 | 3   | `CHANGED`                      | expects `ORIGINAL` | pass   | serves stale source |
 | 4   | `THIRD` after `invalidateFile` | expects `THIRD`    | pass   | corrected           |
 
-Run 3 is the defect that matters. The source on disk said `CHANGED`, the probe asserted `ORIGINAL`,
-and the warm service returned green. A probe daemon that certifies a claim which is false against
-current source is worse than no probe at all, because the agent then carries a proven-wrong belief
-into everything downstream.
+The type stage, using a host that versions the probe and returns a constant version for every
+dependency:
 
-Call `invalidateFile` for every workspace module a revision touches. Treat run 3 as a permanent
-regression test of the engine.
+| Run | Dependency          | Probe expects | Diagnostics | Reading             |
+| --- | ------------------- | ------------- | ----------- | ------------------- |
+| 1   | `value: string`     | `string`      | 0           | correct             |
+| 2   | `value: number`     | `string`      | 0           | serves stale source |
+| 3   | same, host re-stats | `string`      | 1           | corrected           |
+
+Run 3 of the first table and run 2 of the second are the same defect. The source on disk had
+changed, the probe asserted the old behavior, and the warm service returned green. A probe daemon
+that certifies a claim which is false against current source is worse than no probe, because the
+agent carries a proven-wrong belief into everything downstream, and the proof is what persuaded it.
+
+Two consequences follow, and the second is the one a designer misses.
+
+Call `invalidateFile` for every workspace module whose modification time moved since the previous
+call, and version every dependency snapshot the type host serves by its modification time. Neither
+stage revalidates on its own.
+
+Content addressing does not fix this. Deriving a probe's identity from the digest of its own bytes
+makes two different probes distinct, and says nothing about the files they import. A probe whose
+bytes never change, run twice around an edit to a helper, has one digest and two correct answers.
+Identity solves collision; only revalidation solves staleness.
 
 ### Own the deadline outside the worker
 
@@ -187,6 +220,23 @@ globals the root project supplies. Check any candidate source file the probe car
 scoped project for its environment, because that is the project the real gate runs. A candidate
 `core` file checked against the root project accepts `process` and then fails
 `npm run check:src:core`.
+
+### Arm the instrument at boot, against the failure that actually threatens it
+
+Run a known-failing control at startup and refuse to serve any probe until that control has
+reported red. This is the one enforcement mechanism in the whole design that cannot be talked
+around, because its subject is the instrument rather than the agent, and it makes the law in
+`.claude/rules/quality.md:61` mechanical instead of advisory.
+
+Choose the control by the failure that threatens this service. A control asserting
+`expect(2).toBe(3)` imports nothing, so it proves the runner can still report red and proves
+nothing about the module graph — and staleness, not a broken runner, is the failure this design
+spends most of its effort on. A service serving stale source passes that control on every boot
+while returning wrong answers all session.
+
+Arm with a control that imports a dependency the service mutates during arming, and require the
+verdict to change when the dependency changes. That control fails when revalidation fails, which
+is the failure worth refusing to start over.
 
 ## What isolation the runtime already provides, and what it does not
 
@@ -235,26 +285,47 @@ thin synchronous client rather than a watcher.
 
 ## Enforcement, stated honestly
 
-The want is to remove the agent's option to skip proving. Three tiers exist, and only the first two
-are real.
+The want is to remove the agent's option to skip proving. One tier of the three is real, and the
+hook mechanisms that look like the other two were driven headless on Claude Code 2.1.234 and
+measured rather than assumed.
 
-**Make proving cheaper than reasoning.** A 337 ms answer against a 3874 ms one changes behavior
-more than any instruction does. This tier is fully achievable and is most of the value.
+**Make proving cheaper than reasoning. This tier is real and it is most of the value.** A 337 ms
+answer against a 3874 ms one changes behavior more than any instruction does, and the current cost
+is worse than that comparison shows: today an agent also writes a file, invents a path, and cleans
+up afterwards. Removing those is the larger half of the improvement. Nothing measured here touched
+this tier, and it is the only enforcement claim that survived attack.
 
-**Make the verdict independent of the agent's prose.** Derive the exit code from the result: 0 when
-a receipt exists, 1 when the claim or its control failed, and 2 when the request was invalid. The
-harness records that exit code whether or not the agent describes it accurately. Issue a receipt
-only when the claim passes all three stages and its negative control fails at the stage it names.
-That mechanizes the existing law in `.claude/rules/quality.md:61` that an instrument is not
-evidence until it has failed, and it is the strongest available answer to a reader who cannot see
-the agent's thoughts.
+**Make the verdict independent of the agent's prose. This tier is partly real, and its reporting
+half is not.** Deriving the exit code from the result works: issue a receipt only when the claim
+passes every stage and its negative control fails at the stage it names, which mechanizes
+`.claude/rules/quality.md:61`. What does not work is the assumption that a hook then carries that
+verdict to a person. A `Stop` hook's standard output on exit 0 and its standard error on exit 1
+appear in neither the run result nor any channel outside the interactive transcript, which is
+precisely the channel the reader does not watch. Any durable record must therefore be a file the
+service writes, and the reader must go and read it.
 
-**Deny the skip.** This tier is not reachable. No repository mechanism observes a thought the agent
-never expressed, and the three target harnesses expose no common mandatory interception point.
-`.claude/settings.json:189-228` gives Claude Code a `SessionStart` hook, which is where the service
-warms, and a `Stop` hook, which is where a session's probe activity can be surfaced. Codex and
-Cursor expose no equivalent. Any claim to have closed this tier is false, and stating it plainly is
-better than shipping a mechanism that appears to close it.
+**Deny the skip. This tier is not reachable, and three measurements say so.**
+
+- A single write to `.claude/settings.json` disarms every hook, in session, with no restart.
+  Rewriting the file to `{"hooks":{}}` mid-session stopped the `Stop` hook from firing at all.
+  Every hook-based enforcement design shares this one point of failure, and the process being
+  restrained is the process that can perform the write.
+- A blocking `Stop` hook is advice, not a wall. A hook exiting 2 with a message demanding a probe
+  did fire and did block, and the model then disputed the message in its own words as spurious or
+  possibly injected feedback, and declined it.
+- `.agents/orchestration.md` bars the mechanism independently. Its permission floor states that
+  agents run to completion and that routine work is not gated behind approval prompts, so a
+  blocking `Stop` hook is refused by this repository's own contract before its effectiveness
+  matters.
+
+Two hook facts do hold up, and they are worth keeping for what they actually are. A `PreToolUse`
+deny fires even under `bypassPermissions`, which `.claude/settings.json:5` sets, and both
+`PreToolUse` and `PostToolUse` fire for a subagent's tool calls. Those make a recorder possible.
+They do not make a policeman possible.
+
+State the conclusion plainly rather than shipping a mechanism that appears to close the gap: the
+mechanism makes proving cheap, records what was proven, and cannot compel a proof. An agent that
+intends to skip will skip.
 
 ## The surface
 
@@ -334,16 +405,19 @@ Four facts decide the order.
 
 - The runtime stage is the only one that already works. Its gap is latency. The type and lint
   stages do not exist at all, so their gap is capability, and capability outranks latency.
-- The type and lint stages cost 12–95 ms combined against 243–290 ms for runtime.
+- The type and lint stages cost 72–105 ms combined against 259–346 ms for runtime.
 - The type and lint stages need no file, no tmpfs, no cleanup, and no worker pool. They are a pure
-  function of a code string.
-- Every hard defect in this document belongs to the runtime stage alone. The stale module graph,
-  the uncontained infinite loop, the filesystem escape, and the cache phantom are all runtime
-  hazards. The diskless pair carries none of them.
+  function of a code string, and every hazard involving a filesystem, a deadline, or a worker
+  belongs to the runtime stage alone.
+- Staleness is the one hazard both share, which is an argument for the same order rather than
+  against it. Solve revalidation first in the stage where a wrong answer costs 80 ms to reproduce
+  and the fix is a version function, then carry the solved problem into the stage where reproducing
+  it costs a worker pool.
 
-That last point is decisive. Building runtime first means solving the two most dangerous
-correctness problems before delivering anything that does not already exist, while the two cheapest
-and entirely absent signals wait behind them.
+Resist one tempting version of this argument. An earlier draft of this document claimed every hard
+defect belonged to the runtime stage, which was wrong: the type stage serves stale dependencies
+exactly as the runtime stage does, and the measurement that proved it came after the claim. The
+order survives, and the reason it survives is not the reason first written down.
 
 Order of construction is not order of delivery. Ship all three stages in one release, and build the
 part that cannot be silently wrong first.
@@ -372,18 +446,25 @@ Each design below was considered and killed for the stated reason.
   one measured hazard it introduces is the class this document spends the most effort closing.
 - **A git worktree or container per probe.** Both discard residency, which is the entire
   performance argument.
-- **An MCP tool.** No Model Context Protocol software development kit is installed, and adding a
-  dependency requires an explicit request from the user.
+- **Hand-rolling a Model Context Protocol (MCP) server inside this package.** Not rejected for
+  being unreachable, which was an earlier and wrong reading: a working stdio server handling
+  `initialize`, `tools/list`, and `tools/call` was written in roughly 50 lines using only
+  `node:readline` and `node:crypto`. It is rejected because the fleet already publishes that
+  capability and `AGENTS.md` requires reusing a declared ecosystem primitive rather than
+  reimplementing it. Whether to declare that dependency is a decision for the user, not for this
+  document. The prize is real: `.mcp.json`, `.cursor/mcp.json`, and `.codex/config.toml` are all
+  vendored, so one registration reaches all three harnesses in 44 targets.
 - **A `scaffold` bin verb.** `src/bin/constants.ts:22-28` plus the type, options, parse, and
   dispatch sites make a new verb a five-file change for a mechanism that is not a workspace
   operation.
 
 ## Risks
 
-Four hazards were reproduced during this design pass, and three of them carry a prescribed fix
-stated as a law earlier in this document: the cache phantom, the stale module graph, the
-uncontained infinite loop, and the wrong TypeScript project. Treat those as closed by the laws
-rather than as open risks, and treat each reproduction as a regression test the engine owes.
+Five hazards were reproduced during this design pass, and each carries a prescribed fix stated as a
+law earlier in this document: the cache phantom, stale dependencies in the runtime stage, stale
+dependencies in the type stage, the uncontained infinite loop, and the wrong TypeScript project.
+Treat those as closed by the laws rather than as open risks, and treat each reproduction as a
+regression test the engine owes.
 
 The risks below stay open, ranked, and each names the cheapest probe that settles it.
 
@@ -417,8 +498,19 @@ The risks below stay open, ranked, and each names the cheapest probe that settle
 
 - Whether an operating-system sandbox available in every target environment can bound filesystem
   and network effects without discarding residency.
-- Whether the mechanism belongs in the vendored `dist/host` surface, which `src/core/constants.ts:123-156`
-  propagates to 44 target repositories, or stays in this repository until it has run for a while
-  here.
+- Whether the mechanism belongs in the vendored `dist/host` surface, which
+  `src/core/constants.ts:123-156` propagates to 44 target repositories, or stays in this repository
+  until it has run for a while here. `src/server/index.ts` publishes a file-materialization surface
+  today, so a resident service is not an obvious member of it.
+- Whether to declare the fleet's published MCP capability as a dependency, which is the decision
+  that turns the shell client into a tool call across all three harnesses.
+- How to retire the current probe project without breaking the fleet. Two obstacles are measured
+  and neither is optional: `src/core/compilers.ts:361-362` and `:801-802` emit `test:probe` and the
+  `probe` project into every generated workspace, and the vendored `tests/config.test.ts` uses
+  `probe` as its own negative control, throwing `The configured projects carry no probe control`
+  when it is absent. Retirement is a scaffold release plus a 44-target propagation, which is the
+  same shape as the campaign that preceded this document.
 - What replaces the probe law in `.claude/rules/tests.md:92-117` and the probe project paragraph in
-  `.claude/rules/workspace.md:152-155`, both of which describe a mechanism this ruling deletes.
+  `.claude/rules/workspace.md:152-155`, both of which describe the mechanism this ruling retires.
+  Note while rewriting them that `npm run test:probe` exits 1 when `tmp/probe/` holds no file, so
+  the script the law points at fails whenever an agent has cleaned up after itself.
