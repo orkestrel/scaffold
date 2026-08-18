@@ -587,6 +587,14 @@ copy in the target, used by `npm run check` and by the probe alike, so the two c
 `src/core/compilers.ts:1826` calls them "pinned by the shared toolchain, which every workspace
 carries at one version".
 
+Merging the engine into scaffold instead was considered and refused on two grounds. The dependency
+sets barely meet: scaffold's runtime set is `console`, `contract`, `emitter`, `markdown`, and
+`template`, while probe's is `contract`, `emitter`, `mcp`, `tool`, and `timeout`, so the overlap is
+only the two packages every fleet member carries. More decisively, scaffold reaches all 44 targets
+as a development dependency, so peers declared there would push a `typescript`, `oxlint`, and
+`vitest` obligation onto every target and onto scaffold's own consumers, for a capability most of
+them never call.
+
 A package also solves a problem no vendored file solves. The engine cannot live in scaffold's
 published surface, because `typescript`, `vitest`, and `oxlint` are scaffold's development
 dependencies and published code may not import them. A vendored `.mjs` escapes that rule and pays
@@ -598,10 +606,31 @@ one it cannot.
 Its runtime dependencies are `@orkestrel/contract`, `@orkestrel/emitter`, `@orkestrel/mcp`,
 `@orkestrel/tool`, and `@orkestrel/timeout`, the last carrying the coordinator-owned deadline that
 the uncontained infinite loop needs. It declares no `@orkestrel/router` or `@orkestrel/server`
-dependency of its own; those stay required peers of `@orkestrel/mcp` and enter through it. It needs
-a `server` environment and a `bin` environment and no `core`, because every stage depends on Node
-or a native executable, and `@orkestrel/sea` already sets the precedent of a server-only package
-root.
+dependency of its own; those stay required peers of `@orkestrel/mcp` and enter through it, and a
+second pin on either would install the two copies the catalog's own versioning rule exists to
+prevent.
+
+It takes `core`, `server`, and `bin`, mirroring `@orkestrel/mcp`, whose dispatch core sits in
+`src/core` while its transports sit one layer out in `src/server`. The contracts, the claim shape,
+the guards, and the two pure functions — the verdict formatter and the receipt computation — are
+host-independent and belong in `core` by the boundary rule. The TypeScript service, the Oxlint
+process, Vitest, revalidation, and the MCP composition are Node and belong in `server`. The `bin`
+entry is the stdio server the harness launches.
+
+Declare the peers as floors rather than carets: `>=6.0.0`, `>=1.77.0`, `>=4.1.0`. A ceiling is the
+one thing a probe must never impose, because the probe's job is to run whatever the target's gate
+runs, and a caret that refused a target's newer linter would make the probe the reason a workspace
+could not upgrade. The measured drift — `^1.77.0` declared, 1.78.0 installed — is the mechanism
+working rather than failing.
+
+Do not fight the drift; report it. Resolve the three installed versions at construction, expose
+them as `toolchain`, and carry that `toolchain` on every verdict, so a receipt names the toolchain
+that issued it.
+
+Keep all three peers required, never optional. An optional peer is a mechanism for shipping a
+verdict with a stage quietly missing, which is exactly what the `ALL-THREE` control exists to
+prevent. A verdict exists only when all three stages ran; a stage that cannot start throws a coded
+error and the tool returns a tool error, so there is no empty check and no sentinel to misread.
 
 Propagation is one row. `BASE_DEV_DEPENDENCIES` already carries `@orkestrel/guide`,
 `@orkestrel/scaffold`, and `@orkestrel/test`, so `@orkestrel/probe` joins three siblings rather
@@ -662,10 +691,18 @@ are vendored and `.claude/settings.json:3` sets `enableAllProjectMcpServers: tru
 is not theoretical here: `.mcp.json` registers `codex mcp-server` today and that server's tools are
 live in this session.
 
-Warm the engines when `initialize` arrives, without making `initialize` wait for them. A server
-measured this way answers `initialize` in 57.6 ms, finishes warming 3119 ms later, and answers the
-first real probe in 222 ms. An agent's first probe never arrives in the first three seconds of a
-session, so the cold cost lands where nobody is waiting.
+Name the server `probe` and its tool `prove`, so a harness surfaces it to the model as
+`mcp__probe__prove` — the server is the noun and the tool is the verb, and the agent's tool list
+reads correctly with no gloss. `check` is refused because it collides with `npm run check` and with
+the `Check` type, and `run` is refused outright by the fixed lifecycle vocabulary in
+`.claude/rules/names.md`.
+
+Warm the engines when the process starts, without making any reply wait for them. Warming begins at
+construction and `prove` awaits it, so there is no `start` method to call: the harness owns the
+process, and a restart is a new process rather than a second lifecycle to model. A server measured
+this way answers `initialize` in 57.6 ms, finishes warming 3119 ms later, and answers the first
+real probe in 222 ms. An agent's first probe never arrives in the first three seconds of a session,
+so the cold cost lands where nobody is waiting.
 
 One implementation detail decides that number, and it is easy to get wrong. Importing `typescript`
 and `vitest` at module scope delayed the same `initialize` reply to 869 ms, because the runtime
