@@ -241,10 +241,8 @@ Policy instruments:
   thing it polices. A file-level `oxlint-disable` silently defeats every lint rule in its file,
   plugin rules included, and nothing inside a file can suppress the sweep.
 - Write each visitor in the plugin's visitor table as a one-line context-binding arrow delegating to
-  a named module-scope `report{Noun}` function. Never write rule logic inline in the table. The
-  table stays data: it maps each visitor name to a named reporter, and the arrow exists only to bind
-  the `context` the foreign API supplies per rule instance, carrying no logic beyond that
-  delegation. That arrow is the sanctioned exception to the in-body function-expression limits in
+  a named module-scope `report{Noun}` function. Never write rule logic inline in the table. That
+  arrow is the sanctioned exception to the in-body function-expression limits in
   `.claude/rules/architecture.md` for exactly that table.
 - Name no individual rule id here. This section fixes the two instruments and how work is assigned
   between them; each rule's substance stays with the law it enforces.

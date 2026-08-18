@@ -43,7 +43,6 @@ configs/  thin target wrappers around root Vite/TypeScript configuration
 - **NEVER** add an npm package unless the user explicitly requests it; prefer native APIs.
 - **NEVER** remove a symbol to silence lint. Implement it or annotate `// TODO: [Feature] Brief purpose`.
 - **NEVER** undo user edits in `*/types.ts`.
-- **NEVER** put `readonly` on parameters.
 - **NEVER** write `public`, `protected`, or `private` on a class member, and never declare a parameter property; use runtime-enforced `#` fields.
 - **NEVER** use default exports except where a framework requires them, such as Vue SFCs or config files.
 - **NEVER** use mocks, behavioral fakes, module replacement, framework spies, or fake clocks to simulate project-owned behavior. Use real implementations, recorders, temporary resources, protocol-faithful fixture servers, and inert customizable data stubs.
