@@ -251,3 +251,17 @@ vs local a14975c8 — the transcription hazard the transport verdict predicted).
 push: worker's and workflow's partial mains heal deterministically when recovery force-pushes
 the original commits, and nothing consumes those mains in the interim (installs come from the
 registry). Scaffold's two branch replicas remain byte-perfect.
+
+## The wave is closed: 43/43 (2026-08-18)
+
+toolbox 0.0.7 registry-confirmed — the final release. Its path: the visit's check gate exposed
+real API drift; Sol's first unit correctly stopped on the form-flow redesign; the user authorized
+@orkestrel/form as a runtime dependency; Sol implemented, the Opus implementer landed guide
+parity, the cross-engine Opus audit returned FAIL on two claims (a dropped 0.0.6 guard and three
+false guide claims); the fix round applied every prescription verbatim with the restored guard's
+red-then-green proof; the authoritative visit re-ran green, refreshed the stale terminal/workflow
+mirrors, and bumped 0.0.7. Every fleet package now declares latest pins, proven by gates and the
+material-dist rule. The full adoption is on the rescue branch as three byte-verified patches
+(src cc48083, tests 40a5758, guide 2447203). Remaining outside the wave: the 19-commit push
+queue across 8 repos (recovery armed), D6 prepack and D8 branch cleanup with the user, and the
+backlog handoff.

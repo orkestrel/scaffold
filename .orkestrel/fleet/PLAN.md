@@ -43,7 +43,7 @@ re-pin reason in their own second-round slots.
 **supervisor is out of this campaign entirely** — user-owned session; clone removed, excluded from
 every sweep, plan, and script.
 
-## Tier 2 — the release wave, reorganized
+## Tier 2 — the release wave: CLOSED 43/43 (2026-08-18)
 
 Per-repo protocol unchanged (visit.sh): overwrite with current host → format converge → five gates
 → material-dist check → bump when owed → push branch + fast-forward main. Every visit also re-pins
@@ -76,7 +76,7 @@ supervisor work belongs to the user's own session and is not tracked here beyond
 | D6  | B3 prepack manifests                                                                 | open, no default                                |
 | D8  | Branch cleanup script run (.orkestrel/fleet/branch-cleanup.sh, operator credentials) | with user                                       |
 
-## Pending: scaffold 0.0.40
+## Shipped: scaffold 0.0.40 (L4 window, 2026-08-17)
 
 The release-wave procedure and the observed window mechanics landed in `.agents/orchestration.md`
 after 0.0.39 published. Vendored bytes moved, so scaffold owes 0.0.40; it rides the L4 or L5
