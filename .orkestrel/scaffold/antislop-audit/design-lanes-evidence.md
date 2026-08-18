@@ -102,3 +102,15 @@ enforced only by cleanup/review. It also never sees mocks, accessibility keyword
 Codex/Sol: authenticated mid-session (device auth approved by the user); journaled-CLI round trip
 returned `OK` (thread 01a01484-b62b-70b2-9881-17791b9726ac). The MCP loopback transport is dark
 this session (401 — the MCP server process predates the login) — CLI transport only.
+
+## E9. Vue SFC reachability (post-round probe)
+
+The plain-object plugin from E6, run over a `.vue` fixture whose `<script setup lang="ts">` block
+contains a TS `private` member and an `oxlint-disable-next-line` comment:
+
+```
+Widget.vue:6:1: error probe(no-disable-directive): Remove the oxlint-disable directive and fix the cause.
+Widget.vue:3:2: error probe(no-accessibility): Use runtime-enforced # privacy, never TypeScript private.
+```
+
+jsPlugins reach Vue SFC script blocks with correct line mapping under installed oxlint 1.78.0.
