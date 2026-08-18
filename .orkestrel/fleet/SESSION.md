@@ -265,3 +265,13 @@ material-dist rule. The full adoption is on the rescue branch as three byte-veri
 (src cc48083, tests 40a5758, guide 2447203). Remaining outside the wave: the 19-commit push
 queue across 8 repos (recovery armed), D6 prepack and D8 branch cleanup with the user, and the
 backlog handoff.
+
+## Campaign closed: everything pushed (2026-08-18)
+
+The git proxy's write lease returned. Reconciliation ran exactly as recorded: `main` and the
+working branch in all eight affected repos force-updated to the pristine local commits,
+superseding every partial API replica. Verified per repo — remote `main` sha equals local HEAD,
+zero file differences, clean tree — and a fleet-wide sweep found no other repo carrying unpushed
+or dirty state. ROADMAP.md at scaffold's root is now the plan of record for everything still
+open; this campaign folder is closed. Ref deletion remains refused by the proxy, so the rescue
+branch and the branch-cleanup script both wait on operator credentials.

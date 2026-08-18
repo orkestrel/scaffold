@@ -4,24 +4,21 @@ The plan of record after the current-pins release wave (closed 43/43, 2026-08-18
 package published at latest `@orkestrel` pins, proven by gates and the material-dist rule).
 Campaign detail lives in `.orkestrel/fleet/`; this file owns everything still open.
 
-## 1. Git reconciliation after the proxy outage
+## 1. Git reconciliation — CLOSED 2026-08-18
 
 The session's git proxy lost its write lease mid-campaign; releases published from proven local
-trees and source was preserved as verified patches on `rescue/proxy-outage-2026-08-17` plus
-API-pushed main commits. Because file bytes travel inline through tool calls, lockfiles
-(~100KB dense JSON), the 479KB vendored `guides/contract.md` mirror, and any file past ~105KB
-could not transit — those are deferred, and each regenerates mechanically.
+trees while source queued locally, preserved meanwhile as verified patches on
+`rescue/proxy-outage-2026-08-17` and as partial API commits. The lease returned and every repo
+was reconciled: `main` and `claude/orkestrel-fleet-orchestration-b0t5cy` in all eight affected
+repos (scaffold, worker, workflow, brief, program, agent, ollama, toolbox) were force-updated to
+the pristine local commits, which superseded every partial API replica. Verified: remote `main`
+sha equals local HEAD sha in each, with zero file differences and clean trees. The remaining
+43 fleet repos were already current.
 
-Runbook, from any checkout with working credentials:
-
-1. Per repo, compare main against the wave state: lockfiles regenerate with `npm install`;
-   vendored mirrors (`guides/contract.md` and any other deferred mirror) regenerate with
-   `npx scaffold overwrite` (or `repair`); nothing else should differ.
-2. If the outage session's clones still exist, prefer their originals: force-with-lease each
-   working branch, then fast-forward or force main to the original commits — they supersede
-   every API commit as content supersets with pristine history.
-3. Delete `rescue/proxy-outage-2026-08-17` only after every repo's main verifies against the
-   wave state.
+Nothing is outstanding. `rescue/proxy-outage-2026-08-17` on scaffold is now redundant — its
+patches all landed in the reconciled history. Deleting it needs operator credentials: the proxy
+serves writes to existing refs but still refuses ref deletion, so it joins the branch cleanup in
+section 2.
 
 ## 2. User decisions, open
 
