@@ -631,8 +631,13 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 		factories.push(
 			fillTemplate(CONFIG_TEMPLATES.factories.src.browser, {
 				external: core
-					? "external: (id: string) => id === '@src/core' || id.startsWith('@orkestrel/'),"
-					: "external: (id: string) => id.startsWith('@orkestrel/'),",
+					? `external: (id: string) =>
+						id === '@src/core' ||
+						id.startsWith('@orkestrel/') ||
+						peers.some((peer) => id === peer || id.startsWith(peer + '/')),`
+					: `external: (id: string) =>
+						id.startsWith('@orkestrel/') ||
+						peers.some((peer) => id === peer || id.startsWith(peer + '/')),`,
 				output: core
 					? "\t\t\t\t\toutput: { paths: { '@src/core': '../core/index.js' } },"
 					: '\t\t\t\t\toutput: {},',
@@ -649,14 +654,16 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 		const core = blueprint.src.includes('core')
 		factories.push(
 			fillTemplate(CONFIG_TEMPLATES.factories.src.server, {
-				// The formatter reprints this arrow from its syntax tree, so each
-				// selection is written the way it measures at the emitted indentation:
-				// the core predicate carries a third test and passes the vendored
-				// width, and the one without core fits on the line it starts on.
 				external: core
 					? `external: (id: string) =>
-						id === '@src/core' || id.startsWith('node:') || id.startsWith('@orkestrel/'),`
-					: "external: (id: string) => id.startsWith('node:') || id.startsWith('@orkestrel/'),",
+						id === '@src/core' ||
+						id.startsWith('node:') ||
+						id.startsWith('@orkestrel/') ||
+						peers.some((peer) => id === peer || id.startsWith(peer + '/')),`
+					: `external: (id: string) =>
+						id.startsWith('node:') ||
+						id.startsWith('@orkestrel/') ||
+						peers.some((peer) => id === peer || id.startsWith(peer + '/')),`,
 				output: core
 					? `\t\t\t\t\toutput: [
 						{

@@ -487,6 +487,35 @@ describe('blueprintToRootVite fixed proofs', () => {
 		)
 	})
 
+	it('externalizes each package peer through every published build face', () => {
+		const peer = { name: '@orkestrel/emitter', range: '^0.0.7' }
+		const selected = buildBlueprint({
+			src: ['core', 'browser', 'server'],
+			app: ['browser', 'server'],
+			peers: [peer],
+			bin: true,
+		})
+		const absent = buildBlueprint({
+			src: ['core', 'browser', 'server'],
+			app: ['browser', 'server'],
+			bin: true,
+		})
+		const configuration = blueprintToRootVite(selected)
+		const contents = blueprintToConfigArtifacts(selected)
+			.filter(({ path }) => path === 'vite.config.ts' || path === 'configs/src/vite.core.config.ts')
+			.map(({ content }) => content)
+			.join('\n')
+		const clause = "peers.some((peer) => id === peer || id.startsWith(peer + '/'))"
+
+		expect(blueprintToManifest(selected)).toContain('"peerDependencies": {')
+		expect(blueprintToManifest(absent)).not.toContain('"peerDependencies": {')
+		expect(configuration).toBe(blueprintToRootVite(absent))
+		expect(configuration).toContain("import manifest from './package.json' with { type: 'json' }")
+		expect(configuration).toContain("throw new Error('package peerDependencies must be an object')")
+		expect(contents.split(clause)).toHaveLength(5)
+		expect(configuration).not.toContain(peer.name)
+	})
+
 	it('registers the conformance and live-service projects only when their fact is set', () => {
 		const bare = blueprintToRootVite(buildBlueprint())
 		expect(bare).not.toContain("name: { label: 'conformance',")
@@ -546,7 +575,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 		// The removed runtime filesystem classifier leaves the URL import directly
 		// after the three imports every root configuration makes.
 		expect(blueprintToRootVite(buildBlueprint({ src: ['core'] }))).toContain(
-			"import type { UserConfig } from 'vite'\nimport { defineConfig, mergeConfig } from 'vitest/config'\nimport tsconfig from './tsconfig.json' with { type: 'json' }\nimport { fileURLToPath, URL } from 'node:url'",
+			"import type { UserConfig } from 'vite'\nimport { defineConfig, mergeConfig } from 'vitest/config'\nimport manifest from './package.json' with { type: 'json' }\nimport tsconfig from './tsconfig.json' with { type: 'json' }\nimport { fileURLToPath, URL } from 'node:url'",
 		)
 	})
 
@@ -602,14 +631,13 @@ describe('blueprintToRootVite fixed proofs', () => {
 	})
 
 	it('writes each selection-dependent span the way the formatter leaves it', () => {
-		// The server predicate carries a third test with core beside it and passes
-		// the vendored width; without core it fits the line it starts on, and a
-		// formatter that reprints from the syntax tree joins it back either way.
+		// The peer matcher holds both server predicates open, with the core alias
+		// present only when the selected source graph reaches it.
 		expect(blueprintToRootVite(buildBlueprint({ src: ['server'] }))).toContain(
-			"\t\t\t\t\texternal: (id: string) => id.startsWith('node:') || id.startsWith('@orkestrel/'),\n",
+			"\t\t\t\t\texternal: (id: string) =>\n\t\t\t\t\t\tid.startsWith('node:') ||\n\t\t\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
 		)
 		expect(blueprintToRootVite(buildBlueprint({ src: ['core', 'server'] }))).toContain(
-			"\t\t\t\t\texternal: (id: string) =>\n\t\t\t\t\t\tid === '@src/core' || id.startsWith('node:') || id.startsWith('@orkestrel/'),\n",
+			"\t\t\t\t\texternal: (id: string) =>\n\t\t\t\t\t\tid === '@src/core' ||\n\t\t\t\t\t\tid.startsWith('node:') ||\n\t\t\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
 		)
 		// The browser plugin array has no conditional tail without a showcase, so
 		// the formatter emits its three fixed entries joined.

@@ -58,12 +58,25 @@ export const CONFIG_TEMPLATES = Object.freeze({
 `,
 		vite: `import type { {{viteTypes}} } from 'vite'
 {{imports}}import { defineConfig, mergeConfig } from 'vitest/config'
+import manifest from './package.json' with { type: 'json' }
 import tsconfig from './tsconfig.json' with { type: 'json' }
 {{helpers}}{{browsers}}import { fileURLToPath, URL } from 'node:url'
 
 {{options}}export function resolveWorkspacePath(relativePath: string): string {
 	return fileURLToPath(new URL(relativePath, import.meta.url))
 }
+
+const peerDependencies = 'peerDependencies' in manifest ? manifest.peerDependencies : undefined
+if (
+	peerDependencies !== undefined &&
+	(typeof peerDependencies !== 'object' ||
+		peerDependencies === null ||
+		Array.isArray(peerDependencies))
+) {
+	throw new Error('package peerDependencies must be an object')
+}
+export const peers: readonly string[] =
+	peerDependencies === undefined ? [] : Object.keys(peerDependencies)
 
 const resolve = {
 	alias: Object.entries(tsconfig.compilerOptions.paths).reduce((aliases, [key, values]) => {
@@ -192,7 +205,13 @@ const resolve = {
 				},
 				outDir: 'dist/bin',
 				target: 'node22',
-				rolldownOptions: { external: [/^node:/, /^@orkestrel\\//, /^@src\\//] },
+				rolldownOptions: {
+					external: (id: string) =>
+						id.startsWith('node:') ||
+						id.startsWith('@orkestrel/') ||
+						id.startsWith('@src/') ||
+						peers.some((peer) => id === peer || id.startsWith(peer + '/')),
+				},
 			},
 			test: {
 				name: { label: 'src:bin', color: 'yellow' },
@@ -566,7 +585,7 @@ export const probe = (options?: UserConfig): UserConfig =>
 			core: `import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
 import { environmentBoundary, outputBoundary } from '../helpers.js'
-import { srcCore, resolveWorkspacePath } from '../../vite.config.ts'
+import { peers, srcCore, resolveWorkspacePath } from '../../vite.config.ts'
 
 export default defineConfig(
 	srcCore({
@@ -594,7 +613,12 @@ export default defineConfig(
 				fileName: (format) => (format === 'es' ? 'index.js' : 'index.cjs'),
 			},
 			outDir: 'dist/src/core',
-			rolldownOptions: { external: [/^node:/, /^@orkestrel\\//] },
+			rolldownOptions: {
+				external: (id: string) =>
+					id.startsWith('node:') ||
+					id.startsWith('@orkestrel/') ||
+					peers.some((peer) => id === peer || id.startsWith(peer + '/')),
+			},
 		},
 	}),
 )

@@ -8,10 +8,12 @@ import { isString } from '@orkestrel/contract'
 import { requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
 import { fillTemplate, isTemplateError } from '@orkestrel/template'
+import { loadConfigFromFile } from 'vite'
 import {
 	ARTIFACT_TEMPLATES,
 	blueprintToConfigArtifacts,
 	blueprintToDevDependencies,
+	blueprintToManifest,
 	blueprintToSourceArtifacts,
 	blueprintToTestArtifacts,
 	CONFIG_TEMPLATES,
@@ -182,6 +184,7 @@ function stageRootConfig(blueprint: Blueprint, workspace: ScratchInterface, pref
 		`${prefix}/configs/helpers.ts`,
 		readFileSync(resolve('configs/helpers.ts'), 'utf8'),
 	)
+	workspace.write(`${prefix}/package.json`, blueprintToManifest(blueprint))
 	workspace.write(`${prefix}/plugins.d.ts`, BROWSER_PLUGIN_DECLARATIONS)
 }
 
@@ -466,6 +469,21 @@ describe('configuration templates', () => {
 // carries a control drawn from outside the emitted population as well, because an
 // instrument that has never reported is not evidence that the corpus is clean.
 describe('emitted workspaces under their own gates', () => {
+	it('refuses a non-object peer dependency declaration at config load', async () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-e2-peers-' })
+		const root = workspace.ensure('malformed')
+		try {
+			stageRootConfig(createBlueprint('sample', { src: ['core'] }), workspace, 'malformed')
+			workspace.write('malformed/package.json', '{ "peerDependencies": "vitest" }\n')
+
+			await expect(
+				loadConfigFromFile({ command: 'build', mode: 'test' }, join(root, 'vite.config.ts'), root),
+			).rejects.toThrow('package peerDependencies must be an object')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('counts every selection that emits each module', () => {
 		expect(countEmitters(buildSelections())).toStrictEqual(MODULE_EMITTERS)
 
