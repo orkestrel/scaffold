@@ -114,3 +114,18 @@ Widget.vue:3:2: error probe(no-accessibility): Use runtime-enforced # privacy, n
 ```
 
 jsPlugins reach Vue SFC script blocks with correct line mapping under installed oxlint 1.78.0.
+
+## E10. Fork-settling probes (post-lane, Orchestrator-run)
+
+(a) Self-suppression: a fixture opening with `/* oxlint-disable */` and containing a TS `private`
+member produced ZERO findings and exit 0 under the E6 plugin config. File-level disable directives
+silently defeat jsPlugin rules, so a suppression ban homed in the plugin is self-defeating; the
+policy sweep is the only unsuppressible home.
+
+(b) Floor: a scratch install of oxlint@1.77.0 exports `./plugins-dev`, carries `jsPlugins` in its
+configuration schema, and ran the E6 plain plugin identically (same three findings). The fleet's
+declared `^1.77.0` floor carries the mechanism; no floor move needed.
+
+(c) Lint population: `tmp/probe/lintReach.ts` containing a `no-var` violation was NOT reported by
+`npm run lint:check` (oxlint honors .gitignore, which ignores `tmp`). The lint gate does not reach
+`tmp/`; no ignore change is needed for probes.
