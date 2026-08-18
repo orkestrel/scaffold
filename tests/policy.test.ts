@@ -9,14 +9,17 @@ import {
 	inspectPolicyWorkspace,
 	inspectSkillFamily,
 	inspectSkillBridges,
+	matchesSkillTrigger,
 	parseSkillFrontmatter,
 	POLICY_CONTROLS,
 	POLICY_SUPPRESSION_DIRECTIVE,
 	readSkillFamily,
 	SKILL_POLICY_APOSTROPHE,
+	SKILL_POLICY_BACKTICKED,
 	SKILL_POLICY_CONTROLS,
 	SKILL_POLICY_EXCLUSION,
 	SKILL_POLICY_FOLDED,
+	SKILL_POLICY_PARAGRAPHS,
 	stemToPolicyCandidates,
 	testToPolicyStem,
 } from './setupPolicy.js'
@@ -341,6 +344,7 @@ describe('skill family policy', () => {
 			const violations = inspectPolicyControl(control)
 			expect(violations).toHaveLength(1)
 			expect(violations[0]?.rule).toBe(control.rule)
+			expect(control.message === undefined || violations[0]?.message === control.message).toBe(true)
 		})
 	}
 
@@ -350,6 +354,21 @@ describe('skill family policy', () => {
 
 	it(`${SKILL_POLICY_FOLDED.label} [membership: ${SKILL_POLICY_FOLDED.membership}]`, () => {
 		expect(inspectPolicyControl(SKILL_POLICY_FOLDED)).toEqual([])
+	})
+
+	it(`${SKILL_POLICY_BACKTICKED.label} [membership: ${SKILL_POLICY_BACKTICKED.membership}]`, () => {
+		expect(inspectPolicyControl(SKILL_POLICY_BACKTICKED)).toEqual([])
+	})
+
+	it('parses a folded description containing two paragraphs', () => {
+		const skill = SKILL_POLICY_PARAGRAPHS.files.find((file) => file.path.endsWith('/SKILL.md'))
+		const frontmatter = parseSkillFrontmatter(skill?.content ?? '')
+		expect(frontmatter?.keys).toEqual(['name', 'description'])
+		expect(frontmatter?.description).toBe(
+			'First paragraph.\nUse `--app` when a policy fixture needs it.',
+		)
+		expect(matchesSkillTrigger(frontmatter?.description ?? '')).toBe(true)
+		expect(inspectPolicyControl(SKILL_POLICY_PARAGRAPHS)).toEqual([])
 	})
 
 	it(`${SKILL_POLICY_EXCLUSION.label} [membership: ${SKILL_POLICY_EXCLUSION.membership}]`, () => {
@@ -367,6 +386,7 @@ describe('skill bridge policy', () => {
 			const violations = inspectPolicyControl(control)
 			expect(violations).toHaveLength(1)
 			expect(violations[0]?.rule).toBe(control.rule)
+			expect(control.message === undefined || violations[0]?.message === control.message).toBe(true)
 		})
 	}
 })
