@@ -20,6 +20,14 @@ process all stop being ours to write. Compose it as `createStdioServer(createMCP
 undecorated server answers a harness's `tools/list` with `Invalid params: malformed modern request
 metadata`, because the package dispatches by wire era.
 
+Ship that engine as `@orkestrel/probe`, a layer 4 package depending on `@orkestrel/mcp` and
+declaring `typescript`, `vitest`, and `oxlint` as peer dependencies. The peers are what make the
+verdict trustworthy: the probe and the gate then read one installed compiler, so they cannot
+disagree. They are also what makes the engine publishable at all, because those three are
+development dependencies that scaffold's own published code may not import. Do not build it as a
+single executable: an executable freezes a second toolchain, and this checkout already shows
+`oxlint` declared at `^1.77.0` and installed at 1.78.0.
+
 Do not build a one-shot command or a socket daemon. The command buys one second over the instrument
 pair for a whole new surface, and the socket daemon is 40 ms slower per call than the MCP tool
 while carrying a lifetime the harness would have owned for free.
@@ -563,6 +571,85 @@ decision and one is a trap.
   and those are the dated revision. Compose `createStdioServer(createMCPLegacy(mcp))` and the same
   calls answer correctly. A server built without the decorator looks finished and refuses every
   request a harness makes.
+
+### Give the engine its own package, because peers are what keep the verdict honest
+
+Make the resident engine `@orkestrel/probe`, a fleet package at layer 4, rather than a vendored
+file inside scaffold. The name is free on the registry. Its runtime dependency is
+`@orkestrel/mcp`, which sits at layer 3, and it declares `typescript`, `vitest`, and `oxlint` as
+peer dependencies.
+
+The peer choice is the whole argument, and it answers a real defect rather than a preference. A
+probe is worth running only if its verdict predicts the gate's verdict, and that holds only when
+the probe and the gate read the same installed compiler. Peers give exactly that: one installed
+copy in the target, used by `npm run check` and by the probe alike, so the two cannot disagree.
+`BASE_DEV_DEPENDENCIES` already declares those three ranges and
+`src/core/compilers.ts:1826` calls them "pinned by the shared toolchain, which every workspace
+carries at one version".
+
+A package also solves a problem no vendored file solves. The engine cannot live in scaffold's
+published surface, because `typescript`, `vitest`, and `oxlint` are scaffold's development
+dependencies and published code may not import them. A vendored `.mjs` escapes that rule and pays
+for it by being typechecked by nothing and linted by nothing. A package declaring those three as
+peers may import them legitimately, so the engine becomes ordinary published source under its own
+gates. That is the difference between a mechanism this repository can hold to its own standards and
+one it cannot.
+
+Propagation is one row. `BASE_DEV_DEPENDENCIES` already carries `@orkestrel/guide`,
+`@orkestrel/scaffold`, and `@orkestrel/test`, so `@orkestrel/probe` joins three siblings rather
+than opening a new mechanism. Scaffold does not depend on probe: it emits the dependency row and
+the `.mcp.json` registration, which is knowledge rather than a dependency, so no cycle appears in
+the publish order.
+
+### Do not ship it as a single executable
+
+`@orkestrel/sea` is real and light, and it is the wrong tool for this. Three measurements settle
+it, and the first is fatal on its own.
+
+- **A frozen toolchain stops predicting the gate.** The probe's value is that its verdict matches
+  what `npm run check` and `npm run lint:check` will say. An executable carries its own compiler,
+  and this checkout already shows the divergence: `BASE_DEV_DEPENDENCIES` declares
+  `oxlint: '^1.77.0'` while the installed binary is 1.78.0. An executable built against one and run
+  beside the other reports on neither.
+- **Portability multiplies the artifact.** Oxlint is a native Rust binary with 19 platform-specific
+  bindings; this host installed `binding-linux-x64-gnu` and `binding-linux-x64-musl`. One
+  executable cannot carry all 19, so portability means one build per platform.
+- **The size is not affordable.** A Single Executable Application's floor is the Node binary,
+  measured at 118.9 MB on this host, before `typescript` at 24 MB. The dependency it would replace
+  is 6.3 MB of packages. Trading 6.3 MB for 119 MB per platform, in exchange for a verdict that no
+  longer predicts the gate, is a loss on every axis.
+
+`@orkestrel/sea` remains the right tool for shipping a standalone program whose whole point is to
+carry its own runtime. A probe is the opposite: its whole point is to borrow the target's.
+
+### Start it with the harness, and warm it behind the reply
+
+The harness starts the server, because `.mcp.json`, `.cursor/mcp.json`, and `.codex/config.toml`
+are vendored and `.claude/settings.json:3` sets `enableAllProjectMcpServers: true`. This mechanism
+is not theoretical here: `.mcp.json` registers `codex mcp-server` today and that server's tools are
+live in this session.
+
+Warm the engines when `initialize` arrives, without making `initialize` wait for them. A server
+measured this way answers `initialize` in 57.6 ms, finishes warming 3119 ms later, and answers the
+first real probe in 222 ms. An agent's first probe never arrives in the first three seconds of a
+session, so the cold cost lands where nobody is waiting.
+
+One implementation detail decides that number, and it is easy to get wrong. Importing `typescript`
+and `vitest` at module scope delayed the same `initialize` reply to 869 ms, because the runtime
+loads them before the server can answer. Load them with a dynamic `import` inside the warmer, and
+the reply drops to 57.6 ms.
+
+Two further lifecycle rules follow from what was measured.
+
+- A probe arriving mid-warm awaits the warm promise rather than starting a second one. Measured at
+  T+0 the call answered correctly after 3346 ms, having waited rather than duplicated.
+- Revalidate on every call, and the earlier defect stops reproducing. In the server shape, with a
+  modification-time sweep calling `invalidateFile` on what moved, a dependency changed mid-session
+  produced `pass`, then `pass` against its new value, then `fail` against its old one, in 257 ms
+  and 334 ms. That is the sequence that returned a false green without the sweep.
+
+The server stops with the session, because the harness owns it. A second client gets a second
+process, and therefore a second warm engine at the measured 456 MB resident.
 
 ### The upgrade path does not change the inspections
 
