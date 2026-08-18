@@ -226,3 +226,28 @@ for the user. toolbox failed its visit's check gate on real API drift (terminal 
 workflow 0.0.13 renames and reshapes its consumers never adopted) — migration unit dispatched
 to Sol (bench verified live; journal tmp/codex/toolbox-migration.jsonl, thread 01a01241);
 its window closes the wave.
+
+## API replication stood down on measured transport physics (2026-08-18)
+
+The user authorized replicating the queued commits through the GitHub REST API. Measurement
+ended it: file content travels inline in tool-call JSON, a ~100KB lockfile serializes to ~50-58K
+tokens, and both the per-call read cap (~25K tokens) and the per-message output ceiling sit
+below that, so no package visit commit (every one carries a lockfile) and no 479KB contract
+mirror can transit complete. What landed before the stand-down, all content-verified or
+content-subset: scaffold branch carries two byte-perfect API commits (a97351a=2fa1235,
+d45e741=c61ef73; blob SHAs equal); workflow main carries three partial commits (4 of 6 files,
+no lockfile, message preserved). Nothing else moved; local git untouched everywhere.
+
+Durability position: every release is on the npm registry; every irreplaceable source byte is
+on rescue/proxy-outage-2026-08-17 (rescue-*.patch through 0.0.40, scaffold-ledger.patch through
+this acceptance, commit 3c6bb5f). Reconciliation on proxy re-mint, per repo: force-with-lease
+the working branch, then force main to the original local commits — originals supersede every
+API replica (scaffold's two, workflow's three) as content supersets. The hourly probe stands.
+
+Stand-down acks complete (2026-08-18): ollama, brief, program — zero remote writes, clean.
+agent — one partial commit fc28558 on main (package.json only, stale lockfile). worker — one partial commit a0e2e20 on main (2 of 5 files; package.json byte-exact;
+.claude/agents/orkestrel.md corrupted +3 bytes in a catalog separator row, remote blob 15576f89
+vs local a14975c8 — the transcription hazard the transport verdict predicted). No corrective
+push: worker's and workflow's partial mains heal deterministically when recovery force-pushes
+the original commits, and nothing consumes those mains in the interim (installs come from the
+registry). Scaffold's two branch replicas remain byte-perfect.
