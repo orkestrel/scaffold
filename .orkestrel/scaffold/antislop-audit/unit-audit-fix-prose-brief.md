@@ -63,3 +63,20 @@ yours to decide and record.
 - Each added or changed line is a directive; no rule has two homes afterward; `git diff` touches
   only the four owned files; the widened AGENTS.md line and the reduced typescript.md bullets do
   not overlap in subject.
+
+## Successor addendum (AF-voice): user-directed tightening pass
+
+The user directs: instruction files carry directives for agents only — no human-facing prose,
+maximal concision. Four tightenings, fixed verbatim in intent:
+
+1. AGENTS.md: delete the `**NEVER** put `readonly` on parameters.` line — it is subsumed by the
+   widened accessibility line (a `readonly` parameter IS a parameter property). One subject, one
+   line.
+2. typescript.md parameter-property bullet: drop "which declares a field as a side effect of a
+   parameter"; the definition alone carries the trigger.
+3. typescript.md `as const` bullets: compress, keeping only the judgment-bearing clause (annotates
+   a literal with its own type, never overrides the checker, so the assertion ban does not reach
+   it), the two earning uses, and the do-not-use directive.
+4. workspace.md visitor-adapter bullet: state the shape once (one-line context-binding arrow to a
+   named module-scope `report{Noun}` reporter; no inline logic) plus the architecture.md
+   cross-reference; delete the restatement sentence.

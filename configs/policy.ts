@@ -8,17 +8,8 @@ export interface PolicyExpression {
 	readonly property?: PolicyExpression
 	readonly computed?: boolean
 	readonly callee?: PolicyExpression
-	readonly accessibility?: 'private' | 'protected' | 'public' | null
-}
-
-/** The call-expression fields inspected by the policy rules. */
-export interface PolicyCall extends PolicyExpression {
-	readonly type: 'CallExpression'
-	readonly callee: PolicyExpression
-}
-
-/** The class-member fields inspected by the policy rules. */
-export interface PolicyClassMember extends PolicyExpression {
+	readonly quasis?: readonly PolicyExpression[]
+	readonly expressions?: readonly PolicyExpression[]
 	readonly accessibility?: 'private' | 'protected' | 'public' | null
 }
 
@@ -88,6 +79,18 @@ export function reportMocking(context: PolicyContext, node: PolicyExpression): v
 	if (callee.computed) {
 		if (property.type === 'Literal' && typeof property.value === 'string') {
 			member = property.value
+		} else if (
+			property.type === 'TemplateLiteral' &&
+			property.quasis?.length === 1 &&
+			property.expressions?.length === 0
+		) {
+			const quasi = property.quasis[0]
+			const value = quasi?.value
+			if (typeof value === 'object' && value !== null) {
+				const cooked: unknown = Object.getOwnPropertyDescriptor(value, 'cooked')?.value
+				const raw: unknown = Object.getOwnPropertyDescriptor(value, 'raw')?.value
+				member = typeof cooked === 'string' ? cooked : typeof raw === 'string' ? raw : undefined
+			}
 		}
 	} else if (property.type === 'Identifier' && typeof property.name === 'string') {
 		member = property.name

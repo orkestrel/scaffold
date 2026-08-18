@@ -21,6 +21,7 @@ import * as configHelpers from '../configs/helpers.js'
 import { MOCKING_RULE, PRIVACY_RULE } from '../configs/policy.js'
 import configuration, { resolveWorkspacePath } from '../vite.config.js'
 import tsconfig from '../tsconfig.json' with { type: 'json' }
+import { inspectPolicyConfiguration } from './setupPolicy.js'
 import { describe, expect, it } from 'vitest'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -455,6 +456,34 @@ describe('root configuration', () => {
 			hasService && publishes,
 		)
 	})
+
+	it('keeps policy rules active across every linted workspace path', () => {
+		const parsed: unknown = JSON.parse(readFileSync(resolve(root, '.oxlintrc.json'), 'utf8'))
+		expect(inspectPolicyConfiguration(parsed)).toEqual([])
+		if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+			throw new Error('The Oxlint configuration is not a record')
+		}
+		const controlled = structuredClone(parsed)
+		const overrides: unknown = Object.getOwnPropertyDescriptor(controlled, 'overrides')?.value
+		if (!Array.isArray(overrides)) throw new Error('The Oxlint configuration has no overrides')
+		Object.defineProperty(controlled, 'overrides', {
+			value: overrides.concat({
+				files: ['src/**'],
+				rules: { 'policy/no-mocking': 'off' },
+			}),
+			enumerable: true,
+			configurable: true,
+			writable: true,
+		})
+		expect(inspectPolicyConfiguration(controlled)).toEqual([
+			'overrides must not configure policy/no-mocking',
+		])
+	})
+
+	it('omits the audit-confirmed dead policy type exports', () => {
+		const source = readFileSync(resolve(root, 'configs/policy.ts'), 'utf8')
+		expect(source).not.toMatch(/\bPolicy(?:Call|ClassMember)\b/u)
+	})
 })
 
 describe('policy plugin', () => {
@@ -477,6 +506,11 @@ describe('policy plugin', () => {
 			{
 				name: 'rejects computed module mocking [membership: named vi and jest module APIs]',
 				code: `vi['mock']('./x')`,
+				errors: [{ messageId: 'mock' }],
+			},
+			{
+				name: 'rejects template module mocking [membership: named vi and jest module APIs]',
+				code: `vi[\`mock\`]('./x')`,
 				errors: [{ messageId: 'mock' }],
 			},
 			{

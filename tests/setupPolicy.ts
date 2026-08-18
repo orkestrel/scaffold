@@ -8,7 +8,7 @@ import {
 	writeFileSync,
 } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { basename, dirname, join } from 'node:path'
+import { basename, dirname, join, matchesGlob } from 'node:path'
 import * as ts from 'typescript'
 
 /** A rule the fleet placement instrument can decide from syntax and a file path. */
@@ -179,7 +179,23 @@ export const POLICY_SUPPRESSION_DIRECTIVE = ['oxlint', '-disable'].join('')
 /** Source, test, config, and script files inspected for lint suppression directives. */
 export const POLICY_SUPPRESSION_GLOB: readonly string[] = Object.freeze([
 	'{src,app,tests,configs,scripts}/**/*.{cjs,cts,js,jsx,mjs,mts,ts,tsx,vue}',
-	'*.{cjs,cts,js,mjs,mts,ts}',
+	'*.{cjs,cts,js,jsx,mjs,mts,ts,tsx,vue}',
+])
+
+/** Rules whose workspace-wide lint wiring must not be weakened by configuration. */
+export const POLICY_WIRING_RULES: readonly string[] = Object.freeze([
+	'policy/no-mocking',
+	'policy/no-keyword-privacy',
+	'typescript/parameter-properties',
+	'typescript/explicit-member-accessibility',
+])
+
+/** Linted workspace roots that ignore patterns must not reach. */
+export const POLICY_WIRING_ROOTS: readonly string[] = Object.freeze([
+	'src',
+	'app',
+	'tests',
+	'configs',
 ])
 
 /** Either lint suppression token the text sweep refuses. */
@@ -774,6 +790,78 @@ export function inspectPolicySuppressions(root: string): readonly PolicyViolatio
 }
 
 /**
+ * Inspect the lint configuration that keeps policy rules active across the workspace.
+ *
+ * @param configuration - The parsed Oxlint configuration to inspect.
+ * @returns Every wiring violation in rule and configuration order.
+ */
+export function inspectPolicyConfiguration(configuration: unknown): readonly string[] {
+	const violations: string[] = []
+	if (typeof configuration !== 'object' || configuration === null || Array.isArray(configuration)) {
+		return ['Oxlint configuration must be a record']
+	}
+
+	const rules: unknown = Object.getOwnPropertyDescriptor(configuration, 'rules')?.value
+	for (const rule of POLICY_WIRING_RULES) {
+		const setting =
+			typeof rules === 'object' && rules !== null && !Array.isArray(rules)
+				? Object.getOwnPropertyDescriptor(rules, rule)?.value
+				: undefined
+		const severity = Array.isArray(setting) ? setting[0] : setting
+		if (severity !== 'error') violations.push(`${rule} must have top-level error severity`)
+	}
+
+	const ignorePatterns: unknown = Object.getOwnPropertyDescriptor(
+		configuration,
+		'ignorePatterns',
+	)?.value
+	if (ignorePatterns !== undefined && !Array.isArray(ignorePatterns)) {
+		violations.push('ignorePatterns must be an array when declared')
+	} else if (Array.isArray(ignorePatterns)) {
+		for (const pattern of ignorePatterns) {
+			if (typeof pattern !== 'string' || pattern.startsWith('!')) continue
+			const normalized = normalizePolicyPath(pattern).replace(/^\.\//u, '').replace(/^\//u, '')
+			const [first = ''] = normalized.split('/')
+			if (
+				POLICY_WIRING_ROOTS.some(
+					(root) => first === root || (first !== '' && matchesGlob(root, first)),
+				)
+			) {
+				violations.push(`ignorePatterns must not reach ${pattern}`)
+			}
+		}
+	}
+
+	const overrides: unknown = Object.getOwnPropertyDescriptor(configuration, 'overrides')?.value
+	if (overrides !== undefined && !Array.isArray(overrides)) {
+		violations.push('overrides must be an array when declared')
+	} else if (Array.isArray(overrides)) {
+		for (const override of overrides) {
+			if (typeof override !== 'object' || override === null || Array.isArray(override)) {
+				violations.push('override entries must be records')
+				continue
+			}
+			const overrideRules: unknown = Object.getOwnPropertyDescriptor(override, 'rules')?.value
+			if (
+				overrideRules === undefined ||
+				typeof overrideRules !== 'object' ||
+				overrideRules === null ||
+				Array.isArray(overrideRules)
+			) {
+				continue
+			}
+			for (const rule of POLICY_WIRING_RULES) {
+				if (Object.getOwnPropertyDescriptor(overrideRules, rule) !== undefined) {
+					violations.push(`overrides must not configure ${rule}`)
+				}
+			}
+		}
+	}
+
+	return violations
+}
+
+/**
  * Resolve an exact-case directory beneath a physical root.
  *
  * @param root - The physical directory from which resolution starts.
@@ -1019,6 +1107,17 @@ export const POLICY_CONTROLS: readonly PolicyControl[] = Object.freeze([
 		files: [
 			{
 				path: 'scripts/control.ts',
+				content: `// ${POLICY_SUPPRESSION_DIRECTIVE}\ndebugger\n`,
+			},
+		],
+	},
+	{
+		label: 'rejects a suppression directive in a root TSX file',
+		membership: 'root code files in the suppression population',
+		rule: 'suppression',
+		files: [
+			{
+				path: 'probeRoot.tsx',
 				content: `// ${POLICY_SUPPRESSION_DIRECTIVE}\ndebugger\n`,
 			},
 		],
