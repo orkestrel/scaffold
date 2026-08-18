@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
 	BRIDGE_POLICY_CONTROLS,
+	createPolicyScratch,
 	FUNCTION_SOURCE_FILES,
 	GENERIC_POLICY_SOURCES,
 	inspectPolicyControl,
@@ -23,6 +24,20 @@ import {
 	stemToPolicyCandidates,
 	testToPolicyStem,
 } from './setupPolicy.js'
+
+describe('policy scratch', () => {
+	it('contains every write within its root', () => {
+		const scratch = createPolicyScratch({ prefix: 'orkestrel-policy-containment-' })
+		try {
+			expect(() => scratch.write('inside/fixture.ts', '')).not.toThrow()
+			expect(() => scratch.write('../escape', '')).toThrow(
+				'Scratch target must stay within its root',
+			)
+		} finally {
+			scratch.destroy()
+		}
+	})
+})
 
 describe('fleet policy register', () => {
 	it('keeps handlers in the function set and routes out', () => {

@@ -20,7 +20,7 @@ import * as configHelpers from '../configs/helpers.js'
 import { MOCKING_RULE, PRIVACY_RULE } from '../configs/policy.js'
 import configuration, { resolveWorkspacePath } from '../vite.config.js'
 import tsconfig from '../tsconfig.json' with { type: 'json' }
-import { createScratch, inspectPolicyConfiguration } from './setupPolicy.js'
+import { createPolicyScratch, inspectPolicyConfiguration } from './setupPolicy.js'
 import { describe, expect, it } from 'vitest'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -563,7 +563,7 @@ describe('policy plugin', () => {
 	})
 
 	it('loads every configured policy rule through the real binary', () => {
-		const scratch = createScratch({ prefix: 'orkestrel-config-policy-' })
+		const scratch = createPolicyScratch({ prefix: 'orkestrel-config-policy-' })
 		try {
 			scratch.write(
 				'violations/fixture.ts',
@@ -681,7 +681,7 @@ describe('configuration helpers', () => {
 	})
 
 	it('resolves contained workspace paths and refuses a real outside sibling', () => {
-		const scratch = createScratch({ prefix: 'orkestrel-config-outside-' })
+		const scratch = createPolicyScratch({ prefix: 'orkestrel-config-outside-' })
 		try {
 			const outside = scratch.path
 			const importer = resolve(root, 'tests/config.test.ts')
@@ -704,7 +704,7 @@ describe('configuration helpers', () => {
 	})
 
 	it('reads bounded files and resolves package roots from real manifests', () => {
-		const scratch = createScratch({ prefix: 'orkestrel-config-package-' })
+		const scratch = createPolicyScratch({ prefix: 'orkestrel-config-package-' })
 		try {
 			const workspace = scratch.path
 			const packageRoot = resolve(workspace, 'node_modules/@sample/package')
@@ -742,7 +742,7 @@ describe('configuration helpers', () => {
 	})
 
 	it('classifies module boundaries and extracts static asset sources', async () => {
-		const scratch = createScratch({ prefix: 'orkestrel-config-assets-' })
+		const scratch = createPolicyScratch({ prefix: 'orkestrel-config-assets-' })
 		try {
 			const workspace = scratch.path
 			const source = resolve(workspace, 'entry.ts')

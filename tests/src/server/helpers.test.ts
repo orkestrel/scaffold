@@ -145,21 +145,29 @@ describe('matchesExecutablePath', () => {
 })
 
 describe('vendored imports', () => {
-	it('keeps every vendored code file independent of Orkestrel packages', () => {
+	it('keeps every vendored JavaScript and TypeScript module independent of Orkestrel packages', () => {
+		const orkestrelImportPattern =
+			/\b(?:from\s*|(?:import|require)\s*\(\s*)(['"`])@orkestrel\/[^'"`]+\1/u
 		const paths = HOST_PATHS.flatMap((path) => {
 			const source = join(WORKSPACE_ROOT, path)
 			if (!existsSync(source)) return []
 			if (lstatSync(source).isDirectory()) {
-				return globSync('**/*.{ts,js,json}', { cwd: source }).map((nested) => join(path, nested))
+				// No vendored directory holds an eligible module; this branch covers future modules.
+				return globSync('**/*.{ts,mts,cts,js,mjs,cjs}', { cwd: source }).map((nested) =>
+					join(path, nested),
+				)
 			}
-			return /\.(?:js|json|ts)$/u.test(path) ? [path] : []
+			// Only JavaScript and TypeScript module extensions can carry resolvable imports.
+			return /\.[cm]?[jt]s$/u.test(path) ? [path] : []
 		}).sort()
 		const imported: string[] = []
+		expect(orkestrelImportPattern.test("import { value } from '@orkestrel/test/server'")).toBe(true)
+		expect(orkestrelImportPattern.test('await import(`@orkestrel/test/server`)')).toBe(true)
 		expect(paths.length).toBeGreaterThan(0)
 		expect(paths).toContain('tests/config.test.ts')
 		for (const path of paths) {
 			const content = readFileSync(join(WORKSPACE_ROOT, path), 'utf8')
-			if (/['"]@orkestrel\/[^'"]+['"]/u.test(content)) imported.push(path)
+			if (orkestrelImportPattern.test(content)) imported.push(path)
 		}
 		expect(imported).toEqual([])
 	})

@@ -51,7 +51,7 @@ export interface PolicyControl {
 }
 
 /** Describes a contained temporary directory owned by one vendored test. */
-export interface ScratchInterface {
+export interface PolicyScratchInterface {
 	readonly path: string
 	write(target: string, text: string): void
 	destroy(): void
@@ -63,7 +63,7 @@ export interface ScratchInterface {
  * @param options - The temporary directory name prefix.
  * @returns The owned scratch directory.
  */
-export function createScratch(options: { readonly prefix: string }): ScratchInterface {
+export function createPolicyScratch(options: { readonly prefix: string }): PolicyScratchInterface {
 	const root = mkdtempSync(join(tmpdir(), options.prefix))
 	return {
 		path: root,
@@ -1474,7 +1474,7 @@ export function inspectPolicyWorkspace(root: string): readonly PolicyViolation[]
  * @returns Every violation reported through the production workspace route.
  */
 export function inspectPolicyControl(control: PolicyControl): readonly PolicyViolation[] {
-	const scratch = createScratch({ prefix: 'orkestrel-policy-' })
+	const scratch = createPolicyScratch({ prefix: 'orkestrel-policy-' })
 	try {
 		for (const file of control.files) {
 			scratch.write(file.path, file.content)
