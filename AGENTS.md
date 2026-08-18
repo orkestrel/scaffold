@@ -128,6 +128,7 @@ Every file below is a normative extension of this root. Read every rule relevant
 | `.claude/rules/browser.md`       | Vue/browser architecture and platform usage                            |
 | `.claude/rules/styles.md`        | SCSS/CSS centralization, tokens, mixins, layers, naming                |
 | `.claude/rules/documentation.md` | Guides, parity, roadmap, showcase, examples                            |
+| `.claude/rules/writing.md`       | Developer prose: reports, replies, vocabulary, claims, structure       |
 | `.claude/rules/quality.md`       | Research, dependency reuse, hardening, completion, package inspection  |
 
 ## Documentation contract

@@ -70,8 +70,15 @@ type Result<T, E = Error> = Success<T> | Failure<E>
 
 ## Comments and API documentation
 
-- Comments explain why, never restate what self-explanatory code does. The Writing rules in `AGENTS.md` govern their prose.
+- Comments explain why, never restate what self-explanatory code does. The Writing rules in `AGENTS.md` and `.claude/rules/writing.md` govern their prose.
 - Every public export has complete TSDoc: description, `@param`, `@returns`, and `@example` where applicable.
+- The first sentence states what the symbol does in the third person with an `-s` verb — `Creates`,
+  `Returns`, `Checks whether` — and never repeats the symbol's name.
+- Describe a boolean parameter as "If `true`, …; if `false`, …", and a boolean return as
+  "True if …; false otherwise".
+- Write a default as "Default: …" and a thrown error as "Thrown when …".
+- State a prerequisite and the failure behavior wherever the symbol has either.
+- `@deprecated` names the replacement first, then the reason.
 - Document an options object as one `@param`; describe its short fields under `@remarks`.
 - Private methods and overload-specific notes use single-line `//` comments, not public TSDoc.
 - Do not document speculative future product behavior unless requested.
