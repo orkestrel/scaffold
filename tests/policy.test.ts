@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+	BRIDGE_POLICY_CONTROLS,
 	FUNCTION_SOURCE_FILES,
 	GENERIC_POLICY_SOURCES,
 	inspectPolicyControl,
@@ -7,12 +8,15 @@ import {
 	inspectPolicySources,
 	inspectPolicyWorkspace,
 	inspectSkillFamily,
+	inspectSkillBridges,
+	parseSkillFrontmatter,
 	POLICY_CONTROLS,
 	POLICY_SUPPRESSION_DIRECTIVE,
 	readSkillFamily,
 	SKILL_POLICY_APOSTROPHE,
 	SKILL_POLICY_CONTROLS,
 	SKILL_POLICY_EXCLUSION,
+	SKILL_POLICY_FOLDED,
 	stemToPolicyCandidates,
 	testToPolicyStem,
 } from './setupPolicy.js'
@@ -324,6 +328,14 @@ describe('skill family policy', () => {
 		expect(inspectSkillFamily(process.cwd())).toEqual([])
 	})
 
+	it('parses a folded description containing a colon as exactly two frontmatter keys', () => {
+		const skill = SKILL_POLICY_FOLDED.files.find((file) => file.path.endsWith('/SKILL.md'))
+		const frontmatter = parseSkillFrontmatter(skill?.content ?? '')
+		expect(frontmatter?.keys).toEqual(['name', 'description'])
+		expect(frontmatter?.name).toBe('sample')
+		expect(frontmatter?.description).toBe('Use this skill when a continuation contains: a colon.')
+	})
+
 	for (const control of SKILL_POLICY_CONTROLS) {
 		it(`${control.label} [membership: ${control.membership}]`, () => {
 			const violations = inspectPolicyControl(control)
@@ -336,9 +348,27 @@ describe('skill family policy', () => {
 		expect(inspectPolicyControl(SKILL_POLICY_APOSTROPHE)).toEqual([])
 	})
 
+	it(`${SKILL_POLICY_FOLDED.label} [membership: ${SKILL_POLICY_FOLDED.membership}]`, () => {
+		expect(inspectPolicyControl(SKILL_POLICY_FOLDED)).toEqual([])
+	})
+
 	it(`${SKILL_POLICY_EXCLUSION.label} [membership: ${SKILL_POLICY_EXCLUSION.membership}]`, () => {
 		expect(inspectPolicyControl(SKILL_POLICY_EXCLUSION)).toEqual([])
 	})
+})
+
+describe('skill bridge policy', () => {
+	it('matches every real provider bridge to its canonical skill', () => {
+		expect(inspectSkillBridges(process.cwd())).toEqual([])
+	})
+
+	for (const control of BRIDGE_POLICY_CONTROLS) {
+		it(`${control.label} [membership: ${control.membership}]`, () => {
+			const violations = inspectPolicyControl(control)
+			expect(violations).toHaveLength(1)
+			expect(violations[0]?.rule).toBe(control.rule)
+		})
+	}
 })
 
 describe('repository policy', () => {
