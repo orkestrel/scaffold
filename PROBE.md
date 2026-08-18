@@ -75,10 +75,23 @@ only thing the mechanism writes.
 
 ## The certified prototype
 
-A prototype holding all three stages warm answers a claim in 614–651 ms, against 3874 ms for the
-current path that checks one third as much. The measurement below used the Oxlint command-line
-binary at 260–280 ms; the LSP result measured afterwards replaces that stage with 1–5 ms, so the
-combined figure has room to fall to roughly 300 ms.
+A prototype holding all three stages warm answers a claim in a median of 337 ms, against 3874 ms
+for the current path that checks one third as much. That is 11.5 times faster while returning three
+signals rather than one.
+
+The figures below come from 12 warm calls against one resident service holding a TypeScript
+`LanguageService` instance, an Oxlint LSP process, and a Vitest instance. Every control behaved.
+
+| Measure       | Warm                      |
+| ------------- | ------------------------- |
+| Type stage    | 57–83 ms                  |
+| Lint stage    | 15–22 ms                  |
+| Runtime stage | 259–346 ms                |
+| Combined      | 315–440 ms, median 337 ms |
+
+The runtime stage dominates, and it is the only stage that touches a filesystem. An earlier
+prototype that spawned the Oxlint binary per call instead of holding the LSP process measured
+614–651 ms, so the resident lint process accounts for roughly 280 ms of the improvement.
 
 Ten controls certify the prototype, five run serially and the same five run concurrently. Each
 control names the verdict it must produce, and a run where a control produces any other verdict is
@@ -160,9 +173,20 @@ The root project admits Node, DOM, and Vitest globals that the scoped projects r
 is host-independent by the boundary rule in `AGENTS.md`. A core probe checked against the root
 project therefore passes while the same code fails `npm run check:src:core`.
 
-Select the scoped project matching the probe's target environment. The prototype measured earlier
-in this document used the root project, so its type numbers describe the cost of the stage and not
-a correct verdict.
+A probe carries two kinds of file, and they belong to different projects. The projects differ
+exactly where it matters, which the following table records.
+
+| Project                            | Includes        | `types`                                 |
+| ---------------------------------- | --------------- | --------------------------------------- |
+| `tsconfig.json`                    | everything      | `node`, `vite/client`, `vitest/globals` |
+| `configs/src/tsconfig.core.json`   | `src/core/**`   | none                                    |
+| `configs/src/tsconfig.server.json` | `src/server/**` | `node`                                  |
+
+Check the probe's test file against the root project, because a test needs the Vitest and Node
+globals the root project supplies. Check any candidate source file the probe carries against the
+scoped project for its environment, because that is the project the real gate runs. A candidate
+`core` file checked against the root project accepts `process` and then fails
+`npm run check:src:core`.
 
 ## What isolation the runtime already provides, and what it does not
 
@@ -198,7 +222,7 @@ about 1.9 times faster rather than 5 times, because this container reports 4 pro
 
 A watcher that picks up a file the agent writes is an appealing design, and its notice latency is
 not the problem. Measurement puts `fs.watch` notice at 0–1 ms and a Unix socket round trip at
-1.26 ms. Neither is a bottleneck beside a 255 ms runtime stage.
+1.26 ms. Neither is a bottleneck beside a runtime stage that costs two orders of magnitude more.
 
 The difference is the return channel. A watcher notices the write and has nowhere to put the
 verdict, so the agent either polls for a result, which `AGENTS.md` forbids outright, or races a
@@ -214,8 +238,8 @@ thin synchronous client rather than a watcher.
 The want is to remove the agent's option to skip proving. Three tiers exist, and only the first two
 are real.
 
-**Make proving cheaper than reasoning.** A 300 ms answer against a 4 second one changes behavior
-more than any instruction. This tier is fully achievable and is most of the value.
+**Make proving cheaper than reasoning.** A 337 ms answer against a 3874 ms one changes behavior
+more than any instruction does. This tier is fully achievable and is most of the value.
 
 **Make the verdict independent of the agent's prose.** Derive the exit code from the result: 0 when
 a receipt exists, 1 when the claim or its control failed, and 2 when the request was invalid. The
@@ -248,6 +272,58 @@ receipt and writes the proven test into its mirrored path.
 Define these contracts in a `types.ts` file before implementing them, per the Types Then Tests
 Driven Development order in `AGENTS.md`. Every entity member takes one word, every collection is
 readonly, and the result stores no pass flag because pass derives from the stage outcomes.
+
+```ts
+export type Stage = 'type' | 'lint' | 'runtime'
+
+export interface Source {
+	readonly path: string
+	readonly text: string
+}
+
+export interface Case {
+	readonly files: readonly Source[]
+	readonly test: Source
+}
+
+export interface Control extends Case {
+	readonly stage: Stage
+	readonly reason: string
+}
+
+export interface Claim {
+	readonly project: string
+	readonly case: Case
+	readonly control: Control
+}
+
+export interface Finding {
+	readonly stage: Stage
+	readonly path: string
+	readonly message: string
+	readonly line?: number
+}
+
+export interface Check {
+	readonly stage: Stage
+	readonly elapsed: number
+	readonly findings: readonly Finding[]
+}
+
+export interface Verdict {
+	readonly id: string
+	readonly checks: readonly Check[]
+	readonly control: readonly Check[]
+	readonly elapsed: number
+	readonly receipt?: string
+}
+```
+
+The `control` field is what makes this surface different from a test runner, and it is not
+optional. A claim arrives with the negative control that must break, and the `stage` field names
+where it must break. The service issues a `receipt` only when every check on the claim is clean and
+the control fails at its declared stage, which makes the law in `.claude/rules/quality.md:61`
+mechanical rather than advisory. A probe that cannot state what would falsify it cannot be proven.
 
 ## Build the diskless pair first
 
@@ -291,6 +367,9 @@ Each design below was considered and killed for the stated reason.
 - **`rerunFiles` against a stable path.** It returned a false pass for a failing assertion.
 - **A watcher that runs probes the agent writes.** Fast to notice and structurally unable to
   return a verdict without polling.
+- **Vitest `isolate: false` for speed.** It buys 7 ms of the 228 ms runtime stage and gives up the
+  module, global, and environment isolation that the same runtime already provides for free. The
+  one measured hazard it introduces is the class this document spends the most effort closing.
 - **A git worktree or container per probe.** Both discard residency, which is the entire
   performance argument.
 - **An MCP tool.** No Model Context Protocol software development kit is installed, and adding a
@@ -313,11 +392,26 @@ The risks below stay open, ranked, and each names the cheapest probe that settle
    HTTPS request. This is the one reproduced defect with no remedy inside Node. Determine whether
    an operating-system boundary available in every target environment bounds those capabilities
    without discarding residency.
-2. **Combined warm latency is projected rather than measured.** The 614–651 ms figure used the
-   Oxlint binary; substituting the LSP stage projects roughly 300 ms, and no run has produced that
-   combined number. Measure one warm call that uses all three resident stages together.
-3. **Memory growth over a long session is unmeasured beyond 20 probes.** Twenty probes held at
-   456 MB with 7 ms of drift. Run several hundred and read the resident set size.
+2. **Vitest retains one result record per probe, without bound.** Reproduced over 150 probes: the
+   count returned by `state.getFiles` was 50, then 100, then 150, tracking probes exactly. Resident
+   memory itself is not the problem, because it plateaued rather than climbed — 259 MB, 264 MB, and
+   236 MB at those three points, against 159 MB at start — and latency stayed flat at 228 ms,
+   231 ms, and 228 ms with no wrong verdict in 150 runs. Evict each probe's result after returning
+   it, and re-run this measurement over several thousand probes.
+3. **The runtime stage's floor resists configuration, and the reason is not fully attributed.**
+   Five pool configurations, six calls each, moved it very little.
+
+   | Configuration               | Warm median |
+   | --------------------------- | ----------- |
+   | `forks` (default)           | 260 ms      |
+   | `threads`                   | 228 ms      |
+   | `threads`, `isolate: false` | 221 ms      |
+   | `forks`, `isolate: false`   | 256 ms      |
+   | `threads`, single thread    | 230 ms      |
+
+   Disabling isolation saves 7 ms, which establishes that the floor is transform and module-graph
+   work rather than worker startup. Take the `threads` pool for its 32 ms, and attribute the
+   remaining 220 ms before assuming it is fixed.
 
 ## Open questions
 
