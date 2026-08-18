@@ -105,9 +105,7 @@ kind. It reads declaration syntax and file name, never meaning.
   implementation or errors file, and that `constants.ts` declares only UPPER_SNAKE_CASE consts with
   no bare collection literal.
 - It proves that no source, test, config, or script file carries an `eslint-disable` or
-  `oxlint-disable` directive. That rule sits in the sweep rather than in the lint plugin because a
-  file-level disable comment silently defeats every lint rule in its file, plugin rules included,
-  while nothing inside a file can suppress the sweep.
+  `oxlint-disable` directive.
 - It does not prove a collection is frozen. It reads the declaration, never the value a call
   returns, so `Object.freeze([…])` and any other call initializer are one syntax to it. The freeze
   obligation in the kind-purity rules above binds regardless; only the bare literal is mechanical.

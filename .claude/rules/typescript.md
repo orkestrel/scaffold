@@ -17,11 +17,9 @@ The non-negotiables and design laws in `AGENTS.md` apply without exception and a
 - Place `import type` declarations before value imports.
 - Do not place blank lines between consecutive imports of the same kind.
 - Narrow an accepted `unknown` with a total guard rather than a conditional access.
-- Write no accessibility modifier on a class member: `public` is the default, `protected` has no
-  sanctioned use, and with `private` banned a member's only privacy is a `#` field.
-- Declare no parameter property. A constructor parameter carrying `public`, `private`, `protected`,
-  or `readonly` declares a field as a side effect of a parameter; declare the `#` field and assign
-  it in the constructor body.
+- A parameter property is a constructor parameter carrying any accessibility or `readonly` modifier,
+  which declares a field as a side effect of a parameter. The ban reaches every form, `readonly`
+  alone included; declare the `#` field and assign it in the constructor body.
 
 ## Types
 

@@ -71,7 +71,8 @@ Define aliases in `tsconfig.json` first. `vite.config.ts` derives from `compiler
 - Keep `configs/policy.ts` free of imports entirely. It is the workspace's oxlint plugin, the lint
   instrument of the policy law, and it is vendored byte-identical to every workspace including a
   core-only one, so a module that imports nothing at all is the only form that resolves in all of
-  them.
+  them. Because it may import nothing, keep its own types, data, and functions in that one file: the
+  centralized-kind placement in `.claude/rules/architecture.md` does not reach it.
 
 Environment rules:
 
@@ -240,9 +241,11 @@ Policy instruments:
   thing it polices. A file-level `oxlint-disable` silently defeats every lint rule in its file,
   plugin rules included, and nothing inside a file can suppress the sweep.
 - Write each visitor in the plugin's visitor table as a one-line context-binding arrow delegating to
-  a named module-scope `report{Noun}` function. Never write rule logic inline in the table. This is
-  the `routes.ts` idiom over a foreign API shape, and it is the sanctioned exception to the in-body
-  function-expression limits in `.claude/rules/architecture.md` for exactly that table.
+  a named module-scope `report{Noun}` function. Never write rule logic inline in the table. The
+  table stays data: it maps each visitor name to a named reporter, and the arrow exists only to bind
+  the `context` the foreign API supplies per rule instance, carrying no logic beyond that
+  delegation. That arrow is the sanctioned exception to the in-body function-expression limits in
+  `.claude/rules/architecture.md` for exactly that table.
 - Name no individual rule id here. This section fixes the two instruments and how work is assigned
   between them; each rule's substance stays with the law it enforces.
 
