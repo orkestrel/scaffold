@@ -60,3 +60,34 @@ The touched surfaces are vendored (`.claude/rules`, `tests/setupPolicy.ts`, `tes
 `.agents/skills`, `.claude/skills` are all HOST_PATHS members): the change moves `dist/host` and
 obliges a scaffold bump plus fleet re-pin/repair, sequenced with a per-target sweep of skill and
 bridge members outside the vendored set. Fleet counts are unmeasured from this session.
+
+---
+
+# Implementation addendum (accepted campaign, same branch)
+
+- Landed: the three canon sentences plus, from the audit round, the reverse reference-naming rule,
+  the bridge-set symmetry rule, and the sweep's recorded body boundary (parity, path, and
+  references are mechanical; the rest of a bridge body is review-owned); the four drifted bridges
+  restored to byte-parity; the orphaned references/application.md folded and deleted, with the two
+  clauses it alone carried housed in application.md (bare export is core API; app-only manifests
+  omit main, module, types, export map, publish configuration) and one duplicate removed from
+  orkestrel-align-packages' integration reference; the instrument — frontmatter parsing (two
+  scalar shapes, quoted scalars refused as shape, folded paragraphs kept), exact keys, name equals
+  directory, non-empty description, sentence-initial Use trigger (any non-whitespace token),
+  reference symmetry both directions at one level, no auxiliary README/CHANGELOG, and the full
+  bridge sweep under rule 'bridge' including bridge exact keys.
+- Audit round: two blind lanes, both FAIL on first pass. Convergent break: the trigger matcher's
+  \w boundary refused backticked tokens. Objective-lane breaks: folded blank-line refusal, two
+  clauses lost by the deletion. Subjective-lane breaks: two instrument rules bound without canon
+  sentences. Split-claim reconciliation recorded: the subjective lane's 129-line walk was right
+  about the bulk of the deletion; the objective lane was right about the two lost clauses.
+  Claim-8 closed with the 16-row mutation table: every assertion class disabled reddens exactly
+  its paired control. Fixes adopted lane prescriptions verbatim and closed with those pins per the
+  Falsification law's mutation-probe rule.
+- Recorded limits: a vacuous "Use for anything." passes the trigger check (the message claims only
+  presence); a bridge body naming its canonical path may still carry rival prose (review-owned,
+  stated in documentation.md); no skill can illustrate a references/<name>.md example without
+  creating the file (deliberate over-match, safe direction).
+- Still open: fleet-wide skill/bridge members outside the vendored set are unmeasured; the release
+  wave (scaffold bump, publish, re-pin + repair per target) is the user's decision. The two
+  subject repositories' hostile surfaces were adopted nowhere.
