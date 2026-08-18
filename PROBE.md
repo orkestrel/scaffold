@@ -653,6 +653,47 @@ Nothing else in the design depends on which is chosen. The externalization itsel
 `vite.config.ts:21-22` reads `peerDependencies` from the manifest and externalizes every name it
 finds.
 
+### How you actually use it
+
+Declare `@orkestrel/probe` as a development dependency of each package you work in, and add one
+row to `.mcp.json`. Nothing else is a daily action: the harness starts the server when you open the
+repository, and the agent gets a `prove` tool.
+
+```json
+{
+	"mcpServers": {
+		"probe": {
+			"command": "node",
+			"args": ["node_modules/@orkestrel/probe/dist/bin/main.js"]
+		}
+	}
+}
+```
+
+Across the fleet neither step is manual. `BASE_DEV_DEPENDENCIES` gains one row beside
+`@orkestrel/guide`, `@orkestrel/scaffold`, and `@orkestrel/test`, and `.mcp.json` is a `HOST_PATHS`
+member that `repair` writes, so every target receives the dependency and the registration from a
+scaffold release. A project outside the fleet does the same two things by hand.
+
+A shared installation is technically possible and is still the wrong choice. The engine resolves
+the toolchain from the working directory rather than from its own location, verified here: a module
+placed under `node_modules` read the workspace's `typescript` 6.0.3, `vitest` 4.1.10, and `oxlint`
+1.78.0 through `createRequire` against the project's `package.json`. So a globally installed probe
+would find the right tools. It loses on two counts that matter more than the disk it saves. Its
+registration would name a machine-specific path, which cannot be vendored to 44 repositories as one
+identical row, and npm could not check its peer declarations, because peers are satisfied by the
+consumer's tree and a global install has no consumer. The development dependency is the only form
+whose `.mcp.json` entry is byte-identical everywhere.
+
+Register `node node_modules/@orkestrel/probe/dist/bin/main.js` rather than the `probe` shim npm
+writes into `node_modules/.bin`. That shim is a `.cmd` and `.ps1` pair on Windows, and an MCP client
+spawns its server without a shell, which is the same trap the Oxlint resolution avoids.
+
+The developer's own path does not change and does not need the server. `npm run test:probe` runs
+the instrument pair over `tmp/probe/`, which is what a terminal, a continuous-integration job, and
+anyone without an MCP client uses. Both paths call the same inspections, so they cannot drift into
+disagreeing.
+
 ### Do not ship it as a single executable
 
 `@orkestrel/sea` is real and light, and it is the wrong tool for this. Three measurements settle
