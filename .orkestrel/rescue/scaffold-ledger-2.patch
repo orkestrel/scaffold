@@ -1,0 +1,82 @@
+diff --git a/.orkestrel/fleet/BACKLOG.md b/.orkestrel/fleet/BACKLOG.md
+index 4b1b697..418a869 100644
+--- a/.orkestrel/fleet/BACKLOG.md
++++ b/.orkestrel/fleet/BACKLOG.md
+@@ -29,6 +29,8 @@ were pruned are recoverable by the commit hash beside them.
+ | --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+ | B21 | **Test-debt residue from the B1 probe** (briefs/b1-survey-report.md): (a) correct the test guide's population prose to the counted figures (B4); (b) delete mcp's local generic `createTeardown<T>` at `mcp/tests/setupServer.ts:459` in favor of the imported one; (c) replace inline `setTimeout` waits with `waitForDelay` — middleware ×10 sites (does not import it), browser ×4, workflow/queue/router/agent ×1 each                                   | test, mcp, middleware, browser +3     | Each part rides its package's next test-touching release; no dedicated pass.                                                                                                                                  |
+ | B17 | ~~catalog format gate~~ **CLOSED 2026-08-17**: scaffold 0.0.39 ships the oxfmt-clean emitter (padded columns, blank-line framing); proven by the L4/L5 visits running format:check green straight off overwrite | — | Done. |
++| B22 | **Vendored mirror inventory misses `form.md`** (and any future package): toolbox declares @orkestrel/form at runtime but overwrite vendors no form mirror, so its guide names the package with no local reference; the inventory that decides which dependency guides vendor needs the form row | scaffold | Land in scaffold's next release; re-run overwrite in toolbox after. |
++| B23 | **toolbox shapers test claim is stale** (audit F3, pre-existing): guides/toolbox.md says `tests/src/core/shapers.test.ts` covers "every advertised shape" but `promptToolShape`/`answerToolShape` appear nowhere in tests; both were rewritten by 0.0.7 | toolbox | Add the two shape proofs (or correct the sentence) in toolbox's next test-touching release. |
+ 
+ ## From brief/.orkestrel triage (folder pruned this session; recoverable at brief's pruning commit)
+ 
+diff --git a/.orkestrel/fleet/PLAN.md b/.orkestrel/fleet/PLAN.md
+index 954a0ba..c7207ba 100644
+--- a/.orkestrel/fleet/PLAN.md
++++ b/.orkestrel/fleet/PLAN.md
+@@ -43,7 +43,7 @@ re-pin reason in their own second-round slots.
+ **supervisor is out of this campaign entirely** — user-owned session; clone removed, excluded from
+ every sweep, plan, and script.
+ 
+-## Tier 2 — the release wave, reorganized
++## Tier 2 — the release wave: CLOSED 43/43 (2026-08-18)
+ 
+ Per-repo protocol unchanged (visit.sh): overwrite with current host → format converge → five gates
+ → material-dist check → bump when owed → push branch + fast-forward main. Every visit also re-pins
+@@ -76,7 +76,7 @@ supervisor work belongs to the user's own session and is not tracked here beyond
+ | D6  | B3 prepack manifests                                                                 | open, no default                                |
+ | D8  | Branch cleanup script run (.orkestrel/fleet/branch-cleanup.sh, operator credentials) | with user                                       |
+ 
+-## Pending: scaffold 0.0.40
++## Shipped: scaffold 0.0.40 (L4 window, 2026-08-17)
+ 
+ The release-wave procedure and the observed window mechanics landed in `.agents/orchestration.md`
+ after 0.0.39 published. Vendored bytes moved, so scaffold owes 0.0.40; it rides the L4 or L5
+diff --git a/.orkestrel/fleet/SESSION.md b/.orkestrel/fleet/SESSION.md
+index 3fd897f..7df5df6 100644
+--- a/.orkestrel/fleet/SESSION.md
++++ b/.orkestrel/fleet/SESSION.md
+@@ -226,3 +226,42 @@ for the user. toolbox failed its visit's check gate on real API drift (terminal
+ workflow 0.0.13 renames and reshapes its consumers never adopted) — migration unit dispatched
+ to Sol (bench verified live; journal tmp/codex/toolbox-migration.jsonl, thread 01a01241);
+ its window closes the wave.
++
++## API replication stood down on measured transport physics (2026-08-18)
++
++The user authorized replicating the queued commits through the GitHub REST API. Measurement
++ended it: file content travels inline in tool-call JSON, a ~100KB lockfile serializes to ~50-58K
++tokens, and both the per-call read cap (~25K tokens) and the per-message output ceiling sit
++below that, so no package visit commit (every one carries a lockfile) and no 479KB contract
++mirror can transit complete. What landed before the stand-down, all content-verified or
++content-subset: scaffold branch carries two byte-perfect API commits (a97351a=2fa1235,
++d45e741=c61ef73; blob SHAs equal); workflow main carries three partial commits (4 of 6 files,
++no lockfile, message preserved). Nothing else moved; local git untouched everywhere.
++
++Durability position: every release is on the npm registry; every irreplaceable source byte is
++on rescue/proxy-outage-2026-08-17 (rescue-*.patch through 0.0.40, scaffold-ledger.patch through
++this acceptance, commit 3c6bb5f). Reconciliation on proxy re-mint, per repo: force-with-lease
++the working branch, then force main to the original local commits — originals supersede every
++API replica (scaffold's two, workflow's three) as content supersets. The hourly probe stands.
++
++Stand-down acks complete (2026-08-18): ollama, brief, program — zero remote writes, clean.
++agent — one partial commit fc28558 on main (package.json only, stale lockfile). worker — one partial commit a0e2e20 on main (2 of 5 files; package.json byte-exact;
++.claude/agents/orkestrel.md corrupted +3 bytes in a catalog separator row, remote blob 15576f89
++vs local a14975c8 — the transcription hazard the transport verdict predicted). No corrective
++push: worker's and workflow's partial mains heal deterministically when recovery force-pushes
++the original commits, and nothing consumes those mains in the interim (installs come from the
++registry). Scaffold's two branch replicas remain byte-perfect.
++
++## The wave is closed: 43/43 (2026-08-18)
++
++toolbox 0.0.7 registry-confirmed — the final release. Its path: the visit's check gate exposed
++real API drift; Sol's first unit correctly stopped on the form-flow redesign; the user authorized
++@orkestrel/form as a runtime dependency; Sol implemented, the Opus implementer landed guide
++parity, the cross-engine Opus audit returned FAIL on two claims (a dropped 0.0.6 guard and three
++false guide claims); the fix round applied every prescription verbatim with the restored guard's
++red-then-green proof; the authoritative visit re-ran green, refreshed the stale terminal/workflow
++mirrors, and bumped 0.0.7. Every fleet package now declares latest pins, proven by gates and the
++material-dist rule. The full adoption is on the rescue branch as three byte-verified patches
++(src cc48083, tests 40a5758, guide 2447203). Remaining outside the wave: the 19-commit push
++queue across 8 repos (recovery armed), D6 prepack and D8 branch cleanup with the user, and the
++backlog handoff.
