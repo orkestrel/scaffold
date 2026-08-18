@@ -595,11 +595,34 @@ peers may import them legitimately, so the engine becomes ordinary published sou
 gates. That is the difference between a mechanism this repository can hold to its own standards and
 one it cannot.
 
+Its runtime dependencies are `@orkestrel/contract`, `@orkestrel/emitter`, `@orkestrel/mcp`,
+`@orkestrel/tool`, and `@orkestrel/timeout`, the last carrying the coordinator-owned deadline that
+the uncontained infinite loop needs. It declares no `@orkestrel/router` or `@orkestrel/server`
+dependency of its own; those stay required peers of `@orkestrel/mcp` and enter through it. It needs
+a `server` environment and a `bin` environment and no `core`, because every stage depends on Node
+or a native executable, and `@orkestrel/sea` already sets the precedent of a server-only package
+root.
+
 Propagation is one row. `BASE_DEV_DEPENDENCIES` already carries `@orkestrel/guide`,
 `@orkestrel/scaffold`, and `@orkestrel/test`, so `@orkestrel/probe` joins three siblings rather
 than opening a new mechanism. Scaffold does not depend on probe: it emits the dependency row and
 the `.mcp.json` registration, which is knowledge rather than a dependency, so no cycle appears in
 the publish order.
+
+Declaring the peers is not sufficient on its own, and the gap is worth closing at boot. npm installs
+a missing required peer automatically, so a declaration does not prove that the copy the probe
+loads is the copy the gate runs. Resolve all three from the target workspace root at startup, and
+refuse to serve when that resolution disagrees with what the gate commands would load. A probe that
+cannot prove it shares the gate's compiler is worth less than no probe, because it is believed.
+
+One scaffold constraint blocks the obvious path and needs a decision before implementation.
+`Blueprint.peers` validates against `DEPENDENCY_NAME_PATTERN` at `src/core/constants.ts:266`, which
+is `/^@orkestrel\/[a-z][a-z0-9-]*$/`, so a generated workspace cannot express a `typescript`,
+`vitest`, or `oxlint` peer through its blueprint. Either that pattern widens to admit a foreign
+peer, or the probe repository owns those three rows in a manifest the blueprint does not write.
+Nothing else in the design depends on which is chosen. The externalization itself already works:
+`vite.config.ts:21-22` reads `peerDependencies` from the manifest and externalizes every name it
+finds.
 
 ### Do not ship it as a single executable
 
@@ -615,9 +638,19 @@ it, and the first is fatal on its own.
   bindings; this host installed `binding-linux-x64-gnu` and `binding-linux-x64-musl`. One
   executable cannot carry all 19, so portability means one build per platform.
 - **The size is not affordable.** A Single Executable Application's floor is the Node binary,
-  measured at 118.9 MB on this host, before `typescript` at 24 MB. The dependency it would replace
-  is 6.3 MB of packages. Trading 6.3 MB for 119 MB per platform, in exchange for a verdict that no
-  longer predicts the gate, is a loss on every axis.
+  measured at 118.9 MB on this host, before `typescript` at 24 MB, `oxlint` at 2.4 MB, and `vitest`
+  at 2.2 MB. The dependency it would replace is 6.3 MB of packages. Only the 118.9 MB is a hard
+  floor, because a Single Executable Application compresses its JavaScript payload, so read the
+  rest as installed-content arithmetic rather than a final artifact size. The direction is not in
+  doubt at any compression ratio.
+
+The size arithmetic is not even the sharpest form of the argument. Work each stage against a
+Single Executable Application and the design collapses into a dilemma. A bundled compiler can be
+skipped in favour of the target's, resolved through `createRequire`, in which case the embedded
+24 MB is never read and the executable carries dead weight. Or it can be used when the target's is
+missing, in which case the probe answers from a compiler the gate does not run, which is the exact
+failure the whole mechanism exists to prevent. An executable is therefore either useless or
+dishonest, and its size only decides how expensive that is.
 
 `@orkestrel/sea` remains the right tool for shipping a standalone program whose whole point is to
 carry its own runtime. A probe is the opposite: its whole point is to borrow the target's.
@@ -650,6 +683,24 @@ Two further lifecycle rules follow from what was measured.
 
 The server stops with the session, because the harness owns it. A second client gets a second
 process, and therefore a second warm engine at the measured 456 MB resident.
+
+Register the installed path rather than a fetcher. Write the command as
+`node node_modules/@orkestrel/probe/dist/bin/main.js`, never `npx -y @orkestrel/probe`: `npx`
+resolves from its own cache, which is the one state in which the probe loads a copy the target did
+not install, and the whole peer argument is that it must not.
+
+### Reach the target's tools the way that survives Windows
+
+Resolve every tool from the target's own `package.json`, and spawn the resolved file rather than
+the shim. `node_modules/.bin/oxlint` is a symbolic link on this host and a `.cmd` and `.ps1` pair
+on Windows, and `spawn` without a shell cannot execute the Windows form. Reaching for `shell: true`
+re-introduces the quoting this repository already refuses.
+
+The portable form was verified here: `createRequire` against the target's `package.json` resolves
+`oxlint/package.json`, whose `bin` field names `bin/oxlint`, which is an ordinary JavaScript entry.
+Spawning `process.execPath` against that file ran the linter and returned its report. The same
+resolution is what guarantees the probe runs the target's linter rather than one of its own, so the
+portability fix and the honesty requirement are the same line of code.
 
 ### The upgrade path does not change the inspections
 
