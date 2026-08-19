@@ -57,13 +57,31 @@ calls on **one** probe. `Probe.prove` is not serialized against concurrent calle
 runs the three stages in parallel; only each stage's own queue serializes. An overlay held as mutable
 state on a stage is therefore reachable by a second call's inspection.
 
-**Ruled for the objective lane.** The overlay a stage applies must be scoped to one inspection rather
-than held as stage-level mutable state, and the implementation owes the isolation control the
-objective lane named: two concurrent `prove` calls supplying conflicting text for one path, each
-receiving only its own.
+**Ruled for the objective lane, with the severity corrected.** The Orchestrator settled from the code
+what the reconciliation first left open, and the hazard is latent rather than live.
 
-Whether concurrent `prove` is reachable today is unmeasured and the implementation unit settles it
-first, because the answer decides whether this is a live defect or a latent one.
+`Probe.prove` really is unserialized — two callers both await `#arming` and proceed — so two
+inspections can be in flight at once. What prevents contamination today is each stage's own queue:
+
+```text
+async inspect(subject: Case, project?: string): Promise<Check> {
+    if (this.#destroyed) throw new Error('The type stage has been destroyed')
+    const inspection = this.#tail.then(() => this.#inspect(subject, project))
+    this.#tail = inspection.then(() => undefined, () => undefined)
+    return inspection
+}
+```
+
+`#inspect` bodies therefore never overlap, and the type stage's overlay map is set and cleared inside
+one body. So the current code is safe, and it is safe by an accident of where the serialization sits
+rather than by anything the overlay design would guarantee.
+
+That is exactly why the objective lane's ruling is right anyway. A design that holds the overlay as
+stage-level mutable state is correct only while `#tail` keeps bodies disjoint, and nothing states that
+dependency. Scope the overlay to one inspection so the property is owned rather than inherited, and
+keep the isolation control the objective lane named — two concurrent `prove` calls supplying
+conflicting text for one path, each receiving only its own — because it is the test that would catch
+the day someone parallelizes a stage.
 
 ### The mechanism: only one lane found it, and it is load-bearing
 
