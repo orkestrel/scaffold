@@ -269,3 +269,40 @@ comes back, both readings are open and neither belongs in a brief as fact.
 Recorded because a collision diagnosis is the comfortable answer here — it is already written down,
 it explains the symptom, and it costs the unit nothing. That is exactly when a real symptom carrying a
 wrong diagnosis gets accepted.
+
+### Resolved — the rival explanation is excluded, and the writer was the unit's own new proof
+
+Unit S1 isolated it and the answer is neither reading recorded above. Verified independently by the
+Orchestrator from three angles that could each have disagreed.
+
+**The writer.** S1's own new stdout proof, at `tests/src/bin/main.test.ts:74-98`, declares candidate
+tests at `tmp/probe/wire-without-newline.test.ts` and `tmp/probe/wire-with-newline.test.ts`. Running
+them makes the probe write revision files beside them, named `<test>.probe-<uuid>.ts`.
+
+**The reader.** `tests/src/server/Probe.test.ts:293-297` filters that same directory for
+`name.includes('.probe-')` and asserts the result is empty.
+
+**Caught in the act.** The filesystem watcher recorded the exact collision while it happened:
+
+```text
+FILES /workspace/probe/tmp/probe/wire-with-newline.test.probe-00247c42-9c92-47f3-8566-65b95ba30a32.ts,
+      /workspace/probe/tmp/probe/wire-with-newline.test.probe-30006217-0320-48d8-a955-ca8450573852.ts
+```
+
+Two live revision files, named exactly what the assertion's filter matches, present while the server
+suite audited cleanup.
+
+**The rival explanation is excluded.** S1's eviction rewrite did NOT break arming cleanup. These files
+were being created by a concurrently running proof, not left behind by a destroy that failed to clean
+up. That distinction is the whole question — one is a test-isolation defect and the other would have
+been a regression shipping under a weakened assertion.
+
+**S1's repair.** Isolate its spawned entry in an owned scratch workspace, keeping the same built binary
+and linked toolchain, so the real process and real arming behaviour are preserved and only the
+directory changes. That is unit 4b's pattern, arrived at independently.
+
+**What stands from the earlier entries.** The generic-prefix defect in `Probe.test.ts` is real and
+unrepaired: `arm-` and `.probe-` match every probe instance's files, so that assertion is a collision
+waiting for the next test that writes there. S1 removed today's writer rather than the assertion's
+weakness. The pre-existing collider at `main.test.ts:134`, an entry armed with `cwd: ROOT`, is also
+still there. Unit S2 owns `Probe.test.ts` and carries the assertion repair.
