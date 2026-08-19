@@ -208,3 +208,64 @@ emptiness assertion is not.
 **Carrier.** Unit S1 owns `tests/src/server/**` and is hitting this now; it carries its own instances.
 Any instance S1 leaves behind passes to unit S2, which owns `Probe.ts` and its test. Every remaining
 brief carries this as a standing condition so no unit rediscovers it.
+
+### Correction to the preceding entry — the collision is cross-project, not within `src:server`
+
+Verified by reading both call sites, 2026-08-19. The earlier entry said four server test files collide
+with each other. That is true and it is not the whole mechanism, and the difference decides whether a
+repair works.
+
+The worst collider is in a DIFFERENT project:
+
+```text
+tests/src/server/Probe.test.ts:268   const directory = fileURLToPath(new URL('../../../tmp/probe/', import.meta.url))
+tests/src/bin/main.test.ts:134       cwd: ROOT
+```
+
+`Probe.test.ts` asserts that no file in the real workspace's `tmp/probe/` starts with `arm-` or
+contains `.probe-`. `main.test.ts` spawns the built entry with `cwd: ROOT` — the real workspace — so
+that entry arms and writes `arm-type-*` and `arm-runtime-*` into exactly the directory the assertion
+is reading. `src:server` and `src:bin` are separate projects and `test:src` runs both in one Vitest
+invocation, so they overlap in wall-clock.
+
+Only the killed-entry test at `main.test.ts:220` takes an owned scratch workspace. Every other bin test
+drives the entry in the real workspace.
+
+**Why the correction matters.** `npm run test:src:server` passes and `npm test` fails, which is what
+unit 4b saw and what unit S1 hit. A unit told "four server test files collide" fixes those four,
+watches `test:src:server` go green, and ships something `npm test` still reddens. The filter prefixes
+`arm-` and `.probe-` are generic to every probe instance, so they cannot distinguish this test's files
+from any other test's.
+
+**The repair is unchanged and now has a sharper reason.** Assert that the files THIS test created are
+gone, identified by a token unique to this test — not by a prefix every probe instance writes. A
+directory-wide filter on a generic prefix is the defect, whichever project writes the colliding file.
+
+### Amendment to the correction — it fails within one project too, and a rival explanation is open
+
+The correction above claimed the worst collider sits in a different project. That overstated what the
+evidence showed. Minutes later `npm run test:src:server`, which runs `tests/src/server/**` and nothing
+else, failed on the same assertion: `Tests 1 failed | 30 passed (31)`.
+
+So both mechanisms are live. Within `src:server`, the server test files construct probes that arm into
+the shared directory while `Probe.test.ts` asserts nothing there starts with `arm-`. Across projects,
+`main.test.ts` adds an entry armed with `cwd: ROOT`. The cross-project path is real and it is not the
+only one, and the repair — assert the files this test created, identified by a token unique to it — is
+unchanged by which one fires.
+
+**A rival explanation is NOT yet excluded, and it is the more serious one.** The assertion says no
+arming file survives a destroy. Unit S1 rewrote the eviction. If its change broke arming cleanup, this
+is a regression in the unit rather than a test-isolation defect, and reading it as a collision would
+ship the regression with the test weakened to hide it.
+
+The discriminating measurement is to run that one test file alone with no sibling running, and see
+whether it passes. Nobody has run it. The Orchestrator deliberately did not: running a suite in the
+live tree while a writing unit holds it would write into the same shared directory and manufacture the
+collision being tested for, which is an instrument that creates its own result.
+
+Unit S1 holds the tree and is isolating the failure now, so the measurement belongs to it. Until it
+comes back, both readings are open and neither belongs in a brief as fact.
+
+Recorded because a collision diagnosis is the comfortable answer here — it is already written down,
+it explains the symptom, and it costs the unit nothing. That is exactly when a real symptom carrying a
+wrong diagnosis gets accepted.
