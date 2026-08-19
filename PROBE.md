@@ -97,14 +97,21 @@ that ends the host process — and each found things the other two did not.
 | All three                | A boot arming failure ends the host process instead of refusing service        |
 | Measurement only         | The resident runner leaves every probe host exiting 1, from boot               |
 | Measurement only         | A deadline expiry leaves the abandoned test, loop and all, in the checkout     |
-| Measurement only         | The entry orphans its linter child and worker set when the harness stops it    |
 | Design lane only         | A required contract field, `project`, is read by nothing                       |
 | Design lane only         | Arming proves the runtime half of the staleness defect and never the type half |
 | Design lane only         | The published bundle carries the whole development manifest                    |
 | Design lane only         | The published declaration imports a value purely to spell a type               |
 | Reading, after the lanes | The runtime stage never materializes the agent's candidate sources             |
 
-The last one is the largest, and it is a design question rather than a repair. `Case.files` is the
+One further defect was raised and then withdrawn, and the withdrawal is the lesson. The entry
+appeared to orphan its linter child when a harness stopped it, raised from two processes seen in a
+`ps` listing. Enumerating the server's own children by parent id rather than matching by pattern
+settled it: the child exits when the server's stdin closes, the runtime stage's workers are threads
+that die with their parent, and six seconds after `SIGTERM` nothing survives. Both orphans came from
+the bin-test defect in the table. A pattern match had been asked a question about parentage, which it
+cannot answer.
+
+The last row is the largest, and it is a design question rather than a repair. `Case.files` is the
 source an agent supplies without writing it to disk. The type stage overlays every entry into its
 virtual filesystem and the lint stage lints each one, and the runtime stage writes only the test. So
 a test importing a module the agent supplied as text, and that does not already exist on disk,
