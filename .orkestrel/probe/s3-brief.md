@@ -155,6 +155,37 @@ Criterion: a candidate whose declared path the workspace's lint config exempts f
 receive a finding for that rule. Assert both directions — the exempt path clean, and a non-exempt path
 still reporting — or the test only proves the rule was disabled.
 
+
+## The two high findings interact, and one repair widens the other
+
+Verified by the Orchestrator before dispatch. Do not treat A and B as independent.
+
+`#send` throws only when `child === undefined || child.exitCode !== null`. Defect A proves `exitCode`
+stays `null` on signal death, so today a signal-killed child does NOT make `#send` throw — the write
+goes to a dead pipe and the inspection hangs. That is defect A's symptom, and it is the reason defect
+B's orphan path is not reached by that vector.
+
+**Fixing A makes `#send` throw in more cases, which widens B's reachability.** Repair them together, and
+write B's test against the post-A behaviour.
+
+Two vectors were tested by reading and neither reaches B, so do not build your proof on them:
+
+- A workspace with no Oxlint binary: `#inspect` opens with `await this.#warmth`, so a failed warm
+  rejects the inspection before `#document` is called.
+- A signal-killed child, for the reason above.
+
+**The open question, which is yours to settle:** whether Oxlint exits with a CODE in practice — an
+internal panic, a malformed configuration, a resource failure — rather than only by signal. That
+determines whether B is reachable through shipped code or only hypothetically.
+
+`.claude/rules/quality.md` fixes what each answer means. Reachable through shipped code: repair it now.
+Reachable only through a hypothetical foreign implementation: document the obligation on the interface
+that owns it and prove the documentation, rather than building coordination machinery against a
+requirement nobody wrote down. Report which you found and the evidence.
+
+You have a shell and you own the file, so you can instrument `#child` directly. That is the measurement
+the Orchestrator could not take from outside.
+
 ## Scope
 
 - **Owned**: `src/server/stages/LintStage.ts`, and `tests/src/server/stages/LintStage.test.ts` for the

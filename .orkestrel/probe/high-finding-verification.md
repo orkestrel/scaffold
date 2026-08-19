@@ -276,6 +276,63 @@ Unit S2 owns it and produces that interleaving as its required failing proof, re
 green after. This finding is therefore no longer in the criterion 3 hole: its mechanism is established
 on evidence rather than on the sweep's word, and its closure carries an executed proof.
 
+## [MECHANISM CONFIRMED by reading; REACHABILITY narrowed and handed to S3] severity high (resource-lifecycle) — The lint stage orphans a document promise and destroying the probe then ends the host
+
+Settled by the Orchestrator, 2026-08-19, reading `LintStage.ts` at `f9810f9` from the git object store.
+
+**The mechanism is exactly as reported.** `#document` registers `resolve` and `reject` in
+`#publishes` and `#refusals` inside the promise executor, then calls `#notify`, and attaches its
+`.finally()` only on the return statement afterwards:
+
+```ts
+		const diagnostics = new Promise<readonly Finding[]>((resolve, reject) => {
+			this.#documents.set(uri, source.path.replaceAll('\\', '/'))
+			this.#publishes.set(uri, resolve)
+			this.#refusals.set(uri, reject)
+		})
+		this.#notify('textDocument/didOpen', { /* ... */ })
+		return diagnostics.finally(() => { /* the three deletes */ })
+```
+
+`#notify` calls `#send`, which throws when `child === undefined || child.exitCode !== null`. A throw
+there escapes before `.finally()` is ever attached, so the promise is left pending with no handler while
+its `reject` sits in `#refusals`.
+
+`#destroy` then rejects it, and it does so BEFORE the liveness check that would have returned early:
+
+```ts
+		const child = await this.#warmth.catch(() => this.#child)
+		this.#fail(new Error('The lint stage has been destroyed'))
+		if (child === undefined || child.exitCode !== null) return
+```
+
+So the orphan is rejected with no handler attached anywhere, which raises `unhandledRejection` and ends
+the host. Every link in that chain is confirmed.
+
+**The reachability is narrower than the finding implies, and this is the correction.** Two vectors were
+tested by reading and both fail to reach it:
+
+- **A workspace with no Oxlint binary does not reach it.** `#inspect` opens with `await this.#warmth`,
+  so a failed warm rejects the inspection there and `#document` is never called. `#child` being
+  `undefined` therefore cannot be reached through `inspect`.
+- **A signal-killed child does not reach it either** — and this is the interesting part. The other
+  high finding on this file proves `exitCode` stays `null` on signal death, so `#send`'s guard reads a
+  signal-killed child as alive and does NOT throw. The write goes to a dead pipe, no reply arrives, and
+  the inspection hangs.
+
+**The two high findings on this file are alternatives rather than companions.** A signal-killed child
+produces the hang. Only an exit-code death produces the orphan. One vector cannot demonstrate both, and
+a repair for one does not close the other.
+
+**What remains open, and who settles it.** Whether Oxlint exits with a code in practice — an internal
+panic, a malformed configuration, a resource failure — rather than only by signal. That determines
+whether this defect is reachable through shipped code or only through a hypothetical. Unit S3 owns the
+file, can instrument `#child` directly, and settles it as its required failing proof.
+
+Note the interaction for the repair: fixing the liveness read makes `#send` throw in MORE cases, so
+closing the other finding widens this one's reachability. Both must be repaired together, and S3's brief
+says so.
+
 ## Coverage of this file
 
 Five of the ten HIGH findings are settled with executed evidence: the stdout corruption, the runtime
@@ -288,10 +345,9 @@ matching instrument for a claim about static text.
 One HIGH finding is NOT independently reproduced and are carried into their repair units on the
 sweep's own evidence alone:
 
-- the lint stage's orphaned document promise ending the host (unit S3).
-
-The lint stage's `exitCode` liveness read was the third and is now reproduced, immediately preceding
-this section.
+Five carry executed evidence, two were settled by inspection because their subject is static text, two
+had their mechanism confirmed by reading with the behavioural consequence owed to a repair unit's
+failing proof, and the candidate-source gap was measured in full as O9.
 
 It is behavioral and needs an executed reproduction. Unit S3 owns it and produces
 that reproduction as its own failing proof before repairing, per the regression-proof law. Do not
