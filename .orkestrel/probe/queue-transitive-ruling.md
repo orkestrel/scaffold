@@ -52,3 +52,54 @@ store; a queue with `concurrency: 1` and no persistence does not need one.
 That is a shape question for `@orkestrel/queue`, not a defect in probe, and it is outside this
 campaign's fixed scope. Recorded here against the package that owns it, per the finding-outside-scope
 rule in `.claude/rules/quality.md`. Surfaced to the user rather than acted on.
+
+## Why the dependency exists — measured, not assumed 2026-08-19
+
+The working hypothesis was that `@orkestrel/queue` needed `@orkestrel/database` for a host-agnostic
+UUID. **That is not the reason.** Read from the installed package at
+`node_modules/@orkestrel/queue/dist/src/core/index.js`.
+
+The UUID comes from the global, with no import at all:
+
+```text
+310:		const id = supplied ?? crypto.randomUUID();
+```
+
+`crypto` appears in no import statement. The file's five imports are `@orkestrel/contract`,
+`@orkestrel/abort`, `@orkestrel/emitter`, `@orkestrel/timeout`, and `@orkestrel/database`. Nothing in
+the UUID path touches the database.
+
+`@orkestrel/database` is imported once and used at exactly one site:
+
+```text
+  5:import { createDatabase } from "@orkestrel/database";
+1066:	return new DatabaseQueueStore(createDatabase({
+```
+
+That site is `createDatabaseQueueStore`, which builds the durable queue store the package ships beside
+`MemoryQueueStore`. It is a real feature, not a leftover.
+
+## What makes it cost every consumer
+
+The import at line 5 is static and top-level in the **core barrel**, and `@orkestrel/queue` publishes a
+single export subpath:
+
+```json
+{ ".": { "import": { "types": "./dist/src/core/index.d.ts", "default": "./dist/src/core/index.js" } },
+  "./package.json": "./package.json" }
+```
+
+So there is no way to reach `createQueue` without loading `createDatabaseQueueStore`, and no way to load
+that without resolving `@orkestrel/database` and its two backends. A consumer that only ever calls
+`createQueue` — which is every call probe makes, at `src/server/Probe.ts:83`, `:92`, and `:98` — pays
+for the durable store it never constructs.
+
+## The fix, in `@orkestrel/queue`
+
+Move `DatabaseQueueStore` and `createDatabaseQueueStore` behind a second export subpath, and move
+`@orkestrel/database` out of `dependencies`. Then `createQueue` and `createMemoryQueueStore` consumers
+resolve nothing extra, and a consumer that wants durability opts in by importing the subpath and
+declaring the database itself.
+
+This is a change to `@orkestrel/queue`, outside this campaign's fixed scope. Recorded against the
+package that owns it.

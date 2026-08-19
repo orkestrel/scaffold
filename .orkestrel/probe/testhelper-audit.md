@@ -298,3 +298,37 @@ These three constants are the published parameters of `removeTree`'s retry loop 
 **Benefit.**
 
 None. There is no magic number or inline code list in probe to delete, and importing the constants would add three unused symbols.
+
+### `resolveRoot` — ADOPT WITH A DIFFERENCE
+
+**Evidence.**
+
+Probe computes the workspace root by hand at seven sites, in three different forms and at three different depths:
+
+  tests/config.test.ts:27                          const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+  tests/src/bin/main.test.ts:10                    const ROOT = fileURLToPath(new URL('../../../', import.meta.url))
+  tests/src/server/Probe.test.ts:10                const ROOT = fileURLToPath(new URL('../../../', import.meta.url))
+  tests/src/server/helpers.test.ts:19              const ROOT = fileURLToPath(new URL('../../../', import.meta.url))
+  tests/src/server/stages/LintStage.test.ts:5      const ROOT = fileURLToPath(new URL('../../../../', import.meta.url))
+  tests/src/server/stages/RuntimeStage.test.ts:13  const ROOT = fileURLToPath(new URL('../../../../', import.meta.url))
+  tests/src/server/stages/TypeStage.test.ts:11     const ROOT = fileURLToPath(new URL('../../../../', import.meta.url))
+
+(server line numbers read from `git show abad0f6:` per the torn-read instruction; LintStage sits at :5 committed, :6 in the working tree.)
+
+tests/src/server/Probe.test.ts recomputes the same URL inline three more times at :263, :276, and :447 as `new URL('../../../tmp/probe/', import.meta.url)`.
+
+The package publishes `resolveRoot(meta: ImportMeta): URL`, implemented as `new URL('../', meta.url)`, whose TSDoc says it 'Resolves the parent directory of a calling module, which is the workspace root when called from the conventional `tests/setup.ts` location.'
+
+I ran resolveRoot against each call site's real module URL:
+
+  tests/config.test.ts                       -> /workspace/probe/
+  tests/setup.ts                             -> /workspace/probe/
+  tests/src/server/stages/TypeStage.test.ts  -> /workspace/probe/tests/src/server/   (wrong)
+
+So `resolveRoot` is depth-1 only. It substitutes directly at exactly one of the seven sites — tests/config.test.ts:27, whose hand-rolled `resolve(dirname(fileURLToPath(import.meta.url)), '..')` yields `/workspace/probe`, identical modulo a trailing separator that every consumer absorbs (`resolve(root, path)` at :39, :57, :67 and 15 more; `{ cwd: root }` at :271). Probe already tolerates the trailing separator: the six `ROOT` constants all carry one.
+
+The difference: do not swap per file. Put the single call in `tests/setup.ts` and export the result. That file is 0 bytes today and is already registered as a setup file for all six vitest projects (vite.config.ts:45, 95, 131, 150, 165, 184), so every test can reach it, and probe already imports shared test support from a sibling — tests/config.test.ts:24 imports `createPolicyScratch` from './setupPolicy.js'. Adding `export const ROOT = fileURLToPath(resolveRoot(import.meta))` there lets all seven files import one root, which is the usage the helper's own TSDoc names.
+
+**Benefit.**
+
+Deletes seven hand-rolled root computations and the two `node:url` / `node:path` import lines that exist only to serve them, replacing them with one import each. Closes the depth-drift fragility the varying `../../../` versus `../../../../` already encodes: moving a test file between `tests/src/server/` and `tests/src/server/stages/` today silently retargets ROOT one directory off, and nothing fails loudly — `resolve(ROOT, 'tmp/probe')` just points at a path that does not exist, so the test reads as a stage defect rather than a moved file. A single exported ROOT is depth-independent and cannot drift. It also collapses the three inline recomputations at tests/src/server/Probe.test.ts:263, :276, and :447, which are three more copies of the same brittle count.
