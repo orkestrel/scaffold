@@ -410,3 +410,41 @@ and the developer's checkout is not modified.
 
 Both halves of the remedy are now demonstrated. What the design round decides is shape, not
 feasibility.
+
+## Repair round 2's wire evidence, taken by the Orchestrator instead
+
+Round 2 failed its wire instrument five times with empty stdout and empty stderr, and spent much of
+its budget isolating a fault in its subject. The subject is fine. The Orchestrator ran the
+known-good instrument against round 2's own working tree and build:
+
+```text
+[stdout line] {"id":1,"jsonrpc":"2.0","result":{"capabilities":{"tools":{}},"protocolVersion":"2025-06-18","serverInfo":{"name":"probe","version":"0.0.1"}}}
+INITIALIZE OK -> {"name":"probe","version":"0.0.1"}
+[stdout line] {"id":2,"jsonrpc":"2.0","result":{"tools":[{"description":"Proves a claim with type, lint, and runtime evidence.","inputSchema":{…
+TOOLS/LIST OK -> prove
+```
+
+The built module loads and carries its full surface, and the entry is one import and one call:
+
+```text
+$ node -e "import('dist/src/server/index.js').then(m => console.log('LOADED, exports:', Object.keys(m).length))"
+LOADED, exports: 18
+$ cat dist/bin/main.js
+import { createProbe, createProbeServer } from "../src/server/index.js";
+createProbeServer(createProbe()).start();
+```
+
+Round 2's own debug run printed `before-start after-start`, so construction reaches `start()`.
+
+It is not a defect in `@orkestrel/mcp` either. That package's `StdioClientTransport` is documented as
+"newline-delimited JSON-RPC over `stdin`/`stdout`", the same framing the working instrument uses, so
+its client and server agree.
+
+So criteria 5 and 6 of round 2's brief are closed on the Orchestrator's evidence rather than on the
+unit's. The unit's remaining acceptance evidence — the routed project, the two arming controls, the
+named server interface, the schema primitive, the bundled manifest, and the centralized manifest read
+— still needs its report or independent verification.
+
+The lesson is one the orchestration rules already state and this round paid for anyway: run the first
+use of any client, flag, or framing in a throwaway probe before putting it inside a unit's acceptance
+path. A unit that cannot tell its instrument from its subject spends its budget on the wrong one.
