@@ -30,6 +30,31 @@ send('tools/list', { _meta: {
 
 Sending only the version is refused as malformed metadata, which reads like a server defect and is not.
 
+## The bench sandbox buffers a pipe until EOF
+
+This is the third fact, and it is the one that cost the most, because it makes a correct instrument
+look broken and only inside a bench.
+
+A unit running under a bench sandbox that creates a child with `stdio: 'pipe'` and writes requests
+interactively gets nothing back until EOF. The child answers correctly; its output sits in the buffer.
+So an interactive driver hangs, a driver that redirects a file and closes stdin works, and the same
+interactive driver run outside the sandbox works too. Three observations that look contradictory until
+the buffering is the explanation.
+
+What to do about it depends on where the instrument runs:
+
+- **Outside a bench sandbox** — the Orchestrator's own shell — plain pipes are fine, and `wire.mjs`
+  works as written.
+- **Inside a bench sandbox**, either redirect a prepared newline-delimited file into the child and let
+  EOF flush it, or give the child a pseudoterminal-backed stdio so nothing buffers. A unit that needs
+  request-by-request sequencing needs the pseudoterminal; a unit that only needs all four responses
+  can use the file.
+
+Note the shape of the mistake this produces. Every unit that hit it concluded its subject was broken
+and went looking in the server, because a hang with empty stdout and empty stderr is exactly what a
+dead server looks like. Two of them spent most of their budget there. The instrument was right and the
+environment was lying.
+
 ## Measured results this instrument produced
 
 ```text
