@@ -656,7 +656,16 @@ transport.
 3. **Tracked, never loose.** Register every bench unit in the session task registry at launch with
    its subject, journal path, and session id, and complete it there at acceptance. "What is
    running" always has a first-class answer instead of a recollection of a command.
-4. **Ephemeral streams, durable records.** A journal proves a bench is alive and recovers an
+4. **A bench sandbox spawns a child and denies that child's child.** Under `workspace-write` a bench
+   exec runs a test suite and spawns children normally, and every operation one level deeper fails:
+   a grandchild process is denied `EPERM`, and a nested `npm install` is denied the same way. So a
+   proof needing a process tree, a tree-kill, a detached group, or an installed package cannot be
+   produced inside a bench unit at all — however carefully that unit isolates. Name the limit in the
+   brief before dispatch, tell the unit to record such a proof as an observation naming the exact
+   settling command, and take that proof yourself on the host. Never let a unit substitute the
+   reachable half: linking a packed tarball is not installing it, and a gate written to catch an
+   install failure that only ever links cannot see the defect it exists for.
+5. **Ephemeral streams, durable records.** A journal proves a bench is alive and recovers an
    interrupted session. Keep journals under `tmp/`, never commit them, and sweep them at acceptance
    after the final gate evidence is recorded. Durable retention — brief, distillate, verdict,
    instrument, acceptance evidence — is owned by **Dispatch anatomy**; this rule owns only the
