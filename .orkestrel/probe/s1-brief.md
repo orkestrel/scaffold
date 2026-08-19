@@ -45,6 +45,18 @@ evidence and the runtime stage executed nothing.
 The structural guard that exists — `module.state() === 'failed' && findings.length === 0` — fires only
 where findings already exist and never where nothing ran.
 
+The Orchestrator confirmed this by running the exact shape through the same Vitest API the stage uses,
+and found one detail the finding got wrong in a way that helps you:
+
+```text
+t/skip.test.ts   moduleState=skipped  findings=0  -> CLEAN CHECK
+```
+
+The module state is `skipped`, not `passed`. So a clean signal is available and the repair does not
+need to count tests: a module state the stage does not recognise as "ran and passed" is the thing to
+refuse. Check every state Vitest can report rather than only the two you expect, because a state you
+do not handle is exactly how this defect arrived.
+
 Close it so a case that executed no test cannot be clean. Decide and state whether a skipped test is a
 finding or a refusal, and make the message say which of the two happened: nothing ran, or something
 ran and passed.

@@ -249,3 +249,25 @@ All four satisfy `isSource`/`SOURCE_SHAPE`, which require only `path.length > 0`
 **What goes wrong.** `/** The coordinator's deadline fired and the runtime worker was recycled. */` uses the past tense for work that has not begun. `Probe.#inspectRuntime` emits `expire` and only then awaits `#recycle(stage)`, so a listener runs while the hung stage is still installed. Worse, `#recycle` can decline to replace anything: it returns early when `this.#destroyed` is set or when `this.#runtime !== stage`, so `expire` fires in cases where no recycling ever happens. A consumer writing `on: { expire: () => resubmit(claim) }` — the obvious use, since the event hands back the `Claim` — resubmits against the same stage that just hung, because the doc told them the worker was already replaced.
 
 **Evidence.** src/core/types.ts:246 states the claim. src/server/Probe.ts:222-223: `this.#emitter.emit('expire', claim)` immediately followed by `await this.#recycle(stage)`. src/server/Probe.ts:247-248: `if (this.#destroyed || this.#runtime !== stage) return` — the early return precedes `this.#runtime = new RuntimeStage(this.#workspace)`.
+
+---
+
+# Orchestrator verification
+
+## The skipped-test finding is confirmed, with one correction
+
+Run through the same Vitest API the runtime stage uses, on a module whose only test is
+`test.skip('greets', () => { expect(1).toBe(2) })`, evaluating exactly what `#findings` inspects:
+
+```text
+t/skip.test.ts   moduleState=skipped  findings=0  -> CLEAN CHECK
+```
+
+The defect is real: the check is clean, so `computeReceipt` will issue for a case that executed
+nothing.
+
+The lane reasoned the module would report `passed`. It reports `skipped`. That correction matters
+because it makes the repair cheaper — a distinguishable state exists, so the fix does not need to
+count tests. The rule for the repair is to refuse any module state the stage does not positively
+recognise as having run and passed, rather than to enumerate the failures it knows about. A state
+nobody handled is how this defect arrived in the first place.
