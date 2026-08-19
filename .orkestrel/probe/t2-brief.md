@@ -172,3 +172,49 @@ Return exactly: **Files written**, **The ownership ruling** (which setup module 
 **How the setup proof avoids asserting the implementation against itself**, **Validation** (each gate and
 its exit code), **Counts**, **Deviation**, **Decisions**. No process diary. End with `git diff --stat`
 against the baseline.
+
+---
+
+# Amendment 1 — written after S3 landed at `dcd50a3`
+
+## S3 handed you a carrier, and it is now part of this unit
+
+S3 added five module-scope helpers to `tests/src/server/stages/LintStage.test.ts` —
+`killFixtureServer`, `SERVER`, `FIXTURE`, `PASSING`, and `HOST`. It recorded the placement as a scoped
+decision rather than a preference:
+
+> `.claude/rules/tests.md` places shared test infrastructure in a setup file, but `tests/setupServer.ts`
+> is off-limits and empty. [...] If you want them moved, the patch is a straight lift of lines 13-112
+> into `tests/setupServer.ts` plus an import.
+
+`.claude/rules/tests.md` § Shared test infrastructure is unambiguous: "Test files import shared
+infrastructure rather than declaring local fixture factories", and "Export every reusable helper, fixture
+type, factory, constant, and guard from setup files." S3 could not comply because it did not own the
+destination. **You do.**
+
+Lift them into `tests/setupServer.ts` and import them back. Read the file as it stands at `dcd50a3`
+rather than trusting the line range S3 quoted — line numbers move.
+
+Two constraints on the lift, both from the same rule file:
+
+- A setup file owns everything an assertion needs and nothing an assertion is. `describe`, `it`, and
+  `expect` never appear in a `setup*.ts`. If any of the five carries an assertion, leave that part in the
+  test file and lift only the infrastructure.
+- Helper names follow module-helper naming, `{verb}{Noun}`. `killFixtureServer` already does. Rule on
+  whether `SERVER`, `FIXTURE`, `PASSING`, and `HOST` read as workspace-level constants once they leave
+  the file that gave them their context, and rename any that do not. That naming call is yours.
+
+This also strengthens criterion 5's proof: `tests/setup.test.ts` now has real exported behaviour to
+assert, not only `ROOT`.
+
+## One file you own moved under you
+
+`tests/src/server/stages/LintStage.test.ts` grew from 4,472 to roughly 7,200 bytes and
+`tests/src/server/stages/TypeStage.test.ts` will move under S4. Re-read both at dispatch. Every line
+number this brief quotes for either file is stale by construction.
+
+## Your blocked-on list is unchanged
+
+S3 has landed. S4, T1, and H1 have not. The reason stated in the brief still holds: this unit's value is
+uniformity, so landing it while another unit is rewriting one of its seven files leaves a hand-computed
+depth behind and makes the tree worse than either end state.
