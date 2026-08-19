@@ -132,3 +132,22 @@ warm prove x5:      median 492 ms, min 485 ms, max 505 ms
 ```
 
 One warm `prove` returns a six-check verdict with a receipt in under half a second.
+
+## The latency structure, measured
+
+One inspection runs its three stages concurrently, and a `prove` runs the case inspection and then
+the control inspection in sequence. Measured against the built `dist`, five runs each after warming:
+
+```text
+one inspection (three stages concurrent): median 264 ms  min 247 ms  max 296 ms
+runtime stage alone:                      median 187 ms
+```
+
+So a warm `prove` at 492 ms is two sequential 264 ms inspections, and each inspection is the runtime
+stage with the type and lint stages hidden underneath it. The type stage at 56 ms and the lint stage
+at 72 ms cost nothing observable while the runtime stage runs.
+
+Running the case and the control concurrently would take a `prove` to roughly 264 ms. It is not free:
+`RuntimeStage` serializes its inspections through one resident Vitest, so concurrency there needs a
+second resident instance and the memory that costs. Record this as an optimization with a measured
+ceiling, not as a defect.

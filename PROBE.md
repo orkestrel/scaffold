@@ -943,6 +943,16 @@ The risks below stay open, ranked, and each names the cheapest probe that settle
    work rather than worker startup. Take the `threads` pool for its 32 ms, and attribute the
    remaining 220 ms before assuming it is fixed.
 
+4. **A `prove` pays the runtime floor twice, because the case and the control run in sequence.**
+   Measured against the built package: one inspection runs its three stages concurrently at a median
+   of 264 ms, the runtime stage alone is 187 ms of that, and a warm `prove` is 492 ms — two
+   inspections back to back. The type stage at 56 ms and the lint stage at 72 ms cost nothing
+   observable, because they finish while the runtime stage is still running.
+
+   Running the case and the control concurrently would take a `prove` to roughly 264 ms. It is not
+   free: `RuntimeStage` serializes its inspections through one resident Vitest, so this needs a
+   second resident instance and the memory that costs. Measure that memory before taking it.
+
 ## Open questions
 
 - Whether an operating-system sandbox available in every target environment can bound filesystem
