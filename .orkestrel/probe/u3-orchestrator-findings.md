@@ -387,3 +387,26 @@ Repair round 2 adds a second arming control so arming proves the type half of th
 well as the runtime half. Arming is the whole of the probe's 4351 ms boot, so a second control
 roughly doubles it. Measure the new boot cost and correct `PROBE.md` § What was built, which states
 the single-control number.
+
+### The runtime half of the O9 remedy is proven feasible
+
+A Vite plugin serving a candidate that shadows a file which really exists, run against this
+workspace's own Vitest in an isolated project:
+
+```text
+src/thing.ts on disk:   export const LABEL = 'on-disk'
+the overlay supplies:   export const LABEL = 'from-overlay'
+the test asserts:       expect(LABEL).toBe('from-overlay')
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+--- and the file on disk is untouched ---
+export const LABEL = 'on-disk'
+```
+
+`enforce: 'pre'`, a `resolveId` that rewrites a `.js` specifier to its `.ts` source and returns the
+path when the overlay holds it, and a `load` that returns the text. No disk write, no new dependency,
+and the developer's checkout is not modified.
+
+Both halves of the remedy are now demonstrated. What the design round decides is shape, not
+feasibility.

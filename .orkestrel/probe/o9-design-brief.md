@@ -59,8 +59,31 @@ $ grep -n "declare function createVitest" node_modules/vitest/dist/node.d.ts
 ```
 
 A Vite plugin whose `resolveId` and `load` serve candidate text is the same overlay the type stage
-applies, moved to the runner. It needs no new dependency and writes nothing to disk. Whether that is
-the right answer is what this round decides.
+applies, moved to the runner. It needs no new dependency and writes nothing to disk.
+
+That mechanism is proven feasible, so this round rules on its shape rather than on whether it can
+work. The Orchestrator built the hardest case in isolation — a candidate shadowing a file that really
+exists — against this workspace's own Vitest:
+
+```text
+src/thing.ts on disk:   export const LABEL = 'on-disk'
+the overlay supplies:   export const LABEL = 'from-overlay'
+the test asserts:       expect(LABEL).toBe('from-overlay')
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+
+--- and the file on disk is untouched: ---
+export const LABEL = 'on-disk'
+```
+
+The plugin is `enforce: 'pre'` with a `resolveId` that rewrites a `.js` specifier to its `.ts` source
+and returns the path when the overlay map holds it, and a `load` that returns the text. Both halves
+of the remedy are therefore demonstrated: one line each in the type stage's host, and this plugin in
+the runtime stage.
+
+What remains genuinely open is the shape — identity, reach, concurrency, invalidation, and what the
+contract promises when a scenario cannot be supported.
 
 ## What each lane must rule on
 
