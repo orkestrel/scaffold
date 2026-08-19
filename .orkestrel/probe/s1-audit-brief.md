@@ -156,15 +156,22 @@ reaches. For this subject specifically:
 
 ## Evidence supplied to you
 
-The Orchestrator attaches, before dispatch:
+You have no `Bash`. Every piece of executed evidence is therefore supplied as a file you can `Read`:
 
-- the full `git diff` of S1's change,
-- `git status --short`,
-- S1's returned report in full,
-- the output of the five gates run by an independent verifier.
+- `/home/user/scaffold/.orkestrel/probe/s1-diff.md` — the complete `git diff`, `git diff --stat`, and
+  `git status --short`, captured after S1 exited and before any commit.
+- `/home/user/scaffold/.orkestrel/probe/s1-report.md` — S1's returned report in full, including its
+  15-inspection retention curve before and after, and its red-then-green commands.
+- `/home/user/scaffold/.orkestrel/probe/s1-gates.md` — the five gates run by an independent verifier
+  outside the bench sandbox, plus a suppression grep and a `tmp/probe` listing.
 
-Rule on the diff and that evidence. Do not ask for a command to be run; name what you would have run
-and what result would change your verdict, and the Orchestrator will run it and return to you.
+You may also `Read` and `Grep` anything under `/workspace/probe`, including
+`node_modules/vitest/dist/**` for installed declarations. The working tree there is S1's post-change
+state.
+
+Do not ask for a command to be run as a condition of your verdict. Name what you would have run and
+what result would change it, and the Orchestrator runs it and returns to you. Give your verdict on the
+evidence you have, marking any claim `UNPROVEN` that genuinely needs a run you cannot do.
 
 ## Scope
 
