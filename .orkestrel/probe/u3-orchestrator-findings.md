@@ -360,3 +360,30 @@ has not caught up with.
 
 Both rows still owe a measured confirmation, which the Orchestrator takes when no writing unit owns
 the tree. The instrument must cover both scenarios, not only the new-file one.
+
+### Row two of the O9 table is now measured, and its remedy is one line
+
+The type stage's host was reconstructed exactly as shipped, given an overlay for a candidate that
+exists only as text plus a test importing it, and asked for diagnostics. Then the same host with one
+callback changed.
+
+```text
+fileExists goes straight to disk (as shipped):
+   Cannot find module '../../src/core/o9virtual.js' or its corresponding type declarations.
+fileExists CONSULTS the overlay:
+   no diagnostics — the import resolved
+```
+
+So the type stage's half of row two is confirmed, and closing it is
+`fileExists: (file) => this.#overlays.has(file) || typescript.sys.fileExists(file)`. `directoryExists`
+needs the same treatment for a candidate in a directory that does not exist yet, which this probe did
+not exercise because `src/core` is real.
+
+That does not touch the runtime stage, which is the harder half and the one carrying the false green.
+
+### A latency consequence to measure after round 2
+
+Repair round 2 adds a second arming control so arming proves the type half of the staleness defect as
+well as the runtime half. Arming is the whole of the probe's 4351 ms boot, so a second control
+roughly doubles it. Measure the new boot cost and correct `PROBE.md` § What was built, which states
+the single-control number.
