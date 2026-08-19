@@ -108,3 +108,16 @@ the bound belongs somewhere your scope does not reach.
 Return exactly: **Files written**, **Validation**, **Acceptance evidence**, **Deviation**, **Decisions**.
 
 Under **Decisions**, lead with why your green run and the gate disagreed.
+
+## Amendment — the tree was rebuilt, and the failure survived it
+
+The container running this campaign was reclaimed. `/workspace/probe` was re-cloned from
+`claude/probe-package` at `abec122`, `npm install` was re-run, and your uncommitted change was restored
+by applying the diff captured in `.orkestrel/probe/s2-diff.md` — it applied cleanly and reproduces your
+248 insertions across the same three files.
+
+**The failure reproduces on that rebuilt tree**, with fresh dependencies and no local state carried
+over. That is the fourth independent confirmation, after three isolated re-runs on the original tree.
+Nothing about the environment explains it.
+
+Your working tree is exactly as you left it. Nothing else changed.
