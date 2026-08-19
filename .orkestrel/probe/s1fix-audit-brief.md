@@ -57,7 +57,7 @@ your verdict, mark that claim `UNPROVEN`, and the Orchestrator will run it and r
 ## Attack claim 3 first, and attack the number
 
 The unit's brief required that if it capped the runner's lifetime, **N must be a measured choice rather
-than a round number.** Its report gives a measured COST — about 1.15 seconds across 65 inspections,
+than a round number.** Its report gives a measured COST — about 1.15 s as reported, since corrected to 260-285 ms by measurementeconds across 65 inspections,
 roughly 18 ms amortized — and does not say why 64 rather than 32 or 128. Sixty-four is conspicuously
 round.
 

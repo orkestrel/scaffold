@@ -69,7 +69,7 @@ counting both, so a case carrying an instrument fault still fails closed.
    are the stage's own faults wearing a `Vitest` prefix.
 5. **The class TSDoc no longer describes the class.** It omits the recycling entirely, and there is no
    `guides/probe.md`, so it is the only human documentation of the stage.
-6. **The recycle is paid inside the caller's deadline.** 1.15 s lands on the 65th call, 3.8% of the
+6. **The recycle is paid inside the caller's deadline.** 1.15 s as reported, since corrected to 260-285 ms by measurement lands on the 65th call, 3.8% of the
    default budget, and at a tuned deadline it triggers the expiry-and-recycle recovery path — the
    recycling mechanism triggering the recovery mechanism.
 7. **The counter and its own comment disagree.** `#inspections` increments on the early return that
@@ -90,7 +90,7 @@ round proved N was not.
 
 The number is not measured, and the brief required it to be. The only figure is a cost, presented as
 "roughly 18 ms amortized". Amortizing is the wrong frame for a synchronous stall: it does not land as
-18 ms on 65 inspections, it lands as 1.15 s on one. Nothing measured the other side of the trade at
+18 ms on 65 inspections, it lands as 1.15 s as reported, since corrected to 260-285 ms by measurement on one. Nothing measured the other side of the trade at
 all — no per-entry resident cost exists anywhere in the round's evidence.
 
 With the cost measured and the benefit unmeasured, the available numbers argue for a LARGER N: 64 pays
@@ -108,3 +108,28 @@ rests on structure plus a negative search rather than measurement. `#findings` n
 identity, which is an unattacked seam rather than a finding. The cursor-escape bytes on the wire remain
 NOT-EVIDENCED from the previous round. And every executed fact came from a supplied file, because the
 lane has no shell.
+
+## CORRECTED after the fix round measured it — the stall is 260-285 ms, not 1.15 s
+
+The ruling above carried 1.15 seconds from the unit's own report and reasoned about the trade using it.
+The next round measured the stall through the real stage from `dist`, 66 inspections, twice:
+
+```text
+run 1: median 206 ms, inspection 65 = 466 ms, inspection 66 = 216 ms
+run 2: median 215 ms, inspection 65 = 498 ms, inspection 66 = 214 ms
+```
+
+The spike lands on inspection 65 alone in both runs, so each run is its own control. The replacement
+costs 260-285 ms, a little over four times less than the figure the ruling used.
+
+**What that does to the ruling.** The direction survives and the force weakens. At 260-285 ms the
+recycle is about 0.4% of throughput at N=64 rather than 1.8%, and under 1% of the default 30 s deadline
+rather than 3.8%. The argument for a larger N rested on the cost being large; it is smaller than
+believed, so "64 is defensible" becomes a reasonable reading where before it was not.
+
+The closing condition is unchanged and was met by its second arm: the value is named in the class
+`@remarks` with its measured stall, and `ProbeOptions` tells a caller budgeting `deadline` that one
+inspection in 64 pays it.
+
+Recorded because a number that travels through a ruling and into a brief is exactly the kind that never
+gets re-measured. This one was, by the unit the ruling was aimed at.

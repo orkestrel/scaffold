@@ -85,7 +85,7 @@ different door, and the next round will find it there.
 - **The class TSDoc no longer describes the class.** `RuntimeStage.ts:19-33` omits the recycling
   entirely. Add one sentence to `@remarks` naming the retention bound, what triggers it, and that the
   replacement is paid synchronously by the inspection that triggers it.
-- **The recycle is paid inside the caller's deadline.** 1.15 s lands on the 65th call — 3.8% of the
+- **The recycle is paid inside the caller's deadline.** 1.15 s as reported, since corrected to 260-285 ms by measurement lands on the 65th call — 3.8% of the
   default 30 s budget, and at a tuned deadline it triggers `Probe`'s own expiry-and-recycle recovery,
   so the recycling mechanism triggers the recovery mechanism. Either move the replacement off the
   critical path so it falls between calls, or document the stall where a caller budgeting latency will

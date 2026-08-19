@@ -42,7 +42,7 @@ This is the brief-declared sandbox failure. The implementation is complete, and 
 
 **Decisions**
 
-- Break 2 uses runner recycling while retaining unique revision paths. The audit measured one unresolved entry per inspection. The 65-inspection proof records two runner warmups, and direct map inspection confirms replacement resets both resident maps. A 64-inspection lifetime added about 1.15 seconds across 65 measured inspections, roughly 18 ms amortized per inspection.
+- Break 2 uses runner recycling while retaining unique revision paths. The audit measured one unresolved entry per inspection. The 65-inspection proof records two runner warmups, and direct map inspection confirms replacement resets both resident maps. A 64-inspection lifetime added about 1.15 s as reported, since corrected to 260-285 ms by measurementeconds across 65 measured inspections, roughly 18 ms amortized per inspection.
 - Cleanup bookkeeping runs before eviction. Eviction and deletion failures return findings and cannot mask an inspection failure.
 - Worker stdout remains drained through `PassThrough`; worker stderr reaches `process.stderr`.
 - Unmapped paths remain caller findings. Missing configured projects name the absent project.
