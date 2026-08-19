@@ -63,12 +63,21 @@ text. This is a transcription defect, not a conceptual one.
 `src/server/factories.ts:65` admits with `isClaim(input)`. `compileGuard` has no call site in `src/` at
 all — every occurrence there is inside a doc comment.
 
-The anti-drift guarantee the remark exists for is now real, but by a different mechanism than the
-remark describes: `tests/src/core/validators.test.ts` asserts `isClaim` agrees with
-`compileGuard(CLAIM_SHAPE)` over a named hostile population. Rewrite the remark to say that — the tool
-publishes `compileSchema(CLAIM_SHAPE)` and admits with `isClaim`, which a test holds to
-`compileGuard(CLAIM_SHAPE)`'s exact behavior. Keep the guarantee; drop the call path that does not
-exist.
+**A verification lane found a better repair than rewriting the remark, and it is the one to take.**
+The remark describes the right design; the code diverged from it. So make the code do what the remark
+says: in `src/core/validators.ts`, replace the hand-written `recordOf` with
+`export const isClaim: Guard<Claim> = compileGuard(CLAIM_SHAPE)`.
+
+That collapses two hand-maintained definitions into one derived from the shape, which is the anti-drift
+property the remark promises, and it removes the need for a test to hold two things in agreement that
+were never bound. Keep the agreement test regardless — it becomes a proof that the derivation behaves,
+rather than a rope between two independent definitions.
+
+If the substitution turns out not to be behaviour-preserving, that is a finding worth reporting rather
+than a reason to fall back silently: report exactly which input the two disagree on.
+
+Note also that the sweep's wording "`compileGuard` is never called" is false as stated — it is called
+at `tests/src/core/validators.test.ts:74`. The true statement is that it is never called in `src/`.
 
 ### C — `Control.reason` is required, validated at three layers, and read by nothing
 
@@ -95,8 +104,11 @@ summary as the finding.
 
 - **`ProbeInterface` and `ProbeOptions` describe an mtime-keyed revalidation** of every workspace file.
   The sweep hashes contents and covers only module extensions.
-- **`inferTestProject`'s `@returns`** says `undefined` selects the root project. The only consumer
-  throws on `undefined`, and no root project exists.
+- **`inferTestProject`'s `@returns`** says `undefined` selects the root project, and no code implements
+  that. Correction from verification: "no root project exists" is OVERSTATED — Vitest does always have
+  a root project. The real defect is that the documented return contract is not the implemented one.
+  Also note the only consumer changed in unit S1's repair: it no longer throws on `undefined`. Read the
+  current code, not this sentence.
 - **`StageInterface.destroy`** states a teardown guarantee the coordinator's own code refuses to trust.
 - **`Verdict.id`** is documented as the revision identity the verdict was produced for. It is an
   independent UUID no stage ever sees.

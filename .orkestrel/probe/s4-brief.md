@@ -91,16 +91,18 @@ This is presently harmless to correctness, because `#version` consults `#overlay
 is still unbounded growth keyed on caller-supplied strings. Delete the `#versions` entry alongside the
 overlay.
 
-### D — the class documentation describes a project selection the coordinator no longer uses
+### D — STRUCK. This finding was REFUTED by independent verification; do not repair it
 
-`TypeStage`'s class `@remarks` says candidate files use their scoped environment projects. On every
-coordinator-driven call they use the claim's project instead, because `inspect` takes `project` and
-prefers it: `const selected = project ?? inferTypeProject(source.path)` at line 155. The documented
-behavior is the fallback, not the rule.
+The sweep reported that `TypeStage`'s class `@remarks` describes a project selection the coordinator no
+longer uses. A blind verification lane refuted it: the claim misquotes the document it indicts.
 
-Correct the remark to describe what happens: the claim's project is used when the coordinator supplies
-one, and the per-path inference is the fallback for a direct caller who does not. `.claude/rules/writing.md`
-governs the prose.
+The `@remarks` already conditions the scoped-project branch on "when a call names none", which is
+exactly what `inspect` does — `project ?? inferTypeProject(source.path)`. The documentation and the code
+agree, and the sweep read a contradiction into a sentence that states the fallback correctly.
+
+**Leave `src/server/stages/TypeStage.ts` lines 20-22 exactly as written.** Criterion 6 is struck with
+this defect. A dropped finding is kept here with its refutation rather than deleted, so the next reader
+does not re-raise it.
 
 ## Scope
 
@@ -141,7 +143,6 @@ both counts.
 5. `#versions` does not grow across repeated inspections of distinct paths. Assert an observable
    consequence rather than the map's size if you can find one; if you cannot, say so in your report and
    assert the size, and name what would have been better.
-6. The class `@remarks` describes the project selection the code performs.
 
 ## Execution
 
