@@ -986,3 +986,29 @@ S5 would therefore write a permanent contract sentence describing a lint mapping
 S3 and S6 carry a byte-identical "Where a throwaway instrument goes" paragraph asserting that an instrument left in `tmp/probe/` "is collected by a gate". Verified false: `package.json` defines `"test": "npm run test:src && npm run test:policy && npm run test:config"`, and the `probe` project (`vite.config.ts:182-183`, `include: ['tmp/probe/**/*.test.ts']`) is reached only by `test:probe`, which no gate runs. The S3 lane reported it; the S6 lane did not. One edit fixes both paragraphs — the real reason to use `tmp/scratch/` is the concurrent sibling writes, not gate collection.
 
 **Not a defect, checked and cleared:** `guides/README.md` does record `guides/probe.md` as "Not created" (S4, S5, S6 are correct); `guides/probe.md` genuinely does not exist; `/home/user/scaffold/PROBE.md` is cited correctly by S3, S4, S5, and S6; the "four server test files write into one `tmp/probe/`" standing condition repeated in all five is accurate (`Probe.test.ts`, `stages/LintStage.test.ts`, `stages/RuntimeStage.test.ts`, `stages/TypeStage.test.ts` write; `helpers.test.ts` only passes the string to pure helpers); the S4→S5 escaping-path hand-off names `isSource` and `SOURCE_SHAPE` on both sides and both live in files S5 owns, with `src/core/index.ts` re-exporting by `export *` so the barrel needs no grant; and S4's struck defect D correctly refuses the refuted `TypeStage` `@remarks` finding, which no other brief re-raises.
+
+## The gate list in a brief must be the full gate list — 2026-08-19
+
+Unit H1's brief listed its gates as "`npm run lint:check` and `npm run check` pass" and omitted
+`npm run format:check`. The unit ran what it was asked to run, its report said so plainly, and
+`format:check` was red from `2ecddc2` until `282c902` — across two intervening commits, because neither
+of those rounds ran it either.
+
+`AGENTS.md` fixes the acceptance gate as five commands in order:
+
+```text
+npm run format:check → npm run lint:check → npm run check → npm run build → npm test
+```
+
+**A brief that names a subset silently redefines the gate.** Name all five, or name none and cite
+`AGENTS.md` — never a subset, because a subset reads as deliberate.
+
+The failure mode this produced is the one `AGENTS.md` already warns about, arriving through a door the
+warning does not cover. It warns that `lint --fix` output is not formatter-clean, so a `format` that ran
+before it leaves `format:check` red. That warning is addressed to a unit converging its own work. Here
+the unit never ran the gate at all, so the warning had nothing to bite on.
+
+**The shared-file half worked.** The unit that found it did not own `tests/src/server/helpers.test.ts`.
+It confirmed the failure against a stashed baseline, established the red predated its own change, and
+returned the exact patch for serial integration rather than reaching. That is the contract behaving
+correctly, and it is why the defect surfaced at all.
