@@ -204,7 +204,11 @@ Each closes using owned and report-only files alone.
    - `src/core/validators.ts:99` — "Admits and refuses exactly what `compileGuard(CLAIM_SHAPE)` does"
      is a statement about the guard `isClaim`, not about the tool, and unit 4a's test proves it. That
      file is **off-limits** and this line is not a defect. Do not stop over it.
-5. All five gates pass in order.
+5. `npm run format:check`, `npm run lint:check`, and `npm run check` each exit 0.
+
+**`npm run build` and `npm test` are observations, not criteria.** Run them and report each command
+and its exit code. Your own exec is load, so a whole-suite timing failure read from inside it is a
+question rather than an answer, and the Orchestrator takes the authoritative run after you exit.
 
 ## Review evidence
 

@@ -179,7 +179,14 @@ Perform this assignment directly. Spawn nothing.
 8. `tests/src/server/stages/RuntimeStage.test.ts` covers the function arm and the string arm.
 9. If `src/server/Overlay.ts` changed, `tests/src/server/Overlay.test.ts` exists and covers its
    contract.
-10. The five gates pass in order.
+10. `npm run format:check`, `npm run lint:check`, and `npm run check` each exit 0. These are not
+    timing-sensitive, so they are criteria.
+
+**`npm run build` and `npm test` are observations, not criteria.** Run them, report each command and
+its exit code, and report both readings for anything you re-run alone. Your own exec is load, so a
+whole-suite timing failure taken from inside it is a question rather than an answer, and the
+Orchestrator takes the authoritative run once you exit. Do not chase a timeout in a file you do not
+own, and do not weaken a test to make one go away.
 
 ## Deviation contract
 
