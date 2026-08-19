@@ -227,6 +227,55 @@ only those two plus nothing else. Both use the `exitCode !== null` form the prob
 one derived fact rather than two Node fields every call site has to remember to check. `#exit` already
 knows the difference: it formats `signal ${signal}` when `code === null`.
 
+## [MECHANISM CONFIRMED by reading; consequence owed to S2's failing proof] severity high (concurrency) — The runtime deadline is armed before the inspection is queued
+
+Settled by the Orchestrator, 2026-08-19, against the tree at `f9810f9`. The structural half is a claim
+about statement order, so reading the statements is the matching instrument. The behavioural half needs
+concurrency and is owed as unit S2's required failing proof.
+
+**The timer is armed before the work is handed over.** `src/server/Probe.ts:211-217`:
+
+```ts
+	async #inspectRuntime(subject: Case, claim: Claim): Promise<Check> {
+		const stage = this.#runtime
+		const timeout = createTimeout({ ms: this.#deadline })
+		timeout.start()
+		try {
+			return await Promise.race([
+				stage.inspect(subject),
+```
+
+`timeout.start()` runs at line 214 and `stage.inspect(subject)` at line 217.
+
+**`inspect` queues rather than runs.** `src/server/stages/RuntimeStage.ts:61-68`, read from the git
+object store at `f9810f9` so an in-flight unit's edits cannot confuse the reading:
+
+```ts
+	async inspect(subject: Case): Promise<Check> {
+		if (this.#destroyed) throw new Error('The runtime stage has been destroyed')
+		const inspection = this.#tail.then(() => this.#inspect(subject))
+		this.#tail = inspection.then(...)
+		return inspection
+	}
+```
+
+The work is chained onto `#tail`. A second call therefore waits behind the first while its own timer is
+already counting, so the budget `ProbeOptions.deadline` documents as bounding one runtime stage in fact
+covers queue time plus work.
+
+**The expiry path recycles the SHARED stage.** `src/server/Probe.ts:223` calls
+`await this.#recycle(stage)`, and `#recycle` installs a replacement `#runtime`. So the claim whose timer
+fired tears down the stage a different, still-running claim is bound to.
+
+**What is confirmed and what is not.** The three statements above are the mechanism, and each is a
+structural fact a reading settles. What reading cannot settle is the consequence under two real
+concurrent claims — that claim B's expiry destroys claim A's live run and misattributes the failure.
+That needs an executed interleaving.
+
+Unit S2 owns it and produces that interleaving as its required failing proof, red before the fix and
+green after. This finding is therefore no longer in the criterion 3 hole: its mechanism is established
+on evidence rather than on the sweep's word, and its closure carries an executed proof.
+
 ## Coverage of this file
 
 Five of the ten HIGH findings are settled with executed evidence: the stdout corruption, the runtime
@@ -236,15 +285,14 @@ resolve a candidate file that is not on disk (measured in full as O9, recorded i
 `o9-reconciliation.md`). The two doc-truth findings above are settled by inspection, which is the
 matching instrument for a claim about static text.
 
-Two HIGH findings are NOT independently reproduced and are carried into their repair units on the
+One HIGH finding is NOT independently reproduced and are carried into their repair units on the
 sweep's own evidence alone:
 
-- the deadline armed before the inspection is queued (unit S2),
 - the lint stage's orphaned document promise ending the host (unit S3).
 
 The lint stage's `exitCode` liveness read was the third and is now reproduced, immediately preceding
 this section.
 
-Each is behavioral and needs an executed reproduction. Unit S3 owns one of the two and produces
+It is behavioral and needs an executed reproduction. Unit S3 owns it and produces
 that reproduction as its own failing proof before repairing, per the regression-proof law. Do not
 read this file as covering all ten.
