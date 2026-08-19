@@ -105,3 +105,27 @@ Two findings are already known and stay where they are: the type stage's `fileEx
 candidate-source defect and belongs to that design's units, and the entry's shutdown finding overlaps
 a withdrawn claim about orphaned processes — the processes do exit, and the finding that stands is
 about discarded faults rather than leaked children.
+
+## Added to S2 by the third repair round's audit
+
+**A `prove` rejection emits two `error` events, not one.** The audit triggered a real arming failure
+and observed one rejected call and two identical events: `#arm` emits and rethrows, and `prove` emits
+the same error again on the way out.
+
+The first repair round asked for exactly one event per rejection and produced the second emit while
+closing a case that had none. The audit confirmed the duplicate exists in the commit before round 3
+as well, so round 3 did not introduce it — the guarantee was simply never true.
+
+A consumer counting error events double-counts every arming failure. It belongs to S2, which owns
+`Probe.ts` and already carries the arming and error-path work.
+
+## The third round's design decision, endorsed
+
+The audit ruled the fixed resident set plus one recycled slot the right bound: it preserves declared
+projects, admits an undeclared one without letting caller strings grow resident memory, and gives
+repeated use of one undeclared project locality. It measured the cost the round predicted —
+alternating two undeclared projects rebuilds a service each time at 432-573 ms — and ruled it
+acceptable for an exceptional path provided it stays documented, because it is caller-driven CPU work.
+
+It refused a least-recently-used cap for the reason the round gave, and refused rejecting undeclared
+projects because that removes an admitted capability.
