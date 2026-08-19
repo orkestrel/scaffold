@@ -146,3 +146,46 @@ own that would otherwise be written twice.
 - `computeReceipt` issues only when every case check is clean and the control failed at its
   declared stage. Its refusals are the proof that matters: the wrong stage, no failure at all, and
   a dirty case each return `undefined`.
+
+## Exit criterion, restated
+
+The campaign began with an implicit end: build the package. Three repair rounds, a design fork, and a
+six-lens sweep have since changed what "built" means, so the end is restated here explicitly. A plan
+that names work but not its end can only be abandoned, never finished.
+
+The campaign is complete when all of the following hold, and not before:
+
+1. Units 1, 2, 3, and 5 are landed, audited by an engine that did not write them, and committed.
+   **Done.**
+2. The proof units 4a, 4b, and 4c are landed and committed, and `npm test` reports no skipped and no
+   todo test.
+3. Every high-severity sweep finding that an independent verifier **reproduced** is closed, and each
+   closure carries a test that was red before the fix and green after.
+4. The candidate-source defect is closed, or is explicitly excluded on evidence with the contract
+   text changed to match what the package actually promises. A receipt that certifies runtime evidence
+   over source the runtime never ran is not something this package can ship with silently, so the one
+   outcome not available is leaving the contract as it stands.
+5. The five gates pass in order, run by an executor independent of every writer, and guide parity
+   passes.
+6. `PROBE.md` describes what shipped, including every measurement that moved and every claim this
+   campaign withdrew.
+
+## What is deliberately outside it
+
+Recorded against the capability that owns them, for the next change rather than this one:
+
+- Any sweep finding a verifier **refuted** or could not reproduce. A finding nobody can substantiate
+  is dropped on the record, not carried.
+- Medium and low findings that survive verification but are not on the path to criterion 3 or 4. They
+  are real and they are enumerated in `seam-sweep-findings.md`; they are not what closes this campaign.
+- Publishing. That is the user's decision and the user's credential, and nothing here presumes it.
+- The scaffold release that would correct the published self-pin. The source is repaired and `main` is
+  green; shipping that correction is a separate decision.
+
+## The rule this restatement obeys
+
+Re-baselining changes which units run. It never changes the goal. Criterion 3 is bounded by what
+verification reproduces rather than by what an audit claimed, which is a narrowing the evidence
+justifies. Criterion 4 is an addition the original exit criterion already required, because the design
+this package implements states that an agent proves source it has only thought of. Neither is a
+rescope, and a rescope would need the user.
