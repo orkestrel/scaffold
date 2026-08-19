@@ -133,10 +133,33 @@ consults nothing: it writes the test and runs it against the working tree.
 | Replaces a file already on disk   | judges the agent's text      | judges it  | **runs the on-disk text** |
 | Is a file that does not exist yet | **cannot resolve an import** | judges it  | **cannot resolve it**     |
 
-The second row fails loudly, which is survivable. The first row is a false green, and it is the one
-that matters: the type stage typechecks the agent's new text, the runtime stage runs the old text
-still on disk, both report clean, and a receipt is issued. The verdict states the claim was proven
-while its runtime evidence was about a different program.
+Both rows are measured against the built package, not reasoned about. The second fails loudly and
+issues nothing, which is survivable. The first has two outcomes, and which one an agent gets is
+decided by whether its test happens to observe what it changed. The same candidate produces both:
+
+```text
+PROVE A  case: type=0 lint=0 runtime=0
+PROVE A  RECEIPT: ISSUED  <-- for a candidate the runtime never ran
+
+PROVE B  case: type=0 lint=0 runtime=1
+PROVE B  runtime says: expected 'probe' to be 'CHANGED' // Object.is equality
+PROVE B  RECEIPT: none
+```
+
+`PROVE A` is the ordinary refactor claim — "I changed this file and the tests still pass." Every stage
+reports clean, the control fails where it declared, and a receipt is issued. `PROVE B` uses the same
+candidate and asserts the change itself; the runtime reports the value still on disk, which is the
+proof that `PROVE A`'s runtime evidence was never about the agent's code.
+
+So a test that observes the change gets a **false red**: correct code reported as failing, no receipt,
+misleading but self-limiting. A test that does not observe it gets a **false green with a receipt**,
+and that is the common case, because most edits are refactors whose tests are meant to keep passing.
+
+The receipt is what makes the second one serious. `computeReceipt` exists so a proof cannot be issued
+unless the case is clean and the control failed where it said it would, which is what makes the
+falsification law mechanical rather than advisory. Both conditions genuinely hold in `PROVE A`. The
+token is issued honestly by its own rules, and it certifies runtime evidence about a program the agent
+did not write.
 
 That is the failure this document says the mechanism exists to prevent, wearing the shape its own
 warning names — a warm service returning a confident wrong answer about source it has not caught up
