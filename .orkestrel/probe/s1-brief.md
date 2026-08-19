@@ -185,3 +185,45 @@ output, whether the work is done, and at most one short hypothesis.
 
 Return exactly: **Files written**, **Validation**, **Acceptance evidence**, **Deviation**,
 **Decisions**.
+
+## Amendment, 2026-08-19 — the proof suite now exists, and here it is
+
+The preceding section was written before the proof unit landed. It has landed. These are the facts
+rather than the expectation.
+
+**Baseline commit.** `938eb04 Prove the server, the stages, and the built entry`. Start from it. The
+tree is clean at dispatch; `git status --short` returns nothing.
+
+**The files that section refers to, by name.** `git ls-files tests/src/server tests/src/bin`:
+
+```text
+tests/src/bin/main.test.ts
+tests/src/server/Probe.test.ts
+tests/src/server/helpers.test.ts
+tests/src/server/index.test.ts
+tests/src/server/stages/LintStage.test.ts
+tests/src/server/stages/RuntimeStage.test.ts
+tests/src/server/stages/TypeStage.test.ts
+```
+
+`tests/src/server/stages/RuntimeStage.test.ts` is the one your defects mostly land in. It has four
+tests today: a verdict pair, a dependency-revalidation proof, `refuses a test path outside every real
+Vitest project`, and `abandons an inspection and destroys idempotently`. Extend it; do not replace it.
+
+**One test in `tests/src/bin/main.test.ts` is NOT yours.** `records the arming dependency leak when
+the entry is killed during boot` asserts that arming files survive `SIGTERM`. It reads like a defect
+being certified, and it is — but it belongs to unit S6, which wires the entry's shutdown and rewrites
+that assertion in the same change. Leave it exactly as it is. If your change reddens it, that IS a
+deviation worth reporting, because nothing in your scope should reach it.
+
+**Gate baseline at dispatch.** All five gates pass at `938eb04`, verified by an independent verifier:
+`format:check`, `lint:check`, `check`, `build`, and `test` each exit 0, with 12 test files and 157
+tests, and zero skipped, todo, or failed. So any red you see is yours, which is what makes the
+red-then-green evidence this brief asks for meaningful.
+
+**Host facts your commands run under.** You are in `/workspace/probe`. Nested process spawns are
+permitted here. The whole-workspace `npm test` is safe to run and takes roughly three minutes. The
+`probe` Vitest project reads `tmp/probe/`, and several tests write there, so if you build a throwaway
+instrument put it in its own scratch directory rather than in `tmp/probe`, or a sibling project's run
+will see your files and fail on a directory-listing assertion. That collision is real and cost the
+previous unit a repair round.

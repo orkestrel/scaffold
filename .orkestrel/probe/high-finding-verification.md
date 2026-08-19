@@ -120,3 +120,131 @@ The straightforward move alone is not sufficient: the current finally re-calls `
 Note that `#versions` is never cleared by the current finally either; the entry survives every inspection until `destroy`. That is presently harmless because `#version` consults `#overlays.has(file)` first, but it grows unbounded per distinct path and should be deleted alongside the overlay.
 
 Separately, reject a path that escapes the workspace at admission (`isSource` / `SOURCE_SHAPE`) so a malformed claim is refused at the wire rather than part-way through a stage.
+
+## [CONFIRMED, sharper than reported] severity high (doc-truth) — The canonical `Claim` @example declares a negative control byte-identical to the case, so it can never yield a receipt
+
+Settled by the Orchestrator by inspection, 2026-08-19. This claim is a property of static text, so
+reading the text is the measurement rather than a substitute for one.
+
+**Evidence.** `src/core/types.ts` lines 94-102:
+
+```text
+ * const greeting: Source = { path: 'src/core/greeting.ts', text: 'export const GREETING = "hi"\n' }
+ * const test: Source = { path: 'tests/src/core/greeting.test.ts', text: 'test("greets", () => {})\n' }
+ * const claim: Claim = {
+ * 	project: 'configs/src/tsconfig.core.json',
+ * 	case: { files: [greeting], test },
+ * 	control: { files: [greeting], test, stage: 'type', reason: 'the control must not compile' },
+ * }
+```
+
+`case.files` and `control.files` are the same binding. `case.test` and `control.test` are the same
+binding. The control declares `stage: 'type'` and `reason: 'the control must not compile'`, and the
+text it names is `export const GREETING = "hi"`, which compiles. `computeReceipt` issues only when
+every case check is clean AND the control failed at its declared stage, so this claim can never earn
+a receipt: the control passes the type stage it names.
+
+**Correction to the claim.** The finding is right and understates itself in two ways.
+
+1. The example is not merely unable to yield a receipt. It is the flagship example on `Claim`, the
+   package's central type, so it is the shape a first consumer copies. A consumer who copies it gets
+   a refusal with no receipt and no indication that the example, rather than their code, is what is
+   wrong.
+
+2. The same file gets it right one interface earlier. The `Control` @example at lines 70-75 uses
+   `'export const GREETING: number = "hi"\n'` — a string literal assigned to `number`, which
+   genuinely fails the type stage it names. So the correct control text exists in the file, 20 lines
+   above the example that drops it. That rules out "the author did not know what a control is" and
+   makes this a transcription defect, which is the kind a reader is least likely to catch.
+
+**Repair direction.** Give the `Claim` example its own control source with the failing text the
+`Control` example already uses, rather than reusing the `greeting` binding. The fix is three lines and
+belongs with the unit that owns `src/core/types.ts`.
+
+Under `.claude/rules/documentation.md` the guide proof executes flagship fences. This fence is TSDoc
+rather than a guide fence, so `tests/guides.test.ts` does not reach it. Whoever repairs it states
+whether the same claim is made in `guides/` and repairs both.
+
+## [PARTLY CLOSED BY UNIT 4A] severity high (doc-truth) — `CLAIM_SHAPE` claims the tool admits calls with `compileGuard(CLAIM_SHAPE)`; it admits them with `isClaim`
+
+Settled by the Orchestrator by inspection, 2026-08-19.
+
+**Evidence.** The finding has two halves and they are now in different states.
+
+The binding half was true when the sweep ran and unit 4a closed it. `tests/src/core/validators.test.ts`
+line 74 now calls `compileGuard(CLAIM_SHAPE)` and asserts `isClaim` agrees with it over a named
+hostile population, so the guarantee at `src/core/validators.ts` line 98 — "Admits and refuses exactly
+what `compileGuard(CLAIM_SHAPE)` does" — is now proven rather than asserted.
+
+The doc half stands. `src/core/shapers.ts` line 68 says the tool "admits a call with
+`compileGuard(CLAIM_SHAPE)`". `src/server/factories.ts` line 65 admits with `isClaim(input)`.
+`compileGuard` has no call site in `src/` at all — every occurrence there is inside a doc comment.
+The sentence describes a mechanism the server does not use.
+
+**Correction to the claim.** "compileGuard is never called in the package" was true at sweep time and
+is now false: unit 4a's test calls it. Nothing about the finding's substance changes, because the
+finding's subject is the sentence in `shapers.ts`, and that sentence is still false about the server.
+
+**Repair direction.** Rewrite the `shapers.ts` remark to say what is true and now proven: the tool
+publishes `compileSchema(CLAIM_SHAPE)` and admits with `isClaim`, which a test holds to
+`compileGuard(CLAIM_SHAPE)`'s exact behavior. That keeps the anti-drift guarantee the remark is for
+and stops claiming a call path that does not exist.
+
+## [REPRODUCED] severity high (failure-paths) — The lint stage reads liveness from `exitCode` alone, so a signal-killed Oxlint server makes `prove` and `destroy` hang forever
+
+Reproduced by the Orchestrator with an executed probe and a discriminating negative control,
+2026-08-19. Instrument: `scratchpad/liveness.mjs`, transcribed into `instruments/liveness.mjs`.
+
+**Evidence.** Output verbatim:
+
+```text
+exit event      code=null signal=SIGKILL
+child.exitCode  = null
+child.signalCode= SIGKILL
+GUARD exitCode !== null => false (false means the guard reads a dead child as alive)
+write after death threw = false
+CONTROL clean exit: exitCode = 3 signalCode = null
+CONTROL guard exitCode !== null => true (must be true, or the guard never works at all)
+```
+
+**What the control establishes.** The control is drawn from outside the population the finding covers:
+an ordinary `process.exit(3)` rather than a signal death. It reports `exitCode = 3`, so the guard
+returns true and correctly detects that death. That is what makes the signal result a finding rather
+than a broken guard — the guard works, and it works only for the exit path. A control that had also
+returned null would have meant the probe was measuring nothing.
+
+**The second line matters as much as the first.** `child.stdin.write(...)` after the child is dead
+returns without throwing. So the guard at `LintStage.ts:198` is not one of two defenses, it is the
+only one. When it reads false, the write silently succeeds against a dead pipe, no reply ever arrives,
+and nothing settles the promise.
+
+**Confirms the finding as written.** `src/server/stages/LintStage.ts` has exactly two liveness reads,
+at line 89 (`#destroy`) and line 198 (`#send`), and `grep -n 'exitCode|killed|signalCode' ` returns
+only those two plus nothing else. Both use the `exitCode !== null` form the probe just falsified.
+
+**Repair direction.** Read liveness from both fields — a child is dead when `exitCode !== null` OR
+`signalCode !== null` — or better, hold an explicit boolean the `exit` handler sets, so liveness is
+one derived fact rather than two Node fields every call site has to remember to check. `#exit` already
+knows the difference: it formats `signal ${signal}` when `code === null`.
+
+## Coverage of this file
+
+Five of the ten HIGH findings are settled with executed evidence: the stdout corruption, the runtime
+eviction, the type-stage overlay pin, the skipped-test receipt (recorded in
+`seam-sweep-findings.md` under `Orchestrator verification`), and the type stage's inability to
+resolve a candidate file that is not on disk (measured in full as O9, recorded in
+`o9-reconciliation.md`). The two doc-truth findings above are settled by inspection, which is the
+matching instrument for a claim about static text.
+
+Two HIGH findings are NOT independently reproduced and are carried into their repair units on the
+sweep's own evidence alone:
+
+- the deadline armed before the inspection is queued (unit S2),
+- the lint stage's orphaned document promise ending the host (unit S3).
+
+The lint stage's `exitCode` liveness read was the third and is now reproduced, immediately preceding
+this section.
+
+Each is behavioral and needs an executed reproduction. Unit S3 owns one of the two and produces
+that reproduction as its own failing proof before repairing, per the regression-proof law. Do not
+read this file as covering all ten.

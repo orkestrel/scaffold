@@ -189,3 +189,39 @@ verification reproduces rather than by what an audit claimed, which is a narrowi
 justifies. Criterion 4 is an addition the original exit criterion already required, because the design
 this package implements states that an agent proves source it has only thought of. Neither is a
 rescope, and a rescope would need the user.
+
+## Re-baseline after unit 4b, 2026-08-19
+
+The six-lens sweep and its triage landed after this plan was written. Ruling on every remaining unit.
+
+| Unit | Ruling | What changed |
+| ---- | ------ | ------------ |
+| U4a — core proofs | **satisfied** | Landed. 10 tests, gates green. |
+| U4b — server and entry proofs | **satisfied** | Landed. 33 tests across 7 files. Its entry leak test is carried into S6 rather than corrected here. |
+| U4c — guide, parity, README, manifest | **transformed** | Intent stands, position moves. It now runs after the repair units, not before them. |
+| S1-S6 — sweep repairs | **added** | The sweep revealed them after this plan was written. |
+| O9 — candidate-source overlay | **unchanged**, with a new prerequisite | S4 must land first. |
+
+**Why U4c moves.** It documents behavior three repair units are about to change. S1 makes a skipped
+test stop yielding a clean check, S2 changes what `ProbeOptions.deadline` actually bounds, and S6
+gives the entry a shutdown it does not have. A guide written now describes the package as it is today
+and needs rewriting three times before the campaign ends. Writing it last costs one pass instead of
+four, and the parity contract it establishes then holds against the shipped surface rather than
+against a surface in flight.
+
+**Why O9 acquired a prerequisite.** S4 repairs the overlay lifetime — overlays applied outside the try
+that guards them, and a `#versions` map nothing prunes. O9 rebuilds that same lifetime to make
+candidate sources visible to the type stage. Building the new mechanism on the broken lifetime means
+repairing it twice, once in each shape.
+
+**New order.** S1 → S2 → S3 → S4 → S5 → S6 → O9 → U4c → independent verifier → PROBE.md
+reconciliation.
+
+The S-units own disjoint files (`RuntimeStage.ts`, `Probe.ts`, `LintStage.ts`, `TypeStage.ts`,
+`src/core/*`, `src/bin/main.ts`), and each owns its own mirrored test file. They still run one at a
+time in the main checkout from a committed baseline, per the writing-concurrency law; disjointness is
+what makes the ownership clean, not a licence to run them together.
+
+**The exit criterion is unchanged.** This re-baseline reorders units and adds the sweep's repairs,
+which the criterion already required — every capability the package owns ends implemented, repaired,
+retained, or intentionally excluded on evidence. It does not move the goal.

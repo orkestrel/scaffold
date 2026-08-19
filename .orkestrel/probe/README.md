@@ -39,8 +39,14 @@ proofs), `u4b` (server proofs), `u4c` (guide and parity).
 Repairs of unit 3: `u3fix1` (lifecycle), `u3fix2` (contract and publication), `u3fix3` (audit
 findings).
 
-Not yet run: `s1` and `s2` (the first two sweep repair units), `o9-u1` (the candidate-source overlay's
-foundation). `o9-design-brief.md` is the brief both design lanes executed.
+Sweep repairs, in dispatch order: `s1` (the runtime stage certifying what it never ran), `s2` (the
+deadline bounding the queue rather than the work), `s3` (the lint stage surviving its child's death),
+`s4` (the type stage's overlay outliving its inspection), `s5` (the contract describing a package that
+does not exist), `s6` (the entry owning its shutdown). `seam-sweep-triage.md` explains why they run in
+that order and which finding each one carries.
+
+Not yet run: `s2` through `s6`, and `o9-u1` (the candidate-source overlay's foundation), which now
+depends on `s4`. `o9-design-brief.md` is the brief both design lanes executed.
 
 Audit briefs sit beside the round they audit, named `*-audit-brief.md`.
 
@@ -48,6 +54,11 @@ Audit briefs sit beside the round they audit, named `*-audit-brief.md`.
 
 `instruments/` holds what works and why. Read its README before writing a client for the probe's
 stdio server; three units have now lost time to that surface.
+
+`wire.mjs` drives the built entry over its real stdio transport. `liveness.mjs` settles what a
+signal-killed child reports, with a control that discriminates it from a clean exit — it is the
+instrument behind the lint stage's liveness finding, and it is retained because that finding's repair
+owes a regression guard built on the same question.
 
 ## What this record is for
 

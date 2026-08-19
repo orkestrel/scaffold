@@ -129,3 +129,32 @@ acceptable for an exceptional path provided it stays documented, because it is c
 
 It refused a least-recently-used cap for the reason the round gave, and refused rejecting undeclared
 projects because that removes an admitted capability.
+
+## Added to S6 by the Orchestrator's verification of unit 4b
+
+**Unit S6 also owns `tests/src/bin/main.test.ts`, and its first act there is to rewrite one test.**
+
+Unit 4b wrote `records the arming dependency leak when the entry is killed during boot`
+(`tests/src/bin/main.test.ts` lines 166-197). It sends `SIGTERM` to the built entry mid-arming and
+asserts the arming files that existed before the signal still exist after it:
+
+```text
+expect([...leaked].sort()).toStrictEqual(arming.sort())
+```
+
+That assertion makes the leak required rather than recorded, and its name says the opposite of what it
+asserts. The entry installs no signal handler — `src/bin/main.ts` is three lines and `grep -rn
+"SIGTERM\|SIGINT\|process.on" src/` returns only an unrelated `child.once('exit')` in `LintStage.ts` —
+so `SIGTERM` takes its default disposition and nothing cleans up. `SIGTERM` is catchable, so this is
+repairable, which is exactly what S6 is for.
+
+Leave the test in place until S6 runs. It is the honest record of current behavior and it is the
+failing proof S6 needs: wiring shutdown reddens it, and that red is the evidence the repair works.
+
+S6 must not read that red as a regression it caused. Rewrite the test in the same change to assert
+what the repair makes true — the arming files are gone after the entry handles `SIGTERM` and exits —
+and keep the pre-signal `expect(arming).toHaveLength(2)` step, which is what proves the files existed
+to be cleaned up.
+
+Unit 4b is not at fault here. Its brief was to prove the entry, it found behavior nobody had recorded,
+and it recorded it rather than hiding it or quietly widening its scope to fix it.

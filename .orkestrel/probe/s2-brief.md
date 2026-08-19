@@ -155,3 +155,42 @@ output, whether the work is done, and at most one short hypothesis.
 
 Return exactly: **Files written**, **Validation**, **Acceptance evidence**, **Deviation**,
 **Decisions**.
+
+## Amendment, 2026-08-19 — a fifth defect, and the baseline
+
+### Defect E — a `prove` rejection emits two `error` events, not one
+
+Added from the third repair round's audit, which triggered a real arming failure and observed one
+rejected call and two identical events. `#arm` emits and rethrows; `prove` emits the same error again
+on the way out.
+
+The first repair round asked for exactly one event per rejection and produced the second emit while
+closing a case that had none. The audit confirmed the duplicate exists in the commit before round 3 as
+well, so round 3 did not introduce it — the guarantee was never true.
+
+A consumer counting error events double-counts every arming failure. It belongs here because this unit
+owns `Probe.ts` and already carries the arming and error-path work.
+
+Criterion: one rejected `prove` emits exactly one `error` event. Assert the count, not merely that an
+event fired. Cover both the arming-failure path and an ordinary stage failure, because they reach the
+emit through different doors and only one of them was examined.
+
+### Baseline and standing conditions
+
+- Start from the commit `git log --oneline -1` reports at dispatch. The tree is clean.
+- Unit S1 lands before you and owns `src/server/stages/RuntimeStage.ts`. It changes what a clean
+  runtime check means and how the runtime stage is constructed. Read that file as it is when you start;
+  every line number this brief quotes for `Probe.ts` was read before S1 ran, so re-read those too.
+- `src/server/stages/RuntimeStage.ts` is OFF-LIMITS to you. If the deadline repair appears to need it,
+  stop and report — that is a unit boundary.
+- The concurrency this unit must assume is real, not hypothetical. The stdio transport reads with a
+  plain `data` handler and nothing awaits the async message listener beneath it, and `prove` has no
+  mutual exclusion. Two claims can be in flight.
+
+### Host facts your commands run under
+
+- Working directory `/workspace/probe`. Nested process spawns are permitted.
+- The whole-workspace `npm test` is safe and takes roughly three minutes.
+- The `probe` Vitest project reads `tmp/probe/`, and sibling projects write there concurrently. Put any
+  throwaway instrument in its own scratch directory, never in `tmp/probe`. That collision is real and
+  cost an earlier unit a repair round.
