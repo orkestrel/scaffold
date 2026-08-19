@@ -266,3 +266,24 @@ The remedy is not obvious and is a design question rather than a repair. The run
 to materialize each candidate at its declared path, which collides with the real file already there
 when one exists, and the collision has to resolve without corrupting the developer's checkout. Route
 this to a design round rather than to a fix round.
+
+### The seam a remedy for O9 would use
+
+`createVitest` takes a Vite configuration override as its third argument, and the runtime stage
+currently passes only two:
+
+```text
+$ grep -n "declare function createVitest" node_modules/vitest/dist/node.d.ts
+125:declare function createVitest(mode: VitestRunMode, options: CliOptions, viteOverrides?: UserConfig$1, vitestOptions?: VitestOptions): Promise<Vitest>;
+```
+
+A Vite plugin whose `resolveId` and `load` serve the candidate text for a matching path is the same
+overlay the type stage already applies, moved to the runner. It needs no new dependency, writes
+nothing to disk, and keeps the diskless law the design states.
+
+Three questions decide the shape and belong to a design round rather than to a repair:
+
+- What happens when a candidate's declared path names a file that already exists. The overlay must
+  win for that run without the developer's checkout ever changing.
+- How the overlay interacts with the per-revision invalidation the stage already performs.
+- Whether the overlay applies only to the modules the test imports directly, or to the whole graph.
