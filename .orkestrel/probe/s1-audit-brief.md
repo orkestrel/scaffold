@@ -31,8 +31,61 @@ crash — even when the crash looks more dramatic.
 
 ## The claims, numbered
 
-The Orchestrator fills this section from S1's returned report before dispatch. Each claim is stated as
-a falsifiable property, not as "S1 says it fixed A".
+Drawn from the actual diff, not from the unit's report. Each is a falsifiable property.
+
+1. **A case whose test never runs cannot produce a clean check.** `#findings` now switches on
+   `module.state()`: `passed` continues, `skipped` pushes a finding, `failed` pushes one when that
+   module produced none, `pending` and `queued` push one, and any other value pushes an
+   "unrecognized state" finding.
+2. **A case whose test genuinely passes still produces a clean check and still earns a receipt.**
+3. **Worker stdout no longer reaches `process.stdout`.** `#vitest` builds a `PassThrough`, calls
+   `output.resume()`, and passes `{ stdout: output, stderr: output }` as `createVitest`'s fourth
+   `VitestOptions` argument.
+4. **That replacement stream cannot grow without bound.** `resume()` puts it in flowing mode with no
+   consumer, so data is discarded rather than buffered.
+5. **Eviction leaves no retained state.** `#evict` deletes matching `state.idMap` entries, removes the
+   path from `state.pathsSet`, clears the specifications cache, invalidates the file, deletes the
+   module-graph entries and their importer edges, tells the watcher, and removes the disk result row.
+6. **Eviction proves itself.** `#evict` ends by throwing `Vitest retained the generated specification`
+   when `state.filesMap`, `state.idMap`, or any module graph still holds the file.
+7. **An unmapped test path returns a verdict rather than throwing.** `#project` returns `undefined`
+   instead of throwing, and `#inspect` returns a `Check` carrying a finding.
+8. **The per-module fallback is now per-module.** The old guard read `findings.length === 0`, which is
+   the accumulator across every module, so a second failed module with no errors of its own got no
+   fallback finding. It now reads `findings.length === before`.
+
+## Attack claim 6 first, and attack it as a defect rather than a feature
+
+`#evict` is called from `#inspect`'s `finally`, and it throws when it finds retained state. A throw
+from a `finally` REPLACES whatever the `try` produced.
+
+So when an inspection fails for a real reason and eviction also finds something retained, the caller
+receives `Vitest retained the generated specification` and the real diagnosis is gone.
+
+That is the same defect class this campaign is repairing in `LintStage` under unit S3, where a cleanup
+handler throws and replaces the Oxlint crash diagnosis. If it is present here, S1 has introduced the
+defect it is elsewhere fixing, in the same commit that fixes three others.
+
+Determine whether it is reachable. Then rule on the mechanism rather than only the instance: a
+self-check that fails loudly is a good instinct and a `finally` is the wrong place to spend it. Say
+where it belongs.
+
+`#evict` also `await`s `vitest.cache.results.writeToCache()` on every inspection, inside that same
+`finally`. Rule on both the cost and the added throw site.
+
+## Attack claim 1 at the state machine's premise
+
+Every branch depends on `module.state()` returning the value the branch names. The claim collapses
+entirely if Vitest reports a module whose tests were all skipped as `passed` rather than `skipped`.
+
+Ask, for each: a file whose only test is `test.skip`, a file wrapped in `describe.skip`, a file of only
+`it.todo`, a file where a name filter excluded every test, a file with no tests at all, and a test
+skipped at runtime by `ctx.skip()` after it started. Which of these does the shipped code call clean?
+Each one it calls clean is a receipt for a case that never ran, which is the defect this unit exists to
+close.
+
+The unit's tests are evidence of what it checked, not of what is true. Where the installed Vitest
+declarations settle a case, read them.
 
 ## Your posture
 
