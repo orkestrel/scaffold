@@ -562,6 +562,11 @@ nothing.
   second run started beside a live first one produces failures that read as the subject's — a
   publish chain relaunched over a live one reports `EOTP` and `E403` that are its own two processes
   colliding, and both readings point at the registry.
+- Key a liveness watcher on the process id, never on a command pattern. A watcher's own shell carries
+  the pattern in its command line, so `pgrep -f "<the exec>"` matches the watcher itself and the loop
+  never terminates: the watch reports "still running" forever and its completion notification can never
+  arrive. `kill -0 <pid>` cannot make that mistake. The same text also makes an elapsed-time reading
+  report the watcher's age instead of the exec's, which reads as a relaunch that never happened.
 - Kill by process id, never by pattern. `pkill -f` matches the relaunch that is already starting, so
   the pattern that cleans up the old run kills the new one and the cleanup reads as a launch
   failure.
