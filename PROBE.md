@@ -167,13 +167,38 @@ with. It is worse than the stale-cache defects the design pass reproduced, becau
 closes it: the runtime stage is not stale, it is reading a file the agent never claimed.
 
 Closing it means serving candidates as virtual modules through the runner rather than writing them
-out. `createVitest` takes a Vite configuration override the runtime stage does not currently pass, so
-a plugin that resolves and loads candidate text by path is the same overlay the type stage already
-applies, moved to the runner — and the type stage's host needs its `fileExists` and `directoryExists`
-to consult the overlay too. Three questions decide the shape: whether a candidate is keyed by its
-declared path or by a revision-suffixed virtual identity that sidesteps invalidation entirely, how
-the overlay beats the real file when one exists, and whether it covers the whole module graph or only
-direct imports.
+out — the same overlay the type stage already applies, moved to the runner. The type stage's host also
+needs `fileExists` and `directoryExists` to consult the overlay, which is measured: as shipped an
+overlay-only candidate reports `Cannot find module`, and with those two callbacks changed the import
+resolves.
+
+The runner half took two attempts to establish, and the first was wrong. A plugin passed to
+`createVitest` as a Vite configuration override never reaches the project that runs the test, because
+that override merges into the root server only and every Vitest project builds its own:
+
+```text
+ROOT server has o9-marker   : true
+project alpha  has o9-marker: false
+project beta   has o9-marker: false
+```
+
+`RuntimeStage` always selects a project by name, so it would never consult such a plugin. The route
+that works is to augment the target's own project definitions and pass them through `createVitest`'s
+options instead, which is measured against a two-project configuration:
+
+```text
+R2 projects after override: alpha
+   alpha has o9-overlay: true
+R3 resolveId fired for the overlaid module: true
+R3 test outcome: passed
+```
+
+The test asserted the overlay's value and passed while the file on disk was unchanged.
+
+What the mechanism cannot decide is the shape, and that is what the design round rules on: whether a
+candidate is keyed by its declared path or by a revision-suffixed identity, whether the overlay covers
+the whole module graph or only direct imports, what happens to a candidate no stage ever loaded, and
+what the verdict says when a target's project definitions cannot be augmented at all.
 
 ### The lesson worth keeping
 
