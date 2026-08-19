@@ -20,10 +20,18 @@ Read before acting, in this order:
 4. `/home/user/scaffold/PROBE.md`, the design ruling, for what the mechanism is and why. The guide's
    opening paragraphs state the doctrine; take it from there rather than inventing one.
 
-Two guides already sit in `guides/`. `guides/guide.md` and `guides/scaffold.md` are vendored mirrors
-of other packages' guides. They are not yours to edit, they are not concept rows, and their relative
-links address an upstream tree rather than this one. Read `guides/guide.md` as the model for section
-structure, table shape, and voice.
+Seven guides already sit in `guides/` and none of them is yours:
+
+```text
+$ ls guides/
+README.md  contract.md  emitter.md  guide.md  mcp.md  scaffold.md  timeout.md  tool.md
+```
+
+All seven are vendored mirrors of other packages' guides, refetched by a scaffold verb. They are not
+yours to edit, they are not concept rows, and their relative links address an upstream tree rather
+than this one, so they sit outside local-link parity. Five arrived after this workspace was
+scaffolded, when its runtime dependencies were declared. Read `guides/guide.md` as the model for
+section structure, table shape, and voice — and only as a model.
 
 ### The model to copy for the parity proof
 
@@ -128,6 +136,25 @@ A separate unit has already brought this workspace onto the current scaffold and
 `overwrite` here changes `vite.config.ts` and nothing else. If it writes any other file, that is a
 real deviation: stop and report it.
 
+## The three behavioral interfaces and their exact members
+
+Read from the source rather than recalled, so the method tables match:
+
+```text
+ProbeInterface        emitter, toolchain (readonly data)   prove(claim), destroy()
+StageInterface        stage (readonly data)                inspect(subject), destroy()
+ProbeServerInterface                                       start(), stop()
+```
+
+Readonly data properties stay in the interface's `## Surface` row; only the call-signature members
+belong in a `## Methods` table.
+
+One divergence needs documenting honestly rather than hidden. `TypeStage.inspect` takes an optional
+second parameter, `project`, which `StageInterface.inspect` does not declare. That is deliberate: a
+repair round moved it off the shared contract because no consumer read it there, and onto the one
+class where it is real. The method sets still match exactly, which is what parity checks. Document the
+extra parameter on `TypeStage`, and do not add it to the interface's table.
+
 ## The published front page is still the scaffold placeholder
 
 Three fields reach npm and every one of them is starter text:
@@ -185,8 +212,9 @@ someone would actually search. Neither is decoration: both are how the registry 
    surface and the barrel surface equals the documented surface, and that every link in the guide
    resolves. Every parity check reduces to comparing an empty list against an empty list, so a
    failure names exactly what drifted.
-9. The vendored mirrors `guides/guide.md` and `guides/scaffold.md` are excluded from parity as
-   non-rows, and the test says in a comment why.
+9. All seven vendored mirrors in `guides/` are excluded from parity as non-rows, and the test says
+   in a comment why. Do not name them individually where a rule can exclude them, because the set
+   grows whenever a dependency is declared.
 10. `npx scaffold overwrite` adds the `guides` project to `vite.config.ts`, `package.json` gains a
     `test:guides` script matching its siblings' form, and that script joins the `test` chain.
 11. `npm run test:guides` exits 0.
