@@ -102,7 +102,8 @@ consistent with what you chose in defect A.
 ## Scope
 
 - **Owned**: `src/server/stages/RuntimeStage.ts`, `src/server/types.ts`, and
-  `tests/src/server/**` only for the tests these defects owe.
+  `tests/src/server/**` and `tests/src/bin/**` for the tests these defects owe and for any existing
+  assertion your fix makes untrue.
 - **Off-limits**: everything else. Specifically `src/core/**`, `src/server/Probe.ts`,
   `src/server/stages/TypeStage.ts`, `src/server/stages/LintStage.ts`, `src/server/factories.ts`,
   `src/server/helpers.ts`, `src/bin/main.ts`, `guides/**`, `package.json`, `vite.config.ts`,
@@ -133,6 +134,23 @@ exact command and both counts.
    exit 0, run in that order.
 8. `npm test` reports no skipped and no todo test in the final tree.
 9. `git diff --stat` touches only owned files.
+
+
+## Tests written before you that may need to move
+
+A proof unit committed a server and entry suite before this repair. It was written against the
+behaviour that exists now, which includes the behaviour you are about to change. Expect some of its
+assertions to fail under your fix, and treat that as ordinary rather than as a deviation.
+
+The rule for handling one: if a test asserts the defective behaviour, change the test and say in your
+report exactly which assertion moved and why the new one is right. If a test fails for a reason your
+change does not explain, that is a real deviation and it stops the unit.
+
+Those test files are yours to edit for this purpose only. Do not rewrite the suite, and do not delete a
+test to make a gate pass — that is the one move this repository refuses outright.
+
+The assertions most likely to move are the ones about what a clean check means and what a
+receipt requires, because that is precisely what defect A changes.
 
 ## Execution
 

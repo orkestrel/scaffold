@@ -90,7 +90,8 @@ sentence true, or move the emit. Do not leave them disagreeing.
 ## Scope
 
 - **Owned**: `src/server/Probe.ts`, `src/core/types.ts` **only** for the `expire` and `deadline`
-  documentation defects D and E, and `tests/src/server/**` for the tests these defects owe.
+  documentation defects D and E, and `tests/src/server/**` and `tests/src/bin/**` for the tests these defects owe and for any
+  existing assertion your fix makes untrue.
 - **Off-limits**: everything else. Specifically `src/core/helpers.ts`, `validators.ts`, `shapers.ts`,
   `constants.ts`, every file under `src/server/stages/`, `src/server/factories.ts`,
   `src/server/helpers.ts`, `src/server/types.ts`, `src/bin/main.ts`, `guides/**`, `package.json`,
@@ -122,6 +123,23 @@ Every criterion owes a committed test, red before the fix and green after, with 
    proof, which is off-limits and environmental.
 9. `npm test` reports no skipped and no todo test in the final tree.
 10. `git diff --stat` touches only owned files.
+
+
+## Tests written before you that may need to move
+
+A proof unit committed a server and entry suite before this repair. It was written against the
+behaviour that exists now, which includes the behaviour you are about to change. Expect some of its
+assertions to fail under your fix, and treat that as ordinary rather than as a deviation.
+
+The rule for handling one: if a test asserts the defective behaviour, change the test and say in your
+report exactly which assertion moved and why the new one is right. If a test fails for a reason your
+change does not explain, that is a real deviation and it stops the unit.
+
+Those test files are yours to edit for this purpose only. Do not rewrite the suite, and do not delete a
+test to make a gate pass — that is the one move this repository refuses outright.
+
+The assertions most likely to move are the ones about deadline timing, the `expire` event, and the
+count of `error` events, because defects A, D, and E change all three.
 
 ## Execution
 
