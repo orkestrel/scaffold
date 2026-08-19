@@ -57,7 +57,10 @@ permanent.
   Prove a probe whose arming fails leaves the process alive and rejects `prove` with that failure.
 - `destroy` waited behind an in-flight inspection in two stages and abandoned one in the third. Prove
   all three abandon.
-- Sending `SIGTERM` to the spawned entry left its Oxlint child running. Prove no child survives.
+- A probe killed during arming leaves its two arming dependencies in `tmp/probe/`, because the
+  `finally` that removes them never runs. Reproduced every time. Prove the leak exists so a later fix
+  has something to close, or prove it closed if a fix lands first. Do not claim the entry orphans a
+  process: that was measured and refuted.
 - Arming proved only the runtime half of the staleness defect. Prove it refuses when the type host
   serves stale source, as well as when the runtime does.
 
@@ -68,6 +71,33 @@ asserts each value is defined. It passes over an empty population and can only f
 exports a literal `undefined`, which no declaration here produces. `.claude/rules/tests.md` requires
 an assertion that fails rather than passes when its population is empty. Replace it with one that
 does, or delete it — the population assertion above it already pins the surface.
+
+### What the two repair rounds changed under you
+
+This brief was written against the pre-repair tree. Both rounds have landed and the surface moved.
+Verified at commit `32cfa1b`:
+
+```text
+$ node -e "console.log(Object.keys(require('./dist/src/server/index.cjs')).length)"
+18
+$ grep -n "^export interface " src/server/types.ts
+18:export interface StageInterface {
+55:export interface WorkspaceManifest {
+72:export interface ProbeServerInterface {
+$ grep -n "inspect(" src/server/types.ts
+29:	inspect(subject: Case, project?: string): Promise<Check>
+```
+
+Three consequences for what you write:
+
+- The server barrel now publishes 18 runtime names. `readWorkspaceManifest` is the new one, and the
+  population assertion in `tests/src/server/index.test.ts` already names it.
+- `StageInterface.inspect` takes an optional `project`. A claim always carries one, because
+  `Claim.project` is required, so the fallback path exists for a consumer running one stage alone.
+  Prove both: a stage given a project checks against it, and a stage given none falls back to
+  inferring one from the candidate's path.
+- Arming now runs two controls, one for each resident host. Boot is 4392 ms and a warm `prove` is
+  530-621 ms, measured. Size every timeout from those, not from the older 492 ms figure.
 
 ### The timeout constraint, already measured
 

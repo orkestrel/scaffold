@@ -80,13 +80,14 @@ CASE_SHAPE, CLAIM_SHAPE, CONTROL_SHAPE, PROBE_STAGES, RECEIPT_PREFIX, RECEIPT_SE
 Twelve core types, from `src/core/types.ts`: `Stage`, `Source`, `Case`, `Control`, `Claim`,
 `Finding`, `Check`, `Toolchain`, `Verdict`, `ProbeEventMap`, `ProbeOptions`, `ProbeInterface`.
 
-Server, published as `@orkestrel/probe/server`. Seventeen runtime exports, asserted in
-`tests/src/server/index.test.ts`, plus the `StageInterface` type from `src/server/types.ts`.
+Server, published as `@orkestrel/probe/server`. Eighteen runtime exports, asserted in
+`tests/src/server/index.test.ts`, plus three types from `src/server/types.ts`: `StageInterface`,
+`WorkspaceManifest`, and `ProbeServerInterface`.
 
-`ProbeInterface` and `StageInterface` are the two behavioral interfaces, so each owns a
+`ProbeInterface`, `StageInterface`, and `ProbeServerInterface` are the three behavioral interfaces, so each owns a
 `#### \`Interface\`` method table under `## Methods`, and each implementing class exposes exactly
 those methods. `Probe` implements `ProbeInterface`; `TypeStage`, `LintStage`, and `RuntimeStage` each
-implement `StageInterface`.
+implement `StageInterface`; `createProbeServer` returns a `ProbeServerInterface`.
 
 ## Unknowns
 
@@ -168,8 +169,8 @@ someone would actually search. Neither is decoration: both are how the registry 
 ## Criteria
 
 1. `guides/probe.md` exists and carries `## Surface`, `## Methods`, and `## Tests` sections.
-2. Every one of the twenty core runtime exports, the twelve core types, the seventeen server runtime
-   exports, and `StageInterface` appears in the guide's surface with its correct kind.
+2. Every one of the twenty core runtime exports, the twelve core types, the eighteen server runtime
+   exports, and the three server types appears in the guide's surface with its correct kind.
 3. The guide documents no name that is not a real public export.
 4. `## Methods` carries one table per behavioral interface, keyed by its backticked name, and each
    table's rows exactly match that interface's call-signature members.
