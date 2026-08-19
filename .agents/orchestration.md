@@ -495,6 +495,12 @@ wrong is right to stop.
   strike the criterion.
 - Give a small unrelated obligation its own unit. Ride it along in a large one and its scope error
   blocks the primary work, which is a whole unit lost to a detail.
+- Never make a timing-sensitive or whole-suite gate result a criterion for a unit that runs inside its
+  own exec. The exec is load, so the unit cannot take that reading validly however carefully it
+  isolates, and a criterion it cannot close either stalls it or invites it to explain the failure away.
+  Name the gate as an observation the unit reports with both readings, and take the authoritative run
+  yourself after the unit exits, per **Writing concurrency** rule 10. A scoped run over the unit's own
+  owned files stays a legitimate criterion.
 - Ask what the change will do to the facts you just measured. A criterion fixed to a measured set is
   unreachable if the change alters that set, and a file marked off-limits is wrong if the change
   writes to it. Measure the state the unit will finish in, not only the state it starts from.
