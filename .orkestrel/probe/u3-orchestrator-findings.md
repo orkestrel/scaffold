@@ -500,3 +500,50 @@ about 40 ms because it rides the same warm hosts the runtime control already sta
 A warm `prove` moved from a 492 ms median to 530-621 ms across three runs, which is the routed
 project adding a scoped type check rather than the arming change. `PROBE.md` § What was built needs
 the warm number corrected and the boot number left alone.
+
+## O9 measured in full — both failure modes, one of them a false proof
+
+Run against the built package at `32cfa1b`.
+
+**Row two, a candidate that does not exist on disk.** Fails loudly and issues nothing:
+
+```text
+case type:    Cannot find module '../../src/core/o9candidate.js' or its corresponding type declarations.
+case lint:    0 findings
+case runtime: Cannot find module '../../src/core/o9candidate.js' imported from …o9.test.probe-….ts
+receipt: NONE
+```
+
+**Row one, a candidate that replaces a file already on disk.** Two outcomes, decided by whether the
+test happens to observe what the agent changed. Same candidate in both:
+
+```text
+PROVE A  case: type=0 lint=0 runtime=0
+PROVE A  RECEIPT: ISSUED  <-- for a candidate the runtime never ran
+
+PROVE B  case: type=0 lint=0 runtime=1
+PROVE B  runtime says: expected 'probe' to be 'CHANGED' // Object.is equality
+PROVE B  RECEIPT: none
+```
+
+`PROVE A` is the ordinary refactor claim — "I changed this file and the tests still pass." Every stage
+reports clean, the control fails where it declared, and a receipt is issued. `PROVE B` uses the same
+candidate and asserts the change itself, and the runtime reports the on-disk value, which is the proof
+that `PROVE A`'s runtime evidence was never about the agent's code.
+
+So the defect has two faces and both are real:
+
+- The test observes the change: a **false red**. The agent's correct code is reported as failing at
+  runtime, and no receipt is issued. Misleading, and self-limiting.
+- The test does not observe the change: a **false green with a receipt**. This is the common case,
+  because most edits are refactors whose tests are meant to keep passing, and it is precisely the
+  claim an agent most wants to make.
+
+The receipt is what makes the second one serious. `computeReceipt` was built so a proof cannot be
+issued unless the case is clean and the control failed where it said it would, which makes the
+falsification law mechanical. Both conditions hold in `PROVE A`. The token is issued honestly by its
+own rules and certifies runtime evidence about a program the agent did not write.
+
+That is the strongest argument for closing this before the package is published. A wrong answer an
+agent can see is a bug. A proof token that says a claim was verified when its runtime evidence came
+from different source is a mechanism working against the reason it exists.
