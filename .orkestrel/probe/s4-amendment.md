@@ -39,3 +39,29 @@ binds, because a concurrent tree-wide gate reads a sibling's in-flight failure.
 
 The test-helper adoption unit runs after BOTH. It sweeps `tests/src/server/stages/TypeStage.test.ts`,
 which S4 edits, so it must see S4's final shape rather than repair the same drift the other way.
+
+## A neighbouring unit changes which paths escape — write your test against a genuine escape
+
+Unit H1 repairs `resolveWorkspaceFile` in `src/server/helpers.ts`, which S4's defect A depends on
+throwing. H1 makes it throw on FEWER paths, not more: `path.startsWith('..')` is a bare prefix test
+today, so it refuses three contained files whose names begin with dots. Measured:
+
+```text
+DIFFER  "..hidden.ts"            probe=THROW pkgform=ok
+DIFFER  "..config/value.ts"      probe=THROW pkgform=ok
+DIFFER  "...weird.ts"            probe=THROW pkgform=ok
+agree   "../outside.ts"          probe=THROW pkgform=THROW
+agree   ".."                     probe=THROW pkgform=THROW
+agree   "/etc/passwd"            probe=THROW pkgform=THROW
+agree   "./a/../../escape.ts"    probe=THROW pkgform=THROW
+```
+
+Defect A is unchanged: a genuine escape still throws before the `try` is entered, and the `finally`
+still never runs. Only the population of "genuine escape" narrows.
+
+**The obligation this puts on S4: build defect A's proof on a path from the agreeing rows.** Use
+`../outside.ts` or `/etc/passwd`. A proof built on `..hidden.ts` passes today and reddens the moment H1
+lands, and it would read as S4's repair regressing rather than as the test naming the wrong escape.
+
+H1 owns `src/server/helpers.ts` and `tests/src/server/helpers.test.ts`. Both are off-limits to S4, and
+they already were.

@@ -226,3 +226,75 @@ The framing objection stands independently. Probe's stream work is LSP Content-L
 **Benefit.**
 
 None. Probe has no Web ReadableStream to collect, and reaching one would mean adding a `Readable.toWeb` wrapper rather than removing probe code.
+
+## Group 3 — server-filesystem
+
+### `resolveContained` — REJECT
+
+**Evidence.**
+
+Zero probe-owned TEST file contains containment logic. `git grep -n "startsWith('\.\.')\|isAbsolute\|relative(" abad0f6 -- tests` (excluding the vendored `tests/setupPolicy.ts`) returns no hits; the suite only exercises containment through the public API at /workspace/probe/tests/src/server/helpers.test.ts:59-66. The hand-rolled equivalent the brief points at is /workspace/probe/src/server/helpers.ts:15-23 (commit abad0f6): `export function resolveWorkspaceFile(workspace: string, target: string): string { const root = resolve(workspace); const file = resolve(root, target); const path = relative(root, file); if (path.startsWith('..') || isAbsolute(path)) { throw new Error(`Path escapes the workspace: ${target}`) } return file }`. That file is PUBLISHED RUNTIME SOURCE — it is re-exported by /workspace/probe/src/server/index.ts:2 and built into `dist/src/server`. `@orkestrel/test` is a devDependency (package.json devDependencies, ^0.0.7); probe's runtime `dependencies` are @orkestrel/contract, emitter, mcp, queue, timeout, tool only. Importing `@orkestrel/test/server` there would promote a test-only package to a runtime dependency — a dependency addition, which the brief excludes and AGENTS.md forbids without an explicit user request. The signatures also disagree: `resolveContained(root, target): string | undefined` returns `undefined` on escape, while `resolveWorkspaceFile` throws a message three tests and every stage error path depend on. Three further hand-rolled copies live in /workspace/probe/configs/helpers.ts — `workspacePath` at :58 (guard at :59-60), `isBoundaryExemptModule` at :66 (guard at :115-121), and `containedPath` at :130 (guard at :131-134) — but that file is Vite build configuration imported by vite.config.ts:5, not a test or fixture, and its helpers return different shapes (a forward-slash relative string, and a boolean) rather than the absolute path `resolveContained` returns.
+
+**Benefit.**
+
+None available as a deletion; the symbol cannot legally reach either site. The audit did surface one real defect worth a successor unit. I ran both implementations side by side (node script comparing /workspace/probe/src/server/helpers.ts:15 against the package export, root=/workspace/probe): probe's `path.startsWith('..')` is a bare prefix test, so it REFUSES two contained paths the package accepts — `..hidden.ts` and `..config/value.ts` both THROW `Path escapes the workspace`, while `resolveContained` returns them as contained. The package guards `contained === '..' || contained.startsWith('..' + sep)` instead. No escape passes either implementation (`../outside.ts`, `..`, `/etc/passwd`, `./a/../../escape.ts` are refused by both), so the containment itself is sound — probe is strictly over-strict, refusing a legitimate dot-prefixed workspace file. The corrected form is already written correctly in probe's own tree at /workspace/probe/configs/helpers.ts:131-134; the fix is to align src/server/helpers.ts:19 with it, not to import the package. Separately, configs/helpers.ts:130 `containedPath` is an exact predicate duplicate of `resolveContained` (I confirmed the root edge matches: `containedPath(root, root)` is true and `resolveContained(root, root)` returns the root path), which is a near-duplicate defect under `.claude/rules/tests.md` only if that file were a test — it is not.
+
+### `createLoopback` — REJECT
+
+**Evidence.**
+
+Probe binds no socket anywhere. `grep -rn "node:net\|node:http\|node:https\|createServer\|Socket\|WebSocket\|\.listen(" tests/ src/` over the working tree returns nothing outside the vendored `tests/setupPolicy.ts`, and the same grep against every committed server test at abad0f6 returns nothing. `createLoopback(server: Server)` calls `server.listen(0, '127.0.0.1')` and returns an `http://127.0.0.1:<port>` origin (node_modules/@orkestrel/test/dist/src/server/index.js:283-304); probe has no `node:net` server to hand it. Probe's own MCP transport is stdio: /workspace/probe/src/server/factories.ts:5 imports `createStdioServer` from `@orkestrel/mcp/server`, and src/server/types.ts:62 documents it as "the probe's Model Context Protocol stdio transport". The protocol-faithful fixture server the brief mentions is likewise stdio, not TCP — /workspace/probe/tests/src/server/Probe.test.ts:257-258 (abad0f6) writes `node_modules/oxlint/fixture.js`, an LSP server that reads `Content-Length` frames off `process.stdin` and writes replies to `process.stdout`, launched as a spawned child rather than bound to a port.
+
+**Benefit.**
+
+None. There is no port to allocate and no server to tear down, so adopting would add an import with no call site.
+
+### `removeTree` — REJECT
+
+**Evidence.**
+
+Probe hand-rolls no removal retry. `git grep -n "rmSync\|rmdirSync\|maxRetries\|retryDelay\|EPERM\|EBUSY\|ENOTEMPTY" abad0f6 -- src tests` (excluding vendored files) shows every probe-owned removal is a single unretried call: /workspace/probe/tests/src/bin/main.test.ts:318 and :358, tests/src/server/stages/RuntimeStage.test.ts:231, :357, :473, and tests/src/server/stages/TypeStage.test.ts:70, :192, :193 all call `rmSync(<file>, { force: true })` on one file; main.test.ts:229 and :320 call `rmdirSync(directory)` on an empty directory inside `try {} catch {}`. `removeTree(path: string): void` takes an absolute DIRECTORY and loops up to REMOVE_TREE_MAX_ATTEMPTS past EPERM/EBUSY/ENOTEMPTY — probe has written no such loop to delete. The one probe test that hits the exact race `removeTree` documents already routes through it: tests/src/bin/main.test.ts:329-359 spawns a child with `cwd: scratch.path` (line 334), SIGTERMs it, then calls `scratch.destroy()` at line 359, and `createScratch`'s `destroy()` calls `removeTree(path)` after a `matchesIdentity` guard (node_modules/@orkestrel/test/dist/src/server/index.js, destroy body ending `removeTree(path)`). The only recursive removal in a probe-owned test, RuntimeStage.test.ts:473 `rmSync(resolve(directory, file), { force: true, recursive: true })`, deletes marker-matched entries under the shared `tmp/probe`, which is not the scratch allocation `removeTree` is contracted for.
+
+**Benefit.**
+
+None as a deletion. Probe already consumes removeTree transitively through the one createScratch call it makes, so the Windows EPERM retry is covered without an import. Swapping the single-file rmSync calls for removeTree would widen them from a file removal to a tree removal, which is a behavior change rather than a consolidation.
+
+### `matchesIdentity` — REJECT
+
+**Evidence.**
+
+Probe reads no directory identity. `git grep -n "statSync\|lstatSync\|\.ino\b\|\.dev\b\|birthtime\|\.birth\b" abad0f6 -- tests src` (excluding vendored files) returns exactly two hits, both in production source and neither an identity comparison: /workspace/probe/src/server/stages/TypeStage.ts:5 imports `statSync` and :239 uses it for a cache key, `return `disk:${statSync(file).mtimeMs}``. No probe file constructs a `{ device, inode, birth }` triple or compares one. The helper exists to prove an allocated scratch directory is still the same allocation before removal, and probe never re-identifies a directory it allocated — it hands that to `createScratch`, whose `destroy()` already calls `matchesIdentity` internally (node_modules/@orkestrel/test/dist/src/server/index.js, destroy guard) before `removeTree`.
+
+**Benefit.**
+
+None. Probe already gets the identity guard for free on every `scratch.destroy()` call (tests/src/bin/main.test.ts:359 and the createScratch sites in tests/src/server/Probe.test.ts and RuntimeStage.test.ts). A direct import would have no argument to pass it.
+
+### `readInventory` — REJECT
+
+**Evidence.**
+
+Probe has no source-inventory reader and no test project that would need one. Its Vitest projects are `src:core`, `src:server`, `src:bin`, `policy`, `config`, and `probe` (/workspace/probe/vite.config.ts:195, labels at :43, :92, :129, :148, :163, :182) — there is no `guides` project, and package.json's `test` script runs only `test:src && test:policy && test:config`. `readInventory(root, targets, options)` returns file contents keyed by sorted root-relative paths, which is the shape a guide-parity or docs-parity test consumes; probe writes no such test even though it ships a `guides/` directory. The only directory reads in probe-owned tests are targeted `readdirSync` filters over one known directory, not keyed walks: tests/src/bin/main.test.ts:343-351 filters `tmp/probe` for names starting `arm-type-`/`arm-runtime-`, tests/src/server/Probe.test.ts:233 and :436 filter the same directory by a revision prefix, and RuntimeStage.test.ts:422-431 lists `node_modules/.vite` and `tmp/probe`. None reads file CONTENTS keyed by path, and none walks recursively. The one `globSync` in the tree is at tests/config.test.ts:264, which is vendored — `diff -q node_modules/@orkestrel/scaffold/dist/host/tests/config.test.ts tests/config.test.ts` reports identical, so probe does not own it.
+
+**Benefit.**
+
+None. There is no walk to delete. If probe later adds a guides-parity test, readInventory is the helper for it — that is a future creation gate, not a consolidation available today.
+
+### `isExcluded` — REJECT
+
+**Evidence.**
+
+No probe-owned test matches a root-relative key against an exclusion set. `isExcluded(key, exclusions)` is the segment-wise ancestor matcher that `readInventory` applies to its `InventoryOptions.exclude` list (node_modules/@orkestrel/test/dist/src/server/index.js:58-60, `exclusions.some((rule) => rule === '' || key === rule || key.startsWith(`${rule}/`))`). Probe rules out readInventory entirely (see that finding), so its dependent matcher has no subject either. The word `exclude` appears in probe's tests only at tests/config.test.ts:199 and :215, where it reads a Vitest project's own `exclude` array to check config shape — and that file is vendored and unmodified (`diff -q` against node_modules/@orkestrel/scaffold/dist/host/tests/config.test.ts reports identical). The filters probe does write test a name PREFIX on a flat directory listing, not a path-segment ancestor rule: tests/src/bin/main.test.ts:344 `name.startsWith('arm-type-')`, tests/src/server/Probe.test.ts:234 `name.startsWith('expiry.test.probe-')`, :436 `name.startsWith('after-destroy.test.probe-')`. Those are inclusion filters over sibling filenames with no directory component; `isExcluded` would invert the sense and add a `/` boundary rule that has nothing to bound.
+
+**Benefit.**
+
+None. Substituting it into the prefix filters would change what they match, so this is not a deletion.
+
+### `REMOVE_TREE_MAX_ATTEMPTS, REMOVE_TREE_RETRY_DELAY_MS, REMOVE_TREE_RETRYABLE_CODES` — REJECT
+
+**Evidence.**
+
+These three constants are the published parameters of `removeTree`'s retry loop (node_modules/@orkestrel/test/dist/src/server/index.js:10, :14, :18-21 — 10 attempts, 100ms, `['EBUSY','ENOTEMPTY','EPERM']`), exported so a test can assert the retry policy rather than hard-code it. Probe declares no competing constant: `git grep -n "maxRetries\|retryDelay\|EPERM\|EBUSY\|ENOTEMPTY" abad0f6 -- src tests` returns one hit outside vendored files, and it is an assertion on a message string, not a retry parameter — /workspace/probe/tests/src/core/helpers.test.ts:248 expects `'The runtime stage could not delete the generated specification (EPERM: operation not permitted)'`, which formats an error probe's runtime stage surfaces to the caller and never retries. Probe also declares no removal retry loop at all (see the removeTree finding), so there is no attempt count, delay, or code list of its own to replace. A consumer only imports these to test removeTree's own policy, which belongs to @orkestrel/test's suite.
+
+**Benefit.**
+
+None. There is no magic number or inline code list in probe to delete, and importing the constants would add three unused symbols.
