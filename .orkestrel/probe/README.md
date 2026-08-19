@@ -50,6 +50,9 @@ depends on `s4`. `o9-design-brief.md` is the brief both design lanes executed.
 
 Audit briefs sit beside the round they audit, named `*-audit-brief.md`.
 
+`carry-ledger.md` walks all 29 sweep findings and names the unit carrying each, so a dropped finding
+is visible rather than silent. It also records what its instrument could and could not answer.
+
 ## Instruments
 
 `instruments/` holds what works and why. Read its README before writing a client for the probe's
