@@ -72,9 +72,28 @@ the right answer is what this round decides.
    distinct module. Rule between them.
 3. **How far the overlay reaches.** Only modules the test imports directly, or the whole transitive
    graph. State what breaks under each.
-4. **What the type stage's host must change.** `fileExists` and `directoryExists` consulting the
-   overlay is the obvious answer; say what else that affects, including directory listings and
-   whether a virtual file can sit in a directory that does not exist.
+4. **What the type stage's host must change.** This one is already measured, so rule on its
+   consequences rather than on whether it works. The host was reconstructed exactly as shipped and
+   asked for diagnostics on a test importing an overlay-only candidate, then again with the callbacks
+   changed:
+
+   ```text
+   candidate in an existing directory, host as shipped:
+      Cannot find module '../../src/core/o9virtual.js' or its corresponding type declarations.
+   candidate in an existing directory, fileExists consults the overlay:
+      no diagnostics — the import resolved
+
+   candidate in a NON-EXISTENT directory, host as shipped:
+      Cannot find module '../../src/nosuchdir/o9virtual.js' or its corresponding type declarations.
+   candidate in a NON-EXISTENT directory, fileExists AND directoryExists overlay-aware:
+      no diagnostics — the import resolved
+   ```
+
+   So both callbacks are required and together they are sufficient for the type stage. Rule on what
+   else that reaches: `readDirectory` and `getDirectories` still answer from disk, so say whether a
+   virtual file must appear in a directory listing and what breaks if it does not, and whether an
+   overlay-aware `directoryExists` can make a real tool believe in a directory that no later step can
+   read.
 5. **What the contract promises.** If a scenario cannot be supported, `Case.files` must say so and
    the verdict must refuse rather than issue a receipt. A silent partial answer is the defect being
    repaired; do not replace it with a quieter one.
