@@ -96,6 +96,9 @@ sentence true, or move the emit. Do not leave them disagreeing.
   `constants.ts`, every file under `src/server/stages/`, `src/server/factories.ts`,
   `src/server/helpers.ts`, `src/server/types.ts`, `src/bin/main.ts`, `guides/**`, `package.json`,
   `vite.config.ts`, `configs/**`, and every dotfile.
+- **Instruments**: write every throwaway instrument under `tmp/scratch/`, and delete it before you
+  return. `tmp` is gitignored; a bare `scratch/` or a loose file at the repository root is NOT, so an
+  instrument there enters the next commit if your run is interrupted before cleanup.
 - **Tools**: read, write, and `Bash` for validation only.
 - **Permissions**: do not commit, push, tag, publish, install a dependency, or run a destructive
   command. Do not add an npm package. Do not read, print, or copy any secret.

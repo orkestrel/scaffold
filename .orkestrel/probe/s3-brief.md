@@ -196,6 +196,9 @@ the Orchestrator could not take from outside.
   `vite.config.ts`, `configs/**`, and every dotfile.
 - If a fix genuinely needs `src/server/types.ts` or `src/server/helpers.ts`, stop and report rather
   than reaching. A liveness fix that wants a shared helper is exactly the case to report.
+- **Instruments**: write every throwaway instrument under `tmp/scratch/`, and delete it before you
+  return. `tmp` is gitignored; a bare `scratch/` or a loose file at the repository root is NOT, so an
+  instrument there enters the next commit if your run is interrupted before cleanup.
 - **Tools**: read, write, and `Bash` for validation only.
 - **Permissions**: do not commit, push, tag, publish, install a dependency, or run a destructive
   command. Do not add an npm package — the fixes here need none. Do not read, print, or copy a secret.
