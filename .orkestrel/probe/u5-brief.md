@@ -48,11 +48,42 @@ TARGET: The manifest at . does not reach a Vitest project the planned configurat
 No chain from test or prepublishOnly invokes it.
 ```
 
-1. Re-pin `@orkestrel/scaffold` and `@orkestrel/test` in `package.json` to the versions the registry
-   serves now. Read the registry; do not guess from the local manifest.
+1. Re-pin `@orkestrel/scaffold` and `@orkestrel/test` in `package.json`. The Orchestrator swept the
+   registry rather than guessing from the local manifest, and only those two moved.
 2. `npm install`, so the new vendored host is on disk before anything runs it.
 3. `npx scaffold overwrite`, so the vendored files and the catalog come from the installed version.
 4. Run the five gates in order and read their output.
+
+## The registry sweep, already taken
+
+Seven packages were republished — `scaffold`, `test`, `database`, `server`, `sea`, `terminal`, and
+`middleware`. Only two of them are declared here. The other five are not dependencies of this package
+in any form, so nothing about them reaches this workspace.
+
+Every runtime dependency this package declares is already pinned to what the registry serves. Nothing
+in `dependencies` moves.
+
+| Package                | Declared    | Registry | Action              |
+| ---------------------- | ----------- | -------- | ------------------- |
+| `@orkestrel/contract`  | `^0.0.12`   | 0.0.12   | none, already latest |
+| `@orkestrel/emitter`   | `^0.0.7`    | 0.0.7    | none, already latest |
+| `@orkestrel/mcp`       | `^0.0.17`   | 0.0.17   | none, already latest |
+| `@orkestrel/timeout`   | `^0.0.7`    | 0.0.7    | none, already latest |
+| `@orkestrel/tool`      | `^0.0.11`   | 0.0.11   | none, already latest |
+| `@orkestrel/guide`     | `^0.0.12`   | 0.0.12   | none, already latest |
+| `@orkestrel/scaffold`  | `^0.0.41`   | 0.0.42   | **re-pin**          |
+| `@orkestrel/database`  | not declared | 0.0.11   | none                |
+| `@orkestrel/server`    | not declared | 0.0.14   | none                |
+| `@orkestrel/sea`       | not declared | 0.0.8    | none                |
+| `@orkestrel/terminal`  | not declared | 0.0.11   | none                |
+| `@orkestrel/middleware`| not declared | 0.0.15   | none                |
+
+`@orkestrel/test` is declared at `^0.0.6` and the registry serves 0.0.7, so it re-pins too.
+
+Both are development dependencies, so under the fleet's publish rules this reaches no consumer and
+obliges no version bump of `@orkestrel/probe` — unless the rebuilt `dist` differs materially from
+what a publish would have produced, which this package has never published, so the question is moot
+until its first release.
 
 ## Scope
 
