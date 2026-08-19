@@ -388,7 +388,6 @@ export interface Claim {
 }
 
 export interface Finding {
-	readonly stage: Stage
 	readonly path: string
 	readonly message: string
 	readonly line?: number
@@ -408,6 +407,10 @@ export interface Verdict {
 	readonly receipt?: string
 }
 ```
+
+A `Finding` carries no stage of its own. It only ever appears inside a `Check` that already names
+one, so a second copy is the duplicated label `AGENTS.md` refuses under `Derive state`. An earlier
+draft of this surface gave `Finding` a `stage`, and the implementation was right to drop it.
 
 The `control` field is what makes this surface different from a test runner, and it is not
 optional. A claim arrives with the negative control that must break, and the `stage` field names

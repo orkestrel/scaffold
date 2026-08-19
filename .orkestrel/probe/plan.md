@@ -67,3 +67,14 @@ the type stage and the runtime stage, and the arming control must fail when reva
 ## Order
 
 1, then 2, then 3, then 4. Each unit commits before the next is dispatched.
+
+## Standing obligations unit 4 inherits
+
+- The hand guard `isClaim` and `compileGuard(CLAIM_SHAPE)` must agree across a hostile population.
+  `shapers.ts` sits above the leaf pair, so `validators.ts` may not import it and the two are
+  written separately; only a test holds them together. A 15-value population including an empty
+  project, an empty control reason, a bad stage, an extra key, a null-prototype object, and a
+  throwing `Proxy` currently shows zero disagreements.
+- `computeReceipt` issues only when every case check is clean and the control failed at its
+  declared stage. Its refusals are the proof that matters: the wrong stage, no failure at all, and
+  a dirty case each return `undefined`.
