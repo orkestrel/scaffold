@@ -357,3 +357,56 @@ Beyond the list surveyed earlier in this file, `PROBE.md` must also carry:
 T2 runs after S4 and P1 because it sweeps files both of them rewrite. P1 runs after S4 because both touch
 `src/server/stages/TypeStage.ts`. H1 and T1 are independent of everything and go first because they are
 small and unblock nothing else.
+
+## Re-baseline after S3fix2, 2026-08-19
+
+Six units landed since the last re-baseline: S3 (`dcd50a3`), S3fix (`078946d`), H1 (`2ecddc2`),
+T1 (`7721a20`), S3fix2 (`449f96d`), and one integration fix (`282c902`). `npm test` is **194 passed,
+0 skipped, 0 todo** and all five gates are green.
+
+### Criterion state
+
+| # | Criterion | State |
+| - | --------- | ----- |
+| 1 | Units 1, 2, 3, 5 landed, audited, committed | **Closed** |
+| 2 | Units 4a, 4b, 4c landed; no skipped, no todo | **Partly.** 4a and 4b landed; counts clean. **4c is not written**, and `guides/probe.md` still does not exist |
+| 3 | Every reproduced high finding closed with a red-then-green test | **Closed.** Both highs the earlier re-baseline left unreproduced are now repaired with recorded proofs, and two audit rounds since have added more |
+| 4 | The candidate-source defect closed, or excluded on evidence with the contract changed | **Open.** O9 is the last one, and S4 is its prerequisite |
+| 5 | Five gates by an independent executor, and guide parity | **Partly.** Gates green. **Guide parity still has no instrument**: `tests/guides.test.ts` does not exist |
+| 6 | `PROBE.md` describes what shipped | **Open**, and its work list has grown again |
+
+### What the phase revealed that the plan did not contain
+
+- **A published CommonJS entry that crashes** (P1). Found from a build warning the gates pass through.
+  Ruled inside the criterion, on the record, because five green gates say nothing about an artifact
+  nothing loads.
+- **A false red on ordinary source** (H1, closed). `resolveWorkspaceFile` refused contained files whose
+  names begin with dots.
+- **An inert hostile value** (T1, closed). The differential guard test carried a proxy neither guard's
+  traps consulted.
+- **The `tmp/probe` arming false green** — open, and **not this campaign's to close**. `.gitignore`
+  excludes `tmp`, oxlint honours version-control ignores in LSP mode, and `.oxlintignore` does not
+  reverse it. Every remedy is in `Probe.ts`, `vite.config.ts`, or `.gitignore`, and `#arm()` asserts
+  `findings.length > 0`, so any fix turns the boot control red for every workspace that gitignores `tmp`.
+  **That is a product decision and it belongs to the user.** Recorded, routed, not absorbed.
+
+### Criterion 6 gains four more entries
+
+Beyond the two earlier surveys, `PROBE.md` must also carry:
+
+- That a candidate is linted at the path it was declared, with no synthesized identity, and that this is
+  what makes an exact-path override selectable at all.
+- That the stage refuses a concurrent second inspection of one open path, and why the coordinator rather
+  than the stage is where inspections serialize.
+- That a path the workspace's version-control ignore excludes is a path the gate never lints, and the
+  stage reports the same nothing for it.
+- The corrected reachability sentence: the orphan is reached by a candidate whose text ends the server
+  with code 0, not by a signal death.
+
+### Dependency order, redrawn
+
+`S4 → O9`, then `P1`, `T2`, `U4c` in any order, then `PROBE.md`.
+
+O9 is the critical path because criterion 4 is the only criterion no other unit can close. U4c closes the
+back half of criterion 2 and the guide-parity half of criterion 5 together, so it is the second most
+valuable unit remaining.
