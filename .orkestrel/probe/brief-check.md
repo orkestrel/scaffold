@@ -1012,3 +1012,39 @@ the unit never ran the gate at all, so the warning had nothing to bite on.
 It confirmed the failure against a stashed baseline, established the red predated its own change, and
 returned the exact patch for serial integration rather than reaching. That is the contract behaving
 correctly, and it is why the defect surfaced at all.
+
+## A bridge rewriting a brief can change a fact in it — 2026-08-19
+
+Unit S4's first exec stopped without writing. Its report:
+
+```text
+Expected: /workspace/probe/PROBE.md exists as the governing specification.
+Found:    ls: cannot access 'PROBE.md': No such file or directory
+The work is not done. The required specification could not be read.
+```
+
+**The unit was right to stop.** The defect was upstream of it.
+
+The original brief at `.orkestrel/probe/s4-brief.md:19-21` reads:
+
+> Governing guide: `PROBE.md`, at `/home/user/scaffold/PROBE.md` — the orchestrator's repository, not
+> yours. Read it there if your sandbox permits the path; **if it refuses, proceed without it**, because
+> this brief carries every fact you need.
+
+The bridge restaged it to `tmp/codex/s4-brief.md:23` as:
+
+> Governing guide: `PROBE.md` at `/workspace/probe/PROBE.md`.
+
+It changed the repository AND dropped the clause that made absence survivable. The engine read the
+staged copy, looked where it was told, found nothing, and stopped — correctly, because a missing
+governing specification is a stop condition.
+
+### The rule
+
+**Read the staged brief before launching, not the original.** A bridge that restages a brief is
+rewriting it, and a rewrite can move a path, drop a clause, or drop a permission. The brief-check list
+already says to "name the executor that will actually read the brief, and write its transport for that
+reader"; this is the same rule one step later — the file that reader actually opens is the file to check.
+
+Cost: one exec cycle, no tree damage, and a correct stop report that named the exact missing path. Cheap
+only because the deviation contract worked.
