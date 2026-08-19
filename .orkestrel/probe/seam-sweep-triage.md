@@ -158,3 +158,53 @@ to be cleaned up.
 
 Unit 4b is not at fault here. Its brief was to prove the entry, it found behavior nobody had recorded,
 and it recorded it rather than hiding it or quietly widening its scope to fix it.
+
+## Added by the Orchestrator, 2026-08-19 — a systemic test-isolation defect no sweep finding covers
+
+**Four server test files share one `tmp/probe/` directory, and `test:src` runs them in parallel.**
+
+This is not one test's bug. It has now cost two units a repair round — unit 4b found it and fixed only
+its own instance, and unit S1 hit it again while capturing its red baseline. Every remaining unit that
+touches a server test will meet it. It is recorded here rather than in `seam-sweep-findings.md` because
+no sweep lens found it: the sweep read source, and this lives in the interaction between the test suite
+and the Vitest configuration.
+
+**The mechanism, verified.**
+
+```text
+test:    npm run test:src && npm run test:policy && npm run test:config
+test:src: vitest run ... --project src:core --project src:server --project src:bin
+```
+
+`test:src` runs three projects in ONE Vitest invocation, and
+`grep -rn "fileParallelism|singleFork|singleThread|maxWorkers|sequence|isolate" vite.config.ts configs/`
+returns nothing, so Vitest's defaults apply and files run in parallel workers.
+
+Four files write into the same shared directory — `tests/src/server/stages/LintStage.test.ts`,
+`TypeStage.test.ts`, `RuntimeStage.test.ts`, and `Probe.test.ts` — with paths like
+`tmp/probe/runtime-passing.test.ts` and `tmp/probe/type-case-${id}.test.ts`.
+
+`tests/src/server/Probe.test.ts:180` then reads that shared directory and asserts about its whole
+contents. Run alone it passes. Run beside its siblings it sees their files. Tests that pass alone and
+fail together, which is the signature.
+
+**One thing that is NOT wrong, and is worth stating so nobody repairs it.** The `probe` Vitest project
+includes `tmp/probe/**/*.test.ts`, which is exactly the pattern these tests write. It never collects
+them, because `npm test` is `test:src && test:policy && test:config` and names no `probe` project. That
+containment is deliberate and load-bearing — do not "fix" it by narrowing the glob.
+
+**The repair, and why this shape.** `.claude/rules/tests.md` already rules it: assert the membership a
+globbed set should have, not a total that a partly empty population satisfies. So a cleanup proof
+asserts THE FILES THIS TEST CREATED are gone, never that the directory is empty.
+
+Prefer that over disabling file parallelism. Serializing the server project would hide the defect and
+cost every future run the wall-clock, and the assertion would still be wrong — it would just stop being
+observably wrong.
+
+Unit 4b's alternative, an owned scratch workspace linked to the real installed toolchain, is correct
+where a proof needs a whole workspace rather than a few files. Both are acceptable; a directory-wide
+emptiness assertion is not.
+
+**Carrier.** Unit S1 owns `tests/src/server/**` and is hitting this now; it carries its own instances.
+Any instance S1 leaves behind passes to unit S2, which owns `Probe.ts` and its test. Every remaining
+brief carries this as a standing condition so no unit rediscovers it.

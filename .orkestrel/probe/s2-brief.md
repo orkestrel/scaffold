@@ -194,3 +194,23 @@ emit through different doors and only one of them was examined.
 - The `probe` Vitest project reads `tmp/probe/`, and sibling projects write there concurrently. Put any
   throwaway instrument in its own scratch directory, never in `tmp/probe`. That collision is real and
   cost an earlier unit a repair round.
+
+## Standing condition — the shared `tmp/probe` directory
+
+Four server test files write into one `tmp/probe/` directory, and `test:src` runs `src:core`,
+`src:server`, and `src:bin` in a single Vitest invocation with no parallelism guard, so their files
+run concurrently and see each other's writes.
+
+This has already cost two units a repair round. It is a known condition, not a discovery.
+
+Two rules follow, and they bind whatever you are writing:
+
+- **Never assert that `tmp/probe/` is empty, or assert anything about its whole contents.** Assert that
+  the specific files YOUR test created are gone. `.claude/rules/tests.md` requires exactly this: assert
+  the membership a globbed set should have, never a total that a partly empty population satisfies.
+- **Give every file your test writes a name unique to that test**, so a sibling running concurrently
+  cannot collide with it or be mistaken for it.
+
+Where a proof needs a whole workspace rather than a few files, take an owned scratch directory linked
+to the real installed toolchain, as `tests/src/bin/main.test.ts` already does. Do not disable file
+parallelism to make an over-broad assertion pass — that hides the defect and keeps the wrong assertion.

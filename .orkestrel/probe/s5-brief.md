@@ -16,7 +16,13 @@ Read before acting, in this order: `AGENTS.md`; `.claude/rules/names.md`, `types
 `architecture.md`, `patterns.md`, `documentation.md`, `tests.md`, `quality.md`, `writing.md`; then this
 brief. No skill is named for this unit.
 
-Governing guide: `PROBE.md`.
+Governing guide: `PROBE.md`, at `/home/user/scaffold/PROBE.md` — the orchestrator's repository, not
+yours. Read it there if your sandbox permits the path; if it refuses, proceed without it, because this
+brief carries every fact you need.
+
+The probe's own guide, `guides/probe.md`, DOES NOT EXIST yet. `guides/README.md` records it as
+"Not created". So there is no second copy of any documented claim to keep in step, and no parity gate
+covering this surface. A later unit creates it.
 
 Documentation defects reach every consumer who installs the package, and two of these are worse than
 wrong prose: they are examples a consumer copies and a contract a consumer codes against.
@@ -154,8 +160,7 @@ Perform this assignment directly. Spawn no subagent.
 - `tests/guides.test.ts` executes flagship guide fences. It does NOT reach TSDoc @example blocks, which
   is why defect A survived to ship. If you find a documented behavior with no gate, say so in your
   report rather than assuming parity covers it.
-- The `probe` Vitest project reads `tmp/probe/`. Put any throwaway instrument in its own scratch
-  directory.
+- The `probe` Vitest project reads `tmp/probe/`. Put any throwaway instrument in `tmp/scratch/`, and nowhere else.
 - Units before you edited `tests/src/core/**`. Read those files as they are now.
 
 ## Unknowns
@@ -180,3 +185,23 @@ Return exactly: **Files written**, **Validation**, **Acceptance evidence**, **De
 
 Under **Decisions**, lead with your ruling on `Control.reason` and the law you ruled it on. No process
 diary.
+
+## Standing condition — the shared `tmp/probe` directory
+
+Four server test files write into one `tmp/probe/` directory, and `test:src` runs `src:core`,
+`src:server`, and `src:bin` in a single Vitest invocation with no parallelism guard, so their files
+run concurrently and see each other's writes.
+
+This has already cost two units a repair round. It is a known condition, not a discovery.
+
+Two rules follow, and they bind whatever you are writing:
+
+- **Never assert that `tmp/probe/` is empty, or assert anything about its whole contents.** Assert that
+  the specific files YOUR test created are gone. `.claude/rules/tests.md` requires exactly this: assert
+  the membership a globbed set should have, never a total that a partly empty population satisfies.
+- **Give every file your test writes a name unique to that test**, so a sibling running concurrently
+  cannot collide with it or be mistaken for it.
+
+Where a proof needs a whole workspace rather than a few files, take an owned scratch directory linked
+to the real installed toolchain, as `tests/src/bin/main.test.ts` already does. Do not disable file
+parallelism to make an over-broad assertion pass — that hides the defect and keeps the wrong assertion.

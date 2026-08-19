@@ -16,7 +16,9 @@ Read before acting, in this order: `AGENTS.md`; `.claude/rules/names.md`, `types
 `architecture.md`, `patterns.md`, `tests.md`, `quality.md`, `writing.md`; then this brief. No skill is
 named for this unit.
 
-Governing guide: `PROBE.md` at the repository root states what the probe promises. `src/core/types.ts`
+Governing guide: `PROBE.md`, which lives in the ORCHESTRATOR's repository at
+`/home/user/scaffold/PROBE.md`, not in your working directory. Read it there if your sandbox permits
+the path; if it refuses, proceed without it — this brief carries every fact you need. `src/core/types.ts`
 lines 306-311 document `ProbeInterface.destroy` as settling when every engine releases its resources.
 That sentence is the contract two of these defects break.
 
@@ -171,6 +173,20 @@ Perform this assignment directly. Spawn no subagent.
 - A unit before you may have edited `tests/src/server/stages/LintStage.test.ts`. Read it as it is now
   rather than trusting any line number quoted for it.
 
+## Where a throwaway instrument goes
+
+Put it in `tmp/scratch/`, and nowhere else.
+
+`tmp` is gitignored, so nothing there can enter a commit, and `.claude/rules/tests.md` forbids
+committing a probe. `tmp/probe/` is gitignored too but the `probe` Vitest project collects
+`tmp/probe/**/*.test.ts`, and sibling projects write there concurrently, so an instrument left there
+is collected by a gate or trips another project's directory-listing assertion. A bare `scratch/` at the
+repository root is NOT ignored — `git check-ignore` refuses it — so an instrument there walks into the
+next commit.
+
+Delete the instrument before you return, whatever it proved. If it settled a claim, promote it to a
+real test in the mirrored location instead.
+
 ## Unknowns
 
 Two things the Orchestrator does not know, named so you do not have to guess a plan around them.
@@ -199,3 +215,23 @@ Return exactly: **Files written**, **Validation**, **Acceptance evidence**, **De
 Under **Validation**, name each gate you ran and its exit code. Under **Acceptance evidence**, give each
 criterion its test name, and for each red-then-green proof the exact command with both counts. No
 process diary.
+
+## Standing condition — the shared `tmp/probe` directory
+
+Four server test files write into one `tmp/probe/` directory, and `test:src` runs `src:core`,
+`src:server`, and `src:bin` in a single Vitest invocation with no parallelism guard, so their files
+run concurrently and see each other's writes.
+
+This has already cost two units a repair round. It is a known condition, not a discovery.
+
+Two rules follow, and they bind whatever you are writing:
+
+- **Never assert that `tmp/probe/` is empty, or assert anything about its whole contents.** Assert that
+  the specific files YOUR test created are gone. `.claude/rules/tests.md` requires exactly this: assert
+  the membership a globbed set should have, never a total that a partly empty population satisfies.
+- **Give every file your test writes a name unique to that test**, so a sibling running concurrently
+  cannot collide with it or be mistaken for it.
+
+Where a proof needs a whole workspace rather than a few files, take an owned scratch directory linked
+to the real installed toolchain, as `tests/src/bin/main.test.ts` already does. Do not disable file
+parallelism to make an over-broad assertion pass — that hides the defect and keeps the wrong assertion.

@@ -17,7 +17,13 @@ Read before acting, in this order: `AGENTS.md`; `.claude/rules/names.md`, `types
 `architecture.md`, `patterns.md`, `tests.md`, `quality.md`, `writing.md`; then this brief. No skill is
 named for this unit.
 
-Governing guide: `PROBE.md`.
+Governing guide: `PROBE.md`, at `/home/user/scaffold/PROBE.md` — the orchestrator's repository, not
+yours. Read it there if your sandbox permits the path; if it refuses, proceed without it, because this
+brief carries every fact you need.
+
+The probe's own guide, `guides/probe.md`, DOES NOT EXIST yet. `guides/README.md` records it as
+"Not created". So there is no second copy of any documented claim to keep in step, and no parity gate
+covering this surface. A later unit creates it.
 
 ## The defect
 
@@ -123,6 +129,20 @@ Perform this assignment directly. Spawn no subagent.
   existing killed-entry test uses an owned scratch workspace linked to the real installed toolchain for
   exactly this reason. Keep that approach.
 
+## Where a throwaway instrument goes
+
+Put it in `tmp/scratch/`, and nowhere else.
+
+`tmp` is gitignored, so nothing there can enter a commit, and `.claude/rules/tests.md` forbids
+committing a probe. `tmp/probe/` is gitignored too but the `probe` Vitest project collects
+`tmp/probe/**/*.test.ts`, and sibling projects write there concurrently, so an instrument left there
+is collected by a gate or trips another project's directory-listing assertion. A bare `scratch/` at the
+repository root is NOT ignored — `git check-ignore` refuses it — so an instrument there walks into the
+next commit.
+
+Delete the instrument before you return, whatever it proved. If it settled a claim, promote it to a
+real test in the mirrored location instead.
+
 ## Unknowns
 
 - Whether `SIGINT` deserves the same handling as `SIGTERM`. An MCP server under a client is usually
@@ -148,3 +168,23 @@ Return exactly: **Files written**, **Validation**, **Acceptance evidence**, **De
 
 Under **Decisions**, lead with your ruling on where the lifecycle lives and the law you ruled it on. No
 process diary.
+
+## Standing condition — the shared `tmp/probe` directory
+
+Four server test files write into one `tmp/probe/` directory, and `test:src` runs `src:core`,
+`src:server`, and `src:bin` in a single Vitest invocation with no parallelism guard, so their files
+run concurrently and see each other's writes.
+
+This has already cost two units a repair round. It is a known condition, not a discovery.
+
+Two rules follow, and they bind whatever you are writing:
+
+- **Never assert that `tmp/probe/` is empty, or assert anything about its whole contents.** Assert that
+  the specific files YOUR test created are gone. `.claude/rules/tests.md` requires exactly this: assert
+  the membership a globbed set should have, never a total that a partly empty population satisfies.
+- **Give every file your test writes a name unique to that test**, so a sibling running concurrently
+  cannot collide with it or be mistaken for it.
+
+Where a proof needs a whole workspace rather than a few files, take an owned scratch directory linked
+to the real installed toolchain, as `tests/src/bin/main.test.ts` already does. Do not disable file
+parallelism to make an over-broad assertion pass — that hides the defect and keeps the wrong assertion.

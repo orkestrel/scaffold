@@ -16,7 +16,15 @@ Read before acting, in this order: `AGENTS.md`; `.claude/rules/names.md`, `types
 `architecture.md`, `patterns.md`, `tests.md`, `quality.md`, `writing.md`; then this brief. No skill is
 named for this unit.
 
-Governing guide: `PROBE.md`. Its five laws exist to stop the probe certifying against source that is
+Governing guide: `PROBE.md`, at `/home/user/scaffold/PROBE.md` — the orchestrator's repository, not
+yours. Read it there if your sandbox permits the path; if it refuses, proceed without it, because this
+brief carries every fact you need.
+
+The probe's own guide, `guides/probe.md`, DOES NOT EXIST yet. `guides/README.md` records it as
+"Not created", so there is no second copy of any documented claim to keep in step. A later unit
+creates it.
+
+`PROBE.md`'s five laws exist to stop the probe certifying against source that is
 not what it claims to be checking. Defect A below is that exact failure, reached through the cleanup
 path rather than through caching.
 
@@ -143,8 +151,7 @@ Perform this assignment directly. Spawn no subagent.
 
 - Working directory `/workspace/probe`. Nested process spawns are permitted.
 - The whole-workspace `npm test` is safe and takes roughly three minutes.
-- The `probe` Vitest project reads `tmp/probe/`, and several tests write there. Put any throwaway
-  instrument in its own scratch directory, never in `tmp/probe`.
+- The `probe` Vitest project reads `tmp/probe/`, and several tests write there. Put any throwaway instrument in `tmp/scratch/`, and nowhere else.
 - Units before you may have edited `tests/src/server/stages/TypeStage.test.ts`. Read it as it is now
   rather than trusting any line number quoted for it. The line numbers quoted above for
   `src/server/stages/TypeStage.ts` were read at dispatch and no unit before you owned that file, but
@@ -173,3 +180,23 @@ Return exactly: **Files written**, **Validation**, **Acceptance evidence**, **De
 Under **Validation**, name each gate you ran and its exit code. Under **Acceptance evidence**, give each
 criterion its test name, and for each red-then-green proof the exact command with both counts. No
 process diary.
+
+## Standing condition — the shared `tmp/probe` directory
+
+Four server test files write into one `tmp/probe/` directory, and `test:src` runs `src:core`,
+`src:server`, and `src:bin` in a single Vitest invocation with no parallelism guard, so their files
+run concurrently and see each other's writes.
+
+This has already cost two units a repair round. It is a known condition, not a discovery.
+
+Two rules follow, and they bind whatever you are writing:
+
+- **Never assert that `tmp/probe/` is empty, or assert anything about its whole contents.** Assert that
+  the specific files YOUR test created are gone. `.claude/rules/tests.md` requires exactly this: assert
+  the membership a globbed set should have, never a total that a partly empty population satisfies.
+- **Give every file your test writes a name unique to that test**, so a sibling running concurrently
+  cannot collide with it or be mistaken for it.
+
+Where a proof needs a whole workspace rather than a few files, take an owned scratch directory linked
+to the real installed toolchain, as `tests/src/bin/main.test.ts` already does. Do not disable file
+parallelism to make an over-broad assertion pass — that hides the defect and keeps the wrong assertion.
