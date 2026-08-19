@@ -228,3 +228,41 @@ export declare function createStdioServer(mcp: MCPDispatcherInterface, options?:
     stop(): void;
 };
 ```
+
+## O9 — the runtime stage cannot see the candidate sources
+
+`Case.files` is the agent's virtual candidate source. Two stages honour it and one does not.
+
+```text
+$ grep -rn "\.files" src/server/
+src/server/stages/TypeStage.ts:116:		for (const source of subject.files) this.#overlay(source)
+src/server/stages/TypeStage.ts:121:			for (const source of subject.files) {
+src/server/stages/TypeStage.ts:133:			for (const source of subject.files) {
+src/server/stages/LintStage.ts:118:		for (const source of [...subject.files, subject.test]) {
+```
+
+`TypeStage` overlays every candidate into its virtual filesystem and typechecks each against its
+scoped project. `LintStage` lints each one. `RuntimeStage` materializes only the test:
+
+```text
+$ grep -n "writeFileSync\|subject\." src/server/stages/RuntimeStage.ts
+102:		const file = createRevisionFile(this.#workspace, subject.test.path, randomUUID())
+106:		const project = this.#project(vitest, subject.test.path)
+107:		writeFileSync(file, subject.test.text, { encoding: 'utf8', flag: 'wx' })
+```
+
+So a test that imports a candidate module the agent supplied as text, and that does not already exist
+on disk, typechecks clean, lints clean, and fails to resolve at runtime.
+
+That defeats the premise the design states. The whole point is that an agent proves source it has
+only thought of; if the runtime stage can only run against code already committed to disk, the
+runtime evidence covers a different program than the type and lint evidence.
+
+Reading is enough to state the gap. It still owes a measured confirmation, which the Orchestrator
+takes as soon as no writing unit owns the tree: a claim whose `files` carries one module and whose
+`test` imports it, run through a real `prove`.
+
+The remedy is not obvious and is a design question rather than a repair. The runtime stage would have
+to materialize each candidate at its declared path, which collides with the real file already there
+when one exists, and the collision has to resolve without corrupting the developer's checkout. Route
+this to a design round rather than to a fix round.
