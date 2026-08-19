@@ -319,3 +319,44 @@ settled it in one command.
 
 E8 is struck from repair round 2. Adding signal handling now would be hardening against a defect no
 measurement shows, and `AGENTS.md` refuses a capability added without a real consumer.
+
+## O9, sharpened — and the dangerous half is a false green
+
+Reading the type stage's language-service host changes the shape of O9. Only four host callbacks
+consult the overlay map:
+
+```text
+$ sed -n '179,190p' src/server/stages/TypeStage.ts
+getScriptFileNames: () => [...(this.#files.get(project) ?? []), ...this.#overlays.keys()],
+getScriptVersion: (file) => this.#version(file),
+getScriptSnapshot: (file) => this.#snapshot(typescript, file),
+…
+fileExists: typescript.sys.fileExists,
+readFile: (file) => this.#overlays.get(file) ?? typescript.sys.readFile(file),
+readDirectory: typescript.sys.readDirectory,
+directoryExists: typescript.sys.directoryExists,
+```
+
+`fileExists` and `directoryExists` go straight to disk. TypeScript resolves a module specifier by
+asking `fileExists` down a candidate list, so an import of a file that exists only as overlay text
+fails to resolve. The overlay is enough to typecheck the candidate's own text, because
+`getScriptFileNames` carries it, and not enough for anything to import it.
+
+So the three stages disagree in two different ways, and the two scenarios need separating.
+
+| The claim's candidate                | Type stage                    | Lint stage | Runtime stage             |
+| ------------------------------------ | ----------------------------- | ---------- | ------------------------- |
+| Replaces a file already on disk      | judges the agent's text       | judges it  | **runs the on-disk text** |
+| Is a file that does not exist yet    | **cannot resolve an import**  | judges it  | **cannot resolve it**     |
+
+The second row fails loudly, which is survivable. The first row is the dangerous one and it is a
+false green: the type stage typechecks the agent's new text, the runtime stage runs the old text
+still on disk, both report clean, and a receipt is issued. The verdict says the claim was proven when
+the runtime evidence was about a different program.
+
+That is the exact failure the design says this mechanism exists to prevent, wearing the exact shape
+the design's own warning names — a warm service returning a confident wrong answer about source it
+has not caught up with.
+
+Both rows still owe a measured confirmation, which the Orchestrator takes when no writing unit owns
+the tree. The instrument must cover both scenarios, not only the new-file one.
