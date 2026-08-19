@@ -384,6 +384,12 @@ The harness bridge names the concrete mechanism for each of these.
 - Amend a brief on re-run rather than restating it. A mid-campaign correction produces a successor
   file recording what changed and why, and the original stays. A fix round's brief names the
   findings it carries and where each came from.
+- Read the copy the executor will open, not the one you wrote. A brief written in the orchestrator's
+  repository and staged into the subject's checkout so a `-C` invocation can reach it is a second
+  file, and staging can rewrite a path or drop a clause. The executor rules on what it opens, so a
+  staged copy whose facts are false stops a unit that was correctly briefed. Verify the staged path
+  and its load-bearing facts before launching, and stage into a scratch directory the subject tree
+  ignores rather than into the checkout root.
 - Send a decision taken mid-campaign to every unit already in flight whose brief it invalidates. An
   executor cannot see a change made after it was dispatched, so it writes the state its brief
   described and the defect surfaces as its own.
@@ -434,7 +440,14 @@ The harness bridge names the concrete mechanism for each of these.
   shipping a guess the executor would have to invent an answer around.
 - **Scope.** Owned files, shared and off-limits files, allowed tools, permission limits.
 - **Execution.** State that the executor performs the assignment directly and spawns nothing. Put
-  it in every brief; an executor deep in a task does not re-read this contract.
+  it in every brief; an executor deep in a task does not re-read this contract. Write the sentence
+  for the reader the transport actually delivers it to, because "directly" names a different action
+  on each side of a bridge. To a native subagent or a bench engine reading the brief inside its own
+  CLI, it means do the work yourself. To a bridge driver, whose entire assignment is the launch, it
+  means carry the brief across unaltered and return the journal — the engine behind the CLI is not a
+  subagent the driver is spawning, and a driver told to work directly answers from its own engine
+  instead. That answer reads normal and its only tell is the missing journal, so pair this sentence
+  with **Bench laws** rule 2 and refuse a bench result whose journal path and session id are absent.
 - **Output.** The exact distilled return shape. No process diary.
 - **Deviation contract.** The required stop-and-report behaviour for writers, scoped. A conflict
   with the primary objective stops the unit. An ancillary conflict — where a paragraph sits, which
