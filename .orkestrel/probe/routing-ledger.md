@@ -28,3 +28,42 @@ route a model across a bridge when the running harness hosts it.
 
 Recording it because copying a launch script is exactly how an engine assignment goes wrong silently —
 the brief still says Opus, the script says Sol, and nothing reconciles the two at launch.
+
+## Units the criterion-3 verification added
+
+| Unit | Subject | Engine | Why |
+| ---- | ------- | ------ | --- |
+| O9-U1 | `Overlay.ts` and the type stage's adoption | **Opus** | A new entity's contract shape and its single-word member names. |
+| O9-U2 | the runtime stage serves the candidate it certifies | **Sol** | Vite resolution hooks over a transitive import graph, and a resident runner's cache behaviour. Constraint-heavy and mechanically precise. |
+| D1 | the two doc-truth highs criterion 3 left unapplied | **Opus** | Both repairs are TSDoc prose. One is the flagship example's own text. |
+| S3fix2 audit | commits `449f96d` and `282c902` | **Sol**, direct `codex exec` | S3fix2 was Opus-written, so its auditor must not be Opus. |
+
+## A second routing error, and what it cost
+
+The S3fix2 audit was dispatched to the `analyst` bridge driver rather than launched as a direct
+`codex exec`. The driver read the brief's Execution section — "perform the assignment directly, spawn
+no subagent" — as an instruction to answer from its own engine, and it did. The verdict came back
+reading entirely normal, with no journal.
+
+Bench law 2 is what catches this: a bench unit with no journal ran on its driver's engine. The lane
+was Claude, the writer was Claude, and the round had no independent engine in it.
+
+Two things changed as a result. `.agents/orchestration.md` § Dispatch anatomy now says the Execution
+sentence is written for the reader the transport delivers it to, because "directly" means do the work
+on one side of a bridge and carry the brief across on the other. And every Sol lane in this campaign
+now launches as a direct `codex exec` with a journal path, which is the transport that has never
+failed this way.
+
+## A third: a read-only sandbox is not a read-only role
+
+The S3fix audit ran `--sandbox read-only` and returned six of fifteen claims NOT RULED, because under
+that sandbox a Node-spawned Node child returns exit 0 with empty stdout — and the subject was a stage
+that spawns a Node child.
+
+The permission floor makes an auditor read-only by withholding `Edit` and `Write`. It says nothing
+about whether the sandbox may execute a process. Conflating the two blinds a behavioural audit while
+looking like compliance, and `.claude/rules/quality.md` already requires the opposite: give every
+behavioural audit the means to run its attacks.
+
+The re-dispatch runs `--sandbox workspace-write` in a detached git worktree. The worktree is what keeps
+it read-only where it matters — nothing it writes reaches the campaign's checkout.
