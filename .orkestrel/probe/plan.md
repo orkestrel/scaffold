@@ -410,3 +410,72 @@ Beyond the two earlier surveys, `PROBE.md` must also carry:
 O9 is the critical path because criterion 4 is the only criterion no other unit can close. U4c closes the
 back half of criterion 2 and the guide-parity half of criterion 5 together, so it is the second most
 valuable unit remaining.
+
+## Re-baseline, 2026-08-19, after verifying criterion 3 rather than asserting it
+
+The previous re-baseline recorded criterion 3 **Closed**. That was an assertion, and checking it
+against the tree refuted it. `criterion-3-verification.md` carries the ten-row table and the evidence;
+this section carries what it changes in the plan.
+
+### The correction
+
+Two high findings carry a recorded repair direction that no unit ever applied:
+
+- the flagship `Claim` @example declares a control byte-identical to the case, so it can never earn a
+  receipt (`src/core/types.ts:95-101`);
+- the `CLAIM_SHAPE` remark says the tool admits with `compileGuard(CLAIM_SHAPE)` while the server
+  admits with `isClaim`, and `compileGuard` has no call site under `src/` outside a doc comment
+  (`src/core/shapers.ts:68`).
+
+Both were settled by inspection and both got a repair direction. Neither got a unit. The error was
+mine: "settled by inspection" ruled on the finding's truth and I read it as ruling on its closure.
+
+**Unit D1 carries both.** Its brief is `d1-brief.md`, it routes to the Opus `implementer` because both
+repairs are documentation voice, and it queues behind O9-U2.
+
+### One severity correction, on the record
+
+The sweep labelled the runtime stage's per-run eviction HIGH. The verification measured it across 30
+inspections: `idMap` +2, `filesMap` +1, one module-graph node, and 0.038 MB of heap per inspection,
+linear across every point, 26.99 MB to 28.09 MB.
+
+A sweep's severity label is a hypothesis and the measurement is the ruling. The finding moves to the
+plan's medium exclusion list — real, enumerated, and not what closes this campaign. Recorded here so
+it is a ruling rather than a silent absorption.
+
+### What connects D1 to O9
+
+Neither of the example's paths is on disk, so the flagship example is a pure off-disk-candidate claim
+and O9's defect reaches it. The example is therefore unrunnable for two independent reasons: its
+control compiles, and the stages could not serve a candidate that is not on disk. D1 closes the first;
+O9 closes the second; the receipt proof goes green only when both have landed.
+
+That makes D1's proof the sharpest test in the campaign for O9 as well — the package's own flagship
+example, held to what it advertises.
+
+### Criterion state, corrected
+
+| # | Criterion | State |
+| - | --------- | ----- |
+| 1 | Units 1, 2, 3, 5 landed, audited, committed | **Closed** |
+| 2 | Units 4a, 4b, 4c landed; no skipped, no todo | **Partly.** 4a and 4b landed; counts clean. 4c is not written |
+| 3 | Every reproduced high finding closed with a red-then-green test | **Open.** Eight rows closed, one in flight with O9-U2, two carried by D1 |
+| 4 | The candidate-source defect closed, or excluded with the contract changed | **Open.** O9-U2 in flight; U1 landed |
+| 5 | Five gates by an independent executor, and guide parity | **Partly.** Gates green. `tests/guides.test.ts` does not exist |
+| 6 | `PROBE.md` describes what shipped | **Open.** Work list in `probe-md-worklist.md` |
+
+### Dependency order, redrawn
+
+`O9-U2 → D1 → O9-U3`, then `P1`, `T2`, `U4c` in any order, then `PROBE.md`.
+
+D1 moves ahead of O9-U3 because it is the cheapest unit that closes a criterion, and because its proof
+is an independent reading on whether O9 actually worked.
+
+### Criterion 6 gains two entries
+
+`PROBE.md` must also carry:
+
+- That the flagship `Claim` example was unrunnable as shipped in 0.0.1, for both reasons, and what
+  changed.
+- The eviction finding's corrected severity and the measurement behind it, because the campaign
+  published a HIGH label it later withdrew.
