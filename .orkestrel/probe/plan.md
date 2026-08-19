@@ -255,3 +255,39 @@ hosts on a four-core container measures contention rather than the defect.
 
 Eight of the ten high findings are already settled: five with executed evidence, two by inspection
 because their subject is static text, and the candidate-source gap by full measurement as O9.
+
+## Criterion 6's work list, surveyed 2026-08-19
+
+`PROBE.md` must describe what shipped, including every measurement that moved and every claim this
+campaign withdrew. Surveyed against the file rather than from memory, so the reconciliation unit has a
+list instead of a reading assignment.
+
+**Measurements the campaign moved or added.**
+
+- The latency table at `PROBE.md:76-79` — boot 4392 ms, one `prove` 530-621 ms, one inspection 264 ms,
+  the runtime stage alone 187 ms — is still accurate per inspection, and is now incomplete. The runtime
+  stage recycles its resident runner every 64 written specifications, and that replacement costs
+  **260-285 ms** on the inspection that triggers it, measured through the real stage across two runs
+  whose spike lands on inspection 65 alone. A reader budgeting latency from that table will be wrong
+  once in 64 calls, which is exactly the reader the table exists for.
+- The per-stage figures at `:241-243` and `:279-281` were taken before four rounds of repair. Re-measure
+  or mark them as of a stated date; do not silently carry them.
+
+**Claims the campaign withdrew, which the file must not keep asserting.**
+
+- That the entry orphans its resident hosts on termination. Measured false — the processes exit. What
+  stands is that arming files survive and contained faults are discarded.
+- Any wording implying a receipt certifies runtime evidence over source the runtime never ran. The
+  candidate-source gap is O9's subject and criterion 4 forbids leaving the contract as it stands.
+
+**Claims the campaign added that the file does not carry.**
+
+- A receipt is issued only when every stage ran clean on the case AND the control produced at least one
+  `origin: 'code'` finding at the stage it declared. `Finding` carries that discriminant now.
+- A clean runtime check means every collected test passed, not that the module reported `passed`.
+- The formatters render both finding origins identically, so an agent reading `formatVerdict` output
+  cannot yet distinguish a control failure from an instrument fault. Carried out of scope on the record;
+  the file must not imply otherwise.
+
+**Not yet surveyable.** Whatever unit S2 changes about what `ProbeOptions.deadline` bounds. Survey that
+after S2 lands rather than guessing at it now.
