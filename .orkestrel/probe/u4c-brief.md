@@ -90,11 +90,42 @@ implement `StageInterface`.
 
 ## Unknowns
 
-- Whether `npx scaffold overwrite` changes anything besides `vite.config.ts`. Read the full
-  `git diff` after running it and report exactly what moved. If it rewrites a file this brief did not
-  grant you, stop and report rather than keeping the change.
 - Whether the parity proof, once written, reports drift the guide must close. That is the proof
   working. Close the drift in the guide, not by weakening the proof.
+
+Nothing else here is unknown. The Orchestrator measured `scaffold overwrite` against a throwaway copy
+of this tree before writing this brief, and the measured behaviour is stated in the following section
+so you do not rediscover it.
+
+## The order the config change must run in
+
+The order is not free. `scaffold overwrite` refuses a half-change, and its refusal names the exact
+line you are missing:
+
+```text
+TARGET: The manifest at . does not reach a Vitest project the planned configuration registers: guides.
+No chain from test or prepublishOnly invokes it. To continue, add this exact script line to
+package.json: "test:guides": "vitest run --config vite.config.ts --no-cache --reporter=dot --project guides",
+```
+
+So run these three steps in this order:
+
+1. Create `tests/guides.test.ts`. Its presence is what selects the project.
+2. Add the `test:guides` script to `package.json` and chain it into `test`. Both halves, or the verb
+   refuses.
+3. Run `npx scaffold overwrite`. It adds the `guides` project to `vite.config.ts` and puts `guides`
+   into the `projects` array between `config` and `probe`.
+
+Measured result of step 3 in the copy, for comparison against yours:
+
+```text
+vite.config.ts replaced (16 lines added).
+projects: [srcCore, srcServer, srcBin, policy, config, guides, probe],
+```
+
+A separate unit has already brought this workspace onto the current scaffold and re-vendored it, so
+`overwrite` here changes `vite.config.ts` and nothing else. If it writes any other file, that is a
+real deviation: stop and report it.
 
 ## Scope
 

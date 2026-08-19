@@ -88,10 +88,27 @@ Creating `tests/guides.test.ts` selects the `guides` Vitest project, so the temp
 `vite.config.ts` while the `test:guides` script must be added by hand. The vendored config proof
 checks that the projects and the scripts agree, so both halves land together or neither does.
 
+## Unit 5 — bring the workspace onto scaffold 0.0.42 (Orchestrator)
+
+Re-pin, install, re-vendor, prove the gates. Brief: `u5-brief.md`.
+
+Discovered while de-risking unit 4c: `scaffold overwrite` re-pins two development dependencies,
+refreshes the catalog table, and vendors five dependency guides this workspace has never carried,
+all in the same verb. None of that belongs to the unit that writes the package guide. It also brings
+in the repaired vendored `tests/config.test.ts`, which resolves Oxlint through `createRequire`
+instead of spawning the `node_modules/.bin/oxlint` shim that Windows cannot execute and a restricted
+sandbox refuses.
+
+Network-dependent work belongs to the Orchestrator's own tracked commands, because a bench sandbox
+denies the network.
+
 ## Order, revised
 
-1, then 2, then 3, then 4a, then 4b, then 4c. Each unit commits before the next is dispatched, and
-each nontrivial unit is audited by an engine that did not write it.
+Unit 3's two repair rounds, then 5, then 4a, then 4b, then 4c. Each unit commits before the next is
+dispatched, and each nontrivial unit is audited by an engine that did not write it.
+
+Unit 5 sits before the proof units so that every later unit runs against the final vendored host
+rather than against one a later step replaces.
 
 ## Standing obligations unit 4 inherits
 
