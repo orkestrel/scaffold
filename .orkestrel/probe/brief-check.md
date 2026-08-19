@@ -1073,3 +1073,32 @@ cost two earlier units a repair round.
 whatever project it is scoped to. If it needs executed evidence, it gets it from the Orchestrator or it
 waits for the writer to release the tree. "Scoped" must mean scoped to files nobody else touches, not
 scoped to a project name.
+
+## A brief reference must be an absolute path or staged beside the brief — 2026-08-19
+
+The O9 unit 2 brief cited its governing ruling as a bare filename:
+
+> the Orchestrator's reconciliation (`o9-reconciliation.md`, read it in full)
+
+The exec is rooted at `/workspace/probe` and the file lives in the Orchestrator's repository, so the
+unit reported it could not find that reference or `o9-amendment.md` anywhere.
+
+This is the same class as the `PROBE.md` failure one unit earlier, arriving through a different door.
+That one was a **wrong** absolute path introduced by restaging. This one is **no** path at all, written
+that way in the source brief.
+
+**The rule:** every file a brief tells an executor to read is named by absolute path, or is staged into
+the same directory as the brief. A bare filename resolves against a working directory the brief's author
+is not sitting in.
+
+### Two things that limited the cost
+
+The brief's own "What is settled, so you do not re-derive it" section carries the five decisions inline,
+so the substance reached the unit even though the corroborating file did not. **A brief that summarizes
+its references survives losing them**, which is an argument for writing them that way rather than
+pointing.
+
+And the recovery had its own trap. Staging the files into the checkout root would have resolved a
+bare reference from the working directory — and polluted the tree, breaking the unit's own "only owned
+files changed" criterion. They went to `tmp/codex/` beside the brief instead, which is gitignored. The
+root copies were removed and `git status --porcelain` confirmed clean before continuing.
