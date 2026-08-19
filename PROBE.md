@@ -71,16 +71,23 @@ speak the header form to Oxlint.
 
 Latency, measured warm against the built package:
 
-| Measurement                             | Median  |
-| --------------------------------------- | ------- |
-| Boot, including arming                  | 4351 ms |
-| One `prove`, six checks and a receipt   | 492 ms  |
-| One inspection, three stages concurrent | 264 ms  |
-| The runtime stage alone                 | 187 ms  |
+| Measurement                             | Median     |
+| --------------------------------------- | ---------- |
+| Boot, including arming                  | 4392 ms    |
+| One `prove`, six checks and a receipt   | 530-621 ms |
+| One inspection, three stages concurrent | 264 ms     |
+| The runtime stage alone                 | 187 ms     |
 
 The type stage at 56 ms and the lint stage at 72 ms cost nothing observable, because they finish
 while the runtime stage is still running. A `prove` is two inspections in sequence, the case and then
-the control, which is where its 492 ms comes from.
+the control, which is where its half-second comes from.
+
+Two of those numbers moved during the repair and are worth stating, because one prediction was wrong.
+Arming gained a second control so it proves the type half of the staleness defect as well as the
+runtime half, and boot was expected to roughly double as a result. It did not: 4392 ms against
+4351 ms, because the type control rides hosts the runtime control already warmed and costs about
+40 ms. The warm `prove` did move, from 492 ms to 530-621 ms, and that is the routed `project` adding a
+scoped type check rather than anything arming did.
 
 ### What the build found that the design did not
 
