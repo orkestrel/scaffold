@@ -399,14 +399,25 @@ export interface Check {
 	readonly findings: readonly Finding[]
 }
 
+export interface Toolchain {
+	readonly typescript: string
+	readonly oxlint: string
+	readonly vitest: string
+}
+
 export interface Verdict {
 	readonly id: string
+	readonly toolchain: Toolchain
 	readonly checks: readonly Check[]
 	readonly control: readonly Check[]
 	readonly elapsed: number
 	readonly receipt?: string
 }
 ```
+
+A `Verdict` carries the `Toolchain` it was produced by, and the receipt token repeats those three
+versions. A receipt read away from its verdict still states which compiler, linter, and runner stood
+behind it, so a proof cannot be quoted after the toolchain that produced it has moved on.
 
 A `Finding` carries no stage of its own. It only ever appears inside a `Check` that already names
 one, so a second copy is the duplicated label `AGENTS.md` refuses under `Derive state`. An earlier
