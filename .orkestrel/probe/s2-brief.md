@@ -214,3 +214,60 @@ Two rules follow, and they bind whatever you are writing:
 Where a proof needs a whole workspace rather than a few files, take an owned scratch directory linked
 to the real installed toolchain, as `tests/src/bin/main.test.ts` already does. Do not disable file
 parallelism to make an over-broad assertion pass — that hides the defect and keeps the wrong assertion.
+
+## Amendment 2, 2026-08-19 — the deadline mechanism is confirmed, and here is the evidence
+
+Your first defect is no longer the sweep's assertion. The Orchestrator verified all three of its
+structural facts by reading, which is the matching instrument for a claim about statement order. Do not
+re-derive them; build your failing proof on top.
+
+**Fact 1 — the timer is armed before the work is handed over.** `src/server/Probe.ts:211-217`:
+
+```ts
+	async #inspectRuntime(subject: Case, claim: Claim): Promise<Check> {
+		const stage = this.#runtime
+		const timeout = createTimeout({ ms: this.#deadline })
+		timeout.start()
+		try {
+			return await Promise.race([
+				stage.inspect(subject),
+```
+
+**Fact 2 — `inspect` queues rather than runs.** `src/server/stages/RuntimeStage.ts:61-68` chains onto a
+tail promise:
+
+```ts
+		const inspection = this.#tail.then(() => this.#inspect(subject))
+```
+
+So a second call waits behind the first while its own timer is already counting. The budget
+`ProbeOptions.deadline` documents as bounding one runtime stage covers queue time plus work.
+
+**Fact 3 — the expiry path recycles the SHARED stage.** `src/server/Probe.ts:223` calls
+`await this.#recycle(stage)`, and `#recycle` installs a replacement `#runtime`. The claim whose timer
+fired tears down the stage a different, still-running claim is bound to.
+
+**What is NOT settled, and what you owe.** Reading cannot demonstrate the consequence: that under two
+real concurrent claims, claim B's expiry destroys claim A's live run and the failure is misattributed to
+A. That interleaving is your required failing proof — red before the fix, green after, with the exact
+command and both counts.
+
+Concurrency here is reachable rather than theoretical. The stdio transport reads with a plain `data`
+handler and nothing awaits the async message listener beneath it, and `prove` has no mutual exclusion.
+
+**Design note, not a prescription.** The obvious repair is to arm the timer inside the stage, after the
+queue admits the work. Consider what that does to a claim that never reaches the front of the queue: an
+unbounded queue wait with no deadline is a different unbounded hang, not a fix. Whatever you choose,
+state what bounds the total time a caller waits, because that is what `deadline` promises a caller.
+
+## Also yours — a defect a later audit referred to you explicitly
+
+`tests/src/server/Probe.test.ts` lines 293-297 assert over the WHOLE `tmp/probe` directory, filtered by
+`name.startsWith('arm-') || name.includes('.probe-')`. Those prefixes are generic to every probe
+instance, so the assertion collides with any concurrently running test that writes there — and four
+server test files do, under a project with no parallelism guard.
+
+An audit of unit S1 referred this to you by name, because that file is outside S1's scope and inside
+yours. Repair it the way `.claude/rules/tests.md` requires: assert that the files THIS test created are
+gone, identified by a token unique to this test, never that the directory is empty or that no file of a
+generic shape exists.
