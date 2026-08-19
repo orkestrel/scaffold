@@ -6,14 +6,15 @@
 > (boundary, telemetry, compression, security headers, CORS, deadlines,
 > trusted-proxy client facts, ETag, bearer auth, rate limiting, body
 > parsing, sessions, CSRF) plus the session/transport/store seam — and the
-> node-bound face (`@orkestrel/middleware/server`) — static file serving and
-> streaming multipart uploads, plus a `node:zlib`-guaranteed compression
+> node-bound face (`@orkestrel/middleware/server`) — in-memory asset serving,
+> static file serving, and streaming multipart uploads, plus a
+> `node:zlib`-guaranteed compression
 > sibling. Every battery is built over the frozen `@orkestrel/server`
 > middleware seam (`MiddlewareHandler`, `MiddlewareContext`, `compose`) and
 > substrate (cookies, WebCrypto tokens, negotiation, conditionals, security
 > primitives) — this package never re-implements the seam, only composes it
 > into policy (AGENTS §21 "mechanism, never policy"). Source:
-> [`src/core`](../../src/core), [`src/server`](../../src/server). Surfaced
+> [`src/core`](../src/core), [`src/server`](../src/server). Surfaced
 > through the `@orkestrel/middleware` / `@orkestrel/middleware/server`
 > barrels (aliased `@src/core` / `@src/server` inside this repo).
 
@@ -61,6 +62,7 @@ const handle = compose<State>([boundary, security], async (_request, context) =>
 
 | API                 | Kind     | Summary                                                                              |
 | ------------------- | -------- | ------------------------------------------------------------------------------------ |
+| `createAssets`      | function | Serve validated in-memory identity/Brotli assets with shared ETags.                  |
 | `createStatic`      | function | Serve static files from `options.root` over `node:fs`, with Range/ETag/SPA fallback. |
 | `createMultipart`   | function | Stream-parse `multipart/form-data` into `context.state.multipart`.                   |
 | `createCompression` | function | The `node:zlib`-backed compression sibling (gzip/deflate, no feature-detection).     |
@@ -102,6 +104,9 @@ const handle = compose<State>([boundary, security], async (_request, context) =>
 | `MultipartFile`             | interface | `{ field; name; size; mime; validated; status; path }` — one staged upload.                             |
 | `MultipartBody`             | interface | `{ files; fields }` — the parsed multipart request body.                                                |
 | `MultipartState`            | interface | `{ readonly multipart?: MultipartBody }` — the state slice `createMultipart` stashes.                   |
+| `Asset`                     | interface | `{ body; encoding? }` — one identity or Brotli in-memory representation.                                |
+| `AssetSourceInterface`      | interface | `read` — resolve one validated relative asset key.                                                      |
+| `AssetOptions`              | interface | `{ source }` — options for `createAssets`.                                                              |
 | `StaticOptions`             | interface | `{ root; prefix?; index?; dotfiles?; cache?; etag?; fallback? }`.                                       |
 | `MultipartLimits`           | interface | `{ file?; files?; field?; fields?; total? }` — per-category mid-stream caps.                            |
 | `MultipartOptions`          | interface | `{ limits?; allowed?; directory? }` — options for `createMultipart`.                                    |
@@ -220,12 +225,17 @@ const handle = compose<State>([boundary, security], async (_request, context) =>
 
 ### Entities
 
-| API                    | Kind  | Summary                                                                                                                                  |
-| ---------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `Session`              | class | The default session entity — `id` + a live `data` Map; implements `SessionInterface`.                                                    |
-| `MemorySessionStore`   | class | The default in-process `SessionStoreInterface` — idle + absolute-lifetime eviction.                                                      |
-| `DatabaseSessionStore` | class | A durable `SessionStoreInterface` over an `@orkestrel/database` table — same idle + absolute-lifetime contract as `MemorySessionStore`.  |
-| `MultipartParser`      | class | Internal server-source multipart lifecycle engine composed only by public `parseMultipartRequest`; intentionally absent from the barrel. |
+| API                    | Kind  | Summary                                                                                                                                 |
+| ---------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `Session`              | class | The default session entity — `id` + a live `data` Map; implements `SessionInterface`.                                                   |
+| `MemorySessionStore`   | class | The default in-process `SessionStoreInterface` — idle + absolute-lifetime eviction.                                                     |
+| `DatabaseSessionStore` | class | A durable `SessionStoreInterface` over an `@orkestrel/database` table — same idle + absolute-lifetime contract as `MemorySessionStore`. |
+
+Multipart parsing has no entity row because it exposes no entity. The server source declares a
+multipart lifecycle engine that `parseMultipartRequest` composes internally, and the barrel does not
+export it: a consumer reaches every part of that behaviour through `parseMultipartRequest`, whose
+result is a `MultipartBody`. `tests/guides.test.ts` names the class in its `INTERNAL` list, so the
+omission is asserted rather than assumed, and adding it to the barrel would turn that assertion red.
 
 ### Factories
 
@@ -245,9 +255,20 @@ const handle = compose<State>([boundary, security], async (_request, context) =>
 
 ## Methods
 
-The public methods of `SessionControlInterface`, `SessionStoreInterface`, and
-`SessionTransport` — the three behavioral seams `createSession` composes
+The public methods of `AssetSourceInterface`, `SessionControlInterface`,
+`SessionStoreInterface`, and `SessionTransport` — the behavioral seams the
+middleware factories compose
 (their `readonly` data members, where any exist, stay Surface rows above).
+
+#### `AssetSourceInterface`
+
+The in-memory lookup seam. `createAssets` validates a request key before it
+calls `read`, copies each successful result, and caches that key for the
+factory's lifetime. A miss may be read again later.
+
+| Method | Returns              | Behavior                                                       |
+| ------ | -------------------- | -------------------------------------------------------------- |
+| `read` | `Asset \| undefined` | Return one identity/Brotli asset for a validated relative key. |
 
 #### `SessionControlInterface`
 
@@ -293,8 +314,9 @@ These invariants hold across `src/core` / `src/server` ↔ `middleware.md`.
    source directory, and every export appears as a Surface row — exhaustive,
    both directions (AGENTS §22).
 2. **DOC ↔ SOURCE method bijection.** The `## Methods` tables list exactly
-   `SessionControlInterface`'s, `SessionStoreInterface`'s, and
-   `SessionTransport`'s public methods — exhaustive, both directions (AGENTS
+   `AssetSourceInterface`'s, `SessionControlInterface`'s,
+   `SessionStoreInterface`'s, and `SessionTransport`'s public methods —
+   exhaustive, both directions (AGENTS
    §22).
 
 ### The ordering doctrine (PROPOSAL §5)
@@ -404,7 +426,14 @@ prevents:
     multi-range or malformed `Range` header serves the FULL body (`200`),
     never a partial guess; the SPA fallback shell path is a fixed,
     non-user-controlled join — never re-run through the traversal resolver.
-22. **Multipart.** A declared `Content-Type` whose SNIFFED (magic-byte)
+22. **Assets.** `createAssets` decodes a browser-relative key and refuses
+    malformed escapes, backslashes, empty segments, `.`/`..`, and dotfiles
+    before it calls `AssetSourceInterface.read`. A successful value is copied
+    and cached. A Brotli value is decompressed once; Brotli and identity share
+    the identity body's `computeBodyETag` validator and vary on
+    `Accept-Encoding`. Gzip is not offered. `Range` is ignored and serves the
+    selected complete representation as `200`.
+23. **Multipart.** A declared `Content-Type` whose SNIFFED (magic-byte)
     bytes disagree is rejected `415`, as is a signature-less declared type
     on an `allowed` list (sniffing cannot validate it — a list can never
     honestly allow it); staged temp filenames are `randomUUID()`, never
@@ -419,11 +448,11 @@ prevents:
     process-owned `mkdtemp` directory under `os.tmpdir()` locked to mode
     `0o700`, with each staged file opened at mode `0o600` (both overridable
     via `options.directory`).
-23. **Boundary.** `expose: false` leaks nothing (a non-`HTTPError` throw's
+24. **Boundary.** `expose: false` leaks nothing (a non-`HTTPError` throw's
     message never reaches the body); an `HTTPError`'s own `message` ALWAYS
     surfaces (it is the handler's deliberate signal); a `report` sink's own
     throw is swallowed and can never alter the response.
-24. **`only`/`except` are NOT a security boundary.** Both match
+25. **`only`/`except` are NOT a security boundary.** Both match
     `context.url.pathname` EXACTLY — a trailing slash (`/login/` vs `/login`),
     a case variant, or a percent-encoded path silently falls outside an
     `only()`-scoped path set, and a security battery scoped that way goes
@@ -648,6 +677,28 @@ import { resolveMultipartLimits } from '@orkestrel/middleware/server'
 resolveMultipartLimits({ file: 1_048_576 }) // fills in every other default cap
 ```
 
+### Assets: in-memory source
+
+```ts
+import type { AssetSourceInterface } from '@orkestrel/middleware/server'
+import { createAssets } from '@orkestrel/middleware/server'
+
+const source: AssetSourceInterface = {
+	read(path) {
+		return path === 'index.html'
+			? { body: new TextEncoder().encode('<!doctype html><title>App</title>') }
+			: undefined
+	},
+}
+
+const serveAssets = createAssets({ source })
+```
+
+Return `{ body, encoding: 'br' }` when `body` contains Brotli bytes.
+`createAssets` keeps those bytes for Brotli clients and caches one identity
+decompression for every other client. Both responses share an identity-body
+ETag. Gzip is not offered.
+
 ### Static: SPA fallback
 
 ```ts
@@ -698,42 +749,45 @@ const serveApp = createStatic({ root: '/srv/public', fallback: true }) // exclud
 
 ## Tests
 
-- [`tests/src/core/helpers.test.ts`](../../tests/src/core/helpers.test.ts) —
+- [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) —
   `resolveKey` precedence, `buildRetryAfter`/`buildRateLimitField`/
   `buildRateLimitPolicyField` exact wire strings, `matchesTrustedEntry`/
   `resolveForwardedFor` matrices, `detectEncodings`, `compressBytes`, buffering-eligibility
   predicates, `transferSessionData`, the `isSession`/`isSessionControl`/
   `isMultipartBody` totality guards, `isPreflight`, `buildClientInfo`.
-- [`tests/src/core/Session.test.ts`](../../tests/src/core/Session.test.ts) —
+- [`tests/src/core/Session.test.ts`](../tests/src/core/Session.test.ts) —
   the entity shape (`id`, an independent, mutable `data` Map per instance).
-- [`tests/src/core/stores/MemorySessionStore.test.ts`](../../tests/src/core/stores/MemorySessionStore.test.ts) —
+- [`tests/src/core/stores/MemorySessionStore.test.ts`](../tests/src/core/stores/MemorySessionStore.test.ts) —
   construction guards, get/set/delete, idle + absolute-lifetime eviction,
   `createdAt` stamped once and preserved across re-set.
-- [`tests/src/core/stores/DatabaseSessionStore.test.ts`](../../tests/src/core/stores/DatabaseSessionStore.test.ts) —
+- [`tests/src/core/stores/DatabaseSessionStore.test.ts`](../tests/src/core/stores/DatabaseSessionStore.test.ts) —
   get/set/delete over a real `@orkestrel/database` memory-driver table, idle +
   absolute-lifetime eviction (including the underlying row's removal),
   `createdAt` stamped once and preserved across re-set, guard rejection.
-- [`tests/src/core/factories.test.ts`](../../tests/src/core/factories.test.ts) —
+- [`tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) —
   `createCookieTransport`/`createHeaderTransport` round-trips over real
   `Request`/`Response`, `createMemorySessionStore` shallow mirror.
-- [`tests/src/core/middlewares.test.ts`](../../tests/src/core/middlewares.test.ts) —
+- [`tests/src/core/middlewares.test.ts`](../tests/src/core/middlewares.test.ts) —
   every battery's defaults, options, skip conditions, and §6 invariants;
   the canonical onion composed end-to-end.
-- [`tests/src/server/helpers.test.ts`](../../tests/src/server/helpers.test.ts) —
+- [`tests/src/server/helpers.test.ts`](../tests/src/server/helpers.test.ts) —
   traversal and SPA-fallback resolution, byte-signature matching, node zlib
   compression, multipart parsing/cleanup, and uploaded-file operations.
+- [`tests/src/server/middlewares.test.ts`](../tests/src/server/middlewares.test.ts) —
+  in-memory asset ownership, key refusal, identity/Brotli negotiation,
+  conditional and HEAD responses, filesystem static serving, multipart
+  middleware, and the server-face composition.
 
 ## See also
 
-- [`AGENTS.md`](../../AGENTS.md) — the rules; §5 the centralized-file
+- [`AGENTS.md`](../AGENTS.md) — the rules; §5 the centralized-file
   pattern and `middlewares.ts`'s kind-purity, §14 contract & validation
   architecture, §21 "mechanism, never policy", §22 documentation-as-contracts.
-- [`server.md`](server.md) — `@orkestrel/server`, the frozen seam and
-  substrate every battery in this package is built over.
-- [`contract.md`](contract.md) — `@orkestrel/contract`, the guards backing
-  every construction boundary.
-- [`budget.md`](budget.md) — `@orkestrel/budget`, `createLimiter`'s per-key
-  tally.
-- [`abort.md`](abort.md) / [`timeout.md`](timeout.md) — `@orkestrel/abort` /
-  `@orkestrel/timeout`, `createDeadline`'s signal-linking and timer.
-- [`README.md`](../README.md) — the guides index.
+- `@orkestrel/server` — the frozen seam and substrate every battery in this
+  package is built over. Its guide lives in its own repository, as do the
+  guides for the dependencies below.
+- `@orkestrel/contract` — the guards backing every construction boundary.
+- `@orkestrel/budget` — `createLimiter`'s per-key tally.
+- `@orkestrel/abort` / `@orkestrel/timeout` — `createDeadline`'s
+  signal-linking and timer.
+- [`README.md`](README.md) — the guides index.

@@ -1,6 +1,6 @@
 # SEA — Single Executable Application Builder
 
-> Node.js SEA builder — compress, blob, assemble, sign, and embed assets into a standalone binary. Pure TypeScript, no WASM, no external tools. Source: [`src/server`](../../src/server). Surfaced through the `@orkestrel/sea` barrel.
+> Node.js SEA builder — compress, blob, assemble, sign, and embed assets into a standalone binary. Pure TypeScript, no WASM, no external tools. Source: [`src/server`](../src/server). Surfaced through the `@orkestrel/sea` barrel.
 
 ## Overview
 
@@ -23,6 +23,8 @@ process.stdout.write(
 ```
 
 `sea.execute()` runs the three-step pipeline — compress assets, generate the blob, assemble and sign the executable — and transitions `sea.status` from `'idle'` to `'active'` to `'done'` (or `'error'`). `sea.emitter` reports progress on `compress`, `progress` (once per compressed file, with `current`/`total` counts), `blob`, `assemble`, and `complete`.
+
+When an `assets` path is compressed by `compression`, blob generation embeds the Brotli output under that asset's original key. Uncompressed entries keep their original paths, the compression manifest still reports each output path, and SEA does not mutate the caller's `assets` record.
 
 On Windows, `SEAOptions.windows.terminal` (default `true`) selects whether the executable keeps its console window: `false` builds a GUI-subsystem binary that launches without a terminal, at the cost of detached stdio when no console is attached (console output is discarded).
 
@@ -312,4 +314,4 @@ isPowerOfTwo(4096) // true
 
 ## See also
 
-- [`README.md`](../README.md) — the guides index.
+- [`README.md`](README.md) — the guides index.

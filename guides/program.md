@@ -26,7 +26,7 @@
 > `Program` either receives injected qualifier, rater, and engine instances (never
 > destroyed by `Program`) or creates and OWNS one shared quantitative-plus-logical
 > engine (`bail: false`), destroyed in `destroy()`. Every `execute` call fires through
-> `Program`'s typed `emitter` (AGENTS §13). Source: [`src/core`](../../src/core).
+> `Program`'s typed `emitter` (AGENTS §13). Source: [`src/core`](../src/core).
 > Surfaced through the `@src/core` barrel.
 
 ## Surface
@@ -199,28 +199,53 @@ Eligibility and rating failures remain nested result evidence rather than throws
 
 ### Validators
 
-Total, exact guards composed from sibling guards and `@orkestrel/contract`
-combinators — adversarial input returns `false`, never throws. Like the sibling
-packages, only AUTHORED/input types get a guard: `Determination`, `ProgramResult`,
-`AggregateResult`, `Tally`, `AggregateGroup`, and `AggregateProjection` are
-internally-produced results, never untrusted input, so they carry no guard of their
-own.
+All guards are total: adversarial input returns `false`, never throws. Authored
+inputs use exact-record posture. `isNotice` stays exact because `Notice` appears
+only in authored definitions; result notices are `Determination` values.
 
-| API                     | Kind     | Narrows to             |
-| ----------------------- | -------- | ---------------------- |
-| `isDecision`            | const    | `Decision`.            |
-| `isStatus`              | const    | `Status`.              |
-| `isProgramEffect`       | const    | `ProgramEffect`.       |
-| `isNotice`              | function | `Notice`.              |
-| `isAggregateDefinition` | function | `AggregateDefinition`. |
-| `isProgramDefinition`   | function | `ProgramDefinition`.   |
+Result guards use open posture. They admit unknown members and class instances,
+refuse arrays, and accept an optional member when it is absent or `undefined`.
+Use `isProgramResult` and `isAggregateResult` when a result arrives through a
+borrowed `ProgramInterface`. Each composite guard checks the full nested closure,
+except the string-dictionary leaves (`sums`, `scopes`), which certify own members
+only — a value carrying them on a prototype is admitted unchecked.
+Holding `isProgramResult` therefore also holds qualifier's published
+`isQualificationResult` closure and rater's published `isRatingResult` closure.
+`isProgramValidationResult` checks this package's own interface directly rather
+than delegating to reason's independently evolvable validation contract.
+
+| API                         | Kind     | Narrows to                         |
+| --------------------------- | -------- | ---------------------------------- |
+| `isDecision`                | const    | `Decision`.                        |
+| `isStatus`                  | const    | `Status`.                          |
+| `isProgramEffect`           | const    | `ProgramEffect`.                   |
+| `isNotice`                  | function | Exact `Notice`.                    |
+| `isAggregateDefinition`     | function | Exact `AggregateDefinition`.       |
+| `isProgramDefinition`       | function | Exact `ProgramDefinition`.         |
+| `isProgramSums`             | function | Open string-to-number sums record. |
+| `isDetermination`           | const    | Open `Determination`.              |
+| `isAggregateGroup`          | const    | Open `AggregateGroup`.             |
+| `isTally`                   | const    | Open `Tally`.                      |
+| `isTallies`                 | function | Total `Record<Status, Tally>`.     |
+| `isProgramResult`           | const    | Open `ProgramResult`.              |
+| `isAggregateResult`         | const    | Open `AggregateResult`.            |
+| `isProgramValidationResult` | const    | Open `ProgramValidationResult`.    |
+
+`isProgramSums` checks every own string-named member, including non-enumerable
+members, as a JavaScript `number`; it ignores inherited and symbol-named members.
+`isTallies` requires every status in `STATUS_PRECEDENCE`, while admitting unknown
+members because `Record<Status, Tally>` does not forbid them.
 
 ```ts
 import {
 	isAggregateDefinition,
+	isAggregateResult,
 	isDecision,
+	isDetermination,
 	isNotice,
 	isProgramDefinition,
+	isProgramResult,
+	isProgramValidationResult,
 	isStatus,
 } from '@orkestrel/program'
 
@@ -229,6 +254,10 @@ isStatus('conditional') // true
 isNotice({ id: 'file', message: 'Subject retained for audit' }) // true
 isAggregateDefinition({ fields: ['amount'], by: 'location' }) // true
 isProgramDefinition(definition) // true
+isDetermination({ id: 'audit', effect: 'notice', applied: true, premises: [] }) // true
+isProgramResult(program.execute(subject)) // true
+isAggregateResult(program.execute(subjects)) // true
+isProgramValidationResult(program.validate()) // true
 ```
 
 `isProgramDefinition` establishes exact shape only. `Program.validate` additionally
@@ -271,6 +300,9 @@ never destroyed — it holds no state to tear down) purely to drive that reuse.
 | `completeTallies`           | function | Fill missing statuses in a partial tally record.                                                                                                |
 | `tallyProgram`              | function | Add one subject and its fields to the result-status tally.                                                                                      |
 | `buildAggregateResult`      | function | Assemble one batch result, folding an optional aggregate-gate evaluation's `trace`/`errors` in and requiring it error-free for `success`.       |
+| `programDefinition`         | function | Build a fresh `ProgramDefinition`, copying every collection and omitting absent optional keys.                                                  |
+| `noticeDefinition`          | function | Build a fresh `Notice`, omitting an absent scope.                                                                                               |
+| `aggregateDefinition`       | function | Build a fresh `AggregateDefinition`, copying the fields and omitting absent optional keys.                                                      |
 
 The per-subject orchestration leaves guard the subject, select surviving lines, and
 map eligibility to a decision:
@@ -318,27 +350,11 @@ emptySums(['total']) // { total: 0 }
 copyJSONValue({ tier: 'gold', flags: [1, 2] }) // a fresh clone that shares no reference with the input
 ```
 
-### Factories
-
-| API                    | Kind     | Builds…                                |
-| ---------------------- | -------- | -------------------------------------- |
-| `createProgram`        | function | One compiled `ProgramInterface`.       |
-| `createProgramManager` | function | One ordered `ProgramManagerInterface`. |
-| `programDefinition`    | function | A fresh `ProgramDefinition`.           |
-| `noticeDefinition`     | function | A fresh `Notice`.                      |
-| `aggregateDefinition`  | function | A fresh `AggregateDefinition`.         |
-
-Every factory returns a fresh value, copies collections, and omits absent optional
-keys entirely.
+The definition leaves build the authored program values. Each returns a fresh value,
+copies collections, and omits absent optional keys entirely:
 
 ```ts
-import {
-	aggregateDefinition,
-	createProgram,
-	createProgramManager,
-	noticeDefinition,
-	programDefinition,
-} from '@orkestrel/program'
+import { aggregateDefinition, noticeDefinition, programDefinition } from '@orkestrel/program'
 
 const aggregate = aggregateDefinition(['amount'], { by: 'location' })
 const notice = noticeDefinition('audit', 'Program {{program}} executed')
@@ -347,6 +363,22 @@ const definition = programDefinition('standard', 'Standard', qualification, rati
 	notices: [notice],
 	aggregate,
 })
+```
+
+### Factories
+
+| API                    | Kind     | Builds…                                |
+| ---------------------- | -------- | -------------------------------------- |
+| `createProgram`        | function | One compiled `ProgramInterface`.       |
+| `createProgramManager` | function | One ordered `ProgramManagerInterface`. |
+
+The factories compile entities. The authored definitions they compile are plain
+values, so their builders are helper leaves rather than factories.
+
+```ts
+import { createProgram, createProgramManager, programDefinition } from '@orkestrel/program'
+
+const definition = programDefinition('standard', 'Standard', qualification, rating)
 
 const program = createProgram(definition)
 const manager = createProgramManager({ programs: [definition] })
@@ -918,8 +950,8 @@ const program = createProgram(definition, {
 Tests mirror the source structure under `tests/src/core` —
 `validators.test.ts`, `helpers.test.ts`, and `factories.test.ts` for the centralized
 surfaces, `programs/Program.test.ts` and `programs/ProgramManager.test.ts` for the
-entities, and `integrations.test.ts` for cross-entity composition — and use real
-qualifier, rater, and reason instances rather than mocks.
+entities, and the reserved `integration.test.ts` for cross-entity composition — and
+use real qualifier, rater, and reason instances rather than mocks.
 
 ### Program cases
 
@@ -979,7 +1011,7 @@ standalone program destroys its own engine exactly once and idempotently.
 
 ### Public parity
 
-`tests/src/core/integrations.test.ts` asserts the barrel exports only program
+`tests/src/core/integration.test.ts` asserts the barrel exports only program
 concerns — it must not re-export quantitative reason or rating implementation
 symbols such as `QuantitativeReasoner`, `Factor`, `WorksheetFactor`, or `Rater`. It
 consumes `RaterInterface` without claiming ownership of `Rater`.

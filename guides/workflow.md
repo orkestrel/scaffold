@@ -14,7 +14,7 @@ Read the module as five layers of one substrate, top to bottom:
 
 Workflow keeps ALL runtime/engine surface — the definition contract, live entity tree, PURE runner, and durable store. Provider, tool, terminal, and protocol integrations remain composition concerns outside this package.
 
-Source: [`src/core`](../../src/core). Published through `@orkestrel/workflow`.
+Source: [`src/core`](../src/core). Published through `@orkestrel/workflow`.
 
 ## Surface
 
@@ -66,9 +66,8 @@ Why this is safe: the definition is the SINGLE source of truth. `execute` builds
 | ----------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | `createWorkflowContract`      | function | Compile the workflow-definition `ContractInterface` — JSON Schema + guard + parser + seeded generator, all from one shape.                  |
 | `createWorkflow`              | function | Build the live `WorkflowInterface` entity tree from a `WorkflowDefinition` (every node `pending`).                                          |
-| `restoreWorkflow`             | function | Rebuild an equivalent live tree from a `WorkflowSnapshot` — the inverse of `snapshot()` (structure + status + results + order).             |
-| `recoverWorkflow`             | function | Convert interrupted running leaves to retry-budget-preserving pending work, or normalized recovery failures when exhausted.                 |
-| `assertSnapshot`              | function | Validate a `WorkflowSnapshot`'s `bail` + every node's status / override against the lifecycle vocabulary (throws `RESTORE`).                |
+| `createRestoredWorkflow`      | function | Build an equivalent live tree from a `WorkflowSnapshot` — the inverse of `snapshot()` (structure + status + results + order).               |
+| `createRecoveredWorkflow`     | function | Build an interrupted tree back to life — running leaves return to their remaining retry budget, or normalize to recovery failures.          |
 | `createMemoryWorkflowStore`   | function | Create the in-memory default `WorkflowStoreInterface` — persists `WorkflowSnapshot`s by id (the durable-store seam; no TTL, no options).    |
 | `createDatabaseWorkflowStore` | function | Create the driver-pluggable `WorkflowStoreInterface` over a `databases` table (the snapshot as one JSON column; driver defaults to memory). |
 | `createWorkflowRunner`        | function | Create a PURE `WorkflowRunnerInterface` engine over an optional `scheduler` — no behavior or provider registry.                             |
@@ -121,11 +120,11 @@ await scheduleHost((complete) => {
 
 ### Environment backends
 
-Beyond the cross-environment default, each host has a native cooperative-yield primitive a `yield()` should reach for. The backends are standalone `SchedulerInterface` implementations that retain only feature detection and native start/cancel boundaries; `scheduleHost` is the one shared lifecycle. A pending `yield` / `delay` rejects with `signal.reason` _verbatim_, an already-aborted or invalid signal rejects before arming, caller signal method mutation is harmless, cancellation clears the returned handle once, cancellation-closure failure is contained after the winner is captured, and native composite arbitration prevents late completion, abort, or failure from resettling. Each backend's `delay(ms)` is a real `setTimeout`; only the `yield` primitive differs.
+Beyond the cross-environment default, each host has a native cooperative-yield primitive a `yield()` should reach for. The backends are standalone `SchedulerInterface` implementations that retain only feature detection and native start/cancel boundaries; `scheduleHost` is the one shared lifecycle. A pending `yield` / `delay` rejects with `signal.reason` _verbatim_, an already-aborted signal rejects with that same reason before arming, a signal that is not a native `AbortSignal` rejects before arming with a `WorkflowError` carrying the `SCHEDULE` code, caller signal method mutation is harmless, cancellation clears the returned handle once, cancellation-closure failure is contained after the winner is captured, and native composite arbitration prevents late completion, abort, or failure from resettling. Each backend's `delay(ms)` is a real `setTimeout`; only the `yield` primitive differs.
 
-The **Node** backend ships in [`src/server`](../../src/server), published through `@orkestrel/workflow/server`. `NodeScheduler.yield()` waits on `setImmediate` — the canonical Node "give the event loop a turn", running after the current operation and pending I/O. It deliberately does **not** use `node:timers/promises` (whose `{ signal }` option rejects with a Node `AbortError`, `code: 'ABORT_ERR'`, _not_ the caller's `reason`); its `setImmediate` / `setTimeout` boundaries compose `scheduleHost` to preserve the caller reason. `priority` is accepted but a no-op — Node has no priority primitive.
+The **Node** backend ships in [`src/server`](../src/server), published through `@orkestrel/workflow/server`. `NodeScheduler.yield()` waits on `setImmediate` — the canonical Node "give the event loop a turn", running after the current operation and pending I/O. It deliberately does **not** use `node:timers/promises` (whose `{ signal }` option rejects with a Node `AbortError`, `code: 'ABORT_ERR'`, _not_ the caller's `reason`); its `setImmediate` / `setTimeout` boundaries compose `scheduleHost` to preserve the caller reason. `priority` is accepted but a no-op — Node has no priority primitive.
 
-The **browser** backends ship in [`src/browser`](../../src/browser), published through `@orkestrel/workflow/browser`, one per host-turn strategy. All three feature-detect their native API through `@orkestrel/contract` guards (`isRecord` / `isFunction`), never an `as` (AGENTS §14), and fall back to a real macrotask where it is absent:
+The **browser** backends ship in [`src/browser`](../src/browser), published through `@orkestrel/workflow/browser`, one per host-turn strategy. All three feature-detect their native API through `@orkestrel/contract` guards (`isRecord` / `isFunction`), never an `as` (AGENTS §14), and fall back to a real macrotask where it is absent:
 
 - `BrowserScheduler.yield()` posts to the **Prioritized Task Scheduling API** (`scheduler.postTask`) at the mapped priority (`user` → `'user-blocking'`, `normal` → `'user-visible'`, `background` → `'background'`) — so the urgency hint is honoured — falling back to a `setTimeout(0)` macrotask where `scheduler.postTask` is absent (Firefox today). The caller's `signal` is **not** handed to `postTask` (whose own abort rejects with a platform `AbortError`, not the caller's `reason`); an internal controller cancels the posted task while the scheduler rejects with the verbatim caller reason, and an unexpected native promise rejection remains the exact host failure.
 - `FrameScheduler.yield()` resumes just before the next paint via `requestAnimationFrame` (and `cancelAnimationFrame` on abort) — for work that should batch per render frame and naturally pause while the tab is hidden. `priority` is a no-op.
@@ -159,7 +158,7 @@ Each backend is a standalone `implements SchedulerInterface`, so its public meth
 
 ### Stores
 
-The durable persistence seam (W-d) — a DUAL-store convention (the `QueueStore` / `SessionStore` pattern). A `WorkflowStoreInterface` persists the pure-JSON `WorkflowSnapshot` keyed by workflow id through two interchangeable backends: `MemoryWorkflowStore` (a plain `Map`, the zero-plumbing DEFAULT, `createMemoryWorkflowStore`) and `DatabaseWorkflowStore` (the opt-in, driver-pluggable twin over a `databases` table, the snapshot stored as ONE OPAQUE JSON column, `createDatabaseWorkflowStore`). Both live under `src/core/stores/`. The Database store's driver DEFAULTS to memory, so it ALSO works in memory out of the box; you opt into the durable plumbing (JSON / SQLite / IndexedDB) by passing a driver — and it swaps in through the SAME interface, without touching the engine or the entity tree. Restore stays the shipped `restoreWorkflow`.
+The durable persistence seam (W-d) — a DUAL-store convention (the `QueueStore` / `SessionStore` pattern). A `WorkflowStoreInterface` persists the pure-JSON `WorkflowSnapshot` keyed by workflow id through two interchangeable backends: `MemoryWorkflowStore` (a plain `Map`, the zero-plumbing DEFAULT, `createMemoryWorkflowStore`) and `DatabaseWorkflowStore` (the opt-in, driver-pluggable twin over a `databases` table, the snapshot stored as ONE OPAQUE JSON column, `createDatabaseWorkflowStore`). Both live under `src/core/stores/`. The Database store's driver DEFAULTS to memory, so it ALSO works in memory out of the box; you opt into the durable plumbing (JSON / SQLite / IndexedDB) by passing a driver — and it swaps in through the SAME interface, without touching the engine or the entity tree. Restore stays the shipped `createRestoredWorkflow`.
 
 | Class                   | Kind  | Role                                                                                                                                    |
 | ----------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------- |
@@ -168,7 +167,7 @@ The durable persistence seam (W-d) — a DUAL-store convention (the `QueueStore`
 
 ### Registry
 
-The additive manager tier (§9 + the `@orkestrel/agent` line's store standard): `WorkflowManager` (`createWorkflowManager`) is an insertion-ordered registry of live `WorkflowInterface`s keyed by `id`, mirroring `ConversationManager` / `WorkspaceManager` — with the SAME optional `store` seam (`open` hydrates on a registry miss, `save` persists) BUT no `active` / `switch` pointer (nothing in this domain renders "the current workflow"). The workflow-specific nuance: the manager also carries an optional `functions` registry threaded into every mint (`add`, via `createWorkflow`) AND every hydrate (`open`, via `restoreWorkflow`). With functions, named work is runnable; without them, exact hydrated state remains inspectable and execution refuses unresolved names.
+The additive manager tier (§9 + the `@orkestrel/agent` line's store standard): `WorkflowManager` (`createWorkflowManager`) is an insertion-ordered registry of live `WorkflowInterface`s keyed by `id`, mirroring `ConversationManager` / `WorkspaceManager` — with the SAME optional `store` seam (`open` hydrates on a registry miss, `save` persists) BUT no `active` / `switch` pointer (nothing in this domain renders "the current workflow"). The workflow-specific nuance: the manager also carries an optional `functions` registry threaded into every mint (`add`, via `createWorkflow`) AND every hydrate (`open`, via `createRestoredWorkflow`). With functions, named work is runnable; without them, exact hydrated state remains inspectable and execution refuses unresolved names.
 
 | Class             | Kind  | Role                                                                                                                                                  |
 | ----------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -176,10 +175,14 @@ The additive manager tier (§9 + the `@orkestrel/agent` line's store standard): 
 
 ### Errors
 
-| API               | Kind     | Summary                                                                                                        |
-| ----------------- | -------- | -------------------------------------------------------------------------------------------------------------- |
-| `WorkflowError`   | class    | Carries a `WorkflowErrorCode` (`TRANSITION` / `RESTORE` / `MUTATION`) + an optional `context` naming the node. |
-| `isWorkflowError` | function | Narrow an unknown caught value to a `WorkflowError`.                                                           |
+| API               | Kind     | Summary                                                                                                                                  |
+| ----------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `WorkflowError`   | class    | Carries a `WorkflowErrorCode` (`TRANSITION` / `RESTORE` / `MUTATION` / `SCHEDULE`) + an optional `context` naming the node or parameter. |
+| `isWorkflowError` | function | Narrow an unknown caught value to a `WorkflowError`.                                                                                     |
+
+Every error this package raises for a refused operation of its own is a `WorkflowError`, narrowable with `isWorkflowError`. Four values are deliberately NOT translated and reach the caller unchanged: a value thrown by a consumer-supplied `WorkflowFunction`, a value thrown or rejected by a consumer-supplied `WorkflowStoreInterface`, a value thrown by the `start` closure a caller hands `scheduleHost` or reported through its `failure` callback, and the `reason` an `AbortSignal` carries — a pending wait rejects with that reason verbatim, which is what makes cancellation identity-preserving. Those four are caller-owned values the package passes through on purpose, not package faults it failed to wrap.
+
+Two dependency-owned errors still reach callers untranslated. These are known gaps, not intended pass-throughs: `createRunner` surfaces `@orkestrel/queue`'s `QueueError` for an invalid `concurrency` / `retries` / `timeout`, and `createDatabaseWorkflowStore`'s `get` / `set` / `delete` surface `@orkestrel/database`'s `DatabaseError`. Until they are folded into `WorkflowError`, narrow them with the owning package's own guard rather than `isWorkflowError`.
 
 ### Helpers & guards
 
@@ -211,7 +214,7 @@ workflow-specific validation and translate ownership failures into `WorkflowErro
 | `isTaskActivityInput`       | function | Total guard for a reporter frame, including progress bounds, unique ids, hostile getters, and proxies.                                       |
 | `isTaskActivity`            | function | Total guard for persisted activity, including finite non-negative `updated`; never throws on hostile input.                                  |
 | `captureWorkflowOptions`    | function | Capture every root `WorkflowOptions` property once into an owned plain bag while retaining nested bag and function-registry identities.      |
-| `scheduleHost`              | function | Link an owned settlement composite before host setup; preserve exact first completion/failure/abort while containing cancellation cleanup.   |
+| `scheduleHost`              | function | Reject an invalid `signal` (`SCHEDULE`); link an owned settlement composite before host setup; keep the exact winner; contain cleanup.       |
 | `success`                   | function | Box a value as a `Success` — the graceful outcome half of a `Result` (`{ success: true, value }`).                                           |
 | `failure`                   | function | Box an error as a `Failure` — the graceful outcome half of a `Result` (`{ success: false, error }`).                                         |
 | `errorToMessage`            | function | Normalize an unknown thrown value to a non-empty persistence-safe message.                                                                   |
@@ -342,7 +345,7 @@ The shape VALUES `createWorkflowContract` compiles into the four lockstep output
 | `TaskActivity`                 | interface | `TaskActivityInput` normalized to required readonly collections plus `{ updated }`; the last accepted reporter claim.                                                                                                                   |
 | `TaskUpdate`                   | interface | `{ name?, description? }` — a declarative partial edit to a `pending` task, accepted by `TaskInterface.patch` / `TaskManagerInterface.update`.                                                                                          |
 | `PhaseUpdate`                  | interface | `{ name?, description?, concurrency?, bail? }` — a declarative partial edit to a `pending` phase, accepted by `PhaseInterface.patch` / `PhaseManagerInterface.update`.                                                                  |
-| `WorkflowErrorCode`            | type      | `'TRANSITION' \| 'RESTORE' \| 'MUTATION'` — the machine-readable code of a `WorkflowError` (`MUTATION` = a refused structural/patch edit).                                                                                              |
+| `WorkflowErrorCode`            | type      | `'TRANSITION' \| 'RESTORE' \| 'MUTATION' \| 'SCHEDULE'` — the machine-readable code of a `WorkflowError` (`MUTATION` = a refused structural/patch edit; `SCHEDULE` = an invalid-signal host schedule refusal).                          |
 | `LifecycleStatus`              | type      | `'pending' \| 'running' \| 'completed' \| 'failed' \| 'skipped' \| 'stopped'` — the ONE vocabulary the three tiers alias.                                                                                                               |
 | `TaskStatus`                   | type      | A semantic tier of `LifecycleStatus` — a task's lifecycle status.                                                                                                                                                                       |
 | `PhaseStatus`                  | type      | A semantic tier of `LifecycleStatus` — a phase's status, derived from its tasks.                                                                                                                                                        |
@@ -615,7 +618,7 @@ These invariants hold across `src/core` ↔ `workflow.md`:
 
 14. **`WorkflowError` names only Workflow failures.** `TRANSITION` guards lifecycle moves, `RESTORE` rejects invalid durable state, and `MUTATION` reports refused structural, metadata, or activity changes. Integration-specific failures remain outside this package and must not expand Workflow's error vocabulary speculatively.
 
-15. **`WorkflowRunnerInterface.execute(workflow)` claims one coherent drivable object synchronously and once.** The entity overload accepts a fresh pending tree or a quiescent recovered tree with terminal and pending work. It rejects destroyed, terminal, currently running, handler-incomplete, inconsistent, empty-of-pending-work, or previously claimed objects. The internal `WeakSet` is process-local object-identity protection only: two separately restored objects with the same workflow id are distinct claims. A distributed adapter must provide an external workflow-id + epoch lease and idempotent side effects; core does not pretend its local claim is a cross-process lease. Exact restore preserves a running leaf and is therefore intentionally not drivable; call `recoverWorkflow` first.
+15. **`WorkflowRunnerInterface.execute(workflow)` claims one coherent drivable object synchronously and once.** The entity overload accepts a fresh pending tree or a quiescent recovered tree with terminal and pending work. It rejects destroyed, terminal, currently running, handler-incomplete, inconsistent, empty-of-pending-work, or previously claimed objects. The internal `WeakSet` is process-local object-identity protection only: two separately restored objects with the same workflow id are distinct claims. A distributed adapter must provide an external workflow-id + epoch lease and idempotent side effects; core does not pretend its local claim is a cross-process lease. Exact restore preserves a running leaf and is therefore intentionally not drivable; call `createRecoveredWorkflow` first.
 
 16. **A run-level `timeout` / `budget` keeps counting while paused.** `pause` suspends DISPATCH, not the clock — an external `WorkflowRunOptions.timeout` deadline or `budget` ceiling continues to elapse / accumulate while a run sits paused, so a long pause can still fire the bound and unpark the run into a cancelled (`stopped`) outcome; pausing is not a way to freeze a run's external bounds.
 
@@ -637,7 +640,7 @@ These invariants hold across `src/core` ↔ `workflow.md`:
 
 23. **DOC ↔ SOURCE method bijection (scheduler).** The `## Methods` table lists exactly `SchedulerInterface`'s public methods — exhaustive, both directions — and `Scheduler` plus every backend (`NodeScheduler` / `BrowserScheduler` / `FrameScheduler` / `IdleScheduler`) exposes the same public methods, no more (AGENTS §22).
 
-24. **Snapshot is an owned, hostile-boundary durable payload.** `Workflow.snapshot()` returns a deeply cloned, frozen, exact-JSON graph containing policy, statuses, lineage-safe normalized results, task metadata/activity, and consumed `attempts`. Accessors, cycles, class instances, symbols, holes, non-finite numbers, unknown keys, impossible topology, invalid results, and derived-status drift are rejected before live construction. Task order carries no lifecycle topology because tasks are concurrent; phase order uses a sequential frontier that ignores forced skipped/stopped gaps and permits at most one running phase. `restoreWorkflow` is an exact inspectable state round-trip even without functions; it does not make interrupted work runnable. `recoverWorkflow` is an explicit two-pass transform per phase: every exhausted running task is classified first. Graceful recovery fails those exhausted tasks, returns retryable running tasks to pending, and continues eligible work. In a strict (`bail: true`) phase, an existing persisted failed task is retained as an established halt boundary; eligible siblings and later work are skipped. Exhausted running tasks still normalize to recovery failures, and every other eligible sibling on both sides is skipped. Attempts never replenish. Recovery and live recompute use the greater of the host clock and the persisted `updated`, so restored future stamps never regress. Terminal workflow/phase overrides are not recoverable.
+24. **Snapshot is an owned, hostile-boundary durable payload.** `Workflow.snapshot()` returns a deeply cloned, frozen, exact-JSON graph containing policy, statuses, lineage-safe normalized results, task metadata/activity, and consumed `attempts`. Accessors, cycles, class instances, symbols, holes, non-finite numbers, unknown keys, impossible topology, invalid results, and derived-status drift are rejected before live construction. Task order carries no lifecycle topology because tasks are concurrent; phase order uses a sequential frontier that ignores forced skipped/stopped gaps and permits at most one running phase. `createRestoredWorkflow` is an exact inspectable state round-trip even without functions; it does not make interrupted work runnable. `createRecoveredWorkflow` is an explicit two-pass transform per phase: every exhausted running task is classified first. Graceful recovery fails those exhausted tasks, returns retryable running tasks to pending, and continues eligible work. In a strict (`bail: true`) phase, an existing persisted failed task is retained as an established halt boundary; eligible siblings and later work are skipped. Exhausted running tasks still normalize to recovery failures, and every other eligible sibling on both sides is skipped. Attempts never replenish. Recovery and live recompute use the greater of the host clock and the persisted `updated`, so restored future stamps never regress. Terminal workflow/phase overrides are not recoverable.
 
 25. **The durable store owns values on both sides, and the runner can compose it.** Both store implementations deep-clone and validate on `set` and `get`, so callers cannot mutate stored state by alias. `DatabaseWorkflowStore.get` returns `undefined` only for an absent row; present malformed data rejects with the normalized `RESTORE` error. Supplying `WorkflowRunOptions.store` adds required initial, pre-handler attempt, terminal settlement, and final checkpoints. Activity, structural, and skip events trigger best-effort coalesced writes; `WorkflowPersistence` reserves its writer promise before the drain can call external `store.set`, so a synchronous store-triggered entity mutation joins the current obligation instead of starting a second write. There is at most one write in flight, and a newer revision is persisted by the same drain or its latest follow-up. A required failure stops advancement and is returned as `WorkflowResult.fault`; `durable` reports whether the final live state reached the store. Persistence rejection never masks or rewrites the task's normalized handler/timeout/recovery outcome.
 
@@ -826,7 +829,7 @@ workflow.skip() // FORCE the whole workflow 'skipped' — overrides the derived 
 workflow.stop() // FORCE the whole workflow 'stopped'; emits `stop`
 ```
 
-A `skip` / `stop` at the phase / workflow tier is an OVERRIDE — it forces the node's status regardless of its children's derived value, and the override is persisted in `snapshot()`'s `override` field so `restoreWorkflow` restores it directly. A leaf's `skip` / `stop` is a real guarded transition (no override needed — its terminal status IS the marker).
+A `skip` / `stop` at the phase / workflow tier is an OVERRIDE — it forces the node's status regardless of its children's derived value, and the override is persisted in `snapshot()`'s `override` field so `createRestoredWorkflow` restores it directly. A leaf's `skip` / `stop` is a real guarded transition (no override needed — its terminal status IS the marker).
 
 ### Pausing, resuming, and parking on a run — `pause` / `resume` / `wait` / `destroy`
 
@@ -991,7 +994,11 @@ Provider-specific Claude/Cursor/Codex JSONL parsing, journals, raw-log retention
 ### Snapshot & restore (the durable payload)
 
 ```ts
-import { createWorkflow, recoverWorkflow, restoreWorkflow } from '@orkestrel/workflow'
+import {
+	createWorkflow,
+	createRecoveredWorkflow,
+	createRestoredWorkflow,
+} from '@orkestrel/workflow'
 
 const functions = { fetch: async (controller) => `fetched ${controller.task.id}` }
 const workflow = createWorkflow(definition, { functions }) // a live tree, every node pending
@@ -1001,26 +1008,26 @@ const snapshot = workflow.snapshot() // pure JSON — write to disk, send to a p
 
 // Restore is exact and inspectable even without functions. Supplying the registry re-resolves
 // each task's `run` into a fresh handler for later recovery/execution.
-const resumed = restoreWorkflow(snapshot, { functions })
+const resumed = createRestoredWorkflow(snapshot, { functions })
 resumed.status === workflow.status // true — bail comes from the snapshot itself
 
 // Exact restore deliberately preserves the running leaf, so it is inspectable but not drivable.
 // Recovery explicitly consumes persisted attempt history and produces a drivable pending suffix.
-const recovered = recoverWorkflow(snapshot, { functions })
+const recovered = createRecoveredWorkflow(snapshot, { functions })
 ```
 
 The snapshot is an owned exact-JSON graph. It persists `bail`, overrides, normalized JSON results, task `run` / `retries` / `timeout`, and consumed `attempts`. Every pending snapshot omits activity. Recovery of retryable running work also removes its prior activity before returning it to pending, while preserving consumed attempts; the next real `start` creates a fresh attempt frame. Exact restore preserves unresolved names for inspection; execution still requires every present `run` to resolve. During construction, each phase reads every unique initial `run` binding once and gives duplicate-name tasks that exact captured handler; recovery validates the constructed live handlers without rereading the registry. The retained registry identity still serves later live additions, whose binding is read at their own mint time. Recovery refuses terminal workflow/phase overrides and never replenishes attempts. Within each phase it classifies all exhausted running tasks first: strict policy retains an existing failed task as an established halt boundary, normalizes exhausted running tasks to recovery failures, and skips every other eligible sibling on both sides plus later eligible phases; graceful policy fails exhausted tasks, resets retryable running tasks to pending, and continues.
 
 ### Persisting & restoring (the durable store)
 
-The `WorkflowStoreInterface` seam (`get` / `set` / `delete`, async, keyed by a snapshot's own id) has a DUAL-store convention — pick the backend, the seam is identical. `createMemoryWorkflowStore` is the zero-plumbing default (a plain `Map`); `createDatabaseWorkflowStore` is the driver-pluggable twin over a `databases` table (the snapshot one opaque JSON column, driver defaulting to memory). Both persist the `WorkflowSnapshot` from the section above unchanged; reading one back and rebuilding the live tree is the shipped `restoreWorkflow`. A durable backend (JSON / SQLite / IndexedDB) swaps in by passing the driver to `createDatabaseWorkflowStore` — without touching the engine or the entity tree (the `SessionStore` / `QueueStore` driver-swap pattern).
+The `WorkflowStoreInterface` seam (`get` / `set` / `delete`, async, keyed by a snapshot's own id) has a DUAL-store convention — pick the backend, the seam is identical. `createMemoryWorkflowStore` is the zero-plumbing default (a plain `Map`); `createDatabaseWorkflowStore` is the driver-pluggable twin over a `databases` table (the snapshot one opaque JSON column, driver defaulting to memory). Both persist the `WorkflowSnapshot` from the section above unchanged; reading one back and rebuilding the live tree is the shipped `createRestoredWorkflow`. A durable backend (JSON / SQLite / IndexedDB) swaps in by passing the driver to `createDatabaseWorkflowStore` — without touching the engine or the entity tree (the `SessionStore` / `QueueStore` driver-swap pattern).
 
 ```ts
 import {
 	createDatabaseWorkflowStore,
 	createMemoryWorkflowStore,
 	createWorkflow,
-	restoreWorkflow,
+	createRestoredWorkflow,
 } from '@orkestrel/workflow'
 import { createMemoryDriver } from '@orkestrel/database'
 
@@ -1032,7 +1039,7 @@ const workflow = createWorkflow(definition)
 await store.set(workflow.snapshot()) // persist the run state under its own id
 // …later, in another turn / process …
 const snapshot = await store.get(definition.id) // the persisted snapshot, or undefined if absent
-const restored = snapshot && restoreWorkflow(snapshot, { functions }) // exact live state
+const restored = snapshot && createRestoredWorkflow(snapshot, { functions }) // exact live state
 await store.delete(definition.id) // drop it (an absent id is a no-op)
 ```
 
@@ -1050,7 +1057,7 @@ The exported `WorkflowPersistence` coordinator awaits initial, attempt, settleme
 
 ### Managing workflows (registry + store seam)
 
-`WorkflowManager` (`createWorkflowManager`) is the additive manager tier over the section above — a store-backed REGISTRY of live workflows, mirroring the `@orkestrel/agent` line's `ConversationManager` / `WorkspaceManager`. It is PURELY ADDITIVE: direct `WorkflowStoreInterface` use and `restoreWorkflow` (both sections above) remain valid — a caller now has a THIRD, higher-level option that also tracks a `functions` registry so a hydrated workflow stays RUNNABLE.
+`WorkflowManager` (`createWorkflowManager`) is the additive manager tier over the section above — a store-backed REGISTRY of live workflows, mirroring the `@orkestrel/agent` line's `ConversationManager` / `WorkspaceManager`. It is PURELY ADDITIVE: direct `WorkflowStoreInterface` use and `createRestoredWorkflow` (both sections above) remain valid — a caller now has a THIRD, higher-level option that also tracks a `functions` registry so a hydrated workflow stays RUNNABLE.
 
 ```ts
 import { createMemoryWorkflowStore, createWorkflowManager } from '@orkestrel/workflow'
@@ -1094,7 +1101,6 @@ The pure functions the entity tree and runner are built from (AGENTS §4.3 / §1
 
 ```ts
 import {
-	assertSnapshot,
 	buildPhaseContext,
 	buildTaskContext,
 	buildWorkflowContext,
@@ -1129,7 +1135,6 @@ buildTaskContext(phaseContext, { id: 't1', name: 'T1' })
 const snapshot = definitionToSnapshot(definition) // every node 'pending'
 phaseDefinitionToSnapshot(definition.phases[0], snapshot.bail)
 taskDefinitionToSnapshot(definition.phases[0].tasks[0])
-assertSnapshot(snapshot) // throws a RESTORE WorkflowError on an invalid snapshot; void on a valid one
 isWorkflowSnapshot(JSON.parse(JSON.stringify(snapshot))) // true — the shape survives a JSON round-trip
 
 // The pending-suffix boundary — the index of the first `pending` entry (or `length` if none).
@@ -1147,7 +1152,7 @@ abort.abort()
 await parked // resolves
 ```
 
-Every one is pure and side-effect-free: the guards/predicates never throw (`assertSnapshot` is the sole exception — it validates the DEEPER lifecycle vocabulary and throws a `RESTORE` `WorkflowError`), and the builders/synthesizers are deterministic given the same input.
+Every one is pure and side-effect-free: the guards and predicates never throw, and the builders and synthesizers are deterministic given the same input. The throwing snapshot boundary is `cloneWorkflowSnapshot`, which owns and validates a hostile snapshot and raises a `RESTORE` `WorkflowError`.
 
 **The execution substrate.** Beneath the engine sit the shipped primitives it composes. The `Scheduler` paces the host between work; the queue-backed `Runner` bounds and drives a set of units; a `Controller` is the per-unit handle a handler receives; and the `WorkflowRunner` engine composes all of it over the entity tree — with `TaskController` mirroring `Controller` one tier up, as the handle a workflow-task `WorkflowFunction` receives (its read-up `results()` is the inter-task data-flow map). The patterns below build that stack up from pacing to driving to the per-unit handle.
 
@@ -1366,7 +1371,7 @@ A successful run fires `start` → `unit`/`settle` per unit → `finish`. A fail
 - **Lean on the contract** — `createWorkflowContract().parse` an untrusted authored blob (an LLM tool arg) into a `WorkflowDefinition` or `undefined`; never trust raw JSON.
 - **Choose `bail` deliberately** — `false` (graceful) when failures are useful data and every phase should run; `true` (halt) for transaction semantics where the first failure aborts the rest.
 - **Hold the live tree the engine returns** — `result.workflow` is the source of truth; navigate it (`phase(id)?.task(id)?.status` / `.result`) and read the result tree (`results()`).
-- **Snapshot for durability** — `workflow.snapshot()` is the pure-JSON payload; `restoreWorkflow` rebuilds an identical live tree, and the `WorkflowStore` seam persists it (W-d).
+- **Snapshot for durability** — `workflow.snapshot()` is the pure-JSON payload; `createRestoredWorkflow` rebuilds an identical live tree, and the `WorkflowStore` seam persists it (W-d).
 - **`yield` to stay cooperative** — between units of long-running work, `await scheduler.yield()` so the host can flush I/O, fire timers, and paint; never busy-loop a tight synchronous loop that starves the host.
 - **Always thread a `signal` through the scheduler** — pass `options.signal` through `yield` / `delay` so cancellation rejects the pending wait at once (with the signal's `reason`) instead of stalling until the interval elapses; an aborted loop should fall out via that rejection, not a polled flag alone.
 - **`delay` for spacing, `yield` for a turn** — reach for `delay(ms)` to space retries or paced work; reach for `yield()` (a zero-delay turn) when you only need to let the host run before continuing.
@@ -1380,33 +1385,33 @@ A successful run fires `start` → `unit`/`settle` per unit → `finish`. A fail
 
 ## Tests
 
-- [`tests/guides.test.ts`](../../tests/guides.test.ts) — the `## Surface` ↔ source bijection across `src/core` (value + type exports), plus each behavioral interface's `## Methods` ↔ source-method bijection and each implementing-class ↔ interface method parity.
-- [`tests/policy.test.ts`](../../tests/policy.test.ts) — coding policy rejects private `@src/*` imports in TSDoc examples while accepting legitimate source imports and identical text in ordinary non-TSDoc comments.
-- [`tests/src/core/helpers.test.ts`](../../tests/src/core/helpers.test.ts) — status/lineage/snapshot helpers, bounded silence inheritance, and `scheduleHost` setup/cancellation race arbitration with exact falsy failures, hostile caller signal methods, and throwing cancellation closures after caller abort or host failure.
-- [`tests/src/core/cloners.test.ts`](../../tests/src/core/cloners.test.ts) — immutable activity cloning, hostile/revoked proxy containment, one-read getters, no alias retention, stamp-vs-restore `updated` handling, and exact wrong-storage-key `RESTORE` evidence.
-- [`tests/src/core/validators.test.ts`](../../tests/src/core/validators.test.ts) — total activity, task-failure, task-result, and owned-snapshot guards over valid, malformed, cyclic, throwing-proxy/getter/ownKeys, and revoked inputs.
-- [`tests/src/core/shapers.test.ts`](../../tests/src/core/shapers.test.ts) — the shape descriptors: the `taskShape` / `phaseShape` / `workflowShape` mirroring the hand-written definition interfaces, the per-field `description`s riding the `run` string + key fields (Rank 1), `describedLiteral`.
-- [`tests/src/core/tasks/Task.test.ts`](../../tests/src/core/tasks/Task.test.ts) — lifecycle plus whole-frame activity, validation/immutability, pulse, repeatable silence rearming, task signal, terminal cleanup, and cooperative pause.
-- [`tests/src/core/phases/Phase.test.ts`](../../tests/src/core/phases/Phase.test.ts) — the derived middle tier: child-transition cascade, `skip` / `stop` override, results, snapshot/restore, and isolated lifecycle emission including idempotent pause/resume.
-- [`tests/src/core/Workflow.test.ts`](../../tests/src/core/Workflow.test.ts) — the derived root: bail-aware cascade, result tree, override, snapshot/restore, teardown, and isolated lifecycle emission including idempotent pause/resume.
-- [`tests/src/core/phases/PhaseManager.test.ts`](../../tests/src/core/phases/PhaseManager.test.ts) — the lean phases registry: `append` / `phase` / `phases` / `count`, insertion order preserved.
-- [`tests/src/core/tasks/TaskManager.test.ts`](../../tests/src/core/tasks/TaskManager.test.ts) — the lean tasks registry: `append` / `task` / `tasks` / `count`, order surviving an interior `skip`.
-- [`tests/src/core/WorkflowManager.test.ts`](../../tests/src/core/WorkflowManager.test.ts) — the store-backed registry: `add` / `workflow` / `workflows` / `count`, `remove` / `clear`, runnable hydration, both-store parity, same-promise opens even under synchronous `get → open` reentry, add/remove/clear precedence, miss/failure retry, wrong-key refusal, invocation snapshots, strictly serialized `set → save` reentry, failure recovery, and independent ids.
-- [`tests/src/core/tasks/TaskController.test.ts`](../../tests/src/core/tasks/TaskController.test.ts) — folded cancellation, lineage gates, ancestor terminal-event wakeups, activity checkpoints, input, and live result read-up.
-- [`tests/src/core/WorkflowRunner.test.ts`](../../tests/src/core/WorkflowRunner.test.ts) — sequencing/concurrency/retry/cancellation plus ancestor terminal-event gate wakeups, graceful in-flight completion, retry activity reset, stale-attempt refusal, listener balance, and paused-attempt deadline exhaustion.
-- [`tests/src/core/factories.test.ts`](../../tests/src/core/factories.test.ts) — definition construction, exact hostile-boundary restore, handler completeness, and snapshot diagnostics.
-- [`tests/src/core/recovery.test.ts`](../../tests/src/core/recovery.test.ts) — remaining-budget recovery, established strict halt boundaries, exhausted recovery failures, monotonic stamps, exact-restore separation, hostile inputs, coalesced writes including synchronous store-triggered mutation with maximum one active writer and the latest final snapshot, and persistence faults as data.
-- [`tests/src/core/stores/MemoryWorkflowStore.test.ts`](../../tests/src/core/stores/MemoryWorkflowStore.test.ts) — the in-memory store (W-d): a `set` → `get` round-trip returning the same `WorkflowSnapshot` and `restoreWorkflow`'ing an IDENTICAL live tree, for BOTH an all-pending snapshot (`createWorkflow(...).snapshot()`) and a real SETTLED one driven through `createWorkflowRunner().execute` (real `completed` statuses + recorded results); the driver-swap parity case (the retrieved payload survives `JSON.parse(JSON.stringify(...))` AND restores identically from the JSON-revived form — proving it persists unchanged across any JSON / SQLite / IndexedDB backend); `set` replacing under the same id; and `delete` (then `get` ⇒ `undefined`, an absent-id `delete` a no-op, an absent-id `get` ⇒ `undefined`). REAL data throughout (a real `WorkflowDefinition` + real `WorkflowFunction` handlers), no mocks.
-- [`tests/src/core/stores/DatabaseWorkflowStore.test.ts`](../../tests/src/core/stores/DatabaseWorkflowStore.test.ts) — the driver-pluggable twin (W-d): real-table round trips and restore parity, upsert/delete/absence, exact valid-payload/wrong-row-key `RESTORE` evidence, malformed-row normalization, default-driver smoke, and distinct-id isolation. REAL `WorkflowSnapshot` values throughout, NO mocks.
-- [`tests/src/core/Runner.test.ts`](../../tests/src/core/Runner.test.ts) — `execute` runs every input and returns results in declared order (even with out-of-order completion); spawned siblings and start-listener public spawns run after every declared result; nested spawns drain transitively; an entries-resolver graceful stop remains never-dispatched while resolver/property throws remain failures; bounded concurrency caps handlers in flight; `retries` re-run a flaky unit; fail-fast and abort cancellation; one-shot, empty-run lifecycle reentry, active/stopped reporting, and idempotent destroy.
-- [`tests/src/core/Controller.test.ts`](../../tests/src/core/Controller.test.ts) — `wait()` resolves when the unit's signal aborts and stays pending across real delays until it does (promise-parked, not timer-polled), resolving immediately if already aborted; `id` / `input` / `signal` / `aborted` reflect the unit; `abort(reason)` fires the signal with the reason; `spawn` delegates to the injected callback.
-- [`tests/src/core/Scheduler.test.ts`](../../tests/src/core/Scheduler.test.ts) — real-clock macrotask ordering, pre-abort and pending-abort reason fidelity, minimum elapsed delay, settle-once cleanup, untouched caller listener methods, shared-signal cancellation, concurrent deadlines, host coercion for zero / negative / `NaN`, priority composition, and modest resolved/aborted churn.
-- [`tests/src/server/NodeScheduler.test.ts`](../../tests/src/server/NodeScheduler.test.ts) — the same real-clock contract over `setImmediate` / `setTimeout`, including exact primitive/string/object abort reasons, untouched caller listener methods, host timer coercion, cleanup, concurrent deadlines, and modest churn. Node may emit its native warning for negative or `NaN` timer input while applying host coercion.
-- [`tests/src/server/factories.test.ts`](../../tests/src/server/factories.test.ts) — `createNodeScheduler` returns a working `SchedulerInterface` (shape + a real yield/delay round-trip), abort-aware, independent stateless instances.
-- [`tests/src/browser/BrowserScheduler.test.ts`](../../tests/src/browser/BrowserScheduler.test.ts) — the browser backend in REAL headless Chromium (where `scheduler.postTask` exists): `yield()` resolves via the real `postTask` callback, every priority is accepted, abort rejects with the verbatim `signal.reason` and cancels the posted task, `delay` timing, and caller listener methods remain untouched.
-- [`tests/src/browser/FrameScheduler.test.ts`](../../tests/src/browser/FrameScheduler.test.ts) — the frame backend in REAL Chromium over `requestAnimationFrame`: `yield()` resolves in a real frame callback, abort cancels the rAF handle and rejects with the verbatim reason, `delay` timing, and caller listener methods remain untouched.
-- [`tests/src/browser/IdleScheduler.test.ts`](../../tests/src/browser/IdleScheduler.test.ts) — the idle backend in REAL Chromium over `requestIdleCallback`: `yield()` resolves in a real idle callback, abort cancels the idle handle and rejects with the verbatim reason, `delay` timing, and caller listener methods remain untouched; the `setTimeout(0)` fallback is covered by the guard logic + a note.
-- [`tests/src/browser/factories.test.ts`](../../tests/src/browser/factories.test.ts) — `createBrowserScheduler` / `createFrameScheduler` / `createIdleScheduler` each return a working `SchedulerInterface` (shape + a real yield/delay round-trip), abort-aware, independent instances, in real Chromium.
+- [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔ source bijection across `src/core` (value + type exports), plus each behavioral interface's `## Methods` ↔ source-method bijection and each implementing-class ↔ interface method parity.
+- [`tests/policy.test.ts`](../tests/policy.test.ts) — coding policy rejects private `@src/*` imports in TSDoc examples while accepting legitimate source imports and identical text in ordinary non-TSDoc comments.
+- [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) — status/lineage/snapshot helpers, bounded silence inheritance, `scheduleHost` setup/cancellation race arbitration with exact falsy failures, hostile caller signal methods, and throwing cancellation closures after caller abort or host failure, plus the snapshot-decode leaves: remaining-budget recovery, established strict halt boundaries, exhausted recovery failures, monotonic stamps, exact-restore separation, and hostile inputs.
+- [`tests/src/core/cloners.test.ts`](../tests/src/core/cloners.test.ts) — immutable activity cloning, hostile/revoked proxy containment, one-read getters, no alias retention, stamp-vs-restore `updated` handling, and exact wrong-storage-key `RESTORE` evidence.
+- [`tests/src/core/validators.test.ts`](../tests/src/core/validators.test.ts) — total activity, task-failure, task-result, and owned-snapshot guards over valid, malformed, cyclic, throwing-proxy/getter/ownKeys, and revoked inputs.
+- [`tests/src/core/shapers.test.ts`](../tests/src/core/shapers.test.ts) — the shape descriptors: the `taskShape` / `phaseShape` / `workflowShape` mirroring the hand-written definition interfaces, the per-field `description`s riding the `run` string + key fields (Rank 1), `describedLiteral`.
+- [`tests/src/core/tasks/Task.test.ts`](../tests/src/core/tasks/Task.test.ts) — lifecycle plus whole-frame activity, validation/immutability, pulse, repeatable silence rearming, task signal, terminal cleanup, and cooperative pause.
+- [`tests/src/core/phases/Phase.test.ts`](../tests/src/core/phases/Phase.test.ts) — the derived middle tier: child-transition cascade, `skip` / `stop` override, results, snapshot/restore, and isolated lifecycle emission including idempotent pause/resume.
+- [`tests/src/core/Workflow.test.ts`](../tests/src/core/Workflow.test.ts) — the derived root: bail-aware cascade, result tree, override, snapshot/restore, teardown, and isolated lifecycle emission including idempotent pause/resume.
+- [`tests/src/core/phases/PhaseManager.test.ts`](../tests/src/core/phases/PhaseManager.test.ts) — the lean phases registry: `append` / `phase` / `phases` / `count`, insertion order preserved.
+- [`tests/src/core/tasks/TaskManager.test.ts`](../tests/src/core/tasks/TaskManager.test.ts) — the lean tasks registry: `append` / `task` / `tasks` / `count`, order surviving an interior `skip`.
+- [`tests/src/core/WorkflowManager.test.ts`](../tests/src/core/WorkflowManager.test.ts) — the store-backed registry: `add` / `workflow` / `workflows` / `count`, `remove` / `clear`, runnable hydration, both-store parity, same-promise opens even under synchronous `get → open` reentry, add/remove/clear precedence, miss/failure retry, wrong-key refusal, invocation snapshots, strictly serialized `set → save` reentry, failure recovery, and independent ids.
+- [`tests/src/core/tasks/TaskController.test.ts`](../tests/src/core/tasks/TaskController.test.ts) — folded cancellation, lineage gates, ancestor terminal-event wakeups, activity checkpoints, input, and live result read-up.
+- [`tests/src/core/WorkflowRunner.test.ts`](../tests/src/core/WorkflowRunner.test.ts) — sequencing/concurrency/retry/cancellation plus ancestor terminal-event gate wakeups, graceful in-flight completion, retry activity reset, stale-attempt refusal, listener balance, and paused-attempt deadline exhaustion.
+- [`tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) — definition construction, exact hostile-boundary restore, handler completeness, and snapshot diagnostics.
+- [`tests/src/core/WorkflowPersistence.test.ts`](../tests/src/core/WorkflowPersistence.test.ts) — coalesced writes including synchronous store-triggered mutation with maximum one active writer and the latest final snapshot, skipped-tier best-effort writes, attempt checkpoints awaited before dispatch, and persistence faults as data.
+- [`tests/src/core/stores/MemoryWorkflowStore.test.ts`](../tests/src/core/stores/MemoryWorkflowStore.test.ts) — the in-memory store (W-d): a `set` → `get` round-trip returning the same `WorkflowSnapshot` and `createRestoredWorkflow`'ing an IDENTICAL live tree, for BOTH an all-pending snapshot (`createWorkflow(...).snapshot()`) and a real SETTLED one driven through `createWorkflowRunner().execute` (real `completed` statuses + recorded results); the driver-swap parity case (the retrieved payload survives `JSON.parse(JSON.stringify(...))` AND restores identically from the JSON-revived form — proving it persists unchanged across any JSON / SQLite / IndexedDB backend); `set` replacing under the same id; and `delete` (then `get` ⇒ `undefined`, an absent-id `delete` a no-op, an absent-id `get` ⇒ `undefined`). REAL data throughout (a real `WorkflowDefinition` + real `WorkflowFunction` handlers), no mocks.
+- [`tests/src/core/stores/DatabaseWorkflowStore.test.ts`](../tests/src/core/stores/DatabaseWorkflowStore.test.ts) — the driver-pluggable twin (W-d): real-table round trips and restore parity, upsert/delete/absence, exact valid-payload/wrong-row-key `RESTORE` evidence, malformed-row normalization, default-driver smoke, and distinct-id isolation. REAL `WorkflowSnapshot` values throughout, NO mocks.
+- [`tests/src/core/Runner.test.ts`](../tests/src/core/Runner.test.ts) — `execute` runs every input and returns results in declared order (even with out-of-order completion); spawned siblings and start-listener public spawns run after every declared result; nested spawns drain transitively; an entries-resolver graceful stop remains never-dispatched while resolver/property throws remain failures; bounded concurrency caps handlers in flight; `retries` re-run a flaky unit; fail-fast and abort cancellation; one-shot, empty-run lifecycle reentry, active/stopped reporting, and idempotent destroy.
+- [`tests/src/core/Controller.test.ts`](../tests/src/core/Controller.test.ts) — `wait()` resolves when the unit's signal aborts and stays pending across real delays until it does (promise-parked, not timer-polled), resolving immediately if already aborted; `id` / `input` / `signal` / `aborted` reflect the unit; `abort(reason)` fires the signal with the reason; `spawn` delegates to the injected callback.
+- [`tests/src/core/Scheduler.test.ts`](../tests/src/core/Scheduler.test.ts) — real-clock macrotask ordering, pre-abort and pending-abort reason fidelity, minimum elapsed delay, settle-once cleanup, untouched caller listener methods, shared-signal cancellation, concurrent deadlines, host coercion for zero / negative / `NaN`, priority composition, and modest resolved/aborted churn.
+- [`tests/src/server/NodeScheduler.test.ts`](../tests/src/server/NodeScheduler.test.ts) — the same real-clock contract over `setImmediate` / `setTimeout`, including exact primitive/string/object abort reasons, untouched caller listener methods, host timer coercion, cleanup, concurrent deadlines, and modest churn. Node may emit its native warning for negative or `NaN` timer input while applying host coercion.
+- [`tests/src/server/factories.test.ts`](../tests/src/server/factories.test.ts) — `createNodeScheduler` returns a working `SchedulerInterface` (shape + a real yield/delay round-trip), abort-aware, independent stateless instances.
+- [`tests/src/browser/BrowserScheduler.test.ts`](../tests/src/browser/BrowserScheduler.test.ts) — the browser backend in REAL headless Chromium (where `scheduler.postTask` exists): `yield()` resolves via the real `postTask` callback, every priority is accepted, abort rejects with the verbatim `signal.reason` and cancels the posted task, `delay` timing, and caller listener methods remain untouched.
+- [`tests/src/browser/FrameScheduler.test.ts`](../tests/src/browser/FrameScheduler.test.ts) — the frame backend in REAL Chromium over `requestAnimationFrame`: `yield()` resolves in a real frame callback, abort cancels the rAF handle and rejects with the verbatim reason, `delay` timing, and caller listener methods remain untouched.
+- [`tests/src/browser/IdleScheduler.test.ts`](../tests/src/browser/IdleScheduler.test.ts) — the idle backend in REAL Chromium over `requestIdleCallback`: `yield()` resolves in a real idle callback, abort cancels the idle handle and rejects with the verbatim reason, `delay` timing, and caller listener methods remain untouched; the `setTimeout(0)` fallback is covered by the guard logic + a note.
+- [`tests/src/browser/factories.test.ts`](../tests/src/browser/factories.test.ts) — `createBrowserScheduler` / `createFrameScheduler` / `createIdleScheduler` each return a working `SchedulerInterface` (shape + a real yield/delay round-trip), abort-aware, independent instances, in real Chromium.
 
 ## See also
 
@@ -1414,5 +1419,5 @@ A successful run fires `start` → `unit`/`settle` per unit → `finish`. A fail
 - The `@orkestrel/tool` package — generic definitions, a total call-envelope guard, invocation, and registry primitives an application may compose at its integration boundary. It does not validate arguments against schemas, and Workflow does not depend on it.
 - [`abort.md`](abort.md) · [`timeout.md`](timeout.md) · [`budget.md`](budget.md) — the run-level bounds the runner (`Runner` / `WorkflowRunner`) folds; the scheduler (pacing) is documented in this guide.
 - [`emitter.md`](emitter.md) — the typed §13 emitter each live entity owns.
-- [`AGENTS.md`](../../AGENTS.md) — the rules; §4.4 the `bail` boolean toggle, §10 the lifecycle vocabulary, §12 errors & `Result`, §14 totality, §22 documentation-as-contracts.
-- [`README.md`](../README.md) — the guides index.
+- [`AGENTS.md`](../AGENTS.md) — the rules; §4.4 the `bail` boolean toggle, §10 the lifecycle vocabulary, §12 errors & `Result`, §14 totality, §22 documentation-as-contracts.
+- [`README.md`](README.md) — the guides index.
