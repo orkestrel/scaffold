@@ -562,11 +562,18 @@ nothing.
   second run started beside a live first one produces failures that read as the subject's — a
   publish chain relaunched over a live one reports `EOTP` and `E403` that are its own two processes
   colliding, and both readings point at the registry.
-- Key a liveness watcher on the process id, never on a command pattern. A watcher's own shell carries
-  the pattern in its command line, so `pgrep -f "<the exec>"` matches the watcher itself and the loop
-  never terminates: the watch reports "still running" forever and its completion notification can never
-  arrive. `kill -0 <pid>` cannot make that mistake. The same text also makes an elapsed-time reading
-  report the watcher's age instead of the exec's, which reads as a relaunch that never happened.
+- Never ask `pgrep -f` or `ps | grep` whether a command is running from a shell whose own command line
+  contains that command's text. The shell matches itself, so the answer is yes whatever the truth is.
+  This bites in three separate places and each one fails differently:
+  - **A liveness watcher** loops forever, reporting "still running" and never delivering its completion
+    notification, because it always finds itself.
+  - **An elapsed-time reading** returns the watcher's age rather than the exec's, so the number falls
+    instead of rising and reads as a relaunch that never happened.
+  - **A pre-launch "is anything already running" check** reports a phantom concurrent writer, which is
+    the worst of the three: the honest response to it is to kill something, and there is nothing there.
+  Read liveness from the recorded process id with `kill -0 <pid>`, or enumerate by executable name and
+  parent with `ps -eo pid,ppid,comm` and read the rows. Both are immune; a pattern over the full command
+  line is not.
 - Kill by process id, never by pattern. `pkill -f` matches the relaunch that is already starting, so
   the pattern that cleans up the old run kills the new one and the cleanup reads as a launch
   failure.
