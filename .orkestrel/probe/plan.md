@@ -102,13 +102,39 @@ sandbox refuses.
 Network-dependent work belongs to the Orchestrator's own tracked commands, because a bench sandbox
 denies the network.
 
-## Order, revised
+## Order, revised again
 
-Unit 3's two repair rounds, then 5, then 4a, then 4b, then 4c. Each unit commits before the next is
-dispatched, and each nontrivial unit is audited by an engine that did not write it.
+Unit 3's two repair rounds, then 5, then 4a, then 4b, then 4c. Unit 5 ran early, out of that order,
+because the republish wave landed mid-campaign and every later unit had to run against the final
+vendored host rather than one a later step would replace.
 
-Unit 5 sits before the proof units so that every later unit runs against the final vendored host
-rather than against one a later step replaces.
+Each writing unit commits before the next is dispatched. Each nontrivial unit is audited by an engine
+that did not write it.
+
+### Audits run beside the next writer, not before it
+
+A read-only audit lane and a writing unit can run at the same time, and the campaign is long enough
+that they must. The isolation rule is what makes it safe: give the lanes a git worktree pinned at the
+commit under audit, with `node_modules` symlinked from the main checkout, and give the writer the
+live tree. Neither sees the other.
+
+So each phase from here is: commit the writer, cut a worktree at that commit, then launch the audit
+lanes on the worktree and the next writing unit on the live tree together.
+
+Two things this does not license. Two writers still never share the main checkout. And an audit whose
+verdict decides whether the next unit should run at all still blocks it — parallelism is for a lane
+whose findings become a successor brief, not for one that could invalidate the work running beside
+it.
+
+### The design fork the campaign acquired
+
+`O9` is not a repair and does not belong to any unit above. The three stages disagree about
+`Case.files`, and the disagreement includes a false green. Its brief is `o9-design-brief.md` and it
+runs as a two-lane design round, then its own implementation unit. Both halves of the remedy are
+already measured, so the round rules on shape rather than feasibility.
+
+It sits after the proof units. Nothing in 4a, 4b, or 4c depends on it, and it will add proofs of its
+own that would otherwise be written twice.
 
 ## Standing obligations unit 4 inherits
 
