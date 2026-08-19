@@ -225,3 +225,33 @@ what makes the ownership clean, not a licence to run them together.
 **The exit criterion is unchanged.** This re-baseline reorders units and adds the sweep's repairs,
 which the criterion already required — every capability the package owns ends implemented, repaired,
 retained, or intentionally excluded on evidence. It does not move the goal.
+
+## Criterion 3 has a hole, and closing it is on the critical path
+
+Criterion 3 binds "every high-severity sweep finding that an independent verifier **reproduced**". Read
+literally, a high finding nobody has tried to reproduce is covered by neither criterion 3 nor the
+exclusion list, which names only findings a verifier refuted or could not reproduce.
+
+That leaves an unreproduced high in the worst available state: not closed, and not dropped on the
+record either. It would ship as an unexamined claim wearing the word HIGH.
+
+Two high findings are in exactly that state today:
+
+- the deadline armed before the inspection is queued (unit S2),
+- the lint stage's orphaned document promise ending the host (unit S3).
+
+**Ruling: both get an executed reproduction before their repair unit is dispatched.** Whatever comes
+back settles them into a state criterion 3 or the exclusion list actually covers — reproduced and
+therefore owed a closure, or refuted and therefore dropped with the refutation kept. Neither outcome
+needs the criterion changed.
+
+This is not a rescope. Criterion 3 already intends every high finding to end somewhere; the hole is in
+its wording, not in its scope, and the fix is to run the verification the criterion assumes has
+happened.
+
+Both reproductions are behavioural, so they need to execute, and both drive resident hosts. They wait
+until no writing unit holds the tree — a reading taken while S1 runs resident TypeScript and Vitest
+hosts on a four-core container measures contention rather than the defect.
+
+Eight of the ten high findings are already settled: five with executed evidence, two by inspection
+because their subject is static text, and the candidate-source gap by full measurement as O9.
