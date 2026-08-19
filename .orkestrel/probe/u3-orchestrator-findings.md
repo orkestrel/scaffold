@@ -547,3 +547,49 @@ own rules and certifies runtime evidence about a program the agent did not write
 That is the strongest argument for closing this before the package is published. A wrong answer an
 agent can see is a bug. A proof token that says a claim was verified when its runtime evidence came
 from different source is a mechanism working against the reason it exists.
+
+## The O9 remedy's feasibility proof was insufficient, and the design lane caught it
+
+The Orchestrator earlier recorded the runtime half of the remedy as "proven feasible" from a Vite
+plugin serving an overlay. That proof used a single-project Vitest configuration, where a top-level
+plugin belongs to the only project there is. The probe's configuration declares six named projects,
+and `RuntimeStage` always selects one by name.
+
+The subjective design lane read Vitest's source and ruled that `viteOverrides` merges into the root
+server only, so a plugin passed that way would never be consulted by the project that actually runs
+the specification. It marked the reading as needing a probe. It is right:
+
+```text
+ROOT server has o9-marker   : true
+projects: alpha, beta
+  project alpha  has o9-marker: false
+  project beta   has o9-marker: false
+```
+
+So the earlier claim was wrong for this codebase, and the Orchestrator withdraws it. A single-project
+fixture cannot answer a question about project servers.
+
+### The route the lane proposed is proven, at the right fidelity
+
+Augment the target's own project definitions and pass them through `createVitest`'s `CliOptions`
+rather than through `viteOverrides`. Measured against a two-project configuration, with a real file on
+disk shadowed by overlay text:
+
+```text
+R2 projects after override: alpha
+   alpha has o9-overlay: true
+R3 resolveId fired for the overlaid module: true
+R3 test outcome: passed
+```
+
+The test asserted the overlay's value and passed while `t/thing.ts` on disk still read `on-disk`. So
+`CliOptions.test.projects` overrides the config file's projects, the augmented definition carries the
+plugin into the project server, the hook fires for the specification's imports, and the developer's
+file is untouched.
+
+R1, R2, and R3 from the design round's risk table are settled. The remaining risks — leakage between
+claims, cost, per-project file-set perturbation, and the unreached-candidate rule's effect on real
+claim shapes — are not settled and stay with the round.
+
+The lesson is the one this campaign keeps paying for: a fixture that is simpler than the subject
+answers a simpler question. The first proof was run against a configuration the probe does not have.
