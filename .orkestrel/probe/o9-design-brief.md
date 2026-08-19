@@ -1,0 +1,105 @@
+# Design round — how a candidate source becomes visible to every stage
+
+## The question
+
+`Case.files` is the source an agent supplies as text, without writing it to disk. Rule on how the
+probe makes that text the thing all three stages judge, or rule that it cannot and say what the
+contract should promise instead.
+
+This is a design round, not a repair. Two lanes argue it independently and the Orchestrator
+reconciles.
+
+## What is true today, measured and read
+
+Only four callbacks of the type stage's language-service host consult its overlay map:
+
+```text
+$ sed -n '179,190p' src/server/stages/TypeStage.ts
+getScriptFileNames: () => [...(this.#files.get(project) ?? []), ...this.#overlays.keys()],
+getScriptVersion: (file) => this.#version(file),
+getScriptSnapshot: (file) => this.#snapshot(typescript, file),
+…
+fileExists: typescript.sys.fileExists,
+readFile: (file) => this.#overlays.get(file) ?? typescript.sys.readFile(file),
+readDirectory: typescript.sys.readDirectory,
+directoryExists: typescript.sys.directoryExists,
+```
+
+TypeScript resolves a module specifier by asking `fileExists` down a candidate list, so the overlay
+typechecks a candidate's own text and cannot make it importable.
+
+The runtime stage consults nothing. It writes the test to a revision sibling and runs it against the
+working tree:
+
+```text
+$ grep -n "writeFileSync\|subject\." src/server/stages/RuntimeStage.ts
+102:		const file = createRevisionFile(this.#workspace, subject.test.path, randomUUID())
+106:		const project = this.#project(vitest, subject.test.path)
+107:		writeFileSync(file, subject.test.text, { encoding: 'utf8', flag: 'wx' })
+```
+
+The lint stage handles candidates correctly, because linting needs no cross-module resolution.
+
+| The claim's candidate             | Type stage                   | Lint stage | Runtime stage             |
+| --------------------------------- | ---------------------------- | ---------- | ------------------------- |
+| Replaces a file already on disk   | judges the agent's text      | judges it  | **runs the on-disk text** |
+| Is a file that does not exist yet | **cannot resolve an import** | judges it  | **cannot resolve it**     |
+
+Row two fails loudly. Row one is a false green: both stages report clean, a receipt is issued, and
+the runtime evidence was about a different program. No revalidation closes it — the runtime stage is
+not stale, it is reading a file the agent never claimed.
+
+## The seam a remedy would use
+
+`createVitest` takes a Vite configuration override the runtime stage does not currently pass:
+
+```text
+$ grep -n "declare function createVitest" node_modules/vitest/dist/node.d.ts
+125:declare function createVitest(mode: VitestRunMode, options: CliOptions, viteOverrides?: UserConfig$1, vitestOptions?: VitestOptions): Promise<Vitest>;
+```
+
+A Vite plugin whose `resolveId` and `load` serve candidate text is the same overlay the type stage
+applies, moved to the runner. It needs no new dependency and writes nothing to disk. Whether that is
+the right answer is what this round decides.
+
+## What each lane must rule on
+
+1. **Where the overlay lives.** One mechanism serving all three stages, or one per stage that each
+   already has a natural seam for. Say which, and what the cost of the other is.
+2. **How a candidate is identified.** By its declared workspace-relative path, which collides with
+   the real file when one exists; or by a revision-suffixed virtual identity that the resolver
+   rewrites imports onto, which sidesteps cache invalidation entirely because every revision is a
+   distinct module. Rule between them.
+3. **How far the overlay reaches.** Only modules the test imports directly, or the whole transitive
+   graph. State what breaks under each.
+4. **What the type stage's host must change.** `fileExists` and `directoryExists` consulting the
+   overlay is the obvious answer; say what else that affects, including directory listings and
+   whether a virtual file can sit in a directory that does not exist.
+5. **What the contract promises.** If a scenario cannot be supported, `Case.files` must say so and
+   the verdict must refuse rather than issue a receipt. A silent partial answer is the defect being
+   repaired; do not replace it with a quieter one.
+6. **How it is proven.** Name the test that fails before the fix for each row of the table, and how
+   a false green is detected rather than assumed absent.
+
+## Constraints that bind any answer
+
+- `AGENTS.md` and the `.claude/rules/*` files govern. No new npm package. No second parser or
+  source-language analyzer duplicating TypeScript, Oxlint, or Vite.
+- The probe must not write a candidate to the developer's checkout, even transiently. The working
+  tree is the developer's, and a crashed process must not leave it modified.
+- Concurrent probes in one process must not see each other's candidates.
+- The design's diskless law stands: the test file is the one measured exception, and it earned that
+  by measurement.
+- Whatever is chosen must keep the warm path fast. A warm `prove` is 492 ms today, of which the
+  runtime stage is 187 ms per inspection. State the expected cost of your answer.
+
+## Output
+
+Return a ruling, not a survey.
+
+1. **Ruling** — one paragraph naming the design you would ship.
+2. **Answers** — one per numbered question above, each a decision with its reason.
+3. **Cost** — what it adds to a warm `prove`, and what it adds to the surface.
+4. **What you would refuse** — the alternative you considered and rejected, and why.
+5. **Units** — the bounded implementation units, with owned files and acceptance criteria.
+6. **Risks** — what could still be wrong after it ships, and the cheapest probe that settles each.
