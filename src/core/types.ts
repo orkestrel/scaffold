@@ -137,8 +137,9 @@ export interface Override {
  * `src` selects published library environments and `app` selects private
  * runtime environments. The two axes are independent, so library-only,
  * application-only, and mixed workspaces are all first class. `dependencies`
- * and `peers` are runtime `@orkestrel/*` packages; `extras` are
- * package-specific development dependencies and may carry any valid npm name.
+ * are runtime `@orkestrel/*` packages. A peer in the `@orkestrel` scope is a
+ * fleet pin; every other peer is a floor. `extras` are package-specific
+ * development dependencies and may carry any valid npm name.
  * `bin`, `setup`, `guides`, `distribution`, `integration`, `conformance`,
  * `service`, `vendors`, `global`, and `showcase` are structural facts: each is
  * set only when the workspace physically ships the directory or exact-case file

@@ -19,6 +19,7 @@ import {
 	CONFIG_TEMPLATES,
 	contentToHex,
 	createBlueprint,
+	FLOOR_RANGE_PATTERN,
 	isFinding,
 	ORKESTREL_RANGE_PATTERN,
 } from '@src/core'
@@ -29,6 +30,24 @@ const OWNERSHIPS: readonly Ownership[] = ['content', 'presence', 'birth']
 const PLANNED = '# Sample\n'
 const MATCHING = contentToHex(PLANNED)
 const DIFFERING = contentToHex('# Edited\n')
+
+describe('FLOOR_RANGE_PATTERN', () => {
+	it('accepts a canonical three-component floor', () => {
+		expect(FLOOR_RANGE_PATTERN.test('>=6.0.0')).toBe(true)
+	})
+
+	it('refuses every other range form', () => {
+		expect(FLOOR_RANGE_PATTERN.test('>=6')).toBe(false)
+		expect(FLOOR_RANGE_PATTERN.test('>=6.0')).toBe(false)
+		expect(FLOOR_RANGE_PATTERN.test('>6.0.0')).toBe(false)
+		expect(FLOOR_RANGE_PATTERN.test('>= 6.0.0')).toBe(false)
+		expect(FLOOR_RANGE_PATTERN.test('^6.0.3')).toBe(false)
+		expect(FLOOR_RANGE_PATTERN.test('~8.2.0')).toBe(false)
+		expect(FLOOR_RANGE_PATTERN.test('6.0.0')).toBe(false)
+		expect(FLOOR_RANGE_PATTERN.test('>=6.0.0-beta.1')).toBe(false)
+		expect(FLOOR_RANGE_PATTERN.test('>=6.0.0 <7.0.0')).toBe(false)
+	})
+})
 
 describe('ORKESTREL_RANGE_PATTERN', () => {
 	// Pre-1.0 is any `0.x`. The pattern once accepted `0.0.x` alone, which would
@@ -84,6 +103,43 @@ describe('blueprintToDevDependencies compile tooling', () => {
 		expect(planned['@orkestrel/html']).toBe(APP_BROWSER_DEV_DEPENDENCIES['@orkestrel/html'])
 		expect(planned.vue).toBe(APP_BROWSER_DEV_DEPENDENCIES.vue)
 		expect(planned['@orkestrel/test']).toBe(BASE_DEV_DEPENDENCIES['@orkestrel/test'])
+	})
+
+	it('keeps a shared toolchain pin when a foreign peer declares its floor', () => {
+		const planned = blueprintToDevDependencies(
+			buildBlueprint({ peers: [{ name: 'typescript', range: '>=6.0.0' }] }),
+		)
+
+		expect(planned.typescript).toBe(BASE_DEV_DEPENDENCIES.typescript)
+	})
+
+	it('emits a conditional toolchain pin beside a foreign peer floor', () => {
+		const manifest = blueprintToManifest(
+			buildBlueprint({
+				app: ['browser'],
+				peers: [{ name: 'vue', range: '>=3.5.0' }],
+			}),
+		)
+
+		expect(manifest).toContain(`"vue": "${APP_BROWSER_DEV_DEPENDENCIES.vue}"`)
+		expect(manifest).toContain('"peerDependencies": {\n\t\t"vue": ">=3.5.0"\n\t}')
+	})
+
+	it('adds a fleet peer that the shared toolchain does not pin', () => {
+		const planned = blueprintToDevDependencies(
+			buildBlueprint({ peers: [{ name: '@orkestrel/router', range: '^0.0.10' }] }),
+		)
+
+		expect(planned['@orkestrel/router']).toBe('^0.0.10')
+	})
+
+	it('emits a foreign peer floor while keeping its shared development pin', () => {
+		const manifest = blueprintToManifest(
+			buildBlueprint({ peers: [{ name: 'typescript', range: '>=6.0.0' }] }),
+		)
+
+		expect(manifest).toContain(`"typescript": "${BASE_DEV_DEPENDENCIES.typescript}"`)
+		expect(manifest).toContain('"peerDependencies": {\n\t\t"typescript": ">=6.0.0"\n\t}')
 	})
 
 	it('keeps a generated source workspace manifest byte-stable', async () => {
@@ -342,6 +398,104 @@ describe('blueprintToScripts config projects', () => {
 })
 
 describe('blueprint gate laws', () => {
+	it('admits a foreign peer at a floor range', () => {
+		expect(
+			blueprintToQuestions(buildBlueprint({ peers: [{ name: 'typescript', range: '>=6.0.0' }] })),
+		).toStrictEqual([])
+	})
+
+	it('admits a scoped foreign peer at a floor range', () => {
+		expect(
+			blueprintToQuestions(buildBlueprint({ peers: [{ name: '@types/node', range: '>=26.0.0' }] })),
+		).toStrictEqual([])
+	})
+
+	it('refuses a floor range for a fleet peer', () => {
+		expect(
+			blueprintToQuestions(
+				buildBlueprint({ peers: [{ name: '@orkestrel/router', range: '>=0.0.10' }] }),
+			),
+		).toStrictEqual([
+			{
+				field: 'peers',
+				message: '@orkestrel/router declares the range >=0.0.10, which peers does not accept.',
+				blocking: true,
+			},
+		])
+	})
+
+	it('refuses a caret pin for a foreign peer', () => {
+		expect(
+			blueprintToQuestions(buildBlueprint({ peers: [{ name: 'typescript', range: '^6.0.3' }] })),
+		).toStrictEqual([
+			{
+				field: 'peers',
+				message: 'typescript declares the range ^6.0.3, which peers does not accept.',
+				blocking: true,
+			},
+		])
+	})
+
+	it('keeps a malformed fleet name on the fleet branch', () => {
+		expect(
+			blueprintToQuestions(
+				buildBlueprint({
+					peers: [{ name: '@orkestrel/router.core', range: '^0.0.10' }],
+				}),
+			),
+		).toStrictEqual([
+			{
+				field: 'peers',
+				message: '@orkestrel/router.core is not a package name peers accepts.',
+				blocking: true,
+			},
+		])
+	})
+
+	it('keeps a second malformed fleet name on the fleet branch', () => {
+		const questions = blueprintToQuestions(
+			buildBlueprint({ peers: [{ name: '@orkestrel/../etc', range: '>=1.0.0' }] }),
+		)
+
+		expect(questions).toContainEqual({
+			field: 'peers',
+			message: '@orkestrel/../etc is not a package name peers accepts.',
+			blocking: true,
+		})
+	})
+
+	it('refuses a parent segment as a foreign peer name', () => {
+		expect(
+			blueprintToQuestions(buildBlueprint({ peers: [{ name: '../etc', range: '>=1.0.0' }] })),
+		).toContainEqual({
+			field: 'peers',
+			message: '../etc is not a package name peers accepts.',
+			blocking: true,
+		})
+	})
+
+	it('refuses a scoped parent segment as a foreign peer name', () => {
+		expect(
+			blueprintToQuestions(
+				buildBlueprint({ peers: [{ name: '@vendor/../etc', range: '>=1.0.0' }] }),
+			),
+		).toContainEqual({
+			field: 'peers',
+			message: '@vendor/../etc is not a package name peers accepts.',
+			blocking: true,
+		})
+	})
+
+	it('refuses a nested parent segment as a foreign peer name', () => {
+		expect(
+			blueprintToQuestions(buildBlueprint({ peers: [{ name: 'foo/../bar', range: '>=1.0.0' }] })),
+		).toContainEqual({
+			field: 'peers',
+			message: 'foo/../bar is not a package name peers accepts.',
+			blocking: true,
+		})
+	})
+
 	// The shape is chosen once, when the workspace is created, and read by every
 	// verb afterwards. A refusal here left an existing workspace of that shape
 	// undescribable by the verbs whose whole job is to describe and repair it, so
@@ -522,16 +676,11 @@ describe('blueprintToRootVite fixed proofs', () => {
 	// external is a different claim, and `tests/src/core/templates.test.ts` proves
 	// it by building both published faces of a staged workspace for real.
 	it('emits the peer clause in every published build face', () => {
-		// `blueprintToQuestions` validates `blueprint.peers` against
-		// `DEPENDENCY_NAME_PATTERN`, so a Blueprint can name no peer outside
-		// `@orkestrel/*` and the fixture has to sit inside a set the pre-existing
-		// `@orkestrel/` clause already externalizes. That is why the emitted
-		// configuration reads the live manifest instead of compiling a Blueprint
-		// fact: the manifest is the only place a `vitest` peer can be stated. A peer
-		// added there by hand survives `overwrite`, because the manifest artifact is
-		// `ownership: 'birth'` and `overwrite` rewrites only the `@orkestrel/*`
-		// range set.
-		const peer = { name: '@orkestrel/emitter', range: '^0.0.7' }
+		// The emitted configuration reads the live manifest rather than compiling a
+		// Blueprint fact. A peer added there by hand therefore stays external and
+		// survives `overwrite`, because the manifest artifact is `ownership: 'birth'`
+		// and `overwrite` rewrites only the `@orkestrel/*` range set.
+		const peer = { name: 'vitest', range: '>=4.0.0' }
 		const selected = buildBlueprint({
 			src: ['core', 'browser', 'server'],
 			app: ['browser', 'server'],
@@ -556,7 +705,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 		expect(configuration).toContain("import manifest from './package.json' with { type: 'json' }")
 		expect(configuration).toContain("throw new Error('package peerDependencies must be an object')")
 		expect(contents.split(clause)).toHaveLength(5)
-		expect(configuration).not.toContain(peer.name)
+		expect(configuration).not.toContain(peer.range)
 	})
 
 	it('registers the conformance and live-service projects only when their fact is set', () => {

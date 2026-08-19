@@ -266,16 +266,16 @@ export const NAME_PATTERN = /^[a-z][a-z0-9-]*$/
 export const DEPENDENCY_NAME_PATTERN = /^@orkestrel\/[a-z][a-z0-9-]*$/
 
 /**
- * The development extra name syntax: any valid npm package name.
+ * The package name syntax for a dependency this package does not publish.
  *
  * @remarks
- * Wider than a runtime dependency name on purpose. An extra is manifest content
- * and never reaches a path, so it may carry any scope or no scope at all. The
- * single optional `/` is still fixed to the one scope boundary, and neither `..`
- * nor a backslash is admitted, so the shape cannot express a traversal even
- * though it accepts far more names.
+ * A foreign package is one this package does not publish, so its name reaches
+ * no path. It may carry any scope or no scope at all. Each name segment begins
+ * with an alphanumeric character after an optional leading `@`, and the name
+ * carries at most one `/`. No segment can therefore be `..`, and no backslash
+ * is admitted, so the shape cannot express a traversal.
  */
-export const EXTRA_NAME_PATTERN = /^(?:@[a-z0-9][a-z0-9._-]*\/)?[a-z0-9][a-z0-9._-]*$/
+export const FOREIGN_NAME_PATTERN = /^(?:@[a-z0-9][a-z0-9._-]*\/)?[a-z0-9][a-z0-9._-]*$/
 
 /** The exact three-component version syntax a blueprint declares. */
 export const VERSION_PATTERN = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/
@@ -294,6 +294,16 @@ export const ORKESTREL_RANGE_PATTERN = /^\^0\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/
 /** The registry-only semver subset accepted for a development extra's range. */
 export const EXTRA_RANGE_PATTERN =
 	/^(?:\^|~)?(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*)?$/
+
+/**
+ * The exact three-component floor accepted for a foreign peer's range.
+ *
+ * @remarks
+ * This is independent from {@link ENGINES_PATTERN}. An engine floors the Node
+ * runtime a workspace supports, while a peer floors a tool the consumer
+ * supplies. Either obligation may change without changing the other.
+ */
+export const FLOOR_RANGE_PATTERN = /^>=(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/
 
 /** The minimum-Node engine syntax a blueprint declares. */
 export const ENGINES_PATTERN = /^>=(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/

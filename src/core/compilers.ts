@@ -25,8 +25,9 @@ import {
 	DECLARATION_DEV_DEPENDENCIES,
 	DEPENDENCY_NAME_PATTERN,
 	ENVIRONMENTS,
-	EXTRA_NAME_PATTERN,
 	EXTRA_RANGE_PATTERN,
+	FLOOR_RANGE_PATTERN,
+	FOREIGN_NAME_PATTERN,
 	GLOBAL_SETUP_PATH,
 	HOST_PATHS,
 	INTEGRATION_TEST_PATH,
@@ -201,7 +202,10 @@ export function srcToExports(src: readonly Environment[]): Readonly<Record<strin
  * each declared axis adds the set its host needs. A declared extra or peer is
  * applied after those, so a workspace that pins a range for a package the
  * conditional sets also name gets the range it declared. An extra that restates
- * a shared toolchain pin never reaches here, because the gate refuses it.
+ * a shared toolchain pin never reaches here, because the gate refuses it. A peer
+ * that names a development tool already selected keeps that tool's pin, because
+ * the peer's floor states what consumers may supply rather than what this workspace
+ * develops against.
  *
  * A peer is declared here as well as under `peerDependencies`, because a peer is
  * not installed by the workspace that declares it and developing against one
@@ -234,7 +238,9 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
 		...(blueprint.app.includes('server') ? APP_SERVER_DEV_DEPENDENCIES : {}),
 	}
 	for (const extra of blueprint.extras) merged[extra.name] = extra.range
-	for (const peer of blueprint.peers) merged[peer.name] = peer.range
+	for (const peer of blueprint.peers) {
+		if (!Object.hasOwn(merged, peer.name)) merged[peer.name] = peer.range
+	}
 	const own = blueprint.src.length > 0 ? `@orkestrel/${blueprint.name}` : blueprint.name
 	const runtime = new Set(blueprint.dependencies.map((dependency) => dependency.name))
 	return Object.fromEntries(
@@ -1579,11 +1585,11 @@ export function planToFindings(plan: Plan, current: Snapshot): readonly Finding[
  * range, in list order.
  *
  * @remarks
- * The three declared lists differ only in the two syntaxes they accept, so the
- * rules live here once and each caller supplies its own patterns. A runtime
- * dependency name reaches a path through its guide mirror and is fixed to the
- * `@orkestrel` scope; a development extra never reaches a path and admits any
- * valid npm name.
+ * The declared lists and peer partitions differ only in the two syntaxes they
+ * accept, so the rules live here once and each caller supplies its own patterns.
+ * A runtime dependency name reaches a path through its guide mirror and is
+ * fixed to the `@orkestrel` scope. A foreign peer or development extra reaches
+ * no path and admits any valid npm name.
  *
  * Both patterns must be stateless. A global or sticky pattern carries a
  * `lastIndex` between calls, so it would answer differently for the same input
@@ -1787,12 +1793,23 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 			ORKESTREL_RANGE_PATTERN,
 		),
 		...dependenciesToQuestions(
-			blueprint.peers,
+			blueprint.peers.filter((peer) => peer.name.startsWith('@orkestrel/')),
 			'peers',
 			DEPENDENCY_NAME_PATTERN,
 			ORKESTREL_RANGE_PATTERN,
 		),
-		...dependenciesToQuestions(blueprint.extras, 'extras', EXTRA_NAME_PATTERN, EXTRA_RANGE_PATTERN),
+		...dependenciesToQuestions(
+			blueprint.peers.filter((peer) => !peer.name.startsWith('@orkestrel/')),
+			'peers',
+			FOREIGN_NAME_PATTERN,
+			FLOOR_RANGE_PATTERN,
+		),
+		...dependenciesToQuestions(
+			blueprint.extras,
+			'extras',
+			FOREIGN_NAME_PATTERN,
+			EXTRA_RANGE_PATTERN,
+		),
 	)
 	const lists: ReadonlyArray<readonly [field: string, list: readonly Dependency[]]> = [
 		['dependencies', blueprint.dependencies],
