@@ -127,10 +127,38 @@ A separate unit has already brought this workspace onto the current scaffold and
 `overwrite` here changes `vite.config.ts` and nothing else. If it writes any other file, that is a
 real deviation: stop and report it.
 
+## The published front page is still the scaffold placeholder
+
+Three fields reach npm and every one of them is starter text:
+
+```text
+$ cat README.md
+# @orkestrel/probe
+
+The @orkestrel/probe package.
+
+## Development
+…
+$ node -e "const p=require('./package.json'); console.log(p.description); console.log(JSON.stringify(p.keywords))"
+The @orkestrel/probe package.
+[]
+```
+
+`README.md` is listed in the manifest's `files`, so it is the first thing anyone sees on the registry
+page. Write it for someone deciding whether to install this: what the package does, the one-paragraph
+doctrine that a claim carries its own negative control and earns a receipt only when the case is clean
+and the control fails where it said it would, the two-step install and `.mcp.json` registration, and
+one worked example of a claim and the verdict it returns. Take the numbers from `PROBE.md` § What was
+built rather than inventing any. Keep it short; the guide carries the detail and the README points at
+it.
+
+Give `description` one sentence that says what the package does, and `keywords` the handful of terms
+someone would actually search. Neither is decoration: both are how the registry finds this package.
+
 ## Scope
 
-- **Owned**: `guides/probe.md`, `guides/README.md`, `tests/guides.test.ts`, `package.json`, and
-  `vite.config.ts` **only through `npx scaffold overwrite`**.
+- **Owned**: `guides/probe.md`, `guides/README.md`, `README.md`, `tests/guides.test.ts`,
+  `package.json`, and `vite.config.ts` **only through `npx scaffold overwrite`**.
 - **Off-limits**: `src/**`, `tests/src/**`, `tests/config.test.ts`, `tests/policy.test.ts`,
   `tests/setup*.ts`, `guides/guide.md`, `guides/scaffold.md`, `configs/**`, and every dotfile.
 - **Tools**: read, write, and `Bash` for validation and the one scaffold verb.
@@ -165,6 +193,10 @@ real deviation: stop and report it.
 13. `npm test` exits 0 and reports no skipped and no todo test.
 14. `npm run format:check` and `npm run lint:check` both exit 0.
 15. `npx scaffold audit` reports no drift, proving no content-owned file was hand-edited.
+16. `README.md` carries no starter placeholder text, and states what the package does, how it is
+    installed and registered, and one worked claim with the verdict it returns.
+17. `package.json` carries a `description` that is one sentence about what the package does, and a
+    non-empty `keywords` list.
 
 ## Prose requirements
 

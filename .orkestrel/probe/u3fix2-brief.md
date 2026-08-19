@@ -22,7 +22,15 @@ Read before acting:
 3. `/home/user/scaffold/.orkestrel/probe/u3-orchestrator-findings.md`, the measured record.
 4. `/home/user/scaffold/PROBE.md`, the design ruling, for what arming is required to prove.
 
-**Fix round 1 has already rewritten `Probe.ts`, the three stage files, and `src/server/types.ts`.**
+**Three commits have landed since the line numbers in this brief were taken.** Fix round 1 rewrote
+`Probe.ts`, the three stage files, `src/server/types.ts`, and the bin test. A re-pin moved
+`@orkestrel/mcp` to `^0.0.18`, `@orkestrel/scaffold` to `^0.0.42`, and `@orkestrel/test` to `^0.0.7`,
+and a re-vendor replaced `tests/config.test.ts` and added five dependency guides. The MCP surface this
+package composes is unchanged across its bump.
+
+The tree is green at `b912b19`: all five gates exit 0, and the built entry answers the handshake era,
+the current revision with all three reserved metadata keys, and a `tools/call` returning a six-check
+verdict with a receipt.
 Every line number in this brief refers to the pre-round-1 commit `f7104c7` and has moved. Locate every
 subject by symbol name, never by line number, and read the current file before editing it.
 
