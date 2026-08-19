@@ -59,3 +59,27 @@ and it failed before the fix naming the exact drift:
 
 The self-pin stays exempt from it, because a manifest carries its own version as a bare version
 rather than as a dependency of itself.
+
+## The rest of the wave is clean
+
+Every published manifest in the republish wave was read from the registry and every `@orkestrel`
+runtime range compared against what the registry serves now. Zero drift across all eight:
+
+```text
+@orkestrel/scaffold@0.0.42    console ^0.0.8, contract ^0.0.12, emitter ^0.0.7, markdown ^0.0.9, template ^0.0.4
+@orkestrel/test@0.0.7         (no runtime dependencies)
+@orkestrel/database@0.0.11    contract ^0.0.12, emitter ^0.0.7, indexeddb ^0.0.8, sqlite ^0.0.8
+@orkestrel/server@0.0.14      abort ^0.0.7, contract ^0.0.12, emitter ^0.0.7, router ^0.0.10, timeout ^0.0.7
+@orkestrel/sea@0.0.8          contract ^0.0.12, emitter ^0.0.7
+@orkestrel/terminal@0.0.11    console ^0.0.8, contract ^0.0.12, database ^0.0.11, emitter ^0.0.7, form ^0.0.2, sse ^0.0.5
+@orkestrel/middleware@0.0.16  abort ^0.0.7, budget ^0.0.7, contract ^0.0.12, timeout ^0.0.7
+@orkestrel/mcp@0.0.18         contract ^0.0.12, emitter ^0.0.7, sse ^0.0.5, tool ^0.0.11, websocket ^0.0.9
+```
+
+Layer order held too: `terminal@0.0.11` names `database ^0.0.11`, the version published in the same
+wave, so the dependent went out after its dependency rather than beside it.
+
+That is what makes the self-pin the wave's only defect, and it explains why nothing caught it. Every
+check that guards this fleet reads the manifest's dependency ranges. `BASE_DEV_DEPENDENCIES` is not
+one of them — it is source data that scaffold hands to other repositories, so it drifts in a place no
+dependency audit looks.
