@@ -1048,3 +1048,28 @@ reader"; this is the same rule one step later — the file that reader actually 
 
 Cost: one exec cycle, no tree damage, and a correct stop report that named the exact missing path. Cheap
 only because the deviation contract worked.
+
+## A scoped test run is still a shared-resource run — 2026-08-19
+
+The S3fix2 audit brief barred whole-suite gates and explicitly permitted scoped runs:
+
+> **Do not run `npm test` or any whole-suite gate** — it would read S4's in-flight state. Scoped runs
+> against `tests/src/server/stages/LintStage.test.ts` are fine.
+
+They were not fine. The audit ran that scoped project against the real `oxlint` binary, plus a standalone
+script instantiating a real `LintStage`, **while unit S4 was running its own gates on the same tree**.
+Both drive real Oxlint children and both write into one `tmp/probe/` directory.
+
+S4 then reported failures in the full server project and — correctly — waited for diagnostics rather than
+concluding they were its own.
+
+`.agents/orchestration.md` § Writing concurrency rule 4 says a concurrent executor validates "read-only
+and scoped to their own files". The permission above satisfied the letter and missed the mechanism:
+scoping a *Vitest project* does not scope the *filesystem* those tests share, and `tmp/probe` is the
+shared resource four server test files already contend over — a hazard S4's own brief documents as having
+cost two earlier units a repair round.
+
+**The rule:** a concurrent read-only lane runs no test that spawns a child or writes under `tmp/`,
+whatever project it is scoped to. If it needs executed evidence, it gets it from the Orchestrator or it
+waits for the writer to release the tree. "Scoped" must mean scoped to files nobody else touches, not
+scoped to a project name.
