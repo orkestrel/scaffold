@@ -501,6 +501,11 @@ wrong is right to stop.
   Name the gate as an observation the unit reports with both readings, and take the authoritative run
   yourself after the unit exits, per **Writing concurrency** rule 10. A scoped run over the unit's own
   owned files stays a legitimate criterion.
+- Order the criteria so an unreachable one cannot hide the others. A deviation contract fires on the
+  first criterion the unit cannot close and stops it there, so an unreachable criterion placed ahead
+  of a typecheck or a lint criterion skips that gate entirely and the unit ships a defect its own
+  brief would have caught. Put the cheap non-timing gates first, and never let a whole-suite result
+  gate a scoped one.
 - Ask what the change will do to the facts you just measured. A criterion fixed to a measured set is
   unreachable if the change alters that set, and a file marked off-limits is wrong if the change
   writes to it. Measure the state the unit will finish in, not only the state it starts from.
