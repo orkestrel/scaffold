@@ -9,7 +9,7 @@ recalled at launch.
 | ---- | ------- | ------ | --- |
 | S1 and its three fix rounds | `RuntimeStage.ts`, then the `Finding` discriminant | Sol, then Opus for rounds 2 and 3 | Rounds 1 and its first fix were process lifetime and cleanup ordering. Rounds 2 and 3 added a discriminant to a published type and rewrote contract prose, which is API shape. |
 | S2 | `Probe.ts` — the deadline bounds the queue rather than the work | **Sol** | Concurrency, timer ordering, and what a budget actually covers. Constraint-heavy. |
-| S3 | `LintStage.ts` — surviving the Oxlint child's death | **Sol** | Process lifetime, signal semantics, promise settlement. |
+| S3 | `LintStage.ts` — surviving the Oxlint child's death | **Opus, re-routed** | Was Sol on work class. Re-routed on a measured host constraint: the bench sandbox gives a Node-spawned-Node child no working stdio, so a bench unit cannot arm, drive, or observe the Oxlint child that is this unit's entire subject. It would produce false greens rather than failures. The native `implementer` runs outside that sandbox. |
 | S4 | `TypeStage.ts` — the overlay outliving its inspection | **Sol** | Cleanup ordering and map lifetime. |
 | S5 | `src/core/**` — the contract describing a package that does not exist | **Opus** | Documentation voice, plus a ruling on whether `Control.reason` is routed or removed. |
 | S6 | `src/bin/main.ts` — the entry owning its shutdown | **Opus** | Where a lifecycle belongs on a published surface is an API-shape decision. |

@@ -73,3 +73,35 @@ receipt probe:c33e9c58-…:runtime:typescript@6.0.3:oxlint@1.79.0:vitest@4.1.11
 
 Both protocol eras answer, and the `tools/call` returns the verdict as raw text rather than a
 JSON-quoted string.
+
+## The bench sandbox gives a Node-spawned-Node child no working stdio
+
+Measured by unit S2's fix round with a throwaway probe, 2026-08-19, after it cost that unit most of a
+round.
+
+Inside the Codex bench sandbox, a Node process spawned by another Node process **exits cleanly but
+never receives stdin and never publishes stdout**. This is stronger than the buffering constraint
+recorded earlier on this page: it is not that the pipe buffers until EOF, it is that the channel does
+not work at all.
+
+**What this makes unprovable inside a bench.** Anything whose subject is a child process speaking a
+protocol over stdio. Concretely:
+
+- `LintStage` in its entirety. It spawns `oxlint --lsp` and speaks LSP over that child's stdio, so a
+  bench unit cannot arm it, cannot drive it, and cannot observe it fail.
+- Any Language Server Protocol fixture, including the protocol-faithful one S2 built.
+- The built entry's own MCP transport, wherever a test drives it as a spawned child.
+
+**How this produces a FALSE GREEN rather than an obvious failure.** The stage cannot arm, so the
+probe's boot inspection times out, and that timeout produces the same rejection message a genuine
+stage timeout produces. A test asserting on the message accepts it. The unit sees green, the gate
+outside the sandbox sees the honest red, and the two disagree for a reason neither run reports.
+
+**The routing consequence.** Unit S3's whole subject is `LintStage`'s behaviour when its child dies,
+hangs, or misbehaves. A bench unit cannot measure any of that. Either route S3 to the harness's native
+`implementer`, which runs outside this sandbox, or keep it on the bench and have the Orchestrator
+supply every executed measurement it needs. Do not dispatch it to a bench and expect it to prove its
+own work.
+
+**How to tell you have hit this.** A child process that exits with code 0 almost immediately, a request
+to it that never resolves, and a stack that lands in the spawning code's `exit` handler.
