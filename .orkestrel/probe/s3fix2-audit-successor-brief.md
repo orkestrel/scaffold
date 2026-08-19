@@ -23,9 +23,24 @@ Written by Claude Opus 5. You are the independent lane.
 
 ## Your working tree
 
-You run in a detached git worktree checked out at `449f96d`. It is yours: you may write, spawn, build,
-and run scoped tests in it, and nothing you do there reaches the campaign's checkout. Do not touch
-`/workspace/probe` itself.
+You run in `/workspace/probe` directly, on the current `HEAD`. No worktree is involved.
+
+The subject has not moved since its commit. Every file the claims concern is byte-identical between
+`449f96d` and `HEAD`:
+
+```text
+$ git -C /workspace/probe diff --stat 449f96d HEAD -- src/server/stages/LintStage.ts tests/src/server/stages/LintStage.test.ts src/server/helpers.ts
+(no output)
+```
+
+So the working tree **is** the subject, and reading or running it measures `449f96d`. An earlier
+version of this brief put you in a detached worktree; that was unnecessary, and its symlinked
+`node_modules` made Vite resolve outside the worktree and the workspace's own
+`orkestrel-environment-boundary` plugin refuse every module. Do not recreate it.
+
+You may write, spawn, build, and run scoped tests. You are the only unit in the tree. Do not commit,
+and leave the tree as you found it: revert any instrument you write before you finish, and report any
+file you could not restore.
 
 `npm test` there runs the whole suite including the four server test files that contend over
 `tmp/probe`. Run scoped instead — `tests/src/server/stages/LintStage.test.ts` is your subject — and if
