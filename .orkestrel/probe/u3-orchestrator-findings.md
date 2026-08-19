@@ -151,3 +151,46 @@ Running the case and the control concurrently would take a `prove` to roughly 26
 `RuntimeStage` serializes its inspections through one resident Vitest, so concurrency there needs a
 second resident instance and the memory that costs. Record this as an optimization with a measured
 ceiling, not as a defect.
+
+## O7 — a deadline expiry leaves the abandoned test in the checkout
+
+Measured against the built package with a 6 s deadline and a synchronous infinite loop:
+
+```text
+after a normal prove, tmp/probe holds: []
+deadline rejected as designed: The runtime stage exceeded 6000 ms
+after the expiry, tmp/probe holds: [ 'leak.test.probe-de705c2b-4dfb-4be7-9f46-68b34de7d4e9.ts' ]
+a later ordinary claim served: type=0 lint=0 runtime=0
+after destroy, tmp/probe holds: []
+```
+
+`RuntimeStage.#inspect` removes the revision file in a `finally`, and that `finally` does eventually
+run, so the file is gone after `destroy`. Between the expiry and the teardown it sits in the
+consumer's checkout, and it holds whatever the claim held — in this measurement, an infinite loop.
+The file matches the `probe` project's include glob, so a developer running `npm run test:probe`
+during that window hangs on a stranger's abandoned test.
+
+The same run settles two of the design lane's referrals. Recovery works: the later ordinary claim was
+served correctly after the stage was replaced. And the leak is a window rather than a permanent loss.
+
+## The harness journey, driven independently
+
+The Orchestrator spawned the built entry and drove it over newline-delimited JSON, which is what the
+Model Context Protocol stdio transport speaks. An earlier attempt framed requests with
+`Content-Length` headers and timed out; that was the instrument, not the server.
+
+```text
+handshake-era initialize -> {"name":"probe","version":"0.0.1"}
+handshake-era tools/list -> prove
+--- tools/call prove ---
+probe 4e3d2dbf-ace3-431b-8a10-fb66e27d6def (692.649617 ms)
+toolchain typescript 6.0.3, oxlint 1.79.0, vitest 4.1.11
+case type: 0 findings (141.13012200000048 ms)
+...
+control runtime: 1 finding (318.02681200000006 ms)
+  tmp/probe/wire.test.ts:2 expected 4 to be 5 // Object.is equality
+receipt probe:4e3d2dbf-ace3-431b-8a10-fb66e27d6def:runtime:typescript@6.0.3:oxlint@1.79.0:vitest@4.1.11
+```
+
+The journey works end to end. It also shows the raw-float elapsed values an agent reads, against
+documented examples that read `(17 ms)`.
