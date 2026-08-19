@@ -218,3 +218,29 @@ number this brief quotes for either file is stale by construction.
 S3 has landed. S4, T1, and H1 have not. The reason stated in the brief still holds: this unit's value is
 uniformity, so landing it while another unit is rewriting one of its seven files leaves a hand-computed
 depth behind and makes the tree worse than either end state.
+
+---
+
+# Amendment 2 — amendment 1's carrier is WITHDRAWN
+
+**Do not lift the five helpers.** Amendment 1 assigned that work here; the S3 audit's conformance
+verifier refuted the finding it rests on, and it was right on both points it made.
+
+On the rule: `.claude/rules/tests.md` conditions extraction on "as soon as it **could serve another
+test**" and on the helper being **reusable**. Amendment 1 read both as unconditional. The verifier
+measured the condition instead: no other probe test drives an Oxlint language server. `SERVER` is an
+Oxlint-LSP protocol fixture, `FIXTURE` is its package layout, `HOST` hardcodes the `LintStage` import and
+its lint-specific flow, and `killFixtureServer` reads the pid that `SERVER` alone writes. Four of the
+five are single-consumer by construction, so the rule's trigger is not met.
+
+On the scoping: this unit is ROOT centralization and `resolveRoot` adoption across seven sites. A lift of
+Oxlint fixture infrastructure is a different subject riding in a unit that does not own it — the error
+`.agents/orchestration.md` names as "Give a small unrelated obligation its own unit."
+
+**Dissent recorded.** The Sol lane confirmed the violation, reading `.claude/rules/tests.md:151-164` as
+requiring setup-file placement with no exemption. Two defensible readings; the verifier's is the one
+grounded in a measurement of the rule's own trigger, so it wins. If a second Oxlint-driving test ever
+appears, the trigger is met and the extraction is owed then.
+
+Amendment 1's other content stands: re-read both stage test files at dispatch, and the blocked-on list is
+unchanged.
