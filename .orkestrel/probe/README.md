@@ -53,6 +53,34 @@ Audit briefs sit beside the round they audit, named `*-audit-brief.md`.
 `carry-ledger.md` walks all 29 sweep findings and names the unit carrying each, so a dropped finding
 is visible rather than silent. It also records what its instrument could and could not answer.
 
+## Verification — what was independently checked, and what came back
+
+`high-finding-verification.md` covers all ten HIGH sweep findings. Read its coverage section before
+citing it: five carry executed evidence, two were settled by inspection because their subject is static
+text, two have their mechanism confirmed by reading with the behavioural consequence owed to a repair
+unit, and one was measured in full as O9. A "mechanism confirmed" verdict is not a closed finding.
+
+`doc-truth-verification.md` carries nine doc-truth claims, each given to a blind lane with a refutation
+posture. Two reproduced as written, six with corrections, and **M6 was refuted** — the sweep misquoted
+the document it indicted. That finding is dropped on the record and struck from `s4-brief.md`, with the
+refutation kept beside it so nobody re-raises it.
+
+`critic-findings-routing.md` carries five defects a completeness lane found that the doc-truth lens
+missed, four with executed evidence. Two are not documentation defects at all, which is the reason to
+run a critic over a dimension rather than only within it. It also records what the critic checked and
+found SOUND, so the next round does not re-walk it.
+
+`s1-audit-verdict.md` is the campaign's most productive round: `VERDICT: FAIL`, three of eight claims
+broken. Its closing note is worth reading on its own — the claims that broke were the three asserting a
+property of a DEPENDENCY's behaviour, and the ones that held were restatements of the diff's own text.
+
+## Evidence files a read-only lane can consume
+
+A `reviewer` or `checker` lane carries no shell, so executed evidence is captured to files it can read:
+`s1-diff.md` (diff, stat, status), `s1-report.md` (the unit's own return), and `s1-gates.md` (five gates
+run by an independent verifier outside the bench sandbox). Name these paths in a read-only lane's brief
+rather than asking it to run a command it has no tool for.
+
 ## Instruments
 
 `instruments/` holds what works and why. Read its README before writing a client for the probe's
