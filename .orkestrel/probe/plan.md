@@ -56,17 +56,42 @@ Owns `src/server/Probe.ts`, `src/server/factories.ts`, `src/server/index.ts`, `s
   answers a harness `tools/list` with `Invalid params: malformed modern request metadata`.
 - `src/bin/main.ts` declares no module-scope constant and no module-scope function.
 
-## Unit 4 — proofs and parity
+## Unit 4 — proofs and parity, split three ways
 
-Owns `tests/**` and `guides/**`.
+Re-baselined after unit 3 landed. The original single unit owned `tests/**` and `guides/**` together.
+Three facts forced the split: the core proofs are pure and fast while the server proofs drive real
+tools and take minutes, the guide is subjective work that belongs on Opus while both proof sets are
+objective work that belongs on Sol, and the guide forces a scaffold configuration change the proof
+units must not touch. The three own disjoint files and run in order.
 
-Every law above owes a test that fails before its fix. The two reproduced defects are the
-regression guards that matter: a dependency mutated between calls must change the verdict in both
-the type stage and the runtime stage, and the arming control must fail when revalidation fails.
+### Unit 4a — core proofs (Sol)
 
-## Order
+Owns `tests/src/core/**`. Every pure leaf and every guard, including the two standing obligations
+below. Brief: `u4a-brief.md`.
 
-1, then 2, then 3, then 4. Each unit commits before the next is dispatched.
+### Unit 4b — server and entry proofs (Sol)
+
+Owns `tests/src/server/**` and `tests/src/bin/**`. The helpers, the three stages against the real
+toolchain, the coordinator, and the built entry over spawned stdio. Carries the regression guards for
+both reproduced defects. Brief: `u4b-brief.md`.
+
+The `src:server` project runs at Vitest's five-second default and `vite.config.ts` is a scaffold
+content-owned file, so a slow test there sets its own budget through `it(name, { timeout }, fn)`
+rather than through the config.
+
+### Unit 4c — guide and parity (Opus)
+
+Owns `guides/probe.md`, `guides/README.md`, `tests/guides.test.ts`, `package.json`, and
+`vite.config.ts` only through `npx scaffold overwrite`. Brief: `u4c-brief.md`.
+
+Creating `tests/guides.test.ts` selects the `guides` Vitest project, so the template regenerates
+`vite.config.ts` while the `test:guides` script must be added by hand. The vendored config proof
+checks that the projects and the scripts agree, so both halves land together or neither does.
+
+## Order, revised
+
+1, then 2, then 3, then 4a, then 4b, then 4c. Each unit commits before the next is dispatched, and
+each nontrivial unit is audited by an engine that did not write it.
 
 ## Standing obligations unit 4 inherits
 
