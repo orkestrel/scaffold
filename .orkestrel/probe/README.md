@@ -1,0 +1,62 @@
+# The `@orkestrel/probe` campaign record
+
+Start with `plan.md`. It carries the decomposition, the re-baselines, and the campaign's exit
+criterion. Everything else here is evidence or instruction, and this file says which is which.
+
+## Read these to understand the subject
+
+- `plan.md` — units, ownership, order, and the explicit exit criterion. The one file that says when
+  this campaign is finished.
+- `../../PROBE.md` — the design ruling the package implements, and § What was built, which records
+  what shipped, what it measures, and every claim this campaign withdrew.
+
+## Evidence — what was measured, and what was found
+
+- `u3-orchestrator-findings.md` — the Orchestrator's own measurements, in order. Includes the
+  findings it raised, the two it **withdrew** after re-testing, and the latency numbers that moved.
+- `seam-sweep-findings.md` — 29 findings from a six-lens adversarial sweep that survived refutation,
+  with the evidence for each. Thirteen more were refuted and are not here.
+- `high-finding-verification.md` — independent reproduction of the high-severity sweep findings, with
+  the corrections each verifier made to the original claim.
+- `u3fix3-audit-verdict.md`, `u3-gates.txt`, `o9-objective-ruling.md` — returned reports, kept as
+  received.
+
+## Rulings — where two lanes disagreed and someone decided
+
+- `u3-audit-reconciliation.md` — the first audit round, two lanes, including findings dropped on the
+  record because no lane could substantiate them.
+- `u3fix2-audit-reconciliation.md` — the second round, and the referral the Orchestrator confirmed as
+  a defect the round opened while closing another.
+- `o9-reconciliation.md` — the candidate-source design round: six decisions two blind lanes reached
+  independently, two they split on, and the correction that made one ruling's severity change.
+- `seam-sweep-triage.md` — the 29 findings grouped into six repair units, ordered by damage.
+
+## Instructions — briefs, in the order they ran
+
+Implementation: `u1` (contracts), `u2` (stages), `u3` (coordinator), `u5` (re-pin), `u4a` (core
+proofs), `u4b` (server proofs), `u4c` (guide and parity).
+
+Repairs of unit 3: `u3fix1` (lifecycle), `u3fix2` (contract and publication), `u3fix3` (audit
+findings).
+
+Not yet run: `s1` and `s2` (the first two sweep repair units), `o9-u1` (the candidate-source overlay's
+foundation). `o9-design-brief.md` is the brief both design lanes executed.
+
+Audit briefs sit beside the round they audit, named `*-audit-brief.md`.
+
+## Instruments
+
+`instruments/` holds what works and why. Read its README before writing a client for the probe's
+stdio server; three units have now lost time to that surface.
+
+## What this record is for
+
+Two things, and it is worth stating because they pull in opposite directions.
+
+It is the audit trail: every claim here is traceable to the command that produced it, including the
+claims that turned out to be wrong. A withdrawn finding is kept with its refutation rather than
+deleted, because the next person to see the same symptom needs to know it was already chased.
+
+It is also disposable. `.agents/orchestration.md` says to prune the campaign folder at acceptance, so
+the tree ends clean and the record stays recoverable by hash. Anything here that must outlive the
+campaign belongs somewhere durable first — a rule, a guide, a commit message, or `PROBE.md`.
