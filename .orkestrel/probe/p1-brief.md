@@ -149,3 +149,25 @@ Return exactly: **The ruling** (which condition probe publishes, and why), **Fil
 **Red-then-green proof** (the exact command with both outputs), **What the distribution proof drives**,
 **Validation** (each gate and its exit code), **Counts**, **Deviation**, **Decisions**. No process diary.
 End with `git diff --stat` against the baseline.
+
+---
+
+# Amendment 1 — the affected surface is narrower than the finding first stated
+
+Measured after the brief was written. Probe emits three environments:
+
+| Entry | Formats | CommonJS artifact | State |
+| ----- | ------- | ----------------- | ----- |
+| `dist/bin` | `['es']` | none | not affected |
+| `dist/src/core` | `['es', 'cjs']` | `index.cjs` | **sound** — loads, 22 exports, guards run |
+| `dist/src/server` | `['es', 'cjs']` | `index.cjs` | **broken** — `{}.resolve` at two sites |
+
+`grep -c "{}\.\(resolve\|url\)" dist/src/core/index.cjs` returns 0.
+
+Two consequences for this unit.
+
+- **Your ruling is about the SERVER condition only.** Do not drop `cjs` from the core environment; it
+  works, and removing a working published condition is a reduction nothing in this finding justifies.
+- **The core CommonJS entry is your control.** The distribution proof must show it still loads and runs
+  after your change. A proof that only exercises the broken entry cannot tell a real repair from a
+  packaging change that quietly broke everything else.

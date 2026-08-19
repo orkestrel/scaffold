@@ -291,3 +291,69 @@ list instead of a reading assignment.
 
 **Not yet surveyable.** Whatever unit S2 changes about what `ProbeOptions.deadline` bounds. Survey that
 after S2 lands rather than guessing at it now.
+
+## Re-baseline after S3, 2026-08-19
+
+S3 landed at `dcd50a3` with green gates — five gates exit 0, 180 passed, 0 skipped, 0 todo, run by an
+executor independent of every writer. Three lanes are auditing it.
+
+### Where each exit criterion stands
+
+| # | Criterion | State |
+| - | --------- | ----- |
+| 1 | Units 1, 2, 3, 5 landed, audited, committed | **Closed** |
+| 2 | Units 4a, 4b, 4c landed; no skipped, no todo | **Partly.** 4a and 4b landed. `npm test` reports 0 skipped and 0 todo. **4c is not written**, and it cannot be until `guides/probe.md` exists |
+| 3 | Every reproduced high finding closed, each with a red-then-green test | **Closed pending the S3 audit.** The two highs the previous re-baseline left unreproduced were S2's deadline and S3's lint orphan. Both are now reproduced and repaired with recorded red-then-green output |
+| 4 | The candidate-source defect closed, or excluded on evidence with the contract text changed | **Open.** O9 has a design brief and an objective ruling; no unit has been dispatched |
+| 5 | Five gates by an independent executor, and guide parity | **Partly.** The gates passed today. Guide parity has no instrument: probe has no `tests/guides.test.ts` |
+| 6 | `PROBE.md` describes what shipped | **Open.** Its work list is surveyed earlier in this file and has grown; see the additions below |
+
+### Rulings on the remaining units
+
+- **S4** — unchanged. Its defect moved 64 lines under Q1 and its amendment records the new positions.
+- **S5, S6** — unchanged. Their briefs' line references were re-checked against the tree and hold.
+- **U4c** — unchanged, and still blocked on a file that does not exist. Its references to scaffold's
+  `src/core/constants.ts:234` and `src/bin/CLI.ts:556` were re-verified and are accurate.
+- **O9** — unchanged, and it is the only thing standing between criterion 4 and closure. It is now the
+  campaign's critical path.
+
+### Four units the phase added, and why each is inside the criterion
+
+`.claude/rules/quality.md` fixes the enumerated scope when work begins. Adding a unit is legitimate only
+when implementation revealed work the exit criterion already required. Each is ruled on its own.
+
+- **T1 and T2** — the test-package adoption. **User-directed**, in two instructions naming
+  `createHostileValues` and the test package specifically. The user's current instruction outranks this
+  plan, so no further justification is owed. T1 also closes a live defect: the differential guard test's
+  hostile value is inert, exercising no trap either guard consults.
+- **H1** — `resolveWorkspaceFile` refuses three contained files whose names begin with dots, reproduced
+  against nine targets with four genuine escapes as controls. This is a **false red on ordinary source**.
+  Criterion 4 exists because a receipt that certifies what the runtime never ran is not shippable; a
+  refusal of source that is exactly what it claims to be is the same failure from the other side, and the
+  criterion's own wording — the package must promise what it does — reaches it.
+- **P1** — the published CommonJS server entry crashes on both resolving stages, driven as a real
+  consumer with the ESM condition as a passing control. This is not a severity judgment about a finding;
+  it is the package not working when installed. Criterion 5 requires the gates to pass, and probe has no
+  instrument that loads what it publishes, which is why five green gates say nothing about it.
+
+**Stated plainly rather than absorbed:** H1 and P1 were not in the enumerated scope when this campaign
+began. They are additions on the reasoning above. If that reading is wrong, they are the two units to
+strike, and striking them ships a package that refuses valid source and crashes for CommonJS consumers.
+
+### Criterion 6 gains three entries
+
+Beyond the list surveyed earlier in this file, `PROBE.md` must also carry:
+
+- What the lint stage does when its language server dies — it reports the death rather than hanging, and
+  teardown of a stage whose server already died is a clean shutdown rather than a process kill.
+- That a candidate document can kill the real Oxlint server. Measured: `textDocument/didOpen` carrying
+  400,000 nested `(` returns `code=null signal=SIGSEGV` against oxlint 1.79.0.
+- Which module conditions probe publishes, after P1 rules on the CommonJS one.
+
+### Dependency order, redrawn
+
+`H1 → T1 → S4 → P1 → T2`, then S5 and S6 in either order, then O9, then U4c, then `PROBE.md`.
+
+T2 runs after S4 and P1 because it sweeps files both of them rewrite. P1 runs after S4 because both touch
+`src/server/stages/TypeStage.ts`. H1 and T1 are independent of everything and go first because they are
+small and unblock nothing else.

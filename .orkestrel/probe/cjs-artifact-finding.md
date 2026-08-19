@@ -71,3 +71,30 @@ format, so this reaches a package only when that package both declares `cjs` and
 
 `npm view @orkestrel/probe version` returns `E404`. **Probe is unpublished.** There is no consumer to
 break, so dropping the CJS condition costs nothing today and costs a deprecation later.
+
+## Which published entries are affected — measured, not inferred
+
+Probe emits three environments. `dist/bin` builds `formats: ['es']` and publishes no CommonJS at all.
+The other two both emit `.cjs`:
+
+```text
+dist/src/core/index.cjs
+dist/src/server/index.cjs
+```
+
+**Only the server entry is broken.** `grep -c "{}\.\(resolve\|url\)" dist/src/core/index.cjs` returns 0,
+and driving the core CJS artifact as a real consumer loads all 22 exports and runs its guards:
+
+```text
+core cjs exports: 22 -> CASE_SHAPE,CLAIM_SHAPE,CONTROL_SHAPE,FINDING_ORIGINS,PROBE_STAGES,...
+isClaim(valid): false
+isClaim({}):   false
+```
+
+The `false` on the first line is the probe's own input being wrong, not a defect: `Claim` requires
+`project` (`src/core/types.ts:106`) and the hand-built object omitted it. Checked before recording, so the
+line is not read later as a core failure.
+
+So the repair's blast radius inside probe is `src/server` alone. `src/core`'s CommonJS condition is sound
+and must stay working whatever P1 rules about the server one — which makes it the natural control for the
+distribution proof.
