@@ -21,7 +21,7 @@
 > [Project a host-owned resource, prompt, and completion registry](#project-a-host-owned-resource-prompt-and-completion-registry).
 >
 > **The dispatch core is transport-agnostic and provider-agnostic.** `MCPServer`
-> and `MCPClient` live in [`src/core`](../../src/core) and import only siblings —
+> and `MCPClient` live in [`src/core`](../src/core) and import only siblings —
 > JSON-RPC types, `@orkestrel/tool`'s tool registry, `@orkestrel/emitter`'s
 > observable surface, `@orkestrel/contract`'s guards. No HTTP, no WebSocket, no
 > stdio, and no `as`: every value off the wire is narrowed by a total guard. The
@@ -37,8 +37,8 @@
 > like a local throw. A remote JSON-RPC error rejects with `MCPError`, preserving
 > its numeric `code` and optional `error.data` as `context`.
 >
-> **The wire lives ONE layer out.** [`src/server`](../../src/server) carries the
-> three Node transports and [`src/browser`](../../src/browser) the browser face.
+> **The wire lives ONE layer out.** [`src/server`](../src/server) carries the
+> three Node transports and [`src/browser`](../src/browser) the browser face.
 > Each is a matched ingress/egress pair speaking the same `MCPServerInterface` /
 > `MCPClientTransportInterface`; only the framing differs:
 >
@@ -49,8 +49,9 @@
 >   injectable-`fetch` egress.
 > - **WebSocket** — `createWebSocketServer` claims an upgrade on
 >   `@orkestrel/server`'s upgrade seam, composing `@orkestrel/websocket`'s RFC 6455
->   wrapper for full duplex over one persistent connection.
->   `createWebSocketClientTransport` is the `node:http(s)`-upgrade egress.
+>   wrapper for full duplex over one persistent connection, and closes every socket
+>   it claimed when that spine stops. `createWebSocketClientTransport` is the
+>   `node:http(s)`-upgrade egress.
 > - **stdio** — `createStdioServer` pumps newline-delimited JSON-RPC over a
 >   process's `stdin`/`stdout` (or injected streams); `createStdioClientTransport`
 >   spawns a child process and drives the same protocol over its piped stdio.
@@ -1588,13 +1589,13 @@ either one changes what `MCPClient` can talk to, which is a different decision f
 paths are tested, and no unit is scheduled against them.
 
 That eight-module list is a membership rule rather than a reassurance, so it is executed instead
-of asserted: [the repository law suite](../../tests/policy.test.ts) computes the legacy-owning
+of asserted: [the repository law suite](../tests/policy.test.ts) computes the legacy-owning
 module set from the tree and requires it to EQUAL that list **in both directions**, so a new
 participant and a stale entry fail the same way. The same suite checks the `MCPServer` clause as
 three separate facts. What neither check can reach is recorded beside them, in the suite and in
 `tests/setupPolicy.ts`: legacy participation that never spells the entity name or the method
 name — a handler table, a computed concatenation, a branch on a version VALUE — is invisible to
-a structural rule, and [the dispatch tests](../../tests/src/core/MCPLegacy.test.ts) are the guard
+a structural rule, and [the dispatch tests](../tests/src/core/MCPLegacy.test.ts) are the guard
 for that class.
 
 **Three things a legacy client sees differently than it did before this collapse**, because
@@ -2139,6 +2140,16 @@ HTTP transports share ONE transport contract. Like the HTTP transport it is
 `server.upgrade(...)` handler BEFORE this one (it can decline + destroy an
 unauthenticated upgrade).
 
+**It follows the spine's lifecycle, which is why `emitter` is required.** Pass the
+spine's own `server.emitter`: on its `stop` event the handler closes every socket it
+still owns with the RFC 6455 close handshake, so each client reads a clean goodbye and
+the spine's drain settles in milliseconds. Node detaches an upgraded socket from the
+connection set the spine's own close walks, so the claimant is the ONLY thing that can
+end it — an ingress holding its sockets open costs `stop()` the whole `drain` budget
+(10s by default) and the connection is then cut mid-protocol. A socket whose peer already
+vanished is no longer held, and closing a dead one is a no-op, so a departed client
+neither throws nor delays the stop.
+
 ```ts
 import { createMCPClient, createMCPServer } from '@orkestrel/mcp'
 import { createWebSocketClientTransport, createWebSocketServer } from '@orkestrel/mcp/server'
@@ -2148,7 +2159,8 @@ const mcp = createMCPServer({
 	identity: { name: 'docs', version: '1.0.0' },
 	tools: createToolManager(),
 })
-server.upgrade(createWebSocketServer(mcp)) // claims an MCP WebSocket upgrade to /mcp
+// Claims an MCP WebSocket upgrade to /mcp, and closes those sockets when the spine stops.
+server.upgrade(createWebSocketServer(mcp, { emitter: server.emitter }))
 
 // An MCP client connects over the SAME MCPClient, a WebSocket transport instead of HTTP:
 const client = createMCPClient({
@@ -2159,10 +2171,10 @@ await client.connect() // the RFC 6455 handshake, then the MCP initialize over f
 
 #### Factories
 
-| API                              | Kind     | Summary                                                                                                                                                             |
-| -------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `createWebSocketServer`          | function | Mount an `MCPDispatcherInterface` over WebSocket — returns an `UpgradeHandler` for `server.upgrade(...)` (claims an MCP WS upgrade, pipes it through `bindServer`). |
-| `createWebSocketClientTransport` | function | Create a `MCPClientTransportInterface` that drives a REMOTE MCP server over a WebSocket (the WS egress mirror).                                                     |
+| API                              | Kind     | Summary                                                                                                                                                                                                           |
+| -------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createWebSocketServer`          | function | Mount an `MCPDispatcherInterface` over WebSocket — returns an `UpgradeHandler` for `server.upgrade(...)` (claims an MCP WS upgrade, pipes it through `bindServer`, and closes its sockets on the spine's `stop`). |
+| `createWebSocketClientTransport` | function | Create a `MCPClientTransportInterface` that drives a REMOTE MCP server over a WebSocket (the WS egress mirror).                                                                                                   |
 
 #### Entities
 
@@ -2183,10 +2195,10 @@ _`upgradeRequestPath` (used by `createWebSocketServer`) and `bridgeMessageTransp
 
 #### Types
 
-| Type                              | Kind      | Shape                                                                                                                                |
-| --------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `WebSocketServerOptions`          | interface | `{ path?: string; subprotocol?: string }` — the upgrade path (default `/mcp`) + the negotiated subprotocol (default `'mcp'`).        |
-| `WebSocketClientTransportOptions` | interface | `{ url: string; headers?: Record<string, string> }` — the remote WS endpoint (`ws(s)://` or `http(s)://`) + extra handshake headers. |
+| Type                              | Kind      | Shape                                                                                                                                                                                                                                             |
+| --------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `WebSocketServerOptions`          | interface | `{ emitter: EmitterInterface<ServerEventMap>; path?: string; subprotocol?: string }` — the spine emitter whose `stop` closes the claimed sockets (REQUIRED), the upgrade path (default `/mcp`), and the negotiated subprotocol (default `'mcp'`). |
+| `WebSocketClientTransportOptions` | interface | `{ url: string; headers?: Record<string, string> }` — the remote WS endpoint (`ws(s)://` or `http(s)://`) + extra handshake headers.                                                                                                              |
 
 ### stdio transport
 
@@ -2358,8 +2370,9 @@ const tools = await http.tools()
 
 #### Bootstrap
 
-The `serveWorker` analog (the bootstrap factories in `src/browser/factories.ts`) — boot an `MCPServer`
-inside a hostable scope and wire its message events to it.
+The `serveWorker` analog (the bootstrap binders in `src/browser/helpers.ts`) — boot an `MCPServer`
+inside a hostable scope and wire its message events to it. Each returns a disposer rather than an
+entity, so they sit beside `createScopeMessageListener` in `helpers.ts`, not in `factories.ts`.
 
 | API             | Kind     | Summary                                                                                                                        |
 | --------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
@@ -3291,20 +3304,20 @@ closed — while ordinary upstream completion closes the response without invent
 
 ## Tests
 
-- [Exact JSON and Tool-result ownership](../../tests/src/core/cloners.test.ts)
-- [Request-scoped progress backpressure](../../tests/src/core/MCPProgressReporter.test.ts)
-- [Held-open stream cancellation](../../tests/src/core/MCPStreamController.test.ts)
-- [Serialized stream translation](../../tests/src/core/MCPTextStreamController.test.ts)
-- [Core dispatch integration](../../tests/src/core/MCPServer.test.ts)
-- [Legacy translation onto the modern engine](../../tests/src/core/MCPLegacy.test.ts)
-- [Resource and prompt port projection, pagination, and completion](../../tests/src/core/MCPServer.test.ts)
-- [Resource, prompt, and error guards](../../tests/src/core/validators.test.ts)
-- [Client-side durable tasks and the absent poll loop](../../tests/src/core/MCPTaskClient.test.ts)
-- [HTTP response lifecycle composition](../../tests/src/server/transports/HTTPDisconnect.test.ts)
-- [HTTP handler integration](../../tests/src/server/handlers.test.ts)
-- [Session middleware integration](../../tests/src/server/middlewares.test.ts)
-- [Guide/source/public-barrel parity](../../tests/guides.test.ts)
-- [Repository law, including the legacy-removability boundary](../../tests/policy.test.ts)
+- [Exact JSON and Tool-result ownership](../tests/src/core/cloners.test.ts)
+- [Request-scoped progress backpressure](../tests/src/core/MCPProgressReporter.test.ts)
+- [Held-open stream cancellation](../tests/src/core/MCPStreamController.test.ts)
+- [Serialized stream translation](../tests/src/core/MCPTextStreamController.test.ts)
+- [Core dispatch integration](../tests/src/core/MCPServer.test.ts)
+- [Legacy translation onto the modern engine](../tests/src/core/MCPLegacy.test.ts)
+- [Resource and prompt port projection, pagination, and completion](../tests/src/core/MCPServer.test.ts)
+- [Resource, prompt, and error guards](../tests/src/core/validators.test.ts)
+- [Client-side durable tasks and the absent poll loop](../tests/src/core/MCPTaskClient.test.ts)
+- [HTTP response lifecycle composition](../tests/src/server/transports/HTTPDisconnect.test.ts)
+- [HTTP handler integration](../tests/src/server/handlers.test.ts)
+- [Session middleware integration](../tests/src/server/middlewares.test.ts)
+- [Guide/source/public-barrel parity](../tests/guides.test.ts)
+- [Repository law, including the legacy-removability boundary](../tests/policy.test.ts)
 
 ## Declared non-goals
 
@@ -3373,18 +3386,19 @@ is a different decision from an empty allowlist and deserves its own word.
 ## Declared conformance gaps
 
 A reproducible run is `npm run test:conformance`: it starts the real Streamable HTTP
-server from this package's source and runs
-`@modelcontextprotocol/conformance@0.2.0-alpha.10` against specification revision
+server from this package's source and runs `@modelcontextprotocol/conformance` — the
+release `package.json` pins as a development dependency — against specification revision
 `2026-07-28`. That is a genuine foreign MCP client driving this surface end to end, and
 the current recorded result is **23 passed / 0 failed**, the
 `dns-rebinding-protection` security regression guard (2 passed) included. There is no
 remaining failing scenario in that run.
 
-It is a live-service project of its own — `tests/conformance.test.ts` over the fixture in
-`tests/setupConformance.ts` — and it stays outside `npm test`, which is hermetic and
-offline while this run fetches the runner from the npm registry. Its baseline is recorded
-scenario by scenario rather than as one total, so a scenario that silently stops running
-fails the run instead of disappearing into a matching sum.
+It is a project of its own — `tests/conformance.test.ts` over the fixture in
+`tests/setupConformance.ts` — and `npm test` gates it. It spawns a foreign process and
+drives it over a real socket, but the runner is a pinned development dependency resolved
+from `node_modules` and the socket is loopback, so the run is offline and hermetic. Its
+baseline is recorded scenario by scenario rather than as one total, so a scenario that
+silently stops running fails the run instead of disappearing into a matching sum.
 
 **That number has been wrong twice, in the same way, and both times the fixture was the
 cause — so read the fixture before quoting the number.** It was first recorded as
@@ -3659,8 +3673,8 @@ Four facts about the published artifact. Each is a decision carrying its number,
 omission, and a consumer meets all four at install time rather than in a build log.
 
 **IDE integration is not claimed.** A real foreign protocol client drives the Streamable
-HTTP surface end to end — `@modelcontextprotocol/conformance@0.2.0-alpha.10` against
-revision `2026-07-28`, recorded at 23 passed / 0 failed — and that is a claim about the
+HTTP surface end to end — `@modelcontextprotocol/conformance` against revision
+`2026-07-28`, recorded at 23 passed / 0 failed — and that is a claim about the
 wire. No IDE, editor, or agent host has driven this server. The rule is this repository's
 own: a claim about an external client stays unproven until one representative real client
 of that class drives it end to end, and no client of the IDE class has. **What it costs:**
@@ -3742,7 +3756,7 @@ transport` tables) is a real export of the mcp layer (`src/core` or
 4. **The four legacy methods, and they live in `MCPLegacy`.** The decorator owns the
    whole fixed set; `MCPServer` holds no era branch, imports no legacy module, and
    spells no legacy method or header name, all three checked structurally by
-   [the repository law suite](../../tests/policy.test.ts). `ping`, `tools/list`, and
+   [the repository law suite](../tests/policy.test.ts). `ping`, `tools/list`, and
    `tools/call` are TRANSLATED onto the modern engine — they acquire modern request
    metadata, run through the same dispatcher, and are projected back unstamped — so
    they inherit the modern engine's execution port, cancellation, bounds, and
@@ -4057,7 +4071,7 @@ application/json` and an `Accept` of BOTH `application/json` and
     state or widened `send` contract is needed. Both captured
     headers are merged before `options.headers`, so a caller-supplied key wins.
 16. **The WebSocket transport is the full-duplex ingress over the spine
-    upgrade seam (`src/server`).** `createWebSocketServer(mcp, options?)`
+    upgrade seam (`src/server`).** `createWebSocketServer(mcp, options)`
     returns an `UpgradeHandler` (`@orkestrel/server`) to register with
     `server.upgrade(...)`; it composes `@orkestrel/websocket`'s RFC 6455
     wrapper over the spine's generic upgrade seam. It DECLINES (returns
@@ -4078,7 +4092,15 @@ socket, key, head, protocol })` (SERVER mode → writes the `101` handshake
     text frame per message, `close` closes the socket): inbound text frames
     are `JSON.parse`d (guarded) + narrowed via `parseJSONRPCMessage` onto
     `message`, a malformed / non-message frame surfaces on `error` and is
-    DROPPED, and the socket's `close` bridges to the transport's `close`.
+    DROPPED, and the socket's `close` bridges to the transport's `close`. It
+    also OWNS what it claimed: the handler holds every live transport and, on
+    `options.emitter`'s `stop` event (the spine's own emitter, REQUIRED),
+    `close`s each one — the RFC 6455 close handshake, never a destroy. Node
+    detaches an upgraded socket from the connection set the spine's close
+    walks, so nothing else can end it: without this the spine's `stop()`
+    spends its whole `drain` budget and then cuts the connection
+    mid-protocol. A transport drops out of the held set on its own `close`,
+    so a peer that already vanished neither throws nor delays the stop.
 17. **The WebSocket CLIENT transport drives a remote server over an upgrade
     (`src/server`).** `createWebSocketClientTransport({ url, headers? })`
     returns a `MCPClientTransportInterface` — the WebSocket egress mirror of
