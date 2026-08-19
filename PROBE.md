@@ -112,23 +112,43 @@ the bin-test defect in the table. A pattern match had been asked a question abou
 cannot answer.
 
 The last row is the largest, and it is a design question rather than a repair. `Case.files` is the
-source an agent supplies without writing it to disk. The type stage overlays every entry into its
-virtual filesystem and the lint stage lints each one, and the runtime stage writes only the test. So
-a test importing a module the agent supplied as text, and that does not already exist on disk,
-typechecks clean, lints clean, and fails to resolve when it runs.
+source an agent supplies without writing it to disk, and the three stages disagree about it in two
+different ways.
 
-That splits the evidence: two stages judge the program the agent described and the third judges a
-different one. Closing it means serving the candidates as virtual modules through the runner rather
-than writing them out — `createVitest` takes a Vite configuration override the runtime stage does not
-currently pass, so a plugin resolving and loading candidate text by path is the same overlay the type
-stage already applies, moved to the runner. Three questions decide its shape: what happens when a
-candidate names a file that already exists, how the overlay meets the per-revision invalidation, and
-whether it covers the whole module graph or only direct imports.
+The type stage overlays each candidate into a map its language-service host reads from. Only four of
+that host's callbacks consult the map; `fileExists` and `directoryExists` go straight to disk. Since
+TypeScript resolves a module specifier by asking `fileExists` down a candidate list, the overlay is
+enough to typecheck a candidate's own text and not enough to make it importable. The runtime stage
+consults nothing: it writes the test and runs it against the working tree.
+
+| The claim's candidate             | Type stage                   | Lint stage | Runtime stage             |
+| --------------------------------- | ---------------------------- | ---------- | ------------------------- |
+| Replaces a file already on disk   | judges the agent's text      | judges it  | **runs the on-disk text** |
+| Is a file that does not exist yet | **cannot resolve an import** | judges it  | **cannot resolve it**     |
+
+The second row fails loudly, which is survivable. The first row is a false green, and it is the one
+that matters: the type stage typechecks the agent's new text, the runtime stage runs the old text
+still on disk, both report clean, and a receipt is issued. The verdict states the claim was proven
+while its runtime evidence was about a different program.
+
+That is the failure this document says the mechanism exists to prevent, wearing the shape its own
+warning names — a warm service returning a confident wrong answer about source it has not caught up
+with. It is worse than the stale-cache defects the design pass reproduced, because no revalidation
+closes it: the runtime stage is not stale, it is reading a file the agent never claimed.
+
+Closing it means serving candidates as virtual modules through the runner rather than writing them
+out. `createVitest` takes a Vite configuration override the runtime stage does not currently pass, so
+a plugin that resolves and loads candidate text by path is the same overlay the type stage already
+applies, moved to the runner — and the type stage's host needs its `fileExists` and `directoryExists`
+to consult the overlay too. Three questions decide the shape: whether a candidate is keyed by its
+declared path or by a revision-suffixed virtual identity that sidesteps invalidation entirely, how
+the overlay beats the real file when one exists, and whether it covers the whole module graph or only
+direct imports.
 
 ### The lesson worth keeping
 
 Every defect in the table survived five green gates. The suite was green when the server always
-exited 1, when the entry leaked a process per restart, when a required field was read by nothing, and
+exited 1, when a required field was read by nothing, and
 when the runtime stage was judging a different program than its siblings.
 
 That is the same argument this document makes for the probe itself, turned on the probe. Green gates
