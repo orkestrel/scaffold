@@ -120,3 +120,64 @@ Its audit belongs to Opus, because Sol will have written it.
 Every retained finding names its carrier. R1, R2, R3, R4, R5, R6, R10, and the naming and TSDoc
 repairs are all carried by O9-U2fix. Four findings are routed to a successor and named there. One is
 dropped with its refutation kept. One claim is recorded as overreaching wording. Nothing is unassigned.
+
+## Amendment — R4 is withdrawn, and the ruling above was wrong
+
+I ruled that `src/server/types.ts:88-94` "does not state an obligation on the caller, it states a
+guarantee", and prescribed a refusal to make the contract true. Reading the whole passage instead of
+the lane's quotation of it refutes that:
+
+```text
+$ sed -n '86,94p' src/server/types.ts
+ * @remarks
+ * Warming begins at construction. The `inspect` method awaits that one warm operation and reuses
+ * the resulting tool across calls. A stage serves one inspection at a time and admits none itself.
+ * Await an inspection before issuing the next one, or admit through one queue per stage the way
+ * `Probe` does: a second concurrent call reaches the same resident tool and the same overlay,
+ * document, and specification state the first is still using. A stage never holds a later
+ * inspection behind an earlier one, so a caller that abandons an inspection at its own deadline
+ * can still use the stage. The `destroy` method permanently tears the stage down and releases
+ * every resource it owns.
+```
+
+The contract states **both**: an explicit caller obligation — serialize, or admit through one queue
+per stage — and, separately, the non-blocking guarantee. It names the hazard exactly, and it already
+says **overlay**. The design lane quoted the last sentence; the obligation is in the two before it.
+
+`.claude/rules/quality.md` is direct about this case: document the obligation on the interface that
+owns it, prove the documentation, and do not build coordination machinery against a requirement
+nobody wrote down. The requirement is written down, in the right place, in the right words.
+
+**R4 is withdrawn.** Nothing is owed:
+
+- the obligation is documented on `StageInterface`, naming the overlay;
+- `Probe` discharges it with one `concurrency: 1` queue per stage;
+- `tests/src/server/Probe.test.ts:571` proves the shipped path, driving two concurrent `probe.prove`
+  calls through one probe and asserting all eight lint opens land.
+
+The overlay joins the document and specification state already covered by that same sentence. It is
+not a new hazard class.
+
+**How the error happened, so the next round does not repeat it.** I ruled from a lane's quotation
+instead of the file. A quotation is evidence about the quoted span and nothing else, and the two
+sentences that settled it sat immediately before the span. `.claude/rules/quality.md` already requires
+verifying a report against the source before relying on it; this is that rule earning its place.
+
+**The fix unit therefore carries nine repairs, not ten.**
+
+## A correction to the correctness lane's dead-guard finding
+
+The lane reported the `path === undefined` guard at `RuntimeStage.ts:252` unreachable, because
+`String.prototype.split` with limit 1 always returns one element. That is true at runtime and wrong as
+a repair instruction:
+
+```text
+$ grep -n 'noUncheckedIndexedAccess' tsconfig.json
+13:		"noUncheckedIndexedAccess": true,
+```
+
+Under that setting the destructured element is typed `string | undefined`, so the guard is what makes
+the file compile. Removing it fails `npm run check`.
+
+R7 is therefore **not** "delete the guard". If the query handling in R2 stops using a destructured
+split, the guard disappears as a consequence; it is never removed on its own.
