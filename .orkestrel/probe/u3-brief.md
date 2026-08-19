@@ -112,3 +112,47 @@ done or not done, one short hypothesis. An ancillary choice is yours to make and
 Files written with a one-line reason each, the exact validation commands and exit codes, the
 evidence for criteria 2 to 5 as commands and what they printed, any deviation, and anything you
 decided that this brief left open. No process diary.
+
+---
+
+# AMENDMENT — the deviation you reported is resolved; resume
+
+You stopped correctly. `StageInterface` had no way to reclaim a hung runtime stage, and
+`RuntimeStage.destroy()` chains off `#tail`, so it would wait for the very inspection that hangs.
+Three facts were measured after your report, and they close it without changing `StageInterface`.
+
+- `vitest.close()` alone HANGS against a worker spinning in a synchronous loop: 20 s, no return.
+- `vitest.cancelCurrentRun('keyboard-input')` also never resolves against that worker.
+- Firing cancel WITHOUT awaiting it and then awaiting `close()` returns in **10 ms**, and a
+  replacement instance built afterwards runs a specification correctly in **490 ms**.
+
+So the recycle is: `void vitest.cancelCurrentRun('keyboard-input').catch(() => {})`, then
+`await vitest.close()`, then construct a fresh stage. Do not await the cancel; awaiting it is what
+hangs.
+
+`RuntimeStage` and `src/server/types.ts` are now ALSO yours this round, for that purpose only.
+Give the stage a way to be torn down that does not queue behind an in-flight inspection — a
+`destroy()` that abandons rather than waits is the honest meaning of the word, and the fixed
+lifecycle vocabulary in `.claude/rules/names.md` says `destroy` tears down and releases resources.
+An in-flight `inspect` may reject when that happens; that is correct, not a defect.
+
+The coordinator then owns the deadline as the brief already requires: on expiry, emit `expire`,
+recycle the runtime stage through that path, and reject the call.
+
+Add one proof: a claim whose runtime work spins forever is rejected within the deadline, the
+service survives, and the very next claim proves normally. That proof is the whole reason the
+deadline exists.
+
+## One correction to the transport section above
+
+Do not read `createMCPLegacy` as targeting an obsolete protocol. The current revision is
+`2026-07-28`, which removed the handshake and carries the revision per request in `_meta`;
+`@orkestrel/mcp` implements that in its core. The decorator is ADDITIVE and was measured so: the
+decorated server answers handshake `initialize` and `tools/list` AND modern `tools/list` and
+`server/discover`, while the undecorated one answers only the modern pair. Compose the decorated
+form so the server speaks both.
+
+When you drive it for acceptance criterion 4, a modern request needs all three reserved keys —
+`io.modelcontextprotocol/protocolVersion`, `io.modelcontextprotocol/clientCapabilities`, and
+`io.modelcontextprotocol/clientInfo`. A request carrying only the version key is refused as
+malformed metadata, which reads exactly like an unsupported era and is not one.

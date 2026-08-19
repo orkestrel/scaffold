@@ -569,11 +569,43 @@ decision and one is a trap.
   that npm installs. Declaring it is a dependency decision that belongs to the user.
 - The protocol overhead is 3.08 ms median warm, against 0.32 ms for a hand-written 12-line stdio
   server. That difference is 0.8 percent of one probe and is not a reason to hand-write anything.
-- The trap: `createMCPServer` alone answers `tools/list` and `tools/call` with
-  `Invalid params: malformed modern request metadata`, because the package dispatches by wire era
-  and those are the dated revision. Compose `createStdioServer(createMCPLegacy(mcp))` and the same
-  calls answer correctly. A server built without the decorator looks finished and refuses every
-  request a harness makes.
+- The trap: `createMCPServer` alone refuses a handshake, answering `initialize` and a bare
+  `tools/list` with `Invalid params: malformed modern request metadata`. Compose
+  `createStdioServer(createMCPLegacy(mcp))` and both eras answer.
+
+### Which protocol revision this speaks, and why both
+
+The current Model Context Protocol revision is `2026-07-28`, and it removed the handshake. Every
+request now declares its own revision through the `io.modelcontextprotocol/protocolVersion` key in
+`_meta`, `server/discover` replaces `initialize`, and the wire is stateless. `@orkestrel/mcp` calls
+that era **modern** and implements it in the core server, so `createMCPServer` alone is not an old
+server — it is a current-revision server that correctly refuses a handshake.
+
+`createMCPLegacy` is not a compatibility shim over something dying. It is the interoperability path
+the specification itself provides for revisions `2025-11-25` and earlier, whose defining feature is
+the `initialize` handshake. Every named revision in that era, and the packages that speak it, are
+what most clients ship today.
+
+The decorator is **additive**, which is the fact that decides the design. A server driven over
+stdio was measured in both shapes:
+
+| Request                          | `createStdioServer(mcp)` | `createStdioServer(createMCPLegacy(mcp))` |
+| -------------------------------- | ------------------------ | ----------------------------------------- |
+| handshake `initialize`           | refused                  | answered                                  |
+| handshake `tools/list`           | refused                  | answered                                  |
+| modern `tools/list` with `_meta` | answered                 | answered                                  |
+| modern `server/discover`         | answered                 | answered                                  |
+
+So the decorated server speaks the current revision and the handshake era at once, and choosing it
+is not choosing the past. Build a modern request with all three reserved keys —
+`io.modelcontextprotocol/protocolVersion`, `io.modelcontextprotocol/clientCapabilities`, and
+`io.modelcontextprotocol/clientInfo` — because a request carrying only the version key is refused
+as malformed metadata by both shapes, and that refusal reads exactly like an unsupported era.
+
+Use stdio because a harness spawns a local server as a child process and speaks JSON-RPC over its
+pipes. Streamable HTTP is the transport for a remote server and wants a URL, a port, and the
+`MCP-Protocol-Version` header; neither belongs in a per-workspace tool whose registration must be
+one identical vendored row in 44 repositories.
 
 ### Give the engine its own package, because peers are what keep the verdict honest
 
