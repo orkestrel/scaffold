@@ -9,6 +9,42 @@ contract should promise instead.
 This is a design round, not a repair. Two lanes argue it independently and the Orchestrator
 reconciles.
 
+## Where to read the subject
+
+Read `/tmp/probe-audit2`, a read-only git worktree pinned at commit `32cfa1b` with `node_modules`
+symlinked so installed dependency declarations are readable. Do **not** read `/workspace/probe`: a
+writing unit owns it right now and you would read a moving target. Every measurement in this brief
+was taken against `32cfa1b`.
+
+## The defect, measured in full
+
+Both rows of the table below are measured against the built package, not reasoned about. A candidate
+that does not exist on disk fails loudly in the type and runtime stages and issues nothing. A
+candidate replacing a file already on disk has two outcomes, decided by whether the test happens to
+observe what changed. The same candidate produces both:
+
+```text
+PROVE A  case: type=0 lint=0 runtime=0
+PROVE A  RECEIPT: ISSUED  <-- for a candidate the runtime never ran
+
+PROVE B  case: type=0 lint=0 runtime=1
+PROVE B  runtime says: expected 'probe' to be 'CHANGED' // Object.is equality
+PROVE B  RECEIPT: none
+```
+
+`PROVE A` is the ordinary refactor claim — "I changed this file and the tests still pass." Every stage
+reports clean, the control fails where it declared, and a receipt is issued. `PROVE B` uses the same
+candidate and asserts the change itself; the runtime reports the value still on disk.
+
+So a test that observes the change gets a false red, and a test that does not gets a **false green
+carrying a receipt**. The second is the common case, because most edits are refactors whose tests are
+meant to keep passing.
+
+`computeReceipt` exists so a proof cannot be issued unless the case is clean and the control failed
+where it said it would. Both conditions genuinely hold in `PROVE A`. The token is issued honestly by
+its own rules and certifies runtime evidence about a program the agent did not write. Rule with that
+in view: this is the mechanism working against the reason it exists, not a rough edge.
+
 ## What is true today, measured and read
 
 Only four callbacks of the type stage's language-service host consult its overlay map:
