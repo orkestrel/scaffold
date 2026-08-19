@@ -72,9 +72,15 @@ puts `x` in front of the next response, the client's line framer drops the malfo
 The corrupting input is the tool's own advertised argument, so any connected client reaches this with
 a legitimate claim about code that prints.
 
+An independent verifier reproduced this and corrected it in one way that matters: there are **two**
+failure modes, selected by whether the test's write ends in a newline. A write with no trailing
+newline **prefixes** the next protocol line and makes that line unparseable, so the response destroyed
+belongs to a different request than the one that caused it. A write with a newline injects a whole
+spurious line of its own.
+
 `createVitest` takes a fourth parameter carrying `stdout` and `stderr`, and the stage passes only two.
-Give the resident runner streams that are not the protocol channel, and prove a claim whose test
-writes to stdout no longer corrupts a response.
+Give the resident runner streams that are not the protocol channel, and prove both failure modes are
+gone — a test writing without a newline and a test writing with one.
 
 ### C — the per-run eviction removes nothing
 
@@ -87,10 +93,19 @@ than deleting, and `invalidateFile` clears a transform result while leaving the 
 So runner state grows by one entry per inspection for the life of the process, with results, error
 stacks, and logs retained.
 
+An independent verifier reproduced this and measured it, correcting the magnitude upward. The files
+map and the Vite module graph grow by one entry per inspection as claimed. The runner's **id map grows
+by one plus every suite plus every test** — measured at +2 for a single-test file and +4 for one
+`describe` block — so the growth scales with the size of the claims served, not just their number.
+
+It also identified which of the three calls works: `clearSpecificationsCache` is the only one that
+deletes a key. The other two re-register a placeholder and clear a transform result.
+
 The property to reach is that a resident probe's runner state does not grow without bound across
-inspections. Reaching it may mean a different eviction call, or recycling the runner on a threshold,
-or something else — choose, measure the growth before and after, and state the cost. If no bound is
-reachable without recycling, say so and implement the recycle rather than documenting the leak.
+inspections. Evicting by the revision path directly is the verifier's suggested direction; choose your
+own if you find better, measure the growth curve before and after over at least fifteen inspections
+including one with several suites and tests, and state the cost. If no bound is reachable without
+recycling the runner, say so and implement the recycle rather than documenting the leak.
 
 ### D — a test path that makes `prove` throw instead of returning a verdict
 
@@ -122,10 +137,14 @@ exact command and both counts.
    Cover `test.skip`, `test.todo`, and `describe.skip`.
 2. A case whose test genuinely passes still produces a clean check and still earns a receipt. The fix
    must not make every claim fail.
-3. A claim whose test writes to stdout does not corrupt a protocol response. Prove it over the real
-   spawned entry, reading the client side, not by inspecting configuration.
-4. Runner state does not grow without bound across inspections. Paste the measurement before and
-   after, over enough inspections that a per-inspection leak is unmistakable.
+3. A claim whose test writes to stdout does not corrupt a protocol response. Cover both failure
+   modes: a write with a trailing newline and a write without one. Prove it over the real spawned
+   entry, reading the client side, not by inspecting configuration. The working client is
+   `/home/user/scaffold/.orkestrel/probe/instruments/wire.mjs`; read its README before writing your
+   own, because two units have already lost time to that.
+4. Runner state does not grow without bound across inspections. Paste the growth curve before and
+   after, over at least fifteen inspections, including one claim carrying several suites and tests so
+   the per-test component of the growth is visible.
 5. A `Case.test.path` the contract admits never makes `prove` throw an internal error.
 6. Every existing guarantee holds: `process.exitCode` untouched, all three stages abandon on
    `destroy`, expiry bounded and recovering, integer `elapsed`, no `*.probe-*` file after an expiry,
