@@ -644,14 +644,20 @@ loads is the copy the gate runs. Resolve all three from the target workspace roo
 refuse to serve when that resolution disagrees with what the gate commands would load. A probe that
 cannot prove it shares the gate's compiler is worth less than no probe, because it is believed.
 
-One scaffold constraint blocks the obvious path and needs a decision before implementation.
-`Blueprint.peers` validates against `DEPENDENCY_NAME_PATTERN` at `src/core/constants.ts:266`, which
-is `/^@orkestrel\/[a-z][a-z0-9-]*$/`, so a generated workspace cannot express a `typescript`,
-`vitest`, or `oxlint` peer through its blueprint. Either that pattern widens to admit a foreign
-peer, or the probe repository owns those three rows in a manifest the blueprint does not write.
-Nothing else in the design depends on which is chosen. The externalization itself already works:
-`vite.config.ts:21-22` reads `peerDependencies` from the manifest and externalizes every name it
-finds.
+Scaffold admits those three peers as of the peer-partition change, and it took neither of the two
+paths this document first offered. `DEPENDENCY_NAME_PATTERN` did not widen. The gate partitions
+`blueprint.peers` by the literal `@orkestrel/` prefix instead: a peer in that scope stays a
+caret-pinned fleet peer, and every other peer takes `FOREIGN_NAME_PATTERN` and the new
+`FLOOR_RANGE_PATTERN`, which admits only a canonical `>=X.Y.Z`. Partitioning by the prefix rather
+than by a pattern match is what keeps a malformed reserved name on the fleet branch, where it
+fails, instead of escaping into the wider door.
+
+That change also closed a defect it would otherwise have opened. A peer overwrote the development
+pin it shared a name with, so a `typescript >=6.0.0` peer replaced the shared `^6.0.3` in every
+generated workspace. A peer now never overwrites a pin the merge already placed.
+
+The externalization needed nothing: `vite.config.ts` reads `peerDependencies` from the manifest and
+externalizes every name it finds.
 
 ### How you actually use it
 
