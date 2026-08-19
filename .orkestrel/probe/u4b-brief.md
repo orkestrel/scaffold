@@ -92,10 +92,15 @@ Three consequences for what you write:
 
 - The server barrel now publishes 18 runtime names. `readWorkspaceManifest` is the new one, and the
   population assertion in `tests/src/server/index.test.ts` already names it.
-- `StageInterface.inspect` takes an optional `project`. A claim always carries one, because
-  `Claim.project` is required, so the fallback path exists for a consumer running one stage alone.
-  Prove both: a stage given a project checks against it, and a stage given none falls back to
-  inferring one from the candidate's path.
+- A third repair round has since narrowed `StageInterface.inspect` back to one parameter and moved
+  the optional `project` onto `TypeStage.inspect` alone, where it is real. Prove both paths on the
+  class: a stage given a project checks against it, and a stage given none falls back to inferring one
+  from the candidate's path. Do not reach the parameter through `StageInterface`; nothing does.
+- That round also bounded the type stage's language service cache at the resident project set plus
+  one recycled slot, because the caller's project string reaches the key. Prove the bound holds: many
+  spellings of one project stay at one service, and a project outside the declared set does not grow
+  it past that slot. Observe the private state without adding a public accessor — a debugger session
+  reading private properties is the method the repair used.
 - Arming now runs two controls, one for each resident host. Boot is 4392 ms and a warm `prove` is
   530-621 ms, measured. Size every timeout from those, not from the older 492 ms figure.
 
