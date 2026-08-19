@@ -133,3 +133,43 @@ proving the checkout contains no candidate write.
   which is also the inert-overlay control.
 - Whether path canonicalization agrees between TypeScript and Vite under symlinks and case folding.
   The objective lane raised it; it needs a probe on this host.
+
+## Correction — concurrent `prove` is live, not latent
+
+The ruling above said the concurrency hazard is latent because each stage's queue keeps `#inspect`
+bodies disjoint. That is true of the overlay and wrong about everything else, and a later six-lens
+sweep found the reachability the ruling assumed away.
+
+Two `prove` calls genuinely overlap from a real client. The stdio transport reads with a plain
+synchronous data handler and nothing awaits the async message listener beneath it:
+
+```text
+node_modules/@orkestrel/mcp/dist/src/server/index.js
+  this.#input.on("data", (chunk) => this.#receive(chunk.toString()))
+  transport.listen(async (message) => { … })      // bindServer, never awaited
+```
+
+`createProbeServer` calls `probe.prove(input)` straight from the tool, and `Probe.prove` has no mutual
+exclusion. So a client sending two `tools/call` frames gets two inspections in flight.
+
+What that reaches is worse than overlay contamination, and it is the sweep's highest finding. The
+runtime deadline is armed one line **before** the inspection is queued:
+
+```text
+async #inspectRuntime(subject: Case, claim: Claim): Promise<Check> {
+    const stage = this.#runtime
+    const timeout = createTimeout({ ms: this.#deadline })
+    timeout.start()
+    try {
+        return await Promise.race([ stage.inspect(subject), … ])
+```
+
+`stage.inspect` appends to the stage's queue rather than running, so the deadline measures queue time
+plus execution time while `ProbeOptions.deadline` documents it as bounding one runtime stage. Under
+two concurrent claims the second claim's timer can fire while its inspection has barely started, and
+the expiry path then destroys the shared stage and replaces it — failing a *different* claim whose
+inspection was already bound to the destroyed instance.
+
+So the design constraint stands and its justification changes: scope the overlay per inspection
+because the property must be owned, and bound the deadline from the point the inspection actually
+starts rather than from the point it is requested. Both belong to the implementation.
