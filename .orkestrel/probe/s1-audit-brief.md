@@ -84,8 +84,27 @@ skipped at runtime by `ctx.skip()` after it started. Which of these does the shi
 Each one it calls clean is a receipt for a case that never ran, which is the defect this unit exists to
 close.
 
-The unit's tests are evidence of what it checked, not of what is true. Where the installed Vitest
-declarations settle a case, read them.
+The unit's tests are evidence of what it checked, not of what is true.
+
+**The Orchestrator already read the declarations, and they settle half the question.**
+`node_modules/vitest/dist/chunks/reporters.d.DtoKVV2s.d.ts:351-352`:
+
+```ts
+type TestSuiteState = "skipped" | "pending" | "failed" | "passed";
+type TestModuleState = TestSuiteState | "queued";
+```
+
+So the union has exactly five members, and S1's state machine handles all five by name plus an
+unrecognized fallback for a member a later Vitest might add. Against the declaration the switch is
+complete. Do not spend the round re-deriving that; it is checked.
+
+**What the declarations do NOT settle is the mapping, and that is the whole question.** The TSDoc on
+`state()` reads only "Checks the running state of the test file" — it never says which source shape
+produces which member. A module of all-skipped tests returning `"passed"` is fully consistent with this
+type, and it would make the repair inert while every test S1 wrote still passes.
+
+That mapping can only be settled by running it. Name the shapes you want run and what result would
+change your verdict; the Orchestrator will run them and return the output to you.
 
 ## Your posture
 
