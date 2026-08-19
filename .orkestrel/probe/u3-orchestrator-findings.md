@@ -448,3 +448,55 @@ named server interface, the schema primitive, the bundled manifest, and the cent
 The lesson is one the orchestration rules already state and this round paid for anyway: run the first
 use of any client, flag, or framing in a throwaway probe before putting it inside a unit's acceptance
 path. A unit that cannot tell its instrument from its subject spends its budget on the wrong one.
+
+## A regression the Orchestrator reported and then refuted
+
+While verifying repair round 2 the Orchestrator saw `arm-runtime-*.ts` and `arm-type-*.ts` left in
+`tmp/probe/` and called it a regression of round 1's cleanup. It is not.
+
+The instrument that found it did not start from a clean directory. Re-run cleanly, arming leaves
+nothing, and neither does a deadline expiry:
+
+```text
+before construction: []
+BOOT (construction to arm event): 4392 ms
+immediately after arming: []
+after destroy: []
+
+after arming: []
+expiry: The runtime stage exceeded 6000 ms
+after expiry: []
+after expiry + 3s: []
+after destroy: []
+```
+
+The residue came from the Orchestrator's own earlier wire check, which sent `SIGTERM` to a spawned
+server. That path does leak, and it reproduces every time:
+
+```text
+clean start: 0 files
+mid-arming, tmp/probe holds: [ 'arm-runtime-0ea86759-….ts', 'arm-type-0ea86759-….ts' ]
+after SIGTERM, tmp/probe holds: [ 'arm-runtime-0ea86759-….ts', 'arm-type-0ea86759-….ts' ]
+```
+
+So the real finding is smaller and different: **a probe killed during arming leaves its two arming
+dependencies behind**, because the `finally` that removes them never runs. Boot is 4392 ms, so that
+window is open on every server start. The files are inert text in a gitignored scratch directory and
+nothing reads them, which is why this is low severity rather than a defect that blocks acceptance.
+
+It is not the same as the withdrawn O8. That one claimed orphaned processes and did not reproduce.
+This one reproduces every time and claims only leftover files.
+
+Two lessons, both cheap and both paid for twice now. Start an instrument from a known-clean state or
+it reports the previous run. And check a suspected regression against the change that supposedly
+caused it before naming it one.
+
+## Boot did not double
+
+The prediction that a second arming control would roughly double a 4351 ms boot was wrong. Measured
+after round 2: 4392 ms to the `arm` event, against 4351 ms with one control. The type control costs
+about 40 ms because it rides the same warm hosts the runtime control already started.
+
+A warm `prove` moved from a 492 ms median to 530-621 ms across three runs, which is the routed
+project adding a scoped type check rather than the arming change. `PROBE.md` § What was built needs
+the warm number corrected and the boot number left alone.
