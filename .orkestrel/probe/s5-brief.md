@@ -131,9 +131,42 @@ work by assuming admission covers it, and do not skip this by assuming S4 covers
 A path is a wire-level contract concern, so the check belongs with the guard and the shape, not in a
 stage.
 
+
+## Also yours — four defects the completeness critic found after this brief was written
+
+Full evidence in `.orkestrel/probe/critic-findings-routing.md`. Each was executed, not derived.
+
+**C1. Five `@example` blocks carry a test the runtime stage refuses.** `src/core/types.ts:49`, `:72`,
+`:96` and `src/core/validators.ts:66`, `:80` all use `text: 'test("greets", () => {})\n'`. No Vitest
+project in this workspace sets `globals: true` — `tsconfig.json:8` supplies `vitest/globals` to the
+type checker only. Executed: `ReferenceError: test is not defined`.
+
+This is a SECOND independent reason the `Claim` example can never earn a receipt, and it reaches four
+examples that defect A does not. Fix both together: prefix every example test text with
+`import { expect, test } from 'vitest'\n`, matching `Probe.ts:129`. Criterion 1 is not closed until
+the example survives the runtime stage as well as the receipt logic.
+
+**C2. `Finding.line` is documented absent for the case where it is present.** `types.ts:118-119` says
+`line` is absent for a runtime failure; `RuntimeStage.ts:242-243` sets it whenever the stack carries
+one, and a failing assertion does — executed, `line: 3`. Restate to name the real condition: absent
+when the error carries no stack frame.
+
+**C3. `computeReceipt` issues for a control that also broke where it did not declare.** This is a
+RULING, not an edit, and it is yours. `helpers.ts:80-82` and `types.ts:65-66` both say a control
+failing at a stage other than the one it names has falsified the instrument. `helpers.ts:100-101`
+inspects only the declared stage, and executed evidence shows a control breaking at all three stages
+still earns a receipt. The package enforces the strict reading for its OWN boot control at
+`Probe.ts:177-179` and ships the loose one to callers. Rule it: tighten `computeReceipt`, or restate
+both sentences to the narrow reading. Say which and why. If you tighten it, `src/core/helpers.ts` is
+yours for that change.
+
+**C5. `Finding.path` is not what the tool reported, at any stage.** `types.ts:131` says "path the tool
+reported against". All three stages substitute a different path, and the substitutions are correct
+behaviour. Restate the sentence to describe the mapping rather than denying it.
+
 ## Scope
 
-- **Owned**: `src/core/types.ts`, `src/core/shapers.ts`, `src/core/validators.ts`,
+- **Owned**: `src/core/types.ts`, `src/core/shapers.ts`, `src/core/validators.ts`, `src/core/helpers.ts`,
   `src/server/types.ts`, `src/server/helpers.ts`, and `tests/src/core/**` for the tests these changes
   owe.
 - **Conditionally owned**: if your ruling on defect C routes `reason` into the verdict, you also own

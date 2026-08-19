@@ -114,6 +114,47 @@ When the child dies mid-inspection, the `didClose` cleanup at line 157 calls `#n
 only evidence of why the stage stopped — with a generic "not running" message, and `#documents` is
 never pruned because the deletes at 158-160 sit after the throwing call.
 
+
+## Also yours — C4, a false red the completeness critic found after this brief was written
+
+**This is not one of the four defects above. It is a correctness defect, and it is the most consumer-
+visible one in the file.**
+
+`src/core/types.ts:30` calls `Source.path` "workspace-relative path the stages resolve the text
+against". `src/server/stages/LintStage.ts:169-177` discards the declared filename and synthesizes
+`tests/probe-<uuid>.ts` for every candidate outside `src/**` and `app/**`:
+
+```ts
+const [axis, environment] = declared.split('/')
+const directory =
+    (axis === 'src' || axis === 'app') && environment !== undefined && environment !== ''
+        ? `${axis}/${environment}`
+        : 'tests'
+return resolveWorkspaceFile(this.#workspace, `${directory}/probe-${randomUUID()}${extname(declared)}`)
+```
+
+Oxlint applies glob-keyed overrides from `.oxlintrc.json`. A synthesized name matches different globs
+than the declared one, so the rule set diverges. Executed over two files with byte-identical content:
+
+```text
+tests/probe-0d1f.ts:1:8: error import(no-default-export): Prefer named exports
+```
+
+`sample.config.ts` reports nothing, because `.oxlintrc.json` exempts `*.config.ts` from that rule.
+
+**So the probe reports a lint finding the real gate exempts.** A candidate that would pass the gate is
+refused, which is a false red — and `Toolchain`'s own `@remarks` names preventing exactly this as the
+reason that design exists.
+
+Repair direction: preserve the declared basename in the synthesized path, so the overrides the gate
+applies also apply here. Verify by driving two candidates whose only difference is a filename the
+config exempts, and assert the probe's findings match what the workspace's own oxlint reports for the
+declared name.
+
+Criterion: a candidate whose declared path the workspace's lint config exempts from a rule does not
+receive a finding for that rule. Assert both directions — the exempt path clean, and a non-exempt path
+still reporting — or the test only proves the rule was disabled.
+
 ## Scope
 
 - **Owned**: `src/server/stages/LintStage.ts`, and `tests/src/server/stages/LintStage.test.ts` for the
