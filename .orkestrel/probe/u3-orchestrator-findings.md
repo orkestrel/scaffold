@@ -194,3 +194,37 @@ receipt probe:4e3d2dbf-ace3-431b-8a10-fb66e27d6def:runtime:typescript@6.0.3:oxli
 
 The journey works end to end. It also shows the raw-float elapsed values an agent reads, against
 documented examples that read `(17 ms)`.
+
+## O8 — the server entry orphans its children when the harness stops it
+
+`src/bin/main.ts` calls `start()` and installs no signal handler. `createStdioServer` returns
+`{ start(): void; stop(): void }` and `stop` is never called, and `Probe.destroy` is never called
+either.
+
+Observed rather than inferred. After the Orchestrator's wire run sent `SIGTERM` to the spawned entry,
+its Oxlint child was still running ten minutes later, alongside a Vitest worker from the bin test:
+
+```text
+$ ps -eo pid,etime,cmd
+12884  10:15  node /workspace/probe/node_modules/oxlint/bin/oxlint --lsp
+29067  54:39  node ... /workspace/probe/node_modules/vitest/dist/workers/forks.js
+```
+
+A child spawned without `detached` is not reaped when its parent exits, so every harness restart of
+the server leaks one Oxlint process and one Vitest worker set. Over a working session that
+accumulates.
+
+`src/bin/main.ts` is off-limits to both repair rounds as briefed. This finding needs an owner.
+
+## Confirmed shape for the named server interface
+
+`createStdioServer` returns an anonymous object, so the interface fix round 2 declares must match it
+exactly:
+
+```text
+$ sed -n '385,388p' node_modules/@orkestrel/mcp/dist/src/server/index.d.ts
+export declare function createStdioServer(mcp: MCPDispatcherInterface, options?: StdioServerOptions): {
+    start(): void;
+    stop(): void;
+};
+```
