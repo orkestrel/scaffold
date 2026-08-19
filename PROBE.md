@@ -40,6 +40,94 @@ and `:801-802` emit `test:probe` and the `probe` project unconditionally into ev
 workspace, and `tests/config.test.ts` uses `probe` as its own negative control at lines 131, 228,
 and 234-236 while being vendored to 44 targets from `src/core/constants.ts:144`.
 
+## What was built, and what it measures
+
+The ruling above was written before the package existed. `@orkestrel/probe` now exists, and this
+section records what it does rather than what it was expected to do. Where a measurement here
+disagrees with a number earlier in this document, this section is the later reading.
+
+The package publishes at 87.5 kB packed and 359.8 kB unpacked across 17 files, against the 118.9 MB
+floor measured for the single-executable form this document rejects.
+
+A harness reaches it as a Model Context Protocol server over stdio. Driven end to end from a spawned
+child process, the journey works:
+
+```text
+handshake-era initialize -> {"name":"probe","version":"0.0.1"}
+handshake-era tools/list -> prove
+--- tools/call prove ---
+probe 4e3d2dbf-ace3-431b-8a10-fb66e27d6def
+toolchain typescript 6.0.3, oxlint 1.79.0, vitest 4.1.11
+case type: 0 findings        case lint: 0 findings        case runtime: 0 findings
+control type: 0 findings     control lint: 0 findings     control runtime: 1 finding
+  tmp/probe/wire.test.ts:2 expected 4 to be 5 // Object.is equality
+receipt probe:4e3d2dbf-...:runtime:typescript@6.0.3:oxlint@1.79.0:vitest@4.1.11
+```
+
+The transport speaks newline-delimited JSON. An earlier instrument framed its requests with
+`Content-Length` headers, the way a Language Server Protocol client does, and hung; that was the
+instrument rather than the server, and it is worth stating because the probe's own lint stage does
+speak the header form to Oxlint.
+
+Latency, measured warm against the built package:
+
+| Measurement                             | Median |
+| --------------------------------------- | ------ |
+| Boot, including arming                  | 4351 ms |
+| One `prove`, six checks and a receipt   | 492 ms |
+| One inspection, three stages concurrent | 264 ms |
+| The runtime stage alone                 | 187 ms |
+
+The type stage at 56 ms and the lint stage at 72 ms cost nothing observable, because they finish
+while the runtime stage is still running. A `prove` is two inspections in sequence, the case and then
+the control, which is where its 492 ms comes from.
+
+### What the build found that the design did not
+
+Five hazards were reproduced during the design pass and are recorded as laws earlier in this
+document. Building the package surfaced nine more, and the way they surfaced is the point: every one
+of them was invisible to a green gate suite, and most were invisible to reading as well.
+
+Two independent audit lanes and the Orchestrator's own measurement each found defects the others
+missed. The lanes agreed on exactly one — that a failure during boot arming is an unhandled rejection
+that ends the host process — and each found things the other two did not.
+
+| Found by                | Defect                                                                    |
+| ----------------------- | ------------------------------------------------------------------------- |
+| All three               | A boot arming failure ends the host process instead of refusing service   |
+| Measurement only        | The resident runner leaves every probe host exiting 1, from boot          |
+| Measurement only        | A deadline expiry leaves the abandoned test, loop and all, in the checkout |
+| Measurement only        | The entry orphans its linter child and worker set when the harness stops it |
+| Design lane only        | A required contract field, `project`, is read by nothing                  |
+| Design lane only        | Arming proves the runtime half of the staleness defect and never the type half |
+| Design lane only        | The published bundle carries the whole development manifest               |
+| Design lane only        | The published declaration imports a value purely to spell a type          |
+| Reading, after the lanes | The runtime stage never materializes the agent's candidate sources        |
+
+The last one is the largest, and it is a design question rather than a repair. `Case.files` is the
+source an agent supplies without writing it to disk. The type stage overlays every entry into its
+virtual filesystem and the lint stage lints each one, and the runtime stage writes only the test. So
+a test importing a module the agent supplied as text, and that does not already exist on disk,
+typechecks clean, lints clean, and fails to resolve when it runs.
+
+That splits the evidence: two stages judge the program the agent described and the third judges a
+different one. Closing it means serving the candidates as virtual modules through the runner rather
+than writing them out — `createVitest` takes a Vite configuration override the runtime stage does not
+currently pass, so a plugin resolving and loading candidate text by path is the same overlay the type
+stage already applies, moved to the runner. Three questions decide its shape: what happens when a
+candidate names a file that already exists, how the overlay meets the per-revision invalidation, and
+whether it covers the whole module graph or only direct imports.
+
+### The lesson worth keeping
+
+Every defect in the table survived five green gates. The suite was green when the server always
+exited 1, when the entry leaked a process per restart, when a required field was read by nothing, and
+when the runtime stage was judging a different program than its siblings.
+
+That is the same argument this document makes for the probe itself, turned on the probe. Green gates
+prove that nothing asked a question that failed. They do not prove that the right questions were
+asked, and the cheapest way to find out is to run the thing and read what comes back.
+
 ## What is wrong today
 
 Three facts describe the current probe path, each measured on 2026-08-18 in this checkout.
