@@ -197,7 +197,13 @@ Each closes using owned and report-only files alone.
    after.
 3. The `@remarks` on `CLAIM_SHAPE` in `src/core/shapers.ts` states what the server actually does, and
    the words `compileGuard` appear there only in a sentence about the test that holds `isClaim` to it.
-4. `grep -rn 'compileGuard' src/` returns no line asserting that the tool admits a call with it.
+4. `grep -rn 'compileGuard' src/` returns no line asserting that the **tool** admits a call with it.
+   Three lines survive this criterion and are correct as they stand:
+   - `src/core/shapers.ts:13,30,51` — the `SOURCE_SHAPE`, `CASE_SHAPE`, and `CONTROL_SHAPE` examples
+     call `compileGuard` to demonstrate each shape's own API. They make no claim about the server.
+   - `src/core/validators.ts:99` — "Admits and refuses exactly what `compileGuard(CLAIM_SHAPE)` does"
+     is a statement about the guard `isClaim`, not about the tool, and unit 4a's test proves it. That
+     file is **off-limits** and this line is not a defect. Do not stop over it.
 5. All five gates pass in order.
 
 ## Review evidence
