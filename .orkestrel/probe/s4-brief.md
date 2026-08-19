@@ -131,8 +131,9 @@ through the stage directly rather than assuming admission will stop it.
 
 ## Criteria
 
-Every criterion owes a committed test, red before the fix and green after. Record the exact command and
-both counts.
+Every criterion that fixes a defect owes a committed test, red before the fix and green after; record
+the exact command and both counts. Criterion 4 is a regression criterion, proved by the existing tests
+staying green, and has no red state to capture.
 
 1. A case with a good path followed by a workspace-escaping path leaves no overlay behind. Assert it by
    observing what a LATER inspection reads for the good path, not by inspecting a private map.
@@ -146,6 +147,21 @@ both counts.
 5. `#versions` does not grow across repeated inspections of distinct paths. Assert an observable
    consequence rather than the map's size if you can find one; if you cannot, say so in your report and
    assert the size, and name what would have been better.
+
+## Naming, so this brief's vocabulary does not become permanent
+
+The defect letters and criterion numbers in this brief are addressing for this brief only. Name every
+test for the behaviour it proves, never for the defect or the criterion that specified it. A private
+label that reaches a test name outlives the brief and means nothing to the next reader.
+
+## Standing condition — dispatch baseline
+
+You are dispatched from a clean, committed baseline and you are the sole writer in this checkout. The
+Orchestrator confirms `git status --porcelain` is empty before launching you; if it is not empty when
+you start, that is a deviation worth reporting immediately rather than working around.
+
+State any completion criterion about your own diff against the BASELINE COMMIT, never against the
+working tree: `git diff --stat <baseline>..` is stable, and `git status` is not.
 
 ## Execution
 

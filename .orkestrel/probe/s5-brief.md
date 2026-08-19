@@ -116,7 +116,9 @@ summary as the finding.
   starts, and recycling is conditional.
 
 There is also a sixth, lower: **the `Verdict` @example reports an `elapsed` the code cannot produce
-from its own per-stage numbers.** Recompute it from the stage numbers in the same example.
+from its own per-stage numbers.** The figure must exceed the floor `max(case) + max(control) = 513`.
+Fix all three sites in one change — `types.ts:207` and the same wrong figure echoed at `helpers.ts:60`
+and `validators.ts:181` — or two copies survive to contradict the third.
 
 ## Also yours — the admission check unit S4 deliberately deferred
 
@@ -142,12 +144,27 @@ project in this workspace sets `globals: true` — `tsconfig.json:8` supplies `v
 type checker only. Executed: `ReferenceError: test is not defined`.
 
 This is a SECOND independent reason the `Claim` example can never earn a receipt, and it reaches four
-examples that defect A does not. Fix both together: prefix every example test text with
-`import { expect, test } from 'vitest'\n`, matching `Probe.ts:129`. Criterion 1 is not closed until
-the example survives the runtime stage as well as the receipt logic.
+examples that defect A does not. **Prescribe the whole replacement, not just the import.** A bare `import` plus `test('greets', () => {})`
+is lint-clean today only because the example never runs; adding the import while leaving an empty body
+draws oxlint errors that the lint stage then reports, so the repair would redden the criterion it exists
+to close. Use a self-contained assertion:
+
+```text
+import { expect, test } from 'vitest'
+test('greets', () => {
+	expect(1).toBe(1)
+})
+```
+
+The assertion must be self-contained. The runtime stage writes only `subject.test.text` to disk and
+never writes the candidate `files`, so an example test that imports the candidate module fails at module
+resolution rather than proving anything.
+
+Criterion 1 is not closed until the example survives the lint stage AND the runtime stage AND the
+receipt logic. Run it; do not reason about it.
 
 **C2. `Finding.line` is documented absent for the case where it is present.** `types.ts:118-119` says
-`line` is absent for a runtime failure; `RuntimeStage.ts:242-243` sets it whenever the stack carries
+`line` is absent for a runtime failure; `RuntimeStage.ts:319-320` at HEAD (the finding's original citation, 242-243, was against the pre-repair commit 938eb04) sets it whenever the stack carries
 one, and a failing assertion does — executed, `line: 3`. Restate to name the real condition: absent
 when the error carries no stack frame.
 
@@ -169,11 +186,12 @@ behaviour. Restate the sentence to describe the mapping rather than denying it.
 - **Owned**: `src/core/types.ts`, `src/core/shapers.ts`, `src/core/validators.ts`, `src/core/helpers.ts`,
   `src/server/types.ts`, `src/server/helpers.ts`, and `tests/src/core/**` for the tests these changes
   owe.
-- **Conditionally owned**: if your ruling on defect C routes `reason` into the verdict, you also own
-  `src/core/helpers.ts` for `computeReceipt`/`formatVerdict` and `src/server/Probe.ts` ONLY for the two
-  arming-control literals at lines 142 and 152. Say in your report that you took them. If the ruling
-  needs more of `Probe.ts` than those two literals, stop and report — that is a unit boundary, not a
-  detail.
+- **Also owned, under EITHER ruling on defect C**: `src/core/helpers.ts` and `src/server/Probe.ts` in
+  full, plus `tests/src/server/Probe.test.ts`. The earlier draft granted only two literals in
+  `Probe.ts`, which closes neither ruling: routing `reason` needs the verdict path, and removing it
+  needs every write site. Take what the ruling needs and say what you took.
+- `tests/src/bin/main.test.ts` also carries two `reason` literals and belongs to another unit. If your
+  ruling moves them, stop and report the two-line patch rather than editing that file.
 - **Off-limits**: `src/server/stages/**`, `src/server/factories.ts`, `src/bin/main.ts`, `guides/**`,
   `PROBE.md`, `package.json`, `vite.config.ts`, `configs/**`, and every dotfile.
 - **Instruments**: write every throwaway instrument under `tmp/scratch/`, and delete it before you
@@ -197,6 +215,21 @@ behaviour. Restate the sentence to describe the mapping rather than denying it.
 5. Each of the six prose repairs describes what the code does. For each, name the code you read.
 6. Defect C is ruled and implemented in one direction, with the law named.
 
+## Naming, so this brief's vocabulary does not become permanent
+
+The defect letters and criterion numbers in this brief are addressing for this brief only. Name every
+test for the behaviour it proves, never for the defect or the criterion that specified it. A private
+label that reaches a test name outlives the brief and means nothing to the next reader.
+
+## Standing condition — dispatch baseline
+
+You are dispatched from a clean, committed baseline and you are the sole writer in this checkout. The
+Orchestrator confirms `git status --porcelain` is empty before launching you; if it is not empty when
+you start, that is a deviation worth reporting immediately rather than working around.
+
+State any completion criterion about your own diff against the BASELINE COMMIT, never against the
+working tree: `git diff --stat <baseline>..` is stable, and `git status` is not.
+
 ## Execution
 
 Perform this assignment directly. Spawn no subagent.
@@ -204,18 +237,21 @@ Perform this assignment directly. Spawn no subagent.
 ## Host facts your commands run under
 
 - Working directory `/workspace/probe`. Nested process spawns are permitted.
-- The whole-workspace `npm test` is safe and takes roughly three minutes.
-- `tests/guides.test.ts` executes flagship guide fences. It does NOT reach TSDoc @example blocks, which
-  is why defect A survived to ship. If you find a documented behavior with no gate, say so in your
-  report rather than assuming parity covers it.
+- Validate with the scoped commands `npm run test:src:core` and `npm run check:src:core` first. Run the
+  whole-workspace `npm test` only once, at the end, and read its result against the standing condition
+  above rather than treating any red as yours.
+- **This workspace has no `tests/guides.test.ts` and no guide-fence gate of any kind.** So NO documented
+  behaviour in this package has an executing gate — not the guide fences, and not the TSDoc `@example`
+  blocks. That is why defect A and C1 both survived to ship. Report every documented behaviour you find
+  with no gate; the list is the useful output, and it is longer than it looks.
 - The `probe` Vitest project reads `tmp/probe/`. Put any throwaway instrument in `tmp/scratch/`, and nowhere else.
 - Units before you edited `tests/src/core/**`. Read those files as they are now.
 
 ## Unknowns
 
-Whether defect A's repair belongs only in TSDoc or also in `guides/`. The Orchestrator has not checked
-whether `guides/` makes the same claim. Check, and repair both if it does. If `guides/` is not yet
-written for this surface, say so — a later unit writes it and needs to know.
+Nothing. The earlier draft asked whether `guides/` repeats defect A's claim; that is now measured and
+the answer is no — no file under `guides/` mentions the probe's API, and `guides/probe.md` does not
+exist. Defect A has exactly one home, `guides/**` stays off-limits, and no criterion touches it.
 
 ## Deviation contract
 

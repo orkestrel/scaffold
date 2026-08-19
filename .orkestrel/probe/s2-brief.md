@@ -29,10 +29,21 @@ calls `probe.prove(input)` straight from the tool, and `Probe.prove` has no mutu
 Orchestrator confirmed the transport half by reading the installed package:
 
 ```text
-node_modules/@orkestrel/mcp/dist/src/server/index.js
+node_modules/@orkestrel/mcp/dist/src/server/index.js:1438 (the `data` handler) and node_modules/@orkestrel/mcp/dist/src/core/index.js:1372-1375 (`bindServer`'s unawaited `transport.listen(async …)`)
   this.#input.on("data", (chunk) => this.#receive(chunk.toString()))
   transport.listen(async (message) => { … })      // bindServer, never awaited
 ```
+
+## Governing spec and skill
+
+Governing spec: `/home/user/scaffold/PROBE.md`, in the ORCHESTRATOR's repository rather than your
+working directory. Read its section on owning the deadline outside the worker before choosing what the
+deadline bounds. If your sandbox refuses that path, proceed — this brief carries the facts.
+
+Skill: none.
+
+The probe's own guide, `guides/probe.md`, does not exist; `guides/README.md` records it as
+"Not created". There is no guide-parity gate over this surface.
 
 ## Defects
 
@@ -64,7 +75,7 @@ Bound every stage, not one.
 
 ### C — a refusal discards the findings that explain it
 
-Arming is the one failure that refuses service permanently. Both of its throw sites reduce a fully
+Arming is the one failure that refuses service permanently. All four of its throw sites — `src/server/Probe.ts` lines 168, 175, 178, and 184, each with a different message — reduce a fully
 populated set of checks to a bare sentence: `The probe boot control did not begin clean` names neither
 the stage that reported, nor the path, line, or message it reported.
 
@@ -89,9 +100,14 @@ sentence true, or move the emit. Do not leave them disagreeing.
 
 ## Scope
 
-- **Owned**: `src/server/Probe.ts`, `src/core/types.ts` **only** for the `expire` and `deadline`
-  documentation defects D and E, and `tests/src/server/**` and `tests/src/bin/**` for the tests these defects owe and for any
-  existing assertion your fix makes untrue.
+- **Owned**: `src/server/Probe.ts`; `src/core/types.ts` **only** for the `ProbeEventMap.expire` and
+  `ProbeOptions.deadline` doc comments; and exactly two test files —
+  `tests/src/server/Probe.test.ts` and `tests/src/server/index.test.ts`.
+- **NOT yours, though an earlier draft's glob swallowed them**:
+  `tests/src/server/stages/LintStage.test.ts` belongs to unit S3, and
+  `tests/src/server/stages/RuntimeStage.test.ts` and `tests/src/bin/main.test.ts` belong to the runtime
+  stage's units. If a criterion of yours appears to need one, stop and report rather than reaching —
+  two units owning one file is how a serial campaign silently reverts itself.
 - **Off-limits**: everything else. Specifically `src/core/helpers.ts`, `validators.ts`, `shapers.ts`,
   `constants.ts`, every file under `src/server/stages/`, `src/server/factories.ts`,
   `src/server/helpers.ts`, `src/server/types.ts`, `src/bin/main.ts`, `guides/**`, `package.json`,
@@ -144,6 +160,21 @@ test to make a gate pass — that is the one move this repository refuses outrig
 The assertions most likely to move are the ones about deadline timing, the `expire` event, and the
 count of `error` events, because defects A, D, and E change all three.
 
+## Naming, so this brief's vocabulary does not become permanent
+
+The defect letters and criterion numbers in this brief are addressing for this brief only. Name every
+test for the behaviour it proves, never for the defect or the criterion that specified it. A private
+label that reaches a test name outlives the brief and means nothing to the next reader.
+
+## Standing condition — dispatch baseline
+
+You are dispatched from a clean, committed baseline and you are the sole writer in this checkout. The
+Orchestrator confirms `git status --porcelain` is empty before launching you; if it is not empty when
+you start, that is a deviation worth reporting immediately rather than working around.
+
+State any completion criterion about your own diff against the BASELINE COMMIT, never against the
+working tree: `git diff --stat <baseline>..` is stable, and `git status` is not.
+
 ## Execution
 
 Perform this assignment directly. Spawn nothing.
@@ -161,7 +192,7 @@ Return exactly: **Files written**, **Validation**, **Acceptance evidence**, **De
 
 ## Amendment, 2026-08-19 — a fifth defect, and the baseline
 
-### Defect E — a `prove` rejection emits two `error` events, not one
+### The duplicate `error` emit — this is defect D from the body, restated with the audit's evidence
 
 Added from the third repair round's audit, which triggered a real arming failure and observed one
 rejected call and two identical events. `#arm` emits and rethrows; `prove` emits the same error again
@@ -195,8 +226,9 @@ emit through different doors and only one of them was examined.
 - Working directory `/workspace/probe`. Nested process spawns are permitted.
 - The whole-workspace `npm test` is safe and takes roughly three minutes.
 - The `probe` Vitest project reads `tmp/probe/`, and sibling projects write there concurrently. Put any
-  throwaway instrument in its own scratch directory, never in `tmp/probe`. That collision is real and
-  cost an earlier unit a repair round.
+  throwaway instrument in `tmp/scratch/`, and nowhere else, and delete it before returning. `tmp` is
+  gitignored; a bare `scratch/` at the repository root is NOT, and both `format:check` and `lint:check`
+  scan the tree, so an instrument left there reddens the gates.
 
 ## Standing condition — the shared `tmp/probe` directory
 

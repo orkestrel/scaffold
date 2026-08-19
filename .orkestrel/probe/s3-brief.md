@@ -208,13 +208,20 @@ the Orchestrator could not take from outside.
 Every criterion owes a committed test, red before the fix and green after. Record the exact command and
 both counts.
 
-1. A stage whose Oxlint child was killed by signal reports that death rather than hanging. `destroy()`
-   settles, and it settles within a bounded time you assert rather than "eventually".
-2. A `prove` against a signal-killed lint stage produces an error rather than hanging.
-3. Destroying a probe whose lint child died earlier does not raise `unhandledRejection` and does not
+1. A `LintStage` whose Oxlint child was killed by signal reports that death rather than hanging.
+   `stage.destroy()` settles, within a bounded time you assert rather than "eventually".
+2. `stage.inspect()` against a signal-killed lint stage produces an error rather than hanging.
+3. Destroying a lint stage whose child died earlier does not raise `unhandledRejection` and does not
    end the host. Assert this by observing the process, not by reasoning about handler attachment.
-4. The three maps — `#documents`, `#publishes`, `#refusals` — are empty after a failed `#document`
-   call, not merely after a successful one.
+
+   **All three close at the STAGE level, in your own owned test file.** `src/server/Probe.ts` and
+   `tests/src/server/Probe.test.ts` are off-limits, so do not write a criterion that needs `prove`.
+   Drive `new LintStage(workspace)` directly and kill its Oxlint child by pid.
+4. No orphan survives a failed `#document` call. Those three maps are ECMAScript private fields with
+   no accessor, so assert the OBSERVABLE they produce rather than the fields themselves: after a
+   `#document` call that failed because the child was dead, a later `inspect` on a live stage still
+   returns a check, and `destroy()` settles without raising `unhandledRejection`. Do not add a public
+   accessor so a test can read a private field — that widens the published surface to serve a test.
 5. A stage whose child is alive still lints normally and still reports real findings. The fixes must
    not make every lint fail. `tests/src/server/stages/LintStage.test.ts` already has a test that proves
    this; keep it green.
@@ -232,6 +239,21 @@ question for the Orchestrator, not a scope call for you.
 
 `.claude/rules/tests.md` bans mocks and framework spies for project-owned behavior. A real child killed
 by a real signal is the real thing, so this is not an exception to that rule — it is the rule.
+
+## Naming, so this brief's vocabulary does not become permanent
+
+The defect letters and criterion numbers in this brief are addressing for this brief only. Name every
+test for the behaviour it proves, never for the defect or the criterion that specified it. A private
+label that reaches a test name outlives the brief and means nothing to the next reader.
+
+## Standing condition — dispatch baseline
+
+You are dispatched from a clean, committed baseline and you are the sole writer in this checkout. The
+Orchestrator confirms `git status --porcelain` is empty before launching you; if it is not empty when
+you start, that is a deviation worth reporting immediately rather than working around.
+
+State any completion criterion about your own diff against the BASELINE COMMIT, never against the
+working tree: `git diff --stat <baseline>..` is stable, and `git status` is not.
 
 ## Execution
 
@@ -253,9 +275,11 @@ Perform this assignment directly. Spawn no subagent.
 Put it in `tmp/scratch/`, and nowhere else.
 
 `tmp` is gitignored, so nothing there can enter a commit, and `.claude/rules/tests.md` forbids
-committing a probe. `tmp/probe/` is gitignored too but the `probe` Vitest project collects
-`tmp/probe/**/*.test.ts`, and sibling projects write there concurrently, so an instrument left there
-is collected by a gate or trips another project's directory-listing assertion. A bare `scratch/` at the
+committing a probe. `tmp/probe/` is gitignored too, and no gate selects the `probe` project that collects it — but sibling
+projects write into that directory concurrently, so an instrument left there trips another project's
+directory-listing assertion. Note the operational consequence: nothing collects `tmp/scratch/`, so an
+instrument there runs as a plain `node` script rather than as a Vitest file. That is a deliberate
+departure from `.claude/rules/tests.md` § Probes, taken because of the concurrent writes. A bare `scratch/` at the
 repository root is NOT ignored — `git check-ignore` refuses it — so an instrument there walks into the
 next commit.
 

@@ -7,9 +7,14 @@ where the lifecycle belongs on a published surface, which is API-shape work.
 
 ## Objective
 
-Give the probe a shutdown it currently does not have, so a disconnect or a `SIGTERM` releases the
-resident hosts and their temporary files instead of orphaning them, and so a contained fault is
-reported rather than discarded.
+Give the probe a shutdown it does not have, so a `SIGTERM` releases the resident hosts and removes the
+temporary files they left, and so a contained fault is reported rather than discarded.
+
+Two limits on that objective, both from measurement. The campaign WITHDREW the claim that the entry
+orphans its child processes — they do exit — so the findings that stand are the leftover files and the
+discarded faults. And the record measured `SIGTERM` only; nobody measured what a transport disconnect
+does today. If you want disconnect handling in scope, measure today's behaviour first and report it,
+rather than repairing a defect nobody has observed.
 
 ## Context
 
@@ -35,8 +40,7 @@ import { createProbe, createProbeServer } from '@src/server'
 createProbeServer(createProbe()).start()
 ```
 
-`grep -rn "SIGTERM\|SIGINT\|process.on" src/` returns exactly one line, and it is unrelated — a
-`child.once('exit')` inside `LintStage.ts`. So the entry installs no signal handler and observes no
+`grep -rn "SIGTERM\|SIGINT\|process.on" src/` returns NO match at all and exits 1. So the entry installs no signal handler and observes no
 error. On `SIGTERM` the process dies with the default disposition: the resident TypeScript and Vitest
 hosts are never destroyed, the Oxlint child is left to die on stdin close, and any temporary revision
 or arming files under `tmp/probe/` stay on disk.
@@ -88,9 +92,15 @@ either.
 
 ## Scope
 
-- **Owned**: `src/bin/main.ts`, `tests/src/bin/main.test.ts`, and whichever ONE of
-  `src/server/factories.ts` or `src/server/types.ts` your ruling requires — plus the matching test file
-  for it. Name in your report which you took and why.
+- **Owned**: `src/bin/main.ts`, `tests/src/bin/main.test.ts`, `tests/src/server/index.test.ts` (its
+  export set moves when your ruling adds an export), and whichever of `src/server/factories.ts` or
+  `src/server/types.ts` your ruling requires, plus the matching test file for it. Name in your report
+  which you took and why.
+- Note before you rule: `start` and `stop` are implemented by an object literal that a dependency
+  returns, not by a class this package owns. So "`start()` installs the handlers and `stop()` removes
+  them" is not implementable in `factories.ts` alone. Either restate that option as the factory
+  installing handlers at construction, or stop and report that the ruling needs a file you were not
+  granted.
 - **Off-limits**: `src/core/**`, `src/server/Probe.ts`, `src/server/stages/**`, `src/server/helpers.ts`,
   `guides/**`, `PROBE.md`, `package.json`, `vite.config.ts`, `configs/**`, and every dotfile.
 - **Instruments**: write every throwaway instrument under `tmp/scratch/`, and delete it before you
@@ -106,8 +116,10 @@ Every criterion owes a committed test, red before the fix and green after where 
 Record the exact command and both counts.
 
 1. The built entry, sent `SIGTERM` during arming, exits and leaves no `arm-*` file behind.
-2. The built entry, sent `SIGTERM` while idle after arming, exits cleanly and leaves `tmp/probe/`
-   without probe-created residue.
+2. The built entry, sent `SIGTERM` while idle after arming, exits cleanly and leaves none of the files
+   its own run created — the `arm-*` and revision files it can name — in its scratch workspace's
+   `tmp/probe/`. Assert that membership, never that the directory is empty; the standing condition
+   later in this brief forbids a whole-directory assertion and this criterion must not contradict it.
 3. The entry exits with a status that distinguishes a signalled shutdown from a fault. State what you
    chose and why; do not invent a convention the repository does not already have.
 4. A fault the probe contains is observed rather than discarded. What "observed" means is part of your
@@ -115,6 +127,21 @@ Record the exact command and both counts.
 5. `src/bin/main.ts` still declares no module-scope constant and no module-scope function.
 6. Shutdown is idempotent: two signals in quick succession do not produce a double teardown or an
    unhandled rejection.
+
+## Naming, so this brief's vocabulary does not become permanent
+
+The defect letters and criterion numbers in this brief are addressing for this brief only. Name every
+test for the behaviour it proves, never for the defect or the criterion that specified it. A private
+label that reaches a test name outlives the brief and means nothing to the next reader.
+
+## Standing condition — dispatch baseline
+
+You are dispatched from a clean, committed baseline and you are the sole writer in this checkout. The
+Orchestrator confirms `git status --porcelain` is empty before launching you; if it is not empty when
+you start, that is a deviation worth reporting immediately rather than working around.
+
+State any completion criterion about your own diff against the BASELINE COMMIT, never against the
+working tree: `git diff --stat <baseline>..` is stable, and `git status` is not.
 
 ## Execution
 
@@ -126,8 +153,10 @@ Perform this assignment directly. Spawn no subagent.
 - The built entry is at `dist/bin/main.js` and `npm run build` produces it. The entry tests drive the
   BUILT artifact, so rebuild after every source change or you are testing the previous version. This is
   the single easiest way to waste a cycle in this unit.
-- This sandbox buffers a Node-created child pipe until EOF. The existing entry tests drive a real
-  pseudoterminal for that reason. Follow what the file already does rather than reinventing it.
+- The protocol and stderr tests drive a real pseudoterminal because they read framed stdout. The
+  killed-entry test does NOT: it spawns the built entry on plain pipes, and it must keep doing so, or
+  `child.kill('SIGTERM')` reaches a `script` wrapper instead of the entry. Do not move it behind a
+  pseudoterminal.
 - The `probe` Vitest project reads `tmp/probe/`, and sibling projects write there concurrently. The
   existing killed-entry test uses an owned scratch workspace linked to the real installed toolchain for
   exactly this reason. Keep that approach.
