@@ -126,6 +126,22 @@ If the repaired claim still cannot earn a receipt for a reason that is not the c
 report under the deviation contract with both readings. Do not repair a second defect to make your
 test green, and do not weaken the test to match what you got.
 
+## A standing condition of this tree
+
+`tests/src/server/Probe.test.ts` is one of four server test files that contend over the shared
+`tmp/probe` directory, and it is one of the two that time out under whole-suite load. Unit O9-U2 saw
+11 such timeouts in `Probe` and `LintStage` in its own final gate, and every one passed on an isolated
+re-run.
+
+Your proof drives real stages with a real resident host, so it adds to that pressure.
+
+- Give the new test an explicit timeout in the shape the neighbouring tests use, sized from an
+  isolated run you take yourself rather than from a number in this brief.
+- When `npm test` reports a timing failure in `Probe.test.ts` or `LintStage.test.ts`, re-run that file
+  alone before believing it, and report both readings.
+- A timing failure in a file you do not own is not yours to fix. Report it with both readings and
+  carry on.
+
 ## Scope
 
 Owned files:
