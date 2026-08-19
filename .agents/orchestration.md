@@ -246,7 +246,13 @@ clobbered edits, formatter and build races, cache phantoms, and validation cross
    stopped. A slice hands control back while most of the fleet is still unstarted.
 10. Re-run a timing or resource failure alone before believing it. Concurrent slices, builds, and
     suites make a container miss deadlines it meets when idle, so a red result under load is a
-    question rather than an answer.
+    question rather than an answer. A unit re-running the file alone is not alone: its own exec,
+    code-mode host, and sandbox stay resident throughout, and on a small container that residue
+    alone misses a deadline the same file meets on an idle one. So the deciding re-run belongs to
+    the Orchestrator after the unit exits, never to the unit, and a timing failure a unit cannot
+    clear is carried to that reading rather than diagnosed by the unit. This makes a writer's own
+    gate evidence systematically pessimistic on timing, which is a second reason the independent
+    `verifier` runs the authoritative gates.
 11. While any unit is live, the Orchestrator's own instruments go in its scratchpad, never in the
     subject repository's `tmp/`. A probe that both writes and deletes inside the subject tree can
     remove a file it did not create, and a cleanup keyed to a caller-supplied path list is how. The
