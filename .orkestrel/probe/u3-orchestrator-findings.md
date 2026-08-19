@@ -287,3 +287,35 @@ Three questions decide the shape and belong to a design round rather than to a r
   win for that run without the developer's checkout ever changing.
 - How the overlay interacts with the per-revision invalidation the stage already performs.
 - Whether the overlay applies only to the modules the test imports directly, or to the whole graph.
+
+## O8 is withdrawn — it does not reproduce
+
+The Orchestrator raised O8 from two orphaned processes seen in `ps`. Tested directly, with the
+server's own children enumerated by parent id rather than matched by pattern, it does not reproduce:
+
+```text
+server pid 15129 | children while armed:
+15137 /opt/node22/bin/node /workspace/probe/node_modules/oxlint/bin/oxlint --lsp
+matching processes anywhere while armed:
+15137 /opt/node22/bin/node /workspace/probe/node_modules/oxlint/bin/oxlint --lsp
+
+server alive after SIGTERM+6s: dead
+matching processes anywhere 6s after SIGTERM:
+  (none)
+```
+
+The Oxlint child exits on its own when the server's stdin closes, and the runtime stage uses the
+`threads` pool, whose workers are worker threads rather than child processes and die with their
+parent by construction.
+
+The two orphans that prompted the finding came from somewhere else. One was a
+`vitest/dist/workers/forks.js` worker, and the resident runner does not use the forks pool at all, so
+it came from an ordinary suite run. Both trace to O6 — the bin test importing the side-effectful
+entry, which booted a probe inside a Vitest worker that was then torn down abruptly. Repair round 1
+closed O6, and these went with it.
+
+A pattern match answered a question about parentage, which it cannot answer. Enumerating by parent id
+settled it in one command.
+
+E8 is struck from repair round 2. Adding signal handling now would be hardening against a defect no
+measurement shows, and `AGENTS.md` refuses a capability added without a real consumer.

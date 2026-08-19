@@ -8,7 +8,7 @@ audited afterwards by a lane on the engine that did not write it. You are the so
 
 ## Objective
 
-Close eight contract and publication defects. A previous round already closed the lifecycle and
+Close seven contract and publication defects. A previous round already closed the lifecycle and
 safety defects; do not revisit those.
 
 ## Context
@@ -142,38 +142,10 @@ handler declared on `ProbeOptions`.
 
 Add a worked `@example` to each and document every option field.
 
-### E8 — the entry orphans its children when the harness stops it
-
-`src/bin/main.ts` calls `start()` and installs no signal handling. `createStdioServer` returns
-`{ start(): void; stop(): void }`, and neither `stop` nor `Probe.destroy` is ever called.
-
-Observed rather than inferred. Ten minutes after the Orchestrator sent `SIGTERM` to a spawned entry,
-its Oxlint child was still running:
-
-```text
-$ ps -eo pid,etime,cmd
-12884  10:15  node /workspace/probe/node_modules/oxlint/bin/oxlint --lsp
-29067  54:39  node ... /workspace/probe/node_modules/vitest/dist/workers/forks.js
-```
-
-A child spawned without `detached` is not reaped when its parent exits, so every harness restart of
-the server leaks one Oxlint process and one Vitest worker set.
-
-One constraint decides the shape, and it is not negotiable. `.claude/rules/architecture.md` states
-that a runtime entry "declares no module-scope constant and no module-scope function: it imports what
-it needs and runs." So `src/bin/main.ts` cannot hold `const server = …` to reach `stop` later. The
-lifecycle must be reachable through the server environment's own surface, and the entry stays a line
-of imports and a call.
-
-`AGENTS.md` permits a wrapper that adds lifecycle, which this one does. It does not permit framework
-code to take an application decision, so keep the signal handling where a runtime entry's process
-lifecycle honestly belongs and do not put it inside a factory that a library consumer would call for
-other reasons.
-
 ## Scope
 
 - **Owned**: `src/server/factories.ts`, `src/server/types.ts`, `src/server/helpers.ts`,
-  `src/server/Probe.ts`, `src/server/stages/TypeStage.ts`, `src/core/types.ts`, `src/bin/main.ts`,
+  `src/server/Probe.ts`, `src/server/stages/TypeStage.ts`, `src/core/types.ts`,
   and `tests/src/server/index.test.ts` **only** to keep its barrel population assertion true.
 - **Off-limits**: everything else. Specifically `src/core/helpers.ts`, `src/core/validators.ts`,
   `src/core/shapers.ts`, `src/core/constants.ts`, `src/server/index.ts`,
@@ -207,12 +179,9 @@ other reasons.
 7. E6: one exported helper carries the manifest read, both call sites use it, and the barrel
    population test names it.
 8. E7: both factories carry an `@example` and document every `ProbeOptions` field.
-9. E8: after the spawned entry is sent `SIGTERM`, no `oxlint` child and no Vitest worker of its own
-   survives. Prove it with `ps` before and after, and paste both.
-10. E8 does not add a module-scope constant or a module-scope function to `src/bin/main.ts`.
-11. `npm run format:check`, `npm run lint:check`, `npm run check`, `npm run build`, and `npm test`
-    each exit 0, run in that order.
-12. `git diff --stat` touches only the eight owned files.
+9. `npm run format:check`, `npm run lint:check`, `npm run check`, `npm run build`, and `npm test`
+   each exit 0, run in that order.
+10. `git diff --stat` touches only the seven owned files.
 
 ## Execution
 
@@ -235,6 +204,6 @@ Return exactly these five sections, and no process diary.
 
 1. **Files written** — each path with a one-line statement of what changed.
 2. **Validation** — each of the five gates with its exit code.
-3. **Acceptance evidence** — criteria 1 through 12, each with the command and output that closes it.
+3. **Acceptance evidence** — criteria 1 through 10, each with the command and output that closes it.
 4. **Deviation** — the contract above, or `None`.
 5. **Decisions** — ancillary decisions you made, or `None`.
