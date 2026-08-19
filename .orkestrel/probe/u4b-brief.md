@@ -39,6 +39,36 @@ guard must be shown red against the defect before it is accepted.
   finding for a test path under `tmp/probe/`, which is exactly where the coordinator's own arming
   test lives.
 
+### The regression guards the repair rounds owe you
+
+Two repair rounds ran between unit 3 and this one, each closing defects that a green suite had
+hidden. Each closed defect owes a committed test here, because a fix with no test is a fix that comes
+back. The repair rounds proved theirs with throwaway scripts they then deleted; you make them
+permanent.
+
+- The resident Vitest sets `process.exitCode` to 1 when a run reports a failure. Arming deliberately
+  fails a control, so before the repair every probe host exited 1 before serving a claim. Prove
+  `process.exitCode` survives arming and any `prove` untouched, and that a host which set a non-zero
+  code keeps it.
+- A deadline expiry left the abandoned revision file in `tmp/probe/` until `destroy`, holding whatever
+  the claim held — in the measurement, an infinite loop that the `probe` project's glob would pick up.
+  Prove `tmp/probe/` is clean immediately after an expiry, not only after teardown.
+- A failure during arming was an unhandled rejection with no caller, which ended the host process.
+  Prove a probe whose arming fails leaves the process alive and rejects `prove` with that failure.
+- `destroy` waited behind an in-flight inspection in two stages and abandoned one in the third. Prove
+  all three abandon.
+- Sending `SIGTERM` to the spawned entry left its Oxlint child running. Prove no child survives.
+- Arming proved only the runtime half of the staleness defect. Prove it refuses when the type host
+  serves stale source, as well as when the runtime does.
+
+### One inherited test is vacuous
+
+`tests/src/server/index.test.ts` carries a second assertion that iterates `Object.entries(entry)` and
+asserts each value is defined. It passes over an empty population and can only fail if a module
+exports a literal `undefined`, which no declaration here produces. `.claude/rules/tests.md` requires
+an assertion that fails rather than passes when its population is empty. Replace it with one that
+does, or delete it — the population assertion above it already pins the surface.
+
 ### The timeout constraint, already measured
 
 The `src:server` project carries no `testTimeout`, so it runs at Vitest's five-second default:
@@ -97,6 +127,9 @@ construction first and set the budget from that measurement plus explicit slack,
 ## Scope
 
 - **Owned**: `tests/src/server/**` and `tests/src/bin/**`.
+- **Read but do not edit**:
+  `/home/user/scaffold/.orkestrel/probe/u3-orchestrator-findings.md` carries the measured evidence
+  behind every regression guard above, including the exact commands and outputs.
 - **Off-limits**: everything else. Specifically `src/**`, `tests/src/core/**`, `guides/**`,
   `tests/config.test.ts`, `tests/policy.test.ts`, `tests/setup*.ts`, `package.json`,
   `vite.config.ts`, `configs/**`, and every dotfile.
