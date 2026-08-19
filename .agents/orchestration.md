@@ -247,6 +247,11 @@ clobbered edits, formatter and build races, cache phantoms, and validation cross
 10. Re-run a timing or resource failure alone before believing it. Concurrent slices, builds, and
     suites make a container miss deadlines it meets when idle, so a red result under load is a
     question rather than an answer.
+11. While any unit is live, the Orchestrator's own instruments go in its scratchpad, never in the
+    subject repository's `tmp/`. A probe that both writes and deletes inside the subject tree can
+    remove a file it did not create, and a cleanup keyed to a caller-supplied path list is how. The
+    same directory is where dispatched units build their instruments, so removing it destroys a live
+    lane's work.
 
 ## Execution loop
 
@@ -370,6 +375,10 @@ The harness bridge names the concrete mechanism for each of these.
 - Write the brief to a file under `tmp/`, named for its unit, before launching the unit, whatever
   engine executes it. A brief composed only inside a launch argument cannot be corrected, resumed,
   or re-run once that call ends.
+- Write the unit's returned report in the SAME action that commits its code, never afterwards. A
+  commit message states what changed; the report states what the unit measured, what it decided, what
+  it could not close, and which of its own claims it flagged. An auditor's subject is the second one,
+  so a report living only in the Orchestrator's context stops the next lane on arrival.
 - Capture the unit's returned report to a file beside its brief under the same unit name, so a
   unit's instruction and its outcome are one pair on disk.
 - Amend a brief on re-run rather than restating it. A mid-campaign correction produces a successor
