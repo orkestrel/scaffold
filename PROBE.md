@@ -71,12 +71,12 @@ speak the header form to Oxlint.
 
 Latency, measured warm against the built package:
 
-| Measurement                             | Median |
-| --------------------------------------- | ------ |
+| Measurement                             | Median  |
+| --------------------------------------- | ------- |
 | Boot, including arming                  | 4351 ms |
-| One `prove`, six checks and a receipt   | 492 ms |
-| One inspection, three stages concurrent | 264 ms |
-| The runtime stage alone                 | 187 ms |
+| One `prove`, six checks and a receipt   | 492 ms  |
+| One inspection, three stages concurrent | 264 ms  |
+| The runtime stage alone                 | 187 ms  |
 
 The type stage at 56 ms and the lint stage at 72 ms cost nothing observable, because they finish
 while the runtime stage is still running. A `prove` is two inspections in sequence, the case and then
@@ -92,17 +92,17 @@ Two independent audit lanes and the Orchestrator's own measurement each found de
 missed. The lanes agreed on exactly one — that a failure during boot arming is an unhandled rejection
 that ends the host process — and each found things the other two did not.
 
-| Found by                | Defect                                                                    |
-| ----------------------- | ------------------------------------------------------------------------- |
-| All three               | A boot arming failure ends the host process instead of refusing service   |
-| Measurement only        | The resident runner leaves every probe host exiting 1, from boot          |
-| Measurement only        | A deadline expiry leaves the abandoned test, loop and all, in the checkout |
-| Measurement only        | The entry orphans its linter child and worker set when the harness stops it |
-| Design lane only        | A required contract field, `project`, is read by nothing                  |
-| Design lane only        | Arming proves the runtime half of the staleness defect and never the type half |
-| Design lane only        | The published bundle carries the whole development manifest               |
-| Design lane only        | The published declaration imports a value purely to spell a type          |
-| Reading, after the lanes | The runtime stage never materializes the agent's candidate sources        |
+| Found by                 | Defect                                                                         |
+| ------------------------ | ------------------------------------------------------------------------------ |
+| All three                | A boot arming failure ends the host process instead of refusing service        |
+| Measurement only         | The resident runner leaves every probe host exiting 1, from boot               |
+| Measurement only         | A deadline expiry leaves the abandoned test, loop and all, in the checkout     |
+| Measurement only         | The entry orphans its linter child and worker set when the harness stops it    |
+| Design lane only         | A required contract field, `project`, is read by nothing                       |
+| Design lane only         | Arming proves the runtime half of the staleness defect and never the type half |
+| Design lane only         | The published bundle carries the whole development manifest                    |
+| Design lane only         | The published declaration imports a value purely to spell a type               |
+| Reading, after the lanes | The runtime stage never materializes the agent's candidate sources             |
 
 The last one is the largest, and it is a design question rather than a repair. `Case.files` is the
 source an agent supplies without writing it to disk. The type stage overlays every entry into its
