@@ -42,6 +42,36 @@ pending rather than failed.
 `script` is present on this host, so the TTY the npm approval flow needs is satisfiable here.
 `npm whoami` returns 401: the credential is the owner's and the login needs them at the keyboard.
 
+## Scaffold cannot build from a clean install until process publishes
+
+`src/bin/CLI.ts` imports `executeSync` from `@orkestrel/process/server`. That subpath does not exist
+in `@orkestrel/process` 0.0.3, which is what the lockfile resolves, so a clean `npm ci` in this
+repository produces:
+
+```text
+src/bin/CLI.ts(36,29): error TS2307: Cannot find module '@orkestrel/process/server' or its
+corresponding type declarations.
+```
+
+This is not a pin problem and re-pinning does not fix it. The layer order is enforced by **source**
+here, not only by manifest ranges: scaffold's gates cannot go green from the registry until
+`@orkestrel/process` 0.0.4 is published.
+
+The pre-publish workaround, taken 2026-08-20 and still in force in this container:
+
+```text
+cd /workspace/process && npm run build && npm pack --pack-destination /home/user/scaffold/tmp/tarballs
+npm install --no-save tmp/tarballs/orkestrel-process-0.0.4.tgz
+```
+
+`--no-save` is deliberate. It installs the packed artifact — never a link, which would skip the
+packing, the `files` list, and the exports map — and it leaves `package.json` and `package-lock.json
+`untouched, so there is no replaced range to restore. Run `npm ci` to return to the registry copy
+before any gate that must prove the published artifact, and before publishing.
+
+Repack whenever process's source moves. A stale tarball is a stale `dist/` wearing a disguise: the
+consumer's gates go green against a fix that no longer exists upstream.
+
 ## What the audits found
 
 Every package was audited by GPT-5.6 Sol, an engine that wrote none of the fixes. All four returned
