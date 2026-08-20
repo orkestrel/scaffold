@@ -194,6 +194,13 @@ Import `waitForDelay` from `@orkestrel/test`; never repeat an inline timeout pro
 function waitForDelay(ms?: number): Promise<void>
 ```
 
+Use it to yield, never to wait for something another process produces. A fixed delay chosen to
+outlast a child's startup is a race whose loss looks like a product defect: the test measures
+interpreter bootstrap rather than the behaviour it names, and it fails on a loaded host and passes on
+an idle one. Wait until a named condition holds instead, polling with `waitForDelay` inside a budget
+measured by `performance.now()`, and fail with the condition's own description when the budget
+expires.
+
 ### Scratch
 
 Import `createScratch` from `@orkestrel/test/server` when a proof needs real files. It allocates a temporary directory it owns, contains every path against escape, and removes the directory on `destroy`:

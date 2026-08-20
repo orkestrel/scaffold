@@ -2,7 +2,8 @@
 
 The plan of record after the current-pins release wave (closed 43/43, 2026-08-18: every fleet
 package published at latest `@orkestrel` pins, proven by gates and the material-dist rule).
-Campaign detail lives in `.orkestrel/fleet/`; this file owns everything still open.
+This file owns everything still open. Campaign detail is recoverable from git history by hash;
+no campaign folder is the plan of record.
 
 ## 1. Git reconciliation — CLOSED 2026-08-18
 
@@ -33,6 +34,10 @@ section 2.
 - **scaffold**: add `form` to the vendored mirror inventory so `overwrite` vendors
   `guides/form.md` into consumers that declare it (toolbox first); re-run overwrite there after.
   (was B22)
+- **scaffold**: regenerate the package table with `scaffold catalog` so the `form` and `table`
+  rows land in it. (was B8)
+- **scaffold policy**: move the nested-function body law into `configs/policy.ts` as a third
+  plugin rule. The rule set carries the two that shipped; this one stayed a candidate.
 - **scaffold rules**: rule on the interned-class canon — `agent`'s barrelled `Channel` vs
   `middleware`'s interned `MultipartParser` are the same species with opposite rulings; land the
   rule in `architecture.md` and correct the losing package. (was B2)
@@ -66,8 +71,28 @@ section 2.
   the three-key mapping. (was B14)
 - **w3 acceptance**: re-prove or strike what w3 shipped; the real-tree red proof was blocked by
   a read-only `.agents` policy in that harness. (was B15)
+- **Banning the `object` type**: state the invariant in the canon first, or drop the candidate.
+  Banning it today imports a policy the canon does not carry.
+- **Sweeps with no honest mechanical form**: the template-TODO sweep, the model-routing and
+  version-catalog sweep, and the strict skill-directory inventory each red healthy references in
+  every mechanical form tried. They stay review-owned until one exists that does not.
+- **The in-memory probe mechanism** — typecheck, lint, and execution in one call with no
+  `tmp/probe/` opt-out — shipped as `@orkestrel/probe`. Closed by the package, not by a scaffold
+  change.
 
-## 5. supervisor — user-owned, untouched by this plan
+## 5. What the next host release owes each target
+
+The anti-slop, style, and skills audits landed in this repository's rules, policy plugin, and
+vendored host. None of it has reached a target: no target's violation counts were taken, and the
+bump, publish, re-pin, `repair`, and gate wave has not run.
+
+- Take each target's violation counts **before** the wave, so the wave has a baseline to move.
+- Sweep every target for skill and bridge members outside the vendored set; that population is
+  unmeasured, and `repair` does not remove what the plan never owned.
+- `.agents/orchestration.md` § The release wave owns the procedure. Read the publish order from
+  the catalog table, regenerated, rather than from any written copy.
+
+## 6. supervisor — user-owned, untouched by this plan
 
 The supervisor repo, its 2,342-line in-repo roadmap (promote-the-mechanism campaign: extractions
 into contract/terminal/sse/middleware/sea, new packages `human` and `live`), its

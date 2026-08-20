@@ -577,6 +577,10 @@ command that outlives the turn that started it. Every law here binds all of them
   completion re-invokes the session, and the cap kills a wedged command loudly instead of trusting
   the agent to report its own failure. A wedged bridge is silent, and silence must never read as
   progress.
+- Never replicate git commits through a hosting provider's REST API when a file's content must ride
+  inside the tool-call JSON. The per-call read cap truncates it, and a lockfile is the file that
+  proves the point: it transits incomplete and the tree it lands in installs something else. Push
+  over git, or move the file another way.
 - Write a multi-step chain to a script file and run the file. A chain composed inside one shell
   argument cannot be read back, corrected, or re-run, and the record of what actually ran is the
   argument text in a transcript rather than a file on disk.
@@ -819,6 +823,9 @@ once per round with one procedure, publish each layer in one window, and only th
 
 ### Preparing
 
+0. **An unpublished package's first version is `0.0.1`.** Do not bump it before that first publish.
+   The registry has nothing to serve, so there is no version to move away from, and bumping produces
+   a package whose history starts at a number nothing explains.
 1. **Bump from what the registry serves, not from the local manifest.** A repository's `version`
    can sit a release behind what was published from another checkout, and bumping that produces a
    version the registry already holds, which fails on upload after the whole gate chain has run.
@@ -865,7 +872,11 @@ flag is what stops the gate chain running a second time inside the five minutes.
   so a session-start answer does not hold.
 - Surface each approval URL the moment it appears in the log, and take the **last** one in log order.
   npm mints a new URL whenever an attempt restarts, and the log accumulates every one, so a URL
-  chosen by sorting rather than by position is already dead when the user opens it.
+  chosen by sorting rather than by position is already dead when the user opens it. Read it out of
+  the journal in the foreground and surface it before arming any watcher: a watcher-based relay can
+  fail silently, and its silence is indistinguishable from a chain that has not reached the URL yet.
+  Relay the URL as plain text. A decorated link did not render for the operator, who then had nothing
+  to click while the window ran down.
 - Re-read the log before treating an approval as failed. The chain is usually still alive on a newer
   URL, so surface that one rather than relaunching.
 - A `404` on an approval URL usually means the publish already succeeded and consumed it. Read the

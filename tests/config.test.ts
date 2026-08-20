@@ -120,6 +120,16 @@ describe('root configuration', () => {
 				setup: ['./tests/setup.ts'],
 			})
 		}
+		// The setup project is selected by any proof named `setup*.test.ts` directly under
+		// `tests`, so it is the one derived project whose include is a pattern rather than
+		// the proof's own path. Reading it from the same glob the generator reads keeps a
+		// registered project inside this gate instead of beside it.
+		if (globSync('tests/setup*.test.ts', { cwd: root }).length > 0) {
+			expected.set('setup', {
+				include: 'tests/setup*.test.ts',
+				setup: ['./tests/setup.ts'],
+			})
+		}
 		// The live-service project covers a directory rather than one proof, so its
 		// readiness module is the fact that selects it. A suite beneath
 		// `tests/service` with no setup module is a project nothing configures.
