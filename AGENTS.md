@@ -157,6 +157,10 @@ This governs prose everywhere: chat replies, instruction files, guides, TSDoc, c
 - Keep all substance, nuance, and precision. Cut only what makes text hard to read.
 - Present a tradeoff as option, cost, and recommendation — not as a balanced meditation.
 - Write requirements so they are specific and testable. Replace evaluative words such as "user friendly" or "hardened further" with the concrete condition that closes them.
+- **NEVER state a count.** A number answering "how many" about a set anyone can add to — rules, rows, members, exports, files, options, steps, cases, stages, findings, tests — is stale the moment the set moves, and it goes stale silently. Name the members, or write the sentence without the number. The reader counts when the reader needs to.
+- **NEVER name a list item by its position.** Write the item's name, never `rule 4`, `the third row`, or `the fifth kind`. A position is a count and it moves when a row moves.
+- Write a number only as a value the reader needs: a duration, a size, a limit, a version, a date, an exit code, or a measurement reported with the run that produced it. A value is not a count.
+- Delete a count you find. Do not correct it.
 
 #### Instruction files
 
