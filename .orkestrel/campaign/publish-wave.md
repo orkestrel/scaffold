@@ -196,53 +196,70 @@ escapes a published helper unclassified, through a gate this campaign narrowed.
 
 ## Start here next session
 
-**Repository tips at handoff**, all pushed to `main`:
+**Repository tips, all pushed to `main`:**
 
 | Repository | Tip | State |
 | ---------- | --- | ----- |
-| `@orkestrel/scaffold` | see `git log -1` on `main` | clean, gates green |
-| `@orkestrel/process` | `8a4cc94` | clean, gates green |
-| `@orkestrel/mcp` | `b06cd26` | clean, gates green |
-| `@orkestrel/probe` | `f9807ad` | a fix unit was in flight at handoff — check `git status` |
+| `@orkestrel/scaffold` | see `git log -1` on `main` | closed, gates green |
+| `@orkestrel/process` | `8a4cc94` | closed, gates green |
+| `@orkestrel/mcp` | `b06cd26` | closed, gates green |
+| `@orkestrel/probe` | `38cb0c0` | one test red, deliberately committed |
 
 Scaffold's working branch `claude/oxlint-conventions-audit-m66uiq` and `main` point at the same
 commit. Push to both.
 
-**A probe fix unit may be uncommitted.** `PBFIX7` was running when this note was written, on
-GPT-5.6 Sol, against the audit findings above. Its brief is `tmp/codex/pbfix7-brief.md` in the probe
-checkout and its journal is `tmp/codex/pbfix7.jsonl`; `tmp/` is gitignored, so a fresh container will
-not have them and the unit must be re-briefed from the findings recorded here. If the tree is dirty,
-read what it holds before deciding — the work may be complete and unproved rather than partial.
+**Probe's one red test.** `attributes a deadline in runtime cleanup to the instrument` in
+`tests/src/server/Probe.test.ts` times out at 60000 ms on the host — alone on an idle container as
+well as inside the suite — while the unit that wrote it reported green from its bench sandbox. Its
+mechanism is a `mkfifo` at the Vitest results-cache path plus a spawned reader, meant to stall the
+eviction write so a deadline fires during cleanup; on this host it hangs instead of stalling.
 
-**The order that remains:**
+Everything else in probe is green: `format:check`, `lint:check`, `check`, `build`,
+`test:distribution`, and 170 of 171 tests.
 
-1. Finish probe's correctness round — the receipt, the deadline boundary, the sweep's double marker,
-   the symlink ownership, and the unclassified native rethrow.
-2. Rename probe's `Origin` to a name no sibling publishes. `Owner` reads as its own documentation
-   states the concept: the party that must act. Rule explicitly, in the guide, on whether `Finding`
-   and `isFinding` stay, because a consumer importing scaffold and probe together must alias one side
-   and a first publish makes that permanent.
-3. Re-run probe's gates on the host, then audit the fix round on an engine that did not write it.
-4. Run an independent `verifier` over each repository.
-5. Publish, in layer order, with the owner at the keyboard.
+Rule between three, and say which you took: repair the stall deterministically; drive the stage's
+progress boundary directly, which reaches the same assertion without a FIFO; or remove the coverage
+and state plainly that instrument-side deadline attribution ships unproven, naming what would prove
+it. **Do not lengthen the timeout** — a test needing longer than its siblings to prove the same class
+of rule is the wrong test. Its sibling, a caller's non-terminating test attributing `claimant`,
+passes on the host and stays; that is the half this campaign fixed from inverted.
+
+A unit named `PBFIX9` was dispatched against exactly this, with its brief at
+`.orkestrel/probe/pbfix9-brief.md`. If probe's tree is dirty, that unit's work is in it.
+
+**Then: the rename.** `Origin` collides with `@orkestrel/scaffold`, which probe installs, and the
+campaign created that collision. The ruling and its brief are at `.orkestrel/probe/pbfix8-brief.md`:
+rename to `Party`, keep `Finding` and `isFinding`, and state the remaining collision in the guide
+where a consumer reads it before importing.
+
+Two candidates were rejected on evidence. `Fault` is published by `@orkestrel/contract`, a runtime
+dependency — a worse collision than the one being fixed. `Owner` is free across the fleet but
+collides inside probe, where `RuntimeStage.#owned` already answers whether this package generated a
+file. **Run that check twice for any new name: outward against every `@orkestrel` package the target
+declares, and inward against the package's own vocabulary.**
+
+**Then:** a cross-engine audit of probe's fix rounds on an engine that did not write them, an
+independent `verifier` per repository, and the publish window.
 
 **Publishing needs the owner.** `npm whoami` returns 401 here. `AGENTS.md` § Publishing owns the
 window procedure — the fifo stdin, `--browser=false`, one attempt for a layer's first package, and
 reading the result from the registry rather than an exit code. Do not restate it; read it there.
+Layer order is `process` → `{mcp, scaffold}` → `probe`.
 
-**Before scaffold publishes**, run `npm ci` in its checkout. It currently holds an unsaved
+**Before scaffold publishes**, run `npm ci` in its checkout. It holds an unsaved
 `@orkestrel/process` 0.0.4 tarball install, without which `src/bin/CLI.ts` cannot resolve
 `@orkestrel/process/server` and the tree cannot typecheck. That install is what lets scaffold's gates
-run before process is on the registry; it is not what should prove the published artifact.
+run ahead of the registry; it is not what should prove the published artifact.
 
 **Two constraints that outlive this campaign:**
 
-- TypeScript stays below 7. `7.0.2` is on the registry, every package declares `^6.0.3`, and a test
-  in scaffold now refuses a range admitting `7.0.2`. A sweep that reads "latest" as "every
-  dependency" breaks the fleet; the instruction covers `@orkestrel/*` alone.
-- Check every new public name against the guides of every `@orkestrel` package the target declares.
-  `@orkestrel/console` publishes `Capture`. `@orkestrel/scaffold` publishes `Origin`, `Finding`, and
-  `isFinding`. Nothing fails to build when a name collides, so only a deliberate check finds it.
+- TypeScript stays below 7. `7.0.2` is on the registry, every package declares `^6.0.3`, and a
+  scaffold test now refuses a range admitting `7.0.2`. A sweep reading "latest" as "every dependency"
+  breaks the fleet; the instruction covers `@orkestrel/*` alone.
+- A bench sandbox is not the host. This campaign measured a bench denying a loopback listener, a
+  nested install, an `rm -rf`, a process one level below a spawned child, and a write to `.agents/` —
+  and probe's red test is a case where a bench reported green and the host disagreed. Take every
+  release-gating reading on the host.
 
 ## The rule these keep proving
 
