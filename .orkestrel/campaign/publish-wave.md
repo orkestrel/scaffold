@@ -77,6 +77,27 @@ before any gate that must prove the published artifact, and before publishing.
 Repack whenever process's source moves. A stale tarball is a stale `dist/` wearing a disguise: the
 consumer's gates go green against a fix that no longer exists upstream.
 
+## TypeScript stays below 7, and a "latest" sweep must not touch it
+
+The owner's ruling: TypeScript cannot move past `6.0.3`, because version 7 breaks what this fleet is
+built on. TypeScript `7.0.2` is on the registry as of 2026-08-20, so this is live rather than
+hypothetical.
+
+Every package in the wave declares `typescript` at `^6.0.3` and has `6.0.3` installed. That range
+already excludes 7, verified rather than assumed:
+
+```text
+7.0.0 satisfies ^6.0.3: false
+6.9.0 satisfies ^6.0.3: true
+```
+
+So no edit is needed, and none was made. The instruction to bring dependencies to latest is scoped to
+`@orkestrel/*` packages alone. A sweep that reads "latest" as "every dependency" moves TypeScript to
+7 and breaks every package at once — check this line before running one.
+
+`^6.0.3` blocks 7 and admits a later `6.x`. If the intent is to freeze at exactly `6.0.3`, the range
+has to become `6.0.3`; the reason the owner gave is satisfied by the caret as it stands.
+
 ## What the audits found
 
 Every package was audited by GPT-5.6 Sol, an engine that wrote none of the fixes. All four returned
