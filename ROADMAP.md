@@ -80,6 +80,15 @@ section 2.
   attached. The fix site is `@orkestrel/mcp`, not `probe`, and `probe` grades it a release blocker.
   Closing it means an `mcp` bump plus a `probe` test asserting `stop()` leaves
   `process.stdin.listenerCount('data')` at zero.
+- **mcp**: `guides/mcp.md` near line 4187 still describes the pre-0.0.2 `node:child_process`
+  transport. Refresh it on mcp's next documentation pass.
+- **sea**: `SEAOptions` exposes no `timeout`, so `runShell` cannot bound a signing tool whose
+  descendants inherit stdio. Recorded as a successor unit during process's 0.0.3 adoption.
+- **contract**: `isContractError` fails across an ESM and CJS copy boundary the same way
+  `isProcessError` did. `@orkestrel/process` 0.0.4 fixes its own with a `Symbol.for` brand read
+  through `getOwnPropertyDescriptor`; `contract` owns the general mechanism and has not taken it.
+- **supervisor**: re-pin mcp to `^0.0.19` and sea to `^0.0.9` on its next dependency pass. Section 6
+  covers why nothing else touches that repository.
 - **process**: two rulings recorded and never scheduled — the `bytes` and `write` surface synthesis
   ruled for `ProcessInterface`, and bare-`\r` handling in `lines`.
 - **qualifier**: design round on `Premise` — every member is optional so `isPremise` accepts
