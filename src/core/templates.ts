@@ -109,6 +109,7 @@ const resolve = {
 				emptyOutDir: true,
 				sourcemap: true,
 				minify: false,
+				rolldownOptions: { onLog: enforceBuildLog },
 			},
 			test: {
 				name: { label: 'src:core', color: 'magenta' },
@@ -138,6 +139,7 @@ const resolve = {
 				},
 				outDir: 'dist/src/browser',
 				rolldownOptions: {
+					onLog: enforceBuildLog,
 					{{external}}
 {{output}}
 				},
@@ -176,6 +178,7 @@ const resolve = {
 				outDir: 'dist/src/server',
 				target: 'node22',
 				rolldownOptions: {
+					onLog: enforceBuildLog,
 					platform: 'node',
 					{{external}}
 {{output}}
@@ -210,6 +213,7 @@ const resolve = {
 				outDir: 'dist/bin',
 				target: 'node22',
 				rolldownOptions: {
+					onLog: enforceBuildLog,
 					external: (id: string) =>
 						id.startsWith('node:') ||
 						id.startsWith('@orkestrel/') ||
@@ -260,7 +264,10 @@ const resolve = {
 		build: {
 {{showcaseBuild}}			emptyOutDir: true,
 			outDir: resolveWorkspacePath(output),
-			rolldownOptions: { input: resolveWorkspacePath('app/browser/index.html') },
+			rolldownOptions: {
+				onLog: enforceBuildLog,
+				input: resolveWorkspacePath('app/browser/index.html'),
+			},
 		},
 		test: {
 			name: { label: 'app:browser', color: 'blue' },
@@ -297,7 +304,10 @@ export function appBrowser(): UserConfig {
 				},
 				outDir: resolveWorkspacePath('dist/app/server'),
 				target: 'node22',
-				rolldownOptions: { external: (id: string) => id.startsWith('node:') },
+				rolldownOptions: {
+					onLog: enforceBuildLog,
+					external: (id: string) => id.startsWith('node:'),
+				},
 			},
 			test: {
 				name: { label: 'app:server', color: 'green' },

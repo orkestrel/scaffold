@@ -748,27 +748,46 @@ describe('blueprintToRootVite fixed proofs', () => {
 	// the bytes `new` wrote, so each span below is pinned to the text those two gates
 	// accept. Each covers the selections that reach both sides of its branch, because
 	// one selection per span reads as covered while measuring one side.
-	it('imports the boundary plugins a selection actually reaches', () => {
-		// The four memberships the two symbols have: a core-only workspace builds
-		// nothing and bounds nothing, `bin` bounds only its output, an application
-		// core bounds only its environment, and a published server does both.
-		expect(blueprintToRootVite(buildBlueprint({ src: ['core'] }))).not.toContain(
-			"from './configs/helpers.js'",
+	it('imports the configuration helpers a selection actually reaches', () => {
+		// The four memberships the three symbols have: a core build enforces logs,
+		// `bin` also bounds its output, an application core only bounds its
+		// environment, and a published server reaches all three helpers.
+		expect(blueprintToRootVite(buildBlueprint({ src: ['core'] }))).toContain(
+			"import { enforceBuildLog } from './configs/helpers.js'\n",
 		)
 		expect(blueprintToRootVite(buildBlueprint({ src: ['core'], bin: true }))).toContain(
-			"import { outputBoundary } from './configs/helpers.js'\n",
+			"import { enforceBuildLog, outputBoundary } from './configs/helpers.js'\n",
 		)
 		expect(blueprintToRootVite(buildBlueprint({ src: [], app: ['core'] }))).toContain(
 			"import { environmentBoundary } from './configs/helpers.js'\n",
 		)
 		expect(blueprintToRootVite(buildBlueprint({ src: ['core', 'server'] }))).toContain(
-			"import { environmentBoundary, outputBoundary } from './configs/helpers.js'\n",
+			"import { enforceBuildLog, environmentBoundary, outputBoundary } from './configs/helpers.js'\n",
 		)
 		// The removed runtime filesystem classifier leaves the URL import directly
 		// after the three imports every root configuration makes.
 		expect(blueprintToRootVite(buildBlueprint({ src: ['core'] }))).toContain(
-			"import type { UserConfig } from 'vite'\nimport { defineConfig, mergeConfig } from 'vitest/config'\nimport manifest from './package.json' with { type: 'json' }\nimport tsconfig from './tsconfig.json' with { type: 'json' }\nimport { fileURLToPath, URL } from 'node:url'",
+			"import type { UserConfig } from 'vite'\nimport { defineConfig, mergeConfig } from 'vitest/config'\nimport manifest from './package.json' with { type: 'json' }\nimport tsconfig from './tsconfig.json' with { type: 'json' }\nimport { enforceBuildLog } from './configs/helpers.js'\nimport { fileURLToPath, URL } from 'node:url'",
 		)
+	})
+
+	it('wires the build-log guard into every bundle-emitting factory', () => {
+		const configuration = blueprintToRootVite(
+			buildBlueprint({
+				src: ['core', 'browser', 'server'],
+				app: ['core', 'browser', 'server'],
+				bin: true,
+				showcase: true,
+			}),
+		)
+		const appCoreStart = configuration.indexOf('export const appCore')
+		const appCoreEnd = configuration.indexOf('function applicationBrowser')
+
+		expect(configuration.split('onLog: enforceBuildLog')).toHaveLength(7)
+		expect(configuration).toContain('export function appShowcase(): UserConfig {')
+		expect(appCoreStart).toBeGreaterThan(-1)
+		expect(appCoreEnd).toBeGreaterThan(appCoreStart)
+		expect(configuration.slice(appCoreStart, appCoreEnd)).not.toContain('enforceBuildLog')
 	})
 
 	// A generated workspace launches Chromium through the resolver it was given, so

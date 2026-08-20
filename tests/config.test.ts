@@ -685,6 +685,7 @@ describe('configuration helpers', () => {
 			'WORKSPACE_ROOT',
 			'containedPath',
 			'decodeAssetSource',
+			'enforceBuildLog',
 			'enforceOutputPath',
 			'environmentAssetSources',
 			'environmentBoundary',
@@ -710,6 +711,34 @@ describe('configuration helpers', () => {
 		]
 		const found = Object.keys(configHelpers)
 		for (const name of required) expect(found).toContain(name)
+	})
+
+	it('fails broken import-meta builds and forwards every other log', () => {
+		expect(() =>
+			configHelpers.enforceBuildLog(
+				'warn',
+				{
+					code: 'EMPTY_IMPORT_META',
+					message: 'The import.meta meta-property is not available in CommonJS output.',
+				},
+				expect.unreachable,
+			),
+		).toThrow(
+			'[orkestrel-build] The import.meta meta-property is not available in CommonJS output.',
+		)
+
+		const levels: string[] = []
+		const messages: string[] = []
+		configHelpers.enforceBuildLog(
+			'warn',
+			{ code: 'CONTROL_WARNING', message: 'The control warning remains visible.' },
+			(level, log) => {
+				levels.push(level)
+				messages.push(typeof log === 'string' ? log : log.message)
+			},
+		)
+		expect(levels).toStrictEqual(['warn'])
+		expect(messages).toStrictEqual(['The control warning remains visible.'])
 	})
 
 	it('resolves contained workspace paths and refuses a real outside sibling', () => {

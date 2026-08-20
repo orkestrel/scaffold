@@ -813,21 +813,18 @@ export function appShowcase(): UserConfig {
 		: `\t\tprojects: [
 ${projects.map((project) => `\t\t\t${project},`).join('\n')}
 	\t],`
-	// The boundary plugins a selection reaches are read off the factories it
+	// The configuration helpers a selection reaches are read off the factories it
 	// emitted rather than restated as a second selection rule, so the generated
-	// config imports what it uses and passes its own lint gate. A core-only
-	// workspace builds nothing and bounds no environment, so it imports neither.
+	// config imports what it uses and passes its own lint gate.
 	const body = `${factories.join('\n')}\n`
-	const boundaries = ['environmentBoundary', 'outputBoundary'].filter((boundary) =>
-		body.includes(boundary),
+	const helpers = ['enforceBuildLog', 'environmentBoundary', 'outputBoundary'].filter((helper) =>
+		body.includes(helper),
 	)
 	return fillTemplate(CONFIG_TEMPLATES.root.vite, {
 		viteTypes: machinery.showcase ? 'PluginOption, UserConfig' : 'UserConfig',
 		imports: imports.length === 0 ? '' : `${imports.join('\n')}\n`,
 		helpers:
-			boundaries.length === 0
-				? ''
-				: `import { ${boundaries.join(', ')} } from './configs/helpers.js'\n`,
+			helpers.length === 0 ? '' : `import { ${helpers.join(', ')} } from './configs/helpers.js'\n`,
 		// The provider options are resolved once for the whole configuration, and
 		// only a selection that emits `configs/browsers.ts` can name them.
 		browsers: machinery.browser

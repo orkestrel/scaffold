@@ -500,6 +500,59 @@ describe('emitted workspaces under their own gates', () => {
 		}
 	})
 
+	it('keeps a root factory log handler through a scoped build merge', async () => {
+		const workspace = createScratch({ parent: ensureTmpRoot(), prefix: 'scaffold-e2-log-merge-' })
+		const root = workspace.ensure('merged')
+		try {
+			const blueprint = createBlueprint('sample', { src: ['core'], bin: true })
+			stageRootConfig(blueprint, workspace, 'merged')
+			const wrappers = blueprintToConfigArtifacts(blueprint).filter(({ path }) =>
+				['configs/src/vite.core.config.ts', 'configs/src/vite.bin.config.ts'].includes(path),
+			)
+			expect(wrappers.map(({ path }) => path)).toStrictEqual([
+				'configs/src/vite.core.config.ts',
+				'configs/src/vite.bin.config.ts',
+			])
+			for (const wrapper of wrappers) {
+				if (wrapper.origin === 'host') throw new Error('Expected a Vite wrapper')
+				workspace.write(`merged/${wrapper.path}`, wrapper.content)
+			}
+			workspace.write(
+				'merged/control.config.ts',
+				"import { defineConfig } from 'vite'\n\nexport default defineConfig({ build: { rolldownOptions: { external: () => false } } })\n",
+			)
+
+			const control = await loadConfigFromFile(
+				{ command: 'build', mode: 'production' },
+				join(root, 'control.config.ts'),
+				root,
+			)
+			if (control === null) throw new Error('Expected the control configuration to load')
+			expect(control.config.build?.rolldownOptions?.onLog).toBeUndefined()
+
+			const loaded = await loadConfigFromFile(
+				{ command: 'build', mode: 'production' },
+				join(root, 'configs/src/vite.core.config.ts'),
+				root,
+			)
+			if (loaded === null) throw new Error('Expected the core configuration to load')
+			expect(loaded.config.build?.rolldownOptions?.onLog).toBeTypeOf('function')
+			expect(loaded.config.build?.rolldownOptions?.external).toBeTypeOf('function')
+
+			const bin = await loadConfigFromFile(
+				{ command: 'build', mode: 'production' },
+				join(root, 'configs/src/vite.bin.config.ts'),
+				root,
+			)
+			if (bin === null) throw new Error('Expected the bin configuration to load')
+			expect(bin.config.build?.rolldownOptions?.onLog).toBeTypeOf('function')
+			expect(bin.config.build?.rolldownOptions?.external).toBeTypeOf('function')
+			expect(bin.config.build?.rolldownOptions?.output).toBeDefined()
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	// A declared peer is only left alone if a real build leaves it alone, so both
 	// published faces are built for real against a staged workspace whose manifest
 	// declares one. The control is a second installed package the manifest does not
