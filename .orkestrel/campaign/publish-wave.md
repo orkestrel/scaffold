@@ -157,18 +157,50 @@ install already recorded in § Bench laws. Measured in `@orkestrel/mcp`: `listen
 while the same suites exited 0 on the host. A subject needing a real local server is unmeasurable
 inside a bench.
 
-## Order of remaining work
+## Where each package stands
 
-Writers serialize per checkout. Different repositories run concurrently.
+Read this section first; it is the one that changes.
 
-- **process** — PFIX (Sol) closes the three findings; then the Orchestrator takes the pack reading;
-  then gates.
-- **mcp** — MFIX-B (Sol) closes the guide truth, the packed inventory gate, and the count sweep;
-  then the Orchestrator takes the distribution reading the bench cannot; then gates.
-- **scaffold** — SFIX-A (Sol) closes the canon findings and lands the bench fact; then gates.
-- **probe** — PBFIX6 (Sol), then PB-S1 (surface), then PB-E1 (core error axis), then PB-E2 (server
-  error axis), then PB-D1 (guide voice, Opus), then gates. This is the longest chain and probe is the
-  last layer, so it does not block the others.
+| Package | Version | Gates | Findings |
+| ------- | ------- | ----- | -------- |
+| `@orkestrel/process` | 0.0.4 | green on the host | audit and lens closed; cross-engine audit running |
+| `@orkestrel/mcp` | 0.0.20 | green on the host, no audit drift | audit, cross-engine audit, and its fix round all closed |
+| `@orkestrel/scaffold` | 0.0.45 | green on the host, no audit drift | audit and lens closed; cross-engine audit running |
+| `@orkestrel/probe` | 0.0.1 | source green; guide and distribution red until the guide unit lands | audit closed except its documentation layer |
 
-Each finished unit gets an audit lane on an engine that did not write it, then an independent
-`verifier` for the authoritative gates.
+Every engine that wrote a fix has been audited by an engine that did not write it, or has that audit
+in flight. That rule is not ceremony here: the cross-engine audit of mcp found a `prepublishOnly`
+step that could never have run on a clean checkout, while every gate reported green.
+
+## What that audit found, because the class recurs
+
+`tests/distribution.test.ts` minted a directory inside gitignored `tmp/`. On a fresh clone `tmp/`
+does not exist, so `mkdtemp` threw `ENOENT` before packing anything — and that test is the last step
+of `prepublishOnly`. The gate had only ever passed because campaign work happened to have created the
+directory.
+
+**A green gate reading taken on a tree that campaign work has touched is not a green gate reading.**
+Prove a release-gating test by removing the incidental state and running it again. The proof that
+closed this one:
+
+```text
+mv tmp /tmp/hold && npm run test:distribution   # exit 0, Tests 1 passed
+mv /tmp/hold tmp                                 # restored
+```
+
+The same audit found that a fix had introduced a defect: one transport face rejected where its
+sibling resolved, in a pair the guide sells as swappable with no call-site change. An engine cannot
+find that in its own work.
+
+## Remaining work
+
+- **probe** — the guide unit closes its documentation of the ownership axis, the categorization gate
+  that inspects text instead of running anything, the count sweep, and a stale distribution consumer
+  naming a removed union member. Its `guides` and `distribution` projects are red until it lands, and
+  closing them is that unit's objective.
+- **the cross-engine audits** of process and scaffold return, and whatever they find gets a fix round
+  on an engine that did not write the fix under audit.
+- **an independent `verifier`** runs the authoritative gates in each repository once its findings are
+  closed.
+- **the publish window**, which is the owner's and needs them at the keyboard.
+
