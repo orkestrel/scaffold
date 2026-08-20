@@ -565,11 +565,15 @@ right to stop.
   sandbox that writes, so naming any of those stops the unit on arrival over a detail the allowlist
   already settled. Where a read-only lane needs executed evidence, produce it separately and hand it
   over: the Orchestrator supplies the evidence and the lane rules on it.
-- Scope a fleet-wide refactor by the files that **consume** a symbol, not by the files that declare
-  it. A criterion that removes a symbol, or that makes an existing state or fixture shape
-  unreachable, closes only when every consumer that exercises it is owned, so a brief scoped to the
-  declaration alone sends the unit into a typecheck break in a file it cannot edit. Count the
-  importers before writing the owned list.
+- Scope a change by the files its result makes **false**, not by the files that declare the thing
+  changing. Counting importers finds only part of that set. A test asserting the behaviour being
+  reversed, a fixture carrying a value being raised, a golden digest over generated output, and a
+  consumer script naming a union member being removed each go false without importing anything new,
+  and a brief scoped to the declaration alone sends the unit into a failure in a file it cannot edit.
+  The unit is then right to stop, and a whole dispatch cycle produces no work.
+  Ask of every criterion: what asserts the state this change ends? Own every answer, or strike the
+  criterion. Grant a behaviour and the tests that pin it together; grant a constant and every fixture
+  and expectation derived from it together.
 
 ### Carry every finding
 
