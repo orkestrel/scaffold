@@ -25,9 +25,10 @@ section 2.
 
 - **Prepack** (was D6/B3): no fleet package declares `prepack`, so `npm pack` from a stale tree
   ships stale `dist`. Decide once, fleet-wide: add `prepack` or accept the risk.
-- **Branch cleanup** (was D8): run `.orkestrel/fleet/branch-cleanup.sh` with operator
-  credentials (the proxy refuses ref deletions). Include relation's ported
-  `claude/database-package-audit-6r4hsd` branch, whose hardening shipped in relation 0.0.9.
+- **Branch cleanup** (was D8): run `scripts/branch-cleanup.sh` with operator credentials (the
+  proxy refuses ref deletions). It deletes 292 remote branches across 46 repositories; read it
+  before running it. Include relation's ported `claude/database-package-audit-6r4hsd` branch, whose
+  hardening shipped in relation 0.0.9.
 
 ## 3. Package work, scheduled by each package's next natural release
 
@@ -95,6 +96,15 @@ section 2.
   `{}`; decide whether `met`/`field` become required. (was B20)
 
 ## 4. Design and research records
+
+- **A mirrored guide tracks a branch, not a release.** `Upstream` fetches guides from
+  `raw.githubusercontent.com` and versions from `registry.npmjs.org`, so `scaffold catalog` mirrors
+  each dependency's default branch while the catalog table names its published version. A mirror can
+  therefore document a surface no consumer can install: refreshing after `@orkestrel/process` merged
+  its 0.0.4 work brought `snapshotCommand`, `PROCESS_ERROR_CODES`, and `ProcessChild.off` into this
+  repository's copy while the registry still served 0.0.3. Decide whether a mirror must track the
+  published release. Until it does, publish a dependency before publishing the package that mirrors
+  it, so the mirror is true when it ships.
 
 - **settings vendoring**: decide whether `.claude/settings.json` vendors for existence rather
   than bytes; today `repair` restores vendored bytes and operator grants live in
