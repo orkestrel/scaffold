@@ -44,6 +44,11 @@ section 2.
 - **toolbox**: add proofs for `promptToolShape`/`answerToolShape` in
   `tests/src/core/shapers.test.ts`, or correct the guide sentence claiming every advertised
   shape is covered. (was B23)
+- **test**: publish `waitForCondition` — poll a named condition inside a budget measured with
+  `performance.now()`, accepting a synchronous or asynchronous condition, rejecting once the budget
+  elapses. `@orkestrel/process` carries a proven local copy at `tests/setup.ts` and `probe` needs the
+  same. Deferred deliberately: the user ruled it in for a later pass, and the local copy serves both
+  packages meanwhile. A `test` bump is development-only and cascades to nobody.
 - **test**: correct the guide's population prose to the counted figures — `createRecorder`
   32/43 packages, `createScratch` 40/43, `waitForDelay` 16/43, fences 44/44. (was B4/B21a)
 - **mcp**: delete the local generic `createTeardown<T>` at `tests/setupServer.ts:459` in favor
@@ -57,6 +62,26 @@ section 2.
   a per-read getter cannot defeat containment. (was B18)
 - **program**: route the three raw `validate`-path dereferences in `helpers.ts` through the
   published `isQualificationValidationResult`/`isReasonValidationResult` guards. (was B19)
+- **probe**: the rows its 0.0.1 campaign recorded and deliberately left outside its exit criterion.
+  Graded MEDIUM and excluded from campaign close: the coordinator deadline does not bound synchronous
+  stage work, measured at a 1783 ms stall on a caller-named tree-wide project; a missing test
+  directory or a write failure rejects `prove` as a bare `Error` rather than an `origin: 'instrument'`
+  finding. Needing a design round: an unrelated `Control`, carrying independent `files` and `test`,
+  still earns a receipt. Unproven, each needing a probe nobody ran: whether a failed re-warm past the
+  64-specification bound leaves the runtime stage permanently rejected; whether a candidate shadowing
+  an on-disk file makes the type and runtime stages disagree about the text; whether
+  `experimental.fsModuleCache` can serve a disk-derived transform for a covered path. Unmeasured on
+  Windows: the signal-kill orphan sweep, the orphaned lint child, `ENAMETOOLONG`, and the `SIGKILL`
+  fallback. Deferred test-helper debt: `resolveRoot` through `tests/setup.ts`, and `createTeardown` at
+  29 `finally` blocks. Routed to a successor and never scheduled: the generated specification's
+  `import.meta.url` carrying the revision suffix, and bounding `destroy()` against a language server
+  that accepts stdin and never answers `initialize`.
+- **mcp**: `createProbeServer(probe).stop()` never returns, because the stdin `data` listener stays
+  attached. The fix site is `@orkestrel/mcp`, not `probe`, and `probe` grades it a release blocker.
+  Closing it means an `mcp` bump plus a `probe` test asserting `stop()` leaves
+  `process.stdin.listenerCount('data')` at zero.
+- **process**: two rulings recorded and never scheduled — the `bytes` and `write` surface synthesis
+  ruled for `ProcessInterface`, and bare-`\r` handling in `lines`.
 - **qualifier**: design round on `Premise` — every member is optional so `isPremise` accepts
   `{}`; decide whether `met`/`field` become required. (was B20)
 
