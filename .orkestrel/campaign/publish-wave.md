@@ -64,8 +64,13 @@ FAIL. Each verdict is in that package's `.orkestrel/<name>/`.
 
 ## Rulings taken from the chair
 
-- **mcp's missing `typesVersions` stays missing.** A `node10` consumer cannot load an ESM-only
-  package regardless, so the documented floor is the right floor.
+- **`node10` module resolution is not a target, for any package in the wave.** The owner's ruling:
+  everything runs on Node 22 and Node 24, mainly 22. So mcp's missing `typesVersions` stays missing,
+  and probe declares `node10` unsupported rather than leaving it half-working — today its root
+  resolves under `node10` and its `./server` subpath does not, and partial support is worse than
+  declared non-support. mcp's distribution suite already marks legacy `node` false while accepting
+  `node16`, `nodenext`, and `bundler`; probe matches that. The stale `sideEffects` row probe carries
+  for an unshipped `src/bin/main.ts` is a separate defect and is still fixed.
 - **mcp's stdio release finding is a bound or a documented limit, not a re-pin.** The audit proposed
   re-pinning to a `@orkestrel/process` release that closes inherited-pipe iteration. No such release
   exists: 0.0.4 documents the opposite as intended, and its own remedy is a `timeout`.
