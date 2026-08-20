@@ -751,7 +751,7 @@ export class Materializer implements MaterializerInterface {
 		}
 	}
 
-	// Delete only the foreign findings the same plan and target derive now. The
+	// Delete only the foreign findings the same plan and target derive. The
 	// preview must carry that exact membership and the same bytes, so neither a
 	// fabricated candidate nor a path that moved can reach a transaction.
 	#reconfirmCandidates(
@@ -802,8 +802,9 @@ export class Materializer implements MaterializerInterface {
 	}
 
 	// Bind one destination to what this call just observed at it. The digest is
-	// taken now rather than derived from the observation, because a digest over
-	// bytes nobody re-read would only restate what the comparison already proved.
+	// taken directly rather than derived from the observation, because a digest
+	// over bytes nobody re-read would only restate what the comparison already
+	// proved.
 	#bind(target: string, path: string, absent: boolean): WritePrecondition {
 		const destination = resolveContainedPath(target, path)
 		if (destination === undefined) {

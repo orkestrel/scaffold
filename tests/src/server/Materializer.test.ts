@@ -1039,6 +1039,10 @@ describe('Materializer remove', () => {
 			const materializer = new Materializer({ host })
 			try {
 				const base = buildVendoredPlan()
+				// Caller-authored-plan seam: no compiler emits a plan that maps a
+				// protected root such as `src/core`, but the public contract still
+				// admits one, so this shape is what exercises the protected-path
+				// guard rather than the derivation alone.
 				const plan = buildVendoredPlan({
 					groups: [...base.groups, 'source'],
 					artifacts: [

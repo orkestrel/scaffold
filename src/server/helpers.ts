@@ -99,11 +99,13 @@ export function matchesGitPath(path: string): boolean {
  * @remarks
  * The deletion deny-list, stated as a rule over paths rather than as a list of
  * directories. It is the inversion the contract asks for: the candidate set
- * comes from an audit's foreign findings narrowed by what git tracks, and this
- * is what that set is then measured against. Repository metadata is protected
- * because losing history is not a repair, and a target's own `src` and `app`
- * trees are protected because a workspace's source is the one thing scaffold
- * never plans and never owns, whatever an audit reports about it.
+ * is re-derived from the plan and narrowed by what git tracks, and the audit
+ * must agree with that derivation rather than supply the set itself.
+ * Repository metadata is protected because losing history is not a repair,
+ * and a target's own `src` and `app` trees are protected because a
+ * workspace's source is the one thing scaffold never plans and never owns. A
+ * plan the compiler emits never maps a protected root, so this guard exists
+ * for the caller-authored plan a consumer can still supply.
  *
  * @example
  * ```ts
@@ -1317,7 +1319,7 @@ export function readAnchor(path: string): WriteAnchor | undefined {
  * @remarks
  * This binds location rather than history. `true` means the path still resolves
  * to the same physical directory on the same device, so the next write lands
- * where the last one did. A path now holding nothing, a file, or a symlink
+ * where the last one did. A path holding nothing, a file, or a symlink
  * answers `false`; a directory swapped in by `rename` also answers `false`
  * because the replacement carries its own inode. A directory deleted and made
  * again under the same name can receive the old inode back and answers `true`,
@@ -1391,7 +1393,7 @@ export function readExpectation(path: string): WriteExpectation | undefined {
  * Test whether a destination still holds what was captured of it.
  *
  * @param expectation - The state captured earlier.
- * @returns `true` when re-reading the destination now produces that same state.
+ * @returns `true` when re-reading the destination produces that same state.
  *
  * @remarks
  * Compared field for field against a fresh {@link readExpectation}, so an

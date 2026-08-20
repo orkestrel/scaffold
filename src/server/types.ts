@@ -175,7 +175,7 @@ export interface MaterializerInterface {
 	 * compile time. A planned finding carries `ownership`, which findings made
 	 * before that field existed do not, and the guard refuses the call with
 	 * `INVALID`. Take a fresh audit from this materializer; a stored one is a record
-	 * of what a target looked like then, not an argument to a write now. The
+	 * of what a target looked like then, not an argument to a fresh write. The
 	 * refusal is deliberate at `0.0.x` and there is no migration.
 	 */
 	repair(plan: Plan, audit: Audit, target: string): MaterializeResult

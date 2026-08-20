@@ -758,7 +758,7 @@ Presence ownership has separate mechanisms, and a reader needs to know which app
 | Mechanism       | Paths                                             | Bytes belong to       | Cost                                                    |
 | --------------- | ------------------------------------------------- | --------------------- | ------------------------------------------------------- |
 | Verb-owned      | `CATALOG_AGENT_PATH` and dependency guide mirrors | `catalog` or `mirror` | The owning verb is the only route for a later update.   |
-| Workspace-owned | `WORKSPACE_OWNED_PATHS`, today `.gitignore`       | The target workspace  | Present bytes receive no later canonical ignore update. |
+| Workspace-owned | `WORKSPACE_OWNED_PATHS`, which holds `.gitignore` | The target workspace  | Present bytes receive no later canonical ignore update. |
 
 Birth ownership is what makes a generated workspace the consumer's. `materialize` writes a
 birth-owned path into a vacant target. A later `repair` or `overwrite` call treats that path as
@@ -824,7 +824,7 @@ finding carries `ownership`, which findings made before that field existed do no
 only on foreign findings, which never carried ownership, but the guard reads every finding, so one
 older planned finding refuses that call too. Take a fresh audit rather than replaying a stored one:
 a stored audit records what a target looked like then, and each verb binds its writes to what a
-target holds now. The refusal is deliberate at `0.0.x` and there is no migration path.
+target holds. The refusal is deliberate at `0.0.x` and there is no migration path.
 
 ## Fleet catalog
 

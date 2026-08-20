@@ -16,7 +16,7 @@ the pristine local commits, which superseded every partial API replica. Verified
 sha equals local HEAD sha in each, with zero file differences and clean trees. The remaining
 fleet repos were already current.
 
-Nothing is outstanding. `rescue/proxy-outage-2026-08-17` on scaffold is now redundant — its
+Nothing is outstanding. `rescue/proxy-outage-2026-08-17` on scaffold is redundant — its
 patches all landed in the reconciled history. Deleting it needs operator credentials: the proxy
 serves writes to existing refs but still refuses ref deletion, so it joins the branch cleanup under
 **User decisions, open**.
@@ -112,7 +112,7 @@ serves writes to existing refs but still refuses ref deletion, so it joins the b
   it, so the mirror is true when it ships.
 
 - **settings vendoring**: decide whether `.claude/settings.json` vendors for existence rather
-  than bytes; today `repair` restores vendored bytes and operator grants live in
+  than bytes; `repair` restores vendored bytes and operator grants live in
   `settings.local.json`. (was B12)
 - **Order gating**: the ungated-orders survey recorded at brief's acceptance reopens
   when hardening scaffold's order gating. (was B13)
@@ -121,7 +121,7 @@ serves writes to existing refs but still refuses ref deletion, so it joins the b
 - **w3 acceptance**: re-prove or strike what w3 shipped; the real-tree red proof was blocked by
   a read-only `.agents` policy in that harness. (was B15)
 - **Banning the `object` type**: state the invariant in the canon first, or drop the candidate.
-  Banning it today imports a policy the canon does not carry.
+  Banning it imports a policy the canon does not carry.
 - **Sweeps with no honest mechanical form**: the template-TODO sweep, the model-routing and
   version-catalog sweep, and the strict skill-directory inventory each red healthy references in
   every mechanical form tried. They stay review-owned until one exists that does not.

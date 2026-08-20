@@ -205,7 +205,7 @@ export interface RepairResult extends MaterializeResult {
  * The machine-readable outcome of `catalog`.
  *
  * @remarks
- * `entries` is the table as it now stands and `mirrors` is one verdict per
+ * `entries` is the table as it stands and `mirrors` is one verdict per
  * guide fetched. `dropped` names the packages the previous table carried that
  * upstream no longer lists, which is the signal that the fleet answer shrank
  * rather than that a package was genuinely retired.
