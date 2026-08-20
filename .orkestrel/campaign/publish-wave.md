@@ -306,3 +306,59 @@ find that in its own work.
   closed.
 - **the publish window**, which is the owner's and needs them at the keyboard.
 
+
+## The readiness round, its goals, and its metrics
+
+The owner's instruction, 2026-08-20: after probe's fix pipeline closes, audit every package in the
+wave on strict adherence to `AGENTS.md`, the harness bridges, the rule files, and the skills, and
+on whether each works as its guide claims at production grade — then address every finding. The
+exit criterion is fixed here before the round runs, so acceptance is a check rather than a
+judgement made while tired.
+
+### The goal
+
+The wave's packages — `process`, `mcp`, `scaffold`, and `probe` — end the round proven
+publish-ready: canon-conformant, working as documented, and with every finding of the round
+implemented, repaired, retained on evidence, or excluded on evidence. Nothing ends "hardened
+further"; every row ends with its concrete closing condition met.
+
+### The metrics that close the round
+
+1. **Canon conformance.** A named-sweep set per package returns zero unruled hits: the
+   non-negotiables (`any`, assertions, suppression comments, default exports, class member
+   visibility keywords), the writing canon (counts of growable sets, positional references, the
+   substitution table swept case-insensitively across inflections), naming law (single-word
+   entity members, named discriminants), and centralization (declarations in their prescribed
+   files). Every hit is ruled by the sense its rule bans, and each surviving hit is a finding.
+2. **The gates, bare.** In each repository, `format:check`, `lint:check`, `check`, `build`,
+   `npm test`, and the distribution project exit 0 by direct exit code on an idle host, run by an
+   executor independent of every writer, with counts recorded and no skipped or todo test.
+3. **The artifact.** For each package: `npm pack`, then a real install of the tarball in a scratch
+   directory, exit 0; each published entry loads under `import` and under `require`; one real call
+   returns a documented value. A proof run against a link instead of an install does not count.
+4. **The audit's terminal lines.** Each package's round returns per-claim verdicts in the
+   `orkestrel-falsify` shape, and the round ends with every claim `CONFIRMED` on evidence and no
+   substantiated finding beside them — after the fix units, not before.
+5. **Cross-engine discipline.** Every fix unit's auditor is an engine that did not write it, and
+   verbatim-adopted prescriptions close with a recorded mutation probe instead.
+6. **The record.** Each package's matrix, verdicts, and fix reports live in its campaign folder
+   until acceptance, the prune commit is the promotion record, and every landing is pushed to the
+   working branch and to `main`.
+
+### What bounds the round against the rabbit hole
+
+- The claim set is fixed at each round's brief and held closed; an attack invented mid-round
+  against something no claim names becomes a successor claim only when substantiated to the
+  `BROKEN` standard.
+- A defect owned by a package outside the wave — `sea`, `supervisor`, `contract`, `test`,
+  `console`, and the rest of the fleet — is recorded in `ROADMAP.md` against its owner and is not
+  chased in this round.
+- A seam that has already consumed its round budget gets a design ruling, not another repair.
+- Reopening a criterion this round accepts needs the owner, not an auditor's remaining appetite.
+
+### The order
+
+Probe's pipeline first: the PBFIX10 and PBFIX11 units, their cross-engine audit, and the
+verifier's gates. Then the readiness round over the packages in parallel read-only lanes, the
+reconciled matrix, the fix units in serialized writers per repository, the re-audit, the verifier
+per repository, the record, and the owner's publish window.
