@@ -223,8 +223,8 @@ Every role honours this floor. No dispatch may widen it.
 
 ## Writing concurrency
 
-Concurrent executors share a filesystem unless isolated. Follow these six rules to prevent
-clobbered edits, formatter and build races, cache phantoms, and validation cross-talk.
+Concurrent executors share a filesystem unless isolated. Follow these rules to prevent clobbered
+edits, formatter and build races, cache phantoms, and validation cross-talk.
 
 1. Serialize writing executors in the main checkout. Commit a checkpoint before each writing
    dispatch so git is the rollback mechanism.
@@ -410,8 +410,9 @@ The harness bridge names the concrete mechanism for each of these.
   audit verdict, the exact executed script or instrument, and the acceptance evidence into
   `.orkestrel/<package>/` as the unit is dispatched and as it returns, then sweep only the `tmp/`
   launch copies. A capture claim's instrument is acceptance evidence; the frames may be swept once
-  the record transcribes them, because the committed instrument re-produces the film. **Bench
-  laws** rule 4 owns journals and points here for everything durable.
+  the record transcribes them, because the committed instrument re-produces the film. The **Bench
+  laws** rule "Ephemeral streams, durable records" owns journals and points here for everything
+  durable.
 - Promote anything that must outlive the campaign into a durable artifact before the sweep — a
   commit message, a guide, a rule, a retrospective. What is only in a swept file did not survive,
   and a debrief that must quote the record verbatim has nothing to quote.
@@ -503,9 +504,9 @@ That message is what makes the deletion recoverable in practice rather than only
 
 ### Check the brief before you send it
 
-Run these eleven checks on every brief. Each is cheap, and skipping one costs a full dispatch cycle
-that produces no work, because a unit given a brief that is internally consistent and factually
-wrong is right to stop.
+Run these checks on every brief. Each is cheap, and skipping one costs a full dispatch cycle that
+produces no work, because a unit given a brief that is internally consistent and factually wrong is
+right to stop.
 
 - Name the executor that will actually read the brief, and write its transport for that reader. The
   same unit goes either to a bridge driver that invokes a bench CLI or to the bench engine already
@@ -681,7 +682,7 @@ This section adds what is true of a bench and nothing else.
 
 Every bridge verifies before running that its CLI resolves and its bench is authenticated, and stops
 with a deviation report naming the fallback when either fails. The role file owns the exact
-invocation, flags, paths, probe, and recovery ladder; these four laws bind every bench regardless of
+invocation, flags, paths, probe, and recovery ladder; these laws bind every bench regardless of
 transport.
 
 1. **Transport by work class.** Use an MCP transport only for a short interactive exchange — one

@@ -76,9 +76,9 @@ export function verbToSyntax(verb: Verb): string {
  * @remarks
  * Returned as lines because the executable writes through a handler that takes
  * one line, so the caller never has to split a block back apart. The glossary is
- * printed once for every verb rather than repeated per verb, since seven of the
- * nine options are shared and a reader comparing two verbs wants the difference,
- * not the repetition.
+ * printed once for every verb rather than repeated per verb, because
+ * `--from <path>`, `--target <path>`, and `--json` are shared by every verb and
+ * a reader comparing two verbs wants the difference, not the repetition.
  */
 export function renderUsage(): readonly string[] {
 	const summaries = Object.entries(OPTION_SUMMARY)

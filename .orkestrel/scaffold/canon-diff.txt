@@ -1,0 +1,162 @@
+diff --git a/.agents/orchestration.md b/.agents/orchestration.md
+index 105ba45..648afa5 100644
+--- a/.agents/orchestration.md
++++ b/.agents/orchestration.md
+@@ -223,8 +223,8 @@ Every role honours this floor. No dispatch may widen it.
+ 
+ ## Writing concurrency
+ 
+-Concurrent executors share a filesystem unless isolated. Follow these six rules to prevent
+-clobbered edits, formatter and build races, cache phantoms, and validation cross-talk.
++Concurrent executors share a filesystem unless isolated. Follow these rules to prevent clobbered
++edits, formatter and build races, cache phantoms, and validation cross-talk.
+ 
+ 1. Serialize writing executors in the main checkout. Commit a checkpoint before each writing
+    dispatch so git is the rollback mechanism.
+@@ -410,8 +410,9 @@ The harness bridge names the concrete mechanism for each of these.
+   audit verdict, the exact executed script or instrument, and the acceptance evidence into
+   `.orkestrel/<package>/` as the unit is dispatched and as it returns, then sweep only the `tmp/`
+   launch copies. A capture claim's instrument is acceptance evidence; the frames may be swept once
+-  the record transcribes them, because the committed instrument re-produces the film. **Bench
+-  laws** rule 4 owns journals and points here for everything durable.
++  the record transcribes them, because the committed instrument re-produces the film. The **Bench
++  laws** rule "Ephemeral streams, durable records" owns journals and points here for everything
++  durable.
+ - Promote anything that must outlive the campaign into a durable artifact before the sweep — a
+   commit message, a guide, a rule, a retrospective. What is only in a swept file did not survive,
+   and a debrief that must quote the record verbatim has nothing to quote.
+@@ -503,9 +504,9 @@ That message is what makes the deletion recoverable in practice rather than only
+ 
+ ### Check the brief before you send it
+ 
+-Run these eleven checks on every brief. Each is cheap, and skipping one costs a full dispatch cycle
+-that produces no work, because a unit given a brief that is internally consistent and factually
+-wrong is right to stop.
++Run these checks on every brief. Each is cheap, and skipping one costs a full dispatch cycle that
++produces no work, because a unit given a brief that is internally consistent and factually wrong is
++right to stop.
+ 
+ - Name the executor that will actually read the brief, and write its transport for that reader. The
+   same unit goes either to a bridge driver that invokes a bench CLI or to the bench engine already
+@@ -681,7 +682,7 @@ This section adds what is true of a bench and nothing else.
+ 
+ Every bridge verifies before running that its CLI resolves and its bench is authenticated, and stops
+ with a deviation report naming the fallback when either fails. The role file owns the exact
+-invocation, flags, paths, probe, and recovery ladder; these four laws bind every bench regardless of
++invocation, flags, paths, probe, and recovery ladder; these laws bind every bench regardless of
+ transport.
+ 
+ 1. **Transport by work class.** Use an MCP transport only for a short interactive exchange — one
+diff --git a/.agents/skills/orkestrel-falsify/SKILL.md b/.agents/skills/orkestrel-falsify/SKILL.md
+index 8b30156..f964b6c 100644
+--- a/.agents/skills/orkestrel-falsify/SKILL.md
++++ b/.agents/skills/orkestrel-falsify/SKILL.md
+@@ -133,10 +133,11 @@ comparable; a round that invents its own cannot be read against the last one.
+    | `UNRESOLVED`    | cannot be decided from the evidence available                                          | what would settle it                                                                                                                                          |
+    | `NOT-EVIDENCED` | a claim about a rendered or externally driven surface the supplied capture cannot show | which capture is missing                                                                                                                                      |
+ 
+-   The first two rows defer; only the last two are this skill's, because the law does not name them.
+-   `BROKEN` and `UNRESOLVED` are **separate**: a claim nobody could decide has not been falsified,
+-   and it cannot supply the fields falsification requires. `NOT-EVIDENCED` is the token the
+-   `analyst` and `reviewer` charters already require; it is kept, not re-invented.
++   `CONFIRMED` and `BROKEN` defer; only `UNRESOLVED` and `NOT-EVIDENCED` are this skill's, because
++   the law does not name them. `BROKEN` and `UNRESOLVED` are **separate**: a claim nobody could
++   decide has not been falsified, and it cannot supply the fields falsification requires.
++   `NOT-EVIDENCED` is the token the `analyst` and `reviewer` charters already require; it is kept,
++   not re-invented.
+ 
+ 2. **Findings fitting no claim**, if any, each substantiated to the same standard as `BROKEN`.
+ 
+diff --git a/.claude/agents/analyst.md b/.claude/agents/analyst.md
+index 68cd0a9..acabfd5 100644
+--- a/.claude/agents/analyst.md
++++ b/.claude/agents/analyst.md
+@@ -20,7 +20,7 @@ which uses the journaled CLI, the exact `codex exec` form, the journal and sessi
+ the recovery ladder, and the Windows notes. **Read it and follow it.** It is not restated here;
+ two copies of a transport contract drift, and the one you are not reading is the one that is right.
+ 
+-This role pins exactly one thing that file leaves to the dispatch: **the route is `analyst`, and its
++This role pins the two things that file leaves to the dispatch: **the route is `analyst`, and its
+ sandbox is `read-only` in the current checkout.** Never widen it. An analyst unit that appears to
+ need a write is a misrouted unit — stop and report, do not switch routes.
+ 
+diff --git a/.claude/agents/sol.md b/.claude/agents/sol.md
+index 8ffc7b6..87d67f8 100644
+--- a/.claude/agents/sol.md
++++ b/.claude/agents/sol.md
+@@ -20,7 +20,7 @@ exact `codex exec` form, the journal and session-id discipline, the recovery lad
+ Windows notes. **Read it and follow it.** It is not restated here; two copies of a transport
+ contract drift, and the one you are not reading is the one that is right.
+ 
+-This role pins the one thing that file leaves to the dispatch: **the route is `implementer`, and
++This role pins the two things that file leaves to the dispatch: **the route is `implementer`, and
+ its sandbox is `workspace-write`.** A unit that needs no write is a misrouted unit — stop and
+ report, do not switch routes.
+ 
+diff --git a/.claude/rules/workspace.md b/.claude/rules/workspace.md
+index 4e4cc90..6e335b5 100644
+--- a/.claude/rules/workspace.md
++++ b/.claude/rules/workspace.md
+@@ -155,7 +155,7 @@ script names its project, so no gate runs it; its directory is ignored by git; a
+ `.claude/rules/tests.md` governs what may live there.
+ 
+ - Define a cross-cutting project only for a proof the package actually has.
+-- A live-service project is the fifth kind. It is the `service` project above, `scripts/service.sh`
++- A live-service project is the `service` project in the preceding table, `scripts/service.sh`
+   provisions what it drives, and `.claude/rules/tests.md` governs it. Name it `service` whatever it
+   drives.
+ - In a publishing workspace, a project leaves the default run when it drives a live external
+diff --git a/.claude/rules/writing.md b/.claude/rules/writing.md
+index 89180b3..234fc1e 100644
+--- a/.claude/rules/writing.md
++++ b/.claude/rules/writing.md
+@@ -77,6 +77,16 @@ first, and these rules wherever a rule here names no different form for it.
+   file format.
+ - Write a numeral for a technical quantity, a version, or a count. Write a date as `YYYY-MM-DD` in
+   evidence, commit messages, and reports.
++- Delete a number that only tallies the rows of a list or table it introduces. The enumeration is
++  the count, and a number a later edit can leave behind is a second copy that drifts when a row
++  moves.
++- Keep a number that does more than tally: one asserting the set is closed, one fixing a quantity
++  the reader must produce, one counting something other than the enumeration's members — a bound, a
++  budget, a selection size — and one written into the same sentence as the items it counts.
++- Name a rule, a law, or a section rather than its position. An ordinal into a list breaks silently:
++  after a row moves, no number on the page still looks wrong.
++- Recount what every retained number and every ordinal points at, in the same change that adds,
++  removes, or reorders a row, and repair each one that disagrees.
+ - Use the serial comma. Mark omitted code with a comment in the sample's language, never with `...`.
+ 
+ ## Substitutions
+@@ -106,6 +116,15 @@ is exempt from every row.
+ | `blacklist`, `whitelist` | `denylist`, `allowlist`                   |
+ | `master`, `slave`        | `primary`, `replica`                      |
+ 
++- Sweep case-insensitively and across inflections when checking prose against the preceding table. A
++  pattern for `easy` reaches neither `Easy` nor `easier`, and a temporal `once` most often appears
++  as a sentence-initial `Once`.
++- Rule every hit by the sense its row bans, not by the match. `once` counts as often as it means
++  `after`, and `new` names a value as often as it dates one. Record a hit in a permitted sense as
++  permitted rather than dropping it.
++- Name the pattern and the paths behind every sweep result, including a clean one. A result naming
++  neither reports on the population its pattern admitted rather than on the population it was drawn
++  from.
+ - Write singular `they` for a person of unstated gender.
+ - This table carries no row for `execute`, `abort`, `kill`, `terminate`, or `run`:
+   `.claude/rules/names.md` § Fixed lifecycle vocabulary owns those words, and no row here overrides
+diff --git a/src/bin/helpers.ts b/src/bin/helpers.ts
+index d3b6317..c324dc1 100644
+--- a/src/bin/helpers.ts
++++ b/src/bin/helpers.ts
+@@ -76,9 +76,9 @@ export function verbToSyntax(verb: Verb): string {
+  * @remarks
+  * Returned as lines because the executable writes through a handler that takes
+  * one line, so the caller never has to split a block back apart. The glossary is
+- * printed once for every verb rather than repeated per verb, since seven of the
+- * nine options are shared and a reader comparing two verbs wants the difference,
+- * not the repetition.
++ * printed once for every verb rather than repeated per verb, because
++ * `--from <path>`, `--target <path>`, and `--json` are shared by every verb and
++ * a reader comparing two verbs wants the difference, not the repetition.
+  */
+ export function renderUsage(): readonly string[] {
+ 	const summaries = Object.entries(OPTION_SUMMARY)

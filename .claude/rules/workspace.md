@@ -155,7 +155,7 @@ script names its project, so no gate runs it; its directory is ignored by git; a
 `.claude/rules/tests.md` governs what may live there.
 
 - Define a cross-cutting project only for a proof the package actually has.
-- A live-service project is the fifth kind. It is the `service` project above, `scripts/service.sh`
+- A live-service project is the `service` project in the preceding table, `scripts/service.sh`
   provisions what it drives, and `.claude/rules/tests.md` governs it. Name it `service` whatever it
   drives.
 - In a publishing workspace, a project leaves the default run when it drives a live external

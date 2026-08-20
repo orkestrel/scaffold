@@ -20,7 +20,7 @@ exact `codex exec` form, the journal and session-id discipline, the recovery lad
 Windows notes. **Read it and follow it.** It is not restated here; two copies of a transport
 contract drift, and the one you are not reading is the one that is right.
 
-This role pins the one thing that file leaves to the dispatch: **the route is `implementer`, and
+This role pins the two things that file leaves to the dispatch: **the route is `implementer`, and
 its sandbox is `workspace-write`.** A unit that needs no write is a misrouted unit — stop and
 report, do not switch routes.
 

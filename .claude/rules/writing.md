@@ -77,6 +77,16 @@ first, and these rules wherever a rule here names no different form for it.
   file format.
 - Write a numeral for a technical quantity, a version, or a count. Write a date as `YYYY-MM-DD` in
   evidence, commit messages, and reports.
+- Delete a number that only tallies the rows of a list or table it introduces. The enumeration is
+  the count, and a number a later edit can leave behind is a second copy that drifts when a row
+  moves.
+- Keep a number that does more than tally: one asserting the set is closed, one fixing a quantity
+  the reader must produce, one counting something other than the enumeration's members — a bound, a
+  budget, a selection size — and one written into the same sentence as the items it counts.
+- Name a rule, a law, or a section rather than its position. An ordinal into a list breaks silently:
+  after a row moves, no number on the page still looks wrong.
+- Recount what every retained number and every ordinal points at, in the same change that adds,
+  removes, or reorders a row, and repair each one that disagrees.
 - Use the serial comma. Mark omitted code with a comment in the sample's language, never with `...`.
 
 ## Substitutions
@@ -106,6 +116,15 @@ is exempt from every row.
 | `blacklist`, `whitelist` | `denylist`, `allowlist`                   |
 | `master`, `slave`        | `primary`, `replica`                      |
 
+- Sweep case-insensitively and across inflections when checking prose against the preceding table. A
+  pattern for `easy` reaches neither `Easy` nor `easier`, and a temporal `once` most often appears
+  as a sentence-initial `Once`.
+- Rule every hit by the sense its row bans, not by the match. `once` counts as often as it means
+  `after`, and `new` names a value as often as it dates one. Record a hit in a permitted sense as
+  permitted rather than dropping it.
+- Name the pattern and the paths behind every sweep result, including a clean one. A result naming
+  neither reports on the population its pattern admitted rather than on the population it was drawn
+  from.
 - Write singular `they` for a person of unstated gender.
 - This table carries no row for `execute`, `abort`, `kill`, `terminate`, or `run`:
   `.claude/rules/names.md` § Fixed lifecycle vocabulary owns those words, and no row here overrides

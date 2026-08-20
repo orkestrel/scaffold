@@ -133,10 +133,11 @@ comparable; a round that invents its own cannot be read against the last one.
    | `UNRESOLVED`    | cannot be decided from the evidence available                                          | what would settle it                                                                                                                                          |
    | `NOT-EVIDENCED` | a claim about a rendered or externally driven surface the supplied capture cannot show | which capture is missing                                                                                                                                      |
 
-   The first two rows defer; only the last two are this skill's, because the law does not name them.
-   `BROKEN` and `UNRESOLVED` are **separate**: a claim nobody could decide has not been falsified,
-   and it cannot supply the fields falsification requires. `NOT-EVIDENCED` is the token the
-   `analyst` and `reviewer` charters already require; it is kept, not re-invented.
+   `CONFIRMED` and `BROKEN` defer; only `UNRESOLVED` and `NOT-EVIDENCED` are this skill's, because
+   the law does not name them. `BROKEN` and `UNRESOLVED` are **separate**: a claim nobody could
+   decide has not been falsified, and it cannot supply the fields falsification requires.
+   `NOT-EVIDENCED` is the token the `analyst` and `reviewer` charters already require; it is kept,
+   not re-invented.
 
 2. **Findings fitting no claim**, if any, each substantiated to the same standard as `BROKEN`.
 

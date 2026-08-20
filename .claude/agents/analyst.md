@@ -20,7 +20,7 @@ which uses the journaled CLI, the exact `codex exec` form, the journal and sessi
 the recovery ladder, and the Windows notes. **Read it and follow it.** It is not restated here;
 two copies of a transport contract drift, and the one you are not reading is the one that is right.
 
-This role pins exactly one thing that file leaves to the dispatch: **the route is `analyst`, and its
+This role pins the two things that file leaves to the dispatch: **the route is `analyst`, and its
 sandbox is `read-only` in the current checkout.** Never widen it. An analyst unit that appears to
 need a write is a misrouted unit — stop and report, do not switch routes.
 
