@@ -161,16 +161,51 @@ inside a bench.
 
 Read this section first; it is the one that changes.
 
-| Package | Version | Gates | Findings |
-| ------- | ------- | ----- | -------- |
-| `@orkestrel/process` | 0.0.4 | green on the host | audit and lens closed; cross-engine audit running |
-| `@orkestrel/mcp` | 0.0.20 | green on the host, no audit drift | audit, cross-engine audit, and its fix round all closed |
-| `@orkestrel/scaffold` | 0.0.45 | green on the host, no audit drift | audit and lens closed; cross-engine audit running |
-| `@orkestrel/probe` | 0.0.1 | source green; guide and distribution red until the guide unit lands | audit closed except its documentation layer |
+| Package | Version | State |
+| ------- | ------- | ----- |
+| `@orkestrel/process` | 0.0.4 | **closed** — audit, lens, and cross-engine audit all resolved, gates green |
+| `@orkestrel/mcp` | 0.0.20 | **closed** — audit, cross-engine audit, and its fix round all resolved, gates green |
+| `@orkestrel/scaffold` | 0.0.45 | **closed** — audit, lens, and cross-engine audit all resolved, gates green |
+| `@orkestrel/probe` | 0.0.1 | **NOT READY** — its cross-engine audit returned nearly every claim broken |
 
-Every engine that wrote a fix has been audited by an engine that did not write it, or has that audit
-in flight. That rule is not ceremony here: the cross-engine audit of mcp found a `prepublishOnly`
-step that could never have run on a clean checkout, while every gate reported green.
+## Probe is not ready, and two of its defects are this campaign's own
+
+A cross-engine audit before the first publish found these. Each was verified against source by the
+Orchestrator rather than accepted on report.
+
+**Three names collide with `@orkestrel/scaffold`, which probe installs.** Scaffold publishes `Origin`
+as `'host' | 'template' | 'computed'`, and publishes `Finding` and `isFinding`. Probe publishes all
+three for different concepts. The `Origin` collision was **created** by this campaign: the name it
+replaced, `FindingOrigin`, appears nowhere in scaffold. A first publish cements all three.
+
+**The receipt mints over a phase in which no test ran.** `computeReceipt` reads the case as clean when
+no finding carries `origin: 'claimant'`, and the only `workspace` finding the package emits means the
+runtime stage installed no overlay and executed nothing. Before this campaign the condition was
+`findings.length === 0` and refused it. The migration widened it and a test was added asserting the
+widening.
+
+**The deadline attribution inverts.** The runtime stage increments its progress counter after the run
+resolves, so a deadline firing during the run always reports `instrument`. The package's own test
+asserts that a claim whose body is `while (true) {}` reports `instrument` — telling a caller to file a
+probe defect for their own infinite loop.
+
+Also open: a generated specification carrying two revision markers can never be swept, so a host killed
+mid-boot leaves it in the target tree forever; a symlink in the target tree is refused as the
+claimant's fault where the tree owns it, and raised where no claim is in flight; and a native error
+escapes a published helper unclassified, through a gate this campaign narrowed.
+
+## The rule these keep proving
+
+Route a fix round to an engine that did not write the code, and give the auditor the claims that
+sibling rounds turned into blockers. This campaign's audits found, in order: a `prepublishOnly` step
+that could not run on a clean checkout, a fix that made two faces of one API settle oppositely, a
+repair applied at one door while a sibling door stayed open, a rule the dispatcher overrode, and a
+class name a sibling package already publishes.
+
+A name collision is the one no compiler catches. `@orkestrel/console` publishes `Capture`;
+`@orkestrel/scaffold` publishes `Origin`, `Finding`, and `isFinding`. Nothing fails to build. Check
+every new public name against the guides of every `@orkestrel` package the target declares, before
+the name ships.
 
 ## What that audit found, because the class recurs
 
