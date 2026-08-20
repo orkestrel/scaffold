@@ -41,3 +41,6 @@ playwright-report/
 
 # Model files
 *.gguf
+
+# Agent worktrees (created by an isolated subagent dispatch, never committed)
+.claude/worktrees/
