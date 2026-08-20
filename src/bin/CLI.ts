@@ -33,7 +33,7 @@ import type {
 import { renderTable, strip, stripControls } from '@orkestrel/console'
 import { attempt, isRecord, isString, parseJSON } from '@orkestrel/contract'
 import { createMarkdown, flattenText, isTableNode } from '@orkestrel/markdown'
-import { runSync } from '@orkestrel/process/server'
+import { executeSync } from '@orkestrel/process/server'
 import {
 	CATALOG_AGENT_PATH,
 	BIN_ENTRY_PATH,
@@ -932,7 +932,7 @@ export class CLI implements CLIInterface {
 
 	// One git query, answered as its NUL-separated records. Git is asked rather
 	// than reimplemented, because the tracked set and the dirty set are git's own
-	// answers and nothing else can give them. `runSync` resolves the bare `git`
+	// answers and nothing else can give them. `executeSync` resolves the bare `git`
 	// name against `PATH` and `PATHEXT` on Windows, never through a shell, so the
 	// query runs without an extension of its own.
 	#inventory(target: string, args: readonly string[]): readonly string[] {
@@ -940,7 +940,7 @@ export class CLI implements CLIInterface {
 		// what leaves it: git's own refusal is buffered into the result rather than
 		// written onto a stream nobody chose, and the failure is reported through the
 		// diagnostic handler the caller supplied.
-		const result = runSync(
+		const result = executeSync(
 			{ file: 'git', arguments: [...args] },
 			{ workspace: target, limit: MAX_MANIFEST_BYTES, strict: false },
 		)
