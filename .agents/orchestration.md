@@ -184,6 +184,12 @@ Every role honours this floor. No dispatch may widen it.
   from a clean committed baseline, each owning disjoint files.
 - Treat every shared file as report-only.
 - No role commits, pushes, tags, publishes, installs dependencies, or runs a destructive command.
+- No role runs `git checkout`, `git restore`, `git stash`, `git reset`, or `git clean`. Each discards
+  a working-tree change silently, and a tree carrying an uncommitted unit has no other copy of it. A
+  role that must undo its own edit undoes exactly that edit.
+- A dispatch that has a unit plant a line to prove an instrument can fail names a file the unit under
+  verification did not touch, and names how the plant is removed. Check the tree's status before
+  choosing the file.
 - No role reads, prints, copies, uploads, or packages a secret — `CURSOR_API_KEY`, Codex auth
   files, `.env*`, `.npmrc`, `auth.json`, keys, or tokens.
 - Concurrent executors never run tree-wide `format`, lint `--fix`, or `build`. They validate
