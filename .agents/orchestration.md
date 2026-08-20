@@ -430,6 +430,34 @@ The harness bridge names the concrete mechanism for each of these.
 - Prune the campaign folder in a commit at acceptance. The tree ends clean and the record stays
   recoverable by hash. Git history is the archive; the working tree is the workspace.
 
+### Before you prune
+
+Pruning is deletion, so it needs the same evidence as any other destructive step. Run these four
+checks, and prune only when all four close.
+
+1. **Carry check.** List every item the folder leaves open — a defect, a measurement to re-take, a
+   deferred decision, a withdrawn claim, an unmet acceptance condition. Each ends the check with a
+   carrier: a commit that closed it, a live brief that owns it, or an explicit drop on the record.
+   An item with no carrier blocks the prune. Read the register files for this — the plan, the
+   readiness grade, the carry ledger, the triage — not every brief and report in the folder.
+2. **Promotion check.** Rule on each remaining file by what it asserts. Product truth goes to the
+   guide, where the parity gate reaches it. A process law goes to the rule or contract file that
+   owns it. A decision goes to the commit message that made it, which is where it already is.
+   Everything else is process diary and prunes.
+3. **Measurement check.** A number the guide carries out of the folder carries the date it was
+   taken. A measurement whose date the folder does not record is re-taken or dropped, never copied.
+4. **Orientation check.** A cross-session orientation document — a handoff, a package-root narrative
+   file, a session log — is not a fourth category. It duplicates the guide for product truth and the
+   contract for process truth, it is gated by nothing, and it drifts. Dissolve it into the two
+   artifacts that own it and delete it.
+
+A section recording live state — adopter republish status, installed version tables, what a sibling
+repository was doing that week — prunes with no promotion. It was stale when it was written, and
+promoting it publishes the staleness.
+
+Write the prune commit's message as the promotion record: what moved, and where each part landed.
+That message is what makes the deletion recoverable in practice rather than only in principle.
+
 ### Required sections
 
 - **Role and engine.** The named role and its explicit engine.
@@ -610,9 +638,9 @@ nothing.
     instead of rising and reads as a relaunch that never happened.
   - **A pre-launch "is anything already running" check** reports a phantom concurrent writer, which is
     the worst of the three: the honest response to it is to kill something, and there is nothing there.
-  Read liveness from the recorded process id with `kill -0 <pid>`, or enumerate by executable name and
-  parent with `ps -eo pid,ppid,comm` and read the rows. Both are immune; a pattern over the full command
-  line is not.
+    Read liveness from the recorded process id with `kill -0 <pid>`, or enumerate by executable name and
+    parent with `ps -eo pid,ppid,comm` and read the rows. Both are immune; a pattern over the full command
+    line is not.
 - Kill by process id, never by pattern. `pkill -f` matches the relaunch that is already starting, so
   the pattern that cleans up the old run kills the new one and the cleanup reads as a launch
   failure.
