@@ -699,6 +699,18 @@ transport.
    acting on it will go looking for damage that is not there. Tell a unit which of its tools shell out
    one level down — a scaffolding CLI that probes git, a formatter that spawns a worker — so it
    recognises the shape instead of diagnosing the tree.
+   The child a bench does create has unreliable stdio, and that failure wears a worse disguise than a
+   denial. A Node process spawned by a bench unit's own Node process has been measured both buffering
+   its pipe until EOF and publishing nothing at all, so no workaround built on either reading is
+   dependable. Any subject whose behaviour lives in a child's pipes is therefore unmeasurable inside a
+   bench: a stage driving a language server, a protocol fixture, a built entry driven as a spawned
+   child. It fails as a **false green**. The stage never arms, the boot inspection times out, and that
+   timeout produces the same rejection a genuine stage timeout produces, so a test asserting on the
+   message passes inside the bench while the host's gate reports the honest red — and neither run
+   reports why they disagree. Route such a subject to the harness's native implementer, or keep it on
+   the bench and supply every executed measurement yourself. Never dispatch it to a bench and expect
+   it to prove its own work. The shape to recognise is a child that exits 0 almost immediately, a
+   request to it that never resolves, and a stack landing in the spawning code's exit handler.
 5. **Ephemeral streams, durable records.** A journal proves a bench is alive and recovers an
    interrupted session. Keep journals under `tmp/`, never commit them, and sweep them at acceptance
    after the final gate evidence is recorded. Durable retention — brief, distillate, verdict,
