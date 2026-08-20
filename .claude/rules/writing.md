@@ -76,8 +76,8 @@ first, and these rules wherever a rule here names no different form for it.
   Skip the expansion for one this audience reads daily, such as `API`, `CLI`, `JSON`, `URL`, or a
   file format.
 - Write a numeral for a technical quantity, a version, or a measurement. Write a date as
-  `YYYY-MM-DD` in evidence, commit messages, and reports. `AGENTS.md` § Writing bans a count outright,
-  so a numeral here is always a value rather than a tally.
+  `YYYY-MM-DD` in evidence, commit messages, and reports. See `AGENTS.md` § Writing for what
+  separates a value from a count.
 - Use the serial comma. Mark omitted code with a comment in the sample's language, never with `...`.
 
 ## Substitutions
