@@ -324,7 +324,7 @@ export class Materializer implements MaterializerInterface {
 	/**
 	 * Rewrite the marker-bounded package table in the target's catalog agent file.
 	 *
-	 * @param entries - The published packages the table should list.
+	 * @param entries - The published packages the table must list.
 	 * @param target - The directory to write into.
 	 * @returns The catalog path, written when the region's bytes moved and skipped otherwise.
 	 * @throws {@link ScaffoldError} coded `INVALID` when an argument is not the
@@ -353,7 +353,7 @@ export class Materializer implements MaterializerInterface {
 	/**
 	 * Rewrite the `@orkestrel/*` range set in the target's manifest.
 	 *
-	 * @param dependencies - The names and ranges the manifest should declare.
+	 * @param dependencies - The names and ranges the manifest must declare.
 	 * @param target - The directory to write into.
 	 * @returns The manifest path, written when a declared range moved and skipped otherwise.
 	 * @throws {@link ScaffoldError} coded `INVALID` when an argument is not the
@@ -861,7 +861,7 @@ export class Materializer implements MaterializerInterface {
 				if (artifact.origin === 'host') this.#copy(transaction, artifact)
 				else transaction.write(artifact.path, artifact.content)
 			}
-			for (const path of directories) transaction.directory(path)
+			for (const path of directories) transaction.establish(path)
 		})
 		const written = this.#close(transaction, staged, target)
 		for (const path of written) this.#emitter.emit('write', path)

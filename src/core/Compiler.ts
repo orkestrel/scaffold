@@ -130,11 +130,11 @@ export class Compiler implements CompilerInterface {
 	 * carries no plan, then `compile` with the whole outcome either way, so an
 	 * observer reads every compile from one event and the refusals from the other.
 	 *
-	 * A plan says the blueprint can be built. It does not say the blueprint should
-	 * be created, and the questions beside it are what this compiler could not
-	 * settle. A caller creating a fresh workspace answers them first and writes
-	 * nothing while any remains, which is the rule the `new` verb applies; a caller
-	 * describing or repairing an existing target carries them through instead.
+	 * A plan says the blueprint can be built. It does not decide whether to create
+	 * it, and the questions beside it are what this compiler could not settle. A
+	 * caller creating a fresh workspace answers them first and writes nothing while
+	 * any remains, which is the rule the `new` verb applies; a caller describing or
+	 * repairing an existing target carries them through instead.
 	 * Nothing downstream repeats that check, because only the caller knows which
 	 * case it is.
 	 *
@@ -276,7 +276,7 @@ export class Compiler implements CompilerInterface {
 
 	// Every artifact the blueprint drafts, in plan order. The manifest is the one artifact this
 	// package's own fields decide, and it is claimed by birth because a workspace
-	// owns its manifest once it exists. Every other drafted path is vendored. The
+	// owns its manifest after it exists. Every other drafted path is vendored. The
 	// compile spine selects groups and applies overrides after this full set exists,
 	// so override legality never depends on the caller's group selection.
 	#draft(blueprint: Blueprint): readonly Artifact[] {

@@ -1270,7 +1270,7 @@ describe('CLI audit', () => {
 	// live service or measuring official tooling out of every writing verb. Each
 	// direction is measured: the script alone still draws the question, and the
 	// structural file beside it clears the same script.
-	it('accepts the conformance and live-service scripts once their structural file is there', async () => {
+	it('accepts the conformance and live-service scripts after their structural file is there', async () => {
 		const workspace = createWorkspace()
 		try {
 			const fleet = createFleet(workspace)

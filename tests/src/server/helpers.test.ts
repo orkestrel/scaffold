@@ -260,7 +260,7 @@ describe('physical shape', () => {
 			// host this run measured rather than the host the suite was written on.
 			// Where the directory folds case the recased name resolves, so the refusal
 			// above is a case verdict no existence check could produce. Where it does
-			// not, that name is simply absent, the refusals are one condition, and
+			// not, that name is absent, the refusals are one condition, and
 			// the assertions above would equally hold for a guard that only called
 			// `existsSync` — the gap a case-folding host closes.
 			expect(existsSync(folded)).toBe(CASE_FOLDING)
@@ -1188,7 +1188,7 @@ describe('stageHost', () => {
 			workspace.remove('checkout/.cursor/rules')
 			expect(readErrorCode(() => stageHost(checkout, host))).toBe('TARGET')
 			expect(isPhysicalDirectory(host)).toBe(false)
-			// The control: the same checkout stages cleanly once both paths are back,
+			// The control: the same checkout stages cleanly after both paths are back,
 			// so the refusal is the missing membership rather than the fixture.
 			workspace.write('checkout/LICENSE', 'LICENSE\n')
 			workspace.write('checkout/.cursor/rules/sample.md', '.cursor/rules/sample.md\n')
@@ -1317,7 +1317,7 @@ describe('stageHost', () => {
 		}
 	})
 
-	it('writes a manifest whose membership a reader refuses once it is edited', () => {
+	it('writes a manifest whose membership a reader refuses after it is edited', () => {
 		const workspace = createWorkspace()
 		try {
 			const checkout = createCheckout(workspace, 'checkout')

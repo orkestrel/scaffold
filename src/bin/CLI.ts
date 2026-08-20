@@ -164,8 +164,9 @@ export class CLI implements CLIInterface {
 			return EXIT_CLEAN
 		}
 		const read = attempt(() => argvToCommand(argv))
-		// A command line that never became a command carries no `--json`, so the
-		// refusal is prose: there is no machine-readable value for it to pollute.
+		// A command line that never became a command is refused in prose even when
+		// the line carries `--json`, because the flag is read from the command and
+		// no command was read: there is no machine-readable value for it to pollute.
 		if (!read.success) return this.#refuse(read.error, false)
 		const command = read.value
 		try {
@@ -478,7 +479,7 @@ export class CLI implements CLIInterface {
 	//
 	// `new` is the only caller, and it chooses the shape rather than reading one, so
 	// it refuses every question the gate raises, advisory or not: an advisory names
-	// a workspace this package can describe honestly and should not create, and this
+	// a workspace this package can describe honestly but will not create, and this
 	// is the last moment the caller can pick a different shape. `#survey` is the
 	// reading counterpart, and it carries the same advisories through instead.
 	//
@@ -503,7 +504,7 @@ export class CLI implements CLIInterface {
 		}
 	}
 
-	// Compile a blueprint and compare its plan to what the target currently holds,
+	// Compile a blueprint and compare its plan to what the target holds,
 	// through the vendored host a write would draw on.
 	//
 	// The materializer owns the comparison because it is the only one that can

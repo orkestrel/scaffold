@@ -194,7 +194,7 @@ export class Upstream implements UpstreamInterface {
 	 * always answers for the file it names. `observed` is carried through from
 	 * `current` whatever the lookup produced, because it is the precondition the
 	 * later write is held to and a failed fetch does not change what the target
-	 * currently holds.
+	 * holds.
 	 *
 	 * @example
 	 * ```ts

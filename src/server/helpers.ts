@@ -349,8 +349,8 @@ export function isExactCaseFile(path: string): boolean {
  * @returns `true` only for a directory that is not a link.
  *
  * @remarks
- * A junction and a directory symbolic link both report as directories once
- * followed, so the inspection deliberately does not follow: a redirected
+ * A junction and a directory symbolic link both report as directories after
+ * they are followed, so the inspection deliberately does not follow: a redirected
  * directory is refused here rather than silently accepted as the one the caller
  * named.
  *

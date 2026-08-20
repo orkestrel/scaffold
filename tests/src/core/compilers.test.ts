@@ -537,7 +537,7 @@ describe('blueprint gate laws', () => {
 		expect(blueprintToDevDependencies(showcase)['vite-plugin-singlefile']).toBeUndefined()
 	})
 
-	it('raises no showcase question once the browser axis is present', () => {
+	it('raises no showcase question after the browser axis is present', () => {
 		expect(
 			blueprintToQuestions(buildBlueprint({ app: ['browser'], showcase: true })),
 		).toStrictEqual([])
@@ -578,7 +578,7 @@ describe('blueprint gate laws', () => {
 	// The advisory counts both axes together. Reading either one alone withdraws
 	// the proof from a workspace that does compose across environments, which is
 	// the refusal this gate was corrected to stop making.
-	it('raises no integration question once two environments are there to compose across', () => {
+	it('raises no integration question after two environments are there to compose across', () => {
 		const applied = buildBlueprint({ src: [], app: ['core', 'browser'], integration: true })
 		const spanning = buildBlueprint({ src: ['core'], app: ['core'], integration: true })
 		const published = buildBlueprint({ src: ['core', 'server'], integration: true })

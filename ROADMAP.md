@@ -35,8 +35,13 @@ serves writes to existing refs but still refuses ref deletion, so it joins the b
 - **scaffold**: add `form` to the vendored mirror inventory so `overwrite` vendors
   `guides/form.md` into consumers that declare it (toolbox first); re-run overwrite there after.
   (was B22)
-- **scaffold**: regenerate the package table with `scaffold catalog` so the `form` and `table`
-  rows land in it. (was B8)
+- **scaffold**: prove the anchor-swap interleaving on a Windows host.
+  `tests/src/server/WriteTransaction.test.ts` skips its
+  `discards a created segment whose anchor read refuses it` proof on win32 because `renameSync` is
+  `MoveFileExW` with `MOVEFILE_REPLACE_EXISTING`, which rejects an existing directory destination
+  and so kills the attacker's retry loop rather than the interleaving itself. The claim is
+  unverified there, not inapplicable. Closing it needs a Windows host and an attacker that clears
+  `holding` between attempts.
 - **scaffold policy**: move the nested-function body law into `configs/policy.ts` as another
   plugin rule. The rule set carries the rules that shipped; this one stayed a candidate.
 - **scaffold rules**: rule on the interned-class canon — `agent`'s barrelled `Channel` vs
@@ -46,7 +51,7 @@ serves writes to existing refs but still refuses ref deletion, so it joins the b
   `tests/src/core/shapers.test.ts`, or correct the guide sentence claiming every advertised
   shape is covered. (was B23)
 - **test**: publish `waitForCondition` — poll a named condition inside a budget measured with
-  `performance.now()`, accepting a synchronous or asynchronous condition, rejecting once the budget
+  `performance.now()`, accepting a synchronous or asynchronous condition, rejecting after the budget
   elapses. `@orkestrel/process` carries a proven local copy at `tests/setup.ts` and `probe` needs the
   same. Deferred deliberately: the user ruled it in for a later pass, and the local copy serves both
   packages meanwhile. A `test` bump is development-only and cascades to nobody.

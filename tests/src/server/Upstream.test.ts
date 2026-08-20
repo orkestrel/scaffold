@@ -421,7 +421,7 @@ describe('Upstream catalog', () => {
 			// The abbreviated form carries `dist-tags` and nothing a verdict reads. The
 			// organization list and the guide are each published in one form, so those
 			// requests declare no type at all: the control is that the header is not
-			// simply attached to every request the reader makes.
+			// attached to every request the reader makes.
 			expect(server.paths).toStrictEqual([
 				UPSTREAM_PATHS.organization,
 				UPSTREAM_PATHS.router,

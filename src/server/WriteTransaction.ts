@@ -227,7 +227,7 @@ export class WriteTransaction {
 	 * Stage one text file.
 	 *
 	 * @param path - The target-relative path to write.
-	 * @param content - The exact UTF-8 text the destination should hold.
+	 * @param content - The exact UTF-8 text the destination must hold.
 	 * @returns Nothing.
 	 * @throws {@link ScaffoldError} coded `INVALID` when the path is not one this
 	 * transaction opened or is already staged, `TARGET` when the destination holds
@@ -266,7 +266,7 @@ export class WriteTransaction {
 	 *
 	 * @param path - The target-relative path to write.
 	 * @param source - The resolved absolute path to copy the bytes from.
-	 * @param executable - Whether the destination should carry the executable bit.
+	 * @param executable - If `true`, the destination carries the executable bit; if `false`, it does not.
 	 * @returns Nothing.
 	 * @throws {@link ScaffoldError} coded `INVALID` when the path is not one this
 	 * transaction opened or is already staged, `TARGET` when the destination holds
@@ -330,7 +330,7 @@ export class WriteTransaction {
 	 * created segment is captured by device and inode, so a segment swapped
 	 * underneath the transaction is detected rather than written into.
 	 */
-	directory(path: string): WriteDirectoryResult {
+	establish(path: string): WriteDirectoryResult {
 		this.#assertOpen()
 		const expectation = this.#expectation(path)
 		if (expectation.shape === 'file') {

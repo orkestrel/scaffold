@@ -22,7 +22,7 @@ leaves unproven and what covers it instead.
 npm install --save-dev @orkestrel/scaffold
 ```
 
-The executable needs Node 22.12 or newer. Run it through `npx` without installing:
+The executable needs Node 22.12 or later. Run it through `npx` without installing:
 
 ```sh
 npx @orkestrel/scaffold --help
@@ -403,7 +403,7 @@ no interface and is documented directly.
 | ----------- | ---------------------------------------------------------------------------------- |
 | `write`     | Stage one text file.                                                               |
 | `copy`      | Stage one byte-for-byte copy in executable or non-executable destination mode.     |
-| `directory` | Establish one directory inside the target, one segment at a time.                  |
+| `establish` | Establish one directory inside the target, one segment at a time.                  |
 | `remove`    | Mark one file for deletion at commit.                                              |
 | `commit`    | Promote every staged file and take every marked file, or roll the whole call back. |
 | `discard`   | Abandon the transaction and remove everything it created.                          |
@@ -443,7 +443,7 @@ options
   --bin            scaffold a command-line executable at src/bin/main.ts
   --deps <list>    the @orkestrel/* packages the workspace depends on
   --groups <list>  the artifact groups to cover; every group when absent
-  --all            fetch a guide for every package the organization publishes, not just the declared ones
+  --all            fetch a guide for every package the organization publishes, not the declared ones alone
   --dirty          delete from a tree carrying uncommitted changes
   --from <path>    read the data root from a local path instead of the bundled one; catalog alone accepts it more than once
   --target <path>  the directory the verb operates on; the working directory when absent
@@ -455,9 +455,12 @@ exit codes
   2  usage error
 ```
 
-An option a verb does not list is refused by name rather than parsed and ignored. `--deps` reaches
-the registry, so `new` fails when the registry names no release for a package it was given: the
-workspace would otherwise declare a dependency that does not resolve.
+An option a verb does not list is refused by name rather than parsed and ignored. `--help` is the
+one exception, because it replaces the run rather than modifying it: a command line carrying
+`--help` anywhere prints the whole reference and exits `0` before the line is read as a command, so
+no verb has to list it. `--deps` reaches the registry, so `new` fails when the registry names no
+release for a package it was given: the workspace would otherwise declare a dependency that does not
+resolve.
 
 `new --bin` creates the executable entry, its test, and its scoped Vite and TypeScript wrappers. The
 other structural facts do not need creation flags. Add a root `tests/setup*.test.ts` proof for
@@ -562,7 +565,8 @@ standard error, so a piped value is never polluted.
 Every failure reports the same envelope instead: `{ "error": { "code": …, "message": … } }`. The
 code is a `ScaffoldErrorCode`, or `USAGE` for a command line that never became a command, or
 `FAILED` for a raised value that published no code of its own. A command line that never became a
-command carries no `--json`, so its refusal is always prose.
+command is refused in prose even when the line carries `--json`, because the flag is read from the
+command and no command was read.
 
 ## Blueprint
 
@@ -680,11 +684,11 @@ refused blueprint is answered rather than raised, so a caller reads the refusal 
 asked for. Each stage records its input and its output, a failed stage records the coded reason
 beside them, and the stages after a failed one never run.
 
-A plan says the blueprint can be built. It does not say the blueprint should be created. Every
-question beside the plan is advice the compile could not settle, and the caller that chose the shape
-is the one that answers it. So `new` refuses on any question, blocking or not, before it writes,
-while `audit` and `repair` carry the same questions through, because a target that already has that
-shape still has to be described and restored.
+A plan says the blueprint can be built. It does not decide whether to create it. Every question
+beside the plan is advice the compile could not settle, and the caller that chose the shape is the
+one that answers it. So `new` refuses on any question, blocking or not, before it writes, while
+`audit` and `repair` carry the same questions through, because a target that already has that shape
+still has to be described and restored.
 
 A library caller creating a fresh workspace applies `new`'s rule itself:
 
@@ -754,7 +758,7 @@ Presence ownership has separate mechanisms, and a reader needs to know which app
 | Mechanism       | Paths                                             | Bytes belong to       | Cost                                                    |
 | --------------- | ------------------------------------------------- | --------------------- | ------------------------------------------------------- |
 | Verb-owned      | `CATALOG_AGENT_PATH` and dependency guide mirrors | `catalog` or `mirror` | The owning verb is the only route for a later update.   |
-| Workspace-owned | `WORKSPACE_OWNED_PATHS`, currently `.gitignore`   | The target workspace  | Present bytes receive no later canonical ignore update. |
+| Workspace-owned | `WORKSPACE_OWNED_PATHS`, today `.gitignore`       | The target workspace  | Present bytes receive no later canonical ignore update. |
 
 Birth ownership is what makes a generated workspace the consumer's. `materialize` writes a
 birth-owned path into a vacant target. A later `repair` or `overwrite` call treats that path as
@@ -982,10 +986,11 @@ materializer.destroy()
 
 `resolveContainedPath` refuses a lexical escape, a physical link out of the root, and a dangling
 link whose raw target contains a `..` segment. It returns the lexical join of `root` and `path` — an
-absolute path under `root`, which is what its shipped example prints — after checking the namespace,
-not an open filesystem handle. Its contract therefore excludes a concurrent rename or link swap
-during the check or before the caller finishes using that path. A caller that admits hostile
-concurrent namespace mutation needs a handle-bound operation instead.
+absolute path under `root` — after checking the namespace, not an open filesystem handle. Its
+shipped example tests that answer's suffix rather than printing the whole path. Its contract
+therefore excludes a concurrent rename or link swap during the check or before the caller finishes
+using that path. A caller that admits hostile concurrent namespace mutation needs a handle-bound
+operation instead.
 
 `resolveRealPath` answers the caller's own text collapsed lexically, then resolved through every link
 in what survives that collapse. A `..` the caller wrote cancels the segment before it as text, so
@@ -1114,7 +1119,7 @@ host-dependent second one.
 **Scaffold emits no styles axis.** `SRC_MATRIX` is exactly `core`, `browser`, and `server`, and
 `Blueprint` carries no styles field. A workspace that needs `src/styles/` adds the directory, its
 configuration, and its Vitest project by hand. `.claude/rules/workspace.md` describes styles as an
-environment because the fleet has one; scaffold simply does not generate it.
+environment because the fleet has one; scaffold does not generate it.
 
 **No host path is normalized before it is guarded.** `isFilesystemPath` refuses an empty segment, so
 `packages//router` is off contract. A trailing separator does not produce one: it terminates a
@@ -1135,10 +1140,10 @@ registers `distribution` only when the workspace also publishes `src`. In a publ
 `distribution` and `service` run from `prepublishOnly` and `conformance` stays in `test`. In a
 `private: true` workspace, `distribution` is absent, `service` runs from `test`, and there is no
 `prepublishOnly` at all. Scaffold emits no proof into any registered project, because each names
-something only the package knows: the behavior its own packed artifact must hold once installed, the
-official artifact a conformance check measures against, and the service a live proof drives. A
-generated placeholder would read as a proof while measuring nothing, so the file a consumer writes
-is the file that selects the project.
+something only the package knows: the behavior its own packed artifact must hold after it is
+installed, the official artifact a conformance check measures against, and the service a live proof
+drives. A generated placeholder would read as a proof while measuring nothing, so the file a
+consumer writes is the file that selects the project.
 
 A distribution proof carries one contract scaffold does enforce from the outside. The generated
 `prepublishOnly` invokes it as `npm run test:distribution -- --mode release`, and a proof that reads

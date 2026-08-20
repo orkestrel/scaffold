@@ -425,6 +425,8 @@ The harness bridge names the concrete mechanism for each of these.
 
 - Put every campaign artifact in the **orchestrator's** repository under `.orkestrel/<package>/`,
   named for the package the campaign is about.
+- Give a campaign spanning several packages one shared `.orkestrel/campaign/` folder instead, so the
+  wave's plan, ledger, and verdicts sit together rather than split across the packages they rule on.
 - Never put them in the package they are about. A published package's tree is its product.
 - Claim nothing outside `.orkestrel/` unless Orkestrel scaffold mandates it. Everything Orkestrel
   owns in a consumer's tree lives beneath that folder, so a convention can be settled there without

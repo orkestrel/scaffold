@@ -199,10 +199,10 @@ describe('WriteTransaction staging', () => {
 		}
 	})
 
+	// Skipped on win32 because `chmodSync(path, 0o755)` leaves the mode at 666
+	// there, NTFS carrying no POSIX permission bits, so the assertion below cannot
+	// distinguish a set bit from an unset one on that host.
 	it.skipIf(process.platform === 'win32')('sets the executable bit when asked', () => {
-		// Measured on this host: `chmodSync(path, 0o755)` leaves the mode at 666 on
-		// win32, because NTFS carries no POSIX permission bits, so the assertion
-		// below cannot distinguish a set bit from an unset one there.
 		const workspace = createWorkspace()
 		try {
 			const target = join(workspace.path, 'project')
@@ -220,9 +220,10 @@ describe('WriteTransaction staging', () => {
 		}
 	})
 
+	// Skipped on win32 because NTFS exposes no POSIX executable bit to clear, so
+	// the mode assertion cannot distinguish the false branch from an unchanged
+	// source there.
 	it.skipIf(process.platform === 'win32')('clears the executable bit when not asked', () => {
-		// NTFS exposes no POSIX executable bit to clear, so the mode assertion
-		// cannot distinguish the false branch from an unchanged source there.
 		const workspace = createWorkspace()
 		try {
 			const target = join(workspace.path, 'project')
@@ -294,7 +295,7 @@ for (;;) {
 					Atomics.notify(state, 0)
 					let refusal: unknown
 					try {
-						transaction.directory('a')
+						transaction.establish('a')
 					} catch (error) {
 						refusal = error
 					}
@@ -333,7 +334,7 @@ for (;;) {
 			const target = workspace.ensure('project')
 			const transaction = new WriteTransaction(target, ['.claude/skills'])
 			try {
-				const result = transaction.directory('.claude/skills')
+				const result = transaction.establish('.claude/skills')
 				expect(result.created.map((anchor) => anchor.path)).toEqual([
 					join(target, '.claude'),
 					join(target, '.claude/skills'),
@@ -357,8 +358,8 @@ for (;;) {
 			workspace.write('project/AGENTS.md', '# Agents\n')
 			const transaction = new WriteTransaction(target, ['rules', 'AGENTS.md'])
 			try {
-				expect(transaction.directory('rules').created).toEqual([])
-				expect(readErrorCode(() => transaction.directory('AGENTS.md'))).toBe('TARGET')
+				expect(transaction.establish('rules').created).toEqual([])
+				expect(readErrorCode(() => transaction.establish('AGENTS.md'))).toBe('TARGET')
 				expect(transaction.commit()).toEqual([])
 			} finally {
 				transaction.discard()
@@ -373,7 +374,7 @@ for (;;) {
 		try {
 			const target = join(workspace.path, 'project')
 			const transaction = new WriteTransaction(target, ['.claude/skills'])
-			transaction.directory('.claude/skills')
+			transaction.establish('.claude/skills')
 			expect(lstatSync(join(target, '.claude/skills')).isDirectory()).toBe(true)
 			transaction.discard()
 			expect(readdirSync(workspace.path)).toEqual([])
@@ -401,7 +402,7 @@ for (;;) {
 			const previous = process.umask(0o300)
 			let refusal: unknown
 			try {
-				transaction.directory('a/b')
+				transaction.establish('a/b')
 			} catch (error) {
 				refusal = error
 			} finally {
@@ -622,7 +623,7 @@ describe('WriteTransaction commit', () => {
 				'foreign.md',
 			])
 			transaction.write('AGENTS.md', '# Agents\n')
-			transaction.directory('.claude/skills')
+			transaction.establish('.claude/skills')
 			transaction.remove('foreign.md')
 			expect(transaction.commit()).toEqual(['AGENTS.md', '.claude/skills', 'foreign.md'])
 		} finally {
@@ -652,7 +653,7 @@ describe('WriteTransaction discard', () => {
 		try {
 			const target = workspace.ensure('project')
 			const transaction = new WriteTransaction(target, ['.claude/skills'])
-			transaction.directory('.claude/skills')
+			transaction.establish('.claude/skills')
 			// A file planted inside a directory this transaction created stops the
 			// rollback from removing it, which is exactly the residue `discard` owes
 			// the caller instead of a silent success.

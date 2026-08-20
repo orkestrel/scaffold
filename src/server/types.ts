@@ -190,7 +190,7 @@ export interface MaterializerInterface {
 	/**
 	 * Rewrite the marker-bounded package table in the target's catalog agent file.
 	 *
-	 * @param entries - The published packages the table should list.
+	 * @param entries - The published packages the table must list.
 	 * @param target - The directory to write into.
 	 * @returns The catalog path, written when the region's bytes moved and skipped otherwise.
 	 */
@@ -198,7 +198,7 @@ export interface MaterializerInterface {
 	/**
 	 * Rewrite the `@orkestrel/*` range set in the target's manifest.
 	 *
-	 * @param dependencies - The names and ranges the manifest should declare.
+	 * @param dependencies - The names and ranges the manifest must declare.
 	 * @param target - The directory to write into.
 	 * @returns The manifest path, written when a declared range moved and skipped otherwise.
 	 *

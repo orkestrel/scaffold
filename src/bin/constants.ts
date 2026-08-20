@@ -115,7 +115,8 @@ export const OPTION_SUMMARY: Readonly<Record<string, string>> = Object.freeze({
 	'--bin': 'scaffold a command-line executable at src/bin/main.ts',
 	'--deps <list>': 'the @orkestrel/* packages the workspace depends on',
 	'--groups <list>': 'the artifact groups to cover; every group when absent',
-	'--all': 'fetch a guide for every package the organization publishes, not just the declared ones',
+	'--all':
+		'fetch a guide for every package the organization publishes, not the declared ones alone',
 	'--dirty': 'delete from a tree carrying uncommitted changes',
 	'--from <path>':
 		'read the data root from a local path instead of the bundled one; catalog alone accepts it more than once',

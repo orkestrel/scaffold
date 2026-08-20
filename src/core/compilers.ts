@@ -442,7 +442,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  * artifact serialized directly.
  *
  * The artifact carrying this text is claimed by birth. A workspace owns its own
- * manifest once it exists: its description, its keywords, and any script it
+ * manifest after it exists: its description, its keywords, and any script it
  * added are the consumer's, so a repair that replaced the file would take them.
  * The one part scaffold keeps current afterwards is the declared `@orkestrel/*`
  * range set, and that is a region with its own writer rather than a claim over
@@ -1035,7 +1035,7 @@ ${paths.join('\n')}
  *
  * @remarks
  * The barrels and every runtime entry intentionally hold nothing. A generated
- * sample entity is too easy to mistake for package implementation, so the
+ * sample entity would read as package implementation, so the
  * scaffold establishes only the selected environment boundaries. An application
  * entry is empty for the same reason the bin entry is, and because the vendored
  * lint config refuses an unassigned import outside a stylesheet, so the entry
@@ -1656,8 +1656,8 @@ export function dependenciesToQuestions(
  * {@link overridesToQuestions}.
  *
  * A question blocks when it describes a workspace this package cannot generate.
- * These do not, because each describes a workspace it can describe honestly and
- * should not create: a published axis of several environments without core,
+ * These do not, because each describes a workspace it can describe honestly but
+ * will not create: a published axis of several environments without core,
  * whose manifest names a core build the workspace never runs; a showcase flag
  * whose required browser axis is absent, which emits nothing; and an
  * integration flag over fewer than two environments, whose seed does emit and

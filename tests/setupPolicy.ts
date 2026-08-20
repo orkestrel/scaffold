@@ -184,7 +184,10 @@ export const DATA_SOURCE_FILES: readonly string[] = Object.freeze([
 export const DATA_EXEMPT_FILES: readonly string[] = Object.freeze(['helpers.ts'])
 
 /** Fleet-registered folders whose direct modules each contain one named function. */
-export const FUNCTION_DOMAIN_FOLDERS: readonly string[] = Object.freeze(['app/browser/composables'])
+export const FUNCTION_DOMAIN_FOLDERS: readonly string[] = Object.freeze([
+	'app/browser/composables',
+	'src/server/execution',
+])
 
 /** Every ambient declaration suffix the source glob collects and the parsed population excludes. */
 export const POLICY_AMBIENT_SUFFIXES: readonly string[] = Object.freeze([

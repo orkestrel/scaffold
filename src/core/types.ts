@@ -477,17 +477,16 @@ export interface CompileRecord {
  *
  * @remarks
  * `plan` is present exactly when the compile completed, so it is also the
- * completeness test, and it carries the blueprint it was compiled from. A
- * gated compile returns the questions that closed the gate and the stage
- * records up to it, and no plan; the caller still holds the blueprint it
- * passed in, so repeating it here would be one fact stored twice and free to
- * disagree with itself.
+ * completeness test, and `scaffolding.plan.blueprint` carries the blueprint it
+ * was compiled from. A gated compile returns the questions that closed the gate
+ * and the stage records up to it, and no plan; the caller still holds the
+ * blueprint it passed in, so repeating it at this level would be one fact stored
+ * twice and free to disagree with itself.
  */
 export interface Scaffolding {
 	readonly plan?: Plan
 	readonly questions: readonly Question[]
 	readonly stages: readonly CompileRecord[]
-	readonly blueprint?: never
 }
 
 /** The compiler's observation channel. */

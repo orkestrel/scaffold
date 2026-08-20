@@ -13,7 +13,7 @@ a workspace from it, report how a workspace differs from it, and write the diffe
 npm install --save-dev @orkestrel/scaffold
 ```
 
-The executable needs Node 22.12 or newer. Run it without installing anything:
+The executable needs Node 22.12 or later. Run it without installing anything:
 
 ```sh
 npx @orkestrel/scaffold --help
@@ -95,7 +95,7 @@ scaffolding.questions // the advice the compile could not settle
 compiler.destroy()
 ```
 
-A plan says the workspace can be built. It does not say the workspace should be created: a caller
+A plan says the workspace can be built. It does not decide whether to create it: a caller
 creating a fresh workspace refuses on any question beside the plan, blocking or not, exactly as
 `new` does. [`guides/scaffold.md`](guides/scaffold.md) states that rule and what it covers.
 

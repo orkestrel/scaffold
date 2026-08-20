@@ -41,9 +41,9 @@ These subsets carry extra weight:
 - **Runtime dependencies** — `@orkestrel/console` ([`console.md`](console.md)),
   `@orkestrel/contract` ([`contract.md`](contract.md)), `@orkestrel/emitter`
   ([`emitter.md`](emitter.md)), `@orkestrel/markdown` ([`markdown.md`](markdown.md)),
-  `@orkestrel/template` ([`template.md`](template.md)), and `@orkestrel/terminal`
-  ([`terminal.md`](terminal.md)). The library faces reach contract, emitter, markdown, and
-  template; the `scaffold` executable reaches console.
+  `@orkestrel/process` ([`process.md`](process.md)), and `@orkestrel/template`
+  ([`template.md`](template.md)). The library faces reach contract, emitter, and template; the
+  `scaffold` executable reaches console, contract, markdown, and process.
 - **Development** — `@orkestrel/guide` ([`guide.md`](guide.md)) powers this repository's
   guides-parity suite, [`tests/guides.test.ts`](../tests/guides.test.ts).
 

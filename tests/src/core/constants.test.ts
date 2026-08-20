@@ -94,7 +94,7 @@ describe('BASE_DEV_DEPENDENCIES', () => {
 		expect(matchesRange(range, '7.0.2')).toBe(false)
 	})
 
-	// The instrument is only evidence once it has failed. A version the manifest does not declare
+	// The instrument is only evidence after it has failed. A version the manifest does not declare
 	// must be rejected, and a range shape the fleet refuses must be rejected, or neither assertion
 	// above is measuring anything.
 	it('rejects a pin that does not follow the manifest', () => {

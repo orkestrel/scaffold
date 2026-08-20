@@ -691,7 +691,7 @@ export default defineConfig(
 import { srcBin } from '../../vite.config.ts'
 
 // The \`scaffold\` executable build — a single ESM lib file, no declarations (an
-// executable ships no types), with the \`#!/usr/bin/env node\` shebang re-emitted via
+// executable ships no types), with the \`#!/usr/bin/env node\` shebang re-emitted through
 // \`output.banner\` (rolldown strips shebangs from source during bundling), and
 // \`output.paths\` rewriting the externalized \`@src/*\` specifiers to the built sibling
 // src environments (relative to \`dist/bin/\`), so the emitted bin resolves at runtime.
@@ -943,7 +943,7 @@ export function resolveBundledBrowser(platform: NodeJS.Platform, root: string): 
 /**
  * Resolve the first installed stable system Chromium channel.
  *
- * @param platform - The Node platform whose standard layouts should be probed.
+ * @param platform - The Node platform whose standard layouts this call probes.
  * @param environment - The process environment supplying Windows installation roots.
  * @returns \`chrome\`, then \`msedge\`, or \`undefined\` when neither is executable.
  *
@@ -988,7 +988,7 @@ export function resolveSystemBrowser(
  * Resolve Playwright provider options for whatever browser this host can actually launch.
  *
  * @param pinned - The executable path for Playwright's pinned Chromium revision, when it has one.
- * @param platform - The Node platform whose standard layouts should be probed.
+ * @param platform - The Node platform whose standard layouts this call probes.
  * @param environment - The process environment supplying operator overrides and Windows roots.
  * @param root - The managed-container bundled browsers directory to search.
  * @returns Provider options naming an executable, a WebSocket endpoint, or a channel.
