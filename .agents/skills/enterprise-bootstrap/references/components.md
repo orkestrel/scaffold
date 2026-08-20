@@ -423,7 +423,7 @@ Multiple targets: give each panel `.multi-collapse` and point separate triggers 
 </dialog>
 ```
 
-`role="alertdialog"` for a destructive confirm, `role="dialog"` otherwise; `aria-labelledby` points at the heading. The element's own `close` event is where the host clears the state that opened it, so Esc and the buttons all close by one path. The scrim is the UA's `::backdrop`, which no Bootstrap class touches — restyling it is a rung-4 decision.
+`role="alertdialog"` for a destructive confirm, `role="dialog"` otherwise; `aria-labelledby` points at the heading. The element's own `close` event is where the host clears the state that opened it, so Esc and the buttons all close by one path. The scrim is the UA's `::backdrop`, which no Bootstrap class touches — restyling it requires the custom-CSS tier.
 
 Bootstrap's `.modal` is the answer when the project already drives its dialogs through Bootstrap's JS:
 

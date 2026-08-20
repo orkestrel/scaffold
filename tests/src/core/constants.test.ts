@@ -1,7 +1,17 @@
 import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { BASE_DEV_DEPENDENCIES, ORKESTREL_RANGE_PATTERN } from '@src/core'
+import {
+	APP_BROWSER_DEV_DEPENDENCIES,
+	APP_DEV_DEPENDENCIES,
+	APP_SERVER_DEV_DEPENDENCIES,
+	BASE_DEV_DEPENDENCIES,
+	DECLARATION_DEV_DEPENDENCIES,
+	matchesRange,
+	ORKESTREL_RANGE_PATTERN,
+	SHOWCASE_DEV_DEPENDENCIES,
+	SOURCE_BROWSER_DEV_DEPENDENCIES,
+} from '@src/core'
 import { describe, expect, it } from 'vitest'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
@@ -47,20 +57,41 @@ describe('BASE_DEV_DEPENDENCIES', () => {
 		expect(ORKESTREL_RANGE_PATTERN.test(pinned)).toBe(true)
 	})
 
-	// Scaffold hands every generated workspace these pins and installs its own from the manifest, so
-	// a package listed at one version here and another there ships a toolchain scaffold does not
-	// itself run. The self-pin above is exempt: it names the release being prepared, which the
-	// manifest carries as a bare version rather than as a dependency of itself.
+	// Scaffold hands generated workspaces these sets and installs its own declared members from the
+	// manifest, so a package listed at one version here and another there ships a toolchain scaffold
+	// does not itself run. The manifest's development dependencies do not declare the scaffold
+	// self-pin, the generated application packages it carries as runtime dependencies,
+	// @vitejs/plugin-vue, vue, vue-tsc, or vite-plugin-singlefile, so those keys are outside this
+	// comparison. The self-pin is matched to the manifest version above.
 	it('hands every generated dependency the version it installs itself', () => {
 		const declared = manifestDevDependencies()
 		const disagreed: string[] = []
-		for (const [name, range] of Object.entries(BASE_DEV_DEPENDENCIES)) {
-			if (name === '@orkestrel/scaffold') continue
-			const own = declared[name]
-			if (own === undefined) disagreed.push(`${name}: base ${range}, absent from manifest`)
-			else if (own !== range) disagreed.push(`${name}: base ${range}, manifest ${own}`)
+		for (const [set, dependencies] of [
+			['base', BASE_DEV_DEPENDENCIES],
+			['declaration', DECLARATION_DEV_DEPENDENCIES],
+			['source browser', SOURCE_BROWSER_DEV_DEPENDENCIES],
+			['app', APP_DEV_DEPENDENCIES],
+			['app browser', APP_BROWSER_DEV_DEPENDENCIES],
+			['app server', APP_SERVER_DEV_DEPENDENCIES],
+			['showcase', SHOWCASE_DEV_DEPENDENCIES],
+		] as const) {
+			for (const [name, range] of Object.entries(dependencies)) {
+				const own = declared[name]
+				if (own !== undefined && own !== range) {
+					disagreed.push(`${name}: ${set} ${range}, manifest ${own}`)
+				}
+			}
 		}
 		expect(disagreed).toEqual([])
+	})
+
+	// The generated TypeScript configuration and declaration pipeline are proven only below
+	// TypeScript 7, so the shared range must refuse every 7.x release.
+	it('keeps generated TypeScript below 7', () => {
+		const range = BASE_DEV_DEPENDENCIES.typescript
+		if (range === undefined)
+			throw new Error('The base development dependencies carry no TypeScript')
+		expect(matchesRange(range, '7.0.2')).toBe(false)
 	})
 
 	// The instrument is only evidence once it has failed. A version the manifest does not declare

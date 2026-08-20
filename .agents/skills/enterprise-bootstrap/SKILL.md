@@ -105,7 +105,7 @@ the need.
 
 1. **The component's own classes, in its documented structure.** Use the right elements, nesting, class names, and required ARIA: a card is `.card` wrapping `.card-body` wrapping `.card-title`, not a `div` with borrowed padding. Variants, states, color modes, and responsive behavior all hang off that structure.
 2. **Bootstrap utilities, for refinement.** Spacing, flex, display, sizing, text, borders, color. Compose utilities rather than reaching past them, and use only classes that exist in [utilities.md](references/utilities.md).
-3. **Bootstrap's own extension points.** Component `--bs-{component}-*` variables and the utilities API, when a real gap remains after rungs 1 and 2.
+3. **Bootstrap's own extension points.** Component `--bs-{component}-*` variables and the utilities API, when a real gap remains after the component-class and utility tiers.
 4. **Anything beyond Bootstrap's conventions is the developer's call, not yours.** Stop at rung 3 and say plainly what rung 4 would require.
 
 Never open at rung 4. Specifically, do not reach first for:

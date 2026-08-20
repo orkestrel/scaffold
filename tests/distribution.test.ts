@@ -2,6 +2,8 @@ import { spawnSync } from 'node:child_process'
 import { globSync, readFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { HOST_PATHS } from '@src/core'
+import { listFiles, pathToStorage } from '@src/server'
 import { requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
 import ts from 'typescript'
@@ -141,6 +143,135 @@ const DRIVER = [
 ].join('\n')
 
 describe('installed package consumer', () => {
+	it('stages exactly the declared vendored host inventory', () => {
+		// Directory members are expanded here into exact declared membership. A vendored inventory
+		// change must move this declaration; a file present only because work happened in the checkout
+		// must not enter the published host.
+		const expanded = [
+			'AGENTS.md',
+			'CLAUDE.md',
+			'LICENSE',
+			'.agents/orchestration.md',
+			'.agents/skills/enterprise-bootstrap/SKILL.md',
+			'.agents/skills/enterprise-bootstrap/agents/openai.yaml',
+			'.agents/skills/enterprise-bootstrap/references/bootstrap-reference.md',
+			'.agents/skills/enterprise-bootstrap/references/components.md',
+			'.agents/skills/enterprise-bootstrap/references/frontend-design.md',
+			'.agents/skills/enterprise-bootstrap/references/utilities.md',
+			'.agents/skills/orkestrel-align-packages/SKILL.md',
+			'.agents/skills/orkestrel-align-packages/agents/openai.yaml',
+			'.agents/skills/orkestrel-align-packages/references/fleet.md',
+			'.agents/skills/orkestrel-align-packages/references/integration.md',
+			'.agents/skills/orkestrel-build-application/SKILL.md',
+			'.agents/skills/orkestrel-build-application/agents/openai.yaml',
+			'.agents/skills/orkestrel-debrief/SKILL.md',
+			'.agents/skills/orkestrel-debrief/agents/openai.yaml',
+			'.agents/skills/orkestrel-debrief/references/field-testing.md',
+			'.agents/skills/orkestrel-debrief/references/instruction-audit.md',
+			'.agents/skills/orkestrel-falsify/SKILL.md',
+			'.agents/skills/orkestrel-falsify/agents/openai.yaml',
+			'.agents/skills/orkestrel-falsify/references/brief.md',
+			'.agents/skills/orkestrel-falsify/references/reconcile.md',
+			'.agents/skills/orkestrel-harden-package/SKILL.md',
+			'.agents/skills/orkestrel-harden-package/agents/openai.yaml',
+			'.agents/skills/orkestrel-harden-package/references/centralization.md',
+			'.agents/skills/orkestrel-harden-package/references/contract.md',
+			'.agents/skills/orkestrel-harden-package/references/hardening.md',
+			'.agents/skills/orkestrel-harden-package/references/research.md',
+			'.agents/skills/orkestrel-human-journey/SKILL.md',
+			'.agents/skills/orkestrel-human-journey/agents/openai.yaml',
+			'.agents/skills/orkestrel-human-journey/references/captures.md',
+			'.agents/skills/orkestrel-human-journey/references/layer.md',
+			'.agents/skills/orkestrel-polish-surface/SKILL.md',
+			'.agents/skills/orkestrel-polish-surface/agents/openai.yaml',
+			'.agents/skills/orkestrel-polish-surface/references/capture-harness.md',
+			'.claude/agents/analyst.md',
+			'.claude/agents/application.md',
+			'.claude/agents/builder.md',
+			'.claude/agents/checker.md',
+			'.claude/agents/codex.md',
+			'.claude/agents/grok.md',
+			'.claude/agents/implementer.md',
+			'.claude/agents/orkestrel.md',
+			'.claude/agents/planner.md',
+			'.claude/agents/researcher.md',
+			'.claude/agents/reviewer.md',
+			'.claude/agents/scout.md',
+			'.claude/agents/sol.md',
+			'.claude/agents/verifier.md',
+			'.claude/rules/application.md',
+			'.claude/rules/architecture.md',
+			'.claude/rules/browser.md',
+			'.claude/rules/documentation.md',
+			'.claude/rules/names.md',
+			'.claude/rules/patterns.md',
+			'.claude/rules/quality.md',
+			'.claude/rules/styles.md',
+			'.claude/rules/tests.md',
+			'.claude/rules/typescript.md',
+			'.claude/rules/workspace.md',
+			'.claude/rules/writing.md',
+			'.claude/settings.json',
+			'.claude/skills/enterprise-bootstrap/SKILL.md',
+			'.claude/skills/orkestrel-align-packages/SKILL.md',
+			'.claude/skills/orkestrel-build-application/SKILL.md',
+			'.claude/skills/orkestrel-debrief/SKILL.md',
+			'.claude/skills/orkestrel-falsify/SKILL.md',
+			'.claude/skills/orkestrel-harden-package/SKILL.md',
+			'.claude/skills/orkestrel-human-journey/SKILL.md',
+			'.claude/skills/orkestrel-polish-surface/SKILL.md',
+			'.codex/agents/analyst.toml',
+			'.codex/agents/application.toml',
+			'.codex/agents/builder.toml',
+			'.codex/agents/checker.toml',
+			'.codex/agents/claude.toml',
+			'.codex/agents/grok.toml',
+			'.codex/agents/implementer.toml',
+			'.codex/agents/opus.toml',
+			'.codex/agents/orkestrel.toml',
+			'.codex/agents/planner.toml',
+			'.codex/agents/researcher.toml',
+			'.codex/agents/reviewer.toml',
+			'.codex/agents/scout.toml',
+			'.codex/agents/verifier.toml',
+			'.codex/config.toml',
+			'configs/helpers.ts',
+			'configs/policy.ts',
+			'.cursor/mcp.json',
+			'.cursor/rules/orchestration.mdc',
+			'.editorconfig',
+			'.gitattributes',
+			'.gitignore',
+			'.mcp.json',
+			'.oxfmtrc.json',
+			'.oxlintignore',
+			'.oxlintrc.json',
+			'.prettierignore',
+			'guides/guide.md',
+			'guides/scaffold.md',
+			'scripts/codex.sh',
+			'scripts/cursor.sh',
+			'scripts/deps.sh',
+			'scripts/ollama.sh',
+			'tests/config.test.ts',
+			'tests/policy.test.ts',
+			'tests/setupPolicy.ts',
+		]
+		for (const path of HOST_PATHS) {
+			expect(
+				expanded.some((destination) => destination === path || destination.startsWith(`${path}/`)),
+			).toBe(true)
+		}
+		for (const destination of expanded) {
+			expect(
+				HOST_PATHS.some((path) => destination === path || destination.startsWith(`${path}/`)),
+			).toBe(true)
+		}
+		expect(listFiles(resolve(root, 'dist/host'))).toEqual(
+			[...expanded.map((path) => pathToStorage(path)), 'manifest.json'].sort(),
+		)
+	})
+
 	it('answers every example its shipped declarations print exactly as printed', () => {
 		const workspace = createScratch({ prefix: 'scaffold-e4-examples-' })
 		try {

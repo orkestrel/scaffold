@@ -736,17 +736,13 @@ transport.
    the bench and supply every executed measurement yourself. Never dispatch it to a bench and expect
    it to prove its own work. The shape to recognise is a child that exits 0 almost immediately, a
    request to it that never resolves, and a stack landing in the spawning code's exit handler.
-   The sandbox also denies a loopback listener: a unit running a browser and a server test project
-   inside a `workspace-write` bench sandbox got `listen EPERM: operation not permitted` on
-   `0.0.0.0:24678` and on `127.0.0.1`, and neither project could collect at all, while the same
-   suites exited 0 on the host. A subject needing a real local server is therefore unmeasurable
-   inside a bench: name the limit in the brief before dispatch, have the unit report the reading as
-   an observation naming the exact command, and take that proof yourself on the host. A bench sandbox
-   also refuses to write some paths a brief legitimately owns — measured here, `codex exec --sandbox
-workspace-write` accepted edits under `.claude/` and rejected `.agents/orchestration.md` with
-   "patch rejected: writing outside of the project; rejected by user approval settings" — so a brief
-   that assigns a bench unit a path outside the obvious source tree says so, and a unit blocked that
-   way stops and reports rather than finding another write mechanism.
+   **When a bench sandbox denies a loopback listener, `listen` fails `EPERM` on every address.** A
+   subject needing a real local server is unmeasurable inside the bench. Name the limit in the brief
+   before dispatch. Have the unit report the reading as an observation naming the exact command.
+   Take the proof on the host.
+   **When a brief assigns a bench unit a path outside the obvious source tree, name the write limit
+   in the brief.** If the sandbox rejects the patch, the unit stops and reports the rejection. Never
+   find another write mechanism.
 5. **Ephemeral streams, durable records.** A journal proves a bench is alive and recovers an
    interrupted session. Keep journals under `tmp/`, never commit them, and sweep them at acceptance
    after the final gate evidence is recorded. Durable retention — brief, distillate, verdict,

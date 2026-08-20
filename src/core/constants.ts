@@ -389,7 +389,7 @@ export const DECLARATION_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Ob
 
 /** The development dependencies a published browser `src` environment adds. */
 export const SOURCE_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
-	'@vitest/browser-playwright': '^4.1.10',
+	'@vitest/browser-playwright': '^4.1.11',
 	playwright: '^1.62.1',
 })
 
@@ -424,7 +424,7 @@ export const SHOWCASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Objec
 /** The development dependencies a private server application adds. */
 export const APP_SERVER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@orkestrel/emitter': '^0.0.7',
-	'@orkestrel/middleware': '^0.0.13',
+	'@orkestrel/middleware': '^0.0.16',
 	'@orkestrel/router': '^0.0.10',
-	'@orkestrel/server': '^0.0.13',
+	'@orkestrel/server': '^0.0.14',
 })

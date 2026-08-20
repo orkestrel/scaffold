@@ -770,10 +770,10 @@ aligned whether it is present or absent, so it neither restores missing bytes no
 bytes.
 
 You own `tests/setup.ts`, the selected `tests/setupBrowser.ts`, `tests/setupServer.ts`,
-`tests/setupService.ts`, and `tests/setupGlobal.ts` modules, the selected environment entry tests
-under `tests/src` and `tests/app`, the `tests/src/bin/main.test.ts` file, and the
-`tests/integration.test.ts` seed. Scaffold writes those planned files only during materialize and
-leaves later edits or deletions alone. You also own the `tests/guides.test.ts`,
+`tests/setupService.ts`, and `tests/setupGlobal.ts` modules, each root `tests/setup*.test.ts` proof,
+the selected environment entry tests under `tests/src` and `tests/app`, the
+`tests/src/bin/main.test.ts` file, and the `tests/integration.test.ts` seed. Scaffold writes those
+planned files only during materialize and leaves later edits or deletions alone. You also own the `tests/guides.test.ts`,
 `tests/distribution.test.ts`, `tests/conformance.test.ts`, and `tests/service/**/*.test.ts` proof
 files that you add to select their projects. Scaffold content-owns `tests/setupPolicy.ts`,
 `tests/policy.test.ts`, and `tests/config.test.ts`; `repair` and `overwrite` restore those files when
