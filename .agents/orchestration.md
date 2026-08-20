@@ -565,6 +565,12 @@ wrong is right to stop.
 After reconciling findings into briefs, walk the retained finding list once. Every finding names
 the brief item that carries it. A finding with no carrier is a dropped finding.
 
+Every finding names exactly one carrier. Two briefs claiming one finding is not redundancy that
+costs a little duplicated work — it is a conflict the executor discovers mid-unit, between two
+documents you told it to obey, with no way to tell which you meant. It will either implement the row
+twice or stop. Where a reconciliation table and a brief disagree about who owns a row, the brief the
+executor opens wins, and you fix the other one before the second unit launches.
+
 ## Long-running commands
 
 A bench exec, a Workflow, an install, a build, and a publish chain are one class of thing: a
