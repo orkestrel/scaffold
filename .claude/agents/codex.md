@@ -24,9 +24,9 @@ CODEX_IMPLEMENTER_EFFORT=high
 
 Raise the analyst to `xhigh` only for a stated hard reasoning need. Use `gpt-5.6-terra`
 only for explicitly mechanical, taste-free roles. Use `gpt-5.6-luna` for absorption,
-distillation, scouting, and bounded research when the Cursor bench is dark — it is the
-second step of the tedious-work ladder, and the substitution is recorded. Never switch
-models silently.
+distillation, scouting, and bounded research when the Cursor bench is dark — it sits
+between Cursor Grok and Sonnet on the tedious-work ladder, and the substitution is
+recorded. Never switch models silently.
 
 ## Transport — pick by work class
 

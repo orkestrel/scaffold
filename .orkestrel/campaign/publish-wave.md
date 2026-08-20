@@ -39,8 +39,13 @@ All four manifests carry `publishConfig.access: public` and a `prepublishOnly` c
 first publish, so its packument serves 404 for minutes after a successful upload — treat that as
 pending rather than failed.
 
-`script` is present on this host, so the TTY the npm approval flow needs is satisfiable here.
-`npm whoami` returns 401: the credential is the owner's and the login needs them at the keyboard.
+`script` is present on this host (`util-linux 2.39.3`), so the TTY the npm approval flow needs is
+satisfiable here. `npm whoami` returns 401: the credential is the owner's and the login needs them at
+the keyboard.
+
+`AGENTS.md` § Publishing owns the window procedure — the fifo stdin, `--browser=false`, the
+one-attempt rule for a layer's first package, reading the result from the registry rather than an
+exit code, and the rest. Do not restate it anywhere; read it there.
 
 ## Scaffold cannot build from a clean install until process publishes
 

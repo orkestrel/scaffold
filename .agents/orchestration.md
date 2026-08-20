@@ -186,8 +186,7 @@ Every role honours this floor. No dispatch may widen it.
 - Treat every shared file as report-only.
 - No role commits, pushes, tags, publishes, installs dependencies, or runs a destructive command.
 - No role runs `git checkout`, `git restore`, `git stash`, `git reset`, or `git clean`. Each discards
-  a working-tree change silently, and a tree carrying an uncommitted unit has no other copy of it. A
-  role that must undo its own edit undoes exactly that edit.
+  a working-tree change silently. A role that must undo its own edit undoes exactly that edit.
 - A dispatch that has a unit plant a line to prove an instrument can fail names a file the unit under
   verification did not touch, and names how the plant is removed. Check the tree's status before
   choosing the file.
@@ -260,7 +259,7 @@ edits, formatter and build races, cache phantoms, and validation cross-talk.
     alone misses a deadline the same file meets on an idle one. So the deciding re-run belongs to
     the Orchestrator after the unit exits, never to the unit, and a timing failure a unit cannot
     clear is carried to that reading rather than diagnosed by the unit. This makes a writer's own
-    gate evidence systematically pessimistic on timing, which is a second reason the independent
+    gate evidence systematically pessimistic on timing, which is another reason the independent
     `verifier` runs the authoritative gates.
 11. While any unit is live, the Orchestrator's own instruments go in its scratchpad, never in the
     subject repository's `tmp/`. A probe that both writes and deletes inside the subject tree can
@@ -392,7 +391,7 @@ The harness bridge names the concrete mechanism for each of these.
   or re-run once that call ends.
 - Write the unit's returned report in the SAME action that commits its code, never afterwards. A
   commit message states what changed; the report states what the unit measured, what it decided, what
-  it could not close, and which of its own claims it flagged. An auditor's subject is the second one,
+  it could not close, and which of its own claims it flagged. An auditor's subject is the report,
   so a report living only in the Orchestrator's context stops the next lane on arrival.
 - Capture the unit's returned report to a file beside its brief under the same unit name, so a
   unit's instruction and its outcome are one pair on disk.
@@ -526,8 +525,8 @@ right to stop.
 - Take every measurement under the conditions the unit will run in, or have the unit take it. A
   number measured in your environment and asserted as a criterion is unreachable when the
   executor's sandbox denies what yours permitted, and no edit to the owned files can close it.
-  Where the unit is better placed to measure than you are, make the measurement its first step and
-  fix the criterion to the property you want rather than to the number you saw.
+  Where the unit is better placed to measure than you are, have it take the measurement before doing
+  anything else and fix the criterion to the property you want rather than to the number you saw.
 - Read the acceptance criteria against the off-limits list, line by line. Every criterion closes
   using owned files alone. A criterion that needs an off-limits file gets that file granted or gets
   struck. A file the change will break that appears in neither list is an unscoped file; grant it or
@@ -733,6 +732,17 @@ transport.
    the bench and supply every executed measurement yourself. Never dispatch it to a bench and expect
    it to prove its own work. The shape to recognise is a child that exits 0 almost immediately, a
    request to it that never resolves, and a stack landing in the spawning code's exit handler.
+   The sandbox also denies a loopback listener: a unit running a browser and a server test project
+   inside a `workspace-write` bench sandbox got `listen EPERM: operation not permitted` on
+   `0.0.0.0:24678` and on `127.0.0.1`, and neither project could collect at all, while the same
+   suites exited 0 on the host. A subject needing a real local server is therefore unmeasurable
+   inside a bench: name the limit in the brief before dispatch, have the unit report the reading as
+   an observation naming the exact command, and take that proof yourself on the host. A bench sandbox
+   also refuses to write some paths a brief legitimately owns — measured here, `codex exec --sandbox
+workspace-write` accepted edits under `.claude/` and rejected `.agents/orchestration.md` with
+   "patch rejected: writing outside of the project; rejected by user approval settings" — so a brief
+   that assigns a bench unit a path outside the obvious source tree says so, and a unit blocked that
+   way stops and reports rather than finding another write mechanism.
 5. **Ephemeral streams, durable records.** A journal proves a bench is alive and recovers an
    interrupted session. Keep journals under `tmp/`, never commit them, and sweep them at acceptance
    after the final gate evidence is recorded. Durable retention — brief, distillate, verdict,

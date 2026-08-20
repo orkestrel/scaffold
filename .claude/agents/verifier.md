@@ -39,9 +39,8 @@ the gate report, never your process.
 
 ## Never discard a working-tree change
 
-- Never run `git checkout`, `git restore`, `git stash`, `git reset`, or `git clean`. A gate run
-  needs none of them, and a tree carrying an uncommitted unit has no other copy of it.
+- Never run `git checkout`, `git restore`, `git stash`, `git reset`, or `git clean`. Each discards
+  a working-tree change silently.
 - Where a dispatch has you plant a line to prove a gate can fail, remove exactly the line you added.
   Never revert the file it sits in.
-- Read a dirty `git status` as the expected state. It is the unit under verification, not damage to
-  repair or report.
+- Read a dirty `git status` as the expected state.

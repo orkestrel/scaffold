@@ -64,10 +64,10 @@ const SELECTIONS: ReadonlyArray<readonly Environment[]> = [
 // is: one entry per (blueprint, module path) pair the selection matrix emits,
 // projected onto the path as the number of blueprints that emit it. The
 // union of those paths is a weaker claim and does not stand in for this one. One
-// maximal blueprint emits all 29 paths by itself, so under a union assertion 125
-// of the 126 could emit nothing and nothing would move; the counts move for any
-// selection that stops emitting anything. The control beside the first sweep
-// runs that exact narrowing.
+// maximal blueprint emits every path `MODULE_EMITTERS` names by itself, so under a
+// union assertion every blueprint but that one could emit nothing and nothing
+// would move; the counts move for any selection that stops emitting anything.
+// The control beside the first sweep runs that exact narrowing.
 const MODULE_EMITTERS: Readonly<Record<string, number>> = Object.freeze({
 	'app/browser/index.ts': 64,
 	'app/browser/main.ts': 64,
@@ -118,9 +118,9 @@ const PUBLISHED_FACES: ReadonlyArray<readonly [factory: string, environment: str
 	])
 
 // Every selection the compiler accepts, in both structural states it branches on.
-// A shape is emitted for each of the 63 non-empty `src` x `app` pairs twice: once
-// with no structural fact set, and once with every one of them set, so no
-// conditional span is measured in one state alone.
+// A shape is emitted for each non-empty `src` x `app` pair drawn from `SELECTIONS`
+// twice: once with no structural fact set, and once with every one of them set, so
+// no conditional span is measured in one state alone.
 function buildSelections(): readonly Blueprint[] {
 	const blueprints: Blueprint[] = []
 	for (const src of SELECTIONS) {
@@ -479,10 +479,11 @@ describe('configuration templates', () => {
 // A generated workspace vendors `format:check` and `lint:check` and runs both on
 // the bytes `new` just wrote, so the emitted text is measured against the vendored
 // rules directly here. Each instrument's population is every (blueprint, module)
-// pair the matrix emits — 2015 of them over 126 blueprints — and each sweep states
-// that population as `MODULE_EMITTERS` before the empty finding it draws from it,
-// because an empty corpus reports the same empty finding as a clean one. Each rule
-// carries a control drawn from outside the emitted population as well, because an
+// pair the matrix emits — the sum `MODULE_EMITTERS` totals, over every blueprint
+// `buildSelections` returns — and each sweep states that population as
+// `MODULE_EMITTERS` before the empty finding it draws from it, because an empty
+// corpus reports the same empty finding as a clean one. Each rule carries a
+// control drawn from outside the emitted population as well, because an
 // instrument that has never reported is not evidence that the corpus is clean.
 describe('emitted workspaces under their own gates', () => {
 	it('refuses a non-object peer dependency declaration at config load', async () => {
@@ -626,10 +627,11 @@ describe('emitted workspaces under their own gates', () => {
 
 		// The control is the matrix one selection short, which is outside the
 		// population `MODULE_EMITTERS` covers because that population is the pairs
-		// all 126 blueprints emit. `browser+server` is the selection every one of
-		// whose modules another selection also emits, so the union of paths is
-		// bit-identical without it — the assertion these sweeps used to make passes
-		// on a corpus missing 30 blueprints. The relation is what moves.
+		// every blueprint `buildSelections` returns emits. `browser+server` is the
+		// selection every one of whose modules another selection also emits, so the
+		// union of paths is bit-identical without it — the assertion these sweeps
+		// used to make passes on a corpus missing every blueprint the filter below
+		// excludes. The relation is what moves.
 		const narrowed = buildSelections().filter(
 			(blueprint) =>
 				blueprint.src.join('+') !== 'browser+server' &&

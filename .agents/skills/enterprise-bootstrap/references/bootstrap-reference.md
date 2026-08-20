@@ -512,11 +512,13 @@ Give header cells an **opaque background** (`bg-body-secondary` or a table varia
 
 ### Wizards & multi-step forms
 
-- Show step progress: current position, total, and step names ("Step 2 of 4 — Billing"); `list-group-numbered` or a simple nav renders it honestly.
+- Show step progress: current position, total, and step name (for example, "Billing — step ⟨n⟩ of
+  ⟨total⟩", where the wizard fills in its own runtime position and total); `list-group-numbered` or
+  a simple nav renders it honestly.
 - Validate per step before advancing; never let a step advance carrying invalid data.
 - Back never loses data. Persist partial state (save-and-resume) for anything beyond ~3 steps or that crosses sessions.
 - Never re-ask what a previous step collected (Redundant Entry, 3.3.7) — carry it forward or offer "same as above".
-- Last step: a review summary with per-section edit links, then one clearly-named commit action ("Create account", not "Submit").
+- Review step: a review summary with per-section edit links, then one clearly-named commit action ("Create account", not "Submit").
 
 ### The data states
 
