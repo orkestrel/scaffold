@@ -163,10 +163,10 @@ Read this section first; it is the one that changes.
 
 | Package | Version | State |
 | ------- | ------- | ----- |
-| `@orkestrel/process` | 0.0.4 | **closed** — audit, lens, and cross-engine audit all resolved, gates green |
-| `@orkestrel/mcp` | 0.0.20 | **closed** — audit, cross-engine audit, and its fix round all resolved, gates green |
-| `@orkestrel/scaffold` | 0.0.45 | **closed** — audit, lens, and cross-engine audit all resolved, gates green |
-| `@orkestrel/probe` | 0.0.1 | **NOT READY** — its cross-engine audit returned nearly every claim broken |
+| `@orkestrel/process` | 0.0.4 | **fix rounds landed through B2** (7010200, ce0ee20, 5ef0b7f, 182f72a; the pid surface is the owner's 2026-08-20 instruction, design-round reconciled): the pid unit's audit closed by B1's mutation-bound proof; B2 homes the execution functions in the registered `src/server/execution` domain and awaits its landing checks. Remaining: B2 commit and audit, artifact proof v2 (node16 CJS types, a real `execute` from the tarball, sourcemap sweep), the independent verifier, the registry-range restore before any distribution proof |
+| `@orkestrel/mcp` | 0.0.20 | **fix rounds landed and verified** (b59b80d, 40b5368): the cross-engine audit's findings closed, the handshake proofs mutation-bound by the Orchestrator (red 20:47:07, green 20:47:33), the Grok conformance check returned PASS on every item. Remaining: artifact proof v2 (a `handle` round trip from the tarball, the map-sources dump), the independent verifier |
+| `@orkestrel/scaffold` | 0.0.45 | **fix rounds landed through fix4** (0db3921, 2efbb88, 183e8c7, 641494b): the factories deleted, `remove(plan, …)` re-derives with the fabricated-audit refusal red-then-green, the prose and register rows closed, the fix2+3 audit's residue closed by fix4. The wave adds an obligation the swap measured: the bin imports `executeSync` from `@orkestrel/process/server`, so scaffold's release re-pins `@orkestrel/process` to the release that exports it, after process publishes. Remaining: the independent verifier, the `dist/host` inventory walk against `HOST_PATHS` in the artifact proof |
+| `@orkestrel/probe` | 0.0.1 | **PBFIX12 landed** (8749d69: the objective seams closed red-then-green, the host retook the sandbox-denied readings). PBFIX13 is writing (the `Source` rename after the verified `@orkestrel/guide` collision, `Verdict.checks` to `case`, the reply-shape fact, BR9-BR19); the PBFIX12 cross-engine audit runs beside it in the pinned worktree. The installed-bin artifact proof is green (initialize round trip from the tarball, 2026-08-20). Remaining: PBFIX13 landing and audit, the final verifier, artifact proof v3 on the final tree, the campaign-folder prune at acceptance |
 
 ## Probe is not ready, and two of its defects are this campaign's own
 
