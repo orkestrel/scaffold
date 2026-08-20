@@ -665,6 +665,12 @@ transport.
    settling command, and take that proof yourself on the host. Never let a unit substitute the
    reachable half: linking a packed tarball is not installing it, and a gate written to catch an
    install failure that only ever links cannot see the defect it exists for.
+   Not every symptom names the sandbox. A nested process and a nested install fail `EPERM`, which
+   reads as a denial; a nested `git` invocation instead reports **"not a git repository"** while the
+   unit's own `git status` succeeds a moment earlier. That one reads as a broken checkout, and a unit
+   acting on it will go looking for damage that is not there. Tell a unit which of its tools shell out
+   one level down — a scaffolding CLI that probes git, a formatter that spawns a worker — so it
+   recognises the shape instead of diagnosing the tree.
 5. **Ephemeral streams, durable records.** A journal proves a bench is alive and recovers an
    interrupted session. Keep journals under `tmp/`, never commit them, and sweep them at acceptance
    after the final gate evidence is recorded. Durable retention — brief, distillate, verdict,
