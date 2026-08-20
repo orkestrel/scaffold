@@ -192,7 +192,7 @@ export interface TestUpstreamReply {
 }
 
 /**
- * The two declared range sets a published version carries in a packument.
+ * The declared range sets a published version carries in a packument.
  *
  * @remarks
  * Named for the manifest keys the registry serves rather than for what a reader
@@ -304,7 +304,7 @@ export function listExecutablePaths(): readonly string[] {
  * Measured once through {@link detectCaseFolding}. A suite proving a case verdict
  * asserts against this rather than assuming the host it was written on: where the
  * host folds case the recased name resolves, so a refusal is a case verdict no
- * existence check could produce, and where it does not the two refusals coincide.
+ * existence check could produce, and where it does not the refusals coincide.
  */
 export const CASE_FOLDING: boolean = detectCaseFolding()
 
@@ -449,9 +449,9 @@ export function buildUpstreamOptions(fields?: Partial<UpstreamOptions>): Upstrea
  *
  * @remarks
  * `admits` names the hostile labels a guard answers `true` for. The inventory
- * guard states a count law rather than an element law, so it admits the two
+ * guard states a count law rather than an element law, so it admits the
  * hostile arrays whose counts are inside its ceiling; every other server guard
- * refuses all ten.
+ * refuses every one.
  */
 export function buildServerGuardCases(): readonly TestGuardCase[] {
 	return [
@@ -638,7 +638,7 @@ export const FILESYSTEM_PATH_CASES: readonly TestPathCase[] = [
  * Each ceiling appears twice, once on it and once one step past it, which pins
  * the guard to the constant beside it: a guard admitting one more or one fewer
  * than its declared ceiling fails here. It does not pin the constant's own
- * value, because both sides of the pair are written from that constant. The two
+ * value, because both sides of the pair are written from that constant. The
  * byte ceilings are the exception and are written from the core constants, so
  * those cases fail if the server guard and core ever disagree.
  */
@@ -939,7 +939,8 @@ export function createStagedHost(workspace: TestWorkspaceInterface): string {
  * Every text whose SHA-256 is a published, externally checkable value.
  *
  * @remarks
- * The digest law's anchor. The first three are published SHA-256 values, so the
+ * The digest law's anchor. Every case but the multi-byte one is a published
+ * SHA-256 value, so the
  * assertion measures the helper against the algorithm rather than against
  * itself. The multi-byte case pins the encoding as well as the algorithm: the
  * same characters encoded as UTF-16 digest to something else entirely.
@@ -1031,7 +1032,7 @@ export const SENSITIVE_PATH_CASES: readonly TestMatchCase[] = [
  *
  * @remarks
  * Wider than {@link buildStagedManifest} because a writer meets every shape the
- * vendored root has: a root file, two files inside dotted directories, a guide
+ * vendored root has: a root file, files inside dotted directories, a guide
  * mirror and the catalog agent whose bytes another verb owns, an executable
  * script, and `.claude/skills`, the one declared root no entry sits beneath and
  * therefore the only declared empty directory.
@@ -1067,7 +1068,7 @@ export function buildVendoredManifest(
  * One command-line word carrying every byte a refusal must not pass on.
  *
  * @remarks
- * Four hostile classes in one token, because a refusal quotes the word that
+ * Hostile classes in one token, because a refusal quotes the word that
  * caused it and each class escapes through a different door: an ANSI colour
  * sequence repaints the terminal, a bell rings it, a delete character corrupts
  * what a log file records, and a line break forges a second line inside a
@@ -1097,7 +1098,7 @@ export function createRepository(path: string): void {
 }
 
 /**
- * The two destinations one executable run wrote to, and the options that wired them.
+ * The destinations one executable run wrote to, and the options that wired them.
  *
  * @remarks
  * `output` and `diagnostic` are the lines each handler received, in the order it
@@ -1112,9 +1113,9 @@ export interface TestSinkInterface {
 }
 
 /**
- * Create the two recording destinations one executable run writes to.
+ * Create the recording destinations one executable run writes to.
  *
- * @returns The sink, whose `options` drive the run and whose two lists are read after it.
+ * @returns The sink, whose `options` drive the run and whose lists are read after it.
  *
  * @example
  * ```ts
@@ -1144,7 +1145,7 @@ export function createSink(): TestSinkInterface {
  * The vendored paths that are directories rather than files.
  *
  * @remarks
- * `HOST_PATHS` mixes the two and says which is which nowhere, because the
+ * `HOST_PATHS` mixes files and directories and says which is which nowhere, because the
  * vendored root's own manifest is what decides it. A fixture builds that
  * manifest, so the fixture declares the split. `.claude/skills` is the one
  * declared directory no entry sits beneath, which makes it the empty-directory
@@ -1340,7 +1341,7 @@ export function trackFiles(path: string): void {
  * Every artifact no vendored entry answers for: the computed manifest plus each
  * template the blueprint's own axes select. Counted from a real compile rather
  * than summed from parts, because the generated set grows every time the emitter
- * gains a group and a hand-written sum goes stale on each one. Two of those
+ * gains a group and a hand-written sum goes stale on each one. Repeated
  * staleness rounds are what produced this shape.
  */
 export const CORE_GENERATED = (
@@ -1354,7 +1355,7 @@ export const CORE_GENERATED_COUNT = CORE_GENERATED.length
  * How many paths a fleet target's plan claims once the vendored host has hydrated it.
  *
  * @remarks
- * Two terms, each naming a real source. The vendored membership comes from
+ * Each term names a real source. The vendored membership comes from
  * {@link buildFleetManifest} rather than `HOST_PATHS`, because hydration is what
  * decides the number: a vendored directory is one planned path that collapses
  * into the files the host stores beneath it, and the one declared empty
@@ -1404,8 +1405,8 @@ export const FLEET_WRITE_COUNT =
  * A birth-owned artifact is written once, when the workspace is created, and is
  * the consumer's from then on. Repair restores drift and must not overwrite one,
  * so this is exactly what its `skipped` list carries. Counted from the plan so
- * it tracks the emitter: the set grew from one to six the moment generated
- * source, test and documentation artifacts existed.
+ * it tracks the emitter: the set grew the moment generated source, test and
+ * documentation artifacts existed.
  */
 export const FLEET_BIRTH_PATHS = CORE_GENERATED.filter(
 	(artifact) => artifact.ownership === 'birth',
@@ -1573,7 +1574,7 @@ export function omitDependencies(
 	return Object.fromEntries(Object.entries(dependencies).filter(([name]) => !names.includes(name)))
 }
 
-/** A target manifest declaring its planned scripts, tools, two fleet packages, and one extra. */
+/** A target manifest declaring its planned scripts, tools, fleet packages, and an extra. */
 export const TARGET_MANIFEST_TEXT = buildTargetManifest(
 	undefined,
 	{
@@ -1607,9 +1608,9 @@ export const REFUSED_MANIFEST_TEXT = `${JSON.stringify(
  * @remarks
  * `isEndpoint` bounds length and nothing else, so every case here is a string
  * that guard already admits: what is being measured is the entity's own law
- * sitting behind it. The three loopback spellings are accepted because an
+ * sitting behind it. The loopback spellings are accepted because an
  * unencrypted request that never leaves the machine has no network between its
- * two ends; the same scheme to any other host is refused, and so is every
+ * ends; the same scheme to any other host is refused, and so is every
  * scheme that is not HTTP at all.
  */
 export const UPSTREAM_ENDPOINT_CASES: readonly TestEndpointCase[] = [
@@ -1818,7 +1819,7 @@ export const UPSTREAM_PATHS = Object.freeze({
  * @remarks
  * {@link UPSTREAM_PATHS} states the canonical forms the reader is measured
  * against on its own; this states the addresses the fleet fixture's target
- * actually produces when a verb reads upstream for it. The two tables answer
+ * actually produces when a verb reads upstream for it. The tables answer
  * different questions and each is written from the registry's and the
  * raw-content host's own canonical forms rather than derived from anything the
  * reader builds, so a verb that assembled a different URL is answered by the
@@ -1857,7 +1858,7 @@ export const FLEET_UPSTREAM_PATHS = Object.freeze({
  * @remarks
  * Both endpoints are pointed at the one fixture because a fixture scripts paths
  * rather than hosts, and the registry's paths and the raw-content host's paths
- * never collide. Pointing them separately would need two servers to prove
+ * never collide. Pointing them separately would need a second server to prove
  * nothing extra.
  */
 export function buildCLIOptions(sink: TestSinkInterface, base: string): CLIOptions {

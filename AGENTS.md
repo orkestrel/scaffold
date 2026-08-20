@@ -167,9 +167,9 @@ This governs prose everywhere: chat replies, instruction files, guides, TSDoc, c
 `AGENTS.md`, `.claude/rules/*`, `.agents/*`, `.claude/agents/*`, and every skill are executed, not
 read. An agent loads them mid-task and acts on them. Write them for that reader.
 
-- Write every line as a directive: what to do, what to check, or what to refuse. Delete a line that does none of the three.
+- Write every line as a directive: what to do, what to check, or what to refuse. Delete a line that does none of those.
 - Name the observable trigger and the required action. "When X, do Y" is actionable; "X matters" is not.
 - State the finding as the rule. Never record how it was found, which session found it, what was tried first, or what a probe proved. That history belongs in the commit message.
 - Cut any clause written to persuade, reassure, or explain the rule to a person. An agent needs the rule and its trigger, not agreement with it.
-- Give a rule one home. Restating it elsewhere creates two copies that drift, and an agent reading the stale one is following this file.
+- Give a rule one home. Restating it elsewhere creates a duplicate that drifts, and an agent reading the stale copy is following this file.
 - Keep an example only when it disambiguates the rule. Delete an example that merely illustrates it.

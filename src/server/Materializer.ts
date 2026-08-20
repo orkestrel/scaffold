@@ -71,7 +71,7 @@ import { WriteTransaction } from './WriteTransaction.js'
  * The mutation spine: read the vendored host, re-derive the target, stage, swap.
  *
  * @remarks
- * Every verb runs the same three steps. It snapshots each caller-supplied value
+ * Every verb runs the same steps. It snapshots each caller-supplied value
  * and guards the snapshot, so a property backed by an accessor never reaches a
  * decision. It re-derives what it is about to touch and compares that against
  * the observation the caller handed in, refusing the whole call when anything
@@ -333,7 +333,7 @@ export class Materializer implements MaterializerInterface {
 	 * `DESTROYED` after teardown.
 	 *
 	 * @remarks
-	 * Only the text between the two markers is replaced, so every word a consumer
+	 * Only the text between the markers is replaced, so every word a consumer
 	 * wrote around the table survives the call. A row whose lookup produced no
 	 * version prints the cause it carries instead, because dropping the row would
 	 * hide a package the organization publishes behind one failed request.
@@ -725,7 +725,7 @@ export class Materializer implements MaterializerInterface {
 		return hex
 	}
 
-	// The audit is a preview of the same comparison this call just made, so the two
+	// The audit is a preview of the same comparison this call just made, so they
 	// must agree on every path the plan owns. A wider audit may also carry foreign
 	// paths, which belong to the deletion verb and say nothing here.
 	#reconfirm(derived: readonly Finding[], preview: readonly Finding[], target: string): void {
@@ -895,7 +895,7 @@ export class Materializer implements MaterializerInterface {
 	// The catalog table, rendered between the markers that bound it.
 	#recatalog(entries: readonly CatalogEntry[]): (text: string) => string {
 		// The layer is computed from the edges in the same call that writes them, so
-		// the two cannot disagree. A name absent from every layer sits in a cycle and
+		// they cannot disagree. A name absent from every layer sits in a cycle and
 		// carries no layer cell rather than a guessed one.
 		const layers = catalogToLayers(entries)
 		const placed = new Map<string, number>()

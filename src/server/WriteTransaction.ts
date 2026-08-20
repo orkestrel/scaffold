@@ -44,7 +44,7 @@ import { MAX_PATH_DEPTH } from './constants.js'
  * has not touched the target at all. Commit is the only step that mutates the
  * target, and it is the only step that can need rolling back.
  *
- * Two bindings hold a destination still. A **precondition** is what the caller
+ * A precondition and an expectation hold a destination still. A **precondition** is what the caller
  * observed earlier and is checked once, at construction, so a target that moved
  * between the caller's read and this transaction fails before anything is
  * created. An **expectation** is captured here, at construction, and re-checked
@@ -68,7 +68,7 @@ import { MAX_PATH_DEPTH } from './constants.js'
  *   elsewhere, or nothing is refused. An ancestor deleted and recreated under
  *   the same name can receive its old inode back and is indistinguishable here
  *   from one that never moved.
- * - **No crash atomicity across destinations.** A process killed between two
+ * - **No crash atomicity across destinations.** A process killed between
  *   promotions leaves the target holding some new files and some old ones, and
  *   leaves the private root behind. Nothing here is a journal, and the private
  *   root's name is the only record a later run could read.
@@ -485,7 +485,7 @@ export class WriteTransaction {
 
 	// Create one absolute directory path segment by segment, revalidating the
 	// deepest established segment before and after each `mkdir`, so a segment
-	// swapped between two steps is caught rather than written into.
+	// swapped between steps is caught rather than written into.
 	#establish(path: string): WriteDirectoryResult {
 		const destination = resolve(path)
 		const missing: string[] = []

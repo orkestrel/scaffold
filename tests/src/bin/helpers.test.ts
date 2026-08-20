@@ -35,7 +35,7 @@ const DOCUMENTED: readonly string[] = [...new Set(VERBS.flatMap((verb) => VERB_O
 
 // The negative control for every membership claim below, drawn from outside the
 // population those claims cover: one word the executable has never accepted, and
-// the two flags the retired surface carried. An instrument that answers
+// the flags the retired surface carried. An instrument that answers
 // "documented" or "accepted" for these has measured nothing.
 const UNDOCUMENTED: readonly string[] = ['--surfaces <list>', '--apply', '--prune']
 
@@ -222,7 +222,7 @@ describe('auditToExit', () => {
 		})
 	}
 
-	it('distinguishes the two verdicts across the whole table', () => {
+	it('distinguishes the verdicts across the whole table', () => {
 		const codes = AUDIT_EXIT_CASES.map((auditCase) => auditToExit(auditCase.audit))
 		expect(codes).toContain(EXIT_CLEAN)
 		expect(codes).toContain(EXIT_DRIFT)

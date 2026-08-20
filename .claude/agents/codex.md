@@ -43,7 +43,7 @@ models silently.
 
 ## Prepare the journaled CLI launch
 
-Your two jobs are drafting the brief and running short MCP exchanges. For long work you
+Your jobs are drafting the brief and running short MCP exchanges. For long work you
 prepare the launch and return it; the Orchestrator runs it as a harness-tracked
 background command under a hard cap.
 
@@ -52,7 +52,7 @@ never travel as shell arguments. Return the exact resolved command with a pointe
 
 `timeout <cap> codex exec --json -C <working-directory> --sandbox <route-sandbox> --model gpt-5.6-sol -c "model_reasoning_effort=\"high\"" --output-last-message tmp/codex/<unit>-last.md "Read and execute the brief at tmp/codex/<unit>-brief.md exactly. Your final message must be the report it specifies." < /dev/null > tmp/codex/<unit>.jsonl`
 
-- Return three things: the brief path, that resolved command, and the journal path. Leave
+- Return the brief path, that resolved command, and the journal path. Leave
   `<cap>` unresolved — the Orchestrator owns it, per **Long-running commands → Launching**
   in `.agents/orchestration.md`. You hold no record of prior runs.
 - Never launch, background, poll, sleep-loop, restart, or kill an exec.

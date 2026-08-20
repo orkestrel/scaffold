@@ -34,7 +34,7 @@ export const RESERVED_SEGMENT_PATTERN =
  *
  * @remarks
  * Fixed length, unlike the core byte encoding, because a digest is one value of
- * one algorithm rather than a variable run of bytes. Lowercase only, so two
+ * one algorithm rather than a variable run of bytes. Lowercase only, so separate
  * spellings of one digest can never compare unequal.
  */
 export const DIGEST_PATTERN = /^[0-9a-f]{64}$/

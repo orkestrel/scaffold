@@ -852,7 +852,7 @@ describe('configuration helpers', () => {
 		)
 	})
 
-	it('drives both plugins through their real Vite hooks', async () => {
+	it('drives each plugin through its real Vite hooks', async () => {
 		const environments: ReadonlyArray<
 			'src/core' | 'src/browser' | 'src/server' | 'app/core' | 'app/browser' | 'app/server'
 		> = ['src/core', 'src/browser', 'src/server', 'app/core', 'app/browser', 'app/server']

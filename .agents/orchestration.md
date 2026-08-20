@@ -16,9 +16,10 @@ Read in this order before acting:
 `CLAUDE.md`, `.codex/config.toml`, and `.cursor/rules/` are bridges. Each points here and adds
 only what its harness needs. None of them restates this file.
 
-Every dispatch tells its executor to read items 2 through 5 before acting.
+Every dispatch tells its executor to read every item after the user's current instruction before
+acting.
 
-## The three engines
+## The engines
 
 One workflow runs across all providers. Each engine has one job and never takes another's.
 
@@ -31,7 +32,7 @@ One workflow runs across all providers. Each engine has one job and never takes 
 - Route each nontrivial implementation unit to Opus or Sol. Objective, constraint-heavy,
   mechanical-precision work goes to Sol. API-shape, naming, and documentation-voice work goes to
   Opus. Cursor Composer is not an implementation route, and no `composer` role exists.
-- Design and audit always run the two-lane adversarial pass below.
+- Design and audit always run the adversarial pass.
 
 ## Orchestration by harness
 
@@ -54,15 +55,15 @@ reasoning effort.
 
 ## The adversarial pass
 
-Two lanes run on every design round; an audit round runs the lanes the execution loop's step 5
-names, on the same clean-context terms.
+The subjective lane and the objective lane run on every design round; an audit round runs the lanes
+the execution loop's audit step names, on the same clean-context terms.
 
 | Lane           | Argues                                                                      |
 | -------------- | --------------------------------------------------------------------------- |
 | **Subjective** | Shape, taste, naming, ergonomics, design fit, what the API should feel like |
 | **Objective**  | Correctness, constraints, and what the code and contracts actually permit   |
 
-**A required lane always runs.** Never collapse two required lanes into one. Never let an engine's
+**A required lane always runs.** Never collapse required lanes into one. Never let an engine's
 absence stand in for a required lane.
 
 ### Clean contexts
@@ -73,25 +74,25 @@ absence stand in for a required lane.
 - A lane run in the Orchestrator's context is the Orchestrator assessing itself, whatever model
   name it carries. The clean context is what makes the lane independent and unbiased, and it is
   what keeps the main context at decision level.
-- Run both lanes in parallel, blind to each other. Reconcile them yourself.
+- Run the lanes in parallel, blind to each other. Reconcile them yourself.
 
 ### Engine assignment
 
 By default Opus 5 holds the subjective lane and Sol holds the objective lane.
 
-When one engine is unavailable, the remaining engine runs **both** lanes — still two separate
+When one engine is unavailable, the remaining engine runs **every** lane — still separate
 subagents, still clean contexts, still blind to each other, each told which perspective it holds.
 Record the substitution.
 
-| Harness     | Engine unavailable       | Runs both lanes |
-| ----------- | ------------------------ | --------------- |
-| Claude Code | Sol (Codex bench dark)   | Opus 5          |
-| Codex       | Opus 5 (Claude CLI dark) | GPT-5.6 Sol     |
-| Cursor      | Both (MCP servers dark)  | Cursor Grok     |
+| Harness     | Engine unavailable                | Runs every lane |
+| ----------- | --------------------------------- | --------------- |
+| Claude Code | Sol (Codex bench dark)            | Opus 5          |
+| Codex       | Opus 5 (Claude CLI dark)          | GPT-5.6 Sol     |
+| Cursor      | Opus 5 and Sol (MCP servers dark) | Cursor Grok     |
 
 - Never assign Grok to either lane in Claude Code or Codex. If the remaining native engine is also
   unavailable there, the pass cannot run: stop and report rather than substituting Grok.
-- Grok takes both lanes only in Cursor, and only when Opus 5 and Sol are both unavailable.
+- Grok takes every lane only in Cursor, and only when Opus 5 and Sol are both unavailable.
 - Treat a lane that returns no verdicts as a lane that did not run. A bench lane reporting that its
   driver executed and its engine was never reached is a dark bench, not a result. Record the bench
   dark from that report, re-run the lane on the substitute engine from the table above, and name in
@@ -211,8 +212,9 @@ Every role honours this floor. No dispatch may widen it.
   same class of defect through a new door, the search is following the frame rather than the
   defect. Bound the scope, then fan out independent lenses over disjoint slices in one pass.
   Parallelism is worth more here for the framing it breaks than for the wall-clock it saves.
-- Two lanes is the adversarial pass's FLOOR, not its shape. Where a subject has more seams than
-  two lanes can attack, fan out one lens per seam over disjoint slices, keep every lens blind and
+- The subjective and objective lanes are the adversarial pass's FLOOR, not its shape. Where a
+  subject has more seams than that pass can attack, fan out one lens per seam over disjoint slices,
+  keep every lens blind and
   clean-contexted, and number every slice's claims in one shared sequence. Change the lenses in a
   successor round rather than repeating them.
 - Decompose by required context and independently verifiable acceptance criteria, not by task type.
@@ -232,12 +234,13 @@ edits, formatter and build races, cache phantoms, and validation cross-talk.
 3. Keep shared files report-only. Executors return exact patches for serial integration.
 4. Restrict concurrent executors to read-only, scoped validation. A tree-wide result may contain a
    sibling's in-flight failure, so an executor reports only its owned scope.
-5. Give concurrent audit lanes worktree isolation whenever the campaign is uncommitted. Two lanes
+5. Give concurrent audit lanes worktree isolation whenever the campaign is uncommitted. Lanes
    sharing one working tree contaminate each other's readings in both directions.
 6. After integration, clear shared caches if needed, then have one independent `verifier` run the
    authoritative tree-wide sweep. A writer's self-report never establishes green.
 7. The Orchestrator's own sweep is a writing dispatch and queues behind the units that own those
-   files. A script that fixes one thing across every target is the easiest way to break rule 1,
+   files. A script that fixes one thing across every target is the easiest way to break the
+   serialization rule,
    because it does not feel like a dispatch — nobody was named, no brief was written, and it
    finishes in seconds. It still writes into trees a live unit owns, and a unit whose brief it
    invalidates will repair the same drift the other way and report a state that is already false.
@@ -277,7 +280,7 @@ with the network denied. Record a bench live only on a bounded round-tripped mod
 back, and record what came back beside the routing decision. Probes are read-only, and the role file
 owns each bench's exact probe.
 
-The two local steps still run, because they route the recovery rather than decide the verdict: an
+The local steps still run, because they route the recovery rather than decide the verdict: an
 unresolved CLI is an install problem, a failed authentication-state check starts the login ladder
 below, and a bench that passes both and still cannot round-trip is dark for a reason no local check
 can see. Record every dark bench with its fallback and the lane substitution it forces, and never
@@ -290,7 +293,7 @@ lane instead of re-dispatching against a session-start answer that no longer hol
 1. **Absorb.** Dispatch `grok` for terrain, prior art, and the reading the decision needs. In an
    Orkestrel repo dispatch `orkestrel` alongside it for live package state. Skip only when the
    ground is already known.
-2. **Design adversarially.** Run the two-lane adversarial pass on one design brief: `planner` for
+2. **Design adversarially.** Run the adversarial pass on one design brief: `planner` for
    the subjective lane and `analyst` for the objective lane. Reconcile them yourself into one plan:
    units, dependencies, ownership, parallel and serial order, acceptance criteria, risks.
    - Surface the plan before dispatch, including a routing ledger naming each unit's role **and**
@@ -310,7 +313,7 @@ lane instead of re-dispatching against a session-start answer that no longer hol
    criterion discovered at integration is a successor brief routed to a writer, never an
    integration edit.
 5. **Audit adversarially.** Audit every nontrivial implementation with at least one lane whose
-   engine did not write it. Run the second lane when the first returns FAIL, when the subject is a
+   engine did not write it. Run another lane when the first returns FAIL, when the subject is a
    rendered or externally driven surface, or when the unit's claims span both correctness and
    shape. Dispatch `checker` when the acceptance criteria are mechanical — counts, paths, parity
    rows, scope honesty. Record in the round's verdict file when a lane or the checker did not run.
@@ -338,7 +341,7 @@ lane instead of re-dispatching against a session-start answer that no longer hol
    - Record what changed and why. An unrecorded re-baseline cannot be audited, and the next one
      re-derives it.
 8. **Accept.** Decide, then report outcomes, decisions, evidence, and remaining risk concisely.
-   When step 2's exit criterion is met and the gates are green, accept. The next goal is the
+   When the design step's exit criterion is met and the gates are green, accept. The next goal is the
    deliverable.
 
 ### Re-baselining is not rescoping
@@ -377,7 +380,7 @@ Never route a native model through its own CLI or an MCP loopback.
 
 - Use a single-agent dispatch when later control flow depends on the previous result.
 - Use a workflow for a known deterministic fan-out, staged pipeline, or loop. Serialize writing
-  nodes; never run two concurrent writers in the tree.
+  nodes; never run concurrent writers in the tree.
 - Name a role and its engine in every node.
 
 The harness bridge names the concrete mechanism for each of these.
@@ -439,8 +442,8 @@ The harness bridge names the concrete mechanism for each of these.
 
 ### Before you prune
 
-Pruning is deletion, so it needs the same evidence as any other destructive step. Run these four
-checks, and prune only when all four close.
+Pruning is deletion, so it needs the same evidence as any other destructive step. Run these
+checks, and prune only when every one closes.
 
 1. **Carry check.** List every item the folder leaves open — a defect, a measurement to re-take, a
    deferred decision, a withdrawn claim, an unmet acceptance condition. Each ends the check with a
@@ -454,8 +457,8 @@ checks, and prune only when all four close.
 3. **Measurement check.** A number the guide carries out of the folder carries the date it was
    taken. A measurement whose date the folder does not record is re-taken or dropped, never copied.
 4. **Orientation check.** A cross-session orientation document — a handoff, a package-root narrative
-   file, a session log — is not a fourth category. It duplicates the guide for product truth and the
-   contract for process truth, it is gated by nothing, and it drifts. Dissolve it into the two
+   file, a session log — is not a further category. It duplicates the guide for product truth and
+   the contract for process truth, it is gated by nothing, and it drifts. Dissolve it into the
    artifacts that own it and delete it.
 
 A section recording live state — adopter republish status, installed version tables, what a sibling
@@ -488,7 +491,8 @@ That message is what makes the deletion recoverable in practice rather than only
   means carry the brief across unaltered and return the journal — the engine behind the CLI is not a
   subagent the driver is spawning, and a driver told to work directly answers from its own engine
   instead. That answer reads normal and its only tell is the missing journal, so pair this sentence
-  with **Bench laws** rule 2 and refuse a bench result whose journal path and session id are absent.
+  with **Bench laws** rule "Journal first" and refuse a bench result whose journal path and session
+  id are absent.
 - **Output.** The exact distilled return shape. No process diary.
 - **Deviation contract.** The required stop-and-report behaviour for writers, scoped. A conflict
   with the primary objective stops the unit. An ancillary conflict — where a paragraph sits, which
@@ -534,7 +538,8 @@ right to stop.
   own exec. The exec is load, so the unit cannot take that reading validly however carefully it
   isolates, and a criterion it cannot close either stalls it or invites it to explain the failure away.
   Name the gate as an observation the unit reports with both readings, and take the authoritative run
-  yourself after the unit exits, per **Writing concurrency** rule 10. A scoped run over the unit's own
+  yourself after the unit exits, per **Writing concurrency**'s rule on re-running a timing or
+  resource failure alone. A scoped run over the unit's own
   owned files stays a legitimate criterion.
 - Order the criteria so an unreachable one cannot hide the others. A deviation contract fires on the
   first criterion the unit cannot close and stops it there, so an unreachable criterion placed ahead
@@ -572,8 +577,8 @@ right to stop.
 After reconciling findings into briefs, walk the retained finding list once. Every finding names
 the brief item that carries it. A finding with no carrier is a dropped finding.
 
-Every finding names exactly one carrier. Two briefs claiming one finding is not redundancy that
-costs a little duplicated work — it is a conflict the executor discovers mid-unit, between two
+Every finding names exactly one carrier. A further brief claiming the same finding is not redundancy
+that costs a little duplicated work — it is a conflict the executor discovers mid-unit, between
 documents you told it to obey, with no way to tell which you meant. It will either implement the row
 twice or stop. Where a reconciliation table and a brief disagree about who owns a row, the brief the
 executor opens wins, and you fix the other one before the second unit launches.
@@ -644,17 +649,17 @@ nothing.
 
 - Prove the previous run is gone before starting another. List the processes and read the list. A
   second run started beside a live first one produces failures that read as the subject's — a
-  publish chain relaunched over a live one reports `EOTP` and `E403` that are its own two processes
+  publish chain relaunched over a live one reports `EOTP` and `E403` that are its own processes
   colliding, and both readings point at the registry.
 - Never ask `pgrep -f` or `ps | grep` whether a command is running from a shell whose own command line
   contains that command's text. The shell matches itself, so the answer is yes whatever the truth is.
-  This bites in three separate places and each one fails differently:
+  This bites in separate places and each one fails differently:
   - **A liveness watcher** loops forever, reporting "still running" and never delivering its completion
     notification, because it always finds itself.
   - **An elapsed-time reading** returns the watcher's age rather than the exec's, so the number falls
     instead of rising and reads as a relaunch that never happened.
   - **A pre-launch "is anything already running" check** reports a phantom concurrent writer, which is
-    the worst of the three: the honest response to it is to kill something, and there is nothing there.
+    the worst of them: the honest response to it is to kill something, and there is nothing there.
     Read liveness from the recorded process id with `kill -0 <pid>`, or enumerate by executable name and
     parent with `ps -eo pid,ppid,comm` and read the rows. Both are immune; a pattern over the full command
     line is not.
@@ -760,7 +765,7 @@ starting another.
 ### Fixing a dependency before it publishes
 
 A defect a consumer meets sometimes lives in a package the consumer only has from the registry.
-Waiting for that package to publish before the consumer can prove its own fix serializes two releases
+Waiting for that package to publish before the consumer can prove its own fix serializes releases
 that could have been one. Do not wait, and do not work around it in the consumer.
 
 Build the dependency from source, pack it, and **install the tarball** into the consumer.
@@ -805,8 +810,8 @@ either publishes packages nobody needed to publish or leaves a consumer pinned t
 
 Every package is `0.0.x`, where a caret pins one exact release. A dependent therefore sees a new
 version only after it re-pins and republishes, so the fleet publishes in topological layer order
-derived from runtime `dependencies` alone. Layers exist for a reason a flat pass cannot fix: two
-ranges that disagree install two copies of the same package, and the compiler reads them as two
+derived from runtime `dependencies` alone. Layers exist for a reason a flat pass cannot fix:
+ranges that disagree install duplicate copies of the same package, and the compiler reads them as
 distinct types.
 
 Read the order from the catalog table in `.claude/agents/orkestrel.md`, which `scaffold catalog`
@@ -847,14 +852,14 @@ once per round with one procedure, publish each layer in one window, and only th
 - The visit, in order: re-pin the target's `@orkestrel/scaffold` devDependency and install, so the
   overwrite runs the current vendored host; `scaffold overwrite`; force-verify every `@orkestrel`
   range against a registry sweep taken after the previous layer published; full install; mutating
-  `format` to converge generated writes; the five gates; the material-dist comparison against the
+  `format` to converge generated writes; the quality gates; the material-dist comparison against the
   published tarball.
 - Bump on either trigger: the rebuilt dist differs materially from the published tarball, or the
   final runtime dependency set differs from the published packument. Test the final set against the
   packument, never "did my step move a pin" — overwrite's `declare` re-pins before any later check,
   so the step-local reading reports nothing moved while the manifest surface did. A re-pinned
-  runtime range is published surface: without the bump a consumer installs two copies of the moved
-  dependency.
+  runtime range is published surface: without the bump a consumer installs duplicate copies of the
+  moved dependency.
 - A dist built before the version bump is the release artifact; the bump edits no emitted byte.
 - Refresh the registry evidence between layers and derive each round's pins from it. A pin can only
   name a version the registry already serves, so a dependency shipping in the same window keeps the
@@ -904,9 +909,9 @@ flag is what stops the gate chain running a second time inside the five minutes.
   the layer, prove the gates, surface the exact `npm publish` command, and the operator runs it in a
   real terminal. Everything before and after the upload — bumps, re-pins, gates, registry reads —
   stays with the Orchestrator. The fifo stdin law still binds on that host.
-- Expect two approvals. `npmjs.com/login/cli/<id>` authenticates the session; `npmjs.com/auth/cli/<id>`
-  authorizes the publish and opens the five-minute window. Tell the user both are coming, or the
-  second link reads as the first having failed.
+- Expect an approval for each stage. `npmjs.com/login/cli/<id>` authenticates the session;
+  `npmjs.com/auth/cli/<id>` authorizes the publish and opens the five-minute window. Tell the user
+  both are coming, or the second link reads as the first having failed.
 - Confirm authentication with `npm whoami`, never with an exit code. The legacy fallthrough exits
   zero.
 - Re-probe `whoami` immediately before opening the window. A stored credential expires mid-session,
@@ -940,13 +945,14 @@ flag is what stops the gate chain running a second time inside the five minutes.
 - **Never retry a publish that is still waiting for its authorization.** Each `npm publish` attempt
   mints a new `authId` and invalidates the previous one, so a retry loop makes the URL a moving
   target the user cannot approve in time. The abandoned poll then reports
-  `403 Forbidden - GET /-/v1/done?authId=…`, which reads as a permissions problem and is two attempts
-  colliding. Publish the first package of a layer with exactly one attempt.
+  `403 Forbidden - GET /-/v1/done?authId=…`, which reads as a permissions problem and is the
+  abandoned attempt colliding with the live one. Publish the first package of a layer with exactly
+  one attempt.
 - Retry only an upload that failed **inside** an already-open window. `EOTP` there is intermittent
   contention rather than the window closing: retry about three times, and retry a failed set once the
   layer ends. Packages have landed on the third attempt and on a later pass with no new approval.
-  These are two different failures wearing similar codes; a retry fixes the second and causes the
-  first.
+  These are different failures wearing similar codes; a retry fixes in-window contention and causes
+  the moving approval target.
 - Expect a large layer to outlast one window. Size batches to what uploads in five minutes and tell
   the user how many approvals to expect, rather than discovering it mid-run.
 - Read the result from the registry, not from an exit code: a piped `npm publish` reports the exit
@@ -969,7 +975,7 @@ flag is what stops the gate chain running a second time inside the five minutes.
 - Substitute an engine only when the same session records the bench dark — CLI missing, auth
   expired, model unavailable. Name the fallback in the plan; never improvise it silently. The
   tedious-work ladder is the only pre-approved substitution, and each step down it is still recorded.
-- Never run the two lanes on different briefs, and never show either one the other's answer before
+- Never run the lanes on different briefs, and never show either one the other's answer before
   both have returned.
 - Never run a lane inline in the Orchestrator's context, and never drop a lane because its default
   engine is unavailable. Substitute the engine, keep the lane.

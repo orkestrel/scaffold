@@ -156,7 +156,7 @@ describe('matchesPrintWidth', () => {
 		expect(matchesPrintWidth('\t'.repeat(PRINT_WIDTH / TAB_WIDTH + 1))).toBe(false)
 	})
 
-	// The constants exist so four emitters measure one width. They are a second
+	// The constants exist so every emitter measures one width. They are a second
 	// copy of a fact the vendored formatter already holds, so the copy is checked
 	// against the original rather than trusted.
 	it('carries the width the vendored formatter is configured with', () => {
@@ -169,7 +169,7 @@ describe('matchesPrintWidth', () => {
 
 describe('nameToRewrite', () => {
 	// The rewrite is emitted text, so the regex it carries is measured by running
-	// it rather than by reading it: the two spellings a published face's roll-up
+	// it rather than by reading it: the spellings a published face's roll-up
 	// actually prints, and a control the rewrite must leave alone.
 	it('rewrites every relative core path the roll-up prints, and nothing else', () => {
 		const source = /content\.replaceAll\(\s*(?<pattern>\/.+\/)g,\s*'(?<specifier>[^']+)'/su.exec(
@@ -447,7 +447,7 @@ describe('planToSummary', () => {
 })
 
 describe('extractVersion and compareVersions', () => {
-	it('reads only the exact three-component syntax', () => {
+	it('reads only the exact major.minor.patch syntax', () => {
 		expect(extractVersion('0.0.23')).toStrictEqual([0, 0, 23])
 		expect(extractVersion('1.2.3-beta.1')).toBeUndefined()
 		expect(extractVersion('01.2.3')).toBeUndefined()

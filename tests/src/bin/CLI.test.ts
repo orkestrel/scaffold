@@ -352,10 +352,10 @@ describe('CLI new', () => {
 		}
 	})
 
-	// `BLOCKED` names one fact — this blueprint will not be built — so both
-	// refusals a creating verb can meet carry it, and the question quoted beside it
+	// `BLOCKED` names one fact — this blueprint will not be built — so every
+	// refusal a creating verb can meet carries it, and the question quoted beside it
 	// is what tells them apart. The advisory refusal above is the other half of
-	// this pair; splitting the code would give one fact two names.
+	// this pair; splitting the code would give one fact more than one name.
 	it('refuses a blocking and a non-blocking question under the one refusal code', async () => {
 		const workspace = createWorkspace()
 		try {
@@ -571,7 +571,7 @@ describe('CLI audit', () => {
 		}
 	})
 
-	it('reports three missing planned dependencies in stable order', async () => {
+	it('reports every missing planned dependency in stable order', async () => {
 		const workspace = createWorkspace()
 		try {
 			const fleet = createFleet(workspace)
@@ -1266,7 +1266,7 @@ describe('CLI audit', () => {
 		}
 	})
 
-	// The refusal these two scripts used to draw is what kept a workspace driving a
+	// The refusal these scripts used to draw is what kept a workspace driving a
 	// live service or measuring official tooling out of every writing verb. Each
 	// direction is measured: the script alone still draws the question, and the
 	// structural file beside it clears the same script.
@@ -1408,8 +1408,8 @@ describe('CLI audit', () => {
 					(finding.ownership === 'content' && finding.drift === 'missing'),
 			)
 			const nothing = planned.filter((finding) => finding.ownership === 'birth')
-			// The membership the three counts are drawn from: every finding names a
-			// tier, all three are named, and none is proven by an empty population.
+			// The membership the counts are drawn from: every finding names a
+			// tier, every tier is named, and none is proven by an empty population.
 			expect([...new Set(audit.findings.map((finding) => finding.ownership))].sort()).toStrictEqual(
 				['birth', 'content', 'presence'],
 			)
@@ -1573,8 +1573,8 @@ describe('CLI audit', () => {
 					(finding.ownership === 'content' && finding.drift === 'missing'),
 			)
 			const nothing = planned.filter((finding) => finding.ownership === 'birth')
-			// The membership the three counts are drawn from: every finding names a
-			// tier, all three are named, and none is proven by an empty population.
+			// The membership the counts are drawn from: every finding names a
+			// tier, every tier is named, and none is proven by an empty population.
 			expect([...new Set(audit.findings.map((finding) => finding.ownership))].sort()).toStrictEqual(
 				['birth', 'content', 'presence'],
 			)
@@ -1644,9 +1644,9 @@ describe('CLI audit', () => {
 			)
 			const nothing = planned.filter((finding) => finding.ownership === 'birth')
 			const foreign = audit.findings.filter((finding) => finding.drift === 'foreign')
-			// The two populations by membership rather than by arithmetic: the
+			// The populations by membership rather than by arithmetic: the
 			// findings carrying no tier are exactly the foreign ones, and every
-			// remaining finding names one of the three the counts are drawn from.
+			// remaining finding names one of the tiers the counts are drawn from.
 			expect(
 				audit.findings
 					.filter((finding) => finding.ownership === undefined)
@@ -2808,10 +2808,10 @@ describe('CLI overwrite', () => {
 	})
 
 	it('rewrites each declared range to the release the registry it was given names', async () => {
-		// Two rows carry ranges this repository itself declares, so a fleet bump moves
-		// them. The registry here is a fixture, and a rewrite only needs the published
-		// release to be greater than the declared one, so both rows are served a
-		// version above every pin and compared against the declaration that owns them.
+		// The rows carrying ranges this repository itself declares move on a fleet
+		// bump. The registry here is a fixture, and a rewrite only needs the published
+		// release to be greater than the declared one, so each row is served a
+		// version above every pin and compared against the declaration that owns it.
 		// A literal on either side turns an ordinary version bump into a red gate.
 		const published = '9.9.9'
 		const pinnedScaffold = BASE_DEV_DEPENDENCIES['@orkestrel/scaffold']
@@ -3091,7 +3091,7 @@ describe('CLI catalog', () => {
 			// A package the organization lists and the target never declared is
 			// fetched, which is the whole difference `--all` makes.
 			expect(workspace.read('target/guides/router.md')).toBe('# Router\n')
-			// Two controls, each drawn from outside the population `--all` covers: a
+			// The controls, each drawn from outside the population `--all` covers: a
 			// package the target declares but the organization does not list is not
 			// fetched, and neither is the target's own guide.
 			expect(readFileHex(fleet.target, 'guides/guide.md')).toBeUndefined()

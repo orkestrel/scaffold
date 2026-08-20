@@ -82,7 +82,7 @@ describe('isFilesystemPath', () => {
 	})
 
 	it('refuses the portable target law it is not', () => {
-		// The two laws are deliberately different: a host path may name a sibling
+		// The laws are deliberately different: a host path may name a sibling
 		// directory and carry a drive prefix, and a target-relative path may not.
 		expect(isFilesystemPath('../sibling')).toBe(true)
 		expect(isFilesystemPath('C:/project')).toBe(true)

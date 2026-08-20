@@ -49,7 +49,7 @@ import { MANIFEST_NAME, MAX_INVENTORY_PATHS, MAX_PATH_DEPTH } from './constants.
  * @remarks
  * The one place absence is told apart from failure. Every read here answers
  * `undefined` or an empty result for a path that is not there and reports a path
- * that is there but unreadable, so the two must never be read from the same
+ * that is there but unreadable, so they must never be read from the same
  * caught value by eye. Total for any caught value, including a hostile one.
  *
  * @example
@@ -71,7 +71,7 @@ export function matchesMissingPath(error: unknown): boolean {
  * @returns `true` for `.git` and for anything beneath it.
  *
  * @remarks
- * The one home of the `.git` membership rule, read from two directions. A target
+ * The one home of the `.git` membership rule, read in either direction. A target
  * holding nothing but this directory is still vacant, because a checkout of an
  * empty repository is where a fresh workspace legitimately starts. A path
  * beneath it is never removed and never vendored, because deleting a target's
@@ -247,7 +247,7 @@ export function computeDigest(content: string): string {
  * detect a membership edit that did not update it. Order is part of the claim
  * rather than normalized away, because a staged manifest sorts its entries and
  * roots once and a reordered copy is a different file. Each entry is projected
- * to exactly the three declared fields, so a hand-added property cannot ride
+ * to exactly the declared fields, so a hand-added property cannot ride
  * into the digest and cannot change it either.
  *
  * @example
@@ -812,7 +812,7 @@ export function listDirectories(root: string): readonly string[] {
  * snapshot all compare as the same digits. The file's identity and size are
  * measured before and after the read, and one extra byte is requested past the
  * declared size, so a file that grew or was replaced mid-read answers
- * `undefined` rather than half of two files.
+ * `undefined` rather than half of one file and half of another.
  *
  * @example
  * ```ts
@@ -924,7 +924,7 @@ export function readFileText(
  * The one door from a real directory into the vocabulary an audit compares in.
  * Absence is omission rather than an empty value, because core reads a missing
  * key as a missing destination and an empty string as a present directory; the
- * two are different verdicts. A path that is there but unreadable throws instead
+ * they are different verdicts. A path that is there but unreadable throws instead
  * of being omitted, because omission would report it as missing and a repair
  * would then overwrite whatever is actually sitting there.
  *
@@ -993,7 +993,7 @@ export function readSnapshot(target: string, paths: readonly string[]): Snapshot
  * read, is not the declared shape, or does not match its own membership.
  *
  * @remarks
- * The two failures are held apart deliberately. A host with no manifest is a
+ * The failures are held apart deliberately. A host with no manifest is a
  * raw checkout, and a caller reads it by mapping each path one to one. A host
  * with a manifest that does not verify is a staged host that has been edited,
  * and answering `undefined` there would degrade it to that same one-to-one
@@ -1053,8 +1053,8 @@ export function readHostManifest(host: string): HostManifest | undefined {
  * package will vendor or carries more bytes than one artifact may.
  *
  * @remarks
- * The one place the three declared fields are decided together, because they are
- * three readings of one path: {@link pathToStorage} decides where it is stored,
+ * The one place the declared fields are decided together, because they are
+ * readings of one path: {@link pathToStorage} decides where it is stored,
  * the destination is the path it answers for, and {@link matchesExecutablePath}
  * decides whether a target receives it executable.
  *
@@ -1104,7 +1104,7 @@ export function readManifestEntry(destination: string, source: string): Manifest
  * every destination to what the caller observed, and rolls a failed commit back.
  * This reads this package's own checkout at build time and fills its own build
  * output. Different direction, different lifetime, no consumer target involved,
- * so the two do not overlap and neither one belongs inside the other.
+ * so they do not overlap and neither one belongs inside the other.
  *
  * Staging is plain rather than transactional for the same reason. A
  * `WriteTransaction` exists to hold a directory that already holds work

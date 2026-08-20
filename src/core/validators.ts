@@ -113,7 +113,7 @@ export const isHex: Guard<string> = stringOf({
  * The bound is a code-unit ceiling rather than a byte count, because a string
  * of more code units than {@link MAX_ARTIFACT_BYTES} cannot encode within that
  * budget under any encoding this package writes. The exact UTF-8 measurement
- * belongs to the compiler and the writer, which are the two places the bytes
+ * belongs to the compiler and the writer, which are the places the bytes
  * are actually produced.
  */
 export const isContent: Guard<string> = stringOf({ max: MAX_ARTIFACT_BYTES })
@@ -420,7 +420,7 @@ export const isFinding: Guard<Finding> = unionOf(
  *
  * @remarks
  * An audit reaches the writer and the destructive verb, so it is guarded as
- * strictly as the plan beside it. Findings use the sum of the two producer
+ * strictly as the plan beside it. Findings use the sum of the producer
  * bounds: one per planned artifact, then one per unplanned snapshot path.
  */
 export const isAudit: Guard<Audit> = recordOf({
@@ -437,7 +437,7 @@ export const isAudit: Guard<Audit> = recordOf({
  *
  * @remarks
  * `content` is the fetched guide text and `observed` is the local mirror's
- * exact bytes, so the two carry different laws: one is content this package
+ * exact bytes, so they carry different laws: one is content this package
  * writes, the other is the precondition that write is held to.
  */
 export const isMirror: Guard<Mirror> = unionOf(

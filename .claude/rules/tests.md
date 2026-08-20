@@ -93,7 +93,7 @@ its own:
 
 A probe is a throwaway instrument that settles one question. It is not a test and never ships.
 
-Two kinds, split by which tool has to see the probe:
+The kinds split by which tool has to see the probe:
 
 - A **type probe** is read by `tsc`, whose scoped project includes only its own environment, so it
   lives in the source tree beside what it measures. Delete it before the unit returns; a leaked one
@@ -106,7 +106,7 @@ Run a probe before relying on an unverified belief about behaviour: what a funct
 configuration resolves to, whether a path is reached at all. Prefer a probe to an argument whenever
 the probe is cheap.
 
-Three rules bind every probe:
+These rules bind every probe:
 
 - **Prove the instrument can fail before trusting that it passed.** Pair it with a control drawn
   from outside the population it covers.

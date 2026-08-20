@@ -34,7 +34,7 @@ import { isDependencies, isDependencyNames, isUpstreamOptions } from './validato
  * This is the package's only network reader, and it never writes. Every call
  * opens one byte allowance and spends it across every read the call makes, so a
  * caller is bounded twice over: `limit` refuses one oversized answer and
- * `budget` refuses many small ones. The two are separate exhaustion routes and
+ * `budget` refuses many small ones. They are separate exhaustion routes and
  * neither bound covers the other.
  *
  * A per-package failure never escapes as a throw. It is projected into the
@@ -65,7 +65,7 @@ import { isDependencies, isDependencyNames, isUpstreamOptions } from './validato
  * ```
  */
 export class Upstream implements UpstreamInterface {
-	// The defaults a request is built with, and the two fixed strings the fleet's
+	// The defaults a request is built with, and the fixed strings the fleet's
 	// own addresses are assembled from. They sit here rather than in
 	// `constants.ts` because that file is frozen, and each is read by exactly one
 	// line of this class: a default is the entity's law applied when it builds a
@@ -81,7 +81,7 @@ export class Upstream implements UpstreamInterface {
 	static readonly #unreadable = 'the answer carries no readable latest version'
 	// The media type that selects the registry's abbreviated packument. It sits
 	// with the request defaults because it is part of how this class asks for a
-	// version, and it is asked for at exactly the two reads that want one.
+	// version, and it is asked for at exactly the reads that want one.
 	static readonly #packument = 'application/vnd.npm.install-v1+json'
 
 	readonly #emitter: Emitter<UpstreamEventMap>
@@ -100,7 +100,7 @@ export class Upstream implements UpstreamInterface {
 	/**
 	 * Construct a reader over one guide host and one registry.
 	 *
-	 * @param options - The two endpoints, the request bounds, the initial
+	 * @param options - The endpoints, the request bounds, the initial
 	 * listeners, and the listener-error handler.
 	 * @throws {@link ScaffoldError} coded `INVALID` when `options` is present but
 	 * is not an option bag this reader accepts, or when either endpoint names a
@@ -110,7 +110,7 @@ export class Upstream implements UpstreamInterface {
 	 * `isEndpoint` bounds an endpoint's length and nothing else, so the scheme and
 	 * host law is settled here, where a refusal can say which endpoint was refused
 	 * and why. An endpoint must be HTTPS, or HTTP to a loopback host — the one
-	 * place an unencrypted request has no network between the two ends. That
+	 * place an unencrypted request has no network between its ends. That
 	 * refuses `file:`, `data:`, and plain HTTP to a real host, and it is what
 	 * keeps a fixture reachable without weakening transport security anywhere a
 	 * real request goes. An endpoint carrying credentials, a query, or a fragment
@@ -361,8 +361,8 @@ export class Upstream implements UpstreamInterface {
 	}
 
 	// One catalog row. It publishes nothing on the observation channel: the
-	// channel carries the two verdicts the writer binds to, and a catalog row is
-	// neither, so the whole sorted list is the answer instead.
+	// channel carries the verdicts the writer binds to, and a catalog row is
+	// not one of them, so the whole sorted list is the answer instead.
 	async #entry(name: string, allowance: { remaining: number }): Promise<CatalogEntry> {
 		const outcome = await this.#read(
 			this.#registryURL(name),

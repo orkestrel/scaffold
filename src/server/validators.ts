@@ -73,7 +73,7 @@ import {
  * the byte ceiling. The character ceiling is read first so an oversized string is
  * refused before it is split.
  *
- * The two spellings of an empty segment are answered differently. A trailing
+ * The spellings of an empty segment are answered differently. A trailing
  * separator terminates a directory rather than opening a segment, and every
  * supported filesystem and every Node path API reads `project/` and `project` as
  * one location, so it is admitted. A doubled separator is a genuine empty
@@ -106,7 +106,7 @@ export function isFilesystemPath(value: unknown): value is string {
 				? normalized.slice(1)
 				: normalized
 		// A trailing separator terminates a directory rather than opening a segment,
-		// and every supported filesystem and every Node path API reads the two
+		// and every supported filesystem and every Node path API reads the
 		// spellings as one location. A doubled separator is a genuine empty segment
 		// and stays refused below.
 		const segments = (rooted.endsWith('/') ? rooted.slice(0, -1) : rooted).split('/')
@@ -153,7 +153,7 @@ export const isDigest: Guard<string> = stringOf({ pattern: DIGEST_PATTERN })
  * composed, and for the same reason: the item count is settled before anything
  * walks the items, and a hostile `length` accessor answers `false` rather than
  * escaping as a throw. It exists beside that guard rather than reusing it
- * because the two bound different things — one bounds what a caller may hand a
+ * because they bound different things — one bounds what a caller may hand a
  * public method, this one bounds what a checkout may contain.
  *
  * @example
@@ -342,8 +342,8 @@ export const isMaterializerOptions: Guard<MaterializerOptions> = recordOf(
  * Narrow a value to the upstream reader's initial listener record.
  *
  * @remarks
- * Closed to the reader's own four events for the same reason the materializer's
- * record is closed to its five.
+ * Closed to the reader's own events for the same reason the materializer's
+ * record is closed to its own.
  */
 export const isUpstreamHooks: Guard<EmitterHooks<UpstreamEventMap>> = recordOf(
 	{ release: isFunction, mirror: isFunction, error: isFunction, destroy: isFunction },
@@ -358,7 +358,7 @@ export const isUpstreamHooks: Guard<EmitterHooks<UpstreamEventMap>> = recordOf(
  * the wrong entity is refused rather than ignored. Every numeric leaf is a whole
  * number inside a ceiling: an unbounded concurrency, retry count, response
  * limit, or call budget is a way to exhaust the caller, so the ceiling is stated
- * here rather than left to the reader. The two byte ceilings are the core
+ * here rather than left to the reader. The byte ceilings are the core
  * artifact and total-artifact limits, because a fetched guide is an artifact and
  * a whole call retains no more than a whole plan.
  *

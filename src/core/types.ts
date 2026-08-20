@@ -62,7 +62,7 @@ export type Drift = 'aligned' | 'stale' | 'missing' | 'foreign'
  */
 export type Lookup = 'found' | 'missing' | 'failed'
 
-/** The three compile phases, in the order they run. */
+/** The compile phases, in the order they run. */
 export type CompileStage = 'draft' | 'gate' | 'pin'
 
 /** The coded reasons a scaffold error is raised. */
@@ -135,7 +135,7 @@ export interface Override {
  *
  * @remarks
  * `src` selects published library environments and `app` selects private
- * runtime environments. The two axes are independent, so library-only,
+ * runtime environments. The axes are independent, so library-only,
  * application-only, and mixed workspaces are all first class. `dependencies`
  * are runtime `@orkestrel/*` packages. A peer in the `@orkestrel` scope is a
  * fleet pin; every other peer is a floor. `extras` are package-specific
@@ -220,7 +220,7 @@ export type CatalogEntry =
  * A found lookup carries the version upstream reported; one that produced no
  * answer carries the cause and no version. Whether the declared range already
  * admits that version is not recorded, because it is a deterministic function
- * of `range` and `latest`: a stored answer could only disagree with the two
+ * of `range` and `latest`: a stored answer could only disagree with the
  * fields beside it. One centralized helper decides it, and every caller reads
  * the same decision.
  */

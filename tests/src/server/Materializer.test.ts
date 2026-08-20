@@ -96,14 +96,14 @@ describe('Materializer construction', () => {
 			})
 			workspace.write('host/manifest.json', `${JSON.stringify(recased, null, '\t')}\n`)
 			// The control: the host stores the exact name the manifest recases, so
-			// absence cannot explain the case-only difference between the two names.
+			// absence cannot explain the case-only difference between the names.
 			expect(readFileHex(host, 'AGENTS.md')).not.toBe(undefined)
 			// The limit, executable rather than stated in prose, and stated against the
 			// host this run measured rather than the host the suite was written on.
 			// Where the directory folds case the recased storage name resolves to the
 			// stored bytes, so the refusal below is a case verdict no membership check
 			// could produce. Where it does not, that name is simply one the host does
-			// not store, and the two verdicts coincide.
+			// not store, and the verdicts coincide.
 			expect(readFileHex(host, 'agents.md')).toBe(
 				CASE_FOLDING ? readFileHex(host, 'AGENTS.md') : undefined,
 			)

@@ -29,7 +29,7 @@ import { isUsageError, UsageError } from './errors.js'
  * @remarks
  * One token serves both readers: a person reads the value placeholder and the
  * parser reads the name in front of it. Deriving the name means a documented
- * option and an accepted option cannot be two different lists.
+ * option and an accepted option cannot be separate lists.
  *
  * @example
  * ```ts
@@ -106,10 +106,10 @@ export function renderUsage(): readonly string[] {
  * @remarks
  * The one place untrusted argument text becomes a domain value, and it stays one
  * function because the command union admits no partial command to hand on: every
- * refusal has to happen before the value exists. It refuses in four ways, each
+ * refusal has to happen before the value exists. It refuses in these ways, each
  * naming what was wrong — a word that is not a verb, a word that is not an
  * option, an option this verb does not take, and an argument this verb does not
- * take. `node:util` decides the second and this decides the rest, so an unknown
+ * take. `node:util` decides the unknown option and this decides the rest, so an unknown
  * option is reported by the parser that found it rather than re-derived here.
  *
  * A request for usage is not a command and never reaches this: the caller
@@ -248,7 +248,7 @@ export function auditToExit(audit: Audit): number {
  *
  * @remarks
  * A blocking question means the gate produced no plan, so the target was not
- * compared and no finding count is reported. Otherwise the three grounds
+ * compared and no finding count is reported. Otherwise the grounds
  * describe what this run did. `bytes` means content-owned
  * bytes were observed, `existence` means presence or absence alone decided the
  * finding, and `nothing` means a birth-owned path was not examined. Foreign

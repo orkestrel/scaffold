@@ -31,7 +31,7 @@ export function createMaterializer(options?: MaterializerOptions): MaterializerI
 /**
  * Construct an {@link Upstream}.
  *
- * @param options - The two endpoints, the request bounds, the initial listeners,
+ * @param options - The endpoints, the request bounds, the initial listeners,
  * and the listener-error handler.
  * @returns The reader, typed as the contract consumers program against.
  * @throws {@link ScaffoldError} coded `INVALID` when `options` is present but is

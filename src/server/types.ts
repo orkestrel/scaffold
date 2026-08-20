@@ -259,7 +259,7 @@ export type UpstreamEventMap = {
  * Options for the upstream reader.
  *
  * @remarks
- * The two endpoints are grouped under the entity each configures: `guides`
+ * The endpoints are grouped under the entity each configures: `guides`
  * takes the guide host's `base`, its `branch`, and its `timeout`; `registry`
  * takes the registry's `base` and `timeout`. `concurrency` bounds requests in
  * flight and `retries` opts into per-request retry on a transport fault.

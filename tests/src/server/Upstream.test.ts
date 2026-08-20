@@ -666,8 +666,8 @@ describe('Upstream bounds', () => {
 				buildDependency({ name: '@orkestrel/emitter' }),
 				buildDependency({ name: '@orkestrel/router' }),
 			])
-			// Each answer is well inside the per-response limit; it is the third
-			// decoded stream against what the first two already spent that is refused.
+			// Each answer is well inside the per-response limit; it is the last
+			// decoded stream, against what the earlier ones already spent, that is refused.
 			expect(releases.map((release) => release.lookup)).toStrictEqual(['found', 'found', 'failed'])
 			expect(releases[2]?.note).toBe(`the call spent its ${String(budget)}-byte allowance`)
 		} finally {
@@ -826,7 +826,7 @@ describe('Upstream instrument', () => {
 			])
 			// The control, drawn from outside the fixture's scripted population: a
 			// name the table never named comes back missing, so the fixture is not
-			// answering every address alike and the reader really did build the two
+			// answering every address alike and the reader really did build the
 			// exact URLs the upstream contract puts it at.
 			expect(releases.map((release) => release.lookup)).toStrictEqual(['found', 'missing'])
 			expect(server.paths).toStrictEqual([UPSTREAM_PATHS.router, UPSTREAM_PATHS.emitter])

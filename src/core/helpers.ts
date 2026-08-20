@@ -170,7 +170,7 @@ export function matchesOrchestrationPath(path: string): boolean {
  * @returns The group that owns the path.
  *
  * @remarks
- * A path is grouped by what it governs rather than by where it sits. The two
+ * A path is grouped by what it governs rather than by where it sits. The
  * manifest files are named exactly; anything
  * {@link matchesOrchestrationPath} accepts is orchestration; `src` and `app`
  * are source; `tests`, `guides`, and `docs` carry their own names; the licence
@@ -307,7 +307,7 @@ export function matchesPrintWidth(line: string): boolean {
  * module's own relative depth, so a nested module emits a path that escapes
  * `dist/src` and a flat one resolves only by luck. Both faces rewrite the same
  * relative core path to the package's published root export, so the branch is
- * derived once here. The extension alternation is what the two permitted import
+ * derived once here. The extension alternation is what the permitted import
  * spellings produce: an `@src/core` alias resolves to the core source module and
  * prints `.ts`, while a relative import prints the `.js` specifier it was
  * written with. The formatter keeps the call on one line only while the line it
@@ -493,8 +493,8 @@ export function matchesDriftReachability(ownership: Ownership, finding: Finding)
  *
  * The order matters because these packages are `0.0.x`, where a caret pins one
  * exact release. Publishing a dependent before its dependency leaves the
- * dependent pinned to the older release, and two ranges that disagree install
- * two copies of one package that the compiler reads as two distinct types.
+ * dependent pinned to the older release, and ranges that disagree install
+ * duplicate copies of one package that the compiler reads as distinct types.
  *
  * A cycle cannot be published in rounds, so its members are omitted rather than
  * placed in an order that would be wrong. An absent name is the report: compare
@@ -571,11 +571,11 @@ export function planToSummary(plan: Plan): PlanSummary {
 }
 
 /**
- * Extract the three numeric components of an exact version.
+ * Extract the major, minor, and patch components of an exact version.
  *
  * @param version - The candidate version text.
  * @returns The major, minor, and patch numbers, or `undefined` when the text is
- * not the exact three-component syntax.
+ * not the exact `major.minor.patch` syntax.
  *
  * @remarks
  * Deliberately narrow: a prerelease or build suffix is not extracted, because
@@ -645,10 +645,10 @@ export function compareVersions(left: string, right: string): number {
  * @remarks
  * The one place this comparison is made. A `Release` records the declared range
  * and the reported version and stores no verdict beside them, because a stored
- * verdict could only disagree with the two fields it sits next to.
+ * verdict could only disagree with the fields it sits next to.
  *
  * Readability is decided first, and it is `EXTRA_RANGE_PATTERN`: an optional
- * caret or tilde over three numeric components and an optional prerelease
+ * caret or tilde over `major.minor.patch` and an optional prerelease
  * suffix. That pattern already covers every `ORKESTREL_RANGE_PATTERN` range and
  * every `VERSION_PATTERN` version, so the subset is stated once rather than
  * assembled here. Text outside it is never admitted, including text handed in on

@@ -101,8 +101,8 @@ import {
  * upstream reader is built the same way but from the options, because no
  * command line names an endpoint: a terminal caller means the published
  * registry and the published guide host, and only the process driving the
- * executable can mean anything else. That is the seam that makes the three
- * verbs which read the network provable without one.
+ * executable can mean anything else. That is the seam that makes the verbs
+ * which read the network provable without one.
  *
  * @example
  * ```ts
@@ -114,7 +114,7 @@ import {
  * ```
  */
 export class CLI implements CLIInterface {
-	// The two destinations a terminal caller means. They are the only process
+	// The destinations a terminal caller means. They are the only process
 	// streams this class names, and it names them once: a handler is what every
 	// write goes through, so the default is a handler too rather than a branch at
 	// each write site.
@@ -123,12 +123,12 @@ export class CLI implements CLIInterface {
 	readonly #output: OutputHandler
 	readonly #diagnostic: OutputHandler
 	// What every upstream reader this class builds is constructed from. It is held
-	// once and read by each verb that reads the network, so the three of them
+	// once and read by each verb that reads the network, so they
 	// cannot disagree about which registry and which guide host a run addresses.
 	readonly #upstream: UpstreamOptions | undefined
 
 	/**
-	 * Construct the executable over the two destinations it writes to.
+	 * Construct the executable over the destinations it writes to.
 	 *
 	 * @param options - The report and diagnostic handlers and the upstream
 	 * endpoints; the process streams and the published endpoints when absent.
@@ -253,7 +253,7 @@ export class CLI implements CLIInterface {
 	// `repair` — write each planned path the target is missing or has let drift,
 	// then re-audit, because the audit a repair reports is the one taken after it.
 	// One materializer spans the whole verb: the audit that guides the write, the
-	// write, and the audit that answers for it are three readings of one vendored
+	// write, and the audit that answers for it are readings of one vendored
 	// host, and a second instance could not promise they were.
 	#restore(command: RepairCommand): number {
 		const target = command.target ?? '.'
@@ -315,7 +315,7 @@ export class CLI implements CLIInterface {
 		return fetched.mirrors.some((mirror) => mirror.lookup === 'failed') ? EXIT_DRIFT : EXIT_CLEAN
 	}
 
-	// `overwrite` — everything repair and catalog do, plus the two steps only this
+	// `overwrite` — everything repair and catalog do, plus the steps only this
 	// verb carries. The offline half runs first and persists whatever it did,
 	// because it is the destructive one: a run that cannot reach upstream still
 	// leaves the target repaired and says which step it could not complete.
@@ -482,7 +482,7 @@ export class CLI implements CLIInterface {
 	//
 	// The refusal is `BLOCKED` whichever kind of question earned it, because both
 	// are the one fact that code names: this blueprint will not be built. The
-	// questions the message quotes are what tells the two apart, and a second code
+	// questions the message quotes are what tells them apart, and a second code
 	// would be a label for a fact they already carry.
 	#compile(blueprint: Blueprint, groups?: readonly Group[]): Plan {
 		const compiler = createCompiler()
@@ -785,7 +785,7 @@ export class CLI implements CLIInterface {
 			.sort(([left], [right]) => left.localeCompare(right))
 		if (missing.length === 0) return undefined
 		const names = missing.map(([project]) => project)
-		// A project goes unreached for one of two reasons, and they take opposite
+		// A project goes unreached for one of these reasons, and they take opposite
 		// repairs. Where the direct script is absent, the script is what is missing.
 		// Where the target already declares it, adding that line again changes
 		// nothing and the gate chain is what is missing.
@@ -1017,7 +1017,7 @@ export class CLI implements CLIInterface {
 		return this.#pin(releases)
 	}
 
-	// Two results of one run, read as one. Written and skipped never overlap
+	// The results of one run, read as one. Written and skipped never overlap
 	// across the calls a verb makes, because each call answers for its own paths.
 	#merge(first: MaterializeResult, second: MaterializeResult): MaterializeResult {
 		return {

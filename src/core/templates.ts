@@ -997,7 +997,7 @@ export function resolveSystemBrowser(
  * Precedence, most important first: \`PLAYWRIGHT_EXECUTABLE_PATH\`, \`PLAYWRIGHT_WS_ENDPOINT\`,
  * \`PLAYWRIGHT_CHANNEL\`, the managed Playwright Chromium, the container's bundled Chromium, a
  * verified system channel, then the platform default channel. An operator override outranks
- * discovery and is returned exactly as given: none of those three environment values is checked
+ * discovery and is returned exactly as given: none of those environment values is checked
  * against the filesystem, because verifying an override would defeat the override. The pinned
  * managed revision outranks anything found on the host because it is deterministic. The installed
  * pinned revision returns empty options so Playwright keeps its own default launch semantics. Only

@@ -29,12 +29,12 @@ import { describe, expect, it } from 'vitest'
 // The vendored `.oxfmtrc.json` a generated workspace receives: a tab prints as
 // `TAB_WIDTH` columns and a line is printed to fit `PRINT_WIDTH` of them. The
 // emitted text conforms to those bytes, never the reverse, so every width here is
-// measured against the same two constants the emitters measure against, which
+// measured against the same constants the emitters measure against, which
 // `tests/src/core/helpers.test.ts` asserts against the vendored file itself.
 const TAB_COLUMNS = ' '.repeat(TAB_WIDTH)
 // The specifiers the vendored `import/no-unassigned-import` rule exempts.
 const STYLE_IMPORT = /^import\s+'[^']+\.(?:css|less|sass|scss|styl|stylus|pcss|postcss|sss)'/u
-// These are the two specifiers an emitted browser configuration names that this
+// These are the specifiers an emitted browser configuration names that this
 // repository does not install, because scaffold generates a Vue application
 // without being one. Declaring their Vite-facing shapes lets the typecheck reach
 // the emitted configuration itself; the controls below prove a clean run cannot
@@ -60,9 +60,9 @@ const SELECTIONS: ReadonlyArray<readonly Environment[]> = [
 	['browser', 'server'],
 	['core', 'browser', 'server'],
 ]
-// The population the three sweeps below walk, stated as the relation it actually
+// The population the sweeps below walk, stated as the relation it actually
 // is: one entry per (blueprint, module path) pair the selection matrix emits,
-// projected onto the path as the number of the 126 blueprints that emit it. The
+// projected onto the path as the number of blueprints that emit it. The
 // union of those paths is a weaker claim and does not stand in for this one. One
 // maximal blueprint emits all 29 paths by itself, so under a union assertion 125
 // of the 126 could emit nothing and nothing would move; the counts move for any
@@ -101,9 +101,9 @@ const MODULE_EMITTERS: Readonly<Record<string, number>> = Object.freeze({
 	'vite.config.ts': 126,
 })
 
-// The two packages installed into the staged externalization workspace, each
+// The packages installed into the staged externalization workspace, each
 // exporting one token the emitted bundle either keeps as an import or inlines.
-// Only the first is declared as a peer, so the second is the control.
+// Only `sample-peer` is declared as a peer, so `sample-plain` is the control.
 const PEER_FIXTURE_PACKAGES: ReadonlyArray<readonly [name: string, token: string]> = Object.freeze([
 	['sample-peer', 'PEER_TOKEN'],
 	['sample-plain', 'PLAIN_TOKEN'],
@@ -616,7 +616,7 @@ describe('emitted workspaces under their own gates', () => {
 		} finally {
 			workspace.destroy()
 		}
-		// Two real Rolldown builds, measured at about 1.3 seconds together. The budget
+		// Real Rolldown builds, measured at about 1.3 seconds together. The budget
 		// carries slack over that because the cost under a full suite run is contention
 		// rather than work.
 	}, 30_000)
@@ -720,7 +720,7 @@ describe('emitted workspaces under their own gates', () => {
 			expect(application).toContain('projects: [appBrowser(), policy, config, probe]')
 			// The evaluated row carries no function name, so the vendored `config`
 			// proof finds it by the label instead. That label is emitted here, and the
-			// two have to agree or a generated browser workspace fails its own `test`
+			// label and the row have to agree or a generated browser workspace fails its own `test`
 			// script while passing its `check` script.
 			expect(application).toContain("name: { label: 'app:browser', color: 'blue' }")
 			workspace.write(
@@ -755,16 +755,16 @@ describe('emitted workspaces under their own gates', () => {
 		} finally {
 			workspace.destroy()
 		}
-		// Four real `tsc` invocations, measured at about nine seconds alone. The
+		// Real `tsc` invocations, measured at about nine seconds alone. The
 		// budget carries slack over that because the cost is contention, not work:
 		// the previous ten-second budget passed alone and reported a timeout under a
 		// full suite run, which is a red gate carrying no diagnostic.
 	}, 30_000)
 
 	it('prints no line past the vendored width the formatter could have broken', () => {
-		// Three tabs print as six columns, so the first control is one column past
-		// the width and the second sits exactly on it. The third is far past it by a
-		// literal on a line of its own, which is the one excess the formatter leaves
+		// Three tabs print as six columns, so one control lands one column past
+		// the width and another lands exactly on it. A further control is far past it
+		// by a literal on a line of its own, which is the one excess the formatter leaves
 		// and the real formatter confirms it leaves.
 		expect(findWide(`\t\t\t${'a'.repeat(89)} = '_'`)).toHaveLength(1)
 		expect(findWide(`\t\t\t${'a'.repeat(88)} = '_'`)).toStrictEqual([])
@@ -881,7 +881,7 @@ describe('emitted browser resolver', () => {
 		try {
 			const file = stageResolver(workspace)
 			// `chromium-999` sorts above `chromium-1194` by name and below it by
-			// revision, so the entry the sweep picks says which of the two orders ran.
+			// revision, so the entry the sweep picks says which order ran.
 			const browsers = buildBrowsersRoot(workspace, [
 				'chromium',
 				'chromium-1194/chrome-linux64/chrome',

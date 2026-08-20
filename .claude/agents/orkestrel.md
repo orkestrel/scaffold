@@ -111,12 +111,12 @@ account rather than on the dependency's. A superfluous diff obliges nothing.
 The `Layer` column above is the publish round, derived from the runtime edges in the same
 row. `L0` depends on nothing else in the fleet and publishes first; each later layer
 publishes only after every layer before it is on the registry. A row with no layer sits in
-a cycle and cannot be placed in a round at all. Two packages in one layer are independent
+a cycle and cannot be placed in a round at all. Packages in one layer are independent
 of each other and may publish in any order within it.
 
-Report a disagreeing pin as a defect, never as drift to tidy later. When two packages in
-one install graph pin different versions of a third, npm installs both copies, and the
-compiler reads the two copies as two distinct types. The symptom is a type error naming
+Report a disagreeing pin as a defect, never as drift to tidy later. When packages in
+one install graph pin different versions of a dependency, npm installs both copies, and the
+compiler reads those copies as distinct types. The symptom is a type error naming
 one type as not assignable to itself. `npm ls @orkestrel/<name>` is the evidence: one line
 is sound, and nesting is the finding.
 

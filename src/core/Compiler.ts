@@ -59,7 +59,7 @@ import { parseBlueprint, parseCompilerOptions, parseGroups, parseSnapshot } from
  * `INVALID`. Structure raises; the laws a well-formed blueprint can still break
  * are the gate's, and they answer with questions.
  *
- * Two consequences of that order are worth stating, because they are the ones a
+ * The consequences of that order are worth stating, because they are the ones a
  * JavaScript caller meets first. A property backed by an accessor is refused
  * rather than read, which is what closes the race a guard cannot close from
  * inside; the accessor never runs. And an optional field present with the value
@@ -135,8 +135,8 @@ export class Compiler implements CompilerInterface {
 	 * settle. A caller creating a fresh workspace answers them first and writes
 	 * nothing while any remains, which is the rule the `new` verb applies; a caller
 	 * describing or repairing an existing target carries them through instead.
-	 * Nothing downstream repeats that check, because only the caller knows which of
-	 * the two it is.
+	 * Nothing downstream repeats that check, because only the caller knows which
+	 * case it is.
 	 *
 	 * @example
 	 * ```ts
@@ -221,8 +221,8 @@ export class Compiler implements CompilerInterface {
 		this.#emitter.destroy()
 	}
 
-	// The three stages in order, recording each one and stopping at the first
-	// failure. Both public methods run this and choreograph their own events, so
+	// The stages in order, recording each one and stopping at the first
+	// failure. Every public method runs this and choreographs its own events, so
 	// an audit never emits a compile's completion.
 	#scaffold(blueprint: Blueprint, groups: readonly Group[]): Scaffolding {
 		const stages: CompileRecord[] = []

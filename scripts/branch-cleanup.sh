@@ -4,13 +4,13 @@
 # This deletes remote branches. Read it before running it.
 #
 # Every branch named below was verified: the MERGED tips are ancestors of
-# origin/main, and the three unmerged ones were ruled delete-worthy on
+# origin/main, and the unmerged ones were ruled delete-worthy on
 # 2026-08-17 (a net-empty revert pair, an obsolete re-pin, and one merged as a
 # pull request and then rewritten).
 #
 # Corrected on 2026-08-20: the generator emitted one `--delete origin` line per
-# repository, 45 in total, which asked each remote to delete a branch literally
-# named `origin`. Those lines were removed. Nothing else changed, and no line
+# repository, which asked each remote to delete a branch literally named
+# `origin`. Those lines were removed. Nothing else changed, and no line
 # that names a real branch was touched.
 git push https://github.com/orkestrel/abort --delete claude/orkestrel-fleet-orchestration-cv30e8
 git push https://github.com/orkestrel/abort --delete claude/orkestrel-orchestration-k2zfqp

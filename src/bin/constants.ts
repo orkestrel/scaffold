@@ -12,12 +12,12 @@ import type { Verb } from './types.js'
 export const EXECUTABLE_NAME = 'scaffold'
 
 /**
- * The five {@link Verb} values in usage order, frozen.
+ * The {@link Verb} values in usage order, frozen.
  *
  * @remarks
  * The order the type declares them in, which is also the order usage lists them:
  * the verb that creates a workspace, then the one that only reads it, then the
- * three that write to one that already exists, widest last.
+ * ones that write to one that already exists, widest last.
  */
 export const VERBS: readonly Verb[] = Object.freeze([
 	'new',
@@ -40,7 +40,7 @@ export const EXIT_USAGE = 2
  * What each exit code means, frozen.
  *
  * @remarks
- * Keyed by the three code constants rather than by literals, so the usage block
+ * Keyed by the code constants rather than by literals, so the usage block
  * cannot document a code the executable does not return.
  */
 export const EXIT_SUMMARY: Readonly<Record<number, string>> = Object.freeze({
@@ -71,7 +71,7 @@ export const FAILED_MESSAGE = 'The command failed for an unrecognized reason'
  *
  * @remarks
  * The workspace name is the only positional argument any verb takes, so it is
- * one value rather than a per-verb table with four holes in it.
+ * one value rather than a per-verb table with holes in it.
  */
 export const NAME_ARGUMENT = '<name>'
 

@@ -34,7 +34,7 @@ function manifestDevDependencies(): Readonly<Record<string, string>> {
 
 describe('BASE_DEV_DEPENDENCIES', () => {
 	// Every generated workspace receives this pin, and a release moves the manifest version in its
-	// own commit. Without this the two drift silently and every scaffolded project keeps depending
+	// own commit. Without this the pin and the manifest drift silently and every scaffolded project keeps depending
 	// on the previous scaffold.
 	it('pins this package at the version the manifest declares', () => {
 		const pinned = BASE_DEV_DEPENDENCIES['@orkestrel/scaffold']

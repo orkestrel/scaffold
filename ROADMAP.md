@@ -10,25 +10,25 @@ no campaign folder is the plan of record.
 The session's git proxy lost its write lease mid-campaign; releases published from proven local
 trees while source queued locally, preserved meanwhile as verified patches on
 `rescue/proxy-outage-2026-08-17` and as partial API commits. The lease returned and every repo
-was reconciled: `main` and `claude/orkestrel-fleet-orchestration-b0t5cy` in all eight affected
-repos (scaffold, worker, workflow, brief, program, agent, ollama, toolbox) were force-updated to
+was reconciled: `main` and `claude/orkestrel-fleet-orchestration-b0t5cy` in every affected
+repo (scaffold, worker, workflow, brief, program, agent, ollama, toolbox) were force-updated to
 the pristine local commits, which superseded every partial API replica. Verified: remote `main`
 sha equals local HEAD sha in each, with zero file differences and clean trees. The remaining
-43 fleet repos were already current.
+fleet repos were already current.
 
 Nothing is outstanding. `rescue/proxy-outage-2026-08-17` on scaffold is now redundant — its
 patches all landed in the reconciled history. Deleting it needs operator credentials: the proxy
-serves writes to existing refs but still refuses ref deletion, so it joins the branch cleanup in
-section 2.
+serves writes to existing refs but still refuses ref deletion, so it joins the branch cleanup under
+**User decisions, open**.
 
 ## 2. User decisions, open
 
 - **Prepack** (was D6/B3): no fleet package declares `prepack`, so `npm pack` from a stale tree
   ships stale `dist`. Decide once, fleet-wide: add `prepack` or accept the risk.
 - **Branch cleanup** (was D8): run `scripts/branch-cleanup.sh` with operator credentials (the
-  proxy refuses ref deletions). It deletes 292 remote branches across 46 repositories; read it
-  before running it. Include relation's ported `claude/database-package-audit-6r4hsd` branch, whose
-  hardening shipped in relation 0.0.9.
+  proxy refuses ref deletions). It deletes every stale remote branch across the fleet's
+  repositories; read it before running it. Include relation's ported
+  `claude/database-package-audit-6r4hsd` branch, whose hardening shipped in relation 0.0.9.
 
 ## 3. Package work, scheduled by each package's next natural release
 
@@ -37,8 +37,8 @@ section 2.
   (was B22)
 - **scaffold**: regenerate the package table with `scaffold catalog` so the `form` and `table`
   rows land in it. (was B8)
-- **scaffold policy**: move the nested-function body law into `configs/policy.ts` as a third
-  plugin rule. The rule set carries the two that shipped; this one stayed a candidate.
+- **scaffold policy**: move the nested-function body law into `configs/policy.ts` as another
+  plugin rule. The rule set carries the rules that shipped; this one stayed a candidate.
 - **scaffold rules**: rule on the interned-class canon — `agent`'s barrelled `Channel` vs
   `middleware`'s interned `MultipartParser` are the same species with opposite rulings; land the
   rule in `architecture.md` and correct the losing package. (was B2)
@@ -50,18 +50,18 @@ section 2.
   elapses. `@orkestrel/process` carries a proven local copy at `tests/setup.ts` and `probe` needs the
   same. Deferred deliberately: the user ruled it in for a later pass, and the local copy serves both
   packages meanwhile. A `test` bump is development-only and cascades to nobody.
-- **test**: correct the guide's population prose to the counted figures — `createRecorder`
-  32/43 packages, `createScratch` 40/43, `waitForDelay` 16/43, fences 44/44. (was B4/B21a)
+- **test**: correct the guide's population prose to the figures a fresh count produces for
+  `createRecorder`, `createScratch`, `waitForDelay`, and fences. (was B4/B21a)
 - **mcp**: delete the local generic `createTeardown<T>` at `tests/setupServer.ts:459` in favor
   of the `@orkestrel/test` import. (was B21b)
-- **middleware, browser, workflow, queue, router, agent**: replace inline `setTimeout` waits
-  with `waitForDelay` — middleware ×10 sites (does not import it), browser ×4, the rest ×1
-  each. (was B21c)
+- **middleware, browser, workflow, queue, router, agent**: replace every inline `setTimeout` wait
+  with `waitForDelay`; middleware carries the most sites and does not import it yet.
+  (was B21c)
 - **middleware**: move `MultipartParser.ts` from the environment root into a domain folder.
   (was B5)
 - **program, brief**: read-once ownership at guarded doors — clone → guard → seal → refuse, so
   a per-read getter cannot defeat containment. (was B18)
-- **program**: route the three raw `validate`-path dereferences in `helpers.ts` through the
+- **program**: route the raw `validate`-path dereferences in `helpers.ts` through the
   published `isQualificationValidationResult`/`isReasonValidationResult` guards. (was B19)
 - **probe**: the rows its 0.0.1 campaign recorded and deliberately left outside its exit criterion.
   Graded MEDIUM and excluded from campaign close: the coordinator deadline does not bound synchronous
@@ -73,10 +73,10 @@ section 2.
   an on-disk file makes the type and runtime stages disagree about the text; whether
   `experimental.fsModuleCache` can serve a disk-derived transform for a covered path. Unmeasured on
   Windows: the signal-kill orphan sweep, the orphaned lint child, `ENAMETOOLONG`, and the `SIGKILL`
-  fallback. Deferred test-helper debt: `resolveRoot` through `tests/setup.ts`, and `createTeardown` at
-  29 `finally` blocks. Routed to a successor and never scheduled: the generated specification's
-  `import.meta.url` carrying the revision suffix, and bounding `destroy()` against a language server
-  that accepts stdin and never answers `initialize`.
+  fallback. Deferred test-helper debt: `resolveRoot` through `tests/setup.ts`, and `createTeardown`
+  across the `finally` blocks that duplicate it. Routed to a successor and never scheduled: the
+  generated specification's `import.meta.url` carrying the revision suffix, and bounding
+  `destroy()` against a language server that accepts stdin and never answers `initialize`.
 - **mcp**: `createProbeServer(probe).stop()` never returns, because the stdin `data` listener stays
   attached. The fix site is `@orkestrel/mcp`, not `probe`, and `probe` grades it a release blocker.
   Closing it means an `mcp` bump plus a `probe` test asserting `stop()` leaves
@@ -88,9 +88,9 @@ section 2.
 - **contract**: `isContractError` fails across an ESM and CJS copy boundary the same way
   `isProcessError` did. `@orkestrel/process` 0.0.4 fixes its own with a `Symbol.for` brand read
   through `getOwnPropertyDescriptor`; `contract` owns the general mechanism and has not taken it.
-- **supervisor**: re-pin mcp to `^0.0.19` and sea to `^0.0.9` on its next dependency pass. Section 6
-  covers why nothing else touches that repository.
-- **process**: two rulings recorded and never scheduled — the `bytes` and `write` surface synthesis
+- **supervisor**: re-pin mcp to `^0.0.19` and sea to `^0.0.9` on its next dependency pass. The
+  **supervisor** section covers why nothing else touches that repository.
+- **process**: rulings recorded and never scheduled — the `bytes` and `write` surface synthesis
   ruled for `ProcessInterface`, and bare-`\r` handling in `lines`.
 - **qualifier**: design round on `Premise` — every member is optional so `isPremise` accepts
   `{}`; decide whether `met`/`field` become required. (was B20)
@@ -109,10 +109,10 @@ section 2.
 - **settings vendoring**: decide whether `.claude/settings.json` vendors for existence rather
   than bytes; today `repair` restores vendored bytes and operator grants live in
   `settings.local.json`. (was B12)
-- **Order gating**: the 11-row ungated-orders survey recorded at brief's acceptance reopens
+- **Order gating**: the ungated-orders survey recorded at brief's acceptance reopens
   when hardening scaffold's order gating. (was B13)
 - **`agents/openai.yaml`**: research the full external schema when a consumer needs more than
-  the three-key mapping. (was B14)
+  the `display_name`, `short_description`, and `default_prompt` mapping. (was B14)
 - **w3 acceptance**: re-prove or strike what w3 shipped; the real-tree red proof was blocked by
   a read-only `.agents` policy in that harness. (was B15)
 - **Banning the `object` type**: state the invariant in the canon first, or drop the candidate.

@@ -1,7 +1,7 @@
 import type { AppDefinition, BuildFormat, Environment, Group, SrcDefinition } from './types.js'
 
 /**
- * The three `Environment` values, frozen.
+ * The `Environment` values, frozen.
  *
  * @remarks
  * A blueprint's `src` and `app` axes are caller-supplied, so the gate measures
@@ -12,7 +12,7 @@ import type { AppDefinition, BuildFormat, Environment, Group, SrcDefinition } fr
 export const ENVIRONMENTS: readonly Environment[] = Object.freeze(['core', 'browser', 'server'])
 
 /**
- * The seven `Group` values in plan order, frozen.
+ * The `Group` values in plan order, frozen.
  *
  * @remarks
  * A compile that names no groups covers every one of them, so this list is the
@@ -72,7 +72,7 @@ export const SRC_MATRIX: Readonly<Record<Environment, SrcDefinition>> = Object.f
  * @remarks
  * An application environment declares no exports, so it carries a runtime
  * entry instead of a subpath and formats. Core carries none because it is
- * shared logic the other two import rather than a host that runs.
+ * shared logic the other environments import rather than a host that runs.
  */
 export const APP_MATRIX: Readonly<Record<Environment, AppDefinition>> = Object.freeze({
 	core: Object.freeze({
@@ -112,8 +112,8 @@ export const BIN_ENTRY_PATH = 'src/bin/main.ts'
  * @remarks
  * These are the files the fleet shares verbatim: the root instruction
  * documents, the licence, the canonical orchestration contract every harness
- * bridge points at, the four harness directories, the session hook scripts,
- * the shared policy register, the byte-identical root dotfiles, and the two
+ * bridge points at, the harness directories, the session hook scripts,
+ * the shared policy register, the byte-identical root dotfiles, and the
  * guide mirrors a generated workspace starts from. A directory entry vendors
  * everything beneath it.
  *
@@ -277,7 +277,7 @@ export const DEPENDENCY_NAME_PATTERN = /^@orkestrel\/[a-z][a-z0-9-]*$/
  */
 export const FOREIGN_NAME_PATTERN = /^(?:@[a-z0-9][a-z0-9._-]*\/)?[a-z0-9][a-z0-9._-]*$/
 
-/** The exact three-component version syntax a blueprint declares. */
+/** The exact `major.minor.patch` version syntax a blueprint declares. */
 export const VERSION_PATTERN = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/
 
 /**
@@ -296,7 +296,7 @@ export const EXTRA_RANGE_PATTERN =
 	/^(?:\^|~)?(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*)?$/
 
 /**
- * The exact three-component floor accepted for a foreign peer's range.
+ * The exact `major.minor.patch` floor accepted for a foreign peer's range.
  *
  * @remarks
  * This is independent from {@link ENGINES_PATTERN}. An engine floors the Node

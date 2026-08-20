@@ -21,7 +21,7 @@ npx @orkestrel/scaffold --help
 
 ## Verbs
 
-Five verbs. Authority is the verb's: every verb except `audit` writes when it is typed, and no
+Authority is the verb's: every verb except `audit` writes when it is typed, and no
 option grants a write. Exit codes are `0` clean, `1` drift or failure, and `2` usage error.
 
 `--target <path>` points any verb at another directory; the working directory is the default.
@@ -74,14 +74,14 @@ Reads the organization's published package list, rewrites the marker-bounded tab
 npx scaffold overwrite --dirty
 ```
 
-Everything `repair` and `catalog` do, plus the two steps only this verb carries: it deletes tracked
+Everything `repair` and `catalog` do, plus the steps only this verb carries: it deletes tracked
 files the plan does not own, and it rewrites the `@orkestrel/*` ranges in the manifest to the
 registry's latest releases. It needs a git repository, and it refuses a tree carrying uncommitted
 changes unless `--dirty` waives that refusal.
 
 ## Library
 
-Two entry points, split by host. `@orkestrel/scaffold` is host-independent: it compiles, gates, and
+The entry points split by host. `@orkestrel/scaffold` is host-independent: it compiles, gates, and
 compares.
 
 ```ts

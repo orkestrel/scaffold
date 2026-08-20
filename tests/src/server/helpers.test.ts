@@ -227,7 +227,7 @@ describe('computeManifestDigest', () => {
 		expect(computeManifestDigest([], ['a', 'b'])).not.toBe(computeManifestDigest([], ['b', 'a']))
 	})
 
-	it('reads exactly the three declared fields and nothing a caller added', () => {
+	it('reads exactly the declared fields and nothing a caller added', () => {
 		// Built through a variable so the extra field survives to the runtime call
 		// instead of being refused by the excess-property check at the literal.
 		const extended = { ...buildManifestEntry(), note: 'added' }
@@ -260,7 +260,7 @@ describe('physical shape', () => {
 			// host this run measured rather than the host the suite was written on.
 			// Where the directory folds case the recased name resolves, so the refusal
 			// above is a case verdict no existence check could produce. Where it does
-			// not, that name is simply absent, the two refusals are one condition, and
+			// not, that name is simply absent, the refusals are one condition, and
 			// the assertions above would equally hold for a guard that only called
 			// `existsSync` — the gap a case-folding host closes.
 			expect(existsSync(folded)).toBe(CASE_FOLDING)
@@ -1036,7 +1036,7 @@ describe('readManifestEntry', () => {
 		try {
 			// A declared path staged from a source carrying no executable bit still
 			// answers true. This is the Windows publish, where every mode reads 0644:
-			// reading the mode here declared four dead hooks and shipped them.
+			// reading the mode here declared the hooks dead and shipped them.
 			const declared = workspace.write('scripts/codex.sh', '#!/bin/sh\n')
 			chmodSync(declared, 0o644)
 			expect((lstatSync(declared).mode & 0o111) !== 0).toBe(false)
@@ -1062,7 +1062,7 @@ describe('readManifestEntry', () => {
 			chmodSync(source, 0o755)
 			// The entry a checkout stages is a function of the path alone, so the same
 			// checkout produces the same manifest on a host with executable bits and
-			// on one without. Nothing below the mode changed between these two reads.
+			// on one without. Nothing below the mode changed between these reads.
 			expect(readManifestEntry('scripts/deps.sh', source)).toEqual(restrictive)
 		} finally {
 			workspace.destroy()

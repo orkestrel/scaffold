@@ -32,7 +32,7 @@ const MATCHING = contentToHex(PLANNED)
 const DIFFERING = contentToHex('# Edited\n')
 
 describe('FLOOR_RANGE_PATTERN', () => {
-	it('accepts a canonical three-component floor', () => {
+	it('accepts a canonical major.minor.patch floor', () => {
 		expect(FLOOR_RANGE_PATTERN.test('>=6.0.0')).toBe(true)
 	})
 
@@ -198,7 +198,7 @@ describe('blueprintToScripts config projects', () => {
 		expect(scripts.prepublishOnly).not.toContain('test:service')
 	})
 
-	// The vendor list and the live-service axis are two facts, so each is measured
+	// The vendor list and the live-service axis are separate facts, so each is measured
 	// against the other's absence rather than only against its own presence.
 	it('gates the live-service proof on its readiness module rather than on a vendor list', () => {
 		const live = blueprintToScripts(buildBlueprint({ service: true }))
@@ -547,7 +547,7 @@ describe('blueprint gate laws', () => {
 	// runtime refusal beside it. `appShowcase` is generated inline here while
 	// `appBrowser` comes from the template, so one spelling drifting from the other is
 	// the failure this catches.
-	it('seals both argument-free factories through their signatures alone', () => {
+	it('seals every argument-free factory through its signature alone', () => {
 		const config = blueprintToRootVite(buildBlueprint({ app: ['browser'], showcase: true }))
 		expect(config).toContain('export function appShowcase(): UserConfig {')
 		expect(config).toContain('export function appBrowser(): UserConfig {')
@@ -664,8 +664,8 @@ describe('blueprintToRootVite fixed proofs', () => {
 		// path that drifted beside the bytes that moved.
 		expect(Object.fromEntries(current)).toStrictEqual(Object.fromEntries(generated))
 
-		// The control: the same repository compiled from a blueprint missing three of
-		// its facts emits a root configuration this checkout does not hold, so the
+		// The control: the same repository compiled from a blueprint missing facts
+		// this checkout declares emits a root configuration this checkout does not hold, so the
 		// comparison above discriminates rather than reporting agreement by shape.
 		expect(readFileSync(resolve('vite.config.ts'), 'utf8')).not.toBe(
 			blueprintToRootVite(createBlueprint('scaffold', { src: ['core', 'server'] })),
@@ -745,13 +745,13 @@ describe('blueprintToRootVite fixed proofs', () => {
 	})
 
 	// A generated workspace runs the `lint:check` and `format:check` it was given on
-	// the bytes `new` wrote, so each span below is pinned to the text those two gates
+	// the bytes `new` wrote, so each span below is pinned to the text those gates
 	// accept. Each covers the selections that reach both sides of its branch, because
 	// one selection per span reads as covered while measuring one side.
 	it('imports the configuration helpers a selection actually reaches', () => {
-		// The four memberships the three symbols have: a core build enforces logs,
+		// The memberships the helper symbols have: a core build enforces logs,
 		// `bin` also bounds its output, an application core only bounds its
-		// environment, and a published server reaches all three helpers.
+		// environment, and a published server reaches every helper.
 		expect(blueprintToRootVite(buildBlueprint({ src: ['core'] }))).toContain(
 			"import { enforceBuildLog } from './configs/helpers.js'\n",
 		)
@@ -765,7 +765,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 			"import { enforceBuildLog, environmentBoundary, outputBoundary } from './configs/helpers.js'\n",
 		)
 		// The removed runtime filesystem classifier leaves the URL import directly
-		// after the three imports every root configuration makes.
+		// after the imports every root configuration makes.
 		expect(blueprintToRootVite(buildBlueprint({ src: ['core'] }))).toContain(
 			"import type { UserConfig } from 'vite'\nimport { defineConfig, mergeConfig } from 'vitest/config'\nimport manifest from './package.json' with { type: 'json' }\nimport tsconfig from './tsconfig.json' with { type: 'json' }\nimport { enforceBuildLog } from './configs/helpers.js'\nimport { fileURLToPath, URL } from 'node:url'",
 		)
@@ -791,7 +791,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 	})
 
 	// A generated workspace launches Chromium through the resolver it was given, so
-	// the emission and the two spans that reach it are pinned beside the selections
+	// the emission and the spans that reach it are pinned beside the selections
 	// that produce them. The membership is a browser on either axis.
 	it('emits the browser resolver for exactly the selections that launch one', () => {
 		for (const blueprint of [
@@ -842,7 +842,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 	})
 
 	it('writes each selection-dependent span the way the formatter leaves it', () => {
-		// The peer matcher holds all four published predicates open — the browser
+		// The peer matcher holds every published predicate open — the browser
 		// face and the server face, each with the core alias present only when the
 		// selected source graph reaches it. Both faces carry the clause on both
 		// sides of their own branch, so neither side can lose it unseen.
@@ -859,7 +859,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 			"\t\t\t\t\texternal: (id: string) =>\n\t\t\t\t\t\tid === '@src/core' ||\n\t\t\t\t\t\tid.startsWith('node:') ||\n\t\t\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
 		)
 		// The browser plugin array has no conditional tail without a showcase, so
-		// the formatter emits its three fixed entries joined.
+		// the formatter emits its fixed entries joined.
 		expect(blueprintToRootVite(buildBlueprint({ app: ['browser'] }))).toContain(
 			"\t\tplugins: [outputBoundary(output), environmentBoundary('app/browser'), vue()],\n",
 		)
@@ -908,7 +908,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 	})
 
 	it('joins the declaration rewrite only while the line it prints fits the width', () => {
-		// The two names either side of the width: at 19 characters the joined call
+		// The names either side of the width: at 19 characters the joined call
 		// prints exactly on the vendored 100 columns and at 20 it prints one past, so
 		// the branch is observable only at that pair. Every longer name the gate
 		// admits, up to `MAX_NAME_LENGTH`, takes the wrapped form. Both faces fill the
@@ -1192,7 +1192,7 @@ describe('content artifact compilers', () => {
 		expect(tests.at(-1)?.content).not.toContain('spawnSync')
 	})
 
-	it('emits the package front page and both required guide indexes', () => {
+	it('emits the package front page and every required guide index', () => {
 		const blueprint = buildBlueprint({
 			name: 'widget',
 			description: 'A focused widget package.',
@@ -1236,12 +1236,12 @@ describe('content artifact compilers', () => {
 })
 
 describe('artifactToFinding producer matrix', () => {
-	// The instrument's population is every finding the producer can reach: all
-	// three ownership tiers by the three observation states a target can present.
+	// The instrument's population is every finding the producer can reach: every
+	// ownership tier by every observation state a target can present.
 	// Its control is drawn from outside that population, because a control sampled
 	// from inside it could only show the producer disagreeing with itself, and the
 	// question here is what the producer never reaches at all.
-	it('reaches four verdict shapes, and the guard admits one it never reaches', () => {
+	it('reaches every verdict shape, and the guard admits one it never reaches', () => {
 		const cells: string[] = []
 		const verdicts: string[] = []
 		for (const ownership of OWNERSHIPS) {

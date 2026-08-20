@@ -4,7 +4,7 @@ import { USAGE_CODE } from './constants.js'
  * The error raised when a command line is not a command.
  *
  * @remarks
- * Distinct from `ScaffoldError` because the two answer different questions and
+ * Distinct from `ScaffoldError` because they answer different questions and
  * exit differently: a `ScaffoldError` says the package could not serve a
  * well-formed request and exits `1`, while this says there was no request to
  * serve and exits `2`. Folding a usage error into `INVALID` would report a

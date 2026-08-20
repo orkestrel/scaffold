@@ -120,7 +120,7 @@ export interface TestPathCase {
  * One value carrying a key its union branch forbids, beside its sound twin.
  *
  * @remarks
- * The two records differ by exactly one key, which the suite checks, so a
+ * The records differ by exactly one key, which the suite checks, so a
  * refusal can only be caused by the key under test.
  */
 export interface TestUnionCase {
@@ -377,8 +377,9 @@ export const BENIGN_ACCESSOR_DESCRIPTOR: PropertyDescriptor = {
  * Every name the emitted `configs/browsers.ts` publishes, in emission order.
  *
  * @remarks
- * The emitted root configuration reaches two of them, and the rest are the
- * precedence ladder those two are built from. A generated workspace owns the
+ * The emitted root configuration reaches `resolveBrowser` and
+ * `resolvePinnedBrowser`, and the rest are the precedence ladder those are built
+ * from. A generated workspace owns the
  * file, so the whole surface is stated here and compared against the module a
  * runtime actually loaded rather than against the template text.
  */
@@ -550,7 +551,7 @@ export function buildGuardCases(): readonly TestGuardCase[] {
 			guard: isCollection,
 			accepted: [[], ['manifest'], Array.from({ length: MAX_COLLECTION_ITEMS }, () => 'manifest')],
 			// A hole reads as `undefined`, which the composed element guard refuses; the
-			// count law this guard states is satisfied by a sparse array of three items.
+			// count law this guard states is satisfied by a sparse array.
 			admits: ['sparse array'],
 		},
 		{

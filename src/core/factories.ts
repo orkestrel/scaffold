@@ -21,17 +21,17 @@ import { parseBlueprint } from './parsers.js'
  * workspace actually declares.
  *
  * This is the construction door, and {@link parseBlueprint} is the coercing one.
- * They differ in all three of their parts: this fills the defaults and takes a
+ * They differ in every part: this fills the defaults and takes a
  * partial specification, where the parser fills nothing and takes an untrusted
  * value; and this refuses by throwing, where the parser refuses by answering
  * `undefined`. What they share is the law — both accept exactly what
  * `isBlueprint` accepts.
  *
  * That law is structural only. Whether the name is a name, the version a
- * version, and the two environment axes a combination this package can generate
+ * version, and the environment axes a combination this package can generate
  * are the gate's laws, and the gate answers them with {@link Question}s carrying
- * their accepted candidates. Deciding them here as well would state one law in
- * two places and let the two answers disagree, so a blueprint the gate will
+ * their accepted candidates. Deciding them here as well would restate that law
+ * and let the answers disagree, so a blueprint the gate will
  * refuse is still constructible.
  *
  * @example

@@ -211,7 +211,7 @@ export function srcToExports(src: readonly Environment[]): Readonly<Record<strin
  * not installed by the workspace that declares it and developing against one
  * requires it present. A runtime dependency is the opposite case and is removed:
  * it is already installed, so a second declaration would state one fact twice
- * and the two ranges would be free to disagree.
+ * and the ranges would be free to disagree.
  *
  * A workspace never declares itself, so its own package name is removed. That
  * matters for a workspace named after a package the baseline already carries:
@@ -529,7 +529,7 @@ export function blueprintToManifest(blueprint: Blueprint): string {
  * Derive the host-specific machinery a generated root Vite configuration carries.
  *
  * @param blueprint - The workspace specification.
- * @returns The four pipelines the generated configuration selects.
+ * @returns The pipelines the generated configuration selects.
  *
  * @remarks
  * The sole derivation of that set: every renderer reads it rather than
@@ -1500,7 +1500,7 @@ export function planToHash(plan: Plan): string | undefined {
  * destination has no bytes to record, and every other verdict records the bytes
  * it was given, which is the precondition the mutation that follows is held to.
  * Ownership is copied rather than inferred from drift because aligned findings
- * span all three ownership tiers.
+ * span every ownership tier.
  *
  * `foreign` is not answerable here, because it describes a path no artifact was
  * planned for.
@@ -1582,7 +1582,7 @@ export function planToFindings(plan: Plan, current: Snapshot): readonly Finding[
  * range, in list order.
  *
  * @remarks
- * The declared lists and peer partitions differ only in the two syntaxes they
+ * The declared lists and peer partitions differ only in the syntaxes they
  * accept, so the rules live here once and each caller supplies its own patterns.
  * A runtime dependency name reaches a path through its guide mirror and is
  * fixed to the `@orkestrel` scope. A foreign peer or development extra reaches
@@ -1650,13 +1650,13 @@ export function dependenciesToQuestions(
  * Only the laws a blueprint answers alone are here. The structural record and
  * its bounds are already settled by `isBlueprint`, which refuses a value that is
  * not a blueprint at all; what remains is the syntax of a name, a version, a
- * range, and an engines floor, the combinations the two environment axes admit,
- * and the overlaps between the three declared package lists. The laws that need
+ * range, and an engines floor, the combinations the environment axes admit,
+ * and the overlaps between the declared package lists. The laws that need
  * a drafted plan belong to {@link artifactsToQuestions} and
  * {@link overridesToQuestions}.
  *
  * A question blocks when it describes a workspace this package cannot generate.
- * Three do not, because each describes a workspace it can describe honestly and
+ * These do not, because each describes a workspace it can describe honestly and
  * should not create: a published axis of several environments without core,
  * whose manifest names a core build the workspace never runs; a showcase flag
  * whose required browser axis is absent, which emits nothing; and an

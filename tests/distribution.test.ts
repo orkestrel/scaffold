@@ -27,16 +27,16 @@ const registry =
 	}).status === 0
 const release = import.meta.env.MODE === 'release'
 
-// The two declarations a consumer installs. Both are read, because an example
+// The declarations a consumer installs. Each is read, because an example
 // is shipped by whichever declaration prints it and a reader hovers over either.
 // Each carries controls of its own, and none of them is in either built
 // declaration, so every one lies outside the population the instrument covers.
 // One control per outcome the rule below can reach, because the instrument has
-// one way to report and three ways to say nothing. A false claim must be scored
+// one way to report and says nothing as undriven, glossed, or elided. A false claim must be scored
 // a mismatch, which is the proof the comparison can fail at all. A claim the
 // rule excludes must be named in the set that excluded it — undriven, glossed,
 // or elided — which is the proof the rule reports what it cannot reach instead
-// of dropping it. The two false controls in the excluded spellings are the ones
+// of dropping it. The false controls in the excluded spellings are the ones
 // the previous instrument dropped silently: it named the statement kind alone,
 // so a corrected example rewritten with a gloss or an elision left every list
 // where it was.
@@ -69,10 +69,10 @@ const DECLARATIONS = [
 
 // A claim is a line inside a fenced `ts` example whose trailing comment states a
 // verdict. That is the population, and every line in it lands in exactly one of
-// four sets. It is driven when the verdict parses as a literal and the
+// these sets. It is driven when the verdict parses as a literal and the
 // expression the comment sits on closes its own brackets and is an expression
 // rather than a statement. Otherwise it is elided, glossed, or undriven, and
-// each of those three is asserted as the exact list of lines it holds.
+// each of those is asserted as the exact list of lines it holds.
 const EXAMPLE = /```ts\n(?<body>[\s\S]*?)```/gu
 const CLAIM = /^(?<expression>\S.*?) \/\/ (?<verdict>.+)$/u
 const PREFIX = /^\s*\*( |$)/u
@@ -286,7 +286,7 @@ describe('installed package consumer', () => {
 					// The driver answers for every claim in a block it ran, so a claim with
 					// no outcome at all is one the block reached past rather than one the
 					// module contradicted. It is undriven for the same reason a statement
-					// is, and naming it here is what keeps the four sets a partition.
+					// is, and naming it here is what keeps the sets a partition.
 					if (typeof outcome !== 'object' || outcome === null) {
 						undriven.push(`${declaration.types}: ${claim.text}`)
 						continue
@@ -303,10 +303,10 @@ describe('installed package consumer', () => {
 				}
 			}
 
-			// The four sets partition the population rather than sampling it, so no
+			// The sets partition the population rather than sampling it, so no
 			// claim-shaped line can leave the rule without arriving in a list below.
 			// This is the assertion the lists are exact against: a shipped example
-			// that changes spelling moves between two of them and both move.
+			// that changes spelling moves from one list to another and both move.
 			expect(driven.length + undriven.length + glossed.length + elided.length).toBe(shaped)
 			expect(shaped).toBe(171)
 
@@ -318,7 +318,7 @@ describe('installed package consumer', () => {
 				"createCompiler().audit(blueprint, {}).findings.every(({ drift }) => drift === 'missing') // true answered false",
 				"isBranch('main') // false answered true",
 			])
-			// The membership rule, stated as the three exact sets it leaves out. A
+			// The membership rule, stated as the exact sets it leaves out. A
 			// claim is glossed when its verdict is prose, elided when its verdict shows
 			// a prefix of a value, and undriven when the expression the comment sits on
 			// is a statement or the block carrying it refused to compile or threw. Each
