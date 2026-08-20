@@ -64,13 +64,20 @@ FAIL. Each verdict is in that package's `.orkestrel/<name>/`.
 
 ## Rulings taken from the chair
 
-- **`node10` module resolution is not a target, for any package in the wave.** The owner's ruling:
-  everything runs on Node 22 and Node 24, mainly 22. So mcp's missing `typesVersions` stays missing,
-  and probe declares `node10` unsupported rather than leaving it half-working — today its root
-  resolves under `node10` and its `./server` subpath does not, and partial support is worse than
-  declared non-support. mcp's distribution suite already marks legacy `node` false while accepting
-  `node16`, `nodenext`, and `bundler`; probe matches that. The stale `sideEffects` row probe carries
-  for an unshipped `src/bin/main.ts` is a separate defect and is still fixed.
+- **Module resolution is left exactly as declared.** Every package in the wave sets
+  `module: ESNext`, `moduleResolution: bundler`, `target: ESNext`, and `lib: ESNext, DOM,
+  DOM.Iterable`, with an `engines` floor of Node 22.12 or later. Two audit lanes tested resolution
+  under a `node10`/`node16`/`bundler`/`nodenext` matrix on their own initiative and reported `node10`
+  failures — mcp has no `typesVersions`, and probe resolves its root but not its `./server` subpath.
+  Neither is a defect: `node10` appears in no configuration this fleet owns. Add no `typesVersions`,
+  and add no declaration of non-support either. The owner's ruling: do not constrain beyond what is
+  declared, in either direction.
+
+  The stale `sideEffects` row probe carries for an unshipped `src/bin/main.ts` is unrelated to
+  resolution, and it is scaffold-generated — `compilers.ts` emits the source entry for any blueprint
+  with a bin. It is a successor scaffold finding, not a probe fix and not a wave fix: changing it
+  re-plans the manifest of every target for dead weight that breaks nothing.
+
 - **mcp's stdio release finding is a bound or a documented limit, not a re-pin.** The audit proposed
   re-pinning to a `@orkestrel/process` release that closes inherited-pipe iteration. No such release
   exists: 0.0.4 documents the opposite as intended, and its own remedy is a `timeout`.
