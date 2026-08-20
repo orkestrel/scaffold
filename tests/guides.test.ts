@@ -12,6 +12,7 @@ import {
 	SURFACE,
 	TESTS,
 } from '@orkestrel/guide'
+import { createBlueprint, createCompiler, isScaffoldError, ScaffoldError } from '@src/core'
 import { globSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -158,5 +159,42 @@ describe('guides', () => {
 			}
 		}
 		expect(undeclared).toEqual([])
+	})
+})
+
+describe('guide examples', () => {
+	it('executes the blueprint defaults example', () => {
+		const blueprint = createBlueprint('router', {
+			src: ['core', 'server'],
+			dependencies: [{ name: '@orkestrel/emitter', range: '^0.0.5' }],
+			bin: true,
+		})
+
+		expect(blueprint.version).toBe('0.0.1')
+		expect(blueprint.engines).toBe('>=22.12.0')
+	})
+
+	it('executes the compile refusal example', () => {
+		const compiler = createCompiler()
+		try {
+			const scaffolding = compiler.compile(
+				createBlueprint('router', { src: ['browser', 'server'] }),
+			)
+
+			expect(scaffolding.plan === undefined || scaffolding.questions.length > 0).toBe(true)
+		} finally {
+			compiler.destroy()
+		}
+	})
+
+	it('executes the error-code narrowing example', () => {
+		let code: string | undefined
+		try {
+			throw new ScaffoldError('TARGET', 'The target carries no readable manifest.')
+		} catch (error) {
+			if (!isScaffoldError(error)) throw error
+			code = error.code
+		}
+		expect(code).toBe('TARGET')
 	})
 })

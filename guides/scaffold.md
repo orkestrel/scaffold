@@ -12,9 +12,11 @@ does not work. Scaffold makes the shared set data — a vendored data root shipp
 — and gives it verbs: create a workspace from it, report how a workspace differs from it, and
 write the difference back.
 
-Every code fence below is illustrative. Nothing runs one, so a trailing `// value` comment inside a
-fence is this guide's claim rather than a measured answer; the driven examples are the ones the
-shipped declarations print. Limits states what that leaves unproven and what covers it instead.
+Every code fence below is illustrative. [`tests/guides.test.ts`](../tests/guides.test.ts)
+transcribes the pure blueprint-default, compile-refusal, and error-narrowing fences and checks their
+literal verdicts. A trailing comment in another fence is this guide's claim rather than a measured
+answer; the driven examples are the ones the shipped declarations print. Limits states what that
+leaves unproven and what covers it instead.
 
 ```sh
 npm install --save-dev @orkestrel/scaffold
@@ -520,12 +522,14 @@ static Vitest fact to infer.
 
 `audit` still completes the comparison and reports one non-blocking `projects` question. For a
 literal absent project, its advisory tells the developer to register the project or remove the
-script. For a planned project absent from both gate chains, the advisory gives the exact direct
-script line to add to `package.json`. `repair` and `overwrite` refuse either mismatch and do not
-write the manifest or configuration. Their absent-project refusal tells the developer to remove the
-script or not use scaffold writing verbs for a workspace that needs custom Vitest projects. It does
-not recommend editing the content-owned configuration that the refusing verb would restore. An
-advisory alone does not make an aligned target drift.
+script. For a planned project absent from the gate chains, the advisory checks the direct
+`test:<project>` script. When the script is absent, the advisory gives the exact line to add to
+`package.json`. When the script is declared but ungated, the advisory names the script and the gate
+chain that must invoke it, without repeating a script line. `repair` and `overwrite` refuse either
+mismatch and do not write the manifest or configuration. Their absent-project refusal tells the
+developer to remove the script or not use scaffold writing verbs for a workspace that needs custom
+Vitest projects. It does not recommend editing the content-owned configuration that the refusing
+verb would restore. An advisory alone does not make an aligned target drift.
 
 The same plan-reading verbs compare the tooling set the derived blueprint plans against
 `dependencies` and `devDependencies` together. A missing planned package produces one non-blocking
@@ -751,7 +755,7 @@ content is produced. `Ownership` says what scaffold claims at the path.
 | ----------- | -------------- | ------------------------------------------------- |
 | `content`   | The bytes      | Restore a missing file, replace a stale one       |
 | `presence`  | Existence only | Restore an absent file, never touch present bytes |
-| `birth`     | Nothing        | Create the file only while it is absent           |
+| `birth`     | Nothing        | Create the file only during initial materialize   |
 
 Presence ownership has separate mechanisms, and a reader needs to know which applies:
 
@@ -760,9 +764,20 @@ Presence ownership has separate mechanisms, and a reader needs to know which app
 | Verb-owned      | `CATALOG_AGENT_PATH` and dependency guide mirrors | `catalog` or `mirror` | The owning verb is the only route for a later update.   |
 | Workspace-owned | `WORKSPACE_OWNED_PATHS`, currently `.gitignore`   | The target workspace  | Present bytes receive no later canonical ignore update. |
 
-Birth ownership is what makes a generated workspace the consumer's. `package.json`, the source
-barrels, the tests, `README.md`, and `guides/README.md` are written once and are never rewritten by
-a later verb.
+Birth ownership is what makes a generated workspace the consumer's. `materialize` writes a
+birth-owned path into a vacant target. A later `repair` or `overwrite` call treats that path as
+aligned whether it is present or absent, so it neither restores missing bytes nor replaces present
+bytes.
+
+You own `tests/setup.ts`, the selected `tests/setupBrowser.ts`, `tests/setupServer.ts`,
+`tests/setupService.ts`, and `tests/setupGlobal.ts` modules, the selected environment entry tests
+under `tests/src` and `tests/app`, the `tests/src/bin/main.test.ts` file, and the
+`tests/integration.test.ts` seed. Scaffold writes those planned files only during materialize and
+leaves later edits or deletions alone. You also own the `tests/guides.test.ts`,
+`tests/distribution.test.ts`, `tests/conformance.test.ts`, and `tests/service/**/*.test.ts` proof
+files that you add to select their projects. Scaffold content-owns `tests/setupPolicy.ts`,
+`tests/policy.test.ts`, and `tests/config.test.ts`; `repair` and `overwrite` restore those files when
+their bytes drift or the files are missing.
 
 Content ownership does not preserve an arbitrary custom Vitest project. Fixed optional proofs are
 selected by their defining paths, as `guides`, `distribution`, `integration`, `conformance`, and
@@ -852,8 +867,10 @@ Ranges that disagree install duplicate copies of one package, and the compiler r
 distinct types.
 
 A cycle cannot be published in rounds. `catalogToLayers` omits its members rather than placing them
-in an order that would be wrong, and their rows carry no layer cell. An absent name is the report:
-compare the returned names against the catalog to find one.
+in an order that would be wrong. It also omits each row whose `lookup` field is `missing` or
+`failed`, because no published version supplied dependencies to place. To distinguish the causes,
+inspect an omitted row's `lookup` field: an omitted `found` row belongs to a cycle, while another
+lookup verdict records why the registry row could not enter a layer.
 
 ## Vendored data root
 
@@ -1047,9 +1064,10 @@ try {
 }
 ```
 
-`INVALID` is off-contract input, `BLOCKED` is a refused blueprint, `TARGET` is a destination that is
-not what the caller's observation said it was, `WRITE` is a mutation that could not be completed, and
-`FETCH` is an upstream read that produced no answer.
+`INVALID` is off-contract input, `BLOCKED` is a refused blueprint, `DESTROYED` is a call after an
+entity's teardown, `TARGET` is a destination that is not what the caller's observation said it was,
+`WRITE` is a mutation that could not be completed, and `FETCH` is an upstream read that produced no
+answer.
 
 `BLOCKED` covers every refusal a blueprint can meet, because they are one fact — this blueprint will
 not be built — and the questions say which. The compiler answers its refusal rather than throwing it:
@@ -1067,16 +1085,18 @@ are thrown, so an observer sees a refusal even where the caller catches it.
 
 What a reader will look for and not find.
 
-**A code fence in this guide is unverified.** [`tests/guides.test.ts`](../tests/guides.test.ts)
-proves that every fence imports only real exports of the core and server barrels, and that every backticked name
-in this file resolves to one. It neither runs a fence nor typechecks one, so a trailing `// value`
-comment inside a fence states what this guide claims rather than what the build answered. The
-verdicts that are measured are the ones a consumer hovers:
+**Guide parity has a bounded reach.** [`tests/guides.test.ts`](../tests/guides.test.ts) proves that
+the Surface tables match the core and server barrels in each direction, the method tables match the
+behavioral declarations, relative links resolve, and named imports in TypeScript fences resolve. It
+does not resolve arbitrary backticked prose spans or typecheck a whole fence. The same suite
+executes the transcribed pure examples for blueprint defaults, compile refusal, and error-code
+narrowing. Other trailing comments remain guide claims rather than build answers. The verdicts that
+are measured are the ones a consumer hovers:
 [`tests/distribution.test.ts`](../tests/distribution.test.ts) drives every `@example` the built
 declarations print against the installed package, scores each verdict it can read as a value, and
-names exactly the ones it cannot. Fences are not added to that instrument, because most of them
-cannot be run: several declare an ambient value that has no runtime, and several write to a
-directory or read the network, so executing them would be a mutation rather than a check.
+names exactly the ones it cannot. Executing the remaining fences would require fixtures for each
+ambient value plus isolated filesystem and network drivers for the mutating examples; adding those
+drivers is separate test capability rather than name-resolution parity.
 
 **The library does not enforce the creating verb's policy.** `new` refuses a blueprint carrying any
 question, and `materialize` writes any plan into any vacant target. A workspace of several published

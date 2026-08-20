@@ -374,11 +374,11 @@ export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.fr
 	'@orkestrel/scaffold': '^0.0.44',
 	'@orkestrel/test': '^0.0.7',
 	'@types/node': '^26.2.0',
-	oxfmt: '^0.62.0',
-	oxlint: '^1.77.0',
+	oxfmt: '^0.64.0',
+	oxlint: '^1.79.0',
 	typescript: '^6.0.3',
-	vite: '~8.2.0',
-	vitest: '^4.1.10',
+	vite: '~8.2.1',
+	vitest: '^4.1.11',
 })
 
 /** The development dependencies that emit declarations for published source or an executable. */

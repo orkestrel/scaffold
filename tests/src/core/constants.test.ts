@@ -48,17 +48,17 @@ describe('BASE_DEV_DEPENDENCIES', () => {
 	})
 
 	// Scaffold hands every generated workspace these pins and installs its own from the manifest, so
-	// a fleet package listed at one version here and another there ships a toolchain scaffold does
-	// not itself run. The self-pin above is exempt: it names the release being prepared, which the
+	// a package listed at one version here and another there ships a toolchain scaffold does not
+	// itself run. The self-pin above is exempt: it names the release being prepared, which the
 	// manifest carries as a bare version rather than as a dependency of itself.
-	it('hands every fleet package the version it installs itself', () => {
+	it('hands every generated dependency the version it installs itself', () => {
 		const declared = manifestDevDependencies()
 		const disagreed: string[] = []
 		for (const [name, range] of Object.entries(BASE_DEV_DEPENDENCIES)) {
-			if (!name.startsWith('@orkestrel/') || name === '@orkestrel/scaffold') continue
+			if (name === '@orkestrel/scaffold') continue
 			const own = declared[name]
-			if (own !== undefined && own !== range)
-				disagreed.push(`${name}: base ${range}, manifest ${own}`)
+			if (own === undefined) disagreed.push(`${name}: base ${range}, absent from manifest`)
+			else if (own !== range) disagreed.push(`${name}: base ${range}, manifest ${own}`)
 		}
 		expect(disagreed).toEqual([])
 	})
