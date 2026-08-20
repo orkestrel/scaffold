@@ -12,7 +12,7 @@ import {
 	SURFACE,
 	TESTS,
 } from '@orkestrel/guide'
-import { createBlueprint, createCompiler, isScaffoldError, ScaffoldError } from '@src/core'
+import { Compiler, createBlueprint, isScaffoldError, ScaffoldError } from '@src/core'
 import { globSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -175,7 +175,7 @@ describe('guide examples', () => {
 	})
 
 	it('executes the compile refusal example', () => {
-		const compiler = createCompiler()
+		const compiler = new Compiler()
 		try {
 			const scaffolding = compiler.compile(
 				createBlueprint('router', { src: ['browser', 'server'] }),

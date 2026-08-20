@@ -378,6 +378,7 @@ export class Materializer implements MaterializerInterface {
 	/**
 	 * Delete the files the plan does not own.
 	 *
+	 * @param plan - The compiled plan whose foreign paths may be deleted.
 	 * @param audit - The preview returned by this materializer's `audit` method; its foreign findings are the candidate set.
 	 * @param repository - The target's git state; only a tracked path is ever deleted.
 	 * @param target - The directory to delete from.
@@ -396,8 +397,9 @@ export class Materializer implements MaterializerInterface {
 	 * recovery mechanism, so a path it cannot restore is not one this verb takes.
 	 * A tree carrying uncommitted work is refused whole for the same reason.
 	 */
-	remove(audit: Audit, repository: Repository, target: string): MaterializeResult {
+	remove(plan: Plan, audit: Audit, repository: Repository, target: string): MaterializeResult {
 		this.#assertAlive()
+		const accepted = this.#accept(plan, isPlan, 'plan')
 		const preview = this.#accept(audit, isAudit, 'audit')
 		const state = this.#accept(repository, isRepository, 'repository')
 		const directory = this.#accept(target, isFilesystemPath, 'target')
@@ -407,30 +409,21 @@ export class Materializer implements MaterializerInterface {
 				dirty: state.dirty.length,
 			})
 		}
+		const derived = this.#derive(accepted, directory)
+		this.#reconfirmCandidates(derived.findings, preview.findings, directory)
 		const tracked = new Set(state.tracked)
-		const observed = new Map<string, string | undefined>()
 		const removals: string[] = []
 		const skipped: string[] = []
-		for (const finding of preview.findings) {
+		for (const finding of derived.findings) {
 			if (finding.drift !== 'foreign') continue
 			if (!tracked.has(finding.path) || matchesProtectedPath(finding.path)) {
 				skipped.push(finding.path)
 				continue
 			}
-			observed.set(finding.path, finding.observed)
 			removals.push(finding.path)
 		}
-		const current = readSnapshot(directory, removals)
 		const preconditions: WritePrecondition[] = []
-		for (const path of removals) {
-			if (current[path] !== observed.get(path)) {
-				throw this.#error('TARGET', `The path ${path} moved since its audit.`, {
-					target: directory,
-					path,
-				})
-			}
-			preconditions.push(this.#bind(directory, path, false))
-		}
+		for (const path of removals) preconditions.push(this.#bind(directory, path, false))
 		return this.#purge(directory, removals, skipped, preconditions)
 	}
 
@@ -748,6 +741,56 @@ export class Materializer implements MaterializerInterface {
 				)
 			}
 			throw this.#error('TARGET', `The path ${finding.path} moved since its audit.`, {
+				target,
+				path: finding.path,
+			})
+		}
+	}
+
+	// Delete only the foreign findings the same plan and target derive now. The
+	// preview must carry that exact membership and the same bytes, so neither a
+	// fabricated candidate nor a path that moved can reach a transaction.
+	#reconfirmCandidates(
+		derived: readonly Finding[],
+		preview: readonly Finding[],
+		target: string,
+	): void {
+		const current = derived.filter((finding) => finding.drift === 'foreign')
+		const supplied = preview.filter((finding) => finding.drift === 'foreign')
+		const candidates = new Map(current.map((finding) => [finding.path, finding]))
+		const previewed = new Map(supplied.map((finding) => [finding.path, finding]))
+		if (candidates.size !== current.length || previewed.size !== supplied.length) {
+			throw this.#error('TARGET', 'The audit repeats a deletion candidate.', { target })
+		}
+		for (const finding of supplied) {
+			const candidate = candidates.get(finding.path)
+			if (candidate === undefined) {
+				throw this.#error(
+					'TARGET',
+					`The path ${finding.path} is not a deletion candidate for this plan.`,
+					{ target, path: finding.path },
+				)
+			}
+			if (candidate.group !== finding.group) {
+				throw this.#error(
+					'TARGET',
+					`The path ${finding.path} carries a group this plan does not derive.`,
+					{
+						target,
+						path: finding.path,
+					},
+				)
+			}
+			if (candidate.observed !== finding.observed) {
+				throw this.#error('TARGET', `The path ${finding.path} moved since its audit.`, {
+					target,
+					path: finding.path,
+				})
+			}
+		}
+		for (const finding of current) {
+			if (previewed.has(finding.path)) continue
+			throw this.#error('TARGET', `The path ${finding.path} is not covered by its audit.`, {
 				target,
 				path: finding.path,
 			})

@@ -85,9 +85,9 @@ The entry points split by host. `@orkestrel/scaffold` is host-independent: it co
 compares.
 
 ```ts
-import { createBlueprint, createCompiler } from '@orkestrel/scaffold'
+import { Compiler, createBlueprint } from '@orkestrel/scaffold'
 
-const compiler = createCompiler()
+const compiler = new Compiler()
 const scaffolding = compiler.compile(createBlueprint('router', { src: ['core', 'server'] }))
 
 scaffolding.plan?.artifacts // every planned file, in group order
@@ -100,16 +100,16 @@ creating a fresh workspace refuses on any question beside the plan, blocking or 
 `new` does. [`guides/scaffold.md`](guides/scaffold.md) states that rule and what it covers.
 
 `@orkestrel/scaffold/server` is Node-only and holds everything that touches the filesystem or the
-network: `createMaterializer` writes a plan into a target, `createUpstream` reads the registry and
+network: `Materializer` writes a plan into a target, `Upstream` reads the registry and
 the guide host, and `WriteTransaction` stages and swaps a set of files with rollback.
 
 ```ts
 import type { Plan } from '@orkestrel/scaffold'
-import { createMaterializer } from '@orkestrel/scaffold/server'
+import { Materializer } from '@orkestrel/scaffold/server'
 
 declare const plan: Plan
 
-const materializer = createMaterializer()
+const materializer = new Materializer()
 const result = materializer.materialize(plan, './packages/router')
 
 result.written // every path created

@@ -43,7 +43,7 @@ import {
 	CONFORMANCE_TEST_PATH,
 	DISTRIBUTION_TEST_PATH,
 	createBlueprint,
-	createCompiler,
+	Compiler,
 	DEPENDENCY_NAME_PATTERN,
 	ENVIRONMENTS,
 	GROUPS,
@@ -59,8 +59,8 @@ import {
 	SHOWCASE_CONFIG_PATH,
 } from '@src/core'
 import {
-	createMaterializer,
-	createUpstream,
+	Materializer,
+	Upstream,
 	isExactCaseFile,
 	isPhysicalDirectory,
 	isRepository,
@@ -204,7 +204,7 @@ export class CLI implements CLIInterface {
 			dependencies: await this.#resolve(this.#packages(command.dependencies)),
 		})
 		const plan = this.#compile(blueprint)
-		const materializer = createMaterializer(
+		const materializer = new Materializer(
 			command.from === undefined ? undefined : { host: command.from },
 		)
 		try {
@@ -233,7 +233,7 @@ export class CLI implements CLIInterface {
 		const target = command.target ?? '.'
 		const blueprint = this.#derive(target)
 		const questions = this.#targetQuestions(target, blueprint)
-		const materializer = createMaterializer(
+		const materializer = new Materializer(
 			command.from === undefined ? undefined : { host: command.from },
 		)
 		try {
@@ -260,7 +260,7 @@ export class CLI implements CLIInterface {
 		const groups = this.#groups(command.groups)
 		const blueprint = this.#derive(target)
 		this.#assertTarget(target, blueprint)
-		const materializer = createMaterializer(
+		const materializer = new Materializer(
 			command.from === undefined ? undefined : { host: command.from },
 		)
 		try {
@@ -297,7 +297,7 @@ export class CLI implements CLIInterface {
 		}
 		const previous = this.#previous(target)
 		const fetched = await this.#fetch(target, command.all === true)
-		const materializer = createMaterializer(host === undefined ? undefined : { host })
+		const materializer = new Materializer(host === undefined ? undefined : { host })
 		let result: MaterializeResult
 		try {
 			result = this.#publish(materializer, target, fetched.entries, fetched.mirrors)
@@ -332,7 +332,7 @@ export class CLI implements CLIInterface {
 				{ target, dirty: repository.dirty.length },
 			)
 		}
-		const materializer = createMaterializer(
+		const materializer = new Materializer(
 			command.from === undefined ? undefined : { host: command.from },
 		)
 		try {
@@ -343,13 +343,15 @@ export class CLI implements CLIInterface {
 				return EXIT_DRIFT
 			}
 			const repaired = materializer.repair(plan, audit, target)
-			// The candidate set is the audit's own foreign findings, so a path the
-			// plan claims is never a deletion candidate whatever the tree holds, and
-			// neither is a path outside the vendored directories this plan expands.
+			// The candidate set is re-derived from the plan and target, then held to
+			// the audit's foreign findings. A path the plan claims is never a deletion
+			// candidate, and neither is a path outside the vendored directories this
+			// plan expands.
 			// `--dirty` is expressed here and nowhere else: the waiver clears the
 			// refusal the observed dirty set would otherwise trigger downstream, and
 			// waives nothing about which paths are eligible.
 			const removed = materializer.remove(
+				plan,
 				audit,
 				command.dirty === true ? { tracked: repository.tracked, dirty: [] } : repository,
 				target,
@@ -418,7 +420,7 @@ export class CLI implements CLIInterface {
 
 	// Measure each declared range against the registry's latest release.
 	async #lookup(declared: readonly Dependency[]): Promise<readonly Release[]> {
-		const upstream = createUpstream(this.#upstream)
+		const upstream = new Upstream(this.#upstream)
 		try {
 			return await upstream.lookup(declared)
 		} finally {
@@ -435,7 +437,7 @@ export class CLI implements CLIInterface {
 		const manifest = this.#manifest(target)
 		const own = manifestToName(manifest)
 		const declared = manifestToDependencies(manifest).map((dependency) => dependency.name)
-		const upstream = createUpstream(this.#upstream)
+		const upstream = new Upstream(this.#upstream)
 		try {
 			const entries = await upstream.catalog()
 			const names = (all ? entries.map((entry) => entry.name) : declared).filter(
@@ -485,7 +487,7 @@ export class CLI implements CLIInterface {
 	// questions the message quotes are what tells them apart, and a second code
 	// would be a label for a fact they already carry.
 	#compile(blueprint: Blueprint, groups?: readonly Group[]): Plan {
-		const compiler = createCompiler()
+		const compiler = new Compiler()
 		try {
 			const scaffolding = compiler.compile(blueprint, groups)
 			if (scaffolding.plan !== undefined && scaffolding.questions.length === 0) {
@@ -520,7 +522,7 @@ export class CLI implements CLIInterface {
 		target: string,
 		groups?: readonly Group[],
 	): readonly [audit: Audit, plan: Plan | undefined] {
-		const compiler = createCompiler()
+		const compiler = new Compiler()
 		try {
 			const scaffolding = compiler.compile(blueprint, groups)
 			if (scaffolding.plan === undefined) return [compiler.audit(blueprint, {}, groups), undefined]
@@ -999,7 +1001,7 @@ export class CLI implements CLIInterface {
 	// workspace would carry a dependency that does not resolve.
 	async #resolve(names: readonly string[]): Promise<readonly Dependency[]> {
 		if (names.length === 0) return []
-		const upstream = createUpstream(this.#upstream)
+		const upstream = new Upstream(this.#upstream)
 		let releases: readonly Release[]
 		try {
 			releases = await upstream.lookup(names.map((name) => ({ name, range: '*' })))

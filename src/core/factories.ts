@@ -1,5 +1,4 @@
-import type { Blueprint, CompilerInterface, CompilerOptions } from './types.js'
-import { Compiler } from './Compiler.js'
+import type { Blueprint } from './types.js'
 import { cloneValue } from './cloners.js'
 import { DEFAULT_ENGINES, DEFAULT_VERSION } from './constants.js'
 import { ScaffoldError } from './errors.js'
@@ -71,24 +70,4 @@ export function createBlueprint(name: string, input?: Partial<Omit<Blueprint, 'n
 		throw new ScaffoldError('INVALID', 'The filled record is not a blueprint.', { name })
 	}
 	return blueprint
-}
-
-/**
- * Construct a {@link Compiler}.
- *
- * @param options - The initial listeners and the listener-error handler.
- * @returns The compiler, typed as the contract consumers program against.
- * @throws {@link ScaffoldError} coded `INVALID` when `options` is present but is
- * not an option bag the compiler accepts.
- *
- * @example
- * ```ts
- * import { createCompiler } from '@orkestrel/scaffold'
- *
- * const compiler = createCompiler({ on: { block: (questions) => report(questions) } })
- * compiler.destroy()
- * ```
- */
-export function createCompiler(options?: CompilerOptions): CompilerInterface {
-	return new Compiler(options)
 }

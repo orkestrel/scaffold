@@ -18,7 +18,7 @@ import {
 	blueprintToTestArtifacts,
 	CONFIG_TEMPLATES,
 	createBlueprint,
-	createCompiler,
+	Compiler,
 	MAX_NAME_LENGTH,
 	PRINT_WIDTH,
 	TAB_WIDTH,
@@ -442,7 +442,7 @@ describe('configuration templates', () => {
 			]
 			const expected = new Map<string, string>()
 			for (const [index, blueprint] of blueprints.entries()) {
-				const compiler = createCompiler()
+				const compiler = new Compiler()
 				const plan = compiler.compile(blueprint).plan
 				compiler.destroy()
 				if (plan === undefined) throw new Error('The format corpus blueprint was blocked')

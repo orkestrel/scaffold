@@ -6,7 +6,7 @@ import { Compiler, contentToHex, isFinding, WORKSPACE_OWNED_PATHS } from '@src/c
 import { listFiles, Materializer, readFileHex, readHostManifest, readSnapshot } from '@src/server'
 import { describe, expect, it } from 'vitest'
 import { createRecorder } from '@orkestrel/test'
-import { buildBlueprint } from '../../setup.js'
+import { buildBlueprint, buildHostArtifact } from '../../setup.js'
 import {
 	buildHostManifest,
 	buildCompiledPlan,
@@ -994,34 +994,75 @@ describe('Materializer declare', () => {
 })
 
 describe('Materializer remove', () => {
+	it('refuses a fabricated foreign verdict for a path the plan owns', () => {
+		const workspace = createWorkspace()
+		try {
+			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
+			const target = workspace.ensure('project')
+			workspace.write('project/AGENTS.md', 'AGENTS.md\n')
+			const materializer = new Materializer({ host })
+			try {
+				const plan = buildVendoredPlan()
+				const audit: Audit = {
+					findings: [
+						{
+							path: 'AGENTS.md',
+							group: 'docs',
+							drift: 'foreign',
+							observed: contentToHex('AGENTS.md\n'),
+						},
+					],
+					questions: [],
+				}
+				expect(
+					readErrorCode(() =>
+						materializer.remove(plan, audit, { tracked: ['AGENTS.md'], dirty: [] }, target),
+					),
+				).toBe('TARGET')
+				expect(workspace.read('project/AGENTS.md')).toBe('AGENTS.md\n')
+			} finally {
+				materializer.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('deletes a tracked foreign file and never a protected or untracked one', () => {
 		const workspace = createWorkspace()
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = workspace.ensure('project')
-			workspace.write('project/foreign.md', '# Foreign\n')
-			workspace.write('project/untracked.md', '# Untracked\n')
+			workspace.write('project/.claude/rules/foreign.md', '# Foreign\n')
+			workspace.write('project/.claude/rules/untracked.md', '# Untracked\n')
 			workspace.write('project/src/core/index.ts', 'export {}\n')
 			const materializer = new Materializer({ host })
 			try {
-				const paths = ['foreign.md', 'untracked.md', 'src/core/index.ts']
-				const audit = buildTargetAudit(target, paths, [])
+				const base = buildVendoredPlan()
+				const plan = buildVendoredPlan({
+					groups: [...base.groups, 'source'],
+					artifacts: [
+						...base.artifacts,
+						buildHostArtifact({
+							path: 'src/core',
+							source: '.claude/rules',
+							group: 'source',
+						}),
+					],
+				})
+				const audit = materializer.audit(plan, target)
 				const result = materializer.remove(
-					{
-						findings: audit.findings.map((finding) => ({
-							path: finding.path,
-							group: 'docs',
-							drift: 'foreign',
-							observed: finding.observed ?? '',
-						})),
-						questions: [],
-					},
-					{ tracked: ['foreign.md', 'src/core/index.ts'], dirty: [] },
+					plan,
+					audit,
+					{ tracked: ['.claude/rules/foreign.md', 'src/core/index.ts'], dirty: [] },
 					target,
 				)
-				expect(result.removed).toEqual(['foreign.md'])
-				expect(result.skipped).toEqual(['untracked.md', 'src/core/index.ts'])
-				expect([...listFiles(target)].sort()).toEqual(['src/core/index.ts', 'untracked.md'])
+				expect(result.removed).toEqual(['.claude/rules/foreign.md'])
+				expect(result.skipped).toEqual(['.claude/rules/untracked.md', 'src/core/index.ts'])
+				expect([...listFiles(target)].sort()).toEqual([
+					'.claude/rules/untracked.md',
+					'src/core/index.ts',
+				])
 			} finally {
 				materializer.destroy()
 			}
@@ -1035,32 +1076,36 @@ describe('Materializer remove', () => {
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = workspace.ensure('project')
-			workspace.write('project/foreign.md', '# Foreign\n')
+			workspace.write('project/.claude/rules/foreign.md', '# Foreign\n')
 			const materializer = new Materializer({ host })
 			try {
-				const audit: Audit = {
-					findings: [
-						{
-							path: 'foreign.md',
-							group: 'docs',
-							drift: 'foreign',
-							observed: contentToHex('# Foreign\n'),
-						},
-					],
-					questions: [],
-				}
+				const plan = buildVendoredPlan()
+				const audit = materializer.audit(plan, target)
 				expect(
 					readErrorCode(() =>
-						materializer.remove(audit, { tracked: ['foreign.md'], dirty: ['foreign.md'] }, target),
+						materializer.remove(
+							plan,
+							audit,
+							{
+								tracked: ['.claude/rules/foreign.md'],
+								dirty: ['.claude/rules/foreign.md'],
+							},
+							target,
+						),
 					),
 				).toBe('TARGET')
-				writeFileSync(join(target, 'foreign.md'), '# Moved\n', 'utf8')
+				writeFileSync(join(target, '.claude/rules/foreign.md'), '# Moved\n', 'utf8')
 				expect(
 					readErrorCode(() =>
-						materializer.remove(audit, { tracked: ['foreign.md'], dirty: [] }, target),
+						materializer.remove(
+							plan,
+							audit,
+							{ tracked: ['.claude/rules/foreign.md'], dirty: [] },
+							target,
+						),
 					),
 				).toBe('TARGET')
-				expect(readFileSync(join(target, 'foreign.md'), 'utf8')).toBe('# Moved\n')
+				expect(readFileSync(join(target, '.claude/rules/foreign.md'), 'utf8')).toBe('# Moved\n')
 			} finally {
 				materializer.destroy()
 			}
@@ -1074,26 +1119,19 @@ describe('Materializer remove', () => {
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = workspace.ensure('project')
-			workspace.write('project/foreign.md', '# Foreign\n')
+			workspace.write('project/.claude/rules/foreign.md', '# Foreign\n')
 			const removals = createRecorder<readonly [string]>()
 			const materializer = new Materializer({ host, on: { remove: removals.handler } })
 			try {
+				const plan = buildVendoredPlan()
+				const audit = materializer.audit(plan, target)
 				materializer.remove(
-					{
-						findings: [
-							{
-								path: 'foreign.md',
-								group: 'docs',
-								drift: 'foreign',
-								observed: contentToHex('# Foreign\n'),
-							},
-						],
-						questions: [],
-					},
-					{ tracked: ['foreign.md'], dirty: [] },
+					plan,
+					audit,
+					{ tracked: ['.claude/rules/foreign.md'], dirty: [] },
 					target,
 				)
-				expect(removals.calls).toEqual([['foreign.md']])
+				expect(removals.calls).toEqual([['.claude/rules/foreign.md']])
 			} finally {
 				materializer.destroy()
 			}

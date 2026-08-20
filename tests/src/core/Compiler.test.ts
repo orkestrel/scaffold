@@ -1,9 +1,9 @@
-import { createBlueprint, createCompiler } from '@src/core'
+import { Compiler, createBlueprint } from '@src/core'
 import { describe, expect, it } from 'vitest'
 
 describe('Compiler artifacts', () => {
 	it('emits every selected group through its correct origin', () => {
-		const compiler = createCompiler()
+		const compiler = new Compiler()
 		const plan = compiler.compile(createBlueprint('widget', { src: ['core', 'server'] })).plan
 		compiler.destroy()
 		if (plan === undefined) throw new Error('The valid config blueprint was blocked')
@@ -62,7 +62,7 @@ describe('Compiler artifacts', () => {
 	})
 
 	it('emits every conditional config path exactly once', () => {
-		const compiler = createCompiler()
+		const compiler = new Compiler()
 		const plan = compiler.compile(
 			createBlueprint('widget', {
 				src: ['core', 'browser', 'server'],
@@ -107,7 +107,7 @@ describe('Compiler artifacts', () => {
 	// reading verbs meet. While the gate refused it, `audit` reported nothing about
 	// such a target and `repair` could not reach the paths that needed repairing.
 	it('describes an existing workspace whose published axis lacks core', () => {
-		const compiler = createCompiler()
+		const compiler = new Compiler()
 		const blueprint = createBlueprint('widget', { src: ['browser', 'server'] })
 		const scaffolding = compiler.compile(blueprint)
 		const audit = compiler.audit(blueprint, {})
@@ -129,7 +129,7 @@ describe('Compiler artifacts', () => {
 	// advisory beside it said. Nothing downstream re-reads that advisory, so a
 	// creating caller reads it here or writes this manifest.
 	it('plans a manifest naming a core build for a published axis that declares no core', () => {
-		const compiler = createCompiler()
+		const compiler = new Compiler()
 		const scaffolding = compiler.compile(createBlueprint('widget', { src: ['browser', 'server'] }))
 		compiler.destroy()
 
@@ -160,7 +160,7 @@ describe('Compiler artifacts', () => {
 	})
 
 	it('accepts an override outside a narrowed group selection', () => {
-		const compiler = createCompiler()
+		const compiler = new Compiler()
 		const blueprint = createBlueprint('widget', {
 			src: ['core'],
 			overrides: [{ path: 'README.md', content: '# Widget\n' }],

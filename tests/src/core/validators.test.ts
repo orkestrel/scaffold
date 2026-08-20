@@ -2,7 +2,7 @@ import type { Group } from '@src/core'
 import { describe, expect, it } from 'vitest'
 import {
 	createBlueprint,
-	createCompiler,
+	Compiler,
 	isAudit,
 	isCollection,
 	isCompilerHooks,
@@ -148,7 +148,7 @@ describe('isAudit', () => {
 		for (let index = 0; index < MAX_COLLECTION_ITEMS; index += 1) {
 			current[`foreign/f${index}.md`] = ''
 		}
-		const compiler = createCompiler()
+		const compiler = new Compiler()
 		const audit = compiler.audit(createBlueprint('sample', { src: ['core'] }), current)
 		compiler.destroy()
 

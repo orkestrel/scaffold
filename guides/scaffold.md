@@ -241,7 +241,6 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | Name              | Kind     | Summary                                                                           |
 | ----------------- | -------- | --------------------------------------------------------------------------------- |
 | `createBlueprint` | function | Construct a `Blueprint` from a name and the fields that differ from the defaults. |
-| `createCompiler`  | function | Construct a `Compiler`.                                                           |
 
 #### Classes
 
@@ -353,13 +352,6 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 | `resolveRealPath`       | function | Resolve a path through the real filesystem, keeping the part that does not exist yet. |
 | `stageHost`             | function | Stage a vendored host root from a real checkout.                                      |
 
-#### Factories
-
-| Name                 | Kind     | Summary                     |
-| -------------------- | -------- | --------------------------- |
-| `createMaterializer` | function | Construct a `Materializer`. |
-| `createUpstream`     | function | Construct an `Upstream`.    |
-
 #### Classes
 
 | Name               | Kind  | Summary                                                                            |
@@ -393,7 +385,7 @@ no interface and is documented directly.
 | `mirror`      | Write fetched dependency guides to their local mirrors.                          |
 | `catalog`     | Rewrite the marker-bounded package table in the target's catalog agent file.     |
 | `declare`     | Rewrite the `@orkestrel/*` range set in the target's manifest.                   |
-| `remove`      | Delete the files the plan does not own.                                          |
+| `remove`      | Re-derive and delete the tracked files the plan does not own.                    |
 | `destroy`     | Tear the materializer down. Every later call throws, and teardown is idempotent. |
 
 #### `UpstreamInterface`
@@ -673,9 +665,9 @@ The compiler is pure, synchronous, and host-independent. It runs its stages in o
 | `pin`   | Gives the plan its content identity                                      |
 
 ```ts
-import { createBlueprint, createCompiler } from '@orkestrel/scaffold'
+import { Compiler, createBlueprint } from '@orkestrel/scaffold'
 
-const compiler = createCompiler()
+const compiler = new Compiler()
 const scaffolding = compiler.compile(createBlueprint('router', { src: ['core'] }))
 
 scaffolding.plan?.artifacts // every planned file, in group order
@@ -697,9 +689,9 @@ shape still has to be described and restored.
 A library caller creating a fresh workspace applies `new`'s rule itself:
 
 ```ts
-import { createBlueprint, createCompiler } from '@orkestrel/scaffold'
+import { Compiler, createBlueprint } from '@orkestrel/scaffold'
 
-const compiler = createCompiler()
+const compiler = new Compiler()
 const scaffolding = compiler.compile(createBlueprint('router', { src: ['browser', 'server'] }))
 
 scaffolding.plan === undefined || scaffolding.questions.length > 0 // true — do not write this shape
@@ -939,9 +931,9 @@ except the manifest.
 `planToSummary` reports the tally rather than a number written down here:
 
 ```ts
-import { createBlueprint, createCompiler, planToSummary } from '@orkestrel/scaffold'
+import { Compiler, createBlueprint, planToSummary } from '@orkestrel/scaffold'
 
-const compiler = createCompiler()
+const compiler = new Compiler()
 const scaffolding = compiler.compile(createBlueprint('router', { src: ['core', 'server'] }))
 const summary = scaffolding.plan === undefined ? undefined : planToSummary(scaffolding.plan)
 
@@ -961,12 +953,12 @@ Compare a plan against bytes a caller already read:
 
 ```ts
 import type { Blueprint, Snapshot } from '@orkestrel/scaffold'
-import { createCompiler } from '@orkestrel/scaffold'
+import { Compiler } from '@orkestrel/scaffold'
 
 declare const blueprint: Blueprint
 declare const current: Snapshot
 
-const compiler = createCompiler()
+const compiler = new Compiler()
 const audit = compiler.audit(blueprint, current)
 
 audit.findings.filter(({ drift }) => drift !== 'aligned')
@@ -977,11 +969,11 @@ Write a compiled plan into a real directory:
 
 ```ts
 import type { Plan } from '@orkestrel/scaffold'
-import { createMaterializer } from '@orkestrel/scaffold/server'
+import { Materializer } from '@orkestrel/scaffold/server'
 
 declare const plan: Plan
 
-const materializer = createMaterializer({ host: './dist/host' })
+const materializer = new Materializer({ host: './dist/host' })
 const result = materializer.materialize(plan, './packages/router')
 
 result.written // every path created
@@ -1004,9 +996,9 @@ way; the answer is a lexical location resolved through links, not a physical one
 Read the registry and the guide host:
 
 ```ts
-import { createUpstream } from '@orkestrel/scaffold/server'
+import { Upstream } from '@orkestrel/scaffold/server'
 
-const upstream = createUpstream({ registry: { timeout: 5_000 } })
+const upstream = new Upstream({ registry: { timeout: 5_000 } })
 const releases = await upstream.lookup([{ name: '@orkestrel/emitter', range: '^0.0.5' }])
 
 releases.filter((release) => release.lookup === 'found')
@@ -1203,8 +1195,6 @@ port, so the run drives nothing external and stays in `test`.
   digests, inventories, and the staging producer.
 - [`tests/src/server/validators.test.ts`](../tests/src/server/validators.test.ts) — the host-path
   law and every server guard's boundary values.
-- [`tests/src/server/factories.test.ts`](../tests/src/server/factories.test.ts) — the server
-  factories.
 - [`tests/src/bin/CLI.test.ts`](../tests/src/bin/CLI.test.ts) — every verb driven in process
   through recording output handlers.
 - [`tests/src/bin/helpers.test.ts`](../tests/src/bin/helpers.test.ts) — command-line reading, usage

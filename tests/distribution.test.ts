@@ -52,7 +52,7 @@ const DECLARATIONS = [
 			// compiles, and it is the class the previous instrument could not reach.
 			[
 				"const blueprint = createBlueprint('router', { src: ['core'] })",
-				"createCompiler().audit(blueprint, {}).findings.every(({ drift }) => drift === 'missing') // true",
+				"new Compiler().audit(blueprint, {}).findings.every(({ drift }) => drift === 'missing') // true",
 			].join('\n'),
 			// A statement rather than an expression, which the rule excludes.
 			"if (isGroup('manifest')) inferGroup('AGENTS.md') // 'docs'",
@@ -446,7 +446,7 @@ describe('installed package consumer', () => {
 			// in both declarations and through the binding the retired claim needed. It
 			// establishes nothing about a claim the rule excludes.
 			expect(mismatched).toStrictEqual([
-				"createCompiler().audit(blueprint, {}).findings.every(({ drift }) => drift === 'missing') // true answered false",
+				"new Compiler().audit(blueprint, {}).findings.every(({ drift }) => drift === 'missing') // true answered false",
 				"isBranch('main') // false answered true",
 			])
 			// The membership rule, stated as the exact sets it leaves out. A
@@ -499,7 +499,7 @@ describe('installed package consumer', () => {
 			// Both declarations contribute, and the corrected claim is one of them.
 			// The previous instrument read one function in one file.
 			expect(driven).toContain(
-				"dist/src/core/index.d.ts: createCompiler().audit(blueprint, {}, ['manifest']).findings[0]?.drift",
+				"dist/src/core/index.d.ts: new Compiler().audit(blueprint, {}, ['manifest']).findings[0]?.drift",
 			)
 			expect(driven).toContain("dist/src/server/index.d.ts: isFilesystemPath('project/')")
 			expect(driven.filter((claim) => claim.startsWith('dist/src/core/')).length).toBeGreaterThan(
@@ -531,11 +531,11 @@ describe('installed package consumer', () => {
 				`const core = await import(${JSON.stringify(core)})`,
 				`const server = await import(${JSON.stringify(server)})`,
 				"const blueprint = core.createBlueprint('proof', { src: ['core', 'server'], bin: true, integration: true })",
-				'const compiler = core.createCompiler()',
+				'const compiler = new core.Compiler()',
 				'const plan = compiler.compile(blueprint).plan',
 				"if (plan === undefined) throw new Error('The generated proof blueprint was blocked')",
 				'compiler.destroy()',
-				`const materializer = server.createMaterializer({ host: ${JSON.stringify(resolve(root, 'dist/host'))} })`,
+				`const materializer = new server.Materializer({ host: ${JSON.stringify(resolve(root, 'dist/host'))} })`,
 				`const result = materializer.materialize(plan, ${JSON.stringify(target)})`,
 				'materializer.destroy()',
 				'process.stdout.write(String(result.written.length))',
@@ -596,14 +596,14 @@ describe('installed package consumer', () => {
 				workspace.write(
 					'consumer/generate.mjs',
 					[
-						"import { createBlueprint, createCompiler } from '@orkestrel/scaffold'",
-						"import { createMaterializer } from '@orkestrel/scaffold/server'",
+						"import { Compiler, createBlueprint } from '@orkestrel/scaffold'",
+						"import { Materializer } from '@orkestrel/scaffold/server'",
 						"const blueprint = createBlueprint('proof', { src: ['core', 'server'], bin: true, integration: true })",
-						'const compiler = createCompiler()',
+						'const compiler = new Compiler()',
 						'const plan = compiler.compile(blueprint).plan',
 						"if (plan === undefined) throw new Error('The generated proof blueprint was blocked')",
 						'compiler.destroy()',
-						'const materializer = createMaterializer()',
+						'const materializer = new Materializer()',
 						`materializer.materialize(plan, ${JSON.stringify(target)})`,
 						'materializer.destroy()',
 					].join('\n'),

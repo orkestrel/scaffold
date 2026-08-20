@@ -210,6 +210,7 @@ export interface MaterializerInterface {
 	/**
 	 * Delete the files the plan does not own.
 	 *
+	 * @param plan - The compiled plan whose foreign paths may be deleted.
 	 * @param audit - The preview returned by this materializer's `audit` method; its foreign findings are the candidate set.
 	 * @param repository - The target's git state; only a tracked path is ever deleted.
 	 * @param target - The directory to delete from.
@@ -230,7 +231,7 @@ export interface MaterializerInterface {
 	 * audit from this materializer. The refusal is deliberate at `0.0.x` and there
 	 * is no migration.
 	 */
-	remove(audit: Audit, repository: Repository, target: string): MaterializeResult
+	remove(plan: Plan, audit: Audit, repository: Repository, target: string): MaterializeResult
 	/**
 	 * Tear the materializer down. Every later call throws, and teardown is idempotent.
 	 *

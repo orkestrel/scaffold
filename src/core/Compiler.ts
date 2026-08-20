@@ -140,11 +140,11 @@ export class Compiler implements CompilerInterface {
 	 *
 	 * @example
 	 * ```ts
-	 * import { createBlueprint, createCompiler } from '@orkestrel/scaffold'
+	 * import { Compiler, createBlueprint } from '@orkestrel/scaffold'
 	 *
 	 * const blueprint = createBlueprint('router', { src: ['core'] })
 	 *
-	 * createCompiler().compile(blueprint, ['manifest']).plan?.artifacts.length // 1
+	 * new Compiler().compile(blueprint, ['manifest']).plan?.artifacts.length // 1
 	 * ```
 	 */
 	compile(blueprint: Blueprint, groups?: readonly Group[]): Scaffolding {
@@ -178,12 +178,12 @@ export class Compiler implements CompilerInterface {
 	 *
 	 * @example
 	 * ```ts
-	 * import { createBlueprint, createCompiler } from '@orkestrel/scaffold'
+	 * import { Compiler, createBlueprint } from '@orkestrel/scaffold'
 	 *
 	 * const blueprint = createBlueprint('router', { src: ['core'] })
 	 *
-	 * createCompiler().audit(blueprint, {}, ['manifest']).findings[0]?.drift // 'aligned'
-	 * createCompiler().audit(blueprint, {}, ['configs']).findings[0]?.drift // 'missing'
+	 * new Compiler().audit(blueprint, {}, ['manifest']).findings[0]?.drift // 'aligned'
+	 * new Compiler().audit(blueprint, {}, ['configs']).findings[0]?.drift // 'missing'
 	 * ```
 	 */
 	audit(blueprint: Blueprint, current: Snapshot, groups?: readonly Group[]): Audit {
@@ -207,9 +207,9 @@ export class Compiler implements CompilerInterface {
 	 *
 	 * @example
 	 * ```ts
-	 * import { createCompiler } from '@orkestrel/scaffold'
+	 * import { Compiler } from '@orkestrel/scaffold'
 	 *
-	 * const compiler = createCompiler()
+	 * const compiler = new Compiler()
 	 * compiler.destroy()
 	 * compiler.emitter.destroyed // true
 	 * ```

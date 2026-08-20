@@ -1466,9 +1466,9 @@ export function applyOverrides(
  *
  * @example
  * ```ts
- * import { createBlueprint, createCompiler, planToHash } from '@orkestrel/scaffold'
+ * import { Compiler, createBlueprint, planToHash } from '@orkestrel/scaffold'
  *
- * const { plan } = createCompiler().compile(createBlueprint('router', { src: ['core'] }))
+ * const { plan } = new Compiler().compile(createBlueprint('router', { src: ['core'] }))
  *
  * plan === undefined ? undefined : planToHash(plan)?.length // 16
  * ```
@@ -1548,9 +1548,9 @@ export function artifactToFinding(artifact: Artifact, observed?: string): Findin
  *
  * @example
  * ```ts
- * import { createBlueprint, createCompiler, planToFindings } from '@orkestrel/scaffold'
+ * import { Compiler, createBlueprint, planToFindings } from '@orkestrel/scaffold'
  *
- * const { plan } = createCompiler().compile(createBlueprint('router', { src: ['core'] }))
+ * const { plan } = new Compiler().compile(createBlueprint('router', { src: ['core'] }))
  *
  * plan === undefined ? [] : planToFindings(plan, { 'AGENTS.md': '68690a' })
  * ```
