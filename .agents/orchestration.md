@@ -750,6 +750,34 @@ A publish chain is a long-running command, so every law under **Long-running com
 write the chain to a file, detach it with `setsid`, and confirm the previous one is dead before
 starting another.
 
+### Fixing a dependency before it publishes
+
+A defect a consumer meets sometimes lives in a package the consumer only has from the registry.
+Waiting for that package to publish before the consumer can prove its own fix serializes two releases
+that could have been one. Do not wait, and do not work around it in the consumer.
+
+Build the dependency from source, pack it, and **install the tarball** into the consumer.
+
+- **Install it, never link it.** A link resolves through a directory and skips the packing, the
+  `files` list, and the exports map — which is most of what a distribution proof exists to check. A
+  gate written to catch an install failure that only ever linked cannot see the defect it exists for.
+- **Write the swap to a script and run the file**, so the build, the pack, and the install are one
+  artifact the next run reuses rather than a command nobody can read back.
+- **Record the range you replaced** in the same step that replaces it. A consumer sitting on an
+  unpublished tarball with no record of what it had is a consumer nobody can restore.
+- **Rebuild and repack whenever the source moves.** A stale tarball is the same defect as a stale
+  `dist/`, and it is worse for being invisible: the consumer's gates go green against a fix that no
+  longer exists in the dependency's tree.
+- **Restore the registry copy before any gate that must prove the published artifact, and before
+  publishing anything.** A distribution proof run against a local tarball proves the local tarball.
+  The release still follows layer order: the dependency publishes first, then the consumer re-pins to
+  the version the registry now serves and re-runs its gates against that.
+- **Keep the tarballs out of the tree.** They belong under `tmp/`, they are swept at acceptance, and
+  they are never committed.
+
+The tarball is a head start, not a shortcut. It lets the consumer's work proceed and its proofs run
+against the real packed artifact while the dependency's own release is still being prepared.
+
 ### What a bump obliges
 
 A runtime dependency and a development dependency have different blast radius, and confusing them
