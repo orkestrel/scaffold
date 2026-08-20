@@ -376,10 +376,10 @@ export class Materializer implements MaterializerInterface {
 	}
 
 	/**
-	 * Delete the files the plan does not own.
+	 * Re-derive and delete the tracked files the plan does not own.
 	 *
-	 * @param plan - The compiled plan whose foreign paths may be deleted.
-	 * @param audit - The preview returned by this materializer's `audit` method; its foreign findings are the candidate set.
+	 * @param plan - The compiled plan that decides which paths are foreign.
+	 * @param audit - The preview returned by this materializer's `audit` method; it must agree with the candidate set this call re-derives.
 	 * @param repository - The target's git state; only a tracked path is ever deleted.
 	 * @param target - The directory to delete from.
 	 * @returns The paths removed.
@@ -396,6 +396,10 @@ export class Materializer implements MaterializerInterface {
 	 * the audit reports, and neither is anything git does not track: git is the
 	 * recovery mechanism, so a path it cannot restore is not one this verb takes.
 	 * A tree carrying uncommitted work is refused whole for the same reason.
+	 *
+	 * The whole call refuses when the preview disagrees with the re-derivation on
+	 * any foreign finding, including one the deletion itself would skip, because a
+	 * preview stale anywhere is stale evidence.
 	 */
 	remove(plan: Plan, audit: Audit, repository: Repository, target: string): MaterializeResult {
 		this.#assertAlive()
