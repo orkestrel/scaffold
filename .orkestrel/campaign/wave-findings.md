@@ -105,6 +105,12 @@ each belongs to the named next change.
   visit, not adopted. Carrier: a successor scaffold adoption unit if an async `captureError`
   form ships.
 
+- **probe:** the bin-entry protocol assertion (`tests/src/bin/main.test.ts`, `answers both
+  protocol eras without exposing worker output on stdout`) fails deterministically on this
+  checkout's own baseline: the same single red reproduces with the wave diff reverted to HEAD,
+  run alone on an idle container after a fresh build (2026-08-21). It predates the visit and
+  arrived with the moved origin main. Carrier: probe's next `src/bin` or bin-suite change.
+
 ## Post-publish re-pin obligations
 
 - **Consumer mirrors of the test guide predate 0.0.9.** interpret's vendored `guides/test.md`
