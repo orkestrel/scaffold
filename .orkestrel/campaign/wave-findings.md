@@ -19,6 +19,15 @@ each belongs to the named next change.
   apart through separate added and removed tallies. Measured by the workflow visit against the
   shipped source on 2026-08-21; workflow keeps `instrumentSignal` local until this closes.
   Carrier: the next @orkestrel/test API change.
+- **`removeDatabase` reads the close-completion race as a block.** `IDBDatabase.close` returns
+  before the connection is gone, so a delete requested in the same task as the close reports
+  `blocked` and the shipped helper rejects — for a connection the caller already closed, not a
+  leak. The indexeddb visit measured it on 2026-08-21: a direct re-point turned 35 tests red, and
+  one host-timer yield between the close and the delete turned them green; the repository now
+  centralizes that wait in a local `dropDatabase` composition over the shipped helper. The
+  rejects-on-blocked contract stays right for a genuine leak; the open question is whether the
+  helper takes a bounded settle before ruling `blocked`. Carrier: the next @orkestrel/test
+  browser-surface change.
 - **`requestUpgrade` cannot drive an RFC 6455 handshake.** It sends no `Sec-WebSocket-Key` and no
   `Sec-WebSocket-Version`, offers no option to omit either, and rejects — rather than resolving
   `claimed: false` — when a server declines by destroying the un-upgraded socket, which is the
