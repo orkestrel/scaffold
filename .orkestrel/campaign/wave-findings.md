@@ -40,7 +40,11 @@ each belongs to the named next change.
   ordinary Node decline path. The mcp visit measured the shipped helper against that repository's
   real upgrade seam on 2026-08-21: every path rejects with a socket hang up while the local helper
   reads 101 or a resolved decline. mcp keeps `upgradeRequest`/`UpgradeOutcome` local until this
-  closes. Carrier: the next @orkestrel/test server-surface change.
+  closes. The server visit reproduced the same readings independently against its own seam on
+  2026-08-21 — destroy-declines reject as socket hang up, the claimed arm carries no `status`,
+  and `UpgradeOptions` cannot send a caller-supplied header — so server keeps its local helper
+  too, with the measurement in its TSDoc. Carrier: the next @orkestrel/test server-surface
+  change.
 
 ## Carried to the named repository's next change
 
