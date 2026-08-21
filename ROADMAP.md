@@ -30,8 +30,6 @@ no campaign folder is the plan of record.
   the rationale essays beside the `Finding`-shape note ("The shape a `Finding` admits is wider…")
   and the creating-verb policy note ("The library does not enforce the creating verb's policy.").
   Recorded discretionary at the 0.0.45 readiness round (was SR12).
-- **scaffold**: record in the vendored `.claude/agents/codex.md` that `codex exec resume` takes no
-  `-C`; the file states only the flags a resume rejects. (from supervisor's 0.0.46 adoption)
 - **scaffold guide**: add the blueprint `file:`-range note to `guides/scaffold.md`. (from
   supervisor's 0.0.46 adoption)
 - **toolbox**: add proofs for `promptToolShape`/`answerToolShape` in
