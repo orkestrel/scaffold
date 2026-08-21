@@ -122,3 +122,16 @@ Corrected against `rows.tsv`, on unique `(repo, name)` pairs: 296 sites duplicat
 pure duplicates**. The design rulings cover every destination-matched family, so no family was
 omitted by the wrong number, but the brief carried a false fact and the report to the user repeated
 it.
+
+## Baseline finding — 2026-08-21, before any writer dispatched
+
+The untouched `test` clone fails its own suite on this host: `format:check`, `lint:check`, `check`,
+and `build` exit 0, and `npm test` reports two failing files. Both reproduce alone on an idle
+container, so neither is a load flake.
+
+- `tests/src/core/helpers.test.ts:230` — the `retryUntil` budget proof asserts the exact
+  producer-call count, a runtime-chosen number the tests rule forbids pinning. Carried by U1.
+- `tests/src/server/helpers.test.ts:833` — the `destroyScratch` permission-hold proof cannot hold
+  on a root container: root ignores permission bits, so the expected rejection never occurs.
+  Carried by U3, under the rule that a conditional skip cites the mechanism that makes the case
+  inapplicable, probed at runtime rather than keyed to a platform name.
