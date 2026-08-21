@@ -87,6 +87,12 @@ each belongs to the named next change.
   `destroyApplicationScratch` against `destroyScratch` (hard-coded deadline versus `WaitOptions`).
   Carrier: a successor supervisor adoption unit after the post-publish re-pin.
 
+- **server:** the IPv6 bind proof (`tests/src/server/Server.test.ts`, `exposes an IPv6 literal
+  host and its real ephemeral port`) is host-determined: this container has no IPv6 loopback, and
+  a bare `net.createServer().listen(0, '::1')` probe reports `EAFNOSUPPORT` outside any repo
+  code (2026-08-21). The visit's diff is comment-only. Carrier: server's next
+  test-infrastructure change (gate the proof on a capability probe).
+
 ## Post-publish re-pin obligations
 
 - **Consumer mirrors of the test guide predate 0.0.9.** interpret's vendored `guides/test.md`
