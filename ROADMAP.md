@@ -117,9 +117,3 @@ no campaign folder is the plan of record.
   version-catalog sweep, and the strict skill-directory inventory each red healthy references in
   every mechanical form tried. They stay review-owned until one exists that does not.
 
-## 4. supervisor — user-owned, untouched by this plan
-
-The supervisor repo, its 2,342-line in-repo roadmap (promote-the-mechanism campaign: extractions
-into contract/terminal/sse/middleware/sea, new packages `human` and `live`), its
-`rescue/pre-revert-app-server-work` branch, and its divergent mirrors await the user's own
-triage before any overwrite touches it. (was B6/B7)
