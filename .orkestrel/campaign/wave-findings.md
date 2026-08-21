@@ -28,6 +28,12 @@ each belongs to the named next change.
   rejects-on-blocked contract stays right for a genuine leak; the open question is whether the
   helper takes a bounded settle before ruling `blocked`. Carrier: the next @orkestrel/test
   browser-surface change.
+- **`waitForEvent` cannot infer its tuple from the subscribe callback.** A plain adoption
+  typechecks as `unknown[]`, and a call site whose value lands in an `unknown`-tolerant position
+  loses its tuple type with no diagnostic — the supervisor visit measured ten silently widened
+  sites beside one that errored. Sites name the type argument from the real event map
+  (`RunnerEventMap['ready']`). The fix candidate is the same inferable-position change
+  `createRecorders` needs. Carrier: the next @orkestrel/test API change.
 - **`requestUpgrade` cannot drive an RFC 6455 handshake.** It sends no `Sec-WebSocket-Key` and no
   `Sec-WebSocket-Version`, offers no option to omit either, and rejects — rather than resolving
   `claimed: false` — when a server declines by destroying the un-upgraded socket, which is the
@@ -66,6 +72,16 @@ each belongs to the named next change.
   `expect` inside a setup module, which `.claude/rules/tests.md` § Shared test infrastructure
   forbids. Pre-existing, campaign-refused for consolidation, gates green with it. Carrier:
   workspace's next test-infrastructure change.
+
+- **supervisor:** the visit's sweep beyond its closed list found wider-family duplicates it
+  rightly left unadopted, each needing its own briefed unit: `hasProcess` against the shipped
+  `isRunning` (behaviourally identical, pure rename); a local `waitForSocketClose` name-identical
+  to the shipped one but unbounded and error-swallowing where the shipped form budgets and
+  raises — the name collision makes a blind swap likely, so this one needs a ruling first;
+  `waitForRecorder` against `waitForCondition` (silent exhaustion versus throw);
+  `ApplicationCookieJar` against `createCookieJar` (accessor name only); and
+  `destroyApplicationScratch` against `destroyScratch` (hard-coded deadline versus `WaitOptions`).
+  Carrier: a successor supervisor adoption unit after the post-publish re-pin.
 
 ## Post-publish re-pin obligations
 
