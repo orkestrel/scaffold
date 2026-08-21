@@ -5,54 +5,48 @@ package published at latest `@orkestrel` pins, proven by gates and the material-
 This file owns everything still open. Campaign detail is recoverable from git history by hash;
 no campaign folder is the plan of record.
 
-## 1. User decisions, open
+## 1. Package work, scheduled by each package's next natural release
 
-- **Prepack** (was D6/B3): no fleet package declares `prepack`, so `npm pack` from a stale tree
-  ships stale `dist`. Decide once, fleet-wide: add `prepack` or accept the risk.
-
-## 2. Package work, scheduled by each package's next natural release
-
-- **scaffold**: prove the anchor-swap interleaving on a Windows host.
-  `tests/src/server/WriteTransaction.test.ts` skips its
-  `discards a created segment whose anchor read refuses it` proof on win32 because `renameSync` is
-  `MoveFileExW` with `MOVEFILE_REPLACE_EXISTING`, which rejects an existing directory destination
-  and so kills the attacker's retry loop rather than the interleaving itself. The claim is
-  unverified there, not inapplicable. Closing it needs a Windows host and an attacker that clears
-  `holding` between attempts.
-- **scaffold policy**: move the nested-function body law into `configs/policy.ts` as another
-  plugin rule. The rule set carries the rules that shipped; this one stayed a candidate.
 - **fleet**: sweep every target for skill and bridge members outside the vendored set; that
   population is unmeasured, and `repair` does not remove what the plan never owned.
-- **scaffold rules**: rule on the interned-class canon — `agent`'s barrelled `Channel` vs
-  `middleware`'s interned `MultipartParser` are the same species with opposite rulings; land the
-  rule in `architecture.md` and correct the losing package. (was B2)
-- **scaffold guide**: trim the passages that re-argue settled decisions on a documentation pass —
-  the rationale essays beside the `Finding`-shape note ("The shape a `Finding` admits is wider…")
-  and the creating-verb policy note ("The library does not enforce the creating verb's policy.").
-  Recorded discretionary at the 0.0.45 readiness round (was SR12).
-- **scaffold guide**: add the blueprint `file:`-range note to `guides/scaffold.md`. (from
-  supervisor's 0.0.46 adoption)
-- **toolbox**: add proofs for `promptToolShape`/`answerToolShape` in
-  `tests/src/core/shapers.test.ts`, or correct the guide sentence claiming every advertised
-  shape is covered. (was B23)
-- **test**: publish `waitForCondition` — poll a named condition inside a budget measured with
-  `performance.now()`, accepting a synchronous or asynchronous condition, rejecting after the budget
-  elapses. `@orkestrel/process` carries a proven local copy at `tests/setup.ts` and `probe` needs the
-  same. Deferred deliberately: the user ruled it in for a later pass, and the local copy serves both
-  packages meanwhile. A `test` bump is development-only and cascades to nobody.
-- **test**: correct the guide's population prose to the figures a fresh count produces for
-  `createRecorder`, `createScratch`, `waitForDelay`, and fences. (was B4/B21a)
-- **mcp**: delete the local generic `createTeardown<T>` at `tests/setupServer.ts:459` in favor
-  of the `@orkestrel/test` import. (was B21b)
-- **middleware, browser, workflow, queue, router, agent**: replace every inline `setTimeout` wait
-  with `waitForDelay`; middleware carries the most sites and does not import it yet.
-  (was B21c)
+- **fleet**: the vendored `tests/config.test.ts` assertion that reddens a publishing target
+  lacking `"prepack": "npm run build"` lands in the release wave's first round. The line itself
+  is declared in every publishing manifest, `blueprintToScripts` emits it at birth, and the
+  scaffold guide states the publish-time-only intent with the `--ignore-scripts` interplay
+  (all landed 2026-08-21).
+- **test**: transcribe the guide fences a Node `guides` project cannot run — the `contrast`,
+  `readRing`, and journal fences need a browser-capable guides project, and the wait fence's
+  child-exit half belongs with the expensive proofs; the pre-existing fences remain
+  untranscribed standing debt. The transcription idiom exists in `tests/guides.test.ts`.
+- **test**: delete the counts remaining in guide sections the 0.0.8 narrative unit did not own —
+  the Threat model's refusal tally, the contract rules' limit tallies, the Voices trailer, and
+  the server-factories parallel-instance figure — per the no-count law, keeping fence-derived
+  values and stated limits.
+- **middleware, browser, router, process, probe**, after `@orkestrel/test` 0.0.8 publishes:
+  convert the attempt-counted poll loops in middleware and browser and the outlast-then-assert
+  waits to `waitForCondition`; take router's sequencing site as a judgment conversion that
+  preserves the write-before-destroy ordering; replace the proven local copies in process
+  `tests/setup.ts` and probe with the published helper. A settling wait before a negative
+  assertion stays a fixed `waitForDelay`, because a poll cannot prove absence. (was B21c)
 - **middleware**: move `MultipartParser.ts` from the environment root into a domain folder.
   (was B5)
-- **program, brief**: read-once ownership at guarded doors — clone → guard → seal → refuse, so
-  a per-read getter cannot defeat containment. (was B18)
-- **program**: route the raw `validate`-path dereferences in `helpers.ts` through the
-  published `isQualificationValidationResult`/`isReasonValidationResult` guards. (was B19)
+- **brief**: read-once ownership at guarded doors — clone → guard → seal → refuse, so a
+  per-read getter cannot defeat containment. The program half landed with the definition
+  snapshot-guard-seal and the coded clone-fault refusal. (was B18)
+- **agent**: `Channel` silently drops a pushed `undefined` for `Channel<T | undefined>` — the
+  buffer guard cannot tell absence from a pushed `undefined`. Either narrow the published type
+  parameter or hold `{ value: T }` cells. Found by the 2026-08-21 batch audit, outside that
+  wave's changes.
+- **mcp**: expose the supervised child's stderr tail on `StdioClientTransport`. The
+  supervisor retains it — `@orkestrel/process` publishes it as `Process.evidence` — but the
+  transport holds its `Process` in a `#process` field and offers no reader, so a consumer
+  whose child dies at startup gets no diagnostic at all. The guide states the limit as of
+  0.0.21; closing it is a public API addition and takes its own design pass.
+- **mcp, supervisor**: adopt `ProcessOptions.delivery` where each consumer meets stdin-delivery
+  failure, and close supervisor's `CLIProvider` race between `ProcessOptions.on` registration
+  and early child output; supervisor's timeout backstop retires only after that adoption.
+- **supervisor**: rule on the first-unparseable-line policy — whether a stream's first
+  non-JSON line fails fast or accumulates — and pin the ruling.
 - **probe**: the rows its 0.0.1 campaign recorded and deliberately left outside its exit criterion.
   Graded MEDIUM and excluded from campaign close: the coordinator deadline does not bound synchronous
   stage work, measured at a 1783 ms stall on a caller-named tree-wide project; a missing test
@@ -61,55 +55,32 @@ no campaign folder is the plan of record.
   still earns a receipt. Unproven, each needing a probe nobody ran: whether a failed re-warm past the
   64-specification bound leaves the runtime stage permanently rejected; whether a candidate shadowing
   an on-disk file makes the type and runtime stages disagree about the text; whether
-  `experimental.fsModuleCache` can serve a disk-derived transform for a covered path. Unmeasured on
-  Windows: the signal-kill orphan sweep, the orphaned lint child, `ENAMETOOLONG`, and the `SIGKILL`
-  fallback. Deferred test-helper debt: `resolveRoot` through `tests/setup.ts`, and `createTeardown`
-  across the `finally` blocks that duplicate it. Routed to a successor and never scheduled: the
+  `experimental.fsModuleCache` can serve a disk-derived transform for a covered path.
+  Deferred test-helper debt: `resolveRoot` through `tests/setup.ts`, `createTeardown`
+  across the `finally` blocks that duplicate it, and the generic process-ending helper that
+  `tests/src/server/stages/LintStage.test.ts` declares locally — moving it to
+  `tests/setupServer.ts` obliges the `setup` project, its script, and a `tests/setup*.test.ts`
+  proof, so the family moves together or not at all. Routed to a successor and never scheduled: the
   generated specification's `import.meta.url` carrying the revision suffix, and bounding
   `destroy()` against a language server that accepts stdin and never answers `initialize`.
-- **probe**: land the `stop()` regression pin. The stdin detach shipped:
-  `src/server/transports/StdioServerTransport.ts:130-132` in mcp 0.0.20 removes the `data`,
-  `close`, and `error` listeners (verified 2026-08-21). The pin the finding prescribed never
-  landed: a probe test asserting `stop()` returns and leaves
-  `process.stdin.listenerCount('data')` at zero.
-- **sea**: `SEAOptions` exposes no `timeout`, so `runShell` cannot bound a signing tool whose
-  descendants inherit stdio. Recorded as a successor unit during process's 0.0.3 adoption.
-- **contract**: `isContractError` fails across an ESM and CJS copy boundary the same way
-  `isProcessError` did. `@orkestrel/process` 0.0.4 fixes its own with a `Symbol.for` brand read
-  through `getOwnPropertyDescriptor`; `contract` owns the general mechanism and has not taken it.
-- **process**: rulings recorded and never scheduled — the `bytes` and `write` surface synthesis
-  ruled for `ProcessInterface`, and bare-`\r` handling in `lines`.
-- **process**: surface stdin-delivery failure. A stdin error is swallowed and `error` is emitted
-  for the child alone, so a child that closes stdin and stays alive (an `EPIPE` on the prompt
-  write) fails through the consumer's own timeout instead of a fast `PROTOCOL`. Found through
-  supervisor's `CLIProvider` inference path, which keeps the timeout as its backstop until this
-  lands.
-- **qualifier**: design round on `Premise` — every member is optional so `isPremise` accepts
-  `{}`; decide whether `met`/`field` become required. (was B20)
+  Carried into the same wave from the 2026-08-21 Windows campaign: translate the `#issue`
+  prose door the way the refusal doors were translated; rule on the `realpathSync` race a
+  scratch rename can win; a mintty-backed TTY fixture where `/usr/bin/script` is absent.
 
-## 3. Design and research records
+## 2. Design and research records
 
-- **A mirrored guide tracks a branch, not a release.** `Upstream` fetches guides from
-  `raw.githubusercontent.com` and versions from `registry.npmjs.org`, so `scaffold catalog` mirrors
-  each dependency's default branch while the catalog table names its published version. A mirror can
-  therefore document a surface no consumer can install: refreshing after `@orkestrel/process` merged
-  its 0.0.4 work brought `snapshotCommand`, `PROCESS_ERROR_CODES`, and `ProcessChild.off` into this
-  repository's copy while the registry still served 0.0.3 (that instance closed when 0.0.4
-  published, read 2026-08-21; the mechanism is unchanged). Decide whether a mirror must track the
-  published release. Until it does, publish a dependency before publishing the package that mirrors
-  it, so the mirror is true when it ships.
-
-- **settings vendoring**: decide whether `.claude/settings.json` vendors for existence rather
-  than bytes; `repair` restores vendored bytes and operator grants live in
-  `settings.local.json`. (was B12)
-- **Order gating**: the ungated-orders survey recorded at brief's acceptance reopens
-  when hardening scaffold's order gating. (was B13)
-- **`agents/openai.yaml`**: research the full external schema when a consumer needs more than
-  the `display_name`, `short_description`, and `default_prompt` mapping. (was B14)
-- **w3 acceptance**: re-prove or strike what w3 shipped; the real-tree red proof was blocked by
-  a read-only `.agents` policy in that harness. (was B15)
-- **Banning the `object` type**: state the invariant in the canon first, or drop the candidate.
-  Banning it imports a policy the canon does not carry.
-- **Sweeps with no honest mechanical form**: the template-TODO sweep, the model-routing and
-  version-catalog sweep, and the strict skill-directory inventory each red healthy references in
-  every mechanical form tried. They stay review-owned until one exists that does not.
+- **Guide mirrors track upstream `main`, not the catalog release.** `Upstream` fetches guides
+  from `raw.githubusercontent.com` on `main` and versions from `registry.npmjs.org`, so the
+  two are independent by construction: between publishes a mirror is the branch's content and
+  nothing more, and mirror bytes are never evidence for the version the catalog names.
+  Publish a dependency before publishing any package that refreshes and ships its guide.
+  Revisit a release-pinned mirror only when the fleet publishes a stable per-release ref.
+- **Sweeps with no honest mechanical form**: the model-routing and version-catalog sweep stays
+  review-owned, because the version-catalog half has no membership rule separating a catalog table
+  from a permitted version value and every mechanical form tried reds a healthy reference. The
+  landed template-TODO instrument scans literal `TODO` occurrences outside inline backtick spans
+  and fences indented no more than three spaces in canonical `SKILL.md` files, the
+  `references/*.md` files they name, and matching provider-bridge `SKILL.md` files. The landed
+  strict skill-directory inventory admits `SKILL.md`, `agents/openai.yaml`, the direct
+  `references/*.md` files named by `SKILL.md`, and only the `agents/` and `references/`
+  directories.

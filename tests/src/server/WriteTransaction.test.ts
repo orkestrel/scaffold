@@ -244,15 +244,37 @@ describe('WriteTransaction staging', () => {
 })
 
 describe('WriteTransaction directories', () => {
-	// Skipped on Windows because the attacker cannot retry there, not because the
-	// interleaving is impossible: no documented Windows rule forbids a rename landing
-	// between `mkdirSync` and the anchor read, since the new directory is empty and
-	// neither call retains a blocking handle. What does not survive is the retry loop.
-	// The worker renames onto `holding`, and `renameSync` is `MoveFileExW` with
-	// `MOVEFILE_REPLACE_EXISTING`, which is documented to reject an existing directory
-	// destination — so one leftover `holding` makes every later attempt fail for good,
-	// the worker's `catch` swallows it, and the loop spins without ever signalling.
-	// The claim here is therefore unverified on Windows rather than inapplicable.
+	// Skipped on Windows because no attacker measured there has reached the interleaving, not
+	// because the attacker cannot run. A replica of this race was measured on 2026-08-21 on
+	// Windows 11 with Node v24.18.1 over NTFS, against a window opened by the `mkdirSync` call
+	// that creates a segment and closed by the anchor read that follows it. The attacker
+	// designs were: poll the `existsSync` call and clear the `holding` directory each attempt;
+	// rename in a tight loop and clear the `holding` directory whenever the rename is refused;
+	// that same loop under 24 spinner threads over this host's 16 cores; and 8 concurrent
+	// attacker threads across 20000 rounds. Every design landed its swaps — the 8-thread run
+	// landed 159140 of them, at least one inside every one of its 20000 rounds — and every
+	// swap landed after the anchor read rather than inside the window. That is a result about
+	// these designs on this host and this budget, not a proof that the window cannot be hit:
+	// what was measured is that a directory rename, which cannot start before the directory
+	// exists, did not once complete inside the gap between two adjacent syscalls on one
+	// thread. A design that reaches it refutes the skip, and the skip is where to look first.
+	// The earlier reading — that one leftover `holding` directory wedges the retry loop,
+	// the `renameSync` call being the `MoveFileExW` call with `MOVEFILE_REPLACE_EXISTING`
+	// set, which is documented to reject an existing directory destination — is real, but it
+	// is not what stops this proof: clearing the `holding` directory repaired the wedge,
+	// every attempt then completed its rename and signalled, and the race still observed
+	// nothing. Reaching the refusal deterministically failed the same way. An inherit-only
+	// NTFS DENY on the parent directory, applied with the `icacls` command as
+	// `(OI)(CI)(IO)(RA)`, as `(OI)(CI)(IO)(RA,RD)`, and as `(OI)(CI)(IO)(GR)`, left the
+	// `mkdirSync` call on the child succeeding and the `lstatSync` call on that child still
+	// returning a directory, so the anchor read was never refused.
+	// This proof is the only cover for the branch that discards a segment whose anchor read
+	// comes back empty. The sibling `wraps a mid-creation refusal` proof does not reach it:
+	// that one asserts the wrapped `context.error` value carries the `EACCES` code, which is
+	// the raw refusal from the `mkdirSync` call, where this branch wraps a `ScaffoldError`
+	// value carrying the `WRITE` code instead. On Windows that sibling takes its
+	// `enforced: false` branch as well, because NTFS ignores the `chmodSync(control, 0o477)`
+	// call, so it asserts no refusal there at all.
 	// Every wait is bounded regardless, because a test that parks on a signal a host
 	// will never send reports a timeout instead of a verdict.
 	it.skipIf(process.platform === 'win32')(

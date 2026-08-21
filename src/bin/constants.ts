@@ -122,6 +122,7 @@ export const OPTION_SUMMARY: Readonly<Record<string, string>> = Object.freeze({
 		'read the data root from a local path instead of the bundled one; catalog alone accepts it more than once',
 	'--target <path>': 'the directory the verb operates on; the working directory when absent',
 	'--json': 'emit one machine-readable value instead of a report',
+	ORKESTREL_SCAFFOLD_REGISTRY: 'the registry base mapped to upstream.registry.base',
 })
 
 /**

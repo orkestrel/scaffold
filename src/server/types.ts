@@ -196,7 +196,7 @@ export interface MaterializerInterface {
 	 */
 	catalog(entries: readonly CatalogEntry[], target: string): MaterializeResult
 	/**
-	 * Rewrite the `@orkestrel/*` range set in the target's manifest.
+	 * Rewrite the declared dependency ranges the caller names in the target's manifest.
 	 *
 	 * @param dependencies - The names and ranges the manifest must declare.
 	 * @param target - The directory to write into.
@@ -303,7 +303,7 @@ export interface UpstreamOptions {
 export interface UpstreamInterface {
 	readonly emitter: EmitterInterface<UpstreamEventMap>
 	/**
-	 * Look up the registry's latest release for each declared dependency.
+	 * Look up the newest release each declared range admits.
 	 *
 	 * @param dependencies - The declared dependencies to look up.
 	 * @returns One release verdict per dependency, in input order.

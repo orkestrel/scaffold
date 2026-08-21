@@ -1,7 +1,7 @@
 import type { Audit } from '@src/core'
 import { describe, expect, it } from 'vitest'
 import { width } from '@orkestrel/console'
-import { ScaffoldError } from '@src/core'
+import { createBlueprint, ScaffoldError } from '@src/core'
 import {
 	COMMAND_OPTIONS,
 	EXECUTABLE_NAME,
@@ -23,8 +23,12 @@ import {
 	argvToCommand,
 	auditToExit,
 	auditToSummary,
+	dependenciesToFleet,
 	errorToEnvelope,
+	manifestToPlannedDependencies,
 	optionToName,
+	releasesToExit,
+	releasesToQuestions,
 	renderUsage,
 	verbToSyntax,
 } from '../../../src/bin/helpers.js'
@@ -226,6 +230,97 @@ describe('auditToExit', () => {
 		const codes = AUDIT_EXIT_CASES.map((auditCase) => auditToExit(auditCase.audit))
 		expect(codes).toContain(EXIT_CLEAN)
 		expect(codes).toContain(EXIT_DRIFT)
+	})
+})
+
+describe('release evidence', () => {
+	it('reports exact fleet drift and failed lookups as drift', () => {
+		expect(
+			releasesToExit([
+				{ name: '@orkestrel/router', range: '^0.0.8', lookup: 'found', latest: '0.0.8' },
+			]),
+		).toBe(EXIT_CLEAN)
+		expect(
+			releasesToExit([
+				{ name: '@orkestrel/router', range: '^0.0.7', lookup: 'found', latest: '0.0.8' },
+			]),
+		).toBe(EXIT_DRIFT)
+		expect(
+			releasesToExit([
+				{ name: '@orkestrel/router', range: '^0.0.8', lookup: 'failed', note: 'offline' },
+			]),
+		).toBe(EXIT_DRIFT)
+		expect(
+			releasesToExit([{ name: 'typescript', range: '^6.0.3', lookup: 'found', latest: '6.0.4' }]),
+		).toBe(EXIT_CLEAN)
+	})
+
+	it('reports a stale foreign floor beside a served newer major', () => {
+		expect(
+			releasesToQuestions(
+				[
+					{ name: 'typescript', range: '^6.0.3', lookup: 'found', latest: '6.0.4' },
+					{ name: 'vite', range: '^8.2.2', lookup: 'found', latest: '8.2.2' },
+				],
+				[
+					{ name: 'typescript', range: '^6.0.3', lookup: 'found', latest: '7.0.2' },
+					{ name: 'vite', range: '^8.2.2', lookup: 'found', latest: '8.2.2' },
+				],
+			),
+		).toStrictEqual([
+			{
+				field: 'dependencies',
+				message:
+					'typescript declares the floor ^6.0.3, while the registry serves 6.0.4 within major 6.',
+				blocking: false,
+			},
+			{
+				field: 'dependencies',
+				message: 'typescript declares major 6, while the registry serves major 7.',
+				blocking: false,
+			},
+		])
+	})
+
+	it('reports a served newer major when the declared-major lookup finds no release', () => {
+		expect(
+			releasesToQuestions(
+				[{ name: 'typescript', range: '^6.0.3', lookup: 'failed', note: 'missing' }],
+				[{ name: 'typescript', range: '^6.0.3', lookup: 'found', latest: '7.0.2' }],
+			),
+		).toStrictEqual([
+			{
+				field: 'dependencies',
+				message: 'typescript declares major 6, while the registry serves major 7.',
+				blocking: false,
+			},
+		])
+	})
+
+	it('reads fleet rows and declared planned foreign tools from a manifest', () => {
+		const blueprint = createBlueprint('sample', { src: ['core'] })
+		const declared = manifestToPlannedDependencies(
+			'{"dependencies":{"@orkestrel/emitter":"^0.0.7","vite":"^8.2.2"},"devDependencies":{"typescript":"^6.0.3"}}',
+			blueprint,
+		)
+		expect(declared).toStrictEqual([
+			{ name: '@orkestrel/emitter', range: '^0.0.7' },
+			{ name: 'typescript', range: '^6.0.3' },
+			{ name: 'vite', range: '^8.2.2' },
+		])
+	})
+
+	it('keeps only declared fleet dependencies in source order', () => {
+		expect(
+			dependenciesToFleet([
+				{ name: 'typescript', range: '^6.0.3' },
+				{ name: '@orkestrel/router', range: '^0.0.10' },
+				{ name: '@orkestrel/emitter', range: '^0.0.5' },
+			]),
+		).toStrictEqual([
+			{ name: '@orkestrel/router', range: '^0.0.10' },
+			{ name: '@orkestrel/emitter', range: '^0.0.5' },
+		])
 	})
 })
 

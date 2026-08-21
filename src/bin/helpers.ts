@@ -1,8 +1,15 @@
-import type { Audit } from '@src/core'
+import type { Audit, Blueprint, Dependency, Question, Release } from '@src/core'
 import type { CLICommand, ErrorEnvelope, Verb } from './types.js'
 import { align, width } from '@orkestrel/console'
-import { attempt } from '@orkestrel/contract'
-import { isScaffoldError } from '@src/core'
+import { attempt, isRecord, isString, parseJSON } from '@orkestrel/contract'
+import {
+	blueprintToDevDependencies,
+	compareVersions,
+	extractRangeMajor,
+	extractVersion,
+	isScaffoldError,
+	manifestToDependencies,
+} from '@src/core'
 import { parseArgs } from 'node:util'
 import {
 	COMMAND_OPTIONS,
@@ -238,6 +245,107 @@ export function auditToExit(audit: Audit): number {
 	const blocked = audit.questions.some((question) => question.blocking)
 	const drifted = audit.findings.some((finding) => finding.drift !== 'aligned')
 	return blocked || drifted ? EXIT_DRIFT : EXIT_CLEAN
+}
+
+/**
+ * Read the fleet rows and planned foreign tools a target manifest declares.
+ *
+ * @param manifest - The target manifest text.
+ * @param blueprint - The workspace shape that supplies the planned tool set.
+ * @returns The declared fleet rows followed by declared planned foreign rows.
+ */
+export function manifestToPlannedDependencies(
+	manifest: string,
+	blueprint: Blueprint,
+): readonly Dependency[] {
+	const dependencies = [...dependenciesToFleet(manifestToDependencies(manifest))]
+	const parsed = parseJSON(manifest)
+	if (!isRecord(parsed)) return dependencies
+	const runtime = isRecord(parsed.dependencies) ? parsed.dependencies : {}
+	const development = isRecord(parsed.devDependencies) ? parsed.devDependencies : {}
+	for (const name of Object.keys(blueprintToDevDependencies(blueprint)).sort()) {
+		if (name.startsWith('@orkestrel/')) continue
+		const range = runtime[name] ?? development[name]
+		if (isString(range)) dependencies.push({ name, range })
+	}
+	return dependencies
+}
+
+/**
+ * Keep only dependencies published by the Orkestrel fleet.
+ *
+ * @param dependencies - The declared dependencies to inspect.
+ * @returns The fleet declarations in their original order.
+ */
+export function dependenciesToFleet(dependencies: readonly Dependency[]): readonly Dependency[] {
+	return dependencies.filter((dependency) => dependency.name.startsWith('@orkestrel/'))
+}
+
+/**
+ * Read the exit code registry release evidence earns.
+ *
+ * @param releases - The release verdicts to measure.
+ * @returns `EXIT_DRIFT` for a failed lookup or an exact fleet mismatch; `EXIT_CLEAN` otherwise.
+ */
+export function releasesToExit(releases: readonly Release[]): number {
+	return releases.some(
+		(release) =>
+			release.lookup !== 'found' ||
+			(release.name.startsWith('@orkestrel/') && release.range !== `^${release.latest}`),
+	)
+		? EXIT_DRIFT
+		: EXIT_CLEAN
+}
+
+/**
+ * Project foreign floor and supported-major drift into audit questions.
+ *
+ * @param releases - The release verdicts to measure.
+ * @param served - Alternate release verdicts used to detect a newer served major.
+ * @returns One non-blocking question for each stale floor and each crossed major.
+ */
+export function releasesToQuestions(
+	releases: readonly Release[],
+	served: readonly Release[] = releases,
+): readonly Question[] {
+	const questions: Question[] = []
+	for (const release of releases) {
+		if (release.name.startsWith('@orkestrel/')) continue
+		const declared = extractRangeMajor(release.range)
+		const current = release.lookup === 'found' ? release.latest : undefined
+		const resolved = current === undefined ? undefined : extractVersion(current)
+		const floor = extractVersion(
+			release.range.startsWith('^') || release.range.startsWith('~')
+				? release.range.slice(1)
+				: release.range,
+		)
+		if (
+			declared !== undefined &&
+			current !== undefined &&
+			resolved !== undefined &&
+			floor !== undefined &&
+			resolved[0] === declared &&
+			compareVersions(current, floor.join('.')) > 0
+		) {
+			questions.push({
+				field: 'dependencies',
+				message: `${release.name} declares the floor ${release.range}, while the registry serves ${current} within major ${String(declared)}.`,
+				blocking: false,
+			})
+		}
+		const alternate = served.find((candidate) => candidate.name === release.name)
+		const published =
+			release.major ??
+			(alternate?.lookup === 'found' ? extractVersion(alternate.latest)?.[0] : undefined)
+		if (declared !== undefined && published !== undefined && declared < published) {
+			questions.push({
+				field: 'dependencies',
+				message: `${release.name} declares major ${String(declared)}, while the registry serves major ${String(published)}.`,
+				blocking: false,
+			})
+		}
+	}
+	return questions
 }
 
 /**

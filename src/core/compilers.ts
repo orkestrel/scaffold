@@ -12,7 +12,13 @@ import type {
 	Snapshot,
 	ViteMachinery,
 } from './types.js'
-import { attempt, canonicalStringify, compareValues, sortValues } from '@orkestrel/contract'
+import {
+	attempt,
+	canonicalStringify,
+	compareValues,
+	parseJSON,
+	sortValues,
+} from '@orkestrel/contract'
 import { fillTemplate } from '@orkestrel/template'
 import {
 	APP_BROWSER_DEV_DEPENDENCIES,
@@ -414,6 +420,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		scripts['serve:build'] = 'npm run build:app:server && npm run serve'
 	}
 	if (publishes) {
+		scripts.prepack = scripts.build
 		scripts.prepublishOnly = [
 			'npm run format:check && npm run lint:check && npm run check && npm run build && npm test',
 			...(distributes ? ['npm run test:distribution -- --mode release'] : []),
@@ -1444,6 +1451,222 @@ export function applyOverrides(
 		const content = replacements.get(artifact.path)
 		return content === undefined ? artifact : { ...artifact, content }
 	})
+}
+
+/**
+ * Replace declared dependency ranges in package manifest text.
+ *
+ * @param manifest - The manifest text to compile.
+ * @param dependencies - The declared names and replacement ranges.
+ * @returns The manifest with every matching dependency-section value replaced,
+ * or `undefined` when any name has no quoted declaration in those sections.
+ *
+ * @remarks
+ * The compiler replaces values in place instead of serializing the manifest,
+ * so description, keywords, scripts, key order, indentation, and every byte
+ * outside the named ranges survive. Every occurrence in `dependencies`,
+ * `devDependencies`, and `peerDependencies` moves, which keeps duplicate
+ * declarations aligned until the manifest's own validation reports the
+ * duplicate. An override or resolution with the same name stays untouched.
+ *
+ * @example
+ * ```ts
+ * import { replaceManifestRanges } from '@orkestrel/scaffold'
+ *
+ * const manifest = '{"devDependencies":{"typescript":"^6"}}\n'
+ * replaceManifestRanges(manifest, [{ name: 'typescript', range: '^7' }])
+ * // the manifest with the declared range replaced
+ * ```
+ */
+export function replaceManifestRanges(
+	manifest: string,
+	dependencies: readonly Dependency[],
+): string | undefined {
+	if (dependencies.length === 0) return manifest
+	const sectionNames = new Set(['dependencies', 'devDependencies', 'peerDependencies'])
+	const sections: Array<{ start: number; end: number }> = []
+	let depth = 0
+	let cursor = 0
+	while (cursor < manifest.length) {
+		const character = manifest.charAt(cursor)
+		if (character === '{') {
+			depth += 1
+			cursor += 1
+			continue
+		}
+		if (character === '}') {
+			depth -= 1
+			cursor += 1
+			continue
+		}
+		if (character !== '"') {
+			cursor += 1
+			continue
+		}
+		const start = cursor
+		cursor += 1
+		while (cursor < manifest.length) {
+			if (manifest.charAt(cursor) === '\\') {
+				cursor += 2
+				continue
+			}
+			if (manifest.charAt(cursor) === '"') break
+			cursor += 1
+		}
+		if (cursor >= manifest.length) return undefined
+		const end = cursor + 1
+		if (depth === 1) {
+			const key: unknown = parseJSON(manifest.slice(start, end))
+			let value = end
+			while (value < manifest.length && /\s/u.test(manifest.charAt(value))) value += 1
+			if (manifest.charAt(value) === ':') {
+				value += 1
+				while (value < manifest.length && /\s/u.test(manifest.charAt(value))) value += 1
+				if (typeof key === 'string' && sectionNames.has(key) && manifest.charAt(value) === '{') {
+					let sectionDepth = 0
+					let sectionCursor = value
+					while (sectionCursor < manifest.length) {
+						const sectionCharacter = manifest.charAt(sectionCursor)
+						if (sectionCharacter === '"') {
+							sectionCursor += 1
+							while (sectionCursor < manifest.length) {
+								if (manifest.charAt(sectionCursor) === '\\') {
+									sectionCursor += 2
+									continue
+								}
+								if (manifest.charAt(sectionCursor) === '"') break
+								sectionCursor += 1
+							}
+							if (sectionCursor >= manifest.length) return undefined
+						} else if (sectionCharacter === '{') sectionDepth += 1
+						else if (sectionCharacter === '}') {
+							sectionDepth -= 1
+							if (sectionDepth === 0) {
+								sections.push({ start: value, end: sectionCursor + 1 })
+								break
+							}
+						}
+						sectionCursor += 1
+					}
+				}
+			}
+		}
+		cursor = end
+	}
+	const replacements = new Map(dependencies.map(({ name, range }) => [name, range]))
+	const declared = new Set<string>()
+	let compiled = manifest
+	for (const bounds of sections.reverse()) {
+		let section = compiled.slice(bounds.start, bounds.end)
+		let sectionDepth = 0
+		let sectionCursor = 0
+		while (sectionCursor < section.length) {
+			const character = section.charAt(sectionCursor)
+			if (character === '{') {
+				sectionDepth += 1
+				sectionCursor += 1
+				continue
+			}
+			if (character === '}') {
+				sectionDepth -= 1
+				sectionCursor += 1
+				continue
+			}
+			if (character !== '"') {
+				sectionCursor += 1
+				continue
+			}
+			const keyStart = sectionCursor
+			sectionCursor += 1
+			while (sectionCursor < section.length) {
+				if (section.charAt(sectionCursor) === '\\') {
+					sectionCursor += 2
+					continue
+				}
+				if (section.charAt(sectionCursor) === '"') break
+				sectionCursor += 1
+			}
+			if (sectionCursor >= section.length) return undefined
+			const keyEnd = sectionCursor + 1
+			const key: unknown = parseJSON(section.slice(keyStart, keyEnd))
+			let valueStart = keyEnd
+			while (valueStart < section.length && /\s/u.test(section.charAt(valueStart))) valueStart += 1
+			if (sectionDepth !== 1 || section.charAt(valueStart) !== ':') {
+				sectionCursor = keyEnd
+				continue
+			}
+			valueStart += 1
+			while (valueStart < section.length && /\s/u.test(section.charAt(valueStart))) valueStart += 1
+			if (typeof key !== 'string' || section.charAt(valueStart) !== '"') {
+				sectionCursor = keyEnd
+				continue
+			}
+			const replacement = replacements.get(key)
+			if (replacement === undefined) {
+				sectionCursor = keyEnd
+				continue
+			}
+			let valueEnd = valueStart + 1
+			while (valueEnd < section.length) {
+				if (section.charAt(valueEnd) === '\\') {
+					valueEnd += 2
+					continue
+				}
+				if (section.charAt(valueEnd) === '"') break
+				valueEnd += 1
+			}
+			if (valueEnd >= section.length) return undefined
+			const range = JSON.stringify(replacement)
+			section = section.slice(0, valueStart) + range + section.slice(valueEnd + 1)
+			declared.add(key)
+			sectionCursor = valueStart + range.length
+		}
+		compiled = compiled.slice(0, bounds.start) + section + compiled.slice(bounds.end)
+	}
+	return dependencies.every(({ name }) => declared.has(name)) ? compiled : undefined
+}
+
+/**
+ * Replace dependency ranges in a plan's manifest and recompute its identity.
+ *
+ * @param plan - The plan carrying the manifest artifact to compile.
+ * @param dependencies - The declared names and replacement ranges.
+ * @returns A plan with replaced manifest ranges and a matching hash, or
+ * `undefined` when the manifest or its identity cannot be compiled.
+ *
+ * @remarks
+ * The blueprint remains the workspace specification that produced the plan.
+ * Registry answers alter only the manifest artifact that materialization will
+ * write. Recomputing the hash in the same compiler keeps the plan's identity
+ * tied to those final bytes rather than to the unresolved floor.
+ *
+ * @example
+ * ```ts
+ * import { replacePlanRanges } from '@orkestrel/scaffold'
+ *
+ * replacePlanRanges(plan, releases) // the plan carrying the resolved manifest ranges
+ * ```
+ */
+export function replacePlanRanges(
+	plan: Plan,
+	dependencies: readonly Dependency[],
+): Plan | undefined {
+	let replaced = false
+	let refused = false
+	const artifacts = plan.artifacts.map((artifact): Artifact => {
+		if (artifact.path !== 'package.json' || artifact.origin === 'host') return artifact
+		const content = replaceManifestRanges(artifact.content, dependencies)
+		if (content === undefined) {
+			refused = true
+			return artifact
+		}
+		replaced = true
+		return { ...artifact, content }
+	})
+	if (!replaced || refused) return undefined
+	const compiled: Plan = { ...plan, artifacts }
+	const hash = planToHash(compiled)
+	return hash === undefined ? undefined : { ...compiled, hash }
 }
 
 /**

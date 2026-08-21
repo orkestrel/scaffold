@@ -14,14 +14,19 @@ import { isError, isRecord, isString, parseJSON, parseStringField } from '@orkes
 import { Emitter } from '@orkestrel/emitter'
 import {
 	cloneValue,
+	compareVersions,
 	CONTROL_CHARACTER_PATTERN,
+	extractRangeMajor,
+	extractVersion,
 	isCollection,
 	isDependencyName,
 	isSnapshot,
-	MAX_ARTIFACT_BYTES,
 	MAX_COLLECTION_ITEMS,
 	MAX_DEPENDENCY_NAME_LENGTH,
+	MAX_REGISTRY_BYTES,
 	MAX_RANGE_LENGTH,
+	MAX_TOTAL_REGISTRY_BYTES,
+	matchesRange,
 	nameToGuide,
 	ScaffoldError,
 } from '@src/core'
@@ -76,7 +81,6 @@ export class Upstream implements UpstreamInterface {
 	static readonly #defaultTimeout = 10_000
 	static readonly #defaultConcurrency = 6
 	static readonly #defaultRetries = 0
-	static readonly #defaultBudget = 16_777_216
 	static readonly #scope = 'orkestrel'
 	static readonly #unreadable = 'the answer carries no readable latest version'
 	// The media type that selects the registry's abbreviated packument. It sits
@@ -138,8 +142,8 @@ export class Upstream implements UpstreamInterface {
 		this.#registryTimeout = options?.registry?.timeout ?? Upstream.#defaultTimeout
 		this.#concurrency = options?.concurrency ?? Upstream.#defaultConcurrency
 		this.#retries = options?.retries ?? Upstream.#defaultRetries
-		this.#limit = options?.limit ?? MAX_ARTIFACT_BYTES
-		this.#budget = options?.budget ?? Upstream.#defaultBudget
+		this.#limit = options?.limit ?? MAX_REGISTRY_BYTES
+		this.#budget = options?.budget ?? MAX_TOTAL_REGISTRY_BYTES
 	}
 
 	/** The upstream reader's observation channel. */
@@ -148,7 +152,7 @@ export class Upstream implements UpstreamInterface {
 	}
 
 	/**
-	 * Look up the registry's latest release for each declared dependency.
+	 * Look up the newest release each declared range admits.
 	 *
 	 * @param dependencies - The declared dependencies to look up.
 	 * @returns One release verdict per dependency, in input order.
@@ -157,10 +161,11 @@ export class Upstream implements UpstreamInterface {
 	 * torn down before or during the call.
 	 *
 	 * @remarks
-	 * Whether the declared range already admits the reported version is not
-	 * decided here and is not stored on the verdict: it is a function of the
-	 * `range` and `latest` sitting beside each other, and one centralized helper
-	 * answers it for every caller.
+	 * The reader selects across the packument's stable version map before any
+	 * collection bound can truncate it. It falls back to `dist-tags.latest` only
+	 * when that version satisfies the declared range. `*` requests the newest
+	 * stable version outright. The verdict's `major` field carries the stable
+	 * major from the latest tag when that tag can be read.
 	 *
 	 * @example
 	 * ```ts
@@ -317,7 +322,12 @@ export class Upstream implements UpstreamInterface {
 			allowance,
 			Upstream.#packument,
 		)
-		const latest = outcome.lookup === 'found' ? this.#latest(outcome.content) : undefined
+		const latest =
+			outcome.lookup === 'found'
+				? this.#releaseVersion(outcome.content, dependency.range)
+				: undefined
+		const tagged = outcome.lookup === 'found' ? this.#latest(outcome.content) : undefined
+		const major = tagged === undefined ? undefined : extractVersion(tagged)?.[0]
 		const release: Release =
 			latest === undefined
 				? {
@@ -325,8 +335,15 @@ export class Upstream implements UpstreamInterface {
 						range: dependency.range,
 						lookup: outcome.lookup === 'missing' ? 'missing' : 'failed',
 						note: outcome.lookup === 'found' ? Upstream.#unreadable : outcome.note,
+						...(major === undefined ? {} : { major }),
 					}
-				: { name: dependency.name, range: dependency.range, lookup: 'found', latest }
+				: {
+						name: dependency.name,
+						range: dependency.range,
+						lookup: 'found',
+						latest,
+						...(major === undefined ? {} : { major }),
+					}
 		this.#emitter.emit('release', release)
 		return release
 	}
@@ -455,6 +472,36 @@ export class Upstream implements UpstreamInterface {
 			return undefined
 		}
 		return CONTROL_CHARACTER_PATTERN.test(latest) ? undefined : latest
+	}
+
+	// Select before any collection bound can truncate the registry's version map.
+	// A missing or pruned map falls back to the latest tag only when that tag is
+	// still admitted by the declaration.
+	#releaseVersion(content: string, range: string): string | undefined {
+		const parsed = parseJSON(content)
+		if (!isRecord(parsed)) return undefined
+		const versions = parsed.versions
+		let selected: string | undefined
+		if (isRecord(versions)) {
+			for (const version of Object.keys(versions)) {
+				if (!this.#admits(range, version)) continue
+				if (selected === undefined || compareVersions(version, selected) > 0) selected = version
+			}
+		}
+		if (selected !== undefined) return selected
+		const latest = this.#latest(content)
+		return latest !== undefined && this.#admits(range, latest) ? latest : undefined
+	}
+
+	// `matchesRange` owns full-version declarations. The registry reader adds the
+	// unbounded request form and tolerates a bare major caret a consumer may declare.
+	#admits(range: string, version: string): boolean {
+		const extracted = extractVersion(version)
+		if (extracted === undefined) return false
+		if (range === '*') return true
+		const major = extractRangeMajor(range)
+		if (major !== undefined && range === `^${String(major)}`) return extracted[0] === major
+		return matchesRange(range, version)
 	}
 
 	// The canonical scoped-package registry path keeps the literal `@` and encodes

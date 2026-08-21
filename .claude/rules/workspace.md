@@ -214,24 +214,25 @@ Build/check config alignment:
 
 ## Script intent
 
-| Script                  | Contract                                                          |
-| ----------------------- | ----------------------------------------------------------------- |
-| `dev`                   | Browser development entry                                         |
-| `build`                 | Build configured library/application targets                      |
-| `serve` / `serve:build` | Run built server / build then run                                 |
-| `showcase`              | Showcase dev server                                               |
-| `build:showcase`        | Build `dist/showcase`                                             |
-| `show`                  | Build and copy showcase to `demo/showcase.html`                   |
-| `lint`                  | `oxlint --config .oxlintrc.json --fix .`; separate from typecheck |
-| `lint:check`            | Non-mutating whole-tree lint gate                                 |
-| `check`                 | Comprehensive root typecheck plus configured isolation scopes     |
-| `check:<scope>`         | On-demand environment-isolation pass                              |
-| `format`                | Format all files                                                  |
-| `format:check`          | Non-mutating whole-tree format gate                               |
-| `test`                  | Environment projects plus non-isolated cross-cutting proofs       |
-| `clean`                 | Remove `dist/`                                                    |
-| `copy <from> <to>`      | Copy while creating parent directories                            |
-| `prepublishOnly`        | Publishing workspaces only: the gate chain, then isolated proofs  |
+| Script                  | Contract                                                                   |
+| ----------------------- | -------------------------------------------------------------------------- |
+| `dev`                   | Browser development entry                                                  |
+| `build`                 | Build configured library/application targets                               |
+| `serve` / `serve:build` | Run built server / build then run                                          |
+| `showcase`              | Showcase dev server                                                        |
+| `build:showcase`        | Build `dist/showcase`                                                      |
+| `show`                  | Build and copy showcase to `demo/showcase.html`                            |
+| `lint`                  | `oxlint --config .oxlintrc.json --fix .`; separate from typecheck          |
+| `lint:check`            | Non-mutating whole-tree lint gate                                          |
+| `check`                 | Comprehensive root typecheck plus configured isolation scopes              |
+| `check:<scope>`         | On-demand environment-isolation pass                                       |
+| `format`                | Format all files                                                           |
+| `format:check`          | Non-mutating whole-tree format gate                                        |
+| `test`                  | Environment projects plus non-isolated cross-cutting proofs                |
+| `clean`                 | Remove `dist/`                                                             |
+| `copy <from> <to>`      | Copy while creating parent directories                                     |
+| `prepublishOnly`        | Publishing workspaces only: the gate chain, then isolated proofs           |
+| `prepack`               | Publishing workspaces only: rebuild `dist/` so a pack ships current output |
 
 Run `show` only **after** formatting. The committed `demo/showcase.html` is generated/minified; formatting after generation would expand its inlined bundle.
 

@@ -167,6 +167,10 @@ export type OutputHandler = (line: string) => void
  * set on the reader directly, and a second type would drift from the first.
  * Absent, every read addresses the published registry and the published guide
  * host, which is what a terminal caller means.
+ *
+ * The process entry maps `ORKESTREL_SCAFFOLD_REGISTRY` to
+ * `upstream.registry.base`. This lets an installed executable address a
+ * loopback or private registry without changing a command's write authority.
  */
 export interface CLIOptions {
 	readonly output?: OutputHandler
@@ -190,6 +194,11 @@ export interface CLIInterface {
 	execute(argv: readonly string[]): Promise<number>
 }
 
+/** The machine-readable outcome of `audit`. */
+export interface AuditResult extends Audit {
+	readonly releases: readonly Release[]
+}
+
 /**
  * The machine-readable outcome of `repair`.
  *
@@ -199,6 +208,7 @@ export interface CLIInterface {
  */
 export interface RepairResult extends MaterializeResult {
 	readonly audit: Audit
+	readonly releases: readonly Release[]
 }
 
 /**
@@ -214,6 +224,7 @@ export interface CatalogResult extends MaterializeResult {
 	readonly entries: readonly CatalogEntry[]
 	readonly mirrors: readonly Mirror[]
 	readonly dropped: readonly string[]
+	readonly releases: readonly Release[]
 }
 
 /**

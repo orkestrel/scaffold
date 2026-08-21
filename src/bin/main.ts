@@ -8,4 +8,8 @@ process.stdout.on('error', (error) => {
 	if ('code' in error && error.code === 'EPIPE') return
 	throw error
 })
-process.exitCode = await new CLI().execute(process.argv.slice(2))
+process.exitCode = await new CLI(
+	process.env.ORKESTREL_SCAFFOLD_REGISTRY === undefined
+		? undefined
+		: { upstream: { registry: { base: process.env.ORKESTREL_SCAFFOLD_REGISTRY } } },
+).execute(process.argv.slice(2))

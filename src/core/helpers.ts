@@ -600,6 +600,36 @@ export function extractVersion(
 }
 
 /**
+ * Extract the major component of an admitted dependency range.
+ *
+ * @param range - The candidate range text.
+ * @returns The major number, or `undefined` when the text is not a canonical
+ * major caret or an admitted full-version form.
+ *
+ * @remarks
+ * A canonical toolchain range is `^MAJOR`. Existing consumer declarations may
+ * instead carry an exact `major.minor.patch` version or that version under a
+ * caret or tilde. The projection reads those forms without deciding whether a
+ * version satisfies them; {@link matchesRange} owns that separate question.
+ *
+ * @example
+ * ```ts
+ * import { extractRangeMajor } from '@orkestrel/scaffold'
+ *
+ * extractRangeMajor('^6') // the declared major
+ * extractRangeMajor('>=6.0.0') // undefined
+ * ```
+ */
+export function extractRangeMajor(range: string): number | undefined {
+	const match =
+		/^(?:\^(0|[1-9]\d*)|(?:\^|~)?(0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*)?)$/.exec(
+			range,
+		)
+	const major = match?.[1] ?? match?.[2]
+	return major === undefined ? undefined : Number(major)
+}
+
+/**
  * Compare two versions by their numeric components.
  *
  * @param left - The version ordered first when it compares lower.

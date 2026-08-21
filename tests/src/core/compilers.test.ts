@@ -2,9 +2,7 @@ import type { Ownership } from '@src/core'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import {
-	APP_BROWSER_DEV_DEPENDENCIES,
 	artifactToFinding,
-	BASE_DEV_DEPENDENCIES,
 	blueprintToConfigArtifacts,
 	blueprintToDevDependencies,
 	blueprintToDocumentArtifacts,
@@ -22,6 +20,7 @@ import {
 	FLOOR_RANGE_PATTERN,
 	isFinding,
 	ORKESTREL_RANGE_PATTERN,
+	replaceManifestRanges,
 } from '@src/core'
 import { buildBlueprint, buildContentArtifact } from '../../setup.js'
 import { describe, expect, it } from 'vitest'
@@ -68,11 +67,43 @@ describe('ORKESTREL_RANGE_PATTERN', () => {
 	})
 })
 
+describe('replaceManifestRanges', () => {
+	it('rewrites dependency sections without changing overrides or resolutions', () => {
+		const manifest = `{
+	"dependencies": {
+		"typescript": "^6.0.3"
+	},
+	"devDependencies": {
+		"typescript": "^6.0.3"
+	},
+	"peerDependencies": {
+		"typescript": ">=6.0.0"
+	},
+	"overrides": {
+		"typescript": "6.0.3"
+	},
+	"resolutions": {
+		"typescript": "6.0.2"
+	}
+}
+`
+		const replaced = replaceManifestRanges(manifest, [{ name: 'typescript', range: '^6.0.4' }])
+		expect(replaced).toBe(
+			manifest
+				.replace('"typescript": "^6.0.3"', '"typescript": "^6.0.4"')
+				.replace('"typescript": "^6.0.3"', '"typescript": "^6.0.4"')
+				.replace('"typescript": ">=6.0.0"', '"typescript": "^6.0.4"'),
+		)
+		expect(replaced).toContain('"overrides": {\n\t\t"typescript": "6.0.3"')
+		expect(replaced).toContain('"resolutions": {\n\t\t"typescript": "6.0.2"')
+	})
+})
+
 describe('blueprintToDevDependencies compile tooling', () => {
 	it('keeps library publishing tools in a source workspace', () => {
 		const planned = blueprintToDevDependencies(buildBlueprint({ src: ['core'], app: [] }))
 
-		expect(planned['@microsoft/api-extractor']).toBe('^7.58.12')
+		expect(planned['@microsoft/api-extractor']).toBe('^7.59.0')
 		expect(planned['vite-plugin-dts']).toBe('^5.0.3')
 	})
 
@@ -88,7 +119,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 	it('keeps library publishing tools in an executable workspace', () => {
 		const planned = blueprintToDevDependencies(buildBlueprint({ src: [], app: [], bin: true }))
 
-		expect(planned['@microsoft/api-extractor']).toBe('^7.58.12')
+		expect(planned['@microsoft/api-extractor']).toBe('^7.59.0')
 		expect(planned['vite-plugin-dts']).toBe('^5.0.3')
 	})
 
@@ -98,11 +129,13 @@ describe('blueprintToDevDependencies compile tooling', () => {
 		)
 
 		// The claim is membership: an app-only workspace keeps the browser toolchain
-		// and the shared base. Each range is compared with the declaration that owns
-		// it rather than with a literal, which a fleet bump silently invalidates.
-		expect(planned['@orkestrel/html']).toBe(APP_BROWSER_DEV_DEPENDENCIES['@orkestrel/html'])
-		expect(planned.vue).toBe(APP_BROWSER_DEV_DEPENDENCIES.vue)
-		expect(planned['@orkestrel/test']).toBe(BASE_DEV_DEPENDENCIES['@orkestrel/test'])
+		// and the shared base. Each range is stated here rather than read back from
+		// the table the emitter read, which would pass for whatever that table said.
+		// A floor raise moves these lines, which is the point: the raise is a
+		// deliberate step and this is where a workspace receives it.
+		expect(planned['@orkestrel/html']).toBe('^0.0.4')
+		expect(planned.vue).toBe('^3.5.40')
+		expect(planned['@orkestrel/test']).toBe('^0.0.8')
 	})
 
 	it('keeps a shared toolchain pin when a foreign peer declares its floor', () => {
@@ -110,7 +143,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 			buildBlueprint({ peers: [{ name: 'typescript', range: '>=6.0.0' }] }),
 		)
 
-		expect(planned.typescript).toBe(BASE_DEV_DEPENDENCIES.typescript)
+		expect(planned.typescript).toBe('^6.0.3')
 	})
 
 	it('emits a conditional toolchain pin beside a foreign peer floor', () => {
@@ -121,7 +154,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 			}),
 		)
 
-		expect(manifest).toContain(`"vue": "${APP_BROWSER_DEV_DEPENDENCIES.vue}"`)
+		expect(manifest).toContain('"vue": "^3.5.40"')
 		expect(manifest).toContain('"peerDependencies": {\n\t\t"vue": ">=3.5.0"\n\t}')
 	})
 
@@ -138,7 +171,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 			buildBlueprint({ peers: [{ name: 'typescript', range: '>=6.0.0' }] }),
 		)
 
-		expect(manifest).toContain(`"typescript": "${BASE_DEV_DEPENDENCIES.typescript}"`)
+		expect(manifest).toContain('"typescript": "^6.0.3"')
 		expect(manifest).toContain('"peerDependencies": {\n\t\t"typescript": ">=6.0.0"\n\t}')
 	})
 
@@ -151,7 +184,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 
 		// The digest covers the self-pin, so a release moves it. Update it with the
 		// version bump in the same change; it is the tripwire for every other byte.
-		expect(hex).toBe('1d47baa1d3c57e53b5659fd607615aa9087615460a390c4c82589a691a42b551')
+		expect(hex).toBe('73a42aa31e1543e42642eb6579aa473d3f0b8014eddfb89f1417cb0d40e03c25')
 	})
 })
 
@@ -194,6 +227,16 @@ describe('blueprintToScripts config projects', () => {
 		expect(scripts.test).not.toContain('test:probe')
 		expect(scripts.prepublishOnly).not.toContain('test:bench')
 		expect(scripts.prepublishOnly).not.toContain('test:probe')
+	})
+
+	it('rebuilds publishing workspaces before packing', () => {
+		const published = blueprintToScripts(buildBlueprint())
+		const application = blueprintToScripts(createBlueprint('demo', { src: [], app: ['core'] }))
+
+		expect(published.prepack).toBe(published.build)
+		expect(application.prepack).toBeUndefined()
+		expect(published.test).not.toContain('prepack')
+		expect(published.prepublishOnly).not.toContain('prepack')
 	})
 
 	it('does not invent test projects from vendor names alone', () => {

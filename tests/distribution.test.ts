@@ -108,6 +108,19 @@ const KEYWORDS = [
 const ELISION = '…'
 const ABSENT = '\u0000undefined'
 
+// The version a manifest declares, read from its text. The packed core carries
+// its own copy of the same field, inlined when it was built, so keeping this
+// reading textual is what lets the two disagree.
+function readManifestVersion(text: string): string {
+	const parsed: unknown = JSON.parse(text)
+	if (typeof parsed !== 'object' || parsed === null) {
+		throw new Error('The manifest is not a record')
+	}
+	const version: unknown = Object.getOwnPropertyDescriptor(parsed, 'version')?.value
+	if (typeof version !== 'string') throw new Error('The manifest declares no version')
+	return version
+}
+
 // The child that answers for the claims. It compiles each example block on its
 // own, so a block this instrument mis-sliced reports its own refusal instead of
 // taking the run down, and it records each claim where the example puts it, so a
@@ -439,7 +452,7 @@ describe('installed package consumer', () => {
 			// This is the assertion the lists are exact against: a shipped example
 			// that changes spelling moves from one list to another and both move.
 			expect(driven.length + undriven.length + glossed.length + elided.length).toBe(shaped)
-			expect(shaped).toBe(171)
+			expect(shaped).toBe(174)
 
 			// Every claim scored false is a control, and nothing the package ships is.
 			// This establishes that a driven claim the module contradicts is reported,
@@ -464,11 +477,14 @@ describe('installed package consumer', () => {
 				'dist/src/core/index.d.ts: catalogToLayers(entries)[0] // the names that depend on nothing in the fleet',
 				"dist/src/core/index.d.ts: createBlueprint('Router').name // 'Router' — the gate refuses it, this does not",
 				'dist/src/core/index.d.ts: ).length // 1 — the range is not caret-pinned',
+				"dist/src/core/index.d.ts: extractRangeMajor('^6') // the declared major",
 				"dist/src/core/index.d.ts: isBlueprint({ name: 'router', src: ['core'] }) // false — not the whole record",
 				'dist/src/core/index.d.ts: parseCompilerOptions({ on: { compile: () => {} } }) // the same record',
 				'dist/src/core/index.d.ts: planToSummary(plan).computed // the number of computed artifacts',
+				'dist/src/core/index.d.ts: replacePlanRanges(plan, releases) // the plan carrying the resolved manifest ranges',
 				'dist/src/core/index.d.ts: selectGroups() // every group, in plan order',
 				"dist/src/core/index.d.ts: serializeTypeScriptString(\"it's\") // `'it\\\\'s'`",
+				"dist/src/core/index.d.ts: SHOWCASE_DEV_DEPENDENCIES['vite-plugin-singlefile'] // the showcase plugin range",
 				"dist/src/server/index.d.ts: computeFileDigest('/tmp/project/AGENTS.md') // the file's SHA-256",
 				'dist/src/server/index.d.ts: computeManifestDigest([], []) // the digest of the empty membership',
 				"dist/src/server/index.d.ts: isExactCaseFile('/tmp/project/src/bin/main.ts') // true only for that exact spelling",
@@ -593,6 +609,50 @@ describe('installed package consumer', () => {
 					{ cwd: consumer, encoding: 'utf8', env: environment, windowsHide: true, shell },
 				)
 				expect(install.status).toBe(0)
+
+				// The self-pin every generated workspace inherits is inlined into the
+				// built core at build time, and the manifest beside it is packed from the
+				// same file. Reading both out of the installed copy is what proves the
+				// pack carried a matching pair: an artifact built before a version bump
+				// ships the previous pin while the manifest beside it names the new one,
+				// and nothing inside the checkout can see that.
+				const installedManifest = 'consumer/node_modules/@orkestrel/scaffold/package.json'
+				const installedText = requireValue(workspace.read(installedManifest))
+				workspace.write(
+					'consumer/coherence.mjs',
+					[
+						"import { BASE_DEV_DEPENDENCIES } from '@orkestrel/scaffold'",
+						"process.stdout.write(BASE_DEV_DEPENDENCIES['@orkestrel/scaffold'])",
+					].join('\n'),
+				)
+				const coherence = spawnSync(process.execPath, ['coherence.mjs'], {
+					cwd: consumer,
+					encoding: 'utf8',
+					windowsHide: true,
+				})
+				expect(coherence.status).toBe(0)
+				expect(coherence.stdout).toBe(`^${readManifestVersion(installedText)}`)
+
+				// The control. Moving the installed manifest's version without rebuilding
+				// must leave the artifact's pin where it was, or the equality above read
+				// one mechanism twice and could never have failed. The mutation lands in
+				// the scratch install and is restored before the run continues.
+				const mutated = installedText.replace(
+					JSON.stringify(readManifestVersion(installedText)),
+					'"0.0.0"',
+				)
+				expect(mutated).not.toBe(installedText)
+				workspace.write(installedManifest, mutated)
+				const controlled = spawnSync(process.execPath, ['coherence.mjs'], {
+					cwd: consumer,
+					encoding: 'utf8',
+					windowsHide: true,
+				})
+				workspace.write(installedManifest, installedText)
+				expect(controlled.status).toBe(0)
+				expect(controlled.stdout).toBe(coherence.stdout)
+				expect(controlled.stdout).not.toBe(`^${readManifestVersion(mutated)}`)
+
 				workspace.write(
 					'consumer/generate.mjs',
 					[
@@ -614,14 +674,7 @@ describe('installed package consumer', () => {
 					windowsHide: true,
 				})
 				expect(generate.status).toBe(0)
-				const sourceManifest: unknown = JSON.parse(
-					readFileSync(resolve(root, 'package.json'), 'utf8'),
-				)
-				if (typeof sourceManifest !== 'object' || sourceManifest === null) {
-					throw new Error('The scaffold manifest is not a record')
-				}
-				const version: unknown = Object.getOwnPropertyDescriptor(sourceManifest, 'version')?.value
-				if (typeof version !== 'string') throw new Error('The scaffold manifest carries no version')
+				const version = readManifestVersion(readFileSync(resolve(root, 'package.json'), 'utf8'))
 				const targetManifest: unknown = JSON.parse(
 					requireValue(workspace.read('generated/package.json')),
 				)

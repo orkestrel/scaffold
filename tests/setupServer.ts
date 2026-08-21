@@ -10,9 +10,8 @@ import type { CLICommand, CLIOptions, Verb } from '../src/bin/types.js'
 import type { TestGuardCase, TestPathCase } from './setup.js'
 import type { ServerResponse } from 'node:http'
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, symlinkSync } from 'node:fs'
 import { createServer } from 'node:http'
-import { dirname, join } from 'node:path'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { gzipSync } from 'node:zlib'
 import {
@@ -314,10 +313,9 @@ export const CASE_FOLDING: boolean = detectCaseFolding()
  * @returns The workspace, which the caller destroys in a `finally`.
  *
  * @remarks
- * `link` asks the platform for a junction, which is the one redirected directory
- * a Windows host creates without elevation and which every POSIX host reads as an
- * ordinary symbolic link. It is what makes the containment law measurable against
- * a real link rather than against a path a test typed.
+ * `link` delegates to the scratch's own `link`, which owns the host link
+ * mechanism and its junction fallback. That is what makes the containment law
+ * measurable against a real link rather than against a path a test typed.
  *
  * @example
  * ```ts
@@ -345,12 +343,8 @@ export function createWorkspace(): TestWorkspaceInterface {
 			return scratch.ensure(relative)
 		},
 		link(relative: string, target: string) {
-			// `symlinkSync`'s `'junction'` type is not an option `ScratchInterface.link`
-			// takes, so this call site stays on `node:fs` rather than the scratch.
-			const destination = join(path, relative)
-			mkdirSync(dirname(destination), { recursive: true })
-			symlinkSync(target, destination, 'junction')
-			return destination
+			scratch.link(relative, target)
+			return join(path, relative)
 		},
 		remove(relative: string) {
 			scratch.remove(relative)
