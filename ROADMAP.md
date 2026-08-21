@@ -110,4 +110,3 @@ no campaign folder is the plan of record.
 - **Sweeps with no honest mechanical form**: the template-TODO sweep, the model-routing and
   version-catalog sweep, and the strict skill-directory inventory each red healthy references in
   every mechanical form tried. They stay review-owned until one exists that does not.
-
