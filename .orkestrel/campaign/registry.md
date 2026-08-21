@@ -110,3 +110,15 @@ lane shortfall when C2 was in fact complete.
 | C1   | 193            | 193      | 0       | complete          |
 | C2   | 114            | 114      | 0       | complete          |
 | D1   | 186            | 187      | 0       | complete          |
+
+## Count correction — caught by the objective lane
+
+The design brief stated 239 destination-matched sites carrying a behavioral difference against 57
+pure duplicates. Both figures were computed from seven of the nine lanes and were not recomputed
+after A1 and A2 landed. The objective lane read the folded table and reported the mismatch.
+
+Corrected against `rows.tsv`, on unique `(repo, name)` pairs: 296 sites duplicate a symbol
+`@orkestrel/test` already exports, of which **233 carry a noted behavioral difference** and **63 are
+pure duplicates**. The design rulings cover every destination-matched family, so no family was
+omitted by the wrong number, but the brief carried a false fact and the report to the user repeated
+it.
