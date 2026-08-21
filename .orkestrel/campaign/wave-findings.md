@@ -52,6 +52,16 @@ each belongs to the named next change.
   the predicted cost at each call site. The parity gate runs green today, so nothing is broken —
   the rows are stale ledger prose. Carrier: reason's next guide change.
 
+- **database:** the `src/browser` IndexedDB driver leaks a connection when a migration step
+  throws `MIGRATION`, reproducible at `tests/src/browser/drivers/IndexedDBDriver.test.ts:1448`
+  under the shipped `removeDatabase` and invisible under the local settle-on-any-outcome helper.
+  Measured by the database visit on 2026-08-21. Carrier: database's next `src/browser` change.
+- **database:** `deleteDatabase` stays local until the preceding driver leak closes; the visit's
+  measurement and the refused retry loop sit in its TSDoc. When the leak is fixed, re-attempt the
+  adoption through the single-yield composition the indexeddb repository proved — `waitForDelay()`
+  then the shipped `removeDatabase` — before ruling the race unsolvable here. Carrier: database's
+  next test-infrastructure change, after the driver fix.
+
 ## Post-publish re-pin obligations
 
 - **Consumer mirrors of the test guide predate 0.0.9.** interpret's vendored `guides/test.md`
