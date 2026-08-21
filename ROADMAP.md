@@ -37,9 +37,11 @@ no campaign folder is the plan of record.
   buffer guard cannot tell absence from a pushed `undefined`. Either narrow the published type
   parameter or hold `{ value: T }` cells. Found by the 2026-08-21 batch audit, outside that
   wave's changes.
-- **sea**: migrate off `@orkestrel/process` `^0.0.3` — the pinned range imports the renamed
-  `runSync` surface and cannot compile against 0.0.4 or later. Owns the re-pin at sea's next
-  change.
+- **mcp**: expose the supervised child's stderr tail on `StdioClientTransport`. The
+  supervisor retains it — `@orkestrel/process` publishes it as `Process.evidence` — but the
+  transport holds its `Process` in a `#process` field and offers no reader, so a consumer
+  whose child dies at startup gets no diagnostic at all. The guide states the limit as of
+  0.0.21; closing it is a public API addition and takes its own design pass.
 - **mcp, supervisor**: adopt `ProcessOptions.delivery` where each consumer meets stdin-delivery
   failure, and close supervisor's `CLIProvider` race between `ProcessOptions.on` registration
   and early child output; supervisor's timeout backstop retires only after that adoption.
