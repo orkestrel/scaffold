@@ -3,6 +3,10 @@
 		"codex": {
 			"command": "codex",
 			"args": ["mcp-server"]
+		},
+		"probe": {
+			"command": "npx",
+			"args": ["probe"]
 		}
 	}
 }
