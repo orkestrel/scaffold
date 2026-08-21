@@ -171,3 +171,21 @@ Standing obligations this notice adds:
 - Authority drift measured and absorbed: `workspace.md` adds the `prepack` contract the test
   repository already satisfies; `documentation.md` tightens skill-directory contents; neither
   invalidates a completed unit or a staged brief.
+
+## A2 round and the construction ruling — 2026-08-21
+
+The focused cross-engine round on R1 returned FAIL. Its strongest finding held under probe: the
+Partial-of-readonly accumulator compiles only through deferred generic checking and is refused
+TS2540 at a concrete union. The reviewer's smaller-change alternative was refuted the same way:
+tuple-annotated entries select the checked overload, whose return fails TS2322 against the per-key
+map. The measured truth is that no assertion-free construction yields per-key precision — the
+type predicate is the sanctioned validated boundary, and the construction that is legal at every
+instantiation is the minus-readonly uniform-value accumulator narrowed by the guard, proven with
+controls failing where planted.
+
+Rulings recorded: the guard stays in `validators.ts` under `architecture.md`'s kind table; its
+second parameter deviates from the canonical single-argument row in `patterns.md`, which is
+surfaced as a scaffold rules finding rather than edited here — the rules are vendored. The A2
+dispatch itself carried an Orchestrator deviation: the supplied diff was path-limited and omitted
+the barrel hunk, which the reviewer caught as F1. The evidence rule stands: supply `git show`
+unfiltered.
