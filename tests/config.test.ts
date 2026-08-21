@@ -247,10 +247,7 @@ describe('root configuration', () => {
 			}
 			if (label === 'probe') {
 				const benchmark: unknown = Object.getOwnPropertyDescriptor(test, 'benchmark')?.value
-				const parallel: unknown = Object.getOwnPropertyDescriptor(
-					test,
-					'fileParallelism',
-				)?.value
+				const parallel: unknown = Object.getOwnPropertyDescriptor(test, 'fileParallelism')?.value
 				const pool: unknown = Object.getOwnPropertyDescriptor(test, 'pool')?.value
 				if (typeof benchmark !== 'object' || benchmark === null) {
 					throw new Error('The probe project carries no benchmark block')
