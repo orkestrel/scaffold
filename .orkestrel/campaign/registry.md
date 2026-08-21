@@ -148,3 +148,26 @@ The rules this violated were already on the books: read the copy the executor wi
 the Orchestrator's instruments out of the subject repository's `tmp/` while units are live. The
 repair: the canonical brief was reassembled at the named path, verified for both amendments and its
 load-bearing sections before relaunch, and the stray copy was removed from the subject tree.
+
+## Origin reconciliation — 2026-08-21, user notice
+
+The user's other session published `@orkestrel/scaffold` 0.0.47 and moved several origin `main`
+branches. Measured: scaffold `main` moved by the prior campaign's full record (test 0.0.8 and
+scaffold 0.0.47 preparation); the campaign branch has origin `main` merged in, with the add/add
+`plan.md` conflict resolved by keeping the prior campaign's plan at its name and moving this
+campaign's to `plan-test-helpers.md`. The `test` repository's origin `main` has not moved — this
+branch's commits sit directly on it. The registry still serves `@orkestrel/test` 0.0.8, so the
+0.0.9 bump plan holds.
+
+Standing obligations this notice adds:
+
+- Before any push toward a repository's `main`, fetch and reconcile against `origin/main` first,
+  preserving upstream work — merge or rebase, never clobber.
+- Every adoption-wave visit starts from a fresh `git fetch origin` and branches from
+  `origin/main`, never from the session-start clone state.
+- The `test` repository re-pins `@orkestrel/scaffold` from `^0.0.46` to the registry's 0.0.47,
+  installs, runs the vendored refresh, and proves its gates green before the 0.0.9 bump — the
+  0.0.47 release moved `tests/setupPolicy.ts` by 230 lines, so the vendored surface changed.
+- Authority drift measured and absorbed: `workspace.md` adds the `prepack` contract the test
+  repository already satisfies; `documentation.md` tightens skill-directory contents; neither
+  invalidates a completed unit or a staged brief.
