@@ -11,6 +11,14 @@ each belongs to the named next change.
   by the worker visit and the mcp visit (14 call sites there). Candidates measured by the visits:
   an `EmitterInterface`-shaped overload, or a `TMap`-inferable position on `EventSourceInterface`.
   Carrier: the next @orkestrel/test API change.
+- **`createSignal` cannot instrument an externally produced signal, and its `count` is a net
+  tally.** The factory builds its own `AbortController`, so a suite instrumenting a signal the
+  unit under test produced — `workflow.signal`, or the signal a live workflow function receives —
+  cannot adopt it. Its single live `count` (adds minus removes) also reads 0 both for a
+  never-subscribed signal and for one attached then detached, while leak proofs assert those
+  apart through separate added and removed tallies. Measured by the workflow visit against the
+  shipped source on 2026-08-21; workflow keeps `instrumentSignal` local until this closes.
+  Carrier: the next @orkestrel/test API change.
 - **`requestUpgrade` cannot drive an RFC 6455 handshake.** It sends no `Sec-WebSocket-Key` and no
   `Sec-WebSocket-Version`, offers no option to omit either, and rejects — rather than resolving
   `claimed: false` — when a server declines by destroying the un-upgraded socket, which is the
