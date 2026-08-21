@@ -372,7 +372,7 @@ export const DEFAULT_ENGINES = `>=${MINIMUM_NODE_VERSION}`
 export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	'@orkestrel/guide': '^0.0.12',
 	'@orkestrel/probe': '^0.0.1',
-	'@orkestrel/scaffold': '^0.0.45',
+	'@orkestrel/scaffold': '^0.0.46',
 	'@orkestrel/test': '^0.0.7',
 	'@types/node': '^26.2.0',
 	oxfmt: '^0.64.0',

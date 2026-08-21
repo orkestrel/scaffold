@@ -2814,10 +2814,11 @@ describe('CLI overwrite', () => {
 		// version above every pin and compared against the declaration that owns it.
 		// A literal on either side turns an ordinary version bump into a red gate.
 		const published = '9.9.9'
+		const pinnedProbe = BASE_DEV_DEPENDENCIES['@orkestrel/probe']
 		const pinnedScaffold = BASE_DEV_DEPENDENCIES['@orkestrel/scaffold']
 		const pinnedTest = BASE_DEV_DEPENDENCIES['@orkestrel/test']
-		if (pinnedScaffold === undefined || pinnedTest === undefined) {
-			throw new Error('The base development dependencies carry no scaffold or test pin')
+		if (pinnedProbe === undefined || pinnedScaffold === undefined || pinnedTest === undefined) {
+			throw new Error('The base development dependencies carry no probe, scaffold, or test pin')
 		}
 		const workspace = createWorkspace()
 		const server = await createUpstreamServer({
@@ -2827,6 +2828,7 @@ describe('CLI overwrite', () => {
 			},
 			[FLEET_UPSTREAM_PATHS.packages.emitter]: { status: 200, body: buildPackument('0.0.6') },
 			[FLEET_UPSTREAM_PATHS.packages.guide]: { status: 200, body: buildPackument('0.1.0') },
+			[FLEET_UPSTREAM_PATHS.packages.probe]: { status: 200, body: buildPackument(published) },
 			[FLEET_UPSTREAM_PATHS.packages.scaffold]: {
 				status: 200,
 				body: buildPackument(published),
@@ -2837,6 +2839,7 @@ describe('CLI overwrite', () => {
 				type: 'text/plain',
 			},
 			[FLEET_UPSTREAM_PATHS.mirrors.guide]: { status: 200, body: '# Guide\n', type: 'text/plain' },
+			[FLEET_UPSTREAM_PATHS.mirrors.probe]: { status: 200, body: '# Probe\n', type: 'text/plain' },
 			[FLEET_UPSTREAM_PATHS.mirrors.scaffold]: {
 				status: 200,
 				body: '# Scaffold\n',
@@ -2864,6 +2867,7 @@ describe('CLI overwrite', () => {
 			expect(result.releases).toStrictEqual([
 				{ name: '@orkestrel/emitter', range: '^0.0.5', lookup: 'found', latest: '0.0.6' },
 				{ name: '@orkestrel/guide', range: '^0.0.9', lookup: 'found', latest: '0.1.0' },
+				{ name: '@orkestrel/probe', range: pinnedProbe, lookup: 'found', latest: published },
 				{ name: '@orkestrel/scaffold', range: pinnedScaffold, lookup: 'found', latest: published },
 				{ name: '@orkestrel/test', range: pinnedTest, lookup: 'found', latest: published },
 			])
@@ -2992,6 +2996,8 @@ describe('CLI catalog', () => {
 				type: 'text/plain',
 			},
 			[FLEET_UPSTREAM_PATHS.mirrors.guide]: { status: 200, body: '# Guide\n', type: 'text/plain' },
+			[FLEET_UPSTREAM_PATHS.packages.probe]: { status: 200, body: buildPackument('0.0.1') },
+			[FLEET_UPSTREAM_PATHS.mirrors.probe]: { status: 200, body: '# Probe\n', type: 'text/plain' },
 			[FLEET_UPSTREAM_PATHS.mirrors.scaffold]: {
 				status: 200,
 				body: '# Scaffold\n',
@@ -3025,6 +3031,7 @@ describe('CLI catalog', () => {
 			expect(result.mirrors.map((mirror) => mirror.path)).toStrictEqual([
 				'guides/emitter.md',
 				'guides/guide.md',
+				'guides/probe.md',
 				'guides/scaffold.md',
 				'guides/test.md',
 			])

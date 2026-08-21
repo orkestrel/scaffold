@@ -1834,6 +1834,7 @@ export const FLEET_UPSTREAM_PATHS = Object.freeze({
 	packages: Object.freeze({
 		emitter: '/@orkestrel%2Femitter',
 		guide: '/@orkestrel%2Fguide',
+		probe: '/@orkestrel%2Fprobe',
 		router: '/@orkestrel%2Frouter',
 		sample: '/@orkestrel%2Fsample',
 		scaffold: '/@orkestrel%2Fscaffold',
@@ -1842,6 +1843,7 @@ export const FLEET_UPSTREAM_PATHS = Object.freeze({
 	mirrors: Object.freeze({
 		emitter: '/orkestrel/emitter/refs/heads/main/guides/emitter.md',
 		guide: '/orkestrel/guide/refs/heads/main/guides/guide.md',
+		probe: '/orkestrel/probe/refs/heads/main/guides/probe.md',
 		router: '/orkestrel/router/refs/heads/main/guides/router.md',
 		scaffold: '/orkestrel/scaffold/refs/heads/main/guides/scaffold.md',
 		test: '/orkestrel/test/refs/heads/main/guides/test.md',
