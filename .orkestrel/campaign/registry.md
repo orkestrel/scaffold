@@ -189,3 +189,23 @@ surfaced as a scaffold rules finding rather than edited here — the rules are v
 dispatch itself carried an Orchestrator deviation: the supplied diff was path-limited and omitted
 the barrel hunk, which the reviewer caught as F1. The evidence rule stands: supply `git show`
 unfiltered.
+
+## The 0.0.47 toolchain incident — measured, repaired on both fronts
+
+Re-pinning `test` to scaffold 0.0.47 turned `lint:check` red at sites in unchanged 0.0.8 code: the
+hardened policy walk admits object-literal method shorthand and not accessors, because the
+admission reads only the property's method flag. Scaffold's own suite carries no accessor case and
+its own source uses only class accessors, so the instrument was certified only inside its
+population. One flag was genuine — the journal's console interception assigned arrows in a method
+body — and the hardened walk deserves the credit for catching it.
+
+Repairs: R5s lands the accessor admission in `configs/policy.ts` with the boundary proven in the
+config suite (the accessor pair silent, a variable-held function expression and a
+getter-nested function still reporting); R5t repairs the genuine site through the exported
+`createChannel` factory. The `test` tree carries the fixed plugin ahead of the release, extracted
+from the packed tarball, manifest and lock registry-true at 0.0.47; `scaffold audit` reports the
+one-file drift until the 0.0.48 re-pin converges it.
+
+Publish-order consequence, standing: **scaffold 0.0.48 publishes before test 0.0.9**, because
+test's release gates must prove against the registry's plugin. The wave visits inherit the same
+transitional state wherever a target's own code trips the accessor gap before 0.0.48 lands.
