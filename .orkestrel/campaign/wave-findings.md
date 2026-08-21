@@ -62,6 +62,11 @@ each belongs to the named next change.
   then the shipped `removeDatabase` — before ruling the race unsolvable here. Carrier: database's
   next test-infrastructure change, after the driver fix.
 
+- **workspace:** `assertWorkspaceStoreContract` in `tests/setup.ts` calls `describe`, `it`, and
+  `expect` inside a setup module, which `.claude/rules/tests.md` § Shared test infrastructure
+  forbids. Pre-existing, campaign-refused for consolidation, gates green with it. Carrier:
+  workspace's next test-infrastructure change.
+
 ## Post-publish re-pin obligations
 
 - **Consumer mirrors of the test guide predate 0.0.9.** interpret's vendored `guides/test.md`
