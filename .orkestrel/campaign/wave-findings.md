@@ -43,6 +43,14 @@ each belongs to the named next change.
   the predicted cost at each call site. The parity gate runs green today, so nothing is broken —
   the rows are stale ledger prose. Carrier: reason's next guide change.
 
+## Post-publish re-pin obligations
+
+- **Consumer mirrors of the test guide predate 0.0.9.** interpret's vendored `guides/test.md`
+  still carries the pre-release `invokeRaw` exclusion row at line 694; other consumers mirror the
+  same file. A mirror refreshes rather than being rewritten, so each consumer's re-pin visit
+  refreshes its mirror from the 0.0.9 release alongside the manifest and lock move. No parity
+  assertion reads those rows today, so nothing is red in the meantime.
+
 ## Record only
 
 - The mcp sites list carried a `tests/setupServer.ts:458 createTeardown` row that commit
