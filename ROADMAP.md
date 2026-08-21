@@ -12,9 +12,6 @@ no campaign folder is the plan of record.
 
 ## 2. Package work, scheduled by each package's next natural release
 
-- **scaffold**: add `form` to the vendored mirror inventory so `overwrite` vendors
-  `guides/form.md` into consumers that declare it (toolbox first); re-run overwrite there after.
-  (was B22)
 - **scaffold**: prove the anchor-swap interleaving on a Windows host.
   `tests/src/server/WriteTransaction.test.ts` skips its
   `discards a created segment whose anchor read refuses it` proof on win32 because `renameSync` is
@@ -33,6 +30,10 @@ no campaign folder is the plan of record.
   the rationale essays beside the `Finding`-shape note ("The shape a `Finding` admits is wider…")
   and the creating-verb policy note ("The library does not enforce the creating verb's policy.").
   Recorded discretionary at the 0.0.45 readiness round (was SR12).
+- **scaffold**: record in the vendored `.claude/agents/codex.md` that `codex exec resume` takes no
+  `-C`; the file states only the flags a resume rejects. (from supervisor's 0.0.46 adoption)
+- **scaffold guide**: add the blueprint `file:`-range note to `guides/scaffold.md`. (from
+  supervisor's 0.0.46 adoption)
 - **toolbox**: add proofs for `promptToolShape`/`answerToolShape` in
   `tests/src/core/shapers.test.ts`, or correct the guide sentence claiming every advertised
   shape is covered. (was B23)
@@ -78,10 +79,13 @@ no campaign folder is the plan of record.
 - **contract**: `isContractError` fails across an ESM and CJS copy boundary the same way
   `isProcessError` did. `@orkestrel/process` 0.0.4 fixes its own with a `Symbol.for` brand read
   through `getOwnPropertyDescriptor`; `contract` owns the general mechanism and has not taken it.
-- **supervisor**: re-pin mcp to `^0.0.19` and sea to `^0.0.9` on its next dependency pass. The
-  **supervisor** section covers why nothing else touches that repository.
 - **process**: rulings recorded and never scheduled — the `bytes` and `write` surface synthesis
   ruled for `ProcessInterface`, and bare-`\r` handling in `lines`.
+- **process**: surface stdin-delivery failure. A stdin error is swallowed and `error` is emitted
+  for the child alone, so a child that closes stdin and stays alive (an `EPIPE` on the prompt
+  write) fails through the consumer's own timeout instead of a fast `PROTOCOL`. Found through
+  supervisor's `CLIProvider` inference path, which keeps the timeout as its backstop until this
+  lands.
 - **qualifier**: design round on `Premise` — every member is optional so `isPremise` accepts
   `{}`; decide whether `met`/`field` become required. (was B20)
 
@@ -92,7 +96,8 @@ no campaign folder is the plan of record.
   each dependency's default branch while the catalog table names its published version. A mirror can
   therefore document a surface no consumer can install: refreshing after `@orkestrel/process` merged
   its 0.0.4 work brought `snapshotCommand`, `PROCESS_ERROR_CODES`, and `ProcessChild.off` into this
-  repository's copy while the registry still served 0.0.3. Decide whether a mirror must track the
+  repository's copy while the registry still served 0.0.3 (that instance closed when 0.0.4
+  published, read 2026-08-21; the mechanism is unchanged). Decide whether a mirror must track the
   published release. Until it does, publish a dependency before publishing the package that mirrors
   it, so the mirror is true when it ships.
 
