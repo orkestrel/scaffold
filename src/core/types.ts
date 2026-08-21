@@ -214,15 +214,13 @@ export type CatalogEntry =
 	  }
 
 /**
- * One declared dependency range measured against the registry's latest release.
+ * One declared dependency range measured against a registry release.
  *
  * @remarks
- * A found lookup carries the version upstream reported; one that produced no
- * answer carries the cause and no version. Whether the declared range already
- * admits that version is not recorded, because it is a deterministic function
- * of `range` and `latest`: a stored answer could only disagree with the
- * fields beside it. One centralized helper decides it, and every caller reads
- * the same decision.
+ * `range` is the declared range, and `latest` is the version the producer
+ * selected. A found lookup carries that selected version; one that produced no
+ * answer carries the cause and no selected version. `major`, when present, is
+ * the stable major named by the registry's latest tag in the same answer.
  */
 export type Release =
 	| {
@@ -230,6 +228,7 @@ export type Release =
 			readonly range: string
 			readonly lookup: 'found'
 			readonly latest: string
+			readonly major?: number
 			readonly note?: never
 	  }
 	| {
@@ -237,6 +236,7 @@ export type Release =
 			readonly range: string
 			readonly lookup: 'missing' | 'failed'
 			readonly note: string
+			readonly major?: number
 			readonly latest?: never
 	  }
 

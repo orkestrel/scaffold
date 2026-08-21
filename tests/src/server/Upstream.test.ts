@@ -1,6 +1,6 @@
 import type { Mirror, Release } from '@src/core'
 import { gzipSync } from 'node:zlib'
-import { contentToHex, MAX_COLLECTION_ITEMS } from '@src/core'
+import { contentToHex, MAX_ARTIFACT_BYTES, MAX_COLLECTION_ITEMS } from '@src/core'
 import { Upstream } from '@src/server'
 import { describe, expect, it } from 'vitest'
 import { createRecorder } from '@orkestrel/test'
@@ -61,6 +61,114 @@ describe('Upstream construction', () => {
 })
 
 describe('Upstream lookup', () => {
+	it('selects the newest published version the declared range admits', async () => {
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.router]: {
+				status: 200,
+				body: JSON.stringify({
+					'dist-tags': { latest: '2.0.0' },
+					versions: { '1.0.0': {}, '2.0.0': {}, '1.4.0': {} },
+				}),
+			},
+		})
+		const upstream = new Upstream({ registry: { base: server.base } })
+		try {
+			const [release] = await upstream.lookup([
+				buildDependency({ name: '@orkestrel/router', range: '^1.0.0' }),
+			])
+			expect(release?.latest).toBe('1.4.0')
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('selects the newest published version for an unbounded range', async () => {
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.router]: {
+				status: 200,
+				body: JSON.stringify({
+					'dist-tags': { latest: '1.4.0' },
+					versions: { '1.0.0': {}, '2.0.0': {}, '1.4.0': {} },
+				}),
+			},
+		})
+		const upstream = new Upstream({ registry: { base: server.base } })
+		try {
+			const [release] = await upstream.lookup([
+				buildDependency({ name: '@orkestrel/router', range: '*' }),
+			])
+			expect(release?.latest).toBe('2.0.0')
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('selects before applying the public collection bound', async () => {
+		const versions = Object.fromEntries(
+			Array.from({ length: MAX_COLLECTION_ITEMS + 1 }, (_, index) => [`1.0.${String(index)}`, {}]),
+		)
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.router]: {
+				status: 200,
+				body: JSON.stringify({
+					'dist-tags': { latest: `1.0.${String(MAX_COLLECTION_ITEMS)}` },
+					versions,
+				}),
+			},
+		})
+		const upstream = new Upstream({ registry: { base: server.base } })
+		try {
+			const [release] = await upstream.lookup([
+				buildDependency({ name: '@orkestrel/router', range: '^1.0.0' }),
+			])
+			expect(release?.latest).toBe(`1.0.${String(MAX_COLLECTION_ITEMS)}`)
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('falls back to the latest tag when the version map is absent', async () => {
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.router]: {
+				status: 200,
+				body: JSON.stringify({ 'dist-tags': { latest: '1.4.0' } }),
+			},
+		})
+		const upstream = new Upstream({ registry: { base: server.base } })
+		try {
+			const [release] = await upstream.lookup([
+				buildDependency({ name: '@orkestrel/router', range: '^1.0.0' }),
+			])
+			expect(release?.latest).toBe('1.4.0')
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('never crosses the declared major when the version map is absent', async () => {
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.router]: {
+				status: 200,
+				body: JSON.stringify({ 'dist-tags': { latest: '2.0.0' } }),
+			},
+		})
+		const upstream = new Upstream({ registry: { base: server.base } })
+		try {
+			const [release] = await upstream.lookup([
+				buildDependency({ name: '@orkestrel/router', range: '^1.0.0' }),
+			])
+			expect(release?.lookup).toBe('failed')
+			expect(release?.latest).toBe(undefined)
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
 	it('reports the registry latest for each declared dependency, publishing each verdict whole', async () => {
 		const server = await createUpstreamServer({
 			[UPSTREAM_PATHS.router]: { status: 200, body: buildPackument('0.0.8') },
@@ -77,8 +185,20 @@ describe('Upstream lookup', () => {
 				buildDependency({ name: '@orkestrel/emitter', range: '^0.0.5' }),
 			])
 			expect(releases).toStrictEqual([
-				{ name: '@orkestrel/router', range: '^0.0.8', lookup: 'found', latest: '0.0.8' },
-				{ name: '@orkestrel/emitter', range: '^0.0.5', lookup: 'found', latest: '0.0.5' },
+				{
+					name: '@orkestrel/router',
+					range: '^0.0.8',
+					lookup: 'found',
+					latest: '0.0.8',
+					major: 0,
+				},
+				{
+					name: '@orkestrel/emitter',
+					range: '^0.0.5',
+					lookup: 'found',
+					latest: '0.0.5',
+					major: 0,
+				},
 			])
 			expect(recorder.calls.map(([release]) => release)).toStrictEqual([...releases])
 			expect(server.paths).toStrictEqual([UPSTREAM_PATHS.router, UPSTREAM_PATHS.emitter])
@@ -608,6 +728,29 @@ describe('Upstream catalog', () => {
 })
 
 describe('Upstream bounds', () => {
+	it('reads an abbreviated packument larger than the artifact limit by default', async () => {
+		const body = JSON.stringify({
+			'dist-tags': { latest: '1.0.0' },
+			versions: { '1.0.0': {} },
+			padding: 'x'.repeat(MAX_ARTIFACT_BYTES),
+		})
+		expect(Buffer.byteLength(body)).toBeGreaterThan(MAX_ARTIFACT_BYTES)
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.router]: { status: 200, body },
+		})
+		const upstream = new Upstream({ registry: { base: server.base } })
+		try {
+			const [release] = await upstream.lookup([
+				buildDependency({ name: '@orkestrel/router', range: '*' }),
+			])
+			expect(release?.lookup).toBe('found')
+			expect(release?.latest).toBe('1.0.0')
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
 	it('admits a gzip body whose wire length exceeds its decoded limit', async () => {
 		// Written short and inline rather than through `buildPackument`, because the
 		// property under test is that gzip made the body BIGGER, and only a body too
@@ -624,8 +767,8 @@ describe('Upstream bounds', () => {
 		const upstream = new Upstream({ registry: { base: server.base }, limit: decoded })
 		try {
 			const releases = await upstream.lookup([
-				buildDependency({ name: '@orkestrel/router' }),
-				buildDependency({ name: '@orkestrel/emitter' }),
+				buildDependency({ name: '@orkestrel/router', range: '*' }),
+				buildDependency({ name: '@orkestrel/emitter', range: '*' }),
 			])
 			expect(releases.map((release) => release.lookup)).toStrictEqual(['found', 'found'])
 		} finally {
@@ -662,9 +805,9 @@ describe('Upstream bounds', () => {
 		const upstream = new Upstream({ registry: { base: server.base }, concurrency: 1, budget })
 		try {
 			const releases = await upstream.lookup([
-				buildDependency({ name: '@orkestrel/console' }),
-				buildDependency({ name: '@orkestrel/emitter' }),
-				buildDependency({ name: '@orkestrel/router' }),
+				buildDependency({ name: '@orkestrel/console', range: '*' }),
+				buildDependency({ name: '@orkestrel/emitter', range: '*' }),
+				buildDependency({ name: '@orkestrel/router', range: '*' }),
 			])
 			// Each answer is well inside the per-response limit; it is the last
 			// decoded stream, against what the earlier ones already spent, that is refused.
@@ -687,9 +830,9 @@ describe('Upstream bounds', () => {
 		const upstream = new Upstream({ registry: { base: server.base }, concurrency: 1, budget })
 		try {
 			const releases = await upstream.lookup([
-				buildDependency({ name: '@orkestrel/console' }),
-				buildDependency({ name: '@orkestrel/emitter' }),
-				buildDependency({ name: '@orkestrel/router' }),
+				buildDependency({ name: '@orkestrel/console', range: '*' }),
+				buildDependency({ name: '@orkestrel/emitter', range: '*' }),
+				buildDependency({ name: '@orkestrel/router', range: '*' }),
 			])
 			expect(releases.map((release) => release.lookup)).toStrictEqual(['found', 'found', 'failed'])
 			expect(releases[2]?.note).toBe(`the call spent its ${String(budget)}-byte allowance`)
@@ -763,8 +906,8 @@ describe('Upstream transport', () => {
 		const upstream = new Upstream({ registry: { base: server.base }, retries: 2, concurrency: 1 })
 		try {
 			await upstream.lookup([
-				buildDependency({ name: '@orkestrel/router' }),
-				buildDependency({ name: '@orkestrel/emitter' }),
+				buildDependency({ name: '@orkestrel/router', range: '*' }),
+				buildDependency({ name: '@orkestrel/emitter', range: '*' }),
 			])
 			expect(server.paths.filter((path) => path === UPSTREAM_PATHS.router)).toHaveLength(3)
 			expect(server.paths.filter((path) => path === UPSTREAM_PATHS.emitter)).toHaveLength(1)
@@ -821,7 +964,7 @@ describe('Upstream instrument', () => {
 		const upstream = new Upstream({ registry: { base: server.base }, concurrency: 1 })
 		try {
 			const releases = await upstream.lookup([
-				buildDependency({ name: '@orkestrel/router' }),
+				buildDependency({ name: '@orkestrel/router', range: '^0.0.8' }),
 				buildDependency({ name: '@orkestrel/emitter' }),
 			])
 			// The control, drawn from outside the fixture's scripted population: a

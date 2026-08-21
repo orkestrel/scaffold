@@ -1,6 +1,6 @@
 {
 	"name": "@orkestrel/scaffold",
-	"version": "0.0.46",
+	"version": "0.0.47",
 	"description": "Scaffold workspaces with five commands: new, audit, repair, catalog, and overwrite.",
 	"keywords": [
 		"audit",
@@ -92,25 +92,25 @@
 	},
 	"dependencies": {
 		"@orkestrel/console": "^0.0.9",
-		"@orkestrel/contract": "^0.0.12",
+		"@orkestrel/contract": "^0.0.13",
 		"@orkestrel/emitter": "^0.0.7",
 		"@orkestrel/markdown": "^0.0.9",
 		"@orkestrel/process": "^0.0.4",
 		"@orkestrel/template": "^0.0.4"
 	},
 	"devDependencies": {
-		"@microsoft/api-extractor": "^7.58.12",
+		"@microsoft/api-extractor": "^7.59.0",
 		"@orkestrel/guide": "^0.0.12",
 		"@orkestrel/html": "^0.0.4",
-		"@orkestrel/probe": "^0.0.1",
-		"@orkestrel/test": "file:../../AppData/Local/Temp/claude/C--Users-mikes-WebstormProjects-scaffold/5235fd92-3970-4d17-8e5b-d638df6bf263/scratchpad/orkestrel-test-0.0.7.tgz",
+		"@orkestrel/probe": "^0.0.2",
+		"@orkestrel/test": "^0.0.8",
 		"@types/node": "^26.2.0",
 		"@vitest/browser-playwright": "^4.1.11",
 		"oxfmt": "^0.64.0",
 		"oxlint": "^1.79.0",
 		"playwright": "^1.62.1",
 		"typescript": "^6.0.3",
-		"vite": "~8.2.1",
+		"vite": "^8.2.2",
 		"vite-plugin-dts": "^5.0.3",
 		"vitest": "^4.1.11"
 	},

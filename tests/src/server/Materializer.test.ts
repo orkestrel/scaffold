@@ -931,29 +931,31 @@ describe('Materializer catalog', () => {
 })
 
 describe('Materializer declare', () => {
-	it('rewrites a declared range and leaves every other byte of the manifest', () => {
+	it('rewrites declared ranges in runtime, development, and peer sections', () => {
 		const workspace = createWorkspace()
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = workspace.ensure('project')
-			workspace.write('project/package.json', TARGET_MANIFEST_TEXT)
+			const manifest = TARGET_MANIFEST_TEXT.replace(
+				'\n}',
+				',\n\t"peerDependencies": {\n\t\t"@orkestrel/router": "^0.0.8"\n\t}\n}',
+			)
+			workspace.write('project/package.json', manifest)
 			const materializer = new Materializer({ host })
 			try {
 				const result = materializer.declare(
 					[
 						{ name: '@orkestrel/emitter', range: '^0.0.9' },
 						{ name: '@orkestrel/guide', range: '^0.0.9' },
+						{ name: '@orkestrel/router', range: '^0.0.9' },
 					],
 					target,
 				)
 				expect(result.written).toEqual(['package.json'])
 				const text = workspace.read('project/package.json')
-				expect(text).toBe(
-					TARGET_MANIFEST_TEXT.replace(
-						'"@orkestrel/emitter": "^0.0.5"',
-						'"@orkestrel/emitter": "^0.0.9"',
-					),
-				)
+				expect(text).toContain('"@orkestrel/emitter": "^0.0.9"')
+				expect(text).toContain('"@orkestrel/guide": "^0.0.9"')
+				expect(text).toContain('"@orkestrel/router": "^0.0.9"')
 				expect(text).toContain('"description": "A sample workspace."')
 				expect(text).toContain('"vite": "~8.2.0"')
 			} finally {

@@ -11,6 +11,7 @@ import {
 	computeBytes,
 	computeHash,
 	contentToHex,
+	extractRangeMajor,
 	extractVersion,
 	GROUPS,
 	HOST_PATHS,
@@ -463,6 +464,27 @@ describe('extractVersion and compareVersions', () => {
 		expect(compareVersions('unreadable', '1.2.3')).toBe(-1)
 		expect(compareVersions('alpha', 'beta')).toBe(-1)
 		expect(compareVersions('alpha', 'alpha')).toBe(0)
+	})
+})
+
+describe('extractRangeMajor', () => {
+	it('projects canonical majors and admitted full-version forms', () => {
+		expect(extractRangeMajor('^6')).toBe(6)
+		expect(extractRangeMajor('^0')).toBe(0)
+		expect(extractRangeMajor('^6.0.3')).toBe(6)
+		expect(extractRangeMajor('~6.4.0')).toBe(6)
+		expect(extractRangeMajor('6.5.1')).toBe(6)
+		expect(extractRangeMajor('^6.0.0-beta.1')).toBe(6)
+	})
+
+	it('answers nothing for off-form text', () => {
+		expect(extractRangeMajor('6')).toBeUndefined()
+		expect(extractRangeMajor('~6')).toBeUndefined()
+		expect(extractRangeMajor('^6.0')).toBeUndefined()
+		expect(extractRangeMajor('>=6.0.0')).toBeUndefined()
+		expect(extractRangeMajor('01.2.3')).toBeUndefined()
+		expect(extractRangeMajor('^^6')).toBeUndefined()
+		expect(extractRangeMajor('')).toBeUndefined()
 	})
 })
 

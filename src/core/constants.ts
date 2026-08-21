@@ -1,4 +1,5 @@
 import type { AppDefinition, BuildFormat, Environment, Group, SrcDefinition } from './types.js'
+import manifest from '../../package.json' with { type: 'json' }
 
 /**
  * The `Environment` values, frozen.
@@ -353,6 +354,26 @@ export const MAX_ARTIFACT_BYTES = 5_242_880
 /** Maximum length of the hexadecimal string carrying one artifact's bytes. */
 export const MAX_ARTIFACT_HEX_LENGTH = MAX_ARTIFACT_BYTES * 2
 
+/**
+ * Maximum decoded bytes accepted from one registry response.
+ *
+ * @remarks
+ * The 2026-08-21 abbreviated-packument measurements were 8,647,138 bytes for
+ * TypeScript, 8,077,438 for Playwright, 2,315,360 for `@types/node`, 2,298,256
+ * for Vite, and 1,272,652 for Vitest. The bound leaves headroom above those
+ * registry answers.
+ */
+export const MAX_REGISTRY_BYTES = 33_554_432
+
+/**
+ * Maximum decoded bytes accepted across one registry-reading call.
+ *
+ * @remarks
+ * The 2026-08-21 browser-workspace registry set measured about 24 MiB. The
+ * bound leaves headroom for that set to grow without making a call unbounded.
+ */
+export const MAX_TOTAL_REGISTRY_BYTES = 100_663_296
+
 /** Maximum bytes accepted for one package or vendored-host manifest. */
 export const MAX_MANIFEST_BYTES = 1_048_576
 
@@ -370,39 +391,39 @@ export const DEFAULT_ENGINES = `>=${MINIMUM_NODE_VERSION}`
 
 /** The tooling versions scaffold and every generated workspace share. */
 export const BASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
-	'@orkestrel/guide': '^0.0.12',
-	'@orkestrel/probe': '^0.0.1',
-	'@orkestrel/scaffold': '^0.0.46',
-	'@orkestrel/test': '^0.0.7',
-	'@types/node': '^26.2.0',
-	oxfmt: '^0.64.0',
-	oxlint: '^1.79.0',
-	typescript: '^6.0.3',
-	vite: '~8.2.1',
-	vitest: '^4.1.11',
+	'@orkestrel/guide': manifest.devDependencies['@orkestrel/guide'],
+	'@orkestrel/probe': manifest.devDependencies['@orkestrel/probe'],
+	'@orkestrel/scaffold': `^${manifest.version}`,
+	'@orkestrel/test': manifest.devDependencies['@orkestrel/test'],
+	'@types/node': manifest.devDependencies['@types/node'],
+	oxfmt: manifest.devDependencies.oxfmt,
+	oxlint: manifest.devDependencies.oxlint,
+	typescript: manifest.devDependencies.typescript,
+	vite: manifest.devDependencies.vite,
+	vitest: manifest.devDependencies.vitest,
 })
 
 /** The development dependencies that emit declarations for published source or an executable. */
 export const DECLARATION_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
-	'@microsoft/api-extractor': '^7.58.12',
-	'vite-plugin-dts': '^5.0.3',
+	'@microsoft/api-extractor': manifest.devDependencies['@microsoft/api-extractor'],
+	'vite-plugin-dts': manifest.devDependencies['vite-plugin-dts'],
 })
 
 /** The development dependencies a published browser `src` environment adds. */
 export const SOURCE_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
-	'@vitest/browser-playwright': '^4.1.11',
-	playwright: '^1.62.1',
+	'@vitest/browser-playwright': manifest.devDependencies['@vitest/browser-playwright'],
+	playwright: manifest.devDependencies.playwright,
 })
 
 /** The development dependency every private `app` environment adds. */
 export const APP_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
-	'@orkestrel/contract': '^0.0.12',
+	'@orkestrel/contract': manifest.dependencies['@orkestrel/contract'],
 })
 
 /** The development dependencies a private Vue browser application adds. */
 export const APP_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
 	...SOURCE_BROWSER_DEV_DEPENDENCIES,
-	'@orkestrel/html': '^0.0.4',
+	'@orkestrel/html': manifest.devDependencies['@orkestrel/html'],
 	'@vitejs/plugin-vue': '^6.0.8',
 	vue: '^3.5.40',
 	'vue-tsc': '^3.3.7',
@@ -415,7 +436,7 @@ export const APP_BROWSER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Ob
  * ```ts
  * import { SHOWCASE_DEV_DEPENDENCIES } from '@orkestrel/scaffold'
  *
- * SHOWCASE_DEV_DEPENDENCIES['vite-plugin-singlefile'] // '^2.3.3'
+ * SHOWCASE_DEV_DEPENDENCIES['vite-plugin-singlefile'] // the showcase plugin range
  * ```
  */
 export const SHOWCASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
@@ -424,7 +445,7 @@ export const SHOWCASE_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Objec
 
 /** The development dependencies a private server application adds. */
 export const APP_SERVER_DEV_DEPENDENCIES: Readonly<Record<string, string>> = Object.freeze({
-	'@orkestrel/emitter': '^0.0.7',
+	'@orkestrel/emitter': manifest.dependencies['@orkestrel/emitter'],
 	'@orkestrel/middleware': '^0.0.16',
 	'@orkestrel/router': '^0.0.10',
 	'@orkestrel/server': '^0.0.14',

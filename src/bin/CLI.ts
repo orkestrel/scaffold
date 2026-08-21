@@ -18,6 +18,7 @@ import type {
 } from '@src/server'
 import type {
 	AuditCommand,
+	AuditResult,
 	CatalogCommand,
 	CatalogResult,
 	CLICommand,
@@ -46,6 +47,7 @@ import {
 	Compiler,
 	DEPENDENCY_NAME_PATTERN,
 	ENVIRONMENTS,
+	extractRangeMajor,
 	GROUPS,
 	GLOBAL_SETUP_PATH,
 	GUIDES_TEST_PATH,
@@ -54,6 +56,7 @@ import {
 	manifestToName,
 	MAX_MANIFEST_BYTES,
 	nameToGuide,
+	replacePlanRanges,
 	ScaffoldError,
 	SERVICE_SETUP_PATH,
 	SHOWCASE_CONFIG_PATH,
@@ -75,7 +78,11 @@ import {
 	argvToCommand,
 	auditToExit,
 	auditToSummary,
+	dependenciesToFleet,
 	errorToEnvelope,
+	manifestToPlannedDependencies,
+	releasesToExit,
+	releasesToQuestions,
 	renderUsage,
 } from './helpers.js'
 
@@ -202,14 +209,30 @@ export class CLI implements CLIInterface {
 			app: this.#environments(command.app, 'app'),
 			bin: command.bin === true,
 			setup: false,
-			dependencies: await this.#resolve(this.#packages(command.dependencies)),
+			dependencies: this.#packages(command.dependencies).map((name) => ({
+				name,
+				range: '^0.0.0',
+			})),
 		})
 		const plan = this.#compile(blueprint)
+		const manifest = plan.artifacts.find(
+			(artifact) => artifact.path === 'package.json' && artifact.origin !== 'host',
+		)
+		if (manifest === undefined || manifest.origin === 'host') {
+			throw new ScaffoldError('BLOCKED', 'The compiled plan carries no replaceable manifest.')
+		}
+		const releases = await this.#lookup(
+			dependenciesToFleet(manifestToDependencies(manifest.content)),
+		)
+		const resolved = replacePlanRanges(plan, this.#pin(releases))
+		if (resolved === undefined) {
+			throw new ScaffoldError('BLOCKED', 'The compiled plan ranges could not be replaced.')
+		}
 		const materializer = new Materializer(
 			command.from === undefined ? undefined : { host: command.from },
 		)
 		try {
-			const result = materializer.materialize(plan, target)
+			const result = materializer.materialize(resolved, target)
 			if (command.json === true) this.#report(result)
 			else {
 				this.#say(`Scaffolded ${blueprint.name} into ${result.target}.`)
@@ -230,10 +253,16 @@ export class CLI implements CLIInterface {
 	// coded reason. Refusing is the honest answer: the comparison this verb
 	// reports is the hydrated one, and a fallback to the pure compile would report
 	// `aligned` for exactly the files whose bytes it failed to read.
-	#inspect(command: AuditCommand): number {
+	async #inspect(command: AuditCommand): Promise<number> {
 		const target = command.target ?? '.'
+		const manifest = this.#manifest(target)
 		const blueprint = this.#derive(target)
-		const questions = this.#targetQuestions(target, blueprint)
+		const declared = manifestToPlannedDependencies(manifest, blueprint)
+		const releases = await this.#lookup(declared)
+		const questions = [
+			...this.#targetQuestions(target, blueprint),
+			...releasesToQuestions(releases),
+		]
 		const materializer = new Materializer(
 			command.from === undefined ? undefined : { host: command.from },
 		)
@@ -243,9 +272,13 @@ export class CLI implements CLIInterface {
 				questions.length === 0
 					? measured
 					: { ...measured, questions: [...measured.questions, ...questions] }
-			if (command.json === true) this.#report(audit)
-			else this.#present(audit)
-			return auditToExit(audit)
+			const outcome: AuditResult = { ...audit, releases }
+			if (command.json === true) this.#report(outcome)
+			else {
+				this.#present(audit)
+				this.#reportReleases(releases)
+			}
+			return Math.max(auditToExit(audit), releasesToExit(releases))
 		} finally {
 			materializer.destroy()
 		}
@@ -256,7 +289,7 @@ export class CLI implements CLIInterface {
 	// One materializer spans the whole verb: the audit that guides the write, the
 	// write, and the audit that answers for it are readings of one vendored
 	// host, and a second instance could not promise they were.
-	#restore(command: RepairCommand): number {
+	async #restore(command: RepairCommand): Promise<number> {
 		const target = command.target ?? '.'
 		const groups = this.#groups(command.groups)
 		const blueprint = this.#derive(target)
@@ -271,9 +304,16 @@ export class CLI implements CLIInterface {
 				else this.#present(audit)
 				return EXIT_DRIFT
 			}
-			const result = materializer.repair(plan, audit, target)
-			const [terminal] = this.#survey(materializer, blueprint, target, groups)
-			const outcome: RepairResult = { ...result, audit: terminal }
+			const releases = await this.#lookup(
+				manifestToPlannedDependencies(this.#manifest(target), blueprint),
+			)
+			const pins = this.#pin(releases)
+			const result = this.#merge(
+				materializer.repair(plan, audit, target),
+				materializer.declare(pins, target),
+			)
+			const [terminal] = this.#survey(materializer, this.#derive(target), target, groups)
+			const outcome: RepairResult = { ...result, audit: terminal, releases }
 			if (command.json === true) this.#report(outcome)
 			else {
 				this.#present(terminal)
@@ -298,10 +338,19 @@ export class CLI implements CLIInterface {
 		}
 		const previous = this.#previous(target)
 		const fetched = await this.#fetch(target, command.all === true)
+		const releases = this.#catalogReleases(
+			dependenciesToFleet(manifestToDependencies(this.#manifest(target))),
+			fetched.entries,
+		)
+		const pins = this.#pin(releases)
+		this.#assertFetched(fetched.entries, fetched.mirrors)
 		const materializer = new Materializer(host === undefined ? undefined : { host })
 		let result: MaterializeResult
 		try {
-			result = this.#publish(materializer, target, fetched.entries, fetched.mirrors)
+			result = this.#merge(
+				this.#publish(materializer, target, fetched.entries, fetched.mirrors),
+				materializer.declare(pins, target),
+			)
 		} finally {
 			materializer.destroy()
 		}
@@ -310,10 +359,11 @@ export class CLI implements CLIInterface {
 			entries: fetched.entries,
 			mirrors: fetched.mirrors,
 			dropped: previous.filter((name) => !fetched.entries.some((entry) => entry.name === name)),
+			releases,
 		}
 		if (command.json === true) this.#report(outcome)
 		else this.#recount(outcome)
-		return fetched.mirrors.some((mirror) => mirror.lookup === 'failed') ? EXIT_DRIFT : EXIT_CLEAN
+		return EXIT_CLEAN
 	}
 
 	// `overwrite` — everything repair and catalog do, plus the steps only this
@@ -358,7 +408,11 @@ export class CLI implements CLIInterface {
 				target,
 			)
 			const offline = this.#merge(repaired, removed)
-			const online = await this.#reconcile(materializer, target, blueprint.dependencies)
+			const online = await this.#reconcile(
+				materializer,
+				target,
+				manifestToPlannedDependencies(this.#manifest(target), blueprint),
+			)
 			const [terminal] = this.#survey(materializer, blueprint, target, groups)
 			const outcome: OverwriteResult = {
 				...online,
@@ -390,12 +444,15 @@ export class CLI implements CLIInterface {
 		declared: readonly Dependency[],
 	): Promise<Omit<OverwriteResult, 'audit'>> {
 		const previous = this.#previous(target)
+		let releases: readonly Release[] = []
 		try {
-			const releases = await this.#lookup(declared)
+			releases = await this.#lookup(declared)
+			const pins = this.#pin(releases)
 			const fetched = await this.#fetch(target, false)
+			this.#assertFetched(fetched.entries, fetched.mirrors)
 			const written = this.#merge(
 				this.#publish(materializer, target, fetched.entries, fetched.mirrors),
-				materializer.declare(this.#pin(releases), target),
+				materializer.declare(pins, target),
 			)
 			return {
 				...written,
@@ -413,17 +470,43 @@ export class CLI implements CLIInterface {
 				entries: [],
 				mirrors: [],
 				dropped: [],
-				releases: [],
+				releases,
 				note: `The catalog step did not complete: ${errorToEnvelope(error).error.message}`,
 			}
 		}
 	}
 
-	// Measure each declared range against the registry's latest release.
+	// Measure each fleet row against the registry's newest release and each
+	// foreign row against the newest release its declared major admits.
 	async #lookup(declared: readonly Dependency[]): Promise<readonly Release[]> {
+		if (declared.length === 0) return []
 		const upstream = new Upstream(this.#upstream)
 		try {
-			return await upstream.lookup(declared)
+			const releases = await upstream.lookup(
+				declared.map((dependency) => {
+					const major = extractRangeMajor(dependency.range)
+					return {
+						name: dependency.name,
+						range: dependency.name.startsWith('@orkestrel/')
+							? '*'
+							: major === undefined
+								? dependency.range
+								: `^${String(major)}`,
+					}
+				}),
+			)
+			return releases.map((release, index): Release => {
+				const dependency = declared[index]
+				if (dependency === undefined) {
+					return {
+						name: release.name,
+						range: release.range,
+						lookup: 'failed',
+						note: 'the release answer has no matching declaration',
+					}
+				}
+				return { ...release, range: dependency.range }
+			})
 		} finally {
 			upstream.destroy()
 		}
@@ -462,16 +545,54 @@ export class CLI implements CLIInterface {
 		return this.#merge(materializer.mirror(mirrors, target), materializer.catalog(entries, target))
 	}
 
-	// The ranges a found release pins. A lookup that produced no answer names no
-	// version, so it is left declared as it stands rather than rewritten to a
-	// guess.
+	// Derive declared release evidence from the catalog packuments already read.
+	#catalogReleases(
+		declared: readonly Dependency[],
+		entries: readonly CatalogEntry[],
+	): readonly Release[] {
+		return declared.map((dependency): Release => {
+			const entry = entries.find((candidate) => candidate.name === dependency.name)
+			if (entry?.lookup === 'found') {
+				return { ...dependency, lookup: 'found', latest: entry.version }
+			}
+			return {
+				...dependency,
+				lookup: entry?.lookup ?? 'missing',
+				note: entry?.note ?? 'the organization catalog does not list the declared package',
+			}
+		})
+	}
+
+	// A catalog transaction starts only after every packument and mirror answered.
+	#assertFetched(entries: readonly CatalogEntry[], mirrors: readonly Mirror[]): void {
+		const failed = [
+			...entries.filter((entry) => entry.lookup !== 'found').map((entry) => entry.name),
+			...mirrors.filter((mirror) => mirror.lookup !== 'found').map((mirror) => mirror.name),
+		]
+		if (failed.length === 0) return
+		throw new ScaffoldError(
+			'FETCH',
+			`Upstream produced no complete catalog answer for ${failed.join(', ')}.`,
+			{ names: failed.length },
+		)
+	}
+
+	// Build the complete pin set or refuse before any caller writes a range.
 	#pin(releases: readonly Release[]): readonly Dependency[] {
-		const pinned: Dependency[] = []
-		for (const release of releases) {
-			if (release.lookup === 'found')
-				pinned.push({ name: release.name, range: `^${release.latest}` })
+		const refused = releases.filter((release) => release.lookup !== 'found')
+		if (refused.length > 0) {
+			throw new ScaffoldError(
+				'FETCH',
+				`The registry named no release for ${refused.map((release) => release.name).join(', ')}.`,
+				{ names: refused.length },
+			)
 		}
-		return pinned
+		return releases.map((release) => {
+			if (release.lookup !== 'found') {
+				throw new ScaffoldError('FETCH', `The registry named no release for ${release.name}.`)
+			}
+			return { name: release.name, range: `^${release.latest}` }
+		})
 	}
 
 	// Compile a blueprint into the plan it describes, or refuse with the questions
@@ -816,10 +937,9 @@ export class CLI implements CLIInterface {
 		}
 	}
 
-	// Compare planned tooling by membership alone. Ranges are deliberately out of
-	// scope: overwrite already re-pins declared fleet packages, and a workspace may
-	// deliberately pin any other tool. Either manifest section may carry a planned
-	// tool, and workspace-owned extras are not part of the comparison.
+	// Compare planned tooling membership here. Registry release evidence owns
+	// fleet range equality and foreign supported-major drift, so this question
+	// reports only rows the target omitted or malformed sections it cannot read.
 	#dependencyQuestion(target: string, blueprint: Blueprint, writing = false): Question | undefined {
 		const parsed = parseJSON(this.#manifest(target))
 		if (!isRecord(parsed)) return undefined
@@ -997,29 +1117,6 @@ export class CLI implements CLIInterface {
 		return requested
 	}
 
-	// Pin each named package to the registry's latest release. A name upstream
-	// cannot answer for is refused rather than pinned to an invented range: the
-	// workspace would carry a dependency that does not resolve.
-	async #resolve(names: readonly string[]): Promise<readonly Dependency[]> {
-		if (names.length === 0) return []
-		const upstream = new Upstream(this.#upstream)
-		let releases: readonly Release[]
-		try {
-			releases = await upstream.lookup(names.map((name) => ({ name, range: '*' })))
-		} finally {
-			upstream.destroy()
-		}
-		const refused = releases.filter((release) => release.lookup !== 'found')
-		if (refused.length > 0) {
-			throw new ScaffoldError(
-				'FETCH',
-				`The registry named no release for ${refused.map((release) => release.name).join(', ')}.`,
-				{ names: refused.length },
-			)
-		}
-		return this.#pin(releases)
-	}
-
 	// The results of one run, read as one. Written and skipped never overlap
 	// across the calls a verb makes, because each call answers for its own paths.
 	#merge(first: MaterializeResult, second: MaterializeResult): MaterializeResult {
@@ -1047,6 +1144,19 @@ export class CLI implements CLIInterface {
 			for (const line of table.split('\n')) this.#say(line)
 		}
 		this.#say(auditToSummary(audit))
+	}
+
+	// Report failed release reads and exact fleet drift beside the audit.
+	#reportReleases(releases: readonly Release[]): void {
+		for (const release of releases) {
+			if (release.lookup !== 'found') {
+				this.#warn(`${release.name}: ${release.note}`)
+				continue
+			}
+			if (release.name.startsWith('@orkestrel/') && release.range !== `^${release.latest}`) {
+				this.#warn(`${release.name}: ${release.range} differs from ^${release.latest}.`)
+			}
+		}
 	}
 
 	// Name each stale content path the verb replaced, beside the line-count

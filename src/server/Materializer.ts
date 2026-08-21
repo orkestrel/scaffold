@@ -41,6 +41,7 @@ import {
 	MAX_TOTAL_ARTIFACT_BYTES,
 	matchesDriftReachability,
 	planToFindings,
+	replaceManifestRanges,
 	ScaffoldError,
 	WORKSPACE_OWNED_PATHS,
 } from '@src/core'
@@ -351,7 +352,7 @@ export class Materializer implements MaterializerInterface {
 	}
 
 	/**
-	 * Rewrite the `@orkestrel/*` range set in the target's manifest.
+	 * Rewrite the declared dependency ranges the caller names in the target's manifest.
 	 *
 	 * @param dependencies - The names and ranges the manifest must declare.
 	 * @param target - The directory to write into.
@@ -996,54 +997,17 @@ export class Materializer implements MaterializerInterface {
 	// than re-serialized, so nothing but the ranges moves.
 	#redeclare(dependencies: readonly Dependency[]): (text: string) => string {
 		return (text: string) => {
-			let manifest = text
-			for (const dependency of dependencies) {
-				const key = JSON.stringify(dependency.name)
-				const range = JSON.stringify(dependency.range)
-				let index = manifest.indexOf(key)
-				let declared = false
-				while (index >= 0) {
-					const span = this.#span(manifest, index + key.length)
-					if (span === undefined) {
-						index = manifest.indexOf(key, index + key.length)
-						continue
-					}
-					manifest = manifest.slice(0, span[0]) + range + manifest.slice(span[1])
-					declared = true
-					index = manifest.indexOf(key, span[0] + range.length)
-				}
-				if (!declared) {
-					throw this.#error(
-						'INVALID',
-						`The manifest does not declare ${dependency.name}, so its range cannot be rewritten.`,
-						{ name: dependency.name },
-					)
-				}
-			}
-			return manifest
+			const manifest = replaceManifestRanges(text, dependencies)
+			if (manifest !== undefined) return manifest
+			const missing = dependencies.find(
+				(dependency) => !text.includes(JSON.stringify(dependency.name)),
+			)
+			throw this.#error(
+				'INVALID',
+				`The manifest does not declare ${missing?.name ?? 'a requested package'}, so its range cannot be rewritten.`,
+				missing === undefined ? undefined : { name: missing.name },
+			)
 		}
-	}
-
-	// The quoted value a key introduces, as the half-open span it occupies, or
-	// nothing when the text is a value rather than a key.
-	#span(text: string, from: number): readonly [number, number] | undefined {
-		let index = from
-		while (index < text.length && /\s/u.test(text.charAt(index))) index += 1
-		if (text.charAt(index) !== ':') return undefined
-		index += 1
-		while (index < text.length && /\s/u.test(text.charAt(index))) index += 1
-		if (text.charAt(index) !== '"') return undefined
-		const start = index
-		index += 1
-		while (index < text.length) {
-			if (text.charAt(index) === '\\') {
-				index += 2
-				continue
-			}
-			if (text.charAt(index) === '"') return [start, index + 1]
-			index += 1
-		}
-		return undefined
 	}
 
 	// Publish the outcome on the observation channel, then hand it back.
