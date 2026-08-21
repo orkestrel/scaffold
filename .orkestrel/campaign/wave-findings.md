@@ -35,6 +35,14 @@ each belongs to the named next change.
   The visit's diff touches nothing the test imports. Carrier: mcp's next test-infrastructure
   change (assert the pipe class the host actually provides, or gate on a capability probe).
 
+- **reason:** `guides/test.md` carries two consolidation-ledger rows that 0.0.9 overtakes. The
+  row at line 694 excludes `invokeRaw` from publication on the return-type claim; 0.0.9 ships
+  `invokeUnchecked` with that claim assigned to the caller. The row at line 692 excludes the
+  recorder-map candidate on the explicit-type-argument cost; 0.0.9 ships `createRecorders`,
+  `RecorderMap`, `EventSourceInterface`, and `isRecorderMapComplete`, and the visits pay exactly
+  the predicted cost at each call site. The parity gate runs green today, so nothing is broken —
+  the rows are stale ledger prose. Carrier: reason's next guide change.
+
 ## Record only
 
 - The mcp sites list carried a `tests/setupServer.ts:458 createTeardown` row that commit
