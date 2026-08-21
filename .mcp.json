@@ -5,8 +5,8 @@
 			"args": ["mcp-server"]
 		},
 		"probe": {
-			"command": "node",
-			"args": ["node_modules/@orkestrel/probe/dist/bin/main.js"]
+			"command": "npx",
+			"args": ["probe"]
 		}
 	}
 }
