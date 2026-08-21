@@ -151,7 +151,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 
 		// The digest covers the self-pin, so a release moves it. Update it with the
 		// version bump in the same change; it is the tripwire for every other byte.
-		expect(hex).toBe('aaec7883dd4425c61b974c76d48d2c7b3dfbaced4d1aba6db57c0b44d5d74652')
+		expect(hex).toBe('7d63d1adfe8b8089e19e7b56fc1d70dd63deb4bef3fc1381d7d8ef4fd4d5c2ec')
 	})
 })
 
@@ -184,10 +184,13 @@ describe('blueprintToScripts config projects', () => {
 
 	it('emits the probe workbench outside every gate', () => {
 		const scripts = blueprintToScripts(buildBlueprint())
+		expect(scripts.bench).toBe('vitest bench --config vite.config.ts --no-cache --project probe')
 		expect(scripts['test:probe']).toBe(
 			'vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe',
 		)
+		expect(scripts.test).not.toContain('bench')
 		expect(scripts.test).not.toContain('test:probe')
+		expect(scripts.prepublishOnly).not.toContain('bench')
 		expect(scripts.prepublishOnly).not.toContain('test:probe')
 	})
 
