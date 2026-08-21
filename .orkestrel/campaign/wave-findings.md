@@ -99,6 +99,12 @@ each belongs to the named next change.
   confirmed by the compiler's file list — but not executed here. Run `npm run test:service` once
   on a host with the warmed model before publishing conclusions about that suite.
 
+- **scaffold:** `readErrorCode` and `readRejectionCode` in `tests/setupServer.ts` sit near the
+  shipped `captureError` — both narrow through this package's own `isScaffoldError`, and the
+  rejection reader is async where the shipped helper is synchronous. Observed by the scaffold
+  visit, not adopted. Carrier: a successor scaffold adoption unit if an async `captureError`
+  form ships.
+
 ## Post-publish re-pin obligations
 
 - **Consumer mirrors of the test guide predate 0.0.9.** interpret's vendored `guides/test.md`
