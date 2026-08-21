@@ -154,9 +154,11 @@ throwaway instrument against real sources, aliases and setup. Declare no proof t
 project composed in the root configuration rather than declared as a path string. The `probe` MCP
 server arms through it — its arming specifications live under the `tmp/probe/` directory and infer
 this project — so a workspace that removes the project, or declares it as a path string, fails the
-server's arming, and an unarmed server refuses every `prove` call. Every test script names its
-project, so no gate runs it; its directory is ignored by git; and `.claude/rules/tests.md` governs
-what may live there.
+server's arming, and an unarmed server refuses every `prove` call. The `test:bench` script runs the
+same project in benchmark mode, which collects every test file under the `tmp/probe/` directory and
+the `tests/` tree while refusing every ordinary test case. Every test script names its project and
+the `test:bench` script joins no chain, so no gate runs either mode; the project's directory is
+ignored by git; and `.claude/rules/tests.md` governs what may live there.
 
 - Define a cross-cutting project only for a proof the package actually has.
 - A live-service project is the `service` project in the preceding table, `scripts/service.sh`

@@ -109,10 +109,21 @@ The kinds split by which tool has to see the probe:
 - A **runtime probe** is collected by a Vitest project, so it lives in `tmp/probe/` and runs through
   the `probe` project. `tmp/` is ignored by git, so no probe enters a commit by accident, and every
   test script names its project, so no gate runs the `probe` project.
+- A **bench** is read by Vitest's benchmark mode, so it lives inside a test file as a block behind
+  the `if (import.meta.env.MODE === 'benchmark')` guard. Only the `test:bench` script collects it,
+  test mode refuses it, and no gate runs a bench.
 
 Run a probe before relying on an unverified belief about behaviour: what a function returns, what a
 configuration resolves to, whether a path is reached at all. Prefer a probe to an argument whenever
 the probe is cheap.
+
+When the question is whether the difference between methods is a magnitude or negligible, write a
+guarded bench block beside the probe test and run the `test:bench` script. Declare the threshold
+before the run, read the ratio between the methods against each side's reported uncertainty, and
+record nothing below a magnitude. A settled magnitude that underwrites an implementation choice
+promotes with its test into the mirrored suite and keeps its guarded block there while that choice
+stands. A deterministic relationship promotes as an ordinary assertion, so delete the block. Never
+commit baseline output.
 
 These rules bind every probe:
 
