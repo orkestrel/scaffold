@@ -93,6 +93,12 @@ each belongs to the named next change.
   code (2026-08-21). The visit's diff is comment-only. Carrier: server's next
   test-infrastructure change (gate the proof on a capability probe).
 
+- **ollama:** the `service` project is excluded from `npm test` and needs the live daemon, which
+  this container cannot reach (a bounded read of the local endpoint returned no response,
+  2026-08-21). The visit's rewritten `retryUntil` sites are inside the typecheck program —
+  confirmed by the compiler's file list — but not executed here. Run `npm run test:service` once
+  on a host with the warmed model before publishing conclusions about that suite.
+
 ## Post-publish re-pin obligations
 
 - **Consumer mirrors of the test guide predate 0.0.9.** interpret's vendored `guides/test.md`
