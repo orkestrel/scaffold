@@ -61,7 +61,7 @@ import {
 } from '@src/server'
 import { optionToName } from '../src/bin/helpers.js'
 import { createRecorder, requireValue, resolveRoot } from '@orkestrel/test'
-import { createLoopback, createScratch } from '@orkestrel/test/server'
+import { createLoopback, createScratch, supportsCase } from '@orkestrel/test/server'
 import {
 	buildBlueprint,
 	buildContentArtifact,
@@ -237,34 +237,6 @@ export interface TestUpstreamInterface {
 export const WORKSPACE_ROOT = fileURLToPath(resolveRoot(import.meta))
 
 /**
- * Determine whether the temporary directory a workspace lands in resolves a
- * recased name.
- *
- * @returns True when the directory resolves a name whose case it does not store
- *
- * @remarks
- * Measured against a real directory rather than read off `process.platform`,
- * because the platform name does not decide it: Windows resolves case-insensitively
- * by default but can mark a single directory sensitive, and macOS ships either
- * formatting. The directory a test actually writes to is the only scope whose answer
- * binds that test.
- *
- * @example
- * ```ts
- * detectCaseFolding() // false on ext4, true on default NTFS
- * ```
- */
-export function detectCaseFolding(): boolean {
-	const probe = createScratch({ prefix: 'orkestrel-scaffold-case-' })
-	try {
-		probe.write('case.probe', '')
-		return probe.has('CASE.PROBE')
-	} finally {
-		probe.destroy()
-	}
-}
-
-/**
  * List the tracked paths this repository records as executable.
  *
  * @returns The repository-relative paths git holds at mode `100755`, sorted.
@@ -300,12 +272,17 @@ export function listExecutablePaths(): readonly string[] {
  * Whether this run's temporary directories resolve a recased name.
  *
  * @remarks
- * Measured once through {@link detectCaseFolding}. A suite proving a case verdict
- * asserts against this rather than assuming the host it was written on: where the
- * host folds case the recased name resolves, so a refusal is a case verdict no
- * existence check could produce, and where it does not the refusals coincide.
+ * Derived from the shipped `supportsCase` probe, which writes two names differing
+ * only by case into a temporary directory and reports whether the host kept them
+ * apart. Folding is that answer negated, and the probe answers false on every
+ * host refusal, so a host that refuses it reads as folding. The probe allocates
+ * under the same temporary root a workspace lands in, so its answer binds the
+ * directory a test actually writes to rather than the platform name: Windows
+ * resolves case-insensitively by default but can mark a single directory
+ * sensitive, and macOS ships either formatting. A suite proving a case verdict
+ * asserts against this rather than assuming the host it was written on.
  */
-export const CASE_FOLDING: boolean = detectCaseFolding()
+export const CASE_FOLDING: boolean = !supportsCase()
 
 /**
  * Create a real temporary directory for one test.
