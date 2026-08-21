@@ -135,3 +135,16 @@ container, so neither is a load flake.
   on a root container: root ignores permission bits, so the expected rejection never occurs.
   Carried by U3, under the rule that a conditional skip cites the mechanism that makes the case
   inapplicable, probed at runtime rather than keyed to a platform name.
+
+## Dispatch deviation — U1 launched three times, 2026-08-21
+
+Run 1 stopped on a dirty `package-lock.json` the Orchestrator's own install had left — a standing
+condition the brief failed to name. Run 2 stopped on a six-line brief: the full brief had been
+written through a drifted relative path into `/home/user/test/tmp/codex/`, the launch prompt named
+the scaffold path, and a later amendment heredoc created that path with only the amendment in it.
+Both stops were correct executor behavior.
+
+The rules this violated were already on the books: read the copy the executor will open, and keep
+the Orchestrator's instruments out of the subject repository's `tmp/` while units are live. The
+repair: the canonical brief was reassembled at the named path, verified for both amendments and its
+load-bearing sections before relaunch, and the stray copy was removed from the subject tree.
