@@ -110,8 +110,8 @@ The kinds split by which tool has to see the probe:
   the `probe` project. `tmp/` is ignored by git, so no probe enters a commit by accident, and every
   test script names its project, so no gate runs the `probe` project.
 - A **bench** is read by Vitest's benchmark mode, so it lives inside a test file as a block behind
-  the `if (import.meta.env.MODE === 'benchmark')` guard. Only the `test:bench` script collects it,
-  test mode refuses it, and no gate runs a bench.
+  the `if (import.meta.env.MODE === 'benchmark')` guard. Only the `test:bench` script collects the
+  block, test mode fails an unguarded `bench()` call loudly, and no gate runs a bench.
 
 Run a probe before relying on an unverified belief about behaviour: what a function returns, what a
 configuration resolves to, whether a path is reached at all. Prefer a probe to an argument whenever
