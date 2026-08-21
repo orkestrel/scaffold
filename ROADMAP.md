@@ -9,12 +9,6 @@ no campaign folder is the plan of record.
 
 - **Prepack** (was D6/B3): no fleet package declares `prepack`, so `npm pack` from a stale tree
   ships stale `dist`. Decide once, fleet-wide: add `prepack` or accept the risk.
-- **Branch cleanup** (was D8): run `scripts/branch-cleanup.sh` with operator credentials (the
-  proxy refuses ref deletions). It deletes every stale remote branch across the fleet's
-  repositories; read it before running it. Include relation's ported
-  `claude/database-package-audit-6r4hsd` branch, whose hardening shipped in relation 0.0.9, and
-  scaffold's `rescue/proxy-outage-2026-08-17` branch, whose patches all landed in the reconciled
-  history closed on 2026-08-18.
 
 ## 2. Package work, scheduled by each package's next natural release
 
