@@ -413,6 +413,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		scripts['serve:build'] = 'npm run build:app:server && npm run serve'
 	}
 	if (publishes) {
+		scripts.prepack = scripts.build
 		scripts.prepublishOnly = [
 			'npm run format:check && npm run lint:check && npm run check && npm run build && npm test',
 			...(distributes ? ['npm run test:distribution -- --mode release'] : []),

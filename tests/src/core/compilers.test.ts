@@ -151,7 +151,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 
 		// The digest covers the self-pin, so a release moves it. Update it with the
 		// version bump in the same change; it is the tripwire for every other byte.
-		expect(hex).toBe('aaec7883dd4425c61b974c76d48d2c7b3dfbaced4d1aba6db57c0b44d5d74652')
+		expect(hex).toBe('0bb0e4c59bd9be667ac25d7b54c577bbbc0319fdea69ac06c3a1429699d01db3')
 	})
 })
 
@@ -189,6 +189,16 @@ describe('blueprintToScripts config projects', () => {
 		)
 		expect(scripts.test).not.toContain('test:probe')
 		expect(scripts.prepublishOnly).not.toContain('test:probe')
+	})
+
+	it('rebuilds publishing workspaces before packing', () => {
+		const published = blueprintToScripts(buildBlueprint())
+		const application = blueprintToScripts(createBlueprint('demo', { src: [], app: ['core'] }))
+
+		expect(published.prepack).toBe(published.build)
+		expect(application.prepack).toBeUndefined()
+		expect(published.test).not.toContain('prepack')
+		expect(published.prepublishOnly).not.toContain('prepack')
 	})
 
 	it('does not invent test projects from vendor names alone', () => {

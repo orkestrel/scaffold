@@ -18,7 +18,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { build, loadConfigFromFile } from 'vite'
 import { RuleTester } from 'oxlint/plugins-dev'
 import * as configHelpers from '../configs/helpers.js'
-import { MOCKING_RULE, PRIVACY_RULE } from '../configs/policy.js'
+import { MOCKING_RULE, NESTED_RULE, PRIVACY_RULE } from '../configs/policy.js'
 import configuration, { resolveWorkspacePath } from '../vite.config.js'
 import tsconfig from '../tsconfig.json' with { type: 'json' }
 import { createPolicyScratch, inspectPolicyConfiguration } from './setupPolicy.js'
@@ -573,23 +573,91 @@ describe('policy plugin', () => {
 		],
 	})
 
+	tester.run('no-nested-functions', NESTED_RULE, {
+		valid: [
+			{
+				name: 'accepts a module-scope function',
+				code: 'function projectValue() { return 1 }',
+			},
+			{
+				name: 'accepts an anonymous callback passed directly',
+				code: 'function projectValues() { return values.map((value) => value + 1) }',
+			},
+			{
+				name: 'accepts an anonymous arrow returned directly',
+				code: 'function createProjector() { return () => 1 }',
+			},
+			{
+				name: 'accepts the sanctioned policy visitor delegation',
+				code: [
+					'function reportNode(context, node) { context.report({ node }) }',
+					'const RULE = {',
+					'create(context) {',
+					'return { CallExpression: (node) => reportNode(context, node) }',
+					'}',
+					'}',
+				].join('\n'),
+			},
+			{
+				name: 'accepts function syntax inside a class expression',
+				code: 'function projectValue() { return class { read() { const value = () => 1; return value() } } }',
+			},
+		],
+		invalid: [
+			{
+				name: 'rejects a local function declaration',
+				code: 'function projectValue() { function readValue() { return 1 } return readValue() }',
+				errors: [{ messageId: 'nested' }],
+			},
+			{
+				name: 'rejects a function assigned to a local binding',
+				code: 'function projectValue() { const readValue = () => 1; return readValue() }',
+				errors: [{ messageId: 'nested' }],
+			},
+			{
+				name: 'rejects a named function expression argument',
+				code: 'function projectValue() { return read(function readValue() { return 1 }) }',
+				errors: [{ messageId: 'nested' }],
+			},
+			{
+				name: 'rejects a callback parameter default function',
+				code: 'function projectValue() { return values.map((value = () => 1) => value()) }',
+				errors: [{ messageId: 'nested' }],
+			},
+			{
+				name: 'rejects an assignment two direct callbacks down',
+				code: 'function projectValue() { return values.map((value) => read((nested) => { const project = () => nested; return project() })) }',
+				errors: [{ messageId: 'nested' }],
+			},
+			{
+				name: 'rejects a function assigned inside a class-declaration method',
+				code: 'class Project { read() { const value = () => 1; return value() } }',
+				errors: [{ messageId: 'nested' }],
+			},
+		],
+	})
+
 	it('loads every configured policy rule through the real binary', () => {
 		const scratch = createPolicyScratch({ prefix: 'orkestrel-config-policy-' })
 		try {
+			scratch.write('.oxlintrc.json', readFileSync(resolve(root, '.oxlintrc.json'), 'utf8'))
+			scratch.write('configs/policy.ts', readFileSync(resolve(root, 'configs/policy.ts'), 'utf8'))
 			scratch.write(
-				'violations/fixture.ts',
+				'src/violations/fixture.ts',
 				[
 					"vi.mock('./x')",
 					'class PrivateMember { private value = 1 }',
 					'class ParameterMember { constructor(readonly value: string) {} }',
 					'class PublicMember { public value = 1 }',
+					'function OuterFunction() { const nested = () => undefined; return nested() }',
 					'void PrivateMember',
 					'void ParameterMember',
 					'void PublicMember',
+					'void OuterFunction',
 				].join('\n'),
 			)
 			scratch.write(
-				'clean/fixture.ts',
+				'src/clean/fixture.ts',
 				[
 					'class CleanMember {',
 					'\t#value = 1',
@@ -621,16 +689,16 @@ describe('policy plugin', () => {
 				throw new Error('The oxlint package declares no bin.oxlint entry')
 			}
 			const binary = resolve(dirname(manifestPath), entry)
-			const config = resolve(root, '.oxlintrc.json')
+			const config = resolve(scratch.path, '.oxlintrc.json')
 			const violations = spawnSync(
 				process.execPath,
-				[binary, '--config', config, '--format', 'json', resolve(scratch.path, 'violations')],
-				{ cwd: root, encoding: 'utf8', timeout: 15_000 },
+				[binary, '--config', config, '--format', 'json', 'src/violations'],
+				{ cwd: scratch.path, encoding: 'utf8', timeout: 15_000 },
 			)
 			const clean = spawnSync(
 				process.execPath,
-				[binary, '--config', config, '--format', 'json', resolve(scratch.path, 'clean')],
-				{ cwd: root, encoding: 'utf8', timeout: 15_000 },
+				[binary, '--config', config, '--format', 'json', 'src/clean'],
+				{ cwd: scratch.path, encoding: 'utf8', timeout: 15_000 },
 			)
 			const reports: string[][] = []
 			for (const result of [violations, clean]) {
@@ -664,6 +732,7 @@ describe('policy plugin', () => {
 			for (const rule of [
 				'policy(no-mocking)',
 				'policy(no-keyword-privacy)',
+				'policy(no-nested-functions)',
 				'typescript(parameter-properties)',
 				'typescript(explicit-member-accessibility)',
 			]) {

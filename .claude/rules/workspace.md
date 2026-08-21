@@ -230,6 +230,7 @@ Build/check config alignment:
 | `clean`                 | Remove `dist/`                                                    |
 | `copy <from> <to>`      | Copy while creating parent directories                            |
 | `prepublishOnly`        | Publishing workspaces only: the gate chain, then isolated proofs  |
+| `prepack`               | Publishing workspaces only: rebuild `dist/` so a pack ships current output |
 
 Run `show` only **after** formatting. The committed `demo/showcase.html` is generated/minified; formatting after generation would expand its inlined bundle.
 

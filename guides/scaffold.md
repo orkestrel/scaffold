@@ -597,6 +597,25 @@ valid npm name. A peer reaches the generated workspace through separate represen
 every name in that binding, so a peer the workspace declares by hand, such as `vitest`, is left as
 an import in the emitted bundle rather than inlined into it.
 
+A range is admitted by the shape and refused by the gate, and a `file:` specifier is where a
+consumer meets that split. `isDependency` reads `range` as a non-empty string bounded at
+`MAX_RANGE_LENGTH` and nothing more, because which ranges a blueprint may declare is a gate law
+that reports its accepted candidates rather than a bare `false`. So a blueprint naming
+`file:vendor/orkestrel-form-0.0.1.tgz` is a valid `Dependency` and reaches the gate.
+`dependenciesToQuestions` then tests every declared range against the pattern its own field
+accepts — `ORKESTREL_RANGE_PATTERN` for a runtime dependency and a fleet peer,
+`FLOOR_RANGE_PATTERN` for a foreign peer, `EXTRA_RANGE_PATTERN` for a development extra — and none
+of them admits a `file:` specifier. The question is blocking, so `audit` reports it and compares no
+path:
+
+```text
+dependencies: @orkestrel/form declares the range file:vendor/orkestrel-form-0.0.1.tgz, which dependencies does not accept.
+Audit did not compare the target because the blueprint was refused.
+```
+
+A workspace pinned to a committed tarball therefore has no drift detection until it re-pins to a
+registry range. Read that audit as unavailable, not as clean.
+
 One published environment owns the package root directly. Several published environments require
 `core`, which owns that root while each other environment keeps its subpath. A multi-environment
 `src` selection without `core` therefore emits entry fields naming a `core` build the workspace
@@ -807,15 +826,10 @@ removes a foreign file each fail when the destination no longer matches what the
 The requirement sits in the type rather than in prose, because a deletion that cannot bind to what
 the audit showed is the one thing the destructive verb must never do.
 
-The shape a `Finding` admits is wider than the set an audit produces. Which combinations of
-`ownership`, `drift`, and `observed` a real comparison reaches is `inferDrift`'s law — birth is
-always aligned, presence compares existence only, and bytes are recorded only where they were
-read — so the shape admits a birth-owned path reported stale, which no audit produces. That is
-deliberate: restating the comparison's case analysis in the type would be a second copy of it, able
-to disagree with the one that decides. `isFinding` proves the shape a reader may destructure and
-nothing about whether the verdict is one an audit could have reached. `repair` and `remove`
-re-derive every verdict themselves and act only on what they derived, so a verdict the comparison
-could not have produced is refused by name rather than acted on.
+`isFinding` proves the shape a reader may destructure and nothing about whether the verdict is one
+an audit could have reached. `repair` and `remove` re-derive every verdict themselves and act only
+on what they derived, so a verdict the comparison could not have produced is refused by name rather
+than acted on.
 
 That shape is versioned, and the guard runs at runtime. `repair` and `remove` guard the whole audit
 before reading any of it, so an audit persisted or built against an earlier version of this package
@@ -876,6 +890,13 @@ directories, the bench scripts, the shared policy register, the byte-identical r
 the guide mirrors a generated workspace starts from. `HOST_PATHS` is the candidate list; a plan
 carries the subset its target selects, because a workspace never mirrors its own guide.
 
+`.claude/settings.json` is in that set, and the artifact planned for it is content-owned. `repair`
+and `overwrite` restore its bytes, so an edit made to it inside a target is reverted at the next
+visit and reported as drift until then. Put an operator grant in `.claude/settings.local.json`
+instead. That path is outside `HOST_PATHS` and matches the vendoring deny-list
+`matchesSensitivePath` reads, so `stageHost` never copies it into a host root and no plan carries
+it.
+
 `stageHost` fills the root from a real checkout at build time:
 
 ```ts
@@ -907,7 +928,10 @@ A workspace's file set is a function of its axes plus its structural facts. Noth
 except the manifest.
 
 - One computed artifact: `package.json`, with the entry points, `exports` map, scripts, and
-  development dependencies its selection implies.
+  development dependencies its selection implies. A publishing manifest carries
+  `"prepack": "npm run build"` so a publish rebuilds `dist/` and cannot ship a stale artifact;
+  the hook is publish-time only, and every generated distribution proof passes
+  `--ignore-scripts` to `npm pack` so a suite never re-runs the build it already gates.
 - One template artifact per configuration file the selection needs: the root `tsconfig.json` and
   `vite.config.ts`, plus a Vite config and a scoped TypeScript config per selected environment and
   for `bin` when it is set.
@@ -1096,13 +1120,8 @@ ambient value plus isolated filesystem and network drivers for the mutating exam
 drivers is separate test capability rather than name-resolution parity.
 
 **The library does not enforce the creating verb's policy.** `new` refuses a blueprint carrying any
-question, and `materialize` writes any plan into any vacant target. A workspace of several published
-`src` environments without `core` is therefore constructible, compilable, and writable through the
-library, and its manifest names a `core` build the workspace never runs — which is exactly what the
-advisory said. The refusal lives in the verb that chose the shape because that verb is the only one
-holding the advice: `compile` returns `questions` beside `plan`, and `materialize` receives the plan
-alone, so it has nothing to refuse on. The Compile section states the rule a library caller applies
-in its place.
+question, and `materialize` writes any plan into any vacant target. The Compile section states the
+rule a library caller applies in its place.
 
 **`isPath` does not prove host portability.** It proves bounded target-relative syntax and rejects
 traversal, separators, controls, and reserved syntax characters. It deliberately admits host-specific
