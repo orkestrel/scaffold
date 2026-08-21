@@ -152,10 +152,11 @@ configuration.
 One project sits on neither axis. `probe` includes `tmp/probe/**/*.test.ts` so an agent can run a
 throwaway instrument against real sources, aliases and setup. Declare no proof there. Keep the
 project composed in the root configuration rather than declared as a path string. The `probe` MCP
-server arms through it — its arming specifications live under `tmp/probe/` and infer this project —
-so a workspace that removes the project, or declares it as a path string, fails the server's arming,
-and an unarmed server refuses every `prove` call. Every test script names its project, so no gate
-runs it; its directory is ignored by git; and `.claude/rules/tests.md` governs what may live there.
+server arms through it — its arming specifications live under the `tmp/probe/` directory and infer
+this project — so a workspace that removes the project, or declares it as a path string, fails the
+server's arming, and an unarmed server refuses every `prove` call. Every test script names its
+project, so no gate runs it; its directory is ignored by git; and `.claude/rules/tests.md` governs
+what may live there.
 
 - Define a cross-cutting project only for a proof the package actually has.
 - A live-service project is the `service` project in the preceding table, `scripts/service.sh`

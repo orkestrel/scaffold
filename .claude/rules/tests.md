@@ -95,11 +95,11 @@ A probe is a throwaway instrument that settles one question. It is not a test an
 
 Route the question before writing a probe. When you can state the edit you believe is correct and the
 edit that must break with the stage it breaks at, the question is a claim for the `prove` tool the
-`probe` MCP server registers, and `.claude/rules/quality.md` § Instruments owns that rule. Write a
-probe when the question carries no stated belief to falsify yet, when the subject lies outside the
-TypeScript a workspace project judges, or when the proof needs what that tool's stages do not model:
-a process tree, a listening socket, an installed package, a built entry driven as a child, or a live
-external service.
+`probe` MCP server registers, and `.claude/rules/quality.md` § Instruments owns that rule. When the
+question carries no stated belief to falsify yet, when the subject lies outside the TypeScript a
+workspace project judges, or when the proof needs what that tool's stages do not model — a process
+tree, a listening socket, an installed package, a built entry driven as a child, or a live external
+service — write a probe.
 
 The kinds split by which tool has to see the probe:
 
