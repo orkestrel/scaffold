@@ -30,6 +30,8 @@ no campaign folder is the plan of record.
   `holding` between attempts.
 - **scaffold policy**: move the nested-function body law into `configs/policy.ts` as another
   plugin rule. The rule set carries the rules that shipped; this one stayed a candidate.
+- **fleet**: sweep every target for skill and bridge members outside the vendored set; that
+  population is unmeasured, and `repair` does not remove what the plan never owned.
 - **scaffold rules**: rule on the interned-class canon — `agent`'s barrelled `Channel` vs
   `middleware`'s interned `MultipartParser` are the same species with opposite rulings; land the
   rule in `architecture.md` and correct the losing package. (was B2)
@@ -115,21 +117,7 @@ no campaign folder is the plan of record.
   version-catalog sweep, and the strict skill-directory inventory each red healthy references in
   every mechanical form tried. They stay review-owned until one exists that does not.
 
-## 4. What the next host release owes each target
-
-The anti-slop, style, and skills audits, the probe registration (the declared toolchain row and
-the `.mcp.json`, `.cursor/mcp.json`, and `.codex/config.toml` server entries), and the
-registration-form correction all ride scaffold 0.0.46. The fleet re-pin round after its publish
-delivers them: re-pin `@orkestrel/scaffold` in each target, install, `scaffold overwrite`, gates,
-commit — dev-only, no bumps unless the material-dist comparison triggers one.
-
-- Take each target's violation counts **before** the wave, so the wave has a baseline to move.
-- Sweep every target for skill and bridge members outside the vendored set; that population is
-  unmeasured, and `repair` does not remove what the plan never owned.
-- `.agents/orchestration.md` § The release wave owns the procedure. Read the publish order from
-  the catalog table, regenerated, rather than from any written copy.
-
-## 5. supervisor — user-owned, untouched by this plan
+## 4. supervisor — user-owned, untouched by this plan
 
 The supervisor repo, its 2,342-line in-repo roadmap (promote-the-mechanism campaign: extractions
 into contract/terminal/sse/middleware/sea, new packages `human` and `live`), its
