@@ -5,32 +5,18 @@ package published at latest `@orkestrel` pins, proven by gates and the material-
 This file owns everything still open. Campaign detail is recoverable from git history by hash;
 no campaign folder is the plan of record.
 
-## 1. Git reconciliation — CLOSED 2026-08-18
-
-The session's git proxy lost its write lease mid-campaign; releases published from proven local
-trees while source queued locally, preserved meanwhile as verified patches on
-`rescue/proxy-outage-2026-08-17` and as partial API commits. The lease returned and every repo
-was reconciled: `main` and `claude/orkestrel-fleet-orchestration-b0t5cy` in every affected
-repo (scaffold, worker, workflow, brief, program, agent, ollama, toolbox) were force-updated to
-the pristine local commits, which superseded every partial API replica. Verified: remote `main`
-sha equals local HEAD sha in each, with zero file differences and clean trees. The remaining
-fleet repos were already current.
-
-Nothing is outstanding. `rescue/proxy-outage-2026-08-17` on scaffold is redundant — its
-patches all landed in the reconciled history. Deleting it needs operator credentials: the proxy
-serves writes to existing refs but still refuses ref deletion, so it joins the branch cleanup under
-**User decisions, open**.
-
-## 2. User decisions, open
+## 1. User decisions, open
 
 - **Prepack** (was D6/B3): no fleet package declares `prepack`, so `npm pack` from a stale tree
   ships stale `dist`. Decide once, fleet-wide: add `prepack` or accept the risk.
 - **Branch cleanup** (was D8): run `scripts/branch-cleanup.sh` with operator credentials (the
   proxy refuses ref deletions). It deletes every stale remote branch across the fleet's
   repositories; read it before running it. Include relation's ported
-  `claude/database-package-audit-6r4hsd` branch, whose hardening shipped in relation 0.0.9.
+  `claude/database-package-audit-6r4hsd` branch, whose hardening shipped in relation 0.0.9, and
+  scaffold's `rescue/proxy-outage-2026-08-17` branch, whose patches all landed in the reconciled
+  history closed on 2026-08-18.
 
-## 3. Package work, scheduled by each package's next natural release
+## 2. Package work, scheduled by each package's next natural release
 
 - **scaffold**: add `form` to the vendored mirror inventory so `overwrite` vendors
   `guides/form.md` into consumers that declare it (toolbox first); re-run overwrite there after.
@@ -47,6 +33,10 @@ serves writes to existing refs but still refuses ref deletion, so it joins the b
 - **scaffold rules**: rule on the interned-class canon — `agent`'s barrelled `Channel` vs
   `middleware`'s interned `MultipartParser` are the same species with opposite rulings; land the
   rule in `architecture.md` and correct the losing package. (was B2)
+- **scaffold guide**: trim the passages that re-argue settled decisions on a documentation pass —
+  the rationale essays beside the `Finding`-shape note ("The shape a `Finding` admits is wider…")
+  and the creating-verb policy note ("The library does not enforce the creating verb's policy.").
+  Recorded discretionary at the 0.0.45 readiness round (was SR12).
 - **toolbox**: add proofs for `promptToolShape`/`answerToolShape` in
   `tests/src/core/shapers.test.ts`, or correct the guide sentence claiming every advertised
   shape is covered. (was B23)
@@ -82,12 +72,11 @@ serves writes to existing refs but still refuses ref deletion, so it joins the b
   across the `finally` blocks that duplicate it. Routed to a successor and never scheduled: the
   generated specification's `import.meta.url` carrying the revision suffix, and bounding
   `destroy()` against a language server that accepts stdin and never answers `initialize`.
-- **mcp**: `createProbeServer(probe).stop()` never returns, because the stdin `data` listener stays
-  attached. The fix site is `@orkestrel/mcp`, not `probe`, and `probe` grades it a release blocker.
-  Closing it means an `mcp` bump plus a `probe` test asserting `stop()` leaves
+- **probe**: land the `stop()` regression pin. The stdin detach shipped:
+  `src/server/transports/StdioServerTransport.ts:130-132` in mcp 0.0.20 removes the `data`,
+  `close`, and `error` listeners (verified 2026-08-21). The pin the finding prescribed never
+  landed: a probe test asserting `stop()` returns and leaves
   `process.stdin.listenerCount('data')` at zero.
-- **mcp**: `guides/mcp.md` near line 4187 still describes the pre-0.0.2 `node:child_process`
-  transport. Refresh it on mcp's next documentation pass.
 - **sea**: `SEAOptions` exposes no `timeout`, so `runShell` cannot bound a signing tool whose
   descendants inherit stdio. Recorded as a successor unit during process's 0.0.3 adoption.
 - **contract**: `isContractError` fails across an ESM and CJS copy boundary the same way
@@ -100,7 +89,7 @@ serves writes to existing refs but still refuses ref deletion, so it joins the b
 - **qualifier**: design round on `Premise` — every member is optional so `isPremise` accepts
   `{}`; decide whether `met`/`field` become required. (was B20)
 
-## 4. Design and research records
+## 3. Design and research records
 
 - **A mirrored guide tracks a branch, not a release.** `Upstream` fetches guides from
   `raw.githubusercontent.com` and versions from `registry.npmjs.org`, so `scaffold catalog` mirrors
@@ -125,15 +114,14 @@ serves writes to existing refs but still refuses ref deletion, so it joins the b
 - **Sweeps with no honest mechanical form**: the template-TODO sweep, the model-routing and
   version-catalog sweep, and the strict skill-directory inventory each red healthy references in
   every mechanical form tried. They stay review-owned until one exists that does not.
-- **The in-memory probe mechanism** — typecheck, lint, and execution in one call with no
-  `tmp/probe/` opt-out — shipped as `@orkestrel/probe`. Closed by the package, not by a scaffold
-  change.
 
-## 5. What the next host release owes each target
+## 4. What the next host release owes each target
 
-The anti-slop, style, and skills audits landed in this repository's rules, policy plugin, and
-vendored host. None of it has reached a target: no target's violation counts were taken, and the
-bump, publish, re-pin, `repair`, and gate wave has not run.
+The anti-slop, style, and skills audits, the probe registration (the declared toolchain row and
+the `.mcp.json`, `.cursor/mcp.json`, and `.codex/config.toml` server entries), and the
+registration-form correction all ride scaffold 0.0.46. The fleet re-pin round after its publish
+delivers them: re-pin `@orkestrel/scaffold` in each target, install, `scaffold overwrite`, gates,
+commit — dev-only, no bumps unless the material-dist comparison triggers one.
 
 - Take each target's violation counts **before** the wave, so the wave has a baseline to move.
 - Sweep every target for skill and bridge members outside the vendored set; that population is
@@ -141,7 +129,7 @@ bump, publish, re-pin, `repair`, and gate wave has not run.
 - `.agents/orchestration.md` § The release wave owns the procedure. Read the publish order from
   the catalog table, regenerated, rather than from any written copy.
 
-## 6. supervisor — user-owned, untouched by this plan
+## 5. supervisor — user-owned, untouched by this plan
 
 The supervisor repo, its 2,342-line in-repo roadmap (promote-the-mechanism campaign: extractions
 into contract/terminal/sse/middleware/sea, new packages `human` and `live`), its
