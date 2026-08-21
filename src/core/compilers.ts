@@ -366,6 +366,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 	if (blueprint.conformance) scripts['test:conformance'] = `${vitest} --project conformance`
 	scripts['test:probe'] =
 		'vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe'
+	scripts['test:bench'] = 'vitest bench --config vite.config.ts --no-cache --project probe'
 	if (distributes) scripts['test:distribution'] = `${vitest} --project distribution`
 	if (integrates) scripts['test:integration'] = `${vitest} --project integration`
 	if (blueprint.service) scripts['test:service'] = `${vitest} --project service`

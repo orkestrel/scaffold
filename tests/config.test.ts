@@ -62,7 +62,13 @@ describe('root configuration', () => {
 	it('registers every workspace project with its fixed include and setup files', () => {
 		const expected = new Map<
 			string,
-			{ readonly include: string; readonly setup: readonly string[] }
+			{
+				readonly benchmark?: readonly string[]
+				readonly include: string
+				readonly parallel?: boolean
+				readonly pool?: string
+				readonly setup: readonly string[]
+			}
 		>()
 		if (existsSync(resolve(root, 'src/core'))) {
 			expected.set('src:core', {
@@ -139,7 +145,13 @@ describe('root configuration', () => {
 				setup: ['./tests/setup.ts', './tests/setupService.ts'],
 			})
 		}
-		expected.set('probe', { include: 'tmp/probe/**/*.test.ts', setup: ['./tests/setup.ts'] })
+		expected.set('probe', {
+			benchmark: ['tmp/probe/**/*.test.ts', 'tests/**/*.test.ts'],
+			include: 'tmp/probe/**/*.test.ts',
+			parallel: false,
+			pool: 'threads',
+			setup: ['./tests/setup.ts'],
+		})
 		// A row that is a configuration rather than a factory. A workspace with a
 		// browser application emits one, because that factory refuses overrides and
 		// so is not a value Vitest may call. It is required here, in a workspace that
@@ -174,7 +186,13 @@ describe('root configuration', () => {
 		const controlled = projects.concat(control, concrete)
 		const configured = new Map<
 			string,
-			{ readonly include: string; readonly setup: readonly string[] }
+			{
+				readonly benchmark?: readonly string[]
+				readonly include: string
+				readonly parallel?: boolean
+				readonly pool?: string
+				readonly setup: readonly string[]
+			}
 		>()
 		for (const [requiredLabel] of expected) {
 			const factoryName = requiredLabel.replace(/:([a-z])/gu, (_match, letter: string) =>
@@ -226,6 +244,34 @@ describe('root configuration', () => {
 			)
 			if (effective.length !== 1 || typeof effective[0] !== 'string') {
 				throw new Error(`${label} does not resolve to one effective include`)
+			}
+			if (label === 'probe') {
+				const benchmark: unknown = Object.getOwnPropertyDescriptor(test, 'benchmark')?.value
+				const parallel: unknown = Object.getOwnPropertyDescriptor(test, 'fileParallelism')?.value
+				const pool: unknown = Object.getOwnPropertyDescriptor(test, 'pool')?.value
+				if (typeof benchmark !== 'object' || benchmark === null) {
+					throw new Error('The probe project carries no benchmark block')
+				}
+				const benchmarkInclude: unknown = Object.getOwnPropertyDescriptor(
+					benchmark,
+					'include',
+				)?.value
+				if (
+					!Array.isArray(benchmarkInclude) ||
+					!benchmarkInclude.every((path) => typeof path === 'string') ||
+					typeof parallel !== 'boolean' ||
+					typeof pool !== 'string'
+				) {
+					throw new Error('The probe project carries an invalid benchmark configuration')
+				}
+				configured.set(label, {
+					benchmark: benchmarkInclude,
+					include: effective[0],
+					parallel,
+					pool,
+					setup: [...new Set(setup)],
+				})
+				continue
 			}
 			configured.set(label, { include: effective[0], setup: [...new Set(setup)] })
 		}

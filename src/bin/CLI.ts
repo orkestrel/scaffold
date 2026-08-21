@@ -744,7 +744,7 @@ export class CLI implements CLIInterface {
 		const expected = blueprintToScripts(blueprint)
 		const expectedLines = new Map<string, string>()
 		for (const [name, script] of Object.entries(expected)) {
-			if (!name.startsWith('test:') || name === 'test:probe') continue
+			if (!name.startsWith('test:')) continue
 			const invoked = this.#invocations(script)
 			if (invoked === undefined) continue
 			for (const project of invoked.projects) {
