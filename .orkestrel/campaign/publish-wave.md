@@ -157,6 +157,21 @@ install already recorded in § Bench laws. Measured in `@orkestrel/mcp`: `listen
 while the same suites exited 0 on the host. A subject needing a real local server is unmeasurable
 inside a bench.
 
+## Release closure, 2026-08-21
+
+Every package is on the registry, each upload confirmed by a registry read rather than an exit
+code: `@orkestrel/process` 0.0.4, `@orkestrel/mcp` 0.0.20 (re-pinned to process ^0.0.4),
+`@orkestrel/scaffold` 0.0.45 (re-pinned to process ^0.0.4, with the self-pin, golden digest, and
+fixture manifest moved with the manifest), and `@orkestrel/probe` 0.0.1 (first publish, re-pinned
+to mcp ^0.0.20). Each package released from a clean-room visit: lockfile, modules, and dist
+deleted, reinstalled, `prepublishOnly` green end to end, pushed to `main` before its upload.
+
+Remaining housekeeping, the one open item this ledger carries: the dev-only
+`@orkestrel/scaffold` re-pin round across the fleet (^0.0.44 to ^0.0.45 in each target's
+devDependencies), per the release law - re-pin, run `repair`, prove the gates still green, commit
+to `main`, no bump and no publish. The probe repository's protocol-audit records stay in its
+campaign folder deliberately for the owner's reading; they prune at the debrief.
+
 ## Where each package stands
 
 Read this section first; it is the one that changes.
