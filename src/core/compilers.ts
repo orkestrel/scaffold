@@ -4,6 +4,7 @@ import type {
 	Blueprint,
 	ContentArtifact,
 	Dependency,
+	DependencyPinSet,
 	Environment,
 	Finding,
 	Override,
@@ -1457,34 +1458,37 @@ export function applyOverrides(
  * Replace declared dependency ranges in package manifest text.
  *
  * @param manifest - The manifest text to compile.
- * @param dependencies - The declared names and replacement ranges.
- * @returns The manifest with every matching dependency-section value replaced,
- * or `undefined` when any name has no quoted declaration in those sections.
+ * @param pins - The runtime and development names and replacement ranges.
+ * @returns The manifest with every matching writable value replaced, or
+ * `undefined` when a name has no quoted declaration in its named section.
  *
  * @remarks
  * The compiler replaces values in place instead of serializing the manifest,
  * so description, keywords, scripts, key order, indentation, and every byte
- * outside the named ranges survive. Every occurrence in `dependencies`,
- * `devDependencies`, and `peerDependencies` moves, which keeps duplicate
- * declarations aligned until the manifest's own validation reports the
- * duplicate. An override or resolution with the same name stays untouched.
+ * outside the named ranges survive. Runtime pins apply only to `dependencies`,
+ * and development pins apply only to `devDependencies`. The compiler never
+ * reads or writes `peerDependencies` or `peerDependenciesMeta`. An override or
+ * resolution with the same name stays untouched.
  *
  * @example
  * ```ts
  * import { replaceManifestRanges } from '@orkestrel/scaffold'
  *
  * const manifest = '{"devDependencies":{"typescript":"^6"}}\n'
- * replaceManifestRanges(manifest, [{ name: 'typescript', range: '^7' }])
+ * replaceManifestRanges(manifest, {
+ *   runtime: [],
+ *   development: [{ name: 'typescript', range: '^7' }],
+ * })
  * // the manifest with the declared range replaced
  * ```
  */
 export function replaceManifestRanges(
 	manifest: string,
-	dependencies: readonly Dependency[],
+	pins: DependencyPinSet,
 ): string | undefined {
-	if (dependencies.length === 0) return manifest
-	const sectionNames = new Set(['dependencies', 'devDependencies', 'peerDependencies'])
-	const sections: Array<{ start: number; end: number }> = []
+	if (pins.runtime.length === 0 && pins.development.length === 0) return manifest
+	const sectionNames = new Set(['dependencies', 'devDependencies'])
+	const sections: Array<{ name: string; start: number; end: number }> = []
 	let depth = 0
 	let cursor = 0
 	while (cursor < manifest.length) {
@@ -1542,7 +1546,7 @@ export function replaceManifestRanges(
 						else if (sectionCharacter === '}') {
 							sectionDepth -= 1
 							if (sectionDepth === 0) {
-								sections.push({ start: value, end: sectionCursor + 1 })
+								sections.push({ name: key, start: value, end: sectionCursor + 1 })
 								break
 							}
 						}
@@ -1553,10 +1557,13 @@ export function replaceManifestRanges(
 		}
 		cursor = end
 	}
-	const replacements = new Map(dependencies.map(({ name, range }) => [name, range]))
-	const declared = new Set<string>()
+	const runtime = new Set<string>()
+	const development = new Set<string>()
 	let compiled = manifest
 	for (const bounds of sections.reverse()) {
+		const dependencies = bounds.name === 'dependencies' ? pins.runtime : pins.development
+		const replacements = new Map(dependencies.map(({ name, range }) => [name, range]))
+		const declared = bounds.name === 'dependencies' ? runtime : development
 		let section = compiled.slice(bounds.start, bounds.end)
 		let sectionDepth = 0
 		let sectionCursor = 0
@@ -1623,14 +1630,16 @@ export function replaceManifestRanges(
 		}
 		compiled = compiled.slice(0, bounds.start) + section + compiled.slice(bounds.end)
 	}
-	return dependencies.every(({ name }) => declared.has(name)) ? compiled : undefined
+	const declaredRuntime = pins.runtime.every(({ name }) => runtime.has(name))
+	const declaredDevelopment = pins.development.every(({ name }) => development.has(name))
+	return declaredRuntime && declaredDevelopment ? compiled : undefined
 }
 
 /**
  * Replace dependency ranges in a plan's manifest and recompute its identity.
  *
  * @param plan - The plan carrying the manifest artifact to compile.
- * @param dependencies - The declared names and replacement ranges.
+ * @param pins - The runtime and development names and replacement ranges.
  * @returns A plan with replaced manifest ranges and a matching hash, or
  * `undefined` when the manifest or its identity cannot be compiled.
  *
@@ -1644,18 +1653,15 @@ export function replaceManifestRanges(
  * ```ts
  * import { replacePlanRanges } from '@orkestrel/scaffold'
  *
- * replacePlanRanges(plan, releases) // the plan carrying the resolved manifest ranges
+ * replacePlanRanges(plan, pins) // the plan carrying the resolved writable ranges
  * ```
  */
-export function replacePlanRanges(
-	plan: Plan,
-	dependencies: readonly Dependency[],
-): Plan | undefined {
+export function replacePlanRanges(plan: Plan, pins: DependencyPinSet): Plan | undefined {
 	let replaced = false
 	let refused = false
 	const artifacts = plan.artifacts.map((artifact): Artifact => {
 		if (artifact.path !== 'package.json' || artifact.origin === 'host') return artifact
-		const content = replaceManifestRanges(artifact.content, dependencies)
+		const content = replaceManifestRanges(artifact.content, pins)
 		if (content === undefined) {
 			refused = true
 			return artifact

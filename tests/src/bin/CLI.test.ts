@@ -84,9 +84,15 @@ const TARGET_MANIFEST_TEXT = TARGET_MANIFEST_FIXTURE.replace('~8.2.0', '~8.2.2')
 const FLEET_RELEASE_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Object.freeze({
 	[FLEET_UPSTREAM_PATHS.packages.emitter]: { status: 200, body: buildPackument('0.0.5') },
 	[FLEET_UPSTREAM_PATHS.packages.guide]: { status: 200, body: buildPackument('0.0.9') },
-	[FLEET_UPSTREAM_PATHS.packages.probe]: { status: 200, body: buildPackument('0.0.2') },
+	[FLEET_UPSTREAM_PATHS.packages.probe]: {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/probe']?.slice(1) ?? ''),
+	},
 	[FLEET_UPSTREAM_PATHS.packages.scaffold]: { status: 200, body: buildPackument('0.0.49') },
-	[FLEET_UPSTREAM_PATHS.packages.test]: { status: 200, body: buildPackument('0.0.10') },
+	[FLEET_UPSTREAM_PATHS.packages.test]: {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/test']?.slice(1) ?? ''),
+	},
 	'/@microsoft%2Fapi-extractor': {
 		status: 200,
 		body: buildPackument(DECLARATION_DEV_DEPENDENCIES['@microsoft/api-extractor']?.slice(1) ?? ''),
@@ -155,11 +161,17 @@ const AUDIT_REGISTRY = await createUpstreamServer({
 	'/@orkestrel%2Fguide': { status: 200, body: buildPackument('0.0.9') },
 	'/@orkestrel%2Fhtml': { status: 200, body: buildPackument('0.0.4') },
 	'/@orkestrel%2Fmiddleware': { status: 200, body: buildPackument('0.0.16') },
-	'/@orkestrel%2Fprobe': { status: 200, body: buildPackument('0.0.2') },
+	'/@orkestrel%2Fprobe': {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/probe']?.slice(1) ?? ''),
+	},
 	'/@orkestrel%2Frouter': { status: 200, body: buildPackument('0.0.10') },
 	'/@orkestrel%2Fscaffold': { status: 200, body: buildPackument('0.0.49') },
 	'/@orkestrel%2Fserver': { status: 200, body: buildPackument('0.0.14') },
-	'/@orkestrel%2Ftest': { status: 200, body: buildPackument('0.0.10') },
+	'/@orkestrel%2Ftest': {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/test']?.slice(1) ?? ''),
+	},
 	'/@microsoft%2Fapi-extractor': {
 		status: 200,
 		body: buildPackument(DECLARATION_DEV_DEPENDENCIES['@microsoft/api-extractor']?.slice(1) ?? ''),
@@ -1014,7 +1026,7 @@ describe('CLI audit', () => {
 					// back from the table the advisory read: a message built from that table
 					// reads correctly for whatever the table happens to hold. A floor raise
 					// moves this line, which is where a consumer meets the raise.
-					message: `The manifest at ${target} does not declare a planned dependency: @orkestrel/test. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/test": "^0.0.10",`,
+					message: `The manifest at ${target} does not declare a planned dependency: @orkestrel/test. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/test": "^0.0.11",`,
 					blocking: false,
 				},
 			])
@@ -1308,7 +1320,7 @@ describe('CLI audit', () => {
 		}
 	})
 
-	it('refuses repair before it writes the manifest or configuration', async () => {
+	it('scopes a planned-dependency refusal to repair selections', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
@@ -1323,10 +1335,12 @@ describe('CLI audit', () => {
 			workspace.write('target/vite.config.ts', 'configuration marker\n')
 			const manifest = workspace.read('target/package.json')
 			const configuration = workspace.read('target/vite.config.ts')
-			const sink = createSink()
+			const blocked = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				await new CLI({ ...REGISTRY_OPTIONS, ...blocked.options }).execute([
 					'repair',
+					'--groups',
+					'tests',
 					'--from',
 					fleet.host,
 					'--target',
@@ -1334,14 +1348,81 @@ describe('CLI audit', () => {
 					'--json',
 				]),
 			).toBe(EXIT_DRIFT)
-			expect(JSON.parse(sink.output[0] ?? '')).toStrictEqual({
-				error: {
-					code: 'TARGET',
-					message: `The manifest at ${fleet.target} does not declare a planned dependency: typescript. To continue, add this exact dependency line to dependencies or devDependencies in package.json: "typescript": "^6.0.3",`,
-				},
-			})
+			expect(JSON.parse(blocked.output[0] ?? '')).toHaveProperty('error.code', 'TARGET')
+			expect(JSON.parse(blocked.output[0] ?? '')).toHaveProperty(
+				'error.message',
+				expect.stringContaining('typescript'),
+			)
 			expect(workspace.read('target/package.json')).toBe(manifest)
 			expect(workspace.read('target/vite.config.ts')).toBe(configuration)
+
+			const selected = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...selected.options }).execute([
+					'repair',
+					'--groups',
+					'docs',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			expect(JSON.parse(selected.output[0] ?? '')).toMatchObject({
+				target: fleet.target,
+				written: expect.arrayContaining(['AGENTS.md']),
+			})
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('filters target questions from audit selections', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			workspace.write(
+				'target/package.json',
+				buildTargetManifest(
+					undefined,
+					undefined,
+					omitDependencies(TARGET_DEV_DEPENDENCIES, ['typescript']),
+				),
+			)
+			const excluded = createSink()
+			await new CLI({ ...REGISTRY_OPTIONS, ...excluded.options }).execute([
+				'audit',
+				'--groups',
+				'docs',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			const excludedAudit: Audit = JSON.parse(excluded.output[0] ?? '')
+			expect(excludedAudit.questions).toStrictEqual([])
+
+			const included = createSink()
+			await new CLI({ ...REGISTRY_OPTIONS, ...included.options }).execute([
+				'audit',
+				'--groups',
+				'tests',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			const includedAudit: Audit = JSON.parse(included.output[0] ?? '')
+			expect(includedAudit.questions).toStrictEqual([
+				{
+					field: 'dependencies',
+					message: `The manifest at ${fleet.target} does not declare a planned dependency: typescript. Add this exact dependency line to dependencies or devDependencies in package.json: "typescript": "^6.0.3",`,
+					blocking: false,
+				},
+			])
 		} finally {
 			workspace.destroy()
 		}
@@ -1553,7 +1634,7 @@ describe('CLI audit', () => {
 			expect(JSON.parse(sink.output[0] ?? '')).toStrictEqual({
 				error: {
 					code: 'TARGET',
-					message: `The manifest at ${fleet.target} names a Vitest project the planned configuration does not register: setup. To continue, remove the script that names it or do not use scaffold writing verbs on a workspace that needs a custom Vitest project.`,
+					message: `The configs group is blocked because the manifest at ${fleet.target} names a Vitest project the planned vite.config.ts does not register: setup. Remove the script that names it before selecting configs, or exclude configs from --groups.`,
 				},
 			})
 			expect(workspace.read('target/vite.config.ts')).toBe('marker\n')
@@ -2798,7 +2879,7 @@ describe('CLI repair', () => {
 		}
 	})
 
-	it('refuses to write when a manifest script names an unregistered project', async () => {
+	it('refuses repair when a manifest script names an unregistered project', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
@@ -2823,7 +2904,7 @@ describe('CLI repair', () => {
 			const refusal: unknown = JSON.parse(sink.output[0] ?? '')
 			expect(refusal).toHaveProperty('error.code', 'TARGET')
 			expect(refusal).toHaveProperty('error.message', expect.stringContaining('missing'))
-			expect(refusal).toHaveProperty('error.message', expect.stringContaining('remove the script'))
+			expect(refusal).toHaveProperty('error.message', expect.stringContaining('Remove the script'))
 			expect(refusal).toHaveProperty(
 				'error.message',
 				expect.not.stringContaining('Add the project to vite.config.ts'),
@@ -2905,10 +2986,8 @@ describe('CLI repair', () => {
 				]),
 			).toBe(EXIT_DRIFT)
 			const refusal: unknown = JSON.parse(sink.output[0] ?? '')
-			expect(refusal).toHaveProperty(
-				'error.message',
-				expect.stringContaining('do not use scaffold writing verbs'),
-			)
+			expect(refusal).toHaveProperty('error.message', expect.stringContaining('configs group'))
+			expect(refusal).toHaveProperty('error.message', expect.stringContaining('exclude configs'))
 			expect(refusal).toHaveProperty(
 				'error.message',
 				expect.not.stringContaining('Add the project to vite.config.ts'),
@@ -3228,7 +3307,7 @@ describe('CLI overwrite', () => {
 		}
 	})
 
-	it('refuses to write when a manifest script names an unregistered project', async () => {
+	it('scopes a custom-project refusal to overwrite selections', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
@@ -3243,6 +3322,8 @@ describe('CLI overwrite', () => {
 				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
 					'overwrite',
 					'--dirty',
+					'--groups',
+					'configs',
 					'--from',
 					fleet.host,
 					'--target',
@@ -3253,11 +3334,34 @@ describe('CLI overwrite', () => {
 			const refusal: unknown = JSON.parse(sink.output[0] ?? '')
 			expect(refusal).toHaveProperty('error.code', 'TARGET')
 			expect(refusal).toHaveProperty('error.message', expect.stringContaining('missing'))
-			expect(refusal).toHaveProperty('error.message', expect.stringContaining('remove the script'))
+			expect(refusal).toHaveProperty('error.message', expect.stringContaining('Remove the script'))
 			expect(refusal).toHaveProperty(
 				'error.message',
 				expect.not.stringContaining('Add the project to vite.config.ts'),
 			)
+
+			createRepository(fleet.target)
+			trackFiles(fleet.target)
+			const selected = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...selected.options }).execute([
+					'overwrite',
+					'--dirty',
+					'--offline',
+					'--groups',
+					'docs',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			expect(JSON.parse(selected.output[0] ?? '')).toMatchObject({
+				target: fleet.target,
+				written: expect.arrayContaining(['AGENTS.md']),
+				note: expect.stringContaining('catalog'),
+			})
 		} finally {
 			workspace.destroy()
 		}

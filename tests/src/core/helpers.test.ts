@@ -551,35 +551,48 @@ describe('manifestToName', () => {
 	it('refuses a manifest larger than the ceiling it reads within', () => {
 		const oversized = `{"name":"@orkestrel/sample","filler":"${'a'.repeat(MAX_MANIFEST_BYTES)}"}`
 		expect(manifestToName(oversized)).toBeUndefined()
-		expect(manifestToDependencies(oversized)).toStrictEqual([])
+		expect(manifestToDependencies(oversized)).toStrictEqual({
+			runtime: [],
+			development: [],
+			peer: [],
+		})
 	})
 })
 
 describe('manifestToDependencies', () => {
-	it('reads the fleet packages in section order, first declaration winning', () => {
-		expect(manifestToDependencies(MANIFEST_SAMPLE)).toStrictEqual([
-			{ name: '@orkestrel/emitter', range: '^0.0.5' },
-			{ name: '@orkestrel/guide', range: '^0.0.9' },
-		])
+	it('keeps each fleet declaration in its owning section', () => {
+		expect(manifestToDependencies(MANIFEST_SAMPLE)).toStrictEqual({
+			runtime: [{ name: '@orkestrel/emitter', range: '^0.0.5' }],
+			development: [
+				{ name: '@orkestrel/emitter', range: '^9.9.9' },
+				{ name: '@orkestrel/guide', range: '^0.0.9' },
+			],
+			peer: [],
+		})
 	})
 
-	it('answers an empty list for text it cannot read', () => {
-		expect(manifestToDependencies('{')).toStrictEqual([])
-		expect(manifestToDependencies('[]')).toStrictEqual([])
-		expect(manifestToDependencies('{}')).toStrictEqual([])
+	it('answers empty sections for text it cannot read', () => {
+		const empty = { runtime: [], development: [], peer: [] }
+		expect(manifestToDependencies('{')).toStrictEqual(empty)
+		expect(manifestToDependencies('[]')).toStrictEqual(empty)
+		expect(manifestToDependencies('{}')).toStrictEqual(empty)
 	})
 
 	it('returns rows that cross this package’s own boundary unchanged', () => {
 		const dependencies = manifestToDependencies(MANIFEST_SAMPLE)
-		expect(isCollection(dependencies)).toBe(true)
-		for (const dependency of dependencies) expect(isDependency(dependency)).toBe(true)
+		for (const section of [dependencies.runtime, dependencies.development, dependencies.peer]) {
+			expect(isCollection(section)).toBe(true)
+			for (const dependency of section) expect(isDependency(dependency)).toBe(true)
+		}
 	})
 
 	it('skips a declaration whose name or range is off contract', () => {
 		const manifest =
 			'{"dependencies":{"@orkestrel/Router":"^0.0.8","@orkestrel/router":"","@orkestrel/guide":9,"@orkestrel/emitter":"^0.0.5"}}'
-		expect(manifestToDependencies(manifest)).toStrictEqual([
-			{ name: '@orkestrel/emitter', range: '^0.0.5' },
-		])
+		expect(manifestToDependencies(manifest)).toStrictEqual({
+			runtime: [{ name: '@orkestrel/emitter', range: '^0.0.5' }],
+			development: [],
+			peer: [],
+		})
 	})
 })

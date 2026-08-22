@@ -3,6 +3,7 @@ import type {
 	Blueprint,
 	CatalogEntry,
 	Dependency,
+	DependencyPinSet,
 	Environment,
 	Group,
 	Mirror,
@@ -34,6 +35,7 @@ import type {
 	Provenance,
 	RepairCommand,
 	RepairResult,
+	TargetQuestion,
 	VersionResolution,
 } from './types.js'
 import { renderTable, strip, stripControls } from '@orkestrel/console'
@@ -89,7 +91,7 @@ import {
 	dependenciesToFloors,
 	dependenciesToFleet,
 	errorToEnvelope,
-	manifestToPlannedDependencies,
+	manifestToWritableDependencies,
 	releasesToExit,
 	releasesToQuestions,
 	renderUsage,
@@ -230,8 +232,12 @@ export class CLI implements CLIInterface {
 		if (manifest === undefined || manifest.origin === 'host') {
 			throw new ScaffoldError('BLOCKED', 'The compiled plan carries no replaceable manifest.')
 		}
+		const declarations = manifestToDependencies(manifest.content)
 		const versions = await this.#versions(
-			dependenciesToFleet(manifestToDependencies(manifest.content)),
+			{
+				runtime: dependenciesToFleet(declarations.runtime),
+				development: dependenciesToFleet(declarations.development),
+			},
 			command.offline === true,
 		)
 		this.#assertVersions(versions)
@@ -275,10 +281,10 @@ export class CLI implements CLIInterface {
 		const manifest = this.#manifest(target)
 		const blueprint = this.#derive(target)
 		const groups = this.#groups(command.groups)
-		const declared = manifestToPlannedDependencies(manifest, blueprint)
+		const declared = manifestToWritableDependencies(manifest, blueprint)
 		const versions = await this.#versions(declared, command.offline === true)
 		const questions = [
-			...this.#targetQuestions(target, blueprint),
+			...this.#targetQuestions(target, blueprint, groups),
 			...releasesToQuestions(versions.releases),
 		]
 		const host = await this.#host(command.from, target, command.offline === true)
@@ -322,7 +328,7 @@ export class CLI implements CLIInterface {
 		const target = command.target ?? '.'
 		const groups = this.#groups(command.groups)
 		const blueprint = this.#derive(target)
-		this.#assertTarget(target, blueprint)
+		this.#assertTarget(target, blueprint, groups)
 		const host = await this.#host(command.from, target, command.offline === true)
 		try {
 			const [audit, plan] = this.#survey(host.materializer, blueprint, target, groups)
@@ -338,13 +344,13 @@ export class CLI implements CLIInterface {
 				return EXIT_DRIFT
 			}
 			const versions = await this.#versions(
-				manifestToPlannedDependencies(this.#manifest(target), blueprint),
+				manifestToWritableDependencies(this.#manifest(target), blueprint),
 				command.offline === true,
 			)
 			this.#assertVersions(versions)
 			const result = this.#merge(
 				host.materializer.repair(plan, audit, target),
-				host.materializer.declare(versions.pins, target),
+				host.materializer.declare(versions.pins.runtime, versions.pins.development, target),
 			)
 			const [terminal] = this.#survey(host.materializer, this.#derive(target), target, groups)
 			const outcome: RepairResult = {
@@ -382,11 +388,16 @@ export class CLI implements CLIInterface {
 		}
 		const previous = this.#previous(target)
 		const fetched = await this.#fetch(target, command.all === true)
+		const declarations = manifestToDependencies(this.#manifest(target))
+		const writable: DependencyPinSet = {
+			runtime: dependenciesToFleet(declarations.runtime),
+			development: dependenciesToFleet(declarations.development),
+		}
 		const releases = this.#catalogReleases(
-			dependenciesToFleet(manifestToDependencies(this.#manifest(target))),
+			[...writable.runtime, ...writable.development],
 			fetched.entries,
 		)
-		const pins = this.#pin(releases)
+		const pins = this.#pin(releases, writable)
 		this.#assertFetched(fetched.entries, fetched.mirrors)
 		const guides: Baseline | undefined =
 			fetched.mirrors.length === 0
@@ -399,7 +410,7 @@ export class CLI implements CLIInterface {
 		try {
 			result = this.#merge(
 				this.#publish(materializer, target, fetched.entries, fetched.mirrors),
-				materializer.declare(pins, target),
+				materializer.declare(pins.runtime, pins.development, target),
 			)
 		} finally {
 			materializer.destroy()
@@ -428,7 +439,7 @@ export class CLI implements CLIInterface {
 		const target = command.target ?? '.'
 		const groups = this.#groups(command.groups)
 		const blueprint = this.#derive(target)
-		this.#assertTarget(target, blueprint)
+		this.#assertTarget(target, blueprint, groups)
 		const worktree = this.#worktree(target)
 		if (worktree.dirty.length > 0 && command.dirty !== true) {
 			throw new ScaffoldError(
@@ -451,7 +462,7 @@ export class CLI implements CLIInterface {
 				} else this.#present(audit)
 				return EXIT_DRIFT
 			}
-			const declared = manifestToPlannedDependencies(this.#manifest(target), blueprint)
+			const declared = manifestToWritableDependencies(this.#manifest(target), blueprint)
 			const repaired = host.materializer.repair(plan, audit, target)
 			// The candidate set is re-derived from the plan and target, then held to
 			// the audit's foreign findings. A path the plan claims is never a deletion
@@ -499,12 +510,12 @@ export class CLI implements CLIInterface {
 	async #offline(
 		materializer: MaterializerInterface,
 		target: string,
-		declared: readonly Dependency[],
+		declared: DependencyPinSet,
 		host: Baseline | undefined,
 	): Promise<Omit<OverwriteResult, 'audit'>> {
 		const versions = await this.#versions(declared, true)
 		this.#assertVersions(versions)
-		const written = materializer.declare(versions.pins, target)
+		const written = materializer.declare(versions.pins.runtime, versions.pins.development, target)
 		return {
 			...written,
 			entries: [],
@@ -522,7 +533,7 @@ export class CLI implements CLIInterface {
 	async #reconcile(
 		materializer: MaterializerInterface,
 		target: string,
-		declared: readonly Dependency[],
+		declared: DependencyPinSet,
 		host: Baseline | undefined,
 		hostForced: boolean,
 	): Promise<Omit<OverwriteResult, 'audit'>> {
@@ -552,7 +563,7 @@ export class CLI implements CLIInterface {
 			}
 			const written = this.#merge(
 				this.#publish(materializer, target, fetched.entries, fetched.mirrors),
-				materializer.declare(versions.pins, target),
+				materializer.declare(versions.pins.runtime, versions.pins.development, target),
 			)
 			const floors: string[] = []
 			if (hostForced) floors.push('host')
@@ -625,16 +636,33 @@ export class CLI implements CLIInterface {
 
 	// Resolve one whole version surface. Authoritative absence refuses, while a
 	// read that did not complete selects every declaration's distributed floor.
-	async #versions(declared: readonly Dependency[], offline: boolean): Promise<VersionResolution> {
-		if (declared.length === 0) {
-			return { releases: [], pins: [], forced: false, complete: true }
+	async #versions(declared: DependencyPinSet, offline: boolean): Promise<VersionResolution> {
+		const dependencies = [...declared.runtime, ...declared.development]
+		if (dependencies.length === 0) {
+			return {
+				releases: [],
+				pins: { runtime: [], development: [] },
+				forced: false,
+				complete: true,
+			}
 		}
-		const floors = dependenciesToFloors(declared)
+		const floors = dependenciesToFloors(dependencies)
+		const floorPins: DependencyPinSet | undefined =
+			floors === undefined
+				? undefined
+				: {
+						runtime: floors
+							.slice(0, declared.runtime.length)
+							.map((release) => ({ name: release.name, range: release.range })),
+						development: floors
+							.slice(declared.runtime.length)
+							.map((release) => ({ name: release.name, range: release.range })),
+					}
 		if (offline) {
-			if (floors === undefined) {
+			if (floors === undefined || floorPins === undefined) {
 				return {
 					releases: [],
-					pins: [],
+					pins: { runtime: [], development: [] },
 					baseline: 'floor',
 					forced: false,
 					complete: false,
@@ -642,20 +670,20 @@ export class CLI implements CLIInterface {
 			}
 			return {
 				releases: floors,
-				pins: floors.map((release) => ({ name: release.name, range: release.range })),
+				pins: floorPins,
 				baseline: 'floor',
 				forced: false,
 				complete: true,
 			}
 		}
-		const releases = await this.#lookup(declared)
+		const releases = await this.#lookup(dependencies)
 		const absent = releases.filter(
 			(release) => release.lookup === 'missing' || release.lookup === 'unmatched',
 		)
 		if (absent.length > 0) {
 			return {
 				releases,
-				pins: [],
+				pins: { runtime: [], development: [] },
 				baseline: 'live',
 				forced: false,
 				complete: false,
@@ -663,10 +691,10 @@ export class CLI implements CLIInterface {
 		}
 		const failed = releases.some((release) => release.lookup === 'failed')
 		if (failed) {
-			if (floors === undefined) {
+			if (floorPins === undefined) {
 				return {
 					releases,
-					pins: [],
+					pins: { runtime: [], development: [] },
 					baseline: 'floor',
 					forced: true,
 					complete: false,
@@ -674,7 +702,7 @@ export class CLI implements CLIInterface {
 			}
 			return {
 				releases,
-				pins: floors.map((release) => ({ name: release.name, range: release.range })),
+				pins: floorPins,
 				baseline: 'floor',
 				forced: true,
 				complete: true,
@@ -682,7 +710,7 @@ export class CLI implements CLIInterface {
 		}
 		return {
 			releases,
-			pins: this.#pin(releases),
+			pins: this.#pin(releases, declared),
 			baseline: 'live',
 			forced: false,
 			complete: true,
@@ -748,7 +776,14 @@ export class CLI implements CLIInterface {
 	): Promise<{ readonly entries: readonly CatalogEntry[]; readonly mirrors: readonly Mirror[] }> {
 		const manifest = this.#manifest(target)
 		const own = manifestToName(manifest)
-		const declared = manifestToDependencies(manifest).map((dependency) => dependency.name)
+		const dependencies = manifestToDependencies(manifest)
+		const declared = [
+			...new Set(
+				[...dependencies.runtime, ...dependencies.development, ...dependencies.peer].map(
+					(dependency) => dependency.name,
+				),
+			),
+		]
 		const upstream = new Upstream(this.#upstream)
 		try {
 			const entries = await upstream.catalog()
@@ -808,7 +843,7 @@ export class CLI implements CLIInterface {
 	}
 
 	// Build the complete pin set or refuse before any caller writes a range.
-	#pin(releases: readonly Release[]): readonly Dependency[] {
+	#pin(releases: readonly Release[], declared: DependencyPinSet): DependencyPinSet {
 		const refused = releases.filter((release) => release.lookup !== 'found')
 		if (refused.length > 0) {
 			throw new ScaffoldError(
@@ -817,12 +852,26 @@ export class CLI implements CLIInterface {
 				{ names: refused.length },
 			)
 		}
-		return releases.map((release) => {
+		const dependencies = [...declared.runtime, ...declared.development]
+		const pins: Dependency[] = []
+		for (let index = 0; index < releases.length; index += 1) {
+			const release = releases[index]
+			const dependency = dependencies[index]
+			if (release === undefined || dependency === undefined) {
+				throw new ScaffoldError('FETCH', 'The release answer has no matching declaration.')
+			}
 			if (release.lookup !== 'found') {
 				throw new ScaffoldError('FETCH', `The registry named no release for ${release.name}.`)
 			}
-			return { name: release.name, range: `^${release.latest}` }
-		})
+			pins.push({ name: dependency.name, range: `^${release.latest}` })
+		}
+		if (pins.length !== dependencies.length) {
+			throw new ScaffoldError('FETCH', 'The release answer does not match the declaration set.')
+		}
+		return {
+			runtime: pins.slice(0, declared.runtime.length),
+			development: pins.slice(declared.runtime.length),
+		}
 	}
 
 	// Compile a blueprint into the plan it describes, or refuse with the questions
@@ -917,7 +966,7 @@ export class CLI implements CLIInterface {
 		return createBlueprint(declared.slice(declared.lastIndexOf('/') + 1), {
 			src: this.#probe(target, 'src'),
 			app: this.#probe(target, 'app'),
-			dependencies: manifestToDependencies(manifest),
+			dependencies: manifestToDependencies(manifest).runtime,
 			bin: bin !== undefined && isExactCaseFile(bin),
 			setup:
 				tests !== undefined &&
@@ -1054,7 +1103,11 @@ export class CLI implements CLIInterface {
 	// Report either side of the planned-project invariant. Audit carries the
 	// advisory; writing verbs turn it into the hard boundary that keeps a
 	// birth-owned manifest from disagreeing with content-owned configuration.
-	#projectQuestion(target: string, blueprint: Blueprint, writing = false): Question | undefined {
+	#projectQuestion(
+		target: string,
+		blueprint: Blueprint,
+		writing = false,
+	): TargetQuestion | undefined {
 		const manifest = this.#manifest(target)
 		const planned = blueprintToRootVite(blueprint)
 		const parsed = parseJSON(manifest)
@@ -1079,17 +1132,19 @@ export class CLI implements CLIInterface {
 		if (unresolved) {
 			return {
 				field: 'projects',
-				message: `The manifest at ${target} contains a Vitest project expression that cannot be resolved statically.${projects.length === 0 ? '' : ` It also names projects the planned configuration does not register: ${projects.join(', ')}.`} ${writing ? 'Replace it with a literal --project value or remove the script before using a scaffold writing verb.' : 'Replace it with a literal --project value before relying on the planned configuration.'}`,
+				message: `The manifest at ${target} contains a Vitest project expression that cannot be resolved statically.${projects.length === 0 ? '' : ` It also names projects the planned vite.config.ts does not register: ${projects.join(', ')}.`} ${writing ? 'The configs group is blocked. Replace the expression with a literal --project value before selecting configs, or exclude configs from --groups.' : 'Replace it with a literal --project value before relying on the planned configuration.'}`,
 				blocking: false,
+				groups: ['configs'],
 			}
 		}
 		if (projects.length > 0) {
 			return {
 				field: 'projects',
 				message: writing
-					? `The manifest at ${target} names ${projects.length === 1 ? 'a Vitest project' : 'Vitest projects'} the planned configuration does not register: ${projects.join(', ')}. To continue, remove the ${projects.length === 1 ? 'script that names it' : 'scripts that name them'} or do not use scaffold writing verbs on a workspace that needs ${projects.length === 1 ? 'a custom Vitest project' : 'custom Vitest projects'}.`
+					? `The configs group is blocked because the manifest at ${target} names ${projects.length === 1 ? 'a Vitest project' : 'Vitest projects'} the planned vite.config.ts does not register: ${projects.join(', ')}. Remove the ${projects.length === 1 ? 'script that names it' : 'scripts that name them'} before selecting configs, or exclude configs from --groups.`
 					: `The manifest at ${target} names ${projects.length === 1 ? 'a Vitest project' : 'Vitest projects'} the planned configuration does not register: ${projects.join(', ')}. Add ${projects.length === 1 ? 'the project' : 'each project'} to vite.config.ts or remove the ${projects.length === 1 ? 'script that names it' : 'scripts that name them'}.`,
 				blocking: false,
+				groups: ['configs'],
 			}
 		}
 		const expected = blueprintToScripts(blueprint)
@@ -1130,8 +1185,9 @@ export class CLI implements CLIInterface {
 		if (unresolved) {
 			return {
 				field: 'projects',
-				message: `The manifest at ${target} contains a ${gateNames} chain that cannot be resolved statically. ${writing ? 'Replace it with literal npm run script names before using a scaffold writing verb.' : 'Replace it with literal npm run script names before relying on the planned configuration.'}`,
+				message: `The manifest at ${target} contains a ${gateNames} chain that cannot be resolved statically. ${writing ? 'The configs group is blocked. Replace it with literal npm run script names before selecting configs, or exclude configs from --groups.' : 'Replace it with literal npm run script names before relying on the planned configuration.'}`,
 				blocking: false,
+				groups: ['configs'],
 			}
 		}
 		const missing = [...expectedLines]
@@ -1162,15 +1218,20 @@ export class CLI implements CLIInterface {
 		}
 		return {
 			field: 'projects',
-			message: `The manifest at ${target} does not reach ${names.length === 1 ? 'a Vitest project' : 'Vitest projects'} the planned configuration registers: ${names.join(', ')}. No chain from ${gateNames} invokes ${names.length === 1 ? 'it' : 'them'}. ${remedies.join(' ')}`,
+			message: `${writing ? 'The configs group is blocked because ' : ''}the manifest at ${target} does not reach ${names.length === 1 ? 'a Vitest project' : 'Vitest projects'} the planned configuration registers: ${names.join(', ')}. No chain from ${gateNames} invokes ${names.length === 1 ? 'it' : 'them'}. ${remedies.join(' ')}${writing ? ' Exclude configs from --groups to write another group.' : ''}`,
 			blocking: false,
+			groups: ['configs'],
 		}
 	}
 
 	// Compare planned tooling membership here. Registry release evidence owns
 	// fleet range equality and foreign supported-major drift, so this question
 	// reports only rows the target omitted or malformed sections it cannot read.
-	#dependencyQuestion(target: string, blueprint: Blueprint, writing = false): Question | undefined {
+	#dependencyQuestion(
+		target: string,
+		blueprint: Blueprint,
+		writing = false,
+	): TargetQuestion | undefined {
 		const parsed = parseJSON(this.#manifest(target))
 		if (!isRecord(parsed)) return undefined
 		const malformed = ['dependencies', 'devDependencies'].filter(
@@ -1179,8 +1240,9 @@ export class CLI implements CLIInterface {
 		if (malformed.length > 0) {
 			return {
 				field: 'dependencies',
-				message: `The manifest at ${target} declares ${malformed.join(' and ')} as ${malformed.length === 1 ? 'a value' : 'values'} that ${malformed.length === 1 ? 'is' : 'are'} not ${malformed.length === 1 ? 'an object' : 'objects'}. Replace ${malformed.length === 1 ? 'it' : 'them'} with ${malformed.length === 1 ? 'an object' : 'objects'} before ${writing ? 'using a scaffold writing verb' : 'relying on the planned dependency set'}.`,
+				message: `The manifest at ${target} declares ${malformed.join(' and ')} as ${malformed.length === 1 ? 'a value' : 'values'} that ${malformed.length === 1 ? 'is' : 'are'} not ${malformed.length === 1 ? 'an object' : 'objects'}. ${writing ? `The configs and tests groups are blocked. Replace ${malformed.length === 1 ? 'it' : 'them'} with ${malformed.length === 1 ? 'an object' : 'objects'} before selecting configs or tests, or exclude those groups from --groups.` : `Replace ${malformed.length === 1 ? 'it' : 'them'} with ${malformed.length === 1 ? 'an object' : 'objects'} before relying on the planned dependency set.`}`,
 				blocking: false,
+				groups: ['configs', 'tests'],
 			}
 		}
 		const dependencies = isRecord(parsed.dependencies) ? parsed.dependencies : {}
@@ -1195,26 +1257,42 @@ export class CLI implements CLIInterface {
 		)
 		return {
 			field: 'dependencies',
-			message: `The manifest at ${target} does not declare ${names.length === 1 ? 'a planned dependency' : 'planned dependencies'}: ${names.join(', ')}. ${writing ? 'To continue, add' : 'Add'} ${lines.length === 1 ? 'this exact dependency line' : 'these exact dependency lines'} to dependencies or devDependencies in package.json: ${lines.join(' ')}`,
+			message: `The manifest at ${target} does not declare ${names.length === 1 ? 'a planned dependency' : 'planned dependencies'}: ${names.join(', ')}. ${writing ? 'The configs and tests groups are blocked. Add' : 'Add'} ${lines.length === 1 ? 'this exact dependency line' : 'these exact dependency lines'} to dependencies or devDependencies in package.json: ${lines.join(' ')}${writing ? ' Add the dependency before selecting configs or tests, or exclude those groups from --groups.' : ''}`,
 			blocking: false,
+			groups: ['configs', 'tests'],
 		}
 	}
 
 	// Collect the target questions in a fixed order so audit reports every
 	// independent advisory and writing verbs refuse the same complete answer.
-	#targetQuestions(target: string, blueprint: Blueprint, writing = false): readonly Question[] {
-		const questions: Question[] = []
+	#targetQuestions(
+		target: string,
+		blueprint: Blueprint,
+		groups: readonly Group[] | undefined,
+		writing = false,
+	): readonly Question[] {
+		const questions: TargetQuestion[] = []
 		const project = this.#projectQuestion(target, blueprint, writing)
 		if (project !== undefined) questions.push(project)
 		const dependency = this.#dependencyQuestion(target, blueprint, writing)
 		if (dependency !== undefined) questions.push(dependency)
 		return questions
+			.filter(
+				(question) =>
+					groups === undefined || question.groups.some((group) => groups.includes(group)),
+			)
+			.map(({ field, message, blocking, candidates }): Question => ({
+				field,
+				message,
+				blocking,
+				...(candidates === undefined ? {} : { candidates }),
+			}))
 	}
 
 	// Writing verbs refuse the advisories because their next step would replace
 	// planned configuration. Audit alone reports them without changing the target.
-	#assertTarget(target: string, blueprint: Blueprint): void {
-		const questions = this.#targetQuestions(target, blueprint, true)
+	#assertTarget(target: string, blueprint: Blueprint, groups: readonly Group[] | undefined): void {
+		const questions = this.#targetQuestions(target, blueprint, groups, true)
 		if (questions.length === 0) return
 		throw new ScaffoldError('TARGET', questions.map((question) => question.message).join(' '), {
 			target,

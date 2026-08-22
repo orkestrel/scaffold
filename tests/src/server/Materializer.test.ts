@@ -1129,21 +1129,24 @@ describe('Materializer catalog', () => {
 })
 
 describe('Materializer declare', () => {
-	it('rewrites declared ranges in runtime, development, and peer sections', () => {
+	it('raises writable ranges while preserving a shared peer declaration', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = workspace.ensure('project')
 			const manifest = TARGET_MANIFEST_TEXT.replace(
+				'"@orkestrel/guide": "^0.0.9"',
+				'"@orkestrel/guide": "^0.0.9",\n\t\t"@orkestrel/router": "^0.0.8"',
+			).replace(
 				'\n}',
-				',\n\t"peerDependencies": {\n\t\t"@orkestrel/router": "^0.0.8"\n\t}\n}',
+				',\n\t"peerDependencies": {\n\t\t"@orkestrel/router": ">=0.0.8"\n\t},\n\t"peerDependenciesMeta": {\n\t\t"@orkestrel/router": {\n\t\t\t"optional": true\n\t\t}\n\t}\n}',
 			)
 			workspace.write('project/package.json', manifest)
 			const materializer = new Materializer({ host })
 			try {
 				const result = materializer.declare(
+					[{ name: '@orkestrel/emitter', range: '^0.0.9' }],
 					[
-						{ name: '@orkestrel/emitter', range: '^0.0.9' },
 						{ name: '@orkestrel/guide', range: '^0.0.9' },
 						{ name: '@orkestrel/router', range: '^0.0.9' },
 					],
@@ -1151,11 +1154,12 @@ describe('Materializer declare', () => {
 				)
 				expect(result.written).toEqual(['package.json'])
 				const text = workspace.read('project/package.json')
-				expect(text).toContain('"@orkestrel/emitter": "^0.0.9"')
-				expect(text).toContain('"@orkestrel/guide": "^0.0.9"')
-				expect(text).toContain('"@orkestrel/router": "^0.0.9"')
-				expect(text).toContain('"description": "A sample workspace."')
-				expect(text).toContain('"vite": "~8.2.0"')
+				// The development floor moves, while the caller-owned peer bytes do not.
+				expect(text).toBe(
+					manifest
+						.replace('"@orkestrel/emitter": "^0.0.5"', '"@orkestrel/emitter": "^0.0.9"')
+						.replace('"@orkestrel/router": "^0.0.8"', '"@orkestrel/router": "^0.0.9"'),
+				)
 			} finally {
 				materializer.destroy()
 			}
@@ -1174,13 +1178,14 @@ describe('Materializer declare', () => {
 			try {
 				const result = materializer.declare(
 					[{ name: '@orkestrel/emitter', range: '^0.0.5' }],
+					[],
 					target,
 				)
 				expect(result.written).toEqual([])
 				expect(result.skipped).toEqual(['package.json'])
 				expect(
 					readErrorCode(() =>
-						materializer.declare([{ name: '@orkestrel/router', range: '^0.0.8' }], target),
+						materializer.declare([{ name: '@orkestrel/router', range: '^0.0.8' }], [], target),
 					),
 				).toBe('INVALID')
 				expect(workspace.read('project/package.json')).toBe(TARGET_MANIFEST_TEXT)

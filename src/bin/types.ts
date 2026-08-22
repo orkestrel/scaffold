@@ -1,4 +1,12 @@
-import type { Audit, CatalogEntry, Dependency, Mirror, Release } from '@src/core'
+import type {
+	Audit,
+	CatalogEntry,
+	DependencyPinSet,
+	Group,
+	Mirror,
+	Question,
+	Release,
+} from '@src/core'
 import type { MaterializeResult, MaterializerInterface, UpstreamOptions } from '@src/server'
 
 /**
@@ -210,10 +218,15 @@ export interface HostResolution {
 /** One resolved version baseline beside its evidence and writable ranges. */
 export interface VersionResolution {
 	readonly releases: readonly Release[]
-	readonly pins: readonly Dependency[]
+	readonly pins: DependencyPinSet
 	readonly baseline?: Baseline
 	readonly forced: boolean
 	readonly complete: boolean
+}
+
+/** One target question beside the artifact groups that make it relevant. */
+export interface TargetQuestion extends Question {
+	readonly groups: readonly Group[]
 }
 
 /** The executable's boundary. */

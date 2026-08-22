@@ -117,6 +117,19 @@ export interface Dependency {
 	readonly optional?: boolean
 }
 
+/** The dependency sections read from an existing package manifest. */
+export interface ManifestDependencySet {
+	readonly runtime: readonly Dependency[]
+	readonly development: readonly Dependency[]
+	readonly peer: readonly Dependency[]
+}
+
+/** The dependency sections a range-writing operation may change. */
+export interface DependencyPinSet {
+	readonly runtime: readonly Dependency[]
+	readonly development: readonly Dependency[]
+}
+
 /**
  * One artifact override.
  *

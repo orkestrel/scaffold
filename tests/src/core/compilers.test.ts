@@ -68,7 +68,7 @@ describe('ORKESTREL_RANGE_PATTERN', () => {
 })
 
 describe('replaceManifestRanges', () => {
-	it('rewrites dependency sections without changing overrides or resolutions', () => {
+	it('raises writable declarations while preserving peer declarations and metadata', () => {
 		const manifest = `{
 	"dependencies": {
 		"typescript": "^6.0.3"
@@ -79,6 +79,11 @@ describe('replaceManifestRanges', () => {
 	"peerDependencies": {
 		"typescript": ">=6.0.0"
 	},
+	"peerDependenciesMeta": {
+		"typescript": {
+			"optional": true
+		}
+	},
 	"overrides": {
 		"typescript": "6.0.3"
 	},
@@ -87,13 +92,19 @@ describe('replaceManifestRanges', () => {
 	}
 }
 `
-		const replaced = replaceManifestRanges(manifest, [{ name: 'typescript', range: '^6.0.4' }])
+		const replaced = replaceManifestRanges(manifest, {
+			runtime: [{ name: 'typescript', range: '^6.0.4' }],
+			development: [{ name: 'typescript', range: '^6.0.4' }],
+		})
 		expect(replaced).toBe(
 			manifest
 				.replace('"typescript": "^6.0.3"', '"typescript": "^6.0.4"')
-				.replace('"typescript": "^6.0.3"', '"typescript": "^6.0.4"')
-				.replace('"typescript": ">=6.0.0"', '"typescript": "^6.0.4"'),
+				.replace('"typescript": "^6.0.3"', '"typescript": "^6.0.4"'),
 		)
+		// A name shared with a writable declaration does not grant ownership of
+		// its peer range or metadata.
+		expect(replaced).toContain('"typescript": ">=6.0.0"')
+		expect(replaced).toContain('"optional": true')
 		expect(replaced).toContain('"overrides": {\n\t\t"typescript": "6.0.3"')
 		expect(replaced).toContain('"resolutions": {\n\t\t"typescript": "6.0.2"')
 	})
@@ -135,7 +146,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 		// deliberate step and this is where a workspace receives it.
 		expect(planned['@orkestrel/html']).toBe('^0.0.4')
 		expect(planned.vue).toBe('^3.5.40')
-		expect(planned['@orkestrel/test']).toBe('^0.0.10')
+		expect(planned['@orkestrel/test']).toBe('^0.0.11')
 	})
 
 	it('keeps a shared toolchain pin when a foreign peer declares its floor', () => {
@@ -184,7 +195,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 
 		// The digest covers the self-pin, so a release moves it. Update it with the
 		// version bump in the same change; it is the tripwire for every other byte.
-		expect(hex).toBe('b0398042a9ae2b8cad03dd4630e4495dc720e7dd6034927f5f0cd52ede713abb')
+		expect(hex).toBe('3510b15931d4d49acf7fce6ecdddc9ffc910430533a345fd3ddbc2c331d7ca3f')
 	})
 })
 

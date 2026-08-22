@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process'
 import { globSync, readFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { HOST_PATHS } from '@src/core'
+import { HOST_PATHS, replaceManifestRanges } from '@src/core'
 import { listFiles, pathToStorage } from '@src/server'
 import { requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
@@ -481,7 +481,7 @@ describe('installed package consumer', () => {
 				"dist/src/core/index.d.ts: isBlueprint({ name: 'router', src: ['core'] }) // false — not the whole record",
 				'dist/src/core/index.d.ts: parseCompilerOptions({ on: { compile: () => {} } }) // the same record',
 				'dist/src/core/index.d.ts: planToSummary(plan).computed // the number of computed artifacts',
-				'dist/src/core/index.d.ts: replacePlanRanges(plan, releases) // the plan carrying the resolved manifest ranges',
+				'dist/src/core/index.d.ts: replacePlanRanges(plan, pins) // the plan carrying the resolved writable ranges',
 				'dist/src/core/index.d.ts: selectGroups() // every group, in plan order',
 				"dist/src/core/index.d.ts: serializeTypeScriptString(\"it's\") // `'it\\\\'s'`",
 				"dist/src/core/index.d.ts: SHOWCASE_DEV_DEPENDENCIES['vite-plugin-singlefile'] // the showcase plugin range",
@@ -573,6 +573,131 @@ describe('installed package consumer', () => {
 			expect(manifest).toContain('"test:config"')
 			expect(manifest).toContain('"test:integration"')
 			expect(manifest).not.toContain('"test:guides"')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('installs a preserved peer beside an exact co-peer witness and rejects the narrowed control', () => {
+		const workspace = createScratch({ prefix: 'scaffold-peer-install-' })
+		const packed = workspace.ensure('packed')
+		const cache = workspace.ensure('cache')
+		const environment = { ...process.env, npm_config_cache: cache }
+		try {
+			workspace.write('packages/peer/package.json', '{"name":"peer-contract","version":"1.0.0"}\n')
+			const manifest = `{
+	"name": "preserved-range",
+	"version": "1.0.0",
+	"devDependencies": {
+		"peer-contract": "^1.0.0"
+	},
+	"peerDependencies": {
+		"peer-contract": ">=1.0.0"
+	}
+}
+`
+			const preserved = replaceManifestRanges(manifest, {
+				runtime: [],
+				development: [{ name: 'peer-contract', range: '^1.0.1' }],
+			})
+			if (preserved === undefined) throw new Error('The preserved package manifest was refused')
+			expect(preserved).toContain('"peer-contract": "^1.0.1"')
+			expect(preserved).toContain('"peer-contract": ">=1.0.0"')
+			workspace.write('packages/preserved/package.json', preserved)
+			workspace.write(
+				'packages/control/package.json',
+				preserved
+					.replace('"name": "preserved-range"', '"name": "narrowed-range"')
+					.replace('"peer-contract": ">=1.0.0"', '"peer-contract": "^2.0.0"'),
+			)
+			workspace.write(
+				'packages/witness/package.json',
+				'{"name":"co-peer-witness","version":"1.0.0","peerDependencies":{"peer-contract":"1.0.0"}}\n',
+			)
+
+			for (const source of ['peer', 'preserved', 'control', 'witness']) {
+				const pack = spawnSync(
+					npm,
+					['pack', '--json', '--ignore-scripts', '--pack-destination', packed, '--cache', cache],
+					{
+						cwd: join(workspace.path, 'packages', source),
+						encoding: 'utf8',
+						env: environment,
+						windowsHide: true,
+						shell,
+					},
+				)
+				expect(pack.status).toBe(0)
+			}
+
+			const archives = globSync('*.tgz', { cwd: packed })
+			const peer = archives.find((archive) => archive.startsWith('peer-contract-'))
+			const preservedArchive = archives.find((archive) => archive.startsWith('preserved-range-'))
+			const control = archives.find((archive) => archive.startsWith('narrowed-range-'))
+			const witness = archives.find((archive) => archive.startsWith('co-peer-witness-'))
+			if (
+				peer === undefined ||
+				preservedArchive === undefined ||
+				control === undefined ||
+				witness === undefined
+			) {
+				throw new Error('The peer resolver fixture did not pack every package')
+			}
+
+			const accepted = workspace.ensure('accepted')
+			workspace.write(
+				'accepted/package.json',
+				`${JSON.stringify({
+					name: 'accepted-peer-graph',
+					version: '1.0.0',
+					private: true,
+					dependencies: {
+						'peer-contract': `file:${relative(accepted, join(packed, peer)).replaceAll('\\', '/')}`,
+						'preserved-range': `file:${relative(accepted, join(packed, preservedArchive)).replaceAll('\\', '/')}`,
+						'co-peer-witness': `file:${relative(accepted, join(packed, witness)).replaceAll('\\', '/')}`,
+					},
+				})}\n`,
+			)
+			const installed = spawnSync(
+				npm,
+				['install', '--offline', '--ignore-scripts', '--no-audit', '--no-fund', '--cache', cache],
+				{
+					cwd: accepted,
+					encoding: 'utf8',
+					env: environment,
+					windowsHide: true,
+					shell,
+				},
+			)
+			expect(installed.status, `${installed.stdout}\n${installed.stderr}`).toBe(0)
+
+			const refused = workspace.ensure('refused')
+			workspace.write(
+				'refused/package.json',
+				`${JSON.stringify({
+					name: 'refused-peer-graph',
+					version: '1.0.0',
+					private: true,
+					dependencies: {
+						'peer-contract': `file:${relative(refused, join(packed, peer)).replaceAll('\\', '/')}`,
+						'narrowed-range': `file:${relative(refused, join(packed, control)).replaceAll('\\', '/')}`,
+						'co-peer-witness': `file:${relative(refused, join(packed, witness)).replaceAll('\\', '/')}`,
+					},
+				})}\n`,
+			)
+			const rejected = spawnSync(
+				npm,
+				['install', '--offline', '--ignore-scripts', '--no-audit', '--no-fund', '--cache', cache],
+				{
+					cwd: refused,
+					encoding: 'utf8',
+					env: environment,
+					windowsHide: true,
+					shell,
+				},
+			)
+			expect(rejected.status).not.toBe(0)
+			expect(`${rejected.stdout}\n${rejected.stderr}`).toContain('ERESOLVE')
 		} finally {
 			workspace.destroy()
 		}

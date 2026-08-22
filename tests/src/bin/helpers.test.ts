@@ -27,7 +27,7 @@ import {
 	dependenciesToFleet,
 	environmentToUpstream,
 	errorToEnvelope,
-	manifestToPlannedDependencies,
+	manifestToWritableDependencies,
 	optionToName,
 	releasesToExit,
 	releasesToQuestions,
@@ -363,17 +363,19 @@ describe('release evidence', () => {
 		])
 	})
 
-	it('reads fleet rows and declared planned foreign tools from a manifest', () => {
+	it('reads writable fleet rows and planned foreign tools without peers', () => {
 		const blueprint = createBlueprint('sample', { src: ['core'] })
-		const declared = manifestToPlannedDependencies(
-			'{"dependencies":{"@orkestrel/emitter":"^0.0.7","vite":"^8.2.2"},"devDependencies":{"typescript":"^6.0.3"}}',
+		const declared = manifestToWritableDependencies(
+			'{"dependencies":{"@orkestrel/emitter":"^0.0.7","vite":"^8.2.2"},"devDependencies":{"typescript":"^6.0.3"},"peerDependencies":{"@orkestrel/router":"^0.0.8"}}',
 			blueprint,
 		)
-		expect(declared).toStrictEqual([
-			{ name: '@orkestrel/emitter', range: '^0.0.7' },
-			{ name: 'typescript', range: '^6.0.3' },
-			{ name: 'vite', range: '^8.2.2' },
-		])
+		expect(declared).toStrictEqual({
+			runtime: [
+				{ name: '@orkestrel/emitter', range: '^0.0.7' },
+				{ name: 'vite', range: '^8.2.2' },
+			],
+			development: [{ name: 'typescript', range: '^6.0.3' }],
+		})
 	})
 
 	it('keeps only declared fleet dependencies in source order', () => {

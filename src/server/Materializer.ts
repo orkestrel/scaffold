@@ -389,9 +389,10 @@ export class Materializer implements MaterializerInterface {
 	}
 
 	/**
-	 * Rewrite the declared dependency ranges the caller names in the target's manifest.
+	 * Rewrite the runtime and development dependency ranges the caller names in the target's manifest.
 	 *
-	 * @param dependencies - The names and ranges the manifest must declare.
+	 * @param runtime - The names and ranges `dependencies` must declare.
+	 * @param development - The names and ranges `devDependencies` must declare.
 	 * @param target - The directory to write into.
 	 * @returns The manifest path, written when a declared range moved and skipped otherwise.
 	 * @throws {@link ScaffoldError} coded `INVALID` when an argument is not the
@@ -400,17 +401,26 @@ export class Materializer implements MaterializerInterface {
 	 * committed, and `DESTROYED` after teardown.
 	 *
 	 * @remarks
-	 * No other part of the manifest is read back out or rewritten, so a consumer's
-	 * own description, keywords, scripts, and formatting survive the call. Only a
-	 * range already declared is rewritten: inserting a package would mean
-	 * re-serializing the whole manifest, which is exactly the edit this verb
-	 * promises not to make, so an undeclared name is refused by name instead.
+	 * No other part of the manifest is read back out or rewritten. The method
+	 * never reads or writes `peerDependencies` or `peerDependenciesMeta`. Only a
+	 * range already declared in its named writable section is rewritten, so an
+	 * undeclared name is refused instead of inserted.
 	 */
-	declare(dependencies: readonly Dependency[], target: string): MaterializeResult {
+	declare(
+		runtime: readonly Dependency[],
+		development: readonly Dependency[],
+		target: string,
+	): MaterializeResult {
 		this.#assertAlive()
-		const accepted = this.#accept(dependencies, isDependencies, 'dependencies')
+		const acceptedRuntime = this.#accept(runtime, isDependencies, 'runtime')
+		const acceptedDevelopment = this.#accept(development, isDependencies, 'development')
 		const directory = this.#accept(target, isFilesystemPath, 'target')
-		return this.#rewrite(directory, 'package.json', MAX_MANIFEST_BYTES, this.#redeclare(accepted))
+		return this.#rewrite(
+			directory,
+			'package.json',
+			MAX_MANIFEST_BYTES,
+			this.#redeclare(acceptedRuntime, acceptedDevelopment),
+		)
 	}
 
 	/**
@@ -1142,12 +1152,16 @@ export class Materializer implements MaterializerInterface {
 		return note.replaceAll('|', '\\|').replaceAll(/\s+/gu, ' ').trim()
 	}
 
-	// Every declared range replaced in place. The manifest's text is edited rather
-	// than re-serialized, so nothing but the ranges moves.
-	#redeclare(dependencies: readonly Dependency[]): (text: string) => string {
+	// Every writable range replaced in place. The manifest's text is edited rather
+	// than re-serialized, so nothing but runtime and development ranges moves.
+	#redeclare(
+		runtime: readonly Dependency[],
+		development: readonly Dependency[],
+	): (text: string) => string {
 		return (text: string) => {
-			const manifest = replaceManifestRanges(text, dependencies)
+			const manifest = replaceManifestRanges(text, { runtime, development })
 			if (manifest !== undefined) return manifest
+			const dependencies = [...runtime, ...development]
 			const missing = dependencies.find(
 				(dependency) => !text.includes(JSON.stringify(dependency.name)),
 			)

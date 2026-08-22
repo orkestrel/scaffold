@@ -2,6 +2,7 @@ import type {
 	Artifact,
 	CatalogEntry,
 	Dependency,
+	ManifestDependencySet,
 	Drift,
 	Finding,
 	Group,
@@ -806,19 +807,17 @@ export function manifestToName(manifest: string): string | undefined {
 }
 
 /**
- * Project a package manifest's text to the `@orkestrel/*` packages it declares.
+ * Project a package manifest's text to the `@orkestrel/*` packages each dependency section declares.
  *
  * @param manifest - The `package.json` text.
- * @returns One dependency per declared `@orkestrel` package, in section order,
- * with the first declaration of a repeated name winning.
+ * @returns The runtime, development, and peer declarations as separate lists.
  *
  * @remarks
- * Runtime, development, and peer sections are read in that order, because a
- * package the fleet publishes is upstream of this workspace wherever it is
- * declared. Every other name is skipped rather than refused: a workspace's
- * unrelated dependencies are not this package's to report on.
+ * Every other name is skipped rather than refused: a workspace's unrelated
+ * dependencies are not this package's to report on. Keeping the sections
+ * separate prevents a caller from treating a peer as a writable floor.
  *
- * Never throws, and every row it returns satisfies `isDependency` while the
+ * Never throws, and every row it returns satisfies `isDependency` while each
  * list satisfies `isCollection`, so the result crosses the compiler's own
  * boundary without a second cleaning.
  *
@@ -827,25 +826,35 @@ export function manifestToName(manifest: string): string | undefined {
  * import { manifestToDependencies } from '@orkestrel/scaffold'
  *
  * manifestToDependencies('{"dependencies":{"@orkestrel/emitter":"^0.0.5","vite":"~8.2.0"}}')
- * // [{ name: '@orkestrel/emitter', range: '^0.0.5' }]
+ * // { runtime: [{ name: '@orkestrel/emitter', range: '^0.0.5' }], development: [], peer: [] }
  * ```
  */
-export function manifestToDependencies(manifest: string): readonly Dependency[] {
-	if (computeBytes(manifest) > MAX_MANIFEST_BYTES) return []
+export function manifestToDependencies(manifest: string): ManifestDependencySet {
+	if (computeBytes(manifest) > MAX_MANIFEST_BYTES) {
+		return { runtime: [], development: [], peer: [] }
+	}
 	const parsed = parseJSON(manifest)
-	if (!isRecord(parsed)) return []
-	const dependencies: Dependency[] = []
-	const seen = new Set<string>()
-	for (const section of ['dependencies', 'devDependencies', 'peerDependencies']) {
-		const entries = parsed[section]
+	if (!isRecord(parsed)) return { runtime: [], development: [], peer: [] }
+	const runtime: Dependency[] = []
+	const development: Dependency[] = []
+	const peer: Dependency[] = []
+	const sections = [
+		{ name: 'dependencies', dependencies: runtime },
+		{ name: 'devDependencies', dependencies: development },
+		{ name: 'peerDependencies', dependencies: peer },
+	]
+	for (const section of sections) {
+		const entries = parsed[section.name]
 		if (!isRecord(entries)) continue
 		for (const [name, range] of Object.entries(entries)) {
-			if (seen.has(name)) continue
 			if (!DEPENDENCY_NAME_PATTERN.test(name) || name.length > MAX_DEPENDENCY_NAME_LENGTH) continue
 			if (!isString(range) || range.length === 0 || range.length > MAX_RANGE_LENGTH) continue
-			seen.add(name)
-			dependencies.push({ name, range })
+			section.dependencies.push({ name, range })
 		}
 	}
-	return limitEntries(dependencies, MAX_COLLECTION_ITEMS)
+	return {
+		runtime: limitEntries(runtime, MAX_COLLECTION_ITEMS),
+		development: limitEntries(development, MAX_COLLECTION_ITEMS),
+		peer: limitEntries(peer, MAX_COLLECTION_ITEMS),
+	}
 }

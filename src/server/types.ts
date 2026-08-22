@@ -236,17 +236,22 @@ export interface MaterializerInterface {
 	 */
 	catalog(entries: readonly CatalogEntry[], target: string): MaterializeResult
 	/**
-	 * Rewrite the declared dependency ranges the caller names in the target's manifest.
+	 * Rewrite the runtime and development dependency ranges the caller names in the target's manifest.
 	 *
-	 * @param dependencies - The names and ranges the manifest must declare.
+	 * @param runtime - The names and ranges `dependencies` must declare.
+	 * @param development - The names and ranges `devDependencies` must declare.
 	 * @param target - The directory to write into.
 	 * @returns The manifest path, written when a declared range moved and skipped otherwise.
 	 *
 	 * @remarks
-	 * No other part of the manifest is read back out or rewritten, so a
-	 * consumer's own description, keywords, and scripts survive the call.
+	 * No other part of the manifest is read back out or rewritten. The method
+	 * never reads or writes `peerDependencies` or `peerDependenciesMeta`.
 	 */
-	declare(dependencies: readonly Dependency[], target: string): MaterializeResult
+	declare(
+		runtime: readonly Dependency[],
+		development: readonly Dependency[],
+		target: string,
+	): MaterializeResult
 	/**
 	 * Re-derive and delete the tracked files the plan does not own.
 	 *

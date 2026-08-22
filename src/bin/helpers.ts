@@ -1,4 +1,4 @@
-import type { Audit, Blueprint, Dependency, Question, Release } from '@src/core'
+import type { Audit, Blueprint, Dependency, DependencyPinSet, Question, Release } from '@src/core'
 import type { CLICommand, ErrorEnvelope, Verb } from './types.js'
 import type { UpstreamOptions } from '@src/server'
 import { align, width } from '@orkestrel/console'
@@ -271,27 +271,34 @@ export function auditToExit(audit: Audit): number {
 }
 
 /**
- * Read the fleet rows and planned foreign tools a target manifest declares.
+ * Read the runtime and development rows a writing verb may raise.
  *
  * @param manifest - The target manifest text.
  * @param blueprint - The workspace shape that supplies the planned tool set.
- * @returns The declared fleet rows followed by declared planned foreign rows.
+ * @returns The declared fleet rows and planned foreign tools in their writable sections.
  */
-export function manifestToPlannedDependencies(
+export function manifestToWritableDependencies(
 	manifest: string,
 	blueprint: Blueprint,
-): readonly Dependency[] {
-	const dependencies = [...dependenciesToFleet(manifestToDependencies(manifest))]
+): DependencyPinSet {
+	const declared = manifestToDependencies(manifest)
+	const runtime = [...dependenciesToFleet(declared.runtime)]
+	const development = [...dependenciesToFleet(declared.development)]
 	const parsed = parseJSON(manifest)
-	if (!isRecord(parsed)) return dependencies
-	const runtime = isRecord(parsed.dependencies) ? parsed.dependencies : {}
-	const development = isRecord(parsed.devDependencies) ? parsed.devDependencies : {}
+	if (!isRecord(parsed)) return { runtime, development }
+	const runtimeRecord = isRecord(parsed.dependencies) ? parsed.dependencies : {}
+	const developmentRecord = isRecord(parsed.devDependencies) ? parsed.devDependencies : {}
 	for (const name of Object.keys(blueprintToDevDependencies(blueprint)).sort()) {
 		if (name.startsWith('@orkestrel/')) continue
-		const range = runtime[name] ?? development[name]
-		if (isString(range)) dependencies.push({ name, range })
+		const runtimeRange = runtimeRecord[name]
+		if (isString(runtimeRange)) {
+			runtime.push({ name, range: runtimeRange })
+			continue
+		}
+		const developmentRange = developmentRecord[name]
+		if (isString(developmentRange)) development.push({ name, range: developmentRange })
 	}
-	return dependencies
+	return { runtime, development }
 }
 
 /**
