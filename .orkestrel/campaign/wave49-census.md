@@ -48,9 +48,19 @@ tool workspace`.
 `scaffold` is not among them: its runtime pins already name exactly what the registry serves, which
 is what keeps a mid-wave scaffold release from re-vendoring targets the wave has already visited.
 
-## Bench substitution on the record
+## Bench record
 
-The Cursor Grok absorption lane for this campaign is **dark**. Its journal at
-`tmp/cursor/grok-scaffold-49.log` stayed 0 bytes with no live process, and a bench unit with no
-journal ran on its driver's engine rather than on Grok. Its questions were answered instead by the
-Opus planner reading scaffold's source directly and by the measurements recorded here.
+The Cursor Grok absorption lane ran on its second attempt. Its first attempt timed out at 300s with
+an empty journal and was discarded; the run that returned wrote 15871 bytes to
+`tmp/cursor/grok-scaffold-49.log`. Read a bench's liveness from its journal rather than from its
+driver's status line: an empty journal at one reading is not a dark bench when the driver is still
+retrying.
+
+Grok could not answer what moved between 0.0.46 and 0.0.49: the checkout is shallow at `650c0cb`
+with no tags, so no release diff is reachable from it. That question stays open and is not load
+bearing for this wave, whose input is the 0.0.49 tree as it stands.
+
+Grok's finding that `declare` reads ranges from the target's own manifest, checks them live against
+the registry, pins each to the latest its major admits, and refuses to insert a name the manifest
+does not already declare, is what makes the planned-dependency pre-step necessary rather than
+optional.
