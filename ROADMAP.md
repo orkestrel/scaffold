@@ -22,6 +22,15 @@ no campaign folder is the plan of record.
   contact `registry.npmjs.org` for scoped packuments and the `/-/org/orkestrel/package` membership
   path, and
   `raw.githubusercontent.com` for guides, `host.json`, and changed vendored paths.
+- **scaffold**: a writing verb refuses a workspace that declares Vitest projects the planned
+  configuration does not register, and it refuses before it selects a group, so `--groups`
+  cannot reach the groups the conflict does not touch. Measured 2026-08-22 against
+  supervisor, which declares `app:browser:integration`, `guides`, and eight `service:*`
+  projects: `repair` and `repair --groups orchestration,docs` both refuse identically, and
+  that target took the release's `orchestration` and `docs` bytes by hand instead. Rule on
+  whether the precondition belongs after group selection, or whether a target's own Vitest
+  projects belong in the plan; until then no such target can take a vendored change through
+  the tool.
 - **fleet**: sweep every target for skill and bridge members outside the vendored set; that
   population is unmeasured, and `repair` does not remove what the plan never owned.
 - **fleet**: the vendored `tests/config.test.ts` assertion that reddens a publishing target
