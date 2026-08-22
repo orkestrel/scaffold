@@ -243,6 +243,9 @@ export const DISTRIBUTION_TEST_PATH = 'tests/distribution.test.ts'
 /** The cross-environment composition proof whose presence makes a workspace `integration`. */
 export const INTEGRATION_TEST_PATH = 'tests/integration.test.ts'
 
+/** The manifest path every compiler plan emits with birth ownership. */
+export const MANIFEST_PATH = 'package.json'
+
 /** The official-tooling drift proof whose presence makes a workspace `conformance`. */
 export const CONFORMANCE_TEST_PATH = 'tests/conformance.test.ts'
 

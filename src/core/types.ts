@@ -392,7 +392,9 @@ export type Snapshot = Readonly<Record<string, string>>
  *
  * @remarks
  * `hash` is the plan's content identity and is absent until the pin stage
- * fills it.
+ * fills it. An artifact at `package.json` carries `birth` ownership because the
+ * compiler emits the manifest that way. A plan claiming another ownership at
+ * that path contradicts the compiler and is outside this contract.
  */
 export interface Plan {
 	readonly blueprint: Blueprint

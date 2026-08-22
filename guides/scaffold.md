@@ -118,6 +118,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `HOST_INVENTORY_PATH`             | const | The repository-relative path where the committed vendored-file inventory is served.              |
 | `INTEGRATION_TEST_PATH`           | const | The cross-environment composition proof whose presence makes a workspace `integration`.          |
 | `INVALID_PATH_CHARACTER_PATTERN`  | const | Visible characters a target-relative path and a Markdown path cell both forbid.                  |
+| `MANIFEST_PATH`                   | const | The manifest path every compiler plan emits with birth ownership.                                |
 | `MAX_ARTIFACT_BYTES`              | const | Maximum bytes accepted for one artifact.                                                         |
 | `MAX_ARTIFACT_HEX_LENGTH`         | const | Maximum length of the hexadecimal string carrying one artifact's bytes.                          |
 | `MAX_AUDIT_FINDINGS`              | const | Maximum findings one audit can produce from a bounded plan and snapshot.                         |
@@ -790,7 +791,8 @@ place, and the caller that picked the shape is the one holding it.
 Off-contract input is different. A value that is not the exact shape raises `ScaffoldError` coded
 `INVALID`, because it is not a question anyone can answer. Each entry point snapshots the caller's
 value first and then guards the snapshot, so a property backed by an accessor is refused rather than
-read.
+read. `isPlan` refuses an artifact at `package.json` unless it carries `birth` ownership, because a
+plan claiming `content` or `presence` there contradicts the compiler-produced plan.
 
 Overrides replace a drafted artifact's content whole. The gate checks each override against the
 blueprint's full draft before a group selection narrows the returned plan, so an override outside a

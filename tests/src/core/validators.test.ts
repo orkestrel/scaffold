@@ -12,7 +12,9 @@ import {
 	isHex,
 	isMirror,
 	isPath,
+	isPlan,
 	isSnapshot,
+	MANIFEST_PATH,
 	MAX_AUDIT_FINDINGS,
 	MAX_COLLECTION_ITEMS,
 } from '@src/core'
@@ -188,6 +190,40 @@ describe('isAudit', () => {
 				questions: [],
 			}),
 		).toBe(false)
+	})
+})
+
+describe('isPlan', () => {
+	it('refuses a content-owned manifest while accepting the compiler plan', () => {
+		const compiler = new Compiler()
+		const scaffolding = compiler.compile(createBlueprint('sample', { src: ['core'] }))
+		compiler.destroy()
+		const plan = scaffolding.plan
+		if (plan === undefined) throw new Error('Expected the compiler to produce a plan')
+		const claimed = {
+			...plan,
+			artifacts: plan.artifacts.map((artifact) =>
+				artifact.path === MANIFEST_PATH
+					? {
+							path: MANIFEST_PATH,
+							group: 'manifest',
+							ownership: 'content',
+							origin: 'computed',
+							content: '{\n\t"peerDependencies": {\n\t\t"@orkestrel/contract": "^0.0.13"\n\t}\n}\n',
+						}
+					: artifact,
+			),
+		}
+		const present = {
+			...claimed,
+			artifacts: claimed.artifacts.map((artifact) =>
+				artifact.path === MANIFEST_PATH ? { ...artifact, ownership: 'presence' } : artifact,
+			),
+		}
+
+		expect(isPlan(plan)).toBe(true)
+		expect(isPlan(claimed)).toBe(false)
+		expect(isPlan(present)).toBe(false)
 	})
 })
 

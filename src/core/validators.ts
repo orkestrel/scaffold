@@ -39,6 +39,7 @@ import {
 	GROUPS,
 	HEX_PATTERN,
 	INVALID_PATH_CHARACTER_PATTERN,
+	MANIFEST_PATH,
 	MAX_ARTIFACT_BYTES,
 	MAX_ARTIFACT_HEX_LENGTH,
 	MAX_AUDIT_FINDINGS,
@@ -337,16 +338,24 @@ export const isArtifact: Guard<Artifact> = unionOf(
  * @remarks
  * A plan reaches the writer, and the writer has no question channel, so this
  * carries the whole law of the value: every artifact path, every claimed byte,
- * and the blueprint it was compiled from.
+ * and the blueprint it was compiled from. An artifact at {@link MANIFEST_PATH}
+ * must carry `birth` ownership. A plan claiming `content` or `presence` there
+ * is refused because the compiler emits the manifest only as birth-owned.
  */
-export const isPlan: Guard<Plan> = recordOf(
-	{
-		blueprint: isBlueprint,
-		groups: isGroups,
-		artifacts: andOf(isCollection, arrayOf(isArtifact)),
-		hash: isHex,
-	},
-	['hash'],
+export const isPlan: Guard<Plan> = andOf(
+	recordOf(
+		{
+			blueprint: isBlueprint,
+			groups: isGroups,
+			artifacts: andOf(isCollection, arrayOf(isArtifact)),
+			hash: isHex,
+		},
+		['hash'],
+	),
+	(plan: Plan) =>
+		plan.artifacts.every(
+			(artifact) => artifact.path !== MANIFEST_PATH || artifact.ownership === 'birth',
+		),
 )
 
 /**
