@@ -21,7 +21,7 @@ import type {
 	MaterializerEventMap,
 	MaterializerInterface,
 	MaterializerOptions,
-	Repository,
+	Worktree,
 	WritePrecondition,
 } from './types.js'
 import { mkdtempSync, rmSync } from 'node:fs'
@@ -72,7 +72,7 @@ import {
 	isHost,
 	isMaterializerOptions,
 	isMirrors,
-	isRepository,
+	isWorktree,
 } from './validators.js'
 import { WriteTransaction } from './WriteTransaction.js'
 
@@ -418,7 +418,7 @@ export class Materializer implements MaterializerInterface {
 	 *
 	 * @param plan - The compiled plan that decides which paths are foreign.
 	 * @param audit - The preview returned by this materializer's `audit` method; it must agree with the candidate set this call re-derives.
-	 * @param repository - The target's git state; only a tracked path is ever deleted.
+	 * @param worktree - The target's git state; only a tracked path is ever deleted.
 	 * @param target - The directory to delete from.
 	 * @returns The paths removed.
 	 * @throws {@link ScaffoldError} coded `INVALID` when an argument is not the
@@ -439,11 +439,11 @@ export class Materializer implements MaterializerInterface {
 	 * any foreign finding, including one the deletion itself would skip, because a
 	 * preview stale anywhere is stale evidence.
 	 */
-	remove(plan: Plan, audit: Audit, repository: Repository, target: string): MaterializeResult {
+	remove(plan: Plan, audit: Audit, worktree: Worktree, target: string): MaterializeResult {
 		this.#assertAlive()
 		const accepted = this.#accept(plan, isPlan, 'plan')
 		const preview = this.#accept(audit, isAudit, 'audit')
-		const state = this.#accept(repository, isRepository, 'repository')
+		const state = this.#accept(worktree, isWorktree, 'worktree')
 		const directory = this.#accept(target, isFilesystemPath, 'target')
 		if (state.dirty.length > 0) {
 			throw this.#error('TARGET', `The target at ${directory} carries uncommitted changes.`, {

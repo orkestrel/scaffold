@@ -134,6 +134,24 @@ describe('guides', () => {
 		expect(drifted).toEqual([])
 	})
 
+	it('publishes HostFile without the former Copy row type', () => {
+		const names = inspected.flatMap(({ source }) => source.surface().map((symbol) => symbol.name))
+		expect(names).toContain('HostFile')
+		expect(names).not.toContain('Copy')
+	})
+
+	it('publishes Worktree without the former Repository contract', () => {
+		const names = inspected.flatMap(({ source }) => source.surface().map((symbol) => symbol.name))
+		expect(names).toContain('Worktree')
+		expect(names).not.toContain('Repository')
+	})
+
+	it('publishes files without the former vendor reader method', () => {
+		const methods = inspected.flatMap(({ source }) => source.methods('UpstreamInterface'))
+		expect(methods).toContain('files')
+		expect(methods).not.toContain('vendor')
+	})
+
 	it('resolves every relative link to a real file', () => {
 		const broken: string[] = []
 		for (const { entry, guide, source } of inspected) {

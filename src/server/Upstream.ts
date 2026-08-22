@@ -2,8 +2,8 @@ import type { Guard } from '@orkestrel/contract'
 import type { EmitterInterface } from '@orkestrel/emitter'
 import type {
 	CatalogEntry,
-	Copy,
 	Dependency,
+	HostFile,
 	Lookup,
 	Mirror,
 	Release,
@@ -12,7 +12,6 @@ import type {
 } from '@src/core'
 import type { UpstreamEventMap, UpstreamInterface, UpstreamOptions } from './types.js'
 import {
-	attempt,
 	isError,
 	isRecord,
 	isString,
@@ -41,7 +40,7 @@ import {
 	nameToGuide,
 	ScaffoldError,
 } from '@src/core'
-import { computeDigest, computeManifestDigest, hexToDigest } from './helpers.js'
+import { computeManifestDigest, hexToDigest } from './helpers.js'
 import {
 	isDependencies,
 	isDependencyNames,
@@ -250,11 +249,11 @@ export class Upstream implements UpstreamInterface {
 	}
 
 	/**
-	 * Read each named vendored file from the repository, beside the target's copy it answers for.
+	 * Read each named vendored file from the repository, beside the target bytes it answers for.
 	 *
 	 * @param paths - The target-relative vendored paths to read.
-	 * @param current - The target's copies as exact bytes, keyed by the same paths.
-	 * @returns One copy verdict per path, in input order.
+	 * @param current - The target files as exact bytes, keyed by the same paths.
+	 * @returns One file verdict per path, in input order.
 	 * @throws {@link ScaffoldError} coded `INVALID` when `paths` is not a bounded
 	 * list of target-relative paths or `current` is not a snapshot, and
 	 * `DESTROYED` when the reader is torn down before or during the call.
@@ -282,18 +281,18 @@ export class Upstream implements UpstreamInterface {
 	 * import { Upstream } from '@orkestrel/scaffold/server'
 	 *
 	 * const upstream = new Upstream()
-	 * await upstream.vendor(['AGENTS.md'], { 'AGENTS.md': '2320416745' })
+	 * await upstream.files(['AGENTS.md'], { 'AGENTS.md': '2320416745' })
 	 * upstream.destroy()
 	 * ```
 	 */
-	async vendor(paths: readonly string[], current: Snapshot): Promise<readonly Copy[]> {
+	async files(paths: readonly string[], current: Snapshot): Promise<readonly HostFile[]> {
 		this.#assertAlive()
 		const accepted = this.#accept(paths, isPaths, 'paths')
 		const observed = this.#accept(current, isSnapshot, 'current')
 		if (accepted.length === 0) return []
 		const allowance = { remaining: this.#budget }
 		const inventory = await this.#inventory(allowance)
-		return this.#gather(accepted, (path) => this.#copy(path, inventory, observed, allowance))
+		return this.#gather(accepted, (path) => this.#file(path, inventory, observed, allowance))
 	}
 
 	/**
@@ -456,9 +455,9 @@ export class Upstream implements UpstreamInterface {
 	}
 
 	// One vendored file, published on the observation channel beside the target's
-	// own copy of it. The verdict itself is decided next door, because it has
+	// own bytes. The verdict itself is decided next door, because it has
 	// several exits and each one still has to be published exactly once.
-	async #copy(
+	async #file(
 		path: string,
 		inventory: {
 			readonly lookup: Lookup
@@ -468,10 +467,10 @@ export class Upstream implements UpstreamInterface {
 		},
 		current: Snapshot,
 		allowance: { remaining: number },
-	): Promise<Copy> {
-		const copy = await this.#answer(path, inventory, current[path], allowance)
-		this.#emitter.emit('copy', copy)
-		return copy
+	): Promise<HostFile> {
+		const file = await this.#answer(path, inventory, current[path], allowance)
+		this.#emitter.emit('file', file)
+		return file
 	}
 
 	// One path's verdict, decided against the live inventory before anything is
@@ -498,7 +497,7 @@ export class Upstream implements UpstreamInterface {
 		},
 		observed: string | undefined,
 		allowance: { remaining: number },
-	): Promise<Copy> {
+	): Promise<HostFile> {
 		const carried = observed === undefined ? {} : { observed }
 		if (inventory.lookup !== 'found') {
 			return { path, lookup: inventory.lookup, note: inventory.note, ...carried }
@@ -524,23 +523,19 @@ export class Upstream implements UpstreamInterface {
 			return { path, lookup: 'missing', note: `the inventory does not name ${path}`, ...carried }
 		}
 		if (observed !== undefined && hexToDigest(observed) === digest) {
-			const held = attempt(() =>
-				new TextDecoder('utf-8', { fatal: true }).decode(Buffer.from(observed, 'hex')),
-			)
-			return held.success
-				? { path, lookup: 'found', content: held.value, ...carried }
-				: {
-						path,
-						lookup: 'failed',
-						note: `the copy of ${path} at the target is not UTF-8`,
-						...carried,
-					}
+			return { path, lookup: 'found', hex: observed, ...carried }
 		}
-		const outcome = await this.#read(this.#vendorURL(path), this.#repositoryTimeout, allowance)
+		const outcome = await this.#read(
+			this.#vendorURL(path),
+			this.#repositoryTimeout,
+			allowance,
+			undefined,
+			true,
+		)
 		if (outcome.lookup !== 'found') {
 			return { path, lookup: outcome.lookup, note: outcome.note, ...carried }
 		}
-		if (computeDigest(outcome.content) !== digest) {
+		if (hexToDigest(outcome.hex) !== digest) {
 			return {
 				path,
 				lookup: 'failed',
@@ -548,7 +543,7 @@ export class Upstream implements UpstreamInterface {
 				...carried,
 			}
 		}
-		return { path, lookup: 'found', content: outcome.content, ...carried }
+		return { path, lookup: 'found', hex: outcome.hex, ...carried }
 	}
 
 	// The committed inventory, read once per call and projected into the lookup
@@ -785,17 +780,37 @@ export class Upstream implements UpstreamInterface {
 		url: string,
 		timeout: number,
 		allowance: { remaining: number },
+		accept: string | undefined,
+		binary: true,
+	): Promise<{ readonly lookup: Lookup; readonly hex: string; readonly note: string }>
+	async #read(
+		url: string,
+		timeout: number,
+		allowance: { remaining: number },
 		accept?: string,
-	): Promise<{ readonly lookup: Lookup; readonly content: string; readonly note: string }> {
+		binary?: false,
+	): Promise<{ readonly lookup: Lookup; readonly content: string; readonly note: string }>
+	async #read(
+		url: string,
+		timeout: number,
+		allowance: { remaining: number },
+		accept?: string,
+		binary = false,
+	): Promise<
+		| { readonly lookup: Lookup; readonly content: string; readonly note: string }
+		| { readonly lookup: Lookup; readonly hex: string; readonly note: string }
+	> {
 		let note = ''
 		for (let round = 0; round <= this.#retries; round += 1) {
 			this.#assertAlive()
-			const outcome = await this.#request(url, timeout, allowance, accept)
+			const outcome = binary
+				? await this.#request(url, timeout, allowance, accept, true)
+				: await this.#request(url, timeout, allowance, accept)
 			if (outcome.lookup !== 'failed') return outcome
 			note = outcome.note
 		}
 		this.#error('FETCH', `The upstream read at ${url} produced no answer.`, { url, note })
-		return { lookup: 'failed', content: '', note }
+		return binary ? { lookup: 'failed', hex: '', note } : { lookup: 'failed', content: '', note }
 	}
 
 	// One request: unauthenticated, redirect-free, and bounded by both the
@@ -805,14 +820,29 @@ export class Upstream implements UpstreamInterface {
 		url: string,
 		timeout: number,
 		allowance: { remaining: number },
+		accept: string | undefined,
+		binary: true,
+	): Promise<{ readonly lookup: Lookup; readonly hex: string; readonly note: string }>
+	async #request(
+		url: string,
+		timeout: number,
+		allowance: { remaining: number },
 		accept?: string,
-	): Promise<{ readonly lookup: Lookup; readonly content: string; readonly note: string }> {
+		binary?: false,
+	): Promise<{ readonly lookup: Lookup; readonly content: string; readonly note: string }>
+	async #request(
+		url: string,
+		timeout: number,
+		allowance: { remaining: number },
+		accept?: string,
+		binary = false,
+	): Promise<
+		| { readonly lookup: Lookup; readonly content: string; readonly note: string }
+		| { readonly lookup: Lookup; readonly hex: string; readonly note: string }
+	> {
 		if (allowance.remaining <= 0) {
-			return {
-				lookup: 'failed',
-				content: '',
-				note: `the call spent its ${String(this.#budget)}-byte allowance`,
-			}
+			const note = `the call spent its ${String(this.#budget)}-byte allowance`
+			return binary ? { lookup: 'failed', hex: '', note } : { lookup: 'failed', content: '', note }
 		}
 		try {
 			const response = await fetch(url, {
@@ -822,24 +852,31 @@ export class Upstream implements UpstreamInterface {
 			})
 			if (response.status === 404) {
 				await response.body?.cancel()
-				return { lookup: 'missing', content: '', note: 'HTTP 404' }
+				return binary
+					? { lookup: 'missing', hex: '', note: 'HTTP 404' }
+					: { lookup: 'missing', content: '', note: 'HTTP 404' }
 			}
 			if (response.status >= 300 && response.status < 400) {
 				await response.body?.cancel()
-				return {
-					lookup: 'failed',
-					content: '',
-					note: `HTTP ${String(response.status)}, and a redirect is never followed`,
-				}
+				const note = `HTTP ${String(response.status)}, and a redirect is never followed`
+				return binary
+					? { lookup: 'failed', hex: '', note }
+					: { lookup: 'failed', content: '', note }
 			}
 			if (!response.ok) {
 				await response.body?.cancel()
-				return { lookup: 'failed', content: '', note: `HTTP ${String(response.status)}` }
+				const note = `HTTP ${String(response.status)}`
+				return binary
+					? { lookup: 'failed', hex: '', note }
+					: { lookup: 'failed', content: '', note }
 			}
-			return await this.#body(response, allowance)
+			return binary
+				? await this.#body(response, allowance, true)
+				: await this.#body(response, allowance)
 		} catch (error) {
 			this.#assertAlive()
-			return { lookup: 'failed', content: '', note: this.#note(error) }
+			const note = this.#note(error)
+			return binary ? { lookup: 'failed', hex: '', note } : { lookup: 'failed', content: '', note }
 		}
 	}
 
@@ -858,17 +895,28 @@ export class Upstream implements UpstreamInterface {
 	async #body(
 		response: Response,
 		allowance: { remaining: number },
-	): Promise<{ readonly lookup: Lookup; readonly content: string; readonly note: string }> {
+		binary: true,
+	): Promise<{ readonly lookup: Lookup; readonly hex: string; readonly note: string }>
+	async #body(
+		response: Response,
+		allowance: { remaining: number },
+		binary?: false,
+	): Promise<{ readonly lookup: Lookup; readonly content: string; readonly note: string }>
+	async #body(
+		response: Response,
+		allowance: { remaining: number },
+		binary = false,
+	): Promise<
+		| { readonly lookup: Lookup; readonly content: string; readonly note: string }
+		| { readonly lookup: Lookup; readonly hex: string; readonly note: string }
+	> {
 		const body = response.body
 		if (body === null) {
-			return {
-				lookup: 'failed',
-				content: '',
-				note: `HTTP ${String(response.status)}, and the answer carries no body`,
-			}
+			const note = `HTTP ${String(response.status)}, and the answer carries no body`
+			return binary ? { lookup: 'failed', hex: '', note } : { lookup: 'failed', content: '', note }
 		}
 		const reader = body.getReader()
-		const decoder = new TextDecoder('utf-8', { fatal: true })
+		const decoder = binary ? undefined : new TextDecoder('utf-8', { fatal: true })
 		const chunks: string[] = []
 		let total = 0
 		try {
@@ -879,30 +927,34 @@ export class Upstream implements UpstreamInterface {
 				allowance.remaining -= chunk.value.byteLength
 				if (total > this.#limit) {
 					await reader.cancel()
-					return {
-						lookup: 'failed',
-						content: '',
-						note: `the response passed the ${String(this.#limit)}-byte response limit`,
-					}
+					const note = `the response passed the ${String(this.#limit)}-byte response limit`
+					return binary
+						? { lookup: 'failed', hex: '', note }
+						: { lookup: 'failed', content: '', note }
 				}
 				if (allowance.remaining < 0) {
 					await reader.cancel()
-					return {
-						lookup: 'failed',
-						content: '',
-						note: `the call spent its ${String(this.#budget)}-byte allowance`,
-					}
+					const note = `the call spent its ${String(this.#budget)}-byte allowance`
+					return binary
+						? { lookup: 'failed', hex: '', note }
+						: { lookup: 'failed', content: '', note }
 				}
-				chunks.push(decoder.decode(chunk.value, { stream: true }))
+				chunks.push(
+					decoder === undefined
+						? Buffer.from(chunk.value).toString('hex')
+						: decoder.decode(chunk.value, { stream: true }),
+				)
 			}
-			chunks.push(decoder.decode())
+			if (decoder !== undefined) chunks.push(decoder.decode())
 		} catch (error) {
 			await reader.cancel().catch(() => undefined)
 			throw error
 		} finally {
 			reader.releaseLock()
 		}
-		return { lookup: 'found', content: chunks.join(''), note: '' }
+		return binary
+			? { lookup: 'found', hex: chunks.join(''), note: '' }
+			: { lookup: 'found', content: chunks.join(''), note: '' }
 	}
 
 	// A caught transport fault, flattened into one line a caller can print. Node

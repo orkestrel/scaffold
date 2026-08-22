@@ -44,7 +44,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `CatalogEntry`      | type | One package row of the fleet catalog.                                                            |
 | `CompileStage`      | type | The compile phases, in the order they run.                                                       |
 | `CompilerEventMap`  | type | The compiler's observation channel.                                                              |
-| `Copy`              | type | One vendored file read from the repository, beside the target's copy it answers for.             |
+| `HostFile`          | type | One vendored file read from the repository, beside the target bytes it answers for.              |
 | `Drift`             | type | How one target path compares to the artifact planned for it.                                     |
 | `Environment`       | type | One environment a generated workspace selects on its `src` or `app` axis.                        |
 | `Finding`           | type | One drift verdict against a target path.                                                         |
@@ -279,7 +279,7 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 | `MaterializeResult`     | interface | The outcome of one mutation of a target.                                             |
 | `MaterializerInterface` | interface | The mutation contract: the package's only filesystem writer.                         |
 | `MaterializerOptions`   | interface | Options for the materializer.                                                        |
-| `Repository`            | interface | What git reports about a target's working tree.                                      |
+| `Worktree`              | interface | What git reports about a target's working tree.                                      |
 | `UpstreamInterface`     | interface | The upstream contract: the package's only network reader, and it never writes.       |
 | `UpstreamOptions`       | interface | Options for the upstream reader.                                                     |
 | `WriteAnchor`           | interface | One physical directory identity captured across a write transaction.                 |
@@ -325,7 +325,7 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 | `isMaterializerOptions` | const    | Narrow a value to `MaterializerOptions`.                                           |
 | `isMirrors`             | const    | Narrow a value to a bounded list of fetched guide mirrors.                         |
 | `isPaths`               | const    | Narrow a value to a bounded list of target-relative paths.                         |
-| `isRepository`          | const    | Narrow a value to a `Repository`.                                                  |
+| `isWorktree`            | const    | Narrow a value to a `Worktree`.                                                    |
 | `isTimeout`             | const    | Narrow a value to a per-request timeout in milliseconds.                           |
 | `isUpstreamHooks`       | const    | Narrow a value to the upstream reader's initial listener record.                   |
 | `isUpstreamOptions`     | const    | Narrow a value to `UpstreamOptions`.                                               |
@@ -337,7 +337,7 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 | `computeDigest`         | function | Compute the SHA-256 digest of text.                                                   |
 | `computeFileDigest`     | function | Compute the SHA-256 digest of one file's exact bytes.                                 |
 | `computeManifestDigest` | function | Compute the digest of a vendored host's declared membership.                          |
-| `copiesToHost`          | function | Overlay host-owned live copies onto the installed vendored floor.                     |
+| `filesToHost`           | function | Overlay host-owned live files onto the installed vendored floor.                      |
 | `hexToDigest`           | function | Project exact bytes stated in hexadecimal to their SHA-256 digest.                    |
 | `isExactCaseFile`       | function | Test whether a physical file's path matches every on-disk segment exactly.            |
 | `isPhysicalDirectory`   | function | Test whether a path is a physical directory this package will read or write into.     |
@@ -406,13 +406,13 @@ no interface and is documented directly.
 
 #### `UpstreamInterface`
 
-| Method    | Summary                                                                                     |
-| --------- | ------------------------------------------------------------------------------------------- |
-| `lookup`  | Look up the newest release each declared range admits.                                      |
-| `fetch`   | Fetch each named package's guide, beside the local mirror it answers for.                   |
-| `vendor`  | Read each named vendored file from the repository, beside the target's copy it answers for. |
-| `catalog` | Catalog the published fleet from the registry's organization package list.                  |
-| `destroy` | Tear the reader down, aborting every request in flight.                                     |
+| Method    | Summary                                                                                    |
+| --------- | ------------------------------------------------------------------------------------------ |
+| `lookup`  | Look up the newest release each declared range admits.                                     |
+| `fetch`   | Fetch each named package's guide, beside the local mirror it answers for.                  |
+| `files`   | Read each named vendored file from the repository, beside the target bytes it answers for. |
+| `catalog` | Catalog the published fleet from the registry's organization package list.                 |
+| `destroy` | Tear the reader down, aborting every request in flight.                                    |
 
 #### `WriteTransaction`
 
@@ -445,13 +445,20 @@ package distributes; each operation reports one baseline word per surface. A sur
 `floor` only where the package distributes a copy. The registry's organization membership ships
 nowhere, so `catalog` refuses when that read fails.
 
-Authoritative absence never selects `floor`. A registry `404` or a packument with no admitted
-version stays a `FETCH` refusal, because writing a version the registry says is absent produces an
-uninstallable manifest. Transport faults, timeouts, rate refusals, byte-bound refusals, and
-integrity refusals can select the floor.
+For `new`, `repair`, `catalog`, and `overwrite`, authoritative absence never selects `floor`. A
+registry `404` or a packument with no admitted version stays a `FETCH` refusal, because writing a
+version the registry says is absent produces an uninstallable manifest. `audit` turns release
+absence into questions and returns its audit result. Transport faults, timeouts, rate refusals,
+byte-bound refusals, and integrity refusals can select the floor.
 
-The guide surface is the per-row exception to whole-surface fallback. A failed foreign guide
-keeps the target's existing mirror as its floor, while the other guide rows can still update.
+The guide surface is the per-row exception to whole-surface fallback. A failed foreign guide keeps
+the target's existing mirror as its floor, while the other guide rows can still update. When at
+least one selected guide keeps its mirror, `provenance.guides` is `floor` for the result; it is
+`live` only when every selected guide resolved live.
+
+A value `Host` can carry live host-owned bytes beside installed floor bytes for deferred guide and
+catalog paths. Each surface still contributes one baseline. Deferred paths are presence-only, and
+repair never writes their floor bytes.
 
 Every verb's machine-readable result carries `provenance`. The record names only the remote
 surfaces that the verb read. A host supplied by the `--from` option is absent because it comes from
@@ -961,6 +968,16 @@ alike.
 
 ### What each verb reads
 
+`new`, `audit`, and `repair` read declared versions and the vendored host. `catalog` reads
+organization membership, its packuments, and the selected guides. `overwrite` reads every surface
+that `repair` and `catalog` read. A network-forced floor is drift except for a successful `new` run;
+an explicit `--offline` floor is intentional, and the verb's result decides its exit. `catalog` has
+no offline form. `overwrite` commits repair and removal before it starts the catalog step.
+
+Each verb resolves a surface's complete answer before it opens that surface's write transaction, so
+a partial answer never becomes a partial pin set. `overwrite` keeps the repair and removal work it
+committed before a later catalog refusal and records that refusal in `note`.
+
 | Verb        | Reads live                                                       | When the network forces a floor                                                                                             | With `--offline`                                                                                            |
 | ----------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | `new`       | Declared versions and the vendored host                          | Writes the distributed version and host floors; exits `0` after creating the workspace                                      | Reads no upstream surface, writes the same floors, and exits `0` after creating the workspace               |
@@ -968,15 +985,6 @@ alike.
 | `repair`    | Declared versions and the vendored host                          | Repairs from the distributed floors and exits `1`, even when the terminal audit is aligned                                  | Repairs from the floors; the terminal audit decides exit `0` or `1`                                         |
 | `catalog`   | Organization membership, its packuments, and the selected guides | Refuses a membership or version failure with `FETCH` and exit `1`; preserves each failed guide's local mirror and exits `1` | Is a usage error; exits `2` and writes nothing                                                              |
 | `overwrite` | Everything `repair` and `catalog` read                           | Keeps completed repair and deletion work, names each floor or refused catalog step in `note`, and exits `1`                 | Repairs, deletes, and writes version floors; skips `catalog`, records that refusal in `note`, and exits `1` |
-
-Each verb resolves the whole set before it opens a write transaction, so a partial answer never
-becomes a partial pin set. `overwrite` is the exception, and deliberately: its offline repair and
-deletion have already landed by the time the network half runs, so a step that produces no answer is
-collected into `note` and reported rather than discarding work that succeeded.
-
-A floor that the network forced is drift. A floor selected by the `--offline` option is not drift;
-the verb's own result decides its exit. The `new` verb is the forced-floor exception because its exit
-answers whether the workspace was created.
 
 A fleet row is compared exactly — `^0.1.0` is stale the moment the registry serves `0.1.2` — and
 that inequality alone raises `audit` to exit `1`. A foreign row is compared inside its declared
@@ -1007,17 +1015,19 @@ carries the subset its target selects, because a workspace never mirrors its own
 The `host.json` file at the repository root is the committed live inventory. Each entry carries the
 SHA-256 digest of its fetched bytes, and the inventory carries a membership digest over its declared
 paths and file digests. Run `npm run build:inventory` whenever a vendored byte or path changes; the
-`config` project refuses a stale inventory.
+`config` project refuses a stale inventory. Run that gate against a quiescent checkout: its fresh and
+committed reads cannot distinguish stale data from a source edit made while the gate runs.
 
 The installed release fixes which paths a target owns. A live inventory can update bytes only for
 those paths; it can neither introduce a path nor delete one. A path added upstream is invisible
 until a release adds it to the installed manifest. Remove a vendored path in the same change that
 ships the release which removes it from that manifest.
 
-An aligned target spends one request on `host.json`. Each installed path whose live digest differs
-from the target adds one request for its bytes. Raw-host propagation lag after a commit is a property
-of the content host. Scaffold neither creates that lag nor presents a stale response as fresher than
-the host served it.
+At the default `UpstreamOptions.retries` value, an aligned target spends one request on `host.json`,
+and each installed path whose live digest differs from the target adds one request for its bytes. A
+positive `retries` value can repeat a request after a transport fault. Raw-host propagation lag after
+a commit is a property of the content host. Scaffold neither creates that lag nor presents a stale
+response as fresher than the host served it.
 
 `.claude/settings.json` is in that set, and the artifact planned for it is content-owned. `repair`
 and `overwrite` restore its bytes, so an edit made to it inside a target is reverted at the next
@@ -1037,9 +1047,10 @@ stageHost(process.cwd(), 'dist/host') // one ManifestEntry per file staged
 Each vendored path is copied to a storage name, and every dot that opens a segment comes off,
 because npm's own ignore rules would drop a leading-dot entry from the tarball. A dotted file at the
 root moves under `dotfiles/` so it cannot collide with an undotted sibling. `manifest.json` is
-written last and declares the whole membership: one entry per file, the sorted directory inventory,
-and a SHA-256 digest over both. The digest is what detects a membership edit that did not update
-it, and the directory inventory is what makes a declared empty directory survive a file walk.
+written last and declares the whole membership: one entry per file with a digest computed from the
+staged destination after its copy, the sorted directory inventory, and a SHA-256 digest over both.
+The membership digest detects an edit that did not update the manifest, and the directory inventory
+makes a declared empty directory survive a file walk.
 
 A missing vendored path is refused rather than staged around, and the refusal names every missing
 path at once. That is why `guides/scaffold.md` — this file — must exist before `npm run build`
@@ -1054,8 +1065,9 @@ one to one.
 ### Integrity
 
 HTTPS supplies Transport Layer Security (TLS) for each fetched response, and the reader applies its
-per-response and per-call byte budgets before it accepts content. It verifies every fetched vendored
-file against the digest in `host.json`, then verifies that inventory against its membership digest.
+per-response and per-call byte budgets before it accepts content. It carries each fetched vendored
+file as raw hexadecimal and verifies the raw bytes against the digest in `host.json`, then verifies
+that inventory against its membership digest. The path never decodes and re-encodes those bytes.
 
 This posture supplies integrity, not authenticity. An attacker who can serve the files can also
 serve a matching inventory. The residual is direct: fetched bytes govern agent behavior in a target

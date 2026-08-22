@@ -1,4 +1,4 @@
-import type { Copy, Snapshot } from '@src/core'
+import type { HostFile, Snapshot } from '@src/core'
 import type {
 	Host,
 	HostManifest,
@@ -32,7 +32,6 @@ import { fileURLToPath } from 'node:url'
 import { attempt, holds, isError, parseJSONAs } from '@orkestrel/contract'
 import {
 	bytesToHex,
-	contentToHex,
 	EXECUTABLE_PATHS,
 	HOST_INVENTORY_PATH,
 	HOST_PATHS,
@@ -110,7 +109,7 @@ export function matchesGitPath(path: string): boolean {
  * directories. It is the inversion the contract asks for: the candidate set
  * is re-derived from the plan and narrowed by what git tracks, and the audit
  * must agree with that derivation rather than supply the set itself.
- * Repository metadata is protected because losing history is not a repair,
+ * Git metadata is protected because losing history is not a repair,
  * and a target's own `src` and `app` trees are protected because a
  * workspace's source is the one thing scaffold never plans and never owns. A
  * plan the compiler emits never maps a protected root, so this guard exists
@@ -142,7 +141,7 @@ export function matchesProtectedPath(path: string): boolean {
  * The vendoring deny-list. A host root is staged from a real checkout, so the
  * refusal is stated over the path rather than over the file's content: a
  * credential is recognizable by where it sits and what it is called long before
- * anything reads it. Repository metadata is included through
+ * anything reads it. Git metadata is included through
  * {@link matchesGitPath}, so one call answers the whole question and no caller
  * has to remember to ask twice.
  *
@@ -1174,9 +1173,9 @@ export function readManifestEntry(destination: string, source: string): Manifest
 }
 
 /**
- * Assemble a whole vendored host from live copies and the installed floor.
+ * Assemble a whole vendored host from live files and the installed floor.
  *
- * @param copies - The host-owned vendored files read from the repository, one
+ * @param files - The host-owned vendored files read from the repository, one
  * row per path.
  * @param floor - The installed host floor, which fixes the membership a fill
  * may draw from and supplies the bytes owned by another surface.
@@ -1185,11 +1184,13 @@ export function readManifestEntry(destination: string, source: string): Manifest
  *
  * @remarks
  * The one place the host-owned all-or-nothing rule is decided, so no verb
- * restates it. A fill carries live bytes for every path the host surface writes
- * or it is nothing: a single row that failed, went missing, names an undeclared
- * path, or leaves a host-owned path absent answers `undefined`. Only paths whose
- * bytes the catalog or mirror surface writes keep their installed floor bytes;
- * no file the host surface writes can mix live and floor bytes in one fill.
+ * restates it. The host surface contributes one baseline: a fill carries live
+ * bytes for every path that surface writes, or it is nothing. A row that failed,
+ * went missing, names an undeclared path, or leaves a host-owned path absent
+ * answers `undefined`. Deferred paths are presence-only and retain the installed
+ * floor bytes that their catalog or mirror surface owns; repair never writes
+ * those floor bytes. One `Host` can therefore carry live host bytes beside floor
+ * bytes without mixing baselines within a surface.
  *
  * The emitted entries keep the release's own order and its storage and
  * executable declarations, and carry digests recomputed over the bytes the fill
@@ -1199,18 +1200,18 @@ export function readManifestEntry(destination: string, source: string): Manifest
  *
  * @example
  * ```ts
- * import { copiesToHost } from '@orkestrel/scaffold/server'
+ * import { filesToHost } from '@orkestrel/scaffold/server'
  *
- * copiesToHost([{ path: 'AGENTS.md', lookup: 'found', content: '# Agents\n' }], floor)
+ * filesToHost([{ path: 'AGENTS.md', lookup: 'found', hex: '23204167656e74730a' }], floor)
  * // { manifest: { entries: [ … ], roots: [ … ], digest: '…' }, bytes: { 'AGENTS.md': '…' } }
  * ```
  */
-export function copiesToHost(copies: readonly Copy[], floor: Host): Host | undefined {
+export function filesToHost(files: readonly HostFile[], floor: Host): Host | undefined {
 	const declared = new Set(floor.manifest.entries.map((entry) => entry.destination))
 	const held = new Map<string, string>()
-	for (const copy of copies) {
-		if (copy.lookup !== 'found' || !declared.has(copy.path)) return undefined
-		if (!isDeferredPath(copy.path)) held.set(copy.path, contentToHex(copy.content))
+	for (const file of files) {
+		if (file.lookup !== 'found' || !declared.has(file.path)) return undefined
+		if (!isDeferredPath(file.path)) held.set(file.path, file.hex)
 	}
 	const entries: ManifestEntry[] = []
 	const bytes: Record<string, string> = {}
@@ -1433,7 +1434,7 @@ export function stageHost(checkout: string, host: string): readonly ManifestEntr
 	// the same literal `readHostManifest` reads back, so a vendored file claiming it
 	// is refused rather than silently replaced by the manifest.
 	const stored = new Set<string>([MANIFEST_NAME])
-	const entries: ManifestEntry[] = []
+	const candidates: ManifestEntry[] = []
 	for (const destination of vendored) {
 		const full = resolveContainedPath(source, destination)
 		if (full === undefined) {
@@ -1458,9 +1459,9 @@ export function stageHost(checkout: string, host: string): readonly ManifestEntr
 			)
 		}
 		stored.add(entry.storage)
-		entries.push(entry)
+		candidates.push(entry)
 	}
-	entries.sort((first, second) => (first.storage < second.storage ? -1 : 1))
+	candidates.sort((first, second) => (first.storage < second.storage ? -1 : 1))
 	roots.sort()
 	const root = resolve(host)
 	const established = attempt(() => mkdirSync(root, { recursive: true }))
@@ -1470,7 +1471,8 @@ export function stageHost(checkout: string, host: string): readonly ManifestEntr
 			...(established.success ? {} : { error: established.error }),
 		})
 	}
-	for (const entry of entries) {
+	const entries: ManifestEntry[] = []
+	for (const entry of candidates) {
 		const origin = resolveContainedPath(source, entry.destination)
 		const destination = resolveContainedPath(root, entry.storage)
 		if (origin === undefined || destination === undefined) {
@@ -1493,6 +1495,14 @@ export function stageHost(checkout: string, host: string): readonly ManifestEntr
 				error: copied.error,
 			})
 		}
+		const digest = computeFileDigest(destination)
+		if (digest === undefined) {
+			throw new ScaffoldError('WRITE', `Vendored file could not be verified at ${entry.storage}`, {
+				host: root,
+				storage: entry.storage,
+			})
+		}
+		entries.push({ ...entry, digest })
 	}
 	const manifest: HostManifest = {
 		entries,

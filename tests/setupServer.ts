@@ -3,7 +3,7 @@ import type {
 	HostManifest,
 	ManifestEntry,
 	MaterializerOptions,
-	Repository,
+	Worktree,
 	UpstreamOptions,
 } from '@src/server'
 import type { Audit, Blueprint, Finding, Plan, ScaffoldErrorCode, Snapshot } from '@src/core'
@@ -44,7 +44,7 @@ import {
 	isMaterializerHooks,
 	isMaterializerOptions,
 	isMirrors,
-	isRepository,
+	isWorktree,
 	isTimeout,
 	isUpstreamHooks,
 	isUpstreamOptions,
@@ -165,7 +165,7 @@ export interface TestEndpointCase {
  */
 export interface TestUpstreamReply {
 	readonly status: number
-	readonly body: string
+	readonly body: string | Uint8Array
 	readonly type?: string
 	readonly location?: string
 	readonly chunked?: boolean
@@ -321,10 +321,10 @@ export function buildHostManifest(fields?: Partial<HostManifest>): HostManifest 
 /**
  * Build a valid inert git working-tree state, with focused field replacements.
  *
- * @param fields - The repository fields to replace on the returned value.
- * @returns A repository carrying the requested fields over minimal defaults.
+ * @param fields - The worktree fields to replace on the returned value.
+ * @returns A worktree carrying the requested fields over minimal defaults.
  */
-export function buildRepository(fields?: Partial<Repository>): Repository {
+export function buildWorktree(fields?: Partial<Worktree>): Worktree {
 	return { tracked: ['AGENTS.md', 'guides/router.md'], dirty: [], ...fields }
 }
 
@@ -464,9 +464,9 @@ export function buildServerGuardCases(): readonly TestGuardCase[] {
 			admits: [],
 		},
 		{
-			name: 'isRepository',
-			guard: isRepository,
-			accepted: [buildRepository(), buildRepository({ dirty: ['AGENTS.md'] })],
+			name: 'isWorktree',
+			guard: isWorktree,
+			accepted: [buildWorktree(), buildWorktree({ dirty: ['AGENTS.md'] })],
 			admits: [],
 		},
 		{
@@ -729,24 +729,24 @@ export function buildBoundaryCases(): readonly TestBoundaryCase[] {
 		},
 		{
 			label: 'an inventory at the ceiling',
-			guard: isRepository,
-			value: buildRepository({
+			guard: isWorktree,
+			value: buildWorktree({
 				tracked: Array.from({ length: MAX_INVENTORY_PATHS }, () => 'AGENTS.md'),
 			}),
 			accepted: true,
 		},
 		{
 			label: 'an inventory one path past the ceiling',
-			guard: isRepository,
-			value: buildRepository({
+			guard: isWorktree,
+			value: buildWorktree({
 				tracked: Array.from({ length: MAX_INVENTORY_PATHS + 1 }, () => 'AGENTS.md'),
 			}),
 			accepted: false,
 		},
 		{
 			label: 'an inventory carrying a traversal',
-			guard: isRepository,
-			value: buildRepository({ dirty: ['../secrets'] }),
+			guard: isWorktree,
+			value: buildWorktree({ dirty: ['../secrets'] }),
 			accepted: false,
 		},
 	]
@@ -1717,7 +1717,12 @@ export function buildVendoredSnapshot(files: readonly TestVendoredFile[]): Snaps
  */
 export function writeUpstreamReply(response: ServerResponse, reply: TestUpstreamReply): void {
 	const headers: Record<string, string> = { 'content-type': reply.type ?? 'application/json' }
-	const body = reply.encoding === 'gzip' ? gzipSync(reply.body) : Buffer.from(reply.body, 'utf8')
+	const body =
+		reply.encoding === 'gzip'
+			? gzipSync(reply.body)
+			: typeof reply.body === 'string'
+				? Buffer.from(reply.body, 'utf8')
+				: Buffer.from(reply.body)
 	if (reply.location !== undefined) headers.location = reply.location
 	if (reply.encoding !== undefined) headers['content-encoding'] = reply.encoding
 	if (reply.chunked !== true) {

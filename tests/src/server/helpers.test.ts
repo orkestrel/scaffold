@@ -1,4 +1,4 @@
-import type { Copy } from '@src/core'
+import type { HostFile } from '@src/core'
 import {
 	chmodSync,
 	existsSync,
@@ -10,7 +10,9 @@ import {
 	rmSync,
 	writeFileSync,
 } from 'node:fs'
+import { once } from 'node:events'
 import { join } from 'node:path'
+import { Worker } from 'node:worker_threads'
 import {
 	contentToHex,
 	EXECUTABLE_PATHS,
@@ -23,7 +25,7 @@ import {
 	computeDigest,
 	computeFileDigest,
 	computeManifestDigest,
-	copiesToHost,
+	filesToHost,
 	hexToDigest,
 	isHost,
 	isPhysicalDirectory,
@@ -1172,7 +1174,7 @@ describe('readManifestEntry', () => {
 	})
 })
 
-describe('copiesToHost', () => {
+describe('filesToHost', () => {
 	const manifest = buildVendoredManifest()
 	const floor = {
 		manifest,
@@ -1181,13 +1183,13 @@ describe('copiesToHost', () => {
 		),
 	}
 
-	it('overlays host-owned live copies while keeping deferred floor bytes', () => {
-		const copies: readonly Copy[] = [
-			{ path: 'AGENTS.md', lookup: 'found', content: 'live agents\n' },
-			{ path: '.claude/rules/names.md', lookup: 'found', content: 'live names\n' },
-			{ path: 'scripts/codex.sh', lookup: 'found', content: 'live script\n' },
+	it('overlays host-owned live files while keeping deferred floor bytes', () => {
+		const files: readonly HostFile[] = [
+			{ path: 'AGENTS.md', lookup: 'found', hex: contentToHex('live agents\n') },
+			{ path: '.claude/rules/names.md', lookup: 'found', hex: contentToHex('live names\n') },
+			{ path: 'scripts/codex.sh', lookup: 'found', hex: contentToHex('live script\n') },
 		]
-		const assembled = copiesToHost(copies, floor)
+		const assembled = filesToHost(files, floor)
 		expect(assembled?.manifest.entries.map((entry) => entry.destination)).toEqual(
 			manifest.entries.map((entry) => entry.destination),
 		)
@@ -1199,12 +1201,12 @@ describe('copiesToHost', () => {
 	})
 
 	it('assembles a whole host from an all-found fill', () => {
-		const copies: readonly Copy[] = manifest.entries.map((entry) => ({
+		const files: readonly HostFile[] = manifest.entries.map((entry) => ({
 			path: entry.destination,
 			lookup: 'found',
-			content: `${entry.destination}\n`,
+			hex: contentToHex(`${entry.destination}\n`),
 		}))
-		const assembled = copiesToHost(copies, floor)
+		const assembled = filesToHost(files, floor)
 		expect(assembled).toEqual({
 			manifest,
 			bytes: Object.fromEntries(
@@ -1222,10 +1224,10 @@ describe('copiesToHost', () => {
 	})
 
 	it('keeps the release order and the storage and executable declarations it fixed', () => {
-		const copies: readonly Copy[] = [...manifest.entries]
+		const files: readonly HostFile[] = [...manifest.entries]
 			.reverse()
-			.map((entry) => ({ path: entry.destination, lookup: 'found', content: 'moved\n' }))
-		const assembled = copiesToHost(copies, floor)
+			.map((entry) => ({ path: entry.destination, lookup: 'found', hex: contentToHex('moved\n') }))
+		const assembled = filesToHost(files, floor)
 		expect(assembled?.manifest.entries.map((entry) => entry.storage)).toEqual(
 			manifest.entries.map((entry) => entry.storage),
 		)
@@ -1244,34 +1246,34 @@ describe('copiesToHost', () => {
 	})
 
 	it('answers undefined for a row that produced no answer', () => {
-		const found: readonly Copy[] = manifest.entries.map((entry) => ({
+		const found: readonly HostFile[] = manifest.entries.map((entry) => ({
 			path: entry.destination,
 			lookup: 'found',
-			content: `${entry.destination}\n`,
+			hex: contentToHex(`${entry.destination}\n`),
 		}))
-		expect(copiesToHost(found, floor)).toBeDefined()
+		expect(filesToHost(found, floor)).toBeDefined()
 		for (const lookup of ['missing', 'unmatched', 'failed'] as const) {
-			const spoiled: readonly Copy[] = [
+			const spoiled: readonly HostFile[] = [
 				{ path: 'AGENTS.md', lookup, note: 'the read produced no answer' },
 				...found.slice(1),
 			]
-			expect(copiesToHost(spoiled, floor)).toBeUndefined()
+			expect(filesToHost(spoiled, floor)).toBeUndefined()
 		}
 	})
 
 	it('answers undefined for a path the release never declared', () => {
-		const smuggled: readonly Copy[] = [
-			{ path: 'AGENTS.md', lookup: 'found', content: 'AGENTS.md\n' },
-			{ path: 'smuggled.md', lookup: 'found', content: 'smuggled\n' },
+		const smuggled: readonly HostFile[] = [
+			{ path: 'AGENTS.md', lookup: 'found', hex: contentToHex('AGENTS.md\n') },
+			{ path: 'smuggled.md', lookup: 'found', hex: contentToHex('smuggled\n') },
 		]
-		expect(copiesToHost(smuggled, floor)).toBeUndefined()
+		expect(filesToHost(smuggled, floor)).toBeUndefined()
 	})
 
 	it('answers undefined when a host-owned path is absent from the fill', () => {
-		const partial: readonly Copy[] = [
-			{ path: 'AGENTS.md', lookup: 'found', content: 'AGENTS.md\n' },
+		const partial: readonly HostFile[] = [
+			{ path: 'AGENTS.md', lookup: 'found', hex: contentToHex('AGENTS.md\n') },
 		]
-		expect(copiesToHost(partial, floor)).toBeUndefined()
+		expect(filesToHost(partial, floor)).toBeUndefined()
 	})
 })
 
@@ -1393,6 +1395,54 @@ describe('stageBytes', () => {
 })
 
 describe('stageHost', () => {
+	it('declares the digest of the bytes staged after the source changes', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			for (let index = 0; index < 256; index += 1) {
+				workspace.write(
+					`checkout/.claude/rules/interleave-${String(index).padStart(3, '0')}.md`,
+					`${String(index)}\n`,
+				)
+			}
+			const host = join(workspace.path, 'host')
+			const target = join(checkout, 'tests', 'setupPolicy.ts')
+			const staged = join(host, 'AGENTS.md')
+			const worker = new Worker(
+				`const { existsSync, watch, writeFileSync } = require('node:fs')
+const { parentPort, workerData } = require('node:worker_threads')
+const watcher = watch(workerData.root, { recursive: true }, () => {
+	if (!existsSync(workerData.staged)) return
+	watcher.close()
+	writeFileSync(workerData.target, workerData.content)
+	parentPort.postMessage('changed')
+})
+parentPort.postMessage('ready')`,
+				{
+					eval: true,
+					workerData: {
+						root: workspace.path,
+						staged,
+						target,
+						content: 'changed after digest\n',
+					},
+				},
+			)
+			try {
+				expect(await once(worker, 'message')).toStrictEqual(['ready'])
+				const changed = once(worker, 'message')
+				const entries = stageHost(checkout, host)
+				expect(await changed).toStrictEqual(['changed'])
+				const entry = entries.find((candidate) => candidate.destination === 'tests/setupPolicy.ts')
+				expect(entry?.digest).toBe(computeFileDigest(join(host, entry?.storage ?? 'absent')))
+			} finally {
+				await worker.terminate()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('records the exact digest of every staged file', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {

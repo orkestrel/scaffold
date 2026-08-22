@@ -13,7 +13,7 @@ import type {
 import type {
 	MaterializeResult,
 	MaterializerInterface,
-	Repository,
+	Worktree,
 	UpstreamOptions,
 } from '@src/server'
 import type {
@@ -70,10 +70,10 @@ import {
 import {
 	Materializer,
 	Upstream,
-	copiesToHost,
+	filesToHost,
 	isExactCaseFile,
 	isPhysicalDirectory,
-	isRepository,
+	isWorktree,
 	listFiles,
 	readFileText,
 	readHostFloor,
@@ -429,12 +429,12 @@ export class CLI implements CLIInterface {
 		const groups = this.#groups(command.groups)
 		const blueprint = this.#derive(target)
 		this.#assertTarget(target, blueprint)
-		const repository = this.#repository(target)
-		if (repository.dirty.length > 0 && command.dirty !== true) {
+		const worktree = this.#worktree(target)
+		if (worktree.dirty.length > 0 && command.dirty !== true) {
 			throw new ScaffoldError(
 				'TARGET',
-				`The target at ${target} carries ${String(repository.dirty.length)} uncommitted change${repository.dirty.length === 1 ? '' : 's'}. Commit them, or pass --dirty to waive the refusal.`,
-				{ target, dirty: repository.dirty.length },
+				`The target at ${target} carries ${String(worktree.dirty.length)} uncommitted change${worktree.dirty.length === 1 ? '' : 's'}. Commit them, or pass --dirty to waive the refusal.`,
+				{ target, dirty: worktree.dirty.length },
 			)
 		}
 		const host = await this.#host(command.from, target, command.offline === true)
@@ -463,7 +463,7 @@ export class CLI implements CLIInterface {
 			const removed = host.materializer.remove(
 				plan,
 				audit,
-				command.dirty === true ? { tracked: repository.tracked, dirty: [] } : repository,
+				command.dirty === true ? { tracked: worktree.tracked, dirty: [] } : worktree,
 				target,
 			)
 			const offline = this.#merge(repaired, removed)
@@ -611,8 +611,8 @@ export class CLI implements CLIInterface {
 		const current = target === undefined ? floor.bytes : readSnapshot(target, paths)
 		const upstream = new Upstream(this.#upstream)
 		try {
-			const copies = await upstream.vendor(paths, current)
-			const live = copiesToHost(copies, floor)
+			const files = await upstream.files(paths, current)
+			const live = filesToHost(files, floor)
 			return {
 				materializer: new Materializer({ host: live ?? floor }),
 				baseline: live === undefined ? 'floor' : 'live',
@@ -1264,7 +1264,7 @@ export class CLI implements CLIInterface {
 	// What git reports about the target's working tree. Deletion draws only on
 	// what git tracks and refuses a tree carrying uncommitted work, so a target
 	// that is not a repository has no recovery mechanism and is refused here.
-	#repository(target: string): Repository {
+	#worktree(target: string): Worktree {
 		const tracked = this.#inventory(target, ['ls-files', '-z'])
 		const dirty = this.#inventory(target, [
 			'status',
@@ -1273,7 +1273,7 @@ export class CLI implements CLIInterface {
 			'-z',
 		]).map((record) => (record.length > 3 && record[2] === ' ' ? record.slice(3) : record))
 		const state = { tracked, dirty }
-		if (!isRepository(state)) {
+		if (!isWorktree(state)) {
 			throw new ScaffoldError('TARGET', `The git state at ${target} is not a readable inventory.`, {
 				target,
 				tracked: tracked.length,

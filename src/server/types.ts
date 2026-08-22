@@ -2,7 +2,7 @@ import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkes
 import type {
 	Audit,
 	CatalogEntry,
-	Copy,
+	HostFile,
 	Dependency,
 	Mirror,
 	Plan,
@@ -116,11 +116,11 @@ export interface Host {
  * directory survives every verb. `dirty` is every path carrying an uncommitted
  * change, taken repo-wide rather than over a write set, because deletion makes
  * the write set the whole workspace. A clean tree is an empty `dirty`. A target
- * that is not a git repository yields no `Repository` at all, so the caller
+ * that is not a git repository yields no `Worktree` at all, so the caller
  * decides what to do about that rather than reading it out of an invented
  * empty value.
  */
-export interface Repository {
+export interface Worktree {
 	readonly tracked: readonly string[]
 	readonly dirty: readonly string[]
 }
@@ -252,7 +252,7 @@ export interface MaterializerInterface {
 	 *
 	 * @param plan - The compiled plan that decides which paths are foreign.
 	 * @param audit - The preview returned by this materializer's `audit` method; it must agree with the candidate set this call re-derives.
-	 * @param repository - The target's git state; only a tracked path is ever deleted.
+	 * @param worktree - The target's git state; only a tracked path is ever deleted.
 	 * @param target - The directory to delete from.
 	 * @returns The paths removed.
 	 *
@@ -275,7 +275,7 @@ export interface MaterializerInterface {
 	 * any foreign finding, including one the deletion itself would skip, because a
 	 * preview stale anywhere is stale evidence.
 	 */
-	remove(plan: Plan, audit: Audit, repository: Repository, target: string): MaterializeResult
+	remove(plan: Plan, audit: Audit, worktree: Worktree, target: string): MaterializeResult
 	/**
 	 * Tear the materializer down. Every later call throws, and teardown is idempotent.
 	 *
@@ -296,7 +296,7 @@ export interface MaterializerInterface {
 export type UpstreamEventMap = {
 	readonly release: readonly [release: Release]
 	readonly mirror: readonly [mirror: Mirror]
-	readonly copy: readonly [copy: Copy]
+	readonly file: readonly [file: HostFile]
 	readonly error: readonly [error: unknown]
 	readonly destroy: readonly []
 }
@@ -366,13 +366,13 @@ export interface UpstreamInterface {
 	 */
 	fetch(names: readonly string[], current: Snapshot): Promise<readonly Mirror[]>
 	/**
-	 * Read each named vendored file from the repository, beside the target's copy it answers for.
+	 * Read each named vendored file from the repository, beside the target bytes it answers for.
 	 *
 	 * @param paths - The target-relative vendored paths to read.
-	 * @param current - The target's copies as exact bytes, keyed by the same paths.
-	 * @returns One copy verdict per path, in input order.
+	 * @param current - The target files as exact bytes, keyed by the same paths.
+	 * @returns One file verdict per path, in input order.
 	 */
-	vendor(paths: readonly string[], current: Snapshot): Promise<readonly Copy[]>
+	files(paths: readonly string[], current: Snapshot): Promise<readonly HostFile[]>
 	/**
 	 * Catalog the published fleet from the registry's organization package list.
 	 *

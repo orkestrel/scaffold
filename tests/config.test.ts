@@ -514,6 +514,8 @@ describe('root configuration', () => {
 	})
 
 	it('keeps the committed host inventory aligned with the vendored checkout bytes', async () => {
+		// Run this gate against a quiescent checkout. It compares two reads and cannot
+		// distinguish stale committed data from a source edit made while it runs.
 		const packageValue: unknown = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8'))
 		if (typeof packageValue !== 'object' || packageValue === null) {
 			throw new Error('The package manifest is not a record')

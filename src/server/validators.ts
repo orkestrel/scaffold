@@ -7,7 +7,7 @@ import type {
 	ManifestEntry,
 	MaterializerEventMap,
 	MaterializerOptions,
-	Repository,
+	Worktree,
 	UpstreamEventMap,
 	UpstreamOptions,
 } from './types.js'
@@ -332,7 +332,7 @@ export const isHostManifest: Guard<HostManifest> = recordOf({
 export const isHost: Guard<Host> = recordOf({ manifest: isHostManifest, bytes: isSnapshot })
 
 /**
- * Narrow a value to a {@link Repository}.
+ * Narrow a value to a {@link Worktree}.
  *
  * @remarks
  * Both path lists are target-relative, so both are measured by the core path
@@ -342,13 +342,13 @@ export const isHost: Guard<Host> = recordOf({ manifest: isHostManifest, bytes: i
  *
  * @example
  * ```ts
- * import { isRepository } from '@orkestrel/scaffold/server'
+ * import { isWorktree } from '@orkestrel/scaffold/server'
  *
- * isRepository({ tracked: ['AGENTS.md'], dirty: [] }) // true
- * isRepository({ tracked: ['../secrets'], dirty: [] }) // false
+ * isWorktree({ tracked: ['AGENTS.md'], dirty: [] }) // true
+ * isWorktree({ tracked: ['../secrets'], dirty: [] }) // false
  * ```
  */
-export const isRepository: Guard<Repository> = recordOf({
+export const isWorktree: Guard<Worktree> = recordOf({
 	tracked: andOf(isInventory, arrayOf(isPath)),
 	dirty: andOf(isInventory, arrayOf(isPath)),
 })
@@ -405,7 +405,7 @@ export const isUpstreamHooks: Guard<EmitterHooks<UpstreamEventMap>> = recordOf(
 	{
 		release: isFunction,
 		mirror: isFunction,
-		copy: isFunction,
+		file: isFunction,
 		error: isFunction,
 		destroy: isFunction,
 	},

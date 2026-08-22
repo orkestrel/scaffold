@@ -11,7 +11,7 @@ import {
 	isHost,
 	isInventory,
 	isMirrors,
-	isRepository,
+	isWorktree,
 	MAX_INVENTORY_PATHS,
 } from '@src/server'
 import { buildHostileCases, readKeyCount, selectHostileCase } from '../../setup.js'
@@ -185,6 +185,6 @@ describe('composition with core', () => {
 		const beyondCollection = Array.from({ length: MAX_COLLECTION_ITEMS + 1 }, () => 'AGENTS.md')
 		expect(MAX_INVENTORY_PATHS).toBeGreaterThan(MAX_COLLECTION_ITEMS)
 		expect(isDependencyNames(beyondCollection)).toBe(false)
-		expect(isRepository({ tracked: beyondCollection, dirty: [] })).toBe(true)
+		expect(isWorktree({ tracked: beyondCollection, dirty: [] })).toBe(true)
 	})
 })
