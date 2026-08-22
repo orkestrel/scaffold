@@ -7,25 +7,8 @@ no campaign folder is the plan of record.
 
 ## 1. Package work, scheduled by each package's next natural release
 
-- **scaffold**: a writing verb refuses a workspace that declares Vitest projects the planned
-  configuration does not register, and it refuses before it selects a group, so `--groups`
-  cannot reach the groups the conflict does not touch. Measured 2026-08-22 against
-  supervisor, which declares `app:browser:integration`, `guides`, and eight `service:*`
-  projects: `repair` and `repair --groups orchestration,docs` both refuse identically, and
-  that target took the release's `orchestration` and `docs` bytes by hand instead. Rule on
-  whether the precondition belongs after group selection, or whether a target's own Vitest
-  projects belong in the plan; until then no such target can take a vendored change through
-  the tool.
 - **fleet**: sweep every target for skill and bridge members outside the vendored set; that
   population is unmeasured, and `repair` does not remove what the plan never owned.
-- **scaffold**: a writing verb raises a target's `peerDependencies` to the current floors, and a
-  peer range states the breadth a consumer may satisfy rather than the newest version the floor
-  knows. Measured 2026-08-22: `repair` moved probe's `vitest` peer from `^4.1.0` to `^4.1.11`,
-  which no consumer holding `@vitest/browser-playwright` can satisfy because that adapter pins
-  `4.1.10` exactly, and probe's distribution gate caught the packed artifact refusing to install.
-  The same shape shipped undetected in `@orkestrel/test` 0.0.9 and 0.0.10, whose published
-  artifacts fail `ERESOLVE` beside that adapter. Rule on which declaration classes a floor may
-  raise; a runtime range and a peer range are not the same question.
 - **test**: pack a distribution gate that installs this package's own artifact into a consumer
   and drives it. Its absence is why the unsatisfiable `vitest` peer reached the registry twice:
   every other gate passed on a workspace that already had a resolved tree. The idiom exists in
