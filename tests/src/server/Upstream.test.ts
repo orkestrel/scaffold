@@ -174,8 +174,34 @@ describe('Upstream lookup', () => {
 			const [release] = await upstream.lookup([
 				buildDependency({ name: '@orkestrel/router', range: '^1.0.0' }),
 			])
-			expect(release?.lookup).toBe('failed')
+			expect(release?.lookup).toBe('unmatched')
 			expect(release?.latest).toBe(undefined)
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('holds an unmatched range apart from a transport fault', async () => {
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.router]: {
+				status: 200,
+				body: JSON.stringify({
+					'dist-tags': { latest: '2.0.0' },
+					versions: { '2.0.0': {} },
+				}),
+			},
+			[UPSTREAM_PATHS.emitter]: { status: 500, body: '{"error":"Internal"}' },
+		})
+		const upstream = new Upstream({ registry: { base: server.base } })
+		try {
+			const releases = await upstream.lookup([
+				buildDependency({ name: '@orkestrel/router', range: '^1.0.0' }),
+				buildDependency({ name: '@orkestrel/emitter', range: '^0.0.5' }),
+			])
+			expect(releases.map((release) => release.lookup)).toStrictEqual(['unmatched', 'failed'])
+			expect(releases[0]?.note).toBe('the answer carries no readable latest version')
+			expect(releases[1]?.note).toBe('HTTP 500')
 		} finally {
 			upstream.destroy()
 			await server.destroy()
@@ -256,7 +282,7 @@ describe('Upstream lookup', () => {
 		}
 	})
 
-	it('reports an answer that carries no readable latest version as a failed lookup', async () => {
+	it('reports an answer that carries no readable latest version as unmatched', async () => {
 		const server = await createUpstreamServer({
 			[UPSTREAM_PATHS.router]: { status: 200, body: '{"name":"@orkestrel/router"}' },
 			[UPSTREAM_PATHS.emitter]: { status: 200, body: 'not json at all' },
@@ -270,7 +296,7 @@ describe('Upstream lookup', () => {
 				buildDependency({ name: '@orkestrel/console', range: '^0.0.4' }),
 			])
 			for (const release of releases) {
-				expect(release.lookup).toBe('failed')
+				expect(release.lookup).toBe('unmatched')
 				expect(release.latest).toBe(undefined)
 				expect(release.note).toBe('the answer carries no readable latest version')
 			}

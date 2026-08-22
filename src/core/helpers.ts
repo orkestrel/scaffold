@@ -11,6 +11,7 @@ import type {
 } from './types.js'
 import { compareValues, isRecord, isString, limitEntries, parseJSON } from '@orkestrel/contract'
 import {
+	CATALOG_AGENT_PATH,
 	DEPENDENCY_NAME_PATTERN,
 	ENGINES_PATTERN,
 	EXTRA_RANGE_PATTERN,
@@ -161,6 +162,30 @@ export function computeHash(text: string): string {
 export function matchesOrchestrationPath(path: string): boolean {
 	if (ORCHESTRATION_PATH_NAMES.includes(path)) return true
 	return ORCHESTRATION_PATH_PREFIXES.some((prefix) => path.startsWith(prefix))
+}
+
+/**
+ * Checks whether another surface owns the vendored bytes at a path.
+ *
+ * @param path - The target-relative vendored path to test.
+ * @returns `true` for the catalog agent file and for a Markdown guide mirror;
+ * `false` otherwise.
+ *
+ * @remarks
+ * The materializer keeps these paths presence-owned because the catalog or
+ * mirror surface writes their bytes. A live host fill therefore keeps the
+ * installed floor's bytes for them and requests only the host-owned paths.
+ *
+ * @example
+ * ```ts
+ * import { isDeferredPath } from '@orkestrel/scaffold'
+ *
+ * isDeferredPath('guides/router.md') // true
+ * isDeferredPath('AGENTS.md') // false
+ * ```
+ */
+export function isDeferredPath(path: string): boolean {
+	return path === CATALOG_AGENT_PATH || (path.startsWith('guides/') && path.endsWith('.md'))
 }
 
 /**

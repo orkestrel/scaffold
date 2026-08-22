@@ -55,12 +55,14 @@ export type Drift = 'aligned' | 'stale' | 'missing' | 'foreign'
  *
  * @remarks
  * `found` carries the answer. `missing` is an upstream `404`, which is a
- * definite answer that the package is not published there. `failed` is a
- * transport fault, which is no answer at all and may succeed on a later run.
- * Holding these apart from how a local copy compares is what lets a verdict
- * omit the value it never received instead of inventing an empty one.
+ * definite answer that the package is not published there. `unmatched` means
+ * the answer was read but no version admits under the declared range. `failed`
+ * means the read did not complete because of a transport fault, timeout, byte
+ * bound, redirect, or refused response shape. Holding these apart from how a
+ * local copy compares is what lets a verdict omit the value it never received
+ * instead of inventing an empty one.
  */
-export type Lookup = 'found' | 'missing' | 'failed'
+export type Lookup = 'found' | 'missing' | 'unmatched' | 'failed'
 
 /** The compile phases, in the order they run. */
 export type CompileStage = 'draft' | 'gate' | 'pin'
@@ -207,7 +209,7 @@ export type CatalogEntry =
 	  }
 	| {
 			readonly name: string
-			readonly lookup: 'missing' | 'failed'
+			readonly lookup: 'missing' | 'unmatched' | 'failed'
 			readonly note: string
 			readonly version?: never
 			readonly dependencies?: never
@@ -234,7 +236,7 @@ export type Release =
 	| {
 			readonly name: string
 			readonly range: string
-			readonly lookup: 'missing' | 'failed'
+			readonly lookup: 'missing' | 'unmatched' | 'failed'
 			readonly note: string
 			readonly major?: number
 			readonly latest?: never
@@ -266,7 +268,7 @@ export type Copy =
 	  }
 	| {
 			readonly path: string
-			readonly lookup: 'missing' | 'failed'
+			readonly lookup: 'missing' | 'unmatched' | 'failed'
 			readonly note: string
 			readonly observed?: string
 			readonly content?: never
@@ -298,7 +300,7 @@ export type Mirror =
 	| {
 			readonly name: string
 			readonly path: string
-			readonly lookup: 'missing' | 'failed'
+			readonly lookup: 'missing' | 'unmatched' | 'failed'
 			readonly note: string
 			readonly observed?: string
 			readonly content?: never

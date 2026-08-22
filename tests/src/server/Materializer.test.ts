@@ -28,9 +28,10 @@ import {
 	createHostRoot,
 	readErrorCode,
 	readErrorMessage,
-	TARGET_MANIFEST_TEXT, SCRATCH_PREFIX,
+	TARGET_MANIFEST_TEXT,
+	SCRATCH_PREFIX,
 } from '../../setupServer.js'
-import {createScratch} from "@orkestrel/test/server";
+import { createScratch } from '@orkestrel/test/server'
 
 const MATERIALIZED = [
 	'package.json',
@@ -51,18 +52,13 @@ describe('Materializer construction', () => {
 		expect(readErrorCode(() => new Materializer({ host: '' }))).toBe('INVALID')
 	})
 
-	it('accepts a host with no manifest at all, including the default one', () => {
+	it('accepts an explicit host with no manifest at all', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const raw = workspace.ensure('raw')
 			const materializer = new Materializer({ host: raw })
 			expect(materializer.emitter.destroyed).toBe(false)
 			materializer.destroy()
-			// The packaged default resolves from this module's own location, which is
-			// unbuilt in a source checkout, so it reads as a host carrying no manifest.
-			const packaged = new Materializer()
-			expect(packaged.emitter.destroyed).toBe(false)
-			packaged.destroy()
 		} finally {
 			workspace.destroy()
 		}

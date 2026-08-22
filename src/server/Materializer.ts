@@ -26,8 +26,7 @@ import type {
 } from './types.js'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import { attempt } from '@orkestrel/contract'
 import { Emitter } from '@orkestrel/emitter'
 import {
@@ -38,6 +37,7 @@ import {
 	contentToHex,
 	inferGroup,
 	isAudit,
+	isDeferredPath,
 	isPlan,
 	MAX_ARTIFACT_BYTES,
 	MAX_MANIFEST_BYTES,
@@ -59,6 +59,7 @@ import {
 	matchesProtectedPath,
 	readFileHex,
 	readFileText,
+	readHostFloor,
 	readHostManifest,
 	readSnapshot,
 	resolveContainedPath,
@@ -174,7 +175,7 @@ export class Materializer implements MaterializerInterface {
 			...(options?.on === undefined ? {} : { on: options.on }),
 			...(options?.error === undefined ? {} : { error: options.error }),
 		})
-		const supplied = options?.host
+		const supplied = options?.host ?? readHostFloor()
 		if (supplied !== undefined && !isFilesystemPath(supplied)) {
 			const value = this.#own(supplied)
 			this.#value = value
@@ -185,7 +186,7 @@ export class Materializer implements MaterializerInterface {
 			)
 			this.#verify(value)
 		} else {
-			const root = supplied ?? resolve(dirname(fileURLToPath(import.meta.url)), '../../host')
+			const root = supplied
 			this.#value = undefined
 			this.#root = root
 			const read = attempt(() => readHostManifest(root))
@@ -669,7 +670,7 @@ export class Materializer implements MaterializerInterface {
 				expanded.push(this.#presence(artifact, path, entry.destination))
 				continue
 			}
-			if (this.#deferred(path)) {
+			if (isDeferredPath(path)) {
 				expanded.push(this.#presence(artifact, path, entry.destination))
 				continue
 			}
@@ -700,7 +701,7 @@ export class Materializer implements MaterializerInterface {
 			if (WORKSPACE_OWNED_PATHS.includes(artifact.path)) {
 				return [this.#presence(artifact, artifact.path, source)]
 			}
-			if (this.#deferred(artifact.path)) {
+			if (isDeferredPath(artifact.path)) {
 				return [this.#presence(artifact, artifact.path, source)]
 			}
 			return [this.#hydrated(artifact, artifact.path, source, this.#readRoot(source, remaining))]
@@ -720,7 +721,7 @@ export class Materializer implements MaterializerInterface {
 				expanded.push(this.#presence(artifact, path, destination))
 				continue
 			}
-			if (this.#deferred(path)) {
+			if (isDeferredPath(path)) {
 				expanded.push(this.#presence(artifact, path, destination))
 				continue
 			}
@@ -766,14 +767,6 @@ export class Materializer implements MaterializerInterface {
 			})
 		}
 		return `${artifact.path}/${destination.slice(source.length + 1)}`
-	}
-
-	// The destinations whose bytes belong to another verb: the catalog agent file,
-	// whose marked region `catalog` owns, and every guide mirror, which `mirror`
-	// refetches. Hydrating them would claim a byte comparison the verb that owns
-	// them is about to break.
-	#deferred(path: string): boolean {
-		return path === CATALOG_AGENT_PATH || (path.startsWith('guides/') && path.endsWith('.md'))
 	}
 
 	#presence(

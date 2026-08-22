@@ -391,8 +391,8 @@ export class Upstream implements UpstreamInterface {
 	}
 
 	// One dependency, read and projected into the verdict its row carries. A
-	// found answer that states no readable version is a failed lookup rather than
-	// a found one carrying nothing, because an empty version is not an answer.
+	// found answer that states no admitted version is unmatched rather than a
+	// found one carrying nothing, because an empty version is not an answer.
 	async #release(dependency: Dependency, allowance: { remaining: number }): Promise<Release> {
 		const outcome = await this.#read(
 			this.#registryURL(dependency.name),
@@ -411,7 +411,7 @@ export class Upstream implements UpstreamInterface {
 				? {
 						name: dependency.name,
 						range: dependency.range,
-						lookup: outcome.lookup === 'missing' ? 'missing' : 'failed',
+						lookup: outcome.lookup === 'found' ? 'unmatched' : outcome.lookup,
 						note: outcome.lookup === 'found' ? Upstream.#unreadable : outcome.note,
 						...(major === undefined ? {} : { major }),
 					}
@@ -617,7 +617,7 @@ export class Upstream implements UpstreamInterface {
 		}
 		return {
 			name,
-			lookup: outcome.lookup === 'missing' ? 'missing' : 'failed',
+			lookup: outcome.lookup === 'found' ? 'unmatched' : outcome.lookup,
 			note: outcome.lookup === 'found' ? Upstream.#unreadable : outcome.note,
 		}
 	}

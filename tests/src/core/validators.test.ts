@@ -7,8 +7,10 @@ import {
 	isCollection,
 	isCompilerHooks,
 	isCompilerOptions,
+	isCatalogEntry,
 	isGroups,
 	isHex,
+	isMirror,
 	isPath,
 	isSnapshot,
 	MAX_AUDIT_FINDINGS,
@@ -92,6 +94,24 @@ describe('discriminated branches', () => {
 			expect(unionCase.guard(unionCase.refused)).toBe(false)
 		})
 	}
+
+	it('admits unmatched catalog and mirror verdicts', () => {
+		expect(
+			isCatalogEntry({
+				name: '@orkestrel/router',
+				lookup: 'unmatched',
+				note: 'the answer carries no readable latest version',
+			}),
+		).toBe(true)
+		expect(
+			isMirror({
+				name: '@orkestrel/router',
+				path: 'guides/router.md',
+				lookup: 'unmatched',
+				note: 'the answer carries no readable latest version',
+			}),
+		).toBe(true)
+	})
 })
 
 describe('isCompilerHooks', () => {

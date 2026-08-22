@@ -15,6 +15,7 @@ import {
 	contentToHex,
 	EXECUTABLE_PATHS,
 	HOST_PATHS,
+	isDeferredPath,
 	MAX_ARTIFACT_BYTES,
 	MAX_COLLECTION_ITEMS,
 } from '@src/core'
@@ -24,6 +25,7 @@ import {
 	computeManifestDigest,
 	copiesToHost,
 	hexToDigest,
+	isHost,
 	isPhysicalDirectory,
 	isExactCaseFile,
 	isPhysicalFile,
@@ -45,6 +47,7 @@ import {
 	readExpectation,
 	readFileHex,
 	readFileText,
+	readHostFloor,
 	readHostManifest,
 	readManifestEntry,
 	readSnapshot,
@@ -58,6 +61,7 @@ import { describe, expect, it } from 'vitest'
 import { buildHostArtifact, buildHostileCases, buildPlan } from '../../setup.js'
 import {
 	buildCheckoutManifest,
+	buildVendoredPlan,
 	buildManifestEntry,
 	buildStagedManifest,
 	buildVendoredManifest,
@@ -68,7 +72,8 @@ import {
 	GIT_PATH_CASES,
 	listExecutablePaths,
 	PROTECTED_PATH_CASES,
-	readErrorCode, SCRATCH_PREFIX,
+	readErrorCode,
+	SCRATCH_PREFIX,
 	SENSITIVE_PATH_CASES,
 	STORAGE_PATH_CASES,
 	WORKSPACE_ROOT,
@@ -1046,6 +1051,46 @@ describe('readHostManifest', () => {
 	})
 })
 
+describe('readHostFloor', () => {
+	it('reads the default host floor and hydrates as the default materializer does', () => {
+		const floor = readHostFloor()
+		expect(isHost(floor)).toBe(true)
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const packaged = new Materializer()
+		const valued = new Materializer({ host: floor })
+		try {
+			const plan = buildVendoredPlan()
+			expect(valued.audit(plan, workspace.path)).toEqual(packaged.audit(plan, workspace.path))
+		} finally {
+			packaged.destroy()
+			valued.destroy()
+			workspace.destroy()
+		}
+	})
+
+	it('refuses an unreadable root, manifest, or declared file with TARGET', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			expect(readErrorCode(() => readHostFloor(join(workspace.path, 'absent')))).toBe('TARGET')
+			expect(readErrorCode(() => readHostFloor(workspace.ensure('raw')))).toBe('TARGET')
+
+			const malformed = createHostRoot(workspace, 'malformed', buildVendoredManifest())
+			workspace.write('malformed/manifest.json', '{')
+			expect(readErrorCode(() => readHostFloor(malformed))).toBe('TARGET')
+
+			const missing = createHostRoot(workspace, 'missing', buildVendoredManifest())
+			rmSync(join(missing, 'AGENTS.md'))
+			expect(readErrorCode(() => readHostFloor(missing))).toBe('TARGET')
+
+			const changed = createHostRoot(workspace, 'changed', buildVendoredManifest())
+			workspace.write('changed/AGENTS.md', 'changed\n')
+			expect(readErrorCode(() => readHostFloor(changed))).toBe('TARGET')
+		} finally {
+			workspace.destroy()
+		}
+	})
+})
+
 describe('readManifestEntry', () => {
 	it('maps a destination to its storage name and its declared executable bit', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
@@ -1128,14 +1173,38 @@ describe('readManifestEntry', () => {
 })
 
 describe('copiesToHost', () => {
+	const manifest = buildVendoredManifest()
+	const floor = {
+		manifest,
+		bytes: Object.fromEntries(
+			manifest.entries.map((entry) => [entry.destination, contentToHex(`${entry.destination}\n`)]),
+		),
+	}
+
+	it('overlays host-owned live copies while keeping deferred floor bytes', () => {
+		const copies: readonly Copy[] = [
+			{ path: 'AGENTS.md', lookup: 'found', content: 'live agents\n' },
+			{ path: '.claude/rules/names.md', lookup: 'found', content: 'live names\n' },
+			{ path: 'scripts/codex.sh', lookup: 'found', content: 'live script\n' },
+		]
+		const assembled = copiesToHost(copies, floor)
+		expect(assembled?.manifest.entries.map((entry) => entry.destination)).toEqual(
+			manifest.entries.map((entry) => entry.destination),
+		)
+		expect(assembled?.bytes['AGENTS.md']).toBe(contentToHex('live agents\n'))
+		expect(assembled?.bytes['guides/guide.md']).toBe(floor.bytes['guides/guide.md'])
+		expect(assembled?.bytes['.claude/agents/orkestrel.md']).toBe(
+			floor.bytes['.claude/agents/orkestrel.md'],
+		)
+	})
+
 	it('assembles a whole host from an all-found fill', () => {
-		const manifest = buildVendoredManifest()
 		const copies: readonly Copy[] = manifest.entries.map((entry) => ({
 			path: entry.destination,
 			lookup: 'found',
 			content: `${entry.destination}\n`,
 		}))
-		const assembled = copiesToHost(copies, manifest)
+		const assembled = copiesToHost(copies, floor)
 		expect(assembled).toEqual({
 			manifest,
 			bytes: Object.fromEntries(
@@ -1153,62 +1222,56 @@ describe('copiesToHost', () => {
 	})
 
 	it('keeps the release order and the storage and executable declarations it fixed', () => {
-		const manifest = buildVendoredManifest()
 		const copies: readonly Copy[] = [...manifest.entries]
 			.reverse()
 			.map((entry) => ({ path: entry.destination, lookup: 'found', content: 'moved\n' }))
-		const assembled = copiesToHost(copies, manifest)
+		const assembled = copiesToHost(copies, floor)
 		expect(assembled?.manifest.entries.map((entry) => entry.storage)).toEqual(
 			manifest.entries.map((entry) => entry.storage),
 		)
 		expect(assembled?.manifest.entries.map((entry) => entry.executable)).toEqual(
 			manifest.entries.map((entry) => entry.executable),
 		)
-		// The digests are the fill's own, so the release's are not carried over the
-		// bytes the fill actually holds.
-		expect(
-			assembled?.manifest.entries.every((entry) => entry.digest === computeDigest('moved\n')),
-		).toBe(true)
+		// Host-owned digests follow the live fill. Deferred digests follow the floor
+		// bytes that their owning surfaces replace later.
+		for (const entry of assembled?.manifest.entries ?? []) {
+			expect(entry.digest).toBe(
+				isDeferredPath(entry.destination)
+					? floor.manifest.entries.find((one) => one.destination === entry.destination)?.digest
+					: computeDigest('moved\n'),
+			)
+		}
 	})
 
 	it('answers undefined for a row that produced no answer', () => {
-		const manifest = buildVendoredManifest()
 		const found: readonly Copy[] = manifest.entries.map((entry) => ({
 			path: entry.destination,
 			lookup: 'found',
 			content: `${entry.destination}\n`,
 		}))
-		expect(copiesToHost(found, manifest)).toBeDefined()
-		for (const lookup of ['missing', 'failed'] as const) {
+		expect(copiesToHost(found, floor)).toBeDefined()
+		for (const lookup of ['missing', 'unmatched', 'failed'] as const) {
 			const spoiled: readonly Copy[] = [
 				{ path: 'AGENTS.md', lookup, note: 'the read produced no answer' },
 				...found.slice(1),
 			]
-			expect(copiesToHost(spoiled, manifest)).toBeUndefined()
+			expect(copiesToHost(spoiled, floor)).toBeUndefined()
 		}
 	})
 
 	it('answers undefined for a path the release never declared', () => {
-		const manifest = buildVendoredManifest()
 		const smuggled: readonly Copy[] = [
 			{ path: 'AGENTS.md', lookup: 'found', content: 'AGENTS.md\n' },
 			{ path: 'smuggled.md', lookup: 'found', content: 'smuggled\n' },
 		]
-		expect(copiesToHost(smuggled, manifest)).toBeUndefined()
+		expect(copiesToHost(smuggled, floor)).toBeUndefined()
 	})
 
-	it('emits only the entries a partial fill covers, and stays self-consistent', () => {
-		const manifest = buildVendoredManifest()
+	it('answers undefined when a host-owned path is absent from the fill', () => {
 		const partial: readonly Copy[] = [
 			{ path: 'AGENTS.md', lookup: 'found', content: 'AGENTS.md\n' },
 		]
-		const assembled = copiesToHost(partial, manifest)
-		expect(assembled?.manifest.entries.map((entry) => entry.destination)).toEqual(['AGENTS.md'])
-		expect(Object.keys(assembled?.bytes ?? {})).toEqual(['AGENTS.md'])
-		expect(assembled?.manifest.roots).toEqual(manifest.roots)
-		expect(assembled?.manifest.digest).toBe(
-			computeManifestDigest(assembled?.manifest.entries ?? [], assembled?.manifest.roots ?? []),
-		)
+		expect(copiesToHost(partial, floor)).toBeUndefined()
 	})
 })
 

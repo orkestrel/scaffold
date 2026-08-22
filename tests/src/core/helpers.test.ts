@@ -18,6 +18,7 @@ import {
 	inferDrift,
 	inferGroup,
 	isCollection,
+	isDeferredPath,
 	isDependency,
 	manifestToDependencies,
 	manifestToName,
@@ -106,6 +107,17 @@ describe('matchesOrchestrationPath', () => {
 		expect(matchesOrchestrationPath('.mcp.json')).toBe(true)
 		expect(matchesOrchestrationPath('.oxlintrc.json')).toBe(false)
 		expect(matchesOrchestrationPath('.claudeignore')).toBe(false)
+	})
+})
+
+describe('isDeferredPath', () => {
+	it('matches only the catalog agent and Markdown guide mirrors', () => {
+		expect(isDeferredPath('.claude/agents/orkestrel.md')).toBe(true)
+		expect(isDeferredPath('guides/guide.md')).toBe(true)
+		expect(isDeferredPath('guides/nested/router.md')).toBe(true)
+		expect(isDeferredPath('.claude/agents/other.md')).toBe(false)
+		expect(isDeferredPath('guides/guide.MD')).toBe(false)
+		expect(isDeferredPath('docs/guide.md')).toBe(false)
 	})
 })
 

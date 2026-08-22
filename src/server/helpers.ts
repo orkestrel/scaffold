@@ -27,14 +27,17 @@ import {
 	writeFileSync,
 } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { basename, dirname, join, parse, relative, resolve, sep } from 'node:path'
+import { basename, dirname, extname, join, parse, relative, resolve, sep } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { attempt, holds, isError, parseJSONAs } from '@orkestrel/contract'
 import {
 	bytesToHex,
 	contentToHex,
 	EXECUTABLE_PATHS,
+	HOST_INVENTORY_PATH,
 	HOST_PATHS,
 	isCollection,
+	isDeferredPath,
 	isHex,
 	isPath,
 	MAX_ARTIFACT_BYTES,
@@ -1018,6 +1021,7 @@ export function readSnapshot(target: string, paths: readonly string[]): Snapshot
  * Read a vendored host's manifest, when it carries one.
  *
  * @param host - The vendored host root to read.
+ * @param name - The root-relative manifest path. Default: `manifest.json`.
  * @returns The manifest, or `undefined` when the host carries none.
  * @throws `ScaffoldError('INVALID', …)` when `host` is not a host path.
  * @throws `ScaffoldError('TARGET', …)` when the manifest is there but cannot be
@@ -1043,12 +1047,13 @@ export function readSnapshot(target: string, paths: readonly string[]): Snapshot
  * readHostManifest('./dist/host') // the manifest, or undefined for a raw root
  * ```
  */
-export function readHostManifest(host: string): HostManifest | undefined {
+export function readHostManifest(
+	host: string,
+	name: string = MANIFEST_NAME,
+): HostManifest | undefined {
 	if (!isFilesystemPath(host)) {
 		throw new ScaffoldError('INVALID', 'Host root is not a host path', { host })
 	}
-	// The reserved metadata name a staged host writes at its own root.
-	const name = MANIFEST_NAME
 	const full = resolveContainedPath(host, name)
 	if (full === undefined) {
 		throw new ScaffoldError('INVALID', `Host manifest leaves its root at ${host}`, { host })
@@ -1073,6 +1078,61 @@ export function readHostManifest(host: string): HostManifest | undefined {
 		throw new ScaffoldError('TARGET', `Host manifest membership is corrupted at ${full}`, { host })
 	}
 	return manifest
+}
+
+/**
+ * Reads the installed vendored host floor as a value.
+ *
+ * @param root - The vendored host root. Default: the installed package's
+ * vendored root, resolved from this module's location.
+ * @returns The verified manifest and the exact bytes of every declared entry.
+ * @throws `ScaffoldError('TARGET', â€¦)` when the root is not a readable physical
+ * directory, its manifest is absent or unreadable, the manifest does not verify,
+ * or a declared file is unreadable or misses its digest.
+ *
+ * @remarks
+ * Reads the same default floor the {@link Materializer} uses. Each declared
+ * file is addressed through the manifest's storage name and retained under its
+ * destination, so the returned value has the same shape as the installed root.
+ * When this module executes from TypeScript source, the committed inventory is
+ * the manifest and each checkout destination supplies its bytes. The emitted
+ * module reads the staged `manifest.json` file and each storage path instead.
+ *
+ * @example
+ * ```ts
+ * import { readHostFloor } from '@orkestrel/scaffold/server'
+ *
+ * readHostFloor().manifest // the installed floor's verified membership
+ * ```
+ */
+export function readHostFloor(root?: string): Host {
+	const location = fileURLToPath(import.meta.url)
+	const module = dirname(location)
+	const source = root === undefined && extname(location) === '.ts'
+	const host = root ?? resolve(module, source ? '../..' : '../../host')
+	if (!isPhysicalDirectory(host)) {
+		throw new ScaffoldError('TARGET', `The vendored host root is not readable at ${host}`, {
+			host,
+		})
+	}
+	const manifest = readHostManifest(host, source ? HOST_INVENTORY_PATH : MANIFEST_NAME)
+	if (manifest === undefined) {
+		throw new ScaffoldError('TARGET', `The vendored host carries no manifest at ${host}`, { host })
+	}
+	const bytes: Record<string, string> = {}
+	for (const entry of manifest.entries) {
+		const path = source ? entry.destination : entry.storage
+		const hex = readFileHex(host, path)
+		if (hex === undefined || hexToDigest(hex) !== entry.digest) {
+			throw new ScaffoldError(
+				'TARGET',
+				`The vendored host cannot read the declared file at ${path}`,
+				{ host, path, destination: entry.destination },
+			)
+		}
+		bytes[entry.destination] = hex
+	}
+	return { manifest, bytes }
 }
 
 /**
@@ -1114,19 +1174,22 @@ export function readManifestEntry(destination: string, source: string): Manifest
 }
 
 /**
- * Assemble a whole vendored host from live copies and the release's manifest.
+ * Assemble a whole vendored host from live copies and the installed floor.
  *
- * @param copies - The vendored files read from the repository, one row per path.
- * @param manifest - The installed release's manifest, which fixes the membership
- * a fill may draw from and the storage and executable declarations it carries.
+ * @param copies - The host-owned vendored files read from the repository, one
+ * row per path.
+ * @param floor - The installed host floor, which fixes the membership a fill
+ * may draw from and supplies the bytes owned by another surface.
  * @returns The assembled host, or `undefined` when any row produced no answer or
- * names a path the release does not declare.
+ * names a path the floor does not declare, or when a host-owned path is absent.
  *
  * @remarks
- * The one place the all-or-nothing rule is decided, so no verb restates it. A
- * fill is whole or it is nothing: a single row that failed, went missing, or
- * names an undeclared path answers `undefined` and the caller falls back to the
- * root the installed package distributes rather than to a mixture.
+ * The one place the host-owned all-or-nothing rule is decided, so no verb
+ * restates it. A fill carries live bytes for every path the host surface writes
+ * or it is nothing: a single row that failed, went missing, names an undeclared
+ * path, or leaves a host-owned path absent answers `undefined`. Only paths whose
+ * bytes the catalog or mirror surface writes keep their installed floor bytes;
+ * no file the host surface writes can mix live and floor bytes in one fill.
  *
  * The emitted entries keep the release's own order and its storage and
  * executable declarations, and carry digests recomputed over the bytes the fill
@@ -1138,22 +1201,24 @@ export function readManifestEntry(destination: string, source: string): Manifest
  * ```ts
  * import { copiesToHost } from '@orkestrel/scaffold/server'
  *
- * copiesToHost([{ path: 'AGENTS.md', lookup: 'found', content: '# Agents\n' }], manifest)
+ * copiesToHost([{ path: 'AGENTS.md', lookup: 'found', content: '# Agents\n' }], floor)
  * // { manifest: { entries: [ … ], roots: [ … ], digest: '…' }, bytes: { 'AGENTS.md': '…' } }
  * ```
  */
-export function copiesToHost(copies: readonly Copy[], manifest: HostManifest): Host | undefined {
-	const declared = new Set(manifest.entries.map((entry) => entry.destination))
+export function copiesToHost(copies: readonly Copy[], floor: Host): Host | undefined {
+	const declared = new Set(floor.manifest.entries.map((entry) => entry.destination))
 	const held = new Map<string, string>()
 	for (const copy of copies) {
 		if (copy.lookup !== 'found' || !declared.has(copy.path)) return undefined
-		held.set(copy.path, contentToHex(copy.content))
+		if (!isDeferredPath(copy.path)) held.set(copy.path, contentToHex(copy.content))
 	}
 	const entries: ManifestEntry[] = []
 	const bytes: Record<string, string> = {}
-	for (const entry of manifest.entries) {
-		const hex = held.get(entry.destination)
-		if (hex === undefined) continue
+	for (const entry of floor.manifest.entries) {
+		const hex = isDeferredPath(entry.destination)
+			? floor.bytes[entry.destination]
+			: held.get(entry.destination)
+		if (hex === undefined) return undefined
 		entries.push({
 			storage: entry.storage,
 			destination: entry.destination,
@@ -1165,8 +1230,8 @@ export function copiesToHost(copies: readonly Copy[], manifest: HostManifest): H
 	return {
 		manifest: {
 			entries,
-			roots: manifest.roots,
-			digest: computeManifestDigest(entries, manifest.roots),
+			roots: floor.manifest.roots,
+			digest: computeManifestDigest(entries, floor.manifest.roots),
 		},
 		bytes,
 	}

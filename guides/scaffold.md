@@ -49,7 +49,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `Environment`       | type | One environment a generated workspace selects on its `src` or `app` axis.                        |
 | `Finding`           | type | One drift verdict against a target path.                                                         |
 | `Group`             | type | The artifact group a plan selects over.                                                          |
-| `Lookup`            | type | Whether an upstream lookup produced an answer.                                                   |
+| `Lookup`            | type | How an upstream lookup resolved: found, missing, unmatched, or failed.                           |
 | `Mirror`            | type | One dependency guide fetched from upstream, beside the local mirror it answers for.              |
 | `Origin`            | type | How an artifact's content is produced.                                                           |
 | `Ownership`         | type | What scaffold claims at an artifact's path.                                                      |
@@ -197,6 +197,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `extractVersion`            | function | Extract the major, minor, and patch components of an exact version.           |
 | `inferDrift`                | function | Infer how one target path compares to the artifact planned for it.            |
 | `inferGroup`                | function | Infer the `Group` a path belongs to.                                          |
+| `isDeferredPath`            | function | Test whether another surface owns the vendored bytes at a path.               |
 | `manifestToDependencies`    | function | Project a package manifest's text to the `@orkestrel/*` packages it declares. |
 | `manifestToName`            | function | Project a package manifest's text to its own name.                            |
 | `matchesDriftReachability`  | function | Test whether `inferDrift` could have produced a finding for an ownership.     |
@@ -336,7 +337,7 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 | `computeDigest`         | function | Compute the SHA-256 digest of text.                                                   |
 | `computeFileDigest`     | function | Compute the SHA-256 digest of one file's exact bytes.                                 |
 | `computeManifestDigest` | function | Compute the digest of a vendored host's declared membership.                          |
-| `copiesToHost`          | function | Assemble a whole vendored host from live copies and the release manifest.             |
+| `copiesToHost`          | function | Overlay host-owned live copies onto the installed vendored floor.                     |
 | `hexToDigest`           | function | Project exact bytes stated in hexadecimal to their SHA-256 digest.                    |
 | `isExactCaseFile`       | function | Test whether a physical file's path matches every on-disk segment exactly.            |
 | `isPhysicalDirectory`   | function | Test whether a path is a physical directory this package will read or write into.     |
@@ -357,6 +358,7 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 | `readExpectation`       | function | Capture what one destination holds before a write.                                    |
 | `readFileHex`           | function | Read one contained file as its exact bytes in lowercase hexadecimal.                  |
 | `readFileText`          | function | Read one contained file as bounded UTF-8 text.                                        |
+| `readHostFloor`         | function | Read the installed vendored host floor as a verified value.                           |
 | `readHostManifest`      | function | Read a vendored host's manifest, when it carries one.                                 |
 | `readManifestEntry`     | function | Derive one vendored-host manifest entry from a file in a checkout.                    |
 | `readSnapshot`          | function | Read a target's current bytes at the paths a plan claims.                             |

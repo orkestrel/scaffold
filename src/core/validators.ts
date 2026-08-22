@@ -455,7 +455,7 @@ export const isMirror: Guard<Mirror> = unionOf(
 		{
 			name: isDependencyName,
 			path: isPath,
-			lookup: literalOf('missing', 'failed'),
+			lookup: literalOf('missing', 'unmatched', 'failed'),
 			note: isString,
 			observed: isHex,
 		},
@@ -479,7 +479,7 @@ export const isCatalogEntry: Guard<CatalogEntry> = unionOf(
 	}),
 	recordOf({
 		name: isDependencyName,
-		lookup: literalOf('missing', 'failed'),
+		lookup: literalOf('missing', 'unmatched', 'failed'),
 		note: isString,
 	}),
 )
