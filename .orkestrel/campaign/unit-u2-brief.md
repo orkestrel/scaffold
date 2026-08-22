@@ -1,55 +1,94 @@
-# Unit U2: Channel's stale comment and missing example
+# Unit U2: the terminal routine in Process
 
 ## Role and engine
 
-Role `builder`, engine Sonnet, native subagent, sole writer in
-`C:/Users/mikes/WebstormProjects/agent`. You perform the assignment directly and spawn nothing.
+Role `implementer` route `sol`, engine **GPT-5.6 Sol**, sandbox `workspace-write`, rooted at
+`C:/Users/mikes/WebstormProjects/process`. Ordering-critical, race-sensitive work — the
+objective engine's subject. You perform the assignment directly and spawn nothing beyond
+probes under `tmp/` that you delete after reading.
 
-## Objective
+## Ruling record, read in this order
 
-Two corrections the canon ruling left in agent, from design round 3 (S2):
+`C:/Users/mikes/WebstormProjects/scaffold/.orkestrel/campaign/design-terminal-reconciliation.md`
+(AUTHORITATIVE, including the Orchestrator rulings appended at its end), then
+`upstream-teardown-finding.md` for the measurements, then
+`design-terminal-objective-report.md` for detail. Unit U1 has already landed the contracts in
+`src/core/types.ts` and `src/core/constants.ts` — read both before writing.
 
-1. `tests/src/core/Channel.test.ts:5-7` claims `Channel` is "MODULE-INTERNAL … (not
-   barrel-exported)" and relatively imported, while line 2 imports it from `@src/core` and the
-   barrel exports it. Rewrite the comment to state what the tests actually pin — the
-   write/read decoupling and the lost-wakeup case — asserting nothing about barrel membership
-   or import paths.
-2. `src/core/Channel.ts` is the one barrelled class under `src/core` with no `@example` in its
-   TSDoc, and the barrel rule binds a row to a runnable example. Add one: construct a
-   `Channel`, push a value, close it, and drain it with `for await`, importing from
-   `@orkestrel/agent` (published specifier, per the guide-example law). Mirror the `@example`
-   idiom of a sibling such as `src/core/Conversation.ts`.
+## SANDBOX LIMIT, stated so you do not lose the round to it
 
-## Context
+This sandbox denies grandchild processes. The suite's proofs spawn children, so you CANNOT
+run `test:src:server` meaningfully. Do the typecheck and lint work, and report any
+child-spawning suite run as an OBSERVATION with the exact command. The Orchestrator takes the
+authoritative host reading after you exit. Do not weaken a proof to make it runnable here.
 
-Authority in this checkout: `AGENTS.md`, `.claude/rules/typescript.md` (TSDoc shape),
-`.claude/rules/documentation.md` (guide examples import the published specifier),
-`.claude/rules/writing.md`. Read `src/core/Channel.ts` fully first; the example must match the
-class's real API.
+## You own
 
-## Scope
+`src/server/Process.ts`, plus `src/server/factories.ts` and `src/server/ProcessManager.ts`
+where they only need the types to line up.
 
-- Owned: `src/core/Channel.ts` (TSDoc only — no code change), `tests/src/core/Channel.test.ts`
-  (the header comment only — no assertion change).
-- Off-limits: everything else. The checkout is clean.
-- No commits, installs, or git checkout/restore/stash/reset/clean. Use `npx.cmd`.
+OFF LIMITS: every test file, `src/server/helpers.ts`, `src/server/types.ts`,
+`src/server/execution/*`, `guides/process.md`. Later units own those.
 
-## Acceptance criteria, in this order
+## The work
 
-1. `git status --porcelain` lists exactly the owned files.
-2. `npx.cmd oxfmt --config .oxfmtrc.json --check` on the owned files exits 0.
-3. `npx.cmd oxlint --config .oxlintrc.json --deny-warnings` on the owned files exits 0.
-4. `npx.cmd tsc --noEmit --project tsconfig.json` exits 0.
-5. `npx.cmd vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core`
-   exits 0 (no behaviour change), and
-   `npx.cmd vitest run --config vite.config.ts --no-cache --reporter=dot --project guides`
-   exits 0.
+Implement the one invariant: **no path destroys the push channel before the pull channels are
+final.**
+
+1. Field renames so the class vocabulary matches the contract: `#terminating` becomes
+   `#stopping`; the existing stop barrier `#stopping` becomes `#termination`; `#closed`
+   becomes `#settled` and widens from "the close event fired" to "the terminal moment
+   arrived". Leave no residual `#closed` or `#terminating`.
+2. Constructor: hoist and validate `drain` beside `grace` and `delivery`, store
+   `#drain = drain ?? PROCESS_DRAIN`. `drain: 0` is an IMMEDIATE CUTOFF, not a disabled
+   bound — the reconciliation rules this and the reason is that an unbounded drain is the
+   defect the option prevents.
+3. Public getters `settled` and `stopping`, each derived from the renamed field. No second
+   flag.
+4. A single `#settle(drained: boolean)` owning the whole terminal routine, IN THIS ORDER,
+   because the order is load-bearing and its failure is silent:
+   - flush the decoder and emit the final `stderr` chunk;
+   - **set `#settled` before anything else can re-enter**;
+   - remove the abort listener;
+   - close the reader so `lines` ends;
+   - resolve `#exit` with `{ code, signal, drained }`;
+   - emit `exit`;
+   - destroy `#child.stdout` and `#child.stderr`.
+   Destroying the read ends can itself fire the host's `close`, so setting the field first is
+   what stops a late close from reporting a truncated read as `drained: true`.
+5. `#close(code, signal)` becomes the close-event handler and calls `#settle(true)` under the
+   existing idempotence guard.
+6. `#kill()`: after `stopChild`, settle pending writes and destroy stdin as today, then wait
+   up to `#drain` for the terminal moment, then `#settle(false)` if it has not arrived, then
+   return the confirmation boolean.
+7. `#teardown()` becomes `#end()`: await `stop()`, then destroy the emitter — after the
+   frozen state exists.
+8. BOTH `stop()` and `destroy()` reach the terminal moment. That is a ruled split: two live
+   consumers call `stop()` and never `destroy()`, and a destroy-only rule leaves them hanging.
+9. Lines already framed and queued are delivered before `lines` ends; only bytes that would
+   have arrived after the caller's termination are lost.
+10. Rewrite the class TSDoc around the invariant and the two endings — the child's ending
+    (`pid`, `code`, `signal`) and the supervision's ending (`settled`, `exit`, `evidence`,
+    `lines`).
+
+## Acceptance, in this order
+
+1. `git status --porcelain` adds nothing beyond the standing entries plus your owned files.
+2. Scoped `npx.cmd oxfmt --config .oxfmtrc.json --check` and
+   `npx.cmd oxlint --config .oxlintrc.json --deny-warnings` on the owned files exit 0.
+3. `npx.cmd tsc --noEmit --project tsconfig.json` — every remaining error must be in a TEST
+   file that a later unit owns (`tests/src/server/ProcessManager.test.ts` constructs a
+   `ProcessExit` without `drained`). Report the full list. Errors in `src/` are yours.
+4. `npx.cmd tsc --noEmit -p configs/src/tsconfig.core.json` exits 0.
+5. Report, as observations with their commands, whatever suite readings you can take.
 
 ## Output
 
-The diff; raw output and exit code per criterion. No process diary.
+The complete unelided diff; the `#settle` body quoted with its ordering comments; raw output
+and exit code per criterion; any deviation. No process diary.
 
 ## Deviation contract
 
-Stop if the guides project reds on your example (that is a parity-shape finding). Comment
-wording is yours.
+Stop on: an ordering the reconciliation names that cannot be implemented as ruled; a rename
+that collides with a member you do not own; a criterion unreachable for a reason other than
+the stated sandbox limit.

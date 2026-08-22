@@ -70,7 +70,11 @@ frames Content-Length LSP headers, discards stderr, and does not use the package
 4. Add the drained-versus-truncated discriminant with a bounded wait, since a total guarantee
    is impossible. `ProcessOptions` says "There is no completion deadline", so the bounded
    form needs its own naming decision — that is a design question, not a mechanical edit.
-5. Order the Windows tree kill before the direct child exits.
+5. CORRECTED after reading the code: there is no reordering to make. `stopChild` opens with
+   an exited-root guard and, on a LIVE win32 root, calls `killTree` immediately — the tree kill
+   already runs while the root lives. What remains is a documented limit (the orphan is
+   unreachable once the root has exited, and an unconditional retry could target a reused pid)
+   and a consumer obligation to begin teardown while the root is alive.
 
 **Downstream, after it publishes:** mcp sheds its private tail, release, and pump fields and
 keeps only the restartable-single-slot policy that is genuinely its own. Supervisor gets two
