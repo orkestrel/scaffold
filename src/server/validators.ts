@@ -182,10 +182,10 @@ export function isInventory(value: unknown): value is readonly unknown[] {
 export const isEndpoint: Guard<string> = stringOf({ min: 1, max: MAX_ENDPOINT_LENGTH })
 
 /**
- * Narrow a value to a Git branch the guide endpoint accepts.
+ * Narrow a value to a Git branch the repository endpoint accepts.
  *
  * @remarks
- * A branch reaches the guide URL's path, so the syntax is closed rather than
+ * A branch reaches the repository URL's path, so the syntax is closed rather than
  * merely bounded and no `..` is admitted anywhere in it.
  *
  * @example

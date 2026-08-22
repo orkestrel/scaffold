@@ -182,12 +182,12 @@ export type OutputHandler = (line: string) => void
  * process.
  *
  * `upstream` configures the network reader every verb that reads the registry
- * or the guide host constructs, and it is the whole option bag that reader
+ * or the repository host constructs, and it is the whole option bag that reader
  * accepts rather than a narrower copy of it: a caller pointing the executable
  * at a loopback endpoint needs the same bounds, branch, and listeners it would
  * set on the reader directly, and a second type would drift from the first.
- * Absent, every read addresses the published registry and the published guide
- * host, which is what a terminal caller means.
+ * Absent, every read addresses the published registry and the published
+ * repository host, which is what a terminal caller means.
  *
  * The process entry maps `ORKESTREL_SCAFFOLD_REGISTRY` and
  * `ORKESTREL_SCAFFOLD_REPOSITORY` to the matching upstream endpoint groups.

@@ -7,6 +7,21 @@ no campaign folder is the plan of record.
 
 ## 1. Package work, scheduled by each package's next natural release
 
+- **scaffold**: carry the online-first fetch release note into the next publish. The `new`, `audit`,
+  `repair`, and `overwrite` verbs read live version and vendored-host surfaces before using the
+  distributed floors; a transport-forced floor makes `audit`, `repair`, and `overwrite` exit `1`,
+  while a successful `new` run exits `0`. Authoritative version absence and unavailable registry
+  organization membership still refuse with `FETCH` and exit `1`; a failed guide row keeps the
+  target's mirror and makes `catalog` or `overwrite` exit `1`. The `--offline` option selects the
+  version and host floors for `new`, `audit`, `repair`, and `overwrite`; `catalog --offline` is a
+  usage error with exit `2`, and `overwrite --offline` completes its repair and deletion work before
+  recording the skipped catalog step. Every machine-readable verb result carries `provenance`; the
+  `UpstreamOptions.guides` field becomes the `repository` field, and
+  `ORKESTREL_SCAFFOLD_REPOSITORY` configures its base. Adding `ManifestEntry.digest` invalidates a
+  host root staged by an earlier release, so rebuild that root. At their defaults, online runs
+  contact `registry.npmjs.org` for scoped packuments and the `/-/org/orkestrel/package` membership
+  path, and
+  `raw.githubusercontent.com` for guides, `host.json`, and changed vendored paths.
 - **fleet**: sweep every target for skill and bridge members outside the vendored set; that
   population is unmeasured, and `repair` does not remove what the plan never owned.
 - **fleet**: the vendored `tests/config.test.ts` assertion that reddens a publishing target

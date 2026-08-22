@@ -40,13 +40,13 @@ export const RESERVED_SEGMENT_PATTERN =
 export const DIGEST_PATTERN = /^[0-9a-f]{64}$/
 
 /**
- * The Git branch syntax the guide endpoint accepts.
+ * The Git branch syntax the repository endpoint accepts.
  *
  * @remarks
  * A branch is caller-supplied and reaches a URL path, so it is closed to
  * alphanumerics, dot, underscore, hyphen, and the separator, must open with an
  * alphanumeric, and may carry no `..` anywhere. That last refusal is what stops
- * a branch from walking out of the guide directory it addresses.
+ * a branch from walking out of the repository path it addresses.
  */
 export const BRANCH_PATTERN = /^(?!.*\.\.)[A-Za-z0-9][A-Za-z0-9._/-]*$/
 
@@ -85,7 +85,7 @@ export const MAX_INVENTORY_PATHS = 100_000
 /** Maximum characters one caller-supplied upstream endpoint may carry. */
 export const MAX_ENDPOINT_LENGTH = 2_048
 
-/** Maximum characters one guide branch may carry. */
+/** Maximum characters one repository branch may carry. */
 export const MAX_BRANCH_LENGTH = 255
 
 /**

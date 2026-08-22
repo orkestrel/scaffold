@@ -17,6 +17,7 @@ import { globSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { renderUsage } from '../src/bin/helpers.js'
 
 // The inventory the extractor reflects over. `Source` never touches disk, so the
 // consumer gathers the files; the root is resolved from this module rather than
@@ -163,6 +164,17 @@ describe('guides', () => {
 })
 
 describe('guide examples', () => {
+	it('keeps the command reference aligned with rendered usage', () => {
+		const markdown = files['guides/scaffold.md']
+		if (markdown === undefined) throw new Error('The inventory carries no scaffold guide')
+		const matched = markdown.match(
+			/`scaffold --help` prints the whole reference:\r?\n\r?\n```text\r?\n([\s\S]*?)\r?\n```/,
+		)
+		const reference = matched?.[1]
+		if (reference === undefined) throw new Error('The scaffold guide carries no command reference')
+		expect(reference).toBe(renderUsage().join('\n'))
+	})
+
 	it('executes the blueprint defaults example', () => {
 		const blueprint = createBlueprint('router', {
 			src: ['core', 'server'],
