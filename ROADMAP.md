@@ -7,21 +7,6 @@ no campaign folder is the plan of record.
 
 ## 1. Package work, scheduled by each package's next natural release
 
-- **scaffold**: carry the online-first fetch release note into the next publish. The `new`, `audit`,
-  `repair`, and `overwrite` verbs read live version and vendored-host surfaces before using the
-  distributed floors; a transport-forced floor makes `audit`, `repair`, and `overwrite` exit `1`,
-  while a successful `new` run exits `0`. Authoritative version absence and unavailable registry
-  organization membership still refuse with `FETCH` and exit `1`; a failed guide row keeps the
-  target's mirror and makes `catalog` or `overwrite` exit `1`. The `--offline` option selects the
-  version and host floors for `new`, `audit`, `repair`, and `overwrite`; `catalog --offline` is a
-  usage error with exit `2`, and `overwrite --offline` completes its repair and deletion work before
-  recording the skipped catalog step. Every machine-readable verb result carries `provenance`; the
-  `UpstreamOptions.guides` field becomes the `repository` field, and
-  `ORKESTREL_SCAFFOLD_REPOSITORY` configures its base. Adding `ManifestEntry.digest` invalidates a
-  host root staged by an earlier release, so rebuild that root. At their defaults, online runs
-  contact `registry.npmjs.org` for scoped packuments and the `/-/org/orkestrel/package` membership
-  path, and
-  `raw.githubusercontent.com` for guides, `host.json`, and changed vendored paths.
 - **scaffold**: a writing verb refuses a workspace that declares Vitest projects the planned
   configuration does not register, and it refuses before it selects a group, so `--groups`
   cannot reach the groups the conflict does not touch. Measured 2026-08-22 against
@@ -33,11 +18,24 @@ no campaign folder is the plan of record.
   the tool.
 - **fleet**: sweep every target for skill and bridge members outside the vendored set; that
   population is unmeasured, and `repair` does not remove what the plan never owned.
+- **scaffold**: a writing verb raises a target's `peerDependencies` to the current floors, and a
+  peer range states the breadth a consumer may satisfy rather than the newest version the floor
+  knows. Measured 2026-08-22: `repair` moved probe's `vitest` peer from `^4.1.0` to `^4.1.11`,
+  which no consumer holding `@vitest/browser-playwright` can satisfy because that adapter pins
+  `4.1.10` exactly, and probe's distribution gate caught the packed artifact refusing to install.
+  The same shape shipped undetected in `@orkestrel/test` 0.0.9 and 0.0.10, whose published
+  artifacts fail `ERESOLVE` beside that adapter. Rule on which declaration classes a floor may
+  raise; a runtime range and a peer range are not the same question.
+- **test**: pack a distribution gate that installs this package's own artifact into a consumer
+  and drives it. Its absence is why the unsatisfiable `vitest` peer reached the registry twice:
+  every other gate passed on a workspace that already had a resolved tree. The idiom exists in
+  scaffold's and probe's `tests/distribution.test.ts`.
 - **fleet**: the vendored `tests/config.test.ts` assertion that reddens a publishing target
-  lacking `"prepack": "npm run build"` lands in the release wave's first round. The line itself
-  is declared in every publishing manifest, `blueprintToScripts` emits it at birth, and the
-  scaffold guide states the publish-time-only intent with the `--ignore-scripts` interplay
-  (all landed 2026-08-21).
+  lacking `"prepack": "npm run build"` still has not landed. Verified 2026-08-22: the line is
+  declared in every publishing manifest and `blueprintToScripts` emits it at birth, but the
+  vendored suite asserts `test`, `test:config`, and `prepublishOnly` only, so a publishing target
+  that omits `prepack` stays green. An earlier revision of this row claimed the assertion landed
+  on 2026-08-21; it did not.
 - **test**: transcribe the guide fences a Node `guides` project cannot run — the `contrast`,
   `readRing`, and journal fences need a browser-capable guides project, and the wait fence's
   child-exit half belongs with the expensive proofs; the pre-existing fences remain
@@ -46,12 +44,15 @@ no campaign folder is the plan of record.
   the Threat model's refusal tally, the contract rules' limit tallies, the Voices trailer, and
   the server-factories parallel-instance figure — per the no-count law, keeping fence-derived
   values and stated limits.
-- **middleware, browser, router, process, probe**, after `@orkestrel/test` 0.0.8 publishes:
-  convert the attempt-counted poll loops in middleware and browser and the outlast-then-assert
-  waits to `waitForCondition`; take router's sequencing site as a judgment conversion that
-  preserves the write-before-destroy ordering; replace the proven local copies in process
-  `tests/setup.ts` and probe with the published helper. A settling wait before a negative
-  assertion stays a fixed `waitForDelay`, because a poll cannot prove absence. (was B21c)
+- **middleware, router, process, probe**: convert the attempt-counted poll loops and the
+  outlast-then-assert waits to `waitForCondition`, which `@orkestrel/test` publishes; take
+  router's sequencing site as a judgment conversion that preserves the write-before-destroy
+  ordering; replace the proven local copies in process `tests/setup.ts` and probe with the
+  published helper. A settling wait before a negative assertion stays a fixed `waitForDelay`,
+  because a poll cannot prove absence. Verified 2026-08-22: browser is converted and drops off
+  this row; middleware still counts attempts in `tests/src/server/helpers.test.ts`, router's
+  sequencing site is unpinned, process's `detach` and `ProcessManager` suites are unconverted,
+  and probe imports `waitForCondition` nowhere. (was B21c)
 - **middleware**: move `MultipartParser.ts` from the environment root into a domain folder.
   (was B5)
 - **brief**: read-once ownership at guarded doors — clone → guard → seal → refuse, so a
