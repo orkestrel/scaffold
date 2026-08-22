@@ -75,7 +75,7 @@ describe('scaffold', () => {
 			'/@orkestrel%2Femitter': { status: 200, body: buildPackument('0.0.6') },
 			'/@orkestrel%2Fguide': { status: 200, body: buildPackument('0.0.9') },
 			'/@orkestrel%2Fprobe': { status: 200, body: buildPackument('0.0.2') },
-			'/@orkestrel%2Fscaffold': { status: 200, body: buildPackument('0.0.49') },
+			'/@orkestrel%2Fscaffold': { status: 200, body: buildPackument('0.0.50') },
 			'/@orkestrel%2Ftest': { status: 200, body: buildPackument('0.0.9') },
 			'/@microsoft%2Fapi-extractor': {
 				status: 200,

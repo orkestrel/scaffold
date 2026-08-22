@@ -85,7 +85,7 @@ const FLEET_RELEASE_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Objec
 	[FLEET_UPSTREAM_PATHS.packages.emitter]: { status: 200, body: buildPackument('0.0.5') },
 	[FLEET_UPSTREAM_PATHS.packages.guide]: { status: 200, body: buildPackument('0.0.9') },
 	[FLEET_UPSTREAM_PATHS.packages.probe]: { status: 200, body: buildPackument('0.0.2') },
-	[FLEET_UPSTREAM_PATHS.packages.scaffold]: { status: 200, body: buildPackument('0.0.49') },
+	[FLEET_UPSTREAM_PATHS.packages.scaffold]: { status: 200, body: buildPackument('0.0.50') },
 	[FLEET_UPSTREAM_PATHS.packages.test]: { status: 200, body: buildPackument('0.0.10') },
 	'/@microsoft%2Fapi-extractor': {
 		status: 200,
@@ -157,7 +157,7 @@ const AUDIT_REGISTRY = await createUpstreamServer({
 	'/@orkestrel%2Fmiddleware': { status: 200, body: buildPackument('0.0.16') },
 	'/@orkestrel%2Fprobe': { status: 200, body: buildPackument('0.0.2') },
 	'/@orkestrel%2Frouter': { status: 200, body: buildPackument('0.0.10') },
-	'/@orkestrel%2Fscaffold': { status: 200, body: buildPackument('0.0.49') },
+	'/@orkestrel%2Fscaffold': { status: 200, body: buildPackument('0.0.50') },
 	'/@orkestrel%2Fserver': { status: 200, body: buildPackument('0.0.14') },
 	'/@orkestrel%2Ftest': { status: 200, body: buildPackument('0.0.10') },
 	'/@microsoft%2Fapi-extractor': {
@@ -3794,7 +3794,7 @@ describe('CLI catalog', () => {
 					dependencies: [{ name: '@orkestrel/emitter', range: '^0.0.6' }],
 				},
 				{ name: '@orkestrel/probe', lookup: 'found', version: '0.0.1', dependencies: [] },
-				{ name: '@orkestrel/scaffold', lookup: 'found', version: '0.0.49', dependencies: [] },
+				{ name: '@orkestrel/scaffold', lookup: 'found', version: '0.0.50', dependencies: [] },
 				{ name: '@orkestrel/test', lookup: 'found', version: '0.0.2', dependencies: [] },
 			])
 			expect(result.mirrors.map((mirror) => mirror.path)).toStrictEqual([
