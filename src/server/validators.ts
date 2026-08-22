@@ -325,8 +325,10 @@ export const isHostManifest: Guard<HostManifest> = recordOf({
  * ```ts
  * import { isHost } from '@orkestrel/scaffold/server'
  *
- * isHost({ manifest: { entries: [], roots: [], digest: '…' }, bytes: {} }) // true
- * isHost({ manifest: { entries: [], roots: [], digest: '…' } }) // false
+ * const digest = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+ *
+ * isHost({ manifest: { entries: [], roots: [], digest }, bytes: {} }) // true
+ * isHost({ manifest: { entries: [], roots: [], digest } }) // false
  * ```
  */
 export const isHost: Guard<Host> = recordOf({ manifest: isHostManifest, bytes: isSnapshot })

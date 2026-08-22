@@ -452,7 +452,7 @@ describe('installed package consumer', () => {
 			// This is the assertion the lists are exact against: a shipped example
 			// that changes spelling moves from one list to another and both move.
 			expect(driven.length + undriven.length + glossed.length + elided.length).toBe(shaped)
-			expect(shaped).toBe(174)
+			expect(shaped).toBe(183)
 
 			// Every claim scored false is a control, and nothing the package ships is.
 			// This establishes that a driven claim the module contradicts is reported,
@@ -495,9 +495,11 @@ describe('installed package consumer', () => {
 				'dist/src/server/index.d.ts: expectation !== undefined && matchesExpectation(expectation) // true while untouched',
 				"dist/src/server/index.d.ts: matchesPrecondition({ path: '/tmp/project/new.md', shape: 'absent' }) // true while absent",
 				"dist/src/server/index.d.ts: readAnchor('/tmp/project') // { path: '/tmp/project', device: 1, inode: 2 }",
+				"dist/src/server/index.d.ts: readHostFloor().manifest // the installed floor's verified membership",
 				"dist/src/server/index.d.ts: readHostManifest('./dist/host') // the manifest, or undefined for a raw root",
 				"dist/src/server/index.d.ts: resolveRealPath('./packages/new/src') // the real path of `packages`, plus `new/src`",
 				"dist/src/server/index.d.ts: stageHost(process.cwd(), 'dist/host').length // the files staged",
+				"dist/src/server/index.d.ts: stageInventory(process.cwd(), 'host.json') // the committed host inventory",
 				"dist/src/server/index.d.ts: isBranch('main') // false — a branch name is not a branch",
 			])
 			expect(elided).toStrictEqual([
