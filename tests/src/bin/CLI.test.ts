@@ -83,7 +83,7 @@ const FLEET_RELEASE_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Objec
 	[FLEET_UPSTREAM_PATHS.packages.guide]: { status: 200, body: buildPackument('0.0.9') },
 	[FLEET_UPSTREAM_PATHS.packages.probe]: { status: 200, body: buildPackument('0.0.2') },
 	[FLEET_UPSTREAM_PATHS.packages.scaffold]: { status: 200, body: buildPackument('0.0.48') },
-	[FLEET_UPSTREAM_PATHS.packages.test]: { status: 200, body: buildPackument('0.0.8') },
+	[FLEET_UPSTREAM_PATHS.packages.test]: { status: 200, body: buildPackument('0.0.9') },
 	'/@microsoft%2Fapi-extractor': {
 		status: 200,
 		body: buildPackument(DECLARATION_DEV_DEPENDENCIES['@microsoft/api-extractor']?.slice(1) ?? ''),
@@ -156,7 +156,7 @@ const AUDIT_REGISTRY = await createUpstreamServer({
 	'/@orkestrel%2Frouter': { status: 200, body: buildPackument('0.0.10') },
 	'/@orkestrel%2Fscaffold': { status: 200, body: buildPackument('0.0.48') },
 	'/@orkestrel%2Fserver': { status: 200, body: buildPackument('0.0.14') },
-	'/@orkestrel%2Ftest': { status: 200, body: buildPackument('0.0.8') },
+	'/@orkestrel%2Ftest': { status: 200, body: buildPackument('0.0.9') },
 	'/@microsoft%2Fapi-extractor': {
 		status: 200,
 		body: buildPackument(DECLARATION_DEV_DEPENDENCIES['@microsoft/api-extractor']?.slice(1) ?? ''),
@@ -735,7 +735,7 @@ describe('CLI audit', () => {
 					// back from the table the advisory read: a message built from that table
 					// reads correctly for whatever the table happens to hold. A floor raise
 					// moves this line, which is where a consumer meets the raise.
-					message: `The manifest at ${target} does not declare a planned dependency: @orkestrel/test. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/test": "^0.0.8",`,
+					message: `The manifest at ${target} does not declare a planned dependency: @orkestrel/test. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/test": "^0.0.9",`,
 					blocking: false,
 				},
 			])

@@ -111,6 +111,18 @@ each belongs to the named next change.
   run alone on an idle container after a fresh build (2026-08-21). It predates the visit and
   arrived with the moved origin main. Carrier: probe's next `src/bin` or bin-suite change.
 
+- **The browser capture paths carry host-native separator spelling.** The `place` path joins
+  `${options.directory}/${file}` (src/browser/factories.ts:136), so an absolute win32 directory
+  yields a mixed-separator string, and the capture verification normalizes internally but returns
+  `shot.path` unnormalized (src/browser/helpers.ts:1799). Both are published-contract spelling
+  questions the 2026-08-22 sweep raised as derivations; the observed Windows run passed the suites
+  that read them. Carrier: the next @orkestrel/test browser-surface change.
+- **The test workspace registers no `setup` project**, so `normalizePath` in tests/setup.ts —
+  Windows-form-aware after the Sol audit — closes on its mutation probe and passing call sites,
+  the same ruling the sea repository took for `destroyScratch`. Registering the setup project
+  (blueprint `setup: true` with its vite.config.ts, package.json, and proof-file halves) gives the
+  helper its durable proof home. Carrier: the next @orkestrel/test workspace change.
+
 ## Post-publish re-pin obligations
 
 - **Consumer mirrors of the test guide predate 0.0.9.** interpret's vendored `guides/test.md`
