@@ -14,8 +14,8 @@ import { Worker } from 'node:worker_threads'
 import { isScaffoldError } from '@src/core'
 import { computeDigest, listFiles, readExpectation, WriteTransaction } from '@src/server'
 import { describe, expect, it } from 'vitest'
-import {readErrorCode, SCRATCH_PREFIX} from '../../setupServer.js'
-import {createScratch} from "@orkestrel/test/server";
+import { readErrorCode, SCRATCH_PREFIX } from '../../setupServer.js'
+import { createScratch } from '@orkestrel/test/server'
 
 describe('WriteTransaction construction', () => {
 	it('refuses a target, a path list, and a repeated path that are off contract', () => {
