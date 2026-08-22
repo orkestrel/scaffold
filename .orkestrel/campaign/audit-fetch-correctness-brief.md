@@ -10,9 +10,10 @@ session's units, and you rule on all of them.
 
 ## Subject and evidence
 
-The uncommitted working tree implementing the online-first fetch strategy. Evidence:
+The committed campaign implementing the online-first fetch strategy, at `HEAD` with a
+clean tree. Evidence:
 
-- The diff: `git diff` plus the untracked `host.json` (read it directly).
+- The diff: `git diff da523af..HEAD` — the campaign is committed; `git show` any commit in that range for its message and content.
 - The ruling record: `.orkestrel/campaign/design-fetch-reconciliation.md`.
 - The unit reports: `unit-fetch-u1-report.md`, `unit-fetch-u2-report.md`,
   `unit-fetch-u3-report.md`, `unit-fetch-u4-report.md`, `unit-fetch-u5-report.md`,

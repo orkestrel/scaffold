@@ -18,8 +18,8 @@ keeps this lane real.
 
 ## Subject and evidence
 
-The uncommitted working tree implementing the online-first fetch strategy — the
-`git diff`, the untracked `host.json`, the ruling record
+The committed campaign implementing the online-first fetch strategy, at `HEAD` with a
+clean tree — the diff `git diff da523af..HEAD`, the ruling record
 `.orkestrel/campaign/design-fetch-reconciliation.md`, and the unit reports
 `unit-fetch-u1-report.md` through `unit-fetch-u5-report.md`. Read
 `AGENTS.md`, `.claude/rules/names.md`, `patterns.md`, `architecture.md`,
