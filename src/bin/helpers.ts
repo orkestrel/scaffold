@@ -1,5 +1,6 @@
 import type { Audit, Blueprint, Dependency, Question, Release } from '@src/core'
 import type { CLICommand, ErrorEnvelope, Verb } from './types.js'
+import type { UpstreamOptions } from '@src/server'
 import { align, width } from '@orkestrel/console'
 import { attempt, isRecord, isString, parseJSON } from '@orkestrel/contract'
 import {
@@ -49,6 +50,25 @@ import { isUsageError, UsageError } from './errors.js'
 export function optionToName(option: string): string {
 	const [token = option] = option.split(' ')
 	return token.startsWith('--') ? token.slice(2) : token
+}
+
+/**
+ * Project process environment endpoints into upstream reader options.
+ *
+ * @param environment - The process environment to read.
+ * @returns The configured endpoint groups, or `undefined` when neither endpoint
+ * is configured.
+ */
+export function environmentToUpstream(
+	environment: Readonly<Record<string, string | undefined>>,
+): UpstreamOptions | undefined {
+	const registry = environment.ORKESTREL_SCAFFOLD_REGISTRY
+	const repository = environment.ORKESTREL_SCAFFOLD_REPOSITORY
+	if (registry === undefined && repository === undefined) return undefined
+	return {
+		...(registry === undefined ? {} : { registry: { base: registry } }),
+		...(repository === undefined ? {} : { repository: { base: repository } }),
+	}
 }
 
 /**
@@ -172,6 +192,7 @@ export function argvToCommand(argv: readonly string[]): CLICommand {
 	const src = typeof values.src === 'string' ? values.src : undefined
 	const app = typeof values.app === 'string' ? values.app : undefined
 	const bin = values.bin === true
+	const offline = values.offline === true
 	const dependencies = typeof values.deps === 'string' ? values.deps : undefined
 	const target = typeof values.target === 'string' ? values.target : undefined
 	const json = values.json === true
@@ -193,12 +214,13 @@ export function argvToCommand(argv: readonly string[]): CLICommand {
 				...(src === undefined ? {} : { src }),
 				...(app === undefined ? {} : { app }),
 				...(bin ? { bin } : {}),
+				...(offline ? { offline } : {}),
 				...(dependencies === undefined ? {} : { dependencies }),
 			}
 		case 'audit':
-			return { verb, json, ...location, ...source, ...selection }
+			return { verb, json, ...location, ...source, ...selection, ...(offline ? { offline } : {}) }
 		case 'repair':
-			return { verb, json, ...location, ...source, ...selection }
+			return { verb, json, ...location, ...source, ...selection, ...(offline ? { offline } : {}) }
 		case 'catalog':
 			return {
 				verb,
@@ -212,6 +234,7 @@ export function argvToCommand(argv: readonly string[]): CLICommand {
 				verb,
 				json,
 				dirty: values.dirty === true,
+				...(offline ? { offline } : {}),
 				...location,
 				...source,
 				...selection,
@@ -279,6 +302,28 @@ export function manifestToPlannedDependencies(
  */
 export function dependenciesToFleet(dependencies: readonly Dependency[]): readonly Dependency[] {
 	return dependencies.filter((dependency) => dependency.name.startsWith('@orkestrel/'))
+}
+
+/**
+ * Project declared concrete ranges to their distributed release floors.
+ *
+ * @param dependencies - The declarations whose floor versions to read.
+ * @returns One found floor per declaration, or `undefined` when any range names
+ * no concrete version.
+ */
+export function dependenciesToFloors(
+	dependencies: readonly Dependency[],
+): readonly Release[] | undefined {
+	const releases: Release[] = []
+	for (const dependency of dependencies) {
+		const version =
+			dependency.range.startsWith('^') || dependency.range.startsWith('~')
+				? dependency.range.slice(1)
+				: dependency.range
+		if (extractVersion(version) === undefined) return undefined
+		releases.push({ ...dependency, lookup: 'found', latest: version })
+	}
+	return releases
 }
 
 /**

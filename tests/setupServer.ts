@@ -1,4 +1,5 @@
 import type {
+	Host,
 	HostManifest,
 	ManifestEntry,
 	MaterializerOptions,
@@ -21,6 +22,7 @@ import {
 	Compiler,
 	createBlueprint,
 	HOST_PATHS,
+	isDeferredPath,
 	isScaffoldError,
 	MAX_ARTIFACT_BYTES,
 	MAX_COLLECTION_ITEMS,
@@ -57,6 +59,7 @@ import {
 	MAX_UPSTREAM_TIMEOUT,
 	pathToStorage,
 	readFileHex,
+	readHostFloor,
 	stageHost,
 } from '@src/server'
 import { optionToName } from '../src/bin/helpers.js'
@@ -1654,6 +1657,41 @@ export function buildInventory(files: readonly TestVendoredFile[]): string {
 		digest: computeDigest(file.content),
 	}))
 	return JSON.stringify({ entries, roots: [], digest: computeManifestDigest(entries, []) })
+}
+
+/**
+ * Build the raw-repository replies for the installed vendored host.
+ *
+ * @param floor - The installed floor whose inventory and host-owned bytes the
+ * repository serves.
+ * @returns One canonical raw-content reply for the inventory and each
+ * host-owned declared path.
+ *
+ * @remarks
+ * Deferred paths stay absent because the catalog and guide surfaces own their
+ * bytes. The raw-content paths are the repository's external URL contract, not
+ * a projection through the reader under test.
+ */
+export function buildInstalledHostReplies(
+	floor: Host = readHostFloor(),
+): Readonly<Record<string, TestUpstreamReply>> {
+	const replies: Record<string, TestUpstreamReply> = {
+		'/orkestrel/scaffold/refs/heads/main/host.json': {
+			status: 200,
+			body: JSON.stringify(floor.manifest),
+		},
+	}
+	for (const entry of floor.manifest.entries) {
+		if (isDeferredPath(entry.destination)) continue
+		const hex = floor.bytes[entry.destination]
+		if (hex === undefined) continue
+		replies[`/orkestrel/scaffold/refs/heads/main/${entry.destination}`] = {
+			status: 200,
+			body: Buffer.from(hex, 'hex').toString('utf8'),
+			type: 'text/plain',
+		}
+	}
+	return replies
 }
 
 /**

@@ -577,13 +577,13 @@ unless `--dirty` waives that refusal. A target that is not a git repository is r
 `--json` replaces the report with one JSON value on standard output. Warnings and refusals go to
 standard error, so a piped value is never polluted.
 
-| Verb        | Value                                                                                      |
-| ----------- | ------------------------------------------------------------------------------------------ |
-| `new`       | `MaterializeResult` — `target`, `written`, `skipped`, `removed`                            |
-| `audit`     | `Audit` — `findings` and `questions` — plus `releases`; findings carry `ownership`         |
-| `repair`    | `MaterializeResult` plus `audit`, the terminal audit taken after the write, and `releases` |
-| `catalog`   | `MaterializeResult` plus `entries`, `mirrors`, `dropped`, and `releases`                   |
-| `overwrite` | The `catalog` value plus `audit` and `note` on a partial run                               |
+| Verb        | Value                                                                                                    |
+| ----------- | -------------------------------------------------------------------------------------------------------- |
+| `new`       | `MaterializeResult` — `target`, `written`, `skipped`, `removed` — plus `provenance`                      |
+| `audit`     | `Audit` — `findings` and `questions` — plus `releases` and `provenance`; findings carry `ownership`      |
+| `repair`    | `MaterializeResult` plus `audit`, the terminal audit taken after the write, `releases`, and `provenance` |
+| `catalog`   | `MaterializeResult` plus `entries`, `mirrors`, `dropped`, `releases`, and `provenance`                   |
+| `overwrite` | The `catalog` value plus `audit` and `note` on a partial run                                             |
 
 Every failure reports the same envelope instead: `{ "error": { "code": …, "message": … } }`. The
 code is a `ScaffoldErrorCode`, or `USAGE` for a command line that never became a command, or
@@ -937,13 +937,13 @@ alike.
 
 ### What each verb reads
 
-| Verb        | Reads                                                       | Writes on a complete answer                     | With no answer                                           |
-| ----------- | ----------------------------------------------------------- | ----------------------------------------------- | -------------------------------------------------------- |
-| `new`       | Every `@orkestrel/*` row the compiled manifest declares     | The plan's ranges, before the target is opened  | `FETCH`, exit `1`, nothing written                       |
-| `audit`     | Every declared fleet row and planned foreign row            | Nothing                                         | Failed verdicts reported, exit `1`, nothing written      |
-| `repair`    | Every declared fleet row and planned foreign row            | The manifest's ranges, beside the repair        | `FETCH`, exit `1`, nothing written                       |
-| `catalog`   | The organization package list and every packument behind it | The manifest's ranges, beside the package table | `FETCH`, exit `1`, nothing written                       |
-| `overwrite` | Everything `repair` and `catalog` read                      | Everything `repair` and `catalog` write         | The offline half stands, `note` names the step, exit `1` |
+| Verb        | Reads                                                       | Writes on a complete answer                     | With no answer                                                                               |
+| ----------- | ----------------------------------------------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `new`       | Every `@orkestrel/*` row the compiled manifest declares     | The plan's ranges, before the target is opened  | Transport failure writes the floors and exits `0`; authoritative absence stays `FETCH`       |
+| `audit`     | Every declared fleet row and planned foreign row            | Nothing                                         | Transport failure compares through the floors and exits `1`; `--offline` answers drift alone |
+| `repair`    | Every declared fleet row and planned foreign row            | The manifest's ranges, beside the repair        | Transport failure writes the floors and exits `1`; authoritative absence stays `FETCH`       |
+| `catalog`   | The organization package list and every packument behind it | The manifest's ranges, beside the package table | `FETCH`, exit `1`, nothing written                                                           |
+| `overwrite` | Everything `repair` and `catalog` read                      | Everything `repair` and `catalog` write         | The floor half stands, `note` names the refused or fallback step, exit `1`                   |
 
 Each verb resolves the whole set before it opens a write transaction, so a partial answer never
 becomes a partial pin set. `overwrite` is the exception, and deliberately: its offline repair and

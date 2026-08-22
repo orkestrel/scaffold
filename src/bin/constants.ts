@@ -96,6 +96,7 @@ export const COMMAND_OPTIONS: ParseArgsOptionsConfig = Object.freeze({
 	groups: Object.freeze({ type: 'string' }),
 	all: Object.freeze({ type: 'boolean' }),
 	dirty: Object.freeze({ type: 'boolean' }),
+	offline: Object.freeze({ type: 'boolean' }),
 	from: Object.freeze({ type: 'string', multiple: true }),
 	target: Object.freeze({ type: 'string' }),
 	json: Object.freeze({ type: 'boolean' }),
@@ -118,11 +119,13 @@ export const OPTION_SUMMARY: Readonly<Record<string, string>> = Object.freeze({
 	'--all':
 		'fetch a guide for every package the organization publishes, not the declared ones alone',
 	'--dirty': 'delete from a tree carrying uncommitted changes',
+	'--offline': 'use the distributed dependency and vendored-host floors without reading upstream',
 	'--from <path>':
 		'read the data root from a local path instead of the bundled one; catalog alone accepts it more than once',
 	'--target <path>': 'the directory the verb operates on; the working directory when absent',
 	'--json': 'emit one machine-readable value instead of a report',
 	ORKESTREL_SCAFFOLD_REGISTRY: 'the registry base mapped to upstream.registry.base',
+	ORKESTREL_SCAFFOLD_REPOSITORY: 'the repository base mapped to upstream.repository.base',
 })
 
 /**
@@ -140,16 +143,30 @@ export const VERB_OPTIONS: Readonly<Record<Verb, readonly string[]>> = Object.fr
 		'--app <list>',
 		'--bin',
 		'--deps <list>',
+		'--offline',
 		'--from <path>',
 		'--target <path>',
 		'--json',
 	]),
-	audit: Object.freeze(['--groups <list>', '--from <path>', '--target <path>', '--json']),
-	repair: Object.freeze(['--groups <list>', '--from <path>', '--target <path>', '--json']),
+	audit: Object.freeze([
+		'--groups <list>',
+		'--offline',
+		'--from <path>',
+		'--target <path>',
+		'--json',
+	]),
+	repair: Object.freeze([
+		'--groups <list>',
+		'--offline',
+		'--from <path>',
+		'--target <path>',
+		'--json',
+	]),
 	catalog: Object.freeze(['--all', '--from <path>', '--target <path>', '--json']),
 	overwrite: Object.freeze([
 		'--groups <list>',
 		'--dirty',
+		'--offline',
 		'--from <path>',
 		'--target <path>',
 		'--json',

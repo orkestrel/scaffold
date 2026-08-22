@@ -4,6 +4,7 @@ import type {
 	AuditResult,
 	CatalogResult,
 	CLIOptions,
+	NewResult,
 	OverwriteResult,
 	RepairResult,
 } from '../../../src/bin/types.js'
@@ -39,6 +40,7 @@ import {
 	buildCLIOptions,
 	buildFleetManifest,
 	buildHostManifest,
+	buildInstalledHostReplies,
 	buildOrganization,
 	buildPackument,
 	buildTargetManifest as buildTargetManifestFixture,
@@ -480,10 +482,11 @@ describe('CLI new', () => {
 			])
 			expect(code).toBe(EXIT_CLEAN)
 			expect(sink.output).toHaveLength(1)
-			const result: MaterializeResult = JSON.parse(sink.output[0] ?? '')
+			const result: NewResult = JSON.parse(sink.output[0] ?? '')
 			expect(result.written).toHaveLength(FLEET_WRITE_COUNT)
 			expect(result.written).toContain('package.json')
 			expect(result.removed).toStrictEqual([])
+			expect(result.provenance).toStrictEqual({ versions: 'live' })
 		} finally {
 			workspace.destroy()
 		}
@@ -617,6 +620,281 @@ describe('CLI new', () => {
 			expect(audit.findings.some(({ drift }) => drift === 'missing')).toBe(true)
 			expect(audit.questions.every(({ blocking }) => !blocking)).toBe(true)
 			expect(audit.questions.some(({ field }) => field === 'src')).toBe(true)
+		} finally {
+			workspace.destroy()
+		}
+	})
+})
+
+describe('CLI upstream baselines', () => {
+	it('reports catalog offline as a usage error', async () => {
+		const sink = createSink()
+		expect(await new CLI(sink.options).execute(['catalog', '--offline'])).toBe(EXIT_USAGE)
+		expect(sink.diagnostic).toStrictEqual(["USAGE: 'catalog' does not take --offline."])
+	})
+
+	it('takes the host live when every declared digest matches and takes the floor when the repository is dark', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const live = await createUpstreamServer({
+			...FLEET_RELEASE_REPLIES,
+			...buildInstalledHostReplies(),
+		})
+		const dark = await createUpstreamServer({})
+		const repository = dark.base
+		await dark.destroy()
+		try {
+			const host = createStagedHost(workspace)
+			const target = workspace.ensure('host-baseline')
+			const created = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...created.options }).execute([
+					'new',
+					'widget',
+					'--src',
+					'core',
+					'--from',
+					host,
+					'--target',
+					target,
+				]),
+			).toBe(EXIT_CLEAN)
+
+			const aligned = createSink()
+			expect(
+				await new CLI(buildCLIOptions(aligned, live.base)).execute([
+					'repair',
+					'--groups',
+					'docs',
+					'--target',
+					target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const alignedResult: RepairResult = JSON.parse(aligned.output[0] ?? '')
+			expect.soft(alignedResult).toHaveProperty('provenance.host', 'live')
+			expect
+				.soft(live.paths.filter((path) => path.startsWith('/orkestrel/scaffold/refs/heads/main/')))
+				.toStrictEqual(['/orkestrel/scaffold/refs/heads/main/host.json'])
+
+			workspace.write('host-baseline/AGENTS.md', '# Drifted\n')
+			const forced = createSink()
+			expect(
+				await new CLI({
+					...forced.options,
+					upstream: {
+						registry: { base: live.base },
+						repository: { base: repository },
+					},
+				}).execute(['repair', '--groups', 'docs', '--target', target, '--json']),
+			).toBe(EXIT_DRIFT)
+			const forcedResult: RepairResult = JSON.parse(forced.output[0] ?? '')
+			expect(forcedResult).toHaveProperty('provenance.host', 'floor')
+			expect(forcedResult).toHaveProperty('provenance.versions', 'live')
+			expect(forced.diagnostic.join('\n')).toContain('host=floor')
+			expect(readFileHex(target, 'AGENTS.md')).toBe(readFileHex(host, 'AGENTS.md'))
+		} finally {
+			await live.destroy()
+			workspace.destroy()
+		}
+	})
+
+	it('writes the same distributed new baseline when transport forces it and when offline selects it', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const dark = await createUpstreamServer({})
+		const base = dark.base
+		await dark.destroy()
+		try {
+			const forcedTarget = workspace.ensure('forced-new')
+			const forced = createSink()
+			expect(
+				await new CLI(buildCLIOptions(forced, base)).execute([
+					'new',
+					'widget',
+					'--src',
+					'core',
+					'--target',
+					forcedTarget,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const forcedResult: MaterializeResult = JSON.parse(forced.output[0] ?? '')
+			expect(forcedResult).toHaveProperty('provenance', {
+				versions: 'floor',
+				host: 'floor',
+			})
+			expect(forced.diagnostic.join('\n')).toContain('versions=floor')
+			expect(forced.diagnostic.join('\n')).toContain('host=floor')
+
+			const offlineTarget = workspace.ensure('offline-new')
+			const offline = createSink()
+			expect(
+				await new CLI(offline.options).execute([
+					'new',
+					'widget',
+					'--src',
+					'core',
+					'--offline',
+					'--target',
+					offlineTarget,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const offlineResult: MaterializeResult = JSON.parse(offline.output[0] ?? '')
+			expect(offlineResult).toHaveProperty('provenance', {
+				versions: 'floor',
+				host: 'floor',
+			})
+			expect(offline.diagnostic).toStrictEqual([])
+			expect(offlineResult.written).toStrictEqual(forcedResult.written)
+			for (const path of forcedResult.written) {
+				expect(readFileHex(offlineTarget, path)).toBe(readFileHex(forcedTarget, path))
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('makes offline audit answer drift alone and offline repair match a forced floor write', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const dark = await createUpstreamServer({})
+		const base = dark.base
+		await dark.destroy()
+		try {
+			const host = createStagedHost(workspace)
+			for (const name of ['audit-floor', 'forced-repair', 'offline-repair']) {
+				const sink = createSink()
+				expect(
+					await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+						'new',
+						'widget',
+						'--src',
+						'core',
+						'--from',
+						host,
+						'--target',
+						workspace.ensure(name),
+					]),
+				).toBe(EXIT_CLEAN)
+				workspace.write(`${name}/AGENTS.md`, '# Drifted\n')
+			}
+
+			const audited = createSink()
+			expect(
+				await new CLI(audited.options).execute([
+					'audit',
+					'--offline',
+					'--groups',
+					'docs',
+					'--target',
+					workspace.ensure('audit-floor'),
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const audit: AuditResult = JSON.parse(audited.output[0] ?? '')
+			expect(audit.provenance).toStrictEqual({ versions: 'floor', host: 'floor' })
+			expect(audited.diagnostic).toStrictEqual([])
+
+			const forced = createSink()
+			expect(
+				await new CLI(buildCLIOptions(forced, base)).execute([
+					'repair',
+					'--groups',
+					'docs',
+					'--target',
+					workspace.ensure('forced-repair'),
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const forcedResult: RepairResult = JSON.parse(forced.output[0] ?? '')
+
+			const offline = createSink()
+			expect(
+				await new CLI(offline.options).execute([
+					'repair',
+					'--offline',
+					'--groups',
+					'docs',
+					'--target',
+					workspace.ensure('offline-repair'),
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const offlineResult: RepairResult = JSON.parse(offline.output[0] ?? '')
+			expect(offlineResult.provenance).toStrictEqual({ versions: 'floor', host: 'floor' })
+			expect(offline.diagnostic).toStrictEqual([])
+			expect(offlineResult.written).toStrictEqual(forcedResult.written)
+			for (const path of forcedResult.written) {
+				expect(readFileHex(workspace.ensure('offline-repair'), path)).toBe(
+					readFileHex(workspace.ensure('forced-repair'), path),
+				)
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('runs the overwrite floor half offline and refuses its catalog half', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createStagedHost(workspace)
+			const target = workspace.ensure('offline-overwrite')
+			const created = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...created.options }).execute([
+					'new',
+					'widget',
+					'--src',
+					'core',
+					'--from',
+					host,
+					'--target',
+					target,
+				]),
+			).toBe(EXIT_CLEAN)
+			createRepository(target)
+			trackFiles(target)
+			const sink = createSink()
+			expect(
+				await new CLI(sink.options).execute([
+					'overwrite',
+					'--offline',
+					'--dirty',
+					'--target',
+					target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.provenance).toStrictEqual({ versions: 'floor', host: 'floor' })
+			expect(result.note ?? '').toContain("USAGE: 'catalog' does not take --offline")
+			expect(result.entries).toStrictEqual([])
+			expect(result.mirrors).toStrictEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses a dark catalog membership endpoint without writing the target', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const dark = await createUpstreamServer({})
+		const base = dark.base
+		await dark.destroy()
+		try {
+			const fleet = createCatalogFleet(workspace)
+			const before = readFileHex(fleet.target, CATALOG_AGENT_PATH)
+			const sink = createSink()
+			expect(
+				await new CLI(buildCLIOptions(sink, base)).execute([
+					'catalog',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			expect(JSON.parse(sink.output[0] ?? '')).toHaveProperty('error.code', 'FETCH')
+			expect(readFileHex(fleet.target, CATALOG_AGENT_PATH)).toBe(before)
 		} finally {
 			workspace.destroy()
 		}
@@ -881,6 +1159,7 @@ describe('CLI audit', () => {
 			])
 			expect(code).toBe(EXIT_DRIFT)
 			const result: AuditResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.provenance).toStrictEqual({ versions: 'live' })
 			expect(result.questions).toContainEqual({
 				field: 'dependencies',
 				message:
@@ -2681,6 +2960,7 @@ describe('CLI repair', () => {
 			const result: RepairResult = JSON.parse(sink.output[0] ?? '')
 			expect(result.written.length).toBeGreaterThan(0)
 			expect(result.audit.findings.every((finding) => finding.drift === 'aligned')).toBe(true)
+			expect(result.provenance).toStrictEqual({ versions: 'live' })
 		} finally {
 			workspace.destroy()
 		}
@@ -3031,6 +3311,7 @@ describe('CLI overwrite', () => {
 			).toBe(EXIT_CLEAN)
 			const result: OverwriteResult = JSON.parse(overwritten.output[0] ?? '')
 			expect(result.removed).toStrictEqual([])
+			expect(result.provenance).toStrictEqual({ versions: 'live', guides: 'live' })
 
 			const controlTarget = workspace.ensure('control')
 			const controlCreated = createSink()
@@ -3352,7 +3633,7 @@ describe('CLI overwrite', () => {
 		}
 	})
 
-	it('writes no range when one release lookup fails', async () => {
+	it('keeps the floor ranges when one release read does not complete', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({
 			...FLEET_RELEASE_REPLIES,
@@ -3365,7 +3646,6 @@ describe('CLI overwrite', () => {
 		})
 		try {
 			const fleet = createCatalogFleet(workspace)
-			const manifest = workspace.read('target/package.json')
 			createRepository(fleet.target)
 			trackFiles(fleet.target)
 			const sink = createSink()
@@ -3380,14 +3660,15 @@ describe('CLI overwrite', () => {
 			])
 			expect(code).toBe(EXIT_DRIFT)
 			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
-			expect(result.note ?? '').toContain('The catalog step did not complete')
+			expect(result.note ?? '').toContain('The versions step used the distributed floor')
+			expect(result.provenance).toStrictEqual({ versions: 'floor', guides: 'live' })
 			expect(result.releases).toContainEqual({
 				name: 'vite',
 				range: '~8.2.0',
 				lookup: 'failed',
 				note: 'HTTP 503',
 			})
-			expect(workspace.read('target/package.json')).toBe(manifest)
+			expect(workspace.read('target/package.json')).toContain('"vite": "~8.2.0"')
 			expect(workspace.read('target/AGENTS.md')).toBe('AGENTS.md\n')
 		} finally {
 			await server.destroy()
@@ -3503,6 +3784,7 @@ describe('CLI catalog', () => {
 			])
 			expect(code).toBe(EXIT_CLEAN)
 			const result: CatalogResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.provenance).toStrictEqual({ versions: 'live', guides: 'live' })
 			expect(result.entries).toStrictEqual([
 				{ name: '@orkestrel/emitter', lookup: 'found', version: '0.0.6', dependencies: [] },
 				{
@@ -3615,6 +3897,8 @@ describe('CLI catalog', () => {
 		})
 		try {
 			const fleet = createCatalogFleet(workspace)
+			workspace.write('target/guides/emitter.md', '# Existing emitter\n')
+			const existing = readFileHex(fleet.target, 'guides/emitter.md')
 			const sink = createSink()
 			const code = await new CLI(buildCLIOptions(sink, server.base)).execute([
 				'catalog',
@@ -3622,12 +3906,21 @@ describe('CLI catalog', () => {
 				fleet.host,
 				'--target',
 				fleet.target,
+				'--json',
 			])
 			expect(code).toBe(EXIT_DRIFT)
-			expect(sink.diagnostic.join('\n')).toContain('@orkestrel/emitter')
-			// A failed guide leaves the catalog transaction and every mirror untouched.
-			expect(readFileHex(fleet.target, 'guides/guide.md')).toBeUndefined()
-			expect(readFileHex(fleet.target, 'guides/emitter.md')).toBeUndefined()
+			const result: CatalogResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.provenance).toStrictEqual({ versions: 'live', guides: 'floor' })
+			expect(result.mirrors).toContainEqual({
+				name: '@orkestrel/emitter',
+				path: 'guides/emitter.md',
+				lookup: 'failed',
+				note: 'HTTP 500',
+				observed: existing,
+			})
+			expect(readFileHex(fleet.target, 'guides/emitter.md')).toBe(existing)
+			expect(workspace.read('target/guides/guide.md')).toBe('# Guide\n')
+			expect(workspace.read(`target/${CATALOG_AGENT_PATH}`)).toContain('@orkestrel/emitter')
 		} finally {
 			await server.destroy()
 			workspace.destroy()

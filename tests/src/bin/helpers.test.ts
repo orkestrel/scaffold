@@ -23,7 +23,9 @@ import {
 	argvToCommand,
 	auditToExit,
 	auditToSummary,
+	dependenciesToFloors,
 	dependenciesToFleet,
+	environmentToUpstream,
 	errorToEnvelope,
 	manifestToPlannedDependencies,
 	optionToName,
@@ -63,6 +65,24 @@ describe('optionToName', () => {
 		for (const option of UNDOCUMENTED) {
 			expect(Object.keys(COMMAND_OPTIONS)).not.toContain(optionToName(option))
 		}
+	})
+})
+
+describe('environmentToUpstream', () => {
+	it('maps each configured process endpoint to its upstream group', () => {
+		expect(
+			environmentToUpstream({
+				ORKESTREL_SCAFFOLD_REGISTRY: 'http://127.0.0.1:4101',
+				ORKESTREL_SCAFFOLD_REPOSITORY: 'http://127.0.0.1:4102',
+			}),
+		).toStrictEqual({
+			registry: { base: 'http://127.0.0.1:4101' },
+			repository: { base: 'http://127.0.0.1:4102' },
+		})
+	})
+
+	it('leaves upstream options absent when neither endpoint is configured', () => {
+		expect(environmentToUpstream({})).toBeUndefined()
 	})
 })
 
@@ -153,6 +173,34 @@ describe('renderUsage', () => {
 })
 
 describe('argvToCommand', () => {
+	it('reads offline on the verbs that own a distributed floor and refuses it on catalog', () => {
+		expect(argvToCommand(['new', 'widget', '--offline'])).toStrictEqual({
+			verb: 'new',
+			name: 'widget',
+			json: false,
+			offline: true,
+		})
+		expect(argvToCommand(['audit', '--offline'])).toStrictEqual({
+			verb: 'audit',
+			json: false,
+			offline: true,
+		})
+		expect(argvToCommand(['repair', '--offline'])).toStrictEqual({
+			verb: 'repair',
+			json: false,
+			offline: true,
+		})
+		expect(argvToCommand(['overwrite', '--offline'])).toStrictEqual({
+			verb: 'overwrite',
+			json: false,
+			dirty: false,
+			offline: true,
+		})
+		expect(() => argvToCommand(['catalog', '--offline'])).toThrow(
+			"'catalog' does not take --offline.",
+		)
+	})
+
 	it('reads the bin workspace option on new', () => {
 		expect(argvToCommand(['new', 'widget', '--bin'])).toStrictEqual({
 			verb: 'new',
@@ -234,6 +282,24 @@ describe('auditToExit', () => {
 })
 
 describe('release evidence', () => {
+	it('projects concrete declarations to their exact distributed floors', () => {
+		expect(
+			dependenciesToFloors([
+				{ name: '@orkestrel/router', range: '^0.0.8' },
+				{ name: 'vite', range: '~8.2.0' },
+			]),
+		).toStrictEqual([
+			{
+				name: '@orkestrel/router',
+				range: '^0.0.8',
+				lookup: 'found',
+				latest: '0.0.8',
+			},
+			{ name: 'vite', range: '~8.2.0', lookup: 'found', latest: '8.2.0' },
+		])
+		expect(dependenciesToFloors([{ name: 'vite', range: '^8' }])).toBeUndefined()
+	})
+
 	it('reports exact fleet drift and failed lookups as drift', () => {
 		expect(
 			releasesToExit([

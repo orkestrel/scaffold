@@ -1,5 +1,5 @@
-import type { Audit, CatalogEntry, Mirror, Release } from '@src/core'
-import type { MaterializeResult, UpstreamOptions } from '@src/server'
+import type { Audit, CatalogEntry, Dependency, Mirror, Release } from '@src/core'
+import type { MaterializeResult, MaterializerInterface, UpstreamOptions } from '@src/server'
 
 /**
  * The executable's closed command vocabulary.
@@ -17,6 +17,22 @@ import type { MaterializeResult, UpstreamOptions } from '@src/server'
  * `@orkestrel/*` range set in the manifest.
  */
 export type Verb = 'new' | 'audit' | 'repair' | 'catalog' | 'overwrite'
+
+/** The baseline one upstream-backed command surface used. */
+export type Baseline = 'live' | 'floor'
+
+/**
+ * The baselines one command used for the upstream-backed surfaces it read.
+ *
+ * @remarks
+ * An absent property means the command did not read that surface. A local
+ * `--from` host is therefore absent rather than described as live or floor.
+ */
+export interface Provenance {
+	readonly versions?: Baseline
+	readonly guides?: Baseline
+	readonly host?: Baseline
+}
 
 /**
  * The options every verb accepts.
@@ -47,6 +63,7 @@ export interface NewCommand extends CommandBase {
 	readonly app?: string
 	readonly bin?: boolean
 	readonly dependencies?: string
+	readonly offline?: boolean
 	readonly from?: string
 	readonly groups?: never
 	readonly all?: never
@@ -63,6 +80,7 @@ export interface AuditCommand extends CommandBase {
 	readonly verb: 'audit'
 	readonly groups?: string
 	readonly from?: string
+	readonly offline?: boolean
 	readonly name?: never
 	readonly src?: never
 	readonly app?: never
@@ -77,6 +95,7 @@ export interface RepairCommand extends CommandBase {
 	readonly verb: 'repair'
 	readonly groups?: string
 	readonly from?: string
+	readonly offline?: boolean
 	readonly name?: never
 	readonly src?: never
 	readonly app?: never
@@ -105,6 +124,7 @@ export interface CatalogCommand extends CommandBase {
 	readonly dependencies?: never
 	readonly groups?: never
 	readonly dirty?: never
+	readonly offline?: never
 }
 
 /**
@@ -120,6 +140,7 @@ export interface OverwriteCommand extends CommandBase {
 	readonly groups?: string
 	readonly dirty?: boolean
 	readonly from?: string
+	readonly offline?: boolean
 	readonly name?: never
 	readonly src?: never
 	readonly app?: never
@@ -168,14 +189,31 @@ export type OutputHandler = (line: string) => void
  * Absent, every read addresses the published registry and the published guide
  * host, which is what a terminal caller means.
  *
- * The process entry maps `ORKESTREL_SCAFFOLD_REGISTRY` to
- * `upstream.registry.base`. This lets an installed executable address a
- * loopback or private registry without changing a command's write authority.
+ * The process entry maps `ORKESTREL_SCAFFOLD_REGISTRY` and
+ * `ORKESTREL_SCAFFOLD_REPOSITORY` to the matching upstream endpoint groups.
+ * This lets an installed executable address loopback or private endpoints
+ * without changing a command's write authority.
  */
 export interface CLIOptions {
 	readonly output?: OutputHandler
 	readonly diagnostic?: OutputHandler
-	readonly upstream?: UpstreamOptions
+	readonly upstream?: UpstreamOptions | undefined
+}
+
+/** One resolved host baseline beside the materializer constructed over it. */
+export interface HostResolution {
+	readonly materializer: MaterializerInterface
+	readonly baseline?: Baseline
+	readonly forced: boolean
+}
+
+/** One resolved version baseline beside its evidence and writable ranges. */
+export interface VersionResolution {
+	readonly releases: readonly Release[]
+	readonly pins: readonly Dependency[]
+	readonly baseline?: Baseline
+	readonly forced: boolean
+	readonly complete: boolean
 }
 
 /** The executable's boundary. */
@@ -194,9 +232,15 @@ export interface CLIInterface {
 	execute(argv: readonly string[]): Promise<number>
 }
 
+/** The machine-readable outcome of `new`. */
+export interface NewResult extends MaterializeResult {
+	readonly provenance: Provenance
+}
+
 /** The machine-readable outcome of `audit`. */
 export interface AuditResult extends Audit {
 	readonly releases: readonly Release[]
+	readonly provenance: Provenance
 }
 
 /**
@@ -209,6 +253,7 @@ export interface AuditResult extends Audit {
 export interface RepairResult extends MaterializeResult {
 	readonly audit: Audit
 	readonly releases: readonly Release[]
+	readonly provenance: Provenance
 }
 
 /**
@@ -225,6 +270,7 @@ export interface CatalogResult extends MaterializeResult {
 	readonly mirrors: readonly Mirror[]
 	readonly dropped: readonly string[]
 	readonly releases: readonly Release[]
+	readonly provenance: Provenance
 }
 
 /**

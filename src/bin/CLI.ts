@@ -19,17 +19,22 @@ import type {
 import type {
 	AuditCommand,
 	AuditResult,
+	Baseline,
 	CatalogCommand,
 	CatalogResult,
 	CLICommand,
 	CLIInterface,
 	CLIOptions,
+	HostResolution,
 	NewCommand,
+	NewResult,
 	OutputHandler,
 	OverwriteCommand,
 	OverwriteResult,
+	Provenance,
 	RepairCommand,
 	RepairResult,
+	VersionResolution,
 } from './types.js'
 import { renderTable, strip, stripControls } from '@orkestrel/console'
 import { attempt, isRecord, isString, parseJSON } from '@orkestrel/contract'
@@ -52,6 +57,7 @@ import {
 	GLOBAL_SETUP_PATH,
 	GUIDES_TEST_PATH,
 	INTEGRATION_TEST_PATH,
+	isDeferredPath,
 	manifestToDependencies,
 	manifestToName,
 	MAX_MANIFEST_BYTES,
@@ -64,11 +70,13 @@ import {
 import {
 	Materializer,
 	Upstream,
+	copiesToHost,
 	isExactCaseFile,
 	isPhysicalDirectory,
 	isRepository,
 	listFiles,
 	readFileText,
+	readHostFloor,
 	readSnapshot,
 	resolveContainedPath,
 } from '@src/server'
@@ -78,6 +86,7 @@ import {
 	argvToCommand,
 	auditToExit,
 	auditToSummary,
+	dependenciesToFloors,
 	dependenciesToFleet,
 	errorToEnvelope,
 	manifestToPlannedDependencies,
@@ -221,26 +230,34 @@ export class CLI implements CLIInterface {
 		if (manifest === undefined || manifest.origin === 'host') {
 			throw new ScaffoldError('BLOCKED', 'The compiled plan carries no replaceable manifest.')
 		}
-		const releases = await this.#lookup(
+		const versions = await this.#versions(
 			dependenciesToFleet(manifestToDependencies(manifest.content)),
+			command.offline === true,
 		)
-		const resolved = replacePlanRanges(plan, this.#pin(releases))
+		this.#assertVersions(versions)
+		const resolved = replacePlanRanges(plan, versions.pins)
 		if (resolved === undefined) {
 			throw new ScaffoldError('BLOCKED', 'The compiled plan ranges could not be replaced.')
 		}
-		const materializer = new Materializer(
-			command.from === undefined ? undefined : { host: command.from },
-		)
+		const host = await this.#host(command.from, undefined, command.offline === true)
 		try {
-			const result = materializer.materialize(resolved, target)
-			if (command.json === true) this.#report(result)
+			const result = host.materializer.materialize(resolved, target)
+			const outcome: NewResult = {
+				...result,
+				provenance: {
+					...(versions.baseline === undefined ? {} : { versions: versions.baseline }),
+					...(host.baseline === undefined ? {} : { host: host.baseline }),
+				},
+			}
+			if (command.json === true) this.#report(outcome)
 			else {
 				this.#say(`Scaffolded ${blueprint.name} into ${result.target}.`)
 				this.#say(this.#tally(result))
 			}
+			if (versions.forced || host.forced) this.#reportBaselines(outcome.provenance)
 			return EXIT_CLEAN
 		} finally {
-			materializer.destroy()
+			host.materializer.destroy()
 		}
 	}
 
@@ -257,30 +274,42 @@ export class CLI implements CLIInterface {
 		const target = command.target ?? '.'
 		const manifest = this.#manifest(target)
 		const blueprint = this.#derive(target)
+		const groups = this.#groups(command.groups)
 		const declared = manifestToPlannedDependencies(manifest, blueprint)
-		const releases = await this.#lookup(declared)
+		const versions = await this.#versions(declared, command.offline === true)
 		const questions = [
 			...this.#targetQuestions(target, blueprint),
-			...releasesToQuestions(releases),
+			...releasesToQuestions(versions.releases),
 		]
-		const materializer = new Materializer(
-			command.from === undefined ? undefined : { host: command.from },
-		)
+		const host = await this.#host(command.from, target, command.offline === true)
 		try {
-			const [measured] = this.#survey(materializer, blueprint, target, this.#groups(command.groups))
+			const [measured] = this.#survey(host.materializer, blueprint, target, groups)
 			const audit: Audit =
 				questions.length === 0
 					? measured
 					: { ...measured, questions: [...measured.questions, ...questions] }
-			const outcome: AuditResult = { ...audit, releases }
+			const outcome: AuditResult = {
+				...audit,
+				releases: versions.releases,
+				provenance: {
+					...(versions.baseline === undefined ? {} : { versions: versions.baseline }),
+					...(host.baseline === undefined ? {} : { host: host.baseline }),
+				},
+			}
 			if (command.json === true) this.#report(outcome)
 			else {
 				this.#present(audit)
-				this.#reportReleases(releases)
+				if (command.offline !== true) this.#reportReleases(versions.releases)
 			}
-			return Math.max(auditToExit(audit), releasesToExit(releases))
+			if (versions.forced || host.forced) this.#reportBaselines(outcome.provenance)
+			if (command.offline === true) return auditToExit(audit)
+			return Math.max(
+				auditToExit(audit),
+				releasesToExit(versions.releases),
+				versions.forced || host.forced ? EXIT_DRIFT : EXIT_CLEAN,
+			)
 		} finally {
-			materializer.destroy()
+			host.materializer.destroy()
 		}
 	}
 
@@ -294,35 +323,50 @@ export class CLI implements CLIInterface {
 		const groups = this.#groups(command.groups)
 		const blueprint = this.#derive(target)
 		this.#assertTarget(target, blueprint)
-		const materializer = new Materializer(
-			command.from === undefined ? undefined : { host: command.from },
-		)
+		const host = await this.#host(command.from, target, command.offline === true)
 		try {
-			const [audit, plan] = this.#survey(materializer, blueprint, target, groups)
+			const [audit, plan] = this.#survey(host.materializer, blueprint, target, groups)
 			if (plan === undefined) {
-				if (command.json === true) this.#report(audit)
-				else this.#present(audit)
+				if (command.json === true) {
+					this.#report({
+						...audit,
+						provenance: {
+							...(host.baseline === undefined ? {} : { host: host.baseline }),
+						},
+					})
+				} else this.#present(audit)
 				return EXIT_DRIFT
 			}
-			const releases = await this.#lookup(
+			const versions = await this.#versions(
 				manifestToPlannedDependencies(this.#manifest(target), blueprint),
+				command.offline === true,
 			)
-			const pins = this.#pin(releases)
+			this.#assertVersions(versions)
 			const result = this.#merge(
-				materializer.repair(plan, audit, target),
-				materializer.declare(pins, target),
+				host.materializer.repair(plan, audit, target),
+				host.materializer.declare(versions.pins, target),
 			)
-			const [terminal] = this.#survey(materializer, this.#derive(target), target, groups)
-			const outcome: RepairResult = { ...result, audit: terminal, releases }
+			const [terminal] = this.#survey(host.materializer, this.#derive(target), target, groups)
+			const outcome: RepairResult = {
+				...result,
+				audit: terminal,
+				releases: versions.releases,
+				provenance: {
+					...(versions.baseline === undefined ? {} : { versions: versions.baseline }),
+					...(host.baseline === undefined ? {} : { host: host.baseline }),
+				},
+			}
 			if (command.json === true) this.#report(outcome)
 			else {
 				this.#present(terminal)
 				this.#reportReplacements(audit, terminal)
 				this.#say(this.#tally(result))
 			}
+			if (versions.forced || host.forced) this.#reportBaselines(outcome.provenance)
+			if (command.offline !== true && (versions.forced || host.forced)) return EXIT_DRIFT
 			return auditToExit(terminal)
 		} finally {
-			materializer.destroy()
+			host.materializer.destroy()
 		}
 	}
 
@@ -344,7 +388,13 @@ export class CLI implements CLIInterface {
 		)
 		const pins = this.#pin(releases)
 		this.#assertFetched(fetched.entries, fetched.mirrors)
-		const materializer = new Materializer(host === undefined ? undefined : { host })
+		const guides: Baseline | undefined =
+			fetched.mirrors.length === 0
+				? undefined
+				: fetched.mirrors.some((mirror) => mirror.lookup === 'failed')
+					? 'floor'
+					: 'live'
+		const materializer = new Materializer({ host: host ?? readHostFloor() })
 		let result: MaterializeResult
 		try {
 			result = this.#merge(
@@ -360,10 +410,14 @@ export class CLI implements CLIInterface {
 			mirrors: fetched.mirrors,
 			dropped: previous.filter((name) => !fetched.entries.some((entry) => entry.name === name)),
 			releases,
+			provenance: {
+				versions: 'live',
+				...(guides === undefined ? {} : { guides }),
+			},
 		}
 		if (command.json === true) this.#report(outcome)
 		else this.#recount(outcome)
-		return EXIT_CLEAN
+		return guides === 'floor' ? EXIT_DRIFT : EXIT_CLEAN
 	}
 
 	// `overwrite` — everything repair and catalog do, plus the steps only this
@@ -383,17 +437,22 @@ export class CLI implements CLIInterface {
 				{ target, dirty: repository.dirty.length },
 			)
 		}
-		const materializer = new Materializer(
-			command.from === undefined ? undefined : { host: command.from },
-		)
+		const host = await this.#host(command.from, target, command.offline === true)
 		try {
-			const [audit, plan] = this.#survey(materializer, blueprint, target, groups)
+			const [audit, plan] = this.#survey(host.materializer, blueprint, target, groups)
 			if (plan === undefined) {
-				if (command.json === true) this.#report(audit)
-				else this.#present(audit)
+				if (command.json === true) {
+					this.#report({
+						...audit,
+						provenance: {
+							...(host.baseline === undefined ? {} : { host: host.baseline }),
+						},
+					})
+				} else this.#present(audit)
 				return EXIT_DRIFT
 			}
-			const repaired = materializer.repair(plan, audit, target)
+			const declared = manifestToPlannedDependencies(this.#manifest(target), blueprint)
+			const repaired = host.materializer.repair(plan, audit, target)
 			// The candidate set is re-derived from the plan and target, then held to
 			// the audit's foreign findings. A path the plan claims is never a deletion
 			// candidate, and neither is a path outside the vendored directories this
@@ -401,19 +460,18 @@ export class CLI implements CLIInterface {
 			// `--dirty` is expressed here and nowhere else: the waiver clears the
 			// refusal the observed dirty set would otherwise trigger downstream, and
 			// waives nothing about which paths are eligible.
-			const removed = materializer.remove(
+			const removed = host.materializer.remove(
 				plan,
 				audit,
 				command.dirty === true ? { tracked: repository.tracked, dirty: [] } : repository,
 				target,
 			)
 			const offline = this.#merge(repaired, removed)
-			const online = await this.#reconcile(
-				materializer,
-				target,
-				manifestToPlannedDependencies(this.#manifest(target), blueprint),
-			)
-			const [terminal] = this.#survey(materializer, blueprint, target, groups)
+			const online: Omit<OverwriteResult, 'audit'> =
+				command.offline === true
+					? await this.#offline(host.materializer, target, declared, host.baseline)
+					: await this.#reconcile(host.materializer, target, declared, host.baseline, host.forced)
+			const [terminal] = this.#survey(host.materializer, blueprint, target, groups)
 			const outcome: OverwriteResult = {
 				...online,
 				...this.#merge(offline, online),
@@ -429,7 +487,7 @@ export class CLI implements CLIInterface {
 			if (online.note !== undefined) return EXIT_DRIFT
 			return auditToExit(terminal)
 		} finally {
-			materializer.destroy()
+			host.materializer.destroy()
 		}
 	}
 
@@ -438,28 +496,80 @@ export class CLI implements CLIInterface {
 	// step it was instead of discarding what already landed. It writes through the
 	// verb's own materializer rather than opening a second one, so every byte the
 	// run lands comes from the host the caller named once.
+	async #offline(
+		materializer: MaterializerInterface,
+		target: string,
+		declared: readonly Dependency[],
+		host: Baseline | undefined,
+	): Promise<Omit<OverwriteResult, 'audit'>> {
+		const versions = await this.#versions(declared, true)
+		this.#assertVersions(versions)
+		const written = materializer.declare(versions.pins, target)
+		return {
+			...written,
+			entries: [],
+			mirrors: [],
+			dropped: [],
+			releases: versions.releases,
+			provenance: {
+				...(versions.baseline === undefined ? {} : { versions: versions.baseline }),
+				...(host === undefined ? {} : { host }),
+			},
+			note: "The catalog step did not complete: USAGE: 'catalog' does not take --offline.",
+		}
+	}
+
 	async #reconcile(
 		materializer: MaterializerInterface,
 		target: string,
 		declared: readonly Dependency[],
+		host: Baseline | undefined,
+		hostForced: boolean,
 	): Promise<Omit<OverwriteResult, 'audit'>> {
 		const previous = this.#previous(target)
 		let releases: readonly Release[] = []
+		let provenance: Provenance = { ...(host === undefined ? {} : { host }) }
 		try {
-			releases = await this.#lookup(declared)
-			const pins = this.#pin(releases)
+			const versions = await this.#versions(declared, false)
+			releases = versions.releases
+			provenance = {
+				...(versions.baseline === undefined ? {} : { versions: versions.baseline }),
+				...(host === undefined ? {} : { host }),
+			}
+			this.#assertVersions(versions)
 			const fetched = await this.#fetch(target, false)
 			this.#assertFetched(fetched.entries, fetched.mirrors)
+			const guides: Baseline | undefined =
+				fetched.mirrors.length === 0
+					? undefined
+					: fetched.mirrors.some((mirror) => mirror.lookup === 'failed')
+						? 'floor'
+						: 'live'
+			provenance = {
+				...(versions.baseline === undefined ? {} : { versions: versions.baseline }),
+				...(guides === undefined ? {} : { guides }),
+				...(host === undefined ? {} : { host }),
+			}
 			const written = this.#merge(
 				this.#publish(materializer, target, fetched.entries, fetched.mirrors),
-				materializer.declare(pins, target),
+				materializer.declare(versions.pins, target),
 			)
+			const floors: string[] = []
+			if (hostForced) floors.push('host')
+			if (versions.forced) floors.push('versions')
+			if (guides === 'floor') floors.push('guides')
 			return {
 				...written,
 				entries: fetched.entries,
 				mirrors: fetched.mirrors,
 				dropped: previous.filter((name) => !fetched.entries.some((entry) => entry.name === name)),
 				releases,
+				provenance,
+				...(floors.length === 0
+					? {}
+					: {
+							note: `The ${floors.join(', ')} step used the distributed floor after its upstream read did not complete.`,
+						}),
 			}
 		} catch (error) {
 			return {
@@ -471,9 +581,127 @@ export class CLI implements CLIInterface {
 				mirrors: [],
 				dropped: [],
 				releases,
+				provenance,
 				note: `The catalog step did not complete: ${errorToEnvelope(error).error.message}`,
 			}
 		}
+	}
+
+	// Resolve the vendored host without letting a partial repository answer reach
+	// the materializer.
+	async #host(
+		from: string | undefined,
+		target: string | undefined,
+		offline: boolean,
+	): Promise<HostResolution> {
+		if (from !== undefined) {
+			return { materializer: new Materializer({ host: from }), forced: false }
+		}
+		const floor = readHostFloor()
+		if (offline) {
+			return {
+				materializer: new Materializer({ host: floor }),
+				baseline: 'floor',
+				forced: false,
+			}
+		}
+		const paths = floor.manifest.entries
+			.filter((entry) => !isDeferredPath(entry.destination))
+			.map((entry) => entry.destination)
+		const current = target === undefined ? floor.bytes : readSnapshot(target, paths)
+		const upstream = new Upstream(this.#upstream)
+		try {
+			const copies = await upstream.vendor(paths, current)
+			const live = copiesToHost(copies, floor)
+			return {
+				materializer: new Materializer({ host: live ?? floor }),
+				baseline: live === undefined ? 'floor' : 'live',
+				forced: live === undefined,
+			}
+		} finally {
+			upstream.destroy()
+		}
+	}
+
+	// Resolve one whole version surface. Authoritative absence refuses, while a
+	// read that did not complete selects every declaration's distributed floor.
+	async #versions(declared: readonly Dependency[], offline: boolean): Promise<VersionResolution> {
+		if (declared.length === 0) {
+			return { releases: [], pins: [], forced: false, complete: true }
+		}
+		const floors = dependenciesToFloors(declared)
+		if (offline) {
+			if (floors === undefined) {
+				return {
+					releases: [],
+					pins: [],
+					baseline: 'floor',
+					forced: false,
+					complete: false,
+				}
+			}
+			return {
+				releases: floors,
+				pins: floors.map((release) => ({ name: release.name, range: release.range })),
+				baseline: 'floor',
+				forced: false,
+				complete: true,
+			}
+		}
+		const releases = await this.#lookup(declared)
+		const absent = releases.filter(
+			(release) => release.lookup === 'missing' || release.lookup === 'unmatched',
+		)
+		if (absent.length > 0) {
+			return {
+				releases,
+				pins: [],
+				baseline: 'live',
+				forced: false,
+				complete: false,
+			}
+		}
+		const failed = releases.some((release) => release.lookup === 'failed')
+		if (failed) {
+			if (floors === undefined) {
+				return {
+					releases,
+					pins: [],
+					baseline: 'floor',
+					forced: true,
+					complete: false,
+				}
+			}
+			return {
+				releases,
+				pins: floors.map((release) => ({ name: release.name, range: release.range })),
+				baseline: 'floor',
+				forced: true,
+				complete: true,
+			}
+		}
+		return {
+			releases,
+			pins: this.#pin(releases),
+			baseline: 'live',
+			forced: false,
+			complete: true,
+		}
+	}
+
+	// Refuse an incomplete version resolution before a caller opens a write.
+	#assertVersions(versions: VersionResolution): void {
+		if (versions.complete) return
+		const names = versions.releases
+			.filter((release) => release.lookup !== 'found')
+			.map((release) => release.name)
+		throw new ScaffoldError(
+			'FETCH',
+			names.length === 0
+				? 'A declared dependency names no concrete floor.'
+				: `The registry named no release for ${names.join(', ')}.`,
+			{ names: names.length },
+		)
 	}
 
 	// Measure each fleet row against the registry's newest release and each
@@ -567,7 +795,9 @@ export class CLI implements CLIInterface {
 	#assertFetched(entries: readonly CatalogEntry[], mirrors: readonly Mirror[]): void {
 		const failed = [
 			...entries.filter((entry) => entry.lookup !== 'found').map((entry) => entry.name),
-			...mirrors.filter((mirror) => mirror.lookup !== 'found').map((mirror) => mirror.name),
+			...mirrors
+				.filter((mirror) => mirror.lookup !== 'found' && mirror.lookup !== 'failed')
+				.map((mirror) => mirror.name),
 		]
 		if (failed.length === 0) return
 		throw new ScaffoldError(
@@ -1126,6 +1356,17 @@ export class CLI implements CLIInterface {
 			skipped: [...first.skipped, ...second.skipped],
 			removed: [...first.removed, ...second.removed],
 		}
+	}
+
+	// Name every surface baseline after a network read forced a floor.
+	#reportBaselines(provenance: Provenance): void {
+		const baselines: string[] = []
+		if (provenance.versions !== undefined) {
+			baselines.push(`versions=${provenance.versions}`)
+		}
+		if (provenance.guides !== undefined) baselines.push(`guides=${provenance.guides}`)
+		if (provenance.host !== undefined) baselines.push(`host=${provenance.host}`)
+		this.#warn(`Upstream fallback selected the distributed baseline: ${baselines.join(', ')}.`)
 	}
 
 	// The audit as a person reads it: every advisory first, then one row per path
