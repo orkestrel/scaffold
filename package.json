@@ -95,7 +95,7 @@
 		"@orkestrel/contract": "^0.0.13",
 		"@orkestrel/emitter": "^0.0.7",
 		"@orkestrel/markdown": "^0.0.9",
-		"@orkestrel/process": "^0.0.4",
+		"@orkestrel/process": "^0.0.6",
 		"@orkestrel/template": "^0.0.4"
 	},
 	"devDependencies": {
