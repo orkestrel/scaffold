@@ -7,7 +7,7 @@ import type {
 	OverwriteResult,
 	RepairResult,
 } from '../../../src/bin/types.js'
-import type { TestUpstreamReply } from '../../setupServer.js'
+import { SCRATCH_PREFIX, type TestUpstreamReply } from '../../setupServer.js'
 import { afterAll, describe, expect, it } from 'vitest'
 import {
 	APP_BROWSER_DEV_DEPENDENCIES,
@@ -24,6 +24,7 @@ import {
 	SOURCE_BROWSER_DEV_DEPENDENCIES,
 } from '@src/core'
 import { readFileHex } from '@src/server'
+import { requireValue } from '@orkestrel/test'
 import {
 	EXIT_CLEAN,
 	EXIT_DRIFT,
@@ -48,7 +49,6 @@ import {
 	createSink,
 	createStagedHost,
 	createUpstreamServer,
-	createWorkspace,
 	FLEET_ARTIFACT_COUNT,
 	FLEET_BIRTH_COUNT,
 	FLEET_BIRTH_PATHS,
@@ -63,6 +63,7 @@ import {
 	trackFiles,
 	USAGE_CASES,
 } from '../../setupServer.js'
+import { createScratch } from '@orkestrel/test/server'
 
 // The groups whose vendored paths are all files. A vendored directory is a
 // single planned path the materializer expands into one artifact per file it
@@ -83,7 +84,7 @@ const FLEET_RELEASE_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Objec
 	[FLEET_UPSTREAM_PATHS.packages.guide]: { status: 200, body: buildPackument('0.0.9') },
 	[FLEET_UPSTREAM_PATHS.packages.probe]: { status: 200, body: buildPackument('0.0.2') },
 	[FLEET_UPSTREAM_PATHS.packages.scaffold]: { status: 200, body: buildPackument('0.0.48') },
-	[FLEET_UPSTREAM_PATHS.packages.test]: { status: 200, body: buildPackument('0.0.9') },
+	[FLEET_UPSTREAM_PATHS.packages.test]: { status: 200, body: buildPackument('0.0.10') },
 	'/@microsoft%2Fapi-extractor': {
 		status: 200,
 		body: buildPackument(DECLARATION_DEV_DEPENDENCIES['@microsoft/api-extractor']?.slice(1) ?? ''),
@@ -156,7 +157,7 @@ const AUDIT_REGISTRY = await createUpstreamServer({
 	'/@orkestrel%2Frouter': { status: 200, body: buildPackument('0.0.10') },
 	'/@orkestrel%2Fscaffold': { status: 200, body: buildPackument('0.0.48') },
 	'/@orkestrel%2Fserver': { status: 200, body: buildPackument('0.0.14') },
-	'/@orkestrel%2Ftest': { status: 200, body: buildPackument('0.0.9') },
+	'/@orkestrel%2Ftest': { status: 200, body: buildPackument('0.0.10') },
 	'/@microsoft%2Fapi-extractor': {
 		status: 200,
 		body: buildPackument(DECLARATION_DEV_DEPENDENCIES['@microsoft/api-extractor']?.slice(1) ?? ''),
@@ -217,7 +218,7 @@ const AUDIT_REGISTRY = await createUpstreamServer({
 	},
 })
 const REGISTRY_OPTIONS: CLIOptions = {
-	upstream: { registry: { base: AUDIT_REGISTRY.base }, guides: { base: AUDIT_REGISTRY.base } },
+	upstream: { registry: { base: AUDIT_REGISTRY.base }, repository: { base: AUDIT_REGISTRY.base } },
 }
 
 afterAll(async () => AUDIT_REGISTRY.destroy())
@@ -279,7 +280,7 @@ describe('CLI usage', () => {
 	})
 
 	it('accepts every group some plan has', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			for (const group of GROUPS) {
@@ -388,7 +389,7 @@ describe('CLI sanitization', () => {
 
 describe('CLI new', () => {
 	it('creates a bin workspace that round-trips through audit', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const fresh = workspace.ensure('fresh')
@@ -416,7 +417,7 @@ describe('CLI new', () => {
 			]) {
 				expect(result.written).toContain(path)
 			}
-			expect(JSON.parse(workspace.read('fresh/package.json'))).toHaveProperty('bin', {
+			expect(JSON.parse(requireValue(workspace.read('fresh/package.json')))).toHaveProperty('bin', {
 				widget: './dist/bin/main.js',
 			})
 
@@ -436,7 +437,7 @@ describe('CLI new', () => {
 	})
 
 	it('writes every planned path into a vacant target and reports what it wrote', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const fresh = workspace.ensure('fresh')
@@ -461,7 +462,7 @@ describe('CLI new', () => {
 	})
 
 	it('emits one machine-readable value naming every path it wrote', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const fresh = workspace.ensure('fresh')
@@ -510,7 +511,7 @@ describe('CLI new', () => {
 	})
 
 	it('refuses a target that already holds a workspace', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const sink = createSink()
@@ -536,7 +537,7 @@ describe('CLI new', () => {
 	// chooses the shape, so it is the one that refuses: the manifest it would write
 	// names a core build the workspace never runs.
 	it('refuses to create a published axis of several environments without core', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const fresh = workspace.ensure('refused-shape')
@@ -566,7 +567,7 @@ describe('CLI new', () => {
 	// is what tells them apart. The advisory refusal above is the other half of
 	// this pair; splitting the code would give one fact more than one name.
 	it('refuses a blocking and a non-blocking question under the one refusal code', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const blocked = createSink()
@@ -594,7 +595,7 @@ describe('CLI new', () => {
 	// whatever `new` will create. While the gate refused it, `audit` compared
 	// nothing and `repair` could not reach the paths that needed repairing.
 	it('compares a target whose published axis lacks core', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const lacking = workspace.ensure('lacking')
@@ -624,7 +625,7 @@ describe('CLI new', () => {
 
 describe('CLI audit', () => {
 	it('reports a stale planned foreign floor as a non-blocking dependency question', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const sink = createSink()
@@ -653,7 +654,7 @@ describe('CLI audit', () => {
 	})
 
 	it('reports no dependency question for library tools omitted by an app-only workspace', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildFleetManifest())
 			const target = workspace.ensure('target')
@@ -694,7 +695,7 @@ describe('CLI audit', () => {
 	})
 
 	it('reports only the missing shared test tool for an app-only workspace', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildFleetManifest())
 			const target = workspace.ensure('target')
@@ -735,7 +736,7 @@ describe('CLI audit', () => {
 					// back from the table the advisory read: a message built from that table
 					// reads correctly for whatever the table happens to hold. A floor raise
 					// moves this line, which is where a consumer meets the raise.
-					message: `The manifest at ${target} does not declare a planned dependency: @orkestrel/test. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/test": "^0.0.9",`,
+					message: `The manifest at ${target} does not declare a planned dependency: @orkestrel/test. Add this exact dependency line to dependencies or devDependencies in package.json: "@orkestrel/test": "^0.0.10",`,
 					blocking: false,
 				},
 			])
@@ -745,7 +746,7 @@ describe('CLI audit', () => {
 	})
 
 	it('reports one missing planned dependency and its exact manifest line', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			expect(
@@ -790,7 +791,7 @@ describe('CLI audit', () => {
 	})
 
 	it('reports every missing planned dependency in stable order', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			workspace.write(
@@ -824,7 +825,7 @@ describe('CLI audit', () => {
 	})
 
 	it('accepts a planned foreign dependency range on the served major', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			workspace.write(
@@ -851,7 +852,7 @@ describe('CLI audit', () => {
 	})
 
 	it('reports a stale foreign floor and a crossed major without rewriting', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({
 			...FLEET_RELEASE_REPLIES,
 			'/typescript': {
@@ -907,7 +908,7 @@ describe('CLI audit', () => {
 	})
 
 	it('reports a major-zero floor below the newest stable release in that major', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({
 			...FLEET_RELEASE_REPLIES,
 			'/oxfmt': {
@@ -945,7 +946,7 @@ describe('CLI audit', () => {
 	})
 
 	it('ignores dependencies the workspace owns beyond the planned set', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			workspace.write(
@@ -972,7 +973,7 @@ describe('CLI audit', () => {
 	})
 
 	it('accepts a planned tool declared in dependencies instead of devDependencies', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			workspace.write(
@@ -1000,7 +1001,7 @@ describe('CLI audit', () => {
 	})
 
 	it('reports a non-object devDependencies section instead of crashing', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			workspace.write('target/package.json', buildTargetManifest(undefined, undefined, 'invalid'))
@@ -1029,7 +1030,7 @@ describe('CLI audit', () => {
 	})
 
 	it('refuses repair before it writes the manifest or configuration', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			workspace.write(
@@ -1068,7 +1069,7 @@ describe('CLI audit', () => {
 	})
 
 	it('rejects wrong-case structural paths while deriving every exact fact', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			workspace.ensure('target/src/bin')
@@ -1164,7 +1165,7 @@ describe('CLI audit', () => {
 	})
 
 	it('does not derive distribution from a wrong-case proof path', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			workspace.ensure('target/tests')
@@ -1181,7 +1182,7 @@ describe('CLI audit', () => {
 				]),
 			).toBe(EXIT_CLEAN)
 			expect(workspace.read('target/vite.config.ts')).not.toContain("label: 'distribution'")
-			const manifest: unknown = JSON.parse(workspace.read('target/package.json'))
+			const manifest: unknown = JSON.parse(requireValue(workspace.read('target/package.json')))
 			expect(manifest).not.toHaveProperty('scripts.test:distribution')
 		} finally {
 			workspace.destroy()
@@ -1189,7 +1190,7 @@ describe('CLI audit', () => {
 	})
 
 	it('derives distribution from the exact proof path', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			workspace.write('target/tests/distribution.test.ts', 'export {}\n')
@@ -1213,7 +1214,7 @@ describe('CLI audit', () => {
 	})
 
 	it('reports every unregistered manifest project as one non-blocking question', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			workspace.write(
@@ -1247,7 +1248,7 @@ describe('CLI audit', () => {
 	})
 
 	it('refuses a manifest setup project when no root setup proof selects it', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			workspace.write(
@@ -1283,7 +1284,7 @@ describe('CLI audit', () => {
 	})
 
 	it('reports a planned project missing from the manifest with the exact script line', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const scripts = { ...blueprintToScripts(createBlueprint('sample', { src: ['core'] })) }
@@ -1338,7 +1339,7 @@ describe('CLI audit', () => {
 	})
 
 	it('accepts every planned project when each is reachable from a gate', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const scripts = blueprintToScripts(createBlueprint('sample', { src: ['core'] }))
@@ -1365,7 +1366,7 @@ describe('CLI audit', () => {
 	})
 
 	it('uses only gates the target manifest can run for project reachability', async () => {
-		const privateWorkspace = createWorkspace()
+		const privateWorkspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(privateWorkspace)
 			const blueprint = createBlueprint('sample', {
@@ -1407,7 +1408,7 @@ describe('CLI audit', () => {
 			privateWorkspace.destroy()
 		}
 
-		const publishedWorkspace = createWorkspace()
+		const publishedWorkspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(publishedWorkspace)
 			const blueprint = createBlueprint('sample', {
@@ -1437,7 +1438,7 @@ describe('CLI audit', () => {
 	})
 
 	it('reports a private project reached only from a dead publish lifecycle', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const blueprint = createBlueprint('sample', { app: ['core'], service: true })
@@ -1487,7 +1488,7 @@ describe('CLI audit', () => {
 	})
 
 	it('prescribes the script line when the target declares no direct script', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const blueprint = createBlueprint('sample', { app: ['core'], service: true })
@@ -1531,7 +1532,7 @@ describe('CLI audit', () => {
 	})
 
 	it('accepts an integration project reached by the default test chain', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			workspace.write('target/tests/integration.test.ts', 'export {}\n')
@@ -1583,7 +1584,7 @@ describe('CLI audit', () => {
 	// direction is measured: the script alone still draws the question, and the
 	// structural file beside it clears the same script.
 	it('accepts the conformance and live-service scripts after their structural file is there', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			workspace.ensure('target/tests')
@@ -1640,7 +1641,7 @@ describe('CLI audit', () => {
 	})
 
 	it('prints findings and an unregistered-project question in the human report', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			workspace.write(
@@ -1668,7 +1669,7 @@ describe('CLI audit', () => {
 	})
 
 	it('does not let a non-blocking project question make an aligned audit drift', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const created = createSink()
@@ -1736,7 +1737,7 @@ describe('CLI audit', () => {
 	})
 
 	it('reports drift against a target that carries none of its planned paths', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const sink = createSink()
@@ -1756,7 +1757,7 @@ describe('CLI audit', () => {
 	})
 
 	it('reports one aligned manifest path with one noun inflection', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createStagedHost(workspace)
 			const target = workspace.ensure('fresh')
@@ -1821,7 +1822,7 @@ describe('CLI audit', () => {
 	})
 
 	it('emits one audit as the machine-readable value, every finding on a hydrated path', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const sink = createSink()
@@ -1859,7 +1860,7 @@ describe('CLI audit', () => {
 	})
 
 	it('reports the grounds that decided every verdict in a vacant target', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createStagedHost(workspace)
 			const target = workspace.ensure('target')
@@ -1922,7 +1923,7 @@ describe('CLI audit', () => {
 	})
 
 	it('counts a foreign path apart from the planned paths it reports on', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			expect(
@@ -2007,7 +2008,7 @@ describe('CLI audit', () => {
 	})
 
 	it('agrees with itself about one differing path, count and verb alike', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			expect(
@@ -2081,7 +2082,7 @@ describe('CLI audit', () => {
 	})
 
 	it('moves deleted content paths from bytes to existence', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createStagedHost(workspace)
 			const target = workspace.ensure('fresh')
@@ -2223,7 +2224,7 @@ describe('CLI audit', () => {
 	})
 
 	it('reports a clean run against the workspace new just wrote, and writes nothing itself', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const fresh = workspace.ensure('fresh')
@@ -2254,7 +2255,7 @@ describe('CLI audit', () => {
 	})
 
 	it('reports a canon file a consumer edited as stale, and the same file as aligned before the edit', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
@@ -2305,7 +2306,7 @@ describe('CLI audit', () => {
 	})
 
 	it('reads the audit host --from names, so one target answers differently against two hosts', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const other = createHostRoot(workspace, 'other', buildFleetManifest())
@@ -2352,7 +2353,7 @@ describe('CLI audit', () => {
 	})
 
 	it('reports a file the plan does not own beneath an owned canon root, and no file at the target root', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
@@ -2389,7 +2390,7 @@ describe('CLI audit', () => {
 	})
 
 	it('refuses a target that carries no manifest to read itself out of', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const bare = workspace.ensure('bare')
 			const sink = createSink()
@@ -2407,7 +2408,7 @@ describe('CLI audit', () => {
 	})
 
 	it('refuses to read a target through a vendored host whose manifest does not verify', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const broken = createHostRoot(workspace, 'broken', buildHostManifest())
@@ -2428,7 +2429,7 @@ describe('CLI audit', () => {
 	})
 
 	it('reports the questions that closed the gate and nothing about the target', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const refused = workspace.ensure('refused')
@@ -2465,7 +2466,7 @@ describe('CLI audit', () => {
 	})
 
 	it('reports a clean run over the one group the workspace owns its own bytes of', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const sink = createSink()
@@ -2487,7 +2488,7 @@ describe('CLI audit', () => {
 
 describe('CLI repair', () => {
 	it('raises a major-zero floor to the newest stable release in its declared major', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({
 			...FLEET_RELEASE_REPLIES,
 			'/oxfmt': {
@@ -2519,7 +2520,7 @@ describe('CLI repair', () => {
 	})
 
 	it('refuses to write when a manifest script names an unregistered project', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			workspace.write(
@@ -2555,7 +2556,7 @@ describe('CLI repair', () => {
 	})
 
 	it('refuses an unresolved quoted project expression before writing', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			workspace.write(
@@ -2604,7 +2605,7 @@ describe('CLI repair', () => {
 	})
 
 	it('gives a writing refusal only remedies that survive the verb', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			workspace.write(
@@ -2639,7 +2640,7 @@ describe('CLI repair', () => {
 	})
 
 	it('writes each planned path the target is missing, over a group of vendored files', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const sink = createSink()
@@ -2661,7 +2662,7 @@ describe('CLI repair', () => {
 	})
 
 	it('emits the write and the audit taken after it as one value', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const sink = createSink()
@@ -2686,7 +2687,7 @@ describe('CLI repair', () => {
 	})
 
 	it('leaves a repaired group clean on the second run, writing nothing the second time', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			for (const group of FILE_GROUPS) {
@@ -2720,7 +2721,7 @@ describe('CLI repair', () => {
 	})
 
 	it('restores a vendored file the target lost, and reports it as written', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
@@ -2754,7 +2755,7 @@ describe('CLI repair', () => {
 	})
 
 	it('reports a stale content-owned file as replaced with its line delta', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
@@ -2787,7 +2788,7 @@ describe('CLI repair', () => {
 	})
 
 	it('reports a missing content-owned file as created rather than replaced', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
@@ -2821,7 +2822,7 @@ describe('CLI repair', () => {
 	})
 
 	it('repairs at its default selection and earns a clean exit, vendored directories included', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const sink = createSink()
@@ -2848,7 +2849,7 @@ describe('CLI repair', () => {
 	})
 
 	it('writes nothing when the blueprint the target describes is refused', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const refused = workspace.ensure('refused')
@@ -2870,7 +2871,7 @@ describe('CLI repair', () => {
 	})
 
 	it('repairs a canon file a consumer edited back to the bytes the host ships', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
@@ -2906,7 +2907,7 @@ describe('CLI repair', () => {
 
 describe('CLI overwrite', () => {
 	it('reports replacements, creations, and file deletions as distinct outcomes', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({})
 		try {
 			const fleet = createCatalogFleet(workspace)
@@ -2934,7 +2935,7 @@ describe('CLI overwrite', () => {
 				fleet.target,
 			])
 
-			const current = workspace.read('target/vite.config.ts')
+			const current = requireValue(workspace.read('target/vite.config.ts'))
 			const removed = previous.split('\n').length - current.split('\n').length
 			expect(sink.output.some((line) => line.includes('.oxlintrc.json replaced'))).toBe(false)
 			expect(workspace.read('target/.oxlintrc.json')).toBe('.oxlintrc.json\n')
@@ -2948,7 +2949,7 @@ describe('CLI overwrite', () => {
 	})
 
 	it('refuses to write when a manifest script names an unregistered project', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			workspace.write(
@@ -2983,7 +2984,7 @@ describe('CLI overwrite', () => {
 	})
 
 	it('overwrites a freshly scaffolded repository without deleting untracked files', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({
 			...FLEET_RELEASE_REPLIES,
 			...FLEET_MIRROR_REPLIES,
@@ -3069,7 +3070,7 @@ describe('CLI overwrite', () => {
 	})
 
 	it('refuses a target git cannot recover, because deletion has no other undo', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const sink = createSink()
@@ -3086,7 +3087,7 @@ describe('CLI overwrite', () => {
 	})
 
 	it('refuses a tree carrying uncommitted work, and names the waiver that clears it', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			createRepository(fleet.target)
@@ -3105,7 +3106,7 @@ describe('CLI overwrite', () => {
 	})
 
 	it('reports the refusal as one machine-readable value under --json', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			createRepository(fleet.target)
@@ -3125,7 +3126,7 @@ describe('CLI overwrite', () => {
 	})
 
 	it('does not report a refusal it can name under the uncoded code', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const sink = createSink()
@@ -3146,7 +3147,7 @@ describe('CLI overwrite', () => {
 	// through the loopback fixture the run was pointed at, so the exit code this
 	// asserts is the same one an offline machine earns.
 	it('deletes a tracked stray beneath an owned canon root and leaves a root file', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({
 			...FLEET_RELEASE_REPLIES,
 			...FLEET_MIRROR_REPLIES,
@@ -3218,7 +3219,7 @@ describe('CLI overwrite', () => {
 		if (pinnedProbe === undefined || pinnedScaffold === undefined || pinnedTest === undefined) {
 			throw new Error('The base development dependencies carry no probe, scaffold, or test pin')
 		}
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({
 			...FLEET_RELEASE_REPLIES,
 			...FLEET_MIRROR_REPLIES,
@@ -3321,7 +3322,7 @@ describe('CLI overwrite', () => {
 	})
 
 	it('persists the offline half and reports the online step it could not complete', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({})
 		try {
 			const fleet = createCatalogFleet(workspace)
@@ -3352,7 +3353,7 @@ describe('CLI overwrite', () => {
 	})
 
 	it('writes no range when one release lookup fails', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({
 			...FLEET_RELEASE_REPLIES,
 			...FLEET_MIRROR_REPLIES,
@@ -3397,7 +3398,7 @@ describe('CLI overwrite', () => {
 
 describe('CLI catalog', () => {
 	it('catalogs a freshly scaffolded workspace through the markers the host vendors', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({
 			...FLEET_RELEASE_REPLIES,
 			...FLEET_MIRROR_REPLIES,
@@ -3428,7 +3429,7 @@ describe('CLI catalog', () => {
 					target,
 				]),
 			).toBe(EXIT_CLEAN)
-			const agent = workspace.read(`fresh/${CATALOG_AGENT_PATH}`)
+			const agent = requireValue(workspace.read(`fresh/${CATALOG_AGENT_PATH}`))
 			expect(agent.split('<!-- orkestrel:catalog -->')).toHaveLength(2)
 			expect(agent.split('<!-- /orkestrel:catalog -->')).toHaveLength(2)
 			expect(workspace.read('fresh/AGENTS.md')).not.toContain('orkestrel:catalog')
@@ -3454,7 +3455,7 @@ describe('CLI catalog', () => {
 	})
 
 	it('regenerates the package table and the guide mirrors from the endpoints it was given', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({
 			...FLEET_RELEASE_REPLIES,
 			...FLEET_MIRROR_REPLIES,
@@ -3542,7 +3543,7 @@ describe('CLI catalog', () => {
 	})
 
 	it('widens the fetch to the organization list under --all, and never to the target itself', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({
 			...FLEET_RELEASE_REPLIES,
 			...FLEET_MIRROR_REPLIES,
@@ -3599,7 +3600,7 @@ describe('CLI catalog', () => {
 	})
 
 	it('reports a guide the host could not answer for as drift, naming the package', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({
 			...FLEET_RELEASE_REPLIES,
 			...FLEET_MIRROR_REPLIES,
@@ -3634,7 +3635,7 @@ describe('CLI catalog', () => {
 	})
 
 	it('addresses only the endpoint it was given, so an unscripted fixture fails the run', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({})
 		try {
 			const fleet = createCatalogFleet(workspace)
@@ -3666,7 +3667,7 @@ describe('CLI catalog', () => {
 	// verb does not have; until it does, the run says so on the diagnostic where a
 	// reader meets it, and this is the proof that it does.
 	it('warns that a second local root reaches nothing, and reads the first', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({
 			...FLEET_RELEASE_REPLIES,
 			...FLEET_MIRROR_REPLIES,
@@ -3703,7 +3704,7 @@ describe('CLI catalog', () => {
 
 describe('CLI new dependencies', () => {
 	it('pins each named package to the latest release the registry it was given states', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({
 			...FLEET_RELEASE_REPLIES,
 			[FLEET_UPSTREAM_PATHS.packages.emitter]: { status: 200, body: buildPackument('0.0.6') },
@@ -3744,7 +3745,7 @@ describe('CLI new dependencies', () => {
 	})
 
 	it('refuses a package the registry it was given names no release for', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({
 			...FLEET_RELEASE_REPLIES,
 			[FLEET_UPSTREAM_PATHS.packages.emitter]: { status: 200, body: buildPackument('0.0.6') },

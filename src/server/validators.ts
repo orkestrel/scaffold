@@ -2,6 +2,7 @@ import type { Guard } from '@orkestrel/contract'
 import type { EmitterHooks } from '@orkestrel/emitter'
 import type { CatalogEntry, Dependency, Mirror } from '@src/core'
 import type {
+	Host,
 	HostManifest,
 	ManifestEntry,
 	MaterializerEventMap,
@@ -22,6 +23,7 @@ import {
 	isString,
 	recordOf,
 	stringOf,
+	unionOf,
 } from '@orkestrel/contract'
 import {
 	computeBytes,
@@ -32,6 +34,7 @@ import {
 	isDependencyName,
 	isMirror,
 	isPath,
+	isSnapshot,
 	MAX_ARTIFACT_BYTES,
 	MAX_PATH_LENGTH,
 	MAX_TOTAL_ARTIFACT_BYTES,
@@ -230,6 +233,25 @@ export const isDependencyNames: Guard<readonly string[]> = andOf(
 	arrayOf(isDependencyName),
 )
 
+/**
+ * Narrow a value to a bounded list of target-relative paths.
+ *
+ * @remarks
+ * Composed from the core collection and path guards rather than restated, so
+ * the containment law that keeps a caller-supplied path inside its target has
+ * exactly one home. It bounds what a caller may hand a public method, which is
+ * why it is not {@link isInventory}: that one bounds what a checkout may hold.
+ *
+ * @example
+ * ```ts
+ * import { isPaths } from '@orkestrel/scaffold/server'
+ *
+ * isPaths(['AGENTS.md']) // true
+ * isPaths(['../secrets']) // false
+ * ```
+ */
+export const isPaths: Guard<readonly string[]> = andOf(isCollection, arrayOf(isPath))
+
 /** Narrow a value to a bounded list of declared runtime dependencies. */
 export const isDependencies: Guard<readonly Dependency[]> = andOf(
 	isCollection,
@@ -258,13 +280,19 @@ export const isCatalogEntries: Guard<readonly CatalogEntry[]> = andOf(
  * ```ts
  * import { isManifestEntry } from '@orkestrel/scaffold/server'
  *
- * isManifestEntry({ storage: 'AGENTS.md', destination: 'AGENTS.md', executable: false }) // true
+ * isManifestEntry({
+ *   storage: 'AGENTS.md',
+ *   destination: 'AGENTS.md',
+ *   executable: false,
+ *   digest: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+ * }) // true
  * ```
  */
 export const isManifestEntry: Guard<ManifestEntry> = recordOf({
 	storage: isPath,
 	destination: isPath,
 	executable: isBoolean,
+	digest: isDigest,
 })
 
 /**
@@ -280,6 +308,28 @@ export const isHostManifest: Guard<HostManifest> = recordOf({
 	roots: andOf(isCollection, arrayOf(isPath)),
 	digest: isDigest,
 })
+
+/**
+ * Narrow a value to one {@link Host}.
+ *
+ * @remarks
+ * A whole vendored host handed in as a value is as untrusted as one read from a
+ * directory a caller named, so both halves are guarded: the manifest by the same
+ * membership law a read root is held to, and the bytes by the core snapshot law,
+ * which bounds the fill and reads every key as a path and every value as exact
+ * lowercase hexadecimal. Whether those halves agree with each other is the
+ * reader's question rather than this one's, because a guard has only `false` to
+ * say and a mismatch has a path to name.
+ *
+ * @example
+ * ```ts
+ * import { isHost } from '@orkestrel/scaffold/server'
+ *
+ * isHost({ manifest: { entries: [], roots: [], digest: '…' }, bytes: {} }) // true
+ * isHost({ manifest: { entries: [], roots: [], digest: '…' } }) // false
+ * ```
+ */
+export const isHost: Guard<Host> = recordOf({ manifest: isHostManifest, bytes: isSnapshot })
 
 /**
  * Narrow a value to a {@link Repository}.
@@ -325,6 +375,12 @@ export const isMaterializerHooks: Guard<EmitterHooks<MaterializerEventMap>> = re
 /**
  * Narrow a value to {@link MaterializerOptions}.
  *
+ * @remarks
+ * `host` admits both representations of one vendored root: a directory path and
+ * a whole {@link Host} value. They share a key because they are one setting
+ * stated two ways rather than two settings, so nothing downstream has to
+ * reconcile a pair that could disagree.
+ *
  * @example
  * ```ts
  * import { isMaterializerOptions } from '@orkestrel/scaffold/server'
@@ -334,7 +390,7 @@ export const isMaterializerHooks: Guard<EmitterHooks<MaterializerEventMap>> = re
  * ```
  */
 export const isMaterializerOptions: Guard<MaterializerOptions> = recordOf(
-	{ host: isFilesystemPath, on: isMaterializerHooks, error: isFunction },
+	{ host: unionOf(isFilesystemPath, isHost), on: isMaterializerHooks, error: isFunction },
 	true,
 )
 
@@ -346,7 +402,13 @@ export const isMaterializerOptions: Guard<MaterializerOptions> = recordOf(
  * record is closed to its own.
  */
 export const isUpstreamHooks: Guard<EmitterHooks<UpstreamEventMap>> = recordOf(
-	{ release: isFunction, mirror: isFunction, error: isFunction, destroy: isFunction },
+	{
+		release: isFunction,
+		mirror: isFunction,
+		copy: isFunction,
+		error: isFunction,
+		destroy: isFunction,
+	},
 	true,
 )
 
@@ -366,13 +428,13 @@ export const isUpstreamHooks: Guard<EmitterHooks<UpstreamEventMap>> = recordOf(
  * ```ts
  * import { isUpstreamOptions } from '@orkestrel/scaffold/server'
  *
- * isUpstreamOptions({ guides: { branch: 'main' }, concurrency: 4 }) // true
+ * isUpstreamOptions({ repository: { branch: 'main' }, concurrency: 4 }) // true
  * isUpstreamOptions({ concurrency: 0 }) // false
  * ```
  */
 export const isUpstreamOptions: Guard<UpstreamOptions> = recordOf(
 	{
-		guides: recordOf({ base: isEndpoint, branch: isBranch, timeout: isTimeout }, true),
+		repository: recordOf({ base: isEndpoint, branch: isBranch, timeout: isTimeout }, true),
 		registry: recordOf({ base: isEndpoint, timeout: isTimeout }, true),
 		concurrency: andOf(isInteger, boundsOf(1, MAX_UPSTREAM_CONCURRENCY)),
 		retries: andOf(isInteger, boundsOf(0, MAX_UPSTREAM_RETRIES)),

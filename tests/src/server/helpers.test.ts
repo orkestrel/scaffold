@@ -1,3 +1,4 @@
+import type { Copy } from '@src/core'
 import {
 	chmodSync,
 	existsSync,
@@ -10,11 +11,19 @@ import {
 	writeFileSync,
 } from 'node:fs'
 import { join } from 'node:path'
-import { EXECUTABLE_PATHS, HOST_PATHS, MAX_ARTIFACT_BYTES, MAX_COLLECTION_ITEMS } from '@src/core'
+import {
+	contentToHex,
+	EXECUTABLE_PATHS,
+	HOST_PATHS,
+	MAX_ARTIFACT_BYTES,
+	MAX_COLLECTION_ITEMS,
+} from '@src/core'
 import {
 	computeDigest,
 	computeFileDigest,
 	computeManifestDigest,
+	copiesToHost,
+	hexToDigest,
 	isPhysicalDirectory,
 	isExactCaseFile,
 	isPhysicalFile,
@@ -41,7 +50,9 @@ import {
 	readSnapshot,
 	resolveContainedPath,
 	resolveRealPath,
+	stageBytes,
 	stageHost,
+	stageInventory,
 } from '@src/server'
 import { describe, expect, it } from 'vitest'
 import { buildHostArtifact, buildHostileCases, buildPlan } from '../../setup.js'
@@ -49,19 +60,20 @@ import {
 	buildCheckoutManifest,
 	buildManifestEntry,
 	buildStagedManifest,
+	buildVendoredManifest,
 	CASE_FOLDING,
 	createCheckout,
 	createHostRoot,
-	createWorkspace,
 	DIGEST_CASES,
 	GIT_PATH_CASES,
 	listExecutablePaths,
 	PROTECTED_PATH_CASES,
-	readErrorCode,
+	readErrorCode, SCRATCH_PREFIX,
 	SENSITIVE_PATH_CASES,
 	STORAGE_PATH_CASES,
 	WORKSPACE_ROOT,
 } from '../../setupServer.js'
+import { createScratch } from '@orkestrel/test/server'
 
 describe('matchesMissingPath', () => {
 	it('reads only an ENOENT error as absence', () => {
@@ -206,6 +218,18 @@ describe('computeDigest', () => {
 	})
 })
 
+describe('hexToDigest', () => {
+	it('digests the exact bytes represented by hexadecimal text', () => {
+		expect(hexToDigest('')).toBe(computeDigest(''))
+		expect(hexToDigest('68690a')).toBe(computeDigest('hi\n'))
+	})
+
+	it('refuses text that does not state exact lowercase hexadecimal bytes', () => {
+		expect(readErrorCode(() => hexToDigest('0'))).toBe('INVALID')
+		expect(readErrorCode(() => hexToDigest('FF'))).toBe('INVALID')
+	})
+})
+
 describe('computeManifestDigest', () => {
 	it('changes when membership changes and holds when it does not', () => {
 		const entries = [buildManifestEntry()]
@@ -216,6 +240,12 @@ describe('computeManifestDigest', () => {
 		expect(computeManifestDigest([buildManifestEntry({ executable: true })], ['.claude'])).not.toBe(
 			first,
 		)
+		expect(
+			computeManifestDigest(
+				[buildManifestEntry({ digest: computeDigest('changed') })],
+				['.claude'],
+			),
+		).not.toBe(first)
 	})
 
 	it('reads order as part of the membership it authenticates', () => {
@@ -247,7 +277,7 @@ describe('computeManifestDigest', () => {
 
 describe('physical shape', () => {
 	it('requires every file path segment to match its on-disk case exactly', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const exact = workspace.write('src/bin/main.ts', 'export {}\n')
 			const folded = join(workspace.path, 'src/bin/Main.ts')
@@ -271,7 +301,7 @@ describe('physical shape', () => {
 	})
 
 	it('accepts a plain file and a plain directory and refuses each other', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const file = workspace.write('AGENTS.md', 'hi\n')
 			const directory = workspace.ensure('guides')
@@ -285,7 +315,7 @@ describe('physical shape', () => {
 	})
 
 	it('refuses an absent path without throwing', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			expect(isPhysicalFile(join(workspace.path, 'absent.md'))).toBe(false)
 			expect(isPhysicalDirectory(join(workspace.path, 'absent'))).toBe(false)
@@ -295,7 +325,7 @@ describe('physical shape', () => {
 	})
 
 	it('refuses a file that shares its bytes with a second name', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const file = workspace.write('AGENTS.md', 'hi\n')
 			expect(isPhysicalFile(file)).toBe(true)
@@ -308,7 +338,7 @@ describe('physical shape', () => {
 	})
 
 	it('refuses a redirected directory rather than following it', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const real = workspace.ensure('guides')
 			const link = workspace.link('mirror', real)
@@ -322,7 +352,7 @@ describe('physical shape', () => {
 
 describe('computeFileDigest', () => {
 	it('digests exact file bytes and agrees with the text digest', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const file = workspace.write('AGENTS.md', 'hi\n')
 			expect(computeFileDigest(file)).toBe(computeDigest('hi\n'))
@@ -332,7 +362,7 @@ describe('computeFileDigest', () => {
 	})
 
 	it('answers undefined for an absent path, a directory, and a linked file', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			expect(computeFileDigest(join(workspace.path, 'absent.md'))).toBeUndefined()
 			expect(computeFileDigest(workspace.ensure('guides'))).toBeUndefined()
@@ -345,7 +375,7 @@ describe('computeFileDigest', () => {
 	})
 
 	it('digests content larger than one read buffer', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const content = 'a'.repeat(200_000)
 			const file = workspace.write('big.md', content)
@@ -358,7 +388,7 @@ describe('computeFileDigest', () => {
 
 describe('resolveRealPath', () => {
 	it('resolves an existing directory to a path that resolves to itself', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const resolved = resolveRealPath(workspace.path)
 			expect(resolved).toBeDefined()
@@ -369,7 +399,7 @@ describe('resolveRealPath', () => {
 	})
 
 	it('keeps the segments that do not exist yet', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			expect(resolveRealPath(join(workspace.path, 'packages', 'new'))).toBe(
 				join(resolveRealPath(workspace.path) ?? '', 'packages', 'new'),
@@ -380,7 +410,7 @@ describe('resolveRealPath', () => {
 	})
 
 	it('follows a link in the existing prefix to where it really points', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const real = workspace.ensure('real')
 			workspace.link('mirror', real)
@@ -393,8 +423,8 @@ describe('resolveRealPath', () => {
 	})
 
 	it('resolves the target of a dangling link and keeps its absent suffix', () => {
-		const outside = createWorkspace()
-		const workspace = createWorkspace()
+		const outside = createScratch({ prefix: SCRATCH_PREFIX })
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			workspace.link('mirror', join(outside.path, 'absent'))
 			expect(resolveRealPath(join(workspace.path, 'mirror'))).toBe(
@@ -423,7 +453,7 @@ describe('resolveRealPath', () => {
 
 describe('resolveContainedPath', () => {
 	it('answers the path the caller named, not a resolved form', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			expect(resolveContainedPath(workspace.path, 'guides/router.md')).toBe(
 				join(workspace.path, 'guides', 'router.md'),
@@ -434,7 +464,7 @@ describe('resolveContainedPath', () => {
 	})
 
 	it('refuses a lexical escape and every off-contract argument', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			expect(resolveContainedPath(workspace.path, '../secrets')).toBeUndefined()
 			expect(resolveContainedPath(workspace.path, 'guides/../../secrets')).toBeUndefined()
@@ -448,8 +478,8 @@ describe('resolveContainedPath', () => {
 	})
 
 	it('refuses a real link that points out of the root', () => {
-		const outside = createWorkspace()
-		const workspace = createWorkspace()
+		const outside = createScratch({ prefix: SCRATCH_PREFIX })
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			outside.write('secrets.md', 'secret\n')
 			workspace.link('escape', outside.path)
@@ -464,8 +494,8 @@ describe('resolveContainedPath', () => {
 	})
 
 	it('decides dangling links by their target containment', () => {
-		const outside = createWorkspace()
-		const workspace = createWorkspace()
+		const outside = createScratch({ prefix: SCRATCH_PREFIX })
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			workspace.link('escape', join(outside.path, 'absent'))
 			expect(resolveContainedPath(workspace.path, 'escape/router.md')).toBeUndefined()
@@ -492,8 +522,8 @@ describe('resolveContainedPath', () => {
 	it.skipIf(process.platform === 'win32')(
 		'refuses a dangling link whose target crosses a link with parent traversal',
 		() => {
-			const outside = createWorkspace()
-			const workspace = createWorkspace()
+			const outside = createScratch({ prefix: SCRATCH_PREFIX })
+			const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 			try {
 				workspace.link('hop', outside.ensure('deep'))
 				workspace.link('link', 'hop/../secret')
@@ -513,8 +543,8 @@ describe('resolveContainedPath', () => {
 	)
 
 	it('refuses a dangling link that leaves the root and admits one that stays inside', () => {
-		const outside = createWorkspace()
-		const workspace = createWorkspace()
+		const outside = createScratch({ prefix: SCRATCH_PREFIX })
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			workspace.link('straight', join(outside.path, 'absent'))
 			expect(resolveContainedPath(workspace.path, 'straight')).toBeUndefined()
@@ -527,7 +557,7 @@ describe('resolveContainedPath', () => {
 	})
 
 	it('admits a real link that stays inside the root', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const real = workspace.ensure('real')
 			workspace.link('mirror', real)
@@ -543,7 +573,7 @@ describe('resolveContainedPath', () => {
 
 describe('isVacant', () => {
 	it('accepts an absent target and an empty one', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			expect(isVacant(join(workspace.path, 'absent'))).toBe(true)
 			expect(isVacant(workspace.ensure('empty'))).toBe(true)
@@ -553,7 +583,7 @@ describe('isVacant', () => {
 	})
 
 	it('accepts a target holding nothing but its own repository metadata', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('checkout')
 			workspace.ensure('checkout/.git')
@@ -566,7 +596,7 @@ describe('isVacant', () => {
 	})
 
 	it('refuses a target holding one unrelated dotted entry', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('checkout')
 			workspace.ensure('checkout/.github')
@@ -577,7 +607,7 @@ describe('isVacant', () => {
 	})
 
 	it('refuses a metadata name that is a file rather than a directory', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('checkout')
 			workspace.write('checkout/.git', 'gitdir: elsewhere\n')
@@ -588,7 +618,7 @@ describe('isVacant', () => {
 	})
 
 	it('refuses a file, a redirected directory, and text that is not a host path', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			expect(isVacant(workspace.write('AGENTS.md', 'hi\n'))).toBe(false)
 			expect(isVacant(workspace.link('mirror', workspace.ensure('empty')))).toBe(false)
@@ -602,7 +632,7 @@ describe('isVacant', () => {
 
 describe('listFiles', () => {
 	it('answers every descendant file as a sorted root-relative path', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			workspace.write('b.md', 'b\n')
 			workspace.write('a/deep/c.md', 'c\n')
@@ -615,7 +645,7 @@ describe('listFiles', () => {
 	})
 
 	it('answers an absent root with the empty list', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			expect(listFiles(join(workspace.path, 'absent'))).toEqual([])
 		} finally {
@@ -624,7 +654,7 @@ describe('listFiles', () => {
 	})
 
 	it('answers an existing empty root with the empty list', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			expect(listFiles(workspace.ensure('empty'))).toEqual([])
 		} finally {
@@ -637,7 +667,7 @@ describe('listFiles', () => {
 	})
 
 	it('throws TARGET for a root that is a file', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const file = workspace.write('AGENTS.md', 'hi\n')
 			expect(readErrorCode(() => listFiles(file))).toBe('TARGET')
@@ -647,7 +677,7 @@ describe('listFiles', () => {
 	})
 
 	it('throws rather than truncating past the depth one path may carry', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const shallow = Array.from({ length: MAX_PATH_DEPTH - 2 }, () => 'a').join('/')
 			workspace.write(`${shallow}/leaf.md`, 'leaf\n')
@@ -660,7 +690,7 @@ describe('listFiles', () => {
 	})
 
 	it('lists a redirected directory as one entry rather than walking through it', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const real = workspace.ensure('real')
 			workspace.write('real/router.md', '# Router\n')
@@ -674,7 +704,7 @@ describe('listFiles', () => {
 
 describe('listDirectories', () => {
 	it('answers every descendant directory as a sorted root-relative path', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			workspace.write('b/leaf.md', 'leaf\n')
 			workspace.ensure('a/deep/deeper')
@@ -686,7 +716,7 @@ describe('listDirectories', () => {
 	})
 
 	it('reports the directory holding no file that a file walk cannot see', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			workspace.write('filled/leaf.md', 'leaf\n')
 			workspace.ensure('empty')
@@ -700,7 +730,7 @@ describe('listDirectories', () => {
 	})
 
 	it('answers an absent root and an existing empty root with the empty list', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			expect(listDirectories(join(workspace.path, 'absent'))).toEqual([])
 			expect(listDirectories(workspace.ensure('empty'))).toEqual([])
@@ -714,7 +744,7 @@ describe('listDirectories', () => {
 	})
 
 	it('throws TARGET for a root that is a file', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const file = workspace.write('AGENTS.md', 'hi\n')
 			expect(readErrorCode(() => listDirectories(file))).toBe('TARGET')
@@ -724,7 +754,7 @@ describe('listDirectories', () => {
 	})
 
 	it('throws rather than truncating past the depth one path may carry', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const shallow = Array.from({ length: MAX_PATH_DEPTH - 2 }, () => 'a').join('/')
 			workspace.ensure(shallow)
@@ -737,7 +767,7 @@ describe('listDirectories', () => {
 	})
 
 	it('neither lists nor walks a redirected directory', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const real = workspace.ensure('real')
 			workspace.ensure('real/nested')
@@ -754,7 +784,7 @@ describe('listDirectories', () => {
 
 describe('readFileHex and readFileText', () => {
 	it('reads exact bytes and the text they decode to', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			workspace.write('AGENTS.md', 'hi\n')
 			expect(readFileHex(workspace.path, 'AGENTS.md')).toBe('68690a')
@@ -765,7 +795,7 @@ describe('readFileHex and readFileText', () => {
 	})
 
 	it('reads multi-byte content as its exact UTF-8 bytes', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			workspace.write('AGENTS.md', '€\n')
 			expect(readFileHex(workspace.path, 'AGENTS.md')).toBe('e282ac0a')
@@ -776,7 +806,7 @@ describe('readFileHex and readFileText', () => {
 	})
 
 	it('reads an empty file as empty bytes rather than as absence', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			workspace.write('empty.md', '')
 			expect(readFileHex(workspace.path, 'empty.md')).toBe('')
@@ -787,7 +817,7 @@ describe('readFileHex and readFileText', () => {
 	})
 
 	it('answers undefined for an absent path, a directory, and a linked file', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			workspace.ensure('guides')
 			const file = workspace.write('AGENTS.md', 'hi\n')
@@ -802,7 +832,7 @@ describe('readFileHex and readFileText', () => {
 	})
 
 	it('reads at the limit it was given and answers undefined one byte past it', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			workspace.write('AGENTS.md', 'hi\n')
 			expect(readFileHex(workspace.path, 'AGENTS.md', 3)).toBe('68690a')
@@ -813,7 +843,7 @@ describe('readFileHex and readFileText', () => {
 	})
 
 	it('reads bytes that are not valid UTF-8 and refuses to decode them', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const path = workspace.write('broken.md', '')
 			writeFileSync(path, Buffer.from([0xff, 0xfe, 0x00]))
@@ -825,7 +855,7 @@ describe('readFileHex and readFileText', () => {
 	})
 
 	it('throws INVALID for a path that leaves its root or a limit outside the ceiling', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			expect(readErrorCode(() => readFileHex(workspace.path, '../secrets'))).toBe('INVALID')
 			expect(
@@ -842,7 +872,7 @@ describe('readFileHex and readFileText', () => {
 
 describe('readSnapshot', () => {
 	it('maps a file to its bytes, a directory to presence, and omits what is absent', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			workspace.write('AGENTS.md', 'hi\n')
 			workspace.ensure('guides')
@@ -856,7 +886,7 @@ describe('readSnapshot', () => {
 	})
 
 	it('answers the empty snapshot for no paths and for an absent target', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			expect(readSnapshot(workspace.path, [])).toEqual({})
 			expect(readSnapshot(join(workspace.path, 'absent'), ['AGENTS.md'])).toEqual({})
@@ -866,7 +896,7 @@ describe('readSnapshot', () => {
 	})
 
 	it('tells an empty file apart from an absent one', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			workspace.write('empty.md', '')
 			const snapshot = readSnapshot(workspace.path, ['empty.md', 'absent.md'])
@@ -878,7 +908,7 @@ describe('readSnapshot', () => {
 	})
 
 	it('throws TARGET rather than omitting a path it cannot read', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const file = workspace.write('AGENTS.md', 'hi\n')
 			linkSync(file, join(workspace.path, 'CLAUDE.md'))
@@ -889,7 +919,7 @@ describe('readSnapshot', () => {
 	})
 
 	it('throws INVALID for an off-contract target or path list', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			expect(readErrorCode(() => readSnapshot('', ['AGENTS.md']))).toBe('INVALID')
 			expect(readErrorCode(() => readSnapshot(workspace.path, ['../secrets']))).toBe('INVALID')
@@ -908,7 +938,7 @@ describe('readSnapshot', () => {
 	})
 
 	it('leaves the path list it was handed exactly as it found it', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			workspace.write('AGENTS.md', 'hi\n')
 			const paths = ['AGENTS.md', 'absent.md']
@@ -922,7 +952,7 @@ describe('readSnapshot', () => {
 
 describe('readHostManifest', () => {
 	it('reads a staged host that agrees with itself', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const manifest = buildStagedManifest()
 			const host = createHostRoot(workspace, 'host', manifest)
@@ -933,7 +963,7 @@ describe('readHostManifest', () => {
 	})
 
 	it('reads an empty membership as a valid manifest', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const manifest = buildStagedManifest({ entries: [], roots: [] })
 			const host = createHostRoot(workspace, 'host', manifest)
@@ -944,7 +974,7 @@ describe('readHostManifest', () => {
 	})
 
 	it('answers undefined for a raw root carrying no manifest', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			workspace.write('raw/AGENTS.md', 'hi\n')
 			expect(readHostManifest(join(workspace.path, 'raw'))).toBeUndefined()
@@ -955,7 +985,7 @@ describe('readHostManifest', () => {
 	})
 
 	it('throws rather than degrading to a raw root when membership was edited', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const manifest = buildStagedManifest()
 			const host = createHostRoot(workspace, 'host', manifest)
@@ -971,7 +1001,7 @@ describe('readHostManifest', () => {
 	})
 
 	it('throws when the digest was replaced with one matching nothing', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const manifest = buildStagedManifest()
 			const host = createHostRoot(workspace, 'host', manifest)
@@ -986,7 +1016,7 @@ describe('readHostManifest', () => {
 	})
 
 	it('throws for text that is not JSON and for JSON that is not the declared shape', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildStagedManifest())
 			workspace.write('host/manifest.json', '{')
@@ -1001,7 +1031,7 @@ describe('readHostManifest', () => {
 	})
 
 	it('throws TARGET rather than degrading when the manifest is not valid UTF-8', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildStagedManifest())
 			writeFileSync(join(host, 'manifest.json'), Buffer.from([0xff, 0xfe, 0x00]))
@@ -1018,13 +1048,14 @@ describe('readHostManifest', () => {
 
 describe('readManifestEntry', () => {
 	it('maps a destination to its storage name and its declared executable bit', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const source = workspace.write('.gitignore', 'dist\n')
 			expect(readManifestEntry('.gitignore', source)).toEqual({
 				storage: 'dotfiles/gitignore',
 				destination: '.gitignore',
 				executable: false,
+				digest: computeDigest('dist\n'),
 			})
 		} finally {
 			workspace.destroy()
@@ -1032,7 +1063,7 @@ describe('readManifestEntry', () => {
 	})
 
 	it('reads the executable bit from the declaration rather than from the host mode', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			// A declared path staged from a source carrying no executable bit still
 			// answers true. This is the Windows publish, where every mode reads 0644:
@@ -1054,7 +1085,7 @@ describe('readManifestEntry', () => {
 	})
 
 	it('answers the same entry for one path on every host', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const source = workspace.write('scripts/deps.sh', '#!/bin/sh\n')
 			chmodSync(source, 0o644)
@@ -1070,7 +1101,7 @@ describe('readManifestEntry', () => {
 	})
 
 	it('answers undefined for an absent path, a directory, and a shared-byte file', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			expect(readManifestEntry('absent.md', join(workspace.path, 'absent.md'))).toBeUndefined()
 			expect(readManifestEntry('guides', workspace.ensure('guides'))).toBeUndefined()
@@ -1083,7 +1114,7 @@ describe('readManifestEntry', () => {
 	})
 
 	it('answers undefined one byte past the artifact ceiling and reads the ceiling itself', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const source = workspace.write('big.md', '')
 			writeFileSync(source, Buffer.alloc(MAX_ARTIFACT_BYTES))
@@ -1096,9 +1127,224 @@ describe('readManifestEntry', () => {
 	})
 })
 
+describe('copiesToHost', () => {
+	it('assembles a whole host from an all-found fill', () => {
+		const manifest = buildVendoredManifest()
+		const copies: readonly Copy[] = manifest.entries.map((entry) => ({
+			path: entry.destination,
+			lookup: 'found',
+			content: `${entry.destination}\n`,
+		}))
+		const assembled = copiesToHost(copies, manifest)
+		expect(assembled).toEqual({
+			manifest,
+			bytes: Object.fromEntries(
+				manifest.entries.map((entry) => [
+					entry.destination,
+					contentToHex(`${entry.destination}\n`),
+				]),
+			),
+		})
+		// The emitted membership digests itself, so a reader can verify the value
+		// against the same law a staged root is verified against.
+		expect(assembled?.manifest.digest).toBe(
+			computeManifestDigest(assembled?.manifest.entries ?? [], assembled?.manifest.roots ?? []),
+		)
+	})
+
+	it('keeps the release order and the storage and executable declarations it fixed', () => {
+		const manifest = buildVendoredManifest()
+		const copies: readonly Copy[] = [...manifest.entries]
+			.reverse()
+			.map((entry) => ({ path: entry.destination, lookup: 'found', content: 'moved\n' }))
+		const assembled = copiesToHost(copies, manifest)
+		expect(assembled?.manifest.entries.map((entry) => entry.storage)).toEqual(
+			manifest.entries.map((entry) => entry.storage),
+		)
+		expect(assembled?.manifest.entries.map((entry) => entry.executable)).toEqual(
+			manifest.entries.map((entry) => entry.executable),
+		)
+		// The digests are the fill's own, so the release's are not carried over the
+		// bytes the fill actually holds.
+		expect(
+			assembled?.manifest.entries.every((entry) => entry.digest === computeDigest('moved\n')),
+		).toBe(true)
+	})
+
+	it('answers undefined for a row that produced no answer', () => {
+		const manifest = buildVendoredManifest()
+		const found: readonly Copy[] = manifest.entries.map((entry) => ({
+			path: entry.destination,
+			lookup: 'found',
+			content: `${entry.destination}\n`,
+		}))
+		expect(copiesToHost(found, manifest)).toBeDefined()
+		for (const lookup of ['missing', 'failed'] as const) {
+			const spoiled: readonly Copy[] = [
+				{ path: 'AGENTS.md', lookup, note: 'the read produced no answer' },
+				...found.slice(1),
+			]
+			expect(copiesToHost(spoiled, manifest)).toBeUndefined()
+		}
+	})
+
+	it('answers undefined for a path the release never declared', () => {
+		const manifest = buildVendoredManifest()
+		const smuggled: readonly Copy[] = [
+			{ path: 'AGENTS.md', lookup: 'found', content: 'AGENTS.md\n' },
+			{ path: 'smuggled.md', lookup: 'found', content: 'smuggled\n' },
+		]
+		expect(copiesToHost(smuggled, manifest)).toBeUndefined()
+	})
+
+	it('emits only the entries a partial fill covers, and stays self-consistent', () => {
+		const manifest = buildVendoredManifest()
+		const partial: readonly Copy[] = [
+			{ path: 'AGENTS.md', lookup: 'found', content: 'AGENTS.md\n' },
+		]
+		const assembled = copiesToHost(partial, manifest)
+		expect(assembled?.manifest.entries.map((entry) => entry.destination)).toEqual(['AGENTS.md'])
+		expect(Object.keys(assembled?.bytes ?? {})).toEqual(['AGENTS.md'])
+		expect(assembled?.manifest.roots).toEqual(manifest.roots)
+		expect(assembled?.manifest.digest).toBe(
+			computeManifestDigest(assembled?.manifest.entries ?? [], assembled?.manifest.roots ?? []),
+		)
+	})
+})
+
+describe('stageBytes', () => {
+	it('fills a root under the storage names the manifest declares', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const manifest = buildVendoredManifest()
+			const host = {
+				manifest,
+				bytes: Object.fromEntries(
+					manifest.entries.map((entry) => [
+						entry.destination,
+						contentToHex(`${entry.destination}\n`),
+					]),
+				),
+			}
+			const root = workspace.ensure('filled')
+			const staged = stageBytes(
+				host,
+				root,
+				manifest.entries.map((entry) => entry.destination),
+			)
+			expect(staged).toEqual(manifest.entries)
+			expect([...listFiles(root)].sort()).toEqual(
+				manifest.entries.map((entry) => entry.storage).sort(),
+			)
+			expect(readFileSync(join(root, 'claude/rules/names.md'), 'utf8')).toBe(
+				'.claude/rules/names.md\n',
+			)
+			for (const entry of manifest.entries) {
+				expect(computeFileDigest(join(root, entry.storage))).toBe(entry.digest)
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	// Skipped on win32 because `chmodSync(path, 0o755)` leaves the mode at 666
+	// there, so the assertion would measure the platform rather than the helper.
+	it.skipIf(process.platform === 'win32')('gives an entry the bit its manifest declares', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const manifest = buildVendoredManifest()
+			const host = {
+				manifest,
+				bytes: Object.fromEntries(
+					manifest.entries.map((entry) => [
+						entry.destination,
+						contentToHex(`${entry.destination}\n`),
+					]),
+				),
+			}
+			const root = workspace.ensure('filled')
+			stageBytes(host, root, ['scripts/codex.sh', 'AGENTS.md'])
+			expect(lstatSync(join(root, 'scripts/codex.sh')).mode & 0o111).toBe(0o111)
+			expect(lstatSync(join(root, 'AGENTS.md')).mode & 0o111).toBe(0)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses a destination the host does not declare or does not carry', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const manifest = buildVendoredManifest()
+			const bytes = Object.fromEntries(
+				manifest.entries.map((entry) => [
+					entry.destination,
+					contentToHex(`${entry.destination}\n`),
+				]),
+			)
+			const root = workspace.ensure('filled')
+			expect(readErrorCode(() => stageBytes({ manifest, bytes }, root, ['smuggled.md']))).toBe(
+				'TARGET',
+			)
+			const rest = Object.fromEntries(
+				Object.entries(bytes).filter(([destination]) => destination !== 'AGENTS.md'),
+			)
+			expect(readErrorCode(() => stageBytes({ manifest, bytes: rest }, root, ['AGENTS.md']))).toBe(
+				'TARGET',
+			)
+			expect(listFiles(root)).toEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses bytes that miss the digest their entry declares, and a root off contract', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const manifest = buildVendoredManifest()
+			const bytes = Object.fromEntries(
+				manifest.entries.map((entry) => [
+					entry.destination,
+					contentToHex(`${entry.destination}\n`),
+				]),
+			)
+			const root = workspace.ensure('filled')
+			// The control: the same call with the declared bytes stages the file, so
+			// the refusal below is a digest verdict rather than a staging failure.
+			expect(stageBytes({ manifest, bytes }, root, ['AGENTS.md'])).toEqual([manifest.entries[0]])
+			expect(
+				readErrorCode(() =>
+					stageBytes(
+						{ manifest, bytes: { ...bytes, 'AGENTS.md': contentToHex('AGENTS.md \n') } },
+						workspace.ensure('other'),
+						['AGENTS.md'],
+					),
+				),
+			).toBe('TARGET')
+			expect(
+				readErrorCode(() => stageBytes({ manifest, bytes }, 'project/nul', ['AGENTS.md'])),
+			).toBe('INVALID')
+		} finally {
+			workspace.destroy()
+		}
+	})
+})
+
 describe('stageHost', () => {
+	it('records the exact digest of every staged file', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			const entries = stageHost(checkout, join(workspace.path, 'host'))
+			for (const entry of entries) {
+				expect(entry.digest).toBe(computeFileDigest(join(checkout, entry.destination)))
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
 	it('stages every vendored path and writes the membership it staged', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			const host = join(workspace.path, 'host')
@@ -1111,7 +1357,7 @@ describe('stageHost', () => {
 	})
 
 	it('stores exactly the files its manifest declares, and nothing else', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			const host = join(workspace.path, 'host')
@@ -1127,7 +1373,7 @@ describe('stageHost', () => {
 	})
 
 	it('declares the directory holding no file, which no entry can record', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			const host = join(workspace.path, 'host')
@@ -1146,7 +1392,7 @@ describe('stageHost', () => {
 	})
 
 	it('declares every directory nested beneath a vendored directory as a root', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			workspace.ensure('checkout/.claude/skills/orkestrel-falsify/references')
@@ -1165,7 +1411,7 @@ describe('stageHost', () => {
 	})
 
 	it('sorts entries by storage name and roots as paths', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			const host = join(workspace.path, 'host')
@@ -1180,7 +1426,7 @@ describe('stageHost', () => {
 	})
 
 	it('refuses a checkout missing a vendored path, names every one, and creates nothing', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			const host = join(workspace.path, 'host')
@@ -1199,7 +1445,7 @@ describe('stageHost', () => {
 	})
 
 	it('refuses a host root that is not vacant and leaves what it holds', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			const host = workspace.ensure('host')
@@ -1212,7 +1458,7 @@ describe('stageHost', () => {
 	})
 
 	it('refuses an argument that is not a host path and a checkout that is not a directory', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			const host = join(workspace.path, 'host')
@@ -1228,7 +1474,7 @@ describe('stageHost', () => {
 	})
 
 	it('skips a credential found beneath a vendored directory and stages its sibling', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			workspace.write('checkout/.claude/rules/.npmrc', '//registry:_authToken=secret\n')
@@ -1250,7 +1496,7 @@ describe('stageHost', () => {
 	})
 
 	it('refuses two vendored files that claim one storage name', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			workspace.write('checkout/.claude/rules/names.md', 'plain\n')
@@ -1263,8 +1509,8 @@ describe('stageHost', () => {
 	})
 
 	it('refuses a vendored path that is not a plain file and one that leaves the checkout', () => {
-		const outside = createWorkspace()
-		const workspace = createWorkspace()
+		const outside = createScratch({ prefix: SCRATCH_PREFIX })
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			const shared = workspace.write('checkout/.claude/rules/shared.md', 'shared\n')
@@ -1283,7 +1529,7 @@ describe('stageHost', () => {
 	})
 
 	it('produces a host a materializer accepts and writes every vendored shape from', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			const host = join(workspace.path, 'host')
@@ -1318,7 +1564,7 @@ describe('stageHost', () => {
 	})
 
 	it('writes a manifest whose membership a reader refuses after it is edited', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const checkout = createCheckout(workspace, 'checkout')
 			const host = join(workspace.path, 'host')
@@ -1339,9 +1585,36 @@ describe('stageHost', () => {
 	})
 })
 
+describe('stageInventory', () => {
+	it('writes the same validated inventory that host staging derives', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			const path = join(workspace.path, 'host.json')
+			const expected = buildCheckoutManifest()
+			expect(stageInventory(checkout, path)).toEqual(expected)
+			expect(readFileSync(path, 'utf8')).toBe(`${JSON.stringify(expected, null, '\t')}\n`)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('replaces an earlier inventory and refuses an invalid path', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const checkout = createCheckout(workspace, 'checkout')
+			const path = workspace.write('host.json', 'stale\n')
+			expect(stageInventory(checkout, path)).toEqual(buildCheckoutManifest())
+			expect(readErrorCode(() => stageInventory(checkout, 'project/nul'))).toBe('INVALID')
+		} finally {
+			workspace.destroy()
+		}
+	})
+})
+
 describe('write anchors', () => {
 	it('captures a directory identity and matches it while it is untouched', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('project')
 			const anchor = readAnchor(target)
@@ -1353,7 +1626,7 @@ describe('write anchors', () => {
 	})
 
 	it('refuses to capture a file, an absent path, and a redirected directory', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			expect(readAnchor(workspace.write('AGENTS.md', 'hi\n'))).toBeUndefined()
 			expect(readAnchor(join(workspace.path, 'absent'))).toBeUndefined()
@@ -1364,7 +1637,7 @@ describe('write anchors', () => {
 	})
 
 	it('reports a directory swapped in by rename', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('project')
 			const anchor = readAnchor(target)
@@ -1391,7 +1664,7 @@ describe('write anchors', () => {
 	})
 
 	it('reports a path replaced by a symlink to a directory', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('project')
 			const anchor = readAnchor(target)
@@ -1408,7 +1681,7 @@ describe('write anchors', () => {
 	})
 
 	it('reports a directory that is gone', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('project')
 			const anchor = readAnchor(target)
@@ -1424,7 +1697,7 @@ describe('write anchors', () => {
 
 describe('write expectations', () => {
 	it('captures absence as a state rather than as a failure', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const path = join(workspace.path, 'absent.md')
 			expect(readExpectation(path)).toEqual({ path, shape: 'absent' })
@@ -1435,7 +1708,7 @@ describe('write expectations', () => {
 	})
 
 	it('captures a file with its identity, size, and bytes', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const path = workspace.write('AGENTS.md', 'hi\n')
 			const expectation = readExpectation(path)
@@ -1449,7 +1722,7 @@ describe('write expectations', () => {
 	})
 
 	it('captures a directory without claiming bytes it never read', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const path = workspace.ensure('guides')
 			const expectation = readExpectation(path)
@@ -1463,7 +1736,7 @@ describe('write expectations', () => {
 	})
 
 	it('reports a file whose bytes moved and one that vanished', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const path = workspace.write('AGENTS.md', 'hi\n')
 			const expectation = readExpectation(path)
@@ -1479,7 +1752,7 @@ describe('write expectations', () => {
 	})
 
 	it('reports an absence that has since been filled', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const path = join(workspace.path, 'new.md')
 			expect(matchesExpectation({ path, shape: 'absent' })).toBe(true)
@@ -1491,7 +1764,7 @@ describe('write expectations', () => {
 	})
 
 	it('refuses to capture a shape it will not write over', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const file = workspace.write('AGENTS.md', 'hi\n')
 			linkSync(file, join(workspace.path, 'CLAUDE.md'))
@@ -1505,7 +1778,7 @@ describe('write expectations', () => {
 
 describe('write preconditions', () => {
 	it('binds an absent destination to its absence', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const path = join(workspace.path, 'new.md')
 			expect(matchesPrecondition({ path, shape: 'absent' })).toBe(true)
@@ -1517,7 +1790,7 @@ describe('write preconditions', () => {
 	})
 
 	it('binds a file to its bytes, and to presence alone when no digest is stated', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const path = workspace.write('AGENTS.md', 'hi\n')
 			const digest = computeDigest('hi\n')
@@ -1531,7 +1804,7 @@ describe('write preconditions', () => {
 	})
 
 	it('accepts a file rewritten to identical bytes, which an expectation refuses', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const path = workspace.write('AGENTS.md', 'hi\n')
 			const expectation = readExpectation(path)
@@ -1547,7 +1820,7 @@ describe('write preconditions', () => {
 	})
 
 	it('refuses a destination whose shape is not the one stated', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const directory = workspace.ensure('guides')
 			expect(matchesPrecondition({ path: directory, shape: 'file' })).toBe(false)

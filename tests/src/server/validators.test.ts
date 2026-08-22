@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { MAX_COLLECTION_ITEMS } from '@src/core'
+import { requireValue } from '@orkestrel/test'
+import { contentToHex, MAX_COLLECTION_ITEMS } from '@src/core'
 import {
 	computeDigest,
 	isCatalogEntries,
@@ -7,6 +8,7 @@ import {
 	isDependencyNames,
 	isDigest,
 	isFilesystemPath,
+	isHost,
 	isInventory,
 	isMirrors,
 	isRepository,
@@ -15,11 +17,13 @@ import {
 import { buildHostileCases, readKeyCount, selectHostileCase } from '../../setup.js'
 import {
 	buildBoundaryCases,
+	buildHostManifest,
 	buildServerGuardCases,
-	createWorkspace,
 	FILESYSTEM_PATH_CASES,
+	SCRATCH_PREFIX,
 	WORKSPACE_ROOT,
 } from '../../setupServer.js'
+import { createScratch } from '@orkestrel/test/server'
 
 describe('guard totality', () => {
 	it('reports a real failure when the probe under it is not total', () => {
@@ -69,7 +73,7 @@ describe('isFilesystemPath', () => {
 	})
 
 	it('accepts the absolute paths this host actually produced', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const file = workspace.write('guides/router.md', '# Router\n')
 			expect(isFilesystemPath(WORKSPACE_ROOT)).toBe(true)
@@ -92,10 +96,10 @@ describe('isFilesystemPath', () => {
 
 describe('isDigest', () => {
 	it('accepts what the host digest actually produces', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			workspace.write('AGENTS.md', '# Agents\n')
-			const digest = computeDigest(workspace.read('AGENTS.md'))
+			const digest = computeDigest(requireValue(workspace.read('AGENTS.md')))
 			expect(digest).toHaveLength(64)
 			expect(isDigest(digest)).toBe(true)
 		} finally {
@@ -110,6 +114,44 @@ describe('isDigest', () => {
 		expect(isDigest(`${digest}0`)).toBe(false)
 		expect(isDigest('')).toBe(false)
 		expect(isDigest('g'.repeat(64))).toBe(false)
+	})
+})
+
+describe('isHost', () => {
+	it('accepts a whole host whose manifest and fill are both the declared shape', () => {
+		const manifest = buildHostManifest()
+		const bytes = Object.fromEntries(
+			manifest.entries.map((entry) => [entry.destination, contentToHex(`${entry.destination}\n`)]),
+		)
+		expect(isHost({ manifest, bytes })).toBe(true)
+		// Whether the halves agree is the reader's question, so a fill that covers
+		// none of the membership is still the declared shape.
+		expect(isHost({ manifest, bytes: {} })).toBe(true)
+	})
+
+	it('refuses a half that is absent, off shape, or joined by a key it does not declare', () => {
+		const manifest = buildHostManifest()
+		expect(isHost({ manifest })).toBe(false)
+		expect(isHost({ bytes: {} })).toBe(false)
+		expect(isHost({ manifest, bytes: {}, root: 'dist/host' })).toBe(false)
+		expect(
+			isHost({ manifest: { ...manifest, digest: manifest.digest.toUpperCase() }, bytes: {} }),
+		).toBe(false)
+	})
+
+	it('measures the fill by the core snapshot law it composes', () => {
+		const manifest = buildHostManifest()
+		expect(isHost({ manifest, bytes: { 'AGENTS.md': contentToHex('# Agents\n') } })).toBe(true)
+		expect(isHost({ manifest, bytes: { 'AGENTS.md': 'hi' } })).toBe(false)
+		expect(isHost({ manifest, bytes: { 'AGENTS.md': '68690A' } })).toBe(false)
+		expect(isHost({ manifest, bytes: { '../secrets': '68690a' } })).toBe(false)
+	})
+
+	it('answers every hostile value without throwing', () => {
+		for (const hostile of buildHostileCases()) {
+			expect(() => isHost(hostile.value)).not.toThrow()
+			expect(isHost(hostile.value)).toBe(false)
+		}
 	})
 })
 

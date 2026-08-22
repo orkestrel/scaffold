@@ -14,6 +14,7 @@ import type {
 	ScaffoldErrorCode,
 } from '@src/core'
 import type {
+	Host,
 	HostManifest,
 	ManifestEntry,
 	MaterializeResult,
@@ -23,7 +24,9 @@ import type {
 	Repository,
 	WritePrecondition,
 } from './types.js'
-import { dirname, resolve } from 'node:path'
+import { mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { attempt } from '@orkestrel/contract'
 import { Emitter } from '@orkestrel/emitter'
@@ -47,6 +50,8 @@ import {
 } from '@src/core'
 import {
 	computeFileDigest,
+	computeManifestDigest,
+	hexToDigest,
 	isPhysicalDirectory,
 	isPhysicalFile,
 	isVacant,
@@ -57,11 +62,13 @@ import {
 	readHostManifest,
 	readSnapshot,
 	resolveContainedPath,
+	stageBytes,
 } from './helpers.js'
 import {
 	isCatalogEntries,
 	isDependencies,
 	isFilesystemPath,
+	isHost,
 	isMaterializerOptions,
 	isMirrors,
 	isRepository,
@@ -85,6 +92,12 @@ import { WriteTransaction } from './WriteTransaction.js'
  * stored is this class's job. The comparison is exact text and therefore exact
  * case, so a manifest naming `agents.md` for a stored `AGENTS.md` is refused on
  * a case-insensitive filesystem rather than silently resolved.
+ *
+ * That host arrives as a directory path or as a whole {@link Host} value, and
+ * every verb reads one immutable host either way. A value is owned, verified
+ * against its own membership and digests, and read in memory; a write fills it
+ * into a private root and copies from there, so the executable declarations the
+ * release fixed reach the target from either representation.
  *
  * What a mutation guarantees is exactly what {@link WriteTransaction}
  * guarantees, and no more: a caught failure part way through a commit rolls the
@@ -116,7 +129,8 @@ export class Materializer implements MaterializerInterface {
 	static readonly #closing = '<!-- /orkestrel:catalog -->'
 
 	readonly #emitter: Emitter<MaterializerEventMap>
-	readonly #host: string
+	readonly #root: string | undefined
+	readonly #value: Host | undefined
 	readonly #manifest: HostManifest | undefined
 	readonly #entries: ReadonlyMap<string, ManifestEntry>
 	#destroyed = false
@@ -124,17 +138,25 @@ export class Materializer implements MaterializerInterface {
 	/**
 	 * Construct a materializer over one vendored host root.
 	 *
-	 * @param options - The vendored host root, the initial listeners, and the
-	 * listener-error handler.
+	 * @param options - The vendored host, in either representation, the initial
+	 * listeners, and the listener-error handler.
 	 * @throws {@link ScaffoldError} coded `INVALID` when `options` is present but
 	 * is not an option bag this materializer accepts, and `TARGET` when the host
-	 * carries a manifest that cannot be read or does not match what it stores.
+	 * carries a manifest that cannot be read, does not match what it stores, or
+	 * is a value that does not agree with the bytes beside it.
 	 *
 	 * @remarks
-	 * `host` defaults to this package's own vendored root, resolved from this
-	 * module's own location so it never depends on the caller's working
-	 * directory. A host carrying no manifest is read as a raw checkout and every
+	 * A `host` path defaults to this package's own vendored root, resolved from
+	 * this module's own location so it never depends on the caller's working
+	 * directory. A root carrying no manifest is read as a raw checkout and every
 	 * artifact maps onto it one to one.
+	 *
+	 * A `host` value is owned before it is read and then held immutable, so the
+	 * bytes this check measured are the bytes every later read returns. It is
+	 * verified the way a root is, against the same membership law: the manifest
+	 * digest must cover the membership beside it, no two entries may claim one
+	 * destination, and the fill must carry exactly one hashing byte string per
+	 * declared entry.
 	 *
 	 * The host is read here rather than on first use, so a broken vendored root
 	 * fails at construction where the caller can still act on it, and so nothing
@@ -152,19 +174,33 @@ export class Materializer implements MaterializerInterface {
 			...(options?.on === undefined ? {} : { on: options.on }),
 			...(options?.error === undefined ? {} : { error: options.error }),
 		})
-		this.#host = options?.host ?? resolve(dirname(fileURLToPath(import.meta.url)), '../../host')
-		const read = attempt(() => readHostManifest(this.#host))
-		if (!read.success) {
-			throw this.#error('TARGET', 'The vendored host carries a manifest that cannot be read.', {
-				host: this.#host,
-				error: read.error,
-			})
+		const supplied = options?.host
+		if (supplied !== undefined && !isFilesystemPath(supplied)) {
+			const value = this.#own(supplied)
+			this.#value = value
+			this.#root = undefined
+			this.#manifest = value.manifest
+			this.#entries = new Map<string, ManifestEntry>(
+				value.manifest.entries.map((entry) => [entry.destination, entry]),
+			)
+			this.#verify(value)
+		} else {
+			const root = supplied ?? resolve(dirname(fileURLToPath(import.meta.url)), '../../host')
+			this.#value = undefined
+			this.#root = root
+			const read = attempt(() => readHostManifest(root))
+			if (!read.success) {
+				throw this.#error('TARGET', 'The vendored host carries a manifest that cannot be read.', {
+					host: root,
+					error: read.error,
+				})
+			}
+			this.#manifest = read.value
+			this.#entries = new Map<string, ManifestEntry>(
+				(read.value?.entries ?? []).map((entry) => [entry.destination, entry]),
+			)
+			if (read.value !== undefined) this.#reconcile(read.value, root)
 		}
-		this.#manifest = read.value
-		this.#entries = new Map<string, ManifestEntry>(
-			(read.value?.entries ?? []).map((entry) => [entry.destination, entry]),
-		)
-		if (read.value !== undefined) this.#reconcile(read.value)
 	}
 
 	/** The materializer's observation channel. */
@@ -453,15 +489,72 @@ export class Materializer implements MaterializerInterface {
 		this.#emitter.destroy()
 	}
 
+	// Own the caller's value before anything reads it, then guard the copy. A host
+	// handed in as a value is live until it is copied, so what the verification
+	// below measures is what every later read returns.
+	#own(host: Host): Host {
+		const owned = cloneValue(host)
+		if (isHost(owned)) return owned
+		throw this.#error(
+			'INVALID',
+			'The host argument is not the exact shape this materializer accepts.',
+			{ field: 'host' },
+		)
+	}
+
+	// The claim a value cannot make about itself: that the membership its digest
+	// covers is the membership beside it, and that the fill carries exactly one
+	// hashing byte string per declared entry. This is what `#reconcile` is for a
+	// root, measured against the bytes handed in rather than a directory walk.
+	#verify(host: Host): void {
+		const { entries, roots } = host.manifest
+		if (host.manifest.digest !== computeManifestDigest(entries, roots)) {
+			throw this.#error(
+				'TARGET',
+				'The vendored host manifest does not cover the membership beside it.',
+			)
+		}
+		if (this.#entries.size !== entries.length) {
+			throw this.#error('TARGET', 'The vendored host manifest maps two files to one destination.')
+		}
+		if (new Set(entries.map((entry) => entry.storage)).size !== entries.length) {
+			throw this.#error('TARGET', 'The vendored host manifest maps two destinations to one file.')
+		}
+		const held = Object.keys(host.bytes)
+		if (held.length !== entries.length) {
+			throw this.#error('TARGET', 'The vendored host does not carry what its manifest declares.', {
+				held: held.length,
+				declared: entries.length,
+			})
+		}
+		for (const entry of entries) {
+			const hex = host.bytes[entry.destination]
+			if (hex === undefined) {
+				throw this.#error(
+					'TARGET',
+					`The vendored host carries no bytes for ${entry.destination}.`,
+					{ destination: entry.destination },
+				)
+			}
+			if (hexToDigest(hex) !== entry.digest) {
+				throw this.#error(
+					'TARGET',
+					`The vendored host carries bytes for ${entry.destination} that miss its digest.`,
+					{ destination: entry.destination },
+				)
+			}
+		}
+	}
+
 	// The claim a manifest cannot make about itself: that what it declares is what
 	// the host actually stores, one to one and spelled the same way. Compared as
 	// exact text against a real directory walk, so a case-folded name on a
 	// case-insensitive filesystem is a refusal rather than a silent resolution.
-	#reconcile(manifest: HostManifest): void {
-		const walked = attempt(() => listFiles(this.#host))
+	#reconcile(manifest: HostManifest, root: string): void {
+		const walked = attempt(() => listFiles(root))
 		if (!walked.success) {
 			throw this.#error('TARGET', 'The vendored host cannot be inventoried.', {
-				host: this.#host,
+				host: root,
 				error: walked.error,
 			})
 		}
@@ -472,14 +565,14 @@ export class Materializer implements MaterializerInterface {
 			stored.some((name, index) => name !== declared[index])
 		) {
 			throw this.#error('TARGET', 'The vendored host does not store what its manifest declares.', {
-				host: this.#host,
+				host: root,
 				stored: stored.length,
 				declared: declared.length,
 			})
 		}
 		if (this.#entries.size !== manifest.entries.length) {
 			throw this.#error('TARGET', 'The vendored host manifest maps two files to one destination.', {
-				host: this.#host,
+				host: root,
 			})
 		}
 	}
@@ -503,7 +596,7 @@ export class Materializer implements MaterializerInterface {
 		}
 		if (remaining < 0) {
 			throw this.#error('TARGET', 'The hydrated plan retains more bytes than one plan may.', {
-				host: this.#host,
+				host: this.#root,
 				limit: MAX_TOTAL_ARTIFACT_BYTES,
 			})
 		}
@@ -545,7 +638,8 @@ export class Materializer implements MaterializerInterface {
 				continue
 			}
 			if (this.#manifest !== undefined) continue
-			const directory = resolveContainedPath(this.#host, source)
+			const root = this.#root
+			const directory = root === undefined ? undefined : resolveContainedPath(root, source)
 			if (directory !== undefined && isPhysicalDirectory(directory)) roots.add(artifact.path)
 		}
 		return [...roots]
@@ -563,7 +657,7 @@ export class Materializer implements MaterializerInterface {
 		const rooted = manifest.roots.some((root) => root === source || root.startsWith(`${source}/`))
 		if (matched.length === 0 && !rooted) {
 			throw this.#error('TARGET', `The vendored host does not carry ${source}.`, {
-				host: this.#host,
+				host: this.#root,
 				source,
 			})
 		}
@@ -579,7 +673,7 @@ export class Materializer implements MaterializerInterface {
 				expanded.push(this.#presence(artifact, path, entry.destination))
 				continue
 			}
-			const hex = this.#read(entry.storage, budget)
+			const hex = this.#read(entry, budget)
 			budget -= hex.length / 2
 			expanded.push(this.#hydrated(artifact, path, entry.destination, hex))
 		}
@@ -587,16 +681,18 @@ export class Materializer implements MaterializerInterface {
 	}
 
 	// A host root with no manifest is a plain checkout, so a destination maps onto
-	// it under the name it is written to and a directory is walked directly.
+	// it under the name it is written to and a directory is walked directly. Only a
+	// root reaches here: a value host always carries the manifest it was built with.
 	#expandRaw(
 		artifact: HostArtifact | HydratedArtifact,
 		source: string,
 		remaining: number,
 	): readonly Artifact[] {
-		const full = resolveContainedPath(this.#host, source)
+		const root = this.#root
+		const full = root === undefined ? undefined : resolveContainedPath(root, source)
 		if (full === undefined) {
 			throw this.#error('TARGET', `The host source at ${source} leaves its root.`, {
-				host: this.#host,
+				host: this.#root,
 				source,
 			})
 		}
@@ -607,11 +703,11 @@ export class Materializer implements MaterializerInterface {
 			if (this.#deferred(artifact.path)) {
 				return [this.#presence(artifact, artifact.path, source)]
 			}
-			return [this.#hydrated(artifact, artifact.path, source, this.#read(source, remaining))]
+			return [this.#hydrated(artifact, artifact.path, source, this.#readRoot(source, remaining))]
 		}
 		if (!isPhysicalDirectory(full)) {
 			throw this.#error('TARGET', `The host source at ${source} is not a readable file.`, {
-				host: this.#host,
+				host: this.#root,
 				source,
 			})
 		}
@@ -628,7 +724,7 @@ export class Materializer implements MaterializerInterface {
 				expanded.push(this.#presence(artifact, path, destination))
 				continue
 			}
-			const hex = this.#read(destination, budget)
+			const hex = this.#readRoot(destination, budget)
 			budget -= hex.length / 2
 			expanded.push(this.#hydrated(artifact, path, destination, hex))
 		}
@@ -664,7 +760,7 @@ export class Materializer implements MaterializerInterface {
 		if (destination === source) return artifact.path
 		if (!destination.startsWith(`${source}/`)) {
 			throw this.#error('TARGET', `The vendored destination ${destination} is outside ${source}.`, {
-				host: this.#host,
+				host: this.#root,
 				source,
 				destination,
 			})
@@ -712,11 +808,30 @@ export class Materializer implements MaterializerInterface {
 		}
 	}
 
-	#read(storage: string, budget: number): string {
-		const hex = readFileHex(this.#host, storage, Math.max(0, Math.min(MAX_ARTIFACT_BYTES, budget)))
+	// One declared file's exact bytes, from the value the caller supplied or from
+	// the storage name the root holds it under. The ceiling is the same either
+	// way, so a value host retains no more of one file than a root does.
+	#read(entry: ManifestEntry, budget: number): string {
+		const held = this.#value?.bytes[entry.destination]
+		if (held === undefined) return this.#readRoot(entry.storage, budget)
+		if (held.length / 2 > Math.max(0, Math.min(MAX_ARTIFACT_BYTES, budget))) {
+			throw this.#error('TARGET', `The vendored host cannot be read at ${entry.destination}.`, {
+				destination: entry.destination,
+				limit: MAX_ARTIFACT_BYTES,
+			})
+		}
+		return held
+	}
+
+	#readRoot(storage: string, budget: number): string {
+		const root = this.#root
+		const hex =
+			root === undefined
+				? undefined
+				: readFileHex(root, storage, Math.max(0, Math.min(MAX_ARTIFACT_BYTES, budget)))
 		if (hex === undefined) {
 			throw this.#error('TARGET', `The vendored host cannot be read at ${storage}.`, {
-				host: this.#host,
+				host: this.#root,
 				storage,
 			})
 		}
@@ -851,7 +966,10 @@ export class Materializer implements MaterializerInterface {
 	}
 
 	// Stage every write in one transaction and swap them in together, so a target
-	// either receives the whole set or is left as it was found.
+	// either receives the whole set or is left as it was found. A value host is
+	// filled into a private root first and cleared afterwards, so the write path
+	// copies real files with the modes the release declares whichever
+	// representation supplied them.
 	#apply(
 		target: string,
 		writes: readonly Artifact[],
@@ -861,17 +979,49 @@ export class Materializer implements MaterializerInterface {
 	): MaterializeResult {
 		const paths = [...writes.map((artifact) => artifact.path), ...directories]
 		if (paths.length === 0) return this.#finish({ target, written: [], skipped, removed: [] })
-		const transaction = this.#open(target, paths, preconditions)
-		const staged = attempt(() => {
-			for (const artifact of writes) {
-				if (artifact.origin === 'host') this.#copy(transaction, artifact)
-				else transaction.write(artifact.path, artifact.content)
-			}
-			for (const path of directories) transaction.establish(path)
-		})
-		const written = this.#close(transaction, staged, target)
-		for (const path of written) this.#emitter.emit('write', path)
-		return this.#finish({ target, written, skipped, removed: [] })
+		const filled = this.#fill(writes)
+		try {
+			const transaction = this.#open(target, paths, preconditions)
+			const staged = attempt(() => {
+				for (const artifact of writes) {
+					if (artifact.origin === 'host') this.#copy(transaction, artifact, filled ?? this.#root)
+					else transaction.write(artifact.path, artifact.content)
+				}
+				for (const path of directories) transaction.establish(path)
+			})
+			const written = this.#close(transaction, staged, target)
+			for (const path of written) this.#emitter.emit('write', path)
+			return this.#finish({ target, written, skipped, removed: [] })
+		} finally {
+			if (filled !== undefined) rmSync(filled, { recursive: true, force: true })
+		}
+	}
+
+	// Fill a private root with exactly the value host's files this write set needs,
+	// or answer `undefined` when no value host supplied them. The root is private
+	// to one call and removed when that call ends, so nothing outlives the write it
+	// was made for.
+	#fill(writes: readonly Artifact[]): string | undefined {
+		const value = this.#value
+		if (value === undefined) return undefined
+		const destinations = new Set<string>()
+		for (const artifact of writes) {
+			if (artifact.origin !== 'host') continue
+			destinations.add(artifact.source ?? artifact.path)
+		}
+		if (destinations.size === 0) return undefined
+		const opened = attempt(() => mkdtempSync(join(tmpdir(), 'orkestrel-scaffold-fill-')))
+		if (!opened.success) {
+			throw this.#error('WRITE', 'The supplied host could not be filled into a private root.', {
+				error: opened.error,
+			})
+		}
+		const root = opened.value
+		const stored = attempt(() => stageBytes(value, root, [...destinations]))
+		if (stored.success) return root
+		rmSync(root, { recursive: true, force: true })
+		this.#emitter.emit('error', stored.error)
+		throw stored.error
 	}
 
 	// Quarantine every candidate in one transaction. A deletion that fails part way
@@ -926,15 +1076,21 @@ export class Materializer implements MaterializerInterface {
 	}
 
 	// Stage one vendored file, under the storage name the manifest holds it as and
-	// with the executable bit that manifest records.
-	#copy(transaction: WriteTransaction, artifact: HostArtifact | HydratedArtifact): void {
+	// with the executable bit that manifest records. The root is the one the caller
+	// named or the private one a value host was filled into, and the two are the
+	// same shape, so nothing below here reads the representation.
+	#copy(
+		transaction: WriteTransaction,
+		artifact: HostArtifact | HydratedArtifact,
+		root: string | undefined,
+	): void {
 		const destination = artifact.source ?? artifact.path
 		const entry = this.#entries.get(destination)
 		const storage = entry === undefined ? destination : entry.storage
-		const source = resolveContainedPath(this.#host, storage)
+		const source = root === undefined ? undefined : resolveContainedPath(root, storage)
 		if (source === undefined) {
 			throw this.#error('TARGET', `The vendored source at ${storage} leaves its root.`, {
-				host: this.#host,
+				host: root,
 				storage,
 			})
 		}

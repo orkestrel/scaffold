@@ -1,5 +1,14 @@
 import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkestrel/emitter'
-import type { Audit, CatalogEntry, Dependency, Mirror, Plan, Release, Snapshot } from '@src/core'
+import type {
+	Audit,
+	CatalogEntry,
+	Copy,
+	Dependency,
+	Mirror,
+	Plan,
+	Release,
+	Snapshot,
+} from '@src/core'
 
 /**
  * The outcome of one mutation of a target.
@@ -30,23 +39,33 @@ export type MaterializerEventMap = {
  * Options for the materializer.
  *
  * @remarks
- * `host` is the vendored data root host-origin artifacts are copied from. It
- * defaults to this package's own vendored root, resolved from the installed
- * module's location rather than the caller's working directory. A host that
- * carries no manifest beside it maps artifact paths one to one instead of
- * through the manifest.
+ * `host` is the vendored data root host-origin artifacts are copied from, in
+ * either representation. A string is a directory: it defaults to this package's
+ * own vendored root, resolved from the installed module's location rather than
+ * the caller's working directory, and a directory that carries no manifest
+ * beside it maps artifact paths one to one instead of through the manifest. A
+ * {@link Host} is the same root supplied as a value, so a caller that already
+ * holds the bytes never stages them to a directory to be read back.
  */
 export interface MaterializerOptions {
-	readonly host?: string
+	readonly host?: string | Host
 	readonly on?: EmitterHooks<MaterializerEventMap>
 	readonly error?: EmitterErrorHandler
 }
 
-/** One file record of the vendored host's manifest. */
+/**
+ * One file record of the vendored host's manifest.
+ *
+ * @remarks
+ * `digest` is the SHA-256 of the file's exact bytes. A live read compares it
+ * against the target's copy, and verifies host-supplied bytes against it before
+ * treating them as that entry.
+ */
 export interface ManifestEntry {
 	readonly storage: string
 	readonly destination: string
 	readonly executable: boolean
+	readonly digest: string
 }
 
 /**
@@ -64,6 +83,27 @@ export interface HostManifest {
 	readonly entries: readonly ManifestEntry[]
 	readonly roots: readonly string[]
 	readonly digest: string
+}
+
+/**
+ * A whole vendored host supplied as a value: the membership beside the bytes filling it.
+ *
+ * @remarks
+ * `manifest` carries the membership, the roots, and the executable declarations
+ * the installed release fixed, and each entry's `digest` is the digest of the
+ * bytes this value actually holds. `bytes` is keyed by each entry's
+ * `destination` and covers exactly the entries the fill holds, so an entry with
+ * no bytes and a byte string under no entry are each a refusal rather than a
+ * gap a reader has to work around.
+ *
+ * Membership never moves without a release. A fill therefore states which of
+ * the release's paths it carries and never introduces one the release did not
+ * declare, which is what keeps a value host's reach identical to the installed
+ * root's however the bytes were obtained.
+ */
+export interface Host {
+	readonly manifest: HostManifest
+	readonly bytes: Snapshot
 }
 
 /**
@@ -256,6 +296,7 @@ export interface MaterializerInterface {
 export type UpstreamEventMap = {
 	readonly release: readonly [release: Release]
 	readonly mirror: readonly [mirror: Mirror]
+	readonly copy: readonly [copy: Copy]
 	readonly error: readonly [error: unknown]
 	readonly destroy: readonly []
 }
@@ -264,9 +305,11 @@ export type UpstreamEventMap = {
  * Options for the upstream reader.
  *
  * @remarks
- * The endpoints are grouped under the entity each configures: `guides`
- * takes the guide host's `base`, its `branch`, and its `timeout`; `registry`
- * takes the registry's `base` and `timeout`. `concurrency` bounds requests in
+ * The endpoints are grouped under the entity each configures: `repository`
+ * takes the raw content host's `base`, its `branch`, and its `timeout`;
+ * `registry` takes the registry's `base` and `timeout`. One raw content host
+ * serves both the fleet's guides and this package's own vendored files, so one
+ * group configures both. `concurrency` bounds requests in
  * flight and `retries` opts into per-request retry on a transport fault.
  * `limit` bounds the bytes read from one response body and `budget` bounds the
  * bytes read across a whole call, so neither one oversized answer nor many
@@ -274,7 +317,7 @@ export type UpstreamEventMap = {
  * follows no redirect.
  */
 export interface UpstreamOptions {
-	readonly guides?: {
+	readonly repository?: {
 		readonly base?: string
 		readonly branch?: string
 		readonly timeout?: number
@@ -299,6 +342,11 @@ export interface UpstreamOptions {
  * thrown, so one unreachable package never costs the caller the rest of the
  * answer. The organization list is the exception: without it there is no fleet
  * to report, so an unreachable or malformed list is a coded failure.
+ *
+ * The vendored-file inventory is the other whole-answer read, and it fails
+ * softly: an inventory that produces no answer fails every row of that call
+ * rather than throwing, which is what leaves the caller one whole baseline to
+ * fall back to instead of a mixture.
  */
 export interface UpstreamInterface {
 	readonly emitter: EmitterInterface<UpstreamEventMap>
@@ -317,6 +365,14 @@ export interface UpstreamInterface {
 	 * @returns One mirror verdict per name, in input order.
 	 */
 	fetch(names: readonly string[], current: Snapshot): Promise<readonly Mirror[]>
+	/**
+	 * Read each named vendored file from the repository, beside the target's copy it answers for.
+	 *
+	 * @param paths - The target-relative vendored paths to read.
+	 * @param current - The target's copies as exact bytes, keyed by the same paths.
+	 * @returns One copy verdict per path, in input order.
+	 */
+	vendor(paths: readonly string[], current: Snapshot): Promise<readonly Copy[]>
 	/**
 	 * Catalog the published fleet from the registry's organization package list.
 	 *

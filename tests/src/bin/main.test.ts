@@ -1,6 +1,7 @@
 import type { AuditResult } from '../../../src/bin/types.js'
 import { describe, expect, it } from 'vitest'
 import { execute } from '@orkestrel/process/server'
+import { requireValue } from '@orkestrel/test'
 import { spawn, spawnSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -10,9 +11,10 @@ import {
 	buildPackument,
 	createFleet,
 	createUpstreamServer,
-	createWorkspace,
+	SCRATCH_PREFIX,
 	WORKSPACE_ROOT,
 } from '../../setupServer.js'
+import { createScratch } from '@orkestrel/test/server'
 
 describe('scaffold', () => {
 	it('exits cleanly when a JSON consumer closes its pipe after ten bytes', async () => {
@@ -68,7 +70,7 @@ describe('scaffold', () => {
 	})
 
 	it('routes the configured npm registry through the process entry', async () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const registry = await createUpstreamServer({
 			'/@orkestrel%2Femitter': { status: 200, body: buildPackument('0.0.6') },
 			'/@orkestrel%2Fguide': { status: 200, body: buildPackument('0.0.9') },
@@ -136,7 +138,7 @@ describe('scaffold', () => {
 			)
 			expect(repaired.stderr).toBe('')
 			expect(repaired.code).toBe(EXIT_CLEAN)
-			const manifest = workspace.read('target/package.json')
+			const manifest = requireValue(workspace.read('target/package.json'))
 			expect(manifest).toContain('"@orkestrel/emitter": "^0.0.6"')
 			expect(manifest).toContain('"vite": "^8.2.3"')
 

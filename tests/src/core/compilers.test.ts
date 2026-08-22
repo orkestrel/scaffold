@@ -135,7 +135,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 		// deliberate step and this is where a workspace receives it.
 		expect(planned['@orkestrel/html']).toBe('^0.0.4')
 		expect(planned.vue).toBe('^3.5.40')
-		expect(planned['@orkestrel/test']).toBe('^0.0.9')
+		expect(planned['@orkestrel/test']).toBe('^0.0.10')
 	})
 
 	it('keeps a shared toolchain pin when a foreign peer declares its floor', () => {
@@ -184,7 +184,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 
 		// The digest covers the self-pin, so a release moves it. Update it with the
 		// version bump in the same change; it is the tripwire for every other byte.
-		expect(hex).toBe('680c0567194662661e226ff030e51bbc322ac46c98d0a08b67f9b9066db3dc68')
+		expect(hex).toBe('94b1285620fa51842a9fded5fc323fc8fab27fd18bdcf27397b6326a224347d4')
 	})
 })
 

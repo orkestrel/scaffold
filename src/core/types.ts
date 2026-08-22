@@ -241,6 +241,38 @@ export type Release =
 	  }
 
 /**
+ * One vendored file read from the repository, beside the target's copy it answers for.
+ *
+ * @remarks
+ * `path` is the target-relative path, which is also the checkout-relative path
+ * the repository serves, so the file read and the file answered for cannot
+ * drift apart. A found lookup carries the file's exact bytes as text; one that
+ * produced no answer carries the cause and no bytes. `observed` is the target's
+ * copy as exact bytes when the read was made, and is absent when the target
+ * holds no such file; it is the precondition the write is held to, exactly as
+ * {@link Finding.observed} is.
+ *
+ * A found row may carry the target's own bytes rather than read ones, where
+ * those bytes already satisfy the claim the read was going to check. They are
+ * the same bytes either way, so the row does not record which it holds.
+ */
+export type Copy =
+	| {
+			readonly path: string
+			readonly lookup: 'found'
+			readonly content: string
+			readonly observed?: string
+			readonly note?: never
+	  }
+	| {
+			readonly path: string
+			readonly lookup: 'missing' | 'failed'
+			readonly note: string
+			readonly observed?: string
+			readonly content?: never
+	  }
+
+/**
  * One dependency guide fetched from upstream, beside the local mirror it answers for.
  *
  * @remarks

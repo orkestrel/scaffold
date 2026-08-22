@@ -1,9 +1,17 @@
 import type { Audit, CatalogEntry } from '@src/core'
 import type { MaterializeResult } from '@src/server'
-import { readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { Compiler, contentToHex, isFinding, WORKSPACE_OWNED_PATHS } from '@src/core'
-import { listFiles, Materializer, readFileHex, readHostManifest, readSnapshot } from '@src/server'
+import {
+	computeDigest,
+	computeManifestDigest,
+	listFiles,
+	Materializer,
+	readFileHex,
+	readHostManifest,
+	readSnapshot,
+} from '@src/server'
 import { describe, expect, it } from 'vitest'
 import { createRecorder } from '@orkestrel/test'
 import { buildBlueprint, buildHostArtifact } from '../../setup.js'
@@ -18,11 +26,11 @@ import {
 	CASE_FOLDING,
 	CATALOG_AGENT_TEXT,
 	createHostRoot,
-	createWorkspace,
 	readErrorCode,
 	readErrorMessage,
-	TARGET_MANIFEST_TEXT,
+	TARGET_MANIFEST_TEXT, SCRATCH_PREFIX,
 } from '../../setupServer.js'
+import {createScratch} from "@orkestrel/test/server";
 
 const MATERIALIZED = [
 	'package.json',
@@ -44,7 +52,7 @@ describe('Materializer construction', () => {
 	})
 
 	it('accepts a host with no manifest at all, including the default one', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const raw = workspace.ensure('raw')
 			const materializer = new Materializer({ host: raw })
@@ -61,7 +69,7 @@ describe('Materializer construction', () => {
 	})
 
 	it('refuses a manifest that declares a file the host does not store', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			expect(readErrorCode(() => new Materializer({ host }))).toBe(undefined)
@@ -73,7 +81,7 @@ describe('Materializer construction', () => {
 	})
 
 	it('refuses a host that stores a file its manifest never declared', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			workspace.write('host/smuggled.md', '# Smuggled\n')
@@ -84,7 +92,7 @@ describe('Materializer construction', () => {
 	})
 
 	it('refuses a manifest whose spelling differs from the host only in case', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const membership = buildVendoredManifest()
@@ -115,7 +123,7 @@ describe('Materializer construction', () => {
 	})
 
 	it('refuses a manifest mapping two stored files to one destination', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const membership = buildVendoredManifest()
 			const collided = buildVendoredManifest({
@@ -132,7 +140,7 @@ describe('Materializer construction', () => {
 	})
 
 	it('refuses a manifest that does not match its own membership digest', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildHostManifest())
 			expect(readErrorCode(() => new Materializer({ host }))).toBe('TARGET')
@@ -142,9 +150,203 @@ describe('Materializer construction', () => {
 	})
 })
 
+describe('Materializer value host', () => {
+	it('reads and writes a value host as the staged root holding the same bytes', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const manifest = buildVendoredManifest()
+			const host = createHostRoot(workspace, 'host', manifest)
+			const value = {
+				manifest,
+				bytes: Object.fromEntries(
+					manifest.entries.map((entry) => [
+						entry.destination,
+						contentToHex(`${entry.destination}\n`),
+					]),
+				),
+			}
+			const rooted = new Materializer({ host })
+			const valued = new Materializer({ host: value })
+			try {
+				const rootedTarget = join(workspace.path, 'rooted')
+				const valuedTarget = join(workspace.path, 'valued')
+				const fromRoot = rooted.materialize(buildVendoredPlan(), rootedTarget)
+				const fromValue = valued.materialize(buildVendoredPlan(), valuedTarget)
+				expect(fromValue.written).toEqual(fromRoot.written)
+				expect(fromValue.skipped).toEqual(fromRoot.skipped)
+				expect(readSnapshot(valuedTarget, MATERIALIZED)).toEqual(
+					readSnapshot(rootedTarget, MATERIALIZED),
+				)
+				// The modes agree too, because a value host is filled into a private
+				// root and copied from it: the write path is the one a directory host
+				// takes, so the executable declaration survives either representation.
+				for (const path of MATERIALIZED) {
+					expect(statSync(join(valuedTarget, path)).mode).toBe(
+						statSync(join(rootedTarget, path)).mode,
+					)
+				}
+				// The read side agrees over one target, which is hydration equality
+				// stated where a caller can see it.
+				expect(valued.audit(buildVendoredPlan(), rootedTarget)).toEqual(
+					rooted.audit(buildVendoredPlan(), rootedTarget),
+				)
+			} finally {
+				rooted.destroy()
+				valued.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reports stale on exactly the path a value host differs from the target by one byte at', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const manifest = buildVendoredManifest()
+			const host = createHostRoot(workspace, 'host', manifest)
+			const target = join(workspace.path, 'project')
+			const entries = manifest.entries.map((entry) =>
+				entry.destination === 'AGENTS.md'
+					? { ...entry, digest: computeDigest('AGENTS.md ') }
+					: entry,
+			)
+			const value = {
+				manifest: {
+					entries,
+					roots: manifest.roots,
+					digest: computeManifestDigest(entries, manifest.roots),
+				},
+				bytes: Object.fromEntries(
+					entries.map((entry) => [
+						entry.destination,
+						contentToHex(
+							entry.destination === 'AGENTS.md' ? 'AGENTS.md ' : `${entry.destination}\n`,
+						),
+					]),
+				),
+			}
+			const rooted = new Materializer({ host })
+			const valued = new Materializer({ host: value })
+			try {
+				rooted.materialize(buildVendoredPlan(), target)
+				// The control: the root the target was written from reports no drift at
+				// all, so the single verdict below is the one byte and nothing else.
+				expect(
+					rooted
+						.audit(buildVendoredPlan(), target)
+						.findings.filter((finding) => finding.drift === 'stale'),
+				).toEqual([])
+				expect(
+					valued
+						.audit(buildVendoredPlan(), target)
+						.findings.filter((finding) => finding.drift === 'stale')
+						.map((finding) => finding.path),
+				).toEqual(['AGENTS.md'])
+			} finally {
+				rooted.destroy()
+				valued.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses a value host whose digest does not cover the membership beside it', () => {
+		const manifest = buildVendoredManifest()
+		const bytes = Object.fromEntries(
+			manifest.entries.map((entry) => [entry.destination, contentToHex(`${entry.destination}\n`)]),
+		)
+		expect(readErrorCode(() => new Materializer({ host: { manifest, bytes } }))).toBe(undefined)
+		expect(
+			readErrorCode(
+				() =>
+					new Materializer({
+						host: { manifest: { ...manifest, roots: [...manifest.roots, 'extra'] }, bytes },
+					}),
+			),
+		).toBe('TARGET')
+	})
+
+	it('refuses a value host that does not carry the bytes its manifest declares', () => {
+		const manifest = buildVendoredManifest()
+		const bytes = Object.fromEntries(
+			manifest.entries.map((entry) => [entry.destination, contentToHex(`${entry.destination}\n`)]),
+		)
+		const thinned = Object.fromEntries(
+			Object.entries(bytes).filter(([destination]) => destination !== 'AGENTS.md'),
+		)
+		expect(readErrorCode(() => new Materializer({ host: { manifest, bytes: thinned } }))).toBe(
+			'TARGET',
+		)
+		expect(
+			readErrorCode(
+				() =>
+					new Materializer({
+						host: { manifest, bytes: { ...bytes, 'smuggled.md': contentToHex('smuggled\n') } },
+					}),
+			),
+		).toBe('TARGET')
+	})
+
+	it('refuses a value host whose manifest maps two destinations to one stored file', () => {
+		const manifest = buildVendoredManifest()
+		const entries = manifest.entries.map((entry) => ({ ...entry, storage: 'AGENTS.md' }))
+		const collided = {
+			entries,
+			roots: manifest.roots,
+			digest: computeManifestDigest(entries, manifest.roots),
+		}
+		const bytes = Object.fromEntries(
+			entries.map((entry) => [entry.destination, contentToHex(`${entry.destination}\n`)]),
+		)
+		expect(readErrorCode(() => new Materializer({ host: { manifest: collided, bytes } }))).toBe(
+			'TARGET',
+		)
+	})
+
+	it('refuses a value host whose bytes miss the digest their entry declares', () => {
+		const manifest = buildVendoredManifest()
+		const bytes = Object.fromEntries(
+			manifest.entries.map((entry) => [entry.destination, contentToHex(`${entry.destination}\n`)]),
+		)
+		expect(
+			readErrorCode(
+				() =>
+					new Materializer({
+						host: { manifest, bytes: { ...bytes, 'AGENTS.md': contentToHex('AGENTS.md ') } },
+					}),
+			),
+		).toBe('TARGET')
+	})
+
+	it('owns the value it was given, so a later edit to that value changes nothing', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const manifest = buildVendoredManifest()
+			const bytes: Record<string, string> = Object.fromEntries(
+				manifest.entries.map((entry) => [
+					entry.destination,
+					contentToHex(`${entry.destination}\n`),
+				]),
+			)
+			const materializer = new Materializer({ host: { manifest, bytes } })
+			try {
+				bytes['AGENTS.md'] = contentToHex('# Swapped\n')
+				const target = join(workspace.path, 'project')
+				materializer.materialize(buildVendoredPlan(), target)
+				expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).toBe('AGENTS.md\n')
+			} finally {
+				materializer.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+})
+
 describe('Materializer materialize', () => {
 	it('writes every vendored shape into a vacant target with exact bytes', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = join(workspace.path, 'project')
@@ -171,7 +373,7 @@ describe('Materializer materialize', () => {
 	})
 
 	it('creates the one vendored directory that holds no file', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = join(workspace.path, 'project')
@@ -189,7 +391,7 @@ describe('Materializer materialize', () => {
 	})
 
 	it('reads the vendored root rather than the bytes the plan claimed', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = join(workspace.path, 'project')
@@ -217,7 +419,7 @@ describe('Materializer materialize', () => {
 	})
 
 	it('refuses a target that is not vacant and a plan the host cannot answer', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = workspace.ensure('project')
@@ -242,7 +444,7 @@ describe('Materializer materialize', () => {
 	})
 
 	it('refuses an argument that is not the exact shape and publishes every refusal', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const errors = createRecorder<readonly [unknown]>()
@@ -269,7 +471,7 @@ describe('Materializer materialize', () => {
 	})
 
 	it('reports each write and the whole outcome on its observation channel', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const writes = createRecorder<readonly [string]>()
@@ -294,7 +496,7 @@ describe('Materializer materialize', () => {
 	})
 
 	it('maps a host with no manifest onto the target one to one', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			workspace.write('raw/AGENTS.md', '# Raw agents\n')
 			workspace.write('raw/.claude/rules/names.md', '# Raw names\n')
@@ -325,7 +527,7 @@ describe('Materializer materialize', () => {
 	})
 
 	it('throws after teardown and tears down once', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const destroys = createRecorder<readonly []>()
@@ -348,7 +550,7 @@ describe('Materializer materialize', () => {
 
 describe('Materializer audit', () => {
 	it('preserves workspace-owned ignore bytes while detecting other vendored drift', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildFleetManifest())
 			const target = workspace.ensure('project')
@@ -378,7 +580,7 @@ describe('Materializer audit', () => {
 	})
 
 	it('restores an absent workspace-owned ignore file', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildFleetManifest())
 			const target = workspace.ensure('project')
@@ -401,7 +603,7 @@ describe('Materializer audit', () => {
 	})
 
 	it('preserves workspace-owned ignore bytes through a raw vendored root', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			workspace.write('raw/.gitignore', 'dist\n')
 			workspace.write('project/.gitignore', 'dist\nlocal-cache\n')
@@ -433,7 +635,7 @@ describe('Materializer audit', () => {
 	})
 
 	it('shares one hydrated reading with a full-selection repair and bounds foreign files by owned roots', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildFleetManifest())
 			const target = join(workspace.path, 'project')
@@ -502,7 +704,7 @@ describe('Materializer audit', () => {
 	})
 
 	it('reports absent deferred paths as missing and a clean terminal audit after repair', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = workspace.ensure('project')
@@ -531,7 +733,7 @@ describe('Materializer audit', () => {
 	})
 
 	it('does not inspect a vendored root outside the plan selection', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = workspace.ensure('project')
@@ -557,7 +759,7 @@ describe('Materializer audit', () => {
 
 describe('Materializer repair', () => {
 	it('restores a missing file, replaces a stale owned one, and leaves the rest alone', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = join(workspace.path, 'project')
@@ -591,7 +793,7 @@ describe('Materializer repair', () => {
 	})
 
 	it('refuses the whole call when the target moved after its audit', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = join(workspace.path, 'project')
@@ -614,7 +816,7 @@ describe('Materializer repair', () => {
 	})
 
 	it('refuses a host path added after the audit as uncovered', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			workspace.write('raw/.claude/rules/names.md', '# Names\n')
 			const host = workspace.ensure('raw')
@@ -648,7 +850,7 @@ describe('Materializer repair', () => {
 	})
 
 	it('refuses a byte change even when the drift verdict stays stale', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = join(workspace.path, 'project')
@@ -676,7 +878,7 @@ describe('Materializer repair', () => {
 	})
 
 	it('tells a verdict the plan could not produce apart from a target that moved', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = join(workspace.path, 'project')
@@ -737,7 +939,7 @@ describe('Materializer repair', () => {
 	})
 
 	it('writes nothing when the audit reports every path aligned', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = join(workspace.path, 'project')
@@ -759,7 +961,7 @@ describe('Materializer repair', () => {
 
 describe('Materializer mirror', () => {
 	it('writes a mirror whose bytes moved and skips one that is current or failed', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = workspace.ensure('project')
@@ -804,7 +1006,7 @@ describe('Materializer mirror', () => {
 	})
 
 	it('creates a mirror that was never there and refuses one that moved', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = workspace.ensure('project')
@@ -850,7 +1052,7 @@ describe('Materializer mirror', () => {
 
 describe('Materializer catalog', () => {
 	it('writes the oxfmt-padded table and leaves every word around it', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = workspace.ensure('project')
@@ -905,7 +1107,7 @@ describe('Materializer catalog', () => {
 	})
 
 	it('skips a table that already matches and refuses a file with no marked region', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = workspace.ensure('project')
@@ -932,7 +1134,7 @@ describe('Materializer catalog', () => {
 
 describe('Materializer declare', () => {
 	it('rewrites declared ranges in runtime, development, and peer sections', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = workspace.ensure('project')
@@ -967,7 +1169,7 @@ describe('Materializer declare', () => {
 	})
 
 	it('skips a manifest already declaring every range and refuses an undeclared name', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = workspace.ensure('project')
@@ -997,7 +1199,7 @@ describe('Materializer declare', () => {
 
 describe('Materializer remove', () => {
 	it('refuses a fabricated foreign verdict for a path the plan owns', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = workspace.ensure('project')
@@ -1031,7 +1233,7 @@ describe('Materializer remove', () => {
 	})
 
 	it('deletes a tracked foreign file and never a protected or untracked one', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = workspace.ensure('project')
@@ -1078,7 +1280,7 @@ describe('Materializer remove', () => {
 	})
 
 	it('refuses a tree carrying uncommitted work and a candidate that moved', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = workspace.ensure('project')
@@ -1121,7 +1323,7 @@ describe('Materializer remove', () => {
 	})
 
 	it('reports each removal on its observation channel', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
 			const target = workspace.ensure('project')

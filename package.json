@@ -87,6 +87,7 @@
 		"build:src:server": "vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts",
 		"build:src:bin": "vite build --config configs/src/vite.bin.config.ts",
 		"build:host": "node -e \"import('./dist/src/server/index.js').then((m)=>{const n=m.stageHost(process.cwd(),'dist/host').length;console.log('build-host: staged '+n+' file(s) into dist/host')})\"",
+		"build:inventory": "node -e \"import('./dist/src/server/index.js').then((m)=>{const p=process.argv[1]??'host.json',n=m.stageInventory(process.cwd(),p).entries.length;console.log('build-inventory: staged '+n+' file(s) into '+p)})\"",
 		"prepack": "npm run build",
 		"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release"
 	},
@@ -103,7 +104,7 @@
 		"@orkestrel/guide": "^0.0.12",
 		"@orkestrel/html": "^0.0.4",
 		"@orkestrel/probe": "^0.0.2",
-		"@orkestrel/test": "^0.0.9",
+		"@orkestrel/test": "^0.0.10",
 		"@types/node": "^26.2.0",
 		"@vitest/browser-playwright": "^4.1.11",
 		"oxfmt": "^0.64.0",

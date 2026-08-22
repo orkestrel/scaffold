@@ -44,6 +44,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `CatalogEntry`      | type | One package row of the fleet catalog.                                                            |
 | `CompileStage`      | type | The compile phases, in the order they run.                                                       |
 | `CompilerEventMap`  | type | The compiler's observation channel.                                                              |
+| `Copy`              | type | One vendored file read from the repository, beside the target's copy it answers for.             |
 | `Drift`             | type | How one target path compares to the artifact planned for it.                                     |
 | `Environment`       | type | One environment a generated workspace selects on its `src` or `app` axis.                        |
 | `Finding`           | type | One drift verdict against a target path.                                                         |
@@ -112,6 +113,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `GUIDES_TEST_PATH`                | const | The guide-parity proof whose presence selects the planned `guides` project.                      |
 | `HEX_PATTERN`                     | const | Exact lowercase hexadecimal bytes: two digits per byte, and empty content is valid.              |
 | `HOST_PATHS`                      | const | The paths byte-copied from the vendored data root, frozen.                                       |
+| `HOST_INVENTORY_PATH`             | const | The repository-relative path where the committed vendored-file inventory is served.              |
 | `INTEGRATION_TEST_PATH`           | const | The cross-environment composition proof whose presence makes a workspace `integration`.          |
 | `INVALID_PATH_CHARACTER_PATTERN`  | const | Visible characters a target-relative path and a Markdown path cell both forbid.                  |
 | `MAX_ARTIFACT_BYTES`              | const | Maximum bytes accepted for one artifact.                                                         |
@@ -270,8 +272,9 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 
 | Name                    | Kind      | Summary                                                                              |
 | ----------------------- | --------- | ------------------------------------------------------------------------------------ |
+| `Host`                  | interface | A whole vendored host supplied as a value rather than read from a directory.         |
 | `HostManifest`          | interface | The complete vendored-host inventory.                                                |
-| `ManifestEntry`         | interface | One file record of the vendored host's manifest.                                     |
+| `ManifestEntry`         | interface | One file record of the vendored host's manifest, including its exact-byte digest.    |
 | `MaterializeResult`     | interface | The outcome of one mutation of a target.                                             |
 | `MaterializerInterface` | interface | The mutation contract: the package's only filesystem writer.                         |
 | `MaterializerOptions`   | interface | Options for the materializer.                                                        |
@@ -313,12 +316,14 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 | `isDigest`              | const    | Narrow a value to one exact SHA-256 digest.                                        |
 | `isEndpoint`            | const    | Narrow a value to a bounded upstream endpoint.                                     |
 | `isFilesystemPath`      | function | Narrow a value to a path naming a location on this host.                           |
+| `isHost`                | const    | Narrow a value to one whole vendored host supplied as a value.                     |
 | `isHostManifest`        | const    | Narrow a value to one `HostManifest`.                                              |
 | `isInventory`           | function | Narrow a value to a working-tree inventory within the limit one target may report. |
 | `isManifestEntry`       | const    | Narrow a value to one `ManifestEntry`.                                             |
 | `isMaterializerHooks`   | const    | Narrow a value to the materializer's initial listener record.                      |
 | `isMaterializerOptions` | const    | Narrow a value to `MaterializerOptions`.                                           |
 | `isMirrors`             | const    | Narrow a value to a bounded list of fetched guide mirrors.                         |
+| `isPaths`               | const    | Narrow a value to a bounded list of target-relative paths.                         |
 | `isRepository`          | const    | Narrow a value to a `Repository`.                                                  |
 | `isTimeout`             | const    | Narrow a value to a per-request timeout in milliseconds.                           |
 | `isUpstreamHooks`       | const    | Narrow a value to the upstream reader's initial listener record.                   |
@@ -331,6 +336,8 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 | `computeDigest`         | function | Compute the SHA-256 digest of text.                                                   |
 | `computeFileDigest`     | function | Compute the SHA-256 digest of one file's exact bytes.                                 |
 | `computeManifestDigest` | function | Compute the digest of a vendored host's declared membership.                          |
+| `copiesToHost`          | function | Assemble a whole vendored host from live copies and the release manifest.             |
+| `hexToDigest`           | function | Project exact bytes stated in hexadecimal to their SHA-256 digest.                    |
 | `isExactCaseFile`       | function | Test whether a physical file's path matches every on-disk segment exactly.            |
 | `isPhysicalDirectory`   | function | Test whether a path is a physical directory this package will read or write into.     |
 | `isPhysicalFile`        | function | Test whether a path is a physical file this package will read or replace.             |
@@ -355,7 +362,9 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 | `readSnapshot`          | function | Read a target's current bytes at the paths a plan claims.                             |
 | `resolveContainedPath`  | function | Resolve a root-relative path and refuse one that leaves its root.                     |
 | `resolveRealPath`       | function | Resolve a path through the real filesystem, keeping the part that does not exist yet. |
+| `stageBytes`            | function | Stage the named destinations of a value host into a private root.                     |
 | `stageHost`             | function | Stage a vendored host root from a real checkout.                                      |
+| `stageInventory`        | function | Stage the committed vendored-file inventory from a real checkout.                     |
 
 #### Classes
 
@@ -395,12 +404,13 @@ no interface and is documented directly.
 
 #### `UpstreamInterface`
 
-| Method    | Summary                                                                    |
-| --------- | -------------------------------------------------------------------------- |
-| `lookup`  | Look up the newest release each declared range admits.                     |
-| `fetch`   | Fetch each named package's guide, beside the local mirror it answers for.  |
-| `catalog` | Catalog the published fleet from the registry's organization package list. |
-| `destroy` | Tear the reader down, aborting every request in flight.                    |
+| Method    | Summary                                                                                     |
+| --------- | ------------------------------------------------------------------------------------------- |
+| `lookup`  | Look up the newest release each declared range admits.                                      |
+| `fetch`   | Fetch each named package's guide, beside the local mirror it answers for.                   |
+| `vendor`  | Read each named vendored file from the repository, beside the target's copy it answers for. |
+| `catalog` | Catalog the published fleet from the registry's organization package list.                  |
+| `destroy` | Tear the reader down, aborting every request in flight.                                     |
 
 #### `WriteTransaction`
 

@@ -14,11 +14,12 @@ import { Worker } from 'node:worker_threads'
 import { isScaffoldError } from '@src/core'
 import { computeDigest, listFiles, readExpectation, WriteTransaction } from '@src/server'
 import { describe, expect, it } from 'vitest'
-import { createWorkspace, readErrorCode } from '../../setupServer.js'
+import {readErrorCode, SCRATCH_PREFIX} from '../../setupServer.js'
+import {createScratch} from "@orkestrel/test/server";
 
 describe('WriteTransaction construction', () => {
 	it('refuses a target, a path list, and a repeated path that are off contract', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			expect(readErrorCode(() => new WriteTransaction('', ['AGENTS.md']))).toBe('INVALID')
 			expect(readErrorCode(() => new WriteTransaction(workspace.path, ['../secrets']))).toBe(
@@ -31,7 +32,7 @@ describe('WriteTransaction construction', () => {
 	})
 
 	it('refuses a link that leaves the target rather than following it', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const outside = workspace.ensure('outside')
 			workspace.ensure('project')
@@ -48,7 +49,7 @@ describe('WriteTransaction construction', () => {
 	})
 
 	it('refuses a link that stays inside the target, which containment alone admits', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('project')
 			const real = workspace.ensure('project/real')
@@ -64,7 +65,7 @@ describe('WriteTransaction construction', () => {
 	})
 
 	it('leaves the tree exactly as it found it when it refuses', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			workspace.write('project/AGENTS.md', '# Agents\n')
 			const before = readdirSync(workspace.path).sort()
@@ -78,7 +79,7 @@ describe('WriteTransaction construction', () => {
 	})
 
 	it('refuses a precondition that names no destination and one that no longer holds', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('project')
 			workspace.write('project/AGENTS.md', '# Agents\n')
@@ -111,7 +112,7 @@ describe('WriteTransaction construction', () => {
 	})
 
 	it('accepts a precondition that still holds and closes cleanly', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('project')
 			workspace.write('project/AGENTS.md', '# Agents\n')
@@ -140,7 +141,7 @@ describe('WriteTransaction construction', () => {
 
 describe('WriteTransaction staging', () => {
 	it('writes nothing into the target until the commit lands', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = join(workspace.path, 'project')
 			const transaction = new WriteTransaction(target, ['AGENTS.md'])
@@ -158,7 +159,7 @@ describe('WriteTransaction staging', () => {
 	})
 
 	it('refuses an unopened path, a second claim, and a directory destination', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('project')
 			workspace.ensure('project/rules')
@@ -177,7 +178,7 @@ describe('WriteTransaction staging', () => {
 	})
 
 	it('copies exact bytes and refuses a source that is not a physical file', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = join(workspace.path, 'project')
 			const source = workspace.write('host/codex.sh', '#!/bin/sh\necho hi\n')
@@ -203,7 +204,7 @@ describe('WriteTransaction staging', () => {
 	// there, NTFS carrying no POSIX permission bits, so the assertion below cannot
 	// distinguish a set bit from an unset one on that host.
 	it.skipIf(process.platform === 'win32')('sets the executable bit when asked', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = join(workspace.path, 'project')
 			const source = workspace.write('host/codex.sh', '#!/bin/sh\n')
@@ -224,7 +225,7 @@ describe('WriteTransaction staging', () => {
 	// the mode assertion cannot distinguish the false branch from an unchanged
 	// source there.
 	it.skipIf(process.platform === 'win32')('clears the executable bit when not asked', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = join(workspace.path, 'project')
 			const source = workspace.write('host/codex.sh', '#!/bin/sh\n')
@@ -280,7 +281,7 @@ describe('WriteTransaction directories', () => {
 	it.skipIf(process.platform === 'win32')(
 		'discards a created segment whose anchor read refuses it',
 		async () => {
-			const workspace = createWorkspace()
+			const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 			const target = workspace.ensure('project')
 			const segment = join(target, 'a')
 			const holding = join(target, 'holding')
@@ -351,7 +352,7 @@ for (;;) {
 	)
 
 	it('establishes a nested directory segment by segment and reports what it created', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('project')
 			const transaction = new WriteTransaction(target, ['.claude/skills'])
@@ -373,7 +374,7 @@ for (;;) {
 	})
 
 	it('creates nothing for a directory already there and refuses one holding a file', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('project')
 			workspace.ensure('project/rules')
@@ -392,7 +393,7 @@ for (;;) {
 	})
 
 	it('removes every directory it created when it is discarded', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = join(workspace.path, 'project')
 			const transaction = new WriteTransaction(target, ['.claude/skills'])
@@ -406,7 +407,7 @@ for (;;) {
 	})
 
 	it('wraps a mid-creation refusal and discards every segment it created', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('project')
 			const control = workspace.ensure('control')
@@ -479,7 +480,7 @@ for (;;) {
 
 describe('WriteTransaction commit', () => {
 	it('replaces existing bytes and leaves no private residue beside the target', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('project')
 			workspace.write('project/AGENTS.md', '# Old\n')
@@ -499,7 +500,7 @@ describe('WriteTransaction commit', () => {
 	})
 
 	it('restores a destination it already promoted when a later promotion fails', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('project')
 			workspace.write('project/first.md', '# First\n')
@@ -521,7 +522,7 @@ describe('WriteTransaction commit', () => {
 	})
 
 	it('moves nothing at all when a destination moved before the first promotion', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('project')
 			workspace.write('project/first.md', '# First\n')
@@ -546,7 +547,7 @@ describe('WriteTransaction commit', () => {
 		// the population that assertion covers: a plain writer running the same
 		// scenario. It must leave the first file replaced, because nothing rolled it
 		// back. A rollback assertion that passes here as well is measuring nothing.
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('project')
 			workspace.write('project/first.md', '# First\n')
@@ -560,7 +561,7 @@ describe('WriteTransaction commit', () => {
 	})
 
 	it('removes every directory it created when a promotion fails', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = join(workspace.path, 'project')
 			const transaction = new WriteTransaction(target, ['.claude/rules/names.md', 'AGENTS.md'])
@@ -578,7 +579,7 @@ describe('WriteTransaction commit', () => {
 	})
 
 	it('takes a marked file at commit and refuses one that holds no file', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('project')
 			workspace.write('project/foreign.md', '# Foreign\n')
@@ -599,7 +600,7 @@ describe('WriteTransaction commit', () => {
 	})
 
 	it('puts back every file it already took when a later one moved', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('project')
 			workspace.write('project/first.md', '# First\n')
@@ -617,7 +618,7 @@ describe('WriteTransaction commit', () => {
 	})
 
 	it('closes after a commit, so a second commit and a later discard both stop', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('project')
 			const transaction = new WriteTransaction(target, ['AGENTS.md'])
@@ -635,7 +636,7 @@ describe('WriteTransaction commit', () => {
 	})
 
 	it('reports promotions, establishments, and removals in that order', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('project')
 			workspace.write('project/foreign.md', '# Foreign\n')
@@ -656,7 +657,7 @@ describe('WriteTransaction commit', () => {
 
 describe('WriteTransaction discard', () => {
 	it('clears its private root even after a staged write', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('project')
 			const transaction = new WriteTransaction(target, ['AGENTS.md'])
@@ -671,7 +672,7 @@ describe('WriteTransaction discard', () => {
 	})
 
 	it('reports residue rather than swallowing it', () => {
-		const workspace = createWorkspace()
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const target = workspace.ensure('project')
 			const transaction = new WriteTransaction(target, ['.claude/skills'])

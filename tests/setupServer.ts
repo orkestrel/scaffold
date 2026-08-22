@@ -5,18 +5,18 @@ import type {
 	Repository,
 	UpstreamOptions,
 } from '@src/server'
-import type { Audit, Blueprint, Finding, Plan, ScaffoldErrorCode } from '@src/core'
+import type { Audit, Blueprint, Finding, Plan, ScaffoldErrorCode, Snapshot } from '@src/core'
 import type { CLICommand, CLIOptions, Verb } from '../src/bin/types.js'
 import type { TestGuardCase, TestPathCase } from './setup.js'
 import type { ServerResponse } from 'node:http'
 import { execFileSync } from 'node:child_process'
 import { createServer } from 'node:http'
-import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { gzipSync } from 'node:zlib'
 import {
 	CATALOG_AGENT_PATH,
 	blueprintToDevDependencies,
+	contentToHex,
 	blueprintToScripts,
 	Compiler,
 	createBlueprint,
@@ -60,8 +60,8 @@ import {
 	stageHost,
 } from '@src/server'
 import { optionToName } from '../src/bin/helpers.js'
-import { createRecorder, requireValue, resolveRoot } from '@orkestrel/test'
-import { createLoopback, createScratch, supportsCase } from '@orkestrel/test/server'
+import { createRecorder, resolveRoot } from '@orkestrel/test'
+import { createLoopback, type ScratchInterface, supportsCase } from '@orkestrel/test/server'
 import {
 	buildBlueprint,
 	buildContentArtifact,
@@ -70,25 +70,6 @@ import {
 	buildPlan,
 	buildQuestion,
 } from './setup.js'
-
-/**
- * A real temporary directory on this host, owned by the test that created it.
- *
- * @remarks
- * `path` is the directory the platform actually produced, which is what makes it
- * a genuine input to the host-path law rather than a string a test typed.
- * `destroy` is idempotent, so a `finally` that runs after an assertion failure
- * still leaves nothing behind.
- */
-export interface TestWorkspaceInterface {
-	readonly path: string
-	write(relative: string, content: string): string
-	read(relative: string): string
-	ensure(relative: string): string
-	link(relative: string, target: string): string
-	remove(relative: string): void
-	destroy(): void
-}
 
 /**
  * One command line beside the exact command it denotes.
@@ -205,6 +186,21 @@ export interface TestPackumentEdges {
 }
 
 /**
+ * One vendored file the repository fixture serves, beside the path it serves it at.
+ *
+ * @remarks
+ * `path` is the target-relative destination, which the raw content host also
+ * serves the file at, so one field addresses the request and the row alike. The
+ * pair travels together because an inventory declares a digest over exactly
+ * these bytes and a target's snapshot states the same bytes as hexadecimal, and
+ * a test that let them drift would prove nothing about either.
+ */
+export interface TestVendoredFile {
+	readonly path: string
+	readonly content: string
+}
+
+/**
  * A real HTTP server on loopback, scripted per path.
  *
  * @remarks
@@ -235,6 +231,8 @@ export interface TestUpstreamInterface {
  * produced, so a test can measure the host-path law against it.
  */
 export const WORKSPACE_ROOT = fileURLToPath(resolveRoot(import.meta))
+
+export const SCRATCH_PREFIX = 'orkestrel-scaffold-'
 
 /**
  * List the tracked paths this repository records as executable.
@@ -285,61 +283,14 @@ export function listExecutablePaths(): readonly string[] {
 export const CASE_FOLDING: boolean = !supportsCase()
 
 /**
- * Create a real temporary directory for one test.
- *
- * @returns The workspace, which the caller destroys in a `finally`.
- *
- * @remarks
- * `link` delegates to the scratch's own `link`, which owns the host link
- * mechanism and its junction fallback. That is what makes the containment law
- * measurable against a real link rather than against a path a test typed.
- *
- * @example
- * ```ts
- * const workspace = createWorkspace()
- * try {
- * 	workspace.write('guides/router.md', '# Router\n')
- * } finally {
- * 	workspace.destroy()
- * }
- * ```
- */
-export function createWorkspace(): TestWorkspaceInterface {
-	const scratch = createScratch({ prefix: 'orkestrel-scaffold-' })
-	const path = scratch.path
-	return {
-		path,
-		write(relative: string, content: string) {
-			scratch.write(relative, content)
-			return join(path, relative)
-		},
-		read(relative: string) {
-			return requireValue(scratch.read(relative))
-		},
-		ensure(relative: string) {
-			return scratch.ensure(relative)
-		},
-		link(relative: string, target: string) {
-			scratch.link(relative, target)
-			return join(path, relative)
-		},
-		remove(relative: string) {
-			scratch.remove(relative)
-		},
-		destroy() {
-			scratch.destroy()
-		},
-	}
-}
-
-/**
  * Build a valid inert vendored-host manifest entry, with focused field replacements.
  *
  * @param fields - The entry fields to replace on the returned value.
  * @returns An entry carrying the requested fields over minimal defaults.
  */
 export function buildManifestEntry(fields?: Partial<ManifestEntry>): ManifestEntry {
-	return { storage: 'AGENTS.md', destination: 'AGENTS.md', executable: false, ...fields }
+	const entry = { storage: 'AGENTS.md', destination: 'AGENTS.md', executable: false, ...fields }
+	return { ...entry, digest: fields?.digest ?? computeDigest(`${entry.destination}\n`) }
 }
 
 /**
@@ -398,7 +349,7 @@ export function buildMaterializerOptions(
  */
 export function buildUpstreamOptions(fields?: Partial<UpstreamOptions>): UpstreamOptions {
 	return {
-		guides: {
+		repository: {
 			base: 'https://raw.githubusercontent.com/orkestrel',
 			branch: 'main',
 			timeout: 10_000,
@@ -676,39 +627,39 @@ export function buildBoundaryCases(): readonly TestBoundaryCase[] {
 			accepted: false,
 		},
 		{
-			label: 'guide timeout at the ceiling',
+			label: 'repository timeout at the ceiling',
 			guard: isUpstreamOptions,
-			value: buildUpstreamOptions({ guides: { timeout: MAX_UPSTREAM_TIMEOUT } }),
+			value: buildUpstreamOptions({ repository: { timeout: MAX_UPSTREAM_TIMEOUT } }),
 			accepted: true,
 		},
 		{
-			label: 'guide timeout one past the ceiling',
+			label: 'repository timeout one past the ceiling',
 			guard: isUpstreamOptions,
-			value: buildUpstreamOptions({ guides: { timeout: MAX_UPSTREAM_TIMEOUT + 1 } }),
+			value: buildUpstreamOptions({ repository: { timeout: MAX_UPSTREAM_TIMEOUT + 1 } }),
 			accepted: false,
 		},
 		{
-			label: 'guide branch at the length ceiling',
+			label: 'repository branch at the length ceiling',
 			guard: isUpstreamOptions,
-			value: buildUpstreamOptions({ guides: { branch: 'a'.repeat(MAX_BRANCH_LENGTH) } }),
+			value: buildUpstreamOptions({ repository: { branch: 'a'.repeat(MAX_BRANCH_LENGTH) } }),
 			accepted: true,
 		},
 		{
-			label: 'guide branch one past the length ceiling',
+			label: 'repository branch one past the length ceiling',
 			guard: isUpstreamOptions,
-			value: buildUpstreamOptions({ guides: { branch: 'a'.repeat(MAX_BRANCH_LENGTH + 1) } }),
+			value: buildUpstreamOptions({ repository: { branch: 'a'.repeat(MAX_BRANCH_LENGTH + 1) } }),
 			accepted: false,
 		},
 		{
-			label: 'guide branch carrying a traversal',
+			label: 'repository branch carrying a traversal',
 			guard: isUpstreamOptions,
-			value: buildUpstreamOptions({ guides: { branch: 'main/../etc' } }),
+			value: buildUpstreamOptions({ repository: { branch: 'main/../etc' } }),
 			accepted: false,
 		},
 		{
-			label: 'guide branch opening with a separator',
+			label: 'repository branch opening with a separator',
 			guard: isUpstreamOptions,
-			value: buildUpstreamOptions({ guides: { branch: '/main' } }),
+			value: buildUpstreamOptions({ repository: { branch: '/main' } }),
 			accepted: false,
 		},
 		{
@@ -720,7 +671,7 @@ export function buildBoundaryCases(): readonly TestBoundaryCase[] {
 		{
 			label: 'a setting written under the wrong entity',
 			guard: isUpstreamOptions,
-			value: { guides: { concurrency: 4 } },
+			value: { repository: { concurrency: 4 } },
 			accepted: false,
 		},
 		{
@@ -877,7 +828,7 @@ export function buildStagedManifest(fields?: Partial<Omit<HostManifest, 'digest'
  * visible in the assertion rather than in a length.
  */
 export function createHostRoot(
-	workspace: TestWorkspaceInterface,
+	workspace: ScratchInterface,
 	relative: string,
 	manifest: HostManifest,
 ): string {
@@ -900,7 +851,7 @@ export function createHostRoot(
  * synthetic manifest. Use it when the exact bytes in the checkout are the
  * subject of a command-line regression.
  */
-export function createStagedHost(workspace: TestWorkspaceInterface): string {
+export function createStagedHost(workspace: ScratchInterface): string {
 	const root = workspace.ensure('host')
 	stageHost(WORKSPACE_ROOT, root)
 	return root
@@ -1178,7 +1129,7 @@ export function buildFleetManifest(): HostManifest {
  * that is the root a file inventory cannot see and the one the manifest exists
  * to declare.
  */
-export function createCheckout(workspace: TestWorkspaceInterface, relative: string): string {
+export function createCheckout(workspace: ScratchInterface, relative: string): string {
 	const root = workspace.ensure(relative)
 	for (const path of HOST_PATHS) {
 		if (!HOST_DIRECTORY_PATHS.includes(path)) {
@@ -1214,6 +1165,7 @@ export function buildCheckoutManifest(): HostManifest {
 					storage: pathToStorage(path),
 					destination: path,
 					executable: matchesExecutablePath(path),
+					digest: computeDigest(`${path}\n`),
 				}),
 			)
 			continue
@@ -1226,6 +1178,7 @@ export function buildCheckoutManifest(): HostManifest {
 				storage: pathToStorage(destination),
 				destination,
 				executable: matchesExecutablePath(destination),
+				digest: computeDigest(`${destination}\n`),
 			}),
 		)
 	}
@@ -1249,7 +1202,7 @@ export function buildCheckoutManifest(): HostManifest {
  * actually there. Nothing else is written, so every vendored path is missing and
  * a first audit of it has something to find.
  */
-export function createFleet(workspace: TestWorkspaceInterface): {
+export function createFleet(workspace: ScratchInterface): {
 	readonly host: string
 	readonly target: string
 } {
@@ -1278,7 +1231,7 @@ export function createFleet(workspace: TestWorkspaceInterface): {
  * bytes exactly as they are and the catalog verb remains the only writer of
  * them.
  */
-export function createCatalogFleet(workspace: TestWorkspaceInterface): {
+export function createCatalogFleet(workspace: ScratchInterface): {
 	readonly host: string
 	readonly target: string
 } {
@@ -1664,6 +1617,56 @@ export function buildOrganization(names: readonly string[]): string {
 }
 
 /**
+ * The vendored files the repository fixture serves, keyed for a test to name one.
+ *
+ * @remarks
+ * `orchestration` carries a leading-dot directory and `mirror` is a guide the
+ * mirror verb owns, so the set covers the two paths whose handling differs from
+ * a plain root file rather than only the easy case.
+ */
+export const VENDORED_FILES = Object.freeze({
+	agents: Object.freeze({ path: 'AGENTS.md', content: '# Agents\n' }),
+	license: Object.freeze({ path: 'LICENSE', content: 'MIT\n' }),
+	orchestration: Object.freeze({
+		path: '.agents/orchestration.md',
+		content: '# Orchestration\n',
+	}),
+	mirror: Object.freeze({ path: 'guides/guide.md', content: '# Guide\n' }),
+})
+
+/**
+ * Build the committed inventory text a vendored read is decided against.
+ *
+ * @param files - The vendored files the inventory declares, in declaration order.
+ * @returns The manifest body, carrying a per-file digest and a membership digest over that exact order.
+ *
+ * @remarks
+ * Every field is derived the way the real stage derives it, so an inventory this
+ * builds is one the reader's own manifest guard admits. The list is taken in the
+ * caller's order rather than sorted, which is what lets a test declare one
+ * destination twice and measure what the reader does with an ambiguous row.
+ */
+export function buildInventory(files: readonly TestVendoredFile[]): string {
+	const entries: readonly ManifestEntry[] = files.map((file) => ({
+		storage: pathToStorage(file.path),
+		destination: file.path,
+		executable: matchesExecutablePath(file.path),
+		digest: computeDigest(file.content),
+	}))
+	return JSON.stringify({ entries, roots: [], digest: computeManifestDigest(entries, []) })
+}
+
+/**
+ * Build the target snapshot a vendored read is held to.
+ *
+ * @param files - The files the target holds, with the exact bytes it holds.
+ * @returns Those bytes as hexadecimal, keyed by the same paths.
+ */
+export function buildVendoredSnapshot(files: readonly TestVendoredFile[]): Snapshot {
+	return Object.fromEntries(files.map((file) => [file.path, contentToHex(file.content)]))
+}
+
+/**
  * Write one scripted reply onto a real HTTP response.
  *
  * @param response - The open server response to answer on.
@@ -1773,6 +1776,13 @@ export async function createUpstreamServer(
  * a different URL is answered by the fixture's `404` branch instead of quietly
  * passing. The registry keeps the literal `@` and encodes only the scope
  * boundary; the raw-content host addresses a branch through `refs/heads`.
+ *
+ * `vendored` addresses this package's own repository on that same host: the
+ * committed inventory at the repository root, and the vendored files the
+ * inventory declares. Each is written at the checkout-relative path the
+ * repository serves it at, which is also the target-relative path a row answers
+ * for, so a reader that translated the path on its way to the request is
+ * answered by the fixture's `404` branch.
  */
 export const UPSTREAM_PATHS = Object.freeze({
 	organization: '/-/org/orkestrel/package',
@@ -1782,6 +1792,14 @@ export const UPSTREAM_PATHS = Object.freeze({
 	terminal: '/@orkestrel%2Fterminal',
 	guide: '/orkestrel/router/refs/heads/main/guides/router.md',
 	branched: '/orkestrel/router/refs/heads/release/0.1.x/guides/router.md',
+	vendored: Object.freeze({
+		inventory: '/orkestrel/scaffold/refs/heads/main/host.json',
+		agents: '/orkestrel/scaffold/refs/heads/main/AGENTS.md',
+		license: '/orkestrel/scaffold/refs/heads/main/LICENSE',
+		orchestration: '/orkestrel/scaffold/refs/heads/main/.agents/orchestration.md',
+		mirror: '/orkestrel/scaffold/refs/heads/main/guides/guide.md',
+		branched: '/orkestrel/scaffold/refs/heads/release/0.1.x/host.json',
+	}),
 })
 
 /**
@@ -1835,7 +1853,7 @@ export const FLEET_UPSTREAM_PATHS = Object.freeze({
  * nothing extra.
  */
 export function buildCLIOptions(sink: TestSinkInterface, base: string): CLIOptions {
-	return { ...sink.options, upstream: { registry: { base }, guides: { base } } }
+	return { ...sink.options, upstream: { registry: { base }, repository: { base } } }
 }
 
 /**

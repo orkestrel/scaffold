@@ -2,6 +2,7 @@ import type { Guard } from '@orkestrel/contract'
 import type { EmitterInterface } from '@orkestrel/emitter'
 import type {
 	CatalogEntry,
+	Copy,
 	Dependency,
 	Lookup,
 	Mirror,
@@ -10,7 +11,15 @@ import type {
 	Snapshot,
 } from '@src/core'
 import type { UpstreamEventMap, UpstreamInterface, UpstreamOptions } from './types.js'
-import { isError, isRecord, isString, parseJSON, parseStringField } from '@orkestrel/contract'
+import {
+	attempt,
+	isError,
+	isRecord,
+	isString,
+	parseJSON,
+	parseJSONAs,
+	parseStringField,
+} from '@orkestrel/contract'
 import { Emitter } from '@orkestrel/emitter'
 import {
 	cloneValue,
@@ -18,6 +27,8 @@ import {
 	CONTROL_CHARACTER_PATTERN,
 	extractRangeMajor,
 	extractVersion,
+	HOST_INVENTORY_PATH,
+	inferGroup,
 	isCollection,
 	isDependencyName,
 	isSnapshot,
@@ -30,7 +41,14 @@ import {
 	nameToGuide,
 	ScaffoldError,
 } from '@src/core'
-import { isDependencies, isDependencyNames, isUpstreamOptions } from './validators.js'
+import { computeDigest, computeManifestDigest, hexToDigest } from './helpers.js'
+import {
+	isDependencies,
+	isDependencyNames,
+	isHostManifest,
+	isPaths,
+	isUpstreamOptions,
+} from './validators.js'
 
 /**
  * The reading spine: one bounded, unauthenticated, redirect-free request per answer.
@@ -49,6 +67,11 @@ import { isDependencies, isDependencyNames, isUpstreamOptions } from './validato
  * the answer. The organization package list is the one exception: without it
  * there is no fleet to report, so an unreachable or malformed list is a coded
  * `FETCH` failure.
+ *
+ * The vendored-file inventory is the other read a whole call rests on, and it
+ * fails the other way: it fails every row of its call rather than throwing, so
+ * the caller receives one whole dead answer it can replace with one whole
+ * baseline instead of a mixture it would have to reconcile.
  *
  * Requests are unauthenticated because every fleet repository is public, and
  * they follow no redirect, so a misconfigured or hostile endpoint cannot move a
@@ -75,13 +98,18 @@ export class Upstream implements UpstreamInterface {
 	// `constants.ts` because that file is frozen, and each is read by exactly one
 	// line of this class: a default is the entity's law applied when it builds a
 	// request, so it belongs beside the law rather than in shared data.
-	static readonly #defaultGuide = 'https://raw.githubusercontent.com'
+	static readonly #defaultRepository = 'https://raw.githubusercontent.com'
 	static readonly #defaultRegistry = 'https://registry.npmjs.org'
 	static readonly #defaultBranch = 'main'
 	static readonly #defaultTimeout = 10_000
 	static readonly #defaultConcurrency = 6
 	static readonly #defaultRetries = 0
 	static readonly #scope = 'orkestrel'
+	// The repository this package's own vendored files are served from. It is
+	// this package's bare name, stated rather than derived, because the reader
+	// has no manifest to read it out of and one raw content host serves both the
+	// fleet's guides and these files.
+	static readonly #vendor = 'scaffold'
 	static readonly #unreadable = 'the answer carries no readable latest version'
 	// The media type that selects the registry's abbreviated packument. It sits
 	// with the request defaults because it is part of how this class asks for a
@@ -89,9 +117,9 @@ export class Upstream implements UpstreamInterface {
 	static readonly #packument = 'application/vnd.npm.install-v1+json'
 
 	readonly #emitter: Emitter<UpstreamEventMap>
-	readonly #guideBase: string
-	readonly #guideBranch: string
-	readonly #guideTimeout: number
+	readonly #repositoryBase: string
+	readonly #repositoryBranch: string
+	readonly #repositoryTimeout: number
 	readonly #registryBase: string
 	readonly #registryTimeout: number
 	readonly #concurrency: number
@@ -102,7 +130,7 @@ export class Upstream implements UpstreamInterface {
 	#destroyed = false
 
 	/**
-	 * Construct a reader over one guide host and one registry.
+	 * Construct a reader over one raw content host and one registry.
 	 *
 	 * @param options - The endpoints, the request bounds, the initial
 	 * listeners, and the listener-error handler.
@@ -132,9 +160,12 @@ export class Upstream implements UpstreamInterface {
 			...(options?.on === undefined ? {} : { on: options.on }),
 			...(options?.error === undefined ? {} : { error: options.error }),
 		})
-		this.#guideBase = this.#endpoint(options?.guides?.base ?? Upstream.#defaultGuide, 'guides')
-		this.#guideBranch = options?.guides?.branch ?? Upstream.#defaultBranch
-		this.#guideTimeout = options?.guides?.timeout ?? Upstream.#defaultTimeout
+		this.#repositoryBase = this.#endpoint(
+			options?.repository?.base ?? Upstream.#defaultRepository,
+			'repository',
+		)
+		this.#repositoryBranch = options?.repository?.branch ?? Upstream.#defaultBranch
+		this.#repositoryTimeout = options?.repository?.timeout ?? Upstream.#defaultTimeout
 		this.#registryBase = this.#endpoint(
 			options?.registry?.base ?? Upstream.#defaultRegistry,
 			'registry',
@@ -216,6 +247,53 @@ export class Upstream implements UpstreamInterface {
 		const observed = this.#accept(current, isSnapshot, 'current')
 		const allowance = { remaining: this.#budget }
 		return this.#gather(accepted, (name) => this.#mirror(name, observed, allowance))
+	}
+
+	/**
+	 * Read each named vendored file from the repository, beside the target's copy it answers for.
+	 *
+	 * @param paths - The target-relative vendored paths to read.
+	 * @param current - The target's copies as exact bytes, keyed by the same paths.
+	 * @returns One copy verdict per path, in input order.
+	 * @throws {@link ScaffoldError} coded `INVALID` when `paths` is not a bounded
+	 * list of target-relative paths or `current` is not a snapshot, and
+	 * `DESTROYED` when the reader is torn down before or during the call.
+	 *
+	 * @remarks
+	 * The committed inventory is read once per call and decides every row, so a
+	 * path whose declared digest already matches the target's own bytes is `found`
+	 * without a request and the call spends nothing on it. An inventory that
+	 * produces no answer fails every row of the call rather than leaving some rows
+	 * live and some dead, which is what leaves the caller one whole baseline to
+	 * fall back to. A path the inventory does not name is `missing`.
+	 *
+	 * A fetched body is verified against the digest the inventory declares for
+	 * that path, so bytes that do not hash to the inventory's claim fail their row
+	 * rather than reaching a write. That is integrity against a single committed
+	 * baseline, not authenticity: it detects a truncated, substituted, or stale
+	 * body, and it says nothing about who published the inventory.
+	 *
+	 * A guide mirror is never answered here whatever the caller asks for and
+	 * whatever the target holds, because those bytes belong to `fetch` and to the
+	 * mirror verb that writes them.
+	 *
+	 * @example
+	 * ```ts
+	 * import { Upstream } from '@orkestrel/scaffold/server'
+	 *
+	 * const upstream = new Upstream()
+	 * await upstream.vendor(['AGENTS.md'], { 'AGENTS.md': '2320416745' })
+	 * upstream.destroy()
+	 * ```
+	 */
+	async vendor(paths: readonly string[], current: Snapshot): Promise<readonly Copy[]> {
+		this.#assertAlive()
+		const accepted = this.#accept(paths, isPaths, 'paths')
+		const observed = this.#accept(current, isSnapshot, 'current')
+		if (accepted.length === 0) return []
+		const allowance = { remaining: this.#budget }
+		const inventory = await this.#inventory(allowance)
+		return this.#gather(accepted, (path) => this.#copy(path, inventory, observed, allowance))
 	}
 
 	/**
@@ -355,7 +433,7 @@ export class Upstream implements UpstreamInterface {
 		allowance: { remaining: number },
 	): Promise<Mirror> {
 		const path = nameToGuide(name)
-		const outcome = await this.#read(this.#guideURL(name), this.#guideTimeout, allowance)
+		const outcome = await this.#read(this.#guideURL(name), this.#repositoryTimeout, allowance)
 		const observed = current[path]
 		const mirror: Mirror =
 			outcome.lookup === 'found'
@@ -375,6 +453,152 @@ export class Upstream implements UpstreamInterface {
 					}
 		this.#emitter.emit('mirror', mirror)
 		return mirror
+	}
+
+	// One vendored file, published on the observation channel beside the target's
+	// own copy of it. The verdict itself is decided next door, because it has
+	// several exits and each one still has to be published exactly once.
+	async #copy(
+		path: string,
+		inventory: {
+			readonly lookup: Lookup
+			readonly digests: ReadonlyMap<string, string>
+			readonly duplicates: ReadonlySet<string>
+			readonly note: string
+		},
+		current: Snapshot,
+		allowance: { remaining: number },
+	): Promise<Copy> {
+		const copy = await this.#answer(path, inventory, current[path], allowance)
+		this.#emitter.emit('copy', copy)
+		return copy
+	}
+
+	// One path's verdict, decided against the live inventory before anything is
+	// requested. The order is what makes the call cheap and the answer honest: a
+	// dead inventory fails every row alike, a guide mirror and a path the
+	// inventory does not name are each answered without a request, and a path
+	// whose declared digest already matches the target's own bytes is found from
+	// those bytes. Only what is left is fetched, and what comes back has to hash
+	// to the digest the inventory declared or it fails rather than reaching a
+	// write.
+	//
+	// The guide mirror is refused ahead of the byte comparison rather than after
+	// it, so the refusal is a property of the path and reads the same whatever
+	// the target holds. Those bytes belong to the mirror verb, which refetches
+	// them from each package's own repository, so answering one from this
+	// repository would claim a comparison that verb is about to break.
+	async #answer(
+		path: string,
+		inventory: {
+			readonly lookup: Lookup
+			readonly digests: ReadonlyMap<string, string>
+			readonly duplicates: ReadonlySet<string>
+			readonly note: string
+		},
+		observed: string | undefined,
+		allowance: { remaining: number },
+	): Promise<Copy> {
+		const carried = observed === undefined ? {} : { observed }
+		if (inventory.lookup !== 'found') {
+			return { path, lookup: inventory.lookup, note: inventory.note, ...carried }
+		}
+		if (inferGroup(path) === 'guides') {
+			return {
+				path,
+				lookup: 'missing',
+				note: `${path} is a guide mirror the fleet serves`,
+				...carried,
+			}
+		}
+		if (inventory.duplicates.has(path)) {
+			return {
+				path,
+				lookup: 'failed',
+				note: `the inventory names ${path} more than once`,
+				...carried,
+			}
+		}
+		const digest = inventory.digests.get(path)
+		if (digest === undefined) {
+			return { path, lookup: 'missing', note: `the inventory does not name ${path}`, ...carried }
+		}
+		if (observed !== undefined && hexToDigest(observed) === digest) {
+			const held = attempt(() =>
+				new TextDecoder('utf-8', { fatal: true }).decode(Buffer.from(observed, 'hex')),
+			)
+			return held.success
+				? { path, lookup: 'found', content: held.value, ...carried }
+				: {
+						path,
+						lookup: 'failed',
+						note: `the copy of ${path} at the target is not UTF-8`,
+						...carried,
+					}
+		}
+		const outcome = await this.#read(this.#vendorURL(path), this.#repositoryTimeout, allowance)
+		if (outcome.lookup !== 'found') {
+			return { path, lookup: outcome.lookup, note: outcome.note, ...carried }
+		}
+		if (computeDigest(outcome.content) !== digest) {
+			return {
+				path,
+				lookup: 'failed',
+				note: `the bytes served for ${path} do not match the digest the inventory declares`,
+				...carried,
+			}
+		}
+		return { path, lookup: 'found', content: outcome.content, ...carried }
+	}
+
+	// The committed inventory, read once per call and projected into the lookup
+	// every row of that call is decided against. It fails softly rather than
+	// throwing, because a caller holding one whole failed answer can fall back to
+	// one whole baseline, where a mixture of live and dead rows leaves it nothing
+	// to fall back to. The membership digest is recomputed rather than trusted, so
+	// a membership edit that did not update the manifest's own claim is refused
+	// here instead of authorizing bytes downstream.
+	async #inventory(allowance: { remaining: number }): Promise<{
+		readonly lookup: Lookup
+		readonly digests: ReadonlyMap<string, string>
+		readonly duplicates: ReadonlySet<string>
+		readonly note: string
+	}> {
+		const url = this.#vendorURL(HOST_INVENTORY_PATH)
+		const empty = { digests: new Map<string, string>(), duplicates: new Set<string>() }
+		const outcome = await this.#read(url, this.#repositoryTimeout, allowance)
+		if (outcome.lookup !== 'found') {
+			return {
+				...empty,
+				lookup: outcome.lookup,
+				note:
+					outcome.lookup === 'missing'
+						? `the vendored inventory at ${url} is not published there`
+						: `the vendored inventory at ${url} produced no answer: ${outcome.note}`,
+			}
+		}
+		const manifest = parseJSONAs(outcome.content, isHostManifest)
+		if (manifest === undefined) {
+			return {
+				...empty,
+				lookup: 'failed',
+				note: `the vendored inventory at ${url} is not a readable manifest`,
+			}
+		}
+		if (manifest.digest !== computeManifestDigest(manifest.entries, manifest.roots)) {
+			return {
+				...empty,
+				lookup: 'failed',
+				note: `the vendored inventory at ${url} does not match its own membership digest`,
+			}
+		}
+		const digests = new Map<string, string>()
+		const duplicates = new Set<string>()
+		for (const entry of manifest.entries) {
+			if (digests.has(entry.destination)) duplicates.add(entry.destination)
+			digests.set(entry.destination, entry.digest)
+		}
+		return { lookup: 'found', digests, duplicates, note: '' }
 	}
 
 	// One catalog row. It publishes nothing on the observation channel: the
@@ -523,12 +747,29 @@ export class Upstream implements UpstreamInterface {
 	// each is encoded whole, because both reach the URL and only one of them is
 	// closed by a guard.
 	#guideURL(name: string): string {
-		const branch = this.#guideBranch
+		const branch = this.#encode(this.#repositoryBranch)
+		const repository = encodeURIComponent(name.slice(name.lastIndexOf('/') + 1))
+		return `${this.#repositoryBase}/${Upstream.#scope}/${repository}/refs/heads/${branch}/${nameToGuide(name)}`
+	}
+
+	// The same canonical raw-content path, over this package's own repository and
+	// over a target-relative path the caller named. The path is encoded segment by
+	// segment rather than left as written: `isPath` closes the traversal and
+	// separator characters, and the characters it leaves — a fragment marker, a
+	// percent sign — would otherwise reach the URL parser and address something
+	// other than the file the row answers for.
+	#vendorURL(path: string): string {
+		const branch = this.#encode(this.#repositoryBranch)
+		return `${this.#repositoryBase}/${Upstream.#scope}/${Upstream.#vendor}/refs/heads/${branch}/${this.#encode(path)}`
+	}
+
+	// One slash-joined path, encoded a segment at a time, so its separators stay
+	// separators and everything between them is escaped whole.
+	#encode(path: string): string {
+		return path
 			.split('/')
 			.map((segment) => encodeURIComponent(segment))
 			.join('/')
-		const repository = encodeURIComponent(name.slice(name.lastIndexOf('/') + 1))
-		return `${this.#guideBase}/${Upstream.#scope}/${repository}/refs/heads/${branch}/${nameToGuide(name)}`
 	}
 
 	// One read, plus the retries a transport fault is given. A `404` is a definite
@@ -547,7 +788,7 @@ export class Upstream implements UpstreamInterface {
 		accept?: string,
 	): Promise<{ readonly lookup: Lookup; readonly content: string; readonly note: string }> {
 		let note = ''
-		for (let attempt = 0; attempt <= this.#retries; attempt += 1) {
+		for (let round = 0; round <= this.#retries; round += 1) {
 			this.#assertAlive()
 			const outcome = await this.#request(url, timeout, allowance, accept)
 			if (outcome.lookup !== 'failed') return outcome

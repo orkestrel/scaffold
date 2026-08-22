@@ -156,6 +156,9 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
 	'guides/scaffold.md',
 ])
 
+/** The repository-relative path where the committed vendored-file inventory is served. */
+export const HOST_INVENTORY_PATH = 'host.json'
+
 /**
  * The vendored paths whose present bytes belong to each workspace, frozen.
  *

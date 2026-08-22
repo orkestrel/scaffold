@@ -1,5 +1,6 @@
-import type { Snapshot } from '@src/core'
+import type { Copy, Snapshot } from '@src/core'
 import type {
+	Host,
 	HostManifest,
 	ManifestEntry,
 	WriteAnchor,
@@ -14,6 +15,7 @@ import {
 	copyFileSync,
 	fstatSync,
 	lstatSync,
+	mkdtempSync,
 	mkdirSync,
 	opendirSync,
 	openSync,
@@ -21,15 +23,19 @@ import {
 	readdirSync,
 	readSync,
 	realpathSync,
+	rmSync,
 	writeFileSync,
 } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { basename, dirname, join, parse, relative, resolve, sep } from 'node:path'
 import { attempt, holds, isError, parseJSONAs } from '@orkestrel/contract'
 import {
 	bytesToHex,
+	contentToHex,
 	EXECUTABLE_PATHS,
 	HOST_PATHS,
 	isCollection,
+	isHex,
 	isPath,
 	MAX_ARTIFACT_BYTES,
 	MAX_COLLECTION_ITEMS,
@@ -238,6 +244,28 @@ export function computeDigest(content: string): string {
 }
 
 /**
+ * Projects exact bytes stated in hexadecimal to their SHA-256 digest.
+ *
+ * @param hex - The exact lowercase hexadecimal bytes to digest.
+ * @returns Sixty-four lowercase hexadecimal digits.
+ * @throws `ScaffoldError('INVALID', …)` when `hex` is not exact bounded
+ * lowercase hexadecimal text.
+ *
+ * @example
+ * ```ts
+ * import { hexToDigest } from '@orkestrel/scaffold/server'
+ *
+ * hexToDigest('68690a') // '98ea6e4f216f2fb4b69fff9b3a44842c38686ca685f3f55dc48c5d3fb1107be4'
+ * ```
+ */
+export function hexToDigest(hex: string): string {
+	if (!isHex(hex)) {
+		throw new ScaffoldError('INVALID', 'Digest input is not exact hexadecimal bytes', { hex })
+	}
+	return createHash('sha256').update(Buffer.from(hex, 'hex')).digest('hex')
+}
+
+/**
  * Compute the digest of a vendored host's declared membership.
  *
  * @param entries - The ordered file membership declarations.
@@ -269,6 +297,7 @@ export function computeManifestDigest(
 				storage: entry.storage,
 				destination: entry.destination,
 				executable: entry.executable,
+				digest: entry.digest,
 			})),
 			roots: [...roots],
 		}),
@@ -1070,18 +1099,166 @@ export function readHostManifest(host: string): HostManifest | undefined {
  * import { readManifestEntry } from '@orkestrel/scaffold/server'
  *
  * readManifestEntry('.gitignore', '/tmp/checkout/.gitignore')
- * // { storage: 'dotfiles/gitignore', destination: '.gitignore', executable: false }
+ * // { storage: 'dotfiles/gitignore', destination: '.gitignore', executable: false, digest: '...' }
  * ```
  */
 export function readManifestEntry(destination: string, source: string): ManifestEntry | undefined {
-	if (!isPhysicalFile(source)) return undefined
-	const status = attempt(() => lstatSync(source))
-	if (!status.success || status.value.size > MAX_ARTIFACT_BYTES) return undefined
+	const digest = computeFileDigest(source)
+	if (digest === undefined) return undefined
 	return {
 		storage: pathToStorage(destination),
 		destination,
 		executable: matchesExecutablePath(destination),
+		digest,
 	}
+}
+
+/**
+ * Assemble a whole vendored host from live copies and the release's manifest.
+ *
+ * @param copies - The vendored files read from the repository, one row per path.
+ * @param manifest - The installed release's manifest, which fixes the membership
+ * a fill may draw from and the storage and executable declarations it carries.
+ * @returns The assembled host, or `undefined` when any row produced no answer or
+ * names a path the release does not declare.
+ *
+ * @remarks
+ * The one place the all-or-nothing rule is decided, so no verb restates it. A
+ * fill is whole or it is nothing: a single row that failed, went missing, or
+ * names an undeclared path answers `undefined` and the caller falls back to the
+ * root the installed package distributes rather than to a mixture.
+ *
+ * The emitted entries keep the release's own order and its storage and
+ * executable declarations, and carry digests recomputed over the bytes the fill
+ * actually holds. That is what lets a reader verify the value against itself,
+ * and it is why an undeclared path is refused rather than added: membership
+ * moves with a release, never with a fetch.
+ *
+ * @example
+ * ```ts
+ * import { copiesToHost } from '@orkestrel/scaffold/server'
+ *
+ * copiesToHost([{ path: 'AGENTS.md', lookup: 'found', content: '# Agents\n' }], manifest)
+ * // { manifest: { entries: [ … ], roots: [ … ], digest: '…' }, bytes: { 'AGENTS.md': '…' } }
+ * ```
+ */
+export function copiesToHost(copies: readonly Copy[], manifest: HostManifest): Host | undefined {
+	const declared = new Set(manifest.entries.map((entry) => entry.destination))
+	const held = new Map<string, string>()
+	for (const copy of copies) {
+		if (copy.lookup !== 'found' || !declared.has(copy.path)) return undefined
+		held.set(copy.path, contentToHex(copy.content))
+	}
+	const entries: ManifestEntry[] = []
+	const bytes: Record<string, string> = {}
+	for (const entry of manifest.entries) {
+		const hex = held.get(entry.destination)
+		if (hex === undefined) continue
+		entries.push({
+			storage: entry.storage,
+			destination: entry.destination,
+			executable: entry.executable,
+			digest: hexToDigest(hex),
+		})
+		bytes[entry.destination] = hex
+	}
+	return {
+		manifest: {
+			entries,
+			roots: manifest.roots,
+			digest: computeManifestDigest(entries, manifest.roots),
+		},
+		bytes,
+	}
+}
+
+/**
+ * Stage the named destinations of a value host into a private root.
+ *
+ * @param host - The host whose bytes are written, keyed by destination.
+ * @param root - The private directory to fill; it must already be a directory
+ * this process may write into.
+ * @param destinations - The destinations to stage, each declared by `host`.
+ * @returns The entry staged for each destination, in the order requested.
+ * @throws `ScaffoldError('INVALID', …)` when `root` is not a host path or a
+ * storage name leaves it.
+ * @throws `ScaffoldError('TARGET', …)` when a destination is one the host does
+ * not declare, carries no bytes, or carries bytes that miss its declared digest.
+ * @throws `ScaffoldError('WRITE', …)` when a file cannot be written or does not
+ * read back as the bytes it was given.
+ *
+ * @remarks
+ * Each file lands under the storage name the manifest declares and takes the
+ * executable bit that manifest records, so a root filled from a value is the
+ * same shape as one staged from a checkout and a reader cannot tell them apart.
+ * That is what lets a mutation copy real files with real modes from bytes a
+ * caller supplied, instead of degrading them to plain text writes.
+ *
+ * The bytes are digested before the write and the staged file after it, so a
+ * value that disagrees with its own manifest is told apart from a write that
+ * did not land.
+ *
+ * @example
+ * ```ts
+ * import { stageBytes } from '@orkestrel/scaffold/server'
+ *
+ * stageBytes(host, '/tmp/orkestrel-host-a1b2', ['scripts/codex.sh'])
+ * // [{ storage: 'scripts/codex.sh', destination: 'scripts/codex.sh', executable: true, digest: '…' }]
+ * ```
+ */
+export function stageBytes(
+	host: Host,
+	root: string,
+	destinations: readonly string[],
+): readonly ManifestEntry[] {
+	if (!isFilesystemPath(root)) {
+		throw new ScaffoldError('INVALID', 'Staging host root is not a host path', { host: root })
+	}
+	const declared = new Map(host.manifest.entries.map((entry) => [entry.destination, entry]))
+	const staged: ManifestEntry[] = []
+	for (const destination of destinations) {
+		const entry = declared.get(destination)
+		const hex = host.bytes[destination]
+		if (entry === undefined || hex === undefined) {
+			throw new ScaffoldError('TARGET', `The host carries no bytes for ${destination}`, {
+				host: root,
+				destination,
+			})
+		}
+		if (hexToDigest(hex) !== entry.digest) {
+			throw new ScaffoldError('TARGET', `The host bytes for ${destination} miss its digest`, {
+				host: root,
+				destination,
+			})
+		}
+		const full = resolveContainedPath(root, entry.storage)
+		if (full === undefined) {
+			throw new ScaffoldError('INVALID', `Host storage leaves its root at ${entry.storage}`, {
+				host: root,
+				storage: entry.storage,
+			})
+		}
+		const written = attempt(() => {
+			mkdirSync(dirname(full), { recursive: true })
+			writeFileSync(full, Buffer.from(hex, 'hex'), { flag: 'wx' })
+			if (entry.executable) chmodSync(full, 0o755)
+		})
+		if (!written.success) {
+			throw new ScaffoldError('WRITE', `Host bytes could not be staged at ${entry.storage}`, {
+				host: root,
+				storage: entry.storage,
+				error: written.error,
+			})
+		}
+		if (computeFileDigest(full) !== entry.digest) {
+			throw new ScaffoldError('WRITE', `Staged host bytes at ${entry.storage} did not read back`, {
+				host: root,
+				storage: entry.storage,
+			})
+		}
+		staged.push(entry)
+	}
+	return staged
 }
 
 /**
@@ -1280,6 +1457,82 @@ export function stageHost(checkout: string, host: string): readonly ManifestEntr
 		})
 	}
 	return entries
+}
+
+/**
+ * Stages the committed inventory of the files a vendored host carries.
+ *
+ * @param checkout - The checkout whose vendored paths are inventoried.
+ * @param path - The host path where the JSON inventory is written.
+ * @returns The validated manifest written to `path`.
+ * @throws `ScaffoldError('INVALID', …)` when `path` is not a host path.
+ * @throws `ScaffoldError('WRITE', …)` when a temporary host or the inventory
+ * cannot be written or removed.
+ * @throws `ScaffoldError('TARGET', …)` when the staged inventory does not read
+ * back through the manifest validator.
+ *
+ * @remarks
+ * Uses {@link stageHost} as the single vendored-path expansion. The temporary
+ * host supplies the same entries, roots, per-file digests, and membership
+ * digest as the published host while the requested output remains one JSON
+ * file.
+ *
+ * @example
+ * ```ts
+ * import { stageInventory } from '@orkestrel/scaffold/server'
+ *
+ * stageInventory(process.cwd(), 'host.json') // the committed host inventory
+ * ```
+ */
+export function stageInventory(checkout: string, path: string): HostManifest {
+	if (!isFilesystemPath(path)) {
+		throw new ScaffoldError('INVALID', 'Inventory destination is not a host path', { path })
+	}
+	const temporary = attempt(() => mkdtempSync(join(tmpdir(), 'orkestrel-scaffold-host-')))
+	if (!temporary.success) {
+		throw new ScaffoldError('WRITE', 'Inventory staging root could not be established', {
+			path,
+			error: temporary.error,
+		})
+	}
+	const staged = attempt(() => {
+		stageHost(checkout, temporary.value)
+		const manifest = readHostManifest(temporary.value)
+		if (manifest === undefined) {
+			throw new ScaffoldError('TARGET', 'The staged inventory carries no manifest', { path })
+		}
+		const target = resolve(path)
+		const published = attempt(() => {
+			mkdirSync(dirname(target), { recursive: true })
+			writeFileSync(target, `${JSON.stringify(manifest, null, '\t')}\n`, 'utf8')
+		})
+		if (!published.success) {
+			throw new ScaffoldError('WRITE', `Inventory could not be written at ${target}`, {
+				path: target,
+				error: published.error,
+			})
+		}
+		const text = readFileText(dirname(target), basename(target), MAX_MANIFEST_BYTES)
+		const verified = text === undefined ? undefined : parseJSONAs(text, isHostManifest)
+		if (
+			verified === undefined ||
+			verified.digest !== computeManifestDigest(verified.entries, verified.roots)
+		) {
+			throw new ScaffoldError('TARGET', `Inventory does not read back at ${target}`, {
+				path: target,
+			})
+		}
+		return verified
+	})
+	const removed = attempt(() => rmSync(temporary.value, { recursive: true, force: true }))
+	if (!removed.success) {
+		throw new ScaffoldError('WRITE', `Inventory staging root could not be removed`, {
+			path: temporary.value,
+			error: removed.error,
+		})
+	}
+	if (!staged.success) throw staged.error
+	return staged.value
 }
 
 /**

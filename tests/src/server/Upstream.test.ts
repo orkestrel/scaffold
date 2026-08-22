@@ -1,19 +1,30 @@
-import type { Mirror, Release } from '@src/core'
+import type { Copy, Mirror, Release, Snapshot } from '@src/core'
 import { gzipSync } from 'node:zlib'
 import { contentToHex, MAX_ARTIFACT_BYTES, MAX_COLLECTION_ITEMS } from '@src/core'
-import { Upstream } from '@src/server'
+import {
+	computeDigest,
+	computeManifestDigest,
+	hexToDigest,
+	pathToStorage,
+	Upstream,
+} from '@src/server'
 import { describe, expect, it } from 'vitest'
+import { isRecord } from '@orkestrel/contract'
 import { createRecorder } from '@orkestrel/test'
 import { buildDependency } from '../../setup.js'
 import {
+	buildInventory,
+	buildManifestEntry,
 	buildOrganization,
 	buildPackument,
+	buildVendoredSnapshot,
 	createUpstreamServer,
 	FLEET_UPSTREAM_PATHS,
 	readErrorCode,
 	readRejectionCode,
 	UPSTREAM_ENDPOINT_CASES,
 	UPSTREAM_PATHS,
+	VENDORED_FILES,
 } from '../../setupServer.js'
 
 describe('Upstream construction', () => {
@@ -22,15 +33,17 @@ describe('Upstream construction', () => {
 		// are measured against it in `validators.test.ts`; what is measured here is
 		// that the constructor consults that guard at all.
 		expect(readErrorCode(() => new Upstream({ concurrency: 0 }))).toBe('INVALID')
-		expect(readErrorCode(() => new Upstream({ guides: { branch: 'main/../etc' } }))).toBe('INVALID')
+		expect(readErrorCode(() => new Upstream({ repository: { branch: 'main/../etc' } }))).toBe(
+			'INVALID',
+		)
 		expect(readErrorCode(() => new Upstream({ retries: 1.5 }))).toBe('INVALID')
 	})
 
 	it('decides the scheme and host law the endpoint guard leaves to it', () => {
 		for (const endpoint of UPSTREAM_ENDPOINT_CASES) {
-			const guides = readErrorCode(() => new Upstream({ guides: { base: endpoint.base } }))
+			const repository = readErrorCode(() => new Upstream({ repository: { base: endpoint.base } }))
 			const registry = readErrorCode(() => new Upstream({ registry: { base: endpoint.base } }))
-			expect([endpoint.label, guides]).toStrictEqual([
+			expect([endpoint.label, repository]).toStrictEqual([
 				endpoint.label,
 				endpoint.accepted ? undefined : 'INVALID',
 			])
@@ -322,7 +335,7 @@ describe('Upstream lookup', () => {
 		const server = await createUpstreamServer({})
 		const upstream = new Upstream({
 			registry: { base: server.base },
-			guides: { base: server.base },
+			repository: { base: server.base },
 		})
 		try {
 			expect(await upstream.lookup([])).toStrictEqual([])
@@ -379,7 +392,7 @@ describe('Upstream fetch', () => {
 		})
 		const recorder = createRecorder<readonly [Mirror]>()
 		const upstream = new Upstream({
-			guides: { base: server.base },
+			repository: { base: server.base },
 			on: { mirror: recorder.handler },
 		})
 		try {
@@ -406,7 +419,7 @@ describe('Upstream fetch', () => {
 		const server = await createUpstreamServer({
 			[UPSTREAM_PATHS.branched]: { status: 503, body: '{"error":"Unavailable"}' },
 		})
-		const upstream = new Upstream({ guides: { base: server.base, branch: 'release/0.1.x' } })
+		const upstream = new Upstream({ repository: { base: server.base, branch: 'release/0.1.x' } })
 		try {
 			const observed = contentToHex('# Router (local)\n')
 			const mirrors = await upstream.fetch(['@orkestrel/router'], { 'guides/router.md': observed })
@@ -431,7 +444,7 @@ describe('Upstream fetch', () => {
 			[UPSTREAM_PATHS.guide]: { status: 204, body: '' },
 			[FLEET_UPSTREAM_PATHS.mirrors.emitter]: { status: 205, body: '' },
 		})
-		const upstream = new Upstream({ guides: { base: server.base } })
+		const upstream = new Upstream({ repository: { base: server.base } })
 		try {
 			const observed = contentToHex('# Router (local)\n')
 			const mirrors = await upstream.fetch(['@orkestrel/router', '@orkestrel/emitter'], {
@@ -465,7 +478,7 @@ describe('Upstream fetch', () => {
 		const server = await createUpstreamServer({
 			[UPSTREAM_PATHS.guide]: { status: 200, body: '', type: 'text/plain' },
 		})
-		const upstream = new Upstream({ guides: { base: server.base } })
+		const upstream = new Upstream({ repository: { base: server.base } })
 		try {
 			// The control the refusal above is measured against, drawn from the
 			// population it must not reach: a real zero-byte file is an answer, and a
@@ -483,7 +496,7 @@ describe('Upstream fetch', () => {
 		const server = await createUpstreamServer({
 			[UPSTREAM_PATHS.guide]: { status: 404, body: '404: Not Found', type: 'text/plain' },
 		})
-		const upstream = new Upstream({ guides: { base: server.base } })
+		const upstream = new Upstream({ repository: { base: server.base } })
 		try {
 			const mirrors = await upstream.fetch(['@orkestrel/router'], {})
 			expect(mirrors).toStrictEqual([
@@ -520,6 +533,423 @@ describe('Upstream fetch', () => {
 	})
 })
 
+describe('Upstream vendor', () => {
+	it('reads the inventory once and answers an aligned target from its own bytes', async () => {
+		const files = [VENDORED_FILES.agents, VENDORED_FILES.license, VENDORED_FILES.orchestration]
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.vendored.inventory]: { status: 200, body: buildInventory(files) },
+			[UPSTREAM_PATHS.vendored.agents]: {
+				status: 200,
+				body: VENDORED_FILES.agents.content,
+				type: 'text/plain',
+			},
+			[UPSTREAM_PATHS.vendored.license]: {
+				status: 200,
+				body: VENDORED_FILES.license.content,
+				type: 'text/plain',
+			},
+			[UPSTREAM_PATHS.vendored.orchestration]: {
+				status: 200,
+				body: VENDORED_FILES.orchestration.content,
+				type: 'text/plain',
+			},
+		})
+		const recorder = createRecorder<readonly [Copy]>()
+		const upstream = new Upstream({
+			repository: { base: server.base },
+			on: { copy: recorder.handler },
+		})
+		try {
+			const current = buildVendoredSnapshot(files)
+			const copies = await upstream.vendor(
+				files.map((file) => file.path),
+				current,
+			)
+			expect(copies).toStrictEqual(
+				files.map((file) => ({
+					path: file.path,
+					lookup: 'found',
+					content: file.content,
+					observed: current[file.path],
+				})),
+			)
+			// Every blob route is scripted, so a reader that requested one anyway
+			// would be answered rather than refused. The fixture's arrival list is
+			// what proves the aligned rows cost nothing: only the inventory arrived.
+			expect(server.paths).toStrictEqual([UPSTREAM_PATHS.vendored.inventory])
+			expect(recorder.count).toBe(files.length)
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('requests only the path whose bytes moved', async () => {
+		const files = [VENDORED_FILES.agents, VENDORED_FILES.license]
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.vendored.inventory]: { status: 200, body: buildInventory(files) },
+			[UPSTREAM_PATHS.vendored.agents]: {
+				status: 200,
+				body: VENDORED_FILES.agents.content,
+				type: 'text/plain',
+			},
+			[UPSTREAM_PATHS.vendored.license]: {
+				status: 200,
+				body: VENDORED_FILES.license.content,
+				type: 'text/plain',
+			},
+		})
+		const upstream = new Upstream({ repository: { base: server.base }, concurrency: 1 })
+		try {
+			const current: Snapshot = {
+				...buildVendoredSnapshot(files),
+				[VENDORED_FILES.agents.path]: contentToHex('# Agents (local)\n'),
+			}
+			const copies = await upstream.vendor(
+				files.map((file) => file.path),
+				current,
+			)
+			expect(copies).toStrictEqual([
+				{
+					path: VENDORED_FILES.agents.path,
+					lookup: 'found',
+					content: VENDORED_FILES.agents.content,
+					observed: current[VENDORED_FILES.agents.path],
+				},
+				{
+					path: VENDORED_FILES.license.path,
+					lookup: 'found',
+					content: VENDORED_FILES.license.content,
+					observed: current[VENDORED_FILES.license.path],
+				},
+			])
+			expect(server.paths).toStrictEqual([
+				UPSTREAM_PATHS.vendored.inventory,
+				UPSTREAM_PATHS.vendored.agents,
+			])
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('fails every row and requests no file when the inventory produces no answer', async () => {
+		const files = [VENDORED_FILES.agents, VENDORED_FILES.license]
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.vendored.inventory]: { status: 503, body: '{"error":"Unavailable"}' },
+			[UPSTREAM_PATHS.vendored.agents]: { status: 200, body: VENDORED_FILES.agents.content },
+			[UPSTREAM_PATHS.vendored.license]: { status: 200, body: VENDORED_FILES.license.content },
+		})
+		const upstream = new Upstream({ repository: { base: server.base }, concurrency: 1 })
+		try {
+			// The target is aligned on every path, so a reader deciding rows one at a
+			// time would answer them all found without ever reading the inventory. A
+			// whole failed answer is what leaves the caller one baseline to take.
+			const copies = await upstream.vendor(
+				files.map((file) => file.path),
+				buildVendoredSnapshot(files),
+			)
+			expect(copies.map((copy) => copy.lookup)).toStrictEqual(['failed', 'failed'])
+			for (const copy of copies) expect(copy.note).toContain('produced no answer: HTTP 503')
+			expect(server.paths).toStrictEqual([UPSTREAM_PATHS.vendored.inventory])
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('reports an unpublished inventory as a definite absence it never retries', async () => {
+		const files = [VENDORED_FILES.agents, VENDORED_FILES.license]
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.vendored.agents]: { status: 200, body: VENDORED_FILES.agents.content },
+		})
+		const upstream = new Upstream({
+			repository: { base: server.base },
+			retries: 2,
+			concurrency: 1,
+		})
+		try {
+			const copies = await upstream.vendor(
+				files.map((file) => file.path),
+				{},
+			)
+			expect(copies.map((copy) => copy.lookup)).toStrictEqual(['missing', 'missing'])
+			for (const copy of copies) expect(copy.note).toContain('is not published there')
+			// The control is the retry count: a transport fault at this endpoint would
+			// have arrived three times, so one arrival proves the reader read the
+			// `404` as an answer rather than as a fault worth asking again.
+			expect(server.paths).toStrictEqual([UPSTREAM_PATHS.vendored.inventory])
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('fails every row when the inventory does not read back as a manifest', async () => {
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.vendored.inventory]: { status: 200, body: '{"entries":' },
+		})
+		const upstream = new Upstream({ repository: { base: server.base } })
+		try {
+			const copies = await upstream.vendor([VENDORED_FILES.agents.path], {})
+			expect(copies.map((copy) => copy.lookup)).toStrictEqual(['failed'])
+			expect(copies[0]?.note).toContain('is not a readable manifest')
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('fails every row when the inventory does not match its own membership digest', async () => {
+		const declared: unknown = JSON.parse(buildInventory([VENDORED_FILES.agents]))
+		const tampered = JSON.stringify({
+			...(isRecord(declared) ? declared : {}),
+			entries: [
+				buildManifestEntry({
+					storage: pathToStorage(VENDORED_FILES.license.path),
+					destination: VENDORED_FILES.license.path,
+					digest: computeDigest(VENDORED_FILES.license.content),
+				}),
+			],
+		})
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.vendored.inventory]: { status: 200, body: tampered },
+			[UPSTREAM_PATHS.vendored.license]: { status: 200, body: VENDORED_FILES.license.content },
+		})
+		const upstream = new Upstream({ repository: { base: server.base } })
+		try {
+			// The membership moved and the manifest's own claim about it did not, so
+			// the digest the reader recomputes disagrees with the one it was handed.
+			// The control is the untampered body: the same builder produced a digest
+			// this reader accepts in every other row here.
+			const copies = await upstream.vendor([VENDORED_FILES.license.path], {})
+			expect(copies.map((copy) => copy.lookup)).toStrictEqual(['failed'])
+			expect(copies[0]?.note).toContain('does not match its own membership digest')
+			expect(server.paths).toStrictEqual([UPSTREAM_PATHS.vendored.inventory])
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('reports a path the inventory does not name as missing, without requesting it', async () => {
+		const files = [VENDORED_FILES.agents]
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.vendored.inventory]: { status: 200, body: buildInventory(files) },
+			[UPSTREAM_PATHS.vendored.license]: { status: 200, body: VENDORED_FILES.license.content },
+		})
+		const upstream = new Upstream({ repository: { base: server.base }, concurrency: 1 })
+		try {
+			const copies = await upstream.vendor(
+				[VENDORED_FILES.agents.path, VENDORED_FILES.license.path],
+				buildVendoredSnapshot(files),
+			)
+			expect(copies.map((copy) => copy.lookup)).toStrictEqual(['found', 'missing'])
+			expect(copies[1]?.note).toContain(`does not name ${VENDORED_FILES.license.path}`)
+			// The route is scripted and would have answered, so its absence from the
+			// arrival list is the reader declining to ask rather than the fixture
+			// refusing.
+			expect(server.paths).toStrictEqual([UPSTREAM_PATHS.vendored.inventory])
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('fails a row the inventory names twice, and answers the rest', async () => {
+		const doubled = [
+			VENDORED_FILES.agents,
+			{ path: VENDORED_FILES.agents.path, content: '# Agents (other)\n' },
+			VENDORED_FILES.license,
+		]
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.vendored.inventory]: { status: 200, body: buildInventory(doubled) },
+			[UPSTREAM_PATHS.vendored.agents]: { status: 200, body: VENDORED_FILES.agents.content },
+			[UPSTREAM_PATHS.vendored.license]: { status: 200, body: VENDORED_FILES.license.content },
+		})
+		const upstream = new Upstream({ repository: { base: server.base }, concurrency: 1 })
+		try {
+			const copies = await upstream.vendor(
+				[VENDORED_FILES.agents.path, VENDORED_FILES.license.path],
+				{},
+			)
+			expect(copies.map((copy) => copy.lookup)).toStrictEqual(['failed', 'found'])
+			expect(copies[0]?.note).toContain(`names ${VENDORED_FILES.agents.path} more than once`)
+			expect(server.paths).toStrictEqual([
+				UPSTREAM_PATHS.vendored.inventory,
+				UPSTREAM_PATHS.vendored.license,
+			])
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('fails a row whose served bytes do not hash to the digest the inventory declares', async () => {
+		const files = [VENDORED_FILES.agents]
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.vendored.inventory]: { status: 200, body: buildInventory(files) },
+			[UPSTREAM_PATHS.vendored.agents]: { status: 200, body: '# Agents (substituted)\n' },
+		})
+		const upstream = new Upstream({ repository: { base: server.base } })
+		try {
+			const copies = await upstream.vendor([VENDORED_FILES.agents.path], {})
+			expect(copies.map((copy) => copy.lookup)).toStrictEqual(['failed'])
+			expect(copies[0]?.note).toContain('do not match the digest the inventory declares')
+			expect(copies[0]?.content).toBeUndefined()
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('fails a row whose body passes the response limit', async () => {
+		const oversized = {
+			path: VENDORED_FILES.agents.path,
+			content: `# Agents\n${'a'.repeat(2_000)}\n`,
+		}
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.vendored.inventory]: { status: 200, body: buildInventory([oversized]) },
+			[UPSTREAM_PATHS.vendored.agents]: { status: 200, body: oversized.content },
+		})
+		const upstream = new Upstream({ repository: { base: server.base }, limit: 1_000 })
+		try {
+			// The inventory is well under the limit and the file is well over it, so
+			// the limit refuses the blob alone rather than the whole call.
+			const copies = await upstream.vendor([oversized.path], {})
+			expect(copies.map((copy) => copy.lookup)).toStrictEqual(['failed'])
+			expect(copies[0]?.note).toContain('1000-byte response limit')
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('answers a guide mirror without requesting one from this repository', async () => {
+		const files = [VENDORED_FILES.agents, VENDORED_FILES.mirror]
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.vendored.inventory]: { status: 200, body: buildInventory(files) },
+			[UPSTREAM_PATHS.vendored.agents]: { status: 200, body: VENDORED_FILES.agents.content },
+			[UPSTREAM_PATHS.vendored.mirror]: { status: 200, body: VENDORED_FILES.mirror.content },
+		})
+		const upstream = new Upstream({ repository: { base: server.base }, concurrency: 1 })
+		try {
+			// The mirror's bytes belong to the mirror verb, which refetches them from
+			// each package's own repository, so this reader answers none of them. The
+			// target is aligned on the mirror, which is the case a refusal made after
+			// the byte comparison would answer found instead: the refusal is a
+			// property of the path rather than of what the target happens to hold.
+			const copies = await upstream.vendor(
+				files.map((file) => file.path),
+				buildVendoredSnapshot([VENDORED_FILES.mirror]),
+			)
+			expect(copies.map((copy) => copy.lookup)).toStrictEqual(['found', 'missing'])
+			expect(copies[1]?.note).toContain('is a guide mirror the fleet serves')
+			expect(server.paths).toStrictEqual([
+				UPSTREAM_PATHS.vendored.inventory,
+				UPSTREAM_PATHS.vendored.agents,
+			])
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('fails an aligned row whose local bytes are not UTF-8', async () => {
+		const hex = 'ff'
+		const entries = [
+			buildManifestEntry({ storage: 'BINARY', destination: 'BINARY', digest: hexToDigest(hex) }),
+		]
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.vendored.inventory]: {
+				status: 200,
+				body: JSON.stringify({ entries, roots: [], digest: computeManifestDigest(entries, []) }),
+			},
+		})
+		const upstream = new Upstream({ repository: { base: server.base } })
+		try {
+			// The digest matches, so the target holds exactly the declared bytes. They
+			// are still bytes no row can carry as content, and fetching them would
+			// fail the same decode.
+			const copies = await upstream.vendor(['BINARY'], { BINARY: hex })
+			expect(copies).toStrictEqual([
+				{
+					path: 'BINARY',
+					lookup: 'failed',
+					note: 'the copy of BINARY at the target is not UTF-8',
+					observed: hex,
+				},
+			])
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('addresses the configured branch', async () => {
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.vendored.branched]: {
+				status: 200,
+				body: buildInventory([VENDORED_FILES.agents]),
+			},
+		})
+		const upstream = new Upstream({ repository: { base: server.base, branch: 'release/0.1.x' } })
+		try {
+			const copies = await upstream.vendor(
+				[VENDORED_FILES.agents.path],
+				buildVendoredSnapshot([VENDORED_FILES.agents]),
+			)
+			expect(copies.map((copy) => copy.lookup)).toStrictEqual(['found'])
+			expect(server.paths).toStrictEqual([UPSTREAM_PATHS.vendored.branched])
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('rejects an in-flight vendored read when the reader is torn down', async () => {
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.vendored.inventory]: {
+				status: 200,
+				body: buildInventory([VENDORED_FILES.agents]),
+				held: true,
+			},
+		})
+		const upstream = new Upstream({ repository: { base: server.base } })
+		try {
+			const pending = readRejectionCode(() => upstream.vendor([VENDORED_FILES.agents.path], {}))
+			// Deterministic without a clock: teardown happens strictly after the
+			// fixture has the request open, so the abort always lands in flight.
+			await server.arrival(UPSTREAM_PATHS.vendored.inventory)
+			upstream.destroy()
+			expect(await pending).toBe('DESTROYED')
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('refuses paths and local bytes that are not the exact shape', async () => {
+		const upstream = new Upstream()
+		try {
+			expect(await readRejectionCode(() => upstream.vendor(['../secrets'], {}))).toBe('INVALID')
+			expect(
+				await readRejectionCode(() =>
+					upstream.vendor(
+						Array.from({ length: MAX_COLLECTION_ITEMS + 1 }, () => 'AGENTS.md'),
+						{},
+					),
+				),
+			).toBe('INVALID')
+			expect(
+				await readRejectionCode(() => upstream.vendor(['AGENTS.md'], { 'AGENTS.md': 'not hex' })),
+			).toBe('INVALID')
+		} finally {
+			upstream.destroy()
+		}
+	})
+})
+
 describe('Upstream catalog', () => {
 	it('asks the registry for the abbreviated packument and negotiates nothing else', async () => {
 		const server = await createUpstreamServer({
@@ -532,7 +962,7 @@ describe('Upstream catalog', () => {
 		})
 		const upstream = new Upstream({
 			registry: { base: server.base },
-			guides: { base: server.base },
+			repository: { base: server.base },
 			concurrency: 1,
 		})
 		try {
@@ -921,7 +1351,7 @@ describe('Upstream transport', () => {
 		const server = await createUpstreamServer({
 			[UPSTREAM_PATHS.guide]: { status: 200, body: '# Router\n', held: true },
 		})
-		const upstream = new Upstream({ guides: { base: server.base, timeout: 30 } })
+		const upstream = new Upstream({ repository: { base: server.base, timeout: 30 } })
 		try {
 			const [mirror] = await upstream.fetch(['@orkestrel/router'], {})
 			expect(mirror?.lookup).toBe('failed')
