@@ -611,7 +611,7 @@ export class CLI implements CLIInterface {
 		const current = target === undefined ? floor.bytes : readSnapshot(target, paths)
 		const upstream = new Upstream(this.#upstream)
 		try {
-			const files = await upstream.files(paths, current)
+			const files = await upstream.read(paths, current)
 			const live = filesToHost(files, floor)
 			return {
 				materializer: new Materializer({ host: live ?? floor }),

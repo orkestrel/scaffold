@@ -559,7 +559,7 @@ describe('Upstream fetch', () => {
 	})
 })
 
-describe('Upstream files', () => {
+describe('Upstream read', () => {
 	it('reads the inventory once and answers an aligned target from its own bytes', async () => {
 		const declared = [VENDORED_FILES.agents, VENDORED_FILES.license, VENDORED_FILES.orchestration]
 		const server = await createUpstreamServer({
@@ -587,7 +587,7 @@ describe('Upstream files', () => {
 		})
 		try {
 			const current = buildVendoredSnapshot(declared)
-			const files = await upstream.files(
+			const files = await upstream.read(
 				declared.map((file) => file.path),
 				current,
 			)
@@ -631,7 +631,7 @@ describe('Upstream files', () => {
 				...buildVendoredSnapshot(declared),
 				[VENDORED_FILES.agents.path]: contentToHex('# Agents (local)\n'),
 			}
-			const files = await upstream.files(
+			const files = await upstream.read(
 				declared.map((file) => file.path),
 				current,
 			)
@@ -671,7 +671,7 @@ describe('Upstream files', () => {
 			// The target is aligned on every path, so a reader deciding rows one at a
 			// time would answer them all found without ever reading the inventory. A
 			// whole failed answer is what leaves the caller one baseline to take.
-			const files = await upstream.files(
+			const files = await upstream.read(
 				declared.map((file) => file.path),
 				buildVendoredSnapshot(declared),
 			)
@@ -695,7 +695,7 @@ describe('Upstream files', () => {
 			concurrency: 1,
 		})
 		try {
-			const files = await upstream.files(
+			const files = await upstream.read(
 				declared.map((file) => file.path),
 				{},
 			)
@@ -717,7 +717,7 @@ describe('Upstream files', () => {
 		})
 		const upstream = new Upstream({ repository: { base: server.base } })
 		try {
-			const files = await upstream.files([VENDORED_FILES.agents.path], {})
+			const files = await upstream.read([VENDORED_FILES.agents.path], {})
 			expect(files.map((file) => file.lookup)).toStrictEqual(['failed'])
 			expect(files[0]?.note).toContain('is not a readable manifest')
 		} finally {
@@ -748,7 +748,7 @@ describe('Upstream files', () => {
 			// the digest the reader recomputes disagrees with the one it was handed.
 			// The control is the untampered body: the same builder produced a digest
 			// this reader accepts in every other row here.
-			const files = await upstream.files([VENDORED_FILES.license.path], {})
+			const files = await upstream.read([VENDORED_FILES.license.path], {})
 			expect(files.map((file) => file.lookup)).toStrictEqual(['failed'])
 			expect(files[0]?.note).toContain('does not match its own membership digest')
 			expect(server.paths).toStrictEqual([UPSTREAM_PATHS.vendored.inventory])
@@ -766,7 +766,7 @@ describe('Upstream files', () => {
 		})
 		const upstream = new Upstream({ repository: { base: server.base }, concurrency: 1 })
 		try {
-			const files = await upstream.files(
+			const files = await upstream.read(
 				[VENDORED_FILES.agents.path, VENDORED_FILES.license.path],
 				buildVendoredSnapshot(declared),
 			)
@@ -795,7 +795,7 @@ describe('Upstream files', () => {
 		})
 		const upstream = new Upstream({ repository: { base: server.base }, concurrency: 1 })
 		try {
-			const files = await upstream.files(
+			const files = await upstream.read(
 				[VENDORED_FILES.agents.path, VENDORED_FILES.license.path],
 				{},
 			)
@@ -819,10 +819,42 @@ describe('Upstream files', () => {
 		})
 		const upstream = new Upstream({ repository: { base: server.base } })
 		try {
-			const files = await upstream.files([VENDORED_FILES.agents.path], {})
+			const files = await upstream.read([VENDORED_FILES.agents.path], {})
 			expect(files.map((file) => file.lookup)).toStrictEqual(['failed'])
 			expect(files[0]?.note).toContain('do not match the digest the inventory declares')
 			expect(files[0]?.hex).toBeUndefined()
+		} finally {
+			upstream.destroy()
+			await server.destroy()
+		}
+	})
+
+	it('accepts gzip vendored content when its decoded bytes match the inventory digest', async () => {
+		const declared = [VENDORED_FILES.agents]
+		const content = VENDORED_FILES.agents.content
+		expect(gzipSync(content).toString('hex')).not.toBe(contentToHex(content))
+		const server = await createUpstreamServer({
+			[UPSTREAM_PATHS.vendored.inventory]: { status: 200, body: buildInventory(declared) },
+			[UPSTREAM_PATHS.vendored.agents]: {
+				status: 200,
+				body: content,
+				type: 'text/plain',
+				encoding: 'gzip',
+			},
+		})
+		const upstream = new Upstream({ repository: { base: server.base } })
+		try {
+			expect(await upstream.read([VENDORED_FILES.agents.path], {})).toStrictEqual([
+				{
+					path: VENDORED_FILES.agents.path,
+					lookup: 'found',
+					hex: contentToHex(content),
+				},
+			])
+			expect(server.paths).toStrictEqual([
+				UPSTREAM_PATHS.vendored.inventory,
+				UPSTREAM_PATHS.vendored.agents,
+			])
 		} finally {
 			upstream.destroy()
 			await server.destroy()
@@ -851,7 +883,7 @@ describe('Upstream files', () => {
 		})
 		const upstream = new Upstream({ repository: { base: server.base } })
 		try {
-			expect(await upstream.files(['AGENTS.md'], {})).toStrictEqual([
+			expect(await upstream.read(['AGENTS.md'], {})).toStrictEqual([
 				{ path: 'AGENTS.md', lookup: 'found', hex },
 			])
 		} finally {
@@ -882,7 +914,7 @@ describe('Upstream files', () => {
 		})
 		const upstream = new Upstream({ repository: { base: server.base } })
 		try {
-			const files = await upstream.files(['AGENTS.md'], {})
+			const files = await upstream.read(['AGENTS.md'], {})
 			expect(files.map((file) => file.lookup)).toStrictEqual(['failed'])
 			expect(files[0]?.note).toContain('do not match the digest the inventory declares')
 		} finally {
@@ -904,7 +936,7 @@ describe('Upstream files', () => {
 		try {
 			// The inventory is well under the limit and the file is well over it, so
 			// the limit refuses the blob alone rather than the whole call.
-			const files = await upstream.files([oversized.path], {})
+			const files = await upstream.read([oversized.path], {})
 			expect(files.map((file) => file.lookup)).toStrictEqual(['failed'])
 			expect(files[0]?.note).toContain('1000-byte response limit')
 		} finally {
@@ -927,7 +959,7 @@ describe('Upstream files', () => {
 			// target is aligned on the mirror, which is the case a refusal made after
 			// the byte comparison would answer found instead: the refusal is a
 			// property of the path rather than of what the target happens to hold.
-			const files = await upstream.files(
+			const files = await upstream.read(
 				declared.map((file) => file.path),
 				buildVendoredSnapshot([VENDORED_FILES.mirror]),
 			)
@@ -956,7 +988,7 @@ describe('Upstream files', () => {
 		})
 		const upstream = new Upstream({ repository: { base: server.base } })
 		try {
-			const files = await upstream.files(['BINARY'], { BINARY: hex })
+			const files = await upstream.read(['BINARY'], { BINARY: hex })
 			expect(files).toStrictEqual([
 				{
 					path: 'BINARY',
@@ -980,7 +1012,7 @@ describe('Upstream files', () => {
 		})
 		const upstream = new Upstream({ repository: { base: server.base, branch: 'release/0.1.x' } })
 		try {
-			const files = await upstream.files(
+			const files = await upstream.read(
 				[VENDORED_FILES.agents.path],
 				buildVendoredSnapshot([VENDORED_FILES.agents]),
 			)
@@ -1002,7 +1034,7 @@ describe('Upstream files', () => {
 		})
 		const upstream = new Upstream({ repository: { base: server.base } })
 		try {
-			const pending = readRejectionCode(() => upstream.files([VENDORED_FILES.agents.path], {}))
+			const pending = readRejectionCode(() => upstream.read([VENDORED_FILES.agents.path], {}))
 			// Deterministic without a clock: teardown happens strictly after the
 			// fixture has the request open, so the abort always lands in flight.
 			await server.arrival(UPSTREAM_PATHS.vendored.inventory)
@@ -1017,17 +1049,17 @@ describe('Upstream files', () => {
 	it('refuses paths and local bytes that are not the exact shape', async () => {
 		const upstream = new Upstream()
 		try {
-			expect(await readRejectionCode(() => upstream.files(['../secrets'], {}))).toBe('INVALID')
+			expect(await readRejectionCode(() => upstream.read(['../secrets'], {}))).toBe('INVALID')
 			expect(
 				await readRejectionCode(() =>
-					upstream.files(
+					upstream.read(
 						Array.from({ length: MAX_COLLECTION_ITEMS + 1 }, () => 'AGENTS.md'),
 						{},
 					),
 				),
 			).toBe('INVALID')
 			expect(
-				await readRejectionCode(() => upstream.files(['AGENTS.md'], { 'AGENTS.md': 'not hex' })),
+				await readRejectionCode(() => upstream.read(['AGENTS.md'], { 'AGENTS.md': 'not hex' })),
 			).toBe('INVALID')
 		} finally {
 			upstream.destroy()

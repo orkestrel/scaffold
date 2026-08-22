@@ -266,11 +266,13 @@ export class Upstream implements UpstreamInterface {
 	 * live and some dead, which is what leaves the caller one whole baseline to
 	 * fall back to. A path the inventory does not name is `missing`.
 	 *
-	 * A fetched body is verified against the digest the inventory declares for
-	 * that path, so bytes that do not hash to the inventory's claim fail their row
-	 * rather than reaching a write. That is integrity against a single committed
-	 * baseline, not authenticity: it detects a truncated, substituted, or stale
-	 * body, and it says nothing about who published the inventory.
+	 * A fetched response's decoded content is verified against the digest the
+	 * inventory declares for that path, before any character decoding. Transport
+	 * encoding is transparent and does not enter the comparison, so content that
+	 * does not hash to the inventory's claim fails its row rather than reaching a
+	 * write. That is integrity against a single committed baseline, not
+	 * authenticity: it detects truncated, substituted, or stale content, and it
+	 * says nothing about who published the inventory.
 	 *
 	 * A guide mirror is never answered here whatever the caller asks for and
 	 * whatever the target holds, because those bytes belong to `fetch` and to the
@@ -281,11 +283,11 @@ export class Upstream implements UpstreamInterface {
 	 * import { Upstream } from '@orkestrel/scaffold/server'
 	 *
 	 * const upstream = new Upstream()
-	 * await upstream.files(['AGENTS.md'], { 'AGENTS.md': '2320416745' })
+	 * await upstream.read(['AGENTS.md'], { 'AGENTS.md': '2320416745' })
 	 * upstream.destroy()
 	 * ```
 	 */
-	async files(paths: readonly string[], current: Snapshot): Promise<readonly HostFile[]> {
+	async read(paths: readonly string[], current: Snapshot): Promise<readonly HostFile[]> {
 		this.#assertAlive()
 		const accepted = this.#accept(paths, isPaths, 'paths')
 		const observed = this.#accept(current, isSnapshot, 'current')
@@ -393,7 +395,7 @@ export class Upstream implements UpstreamInterface {
 	// found answer that states no admitted version is unmatched rather than a
 	// found one carrying nothing, because an empty version is not an answer.
 	async #release(dependency: Dependency, allowance: { remaining: number }): Promise<Release> {
-		const outcome = await this.#read(
+		const outcome = await this.#readWithRetries(
 			this.#registryURL(dependency.name),
 			this.#registryTimeout,
 			allowance,
@@ -432,7 +434,11 @@ export class Upstream implements UpstreamInterface {
 		allowance: { remaining: number },
 	): Promise<Mirror> {
 		const path = nameToGuide(name)
-		const outcome = await this.#read(this.#guideURL(name), this.#repositoryTimeout, allowance)
+		const outcome = await this.#readWithRetries(
+			this.#guideURL(name),
+			this.#repositoryTimeout,
+			allowance,
+		)
 		const observed = current[path]
 		const mirror: Mirror =
 			outcome.lookup === 'found'
@@ -525,7 +531,7 @@ export class Upstream implements UpstreamInterface {
 		if (observed !== undefined && hexToDigest(observed) === digest) {
 			return { path, lookup: 'found', hex: observed, ...carried }
 		}
-		const outcome = await this.#read(
+		const outcome = await this.#readWithRetries(
 			this.#vendorURL(path),
 			this.#repositoryTimeout,
 			allowance,
@@ -561,7 +567,7 @@ export class Upstream implements UpstreamInterface {
 	}> {
 		const url = this.#vendorURL(HOST_INVENTORY_PATH)
 		const empty = { digests: new Map<string, string>(), duplicates: new Set<string>() }
-		const outcome = await this.#read(url, this.#repositoryTimeout, allowance)
+		const outcome = await this.#readWithRetries(url, this.#repositoryTimeout, allowance)
 		if (outcome.lookup !== 'found') {
 			return {
 				...empty,
@@ -600,7 +606,7 @@ export class Upstream implements UpstreamInterface {
 	// channel carries the verdicts the writer binds to, and a catalog row is
 	// not one of them, so the whole sorted list is the answer instead.
 	async #entry(name: string, allowance: { remaining: number }): Promise<CatalogEntry> {
-		const outcome = await this.#read(
+		const outcome = await this.#readWithRetries(
 			this.#registryURL(name),
 			this.#registryTimeout,
 			allowance,
@@ -652,7 +658,7 @@ export class Upstream implements UpstreamInterface {
 	// from a fleet that shrank.
 	async #packages(allowance: { remaining: number }): Promise<readonly string[]> {
 		const url = `${this.#registryBase}/-/org/${Upstream.#scope}/package`
-		const outcome = await this.#read(url, this.#registryTimeout, allowance)
+		const outcome = await this.#readWithRetries(url, this.#registryTimeout, allowance)
 		if (outcome.lookup !== 'found') {
 			throw this.#error('FETCH', `The organization package list at ${url} produced no answer.`, {
 				url,
@@ -776,21 +782,21 @@ export class Upstream implements UpstreamInterface {
 	// `accept` is stated only where an endpoint publishes more than one form of
 	// the same answer, which is the packument alone. Every other read takes what
 	// the endpoint serves, so no request declares a media type it has no reason to.
-	async #read(
+	async #readWithRetries(
 		url: string,
 		timeout: number,
 		allowance: { remaining: number },
 		accept: string | undefined,
 		binary: true,
 	): Promise<{ readonly lookup: Lookup; readonly hex: string; readonly note: string }>
-	async #read(
+	async #readWithRetries(
 		url: string,
 		timeout: number,
 		allowance: { remaining: number },
 		accept?: string,
 		binary?: false,
 	): Promise<{ readonly lookup: Lookup; readonly content: string; readonly note: string }>
-	async #read(
+	async #readWithRetries(
 		url: string,
 		timeout: number,
 		allowance: { remaining: number },

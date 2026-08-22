@@ -410,7 +410,7 @@ no interface and is documented directly.
 | --------- | ------------------------------------------------------------------------------------------ |
 | `lookup`  | Look up the newest release each declared range admits.                                     |
 | `fetch`   | Fetch each named package's guide, beside the local mirror it answers for.                  |
-| `files`   | Read each named vendored file from the repository, beside the target bytes it answers for. |
+| `read`    | Read each named vendored file from the repository, beside the target bytes it answers for. |
 | `catalog` | Catalog the published fleet from the registry's organization package list.                 |
 | `destroy` | Tear the reader down, aborting every request in flight.                                    |
 
@@ -1013,7 +1013,7 @@ the guide mirrors a generated workspace starts from. `HOST_PATHS` is the candida
 carries the subset its target selects, because a workspace never mirrors its own guide.
 
 The `host.json` file at the repository root is the committed live inventory. Each entry carries the
-SHA-256 digest of its fetched bytes, and the inventory carries a membership digest over its declared
+SHA-256 digest of its file content, and the inventory carries a membership digest over its declared
 paths and file digests. Run `npm run build:inventory` whenever a vendored byte or path changes; the
 `config` project refuses a stale inventory. Run that gate against a quiescent checkout: its fresh and
 committed reads cannot distinguish stale data from a source edit made while the gate runs.
@@ -1066,8 +1066,10 @@ one to one.
 
 HTTPS supplies Transport Layer Security (TLS) for each fetched response, and the reader applies its
 per-response and per-call byte budgets before it accepts content. It carries each fetched vendored
-file as raw hexadecimal and verifies the raw bytes against the digest in `host.json`, then verifies
-that inventory against its membership digest. The path never decodes and re-encodes those bytes.
+response's decoded content as hexadecimal before any character decoding and verifies that content
+against the digest in `host.json`, then verifies the inventory against its membership digest.
+Transport encoding is transparent and does not enter the comparison. The path never character-
+decodes and re-encodes the content.
 
 This posture supplies integrity, not authenticity. An attacker who can serve the files can also
 serve a matching inventory. The residual is direct: fetched bytes govern agent behavior in a target

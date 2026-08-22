@@ -146,10 +146,10 @@ describe('guides', () => {
 		expect(names).not.toContain('Repository')
 	})
 
-	it('publishes files without the former vendor reader method', () => {
+	it('publishes read without the former files reader method', () => {
 		const methods = inspected.flatMap(({ source }) => source.methods('UpstreamInterface'))
-		expect(methods).toContain('files')
-		expect(methods).not.toContain('vendor')
+		expect(methods).toContain('read')
+		expect(methods).not.toContain('files')
 	})
 
 	it('resolves every relative link to a real file', () => {

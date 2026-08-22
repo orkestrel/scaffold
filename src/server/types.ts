@@ -372,7 +372,7 @@ export interface UpstreamInterface {
 	 * @param current - The target files as exact bytes, keyed by the same paths.
 	 * @returns One file verdict per path, in input order.
 	 */
-	files(paths: readonly string[], current: Snapshot): Promise<readonly HostFile[]>
+	read(paths: readonly string[], current: Snapshot): Promise<readonly HostFile[]>
 	/**
 	 * Catalog the published fleet from the registry's organization package list.
 	 *
