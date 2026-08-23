@@ -553,7 +553,10 @@ right to stop.
   first criterion the unit cannot close and stops it there, so an unreachable criterion placed ahead
   of a typecheck or a lint criterion skips that gate entirely and the unit ships a defect its own
   brief would have caught. Put the cheap non-timing gates first, and never let a whole-suite result
-  gate a scoped one.
+  gate a scoped one. Cheap-first has one exception: where the change edits a file the repository
+  vendors or otherwise digests, the regeneration step precedes every gate that reads the generated
+  artifact. A parity or inventory gate ordered ahead of it cannot pass, because the edit restaled the
+  digest that gate reads, and the unit stops on a criterion its own work already satisfied.
 - Ask what the change will do to the facts you just measured. A criterion fixed to a measured set is
   unreachable if the change alters that set, and a file marked off-limits is wrong if the change
   writes to it. Measure the state the unit will finish in, not only the state it starts from.

@@ -55,8 +55,10 @@ npx scaffold repair
 ```
 
 Restores each planned path the target is missing or has let drift, then re-audits. A file the
-workspace owns — its manifest, its source, its tests, its README — is written once at creation and
-is never rewritten here.
+workspace owns — its source, its own proofs, its README — is written once at creation and is never
+rewritten here. Two paths are not owned that way: `tests/distribution.test.ts` is restored when it
+is absent and left alone when the workspace has replaced it, and the manifest's script region is
+rewritten when its chain is the one scaffold generated and refused without a write when it is not.
 
 ### `catalog` — refresh the package table and the guide mirrors
 
