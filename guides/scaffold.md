@@ -624,15 +624,24 @@ that excludes those groups proceeds, and no verb adds the declaration for you: `
 birth-owned, and the range and script regions are the only parts of it a verb rewrites.
 
 `audit` reports one further non-blocking question, on the `setup` field, and it alone reports it.
-The question fires when the target carries a root `tests/setup*.ts` module holding any bytes that is
-neither a proof itself nor one of the vendored modules every target receives, while no root
-`tests/setup*.test.ts` proof selects `setup`. Emptiness is the whole rule, because every setup
-module scaffold seeds is empty, so a module carrying bytes is one a maintainer wrote into. The
-message names each such module and the proof to add, and it belongs to the `tests` group, so a
-scoped audit that excludes `tests` omits it. Scaffold does not write the proof it asks for, and no
-writing verb raises the question: a writing verb refuses the advisories it reports, and refusing
-`repair` over this one would block every write on a gap no write can close. Run across a fleet, the
-question is the list of packages whose setup helpers no proof covers.
+The question fires when the target carries a root `tests/setup*.ts` module that is neither a proof
+itself nor one of the vendored modules every target receives, whose bytes differ from the seed this
+blueprint plans at that same path, while no proof of the same stem covers it.
+
+The comparison is seed-relative rather than a test for emptiness, because the seeds differ by path:
+`tests/setup.ts` is seeded with the empty string and `tests/setupGlobal.ts` is seeded with a `setup`
+function body. A test for emptiness therefore raises the question against a freshly materialized
+workspace. Holding each module to the seed the same blueprint plans at its own path reports only
+what a maintainer wrote, and a seed that gains bytes in a later release needs no change here.
+
+Coverage is read per module: `tests/<name>.ts` is covered by `tests/<name>.test.ts` and by nothing
+else, which is the pairing the vendored policy proof resolves. Writing one proof retires that module
+and leaves every other uncovered module named, and the message pairs each module it names with the
+proof that module wants. The question belongs to the `tests` group, so a scoped audit that excludes
+`tests` omits it. Scaffold does not write the proof it asks for, and no writing verb raises the
+question: a writing verb refuses the advisories it reports, and refusing `repair` over this one
+would block every write on a gap no write can close. Run across a fleet, the question is the list of
+packages whose setup helpers no proof covers.
 
 ### Exit codes
 
@@ -752,7 +761,7 @@ from the `src` axis the blueprint already carries. The proof packs and installs 
 artifact, so a workspace publishing none has nothing for it to read and gets no project, no
 `test:distribution` script, and no gate entry. A workspace publishing any gets the project, the
 script, the `prepublishOnly` entry, and `tests/distribution.test.ts` itself. Limits states why this
-is the one proof scaffold writes.
+is the one proof scaffold generates from the workspace's own shape.
 
 `service` says the workspace runs a live-service Vitest project over `tests/service`, and it alone
 registers that project, its `test:service` script, and the `tests/setupService.ts` readiness module
@@ -882,6 +891,18 @@ Presence ownership has separate mechanisms, and a reader needs to know which app
 | Verb-owned      | `CATALOG_AGENT_PATH` and dependency guide mirrors | `catalog` or `mirror`                        | The owning verb is the only route for a later update.       |
 | Workspace-owned | `WORKSPACE_OWNED_PATHS`, which holds `.gitignore` | The target workspace                         | Present bytes receive no later canonical ignore update.     |
 | Plan-owned      | `DISTRIBUTION_TEST_PATH`                          | The plan, until the workspace writes its own | A deleted file is restored from the plan on the next write. |
+| Unhydrated      | Every vendored path a core-compiled plan carries  | Scaffold, after a hydrating face reads them  | Hydration restores the byte claim the core plan omits.      |
+
+The unhydrated row is the one a core-only caller meets most, and reading it as a claim about the
+path is the mistake it invites. `Compiler` runs in the pure core face, which cannot read the
+vendored data root, so every host artifact it plans carries `presence`: a claim over bytes nobody
+has read is a claim no comparison could check. A `src: ['core']` plan therefore reports `presence`
+for `AGENTS.md`, `.claude/settings.json`, `tests/policy.test.ts`, and every other vendored path, and
+a consumer concluding from that reading that scaffold never replaces those bytes is wrong.
+`Materializer` hydrates the plan before it audits or writes: hydration reads the vendored root and
+turns each path scaffold owns the bytes of into a content-owned artifact, leaving `presence` on the
+workspace-owned paths and the mirror pointers the preceding rows name. What a verb claims at a
+vendored path is the hydrated ownership, and `HostArtifact` carries the same narrowing on the type.
 
 Birth ownership is what makes a generated workspace the consumer's. `materialize` writes a
 birth-owned path into a vacant target. A later `repair` or `overwrite` call treats that path as
@@ -898,13 +919,17 @@ each of which selects its project by being written. Scaffold content-owns `tests
 `tests/policy.test.ts`, and `tests/config.test.ts`; `repair` and `overwrite` restore those files when
 their bytes drift or the files are missing.
 
-`tests/distribution.test.ts` is the one proof scaffold writes, and the one test artifact it claims
-by presence. A publishing workspace missing that file reports `missing` drift, and `repair` or
-`overwrite` writes the generated proof there. A workspace that replaced the generated proof with a
-better one keeps its own bytes exactly: presence compares existence, so no verb reads what is
-already at the path, none replaces it, and none ever reports it stale. Deleting the file is how you
-ask for the generated proof back; editing it is how you keep your own. Limits states what makes this
-proof generable when the others are not.
+`tests/distribution.test.ts` is the one proof scaffold generates, and the one test artifact it
+claims by presence. Generation is the line, not writing: scaffold writes the vendored
+`tests/policy.test.ts` and `tests/config.test.ts` proofs too, and restores them, but those are the
+shared file set's own bytes copied into the target. The distribution proof is derived from the
+workspace's own shape instead, which is why it is the one proof a generated file can be. A
+publishing workspace missing that file reports `missing` drift, and `repair` or `overwrite` writes
+the generated proof there. A workspace that replaced the generated proof with a better one keeps its
+own bytes exactly: presence compares existence, so no verb reads what is already at the path, none
+replaces it, and none ever reports it stale. Deleting the file is how you ask for the generated
+proof back; editing it is how you keep your own. Limits states what makes this proof generable when
+the others are not.
 
 Content ownership does not preserve an arbitrary custom Vitest project. The optional proof projects
 are fixed: `guides`, `integration`, `conformance`, and `service` are selected by their defining
@@ -1388,18 +1413,27 @@ nothing. This is deliberate: a generated sample entity is repeatedly mistaken fo
 implementation. What a consumer does first is write the module's `types.ts`, then the
 implementation that conforms to it, then export both from the barrel — the order `AGENTS.md` fixes.
 
-**Scaffold writes the distribution proof and refuses every other one.** The subject is what
-separates them, and it is the whole rule. A distribution proof's every assertion derives from the
-artifact the workspace installs: the `exports` map the packed tarball declares, the built
-declarations beside it, and the module objects a Node import, a CommonJS require, and a real browser
-hand back from that installed tree. Nothing there has to be named, so one generated file measures
-every publishing workspace, and it stays true as that workspace's published surface moves. A guide,
-conformance, live-service, or setup proof's assertions derive from nothing scaffold can read: each
-names behavior or an external artifact only the package knows — the API a guide fence claims, the
-official runner a conformance check measures against, the service a live proof drives, the helpers a
-setup module exports. A generated file there would read as a proof while measuring nothing, which is
-worse than an absent one. So the file a consumer writes is what selects each of those projects, and
-`tests/distribution.test.ts` is the one proof scaffold writes for you.
+**Scaffold generates the distribution proof and refuses to generate every other one.** The subject
+is what separates them, and it is the whole rule. Generating a file is not the same as writing one:
+scaffold also writes `tests/policy.test.ts` and `tests/config.test.ts` into a target, byte for byte
+from the shared file set, and the distribution proof is the one it derives from the workspace it is
+writing into.
+
+A distribution proof's every assertion derives from the artifact the workspace installs: the
+`exports` map the packed tarball declares, the built declarations beside it, and the module objects
+a Node import, a CommonJS require, and a real browser hand back from that installed tree. Nothing
+there has to be named, so one generated file measures every publishing workspace, and it stays true
+as that workspace's published surface moves.
+
+A guide, conformance, live-service, or setup proof asserts something scaffold cannot read: the API a
+guide fence claims, the official runner a conformance check measures against, the service a live
+proof drives, and what a setup module's helpers do. That subject is what no generated file can
+reach, and the claim here is about the subject rather than about every property those files have. A
+structural property of the same files can be derivable — whether each root `tests/setup*.ts` module
+is reachable from the root configuration is one — and a file asserting it would still leave the
+module's behavior unmeasured. A generated file there would read as a proof while measuring nothing,
+which is worse than an absent one. So the file a consumer writes is what selects each of those
+projects, and `tests/distribution.test.ts` is the one proof scaffold generates for you.
 
 Registration follows the same split. Scaffold registers `conformance` and `service` when their
 structural facts are set, and registers `distribution` whenever the workspace publishes at least one
@@ -1408,8 +1442,32 @@ and `conformance` stays in `test`. In a `private: true` workspace, `distribution
 `service` runs from `test`, and there is no `prepublishOnly` at all. One gap the project set cannot
 show, `audit` reports directly: a filled `tests/setup*.ts` module that no `tests/setup*.test.ts`
 proof covers raises the non-blocking `setup` question, which names the modules and the proof to add.
-Scaffold writes nothing there either, because what that proof asserts is the behavior those modules
-export.
+Scaffold generates nothing there either, because what that proof asserts is the behavior those
+modules export.
+
+The generated proof partitions the installed `exports` map rather than sampling it. Every published
+subpath lands in exactly one of driven, undeclared, or excluded, and a totality assertion holds that
+partition against the map's own subpath list, so a subpath the proof cannot classify reddens instead
+of disappearing. A subpath is driven when its entry resolves a `.d.ts` declaration: the proof
+imports it, requires it where the entry declares a `require` condition, and compiles a consumer
+against it under every module resolution. It is undeclared when it resolves no declaration and names
+a runtime target — a `.js`, `.mjs`, or `.cjs` file — which is a defect, because a consumer importing
+it compiles against nothing under `node16`. It is excluded when it resolves no declaration and names
+no runtime target: the `./package.json` pointer and a published stylesheet are read rather than
+imported, and the proof names them where it excludes them. Classification reads every target the
+entry names under any condition, so a `require`-only CommonJS subpath carrying no declaration
+reddens too, and a `.d.ts` or `.d.cts` target never satisfies the runtime-target test, so a
+types-only condition cannot stand in for a missing declaration.
+
+The proof generated for a workspace publishing no browser face asserts that no browser face exists.
+That variant drives a Node import and a Node require and carries no browser branch, because a
+workspace with no browser face declares neither the launcher nor the bundler that branch imports,
+and the unresolvable import would fail its own `check` and `lint:check` gates. Its Node cases retire
+themselves for a browser face, so a face published after the file was written would leave nothing
+measuring it. The assertion reddens instead, and names the subpath a browser branch is owed for. The
+remedy it carries is to delete the file and run `repair`, which writes the variant that carries the
+branch — the same route presence ownership already gives you for asking for the generated proof
+back.
 
 The generated distribution proof carries one contract from the outside. The generated
 `prepublishOnly` invokes it as `npm run test:distribution -- --mode release`, and the proof reads
