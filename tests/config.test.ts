@@ -152,11 +152,10 @@ describe('root configuration', () => {
 			pool: 'threads',
 			setup: ['./tests/setup.ts'],
 		})
-		// A row that is a configuration rather than a factory. A workspace with a
-		// browser application emits one, because that factory refuses overrides and
-		// so is not a value Vitest may call. It is required here, in a workspace that
-		// has no browser application, so this proof exercises that resolution
-		// wherever it runs instead of only where the shape happens to occur.
+		// A row that is a configuration rather than a factory. Every generated
+		// workspace registers the factory itself, so this shape is required here
+		// rather than observed: the proof exercises that resolution wherever it runs
+		// instead of only where a hand-written configuration happens to produce it.
 		expected.set('concrete', { include: 'tests/concrete.test.ts', setup: ['./tests/setup.ts'] })
 
 		const projects = configuration.test?.projects

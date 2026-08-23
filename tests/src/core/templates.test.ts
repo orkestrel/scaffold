@@ -718,25 +718,31 @@ describe('emitted workspaces under their own gates', () => {
 			expect(checkTypes(applicationRoot)).toBe('')
 			expect(checkTypes(showcaseRoot)).toBe('')
 
-			// The project row calls the sealed factory with no argument, so the
-			// generated configuration receives the `UserConfig` it returns.
-			expect(application).toContain('projects: [appBrowser(), policy, config, probe]')
-			// The evaluated row carries no function name, so the vendored `config`
-			// proof finds it by the label instead. That label is emitted here, and the
-			// label and the row have to agree or a generated browser workspace fails its own `test`
-			// script while passing its `check` script.
+			// The row is the factory itself, so Vitest calls it and reads the command
+			// line's `--mode` inside the project. An evaluated row passes this `check`
+			// while failing the emitted workspace's own `test` script.
+			expect(application).toContain('projects: [appBrowser, policy, config, probe]')
+			// The vendored `config` proof finds a called row by its function name and an
+			// evaluated one by its label, so the name and the label both have to agree
+			// with what that proof expects.
 			expect(application).toContain("name: { label: 'app:browser', color: 'blue' }")
+			// Vitest calls a project row with an argument, so the factory takes the same
+			// optional override its siblings take. Sealing the signature is what made the
+			// generator emit a call in the row, and this stage refuses the seal: the
+			// override below is rejected by a factory declaring no parameter.
 			workspace.write(
 				'application/vite.config.ts',
-				application.replace('projects: [appBrowser(),', 'projects: [appBrowser({}),'),
+				application.replace(
+					'projects: [appBrowser,',
+					'projects: [appBrowser({ publicDir: false }),',
+				),
 			)
-			expect(checkTypes(applicationRoot)).toContain('Expected 0 arguments, but got 1.')
+			expect(checkTypes(applicationRoot)).toBe('')
 			expect(CONFIG_TEMPLATES.factories.app.browser).toContain(
-				'export function appBrowser(): UserConfig',
+				'export function appBrowser(options?: UserConfig): UserConfig',
 			)
-			expect(CONFIG_TEMPLATES.factories.app.browser).not.toContain('...options: never[]')
-			expect(CONFIG_TEMPLATES.factories.app.browser).not.toContain(
-				'Browser configuration overrides are not permitted',
+			expect(CONFIG_TEMPLATES.factories.app.browser).toContain(
+				'mergeConfig(applicationBrowser(false), options ?? {})',
 			)
 			// The showcase-only control removes the contextual type from the
 			// conditional plugin array. It recreates the widening that made the

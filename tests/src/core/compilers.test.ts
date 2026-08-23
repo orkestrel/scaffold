@@ -581,7 +581,7 @@ describe('blueprintToScripts config projects', () => {
 		)
 
 		expect(blueprintToRootVite(blueprint)).toContain(
-			'projects: [appCore, appBrowser(), appServer, policy, config, integration, probe]',
+			'projects: [appCore, appBrowser, appServer, policy, config, integration, probe]',
 		)
 		expect(integration?.content).toContain("import * as appCore from '@app/core'")
 		expect(integration?.content).toContain("import * as appBrowser from '@app/browser'")
@@ -647,6 +647,56 @@ describe('blueprintToScripts config projects', () => {
 		)
 		expect(scripts.test).toContain('npm run test:integration')
 		expect(scripts).not.toHaveProperty('prepublishOnly')
+	})
+
+	// Vitest reads the command line's `--mode` as `import.meta.env.MODE` only inside a
+	// project it calls, so an evaluated row turns the release-mode publish gate into a
+	// skip while every suite stays green. The vendored `config` proof refuses such a row,
+	// and this reads the emitted rows the same way over the selections that produce both
+	// printed layouts. The control is the evaluated row the generator once emitted for a
+	// browser application.
+	it('registers every project as the factory itself rather than a call of it', () => {
+		const block = /projects: \[([^\]]*)\]/u
+		const identifier = /^[A-Za-z][A-Za-z0-9]*$/u
+		const emitted = [
+			buildBlueprint({
+				src: ['core', 'browser', 'server'],
+				app: ['core', 'browser', 'server'],
+				bin: true,
+				setup: true,
+				guides: true,
+				conformance: true,
+				service: true,
+				integration: true,
+				showcase: true,
+			}),
+			buildBlueprint({ src: [], app: ['browser'] }),
+			buildBlueprint({ src: ['core'], app: ['browser'] }),
+		].map((blueprint) => blueprintToRootVite(blueprint))
+		const control = 'projects: [appBrowser(), policy, config, probe],'
+		const readings = [...emitted, control].map((configuration) =>
+			(block.exec(configuration)?.[1] ?? '')
+				.split(',')
+				.map((row) => row.trim())
+				.filter((row) => row.length > 0),
+		)
+
+		// The population answers both ways before either answer counts: every reading
+		// carries rows, every emitted reading carries the browser row, and the control's
+		// row is the one the pattern refuses.
+		expect(readings.map((rows) => rows.length > 0)).toStrictEqual([true, true, true, true])
+		expect(readings.map((rows) => rows.includes('appBrowser'))).toStrictEqual([
+			true,
+			true,
+			true,
+			false,
+		])
+		expect(readings.map((rows) => rows.filter((row) => !identifier.test(row)))).toStrictEqual([
+			[],
+			[],
+			[],
+			['appBrowser()'],
+		])
 	})
 })
 
@@ -796,14 +846,17 @@ describe('blueprint gate laws', () => {
 		).toStrictEqual([])
 	})
 
-	// Both sealed factories take nothing, and the seal is the signature rather than a
-	// runtime refusal beside it. `appShowcase` is generated inline here while
-	// `appBrowser` comes from the template, so one spelling drifting from the other is
-	// the failure this catches.
-	it('seals every argument-free factory through its signature alone', () => {
+	// `appBrowser` is a project row, so Vitest calls it and the signature has to accept
+	// the argument it is called with. `appShowcase` is registered nowhere and is reached
+	// only by the showcase wrapper's own call, so it stays argument-free. The seal is the
+	// signature rather than a runtime refusal beside it. `appShowcase` is generated inline
+	// here while `appBrowser` comes from the template, so one spelling drifting from the
+	// other is the failure this catches.
+	it('opens the registered browser factory and seals the unregistered showcase one', () => {
 		const config = blueprintToRootVite(buildBlueprint({ app: ['browser'], showcase: true }))
 		expect(config).toContain('export function appShowcase(): UserConfig {')
-		expect(config).toContain('export function appBrowser(): UserConfig {')
+		expect(config).toContain('export function appBrowser(options?: UserConfig): UserConfig {')
+		expect(config).toContain('return mergeConfig(applicationBrowser(false), options ?? {})')
 		expect(config).not.toContain('never[]')
 		expect(config).not.toContain('overrides are not permitted')
 	})

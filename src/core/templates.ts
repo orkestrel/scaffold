@@ -285,8 +285,8 @@ const resolve = {
 	}
 }
 
-export function appBrowser(): UserConfig {
-	return applicationBrowser(false)
+export function appBrowser(options?: UserConfig): UserConfig {
+	return mergeConfig(applicationBrowser(false), options ?? {})
 }
 {{showcaseFactory}}`,
 			server: `export const appServer = (options?: UserConfig): UserConfig =>

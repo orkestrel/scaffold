@@ -814,11 +814,11 @@ export function appShowcase(): UserConfig {
 				showcaseFactory,
 			}),
 		)
-		// Every other factory takes an optional override, which is the shape Vitest's
-		// own project type reads as a configuration function and calls with a
-		// `ConfigEnv`. This one takes no argument, so it is neither: the row carries
-		// the configuration it returns rather than the factory itself.
-		projects.push('appBrowser()')
+		// The row is the factory itself, never a call of it. Vitest reads
+		// `import.meta.env.MODE` as the command line's `--mode` only inside a project
+		// it calls, so an evaluated row silently turns the release-mode publish gate
+		// into a skip.
+		projects.push('appBrowser')
 	}
 	if (blueprint.app.includes('server')) {
 		factories.push(CONFIG_TEMPLATES.factories.app.server)
