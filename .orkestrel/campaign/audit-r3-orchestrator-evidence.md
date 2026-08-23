@@ -51,13 +51,25 @@ Two readings follow, and they point opposite ways:
   partitions to `excluded` rather than `undeclared`, which is what the code comment claims for it.
   No package ships a declaration for its own manifest, so demanding one would be a false red.
 - **The extensionless branch has no live case.** `dot === -1` returning `true` is exercised by
-  nothing in the fleet. Its justification is that `require` reads such a file through its JavaScript
-  handler, which is true of the CommonJS loader and false of the ES module one — the ESM loader
-  rejects an unknown extension rather than guessing. So the branch rests on a reason that holds for
-  half the loaders it describes, and no published target has ever taken it.
+  nothing in the fleet, so no published target has ever taken it.
 
-That second reading is a claim for the round to rule on, not a defect the Orchestrator is asserting.
-It is recorded here so neither lane spends a probe re-deriving the sweep.
+**Correction, made after an independent refuter ran it.** This section first argued that the
+extensionless branch rests on a reason holding for the CommonJS loader and not the ES module one,
+because the ESM loader rejects an unknown extension. **That is wrong, and it was the Orchestrator's
+own unverified reasoning rather than a measurement.** Node resolves an extensionless file's format
+through `ESM_FILE_FORMAT`, which reads the nearest `package.json` `type` field: `module` loads it as
+an ES module and an absent or `commonjs` value loads it as CommonJS. A refuter built both fixtures
+and drove each through a real specifier from a consumer with the package in `node_modules`. No run
+produced `ERR_UNKNOWN_FILE_EXTENSION`. This package declares `engines.node` `>=22.12.0` and the
+reading was taken on `v22.22.2`.
+
+So the extensionless branch is correct under both module systems, the guide sentence describing it
+is true, and the emitted proof's ESM drive over such a target succeeds rather than asserting
+something false. The claim is withdrawn.
+
+The lesson is the one `.agents/orchestration.md` already states: an unverified belief the
+Orchestrator states becomes a fact for every unit downstream. This one entered the record as
+"recorded, not asserted" and would still have shaped the fix round had a refuter not run it.
 
 ## Probe readings already carried in the brief
 
