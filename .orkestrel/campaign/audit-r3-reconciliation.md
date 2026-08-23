@@ -65,5 +65,61 @@ attacks is a separate question and went to a refuter.
 | the emitted guard's retired bundler reason | FIX-K |
 | C8 `appBrowser` typing | recorded as a successor row, not carried into 0.0.50 |
 
-Every finding above names exactly one carrier. Rows still open pending refuter verdicts: C5's guide
-sentence, C6's message sentence, F1, F2.
+## Refuter round: the subjective lane's findings, attacked independently
+
+Nine refuters ran blind, one per finding, each given only that finding's vector and briefed to break
+it, defaulting to refuted when uncertain. Four fell.
+
+| finding | verdict | ground | severity |
+| ------- | ------- | ------ | -------- |
+| `.node` misclassified | survives | — | successor |
+| dual `require` declaration uncompiled | survives | — | successor |
+| release-boundary seed | survives | — | successor |
+| the message's behavior sentence | **refuted** | behaviour correct and documented | none |
+| extensionless target under ESM | **refuted** | does not reproduce | none |
+| `bytes` where the code trims | survives | — | fix now |
+| the emitted guard's stale quote | survives | — | **blocks publish** |
+| the canon fixes the subject as exported behavior | **refuted** | does not reproduce | none |
+| the same-stem advisory cannot be closed | **refuted** | behaviour correct and documented | none |
+
+What the refutations establish:
+
+- **The extensionless claim is factually wrong, and so was the Orchestrator's own version of it.**
+  Node resolves such a file through `ESM_FILE_FORMAT` from the nearest `package.json` `type`. Both
+  fixtures loaded through real specifiers with no `ERR_UNKNOWN_FILE_EXTENSION`, on the v22 line this
+  package requires. Withdrawn in `audit-r3-orchestrator-evidence.md`.
+- **The objective lane was right about C6.** The message's behavior sentence is correct and
+  documented, so the subjective lane's reading falls and no prose changes on its account.
+- **F1 and F2 do not reproduce**, so no canon conflict is carried and `.claude/rules/tests.md` is
+  not reopened.
+- **The stale guard quote is the one publish blocker.** A refuter generated the real emitted file
+  from built `dist`, showed the comment quotes `it.runIf(!entry.browser)` while neither predicate in
+  that file is spelled that way, traced which commit superseded it, and confirmed a third copy in
+  `tests/src/core/compilers.test.ts:666` and that the text ships inside `dist`.
+
+Severity is not the same question as scope. The user's standing instruction for this campaign is to
+fix what the round finds before publishing, and every surviving finding sits inside the capability
+0.0.50 owns — the distribution proof. So the successor-rated findings are fixed here too rather than
+deferred; the ratings order the work and do not exempt any of it.
+
+## Final carrier table
+
+| finding | carrier |
+| ------- | ------- |
+| `.node` classification | FIX-J, item J1 |
+| per-format declaration | FIX-J, item J2 |
+| CommonJS partition predicate | FIX-J, item J3 |
+| array member validation | FIX-J, item J4 |
+| the emitted guard's superseded predicate quote | FIX-J, item J5 |
+| the emitted guard's retired bundler reason | FIX-K |
+| the third stale quote in `tests/src/core/compilers.test.ts` | FIX-K |
+| `bytes` where the code trims | FIX-K |
+| guide universals downstream of J1 and J2 | FIX-K |
+| release-boundary seed, and the guide sentence claiming the door is shut | FIX-K, guide only; the mechanism is a successor row |
+| `appBrowser` typing | successor row, not carried into 0.0.50 |
+
+Dropped and not carried: the `.d.mts` sub-claim, the `host.json` drift concern, the extensionless
+claim, the message's behavior sentence, F1, F2.
+
+Every carried finding names exactly one carrier, and every dropped finding is named here rather than
+left silent.
