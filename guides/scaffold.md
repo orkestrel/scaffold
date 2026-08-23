@@ -624,15 +624,18 @@ that excludes those groups proceeds, and no verb adds the declaration for you: `
 birth-owned, and the range and script regions are the only parts of it a verb rewrites.
 
 `audit` reports one further non-blocking question, on the `setup` field, and it alone reports it.
-The question fires when the target carries a root `tests/setup*.ts` module that is neither a proof
-itself nor one of the vendored modules every target receives, whose bytes differ from the seed this
-blueprint plans at that same path, while no proof of the same stem covers it.
+The question fires when the target carries a filled root `tests/setup*.ts` module that is neither a
+proof itself nor one of the vendored modules every target receives, while no proof of the same stem
+covers it. A module counts as filled when its text differs from the seed this blueprint plans at
+that same path.
 
-The comparison is seed-relative rather than a test for emptiness, because the seeds differ by path:
+The comparison reads the module and the seed trimmed, so surrounding whitespace decides nothing: a
+trailing newline is not authorship, and a module holding whitespace alone reads as empty rather than
+as filled. It is seed-relative rather than a test for emptiness, because the seeds differ by path:
 `tests/setup.ts` is seeded with the empty string and `tests/setupGlobal.ts` is seeded with a `setup`
 function body. A test for emptiness therefore raises the question against a freshly materialized
 workspace. Holding each module to the seed the same blueprint plans at its own path reports only
-what a maintainer wrote, and a seed that gains bytes in a later release needs no change here.
+what a maintainer wrote, and a seed that grows in a later release needs no change here.
 
 Coverage is read per module: `tests/<name>.ts` is covered by `tests/<name>.test.ts` and by nothing
 else, which is the pairing the vendored policy proof resolves. Writing one proof retires that module
@@ -641,7 +644,7 @@ proof that module wants. The question belongs to the `tests` group, so a scoped 
 `tests` omits it. Scaffold does not write the proof it asks for, and no writing verb raises the
 question: a writing verb refuses the advisories it reports, and refusing `repair` over this one
 would block every write on a gap no write can close. Run across a fleet, the question is the list of
-packages whose setup helpers no proof covers.
+packages carrying a filled setup module that no proof covers.
 
 ### Exit codes
 
@@ -1427,10 +1430,10 @@ as that workspace's published surface moves.
 
 A guide, conformance, live-service, or setup proof asserts something scaffold cannot read: the API a
 guide fence claims, the official runner a conformance check measures against, the service a live
-proof drives, and what a setup module's helpers do. That subject is what no generated file can
-reach, and the claim here is about the subject rather than about every property those files have. A
-structural property of the same files can be derivable — whether each root `tests/setup*.ts` module
-is reachable from the root configuration is one — and a file asserting it would still leave the
+proof drives, and what a setup module does. That subject is what no generated file can reach, and
+the claim here is about the subject rather than about every property those files have. A structural
+property of the same files can be derivable — whether each root `tests/setup*.ts` module is
+reachable from the root configuration is one — and a file asserting it would still leave the
 module's behavior unmeasured. A generated file there would read as a proof while measuring nothing,
 which is worse than an absent one. So the file a consumer writes is what selects each of those
 projects, and `tests/distribution.test.ts` is the one proof scaffold generates for you.
@@ -1442,29 +1445,66 @@ and `conformance` stays in `test`. In a `private: true` workspace, `distribution
 `service` runs from `test`, and there is no `prepublishOnly` at all. One gap the project set cannot
 show, `audit` reports directly: a filled `tests/setup*.ts` module that no `tests/setup*.test.ts`
 proof covers raises the non-blocking `setup` question, which names the modules and the proof to add.
-Scaffold generates nothing there either, because what that proof asserts is the behavior those
-modules export.
+Scaffold generates nothing there either, because what that proof asserts is those modules' own
+behavior, which only the workspace that wrote them can state.
 
 The generated proof partitions the installed `exports` map rather than sampling it. Every published
 subpath lands in exactly one of driven, undeclared, or excluded, and a totality assertion holds that
-partition against the map's own subpath list, so a subpath the proof cannot classify reddens instead
-of disappearing. A subpath is driven when its entry resolves a `.d.ts` declaration: the proof
-imports it, requires it where the entry declares a `require` condition, and compiles a consumer
-against it under every module resolution. It is undeclared when it resolves no declaration and names
-a runtime target — a `.js`, `.mjs`, or `.cjs` file — which is a defect, because a consumer importing
-it compiles against nothing under `node16`. It is excluded when it resolves no declaration and names
-no runtime target: the `./package.json` pointer and a published stylesheet are read rather than
-imported, and the proof names them where it excludes them. Classification reads every target the
-entry names under any condition, so a `require`-only CommonJS subpath carrying no declaration
-reddens too, and a `.d.ts` or `.d.cts` target never satisfies the runtime-target test, so a
-types-only condition cannot stand in for a missing declaration.
+partition against the map's own subpath list, so a subpath the proof classifies into none of them
+reddens instead of disappearing. Another assertion beside it names every driven subpath whose entry
+resolves neither an `import` target nor a `require` target: each drive retires itself for such a
+subpath, so membership of the partition alone would leave one measured by nothing. Together they
+hold that every published subpath is driven, or is named where the proof cannot drive it.
+
+A subpath is driven when its entry resolves a declaration: the proof imports it, requires it where
+the entry declares a `require` condition, and compiles a consumer against it under every module
+resolution. The declaration is read under `['types', 'import']` and then under `['types',
+'require']`. Those condition sets are iterated rather than coalesced: a set that answers with
+JavaScript has resolved no declaration, so the next set is read rather than that answer returned.
+That is what drives a `require`-only subpath declaring its types inside `require`. A `.d.ts`,
+`.d.cts`, or `.d.mts` target is a declaration, and nothing else is.
+
+A subpath is undeclared when it resolves no declaration and names a runtime target, which is a
+defect, because a consumer importing it compiles against nothing under `node16`. A target is a
+runtime target when its own file name carries no extension at all, or carries `.js`, `.mjs`, or
+`.cjs`. An extensionless target loads, because `require` reads such a file through its JavaScript
+handler; a `.wasm` target does not, because it carries an extension that is not a JavaScript one.
+The test is the extension the name carries rather than a denylist of asset extensions. Reading the
+file name rather than the whole path is load-bearing: `./dist/bundle.js/feature` and
+`./dist/v1.2/index` are modules, and reading the path gets each of them wrong. What the rule
+excludes is stated where the proof is emitted: an extensionless file published for a reader, such as
+a `LICENSE` at a subpath, reports undeclared until it is given an extension or a declaration. That
+is the safe direction — the proof names a subpath it cannot vouch for rather than passing one it
+never measured — and no manifest in the `@orkestrel` line publishes such a target.
+
+A subpath is excluded when it resolves no declaration and names no runtime target: the
+`./package.json` pointer, a published stylesheet, and a WebAssembly binary are read rather than
+imported, and the proof names them where it excludes them.
+
+Classification reads every target the entry names under every condition, and every member of a
+fallback list with them: Node reads an array in an exports entry as a list of fallbacks, and a
+reader taking a later member takes a file the installed tree still owes. So a `require`-only
+CommonJS subpath carrying no declaration reddens too, and a `.d.ts` or `.d.cts` target never
+satisfies the runtime-target test, so a types-only condition cannot stand in for a missing
+declaration.
+
+A `./*` subpath pattern is read as an ordinary subpath, with no expansion of the `*`, so a pattern
+naming a runtime target reddens rather than landing in excluded. That is deliberate: excluding the
+pattern would account for a whole family of published subpaths and measure none of them, which is
+the silence this partition exists to close. Measuring the family means expanding the pattern against
+the installed tree and driving each match, which this proof does not do. A maintainer meeting that
+red is reading the honest answer — the proof does not measure that family — rather than a defect in
+the proof.
 
 The proof generated for a workspace publishing no browser face asserts that no browser face exists.
-That variant drives a Node import and a Node require and carries no browser branch, because a
-workspace with no browser face declares neither the launcher nor the bundler that branch imports,
-and the unresolvable import would fail its own `check` and `lint:check` gates. Its Node cases retire
-themselves for a browser face, so a face published after the file was written would leave nothing
-measuring it. The assertion reddens instead, and names the subpath a browser branch is owed for. The
+That variant drives a Node import and a Node require and carries no browser branch, because that
+branch imports `playwright`, `@vitest/browser-playwright`, and `./configs/browsers.js`, and a
+workspace with no browser face declares no Playwright package, and scaffold emits it no
+`configs/browsers.ts` to import. The unresolvable imports would fail its own `check` and
+`lint:check` gates. The branch also imports `vite`, which is not what keeps it conditional: every
+workspace declares `vite`, whatever it publishes. Its Node cases retire themselves for a browser
+face, so a face published after the file was written would leave nothing measuring it. The assertion
+reddens instead, and names the subpath a browser branch is owed for. The
 remedy it carries is to delete the file and run `repair`, which writes the variant that carries the
 branch — the same route presence ownership already gives you for asking for the generated proof
 back.

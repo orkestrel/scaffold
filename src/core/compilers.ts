@@ -1300,8 +1300,11 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 	// while leaving a package that wrote a better one exactly as it is.
 	//
 	// The browser branch is emitted only for a workspace publishing a browser face,
-	// because the imports it needs — `playwright`, `@vitest/browser-playwright`, and
-	// `vite` — are declared only there. Presence ownership never rewrites the file, so
+	// because it imports `playwright` and `@vitest/browser-playwright`, which only such a
+	// workspace declares, and `./configs/browsers.js`, which scaffold emits it alone. It
+	// imports `vite` too, and that is not what keeps it conditional: `vite` sits in
+	// `BASE_DEV_DEPENDENCIES` and every workspace declares it. Presence ownership never
+	// rewrites the file, so
 	// a workspace publishing a browser face later keeps a proof with no branch for it.
 	// The core-only variant therefore carries the guard that reddens on such an entry
 	// rather than skipping it.
