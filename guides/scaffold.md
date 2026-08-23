@@ -1466,21 +1466,26 @@ published subpath is driven, or is named where the proof cannot drive it.
 
 A subpath is driven when its entry resolves a declaration, and each measurement resolves that entry
 under the conditions of the driver taking it rather than under one shared set. The Node ESM runtime
-resolves `node-addons`, `node`, `import`, and `module-sync`; Vite's production client build resolves
-`module`, `browser`, `production`, and `import`. Those are the conditions each runtime driver uses to
-locate its target. A subpath whose Vite resolution lands under `dist/src/browser/` is driven in a
-real browser and the Node drives retire for it; every other subpath is imported where the ESM set
-resolves a target and required where the Node `require` set resolves a target.
+resolves `node-addons`, `node`, `import`, and `module-sync`; the Node CommonJS runtime resolves
+`node-addons`, `node`, `require`, and `module-sync`; Vite's production client build resolves
+`module`, `browser`, `production`, and `import`. A subpath whose Vite resolution lands under
+`dist/src/browser/` is driven in a real browser and the Node drives retire for it; every other
+subpath is imported where the Node ESM set resolves a target and required where the Node CommonJS
+set resolves one.
 
 The CommonJS compile probe resolves the declaration under `types`, `node`, and `require`, then reads
-that declaration's format. A `.d.cts` declaration admits the subpath. A `.d.mts` declaration refuses
-it. A `.d.ts` declaration takes the nearest enclosing `package.json` from its own directory: a
-`"type": "module"` field refuses, while `"type": "commonjs"`, an omitted field, or a manifest that
-cannot supply a readable field admits. The runtime target does not enter that decision. The runtime
-drive separately resolves under `node` and `require`, then loads the subpath whatever declaration
-format the compile probe found. An invalid non-list target beside a valid CommonJS declaration
-therefore reaches Node's `ERR_INVALID_PACKAGE_TARGET` failure instead of being dropped during
-classification.
+that declaration's format. TypeScript accepts an existing declaration target directly. Otherwise it
+substitutes beside the resolved JavaScript target: `.cjs` maps to `.d.cts`, `.mjs` maps to `.d.mts`,
+and `.js` maps to `.d.ts`. A missing target under `types` leaves that condition unresolved, so the
+walk continues through the remaining conditions or fallback members. A `.d.cts` declaration admits
+the subpath. A `.d.mts` declaration refuses it. A `.d.ts` declaration takes the nearest enclosing
+physical `package.json` file from its own directory: a `"type": "module"` field refuses, while
+`"type": "commonjs"`, an omitted field, or a manifest that cannot supply a readable field admits.
+A directory named `package.json` starts no scope, so the walk continues outward. The runtime target
+does not decide compile membership. The runtime drive separately resolves under `node-addons`,
+`node`, `require`, and `module-sync`, then loads the subpath whatever declaration format the compile
+probe found. An invalid non-list target beside a valid CommonJS declaration therefore reaches Node's
+`ERR_INVALID_PACKAGE_TARGET` failure instead of being dropped during classification.
 
 Each drive compares against the declaration its own consumer reads, resolved under the conditions
 TypeScript applies for that resolution and importing format: `types` first and the format's own
@@ -1488,9 +1493,9 @@ condition after it, with `node` between them for the `node16` and `nodenext` res
 out for `bundler`, which is the set the browser drive compares against. The import declaration and
 the require declaration are resolved independently and kept separately on the entry, so a dual
 subpath is compiled against the declaration each consumer format reads rather than against whichever
-one answered first. That is what drives a `require`-only subpath declaring its types inside `require`. A
-`.d.ts`, `.d.cts`, or `.d.mts` target is a declaration, and nothing else is: a `types` condition
-answering with JavaScript resolves to absence rather than to a declaration.
+one answered first. That is what drives a `require`-only subpath declaring its types inside
+`require`, and what admits a conventional subpath that publishes no `types` condition but ships the
+adjacent declaration TypeScript substitutes from its runtime target.
 
 A subpath is undeclared when it resolves no declaration and names a runtime target, which is a
 defect, because a consumer importing it compiles against nothing under `node16`. A target is a

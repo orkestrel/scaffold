@@ -359,4 +359,12 @@ describe('guide examples', () => {
 		if (!Array.isArray(answers)) throw new Error('The emitted classifier returned no answer list')
 		expect(structuredClone(answers)).toStrictEqual(expected)
 	})
+
+	it('documents declaration substitution and each runtime condition set', () => {
+		const markdown = requireValue(files['guides/scaffold.md'])
+		expect(markdown).toContain('`.cjs` maps to `.d.cts`, `.mjs` maps to `.d.mts`')
+		expect(markdown).toContain('and `.js` maps to `.d.ts`')
+		expect(markdown).toContain('`node-addons`, `node`, `require`, and `module-sync`')
+		expect(markdown).toContain('A directory named `package.json` starts no scope')
+	})
 })

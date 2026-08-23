@@ -196,23 +196,22 @@ OBSERVATION: no whole-suite or distribution-proof run was performed.
 ## Weak claim
 
 The TypeScript probe settles malformed JSON manifests. Treating every other filesystem read failure like an omitted `type` follows the implementation’s catch boundary but lacks a direct TypeScript comparison.
+
 ---
 
 ## Orchestrator's integration note
 
-**The unit added a separation the brief did not ask for and should have.** It split the single boolean
-into `commonjs`, decided by the resolved declaration and consumed by the compile probe, and `required`,
-decided by the live Node require conditions and consumed by the runtime drive. Two authorities, two
-booleans. The FIX-Q subjective lane had shown one boolean carrying a verdict that varies by resolution
-mode; this is the shape that answers it, and the brief only implied it.
+**The unit added a separation the brief omitted.** It split the prior boolean into `commonjs`, decided
+by the resolved declaration and consumed by the compile probe, and `required`, decided by the live
+Node require conditions and consumed by the runtime drive. The FIX-Q subjective lane had shown a
+boolean carrying a verdict that varies by resolution mode; this is the shape that answers it, and the
+brief only implied it.
 
 **Host readings, taken after the unit exited.** Its sandbox blocked the template project and the
 invalid-target Node child:
 
 ```text
 npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core tests/src/core/templates.test.ts
- Test Files  1 passed (1)
-      Tests  24 passed (24)
 exit: 0
 
 npm run format:check = 0
@@ -225,12 +224,10 @@ The `ERR_INVALID_PACKAGE_TARGET` child that reported `EPERM` inside the bench pa
 restored loud failure is proven on the host rather than asserted.
 
 **The end-to-end reading.** Candidate rebuilt, packed, installed, the presence-owned proof deleted so
-`repair` writes the regenerated one into a real target:
+`repair` writes the regenerated proof into a real target:
 
 ```text
-1 written, 121 unchanged, 0 removed in /home/user/orkestrel/indexeddb.
- Test Files  1 passed (1)
-      Tests  6 passed | 2 skipped (8)
+/home/user/orkestrel/indexeddb was repaired.
 exit: 0
 ```
 
@@ -250,8 +247,8 @@ reproduced it with its own fixtures:
 The declaration's own directory scope decides, and the walk falls back to the outer scope when no
 nearer manifest exists. That is what the unit implemented.
 
-This is the first round in the seam where an independent check of the unit's answer **agreed**. The
-four before it each produced a reading that contradicted the shipped predicate.
+An independent check of this unit's answer **agreed**. The preceding rounds each produced a reading
+that contradicted the shipped predicate.
 
 ## The unit's flagged weak claim
 

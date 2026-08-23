@@ -1,7 +1,7 @@
 import type { Blueprint, Environment } from '@src/core'
 import type { ScratchInterface } from '@orkestrel/test/server'
 import { execFileSync } from 'node:child_process'
-import { chmodSync, existsSync, mkdirSync, readFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { runInNewContext } from 'node:vm'
@@ -264,8 +264,8 @@ const CLASSIFIER_DECLARATIONS: readonly string[] = [
 	'MODULE_EXTENSIONS',
 	'ADDON_EXTENSION',
 	'DECLARATION_EXTENSIONS',
+	'BROWSER_OUTPUT',
 	'RUNTIME_CONDITIONS',
-	'COMMONJS_CONDITIONS',
 	'BUNDLER_CONDITIONS',
 	'DECLARATION_CONDITIONS',
 	'isRecord',
@@ -274,6 +274,9 @@ const CLASSIFIER_DECLARATIONS: readonly string[] = [
 	'readJson',
 	'resolvePackageTarget',
 	'resolveTarget',
+	'matchesFile',
+	'targetToDeclaration',
+	'resolveDeclaration',
 	'readPackageType',
 	'resolvesCommonJS',
 	'collectTargets',
@@ -281,6 +284,7 @@ const CLASSIFIER_DECLARATIONS: readonly string[] = [
 	'isDeclaration',
 	'readDeclaration',
 	'selectEntries',
+	'selectUntypable',
 ]
 
 // One classification the emitted proof performs, written as the driver evaluates it
@@ -299,22 +303,6 @@ const CLASSIFIER_CASES: ReadonlyArray<readonly [call: string, answer: unknown]> 
 		`classifier.resolveTarget([{ types: './x.d.ts', default: './x.js' }], ['types', 'import'])`,
 		'./x.d.ts',
 	],
-	[
-		`classifier.readDeclaration({ import: { types: ['./x.d.ts'], default: './x.js' } })`,
-		{ module: './x.d.ts', commonjs: undefined, browser: './x.d.ts' },
-	],
-	[
-		`classifier.readDeclaration({ require: { types: './x.d.cts', default: './x.cjs' } })`,
-		{ module: undefined, commonjs: './x.d.cts', browser: undefined },
-	],
-	[
-		`classifier.readDeclaration({ import: { types: './x.d.ts' }, require: { types: './x.d.cts' } })`,
-		{ module: './x.d.ts', commonjs: './x.d.cts', browser: './x.d.ts' },
-	],
-	[
-		`classifier.readDeclaration({ import: './x.js', default: './x.js' })`,
-		{ module: undefined, commonjs: undefined, browser: undefined },
-	],
 	[`classifier.isModule('./dist/src/core/index.js')`, true],
 	[`classifier.isModule('./dist/src/core/index.mjs')`, true],
 	[`classifier.isModule('./dist/src/core/index.cjs')`, true],
@@ -331,8 +319,12 @@ const CLASSIFIER_CASES: ReadonlyArray<readonly [call: string, answer: unknown]> 
 // The lifted declarations, written where a real Node process can load them. The
 // TypeScript parser reads them off the emitted text, so a formatting change moves
 // nothing here and a renamed declaration fails loudly.
-function stageClassifier(workspace: ScratchInterface, content: string): string {
-	workspace.write('classifier.ts', extractDeclarations(content, CLASSIFIER_DECLARATIONS))
+function stageClassifier(
+	workspace: ScratchInterface,
+	content: string,
+	declarations: readonly string[] = CLASSIFIER_DECLARATIONS,
+): string {
+	workspace.write('classifier.ts', extractDeclarations(content, declarations))
 	return join(workspace.path, 'classifier.ts')
 }
 
@@ -351,6 +343,7 @@ function driveClassifier(file: string, calls: readonly string[]): readonly unkno
 		exports: classifier,
 		join,
 		readFileSync,
+		statSync,
 	})
 	const answers: unknown = runInNewContext(`[${calls.join(', ')}]`, { classifier })
 	if (!Array.isArray(answers)) throw new Error('The emitted classifier driver returned no list')
@@ -1171,12 +1164,34 @@ describe('emitted distribution classifier', () => {
 		})
 		try {
 			const file = stageDistributionClassifier(workspace)
+			const installed = workspace.ensure('installed')
+			workspace.write('installed/x.d.ts', 'export const value: number\n')
+			workspace.write('installed/x.d.cts', 'export const value: number\n')
+			const cases: ReadonlyArray<readonly [call: string, answer: unknown]> = [
+				...CLASSIFIER_CASES,
+				[
+					`classifier.readDeclaration({ import: { types: ['./x.d.ts'], default: './x.js' } }, ${JSON.stringify(installed)})`,
+					{ module: './x.d.ts', commonjs: undefined, browser: './x.d.ts' },
+				],
+				[
+					`classifier.readDeclaration({ require: { types: './x.d.cts', default: './x.cjs' } }, ${JSON.stringify(installed)})`,
+					{ module: undefined, commonjs: './x.d.cts', browser: undefined },
+				],
+				[
+					`classifier.readDeclaration({ import: { types: './x.d.ts' }, require: { types: './x.d.cts' } }, ${JSON.stringify(installed)})`,
+					{ module: './x.d.ts', commonjs: './x.d.cts', browser: './x.d.ts' },
+				],
+				[
+					`classifier.readDeclaration({ import: './missing.js', default: './missing.js' }, ${JSON.stringify(installed)})`,
+					{ module: undefined, commonjs: undefined, browser: undefined },
+				],
+			]
 			const answers = driveClassifier(
 				file,
-				CLASSIFIER_CASES.map(([call]) => call),
+				cases.map(([call]) => call),
 			)
 
-			expect(answers).toStrictEqual(CLASSIFIER_CASES.map(([, answer]) => answer))
+			expect(answers).toStrictEqual(cases.map(([, answer]) => answer))
 		} finally {
 			workspace.destroy()
 		}
@@ -1207,14 +1222,49 @@ describe('emitted distribution classifier', () => {
 		})
 		try {
 			const file = stageDistributionClassifier(workspace)
+			const installed = workspace.ensure('installed')
+			workspace.write('installed/x.d.mts', 'export const value: number\n')
+			workspace.write('installed/x.d.cts', 'export const value: number\n')
 			const answers = driveClassifier(file, [
-				`classifier.readDeclaration({ import: { types: './x.d.mts', default: './x.mjs' }, require: { types: './x.d.cts', default: './x.cjs' } })`,
-				`classifier.readDeclaration({ import: { types: './x.d.mts', default: './x.mjs' }, require: './x.cjs' })`,
+				`classifier.readDeclaration({ import: { types: './x.d.mts', default: './x.mjs' }, require: { types: './x.d.cts', default: './x.cjs' } }, ${JSON.stringify(installed)})`,
+				`classifier.readDeclaration({ import: { types: './x.d.mts', default: './x.mjs' }, require: './missing.cjs' }, ${JSON.stringify(installed)})`,
 			])
 
 			expect(answers).toStrictEqual([
 				{ module: './x.d.mts', commonjs: './x.d.cts', browser: './x.d.mts' },
 				{ module: './x.d.mts', commonjs: undefined, browser: './x.d.mts' },
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('resolves declarations from explicit and adjacent targets that exist', () => {
+		const workspace = createScratch({
+			parent: ensureTmpRoot(),
+			prefix: 'scaffold-e2-declaration-substitution-',
+		})
+		try {
+			const file = stageDistributionClassifier(workspace)
+			const installed = workspace.ensure('installed')
+			workspace.write('installed/index.d.cts', 'export const value: number\n')
+			workspace.write('installed/index.d.mts', 'export const value: number\n')
+			const conventional = `{ require: './index.cjs', import: './index.mjs' }`
+			const missingTypes = `{ require: { types: './missing.d.cts', default: './index.cjs' } }`
+			const fallback = `{ require: ['../outside.cjs', './index.cjs'] }`
+			const absent = workspace.ensure('absent')
+			const answers = driveClassifier(file, [
+				`classifier.readDeclaration(${conventional}, ${JSON.stringify(installed)})`,
+				`classifier.readDeclaration(${missingTypes}, ${JSON.stringify(installed)})`,
+				`classifier.readDeclaration(${fallback}, ${JSON.stringify(installed)})`,
+				`classifier.readDeclaration(${conventional}, ${JSON.stringify(absent)})`,
+			])
+
+			expect(answers).toStrictEqual([
+				{ module: './index.d.mts', commonjs: './index.d.cts', browser: './index.d.mts' },
+				{ module: undefined, commonjs: './index.d.cts', browser: undefined },
+				{ module: undefined, commonjs: './index.d.cts', browser: undefined },
+				{ module: undefined, commonjs: undefined, browser: undefined },
 			])
 		} finally {
 			workspace.destroy()
@@ -1228,9 +1278,13 @@ describe('emitted distribution classifier', () => {
 		})
 		try {
 			const file = stageDistributionClassifier(workspace)
+			const installed = workspace.ensure('installed')
+			workspace.write('installed/node.d.mts', 'export const value: number\n')
+			workspace.write('installed/node.d.cts', 'export const value: number\n')
+			workspace.write('installed/default.d.ts', 'export const value: number\n')
 			const entry = `{ node: { import: { types: './node.d.mts', default: './node.mjs' }, require: { types: './node.d.cts', default: './node.cjs' } }, browser: './browser.js', default: { types: './default.d.ts', default: './default.js' } }`
 			const answers = driveClassifier(file, [
-				`classifier.readDeclaration(${entry})`,
+				`classifier.readDeclaration(${entry}, ${JSON.stringify(installed)})`,
 				`classifier.resolveTarget(${entry}, classifier.RUNTIME_CONDITIONS.module)`,
 				`classifier.resolveTarget(${entry}, classifier.RUNTIME_CONDITIONS.browser)`,
 				`classifier.resolveTarget(${entry}, classifier.BUNDLER_CONDITIONS.module)`,
@@ -1261,6 +1315,18 @@ describe('emitted distribution classifier', () => {
 			workspace.write('installed/package.json', '{ "type": "module" }\n')
 			workspace.write('installed/nested/package.json', '{ "type": "commonjs" }\n')
 			workspace.write('installed/malformed/package.json', '{ "type":\n}\n')
+			workspace.ensure('installed/directory/package.json')
+			workspace.write('installed/directory/index.d.ts', 'export const value: number\n')
+			workspace.write('installed/feature.d.cts', 'export const value: number\n')
+			workspace.write('installed/feature.d.mts', 'export const value: number\n')
+			workspace.write('installed/synchronized.d.cts', 'export const value: number\n')
+			workspace.write('installed/node.d.cts', 'export const value: number\n')
+			workspace.write('installed/default.d.mts', 'export const value: number\n')
+			workspace.write('installed/module.d.mts', 'export const value: number\n')
+			workspace.write('installed/dual.d.mts', 'export const value: number\n')
+			workspace.write('installed/dual.d.cts', 'export const value: number\n')
+			workspace.write('installed/nested/feature.d.ts', 'export const value: number\n')
+			workspace.write('installed/malformed/feature.d.ts', 'export const value: number\n')
 			const declarationCommonRuntimeModule = `{ require: { types: './feature.d.cts', default: './feature.mjs' } }`
 			const declarationModuleRuntimeCommon = `{ require: { types: './feature.d.mts', default: './feature.cjs' } }`
 			const synchronized = `{ types: './synchronized.d.cts', 'module-sync': './synchronized.mjs', require: './synchronized.cjs', import: './synchronized.mjs' }`
@@ -1270,6 +1336,7 @@ describe('emitted distribution classifier', () => {
 			const extensionless = `{ types: './feature.d.cts', require: './feature' }`
 			const nested = `{ types: './nested/feature.d.ts', require: './feature.mjs' }`
 			const malformed = `{ types: './malformed/feature.d.ts', require: './feature.mjs' }`
+			const directory = `{ types: './directory/index.d.ts', require: './feature.mjs' }`
 			const answers = driveClassifier(file, [
 				`classifier.resolvesCommonJS(${declarationCommonRuntimeModule}, ${JSON.stringify(installed)})`,
 				`classifier.resolvesCommonJS(${declarationModuleRuntimeCommon}, ${JSON.stringify(installed)})`,
@@ -1280,6 +1347,7 @@ describe('emitted distribution classifier', () => {
 				`classifier.resolvesCommonJS(${extensionless}, ${JSON.stringify(installed)})`,
 				`classifier.resolvesCommonJS(${nested}, ${JSON.stringify(installed)})`,
 				`classifier.resolvesCommonJS(${malformed}, ${JSON.stringify(installed)})`,
+				`classifier.resolvesCommonJS(${directory}, ${JSON.stringify(installed)})`,
 				`classifier.selectEntries([{ subpath: './dual', mapping: ${dual}, commonjs: true }, { subpath: './module', mapping: ${module}, commonjs: false }], classifier.BUNDLER_CONDITIONS.commonjs).map((entry) => entry.subpath)`,
 			])
 
@@ -1293,6 +1361,7 @@ describe('emitted distribution classifier', () => {
 				true,
 				true,
 				true,
+				false,
 				['./dual'],
 			])
 		} finally {
@@ -1309,6 +1378,13 @@ describe('emitted distribution classifier', () => {
 			const file = stageDistributionClassification(workspace)
 			const installed = workspace.ensure('installed')
 			workspace.write('installed/package.json', '{ "type": "module" }\n')
+			workspace.write('installed/common.d.cts', 'export const value: number\n')
+			workspace.write('installed/module.d.mts', 'export const value: number\n')
+			workspace.write('installed/invalid.d.cts', 'export const value: number\n')
+			workspace.write('installed/esm.d.mts', 'export const value: number\n')
+			workspace.write('installed/browser.d.ts', 'export const value: number\n')
+			workspace.write('installed/sync.d.cts', 'export const value: number\n')
+			workspace.write('installed/addon.d.cts', 'export const value: number\n')
 			const manifest = {
 				exports: {
 					'./decl-cts-rt-mjs': {
@@ -1319,6 +1395,23 @@ describe('emitted distribution classifier', () => {
 					},
 					'./invalid': {
 						require: { types: './invalid.d.cts', default: '../outside.cjs' },
+					},
+					'./esm-only': {
+						import: { types: './esm.d.mts', default: './esm.mjs' },
+					},
+					'./browser': {
+						types: './browser.d.ts',
+						browser: './dist/src/browser/index.js',
+						import: './dist/src/core/index.js',
+					},
+					'./javascript-require': { require: './javascript.cjs' },
+					'./module-sync': {
+						types: './sync.d.cts',
+						'module-sync': './sync.mjs',
+					},
+					'./node-addons': {
+						types: './addon.d.cts',
+						'node-addons': './addon.node',
 					},
 					'./undeclared': './feature.cjs',
 					'./package.json': './package.json',
@@ -1373,6 +1466,62 @@ describe('emitted distribution classifier', () => {
 							commonjs: true,
 							required: true,
 						},
+						{
+							subpath: './esm-only',
+							specifier: 'sample-package/esm-only',
+							mapping: manifest.exports['./esm-only'],
+							declaration: {
+								module: join(installed, './esm.d.mts'),
+								commonjs: undefined,
+								browser: join(installed, './esm.d.mts'),
+							},
+							browser: false,
+							module: true,
+							commonjs: false,
+							required: false,
+						},
+						{
+							subpath: './browser',
+							specifier: 'sample-package/browser',
+							mapping: manifest.exports['./browser'],
+							declaration: {
+								module: join(installed, './browser.d.ts'),
+								commonjs: join(installed, './browser.d.ts'),
+								browser: join(installed, './browser.d.ts'),
+							},
+							browser: true,
+							module: true,
+							commonjs: false,
+							required: false,
+						},
+						{
+							subpath: './module-sync',
+							specifier: 'sample-package/module-sync',
+							mapping: manifest.exports['./module-sync'],
+							declaration: {
+								module: join(installed, './sync.d.cts'),
+								commonjs: join(installed, './sync.d.cts'),
+								browser: join(installed, './sync.d.cts'),
+							},
+							browser: false,
+							module: true,
+							commonjs: true,
+							required: true,
+						},
+						{
+							subpath: './node-addons',
+							specifier: 'sample-package/node-addons',
+							mapping: manifest.exports['./node-addons'],
+							declaration: {
+								module: join(installed, './addon.d.cts'),
+								commonjs: join(installed, './addon.d.cts'),
+								browser: join(installed, './addon.d.cts'),
+							},
+							browser: false,
+							module: true,
+							commonjs: true,
+							required: true,
+						},
 					],
 					targets: [
 						'./common.d.cts',
@@ -1381,6 +1530,16 @@ describe('emitted distribution classifier', () => {
 						'./runtime.cjs',
 						'./invalid.d.cts',
 						'../outside.cjs',
+						'./esm.d.mts',
+						'./esm.mjs',
+						'./browser.d.ts',
+						'./dist/src/browser/index.js',
+						'./dist/src/core/index.js',
+						'./javascript.cjs',
+						'./sync.d.cts',
+						'./sync.mjs',
+						'./addon.d.cts',
+						'./addon.node',
 						'./feature.cjs',
 						'./package.json',
 					],
@@ -1388,13 +1547,49 @@ describe('emitted distribution classifier', () => {
 						'./decl-cts-rt-mjs',
 						'./decl-mts-rt-cjs',
 						'./invalid',
+						'./esm-only',
+						'./browser',
+						'./javascript-require',
+						'./module-sync',
+						'./node-addons',
 						'./undeclared',
 						'./package.json',
 					],
-					undeclared: ['./undeclared'],
+					undeclared: ['./javascript-require', './undeclared'],
 					excluded: ['./package.json'],
 				},
 			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('names require-loadable entries that a CommonJS compile cannot type', () => {
+		const workspace = createScratch({
+			parent: ensureTmpRoot(),
+			prefix: 'scaffold-e2-commonjs-untypable-',
+		})
+		try {
+			const file = stageDistributionClassification(workspace)
+			const installed = workspace.ensure('installed')
+			workspace.write('installed/package.json', '{ "type": "module" }\n')
+			workspace.write('installed/module.d.mts', 'export const value: number\n')
+			workspace.write('installed/dist/src/core/index.d.ts', 'export const value: number\n')
+			workspace.write('installed/dist/src/core/index.d.cts', 'export const value: number\n')
+			const untypable = {
+				exports: {
+					'.': { require: { types: './module.d.mts', default: './runtime.cjs' } },
+				},
+			}
+			const generated: unknown = JSON.parse(
+				blueprintToManifest(createBlueprint('sample', { src: ['core'] })),
+			)
+			const answers = driveClassifier(file, [
+				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(untypable)}, ${JSON.stringify(installed)}, 'untypable').entries).map((entry) => entry.subpath)`,
+				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(generated)}, ${JSON.stringify(installed)}, 'sample').entries).map((entry) => entry.subpath)`,
+			])
+
+			expect(answers).toStrictEqual([['.'], []])
 		} finally {
 			workspace.destroy()
 		}
@@ -1409,6 +1604,7 @@ describe('emitted distribution classifier', () => {
 			const file = stageDistributionClassification(workspace)
 			const installed = workspace.ensure('installed')
 			workspace.write('installed/package.json', '{ "type": "module" }\n')
+			workspace.write('installed/index.d.cts', 'export const value: number\n')
 			const manifest = {
 				exports: {
 					'.': {
