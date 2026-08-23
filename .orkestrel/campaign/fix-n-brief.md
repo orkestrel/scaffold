@@ -70,10 +70,22 @@ pattern and the paths you swept — including a clean result.
 
 ## N3 — sentences FIX-M falsified
 
-FIX-M repaired the CommonJS probe's selector and added executed guide assertions. Its report is at
-`.orkestrel/campaign/fix-m-report.md` and lists every `guides/scaffold.md` sentence its change
-falsified. Read that list and correct each. Read `src/core/templates.ts` for what is true now rather
-than describing it from any report.
+FIX-M repaired the CommonJS probe's selector and added executed guide assertions. It named exactly
+one falsified sentence in `guides/scaffold.md`:
+
+> A subpath whose Vite resolution lands under `dist/src/browser/` is driven in a real browser and the
+> Node drives retire for it; every other subpath is imported where the ESM set resolves a target and
+> required where the CommonJS set resolves one.
+
+The final clause is now false. A subpath is required where the entry **declares CommonJS support** —
+the resolved path must traverse an explicit `require` condition. A `default` branch resolving under
+the CommonJS condition set is not a declaration of support, and a package relying on one is ESM-only:
+TypeScript refuses to `require` it even though Node's `require(esm)` loads it.
+
+Correct that clause. Read `src/core/templates.ts` for what is true now rather than describing it from
+this brief.
+
+Its report is at `.orkestrel/campaign/fix-m-report.md`.
 
 ## N4 — two rules this campaign earned
 
