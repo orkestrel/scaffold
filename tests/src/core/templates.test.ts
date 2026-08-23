@@ -1564,7 +1564,46 @@ describe('emitted distribution classifier', () => {
 		}
 	})
 
-	it('names require-loadable entries that a CommonJS compile cannot type', () => {
+	it('leaves a default-resolved entry outside the CommonJS claim assertion', () => {
+		const workspace = createScratch({
+			parent: ensureTmpRoot(),
+			prefix: 'scaffold-e2-commonjs-unclaimed-',
+		})
+		try {
+			const file = stageDistributionClassification(workspace)
+			const installed = workspace.ensure('installed')
+			workspace.write('installed/package.json', '{ "type": "module" }\n')
+			workspace.write('installed/dist/src/browser/index.d.ts', 'export const value: number\n')
+			const unclaimed = {
+				exports: {
+					'.': {
+						types: './dist/src/browser/index.d.ts',
+						import: './dist/src/browser/index.js',
+						default: './dist/src/browser/index.js',
+					},
+				},
+			}
+			const declared = {
+				exports: {
+					'.': {
+						types: './dist/src/browser/index.d.ts',
+						import: './dist/src/browser/index.js',
+						require: './dist/src/browser/index.js',
+					},
+				},
+			}
+			const answers = driveClassifier(file, [
+				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(unclaimed)}, ${JSON.stringify(installed)}, 'unclaimed').entries).map((entry) => entry.subpath)`,
+				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(declared)}, ${JSON.stringify(installed)}, 'declared').entries).map((entry) => entry.subpath)`,
+			])
+
+			expect(answers).toStrictEqual([[], ['.']])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('names an incompatible declaration under an explicit CommonJS claim', () => {
 		const workspace = createScratch({
 			parent: ensureTmpRoot(),
 			prefix: 'scaffold-e2-commonjs-untypable-',
@@ -1574,19 +1613,20 @@ describe('emitted distribution classifier', () => {
 			const installed = workspace.ensure('installed')
 			workspace.write('installed/package.json', '{ "type": "module" }\n')
 			workspace.write('installed/module.d.mts', 'export const value: number\n')
-			workspace.write('installed/dist/src/core/index.d.ts', 'export const value: number\n')
-			workspace.write('installed/dist/src/core/index.d.cts', 'export const value: number\n')
-			const untypable = {
+			workspace.write('installed/common.d.cts', 'export const value: number\n')
+			const incompatible = {
 				exports: {
 					'.': { require: { types: './module.d.mts', default: './runtime.cjs' } },
 				},
 			}
-			const generated: unknown = JSON.parse(
-				blueprintToManifest(createBlueprint('sample', { src: ['core'] })),
-			)
+			const compatible = {
+				exports: {
+					'.': { require: { types: './common.d.cts', default: './runtime.cjs' } },
+				},
+			}
 			const answers = driveClassifier(file, [
-				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(untypable)}, ${JSON.stringify(installed)}, 'untypable').entries).map((entry) => entry.subpath)`,
-				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(generated)}, ${JSON.stringify(installed)}, 'sample').entries).map((entry) => entry.subpath)`,
+				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(incompatible)}, ${JSON.stringify(installed)}, 'incompatible').entries).map((entry) => entry.subpath)`,
+				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(compatible)}, ${JSON.stringify(installed)}, 'compatible').entries).map((entry) => entry.subpath)`,
 			])
 
 			expect(answers).toStrictEqual([['.'], []])

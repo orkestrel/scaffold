@@ -1487,6 +1487,11 @@ does not decide compile membership. The runtime drive separately resolves under 
 probe found. An invalid non-list target beside a valid CommonJS declaration therefore reaches Node's
 `ERR_INVALID_PACKAGE_TARGET` failure instead of being dropped during classification.
 
+The mirror assertion reports a CommonJS typing defect only when the entry's own mapping declares an
+explicit `require` condition, the Node `require` resolver reaches the entry, and the selected
+declaration refuses a CommonJS consumer. A `default` branch that merely resolves under the require
+condition set makes no CommonJS claim.
+
 Each drive compares against the declaration its own consumer reads, resolved under the conditions
 TypeScript applies for that resolution and importing format: `types` first and the format's own
 condition after it, with `node` between them for the `node16` and `nodenext` resolutions and left
