@@ -1178,12 +1178,17 @@ interface Entry {
 	readonly commonjs: boolean
 }
 
-// The installed tree every claim is read from.
+// The installed tree every claim is read from. Every subpath the exports map names
+// lands in exactly one of \`entries\`, \`undeclared\`, and \`excluded\`, so a subpath this
+// proof cannot drive is reported rather than dropped.
 interface Stage {
 	readonly consumer: string
 	readonly installed: string
 	readonly archives: readonly string[]
 	readonly entries: readonly Entry[]
+	readonly subpaths: readonly string[]
+	readonly undeclared: readonly string[]
+	readonly excluded: readonly string[]
 	readonly targets: readonly string[]
 }
 
@@ -1254,6 +1259,14 @@ function collectTargets(entry: unknown): readonly string[] {
 	if (typeof entry === 'string') return [entry]
 	if (!isRecord(entry)) return []
 	return Object.values(entry).flatMap((nested) => collectTargets(nested))
+}
+
+// Whether a target is a JavaScript module a runtime loads for its names. A
+// declaration is owed for one of these and for nothing else: a stylesheet, the
+// \`"./package.json"\` manifest pointer, and every other published asset is a file a
+// consumer reads rather than imports.
+function isModule(target: string): boolean {
+	return target.endsWith('.js') || target.endsWith('.mjs') || target.endsWith('.cjs')
 }
 
 // The value exports a declaration publishes, read through the compiler's checker
@@ -1362,10 +1375,24 @@ function buildStage(): Stage {
 	}
 	const entries: Entry[] = []
 	const targets: string[] = []
+	const subpaths: string[] = []
+	const undeclared: string[] = []
+	const excluded: string[] = []
 	for (const [subpath, entry] of Object.entries(manifest.exports)) {
-		targets.push(...collectTargets(entry))
+		const files = collectTargets(entry)
+		targets.push(...files)
+		subpaths.push(subpath)
 		const declaration = resolveTarget(entry, ['types', 'import'])
-		if (declaration === undefined || !declaration.endsWith('.d.ts')) continue
+		// A subpath resolving no declaration is partitioned rather than dropped. It is a
+		// defect when a runtime loads one of its targets for names, because a consumer
+		// importing it compiles against nothing under \`node16\`. It is an excluded
+		// publication otherwise: the \`"./package.json"\` manifest pointer and a stylesheet
+		// are published for a reader rather than an importer.
+		if (declaration === undefined || !declaration.endsWith('.d.ts')) {
+			if (files.some(isModule)) undeclared.push(subpath)
+			else excluded.push(subpath)
+			continue
+		}
 		const module = resolveTarget(entry, ['import'])
 		entries.push({
 			subpath,
@@ -1375,7 +1402,7 @@ function buildStage(): Stage {
 			commonjs: resolveTarget(entry, ['require']) !== undefined,
 		})
 	}
-	return { consumer, installed, archives, entries, targets }
+	return { consumer, installed, archives, entries, subpaths, undeclared, excluded, targets }
 }
 
 const SCRATCH = mkdtempSync(join(tmpdir(), 'distribution-'))
@@ -1437,6 +1464,21 @@ describe('installed package consumer', () => {
 		)
 	})
 
+	// Every published subpath is driven, excluded by name, or reported here. A dropped
+	// one leaves no trace: no runtime test, no declaration comparison, and no place in
+	// the resolution compile, so the run reports success for a subpath it never
+	// measured.
+	it('declares types for every module it publishes [requires the registry]', (context) => {
+		const stage = requireStage(context)
+		const partitioned = [
+			...stage.entries.map((entry) => entry.subpath),
+			...stage.undeclared,
+			...stage.excluded,
+		]
+		expect(stage.undeclared).toStrictEqual([])
+		expect(partitioned.sort()).toStrictEqual([...stage.subpaths].sort())
+	})
+
 	it('refuses a subpath its exports map does not name [requires the registry]', (context) => {
 		const stage = requireStage(context)
 		const name = readManifestName(join(stage.installed, 'package.json'))
@@ -1465,7 +1507,7 @@ describe('installed package consumer', () => {
 		expect(reported).toStrictEqual([])
 		expect(silent).toStrictEqual([])
 	})
-})
+{{guard}}})
 
 for (const entry of STAGE?.entries ?? []) {
 	describe(\`installed entry \${entry.subpath}\`, () => {
@@ -1614,6 +1656,20 @@ async function readBrowserExports(browser: Browser, bundle: string): Promise<rea
 				}
 			},
 		)
+`,
+			guard: `
+	// This proof drives a Node import and a Node require and carries no browser
+	// branch: the workspace published no browser face when it was written, so the
+	// launcher and the bundler one needs are not imported here. \`it.runIf(!entry.browser)\`
+	// retires the Node import and the Node require for a face published later, which
+	// leaves nothing measuring it. So it reddens here and names the subpath a browser
+	// branch is owed for. A workspace that gains one deletes this file and runs the
+	// \`repair\` verb, which writes the variant carrying that branch.
+	it('publishes no browser face this proof cannot drive [requires the registry]', (context) => {
+		const stage = requireStage(context)
+		const faces = stage.entries.filter((entry) => entry.browser)
+		expect(faces.map((entry) => entry.subpath)).toStrictEqual([])
+	})
 `,
 		}),
 		integration: `{{imports}}import { describe, expect, it } from 'vitest'

@@ -18,6 +18,7 @@ import {
 	CONFIG_TEMPLATES,
 	contentToHex,
 	createBlueprint,
+	ENVIRONMENTS,
 	FLOOR_RANGE_PATTERN,
 	isFinding,
 	ORKESTREL_RANGE_PATTERN,
@@ -567,6 +568,68 @@ describe('blueprintToScripts config projects', () => {
 		expect(plain).toContain("const BROWSER_OUTPUT = './dist/src/browser/'")
 		expect(plain).not.toContain('playwright')
 		expect(plain).not.toContain('configs/browsers.js')
+	})
+
+	// A subpath the loop skips leaves no trace of its own: no runtime test, no
+	// declaration comparison, and no place in the resolution compile. So the proof
+	// partitions every published subpath into what it drives, what it excludes, and
+	// what it reports. The `./package.json` manifest pointer and a stylesheet target
+	// are published for a reader rather than an importer, so a JavaScript module with
+	// no `.d.ts` beside it is the one shape that reddens.
+	it('writes a proof that partitions every published subpath rather than dropping one', () => {
+		const [proof] = blueprintToTestArtifacts(buildBlueprint({ src: ['core'] })).filter(
+			({ path }) => path === 'tests/distribution.test.ts',
+		)
+		const content = proof?.content ?? ''
+
+		expect(content).toContain(
+			"return target.endsWith('.js') || target.endsWith('.mjs') || target.endsWith('.cjs')",
+		)
+		expect(content).toContain('subpaths.push(subpath)')
+		expect(content).toContain('if (files.some(isModule)) undeclared.push(subpath)')
+		expect(content).toContain('else excluded.push(subpath)')
+		expect(content).toContain('expect(stage.undeclared).toStrictEqual([])')
+		expect(content).toContain(
+			'expect(partitioned.sort()).toStrictEqual([...stage.subpaths].sort())',
+		)
+		// The falsifying shape: a declaration test that leaves the loop with no bucket
+		// for the subpath it walked past.
+		expect(content).not.toContain("!declaration.endsWith('.d.ts')) continue")
+	})
+
+	// `it.runIf(!entry.browser)` retires the Node import and the Node require for a
+	// browser entry, and a workspace publishing no browser face carries no branch that
+	// drives one. Presence ownership never rewrites the proof, so a face published
+	// later meets whichever variant was written: the guard reddens on it, and the
+	// browser branch drives it. Every selection carries exactly one of them.
+	it('writes a core-only proof that reddens on a browser face it cannot drive', () => {
+		const guarded: string[] = []
+		const driven: string[] = []
+		const selections: string[] = []
+		for (let mask = 1; mask < 2 ** ENVIRONMENTS.length; mask += 1) {
+			const src = ENVIRONMENTS.filter((_, index) => (mask & (1 << index)) !== 0)
+			const [artifact] = blueprintToTestArtifacts(buildBlueprint({ src })).filter(
+				({ path }) => path === 'tests/distribution.test.ts',
+			)
+			const content = artifact?.content ?? ''
+			const selection = src.join('+')
+			selections.push(selection)
+			if (content.includes('publishes no browser face this proof cannot drive')) {
+				guarded.push(selection)
+			}
+			if (content.includes('publishes what it declares to a real browser')) {
+				driven.push(selection)
+			}
+		}
+
+		expect(guarded).toStrictEqual(['core', 'server', 'core+server'])
+		expect(driven).toStrictEqual([
+			'browser',
+			'core+browser',
+			'browser+server',
+			'core+browser+server',
+		])
+		expect([...guarded, ...driven].sort()).toStrictEqual([...selections].sort())
 	})
 
 	it('registers an application-only integration proof in the default test gate', () => {

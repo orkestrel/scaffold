@@ -1298,6 +1298,13 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 	// that packs no published source has nothing for it to read. Ownership is
 	// presence, which is what reports a target still lacking the proof as drift
 	// while leaving a package that wrote a better one exactly as it is.
+	//
+	// The browser branch is emitted only for a workspace publishing a browser face,
+	// because the imports it needs — `playwright`, `@vitest/browser-playwright`, and
+	// `vite` — are declared only there. Presence ownership never rewrites the file, so
+	// a workspace publishing a browser face later keeps a proof with no branch for it.
+	// The core-only variant therefore carries the guard that reddens on such an entry
+	// rather than skipping it.
 	if (blueprint.src.length > 0) {
 		const browser = blueprint.src.includes('browser')
 		const distribution = ARTIFACT_TEMPLATES.tests.distribution
@@ -1312,6 +1319,7 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 				launcher: browser ? distribution.launcher : '',
 				helpers: browser ? distribution.helpers : '',
 				drive: browser ? distribution.drive : '',
+				guard: browser ? '' : distribution.guard,
 			}),
 		})
 	}
