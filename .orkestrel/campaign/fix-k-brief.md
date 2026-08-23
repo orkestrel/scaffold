@@ -56,6 +56,39 @@ round claimed it was wrong and an independent refuter broke that claim: Node loa
 file under both module systems, resolving format from the nearest `package.json` `type`. The sentence
 stands. Do not revive the claim and do not "improve" the sentence into hedging.
 
+### K1b — the guide sentences FIX-L falsified, added before dispatch
+
+This brief was written after FIX-J and before FIX-L. FIX-L then repaired the condition model itself,
+which falsified more of the same passage. These are added rather than left for a later round, because
+they are the same paragraph and one writer must own it.
+
+FIX-L's report names each. In `guides/scaffold.md`:
+
+- **Line 1454-1457.** "Another assertion beside it names every driven subpath whose entry resolves
+  neither an `import` target nor a `require` target." The proof now resolves Node and browser targets
+  under their own driver conditions, so the assertion is about an entry resolving no Node **or
+  browser** target. Restate it as the code now reads.
+- **Line 1459-1463.** "A subpath is driven when its entry resolves a declaration: the proof imports
+  it, requires it where the entry declares a `require` condition, and compiles a consumer against it
+  under every module resolution. The declaration is read under `['types', 'import']` and then under
+  `['types', 'require']`. Those condition sets are iterated rather than coalesced: a set that answers
+  with JavaScript has resolved no declaration, so the next set is read rather than that answer
+  returned."
+
+  All of it describes the model FIX-L replaced. What is true now: **each measurement resolves under
+  the conditions of the driver that takes it.** The Node ESM runtime resolves `node-addons`, `node`,
+  `import`, `module-sync`; the Node CommonJS runtime the same with `require`; the Node TypeScript
+  resolutions add `node` to the format condition; the Vite production browser runtime resolves
+  `module`, `browser`, `production`, `import`, with bundler conditions for its declaration. Those
+  sets come from Node's, Vite's, and TypeScript's own documentation. State the principle and enough
+  of the sets that a maintainer can check the claim; do not paste all of them if the paragraph reads
+  better naming the principle and the two that differ.
+- **Line 1464.** "That is what drives a `require`-only subpath declaring its types inside `require`."
+  Still true of the outcome, and no longer true of the mechanism it is attached to. Keep the fact,
+  reattach it.
+
+**The `.node` sentence** at line 1467-1470 is still owed from K1 and unchanged by FIX-L.
+
 ### K2 — the emitted guard's retired reason of record
 
 `src/core/templates.ts:1799`, inside the `guard` template that scaffold writes into a target:
