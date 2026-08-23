@@ -4,6 +4,7 @@ import { execFileSync } from 'node:child_process'
 import { chmodSync, mkdirSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { runInNewContext } from 'node:vm'
 import { isRecord, isString } from '@orkestrel/contract'
 import { requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
@@ -266,11 +267,14 @@ const CLASSIFIER_DECLARATIONS: readonly string[] = [
 	'DECLARATION_CONDITIONS',
 	'isRecord',
 	'isList',
+	'isPackageTarget',
 	'resolveTarget',
 	'collectTargets',
 	'isModule',
 	'isDeclaration',
 	'readDeclaration',
+	'readDeclarations',
+	'selectEntries',
 ]
 
 // One classification the emitted proof performs, written as the driver evaluates it
@@ -290,21 +294,25 @@ const CLASSIFIER_CASES: ReadonlyArray<readonly [call: string, answer: unknown]> 
 		'./x.d.ts',
 	],
 	[
-		`classifier.readDeclaration({ import: { types: ['./x.d.ts'], default: './x.js' } })`,
+		`classifier.readDeclaration({ import: { types: ['./x.d.ts'], default: './x.js' } }, ['types', 'import'])`,
 		'./x.d.ts',
 	],
 	[
-		`classifier.readDeclaration({ require: { types: './x.d.cts', default: './x.cjs' } })`,
+		`classifier.readDeclaration({ require: { types: './x.d.cts', default: './x.cjs' } }, ['types', 'require'])`,
 		'./x.d.cts',
 	],
 	[
-		`classifier.readDeclaration({ import: { types: './x.d.ts' }, require: { types: './x.d.cts' } })`,
+		`classifier.readDeclaration({ import: { types: './x.d.ts' }, require: { types: './x.d.cts' } }, ['types', 'import'])`,
 		'./x.d.ts',
 	],
-	[`classifier.readDeclaration({ import: './x.js', default: './x.js' })`, null],
+	[
+		`classifier.readDeclaration({ import: './x.js', default: './x.js' }, ['types', 'import'])`,
+		undefined,
+	],
 	[`classifier.isModule('./dist/src/core/index.js')`, true],
 	[`classifier.isModule('./dist/src/core/index.mjs')`, true],
 	[`classifier.isModule('./dist/src/core/index.cjs')`, true],
+	[`classifier.isModule('./dist/src/core/addon.node')`, true],
 	[`classifier.isModule('./dist/src/core/feature')`, true],
 	[`classifier.isModule('./dist/bundle.js/feature')`, true],
 	[`classifier.isModule('./dist/src/core/module.wasm')`, false],
@@ -320,6 +328,29 @@ const CLASSIFIER_CASES: ReadonlyArray<readonly [call: string, answer: unknown]> 
 function stageClassifier(workspace: ScratchInterface, content: string): string {
 	workspace.write('classifier.ts', extractDeclarations(content, CLASSIFIER_DECLARATIONS))
 	return join(workspace.path, 'classifier.ts')
+}
+
+// The emitted classifier driven in this process after TypeScript removes its type
+// syntax. The source still comes from the real template lift, and a fresh VM
+// context gives each drive an isolated module instance without a child process.
+function driveClassifier(file: string, calls: readonly string[]): readonly unknown[] {
+	const compiled = ts.transpileModule(readFileSync(file, 'utf8'), {
+		compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ESNext },
+	})
+	const classifier: Record<string, unknown> = {}
+	runInNewContext(compiled.outputText, { exports: classifier })
+	const answers: unknown = runInNewContext(`[${calls.join(', ')}]`, { classifier })
+	if (!Array.isArray(answers)) throw new Error('The emitted classifier driver returned no list')
+	return structuredClone(answers)
+}
+
+// The generated distribution proof lifted into one scratch module for a direct
+// classifier drive.
+function stageDistributionClassifier(workspace: ScratchInterface): string {
+	const [proof] = blueprintToTestArtifacts(createBlueprint('sample', { src: ['core'] })).filter(
+		({ path }) => path === 'tests/distribution.test.ts',
+	)
+	return stageClassifier(workspace, requireValue(proof?.content))
 }
 
 // One module carrying the named top-level declarations of another, in source order
@@ -1071,19 +1102,15 @@ describe('emitted distribution classifier', () => {
 	// to read is a subpath published without measurement: the walkers answer nothing
 	// for it, the proof files it as excluded, and the totality assertion stays green
 	// because the subpath is accounted for.
-	it('reads a fallback list, a declaration under require, and an extensionless module', () => {
+	it('reads a fallback list, a declaration under require, and an extensionless module', async () => {
 		const workspace = createScratch({
 			parent: ensureTmpRoot(),
 			prefix: 'scaffold-e2-classifier-',
 		})
 		try {
-			const [proof] = blueprintToTestArtifacts(createBlueprint('sample', { src: ['core'] })).filter(
-				({ path }) => path === 'tests/distribution.test.ts',
-			)
-			const file = stageClassifier(workspace, requireValue(proof?.content))
-			const answers = driveModule(
+			const file = stageDistributionClassifier(workspace)
+			const answers = await driveClassifier(
 				file,
-				'classifier',
 				CLASSIFIER_CASES.map(([call]) => call),
 			)
 
@@ -1092,6 +1119,93 @@ describe('emitted distribution classifier', () => {
 			workspace.destroy()
 		}
 	}, 20_000)
+
+	it('classifies native addon targets as modules', async () => {
+		const workspace = createScratch({
+			parent: ensureTmpRoot(),
+			prefix: 'scaffold-e2-native-addon-',
+		})
+		try {
+			const file = stageDistributionClassifier(workspace)
+			const answers = await driveClassifier(file, [
+				`classifier.isModule('./dist/addon.node')`,
+				`classifier.isModule('./dist/module.wasm')`,
+			])
+
+			expect(answers).toStrictEqual([true, false])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('resolves import and require declarations independently', async () => {
+		const workspace = createScratch({
+			parent: ensureTmpRoot(),
+			prefix: 'scaffold-e2-dual-declaration-',
+		})
+		try {
+			const file = stageDistributionClassifier(workspace)
+			const answers = await driveClassifier(file, [
+				`classifier.readDeclarations({ import: { types: './x.d.mts', default: './x.mjs' }, require: { types: './x.d.cts', default: './x.cjs' } })`,
+				`classifier.readDeclarations({ import: { types: './x.d.mts', default: './x.mjs' }, require: './x.cjs' })`,
+			])
+
+			expect(answers).toStrictEqual([
+				{ module: './x.d.mts', commonjs: './x.d.cts' },
+				{ module: './x.d.mts', commonjs: undefined },
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('includes dual entries in CommonJS compile probes', async () => {
+		const workspace = createScratch({
+			parent: ensureTmpRoot(),
+			prefix: 'scaffold-e2-dual-format-',
+		})
+		try {
+			const file = stageDistributionClassifier(workspace)
+			const answers = await driveClassifier(file, [
+				`classifier.selectEntries([{ subpath: './dual', module: true, commonjs: true }, { subpath: './module', module: true, commonjs: false }], false).map((entry) => entry.subpath)`,
+			])
+
+			expect(answers).toStrictEqual([['./dual']])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('skips invalid package targets only inside fallback arrays', async () => {
+		const workspace = createScratch({
+			parent: ensureTmpRoot(),
+			prefix: 'scaffold-e2-package-target-',
+		})
+		try {
+			const file = stageDistributionClassifier(workspace)
+			const answers = await driveClassifier(file, [
+				`classifier.resolveTarget(['../outside.cjs', './valid.cjs'], ['import'])`,
+				`classifier.collectTargets(['../outside.cjs', './valid.cjs'])`,
+				`classifier.resolveTarget('../outside.cjs', ['import'])`,
+				`classifier.collectTargets('../outside.cjs')`,
+				`classifier.resolveTarget(['./x/../outside.cjs', './valid.cjs'], ['import'])`,
+				`classifier.resolveTarget(['./x//missing.cjs', './valid.cjs'], ['import'])`,
+				`classifier.resolveTarget(['./x%2fmissing.cjs', './valid.cjs'], ['import'])`,
+			])
+
+			expect(answers).toStrictEqual([
+				'./valid.cjs',
+				['./valid.cjs'],
+				'../outside.cjs',
+				['../outside.cjs'],
+				'./valid.cjs',
+				'./x//missing.cjs',
+				'./x%2fmissing.cjs',
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
 
 	// The control on the lift itself: a name the proof does not declare stops the
 	// extraction, so a drive above reports on declarations that were really carried

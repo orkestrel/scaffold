@@ -1168,7 +1168,7 @@ const RESOLUTIONS = [
 ] as const
 
 // The extensions a JavaScript runtime loads a file as a module through.
-const MODULE_EXTENSIONS = ['.js', '.mjs', '.cjs']
+const MODULE_EXTENSIONS = ['.js', '.mjs', '.cjs', '.node']
 // The extensions a declaration file carries. A \`require\` condition declares
 // \`.d.cts\` and an ESM-only one \`.d.mts\`, so the \`.d.ts\` spelling alone does not
 // name them.
@@ -1195,7 +1195,10 @@ const FORMATS: ReadonlyArray<readonly [extension: string, module: boolean]> = [
 interface Entry {
 	readonly subpath: string
 	readonly specifier: string
-	readonly declaration: string
+	readonly declaration: {
+		readonly module: string | undefined
+		readonly commonjs: string | undefined
+	}
 	readonly browser: boolean
 	readonly module: boolean
 	readonly commonjs: boolean
@@ -1228,6 +1231,23 @@ function isNames(value: unknown): value is readonly string[] {
 // member to \`any\`, and an entry read that way is not read at all.
 function isList(value: unknown): value is readonly unknown[] {
 	return Array.isArray(value)
+}
+
+// Whether a string is a valid package target. Node rejects a target outside the
+// package and a target containing a dot, parent, or node_modules segment during
+// package-target resolution. A later module-resolution failure is not the same
+// thing: an array falls through the former and keeps the latter.
+function isPackageTarget(target: string): boolean {
+	if (!target.startsWith('./')) return false
+	for (const segment of target.slice(2).split(/[\\\\/]/u)) {
+		let decoded = segment
+		try {
+			decoded = decodeURIComponent(segment)
+		} catch {}
+		const normalized = decoded.toLowerCase()
+		if (normalized === '.' || normalized === '..' || normalized === 'node_modules') return false
+	}
+	return true
 }
 
 function readJson(path: string): unknown {
@@ -1278,7 +1298,7 @@ function resolveTarget(entry: unknown, conditions: readonly string[]): string | 
 	if (isList(entry)) {
 		for (const member of entry) {
 			const resolved = resolveTarget(member, conditions)
-			if (resolved !== undefined) return resolved
+			if (resolved !== undefined && isPackageTarget(resolved)) return resolved
 		}
 		return undefined
 	}
@@ -1296,7 +1316,11 @@ function resolveTarget(entry: unknown, conditions: readonly string[]): string | 
 // a reader that takes a later member takes a file this tree still owes.
 function collectTargets(entry: unknown): readonly string[] {
 	if (typeof entry === 'string') return [entry]
-	if (isList(entry)) return entry.flatMap((member) => collectTargets(member))
+	if (isList(entry)) {
+		return entry
+			.flatMap((member) => collectTargets(member))
+			.filter((target) => isPackageTarget(target))
+	}
 	if (!isRecord(entry)) return []
 	return Object.values(entry).flatMap((nested) => collectTargets(nested))
 }
@@ -1328,12 +1352,25 @@ function isDeclaration(target: string): boolean {
 // subpath as undeclared. A set whose \`default\` branch answers with JavaScript
 // resolved no declaration, so the next set is read rather than that fallthrough
 // returned.
-function readDeclaration(entry: unknown): string | undefined {
-	for (const conditions of DECLARATION_CONDITIONS) {
-		const resolved = resolveTarget(entry, conditions)
-		if (resolved !== undefined && isDeclaration(resolved)) return resolved
+function readDeclaration(entry: unknown, conditions: readonly string[]): string | undefined {
+	const resolved = resolveTarget(entry, conditions)
+	return resolved !== undefined && isDeclaration(resolved) ? resolved : undefined
+}
+
+// The declarations each consumer module format resolves independently. A dual
+// entry can publish distinct declarations, and absence on one side must survive
+// so that format's compile and runtime probes can report it.
+function readDeclarations(entry: unknown): Entry['declaration'] {
+	return {
+		module: readDeclaration(entry, DECLARATION_CONDITIONS[0] ?? []),
+		commonjs: readDeclaration(entry, DECLARATION_CONDITIONS[1] ?? []),
 	}
-	return undefined
+}
+
+// The entries one consumer module format can resolve. A dual entry belongs to
+// each selection, while a format-specific entry belongs only to its own.
+function selectEntries(entries: readonly Entry[], module: boolean): readonly Entry[] {
+	return entries.filter((entry) => (module ? entry.module : entry.commonjs))
 }
 
 // The value exports a declaration publishes, read through the compiler's checker
@@ -1449,13 +1486,13 @@ function buildStage(): Stage {
 		const files = collectTargets(entry)
 		targets.push(...files)
 		subpaths.push(subpath)
-		const declaration = readDeclaration(entry)
+		const declaration = readDeclarations(entry)
 		// A subpath resolving no declaration is partitioned rather than dropped. It is a
 		// defect when a runtime loads one of its targets for names, because a consumer
 		// importing it compiles against nothing under \`node16\`. It is an excluded
 		// publication otherwise: the \`"./package.json"\` manifest pointer and a stylesheet
 		// are published for a reader rather than an importer.
-		if (declaration === undefined) {
+		if (declaration.module === undefined && declaration.commonjs === undefined) {
 			if (files.some(isModule)) undeclared.push(subpath)
 			else excluded.push(subpath)
 			continue
@@ -1464,7 +1501,11 @@ function buildStage(): Stage {
 		entries.push({
 			subpath,
 			specifier: subpath === '.' ? name : \`\${name}\${subpath.slice(1)}\`,
-			declaration: join(installed, declaration),
+			declaration: {
+				module: declaration.module === undefined ? undefined : join(installed, declaration.module),
+				commonjs:
+					declaration.commonjs === undefined ? undefined : join(installed, declaration.commonjs),
+			},
 			browser: module !== undefined && module.startsWith(BROWSER_OUTPUT),
 			module: module !== undefined,
 			commonjs: resolveTarget(entry, ['require']) !== undefined,
@@ -1573,7 +1614,7 @@ describe('installed package consumer', () => {
 		const silent: string[] = []
 		for (const [label, resolution, kind] of RESOLUTIONS) {
 			for (const [extension, module] of FORMATS) {
-				const written = stage.entries.filter((entry) => entry.module === module)
+				const written = selectEntries(stage.entries, module)
 				if (written.length === 0) continue
 				const specifiers = written.map((entry) => entry.specifier)
 				const probe = writeConsumerProbe(stage, \`probe.\${label}.\${extension}\`, specifiers)
@@ -1597,16 +1638,24 @@ for (const entry of STAGE?.entries ?? []) {
 		it.runIf(entry.module && !entry.browser)(
 			'publishes what it declares to a Node import, and no more',
 			(context) => {
+				const declaration = entry.declaration.module
+				if (declaration === undefined) {
+					throw new Error(\`\${entry.subpath} publishes no import declaration\`)
+				}
 				const published = driveRuntime(requireStage(context), entry.specifier, ESM_DRIVER)
-				expect(published).toStrictEqual(readDeclaredExports(entry.declaration))
+				expect(published).toStrictEqual(readDeclaredExports(declaration))
 			},
 		)
 
 		it.runIf(!entry.browser && entry.commonjs)(
 			'publishes what it declares to a Node require, and no more',
 			(context) => {
+				const declaration = entry.declaration.commonjs
+				if (declaration === undefined) {
+					throw new Error(\`\${entry.subpath} publishes no require declaration\`)
+				}
 				const published = driveRuntime(requireStage(context), entry.specifier, CJS_DRIVER)
-				expect(published).toStrictEqual(readDeclaredExports(entry.declaration))
+				expect(published).toStrictEqual(readDeclaredExports(declaration))
 			},
 		)
 {{drive}}	})
@@ -1731,8 +1780,12 @@ async function readBrowserExports(browser: Browser, bundle: string): Promise<rea
 				})
 				try {
 					const bundle = await bundleEntry(stage, entry)
+					const declaration = entry.declaration.module
+					if (declaration === undefined) {
+						throw new Error(\`\${entry.subpath} publishes no import declaration\`)
+					}
 					expect(await readBrowserExports(browser, bundle)).toStrictEqual(
-						readDeclaredExports(entry.declaration),
+						readDeclaredExports(declaration),
 					)
 				} finally {
 					await browser.close()
@@ -1743,8 +1796,8 @@ async function readBrowserExports(browser: Browser, bundle: string): Promise<rea
 			guard: `
 	// This proof drives a Node import and a Node require and carries no browser
 	// branch: the workspace published no browser face when it was written, so the
-	// launcher and the bundler one needs are not imported here. \`it.runIf(!entry.browser)\`
-	// retires the Node import and the Node require for a face published later, which
+	// launcher and the bundler one needs are not imported here. The Node \`it.runIf\` predicates
+	// below retire each matching Node drive for a face published later, which
 	// leaves nothing measuring it. So it reddens here and names the subpath a browser
 	// branch is owed for. A workspace that gains one deletes this file and runs the
 	// \`repair\` verb, which writes the variant carrying that branch.
