@@ -1466,32 +1466,29 @@ published subpath is driven, or is named where the proof cannot drive it.
 
 A subpath is driven when its entry resolves a declaration, and each measurement resolves that entry
 under the conditions of the driver taking it rather than under one shared set. The Node ESM runtime
-resolves `node-addons`, `node`, `import`, and `module-sync`; the Node CommonJS runtime resolves the
-same set with `require` in place of `import`; Vite's production client build resolves `module`,
-`browser`, `production`, and `import`. The Node sets are the conditions Node itself enables, and the
-Vite set is `defaultClientConditions` — `module`, `browser`, and `development|production`, which a
-production build resolves as `production` — with the `import` that Vite applies for an ES module
-resolution. A subpath whose Vite resolution lands under `dist/src/browser/` is driven in a real
-browser and the Node drives retire for it; every other subpath is imported where the ESM set
-resolves a target and required where the entry declares CommonJS support. Resolution under the
-`node` and `require` conditions locates the runtime target TypeScript's CommonJS consumer selects
-after its `types` condition is removed. That set omits Node's runtime-only `node-addons` and
-`module-sync` conditions. Including `module-sync` could select an ESM branch before the `require`
-branch that a `.cts` compile probe resolves. Resolution alone does not decide whether a typed
-CommonJS consumer can take the subpath. The proof admits `.cjs`, `.json`, `.node`, and extensionless
-targets to the CommonJS drives, and rejects `.mjs` and other extensions. For a `.js` target, the
-nearest enclosing `package.json` between the target and the installed root decides the format. A
-`"type": "module"` field rejects it, while a `"type": "commonjs"` field or an omitted `type` field
-admits it. The proof also compiles a consumer against the installed declarations under every module
-resolution.
+resolves `node-addons`, `node`, `import`, and `module-sync`; Vite's production client build resolves
+`module`, `browser`, `production`, and `import`. Those are the conditions each runtime driver uses to
+locate its target. A subpath whose Vite resolution lands under `dist/src/browser/` is driven in a
+real browser and the Node drives retire for it; every other subpath is imported where the ESM set
+resolves a target and required where the Node `require` set resolves a target.
+
+The CommonJS compile probe resolves the declaration under `types`, `node`, and `require`, then reads
+that declaration's format. A `.d.cts` declaration admits the subpath. A `.d.mts` declaration refuses
+it. A `.d.ts` declaration takes the nearest enclosing `package.json` from its own directory: a
+`"type": "module"` field refuses, while `"type": "commonjs"`, an omitted field, or a manifest that
+cannot supply a readable field admits. The runtime target does not enter that decision. The runtime
+drive separately resolves under `node` and `require`, then loads the subpath whatever declaration
+format the compile probe found. An invalid non-list target beside a valid CommonJS declaration
+therefore reaches Node's `ERR_INVALID_PACKAGE_TARGET` failure instead of being dropped during
+classification.
 
 Each drive compares against the declaration its own consumer reads, resolved under the conditions
 TypeScript applies for that resolution and importing format: `types` first and the format's own
 condition after it, with `node` between them for the `node16` and `nodenext` resolutions and left
 out for `bundler`, which is the set the browser drive compares against. The import declaration and
-the require declaration are resolved independently and both kept on the entry, so a dual subpath is
-compiled against the declaration each consumer format reads rather than against whichever one
-answered first. That is what drives a `require`-only subpath declaring its types inside `require`. A
+the require declaration are resolved independently and kept separately on the entry, so a dual
+subpath is compiled against the declaration each consumer format reads rather than against whichever
+one answered first. That is what drives a `require`-only subpath declaring its types inside `require`. A
 `.d.ts`, `.d.cts`, or `.d.mts` target is a declaration, and nothing else is: a `types` condition
 answering with JavaScript resolves to absence rather than to a declaration.
 
