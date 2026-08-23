@@ -634,7 +634,7 @@
 			"storage": "tests/config.test.ts",
 			"destination": "tests/config.test.ts",
 			"executable": false,
-			"digest": "c48dd9b1e4bdc03d058443846bef824ff2130f9f68fccf2690dfa5af954703c4"
+			"digest": "d8e0629e7aa3f3cb3a4e9f51356704c2eaadbaec69ea15804ffd90a7d48841fb"
 		},
 		{
 			"storage": "tests/policy.test.ts",
@@ -688,5 +688,5 @@
 		".codex/agents",
 		".cursor/rules"
 	],
-	"digest": "754a98cde78d222344bce95bc25d8896ee79f6655cfcf81319c7dd07a8558b36"
+	"digest": "266593b0707034311bd3f4cc72cce49e8e2a3e5562fdc5af6977d0a33ad65720"
 }

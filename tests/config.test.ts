@@ -297,6 +297,28 @@ describe('root configuration', () => {
 		}).toThrow(/strictly equal/u)
 	})
 
+	it('emits every project as a factory so the release mode reaches its proof', () => {
+		const projects = configuration.test?.projects
+		if (!Array.isArray(projects)) throw new Error('The root configuration carries no projects')
+		if (projects.length === 0) throw new Error('The root configuration registers no project')
+		// Measured: with `--mode release` on the command line, `import.meta.env.MODE` reads
+		// `release` inside a project Vitest calls and `test` inside an inline project
+		// configuration. `prepublishOnly` runs the distribution proof with `--mode release`, and
+		// that proof fails rather than skips only when it reads `release`, so converting these
+		// entries to inline configurations turns the publish gate into a skip while every suite
+		// stays green. The control is that conversion applied to one entry.
+		const inline = {
+			test: {
+				name: { label: 'inline' },
+				include: ['tests/inline.test.ts'],
+				setupFiles: ['./tests/setup.ts'],
+			},
+		}
+		const callable = projects.concat(inline).filter((entry) => typeof entry === 'function')
+		for (const entry of projects) expect(callable).toContain(entry)
+		expect(callable).not.toContain(inline)
+	})
+
 	it('requires and validates every selected target wrapper', async () => {
 		const required: string[] = []
 		for (const axis of ['src', 'app']) {

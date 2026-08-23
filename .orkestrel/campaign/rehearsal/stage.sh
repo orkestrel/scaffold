@@ -40,8 +40,8 @@ cat > index.html <<'HTML'
 HTML
 cat > src/main.ts <<'TS'
 import * as browser from '@orkestrel/router/browser'
-declare global { interface Window { __keys?: readonly string[] } }
-window.__keys = Object.keys(browser).sort()
+declare global { interface Window { subjectKeys?: readonly string[] } }
+window.subjectKeys = Object.keys(browser).sort()
 TS
 cat > vite.config.mjs <<'JS'
 export default { base: './', build: { outDir: 'dist', emptyOutDir: true } }

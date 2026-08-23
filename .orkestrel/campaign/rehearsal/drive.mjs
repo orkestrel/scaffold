@@ -7,9 +7,9 @@ import { join, extname, dirname } from 'node:path'
 import { createRequire } from 'node:module'
 
 const CONSUMER = '/tmp/claude-0/-home-user-scaffold/44b44986-60fe-5808-9e54-b88ca82b9390/scratchpad/rehearsal/consumer'
-const require_ = createRequire('/home/user/scaffold/package.json')
-const ts = require_('typescript')
-const { chromium } = require_('playwright')
+const loadFromScaffold = createRequire('/home/user/scaffold/package.json')
+const ts = loadFromScaffold('typescript')
+const { chromium } = loadFromScaffold('playwright')
 
 // --- the resolver ladder the generated configs/browsers.ts implements ---
 const executable = (p) => { try { return statSync(p).isFile() && (statSync(p).mode & 0o111) !== 0 } catch { return false } }
@@ -76,7 +76,7 @@ const page = await browser.newPage()
 const failures = []
 page.on('pageerror', (error) => failures.push(String(error)))
 await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: 'load' })
-const runtime = await page.evaluate(() => window.__keys ?? null)
+const runtime = await page.evaluate(() => window.subjectKeys ?? null)
 await browser.close()
 server.close()
 
