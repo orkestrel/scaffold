@@ -49,6 +49,7 @@ import {
 	blueprintToDevDependencies,
 	blueprintToRootVite,
 	blueprintToScripts,
+	blueprintToTestArtifacts,
 	blueprintToWritableScripts,
 	CONFORMANCE_TEST_PATH,
 	createBlueprint,
@@ -1281,13 +1282,23 @@ export class CLI implements CLIInterface {
 	// proof: `.claude/rules/tests.md` fixes that proof's subject as the behavior
 	// a workspace's own helpers export, and no generated file can assert that.
 	//
-	// A module counts as filled when it carries bytes at all. Every
-	// `tests/setup*.ts` module scaffold writes is seeded with the empty string,
-	// so emptiness separates the seed from a module a maintainer wrote into
-	// without reading TypeScript at all. That matters: `typescript` is a
-	// development dependency here, so `src/` cannot parse a module to count what
-	// it exports, and scanning the text for the keyword would be a second
-	// source-language analyzer that is wrong about comments and strings.
+	// A module counts as filled when its bytes differ from the seed this
+	// blueprint plans at that same path. The seeds differ by path: `tests/setup.ts`
+	// is seeded with the empty string, and `tests/setupGlobal.ts` is seeded with a
+	// `setup` function body. So emptiness alone would raise the question against a
+	// workspace scaffold had just materialized, and the planned seed is what the
+	// bytes are held to instead. It stays a comparison of bytes because
+	// `typescript` is a development dependency here, so `src/` cannot parse a
+	// module to count what it exports, and scanning the text for the keyword would
+	// be a second source-language analyzer that is wrong about comments and
+	// strings.
+	//
+	// Coverage is read per module: `tests/<name>.ts` is covered by
+	// `tests/<name>.test.ts` and by nothing else, which is the pairing the vendored
+	// policy proof resolves through `stemToPolicyCandidates`. Keying the silence on
+	// the presence of any setup proof instead would retire the question on the
+	// first proof a maintainer writes and leave every other module uncovered with
+	// no further signal.
 	//
 	// A vendored module is excluded because `repair` restores it in every target,
 	// so a question naming one would fire everywhere and name nothing the
@@ -1298,22 +1309,35 @@ export class CLI implements CLIInterface {
 	// plans, so refusing a repair over it would block a write on a gap no write
 	// could close.
 	#setupQuestion(target: string, blueprint: Blueprint): TargetQuestion | undefined {
-		if (blueprint.setup) return undefined
 		const tests = resolveContainedPath(target, 'tests')
 		if (tests === undefined) return undefined
-		const modules = listFiles(tests)
+		const entries = listFiles(tests).filter((path) => !path.includes('/'))
+		const proofs = new Set(entries.filter((path) => path.endsWith('.test.ts')))
+		const seeds = new Map(
+			blueprintToTestArtifacts(blueprint).map(({ path, content }) => [path, content.trim()]),
+		)
+		const modules = entries
 			.filter((path) => {
-				if (path.includes('/') || !path.startsWith('setup') || !path.endsWith('.ts')) return false
+				if (!path.startsWith('setup') || !path.endsWith('.ts')) return false
 				if (path.endsWith('.test.ts') || HOST_PATHS.includes(`tests/${path}`)) return false
+				if (proofs.has(`${path.slice(0, -'.ts'.length)}.test.ts`)) return false
 				if (resolveContainedPath(tests, path) === undefined) return false
-				return (readFileText(tests, path) ?? '').trim() !== ''
+				const content = (readFileText(tests, path) ?? '').trim()
+				return content !== '' && content !== (seeds.get(`tests/${path}`) ?? '')
 			})
 			.sort()
 		if (modules.length === 0) return undefined
 		const single = modules.length === 1
+		const named = modules.map((path) => `tests/${path}`).join(', ')
+		const remedies = modules
+			.map((path) => `tests/${path.slice(0, -'.ts'.length)}.test.ts`)
+			.join(', ')
+		const remedy = single
+			? `Add ${remedies} asserting the behavior it exports.`
+			: `Add ${remedies}, each asserting the behavior the module of the same name exports.`
 		return {
 			field: 'setup',
-			message: `The target at ${target} carries ${single ? 'a test setup module' : 'test setup modules'} that no proof covers: ${modules.map((path) => `tests/${path}`).join(', ')}. Add tests/setup.test.ts asserting the behavior ${single ? 'it exports' : 'they export'}. The proof's subject is behavior only this workspace can assert, so scaffold does not write it.`,
+			message: `The target at ${target} carries ${single ? 'a test setup module' : 'test setup modules'} that no proof covers: ${named}. ${remedy} The proof's subject is behavior only this workspace can assert, so scaffold does not write it.`,
 			blocking: false,
 			groups: ['tests'],
 		}
