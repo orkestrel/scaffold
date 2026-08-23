@@ -531,6 +531,11 @@ right to stop.
   directory proves something about that directory and nothing about the rest of the tree, and a
   filtered set proves something about the filter's membership rule and nothing about the population
   it was drawn from.
+- Check a fact against the thing it describes before the brief states it as settled and tells the
+  unit not to re-decide it. Run the code, or read the implementation that decides it. Where several
+  artifacts state that fact, check it against the code rather than against the other copies:
+  agreement proves one copy was taken from another, and says nothing about whether any of them is
+  true.
 - Take every measurement under the conditions the unit will run in, or have the unit take it. A
   number measured in your environment and asserted as a criterion is unreachable when the
   executor's sandbox denies what yours permitted, and no edit to the owned files can close it.
@@ -595,6 +600,11 @@ right to stop.
   grep. Where the change is already written somewhere — a scratch copy, an earlier unit, a probe —
   run the suite against it and read the failures. Where it is not, name the search's bound in the
   brief so the unit re-derives the set instead of trusting it.
+- Scope a unit that changes a mechanism to own the prose describing that mechanism: the comment
+  beside the code it edits, and the guide passage stating the behaviour it moves. A brief that
+  scopes only the code ships a sentence describing the mechanism the same commit deleted, and the
+  audit lane that reads it breaks the unit. Where a brief scopes that prose out so writers do not
+  share a file, name the carrier that takes it and dispatch that carrier before the change ships.
 
 ### Carry every finding
 

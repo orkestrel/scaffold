@@ -1865,17 +1865,18 @@ async function readBrowserExports(browser: Browser, bundle: string): Promise<rea
 `,
 			guard: `
 	// This proof drives a Node import and a Node require and carries no browser
-	// branch: the workspace published no browser face when it was written, so the
-	// browser launcher, its Vitest browser provider, and the generated browser
-	// configuration module are not imported here — a browser face is what declares
-	// the launcher packages, and scaffold emits that configuration module only
-	// beside one. The branch imports \`vite\` too, and that is not what keeps it
-	// conditional: scaffold puts \`vite\` in every workspace's base development
-	// dependencies, whatever that workspace publishes. The later Node
-	// \`it.runIf\` predicates retire each matching Node drive for a face published later, which
-	// leaves nothing measuring it. So it reddens here and names the subpath a browser
-	// branch is owed for. A workspace that gains one deletes this file and runs the
-	// \`repair\` verb, which writes the variant carrying that branch.
+	// branch: the workspace published no browser face when it was written, and the
+	// browser drive measures the packed artifact, so only a published face is owed
+	// one. A private browser application declares the browser launcher and its
+	// Vitest browser provider and gets the generated browser configuration module
+	// beside it, and is owed no drive here all the same — those imports follow a
+	// published face rather than selecting the branch. \`vite\` selects nothing either,
+	// though the branch imports it: scaffold puts \`vite\` in every workspace's base
+	// development dependencies, whatever that workspace publishes. The later Node
+	// \`it.runIf\` predicates retire each matching Node drive for a face published
+	// later, which leaves nothing measuring it. So it reddens here and names the
+	// subpath a browser branch is owed for. A workspace that gains one deletes this
+	// file and runs the \`repair\` verb, which writes the variant carrying that branch.
 	it('publishes no browser face this proof cannot drive [requires the registry]', (context) => {
 		const stage = requireStage(context)
 		const faces = stage.entries.filter((entry) => entry.browser)

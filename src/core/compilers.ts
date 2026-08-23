@@ -1299,12 +1299,14 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 	// presence, which is what reports a target still lacking the proof as drift
 	// while leaving a package that wrote a better one exactly as it is.
 	//
-	// The browser branch is emitted only for a workspace publishing a browser face,
-	// because it imports `playwright` and `@vitest/browser-playwright`, which only such a
-	// workspace declares, and `./configs/browsers.js`, which scaffold emits it alone. It
-	// imports `vite` too, and that is not what keeps it conditional: `vite` sits in
-	// `BASE_DEV_DEPENDENCIES` and every workspace declares it. Presence ownership never
-	// rewrites the file, so
+	// The browser branch follows a published `src` browser face, because the browser
+	// drive measures the packed artifact and only a published face is packed. A
+	// workspace selecting `browser` on its `app` axis alone declares
+	// `@vitest/browser-playwright` and `playwright` and gets `configs/browsers.ts`
+	// emitted, and its proof still carries no branch: those imports follow a
+	// published face rather than selecting the branch. `vite` selects nothing either,
+	// though the branch imports it: `vite` sits in `BASE_DEV_DEPENDENCIES` and every
+	// workspace declares it. Presence ownership never rewrites the file, so
 	// a workspace publishing a browser face later keeps a proof with no branch for it.
 	// The core-only variant therefore carries the guard that reddens on such an entry
 	// rather than skipping it.

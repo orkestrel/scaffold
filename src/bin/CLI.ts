@@ -1286,7 +1286,7 @@ export class CLI implements CLIInterface {
 	// plans at that same path, with both sides read trimmed. The seeds differ by
 	// path: `tests/setup.ts` is seeded with the empty string, and
 	// `tests/setupGlobal.ts` is seeded with a `setup` function body. So emptiness
-	// alone would raise the question against a workspace scaffold had just
+	// alone would raise the question against a workspace scaffold had
 	// materialized, and the planned seed is what the text is held to instead. It
 	// stays a text comparison because `typescript` is a development dependency
 	// here, so `src/` cannot parse a module to count what it exports, and scanning
@@ -1332,7 +1332,7 @@ export class CLI implements CLIInterface {
 		const remedies = modules
 			.map((path) => `tests/${path.slice(0, -'.ts'.length)}.test.ts`)
 			.join(', ')
-		// The remedy asks for coverage, which is the fact the filter above decides.
+		// The remedy asks for coverage, which is the fact the preceding filter decides.
 		// It does not say what the proof asserts: the reading is text against a
 		// seed, so a module that exports nothing and only registers a hook reaches
 		// here, and a remedy demanding a proof of exported behavior leaves that

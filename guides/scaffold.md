@@ -637,7 +637,7 @@ function body. A test for emptiness therefore raises the question against a fres
 workspace. Holding each module to the seed the same blueprint plans at its own path reports what a
 maintainer wrote rather than what scaffold seeded.
 
-That reading carries one limit. A seeded setup module is birth-owned, so `repair` reports it aligned
+That reading carries a release-skew limit. A seeded setup module is birth-owned, so `repair` reports it aligned
 and never rewrites it, and a target keeps the seed of the release that materialized it. A release
 that moves a planned seed therefore raises the question on every target materialized before it,
 against a module scaffold wrote and no maintainer touched. `tests/setupGlobal.ts` is the module that
@@ -1471,11 +1471,15 @@ same set with `require` in place of `import`; Vite's production client build res
 `browser`, `production`, and `import`. The Node sets are the conditions Node itself enables, and the
 Vite set is `defaultClientConditions` — `module`, `browser`, and `development|production`, which a
 production build resolves as `production` — with the `import` that Vite applies for an ES module
-resolution. A subpath whose Vite
-resolution lands under `dist/src/browser/` is driven in a real browser and the Node drives retire
-for it; every other subpath is imported where the ESM set resolves a target and required where the
-CommonJS set resolves one. The proof also compiles a consumer against the installed declarations
-under every module resolution.
+resolution. A subpath whose Vite resolution lands under `dist/src/browser/` is driven in a real
+browser and the Node drives retire for it; every other subpath is imported where the ESM set
+resolves a target and required where the entry declares CommonJS support. Resolution under the
+CommonJS set does not declare it: the selected path must traverse an explicit `require` condition,
+and a `default` branch resolving under that set leaves the package ESM-only. Node's `require` may
+load such an entry and TypeScript refuses a CommonJS consumer of it, so a require drive and a
+CommonJS compile probe keyed on resolution alone would report against a subpath no typed CommonJS
+consumer can take. The proof also compiles a consumer against the installed declarations under every
+module resolution.
 
 Each drive compares against the declaration its own consumer reads, resolved under the conditions
 TypeScript applies for that resolution and importing format: `types` first and the format's own
@@ -1527,19 +1531,22 @@ red is reading the honest answer — the proof does not measure that family — 
 the proof.
 
 The proof generated for a workspace publishing no browser face asserts that no browser face exists.
-That variant drives a Node import and a Node require and carries no browser branch, because that
-branch imports `playwright`, `@vitest/browser-playwright`, and `./configs/browsers.js`, and a
-workspace with no browser face declares no Playwright package, and scaffold emits it no
-`configs/browsers.ts` to import. The unresolvable imports would fail its own `check` and
-`lint:check` gates. The branch also imports `vite`, which is not what keeps it conditional: every
-workspace declares `vite`, whatever it publishes. Its Node cases retire themselves for a browser
-face, so a face published after the file was written would leave nothing measuring it. The assertion
-reddens instead, and names the subpath a browser branch is owed for. The
+That variant drives a Node import and a Node require and carries no browser branch, because the
+branch follows a published browser face on the `src` axis: the browser drive measures the packed
+artifact, and only a published face is packed. A workspace that selects `browser` on its `app` axis
+alone declares `playwright` and `@vitest/browser-playwright` and gets `configs/browsers.ts` emitted,
+and its proof still carries no branch: the selector reads the `src` axis, and a generated manifest
+packs `dist/src`, so an application face is neither selected nor packed. So the imports the branch needs follow a published face rather than selecting the
+branch, and `vite` selects nothing either, though the branch imports it: every workspace declares
+`vite`, whatever it publishes. In a core-only workspace those imports resolve to nothing, and
+emitting the branch there would fail its own `check` and `lint:check` gates. Its Node cases retire
+themselves for a browser face, so a face published after the file was written would leave nothing
+measuring it. The assertion reddens instead, and names the subpath a browser branch is owed for. The
 remedy it carries is to delete the file and run `repair`, which writes the variant that carries the
 branch — the same route presence ownership already gives you for asking for the generated proof
 back.
 
-The generated distribution proof carries one contract from the outside. The generated
+The generated distribution proof takes its release contract from the outside. The generated
 `prepublishOnly` invokes it as `npm run test:distribution -- --mode release`, and the proof reads
 `import.meta.env.MODE === 'release'` and **fails** on an unreachable registry rather than skipping.
 An ordinary local run skips that case, because a developer offline is not a defect; a release run
