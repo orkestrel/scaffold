@@ -275,10 +275,11 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
  * `test` and runs them from `prepublishOnly` instead. Publishing is what selects
  * the distribution proof: what that proof measures is the packed tarball, so a
  * workspace that packs no published source has nothing for it to read. A private
- * workspace therefore omits it and runs a live-service proof from `test`. Integration and conformance stay in `test` because they neither
- * pack nor install the workspace and drive no external service. A conformance
- * run may start a server, but it starts its own and reaches it over loopback,
- * so the run stays hermetic.
+ * workspace therefore omits it and runs a live-service proof from `test`.
+ * Integration and conformance stay in `test` because they neither pack nor
+ * install the workspace and drive no external service. A conformance run may
+ * start a server, but it starts its own and reaches it over loopback, so the run
+ * stays hermetic.
  *
  * The configuration paths interpolated here are the same ones `SRC_MATRIX` and
  * `APP_MATRIX` list as each environment's configuration files, so a rename in

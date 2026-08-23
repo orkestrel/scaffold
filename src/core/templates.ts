@@ -1113,6 +1113,7 @@ describe('bin entry', () => {
 // package, one of its exports, or how many there are, so the proof stays true as
 // the published surface moves.
 {{types}}import type { SpawnSyncReturns } from 'node:child_process'
+import type { TestContext } from 'vitest'
 import { spawnSync } from 'node:child_process'
 import {
 	existsSync,
@@ -1380,38 +1381,55 @@ function buildStage(): Stage {
 const SCRATCH = mkdtempSync(join(tmpdir(), 'distribution-'))
 const CACHE = join(SCRATCH, 'cache')
 mkdirSync(CACHE, { recursive: true })
-// Installing the packed archive resolves its own runtime dependencies, so an
-// unreachable registry leaves nothing to measure. Under release that is the gate
-// failing; anywhere else the suite skips and names the mechanism it wanted.
-const REACHABLE = runNpm(PING, ROOT).status === 0
-if (RELEASE && !REACHABLE) {
-	throw new Error('The release gate requires a reachable npm registry, and npm ping did not answer')
-}
-const STAGE = REACHABLE ? buildStage() : undefined
-const STAGED = STAGE === undefined
-
-function requireStage(): Stage {
-	if (STAGE === undefined) throw new Error('No consumer was staged')
-	return STAGE
-}
-
+// The scratch tree holds the npm cache, the packed archive, and the installed
+// consumer, so its removal is registered before the first thing that can throw.
 afterAll(() => {
 	rmSync(SCRATCH, { force: true, recursive: true })
 })
 
-describe('installed package consumer', () => {
-	it.skipIf(STAGED)(
-		'packs one archive and installs it into an isolated consumer [requires the registry]',
-		() => {
-			const stage = requireStage()
-			expect(stage.archives).toHaveLength(1)
-			expect(existsSync(join(stage.installed, 'package.json'))).toBe(true)
-			expect(stage.entries.length).toBeGreaterThan(0)
-		},
-	)
+// Installing the packed archive resolves its own runtime dependencies, so an
+// unreachable registry leaves nothing to measure. Under release that is the gate
+// failing; anywhere else the suite skips and names the mechanism it wanted.
+//
+// A module that throws while loading never reaches the \`afterAll\` it registered,
+// so every throw here removes the scratch tree on its way out.
+function openStage(): Stage | undefined {
+	try {
+		if (runNpm(PING, ROOT).status !== 0) {
+			if (!RELEASE) return undefined
+			throw new Error(
+				'The release gate requires a reachable npm registry, and npm ping did not answer',
+			)
+		}
+		return buildStage()
+	} catch (error) {
+		rmSync(SCRATCH, { force: true, recursive: true })
+		throw error
+	}
+}
 
-	it.skipIf(STAGED)('ships every relative file target its exports map names', () => {
-		const stage = requireStage()
+const STAGE = openStage()
+const STAGED = STAGE !== undefined
+
+// The staged consumer, or a skip naming what the run could not reach. \`it.skipIf\`
+// carries no reason, so the gate sits here where the test context can state one.
+function requireStage(context: TestContext): Stage {
+	if (!STAGED) {
+		return context.skip('\`npm ping\` did not answer, so nothing was packed or installed')
+	}
+	return STAGE
+}
+
+describe('installed package consumer', () => {
+	it('packs one archive and installs it in isolation [requires the registry]', (context) => {
+		const stage = requireStage(context)
+		expect(stage.archives).toHaveLength(1)
+		expect(existsSync(join(stage.installed, 'package.json'))).toBe(true)
+		expect(stage.entries.length).toBeGreaterThan(0)
+	})
+
+	it('ships every relative target its exports map names [requires the registry]', (context) => {
+		const stage = requireStage(context)
 		const relative = stage.targets.filter((target) => target.startsWith('./'))
 		expect(relative).not.toStrictEqual([])
 		expect(relative.filter((target) => !existsSync(join(stage.installed, target)))).toStrictEqual(
@@ -1419,8 +1437,8 @@ describe('installed package consumer', () => {
 		)
 	})
 
-	it.skipIf(STAGED)('refuses a subpath its exports map does not name', () => {
-		const stage = requireStage()
+	it('refuses a subpath its exports map does not name [requires the registry]', (context) => {
+		const stage = requireStage(context)
 		const name = readManifestName(join(stage.installed, 'package.json'))
 		const driver = join(stage.consumer, ESM_DRIVER)
 		const result = runNode([driver, \`\${name}\${ABSENT_SUBPATH}\`], stage.consumer)
@@ -1430,8 +1448,8 @@ describe('installed package consumer', () => {
 
 	// The absent subpath is the firing control: a resolution that reports nothing
 	// for every published entry has not been shown to resolve anything at all.
-	it.skipIf(STAGED)('compiles a consumer under every module resolution one can pick', () => {
-		const stage = requireStage()
+	it('compiles a consumer under every module resolution [requires the registry]', (context) => {
+		const stage = requireStage(context)
 		const name = readManifestName(join(stage.installed, 'package.json'))
 		const published = stage.entries.map((entry) => entry.specifier)
 		const reported: string[] = []
@@ -1451,15 +1469,18 @@ describe('installed package consumer', () => {
 
 for (const entry of STAGE?.entries ?? []) {
 	describe(\`installed entry \${entry.subpath}\`, () => {
-		it.runIf(!entry.browser)('publishes what it declares to a Node import, and no more', () => {
-			const published = driveRuntime(requireStage(), entry.specifier, ESM_DRIVER)
-			expect(published).toStrictEqual(readDeclaredExports(entry.declaration))
-		})
+		it.runIf(!entry.browser)(
+			'publishes what it declares to a Node import, and no more',
+			(context) => {
+				const published = driveRuntime(requireStage(context), entry.specifier, ESM_DRIVER)
+				expect(published).toStrictEqual(readDeclaredExports(entry.declaration))
+			},
+		)
 
 		it.runIf(!entry.browser && entry.commonjs)(
 			'publishes what it declares to a Node require, and no more',
-			() => {
-				const published = driveRuntime(requireStage(), entry.specifier, CJS_DRIVER)
+			(context) => {
+				const published = driveRuntime(requireStage(context), entry.specifier, CJS_DRIVER)
 				expect(published).toStrictEqual(readDeclaredExports(entry.declaration))
 			},
 		)
@@ -1576,7 +1597,7 @@ async function readBrowserExports(browser: Browser, bundle: string): Promise<rea
 		it.runIf(entry.browser)(
 			'publishes what it declares to a real browser, and no more [requires a browser]',
 			async (context) => {
-				const stage = requireStage()
+				const stage = requireStage(context)
 				const options = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)
 				const browser = await launchBrowser(options).catch((error: unknown) => {
 					const cause = \`\${describeBrowser(options)} was rejected: \${String(error)}\`
