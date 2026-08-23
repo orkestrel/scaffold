@@ -663,9 +663,9 @@ describe('blueprintToScripts config projects', () => {
 		expect(content).toContain('if (isList(entry)) {')
 	})
 
-	// `it.runIf(!entry.browser)` retires the Node import and the Node require for a
-	// browser entry, and a workspace publishing no browser face carries no branch that
-	// drives one. Presence ownership never rewrites the proof, so a face published
+	// Each Node drive's `it.runIf` predicate requires `!entry.browser`, so both the Node
+	// import and the Node require retire for a browser entry, and a workspace publishing
+	// no browser face carries no branch that drives one. Presence ownership never rewrites the proof, so a face published
 	// later meets whichever variant was written: the guard reddens on it, and the
 	// browser branch drives it. Every selection carries exactly one of them.
 	it('writes a core-only proof that reddens on a browser face it cannot drive', () => {

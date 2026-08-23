@@ -75,10 +75,10 @@ import { createScratch } from '@orkestrel/test/server'
 // write can be measured over end to end today.
 const FILE_GROUPS: readonly Group[] = ['manifest', 'configs', 'tests', 'guides', 'docs']
 // A setup module a maintainer wrote into. What separates it from what scaffold
-// seeds at that path is that its bytes are not the seed's.
+// seeds at that path is that its text is not the seed's.
 const FILLED_SETUP_TEXT = "export const SAMPLE_FIXTURE = 'sample'\n"
 // The other half of that population: a setup module a maintainer wrote into that
-// exports nothing and only registers a hook. The question reads bytes, so this
+// exports nothing and only registers a hook. The question reads text, so this
 // module reaches it exactly as the exporting one does, and the fleet ships this
 // shape. Its remedy must be one this maintainer can carry out.
 const HOOK_SETUP_TEXT = [
@@ -2122,7 +2122,7 @@ describe('CLI audit', () => {
 		}
 	})
 
-	// The question reads bytes, so it reaches a filled module that exports
+	// The question reads text, so it reaches a filled module that exports
 	// nothing. Its remedy has to stay inside what that reading knows: asking this
 	// maintainer for a proof of exported behavior leaves them a permanent advisory
 	// or a proof asserting nothing, and the message is what has to be actionable

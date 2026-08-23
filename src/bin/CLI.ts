@@ -1282,16 +1282,16 @@ export class CLI implements CLIInterface {
 	// proof: `.claude/rules/tests.md` fixes that proof's subject as the behavior
 	// a workspace's own helpers export, and no generated file can assert that.
 	//
-	// A module counts as filled when its bytes differ from the seed this
-	// blueprint plans at that same path. The seeds differ by path: `tests/setup.ts`
-	// is seeded with the empty string, and `tests/setupGlobal.ts` is seeded with a
-	// `setup` function body. So emptiness alone would raise the question against a
-	// workspace scaffold had just materialized, and the planned seed is what the
-	// bytes are held to instead. It stays a comparison of bytes because
-	// `typescript` is a development dependency here, so `src/` cannot parse a
-	// module to count what it exports, and scanning the text for the keyword would
-	// be a second source-language analyzer that is wrong about comments and
-	// strings.
+	// A module counts as filled when its text differs from the seed this blueprint
+	// plans at that same path, with both sides read trimmed. The seeds differ by
+	// path: `tests/setup.ts` is seeded with the empty string, and
+	// `tests/setupGlobal.ts` is seeded with a `setup` function body. So emptiness
+	// alone would raise the question against a workspace scaffold had just
+	// materialized, and the planned seed is what the text is held to instead. It
+	// stays a text comparison because `typescript` is a development dependency
+	// here, so `src/` cannot parse a module to count what it exports, and scanning
+	// the text for the keyword would be a second source-language analyzer that is
+	// wrong about comments and strings.
 	//
 	// Coverage is read per module: `tests/<name>.ts` is covered by
 	// `tests/<name>.test.ts` and by nothing else, which is the pairing the vendored
@@ -1333,7 +1333,7 @@ export class CLI implements CLIInterface {
 			.map((path) => `tests/${path.slice(0, -'.ts'.length)}.test.ts`)
 			.join(', ')
 		// The remedy asks for coverage, which is the fact the filter above decides.
-		// It does not say what the proof asserts: the reading is bytes against a
+		// It does not say what the proof asserts: the reading is text against a
 		// seed, so a module that exports nothing and only registers a hook reaches
 		// here, and a remedy demanding a proof of exported behavior leaves that
 		// maintainer a permanent advisory or a proof that measures nothing.

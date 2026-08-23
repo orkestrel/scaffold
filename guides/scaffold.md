@@ -634,8 +634,16 @@ trailing newline is not authorship, and a module holding whitespace alone reads 
 as filled. It is seed-relative rather than a test for emptiness, because the seeds differ by path:
 `tests/setup.ts` is seeded with the empty string and `tests/setupGlobal.ts` is seeded with a `setup`
 function body. A test for emptiness therefore raises the question against a freshly materialized
-workspace. Holding each module to the seed the same blueprint plans at its own path reports only
-what a maintainer wrote, and a seed that grows in a later release needs no change here.
+workspace. Holding each module to the seed the same blueprint plans at its own path reports what a
+maintainer wrote rather than what scaffold seeded.
+
+That reading carries one limit. A seeded setup module is birth-owned, so `repair` reports it aligned
+and never rewrites it, and a target keeps the seed of the release that materialized it. A release
+that moves a planned seed therefore raises the question on every target materialized before it,
+against a module scaffold wrote and no maintainer touched. `tests/setupGlobal.ts` is the module that
+can meet it, because it is the one seeded with more than the empty string. A maintainer meeting that
+question closes it by writing the proof it asks for, or by taking the seed the installed release
+plans.
 
 Coverage is read per module: `tests/<name>.ts` is covered by `tests/<name>.test.ts` and by nothing
 else, which is the pairing the vendored policy proof resolves. Writing one proof retires that module
@@ -1452,41 +1460,63 @@ The generated proof partitions the installed `exports` map rather than sampling 
 subpath lands in exactly one of driven, undeclared, or excluded, and a totality assertion holds that
 partition against the map's own subpath list, so a subpath the proof classifies into none of them
 reddens instead of disappearing. Another assertion beside it names every driven subpath whose entry
-resolves neither an `import` target nor a `require` target: each drive retires itself for such a
-subpath, so membership of the partition alone would leave one measured by nothing. Together they
-hold that every published subpath is driven, or is named where the proof cannot drive it.
+resolves no Node target and no browser target: each drive retires itself for such a subpath, so
+membership of the partition alone would leave one measured by nothing. Together they hold that every
+published subpath is driven, or is named where the proof cannot drive it.
 
-A subpath is driven when its entry resolves a declaration: the proof imports it, requires it where
-the entry declares a `require` condition, and compiles a consumer against it under every module
-resolution. The declaration is read under `['types', 'import']` and then under `['types',
-'require']`. Those condition sets are iterated rather than coalesced: a set that answers with
-JavaScript has resolved no declaration, so the next set is read rather than that answer returned.
-That is what drives a `require`-only subpath declaring its types inside `require`. A `.d.ts`,
-`.d.cts`, or `.d.mts` target is a declaration, and nothing else is.
+A subpath is driven when its entry resolves a declaration, and each measurement resolves that entry
+under the conditions of the driver taking it rather than under one shared set. The Node ESM runtime
+resolves `node-addons`, `node`, `import`, and `module-sync`; the Node CommonJS runtime resolves the
+same set with `require` in place of `import`; Vite's production client build resolves `module`,
+`browser`, `production`, and `import`. The Node sets are the conditions Node itself enables, and the
+Vite set is `defaultClientConditions` — `module`, `browser`, and `development|production`, which a
+production build resolves as `production` — with the `import` that Vite applies for an ES module
+resolution. A subpath whose Vite
+resolution lands under `dist/src/browser/` is driven in a real browser and the Node drives retire
+for it; every other subpath is imported where the ESM set resolves a target and required where the
+CommonJS set resolves one. The proof also compiles a consumer against the installed declarations
+under every module resolution.
+
+Each drive compares against the declaration its own consumer reads, resolved under the conditions
+TypeScript applies for that resolution and importing format: `types` first and the format's own
+condition after it, with `node` between them for the `node16` and `nodenext` resolutions and left
+out for `bundler`, which is the set the browser drive compares against. The import declaration and
+the require declaration are resolved independently and both kept on the entry, so a dual subpath is
+compiled against the declaration each consumer format reads rather than against whichever one
+answered first. That is what drives a `require`-only subpath declaring its types inside `require`. A
+`.d.ts`, `.d.cts`, or `.d.mts` target is a declaration, and nothing else is: a `types` condition
+answering with JavaScript resolves to absence rather than to a declaration.
 
 A subpath is undeclared when it resolves no declaration and names a runtime target, which is a
 defect, because a consumer importing it compiles against nothing under `node16`. A target is a
-runtime target when its own file name carries no extension at all, or carries `.js`, `.mjs`, or
-`.cjs`. An extensionless target loads, because `require` reads such a file through its JavaScript
-handler; a `.wasm` target does not, because it carries an extension that is not a JavaScript one.
-The test is the extension the name carries rather than a denylist of asset extensions. Reading the
+runtime target when its own file name carries no extension at all, or carries `.js`, `.mjs`,
+`.cjs`, or `.node`. An extensionless target loads, because `require` reads such a file through its
+JavaScript handler; a `.wasm` target does not, because it carries an extension that is not a
+JavaScript one. A
+`.node` target is named beside them because `require` loads a native addon through its own handler
+rather than the JavaScript one, and the addon publishes names to whatever loads it. The test is the
+extension the name carries rather than a denylist of asset extensions. Reading the
 file name rather than the whole path is load-bearing: `./dist/bundle.js/feature` and
 `./dist/v1.2/index` are modules, and reading the path gets each of them wrong. What the rule
 excludes is stated where the proof is emitted: an extensionless file published for a reader, such as
 a `LICENSE` at a subpath, reports undeclared until it is given an extension or a declaration. That
-is the safe direction — the proof names a subpath it cannot vouch for rather than passing one it
-never measured — and no manifest in the `@orkestrel` line publishes such a target.
+is the safe direction: the proof names a subpath it cannot vouch for rather than passing one it
+never measured.
 
 A subpath is excluded when it resolves no declaration and names no runtime target: the
 `./package.json` pointer, a published stylesheet, and a WebAssembly binary are read rather than
 imported, and the proof names them where it excludes them.
 
-Classification reads every target the entry names under every condition, and every member of a
+Classification reads every target the entry names under every condition, and the members of a
 fallback list with them: Node reads an array in an exports entry as a list of fallbacks, and a
-reader taking a later member takes a file the installed tree still owes. So a `require`-only
-CommonJS subpath carrying no declaration reddens too, and a `.d.ts` or `.d.cts` target never
-satisfies the runtime-target test, so a types-only condition cannot stand in for a missing
-declaration.
+reader taking a later member takes a file the installed tree still owes. Node's package-target rules
+apply inside that list, so a member naming a path outside the package or carrying a `.`, `..`, or
+`node_modules` segment is skipped rather than resolved or collected: Node falls through to the next
+member, and no reader can take the one it passed. A standalone target Node rejects the same way is
+still read and reported, because Node throws on one rather than falling through to anything. So a
+`require`-only CommonJS subpath carrying no declaration reddens too, and a `.d.ts` or `.d.cts`
+target never satisfies the runtime-target test, so a types-only condition cannot stand in for a
+missing declaration.
 
 A `./*` subpath pattern is read as an ordinary subpath, with no expansion of the `*`, so a pattern
 naming a runtime target reddens rather than landing in excluded. That is deliberate: excluding the
