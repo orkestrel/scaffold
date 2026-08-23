@@ -585,6 +585,13 @@ right to stop.
   Ask of every criterion: what asserts the state this change ends? Own every answer, or strike the
   criterion. Grant a behaviour and the tests that pin it together; grant a constant and every fixture
   and expectation derived from it together.
+- Find that set by running the suite, not by searching for the assertion's shape. A search returns
+  the assertions that look right and cannot say which ones the change actually reaches: a fixture
+  that never builds the directory the new code reads is a match the change cannot touch, and a
+  fixture that reaches it through a path the search never named is a miss. Both errors appear in one
+  grep. Where the change is already written somewhere — a scratch copy, an earlier unit, a probe —
+  run the suite against it and read the failures. Where it is not, name the search's bound in the
+  brief so the unit re-derives the set instead of trusting it.
 
 ### Carry every finding
 

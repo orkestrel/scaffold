@@ -1,4 +1,4 @@
-import type { Audit, Group } from '@src/core'
+import type { Audit, Group, Question } from '@src/core'
 import type { MaterializeResult } from '@src/server'
 import type {
 	AuditResult,
@@ -73,6 +73,9 @@ import { createScratch } from '@orkestrel/test/server'
 // holds, and every one of them is `orchestration`, so these are the groups a
 // write can be measured over end to end today.
 const FILE_GROUPS: readonly Group[] = ['manifest', 'configs', 'tests', 'guides', 'docs']
+// A setup module a maintainer wrote into. What separates it from what scaffold
+// seeds at that path is that it carries bytes at all.
+const FILLED_SETUP_TEXT = "export const SAMPLE_FIXTURE = 'sample'\n"
 const FLEET_NAMES: readonly string[] = Object.freeze([
 	'@orkestrel/emitter',
 	'@orkestrel/guide',
@@ -154,6 +157,17 @@ function buildTargetManifest(
 			? { ...declared, '@orkestrel/guide': '^0.0.9' }
 			: declared
 	return buildTargetManifestFixture(blueprint, dependenciesAligned, aligned, scripts)
+}
+
+// The advisory audit raises over one filled setup module no proof covers.
+// Several fixtures carry such a module to reach another subject, and each of
+// them has to state this question exactly rather than loosen its assertion.
+function buildSetupQuestion(target: string, module: string): Question {
+	return {
+		field: 'setup',
+		message: `The target at ${target} carries a test setup module that no proof covers: ${module}. Add tests/setup.test.ts asserting the behavior it exports. The proof's subject is behavior only this workspace can assert, so scaffold does not write it.`,
+		blocking: false,
+	}
 }
 
 const AUDIT_REGISTRY = await createUpstreamServer({
@@ -1753,10 +1767,12 @@ describe('CLI audit', () => {
 				]),
 			).toBe(EXIT_DRIFT)
 			const audit: Audit = JSON.parse(sink.output[0] ?? '')
-			// Reachability is silent, which is the subject here, and nothing else in
-			// this target raises a question either.
+			// Reachability is silent, which is the subject here. The service setup
+			// module this fixture needs draws its own advisory, and nothing else does.
 			expect(audit.questions.filter((question) => question.field === 'projects')).toStrictEqual([])
-			expect(audit.questions).toStrictEqual([])
+			expect(audit.questions).toStrictEqual([
+				buildSetupQuestion(fleet.target, 'tests/setupService.ts'),
+			])
 		} finally {
 			privateWorkspace.destroy()
 		}
@@ -1779,7 +1795,9 @@ describe('CLI audit', () => {
 				]),
 			).toBe(EXIT_DRIFT)
 			const audit: Audit = JSON.parse(sink.output[0] ?? '')
-			expect(audit.questions).toStrictEqual([])
+			expect(audit.questions).toStrictEqual([
+				buildSetupQuestion(fleet.target, 'tests/setupService.ts'),
+			])
 		} finally {
 			publishedWorkspace.destroy()
 		}
@@ -1818,7 +1836,10 @@ describe('CLI audit', () => {
 				]),
 			).toBe(EXIT_DRIFT)
 			const audit: Audit = JSON.parse(sink.output[0] ?? '')
-			expect(audit.questions).toHaveLength(1)
+			expect(audit.questions).toHaveLength(2)
+			expect(audit.questions[1]).toStrictEqual(
+				buildSetupQuestion(fleet.target, 'tests/setupService.ts'),
+			)
 			expect(audit.questions[0]).toMatchObject({ field: 'projects', blocking: false })
 			expect(audit.questions[0]?.message).toContain(
 				'does not reach a Vitest project the planned configuration registers: service. No chain from test invokes it.',
@@ -1870,7 +1891,10 @@ describe('CLI audit', () => {
 				]),
 			).toBe(EXIT_DRIFT)
 			const audit: Audit = JSON.parse(sink.output[0] ?? '')
-			expect(audit.questions).toHaveLength(1)
+			expect(audit.questions).toHaveLength(2)
+			expect(audit.questions[1]).toStrictEqual(
+				buildSetupQuestion(fleet.target, 'tests/setupService.ts'),
+			)
 			expect(audit.questions[0]?.message).toContain('this exact script line to package.json:')
 			expect(audit.questions[0]?.message).toContain('"test:service":')
 			expect(audit.questions[0]?.message).not.toContain('already declared')
@@ -1982,7 +2006,135 @@ describe('CLI audit', () => {
 				]),
 			).toBe(EXIT_DRIFT)
 			const after: Audit = JSON.parse(accepted.output[0] ?? '')
-			expect(after.questions).toStrictEqual([])
+			expect(after.questions).toStrictEqual([
+				buildSetupQuestion(fleet.target, 'tests/setupService.ts'),
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	// The seed and the filled module are the two sides of this question. Scaffold
+	// materializes every `tests/setup*.ts` module empty and vendors
+	// `tests/setupPolicy.ts` with real bytes, so an advisory that fired on either
+	// would fire in every workspace and name nothing a maintainer can act on.
+	// Both readings are taken against one fresh workspace, so the module's bytes
+	// are the only thing that moved between them, and the exit code answers for
+	// the advisory being non-blocking.
+	it('reports a setup module a maintainer filled and stays silent on the ones scaffold wrote', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const fresh = workspace.ensure('fresh')
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+					'new',
+					'widget',
+					'--src',
+					'core,server',
+					'--from',
+					fleet.host,
+					'--target',
+					fresh,
+				]),
+			).toBe(EXIT_CLEAN)
+			expect(workspace.read('fresh/tests/setup.ts')).toBe('')
+			expect(workspace.read('fresh/tests/setupServer.ts')).toBe('')
+			expect(requireValue(workspace.read('fresh/tests/setupPolicy.ts')).trim()).not.toBe('')
+			const seeded = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...seeded.options }).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fresh,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const before: Audit = JSON.parse(seeded.output[0] ?? '')
+			expect(before.questions).toStrictEqual([])
+
+			workspace.write('fresh/tests/setup.ts', FILLED_SETUP_TEXT)
+			const filled = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...filled.options }).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fresh,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const after: Audit = JSON.parse(filled.output[0] ?? '')
+			expect(after.questions).toStrictEqual([
+				{
+					field: 'setup',
+					message: `The target at ${fresh} carries a test setup module that no proof covers: tests/setup.ts. Add tests/setup.test.ts asserting the behavior it exports. The proof's subject is behavior only this workspace can assert, so scaffold does not write it.`,
+					blocking: false,
+				},
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('names every filled setup module no proof covers', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			workspace.write('target/package.json', buildTargetManifest())
+			workspace.write('target/tests/setup.ts', FILLED_SETUP_TEXT)
+			workspace.write('target/tests/setupServer.ts', FILLED_SETUP_TEXT)
+			const sink = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions).toStrictEqual([
+				{
+					field: 'setup',
+					message: `The target at ${fleet.target} carries test setup modules that no proof covers: tests/setup.ts, tests/setupServer.ts. Add tests/setup.test.ts asserting the behavior they export. The proof's subject is behavior only this workspace can assert, so scaffold does not write it.`,
+					blocking: false,
+				},
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('stops reporting a filled setup module once a proof covers it', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const blueprint = createBlueprint('sample', { src: ['core'], setup: true })
+			workspace.write(
+				'target/package.json',
+				buildTargetManifest(blueprint, undefined, undefined, blueprintToScripts(blueprint)),
+			)
+			workspace.write('target/tests/setup.ts', FILLED_SETUP_TEXT)
+			workspace.write('target/tests/setup.test.ts', 'export {}\n')
+			const sink = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions).toStrictEqual([])
 		} finally {
 			workspace.destroy()
 		}

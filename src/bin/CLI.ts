@@ -59,6 +59,7 @@ import {
 	GROUPS,
 	GLOBAL_SETUP_PATH,
 	GUIDES_TEST_PATH,
+	HOST_PATHS,
 	INTEGRATION_TEST_PATH,
 	isDeferredPath,
 	manifestToDependencies,
@@ -1275,8 +1276,51 @@ export class CLI implements CLIInterface {
 		}
 	}
 
+	// Report a setup surface no proof covers. The reading is the target's own
+	// tests directory rather than the plan, because scaffold writes no setup
+	// proof: `.claude/rules/tests.md` fixes that proof's subject as the behavior
+	// a workspace's own helpers export, and no generated file can assert that.
+	//
+	// A module counts as filled when it carries bytes at all. Every
+	// `tests/setup*.ts` module scaffold writes is seeded with the empty string,
+	// so emptiness separates the seed from a module a maintainer wrote into
+	// without reading TypeScript at all. That matters: `typescript` is a
+	// development dependency here, so `src/` cannot parse a module to count what
+	// it exports, and scanning the text for the keyword would be a second
+	// source-language analyzer that is wrong about comments and strings.
+	//
+	// A vendored module is excluded because `repair` restores it in every target,
+	// so a question naming one would fire everywhere and name nothing the
+	// maintainer owns.
+	//
+	// Audit alone raises this. A writing verb refuses an advisory whose next step
+	// would replace planned configuration, and this one names nothing scaffold
+	// plans, so refusing a repair over it would block a write on a gap no write
+	// could close.
+	#setupQuestion(target: string, blueprint: Blueprint): TargetQuestion | undefined {
+		if (blueprint.setup) return undefined
+		const tests = resolveContainedPath(target, 'tests')
+		if (tests === undefined) return undefined
+		const modules = listFiles(tests)
+			.filter((path) => {
+				if (path.includes('/') || !path.startsWith('setup') || !path.endsWith('.ts')) return false
+				if (path.endsWith('.test.ts') || HOST_PATHS.includes(`tests/${path}`)) return false
+				if (resolveContainedPath(tests, path) === undefined) return false
+				return (readFileText(tests, path) ?? '').trim() !== ''
+			})
+			.sort()
+		if (modules.length === 0) return undefined
+		const single = modules.length === 1
+		return {
+			field: 'setup',
+			message: `The target at ${target} carries ${single ? 'a test setup module' : 'test setup modules'} that no proof covers: ${modules.map((path) => `tests/${path}`).join(', ')}. Add tests/setup.test.ts asserting the behavior ${single ? 'it exports' : 'they export'}. The proof's subject is behavior only this workspace can assert, so scaffold does not write it.`,
+			blocking: false,
+			groups: ['tests'],
+		}
+	}
+
 	// Collect the target questions in a fixed order so audit reports every
-	// independent advisory and writing verbs refuse the same complete answer.
+	// independent advisory and writing verbs refuse the ones a write would act on.
 	#targetQuestions(
 		target: string,
 		blueprint: Blueprint,
@@ -1288,6 +1332,10 @@ export class CLI implements CLIInterface {
 		if (project !== undefined) questions.push(project)
 		const dependency = this.#dependencyQuestion(target, blueprint, writing)
 		if (dependency !== undefined) questions.push(dependency)
+		if (!writing) {
+			const setup = this.#setupQuestion(target, blueprint)
+			if (setup !== undefined) questions.push(setup)
+		}
 		return questions
 			.filter(
 				(question) =>
