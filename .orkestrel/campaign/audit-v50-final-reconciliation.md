@@ -1,91 +1,91 @@
 # Reconciliation — the pre-publication round
 
-Three lanes ran on one brief and its successor, in clean contexts, blind to each other. A subjective
-lane and an objective lane on Opus 5, and the objective lane again on GPT-5.6 Sol over the Codex
-bridge once the user authorized it — the first Sol reading in this campaign, journalled at
-`tmp/codex/audit-sol.jsonl`, thread `01a02e6b-cb79-7ff2-af42-cc1a5dde4dc5`.
+Three lanes ran on one brief and its successor, in clean contexts, blind to each other, plus a
+read-only coverage sweep. **All three returned FAIL.** Publication is blocked.
 
-Every lane returned `FAIL`. **Publication is blocked.** The Orchestrator reproduced every sharp
-finding before ruling on it.
+| Lane                | Engine        | Terminal line                                                       |
+| ------------------- | ------------- | ------------------------------------------------------------------- |
+| Subjective          | Opus 5        | FAIL — 4 broken, 1 unresolved, 5 findings outside the claims        |
+| Objective           | Opus 5        | FAIL — 4 broken, 0 unresolved, 2 findings outside the claims        |
+| Objective           | GPT-5.6 Sol   | FAIL — 1 broken, 1 unresolved, 1 finding outside the claims         |
+
+Sol held the objective lane on its own engine for the first time in this campaign. The Opus
+objective lane ran beside it rather than being replaced, so the round carries two independent
+objective readings and their disagreements are evidence rather than noise.
 
 ## Where every lane agrees
 
 **Claim 2 is broken.** A published subpath whose entry resolves no `.d.ts` is dropped by a bare
-`continue` at `src/core/templates.ts:1368`. It receives no per-entry runtime test and is absent from
-the population the resolution-modes case compiles, and the run reports success under `--mode
-release`. The intended exclusion of the manifest pointer and an unintended miss share one silent
-branch.
+`continue` at `src/core/templates.ts:1368`. It receives no runtime test, no declaration comparison,
+and no place in the module-resolution compile, and nothing records that it was skipped. Under
+`--mode release` the run reports success for a subpath it never measured. Three engines found this
+by three routes; it is not in dispute.
 
-Three engines found it by three routes: an untyped `./legacy` subpath, an import-only `./raw` entry,
-and a core-only proof driven against a real browser-face package. It is not in dispute.
-
-The objective lane on Opus found a **second vector for the same claim**, measured on a copy of the
-real `@orkestrel/indexeddb` carrying the core-only proof variant: `4 passed | 2 skipped` under
-`--mode release` with the browser entry never imported, bundled, or loaded. The branch is selected at
-**generation** time — `src/core/compilers.ts:1302`, `blueprint.src.includes('browser')` — and the
-artifact is presence-owned, so no verb ever revisits it. A workspace that takes 0.0.50 while
-core-only and later publishes a browser face gets a green publish gate with no evidence for the face
-it publishes, and `audit` reports the file aligned.
+The objective lane found a second door into the same class, measured on a real copy of
+`@orkestrel/indexeddb` carrying the core-only variant: `4 passed | 2 skipped` under `--mode release`
+with the browser entry never imported, bundled, or loaded. `entry.browser` is true, both Node cases
+skip on `it.runIf(!entry.browser)`, and the core-only variant emits no browser block at all. The
+branch is chosen at generation time — `src/core/compilers.ts:1302` — and presence ownership means no
+verb ever rewrites the file, so a workspace that later publishes a browser face keeps a proof that
+cannot see it and audits as aligned.
 
 ## Where the lanes disagree, and the ruling
 
-**Claim 5 — ruled broken, with the Opus objective lane.** Sol confirmed it; the Opus objective lane
-falsified it with a concrete input Sol did not test. `ARTIFACT_TEMPLATES.tests.global` is
-`export function setup(): void {}`, not the empty string, so a freshly materialized `global: true`
-workspace fires the `setup` question immediately. It is live in the fleet: `audit` on `mcp` names
-`tests/setupGlobal.ts`. A lane that produces the failing input outranks a lane that did not look for
-one.
+**Claim 5 — Sol CONFIRMED, Opus objective BROKEN. Opus wins.** It produced the failing input: a
+blueprint with `global: true` seeds `tests/setupGlobal.ts` with `export function setup(): void {}`,
+33 bytes, because `ARTIFACT_TEMPLATES.tests.global` is not the empty seed. The question fires on a
+freshly materialized workspace and is live on `mcp` today. Sol did not test that shape. The comment
+the filter rests on, and the guide sentence repeating it, are both false.
 
-The false premise is the Orchestrator's. The W5 brief stated the setup seed is the empty string —
-true of `tests/setup.ts` alone — and the unit's shipped comment generalized it to every
-`tests/setup*.ts` module. The guide repeats it.
+**Claim 14 — Sol CONFIRMED, both Opus lanes BROKEN. Both are right about different questions.** Sol
+ruled on the implementation, which behaves as it should. The Opus lanes ruled on the wording: the
+claim and the shipped in-file comment say the assertion detects "an extractor that narrows over what
+a declaration prints", and the objective lane measured that a rule keeping only a tenth of each
+declaration's fenced bodies drops 172 of 188 claim lines while `printing` does not move. The code
+stands; the sentence describing it does not.
 
-**Claim 14 — ruled broken, on the wording only.** Sol confirmed the implementation and both Opus
-lanes broke the claim. They answered different questions and both answers are right: the assertion
-behaves exactly as Sol describes, and the claim as written — with the shipped in-file comment —
-describes a stronger property than the code has. The Opus objective lane measured the gap: narrowing
-to a tenth of each declaration's fenced bodies drops 172 of 188 claim lines while `printing` does not
-move. The code stays; the claim and the comment are corrected to "silences a shipped declaration".
+**Sol's finding versus the Opus objective lane's reading. Sol wins, and this is the round's clearest
+argument for the cross-engine split.** Both lanes drove an empty `scripts` region through
+`replaceManifestScripts`. Opus saw it refused and recorded that as correct behaviour. Sol read the
+contract: `src/core/types.ts:140` states "An absent script is always writable and needs no entry in
+`accepted`", and the refusal at `src/core/compilers.ts:1896` contradicts it. The Orchestrator
+verified the type's wording. Same evidence, opposite conclusions, and the one that read the contract
+was right.
 
-**Sol's finding against an Opus ruling — ruled with Sol.** The Opus objective lane tested a manifest
-whose `scripts` object is empty, saw the write refused, and recorded it as correct. Sol called it a
-defect and the type agrees: `src/core/types.ts:140` states "An absent script is always writable and
-needs no entry in `accepted`", while `src/core/compilers.ts:1896` and `:1899` refuse every empty
-region. That is a contract violation, and the lane that read the contract wins over the lane that
-read the behaviour.
+**Claim 11 — subjective BROKEN, both objective lanes CONFIRMED.** They tested different candidates.
+The objective lanes rejected reference coverage, import-without-throwing, and the no-`describe` law,
+each for a measured reason. The subjective lane proposed a reachability assertion — every
+`tests/**/setup*.ts` is named by the root configuration or imported by a non-setup file — and
+measured it green across every checkout, 50 modules with none unreachable. That candidate was not
+tested by either objective lane. The narrow ruling that satisfies all three is that the **guide's
+categorical sentence** asserts a whole space from one sample and must be narrowed to what was
+measured; whether to adopt the assertion itself is a successor question, not this release's.
 
-**Claim 11 — ruled confirmed on the ruling, broken on the guide's sentence.** Sol and the Opus
-objective lane each tested candidate assertions and closed each one. The subjective lane found a
-candidate neither tested — every `tests/**/setup*.ts` module is reachable from the root configuration
-or a relative import — and measured it green across every checkout, 50 modules with none unreachable.
-The design ruling not to generate a setup proof stands. What does not stand is the guide asserting a
-whole space from one sample; that sentence narrows to what was measured.
+## What the coverage sweep found
 
-## The finding no claim named, and the worst of the round
+Grok swept the chain for behavioural changes no claim names and returned exactly one:
+`#projectQuestion` now audits the manifest **as a write would leave it**, projecting the disk text
+through `replaceManifestScripts` before judging Vitest-project reachability. That was a deliberate
+and necessary change, and no claim attacked it. It is a claim for the successor brief.
 
-**Every `app/browser` workspace goes red on `npm test` the moment it takes 0.0.50's vendored bytes.**
+The sweep names its own bound: it did not walk the complete unified diff, the per-file test diffs,
+or the vendored inventory.
 
-W1 added a vendored assertion requiring every root `test.projects` entry to be a function.
-`src/core/compilers.ts:821` pushes `'appBrowser()'` — a called factory returning a plain record —
-and the comment above it documents that as deliberate. The lane measured a workspace scaffold had
-just created failing its own `test:config`, and reproduced it on `supervisor`, which passes its
-current vendored proof and fails 16 of 44 on the candidate's.
+## Carried to fix units
 
-The propagation phase could not have caught it: no propagated target carries an `app/` axis, and
-`supervisor` — the only checkout that does — is refused by `overwrite` for an unrelated pre-existing
-reason. The gate is correct and is not weakened; the generator is corrected.
+| Finding                                                                    | Unit  |
+| -------------------------------------------------------------------------- | ----- |
+| `appBrowser()` reds every `app/browser` workspace on its own `npm test`     | FIX-A |
+| Untyped subpath silently dropped; core-only proof blind to a browser face   | FIX-B |
+| Setup question fires on the seeded global module; remedy names one file     | FIX-C |
+| The W7 comment and claim over-state the assertion's coverage                | FIX-D |
+| Guide: "the one proof scaffold writes"; the empty-seed sentence; the        | FIX-E |
+| categorical setup sentence; the presence-ownership table's missing row      |       |
+| An empty `scripts` region is refused against its own contract               | FIX-F |
 
-## Carried, ruled, and dropped
+## Recorded, not carried
 
-Fix units follow for: the untyped-subpath partition; the core-only proof's missing guard against a
-browser entry it cannot drive; the `setupGlobal` filter and the setup question's remedy, which
-hard-codes one filename regardless of how many modules it names and goes permanently silent once any
-proof exists; the empty-`scripts` insertion path; the W7 comment; and the guide's false sentences —
-"the one proof scaffold writes", repeated four times where scaffold writes four kinds of test file;
-"every setup module scaffold seeds is empty"; and the categorical setup claim.
-
-Recorded against the capability that owns them, not reopened here: the hard-linked-checkout refusal
-on the read path, and `overwrite --offline` exiting 1 after a successful write. Both reproduce under
-the published 0.0.49.
-
-Dropped on the record: nothing. No lane raised a finding another lane refuted.
+A hard-linked checkout is refused as carrying no readable manifest, pre-existing on `origin/main`.
+`overwrite --offline` exits 1 after a successful write because its catalog step refuses the flag,
+also pre-existing. Both are recorded in `propagation-offline-evidence.md` for the change that owns
+them.
