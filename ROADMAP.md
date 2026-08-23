@@ -106,6 +106,13 @@ no campaign folder is the plan of record.
   means deciding CommonJS support from the resolved target's module format — its extension, and the
   package's `type` for a `.js` target — rather than from a traversed condition name.
 
+- **supervisor**: `tests/app/server/fixtures/claude.mjs` orphans itself on every run and never exits.
+  It blocks on `for await (const chunk of process.stdin)`, so a spawn whose stdin is never closed
+  parks it forever. Measured 2026-08-23: one instance had survived 7h46m holding 57MB, and a fresh
+  run leaked another within seconds — its parent is already PID 1 at 17 seconds old. Each leak costs
+  about 50MB and they accumulate across runs until the container is reclaimed. The fixture needs its
+  stdin closed by whatever spawns it, or a guard that exits when stdin is not a pipe.
+
 ## 2. Design and research records
 
 - **Guide mirrors track upstream `main`, not the catalog release.** `Upstream` fetches guides
