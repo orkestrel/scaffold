@@ -70,6 +70,32 @@ no campaign folder is the plan of record.
   prose door the way the refusal doors were translated; rule on the `realpathSync` race a
   scratch rename can win; a mintty-backed TTY fixture where `/usr/bin/script` is absent.
 
+- **scaffold**: the emitted distribution proof detects a browser face by output-path prefix
+  (`module.startsWith(BROWSER_OUTPUT)`) rather than by resolving the `browser` condition. A package
+  publishing a browser face under a condition instead of a path convention is classified as a Node
+  entry. Surfaced 2026-08-23 while repairing the condition model; the repair established that a
+  single shared module field cannot carry `node` without breaking browser resolution, which is the
+  same seam.
+- **scaffold**: a generated `vite.config.ts` declares every project factory as
+  `(options?: UserConfig)` and `src/core/compilers.ts` pushes each as a bare reference into
+  `test.projects`, where Vitest calls it with a `ConfigEnv`. Measured 2026-08-23:
+  `{"command":"serve","mode":"test","isPreview":false,"isSsrBuild":false}` is merged into the config.
+  `mode` is a real `UserConfig` field already equal to the run's mode and the rest are inert, so
+  nothing observable changes and every target's gates are green — but the declared type is false
+  about the only call that happens, in a file every fleet maintainer reads. Two audit lanes ruled it
+  a latent hazard rather than a defect. The fix is to emit the entry invoked, which moves every
+  factory reference in every target's config, so it wants one deliberate pass.
+- **scaffold**: `tests/setup*.ts` is birth-owned, so a target keeps the seed of whichever release
+  materialized it and `repair` reports it aligned forever. A release whose planned seed differs then
+  raises the uncovered-setup question against a module scaffold itself wrote. Reproduced 2026-08-23
+  with the built CLI. No seed moved in 0.0.50, so nothing fires on it. Closing it means treating a
+  module matching any seed the blueprint has ever planned at that path as unfilled, which means
+  shipping that history; the guide states the limit meanwhile.
+- **scaffold**: `above` and `below` as directional references violate `.claude/rules/writing.md`
+  § Code tokens, references, and links. The instances inside the emitted distribution template were
+  repaired 2026-08-23 because they ship into every target; several remain elsewhere in
+  `src/core/templates.ts`. Sweep the repository once rather than fixing them where they are noticed.
+
 ## 2. Design and research records
 
 - **Guide mirrors track upstream `main`, not the catalog release.** `Upstream` fetches guides
