@@ -1332,9 +1332,14 @@ export class CLI implements CLIInterface {
 		const remedies = modules
 			.map((path) => `tests/${path.slice(0, -'.ts'.length)}.test.ts`)
 			.join(', ')
+		// The remedy asks for coverage, which is the fact the filter above decides.
+		// It does not say what the proof asserts: the reading is bytes against a
+		// seed, so a module that exports nothing and only registers a hook reaches
+		// here, and a remedy demanding a proof of exported behavior leaves that
+		// maintainer a permanent advisory or a proof that measures nothing.
 		const remedy = single
-			? `Add ${remedies} asserting the behavior it exports.`
-			: `Add ${remedies}, each asserting the behavior the module of the same name exports.`
+			? `Add ${remedies} to cover it.`
+			: `Add ${remedies}, each covering the module of the same name.`
 		return {
 			field: 'setup',
 			message: `The target at ${target} carries ${single ? 'a test setup module' : 'test setup modules'} that no proof covers: ${named}. ${remedy} The proof's subject is behavior only this workspace can assert, so scaffold does not write it.`,

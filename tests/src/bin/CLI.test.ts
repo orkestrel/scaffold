@@ -77,6 +77,18 @@ const FILE_GROUPS: readonly Group[] = ['manifest', 'configs', 'tests', 'guides',
 // A setup module a maintainer wrote into. What separates it from what scaffold
 // seeds at that path is that its bytes are not the seed's.
 const FILLED_SETUP_TEXT = "export const SAMPLE_FIXTURE = 'sample'\n"
+// The other half of that population: a setup module a maintainer wrote into that
+// exports nothing and only registers a hook. The question reads bytes, so this
+// module reaches it exactly as the exporting one does, and the fleet ships this
+// shape. Its remedy must be one this maintainer can carry out.
+const HOOK_SETUP_TEXT = [
+	"import { afterEach } from 'vitest'",
+	'',
+	'afterEach(() => {',
+	'\tSAMPLE_REGISTRY.clear()',
+	'})',
+	'',
+].join('\n')
 const FLEET_NAMES: readonly string[] = Object.freeze([
 	'@orkestrel/emitter',
 	'@orkestrel/guide',
@@ -170,7 +182,7 @@ function buildSetupQuestion(target: string, module: string): Question {
 	const proof = `${module.slice(0, -'.ts'.length)}.test.ts`
 	return {
 		field: 'setup',
-		message: `The target at ${target} carries a test setup module that no proof covers: ${module}. Add ${proof} asserting the behavior it exports. The proof's subject is behavior only this workspace can assert, so scaffold does not write it.`,
+		message: `The target at ${target} carries a test setup module that no proof covers: ${module}. Add ${proof} to cover it. The proof's subject is behavior only this workspace can assert, so scaffold does not write it.`,
 		blocking: false,
 	}
 }
@@ -2101,10 +2113,44 @@ describe('CLI audit', () => {
 			expect(audit.questions).toStrictEqual([
 				{
 					field: 'setup',
-					message: `The target at ${fleet.target} carries test setup modules that no proof covers: tests/setup.ts, tests/setupServer.ts. Add tests/setup.test.ts, tests/setupServer.test.ts, each asserting the behavior the module of the same name exports. The proof's subject is behavior only this workspace can assert, so scaffold does not write it.`,
+					message: `The target at ${fleet.target} carries test setup modules that no proof covers: tests/setup.ts, tests/setupServer.ts. Add tests/setup.test.ts, tests/setupServer.test.ts, each covering the module of the same name. The proof's subject is behavior only this workspace can assert, so scaffold does not write it.`,
 					blocking: false,
 				},
 			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	// The question reads bytes, so it reaches a filled module that exports
+	// nothing. Its remedy has to stay inside what that reading knows: asking this
+	// maintainer for a proof of exported behavior leaves them a permanent advisory
+	// or a proof asserting nothing, and the message is what has to be actionable
+	// for the whole population the predicate admits rather than for part of it.
+	it('asks a hook-only setup module for coverage rather than for a proof of its exports', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			workspace.write('target/package.json', buildTargetManifest())
+			workspace.write('target/tests/setup.ts', HOOK_SETUP_TEXT)
+			const sink = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions).toStrictEqual([buildSetupQuestion(fleet.target, 'tests/setup.ts')])
+			// Stated as the property as well as the literal, because a wording change
+			// moves the literal and this assertion together only if it is deliberate.
+			// Scanning scaffold's own message is not the source-language scan the
+			// predicate refuses: the subject here is the sentence, not a module.
+			expect(requireValue(audit.questions[0]).message).not.toContain('export')
 		} finally {
 			workspace.destroy()
 		}

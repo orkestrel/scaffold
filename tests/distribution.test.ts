@@ -600,7 +600,20 @@ describe('installed package consumer', () => {
 		const workspace = createScratch({ prefix: 'scaffold-peer-install-' })
 		const packed = workspace.ensure('packed')
 		const cache = workspace.ensure('cache')
-		const environment = { ...process.env, npm_config_cache: cache }
+		// npm reads its peer-resolution policy from the environment and from every
+		// `.npmrc` on the host, so forwarding `process.env` unchanged answers with
+		// the host's policy rather than this fixture's. Under
+		// `npm_config_legacy_peer_deps=true` the refused graph installs and the
+		// refusal below fails for a reason outside this package. Pin both peer
+		// settings to npm's defaults so the answer is the test's. An environment
+		// variable outranks every `.npmrc`, and no command line here carries the
+		// flags that would outrank it in turn.
+		const environment = {
+			...process.env,
+			npm_config_cache: cache,
+			npm_config_legacy_peer_deps: 'false',
+			npm_config_strict_peer_deps: 'false',
+		}
 		try {
 			workspace.write('packages/peer/package.json', '{"name":"peer-contract","version":"1.0.0"}\n')
 			const manifest = `{
@@ -714,7 +727,15 @@ describe('installed package consumer', () => {
 					shell,
 				},
 			)
-			expect(rejected.status).not.toBe(0)
+			// A child that never ran its resolver reports the same refusal this
+			// assertion is looking for: a killed one returns `status: null` with a
+			// signal and renders nothing, and a spawn fault returns `status: null`
+			// with an error, so `not.toBe(0)` accepts either. Assert the resolver ran
+			// and exited on its own, so a harness fault fails as a harness fault and
+			// carries its diagnosis instead of reading as npm's answer.
+			expect(rejected.error).toBeUndefined()
+			expect(rejected.signal).toBeNull()
+			expect(rejected.status, `${rejected.stdout}\n${rejected.stderr}`).not.toBe(0)
 			expect(`${rejected.stdout}\n${rejected.stderr}`).toContain('ERESOLVE')
 		} finally {
 			workspace.destroy()
@@ -732,7 +753,17 @@ describe('installed package consumer', () => {
 			const consumer = workspace.ensure('consumer')
 			const target = join(workspace.path, 'generated')
 			const cache = workspace.ensure('cache')
-			const environment = { ...process.env, npm_config_cache: cache }
+			// Pinned for the reason the refused-peer fixture above pins it: an npm
+			// environment variable outranks every `.npmrc`, so a host carrying a peer
+			// policy would otherwise answer for this install. This one asserts successes
+			// rather than a refusal, so `npm_config_strict_peer_deps=true` is the
+			// direction that would red it.
+			const environment = {
+				...process.env,
+				npm_config_cache: cache,
+				npm_config_legacy_peer_deps: 'false',
+				npm_config_strict_peer_deps: 'false',
+			}
 			try {
 				const pack = spawnSync(
 					npm,
