@@ -1177,6 +1177,9 @@ const RUNTIME_CONDITIONS = Object.freeze({
 	commonjs: Object.freeze(['node-addons', 'node', 'require', 'module-sync']),
 	browser: Object.freeze(['module', 'browser', 'production', 'import']),
 })
+// TypeScript's CommonJS consumer conditions without \`types\`, so the target is the
+// runtime module whose format the consumer receives rather than its declaration.
+const COMMONJS_CONDITIONS = Object.freeze(['node', 'require'])
 // TypeScript's Node resolutions add \`node\` to the format condition. Its bundler
 // resolution does not, so a browser drive compares against the declaration a bundler
 // consumer reads rather than borrowing the Node declaration.
@@ -1199,7 +1202,6 @@ interface Resolution {
 
 interface TargetResolution {
 	readonly target: string
-	readonly matched: boolean
 }
 
 // Each compile driver carries the conditions TypeScript applies for its resolution
@@ -1330,20 +1332,15 @@ function runNode(args: readonly string[], cwd: string): SpawnSyncReturns<string>
 	return spawnSync(process.execPath, [...args], { cwd, encoding: 'utf8', windowsHide: true })
 }
 
-// Node's own condition matching, read in declaration order. The matched bit records
-// whether the selected path traversed one caller-named condition; a \`default\`
-// branch can resolve for CommonJS without declaring CommonJS support, so resolution
-// alone cannot select a CommonJS consumer probe.
+// Node's own condition matching, read in declaration order.
 function resolvePackageTarget(
 	entry: unknown,
 	conditions: readonly string[],
-	required: string | undefined,
-	matched = false,
 ): TargetResolution | undefined {
-	if (typeof entry === 'string') return { target: entry, matched }
+	if (typeof entry === 'string') return { target: entry }
 	if (isList(entry)) {
 		for (const member of entry) {
-			const resolved = resolvePackageTarget(member, conditions, required, matched)
+			const resolved = resolvePackageTarget(member, conditions)
 			if (resolved !== undefined && isPackageTarget(resolved.target)) return resolved
 		}
 		return undefined
@@ -1351,12 +1348,7 @@ function resolvePackageTarget(
 	if (!isRecord(entry)) return undefined
 	for (const [condition, nested] of Object.entries(entry)) {
 		if (condition !== 'default' && !conditions.includes(condition)) continue
-		const resolved = resolvePackageTarget(
-			nested,
-			conditions,
-			required,
-			matched || condition === required,
-		)
+		const resolved = resolvePackageTarget(nested, conditions)
 		if (resolved !== undefined) return resolved
 	}
 	return undefined
@@ -1367,15 +1359,18 @@ function resolvePackageTarget(
 // rather than inside \`import\`, so a fixed \`entry.import.types\` lookup is not
 // equivalent to condition resolution.
 function resolveTarget(entry: unknown, conditions: readonly string[]): string | undefined {
-	return resolvePackageTarget(entry, conditions, undefined)?.target
+	return resolvePackageTarget(entry, conditions)?.target
 }
 
-// A CommonJS entry is one whose selected Node path traverses an explicit \`require\`
-// condition. A \`default\` target is deliberately insufficient: Node 22 may load an
-// ES module from require, while TypeScript correctly refuses a CommonJS consumer of
-// a package that declares no CommonJS condition.
-function resolvesCommonJS(entry: unknown): boolean {
-	return resolvePackageTarget(entry, RUNTIME_CONDITIONS.commonjs, 'require')?.matched === true
+// Whether a typed CommonJS consumer resolves a CommonJS module. The target's fixed
+// extension decides first; a \`.js\` target takes the installed package's \`type\`.
+function resolvesCommonJS(entry: unknown, packageType: unknown): boolean {
+	const target = resolveTarget(entry, COMMONJS_CONDITIONS)
+	if (target === undefined) return false
+	const name = target.slice(target.lastIndexOf('/') + 1)
+	if (name.endsWith('.cjs') || name.endsWith(ADDON_EXTENSION)) return true
+	if (name.endsWith('.js')) return packageType !== 'module'
+	return false
 }
 
 // Every target an entry names under any condition. A fallback list omits members
@@ -1428,7 +1423,7 @@ function selectEntries(entries: readonly Entry[], conditions: readonly string[])
 	return entries.filter(
 		(entry) =>
 			resolveTarget(entry.mapping, conditions) !== undefined &&
-			(!conditions.includes('require') || resolvesCommonJS(entry.mapping)),
+			(!conditions.includes('require') || entry.commonjs),
 	)
 }
 
@@ -1561,7 +1556,7 @@ function buildStage(): Stage {
 			continue
 		}
 		const imported = resolveTarget(entry, RUNTIME_CONDITIONS.module)
-		const commonjs = resolvesCommonJS(entry)
+		const commonjs = resolvesCommonJS(entry, manifest.type)
 		const module = resolveTarget(entry, RUNTIME_CONDITIONS.browser)
 		entries.push({
 			subpath,
@@ -1869,8 +1864,8 @@ async function readBrowserExports(browser: Browser, bundle: string): Promise<rea
 	// browser drive measures the packed artifact, so only a published face is owed
 	// one. A private browser application declares the browser launcher and its
 	// Vitest browser provider and gets the generated browser configuration module
-	// beside it, and is owed no drive here all the same — those imports follow a
-	// published face rather than selecting the branch. \`vite\` selects nothing either,
+	// beside it, and is owed no drive here all the same — those imports are declared
+	// by either axis, so they do not select the branch. \`vite\` selects nothing either,
 	// though the branch imports it: scaffold puts \`vite\` in every workspace's base
 	// development dependencies, whatever that workspace publishes. The later Node
 	// \`it.runIf\` predicates retire each matching Node drive for a face published

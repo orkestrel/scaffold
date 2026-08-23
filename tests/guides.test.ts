@@ -246,9 +246,7 @@ describe('guide examples', () => {
 
 	it('reports a retained setup seed when the planned release seed differs', async () => {
 		const markdown = requireValue(files['guides/scaffold.md'])
-		expect(markdown).toContain(
-			'that moves a planned seed therefore raises the question on every target materialized before it,',
-		)
+		expect(markdown).toContain('raises the question on every target materialized before it')
 		const workspace = createScratch({ prefix: 'scaffold-guide-release-skew-' })
 		try {
 			const host = createStagedHost(workspace)
@@ -316,6 +314,12 @@ describe('guide examples', () => {
 			ts.ScriptTarget.ESNext,
 			true,
 		)
+		const build = source.statements.find(
+			(statement): statement is ts.FunctionDeclaration =>
+				ts.isFunctionDeclaration(statement) && statement.name?.text === 'buildStage',
+		)
+		if (build === undefined) throw new Error('The emitted proof declares no buildStage function')
+		expect(build.getText(source)).toContain('collectTargets(entry)')
 		const names = [
 			'isRecord',
 			'isList',

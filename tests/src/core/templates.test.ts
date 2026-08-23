@@ -265,6 +265,7 @@ const CLASSIFIER_DECLARATIONS: readonly string[] = [
 	'ADDON_EXTENSION',
 	'DECLARATION_EXTENSIONS',
 	'RUNTIME_CONDITIONS',
+	'COMMONJS_CONDITIONS',
 	'BUNDLER_CONDITIONS',
 	'DECLARATION_CONDITIONS',
 	'isRecord',
@@ -1194,22 +1195,26 @@ describe('emitted distribution classifier', () => {
 		}
 	})
 
-	it('selects dual entries and excludes ESM-only entries from CommonJS compile probes', () => {
+	it('selects CommonJS entries by the target format a typed consumer resolves', () => {
 		const workspace = createScratch({
 			parent: ensureTmpRoot(),
 			prefix: 'scaffold-e2-dual-format-',
 		})
 		try {
 			const file = stageDistributionClassifier(workspace)
+			const synchronized = `{ 'module-sync': './synchronized.js', require: './synchronized.cjs', import: './synchronized.js' }`
+			const conditioned = `{ node: { types: './node.d.cts', default: './node.cjs' }, default: { types: './default.d.mts', default: './default.js' } }`
 			const dual = `{ import: './dual.js', require: './dual.cjs' }`
 			const module = `{ types: './module.d.ts', import: './module.js', default: './module.js' }`
 			const answers = driveClassifier(file, [
-				`classifier.resolvesCommonJS(${dual})`,
-				`classifier.resolvesCommonJS(${module})`,
-				`classifier.selectEntries([{ subpath: './dual', mapping: ${dual} }, { subpath: './module', mapping: ${module} }], classifier.BUNDLER_CONDITIONS.commonjs).map((entry) => entry.subpath)`,
+				`classifier.resolvesCommonJS(${synchronized}, 'module')`,
+				`classifier.resolvesCommonJS(${conditioned}, 'module')`,
+				`classifier.resolvesCommonJS(${module}, 'module')`,
+				`classifier.resolvesCommonJS(${dual}, 'module')`,
+				`classifier.selectEntries([{ subpath: './dual', mapping: ${dual}, commonjs: true }, { subpath: './module', mapping: ${module}, commonjs: false }], classifier.BUNDLER_CONDITIONS.commonjs).map((entry) => entry.subpath)`,
 			])
 
-			expect(answers).toStrictEqual([true, false, ['./dual']])
+			expect(answers).toStrictEqual([true, true, false, true, ['./dual']])
 		} finally {
 			workspace.destroy()
 		}

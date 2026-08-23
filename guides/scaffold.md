@@ -637,8 +637,9 @@ function body. A test for emptiness therefore raises the question against a fres
 workspace. Holding each module to the seed the same blueprint plans at its own path reports what a
 maintainer wrote rather than what scaffold seeded.
 
-That reading carries a release-skew limit. A seeded setup module is birth-owned, so `repair` reports it aligned
-and never rewrites it, and a target keeps the seed of the release that materialized it. A release
+That reading carries a release-skew limit. A seeded setup module is birth-owned, so `repair`
+reports it aligned and never rewrites it, and a target keeps the seed of the release that
+materialized it. A release
 that moves a planned seed therefore raises the question on every target materialized before it,
 against a module scaffold wrote and no maintainer touched. `tests/setupGlobal.ts` is the module that
 can meet it, because it is the one seeded with more than the empty string. A maintainer meeting that
@@ -1474,12 +1475,10 @@ production build resolves as `production` — with the `import` that Vite applie
 resolution. A subpath whose Vite resolution lands under `dist/src/browser/` is driven in a real
 browser and the Node drives retire for it; every other subpath is imported where the ESM set
 resolves a target and required where the entry declares CommonJS support. Resolution under the
-CommonJS set does not declare it: the selected path must traverse an explicit `require` condition,
-and a `default` branch resolving under that set leaves the package ESM-only. Node's `require` may
-load such an entry and TypeScript refuses a CommonJS consumer of it, so a require drive and a
-CommonJS compile probe keyed on resolution alone would report against a subpath no typed CommonJS
-consumer can take. The proof also compiles a consumer against the installed declarations under every
-module resolution.
+CommonJS set does not decide whether a typed CommonJS consumer can take the subpath. The proof
+resolves the target under the typed CommonJS consumer's runtime conditions, then reads its module
+format from its extension and the installed package's `type` field for a `.js` target. The proof
+also compiles a consumer against the installed declarations under every module resolution.
 
 Each drive compares against the declaration its own consumer reads, resolved under the conditions
 TypeScript applies for that resolution and importing format: `types` first and the format's own
@@ -1536,9 +1535,10 @@ branch follows a published browser face on the `src` axis: the browser drive mea
 artifact, and only a published face is packed. A workspace that selects `browser` on its `app` axis
 alone declares `playwright` and `@vitest/browser-playwright` and gets `configs/browsers.ts` emitted,
 and its proof still carries no branch: the selector reads the `src` axis, and a generated manifest
-packs `dist/src`, so an application face is neither selected nor packed. So the imports the branch needs follow a published face rather than selecting the
-branch, and `vite` selects nothing either, though the branch imports it: every workspace declares
-`vite`, whatever it publishes. In a core-only workspace those imports resolve to nothing, and
+packs `dist/src`, so an application face is neither selected nor packed. The imports the branch
+needs are declared by either axis, so they do not select the branch. The `vite` import selects
+nothing either: every workspace declares `vite`, whatever it publishes. In a core-only workspace
+those imports resolve to nothing, and
 emitting the branch there would fail its own `check` and `lint:check` gates. Its Node cases retire
 themselves for a browser face, so a face published after the file was written would leave nothing
 measuring it. The assertion reddens instead, and names the subpath a browser branch is owed for. The

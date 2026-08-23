@@ -1304,7 +1304,7 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 	// workspace selecting `browser` on its `app` axis alone declares
 	// `@vitest/browser-playwright` and `playwright` and gets `configs/browsers.ts`
 	// emitted, and its proof still carries no branch: those imports follow a
-	// published face rather than selecting the branch. `vite` selects nothing either,
+	// declared by either axis, so they do not select the branch. `vite` selects nothing either,
 	// though the branch imports it: `vite` sits in `BASE_DEV_DEPENDENCIES` and every
 	// workspace declares it. Presence ownership never rewrites the file, so
 	// a workspace publishing a browser face later keeps a proof with no branch for it.

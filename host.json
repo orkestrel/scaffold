@@ -22,7 +22,7 @@
 			"storage": "agents/orchestration.md",
 			"destination": ".agents/orchestration.md",
 			"executable": false,
-			"digest": "0ebeab9cb69838f6edfdc31f4e001847742eac911b50ddacfde60f7daa1872ed"
+			"digest": "c8e9931f5cf30d0a5a94ea2a3008904b5833cd534036680ea0fd9618c64d6f54"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
@@ -604,7 +604,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "1f352739613c2bed8b1846db17141a7ff48af6f96363f4aa628db5f32a25686c"
+			"digest": "3b7ad11655fd90c5abbafc7fd35cf89c949e051a33979e3713402884867be635"
 		},
 		{
 			"storage": "scripts/codex.sh",
@@ -688,5 +688,5 @@
 		".codex/agents",
 		".cursor/rules"
 	],
-	"digest": "11fff4c7ac5cdb7588abb4dd530cf8081eeab32e0fdca9d3c35ada06acf9ec52"
+	"digest": "e98e694a6b93167dab682d52dcdca1377801fe9c8d81c05ef6abce08794baf27"
 }
