@@ -127,13 +127,24 @@ const SCRIPT_MANIFEST = `{
 }
 `
 
+const SCRIPT_SECTION = `"scripts": {
+		"test": "vitest run",
+		"prepublishOnly": "npm test"
+	}`
+
+const SCRIPT_PROOF: ManifestScript = {
+	name: 'test:distribution',
+	command: 'vitest run --project distribution',
+	accepted: [],
+}
+
 const SCRIPT_REGION: readonly ManifestScript[] = [
 	{
 		name: 'prepublishOnly',
 		command: `npm test && ${RELEASE_PROOF_COMMAND}`,
 		accepted: ['npm test'],
 	},
-	{ name: 'test:distribution', command: 'vitest run --project distribution', accepted: [] },
+	SCRIPT_PROOF,
 ]
 
 describe('blueprintToWritableScripts', () => {
@@ -224,8 +235,51 @@ describe('replaceManifestScripts', () => {
 
 	it('refuses text carrying no readable scripts object', () => {
 		expect(replaceManifestScripts('{\n\t"name": "sample"\n}\n', SCRIPT_REGION)).toBeUndefined()
-		expect(replaceManifestScripts('{\n\t"scripts": {}\n}\n', SCRIPT_REGION)).toBeUndefined()
 		expect(replaceManifestScripts('not json', SCRIPT_REGION)).toBeUndefined()
+	})
+
+	// Every named script is absent from an empty region, and `ManifestScript` says an
+	// absent script is always writable. The region therefore takes the whole set as its
+	// first entries rather than refusing the write.
+	it('writes every named script into an empty region, moving no byte outside it', () => {
+		const empty = SCRIPT_MANIFEST.replace(SCRIPT_SECTION, '"scripts": {}')
+
+		// The expectation is the emptied manifest with exactly the region's interior
+		// filled, so the assertion is byte identity everywhere else rather than a spot
+		// check. The first entry carries no leading comma.
+		expect(replaceManifestScripts(empty, SCRIPT_REGION)).toBe(
+			empty.replace(
+				'"scripts": {}',
+				`"scripts": {\n\t\t"prepublishOnly": "npm test && ${RELEASE_PROOF_COMMAND}",\n\t\t"test:distribution": "vitest run --project distribution"\n\t}`,
+			),
+		)
+	})
+
+	// The indentation comes from the region's own opening line, because no sibling entry
+	// exists to copy it from. A top-level key sits one level in, so that line's leading
+	// whitespace is one level and an entry inside the region sits at two.
+	it('derives an empty region indentation from the line its own brace opens on', () => {
+		const spaced = '{\n  "scripts": {}\n}\n'
+
+		expect(replaceManifestScripts(spaced, [SCRIPT_PROOF])).toBe(
+			'{\n  "scripts": {\n    "test:distribution": "vitest run --project distribution"\n  }\n}\n',
+		)
+		// The region's interior is the write's own range, so a brace pair already split
+		// over lines lands the same bytes as a closed one rather than keeping whatever
+		// whitespace sat between the braces.
+		expect(replaceManifestScripts('{\n\t"scripts": {\n\t}\n}\n', [SCRIPT_PROOF])).toBe(
+			'{\n\t"scripts": {\n\t\t"test:distribution": "vitest run --project distribution"\n\t}\n}\n',
+		)
+	})
+
+	// A manifest carrying no line break before the region is written on one line, exactly
+	// as the append path writes a one-line region it finds already populated.
+	it('writes an empty region inline when no line break precedes it', () => {
+		const inline = '{"name":"sample","scripts":{}}\n'
+
+		expect(replaceManifestScripts(inline, [SCRIPT_PROOF])).toBe(
+			'{"name":"sample","scripts":{"test:distribution": "vitest run --project distribution"}}\n',
+		)
 	})
 
 	it('reads only the top-level scripts object', () => {

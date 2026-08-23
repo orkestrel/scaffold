@@ -464,8 +464,12 @@ describe('installed package consumer', () => {
 			// declaration documents another example and a number pinned to it goes stale on
 			// the next one. What stays fixed is the declaration list, so this asserts that
 			// every declaration the package ships printed a claim-shaped line of its own: an
-			// extractor that narrows over what a declaration prints drops that name here and
-			// the failure says which one went silent, while an added example moves nothing.
+			// extractor that goes silent on a declaration drops that name here and the failure
+			// says which one, while an added example moves nothing. It catches silence, not
+			// thinning: any nonzero remainder keeps the declaration's name, so a rule that
+			// narrows over what a declaration prints without silencing it moves nothing here.
+			// The driven-count floors that follow are what catch a partial narrowing, by
+			// pinning each declaration's driven claims above a bound.
 			expect(printing).toStrictEqual(DECLARATIONS.map((declaration) => declaration.types))
 
 			// Every claim scored false is a control, and nothing the package ships is.

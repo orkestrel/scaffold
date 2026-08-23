@@ -1733,7 +1733,9 @@ export function replaceManifestRanges(
  * of its {@link ManifestScript.accepted} predecessors; anything else is a chain
  * the workspace author customized, and the whole region is refused without a
  * byte moving. A named script the manifest does not declare is appended after
- * the last declared script, copying that section's indentation.
+ * the last declared script, copying that section's indentation. A region
+ * declaring nothing takes every named script as its first entries, indented
+ * from the line its own opening brace sits on.
  *
  * The refusal is whole rather than per script, so a manifest never ends up
  * holding one written script beside one refused one.
@@ -1901,23 +1903,42 @@ export function replaceManifestScripts(
 	}
 	const missing = scripts.filter((script) => !written.has(script.name))
 	if (missing.length > 0) {
-		if (first < 0) return undefined
-		let anchor = end - 1
-		while (anchor > start && /\s/u.test(manifest.charAt(anchor - 1))) anchor -= 1
-		if (manifest.charAt(anchor - 1) === '{') return undefined
-		const newline = manifest.lastIndexOf('\n', first)
-		const indent = newline < 0 ? '' : manifest.slice(newline + 1, first)
-		const separator = newline < 0 || /\S/u.test(indent) ? '' : `\n${indent}`
-		edits.push({
-			start: anchor,
-			end: anchor,
-			text: missing
-				.map(
-					(script) =>
-						`,${separator}${JSON.stringify(script.name)}: ${JSON.stringify(script.command)}`,
-				)
-				.join(''),
-		})
+		if (first < 0) {
+			// An empty region declares every named script absent, and an absent script is
+			// always writable, so the region takes them as its first entries rather than
+			// refusing the write. No sibling entry exists to copy a column from, so the
+			// indentation comes from the region's own opening line: `scripts` is a
+			// top-level key, so that line's leading whitespace is one level and an entry
+			// inside the region sits at two. A manifest carrying no line break before the
+			// region is written on one line, which is what the append path does with a
+			// one-line region it finds already populated.
+			const opening = manifest.lastIndexOf('\n', start)
+			let column = opening + 1
+			while (column < start && /\s/u.test(manifest.charAt(column))) column += 1
+			const level = opening < 0 ? '' : manifest.slice(opening + 1, column)
+			const separator = opening < 0 ? '' : `\n${level}${level}`
+			const closing = opening < 0 ? '' : `\n${level}`
+			const entries = missing.map(
+				(script) => `${separator}${JSON.stringify(script.name)}: ${JSON.stringify(script.command)}`,
+			)
+			edits.push({ start: start + 1, end: end - 1, text: `${entries.join(',')}${closing}` })
+		} else {
+			let anchor = end - 1
+			while (anchor > start && /\s/u.test(manifest.charAt(anchor - 1))) anchor -= 1
+			const newline = manifest.lastIndexOf('\n', first)
+			const indent = newline < 0 ? '' : manifest.slice(newline + 1, first)
+			const separator = newline < 0 || /\S/u.test(indent) ? '' : `\n${indent}`
+			edits.push({
+				start: anchor,
+				end: anchor,
+				text: missing
+					.map(
+						(script) =>
+							`,${separator}${JSON.stringify(script.name)}: ${JSON.stringify(script.command)}`,
+					)
+					.join(''),
+			})
+		}
 	}
 	let compiled = manifest
 	for (const edit of edits.sort((left, right) => right.start - left.start)) {
