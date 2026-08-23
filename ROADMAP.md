@@ -96,12 +96,15 @@ no campaign folder is the plan of record.
   repaired 2026-08-23 because they ship into every target; several remain elsewhere in
   `src/core/templates.ts`. Sweep the repository once rather than fixing them where they are noticed.
 
-- **scaffold**: the emitted proof's `commonjs` selector requires an explicit `require` condition, so
-  a subpath published as a bare string target such as `{".": "./index.cjs"}` is excluded from the
-  CommonJS compile probe although a CommonJS consumer can import it. Measured 2026-08-23: no fleet
-  manifest uses a bare-string exports entry, so it reaches nothing today. It fails quiet, as missing
-  coverage rather than a false red. Closing it means inferring the target's module format from its
-  extension and the package's `type` field.
+- **scaffold**: the emitted proof's `commonjs` selector reads which condition names the resolution
+  walked through rather than what a typed CommonJS consumer can take, so it excludes subpaths that
+  consumer accepts. Two vectors are measured, 2026-08-23, and no single condition-set change covers
+  both: `{"module-sync": "./x.js", "require": "./x.cjs", "import": "./x.js"}`, where the walk returns
+  at `module-sync` before reaching `require`; and
+  `{"node": {"types": "./index.d.cts", "default": "./index.cjs"}, "default": {…}}`, where the walk
+  never meets a `require` key at all although Node's `require` returns the CommonJS module. Closing it
+  means deciding CommonJS support from the resolved target's module format — its extension, and the
+  package's `type` for a `.js` target — rather than from a traversed condition name.
 
 ## 2. Design and research records
 
