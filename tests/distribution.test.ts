@@ -293,6 +293,7 @@ describe('installed package consumer', () => {
 			const elided: string[] = []
 			const glossed: string[] = []
 			const mismatched: string[] = []
+			const printing: string[] = []
 			let shaped = 0
 			for (const declaration of DECLARATIONS) {
 				const text = readFileSync(resolve(root, declaration.types), 'utf8')
@@ -307,10 +308,15 @@ describe('installed package consumer', () => {
 				// The controls are appended to the population the driver runs, never to
 				// the population extracted from the declaration, so what they prove is a
 				// property of the instrument rather than of what the package shipped.
+				// Every body appended past this index is a control, so the tally below reads
+				// what the declaration printed alone: a rule that narrowed to the controls
+				// still leaves the declaration at zero.
+				const fenced = bodies.length
 				bodies.push(...declaration.controls)
+				let printed = 0
 				const claims: Array<{ readonly text: string; readonly encoded: string }> = []
 				const blocks: Array<{ readonly source: string; readonly claims: readonly number[] }> = []
-				for (const body of bodies) {
+				for (const [ordinal, body] of bodies.entries()) {
 					const lines = body.split('\n')
 					const spans: Array<{
 						readonly start: number
@@ -323,6 +329,7 @@ describe('installed package consumer', () => {
 						const verdict = match?.groups?.verdict
 						if (expression === undefined || verdict === undefined) continue
 						shaped += 1
+						if (ordinal < fenced) printed += 1
 						const stated = `${declaration.types}: ${expression} // ${verdict}`
 						if (verdict.includes(ELISION)) {
 							elided.push(stated)
@@ -409,6 +416,7 @@ describe('installed package consumer', () => {
 						claims: spans.map((span) => span.id),
 					})
 				}
+				if (printed > 0) printing.push(declaration.types)
 				const answered = spawnSync(process.execPath, ['--input-type=module', '--eval', DRIVER], {
 					cwd: workspace.path,
 					encoding: 'utf8',
@@ -452,7 +460,13 @@ describe('installed package consumer', () => {
 			// This is the assertion the lists are exact against: a shipped example
 			// that changes spelling moves from one list to another and both move.
 			expect(driven.length + undriven.length + glossed.length + elided.length).toBe(shaped)
-			expect(shaped).toBe(183)
+			// Named rather than tallied, because the population grows whenever a shipped
+			// declaration documents another example and a number pinned to it goes stale on
+			// the next one. What stays fixed is the declaration list, so this asserts that
+			// every declaration the package ships printed a claim-shaped line of its own: an
+			// extractor that narrows over what a declaration prints drops that name here and
+			// the failure says which one went silent, while an added example moves nothing.
+			expect(printing).toStrictEqual(DECLARATIONS.map((declaration) => declaration.types))
 
 			// Every claim scored false is a control, and nothing the package ships is.
 			// This establishes that a driven claim the module contradicts is reported,
