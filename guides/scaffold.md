@@ -105,7 +105,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `DEFAULT_ENGINES`                 | const | The `engines.node` range a workspace starts with.                                                |
 | `DEFAULT_VERSION`                 | const | The version a workspace starts at.                                                               |
 | `DEPENDENCY_NAME_PATTERN`         | const | The runtime dependency name syntax: the `@orkestrel` scope and a bare name.                      |
-| `DISTRIBUTION_TEST_PATH`          | const | The packed-package proof whose presence makes a workspace `distribution`.                        |
+| `DISTRIBUTION_TEST_PATH`          | const | The generated packed-package proof every publishing workspace is planned at.                     |
 | `ENGINES_PATTERN`                 | const | The minimum-Node engine syntax a blueprint declares.                                             |
 | `ENVIRONMENTS`                    | const | The `Environment` values, frozen.                                                                |
 | `EXECUTABLE_PATHS`                | const | The vendored paths a target receives with its executable bit set, frozen.                        |
@@ -411,7 +411,7 @@ no interface and is documented directly.
 | `repair`      | Write a plan into an existing target, guided by an audit of it.                  |
 | `mirror`      | Write fetched dependency guides to their local mirrors.                          |
 | `catalog`     | Rewrite the marker-bounded package table in the target's catalog agent file.     |
-| `declare`     | Rewrite named runtime and development ranges without reading or writing peers.   |
+| `declare`     | Rewrite the manifest regions the caller names: the ranges and the scripts.       |
 | `remove`      | Re-derive and delete the tracked files the plan does not own.                    |
 | `destroy`     | Tear the materializer down. Every later call throws, and teardown is idempotent. |
 
@@ -441,13 +441,13 @@ no interface and is documented directly.
 Authority is the verb's: every verb except `audit` writes when it is typed, and no
 option grants a write.
 
-| Verb        | Writes                                                                          |
-| ----------- | ------------------------------------------------------------------------------- |
-| `new`       | A whole workspace, into a target that holds nothing the plan would collide with |
-| `audit`     | Nothing                                                                         |
-| `repair`    | Each planned path the target is missing or has let drift, and the ranges        |
-| `catalog`   | The package table, the guide mirrors, and the ranges                            |
-| `overwrite` | Everything `repair` and `catalog` write, plus deletions                         |
+| Verb        | Writes                                                                                     |
+| ----------- | ------------------------------------------------------------------------------------------ |
+| `new`       | A whole workspace, into a target that holds nothing the plan would collide with            |
+| `audit`     | Nothing                                                                                    |
+| `repair`    | Each planned path the target is missing or has let drift, and the range and script regions |
+| `catalog`   | The package table, the guide mirrors, and the range region                                 |
+| `overwrite` | Everything `repair` and `catalog` write, plus deletions                                    |
 
 ### Baselines
 
@@ -528,13 +528,16 @@ answers a read and grant no verb write authority that it did not already have.
 
 `new --bin` creates the executable entry, its test, and its scoped Vite and TypeScript wrappers. The
 other structural facts do not need creation flags. Add a root `tests/setup*.test.ts` proof for
-`setup`, `tests/guides.test.ts` for `guides`,
-`tests/distribution.test.ts` for `distribution`, `tests/integration.test.ts` for `integration`,
+`setup`, `tests/guides.test.ts` for `guides`, `tests/integration.test.ts` for `integration`,
 `tests/conformance.test.ts` for `conformance`, `tests/setupService.ts` for `service`,
 `tests/setupGlobal.ts` for `global`, and `configs/app/vite.showcase.config.ts` for `showcase`;
 reading verbs detect each exact-case file and register its fixed machinery. Add `scripts/service.sh`
 for `vendors`. Reading verbs preserve and protect that birth-owned script, but do not infer its
 vendor list from edited text.
+
+`distribution` is not on that list. Publishing at least one `src` environment is its whole
+condition, and scaffold writes `tests/distribution.test.ts` itself rather than waiting for you to.
+Limits states what makes that one proof generable when the others are not.
 
 ### Reading a target
 
@@ -543,11 +546,11 @@ and the declared `@orkestrel/*` packages come from `package.json`. The environme
 from the directories the target actually ships, because a directory is the fact and a declaration
 beside it could disagree. The remaining facts come from exact-case files: `src/bin/main.ts` selects
 `bin`, each root `tests/setup*.test.ts` match selects `setup`, `tests/guides.test.ts` selects
-`guides`, `tests/distribution.test.ts` selects `distribution`,
-`tests/integration.test.ts` selects `integration`, `tests/conformance.test.ts` selects
+`guides`, `tests/integration.test.ts` selects `integration`, `tests/conformance.test.ts` selects
 `conformance`, `tests/setupService.ts` selects `service`, `tests/setupGlobal.ts` selects `global`,
 and `configs/app/vite.showcase.config.ts` selects `showcase`. A containing directory does not select
-the fact by itself.
+the fact by itself. `tests/distribution.test.ts` selects nothing: the published `src` axis the
+target ships already decides the `distribution` project, and the file is planned from that.
 
 `vendors` is not reconstructed. Its only artifact, `scripts/service.sh`, is birth-owned, so edited
 script text is not a trustworthy declaration of a vendor list. A present script remains in the
@@ -591,6 +594,23 @@ manifest and planned `vite.config.ts` conflict, and the option to exclude `confi
 `--groups`. A selection that excludes `configs` proceeds. An advisory alone does not make an aligned
 target drift.
 
+Scaffold writes one part of the manifest rather than advising on it: the script region a publishing
+workspace needs for the generated distribution proof. `repair` and `overwrite` write
+`test:distribution` and `prepublishOnly` there. A declared value is overwritten only when it is
+already the value being written, or, for `prepublishOnly`, the one predecessor the region accepts —
+the same gate chain without the release row. The overwrite happens in place, so every byte outside
+the replaced ranges survives, and a description, a keyword, a key order, and a script the workspace
+added are untouched. A script the manifest does not declare is appended after the last declared one,
+copying that section's indentation. `catalog` writes no script region; it names the ranges alone.
+
+A value matching neither is a chain the workspace author wrote. The region is then refused whole,
+without a byte moving, and the range region is still written. The `projects` advisory reads the
+manifest as a write would leave it, so a region scaffold writes for itself raises no question, while
+a refused region leaves the target's own text standing and the advisory reports whichever half is
+outstanding: the exact `test:distribution` line to paste, or the gate chain that must invoke a
+script the manifest already declares. The refusal covers the region rather than one script, so a
+manifest never holds one written value beside one refused one.
+
 The same plan-reading verbs compare the tooling set the derived blueprint plans against
 `dependencies` and `devDependencies` together. A missing planned package produces one non-blocking
 `dependencies` question naming every missing package and the exact manifest lines to add, in stable
@@ -600,7 +620,19 @@ Dependency floors describes rather than to this question. A present section that
 produces a question instead of a crash. This question belongs to `configs` and `tests`. `audit`
 reports it only when its selection includes either group, without changing its exit semantics.
 `repair` and `overwrite` refuse before writing a selected `configs` or `tests` group. A selection
-that excludes those groups proceeds, and no verb edits the birth-owned `package.json`.
+that excludes those groups proceeds, and no verb adds the declaration for you: `package.json` is
+birth-owned, and the range and script regions are the only parts of it a verb rewrites.
+
+`audit` reports one further non-blocking question, on the `setup` field, and it alone reports it.
+The question fires when the target carries a root `tests/setup*.ts` module holding any bytes that is
+neither a proof itself nor one of the vendored modules every target receives, while no root
+`tests/setup*.test.ts` proof selects `setup`. Emptiness is the whole rule, because every setup
+module scaffold seeds is empty, so a module carrying bytes is one a maintainer wrote into. The
+message names each such module and the proof to add, and it belongs to the `tests` group, so a
+scoped audit that excludes `tests` omits it. Scaffold does not write the proof it asks for, and no
+writing verb raises the question: a writing verb refuses the advisories it reports, and refusing
+`repair` over this one would block every write on a gap no write can close. Run across a fleet, the
+question is the list of packages whose setup helpers no proof covers.
 
 ### Exit codes
 
@@ -691,10 +723,10 @@ because the shape is chosen once and read afterwards: `new` refuses the advisory
 `repair` need the plan to describe and restore a target that already has that shape. A library
 caller creating a workspace holds the same refusal, and the Compile section below states it.
 
-`bin`, `setup`, `guides`, `distribution`, `integration`, `conformance`, `service`, `vendors`,
-`global`, and `showcase` are structural facts. Each is set only when the workspace physically ships
-the directory or exact-case file that defines it, never because of the workspace's name and never
-because a sibling fact is set.
+`bin`, `setup`, `guides`, `integration`, `conformance`, `service`, `vendors`, `global`, and
+`showcase` are structural facts. Each is set only when the workspace physically ships the directory
+or exact-case file that defines it, never because of the workspace's name and never because a
+sibling fact is set.
 
 `setup` registers every root `tests/setup*.test.ts` proof in one Node project that loads
 `tests/setup.ts`. A nested or wrong-case match does not set the fact. The generated manifest emits
@@ -715,9 +747,12 @@ Adding a structural proof is therefore these steps, in order: write the file; de
 regenerates the root configuration and registers the project. `audit` reports whichever piece is
 still outstanding at each step.
 
-`distribution` projects only when the workspace also publishes at least one `src` environment. It
-packs and installs the published artifact, so without that axis there is nothing to pack, and the
-declared flag alone adds no project, no `test:distribution` script, and no gate entry.
+`distribution` is not a field at all. A published `src` environment is its whole condition, read
+from the `src` axis the blueprint already carries. The proof packs and installs the published
+artifact, so a workspace publishing none has nothing for it to read and gets no project, no
+`test:distribution` script, and no gate entry. A workspace publishing any gets the project, the
+script, the `prepublishOnly` entry, and `tests/distribution.test.ts` itself. Limits states why this
+is the one proof scaffold writes.
 
 `service` says the workspace runs a live-service Vitest project over `tests/service`, and it alone
 registers that project, its `test:service` script, and the `tests/setupService.ts` readiness module
@@ -842,10 +877,11 @@ content is produced. `Ownership` says what scaffold claims at the path.
 
 Presence ownership has separate mechanisms, and a reader needs to know which applies:
 
-| Mechanism       | Paths                                             | Bytes belong to       | Cost                                                    |
-| --------------- | ------------------------------------------------- | --------------------- | ------------------------------------------------------- |
-| Verb-owned      | `CATALOG_AGENT_PATH` and dependency guide mirrors | `catalog` or `mirror` | The owning verb is the only route for a later update.   |
-| Workspace-owned | `WORKSPACE_OWNED_PATHS`, which holds `.gitignore` | The target workspace  | Present bytes receive no later canonical ignore update. |
+| Mechanism       | Paths                                             | Bytes belong to                              | Cost                                                        |
+| --------------- | ------------------------------------------------- | -------------------------------------------- | ----------------------------------------------------------- |
+| Verb-owned      | `CATALOG_AGENT_PATH` and dependency guide mirrors | `catalog` or `mirror`                        | The owning verb is the only route for a later update.       |
+| Workspace-owned | `WORKSPACE_OWNED_PATHS`, which holds `.gitignore` | The target workspace                         | Present bytes receive no later canonical ignore update.     |
+| Plan-owned      | `DISTRIBUTION_TEST_PATH`                          | The plan, until the workspace writes its own | A deleted file is restored from the plan on the next write. |
 
 Birth ownership is what makes a generated workspace the consumer's. `materialize` writes a
 birth-owned path into a vacant target. A later `repair` or `overwrite` call treats that path as
@@ -856,16 +892,25 @@ You own `tests/setup.ts`, the selected `tests/setupBrowser.ts`, `tests/setupServ
 `tests/setupService.ts`, and `tests/setupGlobal.ts` modules, each root `tests/setup*.test.ts` proof,
 the selected environment entry tests under `tests/src` and `tests/app`, the
 `tests/src/bin/main.test.ts` file, and the `tests/integration.test.ts` seed. Scaffold writes those
-planned files only during materialize and leaves later edits or deletions alone. You also own the `tests/guides.test.ts`,
-`tests/distribution.test.ts`, `tests/conformance.test.ts`, and `tests/service/**/*.test.ts` proof
-files that you add to select their projects. Scaffold content-owns `tests/setupPolicy.ts`,
+planned files only during materialize and leaves later edits or deletions alone. You also own the
+`tests/guides.test.ts`, `tests/conformance.test.ts`, and `tests/service/**/*.test.ts` proof files,
+each of which selects its project by being written. Scaffold content-owns `tests/setupPolicy.ts`,
 `tests/policy.test.ts`, and `tests/config.test.ts`; `repair` and `overwrite` restore those files when
 their bytes drift or the files are missing.
 
-Content ownership does not preserve an arbitrary custom Vitest project. Fixed optional proofs are
-selected by their defining paths, as `guides`, `distribution`, `integration`, `conformance`, and
-`service` are. A workspace that needs other local configuration must keep those edits outside a
-content-owned file; `repair` restores that file to the canonical project set.
+`tests/distribution.test.ts` is the one proof scaffold writes, and the one test artifact it claims
+by presence. A publishing workspace missing that file reports `missing` drift, and `repair` or
+`overwrite` writes the generated proof there. A workspace that replaced the generated proof with a
+better one keeps its own bytes exactly: presence compares existence, so no verb reads what is
+already at the path, none replaces it, and none ever reports it stale. Deleting the file is how you
+ask for the generated proof back; editing it is how you keep your own. Limits states what makes this
+proof generable when the others are not.
+
+Content ownership does not preserve an arbitrary custom Vitest project. The optional proof projects
+are fixed: `guides`, `integration`, `conformance`, and `service` are selected by their defining
+paths, and `distribution` by a published `src` environment. A workspace that needs other local
+configuration must keep those edits outside a content-owned file; `repair` restores that file to the
+canonical project set.
 
 An audit reports one `Finding` per planned path, followed by any foreign path beneath the groups
 the plan covers. Every planned finding carries its artifact's `ownership`. A foreign finding has
@@ -1127,6 +1172,12 @@ except the manifest.
   integration selection also emits a birth-owned `tests/integration.test.ts` seed that imports each
   selected public barrel and records its initial empty exports for the consumer to replace with an
   observable cross-environment flow.
+- One template artifact, `tests/distribution.test.ts`, for a workspace publishing any `src`
+  environment. It is the packed-package proof, and it is claimed by presence rather than birth, so a
+  workspace that replaces it keeps its replacement. A published browser environment adds the
+  real-browser stage to it: the stage bundles the installed package with the workspace's own
+  `configs/browsers.ts` resolution, serves the bundle over a loopback server, and drives it in
+  Playwright Chromium.
 - One template artifact each for `README.md` and `guides/README.md`.
 - One host artifact per vendored path the workspace selects. A vendored directory is one planned
   path that expands into the files the data root stores beneath it.
@@ -1337,32 +1388,47 @@ nothing. This is deliberate: a generated sample entity is repeatedly mistaken fo
 implementation. What a consumer does first is write the module's `types.ts`, then the
 implementation that conforms to it, then export both from the barrel — the order `AGENTS.md` fixes.
 
-**A selected distribution, conformance, or live-service proof is registered, but none is written for
-you.** Scaffold registers `conformance` and `service` when their structural facts are set, and
-registers `distribution` only when the workspace also publishes `src`. In a publishing workspace,
-`distribution` and `service` run from `prepublishOnly` and `conformance` stays in `test`. In a
-`private: true` workspace, `distribution` is absent, `service` runs from `test`, and there is no
-`prepublishOnly` at all. Scaffold emits no proof into any registered project, because each names
-something only the package knows: the behavior its own packed artifact must hold after it is
-installed, the official artifact a conformance check measures against, and the service a live proof
-drives. A generated placeholder would read as a proof while measuring nothing, so the file a
-consumer writes is the file that selects the project.
+**Scaffold writes the distribution proof and refuses every other one.** The subject is what
+separates them, and it is the whole rule. A distribution proof's every assertion derives from the
+artifact the workspace installs: the `exports` map the packed tarball declares, the built
+declarations beside it, and the module objects a Node import, a CommonJS require, and a real browser
+hand back from that installed tree. Nothing there has to be named, so one generated file measures
+every publishing workspace, and it stays true as that workspace's published surface moves. A guide,
+conformance, live-service, or setup proof's assertions derive from nothing scaffold can read: each
+names behavior or an external artifact only the package knows — the API a guide fence claims, the
+official runner a conformance check measures against, the service a live proof drives, the helpers a
+setup module exports. A generated file there would read as a proof while measuring nothing, which is
+worse than an absent one. So the file a consumer writes is what selects each of those projects, and
+`tests/distribution.test.ts` is the one proof scaffold writes for you.
 
-A distribution proof carries one contract scaffold does enforce from the outside. The generated
-`prepublishOnly` invokes it as `npm run test:distribution -- --mode release`, and a proof that reads
-`import.meta.env.MODE === 'release'` must **fail** on an unreachable registry rather than skip. An
-ordinary local run may skip that case, because a developer offline is not a defect; a release run
-may not, because skipping there passes the publish gate without ever proving the artifact installs.
-Scaffold writes no proof, so honouring the flag is the consumer's, and a proof that ignores it
-reports green on exactly the runs that matter.
+Registration follows the same split. Scaffold registers `conformance` and `service` when their
+structural facts are set, and registers `distribution` whenever the workspace publishes at least one
+`src` environment. In a publishing workspace, `distribution` and `service` run from `prepublishOnly`
+and `conformance` stays in `test`. In a `private: true` workspace, `distribution` is absent,
+`service` runs from `test`, and there is no `prepublishOnly` at all. One gap the project set cannot
+show, `audit` reports directly: a filled `tests/setup*.ts` module that no `tests/setup*.test.ts`
+proof covers raises the non-blocking `setup` question, which names the modules and the proof to add.
+Scaffold writes nothing there either, because what that proof asserts is the behavior those modules
+export.
 
-The consequence is one empty-project case per registered proof. A publishing blueprint carrying
-`distribution` with no `tests/distribution.test.ts`, or any blueprint carrying `conformance` with no
-`tests/conformance.test.ts`, registers a project whose include resolves to nothing, and Vitest exits
-non-zero on it. A blueprint carrying `service` gets `tests/setupService.ts` — the root configuration
-names that module by path, so an absent one fails the project's load rather than its run — and still
-no suite beneath `tests/service`, so `test:service` reports no test files until the consumer writes
-the first one. Every case is visible the first time the script runs, which is why none is silent.
+The generated distribution proof carries one contract from the outside. The generated
+`prepublishOnly` invokes it as `npm run test:distribution -- --mode release`, and the proof reads
+`import.meta.env.MODE === 'release'` and **fails** on an unreachable registry rather than skipping.
+An ordinary local run skips that case, because a developer offline is not a defect; a release run
+does not, because skipping there passes the publish gate without ever proving the artifact installs.
+A workspace that replaces the generated proof takes that contract with it: presence ownership leaves
+a replacement alone, so a replacement that ignores the flag reports green on exactly the runs that
+matter.
+
+The consequence is one empty-project case per refused proof. A blueprint carrying `conformance` with
+no `tests/conformance.test.ts` registers a project whose include resolves to nothing, and Vitest
+exits non-zero on it. A blueprint carrying `service` gets `tests/setupService.ts` — the root
+configuration names that module by path, so an absent one fails the project's load rather than its
+run — and still no suite beneath `tests/service`, so `test:service` reports no test files until the
+consumer writes the first one. The `distribution` project no longer has that case: `new` writes the
+proof into the workspace it registers the project in, and a target that later lost the file reports
+drift that `repair` closes. Every remaining case is visible the first time the script runs, which is
+why none is silent.
 
 None of those folds into `integration`, which measures a different axis rather than a smaller
 one: the workspace's selected environments compose through their public barrels. The generated seed
