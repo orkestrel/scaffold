@@ -53,6 +53,28 @@ for (const key of globSync(['src/**/*.ts', 'tests/**/*.ts', 'guides/*.md', '*.md
 	files[key.replaceAll('\\', '/')] = readFileSync(resolve(root, key), 'utf8')
 }
 
+function readInitializerCalls(node: ts.Node, source: ts.SourceFile): readonly string[] {
+	const calls: string[] = []
+	const pending: ts.Node[] = [node]
+	while (pending.length > 0) {
+		const current = pending.pop()
+		if (current === undefined) continue
+		if (
+			ts.isVariableDeclaration(current) &&
+			current.initializer !== undefined &&
+			ts.isCallExpression(current.initializer) &&
+			ts.isIdentifier(current.initializer.expression)
+		) {
+			const name = current.initializer.expression.text
+			if (['collectTargets', 'resolveTarget', 'resolvesCommonJS'].includes(name)) {
+				calls.push(current.initializer.getText(source))
+			}
+		}
+		pending.push(...current.getChildren(source))
+	}
+	return calls.reverse()
+}
+
 // `guides/README.md` is the map, so it decides what this proof covers. Each row
 // of its concept index names one guide and the source directories that guide
 // documents. The vendored dependency mirrors beside it are not rows: each
@@ -319,7 +341,12 @@ describe('guide examples', () => {
 				ts.isFunctionDeclaration(statement) && statement.name?.text === 'buildStage',
 		)
 		if (build === undefined) throw new Error('The emitted proof declares no buildStage function')
-		expect(build.getText(source)).toContain('collectTargets(entry)')
+		expect(readInitializerCalls(build, source)).toStrictEqual([
+			'collectTargets(entry)',
+			'resolveTarget(entry, RUNTIME_CONDITIONS.module)',
+			'resolvesCommonJS(entry, installed)',
+			'resolveTarget(entry, RUNTIME_CONDITIONS.browser)',
+		])
 		const names = [
 			'isRecord',
 			'isList',

@@ -637,14 +637,13 @@ function body. A test for emptiness therefore raises the question against a fres
 workspace. Holding each module to the seed the same blueprint plans at its own path reports what a
 maintainer wrote rather than what scaffold seeded.
 
-That reading carries a release-skew limit. A seeded setup module is birth-owned, so `repair`
-reports it aligned and never rewrites it, and a target keeps the seed of the release that
-materialized it. A release
-that moves a planned seed therefore raises the question on every target materialized before it,
-against a module scaffold wrote and no maintainer touched. `tests/setupGlobal.ts` is the module that
-can meet it, because it is the one seeded with more than the empty string. A maintainer meeting that
-question closes it by writing the proof it asks for, or by taking the seed the installed release
-plans.
+That reading carries a release-skew limit. A seeded setup module is birth-owned, so `repair` reports
+it aligned and never rewrites it. A target keeps the seed of the release that materialized it. When
+a release moves a planned seed, scaffold raises the question on every target materialized before it,
+against a module scaffold wrote and no maintainer touched.
+`tests/setupGlobal.ts` is the module that can meet it, because it is the one seeded with more than
+the empty string. A maintainer meeting that question closes it by writing the proof it asks for, or
+by taking the seed the installed release plans.
 
 Coverage is read per module: `tests/<name>.ts` is covered by `tests/<name>.test.ts` and by nothing
 else, which is the pairing the vendored policy proof resolves. Writing one proof retires that module
@@ -1475,10 +1474,16 @@ production build resolves as `production` — with the `import` that Vite applie
 resolution. A subpath whose Vite resolution lands under `dist/src/browser/` is driven in a real
 browser and the Node drives retire for it; every other subpath is imported where the ESM set
 resolves a target and required where the entry declares CommonJS support. Resolution under the
-CommonJS set does not decide whether a typed CommonJS consumer can take the subpath. The proof
-resolves the target under the typed CommonJS consumer's runtime conditions, then reads its module
-format from its extension and the installed package's `type` field for a `.js` target. The proof
-also compiles a consumer against the installed declarations under every module resolution.
+`node` and `require` conditions locates the runtime target TypeScript's CommonJS consumer selects
+after its `types` condition is removed. That set omits Node's runtime-only `node-addons` and
+`module-sync` conditions. Including `module-sync` could select an ESM branch before the `require`
+branch that a `.cts` compile probe resolves. Resolution alone does not decide whether a typed
+CommonJS consumer can take the subpath. The proof admits `.cjs`, `.json`, `.node`, and extensionless
+targets to the CommonJS drives, and rejects `.mjs` and other extensions. For a `.js` target, the
+nearest enclosing `package.json` between the target and the installed root decides the format. A
+`"type": "module"` field rejects it, while a `"type": "commonjs"` field or an omitted `type` field
+admits it. The proof also compiles a consumer against the installed declarations under every module
+resolution.
 
 Each drive compares against the declaration its own consumer reads, resolved under the conditions
 TypeScript applies for that resolution and importing format: `types` first and the format's own
@@ -1537,14 +1542,13 @@ alone declares `playwright` and `@vitest/browser-playwright` and gets `configs/b
 and its proof still carries no branch: the selector reads the `src` axis, and a generated manifest
 packs `dist/src`, so an application face is neither selected nor packed. The imports the branch
 needs are declared by either axis, so they do not select the branch. The `vite` import selects
-nothing either: every workspace declares `vite`, whatever it publishes. In a core-only workspace
-those imports resolve to nothing, and
-emitting the branch there would fail its own `check` and `lint:check` gates. Its Node cases retire
-themselves for a browser face, so a face published after the file was written would leave nothing
-measuring it. The assertion reddens instead, and names the subpath a browser branch is owed for. The
-remedy it carries is to delete the file and run `repair`, which writes the variant that carries the
-branch — the same route presence ownership already gives you for asking for the generated proof
-back.
+nothing either: every workspace declares `vite`, whatever it publishes. In a core-only workspace,
+those imports resolve to nothing, and emitting the branch there would fail its own `check` and
+`lint:check` gates. Its Node cases retire themselves for a browser face, so a face published after
+the file was written would leave nothing measuring it. The assertion reddens instead, and names the
+subpath a browser branch is owed for. The remedy it carries is to delete the file and run `repair`,
+which writes the variant that carries the branch — the same route presence ownership already gives
+you for asking for the generated proof back.
 
 The generated distribution proof takes its release contract from the outside. The generated
 `prepublishOnly` invokes it as `npm run test:distribution -- --mode release`, and the proof reads

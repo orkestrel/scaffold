@@ -40,7 +40,7 @@ The implementation and test were edited but not rerun because the stop contract 
 
 ## P2
 
-The assertion now checks that the emitted `buildStage` body contains the shipped `collectTargets(entry)` call.
+The assertion checks that the emitted `buildStage` body contains the shipped `collectTargets(entry)` call.
 
 Baseline before caller mutation:
 
@@ -54,23 +54,24 @@ The caller-mutating control was not run before the stop.
 
 ## P3
 
-- [src/core/compilers.ts](/home/user/scaffold/src/core/compilers.ts):  
-  Old: “those imports follow a published face rather than selecting the branch.”  
-  New: “those imports are declared by either axis, so they do not select the branch.”
+- [src/core/compilers.ts](/home/user/scaffold/src/core/compilers.ts):
+  Before: “those imports follow a published face rather than selecting the branch.”
+  Replacement: “those imports are declared by either axis, so they do not select the branch.”
 
   **This entry is false and is corrected here rather than edited away.** The edit did not land. The
   file carries a graft — the replacement was spliced onto the surviving fragment `those imports
-  follow a`, leaving `those imports follow a / declared by either axis`, which states nothing. Two
-  audit lanes found it independently. The other two entries in this section are accurate, which is
-  what made the false one invisible to a check comparing the copies against each other.
+  follow a`, leaving `those imports follow a / declared by either axis`, which states nothing. The
+  subjective and objective audit lanes found it independently. The template and guide entries in
+  this section are accurate, which made the false compiler entry invisible to a check comparing the
+  copies against each other.
 
-- [src/core/templates.ts](/home/user/scaffold/src/core/templates.ts):  
-  Old: “those imports follow a published face rather than selecting the branch.”  
-  New: “those imports are declared by either axis, so they do not select the branch.”
+- [src/core/templates.ts](/home/user/scaffold/src/core/templates.ts):
+  Before: “those imports follow a published face rather than selecting the branch.”
+  Replacement: “those imports are declared by either axis, so they do not select the branch.”
 
-- [guides/scaffold.md](/home/user/scaffold/guides/scaffold.md):  
-  Old: “the imports the branch needs follow a published face rather than selecting the branch.”  
-  New: “The imports the branch needs are declared by either axis, so they do not select the branch.”
+- [guides/scaffold.md](/home/user/scaffold/guides/scaffold.md):
+  Before: “the imports the branch needs follow a published face rather than selecting the branch.”
+  Replacement: “The imports the branch needs are declared by either axis, so they do not select the branch.”
 
 ## P4 and P5
 
@@ -80,7 +81,7 @@ P5 is edited:
 
 - The release-skew paragraph is wrapped.
 - The browser-branch paragraph is wrapped.
-- The guide assertion now uses the stable fragment “raises the question on every target materialized before it”.
+- The guide assertion uses the stable fragment “raises the question on every target materialized before it”.
 
 ## Ordered gates
 
@@ -135,21 +136,21 @@ npx vitest run --config vite.config.ts --no-cache --reporter=dot --project src:c
 exit: 0
 ```
 
-The four cases, run against the shipped predicate:
+The module-sync, node-condition, ESM-only, and dual cases, run against the shipped predicate:
 
 ```text
   module-sync first   required=true   got=true  OK
   node condition      required=true   got=true  OK
   plain ESM-only      required=false  got=false OK
   plain dual          required=true   got=true  OK
-  => all four cases hold
+  => the matrix holds
 ```
 
 The predicate resolves under `['node','require']` and then classifies the target: `.cjs` and the
 addon extension are CommonJS, `.js` is CommonJS unless the installed manifest declares
 `"type": "module"`, anything else is not. It reads what the target **is** rather than which condition
-names the walk visited, which is what makes it the first selector to clear both audit vectors while
-keeping both controls.
+names the walk visited. That target-format reading clears the module-sync and node-condition audit
+vectors while keeping the ESM-only and dual controls.
 
 **P2's caller-mutating control, taken by the Orchestrator.** The original was held outside the tree so
 restoration could not fail. Replacing `collectTargets(entry)` inside the emitted `buildStage`:
@@ -161,26 +162,29 @@ caller mutated   FAIL … skips rejected package targets only while traversing f
 restored byte-identical               Tests  16 passed (16)
 ```
 
-The assertion now binds the shipped call site. Before this round the same mutation left it passing.
+The assertion binds the shipped call site. Before this round the same mutation left it passing.
 
 **Correction to this integration note.** It asserted P3's outcome from the unit's report without
-opening `src/core/compilers.ts`. One of the three copies had not changed, so the note repeated a
-false claim into the next round's brief, which then carried "in all three copies" as a thing to
-attack rather than as a thing already known false. `.agents/orchestration.md` requires checking a
+opening `src/core/compilers.ts`. The compiler copy had not changed, so the note repeated a false
+claim into the next round's brief, which then carried agreement across the compiler, template, and
+guide copies as a thing to attack rather than as a thing already known false.
+`.agents/orchestration.md` requires checking a
 fact against the thing it describes, and where several artifacts state it, checking the code rather
 than the other copies. This note checked the report against itself. The rule was landed in this same
 campaign, by the Orchestrator, and broken by the Orchestrator in the round that landed it.
 
 **P4, completed by the Orchestrator** because the bench could not write the file. The duplicated
-fact-check directive is deleted and its one additive clause folded into the existing
+fact-check directive is deleted and its additive clause folded into the existing
 paste-the-command bullet, which already owned the subject. The surviving rule keeps its trigger and
 action and loses its explanatory consequence.
 
-**P5's width.** Both paragraphs now wrap at or under the width their neighbours use. Two lines inside
-them wrap raggedly. They are left alone deliberately: reflowing that span risks the assertion
-coupling F2 identified, `test:guides` is green, and trading a gate for typography is a poor exchange.
+**P5's width.** The release-skew and browser-branch paragraphs wrap at or under the width their
+neighbours use. The break after “A release” in the release-skew paragraph and the break before
+“emitting the branch” in the browser-branch paragraph remain ragged. They are left alone
+deliberately: reflowing that span risks the assertion coupling F2 identified, `test:guides` is green,
+and trading a gate for typography is a poor exchange.
 The file's other over-width lines are pre-existing tables and fences, so a whole-file width check
-answers a different question than the one this finding asked. That criterion was mis-specified in the
+answers a different question than this finding asked. That criterion was mis-specified in the
 brief.
 
 **`format:check` was red on arrival** — the unit's stop fired before it formatted `tests/guides.test.ts`.

@@ -1362,14 +1362,37 @@ function resolveTarget(entry: unknown, conditions: readonly string[]): string | 
 	return resolvePackageTarget(entry, conditions)?.target
 }
 
-// Whether a typed CommonJS consumer resolves a CommonJS module. The target's fixed
-// extension decides first; a \`.js\` target takes the installed package's \`type\`.
-function resolvesCommonJS(entry: unknown, packageType: unknown): boolean {
+// The nearest package scope that decides a \`.js\` target's module format. A nested
+// manifest starts a scope even when it omits \`type\`, so the walk stops at the first
+// manifest rather than borrowing the installed root's declaration.
+function readPackageType(installed: string, target: string): unknown {
+	let directory = dirname(join(installed, target))
+	while (true) {
+		const path = join(directory, 'package.json')
+		if (existsSync(path)) {
+			const manifest = readJson(path)
+			return isRecord(manifest) ? manifest.type : undefined
+		}
+		if (directory === installed) return undefined
+		const parent = dirname(directory)
+		if (parent === directory) return undefined
+		directory = parent
+	}
+}
+
+// Whether the runtime target selected by a typed CommonJS consumer can enter its
+// compile and require drives. The CommonJS, JSON, addon, and extensionless handlers
+// are accepted; \`.mjs\` and other targets are not. A \`.js\` target takes its nearest
+// package scope instead of the installed root's scope.
+function resolvesCommonJS(entry: unknown, installed: string): boolean {
 	const target = resolveTarget(entry, COMMONJS_CONDITIONS)
-	if (target === undefined) return false
+	if (target === undefined || !isPackageTarget(target)) return false
 	const name = target.slice(target.lastIndexOf('/') + 1)
-	if (name.endsWith('.cjs') || name.endsWith(ADDON_EXTENSION)) return true
-	if (name.endsWith('.js')) return packageType !== 'module'
+	const dot = name.lastIndexOf('.')
+	if (dot === -1) return true
+	const extension = name.slice(dot)
+	if (extension === '.cjs' || extension === '.json' || extension === ADDON_EXTENSION) return true
+	if (extension === '.js') return readPackageType(installed, target) !== 'module'
 	return false
 }
 
@@ -1556,7 +1579,7 @@ function buildStage(): Stage {
 			continue
 		}
 		const imported = resolveTarget(entry, RUNTIME_CONDITIONS.module)
-		const commonjs = resolvesCommonJS(entry, manifest.type)
+		const commonjs = resolvesCommonJS(entry, installed)
 		const module = resolveTarget(entry, RUNTIME_CONDITIONS.browser)
 		entries.push({
 			subpath,
@@ -1864,8 +1887,8 @@ async function readBrowserExports(browser: Browser, bundle: string): Promise<rea
 	// browser drive measures the packed artifact, so only a published face is owed
 	// one. A private browser application declares the browser launcher and its
 	// Vitest browser provider and gets the generated browser configuration module
-	// beside it, and is owed no drive here all the same — those imports are declared
-	// by either axis, so they do not select the branch. \`vite\` selects nothing either,
+	// beside it, and is owed no drive here all the same: installed browser tooling
+	// does not stand for a published browser face. \`vite\` selects nothing either,
 	// though the branch imports it: scaffold puts \`vite\` in every workspace's base
 	// development dependencies, whatever that workspace publishes. The later Node
 	// \`it.runIf\` predicates retire each matching Node drive for a face published

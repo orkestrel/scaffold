@@ -1,8 +1,8 @@
 import type { Blueprint, Environment } from '@src/core'
 import type { ScratchInterface } from '@orkestrel/test/server'
 import { execFileSync } from 'node:child_process'
-import { chmodSync, mkdirSync, readFileSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { chmodSync, existsSync, mkdirSync, readFileSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { runInNewContext } from 'node:vm'
 import { isRecord, isString } from '@orkestrel/contract'
@@ -271,8 +271,10 @@ const CLASSIFIER_DECLARATIONS: readonly string[] = [
 	'isRecord',
 	'isList',
 	'isPackageTarget',
+	'readJson',
 	'resolvePackageTarget',
 	'resolveTarget',
+	'readPackageType',
 	'resolvesCommonJS',
 	'collectTargets',
 	'isModule',
@@ -343,7 +345,13 @@ function driveClassifier(file: string, calls: readonly string[]): readonly unkno
 		compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ESNext },
 	})
 	const classifier: Record<string, unknown> = {}
-	runInNewContext(compiled.outputText, { exports: classifier })
+	runInNewContext(compiled.outputText, {
+		dirname,
+		existsSync,
+		exports: classifier,
+		join,
+		readFileSync,
+	})
 	const answers: unknown = runInNewContext(`[${calls.join(', ')}]`, { classifier })
 	if (!Array.isArray(answers)) throw new Error('The emitted classifier driver returned no list')
 	return structuredClone(answers)
@@ -1202,19 +1210,55 @@ describe('emitted distribution classifier', () => {
 		})
 		try {
 			const file = stageDistributionClassifier(workspace)
+			const installed = workspace.ensure('installed')
+			workspace.write('installed/package.json', '{ "type": "module" }\n')
+			workspace.write('installed/nested/package.json', '{ "type": "commonjs" }\n')
 			const synchronized = `{ 'module-sync': './synchronized.js', require: './synchronized.cjs', import: './synchronized.js' }`
 			const conditioned = `{ node: { types: './node.d.cts', default: './node.cjs' }, default: { types: './default.d.mts', default: './default.js' } }`
 			const dual = `{ import: './dual.js', require: './dual.cjs' }`
 			const module = `{ types: './module.d.ts', import: './module.js', default: './module.js' }`
+			const extensionless = `{ types: './feature.d.cts', require: './feature' }`
+			const nested = `{ types: './nested/feature.d.cts', require: './nested/feature.js' }`
 			const answers = driveClassifier(file, [
-				`classifier.resolvesCommonJS(${synchronized}, 'module')`,
-				`classifier.resolvesCommonJS(${conditioned}, 'module')`,
-				`classifier.resolvesCommonJS(${module}, 'module')`,
-				`classifier.resolvesCommonJS(${dual}, 'module')`,
+				`classifier.resolvesCommonJS(${synchronized}, ${JSON.stringify(installed)})`,
+				`classifier.resolvesCommonJS(${conditioned}, ${JSON.stringify(installed)})`,
+				`classifier.resolvesCommonJS(${module}, ${JSON.stringify(installed)})`,
+				`classifier.resolvesCommonJS(${dual}, ${JSON.stringify(installed)})`,
+				`classifier.resolvesCommonJS(${extensionless}, ${JSON.stringify(installed)})`,
+				`classifier.resolvesCommonJS(${nested}, ${JSON.stringify(installed)})`,
 				`classifier.selectEntries([{ subpath: './dual', mapping: ${dual}, commonjs: true }, { subpath: './module', mapping: ${module}, commonjs: false }], classifier.BUNDLER_CONDITIONS.commonjs).map((entry) => entry.subpath)`,
 			])
 
-			expect(answers).toStrictEqual([true, true, false, true, ['./dual']])
+			expect(answers).toStrictEqual([true, true, false, true, true, true, ['./dual']])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('classifies every CommonJS runtime target format without admitting an ES module', () => {
+		const workspace = createScratch({
+			parent: ensureTmpRoot(),
+			prefix: 'scaffold-e2-commonjs-format-',
+		})
+		try {
+			const file = stageDistributionClassifier(workspace)
+			const installed = workspace.ensure('installed')
+			workspace.write('installed/package.json', '{ "type": "module" }\n')
+			workspace.write('installed/common/package.json', '{ "type": "commonjs" }\n')
+			workspace.write('installed/plain/package.json', '{}\n')
+			const answers = driveClassifier(file, [
+				`classifier.resolvesCommonJS({ require: './feature.cjs' }, ${JSON.stringify(installed)})`,
+				`classifier.resolvesCommonJS({ require: './feature.mjs' }, ${JSON.stringify(installed)})`,
+				`classifier.resolvesCommonJS({ require: './feature.json' }, ${JSON.stringify(installed)})`,
+				`classifier.resolvesCommonJS({ require: './feature.node' }, ${JSON.stringify(installed)})`,
+				`classifier.resolvesCommonJS({ require: './feature' }, ${JSON.stringify(installed)})`,
+				`classifier.resolvesCommonJS({ require: './feature.js' }, ${JSON.stringify(installed)})`,
+				`classifier.resolvesCommonJS({ require: './common/feature.js' }, ${JSON.stringify(installed)})`,
+				`classifier.resolvesCommonJS({ require: './plain/feature.js' }, ${JSON.stringify(installed)})`,
+				`classifier.resolvesCommonJS({ require: './feature.wasm' }, ${JSON.stringify(installed)})`,
+			])
+
+			expect(answers).toStrictEqual([true, false, true, true, true, false, true, true, false])
 		} finally {
 			workspace.destroy()
 		}
