@@ -1524,12 +1524,42 @@ describe('CLI audit', () => {
 		}
 	})
 
-	it('does not derive distribution from a wrong-case proof path', async () => {
+	// Publishing is what selects the distribution project, and nothing else does.
+	// Reading the proof's own presence back off the target was a loop: a target
+	// lacking the file was compiled as a workspace that wanted no file, so the
+	// artifact could never be written to the targets that needed it.
+	it('registers the distribution project for a target that publishes no proof yet', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			workspace.ensure('target/tests')
-			workspace.write('target/tests/Distribution.test.ts', 'export {}\n')
+			expect(workspace.read('target/tests/distribution.test.ts')).toBeUndefined()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+					'repair',
+					'--groups',
+					'configs',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				]),
+			).toBe(EXIT_CLEAN)
+			expect(workspace.read('target/vite.config.ts')).toContain("label: 'distribution'")
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	// The private control. A workspace that packs no published source has nothing
+	// for the proof to read, so the project is absent however the target is written.
+	it('withholds the distribution project from a target that publishes nothing', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			workspace.remove('target/src')
+			workspace.ensure('target/app/core')
+			const blueprint = createBlueprint('sample', { app: ['core'] })
+			workspace.write('target/package.json', buildTargetManifest(blueprint))
 			expect(
 				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
 					'repair',
@@ -1544,30 +1574,6 @@ describe('CLI audit', () => {
 			expect(workspace.read('target/vite.config.ts')).not.toContain("label: 'distribution'")
 			const manifest: unknown = JSON.parse(requireValue(workspace.read('target/package.json')))
 			expect(manifest).not.toHaveProperty('scripts.test:distribution')
-		} finally {
-			workspace.destroy()
-		}
-	})
-
-	it('derives distribution from the exact proof path', async () => {
-		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
-		try {
-			const fleet = createFleet(workspace)
-			workspace.write('target/tests/distribution.test.ts', 'export {}\n')
-			const blueprint = createBlueprint('sample', { src: ['core'], distribution: true })
-			workspace.write('target/package.json', buildTargetManifest(blueprint))
-			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
-					'repair',
-					'--groups',
-					'configs',
-					'--from',
-					fleet.host,
-					'--target',
-					fleet.target,
-				]),
-			).toBe(EXIT_CLEAN)
-			expect(workspace.read('target/vite.config.ts')).toContain("label: 'distribution'")
 		} finally {
 			workspace.destroy()
 		}
@@ -1729,14 +1735,9 @@ describe('CLI audit', () => {
 		const privateWorkspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(privateWorkspace)
-			const blueprint = createBlueprint('sample', {
-				app: ['core'],
-				service: true,
-				distribution: true,
-			})
+			const blueprint = createBlueprint('sample', { app: ['core'], service: true })
 			privateWorkspace.remove('target/src/core')
 			privateWorkspace.ensure('target/app/core')
-			privateWorkspace.write('target/tests/distribution.test.ts', 'export {}\n')
 			privateWorkspace.write('target/tests/setupService.ts', 'export {}\n')
 			privateWorkspace.write('target/package.json', blueprintToManifest(blueprint))
 			const sink = createSink()
@@ -1751,19 +1752,10 @@ describe('CLI audit', () => {
 				]),
 			).toBe(EXIT_DRIFT)
 			const audit: Audit = JSON.parse(sink.output[0] ?? '')
-			// Reachability is silent, which is the subject here. The one question is
-			// the distribution advisory: this blueprint sets the flag with no `src`,
-			// so the flag selects nothing, and saying so is what the sibling
-			// structural facts already do.
+			// Reachability is silent, which is the subject here, and nothing else in
+			// this target raises a question either.
 			expect(audit.questions.filter((question) => question.field === 'projects')).toStrictEqual([])
-			expect(audit.questions).toStrictEqual([
-				{
-					field: 'distribution',
-					message:
-						'distribution packs the published source, and this workspace declares none, so it emits nothing.',
-					blocking: false,
-				},
-			])
+			expect(audit.questions).toStrictEqual([])
 		} finally {
 			privateWorkspace.destroy()
 		}
@@ -1771,12 +1763,7 @@ describe('CLI audit', () => {
 		const publishedWorkspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(publishedWorkspace)
-			const blueprint = createBlueprint('sample', {
-				src: ['core'],
-				service: true,
-				distribution: true,
-			})
-			publishedWorkspace.write('target/tests/distribution.test.ts', 'export {}\n')
+			const blueprint = createBlueprint('sample', { src: ['core'], service: true })
 			publishedWorkspace.write('target/tests/setupService.ts', 'export {}\n')
 			publishedWorkspace.write('target/package.json', blueprintToManifest(blueprint))
 			const sink = createSink()

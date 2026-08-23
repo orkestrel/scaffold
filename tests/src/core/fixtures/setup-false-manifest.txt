@@ -52,11 +52,12 @@
 		"test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",
 		"test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",
 		"test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",
+		"test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",
 		"build": "npm run clean && npm run build:src",
 		"build:src": "npm run build:src:core",
 		"build:src:core": "vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts",
 		"prepack": "npm run clean && npm run build:src",
-		"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test"
+		"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release"
 	},
 	"dependencies": {},
 	"devDependencies": {

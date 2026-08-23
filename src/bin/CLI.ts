@@ -49,7 +49,6 @@ import {
 	blueprintToRootVite,
 	blueprintToScripts,
 	CONFORMANCE_TEST_PATH,
-	DISTRIBUTION_TEST_PATH,
 	createBlueprint,
 	Compiler,
 	DEPENDENCY_NAME_PATTERN,
@@ -957,7 +956,6 @@ export class CLI implements CLIInterface {
 		const bin = resolveContainedPath(target, BIN_ENTRY_PATH)
 		const tests = resolveContainedPath(target, 'tests')
 		const guides = resolveContainedPath(target, GUIDES_TEST_PATH)
-		const distribution = resolveContainedPath(target, DISTRIBUTION_TEST_PATH)
 		const integration = resolveContainedPath(target, INTEGRATION_TEST_PATH)
 		const conformance = resolveContainedPath(target, CONFORMANCE_TEST_PATH)
 		const service = resolveContainedPath(target, SERVICE_SETUP_PATH)
@@ -978,7 +976,6 @@ export class CLI implements CLIInterface {
 					return proof !== undefined && isExactCaseFile(proof)
 				}),
 			guides: guides !== undefined && isExactCaseFile(guides),
-			distribution: distribution !== undefined && isExactCaseFile(distribution),
 			integration: integration !== undefined && isExactCaseFile(integration),
 			conformance: conformance !== undefined && isExactCaseFile(conformance),
 			service: service !== undefined && isExactCaseFile(service),

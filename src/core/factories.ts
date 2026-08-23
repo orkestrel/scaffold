@@ -57,7 +57,6 @@ export function createBlueprint(name: string, input?: Partial<Omit<Blueprint, 'n
 		bin: input?.bin ?? false,
 		setup: input?.setup ?? false,
 		guides: input?.guides ?? false,
-		distribution: input?.distribution ?? false,
 		integration: input?.integration ?? false,
 		conformance: input?.conformance ?? false,
 		service: input?.service ?? false,

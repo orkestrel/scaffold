@@ -52,12 +52,23 @@ describe('Compiler artifacts', () => {
 			'tests/setupServer.ts',
 			'tests/src/core/index.test.ts',
 			'tests/src/server/index.test.ts',
+			'tests/distribution.test.ts',
 			'guides/README.md',
 			'README.md',
 		])
-		expect(plan.artifacts).toHaveLength(47)
+		// The generated packed-package proof is the one template artifact claimed by
+		// presence: a target lacking it reports as drift, and a package that wrote a
+		// better proof of its own keeps those bytes untouched.
+		expect(plan.artifacts).toContainEqual({
+			path: 'tests/distribution.test.ts',
+			group: 'tests',
+			ownership: 'presence',
+			origin: 'template',
+			content: expect.stringContaining('installed package consumer'),
+		})
+		expect(plan.artifacts).toHaveLength(48)
 		expect(plan.artifacts.filter(({ origin }) => origin === 'computed')).toHaveLength(1)
-		expect(plan.artifacts.filter(({ origin }) => origin === 'template')).toHaveLength(14)
+		expect(plan.artifacts.filter(({ origin }) => origin === 'template')).toHaveLength(15)
 		expect(plan.artifacts.filter(({ origin }) => origin === 'host')).toHaveLength(32)
 	})
 

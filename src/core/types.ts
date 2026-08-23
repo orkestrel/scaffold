@@ -155,8 +155,8 @@ export interface Override {
  * are runtime `@orkestrel/*` packages. A peer in the `@orkestrel` scope is a
  * fleet pin; every other peer is a floor. `extras` are package-specific
  * development dependencies and may carry any valid npm name.
- * `bin`, `setup`, `guides`, `distribution`, `integration`, `conformance`,
- * `service`, `vendors`, `global`, and `showcase` are structural facts: each is
+ * `bin`, `setup`, `guides`, `integration`, `conformance`, `service`,
+ * `vendors`, `global`, and `showcase` are structural facts: each is
  * set only when the workspace physically ships the directory or exact-case file
  * that defines it, never because of the workspace's name and never because a
  * sibling fact is set.
@@ -186,7 +186,6 @@ export interface Blueprint {
 	readonly bin: boolean
 	readonly setup: boolean
 	readonly guides: boolean
-	readonly distribution: boolean
 	readonly integration: boolean
 	readonly conformance: boolean
 	readonly service: boolean

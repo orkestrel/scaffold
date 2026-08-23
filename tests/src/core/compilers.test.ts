@@ -195,7 +195,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 
 		// The digest covers the self-pin, so a release moves it. Update it with the
 		// version bump in the same change; it is the tripwire for every other byte.
-		expect(hex).toBe('c7343c02b6ea2711f106e4182827e02153e1a52408ff45c2227646c2f947fff2')
+		expect(hex).toBe('335fc68666ccf43bffceb5b8a2e2a10e9b454b5834712a0995c43e0b8c63fcfe')
 	})
 })
 
@@ -296,7 +296,9 @@ describe('blueprintToScripts config projects', () => {
 
 		expect(configuration).toContain('export const guides = (options?: UserConfig): UserConfig =>')
 		expect(configuration).toContain("include: ['tests/guides.test.ts']")
-		expect(configuration).toContain('projects: [srcCore, policy, config, guides, probe]')
+		expect(configuration).toContain(
+			'projects: [srcCore, policy, config, guides, distribution, probe]',
+		)
 		expect(configuration).not.toContain('isExactCaseFile')
 		expect(scripts['test:guides']).toBe(
 			'vitest run --config vite.config.ts --no-cache --reporter=dot --project guides',
@@ -316,7 +318,7 @@ describe('blueprintToScripts config projects', () => {
 	})
 
 	it('registers the distribution proof only in the release-mode publish gate', () => {
-		const blueprint = buildBlueprint({ distribution: true })
+		const blueprint = buildBlueprint({ src: ['core'] })
 		const configuration = blueprintToRootVite(blueprint)
 		const scripts = blueprintToScripts(blueprint)
 
@@ -333,11 +335,7 @@ describe('blueprintToScripts config projects', () => {
 	})
 
 	it('withholds publish-only machinery from a private workspace', () => {
-		const blueprint = createBlueprint('demo', {
-			app: ['core'],
-			service: true,
-			distribution: true,
-		})
+		const blueprint = createBlueprint('demo', { app: ['core'], service: true })
 		const configuration = blueprintToRootVite(blueprint)
 		const scripts = blueprintToScripts(blueprint)
 
@@ -352,11 +350,7 @@ describe('blueprintToScripts config projects', () => {
 	})
 
 	it('keeps publish proofs in the publish gate for a source workspace', () => {
-		const blueprint = createBlueprint('demo', {
-			src: ['core'],
-			service: true,
-			distribution: true,
-		})
+		const blueprint = createBlueprint('demo', { src: ['core'], service: true })
 		const configuration = blueprintToRootVite(blueprint)
 		const scripts = blueprintToScripts(blueprint)
 
@@ -366,15 +360,72 @@ describe('blueprintToScripts config projects', () => {
 		expect(scripts.prepublishOnly).toContain('npm run test:service')
 	})
 
-	it('omits the unplanned distribution proof', () => {
-		const blueprint = buildBlueprint({ distribution: false })
+	it('omits the distribution proof from a workspace that packs no published source', () => {
+		const blueprint = buildBlueprint({ src: [], app: ['core'] })
 		const configuration = blueprintToRootVite(blueprint)
 		const scripts = blueprintToScripts(blueprint)
 
 		expect(configuration).not.toContain("name: { label: 'distribution',")
 		expect(scripts['test:distribution']).toBeUndefined()
 		expect(scripts.test).not.toContain('test:distribution')
-		expect(scripts.prepublishOnly).not.toContain('test:distribution')
+		expect(scripts).not.toHaveProperty('prepublishOnly')
+	})
+
+	// Publishing decides the artifact exactly as it decides the project, so the two
+	// cannot disagree: a workspace registering the project always receives a proof
+	// for it to run, and a workspace registering neither receives no orphan file.
+	it('plans the packed-package proof for a publishing workspace and for no other', () => {
+		const planned = blueprintToTestArtifacts(buildBlueprint({ src: ['core'] })).filter(
+			({ path }) => path === 'tests/distribution.test.ts',
+		)
+
+		expect(planned).toHaveLength(1)
+		expect(planned[0]?.ownership).toBe('presence')
+		expect(planned[0]?.origin).toBe('template')
+		expect(planned[0]?.group).toBe('tests')
+		expect(
+			blueprintToTestArtifacts(buildBlueprint({ src: [], app: ['core'] })).map(({ path }) => path),
+		).not.toContain('tests/distribution.test.ts')
+	})
+
+	// Selection inside the generated proof reads the export TARGET, because
+	// `@orkestrel/indexeddb` publishes its browser face at the root subpath and a
+	// rule keyed on the subpath name drives that bundle through Node instead.
+	it('writes a proof that selects a browser entry by its target rather than its name', () => {
+		const [proof] = blueprintToTestArtifacts(buildBlueprint({ src: ['browser'] })).filter(
+			({ path }) => path === 'tests/distribution.test.ts',
+		)
+		const content = proof?.content ?? ''
+
+		expect(content).toContain("const BROWSER_OUTPUT = './dist/src/browser/'")
+		expect(content).toContain('module !== undefined && module.startsWith(BROWSER_OUTPUT)')
+		expect(content).toMatch(/never off the subpath name/u)
+		// The falsifying shape, stated as the whole class rather than as the one
+		// spelling: any comparison of a subpath against a `./` literal is a rule keyed
+		// on the name. Building a specifier from the root subpath is not one, so
+		// `subpath === '.'` stays and every `'./…'` comparison is refused.
+		expect(
+			[...content.matchAll(/subpath\s*(?:===|!==|\.startsWith|\.includes)\s*\(?'[^']*'/gu)].map(
+				([match]) => match,
+			),
+		).toStrictEqual(["subpath === '.'"])
+		expect(content).toContain(
+			"import { resolveBrowser, resolvePinnedBrowser } from '../configs/browsers.js'",
+		)
+		// The declaration locator walks conditions for the first `types` key, because
+		// one published root entry declares `types` beside `default` rather than
+		// inside `import`, and a fixed lookup returns a JavaScript file there.
+		expect(content).toContain("resolveTarget(entry, ['types', 'import'])")
+		// The workspace that publishes no browser face carries neither the launcher
+		// nor its imports, so its own `lint:check` sees no binding it never uses.
+		const [core] = blueprintToTestArtifacts(buildBlueprint({ src: ['core'] })).filter(
+			({ path }) => path === 'tests/distribution.test.ts',
+		)
+		const plain = core?.content ?? ''
+
+		expect(plain).toContain("const BROWSER_OUTPUT = './dist/src/browser/'")
+		expect(plain).not.toContain('playwright')
+		expect(plain).not.toContain('configs/browsers.js')
 	})
 
 	it('registers an application-only integration proof in the default test gate', () => {
@@ -412,7 +463,9 @@ describe('blueprintToScripts config projects', () => {
 
 		expect(configuration).toContain("name: { label: 'integration', color: 'blue' }")
 		expect(configuration).toContain("include: ['tests/integration.test.ts']")
-		expect(configuration).toContain('projects: [srcCore, policy, config, integration, probe]')
+		expect(configuration).toContain(
+			'projects: [srcCore, policy, config, distribution, integration, probe]',
+		)
 		expect(scripts['test:integration']).toBe(
 			'vitest run --config vite.config.ts --no-cache --reporter=dot --project integration',
 		)
@@ -695,7 +748,6 @@ describe('blueprintToRootVite fixed proofs', () => {
 			src: ['core', 'server'],
 			bin: true,
 			guides: true,
-			distribution: true,
 		})
 		const artifacts = blueprintToConfigArtifacts(blueprint)
 
@@ -778,7 +830,9 @@ describe('blueprintToRootVite fixed proofs', () => {
 		)
 		expect(measured).toContain("include: ['tests/conformance.test.ts']")
 		expect(measured).toContain("setupFiles: ['./tests/setup.ts'],\n\t\t\t\tenvironment: 'node',")
-		expect(measured).toContain('projects: [srcCore, policy, config, conformance, probe]')
+		expect(measured).toContain(
+			'projects: [srcCore, policy, config, conformance, distribution, probe]',
+		)
 
 		// The live project names its readiness module by path, so the registration
 		// and the emitted setup module have to agree on that exact path.
@@ -789,7 +843,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 		expect(live).toContain("include: ['tests/service/**/*.test.ts']")
 		expect(live).toContain("setupFiles: ['./tests/setup.ts', './tests/setupService.ts'],")
 		expect(live).toContain('\t\t\t\tfileParallelism: false,\n')
-		expect(live).toContain('projects: [srcCore, policy, config, service, probe]')
+		expect(live).toContain('projects: [srcCore, policy, config, service, distribution, probe]')
 		expect(
 			blueprintToTestArtifacts(buildBlueprint({ service: true })).map(({ path }) => path),
 		).toContain('tests/setupService.ts')
@@ -1238,11 +1292,13 @@ describe('content artifact compilers', () => {
 			'tests/app/core/index.test.ts',
 			'tests/app/browser/index.test.ts',
 			'tests/app/server/index.test.ts',
+			'tests/distribution.test.ts',
 			'tests/integration.test.ts',
 		])
 		const tests = artifacts.filter(({ path }) => path.endsWith('.test.ts'))
-		expect(tests).toHaveLength(8)
-		for (const artifact of tests.filter(({ path }) => path !== 'tests/integration.test.ts')) {
+		expect(tests).toHaveLength(9)
+		const seeded = ['tests/distribution.test.ts', 'tests/integration.test.ts']
+		for (const artifact of tests.filter(({ path }) => !seeded.includes(path))) {
 			expect(artifact.content).toContain('Object.keys(entry)')
 			expect(artifact.content).toContain('toStrictEqual([])')
 		}

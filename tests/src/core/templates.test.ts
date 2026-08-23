@@ -89,6 +89,7 @@ const MODULE_EMITTERS: Readonly<Record<string, number>> = Object.freeze({
 	'tests/app/browser/index.test.ts': 64,
 	'tests/app/core/index.test.ts': 64,
 	'tests/app/server/index.test.ts': 64,
+	'tests/distribution.test.ts': 112,
 	'tests/integration.test.ts': 63,
 	'tests/setup.ts': 126,
 	'tests/setupBrowser.ts': 96,

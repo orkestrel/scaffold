@@ -189,7 +189,6 @@ export function buildBlueprint(fields?: Partial<Blueprint>): Blueprint {
 		bin: false,
 		setup: false,
 		guides: false,
-		distribution: false,
 		integration: false,
 		conformance: false,
 		service: false,

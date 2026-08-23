@@ -237,7 +237,7 @@ export const GLOBAL_SETUP_PATH = 'tests/setupGlobal.ts'
 /** The guide-parity proof whose presence selects the planned `guides` project. */
 export const GUIDES_TEST_PATH = 'tests/guides.test.ts'
 
-/** The packed-package proof whose presence makes a workspace `distribution`. */
+/** The generated packed-package proof every publishing workspace is planned at. */
 export const DISTRIBUTION_TEST_PATH = 'tests/distribution.test.ts'
 
 /** The cross-environment composition proof whose presence makes a workspace `integration`. */

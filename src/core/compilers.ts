@@ -31,6 +31,7 @@ import {
 	BIN_ENTRY_PATH,
 	DECLARATION_DEV_DEPENDENCIES,
 	DEPENDENCY_NAME_PATTERN,
+	DISTRIBUTION_TEST_PATH,
 	ENVIRONMENTS,
 	EXTRA_RANGE_PATTERN,
 	FLOOR_RANGE_PATTERN,
@@ -270,10 +271,11 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
  * proofs every workspace can pass before it has a public API, and one build per
  * target that actually builds.
  *
- * A publishing workspace isolates distribution and live-service proofs from
- * `test` and runs them from `prepublishOnly` instead. A private workspace has
- * no publish lifecycle, so it omits distribution and runs a live-service proof
- * from `test`. Integration and conformance stay in `test` because they neither
+ * A publishing workspace isolates its distribution and live-service proofs from
+ * `test` and runs them from `prepublishOnly` instead. Publishing is what selects
+ * the distribution proof: what that proof measures is the packed tarball, so a
+ * workspace that packs no published source has nothing for it to read. A private
+ * workspace therefore omits it and runs a live-service proof from `test`. Integration and conformance stay in `test` because they neither
  * pack nor install the workspace and drive no external service. A conformance
  * run may start a server, but it starts its own and reaches it over loopback,
  * so the run stays hermetic.
@@ -293,9 +295,6 @@ export function blueprintToDevDependencies(blueprint: Blueprint): Readonly<Recor
  */
 export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string, string>> {
 	const publishes = blueprint.src.length > 0
-	// Distribution requires the published source it packs, so the declared flag
-	// alone never selects it.
-	const distributes = blueprint.distribution && publishes
 	const integrates = blueprint.integration
 	const compiles = publishes || blueprint.bin
 	const runtime = blueprint.app.filter((environment) => environment !== 'core')
@@ -374,7 +373,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 	scripts['test:probe'] =
 		'vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe'
 	scripts['test:bench'] = 'vitest bench --config vite.config.ts --no-cache --project probe'
-	if (distributes) scripts['test:distribution'] = `${vitest} --project distribution`
+	if (publishes) scripts['test:distribution'] = `${vitest} --project distribution`
 	if (integrates) scripts['test:integration'] = `${vitest} --project integration`
 	if (blueprint.service) scripts['test:service'] = `${vitest} --project service`
 	scripts.build = [
@@ -424,7 +423,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		scripts.prepack = scripts.build
 		scripts.prepublishOnly = [
 			'npm run format:check && npm run lint:check && npm run check && npm run build && npm test',
-			...(distributes ? ['npm run test:distribution -- --mode release'] : []),
+			...(publishes ? ['npm run test:distribution -- --mode release'] : []),
 			...(blueprint.service ? ['npm run test:service'] : []),
 		].join(' && ')
 	}
@@ -627,9 +626,6 @@ export function blueprintToRootTsconfig(blueprint: Blueprint): string {
 export function blueprintToRootVite(blueprint: Blueprint): string {
 	const machinery = blueprintToMachinery(blueprint)
 	const publishes = blueprint.src.length > 0
-	// Distribution requires the published source it packs, so the declared flag
-	// alone never selects it.
-	const distributes = blueprint.distribution && publishes
 	const imports: string[] = []
 	if (machinery.browser) imports.push("import { playwright } from '@vitest/browser-playwright'")
 	if (machinery.vue) imports.push("import vue from '@vitejs/plugin-vue'")
@@ -801,7 +797,7 @@ export function appShowcase(): UserConfig {
 		factories.push(CONFIG_TEMPLATES.factories.service)
 		projects.push('service')
 	}
-	if (distributes) {
+	if (publishes) {
 		factories.push(CONFIG_TEMPLATES.factories.distribution)
 		projects.push('distribution')
 	}
@@ -1141,6 +1137,13 @@ export function blueprintToSourceArtifacts(blueprint: Blueprint): readonly Conte
  * readiness setup alone, because the root configuration names that module by
  * path.
  *
+ * The distribution proof is emitted, and the same test separates it from those
+ * two: its subject is the packed tarball rather than anything only the package
+ * knows, so every assertion derives from the installed tree at run time and
+ * nothing has to be named. It follows the published source it packs, and it is
+ * the one artifact here claimed by presence: a target lacking it reports as
+ * drift, and a package that replaced it with a better proof keeps that proof.
+ *
  * @example
  * ```ts
  * import { blueprintToTestArtifacts, createBlueprint } from '@orkestrel/scaffold'
@@ -1239,6 +1242,29 @@ export function blueprintToTestArtifacts(blueprint: Blueprint): readonly Content
 			content: fillTemplate(ARTIFACT_TEMPLATES.tests.entry, {
 				specifier: serializeTypeScriptString(`@app/${environment}`),
 				label: serializeTypeScriptString(`app ${environment} entry`),
+			}),
+		})
+	}
+	// The packed artifact is what this proof measures, and that subject is the same
+	// in every publishing workspace: an installed tree, its exports map, and the
+	// declarations beside it. So it is derived rather than named, and a workspace
+	// that packs no published source has nothing for it to read. Ownership is
+	// presence, which is what reports a target still lacking the proof as drift
+	// while leaving a package that wrote a better one exactly as it is.
+	if (blueprint.src.length > 0) {
+		const browser = blueprint.src.includes('browser')
+		const distribution = ARTIFACT_TEMPLATES.tests.distribution
+		artifacts.push({
+			path: DISTRIBUTION_TEST_PATH,
+			group: 'tests',
+			ownership: 'presence',
+			origin: 'template',
+			content: fillTemplate(distribution.proof, {
+				types: browser ? distribution.types : '',
+				transport: browser ? distribution.transport : '',
+				launcher: browser ? distribution.launcher : '',
+				helpers: browser ? distribution.helpers : '',
+				drive: browser ? distribution.drive : '',
 			}),
 		})
 	}
@@ -1995,14 +2021,6 @@ export function blueprintToQuestions(blueprint: Blueprint): readonly Question[] 
 			})
 		}
 		vendors.add(vendor)
-	}
-	if (blueprint.distribution && blueprint.src.length === 0) {
-		questions.push({
-			field: 'distribution',
-			message:
-				'distribution packs the published source, and this workspace declares none, so it emits nothing.',
-			blocking: false,
-		})
 	}
 	if (blueprint.showcase && !blueprint.app.includes('browser')) {
 		questions.push({
