@@ -610,8 +610,13 @@ describe('blueprintToScripts config projects', () => {
 		)
 		// The declaration locator walks conditions for the first `types` key, because
 		// one published root entry declares `types` beside `default` rather than
-		// inside `import`, and a fixed lookup returns a JavaScript file there.
-		expect(content).toContain("resolveTarget(entry, ['types', 'import'])")
+		// inside `import`, and a fixed lookup returns a JavaScript file there. It reads
+		// `require` beside `import`, because a `require`-only subpath declares its
+		// types under `require` and an `import`-only lookup calls that subpath
+		// undeclared. `tests/src/core/templates.test.ts` drives what it answers.
+		expect(content).toContain("['types', 'import'],")
+		expect(content).toContain("['types', 'require'],")
+		expect(content).toContain('const declaration = readDeclaration(entry)')
 		// The workspace that publishes no browser face carries neither the launcher
 		// nor its imports, so its own `lint:check` sees no binding it never uses.
 		const [core] = blueprintToTestArtifacts(buildBlueprint({ src: ['core'] })).filter(
@@ -628,17 +633,18 @@ describe('blueprintToScripts config projects', () => {
 	// declaration comparison, and no place in the resolution compile. So the proof
 	// partitions every published subpath into what it drives, what it excludes, and
 	// what it reports. The `./package.json` manifest pointer and a stylesheet target
-	// are published for a reader rather than an importer, so a JavaScript module with
-	// no `.d.ts` beside it is the one shape that reddens.
+	// are published for a reader rather than an importer, so what reddens is a target
+	// a runtime loads for its names carrying no declaration. The extension on the
+	// target's own file name decides which of those it is, and
+	// `tests/src/core/templates.test.ts` drives that reading against real targets.
 	it('writes a proof that partitions every published subpath rather than dropping one', () => {
 		const [proof] = blueprintToTestArtifacts(buildBlueprint({ src: ['core'] })).filter(
 			({ path }) => path === 'tests/distribution.test.ts',
 		)
 		const content = proof?.content ?? ''
 
-		expect(content).toContain(
-			"return target.endsWith('.js') || target.endsWith('.mjs') || target.endsWith('.cjs')",
-		)
+		expect(content).toContain("const MODULE_EXTENSIONS = ['.js', '.mjs', '.cjs']")
+		expect(content).toContain('return dot === -1 || MODULE_EXTENSIONS.includes(name.slice(dot))')
 		expect(content).toContain('subpaths.push(subpath)')
 		expect(content).toContain('if (files.some(isModule)) undeclared.push(subpath)')
 		expect(content).toContain('else excluded.push(subpath)')
@@ -649,6 +655,12 @@ describe('blueprintToScripts config projects', () => {
 		// The falsifying shape: a declaration test that leaves the loop with no bucket
 		// for the subpath it walked past.
 		expect(content).not.toContain("!declaration.endsWith('.d.ts')) continue")
+		// The other falsifying shape: a walker that answers nothing for a fallback
+		// list. Node reads an array in an exports entry as one, so a walker refusing it
+		// collects no target, and the subpath is filed as excluded and never measured
+		// while the totality assertion stays green.
+		expect(content).toContain('if (isList(entry)) return entry.flatMap')
+		expect(content).toContain('if (isList(entry)) {')
 	})
 
 	// `it.runIf(!entry.browser)` retires the Node import and the Node require for a

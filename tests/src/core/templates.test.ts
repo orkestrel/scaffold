@@ -8,6 +8,7 @@ import { isRecord, isString } from '@orkestrel/contract'
 import { requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
 import { fillTemplate, isTemplateError } from '@orkestrel/template'
+import ts from 'typescript'
 import { build, loadConfigFromFile } from 'vite'
 import {
 	ARTIFACT_TEMPLATES,
@@ -236,12 +237,13 @@ function stageResolver(workspace: ScratchInterface): string {
 	return join(workspace.path, 'browsers.ts')
 }
 
-// One or more expressions evaluated against the loaded resolver, in a real Node
-// process that strips the module's types and runs it. `undefined` is not JSON, so
-// an absent answer arrives as `null` and every assertion below reads it that way.
-function driveResolver(file: string, calls: readonly string[]): readonly unknown[] {
+// One or more expressions evaluated against a loaded emitted module, in a real Node
+// process that strips the module's types and runs it. The caller names the binding
+// its own expressions read. `undefined` is not JSON, so an absent answer arrives as
+// `null` and every assertion below reads it that way.
+function driveModule(file: string, binding: string, calls: readonly string[]): readonly unknown[] {
 	const script = [
-		`const resolver = await import(${JSON.stringify(pathToFileURL(file).href)})`,
+		`const ${binding} = await import(${JSON.stringify(pathToFileURL(file).href)})`,
 		`console.log(JSON.stringify([${calls.join(', ')}]))`,
 	].join('\n')
 	const output = execFileSync(
@@ -250,8 +252,105 @@ function driveResolver(file: string, calls: readonly string[]): readonly unknown
 		{ stdio: 'pipe', encoding: 'utf8' },
 	)
 	const answers: unknown = JSON.parse(output)
-	if (!Array.isArray(answers)) throw new Error('The resolver driver printed no answer list')
+	if (!Array.isArray(answers)) throw new Error(`The ${binding} driver printed no answer list`)
 	return answers
+}
+
+// The declarations the emitted distribution proof classifies an installed exports
+// map with. The proof packs and installs at module load, so it cannot be imported;
+// these are lifted out of the real emitted text instead and driven directly. A name
+// the proof stops declaring fails the lift rather than thinning the drive.
+const CLASSIFIER_DECLARATIONS: readonly string[] = [
+	'MODULE_EXTENSIONS',
+	'DECLARATION_EXTENSIONS',
+	'DECLARATION_CONDITIONS',
+	'isRecord',
+	'isList',
+	'resolveTarget',
+	'collectTargets',
+	'isModule',
+	'isDeclaration',
+	'readDeclaration',
+]
+
+// One classification the emitted proof performs, written as the driver evaluates it
+// and paired with the answer it owes. Each export shape here is one Node accepts:
+// an array is a fallback list, a condition value may be an array, and a subpath may
+// answer `require` alone.
+const CLASSIFIER_CASES: ReadonlyArray<readonly [call: string, answer: unknown]> = [
+	[`classifier.collectTargets(['./dist/src/core/index.js'])`, ['./dist/src/core/index.js']],
+	[`classifier.collectTargets(['./a.js', { require: './b.cjs' }])`, ['./a.js', './b.cjs']],
+	[
+		`classifier.collectTargets({ import: { types: './x.d.ts', default: './x.js' } })`,
+		['./x.d.ts', './x.js'],
+	],
+	[`classifier.resolveTarget(['./a.js', './b.js'], ['import'])`, './a.js'],
+	[
+		`classifier.resolveTarget([{ types: './x.d.ts', default: './x.js' }], ['types', 'import'])`,
+		'./x.d.ts',
+	],
+	[
+		`classifier.readDeclaration({ import: { types: ['./x.d.ts'], default: './x.js' } })`,
+		'./x.d.ts',
+	],
+	[
+		`classifier.readDeclaration({ require: { types: './x.d.cts', default: './x.cjs' } })`,
+		'./x.d.cts',
+	],
+	[
+		`classifier.readDeclaration({ import: { types: './x.d.ts' }, require: { types: './x.d.cts' } })`,
+		'./x.d.ts',
+	],
+	[`classifier.readDeclaration({ import: './x.js', default: './x.js' })`, null],
+	[`classifier.isModule('./dist/src/core/index.js')`, true],
+	[`classifier.isModule('./dist/src/core/index.mjs')`, true],
+	[`classifier.isModule('./dist/src/core/index.cjs')`, true],
+	[`classifier.isModule('./dist/src/core/feature')`, true],
+	[`classifier.isModule('./dist/bundle.js/feature')`, true],
+	[`classifier.isModule('./dist/src/core/module.wasm')`, false],
+	[`classifier.isModule('./dist/src/styles/main.css')`, false],
+	[`classifier.isModule('./package.json')`, false],
+	[`classifier.isModule('./dist/src/core/index.d.ts')`, false],
+	[`classifier.isModule('./dist/src/core/index.d.cts')`, false],
+]
+
+// The lifted declarations, written where a real Node process can load them. The
+// TypeScript parser reads them off the emitted text, so a formatting change moves
+// nothing here and a renamed declaration fails loudly.
+function stageClassifier(workspace: ScratchInterface, content: string): string {
+	workspace.write('classifier.ts', extractDeclarations(content, CLASSIFIER_DECLARATIONS))
+	return join(workspace.path, 'classifier.ts')
+}
+
+// One module carrying the named top-level declarations of another, in source order
+// so a constant still precedes the function reading it, and exporting each name.
+function extractDeclarations(content: string, names: readonly string[]): string {
+	const source = ts.createSourceFile('proof.ts', content, ts.ScriptTarget.ESNext, true)
+	const lifted = new Map<string, string>()
+	for (const statement of source.statements) {
+		for (const name of readDeclaredNames(statement)) {
+			if (names.includes(name)) lifted.set(name, statement.getText(source))
+		}
+	}
+	const missing = names.filter((name) => !lifted.has(name))
+	if (missing.length > 0) {
+		throw new Error(`The emitted proof declares no ${missing.join(', ')}`)
+	}
+	return `${[...lifted.values()].join('\n\n')}\n\nexport { ${names.join(', ')} }\n`
+}
+
+// The names one top-level statement binds, for the function and variable statements
+// a lift can carry. Every other statement binds nothing a caller can name.
+function readDeclaredNames(statement: ts.Statement): readonly string[] {
+	if (ts.isFunctionDeclaration(statement)) {
+		return statement.name === undefined ? [] : [statement.name.text]
+	}
+	if (!ts.isVariableStatement(statement)) return []
+	const names: string[] = []
+	for (const declaration of statement.declarationList.declarations) {
+		if (ts.isIdentifier(declaration.name)) names.push(declaration.name.text)
+	}
+	return names
 }
 
 // One `resolveBrowser` call, written as the driver evaluates it. The platform is
@@ -817,7 +916,7 @@ describe('emitted browser resolver', () => {
 		})
 		try {
 			const file = stageResolver(workspace)
-			const [names, bundled] = driveResolver(file, [
+			const [names, bundled] = driveModule(file, 'resolver', [
 				'Object.keys(resolver)',
 				'resolver.BUNDLED_BROWSERS_ROOT',
 			])
@@ -843,26 +942,30 @@ describe('emitted browser resolver', () => {
 			const browsers = buildBrowsersRoot(workspace, ['chromium'])
 			const pinned = join(browsers, 'chromium-1234/chrome-linux64/chrome')
 			const alias = join(browsers, 'chromium')
-			const [discovered, executable, endpoint, channel, ranked, empty] = driveResolver(file, [
-				buildResolveCall(pinned, {}, browsers),
-				buildResolveCall(pinned, { PLAYWRIGHT_EXECUTABLE_PATH: '/operator/chrome' }, browsers),
-				buildResolveCall(
-					pinned,
-					{ PLAYWRIGHT_WS_ENDPOINT: 'ws://operator:9222/session' },
-					browsers,
-				),
-				buildResolveCall(pinned, { PLAYWRIGHT_CHANNEL: 'msedge' }, browsers),
-				buildResolveCall(
-					pinned,
-					{
-						PLAYWRIGHT_EXECUTABLE_PATH: '/operator/chrome',
-						PLAYWRIGHT_WS_ENDPOINT: 'ws://operator:9222/session',
-						PLAYWRIGHT_CHANNEL: 'msedge',
-					},
-					browsers,
-				),
-				buildResolveCall(pinned, { PLAYWRIGHT_EXECUTABLE_PATH: '' }, browsers),
-			])
+			const [discovered, executable, endpoint, channel, ranked, empty] = driveModule(
+				file,
+				'resolver',
+				[
+					buildResolveCall(pinned, {}, browsers),
+					buildResolveCall(pinned, { PLAYWRIGHT_EXECUTABLE_PATH: '/operator/chrome' }, browsers),
+					buildResolveCall(
+						pinned,
+						{ PLAYWRIGHT_WS_ENDPOINT: 'ws://operator:9222/session' },
+						browsers,
+					),
+					buildResolveCall(pinned, { PLAYWRIGHT_CHANNEL: 'msedge' }, browsers),
+					buildResolveCall(
+						pinned,
+						{
+							PLAYWRIGHT_EXECUTABLE_PATH: '/operator/chrome',
+							PLAYWRIGHT_WS_ENDPOINT: 'ws://operator:9222/session',
+							PLAYWRIGHT_CHANNEL: 'msedge',
+						},
+						browsers,
+					),
+					buildResolveCall(pinned, { PLAYWRIGHT_EXECUTABLE_PATH: '' }, browsers),
+				],
+			)
 
 			// The control: with no override the same call discovers a real executable in
 			// the fixture, so each override below outranks an answer that exists.
@@ -902,7 +1005,7 @@ describe('emitted browser resolver', () => {
 			const lowest = join(browsers, 'chromium-999/chrome-linux/chrome')
 			const call = `resolver.resolveManagedBrowser(${JSON.stringify(pinned)})`
 
-			const [aliased, missing, directory] = driveResolver(file, [
+			const [aliased, missing, directory] = driveModule(file, 'resolver', [
 				call,
 				`resolver.isBrowserExecutable(${JSON.stringify(pinned)})`,
 				`resolver.isBrowserExecutable(${JSON.stringify(browsers)})`,
@@ -914,17 +1017,17 @@ describe('emitted browser resolver', () => {
 			expect(aliased).toBe(alias)
 
 			workspace.remove('browsers/chromium')
-			const [byRevision] = driveResolver(file, [call])
+			const [byRevision] = driveModule(file, 'resolver', [call])
 			expect(byRevision).toBe(highest)
 
 			workspace.remove('browsers/chromium-1194')
-			const [remaining] = driveResolver(file, [call])
+			const [remaining] = driveModule(file, 'resolver', [call])
 			expect(remaining).toBe(lowest)
 
 			// The control the ladder needs: with nothing installed the same call reports
 			// absence, so each answer above is a resolution rather than a constant.
 			workspace.remove('browsers/chromium-999')
-			const [absent] = driveResolver(file, [call])
+			const [absent] = driveModule(file, 'resolver', [call])
 			expect(absent).toBeNull()
 		} finally {
 			workspace.destroy()
@@ -941,7 +1044,7 @@ describe('emitted browser resolver', () => {
 			const browsers = buildBrowsersRoot(workspace, ['chromium-1234/chrome-linux64/chrome'])
 			const pinned = join(browsers, 'chromium-1234/chrome-linux64/chrome')
 			const bare = workspace.ensure('bare')
-			const [installed, bundled, channel] = driveResolver(file, [
+			const [installed, bundled, channel] = driveModule(file, 'resolver', [
 				buildResolveCall(pinned, {}, browsers),
 				buildResolveCall(undefined, {}, browsers),
 				buildResolveCall(undefined, {}, bare),
@@ -961,4 +1064,47 @@ describe('emitted browser resolver', () => {
 			workspace.destroy()
 		}
 	}, 20_000)
+})
+
+describe('emitted distribution classifier', () => {
+	// Every shape here is legal in an exports map, and each one the classifier fails
+	// to read is a subpath published without measurement: the walkers answer nothing
+	// for it, the proof files it as excluded, and the totality assertion stays green
+	// because the subpath is accounted for.
+	it('reads a fallback list, a declaration under require, and an extensionless module', () => {
+		const workspace = createScratch({
+			parent: ensureTmpRoot(),
+			prefix: 'scaffold-e2-classifier-',
+		})
+		try {
+			const [proof] = blueprintToTestArtifacts(createBlueprint('sample', { src: ['core'] })).filter(
+				({ path }) => path === 'tests/distribution.test.ts',
+			)
+			const file = stageClassifier(workspace, requireValue(proof?.content))
+			const answers = driveModule(
+				file,
+				'classifier',
+				CLASSIFIER_CASES.map(([call]) => call),
+			)
+
+			expect(answers).toStrictEqual(CLASSIFIER_CASES.map(([, answer]) => answer))
+		} finally {
+			workspace.destroy()
+		}
+	}, 20_000)
+
+	// The control on the lift itself: a name the proof does not declare stops the
+	// extraction, so a drive above reports on declarations that were really carried
+	// across rather than on a module that quietly lost them.
+	it('refuses to lift a declaration the emitted proof does not carry', () => {
+		const [proof] = blueprintToTestArtifacts(createBlueprint('sample', { src: ['core'] })).filter(
+			({ path }) => path === 'tests/distribution.test.ts',
+		)
+		const content = requireValue(proof?.content)
+
+		expect(() => extractDeclarations(content, ['resolveTarget', 'resolveNothing'])).toThrow(
+			'declares no resolveNothing',
+		)
+		expect(extractDeclarations(content, ['isModule'])).toContain('export { isModule }')
+	})
 })
