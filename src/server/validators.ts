@@ -1,6 +1,6 @@
 import type { Guard } from '@orkestrel/contract'
 import type { EmitterHooks } from '@orkestrel/emitter'
-import type { CatalogEntry, Dependency, Mirror } from '@src/core'
+import type { CatalogEntry, Dependency, ManifestRegionSet, Mirror } from '@src/core'
 import type {
 	Host,
 	HostManifest,
@@ -32,6 +32,7 @@ import {
 	isCollection,
 	isDependency,
 	isDependencyName,
+	isManifestScript,
 	isMirror,
 	isPath,
 	isSnapshot,
@@ -257,6 +258,27 @@ export const isDependencies: Guard<readonly Dependency[]> = andOf(
 	isCollection,
 	arrayOf(isDependency),
 )
+
+/**
+ * Narrow a value to one {@link ManifestRegionSet}.
+ *
+ * @remarks
+ * The whole closed record a manifest-writing method accepts, so a caller
+ * naming a region the writer does not carry is refused before any byte moves.
+ * Each region is bounded by the same collection law its own list guard applies.
+ *
+ * @example
+ * ```ts
+ * import { isManifestRegionSet } from '@orkestrel/scaffold/server'
+ *
+ * isManifestRegionSet({ pins: { runtime: [], development: [] }, scripts: [] }) // true
+ * isManifestRegionSet({ pins: { runtime: [], development: [] } }) // false
+ * ```
+ */
+export const isManifestRegionSet: Guard<ManifestRegionSet> = recordOf({
+	pins: recordOf({ runtime: isDependencies, development: isDependencies }),
+	scripts: andOf(isCollection, arrayOf(isManifestScript)),
+})
 
 /** Narrow a value to a bounded list of fetched guide mirrors. */
 export const isMirrors: Guard<readonly Mirror[]> = andOf(isCollection, arrayOf(isMirror))

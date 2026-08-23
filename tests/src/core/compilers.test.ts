@@ -1,4 +1,4 @@
-import type { Ownership } from '@src/core'
+import type { ManifestScript, Ownership } from '@src/core'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import {
@@ -14,13 +14,16 @@ import {
 	blueprintToScripts,
 	blueprintToSourceArtifacts,
 	blueprintToTestArtifacts,
+	blueprintToWritableScripts,
 	CONFIG_TEMPLATES,
 	contentToHex,
 	createBlueprint,
 	FLOOR_RANGE_PATTERN,
 	isFinding,
 	ORKESTREL_RANGE_PATTERN,
+	RELEASE_PROOF_COMMAND,
 	replaceManifestRanges,
+	replaceManifestScripts,
 } from '@src/core'
 import { buildBlueprint, buildContentArtifact } from '../../setup.js'
 import { describe, expect, it } from 'vitest'
@@ -107,6 +110,144 @@ describe('replaceManifestRanges', () => {
 		expect(replaced).toContain('"optional": true')
 		expect(replaced).toContain('"overrides": {\n\t\t"typescript": "6.0.3"')
 		expect(replaced).toContain('"resolutions": {\n\t\t"typescript": "6.0.2"')
+	})
+})
+
+const SCRIPT_MANIFEST = `{
+	"name": "@orkestrel/sample",
+	"description": "Kept exactly as written, punctuation and all.",
+	"scripts": {
+		"test": "vitest run",
+		"prepublishOnly": "npm test"
+	},
+	"dependencies": {
+		"@orkestrel/emitter": "^0.0.5"
+	}
+}
+`
+
+const SCRIPT_REGION: readonly ManifestScript[] = [
+	{
+		name: 'prepublishOnly',
+		command: `npm test && ${RELEASE_PROOF_COMMAND}`,
+		accepted: ['npm test'],
+	},
+	{ name: 'test:distribution', command: 'vitest run --project distribution', accepted: [] },
+]
+
+describe('blueprintToWritableScripts', () => {
+	it('names the scripts the packed-package proof needs, and the chain that predates them', () => {
+		const blueprint = buildBlueprint({ src: ['core'] })
+		const region = blueprintToWritableScripts(blueprint)
+		const scripts = blueprintToScripts(blueprint)
+
+		expect(region.map((script) => script.name)).toEqual(['test:distribution', 'prepublishOnly'])
+		expect(region.map((script) => script.command)).toEqual([
+			scripts['test:distribution'],
+			scripts.prepublishOnly,
+		])
+		// The predecessor is the same chain without the release row, which is what
+		// a target scaffolded before the proof existed still holds.
+		expect(region[0]?.accepted).toEqual([])
+		expect(region[1]?.accepted).toEqual([
+			`${scripts.prepublishOnly ?? ''}`.replace(` && ${RELEASE_PROOF_COMMAND}`, ''),
+		])
+		expect(region[1]?.accepted[0]).not.toContain(RELEASE_PROOF_COMMAND)
+	})
+
+	it('names nothing for a workspace that publishes no source', () => {
+		expect(blueprintToWritableScripts(buildBlueprint({ src: [], app: ['core'] }))).toEqual([])
+	})
+})
+
+describe('replaceManifestScripts', () => {
+	it('replaces a recognized predecessor and appends an absent script, moving no other byte', () => {
+		const written = replaceManifestScripts(SCRIPT_MANIFEST, SCRIPT_REGION)
+
+		// The expectation is the input with exactly the replaced ranges edited, so
+		// the assertion is byte identity everywhere else rather than a spot check.
+		expect(written).toBe(
+			SCRIPT_MANIFEST.replace(
+				'\t\t"prepublishOnly": "npm test"\n',
+				`\t\t"prepublishOnly": "npm test && ${RELEASE_PROOF_COMMAND}",\n\t\t"test:distribution": "vitest run --project distribution"\n`,
+			),
+		)
+		expect(written).toContain('"description": "Kept exactly as written, punctuation and all."')
+		expect(written).toContain('"test": "vitest run"')
+		expect(written).toContain('"@orkestrel/emitter": "^0.0.5"')
+	})
+
+	it('accepts the chain the generated manifest carried before the proof existed', () => {
+		const blueprint = buildBlueprint({ src: ['core'] })
+		const region = blueprintToWritableScripts(blueprint)
+		const current = blueprintToManifest(blueprint)
+		const previous = current
+			.replaceAll(/\t\t"test:distribution": .*\n/gu, '')
+			.replace(` && ${RELEASE_PROOF_COMMAND}`, '')
+		const written = replaceManifestScripts(previous, region)
+
+		expect(previous).not.toContain('test:distribution')
+		expect(written).toBeDefined()
+		expect(written).toContain(RELEASE_PROOF_COMMAND)
+		expect(JSON.parse(written ?? '')).toMatchObject({
+			scripts: {
+				'test:distribution': region[0]?.command,
+				prepublishOnly: region[1]?.command,
+			},
+		})
+	})
+
+	it('leaves a manifest that already carries every command exactly as it found it', () => {
+		const written = replaceManifestScripts(SCRIPT_MANIFEST, SCRIPT_REGION)
+
+		expect(replaceManifestScripts(written ?? '', SCRIPT_REGION)).toBe(written)
+	})
+
+	it('refuses a customized value and writes nothing at all', () => {
+		const customized = SCRIPT_MANIFEST.replace(
+			'"prepublishOnly": "npm test"',
+			'"prepublishOnly": "npm test && npm run verify"',
+		)
+
+		expect(replaceManifestScripts(customized, SCRIPT_REGION)).toBeUndefined()
+		// The refusal is whole: the recognized member of the region is not written
+		// either, so no manifest ends up half converted.
+		expect(customized).not.toContain('test:distribution')
+	})
+
+	it('refuses a script declared as something other than a string', () => {
+		const malformed = SCRIPT_MANIFEST.replace('"prepublishOnly": "npm test"', '"prepublishOnly": 1')
+
+		expect(replaceManifestScripts(malformed, SCRIPT_REGION)).toBeUndefined()
+	})
+
+	it('refuses text carrying no readable scripts object', () => {
+		expect(replaceManifestScripts('{\n\t"name": "sample"\n}\n', SCRIPT_REGION)).toBeUndefined()
+		expect(replaceManifestScripts('{\n\t"scripts": {}\n}\n', SCRIPT_REGION)).toBeUndefined()
+		expect(replaceManifestScripts('not json', SCRIPT_REGION)).toBeUndefined()
+	})
+
+	it('reads only the top-level scripts object', () => {
+		const nested = `{
+	"workspaces": {
+		"scripts": {
+			"prepublishOnly": "echo nested"
+		}
+	},
+	"scripts": {
+		"test": "vitest run",
+		"prepublishOnly": "npm test"
+	}
+}
+`
+		const written = replaceManifestScripts(nested, SCRIPT_REGION)
+
+		expect(written).toContain('"prepublishOnly": "echo nested"')
+		expect(written).toContain(`"prepublishOnly": "npm test && ${RELEASE_PROOF_COMMAND}"`)
+	})
+
+	it('returns the text untouched when the region names nothing', () => {
+		expect(replaceManifestScripts(SCRIPT_MANIFEST, [])).toBe(SCRIPT_MANIFEST)
 	})
 })
 

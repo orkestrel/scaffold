@@ -75,6 +75,8 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `HostArtifact`          | interface | A file byte-copied from the vendored data root, planned before its bytes are read.      |
 | `HydratedArtifact`      | interface | A vendored file whose exact bytes have been read, so its content can be compared.       |
 | `ManifestDependencySet` | interface | The runtime, development, and peer declarations read from an existing manifest.         |
+| `ManifestRegionSet`     | interface | The manifest regions a writing operation may change.                                    |
+| `ManifestScript`        | interface | One manifest script a region-writing operation may replace.                             |
 | `Override`              | interface | One artifact override.                                                                  |
 | `Plan`                  | interface | The compiled, ordered artifact list and the selection it covers.                        |
 | `PlanSummary`           | interface | The tally of one plan by artifact origin.                                               |
@@ -129,6 +131,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `MAX_PATH_LENGTH`                 | const | Maximum length of one path, matching the longest a supported filesystem accepts.                 |
 | `MAX_RANGE_LENGTH`                | const | Maximum length of one declared package range.                                                    |
 | `MAX_REGISTRY_BYTES`              | const | Maximum decoded bytes accepted from one registry response.                                       |
+| `MAX_SCRIPT_LENGTH`               | const | Maximum length of one manifest script name or command.                                           |
 | `MAX_TOTAL_ARTIFACT_BYTES`        | const | Maximum bytes retained across one whole plan or audit.                                           |
 | `MAX_TOTAL_REGISTRY_BYTES`        | const | Maximum decoded bytes accepted across one registry-reading call.                                 |
 | `MINIMUM_NODE_VERSION`            | const | The oldest Node version the generated toolchain supports.                                        |
@@ -137,6 +140,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `ORCHESTRATION_PATH_PREFIXES`     | const | The path prefixes whose contents instruct or wire an agent, frozen.                              |
 | `ORKESTREL_RANGE_PATTERN`         | const | The exact caret-pinned pre-1.0 range accepted for an `@orkestrel/*` runtime dependency.          |
 | `PRINT_WIDTH`                     | const | Columns one emitted line may occupy, matching `printWidth` in `.oxfmtrc.json`.                   |
+| `RELEASE_PROOF_COMMAND`           | const | The `prepublishOnly` row that runs the packed-package proof against a real registry.             |
 | `SERVICE_SCRIPT_PATH`             | const | The provisioner skeleton a workspace with declared service vendors is given once.                |
 | `SERVICE_SETUP_PATH`              | const | The live-service readiness module whose presence makes a workspace `service`.                    |
 | `SERVICE_TEST_INCLUDE`            | const | The include the live-service project covers, which is a directory rather than one proof.         |
@@ -167,6 +171,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `isGroup`           | const    | Narrow a value to one `Group` a plan selects over.                               |
 | `isGroups`          | const    | Narrow a value to a bounded group selection.                                     |
 | `isHex`             | const    | Narrow a value to exact lowercase hexadecimal bytes within one artifact's limit. |
+| `isManifestScript`  | const    | Narrow a value to a `ManifestScript`.                                            |
 | `isMirror`          | const    | Narrow a value to a `Mirror`.                                                    |
 | `isOverride`        | const    | Narrow a value to an `Override`.                                                 |
 | `isPath`            | function | Narrow a value to a logical target-relative path.                                |
@@ -235,6 +240,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `blueprintToScripts`                | function | Project a blueprint into the scripts its manifest declares.                     |
 | `blueprintToSourceArtifacts`        | function | Compile every artifact in the `source` group.                                   |
 | `blueprintToTestArtifacts`          | function | Compile every artifact in the `tests` group that is not vendored from the host. |
+| `blueprintToWritableScripts`        | function | Project a blueprint into the manifest scripts a region write may replace.       |
 | `dependenciesToQuestions`           | function | Measure one declared package list against the name and range syntax it accepts. |
 | `nameToHostArtifacts`               | function | Compile the vendored host artifacts a named workspace plans.                    |
 | `overridesToQuestions`              | function | Measure a blueprint's overrides against the artifacts drafted for it.           |
@@ -242,6 +248,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `planToFindings`                    | function | Compare a plan against a target's current content.                              |
 | `planToHash`                        | function | Compute a plan's content identity.                                              |
 | `replaceManifestRanges`             | function | Replace runtime and development ranges without reading or writing peer fields.  |
+| `replaceManifestScripts`            | function | Replace named script values, refusing a value the region does not accept.       |
 | `replacePlanRanges`                 | function | Replace writable ranges in a plan's manifest and recompute its identity.        |
 | `srcToEntry`                        | function | Project a published selection into the manifest's entry fields.                 |
 | `srcToExports`                      | function | Project a published selection into the manifest's `exports` map.                |
@@ -324,6 +331,7 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 | `isHostManifest`        | const    | Narrow a value to one `HostManifest`.                                              |
 | `isInventory`           | function | Narrow a value to a working-tree inventory within the limit one target may report. |
 | `isManifestEntry`       | const    | Narrow a value to one `ManifestEntry`.                                             |
+| `isManifestRegionSet`   | const    | Narrow a value to one `ManifestRegionSet`.                                         |
 | `isMaterializerHooks`   | const    | Narrow a value to the materializer's initial listener record.                      |
 | `isMaterializerOptions` | const    | Narrow a value to `MaterializerOptions`.                                           |
 | `isMirrors`             | const    | Narrow a value to a bounded list of fetched guide mirrors.                         |

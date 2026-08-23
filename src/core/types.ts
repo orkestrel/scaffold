@@ -131,6 +131,34 @@ export interface DependencyPinSet {
 }
 
 /**
+ * One manifest script a region-writing operation may replace.
+ *
+ * @remarks
+ * `command` is the value the write lands. `accepted` is the closed set of
+ * values the write is willing to overwrite, so a script holding anything else
+ * is a chain its author customized and the write refuses rather than takes it.
+ * An absent script is always writable and needs no entry in `accepted`.
+ */
+export interface ManifestScript {
+	readonly name: string
+	readonly command: string
+	readonly accepted: readonly string[]
+}
+
+/**
+ * The manifest regions a writing operation may change.
+ *
+ * @remarks
+ * Each region is written in place, so every byte outside the named ranges
+ * survives. `pins` names the declared ranges and `scripts` the declared script
+ * values; a region given nothing to write leaves its section untouched.
+ */
+export interface ManifestRegionSet {
+	readonly pins: DependencyPinSet
+	readonly scripts: readonly ManifestScript[]
+}
+
+/**
  * One artifact override.
  *
  * @remarks

@@ -4,11 +4,11 @@ import type {
 	Artifact,
 	Audit,
 	CatalogEntry,
-	Dependency,
 	Drift,
 	Finding,
 	HostArtifact,
 	HydratedArtifact,
+	ManifestRegionSet,
 	Mirror,
 	Plan,
 	ScaffoldErrorCode,
@@ -45,6 +45,7 @@ import {
 	matchesDriftReachability,
 	planToFindings,
 	replaceManifestRanges,
+	replaceManifestScripts,
 	ScaffoldError,
 	WORKSPACE_OWNED_PATHS,
 } from '@src/core'
@@ -67,9 +68,9 @@ import {
 } from './helpers.js'
 import {
 	isCatalogEntries,
-	isDependencies,
 	isFilesystemPath,
 	isHost,
+	isManifestRegionSet,
 	isMaterializerOptions,
 	isMirrors,
 	isWorktree,
@@ -389,12 +390,11 @@ export class Materializer implements MaterializerInterface {
 	}
 
 	/**
-	 * Rewrite the runtime and development dependency ranges the caller names in the target's manifest.
+	 * Rewrite the manifest regions the caller names in the target's manifest.
 	 *
-	 * @param runtime - The names and ranges `dependencies` must declare.
-	 * @param development - The names and ranges `devDependencies` must declare.
+	 * @param regions - The dependency ranges and script values the manifest must declare.
 	 * @param target - The directory to write into.
-	 * @returns The manifest path, written when a declared range moved and skipped otherwise.
+	 * @returns The manifest path, written when a named region moved and skipped otherwise.
 	 * @throws {@link ScaffoldError} coded `INVALID` when an argument is not the
 	 * exact shape or names a package the manifest does not declare, `TARGET` when
 	 * the manifest is unreadable, `WRITE` when the write cannot be staged or
@@ -405,22 +405,19 @@ export class Materializer implements MaterializerInterface {
 	 * never reads or writes `peerDependencies` or `peerDependenciesMeta`. Only a
 	 * range already declared in its named writable section is rewritten, so an
 	 * undeclared name is refused instead of inserted.
+	 *
+	 * The regions refuse differently because their targets differ. A range
+	 * the manifest does not declare is the caller's mistake and throws. A script
+	 * holding a value the region does not accept is the workspace author's own
+	 * chain, so the script region is skipped without a byte moving and the range
+	 * region is still written. The advisory channel reports what the maintainer
+	 * must paste.
 	 */
-	declare(
-		runtime: readonly Dependency[],
-		development: readonly Dependency[],
-		target: string,
-	): MaterializeResult {
+	declare(regions: ManifestRegionSet, target: string): MaterializeResult {
 		this.#assertAlive()
-		const acceptedRuntime = this.#accept(runtime, isDependencies, 'runtime')
-		const acceptedDevelopment = this.#accept(development, isDependencies, 'development')
+		const accepted = this.#accept(regions, isManifestRegionSet, 'regions')
 		const directory = this.#accept(target, isFilesystemPath, 'target')
-		return this.#rewrite(
-			directory,
-			'package.json',
-			MAX_MANIFEST_BYTES,
-			this.#redeclare(acceptedRuntime, acceptedDevelopment),
-		)
+		return this.#rewrite(directory, 'package.json', MAX_MANIFEST_BYTES, this.#redeclare(accepted))
 	}
 
 	/**
@@ -1152,24 +1149,23 @@ export class Materializer implements MaterializerInterface {
 		return note.replaceAll('|', '\\|').replaceAll(/\s+/gu, ' ').trim()
 	}
 
-	// Every writable range replaced in place. The manifest's text is edited rather
-	// than re-serialized, so nothing but runtime and development ranges moves.
-	#redeclare(
-		runtime: readonly Dependency[],
-		development: readonly Dependency[],
-	): (text: string) => string {
+	// Every named region replaced in place. The manifest's text is edited rather
+	// than re-serialized, so nothing but the named ranges and script values moves.
+	#redeclare(regions: ManifestRegionSet): (text: string) => string {
 		return (text: string) => {
-			const manifest = replaceManifestRanges(text, { runtime, development })
-			if (manifest !== undefined) return manifest
-			const dependencies = [...runtime, ...development]
-			const missing = dependencies.find(
-				(dependency) => !text.includes(JSON.stringify(dependency.name)),
-			)
-			throw this.#error(
-				'INVALID',
-				`The manifest does not declare ${missing?.name ?? 'a requested package'}, so its range cannot be rewritten.`,
-				missing === undefined ? undefined : { name: missing.name },
-			)
+			const manifest = replaceManifestRanges(text, regions.pins)
+			if (manifest === undefined) {
+				const dependencies = [...regions.pins.runtime, ...regions.pins.development]
+				const missing = dependencies.find(
+					(dependency) => !text.includes(JSON.stringify(dependency.name)),
+				)
+				throw this.#error(
+					'INVALID',
+					`The manifest does not declare ${missing?.name ?? 'a requested package'}, so its range cannot be rewritten.`,
+					missing === undefined ? undefined : { name: missing.name },
+				)
+			}
+			return replaceManifestScripts(manifest, regions.scripts) ?? manifest
 		}
 	}
 

@@ -41,6 +41,7 @@ import {
 	isHostManifest,
 	isInventory,
 	isManifestEntry,
+	isManifestRegionSet,
 	isMaterializerHooks,
 	isMaterializerOptions,
 	isMirrors,
@@ -416,6 +417,21 @@ export function buildServerGuardCases(): readonly TestGuardCase[] {
 			name: 'isDependencies',
 			guard: isDependencies,
 			accepted: [[], [{ name: '@orkestrel/emitter', range: '^0.0.5' }]],
+			admits: [],
+		},
+		{
+			name: 'isManifestRegionSet',
+			guard: isManifestRegionSet,
+			accepted: [
+				{ pins: { runtime: [], development: [] }, scripts: [] },
+				{
+					pins: {
+						runtime: [{ name: '@orkestrel/emitter', range: '^0.0.5' }],
+						development: [],
+					},
+					scripts: [{ name: 'test', command: 'vitest run', accepted: [] }],
+				},
+			],
 			admits: [],
 		},
 		{

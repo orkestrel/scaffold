@@ -4,6 +4,7 @@ import type {
 	CatalogEntry,
 	HostFile,
 	Dependency,
+	ManifestRegionSet,
 	Mirror,
 	Plan,
 	Release,
@@ -236,22 +237,19 @@ export interface MaterializerInterface {
 	 */
 	catalog(entries: readonly CatalogEntry[], target: string): MaterializeResult
 	/**
-	 * Rewrite the runtime and development dependency ranges the caller names in the target's manifest.
+	 * Rewrite the manifest regions the caller names in the target's manifest.
 	 *
-	 * @param runtime - The names and ranges `dependencies` must declare.
-	 * @param development - The names and ranges `devDependencies` must declare.
+	 * @param regions - The dependency ranges and script values the manifest must declare.
 	 * @param target - The directory to write into.
-	 * @returns The manifest path, written when a declared range moved and skipped otherwise.
+	 * @returns The manifest path, written when a named region moved and skipped otherwise.
 	 *
 	 * @remarks
 	 * No other part of the manifest is read back out or rewritten. The method
-	 * never reads or writes `peerDependencies` or `peerDependenciesMeta`.
+	 * never reads or writes `peerDependencies` or `peerDependenciesMeta`. A
+	 * script region naming a value the manifest does not accept is skipped
+	 * without a byte moving, and the range region is written regardless.
 	 */
-	declare(
-		runtime: readonly Dependency[],
-		development: readonly Dependency[],
-		target: string,
-	): MaterializeResult
+	declare(regions: ManifestRegionSet, target: string): MaterializeResult
 	/**
 	 * Re-derive and delete the tracked files the plan does not own.
 	 *

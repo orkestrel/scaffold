@@ -7,6 +7,7 @@ import type {
 	DependencyPinSet,
 	Environment,
 	Finding,
+	ManifestScript,
 	Override,
 	Plan,
 	Question,
@@ -17,6 +18,8 @@ import {
 	attempt,
 	canonicalStringify,
 	compareValues,
+	isRecord,
+	isString,
 	parseJSON,
 	sortValues,
 } from '@orkestrel/contract'
@@ -44,6 +47,7 @@ import {
 	MAX_TOTAL_ARTIFACT_BYTES,
 	NAME_PATTERN,
 	ORKESTREL_RANGE_PATTERN,
+	RELEASE_PROOF_COMMAND,
 	SERVICE_SCRIPT_PATH,
 	SERVICE_SETUP_PATH,
 	SHOWCASE_CONFIG_PATH,
@@ -424,11 +428,53 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		scripts.prepack = scripts.build
 		scripts.prepublishOnly = [
 			'npm run format:check && npm run lint:check && npm run check && npm run build && npm test',
-			...(publishes ? ['npm run test:distribution -- --mode release'] : []),
+			RELEASE_PROOF_COMMAND,
 			...(blueprint.service ? ['npm run test:service'] : []),
 		].join(' && ')
 	}
 	return scripts
+}
+
+/**
+ * Project a blueprint into the manifest scripts a region write may replace.
+ *
+ * @param blueprint - The workspace specification.
+ * @returns One entry per writable script, or none when the workspace publishes
+ * nothing and therefore declares neither script.
+ *
+ * @remarks
+ * Publishing is what selects these scripts, so a private workspace answers an
+ * empty region and the write leaves its manifest alone.
+ *
+ * `accepted` carries the predecessor a target can hold before this package
+ * generated the packed-package proof: the same gate chain without
+ * {@link RELEASE_PROOF_COMMAND}. The value being written is always writable, so
+ * it is not repeated there. Any other value is a chain the workspace author
+ * customized, and {@link replaceManifestScripts} refuses the whole region
+ * rather than taking it.
+ *
+ * @example
+ * ```ts
+ * import { blueprintToWritableScripts, createBlueprint } from '@orkestrel/scaffold'
+ *
+ * const blueprint = createBlueprint('router', { src: ['core'] })
+ *
+ * blueprintToWritableScripts(blueprint)[0]?.name // 'test:distribution'
+ * ```
+ */
+export function blueprintToWritableScripts(blueprint: Blueprint): readonly ManifestScript[] {
+	const scripts = blueprintToScripts(blueprint)
+	const distribution = scripts['test:distribution']
+	const prepublish = scripts.prepublishOnly
+	if (distribution === undefined || prepublish === undefined) return []
+	return [
+		{ name: 'test:distribution', command: distribution, accepted: [] },
+		{
+			name: 'prepublishOnly',
+			command: prepublish,
+			accepted: [prepublish.replace(` && ${RELEASE_PROOF_COMMAND}`, '')],
+		},
+	]
 }
 
 /**
@@ -1660,6 +1706,216 @@ export function replaceManifestRanges(
 	const declaredRuntime = pins.runtime.every(({ name }) => runtime.has(name))
 	const declaredDevelopment = pins.development.every(({ name }) => development.has(name))
 	return declaredRuntime && declaredDevelopment ? compiled : undefined
+}
+
+/**
+ * Replace named script values in package manifest text.
+ *
+ * @param manifest - The manifest text to compile.
+ * @param scripts - The scripts to write, each with the predecessors it accepts.
+ * @returns The manifest carrying every named script, or `undefined` when a
+ * named script holds a value outside what it accepts, or when the text carries
+ * no readable `scripts` object to write into.
+ *
+ * @remarks
+ * The compiler replaces values in place instead of serializing the manifest, so
+ * description, keywords, dependencies, key order, indentation, and every byte
+ * outside the replaced ranges survive. A named script the manifest already
+ * declares is overwritten only when its value is the one being written or one
+ * of its {@link ManifestScript.accepted} predecessors; anything else is a chain
+ * the workspace author customized, and the whole region is refused without a
+ * byte moving. A named script the manifest does not declare is appended after
+ * the last declared script, copying that section's indentation.
+ *
+ * The refusal is whole rather than per script, so a manifest never ends up
+ * holding one written script beside one refused one.
+ *
+ * @example
+ * ```ts
+ * import { replaceManifestScripts } from '@orkestrel/scaffold'
+ *
+ * const manifest = '{\n\t"scripts": {\n\t\t"test": "vitest run"\n\t}\n}\n'
+ * replaceManifestScripts(manifest, [
+ *   { name: 'test', command: 'vitest run --no-cache', accepted: ['vitest run'] },
+ * ])
+ * // the manifest with the declared script replaced
+ * ```
+ */
+export function replaceManifestScripts(
+	manifest: string,
+	scripts: readonly ManifestScript[],
+): string | undefined {
+	if (scripts.length === 0) return manifest
+	const parsed: unknown = parseJSON(manifest)
+	if (!isRecord(parsed) || !isRecord(parsed.scripts)) return undefined
+	const declared = parsed.scripts
+	// Rule on every named script before any of them is written, so a refusal
+	// later in the region cannot leave an earlier one already replaced.
+	for (const script of scripts) {
+		if (!Object.hasOwn(declared, script.name)) continue
+		const value: unknown = declared[script.name]
+		if (!isString(value)) return undefined
+		if (value !== script.command && !script.accepted.includes(value)) return undefined
+	}
+	// Locate the top-level scripts object. Depth counts objects alone, exactly as
+	// the range writer counts them, so a key nested inside another object never
+	// reads as a top-level one.
+	let depth = 0
+	let cursor = 0
+	let start = -1
+	let end = -1
+	while (cursor < manifest.length && end < 0) {
+		const character = manifest.charAt(cursor)
+		if (character === '{') {
+			depth += 1
+			cursor += 1
+			continue
+		}
+		if (character === '}') {
+			depth -= 1
+			cursor += 1
+			continue
+		}
+		if (character !== '"') {
+			cursor += 1
+			continue
+		}
+		const keyStart = cursor
+		cursor += 1
+		while (cursor < manifest.length) {
+			if (manifest.charAt(cursor) === '\\') {
+				cursor += 2
+				continue
+			}
+			if (manifest.charAt(cursor) === '"') break
+			cursor += 1
+		}
+		if (cursor >= manifest.length) return undefined
+		const keyEnd = cursor + 1
+		cursor = keyEnd
+		if (depth !== 1) continue
+		const key: unknown = parseJSON(manifest.slice(keyStart, keyEnd))
+		if (key !== 'scripts') continue
+		let opening = keyEnd
+		while (opening < manifest.length && /\s/u.test(manifest.charAt(opening))) opening += 1
+		if (manifest.charAt(opening) !== ':') continue
+		opening += 1
+		while (opening < manifest.length && /\s/u.test(manifest.charAt(opening))) opening += 1
+		if (manifest.charAt(opening) !== '{') continue
+		start = opening
+		let nested = 0
+		let scan = opening
+		while (scan < manifest.length) {
+			const inner = manifest.charAt(scan)
+			if (inner === '"') {
+				scan += 1
+				while (scan < manifest.length) {
+					if (manifest.charAt(scan) === '\\') {
+						scan += 2
+						continue
+					}
+					if (manifest.charAt(scan) === '"') break
+					scan += 1
+				}
+				if (scan >= manifest.length) return undefined
+			} else if (inner === '{') nested += 1
+			else if (inner === '}') {
+				nested -= 1
+				if (nested === 0) {
+					end = scan + 1
+					break
+				}
+			}
+			scan += 1
+		}
+	}
+	if (start < 0 || end < 0) return undefined
+	// Read the section's own entries for their byte ranges, and remember where the
+	// first key sits: that column is the indentation an appended script copies.
+	const edits: Array<{ start: number; end: number; text: string }> = []
+	const written = new Set<string>()
+	let first = -1
+	let nested = 0
+	let scan = start
+	while (scan < end) {
+		const character = manifest.charAt(scan)
+		if (character === '{') {
+			nested += 1
+			scan += 1
+			continue
+		}
+		if (character === '}') {
+			nested -= 1
+			scan += 1
+			continue
+		}
+		if (character !== '"') {
+			scan += 1
+			continue
+		}
+		const keyStart = scan
+		scan += 1
+		while (scan < end) {
+			if (manifest.charAt(scan) === '\\') {
+				scan += 2
+				continue
+			}
+			if (manifest.charAt(scan) === '"') break
+			scan += 1
+		}
+		if (scan >= end) return undefined
+		const keyEnd = scan + 1
+		scan = keyEnd
+		if (nested !== 1) continue
+		let valueStart = keyEnd
+		while (valueStart < end && /\s/u.test(manifest.charAt(valueStart))) valueStart += 1
+		if (manifest.charAt(valueStart) !== ':') continue
+		valueStart += 1
+		while (valueStart < end && /\s/u.test(manifest.charAt(valueStart))) valueStart += 1
+		if (first < 0) first = keyStart
+		if (manifest.charAt(valueStart) !== '"') continue
+		let valueEnd = valueStart + 1
+		while (valueEnd < end) {
+			if (manifest.charAt(valueEnd) === '\\') {
+				valueEnd += 2
+				continue
+			}
+			if (manifest.charAt(valueEnd) === '"') break
+			valueEnd += 1
+		}
+		if (valueEnd >= end) return undefined
+		scan = valueEnd + 1
+		const key: unknown = parseJSON(manifest.slice(keyStart, keyEnd))
+		const script = scripts.find((entry) => entry.name === key)
+		if (script === undefined) continue
+		written.add(script.name)
+		edits.push({ start: valueStart, end: valueEnd + 1, text: JSON.stringify(script.command) })
+	}
+	const missing = scripts.filter((script) => !written.has(script.name))
+	if (missing.length > 0) {
+		if (first < 0) return undefined
+		let anchor = end - 1
+		while (anchor > start && /\s/u.test(manifest.charAt(anchor - 1))) anchor -= 1
+		if (manifest.charAt(anchor - 1) === '{') return undefined
+		const newline = manifest.lastIndexOf('\n', first)
+		const indent = newline < 0 ? '' : manifest.slice(newline + 1, first)
+		const separator = newline < 0 || /\S/u.test(indent) ? '' : `\n${indent}`
+		edits.push({
+			start: anchor,
+			end: anchor,
+			text: missing
+				.map(
+					(script) =>
+						`,${separator}${JSON.stringify(script.name)}: ${JSON.stringify(script.command)}`,
+				)
+				.join(''),
+		})
+	}
+	let compiled = manifest
+	for (const edit of edits.sort((left, right) => right.start - left.start)) {
+		compiled = compiled.slice(0, edit.start) + edit.text + compiled.slice(edit.end)
+	}
+	return compiled
 }
 
 /**

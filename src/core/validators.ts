@@ -11,6 +11,7 @@ import type {
 	Environment,
 	Finding,
 	Group,
+	ManifestScript,
 	Mirror,
 	Override,
 	Plan,
@@ -48,6 +49,7 @@ import {
 	MAX_NAME_LENGTH,
 	MAX_PATH_LENGTH,
 	MAX_RANGE_LENGTH,
+	MAX_SCRIPT_LENGTH,
 } from './constants.js'
 
 /**
@@ -218,6 +220,29 @@ export const isDependency: Guard<Dependency> = recordOf(
 	},
 	['optional'],
 )
+
+/**
+ * Narrow a value to a {@link ManifestScript}.
+ *
+ * @remarks
+ * Structural and bounded, exactly as {@link isDependency} is: a script name
+ * and a script command are free text a manifest may carry, and which values a
+ * region writer is willing to overwrite is the caller's decision rather than
+ * this guard's.
+ *
+ * @example
+ * ```ts
+ * import { isManifestScript } from '@orkestrel/scaffold'
+ *
+ * isManifestScript({ name: 'test', command: 'vitest run', accepted: [] }) // true
+ * isManifestScript({ name: 'test', command: 'vitest run' }) // false
+ * ```
+ */
+export const isManifestScript: Guard<ManifestScript> = recordOf({
+	name: stringOf({ min: 1, max: MAX_SCRIPT_LENGTH }),
+	command: stringOf({ min: 1, max: MAX_SCRIPT_LENGTH }),
+	accepted: andOf(isCollection, arrayOf(stringOf({ min: 1, max: MAX_SCRIPT_LENGTH }))),
+})
 
 /**
  * Narrow a value to an {@link Override}.

@@ -240,6 +240,16 @@ export const GUIDES_TEST_PATH = 'tests/guides.test.ts'
 /** The generated packed-package proof every publishing workspace is planned at. */
 export const DISTRIBUTION_TEST_PATH = 'tests/distribution.test.ts'
 
+/**
+ * The `prepublishOnly` row that runs the packed-package proof against a real registry.
+ *
+ * @remarks
+ * The proof reads `import.meta.env.MODE`, so without `--mode release` it passes
+ * on an unreachable registry instead of failing. The row therefore has one home
+ * and both the script compiler and the manifest region writer read it from here.
+ */
+export const RELEASE_PROOF_COMMAND = 'npm run test:distribution -- --mode release'
+
 /** The cross-environment composition proof whose presence makes a workspace `integration`. */
 export const INTEGRATION_TEST_PATH = 'tests/integration.test.ts'
 
@@ -338,6 +348,9 @@ export const MAX_DEPENDENCY_NAME_LENGTH = 214
 
 /** Maximum length of one declared package range. */
 export const MAX_RANGE_LENGTH = 2_048
+
+/** Maximum length of one manifest script name or command. */
+export const MAX_SCRIPT_LENGTH = 4_096
 
 /** Maximum length of one path, matching the longest a supported filesystem accepts. */
 export const MAX_PATH_LENGTH = 32_767

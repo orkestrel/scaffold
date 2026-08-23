@@ -21,6 +21,7 @@ import {
 	createBlueprint,
 	DECLARATION_DEV_DEPENDENCIES,
 	GROUPS,
+	RELEASE_PROOF_COMMAND,
 	SHOWCASE_DEV_DEPENDENCIES,
 	SOURCE_BROWSER_DEV_DEPENDENCIES,
 } from '@src/core'
@@ -2862,6 +2863,98 @@ describe('CLI repair', () => {
 			expect(workspace.read('target/package.json')).toContain('"oxfmt": "^0.65.0"')
 		} finally {
 			await server.destroy()
+			workspace.destroy()
+		}
+	})
+
+	it('writes the distribution rows a target scaffolded before the proof is missing', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const server = await createUpstreamServer(FLEET_RELEASE_REPLIES)
+		try {
+			const fleet = createFleet(workspace)
+			const previous = buildTargetManifest()
+				.replaceAll(/\t\t"test:distribution": .*\n/gu, '')
+				.replace(` && ${RELEASE_PROOF_COMMAND}`, '')
+			workspace.write('target/package.json', previous)
+			const sink = createSink()
+
+			expect(previous).not.toContain('test:distribution')
+			const code = await new CLI(buildCLIOptions(sink, server.base)).execute([
+				'repair',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+
+			// The advisory that used to stop this verb is what the write closes: a
+			// target receiving the generated proof needs no hand edit to reach it.
+			expect(code).toBe(EXIT_CLEAN)
+			const written = workspace.read('target/package.json')
+			expect(written).toContain(
+				'"test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution"',
+			)
+			expect(written).toContain(RELEASE_PROOF_COMMAND)
+			expect(written).toContain('"description": "A sample workspace."')
+		} finally {
+			await server.destroy()
+			workspace.destroy()
+		}
+	})
+
+	it('refuses a customized chain, leaves the manifest alone, and names what to paste', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const customized = buildTargetManifest()
+				.replaceAll(/\t\t"test:distribution": .*\n/gu, '')
+				.replace(` && ${RELEASE_PROOF_COMMAND}`, ' && npm run verify')
+			workspace.write('target/package.json', customized)
+			workspace.write('target/vite.config.ts', 'marker\n')
+			const sink = createSink()
+
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+					'repair',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const refusal: unknown = JSON.parse(sink.output[0] ?? '')
+			expect(refusal).toHaveProperty('error.code', 'TARGET')
+			expect(refusal).toHaveProperty('error.message', expect.stringContaining('distribution'))
+			expect(refusal).toHaveProperty(
+				'error.message',
+				expect.stringContaining(
+					'"test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",',
+				),
+			)
+			// Nothing moved: neither the chain its author customized nor any other
+			// planned path.
+			expect(workspace.read('target/package.json')).toBe(customized)
+			expect(workspace.read('target/vite.config.ts')).toBe('marker\n')
+
+			const audited = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...audited.options }).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const reported: unknown = JSON.parse(audited.output[0] ?? '')
+			expect(reported).toHaveProperty(
+				'questions',
+				expect.arrayContaining([expect.objectContaining({ field: 'projects', blocking: false })]),
+			)
+		} finally {
 			workspace.destroy()
 		}
 	})

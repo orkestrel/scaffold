@@ -2,7 +2,15 @@ import type { Audit, CatalogEntry } from '@src/core'
 import type { MaterializeResult } from '@src/server'
 import { readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { Compiler, contentToHex, isFinding, WORKSPACE_OWNED_PATHS } from '@src/core'
+import {
+	blueprintToWritableScripts,
+	Compiler,
+	contentToHex,
+	createBlueprint,
+	isFinding,
+	RELEASE_PROOF_COMMAND,
+	WORKSPACE_OWNED_PATHS,
+} from '@src/core'
 import {
 	computeDigest,
 	computeManifestDigest,
@@ -1145,11 +1153,16 @@ describe('Materializer declare', () => {
 			const materializer = new Materializer({ host })
 			try {
 				const result = materializer.declare(
-					[{ name: '@orkestrel/emitter', range: '^0.0.9' }],
-					[
-						{ name: '@orkestrel/guide', range: '^0.0.9' },
-						{ name: '@orkestrel/router', range: '^0.0.9' },
-					],
+					{
+						pins: {
+							runtime: [{ name: '@orkestrel/emitter', range: '^0.0.9' }],
+							development: [
+								{ name: '@orkestrel/guide', range: '^0.0.9' },
+								{ name: '@orkestrel/router', range: '^0.0.9' },
+							],
+						},
+						scripts: [],
+					},
 					target,
 				)
 				expect(result.written).toEqual(['package.json'])
@@ -1177,18 +1190,143 @@ describe('Materializer declare', () => {
 			const materializer = new Materializer({ host })
 			try {
 				const result = materializer.declare(
-					[{ name: '@orkestrel/emitter', range: '^0.0.5' }],
-					[],
+					{
+						pins: { runtime: [{ name: '@orkestrel/emitter', range: '^0.0.5' }], development: [] },
+						scripts: [],
+					},
 					target,
 				)
 				expect(result.written).toEqual([])
 				expect(result.skipped).toEqual(['package.json'])
 				expect(
 					readErrorCode(() =>
-						materializer.declare([{ name: '@orkestrel/router', range: '^0.0.8' }], [], target),
+						materializer.declare(
+							{
+								pins: {
+									runtime: [{ name: '@orkestrel/router', range: '^0.0.8' }],
+									development: [],
+								},
+								scripts: [],
+							},
+							target,
+						),
 					),
 				).toBe('INVALID')
 				expect(workspace.read('project/package.json')).toBe(TARGET_MANIFEST_TEXT)
+			} finally {
+				materializer.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+})
+
+describe('Materializer declare scripts', () => {
+	it('writes the script region a target scaffolded before the proof is missing', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
+			const target = workspace.ensure('project')
+			const previous = TARGET_MANIFEST_TEXT.replaceAll(
+				/\t\t"test:distribution": .*\n/gu,
+				'',
+			).replace(` && ${RELEASE_PROOF_COMMAND}`, '')
+			workspace.write('project/package.json', previous)
+			const materializer = new Materializer({ host })
+			try {
+				const result = materializer.declare(
+					{
+						pins: { runtime: [], development: [] },
+						scripts: blueprintToWritableScripts(createBlueprint('sample', { src: ['core'] })),
+					},
+					target,
+				)
+
+				expect(result.written).toEqual(['package.json'])
+				// The expectation is the input with exactly the named script ranges
+				// edited, so nothing outside them can have moved.
+				expect(workspace.read('project/package.json')).toBe(
+					previous
+						.replace(
+							'"npm run format:check && npm run lint:check && npm run check && npm run build && npm test"',
+							`"npm run format:check && npm run lint:check && npm run check && npm run build && npm test && ${RELEASE_PROOF_COMMAND}"`,
+						)
+						.replace(
+							/(\t\t"prepublishOnly": ".*")\n\t\}/u,
+							'$1,\n\t\t"test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution"\n\t}',
+						),
+				)
+			} finally {
+				materializer.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses a customized chain without moving a byte, and still writes the ranges', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
+			const target = workspace.ensure('project')
+			const customized = TARGET_MANIFEST_TEXT.replaceAll(
+				/\t\t"test:distribution": .*\n/gu,
+				'',
+			).replace(` && ${RELEASE_PROOF_COMMAND}`, ' && npm run verify')
+			workspace.write('project/package.json', customized)
+			const materializer = new Materializer({ host })
+			try {
+				const result = materializer.declare(
+					{
+						pins: {
+							runtime: [{ name: '@orkestrel/emitter', range: '^0.0.9' }],
+							development: [],
+						},
+						scripts: blueprintToWritableScripts(createBlueprint('sample', { src: ['core'] })),
+					},
+					target,
+				)
+
+				expect(result.written).toEqual(['package.json'])
+				// Only the range moved. The customized chain is exactly as its author
+				// left it, and no distribution script was inserted beside it.
+				expect(workspace.read('project/package.json')).toBe(
+					customized.replace('"@orkestrel/emitter": "^0.0.5"', '"@orkestrel/emitter": "^0.0.9"'),
+				)
+				expect(workspace.read('project/package.json')).toContain('npm run verify')
+				expect(workspace.read('project/package.json')).not.toContain('test:distribution')
+			} finally {
+				materializer.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('leaves a manifest untouched when the script region alone is refused', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
+			const target = workspace.ensure('project')
+			const customized = TARGET_MANIFEST_TEXT.replace(
+				` && ${RELEASE_PROOF_COMMAND}`,
+				' && npm run verify',
+			)
+			workspace.write('project/package.json', customized)
+			const materializer = new Materializer({ host })
+			try {
+				const result = materializer.declare(
+					{
+						pins: { runtime: [], development: [] },
+						scripts: blueprintToWritableScripts(createBlueprint('sample', { src: ['core'] })),
+					},
+					target,
+				)
+
+				expect(result.written).toEqual([])
+				expect(result.skipped).toEqual(['package.json'])
+				expect(workspace.read('project/package.json')).toBe(customized)
 			} finally {
 				materializer.destroy()
 			}

@@ -6,6 +6,7 @@ import type {
 	DependencyPinSet,
 	Environment,
 	Group,
+	ManifestRegionSet,
 	Mirror,
 	Plan,
 	Question,
@@ -48,6 +49,7 @@ import {
 	blueprintToDevDependencies,
 	blueprintToRootVite,
 	blueprintToScripts,
+	blueprintToWritableScripts,
 	CONFORMANCE_TEST_PATH,
 	createBlueprint,
 	Compiler,
@@ -63,6 +65,7 @@ import {
 	manifestToName,
 	MAX_MANIFEST_BYTES,
 	nameToGuide,
+	replaceManifestScripts,
 	replacePlanRanges,
 	ScaffoldError,
 	SERVICE_SETUP_PATH,
@@ -349,7 +352,10 @@ export class CLI implements CLIInterface {
 			this.#assertVersions(versions)
 			const result = this.#merge(
 				host.materializer.repair(plan, audit, target),
-				host.materializer.declare(versions.pins.runtime, versions.pins.development, target),
+				host.materializer.declare(
+					{ pins: versions.pins, scripts: blueprintToWritableScripts(blueprint) },
+					target,
+				),
 			)
 			const [terminal] = this.#survey(host.materializer, this.#derive(target), target, groups)
 			const outcome: RepairResult = {
@@ -409,7 +415,7 @@ export class CLI implements CLIInterface {
 		try {
 			result = this.#merge(
 				this.#publish(materializer, target, fetched.entries, fetched.mirrors),
-				materializer.declare(pins.runtime, pins.development, target),
+				materializer.declare({ pins, scripts: [] }, target),
 			)
 		} finally {
 			materializer.destroy()
@@ -461,7 +467,10 @@ export class CLI implements CLIInterface {
 				} else this.#present(audit)
 				return EXIT_DRIFT
 			}
-			const declared = manifestToWritableDependencies(this.#manifest(target), blueprint)
+			const declared: ManifestRegionSet = {
+				pins: manifestToWritableDependencies(this.#manifest(target), blueprint),
+				scripts: blueprintToWritableScripts(blueprint),
+			}
 			const repaired = host.materializer.repair(plan, audit, target)
 			// The candidate set is re-derived from the plan and target, then held to
 			// the audit's foreign findings. A path the plan claims is never a deletion
@@ -509,12 +518,12 @@ export class CLI implements CLIInterface {
 	async #offline(
 		materializer: MaterializerInterface,
 		target: string,
-		declared: DependencyPinSet,
+		declared: ManifestRegionSet,
 		host: Baseline | undefined,
 	): Promise<Omit<OverwriteResult, 'audit'>> {
-		const versions = await this.#versions(declared, true)
+		const versions = await this.#versions(declared.pins, true)
 		this.#assertVersions(versions)
-		const written = materializer.declare(versions.pins.runtime, versions.pins.development, target)
+		const written = materializer.declare({ pins: versions.pins, scripts: declared.scripts }, target)
 		return {
 			...written,
 			entries: [],
@@ -532,7 +541,7 @@ export class CLI implements CLIInterface {
 	async #reconcile(
 		materializer: MaterializerInterface,
 		target: string,
-		declared: DependencyPinSet,
+		declared: ManifestRegionSet,
 		host: Baseline | undefined,
 		hostForced: boolean,
 	): Promise<Omit<OverwriteResult, 'audit'>> {
@@ -540,7 +549,7 @@ export class CLI implements CLIInterface {
 		let releases: readonly Release[] = []
 		let provenance: Provenance = { ...(host === undefined ? {} : { host }) }
 		try {
-			const versions = await this.#versions(declared, false)
+			const versions = await this.#versions(declared.pins, false)
 			releases = versions.releases
 			provenance = {
 				...(versions.baseline === undefined ? {} : { versions: versions.baseline }),
@@ -562,7 +571,7 @@ export class CLI implements CLIInterface {
 			}
 			const written = this.#merge(
 				this.#publish(materializer, target, fetched.entries, fetched.mirrors),
-				materializer.declare(versions.pins.runtime, versions.pins.development, target),
+				materializer.declare({ pins: versions.pins, scripts: declared.scripts }, target),
 			)
 			const floors: string[] = []
 			if (hostForced) floors.push('host')
@@ -1100,12 +1109,18 @@ export class CLI implements CLIInterface {
 	// Report either side of the planned-project invariant. Audit carries the
 	// advisory; writing verbs turn it into the hard boundary that keeps a
 	// birth-owned manifest from disagreeing with content-owned configuration.
+	//
+	// The subject is the manifest a write would leave, not the one on disk: a
+	// script region this package writes itself is not something to ask the
+	// maintainer to paste. Where the region is refused the projection is the
+	// disk text, so a customized chain still raises the advisory it always did.
 	#projectQuestion(
 		target: string,
 		blueprint: Blueprint,
 		writing = false,
 	): TargetQuestion | undefined {
-		const manifest = this.#manifest(target)
+		const text = this.#manifest(target)
+		const manifest = replaceManifestScripts(text, blueprintToWritableScripts(blueprint)) ?? text
 		const planned = blueprintToRootVite(blueprint)
 		const parsed = parseJSON(manifest)
 		const scripts = isRecord(parsed) && isRecord(parsed.scripts) ? parsed.scripts : {}

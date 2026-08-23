@@ -47,6 +47,7 @@ import {
 	isGroup,
 	isGroups,
 	isHex,
+	isManifestScript,
 	isMirror,
 	isOverride,
 	isPath,
@@ -571,6 +572,15 @@ export function buildGuardCases(): readonly TestGuardCase[] {
 			name: 'isDependency',
 			guard: isDependency,
 			accepted: [buildDependency(), buildDependency({ optional: true })],
+			admits: [],
+		},
+		{
+			name: 'isManifestScript',
+			guard: isManifestScript,
+			accepted: [
+				{ name: 'test', command: 'vitest run', accepted: [] },
+				{ name: 'prepublishOnly', command: 'npm test', accepted: ['npm run test'] },
+			],
 			admits: [],
 		},
 		{ name: 'isOverride', guard: isOverride, accepted: [buildOverride()], admits: [] },
