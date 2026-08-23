@@ -58,6 +58,12 @@ The caller-mutating control was not run before the stop.
   Old: “those imports follow a published face rather than selecting the branch.”  
   New: “those imports are declared by either axis, so they do not select the branch.”
 
+  **This entry is false and is corrected here rather than edited away.** The edit did not land. The
+  file carries a graft — the replacement was spliced onto the surviving fragment `those imports
+  follow a`, leaving `those imports follow a / declared by either axis`, which states nothing. Two
+  audit lanes found it independently. The other two entries in this section are accurate, which is
+  what made the false one invisible to a check comparing the copies against each other.
+
 - [src/core/templates.ts](/home/user/scaffold/src/core/templates.ts):  
   Old: “those imports follow a published face rather than selecting the branch.”  
   New: “those imports are declared by either axis, so they do not select the branch.”
@@ -156,6 +162,14 @@ restored byte-identical               Tests  16 passed (16)
 ```
 
 The assertion now binds the shipped call site. Before this round the same mutation left it passing.
+
+**Correction to this integration note.** It asserted P3's outcome from the unit's report without
+opening `src/core/compilers.ts`. One of the three copies had not changed, so the note repeated a
+false claim into the next round's brief, which then carried "in all three copies" as a thing to
+attack rather than as a thing already known false. `.agents/orchestration.md` requires checking a
+fact against the thing it describes, and where several artifacts state it, checking the code rather
+than the other copies. This note checked the report against itself. The rule was landed in this same
+campaign, by the Orchestrator, and broken by the Orchestrator in the round that landed it.
 
 **P4, completed by the Orchestrator** because the bench could not write the file. The duplicated
 fact-check directive is deleted and its one additive clause folded into the existing
