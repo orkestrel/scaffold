@@ -118,6 +118,26 @@ invalid target makes Node throw `ERR_INVALID_PACKAGE_TARGET`, which is a package
 must keep reporting rather than skip. Confirm that reading against Node's own behaviour before you
 implement, and if it does not hold, stop and report rather than guessing which way to go.
 
+### J5 — a comment your own change would falsify
+
+`ARTIFACT_TEMPLATES.tests.distribution` also carries a `guard` template, emitted into a target that
+published no browser face. Its comment quotes a predicate verbatim:
+
+```text
+	// launcher and the bundler one needs are not imported here. `it.runIf(!entry.browser)`
+	// retires the Node import and the Node require for a face published later, which
+```
+
+The quoted `it.runIf(!entry.browser)` is already stale: the shipped predicate at
+`src/core/templates.ts:1597` reads `it.runIf(entry.module && !entry.browser)`. J3 moves the
+partition again, so shipping J1 through J4 without touching this leaves a comment contradicting the
+code beside it, inside a file every target reads.
+
+Fix ONLY the quoted predicate and the sentence that depends on it, so the comment describes what your
+change actually leaves behind. Do not touch the clause about the launcher and the bundler: that
+sentence names a retired reason of record, its replacement is settled prose, and a subjective unit
+owns it immediately after you. Editing it here would put two writers on one paragraph.
+
 ## Owned files
 
 - `src/core/templates.ts` — the distribution template only.
@@ -183,7 +203,7 @@ the Orchestrator takes the authoritative run after you exit.
 
 ## Output
 
-- What changed, per defect, with file and line.
+- What changed, per defect (J1 through J5), with file and line.
 - The firing-control transcript for each of J1, J2, J3, J4.
 - The exact `guides/scaffold.md` sentences your change falsifies, with line numbers.
 - Anything you could not close, named, with the command that would settle it.
