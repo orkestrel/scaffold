@@ -1,3 +1,5 @@
+import type { Question } from '@src/core'
+import { isRecord } from '@orkestrel/contract'
 import {
 	createGuide,
 	createSource,
@@ -12,12 +14,26 @@ import {
 	SURFACE,
 	TESTS,
 } from '@orkestrel/guide'
-import { Compiler, createBlueprint, isScaffoldError, ScaffoldError } from '@src/core'
+import { requireValue } from '@orkestrel/test'
+import { createScratch } from '@orkestrel/test/server'
+import {
+	ARTIFACT_TEMPLATES,
+	blueprintToTestArtifacts,
+	Compiler,
+	createBlueprint,
+	isQuestion,
+	isScaffoldError,
+	ScaffoldError,
+} from '@src/core'
 import { globSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { runInNewContext } from 'node:vm'
+import ts from 'typescript'
 import { describe, expect, it } from 'vitest'
 import { renderUsage } from '../src/bin/helpers.js'
+import { CLI } from '../src/bin/CLI.js'
+import { buildTargetManifest, createSink, createStagedHost } from './setupServer.js'
 
 // The inventory the extractor reflects over. `Source` never touches disk, so the
 // consumer gathers the files; the root is resolved from this module rather than
@@ -226,5 +242,123 @@ describe('guide examples', () => {
 			code = error.code
 		}
 		expect(code).toBe('TARGET')
+	})
+
+	it('reports a retained setup seed when the planned release seed differs', async () => {
+		const markdown = requireValue(files['guides/scaffold.md'])
+		expect(markdown).toContain(
+			'that moves a planned seed therefore raises the question on every target materialized before it,',
+		)
+		const workspace = createScratch({ prefix: 'scaffold-guide-release-skew-' })
+		try {
+			const host = createStagedHost(workspace)
+			const target = workspace.ensure('target')
+			const blueprint = createBlueprint('sample', { src: ['core'], global: true })
+			workspace.write('target/package.json', buildTargetManifest(blueprint))
+			workspace.ensure('target/src/core')
+			const retained = `export function setup(): void {
+	return
+}
+`
+			const readings: Question[][] = []
+			for (const content of [ARTIFACT_TEMPLATES.tests.global, retained]) {
+				workspace.write('target/tests/setupGlobal.ts', content)
+				const sink = createSink()
+				await new CLI(sink.options).execute([
+					'audit',
+					'--offline',
+					'--from',
+					host,
+					'--target',
+					target,
+					'--groups',
+					'tests',
+					'--json',
+				])
+				const parsed: unknown = JSON.parse(requireValue(sink.output[0]))
+				if (
+					!isRecord(parsed) ||
+					!Array.isArray(parsed.questions) ||
+					!parsed.questions.every(isQuestion)
+				) {
+					throw new Error('The guide audit returned no question list')
+				}
+				readings.push(parsed.questions)
+			}
+
+			const planned = requireValue(readings[0])
+			const skewed = requireValue(readings[1])
+			expect(planned.filter(({ field }) => field === 'setup')).toStrictEqual([])
+			expect(skewed.filter(({ field }) => field === 'setup')).toStrictEqual([
+				{
+					field: 'setup',
+					message: `The target at ${target} carries a test setup module that no proof covers: tests/setupGlobal.ts. Add tests/setupGlobal.test.ts to cover it. The proof's subject is behavior only this workspace can assert, so scaffold does not write it.`,
+					blocking: false,
+				},
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('skips rejected package targets only while traversing fallback lists', () => {
+		const markdown = requireValue(files['guides/scaffold.md'])
+		expect(markdown).toContain(
+			'`node_modules` segment is skipped rather than resolved or collected',
+		)
+		const proof = blueprintToTestArtifacts(createBlueprint('sample', { src: ['core'] })).find(
+			({ path }) => path === 'tests/distribution.test.ts',
+		)
+		const content = requireValue(proof?.content)
+		const source = ts.createSourceFile(
+			'distribution.test.ts',
+			content,
+			ts.ScriptTarget.ESNext,
+			true,
+		)
+		const names = [
+			'isRecord',
+			'isList',
+			'isPackageTarget',
+			'resolvePackageTarget',
+			'resolveTarget',
+			'collectTargets',
+		]
+		const declarations: string[] = []
+		const declared: string[] = []
+		for (const statement of source.statements) {
+			if (!ts.isFunctionDeclaration(statement) || statement.name === undefined) continue
+			if (!names.includes(statement.name.text)) continue
+			declared.push(statement.name.text)
+			declarations.push(statement.getText(source))
+		}
+		expect(declared).toStrictEqual(names)
+		const compiled = ts.transpileModule(
+			`${declarations.join('\n\n')}\n\nexport { ${names.join(', ')} }\n`,
+			{
+				compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ESNext },
+			},
+		)
+		const classifier: Record<string, unknown> = {}
+		runInNewContext(compiled.outputText, { exports: classifier })
+		const calls: string[] = []
+		const expected: unknown[] = []
+		for (const target of [
+			'../outside.cjs',
+			'./x/./outside.cjs',
+			'./x/../outside.cjs',
+			'./x/node_modules/outside.cjs',
+		]) {
+			calls.push(
+				`classifier.resolveTarget([${JSON.stringify(target)}, './valid.cjs'], ['import'])`,
+				`classifier.collectTargets([${JSON.stringify(target)}, './valid.cjs'])`,
+				`classifier.resolveTarget(${JSON.stringify(target)}, ['import'])`,
+				`classifier.collectTargets(${JSON.stringify(target)})`,
+			)
+			expected.push('./valid.cjs', ['./valid.cjs'], target, [target])
+		}
+		const answers: unknown = runInNewContext(`[${calls.join(', ')}]`, { classifier })
+		if (!Array.isArray(answers)) throw new Error('The emitted classifier returned no answer list')
+		expect(structuredClone(answers)).toStrictEqual(expected)
 	})
 })

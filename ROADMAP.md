@@ -96,6 +96,13 @@ no campaign folder is the plan of record.
   repaired 2026-08-23 because they ship into every target; several remain elsewhere in
   `src/core/templates.ts`. Sweep the repository once rather than fixing them where they are noticed.
 
+- **scaffold**: the emitted proof's `commonjs` selector requires an explicit `require` condition, so
+  a subpath published as a bare string target such as `{".": "./index.cjs"}` is excluded from the
+  CommonJS compile probe although a CommonJS consumer can import it. Measured 2026-08-23: no fleet
+  manifest uses a bare-string exports entry, so it reaches nothing today. It fails quiet, as missing
+  coverage rather than a false red. Closing it means inferring the target's module format from its
+  extension and the package's `type` field.
+
 ## 2. Design and research records
 
 - **Guide mirrors track upstream `main`, not the catalog release.** `Upstream` fetches guides

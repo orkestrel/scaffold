@@ -270,7 +270,9 @@ const CLASSIFIER_DECLARATIONS: readonly string[] = [
 	'isRecord',
 	'isList',
 	'isPackageTarget',
+	'resolvePackageTarget',
 	'resolveTarget',
+	'resolvesCommonJS',
 	'collectTargets',
 	'isModule',
 	'isDeclaration',
@@ -1192,18 +1194,22 @@ describe('emitted distribution classifier', () => {
 		}
 	})
 
-	it('includes dual entries in CommonJS compile probes', () => {
+	it('selects dual entries and excludes ESM-only entries from CommonJS compile probes', () => {
 		const workspace = createScratch({
 			parent: ensureTmpRoot(),
 			prefix: 'scaffold-e2-dual-format-',
 		})
 		try {
 			const file = stageDistributionClassifier(workspace)
+			const dual = `{ import: './dual.js', require: './dual.cjs' }`
+			const module = `{ types: './module.d.ts', import: './module.js', default: './module.js' }`
 			const answers = driveClassifier(file, [
-				`classifier.selectEntries([{ subpath: './dual', mapping: { import: './dual.js', require: './dual.cjs' } }, { subpath: './module', mapping: { import: './module.js' } }], classifier.BUNDLER_CONDITIONS.commonjs).map((entry) => entry.subpath)`,
+				`classifier.resolvesCommonJS(${dual})`,
+				`classifier.resolvesCommonJS(${module})`,
+				`classifier.selectEntries([{ subpath: './dual', mapping: ${dual} }, { subpath: './module', mapping: ${module} }], classifier.BUNDLER_CONDITIONS.commonjs).map((entry) => entry.subpath)`,
 			])
 
-			expect(answers).toStrictEqual([['./dual']])
+			expect(answers).toStrictEqual([true, false, ['./dual']])
 		} finally {
 			workspace.destroy()
 		}
