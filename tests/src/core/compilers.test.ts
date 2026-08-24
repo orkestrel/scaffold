@@ -148,27 +148,63 @@ const SCRIPT_REGION: readonly ManifestScript[] = [
 ]
 
 describe('blueprintToWritableScripts', () => {
-	it('names the scripts the packed-package proof needs, and the chain that predates them', () => {
+	it('names direct project scripts and lifecycle scripts without taking gate chains', () => {
 		const blueprint = buildBlueprint({ src: ['core'] })
 		const region = blueprintToWritableScripts(blueprint)
 		const scripts = blueprintToScripts(blueprint)
 
-		expect(region.map((script) => script.name)).toEqual(['test:distribution', 'prepublishOnly'])
+		expect(region.map((script) => script.name)).toEqual([
+			'test:src:core',
+			'test:policy',
+			'test:config',
+			'test:probe',
+			'test:bench',
+			'test:distribution',
+			'prepack',
+			'prepublishOnly',
+		])
 		expect(region.map((script) => script.command)).toEqual([
+			scripts['test:src:core'],
+			scripts['test:policy'],
+			scripts['test:config'],
+			scripts['test:probe'],
+			scripts['test:bench'],
 			scripts['test:distribution'],
+			scripts.prepack,
 			scripts.prepublishOnly,
 		])
-		// The predecessor is the same chain without the release row, which is what
-		// a target scaffolded before the proof existed still holds.
-		expect(region[0]?.accepted).toEqual([])
-		expect(region[1]?.accepted).toEqual([
+		for (const script of region.slice(0, 6)) expect(script.accepted).toEqual([])
+		// The generated predecessor copied the build chain instead of delegating to
+		// it, so the region accepts that value while moving targets to the delegate.
+		expect(region[6]?.accepted).toEqual([scripts.build])
+		// The publish predecessor is the same chain without the release row, which
+		// is what a target scaffolded before the proof existed still holds.
+		expect(region[7]?.accepted).toEqual([
 			`${scripts.prepublishOnly ?? ''}`.replace(` && ${RELEASE_PROOF_COMMAND}`, ''),
 		])
-		expect(region[1]?.accepted[0]).not.toContain(RELEASE_PROOF_COMMAND)
+		expect(region[7]?.accepted[0]).not.toContain(RELEASE_PROOF_COMMAND)
+		for (const name of [
+			'test',
+			'test:src',
+			'check',
+			'build',
+			'format',
+			'format:check',
+			'lint',
+			'lint:check',
+			'clean',
+			'copy',
+		]) {
+			expect(region.map((script) => script.name)).not.toContain(name)
+		}
 	})
 
-	it('names nothing for a workspace that publishes no source', () => {
-		expect(blueprintToWritableScripts(buildBlueprint({ src: [], app: ['core'] }))).toEqual([])
+	it('names direct project and workbench scripts for a private application', () => {
+		expect(
+			blueprintToWritableScripts(buildBlueprint({ src: [], app: ['core'] })).map(
+				(script) => script.name,
+			),
+		).toEqual(['test:app:core', 'test:policy', 'test:config', 'test:probe', 'test:bench'])
 	})
 })
 
@@ -193,18 +229,26 @@ describe('replaceManifestScripts', () => {
 		const blueprint = buildBlueprint({ src: ['core'] })
 		const region = blueprintToWritableScripts(blueprint)
 		const current = blueprintToManifest(blueprint)
+		const legacyBuild = blueprintToScripts(blueprint).build
+		if (legacyBuild === undefined)
+			throw new Error('The publishing blueprint carries no build script')
 		const previous = current
+			.replace('"prepack": "npm run build"', `"prepack": ${JSON.stringify(legacyBuild)}`)
 			.replaceAll(/\t\t"test:distribution": .*\n/gu, '')
 			.replace(` && ${RELEASE_PROOF_COMMAND}`, '')
 		const written = replaceManifestScripts(previous, region)
+		const distribution = region.find((script) => script.name === 'test:distribution')
+		const prepublish = region.find((script) => script.name === 'prepublishOnly')
 
 		expect(previous).not.toContain('test:distribution')
+		expect(previous).toContain(`"prepack": ${JSON.stringify(legacyBuild)}`)
 		expect(written).toBeDefined()
 		expect(written).toContain(RELEASE_PROOF_COMMAND)
 		expect(JSON.parse(written ?? '')).toMatchObject({
 			scripts: {
-				'test:distribution': region[0]?.command,
-				prepublishOnly: region[1]?.command,
+				prepack: 'npm run build',
+				'test:distribution': distribution?.command,
+				prepublishOnly: prepublish?.command,
 			},
 		})
 	})
@@ -391,7 +435,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 
 		// The digest covers the self-pin, so a release moves it. Update it with the
 		// version bump in the same change; it is the tripwire for every other byte.
-		expect(hex).toBe('335fc68666ccf43bffceb5b8a2e2a10e9b454b5834712a0995c43e0b8c63fcfe')
+		expect(hex).toBe('ac92faf53d9eb4f542e51350df3092ee70e9e40220863f91fd48b142d7c4c9da')
 	})
 })
 
@@ -440,7 +484,7 @@ describe('blueprintToScripts config projects', () => {
 		const published = blueprintToScripts(buildBlueprint())
 		const application = blueprintToScripts(createBlueprint('demo', { src: [], app: ['core'] }))
 
-		expect(published.prepack).toBe(published.build)
+		expect(published.prepack).toBe('npm run build')
 		expect(application.prepack).toBeUndefined()
 		expect(published.test).not.toContain('prepack')
 		expect(published.prepublishOnly).not.toContain('prepack')

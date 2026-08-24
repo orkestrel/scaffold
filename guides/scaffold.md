@@ -566,9 +566,9 @@ carries the fact and the vendor list keeps its own separate job.
 The root Vite configuration defines and registers the fixed `guides` project only when the derived
 blueprint carries `guides`. Reading verbs set that fact only when `tests/guides.test.ts` is a
 physical file with that exact path case. A directory or a case-folded spelling does not select it. A
-fresh workspace therefore carries no guides project or script. A developer who adds the proof must
-also add the exact `test:guides` script line that the plan reports; the manifest remains
-birth-owned.
+fresh workspace therefore carries no guides project or script. When a developer adds the proof,
+`audit` reports the exact `test:guides` script line until `repair` or `overwrite` appends it through
+the writable script region. The rest of the manifest remains birth-owned.
 
 The plan-reading verbs compare the Vitest project set named by the target manifest with the
 project set the planned root configuration registers. Every planned proof project must also be
@@ -585,31 +585,33 @@ static Vitest fact to infer.
 `audit` still completes the comparison and reports one non-blocking `projects` question when its
 selection includes `configs`. A scoped audit that excludes `configs` omits that question. For a
 literal absent project, its advisory tells the developer to register the project or remove the
-script. For a planned project absent from the gate chains, the advisory checks the direct
-`test:<project>` script. When the script is absent, the advisory gives the exact line to add to
-`package.json`. When the script is declared but ungated, the advisory names the script and the gate
-chain that must invoke it, without repeating a script line. When `configs` is selected, `repair` and
-`overwrite` refuse either mismatch before writing. Their refusal names the `configs` group, the
-manifest and planned `vite.config.ts` conflict, and the option to exclude `configs` from
-`--groups`. A selection that excludes `configs` proceeds. An advisory alone does not make an aligned
-target drift.
+script. For a planned project absent from the gate chains, the advisory reads the manifest after a
+writable script projection. The `scripts` question owns an absent direct `test:<project>` line. The
+`projects` question names the direct script and the gate chain that must invoke it when the projected
+region still leaves the project ungated. When `configs` is selected, `repair` and `overwrite` refuse
+an unregistered or ungated project before writing. Their refusal names the `configs` group, the
+manifest and planned `vite.config.ts` conflict, and the option to exclude `configs` from `--groups`.
+A selection that excludes `configs` proceeds. An advisory alone does not make an aligned target
+drift.
 
-Scaffold writes one part of the manifest rather than advising on it: the script region a publishing
-workspace needs for the generated distribution proof. `repair` and `overwrite` write
-`test:distribution` and `prepublishOnly` there. A declared value is overwritten only when it is
-already the value being written, or, for `prepublishOnly`, the one predecessor the region accepts —
-the same gate chain without the release row. The overwrite happens in place, so every byte outside
-the replaced ranges survives, and a description, a keyword, a key order, and a script the workspace
-added are untouched. A script the manifest does not declare is appended after the last declared one,
-copying that section's indentation. `catalog` writes no script region; it names the ranges alone.
+Scaffold writes one part of the manifest rather than advising on it: the writable script region.
+`repair` and `overwrite` write every direct `test:<project>` script the blueprint computes,
+`test:probe`, and `test:bench`. A publishing workspace also receives `test:distribution`, `prepack`,
+and `prepublishOnly`. The `test`, `check`, `build`, `dev`, `serve`, `show`, `format`, `lint`, `clean`,
+and `copy` gate chains stay maintainer-owned. A declared value is overwritten only when it is already
+the value being written or is a recognized generated predecessor. The overwrite happens in place,
+so every byte outside the replaced ranges survives. A target's descriptions, keywords, extra
+scripts, and manifest key order survive byte-for-byte. A script the manifest does not declare is
+appended after the last declared one, copying that section's indentation. `catalog` writes no script
+region; it names the ranges alone.
 
-A value matching neither is a chain the workspace author wrote. The region is then refused whole,
-without a byte moving, and the range region is still written. The `projects` advisory reads the
-manifest as a write would leave it, so a region scaffold writes for itself raises no question, while
-a refused region leaves the target's own text standing and the advisory reports whichever half is
-outstanding: the exact `test:distribution` line to paste, or the gate chain that must invoke a
-script the manifest already declares. The refusal covers the region rather than one script, so a
-manifest never holds one written value beside one refused one.
+A value matching neither is a script the workspace author wrote. The script region is then refused
+whole, without a byte moving. The `scripts` question reads the target during `audit` and the projected
+manifest before a write. A writable region therefore retires the question it can close. A refused
+region leaves the target's text standing, so the question still names each missing script and the
+exact line to paste. The `projects` question reports only a direct script the manifest declares but
+the maintainer-owned gate chain does not invoke after projection. The refusal covers the region rather
+than one script, so a manifest never holds one written value beside one refused one.
 
 The same plan-reading verbs compare the tooling set the derived blueprint plans against
 `dependencies` and `devDependencies` together. A missing planned package produces one non-blocking

@@ -1207,34 +1207,44 @@ export class CLI implements CLIInterface {
 		const missing = [...expectedLines]
 			.filter(([project]) => !reachable.has(project))
 			.sort(([left], [right]) => left.localeCompare(right))
-		if (missing.length === 0) return undefined
-		const names = missing.map(([project]) => project)
-		// A project goes unreached for one of these reasons, and they take opposite
-		// repairs. Where the direct script is absent, the script is what is missing.
-		// Where the target already declares it, adding that line again changes
-		// nothing and the gate chain is what is missing.
-		const unscripted = missing.filter(([project]) => !isString(scripts[`test:${project}`]))
 		const ungated = missing.filter(([project]) => isString(scripts[`test:${project}`]))
-		// The script lines are meant to be pasted and end in a trailing comma, so
-		// they go last. Any prose after them reads as part of the paste.
-		const remedies: string[] = []
-		if (ungated.length > 0) {
-			const declared = ungated.map(([project]) => `test:${project}`)
-			remedies.push(
-				`${declared.join(', ')} ${declared.length === 1 ? 'is' : 'are'} already declared, so the gate is missing rather than the script: invoke ${declared.length === 1 ? 'it' : 'each of them'} by name from the ${gateNames} chain.`,
-			)
-		}
-		if (unscripted.length > 0) {
-			const lines = unscripted.map(([, line]) => line)
-			remedies.push(
-				`${writing ? 'To continue, add' : 'Add'} ${lines.length === 1 ? 'this exact script line' : 'these exact script lines'} to package.json: ${lines.join(' ')}`,
-			)
-		}
+		if (ungated.length === 0) return undefined
+		const names = ungated.map(([project]) => project)
+		const declared = ungated.map(([project]) => `test:${project}`)
 		return {
 			field: 'projects',
-			message: `${writing ? 'The configs group is blocked because ' : ''}the manifest at ${target} does not reach ${names.length === 1 ? 'a Vitest project' : 'Vitest projects'} the planned configuration registers: ${names.join(', ')}. No chain from ${gateNames} invokes ${names.length === 1 ? 'it' : 'them'}. ${remedies.join(' ')}${writing ? ' Exclude configs from --groups to write another group.' : ''}`,
+			message: `${writing ? 'The configs group is blocked because ' : ''}the manifest at ${target} does not reach ${names.length === 1 ? 'a Vitest project' : 'Vitest projects'} the planned configuration registers: ${names.join(', ')}. No chain from ${gateNames} invokes ${names.length === 1 ? 'it' : 'them'}. ${declared.join(', ')} ${declared.length === 1 ? 'is' : 'are'} already declared, so the gate is missing rather than the script: invoke ${declared.length === 1 ? 'it' : 'each of them'} by name from the ${gateNames} chain.${writing ? ' Exclude configs from --groups to write another group.' : ''}`,
 			blocking: false,
 			groups: ['configs'],
+		}
+	}
+
+	// Report the writable scripts a target has not declared. Audit reads the
+	// target bytes, while writing verbs read the successful projection they will
+	// land. A refused projection falls back to the target bytes, which keeps the
+	// outstanding lines visible and blocks the selected manifest group before any
+	// other write starts.
+	#scriptQuestion(
+		target: string,
+		blueprint: Blueprint,
+		writing = false,
+	): TargetQuestion | undefined {
+		const text = this.#manifest(target)
+		const writable = blueprintToWritableScripts(blueprint)
+		const manifest = writing ? (replaceManifestScripts(text, writable) ?? text) : text
+		const parsed = parseJSON(manifest)
+		const scripts = isRecord(parsed) && isRecord(parsed.scripts) ? parsed.scripts : {}
+		const missing = writable.filter((script) => !Object.hasOwn(scripts, script.name))
+		if (missing.length === 0) return undefined
+		const names = missing.map((script) => script.name)
+		const lines = missing.map(
+			(script) => `${JSON.stringify(script.name)}: ${JSON.stringify(script.command)},`,
+		)
+		return {
+			field: 'scripts',
+			message: `The manifest at ${target} does not declare ${names.length === 1 ? 'a planned script' : 'planned scripts'}: ${names.join(', ')}. ${writing ? 'The manifest group is blocked. Add' : 'Add'} ${lines.length === 1 ? 'this exact script line' : 'these exact script lines'} to package.json: ${lines.join(' ')}${writing ? ' Add the scripts before selecting manifest, or exclude manifest from --groups.' : ''}`,
+			blocking: false,
+			groups: ['manifest'],
 		}
 	}
 
@@ -1357,6 +1367,8 @@ export class CLI implements CLIInterface {
 		writing = false,
 	): readonly Question[] {
 		const questions: TargetQuestion[] = []
+		const script = this.#scriptQuestion(target, blueprint, writing)
+		if (script !== undefined) questions.push(script)
 		const project = this.#projectQuestion(target, blueprint, writing)
 		if (project !== undefined) questions.push(project)
 		const dependency = this.#dependencyQuestion(target, blueprint, writing)

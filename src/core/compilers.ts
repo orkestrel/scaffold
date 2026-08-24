@@ -425,7 +425,7 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
 		scripts['serve:build'] = 'npm run build:app:server && npm run serve'
 	}
 	if (publishes) {
-		scripts.prepack = scripts.build
+		scripts.prepack = 'npm run build'
 		scripts.prepublishOnly = [
 			'npm run format:check && npm run lint:check && npm run check && npm run build && npm test',
 			RELEASE_PROOF_COMMAND,
@@ -439,17 +439,19 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  * Project a blueprint into the manifest scripts a region write may replace.
  *
  * @param blueprint - The workspace specification.
- * @returns One entry per writable script, or none when the workspace publishes
- * nothing and therefore declares neither script.
+ * @returns One entry per writable script.
  *
  * @remarks
- * Publishing is what selects these scripts, so a private workspace answers an
- * empty region and the write leaves its manifest alone.
+ * Every direct `test:<project>` script is writable, together with the probe and
+ * benchmark workbench scripts. Publishing adds the pack and publication
+ * lifecycle scripts. Aggregate test scripts and maintainer-owned gate chains
+ * stay outside the region.
  *
- * `accepted` carries the predecessor a target can hold before this package
- * generated the packed-package proof: the same gate chain without
+ * `accepted` carries each generated predecessor the region can replace. The
+ * pack hook accepts the build chain emitted before it delegated to `build`. The
+ * publication hook accepts the same gate chain without
  * {@link RELEASE_PROOF_COMMAND}. The value being written is always writable, so
- * it is not repeated there. Any other value is a chain the workspace author
+ * it is not repeated there. Any other value is a script the workspace author
  * customized, and {@link replaceManifestScripts} refuses the whole region
  * rather than taking it.
  *
@@ -459,22 +461,34 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  *
  * const blueprint = createBlueprint('router', { src: ['core'] })
  *
- * blueprintToWritableScripts(blueprint)[0]?.name // 'test:distribution'
+ * blueprintToWritableScripts(blueprint)[0]?.name // 'test:src:core'
  * ```
  */
 export function blueprintToWritableScripts(blueprint: Blueprint): readonly ManifestScript[] {
 	const scripts = blueprintToScripts(blueprint)
-	const distribution = scripts['test:distribution']
+	const writable: ManifestScript[] = []
+	for (const [name, command] of Object.entries(scripts)) {
+		if (!name.startsWith('test:') || name === 'test:src' || name === 'test:app') continue
+		writable.push({ name, command, accepted: [] })
+	}
+	const prepack = scripts.prepack
+	if (prepack !== undefined) {
+		const predecessor = scripts.build
+		writable.push({
+			name: 'prepack',
+			command: prepack,
+			accepted: predecessor === undefined ? [] : [predecessor],
+		})
+	}
 	const prepublish = scripts.prepublishOnly
-	if (distribution === undefined || prepublish === undefined) return []
-	return [
-		{ name: 'test:distribution', command: distribution, accepted: [] },
-		{
+	if (prepublish !== undefined) {
+		writable.push({
 			name: 'prepublishOnly',
 			command: prepublish,
 			accepted: [prepublish.replace(` && ${RELEASE_PROOF_COMMAND}`, '')],
-		},
-	]
+		})
+	}
+	return writable
 }
 
 /**

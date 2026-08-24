@@ -18,11 +18,13 @@ import {
 	blueprintToDevDependencies,
 	blueprintToManifest,
 	blueprintToScripts,
+	blueprintToWritableScripts,
 	CATALOG_AGENT_PATH,
 	createBlueprint,
 	DECLARATION_DEV_DEPENDENCIES,
 	GROUPS,
 	RELEASE_PROOF_COMMAND,
+	replaceManifestScripts,
 	SHOWCASE_DEV_DEPENDENCIES,
 	SOURCE_BROWSER_DEV_DEPENDENCIES,
 } from '@src/core'
@@ -1615,11 +1617,13 @@ describe('CLI audit', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
+			const scripts = {
+				...blueprintToScripts(createBlueprint('sample', { src: ['core'] })),
+				test: 'vitest run --project src:core "--project=missing"',
+			}
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(undefined, undefined, undefined, {
-					test: 'vitest run --project src:core "--project=missing"',
-				}),
+				buildTargetManifest(undefined, undefined, undefined, scripts),
 			)
 			const sink = createSink()
 			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
@@ -1681,7 +1685,7 @@ describe('CLI audit', () => {
 		}
 	})
 
-	it('reports a planned project missing from the manifest with the exact script line', async () => {
+	it('reports a writable project script missing from the manifest', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
@@ -1704,33 +1708,188 @@ describe('CLI audit', () => {
 			).toBe(EXIT_DRIFT)
 			const audit: Audit = JSON.parse(sink.output[0] ?? '')
 			expect(audit.questions).toHaveLength(1)
-			expect(audit.questions[0]).toMatchObject({ field: 'projects', blocking: false })
+			expect(audit.questions[0]).toMatchObject({ field: 'scripts', blocking: false })
 			expect(audit.questions[0]?.message).toContain('test:config')
 			expect(audit.questions[0]?.message).toContain(
 				'"test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",',
 			)
-			workspace.write('target/vite.config.ts', 'marker\n')
-			const refused = createSink()
+			const repaired = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...refused.options }).execute([
+				await new CLI({ ...REGISTRY_OPTIONS, ...repaired.options }).execute([
 					'repair',
+					'--groups',
+					'manifest',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--offline',
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			expect(workspace.read('target/package.json')).toContain(
+				'"test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config"',
+			)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('audits and repairs the writable scripts without moving target-owned manifest bytes', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const blueprint = createBlueprint('html', { src: ['core', 'browser'] })
+			workspace.ensure('target/src/browser')
+			const scripts = { ...blueprintToScripts(blueprint), deploy: 'npm run build && npm publish' }
+			delete scripts['test:probe']
+			delete scripts['test:bench']
+			const manifest = buildTargetManifest(blueprint, undefined, undefined, scripts)
+			workspace.write('target/package.json', manifest)
+			const question: Question = {
+				field: 'scripts',
+				message: `The manifest at ${fleet.target} does not declare planned scripts: test:probe, test:bench. Add these exact script lines to package.json: "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe", "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",`,
+				blocking: false,
+			}
+
+			const before = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...before.options }).execute([
+					'audit',
+					'--groups',
+					'manifest',
 					'--from',
 					fleet.host,
 					'--target',
 					fleet.target,
 					'--json',
 				]),
+			).toBe(EXIT_CLEAN)
+			const initial: Audit = JSON.parse(before.output[0] ?? '')
+			expect(initial.questions).toStrictEqual([question])
+
+			const repaired = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...repaired.options }).execute([
+					'repair',
+					'--groups',
+					'manifest',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--offline',
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const outcome: RepairResult = JSON.parse(repaired.output[0] ?? '')
+			expect(outcome.audit.questions.filter(({ field }) => field === 'scripts')).toStrictEqual([])
+			const written = requireValue(workspace.read('target/package.json'))
+			const appended = [
+				',',
+				'\t\t"test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",',
+				'\t\t"test:bench": "vitest bench --config vite.config.ts --no-cache --project probe"',
+			].join('\n')
+			expect(written.replace(appended, '')).toBe(manifest)
+			expect(written).toContain('"deploy": "npm run build && npm publish"')
+
+			const after = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...after.options }).execute([
+					'audit',
+					'--groups',
+					'manifest',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const terminal: Audit = JSON.parse(after.output[0] ?? '')
+			expect(terminal.questions.filter(({ field }) => field === 'scripts')).toStrictEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('refuses the writable region when a direct project script is customized', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const blueprint = createBlueprint('html', { src: ['core', 'browser'] })
+			workspace.ensure('target/src/browser')
+			const scripts = {
+				...blueprintToScripts(blueprint),
+				'test:config': 'vitest run --project custom',
+			}
+			delete scripts['test:probe']
+			delete scripts['test:bench']
+			const manifest = buildTargetManifest(blueprint, undefined, undefined, scripts)
+			workspace.write('target/package.json', manifest)
+			const sink = createSink()
+
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+					'repair',
+					'--groups',
+					'manifest',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--offline',
+					'--json',
+				]),
 			).toBe(EXIT_DRIFT)
-			const refusal: unknown = JSON.parse(refused.output[0] ?? '')
+			const refusal: unknown = JSON.parse(sink.output[0] ?? '')
 			expect(refusal).toHaveProperty('error.code', 'TARGET')
-			expect(refusal).toHaveProperty('error.message', expect.stringContaining('test:config'))
-			expect(refusal).toHaveProperty(
-				'error.message',
-				expect.stringContaining(
-					'"test:config": "vitest run --config vite.config.ts --no-cache --reporter=dot --project config",',
-				),
+			expect(refusal).toHaveProperty('error.message', expect.stringContaining('test:probe'))
+			expect(refusal).toHaveProperty('error.message', expect.stringContaining('test:bench'))
+			expect(workspace.read('target/package.json')).toBe(manifest)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('keeps the scripts question when the real projection omits a writable script', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			const blueprint = createBlueprint('html', { src: ['core', 'browser'] })
+			workspace.ensure('target/src/browser')
+			const scripts = { ...blueprintToScripts(blueprint) }
+			delete scripts['test:probe']
+			delete scripts['test:bench']
+			const manifest = buildTargetManifest(blueprint, undefined, undefined, scripts)
+			const projection = blueprintToWritableScripts(blueprint).filter(
+				(script) => script.name !== 'test:bench',
 			)
-			expect(workspace.read('target/vite.config.ts')).toBe('marker\n')
+			const projected = replaceManifestScripts(manifest, projection)
+			if (projected === undefined) throw new Error('The script projection was refused')
+			workspace.write('target/package.json', projected)
+			const sink = createSink()
+
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+					'audit',
+					'--groups',
+					'manifest',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const audit: Audit = JSON.parse(sink.output[0] ?? '')
+			expect(audit.questions).toStrictEqual([
+				{
+					field: 'scripts',
+					message: `The manifest at ${fleet.target} does not declare a planned script: test:bench. Add this exact script line to package.json: "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",`,
+					blocking: false,
+				},
+			])
 		} finally {
 			workspace.destroy()
 		}
@@ -1873,7 +2032,7 @@ describe('CLI audit', () => {
 		}
 	})
 
-	it('prescribes the script line when the target declares no direct script', async () => {
+	it('separates a missing writable script from its ungated project', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
@@ -1908,13 +2067,17 @@ describe('CLI audit', () => {
 				]),
 			).toBe(EXIT_DRIFT)
 			const audit: Audit = JSON.parse(sink.output[0] ?? '')
-			expect(audit.questions).toHaveLength(2)
-			expect(audit.questions[1]).toStrictEqual(
+			expect(audit.questions).toHaveLength(3)
+			expect(audit.questions[2]).toStrictEqual(
 				buildSetupQuestion(fleet.target, 'tests/setupService.ts'),
 			)
+			expect(audit.questions[0]).toMatchObject({ field: 'scripts', blocking: false })
 			expect(audit.questions[0]?.message).toContain('this exact script line to package.json:')
 			expect(audit.questions[0]?.message).toContain('"test:service":')
-			expect(audit.questions[0]?.message).not.toContain('already declared')
+			expect(audit.questions[1]).toMatchObject({ field: 'projects', blocking: false })
+			expect(audit.questions[1]?.message).toContain(
+				'test:service is already declared, so the gate is missing rather than the script',
+			)
 		} finally {
 			workspace.destroy()
 		}
@@ -2272,11 +2435,13 @@ describe('CLI audit', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
+			const scripts = {
+				...blueprintToScripts(createBlueprint('sample', { src: ['core'] })),
+				test: 'vitest run --project=missing --project "absent"',
+			}
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(undefined, undefined, undefined, {
-					test: 'vitest run --project=missing --project "absent"',
-				}),
+				buildTargetManifest(undefined, undefined, undefined, scripts),
 			)
 			const sink = createSink()
 			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
@@ -2310,11 +2475,13 @@ describe('CLI audit', () => {
 					fleet.target,
 				]),
 			).toBe(EXIT_CLEAN)
+			const scripts = {
+				...blueprintToScripts(createBlueprint('sample', { src: ['core'] })),
+				test: 'vitest run --project missing',
+			}
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(undefined, undefined, undefined, {
-					test: 'vitest run --project missing',
-				}),
+				buildTargetManifest(undefined, undefined, undefined, scripts),
 			)
 			const sink = createSink()
 			expect(
@@ -3147,17 +3314,19 @@ describe('CLI repair', () => {
 		}
 	})
 
-	it('writes the distribution rows a target scaffolded before the proof is missing', async () => {
+	it('writes the publishing rows a target scaffolded before them is missing', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer(FLEET_RELEASE_REPLIES)
 		try {
 			const fleet = createFleet(workspace)
 			const previous = buildTargetManifest()
+				.replaceAll(/\t\t"prepack": .*\n/gu, '')
 				.replaceAll(/\t\t"test:distribution": .*\n/gu, '')
 				.replace(` && ${RELEASE_PROOF_COMMAND}`, '')
 			workspace.write('target/package.json', previous)
 			const sink = createSink()
 
+			expect(previous).not.toContain('prepack')
 			expect(previous).not.toContain('test:distribution')
 			const code = await new CLI(buildCLIOptions(sink, server.base)).execute([
 				'repair',
@@ -3172,6 +3341,7 @@ describe('CLI repair', () => {
 			// target receiving the generated proof needs no hand edit to reach it.
 			expect(code).toBe(EXIT_CLEAN)
 			const written = workspace.read('target/package.json')
+			expect(written).toContain('"prepack": "npm run build"')
 			expect(written).toContain(
 				'"test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution"',
 			)
@@ -3232,7 +3402,7 @@ describe('CLI repair', () => {
 			const reported: unknown = JSON.parse(audited.output[0] ?? '')
 			expect(reported).toHaveProperty(
 				'questions',
-				expect.arrayContaining([expect.objectContaining({ field: 'projects', blocking: false })]),
+				expect.arrayContaining([expect.objectContaining({ field: 'scripts', blocking: false })]),
 			)
 		} finally {
 			workspace.destroy()
@@ -3243,11 +3413,13 @@ describe('CLI repair', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
+			const scripts = {
+				...blueprintToScripts(createBlueprint('sample', { src: ['core'] })),
+				test: 'vitest run "--project=missing"',
+			}
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(undefined, undefined, undefined, {
-					test: 'vitest run "--project=missing"',
-				}),
+				buildTargetManifest(undefined, undefined, undefined, scripts),
 			)
 			workspace.write('target/vite.config.ts', 'marker\n')
 			const sink = createSink()
@@ -3279,11 +3451,13 @@ describe('CLI repair', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
+			const scripts = {
+				...blueprintToScripts(createBlueprint('sample', { src: ['core'] })),
+				test: 'vitest run "--project=$ROGUE"',
+			}
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(undefined, undefined, undefined, {
-					test: 'vitest run "--project=$ROGUE"',
-				}),
+				buildTargetManifest(undefined, undefined, undefined, scripts),
 			)
 			workspace.write('target/vite.config.ts', 'marker\n')
 			const sink = createSink()
@@ -3328,11 +3502,13 @@ describe('CLI repair', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
+			const scripts = {
+				...blueprintToScripts(createBlueprint('sample', { src: ['core'] })),
+				test: 'vitest --project missing',
+			}
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(undefined, undefined, undefined, {
-					test: 'vitest --project missing',
-				}),
+				buildTargetManifest(undefined, undefined, undefined, scripts),
 			)
 			const sink = createSink()
 			expect(
@@ -3671,11 +3847,13 @@ describe('CLI overwrite', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
+			const scripts = {
+				...blueprintToScripts(createBlueprint('sample', { src: ['core'] })),
+				test: 'vitest run "--project=missing"',
+			}
 			workspace.write(
 				'target/package.json',
-				buildTargetManifest(undefined, undefined, undefined, {
-					test: 'vitest run "--project=missing"',
-				}),
+				buildTargetManifest(undefined, undefined, undefined, scripts),
 			)
 			const sink = createSink()
 			expect(
