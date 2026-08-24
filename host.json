@@ -358,7 +358,7 @@
 			"storage": "claude/rules/tests.md",
 			"destination": ".claude/rules/tests.md",
 			"executable": false,
-			"digest": "46e552dfc98c930b9f3d22fc8e0872b5fd844b2de8a75997899d8f3f1acb3895"
+			"digest": "2f8658425bc48b8751a5526300827c90f22226d4605514ec866891b5be4fabfb"
 		},
 		{
 			"storage": "claude/rules/typescript.md",
@@ -688,5 +688,5 @@
 		".codex/agents",
 		".cursor/rules"
 	],
-	"digest": "f8f42443cdb6607962cf03b66bb94937f4661d5ea4534c366303101dfbee2130"
+	"digest": "1472dda0358190ef9900fcdf86fdfb0ed60053b6095ba7b9f1b0efe490cc85ce"
 }
