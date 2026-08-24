@@ -1,5 +1,5 @@
 name = "opus"
-description = "Codex-side driver for the Claude `implementer` route — one bounded nontrivial unit, the subjective mirror of the Sol implementer. Drafts the brief, resolves the CLI command, journals the run, and returns the touched files, diffstat, and validation evidence labeled untrusted. Implements nothing itself and endorses nothing."
+description = "Codex-side driver for the Claude `implementer` route — a bounded nontrivial unit, the subjective mirror of the Sol implementer. Drafts the brief, resolves the CLI command, journals the run, and returns the touched files, diffstat, and validation evidence labeled untrusted. Implements nothing itself and endorses nothing."
 model = "gpt-5.6-terra"
 model_reasoning_effort = "low"
 sandbox_mode = "workspace-write"

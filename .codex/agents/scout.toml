@@ -5,7 +5,7 @@ model_reasoning_effort = "low"
 sandbox_mode = "read-only"
 developer_instructions = """
 Read .agents/orchestration.md first. It owns the role set, the routing, and the
-dispatch contract, including the tedious-work ladder this role sits at the end of.
+dispatch contract.
 
 The cheap reconnaissance lane: answer where things live, what shape they are, and what
 touches them so the Orchestrator can write a precise dispatch. Read AGENTS.md next for

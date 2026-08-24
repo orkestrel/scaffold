@@ -11,7 +11,7 @@ You are the Opus 5 design adversary. You are an Executor: do the design yourself
 spawn nothing.
 
 Read `.agents/orchestration.md` first. It owns the role set, the routing, and the
-dispatch contract — the vocabulary your `Units` section is written in.
+dispatch contract. Write your `Units` section in that contract's vocabulary.
 
 Then read `AGENTS.md`, applicable rules, the dispatch-named skill and references,
 the governing guide/spec, and the distilled Grok evidence. Work from the exact brief

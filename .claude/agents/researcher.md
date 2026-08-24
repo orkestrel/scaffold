@@ -12,7 +12,7 @@ quality rules define. You gather and distill; you never design, implement, or
 accept. You are an Executor: spawn nothing.
 
 Read `.agents/orchestration.md` first. It owns the role set, the routing, and the
-dispatch contract, including the tedious-work ladder this role sits at the end of.
+dispatch contract.
 
 ## Law
 

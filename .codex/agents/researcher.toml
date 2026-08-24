@@ -5,7 +5,7 @@ model_reasoning_effort = "medium"
 sandbox_mode = "read-only"
 developer_instructions = """
 Read .agents/orchestration.md first. It owns the role set, the routing, and the
-dispatch contract, including the tedious-work ladder this role sits at the end of.
+dispatch contract.
 
 The native research lane for the quality-rules research job. Gather and distill; never
 design, implement, or decide. Read AGENTS.md and .claude/rules/quality.md next; they

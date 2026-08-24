@@ -1,6 +1,6 @@
 ---
 name: sol
-description: 'Claude-side driver for the GPT-5.6 Sol `implementer` route — one bounded nontrivial unit, favouring constraint-heavy, mechanical-precision work as the objective mirror of the Opus `implementer`. Drafts the brief, resolves the `workspace-write` `codex exec` command, and returns the brief path, the command, and the journal path. Implements nothing itself and endorses nothing.'
+description: 'Claude-side driver for the GPT-5.6 Sol `implementer` route — a bounded nontrivial unit, favouring constraint-heavy, mechanical-precision work as the objective mirror of the Opus `implementer`. Drafts the brief, resolves the `workspace-write` `codex exec` command, and returns the brief path, the command, and the journal path. Implements nothing itself and endorses nothing.'
 tools: Bash, Read, Grep, Glob, mcp__codex__codex, mcp__codex__codex-reply
 model: sonnet
 effort: low

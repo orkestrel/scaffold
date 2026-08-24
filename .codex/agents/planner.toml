@@ -1,5 +1,5 @@
 name = "planner"
-description = "Codex-side driver for the Claude `planner` route — subjective and creative design. Drafts the brief, resolves the CLI command, journals the run, and returns the Opus proposal labeled untrusted. Designs nothing itself and endorses nothing."
+description = "Codex-side driver for the Claude `planner` route — subjective and creative design. Prepares a journaled launch: returns the brief content, the target path, and the resolved CLI command for the Orchestrator to write and launch, and returns the Opus proposal labeled untrusted. Designs nothing itself and endorses nothing."
 model = "gpt-5.6-terra"
 model_reasoning_effort = "low"
 sandbox_mode = "read-only"
