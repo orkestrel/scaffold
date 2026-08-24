@@ -28,8 +28,9 @@ follows it. This file adds only what Claude Code does differently, and cannot we
   and confirm from its journal that it reached Sol. A bridge driver that answers from its own engine
   collapses the round to one engine and its ruling still reads as normal.
 - Claude role frontmatter accepts Claude models only. Reach Grok through `grok`, and Sol through
-  `analyst` and `sol`. Never put an external model in `model:`. Both bridges bind the transport
-  contract at `.agents/transports/codex.md`, which is a contract rather than a dispatchable role.
+  `analyst` and `sol`. Never put an external model in `model:`. Treat
+  `.agents/transports/codex.md` as the transport contract for those bridges, never as a
+  dispatchable role.
 - Claude Code hot-reloads edits to existing role files.
 
 ## Bench wiring
