@@ -121,6 +121,15 @@ no campaign folder is the plan of record.
   ships under presence ownership, is clean. Rule each remaining hit by sense and repair the banned
   senses in a pass that owns those files.
 
+- **probe**: `tests/src/bin/main.test.ts` fails 9 of 11 at HEAD `e481c62` with no scaffold
+  propagation applied — a pristine clone reproduces it, including the SIGTERM and SIGINT
+  target-cleanliness cases and the protocol-era case. Measured 2026-08-24. Unrelated to scaffold;
+  the propagated tree is less red than the baseline.
+- **html**: the `subquadratic` and `linear` tests in `tests/src/core/helpers.test.ts` and
+  `tests/src/core/parsers.test.ts` assert measured wall-clock milliseconds against a computed budget,
+  so they fail on a loaded machine and pass on an idle one. Measured 2026-08-24: red under three
+  concurrent sweep slices, green alone. A timing budget is not a property a shared runner can hold.
+
 ## 2. Design and research records
 
 - **Guide mirrors track upstream `main`, not the catalog release.** `Upstream` fetches guides
