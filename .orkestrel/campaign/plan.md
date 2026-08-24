@@ -184,6 +184,23 @@ ruling, or excluded on evidence. Scaffold-surface changes that oblige a publish 
   to ^0.0.50 before commit; lock synced; html gates and full suite green under the re-pinned
   toolchain; bench mode collects empty. Materialization committed 55bf2f4 and pushed. U2b
   dispatched as the last html unit.
+- SD7 closed at f2d04b1 after a one-claim FAIL fixed by the auditor's own prescription (the
+  verb form "that follows" replaced with the sanctioned pointer words at every named site,
+  both template halves and the materialized wrapper together); the unit's own deviation stop
+  (my brief withheld the materialized half the byte-identity pin couples) was resolved by
+  applying its exact returned patches serially. SD8 landed the bench-guard sentence at
+  e0b9ae7. SCAFFOLD AUTHORITATIVE SWEEP GREEN at c7b38b1: format, lint, check, build, and the
+  complete test chain pass; the sweep's one find — the Materializer declare-scripts pin still
+  expecting the transactional freeze — was flipped to the ruled per-script write (the CLI
+  twin's already-audited semantics) and re-verified green. The scaffold unit chain is
+  COMPLETE.
+- PD5 landed with the party flip at the one real file-less door, the root-spelling-only
+  message helper (a mid-unit probe showed whole-message normalization corrupts claimant
+  evidence carrying literal escape renderings — the escaped-text boundary is pinned), and the
+  revision-suffix leak closed. The uncontended host run passed the complete server project,
+  settling the writer's one under-load timing red as contention. Known expected red:
+  `test:guides` until PD6 lands the helper row and corrects the now-false inspect sentence —
+  both named in PD6's brief. Analyst audit dispatched.
 - SD3 (vendored prepack assertion + sentinel-env pin): landed on 85f8df3 — the packing test with
   its throwing control (recorded red then green), the sentinel-env `Reflect.apply` factory test
   with a named control, the guide sentence, `host.json` regenerated. Host gates green
