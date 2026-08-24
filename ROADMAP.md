@@ -13,10 +13,18 @@ is recoverable from git history by hash; no campaign folder is the plan of recor
   vendored suite asserts `test`, `test:config`, and `prepublishOnly` only, so a publishing target
   that omits `prepack` stays green. An earlier revision of this row claimed the assertion landed
   on 2026-08-21; it did not.
-- **test**: transcribe the guide fences a Node `guides` project cannot run — the `contrast`,
-  `readRing`, and journal fences need a browser-capable guides project, and the wait fence's
-  child-exit half belongs with the expensive proofs; the pre-existing fences remain
-  untranscribed standing debt. The transcription idiom exists in `tests/guides.test.ts`.
+- **test**: transcribe the remaining guide fences under the placement rule that landed
+  2026-08-24 (a carrier lives in the project that can run it; browser carriers live in
+  `tests/src/browser/` with guide markers, and `tests/guides.test.ts` holds an executed presence
+  guard). The `contrast`, `readRing`, journal, and wait-cleanup fences carried that day. The
+  measured residue, by heading: the throw-capture fence's `SyntaxError` and thrown-`undefined`
+  claims; "Copy a JSON value"; "Prove a guard is total"; "Prove a wire fixpoint"; "Read a source
+  inventory"; the scratch-directory fences; "Give everything back in one hook"; "Answer a real
+  request on a loopback port"; "Probe what the host supports"; "Refuse an escaping path in your
+  own fixture"; the wait fence's `retryUntil` half; and the browser set — "Build and mount a
+  fixture", "Drive an interface the way a person does", "Drive a field the component listens
+  to", the theme-token fence, "Find a rule in the cascade", "Remove an IndexedDB database",
+  "Place a capture portfolio".
 - **probe**: convert the attempt-counted poll loops to `waitForCondition`, which
   `@orkestrel/test` publishes. A settling wait before a negative assertion stays a fixed
   `waitForDelay`, because a poll cannot prove absence. The conversion map, measured 2026-08-24:
