@@ -704,20 +704,20 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 			fillTemplate(CONFIG_TEMPLATES.factories.src.browser, {
 				external: core
 					? `external: (id: string) =>
-						id === '@src/core' ||
-						id.startsWith('@orkestrel/') ||
-						peers.some((peer) => id === peer || id.startsWith(peer + '/')),`
+				id === '@src/core' ||
+				id.startsWith('@orkestrel/') ||
+				peers.some((peer) => id === peer || id.startsWith(peer + '/')),`
 					: `external: (id: string) =>
-						id.startsWith('@orkestrel/') ||
-						peers.some((peer) => id === peer || id.startsWith(peer + '/')),`,
+				id.startsWith('@orkestrel/') ||
+				peers.some((peer) => id === peer || id.startsWith(peer + '/')),`,
 				output: core
-					? "\t\t\t\t\toutput: { paths: { '@src/core': '../core/index.js' } },"
-					: '\t\t\t\t\toutput: {},',
-				exclude: core ? "\t\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" : '',
+					? "\t\t\toutput: { paths: { '@src/core': '../core/index.js' } },"
+					: '\t\t\toutput: {},',
+				exclude: core ? "\t\texclude: ['tests/src/core/**/*.test.ts'],\n" : '',
 				// A browser test runs in the browser, so it cannot start a Node fixture
 				// for itself. That is the case a global setup exists for, and it is why
 				// this project takes the same span the integration project does.
-				global: blueprint.global ? "\t\t\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : '',
+				global: blueprint.global ? "\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : '',
 			}),
 		)
 		projects.push('srcBrowser')
@@ -728,29 +728,29 @@ export function blueprintToRootVite(blueprint: Blueprint): string {
 			fillTemplate(CONFIG_TEMPLATES.factories.src.server, {
 				external: core
 					? `external: (id: string) =>
-						id === '@src/core' ||
-						id.startsWith('node:') ||
-						id.startsWith('@orkestrel/') ||
-						peers.some((peer) => id === peer || id.startsWith(peer + '/')),`
+				id === '@src/core' ||
+				id.startsWith('node:') ||
+				id.startsWith('@orkestrel/') ||
+				peers.some((peer) => id === peer || id.startsWith(peer + '/')),`
 					: `external: (id: string) =>
-						id.startsWith('node:') ||
-						id.startsWith('@orkestrel/') ||
-						peers.some((peer) => id === peer || id.startsWith(peer + '/')),`,
+				id.startsWith('node:') ||
+				id.startsWith('@orkestrel/') ||
+				peers.some((peer) => id === peer || id.startsWith(peer + '/')),`,
 				output: core
-					? `\t\t\t\t\toutput: [
-						{
-							format: 'es',
-							entryFileNames: 'index.js',
-							paths: { '@src/core': '../core/index.js' },
-						},
-						{
-							format: 'cjs',
-							entryFileNames: 'index.cjs',
-							paths: { '@src/core': '../core/index.cjs' },
-						},
-					],`
-					: '\t\t\t\t\toutput: {},',
-				exclude: core ? "\t\t\t\texclude: ['tests/src/core/**/*.test.ts'],\n" : '',
+					? `\t\t\toutput: [
+				{
+					format: 'es',
+					entryFileNames: 'index.js',
+					paths: { '@src/core': '../core/index.js' },
+				},
+				{
+					format: 'cjs',
+					entryFileNames: 'index.cjs',
+					paths: { '@src/core': '../core/index.cjs' },
+				},
+			],`
+					: '\t\t\toutput: {},',
+				exclude: core ? "\t\texclude: ['tests/src/core/**/*.test.ts'],\n" : '',
 			}),
 		)
 		projects.push('srcServer')
@@ -865,7 +865,7 @@ export function appShowcase(): UserConfig {
 	if (blueprint.integration) {
 		factories.push(
 			fillTemplate(CONFIG_TEMPLATES.factories.integration, {
-				global: blueprint.global ? "\t\t\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : '',
+				global: blueprint.global ? "\t\tglobalSetup: ['./tests/setupGlobal.ts'],\n" : '',
 			}),
 		)
 		projects.push('integration')

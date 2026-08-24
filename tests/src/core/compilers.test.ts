@@ -454,7 +454,7 @@ describe('blueprintToScripts config projects', () => {
 		expect(blueprintToRootVite(absent)).not.toContain("name: { label: 'setup',")
 		expect(blueprintToScripts(absent)).not.toHaveProperty('test:setup')
 		expect(blueprintToScripts(absent).test).not.toContain('test:setup')
-		expect(configuration).toContain('export const setup = (options?: UserConfig): UserConfig =>')
+		expect(configuration).toContain('export const setup = (): UserConfig => ({')
 		expect(configuration).toContain("name: { label: 'setup', color: 'white' }")
 		expect(configuration).toContain("include: ['tests/setup*.test.ts']")
 		expect(configuration).toContain("setupFiles: ['./tests/setup.ts']")
@@ -534,7 +534,7 @@ describe('blueprintToScripts config projects', () => {
 		const configuration = blueprintToRootVite(blueprint)
 		const scripts = blueprintToScripts(blueprint)
 
-		expect(configuration).toContain('export const guides = (options?: UserConfig): UserConfig =>')
+		expect(configuration).toContain('export const guides = (): UserConfig => ({')
 		expect(configuration).toContain("include: ['tests/guides.test.ts']")
 		expect(configuration).toContain(
 			'projects: [srcCore, policy, config, guides, distribution, probe]',
@@ -562,9 +562,7 @@ describe('blueprintToScripts config projects', () => {
 		const configuration = blueprintToRootVite(blueprint)
 		const scripts = blueprintToScripts(blueprint)
 
-		expect(configuration).toContain(
-			'export const distribution = (options?: UserConfig): UserConfig =>',
-		)
+		expect(configuration).toContain('export const distribution = (): UserConfig => ({')
 		expect(configuration).toContain("include: ['tests/distribution.test.ts']")
 		expect(configuration).toContain('projects: [srcCore, policy, config, distribution, probe]')
 		expect(scripts['test:distribution']).toBe(
@@ -1022,17 +1020,17 @@ describe('blueprint gate laws', () => {
 		).toStrictEqual([])
 	})
 
-	// `appBrowser` is a project row, so Vitest calls it and the signature has to accept
-	// the argument it is called with. `appShowcase` is registered nowhere and is reached
-	// only by the showcase wrapper's own call, so it stays argument-free. The seal is the
-	// signature rather than a runtime refusal beside it. `appShowcase` is generated inline
-	// here while `appBrowser` comes from the template, so one spelling drifting from the
-	// other is the failure this catches.
-	it('opens the registered browser factory and seals the unregistered showcase one', () => {
+	// Neither factory takes an argument. `appBrowser` is a project row, so Vitest calls
+	// it with its own environment record, and a parameter there merged those fields into
+	// the configuration it returned. `appShowcase` is registered nowhere and is reached
+	// only by the showcase wrapper's own call. `appShowcase` is generated inline here
+	// while `appBrowser` comes from the template, so one spelling drifting from the other
+	// is the failure this catches.
+	it('seals every application browser factory against a caller argument', () => {
 		const config = blueprintToRootVite(buildBlueprint({ app: ['browser'], showcase: true }))
 		expect(config).toContain('export function appShowcase(): UserConfig {')
-		expect(config).toContain('export function appBrowser(options?: UserConfig): UserConfig {')
-		expect(config).toContain('return mergeConfig(applicationBrowser(false), options ?? {})')
+		expect(config).toContain('export function appBrowser(): UserConfig {')
+		expect(config).toContain('return applicationBrowser(false)')
 		expect(config).not.toContain('never[]')
 		expect(config).not.toContain('overrides are not permitted')
 	})
@@ -1195,11 +1193,9 @@ describe('blueprintToRootVite fixed proofs', () => {
 		expect(bare).not.toContain("name: { label: 'service',")
 
 		const measured = blueprintToRootVite(buildBlueprint({ conformance: true }))
-		expect(measured).toContain(
-			'export const conformance = (options?: UserConfig): UserConfig =>\n\tmergeConfig(\n',
-		)
+		expect(measured).toContain('export const conformance = (): UserConfig => ({\n\tresolve,\n')
 		expect(measured).toContain("include: ['tests/conformance.test.ts']")
-		expect(measured).toContain("setupFiles: ['./tests/setup.ts'],\n\t\t\t\tenvironment: 'node',")
+		expect(measured).toContain("setupFiles: ['./tests/setup.ts'],\n\t\tenvironment: 'node',")
 		expect(measured).toContain(
 			'projects: [srcCore, policy, config, conformance, distribution, probe]',
 		)
@@ -1207,12 +1203,10 @@ describe('blueprintToRootVite fixed proofs', () => {
 		// The live project names its readiness module by path, so the registration
 		// and the emitted setup module have to agree on that exact path.
 		const live = blueprintToRootVite(buildBlueprint({ service: true }))
-		expect(live).toContain(
-			'export const service = (options?: UserConfig): UserConfig =>\n\tmergeConfig(\n',
-		)
+		expect(live).toContain('export const service = (): UserConfig => ({\n\tresolve,\n')
 		expect(live).toContain("include: ['tests/service/**/*.test.ts']")
 		expect(live).toContain("setupFiles: ['./tests/setup.ts', './tests/setupService.ts'],")
-		expect(live).toContain('\t\t\t\tfileParallelism: false,\n')
+		expect(live).toContain('\t\tfileParallelism: false,\n')
 		expect(live).toContain('projects: [srcCore, policy, config, service, distribution, probe]')
 		expect(
 			blueprintToTestArtifacts(buildBlueprint({ service: true })).map(({ path }) => path),
@@ -1250,7 +1244,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 		// The removed runtime filesystem classifier leaves the URL import directly
 		// after the imports every root configuration makes.
 		expect(blueprintToRootVite(buildBlueprint({ src: ['core'] }))).toContain(
-			"import type { UserConfig } from 'vite'\nimport { defineConfig, mergeConfig } from 'vitest/config'\nimport manifest from './package.json' with { type: 'json' }\nimport tsconfig from './tsconfig.json' with { type: 'json' }\nimport { enforceBuildLog } from './configs/helpers.js'\nimport { fileURLToPath, URL } from 'node:url'",
+			"import type { UserConfig } from 'vite'\nimport { defineConfig } from 'vitest/config'\nimport manifest from './package.json' with { type: 'json' }\nimport tsconfig from './tsconfig.json' with { type: 'json' }\nimport { enforceBuildLog } from './configs/helpers.js'\nimport { fileURLToPath, URL } from 'node:url'",
 		)
 	})
 
@@ -1315,7 +1309,7 @@ describe('blueprintToRootVite fixed proofs', () => {
 				'\nconst browserOptions = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)\n\n',
 			)
 		}
-		expect(published).toContain('\t\t\t\t\tprovider: playwright(browserOptions),\n')
+		expect(published).toContain('\t\t\tprovider: playwright(browserOptions),\n')
 		expect(application).toContain('\t\t\t\tprovider: playwright(browserOptions),\n')
 		// The control: neither span is part of the skeleton, so a selection that emits
 		// no resolver names nothing that would fail to resolve.
@@ -1330,16 +1324,16 @@ describe('blueprintToRootVite fixed proofs', () => {
 		// selected source graph reaches it. Both faces carry the clause on both
 		// sides of their own branch, so neither side can lose it unseen.
 		expect(blueprintToRootVite(buildBlueprint({ src: ['browser'] }))).toContain(
-			"\t\t\t\t\texternal: (id: string) =>\n\t\t\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
+			"\t\t\texternal: (id: string) =>\n\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
 		)
 		expect(blueprintToRootVite(buildBlueprint({ src: ['core', 'browser'] }))).toContain(
-			"\t\t\t\t\texternal: (id: string) =>\n\t\t\t\t\t\tid === '@src/core' ||\n\t\t\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
+			"\t\t\texternal: (id: string) =>\n\t\t\t\tid === '@src/core' ||\n\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
 		)
 		expect(blueprintToRootVite(buildBlueprint({ src: ['server'] }))).toContain(
-			"\t\t\t\t\texternal: (id: string) =>\n\t\t\t\t\t\tid.startsWith('node:') ||\n\t\t\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
+			"\t\t\texternal: (id: string) =>\n\t\t\t\tid.startsWith('node:') ||\n\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
 		)
 		expect(blueprintToRootVite(buildBlueprint({ src: ['core', 'server'] }))).toContain(
-			"\t\t\t\t\texternal: (id: string) =>\n\t\t\t\t\t\tid === '@src/core' ||\n\t\t\t\t\t\tid.startsWith('node:') ||\n\t\t\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
+			"\t\t\texternal: (id: string) =>\n\t\t\t\tid === '@src/core' ||\n\t\t\t\tid.startsWith('node:') ||\n\t\t\t\tid.startsWith('@orkestrel/') ||\n\t\t\t\tpeers.some((peer) => id === peer || id.startsWith(peer + '/')),\n",
 		)
 		// The browser plugin array has no conditional tail without a showcase, so
 		// the formatter emits its fixed entries joined.

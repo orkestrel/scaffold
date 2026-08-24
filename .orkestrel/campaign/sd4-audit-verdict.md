@@ -1,0 +1,19 @@
+1. **CONFIRMED.** The emitted factory declarations use `(): UserConfig`. A bounded search found the former parameter only in the planted test control and found `mergeConfig` only in scoped wrapper templates and materialized wrappers. The parser-backed matrix test passed.
+
+2. **BROKEN.** Exact failing input: `find configs/src -maxdepth 1 -name 'vite.*.config.ts'` returns `vite.core.config.ts`, `vite.server.config.ts`, and `vite.bin.config.ts`; `vite.browser.config.ts` is not materialized in this checkout. The selected wrappers do compose correctly, and direct Vite loads showed their factory fields and overrides surviving. The template set also contains the browser wrapper. Smallest correct fix: describe “the selected materialized wrappers and every core, browser, server, and bin wrapper template,” without claiming a materialized browser wrapper exists here.
+
+3. **CONFIRMED.** Emitted root configurations import only `defineConfig` from `vitest/config`. The selection-matrix unused-import test passed. Scoped Oxlint exited `0`, and the supplied host `check:src` result exited `0`.
+
+4. **CONFIRMED.** The pin uses the TypeScript parser for exported function declarations and exported arrow declarations returning `UserConfig`. It walks the complete `buildSelections()` and `buildModules()` relation, checks that relation against `MODULE_EMITTERS`, and plants `policy` in every emitted root configuration. The targeted test passed in 1.25 seconds. The required `prove` service returned `MCP tool call requires approval, but approval policy is never`, so it issued no receipt; the real Vitest fallback ran successfully.
+
+5. **CONFIRMED.** The template contains `export function appBrowser(): UserConfig { return applicationBrowser(false) }`. `applicationBrowser(showcase: boolean)` is unexported, and only `appBrowser` enters the project rows. The compiler test containing these byte assertions passed. The emitted-workspace `tsc` control could not run in this sandbox because its nested Node spawn returned `EPERM`; the supplied host run covered the control and its expected `Expected 0 arguments, but got 1` diagnostic.
+
+6. **CONFIRMED.** Vitest 4.1.11 declares `LabelColor` as `"black" | "red" | "green" | "yellow" | "blue" | "magenta" | "cyan" | "white"`, so `gray` is invalid. A tree-wide literal search found no `gray`. The `black` project color appears only on `probe` in the template and materialized root configuration.
+
+7. **CONFIRMED.** The `src/core/compilers.ts` diff changes tab prefixes inside filled strings and their source indentation. Factory selection, project registration, branches, and calls remain unchanged. The compiler suite passed with 91 tests. The emitted-corpus fixed-point test was blocked here by nested-spawn `EPERM`; the supplied host run reports the compilers and templates files green, and scoped Oxfmt reported the changed files correctly formatted.
+
+8. **CONFIRMED.** The `tests/src/core/compilers.test.ts` edits pin the emitted signatures, root import bytes, and changed indentation directly. A bounded search found no remaining expectation for `options?: UserConfig`, the former merge spine, or `gray`. The complete file passed with 91 tests.
+
+9. **CONFIRMED.** `git diff --exit-code -- tests/config.test.ts` exited `0`, and the existing proof still invokes rows without a sentinel environment. The `tmp/units/sd3-prepack-assertion-brief.md` file explicitly carries the `Reflect.apply(row, undefined, [env])` proof and states that environment fields must not enter the returned configuration. No separate SD4 report file was available in the tree, but the SD3 brief records the carry, so it is not silent.
+
+FAIL: 2

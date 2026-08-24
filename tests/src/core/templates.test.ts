@@ -529,6 +529,48 @@ function findWide(content: string): readonly string[] {
 		.filter((line) => measureWidth(line) > PRINT_WIDTH && !/^\t*'[^']*',?$/u.test(line))
 }
 
+// Every project factory in a module that still declares a parameter, read off the
+// TypeScript parser rather than off the text: the question is what a declaration
+// carries, and a pattern reports on one spelling of it. Membership is an exported
+// top-level declaration whose return type is `UserConfig`, which is what Vitest
+// calls as a project row. `applicationBrowser` takes the showcase switch and is not
+// exported, so the same rule leaves it outside the population rather than exempting
+// it.
+function findParameters(content: string): readonly string[] {
+	const source = ts.createSourceFile('vite.config.ts', content, ts.ScriptTarget.ESNext, true)
+	const carried: string[] = []
+	for (const statement of source.statements) {
+		const modifiers = ts.canHaveModifiers(statement) ? ts.getModifiers(statement) : undefined
+		if (!(modifiers ?? []).some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)) {
+			continue
+		}
+		if (ts.isFunctionDeclaration(statement)) {
+			if (statement.type?.getText(source) !== 'UserConfig') continue
+			if (statement.parameters.length > 0) carried.push(requireValue(statement.name?.text))
+			continue
+		}
+		if (!ts.isVariableStatement(statement)) continue
+		for (const declaration of statement.declarationList.declarations) {
+			const initializer = declaration.initializer
+			if (initializer === undefined || !ts.isArrowFunction(initializer)) continue
+			if (initializer.type?.getText(source) !== 'UserConfig') continue
+			if (initializer.parameters.length === 0 || !ts.isIdentifier(declaration.name)) continue
+			carried.push(declaration.name.text)
+		}
+	}
+	return carried
+}
+
+// The refused parameter planted back into a copy of emitted or template text. Every
+// root configuration declares `policy`, so the plant lands in each one the sweep
+// walks and an empty finding is a finding rather than a module the parser skipped.
+function plantParameter(content: string): string {
+	return content.replace(
+		'export const policy = (): UserConfig =>',
+		'export const policy = (options?: UserConfig): UserConfig =>',
+	)
+}
+
 describe('configuration templates', () => {
 	it('uses the dependency fill boundary with missing placeholders closed', () => {
 		for (const template of [CONFIG_TEMPLATES.root.tsconfig, ARTIFACT_TEMPLATES.docs.readme]) {
@@ -863,6 +905,34 @@ describe('emitted workspaces under their own gates', () => {
 		expect(strays).toStrictEqual([])
 	})
 
+	it('declares every emitted project factory without a parameter list', () => {
+		// Vitest calls a project row with its own environment record, so a factory
+		// that declared a parameter merged those fields into the configuration it
+		// returned. The controls are that parameter planted back: once into the
+		// template text the emitters carry, and once into every emitted configuration
+		// the sweep reads.
+		const planted = plantParameter(CONFIG_TEMPLATES.factories.policy)
+		expect(planted).not.toBe(CONFIG_TEMPLATES.factories.policy)
+		expect(findParameters(planted)).toStrictEqual(['policy'])
+		expect(findParameters(CONFIG_TEMPLATES.factories.policy)).toStrictEqual([])
+		expect(findParameters(CONFIG_TEMPLATES.factories.app.browser)).toStrictEqual([])
+
+		const inspected = new Map<string, number>()
+		const carried: string[] = []
+		const blind: string[] = []
+		for (const blueprint of buildSelections()) {
+			for (const [path, content] of buildModules(blueprint)) {
+				inspected.set(path, (inspected.get(path) ?? 0) + 1)
+				for (const name of findParameters(content)) carried.push(`${path} ${name}`)
+				if (path !== 'vite.config.ts') continue
+				if (findParameters(plantParameter(content)).length === 0) blind.push(path)
+			}
+		}
+		expect(Object.fromEntries(inspected)).toStrictEqual(MODULE_EMITTERS)
+		expect(blind).toStrictEqual([])
+		expect(carried).toStrictEqual([])
+	})
+
 	it('emits no entry the vendored unassigned-import rule refuses', () => {
 		expect(findUnassigned("import './index.js'\n")).toStrictEqual(["import './index.js'"])
 		expect(findUnassigned("import './index.scss'\n")).toStrictEqual([])
@@ -913,10 +983,10 @@ describe('emitted workspaces under their own gates', () => {
 			// evaluated one by its label, so the name and the label both have to agree
 			// with what that proof expects.
 			expect(application).toContain("name: { label: 'app:browser', color: 'blue' }")
-			// Vitest calls a project row with an argument, so the factory takes the same
-			// optional override its siblings take. Sealing the signature is what made the
-			// generator emit a call in the row, and this stage refuses the seal: the
-			// override below is rejected by a factory declaring no parameter.
+			// The factory takes no parameter, so an override passed into a project row is
+			// what the emitted workspace's own typecheck refuses. That refusal is the
+			// control: it fails where the sealed declaration is read, so a clean run
+			// cannot be a typecheck that resolved nothing.
 			workspace.write(
 				'application/vite.config.ts',
 				application.replace(
@@ -924,13 +994,11 @@ describe('emitted workspaces under their own gates', () => {
 					'projects: [appBrowser({ publicDir: false }),',
 				),
 			)
-			expect(checkTypes(applicationRoot)).toBe('')
+			expect(checkTypes(applicationRoot)).toContain('Expected 0 arguments, but got 1')
 			expect(CONFIG_TEMPLATES.factories.app.browser).toContain(
-				'export function appBrowser(options?: UserConfig): UserConfig',
+				'export function appBrowser(): UserConfig',
 			)
-			expect(CONFIG_TEMPLATES.factories.app.browser).toContain(
-				'mergeConfig(applicationBrowser(false), options ?? {})',
-			)
+			expect(CONFIG_TEMPLATES.factories.app.browser).toContain('return applicationBrowser(false)')
 			// The showcase-only control removes the contextual type from the
 			// conditional plugin array. It recreates the widening that made the
 			// emitted workspace fail even though the runtime plugin list is unchanged.

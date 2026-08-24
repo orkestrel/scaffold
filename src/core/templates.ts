@@ -61,7 +61,7 @@ export const CONFIG_TEMPLATES = Object.freeze({
 		// One fixed block costs less than a fifth conditional span, and a workspace
 		// that builds nothing carries one export nothing reads.
 		vite: `import type { {{viteTypes}} } from 'vite'
-{{imports}}import { defineConfig, mergeConfig } from 'vitest/config'
+{{imports}}import { defineConfig } from 'vitest/config'
 import manifest from './package.json' with { type: 'json' }
 import tsconfig from './tsconfig.json' with { type: 'json' }
 {{helpers}}{{browsers}}import { fileURLToPath, URL } from 'node:url'
@@ -100,160 +100,140 @@ const resolve = {
 	}),
 	factories: Object.freeze({
 		src: Object.freeze({
-			core: `export const srcCore = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			publicDir: false,
-			build: {
-				emptyOutDir: true,
-				sourcemap: true,
-				minify: false,
-				rolldownOptions: { onLog: enforceBuildLog },
-			},
-			test: {
-				name: { label: 'src:core', color: 'magenta' },
-				include: ['tests/src/core/**/*.test.ts'],
-				setupFiles: ['./tests/setup.ts'],
-				environment: 'node',
-				browser: { enabled: false },
-			},
-		},
-		options ?? {},
-	)
+			core: `export const srcCore = (): UserConfig => ({
+	resolve,
+	publicDir: false,
+	build: {
+		emptyOutDir: true,
+		sourcemap: true,
+		minify: false,
+		rolldownOptions: { onLog: enforceBuildLog },
+	},
+	test: {
+		name: { label: 'src:core', color: 'magenta' },
+		include: ['tests/src/core/**/*.test.ts'],
+		setupFiles: ['./tests/setup.ts'],
+		environment: 'node',
+		browser: { enabled: false },
+	},
+})
 `,
-			browser: `export const srcBrowser = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			publicDir: false,
-			plugins: [outputBoundary('dist/src/browser'), environmentBoundary('src/browser')],
-			build: {
-				emptyOutDir: true,
-				sourcemap: true,
-				minify: false,
-				lib: {
-					entry: resolveWorkspacePath('src/browser/index.ts'),
-					formats: ['es'],
-					fileName: () => 'index.js',
-				},
-				outDir: 'dist/src/browser',
-				rolldownOptions: {
-					onLog: enforceBuildLog,
-					{{external}}
+			browser: `export const srcBrowser = (): UserConfig => ({
+	resolve,
+	publicDir: false,
+	plugins: [outputBoundary('dist/src/browser'), environmentBoundary('src/browser')],
+	build: {
+		emptyOutDir: true,
+		sourcemap: true,
+		minify: false,
+		lib: {
+			entry: resolveWorkspacePath('src/browser/index.ts'),
+			formats: ['es'],
+			fileName: () => 'index.js',
+		},
+		outDir: 'dist/src/browser',
+		rolldownOptions: {
+			onLog: enforceBuildLog,
+			{{external}}
 {{output}}
-				},
-			},
-			test: {
-				name: { label: 'src:browser', color: 'yellow' },
-				include: ['tests/src/browser/**/*.test.ts'],
-{{exclude}}				setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
+		},
+	},
+	test: {
+		name: { label: 'src:browser', color: 'yellow' },
+		include: ['tests/src/browser/**/*.test.ts'],
+{{exclude}}		setupFiles: ['./tests/setup.ts', './tests/setupBrowser.ts'],
 {{global}}
-				browser: {
-					enabled: true,
-					provider: playwright(browserOptions),
-					instances: [{ browser: 'chromium', headless: true }],
-				},
-				fileParallelism: false,
-			},
+		browser: {
+			enabled: true,
+			provider: playwright(browserOptions),
+			instances: [{ browser: 'chromium', headless: true }],
 		},
-		options ?? {},
-	)
+		fileParallelism: false,
+	},
+})
 `,
-			server: `export const srcServer = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			publicDir: false,
-			plugins: [outputBoundary('dist/src/server'), environmentBoundary('src/server')],
-			build: {
-				emptyOutDir: true,
-				sourcemap: true,
-				minify: false,
-				lib: {
-					entry: resolveWorkspacePath('src/server/index.ts'),
-					formats: ['es', 'cjs'],
-					fileName: (format: string) => (format === 'es' ? 'index.js' : 'index.cjs'),
-				},
-				outDir: 'dist/src/server',
-				target: 'node22',
-				rolldownOptions: {
-					onLog: enforceBuildLog,
-					platform: 'node',
-					{{external}}
+			server: `export const srcServer = (): UserConfig => ({
+	resolve,
+	publicDir: false,
+	plugins: [outputBoundary('dist/src/server'), environmentBoundary('src/server')],
+	build: {
+		emptyOutDir: true,
+		sourcemap: true,
+		minify: false,
+		lib: {
+			entry: resolveWorkspacePath('src/server/index.ts'),
+			formats: ['es', 'cjs'],
+			fileName: (format: string) => (format === 'es' ? 'index.js' : 'index.cjs'),
+		},
+		outDir: 'dist/src/server',
+		target: 'node22',
+		rolldownOptions: {
+			onLog: enforceBuildLog,
+			platform: 'node',
+			{{external}}
 {{output}}
-				},
-			},
-			test: {
-				name: { label: 'src:server', color: 'red' },
-				include: ['tests/src/server/**/*.test.ts'],
-{{exclude}}				setupFiles: ['./tests/setup.ts', './tests/setupServer.ts'],
-				environment: 'node',
-				browser: { enabled: false },
-			},
 		},
-		options ?? {},
-	)
+	},
+	test: {
+		name: { label: 'src:server', color: 'red' },
+		include: ['tests/src/server/**/*.test.ts'],
+{{exclude}}		setupFiles: ['./tests/setup.ts', './tests/setupServer.ts'],
+		environment: 'node',
+		browser: { enabled: false },
+	},
+})
 `,
-			bin: `export const srcBin = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			publicDir: false,
-			plugins: [outputBoundary('dist/bin')],
-			build: {
-				emptyOutDir: true,
-				sourcemap: true,
-				minify: false,
-				lib: {
-					entry: resolveWorkspacePath('${BIN_ENTRY_PATH}'),
-					formats: ['es'],
-					fileName: () => 'main.js',
-				},
-				outDir: 'dist/bin',
-				target: 'node22',
-				rolldownOptions: {
-					onLog: enforceBuildLog,
-					external: (id: string) =>
-						id.startsWith('node:') ||
-						id.startsWith('@orkestrel/') ||
-						id.startsWith('@src/') ||
-						peers.some((peer) => id === peer || id.startsWith(peer + '/')),
-				},
-			},
-			test: {
-				name: { label: 'src:bin', color: 'yellow' },
-				include: ['tests/src/bin/**/*.test.ts'],
-				setupFiles: ['./tests/setup.ts', './tests/setupServer.ts'],
-				environment: 'node',
-				browser: { enabled: false },
-				// A bin test drives the real executable over a real temporary repository, so it
-				// spends seconds in process startup and filesystem work rather than milliseconds.
-				// Vitest's five-second default clears one alone and times out under a full suite.
-				testTimeout: 15_000,
-			},
+			bin: `export const srcBin = (): UserConfig => ({
+	resolve,
+	publicDir: false,
+	plugins: [outputBoundary('dist/bin')],
+	build: {
+		emptyOutDir: true,
+		sourcemap: true,
+		minify: false,
+		lib: {
+			entry: resolveWorkspacePath('${BIN_ENTRY_PATH}'),
+			formats: ['es'],
+			fileName: () => 'main.js',
 		},
-		options ?? {},
-	)
+		outDir: 'dist/bin',
+		target: 'node22',
+		rolldownOptions: {
+			onLog: enforceBuildLog,
+			external: (id: string) =>
+				id.startsWith('node:') ||
+				id.startsWith('@orkestrel/') ||
+				id.startsWith('@src/') ||
+				peers.some((peer) => id === peer || id.startsWith(peer + '/')),
+		},
+	},
+	test: {
+		name: { label: 'src:bin', color: 'yellow' },
+		include: ['tests/src/bin/**/*.test.ts'],
+		setupFiles: ['./tests/setup.ts', './tests/setupServer.ts'],
+		environment: 'node',
+		browser: { enabled: false },
+		// A bin test drives the real executable over a real temporary repository, so it
+		// spends seconds in process startup and filesystem work rather than milliseconds.
+		// Vitest's five-second default clears one alone and times out under a full suite.
+		testTimeout: 15_000,
+	},
+})
 `,
 		}),
 		app: Object.freeze({
-			core: `export const appCore = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			publicDir: false,
-			plugins: [environmentBoundary('app/core')],
-			test: {
-				name: { label: 'app:core', color: 'cyan' },
-				include: ['tests/app/core/**/*.test.ts'],
-				setupFiles: ['./tests/setup.ts'],
-				environment: 'node',
-				browser: { enabled: false },
-			},
-		},
-		options ?? {},
-	)
+			core: `export const appCore = (): UserConfig => ({
+	resolve,
+	publicDir: false,
+	plugins: [environmentBoundary('app/core')],
+	test: {
+		name: { label: 'app:core', color: 'cyan' },
+		include: ['tests/app/core/**/*.test.ts'],
+		setupFiles: ['./tests/setup.ts'],
+		environment: 'node',
+		browser: { enabled: false },
+	},
+})
 `,
 			browser: `function applicationBrowser(showcase: boolean): UserConfig {
 	const output = showcase ? 'dist/showcase' : 'dist/app/browser'
@@ -285,197 +265,157 @@ const resolve = {
 	}
 }
 
-export function appBrowser(options?: UserConfig): UserConfig {
-	return mergeConfig(applicationBrowser(false), options ?? {})
+export function appBrowser(): UserConfig {
+	return applicationBrowser(false)
 }
 {{showcaseFactory}}`,
-			server: `export const appServer = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			publicDir: false,
-			plugins: [outputBoundary('dist/app/server'), environmentBoundary('app/server')],
-			build: {
-				emptyOutDir: true,
-				lib: {
-					entry: resolveWorkspacePath('app/server/main.ts'),
-					formats: ['cjs'],
-					fileName: () => 'main.cjs',
-				},
-				outDir: resolveWorkspacePath('dist/app/server'),
-				target: 'node22',
-				rolldownOptions: {
-					onLog: enforceBuildLog,
-					external: (id: string) => id.startsWith('node:'),
-				},
-			},
-			test: {
-				name: { label: 'app:server', color: 'green' },
-				include: ['tests/app/server/**/*.test.ts'],
-				setupFiles: ['./tests/setup.ts', './tests/setupServer.ts'],
-				environment: 'node',
-				browser: { enabled: false },
-			},
+			server: `export const appServer = (): UserConfig => ({
+	resolve,
+	publicDir: false,
+	plugins: [outputBoundary('dist/app/server'), environmentBoundary('app/server')],
+	build: {
+		emptyOutDir: true,
+		lib: {
+			entry: resolveWorkspacePath('app/server/main.ts'),
+			formats: ['cjs'],
+			fileName: () => 'main.cjs',
 		},
-		options ?? {},
-	)
+		outDir: resolveWorkspacePath('dist/app/server'),
+		target: 'node22',
+		rolldownOptions: {
+			onLog: enforceBuildLog,
+			external: (id: string) => id.startsWith('node:'),
+		},
+	},
+	test: {
+		name: { label: 'app:server', color: 'green' },
+		include: ['tests/app/server/**/*.test.ts'],
+		setupFiles: ['./tests/setup.ts', './tests/setupServer.ts'],
+		environment: 'node',
+		browser: { enabled: false },
+	},
+})
 `,
 		}),
-		policy: `export const policy = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			test: {
-				name: { label: 'policy', color: 'white' },
-				include: ['tests/policy.test.ts'],
-				setupFiles: ['./tests/setup.ts'],
-				environment: 'node',
-				browser: { enabled: false },
-			},
-		},
-		options ?? {},
-	)
+		policy: `export const policy = (): UserConfig => ({
+	resolve,
+	test: {
+		name: { label: 'policy', color: 'white' },
+		include: ['tests/policy.test.ts'],
+		setupFiles: ['./tests/setup.ts'],
+		environment: 'node',
+		browser: { enabled: false },
+	},
+})
 `,
-		config: `export const config = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			test: {
-				name: { label: 'config', color: 'yellow' },
-				include: ['tests/config.test.ts'],
-				setupFiles: ['./tests/setup.ts'],
-				environment: 'node',
-				browser: { enabled: false },
-				// A config test validates every target wrapper and runs the real linter twice with
-				// 15-second child caps, so this budget clears both caps and reports their diagnostics.
-				testTimeout: 45_000,
-			},
-		},
-		options ?? {},
-	)
+		config: `export const config = (): UserConfig => ({
+	resolve,
+	test: {
+		name: { label: 'config', color: 'yellow' },
+		include: ['tests/config.test.ts'],
+		setupFiles: ['./tests/setup.ts'],
+		environment: 'node',
+		browser: { enabled: false },
+		// A config test validates every target wrapper and runs the real linter twice with
+		// 15-second child caps, so this budget clears both caps and reports their diagnostics.
+		testTimeout: 45_000,
+	},
+})
 `,
-		setup: `export const setup = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			test: {
-				name: { label: 'setup', color: 'white' },
-				include: ['tests/setup*.test.ts'],
-				setupFiles: ['./tests/setup.ts'],
-				environment: 'node',
-				browser: { enabled: false },
-			},
-		},
-		options ?? {},
-	)
+		setup: `export const setup = (): UserConfig => ({
+	resolve,
+	test: {
+		name: { label: 'setup', color: 'white' },
+		include: ['tests/setup*.test.ts'],
+		setupFiles: ['./tests/setup.ts'],
+		environment: 'node',
+		browser: { enabled: false },
+	},
+})
 `,
-		guides: `export const guides = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			test: {
-				name: { label: 'guides', color: 'green' },
-				include: ['${GUIDES_TEST_PATH}'],
-				exclude: ['tests/src/**/*.test.ts', 'tests/app/**/*.test.ts', 'tests/setup.test.ts'],
-				setupFiles: ['./tests/setup.ts'],
-				environment: 'node',
-				browser: { enabled: false },
-			},
-		},
-		options ?? {},
-	)
+		guides: `export const guides = (): UserConfig => ({
+	resolve,
+	test: {
+		name: { label: 'guides', color: 'green' },
+		include: ['${GUIDES_TEST_PATH}'],
+		exclude: ['tests/src/**/*.test.ts', 'tests/app/**/*.test.ts', 'tests/setup.test.ts'],
+		setupFiles: ['./tests/setup.ts'],
+		environment: 'node',
+		browser: { enabled: false },
+	},
+})
 `,
 		conformance: `// Where this package drifts from the official tooling it stays compatible with.
 // The subject is this package, so the proof is hermetic and stays in \`npm test\`.
-export const conformance = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			test: {
-				name: { label: 'conformance', color: 'magenta' },
-				include: ['${CONFORMANCE_TEST_PATH}'],
-				setupFiles: ['./tests/setup.ts'],
-				environment: 'node',
-				browser: { enabled: false },
-			},
-		},
-		options ?? {},
-	)
+export const conformance = (): UserConfig => ({
+	resolve,
+	test: {
+		name: { label: 'conformance', color: 'magenta' },
+		include: ['${CONFORMANCE_TEST_PATH}'],
+		setupFiles: ['./tests/setup.ts'],
+		environment: 'node',
+		browser: { enabled: false },
+	},
+})
 `,
 		service: `// The live external services this package drives. It starts nothing itself:
 // \`scripts/service.sh\` provisions, \`tests/setupService.ts\` proves readiness, and
 // the project stays out of \`npm test\` because a real service answers it.
-export const service = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			test: {
-				name: { label: 'service', color: 'red' },
-				include: ['${SERVICE_TEST_INCLUDE}'],
-				setupFiles: ['./tests/setup.ts', './tests/setupService.ts'],
-				environment: 'node',
-				browser: { enabled: false },
-				testTimeout: 120_000,
-				hookTimeout: 120_000,
-				fileParallelism: false,
-			},
-		},
-		options ?? {},
-	)
+export const service = (): UserConfig => ({
+	resolve,
+	test: {
+		name: { label: 'service', color: 'red' },
+		include: ['${SERVICE_TEST_INCLUDE}'],
+		setupFiles: ['./tests/setup.ts', './tests/setupService.ts'],
+		environment: 'node',
+		browser: { enabled: false },
+		testTimeout: 120_000,
+		hookTimeout: 120_000,
+		fileParallelism: false,
+	},
+})
 `,
-		distribution: `export const distribution = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			test: {
-				name: { label: 'distribution', color: 'cyan' },
-				include: ['${DISTRIBUTION_TEST_PATH}'],
-				setupFiles: ['./tests/setup.ts'],
-				environment: 'node',
-				testTimeout: 120_000,
-				hookTimeout: 120_000,
-				fileParallelism: false,
-			},
-		},
-		options ?? {},
-	)
+		distribution: `export const distribution = (): UserConfig => ({
+	resolve,
+	test: {
+		name: { label: 'distribution', color: 'cyan' },
+		include: ['${DISTRIBUTION_TEST_PATH}'],
+		setupFiles: ['./tests/setup.ts'],
+		environment: 'node',
+		testTimeout: 120_000,
+		hookTimeout: 120_000,
+		fileParallelism: false,
+	},
+})
 `,
 		probe: `// A workbench, not a proof. No gate selects this project. Run in test mode by the
 // \`test:probe\` script, it collects \`tmp/probe/**/*.test.ts\`. Run in benchmark mode by the
 // \`test:bench\` script, the same workbench also collects \`tests/**/*.test.ts\` for a \`bench\` block,
 // so a suite may carry a bench beside its ordinary tests without a second project. The mode
 // guard around each \`bench\` call keeps it out of test mode, so it never executes there.
-export const probe = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			test: {
-				name: { label: 'probe', color: 'gray' },
-				include: ['tmp/probe/**/*.test.ts'],
-				setupFiles: ['./tests/setup.ts'],
-				environment: 'node',
-				browser: { enabled: false },
-				fileParallelism: false,
-				pool: 'threads',
-				benchmark: { include: ['tmp/probe/**/*.test.ts', 'tests/**/*.test.ts'] },
-			},
-		},
-		options ?? {},
-	)
+export const probe = (): UserConfig => ({
+	resolve,
+	test: {
+		name: { label: 'probe', color: 'black' },
+		include: ['tmp/probe/**/*.test.ts'],
+		setupFiles: ['./tests/setup.ts'],
+		environment: 'node',
+		browser: { enabled: false },
+		fileParallelism: false,
+		pool: 'threads',
+		benchmark: { include: ['tmp/probe/**/*.test.ts', 'tests/**/*.test.ts'] },
+	},
+})
 `,
-		integration: `export const integration = (options?: UserConfig): UserConfig =>
-	mergeConfig(
-		{
-			resolve,
-			test: {
-				name: { label: 'integration', color: 'blue' },
-				include: ['${INTEGRATION_TEST_PATH}'],
-				setupFiles: ['./tests/setup.ts'],
-{{global}}				environment: 'node',
-			},
-		},
-		options ?? {},
-	)
+		integration: `export const integration = (): UserConfig => ({
+	resolve,
+	test: {
+		name: { label: 'integration', color: 'blue' },
+		include: ['${INTEGRATION_TEST_PATH}'],
+		setupFiles: ['./tests/setup.ts'],
+{{global}}		environment: 'node',
+	},
+})
 `,
 	}),
 	tsconfigs: Object.freeze({
@@ -603,13 +543,13 @@ export const probe = (options?: UserConfig): UserConfig =>
 	}),
 	vites: Object.freeze({
 		src: Object.freeze({
-			core: `import { defineConfig } from 'vite'
+			core: `import { defineConfig, mergeConfig } from 'vite'
 import dts from 'vite-plugin-dts'
 import { environmentBoundary, outputBoundary } from '../helpers.js'
 import { peers, srcCore, resolveWorkspacePath } from '../../vite.config.ts'
 
 export default defineConfig(
-	srcCore({
+	mergeConfig(srcCore(), {
 		publicDir: false,
 		plugins: [
 			outputBoundary('dist/src/core'),
@@ -631,7 +571,7 @@ export default defineConfig(
 			lib: {
 				entry: resolveWorkspacePath('src/core/index.ts'),
 				formats: ['es', 'cjs'],
-				fileName: (format) => (format === 'es' ? 'index.js' : 'index.cjs'),
+				fileName: (format: string) => (format === 'es' ? 'index.js' : 'index.cjs'),
 			},
 			outDir: 'dist/src/core',
 			rolldownOptions: {
@@ -644,7 +584,7 @@ export default defineConfig(
 	}),
 )
 `,
-			browser: `import { defineConfig } from 'vite'
+			browser: `import { defineConfig, mergeConfig } from 'vite'
 import dts from 'vite-plugin-dts'
 import { srcBrowser, resolveWorkspacePath } from '../../vite.config.ts'
 
@@ -654,7 +594,7 @@ import { srcBrowser, resolveWorkspacePath } from '../../vite.config.ts'
 // one that leaves dist/src entirely. The rewrite below externalizes core through
 // the package's own published root export, on the final roll-up only.
 export default defineConfig(
-	srcBrowser({
+	mergeConfig(srcBrowser(), {
 		plugins: [
 			dts({
 				tsconfigPath: resolveWorkspacePath('configs/src/tsconfig.browser.json'),
@@ -669,7 +609,7 @@ export default defineConfig(
 	}),
 )
 `,
-			server: `import { defineConfig } from 'vite'
+			server: `import { defineConfig, mergeConfig } from 'vite'
 import dts from 'vite-plugin-dts'
 import { srcServer, resolveWorkspacePath } from '../../vite.config.ts'
 
@@ -678,7 +618,7 @@ import { srcServer, resolveWorkspacePath } from '../../vite.config.ts'
 // below externalizes core through the package's own published root export, on the
 // final roll-up only.
 export default defineConfig(
-	srcServer({
+	mergeConfig(srcServer(), {
 		plugins: [
 			dts({
 				tsconfigPath: resolveWorkspacePath('configs/src/tsconfig.server.json'),
@@ -694,7 +634,7 @@ export default defineConfig(
 )
 `,
 		}),
-		bin: `import { defineConfig } from 'vite'
+		bin: `import { defineConfig, mergeConfig } from 'vite'
 import { srcBin } from '../../vite.config.ts'
 
 // The \`scaffold\` executable build — a single ESM lib file, no declarations (an
@@ -703,7 +643,7 @@ import { srcBin } from '../../vite.config.ts'
 // \`output.paths\` rewriting the externalized \`@src/*\` specifiers to the built sibling
 // src environments (relative to \`dist/bin/\`), so the emitted bin resolves at runtime.
 export default defineConfig(
-	srcBin({
+	mergeConfig(srcBin(), {
 		build: {
 			rolldownOptions: {
 				output: {

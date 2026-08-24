@@ -119,6 +119,23 @@ ruling, or excluded on evidence. Scaffold-surface changes that oblige a publish 
 - Staged briefs (2026-08-24): sd2-fix, sd3-prepack-assertion, sd5-seed-pin, sd7-directional,
   pd3-overlay-serve, pd4-identical-control, pd5-issue-party, w1-workspace-root, w2-setup-family,
   w3-teardown, pd6-guide, u2b-html-split — all under `tmp/units/`.
+- SD4 (scaffold factories): landed after the Orchestrator applied the writer's report-only
+  patches to `tests/src/core/compilers.test.ts` serially; host gates green (core suite complete,
+  config proof complete, scoped checks clean). Sol analyst audit: every code claim CONFIRMED —
+  the one BROKEN claim was the audit brief's own wording (a materialized browser wrapper claimed
+  where only the template exists), ruled a claim-wording defect against the Orchestrator; the
+  code stands. Carried out of SD4: the root-check TS7053 quartet in `tests/src/bin/CLI.test.ts`
+  to SD2-FIX, and ruling 4's runtime sentinel-env pin to SD3 — both amended into those briefs
+  before the audit read them. Retained: `sd4-factories-brief.md`, `sd4-report.md`,
+  `sd4-audit-brief.md`, `sd4-audit-verdict.md`.
+- PD2 (probe re-warm + fault doors): the exec was cap-killed and `codex exec resume` completed
+  it (the resume subcommand accepts no sandbox or model flag — it inherits the original
+  session's config; recorded for the next recovery). Host runs authoritative: the stage suites,
+  Probe, and ProbeServer all green; `check:src:server` clean. Checker audit: FAIL on one
+  finding — the `#door` body duplicated verbatim across the three stages; PD2-FIX (Sol)
+  dispatched with the prescription adopted verbatim (exported tested helper in server helpers).
+  The checker's red-first reservation closed against the primary record: the journal carries the
+  single-test red runs at the reported times.
 
 ## Returned evidence
 

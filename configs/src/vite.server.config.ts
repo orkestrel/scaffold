@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, mergeConfig } from 'vite'
 import dts from 'vite-plugin-dts'
 import { srcServer, resolveWorkspacePath } from '../../vite.config.ts'
 
@@ -7,7 +7,7 @@ import { srcServer, resolveWorkspacePath } from '../../vite.config.ts'
 // below externalizes core through the package's own published root export, on the
 // final roll-up only.
 export default defineConfig(
-	srcServer({
+	mergeConfig(srcServer(), {
 		plugins: [
 			dts({
 				tsconfigPath: resolveWorkspacePath('configs/src/tsconfig.server.json'),
