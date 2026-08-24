@@ -19,19 +19,14 @@ is recoverable from git history by hash; no campaign folder is the plan of recor
   `readRing`, and journal fences need a browser-capable guides project, and the wait fence's
   child-exit half belongs with the expensive proofs; the pre-existing fences remain
   untranscribed standing debt. The transcription idiom exists in `tests/guides.test.ts`.
-- **test**: delete the counts remaining in guide sections the 0.0.8 narrative unit did not own —
-  the Threat model's refusal tally, the contract rules' limit tallies, the Voices trailer, and
-  the server-factories parallel-instance figure — per the no-count law, keeping fence-derived
-  values and stated limits.
-- **middleware, router, process, probe**: convert the attempt-counted poll loops and the
-  outlast-then-assert waits to `waitForCondition`, which `@orkestrel/test` publishes; take
-  router's sequencing site as a judgment conversion that preserves the write-before-destroy
-  ordering. A settling wait before a negative assertion stays a fixed `waitForDelay`, because a
-  poll cannot prove absence. Verified 2026-08-24: browser is converted and off this row; process
-  adopted `waitForCondition` across its server suites and its `tests/setup.ts` local copy is
-  gone, but `tests/src/server/ProcessManager.test.ts` still holds attempt-counted loops;
-  middleware still counts attempts in `tests/src/server/helpers.test.ts`; router's sequencing
-  site is unpinned; probe imports `waitForCondition` nowhere. (was B21c)
+- **probe**: convert the attempt-counted poll loops to `waitForCondition`, which
+  `@orkestrel/test` publishes. A settling wait before a negative assertion stays a fixed
+  `waitForDelay`, because a poll cannot prove absence. The conversion map, measured 2026-08-24:
+  poll loops at `tests/src/bin/main.test.ts` (the arming waits), `tests/src/server/stages/LintStage.test.ts:152-158,368-371`,
+  `tests/src/server/stages/RuntimeStage.test.ts:971-972,1274-1280`, and
+  `tests/src/server/Probe.test.ts:826-833`; the settling waits at
+  `LintStage.test.ts:344,828,939` stay. Middleware, router, and process converted in their
+  repositories on the same date, and browser earlier. (was B21c)
 - **middleware**: move `MultipartParser.ts` from the environment root into a domain folder.
   (was B5)
 - **brief**: read-once ownership at guarded doors — clone → guard → seal → refuse, so a

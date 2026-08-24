@@ -77,7 +77,15 @@ ruling, or excluded on evidence. Scaffold-surface changes that oblige a publish 
   tree pending integration; the lock still needs syncing for the re-pin.
 - New finding (html, carried): `tests/setup.ts` exists with no `tests/setup.test.ts` proof —
   `scaffold audit` reports it; belongs to html's next release alongside U2b or as its own unit.
-- U4 (process), U5 (middleware), U7 (test guide counts): in flight.
+- U4 (process): landed 3c4ec64 after a PASS audit; host run authoritative (bench denies child
+  spawning).
+- U5 (middleware): landed 6996b31; Sol audit's letter finding adopted verbatim.
+- U7 (test guide counts): landed c6865c9; the Sol audit's findings were reconciled — the
+  uniqueness-claim finding dropped on the record, the rest applied verbatim with members verified
+  against the pinning test.
+- Carried finding (test): `guides/test.md` carries a directional `below` near the Threat model
+  cross-reference — the writing rule replaces it with `later`; belongs to a test-package sweep at
+  its next release, not to the counts unit.
 
 ## Returned evidence
 
