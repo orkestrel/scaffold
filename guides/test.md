@@ -1132,7 +1132,7 @@ packages wrote is still refused when it is one suite's policy, a redeclaration o
 `@orkestrel` package already publishes, or a race; a shape few packages wrote still ships when the
 mechanism is a contract every consumer has to implement identically.
 
-The journey layer in `src/browser` is that second case. It is what `orkestrel-human-journey`
+The journey layer in `src/browser` is that second case. It is what `orkestrel-prove-journey`
 requires every browser workspace to implement, and a workspace writing its own copy of it writes a
 slightly different resolver, a slightly different set of failure voices, and a journey that reads as
 if it proved something it did not. Publishing it once is what keeps those implementations identical.
