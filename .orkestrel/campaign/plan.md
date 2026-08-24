@@ -174,6 +174,16 @@ ruling, or excluded on evidence. Scaffold-surface changes that oblige a publish 
   true property (no stage inspects this claim), and the collision vector added as an admitted
   negative control. PD4-FIX (Opus) dispatched; the round closes on a fresh Sol check of the
   changed comparison or a mutation probe per the adoption rule.
+- SD2-FIX-2 closed: checker PASS on every claim including the Orchestrator's two fixture
+  reconciliations; checkpointed fa3a33b and pushed.
+- TH1 CLOSED (2026-08-24, tarball from fa3a33b, sha256 6454ae1c…): the real `repair` in html
+  appended `test:probe`, `test:bench`, and `prepack`, named `test:guides` differing with both
+  values, refreshed the vendored config proof (SD3's packing and sentinel tests pass against
+  html's own manifest and factories — a second-workspace validation of the vendored surface)
+  and the sealed configurations, and re-pinned the planned tool versions. Registry pin restored
+  to ^0.0.50 before commit; lock synced; html gates and full suite green under the re-pinned
+  toolchain; bench mode collects empty. Materialization committed 55bf2f4 and pushed. U2b
+  dispatched as the last html unit.
 - SD3 (vendored prepack assertion + sentinel-env pin): landed on 85f8df3 — the packing test with
   its throwing control (recorded red then green), the sentinel-env `Reflect.apply` factory test
   with a named control, the guide sentence, `host.json` regenerated. Host gates green
