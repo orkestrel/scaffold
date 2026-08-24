@@ -66,10 +66,10 @@ describe('Compiler artifacts', () => {
 			origin: 'template',
 			content: expect.stringContaining('installed package consumer'),
 		})
-		expect(plan.artifacts).toHaveLength(48)
+		expect(plan.artifacts).toHaveLength(50)
 		expect(plan.artifacts.filter(({ origin }) => origin === 'computed')).toHaveLength(1)
 		expect(plan.artifacts.filter(({ origin }) => origin === 'template')).toHaveLength(15)
-		expect(plan.artifacts.filter(({ origin }) => origin === 'host')).toHaveLength(32)
+		expect(plan.artifacts.filter(({ origin }) => origin === 'host')).toHaveLength(34)
 	})
 
 	it('emits every conditional config path exactly once', () => {
