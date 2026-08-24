@@ -1265,7 +1265,7 @@ describe('Materializer declare scripts', () => {
 		}
 	})
 
-	it('refuses a customized chain without moving a byte, and still writes the ranges', () => {
+	it('retains a customized chain byte-identically while the absent sibling appends', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
@@ -1289,13 +1289,17 @@ describe('Materializer declare scripts', () => {
 				)
 
 				expect(result.written).toEqual(['package.json'])
-				// Only the range moved. The customized chain is exactly as its author
-				// left it, and no distribution script was inserted beside it.
+				// The write is per-script: the customized chain stays exactly as its
+				// author left it while the absent distribution script appends beside it,
+				// and the range moves.
+				const appended =
+					'"test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution"'
 				expect(workspace.read('project/package.json')).toBe(
-					customized.replace('"@orkestrel/emitter": "^0.0.5"', '"@orkestrel/emitter": "^0.0.9"'),
+					customized
+						.replace('"@orkestrel/emitter": "^0.0.5"', '"@orkestrel/emitter": "^0.0.9"')
+						.replace(/("prepublishOnly": "[^"]+")\n/u, `$1,\n\t\t${appended}\n`),
 				)
 				expect(workspace.read('project/package.json')).toContain('npm run verify')
-				expect(workspace.read('project/package.json')).not.toContain('test:distribution')
 			} finally {
 				materializer.destroy()
 			}
