@@ -1,18 +1,14 @@
 # ROADMAP
 
-The plan of record after the current-pins release wave (closed 43/43, 2026-08-18: every fleet
-package published at latest `@orkestrel` pins, proven by gates and the material-dist rule).
-This file owns everything still open. Campaign detail is recoverable from git history by hash;
-no campaign folder is the plan of record.
+The plan of record after the scaffold 0.0.50 adoption (2026-08-24: the fleet re-pinned to the
+published scaffold with the generated distribution proof landed everywhere, following the
+current-pins release wave of 2026-08-18). This file owns everything still open. Campaign detail
+is recoverable from git history by hash; no campaign folder is the plan of record.
 
 ## 1. Package work, scheduled by each package's next natural release
 
 - **fleet**: sweep every target for skill and bridge members outside the vendored set; that
   population is unmeasured, and `repair` does not remove what the plan never owned.
-- **test**: pack a distribution gate that installs this package's own artifact into a consumer
-  and drives it. Its absence is why the unsatisfiable `vitest` peer reached the registry twice:
-  every other gate passed on a workspace that already had a resolved tree. The idiom exists in
-  scaffold's and probe's `tests/distribution.test.ts`.
 - **fleet**: the vendored `tests/config.test.ts` assertion that reddens a publishing target
   lacking `"prepack": "npm run build"` still has not landed. Verified 2026-08-22: the line is
   declared in every publishing manifest and `blueprintToScripts` emits it at birth, but the
@@ -30,12 +26,12 @@ no campaign folder is the plan of record.
 - **middleware, router, process, probe**: convert the attempt-counted poll loops and the
   outlast-then-assert waits to `waitForCondition`, which `@orkestrel/test` publishes; take
   router's sequencing site as a judgment conversion that preserves the write-before-destroy
-  ordering; replace the proven local copies in process `tests/setup.ts` and probe with the
-  published helper. A settling wait before a negative assertion stays a fixed `waitForDelay`,
-  because a poll cannot prove absence. Verified 2026-08-22: browser is converted and drops off
-  this row; middleware still counts attempts in `tests/src/server/helpers.test.ts`, router's
-  sequencing site is unpinned, process's `detach` and `ProcessManager` suites are unconverted,
-  and probe imports `waitForCondition` nowhere. (was B21c)
+  ordering. A settling wait before a negative assertion stays a fixed `waitForDelay`, because a
+  poll cannot prove absence. Verified 2026-08-24: browser is converted and off this row; process
+  adopted `waitForCondition` across its server suites and its `tests/setup.ts` local copy is
+  gone, but `tests/src/server/ProcessManager.test.ts` still holds attempt-counted loops;
+  middleware still counts attempts in `tests/src/server/helpers.test.ts`; router's sequencing
+  site is unpinned; probe imports `waitForCondition` nowhere. (was B21c)
 - **middleware**: move `MultipartParser.ts` from the environment root into a domain folder.
   (was B5)
 - **brief**: read-once ownership at guarded doors — clone → guard → seal → refuse, so a
@@ -121,10 +117,6 @@ no campaign folder is the plan of record.
   ships under presence ownership, is clean. Rule each remaining hit by sense and repair the banned
   senses in a pass that owns those files.
 
-- **probe**: `tests/src/bin/main.test.ts` fails 9 of 11 at HEAD `e481c62` with no scaffold
-  propagation applied — a pristine clone reproduces it, including the SIGTERM and SIGINT
-  target-cleanliness cases and the protocol-era case. Measured 2026-08-24. Unrelated to scaffold;
-  the propagated tree is less red than the baseline.
 - **html**: the `subquadratic` and `linear` tests in `tests/src/core/helpers.test.ts` and
   `tests/src/core/parsers.test.ts` assert measured wall-clock milliseconds against a computed budget,
   so they fail on a loaded machine and pass on an idle one. Measured 2026-08-24: red under three
