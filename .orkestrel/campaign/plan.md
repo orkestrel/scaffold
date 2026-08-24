@@ -60,6 +60,25 @@ ruling, or excluded on evidence. Scaffold-surface changes that oblige a publish 
   harness-tracked chains (chain-a.sh, chain-b.sh), 600 s cap per lane, using the inline-brief
   invocation form the succeeding lane used. Lesson: bound grok concurrency at about two.
 
+## Unit status
+
+- U1 (agent Channel): implemented by Sol; red proof recorded (the two new tests failed before the
+  fix; the suite passes complete after it); check and suite green; audit dispatched.
+- U3 (router waits): implemented by Sol; the exec sandbox denied loopback listeners so the writer
+  could not run the suite — deviation reported correctly, and the brief's failure to name that
+  documented bench limit is the Orchestrator's recorded miss; host run green (27 passed); audit
+  dispatched.
+- U2a (html bench script): builder deviation — `scaffold overwrite` does not refresh a target's
+  script set, and `scaffold audit` does not report script drift (verified 2026-08-24 in html:
+  audit reports only an uncovered `tests/setup.ts` and a typescript major note). html's script set
+  is birth-cohort stale (`test:probe` and `test:bench` absent). The systemic gap routes to the D2
+  scaffold family beside the prepack-assertion row; html's materialization mechanism is decided
+  there. The overwrite side effects (guide ^0.0.13 re-pin, two mirror refreshes) stand in html's
+  tree pending integration; the lock still needs syncing for the re-pin.
+- New finding (html, carried): `tests/setup.ts` exists with no `tests/setup.test.ts` proof —
+  `scaffold audit` reports it; belongs to html's next release alongside U2b or as its own unit.
+- U4 (process), U5 (middleware), U7 (test guide counts): in flight.
+
 ## Returned evidence
 
 - g-probe-tests (complete): `createTeardown` has zero adoption in probe — every `finally` is a
