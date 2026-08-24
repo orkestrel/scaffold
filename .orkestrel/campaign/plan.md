@@ -144,6 +144,22 @@ ruling, or excluded on evidence. Scaffold-surface changes that oblige a publish 
   the documented contract: the region refusal is region-scoped (the manifest's other planned
   regions still repair, the tilde range takes the planned caret form), and a non-blocking
   question rides a clean audit exit per the `auditToExit` TSDoc. Both named to the audit.
+- TH1 resumption (2026-08-24, scaffold 85f8df3 tarball, sha256 b51a67d3…): the real `repair` in
+  html no longer blocks — it reported the scripts question non-blocking and wrote the config
+  refresh and tool re-pins — but appended NOTHING: `replaceManifestScripts` refuses the WHOLE
+  region when any writable script's value is neither planned nor accepted, and html's
+  `test:guides` lacks the planned `--no-cache` flag (reproduced per-script through the
+  installed tarball's own exports; every other writable script passes alone). The transactional
+  coupling defeats d2d ruling 6 ("for html: repair appends both") and blocks the release wave's
+  healing story fleet-wide. RULING: the scripts write is per-script — absent appends, accepted
+  upgrades, differing stays byte-identical and is REPORTED BY NAME (the question today names
+  only absent scripts, hiding the cause). SD2-FIX-2 brief staged (`tmp/units/sd2-fix2-brief.md`),
+  queued behind SD3; the ruling does not invalidate SD3's brief. html stays parked with the
+  repair's config writes uncommitted; the next repack re-runs repair after SD2-FIX-2 lands.
+- SD3 (vendored prepack assertion + sentinel-env pin): landed on 85f8df3 — the packing test with
+  its throwing control (recorded red then green), the sentinel-env `Reflect.apply` factory test
+  with a named control, the guide sentence, `host.json` regenerated. Host gates green
+  (`test:config` complete including the additions, guides parity complete). Audit dispatched.
 - PD2 (probe re-warm + fault doors): the exec was cap-killed and `codex exec resume` completed
   it (the resume subcommand accepts no sandbox or model flag — it inherits the original
   session's config; recorded for the next recovery). Host runs authoritative: the stage suites,

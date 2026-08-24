@@ -1185,9 +1185,9 @@ A workspace's file set is a function of its axes plus its structural facts. Noth
 except the manifest.
 
 - One computed artifact: `package.json`, with the entry points, `exports` map, scripts, and
-  development dependencies its selection implies. A publishing manifest carries
-  `"prepack": "npm run build"` so a publish rebuilds `dist/` and cannot ship a stale artifact;
-  the hook is publish-time only, and every generated distribution proof passes
+  development dependencies its selection implies. In publishing workspaces, the emitted `prepack`
+  script runs `npm run build` so a publish rebuilds `dist/` and cannot ship a stale artifact; the
+  hook is publish-time only, and every generated distribution proof passes
   `--ignore-scripts` to `npm pack` so a suite never re-runs the build it already gates.
 - One template artifact per configuration file the selection needs: the root `tsconfig.json` and
   `vite.config.ts`, plus a Vite config and a scoped TypeScript config per selected environment and
