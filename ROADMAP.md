@@ -7,8 +7,6 @@ is recoverable from git history by hash; no campaign folder is the plan of recor
 
 ## 1. Package work, scheduled by each package's next natural release
 
-- **fleet**: sweep every target for skill and bridge members outside the vendored set; that
-  population is unmeasured, and `repair` does not remove what the plan never owned.
 - **fleet**: the vendored `tests/config.test.ts` assertion that reddens a publishing target
   lacking `"prepack": "npm run build"` still has not landed. Verified 2026-08-22: the line is
   declared in every publishing manifest and `blueprintToScripts` emits it at birth, but the
