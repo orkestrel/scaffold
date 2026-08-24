@@ -608,15 +608,18 @@ describe('blueprintToScripts config projects', () => {
 		expect(content).toContain(
 			"import { resolveBrowser, resolvePinnedBrowser } from '../configs/browsers.js'",
 		)
-		// The declaration locator walks conditions for the first `types` key, because
-		// one published root entry declares `types` beside `default` rather than
-		// inside `import`, and a fixed lookup returns a JavaScript file there. It reads
-		// `require` beside `import`, because a `require`-only subpath declares its
-		// types under `require` and an `import`-only lookup calls that subpath
-		// undeclared. `tests/src/core/templates.test.ts` drives what it answers.
-		expect(content).toContain("['types', 'import'],")
-		expect(content).toContain("['types', 'require'],")
-		expect(content).toContain('const declaration = readDeclaration(entry)')
+		// Each consumer format resolves its own declaration, because TypeScript decides a
+		// consumer's format from the declaration rather than from the runtime target: a
+		// `.d.cts` declaration over an ES module target is accepted and a `.d.mts` one over
+		// a CommonJS target is refused. The Node resolutions carry `node` between `types`
+		// and the format condition and the bundler resolution does not, so a browser drive
+		// compares against the declaration a bundler consumer reads. The locator takes the
+		// installed root because a `.d.ts` declaration's format comes from the nearest
+		// manifest above the declaration itself. `tests/src/core/templates.test.ts` drives
+		// what it answers.
+		expect(content).toContain("module: ['types', 'node', 'import'],")
+		expect(content).toContain("commonjs: ['types', 'node', 'require'],")
+		expect(content).toContain('const declaration = readDeclaration(entry, installed)')
 		// The workspace that publishes no browser face carries neither the launcher
 		// nor its imports, so its own `lint:check` sees no binding it never uses.
 		const [core] = blueprintToTestArtifacts(buildBlueprint({ src: ['core'] })).filter(
