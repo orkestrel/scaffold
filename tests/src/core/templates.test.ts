@@ -274,11 +274,13 @@ const CLASSIFIER_DECLARATIONS: readonly string[] = [
 	'readJson',
 	'resolvePackageTarget',
 	'resolveTarget',
+	'resolvesBrowser',
 	'matchesFile',
 	'targetToDeclaration',
 	'resolveDeclaration',
 	'readPackageType',
 	'resolvesCommonJS',
+	'declaresCommonJS',
 	'collectTargets',
 	'isModule',
 	'isDeclaration',
@@ -1304,7 +1306,7 @@ describe('emitted distribution classifier', () => {
 		}
 	})
 
-	it('selects the CommonJS compile probe from the resolved declaration format', () => {
+	it('separates the CommonJS runtime format from declaration compatibility', () => {
 		const workspace = createScratch({
 			parent: ensureTmpRoot(),
 			prefix: 'scaffold-e2-declaration-format-',
@@ -1348,18 +1350,22 @@ describe('emitted distribution classifier', () => {
 				`classifier.resolvesCommonJS(${nested}, ${JSON.stringify(installed)})`,
 				`classifier.resolvesCommonJS(${malformed}, ${JSON.stringify(installed)})`,
 				`classifier.resolvesCommonJS(${directory}, ${JSON.stringify(installed)})`,
+				`classifier.declaresCommonJS(${declarationCommonRuntimeModule}, ${JSON.stringify(installed)})`,
+				`classifier.declaresCommonJS(${declarationModuleRuntimeCommon}, ${JSON.stringify(installed)})`,
 				`classifier.selectEntries([{ subpath: './dual', mapping: ${dual}, commonjs: true }, { subpath: './module', mapping: ${module}, commonjs: false }], classifier.BUNDLER_CONDITIONS.commonjs).map((entry) => entry.subpath)`,
 			])
 
 			expect(answers).toStrictEqual([
+				false,
+				true,
+				false,
 				true,
 				false,
 				true,
 				true,
 				false,
-				true,
-				true,
-				true,
+				false,
+				false,
 				true,
 				false,
 				['./dual'],
@@ -1369,7 +1375,7 @@ describe('emitted distribution classifier', () => {
 		}
 	})
 
-	it('classifies staged exports into driven and refused records', () => {
+	it('classifies staged exports by browser reachability and runtime format', () => {
 		const workspace = createScratch({
 			parent: ensureTmpRoot(),
 			prefix: 'scaffold-e2-stage-classification-',
@@ -1435,7 +1441,7 @@ describe('emitted distribution classifier', () => {
 							},
 							browser: false,
 							module: false,
-							commonjs: true,
+							commonjs: false,
 							required: true,
 						},
 						{
@@ -1449,7 +1455,7 @@ describe('emitted distribution classifier', () => {
 							},
 							browser: false,
 							module: false,
-							commonjs: false,
+							commonjs: true,
 							required: true,
 						},
 						{
@@ -1505,7 +1511,7 @@ describe('emitted distribution classifier', () => {
 							},
 							browser: false,
 							module: true,
-							commonjs: true,
+							commonjs: false,
 							required: true,
 						},
 						{
@@ -1564,7 +1570,7 @@ describe('emitted distribution classifier', () => {
 		}
 	})
 
-	it('leaves a default-resolved entry outside the CommonJS claim assertion', () => {
+	it('excludes browser artifacts from the CommonJS claim assertion', () => {
 		const workspace = createScratch({
 			parent: ensureTmpRoot(),
 			prefix: 'scaffold-e2-commonjs-unclaimed-',
@@ -1572,7 +1578,7 @@ describe('emitted distribution classifier', () => {
 		try {
 			const file = stageDistributionClassification(workspace)
 			const installed = workspace.ensure('installed')
-			workspace.write('installed/package.json', '{ "type": "module" }\n')
+			workspace.write('installed/package.json', '{ "type": "commonjs" }\n')
 			workspace.write('installed/dist/src/browser/index.d.ts', 'export const value: number\n')
 			const unclaimed = {
 				exports: {
@@ -1593,11 +1599,12 @@ describe('emitted distribution classifier', () => {
 				},
 			}
 			const answers = driveClassifier(file, [
-				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(unclaimed)}, ${JSON.stringify(installed)}, 'unclaimed').entries).map((entry) => entry.subpath)`,
-				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(declared)}, ${JSON.stringify(installed)}, 'declared').entries).map((entry) => entry.subpath)`,
+				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(unclaimed)}, ${JSON.stringify(installed)}, 'unclaimed').entries, ${JSON.stringify(installed)}).map((entry) => entry.subpath)`,
+				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(declared)}, ${JSON.stringify(installed)}, 'declared').entries, ${JSON.stringify(installed)}).map((entry) => entry.subpath)`,
+				`classifier.classifyStage(${JSON.stringify(declared)}, ${JSON.stringify(installed)}, 'declared').entries.map((entry) => ({ commonjs: entry.commonjs, required: entry.required }))`,
 			])
 
-			expect(answers).toStrictEqual([[], ['.']])
+			expect(answers).toStrictEqual([[], [], [{ commonjs: false, required: false }]])
 		} finally {
 			workspace.destroy()
 		}
@@ -1625,8 +1632,8 @@ describe('emitted distribution classifier', () => {
 				},
 			}
 			const answers = driveClassifier(file, [
-				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(incompatible)}, ${JSON.stringify(installed)}, 'incompatible').entries).map((entry) => entry.subpath)`,
-				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(compatible)}, ${JSON.stringify(installed)}, 'compatible').entries).map((entry) => entry.subpath)`,
+				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(incompatible)}, ${JSON.stringify(installed)}, 'incompatible').entries, ${JSON.stringify(installed)}).map((entry) => entry.subpath)`,
+				`classifier.selectUntypable(classifier.classifyStage(${JSON.stringify(compatible)}, ${JSON.stringify(installed)}, 'compatible').entries, ${JSON.stringify(installed)}).map((entry) => entry.subpath)`,
 			])
 
 			expect(answers).toStrictEqual([['.'], []])
