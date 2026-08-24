@@ -18,8 +18,6 @@ only what its harness needs. None of them restates this file.
 
 A line stays in this file when an executor who is not doing that thing is worse off without it. A
 line becomes a skill when it fires on a named trigger and its reader is one agent at one moment.
-Every agent loads this file on every dispatch, so a procedure kept here is paid for by everyone who
-never runs it.
 
 Every dispatch tells its executor to read every item after the user's current instruction before
 acting.
@@ -512,9 +510,7 @@ The harness bridge names the concrete mechanism for each of these.
 ### Check the brief before you send it
 
 Fill `.agents/templates/brief.md`, which carries the named scope rows and the worked reason behind
-each check. Then run this checklist against what you filled. Each check is cheap, and skipping one
-costs a dispatch cycle that produces no work: a unit given a brief that is internally consistent and
-factually wrong is right to stop.
+each check. Then run this checklist against what you filled.
 
 - Name the executor that will open the brief, and write the transport for that reader. A bridge
   driver and the bench engine inside that driver's CLI need opposite instructions.
