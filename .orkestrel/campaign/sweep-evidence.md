@@ -60,3 +60,25 @@ this version's.
 
 `supervisor`'s `tests/app/server/fixtures/claude.mjs` orphans itself on every run and never exits.
 Recorded on `ROADMAP.md` against the package that owns it.
+
+## The recast writing check
+
+The old claim swept campaign prose and repriced on every round, because each round writes new prose.
+`.claude/rules/quality.md` line 89 directs such a subject to be dropped or recast to the property the
+tally stood in for. The property is **the bytes a target receives carry no banned term**, over a fixed
+population — the vendored inventory — so it has a closing condition.
+
+Result:
+
+- **The emitted distribution proof is clean.** No banned substitution and no directional reference.
+  That is the file that ships under presence ownership into every target and is never rewritten once
+  written, so it is the surface that had to be clean.
+- **The two vendored files this version touched added no directional reference.**
+  `.agents/orchestration.md` and `guides/scaffold.md` each add zero lines containing `above` or
+  `below`.
+- Pre-existing directional references remain in vendored instruction files, and many are in permitted
+  senses — `.claude/rules/writing.md` states the ban and must contain the words; `matchesEngines`
+  describes a floor "at or above" a minimum, which is numeric comparison. These predate this version
+  and belong to a later scope.
+
+The check closes for what 0.0.50 ships and changes.

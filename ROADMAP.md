@@ -113,6 +113,14 @@ no campaign folder is the plan of record.
   about 50MB and they accumulate across runs until the container is reclaimed. The fixture needs its
   stdin closed by whatever spawns it, or a guard that exits when stdin is not a pipe.
 
+- **scaffold**: vendored instruction files carry pre-existing directional references (`above`,
+  `below`) that `.claude/rules/writing.md` refuses. Measured 2026-08-23 over the vendored inventory:
+  hits sit in `.claude/agents/*`, `.claude/rules/*`, `.codex/config.toml`, and `guides/scaffold.md`.
+  Several are permitted by sense — the rule stating the ban must quote the words, and a version floor
+  described as "at or above" a minimum is numeric comparison. The emitted distribution proof, which
+  ships under presence ownership, is clean. Rule each remaining hit by sense and repair the banned
+  senses in a pass that owns those files.
+
 ## 2. Design and research records
 
 - **Guide mirrors track upstream `main`, not the catalog release.** `Upstream` fetches guides
