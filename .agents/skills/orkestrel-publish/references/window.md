@@ -1,7 +1,7 @@
 # The approval and the upload window
 
-The npm approval is the user's click, and the window it opens is five minutes long. Everything
-here exists to reach that click with a live chain and to spend the window without losing it.
+The npm approval is the user's click, and the window it opens is five minutes long. Reach that
+click with a live chain, and spend the window without losing it.
 
 ## Arm the terminal
 
@@ -46,7 +46,7 @@ here exists to reach that click with a live chain and to spend the window withou
 - Relay the URL as plain text. A decorated link did not render for the operator, who then had
   nothing to click while the window ran down.
 - Re-read the log before treating an approval as failed. The chain is usually still alive on a
-  newer URL, so surface that one rather than starting the chain again.
+  later URL, so surface that one rather than starting the chain again.
 - Read a `404` on an approval URL as a publish that already succeeded and consumed it. Read the
   registry before calling it a failure.
 
@@ -60,7 +60,7 @@ here exists to reach that click with a live chain and to spend the window withou
   its own URL.
 - Relay every new URL to the user the moment it appears, through a journal watcher, and never
   pause the chain to wait for a click: a poll outlives the relay.
-- Tell the user to click only the newest URL. A click on a superseded URL poisons the live attempt
+- Tell the user to click only the URL last in log order. A click on a superseded URL poisons the live attempt
   — the current poll fails `403 Forbidden - GET /-/v1/done` mid-flight. After any such 403,
   confirm no publish process is live, then mint one fresh attempt.
 - **Never retry a publish that is still waiting for its authorization.** Each `npm publish`
@@ -75,7 +75,7 @@ here exists to reach that click with a live chain and to spend the window withou
   approval. These are different failures wearing similar codes; a retry fixes in-window contention
   and causes the moving approval target.
 - Expect a large layer to outlast one window. Size batches to what uploads in five minutes and
-  tell the user how many approvals to expect, rather than discovering it mid-run.
+  name each planned approval point to the user, rather than discovering them mid-run.
 - The contract's serialization law binds every upload in the window, and
   `.agents/orchestration.md` § Long-running commands binds the chain that runs them.
 

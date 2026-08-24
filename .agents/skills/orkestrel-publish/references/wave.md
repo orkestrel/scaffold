@@ -1,6 +1,7 @@
 # The release wave
 
-Close a fleet-wide "everything on latest" goal as a release wave in layer order: visit every
+Close a fleet-wide goal of every package on registry-served versions as a release wave in layer
+order: visit every
 repository once per round with one procedure, publish each layer in one window, and only then
 prepare the next.
 
@@ -56,7 +57,7 @@ Prepare a published package's layer in this order:
    field can sit a release behind what was published from another checkout, and bumping that
    produces a version the registry already holds, which fails on upload after the whole gate chain
    has run. Read the registry first.
-2. **Re-pin every `@orkestrel` range to what the registry serves now, and install.**
+2. **Re-pin every `@orkestrel` range to what the registry serves, and install.**
 3. **Sweep the self-pins**, per the following section.
 4. **Run each package's own `prepublishOnly` script to green.**
 5. **Commit and push before the window opens.**

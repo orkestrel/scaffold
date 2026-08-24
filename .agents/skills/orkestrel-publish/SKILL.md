@@ -10,16 +10,16 @@ description: Run an Orkestrel release from layer order to registry confirmation.
 Read the current files in this order:
 
 1. `AGENTS.md` and every applicable `.claude/rules/*.md` file.
-2. `.agents/orchestration.md` § Publishing the fleet and § Long-running commands. Both bind every
-   step here.
+2. `.agents/orchestration.md` § Publishing the fleet and § Long-running commands. Each named
+   section binds every step here.
 3. The reference the moment needs: [wave.md](references/wave.md) before visiting a repository,
    ruling on a bump, or preparing a layer; [window.md](references/window.md) before running
    `npm login` or any upload.
 4. The live evidence: the registry's packument for every package in the round, each target's
    manifest, and the catalog table the contract names as the layer order.
 
-The user's current instruction wins. Publishing is the user's decision and the user's credential,
-and nothing in this skill authorizes an upload the user did not ask for.
+The user's current instruction wins. The contract's § Publishing the fleet owns the credential
+and authorization law; nothing here weakens it.
 
 ## The boundary with the contract
 
@@ -37,8 +37,7 @@ following the skill.
 ## Run the release
 
 1. **Name the round.** List the packages the release covers, and group them into layers by the
-   contract's layer order. Regenerate the catalog before sequencing rather than trusting the copy
-   in the tree.
+   contract's layer order.
 2. **Take the registry evidence.** Read what the registry serves for every package in the round.
    Derive each pin from that reading, never from a local manifest.
 3. **Visit each repository.** Run the visit in [wave.md](references/wave.md) in its stated order,
@@ -66,10 +65,10 @@ Completion requires:
 
 - every package the round named has ended published at a registry-confirmed version, published on
   a later round with the reason recorded, or ruled as no bump with the evidence that ruled it;
-- every published package's dependents are re-pinned, gated, and either republished or recorded as
-  unmoved;
-- no target repository is left holding a local tarball, an uncommitted bump, or an unpushed
-  commit;
+- every obligation § What a bump obliges places on a published package's dependents has closed as
+  that section requires;
+- every tarball swap is restored per § Fixing a dependency before it publishes, and no target
+  repository is left holding an uncommitted bump or an unpushed commit;
 - every gate that proved a package ran outside the window and against the artifact that shipped.
 
 Report the layers in publish order, each package with its registry-confirmed version, the bump
