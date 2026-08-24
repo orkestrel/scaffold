@@ -111,3 +111,15 @@ ruling, or excluded on evidence. Scaffold-surface changes that oblige a publish 
   (`process/src/core/types.ts:160-161`, `Process.ts:256-260`) bounds an unconfirmed write and
   settles it `false`. `StdioClientTransportOptions` (`mcp/src/server/transports/types.ts:371-375`)
   carries no `delivery` field today.
+
+## SD6 census (2026-08-24, by script over 46 manifests)
+
+The publishing targets missing `prepack` entirely: abort, budget, console, csv, database,
+emitter, form, guide, html, indexeddb, interpret, markdown, msg, ndjson, ollama, pool, rater,
+reason, relation, server, sqlite, sse, table, template, terminal, timeout, tool, websocket,
+workspace. Every other swept manifest conforms (`npm run build`, or private without the script).
+This falsifies the ROADMAP row's recorded 2026-08-22 verification that the line is declared in
+every publishing manifest; the run is authoritative. Consequence: SD2's writable-set repair and
+SD3's vendored assertion ship in one release, and each target's visit (re-pin, install, repair,
+gates) lands the remedy before the gate reads it — the per-target order makes the fleet-wide red
+switch safe within a single release.
