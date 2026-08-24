@@ -86,6 +86,39 @@ ruling, or excluded on evidence. Scaffold-surface changes that oblige a publish 
 - Carried finding (test): `guides/test.md` carries a directional `below` near the Threat model
   cross-reference — the writing rule replaces it with `later`; belongs to a test-package sweep at
   its next release, not to the counts unit.
+- MCP chain (mcp): landed 417e3a5, b2fd6c4, e174fde — delivery option, `DEFAULT_MCP_DELIVERY`
+  10000 ms, voice split, omitted-default pin, guide rows. Audit findings adopted verbatim with an
+  executed omitted-default pin upgrade; pushed.
+- T chain (test): landed 6f34f44, fe3fa7b, 2c3da13 — contrast/readRing/journal carriers with
+  guide markers, `wait` cleanup-on-delivery arm, placement-rule comment, presence guard. Audit
+  overclaim fixed; pushed.
+- B chain (brief): landed 2fdfea4, a073157, fbe3bf6 — `captureValue` cloner, clone-else-capture
+  `#own`, seal-live removed, `deriveTask` one-descriptor capture, prose carriers. B3 audit's two
+  prose findings fixed; getter literal annotations repaired directly (compiler-prescribed);
+  pushed.
+- SD0 (scaffold commonjs probe): the ROADMAP row's two vectors already pass on head; the silent
+  drop vector is real — re-baselined SD1's brief from the probe.
+- SD1 (scaffold classifiers): landed f9deb6e after a deviation stop granted
+  `templates.test.ts` (the file pinned the reversed behavior); audit PASS; flip ledger recorded;
+  pushed.
+- SD2 (scaffold script region + emitted prepack): landed 1b39fa0; audit PASS; host.json
+  regenerated after the guide edit (stale digests briefly broke the CLI suite — brief omission
+  recorded).
+- PD1 (probe coordinator): landed 12809a9 after a cap-kill recovery
+  (`codex exec resume 01a033f0-…`); audit ruled the expire-claim wording defective, code stands;
+  host run 25/25.
+- TH1 (html integration): PARKED on a critical deviation — the real
+  `npx scaffold repair` (packed from 1b39fa0) BLOCKS the manifest group on absent planned scripts
+  instead of appending, falsifying SD2's fixture pin; adoption commit f489720 landed; tarball
+  installed with `package.json`/lock uncommitted; SD2-FIX brief staged
+  (`tmp/units/sd2-fix-brief.md`) and queued behind SD4.
+- G-SD7 (directional sense table): first launch starved its bounded window; relaunched as an
+  Orchestrator-tracked command and returned complete — retained as
+  `.orkestrel/campaign/g-sd7-directional.md`. OTHER-classed rank senses ruled permitted; the
+  DIRECTIONAL set feeds SD7's brief.
+- Staged briefs (2026-08-24): sd2-fix, sd3-prepack-assertion, sd5-seed-pin, sd7-directional,
+  pd3-overlay-serve, pd4-identical-control, pd5-issue-party, w1-workspace-root, w2-setup-family,
+  w3-teardown, pd6-guide, u2b-html-split — all under `tmp/units/`.
 
 ## Returned evidence
 
