@@ -5,10 +5,10 @@ Copy this file for each dispatch and fill every row. Then run
 the filled copy and the returned report under the names § "Every dispatch is a file before it is a
 launch" fixes.
 
-Every `UPPER_SNAKE_CASE` token is a placeholder for a concrete value you supply. Retitle the filled
-copy `# Unit UNIT_ID — SHORT_SUBJECT`. Delete each italic reminder as you fill the row it sits under,
-and leave no row blank: a row you cannot fill is an unknown, and it moves to § Unknowns with how the
-unit reports back on it.
+Replace every placeholder written in upper snake case with a concrete value. Retitle the filled
+copy `# Unit UNIT_ID — SHORT_SUBJECT`. Delete each italic reminder as you fill the row it sits
+under, and leave no row blank: fill a row you cannot close with a named unknown label, and
+describe that label under § Unknowns with how the unit reports back on it.
 
 ## Role and engine
 
@@ -114,7 +114,7 @@ refuse it._
 
 ## Output
 
-RETURN_SHAPE, written to OUTPUT_PATH.
+RETURN_SHAPE, delivered through OUTPUT_MECHANISM.
 
 _State the exact distilled return shape and the mechanism that delivers it. No process diary._
 
@@ -135,9 +135,11 @@ heading a section takes are the unit's to settle._
 
 _Order the criteria cheap-first, so an unreachable criterion cannot hide a typecheck or a lint
 criterion behind it. Where the change edits a file the repository vendors or digests, put the
-regeneration step ahead of every gate that reads the generated artifact. Fix each criterion to the
-state the unit finishes in, close each one with owned files alone, and name the property the unit
-must change without bundling a consequence you expect to follow from it._
+regeneration step ahead of every gate that reads the generated artifact. Ask what the change does
+to every fact you measured, and fix each criterion to the state the unit finishes in. Close each
+criterion with owned files alone, and name the property the unit must change; record a consequence
+you expect to follow as an observation, never as a criterion. A scoped run over the unit's own
+owned files stays a legitimate criterion._
 
 **Observations, not criteria.** TIMING_SENSITIVE_OR_WHOLE_SUITE_GATES
 
