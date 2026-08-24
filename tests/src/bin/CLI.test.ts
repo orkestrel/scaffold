@@ -1741,14 +1741,18 @@ describe('CLI audit', () => {
 			const fleet = createFleet(workspace)
 			const blueprint = createBlueprint('html', { src: ['core', 'browser'] })
 			workspace.ensure('target/src/browser')
-			const scripts = { ...blueprintToScripts(blueprint), deploy: 'npm run build && npm publish' }
+			const scripts: Record<string, string> = {
+				...blueprintToScripts(blueprint),
+				deploy: 'npm run build && npm publish',
+			}
 			delete scripts['test:probe']
 			delete scripts['test:bench']
+			delete scripts.prepack
 			const manifest = buildTargetManifest(blueprint, undefined, undefined, scripts)
 			workspace.write('target/package.json', manifest)
 			const question: Question = {
 				field: 'scripts',
-				message: `The manifest at ${fleet.target} does not declare planned scripts: test:probe, test:bench. Add these exact script lines to package.json: "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe", "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",`,
+				message: `The manifest at ${fleet.target} does not declare planned scripts: test:probe, test:bench, prepack. Add these exact script lines to package.json: "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe", "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe", "prepack": "npm run build",`,
 				blocking: false,
 			}
 
@@ -1788,8 +1792,11 @@ describe('CLI audit', () => {
 			const appended = [
 				',',
 				'\t\t"test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",',
-				'\t\t"test:bench": "vitest bench --config vite.config.ts --no-cache --project probe"',
+				'\t\t"test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",',
+				'\t\t"prepack": "npm run build"',
 			].join('\n')
+			// Removing only the appended region recovers every original byte. This
+			// covers the custom script's value and the order of every original key.
 			expect(written.replace(appended, '')).toBe(manifest)
 			expect(written).toContain('"deploy": "npm run build && npm publish"')
 
@@ -1813,18 +1820,19 @@ describe('CLI audit', () => {
 		}
 	})
 
-	it('refuses the writable region when a direct project script is customized', async () => {
+	it('reports a customized writable region after repair reaches it', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			const blueprint = createBlueprint('html', { src: ['core', 'browser'] })
 			workspace.ensure('target/src/browser')
-			const scripts = {
+			const scripts: Record<string, string> = {
 				...blueprintToScripts(blueprint),
 				'test:config': 'vitest run --project custom',
 			}
 			delete scripts['test:probe']
 			delete scripts['test:bench']
+			delete scripts.prepack
 			const manifest = buildTargetManifest(blueprint, undefined, undefined, scripts)
 			workspace.write('target/package.json', manifest)
 			const sink = createSink()
@@ -1841,11 +1849,15 @@ describe('CLI audit', () => {
 					'--offline',
 					'--json',
 				]),
-			).toBe(EXIT_DRIFT)
-			const refusal: unknown = JSON.parse(sink.output[0] ?? '')
-			expect(refusal).toHaveProperty('error.code', 'TARGET')
-			expect(refusal).toHaveProperty('error.message', expect.stringContaining('test:probe'))
-			expect(refusal).toHaveProperty('error.message', expect.stringContaining('test:bench'))
+			).toBe(EXIT_CLEAN)
+			const outcome: RepairResult = JSON.parse(sink.output[0] ?? '')
+			expect(outcome.audit.questions).toStrictEqual([
+				{
+					field: 'scripts',
+					message: `The manifest at ${fleet.target} does not declare planned scripts: test:probe, test:bench, prepack. Add these exact script lines to package.json: "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe", "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe", "prepack": "npm run build",`,
+					blocking: false,
+				},
+			])
 			expect(workspace.read('target/package.json')).toBe(manifest)
 		} finally {
 			workspace.destroy()
@@ -3353,7 +3365,7 @@ describe('CLI repair', () => {
 		}
 	})
 
-	it('refuses a customized chain, leaves the manifest alone, and names what to paste', async () => {
+	it('repairs other paths while a customized script region stays reported', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
@@ -3373,22 +3385,30 @@ describe('CLI repair', () => {
 					fleet.target,
 					'--json',
 				]),
-			).toBe(EXIT_DRIFT)
-			const refusal: unknown = JSON.parse(sink.output[0] ?? '')
-			expect(refusal).toHaveProperty('error.code', 'TARGET')
-			expect(refusal).toHaveProperty('error.message', expect.stringContaining('distribution'))
-			expect(refusal).toHaveProperty(
-				'error.message',
-				expect.stringContaining(
-					'"test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",',
-				),
+			).toBe(EXIT_CLEAN)
+			const outcome: RepairResult = JSON.parse(sink.output[0] ?? '')
+			expect(outcome.audit.questions).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						field: 'scripts',
+						blocking: false,
+						message: expect.stringContaining('test:distribution'),
+					}),
+				]),
 			)
-			// Nothing moved: neither the chain its author customized nor any other
-			// planned path.
-			expect(workspace.read('target/package.json')).toBe(customized)
-			expect(workspace.read('target/vite.config.ts')).toBe('marker\n')
+			// The refusal is region-scoped: the customized scripts bytes survive while the
+			// manifest's other planned regions still repair, so the tilde range takes the
+			// planned caret form the audit advisory names.
+			const written = workspace.read('target/package.json') ?? ''
+			expect(written.match(/"scripts": \{[\s\S]*?\n\t\}/u)?.[0]).toBe(
+				customized.match(/"scripts": \{[\s\S]*?\n\t\}/u)?.[0],
+			)
+			expect(written).toContain('"vite": "^8.2.2"')
+			expect(workspace.read('target/vite.config.ts')).not.toBe('marker\n')
 
 			const audited = createSink()
+			// A non-blocking question rides a complete result without drifting the exit,
+			// so the standing scripts advisory reports inside a clean audit.
 			expect(
 				await new CLI({ ...REGISTRY_OPTIONS, ...audited.options }).execute([
 					'audit',
@@ -3398,7 +3418,7 @@ describe('CLI repair', () => {
 					fleet.target,
 					'--json',
 				]),
-			).toBe(EXIT_DRIFT)
+			).toBe(EXIT_CLEAN)
 			const reported: unknown = JSON.parse(audited.output[0] ?? '')
 			expect(reported).toHaveProperty(
 				'questions',

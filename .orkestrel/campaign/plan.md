@@ -128,6 +128,22 @@ ruling, or excluded on evidence. Scaffold-surface changes that oblige a publish 
   to SD2-FIX, and ruling 4's runtime sentinel-env pin to SD3 — both amended into those briefs
   before the audit read them. Retained: `sd4-factories-brief.md`, `sd4-report.md`,
   `sd4-audit-brief.md`, `sd4-audit-verdict.md`.
+- PD3 (probe overlay + serve detection): landed and checkpointed a4ebf3c after a checker PASS;
+  the full-suite host reading showed no serve-detection false finding, so the detection ships
+  issue-producing per the ruling's condition. The checker's extraction question on the
+  reachability walk was ruled against extraction: a recursive spine belongs to a private
+  method per the leaf test. One finding out of the round: the guides parity gate reds on the
+  undocumented `guardStage` export — the PD2-FIX brief scoped the guide out without naming a
+  carrier, the Orchestrator's recorded miss; PD2-GUIDE (Opus) dispatched with the row.
+- SD2-FIX (scaffold repair append): the writer found the gate in the writing preflight
+  (`#assertTarget` carried the scripts advisory as blocking before the region writer ran),
+  excluded scripts from writing preflight, kept the non-blocking audit question, promoted the
+  real-verb html pin, and closed the TS7053 quartet by typing the fixture records. Host gates
+  green (bare root tsc, the config proof, the CLI suite, guides, core). The Orchestrator
+  corrected the writer's two sandbox-blind follow-up assertions against observed behavior and
+  the documented contract: the region refusal is region-scoped (the manifest's other planned
+  regions still repair, the tilde range takes the planned caret form), and a non-blocking
+  question rides a clean audit exit per the `auditToExit` TSDoc. Both named to the audit.
 - PD2 (probe re-warm + fault doors): the exec was cap-killed and `codex exec resume` completed
   it (the resume subcommand accepts no sandbox or model flag — it inherits the original
   session's config; recorded for the next recovery). Host runs authoritative: the stage suites,

@@ -606,12 +606,13 @@ appended after the last declared one, copying that section's indentation. `catal
 region; it names the ranges alone.
 
 A value matching neither is a script the workspace author wrote. The script region is then refused
-whole, without a byte moving. The `scripts` question reads the target during `audit` and the projected
-manifest before a write. A writable region therefore retires the question it can close. A refused
-region leaves the target's text standing, so the question still names each missing script and the
-exact line to paste. The `projects` question reports only a direct script the manifest declares but
-the maintainer-owned gate chain does not invoke after projection. The refusal covers the region rather
-than one script, so a manifest never holds one written value beside one refused one.
+whole, without a byte in that region moving. `audit` reports the non-blocking `scripts` question
+against the target. Writing verbs do not promote that advisory into a preflight refusal: they reach
+the region writer, append every absent script when the region is writable, and report the terminal
+question when a customized value leaves the region untouched. Other selected writes still proceed.
+The `projects` question reports only a direct script the manifest declares but the maintainer-owned
+gate chain does not invoke after projection. The refusal covers the region rather than one script, so
+a manifest never holds one written value beside one refused one.
 
 The same plan-reading verbs compare the tooling set the derived blueprint plans against
 `dependencies` and `devDependencies` together. A missing planned package produces one non-blocking
@@ -760,14 +761,12 @@ generated before that file existed and still registers no `integration` project,
 fails with `integration has no project factory or configuration` until a plan-writing verb
 regenerates it.
 
-`repair` alone does not close that, and refusing is correct rather than a gap. `package.json` is
-birth-owned, so the verb cannot add the project's script, and it will not register a project the
-manifest reaches from no gate. It exits 1 naming the target and writes nothing.
+`repair` closes the direct-script half through the writable manifest region. It still refuses to
+register a project that the maintainer-owned gate chains do not reach.
 
-Adding a structural proof is therefore these steps, in order: write the file; declare its
-`test:<project>` script and invoke that script from a gate chain; then run `repair`, which
-regenerates the root configuration and registers the project. `audit` reports whichever piece is
-still outstanding at each step.
+When you add a structural proof, write the file and invoke its planned `test:<project>` script from
+a gate chain. Then run `repair`; it appends the direct script, regenerates the root configuration,
+and registers the project. `audit` reports whichever piece is still outstanding at each step.
 
 `distribution` is not a field at all. A published `src` environment is its whole condition, read
 from the `src` axis the blueprint already carries. The proof packs and installs the published

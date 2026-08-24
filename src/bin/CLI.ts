@@ -359,7 +359,9 @@ export class CLI implements CLIInterface {
 					target,
 				),
 			)
-			const [terminal] = this.#survey(host.materializer, this.#derive(target), target, groups)
+			const terminalBlueprint = this.#derive(target)
+			const [measured] = this.#survey(host.materializer, terminalBlueprint, target, groups)
+			const terminal = this.#appendQuestions(measured, target, terminalBlueprint, groups)
 			const outcome: RepairResult = {
 				...result,
 				audit: terminal,
@@ -492,7 +494,8 @@ export class CLI implements CLIInterface {
 				command.offline === true
 					? await this.#offline(host.materializer, target, declared, host.baseline)
 					: await this.#reconcile(host.materializer, target, declared, host.baseline, host.forced)
-			const [terminal] = this.#survey(host.materializer, blueprint, target, groups)
+			const [measured] = this.#survey(host.materializer, blueprint, target, groups)
+			const terminal = this.#appendQuestions(measured, target, blueprint, groups)
 			const outcome: OverwriteResult = {
 				...online,
 				...this.#merge(offline, online),
@@ -1219,20 +1222,13 @@ export class CLI implements CLIInterface {
 		}
 	}
 
-	// Report the writable scripts a target has not declared. Audit reads the
-	// target bytes, while writing verbs read the successful projection they will
-	// land. A refused projection falls back to the target bytes, which keeps the
-	// outstanding lines visible and blocks the selected manifest group before any
-	// other write starts.
-	#scriptQuestion(
-		target: string,
-		blueprint: Blueprint,
-		writing = false,
-	): TargetQuestion | undefined {
+	// Report the writable scripts a target has not declared. Audit owns this
+	// advisory. Writing verbs reach the manifest region writer, which appends
+	// absent scripts and leaves a customized script region untouched.
+	#scriptQuestion(target: string, blueprint: Blueprint): TargetQuestion | undefined {
 		const text = this.#manifest(target)
 		const writable = blueprintToWritableScripts(blueprint)
-		const manifest = writing ? (replaceManifestScripts(text, writable) ?? text) : text
-		const parsed = parseJSON(manifest)
+		const parsed = parseJSON(text)
 		const scripts = isRecord(parsed) && isRecord(parsed.scripts) ? parsed.scripts : {}
 		const missing = writable.filter((script) => !Object.hasOwn(scripts, script.name))
 		if (missing.length === 0) return undefined
@@ -1242,7 +1238,7 @@ export class CLI implements CLIInterface {
 		)
 		return {
 			field: 'scripts',
-			message: `The manifest at ${target} does not declare ${names.length === 1 ? 'a planned script' : 'planned scripts'}: ${names.join(', ')}. ${writing ? 'The manifest group is blocked. Add' : 'Add'} ${lines.length === 1 ? 'this exact script line' : 'these exact script lines'} to package.json: ${lines.join(' ')}${writing ? ' Add the scripts before selecting manifest, or exclude manifest from --groups.' : ''}`,
+			message: `The manifest at ${target} does not declare ${names.length === 1 ? 'a planned script' : 'planned scripts'}: ${names.join(', ')}. Add ${lines.length === 1 ? 'this exact script line' : 'these exact script lines'} to package.json: ${lines.join(' ')}`,
 			blocking: false,
 			groups: ['manifest'],
 		}
@@ -1367,8 +1363,10 @@ export class CLI implements CLIInterface {
 		writing = false,
 	): readonly Question[] {
 		const questions: TargetQuestion[] = []
-		const script = this.#scriptQuestion(target, blueprint, writing)
-		if (script !== undefined) questions.push(script)
+		if (!writing) {
+			const script = this.#scriptQuestion(target, blueprint)
+			if (script !== undefined) questions.push(script)
+		}
 		const project = this.#projectQuestion(target, blueprint, writing)
 		if (project !== undefined) questions.push(project)
 		const dependency = this.#dependencyQuestion(target, blueprint, writing)
@@ -1390,8 +1388,24 @@ export class CLI implements CLIInterface {
 			}))
 	}
 
-	// Writing verbs refuse the advisories because their next step would replace
-	// planned configuration. Audit alone reports them without changing the target.
+	// Append the audit-only target advisories to a measured filesystem audit.
+	// Writing verbs use this after their manifest region attempt, so a refused
+	// customized region reports the scripts it left absent.
+	#appendQuestions(
+		audit: Audit,
+		target: string,
+		blueprint: Blueprint,
+		groups: readonly Group[] | undefined,
+	): Audit {
+		const questions = this.#targetQuestions(target, blueprint, groups)
+		return questions.length === 0
+			? audit
+			: { ...audit, questions: [...audit.questions, ...questions] }
+	}
+
+	// Writing verbs refuse the project and dependency advisories because their
+	// next step would replace planned configuration. The audit-only scripts
+	// advisory does not enter this boundary; the manifest region writer owns it.
 	#assertTarget(target: string, blueprint: Blueprint, groups: readonly Group[] | undefined): void {
 		const questions = this.#targetQuestions(target, blueprint, groups, true)
 		if (questions.length === 0) return
