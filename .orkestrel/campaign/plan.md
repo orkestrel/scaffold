@@ -119,6 +119,36 @@ ruling, or excluded on evidence. Scaffold-surface changes that oblige a publish 
 - Staged briefs (2026-08-24): sd2-fix, sd3-prepack-assertion, sd5-seed-pin, sd7-directional,
   pd3-overlay-serve, pd4-identical-control, pd5-issue-party, w1-workspace-root, w2-setup-family,
   w3-teardown, pd6-guide, u2b-html-split — all under `tmp/units/`.
+- SD5 closed (analyst PASS, checkpointed 60a9f6f); SD7 closed (the writer stopped on the
+  brief's withheld materialized half, the returned patches applied serially, the audit's one
+  broken claim — the verb form in place of the sanctioned pointer words — fixed by its own
+  prescription; checkpointed f2d04b1); SD8 closed (the bench-guard sentence verified verbatim
+  against the U2b patch; checkpointed e0b9ae7). The scaffold whole-tree verifier sweep caught
+  one pin the scoped runs never reached — the Materializer-level twin of the flipped CLI test
+  still expecting whole-manifest byte identity — reconciled to the ruled per-script semantics
+  and re-verified green.
+- U2b closed (analyst PASS with every literal reproduced; html checkpointed 09a42f9). The html
+  chain is COMPLETE: adoption f489720, materialization 55bf2f4, split 09a42f9, all pushed.
+- W1 closed (mechanical criterion re-verified by the Orchestrator; f501f99). W2 closed (checker
+  PASS; the red-first reservation closed against the exec journal's own reading; fb6d698). W3
+  closed (the converted and skipped ledgers complete, the swallowing-finally skips correctly
+  reasoned; committed with the chain).
+- PD6 closed (checkpointed 70f20fb; the analyst broke the containment sentence with the
+  boot-mutation follow-flag reading, one search-inventory omission, and banned wordings — all
+  carried to PD7 with prescriptions). PD7 closed (checkpointed ea1a9b7): the unrelated-control
+  receipt proof with path-difference assertions, the no-follow overwrite helper with the
+  measured escape and ELOOP readings, the prose prescriptions, and — from the resumed audit's
+  own executed hard-link attack — the exact containment boundary: creation and removal closed,
+  the overwrite refusing symbolic-link and gone-file swaps, hard-link aliasing open and named.
+  The container restart interrupted the PD7 audit mid-run; `codex exec resume` completed it on
+  the same thread.
+- Campaign close (2026-08-24): every non-supervisor row in the previous ROADMAP § 1 ended
+  implemented, repaired, retained with a recorded ruling, or excluded on evidence; the rewrite
+  carries the scaffold release obligation and the carried findings (test guide fences and the
+  directional word, mcp backpressure, probe's mintty exclusion with the Linux acceptance read
+  from the complete bin run, middleware and html setup proofs, the html entity-membership
+  question, the process assertion and placement findings, the brief members-list
+  centralization). Publishing stays with the user.
 - SD4 (scaffold factories): landed after the Orchestrator applied the writer's report-only
   patches to `tests/src/core/compilers.test.ts` serially; host gates green (core suite complete,
   config proof complete, scoped checks clean). Sol analyst audit: every code claim CONFIRMED —
