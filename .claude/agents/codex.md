@@ -1,6 +1,6 @@
 ---
 name: codex
-description: 'The GPT-5.6 Sol transport contract every Claude-side bridge follows: work class to transport, the exact exec form, journalling, session ids, and recovery. Reach a route by its own name — `analyst` for audit, `sol` for implementation. Never dispatched directly for work.'
+description: 'The transport contract every Claude-side driver follows when it carries a brief to the GPT-5.6 Sol bench: work class to transport, the exact exec form, journalling, session ids, and recovery. Reach a route by its own name — `analyst` for audit, `sol` for implementation. Never dispatched directly for work.'
 tools: Bash, Read, Grep, Glob, mcp__codex__codex, mcp__codex__codex-reply
 model: sonnet
 effort: low
