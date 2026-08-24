@@ -35,9 +35,6 @@ is recoverable from git history by hash; no campaign folder is the plan of recor
   repositories on the same date, and browser earlier. (was B21c)
 - **middleware**: move `MultipartParser.ts` from the environment root into a domain folder.
   (was B5)
-- **brief**: read-once ownership at guarded doors — clone → guard → seal → refuse, so a
-  per-read getter cannot defeat containment. The program half landed with the definition
-  snapshot-guard-seal and the coded clone-fault refusal. (was B18)
 - **supervisor**: adopt `ProcessOptions.delivery` where each consumer meets stdin-delivery
   failure, and close the `CLIProvider` race between `ProcessOptions.on` registration and early
   child output; the timeout backstop retires only after that adoption. The mcp half closed
