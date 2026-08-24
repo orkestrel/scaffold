@@ -7,19 +7,23 @@ recoverable from git history by hash; no campaign folder is the plan of record.
 
 ## 1. Package work, scheduled by each package's next natural release
 
-- **scaffold**: publish the release that landed on `main` 2026-08-24. `dist/src` carries the
-  distribution-proof classifiers, the script region with the emitted `prepack` delegation, the
-  per-script manifest writes, and the zero-parameter project factories; `dist/host` carries the
-  vendored packing and sentinel-environment assertions in `tests/config.test.ts`, the per-script
-  boundary and packing prose in `guides/scaffold.md`, the directional-reference sweep across the
-  vendored instruction files, and the bench-guard sentence in the tests rule. The surfaces ship
-  in one release so each fleet target's visit runs `repair` — which appends the absent
-  `test:probe`, `test:bench`, and `prepack` scripts and names a differing value it retains —
-  before the vendored packing assertion reads the manifest; the 2026-08-24 census found
-  publishing targets missing `prepack` throughout the fleet, so that per-target order is what
-  makes the fleet-wide assertion switch safe. The emitted distribution proof is presence-owned,
-  so an existing target receives the classifier repair only by deleting the proof before its
-  visit's `repair`; record that step in each visit. Publishing stays with the user.
+- **scaffold**: publish the release that landed on `main` 2026-08-24 from the debrief of the
+  package-rows campaign. `dist/src` carries the `HOST_PATHS` additions vendoring
+  `.agents/templates` and `.agents/transports`; `dist/host` carries the shrunk orchestration
+  contract with its skill pointers, the `orkestrel-publish` skill, the debrief retention
+  reference, the dispatch-brief template, the transport contracts at `.agents/transports/`, the
+  mirrored charter fixes, and the `orkestrel-prove-journey` rename. The 0.0.51 release published
+  2026-08-24 with agent 0.0.18, brief 0.0.5, mcp 0.0.22, probe 0.0.4, ollama 0.0.12, and
+  toolbox 0.0.9, and its adoption wave closed the same day: every fleet target re-pinned,
+  repaired, gated green, and pushed. Publishing stays with the user.
+- **scaffold**: the 0.0.51 plan writes `--no-cache` into the `test:guides` script and every
+  fleet target declares the script without it, so each visit's `repair` names the same retained
+  difference. Rule which side owns the value and pin the ruling at the next release.
+- **fleet**: `scaffold audit` reports an uncovered root `tests/setup.ts` module in a package
+  that carries the module with no `tests/setup.test.ts` proof, and the 2026-08-24 adoption wave
+  surfaced that advisory across the fleet. The audit recomputes the set; each reported package
+  lands the proof and the `setup` project at its next natural release, the way the html and
+  middleware rows record their instances.
 - **test**: transcribe the remaining guide fences under the placement rule that landed
   2026-08-24 (a carrier lives in the project that can run it; browser carriers live in
   `tests/src/browser/` with guide markers, and `tests/guides.test.ts` holds an executed presence
