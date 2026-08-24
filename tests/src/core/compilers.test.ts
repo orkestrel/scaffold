@@ -259,16 +259,20 @@ describe('replaceManifestScripts', () => {
 		expect(replaceManifestScripts(written ?? '', SCRIPT_REGION)).toBe(written)
 	})
 
-	it('refuses a customized value and writes nothing at all', () => {
+	it('retains a differing value while appending an absent script', () => {
 		const customized = SCRIPT_MANIFEST.replace(
 			'"prepublishOnly": "npm test"',
 			'"prepublishOnly": "npm test && npm run verify"',
 		)
+		const written = replaceManifestScripts(customized, SCRIPT_REGION)
 
-		expect(replaceManifestScripts(customized, SCRIPT_REGION)).toBeUndefined()
-		// The refusal is whole: the recognized member of the region is not written
-		// either, so no manifest ends up half converted.
-		expect(customized).not.toContain('test:distribution')
+		expect(written).toBe(
+			customized.replace(
+				'"prepublishOnly": "npm test && npm run verify"\n',
+				'"prepublishOnly": "npm test && npm run verify",\n\t\t"test:distribution": "vitest run --project distribution"\n',
+			),
+		)
+		expect(written).toContain('"prepublishOnly": "npm test && npm run verify"')
 	})
 
 	it('refuses a script declared as something other than a string', () => {

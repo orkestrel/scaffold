@@ -452,8 +452,8 @@ export function blueprintToScripts(blueprint: Blueprint): Readonly<Record<string
  * publication hook accepts the same gate chain without
  * {@link RELEASE_PROOF_COMMAND}. The value being written is always writable, so
  * it is not repeated there. Any other value is a script the workspace author
- * customized, and {@link replaceManifestScripts} refuses the whole region
- * rather than taking it.
+ * customized, and {@link replaceManifestScripts} retains it while writing the
+ * other named scripts independently.
  *
  * @example
  * ```ts
@@ -1740,24 +1740,23 @@ export function replaceManifestRanges(
  *
  * @param manifest - The manifest text to compile.
  * @param scripts - The scripts to write, each with the predecessors it accepts.
- * @returns The manifest carrying every named script, or `undefined` when a
- * named script holds a value outside what it accepts, or when the text carries
- * no readable `scripts` object to write into.
+ * @returns The manifest carrying every absent or accepted named script and
+ * retaining every differing string value, or `undefined` when a planned key
+ * holds a non-string value or the text carries no readable `scripts` object to
+ * write into.
  *
  * @remarks
  * The compiler replaces values in place instead of serializing the manifest, so
  * description, keywords, dependencies, key order, indentation, and every byte
  * outside the replaced ranges survive. A named script the manifest already
- * declares is overwritten only when its value is the one being written or one
- * of its {@link ManifestScript.accepted} predecessors; anything else is a chain
- * the workspace author customized, and the whole region is refused without a
- * byte moving. A named script the manifest does not declare is appended after
- * the last declared script, copying that section's indentation. A region
- * declaring nothing takes every named script as its first entries, indented
- * from the line its own opening brace sits on.
- *
- * The refusal is whole rather than per script, so a manifest never ends up
- * holding one written script beside one refused one.
+ * declares is overwritten only when its value is one of its
+ * {@link ManifestScript.accepted} predecessors. The planned value stands. Any
+ * other string is a chain the workspace author customized, so it stays
+ * byte-identical while the other named scripts are written independently. A
+ * named script the manifest does not declare is appended after the last
+ * declared script, copying that section's indentation. A region declaring
+ * nothing takes every named script as its first entries, indented from the line
+ * its own opening brace sits on.
  *
  * @example
  * ```ts
@@ -1778,13 +1777,12 @@ export function replaceManifestScripts(
 	const parsed: unknown = parseJSON(manifest)
 	if (!isRecord(parsed) || !isRecord(parsed.scripts)) return undefined
 	const declared = parsed.scripts
-	// Rule on every named script before any of them is written, so a refusal
-	// later in the region cannot leave an earlier one already replaced.
+	// A non-string planned key makes the region structurally unsafe to edit, so
+	// rule on that shape before locating any byte range.
 	for (const script of scripts) {
 		if (!Object.hasOwn(declared, script.name)) continue
 		const value: unknown = declared[script.name]
 		if (!isString(value)) return undefined
-		if (value !== script.command && !script.accepted.includes(value)) return undefined
 	}
 	// Locate the top-level scripts object. Depth counts objects alone, exactly as
 	// the range writer counts them, so a key nested inside another object never
@@ -1918,6 +1916,8 @@ export function replaceManifestScripts(
 		const script = scripts.find((entry) => entry.name === key)
 		if (script === undefined) continue
 		written.add(script.name)
+		const value: unknown = declared[script.name]
+		if (value === script.command || !isString(value) || !script.accepted.includes(value)) continue
 		edits.push({ start: valueStart, end: valueEnd + 1, text: JSON.stringify(script.command) })
 	}
 	const missing = scripts.filter((script) => !written.has(script.name))

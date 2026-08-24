@@ -1820,15 +1820,22 @@ describe('CLI audit', () => {
 		}
 	})
 
-	it('reports a customized writable region after repair reaches it', async () => {
+	it('appends absent scripts while retaining and reporting a differing html script', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			const blueprint = createBlueprint('html', { src: ['core', 'browser'] })
+			const blueprint = createBlueprint('html', {
+				src: ['core', 'browser'],
+				guides: true,
+			})
 			workspace.ensure('target/src/browser')
+			workspace.write('target/tests/guides.test.ts', "export const HTML_GUIDE_PROOF = 'html'\n")
+			const planned = blueprintToScripts(blueprint)
+			const plannedGuides = requireValue(planned['test:guides'])
+			const declaredGuides = plannedGuides.replace(' --no-cache', '')
 			const scripts: Record<string, string> = {
-				...blueprintToScripts(blueprint),
-				'test:config': 'vitest run --project custom',
+				...planned,
+				'test:guides': declaredGuides,
 			}
 			delete scripts['test:probe']
 			delete scripts['test:bench']
@@ -1854,11 +1861,20 @@ describe('CLI audit', () => {
 			expect(outcome.audit.questions).toStrictEqual([
 				{
 					field: 'scripts',
-					message: `The manifest at ${fleet.target} does not declare planned scripts: test:probe, test:bench, prepack. Add these exact script lines to package.json: "test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe", "test:bench": "vitest bench --config vite.config.ts --no-cache --project probe", "prepack": "npm run build",`,
+					message: `The manifest at ${fleet.target} declares a planned script with a differing value: test:guides. Keep the declared value unchanged or replace it with the planned value: "test:guides" declares ${JSON.stringify(declaredGuides)}; planned ${JSON.stringify(plannedGuides)}.`,
 					blocking: false,
 				},
 			])
-			expect(workspace.read('target/package.json')).toBe(manifest)
+			const written = requireValue(workspace.read('target/package.json'))
+			expect(written).toContain(
+				'"test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe"',
+			)
+			expect(written).toContain(
+				'"test:bench": "vitest bench --config vite.config.ts --no-cache --project probe"',
+			)
+			expect(written).toContain('"prepack": "npm run build"')
+			expect(written).toContain(`"test:guides": ${JSON.stringify(declaredGuides)}`)
+			expect(written).not.toContain(`"test:guides": ${JSON.stringify(plannedGuides)}`)
 		} finally {
 			workspace.destroy()
 		}
@@ -2176,7 +2192,14 @@ describe('CLI audit', () => {
 				]),
 			).toBe(EXIT_DRIFT)
 			const before: Audit = JSON.parse(refused.output[0] ?? '')
+			// Before the structural files exist the derived blueprint plans the base
+			// chain, so the declared service-bearing prepublishOnly reports as differing.
 			expect(before.questions).toStrictEqual([
+				{
+					field: 'scripts',
+					message: `The manifest at ${fleet.target} declares a planned script with a differing value: prepublishOnly. Keep the declared value unchanged or replace it with the planned value: ${JSON.stringify('prepublishOnly')} declares ${JSON.stringify(scripts.prepublishOnly)}; planned ${JSON.stringify(blueprintToScripts(createBlueprint('sample', { src: ['core'] })).prepublishOnly)}.`,
+					blocking: false,
+				},
 				{
 					field: 'projects',
 					message: `The manifest at ${fleet.target} names Vitest projects the planned configuration does not register: conformance, service. Add each project to vite.config.ts or remove the scripts that name them.`,
@@ -3369,9 +3392,12 @@ describe('CLI repair', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
+			// The customization keeps the release proof so the projected manifest still
+			// gates the distribution project: a customization that removed the gate
+			// would block the verb at the planned-project boundary instead.
 			const customized = buildTargetManifest()
 				.replaceAll(/\t\t"test:distribution": .*\n/gu, '')
-				.replace(` && ${RELEASE_PROOF_COMMAND}`, ' && npm run verify')
+				.replace(` && ${RELEASE_PROOF_COMMAND}`, ` && ${RELEASE_PROOF_COMMAND} && npm run verify`)
 			workspace.write('target/package.json', customized)
 			workspace.write('target/vite.config.ts', 'marker\n')
 			const sink = createSink()
@@ -3392,16 +3418,18 @@ describe('CLI repair', () => {
 					expect.objectContaining({
 						field: 'scripts',
 						blocking: false,
-						message: expect.stringContaining('test:distribution'),
+						message: expect.stringContaining('prepublishOnly'),
 					}),
 				]),
 			)
-			// The refusal is region-scoped: the customized scripts bytes survive while the
-			// manifest's other planned regions still repair, so the tilde range takes the
-			// planned caret form the audit advisory names.
+			// The differing release-proof command stays byte-identical while the absent
+			// distribution script appends and the other planned regions repair.
 			const written = workspace.read('target/package.json') ?? ''
-			expect(written.match(/"scripts": \{[\s\S]*?\n\t\}/u)?.[0]).toBe(
-				customized.match(/"scripts": \{[\s\S]*?\n\t\}/u)?.[0],
+			expect(written).toContain(
+				'"test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution"',
+			)
+			expect(written).toContain(
+				'"prepublishOnly": "npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release && npm run verify"',
 			)
 			expect(written).toContain('"vite": "^8.2.2"')
 			expect(workspace.read('target/vite.config.ts')).not.toBe('marker\n')

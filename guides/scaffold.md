@@ -605,14 +605,16 @@ scripts, and manifest key order survive byte-for-byte. A script the manifest doe
 appended after the last declared one, copying that section's indentation. `catalog` writes no script
 region; it names the ranges alone.
 
-A value matching neither is a script the workspace author wrote. The script region is then refused
-whole, without a byte in that region moving. `audit` reports the non-blocking `scripts` question
-against the target. Writing verbs do not promote that advisory into a preflight refusal: they reach
-the region writer, append every absent script when the region is writable, and report the terminal
-question when a customized value leaves the region untouched. Other selected writes still proceed.
-The `projects` question reports only a direct script the manifest declares but the maintainer-owned
-gate chain does not invoke after projection. The refusal covers the region rather than one script, so
-a manifest never holds one written value beside one refused one.
+A value matching neither is a script the workspace author wrote. The region writer retains that
+value byte-for-byte and reports its name, declared value, and planned value. Each other planned
+script is decided independently: an absent script appends, the planned value stands, and an accepted
+predecessor upgrades in place. Extra scripts remain byte-identical. A planned key holding a
+non-string value or a `scripts` field that is not an object still refuses the whole region with no
+script byte moving. `audit` reports absent and differing scripts separately in its non-blocking
+`scripts` question, and the terminal audit in `repair` and `overwrite` keeps every retained
+difference visible. Other selected writes still proceed. The `projects` question reports only a
+direct script the manifest declares but the maintainer-owned gate chain does not invoke after
+projection.
 
 The same plan-reading verbs compare the tooling set the derived blueprint plans against
 `dependencies` and `devDependencies` together. A missing planned package produces one non-blocking

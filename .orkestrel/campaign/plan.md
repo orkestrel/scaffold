@@ -156,6 +156,24 @@ ruling, or excluded on evidence. Scaffold-surface changes that oblige a publish 
   only absent scripts, hiding the cause). SD2-FIX-2 brief staged (`tmp/units/sd2-fix2-brief.md`),
   queued behind SD3; the ruling does not invalidate SD3's brief. html stays parked with the
   repair's config writes uncommitted; the next repack re-runs repair after SD2-FIX-2 lands.
+- SD2-FIX-2 (per-script scripts writes): the writer landed the semantics, the split
+  absent/differing question, and the flipped pins; the sandbox hid the spawning CLI suite, and
+  the host run surfaced the preflight boundary correctly blocking a fixture whose customization
+  removed the distribution gate from the projected manifest (`#projectQuestion` audits the
+  manifest a write would leave, so the per-script projection now carries the appended script).
+  The mechanism was ruled correct; the Orchestrator reconciled the two fixtures against it — the
+  region-refusal fixture keeps the release proof and appends a suffix, and the
+  conformance/live-service before-phase expects the differing-`prepublishOnly` advisory the new
+  reporting legitimately emits. Host gates green (the CLI suite, config proof, core suite, bare
+  root tsc). Checker audit dispatched with both reconciliations named.
+- PD4 (byte-identical control refusal): landed by Opus with red-first pins and eleven fixture
+  repairs; host Probe suite green. The Sol analyst audit BROKE the mechanism claim with an
+  executed collision: `computeDigest` normalizes absolute-looking strings, so candidate texts
+  differing by one separator byte digest identically and a non-identical control is refused.
+  Prescription adopted: direct byte comparison of the projection, the TSDoc reworded to the
+  true property (no stage inspects this claim), and the collision vector added as an admitted
+  negative control. PD4-FIX (Opus) dispatched; the round closes on a fresh Sol check of the
+  changed comparison or a mutation probe per the adoption rule.
 - SD3 (vendored prepack assertion + sentinel-env pin): landed on 85f8df3 — the packing test with
   its throwing control (recorded red then green), the sentinel-env `Reflect.apply` factory test
   with a named control, the guide sentence, `host.json` regenerated. Host gates green

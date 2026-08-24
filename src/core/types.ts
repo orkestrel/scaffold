@@ -136,8 +136,10 @@ export interface DependencyPinSet {
  * @remarks
  * `command` is the value the write lands. `accepted` is the closed set of
  * values the write is willing to overwrite, so a script holding anything else
- * is a chain its author customized and the write refuses rather than takes it.
- * An absent script is always writable and needs no entry in `accepted`.
+ * is a chain its author customized and the write retains rather than takes it.
+ * Retaining one differing script does not block another named script from being
+ * appended or upgraded. An absent script is always writable and needs no entry
+ * in `accepted`.
  */
 export interface ManifestScript {
 	readonly name: string

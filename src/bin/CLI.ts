@@ -1222,23 +1222,41 @@ export class CLI implements CLIInterface {
 		}
 	}
 
-	// Report the writable scripts a target has not declared. Audit owns this
-	// advisory. Writing verbs reach the manifest region writer, which appends
-	// absent scripts and leaves a customized script region untouched.
+	// Report absent and differing writable scripts separately. Audit owns this
+	// advisory. Writing verbs reach the manifest region writer, which appends an
+	// absent script, upgrades an accepted predecessor, and retains a differing
+	// string value.
 	#scriptQuestion(target: string, blueprint: Blueprint): TargetQuestion | undefined {
 		const text = this.#manifest(target)
 		const writable = blueprintToWritableScripts(blueprint)
 		const parsed = parseJSON(text)
 		const scripts = isRecord(parsed) && isRecord(parsed.scripts) ? parsed.scripts : {}
 		const missing = writable.filter((script) => !Object.hasOwn(scripts, script.name))
-		if (missing.length === 0) return undefined
-		const names = missing.map((script) => script.name)
-		const lines = missing.map(
+		const differing = writable.filter((script) => {
+			const value: unknown = scripts[script.name]
+			return isString(value) && value !== script.command && !script.accepted.includes(value)
+		})
+		if (missing.length === 0 && differing.length === 0) return undefined
+		const missingNames = missing.map((script) => script.name)
+		const missingLines = missing.map(
 			(script) => `${JSON.stringify(script.name)}: ${JSON.stringify(script.command)},`,
 		)
+		const differingNames = differing.map((script) => script.name)
+		const differingLines = differing.map((script) => {
+			const value: unknown = scripts[script.name]
+			return `${JSON.stringify(script.name)} declares ${JSON.stringify(value)}; planned ${JSON.stringify(script.command)}.`
+		})
+		const missingMessage =
+			missing.length === 0
+				? ''
+				: `The manifest at ${target} does not declare ${missingNames.length === 1 ? 'a planned script' : 'planned scripts'}: ${missingNames.join(', ')}. Add ${missingLines.length === 1 ? 'this exact script line' : 'these exact script lines'} to package.json: ${missingLines.join(' ')}`
+		const differingMessage =
+			differing.length === 0
+				? ''
+				: `The manifest at ${target} declares ${differingNames.length === 1 ? 'a planned script' : 'planned scripts'} with ${differingNames.length === 1 ? 'a differing value' : 'differing values'}: ${differingNames.join(', ')}. Keep ${differingNames.length === 1 ? 'the declared value' : 'each declared value'} unchanged or replace ${differingNames.length === 1 ? 'it' : 'them'} with the planned ${differingNames.length === 1 ? 'value' : 'values'}: ${differingLines.join(' ')}`
 		return {
 			field: 'scripts',
-			message: `The manifest at ${target} does not declare ${names.length === 1 ? 'a planned script' : 'planned scripts'}: ${names.join(', ')}. Add ${lines.length === 1 ? 'this exact script line' : 'these exact script lines'} to package.json: ${lines.join(' ')}`,
+			message: [missingMessage, differingMessage].filter((message) => message !== '').join(' '),
 			blocking: false,
 			groups: ['manifest'],
 		}
@@ -1389,8 +1407,8 @@ export class CLI implements CLIInterface {
 	}
 
 	// Append the audit-only target advisories to a measured filesystem audit.
-	// Writing verbs use this after their manifest region attempt, so a refused
-	// customized region reports the scripts it left absent.
+	// Writing verbs use this after their manifest region attempt, so a retained
+	// differing value remains visible after the writable siblings move.
 	#appendQuestions(
 		audit: Audit,
 		target: string,
