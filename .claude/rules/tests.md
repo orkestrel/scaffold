@@ -169,7 +169,7 @@ A test that spawns a process, packs, installs, or drives a real build is a proof
 
 Test helpers are shared infrastructure, not local test-file clutter.
 
-`@orkestrel/test` owns the helpers every workspace repeats: the call recorder, the real delay, the JSON and async collectors, and the owned scratch directory. Import them from `@orkestrel/test`, and its Node-only helpers from `@orkestrel/test/server`. Write a helper of your own only where the package exports none for the job. The shapes below are the contract a workspace codes against, not source to copy.
+`@orkestrel/test` owns the helpers every workspace repeats: the call recorder, the real delay, the JSON and async collectors, and the owned scratch directory. Import them from `@orkestrel/test`, and its Node-only helpers from `@orkestrel/test/server`. Write a helper of your own only where the package exports none for the job. The following shapes are the contract a workspace codes against, not source to copy.
 
 - For the vendored test set (`tests/setupPolicy.ts`, `tests/policy.test.ts`, and
   `tests/config.test.ts`), keep shared helpers within that set instead of importing them from

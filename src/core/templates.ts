@@ -591,8 +591,8 @@ import { srcBrowser, resolveWorkspacePath } from '../../vite.config.ts'
 // vite-plugin-dts rolls this face into one declaration, and the roll-up reaches
 // src/core through a relative source path the tarball does not carry. The path
 // keeps each source module's own depth, so a module in a browser subfolder emits
-// one that leaves dist/src entirely. The rewrite below externalizes core through
-// the package's own published root export, on the final roll-up only.
+// one that leaves dist/src entirely. The following rewrite externalizes core
+// through the package's own published root export, on the final roll-up only.
 export default defineConfig(
 	mergeConfig(srcBrowser(), {
 		plugins: [
@@ -614,9 +614,9 @@ import dts from 'vite-plugin-dts'
 import { srcServer, resolveWorkspacePath } from '../../vite.config.ts'
 
 // vite-plugin-dts rolls this face into one declaration, and the roll-up reaches
-// src/core through a relative source path the tarball does not carry. The rewrite
-// below externalizes core through the package's own published root export, on the
-// final roll-up only.
+// src/core through a relative source path the tarball does not carry. The
+// following rewrite externalizes core through the package's own published root
+// export, on the final roll-up only.
 export default defineConfig(
 	mergeConfig(srcServer(), {
 		plugins: [

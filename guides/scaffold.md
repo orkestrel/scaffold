@@ -12,8 +12,8 @@ does not work. Scaffold makes the shared set data — a vendored data root shipp
 — and gives it verbs: create a workspace from it, report how a workspace differs from it, and
 write the difference back.
 
-Every code fence below is illustrative. [`tests/guides.test.ts`](../tests/guides.test.ts) keeps the
-command reference aligned with the executable and transcribes the pure blueprint-default,
+Every following code fence is illustrative. [`tests/guides.test.ts`](../tests/guides.test.ts)
+keeps the command reference aligned with the executable and transcribes the pure blueprint-default,
 compile-refusal, and error-narrowing fences. A trailing comment in another fence is this guide's
 claim rather than a measured answer; the driven examples are the ones the shipped declarations
 print. Limits states what that leaves unproven and what covers it instead.
@@ -391,8 +391,8 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 
 `Compiler` implements `CompilerInterface`, `Materializer` implements `MaterializerInterface`, and
 `Upstream` implements `UpstreamInterface`. Each class exposes exactly its interface's members and
-nothing more, so the interface tables below describe the classes too. `WriteTransaction` publishes
-no interface and is documented directly.
+nothing more, so the following interface tables describe the classes too. `WriteTransaction`
+publishes no interface and is documented directly.
 
 #### `CompilerInterface`
 
@@ -747,7 +747,7 @@ One published environment owns the package root directly. Several published envi
 never runs. The gate reports that as a non-blocking `src` question rather than refusing the compile,
 because the shape is chosen once and read afterwards: `new` refuses the advisory, while `audit` and
 `repair` need the plan to describe and restore a target that already has that shape. A library
-caller creating a workspace holds the same refusal, and the Compile section below states it.
+caller creating a workspace holds the same refusal, and the Compile section states it.
 
 `bin`, `setup`, `guides`, `integration`, `conformance`, `service`, `vendors`, `global`, and
 `showcase` are structural facts. Each is set only when the workspace physically ships the directory

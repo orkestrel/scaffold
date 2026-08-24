@@ -4,7 +4,7 @@
 			"storage": "AGENTS.md",
 			"destination": "AGENTS.md",
 			"executable": false,
-			"digest": "152c8e8fb880814be96fb0b0a63524e98bf72125af97edddb72c140d2e3cc0ea"
+			"digest": "691f9fb52acd475a08109b93cdbed18628af36e9363f4803d84176a8117cf53c"
 		},
 		{
 			"storage": "CLAUDE.md",
@@ -22,7 +22,7 @@
 			"storage": "agents/orchestration.md",
 			"destination": ".agents/orchestration.md",
 			"executable": false,
-			"digest": "c8e9931f5cf30d0a5a94ea2a3008904b5833cd534036680ea0fd9618c64d6f54"
+			"digest": "63bacfdcd9b9918fb8302b723a0049bd3bbf74e939a8c1afbe50d0083c1742db"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
@@ -268,7 +268,7 @@
 			"storage": "claude/agents/orkestrel.md",
 			"destination": ".claude/agents/orkestrel.md",
 			"executable": false,
-			"digest": "dc6f528f27980569650b5d8fb3ec21e7adfd50eb815f1c0a4f48bf001b816707"
+			"digest": "8e228a484383a04bf12fa510b3619eb7f38a512ec081ee0870ea7534b314945d"
 		},
 		{
 			"storage": "claude/agents/planner.md",
@@ -316,7 +316,7 @@
 			"storage": "claude/rules/architecture.md",
 			"destination": ".claude/rules/architecture.md",
 			"executable": false,
-			"digest": "32bf977e77fb42cbf16bbcb92d9005d4879b194f5957ad6173c355054bfa0a88"
+			"digest": "94f70c20f927129cf9cb3965b3180a14e941e4f6eddf6512c4adc014e0bcbdf2"
 		},
 		{
 			"storage": "claude/rules/browser.md",
@@ -358,7 +358,7 @@
 			"storage": "claude/rules/tests.md",
 			"destination": ".claude/rules/tests.md",
 			"executable": false,
-			"digest": "6830aafb605cb7123c682b09a0b7cb8fbbb8d62437ac136c9c91d88b7c79149c"
+			"digest": "46e552dfc98c930b9f3d22fc8e0872b5fd844b2de8a75997899d8f3f1acb3895"
 		},
 		{
 			"storage": "claude/rules/typescript.md",
@@ -370,7 +370,7 @@
 			"storage": "claude/rules/workspace.md",
 			"destination": ".claude/rules/workspace.md",
 			"executable": false,
-			"digest": "eac73efda50bcf415968538caa83c326ee5e30076d7dadefe07512510e86df22"
+			"digest": "8120bac99d00b4cb0613b0dc6cb4048074c86fdb6f6583be07514229d90bbd07"
 		},
 		{
 			"storage": "claude/rules/writing.md",
@@ -520,7 +520,7 @@
 			"storage": "codex/config.toml",
 			"destination": ".codex/config.toml",
 			"executable": false,
-			"digest": "5aa2e5903a9501fb53a6fa9b58d4e1d18b44e950f88fd928edbc3f5b5aadfc62"
+			"digest": "e67d555ed4381b098b203e14484718e64e5262715d87b3f71857511cff929560"
 		},
 		{
 			"storage": "configs/helpers.ts",
@@ -604,7 +604,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "7e9aefbf71041bcaad8affe4bb2c515531838c06d5e056a1db8e6c57a1f0142c"
+			"digest": "1aace5325608c6880d73a2bae7c02936c26445ef7aff550c43a70333c7be85f6"
 		},
 		{
 			"storage": "scripts/codex.sh",
@@ -688,5 +688,5 @@
 		".codex/agents",
 		".cursor/rules"
 	],
-	"digest": "a2e843d9fe8d75706073f6bbf11ea8875e16a09efe15c9e836417058a72965bb"
+	"digest": "f8f42443cdb6607962cf03b66bb94937f4661d5ea4534c366303101dfbee2130"
 }
