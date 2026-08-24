@@ -645,7 +645,8 @@ maintainer wrote rather than what scaffold seeded.
 That reading carries a release-skew limit. A seeded setup module is birth-owned, so `repair` reports
 it aligned and never rewrites it. A target keeps the seed of the release that materialized it. When
 a release moves a planned seed, scaffold raises the question on every target materialized before it,
-against a module scaffold wrote and no maintainer touched.
+against a module scaffold wrote and no maintainer touched. `audit` compares each setup module only
+with the seed the installed release plans, and it retains no earlier seed bytes.
 `tests/setupGlobal.ts` is the module that can meet it, because it is the one seeded with more than
 the empty string. A maintainer meeting that question closes it by writing the proof it asks for, or
 by taking the seed the installed release plans.

@@ -561,6 +561,22 @@ function findParameters(content: string): readonly string[] {
 	return carried
 }
 
+// The setup seeds a target is born with, transcribed from a run that printed them
+// rather than derived from the templates the pin reads. `audit` decides whether a
+// setup module is filled by comparing its text against the seed the installed
+// release plans at that path, and it holds no earlier seed, so a moved byte here
+// moves that reading on every target materialized before the move. Transcribing
+// the bytes makes such a move a deliberate edit rather than a silent one.
+const PLANNED_SETUP_SEED = ''
+const PLANNED_GLOBAL_SEED = 'export function setup(): void {}\n'
+
+// One byte of a seed changed: the trailing byte becomes a space, and a seed
+// holding no bytes gains one, because a byte that is not there cannot be replaced.
+// Every planned seed is ASCII, so a byte and a code unit are the same thing here.
+function mutateSeed(seed: string): string {
+	return `${seed.slice(0, -1)} `
+}
+
 // The refused parameter planted back into a copy of emitted or template text. Every
 // root configuration declares `policy`, so the plant lands in each one the sweep
 // walks and an empty finding is a finding rather than a module the parser skipped.
@@ -572,6 +588,19 @@ function plantParameter(content: string): string {
 }
 
 describe('configuration templates', () => {
+	it('seeds each planned setup module with the exact transcribed bytes', () => {
+		expect(ARTIFACT_TEMPLATES.tests.setup).toBe(PLANNED_SETUP_SEED)
+		expect(ARTIFACT_TEMPLATES.tests.global).toBe(PLANNED_GLOBAL_SEED)
+
+		// The control on each comparison: the same assertion, driven against a copy
+		// of the real seed carrying one changed byte, must report the difference. An
+		// equality pin that has never reported one is not evidence that it can, and
+		// a transcription that had drifted from its seed would leave both of these
+		// passing for the wrong reason.
+		expect(mutateSeed(ARTIFACT_TEMPLATES.tests.setup)).not.toBe(PLANNED_SETUP_SEED)
+		expect(mutateSeed(ARTIFACT_TEMPLATES.tests.global)).not.toBe(PLANNED_GLOBAL_SEED)
+	})
+
 	it('uses the dependency fill boundary with missing placeholders closed', () => {
 		for (const template of [CONFIG_TEMPLATES.root.tsconfig, ARTIFACT_TEMPLATES.docs.readme]) {
 			let caught: unknown
