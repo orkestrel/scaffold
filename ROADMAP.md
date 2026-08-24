@@ -37,10 +37,6 @@ is recoverable from git history by hash; no campaign folder is the plan of recor
 - **brief**: read-once ownership at guarded doors — clone → guard → seal → refuse, so a
   per-read getter cannot defeat containment. The program half landed with the definition
   snapshot-guard-seal and the coded clone-fault refusal. (was B18)
-- **agent**: `Channel` silently drops a pushed `undefined` for `Channel<T | undefined>` — the
-  buffer guard cannot tell absence from a pushed `undefined`. Either narrow the published type
-  parameter or hold `{ value: T }` cells. Found by the 2026-08-21 batch audit, outside that
-  wave's changes.
 - **mcp, supervisor**: adopt `ProcessOptions.delivery` where each consumer meets stdin-delivery
   failure, and close supervisor's `CLIProvider` race between `ProcessOptions.on` registration
   and early child output; supervisor's timeout backstop retires only after that adoption.
