@@ -28,7 +28,7 @@
 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
 			"destination": ".agents/skills/enterprise-bootstrap/SKILL.md",
 			"executable": false,
-			"digest": "9e427d6279d192ba32c0ddd2121426071795e80711bbf8b3edb22d745606b1f5"
+			"digest": "b9bd94c3c2fed84cc5f330631622c547908069eb7f4f91ac4577f6ff066d6148"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/agents/openai.yaml",
@@ -430,7 +430,7 @@
 			"storage": "claude/skills/enterprise-bootstrap/SKILL.md",
 			"destination": ".claude/skills/enterprise-bootstrap/SKILL.md",
 			"executable": false,
-			"digest": "d675de71ac83c1cf55217ab75089396505a7d73ce1d5345586b434f57b7f54a1"
+			"digest": "1e2c83abb2a7c6a2e41dc210202d25124f6a30cfdc1bbd44d6b9c59dded6d93f"
 		},
 		{
 			"storage": "claude/skills/orkestrel-align-packages/SKILL.md",
@@ -736,5 +736,5 @@
 		".codex/agents",
 		".cursor/rules"
 	],
-	"digest": "7e3c724b2d295779e53c3494ac9024a36c2e3f839d6d53e0501adf2ac83b13a4"
+	"digest": "f82097a8363d8b04d7363565947907bdb691a8fcbca2a2f103d9e9c551328bd5"
 }
