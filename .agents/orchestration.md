@@ -466,7 +466,7 @@ The harness bridge names the concrete mechanism for each of these.
   `scaffold catalog` regenerates, not in a written order anyone has to remember to update.
 - Prune the campaign folder in a commit at acceptance. Git history is the archive; the working tree
   is the workspace. `.agents/skills/orkestrel-debrief/references/retention.md` owns the procedure —
-  the checks that authorize the deletion, the artifact locations it sweeps, and the promotion record
+  the checks that close the prune, the artifact locations it sweeps, and the promotion record
   the commit message carries. Run it before deleting anything.
 
 ### Required sections

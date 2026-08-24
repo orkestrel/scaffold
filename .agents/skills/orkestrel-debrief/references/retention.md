@@ -1,15 +1,16 @@
 # Retire a campaign folder
 
-The procedure for deleting a campaign's working artifacts: what the deletion covers, the checks
-that close it, the go-ahead that authorizes it, and the commit message that keeps it recoverable.
+Delete a campaign's working artifacts through this procedure. It fixes what the deletion
+covers, the checks that close it, the go-ahead that authorizes it, and the commit message that
+keeps it recoverable.
 
-Two doors reach this procedure. A debrief arrives at its Dispose step, after every finding has a
+A debrief arrives at its Dispose step, after every finding has a
 carrier. A campaign that accepts with no debrief arrives at acceptance, per
 `.agents/orchestration.md` § Where campaign artifacts live. The procedure is the same through
 either door.
 
-Call the `.orkestrel/` folder the campaign folder. The word `ledger` already names the routing
-ledger and the carry ledger, so a second meaning for it sends a reader to the wrong file.
+Call the `.orkestrel/` folder the campaign folder, never a ledger. The word `ledger` names the
+routing ledger and the carry ledger only.
 
 ## The gate order
 
