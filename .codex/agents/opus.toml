@@ -5,8 +5,8 @@ model_reasoning_effort = "low"
 sandbox_mode = "workspace-write"
 developer_instructions = """
 Read .agents/orchestration.md first. It owns the role set, the routing, and the
-dispatch contract. `.codex/agents/claude.toml` owns the Claude transport contract in
-full; read it and follow it.
+dispatch contract. `.agents/transports/claude.md` owns the Claude transport contract
+in full; read it and follow it.
 
 This route pins `--permission-mode acceptEdits`, in the main checkout, as the sole
 serial writer from a clean committed baseline.

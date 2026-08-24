@@ -127,6 +127,8 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
 	'LICENSE',
 	'.agents/orchestration.md',
 	'.agents/skills',
+	'.agents/templates',
+	'.agents/transports',
 	'.claude/agents',
 	'.claude/rules',
 	'.claude/skills',

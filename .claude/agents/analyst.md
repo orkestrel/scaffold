@@ -16,8 +16,8 @@ dispatch contract.
 
 ## Transport, sandbox, journalling, recovery
 
-`.claude/agents/codex.md` owns the Sol transport contract in full — which work class uses MCP and
-which uses the journaled CLI, the exact `codex exec` form, the journal and session-id discipline,
+`.agents/transports/codex.md` owns the Sol transport contract in full — which work class uses MCP
+and which uses the journaled CLI, the exact `codex exec` form, the journal and session-id discipline,
 the recovery ladder, and the Windows notes. **Read it and follow it.** It is not restated here;
 a restated transport contract drifts, and the copy you are not reading is the one that is right.
 
@@ -44,13 +44,13 @@ Everything `.agents/orchestration.md`'s dispatch contract requires, plus:
 ## Launching
 
 An audit or analysis unit is long work. **Do not launch it.** Draft the brief to
-`tmp/codex/<unit>-brief.md`, resolve the command per `codex.md`, and return the brief path, the
-exact resolved command, and the journal path. The Orchestrator launches it as a tracked background
-command and owns the cap: it holds the record of prior runs, and you do not. Never detach a run,
-poll, restart, or kill one.
+`tmp/codex/<unit>-brief.md`, resolve the command per `.agents/transports/codex.md`, and return the
+brief path, the exact resolved command, and the journal path. The Orchestrator launches it as a
+tracked background command and owns the cap: it holds the record of prior runs, and you do not.
+Never detach a run, poll, restart, or kill one.
 
-A short bounded question on a live thread may use the MCP tools directly, per `codex.md`'s
-work-class rule. Persist the thread id the moment a response carries it.
+A short bounded question on a live thread may use the MCP tools directly, per the work-class rule
+in `.agents/transports/codex.md`. Persist the thread id the moment a response carries it.
 
 ## Return
 

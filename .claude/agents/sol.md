@@ -16,8 +16,8 @@ dispatch contract.
 
 ## Transport, sandbox, journalling, recovery
 
-`.claude/agents/codex.md` owns the Sol transport contract in full — work class to transport, the
-exact `codex exec` form, the journal and session-id discipline, the recovery ladder, and the
+`.agents/transports/codex.md` owns the Sol transport contract in full — work class to transport,
+the exact `codex exec` form, the journal and session-id discipline, the recovery ladder, and the
 Windows notes. **Read it and follow it.** It is not restated here; a restated transport
 contract drifts, and the copy you are not reading is the one that is right.
 
@@ -42,10 +42,10 @@ Everything `.agents/orchestration.md`'s dispatch contract requires, plus:
 ## Launching
 
 An implementation unit is long work. **Do not launch it.** Draft the brief to
-`tmp/codex/<unit>-brief.md`, resolve the command per `codex.md`, and return the brief path, the
-exact resolved command, and the journal path. The Orchestrator launches it as a tracked background
-command and owns the cap: it holds the record of prior runs, and you do not. Never detach a run,
-poll, restart, or kill one.
+`tmp/codex/<unit>-brief.md`, resolve the command per `.agents/transports/codex.md`, and return the
+brief path, the exact resolved command, and the journal path. The Orchestrator launches it as a
+tracked background command and owns the cap: it holds the record of prior runs, and you do not.
+Never detach a run, poll, restart, or kill one.
 
 Writing units are strictly serialized. Never run beside another writer in the same checkout.
 

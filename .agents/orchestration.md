@@ -170,11 +170,15 @@ when the role file already pins it.
   has stepped past Grok. Record which step you are on.
 - `orkestrel` stays native because it carries the package catalog in its own role file. Sending its
   job to a bench means shipping that catalog across, which costs more than the bench saves.
-- `codex` is the shared Sol transport contract, not a route. `analyst` and `sol` are the named
-  bridges; both bind that contract by reference and pin only their route and sandbox.
-- Mirroring is by work class, not filename. A transport contract is provider-specific:
-  `.claude/agents/codex.md` carries the Sol transport on the Claude side, `.codex/agents/claude.toml`
-  the Opus transport on the Codex side, and each side's bridges bind their own by reference.
+- A transport contract lives in `.agents/transports/`, not in an agents directory. A harness lists
+  its dispatchable agents from that directory, so a contract that is never dispatched sits outside
+  it. `.agents/transports/codex.md` is the shared Sol transport contract and
+  `.agents/transports/claude.md` the shared Opus transport contract. Neither is a route: `analyst`
+  and `sol` are the named Sol bridges, `planner`, `reviewer`, and `opus` the named Opus bridges, and
+  each binds its own contract by reference and pins only its route and sandbox.
+- Mirroring is by work class, not filename. A transport contract is provider-specific: the Codex
+  contract carries the Sol transport the Claude-side bridges follow, the Claude contract carries the
+  Opus transport the Codex-side bridges follow, and each side's bridges bind their own.
 - Opus and Sol roles use high effort. Native cheap-tier roles use low or medium. Bridge drivers use
   the cheapest tier that can run a CLI.
 - Never route orchestration or acceptance across a bridge.
