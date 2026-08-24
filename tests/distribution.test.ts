@@ -181,6 +181,7 @@ describe('installed package consumer', () => {
 			'.agents/skills/orkestrel-debrief/agents/openai.yaml',
 			'.agents/skills/orkestrel-debrief/references/field-testing.md',
 			'.agents/skills/orkestrel-debrief/references/instruction-audit.md',
+			'.agents/skills/orkestrel-debrief/references/retention.md',
 			'.agents/skills/orkestrel-falsify/SKILL.md',
 			'.agents/skills/orkestrel-falsify/agents/openai.yaml',
 			'.agents/skills/orkestrel-falsify/references/brief.md',
