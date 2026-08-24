@@ -30,9 +30,15 @@ is recoverable from git history by hash; no campaign folder is the plan of recor
 - **brief**: read-once ownership at guarded doors — clone → guard → seal → refuse, so a
   per-read getter cannot defeat containment. The program half landed with the definition
   snapshot-guard-seal and the coded clone-fault refusal. (was B18)
-- **mcp, supervisor**: adopt `ProcessOptions.delivery` where each consumer meets stdin-delivery
-  failure, and close supervisor's `CLIProvider` race between `ProcessOptions.on` registration
-  and early child output; supervisor's timeout backstop retires only after that adoption.
+- **supervisor**: adopt `ProcessOptions.delivery` where each consumer meets stdin-delivery
+  failure, and close the `CLIProvider` race between `ProcessOptions.on` registration and early
+  child output; the timeout backstop retires only after that adoption. The mcp half closed
+  2026-08-24: the stdio client transport carries a defaulted `delivery` bound with the
+  send-failure voice split and executed pins.
+- **mcp**: `StdioServerTransport.send` discards its write's outcome — `#output.write` with no
+  return check, no callback, and no `error` subscription on the output stream. Rule on
+  backpressure and error surfacing for caller-owned output streams, and pin the ruling. Both
+  design lanes ruled it outside the delivery row's scope on 2026-08-24.
 - **supervisor**: rule on the first-unparseable-line policy — whether a stream's first
   non-JSON line fails fast or accumulates — and pin the ruling.
 - **probe**: the rows its 0.0.1 campaign recorded and deliberately left outside its exit criterion.
