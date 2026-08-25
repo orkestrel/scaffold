@@ -4,7 +4,7 @@
 			"storage": "AGENTS.md",
 			"destination": "AGENTS.md",
 			"executable": false,
-			"digest": "691f9fb52acd475a08109b93cdbed18628af36e9363f4803d84176a8117cf53c"
+			"digest": "5dbb143394991882d36f90a8aabd7e6b0874863b45dde4040760fc834e9d942e"
 		},
 		{
 			"storage": "CLAUDE.md",
@@ -736,5 +736,5 @@
 		".codex/agents",
 		".cursor/rules"
 	],
-	"digest": "34a0cac8c42449ad137ab10df5112b6ede391dff3a7b360171ad386cd5532503"
+	"digest": "7d70f75b724f20fafae460c91b19d903e002de4d5725ffc80facfb056d23c7f8"
 }
