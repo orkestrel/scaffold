@@ -615,7 +615,7 @@ The range region and the script region are not groups. `package.json` is birth-o
 `manifest` group creates it when a workspace is first materialized and never rewrites it afterwards,
 and `--groups` narrows the plan rather than the regions. `repair` and `overwrite` therefore
 reconcile the declared ranges and write the script region on every run, whatever the selection
-names. A run scoped to `manifest` for the sake of one script takes the reconciled `@orkestrel/*`
+names. A run scoped to `manifest` for a script write takes the reconciled `@orkestrel/*`
 ranges with it, and a run that excludes `manifest` still takes the ranges and the scripts.
 
 A value matching neither is a script the workspace author wrote. The region writer retains that

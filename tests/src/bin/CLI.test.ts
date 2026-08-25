@@ -3431,7 +3431,7 @@ describe('CLI repair', () => {
 			const keys = Object.keys(JSON.parse(after).scripts)
 
 			// `package.json` is birth-owned, so no group selection carries it into the
-			// plan. The range and the script regions are one write on every repair,
+			// plan. The range and the script regions share the manifest write on every repair,
 			// whatever the selection names, and a caller scoping a run to the manifest
 			// for its script takes the reconciled ranges with it.
 			expect(after).toContain(`"@orkestrel/scaffold": "^${published}"`)

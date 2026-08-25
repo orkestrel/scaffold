@@ -1122,7 +1122,7 @@ export class CLI implements CLIInterface {
 	//
 	// The remedy sentence reads the disk text instead, because it states what the
 	// developer's own manifest holds. Deciding it from the projection reported a
-	// script the projection had just supplied as one the manifest already
+	// script the projection itself had supplied as one the manifest already
 	// declared, which contradicted the `scripts` question raised beside it.
 	#projectQuestion(
 		target: string,
