@@ -5,62 +5,21 @@ scaffold 0.0.52, registry-confirmed the same day, and closed its adoption wave t
 every fleet target re-pinned, repaired, gated green, and pushed. It closed the scaffold, fleet,
 test, mcp, middleware, html, process, and brief rows the previous revision carried, through
 implementation, cross-engine audit, the setup-proof wave over every published package, and the
-mcp 0.0.23, brief 0.0.6, and probe 0.0.5 releases. This file owns everything still open. Campaign
-detail is recoverable from git history by hash; no campaign folder is the plan of record.
+mcp 0.0.23, brief 0.0.6, and probe 0.0.5 releases. A same-day row-completion pass then closed the
+package rows through committed implementation on each repository's `main`, leaving in § 1 only
+the rows whose triggers have not fired. This file owns everything still open. Campaign detail is
+recoverable from git history by hash; no campaign folder is the plan of record.
 
 ## 1. Package work, scheduled by each package's next natural release
 
-- **scaffold**: the blocked-`configs` `repair` message claims `test:setup is already declared`
-  while the declared manifest carries no such script — the 2026-08-25 wave recorded the false
-  clause across its visits, and the block and its recovery are correct. Correct the clause at the
-  next release, and in the same release rule on `npm pkg set` appending `test:setup` after
-  `prepack` rather than beside the other `test:*` keys, and on `repair --groups manifest`
-  rewriting the `@orkestrel/scaffold` range as a side effect of writing a script, observed in the
-  test repository that day.
-- **fleet**: `isBrowserVuePath` repeats across packages, and the qualifier, markdown, and
-  interpret visits record it with no `app/` tree to accept, recorded across the 2026-08-25 wave. The next cross-package alignment campaign owns the
-  dedup-or-delete ruling.
-- **agent**: `tests/setup.ts` registers the conversation-store battery with `describe`, `it`, and
-  `expect`, which the shared-infrastructure rule forbids. Move the registration into the store
-  twin suites at the next release.
-- **database**: the same class — `conformDriver` in `tests/setup.ts` carries `describe`, `it`, and
-  `expect`, so the battery registration moves into the consuming suites at the next release. In
-  the same release, `createIntegrationDatabase` in `tests/setupBrowser.ts` is imported by no
-  suite, so its opened half is proven nowhere: give it a consumer or remove it.
-- **html**: the `src/core/constants.ts` TSDoc states counts of the entity set and carries a stale
-  snapshot date, recorded 2026-08-25. Rewrite the comment under the writing rules at the next
-  release.
-- **interpret and reason**: the `TRICKY_KEYS` TSDoc in each package misdescribes its stored bytes,
-  claiming a combining sequence and an NFC-labile form where the stored form is precomposed and
-  NFC-stable, and the reason package's `INTEGER_KEY_SUBJECT` comment states a wrong `Object.keys`
-  order, recorded 2026-08-25. Correct each comment at its package's next release.
-- **mcp**: `buildElement` in `tests/setupBrowser.ts` has no consumer; give it a `src:browser`
-  proof or remove it at the next release. The 2026-08-25 audit also referred the post-close `send`
-  pin for the Node WebSocket client transport and the race-abandoned `writeLine` callback on a
-  wedged stream; rule on each in the same release.
-- **msg**: `patchBytes` documents a copy-only contract and mutates its `Buffer` source through a
-  `.slice()` view. The defect is latent, because the wave's 2026-08-25 proof pinned the copying
-  route; align the implementation with the contract at the next release.
-- **ollama**: `tests/setupService.test.ts` declares its protocol-faithful daemon fixture locally,
-  because the shared setup modules sat outside the 2026-08-25 unit's scope. Move the fixture into
-  the shared module when a second consumer appears.
-- **probe**: a boot whose control inspection expires rejects silently — no `arm` event, no `error`
-  event, invisible until the next `prove` call retries the arming — which the 0.0.5 release
-  diagnosed only after repeated runs on 2026-08-25; rule on surfacing boot rejection at the next
-  release. Run `npm pkg fix` at the next manifest touch.
+- **fleet**: an entry module's `@packageDocumentation` never reaches the published declaration
+  rollup — the build pipeline hands API Extractor a synthetic comment-free entry file, measured
+  2026-08-25 in the test repository against a byte-identical rollup. Rule whether the pipeline
+  adopts the real entry declaration, at a toolchain revisit.
 - **probe**: a mintty-backed TTY fixture where `/usr/bin/script` is absent stays Windows-host
   work; the trigger is the first Windows campaign that runs the bin suite there. The Linux
   acceptance recorded 2026-08-24: the `script`-guarded proofs execute rather than skip on this
   host — the bin suite passes complete with no skipped case.
-- **qualifier**: `buildHostileRecord`'s `__proto__` literal is inert and its doc comment overstates
-  the hostility, recorded 2026-08-25. Correct the comment or the fixture at the next release.
-- **table**: `readTableError` reports a non-thrown case as `undefined`, which is indistinguishable
-  from success, recorded 2026-08-25. Rule whether the helper names the non-throw, at the next
-  release.
-- **test**: `src/browser/helpers.ts` imports `vitest/browser` at module scope, so the published
-  browser barrel cannot load outside Browser Mode, and the repository's own `tests/setupBrowser.ts`
-  works around that with a DOM-guarded dynamic import, recorded 2026-08-25. Rule whether the
-  published barrel owns a lazy import, and pin the ruling at the next release.
 
 ## 2. Design and research records
 
