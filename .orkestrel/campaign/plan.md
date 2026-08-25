@@ -69,7 +69,17 @@ unit's cheapest probe.
 - **M6 — naming cascade** — Opus `implementer`, last so mcp bumps once. `MCPLegacy` to
   `MCPDualEra` with `createMCPDualEra`; `MCP_PROTOCOL_VERSION` to `MCP_HANDSHAKE_VERSION`;
   `MCP_LEGACY_VERSION` to `MCP_FALLBACK_VERSION`; every consumer, test, and guide fence in
-  the same change.
+  the same change, and the M7 wrapper's family name lands here beside them.
+- **M7 — client era boundary** — `sol`, added by the user's 2026-08-25 addendum (see the
+  direction record) and scheduled ahead of M2 so the client contract is stable before
+  features build on it. The automatic legacy fallback and the built-in legacy pin path move
+  out of `MCPClient` into an explicit consumer-opt-in wrapper mirroring the server's
+  decorator: the wrapper performs the legacy handshake and converts the peer's era so the
+  consumer-visible surface stays 2026-07-28 whatever the peer speaks; the bare client
+  refuses a peer it cannot negotiate modern with, naming the wrapper in the error. The
+  tests and guide rows pinning the fallback sequence (`MCPClient.test.ts` negotiation rows,
+  the guide's fallback sections) are repaired red-first with the change. Auditor: the
+  `reviewer` lane, the engine that did not write it.
 
 ## Wave H — html and markdown provenance (unchanged from the audit)
 

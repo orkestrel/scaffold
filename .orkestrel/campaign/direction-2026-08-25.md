@@ -117,3 +117,23 @@ a type basis and a runtime basis wherever possible, driven by the staged 3.18.0
 artifacts, any protocol-types package used for comparison — enters as a development
 dependency or vendored fixture only, never as a runtime dependency or any other
 runtime-level requirement.
+
+## Addendum, same day — the mcp client's era boundary mirrors the server's
+
+Stated after the M1+M1.1 falsification round surfaced the client's automatic legacy
+fallback as a documented door. The client side uses the latest protocol; the package has no
+use case of its own for automatic legacy negotiation, so client-side era routing is the
+consumer's decision, never a silent behavior. The client always pushes for the latest
+revision; when a peer cannot speak it, the accommodation is an explicit adaptive wrapper —
+the client analog of the server's legacy decorator — that the consumer opts into, and that
+wrapper converts the legacy peer's protocol into what the modern surface understands,
+forcing every consumer-visible interaction to the latest protocol no matter what the peer
+speaks.
+
+Consequences carried into the plan: the automatic fallback in `MCPClient` negotiation and
+the built-in legacy pin path move out of the core client into the explicit wrapper; the
+core client refuses a peer it cannot negotiate modern with, naming the wrapper in the
+error; the tests and guide rows pinning the fallback sequence are repaired red-first with
+the behavior change; the m-audit verdict's ruling that retained the fallback as designed is
+superseded by this instruction on the record. The wrapper's family naming lands coherently
+in the M6 cascade beside `MCPDualEra`.
