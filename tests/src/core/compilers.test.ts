@@ -440,7 +440,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 		// the table the emitter read, which would pass for whatever that table said.
 		// A floor raise moves these lines, which is the point: the raise is a
 		// deliberate step and this is where a workspace receives it.
-		expect(planned['@orkestrel/html']).toBe('^0.0.5')
+		expect(planned['@orkestrel/html']).toBe('^0.0.6')
 		expect(planned.vue).toBe('^3.5.40')
 		expect(planned['@orkestrel/test']).toBe('^0.0.11')
 	})
@@ -491,7 +491,7 @@ describe('blueprintToDevDependencies compile tooling', () => {
 
 		// The digest covers the self-pin, so a release moves it. Update it with the
 		// version bump in the same change; it is the tripwire for every other byte.
-		expect(hex).toBe('1ef4477df3c211c0bf1df6e0609595f93b0b939c78aecd7195e15367ae34d708')
+		expect(hex).toBe('3f4ecc8d826554590c15c18b922acf2dbcb3fae7970cee9ddfead29498731996')
 	})
 })
 

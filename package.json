@@ -1,6 +1,6 @@
 {
 	"name": "@orkestrel/scaffold",
-	"version": "0.0.52",
+	"version": "0.0.53",
 	"description": "Scaffold workspaces with five commands: new, audit, repair, catalog, and overwrite.",
 	"keywords": [
 		"audit",
@@ -95,15 +95,15 @@
 		"@orkestrel/console": "^0.0.10",
 		"@orkestrel/contract": "^0.0.13",
 		"@orkestrel/emitter": "^0.0.8",
-		"@orkestrel/markdown": "^0.0.10",
+		"@orkestrel/markdown": "^0.0.11",
 		"@orkestrel/process": "^0.0.6",
 		"@orkestrel/template": "^0.0.5"
 	},
 	"devDependencies": {
 		"@microsoft/api-extractor": "^7.59.0",
 		"@orkestrel/guide": "^0.0.13",
-		"@orkestrel/html": "^0.0.5",
-		"@orkestrel/probe": "^0.0.5",
+		"@orkestrel/html": "^0.0.6",
+		"@orkestrel/probe": "^0.0.6",
 		"@orkestrel/test": "^0.0.11",
 		"@types/node": "^26.2.0",
 		"@vitest/browser-playwright": "^4.1.11",
