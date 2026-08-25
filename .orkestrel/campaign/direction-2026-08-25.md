@@ -45,3 +45,32 @@ No concrete progress contract is decided. The design round proposes shapes to pl
 the general MCP-versus-LSP ruling as input, with the user leaning toward the progress model
 following MCP either way (`notifications/progress` tokens, and the tasks extension's status
 model, per the researcher report).
+
+# User direction, 2026-08-25, after the audit
+
+Rulings the user stated on the delivered audit (`audit.md`). Each is fixed; the plan in
+`plan.md` carries them.
+
+## mcp, html, markdown, probe — repairs and fills proceed with full proof
+
+The audit's defect findings and rulings for mcp, html, markdown, and probe are confirmed.
+Every repair and fill lands with full proof and evidence that the result works as intended:
+red-before-green defect proofs, adversarial falsification before acceptance, and host-taken
+evidence wherever a proof drives a child process or a listener.
+
+## workflow — adopt MCP's progress model directly, no adapter
+
+The audit's held-open subject is closed by the user: workflow changes to the way MCP does it.
+An adapter is another point of breakage, and workflow exists to work well with agents through
+MCP. The objective lane's semantic findings (replacement versus monotonic semantics, the
+`unit` field, the `note` overlap) become constraints the adoption unit resolves and proves,
+never a reason to hold. The reporter-replay probe becomes the unit's failing proof rather
+than a decision gate.
+
+## lsp — a new package, the way mcp is a package
+
+The `LanguageClient` idea grows into `@orkestrel/lsp`: a package mirroring how `@orkestrel/mcp`
+carries its protocol — types-first from the LSP 3.18 specification, an `LSPClient` first, and
+eventually an `LSPServer` built the way `MCPServer` was. probe consumes `LSPClient` instead of
+growing its own client. The `LSPServer` is a recorded trajectory with triggers, not part of
+this campaign.
