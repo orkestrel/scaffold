@@ -74,3 +74,44 @@ carries its protocol — types-first from the LSP 3.18 specification, an `LSPCli
 eventually an `LSPServer` built the way `MCPServer` was. probe consumes `LSPClient` instead of
 growing its own client. The `LSPServer` is a recorded trajectory with triggers, not part of
 this campaign.
+
+# User direction, 2026-08-25, on the plan's confirmations
+
+## Repository and blessings
+
+The user created the `orkestrel/lsp` repository; the session attached and scaffolded it
+(core and server environments; seed dependencies `@orkestrel/contract`, `@orkestrel/emitter`,
+`@orkestrel/process`). The mcp renames in M6 are blessed. The provenance side-lookup ruling
+and the zero-based-stored coordinate ruling stand, the side-lookup on the user's deferral to
+the Orchestrator's reasoning.
+
+## workflow `unit` — ruled on evidence, override open
+
+The user challenged the claimed weight of the `unit` field. The evidence read: the only
+readers are `workflow/src/core/cloners.ts:129` (copies it) and `workflow/src/core/validators.ts:253`
+(checks it is a string) — plumbing, not consumers; no renderer, formatter, or behavioral
+consumer reads it anywhere in `src/`, `tests/`, or `guides/`; the guide documents it as
+"observer-facing text", which is the job MCP's `message` field does. The field's weight was
+overstated in the audit. Ruling: workflow adopts MCP's exact shape `{ progress, total?,
+message? }`; `unit` retires; the re-admitting trigger — a consumer that formats by a
+machine-readable unit distinct from the message text — is recorded in the guide. The user's
+"why not have both" stays open as an override: keeping `unit?` as a superset field costs
+nothing on the MCP wire, and the W1 unit sits last in the pipeline, so the override window
+stays open until W1 dispatches.
+
+## TypeScript 7 — deferred outright
+
+`@typescript/native-preview` is not installed and TypeScript 7 is not adopted in this
+campaign. The receipt gate leaves the campaign; probe's guide records it as the trigger that
+reopens the adapter question. `TypeStage` stays on the in-process LanguageService.
+
+## lsp — conformance testing is a required capability
+
+The lsp package adopts the conformance-test approach the mcp package carries
+(`mcp/tests/setupConformance.ts` with its pinned `CONFORMANCE_SPEC`, the same pattern the
+ollama package uses): tests that prove parity and compatibility with the LSP specification on
+a type basis and a runtime basis wherever possible, driven by the staged 3.18.0
+`metaModel.json` as a fixture. Everything foreign — the metaModel, vendored specification
+artifacts, any protocol-types package used for comparison — enters as a development
+dependency or vendored fixture only, never as a runtime dependency or any other
+runtime-level requirement.

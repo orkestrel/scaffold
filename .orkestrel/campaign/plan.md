@@ -14,9 +14,9 @@ different checkouts.
 
 ## Wave L — the lsp package (user-directed rescope)
 
-- **L0 — repository creation.** Create `orkestrel/lsp`, scaffold the workspace with
-  `scaffold new`, add the repository to the session scope. Needs the user's confirmation to
-  create the repository. Orchestrator-owned.
+- **L0 — repository creation. DONE 2026-08-25.** The user created `orkestrel/lsp`; the
+  session attached it, and `scaffold new lsp --src core,server --deps @orkestrel/contract,
+  @orkestrel/emitter,@orkestrel/process` wrote the workspace (131 files).
 - **L1 — contract design round.** One brief, two blind lanes (`planner` Opus, `analyst`
   Sol): the `@orkestrel/lsp` v1 public contract, mirroring the mcp package's architecture —
   host-independent core (protocol types from the 3.18 spec and metaModel, validators,
@@ -26,7 +26,12 @@ different checkouts.
   negotiation, `didOpen`/`didClose`, sync-mode selection from server capability, push
   diagnostics plus pull selection from `diagnosticProvider`, `$/cancelRequest`,
   method-not-found responses to unsupported server requests, the shutdown/exit/kill
-  teardown. Excluded with recorded triggers: `didChange` (first re-inspecting consumer),
+  teardown. Required v1 capability, per the user's ruling: a conformance suite in the mcp
+  package's pattern (`mcp/tests/setupConformance.ts`, pinned conformance revision) proving
+  parity with the 3.18 specification on a type basis and a runtime basis wherever possible,
+  driven by the staged 3.18.0 `metaModel.json` as a vendored fixture — everything foreign
+  stays a development dependency or fixture, never a runtime dependency. Excluded with
+  recorded triggers: `didChange` (first re-inspecting consumer),
   work-done progress rendering (first rendering consumer), `LSPServer` (the user's named
   eventual trajectory — designed the way `MCPServer` was, when a serving consumer exists;
   the html/markdown structure exclusions in `audit.md` name this server as their admitting
@@ -93,22 +98,26 @@ Serial on the probe checkout, Opus `implementer` (native — child-process proof
 - **P2 — `Issue` range.** `line` replaced by zero-based UTF-16 `range`, rendered one-based
   at format time; consumer set derived by running the suite; every stage and renderer in the
   same change.
-- **P3 — TypeScript 7 receipt gate.** Orchestrator-owned host capture: run the native
-  toolchain's LSP server, record the launch contract and the initialization and diagnostic
-  exchanges. Needs the user's approval to install `@typescript/native-preview` into a
-  scratch workspace when the gate runs. The adapter unit that would retire `TypeStage`
-  opens only on parity evidence; until then `TypeStage` stays.
+- **P3 — TypeScript 7 receipt gate. STRUCK 2026-08-25 by the user's deferral.** TypeScript 7
+  is not adopted in this campaign and `@typescript/native-preview` is not installed.
+  `TypeStage` stays on the in-process LanguageService. probe's guide records the receipt
+  gate as the trigger that reopens the adapter question (the seam prose rides the P-wave
+  guide work).
 
 ## Wave W — workflow adopts MCP progress directly (user-directed reversal)
 
 - **W1 — progress adoption** — `sol`. `TaskProgress { current, total?, unit? }` becomes
-  `{ progress, total?, message? }` with MCP's semantics, no adapter. The unit resolves and
-  proves the named constraints: monotonicity is scoped to one task execution (a new attempt
-  is a new scope, mirroring MCP's per-request token scope); a regressing report within a
-  scope is refused; `unit` retires with its formatting content folded into `message`; the
-  activity `note` overlap is reconciled so one field carries observer text. Failing proof:
-  replay workflow's existing reporters against the monotonic rule, record the refusals red,
-  fix the reporters, record green. Dependents re-pin when workflow bumps.
+  `{ progress, total?, message? }` with MCP's semantics, no adapter. The `unit` retirement
+  is ruled on evidence (direction file, third ruling set): its only readers are the cloner
+  and the validator — plumbing, not consumers — so the field carries no measured weight,
+  and the re-admitting trigger is recorded in the guide. The user's stated override
+  ("why not have both") stays open until W1 dispatches; W1 sits last in the Sol pipeline.
+  The unit resolves and proves the named constraints: monotonicity is scoped to one task
+  execution (a new attempt is a new scope, mirroring MCP's per-request token scope); a
+  regressing report within a scope is refused; the activity `note` overlap is reconciled so
+  one field carries observer text. Failing proof: replay workflow's existing reporters
+  against the monotonic rule, record the refusals red, fix the reporters, record green.
+  Dependents re-pin when workflow bumps.
 - **G1 — guide rulings** — `builder`. queue, process, tool, and middleware record why they
   stay untouched; middleware records the multipart-upload-progress trigger; tool records
   that progress lives one layer up in mcp's execution context.
