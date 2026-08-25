@@ -101,7 +101,7 @@
 	},
 	"devDependencies": {
 		"@microsoft/api-extractor": "^7.59.0",
-		"@orkestrel/guide": "^0.0.13",
+		"@orkestrel/guide": "^0.0.14",
 		"@orkestrel/html": "^0.0.6",
 		"@orkestrel/probe": "^0.0.6",
 		"@orkestrel/test": "^0.0.11",
