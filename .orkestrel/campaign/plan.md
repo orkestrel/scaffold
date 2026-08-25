@@ -163,3 +163,23 @@ trajectories, not as debt.
   runs.
 - `unit` retiring from workflow's progress shape in W1 — the one acknowledged loss of the
   direct adoption; standing unless the user overrules.
+
+## Re-baseline 2026-08-25, after the L3.1 phase
+
+- **L3.1 satisfied.** The combined L2+L2.1+L3 falsification round returned FAIL on both
+  lanes; the reconciled verdict's items landed as the L3.1 repair at lsp `9c343cf` with
+  red-first proofs, mutation probes, and a host receipt for the `satisfies` control. The
+  `reviewer` re-check runs; L4 opens only on its PASS.
+- **L6 transformed.** L3.1 created `guides/lsp.md` per the `guides/README.md` instruction
+  (the fix brief wrongly assumed the file existed; the executor's resolution stands). L6
+  shrinks to extending that guide and recording the exclusions table with triggers.
+- **Reconciliation ruling 13 struck.** `LSPHeader` is removed; `LSPDecodeState` supersedes
+  the capability. The l23 audit verdict carries the correction.
+- **M7 in flight** on the Sol bench from mcp `a379b08`: modern-only client, legacy reach
+  through a client-transport decorator.
+- **H1 and W1 added to the ready queue.** Both briefs are staged from retained Grok terrain
+  distillates with spot-verified pointers: `tmp/codex/h1-provenance-brief.md` (html span
+  side-lookup, original-input UTF-16 coordinates) and `tmp/codex/w1-progress-brief.md`
+  (MCP-exact progress shape, `unit` removed). Bench order after M7 is settled at the M7
+  re-baseline; the default is M2 next, with H1 and W1 slotting behind the M-wave unless a
+  bench gap argues otherwise.
