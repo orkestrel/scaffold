@@ -1,46 +1,59 @@
 # ROADMAP
 
-The plan of record after the package-rows campaign of 2026-08-24 (which closed the scaffold,
-probe, html, mcp, test, brief, agent, router, process, and middleware rows the previous revision
-carried, on `main` in each repository). This file owns everything still open. Campaign detail is
-recoverable from git history by hash; no campaign folder is the plan of record.
+The plan of record after the ROADMAP-rows campaign of 2026-08-25. That campaign published
+scaffold 0.0.52, registry-confirmed the same day, and closed its adoption wave the same day —
+every fleet target re-pinned, repaired, gated green, and pushed. It closed the scaffold, fleet,
+test, mcp, middleware, html, process, and brief rows the previous revision carried, through
+implementation, cross-engine audit, the setup-proof wave over every published package, and the
+mcp 0.0.23, brief 0.0.6, and probe 0.0.5 releases. This file owns everything still open. Campaign
+detail is recoverable from git history by hash; no campaign folder is the plan of record.
 
 ## 1. Package work, scheduled by each package's next natural release
 
-- **scaffold**: publish the release that landed on `main` 2026-08-24 from the debrief of the
-  package-rows campaign. `dist/src` carries the `HOST_PATHS` additions vendoring
-  `.agents/templates` and `.agents/transports`; `dist/host` carries the shrunk orchestration
-  contract with its skill pointers, the `orkestrel-publish` skill, the debrief retention
-  reference, the dispatch-brief template, the transport contracts at `.agents/transports/`, the
-  mirrored charter fixes, and the `orkestrel-prove-journey` rename. The 0.0.51 release published
-  2026-08-24 with agent 0.0.18, brief 0.0.5, mcp 0.0.22, probe 0.0.4, ollama 0.0.12, and
-  toolbox 0.0.9, and its adoption wave closed the same day: every fleet target re-pinned,
-  repaired, gated green, and pushed. Publishing stays with the user.
-- **scaffold**: the 0.0.51 plan writes `--no-cache` into the `test:guides` script and every
-  fleet target declares the script without it, so each visit's `repair` names the same retained
-  difference. Rule which side owns the value and pin the ruling at the next release.
-- **fleet**: `scaffold audit` reports an uncovered root `tests/setup.ts` module in a package
-  that carries the module with no `tests/setup.test.ts` proof, and the 2026-08-24 adoption wave
-  surfaced that advisory across the fleet. The audit recomputes the set; each reported package
-  lands the proof and the `setup` project at its next natural release, the way the html and
-  middleware rows record their instances.
-- **test**: transcribe the remaining guide fences under the placement rule that landed
-  2026-08-24 (a carrier lives in the project that can run it; browser carriers live in
-  `tests/src/browser/` with guide markers, and `tests/guides.test.ts` holds an executed presence
-  guard). The `contrast`, `readRing`, journal, and wait-cleanup fences carried that day. The
-  measured residue, by heading: the throw-capture fence's `SyntaxError` and thrown-`undefined`
-  claims; "Copy a JSON value"; "Prove a guard is total"; "Prove a wire fixpoint"; "Read a source
-  inventory"; the scratch-directory fences; "Give everything back in one hook"; "Answer a real
-  request on a loopback port"; "Probe what the host supports"; "Refuse an escaping path in your
-  own fixture"; the wait fence's `retryUntil` half; and the browser set — "Build and mount a
-  fixture", "Drive an interface the way a person does", "Drive a field the component listens
-  to", the theme-token fence, "Find a rule in the cascade", "Remove an IndexedDB database",
-  "Place a capture portfolio". The guide also carries a directional `below` near the Threat
-  model cross-reference; the writing rule replaces it with `later` in the same release.
-- **mcp**: `StdioServerTransport.send` discards its write's outcome — `#output.write` with no
-  return check, no callback, and no `error` subscription on the output stream. Rule on
-  backpressure and error surfacing for caller-owned output streams, and pin the ruling. Both
-  design lanes ruled it outside the delivery row's scope on 2026-08-24.
+- **scaffold**: the blocked-`configs` `repair` message claims `test:setup is already declared`
+  while the declared manifest carries no such script — the 2026-08-25 wave recorded the false
+  clause across its visits, and the block and its recovery are correct. Correct the clause at the
+  next release, and in the same release rule on `npm pkg set` appending `test:setup` after
+  `prepack` rather than beside the other `test:*` keys, and on `repair --groups manifest`
+  rewriting the `@orkestrel/scaffold` range as a side effect of writing a script, observed in the
+  test repository that day.
+- **fleet**: `isBrowserVuePath` repeats across packages, and the qualifier, markdown, and
+  interpret visits record it with no `app/` tree to accept, recorded across the 2026-08-25 wave. The next cross-package alignment campaign owns the
+  dedup-or-delete ruling.
+- **agent**: `tests/setup.ts` registers the conversation-store battery with `describe`, `it`, and
+  `expect`, which the shared-infrastructure rule forbids. Move the registration into the store
+  twin suites at the next release.
+- **database**: the same class — `conformDriver` in `tests/setup.ts` carries `describe`, `it`, and
+  `expect`, so the battery registration moves into the consuming suites at the next release. In
+  the same release, `createIntegrationDatabase` in `tests/setupBrowser.ts` is imported by no
+  suite, so its opened half is proven nowhere: give it a consumer or remove it.
+- **html**: the `src/core/constants.ts` TSDoc states counts of the entity set and carries a stale
+  snapshot date, recorded 2026-08-25. Rewrite the comment under the writing rules at the next
+  release.
+- **interpret and reason**: the `TRICKY_KEYS` TSDoc in each package misdescribes its stored bytes,
+  claiming a combining sequence and an NFC-labile form where the stored form is precomposed and
+  NFC-stable, and the reason package's `INTEGER_KEY_SUBJECT` comment states a wrong `Object.keys`
+  order, recorded 2026-08-25. Correct each comment at its package's next release.
+- **mcp**: `buildElement` in `tests/setupBrowser.ts` has no consumer; give it a `src:browser`
+  proof or remove it at the next release. The 2026-08-25 audit also referred the post-close `send`
+  pin for the Node WebSocket client transport and the race-abandoned `writeLine` callback on a
+  wedged stream; rule on each in the same release.
+- **msg**: `patchBytes` documents a copy-only contract and mutates its `Buffer` source through a
+  `.slice()` view. The defect is latent, because the wave's 2026-08-25 proof pinned the copying
+  route; align the implementation with the contract at the next release.
+- **ollama**: `tests/setupService.test.ts` declares its protocol-faithful daemon fixture locally,
+  because the shared setup modules sat outside the 2026-08-25 unit's scope. Move the fixture into
+  the shared module when a second consumer appears.
+- **probe**: a boot whose control inspection expires rejects silently — no `arm` event, no `error`
+  event, invisible until the next `prove` call retries the arming — which the 0.0.5 release
+  diagnosed only after repeated runs on 2026-08-25; rule on surfacing boot rejection at the next
+  release. Run `npm pkg fix` at the next manifest touch.
+- **probe**: a mintty-backed TTY fixture where `/usr/bin/script` is absent stays Windows-host
+  work; the trigger is the first Windows campaign that runs the bin suite there. The Linux
+  acceptance recorded 2026-08-24: the `script`-guarded proofs execute rather than skip on this
+  host — the bin suite passes complete with no skipped case.
+- **qualifier**: `buildHostileRecord`'s `__proto__` literal is inert and its doc comment overstates
+  the hostility, recorded 2026-08-25. Correct the comment or the fixture at the next release.
 - **supervisor**: adopt `ProcessOptions.delivery` where each consumer meets stdin-delivery
   failure, and close the `CLIProvider` race between `ProcessOptions.on` registration and early
   child output; the timeout backstop retires only after that adoption. The mcp half closed
@@ -54,28 +67,13 @@ recoverable from git history by hash; no campaign folder is the plan of record.
   run leaked another within seconds — its parent is already PID 1 at 17 seconds old. Each leak costs
   about 50MB and they accumulate across runs until the container is reclaimed. The fixture needs its
   stdin closed by whatever spawns it, or a guard that exits when stdin is not a pipe.
-- **probe**: a mintty-backed TTY fixture where `/usr/bin/script` is absent stays Windows-host
-  work; the trigger is the first Windows campaign that runs the bin suite there. The Linux
-  acceptance recorded 2026-08-24: the `script`-guarded proofs execute rather than skip on this
-  host — the bin suite passes complete with no skipped case.
-- **middleware**: `tests/setupServer.ts` exports the request-tally and closed-handle helpers
-  with no `tests/setup*.test.ts` proof and no registered `setup` project. The workspace rules
-  move the proof with the family, so the registration, the `test:setup` script, and the proof
-  land together at the next release — the shape probe and html closed 2026-08-24.
-- **html**: `tests/setup.ts` exists with no `tests/setup.test.ts` proof — `scaffold audit`
-  reports the uncovered module. The proof and the `setup` project land at the next release.
-- **html**: `NAMED_ENTITIES` is asserted by size beside the entity audit and again in the
-  exhaustive-decode test. The membership-strength question — whether size plus spot membership
-  proves the reviewed set — stayed open in the 2026-08-24 design round; rule and pin at the
-  next release.
-- **process**: the `ProcessManager.test.ts` negative assertion is weak by its own admission — a
-  change that stopped spawning also passes it. Strengthen it to assert the spawn happened, at
-  the next release.
-- **process**: a spawning proof sits in the shared `src:server` project. Place the expensive
-  proof per the workspace project rules at the next release.
-- **brief**: the published `Interpretation` member names live as an array literal inside a
-  `BriefCompiler` method. The centralization law places that data in `src/core/constants.ts` as
-  a frozen constant; move it with its consumers at the next release.
+- **table**: `readTableError` reports a non-thrown case as `undefined`, which is indistinguishable
+  from success, recorded 2026-08-25. Rule whether the helper names the non-throw, at the next
+  release.
+- **test**: `src/browser/helpers.ts` imports `vitest/browser` at module scope, so the published
+  browser barrel cannot load outside Browser Mode, and the repository's own `tests/setupBrowser.ts`
+  works around that with a DOM-guarded dynamic import, recorded 2026-08-25. Rule whether the
+  published barrel owns a lazy import, and pin the ruling at the next release.
 
 ## 2. Design and research records
 
