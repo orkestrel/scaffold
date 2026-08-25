@@ -1754,9 +1754,12 @@ export function replaceManifestRanges(
  * other string is a chain the workspace author customized, so it stays
  * byte-identical while the other named scripts are written independently. A
  * named script the manifest does not declare is appended after the last
- * declared script, copying that section's indentation. A region declaring
- * nothing takes every named script as its first entries, indented from the line
- * its own opening brace sits on.
+ * declared script of its own key family, copying that section's indentation:
+ * `test:setup` follows the last declared `test:` key. A name carrying no colon
+ * has no family, and so does a family the section declares no member of, and
+ * each of those is appended after the last declared script instead. A region
+ * declaring nothing takes every named script as its first entries, indented
+ * from the line its own opening brace sits on.
  *
  * @example
  * ```ts
@@ -1859,8 +1862,11 @@ export function replaceManifestScripts(
 	if (start < 0 || end < 0) return undefined
 	// Read the section's own entries for their byte ranges, and remember where the
 	// first key sits: that column is the indentation an appended script copies.
+	// Each string-valued entry also records where it ends, because that offset is
+	// the anchor an appended sibling of the same key family inserts after.
 	const edits: Array<{ start: number; end: number; text: string }> = []
 	const written = new Set<string>()
+	const anchors: Array<{ name: string; end: number }> = []
 	let first = -1
 	let nested = 0
 	let scan = start
@@ -1913,6 +1919,7 @@ export function replaceManifestScripts(
 		if (valueEnd >= end) return undefined
 		scan = valueEnd + 1
 		const key: unknown = parseJSON(manifest.slice(keyStart, keyEnd))
+		if (isString(key)) anchors.push({ name: key, end: valueEnd + 1 })
 		const script = scripts.find((entry) => entry.name === key)
 		if (script === undefined) continue
 		written.add(script.name)
@@ -1942,21 +1949,33 @@ export function replaceManifestScripts(
 			)
 			edits.push({ start: start + 1, end: end - 1, text: `${entries.join(',')}${closing}` })
 		} else {
-			let anchor = end - 1
-			while (anchor > start && /\s/u.test(manifest.charAt(anchor - 1))) anchor -= 1
+			// A qualified name joins the family its prefix names, landing after that
+			// family's last declared member so a reader finds it among its siblings
+			// rather than behind the lifecycle scripts that close the section. An
+			// unqualified name has no family, and a family the section never declares
+			// has no member to follow, so each takes the section's own end.
+			let tail = end - 1
+			while (tail > start && /\s/u.test(manifest.charAt(tail - 1))) tail -= 1
 			const newline = manifest.lastIndexOf('\n', first)
 			const indent = newline < 0 ? '' : manifest.slice(newline + 1, first)
 			const separator = newline < 0 || /\S/u.test(indent) ? '' : `\n${indent}`
-			edits.push({
-				start: anchor,
-				end: anchor,
-				text: missing
-					.map(
-						(script) =>
-							`,${separator}${JSON.stringify(script.name)}: ${JSON.stringify(script.command)}`,
-					)
-					.join(''),
-			})
+			const placed = new Map<number, string[]>()
+			for (const script of missing) {
+				const colon = script.name.indexOf(':')
+				const family = colon < 0 ? undefined : script.name.slice(0, colon + 1)
+				const sibling =
+					family === undefined
+						? undefined
+						: anchors.findLast((entry) => entry.name.startsWith(family))
+				const anchor = sibling?.end ?? tail
+				const text = `,${separator}${JSON.stringify(script.name)}: ${JSON.stringify(script.command)}`
+				const queued = placed.get(anchor)
+				if (queued === undefined) placed.set(anchor, [text])
+				else queued.push(text)
+			}
+			for (const [anchor, queued] of placed) {
+				edits.push({ start: anchor, end: anchor, text: queued.join('') })
+			}
 		}
 	}
 	let compiled = manifest

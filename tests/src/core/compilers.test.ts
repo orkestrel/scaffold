@@ -349,6 +349,58 @@ describe('replaceManifestScripts', () => {
 		expect(written).toContain(`"prepublishOnly": "npm test && ${RELEASE_PROOF_COMMAND}"`)
 	})
 
+	// A qualified name belongs to the family its prefix names, and the developer
+	// reading the manifest afterwards expects to find it among its siblings rather
+	// than behind the lifecycle scripts that close the section.
+	it('appends a qualified script after the last declared member of its own family', () => {
+		const declared = buildBlueprint({ src: ['core'] })
+		const manifest = blueprintToManifest(declared)
+		const region = blueprintToWritableScripts(buildBlueprint({ src: ['core'], setup: true }))
+		const written = replaceManifestScripts(manifest, region)
+		const proof = region.find((script) => script.name === 'test:setup')
+
+		expect(Object.keys(JSON.parse(manifest).scripts)).not.toContain('test:setup')
+		expect(JSON.parse(written ?? '').scripts['test:setup']).toBe(proof?.command)
+		expect(Object.keys(JSON.parse(written ?? '').scripts)).toEqual([
+			'clean',
+			'copy',
+			'format',
+			'format:check',
+			'lint',
+			'lint:check',
+			'check',
+			'check:src',
+			'check:src:core',
+			'test',
+			'test:src',
+			'test:src:core',
+			'test:policy',
+			'test:config',
+			'test:probe',
+			'test:bench',
+			'test:distribution',
+			'test:setup',
+			'build',
+			'build:src',
+			'build:src:core',
+			'prepack',
+			'prepublishOnly',
+		])
+	})
+
+	// The fallback is the section's own end, and an unqualified name has no family
+	// to join, so both keep the placement the append path always had.
+	it('appends at the section end when no declared key shares the family', () => {
+		const written = replaceManifestScripts(SCRIPT_MANIFEST, SCRIPT_REGION)
+
+		expect(Object.keys(JSON.parse(SCRIPT_MANIFEST).scripts)).toEqual(['test', 'prepublishOnly'])
+		expect(Object.keys(JSON.parse(written ?? '').scripts)).toEqual([
+			'test',
+			'prepublishOnly',
+			'test:distribution',
+		])
+	})
+
 	it('returns the text untouched when the region names nothing', () => {
 		expect(replaceManifestScripts(SCRIPT_MANIFEST, [])).toBe(SCRIPT_MANIFEST)
 	})

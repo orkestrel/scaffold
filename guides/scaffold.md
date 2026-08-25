@@ -588,7 +588,10 @@ literal absent project, its advisory tells the developer to register the project
 script. For a planned project absent from the gate chains, the advisory reads the manifest after a
 writable script projection. The `scripts` question owns an absent direct `test:<project>` line. The
 `projects` question names the direct script and the gate chain that must invoke it when the projected
-region still leaves the project ungated. When `configs` is selected, `repair` and `overwrite` refuse
+region still leaves the project ungated. Its remedy reads the manifest on disk rather than the
+projection, so it states what the developer's own file holds: a script the manifest declares leaves
+the gate as the only repair, and a script only the projection supplies is named as missing beside
+the gate. When `configs` is selected, `repair` and `overwrite` refuse
 an unregistered or ungated project before writing. Their refusal names the `configs` group, the
 manifest and planned `vite.config.ts` conflict, and the option to exclude `configs` from `--groups`.
 A selection that excludes `configs` proceeds. An advisory alone does not make an aligned target
@@ -602,8 +605,18 @@ and `copy` gate chains stay maintainer-owned. A declared value is overwritten on
 the value being written or is a recognized generated predecessor. The overwrite happens in place,
 so every byte outside the replaced ranges survives. A target's descriptions, keywords, extra
 scripts, and manifest key order survive byte-for-byte. A script the manifest does not declare is
-appended after the last declared one, copying that section's indentation. `catalog` writes no script
-region; it names the ranges alone.
+appended after the last declared script of its own key family, copying that section's indentation:
+`test:setup` follows the last declared `test:` key rather than the lifecycle scripts that close the
+section. A name carrying no colon has no family, and a family the section declares no member of has
+nothing to follow, so each of those is appended after the last declared script instead. `catalog`
+writes no script region; it names the ranges alone.
+
+The range region and the script region are not groups. `package.json` is birth-owned, so the
+`manifest` group creates it when a workspace is first materialized and never rewrites it afterwards,
+and `--groups` narrows the plan rather than the regions. `repair` and `overwrite` therefore
+reconcile the declared ranges and write the script region on every run, whatever the selection
+names. A run scoped to `manifest` for the sake of one script takes the reconciled `@orkestrel/*`
+ranges with it, and a run that excludes `manifest` still takes the ranges and the scripts.
 
 A value matching neither is a script the workspace author wrote. The region writer retains that
 value byte-for-byte and reports its name, declared value, and planned value. Each other planned
@@ -613,8 +626,8 @@ non-string value or a `scripts` field that is not an object still refuses the wh
 script byte moving. `audit` reports absent and differing scripts separately in its non-blocking
 `scripts` question, and the terminal audit in `repair` and `overwrite` keeps every retained
 difference visible. Other selected writes still proceed. The `projects` question reports only a
-direct script the manifest declares but the maintainer-owned gate chain does not invoke after
-projection.
+direct script the projected region declares and the maintainer-owned gate chain does not invoke, and
+it names that script as declared or as missing according to the manifest on disk.
 
 The same plan-reading verbs compare the tooling set the derived blueprint plans against
 `dependencies` and `devDependencies` together. A missing planned package produces one non-blocking

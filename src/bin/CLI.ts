@@ -1119,6 +1119,11 @@ export class CLI implements CLIInterface {
 	// script region this package writes itself is not something to ask the
 	// maintainer to paste. Where the region is refused the projection is the
 	// disk text, so a customized chain still raises the advisory it always did.
+	//
+	// The remedy sentence reads the disk text instead, because it states what the
+	// developer's own manifest holds. Deciding it from the projection reported a
+	// script the projection had just supplied as one the manifest already
+	// declared, which contradicted the `scripts` question raised beside it.
 	#projectQuestion(
 		target: string,
 		blueprint: Blueprint,
@@ -1213,10 +1218,22 @@ export class CLI implements CLIInterface {
 		const ungated = missing.filter(([project]) => isString(scripts[`test:${project}`]))
 		if (ungated.length === 0) return undefined
 		const names = ungated.map(([project]) => project)
-		const declared = ungated.map(([project]) => `test:${project}`)
+		const disk = parseJSON(text)
+		const written = isRecord(disk) && isRecord(disk.scripts) ? disk.scripts : {}
+		const direct = names.map((project) => `test:${project}`)
+		const declared = direct.filter((script) => isString(written[script]))
+		const undeclared = direct.filter((script) => !isString(written[script]))
+		const remedies = [
+			declared.length === 0
+				? ''
+				: `${declared.join(', ')} ${declared.length === 1 ? 'is' : 'are'} already declared, so the gate is missing rather than the script: invoke ${declared.length === 1 ? 'it' : 'each of them'} by name from the ${gateNames} chain.`,
+			undeclared.length === 0
+				? ''
+				: `${undeclared.join(', ')} ${undeclared.length === 1 ? 'is' : 'are'} not declared, so the script is missing as well as the gate: declare ${undeclared.length === 1 ? 'it' : 'each of them'} and invoke ${undeclared.length === 1 ? 'it' : 'each of them'} by name from the ${gateNames} chain.`,
+		]
 		return {
 			field: 'projects',
-			message: `${writing ? 'The configs group is blocked because ' : ''}the manifest at ${target} does not reach ${names.length === 1 ? 'a Vitest project' : 'Vitest projects'} the planned configuration registers: ${names.join(', ')}. No chain from ${gateNames} invokes ${names.length === 1 ? 'it' : 'them'}. ${declared.join(', ')} ${declared.length === 1 ? 'is' : 'are'} already declared, so the gate is missing rather than the script: invoke ${declared.length === 1 ? 'it' : 'each of them'} by name from the ${gateNames} chain.${writing ? ' Exclude configs from --groups to write another group.' : ''}`,
+			message: `${writing ? 'The configs group is blocked because ' : ''}the manifest at ${target} does not reach ${names.length === 1 ? 'a Vitest project' : 'Vitest projects'} the planned configuration registers: ${names.join(', ')}. No chain from ${gateNames} invokes ${names.length === 1 ? 'it' : 'them'}. ${remedies.filter((remedy) => remedy !== '').join(' ')}${writing ? ' Exclude configs from --groups to write another group.' : ''}`,
 			blocking: false,
 			groups: ['configs'],
 		}

@@ -1789,15 +1789,17 @@ describe('CLI audit', () => {
 			const outcome: RepairResult = JSON.parse(repaired.output[0] ?? '')
 			expect(outcome.audit.questions.filter(({ field }) => field === 'scripts')).toStrictEqual([])
 			const written = requireValue(workspace.read('target/package.json'))
-			const appended = [
+			// The qualified pair joins the `test:` family it belongs to. The
+			// lifecycle script carries no family, so it closes the section instead.
+			const family = [
 				',',
 				'\t\t"test:probe": "vitest run --config vite.config.ts --no-cache --reporter=verbose --project probe",',
-				'\t\t"test:bench": "vitest bench --config vite.config.ts --no-cache --project probe",',
-				'\t\t"prepack": "npm run build"',
+				'\t\t"test:bench": "vitest bench --config vite.config.ts --no-cache --project probe"',
 			].join('\n')
-			// Removing only the appended region recovers every original byte. This
+			const lifecycle = ',\n\t\t"prepack": "npm run build"'
+			// Removing only the appended regions recovers every original byte. This
 			// covers the custom script's value and the order of every original key.
-			expect(written.replace(appended, '')).toBe(manifest)
+			expect(written.replace(family, '').replace(lifecycle, '')).toBe(manifest)
 			expect(written).toContain('"deploy": "npm run build && npm publish"')
 
 			const after = createSink()
@@ -2103,9 +2105,53 @@ describe('CLI audit', () => {
 			expect(audit.questions[0]?.message).toContain('this exact script line to package.json:')
 			expect(audit.questions[0]?.message).toContain('"test:service":')
 			expect(audit.questions[1]).toMatchObject({ field: 'projects', blocking: false })
+			// The projected region would declare the script, but the manifest the
+			// developer is reading does not. The advisory states the manifest's own
+			// state, so it never contradicts the `scripts` question beside it.
 			expect(audit.questions[1]?.message).toContain(
-				'test:service is already declared, so the gate is missing rather than the script',
+				'test:service is not declared, so the script is missing as well as the gate: declare it and invoke it by name from the test chain.',
 			)
+			expect(audit.questions[1]?.message).not.toContain('already declared')
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('states an undeclared script as missing when the write is blocked', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			// The proof selects the planned `setup` project. The manifest predates it,
+			// so it declares neither `test:setup` nor a chain that reaches the project.
+			workspace.write('target/tests/setup.test.ts', 'export {}\n')
+			workspace.write(
+				'target/package.json',
+				buildTargetManifest(
+					undefined,
+					undefined,
+					undefined,
+					blueprintToScripts(createBlueprint('sample', { src: ['core'] })),
+				),
+			)
+			const sink = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+					'repair',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_DRIFT)
+			const refusal: { readonly error: { readonly code: string; readonly message: string } } =
+				JSON.parse(sink.output[0] ?? '')
+			expect(refusal.error.code).toBe('TARGET')
+			expect(refusal.error.message).toContain('The configs group is blocked because')
+			expect(refusal.error.message).toContain(
+				'test:setup is not declared, so the script is missing as well as the gate: declare it and invoke it by name from the test or prepublishOnly chain.',
+			)
+			expect(refusal.error.message).not.toContain('already declared')
 		} finally {
 			workspace.destroy()
 		}
@@ -3343,6 +3389,75 @@ describe('CLI repair', () => {
 			])
 			expect(code).toBe(EXIT_CLEAN)
 			expect(workspace.read('target/package.json')).toContain('"oxfmt": "^0.65.0"')
+		} finally {
+			await server.destroy()
+			workspace.destroy()
+		}
+	})
+
+	it('reconciles the declared ranges whatever group selection the run names', async () => {
+		// A release above every declared pin, so the rewrite stays visible whatever
+		// the fleet pins today and a version bump moves no literal here.
+		const published = '9.9.9'
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const server = await createUpstreamServer({
+			...FLEET_RELEASE_REPLIES,
+			[FLEET_UPSTREAM_PATHS.packages.scaffold]: { status: 200, body: buildPackument(published) },
+		})
+		try {
+			const fleet = createFleet(workspace)
+			// The proof selects the planned `setup` project, so this run has a script
+			// to write as well as a range to reconcile.
+			workspace.write('target/tests/setup.test.ts', 'export {}\n')
+			workspace.write('target/package.json', buildTargetManifest())
+			const before = requireValue(workspace.read('target/package.json'))
+			const sink = createSink()
+
+			expect(before).not.toContain('"test:setup"')
+			expect(before).not.toContain(`"@orkestrel/scaffold": "^${published}"`)
+			expect(
+				await new CLI(buildCLIOptions(sink, server.base)).execute([
+					'repair',
+					'--groups',
+					'manifest',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
+			const after = requireValue(workspace.read('target/package.json'))
+			const keys = Object.keys(JSON.parse(after).scripts)
+
+			// `package.json` is birth-owned, so no group selection carries it into the
+			// plan. The range and the script regions are one write on every repair,
+			// whatever the selection names, and a caller scoping a run to the manifest
+			// for its script takes the reconciled ranges with it.
+			expect(after).toContain(`"@orkestrel/scaffold": "^${published}"`)
+			expect(keys).toContain('test:setup')
+			expect(keys.indexOf('test:setup')).toBe(keys.indexOf('test:distribution') + 1)
+
+			// The other direction of the same ruling: a selection naming no manifest
+			// group reconciles the ranges too, because the selection never reached them.
+			workspace.write(
+				'target/package.json',
+				after.replace(`"@orkestrel/scaffold": "^${published}"`, '"@orkestrel/scaffold": "^0.0.1"'),
+			)
+			const scoped = createSink()
+			await new CLI(buildCLIOptions(scoped, server.base)).execute([
+				'repair',
+				'--groups',
+				'docs',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			expect(requireValue(workspace.read('target/package.json'))).toContain(
+				`"@orkestrel/scaffold": "^${published}"`,
+			)
 		} finally {
 			await server.destroy()
 			workspace.destroy()

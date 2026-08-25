@@ -1252,9 +1252,11 @@ describe('Materializer declare scripts', () => {
 							'"npm run format:check && npm run lint:check && npm run check && npm run build && npm test"',
 							`"npm run format:check && npm run lint:check && npm run check && npm run build && npm test && ${RELEASE_PROOF_COMMAND}"`,
 						)
+						// The absent script joins its own key family, so it lands after the
+						// last declared `test:` key rather than closing the section.
 						.replace(
-							/(\t\t"prepublishOnly": ".*")\n\t\}/u,
-							'$1,\n\t\t"test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution"\n\t}',
+							/(\t\t"test:bench": ".*",)\n/u,
+							'$1\n\t\t"test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution",\n',
 						),
 				)
 			} finally {
@@ -1290,14 +1292,14 @@ describe('Materializer declare scripts', () => {
 
 				expect(result.written).toEqual(['package.json'])
 				// The write is per-script: the customized chain stays exactly as its
-				// author left it while the absent distribution script appends beside it,
-				// and the range moves.
+				// author left it while the absent distribution script appends among the
+				// `test:` keys it belongs to, and the range moves.
 				const appended =
 					'"test:distribution": "vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution"'
 				expect(workspace.read('project/package.json')).toBe(
 					customized
 						.replace('"@orkestrel/emitter": "^0.0.5"', '"@orkestrel/emitter": "^0.0.9"')
-						.replace(/("prepublishOnly": "[^"]+")\n/u, `$1,\n\t\t${appended}\n`),
+						.replace(/("test:bench": "[^"]+",)\n/u, `$1\n\t\t${appended},\n`),
 				)
 				expect(workspace.read('project/package.json')).toContain('npm run verify')
 			} finally {
