@@ -108,10 +108,11 @@ Serial on the probe checkout, Opus `implementer` (native — child-process proof
 
 - **W1 — progress adoption** — `sol`. `TaskProgress { current, total?, unit? }` becomes
   `{ progress, total?, message? }` with MCP's semantics, no adapter. The `unit` retirement
-  is ruled on evidence (direction file, third ruling set): its only readers are the cloner
-  and the validator — plumbing, not consumers — so the field carries no measured weight,
-  and the re-admitting trigger is recorded in the guide. The user's stated override
-  ("why not have both") stays open until W1 dispatches; W1 sits last in the Sol pipeline.
+  is ruled on evidence (direction file, third ruling set) and closed by the user's final
+  word: the field goes, no loose ends. W1 removes the declaration, the cloner branch at
+  `src/core/cloners.ts:129`, the validator branch at `src/core/validators.ts:253`, every
+  test constructing `unit`, and the guide rows naming it, with the re-admitting trigger
+  recorded in the guide.
   The unit resolves and proves the named constraints: monotonicity is scoped to one task
   execution (a new attempt is a new scope, mirroring MCP's per-request token scope); a
   regressing report within a scope is refused; the activity `note` overlap is reconciled so

@@ -94,10 +94,12 @@ consumer reads it anywhere in `src/`, `tests/`, or `guides/`; the guide document
 "observer-facing text", which is the job MCP's `message` field does. The field's weight was
 overstated in the audit. Ruling: workflow adopts MCP's exact shape `{ progress, total?,
 message? }`; `unit` retires; the re-admitting trigger — a consumer that formats by a
-machine-readable unit distinct from the message text — is recorded in the guide. The user's
-"why not have both" stays open as an override: keeping `unit?` as a superset field costs
-nothing on the MCP wire, and the W1 unit sits last in the pipeline, so the override window
-stays open until W1 dispatches.
+machine-readable unit distinct from the message text — is recorded in the guide.
+
+Final, same day, from the user: get rid of `unit` and clean workflow up accordingly — no
+loose ends. The override is closed. W1 removes the field and every piece of plumbing that
+carried it: the `TaskProgress` declaration, the cloner and validator branches, every test
+constructing it, and the guide rows naming it.
 
 ## TypeScript 7 — deferred outright
 
