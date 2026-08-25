@@ -7,11 +7,23 @@ priors for the design round: the round argues how, never whether.
 
 The package is intended to be MCP revision 2026-07-28 under the hood, by default, always true
 to 2026-07-28, with an optional legacy wrapper function adding compatibility with older
-revisions. The tree as found — `MCP_PROTOCOL_VERSION = '2025-11-25'` in
-`src/core/constants.ts:15`, an `initialize`-based lifecycle, and `SUPPORTED_PROTOCOL_VERSIONS`
-omitting `2026-07-28` — is drift against that intent, not a design choice. The 2026-07-28
-lifecycle page's own terms name the target posture: a **modern**-core implementation, optionally
-**dual-era** through the wrapper (see the researcher report's lifecycle section).
+revisions. The 2026-07-28 lifecycle page's own terms name the target posture: a **modern**-core
+implementation, optionally **dual-era** through the wrapper (see the researcher report's
+lifecycle section).
+
+### Correction, same day (fleet-sweep evidence)
+
+The drift claim this section first carried is falsified. The shallow map had reported
+`SUPPORTED_PROTOCOL_VERSIONS` omitting `2026-07-28`; the deep sweep read the tree as it is:
+`MCP_MODERN_VERSION = '2026-07-28'` (`src/core/constants.ts:21`), `SUPPORTED_PROTOCOL_VERSIONS`
+listing it first (`constants.ts:33`), per-request `_meta` version and capability parsing,
+`notifications/progress` with a reporter, `notifications/cancelled`, a stateless modern core
+whose bare server rejects `initialize`, and `MCPLegacy` as the legacy projection. The intent
+stands as the prior; the open design questions become completeness against the revision
+(`server/discover`, `subscriptions/listen`, the input-required retry pattern, the tasks
+extension, the deprecation list) and the shape of the legacy wrapper and the
+`MCP_PROTOCOL_VERSION` constant, whose name reads as "the protocol version" while it declares
+the newest legacy handshake revision.
 
 ## probe — toward full LSP
 
