@@ -1,0 +1,15 @@
+agent: owned=19 vendored=57  sep-split=11 file-url=4 platform-gate=2 ext-cmd=1 tmpdir-use=1
+browser: owned=136 vendored=57  platform-gate=36 proc-kill=24 signals=16 posix-root=13 sep-split=10 win-drive=10 posix-tmp=6 tmpdir-use=5 abs-check=5 file-url=4 ext-cmd=3 nl-split=2 symlink=1 eol=1
+console: owned=98 vendored=57  sep-split=48 nl-split=20 platform-gate=15 file-url=6 ext-cmd=5 eol=2 chmod-exec=1 tmpdir-use=1
+guide: owned=76 vendored=57  sep-split=59 file-url=6 eol=6 platform-gate=2 ext-cmd=1 tmpdir-use=1 nl-split=1
+lsp: owned=161 vendored=57  file-url=127 eol=17 signals=7 sep-split=4 platform-gate=3 ext-cmd=1 tmpdir-use=1 proc-kill=1
+mcp: owned=94 vendored=57  eol=19 platform-gate=16 proc-kill=14 sep-split=13 file-url=11 signals=10 ext-cmd=5 nl-split=2 chmod-exec=1 abs-check=1 tmpdir-use=1 posix-tmp=1
+probe: owned=204 vendored=57  signals=65 sep-split=45 file-url=42 nl-split=16 win-drive=11 symlink=8 proc-kill=5 posix-root=5 platform-gate=2 dev-null=2 ext-cmd=1 tmpdir-use=1 abs-check=1
+process: owned=277 vendored=57  signals=90 platform-gate=53 proc-kill=43 win-drive=33 ext-cmd=32 sep-split=7 eol=7 file-url=6 posix-root=3 nl-split=2 tmpdir-use=1
+scaffold: owned=264 vendored=0  sep-split=89 file-url=33 posix-tmp=27 platform-gate=26 chmod-exec=22 abs-check=16 nl-split=11 eol=8 win-drive=6 dev-null=5 ext-cmd=5 tmpdir-use=4 symlink=4 posix-root=4 cli-spawn=3 shell-true=1
+sea: owned=88 vendored=57  platform-gate=29 ext-cmd=27 symlink=12 file-url=7 posix-tmp=4 chmod-exec=4 sep-split=3 tmpdir-use=1 win-drive=1
+server: owned=42 vendored=57  eol=26 file-url=7 sep-split=4 platform-gate=2 ext-cmd=1 tmpdir-use=1 posix-tmp=1
+terminal: owned=16 vendored=57  sep-split=8 file-url=4 platform-gate=2 ext-cmd=1 tmpdir-use=1
+test: owned=165 vendored=57  tmpdir-use=53 symlink=27 platform-gate=21 chmod-exec=16 sep-split=14 file-url=10 posix-tmp=6 ext-cmd=5 eol=5 nl-split=3 posix-root=3 proc-kill=1 win-drive=1
+websocket: owned=17 vendored=57  eol=6 file-url=4 sep-split=3 platform-gate=2 ext-cmd=1 tmpdir-use=1
+worker: owned=12 vendored=57  file-url=6 platform-gate=2 sep-split=2 ext-cmd=1 tmpdir-use=1

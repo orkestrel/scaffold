@@ -1,0 +1,165 @@
+configs/browsers.ts:58	platform-gate	darwin: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+configs/browsers.ts:59	platform-gate	win32: Object.freeze(['Google', 'Chrome', 'Application', 'chrome.exe']),
+configs/browsers.ts:59	ext-cmd	win32: Object.freeze(['Google', 'Chrome', 'Application', 'chrome.exe']),
+configs/browsers.ts:66	platform-gate	darwin: '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+configs/browsers.ts:67	platform-gate	win32: Object.freeze(['Microsoft', 'Edge', 'Application', 'msedge.exe']),
+configs/browsers.ts:67	ext-cmd	win32: Object.freeze(['Microsoft', 'Edge', 'Application', 'msedge.exe']),
+configs/browsers.ts:86	chmod-exec	accessSync(path, FS_CONSTANTS.X_OK)
+configs/browsers.ts:141	ext-cmd	* otherwise a `chromium` / `chromium.exe` alias or any other `chromium-*` revision under the same
+configs/browsers.ts:164	ext-cmd	for (const alias of ['chromium', 'chromium.exe']) {
+configs/browsers.ts:224	platform-gate	* resolveSystemBrowser(process.platform, process.env)
+configs/browsers.ts:231	platform-gate	if (platform !== 'linux' && platform !== 'darwin' && platform !== 'win32') return undefined
+configs/browsers.ts:233	platform-gate	if (platform === 'win32') {
+configs/browsers.ts:248	platform-gate	if (platform === 'win32') {
+configs/browsers.ts:250	platform-gate	if (isBrowserExecutable(join(root, ...browser.layouts.win32))) return browser.channel
+configs/browsers.ts:282	platform-gate	* resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)
+configs/browsers.ts:309	platform-gate	const fallback = platform === 'win32' ? 'msedge' : 'chrome'
+src/browser/helpers.ts:749	sep-split	return lines.join('\n')
+src/browser/helpers.ts:791	sep-split	.join('\n')
+src/browser/helpers.ts:1799	sep-split	for (const segment of options.path.replaceAll('\\', '/').split('/')) {
+src/browser/helpers.ts:1804	sep-split	if (!shot.path.replaceAll('\\', '/').endsWith(segments.join('/'))) {
+src/core/helpers.ts:299	sep-split	for (const [index, physical] of text.split('\n').entries()) {
+src/core/helpers.ts:299	nl-split	for (const [index, physical] of text.split('\n').entries()) {
+src/server/factories.ts:34	tmpdir-use	const parent = resolve(options?.parent ?? tmpdir())
+src/server/helpers.ts:20	symlink	symlinkSync,
+src/server/helpers.ts:26	file-url	import { fileURLToPath } from 'node:url'
+src/server/helpers.ts:96	symlink	symlinkSync(source, path)
+src/server/helpers.ts:110	symlink	symlinkSync(resolved, path, 'junction')
+src/server/helpers.ts:171	file-url	const supplied = resolve(typeof root === 'string' ? root : fileURLToPath(root))
+src/server/helpers.ts:207	sep-split	const key = relative(base, resolved).split(sep).join('/')
+src/server/helpers.ts:227	sep-split	const key = relative(base, path).split(sep).join('/')
+src/server/helpers.ts:278	proc-kill	process.kill(pid, 0)
+src/server/helpers.ts:282	platform-gate	if (process.platform !== 'linux') return true
+src/server/helpers.ts:519	symlink	* @remarks `symlinkSync(source, target, 'junction')` creates a directory junction on Windows, which
+src/server/helpers.ts:526	tmpdir-use	const directory = mkdtempSync(join(tmpdir(), 'orkestrel-test-directory-links-'))
+src/server/helpers.ts:532	symlink	symlinkSync(source, link, 'junction')
+src/server/helpers.ts:552	symlink	* @remarks `symlinkSync(source, target, 'file')` needs the symbolic-link privilege, which Windows
+src/server/helpers.ts:560	tmpdir-use	const directory = mkdtempSync(join(tmpdir(), 'orkestrel-test-file-links-'))
+src/server/helpers.ts:565	symlink	symlinkSync(source, link, 'file')
+src/server/helpers.ts:577	chmod-exec	* @returns True if a directory created with mode `0o700` reports that mode back; false otherwise,
+src/server/helpers.ts:581	chmod-exec	* @remarks POSIX reports `mode & 0o777 === 0o700` and Windows reports `0o666` regardless, so the
+src/server/helpers.ts:588	tmpdir-use	const directory = mkdtempSync(join(tmpdir(), 'orkestrel-test-mode-'))
+src/server/helpers.ts:591	chmod-exec	mkdirSync(path, { mode: 0o700 })
+src/server/helpers.ts:592	chmod-exec	return (statSync(path).mode & 0o777) === 0o700
+src/server/helpers.ts:614	tmpdir-use	const directory = mkdtempSync(join(tmpdir(), 'orkestrel-test-case-'))
+src/server/helpers.ts:640	tmpdir-use	const directory = mkdtempSync(join(tmpdir(), 'orkestrel-test-bytes-'))
+src/server/types.ts:59	symlink	* `node:fs`'s `symlinkSync(target, path)` vocabulary, this interface consistently calls the
+tests/distribution.test.ts:25	file-url	import { fileURLToPath } from 'node:url'
+tests/distribution.test.ts:32	file-url	const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+tests/distribution.test.ts:33	platform-gate	const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+tests/distribution.test.ts:33	ext-cmd	const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+tests/distribution.test.ts:38	platform-gate	const SHELL = process.platform === 'win32'
+tests/distribution.test.ts:488	sep-split	writeFile(target, `${bindings.join('\n')}\nexport const surface = [${names.join(', ')}]\n`)
+tests/distribution.test.ts:626	sep-split	const installed = join(consumer, 'node_modules', ...name.split('/'))
+tests/distribution.test.ts:681	tmpdir-use	const SCRATCH = mkdtempSync(join(tmpdir(), 'distribution-'))
+tests/distribution.test.ts:906	platform-gate	const options = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)
+tests/guides.test.ts:114	sep-split	return text.split('\n').some((line) => line.trim().startsWith(marker))
+tests/guides.test.ts:114	nl-split	return text.split('\n').some((line) => line.trim().startsWith(marker))
+tests/guides.test.ts:256	sep-split	for (const line of text.split('\n')) {
+tests/guides.test.ts:256	nl-split	for (const line of text.split('\n')) {
+tests/guides.test.ts:808	eol	'HTTP/1.1 101 Switching Protocols\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Protocol: ledger.v2\r\n\r\n',
+tests/guides.test.ts:899	posix-root	expect(resolveContained(root, '/etc/passwd')).toBeUndefined()
+tests/setup.test.ts:46	win-drive	expect(normalizePath('C:\\Users\\dev\\project')).toBe('C:/Users/dev/project')
+tests/setup.test.ts:56	posix-root	expect(normalizePath('/home/dev/weird\\name')).toBe('/home/dev/weird\\name')
+tests/setup.test.ts:60	posix-root	expect(normalizePath('/home/dev/project')).toBe('/home/dev/project')
+tests/setupServer.test.ts:8	symlink	symlinkSync,
+tests/setupServer.test.ts:31	tmpdir-use	const directory = mkdtempSync(join(tmpdir(), 'orkestrel-test-setup-file-links-'))
+tests/setupServer.test.ts:38	symlink	symlinkSync(source, link, 'file')
+tests/setupServer.test.ts:52	tmpdir-use	const directory = mkdtempSync(join(tmpdir(), 'orkestrel-test-setup-directory-links-'))
+tests/setupServer.test.ts:60	symlink	symlinkSync(source, link, 'junction')
+tests/setupServer.test.ts:77	tmpdir-use	const directory = mkdtempSync(join(tmpdir(), 'orkestrel-test-setup-mode-'))
+tests/setupServer.test.ts:80	chmod-exec	mkdirSync(path, { mode: 0o700 })
+tests/setupServer.test.ts:81	chmod-exec	const stored = (statSync(path).mode & 0o777) === 0o700
+tests/setupServer.test.ts:91	tmpdir-use	const directory = mkdtempSync(join(tmpdir(), 'orkestrel-test-setup-case-'))
+tests/setupServer.test.ts:108	tmpdir-use	const directory = mkdtempSync(join(tmpdir(), 'orkestrel-test-setup-bytes-'))
+tests/src/browser/factories.test.ts:195	posix-tmp	`${server.config.root}/tmp/capture/portfolio/start-empty--dark-390.png`,
+tests/src/browser/factories.test.ts:222	posix-tmp	normalizePath(`${server.config.root}/tmp/capture/portfolio/answer-ideal--dark-390.png`),
+tests/src/browser/factories.test.ts:249	posix-tmp	normalizePath(`${server.config.root}/tmp/capture/portfolio/start-empty--light-1440.png`),
+tests/src/browser/factories.test.ts:291	posix-tmp	`${server.config.root}/tmp/capture/states/start-empty--dark-390.png`,
+tests/src/browser/helpers.test.ts:858	sep-split	].join('\n'),
+tests/src/browser/helpers.test.ts:868	sep-split	['region "Ledger"', '  button "Add row" [disabled, collapsed]'].join('\n'),
+tests/src/browser/helpers.test.ts:878	sep-split	['main "Board"', '  heading "Standing"'].join('\n'),
+tests/src/browser/helpers.test.ts:1686	posix-tmp	normalizePath(`${server.config.root}/tmp/capture/frame/page.png`),
+tests/src/browser/helpers.test.ts:1692	posix-tmp	const planted = `${server.config.root}/tmp/capture/frame/planted.png`
+tests/src/core/helpers.test.ts:451	eol	expect(decodeJSONLines('1\r\n2\r\n')).toStrictEqual([1, 2])
+tests/src/server/factories.test.ts:13	symlink	symlinkSync,
+tests/src/server/factories.test.ts:35	chmod-exec	expect(statSync(scratch.path).mode & 0o777).toBe(0o700)
+tests/src/server/factories.test.ts:47	tmpdir-use	const location = relative(tmpdir(), scratch.path)
+tests/src/server/factories.test.ts:120	tmpdir-use	const parent = mkdtempSync(join(tmpdir(), 'orkestrel-test-scratch-control-'))
+tests/src/server/factories.test.ts:147	tmpdir-use	const outside = mkdtempSync(join(tmpdir(), 'orkestrel-test-scratch-outside-'))
+tests/src/server/factories.test.ts:150	symlink	symlinkSync(outside, join(scratch.path, 'linked'), 'junction')
+tests/src/server/factories.test.ts:180	symlink	symlinkSync(moved, scratch.path, 'junction')
+tests/src/server/factories.test.ts:261	tmpdir-use	const before = readdirSync(tmpdir())
+tests/src/server/factories.test.ts:267	tmpdir-use	const after = readdirSync(tmpdir())
+tests/src/server/factories.test.ts:987	tmpdir-use	expect(dirname(scratch.path)).toBe(resolve(tmpdir()))
+tests/src/server/helpers.test.ts:14	symlink	symlinkSync,
+tests/src/server/helpers.test.ts:21	file-url	import { pathToFileURL } from 'node:url'
+tests/src/server/helpers.test.ts:59	tmpdir-use	const parent = mkdtempSync(join(tmpdir(), 'orkestrel-test-hold-probe-'))
+tests/src/server/helpers.test.ts:62	chmod-exec	chmodSync(parent, 0o500)
+tests/src/server/helpers.test.ts:69	chmod-exec	chmodSync(parent, 0o700)
+tests/src/server/helpers.test.ts:106	tmpdir-use	* Every environment variable a host's `os.tmpdir()` reads. Each platform reads its own name first —
+tests/src/server/helpers.test.ts:107	platform-gate	* win32 takes `TEMP`, then `TMP`; POSIX takes `TMPDIR`, then `TMP`, then `TEMP` — so an override
+tests/src/server/helpers.test.ts:115	tmpdir-use	* @param path - The directory `os.tmpdir()` reports while the override holds.
+tests/src/server/helpers.test.ts:136	tmpdir-use	const root = mkdtempSync(join(tmpdir(), 'orkestrel-test-contained-'))
+tests/src/server/helpers.test.ts:180	platform-gate	it.runIf(process.platform === 'win32')(
+tests/src/server/helpers.test.ts:183	tmpdir-use	const root = mkdtempSync(join(tmpdir(), 'orkestrel-test-remove-tree-'))
+tests/src/server/helpers.test.ts:212	platform-gate	it.runIf(process.platform !== 'win32')(
+tests/src/server/helpers.test.ts:215	tmpdir-use	const root = mkdtempSync(join(tmpdir(), 'orkestrel-test-remove-tree-'))
+tests/src/server/helpers.test.ts:251	tmpdir-use	const root = mkdtempSync(join(tmpdir(), 'orkestrel-test-link-absolute-'))
+tests/src/server/helpers.test.ts:270	tmpdir-use	const root = mkdtempSync(join(tmpdir(), 'orkestrel-test-link-relative-'))
+tests/src/server/helpers.test.ts:290	tmpdir-use	const root = mkdtempSync(join(tmpdir(), 'orkestrel-test-link-dangling-'))
+tests/src/server/helpers.test.ts:304	tmpdir-use	const root = mkdtempSync(join(tmpdir(), 'orkestrel-test-link-occupied-'))
+tests/src/server/helpers.test.ts:326	tmpdir-use	const root = mkdtempSync(join(tmpdir(), 'orkestrel-test-link-file-source-'))
+tests/src/server/helpers.test.ts:341	symlink	expect(refusal).toHaveProperty('syscall', 'symlink')
+tests/src/server/helpers.test.ts:357	tmpdir-use	const parent = mkdtempSync(join(tmpdir(), 'orkestrel-test-inventory-linked-escape-'))
+tests/src/server/helpers.test.ts:364	symlink	symlinkSync(outside, join(root, 'link'), 'junction')
+tests/src/server/helpers.test.ts:378	tmpdir-use	const root = mkdtempSync(join(tmpdir(), 'orkestrel-test-inventory-linked-contained-'))
+tests/src/server/helpers.test.ts:382	symlink	symlinkSync(join(root, 'real'), join(root, 'link'), 'junction')
+tests/src/server/helpers.test.ts:394	tmpdir-use	const parent = mkdtempSync(join(tmpdir(), 'orkestrel-test-inventory-targets-'))
+tests/src/server/helpers.test.ts:412	tmpdir-use	const parent = mkdtempSync(join(tmpdir(), 'orkestrel-test-inventory-empty-'))
+tests/src/server/helpers.test.ts:417	symlink	symlinkSync(root, linked, 'junction')
+tests/src/server/helpers.test.ts:427	tmpdir-use	const root = mkdtempSync(join(tmpdir(), 'orkestrel-test-inventory-prototype-'))
+tests/src/server/helpers.test.ts:442	symlink	it.runIf(DIRECTORY_LINKS)('refuses a symlinked root while accepting the real directory', () => {
+tests/src/server/helpers.test.ts:443	tmpdir-use	const parent = mkdtempSync(join(tmpdir(), 'orkestrel-test-inventory-root-'))
+tests/src/server/helpers.test.ts:449	symlink	symlinkSync(root, linked, 'junction')
+tests/src/server/helpers.test.ts:451	file-url	expect(readInventory(pathToFileURL(root), ['.'])).toStrictEqual({ 'file.txt': 'real' })
+tests/src/server/helpers.test.ts:459	symlink	'refuses a symlinked root supplied as a URL with a trailing slash',
+tests/src/server/helpers.test.ts:461	tmpdir-use	const parent = mkdtempSync(join(tmpdir(), 'orkestrel-test-inventory-url-root-'))
+tests/src/server/helpers.test.ts:467	symlink	symlinkSync(root, linked, 'junction')
+tests/src/server/helpers.test.ts:469	file-url	const linkedUrl = pathToFileURL(`${linked}/`)
+tests/src/server/helpers.test.ts:473	file-url	const rootUrl = pathToFileURL(`${root}/`)
+tests/src/server/helpers.test.ts:482	symlink	'skips a symlinked file and includes the same path when it is a regular file',
+tests/src/server/helpers.test.ts:484	tmpdir-use	const parent = mkdtempSync(join(tmpdir(), 'orkestrel-test-inventory-file-'))
+tests/src/server/helpers.test.ts:492	symlink	symlinkSync(target, linked, 'file')
+tests/src/server/helpers.test.ts:505	tmpdir-use	const root = mkdtempSync(join(tmpdir(), 'orkestrel-test-inventory-options-'))
+tests/src/server/helpers.test.ts:532	tmpdir-use	const root = mkdtempSync(join(tmpdir(), 'orkestrel-test-inventory-excluded-directory-'))
+tests/src/server/helpers.test.ts:564	tmpdir-use	const root = mkdtempSync(join(tmpdir(), 'orkestrel-test-inventory-exclusion-spelling-'))
+tests/src/server/helpers.test.ts:604	tmpdir-use	const parent = mkdtempSync(join(tmpdir(), 'orkestrel-test-inventory-escape-'))
+tests/src/server/helpers.test.ts:617	tmpdir-use	const parent = mkdtempSync(join(tmpdir(), 'orkestrel-test-inventory-directory-'))
+tests/src/server/helpers.test.ts:623	symlink	symlinkSync(join(root, 'real'), join(root, 'linked'), 'junction')
+tests/src/server/helpers.test.ts:634	tmpdir-use	const parent = mkdtempSync(join(tmpdir(), 'orkestrel-test-inventory-file-target-link-'))
+tests/src/server/helpers.test.ts:639	symlink	symlinkSync(join(root, 'file.txt'), join(root, 'linked.txt'), 'file')
+tests/src/server/helpers.test.ts:651	tmpdir-use	const root = mkdtempSync(join(tmpdir(), 'orkestrel-test-inventory-file-target-'))
+tests/src/server/helpers.test.ts:670	tmpdir-use	const root = mkdtempSync(join(tmpdir(), 'orkestrel-test-inventory-directory-target-'))
+tests/src/server/helpers.test.ts:688	tmpdir-use	const parent = mkdtempSync(join(tmpdir(), 'orkestrel-test-inventory-root-file-'))
+tests/src/server/helpers.test.ts:699	tmpdir-use	const root = mkdtempSync(join(tmpdir(), 'orkestrel-test-inventory-case-'))
+tests/src/server/helpers.test.ts:919	tmpdir-use	const parent = mkdtempSync(join(tmpdir(), 'orkestrel-test-destroy-held-'))
+tests/src/server/helpers.test.ts:922	chmod-exec	chmodSync(parent, 0o500)
+tests/src/server/helpers.test.ts:939	chmod-exec	const release = setTimeout(() => chmodSync(parent, 0o700), 60)
+tests/src/server/helpers.test.ts:948	chmod-exec	chmodSync(parent, 0o700)
+tests/src/server/helpers.test.ts:954	platform-gate	it.runIf(process.platform === 'win32')(
+tests/src/server/helpers.test.ts:1059	eol	'HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Protocol: chat\r\n\r\n',
+tests/src/server/helpers.test.ts:1084	eol	'HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n\r\n',
+tests/src/server/helpers.test.ts:1228	eol	'HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n\r\n',
+tests/src/server/helpers.test.ts:1296	tmpdir-use	// `os.tmpdir()` resolves against whichever temporary-directory variable its platform reads
+tests/src/server/helpers.test.ts:1299	tmpdir-use	// belonged to this call. A scratch path carries no trailing separator and `os.tmpdir()`
+tests/src/server/helpers.test.ts:1303	tmpdir-use	expect(tmpdir()).toBe(owned.path)
+tests/src/server/helpers.test.ts:1319	platform-gate	// throws `ENOENT` on win32 and POSIX alike. A probe that ignored `os.tmpdir()` would
+tests/src/server/helpers.test.ts:1319	tmpdir-use	// throws `ENOENT` on win32 and POSIX alike. A probe that ignored `os.tmpdir()` would
+tests/src/server/helpers.test.ts:1361	tmpdir-use	const parent = mkdtempSync(join(tmpdir(), 'orkestrel-test-mode-control-'))
+tests/src/server/helpers.test.ts:1364	chmod-exec	chmodSync(parent, 0o500)
+tests/src/server/helpers.test.ts:1365	chmod-exec	const stored = (statSync(parent).mode & 0o777) === 0o500
+tests/src/server/helpers.test.ts:1378	chmod-exec	chmodSync(parent, 0o700)
+vite.config.ts:8	file-url	import { fileURLToPath, URL } from 'node:url'
+vite.config.ts:10	platform-gate	const browserOptions = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)
+vite.config.ts:13	file-url	return fileURLToPath(new URL(relativePath, import.meta.url))

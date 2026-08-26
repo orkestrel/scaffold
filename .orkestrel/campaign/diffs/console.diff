@@ -1,0 +1,107 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index 55b5ff2..ae2a131 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -6,14 +6,18 @@ on:
+ 
+ jobs:
+   ci:
+-    runs-on: ubuntu-latest
++    runs-on: ${{ matrix.os }}
+     timeout-minutes: 60
+     permissions:
+       contents: read
+     strategy:
+       fail-fast: false
+       matrix:
++        os: [ubuntu-latest, windows-latest]
+         node: ['22.12.0', '26']
++        exclude:
++          - os: windows-latest
++            node: '22.12.0'
+ 
+     steps:
+       - name: Checkout code
+@@ -30,9 +34,14 @@ jobs:
+       - name: Install dependencies
+         run: npm ci --ignore-scripts
+ 
+-      - name: Install Playwright browsers
++      - name: Install Playwright browsers (Linux)
++        if: runner.os == 'Linux'
+         run: npx --no-install playwright install --with-deps chromium
+ 
++      - name: Install Playwright browsers (Windows)
++        if: runner.os == 'Windows'
++        run: npx --no-install playwright install chromium
++
+       - name: Check formatting
+         run: npm run format:check
+ 
+diff --git a/guides/console.md b/guides/console.md
+index b866d3e..41e1e73 100644
+--- a/guides/console.md
++++ b/guides/console.md
+@@ -400,7 +400,7 @@ These invariants hold across `src/core` ↔ `src/browser` ↔ `src/server` ↔ `
+ 10. **Color detection is the server sink's alone.** `createServerSink` decides each target's styling ONCE, at construction: `options.styled` when supplied; otherwise `inferStyled(target, options.environment ?? process.env)` checks a PRESENT `FORCE_COLOR` first (only the exact value `'0'` disables), then a present, non-empty `NO_COLOR`, then the target's own `isTTY === true`. The sink stores that fact per target (`out` and `err` can differ), keys its ANSI stripping off it, and exposes the `out` fact as `styled`. Nothing else reads the environment: core's `createStyler` takes `enabled` from its caller and defaults to `true`, and the browser sink always styles. The server pairing is `createStyler({ enabled: sink.styled })` — one styling fact drives both ANSI generation and sink stripping.
+ 11. **Animations: every sink gets the frame, the sink decides the redraw + timer leak-freedom.** A `Spinner` / `Progress` builds a frame line and writes a leading `\r` + that line to its sink, then emits it — every sink receives the SAME frame and the line-OVERWRITE is the SINK's decision. A `ServerSink` writes the frame straight to the stream and appends no newline (a plain target loses the frame's ANSI, never its `\r`), so a terminal returns to column 0 and redraws in place. Core's `createConsoleSink` also writes it verbatim, and because `console.log` terminates each call the frame lands as a fresh line rather than an overwrite — the plain-environment degrade, with no `\r`-specific branch in core. `createBrowserSink` strips the leading `\r` (a DevTools console cannot overwrite a line, and the stray control character would be rendered) and writes a fresh line — the locked browser degrade. A `Spinner`'s internal timer is ALWAYS cleared on `success` / `failure` / `stop` / `destroy`, so it never leaks; a `Progress` has no self-timer (the caller drives `update`). Both are universal — `setInterval` + the one styler + the one sink, no `node:*`, no `process.stdout`.
+ 12. **Capture never-throws, non-reentrant, pristine restore.** A `Capture` / `ProcessCapture` builds its record through a TOTAL stringify / decode (`formatArgs` / `decodeChunk`), so intercepting `console.*` / `process.*.write` can never throw and crash the host. Each is PROCESS-GLOBAL + NON-REENTRANT — it patches the one global, so at most one may be active at a time; `start()` is idempotent (never double-patches) and `stop()` restores the EXACT snapshot reference, leaving the global pristine. A `ProcessCapture` additionally returns the snapshot-original's backpressure boolean so a caller's `write` handling keeps working.
+-13. **`width()`-aware rendering.** Every layout (`renderSeparator` / `renderBox` / `renderTable` / `renderTree` / `renderBar`, via `align` / `repeatTo`) measures on the VISIBLE `width` (ANSI stripped, counted in code points), so an already-styled cell or title keeps its columns — its escape codes never break the layout.
++13. **`width()`-aware rendering.** Every layout (`renderSeparator` / `renderBox` / `renderTable` / `renderTree` / `renderBar`, via `align` / `repeatTo`) measures on the VISIBLE `width` (ANSI stripped, counted in code points), so an already-styled cell or title keeps its columns — its escape codes never break the layout. Caller text arrives line-broken either way: the `renderBox` function splits its `content` on a line feed OR a CRLF pair, so a body written on Windows frames byte-identically to the same body written on POSIX, and no raw carriage return reaches a framed row. A LONE carriage return is not a separator — it stays inside its line, because a bare `\r` is the animation frame's cursor control (Contract 11), and cutting a frame on it would break the redraw the sink decides.
+ 
+ What ships is the **cross-environment core** (the style engine, structured logging, narrative reporting, the `console` `Capture`, and the live animations) plus the two environment backends (the browser `%c` sink, the server TTY sink + raw-stream `ProcessCapture`). Deliberately **not** part of this surface, by the same "build only what earns its keep" discipline:
+ 
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index e84f2a7..6c7ec3a 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -360,7 +360,10 @@ export function renderSeparator(options: SeparatorOptions): string {
+  * styled content stays aligned inside the frame. Pure: same {@link BoxOptions} → same string.
+  *
+  * @remarks
+- * - **Lines.** `content` is split on `\n`; each line is padded (left-aligned) to the inner
++ * - **Lines.** `content` is split on `\n` OR `\r\n`, so caller text written on Windows frames
++ *   exactly as the same text written on POSIX; a LONE `\r` is kept inside its line (it is a
++ *   cursor control — the animation frame prefix — not a line separator). Each line is padded
++ *   (left-aligned) to the inner
+  *   width by {@link align} — measured on VISIBLE width, so a styled line never breaks the
+  *   right edge. The inner width is the widest line's visible width (or `width − borders −
+  *   2·padding` when an explicit `width` is given and is wider), plus `padding` blank cells
+@@ -380,7 +383,11 @@ export function renderBox(options: BoxOptions): string {
+ 	const chars = BORDER_CHARS[options.border ?? DEFAULT_BORDER]
+ 	const padding = Math.max(0, Math.trunc(options.padding ?? DEFAULT_PADDING))
+ 	const styler = options.styler
+-	const lines = options.content.split('\n')
++	// Split on a line feed OR a CRLF pair, so caller text written on Windows frames exactly as the
++	// same text written on POSIX. A LONE carriage return is deliberately NOT a separator: the
++	// animation frame prefix is a bare `\r` cursor control, so splitting on it would cut a frame in
++	// half. The literal is local because this is the one caller-text split in the module.
++	const lines = options.content.split(/\r\n|\n/)
+ 	// The inner content width: the widest line, the title (when present), and any explicit
+ 	// `width` budget (minus the two edges and the two padding gutters) all compete — the
+ 	// widest wins, so nothing is ever clipped and an explicit width only ever pads outward.
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 383ab60..58b28dd 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -382,6 +382,20 @@ describe('renderBox', () => {
+ 		)
+ 	})
+ 
++	it('renders CRLF content exactly as it renders the same LF content', () => {
++		// A CRLF line break is a line break: the CR belongs to the separator, never to the row.
++		expect(renderBox({ content: 'a\r\nbbb' })).toBe(
++			['┌─────┐', '│ a   │', '│ bbb │', '└─────┘'].join('\n'),
++		)
++		expect(renderBox({ content: 'a\r\nbbb' })).not.toContain('\r')
++	})
++
++	it('leaves a lone carriage return inside its line instead of splitting on it', () => {
++		// A bare CR is a cursor control (the animation frame prefix), not a line separator, so it
++		// stays in the row and counts as one visible cell.
++		expect(renderBox({ content: 'a\rb' })).toBe(['┌─────┐', '│ a\rb │', '└─────┘'].join('\n'))
++	})
++
+ 	it('embeds a title in the top border, keeping the box rectangular', () => {
+ 		// The title widens the box so ` T ` fits after one lead fill — every row equal width.
+ 		const box = renderBox({ content: 'x', title: 'T' })

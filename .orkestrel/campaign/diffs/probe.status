@@ -1,0 +1,6 @@
+ M guides/probe.md
+ M src/server/Overlay.ts
+ M src/server/stages/TypeStage.ts
+ M tests/src/server/Overlay.test.ts
+ M tests/src/server/stages/TypeStage.test.ts
+?? .github/

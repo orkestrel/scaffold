@@ -4,7 +4,7 @@
 			"storage": "AGENTS.md",
 			"destination": "AGENTS.md",
 			"executable": false,
-			"digest": "5dbb143394991882d36f90a8aabd7e6b0874863b45dde4040760fc834e9d942e"
+			"digest": "43ce847aa96a525919dbe948a2311214c312d58069054800577e5aff89024f08"
 		},
 		{
 			"storage": "CLAUDE.md",
@@ -358,7 +358,7 @@
 			"storage": "claude/rules/architecture.md",
 			"destination": ".claude/rules/architecture.md",
 			"executable": false,
-			"digest": "94f70c20f927129cf9cb3965b3180a14e941e4f6eddf6512c4adc014e0bcbdf2"
+			"digest": "674bcc17f8127948e11391cbbedfd7396911d88c0e99cfefe718f718ed06a333"
 		},
 		{
 			"storage": "claude/rules/browser.md",
@@ -383,6 +383,12 @@
 			"destination": ".claude/rules/patterns.md",
 			"executable": false,
 			"digest": "c128dace792fcc042446f3d35dce90ef3918d44449a424dbd6dcea4dfcab24f5"
+		},
+		{
+			"storage": "claude/rules/portability.md",
+			"destination": ".claude/rules/portability.md",
+			"executable": false,
+			"digest": "b948c92e3409efd01b45ed9e8d917f4713cda0ecd5ea343932613b2977a614ff"
 		},
 		{
 			"storage": "claude/rules/quality.md",
@@ -682,13 +688,13 @@
 			"storage": "tests/policy.test.ts",
 			"destination": "tests/policy.test.ts",
 			"executable": false,
-			"digest": "4642dfcfe2c2d928373ba42026323c4eba976908dd4382ee2ff1d1faf5d766a2"
+			"digest": "6a2be29c887e90b976273f8ef9da9ac1c17ed8c1880c133eb8a67514ddf5b5c3"
 		},
 		{
 			"storage": "tests/setupPolicy.ts",
 			"destination": "tests/setupPolicy.ts",
 			"executable": false,
-			"digest": "3714a96bda5aeb5bbdcc8223d33a7ef77562214303d6c58acfec33af182bdc45"
+			"digest": "e33cc2f49a5bc201e339f50c59d280d36d06a5b687bc080a00b41f09577fa7c7"
 		}
 	],
 	"roots": [
@@ -736,5 +742,5 @@
 		".codex/agents",
 		".cursor/rules"
 	],
-	"digest": "bb4f3428a2d0d631ca77df5dc1921a7a171cef0b5e8a840038f0b7ab32f751d7"
+	"digest": "f595c6d2088904f0f3b2d3c99f253d5316f9e91e06acee11033ee89f6bf5ac1f"
 }

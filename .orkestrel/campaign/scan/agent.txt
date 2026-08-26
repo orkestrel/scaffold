@@ -1,0 +1,76 @@
+configs/helpers.ts:3	file-url	import { fileURLToPath } from 'node:url'
+configs/helpers.ts:49	file-url	resolvePath(dirname(fileURLToPath(import.meta.url)), '..'),
+configs/helpers.ts:53	abs-check	if (!pathname.startsWith('/@fs/')) return pathname
+configs/helpers.ts:56	abs-check	return candidate.startsWith('/') || /^[A-Za-z]:[\\/]/.test(candidate)
+configs/helpers.ts:64	file-url	const physicalCandidate = /^file:/i.test(candidate) ? fileURLToPath(candidate) : candidate
+configs/helpers.ts:75	file-url	return /^file:/i.test(source) ? fileURLToPath(source) : resolvePath(dirname(importer), source)
+configs/helpers.ts:95	abs-check	normalizedId.startsWith('/@id/') ||
+configs/helpers.ts:96	abs-check	normalizedId.startsWith('/@vite/') ||
+configs/helpers.ts:97	abs-check	normalizedId.startsWith('/__vite') ||
+configs/helpers.ts:98	abs-check	normalizedId.startsWith('/__vitest') ||
+configs/helpers.ts:111	sep-split	if (candidate.split('/').some((segment) => segment.toLowerCase() === 'node_modules')) {
+configs/helpers.ts:125	file-url	if (/^file:/i.test(candidate)) candidate = fileURLToPath(candidate)
+configs/helpers.ts:164	abs-check	sourcePath.startsWith('/') ||
+configs/helpers.ts:172	sep-split	const segments = sourcePath.split('/')
+configs/helpers.ts:247	sep-split	const segments = directory.replaceAll('\\', '/').split('/')
+configs/helpers.ts:524	abs-check	value.startsWith('/') ||
+configs/helpers.ts:557	sep-split	const [layer, environment] = importerPath?.split('/') ?? []
+configs/helpers.ts:567	abs-check	normalizedSource.startsWith('/') ||
+configs/helpers.ts:572	abs-check	normalizedSource.startsWith('/') ||
+configs/helpers.ts:651	abs-check	normalizedSource.startsWith('/') ||
+configs/helpers.ts:745	abs-check	normalizedSource.startsWith('/') ||
+scripts/codex.sh:9	dev-null	if ! command -v codex >/dev/null 2>&1; then
+scripts/codex.sh:33	dev-null	if codex login status >/dev/null 2>&1; then
+scripts/cursor.sh:9	dev-null	if ! command -v agent >/dev/null 2>&1; then
+scripts/cursor.sh:14	posix-tmp	MODELS_LOG="$(mktemp /tmp/orkestrel-cursor-models.XXXXXX)" || exit 0
+scripts/deps.sh:21	posix-tmp	DEPS_LOG="$(mktemp /tmp/orkestrel-deps.XXXXXX)" || {
+scripts/deps.sh:39	eol	[ "$(tr -d '\r\n' <"$LOCK_MARKER")" = "$LOCK_HASH" ]; then
+scripts/ollama.sh:9	dev-null	if ! command -v ollama >/dev/null 2>&1; then
+scripts/ollama.sh:14	dev-null	if curl -sf --max-time 2 "http://127.0.0.1:11434/api/tags" >/dev/null 2>&1; then
+src/core/AgentContext.ts:233	sep-split	content: parts.join('\n\n'),
+src/core/AgentContext.ts:255	sep-split	parts.push(lines.join('\n\n'))
+src/core/conversations/Conversation.ts:284	sep-split	return lines.join('\n')
+tests/config.test.ts:17	file-url	import { fileURLToPath, pathToFileURL } from 'node:url'
+tests/config.test.ts:27	file-url	const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+tests/config.test.ts:825	sep-split	].join('\n'),
+tests/config.test.ts:850	sep-split	].join('\n'),
+tests/config.test.ts:906	sep-split	].join('\n'),
+tests/config.test.ts:916	sep-split	].join('\n'),
+tests/config.test.ts:920	symlink	// `node_modules/.bin/oxlint` shim. That shim is a POSIX `sh` script — a symlink to one on
+tests/config.test.ts:922	shell-true	// extensionless form; spawning the `.cmd` would need `shell: true`, which breaks on paths
+tests/config.test.ts:1073	file-url	expect(configHelpers.sourceFallback(importer, pathToFileURL(importer).href)).toBe(importer)
+tests/distribution.test.ts:22	file-url	import { fileURLToPath } from 'node:url'
+tests/distribution.test.ts:26	file-url	const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+tests/distribution.test.ts:27	platform-gate	const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+tests/distribution.test.ts:27	ext-cmd	const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+tests/distribution.test.ts:32	platform-gate	const SHELL = process.platform === 'win32'
+tests/distribution.test.ts:482	sep-split	writeFile(target, `${bindings.join('\n')}\nexport const surface = [${names.join(', ')}]\n`)
+tests/distribution.test.ts:524	sep-split	const installed = join(consumer, 'node_modules', ...name.split('/'))
+tests/distribution.test.ts:579	tmpdir-use	const SCRATCH = mkdtempSync(join(tmpdir(), 'distribution-'))
+tests/setupPolicy.ts:69	tmpdir-use	const root = mkdtempSync(join(tmpdir(), options.prefix))
+tests/setupPolicy.ts:74	sep-split	const segments = normalized.split('/')
+tests/setupPolicy.ts:77	abs-check	normalized.startsWith('/') ||
+tests/setupPolicy.ts:838	sep-split	const lines = readFileSync(join(root, path), 'utf8').split('\n')
+tests/setupPolicy.ts:838	nl-split	const lines = readFileSync(join(root, path), 'utf8').split('\n')
+tests/setupPolicy.ts:886	sep-split	const [first = ''] = normalized.split('/')
+tests/setupPolicy.ts:937	sep-split	for (const segment of normalized.split('/')) {
+tests/setupPolicy.ts:997	sep-split	const lines = content.replaceAll('\r\n', '\n').split('\n')
+tests/setupPolicy.ts:997	eol	const lines = content.replaceAll('\r\n', '\n').split('\n')
+tests/setupPolicy.ts:997	nl-split	const lines = content.replaceAll('\r\n', '\n').split('\n')
+tests/setupPolicy.ts:998	sep-split	const rawLines = content.split('\n')
+tests/setupPolicy.ts:998	nl-split	const rawLines = content.split('\n')
+tests/setupPolicy.ts:1054	sep-split	source = sourceLines.join('\n')
+tests/setupPolicy.ts:1114	sep-split	].join('\n') + '\n'
+tests/setupPolicy.ts:1127	eol	const normalized = content.replaceAll('\r\n', '\n')
+tests/setupPolicy.ts:1128	sep-split	const lines = (normalized.endsWith('\n') ? normalized.slice(0, -1) : normalized).split('\n')
+tests/setupPolicy.ts:1128	nl-split	const lines = (normalized.endsWith('\n') ? normalized.slice(0, -1) : normalized).split('\n')
+tests/setupPolicy.ts:1196	eol	const lines = content.split(/\r\n|\r|\n/u)
+tests/setupPolicy.ts:1500	eol	const normalized = content.replaceAll('\r\n', '\n')
+tests/src/core/AgentContext.test.ts:366	sep-split	].join('\n\n'),
+tests/src/core/AgentContext.test.ts:849	sep-split	return requireValue(block.split('\n\n')[0])
+tests/src/core/AgentContext.test.ts:884	sep-split	return requireValue(block.split('\n\n')[1])
+tests/src/core/AgentContext.test.ts:1012	sep-split	].join('\n\n')
+tests/src/core/AgentContext.test.ts:1082	sep-split	].join('\n\n'),
+tests/src/core/AgentContext.test.ts:1283	sep-split	].join('\n\n'),
+vite.config.ts:6	file-url	import { fileURLToPath, URL } from 'node:url'
+vite.config.ts:9	file-url	return fileURLToPath(new URL(relativePath, import.meta.url))

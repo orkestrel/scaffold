@@ -1,0 +1,92 @@
+- `Question`: Where does operating-system coupling live in `@orkestrel/scaffold`, `@orkestrel/console`, `@orkestrel/terminal`, and `@orkestrel/test`?
+- `Evidence`:
+  **scaffold (`@orkestrel/scaffold`)**
+  - `scripts/codex.sh:1` — `#!/bin/bash` plus `/dev/null` probes — POSIX bash; not runnable on Windows outside Git Bash `[host]`
+  - `scripts/cursor.sh:14` — `mktemp /tmp/orkestrel-cursor-models.XXXXXX` then `chmod 600` — hardcoded POSIX temp and mode bits `[host]`
+  - `scripts/deps.sh:21` — `mktemp /tmp/…`, `chmod 600`, `tr -d '\r\n'` lock compare — POSIX temp/mode; CRLF-tolerant marker read `[host]`
+  - `scripts/ollama.sh:9` — `command -v` / `curl` with `/dev/null` — POSIX shell and Unix tools `[host]`
+  - `.gitattributes:2` — `* text=auto eol=lf` — forces LF on every host, including Windows checkouts `[host]`
+  - `.editorconfig:4` — `end_of_line = lf` — editor LF, not `os.EOL` `[host]`
+  - `configs/helpers.ts:56` — `startsWith('/')` or `/^[A-Za-z]:[\\/]/` after Vite `/@fs/` strip — POSIX absolute vs Windows drive `[host]`
+  - `configs/helpers.ts:79` — `replaceAll('\\', '/')` then `startsWith('../')` — host paths folded to `/` `[host]`
+  - `configs/src/vite.bin.config.ts:14` — `banner: '#!/usr/bin/env node'` — POSIX shebang on the published CLI `[configs]`
+  - `src/bin/main.ts:8` — `process.stdout` `EPIPE` swallowed — POSIX broken-pipe `[src]`
+  - `src/bin/CLI.ts:1531` — `executeSync({ file: 'git', … })` — bare `git`; Windows needs PATH/PATHEXT resolution (delegated to `@orkestrel/process`) `[src]`
+  - `src/core/templates.ts:650` — generated bin `#!/usr/bin/env node` — POSIX shebang in every fleet bin build `[src]`
+  - `src/core/templates.ts:712` — `BUNDLED_BROWSERS_ROOT = '/opt/pw-browsers'` — Linux container path `[src]`
+  - `src/core/templates.ts:733` — Chrome/Edge layouts: darwin `/Applications/…`, linux `/opt/…`, win32 `chrome.exe`/`msedge.exe` under `LOCALAPPDATA`/`PROGRAMFILES` `[src]` `[gated]`
+  - `src/core/templates.ts:761` — `accessSync(path, X_OK)` — POSIX execute bit; Windows `X_OK` does not mean executable `[src]`
+  - `src/core/templates.ts:874` — `resolveBundledBrowser` returns only when `platform === 'linux'` `[src]` `[gated]`
+  - `src/core/templates.ts:1075` — `NPM = win32 ? 'npm.cmd' : 'npm'` and `shell: true` on win32 — Windows `.cmd` spawn `[src]` `[gated]`
+  - `src/core/templates.ts:2042` — generated orchestration `#!/usr/bin/env sh` / `set -eu` — POSIX service script `[src]`
+  - `src/server/constants.ts:29` — `RESERVED_SEGMENT_PATTERN` (`con`/`nul`/…) — Windows device names refused on every host `[src]`
+  - `src/server/validators.ts:104` — `replaceAll('\\', '/')` then `startsWith('/')` / `//` UNC — separators and roots from both hosts `[src]`
+  - `src/server/helpers.ts:216` — `pathToStorage` `split('/')` — host storage keys are POSIX-shaped `[src]`
+  - `src/server/helpers.ts:359` — `isExactCaseFile` via `readdirSync` membership — case-folding volumes (typical Windows) vs case-sensitive POSIX `[src]`
+  - `src/server/helpers.ts:574` — containment `startsWith(physicalRoot + sep)` — case-sensitive prefix; Windows paths fold case `[src]`
+  - `src/server/helpers.ts:1310` — `chmodSync(full, 0o755)` when `entry.executable` — POSIX exec bit; NTFS ignores it `[src]`
+  - `src/server/WriteTransaction.ts:191` — `mkdirSync(..., { mode: 0o700 })` — POSIX private-dir mode; Windows reports `666` `[src]`
+  - `src/server/WriteTransaction.ts:295` — `chmodSync(staged, executable ? 0o755 : 0o644)` — same POSIX mode write `[src]`
+  - `guides/scaffold.md:317` — documents Windows reserved device names as a path law on every host `[guides]`
+  - `.agents/orchestration.md:591` — Windows Git Bash approval classifier trips on `node -e` / `&&` / `${…}` `[host]`
+  - `.agents/skills/orkestrel-publish/references/window.md:26` — Windows Git Bash has no `script` binary `[host]`
+  - `.agents/skills/orkestrel-build-application/SKILL.md:93` — Windows `ChildProcess.kill('SIGTERM')` vs POSIX graceful SIGTERM `[host]`
+  - `tests/config.test.ts:920` — oxlint spawned via `process.execPath` because `.bin/oxlint` is a POSIX `sh` shim / Windows `.cmd` `[host]`
+  - `tests/distribution.test.ts:13` — `npm.cmd` + `shell: true` on win32 `[tests]` `[gated]`
+  - `tests/src/server/helpers.test.ts:529` — `it.skipIf(win32)` dangling `hop/../secret` link traversal — junction lexical `..` on Windows `[tests]` `[gated]`
+  - `tests/src/server/helpers.test.ts:1317` — `it.skipIf(win32)` executable-bit assert — `chmod 0o755` stays 666 on NTFS `[tests]` `[gated]`
+  - `tests/src/server/WriteTransaction.test.ts:206` — `it.skipIf(win32)` set/clear executable bit `[tests]` `[gated]`
+  - `tests/setupServer.ts:258` — `execFileSync('git', …)` with `windowsHide: true` — git on PATH; Windows console hide `[tests]`
+
+  **console (`@orkestrel/console`)**
+  - `src/core/ANSIRenderer.ts:34` — SGR `${CSI}…m` — ANSI/VT; no Windows `ENABLE_VIRTUAL_TERMINAL_PROCESSING` call `[src]`
+  - `src/core/helpers.ts:383` — `options.content.split('\n')` in `renderBox` — LF-only line split; CRLF becomes a stray empty row `[src]`
+  - `src/core/Spinner.ts:162` — `sink.write(\`\\r${line}\`)` — TTY carriage-return overwrite `[src]`
+  - `src/server/helpers.ts:79` — `inferStyled`: `FORCE_COLOR` then `NO_COLOR` then `isTTY === true` — color gated on TTY, not on Windows VT capability `[src]`
+  - `src/server/factories.ts:57` — default sink is `process.stdout` / `process.stderr` with that TTY fact `[src]`
+  - `src/server/constants.ts:35` — `DEFAULT_COLUMNS = 80` when not a TTY `[src]`
+  - `configs/browsers.ts:58` — same Chrome/Edge darwin/`/opt`/win32 `.exe` layouts as scaffold `[configs]` `[gated]`
+  - `configs/browsers.ts:86` — `accessSync(..., X_OK)` — POSIX execute probe `[configs]`
+  - `configs/browsers.ts:309` — fallback channel `win32 ? 'msedge' : 'chrome'` `[configs]` `[gated]`
+  - `guides/console.md:5` — ANSI default; TTY sink writes `\\r` verbatim for in-place redraw `[guides]`
+  - `tests/distribution.test.ts:33` — `npm.cmd` + `shell: true` on win32 `[tests]` `[gated]`
+  - `tests/src/browser/helpers.test.ts:210` — fixture mixes `\\n` and `\\r\\n` inside ANSI text `[tests]`
+
+  **terminal (`@orkestrel/terminal`)**
+  - `src/core/constants.ts:20` — `DELETE` (U+007F) “usual Backspace byte on a Unix TTY” — Unix backspace vs Windows BS (U+0008, also mapped) `[src]`
+  - `src/core/constants.ts:89` — `RETURN` and `NEWLINE` both named `'return'` — Enter as CR or LF, not a CRLF pair `[src]`
+  - `src/core/helpers.ts:72` — `parseKey` matches the whole chunk; a single `'data'` event of `\\r\\n` matches neither control table `[src]`
+  - `src/server/constants.ts:14` — CSI cursor hide/show/up/`J` erase — ANSI cursor control `[src]`
+  - `src/server/helpers.ts:101` — `rawCapable` requires `isTTY === true` and `setRawMode` `[src]`
+  - `src/server/Terminal.ts:380` — `setRawMode(true)` on stdin — Node TTY raw mode (Windows console vs POSIX termios) `[src]`
+  - `src/server/helpers.ts:153` — redraw via `CSI_UP` + `CARRIAGE_RETURN` + `CLEAR_DOWN` — VT in-place redraw `[src]`
+  - `guides/terminal.md:13` — documents raw-mode stdin and in-place ANSI re-render `[guides]`
+  - `tests/distribution.test.ts:27` — `npm.cmd` + `shell: true` on win32 `[tests]` `[gated]`
+
+  **test (`@orkestrel/test`)**
+  - `src/server/helpers.ts:46` — `relative` + `startsWith('..'+sep)` / `isAbsolute`; comment: cross-drive containment unproven on POSIX `[src]`
+  - `src/server/helpers.ts:94` — `symlinkSync` then on `EPERM` `symlinkSync(..., 'junction')` — Windows unprivileged directory links `[src]`
+  - `src/server/helpers.ts:128` — `removeTree` retries `EBUSY`/`ENOTEMPTY`/`EPERM` 10×100ms — Windows handle-release after cwd hold `[src]`
+  - `src/server/helpers.ts:278` — `process.kill(pid, 0)` liveness; pid `0` is POSIX process group vs Windows idle process `[src]`
+  - `src/server/helpers.ts:282` — non-linux returns true; linux reads `/proc/${pid}/stat` for zombie `Z` `[src]` `[gated]`
+  - `src/server/helpers.ts:532` — `supportsDirectoryLinks` uses `'junction'` — Windows reparse vs POSIX symlink `[src]`
+  - `src/server/helpers.ts:565` — `supportsFileLinks` uses `'file'` — Windows symlink privilege `[src]`
+  - `src/server/helpers.ts:591` — `supportsMode`: `mkdir 0o700` then `mode & 0o777 === 0o700` — POSIX bits; Windows reports `666` `[src]`
+  - `src/server/helpers.ts:613` — `supportsCase` writes `A` and `a` — case-sensitive POSIX vs NTFS/APFS folding `[src]`
+  - `src/server/helpers.ts:639` — `supportsBytes` name ending `0x80` — POSIX stores; Windows `ENOENT` `[src]`
+  - `src/server/factories.ts:34` — scratch parent `os.tmpdir()`; `mkdtempSync` POSIX mode `0700` `[src]`
+  - `src/browser/helpers.ts:1799` — capture path `replaceAll('\\','/')` then `split('/')` — Windows screenshot paths `[src]`
+  - `src/core/helpers.ts:299` — `decodeJSONLines` `split('\\n')` then strip trailing `\\r` — CRLF JSON Lines `[src]`
+  - `configs/browsers.ts:58` — same Playwright Chrome/Edge platform layouts `[configs]` `[gated]`
+  - `guides/test.md:577` — unprivileged Windows: directory junctions yes, file symlinks no; POSIX mode 0700 proven on POSIX CI only `[guides]`
+  - `tests/setupServer.ts:15` — `FILE_LINKS` / `DIRECTORY_LINKS` / `POSIX_MODE` / `CASE_SENSITIVE_FS` / `RAW_BYTE_NAMES` from live probes `[tests]`
+  - `tests/src/server/factories.test.ts:32` — `it.runIf(POSIX_MODE)` asserts scratch mode `0700` `[tests]`
+  - `tests/src/server/helpers.test.ts:180` — `it.runIf(win32)` cwd-hold `removeTree` retry `[tests]` `[gated]`
+  - `tests/src/server/helpers.test.ts:212` — `it.runIf(!== win32)` POSIX cwd-hold (removal allowed while cwd) `[tests]` `[gated]`
+  - `tests/distribution.test.ts:33` — `npm.cmd` + `shell: true` on win32 `[tests]` `[gated]`
+- `Distillate`:
+  - **scaffold**: Coupling is the vendored host (bash `/tmp` hooks, LF-only attributes) plus writer `chmod 0o755`/`0o700`, Windows reserved names, and generated Playwright/npm.cmd layout; chmod/symlink-traversal tests `skipIf(win32)`.
+  - **console**: Published src never branches on `process.platform`; coupling is ANSI/SGR + `isTTY`/`FORCE_COLOR`/`\\r` overwrite (Windows VT assumed already on). Platform gates sit in `configs/browsers.ts` and distribution `npm.cmd`.
+  - **terminal**: Published src never branches on `process.platform`; coupling is POSIX-TTY raw mode, Unix DEL-backspace, and CSI cursor redraw. Distribution tests still spawn `npm.cmd` on win32.
+  - **test**: The library *is* the OS seam: symlink/junction, chmod round-trip, case/bytes, Windows `removeTree` retry, Linux `/proc` zombies; suites gate on capability probes or `process.platform`.
+- `Unknowns`: Whether Windows raw-mode stdin ever delivers Enter as a single `\\r\\n` chunk (would miss `parseKey`). Whether modern Windows Terminal/Node already enables VT so console/terminal ANSI works without an explicit console-mode call (not set in these trees). Whether `isExactCaseFile` / `startsWith(root+sep)` mis-compares on a case-folding volume with mixed drive-letter case. Whether `accessSync(X_OK)` on Windows accepts non-executables and lets `resolveSystemBrowser` report a false chrome/msedge. Host `.sh` hooks exit immediately unless `CLAUDE_CODE_REMOTE=true` (Linux cloud); behavior under Git Bash on Windows was not executed. `vite.config.ts` at repo roots sits outside the listed sweep dirs.

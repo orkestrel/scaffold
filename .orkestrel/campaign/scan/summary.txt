@@ -1,0 +1,15 @@
+scaffold: total=264 sep-split=89 file-url=33 posix-tmp=27 platform-gate=26 chmod-exec=22 abs-check=16 nl-split=11 eol=8 win-drive=6 dev-null=5 ext-cmd=5 tmpdir-use=4 symlink=4 posix-root=4 cli-spawn=3 shell-true=1
+lsp: total=218 file-url=135 eol=22 sep-split=21 abs-check=13 signals=7 dev-null=5 nl-split=4 platform-gate=3 posix-tmp=2 tmpdir-use=2 symlink=1 shell-true=1 ext-cmd=1 proc-kill=1
+mcp: total=151 sep-split=30 eol=24 file-url=19 platform-gate=16 abs-check=14 proc-kill=14 signals=10 nl-split=6 ext-cmd=5 dev-null=5 posix-tmp=3 tmpdir-use=2 chmod-exec=1 symlink=1 shell-true=1
+probe: total=261 signals=65 sep-split=62 file-url=50 nl-split=20 abs-check=14 win-drive=11 symlink=9 dev-null=7 eol=5 proc-kill=5 posix-root=5 posix-tmp=2 platform-gate=2 tmpdir-use=2 shell-true=1 ext-cmd=1
+process: total=334 signals=90 platform-gate=53 proc-kill=43 win-drive=33 ext-cmd=32 sep-split=24 file-url=14 abs-check=13 eol=12 nl-split=6 dev-null=5 posix-root=3 posix-tmp=2 tmpdir-use=2 symlink=1 shell-true=1
+server: total=99 eol=31 sep-split=21 file-url=15 abs-check=13 dev-null=5 nl-split=4 posix-tmp=3 platform-gate=2 tmpdir-use=2 symlink=1 shell-true=1 ext-cmd=1
+sea: total=145 platform-gate=29 ext-cmd=27 sep-split=20 file-url=15 abs-check=13 symlink=13 posix-tmp=6 dev-null=5 eol=5 chmod-exec=4 nl-split=4 tmpdir-use=2 shell-true=1 win-drive=1
+worker: total=69 sep-split=19 file-url=14 abs-check=13 dev-null=5 eol=5 nl-split=4 posix-tmp=2 platform-gate=2 tmpdir-use=2 symlink=1 shell-true=1 ext-cmd=1
+websocket: total=74 sep-split=20 abs-check=13 file-url=12 eol=11 dev-null=5 nl-split=4 posix-tmp=2 platform-gate=2 tmpdir-use=2 symlink=1 shell-true=1 ext-cmd=1
+console: total=155 sep-split=65 nl-split=24 platform-gate=15 file-url=14 abs-check=13 eol=7 ext-cmd=5 dev-null=5 posix-tmp=2 tmpdir-use=2 chmod-exec=1 symlink=1 shell-true=1
+test: total=222 tmpdir-use=54 sep-split=31 symlink=28 platform-gate=21 file-url=18 chmod-exec=16 abs-check=13 eol=10 posix-tmp=8 nl-split=7 ext-cmd=5 dev-null=5 posix-root=3 proc-kill=1 shell-true=1 win-drive=1
+browser: total=193 platform-gate=36 sep-split=27 proc-kill=24 abs-check=18 signals=16 posix-root=13 file-url=12 win-drive=10 posix-tmp=8 eol=6 tmpdir-use=6 nl-split=6 dev-null=5 ext-cmd=3 symlink=2 shell-true=1
+terminal: total=73 sep-split=25 abs-check=13 file-url=12 dev-null=5 eol=5 nl-split=4 posix-tmp=2 platform-gate=2 tmpdir-use=2 symlink=1 shell-true=1 ext-cmd=1
+agent: total=76 sep-split=28 abs-check=13 file-url=12 dev-null=5 eol=5 nl-split=4 posix-tmp=2 platform-gate=2 tmpdir-use=2 symlink=1 shell-true=1 ext-cmd=1
+guide: total=133 sep-split=76 file-url=14 abs-check=13 eol=11 dev-null=5 nl-split=5 posix-tmp=2 platform-gate=2 tmpdir-use=2 symlink=1 shell-true=1 ext-cmd=1

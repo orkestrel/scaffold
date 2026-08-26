@@ -1,0 +1,264 @@
+configs/helpers.ts:3	file-url	import { fileURLToPath } from 'node:url'
+configs/helpers.ts:49	file-url	resolvePath(dirname(fileURLToPath(import.meta.url)), '..'),
+configs/helpers.ts:53	abs-check	if (!pathname.startsWith('/@fs/')) return pathname
+configs/helpers.ts:56	abs-check	return candidate.startsWith('/') || /^[A-Za-z]:[\\/]/.test(candidate)
+configs/helpers.ts:64	file-url	const physicalCandidate = /^file:/i.test(candidate) ? fileURLToPath(candidate) : candidate
+configs/helpers.ts:75	file-url	return /^file:/i.test(source) ? fileURLToPath(source) : resolvePath(dirname(importer), source)
+configs/helpers.ts:95	abs-check	normalizedId.startsWith('/@id/') ||
+configs/helpers.ts:96	abs-check	normalizedId.startsWith('/@vite/') ||
+configs/helpers.ts:97	abs-check	normalizedId.startsWith('/__vite') ||
+configs/helpers.ts:98	abs-check	normalizedId.startsWith('/__vitest') ||
+configs/helpers.ts:111	sep-split	if (candidate.split('/').some((segment) => segment.toLowerCase() === 'node_modules')) {
+configs/helpers.ts:125	file-url	if (/^file:/i.test(candidate)) candidate = fileURLToPath(candidate)
+configs/helpers.ts:164	abs-check	sourcePath.startsWith('/') ||
+configs/helpers.ts:172	sep-split	const segments = sourcePath.split('/')
+configs/helpers.ts:247	sep-split	const segments = directory.replaceAll('\\', '/').split('/')
+configs/helpers.ts:524	abs-check	value.startsWith('/') ||
+configs/helpers.ts:557	sep-split	const [layer, environment] = importerPath?.split('/') ?? []
+configs/helpers.ts:567	abs-check	normalizedSource.startsWith('/') ||
+configs/helpers.ts:572	abs-check	normalizedSource.startsWith('/') ||
+configs/helpers.ts:651	abs-check	normalizedSource.startsWith('/') ||
+configs/helpers.ts:745	abs-check	normalizedSource.startsWith('/') ||
+scripts/codex.sh:9	dev-null	if ! command -v codex >/dev/null 2>&1; then
+scripts/codex.sh:33	dev-null	if codex login status >/dev/null 2>&1; then
+scripts/cursor.sh:9	dev-null	if ! command -v agent >/dev/null 2>&1; then
+scripts/cursor.sh:14	posix-tmp	MODELS_LOG="$(mktemp /tmp/orkestrel-cursor-models.XXXXXX)" || exit 0
+scripts/deps.sh:21	posix-tmp	DEPS_LOG="$(mktemp /tmp/orkestrel-deps.XXXXXX)" || {
+scripts/deps.sh:39	eol	[ "$(tr -d '\r\n' <"$LOCK_MARKER")" = "$LOCK_HASH" ]; then
+scripts/ollama.sh:9	dev-null	if ! command -v ollama >/dev/null 2>&1; then
+scripts/ollama.sh:14	dev-null	if curl -sf --max-time 2 "http://127.0.0.1:11434/api/tags" >/dev/null 2>&1; then
+src/bin/CLI.ts:1540	sep-split	return result.stdout.split('\0').filter((record) => record.length > 0)
+src/bin/CLI.ts:1620	sep-split	for (const line of table.split('\n')) this.#say(line)
+src/bin/CLI.ts:1620	nl-split	for (const line of table.split('\n')) this.#say(line)
+src/bin/CLI.ts:1649	eol	.split(/\r\n|\r|\n/u).length
+src/bin/CLI.ts:1652	eol	.split(/\r\n|\r|\n/u).length
+src/core/compilers.ts:663	sep-split	.join('\n')
+src/core/compilers.ts:880	sep-split	${projects.map((project) => `\t\t\t${project},`).join('\n')}
+src/core/compilers.ts:885	sep-split	const body = `${factories.join('\n')}\n`
+src/core/compilers.ts:891	sep-split	imports: imports.length === 0 ? '' : `${imports.join('\n')}\n`,
+src/core/compilers.ts:900	platform-gate	? 'const browserOptions = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)\n\n'
+src/core/compilers.ts:986	sep-split	${paths.join('\n')}
+src/core/compilers.ts:1037	sep-split	.join('\n'),
+src/core/compilers.ts:1070	sep-split	.join('\n'),
+src/core/compilers.ts:1363	sep-split	: `expect([\n${entries.map((entry) => `\t\t\tObject.keys(${entry}),`).join('\n')}\n\t\t]).toStrictEqual(`
+src/core/compilers.ts:1368	sep-split	: `[\n${entries.map(() => '\t\t\t[],').join('\n')}\n\t\t]`
+src/core/compilers.ts:1375	sep-split	imports: `${imports.join('\n')}\n`,
+src/core/compilers.ts:1423	sep-split	source: source.join('\n'),
+src/core/compilers.ts:1424	sep-split	tests: tests.join('\n'),
+src/core/compilers.ts:1425	sep-split	directories: directories.join('\n'),
+src/core/compilers.ts:1474	sep-split	.join('\n')
+src/core/helpers.ts:362	sep-split	].join('\n')
+src/core/templates.ts:67	file-url	{{helpers}}{{browsers}}import { fileURLToPath, URL } from 'node:url'
+src/core/templates.ts:70	file-url	return fileURLToPath(new URL(relativePath, import.meta.url))
+src/core/templates.ts:733	platform-gate	darwin: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+src/core/templates.ts:734	platform-gate	win32: Object.freeze(['Google', 'Chrome', 'Application', 'chrome.exe']),
+src/core/templates.ts:734	ext-cmd	win32: Object.freeze(['Google', 'Chrome', 'Application', 'chrome.exe']),
+src/core/templates.ts:741	platform-gate	darwin: '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+src/core/templates.ts:742	platform-gate	win32: Object.freeze(['Microsoft', 'Edge', 'Application', 'msedge.exe']),
+src/core/templates.ts:742	ext-cmd	win32: Object.freeze(['Microsoft', 'Edge', 'Application', 'msedge.exe']),
+src/core/templates.ts:761	chmod-exec	accessSync(path, FS_CONSTANTS.X_OK)
+src/core/templates.ts:839	ext-cmd	for (const alias of ['chromium', 'chromium.exe']) {
+src/core/templates.ts:899	platform-gate	* resolveSystemBrowser(process.platform, process.env)
+src/core/templates.ts:906	platform-gate	if (platform !== 'linux' && platform !== 'darwin' && platform !== 'win32') return undefined
+src/core/templates.ts:908	platform-gate	if (platform === 'win32') {
+src/core/templates.ts:923	platform-gate	if (platform === 'win32') {
+src/core/templates.ts:925	platform-gate	if (isBrowserExecutable(join(root, ...browser.layouts.win32))) return browser.channel
+src/core/templates.ts:957	platform-gate	* resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)
+src/core/templates.ts:984	platform-gate	const fallback = platform === 'win32' ? 'msedge' : 'chrome'
+src/core/templates.ts:1070	file-url	import { fileURLToPath } from 'node:url'
+src/core/templates.ts:1074	file-url	const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+src/core/templates.ts:1075	platform-gate	const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+src/core/templates.ts:1075	ext-cmd	const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+src/core/templates.ts:1080	platform-gate	const SHELL = process.platform === 'win32'
+src/core/templates.ts:1530	sep-split	writeFile(target, \`\${bindings.join('\\n')}\\nexport const surface = [\${names.join(', ')}]\\n\`)
+src/core/templates.ts:1572	sep-split	const installed = join(consumer, 'node_modules', ...name.split('/'))
+src/core/templates.ts:1627	tmpdir-use	const SCRATCH = mkdtempSync(join(tmpdir(), 'distribution-'))
+src/core/templates.ts:1961	platform-gate	const options = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)
+src/core/validators.ts:84	sep-split	for (const segment of value.split('/')) {
+src/server/helpers.ts:31	file-url	import { fileURLToPath } from 'node:url'
+src/server/helpers.ts:216	sep-split	const segments = path.split('/')
+src/server/helpers.ts:220	sep-split	return segments.map((segment) => (segment.startsWith('.') ? segment.slice(1) : segment)).join('/')
+src/server/helpers.ts:326	posix-tmp	* isPhysicalFile('/tmp/project/AGENTS.md') // true for a plain file
+src/server/helpers.ts:356	posix-tmp	* isExactCaseFile('/tmp/project/src/bin/main.ts') // true only for that exact spelling
+src/server/helpers.ts:394	posix-tmp	* isPhysicalDirectory('/tmp/project') // true for a plain directory
+src/server/helpers.ts:419	posix-tmp	* computeFileDigest('/tmp/project/AGENTS.md') // the file's SHA-256
+src/server/helpers.ts:420	posix-tmp	* computeFileDigest('/tmp/project/absent.md') // undefined
+src/server/helpers.ts:563	posix-tmp	* resolveContainedPath('/tmp/project', 'guides/router.md')?.endsWith('router.md') // true
+src/server/helpers.ts:564	posix-tmp	* resolveContainedPath('/tmp/project', '../secrets') // undefined
+src/server/helpers.ts:854	posix-tmp	* readFileHex('/tmp/project', 'AGENTS.md') // '2320416765…'
+src/server/helpers.ts:927	posix-tmp	* readFileText('/tmp/project', 'package.json') // '{ "name": "@orkestrel/router", … }'
+src/server/helpers.ts:1108	file-url	const location = fileURLToPath(import.meta.url)
+src/server/helpers.ts:1160	posix-tmp	* readManifestEntry('.gitignore', '/tmp/checkout/.gitignore')
+src/server/helpers.ts:1271	posix-tmp	* stageBytes(host, '/tmp/orkestrel-host-a1b2', ['scripts/codex.sh'])
+src/server/helpers.ts:1310	chmod-exec	if (entry.executable) chmodSync(full, 0o755)
+src/server/helpers.ts:1489	chmod-exec	if (entry.executable) chmodSync(destination, 0o755)
+src/server/helpers.ts:1566	tmpdir-use	const temporary = attempt(() => mkdtempSync(join(tmpdir(), 'orkestrel-scaffold-host-')))
+src/server/helpers.ts:1629	posix-tmp	* readAnchor('/tmp/project') // { path: '/tmp/project', device: 1, inode: 2 }
+src/server/helpers.ts:1650	symlink	* where the last one did. A path holding nothing, a file, or a symlink
+src/server/helpers.ts:1660	posix-tmp	* const anchor = readAnchor('/tmp/project')
+src/server/helpers.ts:1688	posix-tmp	* readExpectation('/tmp/project/absent.md') // { path: …, shape: 'absent' }
+src/server/helpers.ts:1736	posix-tmp	* const expectation = readExpectation('/tmp/project/AGENTS.md')
+src/server/helpers.ts:1771	posix-tmp	* matchesPrecondition({ path: '/tmp/project/new.md', shape: 'absent' }) // true while absent
+src/server/Materializer.ts:1013	tmpdir-use	const opened = attempt(() => mkdtempSync(join(tmpdir(), 'orkestrel-scaffold-fill-')))
+src/server/Materializer.ts:1134	sep-split	.join('\n')
+src/server/Upstream.ts:771	sep-split	.split('/')
+src/server/Upstream.ts:773	sep-split	.join('/')
+src/server/validators.ts:93	win-drive	* isFilesystemPath('C:/Users/sample/project') // true
+src/server/validators.ts:107	abs-check	const rooted = normalized.startsWith('//')
+src/server/validators.ts:109	abs-check	: normalized.startsWith('/')
+src/server/validators.ts:116	sep-split	const segments = (rooted.endsWith('/') ? rooted.slice(0, -1) : rooted).split('/')
+src/server/WriteTransaction.ts:67	symlink	*   promotion, so an ancestor that became a file, a symlink, a directory
+src/server/WriteTransaction.ts:191	chmod-exec	mkdirSync(directory, { mode: 0o700 })
+src/server/WriteTransaction.ts:295	chmod-exec	chmodSync(staged, executable ? 0o755 : 0o644)
+tests/config.test.ts:17	file-url	import { fileURLToPath, pathToFileURL } from 'node:url'
+tests/config.test.ts:27	file-url	const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+tests/config.test.ts:825	sep-split	].join('\n'),
+tests/config.test.ts:850	sep-split	].join('\n'),
+tests/config.test.ts:906	sep-split	].join('\n'),
+tests/config.test.ts:916	sep-split	].join('\n'),
+tests/config.test.ts:920	symlink	// `node_modules/.bin/oxlint` shim. That shim is a POSIX `sh` script — a symlink to one on
+tests/config.test.ts:922	shell-true	// extensionless form; spawning the `.cmd` would need `shell: true`, which breaks on paths
+tests/config.test.ts:1073	file-url	expect(configHelpers.sourceFallback(importer, pathToFileURL(importer).href)).toBe(importer)
+tests/distribution.test.ts:4	file-url	import { fileURLToPath, pathToFileURL } from 'node:url'
+tests/distribution.test.ts:12	file-url	const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+tests/distribution.test.ts:13	platform-gate	const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+tests/distribution.test.ts:13	ext-cmd	const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+tests/distribution.test.ts:21	platform-gate	const shell = process.platform === 'win32'
+tests/distribution.test.ts:56	sep-split	].join('\n'),
+tests/distribution.test.ts:156	sep-split	].join('\n')
+tests/distribution.test.ts:309	eol	.replaceAll('\r\n', '\n')
+tests/distribution.test.ts:310	sep-split	.split('\n')
+tests/distribution.test.ts:310	nl-split	.split('\n')
+tests/distribution.test.ts:312	sep-split	.join('\n')
+tests/distribution.test.ts:327	sep-split	const lines = body.split('\n')
+tests/distribution.test.ts:327	nl-split	const lines = body.split('\n')
+tests/distribution.test.ts:369	sep-split	const joined = [...lines.slice(start, index), expression].join('\n').trim()
+tests/distribution.test.ts:409	sep-split	source.push(`record(${String(span.id)}, (${[...opening, expression].join('\n')}))`)
+tests/distribution.test.ts:420	sep-split	source: ts.transpileModule(source.join('\n'), {
+tests/distribution.test.ts:431	file-url	module: pathToFileURL(resolve(root, declaration.module)).href,
+tests/distribution.test.ts:513	posix-tmp	"dist/src/server/index.d.ts: computeFileDigest('/tmp/project/AGENTS.md') // the file's SHA-256",
+tests/distribution.test.ts:515	posix-tmp	"dist/src/server/index.d.ts: isExactCaseFile('/tmp/project/src/bin/main.ts') // true only for that exact spelling",
+tests/distribution.test.ts:516	posix-tmp	"dist/src/server/index.d.ts: isPhysicalDirectory('/tmp/project') // true for a plain directory",
+tests/distribution.test.ts:517	posix-tmp	"dist/src/server/index.d.ts: isPhysicalFile('/tmp/project/AGENTS.md') // true for a plain file",
+tests/distribution.test.ts:521	posix-tmp	"dist/src/server/index.d.ts: matchesPrecondition({ path: '/tmp/project/new.md', shape: 'absent' }) // true while absent",
+tests/distribution.test.ts:522	posix-tmp	"dist/src/server/index.d.ts: readAnchor('/tmp/project') // { path: '/tmp/project', device: 1, inode: 2 }",
+tests/distribution.test.ts:533	posix-tmp	"dist/src/server/index.d.ts: readExpectation('/tmp/project/absent.md') // { path: …, shape: 'absent' }",
+tests/distribution.test.ts:534	posix-tmp	"dist/src/server/index.d.ts: readFileHex('/tmp/project', 'AGENTS.md') // '2320416765…'",
+tests/distribution.test.ts:535	posix-tmp	"dist/src/server/index.d.ts: readFileText('/tmp/project', 'package.json') // '{ \"name\": \"@orkestrel/router\", … }'",
+tests/distribution.test.ts:562	file-url	const core = pathToFileURL(resolve(root, 'dist/src/core/index.js')).href
+tests/distribution.test.ts:563	file-url	const server = pathToFileURL(resolve(root, 'dist/src/server/index.js')).href
+tests/distribution.test.ts:564	file-url	const missing = pathToFileURL(resolve(root, 'dist/outside-integration-control.js')).href
+tests/distribution.test.ts:585	sep-split	].join('\n')
+tests/distribution.test.ts:809	sep-split	].join('\n'),
+tests/distribution.test.ts:852	sep-split	].join('\n'),
+tests/guides.test.ts:30	file-url	import { fileURLToPath } from 'node:url'
+tests/guides.test.ts:48	file-url	const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+tests/guides.test.ts:209	sep-split	expect(reference).toBe(renderUsage().join('\n'))
+tests/guides.test.ts:335	sep-split	`${declarations.join('\n\n')}\n\nexport { ${names.join(', ')} }\n`,
+tests/setup.ts:845	posix-root	{ label: 'leading slash', path: '/etc/passwd', accepted: false },
+tests/setup.ts:851	win-drive	{ label: 'drive colon', path: 'C:/configs/vite.config.ts', accepted: false },
+tests/setupPolicy.ts:69	tmpdir-use	const root = mkdtempSync(join(tmpdir(), options.prefix))
+tests/setupPolicy.ts:74	sep-split	const segments = normalized.split('/')
+tests/setupPolicy.ts:77	abs-check	normalized.startsWith('/') ||
+tests/setupPolicy.ts:838	sep-split	const lines = readFileSync(join(root, path), 'utf8').split('\n')
+tests/setupPolicy.ts:838	nl-split	const lines = readFileSync(join(root, path), 'utf8').split('\n')
+tests/setupPolicy.ts:886	sep-split	const [first = ''] = normalized.split('/')
+tests/setupPolicy.ts:937	sep-split	for (const segment of normalized.split('/')) {
+tests/setupPolicy.ts:997	sep-split	const lines = content.replaceAll('\r\n', '\n').split('\n')
+tests/setupPolicy.ts:997	eol	const lines = content.replaceAll('\r\n', '\n').split('\n')
+tests/setupPolicy.ts:997	nl-split	const lines = content.replaceAll('\r\n', '\n').split('\n')
+tests/setupPolicy.ts:998	sep-split	const rawLines = content.split('\n')
+tests/setupPolicy.ts:998	nl-split	const rawLines = content.split('\n')
+tests/setupPolicy.ts:1054	sep-split	source = sourceLines.join('\n')
+tests/setupPolicy.ts:1114	sep-split	].join('\n') + '\n'
+tests/setupPolicy.ts:1127	eol	const normalized = content.replaceAll('\r\n', '\n')
+tests/setupPolicy.ts:1128	sep-split	const lines = (normalized.endsWith('\n') ? normalized.slice(0, -1) : normalized).split('\n')
+tests/setupPolicy.ts:1128	nl-split	const lines = (normalized.endsWith('\n') ? normalized.slice(0, -1) : normalized).split('\n')
+tests/setupPolicy.ts:1196	eol	const lines = content.split(/\r\n|\r|\n/u)
+tests/setupPolicy.ts:1500	eol	const normalized = content.replaceAll('\r\n', '\n')
+tests/setupServer.ts:15	file-url	import { fileURLToPath } from 'node:url'
+tests/setupServer.ts:237	file-url	export const WORKSPACE_ROOT = fileURLToPath(resolveRoot(import.meta))
+tests/setupServer.ts:258	cli-spawn	const listing = execFileSync('git', ['ls-files', '--stage'], {
+tests/setupServer.ts:264	sep-split	for (const line of listing.split('\n')) {
+tests/setupServer.ts:264	nl-split	for (const line of listing.split('\n')) {
+tests/setupServer.ts:387	win-drive	accepted: [WORKSPACE_ROOT, 'C:/Users/sample/project', '../sibling', '.'],
+tests/setupServer.ts:524	posix-root	{ label: 'POSIX absolute path', path: '/home/sample/project', accepted: true },
+tests/setupServer.ts:525	win-drive	{ label: 'Windows drive path', path: 'C:\\Users\\sample\\project', accepted: true },
+tests/setupServer.ts:528	win-drive	path: 'C:/Users/sample/project',
+tests/setupServer.ts:544	sep-split	path: Array.from({ length: MAX_PATH_DEPTH }, () => 'a').join('/'),
+tests/setupServer.ts:568	sep-split	path: Array.from({ length: MAX_PATH_DEPTH + 1 }, () => 'a').join('/'),
+tests/setupServer.ts:1038	cli-spawn	execFileSync('git', ['init', '--quiet'], { cwd: path, windowsHide: true, stdio: 'ignore' })
+tests/setupServer.ts:1277	cli-spawn	execFileSync('git', ['add', '--all'], { cwd: path, windowsHide: true, stdio: 'ignore' })
+tests/setupServer.ts:1468	sep-split	].join('\n')
+tests/setupServer.ts:1566	file-url	{ label: 'a local file', base: 'file:///etc/passwd', accepted: false },
+tests/setupServer.ts:1567	file-url	{ label: 'a local file on a Windows drive', base: 'file:///C:/secrets.txt', accepted: false },
+tests/src/bin/CLI.test.ts:93	sep-split	].join('\n')
+tests/src/bin/CLI.test.ts:512	sep-split	expect(sink.output.join('\n')).toContain(String(FLEET_WRITE_COUNT))
+tests/src/bin/CLI.test.ts:612	sep-split	expect(sink.diagnostic.join('\n')).toContain('BLOCKED')
+tests/src/bin/CLI.test.ts:613	sep-split	expect(sink.diagnostic.join('\n')).toContain('core at the package root')
+tests/src/bin/CLI.test.ts:641	sep-split	expect(blocked.diagnostic.join('\n')).toContain('BLOCKED')
+tests/src/bin/CLI.test.ts:642	sep-split	expect(blocked.diagnostic.join('\n')).toContain('lowercase alphanumeric name')
+tests/src/bin/CLI.test.ts:728	abs-check	.soft(live.paths.filter((path) => path.startsWith('/orkestrel/scaffold/refs/heads/main/')))
+tests/src/bin/CLI.test.ts:745	sep-split	expect(forced.diagnostic.join('\n')).toContain('host=floor')
+tests/src/bin/CLI.test.ts:777	sep-split	expect(forced.diagnostic.join('\n')).toContain('versions=floor')
+tests/src/bin/CLI.test.ts:778	sep-split	expect(forced.diagnostic.join('\n')).toContain('host=floor')
+tests/src/bin/CLI.test.ts:1809	sep-split	].join('\n')
+tests/src/bin/CLI.test.ts:2547	sep-split	expect(sink.output.join('\n')).toContain('AGENTS.md')
+tests/src/bin/CLI.test.ts:2639	sep-split	expect(sink.output.join('\n')).toContain('AGENTS.md')
+tests/src/bin/CLI.test.ts:3935	sep-split	expect(sink.diagnostic.join('\n')).toContain('Sample')
+tests/src/bin/CLI.test.ts:4008	sep-split	const removed = previous.split('\n').length - current.split('\n').length
+tests/src/bin/CLI.test.ts:4008	nl-split	const removed = previous.split('\n').length - current.split('\n').length
+tests/src/bin/helpers.test.ts:121	sep-split	const usage = renderUsage().join('\n')
+tests/src/bin/helpers.test.ts:139	sep-split	const usage = renderUsage().join('\n')
+tests/src/bin/helpers.test.ts:147	sep-split	const usage = renderUsage().join('\n')
+tests/src/core/compilers.test.ts:1236	sep-split	.join('\n')
+tests/src/core/compilers.test.ts:1305	file-url	"import type { UserConfig } from 'vite'\nimport { defineConfig } from 'vitest/config'\nimport manifest from './package.json' with { type: 'j
+tests/src/core/compilers.test.ts:1367	platform-gate	'\nconst browserOptions = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)\n\n',
+tests/src/core/compilers.test.ts:1689	sep-split	expect(artifacts.map(({ content }) => content).join('\n')).not.toMatch(
+tests/src/core/constants.test.ts:3	file-url	import { fileURLToPath } from 'node:url'
+tests/src/core/constants.test.ts:23	file-url	const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
+tests/src/core/helpers.test.ts:255	sep-split	].join('\n'),
+tests/src/core/templates.test.ts:6	file-url	import { pathToFileURL } from 'node:url'
+tests/src/core/templates.test.ts:246	file-url	`const ${binding} = await import(${JSON.stringify(pathToFileURL(file).href)})`,
+tests/src/core/templates.test.ts:248	sep-split	].join('\n')
+tests/src/core/templates.test.ts:404	sep-split	${declarations.map((statement) => statement.getText(source)).join('\n')}
+tests/src/core/templates.test.ts:427	sep-split	return `${[...lifted.values()].join('\n\n')}\n\nexport { ${names.join(', ')} }\n`
+tests/src/core/templates.test.ts:464	chmod-exec	chmodSync(join(workspace.path, target), 0o755)
+tests/src/core/templates.test.ts:517	sep-split	.split('\n')
+tests/src/core/templates.test.ts:517	nl-split	.split('\n')
+tests/src/core/templates.test.ts:528	sep-split	.split('\n')
+tests/src/core/templates.test.ts:528	nl-split	.split('\n')
+tests/src/server/helpers.test.ts:204	sep-split	for (const segment of storageCase.storage.split('/')) {
+tests/src/server/helpers.test.ts:478	posix-root	expect(resolveContainedPath(workspace.path, '/etc/passwd')).toBeUndefined()
+tests/src/server/helpers.test.ts:529	platform-gate	it.skipIf(process.platform === 'win32')(
+tests/src/server/helpers.test.ts:689	sep-split	const shallow = Array.from({ length: MAX_PATH_DEPTH - 2 }, () => 'a').join('/')
+tests/src/server/helpers.test.ts:766	sep-split	const shallow = Array.from({ length: MAX_PATH_DEPTH - 2 }, () => 'a').join('/')
+tests/src/server/helpers.test.ts:1119	chmod-exec	chmodSync(declared, 0o644)
+tests/src/server/helpers.test.ts:1120	chmod-exec	expect((lstatSync(declared).mode & 0o111) !== 0).toBe(false)
+tests/src/server/helpers.test.ts:1127	chmod-exec	chmodSync(undeclared, 0o755)
+tests/src/server/helpers.test.ts:1138	chmod-exec	chmodSync(source, 0o644)
+tests/src/server/helpers.test.ts:1140	chmod-exec	chmodSync(source, 0o755)
+tests/src/server/helpers.test.ts:1315	platform-gate	// Skipped on win32 because `chmodSync(path, 0o755)` leaves the mode at 666
+tests/src/server/helpers.test.ts:1315	chmod-exec	// Skipped on win32 because `chmodSync(path, 0o755)` leaves the mode at 666
+tests/src/server/helpers.test.ts:1317	platform-gate	it.skipIf(process.platform === 'win32')('gives an entry the bit its manifest declares', () => {
+tests/src/server/helpers.test.ts:1332	chmod-exec	expect(lstatSync(join(root, 'scripts/codex.sh')).mode & 0o111).toBe(0o111)
+tests/src/server/helpers.test.ts:1333	chmod-exec	expect(lstatSync(join(root, 'AGENTS.md')).mode & 0o111).toBe(0)
+tests/src/server/helpers.test.ts:1779	symlink	it('reports a path replaced by a symlink to a directory', () => {
+tests/src/server/Materializer.test.ts:1097	sep-split	].join('\n')
+tests/src/server/Upstream.test.ts:398	posix-root	// `/etc` before the request left, and the fixture records what arrived.
+tests/src/server/validators.test.ts:92	win-drive	expect(isFilesystemPath('C:/project')).toBe(true)
+tests/src/server/WriteTransaction.test.ts:203	platform-gate	// Skipped on win32 because `chmodSync(path, 0o755)` leaves the mode at 666
+tests/src/server/WriteTransaction.test.ts:203	chmod-exec	// Skipped on win32 because `chmodSync(path, 0o755)` leaves the mode at 666
+tests/src/server/WriteTransaction.test.ts:206	platform-gate	it.skipIf(process.platform === 'win32')('sets the executable bit when asked', () => {
+tests/src/server/WriteTransaction.test.ts:215	chmod-exec	expect(lstatSync(join(target, 'scripts/codex.sh')).mode & 0o111).not.toBe(0)
+tests/src/server/WriteTransaction.test.ts:224	platform-gate	// Skipped on win32 because NTFS exposes no POSIX executable bit to clear, so
+tests/src/server/WriteTransaction.test.ts:227	platform-gate	it.skipIf(process.platform === 'win32')('clears the executable bit when not asked', () => {
+tests/src/server/WriteTransaction.test.ts:232	chmod-exec	chmodSync(source, 0o755)
+tests/src/server/WriteTransaction.test.ts:237	chmod-exec	expect(lstatSync(join(target, 'scripts/codex.sh')).mode & 0o111).toBe(0)
+tests/src/server/WriteTransaction.test.ts:277	chmod-exec	// `enforced: false` branch as well, because NTFS ignores the `chmodSync(control, 0o477)`
+tests/src/server/WriteTransaction.test.ts:281	platform-gate	it.skipIf(process.platform === 'win32')(
+tests/src/server/WriteTransaction.test.ts:415	chmod-exec	chmodSync(control, 0o477)
+tests/src/server/WriteTransaction.test.ts:422	chmod-exec	chmodSync(control, 0o700)
+tests/src/server/WriteTransaction.test.ts:425	chmod-exec	const previous = process.umask(0o300)
+vite.config.ts:6	file-url	import { fileURLToPath, URL } from 'node:url'
+vite.config.ts:9	file-url	return fileURLToPath(new URL(relativePath, import.meta.url))

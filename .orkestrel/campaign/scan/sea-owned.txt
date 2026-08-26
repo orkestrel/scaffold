@@ -1,0 +1,88 @@
+src/server/constants.ts:122	platform-gate	win32: Object.freeze({
+src/server/constants.ts:123	ext-cmd	executable: 'node.exe',
+src/server/constants.ts:126	platform-gate	darwin: Object.freeze({
+src/server/helpers.ts:60	platform-gate	* @param platform - Platform identifier. Default: `process.platform`.
+src/server/helpers.ts:64	platform-gate	return SEA_PLATFORMS[platform ?? process.platform]
+src/server/helpers.ts:74	platform-gate	return (platform ?? process.platform) in SEA_PLATFORMS
+src/server/helpers.ts:119	symlink	// Symlinks can escape the compression root (point outside `directory`),
+src/server/helpers.ts:242	symlink	// walkDirectory already skips symlinks on the read side; mirror that here
+src/server/helpers.ts:243	symlink	// on the write side so a planted symlink at `output` (e.g. `X.br -> /victim`)
+src/server/helpers.ts:252	symlink	throw new SEAError('OUTPUT', 'Refusing to write compressed output through a symlink', {
+src/server/helpers.ts:563	sep-split	if (key.split('/').includes('..')) {
+src/server/helpers.ts:570	symlink	* location inside `base`, defeating a symlink escape.
+src/server/helpers.ts:576	posix-tmp	* Dereferencing BOTH sides means a symlinked base itself (e.g. macOS `/tmp`
+src/server/helpers.ts:576	symlink	* Dereferencing BOTH sides means a symlinked base itself (e.g. macOS `/tmp`
+src/server/helpers.ts:577	symlink	* -> `/private/tmp`) still matches, while a symlink inside the tree that
+src/server/helpers.ts:584	symlink	* @returns The real (symlink-resolved) contained path
+src/server/helpers.ts:675	platform-gate	if (process.platform === 'win32') return
+src/server/helpers.ts:723	posix-tmp	* finalizeExecutable('/tmp/build/app.tmp', '/dist/app')
+src/server/helpers.ts:980	platform-gate	* `process.platform` (`win32` -> `rundll32 url.dll,FileProtocolHandler`,
+src/server/helpers.ts:981	platform-gate	* `darwin` -> `open`, else -> `xdg-open`), each invoked with an argv array
+src/server/helpers.ts:1016	platform-gate	process.platform === 'win32'
+src/server/helpers.ts:1018	platform-gate	: process.platform === 'darwin'
+src/server/injectors/Injector.ts:1615	chmod-exec	chmodSync(injTemp, mode & 0o7777)
+src/server/seals/SEA.ts:91	platform-gate	const error = new SEAError('PLATFORM', `Unsupported platform: ${process.platform}`, {
+src/server/seals/SEA.ts:92	platform-gate	platform: process.platform,
+src/server/seals/SEA.ts:120	platform-gate	platform: process.platform,
+src/server/seals/SEA.ts:278	platform-gate	throw new SEAError('PLATFORM', `Unsupported platform: ${process.platform}`, {
+src/server/seals/SEA.ts:279	platform-gate	platform: process.platform,
+src/server/seals/SEA.ts:284	platform-gate	const ext = process.platform === 'win32' ? '.exe' : ''
+src/server/seals/SEA.ts:285	platform-gate	const name = process.platform === 'win32' ? `${this.#options.name}.exe` : this.#options.name
+src/server/seals/SEA.ts:298	platform-gate	if (process.platform === 'darwin') {
+src/server/seals/SEA.ts:301	chmod-exec	chmodSync(temp, 0o755)
+src/server/seals/SEA.ts:348	platform-gate	} else if (process.platform === 'win32') {
+src/server/seals/SEA.ts:399	chmod-exec	chmodSync(temp, 0o755)
+src/server/types.ts:400	platform-gate	* `platform`    — platform identifier (e.g. `"win32"`, `"darwin"`).
+tests/distribution.test.ts:22	file-url	import { fileURLToPath } from 'node:url'
+tests/distribution.test.ts:26	file-url	const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+tests/distribution.test.ts:27	platform-gate	const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+tests/distribution.test.ts:27	ext-cmd	const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+tests/distribution.test.ts:32	platform-gate	const SHELL = process.platform === 'win32'
+tests/distribution.test.ts:482	sep-split	writeFile(target, `${bindings.join('\n')}\nexport const surface = [${names.join(', ')}]\n`)
+tests/distribution.test.ts:524	sep-split	const installed = join(consumer, 'node_modules', ...name.split('/'))
+tests/distribution.test.ts:579	tmpdir-use	const SCRATCH = mkdtempSync(join(tmpdir(), 'distribution-'))
+tests/integration.test.ts:56	platform-gate	expect(result.platform).toBe(process.platform)
+tests/integration.test.ts:67	platform-gate	darwin: { signed: true, stripped: true },
+tests/integration.test.ts:69	platform-gate	win32: { stripped: true, signed: false, terminal: true },
+tests/integration.test.ts:71	platform-gate	expect(result).toMatchObject(platformExpectations[process.platform] ?? {})
+tests/setupServer.test.ts:94	posix-tmp	expect(createSEAOptions({ output: 'build', root: '/tmp/seal' })).toEqual({
+tests/setupServer.test.ts:98	posix-tmp	root: '/tmp/seal',
+tests/setupServer.test.ts:105	ext-cmd	const options = createInjectorOptions({ executable: 'app.exe', blob: 'blob.bin' })
+tests/setupServer.test.ts:108	ext-cmd	executable: 'app.exe',
+tests/setupServer.test.ts:121	ext-cmd	executable: 'app.exe',
+tests/setupServer.test.ts:130	ext-cmd	executable: 'app.exe',
+tests/setupServer.ts:8	file-url	import { fileURLToPath } from 'node:url'
+tests/setupServer.ts:23	file-url	export const WORKSPACE_ROOT = fileURLToPath(resolveRoot(import.meta))
+tests/src/server/factories.test.ts:24	ext-cmd	const executable = join(scratch.path, 'app.exe')
+tests/src/server/helpers.test.ts:40	ext-cmd	const command = ['signtool', '/P', 'secret', '--password', 'other', 'target.exe']
+tests/src/server/helpers.test.ts:48	ext-cmd	'target.exe',
+tests/src/server/helpers.test.ts:50	ext-cmd	expect(command).toEqual(['signtool', '/P', 'secret', '--password', 'other', 'target.exe'])
+tests/src/server/helpers.test.ts:125	win-drive	it.each(['../x', 'a/../../x', '/abs', 'C:\\x', 'a\\b', 'C:foo'])(
+tests/src/server/helpers.test.ts:158	symlink	it('rejects a symlink that escapes the base via realpath', async (context) => {
+tests/src/server/helpers.test.ts:371	symlink	it('skips symlinks that escape the walk root', async () => {
+tests/src/server/helpers.test.ts:461	platform-gate	if (process.platform === 'win32') {
+tests/src/server/helpers.test.ts:462	platform-gate	// syncDirectory is a no-op on win32 — nothing to assert.
+tests/src/server/helpers.test.ts:494	file-url	it.each(['file:///etc/passwd', 'ftp://x', 'javascript:alert(1)'])(
+tests/src/server/helpers.test.ts:673	ext-cmd	const path = join(scratch.path, 'app.exe')
+tests/src/server/helpers.test.ts:737	ext-cmd	const path = join(scratch.path, 'app.exe')
+tests/src/server/helpers.test.ts:763	ext-cmd	const path = join(scratch.path, 'app.exe')
+tests/src/server/helpers.test.ts:790	ext-cmd	const path = join(scratch.path, 'app.exe')
+tests/src/server/helpers.test.ts:821	ext-cmd	const path = join(scratch.path, 'signed.exe')
+tests/src/server/helpers.test.ts:852	ext-cmd	const path = join(scratch.path, 'app.exe')
+tests/src/server/helpers.test.ts:857	ext-cmd	const after = scratch.read('app.exe')
+tests/src/server/helpers.test.ts:864	ext-cmd	const path = join(scratch.path, 'app.exe')
+tests/src/server/helpers.test.ts:877	ext-cmd	const path = join(scratch.path, 'app.exe')
+tests/src/server/helpers.test.ts:890	ext-cmd	const path = join(scratch.path, 'app.exe')
+tests/src/server/helpers.test.ts:960	symlink	it('refuses to write compressed output through a planted symlink', async (context) => {
+tests/src/server/injectors/Injector.test.ts:46	ext-cmd	const executable = join(scratch.path, 'test.exe')
+tests/src/server/injectors/Injector.test.ts:203	chmod-exec	chmodSync(executable, 0o755)
+tests/src/server/injectors/Injector.test.ts:332	ext-cmd	const executable = join(scratch.path, 'test.exe')
+tests/src/server/injectors/Injector.test.ts:355	ext-cmd	const executable = join(scratch.path, 'test.exe')
+tests/src/server/injectors/Injector.test.ts:402	ext-cmd	const executable = join(scratch.path, 'test.exe')
+tests/src/server/injectors/Injector.test.ts:430	ext-cmd	const executable = join(scratch.path, 'test.exe')
+tests/src/server/injectors/Injector.test.ts:454	ext-cmd	const executable = join(scratch.path, 'test.exe')
+tests/src/server/seals/SEA.test.ts:141	platform-gate	const name = process.platform === 'win32' ? 'seal-test.exe' : 'seal-test'
+tests/src/server/seals/SEA.test.ts:141	ext-cmd	const name = process.platform === 'win32' ? 'seal-test.exe' : 'seal-test'
+tests/src/server/seals/SEA.test.ts:237	symlink	it('rejects an asset path that symlink-escapes root with code ASSET', async (context) => {
+vite.config.ts:6	file-url	import { fileURLToPath, URL } from 'node:url'
+vite.config.ts:9	file-url	return fileURLToPath(new URL(relativePath, import.meta.url))

@@ -1,0 +1,334 @@
+configs/helpers.ts:3	file-url	import { fileURLToPath } from 'node:url'
+configs/helpers.ts:49	file-url	resolvePath(dirname(fileURLToPath(import.meta.url)), '..'),
+configs/helpers.ts:53	abs-check	if (!pathname.startsWith('/@fs/')) return pathname
+configs/helpers.ts:56	abs-check	return candidate.startsWith('/') || /^[A-Za-z]:[\\/]/.test(candidate)
+configs/helpers.ts:64	file-url	const physicalCandidate = /^file:/i.test(candidate) ? fileURLToPath(candidate) : candidate
+configs/helpers.ts:75	file-url	return /^file:/i.test(source) ? fileURLToPath(source) : resolvePath(dirname(importer), source)
+configs/helpers.ts:95	abs-check	normalizedId.startsWith('/@id/') ||
+configs/helpers.ts:96	abs-check	normalizedId.startsWith('/@vite/') ||
+configs/helpers.ts:97	abs-check	normalizedId.startsWith('/__vite') ||
+configs/helpers.ts:98	abs-check	normalizedId.startsWith('/__vitest') ||
+configs/helpers.ts:111	sep-split	if (candidate.split('/').some((segment) => segment.toLowerCase() === 'node_modules')) {
+configs/helpers.ts:125	file-url	if (/^file:/i.test(candidate)) candidate = fileURLToPath(candidate)
+configs/helpers.ts:164	abs-check	sourcePath.startsWith('/') ||
+configs/helpers.ts:172	sep-split	const segments = sourcePath.split('/')
+configs/helpers.ts:247	sep-split	const segments = directory.replaceAll('\\', '/').split('/')
+configs/helpers.ts:524	abs-check	value.startsWith('/') ||
+configs/helpers.ts:557	sep-split	const [layer, environment] = importerPath?.split('/') ?? []
+configs/helpers.ts:567	abs-check	normalizedSource.startsWith('/') ||
+configs/helpers.ts:572	abs-check	normalizedSource.startsWith('/') ||
+configs/helpers.ts:651	abs-check	normalizedSource.startsWith('/') ||
+configs/helpers.ts:745	abs-check	normalizedSource.startsWith('/') ||
+scripts/codex.sh:9	dev-null	if ! command -v codex >/dev/null 2>&1; then
+scripts/codex.sh:33	dev-null	if codex login status >/dev/null 2>&1; then
+scripts/cursor.sh:9	dev-null	if ! command -v agent >/dev/null 2>&1; then
+scripts/cursor.sh:14	posix-tmp	MODELS_LOG="$(mktemp /tmp/orkestrel-cursor-models.XXXXXX)" || exit 0
+scripts/deps.sh:21	posix-tmp	DEPS_LOG="$(mktemp /tmp/orkestrel-deps.XXXXXX)" || {
+scripts/deps.sh:39	eol	[ "$(tr -d '\r\n' <"$LOCK_MARKER")" = "$LOCK_HASH" ]; then
+scripts/ollama.sh:9	dev-null	if ! command -v ollama >/dev/null 2>&1; then
+scripts/ollama.sh:14	dev-null	if curl -sf --max-time 2 "http://127.0.0.1:11434/api/tags" >/dev/null 2>&1; then
+src/core/constants.ts:1	signals	/** The default cooperative POSIX window in milliseconds between `SIGTERM` and `SIGKILL` during termination. */
+src/core/constants.ts:15	proc-kill	* kill ended it, and a `taskkill /F /T` that reaped a descendant while the root was still alive
+src/core/types.ts:73	ext-cmd	* argument that batch target could corrupt — one carrying `%`, which `cmd.exe` expands before it
+src/core/types.ts:125	signals	* `grace` is the cooperative window between `SIGTERM` and `SIGKILL` on a POSIX host; Windows has no
+src/core/types.ts:143	signals	* termination, so the child survives the supervisor's `SIGKILL` and does not receive the terminal's
+src/core/types.ts:144	signals	* `SIGINT`. A consumer must call `stop` or `destroy` during an orderly shutdown.
+src/core/types.ts:152	signals	/** Cooperative POSIX window in milliseconds between `SIGTERM` and `SIGKILL`. Default: {@link PROCESS_GRACE}. */
+src/core/types.ts:296	proc-kill	* Never rejects. On Windows the whole tree is killed immediately through `taskkill`, with a
+src/core/types.ts:297	signals	* direct kill as the fallback; on a POSIX host the process group receives `SIGTERM`, then
+src/core/types.ts:298	signals	* `SIGKILL` after `grace`. No signal is initiated after the child's native exit is observed; the
+src/core/types.ts:413	signals	/** Cooperative POSIX window between `SIGTERM` and `SIGKILL` when terminating. Default: {@link PROCESS_GRACE}. */
+src/core/types.ts:430	signals	* tree. A `timeout` and an output overflow both end the root with `SIGKILL`; an overflow reports
+src/server/execution/execute.ts:110	platform-gate	detached: process.platform !== 'win32',
+src/server/execution/executeSync.ts:27	signals	* timeout and an output overflow both end the root with `SIGKILL`: an overflow reports `truncated`
+src/server/execution/executeSync.ts:73	signals	killSignal: 'SIGKILL',
+src/server/helpers.ts:12	platform-gate	import { join, posix, win32 } from 'node:path'
+src/server/helpers.ts:137	platform-gate	* caller asks for `PATH`. The exact key is tried first and a folded scan runs only for `win32`.
+src/server/helpers.ts:146	win-drive	* readPlatformVariable({ Path: 'C:\\Windows' }, 'PATH', 'win32') // 'C:\\Windows'
+src/server/helpers.ts:146	platform-gate	* readPlatformVariable({ Path: 'C:\\Windows' }, 'PATH', 'win32') // 'C:\\Windows'
+src/server/helpers.ts:156	platform-gate	if (platform !== 'win32') return undefined
+src/server/helpers.ts:173	posix-root	* readVariable({ PATH: '/usr/bin' }, 'PATH') // '/usr/bin'
+src/server/helpers.ts:187	platform-gate	* Later maps override earlier ones and an `undefined` value unsets a key. For `win32` the keys fold
+src/server/helpers.ts:210	platform-gate	const folded = platform === 'win32'
+src/server/helpers.ts:280	ext-cmd	* `report.txt.cmd` where none does. The lookup reads the child's effective environment, so an
+src/server/helpers.ts:295	win-drive	* buildExecutableCandidates('git', 'C:\\work', { PATH: 'C:\\bin' }, 'win32')
+src/server/helpers.ts:295	platform-gate	* buildExecutableCandidates('git', 'C:\\work', { PATH: 'C:\\bin' }, 'win32')
+src/server/helpers.ts:304	platform-gate	if (platform !== 'win32') return Object.freeze([])
+src/server/helpers.ts:317	platform-gate	targets.push(win32.resolve(directory, candidate))
+src/server/helpers.ts:346	ext-cmd	* Quotes one command-line token for a `cmd.exe` command line.
+src/server/helpers.ts:349	ext-cmd	* A token carrying whitespace or a shell metacharacter is wrapped in double quotes so `cmd.exe`
+src/server/helpers.ts:350	ext-cmd	* passes it as one literal argument; an embedded double quote is doubled, which is how `cmd.exe`
+src/server/helpers.ts:352	ext-cmd	* stop `cmd.exe` expansion; {@link buildSpawn} therefore refuses `%` in an argument to a Windows
+src/server/helpers.ts:356	ext-cmd	* @returns The token, quoted only when `cmd.exe` would otherwise split or interpret it
+src/server/helpers.ts:374	ext-cmd	* verbatim. No path uses a shell, so a metacharacter in an argument is never interpreted. `cmd.exe`
+src/server/helpers.ts:377	ext-cmd	* The whole batch path is Windows-only. A POSIX host has no `cmd.exe` and no restriction on spawning
+src/server/helpers.ts:378	ext-cmd	* a file directly, so a target named `worker.cmd` spawns directly there and receives a percent sign
+src/server/helpers.ts:386	platform-gate	* @throws A {@link ProcessError} coded `invalid` when `platform` is `win32`, the resolved target is a batch script, and an argument carries 
+src/server/helpers.ts:399	platform-gate	const extension = (platform === 'win32' ? win32.extname(file) : posix.extname(file)).toLowerCase()
+src/server/helpers.ts:400	ext-cmd	// Windows alone cannot spawn a batch script directly, and `cmd.exe` is what expands `%NAME%`.
+src/server/helpers.ts:403	platform-gate	const batch = platform === 'win32' && (extension === '.cmd' || extension === '.bat')
+src/server/helpers.ts:416	ext-cmd	file: readPlatformVariable(environment, 'ComSpec', platform) ?? 'cmd.exe',
+src/server/helpers.ts:607	signals	* killProcess(child, 'SIGTERM')
+src/server/helpers.ts:615	platform-gate	if (process.platform === 'win32' || child.pid === undefined) {
+src/server/helpers.ts:619	proc-kill	process.kill(-child.pid, signal)
+src/server/helpers.ts:630	proc-kill	* Kills one Windows process tree through `taskkill`.
+src/server/helpers.ts:650	win-drive	const executable = join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'taskkill.exe')
+src/server/helpers.ts:650	proc-kill	const executable = join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'taskkill.exe')
+src/server/helpers.ts:650	ext-cmd	const executable = join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'taskkill.exe')
+src/server/helpers.ts:720	signals	* has no cooperative termination to offer. A POSIX host signals the process group `SIGTERM`, falls
+src/server/helpers.ts:721	signals	* back to the direct child when no group owns its pid, waits `grace`, then sends `SIGKILL` through
+src/server/helpers.ts:724	proc-kill	* each awaited step rather than the call as a whole: on Windows it bounds the `taskkill` call and
+src/server/helpers.ts:729	signals	* @param grace - The cooperative POSIX window in milliseconds between `SIGTERM` and `SIGKILL`
+src/server/helpers.ts:744	platform-gate	if (process.platform === 'win32') {
+src/server/helpers.ts:746	signals	if (!killed && !isExited(child)) killProcess(child, 'SIGKILL')
+src/server/helpers.ts:748	signals	killProcess(child, 'SIGTERM')
+src/server/helpers.ts:750	signals	if (!isExited(child)) killProcess(child, 'SIGKILL')
+src/server/Process.ts:147	platform-gate	detached: process.platform !== 'win32',
+tests/config.test.ts:17	file-url	import { fileURLToPath, pathToFileURL } from 'node:url'
+tests/config.test.ts:27	file-url	const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+tests/config.test.ts:825	sep-split	].join('\n'),
+tests/config.test.ts:850	sep-split	].join('\n'),
+tests/config.test.ts:906	sep-split	].join('\n'),
+tests/config.test.ts:916	sep-split	].join('\n'),
+tests/config.test.ts:920	symlink	// `node_modules/.bin/oxlint` shim. That shim is a POSIX `sh` script — a symlink to one on
+tests/config.test.ts:922	shell-true	// extensionless form; spawning the `.cmd` would need `shell: true`, which breaks on paths
+tests/config.test.ts:1073	file-url	expect(configHelpers.sourceFallback(importer, pathToFileURL(importer).href)).toBe(importer)
+tests/distribution.test.ts:22	file-url	import { fileURLToPath } from 'node:url'
+tests/distribution.test.ts:26	file-url	const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+tests/distribution.test.ts:27	platform-gate	const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+tests/distribution.test.ts:27	ext-cmd	const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+tests/distribution.test.ts:32	platform-gate	const SHELL = process.platform === 'win32'
+tests/distribution.test.ts:482	sep-split	writeFile(target, `${bindings.join('\n')}\nexport const surface = [${names.join(', ')}]\n`)
+tests/distribution.test.ts:524	sep-split	const installed = join(consumer, 'node_modules', ...name.split('/'))
+tests/distribution.test.ts:579	tmpdir-use	const SCRATCH = mkdtempSync(join(tmpdir(), 'distribution-'))
+tests/guides.test.ts:438	sep-split	.join('\n')
+tests/guides.test.ts:549	signals	// child traps `SIGTERM` and keeps writing, so lines certainly arrive while the stop is in flight;
+tests/guides.test.ts:553	signals	"process.on('SIGTERM', () => undefined); console.log('ready'); let n = 0;" +
+tests/guides.test.ts:738	platform-gate	detached: process.platform !== 'win32',
+tests/guides.test.ts:748	platform-gate	detached: process.platform !== 'win32',
+tests/guides.test.ts:777	platform-gate	detached: process.platform !== 'win32',
+tests/guides.test.ts:782	signals	killProcess(reporter, 'SIGTERM')
+tests/guides.test.ts:785	platform-gate	if (!isExited(reporter) && process.platform === 'win32') {
+tests/guides.test.ts:789	signals	killProcess(reporter, 'SIGKILL')
+tests/guides.test.ts:844	signals	"The child therefore survives the supervisor's `SIGKILL` and does not receive the terminal's `SIGINT`.",
+tests/guides.test.ts:1013	platform-gate	expect(keys.includes('SYSTEMROOT')).toBe(process.platform === 'win32')
+tests/guides.test.ts:1019	platform-gate	it.skipIf(process.platform === 'win32')('leaves an isolated POSIX child no PATH', () => {
+tests/guides.test.ts:1071	signals	expect(blocking.signal).toBe('SIGKILL')
+tests/guides.test.ts:1151	win-drive	value: buildExecutableCandidates('git', 'C:\\work', { PATH: 'C:\\bin' }, 'win32'),
+tests/guides.test.ts:1151	platform-gate	value: buildExecutableCandidates('git', 'C:\\work', { PATH: 'C:\\bin' }, 'win32'),
+tests/guides.test.ts:1153	win-drive	'C:\\work\\git',
+tests/guides.test.ts:1154	win-drive	'C:\\work\\git.COM',
+tests/guides.test.ts:1155	win-drive	'C:\\work\\git.EXE',
+tests/guides.test.ts:1156	win-drive	'C:\\work\\git.BAT',
+tests/guides.test.ts:1157	win-drive	'C:\\work\\git.CMD',
+tests/guides.test.ts:1158	win-drive	'C:\\bin\\git',
+tests/guides.test.ts:1159	win-drive	'C:\\bin\\git.COM',
+tests/guides.test.ts:1160	win-drive	'C:\\bin\\git.EXE',
+tests/guides.test.ts:1161	win-drive	'C:\\bin\\git.BAT',
+tests/guides.test.ts:1162	win-drive	'C:\\bin\\git.CMD',
+tests/guides.test.ts:1173	win-drive	value: readPlatformVariable({ Path: 'C:\\Windows' }, 'PATH', 'win32'),
+tests/guides.test.ts:1173	platform-gate	value: readPlatformVariable({ Path: 'C:\\Windows' }, 'PATH', 'win32'),
+tests/guides.test.ts:1174	win-drive	claim: 'C:\\Windows',
+tests/guides.test.ts:1176	posix-root	{ name: 'readVariable', value: readVariable({ PATH: '/usr/bin' }, 'PATH'), claim: '/usr/bin' },
+tests/guides.test.ts:1212	platform-gate	it.skipIf(process.platform === 'win32')(
+tests/guides.test.ts:1219	platform-gate	it.skipIf(process.platform !== 'win32')(
+tests/setup.test.ts:2	file-url	import { fileURLToPath } from 'node:url'
+tests/setup.test.ts:9	file-url	const fixture = fileURLToPath(new URL('./src/server/fixtures/child.mjs', import.meta.url))
+tests/setupPolicy.ts:69	tmpdir-use	const root = mkdtempSync(join(tmpdir(), options.prefix))
+tests/setupPolicy.ts:74	sep-split	const segments = normalized.split('/')
+tests/setupPolicy.ts:77	abs-check	normalized.startsWith('/') ||
+tests/setupPolicy.ts:838	sep-split	const lines = readFileSync(join(root, path), 'utf8').split('\n')
+tests/setupPolicy.ts:838	nl-split	const lines = readFileSync(join(root, path), 'utf8').split('\n')
+tests/setupPolicy.ts:886	sep-split	const [first = ''] = normalized.split('/')
+tests/setupPolicy.ts:937	sep-split	for (const segment of normalized.split('/')) {
+tests/setupPolicy.ts:997	sep-split	const lines = content.replaceAll('\r\n', '\n').split('\n')
+tests/setupPolicy.ts:997	eol	const lines = content.replaceAll('\r\n', '\n').split('\n')
+tests/setupPolicy.ts:997	nl-split	const lines = content.replaceAll('\r\n', '\n').split('\n')
+tests/setupPolicy.ts:998	sep-split	const rawLines = content.split('\n')
+tests/setupPolicy.ts:998	nl-split	const rawLines = content.split('\n')
+tests/setupPolicy.ts:1054	sep-split	source = sourceLines.join('\n')
+tests/setupPolicy.ts:1114	sep-split	].join('\n') + '\n'
+tests/setupPolicy.ts:1127	eol	const normalized = content.replaceAll('\r\n', '\n')
+tests/setupPolicy.ts:1128	sep-split	const lines = (normalized.endsWith('\n') ? normalized.slice(0, -1) : normalized).split('\n')
+tests/setupPolicy.ts:1128	nl-split	const lines = (normalized.endsWith('\n') ? normalized.slice(0, -1) : normalized).split('\n')
+tests/setupPolicy.ts:1196	eol	const lines = content.split(/\r\n|\r|\n/u)
+tests/setupPolicy.ts:1500	eol	const normalized = content.replaceAll('\r\n', '\n')
+tests/src/server/execution/detach.test.ts:56	signals	// A terminal delivers SIGINT to its foreground group and a supervisor is ended by a signal to its
+tests/src/server/execution/detach.test.ts:59	platform-gate	it.skipIf(process.platform === 'win32')(
+tests/src/server/execution/detach.test.ts:65	signals	// Each child records that it received SIGINT and touches a heartbeat file while it lives,
+tests/src/server/execution/detach.test.ts:73	signals	"process.on('SIGINT', () => writeFileSync(marker + '.sigint', 'interrupted'))",
+tests/src/server/execution/detach.test.ts:76	sep-split	].join('\n'),
+tests/src/server/execution/detach.test.ts:84	signals	"process.on('SIGINT', () => undefined)",
+tests/src/server/execution/detach.test.ts:94	sep-split	].join('\n'),
+tests/src/server/execution/detach.test.ts:120	signals	process.kill(-supervisor, 'SIGINT')
+tests/src/server/execution/detach.test.ts:120	proc-kill	process.kill(-supervisor, 'SIGINT')
+tests/src/server/execution/detach.test.ts:131	signals	process.kill(-supervisor, 'SIGKILL')
+tests/src/server/execution/detach.test.ts:131	proc-kill	process.kill(-supervisor, 'SIGKILL')
+tests/src/server/execution/detach.test.ts:141	signals	holds(() => process.kill(survivor, 'SIGKILL'))
+tests/src/server/execution/detach.test.ts:141	proc-kill	holds(() => process.kill(survivor, 'SIGKILL'))
+tests/src/server/execution/detach.test.ts:142	signals	holds(() => process.kill(member, 'SIGKILL'))
+tests/src/server/execution/detach.test.ts:142	proc-kill	holds(() => process.kill(member, 'SIGKILL'))
+tests/src/server/execution/detach.test.ts:143	signals	holds(() => process.kill(supervisor, 'SIGKILL'))
+tests/src/server/execution/detach.test.ts:143	proc-kill	holds(() => process.kill(supervisor, 'SIGKILL'))
+tests/src/server/execution/execute.test.ts:167	ext-cmd	file: 'orkestrel-nonexistent-binary.exe',
+tests/src/server/execution/execute.test.ts:186	ext-cmd	{ file: 'orkestrel-nonexistent-binary.exe', arguments: [] },
+tests/src/server/execution/executeSync.test.ts:184	ext-cmd	{ file: 'orkestrel-nonexistent-binary.exe', arguments: [] },
+tests/src/server/execution/executeSync.test.ts:196	ext-cmd	{ file: 'orkestrel-nonexistent-binary.exe', arguments: [] },
+tests/src/server/fixtures/child.mjs:35	signals	process.on('SIGTERM', () => process.exit(0))
+tests/src/server/fixtures/child.mjs:57	proc-kill	// non-detached grandchild dies with its root, which no `taskkill /T` is needed for, so the
+tests/src/server/fixtures/child.mjs:70	platform-gate	detached: process.platform === 'win32',
+tests/src/server/fixtures/child.mjs:90	signals	process.on('SIGTERM', () => process.exit(0))
+tests/src/server/fixtures/child.mjs:105	signals	process.on('SIGTERM', () => process.exit(0))
+tests/src/server/fixtures/child.mjs:111	platform-gate	detached: process.platform === 'win32',
+tests/src/server/fixtures/child.mjs:143	signals	process.on('SIGTERM', () => process.exit(0))
+tests/src/server/fixtures/child.mjs:145	signals	// Trap SIGTERM with a no-op and keep running: the cooperative signal is delivered and ignored, so
+tests/src/server/fixtures/child.mjs:146	signals	// only an escalation to SIGKILL ends this process.
+tests/src/server/fixtures/child.mjs:148	signals	process.on('SIGTERM', () => undefined)
+tests/src/server/fixtures/child.mjs:154	signals	process.on('SIGTERM', () => undefined)
+tests/src/server/fixtures/child.mjs:163	signals	// No SIGTERM handler: a termination signal ends the process as a signal exit, so a caller that
+tests/src/server/fixtures/child.mjs:175	signals	process.on('SIGTERM', () => process.exit(0))
+tests/src/server/helpers.test.ts:113	platform-gate	const folded = process.platform === 'win32'
+tests/src/server/helpers.test.ts:123	win-drive	const environment = { Path: 'C:\\tools' }
+tests/src/server/helpers.test.ts:125	win-drive	expect(readPlatformVariable(environment, 'PATH', 'win32')).toBe('C:\\tools')
+tests/src/server/helpers.test.ts:125	platform-gate	expect(readPlatformVariable(environment, 'PATH', 'win32')).toBe('C:\\tools')
+tests/src/server/helpers.test.ts:127	posix-root	expect(readPlatformVariable({ PATH: '/usr/bin' }, 'PATH', 'linux')).toBe('/usr/bin')
+tests/src/server/helpers.test.ts:151	win-drive	const environment = { Path: 'C:\\bin;D:\\tools', PathExt: '.CMD;.EXE' }
+tests/src/server/helpers.test.ts:153	win-drive	expect(buildExecutableCandidates('report.txt', 'C:\\workspace', environment, 'win32')).toEqual([
+tests/src/server/helpers.test.ts:153	platform-gate	expect(buildExecutableCandidates('report.txt', 'C:\\workspace', environment, 'win32')).toEqual([
+tests/src/server/helpers.test.ts:154	win-drive	'C:\\workspace\\report.txt',
+tests/src/server/helpers.test.ts:155	win-drive	'C:\\workspace\\report.txt.CMD',
+tests/src/server/helpers.test.ts:156	win-drive	'C:\\workspace\\report.txt.EXE',
+tests/src/server/helpers.test.ts:157	win-drive	'C:\\bin\\report.txt',
+tests/src/server/helpers.test.ts:158	win-drive	'C:\\bin\\report.txt.CMD',
+tests/src/server/helpers.test.ts:159	win-drive	'C:\\bin\\report.txt.EXE',
+tests/src/server/helpers.test.ts:160	win-drive	'D:\\tools\\report.txt',
+tests/src/server/helpers.test.ts:161	win-drive	'D:\\tools\\report.txt.CMD',
+tests/src/server/helpers.test.ts:162	win-drive	'D:\\tools\\report.txt.EXE',
+tests/src/server/helpers.test.ts:170	platform-gate	it.skipIf(process.platform !== 'win32')(
+tests/src/server/helpers.test.ts:175	eol	scratch.write('tool.cmd', '@echo off\r\necho tool-ran\r\n')
+tests/src/server/helpers.test.ts:175	ext-cmd	scratch.write('tool.cmd', '@echo off\r\necho tool-ran\r\n')
+tests/src/server/helpers.test.ts:183	ext-cmd	).toBe(join(scratch.path, 'tool.cmd').toLowerCase())
+tests/src/server/helpers.test.ts:198	platform-gate	it.skipIf(process.platform !== 'win32')(
+tests/src/server/helpers.test.ts:203	eol	scratch.write('report.txt', 'not an executable\r\n')
+tests/src/server/helpers.test.ts:204	eol	scratch.write('report.txt.cmd', '@echo off\r\necho appended\r\n')
+tests/src/server/helpers.test.ts:204	ext-cmd	scratch.write('report.txt.cmd', '@echo off\r\necho appended\r\n')
+tests/src/server/helpers.test.ts:205	eol	scratch.write('notes.txt.cmd', '@echo off\r\necho appended\r\n')
+tests/src/server/helpers.test.ts:205	ext-cmd	scratch.write('notes.txt.cmd', '@echo off\r\necho appended\r\n')
+tests/src/server/helpers.test.ts:219	ext-cmd	).toBe(join(scratch.path, 'notes.txt.cmd').toLowerCase())
+tests/src/server/helpers.test.ts:228	platform-gate	it.skipIf(process.platform !== 'win32')('searches the workspace before the path', () => {
+tests/src/server/helpers.test.ts:231	eol	scratch.write('tool.cmd', '@echo off\r\necho workspace-ran\r\n')
+tests/src/server/helpers.test.ts:231	ext-cmd	scratch.write('tool.cmd', '@echo off\r\necho workspace-ran\r\n')
+tests/src/server/helpers.test.ts:238	ext-cmd	).toBe(join(scratch.path, 'tool.cmd').toLowerCase())
+tests/src/server/helpers.test.ts:246	platform-gate	it.skipIf(process.platform === 'win32')('leaves the lookup to the host that performs it', () => {
+tests/src/server/helpers.test.ts:253	ext-cmd	const command = { file: 'greet.cmd', arguments: ['a&b'] }
+tests/src/server/helpers.test.ts:256	win-drive	buildPlatformSpawn(command, 'C:\\tools\\greet.cmd', { ComSpec: 'C:\\cmd.exe' }, 'win32'),
+tests/src/server/helpers.test.ts:256	platform-gate	buildPlatformSpawn(command, 'C:\\tools\\greet.cmd', { ComSpec: 'C:\\cmd.exe' }, 'win32'),
+tests/src/server/helpers.test.ts:258	win-drive	file: 'C:\\cmd.exe',
+tests/src/server/helpers.test.ts:259	win-drive	arguments: ['/d', '/s', '/c', '""C:\\tools\\greet.cmd" "a&b""'],
+tests/src/server/helpers.test.ts:270	ext-cmd	const command = { file: 'greet.cmd', arguments: ['%PATH%'] }
+tests/src/server/helpers.test.ts:272	win-drive	expect(() => buildPlatformSpawn(command, 'C:\\tools\\greet.cmd', {}, 'win32')).toThrow(
+tests/src/server/helpers.test.ts:272	platform-gate	expect(() => buildPlatformSpawn(command, 'C:\\tools\\greet.cmd', {}, 'win32')).toThrow(
+tests/src/server/helpers.test.ts:307	platform-gate	it.skipIf(process.platform !== 'win32')(
+tests/src/server/helpers.test.ts:312	eol	scratch.write('greet.cmd', '@echo off\r\necho got:%1\r\n')
+tests/src/server/helpers.test.ts:312	ext-cmd	scratch.write('greet.cmd', '@echo off\r\necho got:%1\r\n')
+tests/src/server/helpers.test.ts:313	ext-cmd	const file = join(scratch.path, 'greet.cmd')
+tests/src/server/helpers.test.ts:331	ext-cmd	// Only Windows routes a batch target through a `cmd.exe` command line, so only Windows can show
+tests/src/server/helpers.test.ts:333	platform-gate	it.skipIf(process.platform !== 'win32')(
+tests/src/server/helpers.test.ts:338	eol	scratch.write('with space/greet.cmd', '@echo off\r\necho cmd-ran %1\r\n')
+tests/src/server/helpers.test.ts:339	ext-cmd	const file = join(scratch.path, 'with space', 'greet.cmd')
+tests/src/server/helpers.test.ts:441	signals	expect(isExited({ exitCode: null, signalCode: 'SIGKILL' })).toBe(true)
+tests/src/server/helpers.test.ts:511	signals	holds(() => holding.kill('SIGKILL'))
+tests/src/server/helpers.test.ts:524	signals	holds(() => child.kill('SIGKILL'))
+tests/src/server/helpers.test.ts:570	proc-kill	// `taskkill /F /T` is the only route to a descendant on this host, and `stopChild` selects it by
+tests/src/server/helpers.test.ts:571	platform-gate	// reading `process.platform`, so no POSIX host reaches the branch under test. The fixture also
+tests/src/server/helpers.test.ts:572	platform-gate	// detaches its descendant on `win32` alone, because a non-detached one there dies with its root
+tests/src/server/helpers.test.ts:574	platform-gate	it.skipIf(process.platform !== 'win32')(
+tests/src/server/helpers.test.ts:602	sep-split	const [rootedLine = ''] = rootedOutput.split('\n')
+tests/src/server/helpers.test.ts:602	nl-split	const [rootedLine = ''] = rootedOutput.split('\n')
+tests/src/server/helpers.test.ts:603	sep-split	const [orphanedLine = ''] = orphanedOutput.split('\n')
+tests/src/server/helpers.test.ts:603	nl-split	const [orphanedLine = ''] = orphanedOutput.split('\n')
+tests/src/server/helpers.test.ts:625	signals	if (held > 0) holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/helpers.test.ts:625	proc-kill	if (held > 0) holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/helpers.test.ts:626	signals	if (abandoned > 0) holds(() => process.kill(abandoned, 'SIGKILL'))
+tests/src/server/helpers.test.ts:626	proc-kill	if (abandoned > 0) holds(() => process.kill(abandoned, 'SIGKILL'))
+tests/src/server/helpers.test.ts:627	signals	holds(() => rooted.kill('SIGKILL'))
+tests/src/server/helpers.test.ts:628	signals	holds(() => orphaned.kill('SIGKILL'))
+tests/src/server/helpers.test.ts:668	proc-kill	// Long enough for a `taskkill.exe` spawn to have started, run, and reaped the tree it was
+tests/src/server/helpers.test.ts:668	ext-cmd	// Long enough for a `taskkill.exe` spawn to have started, run, and reaped the tree it was
+tests/src/server/helpers.test.ts:677	signals	holds(() => reused.kill('SIGKILL'))
+tests/src/server/helpers.test.ts:678	signals	holds(() => untouched.kill('SIGKILL'))
+tests/src/server/helpers.test.ts:684	proc-kill	// `taskkill` is the Windows utility that ends a process tree by root id; a POSIX host reaches a
+tests/src/server/helpers.test.ts:686	platform-gate	it.skipIf(process.platform !== 'win32')(
+tests/src/server/helpers.test.ts:709	platform-gate	const windows = mergePlatformEnvironment('win32', parent, false, base, override)
+tests/src/server/helpers.test.ts:723	platform-gate	const folded = process.platform === 'win32'
+tests/src/server/helpers.test.ts:790	signals	signal: 'SIGTERM',
+tests/src/server/helpers.test.ts:861	signals	killProcess({ pid: undefined, kill: (signal) => (signals.handler(signal), true) }, 'SIGTERM')
+tests/src/server/helpers.test.ts:862	signals	expect(signals.calls).toEqual([['SIGTERM']])
+tests/src/server/helpers.test.ts:867	platform-gate	it.skipIf(process.platform === 'win32')(
+tests/src/server/helpers.test.ts:872	signals	killProcess({ pid: 4_194_303, kill: (signal) => (signals.handler(signal), true) }, 'SIGTERM')
+tests/src/server/helpers.test.ts:874	signals	expect(signals.calls).toEqual([['SIGTERM']])
+tests/src/server/helpers.test.ts:881	platform-gate	it.skipIf(process.platform === 'win32')(
+tests/src/server/helpers.test.ts:893	signals	process.kill(-pid, 'SIGKILL')
+tests/src/server/helpers.test.ts:893	proc-kill	process.kill(-pid, 'SIGKILL')
+tests/src/server/helpers.test.ts:903	signals	killProcess(child, 'SIGKILL')
+tests/src/server/helpers.test.ts:906	signals	expect(child.signalCode).toBe('SIGKILL')
+tests/src/server/helpers.test.ts:909	signals	holds(() => child.kill('SIGKILL'))
+tests/src/server/Process.test.ts:450	signals	// `taskkill /F /T`, which delivers no `SIGTERM` and offers the child no chance to ignore one, so
+tests/src/server/Process.test.ts:450	proc-kill	// `taskkill /F /T`, which delivers no `SIGTERM` and offers the child no chance to ignore one, so
+tests/src/server/Process.test.ts:451	signals	// only a POSIX host can observe the grace window elapse and `SIGKILL` follow.
+tests/src/server/Process.test.ts:452	platform-gate	it.skipIf(process.platform === 'win32')(
+tests/src/server/Process.test.ts:453	signals	'escalates to SIGKILL when the child traps SIGTERM and stays alive',
+tests/src/server/Process.test.ts:468	signals	expect(exit.signal).toBe('SIGKILL')
+tests/src/server/Process.test.ts:478	signals	// elapses, and `SIGKILL` follows. Where they agree the host's stop path offers no signal to trap, so
+tests/src/server/Process.test.ts:480	proc-kill	// `taskkill /F /T` ends a trapped and an untrapped child alike at `{ code: 1, signal: null }`.
+tests/src/server/Process.test.ts:521	signals	// escalating to `SIGKILL` fails here.
+tests/src/server/Process.test.ts:523	signals	trappedExit.signal === 'SIGKILL' ||
+tests/src/server/Process.test.ts:527	signals	// Where the host escalates, that reading is `SIGKILL` and this line carries the POSIX expectation.
+tests/src/server/Process.test.ts:594	signals	holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/Process.test.ts:594	proc-kill	holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/Process.test.ts:599	proc-kill	// each host proves its own mechanism. This one drives `taskkill /T`, which has no POSIX peer.
+tests/src/server/Process.test.ts:600	platform-gate	it.skipIf(process.platform !== 'win32')(
+tests/src/server/Process.test.ts:613	proc-kill	expect(holds(() => process.kill(held, 0))).toBe(true)
+tests/src/server/Process.test.ts:618	proc-kill	expect(holds(() => process.kill(held, 0))).toBe(false)
+tests/src/server/Process.test.ts:620	signals	holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/Process.test.ts:620	proc-kill	holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/Process.test.ts:627	platform-gate	it.skipIf(process.platform === 'win32')(
+tests/src/server/Process.test.ts:640	proc-kill	expect(holds(() => process.kill(held, 0))).toBe(true)
+tests/src/server/Process.test.ts:650	signals	holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/Process.test.ts:650	proc-kill	holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/Process.test.ts:769	signals	holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/Process.test.ts:769	proc-kill	holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/Process.test.ts:893	signals	holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/Process.test.ts:893	proc-kill	holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/Process.test.ts:955	signals	holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/Process.test.ts:955	proc-kill	holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/Process.test.ts:1003	signals	holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/Process.test.ts:1003	proc-kill	holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/Process.test.ts:1004	signals	holds(() => process.kill(controlHeld, 'SIGKILL'))
+tests/src/server/Process.test.ts:1004	proc-kill	holds(() => process.kill(controlHeld, 'SIGKILL'))
+tests/src/server/Process.test.ts:1040	signals	holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/Process.test.ts:1040	proc-kill	holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/Process.test.ts:1095	signals	holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/Process.test.ts:1095	proc-kill	holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/Process.test.ts:1136	signals	holds(() => process.kill(cutHeld, 'SIGKILL'))
+tests/src/server/Process.test.ts:1136	proc-kill	holds(() => process.kill(cutHeld, 'SIGKILL'))
+tests/src/server/Process.test.ts:1137	signals	holds(() => process.kill(waitedHeld, 'SIGKILL'))
+tests/src/server/Process.test.ts:1137	proc-kill	holds(() => process.kill(waitedHeld, 'SIGKILL'))
+tests/src/server/Process.test.ts:1208	signals	holds(() => process.kill(cutHeld, 'SIGKILL'))
+tests/src/server/Process.test.ts:1208	proc-kill	holds(() => process.kill(cutHeld, 'SIGKILL'))
+tests/src/server/Process.test.ts:1209	signals	holds(() => process.kill(closedHeld, 'SIGKILL'))
+tests/src/server/Process.test.ts:1209	proc-kill	holds(() => process.kill(closedHeld, 'SIGKILL'))
+tests/src/server/Process.test.ts:1294	signals	holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/Process.test.ts:1294	proc-kill	holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/Process.test.ts:1402	signals	holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/Process.test.ts:1402	proc-kill	holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/Process.test.ts:1403	signals	holds(() => process.kill(controlHeld, 'SIGKILL'))
+tests/src/server/Process.test.ts:1403	proc-kill	holds(() => process.kill(controlHeld, 'SIGKILL'))
+tests/src/server/ProcessManager.test.ts:158	signals	// The fixture handles `SIGTERM`, so the refused child's teardown is bounded by `grace` plus the
+tests/src/server/ProcessManager.test.ts:159	signals	// confirmation of its exit rather than by the `SIGKILL` window. The condition budget outlasts
+tests/src/server/ProcessManager.test.ts:270	signals	if (pid > 0) holds(() => process.kill(pid, 'SIGKILL'))
+tests/src/server/ProcessManager.test.ts:270	proc-kill	if (pid > 0) holds(() => process.kill(pid, 'SIGKILL'))
+tests/src/server/ProcessManager.test.ts:393	signals	holds(() => process.kill(held, 'SIGKILL'))
+tests/src/server/ProcessManager.test.ts:393	proc-kill	holds(() => process.kill(held, 'SIGKILL'))
+vite.config.ts:6	file-url	import { fileURLToPath, URL } from 'node:url'
+vite.config.ts:9	file-url	return fileURLToPath(new URL(relativePath, import.meta.url))

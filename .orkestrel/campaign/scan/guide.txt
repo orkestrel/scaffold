@@ -1,0 +1,133 @@
+configs/helpers.ts:3	file-url	import { fileURLToPath } from 'node:url'
+configs/helpers.ts:49	file-url	resolvePath(dirname(fileURLToPath(import.meta.url)), '..'),
+configs/helpers.ts:53	abs-check	if (!pathname.startsWith('/@fs/')) return pathname
+configs/helpers.ts:56	abs-check	return candidate.startsWith('/') || /^[A-Za-z]:[\\/]/.test(candidate)
+configs/helpers.ts:64	file-url	const physicalCandidate = /^file:/i.test(candidate) ? fileURLToPath(candidate) : candidate
+configs/helpers.ts:75	file-url	return /^file:/i.test(source) ? fileURLToPath(source) : resolvePath(dirname(importer), source)
+configs/helpers.ts:95	abs-check	normalizedId.startsWith('/@id/') ||
+configs/helpers.ts:96	abs-check	normalizedId.startsWith('/@vite/') ||
+configs/helpers.ts:97	abs-check	normalizedId.startsWith('/__vite') ||
+configs/helpers.ts:98	abs-check	normalizedId.startsWith('/__vitest') ||
+configs/helpers.ts:111	sep-split	if (candidate.split('/').some((segment) => segment.toLowerCase() === 'node_modules')) {
+configs/helpers.ts:125	file-url	if (/^file:/i.test(candidate)) candidate = fileURLToPath(candidate)
+configs/helpers.ts:164	abs-check	sourcePath.startsWith('/') ||
+configs/helpers.ts:172	sep-split	const segments = sourcePath.split('/')
+configs/helpers.ts:247	sep-split	const segments = directory.replaceAll('\\', '/').split('/')
+configs/helpers.ts:524	abs-check	value.startsWith('/') ||
+configs/helpers.ts:557	sep-split	const [layer, environment] = importerPath?.split('/') ?? []
+configs/helpers.ts:567	abs-check	normalizedSource.startsWith('/') ||
+configs/helpers.ts:572	abs-check	normalizedSource.startsWith('/') ||
+configs/helpers.ts:651	abs-check	normalizedSource.startsWith('/') ||
+configs/helpers.ts:745	abs-check	normalizedSource.startsWith('/') ||
+scripts/codex.sh:9	dev-null	if ! command -v codex >/dev/null 2>&1; then
+scripts/codex.sh:33	dev-null	if codex login status >/dev/null 2>&1; then
+scripts/cursor.sh:9	dev-null	if ! command -v agent >/dev/null 2>&1; then
+scripts/cursor.sh:14	posix-tmp	MODELS_LOG="$(mktemp /tmp/orkestrel-cursor-models.XXXXXX)" || exit 0
+scripts/deps.sh:21	posix-tmp	DEPS_LOG="$(mktemp /tmp/orkestrel-deps.XXXXXX)" || {
+scripts/deps.sh:39	eol	[ "$(tr -d '\r\n' <"$LOCK_MARKER")" = "$LOCK_HASH" ]; then
+scripts/ollama.sh:9	dev-null	if ! command -v ollama >/dev/null 2>&1; then
+scripts/ollama.sh:14	dev-null	if curl -sf --max-time 2 "http://127.0.0.1:11434/api/tags" >/dev/null 2>&1; then
+src/core/helpers.ts:563	sep-split	return key.split('/').every((segment) => segment !== '' && segment !== '.' && segment !== '..')
+src/core/helpers.ts:607	sep-split	return normalizeDirectories(module).join('\0')
+src/core/helpers.ts:840	sep-split	for (const segment of combined.split('/')) {
+src/core/helpers.ts:851	sep-split	return segments.length === 0 ? '.' : segments.join('/')
+src/core/helpers.ts:1139	sep-split	for (const line of extractSourceLines(lines.join('\n'))) {
+src/core/helpers.ts:1429	sep-split	* const block = ['/**', ' * @example', ' *' + '/', 'export function walk() {}', ''].join('\n')
+src/core/helpers.ts:1469	sep-split	for (const line of extractExampleLines(extractSourceLines(lines.join('\n')))) {
+tests/config.test.ts:17	file-url	import { fileURLToPath, pathToFileURL } from 'node:url'
+tests/config.test.ts:27	file-url	const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+tests/config.test.ts:825	sep-split	].join('\n'),
+tests/config.test.ts:850	sep-split	].join('\n'),
+tests/config.test.ts:906	sep-split	].join('\n'),
+tests/config.test.ts:916	sep-split	].join('\n'),
+tests/config.test.ts:920	symlink	// `node_modules/.bin/oxlint` shim. That shim is a POSIX `sh` script — a symlink to one on
+tests/config.test.ts:922	shell-true	// extensionless form; spawning the `.cmd` would need `shell: true`, which breaks on paths
+tests/config.test.ts:1073	file-url	expect(configHelpers.sourceFallback(importer, pathToFileURL(importer).href)).toBe(importer)
+tests/distribution.test.ts:22	file-url	import { fileURLToPath } from 'node:url'
+tests/distribution.test.ts:26	file-url	const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+tests/distribution.test.ts:27	platform-gate	const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+tests/distribution.test.ts:27	ext-cmd	const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+tests/distribution.test.ts:32	platform-gate	const SHELL = process.platform === 'win32'
+tests/distribution.test.ts:482	sep-split	writeFile(target, `${bindings.join('\n')}\nexport const surface = [${names.join(', ')}]\n`)
+tests/distribution.test.ts:524	sep-split	const installed = join(consumer, 'node_modules', ...name.split('/'))
+tests/distribution.test.ts:579	tmpdir-use	const SCRATCH = mkdtempSync(join(tmpdir(), 'distribution-'))
+tests/setupPolicy.ts:69	tmpdir-use	const root = mkdtempSync(join(tmpdir(), options.prefix))
+tests/setupPolicy.ts:74	sep-split	const segments = normalized.split('/')
+tests/setupPolicy.ts:77	abs-check	normalized.startsWith('/') ||
+tests/setupPolicy.ts:838	sep-split	const lines = readFileSync(join(root, path), 'utf8').split('\n')
+tests/setupPolicy.ts:838	nl-split	const lines = readFileSync(join(root, path), 'utf8').split('\n')
+tests/setupPolicy.ts:886	sep-split	const [first = ''] = normalized.split('/')
+tests/setupPolicy.ts:937	sep-split	for (const segment of normalized.split('/')) {
+tests/setupPolicy.ts:997	sep-split	const lines = content.replaceAll('\r\n', '\n').split('\n')
+tests/setupPolicy.ts:997	eol	const lines = content.replaceAll('\r\n', '\n').split('\n')
+tests/setupPolicy.ts:997	nl-split	const lines = content.replaceAll('\r\n', '\n').split('\n')
+tests/setupPolicy.ts:998	sep-split	const rawLines = content.split('\n')
+tests/setupPolicy.ts:998	nl-split	const rawLines = content.split('\n')
+tests/setupPolicy.ts:1054	sep-split	source = sourceLines.join('\n')
+tests/setupPolicy.ts:1114	sep-split	].join('\n') + '\n'
+tests/setupPolicy.ts:1127	eol	const normalized = content.replaceAll('\r\n', '\n')
+tests/setupPolicy.ts:1128	sep-split	const lines = (normalized.endsWith('\n') ? normalized.slice(0, -1) : normalized).split('\n')
+tests/setupPolicy.ts:1128	nl-split	const lines = (normalized.endsWith('\n') ? normalized.slice(0, -1) : normalized).split('\n')
+tests/setupPolicy.ts:1196	eol	const lines = content.split(/\r\n|\r|\n/u)
+tests/setupPolicy.ts:1500	eol	const normalized = content.replaceAll('\r\n', '\n')
+tests/setupServer.test.ts:2	file-url	import { pathToFileURL } from 'node:url'
+tests/setupServer.test.ts:17	file-url	const files = readInventory(pathToFileURL(`${scratch.path}/`), ['.'])
+tests/src/core/helpers.test.ts:55	eol	'let count = 0\r\n--/[/*]/.lastIndex\r\nexport const visible = true',
+tests/src/core/helpers.test.ts:57	eol	'let count = 0 /* separated\r\n*/ --/[/*]/.lastIndex\r\nexport const visible = true',
+tests/src/core/helpers.test.ts:79	sep-split	].join('\n'),
+tests/src/core/helpers.test.ts:86	sep-split	].join('\n'),
+tests/src/core/helpers.test.ts:148	sep-split	].join('\n'),
+tests/src/core/helpers.test.ts:195	eol	"if (true) /[/*]/.test('')\r\nexport const visible = true",
+tests/src/core/helpers.test.ts:215	sep-split	].join('\n')
+tests/src/core/helpers.test.ts:229	sep-split	].join('\n')
+tests/src/core/helpers.test.ts:266	eol	for (const source of ['code // note\n/* block */\n', 'code // note\r\n/* block */\r\n']) {
+tests/src/core/helpers.test.ts:277	sep-split	const source = ['const before = true /* open', 'hidden */ const after = true', ''].join('\n')
+tests/src/core/helpers.test.ts:298	sep-split	].join('\n')
+tests/src/core/helpers.test.ts:312	sep-split	].join('\n')
+tests/src/core/helpers.test.ts:325	sep-split	].join('\n')
+tests/src/core/helpers.test.ts:337	sep-split	].join('\n')
+tests/src/core/helpers.test.ts:357	sep-split	].join('\n')
+tests/src/core/helpers.test.ts:358	sep-split	expect(extractSourceLines(source).map((line) => line.code)).toEqual(source.split('\n'))
+tests/src/core/helpers.test.ts:358	nl-split	expect(extractSourceLines(source).map((line) => line.code)).toEqual(source.split('\n'))
+tests/src/core/helpers.test.ts:381	sep-split	].join('\r\n')
+tests/src/core/helpers.test.ts:381	eol	].join('\r\n')
+tests/src/core/helpers.test.ts:402	sep-split	['/**', ' * first', ' */ /** second */', ''].join('\r\n'),
+tests/src/core/helpers.test.ts:402	eol	['/**', ' * first', ' */ /** second */', ''].join('\r\n'),
+tests/src/core/helpers.test.ts:933	sep-split	].join('\n')
+tests/src/core/helpers.test.ts:953	sep-split	].join('\n')
+tests/src/core/helpers.test.ts:1095	sep-split	].join('\n')
+tests/src/core/helpers.test.ts:1109	sep-split	].join('\n')
+tests/src/core/helpers.test.ts:1169	sep-split	].join('\n')
+tests/src/core/helpers.test.ts:1183	sep-split	].join('\n')
+tests/src/core/helpers.test.ts:1403	sep-split	].join('\n')
+tests/src/core/helpers.test.ts:1408	sep-split	const source = ['/**', ' * @example', ' */', 'export function walk() {}', ''].join('\n')
+tests/src/core/helpers.test.ts:1424	sep-split	const source = ['/**', ' * @example', ' */', '', 'export function walk() {}', ''].join('\n')
+tests/src/core/helpers.test.ts:1429	sep-split	const source = ['/**', ' * @example', ' */', 'export async function load() {}', ''].join('\n')
+tests/src/core/helpers.test.ts:1434	sep-split	const source = ['/**', ' * @example', ' */', 'export function* walk() {}', ''].join('\n')
+tests/src/core/helpers.test.ts:1454	sep-split	].join('\n')
+tests/src/core/parsers.test.ts:70	sep-split	].join('\n')
+tests/src/core/sources/Source.test.ts:35	sep-split	].join('\n'),
+tests/src/core/sources/Source.test.ts:41	sep-split	].join('\n'),
+tests/src/core/sources/Source.test.ts:136	sep-split	].join('\n'),
+tests/src/core/sources/Source.test.ts:176	sep-split	].join('\n'),
+tests/src/core/sources/Source.test.ts:199	sep-split	].join('\n'),
+tests/src/core/sources/Source.test.ts:220	sep-split	].join('\n'),
+tests/src/core/sources/Source.test.ts:286	sep-split	].join('\n')
+tests/src/core/sources/Source.test.ts:309	sep-split	].join('\n'),
+tests/src/core/sources/Source.test.ts:328	sep-split	].join('\n'),
+tests/src/core/sources/Source.test.ts:349	sep-split	].join('\n'),
+tests/src/core/sources/Source.test.ts:443	sep-split	].join('\n'),
+tests/src/core/sources/Source.test.ts:459	sep-split	].join('\n'),
+tests/src/core/sources/Source.test.ts:486	sep-split	].join('\n'),
+tests/src/core/sources/Source.test.ts:522	sep-split	].join('\n'),
+tests/src/core/sources/Source.test.ts:534	sep-split	'module/terminal.ts': ['/*', 'export const ghost = true', '*/', ''].join('\n'),
+tests/src/core/sources/Source.test.ts:597	sep-split	].join('\n'),
+tests/src/core/sources/Source.test.ts:632	sep-split	].join('\n'),
+tests/src/core/sources/Source.test.ts:654	sep-split	].join('\n'),
+tests/src/core/sources/Source.test.ts:669	sep-split	].join('\n'),
+tests/src/core/sources/Source.test.ts:716	sep-split	].join('\n'),
+tests/src/core/sources/Source.test.ts:864	sep-split	].join('\n'),
+tests/src/core/sources/Source.test.ts:878	sep-split	].join('\n'),
+tests/src/core/sources/Source.test.ts:889	sep-split	].join('\n'),
+vite.config.ts:6	file-url	import { fileURLToPath, URL } from 'node:url'
+vite.config.ts:9	file-url	return fileURLToPath(new URL(relativePath, import.meta.url))

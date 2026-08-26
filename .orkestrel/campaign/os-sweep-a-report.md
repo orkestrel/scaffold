@@ -1,0 +1,117 @@
+- `Question`: Where does operating-system coupling appear in `@orkestrel/process`, `@orkestrel/lsp`, and `@orkestrel/sea`?
+- `Evidence`:
+  **process** (`@orkestrel/process`; no `app/`):
+  - `src/server/helpers.ts:12` — `posix`/`win32` from `node:path` — Windows vs POSIX path rules for spawn resolution `[src]`
+  - `src/server/helpers.ts:156` — `platform !== 'win32'` skip of case-folded env scan — Windows env keys are case-insensitive `[src]` `[gated]`
+  - `src/server/helpers.ts:210` — `folded = platform === 'win32'` — Windows merge collapses `PATH`/`Path` `[src]` `[gated]`
+  - `src/server/helpers.ts:304` — empty candidate list off `win32`; `PATHEXT`/`PATH` split on `';'`; `includes('/') || includes('\\')`; `win32.resolve` — Windows cwd-first + PATHEXT lookup `[src]` `[gated]`
+  - `src/server/helpers.ts:399` — `win32.extname` vs `posix.extname`; `.cmd`/`.bat` via `ComSpec`/`cmd.exe` `/d /s /c` verbatim — Windows cannot spawn batch directly; POSIX treats `.cmd` as a normal file `[src]` `[gated]`
+  - `src/server/helpers.ts:615` — `process.platform === 'win32'` uses `child.kill`; else `process.kill(-pid)` — Windows has no POSIX process groups `[src]` `[gated]`
+  - `src/server/helpers.ts:650` — `join(SystemRoot ?? 'C:\\Windows', 'System32', 'taskkill.exe')` `/F /T /PID` — hardcoded Windows tree-kill utility (caller is gated; function body is not) `[src]`
+  - `src/server/helpers.ts:744` — `stopChild`: `killTree` vs `SIGTERM` then `SIGKILL` — Windows has no cooperative signals `[src]` `[gated]`
+  - `src/server/Process.ts:147` / `src/server/execution/execute.ts:110` — `detached: process.platform !== 'win32'` — POSIX process-group leadership; Windows stays in the parent group `[src]` `[gated]`
+  - `src/server/Process.ts:150` / `execute.ts:113` / `executeSync.ts:74` / `detach.ts:43` / `helpers.ts:653` — `windowsHide: true` — Windows console-window spawn `[src]`
+  - `src/server/Process.ts:153` — `createInterface({ crlfDelay: Infinity })` — LF, CRLF, and bare CR all terminate lines `[src]`
+  - `src/server/execution/executeSync.ts:73` — `killSignal: 'SIGKILL'` — POSIX signal name (Node maps it on Windows) `[src]`
+  - `src/server/execution/detach.ts:40` — `detached: true` on every host — Windows detach does not create a signalable group `[src]`
+  - `src/core/constants.ts:37` — `PROCESS_PATHEXT = '.COM;.EXE;.BAT;.CMD'` — Windows PATHEXT default `[src]`
+  - `src/core/types.ts:33` — `isolated: true` leaves no `PATH` on POSIX; Windows libuv still injects a host set `[src]`
+  - `tests/src/server/helpers.test.ts:170` — `skipIf !== 'win32'` live PATHEXT/`PATH` lookup — Windows-only resolver `[tests]` `[gated]`
+  - `tests/src/server/helpers.test.ts:173` — `tool.cmd` written with `\r\n` — Windows batch CRLF `[tests]` `[gated]`
+  - `tests/src/server/helpers.test.ts:246` — `skipIf === 'win32'` empty candidates — POSIX lookup is `execvp` `[tests]` `[gated]`
+  - `tests/src/server/helpers.test.ts:307` — `skipIf !== 'win32'` `%PATH%` refusal against a live `.cmd` — `cmd.exe` percent expansion `[tests]` `[gated]`
+  - `tests/src/server/helpers.test.ts:574` — `skipIf !== 'win32'` live `killTree` descendants — `taskkill /T` `[tests]` `[gated]`
+  - `tests/src/server/helpers.test.ts:686` — `skipIf !== 'win32'` `killTree` on a dead pid — Windows-only utility `[tests]` `[gated]`
+  - `tests/src/server/helpers.test.ts:867` — `skipIf === 'win32'` `process.kill(-pid)` ESRCH fallback — Windows rejects negative pids `[tests]` `[gated]`
+  - `tests/src/server/Process.test.ts:97` — line framing of `\n`, `\r`, `\r\n` via `node -e` — CRLF/CR as line ends `[tests]`
+  - `tests/src/server/Process.test.ts:452` — `skipIf === 'win32'` SIGTERM trap escalates to SIGKILL — Windows `taskkill` has no cooperative signal `[tests]` `[gated]`
+  - `tests/src/server/Process.test.ts:600` — `skipIf !== 'win32'` grandchild via tree — `taskkill /T` `[tests]` `[gated]`
+  - `tests/src/server/Process.test.ts:627` — `skipIf === 'win32'` grandchild via process group — negated pid `[tests]` `[gated]`
+  - `tests/src/server/execution/detach.test.ts:59` — `skipIf === 'win32'` SIGINT to supervisor group — POSIX process-group SIGINT `[tests]` `[gated]`
+  - `tests/src/server/fixtures/child.mjs:35` — `process.on('SIGTERM', …)` — POSIX signal delivery `[tests]`
+  - `tests/src/server/fixtures/child.mjs:70` — `detached: process.platform === 'win32'` for grandchild survival — Windows tree vs POSIX session `[tests]` `[gated]`
+  - `tests/guides.test.ts:1013` — isolated child has `SYSTEMROOT` iff `win32` — libuv required-set injection `[tests]` `[gated]`
+  - `tests/guides.test.ts:1019` — `skipIf === 'win32'` isolated child has no `PATH` — POSIX-only emptiness `[tests]` `[gated]`
+  - `tests/guides.test.ts:1212` — `skipIf === 'win32'` `resolveExecutable('git')` stays `'git'` — POSIX leaves the bare name `[tests]` `[gated]`
+  - `tests/guides.test.ts:1219` — `skipIf !== 'win32'` `resolveExecutable('git')` is absolute — Windows PATHEXT search `[tests]` `[gated]`
+  - `tests/distribution.test.ts:27` — `NPM = win32 ? 'npm.cmd' : 'npm'`; `shell: SHELL` — Windows `.cmd` needs a shell `[tests]` `[gated]`
+  - `scripts/deps.sh:1` / `scripts/cursor.sh:1` / `scripts/codex.sh:1` / `scripts/ollama.sh:1` — `#!/bin/bash` — bash-only hooks `[scripts]`
+  - `scripts/deps.sh:21` / `scripts/cursor.sh:14` — `mktemp /tmp/orkestrel-…` — hardcoded POSIX `/tmp` `[scripts]`
+  - `scripts/deps.sh:25` / `scripts/cursor.sh:15` — `chmod 600` — POSIX permission bits `[scripts]`
+  - `configs/helpers.ts:56` — `startsWith('/') || /^[A-Za-z]:[\\/]/` — POSIX absolute vs Windows drive in Vite `@fs` URLs `[configs]`
+  - `configs/helpers.ts:79` — `replaceAll('\\', '/')` — Windows separator folded for repo-relative ids `[configs]`
+  - `configs/src/vite.server.config.ts:16` — `/[\\/]dist[\\/]/` — mixed path separators `[configs]`
+  - `guides/process.md:522` — POSIX `SIGTERM`/`SIGKILL` group vs Windows `taskkill /F /T` — documents host-split termination `[guides]`
+  - `guides/process.md:618` — `.cmd`/`.bat` through quoted `cmd.exe`; no `shell: true` — Windows batch spawn `[guides]`
+  - `guides/process.md:675` — isolated Windows still gets `PATH`/`SYSTEMROOT`/`TEMP`/`USERPROFILE` — libuv host set `[guides]`
+  - `guides/process.md:1240` — spawn budgets sized from a Linux contended run — Linux timing as the proven host `[guides]`
+  - `guides/process.md:1251` — live `cmd.exe`/`taskkill.exe` rows last proven on Windows 2026-08-21 — Windows-only live proof `[guides]`
+  - `guides/test.md:54` — ````bash` install snippet — bash as the documented shell `[guides]`
+  - `guides/test.md:888` — “The suite runs on POSIX” / mode `0700` asserted on POSIX “the only host CI runs” — POSIX-as-CI `[guides]`
+  - `guides/probe.md:421` — `node_modules/.bin` shim is a POSIX shell script vs a Windows batch file — shell-specific spawn `[guides]`
+  - `.gitattributes:2` — `* text=auto eol=lf` — LF enforced against Windows CRLF checkout `[configs]`
+
+  **lsp** (`@orkestrel/lsp`; no `app/`):
+  - `src/server/transports/StdioTransport.ts:192` — `buildSpawn` then `spawn` with `windowsVerbatimArguments` — inherits process Windows PATHEXT/cmd routing `[src]`
+  - `src/server/transports/StdioTransport.ts:25` — child not `detached` (stays in this process group) — POSIX group signalling vs Windows `stopChild`/`taskkill` `[src]`
+  - `src/server/transports/StdioTransport.ts:177` — `stopChild(child, grace, grace)` after stdin end — POSIX SIGTERM/SIGKILL vs Windows tree kill `[src]`
+  - `src/core/helpers.ts:36` — header `Content-Length: …\r\n\r\n` — LSP base protocol is CRLF, not `os.EOL` `[src]`
+  - `src/core/parsers.ts:123` — `headerText.split('\r\n')` — LSP headers must be CRLF (LF-only headers fail) `[src]`
+  - `src/core/LSPClient.ts:112` — `workspace` stored as an opaque URI string; no `pathToFileURL`/`fileURLToPath` — Windows drive-letter casing and percent-encoding are the caller’s problem `[src]`
+  - `tests/setupServer.ts:41` — `KILLED_EXIT`: win32 `{code:1,signal:null}` else `{code:null,signal:'SIGKILL'}` — Windows `taskkill` vs POSIX SIGKILL `[tests]` `[gated]`
+  - `tests/setupServer.ts:22` — Windows copies `PATH`/`TEMP`/`USERPROFILE` into every child env — libuv required set `[tests]`
+  - `tests/setupServer.ts:45` — `fileURLToPath(…/oxlint/bin/oxlint)` then `process.execPath` — avoids OS-specific `.bin` shims `[tests]`
+  - `tests/src/server/integration.test.ts:25` — `pathToFileURL(scratch.path).href` as `workspace`/`uri` — host-correct `file://` including Windows drives `[tests]`
+  - `tests/src/core/LSPClient.test.ts:179` — `'file:///workspace'` fixtures — POSIX-shaped file URIs, not `file:///C:/…` `[tests]`
+  - `tests/src/server/fixtures/peer.mjs:90` — `process.on('SIGTERM', () => undefined)` — POSIX cooperative signal `[tests]`
+  - `tests/src/server/fixtures/holder.mjs:58` — grandchild `detached: true` holding stdout — POSIX session vs Windows tree `[tests]`
+  - `tests/src/server/transports/StdioTransport.test.ts:24` — peer waits `budget: 5_000` — spawn/kill latency `[tests]`
+  - `tests/config.test.ts:920` — skip `node_modules/.bin/oxlint` (POSIX `sh` / Windows `.cmd`) — CreateProcess cannot run the extensionless shim `[tests]`
+  - `tests/distribution.test.ts:27` — `npm.cmd` + `shell: true` on win32 — Windows npm launcher `[tests]` `[gated]`
+  - `scripts/deps.sh:1` / `scripts/cursor.sh:1` / `scripts/codex.sh:1` / `scripts/ollama.sh:1` / `scripts/metamodel.sh:1` — `#!/bin/bash` `[scripts]`
+  - `scripts/deps.sh:21` / `scripts/cursor.sh:14` — `mktemp /tmp/orkestrel-…` — hardcoded `/tmp` `[scripts]`
+  - `scripts/deps.sh:25` — `chmod 600` — POSIX modes `[scripts]`
+  - `configs/helpers.ts:56` — `startsWith('/')` plus drive-letter absolute check — Vite `@fs` Windows/POSIX `[configs]`
+  - `guides/lsp.md:36` — `workspace: 'file:///workspace'` — POSIX file-URI example `[guides]`
+  - `.gitattributes:2` — `eol=lf` `[configs]`
+
+  **sea** (`@orkestrel/sea`; no `app/`):
+  - `src/server/constants.ts:122` — `SEA_PLATFORMS` `win32` (`node.exe`, `signtool verify /pa`) / `darwin` (`codesign`) / `linux` (`node`) — per-OS SEA toolchain `[src]`
+  - `src/server/seals/SEA.ts:91` — `Unsupported platform: ${process.platform}` — only win32/darwin/linux `[src]` `[gated]`
+  - `src/server/seals/SEA.ts:284` — `.exe` suffix and name on `win32` — Windows executable naming `[src]` `[gated]`
+  - `src/server/seals/SEA.ts:298` — darwin: `chmodSync(temp, 0o755)`, `codesign --remove-signature` / `--sign` / `--verify` — macOS signing + POSIX exec bit `[src]` `[gated]`
+  - `src/server/seals/SEA.ts:348` — win32: `stripPESignature`, `patchPESubsystem`, `createSignCommand`/`signtool` — PE console/GUI + Authenticode `[src]` `[gated]`
+  - `src/server/seals/SEA.ts:399` — non-darwin/non-win32: `chmodSync(temp, 0o755)` then ELF inject — POSIX exec bit on Linux `[src]` `[gated]`
+  - `src/server/helpers.ts:121` — `walkDirectory` skips `isSymbolicLink()` — symlink escape/portability `[src]`
+  - `src/server/helpers.ts:252` — refuse write through a symlink (`X.br -> /victim`) — symlink redirect `[src]`
+  - `src/server/helpers.ts:557` — reject `\\` and `/^[A-Za-z]:/` in asset keys; `key.split('/')` — POSIX key segments; Windows `\` and `C:` refused `[src]`
+  - `src/server/helpers.ts:607` — `real.startsWith(realBase + sep)` after `realpathSync` — containment uses host `sep` (and macOS `/tmp` → `/private/tmp`) `[src]`
+  - `src/server/helpers.ts:675` — `syncDirectory` returns on `win32` — no directory fsync handle `[src]` `[gated]`
+  - `src/server/helpers.ts:175` — `runShell` → `executeSync` (no shell) — Windows PATHEXT/cmd via process `[src]`
+  - `src/server/helpers.ts:465` — `createSignCommand` builds `signtool sign` argv — Windows Authenticode `[src]`
+  - `src/server/helpers.ts:1016` — `openBrowser`: `rundll32 url.dll,FileProtocolHandler` / `open` / `xdg-open` — OS default URL handler `[src]` `[gated]`
+  - `src/server/injectors/Injector.ts:108` — PE/ELF/Mach-O chosen by magic, not `process.platform` — format-native injection `[src]`
+  - `src/server/injectors/Injector.ts:1607` — close source fd before `rename` — Windows cannot rename a file with an open handle `[src]`
+  - `src/server/injectors/Injector.ts:1615` — `chmodSync(injTemp, mode & 0o7777)` — POSIX mode bits (exec bit) `[src]`
+  - `tests/src/server/seals/SEA.test.ts:141` — output name `seal-test.exe` iff win32 `[tests]` `[gated]`
+  - `tests/src/server/helpers.test.ts:125` — reject `'C:\\x'`, `'a\\b'`, `'/abs'` as keys — Windows/POSIX unsafe names `[tests]`
+  - `tests/src/server/helpers.test.ts:461` — `syncDirectory` missing-path assert skipped on win32 — no-op host `[tests]` `[gated]`
+  - `tests/src/server/helpers.test.ts:482` — valid `openBrowser` spawn not exercised — would launch rundll32/xdg-open `[tests]`
+  - `tests/src/server/helpers.test.ts:494` — `file:///etc/passwd` rejected as non-http — POSIX file URL as a forbidden scheme `[tests]`
+  - `tests/setupServer.test.ts:94` — `root: '/tmp/seal'` in option equality — POSIX path literal (not opened) `[tests]`
+  - `tests/src/server/injectors/Injector.test.ts:203` — `chmodSync(executable, 0o755)` on Mach-O fixture — POSIX exec bit `[tests]`
+  - `tests/integration.test.ts:66` — expect map `darwin` signed/stripped, `linux` unsigned, `win32` stripped/`terminal: true` `[tests]` `[gated]`
+  - `tests/integration.test.ts:14` — skip when the host binary has no free ELF program-header slot — Linux/ELF layout `[tests]`
+  - `tests/distribution.test.ts:27` — `npm.cmd` + `shell: true` on win32 `[tests]` `[gated]`
+  - `scripts/deps.sh:1` / `scripts/cursor.sh:1` / `scripts/codex.sh:1` / `scripts/ollama.sh:1` — `#!/bin/bash`; `mktemp /tmp/…`; `chmod 600` `[scripts]`
+  - `configs/helpers.ts:56` — Vite `@fs` `startsWith('/')` / drive letter `[configs]`
+  - `guides/sea.md:30` — Windows `windows.terminal` GUI subsystem detaches stdio `[guides]`
+  - `guides/sea.md:32` — Windows `signtool` signing `[guides]`
+  - `guides/sea.md:311` — `syncDirectory` no-op on win32 `[guides]`
+  - `guides/test.md:888` — suite/CI assumed POSIX `[guides]`
+  - `.gitattributes:2` — `eol=lf` `[configs]`
+- `Distillate`:
+  - **process**: Coupling is the product: Windows PATHEXT/`cmd.exe`/`taskkill`/`C:\\Windows` vs POSIX process groups/`SIGTERM`/`SIGKILL`/`detached`, plus `readline` CRLF framing; tests `skipIf` the live half they cannot run; scripts are bash+`/tmp`.
+  - **lsp**: Published src does not branch on `process.platform`; spawn/kill ride `@orkestrel/process` (Windows cmd/taskkill, POSIX signals). File URLs are opaque (guides/unit tests use `file:///workspace`; the oxlint receipt uses `pathToFileURL`). Framing is protocol CRLF. Kill-exit expectations are host-gated. Scripts are bash+`/tmp`.
+  - **sea**: Coupling is PE vs ELF vs Mach-O assembly plus `chmod 0o755`, `signtool`/`codesign`, `.exe`, win32 directory-fsync no-op, and `rundll32`/`open`/`xdg-open`; Injector closes before rename for Windows; asset keys ban `\\` and `C:`; scripts are bash+`/tmp`.
+- `Unknowns`: Whether `grace: 20` / `waitForDelay(50)` spawn cases flake on a slow Windows host (not executed here). Whether `StdioTransport` spawn without `windowsHide` flashes a console on Windows. Whether `openBrowser`’s `rundll32`/`xdg-open` exist on CI (spawn path untested). Darwin SEA/`codesign` branches have no live proof in this fleet. Whether any caller besides the oxlint receipt feeds Windows `file:///C%3A/…` URIs into `LSPClient`. `.github/workflows` (sea `ubuntu-latest` only) sits outside the listed sweep roots.

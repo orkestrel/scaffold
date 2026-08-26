@@ -1,0 +1,94 @@
+configs/browsers.ts:58	platform-gate	darwin: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+configs/browsers.ts:59	platform-gate	win32: Object.freeze(['Google', 'Chrome', 'Application', 'chrome.exe']),
+configs/browsers.ts:59	ext-cmd	win32: Object.freeze(['Google', 'Chrome', 'Application', 'chrome.exe']),
+configs/browsers.ts:66	platform-gate	darwin: '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+configs/browsers.ts:67	platform-gate	win32: Object.freeze(['Microsoft', 'Edge', 'Application', 'msedge.exe']),
+configs/browsers.ts:67	ext-cmd	win32: Object.freeze(['Microsoft', 'Edge', 'Application', 'msedge.exe']),
+configs/browsers.ts:86	chmod-exec	accessSync(path, FS_CONSTANTS.X_OK)
+configs/browsers.ts:141	ext-cmd	* otherwise a `chromium` / `chromium.exe` alias or any other `chromium-*` revision under the same
+configs/browsers.ts:164	ext-cmd	for (const alias of ['chromium', 'chromium.exe']) {
+configs/browsers.ts:224	platform-gate	* resolveSystemBrowser(process.platform, process.env)
+configs/browsers.ts:231	platform-gate	if (platform !== 'linux' && platform !== 'darwin' && platform !== 'win32') return undefined
+configs/browsers.ts:233	platform-gate	if (platform === 'win32') {
+configs/browsers.ts:248	platform-gate	if (platform === 'win32') {
+configs/browsers.ts:250	platform-gate	if (isBrowserExecutable(join(root, ...browser.layouts.win32))) return browser.channel
+configs/browsers.ts:282	platform-gate	* resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)
+configs/browsers.ts:309	platform-gate	const fallback = platform === 'win32' ? 'msedge' : 'chrome'
+src/core/helpers.ts:490	sep-split	return parts.join('\n')
+src/core/validators.ts:215	abs-check	if (!hierarchy.startsWith('//')) {
+src/server/helpers.ts:350	sep-split	const parts = combined.split('\n')
+src/server/helpers.ts:350	nl-split	const parts = combined.split('\n')
+src/server/transports/StdioClientTransport.ts:46	signals	*   child's own process group `SIGTERM`, waits the grace window, then `SIGKILL`s through the same
+src/server/transports/StdioClientTransport.ts:48	proc-kill	*   tree with `taskkill /F /T`, which nothing in the child can intercept.
+src/server/types.ts:446	proc-kill	*   Windows ends the tree with `taskkill /F /T`, which nothing in the child can intercept: a
+src/server/types.ts:447	signals	*   `SIGTERM` handler never runs there, so the bytes it would have written never exist. A
+tests/distribution.test.ts:25	file-url	import { fileURLToPath } from 'node:url'
+tests/distribution.test.ts:32	file-url	const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+tests/distribution.test.ts:33	platform-gate	const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+tests/distribution.test.ts:33	ext-cmd	const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+tests/distribution.test.ts:38	platform-gate	const SHELL = process.platform === 'win32'
+tests/distribution.test.ts:488	sep-split	writeFile(target, `${bindings.join('\n')}\nexport const surface = [${names.join(', ')}]\n`)
+tests/distribution.test.ts:626	sep-split	const installed = join(consumer, 'node_modules', ...name.split('/'))
+tests/distribution.test.ts:681	tmpdir-use	const SCRATCH = mkdtempSync(join(tmpdir(), 'distribution-'))
+tests/distribution.test.ts:906	platform-gate	const options = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)
+tests/guides.test.ts:388	sep-split	].join('\n')
+tests/guides.test.ts:399	sep-split	].join('\n')
+tests/guides.test.ts:466	sep-split	].join('\n')
+tests/guides.test.ts:471	sep-split	].join('\n')
+tests/setupConformance.test.ts:91	sep-split	].join('\n')
+tests/setupConformance.ts:33	file-url	import { fileURLToPath } from 'node:url'
+tests/setupConformance.ts:104	file-url	export const TASK_SCHEMA_PATH = fileURLToPath(
+tests/setupGlobal.ts:3	file-url	import { fileURLToPath } from 'node:url'
+tests/setupGlobal.ts:32	file-url	const workspace = fileURLToPath(new URL('../', import.meta.url))
+tests/setupGlobal.ts:39	file-url	'@src/core': fileURLToPath(new URL('../src/core/index.ts', import.meta.url)),
+tests/setupGlobal.ts:40	file-url	'@src/server': fileURLToPath(new URL('../src/server/index.ts', import.meta.url)),
+tests/setupServer.test.ts:195	eol	Buffer.from('HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\n\r\n'),
+tests/setupServer.ts:103	sep-split	.join('\n')
+tests/setupServer.ts:338	eol	* server's HTTP `101` handshake response (the leading text up to `\r\n\r\n`), THEN
+tests/setupServer.ts:351	eol	const end = Buffer.from('\r\n\r\n')
+tests/setupServer.ts:405	eol	`GET ${path} HTTP/1.1\r\nHost: ${url.host}\r\nConnection: Upgrade\r\nUpgrade: websocket\r\n` +
+tests/setupServer.ts:406	eol	`Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n` +
+tests/setupServer.ts:407	eol	`Sec-WebSocket-Protocol: mcp\r\n\r\n`,
+tests/setupServer.ts:701	eol	'HTTP/1.1 101 Switching Protocols\r\n' +
+tests/setupServer.ts:702	eol	'Upgrade: websocket\r\n' +
+tests/setupServer.ts:703	eol	'Connection: Upgrade\r\n' +
+tests/setupServer.ts:704	eol	`Sec-WebSocket-Accept: ${computeWebSocketAccept(key)}\r\n\r\n`,
+tests/src/core/MCPStreamController.test.ts:97	sep-split	].join('\n')
+tests/src/core/MCPStreamController.test.ts:107	sep-split	.join('\n')
+tests/src/core/validators.test.ts:414	posix-tmp	'file:///tmp/item',
+tests/src/core/validators.test.ts:414	file-url	'file:///tmp/item',
+tests/src/server/transports/StdioClientTransport.test.ts:309	proc-kill	process.kill(pid)
+tests/src/server/transports/StdioClientTransport.test.ts:476	signals	// - Windows ends a child tree with `taskkill /F /T`, which no `SIGTERM` handler can intercept, so
+tests/src/server/transports/StdioClientTransport.test.ts:476	proc-kill	// - Windows ends a child tree with `taskkill /F /T`, which no `SIGTERM` handler can intercept, so
+tests/src/server/transports/StdioClientTransport.test.ts:478	signals	//   `SIGTERM` and waits out the grace window instead, and that window is unmeasured here.
+tests/src/server/transports/StdioClientTransport.test.ts:506	signals	/** The bytes the handled child writes from inside its own `SIGTERM` handler. */
+tests/src/server/transports/StdioClientTransport.test.ts:513	platform-gate	const FORCED = process.platform === 'win32'
+tests/src/server/transports/StdioClientTransport.test.ts:562	signals	// A child that installs a `SIGTERM` handler and writes its startup marker at once. The handler
+tests/src/server/transports/StdioClientTransport.test.ts:568	signals	process.on('SIGTERM', () => {
+tests/src/server/transports/StdioClientTransport.test.ts:790	signals	// The child holds a `SIGTERM` handler that would write more, so this reading is what the
+tests/src/server/transports/StdioClientTransport.test.ts:803	proc-kill	// belongs to the host that produces it. Windows ends the tree with `taskkill /F /T`, which the
+tests/src/server/transports/StdioClientTransport.test.ts:804	signals	// child cannot intercept. A cooperative host signals `SIGTERM` and waits out the grace window
+tests/src/server/transports/StdioClientTransport.test.ts:807	signals	'runs no child SIGTERM handler at all on a host that ends the tree by force',
+tests/src/server/transports/StdioClientTransport.test.ts:1007	proc-kill	if (pid !== undefined && isRunning(pid)) process.kill(pid)
+tests/src/server/transports/StdioClientTransport.test.ts:1052	proc-kill	if (pid !== undefined && isRunning(pid)) process.kill(pid)
+tests/src/server/transports/StdioClientTransport.test.ts:1101	proc-kill	if (pid !== undefined && isRunning(pid)) process.kill(pid)
+tests/src/server/transports/StdioClientTransport.test.ts:1146	proc-kill	if (pid !== undefined && isRunning(pid)) process.kill(pid)
+tests/src/server/transports/StdioClientTransport.test.ts:1168	proc-kill	// spends ending the tree through `taskkill` (both measured on this host, 2026-08-21).
+tests/src/server/transports/StdioClientTransport.test.ts:1354	proc-kill	if (pid !== undefined && isRunning(pid)) process.kill(pid)
+tests/src/server/transports/StdioClientTransport.test.ts:1391	proc-kill	if (pid !== undefined && isRunning(pid)) process.kill(pid)
+tests/src/server/transports/StdioClientTransport.test.ts:1432	proc-kill	if (pid !== undefined && isRunning(pid)) process.kill(pid)
+tests/src/server/transports/StdioClientTransport.test.ts:1466	proc-kill	if (pid !== undefined && isRunning(pid)) process.kill(pid)
+tests/src/server/transports/StdioServerTransport.test.ts:24	sep-split	const parts = buffer.split('\n')
+tests/src/server/transports/StdioServerTransport.test.ts:24	nl-split	const parts = buffer.split('\n')
+tests/src/server/transports/WebSocketClientTransport.test.ts:84	eol	'HTTP/1.1 101 Switching Protocols\r\n' +
+tests/src/server/transports/WebSocketClientTransport.test.ts:85	eol	'Upgrade: websocket\r\n' +
+tests/src/server/transports/WebSocketClientTransport.test.ts:86	eol	'Connection: Upgrade\r\n' +
+tests/src/server/transports/WebSocketClientTransport.test.ts:87	eol	'Sec-WebSocket-Accept: wrong\r\n' +
+tests/src/server/transports/WebSocketClientTransport.test.ts:88	eol	'\r\n',
+tests/src/server/transports/WebSocketClientTransport.test.ts:359	eol	'HTTP/1.1 101 Switching Protocols\r\n' +
+tests/src/server/transports/WebSocketClientTransport.test.ts:360	eol	'Upgrade: websocket\r\n' +
+tests/src/server/transports/WebSocketClientTransport.test.ts:361	eol	'Connection: Upgrade\r\n' +
+tests/src/server/transports/WebSocketClientTransport.test.ts:362	eol	`Sec-WebSocket-Accept: ${computeWebSocketAccept(key)}\r\n\r\n`,
+vite.config.ts:8	file-url	import { fileURLToPath, URL } from 'node:url'
+vite.config.ts:10	platform-gate	const browserOptions = resolveBrowser(resolvePinnedBrowser(), process.platform, process.env)
+vite.config.ts:13	file-url	return fileURLToPath(new URL(relativePath, import.meta.url))

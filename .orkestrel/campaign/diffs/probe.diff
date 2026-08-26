@@ -1,0 +1,308 @@
+diff --git a/guides/probe.md b/guides/probe.md
+index e4e6e4e..49df6de 100644
+--- a/guides/probe.md
++++ b/guides/probe.md
+@@ -166,10 +166,20 @@ Each stage takes one optional `workspace` argument and defaults to the working d
+ serves one inspection at a time and admits none itself, so drive stages through `Probe` unless you
+ are building your own coordinator.
+ 
+-`new Overlay()` takes no arguments, so a coordinator of your own can mint one. Mint it per
+-inspection and release it when that inspection ends. An overlay shared across inspections keeps the
+-identity a resident tool caches its answers against, so the second inspection reads the first one's
+-answer as a fresh one. Each stage in this package mints its own for that reason.
++`new Overlay(sensitive)` takes an optional flag, so a coordinator of your own can mint one. Mint it
++per inspection and release it when that inspection ends. An overlay shared across inspections keeps
++the identity a resident tool caches its answers against, so the second inspection reads the first
++one's answer as a fresh one. Each stage in this package mints its own for that reason.
++
++Pass `sensitive` as the file-name case sensitivity you declare to the tool that overlay serves; it
++defaults to `true`, which matches a lookup key against a recorded path exactly. On a host that
++resolves two spellings of one file name to one file, the tool keeps whichever spelling it met first
++— the committed file's, where the candidate shadows one — and asks the overlay under that, so an
++overlay matching keys exactly answers nothing and the tool reads the committed file instead.
++`TypeStage` mints its overlay from the workspace compiler's own `useCaseSensitiveFileNames` reading,
++which is the reading it declares to that compiler's language-service host. The folding reaches the
++lookup key alone: `paths` reports the recorded spelling, and `covers` compares a directory against
++that spelling unfolded.
+ 
+ ### Server helpers
+ 
+@@ -234,12 +244,12 @@ The public call-signature members of each behavioral interface, one table per in
+ 
+ #### `OverlayInterface`
+ 
+-| Method   | Returns               | Behavior                                                                                          |
+-| -------- | --------------------- | ------------------------------------------------------------------------------------------------- |
+-| `set`    | `void`                | Records one candidate's text against the absolute path it stands in for.                          |
+-| `text`   | `string \| undefined` | Reads the candidate text recorded for one absolute path, or `undefined` when it holds none there. |
+-| `covers` | `boolean`             | Reports whether a candidate sits beneath one absolute directory. Directory listings stay on disk. |
+-| `clear`  | `void`                | Releases every candidate, so the paths this overlay held read from disk again.                    |
++| Method   | Returns               | Behavior                                                                                                                                                                 |
++| -------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
++| `set`    | `void`                | Records one candidate's text against the absolute path it stands in for.                                                                                                 |
++| `text`   | `string \| undefined` | Reads the candidate text recorded for one absolute path, or `undefined` when it holds none there. An overlay minted for a case-folding host folds the lookup key's case. |
++| `covers` | `boolean`             | Reports whether a candidate sits beneath one absolute directory. Directory listings stay on disk.                                                                        |
++| `clear`  | `void`                | Releases every candidate, so the paths this overlay held read from disk again.                                                                                           |
+ 
+ #### `ProbeServerInterface`
+ 
+diff --git a/src/server/Overlay.ts b/src/server/Overlay.ts
+index f460127..dda8ba5 100644
+--- a/src/server/Overlay.ts
++++ b/src/server/Overlay.ts
+@@ -12,6 +12,15 @@ import { normalizePath } from './helpers.js'
+  * is what makes a resident tool re-read a path this overlay holds, so two inspections that supply
+  * different text for one path never share a cached answer.
+  *
++ * This overlay matches a lookup key the way the host its stage declares to its tool matches file
++ * names. A host that resolves two spellings of one file name to one file leaves the tool holding
++ * whichever spelling it met first — the disk one, where the file is on disk — and the tool asks
++ * under that, so an overlay matching keys exactly answers nothing and the tool reads the committed
++ * file instead. Mint the overlay with the sensitivity the stage declares, and one reading decides
++ * both. The recorded spelling is what `paths` reports and what `covers` matches a directory
++ * against, so a folded key never reaches the paths a tool is handed and containment stays an exact
++ * comparison.
++ *
+  * @example
+  * ```ts
+  * const overlay = new Overlay()
+@@ -22,25 +31,41 @@ import { normalizePath } from './helpers.js'
+  */
+ export class Overlay implements OverlayInterface {
+ 	readonly #revision = randomUUID()
+-	readonly #candidates = new Map<string, string>()
++	readonly #sensitive: boolean
++	readonly #candidates = new Map<string, readonly [path: string, text: string]>()
++
++	/**
++	 * Creates an empty candidate set under a fresh identity.
++	 *
++	 * @param sensitive - If `true`, a lookup key matches a recorded path exactly; if `false`, it
++	 * matches with file-name case folded. Default: `true`
++	 */
++	constructor(sensitive = true) {
++		this.#sensitive = sensitive
++	}
+ 
+ 	get revision(): string {
+ 		return this.#revision
+ 	}
+ 
+ 	get paths(): readonly string[] {
+-		return [...this.#candidates.keys()]
++		return [...this.#candidates.values()].map(([path]) => path)
+ 	}
+ 
+ 	/**
+ 	 * Records one candidate's text against the absolute path it stands in for.
+ 	 *
++	 * @remarks
++	 * Recording a candidate under a path this overlay's own matching reads as one already recorded
++	 * replaces that candidate, the way one file holds one text.
++	 *
+ 	 * @param path - The absolute path the candidate replaces
+ 	 * @param text - The candidate's full contents
+ 	 * @returns Nothing
+ 	 */
+ 	set(path: string, text: string): void {
+-		this.#candidates.set(normalizePath(path), text)
++		const recorded = normalizePath(path)
++		this.#candidates.set(this.#key(recorded), [recorded, text])
+ 	}
+ 
+ 	/**
+@@ -50,7 +75,7 @@ export class Overlay implements OverlayInterface {
+ 	 * @returns The recorded text, or `undefined` when this overlay holds no candidate there
+ 	 */
+ 	text(path: string): string | undefined {
+-		return this.#candidates.get(normalizePath(path))
++		return this.#candidates.get(this.#key(normalizePath(path)))?.[1]
+ 	}
+ 
+ 	/**
+@@ -60,14 +85,16 @@ export class Overlay implements OverlayInterface {
+ 	 * The answer is derived from the paths the overlay holds rather than stored, so it stops being
+ 	 * true exactly when the inspection that declared those candidates clears them. Both sides pass
+ 	 * through `normalizePath` first, because a tool that normalizes its own paths asks about a
+-	 * directory in a spelling the recorded path may not share.
++	 * directory in a spelling the recorded path may not share. Case is never folded here: this is a
++	 * containment comparison, and it reads the recorded spelling whatever an overlay minted for a
++	 * case-folding host matches its lookup keys by.
+ 	 *
+ 	 * @param directory - The absolute directory path to check
+ 	 * @returns True if a candidate path sits beneath the directory; false otherwise
+ 	 */
+ 	covers(directory: string): boolean {
+ 		const base = `${normalizePath(directory).replace(/\/+$/, '')}/`
+-		for (const path of this.#candidates.keys()) {
++		for (const [path] of this.#candidates.values()) {
+ 			if (path.startsWith(base)) return true
+ 		}
+ 		return false
+@@ -81,4 +108,11 @@ export class Overlay implements OverlayInterface {
+ 	clear(): void {
+ 		this.#candidates.clear()
+ 	}
++
++	// The host this overlay was minted for decides this and nothing else does. Lowercasing is the
++	// locale-independent `toLowerCase`, not the locale-sensitive form, so one candidate is not
++	// reachable on one machine's locale and lost on another's.
++	#key(path: string): string {
++		return this.#sensitive ? path : path.toLowerCase()
++	}
+ }
+diff --git a/src/server/stages/TypeStage.ts b/src/server/stages/TypeStage.ts
+index 6b33d45..d9f5335 100644
+--- a/src/server/stages/TypeStage.ts
++++ b/src/server/stages/TypeStage.ts
+@@ -152,8 +152,11 @@ export class TypeStage implements TypeStageInterface {
+ 		// Each inspection owns its candidate set and reads it through its own reference, so the
+ 		// clear that follows releases what this inspection recorded and nothing else. The resident
+ 		// services read whichever overlay is installed, so a caller admits one inspection at a
+-		// time the way `Probe` does.
+-		const overlay = new Overlay()
++		// time the way `Probe` does. The overlay matches its keys by the same reading this stage
++		// declares to the compiler: where the compiler resolves two spellings of one file name to
++		// one file it keeps the spelling its root file list already holds and asks the host for
++		// that, so a candidate spelled differently from the file on disk answers for it.
++		const overlay = new Overlay(this.#caseSensitive(typescript))
+ 		this.#overlay = overlay
+ 		try {
+ 			this.#record(subject.test, overlay)
+diff --git a/tests/src/server/Overlay.test.ts b/tests/src/server/Overlay.test.ts
+index 2d988d0..cc4204e 100644
+--- a/tests/src/server/Overlay.test.ts
++++ b/tests/src/server/Overlay.test.ts
+@@ -36,4 +36,45 @@ describe('overlay', () => {
+ 		expect(overlay.covers('C:\\workspace\\src')).toBe(true)
+ 		expect(overlay.covers('C:\\workspace\\source')).toBe(false)
+ 	})
++
++	// A stage that declares case-insensitive file names to its tool mints its overlay the same way,
++	// so the tool reaches the candidate under whichever spelling of the name it kept.
++	it('reads a candidate through a divergent-case spelling where the host ignores case', () => {
++		const overlay = new Overlay(false)
++		overlay.set('C:/workspace/src/Value.ts', "export const VALUE = 'candidate'\n")
++
++		expect(overlay.text('C:/workspace/src/value.ts')).toBe("export const VALUE = 'candidate'\n")
++		expect(overlay.text('c:\\WORKSPACE\\src\\VALUE.ts')).toBe("export const VALUE = 'candidate'\n")
++		// The recorded spelling is what a tool receives as a file name, so the folding decides the
++		// lookup and nothing a tool is handed.
++		expect(overlay.paths).toStrictEqual(['C:/workspace/src/Value.ts'])
++	})
++
++	it('reads a candidate by exact spelling where the host reads case', () => {
++		const overlay = new Overlay()
++		overlay.set('C:/workspace/src/Value.ts', "export const VALUE = 'candidate'\n")
++
++		expect(overlay.text('C:/workspace/src/Value.ts')).toBe("export const VALUE = 'candidate'\n")
++		expect(overlay.text('C:/workspace/src/value.ts')).toBeUndefined()
++	})
++
++	it('replaces a candidate whose path its own matching reads as one already recorded', () => {
++		const overlay = new Overlay(false)
++		overlay.set('C:/workspace/src/Value.ts', "export const VALUE = 'first'\n")
++		overlay.set('C:/workspace/src/value.ts', "export const VALUE = 'second'\n")
++
++		expect(overlay.paths).toStrictEqual(['C:/workspace/src/value.ts'])
++		expect(overlay.text('C:/workspace/src/VALUE.ts')).toBe("export const VALUE = 'second'\n")
++	})
++
++	// A directory spelled in another case names another directory here, whatever the host does with
++	// file names: this is a containment comparison rather than a lookup, so the folding stops at the
++	// key.
++	it('never folds case in a containment check', () => {
++		const overlay = new Overlay(false)
++		overlay.set('/srv/workspace/src/value.ts', '')
++
++		expect(overlay.covers('/srv/workspace/src')).toBe(true)
++		expect(overlay.covers('/srv/workspace/SRC')).toBe(false)
++	})
+ })
+diff --git a/tests/src/server/stages/TypeStage.test.ts b/tests/src/server/stages/TypeStage.test.ts
+index a6fcc05..b91f7df 100644
+--- a/tests/src/server/stages/TypeStage.test.ts
++++ b/tests/src/server/stages/TypeStage.test.ts
+@@ -372,6 +372,82 @@ describe('type stage', () => {
+ 		},
+ 	)
+ 
++	// A case-folding volume resolves a draft's spelling and the disk spelling to one file, so the
++	// compiler keeps the spelling its root file list already holds — the disk one — and asks the host
++	// for that. An overlay matching its keys exactly never answers there, and the inspection reports
++	// the committed file: the broken draft passes and the clean draft carries the disk file's error.
++	// The matching-case pair runs first as this case's control, so a run that reddens shows the
++	// difference is the file-name case rather than the assertion.
++	it(
++		'reads the candidate text where a draft and its disk file differ in file-name case',
++		{ timeout: 60_000 },
++		async () => {
++			const scratch = createScratch({ prefix: 'probe-type-case-' })
++			scratch.write('package.json', '{"type":"module"}\n')
++			scratch.link('node_modules', resolve(ROOT, 'node_modules'))
++			scratch.write(
++				'tsconfig.json',
++				'{"compilerOptions":{"module":"ESNext","moduleResolution":"Bundler","target":"ESNext","types":[],"strict":true},"include":["src/**/*.ts"]}\n',
++			)
++			scratch.write('src/signal.ts', "export const SIGNAL: string = 'disk'\n")
++			scratch.write('src/reading.ts', 'export const READING: string = MISSING\n')
++			// Case folding is the volume's property, so it is read from the volume this scratch
++			// workspace sits on rather than assumed from the platform name. Where the volume folds, the
++			// compiler reports the diagnostic against the disk spelling it kept.
++			const folding = existsSync(resolve(scratch.path, 'src/Signal.ts'))
++			const test = { path: 'tmp/probe/case.test.ts', text: 'export {}\n' }
++			const broken = "export const SIGNAL: number = 'draft'\n"
++			const clean = "export const READING: string = 'draft'\n"
++			const stage = new TypeStage(scratch.path)
++			try {
++				const matched = await stage.inspect(
++					{
++						files: [
++							{ path: 'src/signal.ts', text: broken },
++							{ path: 'src/reading.ts', text: clean },
++						],
++						test,
++					},
++					'tsconfig.json',
++				)
++				const diverged = await stage.inspect(
++					{
++						files: [
++							{ path: 'src/Signal.ts', text: broken },
++							{ path: 'src/Reading.ts', text: clean },
++						],
++						test,
++					},
++					'tsconfig.json',
++				)
++
++				expect(matched.issues).toStrictEqual([
++					{
++						origin: 'claimant',
++						path: 'src/signal.ts',
++						message: expect.stringContaining("not assignable to type 'number'"),
++						range: expect.anything(),
++					},
++				])
++				// The broken draft's own error is reported and the broken disk file the clean draft
++				// stands in for is not, so the overlay answered for both spellings of both files.
++				expect(diverged.issues).toStrictEqual([
++					{
++						origin: 'claimant',
++						path: folding ? 'src/signal.ts' : 'src/Signal.ts',
++						message: expect.stringContaining("not assignable to type 'number'"),
++						range: expect.anything(),
++					},
++				])
++			} finally {
++				const teardown = createTeardown()
++				teardown.add(() => scratch.destroy())
++				teardown.add(() => stage.destroy())
++				await teardown.destroy()
++			}
++		},
++	)
++
+ 	it.each(['first', 'middle', 'last'])(
+ 		'removes every applied overlay when an escaping source is %s',
+ 		{ timeout: 60_000 },
