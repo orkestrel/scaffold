@@ -628,13 +628,13 @@
 			"storage": "dotfiles/oxlintrc.json",
 			"destination": ".oxlintrc.json",
 			"executable": false,
-			"digest": "d4154c90721ff32cb1e4a709ac4672ca7bf31c0c9d757a0643397b2c8fbcff0d"
+			"digest": "c2d9715f5db07992601cf764532c9d9c7b11177a366d46d767ce07f50f49acad"
 		},
 		{
 			"storage": "dotfiles/prettierignore",
 			"destination": ".prettierignore",
 			"executable": false,
-			"digest": "9a2f99856efdf7a1c1cd806e40997a4621237de5a037ee60b2ac0bd23a3979cb"
+			"digest": "6f8bd3b8a192c974ae6332f017c2e76179d15e2598fbd624f7cd4e9e57156ff2"
 		},
 		{
 			"storage": "guides/guide.md",
@@ -736,5 +736,5 @@
 		".codex/agents",
 		".cursor/rules"
 	],
-	"digest": "938ab0fd0dc511cf6d138259d14c58de31eaec665ce65ce2ac4ef62e5f31ae32"
+	"digest": "01277d8096f1a39ce726d570ff977ae8a4840e23c798129e752c8f25c4cd61a7"
 }
