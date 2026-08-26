@@ -411,7 +411,7 @@ export class CLI implements CLIInterface {
 		const guides: Baseline | undefined =
 			fetched.mirrors.length === 0
 				? undefined
-				: fetched.mirrors.some((mirror) => mirror.lookup === 'failed')
+				: fetched.mirrors.some((mirror) => mirror.lookup !== 'found')
 					? 'floor'
 					: 'live'
 		const materializer = new Materializer({ host: host ?? readHostFloor() })
@@ -839,12 +839,19 @@ export class CLI implements CLIInterface {
 		})
 	}
 
-	// A catalog transaction starts only after every packument and mirror answered.
+	// A catalog transaction starts only after every packument answered. A mirror
+	// the host could not serve — a failed read or an absent guide, which is what
+	// a published package with a private repository answers with — is skipped and
+	// reported rather than refusing every other write, because one unreachable
+	// package never costs the caller the rest of the fetch.
 	#assertFetched(entries: readonly CatalogEntry[], mirrors: readonly Mirror[]): void {
 		const failed = [
 			...entries.filter((entry) => entry.lookup !== 'found').map((entry) => entry.name),
 			...mirrors
-				.filter((mirror) => mirror.lookup !== 'found' && mirror.lookup !== 'failed')
+				.filter(
+					(mirror) =>
+						mirror.lookup !== 'found' && mirror.lookup !== 'failed' && mirror.lookup !== 'missing',
+				)
 				.map((mirror) => mirror.name),
 		]
 		if (failed.length === 0) return

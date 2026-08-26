@@ -130,22 +130,30 @@ check, met or missed, narrated by the reasoner.
 
 ### Constants
 
-| API                   | Kind  | Summary                                                                                               |
-| --------------------- | ----- | ----------------------------------------------------------------------------------------------------- |
-| `TASK_OPERATIONS`     | const | The twelve `TaskOperation` values, frozen — compose with `literalOf(…)` / `parseEnum(…)`.             |
-| `TASK_DOMAINS`        | const | The eight `TaskDomain` values, frozen.                                                                |
-| `OUTPUT_FORMATS`      | const | The five `OutputFormat` values, frozen.                                                               |
-| `RISK_SEVERITIES`     | const | The three `RiskSeverity` values, frozen.                                                              |
-| `DEFAULT_BRIEF_TURNS` | const | `16` — the default turn cap `briefToGoal` renders; domain-qualified to keep the barrel clean.         |
-| `GATE_ID`             | const | `'gate'` — the id of the `gateDefinition()` logical definition.                                       |
-| `LINE_BREAK_PATTERN`  | const | The four ECMAScript line terminators a brief field refuses; unanchored and flagless-`g`.              |
-| `SINGLE_LINE_PATTERN` | const | The positive form of `LINE_BREAK_PATTERN`, for `stringShape`'s `pattern` — one class, two mechanisms. |
-| `BLANK_PATTERN`       | const | Empty or all spaces — the one exemplar side `exampleToLines` must not pad.                            |
+| API                      | Kind  | Summary                                                                                                    |
+| ------------------------ | ----- | ---------------------------------------------------------------------------------------------------------- |
+| `TASK_OPERATIONS`        | const | The twelve `TaskOperation` values, frozen — compose with `literalOf(…)` / `parseEnum(…)`.                  |
+| `TASK_DOMAINS`           | const | The eight `TaskDomain` values, frozen.                                                                     |
+| `OUTPUT_FORMATS`         | const | The five `OutputFormat` values, frozen.                                                                    |
+| `RISK_SEVERITIES`        | const | The three `RiskSeverity` values, frozen.                                                                   |
+| `INTERPRETATION_MEMBERS` | const | Every published `Interpretation` member name, frozen — the capture list, pinned to `keyof Interpretation`. |
+| `DEFAULT_BRIEF_TURNS`    | const | `16` — the default turn cap `briefToGoal` renders; domain-qualified to keep the barrel clean.              |
+| `GATE_ID`                | const | `'gate'` — the id of the `gateDefinition()` logical definition.                                            |
+| `LINE_BREAK_PATTERN`     | const | The four ECMAScript line terminators a brief field refuses; unanchored and flagless-`g`.                   |
+| `SINGLE_LINE_PATTERN`    | const | The positive form of `LINE_BREAK_PATTERN`, for `stringShape`'s `pattern` — one class, two mechanisms.      |
+| `BLANK_PATTERN`          | const | Empty or all spaces — the one exemplar side `exampleToLines` must not pad.                                 |
+
+An interpretation the compiler reads is foreign data, and a class instance carries its contract
+on the prototype, so `BriefCompiler` materializes the members `INTERPRETATION_MEMBERS` names into
+a frozen view of its own. The list is pinned to `keyof Interpretation`: a name
+`@orkestrel/interpret` does not publish fails the compile, and a member it adds fails the equality
+assertion in [`BriefCompiler.test.ts`](../tests/src/core/BriefCompiler.test.ts).
 
 ```ts
 import {
 	DEFAULT_BRIEF_TURNS,
 	GATE_ID,
+	INTERPRETATION_MEMBERS,
 	OUTPUT_FORMATS,
 	RISK_SEVERITIES,
 	TASK_DOMAINS,
@@ -158,6 +166,7 @@ OUTPUT_FORMATS // ['markdown', 'json', 'code', 'diff', 'prose']
 RISK_SEVERITIES // ['low', 'medium', 'high']
 DEFAULT_BRIEF_TURNS // 16
 GATE_ID // 'gate'
+INTERPRETATION_MEMBERS.includes('subject') // true — the optional members are captured too
 ```
 
 A closed-set field that does not fit a listed value is a signal the request is mis-scoped,
@@ -441,7 +450,8 @@ consumes a WHOLE and returns a derived view of it.
 | `briefToContent`         | function | The canonical TEXT the hash describes — the identity two briefs must share to be the same brief, since eight hex digits are not identity.                              |
 | `findUnmetRules`         | function | The readiness rules a brief fails, measured in CODE — the gate's decision, which `compile` makes rather than delegating to a borrowed engine.                          |
 | `pinBrief`               | function | Return a fresh `Brief` with `trace` and `hash` filled — deterministic, no clocks, no run-specific data, idempotent, and deeply frozen.                                 |
-| `snapshotBrief`          | function | One deeply owned, deeply frozen, validated reading of a `Brief` — the identity boundary the pin, the registry, and every projection cross.                             |
+| `snapshotBrief`          | function | One deeply owned, deeply frozen, validated reading of a `Brief` — the door `pinBrief`, `BriefManager`, `briefToMarkdown`, `briefToGoal`, and `briefToDispatch` cross.  |
+| `captureValue`           | function | A primitive passes through; an object a structured clone refuses becomes a frozen plain view of its own enumerable members, each named published member read once.     |
 | `assertBrief`            | function | Narrow unknown data to a `Brief` by IDENTITY, throwing `BriefError` `INVALID` when the guard refuses.                                                                  |
 | `exampleToLines`         | function | Render one `Example` as markdown lines — a single-line pair becomes one row, a multi-line pair becomes a fenced block.                                                 |
 | `validateBrief`          | function | The semantic pass over an already-shape-valid brief; returns a reasons `ReasonValidationResult`, never throws.                                                         |
@@ -466,6 +476,7 @@ import {
 	briefToTrace,
 	briefToMarkdown,
 	briefToSubject,
+	captureValue,
 	countSentences,
 	deriveGaps,
 	deriveGivens,
@@ -512,6 +523,11 @@ deriveGaps([{ field: 'output', question: 'Diff or files?', candidates: [], requi
 errorToMessage(new Error('boom')) // 'boom'
 errorToMessage(Object.create(null)) // 'an unreadable object was thrown' — never throws
 freezeDeep({ outcomes: [{ rank: 1 }] }) // nested array frozen too, unlike Object.freeze
+
+const leaf = () => 'ready'
+const captured = captureValue({ leaf }, ['leaf'])
+Object.isFrozen(captured) // true — the view a Briefing replays
+Reflect.get(Object(captured), 'leaf') === leaf // true — an uncloneable leaf keeps its identity
 ```
 
 `validateBrief` ERRORS on the structural violations no assumption can paper over — a
@@ -549,6 +565,13 @@ parseBrief(JSON.stringify(pinned))?.hash === pinned.hash // true — briefs roun
 
 Coerce a bare vocabulary value with `parseEnum` from `@orkestrel/contract` against the
 exported tuple; this package ships no rename-wrapper around it.
+
+`parseBrief` is the intake half that is OWNED BY CONSTRUCTION: its argument is text, so the
+value it returns is a graph built inside the call, carrying no caller identity, no accessor,
+and no alias back to anything the caller holds. `assertBrief` is the other half, and it narrows
+by IDENTITY without taking ownership — the value that comes back is the caller's own object,
+whose accessors can still answer a later reader differently. Pass `assertBrief` a value you
+already own, and cross `snapshotBrief` when you want intake to own it for you.
 
 ### Factories
 
@@ -692,9 +715,10 @@ These invariants hold across `src/core` and this guide:
 
    Within ONE call the answer cannot drift, because how many times a foreign object is read is
    this module's decision rather than the engine's: every value an engine returns is owned at
-   arrival — copied where the value permits it, sealed in place where it does not — and read
-   exactly once thereafter. A verdict whose members answer differently on a second read
-   produces the same `Briefing` as one returning those first answers as plain data. The
+   arrival — copied where a structured clone can carry it, captured into a frozen plain view
+   where it cannot — and every later read is of that copy or that view, never of the engine's
+   object. A verdict whose members answer differently on a second read produces the same
+   `Briefing` as one returning those first answers as plain data. The
    earlier wording said "on its second call" while the module was in fact reading one returned
    object twice, which made a sentence about the engine's determinism cover a defect in this
    module's.
@@ -789,22 +813,37 @@ These invariants hold across `src/core` and this guide:
    exactly its public methods — exhaustive, both directions — and each implementing class
    exposes the same public methods, no more.
 10. **A borrowed engine is the caller's code, not an attacker.** `BriefCompilerOptions.interpret`
-    and `.reason` are seams, and what crosses them obeys three rules: OWN AT ARRIVAL — copied
-    where the value permits it, sealed in place where it does not; VALIDATE THE OWNED COPY;
-    NEVER READ A FOREIGN OBJECT TWICE. How many times a foreign object is read is this module's
-    decision, so a briefing never depends on it.
+    and `.reason` are seams, and what crosses them is owned, validated, and read once: OWN AT
+    ARRIVAL — copied where a structured clone can carry the value, captured into a frozen plain
+    view where it cannot; VALIDATE THE OWNED VIEW; NEVER READ A FOREIGN OBJECT TWICE. How many
+    times a foreign object is read is this module's decision, so a briefing never depends on it.
 
-    Bounding that, and equally load-bearing: never narrow past the published contract. `Entity.value`
-    is `unknown` and `LogicalResult` is an interface a class instance satisfies, so a value JSON
-    cannot express is on-contract and is sealed rather than refused. Every defect this seam
-    produced came from narrowing it — an exact guard that failed the gate closed on a valid
-    engine, and a JSON clone that turned a correct refusal into an emitted brief.
+    `captureValue` is the capture arm, and what it produces is what the `Briefing` replays. It
+    rebuilds the root and every reachable plain container from own enumerable members, keeps
+    unknown own members, materializes each published member absent from that own set by reading
+    it once, and keeps an uncloneable leaf — a function, for one — by identity. A member the
+    caller's prototype carries and the published contract does not name drops out of the capture,
+    and it never survived a structured clone either, so the arms agree on what a `Briefing`
+    carries.
+
+    The law reaches values this module PULLS across a seam it called, and stops there.
+    `assertBrief` and `parseBrief` are intake narrowing, outside it: `assertBrief` returns the
+    caller's own object by identity and takes no ownership of it, and `parseBrief` is owned by
+    construction because its argument is text. `snapshotBrief` is the ownership door on that
+    side, and a caller who wants intake to own its value takes it.
+
+    Bounding the law the other way, and equally load-bearing: never narrow past the published
+    contract. `Entity.value` is `unknown` and `LogicalResult` is an interface a class instance
+    satisfies, so a value JSON cannot express is on-contract and is captured rather than refused.
+    Every defect this seam produced came from narrowing it — an exact guard that failed the gate
+    closed on a valid engine, and a JSON clone that turned a correct refusal into an emitted
+    brief.
 
     Both engines' returns are shape-checked with their packages' published guards: the verdict
     with reasons' `isLogicalResult`, and the `Interpretation` with interprets'
     `isInterpretation` at both of the stage's doors. A supplied interpretation whose snapshot
-    copy loses prototype-carried members is sealed live rather than refused, because the
-    published contract is wider than the copy mechanism.
+    copy loses prototype-carried members is captured rather than refused, because the published
+    contract is wider than the copy mechanism.
 
 Deliberately absent: a relation or graph layer over briefs (a brief's links are one RANKED
 list and four DISJOINT partitions — order and set membership, fully served by the guards,
@@ -1156,7 +1195,8 @@ store.destroy()
 - [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) — every builder's output shape, every projection, the derivations and their off-vocabulary `undefined`, `pinBrief` determinism and idempotence, `gateDefinition`'s rule list against `findUnmetRules` over one value set, `validateBrief` errors and warnings, and the four `find*` leaves.
 - [`tests/src/core/validators.test.ts`](../tests/src/core/validators.test.ts) — each guard accepts valid and rejects invalid plus adversarial junk, exact-record semantics, and off-vocabulary rejection.
 - [`tests/src/core/shapers.test.ts`](../tests/src/core/shapers.test.ts) — the shape family against the guard family over one value set, JSON Schema essentials, and seeded generate round-trips.
-- [`tests/src/core/parsers.test.ts`](../tests/src/core/parsers.test.ts) — `parseBrief` guard soundness in both directions and its JSON round-trip.
+- [`tests/src/core/parsers.test.ts`](../tests/src/core/parsers.test.ts) — `parseBrief` guard soundness in both directions, its JSON round-trip, and the intake contrast: `assertBrief` returning its argument by identity where `parseBrief` returns a graph sharing no reference with the source.
+- [`tests/src/core/cloners.test.ts`](../tests/src/core/cloners.test.ts) — `captureValue` over a source carrying a prototype accessor, an unknown own accessor, an uncloneable leaf, a cycle, and a shared branch, plus the source whose own members cannot be read at all.
 - [`tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) — `createBriefCompiler` / `createBriefManager` / `createBriefContract`.
 - [`tests/src/core/index.test.ts`](../tests/src/core/index.test.ts) — the barrel resolves and re-exports the whole surface.
 - [`tests/src/core/integration.test.ts`](../tests/src/core/integration.test.ts) — text to interpret to brief to gate to projections end to end, and a gated brief re-compiled with the answered gap passing.

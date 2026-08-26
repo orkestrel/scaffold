@@ -107,7 +107,10 @@ const FLEET_RELEASE_REPLIES: Readonly<Record<string, TestUpstreamReply>> = Objec
 		status: 200,
 		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/probe']?.slice(1) ?? ''),
 	},
-	[FLEET_UPSTREAM_PATHS.packages.scaffold]: { status: 200, body: buildPackument('0.0.53') },
+	[FLEET_UPSTREAM_PATHS.packages.scaffold]: {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/scaffold']?.slice(1) ?? ''),
+	},
 	[FLEET_UPSTREAM_PATHS.packages.test]: {
 		status: 200,
 		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/test']?.slice(1) ?? ''),
@@ -200,7 +203,10 @@ const AUDIT_REGISTRY = await createUpstreamServer({
 		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/probe']?.slice(1) ?? ''),
 	},
 	'/@orkestrel%2Frouter': { status: 200, body: buildPackument('0.0.10') },
-	'/@orkestrel%2Fscaffold': { status: 200, body: buildPackument('0.0.53') },
+	'/@orkestrel%2Fscaffold': {
+		status: 200,
+		body: buildPackument(BASE_DEV_DEPENDENCIES['@orkestrel/scaffold']?.slice(1) ?? ''),
+	},
 	'/@orkestrel%2Fserver': { status: 200, body: buildPackument('0.0.14') },
 	'/@orkestrel%2Ftest': {
 		status: 200,
@@ -1234,13 +1240,19 @@ describe('CLI audit', () => {
 
 	it('reports a major-zero floor below the newest stable release in that major', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		// The scenario needs a stable release above the declared floor within major
+		// zero, so the served release derives from the floor the manifest states and
+		// the premise survives a floor raise.
+		const floor = BASE_DEV_DEPENDENCIES.oxfmt ?? ''
+		const minor = Number(floor.split('.')[1] ?? '')
+		const served = `0.${minor + 1}.0`
 		const server = await createUpstreamServer({
 			...FLEET_RELEASE_REPLIES,
 			'/oxfmt': {
 				status: 200,
 				body: JSON.stringify({
-					'dist-tags': { latest: '0.65.0' },
-					versions: { '0.64.9': {}, '0.65.0': {} },
+					'dist-tags': { latest: served },
+					versions: { [`0.${minor}.9`]: {}, [served]: {} },
 				}),
 			},
 		})
@@ -1260,8 +1272,7 @@ describe('CLI audit', () => {
 			const result: AuditResult = JSON.parse(sink.output[0] ?? '')
 			expect(result.questions).toContainEqual({
 				field: 'dependencies',
-				message:
-					'oxfmt declares the floor ^0.64.0, while the registry serves 0.65.0 within major 0.',
+				message: `oxfmt declares the floor ${floor}, while the registry serves ${served} within major 0.`,
 				blocking: false,
 			})
 		} finally {
@@ -4568,6 +4579,9 @@ describe('CLI catalog', () => {
 			[FLEET_UPSTREAM_PATHS.mirrors.guide]: { status: 200, body: '# Guide\n', type: 'text/plain' },
 			[FLEET_UPSTREAM_PATHS.packages.probe]: { status: 200, body: buildPackument('0.0.1') },
 			[FLEET_UPSTREAM_PATHS.mirrors.probe]: { status: 200, body: '# Probe\n', type: 'text/plain' },
+			// A fictional release, like every packument this scenario serves, so the
+			// table the test pins does not move with scaffold's own version.
+			[FLEET_UPSTREAM_PATHS.packages.scaffold]: { status: 200, body: buildPackument('0.0.26') },
 			[FLEET_UPSTREAM_PATHS.mirrors.scaffold]: {
 				status: 200,
 				body: '# Scaffold\n',
@@ -4599,7 +4613,7 @@ describe('CLI catalog', () => {
 					dependencies: [{ name: '@orkestrel/emitter', range: '^0.0.6' }],
 				},
 				{ name: '@orkestrel/probe', lookup: 'found', version: '0.0.1', dependencies: [] },
-				{ name: '@orkestrel/scaffold', lookup: 'found', version: '0.0.53', dependencies: [] },
+				{ name: '@orkestrel/scaffold', lookup: 'found', version: '0.0.26', dependencies: [] },
 				{ name: '@orkestrel/test', lookup: 'found', version: '0.0.2', dependencies: [] },
 			])
 			expect(result.mirrors.map((mirror) => mirror.path)).toStrictEqual([
@@ -4721,6 +4735,57 @@ describe('CLI catalog', () => {
 				path: 'guides/emitter.md',
 				lookup: 'failed',
 				note: 'HTTP 500',
+				observed: existing,
+			})
+			expect(readFileHex(fleet.target, 'guides/emitter.md')).toBe(existing)
+			expect(workspace.read('target/guides/guide.md')).toBe('# Guide\n')
+			expect(workspace.read(`target/${CATALOG_AGENT_PATH}`)).toContain('@orkestrel/emitter')
+		} finally {
+			await server.destroy()
+			workspace.destroy()
+		}
+	})
+
+	it('skips a guide the host does not publish and completes the catalog', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		const server = await createUpstreamServer({
+			...FLEET_RELEASE_REPLIES,
+			...FLEET_MIRROR_REPLIES,
+			[FLEET_UPSTREAM_PATHS.organization]: {
+				status: 200,
+				body: buildOrganization(FLEET_NAMES),
+			},
+			[FLEET_UPSTREAM_PATHS.packages.emitter]: { status: 200, body: buildPackument('0.0.6') },
+			[FLEET_UPSTREAM_PATHS.packages.guide]: { status: 200, body: buildPackument('0.1.0') },
+			// A published package whose repository is private answers its guide fetch
+			// with the same absence a deleted guide answers with. The mirror it could
+			// not replace is skipped and reported rather than refusing every other
+			// write, because one unreachable package never costs the caller the rest
+			// of the fetch.
+			[FLEET_UPSTREAM_PATHS.mirrors.emitter]: { status: 404, body: 'Not found' },
+			[FLEET_UPSTREAM_PATHS.mirrors.guide]: { status: 200, body: '# Guide\n', type: 'text/plain' },
+		})
+		try {
+			const fleet = createCatalogFleet(workspace)
+			workspace.write('target/guides/emitter.md', '# Existing emitter\n')
+			const existing = readFileHex(fleet.target, 'guides/emitter.md')
+			const sink = createSink()
+			const code = await new CLI(buildCLIOptions(sink, server.base)).execute([
+				'catalog',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			expect(code).toBe(EXIT_DRIFT)
+			const result: CatalogResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.provenance).toStrictEqual({ versions: 'live', guides: 'floor' })
+			expect(result.mirrors).toContainEqual({
+				name: '@orkestrel/emitter',
+				path: 'guides/emitter.md',
+				lookup: 'missing',
+				note: 'HTTP 404',
 				observed: existing,
 			})
 			expect(readFileHex(fleet.target, 'guides/emitter.md')).toBe(existing)

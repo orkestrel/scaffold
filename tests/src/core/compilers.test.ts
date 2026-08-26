@@ -430,19 +430,24 @@ describe('blueprintToDevDependencies compile tooling', () => {
 		expect(planned['vite-plugin-dts']).toBe('^5.0.3')
 	})
 
-	it('keeps the browser application toolchain in an app-only workspace', () => {
+	it('keeps the browser application toolchain in an app-only workspace', async () => {
 		const planned = blueprintToDevDependencies(
 			buildBlueprint({ src: [], app: ['core', 'browser'], bin: false }),
 		)
 
 		// The claim is membership: an app-only workspace keeps the browser toolchain
-		// and the shared base. Each range is stated here rather than read back from
-		// the table the emitter read, which would pass for whatever that table said.
-		// A floor raise moves these lines, which is the point: the raise is a
-		// deliberate step and this is where a workspace receives it.
-		expect(planned['@orkestrel/html']).toBe('^0.0.6')
-		expect(planned.vue).toBe('^3.5.40')
-		expect(planned['@orkestrel/test']).toBe('^0.0.11')
+		// and the shared base. The names are pinned here because membership is the
+		// claim; the ranges live in the fixture, which states every name and range
+		// rather than reading them back from the table the emitter read. A floor
+		// raise moves the fixture, which is the point: regenerate it with
+		// `npm run test:src:core -- -u` and review the diff, which is where a
+		// workspace receives the raise.
+		expect(Object.keys(planned)).toEqual(
+			expect.arrayContaining(['@orkestrel/html', 'vue', '@orkestrel/test']),
+		)
+		await expect(JSON.stringify(planned, undefined, '\t')).toMatchFileSnapshot(
+			'fixtures/app-only-toolchain.txt',
+		)
 	})
 
 	it('keeps a shared toolchain pin when a foreign peer declares its floor', () => {
@@ -484,29 +489,26 @@ describe('blueprintToDevDependencies compile tooling', () => {
 
 	it('keeps a generated source workspace manifest byte-stable', async () => {
 		const manifest = blueprintToManifest(createBlueprint('sample', { src: ['core'] }))
-		const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(manifest))
-		const hex = [...new Uint8Array(digest)]
-			.map((byte) => byte.toString(16).padStart(2, '0'))
-			.join('')
 
-		// The digest covers the self-pin, so a release moves it. Update it with the
-		// version bump in the same change; it is the tripwire for every other byte.
-		expect(hex).toBe('671a12afa410862a8bd89ca0585d5bc51b35aa021a393e72add8c2fe289e395c')
+		// The fixture covers every emitted byte, the self-pin included, so a release
+		// moves it. Regenerate it with `npm run test:src:core -- -u` and review the
+		// diff; it is the tripwire for every other byte.
+		await expect(manifest).toMatchFileSnapshot('fixtures/source-manifest.txt')
 	})
 })
 
 describe('blueprintToScripts config projects', () => {
-	it('registers and gates setup proofs only when the blueprint selects them', () => {
-		const fixture = readFileSync(
-			resolve('tests/src/core/fixtures/setup-false-manifest.txt'),
-			'utf8',
-		)
+	it('registers and gates setup proofs only when the blueprint selects them', async () => {
 		const absent = createBlueprint('sample', { src: ['core'], setup: false })
 		const present = createBlueprint('sample', { src: ['core'], setup: true })
 		const configuration = blueprintToRootVite(present)
 		const scripts = blueprintToScripts(present)
 
-		expect(blueprintToManifest(absent)).toBe(fixture)
+		// A release moves the fixture through its floors and self-pin; regenerate it
+		// with `npm run test:src:core -- -u` and review the diff.
+		await expect(blueprintToManifest(absent)).toMatchFileSnapshot(
+			'fixtures/setup-false-manifest.txt',
+		)
 		expect(blueprintToRootVite(absent)).not.toContain("name: { label: 'setup',")
 		expect(blueprintToScripts(absent)).not.toHaveProperty('test:setup')
 		expect(blueprintToScripts(absent).test).not.toContain('test:setup')
