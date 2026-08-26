@@ -132,7 +132,47 @@ bench laws unchanged.
 | T2/C2/SE1/M1/TE3 CI axes | terminal/console/sea/mcp/test | returned green |
 | mcp solo re-run | mcp | all green solo — baseline reds were load flakes |
 | Fleet sweep probe | all | zero violations, control reds — no target reds at re-pin |
-| Queued | — | B4; audit round (reviewer + Grok objective + checker); verifier; integration commits; catalog regen; republish inventory |
+| B4 CI axis | browser | returned green |
+| Audit round 1 | fleet | checker PASS (mechanical); Grok FAIL (4 broken, reproduced); reviewer FAIL (3 broken + F1-F11); reconciled in `audit-1-verdict.md` |
+| Verifier V1-V3 | fleet | every repo's full gate chain green on this host; mcp one load-race, solo green |
+| Fix round FA/FB/FT/FC/FL/FP/F9 | fleet | all returned green; `fix-round-report.md` |
+| Final sweep | scaffold/browser/probe/terminal | full `npm test` exit 0 after the fix round |
+| Integration commits | fleet | landed 2026-08-26; every tree clean (`commit-campaign.sh` output) |
+| Republish inventory | fleet | `republish-inventory.md` — console, lsp, browser, terminal, probe, scaffold material; rounds derived |
+
+## Exit criterion closure
+
+1. **Sweep coverage** — closed: four Grok lanes plus the controlled deterministic scan, reconciled
+   through the design round's per-repo matrix; every row ruled repair/retain/protocol/guide/test
+   with evidence.
+2. **Runtime portability** — closed: browser `where` parse and endpoint-owner adoption, console
+   CRLF framing, terminal CRLF Enter, probe overlay case matching — each red-then-green with the
+   regression adopted; deliberate platform forks retained on evidence.
+3. **Test portability** — closed: browser SIGTERM gating on the shared mechanism reading, test-repo
+   host-reading gates, process termination measurement; capability-probe idiom confirmed as the
+   fleet convention.
+4. **Instruction set** — closed: `.claude/rules/portability.md` plus rule-map row, architecture
+   sweep bullets, and the `portability`/`rules` policy-sweep members with controls — all vendored
+   and propagating at re-pin; harness bridges and skills assessed as needing no change.
+5. **Gates** — closed on this Windows host (verifier V1-V3 plus the final sweep); Linux proof is
+   the ubuntu CI axis, now present in every fleet workflow, with the Windows floor limit recorded
+   on each exclude row.
+6. **Republish inventory** — closed: `republish-inventory.md`, instrument-controlled, rounds
+   derived from runtime edges. Publishing awaits the user.
+
+## Successor rows (recorded, not reopened)
+
+- process `executeSync.test.ts:71` splits child output on `'\n'` alone (legal before the rule;
+  first conformance sweep owns it) and its stale bootstrap-latency comment; readiness budgets thin
+  under contention (307-2455 ms descendant creation measured).
+- probe `RuntimeStage` mints an exact-match overlay; settling probe named in the audit (one
+  inspection with a divergent-case candidate imported under the disk spelling — reviewer corrected
+  severity: a miss surfaces as a candidate-miss issue, not a silent wrong answer).
+- mcp `MCPLegacyClientTransport.test.ts:397` 20 ms race loses under full-suite load (solo green).
+- worker thread-spawn deadlines pass on this host; contended-runner risk stands.
+- Browser dependency question: `@orkestrel/process` adoption for finder resolution (rejected this
+  campaign as an unrequested dependency and layer edge).
+- guide `EXTERNAL_SCHEMES` omits `file:` (scheme handling, not OS coupling).
 
 ## Status log
 
