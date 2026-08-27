@@ -7,12 +7,12 @@ Every `@orkestrel` repository shares one toolchain, one set of agent instruction
 root dotfiles. Scaffold ships that shared set as data inside the package and gives it verbs: create
 a workspace from it, report how a workspace differs from it, and write the difference back.
 
-The set splits by how a repository meets it. The tool surface is vendored: every target receives its
-own copy, and the verbs write it and compare it. The instruction canon — the coding and orchestration
-contracts, the rules, the skills, the templates, and the transport contracts — is published for
-reading instead, from a scaffold checkout sitting beside the repository, or from
-`node_modules/@orkestrel/scaffold/dist/host/` in the installed package. Every target carries the
-`AGENTS.md` and `CLAUDE.md` pointers that name where to read it.
+The set splits by how a repository meets it. Every target carries its own copy of the vendored set —
+its toolchain, its policy proofs, its harness wiring — and the verbs write it and compare it. The
+instruction canon — the coding and orchestration contracts, the rules, the skills, the templates, and
+the transport contracts — is published for reading instead, from a scaffold checkout sitting beside
+the repository, or from `node_modules/@orkestrel/scaffold/dist/host/` in the installed package.
+Every target carries the `AGENTS.md` and `CLAUDE.md` pointers that name where to read it.
 
 ## Install
 

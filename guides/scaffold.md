@@ -12,12 +12,13 @@ does not work. Scaffold makes the shared set data — a vendored data root shipp
 — and gives it verbs: create a workspace from it, report how a workspace differs from it, and
 write the difference back.
 
-That root stages the tool surface and the instruction canon, and a target meets them differently.
-`HOST_PATHS` names the tool surface: every target receives a copy, and the verbs write it and compare
-it. `CANON_PATHS` names the instruction canon — the coding and orchestration contracts, the rules,
-the skills, the templates, and the transport contracts — which stays in one place and is published
-for reading. A target carries the `AGENTS.md` and `CLAUDE.md` pointers that name where a reader finds
-it. Vendored data root states how each set is staged and how a pointer resolves.
+That root stages the vendored set and the instruction canon, and a target meets them differently.
+`HOST_PATHS` names the vendored set — the toolchain, the policy proofs, the harness wiring — and
+every target carries its own copy, which the verbs write and compare. `CANON_PATHS` names the
+instruction canon — the coding and orchestration contracts, the rules, the skills, the templates, and
+the transport contracts — which stays in one place and is published for reading. A target carries the
+`AGENTS.md` and `CLAUDE.md` pointers that name where a reader finds it. Vendored data root states how
+each set is staged and how a pointer resolves.
 
 Every following code fence is illustrative. [`tests/guides.test.ts`](../tests/guides.test.ts)
 keeps the command reference aligned with the executable and transcribes the pure blueprint-default,
@@ -696,9 +697,10 @@ instruction in a list.
 The planned document paths are subtracted. The `AGENTS.md` and `CLAUDE.md` pointers sit at canon
 paths and `repair` restores them, so naming one would tell a maintainer to delete what the next write
 puts back. The remedy is one commit in the target that deletes the named paths, and the question goes
-quiet after it. No verb writes or deletes a canon path, so refusing `repair` over this question would
-block every write on a gap no write can close. The question belongs to the `docs` and `orchestration`
-groups, so a scoped audit that excludes both omits it.
+quiet after it. No verb writes or deletes a path this question names, because the subtraction removes
+exactly the paths a plan claims, so refusing `repair` over this question would block every write on a
+gap no write can close. The question belongs to the `docs` and `orchestration` groups, so a scoped
+audit that excludes both omits it.
 
 ### Exit codes
 
@@ -922,9 +924,11 @@ order is the order a plan lists its artifacts in.
 | `docs`          | `README.md` beside the `AGENTS.md` and `CLAUDE.md` pointers        |
 | `orchestration` | The vendored harness wiring, the bench scripts, and `.mcp.json`    |
 
-No group carries the instruction canon. A plan never claims a `CANON_PATHS` member, so no group
-selection reaches one and no verb writes one into a target. The `docs` group carries the `AGENTS.md`
-and `CLAUDE.md` pointers that name where each contract is read instead.
+No group carries the instruction canon. No host-origin artifact claims a `CANON_PATHS` member, so no
+group selection reaches a staged contract and no verb copies one into a target. The one deliberate
+overlap is on the plan: the `docs` group carries the `AGENTS.md` and `CLAUDE.md` pointers that name
+where each contract is read instead, planned at those canon destinations as this package's own
+template content.
 
 ## Ownership and drift
 
@@ -1173,15 +1177,20 @@ because a workspace never mirrors its own guide.
 the `CLAUDE.md` harness bridge, the `.agents/orchestration.md` agent-operation contract, the rules
 under `.claude/rules/`, the skills under `.agents/skills/` and `.claude/skills/`, the templates under
 `.agents/templates/`, and the transport contracts under `.agents/transports/`. A release stages every
-one of them and no plan claims one, so no target receives a copy. A reader reaches them from a
+one of them and no plan claims those staged bytes, so no target receives a copy of a contract. At the
+`AGENTS.md` and `CLAUDE.md` destinations a target receives the pointers instead: different content at
+the same paths, planned as this package's own template content. A reader reaches the contracts from a
 scaffold checkout sitting beside the repository, or from the
 `node_modules/@orkestrel/scaffold/dist/host/` root inside the installed package, and the `AGENTS.md`
 pointer scaffold plans into a target names each location.
 
-`HOST_PATHS` and `CANON_PATHS` are disjoint. A path in both would be planned into a target and
-withheld from it at once. `isCanonPath` is the one reading of canon membership, matching a member and
-anything beneath a member that is a directory, so the compiler, the live overlay, and the
-executable's advisory never disagree about what a path is.
+`HOST_PATHS` and `CANON_PATHS` are disjoint. A path in both would be copied into a target as a host
+artifact and refused by the overlay that keeps a host artifact current, at once. `isCanonPath` is the
+one reading of canon membership, matching a member and anything beneath a member that is a directory,
+so staging, the live overlay, and the executable's advisory never disagree about what a path is. The
+document compiler deliberately plans the `AGENTS.md` and `CLAUDE.md` pointers at canon destinations
+as this package's own template content, and the advisory subtracts exactly the paths that compiler
+plans.
 
 The `host.json` file at the repository root is the committed live inventory. Each entry carries the
 SHA-256 digest of its file content, and the inventory carries a membership digest over its declared
@@ -1195,9 +1204,10 @@ until a release adds it to the installed manifest. Remove a vendored path in the
 ships the release which removes it from that manifest.
 
 Moving a path from `HOST_PATHS` to `CANON_PATHS` is not that removal. The path stays staged, stays in
-the installed manifest, and keeps being published; what changes is that no plan claims it. A target
-generated before the move keeps the copy it received, no verb writes or deletes that copy, and
-`audit` raises the `canon` question naming it until a maintainer removes it in one commit.
+the installed manifest, and keeps being published; what changes is that no host artifact claims it. A
+target generated before the move keeps the copy it received, and where no artifact is planned at that
+path no verb writes or deletes that copy, so `audit` raises the `canon` question naming it until a
+maintainer removes it in one commit.
 
 At the default `UpstreamOptions.retries` value, an aligned target spends one request on `host.json`,
 and each installed path whose live digest differs from the target adds one request for its bytes. A
@@ -1491,12 +1501,13 @@ rule a library caller applies in its place.
 
 **No verb removes a superseded instruction copy.** A target generated before the canon split holds
 its own copies of the paths `CANON_PATHS` names. `repair` writes the planned paths a target is
-missing or has let drift and never deletes. `overwrite` does delete a tracked file the plan does not
-own, but its foreign reading extends only beneath the vendored directories the plan expands, and a
-plan expands no canon directory, so those copies sit outside what it can see. They are unmanaged:
-`audit` reports no drift against them and raises the non-blocking `canon` question naming them
-instead. The removal is one commit in the target — `git rm -r` over each named path — and the release
-wave's per-repository visit is where it runs.
+missing or has let drift and never deletes, so it replaces the `AGENTS.md` and `CLAUDE.md` copies
+with the pointers planned there and leaves every other copy alone. `overwrite` does delete a tracked
+file the plan does not own, but its foreign reading extends only beneath the vendored directories the
+plan expands, and a plan expands no canon directory, so those copies sit outside what it can see.
+They are unmanaged: `audit` reports no drift against them and raises the non-blocking `canon`
+question naming them instead. The removal is one commit in the target — `git rm -r` over each named
+path — and the release wave's per-repository visit is where it runs.
 
 **`isPath` does not prove host portability.** It proves bounded target-relative syntax and rejects
 traversal, separators, controls, and reserved syntax characters. It deliberately admits host-specific

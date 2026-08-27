@@ -355,8 +355,16 @@ describe('skill family policy', () => {
 	// bind this file to one workspace. The relationship binds in every workspace: a
 	// direct `node:fs` read of the canonical root is a second mechanism that reports
 	// the same directories, and reports none where the root is absent.
+	//
+	// The root is spelled here as literal segments rather than read from
+	// `SKILL_FAMILY_ROOT`, and that literal is what makes this read a second
+	// mechanism. Both sides reading the constant would move together when it drifts,
+	// so the case would stay green for every value the constant ever holds. Against
+	// the literal, a drifted constant desyncs the sides and reddens this case in a
+	// workspace that has the tree, while a workspace without one still passes on
+	// both readings being empty.
 	it('discovers exactly the directories the canonical skill root holds', () => {
-		const root = join(process.cwd(), SKILL_FAMILY_ROOT)
+		const root = join(process.cwd(), '.agents', 'skills')
 		const held = existsSync(root)
 			? readdirSync(root, { withFileTypes: true })
 					.filter((entry) => entry.isDirectory())

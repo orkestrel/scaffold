@@ -244,7 +244,7 @@
 			"storage": "agents/skills/orkestrel-publish/references/wave.md",
 			"destination": ".agents/skills/orkestrel-publish/references/wave.md",
 			"executable": false,
-			"digest": "62620bd6d1d985ed14c780e161b111186e61947a245f9c5e197de3ad753e472a"
+			"digest": "22ba16a4f55c97419ceee76a6f02f7fcccc5ca316eb98f3d018cb0178d3175a7"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/references/window.md",
@@ -652,7 +652,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "4b6e503d74188118ebba5ff4c9d76d9c9a933c0aec055ae600e02540e73c8c57"
+			"digest": "b1de8ebdd545e863809020df725292b409561a9d17e1cc4671ebfb68020f867c"
 		},
 		{
 			"storage": "scripts/codex.sh",
@@ -688,7 +688,7 @@
 			"storage": "tests/policy.test.ts",
 			"destination": "tests/policy.test.ts",
 			"executable": false,
-			"digest": "c2e0f344ad368991034556ac18772d612f29edb26c7cf72c361b35ebb3f3d580"
+			"digest": "f1f9ad779a090e9921695c743068025c387ccd610a09fee411eda809475a7367"
 		},
 		{
 			"storage": "tests/setupPolicy.ts",
@@ -742,5 +742,5 @@
 		".codex/agents",
 		".cursor/rules"
 	],
-	"digest": "4dc8bd4866b9f421d4c316a581a11a556f7f8d8afb65005e3886981e8b9c1ee2"
+	"digest": "8bf016141de020541d8aeaf20f65577e47c05a9487b50e0253cb1ac491c5b681"
 }

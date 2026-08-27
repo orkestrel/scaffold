@@ -163,12 +163,18 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
  * Staging walks these beside {@link HOST_PATHS}, so a release ships them and a
  * reader reaches them two ways: a scaffold checkout sitting beside the
  * repository, or the `node_modules/@orkestrel/scaffold/dist/host/` root inside
- * the installed package. No plan claims one, no target receives one, and the
- * `AGENTS.md` and `CLAUDE.md` pointers scaffold plans are what name those two
- * locations.
+ * the installed package. No host-origin artifact claims one, so no target
+ * receives the canon itself, and the `AGENTS.md` and `CLAUDE.md` pointers
+ * scaffold plans are what name each location.
  *
- * The two sets are disjoint. A path in both would be planned into a target and
- * withheld from it at once.
+ * The one deliberate overlap sits on the plan rather than on these lists:
+ * `blueprintToDocumentArtifacts` plans those pointers at the `AGENTS.md` and
+ * `CLAUDE.md` destinations as this package's own template content, and the
+ * `canon` advisory subtracts exactly the paths that compiler plans.
+ *
+ * `HOST_PATHS` and `CANON_PATHS` are disjoint. A path in both would be copied
+ * into a target as a host artifact and refused by the overlay that keeps a host
+ * artifact current, at once.
  */
 export const CANON_PATHS: readonly string[] = Object.freeze([
 	'AGENTS.md',

@@ -1433,8 +1433,8 @@ export function blueprintToGuideArtifacts(blueprint: Blueprint): readonly Conten
  * Compile the generated workspace's root documentation.
  *
  * @param blueprint - The workspace specification.
- * @returns The birth-owned package front page and the two content-owned root
- * instruction pointers.
+ * @returns The birth-owned package front page and the content-owned `AGENTS.md`
+ * and `CLAUDE.md` pointers.
  *
  * @remarks
  * The front page is the workspace's own prose, so it is written once and left

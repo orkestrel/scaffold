@@ -16,8 +16,10 @@ step that writes it.
 3. Where the target still carries an instruction-canon path, delete it. `scaffold audit` names each
    one in its `canon` question; run `git rm -r` over the named paths in this visit, and prove the
    removal with the paths' absence and a clean `git status`. No scaffold verb deletes those copies,
-   so a visit that skips this step leaves the target holding instructions nothing updates and the
-   question firing on the next audit.
+   and this deletion cannot be deferred past the quality gates: `scaffold overwrite` has already
+   replaced the target's `AGENTS.md` with the pointer, which carries no rule map, so
+   `inspectPolicyRuleMap` reports `the rule map names every rule file` for every file a kept
+   `.claude/rules` directory still holds and the policy sweep is red until this deletion runs.
 4. Force-verify every `@orkestrel` range against a registry sweep taken after the previous layer
    published.
 5. Run the full install.

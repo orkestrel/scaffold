@@ -1207,8 +1207,12 @@ export function readManifestEntry(destination: string, source: string): Manifest
  * ```ts
  * import { filesToHost } from '@orkestrel/scaffold/server'
  *
- * filesToHost([{ path: 'AGENTS.md', lookup: 'found', hex: '23204167656e74730a' }], floor)
- * // { manifest: { entries: [ … ], roots: [ … ], digest: '…' }, bytes: { 'AGENTS.md': '…' } }
+ * // A floor declaring the host-owned `scripts/codex.sh` path and the canon
+ * // `AGENTS.md` destination. The script's live bytes are taken; the canon
+ * // destination keeps the floor's.
+ * filesToHost([{ path: 'scripts/codex.sh', lookup: 'found', hex: '23212f62696e2f73680a' }], floor)
+ * // { manifest: { entries: [ … ], roots: [ … ], digest: '…' },
+ * //   bytes: { 'scripts/codex.sh': '23212f62696e2f73680a', 'AGENTS.md': floor.bytes['AGENTS.md'] } }
  * ```
  */
 export function filesToHost(files: readonly HostFile[], floor: Host): Host | undefined {

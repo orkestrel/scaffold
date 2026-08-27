@@ -246,7 +246,9 @@ export function inferGroup(path: string): Group {
 	if (path.startsWith('tests/')) return 'tests'
 	if (path.startsWith('guides/')) return 'guides'
 	if (path.startsWith('docs/')) return 'docs'
-	// The licence and the root instruction documents are the workspace's own prose.
+	// The row holds the licence, the workspace's own front page, and the
+	// scaffold-owned root pointers. The group carries placement rather than
+	// authorship, so `Ownership` is what separates them.
 	if (path === 'LICENSE') return 'docs'
 	if (!path.includes('/') && path.endsWith('.md')) return 'docs'
 	return 'configs'

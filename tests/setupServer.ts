@@ -1108,10 +1108,11 @@ export const HOST_DIRECTORY_PATHS: readonly string[] = [
  * Every path a release stages, the vendored set and the instruction canon together.
  *
  * @remarks
- * The stager walks both lists, so a checkout fixture carrying only one of them
- * is refused for the paths it left out. No plan claims a canon path, which is
- * why {@link buildFleetManifest} stays on `HOST_PATHS` while the two checkout
- * fixtures read this.
+ * The stager walks `HOST_PATHS` and `CANON_PATHS` alike, so a checkout fixture
+ * carrying only one of them is refused for the paths it left out. No host
+ * artifact claims a canon path, which is why {@link buildFleetManifest} stays on
+ * `HOST_PATHS` while {@link createCheckout} and {@link buildCheckoutManifest}
+ * read this.
  */
 export const STAGED_PATHS: readonly string[] = [...HOST_PATHS, ...CANON_PATHS]
 
@@ -1154,8 +1155,9 @@ export function buildFleetManifest(): HostManifest {
  * @returns The checkout's absolute path.
  *
  * @remarks
- * The stager reads {@link STAGED_PATHS}' two lists out of core, which no test can
- * vary, so the checkout beneath it is the only seam a stager test has. Every file
+ * The stager reads {@link STAGED_PATHS} out of core, where `HOST_PATHS` and
+ * `CANON_PATHS` are fixed and no test can vary either, so the checkout beneath it
+ * is the only seam a stager test has. Every file
  * carries its own path as its content, so a file staged under the wrong storage
  * name is visible in the assertion rather than in a count. Each staged directory
  * is given one file except `.claude/skills`, which is left genuinely empty

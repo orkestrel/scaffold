@@ -589,15 +589,19 @@ function plantParameter(content: string): string {
 
 describe('pointer documents', () => {
 	// The pointer replaces the vendored copies of the canon, so its whole job is
-	// telling a reader where the canon now is. Each resolution the body offers is
-	// asserted as text, because a body that names one of them and not the other
-	// leaves every reader without a checkout unable to find anything.
+	// telling a reader where the canon now is. Every subject the read list names is
+	// asserted on each side, because a subject resolved on one side and not the
+	// other leaves a reader on the unresolved side unable to find it.
 	it('names the sibling checkout and the installed copy for each canon contract', () => {
 		const agents = ARTIFACT_TEMPLATES.docs.agents
 		expect(agents).toContain('`../scaffold/AGENTS.md`')
 		expect(agents).toContain('`../scaffold/.agents/orchestration.md`')
+		expect(agents).toContain('`../scaffold/.claude/rules/`')
+		expect(agents).toContain('`../scaffold/.agents/skills/`')
 		expect(agents).toContain('`node_modules/@orkestrel/scaffold/dist/host/AGENTS.md`')
 		expect(agents).toContain('`node_modules/@orkestrel/scaffold/dist/host/agents/orchestration.md`')
+		expect(agents).toContain('`node_modules/@orkestrel/scaffold/dist/host/claude/rules/`')
+		expect(agents).toContain('`node_modules/@orkestrel/scaffold/dist/host/agents/skills/`')
 		expect(ARTIFACT_TEMPLATES.docs.claude).toContain('`AGENTS.md`')
 	})
 

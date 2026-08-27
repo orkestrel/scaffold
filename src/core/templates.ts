@@ -2032,11 +2032,13 @@ requires.
 Resolve every one of those paths against scaffold, never against this repository:
 
 - When a scaffold checkout sits beside this repository, read \`../scaffold/AGENTS.md\`, the
-  \`../scaffold/.agents/orchestration.md\` file, and the \`../scaffold/.claude/rules/\` directory.
+  \`../scaffold/.agents/orchestration.md\` file, the \`../scaffold/.claude/rules/\` directory, and
+  the \`../scaffold/.agents/skills/\` directory.
 - Otherwise read the installed copy, whose paths drop the dot that opens each segment: the
   \`node_modules/@orkestrel/scaffold/dist/host/AGENTS.md\` file, the
-  \`node_modules/@orkestrel/scaffold/dist/host/agents/orchestration.md\` file, and the
-  \`node_modules/@orkestrel/scaffold/dist/host/claude/rules/\` directory.
+  \`node_modules/@orkestrel/scaffold/dist/host/agents/orchestration.md\` file, the
+  \`node_modules/@orkestrel/scaffold/dist/host/claude/rules/\` directory, and the
+  \`node_modules/@orkestrel/scaffold/dist/host/agents/skills/\` directory.
 
 Every path a scaffold-supplied file names resolves the same way. The files this repository carries
 — the \`.claude/agents/\` directory, the \`.codex/\` directory, the \`.cursor/\` directory, the
