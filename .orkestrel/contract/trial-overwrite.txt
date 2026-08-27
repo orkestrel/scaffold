@@ -1,0 +1,9 @@
+0 of 34 planned paths drifted from the plan. Audit compared bytes at 23, existence at 5, and nothing at 6.
+.oxlintrc.json replaced (1 line added).
+.prettierignore replaced (3 lines added).
+tests/setupPolicy.ts replaced (536 lines added).
+tests/policy.test.ts replaced (84 lines added).
+AGENTS.md replaced (160 lines removed).
+CLAUDE.md replaced (44 lines removed).
+12 written, 28 unchanged, 92 removed in ..
+49 published, 4 guides fetched, 0 no longer listed.
