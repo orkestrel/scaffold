@@ -657,8 +657,8 @@ describe('Materializer audit', () => {
 					'is not covered by its audit',
 				)
 
-				writeFileSync(join(target, 'AGENTS.md'), '# Edited agents\n', 'utf8')
-				rmSync(join(target, '.claude/rules/sample.md'))
+				writeFileSync(join(target, '.claude/settings.json'), '{ "edited": true }\n', 'utf8')
+				rmSync(join(target, '.cursor/rules/sample.md'))
 				const staleCompilerAudit = compiler.audit(
 					plan.blueprint,
 					readSnapshot(
@@ -667,35 +667,40 @@ describe('Materializer audit', () => {
 					),
 				)
 				expect(
-					staleCompilerAudit.findings.find((finding) => finding.path === 'AGENTS.md')?.drift,
+					staleCompilerAudit.findings.find((finding) => finding.path === '.claude/settings.json')
+						?.drift,
 				).toBe('aligned')
 
 				const audit = materializer.audit(plan, target)
 				expect(audit.questions).toEqual([])
-				expect(audit.findings.find((finding) => finding.path === 'AGENTS.md')?.drift).toBe('stale')
 				expect(
-					audit.findings.find((finding) => finding.path === '.claude/rules/sample.md')?.drift,
+					audit.findings.find((finding) => finding.path === '.claude/settings.json')?.drift,
+				).toBe('stale')
+				expect(
+					audit.findings.find((finding) => finding.path === '.cursor/rules/sample.md')?.drift,
 				).toBe('missing')
 
-				workspace.write('project/.claude/rules/foreign.md', '# Foreign rule\n')
+				workspace.write('project/.cursor/rules/foreign.md', '# Foreign rule\n')
 				workspace.write('project/NOTES.md', '# Consumer notes\n')
 				const discovered = materializer.audit(plan, target)
 				expect(
-					discovered.findings.find((finding) => finding.path === '.claude/rules/foreign.md')?.drift,
+					discovered.findings.find((finding) => finding.path === '.cursor/rules/foreign.md')?.drift,
 				).toBe('foreign')
 				expect(discovered.findings.some((finding) => finding.path === 'NOTES.md')).toBe(false)
 
 				const result = materializer.repair(plan, audit, target)
-				expect(result.written).toContain('AGENTS.md')
-				expect(result.written).toContain('.claude/rules/sample.md')
-				expect(readFileSync(join(target, 'AGENTS.md'), 'utf8')).toBe('AGENTS.md\n')
-				expect(readFileSync(join(target, '.claude/rules/foreign.md'), 'utf8')).toBe(
+				expect(result.written).toContain('.claude/settings.json')
+				expect(result.written).toContain('.cursor/rules/sample.md')
+				expect(readFileSync(join(target, '.claude/settings.json'), 'utf8')).toBe(
+					'.claude/settings.json\n',
+				)
+				expect(readFileSync(join(target, '.cursor/rules/foreign.md'), 'utf8')).toBe(
 					'# Foreign rule\n',
 				)
 				expect(readFileSync(join(target, 'NOTES.md'), 'utf8')).toBe('# Consumer notes\n')
 				const terminal = materializer.audit(plan, target)
 				expect(
-					terminal.findings.find((finding) => finding.path === '.claude/rules/foreign.md')?.drift,
+					terminal.findings.find((finding) => finding.path === '.cursor/rules/foreign.md')?.drift,
 				).toBe('foreign')
 				expect(materializer.repair(plan, terminal, target).written).toEqual([])
 			} finally {

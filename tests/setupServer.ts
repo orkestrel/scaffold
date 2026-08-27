@@ -19,6 +19,7 @@ import {
 	blueprintToDevDependencies,
 	contentToHex,
 	blueprintToScripts,
+	CANON_PATHS,
 	Compiler,
 	createBlueprint,
 	HOST_PATHS,
@@ -1083,23 +1084,36 @@ export function createSink(): TestSinkInterface {
 }
 
 /**
- * The vendored paths that are directories rather than files.
+ * The staged paths that are directories rather than files.
  *
  * @remarks
- * `HOST_PATHS` mixes files and directories and says which is which nowhere, because the
- * vendored root's own manifest is what decides it. A fixture builds that
- * manifest, so the fixture declares the split. `.claude/skills` is the one
- * declared directory no entry sits beneath, which makes it the empty-directory
- * case every writer has to survive.
+ * `HOST_PATHS` and `CANON_PATHS` each mix files and directories and say which is
+ * which nowhere, because the vendored root's own manifest is what decides it. A
+ * fixture builds that manifest, so the fixture declares the split.
+ * `.claude/skills` is the one declared directory no entry sits beneath, which
+ * makes it the empty-directory case every writer has to survive.
  */
 export const HOST_DIRECTORY_PATHS: readonly string[] = [
 	'.agents/skills',
+	'.agents/templates',
+	'.agents/transports',
 	'.claude/agents',
 	'.claude/rules',
 	'.claude/skills',
 	'.codex/agents',
 	'.cursor/rules',
 ]
+
+/**
+ * Every path a release stages, the vendored set and the instruction canon together.
+ *
+ * @remarks
+ * The stager walks both lists, so a checkout fixture carrying only one of them
+ * is refused for the paths it left out. No plan claims a canon path, which is
+ * why {@link buildFleetManifest} stays on `HOST_PATHS` while the two checkout
+ * fixtures read this.
+ */
+export const STAGED_PATHS: readonly string[] = [...HOST_PATHS, ...CANON_PATHS]
 
 /**
  * Build the manifest a vendored root storing every planned path declares.
@@ -1133,24 +1147,24 @@ export function buildFleetManifest(): HostManifest {
 }
 
 /**
- * Write a real checkout carrying every vendored path, as the stager reads one.
+ * Write a real checkout carrying every staged path, as the stager reads one.
  *
  * @param workspace - The temporary workspace the checkout is written into.
  * @param relative - The workspace-relative directory to write it at.
  * @returns The checkout's absolute path.
  *
  * @remarks
- * The stager reads `HOST_PATHS` out of core, which no test can vary, so the
- * checkout beneath it is the only seam a stager test has. Every file carries its
- * own path as its content, so a file staged under the wrong storage name is
- * visible in the assertion rather than in a count. Each vendored directory is
- * given one file except `.claude/skills`, which is left genuinely empty because
- * that is the root a file inventory cannot see and the one the manifest exists
- * to declare.
+ * The stager reads {@link STAGED_PATHS}' two lists out of core, which no test can
+ * vary, so the checkout beneath it is the only seam a stager test has. Every file
+ * carries its own path as its content, so a file staged under the wrong storage
+ * name is visible in the assertion rather than in a count. Each staged directory
+ * is given one file except `.claude/skills`, which is left genuinely empty
+ * because that is the root a file inventory cannot see and the one the manifest
+ * exists to declare.
  */
 export function createCheckout(workspace: ScratchInterface, relative: string): string {
 	const root = workspace.ensure(relative)
-	for (const path of HOST_PATHS) {
+	for (const path of STAGED_PATHS) {
 		if (!HOST_DIRECTORY_PATHS.includes(path)) {
 			workspace.write(`${relative}/${path}`, `${path}\n`)
 			continue
@@ -1177,7 +1191,7 @@ export function createCheckout(workspace: ScratchInterface, relative: string): s
 export function buildCheckoutManifest(): HostManifest {
 	const entries: ManifestEntry[] = []
 	const roots: string[] = []
-	for (const path of HOST_PATHS) {
+	for (const path of STAGED_PATHS) {
 		if (!HOST_DIRECTORY_PATHS.includes(path)) {
 			entries.push(
 				buildManifestEntry({

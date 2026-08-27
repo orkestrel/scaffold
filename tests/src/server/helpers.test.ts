@@ -197,6 +197,46 @@ describe('vendored imports', () => {
 	})
 })
 
+describe('vendored inventory', () => {
+	// No plan claims a canon path and no target receives one, so the committed
+	// inventory is where the instruction canon's arrival in the published root is
+	// visible. `tests/config.test.ts` holds this file equal to a fresh stage, which
+	// makes a storage name here a statement about what a release ships. The names are
+	// storage spellings: `pathToStorage` strips the dot that opens each segment.
+	it('records every instruction-canon root the published fallback serves', () => {
+		const inventory: unknown = JSON.parse(
+			readFileSync(join(WORKSPACE_ROOT, HOST_INVENTORY_PATH), 'utf8'),
+		)
+		if (!isRecord(inventory) || !arrayOf(isRecord)(inventory.entries)) {
+			throw new Error('The committed host inventory carries no entry list')
+		}
+		const storage = inventory.entries.flatMap((entry) =>
+			isString(entry.storage) ? [entry.storage] : [],
+		)
+		expect(storage.length).toBe(inventory.entries.length)
+		for (const name of [
+			'AGENTS.md',
+			'CLAUDE.md',
+			'agents/orchestration.md',
+			'agents/skills/orkestrel-falsify/SKILL.md',
+			'agents/templates/brief.md',
+			'agents/transports/codex.md',
+			'claude/rules/names.md',
+			'claude/skills/orkestrel-falsify/SKILL.md',
+		]) {
+			expect(storage).toContain(name)
+		}
+		// The controls, drawn from outside the staged population: a manifest this
+		// checkout carries at its root and an operator's own harness settings beside a
+		// vendored file of nearly the same name. Neither is staged, so the membership
+		// above is the inventory's selection rather than every path in the checkout.
+		expect(existsSync(join(WORKSPACE_ROOT, 'package.json'))).toBe(true)
+		expect(storage).not.toContain('package.json')
+		expect(storage).toContain('claude/settings.json')
+		expect(storage).not.toContain('claude/settings.local.json')
+	})
+})
+
 describe('pathToStorage', () => {
 	for (const storageCase of STORAGE_PATH_CASES) {
 		it(`maps ${storageCase.label} to its storage name`, () => {

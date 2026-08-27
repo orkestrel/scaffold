@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process'
 import { globSync, readFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { HOST_PATHS, replaceManifestRanges } from '@src/core'
+import { CANON_PATHS, HOST_PATHS, replaceManifestRanges } from '@src/core'
 import { listFiles, pathToStorage } from '@src/server'
 import { requireValue } from '@orkestrel/test'
 import { createScratch } from '@orkestrel/test/server'
@@ -277,14 +277,18 @@ describe('installed package consumer', () => {
 			'tests/policy.test.ts',
 			'tests/setupPolicy.ts',
 		]
-		for (const path of HOST_PATHS) {
+		// A release stages the vendored set and the instruction canon, so containment
+		// runs against both lists. Reading `HOST_PATHS` alone reports every canon
+		// destination as undeclared.
+		const staged = [...HOST_PATHS, ...CANON_PATHS]
+		for (const path of staged) {
 			expect(
 				expanded.some((destination) => destination === path || destination.startsWith(`${path}/`)),
 			).toBe(true)
 		}
 		for (const destination of expanded) {
 			expect(
-				HOST_PATHS.some((path) => destination === path || destination.startsWith(`${path}/`)),
+				staged.some((path) => destination === path || destination.startsWith(`${path}/`)),
 			).toBe(true)
 		}
 		expect(listFiles(resolve(root, 'dist/host'))).toEqual(
