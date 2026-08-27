@@ -225,6 +225,7 @@ describe('installed package consumer', () => {
 			'.claude/rules/documentation.md',
 			'.claude/rules/names.md',
 			'.claude/rules/patterns.md',
+			'.claude/rules/portability.md',
 			'.claude/rules/quality.md',
 			'.claude/rules/styles.md',
 			'.claude/rules/tests.md',
