@@ -98,6 +98,36 @@ account answers publish 2FA with an authenticator code. `--ignore-scripts` is de
 chain proved the artifact outside the window, and the flag stops it running again inside the five
 minutes. The dry run reports 134 files, 1.1 MB packed, tag `latest`, public access.
 
+## The upload, as it ran
+
+The layer published on 2026-08-27 at 13:54Z. The registry serves `@orkestrel/scaffold` 0.0.56 with
+shasum `5de2819ff7c6ccc74eb9b8d87d646b3410193edd`, 134 files, 4129324 bytes unpacked. That shasum is
+the artifact the gate chain proved, so the published bytes and the gated bytes are the same bytes.
+
+The approval mechanics cost the run several attempts, and the causes were measured rather than
+guessed:
+
+- The container held no credential, so the chain ran `npm login --browser=false` first. An
+  unclicked CLI session dies about 45 seconds after minting: npm polls `GET /-/v1/done`, takes
+  `202` while it waits, and the registry answers `403`, after which `npm login` drops to its legacy
+  `Username:` prompt. The Orchestrator never answers that prompt, because it asks for a password.
+- The Orchestrator relayed a rewritten URL. The `npm login` command prints
+  `https://www.npmjs.com/login?next=/login/cli/<id>`, and the bare
+  `https://www.npmjs.com/login/cli/<id>` target it names answers `{"message":"Unauthorized"}`. The
+  window reference itself carried that bare form, which is where the rewrite came from.
+- A supervisor that re-minted on each expiry made the link a moving target, so every relayed URL
+  was dead on arrival. The login landed only after a single mint relayed in one message.
+- The browser authorization for the upload failed twice on the same 45-second abandon, each time
+  exiting `E403` naming `GET /-/v1/done?authId=`. The registry read 0.0.55 after each, so neither
+  attempt uploaded anything.
+- The account's one-time code uploaded the package with no retry:
+  `npm publish --ignore-scripts --browser=false --otp=<code>`. That path opens no window and runs
+  no poll.
+
+Each of those findings is now a directive in
+`.agents/skills/orkestrel-publish/references/window.md`, and the skill's own step names the
+one-time-code path first.
+
 ## After the upload
 
 - Read the version back from the registry rather than from an exit code.
