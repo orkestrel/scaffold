@@ -203,6 +203,11 @@ export function isDeferredPath(path: string): boolean {
  * to a segment boundary, so a sibling whose name opens with a member's name —
  * `.claude/rulesets` beside `.claude/rules` — stays outside.
  *
+ * Membership answers where a path's bytes are staged, not whether a plan claims
+ * it. A plan claims `AGENTS.md`, `CLAUDE.md`, and {@link CATALOG_AGENT_PATH} at
+ * canon paths deliberately, so a consumer deciding whether to write, restore, or
+ * remove a path reads the plan rather than this predicate.
+ *
  * @example
  * ```ts
  * import { isCanonPath } from '@orkestrel/scaffold'

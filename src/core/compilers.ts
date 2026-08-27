@@ -32,6 +32,7 @@ import {
 	BASE_DEV_DEPENDENCIES,
 	BIN_CONFIGS,
 	BIN_ENTRY_PATH,
+	CATALOG_AGENT_PATH,
 	DECLARATION_DEV_DEPENDENCIES,
 	DEPENDENCY_NAME_PATTERN,
 	DISTRIBUTION_TEST_PATH,
@@ -1516,7 +1517,8 @@ export function blueprintToOrchestrationArtifacts(
  * Compile the vendored host artifacts a named workspace plans.
  *
  * @param name - The target workspace's own bare package name.
- * @returns One artifact per vendored path, in `HOST_PATHS` order.
+ * @returns One artifact per vendored path in `HOST_PATHS` order, then the
+ * catalog file.
  *
  * @remarks
  * Every artifact is claimed by presence, which is the strongest claim a pure
@@ -1530,20 +1532,26 @@ export function blueprintToOrchestrationArtifacts(
  * are classified by one rule and a plan never disagrees with the audit beside
  * it.
  *
- * The instruction canon is outside this set. `CANON_PATHS` is staged for reading
- * and never planned, and the `AGENTS.md` and `CLAUDE.md` pointers
- * {@link blueprintToDocumentArtifacts} emits are what name where it is read.
+ * {@link CATALOG_AGENT_PATH} is appended rather than listed, and it is the canon
+ * path this compiler claims. The catalog verb refuses a target that lacks the
+ * file, so the plan has to carry it; repair restores its absence from the
+ * staged bytes; and the `.claude/agents` directory in `CANON_PATHS` is what
+ * stages those bytes, so listing the file in `HOST_PATHS` as well would claim one
+ * storage name twice and refuse the stage. The rest of the canon a target reads
+ * from the installed package, at the locations the `AGENTS.md` and `CLAUDE.md`
+ * pointers {@link blueprintToDocumentArtifacts} emits name.
  *
  * @example
  * ```ts
  * import { nameToHostArtifacts } from '@orkestrel/scaffold'
  *
  * nameToHostArtifacts('router').some((artifact) => artifact.path === '.claude/settings.json') // true
+ * nameToHostArtifacts('router').some((artifact) => artifact.path === '.claude/agents/orkestrel.md') // true
  * nameToHostArtifacts('router').some((artifact) => artifact.path === 'guides/router.md') // false
  * ```
  */
 export function nameToHostArtifacts(name: string): readonly Artifact[] {
-	return selectHostPaths(HOST_PATHS, name).map((path): Artifact => ({
+	return [...selectHostPaths(HOST_PATHS, name), CATALOG_AGENT_PATH].map((path): Artifact => ({
 		path,
 		group: inferGroup(path),
 		ownership: 'presence',

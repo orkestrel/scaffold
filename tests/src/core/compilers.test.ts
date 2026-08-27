@@ -1773,15 +1773,33 @@ describe('content artifact compilers', () => {
 		expect(claude?.content).not.toContain('widget')
 	})
 
-	// Every host artifact is a path the target receives bytes for. The canon is not
-	// among them, and this names the neighbours it left behind so a removal that
-	// took a sibling with it is visible.
-	it('plans no canon path among the vendored artifacts', () => {
-		const artifacts = nameToHostArtifacts('widget')
+	// Every host artifact is a path the target receives bytes for. The catalog file
+	// sits inside the canon and is planned anyway, because `catalog` refuses a
+	// target that lacks it and `repair` restores its absence. This names the
+	// vendored neighbours the moved wiring left behind, so a removal that took a
+	// sibling with it is visible.
+	it('plans the catalog file inside the canon and none of the moved wiring', () => {
+		const artifacts = nameToHostArtifacts('router')
 		const paths = artifacts.map(({ path }) => path)
-		expect(paths.filter((path) => isCanonPath(path))).toStrictEqual([])
+		const canon = paths.filter((path) => isCanonPath(path))
+		expect(canon).toStrictEqual(['.claude/agents/orkestrel.md'])
+		expect(artifacts).toContainEqual({
+			path: '.claude/agents/orkestrel.md',
+			group: 'orchestration',
+			ownership: 'presence',
+			origin: 'host',
+		})
+		for (const path of [
+			'.claude/agents',
+			'.codex/agents',
+			'.codex/config.toml',
+			'.cursor/mcp.json',
+			'.cursor/rules',
+			'.mcp.json',
+		]) {
+			expect(paths).not.toContain(path)
+		}
 		expect(paths).toContain('.claude/settings.json')
-		expect(paths).toContain('.claude/agents')
 		expect(paths).toContain('scripts/deps.sh')
 		expect(
 			artifacts.every(({ ownership, origin }) => ownership === 'presence' && origin === 'host'),

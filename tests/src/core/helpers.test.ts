@@ -129,11 +129,16 @@ describe('isCanonPath', () => {
 		expect(isCanonPath('.claude/rules/names.md')).toBe(true)
 		expect(isCanonPath('.agents/skills/orkestrel-falsify/SKILL.md')).toBe(true)
 		expect(isCanonPath('.agents/transports/codex.md')).toBe(true)
+		expect(isCanonPath('.codex/agents/planner.md')).toBe(true)
+		expect(isCanonPath('.cursor/rules/orkestrel.mdc')).toBe(true)
+		expect(isCanonPath('.mcp.json')).toBe(true)
+		// The catalog file sits beneath a canon directory and the plan claims it
+		// anyway, so canon membership and being planned are separate readings.
+		expect(isCanonPath('.claude/agents/orkestrel.md')).toBe(true)
 	})
 
-	it('refuses a vendored path, a nested vendored path, and a prefix lookalike', () => {
+	it('refuses a vendored path beside a canon member and a prefix lookalike', () => {
 		expect(isCanonPath('.claude/settings.json')).toBe(false)
-		expect(isCanonPath('.claude/agents/orkestrel.md')).toBe(false)
 		expect(isCanonPath('scripts/deps.sh')).toBe(false)
 		// The control the directory rule needs: a sibling whose name opens with a
 		// canon member's name is outside it, so the match is a segment boundary
@@ -144,12 +149,26 @@ describe('isCanonPath', () => {
 	})
 
 	// `HOST_PATHS` and `CANON_PATHS` partition the staged membership: a target
-	// receives the vendored set and reads the canon from the package, so a path in
-	// both would be copied into a target as a host artifact and refused by the
-	// overlay that keeps a host artifact current.
-	it('shares no member with the vendored set', () => {
+	// receives the vendored set and reads the canon from the package. The lists are
+	// disjoint by prefix in either direction, because the stager walks their union
+	// and a path discovered twice claims one storage name twice.
+	it('shares no member with the vendored set, in either direction', () => {
 		expect(HOST_PATHS.filter((path) => isCanonPath(path))).toStrictEqual([])
-		expect(CANON_PATHS.filter((path) => HOST_PATHS.includes(path))).toStrictEqual([])
+		expect(
+			CANON_PATHS.filter((canon) =>
+				HOST_PATHS.some((host) => canon === host || canon.startsWith(`${host}/`)),
+			),
+		).toStrictEqual([])
+		// The control each reading needs, drawn from outside both lists: a path
+		// beneath a canon member and a path beneath a vendored member each report.
+		// Every vendored member is a file after the wiring moved, so the second
+		// reading's prefix arm has no member to fire on and the control supplies it.
+		expect(['.claude/rules/names.md'].filter((path) => isCanonPath(path))).toHaveLength(1)
+		expect(
+			['scripts/deps.sh/copy'].filter((canon) =>
+				HOST_PATHS.some((host) => canon === host || canon.startsWith(`${host}/`)),
+			),
+		).toHaveLength(1)
 	})
 })
 
@@ -318,17 +337,35 @@ describe('selectHostPaths', () => {
 		expect(selectHostPaths(HOST_PATHS, 'router')).toStrictEqual(HOST_PATHS)
 	})
 
-	// The selection is what a target's plan claims, so the canon must not reach it:
-	// a target reads those files from the package it installs. The retained paths
-	// are the neighbours each canon member left behind, so a removal that took a
+	// The selection reads `HOST_PATHS` alone, so no canon member reaches it: a
+	// target reads those files from the package it installs, and the one canon path
+	// the plan does claim is appended by the compiler instead. The retained paths
+	// are the neighbours each moved path left behind, so a removal that took a
 	// sibling with it is visible here rather than in a length.
-	it('plans no canon member and retains the vendored paths beside them', () => {
+	it('selects no canon member and retains the vendored paths beside them', () => {
 		const selected = selectHostPaths(HOST_PATHS, 'router')
 		expect(selected.filter((path) => isCanonPath(path))).toStrictEqual([])
-		for (const path of ['AGENTS.md', 'CLAUDE.md', '.agents/orchestration.md', '.claude/rules']) {
+		for (const path of [
+			'AGENTS.md',
+			'CLAUDE.md',
+			'.agents/orchestration.md',
+			'.claude/rules',
+			'.claude/agents',
+			'.claude/agents/orkestrel.md',
+			'.codex/agents',
+			'.codex/config.toml',
+			'.cursor/mcp.json',
+			'.cursor/rules',
+			'.mcp.json',
+		]) {
 			expect(selected).not.toContain(path)
 		}
-		for (const path of ['.claude/settings.json', '.claude/agents', 'scripts/deps.sh', 'LICENSE']) {
+		for (const path of [
+			'.claude/settings.json',
+			'scripts/deps.sh',
+			'configs/policy.ts',
+			'LICENSE',
+		]) {
 			expect(selected).toContain(path)
 		}
 	})

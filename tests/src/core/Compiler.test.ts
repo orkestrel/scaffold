@@ -68,13 +68,13 @@ describe('Compiler artifacts', () => {
 			origin: 'template',
 			content: expect.stringContaining('installed package consumer'),
 		})
-		expect(plan.artifacts).toHaveLength(44)
+		expect(plan.artifacts).toHaveLength(39)
 		expect(plan.artifacts.filter(({ origin }) => origin === 'computed')).toHaveLength(1)
 		expect(plan.artifacts.filter(({ origin }) => origin === 'template')).toHaveLength(17)
-		expect(plan.artifacts.filter(({ origin }) => origin === 'host')).toHaveLength(26)
+		expect(plan.artifacts.filter(({ origin }) => origin === 'host')).toHaveLength(21)
 	})
 
-	// The canon left the vendored set, so the two root instruction documents are
+	// The canon left the vendored set, so the root instruction documents are
 	// planned as this package's own content instead. Each has to claim its path
 	// once: a second claimant would make the plan's last writer win silently, which
 	// is what the plan gate refuses.
@@ -99,14 +99,20 @@ describe('Compiler artifacts', () => {
 		expect(
 			artifactsToQuestions([...plan.artifacts, ...plan.artifacts]).map(({ field }) => field),
 		).toContain('artifacts')
-		// The pointer pair is the only canon path a plan claims, and it claims those
-		// as its own content. Nothing vendors a canon path any more, so a target
-		// reads the rest from the package it installs.
+		// A target holds a file at a canon path only where the plan claims it, and
+		// these are every path the plan claims: the pointer pair as this package's
+		// own template content, and the catalog file as the vendored bytes `catalog`
+		// rewrites in place. Everything else at a canon path a target reads from the
+		// package it installs.
 		expect(
 			plan.artifacts
 				.filter((artifact) => isCanonPath(artifact.path))
 				.map(({ path, origin }) => `${path}:${origin}`),
-		).toStrictEqual(['AGENTS.md:template', 'CLAUDE.md:template'])
+		).toStrictEqual([
+			'AGENTS.md:template',
+			'CLAUDE.md:template',
+			'.claude/agents/orkestrel.md:host',
+		])
 	})
 
 	it('emits every conditional config path exactly once', () => {

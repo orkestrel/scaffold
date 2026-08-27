@@ -112,26 +112,24 @@ export const BIN_ENTRY_PATH = 'src/bin/main.ts'
  *
  * @remarks
  * These are the files the fleet shares verbatim and every target holds a copy
- * of: the licence, the harness directories, the session hook scripts, the shared
- * policy register, the byte-identical root dotfiles, and the guide mirrors a
- * generated workspace starts from. A directory entry vendors everything beneath
- * it.
+ * of: the licence, the harness permission file, the session hook scripts, the
+ * shared policy register, the byte-identical root dotfiles, and the guide
+ * mirrors a generated workspace starts from. A directory entry vendors
+ * everything beneath it.
  *
  * A plan carries the subset its target selects, which is why the list is a
  * candidate set rather than a plan: a workspace never mirrors its own guide.
  *
- * The instruction canon is not here. {@link CANON_PATHS} carries it, and a
- * target reads it from the installed package instead of holding a copy.
+ * Neither the instruction canon nor the harness wiring is here. A target reads
+ * its rules, its skills, its agent roles, its bench configuration, and its MCP
+ * registrations from {@link CANON_PATHS} inside the installed package, so no
+ * file scaffold leaves in a target names a path the target does not hold.
+ * `nameToHostArtifacts` appends {@link CATALOG_AGENT_PATH} to what this list
+ * selects, which is what keeps the list itself disjoint from the canon.
  */
 export const HOST_PATHS: readonly string[] = Object.freeze([
 	'LICENSE',
-	'.claude/agents',
 	'.claude/settings.json',
-	'.codex/agents',
-	'.codex/config.toml',
-	'.cursor/mcp.json',
-	'.cursor/rules',
-	'.mcp.json',
 	'scripts/deps.sh',
 	'scripts/cursor.sh',
 	'scripts/codex.sh',
@@ -157,34 +155,49 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
  *
  * @remarks
  * The root instruction documents, the orchestration contract every harness
- * bridge points at, the rule map's rules, the skills, the templates, and the
- * transport contracts. A directory entry covers everything beneath it.
+ * bridge points at, the rule map's rules, the skills, the templates, the
+ * transport contracts, the agent roles each harness dispatches, the bench
+ * configuration, and the MCP registrations. A directory entry covers everything
+ * beneath it.
  *
  * Staging walks these beside {@link HOST_PATHS}, so a release ships them and a
  * reader reaches them two ways: a scaffold checkout sitting beside the
  * repository, or the `node_modules/@orkestrel/scaffold/dist/host/` root inside
- * the installed package. No host-origin artifact claims one, so no target
- * receives the canon itself, and the `AGENTS.md` and `CLAUDE.md` pointers
- * scaffold plans are what name each location.
+ * the installed package. The `AGENTS.md` and `CLAUDE.md` pointers scaffold plans
+ * are what name each location.
  *
- * The one deliberate overlap sits on the plan rather than on these lists:
- * `blueprintToDocumentArtifacts` plans those pointers at the `AGENTS.md` and
- * `CLAUDE.md` destinations as this package's own template content, and the
- * `canon` advisory subtracts exactly the paths that compiler plans.
+ * These facts fix what a target holds at one of these paths.
  *
- * `HOST_PATHS` and `CANON_PATHS` are disjoint. A path in both would be copied
- * into a target as a host artifact and refused by the overlay that keeps a host
- * artifact current, at once.
+ * The lists are disjoint by prefix in either direction: no member of either
+ * equals or sits beneath a member of the other. Staging depends on that, because
+ * the walk covers the union and a path it discovers twice claims one storage
+ * name twice, which refuses the stage.
+ *
+ * The plan claims paths inside the canon deliberately, and each has a reason.
+ * `blueprintToDocumentArtifacts` claims `AGENTS.md` and `CLAUDE.md` as this
+ * package's own template pointers. `nameToHostArtifacts` claims
+ * {@link CATALOG_AGENT_PATH}, because the catalog verb refuses a target that
+ * lacks the file and repair restores its absence.
+ *
+ * A target therefore holds a file at a canon path only where the plan claims it.
+ * That is the rule every verb obeys, and it is what makes a copy found anywhere
+ * else superseded.
  */
 export const CANON_PATHS: readonly string[] = Object.freeze([
 	'AGENTS.md',
 	'CLAUDE.md',
+	'.mcp.json',
 	'.agents/orchestration.md',
 	'.agents/skills',
 	'.agents/templates',
 	'.agents/transports',
+	'.claude/agents',
 	'.claude/rules',
 	'.claude/skills',
+	'.codex/agents',
+	'.codex/config.toml',
+	'.cursor/mcp.json',
+	'.cursor/rules',
 ])
 
 /** The repository-relative path where the committed vendored-file inventory is served. */
@@ -253,9 +266,15 @@ export const ORCHESTRATION_PATH_NAMES: readonly string[] = Object.freeze(['.mcp.
  * The agent file whose marker-bounded package table the catalog verb alone owns.
  *
  * @remarks
- * It is vendored like every other host artifact but claimed by presence rather
- * than content, so a consumer's own edits to the file survive every verb and
- * only the catalog verb rewrites the region inside the markers.
+ * A plan claims it at a canon path, because the catalog verb refuses a target
+ * that lacks the file. `nameToHostArtifacts` appends it to the vendored
+ * selection, and it reaches a release through the `.claude/agents` directory in
+ * {@link CANON_PATHS} rather than through {@link HOST_PATHS}, which is what
+ * keeps the two lists disjoint.
+ *
+ * It is claimed by presence rather than content, so a consumer's own edits to
+ * the file survive every verb and only the catalog verb rewrites the region
+ * inside the markers.
  */
 export const CATALOG_AGENT_PATH = '.claude/agents/orkestrel.md'
 
