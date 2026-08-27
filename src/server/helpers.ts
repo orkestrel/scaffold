@@ -858,7 +858,7 @@ export function listDirectories(root: string): readonly string[] {
  * ```ts
  * import { listCanonPaths } from '@orkestrel/scaffold/server'
  *
- * listCanonPaths('/tmp/project', ['orchestration']) // ['.claude/agents/orkestrel.md']
+ * listCanonPaths('vacant', ['orchestration']) // []
  * ```
  */
 export function listCanonPaths(target: string, groups: readonly Group[]): readonly string[] {
