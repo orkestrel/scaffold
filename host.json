@@ -232,7 +232,7 @@
 			"storage": "agents/skills/orkestrel-publish/SKILL.md",
 			"destination": ".agents/skills/orkestrel-publish/SKILL.md",
 			"executable": false,
-			"digest": "35a3255f88aa7b80a3fa47f9d3052c4f0238e8ec14aa5b01cd5c284ae47788d3"
+			"digest": "7c259c5945838d0fedfd6eaf453bd912f6af802e26e74aebac13810018218c8c"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/agents/openai.yaml",
@@ -250,7 +250,7 @@
 			"storage": "agents/skills/orkestrel-publish/references/window.md",
 			"destination": ".agents/skills/orkestrel-publish/references/window.md",
 			"executable": false,
-			"digest": "88cf1dba129ce5a354087a0a865fe70d9e415b178842891b9734eec70a32215d"
+			"digest": "db102eb706708e887d8abf0d1f1bdd1132850e4dced735fb8c8378595c819ffd"
 		},
 		{
 			"storage": "agents/templates/brief.md",
@@ -742,5 +742,5 @@
 		".codex/agents",
 		".cursor/rules"
 	],
-	"digest": "260052484e5203b91bc8542fc49870dde886f789dc4f3f2a4e48f50f4f16afb3"
+	"digest": "21424b0a9f13e34fb838f565808372d07ec5b4a49a7b558196e48b63cd883a67"
 }

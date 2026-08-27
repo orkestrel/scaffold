@@ -50,8 +50,10 @@ following the skill.
    happens outside the window.
 6. **Reach the approval.** Follow [window.md](references/window.md), and launch the login chain
    only after the user signals they are at the keyboard.
-7. **Spend the window.** Follow [window.md](references/window.md). Open the layer with one
-   package, confirm its upload from the registry, then chase the remaining uploads back-to-back.
+7. **Authorize and upload.** Follow [window.md](references/window.md). Take the account's one-time
+   code where it has one, because that path opens no window. Where the account answers with no
+   code, the browser authorization opens the five-minute window: open the layer with one package,
+   confirm its upload from the registry, then chase the remaining uploads back-to-back.
 8. **Close the layer from the registry, then prepare the next.** A dependent's new pin cannot
    install until the version it names exists, so preparation and publication interleave and cannot
    be batched ahead.
