@@ -7,6 +7,13 @@ Every `@orkestrel` repository shares one toolchain, one set of agent instruction
 root dotfiles. Scaffold ships that shared set as data inside the package and gives it verbs: create
 a workspace from it, report how a workspace differs from it, and write the difference back.
 
+The set splits by how a repository meets it. The tool surface is vendored: every target receives its
+own copy, and the verbs write it and compare it. The instruction canon — the coding and orchestration
+contracts, the rules, the skills, the templates, and the transport contracts — is published for
+reading instead, from a scaffold checkout sitting beside the repository, or from
+`node_modules/@orkestrel/scaffold/dist/host/` in the installed package. Every target carries the
+`AGENTS.md` and `CLAUDE.md` pointers that name where to read it.
+
 ## Install
 
 ```sh
@@ -34,10 +41,11 @@ npx scaffold new router --src core,server
 ```
 
 Writes a complete workspace into `./router`: its manifest, its build configuration, empty barrels
-for each selected environment, its tests, its documentation, and every shared file. `--app` selects
-private application environments on an independent axis, and `--deps` names `@orkestrel/*` runtime
-dependencies, each pinned to the registry's latest release. `--bin` adds the command-line entry, its
-test, and its scoped build configuration.
+for each selected environment, its tests, its documentation, the `AGENTS.md` and `CLAUDE.md`
+pointers, and every vendored file. `--app` selects private application environments on an
+independent axis, and `--deps` names `@orkestrel/*` runtime dependencies, each pinned to the
+registry's latest release. `--bin` adds the command-line entry, its test, and its scoped build
+configuration.
 
 ### `audit` — report how a target compares to its plan
 

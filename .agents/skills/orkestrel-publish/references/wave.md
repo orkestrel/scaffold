@@ -13,12 +13,17 @@ step that writes it.
 1. Re-pin the target's `@orkestrel/scaffold` devDependency and install, so the overwrite runs the
    current vendored host.
 2. Run `scaffold overwrite`.
-3. Force-verify every `@orkestrel` range against a registry sweep taken after the previous layer
+3. Where the target still carries an instruction-canon path, delete it. `scaffold audit` names each
+   one in its `canon` question; run `git rm -r` over the named paths in this visit, and prove the
+   removal with the paths' absence and a clean `git status`. No scaffold verb deletes those copies,
+   so a visit that skips this step leaves the target holding instructions nothing updates and the
+   question firing on the next audit.
+4. Force-verify every `@orkestrel` range against a registry sweep taken after the previous layer
    published.
-4. Run the full install.
-5. Run the mutating `format` script to converge generated writes.
-6. Run the quality gates.
-7. Compare the rebuilt `dist/` against the published tarball for material content.
+5. Run the full install.
+6. Run the mutating `format` script to converge generated writes.
+7. Run the quality gates.
+8. Compare the rebuilt `dist/` against the published tarball for material content.
 
 Restore any unpublished tarball the target is holding before the quality gates run, per
 `.agents/orchestration.md` § Fixing a dependency before it publishes. A distribution proof run

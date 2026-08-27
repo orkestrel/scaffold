@@ -12,6 +12,13 @@ does not work. Scaffold makes the shared set data — a vendored data root shipp
 — and gives it verbs: create a workspace from it, report how a workspace differs from it, and
 write the difference back.
 
+That root stages the tool surface and the instruction canon, and a target meets them differently.
+`HOST_PATHS` names the tool surface: every target receives a copy, and the verbs write it and compare
+it. `CANON_PATHS` names the instruction canon — the coding and orchestration contracts, the rules,
+the skills, the templates, and the transport contracts — which stays in one place and is published
+for reading. A target carries the `AGENTS.md` and `CLAUDE.md` pointers that name where a reader finds
+it. Vendored data root states how each set is staged and how a pointer resolves.
+
 Every following code fence is illustrative. [`tests/guides.test.ts`](../tests/guides.test.ts)
 keeps the command reference aligned with the executable and transcribes the pure blueprint-default,
 compile-refusal, and error-narrowing fences. A trailing comment in another fence is this guide's
@@ -97,6 +104,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `BASE_DEV_DEPENDENCIES`           | const | The tooling versions scaffold and every generated workspace share.                               |
 | `BIN_CONFIGS`                     | const | The configuration files a workspace that ships its own executable adds, frozen.                  |
 | `BIN_ENTRY_PATH`                  | const | The executable entry whose presence makes a workspace `bin`.                                     |
+| `CANON_PATHS`                     | const | The instruction-canon paths staged for reading rather than for a target, frozen.                 |
 | `CATALOG_AGENT_PATH`              | const | The agent file whose marker-bounded package table the catalog verb alone owns.                   |
 | `CONFIG_TEMPLATES`                | const | Formatter-stable template text for every configuration artifact.                                 |
 | `CONFORMANCE_TEST_PATH`           | const | The official-tooling drift proof whose presence makes a workspace `conformance`.                 |
@@ -116,7 +124,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `GROUPS`                          | const | The `Group` values in plan order, frozen.                                                        |
 | `GUIDES_TEST_PATH`                | const | The guide-parity proof whose presence selects the planned `guides` project.                      |
 | `HEX_PATTERN`                     | const | Exact lowercase hexadecimal bytes: two digits per byte, and empty content is valid.              |
-| `HOST_PATHS`                      | const | The paths byte-copied from the vendored data root, frozen.                                       |
+| `HOST_PATHS`                      | const | The paths a target receives from the vendored data root, frozen.                                 |
 | `HOST_INVENTORY_PATH`             | const | The repository-relative path where the committed vendored-file inventory is served.              |
 | `INTEGRATION_TEST_PATH`           | const | The cross-environment composition proof whose presence makes a workspace `integration`.          |
 | `INVALID_PATH_CHARACTER_PATTERN`  | const | Visible characters a target-relative path and a Markdown path cell both forbid.                  |
@@ -205,6 +213,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `extractVersion`            | function | Extract the major, minor, and patch components of an exact version.           |
 | `inferDrift`                | function | Infer how one target path compares to the artifact planned for it.            |
 | `inferGroup`                | function | Infer the `Group` a path belongs to.                                          |
+| `isCanonPath`               | function | Test whether a path belongs to the instruction canon a target reads.          |
 | `isDeferredPath`            | function | Test whether another surface owns the vendored bytes at a path.               |
 | `manifestToDependencies`    | function | Project a manifest's `@orkestrel/*` declarations into separate section lists. |
 | `manifestToName`            | function | Project a package manifest's text to its own name.                            |
@@ -643,11 +652,12 @@ reports it only when its selection includes either group, without changing its e
 that excludes those groups proceeds, and no verb adds the declaration for you: `package.json` is
 birth-owned, and the range and script regions are the only parts of it a verb rewrites.
 
-`audit` reports one further non-blocking question, on the `setup` field, and it alone reports it.
-The question fires when the target carries a filled root `tests/setup*.ts` module that is neither a
-proof itself nor one of the vendored modules every target receives, while no proof of the same stem
-covers it. A module counts as filled when its text differs from the seed this blueprint plans at
-that same path.
+`audit` reports further non-blocking questions, on the `setup` field and on the `canon` field.
+
+The `setup` question fires when the target carries a filled root `tests/setup*.ts` module that is
+neither a proof itself nor one of the vendored modules every target receives, while no proof of the
+same stem covers it. A module counts as filled when its text differs from the seed this blueprint
+plans at that same path.
 
 The comparison reads the module and the seed trimmed, so surrounding whitespace decides nothing: a
 trailing newline is not authorship, and a module holding whitespace alone reads as empty rather than
@@ -674,6 +684,21 @@ proof that module wants. The question belongs to the `tests` group, so a scoped 
 question: a writing verb refuses the advisories it reports, and refusing `repair` over this one
 would block every write on a gap no write can close. Run across a fleet, the question is the list of
 packages carrying a filled setup module that no proof covers.
+
+The `canon` question fires when the target still holds an instruction path the installed package
+supplies. Scaffold vendored those paths before the canon split and stages them for reading instead,
+so a target generated before that release carries bytes nothing updates. The reading is the target's
+own filesystem rather than the plan, because the plan is exactly what no longer names those paths.
+The message names each `CANON_PATHS` member the target holds, reported as the directory where the
+member is a directory, because the whole tree goes and naming every file beneath it would bury the
+instruction in a list.
+
+The planned document paths are subtracted. The `AGENTS.md` and `CLAUDE.md` pointers sit at canon
+paths and `repair` restores them, so naming one would tell a maintainer to delete what the next write
+puts back. The remedy is one commit in the target that deletes the named paths, and the question goes
+quiet after it. No verb writes or deletes a canon path, so refusing `repair` over this question would
+block every write on a gap no write can close. The question belongs to the `docs` and `orchestration`
+groups, so a scoped audit that excludes both omits it.
 
 ### Exit codes
 
@@ -894,8 +919,12 @@ order is the order a plan lists its artifacts in.
 | `source`        | The selected environment barrels and entries                       |
 | `tests`         | The shared setup modules, the entry tests, and the policy sweep    |
 | `guides`        | The guide index and the vendored guide mirrors                     |
-| `docs`          | `README.md` and the root instruction documents                     |
-| `orchestration` | The harness directories, the bench scripts, and `.mcp.json`        |
+| `docs`          | `README.md` beside the `AGENTS.md` and `CLAUDE.md` pointers        |
+| `orchestration` | The vendored harness wiring, the bench scripts, and `.mcp.json`    |
+
+No group carries the instruction canon. A plan never claims a `CANON_PATHS` member, so no group
+selection reaches one and no verb writes one into a target. The `docs` group carries the `AGENTS.md`
+and `CLAUDE.md` pointers that name where each contract is read instead.
 
 ## Ownership and drift
 
@@ -927,12 +956,18 @@ The unhydrated row is the one a core-only caller meets most, and reading it as a
 path is the mistake it invites. `Compiler` runs in the pure core face, which cannot read the
 vendored data root, so every host artifact it plans carries `presence`: a claim over bytes nobody
 has read is a claim no comparison could check. A `src: ['core']` plan therefore reports `presence`
-for `AGENTS.md`, `.claude/settings.json`, `tests/policy.test.ts`, and every other vendored path, and
-a consumer concluding from that reading that scaffold never replaces those bytes is wrong.
+for `.claude/settings.json`, `.codex/config.toml`, `tests/policy.test.ts`, and every other vendored
+path, and a consumer concluding from that reading that scaffold never replaces those bytes is wrong.
 `Materializer` hydrates the plan before it audits or writes: hydration reads the vendored root and
 turns each path scaffold owns the bytes of into a content-owned artifact, leaving `presence` on the
 workspace-owned paths and the mirror pointers the preceding rows name. What a verb claims at a
 vendored path is the hydrated ownership, and `HostArtifact` carries the same narrowing on the type.
+
+The `AGENTS.md` and `CLAUDE.md` pointers sit outside that row. Their bytes come from a frozen
+template rather than from the data root, so the pure core face already claims them content-owned and
+hydration leaves them alone. `repair` and `overwrite` restore a missing pointer and replace a drifted
+one, in every face, which is what keeps a target's resolution instructions in agreement with the
+release it installed.
 
 Birth ownership is what makes a generated workspace the consumer's. `materialize` writes a
 birth-owned path into a vacant target. A later `repair` or `overwrite` call treats that path as
@@ -1126,11 +1161,27 @@ generating a workspace with no network receives.
 
 ## Vendored data root
 
-The vendored data root is the shared file set, staged into the published package as plain data. It
-holds the root instruction documents, the licence, the orchestration contract, the harness
-directories, the bench scripts, the shared policy register, the byte-identical root dotfiles, and
-the guide mirrors a generated workspace starts from. `HOST_PATHS` is the candidate list; a plan
-carries the subset its target selects, because a workspace never mirrors its own guide.
+The vendored data root is the shared file set, staged into the published package as plain data.
+Staging walks `HOST_PATHS` and `CANON_PATHS`, and a release ships what both name.
+
+`HOST_PATHS` is the vendored set, and a target receives a copy of each path it selects: the licence,
+the harness wiring, the bench scripts, the shared policy register, the byte-identical root dotfiles,
+and the guide mirrors a generated workspace starts from. It is a candidate list rather than a plan,
+because a workspace never mirrors its own guide.
+
+`CANON_PATHS` is the instruction canon, staged for reading instead: the `AGENTS.md` coding contract,
+the `CLAUDE.md` harness bridge, the `.agents/orchestration.md` agent-operation contract, the rules
+under `.claude/rules/`, the skills under `.agents/skills/` and `.claude/skills/`, the templates under
+`.agents/templates/`, and the transport contracts under `.agents/transports/`. A release stages every
+one of them and no plan claims one, so no target receives a copy. A reader reaches them from a
+scaffold checkout sitting beside the repository, or from the
+`node_modules/@orkestrel/scaffold/dist/host/` root inside the installed package, and the `AGENTS.md`
+pointer scaffold plans into a target names each location.
+
+`HOST_PATHS` and `CANON_PATHS` are disjoint. A path in both would be planned into a target and
+withheld from it at once. `isCanonPath` is the one reading of canon membership, matching a member and
+anything beneath a member that is a directory, so the compiler, the live overlay, and the
+executable's advisory never disagree about what a path is.
 
 The `host.json` file at the repository root is the committed live inventory. Each entry carries the
 SHA-256 digest of its file content, and the inventory carries a membership digest over its declared
@@ -1143,11 +1194,22 @@ those paths; it can neither introduce a path nor delete one. A path added upstre
 until a release adds it to the installed manifest. Remove a vendored path in the same change that
 ships the release which removes it from that manifest.
 
+Moving a path from `HOST_PATHS` to `CANON_PATHS` is not that removal. The path stays staged, stays in
+the installed manifest, and keeps being published; what changes is that no plan claims it. A target
+generated before the move keeps the copy it received, no verb writes or deletes that copy, and
+`audit` raises the `canon` question naming it until a maintainer removes it in one commit.
+
 At the default `UpstreamOptions.retries` value, an aligned target spends one request on `host.json`,
 and each installed path whose live digest differs from the target adds one request for its bytes. A
 positive `retries` value can repeat a request after a transport fault. Raw-host propagation lag after
 a commit is a property of the content host. Scaffold neither creates that lag nor presents a stale
 response as fresher than the host served it.
+
+A canon destination costs no request. No target receives those bytes, so the fetch list drops the
+path rather than spending a round trip on one no verb can write, and `filesToHost` takes the
+installed floor bytes for it. A fill carrying no row for a canon path is complete rather than
+spoiled, which is what lets one `Host` carry live bytes beside floor bytes without mixing baselines
+within a surface.
 
 `.claude/settings.json` is in that set, and the artifact planned for it is content-owned. `repair`
 and `overwrite` restore its bytes, so an edit made to it inside a target is reverted at the next
@@ -1164,7 +1226,7 @@ import { stageHost } from '@orkestrel/scaffold/server'
 stageHost(process.cwd(), 'dist/host') // one ManifestEntry per file staged
 ```
 
-Each vendored path is copied to a storage name, and every dot that opens a segment comes off,
+Each staged path is copied to a storage name, and every dot that opens a segment comes off,
 because npm's own ignore rules would drop a leading-dot entry from the tarball. A dotted file at the
 root moves under `dotfiles/` so it cannot collide with an undotted sibling. `manifest.json` is
 written last and declares the whole membership: one entry per file with a digest computed from the
@@ -1172,7 +1234,15 @@ staged destination after its copy, the sorted directory inventory, and a SHA-256
 The membership digest detects an edit that did not update the manifest, and the directory inventory
 makes a declared empty directory survive a file walk.
 
-A missing vendored path is refused rather than staged around, and the refusal names every missing
+The pointer reads that spelling back. The installed branch of a target's `AGENTS.md` names the
+`node_modules/@orkestrel/scaffold/dist/host/AGENTS.md` file, the
+`node_modules/@orkestrel/scaffold/dist/host/agents/orchestration.md` file, and the
+`node_modules/@orkestrel/scaffold/dist/host/claude/rules/` directory, which are where the dot-stripped
+storage names of `AGENTS.md`, `.agents/orchestration.md`, and `.claude/rules/` land. A reader
+following a canon path through the installed package types the storage spelling, not the repository
+one.
+
+A missing staged path is refused rather than staged around, and the refusal names every missing
 path at once. That is why `guides/scaffold.md` — this file — must exist before `npm run build`
 completes.
 
@@ -1234,6 +1304,12 @@ except the manifest.
   `configs/browsers.ts` resolution, serves the bundle over a loopback server, and drives it in
   Playwright Chromium.
 - One template artifact each for `README.md` and `guides/README.md`.
+- One template artifact each for `AGENTS.md` and `CLAUDE.md`. They are pointers rather than contracts:
+  `AGENTS.md` names the coding contract, the orchestration contract, the rules, and the skills, and
+  resolves each against a sibling scaffold checkout or the installed package; `CLAUDE.md` names the
+  `AGENTS.md` file beside it and imports nothing, because an `@path` import inlines the imported file
+  into every context that loads it. Scaffold owns their bytes, so a release that moves the wording
+  moves every target's copy at its next `repair`.
 - One host artifact per vendored path the workspace selects. A vendored directory is one planned
   path that expands into the files the data root stores beneath it.
 
@@ -1412,6 +1488,15 @@ drivers is separate test capability rather than name-resolution parity.
 **The library does not enforce the creating verb's policy.** `new` refuses a blueprint carrying any
 question, and `materialize` writes any plan into any vacant target. The Compile section states the
 rule a library caller applies in its place.
+
+**No verb removes a superseded instruction copy.** A target generated before the canon split holds
+its own copies of the paths `CANON_PATHS` names. `repair` writes the planned paths a target is
+missing or has let drift and never deletes. `overwrite` does delete a tracked file the plan does not
+own, but its foreign reading extends only beneath the vendored directories the plan expands, and a
+plan expands no canon directory, so those copies sit outside what it can see. They are unmanaged:
+`audit` reports no drift against them and raises the non-blocking `canon` question naming them
+instead. The removal is one commit in the target — `git rm -r` over each named path — and the release
+wave's per-repository visit is where it runs.
 
 **`isPath` does not prove host portability.** It proves bounded target-relative syntax and rejects
 traversal, separators, controls, and reserved syntax characters. It deliberately admits host-specific
@@ -1648,4 +1733,4 @@ port, so the run drives nothing external and stays in `test`.
 
 - [`guides/README.md`](README.md) — the concept and directory index.
 - [`README.md`](../README.md) — the package front page.
-- [`AGENTS.md`](../AGENTS.md) — the coding contract every generated workspace inherits.
+- [`AGENTS.md`](../AGENTS.md) — the coding contract every generated workspace points at.
