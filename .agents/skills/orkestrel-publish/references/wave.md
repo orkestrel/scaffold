@@ -12,20 +12,20 @@ step that writes it.
 
 1. Re-pin the target's `@orkestrel/scaffold` devDependency and install, so the overwrite runs the
    current vendored host.
-2. Run `scaffold overwrite`.
-3. Where the target still carries an instruction-canon path, delete it. `scaffold audit` names each
-   one in its `canon` question; run `git rm -r` over the named paths in this visit, and prove the
-   removal with the paths' absence and a clean `git status`. No scaffold verb deletes those copies,
-   and this deletion cannot be deferred past the quality gates: `scaffold overwrite` has already
-   replaced the target's `AGENTS.md` with the pointer, which carries no rule map, so
-   `inspectPolicyRuleMap` reports `the rule map names every rule file` for every file a kept
-   `.claude/rules` directory still holds and the policy sweep is red until this deletion runs.
-4. Force-verify every `@orkestrel` range against a registry sweep taken after the previous layer
+2. Run `scaffold overwrite`. One run repairs the `AGENTS.md` and `CLAUDE.md` pointers and deletes
+   every tracked copy the target still holds at an instruction-canon path. Prove the sweep with a
+   second `scaffold audit` that exits `0`.
+   - The deletion draws on what git tracks, so an untracked copy survives it, and the verb refuses
+     the whole run as uncommitted work while an unignored one stands. Commit that copy or delete it
+     by hand before re-running: `--dirty` clears the refusal and leaves the copy standing.
+   - A copy the target git-ignores stays a `foreign` finding, so that target never reaches exit `0`
+     again. Keep a local MCP server registration outside the repository rather than at `.mcp.json`.
+3. Force-verify every `@orkestrel` range against a registry sweep taken after the previous layer
    published.
-5. Run the full install.
-6. Run the mutating `format` script to converge generated writes.
-7. Run the quality gates.
-8. Compare the rebuilt `dist/` against the published tarball for material content.
+4. Run the full install.
+5. Run the mutating `format` script to converge generated writes.
+6. Run the quality gates.
+7. Compare the rebuilt `dist/` against the published tarball for material content.
 
 Restore any unpublished tarball the target is holding before the quality gates run, per
 `.agents/orchestration.md` § Fixing a dependency before it publishes. A distribution proof run

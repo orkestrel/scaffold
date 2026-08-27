@@ -8,11 +8,14 @@ root dotfiles. Scaffold ships that shared set as data inside the package and giv
 a workspace from it, report how a workspace differs from it, and write the difference back.
 
 The set splits by how a repository meets it. Every target carries its own copy of the vendored set —
-its toolchain, its policy proofs, its harness wiring — and the verbs write it and compare it. The
-instruction canon — the coding and orchestration contracts, the rules, the skills, the templates, and
-the transport contracts — is published for reading instead, from a scaffold checkout sitting beside
-the repository, or from `node_modules/@orkestrel/scaffold/dist/host/` in the installed package.
-Every target carries the `AGENTS.md` and `CLAUDE.md` pointers that name where to read it.
+its toolchain, its policy proofs, its bench scripts, its harness permission file — and the verbs
+write it and compare it. The instruction canon — the coding and orchestration contracts, the rules,
+the skills, the templates, the transport contracts, the agent roles, the bench configuration, and the
+MCP registrations — is published for reading instead, from a scaffold checkout sitting beside the
+repository, or from `node_modules/@orkestrel/scaffold/dist/host/` in the installed package. Every
+target carries the `AGENTS.md` and `CLAUDE.md` pointers that name where to read it, and the
+`.claude/agents/orkestrel.md` catalog file the `catalog` verb rewrites. Anything else a target holds
+at a canon path is a superseded copy, and `overwrite` deletes it.
 
 ## Install
 
@@ -86,8 +89,10 @@ npx scaffold overwrite --dirty
 
 Everything `repair` and `catalog` do, plus the steps only this verb carries: it deletes tracked
 files the plan does not own, and it rewrites the `@orkestrel/*` ranges in the manifest to the
-registry's latest releases. It needs a git repository, and it refuses a tree carrying uncommitted
-changes unless `--dirty` waives that refusal.
+registry's latest releases. The deletion covers a stray beneath a vendored directory and a superseded
+instruction copy alike, so one run repairs the pointers and sweeps the canon paths a release moved.
+It needs a git repository, and it refuses a tree carrying uncommitted changes unless `--dirty` waives
+that refusal.
 
 ## Library
 

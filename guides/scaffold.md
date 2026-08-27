@@ -13,12 +13,15 @@ does not work. Scaffold makes the shared set data — a vendored data root shipp
 write the difference back.
 
 That root stages the vendored set and the instruction canon, and a target meets them differently.
-`HOST_PATHS` names the vendored set — the toolchain, the policy proofs, the harness wiring — and
-every target carries its own copy, which the verbs write and compare. `CANON_PATHS` names the
-instruction canon — the coding and orchestration contracts, the rules, the skills, the templates, and
-the transport contracts — which stays in one place and is published for reading. A target carries the
-`AGENTS.md` and `CLAUDE.md` pointers that name where a reader finds it. Vendored data root states how
-each set is staged and how a pointer resolves.
+`HOST_PATHS` names the vendored set — the toolchain, the policy proofs, the bench scripts, and the
+harness permission file — and every target carries its own copy, which the verbs write and compare.
+`CANON_PATHS` names the instruction canon — the coding and orchestration contracts, the rules, the
+skills, the templates, the transport contracts, the agent roles, the bench configuration, and the
+MCP registrations — which stays in one place and is published for reading. A target carries the
+`AGENTS.md` and `CLAUDE.md` pointers that name where a reader finds it, and the catalog agent file
+the `catalog` verb rewrites. It carries nothing else at a canon path: a file found at one is a
+superseded copy, and `overwrite` deletes it. Vendored data root states how each set is staged and
+how a pointer resolves.
 
 Every following code fence is illustrative. [`tests/guides.test.ts`](../tests/guides.test.ts)
 keeps the command reference aligned with the executable and transcribes the pure blueprint-default,
@@ -653,7 +656,7 @@ reports it only when its selection includes either group, without changing its e
 that excludes those groups proceeds, and no verb adds the declaration for you: `package.json` is
 birth-owned, and the range and script regions are the only parts of it a verb rewrites.
 
-`audit` reports further non-blocking questions, on the `setup` field and on the `canon` field.
+`audit` reports a further non-blocking question, on the `setup` field.
 
 The `setup` question fires when the target carries a filled root `tests/setup*.ts` module that is
 neither a proof itself nor one of the vendored modules every target receives, while no proof of the
@@ -686,35 +689,27 @@ write: a writing verb reports it in the terminal audit it prints, because refusi
 gap no write can close would block every write. Run across a fleet, the question is the list of
 packages carrying a filled setup module that no proof covers.
 
-The `canon` question fires when the target still holds an instruction path the installed package
-supplies. Scaffold vendored those paths before the canon split and stages them for reading instead,
-so a target generated before that release carries bytes nothing updates. The reading is the target's
-own filesystem rather than the plan, because the plan is exactly what no longer names those paths.
-The message names each `CANON_PATHS` member the target holds, reported as the directory where the
-member is a directory, because the whole tree goes and naming every file beneath it would bury the
-instruction in a list.
-
-The planned document paths are subtracted. The `AGENTS.md` and `CLAUDE.md` pointers sit at canon
-paths and `repair` restores them, so naming one would tell a maintainer to delete what the next write
-puts back. The remedy is one commit in the target that deletes the named paths, and the question goes
-quiet after it. No verb writes or deletes a path this question names, because the subtraction removes
-exactly the paths a plan claims, so refusing `repair` over this question would block every write on a
-gap no write can close. The question belongs to the `docs` and `orchestration` groups, so a scoped
-audit that excludes both omits it.
+`audit` reads the instruction canon as findings rather than as a question. Each `CANON_PATHS` member
+the target holds enters the comparison, by file where the member is a directory, and a path the plan
+does not claim there reports `foreign`. Ownership and drift states that population, and Vendored data
+root states what `overwrite` does with it.
 
 ### Exit codes
 
 `0` means the target matched its plan and every step completed. `1` means the target drifted or a
 step failed. `2` means the command line was not a command. A foreign file counts as drift: the
 target holds something the plan does not own, whether or not the verb that found it was allowed to
-remove it.
+remove it. A superseded instruction copy is such a file, so a target generated before the canon
+split exits `1` until the copy goes.
 
 ### Git
 
 `overwrite` is the only verb that reads git, and it needs a repository. It asks git for the tracked
 set and the dirty set, deletes only tracked paths, and refuses a tree carrying uncommitted changes
 unless `--dirty` waives that refusal. A target that is not a git repository is refused under
-`TARGET`, because deletion there would have no recovery mechanism. The other verbs never ask.
+`TARGET`, because deletion there would have no recovery mechanism. The other verbs never ask. A
+git-ignored file sits outside each reading: it never makes the tree dirty and it is never deleted.
+Limits states what that costs a target that keeps one at a canon path.
 
 ### Machine-readable output
 
@@ -914,21 +909,24 @@ than a silent no-op.
 A plan selects over the following groups, and a compile that names none covers all of them. Their
 order is the order a plan lists its artifacts in.
 
-| Group           | Holds                                                              |
-| --------------- | ------------------------------------------------------------------ |
-| `manifest`      | `package.json`                                                     |
-| `configs`       | The root and per-target build configuration, and the root dotfiles |
-| `source`        | The selected environment barrels and entries                       |
-| `tests`         | The shared setup modules, the entry tests, and the policy sweep    |
-| `guides`        | The guide index and the vendored guide mirrors                     |
-| `docs`          | `README.md` beside the `AGENTS.md` and `CLAUDE.md` pointers        |
-| `orchestration` | The vendored harness wiring, the bench scripts, and `.mcp.json`    |
+| Group           | Holds                                                                      |
+| --------------- | -------------------------------------------------------------------------- |
+| `manifest`      | `package.json`                                                             |
+| `configs`       | The root and per-target build configuration, and the root dotfiles         |
+| `source`        | The selected environment barrels and entries                               |
+| `tests`         | The shared setup modules, the entry tests, and the policy sweep            |
+| `guides`        | The guide index and the vendored guide mirrors                             |
+| `docs`          | `README.md` beside the `AGENTS.md` and `CLAUDE.md` pointers                |
+| `orchestration` | The harness permission file, the bench scripts, and the catalog agent file |
 
-No group carries the instruction canon. No host-origin artifact claims a `CANON_PATHS` member, so no
-group selection reaches a staged contract and no verb copies one into a target. The one deliberate
-overlap is on the plan: the `docs` group carries the `AGENTS.md` and `CLAUDE.md` pointers that name
-where each contract is read instead, planned at those canon destinations as this package's own
-template content.
+The plan claims paths inside the instruction canon deliberately, and each has a reason. The `docs`
+group carries the `AGENTS.md` and `CLAUDE.md` pointers that name where each contract is read,
+planned at those canon destinations as this package's own template content. The `orchestration`
+group carries `CATALOG_AGENT_PATH`, the host-origin artifact at a canon path, because the `catalog`
+verb refuses a target that lacks the file. Every other canon path is staged for reading, so no group
+selection copies a contract into a target, and a copy a target holds at one of them is foreign drift
+in the group `inferGroup` gives it. A scoped audit reads the canon through that same selection, so a
+run excluding a group reports nothing there.
 
 ## Ownership and drift
 
@@ -960,7 +958,7 @@ The unhydrated row is the one a core-only caller meets most, and reading it as a
 path is the mistake it invites. `Compiler` runs in the pure core face, which cannot read the
 vendored data root, so every host artifact it plans carries `presence`: a claim over bytes nobody
 has read is a claim no comparison could check. A `src: ['core']` plan therefore reports `presence`
-for `.claude/settings.json`, `.codex/config.toml`, `tests/policy.test.ts`, and every other vendored
+for `.claude/settings.json`, `scripts/codex.sh`, `tests/policy.test.ts`, and every other vendored
 path, and a consumer concluding from that reading that scaffold never replaces those bytes is wrong.
 `Materializer` hydrates the plan before it audits or writes: hydration reads the vendored root and
 turns each path scaffold owns the bytes of into a content-owned artifact, leaving `presence` on the
@@ -1006,9 +1004,11 @@ paths, and `distribution` by a published `src` environment. A workspace that nee
 configuration must keep those edits outside a content-owned file; `repair` restores that file to the
 canonical project set.
 
-An audit reports one `Finding` per planned path, followed by any foreign path beneath the groups
-the plan covers. Every planned finding carries its artifact's `ownership`. A foreign finding has
-no ownership because no artifact was planned for its path. `Ownership` says what scaffold claims at
+An audit reports one `Finding` per planned path, followed by every foreign path in the groups the
+plan covers. That second list draws on a file beneath a vendored directory the plan expands and on a
+file the target holds at a canon path the plan does not claim. Every planned finding carries its
+artifact's `ownership`. A foreign finding has no ownership because no artifact was planned for its
+path. `Ownership` says what scaffold claims at
 a path, not what one run did there. Counting planned findings by `content`, `presence`, and `birth`
 therefore says what audit is entitled to compare and stays the same against a vacant target and a
 repaired one. What one run compared comes from `ownership`, `drift`, and `observed` together. A
@@ -1169,28 +1169,32 @@ The vendored data root is the shared file set, staged into the published package
 Staging walks `HOST_PATHS` and `CANON_PATHS`, and a release ships what both name.
 
 `HOST_PATHS` is the vendored set, and a target receives a copy of each path it selects: the licence,
-the harness wiring, the bench scripts, the shared policy register, the byte-identical root dotfiles,
-and the guide mirrors a generated workspace starts from. It is a candidate list rather than a plan,
-because a workspace never mirrors its own guide.
+the harness permission file, the bench scripts, the shared policy register, the byte-identical root
+dotfiles, and the guide mirrors a generated workspace starts from. It is a candidate list rather than
+a plan, because a workspace never mirrors its own guide.
 
 `CANON_PATHS` is the instruction canon, staged for reading instead: the `AGENTS.md` coding contract,
 the `CLAUDE.md` harness bridge, the `.agents/orchestration.md` agent-operation contract, the rules
-under `.claude/rules/`, the skills under `.agents/skills/` and `.claude/skills/`, the templates under
-`.agents/templates/`, and the transport contracts under `.agents/transports/`. A release stages every
-one of them and no plan claims those staged bytes, so no target receives a copy of a contract. At the
-`AGENTS.md` and `CLAUDE.md` destinations a target receives the pointers instead: different content at
-the same paths, planned as this package's own template content. A reader reaches the contracts from a
-scaffold checkout sitting beside the repository, or from the
-`node_modules/@orkestrel/scaffold/dist/host/` root inside the installed package, and the `AGENTS.md`
-pointer scaffold plans into a target names each location.
+under `.claude/rules/` and `.cursor/rules/`, the skills under `.agents/skills/` and `.claude/skills/`,
+the templates under `.agents/templates/`, the transport contracts under `.agents/transports/`, the
+agent roles under `.claude/agents/` and `.codex/agents/`, the `.codex/config.toml` bench
+configuration, and the `.mcp.json` and `.cursor/mcp.json` server registrations. A release stages
+every one of them, and a target receives a copy only where the plan claims the path. At the
+`AGENTS.md` and `CLAUDE.md` destinations it receives the pointers: different content at the same
+paths, planned as this package's own template content. At `CATALOG_AGENT_PATH` it receives the staged
+bytes themselves, because the `catalog` verb refuses a target that lacks the file. Everywhere else in
+the canon a target holds nothing, and a reader reaches the contracts from a scaffold checkout sitting
+beside the repository, or from the `node_modules/@orkestrel/scaffold/dist/host/` root inside the
+installed package, which is what the `AGENTS.md` pointer scaffold plans into a target names.
 
-`HOST_PATHS` and `CANON_PATHS` are disjoint. A path in both would be copied into a target as a host
-artifact and refused by the overlay that keeps a host artifact current, at once. `isCanonPath` is the
+`HOST_PATHS` and `CANON_PATHS` are disjoint by prefix in either direction: no member of one equals or
+sits beneath a member of the other. Staging depends on that, because the walk covers the union and a
+path it discovers twice claims one storage name twice, which refuses the stage. `isCanonPath` is the
 one reading of canon membership, matching a member and anything beneath a member that is a directory,
-so staging, the live overlay, and the executable's advisory never disagree about what a path is. The
-document compiler deliberately plans the `AGENTS.md` and `CLAUDE.md` pointers at canon destinations
-as this package's own template content, and the advisory subtracts exactly the paths that compiler
-plans.
+so staging, the live overlay, and the executable's fetch list never disagree about what a path is.
+Membership says where a path's bytes are staged, not whether a plan claims it: `nameToHostArtifacts`
+appends `CATALOG_AGENT_PATH` to what `HOST_PATHS` selects rather than listing it there, which is what
+keeps the file planned without putting a canon path in the vendored list.
 
 The `host.json` file at the repository root is the committed live inventory. Each entry carries the
 SHA-256 digest of its file content, and the inventory carries a membership digest over its declared
@@ -1205,9 +1209,12 @@ ships the release which removes it from that manifest.
 
 Moving a path from `HOST_PATHS` to `CANON_PATHS` is not that removal. The path stays staged, stays in
 the installed manifest, and keeps being published; what changes is that no host artifact claims it. A
-target generated before the move keeps the copy it received, and where no artifact is planned at that
-path no verb writes or deletes that copy, so `audit` raises the `canon` question naming it until a
-maintainer removes it in one commit.
+target generated before the move still holds the copy it received, and that copy sits at a path the
+plan does not own, so `audit` reports it `foreign` and exits `1`. `overwrite` deletes it in the run
+that repairs the pointers — one candidate list and one transaction, whether the file is a stray
+beneath a vendored directory or a superseded copy inside the canon. Membership decides that, never
+byte identity: a copy a release behind no longer matches the bytes the canon stages, and matching
+bytes is exactly how such a copy would be spared.
 
 At the default `UpstreamOptions.retries` value, an aligned target spends one request on `host.json`,
 and each installed path whose live digest differs from the target adds one request for its bytes. A
@@ -1215,11 +1222,11 @@ positive `retries` value can repeat a request after a transport fault. Raw-host 
 a commit is a property of the content host. Scaffold neither creates that lag nor presents a stale
 response as fresher than the host served it.
 
-A canon destination costs no request. No target receives those bytes, so the fetch list drops the
-path rather than spending a round trip on one no verb can write, and `filesToHost` takes the
-installed floor bytes for it. A fill carrying no row for a canon path is complete rather than
-spoiled, which is what lets one `Host` carry live bytes beside floor bytes without mixing baselines
-within a surface.
+A canon destination costs no request. The fetch list drops it and `filesToHost` takes the installed
+floor bytes for it: a target receives no copy of a staged contract, and the one canon path a plan
+does claim is deferred, so live bytes reach neither. A fill carrying no row for a canon path is
+complete rather than spoiled, which is what lets one `Host` carry live bytes beside
+floor bytes without mixing baselines within a surface.
 
 `.claude/settings.json` is in that set, and the artifact planned for it is content-owned. `repair`
 and `overwrite` restore its bytes, so an edit made to it inside a target is reverted at the next
@@ -1499,15 +1506,16 @@ drivers is separate test capability rather than name-resolution parity.
 question, and `materialize` writes any plan into any vacant target. The Compile section states the
 rule a library caller applies in its place.
 
-**No verb removes a superseded instruction copy.** A target generated before the canon split holds
-its own copies of the paths `CANON_PATHS` names. `repair` writes the planned paths a target is
-missing or has let drift and never deletes, so it replaces the `AGENTS.md` and `CLAUDE.md` copies
-with the pointers planned there and leaves every other copy alone. `overwrite` does delete a tracked
-file the plan does not own, but its foreign reading extends only beneath the vendored directories the
-plan expands, and a plan expands no canon directory, so those copies sit outside what it can see.
-They are unmanaged: `audit` reports no drift against them and raises the non-blocking `canon`
-question naming them instead. The removal is one commit in the target — `git rm -r` over each named
-path — and the release wave's per-repository visit is where it runs.
+**A file a target keeps at a canon path never reports clean.** `overwrite` deletes a superseded
+instruction copy in the run that repairs the pointers, and it deletes only what git tracks, from a
+tree carrying no uncommitted work. An untracked copy is left standing, and a git-ignored one sits
+outside the dirty reading as well, so a target can carry its own file at a canon path through every
+visit. The audit reads canon membership by path, so such a copy stays a `foreign` finding and that
+target exits `1` on every run. `repair` never closes it either: that verb writes the planned paths a
+target is missing or has let drift and deletes nothing, so it restores the `AGENTS.md` and
+`CLAUDE.md` pointers and leaves every other copy where it is. A maintainer who wants a local MCP
+server registration keeps it outside the repository, in the harness's own local or user scope, rather
+than at `.mcp.json`, where the file is drift whoever wrote it.
 
 **`isPath` does not prove host portability.** It proves bounded target-relative syntax and rejects
 traversal, separators, controls, and reserved syntax characters. It deliberately admits host-specific

@@ -14,10 +14,10 @@ recoverable from git history by hash; no campaign folder is the plan of record.
 
 - **scaffold**: the instruction canon stops reaching targets, so every fleet repository owes one
   adoption visit. The trigger is the scaffold release that ships the split. Per repository: re-pin
-  `@orkestrel/scaffold` and install, run `repair` to take the `AGENTS.md` and `CLAUDE.md` pointers,
-  delete each path the `canon` question names with `git rm -r`, and run the gates. The step lives in
-  `.agents/skills/orkestrel-publish/references/wave.md` § Visit a repository; the question
-  self-extinguishes per target after the deletion commits.
+  `@orkestrel/scaffold` and install, run `scaffold overwrite`, and run the gates. That one run takes
+  the `AGENTS.md` and `CLAUDE.md` pointers and deletes every tracked copy the target still holds at a
+  canon path, so a second `scaffold audit` in the same visit exits `0`. The step lives in
+  `.agents/skills/orkestrel-publish/references/wave.md` § Visit a repository.
 - **fleet**: an entry module's `@packageDocumentation` never reaches the published declaration
   rollup — the build pipeline hands API Extractor a synthetic comment-free entry file, measured
   2026-08-25 in the test repository against a byte-identical rollup. Rule whether the pipeline

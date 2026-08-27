@@ -2041,9 +2041,8 @@ Resolve every one of those paths against scaffold, never against this repository
   \`node_modules/@orkestrel/scaffold/dist/host/agents/skills/\` directory.
 
 Every path a scaffold-supplied file names resolves the same way. The files this repository carries
-— the \`.claude/agents/\` directory, the \`.codex/\` directory, the \`.cursor/\` directory, the
-\`.mcp.json\` file, and the \`.claude/settings.json\` file — are this repository's own copies and
-resolve here.
+— the \`.claude/agents/orkestrel.md\` catalog file, the \`.claude/settings.json\` permission file,
+and the bench scripts under \`scripts/\` — are this repository's own copies and resolve here.
 
 Edit none of the scaffold-owned files here. The \`scaffold repair\` command restores them, so a
 change to one is a commit in the scaffold repository followed by a release.

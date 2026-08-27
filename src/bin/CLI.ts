@@ -633,8 +633,9 @@ export class CLI implements CLIInterface {
 			}
 		}
 		// A canon destination is dropped beside a deferred one, and for the same
-		// reason the assembler drops it: no target receives those bytes, so a request
-		// for them would spend a round trip on a path no verb can write.
+		// reason the assembler drops it: the overlay keeps the floor's bytes for a
+		// canon path and another verb owns a deferred path's bytes, so a request
+		// for either spends a round trip on bytes the overlay would not take.
 		const paths = floor.manifest.entries
 			.filter((entry) => !isDeferredPath(entry.destination) && !isCanonPath(entry.destination))
 			.map((entry) => entry.destination)
