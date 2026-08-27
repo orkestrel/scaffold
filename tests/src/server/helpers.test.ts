@@ -52,6 +52,7 @@ import {
 	matchesSensitivePath,
 	MAX_PATH_DEPTH,
 	pathToStorage,
+	pruneEmptiedDirectories,
 	readAnchor,
 	readExpectation,
 	readFileHex,
@@ -922,6 +923,80 @@ describe('listCanonPaths', () => {
 			expect(listCanonPaths(workspace.path, ['orchestration'])).toEqual([
 				'.agents/orchestration.md',
 			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+})
+
+describe('pruneEmptiedDirectories', () => {
+	it('takes an emptied chain deepest first', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			workspace.write('skills/falsify/references/brief.md', 'brief\n')
+			workspace.remove('skills/falsify/references/brief.md')
+			expect(
+				pruneEmptiedDirectories(workspace.path, ['skills/falsify/references/brief.md']),
+			).toEqual(['skills/falsify/references', 'skills/falsify', 'skills'])
+			expect(listDirectories(workspace.path)).toEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('leaves a directory still holding an unrelated file standing', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			workspace.write('rules/kept.md', 'kept\n')
+			workspace.write('rules/gone.md', 'gone\n')
+			workspace.remove('rules/gone.md')
+			expect(pruneEmptiedDirectories(workspace.path, ['rules/gone.md'])).toEqual([])
+			expect(listFiles(workspace.path)).toEqual(['rules/kept.md'])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('leaves a directory holding a surviving subdirectory standing', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			workspace.write('agents/roles/planner.md', 'role\n')
+			workspace.write('agents/skills/falsify/brief.md', 'brief\n')
+			workspace.remove('agents/skills/falsify/brief.md')
+			// `agents` is an ancestor of the emptied chain and holds `roles`, so the
+			// chain goes and the branch outside it stops the walk there.
+			expect(pruneEmptiedDirectories(workspace.path, ['agents/skills/falsify/brief.md'])).toEqual([
+				'agents/skills/falsify',
+				'agents/skills',
+			])
+			expect(listDirectories(workspace.path)).toEqual(['agents', 'agents/roles'])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('leaves a candidate that escapes the target standing', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const target = workspace.ensure('project')
+			workspace.ensure('outside')
+			expect(pruneEmptiedDirectories(target, ['../outside/entry.md'])).toEqual([])
+			// The control: the same empty directory named from inside the target is
+			// taken, so the omission is the escape and not an unread candidate.
+			workspace.ensure('project/inside')
+			expect(pruneEmptiedDirectories(target, ['inside/entry.md'])).toEqual(['inside'])
+			expect(listDirectories(workspace.path)).toEqual(['outside', 'project'])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('answers the empty list for an absent target', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			expect(pruneEmptiedDirectories(join(workspace.path, 'absent'), ['notes/entry.md'])).toEqual(
+				[],
+			)
 		} finally {
 			workspace.destroy()
 		}

@@ -244,7 +244,7 @@
 			"storage": "agents/skills/orkestrel-publish/references/wave.md",
 			"destination": ".agents/skills/orkestrel-publish/references/wave.md",
 			"executable": false,
-			"digest": "cb6643442788b9d87a1f42427042d285b1193fd10a192956fbe91bba45ae5104"
+			"digest": "9f8dbb293bccffbc87751d70b828a8a7e6e6f09fb60ae9fc9f66aeb9f135e906"
 		},
 		{
 			"storage": "agents/skills/orkestrel-publish/references/window.md",
@@ -652,7 +652,7 @@
 			"storage": "guides/scaffold.md",
 			"destination": "guides/scaffold.md",
 			"executable": false,
-			"digest": "b988faa941ca40cecf7031975cc3ef8006f1bb6d18e1f027d4ec23bc02584e7b"
+			"digest": "168273a80a9bd44046d1afe472c238858b92deae528e46d73b8ff4b4b4fe73bd"
 		},
 		{
 			"storage": "scripts/codex.sh",
@@ -742,5 +742,5 @@
 		".codex/agents",
 		".cursor/rules"
 	],
-	"digest": "de0982ee2f9164724d8c514284b41bd2d3234d9d861c00bdd5630bf2653cf3c7"
+	"digest": "260052484e5203b91bc8542fc49870dde886f789dc4f3f2a4e48f50f4f16afb3"
 }

@@ -83,6 +83,21 @@ catalog-restoration, collateral-scope (verifier lanes), policy-binding (checker 
 authoritative gate chain (verifier). Verdicts and the root-cause narrative are in
 `trial-verdicts.md`.
 
+## Fix unit
+
+The `prune` unit (Opus `implementer`, Sol dark, brief and report retained beside this file) closed
+findings 2, 3, 5, and 6 in one pass: `pruneEmptiedDirectories` in `src/server/helpers.ts` wired
+into `#purge` after the transaction commits, red-then-green bound to the wiring; the wave
+migration trigger keyed on the stale body outside the marker-bounded table; the `--no-save`
+staging sentence; and the pre-publish `--offline` visit paragraph. Rulings on its flagged
+decisions: the guide-table re-alignment stands; pruning an emptied `.claude/skills` is correct
+because a directory-shaped host artifact with nothing beneath it expands into no artifact; the
+absent `rmdirSync` retry is a recorded deviation from the portability rule's removal-retry line —
+emptiness is pre-checked so `ENOTEMPTY` is excluded by construction, and a transient refusal
+leaves a husk the next run prunes — accepted rather than adding a retry idiom the package does
+not carry. Its `.orkestrel` observation was the Orchestrator's own mid-unit record commit turning
+untracked files tracked; no files left the tree.
+
 ## Outcome
 
 The sweep mechanics hold on the real target: one `scaffold overwrite` run removed all 92 tracked

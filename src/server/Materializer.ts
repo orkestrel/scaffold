@@ -59,6 +59,7 @@ import {
 	listCanonPaths,
 	listFiles,
 	matchesProtectedPath,
+	pruneEmptiedDirectories,
 	readFileHex,
 	readFileText,
 	readHostFloor,
@@ -463,6 +464,9 @@ export class Materializer implements MaterializerInterface {
 	 * The whole call refuses when the preview disagrees with the re-derivation on
 	 * any foreign finding, including one the deletion itself would skip, because a
 	 * preview stale anywhere is stale evidence.
+	 *
+	 * Every directory the deletions emptied is taken after the commit, so a swept
+	 * target does not keep the shape of the set it no longer holds.
 	 */
 	remove(plan: Plan, audit: Audit, worktree: Worktree, target: string): MaterializeResult {
 		this.#assertAlive()
@@ -1044,8 +1048,11 @@ export class Materializer implements MaterializerInterface {
 		throw stored.error
 	}
 
-	// Quarantine every candidate in one transaction. A deletion that fails part way
-	// through puts back what it already took.
+	// Quarantine every candidate in one transaction, then take the directories that
+	// transaction emptied. A deletion that fails part way through puts back what it
+	// already took, and the prune runs after the commit so nothing it takes could be
+	// restored. A pruned directory holds nothing, so it is neither a result path nor
+	// an observation: what the caller acts on is the files that went.
 	#purge(
 		target: string,
 		removals: readonly string[],
@@ -1059,6 +1066,7 @@ export class Materializer implements MaterializerInterface {
 		})
 		const removed = this.#close(transaction, staged, target)
 		for (const path of removed) this.#emitter.emit('remove', path)
+		pruneEmptiedDirectories(target, removed)
 		return this.#finish({ target, written: [], skipped, removed })
 	}
 

@@ -356,42 +356,43 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 
 #### Helpers
 
-| Name                    | Kind     | Summary                                                                               |
-| ----------------------- | -------- | ------------------------------------------------------------------------------------- |
-| `computeDigest`         | function | Compute the SHA-256 digest of text.                                                   |
-| `computeFileDigest`     | function | Compute the SHA-256 digest of one file's exact bytes.                                 |
-| `computeManifestDigest` | function | Compute the digest of a vendored host's declared membership.                          |
-| `filesToHost`           | function | Overlay host-owned live files onto the installed vendored floor.                      |
-| `hexToDigest`           | function | Project exact bytes stated in hexadecimal to their SHA-256 digest.                    |
-| `isExactCaseFile`       | function | Test whether a physical file's path matches every on-disk segment exactly.            |
-| `isPhysicalDirectory`   | function | Test whether a path is a physical directory this package will read or write into.     |
-| `isPhysicalFile`        | function | Test whether a path is a physical file this package will read or replace.             |
-| `isVacant`              | function | Test whether a target is safe to write a fresh workspace into.                        |
-| `listCanonPaths`        | function | Lists the canon paths a target holds, filtered to a plan's groups.                    |
-| `listDirectories`       | function | List a directory's descendant directories as sorted root-relative paths.              |
-| `listFiles`             | function | List a directory's files as sorted root-relative paths.                               |
-| `matchesAnchor`         | function | Test whether a captured directory is still the same directory.                        |
-| `matchesExecutablePath` | function | Test whether a vendored path is one a target receives executable.                     |
-| `matchesExpectation`    | function | Test whether a destination still holds what was captured of it.                       |
-| `matchesGitPath`        | function | Test whether a path addresses a target's own repository metadata.                     |
-| `matchesMissingPath`    | function | Test whether a caught filesystem error reports an absent path.                        |
-| `matchesPrecondition`   | function | Test whether a destination still matches the narrower state a caller observed.        |
-| `matchesProtectedPath`  | function | Test whether a target-relative path is one no verb may delete.                        |
-| `matchesSensitivePath`  | function | Test whether a path names local configuration or a credential.                        |
-| `pathToStorage`         | function | Project a target-relative path to the storage name a vendored host holds it under.    |
-| `readAnchor`            | function | Capture one directory's physical identity.                                            |
-| `readExpectation`       | function | Capture what one destination holds before a write.                                    |
-| `readFileHex`           | function | Read one contained file as its exact bytes in lowercase hexadecimal.                  |
-| `readFileText`          | function | Read one contained file as bounded UTF-8 text.                                        |
-| `readHostFloor`         | function | Read the installed vendored host floor as a verified value.                           |
-| `readHostManifest`      | function | Read a vendored host's manifest, when it carries one.                                 |
-| `readManifestEntry`     | function | Derive one vendored-host manifest entry from a file in a checkout.                    |
-| `readSnapshot`          | function | Read a target's current bytes at the paths a plan claims.                             |
-| `resolveContainedPath`  | function | Resolve a root-relative path and refuse one that leaves its root.                     |
-| `resolveRealPath`       | function | Resolve a path through the real filesystem, keeping the part that does not exist yet. |
-| `stageBytes`            | function | Stage the named destinations of a value host into a private root.                     |
-| `stageHost`             | function | Stage a vendored host root from a real checkout.                                      |
-| `stageInventory`        | function | Stage the committed vendored-file inventory from a real checkout.                     |
+| Name                      | Kind     | Summary                                                                               |
+| ------------------------- | -------- | ------------------------------------------------------------------------------------- |
+| `computeDigest`           | function | Compute the SHA-256 digest of text.                                                   |
+| `computeFileDigest`       | function | Compute the SHA-256 digest of one file's exact bytes.                                 |
+| `computeManifestDigest`   | function | Compute the digest of a vendored host's declared membership.                          |
+| `filesToHost`             | function | Overlay host-owned live files onto the installed vendored floor.                      |
+| `hexToDigest`             | function | Project exact bytes stated in hexadecimal to their SHA-256 digest.                    |
+| `isExactCaseFile`         | function | Test whether a physical file's path matches every on-disk segment exactly.            |
+| `isPhysicalDirectory`     | function | Test whether a path is a physical directory this package will read or write into.     |
+| `isPhysicalFile`          | function | Test whether a path is a physical file this package will read or replace.             |
+| `isVacant`                | function | Test whether a target is safe to write a fresh workspace into.                        |
+| `listCanonPaths`          | function | Lists the canon paths a target holds, filtered to a plan's groups.                    |
+| `listDirectories`         | function | List a directory's descendant directories as sorted root-relative paths.              |
+| `listFiles`               | function | List a directory's files as sorted root-relative paths.                               |
+| `matchesAnchor`           | function | Test whether a captured directory is still the same directory.                        |
+| `matchesExecutablePath`   | function | Test whether a vendored path is one a target receives executable.                     |
+| `matchesExpectation`      | function | Test whether a destination still holds what was captured of it.                       |
+| `matchesGitPath`          | function | Test whether a path addresses a target's own repository metadata.                     |
+| `matchesMissingPath`      | function | Test whether a caught filesystem error reports an absent path.                        |
+| `matchesPrecondition`     | function | Test whether a destination still matches the narrower state a caller observed.        |
+| `matchesProtectedPath`    | function | Test whether a target-relative path is one no verb may delete.                        |
+| `matchesSensitivePath`    | function | Test whether a path names local configuration or a credential.                        |
+| `pathToStorage`           | function | Project a target-relative path to the storage name a vendored host holds it under.    |
+| `pruneEmptiedDirectories` | function | Removes every directory one set of deletions emptied.                                 |
+| `readAnchor`              | function | Capture one directory's physical identity.                                            |
+| `readExpectation`         | function | Capture what one destination holds before a write.                                    |
+| `readFileHex`             | function | Read one contained file as its exact bytes in lowercase hexadecimal.                  |
+| `readFileText`            | function | Read one contained file as bounded UTF-8 text.                                        |
+| `readHostFloor`           | function | Read the installed vendored host floor as a verified value.                           |
+| `readHostManifest`        | function | Read a vendored host's manifest, when it carries one.                                 |
+| `readManifestEntry`       | function | Derive one vendored-host manifest entry from a file in a checkout.                    |
+| `readSnapshot`            | function | Read a target's current bytes at the paths a plan claims.                             |
+| `resolveContainedPath`    | function | Resolve a root-relative path and refuse one that leaves its root.                     |
+| `resolveRealPath`         | function | Resolve a path through the real filesystem, keeping the part that does not exist yet. |
+| `stageBytes`              | function | Stage the named destinations of a value host into a private root.                     |
+| `stageHost`               | function | Stage a vendored host root from a real checkout.                                      |
+| `stageInventory`          | function | Stage the committed vendored-file inventory from a real checkout.                     |
 
 #### Classes
 
@@ -710,7 +711,9 @@ set and the dirty set, deletes only tracked paths, and refuses a tree carrying u
 unless `--dirty` waives that refusal. A target that is not a git repository is refused under
 `TARGET`, because deletion there would have no recovery mechanism. The other verbs never ask. A
 git-ignored file sits outside each reading: it never makes the tree dirty and it is never deleted.
-Limits states what that costs a target that keeps one at a canon path.
+Limits states what that costs a target that keeps one at a canon path. The sweep prunes the
+directories its deletions emptied, so a swept target does not keep the shape of the set it no longer
+holds, and git records no directory to report that shape with.
 
 ### Machine-readable output
 

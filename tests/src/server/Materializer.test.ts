@@ -15,6 +15,7 @@ import {
 import {
 	computeDigest,
 	computeManifestDigest,
+	listDirectories,
 	listFiles,
 	Materializer,
 	readFileHex,
@@ -1626,6 +1627,36 @@ describe('Materializer remove', () => {
 					target,
 				)
 				expect(removals.calls).toEqual([['.claude/rules/foreign.md']])
+			} finally {
+				materializer.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('takes the directories its deletions emptied and leaves a filled one standing', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createHostRoot(workspace, 'host', buildVendoredManifest())
+			const target = workspace.ensure('project')
+			workspace.write('project/.claude/skills/orkestrel-falsify/references/brief.md', '# Brief\n')
+			workspace.write('project/.claude/rules/kept.md', '# Kept\n')
+			const materializer = new Materializer({ host })
+			try {
+				const plan = buildVendoredPlan()
+				const audit = materializer.audit(plan, target)
+				const result = materializer.remove(
+					plan,
+					audit,
+					{ tracked: ['.claude/skills/orkestrel-falsify/references/brief.md'], dirty: [] },
+					target,
+				)
+				expect(result.removed).toEqual(['.claude/skills/orkestrel-falsify/references/brief.md'])
+				// The emptied chain goes whole, and `.claude` survives because the
+				// untracked file this verb spared keeps `.claude/rules` filled.
+				expect(listDirectories(target)).toEqual(['.claude', '.claude/rules'])
+				expect(workspace.read('project/.claude/rules/kept.md')).toBe('# Kept\n')
 			} finally {
 				materializer.destroy()
 			}

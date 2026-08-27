@@ -15,12 +15,13 @@ step that writes it.
 2. Run `scaffold overwrite`. One run repairs the `AGENTS.md` and `CLAUDE.md` pointers and deletes
    every tracked copy the target still holds at an instruction-canon path. Prove the sweep with a
    second `scaffold audit` that exits `0`.
-   - Where the target's `.claude/agents/orkestrel.md` still opens with a repository-relative
-     `.agents/` read instruction, delete the file and commit the deletion before the run. `repair`
-     restores the floor body and `catalog` refills the table, so one visit leaves the current file
-     and the committed deletion keeps the uncommitted-work refusal from firing. Presence ownership
-     never replaces present bytes and the table rewrite touches only the marker-bounded region,
-     which is why the deletion is the migration.
+   - Where the target's `.claude/agents/orkestrel.md` carries a body outside the marker-bounded
+     table that differs from the floor copy the installed scaffold stages, delete the file and
+     commit the deletion before the run. `repair` restores the floor body and `catalog` refills the
+     table, so one visit leaves the current file and the committed deletion keeps the
+     uncommitted-work refusal from firing. Presence ownership never replaces present bytes and the
+     table rewrite touches only the marker-bounded region, which is why the deletion is the
+     migration.
    - The deletion draws on what git tracks, so an untracked copy survives it, and the verb refuses
      the whole run as uncommitted work while an unignored one stands. Commit that copy or delete it
      by hand before re-running. `--dirty` clears the refusal and leaves the copy standing, and a
@@ -38,7 +39,16 @@ step that writes it.
 
 Restore any unpublished tarball the target is holding before the quality gates run, per
 `.agents/orchestration.md` § Fixing a dependency before it publishes. A distribution proof run
-against a local tarball proves the local tarball.
+against a local tarball proves the local tarball. Stage an unpublished tarball with
+`npm install --no-save`, because a `file:` pin refuses the blueprint and the manifest keeps a
+registry range.
+
+Where a visit runs before scaffold itself publishes, run `scaffold overwrite --offline` and prove
+the sweep with `scaffold audit --offline`. The online verbs read vendored bytes from the published
+package, so an unpublished scaffold's visit otherwise writes the registry's older floor, and an
+online audit reports the floor-restored files as stale until the release. The `--offline` overwrite
+skips the catalog step and exits `1` with a note naming that refusal, so run the full
+`scaffold overwrite` after the release.
 
 Run visits in parallel slices of disjoint repositories, each slice strictly serial inside itself,
 reporting per target. Refuse a failed target, name it, repair it, and re-run it alone.

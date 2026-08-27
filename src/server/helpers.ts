@@ -23,13 +23,14 @@ import {
 	readdirSync,
 	readSync,
 	realpathSync,
+	rmdirSync,
 	rmSync,
 	writeFileSync,
 } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, dirname, extname, join, parse, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { attempt, holds, isError, parseJSONAs } from '@orkestrel/contract'
+import { attempt, compareValues, holds, isError, parseJSONAs } from '@orkestrel/contract'
 import {
 	bytesToHex,
 	CANON_PATHS,
@@ -872,6 +873,63 @@ export function listCanonPaths(target: string, groups: readonly Group[]): readon
 		}
 	}
 	return held.filter((path) => groups.includes(inferGroup(path)))
+}
+
+/**
+ * Removes every directory one set of deletions emptied.
+ *
+ * @param target - The directory the deleted paths are relative to.
+ * @param removed - The `/`-separated target-relative paths the deletion took.
+ * @returns Every removed directory as a target-relative path, in the order they
+ * were taken, and `[]` when the target is absent or nothing it holds was
+ * emptied.
+ *
+ * @remarks
+ * A deletion that takes the last file out of a directory leaves the directory
+ * standing, and git records no directory, so a swept target keeps the shape of a
+ * set it no longer holds while every reading of it reports clean. Only an
+ * ancestor of a path this deletion took is a candidate, so nothing the deletion
+ * did not reach is inspected, and the target itself is never a candidate.
+ *
+ * Candidates are taken deepest first, which is what lets a whole chain go: the
+ * directory holding nothing but the emptied directory is empty in turn by the
+ * time it is read. Each one is resolved through the containment law and left
+ * standing when it escapes the target, is not a physical directory, still holds
+ * an entry, or refuses removal, and a directory left standing is absent from the
+ * answer.
+ *
+ * @example
+ * ```ts
+ * import { pruneEmptiedDirectories } from '@orkestrel/scaffold/server'
+ *
+ * pruneEmptiedDirectories('vacant', ['notes/entry.md']) // []
+ * ```
+ */
+export function pruneEmptiedDirectories(
+	target: string,
+	removed: readonly string[],
+): readonly string[] {
+	const candidates = new Set<string>()
+	for (const path of removed) {
+		let parent = dirname(path)
+		while (parent !== '.' && parent !== dirname(parent) && !candidates.has(parent)) {
+			candidates.add(parent)
+			parent = dirname(parent)
+		}
+	}
+	const ordered = [...candidates].sort(
+		(left, right) =>
+			compareValues(right.split('/').length, left.split('/').length) || compareValues(left, right),
+	)
+	const pruned: string[] = []
+	for (const candidate of ordered) {
+		const directory = resolveContainedPath(target, candidate)
+		if (directory === undefined || !isPhysicalDirectory(directory)) continue
+		const entries = attempt(() => readdirSync(directory))
+		if (!entries.success || entries.value.length > 0) continue
+		if (attempt(() => rmdirSync(directory)).success) pruned.push(candidate)
+	}
+	return pruned
 }
 
 /**
