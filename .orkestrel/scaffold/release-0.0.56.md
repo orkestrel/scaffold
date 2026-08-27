@@ -61,8 +61,29 @@ version, so the bump reaches published code and generated output:
 
 ## Gate evidence
 
-Pending: the independent `verifier` runs the manifest's `prepublishOnly` chain command by command
-at the bump commit.
+An independent `verifier` ran the manifest's `prepublishOnly` chain command by command at the bump
+commit `09d0c03`, on a tree that was clean before the run. Every command exited 0:
+
+| Command                                     | Exit | Reading                                                                                    |
+| ------------------------------------------- | ---- | ------------------------------------------------------------------------------------------ |
+| `npm run format:check`                      | 0    | 212 files, all correctly formatted                                                          |
+| `npm run lint:check`                        | 0    | no diagnostics                                                                              |
+| `npm run check`                             | 0    | root typecheck plus the core, server, and bin isolation scopes                              |
+| `npm run build`                             | 0    | `dist/host` staged 116 files; `host.json` staged 116 entries                                |
+| `npm test`                                  | 0    | src:core 373, src:server 431, src:bin 209, policy 111, config 46, guides 17                 |
+| `npm run test:distribution -- --mode release` | 0  | 5 tests, mode `release`, 64.40s: the packed tarball installs and drives a generated workspace |
+
+`host.json` did not move against the committed copy, and the `config` project's host-inventory case
+read the same 116 entries.
+
+Anomalies the run named, each with exit code 0: `tests/src/core/templates.test.ts` prints expected
+stderr where it refuses a malformed peer dependency declaration, and `build:src:server` prints a
+plugin-timing diagnostic. The verifier also reported the release record itself as an untracked file
+and attributed it to the distribution proof; the Orchestrator wrote it, and it is committed
+separately.
+
+`npm run format:check` and `npm run test:policy` ran again at the record commit, both exit 0, so the
+documentation commit that follows the chain moves neither gate.
 
 ## The upload
 
