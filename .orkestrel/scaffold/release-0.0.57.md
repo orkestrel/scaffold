@@ -40,13 +40,23 @@ The run named the expected stderr in `tests/src/core/templates.test.ts` as an an
 failure. It also reported `host.json` as untracked; the file is tracked and committed, and that
 reading is wrong without affecting any gate result.
 
-## The upload
+## The upload, as it ran
 
-Pending the user's one-time code. The command is
-`npm publish --ignore-scripts --browser=false --otp=<code>`, run inside the code's own life, on the
-terminal arming `.agents/skills/orkestrel-publish/references/window.md` § Arm the terminal
-prescribes. The session credential from the 0.0.56 run still holds; re-probe `npm whoami` before
-the upload.
+The layer published on 2026-08-27 at 14:12Z with
+`npm publish --ignore-scripts --browser=false --otp=<code>`, on the session credential the 0.0.56
+run established and re-probed with `npm whoami` beforehand. The upload took one attempt, opened no
+browser authorization, and ran no poll.
+
+The registry serves 0.0.57 with shasum `aa192aa24937cc3ae16cd331405656960f1bba42`, 134 files,
+4133304 bytes unpacked. A local `npm pack --dry-run` over the gated tree reports the same shasum, so
+the published bytes and the gated bytes are the same bytes.
+
+The corrected canon was read back out of the published tarball rather than inferred from the
+shasum: `dist/host/agents/skills/orkestrel-publish/references/window.md` carries the
+`login?next=/login/cli/<id>` form, the `Unauthorized` rule, the 45-second reading, and the
+one-time-code section, and `dist/host/agents/skills/orkestrel-publish/SKILL.md` carries the
+corrected step. The negative control holds: the struck ten-to-fifteen-minute claim appears nowhere
+in the published file.
 
 ## After the upload
 
