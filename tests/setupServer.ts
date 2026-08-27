@@ -1087,11 +1087,12 @@ export function createSink(): TestSinkInterface {
  * The staged paths that are directories rather than files.
  *
  * @remarks
- * `HOST_PATHS` and `CANON_PATHS` each mix files and directories and say which is
- * which nowhere, because the vendored root's own manifest is what decides it. A
- * fixture builds that manifest, so the fixture declares the split.
- * `.claude/skills` is the one declared directory no entry sits beneath, which
- * makes it the empty-directory case every writer has to survive.
+ * `CANON_PATHS` mixes files and directories and says which is which nowhere,
+ * because the vendored root's own manifest is what decides it. A fixture builds
+ * that manifest, so the fixture declares the split. `.claude/skills` is the one
+ * declared directory no entry sits beneath, which makes it the empty-directory
+ * case every writer has to survive. `HOST_PATHS` holds only files, so every
+ * member of this list is a canon member.
  */
 export const HOST_DIRECTORY_PATHS: readonly string[] = [
 	'.agents/skills',
@@ -1109,10 +1110,10 @@ export const HOST_DIRECTORY_PATHS: readonly string[] = [
  *
  * @remarks
  * The stager walks `HOST_PATHS` and `CANON_PATHS` alike, so a checkout fixture
- * carrying only one of them is refused for the paths it left out. No host
- * artifact claims a canon path, which is why {@link buildFleetManifest} stays on
- * `HOST_PATHS` while {@link createCheckout} and {@link buildCheckoutManifest}
- * read this.
+ * carrying only one of them is refused for the paths it left out. A plan claims
+ * one destination inside the canon and vendors none of the rest, which is why
+ * {@link buildFleetManifest} declares `HOST_PATHS` plus that one file while
+ * {@link createCheckout} and {@link buildCheckoutManifest} read this.
  */
 export const STAGED_PATHS: readonly string[] = [...HOST_PATHS, ...CANON_PATHS]
 
@@ -1127,23 +1128,19 @@ export const STAGED_PATHS: readonly string[] = [...HOST_PATHS, ...CANON_PATHS]
  * whole compiled plan somewhere to resolve. A plan claims every path in
  * `HOST_PATHS`, and a host that does not carry one of them refuses the write, so
  * a fixture driving the executable needs the complete set rather than a sample.
- * Each directory except the declared empty one is given one file, which is what
- * makes its expansion observable.
+ *
+ * `nameToHostArtifacts` appends {@link CATALOG_AGENT_PATH} to that selection, so
+ * the manifest declares it too: a host missing it refuses every verb the moment
+ * the plan is hydrated. It is the one destination a plan claims inside the
+ * canon, and `HOST_PATHS` itself holds only files, so this manifest declares no
+ * root at all. {@link buildCheckoutManifest} is where the staged directory
+ * shapes are declared.
  */
 export function buildFleetManifest(): HostManifest {
-	const entries: ManifestEntry[] = []
-	const roots: string[] = []
-	for (const path of HOST_PATHS) {
-		if (!HOST_DIRECTORY_PATHS.includes(path)) {
-			entries.push(buildManifestEntry({ storage: pathToStorage(path), destination: path }))
-			continue
-		}
-		roots.push(path)
-		if (path === '.claude/skills') continue
-		const destination = path === '.claude/agents' ? CATALOG_AGENT_PATH : `${path}/sample.md`
-		entries.push(buildManifestEntry({ storage: pathToStorage(destination), destination }))
-	}
-	const membership = { entries, roots: [...roots].sort() }
+	const entries: ManifestEntry[] = [...HOST_PATHS, CATALOG_AGENT_PATH].map((path) =>
+		buildManifestEntry({ storage: pathToStorage(path), destination: path }),
+	)
+	const membership = { entries, roots: [] }
 	return { ...membership, digest: computeManifestDigest(membership.entries, membership.roots) }
 }
 
@@ -1294,6 +1291,41 @@ export function trackFiles(path: string): void {
 }
 
 /**
+ * Commit everything {@link trackFiles} staged, so a run reads a clean tree.
+ *
+ * @param path - The repository to commit.
+ * @returns Nothing.
+ *
+ * @remarks
+ * The destructive verb refuses a tree carrying uncommitted work, and `--dirty`
+ * waives that refusal for every path at once. A claim about which paths a clean
+ * run treats as dirty therefore needs a real commit rather than the waiver: an
+ * ignored file is outside the dirty set, and a waived run cannot tell that apart
+ * from a file the waiver covered.
+ *
+ * The identity is passed per invocation with `-c`, so nothing is written to any
+ * git configuration this suite does not own, and the commit is unsigned because
+ * a signing key is not a fixture's to require.
+ */
+export function commitFiles(path: string): void {
+	execFileSync(
+		'git',
+		[
+			'-c',
+			'user.name=Scaffold Fixture',
+			'-c',
+			'user.email=fixture@orkestrel.invalid',
+			'commit',
+			'--quiet',
+			'--no-gpg-sign',
+			'--message',
+			'The state a run reads',
+		],
+		{ cwd: path, windowsHide: true, stdio: 'ignore' },
+	)
+}
+
+/**
  * How many artifacts the compiler itself supplies for a plan selecting `src/core` alone.
  *
  * @remarks
@@ -1316,46 +1348,20 @@ export const CORE_GENERATED_COUNT = CORE_GENERATED.length
  * @remarks
  * Each term names a real source. The vendored membership comes from
  * {@link buildFleetManifest} rather than `HOST_PATHS`, because hydration is what
- * decides the number: a vendored directory is one planned path that collapses
- * into the files the host stores beneath it, and the one declared empty
- * directory collapses into none. {@link CORE_GENERATED_COUNT} is everything the
+ * decides the number: every claim this manifest declares is a file, so each
+ * planned vendored path is one written path and the executable writes exactly
+ * this many into a vacant target. {@link CORE_GENERATED_COUNT} is everything the
  * compiler supplies on top of that membership.
+ *
+ * A plan claims no vendored directory, so no run adds the extra written path a
+ * declared empty root would carry. `Materializer` still materializes such a
+ * root, and `src:server` proves it against a manifest that declares one.
  *
  * The suites using this assert that the executable writes every path its plan
  * claims. That the plan claims the right ones is proven separately, against the
  * compiler in `src:core`.
  */
 export const FLEET_ARTIFACT_COUNT = buildFleetManifest().entries.length + CORE_GENERATED_COUNT
-
-/**
- * Whether a declared host root holds no stored entry beneath it.
- *
- * @param root - The root-relative directory a manifest declares.
- * @returns True when the manifest stores nothing under it.
- *
- * @remarks
- * The half a file walk cannot see. A root that holds files is implied by those
- * files; a root that holds none exists only because the manifest declares it,
- * and it is still materialized because the workspace is meant to have the
- * directory.
- */
-export function matchesVacantRoot(root: string): boolean {
-	return !buildFleetManifest().entries.some((entry) => entry.destination.startsWith(`${root}/`))
-}
-
-/**
- * How many paths the executable writes into a vacant target.
- *
- * @remarks
- * One more than {@link FLEET_ARTIFACT_COUNT}, and the extra one is a directory
- * rather than a file. A declared root that holds no entry — `.claude/skills` in
- * this fixture — is materialized because the workspace is meant to have it, and
- * is reported among the written paths. It carries no bytes, so the manifest has
- * no entry for it and an audit raises no finding against it. Measured, not
- * derived: a probe compared the written list against the manifest membership.
- */
-export const FLEET_WRITE_COUNT =
-	FLEET_ARTIFACT_COUNT + buildFleetManifest().roots.filter(matchesVacantRoot).length
 
 /**
  * How many planned paths a repair leaves alone because the workspace owns them.

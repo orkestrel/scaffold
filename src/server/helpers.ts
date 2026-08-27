@@ -1192,8 +1192,9 @@ export function readManifestEntry(destination: string, source: string): Manifest
  * answers `undefined`. Deferred paths are presence-only and retain the installed
  * floor bytes that their catalog or mirror surface owns; repair never writes
  * those floor bytes. A canon path is read the same way for a different reason:
- * no target receives one, so the overlay never requests it and a fill that
- * carries no row for it is complete rather than spoiled. One `Host` can
+ * the canon is staged for reading rather than for a target, and the one canon
+ * path a plan does claim is deferred, so the overlay never requests one and a
+ * fill that carries no row for it is complete rather than spoiled. One `Host` can
  * therefore carry live host bytes beside floor bytes without mixing baselines
  * within a surface.
  *

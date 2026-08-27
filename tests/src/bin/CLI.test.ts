@@ -1,4 +1,4 @@
-import type { Audit, Group, Question } from '@src/core'
+import type { Audit, Question } from '@src/core'
 import type { MaterializeResult } from '@src/server'
 import type {
 	AuditResult,
@@ -49,6 +49,7 @@ import {
 	buildOrganization,
 	buildPackument,
 	buildTargetManifest as buildTargetManifestFixture,
+	commitFiles,
 	createCatalogFleet,
 	createFleet,
 	createHostRoot,
@@ -59,7 +60,6 @@ import {
 	FLEET_ARTIFACT_COUNT,
 	FLEET_BIRTH_COUNT,
 	FLEET_BIRTH_PATHS,
-	FLEET_WRITE_COUNT,
 	FLEET_UPSTREAM_PATHS,
 	HOSTILE_ARGUMENT,
 	HOSTILE_BYTES,
@@ -72,11 +72,6 @@ import {
 } from '../../setupServer.js'
 import { createScratch } from '@orkestrel/test/server'
 
-// The groups whose vendored paths are all files. A vendored directory is a
-// single planned path the materializer expands into one artifact per file it
-// holds, and every one of them is `orchestration`, so these are the groups a
-// write can be measured over end to end today.
-const FILE_GROUPS: readonly Group[] = ['manifest', 'configs', 'tests', 'guides', 'docs']
 // A setup module a maintainer wrote into. What separates it from what scaffold
 // seeds at that path is that its text is not the seed's.
 const FILLED_SETUP_TEXT = "export const SAMPLE_FIXTURE = 'sample'\n"
@@ -510,7 +505,7 @@ describe('CLI new', () => {
 			expect(code).toBe(EXIT_CLEAN)
 			expect(sink.diagnostic).toStrictEqual([])
 			expect(workspace.read('fresh/package.json')).toContain('widget')
-			expect(sink.output.join('\n')).toContain(String(FLEET_WRITE_COUNT))
+			expect(sink.output.join('\n')).toContain(String(FLEET_ARTIFACT_COUNT))
 		} finally {
 			workspace.destroy()
 		}
@@ -536,7 +531,7 @@ describe('CLI new', () => {
 			expect(code).toBe(EXIT_CLEAN)
 			expect(sink.output).toHaveLength(1)
 			const result: NewResult = JSON.parse(sink.output[0] ?? '')
-			expect(result.written).toHaveLength(FLEET_WRITE_COUNT)
+			expect(result.written).toHaveLength(FLEET_ARTIFACT_COUNT)
 			expect(result.written).toContain('package.json')
 			expect(result.removed).toStrictEqual([])
 			expect(result.provenance).toStrictEqual({ versions: 'live' })
@@ -754,10 +749,11 @@ describe('CLI upstream baselines', () => {
 		}
 	})
 
-	// No verb copies a canon path's staged bytes into a target, so asking the
-	// repository for one spends a round trip on bytes nothing can place. The drifted vendored path is
-	// the control: the same run still fetches what a target does receive, so an
-	// empty canon list is a filter rather than a fetch that never ran.
+	// A canon path is staged for reading, and the one such path a plan claims is
+	// owned by presence, so no run places bytes fetched for either. Asking the
+	// repository for one spends a round trip on bytes nothing writes. The drifted
+	// vendored path is the control: the same run still fetches what a target does
+	// receive, so an empty canon list is a filter rather than a fetch that never ran.
 	it('asks the repository for no canon path while fetching a drifted vendored one', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const live = await createUpstreamServer({
@@ -2462,16 +2458,17 @@ describe('CLI audit', () => {
 	})
 
 	// A target that predates the canon split still carries the copies scaffold once
-	// vendored. No verb writes or deletes the paths the advisory names, so
-	// detection is all the executable can offer, and the advisory has to name each
-	// path a maintainer must remove.
-	it('names every superseded canon path a target still carries', async () => {
+	// vendored. The release stages those paths for reading now, so a copy of one
+	// sitting in a target is a file the plan does not own, and the audit reports it
+	// the way it reports any other: as drift a verb can act on.
+	it('reports each superseded canon copy as a foreign finding in its own group', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
-			const fleet = createFleet(workspace)
+			const fleet = createCatalogFleet(workspace)
 			workspace.write('target/package.json', buildTargetManifest())
 			workspace.write('target/.agents/orchestration.md', '# Orchestration\n')
 			workspace.write('target/.claude/rules/names.md', '# Names\n')
+			workspace.write('target/.claude/agents/planner.md', '# Planner\n')
 			const sink = createSink()
 			expect(
 				await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
@@ -2484,31 +2481,38 @@ describe('CLI audit', () => {
 				]),
 			).toBe(EXIT_DRIFT)
 			const audit: Audit = JSON.parse(sink.output[0] ?? '')
-			const question = audit.questions.find(({ field }) => field === 'canon')
-			expect(question?.blocking).toBe(false)
-			expect(question?.message).toContain('.agents/orchestration.md, .claude/rules')
-			expect(question?.message).toContain(fleet.target)
-			// The pointer pair sits at canon paths and is planned, so it is never
-			// named: a maintainer told to delete it would delete what repair restores.
-			expect(question?.message).not.toContain('AGENTS.md,')
-			expect(question?.message).not.toContain('CLAUDE.md')
+			const foreign = audit.findings.filter((finding) => finding.drift === 'foreign')
+			expect(foreign.map((finding) => finding.path).toSorted()).toStrictEqual([
+				'.agents/orchestration.md',
+				'.claude/agents/planner.md',
+				'.claude/rules/names.md',
+			])
+			expect(foreign.every((finding) => finding.group === 'orchestration')).toBe(true)
+			// The catalog file sits beneath the same canon directory as the role file
+			// beside it, and the plan claims it, so it is compared rather than found. A
+			// run that deleted it would delete what the next repair restores.
+			expect(audit.findings.find((finding) => finding.path === CATALOG_AGENT_PATH)?.drift).toBe(
+				'aligned',
+			)
+			// The advisory this reading replaced is gone, and nothing raises its field.
+			expect(audit.questions.map(({ field }) => field)).not.toContain('canon')
 		} finally {
 			workspace.destroy()
 		}
 	})
 
-	// The control the preceding claim needs, and the writing half of the ruling: a
-	// target holding no superseded copy hears nothing, and a write is never refused
-	// over an advisory no write could close.
-	it('stays silent on a target holding no superseded canon path and never blocks a write', async () => {
+	it('reads no canon path outside the groups the run selects', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
 			workspace.write('target/package.json', buildTargetManifest())
-			const clean = createSink()
+			workspace.write('target/.claude/rules/names.md', '# Names\n')
+			const scoped = createSink()
 			expect(
-				await new CLI({ ...REGISTRY_OPTIONS, ...clean.options }).execute([
+				await new CLI({ ...REGISTRY_OPTIONS, ...scoped.options }).execute([
 					'audit',
+					'--groups',
+					'tests',
 					'--from',
 					fleet.host,
 					'--target',
@@ -2516,9 +2520,39 @@ describe('CLI audit', () => {
 					'--json',
 				]),
 			).toBe(EXIT_DRIFT)
-			const audit: Audit = JSON.parse(clean.output[0] ?? '')
-			expect(audit.questions.map(({ field }) => field)).not.toContain('canon')
+			const narrow: Audit = JSON.parse(scoped.output[0] ?? '')
+			expect(narrow.findings.some((finding) => finding.drift === 'foreign')).toBe(false)
+			// The control: the same leftover in the same target, read by a run whose
+			// selection admits its group. A silent scoped audit is the selection rather
+			// than a reading that never fires.
+			const whole = createSink()
+			await new CLI({ ...REGISTRY_OPTIONS, ...whole.options }).execute([
+				'audit',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			const wide: Audit = JSON.parse(whole.output[0] ?? '')
+			expect(
+				wide.findings
+					.filter((finding) => finding.drift === 'foreign')
+					.map((finding) => finding.path),
+			).toStrictEqual(['.claude/rules/names.md'])
+		} finally {
+			workspace.destroy()
+		}
+	})
 
+	// The verb split, at the one path where it is easy to lose: `repair` restores
+	// what the plan claims and removes nothing, so a superseded copy survives it and
+	// is still reported. Deleting is `overwrite`'s half alone.
+	it('deletes no superseded canon copy on a repair and reports it afterwards', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createFleet(workspace)
+			workspace.write('target/package.json', buildTargetManifest())
 			workspace.write('target/.claude/rules/names.md', '# Names\n')
 			const repaired = createSink()
 			expect(
@@ -2530,10 +2564,18 @@ describe('CLI audit', () => {
 					fleet.target,
 					'--json',
 				]),
-			).toBe(EXIT_CLEAN)
+			).toBe(EXIT_DRIFT)
 			const result: RepairResult = JSON.parse(repaired.output[0] ?? '')
 			expect(result.removed).toStrictEqual([])
+			expect(
+				result.audit.findings
+					.filter((finding) => finding.drift === 'foreign')
+					.map((finding) => finding.path),
+			).toStrictEqual(['.claude/rules/names.md'])
 			expect(workspace.read('target/.claude/rules/names.md')).toBe('# Names\n')
+			// The control: the paths the same run did restore, which is what separates
+			// "removes nothing" from "wrote nothing at all".
+			expect(result.written).toContain('AGENTS.md')
 		} finally {
 			workspace.destroy()
 		}
@@ -2854,13 +2896,11 @@ describe('CLI audit', () => {
 			const audit: Audit = JSON.parse(sink.output[0] ?? '')
 			expect(audit.findings).toHaveLength(FLEET_ARTIFACT_COUNT)
 			expect(audit.findings.some((finding) => finding.drift === 'missing')).toBe(true)
-			// The vendored directory the plan claims as one path is reported as the
-			// files the host stores beneath it, which is the comparison a repair is
-			// about to make and the one the pure compile cannot state.
-			expect(audit.findings.some((finding) => finding.path === '.cursor/rules/sample.md')).toBe(
-				true,
-			)
-			expect(audit.findings.some((finding) => finding.path === '.cursor/rules')).toBe(false)
+			// Every finding sits on a file the host stores, which is the comparison a
+			// repair is about to make. The one path the plan claims inside the canon is
+			// reported at that file, and the directory holding it is not a planned path.
+			expect(audit.findings.some((finding) => finding.path === CATALOG_AGENT_PATH)).toBe(true)
+			expect(audit.findings.some((finding) => finding.path === '.claude/agents')).toBe(false)
 			expect(audit.questions).toStrictEqual([
 				{
 					field: 'dependencies',
@@ -3887,7 +3927,7 @@ describe('CLI repair', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
-			for (const group of FILE_GROUPS) {
+			for (const group of GROUPS) {
 				await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
 					'repair',
 					'--groups',
@@ -4023,7 +4063,7 @@ describe('CLI repair', () => {
 		}
 	})
 
-	it('repairs at its default selection and earns a clean exit, vendored directories included', async () => {
+	it('repairs at its default selection and earns a clean exit, the canon claim included', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const fleet = createFleet(workspace)
@@ -4044,7 +4084,9 @@ describe('CLI repair', () => {
 			expect(result.skipped).toStrictEqual(FLEET_BIRTH_PATHS)
 			expect(result.audit.findings).toHaveLength(FLEET_ARTIFACT_COUNT)
 			expect(result.audit.findings.every((finding) => finding.drift === 'aligned')).toBe(true)
-			expect(workspace.read('target/.cursor/rules/sample.md')).toBe('.cursor/rules/sample.md\n')
+			// The one path a plan claims inside the canon is restored like any other
+			// vendored file, which is what keeps the catalog verb a file to rewrite.
+			expect(workspace.read(`target/${CATALOG_AGENT_PATH}`)).toBe(`${CATALOG_AGENT_PATH}\n`)
 		} finally {
 			workspace.destroy()
 		}
@@ -4372,11 +4414,13 @@ describe('CLI overwrite', () => {
 		}
 	})
 
-	// The destructive verb, driven end to end through both of its halves. The
-	// offline half deletes; the online half reads the registry and the guide host
-	// through the loopback fixture the run was pointed at, so the exit code this
-	// asserts is the same one an offline machine earns.
-	it('deletes a tracked stray beneath an owned canon root and leaves a root file', async () => {
+	// The destructive verb, driven end to end through both of its halves against a
+	// target an earlier release left behind: the pointer drifted, the copies
+	// scaffold once vendored still beside it, and a registration the maintainer
+	// keeps out of git. One run repairs and sweeps, and the exit code it earns is
+	// the fleet visit's success condition. The tree is committed rather than
+	// waived, so the ignored file's survival is the dirty set's own answer.
+	it('repairs the pointer and sweeps every tracked canon leftover in one run', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		const server = await createUpstreamServer({
 			...FLEET_RELEASE_REPLIES,
@@ -4405,14 +4449,25 @@ describe('CLI overwrite', () => {
 		})
 		try {
 			const fleet = createCatalogFleet(workspace)
+			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+				'repair',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+			])
+			const pointer = requireValue(workspace.read('target/AGENTS.md'))
+			workspace.write('target/AGENTS.md', '# The pointer an earlier release wrote\n')
+			workspace.write('target/.claude/rules/names.md', '# Superseded rule\n')
+			workspace.write('target/.claude/agents/planner.md', '# Superseded role\n')
 			workspace.write('target/.cursor/rules/stray.md', '# A rule nobody planned\n')
 			workspace.write('target/NOTES.md', '# Notes a consumer keeps\n')
 			createRepository(fleet.target)
 			trackFiles(fleet.target)
+			commitFiles(fleet.target)
 			const sink = createSink()
 			const code = await new CLI(buildCLIOptions(sink, server.base)).execute([
 				'overwrite',
-				'--dirty',
 				'--from',
 				fleet.host,
 				'--target',
@@ -4422,16 +4477,144 @@ describe('CLI overwrite', () => {
 			expect(code).toBe(EXIT_CLEAN)
 			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
 			expect(result.note).toBe(undefined)
-			expect(result.removed).toStrictEqual(['.cursor/rules/stray.md'])
+			expect(result.removed.toSorted()).toStrictEqual([
+				'.claude/agents/planner.md',
+				'.claude/rules/names.md',
+				'.cursor/rules/stray.md',
+			])
 			expect(readFileHex(fleet.target, '.cursor/rules/stray.md')).toBeUndefined()
-			// The control, drawn from outside the population the deletion covers: a
-			// tracked root file the plan does not own either, which the owned-root
-			// bound excludes. It is still there, so the deletion is bounded by the
-			// root rather than by what git happens to track.
+			// The pointer sits at a canon path too, and the same run that deleted its
+			// neighbours restored it instead, because the plan claims it.
+			expect(result.written).toContain('AGENTS.md')
+			expect(result.removed).not.toContain('AGENTS.md')
+			expect(workspace.read('target/AGENTS.md')).toBe(pointer)
+			// The controls, drawn from outside the population the deletion covers: a
+			// tracked root file the plan does not own, and the catalog file the plan
+			// claims inside the swept canon directory, whose own prose survives the run
+			// that rewrites its table.
 			expect(workspace.read('target/NOTES.md')).toContain('Notes a consumer keeps')
+			const agent = requireValue(workspace.read(`target/${CATALOG_AGENT_PATH}`))
+			expect(agent).toContain('Prose a consumer wrote above the table.')
+			expect(agent).toContain('Prose a consumer wrote below the table.')
+			expect(agent).toContain('| `@orkestrel/guide`')
 			expect(result.audit.findings.every((finding) => finding.drift === 'aligned')).toBe(true)
+			// The visit's success condition, taken by a second run rather than by the
+			// first run's own report.
+			const terminal = createSink()
+			expect(
+				await new CLI(buildCLIOptions(terminal, server.base)).execute([
+					'audit',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+					'--json',
+				]),
+			).toBe(EXIT_CLEAN)
 		} finally {
 			await server.destroy()
+			workspace.destroy()
+		}
+	})
+
+	// The maintainer's seam. A target that ignores a canon path and writes its own
+	// copy there keeps it through every visit: the deletion draws on what git
+	// tracks, and the dirty refusal reads a status that omits an ignored file. The
+	// cost is stated here rather than assumed — the copy stays a foreign finding,
+	// because membership is a path and git has never seen this one.
+	it('leaves a git-ignored registration outside the dirty refusal and outside the deletion', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createCatalogFleet(workspace)
+			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+				'repair',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+			])
+			workspace.write('target/.gitignore', '.mcp.json\n')
+			workspace.write('target/.mcp.json', '{ "mcpServers": {} }\n')
+			createRepository(fleet.target)
+			trackFiles(fleet.target)
+			commitFiles(fleet.target)
+			const sink = createSink()
+			await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+				'overwrite',
+				'--offline',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			// The run was not refused. A dirty refusal reports an error envelope and
+			// writes nothing, so the audit this result carries is the proof it ran.
+			expect(sink.output[0] ?? '').not.toContain('"error"')
+			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
+			expect(result.removed).toStrictEqual([])
+			expect(workspace.read('target/.mcp.json')).toBe('{ "mcpServers": {} }\n')
+			expect(
+				result.audit.findings
+					.filter((finding) => finding.drift === 'foreign')
+					.map((finding) => finding.path),
+			).toStrictEqual(['.mcp.json'])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	// The untracked half of the same law. Git is the recovery mechanism, so a copy
+	// git has never seen is never deleted — and an unignored one is uncommitted
+	// work, which the verb refuses whole until the waiver clears it.
+	it('refuses an untracked canon leftover as uncommitted work and leaves it standing under the waiver', async () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const fleet = createCatalogFleet(workspace)
+			await new CLI({ ...REGISTRY_OPTIONS, ...createSink().options }).execute([
+				'repair',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+			])
+			createRepository(fleet.target)
+			trackFiles(fleet.target)
+			commitFiles(fleet.target)
+			workspace.write('target/.claude/rules/names.md', '# Superseded rule\n')
+			const refused = createSink()
+			expect(
+				await new CLI({ ...REGISTRY_OPTIONS, ...refused.options }).execute([
+					'overwrite',
+					'--from',
+					fleet.host,
+					'--target',
+					fleet.target,
+				]),
+			).toBe(EXIT_DRIFT)
+			expect(refused.diagnostic[0] ?? '').toContain('uncommitted')
+			expect(workspace.read('target/.claude/rules/names.md')).toBe('# Superseded rule\n')
+
+			const waived = createSink()
+			await new CLI({ ...REGISTRY_OPTIONS, ...waived.options }).execute([
+				'overwrite',
+				'--dirty',
+				'--offline',
+				'--from',
+				fleet.host,
+				'--target',
+				fleet.target,
+				'--json',
+			])
+			const result: OverwriteResult = JSON.parse(waived.output[0] ?? '')
+			expect(result.removed).toStrictEqual([])
+			expect(workspace.read('target/.claude/rules/names.md')).toBe('# Superseded rule\n')
+			expect(
+				result.audit.findings
+					.filter((finding) => finding.drift === 'foreign')
+					.map((finding) => finding.path),
+			).toStrictEqual(['.claude/rules/names.md'])
+		} finally {
 			workspace.destroy()
 		}
 	})

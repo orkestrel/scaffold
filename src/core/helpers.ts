@@ -198,9 +198,9 @@ export function isDeferredPath(path: string): boolean {
  * member that is a directory; `false` otherwise.
  *
  * @remarks
- * The one reading of canon membership, so the compiler, the live overlay, and
- * the executable's advisory never disagree about what a path is. The match runs
- * to a segment boundary, so a sibling whose name opens with a member's name —
+ * The one reading of canon membership, so the live overlay and the executable's
+ * fetch list never disagree about what a path is. The match runs to a segment
+ * boundary, so a sibling whose name opens with a member's name —
  * `.claude/rulesets` beside `.claude/rules` — stays outside.
  *
  * Membership answers where a path's bytes are staged, not whether a plan claims

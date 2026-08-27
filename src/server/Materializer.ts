@@ -30,6 +30,7 @@ import { join } from 'node:path'
 import { attempt } from '@orkestrel/contract'
 import { Emitter } from '@orkestrel/emitter'
 import {
+	CANON_PATHS,
 	catalogToLayers,
 	CATALOG_AGENT_PATH,
 	cloneValue,
@@ -215,7 +216,8 @@ export class Materializer implements MaterializerInterface {
 	 *
 	 * @param plan - The compiled plan to compare.
 	 * @param target - The directory to inspect.
-	 * @returns One finding per hydrated planned path, plus foreign files beneath owned host roots.
+	 * @returns One finding per hydrated planned path, plus the foreign files
+	 * beneath owned host roots and inside the instruction canon.
 	 * @throws {@link ScaffoldError} coded `INVALID` when an argument is not the
 	 * exact shape, `TARGET` when the host or target cannot be read within its
 	 * bounds, and `DESTROYED` after teardown.
@@ -223,8 +225,16 @@ export class Materializer implements MaterializerInterface {
 	 * @remarks
 	 * Host directories expand before the target is read, so this method and
 	 * {@link repair} compare the same paths with the same ownership. Foreign
-	 * candidates are files beneath those expanded roots only; a root file never
-	 * becomes a deletion candidate merely because its group is selected.
+	 * candidates are files beneath those expanded roots and files the target holds
+	 * at a `CANON_PATHS` member, each in a group the plan selects; a file outside
+	 * both populations never becomes a deletion candidate merely because its group
+	 * is selected.
+	 *
+	 * The canon is staged for reading rather than for a target, so a copy of one of
+	 * its paths sitting in a target is a superseded artifact and reports foreign. A
+	 * path the plan claims inside the canon — the root instruction pointers and the
+	 * catalog agent file — pairs with its artifact and is compared like any other
+	 * planned path.
 	 */
 	audit(plan: Plan, target: string): Audit {
 		this.#assertAlive()
@@ -442,6 +452,14 @@ export class Materializer implements MaterializerInterface {
 	 * recovery mechanism, so a path it cannot restore is not one this verb takes.
 	 * A tree carrying uncommitted work is refused whole for the same reason.
 	 *
+	 * One candidate list carries both foreign populations {@link audit} reports, so
+	 * a superseded instruction copy the target holds inside the canon is deleted in
+	 * the same transaction as a stray beneath an owned root. Membership decides it,
+	 * never byte identity: a copy a release behind no longer matches the bytes the
+	 * canon now stages, and matching bytes is exactly how such a copy would be
+	 * spared. An untracked leftover is left where it sits and stays a finding, which
+	 * is the seam a maintainer keeps a git-ignored file in.
+	 *
 	 * The whole call refuses when the preview disagrees with the re-derivation on
 	 * any foreign finding, including one the deletion itself would skip, because a
 	 * preview stale anywhere is stale evidence.
@@ -611,10 +629,11 @@ export class Materializer implements MaterializerInterface {
 		return { blueprint: plan.blueprint, groups: plan.groups, artifacts }
 	}
 
-	// Hydrate once, extend the target snapshot only beneath vendored directories
-	// this plan expands, then run the core comparison over that one population.
-	// Repair may supply the hydrated plan it already needs for writes, while the
-	// public audit lets this method own the hydration itself.
+	// Hydrate once, extend the target snapshot beneath the vendored directories
+	// this plan expands and across the instruction canon the target holds, then run
+	// the core comparison over that one population. Repair may supply the hydrated
+	// plan it already needs for writes, while the public audit lets this method own
+	// the hydration itself.
 	#derive(plan: Plan, target: string, hydrated = this.#hydrate(plan)): Audit {
 		const paths = new Set(hydrated.artifacts.map((artifact) => artifact.path))
 		for (const root of this.#roots(plan)) {
@@ -627,10 +646,34 @@ export class Materializer implements MaterializerInterface {
 			}
 			for (const name of listFiles(directory)) paths.add(`${root}/${name}`)
 		}
+		for (const path of this.#canon(plan, target)) paths.add(path)
 		return {
 			findings: planToFindings(hydrated, readSnapshot(target, [...paths])),
 			questions: [],
 		}
+	}
+
+	// The canon paths a target actually holds. A release stages these for reading
+	// rather than for a target, so a copy sitting in one is an artifact of a release
+	// that vendored it, and reading it here is what lets the deletion verb take it.
+	//
+	// A directory member is read by file, which is what pairs the paths this plan
+	// claims inside the canon with their artifacts and leaves only the rest foreign,
+	// with no case for the planned file. The plan's own selection gates the reading,
+	// the same rule that decides a vendored path's group, so a scoped audit reports
+	// nothing outside its groups. A member that cannot resolve inside the target is
+	// not held by it.
+	#canon(plan: Plan, target: string): readonly string[] {
+		const held: string[] = []
+		for (const member of CANON_PATHS) {
+			const full = resolveContainedPath(target, member)
+			if (full === undefined) continue
+			if (isPhysicalFile(full)) held.push(member)
+			else if (isPhysicalDirectory(full)) {
+				for (const name of listFiles(full)) held.push(`${member}/${name}`)
+			}
+		}
+		return held.filter((path) => plan.groups.includes(inferGroup(path)))
 	}
 
 	// The target roots scaffold owns completely are exactly the host directories

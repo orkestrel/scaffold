@@ -176,7 +176,8 @@ describe('vendored imports', () => {
 			const source = join(WORKSPACE_ROOT, path)
 			if (!existsSync(source)) return []
 			if (lstatSync(source).isDirectory()) {
-				// No vendored directory holds an eligible module; this branch covers future modules.
+				// `HOST_PATHS` holds only files, so this branch reads a directory the
+				// vendored set gains rather than one it carries.
 				return globSync('**/*.{ts,mts,cts,js,mjs,cjs}', { cwd: source }).map((nested) =>
 					join(path, nested),
 				)
@@ -198,10 +199,10 @@ describe('vendored imports', () => {
 })
 
 describe('vendored inventory', () => {
-	// No host artifact claims a canon path, so no target receives the canon
-	// itself, and the committed
-	// inventory is where the instruction canon's arrival in the published root is
-	// visible. `tests/config.test.ts` holds this file equal to a fresh stage, which
+	// A target receives one canon path, the catalog agent file, and reads the rest
+	// out of the installed package. The committed inventory is where the whole
+	// canon's arrival in the published root is visible.
+	// `tests/config.test.ts` holds this file equal to a fresh stage, which
 	// makes a storage name here a statement about what a release ships. The names are
 	// storage spellings: `pathToStorage` strips the dot that opens each segment.
 	it('records every instruction-canon root the published fallback serves', () => {
@@ -1550,10 +1551,10 @@ parentPort.postMessage('ready')`,
 		}
 	})
 
-	// The canon left `HOST_PATHS` and no target receives it, so the only proof that
-	// it still reaches the published root is a real stage of this repository. The
-	// committed inventory is the comparison, because a release ships that file and
-	// a different call produced it.
+	// The canon left `HOST_PATHS`, and a target receives one path out of it, so the
+	// only proof that the whole canon still reaches the published root is a real
+	// stage of this repository. The committed inventory is the comparison, because a
+	// release ships that file and a different call produced it.
 	it('stages the canon beside the vendored set from this checkout', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {

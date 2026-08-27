@@ -4,6 +4,7 @@ import { readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
 	blueprintToWritableScripts,
+	CATALOG_AGENT_PATH,
 	Compiler,
 	contentToHex,
 	createBlueprint,
@@ -21,7 +22,7 @@ import {
 	readSnapshot,
 } from '@src/server'
 import { describe, expect, it } from 'vitest'
-import { createRecorder } from '@orkestrel/test'
+import { createRecorder, requireValue } from '@orkestrel/test'
 import { buildBlueprint, buildHostArtifact } from '../../setup.js'
 import {
 	buildHostManifest,
@@ -638,7 +639,7 @@ describe('Materializer audit', () => {
 		}
 	})
 
-	it('shares one hydrated reading with a full-selection repair and bounds foreign files by owned roots', () => {
+	it('reads the host bytes a compiler audit cannot, and leaves a foreign file to the deletion verb', () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
 			const host = createHostRoot(workspace, 'host', buildFleetManifest())
@@ -648,18 +649,13 @@ describe('Materializer audit', () => {
 			const materializer = new Materializer({ host })
 			try {
 				materializer.materialize(plan, target)
-				const current = readSnapshot(
-					target,
-					plan.artifacts.map((artifact) => artifact.path),
-				)
-				const compilerAudit = compiler.audit(plan.blueprint, current)
-				expect(readErrorMessage(() => materializer.repair(plan, compilerAudit, target))).toContain(
-					'is not covered by its audit',
-				)
-
 				writeFileSync(join(target, '.claude/settings.json'), '{ "edited": true }\n', 'utf8')
-				rmSync(join(target, '.cursor/rules/sample.md'))
-				const staleCompilerAudit = compiler.audit(
+				rmSync(join(target, '.oxlintrc.json'))
+				// The compiler never holds a vendored path's bytes, so it claims presence
+				// there and reports an edited file aligned. The materializer reads the
+				// host it was constructed over, which is the whole reason the writing
+				// verbs take their audit from here rather than from a compiled comparison.
+				const compilerAudit = compiler.audit(
 					plan.blueprint,
 					readSnapshot(
 						target,
@@ -667,8 +663,7 @@ describe('Materializer audit', () => {
 					),
 				)
 				expect(
-					staleCompilerAudit.findings.find((finding) => finding.path === '.claude/settings.json')
-						?.drift,
+					compilerAudit.findings.find((finding) => finding.path === '.claude/settings.json')?.drift,
 				).toBe('aligned')
 
 				const audit = materializer.audit(plan, target)
@@ -676,9 +671,9 @@ describe('Materializer audit', () => {
 				expect(
 					audit.findings.find((finding) => finding.path === '.claude/settings.json')?.drift,
 				).toBe('stale')
-				expect(
-					audit.findings.find((finding) => finding.path === '.cursor/rules/sample.md')?.drift,
-				).toBe('missing')
+				expect(audit.findings.find((finding) => finding.path === '.oxlintrc.json')?.drift).toBe(
+					'missing',
+				)
 
 				workspace.write('project/.cursor/rules/foreign.md', '# Foreign rule\n')
 				workspace.write('project/NOTES.md', '# Consumer notes\n')
@@ -686,11 +681,13 @@ describe('Materializer audit', () => {
 				expect(
 					discovered.findings.find((finding) => finding.path === '.cursor/rules/foreign.md')?.drift,
 				).toBe('foreign')
+				// The control, drawn from outside the population the reading covers: a
+				// root file that is neither planned nor canon is not a finding at all.
 				expect(discovered.findings.some((finding) => finding.path === 'NOTES.md')).toBe(false)
 
 				const result = materializer.repair(plan, audit, target)
 				expect(result.written).toContain('.claude/settings.json')
-				expect(result.written).toContain('.cursor/rules/sample.md')
+				expect(result.written).toContain('.oxlintrc.json')
 				expect(readFileSync(join(target, '.claude/settings.json'), 'utf8')).toBe(
 					'.claude/settings.json\n',
 				)
@@ -703,6 +700,93 @@ describe('Materializer audit', () => {
 					terminal.findings.find((finding) => finding.path === '.cursor/rules/foreign.md')?.drift,
 				).toBe('foreign')
 				expect(materializer.repair(plan, terminal, target).written).toEqual([])
+			} finally {
+				materializer.destroy()
+				compiler.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	// The manifest this host carries declares no root, so the plan expands no
+	// directory and the owned-root arm of the reading has nothing to report. Every
+	// foreign path below therefore arrives through the canon, which is the rival
+	// reading this fixture exists to exclude.
+	it('reports an unplanned canon path as foreign and pairs a planned one with its artifact', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createHostRoot(workspace, 'host', buildFleetManifest())
+			const target = join(workspace.path, 'project')
+			const plan = buildCompiledPlan()
+			const materializer = new Materializer({ host })
+			try {
+				materializer.materialize(plan, target)
+				workspace.write('project/.claude/rules/names.md', '# Superseded rule\n')
+				workspace.write('project/.claude/agents/planner.md', '# Superseded role\n')
+				workspace.write('project/.mcp.json', '{ "mcpServers": {} }\n')
+				workspace.write('project/NOTES.md', '# Consumer notes\n')
+				const audit = materializer.audit(plan, target)
+				expect(
+					audit.findings
+						.filter((finding) => finding.drift === 'foreign')
+						.map((finding) => finding.path)
+						.toSorted(),
+				).toStrictEqual([
+					'.claude/agents/planner.md',
+					'.claude/rules/names.md',
+					'.mcp.json',
+					// The directory member and the file member of the canon both report,
+					// and a file the canon does not name reports through neither.
+				])
+				expect(
+					audit.findings.find((finding) => finding.path === '.claude/agents/planner.md')?.group,
+				).toBe('orchestration')
+				// The catalog file sits beneath the same canon directory as the role file
+				// beside it. The plan claims it, so it pairs with its artifact and the
+				// deletion verb never sees it.
+				expect(
+					audit.findings.find((finding) => finding.path === '.claude/agents/orkestrel.md')?.drift,
+				).toBe('aligned')
+				expect(audit.findings.find((finding) => finding.path === 'AGENTS.md')?.drift).toBe(
+					'aligned',
+				)
+			} finally {
+				materializer.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('reads no canon path outside the groups the plan selects', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createHostRoot(workspace, 'host', buildFleetManifest())
+			const target = workspace.ensure('project')
+			const compiler = new Compiler()
+			const materializer = new Materializer({ host })
+			try {
+				const scoped = compiler.compile(buildBlueprint(), ['tests']).plan
+				const whole = compiler.compile(buildBlueprint()).plan
+				if (scoped === undefined || whole === undefined) {
+					throw new Error('Expected the default blueprint to compile at either selection')
+				}
+				workspace.write('project/.claude/rules/names.md', '# Superseded rule\n')
+				expect(
+					materializer
+						.audit(scoped, target)
+						.findings.some((finding) => finding.drift === 'foreign'),
+				).toBe(false)
+				// The control: the same leftover in the same target, read by a plan whose
+				// selection admits its group. A silent scoped audit is the selection
+				// rather than a reading that never fires.
+				expect(
+					materializer
+						.audit(whole, target)
+						.findings.filter((finding) => finding.drift === 'foreign')
+						.map((finding) => finding.path),
+				).toStrictEqual(['.claude/rules/names.md'])
 			} finally {
 				materializer.destroy()
 				compiler.destroy()
@@ -1421,6 +1505,58 @@ describe('Materializer remove', () => {
 					'.claude/rules/untracked.md',
 					'src/core/index.ts',
 				])
+			} finally {
+				materializer.destroy()
+			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('takes the tracked canon leftovers through the one transaction and spares the planned file', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const host = createHostRoot(workspace, 'host', buildFleetManifest())
+			const target = join(workspace.path, 'project')
+			const plan = buildCompiledPlan()
+			const materializer = new Materializer({ host })
+			try {
+				materializer.materialize(plan, target)
+				const catalog = requireValue(workspace.read(`project/${CATALOG_AGENT_PATH}`))
+				workspace.write('project/.claude/rules/names.md', '# Superseded rule\n')
+				workspace.write('project/.claude/agents/planner.md', '# Superseded role\n')
+				workspace.write('project/.mcp.json', '{ "mcpServers": {} }\n')
+				const audit = materializer.audit(plan, target)
+				const result = materializer.remove(
+					plan,
+					audit,
+					{
+						tracked: [
+							'.claude/agents/planner.md',
+							'.claude/rules/names.md',
+							CATALOG_AGENT_PATH,
+							'AGENTS.md',
+						],
+						dirty: [],
+					},
+					target,
+				)
+				expect(result.removed.toSorted()).toStrictEqual([
+					'.claude/agents/planner.md',
+					'.claude/rules/names.md',
+				])
+				// Untracked, so git cannot restore it and this verb does not take it.
+				expect(result.skipped).toStrictEqual(['.mcp.json'])
+				expect(readFileHex(target, '.claude/rules/names.md')).toBeUndefined()
+				expect(readFileHex(target, '.claude/agents/planner.md')).toBeUndefined()
+				expect(workspace.read(`project/${CATALOG_AGENT_PATH}`)).toBe(catalog)
+				expect(workspace.read('project/.mcp.json')).toBe('{ "mcpServers": {} }\n')
+				expect(
+					materializer
+						.audit(plan, target)
+						.findings.filter((finding) => finding.drift === 'foreign')
+						.map((finding) => finding.path),
+				).toStrictEqual(['.mcp.json'])
 			} finally {
 				materializer.destroy()
 			}
