@@ -30,7 +30,6 @@ import { join } from 'node:path'
 import { attempt } from '@orkestrel/contract'
 import { Emitter } from '@orkestrel/emitter'
 import {
-	CANON_PATHS,
 	catalogToLayers,
 	CATALOG_AGENT_PATH,
 	cloneValue,
@@ -57,6 +56,7 @@ import {
 	isPhysicalDirectory,
 	isPhysicalFile,
 	isVacant,
+	listCanonPaths,
 	listFiles,
 	matchesProtectedPath,
 	readFileHex,
@@ -646,34 +646,11 @@ export class Materializer implements MaterializerInterface {
 			}
 			for (const name of listFiles(directory)) paths.add(`${root}/${name}`)
 		}
-		for (const path of this.#canon(plan, target)) paths.add(path)
+		for (const path of listCanonPaths(target, plan.groups)) paths.add(path)
 		return {
 			findings: planToFindings(hydrated, readSnapshot(target, [...paths])),
 			questions: [],
 		}
-	}
-
-	// The canon paths a target actually holds. A release stages these for reading
-	// rather than for a target, so a copy sitting in one is an artifact of a release
-	// that vendored it, and reading it here is what lets the deletion verb take it.
-	//
-	// A directory member is read by file, which is what pairs the paths this plan
-	// claims inside the canon with their artifacts and leaves only the rest foreign,
-	// with no case for the planned file. The plan's own selection gates the reading,
-	// the same rule that decides a vendored path's group, so a scoped audit reports
-	// nothing outside its groups. A member that cannot resolve inside the target is
-	// not held by it.
-	#canon(plan: Plan, target: string): readonly string[] {
-		const held: string[] = []
-		for (const member of CANON_PATHS) {
-			const full = resolveContainedPath(target, member)
-			if (full === undefined) continue
-			if (isPhysicalFile(full)) held.push(member)
-			else if (isPhysicalDirectory(full)) {
-				for (const name of listFiles(full)) held.push(`${member}/${name}`)
-			}
-		}
-		return held.filter((path) => plan.groups.includes(inferGroup(path)))
 	}
 
 	// The target roots scaffold owns completely are exactly the host directories

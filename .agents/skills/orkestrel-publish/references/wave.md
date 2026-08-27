@@ -15,9 +15,18 @@ step that writes it.
 2. Run `scaffold overwrite`. One run repairs the `AGENTS.md` and `CLAUDE.md` pointers and deletes
    every tracked copy the target still holds at an instruction-canon path. Prove the sweep with a
    second `scaffold audit` that exits `0`.
+   - Where the target's `.claude/agents/orkestrel.md` still opens with a repository-relative
+     `.agents/` read instruction, delete the file and commit the deletion before the run. `repair`
+     restores the floor body and `catalog` refills the table, so one visit leaves the current file
+     and the committed deletion keeps the uncommitted-work refusal from firing. Presence ownership
+     never replaces present bytes and the table rewrite touches only the marker-bounded region,
+     which is why the deletion is the migration.
    - The deletion draws on what git tracks, so an untracked copy survives it, and the verb refuses
      the whole run as uncommitted work while an unignored one stands. Commit that copy or delete it
-     by hand before re-running: `--dirty` clears the refusal and leaves the copy standing.
+     by hand before re-running. `--dirty` clears the refusal and leaves the copy standing, and a
+     kept `.claude/rules` copy then reddens the target's own policy sweep: the pointer `AGENTS.md`
+     carries no rule map, so the copy has no row there and the sweep reports it. Delete the copy
+     rather than waiving past it.
    - A copy the target git-ignores stays a `foreign` finding, so that target never reaches exit `0`
      again. Keep a local MCP server registration outside the repository rather than at `.mcp.json`.
 3. Force-verify every `@orkestrel` range against a registry sweep taken after the previous layer

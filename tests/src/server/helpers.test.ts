@@ -19,6 +19,7 @@ import {
 	CANON_PATHS,
 	contentToHex,
 	EXECUTABLE_PATHS,
+	GROUPS,
 	HOST_INVENTORY_PATH,
 	HOST_PATHS,
 	isCanonPath,
@@ -37,6 +38,7 @@ import {
 	isExactCaseFile,
 	isPhysicalFile,
 	isVacant,
+	listCanonPaths,
 	listDirectories,
 	listFiles,
 	Materializer,
@@ -847,6 +849,79 @@ describe('listDirectories', () => {
 			// they really sit at, so the omission is the link rather than an unread
 			// tree.
 			expect(listDirectories(workspace.path)).toEqual(['real', 'real/nested'])
+		} finally {
+			workspace.destroy()
+		}
+	})
+})
+
+describe('listCanonPaths', () => {
+	it('lists a held canon file and expands a held canon directory by file', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			workspace.write('.agents/orchestration.md', 'contract\n')
+			workspace.write('.claude/agents/orkestrel.md', 'catalog\n')
+			workspace.write('.claude/agents/planner.md', 'role\n')
+			workspace.write('.claude/rules/names.md', 'rule\n')
+			// The control sits outside the canon membership while inside the group the
+			// call selects, so a filter reading the group alone would list it. Its
+			// absence is what proves the membership rule and not the group filter
+			// decided the answer.
+			workspace.write('.claude/settings.json', '{}\n')
+			expect(listCanonPaths(workspace.path, ['orchestration'])).toEqual([
+				'.agents/orchestration.md',
+				'.claude/agents/orkestrel.md',
+				'.claude/agents/planner.md',
+				'.claude/rules/names.md',
+			])
+			expect(isCanonPath('.claude/settings.json')).toBe(false)
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('lists only the held canon paths whose group the caller selects', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			workspace.write('AGENTS.md', 'pointer\n')
+			workspace.write('.agents/orchestration.md', 'contract\n')
+			expect(listCanonPaths(workspace.path, ['docs'])).toEqual(['AGENTS.md'])
+			expect(listCanonPaths(workspace.path, ['orchestration'])).toEqual([
+				'.agents/orchestration.md',
+			])
+			expect(listCanonPaths(workspace.path, ['tests'])).toEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('answers the empty list for a target holding no canon path and for an absent one', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			workspace.write('guides/scaffold.md', 'guide\n')
+			workspace.ensure('.claude/agents')
+			expect(listCanonPaths(workspace.path, [...GROUPS])).toEqual([])
+			expect(listCanonPaths(join(workspace.path, 'absent'), [...GROUPS])).toEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('lists a canon path a target really holds and not one it redirects to', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const real = workspace.write('kept/orchestration.md', 'contract\n')
+			workspace.ensure('.agents')
+			workspace.link('.agents/orchestration.md', real)
+			expect(listCanonPaths(workspace.path, ['orchestration'])).toEqual([])
+			// The control: the same bytes written at the same path rather than linked
+			// to it are listed, so the omission is the redirection and not an unread
+			// member.
+			workspace.remove('.agents/orchestration.md')
+			workspace.write('.agents/orchestration.md', 'contract\n')
+			expect(listCanonPaths(workspace.path, ['orchestration'])).toEqual([
+				'.agents/orchestration.md',
+			])
 		} finally {
 			workspace.destroy()
 		}

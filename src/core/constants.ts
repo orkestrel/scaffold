@@ -166,8 +166,6 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
  * the installed package. The `AGENTS.md` and `CLAUDE.md` pointers scaffold plans
  * are what name each location.
  *
- * These facts fix what a target holds at one of these paths.
- *
  * The lists are disjoint by prefix in either direction: no member of either
  * equals or sits beneath a member of the other. Staging depends on that, because
  * the walk covers the union and a path it discovers twice claims one storage

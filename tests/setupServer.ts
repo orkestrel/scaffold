@@ -1111,8 +1111,10 @@ export const HOST_DIRECTORY_PATHS: readonly string[] = [
  * @remarks
  * The stager walks `HOST_PATHS` and `CANON_PATHS` alike, so a checkout fixture
  * carrying only one of them is refused for the paths it left out. A plan claims
- * one destination inside the canon and vendors none of the rest, which is why
- * {@link buildFleetManifest} declares `HOST_PATHS` plus that one file while
+ * the root pointers and {@link CATALOG_AGENT_PATH} inside the canon and vendors
+ * none of the rest; the pointers are written from templates, so the catalog file
+ * is the only canon destination a host declares. That is why
+ * {@link buildFleetManifest} declares `HOST_PATHS` plus that file while
  * {@link createCheckout} and {@link buildCheckoutManifest} read this.
  */
 export const STAGED_PATHS: readonly string[] = [...HOST_PATHS, ...CANON_PATHS]
@@ -1131,10 +1133,11 @@ export const STAGED_PATHS: readonly string[] = [...HOST_PATHS, ...CANON_PATHS]
  *
  * `nameToHostArtifacts` appends {@link CATALOG_AGENT_PATH} to that selection, so
  * the manifest declares it too: a host missing it refuses every verb the moment
- * the plan is hydrated. It is the one destination a plan claims inside the
- * canon, and `HOST_PATHS` itself holds only files, so this manifest declares no
- * root at all. {@link buildCheckoutManifest} is where the staged directory
- * shapes are declared.
+ * the plan is hydrated. It is the only canon destination a host declares, because
+ * the pointers a plan claims there carry their own content, and `HOST_PATHS`
+ * itself holds only files, so this manifest declares no root at all.
+ * {@link buildCheckoutManifest} is where the staged directory shapes are
+ * declared.
  */
 export function buildFleetManifest(): HostManifest {
 	const entries: ManifestEntry[] = [...HOST_PATHS, CATALOG_AGENT_PATH].map((path) =>

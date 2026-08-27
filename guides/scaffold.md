@@ -367,6 +367,7 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 | `isPhysicalDirectory`   | function | Test whether a path is a physical directory this package will read or write into.     |
 | `isPhysicalFile`        | function | Test whether a path is a physical file this package will read or replace.             |
 | `isVacant`              | function | Test whether a target is safe to write a fresh workspace into.                        |
+| `listCanonPaths`        | function | Lists the canon paths a target holds, filtered to a plan's groups.                    |
 | `listDirectories`       | function | List a directory's descendant directories as sorted root-relative paths.              |
 | `listFiles`             | function | List a directory's files as sorted root-relative paths.                               |
 | `matchesAnchor`         | function | Test whether a captured directory is still the same directory.                        |
@@ -1222,11 +1223,13 @@ positive `retries` value can repeat a request after a transport fault. Raw-host 
 a commit is a property of the content host. Scaffold neither creates that lag nor presents a stale
 response as fresher than the host served it.
 
-A canon destination costs no request. The fetch list drops it and `filesToHost` takes the installed
-floor bytes for it: a target receives no copy of a staged contract, and the one canon path a plan
-does claim is deferred, so live bytes reach neither. A fill carrying no row for a canon path is
-complete rather than spoiled, which is what lets one `Host` carry live bytes beside
-floor bytes without mixing baselines within a surface.
+A canon destination costs no request. The fetch list drops every canon destination and `filesToHost`
+keeps the installed floor bytes for each one, claimed or not. The rule covers the destinations a plan
+does claim as well: the `AGENTS.md` and `CLAUDE.md` pointers are written from this package's own
+templates, and the catalog agent file is claimed by presence, so no byte a target holds is taken from
+a fetched canon path. A fill carrying no row for a canon path is complete rather than spoiled, which
+is what lets one `Host` carry live bytes beside floor bytes without mixing baselines within a
+surface.
 
 `.claude/settings.json` is in that set, and the artifact planned for it is content-owned. `repair`
 and `overwrite` restore its bytes, so an edit made to it inside a target is reverted at the next
@@ -1516,6 +1519,15 @@ target is missing or has let drift and deletes nothing, so it restores the `AGEN
 `CLAUDE.md` pointers and leaves every other copy where it is. A maintainer who wants a local MCP
 server registration keeps it outside the repository, in the harness's own local or user scope, rather
 than at `.mcp.json`, where the file is drift whoever wrote it.
+
+**A target holds no dispatchable role beyond the catalog agent.** The canon is staged for reading, so
+a target receives the `AGENTS.md` and `CLAUDE.md` pointers and `.claude/agents/orkestrel.md`, and
+nothing else a harness reads: no other agent role, no bench configuration, and no MCP registration. A
+harness running in a target loads none of those from `node_modules` either, so a role, a bench, or a
+server that target needs is defined in the harness's own local or user scope — the seam the preceding
+registration entry already names. Fleet targets are not orchestration hosts. A session that
+dispatches roles starts on scaffold, where `.agents/orchestration.md` and the role files sit, and
+attaches the target it is working on.
 
 **`isPath` does not prove host portability.** It proves bounded target-relative syntax and rejects
 traversal, separators, controls, and reserved syntax characters. It deliberately admits host-specific

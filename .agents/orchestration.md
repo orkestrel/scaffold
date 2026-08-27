@@ -161,9 +161,12 @@ when the role file already pins it.
 - `implementer` names the harness's native implementation lane, so the token means Opus in Claude
   Code and Sol in Codex. An engine-named bridge — `sol`, `opus` — names the other engine. Read a
   role name against the harness you are running in, and state the engine anyway.
-- Give every role a file on both sides. The role file is where engine, effort, tools, permissions,
-  and charter are pinned, and the tool allowlist is what makes the read-only floor real. A role
-  with no file has nowhere to pin either.
+- Give every role a file in the scaffold checkout, under `.claude/agents/` and under
+  `.codex/agents/`. The role file is where engine, effort, tools, permissions, and charter are
+  pinned, and the tool allowlist is what makes the read-only floor real. A role with no file has
+  nowhere to pin either. The requirement is the canon repository's alone: a fleet target holds the
+  catalog agent and no other role, and a session that dispatches roles starts on scaffold and
+  attaches the target.
 - Reach every role by its own name. Do not rely on a remembered route.
 - `researcher`, `scout`, and `checker` are native lanes for jobs that belong to Grok first.
   Dispatch `grok` with their brief before using them, and use the native role only once the ladder

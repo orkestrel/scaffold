@@ -26,3 +26,15 @@ audit --offline -> exit 0, '0 of 34 planned paths drifted'
 - The swept tree audits clean against its floor.
 - The online stale row is the live overlay reading the published release, which is
   the correct answer for an unpublished branch.
+
+## Migration addendum, 2026-08-27
+
+```text
+planted a stale presence-owned catalog body opening with the repository-relative read
+  line, committed; deleted the file and committed (the visit's condition-first step)
+repair --offline -> exit 0; the restored file is the floor body carrying the
+  both-reader resolution (the installed agents/orchestration.md spelling present)
+```
+
+The wave's presence-owned migration step works as documented: deletion is the
+migration, and repair restores the current floor body.

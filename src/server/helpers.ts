@@ -1,4 +1,4 @@
-import type { HostFile, Snapshot } from '@src/core'
+import type { Group, HostFile, Snapshot } from '@src/core'
 import type {
 	Host,
 	HostManifest,
@@ -36,6 +36,7 @@ import {
 	EXECUTABLE_PATHS,
 	HOST_INVENTORY_PATH,
 	HOST_PATHS,
+	inferGroup,
 	isCanonPath,
 	isCollection,
 	isDeferredPath,
@@ -830,6 +831,50 @@ export function listDirectories(root: string): readonly string[] {
 }
 
 /**
+ * Lists the canon paths a target holds, filtered to a plan's groups.
+ *
+ * @param target - The target directory to inspect.
+ * @param groups - The artifact groups the plan covers; a held path whose group
+ * is outside them is not listed.
+ * @returns Every held canon path as a `/`-separated target-relative path, a
+ * directory member expanded to the files beneath it, and `[]` when the target
+ * holds none or cannot be resolved.
+ * @throws `ScaffoldError('TARGET', …)` when a held canon directory cannot be
+ * inventoried; {@link listFiles} states each refusal.
+ *
+ * @remarks
+ * A release stages the canon for reading rather than for a target, so a copy
+ * sitting in one is an artifact of a release that vendored it, and reading it
+ * here is what lets the deletion verb take it.
+ *
+ * A directory member is read by file, which is what pairs the paths a plan
+ * claims inside the canon with their artifacts and leaves only the rest foreign,
+ * with no case for a planned file. The plan's own selection gates the reading,
+ * the same rule that decides a vendored path's group, so a scoped audit reports
+ * nothing outside its groups. A member that cannot resolve inside the target is
+ * not held by it.
+ *
+ * @example
+ * ```ts
+ * import { listCanonPaths } from '@orkestrel/scaffold/server'
+ *
+ * listCanonPaths('/tmp/project', ['orchestration']) // ['.claude/agents/orkestrel.md']
+ * ```
+ */
+export function listCanonPaths(target: string, groups: readonly Group[]): readonly string[] {
+	const held: string[] = []
+	for (const member of CANON_PATHS) {
+		const full = resolveContainedPath(target, member)
+		if (full === undefined) continue
+		if (isPhysicalFile(full)) held.push(member)
+		else if (isPhysicalDirectory(full)) {
+			for (const name of listFiles(full)) held.push(`${member}/${name}`)
+		}
+	}
+	return held.filter((path) => groups.includes(inferGroup(path)))
+}
+
+/**
  * Read one contained file as its exact bytes in lowercase hexadecimal.
  *
  * @param root - The containing host directory.
@@ -1192,11 +1237,10 @@ export function readManifestEntry(destination: string, source: string): Manifest
  * answers `undefined`. Deferred paths are presence-only and retain the installed
  * floor bytes that their catalog or mirror surface owns; repair never writes
  * those floor bytes. A canon path is read the same way for a different reason:
- * the canon is staged for reading rather than for a target, and the one canon
- * path a plan does claim is deferred, so the overlay never requests one and a
- * fill that carries no row for it is complete rather than spoiled. One `Host` can
- * therefore carry live host bytes beside floor bytes without mixing baselines
- * within a surface.
+ * the canon is staged for reading rather than for a target, so every canon
+ * destination keeps its floor bytes here, claimed or not, and a fill that carries
+ * no row for one is complete rather than spoiled. One `Host` can therefore carry
+ * live host bytes beside floor bytes without mixing baselines within a surface.
  *
  * The emitted entries keep the release's own order and its storage and
  * executable declarations, and carry digests recomputed over the bytes the fill

@@ -8,10 +8,12 @@ root dotfiles. Scaffold ships that shared set as data inside the package and giv
 a workspace from it, report how a workspace differs from it, and write the difference back.
 
 The set splits by how a repository meets it. Every target carries its own copy of the vendored set —
-its toolchain, its policy proofs, its bench scripts, its harness permission file — and the verbs
-write it and compare it. The instruction canon — the coding and orchestration contracts, the rules,
-the skills, the templates, the transport contracts, the agent roles, the bench configuration, and the
-MCP registrations — is published for reading instead, from a scaffold checkout sitting beside the
+its toolchain, its policy proofs, its harness permission file, its bench probe scripts — and the
+verbs write it and compare it. A bench probe script is a session-start hook that reports whether a
+bench CLI resolves; what wires that bench stays in the canon, and a session reads it at its primary
+root. The instruction canon — the coding and orchestration contracts, the rules, the skills, the
+templates, the transport contracts, the agent roles, the bench configuration, and the MCP
+registrations — is published for reading instead, from a scaffold checkout sitting beside the
 repository, or from `node_modules/@orkestrel/scaffold/dist/host/` in the installed package. Every
 target carries the `AGENTS.md` and `CLAUDE.md` pointers that name where to read it, and the
 `.claude/agents/orkestrel.md` catalog file the `catalog` verb rewrites. Anything else a target holds

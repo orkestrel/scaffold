@@ -338,8 +338,9 @@ describe('selectHostPaths', () => {
 	})
 
 	// The selection reads `HOST_PATHS` alone, so no canon member reaches it: a
-	// target reads those files from the package it installs, and the one canon path
-	// the plan does claim is appended by the compiler instead. The retained paths
+	// target reads those files from the package it installs, and the compiler
+	// appends the catalog file to the host selection while the pointers arrive as
+	// content-owned template artifacts. The retained paths
 	// are the neighbours each moved path left behind, so a removal that took a
 	// sibling with it is visible here rather than in a length.
 	it('selects no canon member and retains the vendored paths beside them', () => {

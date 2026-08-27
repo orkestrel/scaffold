@@ -2458,9 +2458,9 @@ describe('CLI audit', () => {
 	})
 
 	// A target that predates the canon split still carries the copies scaffold once
-	// vendored. The release stages those paths for reading now, so a copy of one
-	// sitting in a target is a file the plan does not own, and the audit reports it
-	// the way it reports any other: as drift a verb can act on.
+	// vendored. The release stages those paths for reading, so a copy of one sitting
+	// in a target is a file the plan does not own, and the audit reports it the way
+	// it reports any other: as drift a verb can act on.
 	it('reports each superseded canon copy as a foreign finding in its own group', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {
@@ -2545,7 +2545,7 @@ describe('CLI audit', () => {
 		}
 	})
 
-	// The verb split, at the one path where it is easy to lose: `repair` restores
+	// The verb split, at the one path where it is most often lost: `repair` restores
 	// what the plan claims and removes nothing, so a superseded copy survives it and
 	// is still reported. Deleting is `overwrite`'s half alone.
 	it('deletes no superseded canon copy on a repair and reports it afterwards', async () => {
@@ -4539,7 +4539,7 @@ describe('CLI overwrite', () => {
 			trackFiles(fleet.target)
 			commitFiles(fleet.target)
 			const sink = createSink()
-			await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
+			const code = await new CLI({ ...REGISTRY_OPTIONS, ...sink.options }).execute([
 				'overwrite',
 				'--offline',
 				'--from',
@@ -4552,6 +4552,11 @@ describe('CLI overwrite', () => {
 			// writes nothing, so the audit this result carries is the proof it ran.
 			expect(sink.output[0] ?? '').not.toContain('"error"')
 			const result: OverwriteResult = JSON.parse(sink.output[0] ?? '')
+			// The exit this offline run earns, read rather than discarded: the catalog
+			// half is refused offline and reported as a note, and that refusal is what
+			// the code carries.
+			expect(code).toBe(EXIT_DRIFT)
+			expect(result.note ?? '').toContain("USAGE: 'catalog' does not take --offline")
 			expect(result.removed).toStrictEqual([])
 			expect(workspace.read('target/.mcp.json')).toBe('{ "mcpServers": {} }\n')
 			expect(
@@ -4596,7 +4601,7 @@ describe('CLI overwrite', () => {
 			expect(workspace.read('target/.claude/rules/names.md')).toBe('# Superseded rule\n')
 
 			const waived = createSink()
-			await new CLI({ ...REGISTRY_OPTIONS, ...waived.options }).execute([
+			const code = await new CLI({ ...REGISTRY_OPTIONS, ...waived.options }).execute([
 				'overwrite',
 				'--dirty',
 				'--offline',
@@ -4607,6 +4612,11 @@ describe('CLI overwrite', () => {
 				'--json',
 			])
 			const result: OverwriteResult = JSON.parse(waived.output[0] ?? '')
+			// The waiver clears the refusal without clearing the exit: the catalog half
+			// is still refused offline, so the code separates a run that proceeded from
+			// the `EXIT_DRIFT` the refused run above earned.
+			expect(code).toBe(EXIT_DRIFT)
+			expect(result.note ?? '').toContain("USAGE: 'catalog' does not take --offline")
 			expect(result.removed).toStrictEqual([])
 			expect(workspace.read('target/.claude/rules/names.md')).toBe('# Superseded rule\n')
 			expect(
