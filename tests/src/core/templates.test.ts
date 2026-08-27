@@ -589,7 +589,7 @@ function plantParameter(content: string): string {
 
 describe('pointer documents', () => {
 	// The pointer replaces the vendored copies of the canon, so its whole job is
-	// telling a reader where the canon now is. Every subject the read list names is
+	// telling a reader where to read the canon. Every subject the read list names is
 	// asserted on each side, because a subject resolved on one side and not the
 	// other leaves a reader on the unresolved side unable to find it.
 	it('names the sibling checkout and the installed copy for each canon contract', () => {

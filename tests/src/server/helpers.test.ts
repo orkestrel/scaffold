@@ -198,7 +198,8 @@ describe('vendored imports', () => {
 })
 
 describe('vendored inventory', () => {
-	// No plan claims a canon path and no target receives one, so the committed
+	// No host artifact claims a canon path, so no target receives the canon
+	// itself, and the committed
 	// inventory is where the instruction canon's arrival in the published root is
 	// visible. `tests/config.test.ts` holds this file equal to a fresh stage, which
 	// makes a storage name here a statement about what a release ships. The names are

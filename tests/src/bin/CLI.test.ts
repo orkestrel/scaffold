@@ -754,8 +754,8 @@ describe('CLI upstream baselines', () => {
 		}
 	})
 
-	// No verb writes a canon path into a target, so asking the repository for one
-	// spends a round trip on bytes nothing can place. The drifted vendored path is
+	// No verb copies a canon path's staged bytes into a target, so asking the
+	// repository for one spends a round trip on bytes nothing can place. The drifted vendored path is
 	// the control: the same run still fetches what a target does receive, so an
 	// empty canon list is a filter rather than a fetch that never ran.
 	it('asks the repository for no canon path while fetching a drifted vendored one', async () => {
@@ -2462,8 +2462,9 @@ describe('CLI audit', () => {
 	})
 
 	// A target that predates the canon split still carries the copies scaffold once
-	// vendored. No verb writes or deletes them, so detection is all the executable
-	// can offer, and the advisory has to name each path a maintainer must remove.
+	// vendored. No verb writes or deletes the paths the advisory names, so
+	// detection is all the executable can offer, and the advisory has to name each
+	// path a maintainer must remove.
 	it('names every superseded canon path a target still carries', async () => {
 		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
 		try {

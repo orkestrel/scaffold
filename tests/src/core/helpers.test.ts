@@ -143,9 +143,10 @@ describe('isCanonPath', () => {
 		expect(isCanonPath('')).toBe(false)
 	})
 
-	// The two sets partition the staged membership: a target receives `HOST_PATHS`
-	// and reads the canon from the package, so a path in both would be planned and
-	// unplanned at once.
+	// `HOST_PATHS` and `CANON_PATHS` partition the staged membership: a target
+	// receives the vendored set and reads the canon from the package, so a path in
+	// both would be copied into a target as a host artifact and refused by the
+	// overlay that keeps a host artifact current.
 	it('shares no member with the vendored set', () => {
 		expect(HOST_PATHS.filter((path) => isCanonPath(path))).toStrictEqual([])
 		expect(CANON_PATHS.filter((path) => HOST_PATHS.includes(path))).toStrictEqual([])

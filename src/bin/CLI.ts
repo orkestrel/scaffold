@@ -1417,8 +1417,8 @@ export class CLI implements CLIInterface {
 	// what the next repair restores.
 	//
 	// Audit alone raises this, on the `#setupQuestion` precedent. No verb writes or
-	// deletes a canon path, so refusing a write over it would block every write on
-	// a gap no write could close. The removal is one commit in the target, and the
+	// deletes a path this question names, so refusing a write over it would block
+	// every write on a gap no write could close. The removal is one commit in the target, and the
 	// question goes quiet after it.
 	#canonQuestion(target: string, blueprint: Blueprint): TargetQuestion | undefined {
 		const planned = new Set(blueprintToDocumentArtifacts(blueprint).map(({ path }) => path))
