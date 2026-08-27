@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest'
 import {
 	artifactToHex,
 	bytesToHex,
+	CANON_PATHS,
 	catalogToLayers,
 	compareVersions,
 	computeBytes,
@@ -17,6 +18,7 @@ import {
 	HOST_PATHS,
 	inferDrift,
 	inferGroup,
+	isCanonPath,
 	isCollection,
 	isDeferredPath,
 	isDependency,
@@ -118,6 +120,35 @@ describe('isDeferredPath', () => {
 		expect(isDeferredPath('.claude/agents/other.md')).toBe(false)
 		expect(isDeferredPath('guides/guide.MD')).toBe(false)
 		expect(isDeferredPath('docs/guide.md')).toBe(false)
+	})
+})
+
+describe('isCanonPath', () => {
+	it('matches every canon member and everything beneath a canon directory', () => {
+		for (const path of CANON_PATHS) expect(isCanonPath(path)).toBe(true)
+		expect(isCanonPath('.claude/rules/names.md')).toBe(true)
+		expect(isCanonPath('.agents/skills/orkestrel-falsify/SKILL.md')).toBe(true)
+		expect(isCanonPath('.agents/transports/codex.md')).toBe(true)
+	})
+
+	it('refuses a vendored path, a nested vendored path, and a prefix lookalike', () => {
+		expect(isCanonPath('.claude/settings.json')).toBe(false)
+		expect(isCanonPath('.claude/agents/orkestrel.md')).toBe(false)
+		expect(isCanonPath('scripts/deps.sh')).toBe(false)
+		// The control the directory rule needs: a sibling whose name opens with a
+		// canon member's name is outside it, so the match is a segment boundary
+		// rather than a string prefix.
+		expect(isCanonPath('.claude/rulesets/names.md')).toBe(false)
+		expect(isCanonPath('AGENTS.md.bak')).toBe(false)
+		expect(isCanonPath('')).toBe(false)
+	})
+
+	// The two sets partition the staged membership: a target receives `HOST_PATHS`
+	// and reads the canon from the package, so a path in both would be planned and
+	// unplanned at once.
+	it('shares no member with the vendored set', () => {
+		expect(HOST_PATHS.filter((path) => isCanonPath(path))).toStrictEqual([])
+		expect(CANON_PATHS.filter((path) => HOST_PATHS.includes(path))).toStrictEqual([])
 	})
 })
 
@@ -284,6 +315,21 @@ describe('selectHostPaths', () => {
 
 	it('keeps every candidate for a workspace that vendors no guide of its own', () => {
 		expect(selectHostPaths(HOST_PATHS, 'router')).toStrictEqual(HOST_PATHS)
+	})
+
+	// The selection is what a target's plan claims, so the canon must not reach it:
+	// a target reads those files from the package it installs. The retained paths
+	// are the neighbours each canon member left behind, so a removal that took a
+	// sibling with it is visible here rather than in a length.
+	it('plans no canon member and retains the vendored paths beside them', () => {
+		const selected = selectHostPaths(HOST_PATHS, 'router')
+		expect(selected.filter((path) => isCanonPath(path))).toStrictEqual([])
+		for (const path of ['AGENTS.md', 'CLAUDE.md', '.agents/orchestration.md', '.claude/rules']) {
+			expect(selected).not.toContain(path)
+		}
+		for (const path of ['.claude/settings.json', '.claude/agents', 'scripts/deps.sh', 'LICENSE']) {
+			expect(selected).toContain(path)
+		}
 	})
 })
 

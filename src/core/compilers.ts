@@ -1433,7 +1433,22 @@ export function blueprintToGuideArtifacts(blueprint: Blueprint): readonly Conten
  * Compile the generated workspace's root documentation.
  *
  * @param blueprint - The workspace specification.
- * @returns One birth-owned package front page.
+ * @returns The birth-owned package front page and the two content-owned root
+ * instruction pointers.
+ *
+ * @remarks
+ * The front page is the workspace's own prose, so it is written once and left
+ * alone from then on. The pointers are scaffold's, so they are content-owned and
+ * restored whenever they drift.
+ *
+ * A pointer is planned here rather than vendored because `stageHost` refuses two
+ * vendored paths at one storage name, and `AGENTS.md` and `CLAUDE.md` already
+ * store the canon a release ships. Planning them as this package's own content
+ * leaves each path with one claimant.
+ *
+ * Neither pointer carries a varying span, so neither is filled: a workspace's
+ * name never reaches the text, and the paths a reader follows are the same in
+ * every target.
  */
 export function blueprintToDocumentArtifacts(blueprint: Blueprint): readonly ContentArtifact[] {
 	const publishes = blueprint.src.length > 0
@@ -1450,6 +1465,20 @@ export function blueprintToDocumentArtifacts(blueprint: Blueprint): readonly Con
 				package: name,
 				description,
 			}),
+		},
+		{
+			path: 'AGENTS.md',
+			group: 'docs',
+			ownership: 'content',
+			origin: 'template',
+			content: ARTIFACT_TEMPLATES.docs.agents,
+		},
+		{
+			path: 'CLAUDE.md',
+			group: 'docs',
+			ownership: 'content',
+			origin: 'template',
+			content: ARTIFACT_TEMPLATES.docs.claude,
 		},
 	]
 }
@@ -1501,11 +1530,15 @@ export function blueprintToOrchestrationArtifacts(
  * are classified by one rule and a plan never disagrees with the audit beside
  * it.
  *
+ * The instruction canon is outside this set. `CANON_PATHS` is staged for reading
+ * and never planned, and the `AGENTS.md` and `CLAUDE.md` pointers
+ * {@link blueprintToDocumentArtifacts} emits are what name where it is read.
+ *
  * @example
  * ```ts
  * import { nameToHostArtifacts } from '@orkestrel/scaffold'
  *
- * nameToHostArtifacts('router').some((artifact) => artifact.path === 'AGENTS.md') // true
+ * nameToHostArtifacts('router').some((artifact) => artifact.path === '.claude/settings.json') // true
  * nameToHostArtifacts('router').some((artifact) => artifact.path === 'guides/router.md') // false
  * ```
  */

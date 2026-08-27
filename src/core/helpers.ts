@@ -12,6 +12,7 @@ import type {
 } from './types.js'
 import { compareValues, isRecord, isString, limitEntries, parseJSON } from '@orkestrel/contract'
 import {
+	CANON_PATHS,
 	CATALOG_AGENT_PATH,
 	DEPENDENCY_NAME_PATTERN,
 	ENGINES_PATTERN,
@@ -187,6 +188,31 @@ export function matchesOrchestrationPath(path: string): boolean {
  */
 export function isDeferredPath(path: string): boolean {
 	return path === CATALOG_AGENT_PATH || (path.startsWith('guides/') && path.endsWith('.md'))
+}
+
+/**
+ * Checks whether a path belongs to the instruction canon a target reads rather than holds.
+ *
+ * @param path - The target-relative path to test.
+ * @returns `true` for a {@link CANON_PATHS} member and for any path beneath a
+ * member that is a directory; `false` otherwise.
+ *
+ * @remarks
+ * The one reading of canon membership, so the compiler, the live overlay, and
+ * the executable's advisory never disagree about what a path is. The match runs
+ * to a segment boundary, so a sibling whose name opens with a member's name —
+ * `.claude/rulesets` beside `.claude/rules` — stays outside.
+ *
+ * @example
+ * ```ts
+ * import { isCanonPath } from '@orkestrel/scaffold'
+ *
+ * isCanonPath('.claude/rules/names.md') // true
+ * isCanonPath('.claude/settings.json') // false
+ * ```
+ */
+export function isCanonPath(path: string): boolean {
+	return CANON_PATHS.some((canon) => path === canon || path.startsWith(`${canon}/`))
 }
 
 /**

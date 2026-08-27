@@ -2019,6 +2019,41 @@ npm install
 npm test
 \`\`\`
 `,
+		agents: `# AGENTS.md
+
+The \`@orkestrel/scaffold\` package is this repository's coding and orchestration authority. This
+file points at it and states no law of its own.
+
+Read these before working: the \`AGENTS.md\` coding contract, the \`.agents/orchestration.md\`
+agent-operation contract, every applicable rule the contract's rule map names under
+\`.claude/rules/\`, and the dispatch-named skill under \`.agents/skills/\` with the references it
+requires.
+
+Resolve every one of those paths against scaffold, never against this repository:
+
+- When a scaffold checkout sits beside this repository, read \`../scaffold/AGENTS.md\`, the
+  \`../scaffold/.agents/orchestration.md\` file, and the \`../scaffold/.claude/rules/\` directory.
+- Otherwise read the installed copy, whose paths drop the dot that opens each segment: the
+  \`node_modules/@orkestrel/scaffold/dist/host/AGENTS.md\` file, the
+  \`node_modules/@orkestrel/scaffold/dist/host/agents/orchestration.md\` file, and the
+  \`node_modules/@orkestrel/scaffold/dist/host/claude/rules/\` directory.
+
+Every path a scaffold-supplied file names resolves the same way. The files this repository carries
+— the \`.claude/agents/\` directory, the \`.codex/\` directory, the \`.cursor/\` directory, the
+\`.mcp.json\` file, and the \`.claude/settings.json\` file — are this repository's own copies and
+resolve here.
+
+Edit none of the scaffold-owned files here. The \`scaffold repair\` command restores them, so a
+change to one is a commit in the scaffold repository followed by a release.
+`,
+		claude: `# CLAUDE.md
+
+Read the \`AGENTS.md\` file in this repository first. It names the coding and orchestration
+authority and where to read each contract.
+
+This file imports nothing. An \`@path\` import inlines the imported file into every context that
+loads it, which is the cost this pointer removes.
+`,
 	}),
 	guides: Object.freeze({
 		readme: `# Guides

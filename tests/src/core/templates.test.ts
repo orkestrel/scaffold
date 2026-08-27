@@ -587,6 +587,40 @@ function plantParameter(content: string): string {
 	)
 }
 
+describe('pointer documents', () => {
+	// The pointer replaces the vendored copies of the canon, so its whole job is
+	// telling a reader where the canon now is. Each resolution the body offers is
+	// asserted as text, because a body that names one of them and not the other
+	// leaves every reader without a checkout unable to find anything.
+	it('names the sibling checkout and the installed copy for each canon contract', () => {
+		const agents = ARTIFACT_TEMPLATES.docs.agents
+		expect(agents).toContain('`../scaffold/AGENTS.md`')
+		expect(agents).toContain('`../scaffold/.agents/orchestration.md`')
+		expect(agents).toContain('`node_modules/@orkestrel/scaffold/dist/host/AGENTS.md`')
+		expect(agents).toContain('`node_modules/@orkestrel/scaffold/dist/host/agents/orchestration.md`')
+		expect(ARTIFACT_TEMPLATES.docs.claude).toContain('`AGENTS.md`')
+	})
+
+	// A bare `@` opens a Claude Code import, which inlines the named file into
+	// every context that loads this one — the cost the pointer exists to remove.
+	// So every `@` a body carries has to sit inside a code span, and the reading
+	// is taken over the body with its code spans removed.
+	it('opens no import outside a code span', () => {
+		for (const body of [ARTIFACT_TEMPLATES.docs.agents, ARTIFACT_TEMPLATES.docs.claude]) {
+			expect(body).toContain('@')
+			expect(body.replaceAll(/`[^`]*`/gu, '')).not.toContain('@')
+		}
+	})
+
+	// A pointer carries no varying span, so it is planned as its own bytes rather
+	// than filled. A leftover token would reach a target verbatim.
+	it('carries no template placeholder', () => {
+		for (const body of [ARTIFACT_TEMPLATES.docs.agents, ARTIFACT_TEMPLATES.docs.claude]) {
+			expect(body).not.toMatch(/\{\{[^}]*\}\}/u)
+		}
+	})
+})
+
 describe('configuration templates', () => {
 	it('seeds each planned setup module with the exact transcribed bytes', () => {
 		expect(ARTIFACT_TEMPLATES.tests.setup).toBe(PLANNED_SETUP_SEED)

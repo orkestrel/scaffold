@@ -108,30 +108,24 @@ export const BIN_CONFIGS: readonly string[] = Object.freeze([
 export const BIN_ENTRY_PATH = 'src/bin/main.ts'
 
 /**
- * The paths byte-copied from the vendored data root, frozen.
+ * The paths a target receives from the vendored data root, frozen.
  *
  * @remarks
- * These are the files the fleet shares verbatim: the root instruction
- * documents, the licence, the canonical orchestration contract every harness
- * bridge points at, the harness directories, the session hook scripts,
- * the shared policy register, the byte-identical root dotfiles, and the
- * guide mirrors a generated workspace starts from. A directory entry vendors
- * everything beneath it.
+ * These are the files the fleet shares verbatim and every target holds a copy
+ * of: the licence, the harness directories, the session hook scripts, the shared
+ * policy register, the byte-identical root dotfiles, and the guide mirrors a
+ * generated workspace starts from. A directory entry vendors everything beneath
+ * it.
  *
  * A plan carries the subset its target selects, which is why the list is a
  * candidate set rather than a plan: a workspace never mirrors its own guide.
+ *
+ * The instruction canon is not here. {@link CANON_PATHS} carries it, and a
+ * target reads it from the installed package instead of holding a copy.
  */
 export const HOST_PATHS: readonly string[] = Object.freeze([
-	'AGENTS.md',
-	'CLAUDE.md',
 	'LICENSE',
-	'.agents/orchestration.md',
-	'.agents/skills',
-	'.agents/templates',
-	'.agents/transports',
 	'.claude/agents',
-	'.claude/rules',
-	'.claude/skills',
 	'.claude/settings.json',
 	'.codex/agents',
 	'.codex/config.toml',
@@ -156,6 +150,35 @@ export const HOST_PATHS: readonly string[] = Object.freeze([
 	'.prettierignore',
 	'guides/guide.md',
 	'guides/scaffold.md',
+])
+
+/**
+ * The instruction-canon paths staged for reading rather than for a target, frozen.
+ *
+ * @remarks
+ * The root instruction documents, the orchestration contract every harness
+ * bridge points at, the rule map's rules, the skills, the templates, and the
+ * transport contracts. A directory entry covers everything beneath it.
+ *
+ * Staging walks these beside {@link HOST_PATHS}, so a release ships them and a
+ * reader reaches them two ways: a scaffold checkout sitting beside the
+ * repository, or the `node_modules/@orkestrel/scaffold/dist/host/` root inside
+ * the installed package. No plan claims one, no target receives one, and the
+ * `AGENTS.md` and `CLAUDE.md` pointers scaffold plans are what name those two
+ * locations.
+ *
+ * The two sets are disjoint. A path in both would be planned into a target and
+ * withheld from it at once.
+ */
+export const CANON_PATHS: readonly string[] = Object.freeze([
+	'AGENTS.md',
+	'CLAUDE.md',
+	'.agents/orchestration.md',
+	'.agents/skills',
+	'.agents/templates',
+	'.agents/transports',
+	'.claude/rules',
+	'.claude/skills',
 ])
 
 /** The repository-relative path where the committed vendored-file inventory is served. */

@@ -32,9 +32,11 @@ import { fileURLToPath } from 'node:url'
 import { attempt, holds, isError, parseJSONAs } from '@orkestrel/contract'
 import {
 	bytesToHex,
+	CANON_PATHS,
 	EXECUTABLE_PATHS,
 	HOST_INVENTORY_PATH,
 	HOST_PATHS,
+	isCanonPath,
 	isCollection,
 	isDeferredPath,
 	isHex,
@@ -1189,8 +1191,11 @@ export function readManifestEntry(destination: string, source: string): Manifest
  * went missing, names an undeclared path, or leaves a host-owned path absent
  * answers `undefined`. Deferred paths are presence-only and retain the installed
  * floor bytes that their catalog or mirror surface owns; repair never writes
- * those floor bytes. One `Host` can therefore carry live host bytes beside floor
- * bytes without mixing baselines within a surface.
+ * those floor bytes. A canon path is read the same way for a different reason:
+ * no target receives one, so the overlay never requests it and a fill that
+ * carries no row for it is complete rather than spoiled. One `Host` can
+ * therefore carry live host bytes beside floor bytes without mixing baselines
+ * within a surface.
  *
  * The emitted entries keep the release's own order and its storage and
  * executable declarations, and carry digests recomputed over the bytes the fill
@@ -1211,14 +1216,15 @@ export function filesToHost(files: readonly HostFile[], floor: Host): Host | und
 	const held = new Map<string, string>()
 	for (const file of files) {
 		if (file.lookup !== 'found' || !declared.has(file.path)) return undefined
-		if (!isDeferredPath(file.path)) held.set(file.path, file.hex)
+		if (!isDeferredPath(file.path) && !isCanonPath(file.path)) held.set(file.path, file.hex)
 	}
 	const entries: ManifestEntry[] = []
 	const bytes: Record<string, string> = {}
 	for (const entry of floor.manifest.entries) {
-		const hex = isDeferredPath(entry.destination)
-			? floor.bytes[entry.destination]
-			: held.get(entry.destination)
+		const hex =
+			isDeferredPath(entry.destination) || isCanonPath(entry.destination)
+				? floor.bytes[entry.destination]
+				: held.get(entry.destination)
 		if (hex === undefined) return undefined
 		entries.push({
 			storage: entry.storage,
@@ -1367,9 +1373,15 @@ export function stageBytes(
  * once. A directory is the same case — declaring an absent directory as an empty
  * root would create an empty directory in every generated workspace.
  *
- * The vendoring deny-list applies to what the walk discovers beneath a vendored
+ * The walk covers `HOST_PATHS` and `CANON_PATHS` together, because a release
+ * ships both: a target receives the first set, and reads the second one out of
+ * the installed package. Everything downstream — the missing-path refusal, the
+ * storage collision guard, the sort, the digests, and the root inventory — reads
+ * the union, so a canon path is staged under exactly the law a vendored one is.
+ *
+ * The vendoring deny-list applies to what the walk discovers beneath a staged
  * directory, where a maintainer's local credential can legitimately sit, and
- * such a path is skipped. A path `HOST_PATHS` names itself is curated data
+ * such a path is skipped. A path either list names itself is curated data
  * rather than discovery, so it is staged or the stage is refused.
  *
  * @example
@@ -1398,7 +1410,7 @@ export function stageHost(checkout: string, host: string): readonly ManifestEntr
 	const vendored: string[] = []
 	const roots: string[] = []
 	const missing: string[] = []
-	for (const path of HOST_PATHS) {
+	for (const path of [...HOST_PATHS, ...CANON_PATHS]) {
 		const full = resolveContainedPath(source, path)
 		if (full === undefined) {
 			throw new ScaffoldError('INVALID', `Vendored path leaves its checkout at ${path}`, {

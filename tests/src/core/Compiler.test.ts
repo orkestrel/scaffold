@@ -1,4 +1,4 @@
-import { Compiler, createBlueprint } from '@src/core'
+import { artifactsToQuestions, Compiler, createBlueprint, isCanonPath } from '@src/core'
 import { describe, expect, it } from 'vitest'
 
 describe('Compiler artifacts', () => {
@@ -55,6 +55,8 @@ describe('Compiler artifacts', () => {
 			'tests/distribution.test.ts',
 			'guides/README.md',
 			'README.md',
+			'AGENTS.md',
+			'CLAUDE.md',
 		])
 		// The generated packed-package proof is the one template artifact claimed by
 		// presence: a target lacking it reports as drift, and a package that wrote a
@@ -66,10 +68,45 @@ describe('Compiler artifacts', () => {
 			origin: 'template',
 			content: expect.stringContaining('installed package consumer'),
 		})
-		expect(plan.artifacts).toHaveLength(50)
+		expect(plan.artifacts).toHaveLength(44)
 		expect(plan.artifacts.filter(({ origin }) => origin === 'computed')).toHaveLength(1)
-		expect(plan.artifacts.filter(({ origin }) => origin === 'template')).toHaveLength(15)
-		expect(plan.artifacts.filter(({ origin }) => origin === 'host')).toHaveLength(34)
+		expect(plan.artifacts.filter(({ origin }) => origin === 'template')).toHaveLength(17)
+		expect(plan.artifacts.filter(({ origin }) => origin === 'host')).toHaveLength(26)
+	})
+
+	// The canon left the vendored set, so the two root instruction documents are
+	// planned as this package's own content instead. Each has to claim its path
+	// once: a second claimant would make the plan's last writer win silently, which
+	// is what the plan gate refuses.
+	it('plans each root instruction pointer once, as content nothing vendors', () => {
+		const compiler = new Compiler()
+		const scaffolding = compiler.compile(createBlueprint('widget', { src: ['core'] }))
+		compiler.destroy()
+		const plan = scaffolding.plan
+		if (plan === undefined) throw new Error('The pointer blueprint was blocked')
+
+		for (const path of ['AGENTS.md', 'CLAUDE.md']) {
+			const claimants = plan.artifacts.filter((artifact) => artifact.path === path)
+			expect(claimants).toHaveLength(1)
+			expect(claimants[0]?.group).toBe('docs')
+			expect(claimants[0]?.origin).toBe('template')
+			expect(claimants[0]?.ownership).toBe('content')
+			expect(claimants[0]?.content).toContain(`# ${path}`)
+		}
+		expect(artifactsToQuestions(plan.artifacts)).toStrictEqual([])
+		// The control the collision claim needs: the gate does report a second
+		// claimant, so an empty result is a measurement rather than a silent pass.
+		expect(
+			artifactsToQuestions([...plan.artifacts, ...plan.artifacts]).map(({ field }) => field),
+		).toContain('artifacts')
+		// The pointer pair is the only canon path a plan claims, and it claims those
+		// as its own content. Nothing vendors a canon path any more, so a target
+		// reads the rest from the package it installs.
+		expect(
+			plan.artifacts
+				.filter((artifact) => isCanonPath(artifact.path))
+				.map(({ path, origin }) => `${path}:${origin}`),
+		).toStrictEqual(['AGENTS.md:template', 'CLAUDE.md:template'])
 	})
 
 	it('emits every conditional config path exactly once', () => {

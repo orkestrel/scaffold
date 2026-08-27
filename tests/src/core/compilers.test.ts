@@ -20,7 +20,9 @@ import {
 	createBlueprint,
 	ENVIRONMENTS,
 	FLOOR_RANGE_PATTERN,
+	isCanonPath,
 	isFinding,
+	nameToHostArtifacts,
 	ORKESTREL_RANGE_PATTERN,
 	RELEASE_PROOF_COMMAND,
 	replaceManifestRanges,
@@ -1746,6 +1748,44 @@ describe('content artifact compilers', () => {
 		expect(guide?.content).toContain('## By directory')
 		expect(guide?.content).toContain('[`src/server`](../src/server)')
 		expect(guide?.content).toContain('[`app/core`](../app/core)')
+	})
+
+	// The front page is the workspace's own prose, written once. The pointers are
+	// scaffold's, so they are content-owned and restored whenever they drift.
+	it('emits the front page beside the two root instruction pointers', () => {
+		const documents = blueprintToDocumentArtifacts(buildBlueprint({ name: 'widget' }))
+		expect(documents.map(({ path }) => path)).toStrictEqual(['README.md', 'AGENTS.md', 'CLAUDE.md'])
+		expect(documents.map(({ ownership }) => ownership)).toStrictEqual([
+			'birth',
+			'content',
+			'content',
+		])
+		expect(documents.every(({ group, origin }) => group === 'docs' && origin === 'template')).toBe(
+			true,
+		)
+		const [, agents, claude] = documents
+		expect(agents?.content).toContain('`../scaffold/.agents/orchestration.md`')
+		expect(agents?.content).toContain('`node_modules/@orkestrel/scaffold/dist/host/AGENTS.md`')
+		expect(claude?.content).toContain('`AGENTS.md`')
+		// The pointer carries no varying span, so the blueprint's own name never
+		// reaches it. A body that named the workspace would need a fill.
+		expect(agents?.content).not.toContain('widget')
+		expect(claude?.content).not.toContain('widget')
+	})
+
+	// Every host artifact is a path the target receives bytes for. The canon is not
+	// among them, and this names the neighbours it left behind so a removal that
+	// took a sibling with it is visible.
+	it('plans no canon path among the vendored artifacts', () => {
+		const artifacts = nameToHostArtifacts('widget')
+		const paths = artifacts.map(({ path }) => path)
+		expect(paths.filter((path) => isCanonPath(path))).toStrictEqual([])
+		expect(paths).toContain('.claude/settings.json')
+		expect(paths).toContain('.claude/agents')
+		expect(paths).toContain('scripts/deps.sh')
+		expect(
+			artifacts.every(({ ownership, origin }) => ownership === 'presence' && origin === 'host'),
+		).toBe(true)
 	})
 
 	it('names the unwritten package guide without linking to it', () => {

@@ -13,10 +13,15 @@ import {
 import { once } from 'node:events'
 import { join } from 'node:path'
 import { Worker } from 'node:worker_threads'
+import { arrayOf, isRecord, isString } from '@orkestrel/contract'
 import {
+	ARTIFACT_TEMPLATES,
+	CANON_PATHS,
 	contentToHex,
 	EXECUTABLE_PATHS,
+	HOST_INVENTORY_PATH,
 	HOST_PATHS,
+	isCanonPath,
 	isDeferredPath,
 	MAX_ARTIFACT_BYTES,
 	MAX_COLLECTION_ITEMS,
@@ -209,6 +214,23 @@ describe('pathToStorage', () => {
 
 	it('keeps a dotted root file apart from its undotted sibling', () => {
 		expect(pathToStorage('.gitignore')).not.toBe(pathToStorage('gitignore'))
+	})
+
+	// The pointer sends a reader without a sibling checkout into the installed
+	// package, where each canon file sits under its storage name rather than under
+	// the path a target used to carry. The spelling is pinned by the projection
+	// that decides it, so a change to that projection reddens the pointer instead
+	// of leaving a reader following a path nothing resolves.
+	it('spells the installed fallback the pointer body sends a reader to', () => {
+		const installed = 'node_modules/@orkestrel/scaffold/dist/host'
+		const agents = ARTIFACT_TEMPLATES.docs.agents
+		expect(agents).toContain(`${installed}/${pathToStorage('AGENTS.md')}`)
+		expect(agents).toContain(`${installed}/${pathToStorage('.agents/orchestration.md')}`)
+		expect(agents).toContain(`${installed}/${pathToStorage('.claude/rules')}/`)
+		// The control the claim needs: the target-relative spelling is a different
+		// string, and a pointer carrying it would send the reader nowhere.
+		expect(pathToStorage('.agents/orchestration.md')).not.toBe('.agents/orchestration.md')
+		expect(agents).not.toContain(`${installed}/.agents/orchestration.md`)
 	})
 })
 
@@ -1183,7 +1205,7 @@ describe('filesToHost', () => {
 		),
 	}
 
-	it('overlays host-owned live files while keeping deferred floor bytes', () => {
+	it('overlays host-owned live files while keeping deferred and canon floor bytes', () => {
 		const files: readonly HostFile[] = [
 			{ path: 'AGENTS.md', lookup: 'found', hex: contentToHex('live agents\n') },
 			{ path: '.claude/rules/names.md', lookup: 'found', hex: contentToHex('live names\n') },
@@ -1193,11 +1215,16 @@ describe('filesToHost', () => {
 		expect(assembled?.manifest.entries.map((entry) => entry.destination)).toEqual(
 			manifest.entries.map((entry) => entry.destination),
 		)
-		expect(assembled?.bytes['AGENTS.md']).toBe(contentToHex('live agents\n'))
+		expect(assembled?.bytes['scripts/codex.sh']).toBe(contentToHex('live script\n'))
 		expect(assembled?.bytes['guides/guide.md']).toBe(floor.bytes['guides/guide.md'])
 		expect(assembled?.bytes['.claude/agents/orkestrel.md']).toBe(
 			floor.bytes['.claude/agents/orkestrel.md'],
 		)
+		// A canon destination keeps the installed floor's bytes even when a live row
+		// for it arrives: those bytes belong to the package a target reads, and no
+		// target receives them.
+		expect(assembled?.bytes['AGENTS.md']).toBe(floor.bytes['AGENTS.md'])
+		expect(assembled?.bytes['.claude/rules/names.md']).toBe(floor.bytes['.claude/rules/names.md'])
 	})
 
 	it('assembles a whole host from an all-found fill', () => {
@@ -1234,11 +1261,11 @@ describe('filesToHost', () => {
 		expect(assembled?.manifest.entries.map((entry) => entry.executable)).toEqual(
 			manifest.entries.map((entry) => entry.executable),
 		)
-		// Host-owned digests follow the live fill. Deferred digests follow the floor
-		// bytes that their owning surfaces replace later.
+		// Host-owned digests follow the live fill. Deferred and canon digests follow
+		// the floor bytes that their owning surfaces replace later.
 		for (const entry of assembled?.manifest.entries ?? []) {
 			expect(entry.digest).toBe(
-				isDeferredPath(entry.destination)
+				isDeferredPath(entry.destination) || isCanonPath(entry.destination)
 					? floor.manifest.entries.find((one) => one.destination === entry.destination)?.digest
 					: computeDigest('moved\n'),
 			)
@@ -1274,6 +1301,45 @@ describe('filesToHost', () => {
 			{ path: 'AGENTS.md', lookup: 'found', hex: contentToHex('AGENTS.md\n') },
 		]
 		expect(filesToHost(partial, floor)).toBeUndefined()
+	})
+
+	// The live overlay stops requesting a canon destination, so no row ever arrives
+	// for one. A fill missing those rows is complete rather than spoiled, and the
+	// canon keeps the installed floor's bytes.
+	it('assembles a host from a fill carrying no canon row', () => {
+		const requested = manifest.entries
+			.map((entry) => entry.destination)
+			.filter((destination) => !isDeferredPath(destination) && !isCanonPath(destination))
+		expect(requested.length).toBeGreaterThan(0)
+		const files: readonly HostFile[] = requested.map((destination) => ({
+			path: destination,
+			lookup: 'found',
+			hex: contentToHex('live\n'),
+		}))
+		const assembled = filesToHost(files, floor)
+		expect(assembled?.manifest.entries.map((entry) => entry.destination)).toEqual(
+			manifest.entries.map((entry) => entry.destination),
+		)
+		for (const entry of manifest.entries) {
+			expect(assembled?.bytes[entry.destination]).toBe(
+				isDeferredPath(entry.destination) || isCanonPath(entry.destination)
+					? floor.bytes[entry.destination]
+					: contentToHex('live\n'),
+			)
+		}
+	})
+
+	// The negative control the preceding claim needs: dropping a planned row that
+	// is neither deferred nor canon still refuses the whole fill, so the acceptance
+	// is about the canon rather than about a relaxed rule.
+	it('answers undefined when a planned non-canon row is dropped from the fill', () => {
+		const requested = manifest.entries
+			.map((entry) => entry.destination)
+			.filter((destination) => !isDeferredPath(destination) && !isCanonPath(destination))
+		const files: readonly HostFile[] = requested
+			.slice(1)
+			.map((destination) => ({ path: destination, lookup: 'found', hex: contentToHex('live\n') }))
+		expect(filesToHost(files, floor)).toBeUndefined()
 	})
 })
 
@@ -1438,6 +1504,38 @@ parentPort.postMessage('ready')`,
 			} finally {
 				await worker.terminate()
 			}
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	// The canon left `HOST_PATHS` and no target receives it, so the only proof that
+	// it still reaches the published root is a real stage of this repository. The
+	// committed inventory is the comparison, because a release ships that file and
+	// a different call produced it.
+	it('stages the canon beside the vendored set from this checkout', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			const entries = stageHost(WORKSPACE_ROOT, join(workspace.path, 'host'))
+			const destinations = entries.map((entry) => entry.destination)
+			const held = new Set(destinations)
+			for (const path of CANON_PATHS) {
+				expect(held.has(path) || destinations.some((one) => one.startsWith(`${path}/`))).toBe(true)
+			}
+			for (const path of ['.claude/settings.json', 'scripts/deps.sh', 'LICENSE']) {
+				expect(held.has(path)).toBe(true)
+			}
+			const inventory: unknown = JSON.parse(
+				readFileSync(join(WORKSPACE_ROOT, HOST_INVENTORY_PATH), 'utf8'),
+			)
+			if (!isRecord(inventory) || !arrayOf(isRecord)(inventory.entries)) {
+				throw new Error('The committed host inventory carries no entry list')
+			}
+			const declared = inventory.entries.flatMap((entry) =>
+				isString(entry.destination) ? [entry.destination] : [],
+			)
+			expect(declared.length).toBe(inventory.entries.length)
+			expect(destinations.toSorted()).toStrictEqual(declared.toSorted())
 		} finally {
 			workspace.destroy()
 		}
