@@ -680,9 +680,9 @@ Coverage is read per module: `tests/<name>.ts` is covered by `tests/<name>.test.
 else, which is the pairing the vendored policy proof resolves. Writing one proof retires that module
 and leaves every other uncovered module named, and the message pairs each module it names with the
 proof that module wants. The question belongs to the `tests` group, so a scoped audit that excludes
-`tests` omits it. Scaffold does not write the proof it asks for, and no writing verb raises the
-question: a writing verb refuses the advisories it reports, and refusing `repair` over this one
-would block every write on a gap no write can close. Run across a fleet, the question is the list of
+`tests` omits it. Scaffold does not write the proof it asks for, and the question never refuses a
+write: a writing verb reports it in the terminal audit it prints, because refusing `repair` over a
+gap no write can close would block every write. Run across a fleet, the question is the list of
 packages carrying a filled setup module that no proof covers.
 
 The `canon` question fires when the target still holds an instruction path the installed package
