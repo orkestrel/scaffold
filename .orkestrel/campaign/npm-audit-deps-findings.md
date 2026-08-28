@@ -180,3 +180,21 @@ The user ruled on the four open decisions:
    are behavioral rulings, so the conforming changes are movers and land with the fix phase.
 4. **Release: prepared, not published.** The process 0.0.9 wave remainder and every other publish
    hold until the user asks. Fix work continues on the campaign branches.
+
+## Fix phase round 1 (2026-08-28)
+
+Workflow `wf_a88c02f6-538` dispatches one Claude Opus 5 writer per package with fix-producing
+verdicts, in disjoint repository checkouts, each running the full gate chain and leaving the tree
+uncommitted for orchestrator review. The shared brief is `fix/fix-brief.md`; the per-package
+dossiers under `fix/` join each finding's text with its final verdict and, for DRIFT-RESHAPE, the
+corrected repair from the verification lanes and judges. The brief carries the breaking test: a
+repair that renames or removes published API, changes a published signature non-additively, or
+changes unpinned consumer-observable behavior is deferred to the breaking work order, not
+applied. The 2026-08-28 rulings ride in the unit briefs: workspace conforms its batch operations
+to all-succeed (s17-37), html moves the five predicates to `helpers.ts` under kind purity
+(s08-06), terminal and tool keep their all-succeed repairs, and voice-only findings defer to the
+final TSDoc wave. The multi-package TSDoc findings (s13-01, s18-01, s18-02) route to
+`fix/tsdoc-wave.md`. The lane-raised mcp extras ride the mcp dossier as s01-ex-A and s01-ex-B;
+the judge-ruled s01-ex-03/ex03 (INVALID) and s01-ex-04/ex04 (EXCEPTION) produce no fix work.
+Writers run on the Opus engine because the Sol bench remains dark (`codex` absent, re-probed at
+session resume); the substitution is recorded per the engine-assignment table.
