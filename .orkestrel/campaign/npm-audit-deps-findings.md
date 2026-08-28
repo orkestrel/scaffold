@@ -132,3 +132,18 @@ checkouts and the registry at `process@0.0.8`:
   refactor rather than fix work here. The s13 process findings (ProcessChild interface naming,
   snapshotCommand cloners placement, SupervisorFace type extraction, ProcessError @example,
   undocumented signal members) were handed to the user for that session.
+
+## Process 0.0.9 re-pin evidence (2026-08-28)
+
+`@orkestrel/process@0.0.9` reached the registry with no `Retention` in its published
+declarations (verified against the unpacked tarball). The re-pin to `^0.0.9` landed in `lsp`,
+`mcp`, `sea`, and `scaffold` with regenerated lockfiles, and `/home/user/work/repin-gates.sh`
+ran the full gate chain in each — `format:check`, `lint:check`, `check`, `build`, `test` — with
+every repo green (`/home/user/work/repin-gates.log`: `lsp OK`, `mcp OK`, `sea OK`,
+`scaffold OK`). The scaffold run also closes the re-gate owed after the fixture repair. The
+`guides/process.md` mirrors in `lsp`, `mcp`, and `sea` are refreshed from the process
+repository's main after the release and carry no `Retention` section. The process campaign
+branch carries a merge of that main; its own gate run is recorded beside this entry when it
+completes. The wave remainder is release work: bump and publish `lsp`, `mcp`, `sea` in layer
+order, `scaffold` on its own account, then re-pin `lsp` and `mcp` in `probe` and publish
+`probe` last.
