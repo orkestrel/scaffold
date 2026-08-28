@@ -1,0 +1,2173 @@
+{
+ "verdicts": [
+  {
+   "id": "s12-21",
+   "g": "g01",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-22",
+   "g": "g01",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-23",
+   "g": "g01",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-24",
+   "g": "g01",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-25",
+   "g": "g01",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-26",
+   "g": "g01",
+   "o": "DRIFT/medium",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "DRIFT/high",
+   "jr": "Both lanes concede the `data` hit; the dispute is placement. The subjective lane's decisive reason for keeping the symbol in `factories.ts` — that moving it 'would break the documented factory/coercer pairing with `parseTemplate`' — is factually false: `parseTemplate` is itself in `helpers.ts:831`. ",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-27",
+   "g": "g01",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-28",
+   "g": "g01",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-29",
+   "g": "g01",
+   "o": "DRIFT-RESHAPE/medium",
+   "s": "DRIFT-RESHAPE/medium",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s12-30",
+   "g": "g01",
+   "o": "DRIFT/high",
+   "s": "DRIFT-RESHAPE/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The `Intent` half is unambiguous: `''` stands for 'unclassified' on a required field of a published interface, is constructed at two call sites, and is taught in an `@example`. The design law names `''` explicitly and nothing in the guide, TSDoc, or history defends it. The repair's last sentence is ",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s12-31",
+   "g": "g01",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-32",
+   "g": "g01",
+   "o": "INVALID/high",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "INVALID/high",
+   "jr": "The signatures are exactly as described, but neither cited rule bans them and a sweep of the whole canon finds no rule that does. § Split instead of compounding is about compound identifiers such as `addTool`; § Options is about the keys of an options record. Both triggers are absent: these are `#` ",
+   "final": "INVALID"
+  },
+  {
+   "id": "s12-33",
+   "g": "g01",
+   "o": "DRIFT/high",
+   "s": "DRIFT-RESHAPE/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The prose is false against the shipped code on both sides, verified line by line. The repair as written offers two branches and an executor may take either; branch one — adding per-stage option keys to `InterpretOptions` and threading them — expands the published API with no consumer, gives a caller",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s12-34",
+   "g": "g01",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-35",
+   "g": "g01",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-36",
+   "g": "g01",
+   "o": "DRIFT-RESHAPE/medium",
+   "s": "DRIFT/medium",
+   "j": "DRIFT/medium",
+   "jr": "The violation is real: the package declares wording to be caller data in three places, then mints user-facing English in the forward direction with no seam. The finding overstates its `types.ts:427-428` citation, which is scoped to what a `Narrator` renders, so the operative ban is the design law it",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-37",
+   "g": "g01",
+   "o": "DRIFT-RESHAPE/medium",
+   "s": "DRIFT/high",
+   "j": "DRIFT/high",
+   "jr": "The defect is confirmed on both halves: an undeclared, unsuppressible set of English-named fields lands on a caller's subject, and the author's own declared field is silently overwritten. The objective lane's reshape rests on reading `aggregates?: readonly string[]` as a behavior-selecting magic str",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-38",
+   "g": "g01",
+   "o": "DRIFT/high",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-39",
+   "g": "g01",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-40",
+   "g": "g01",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-41",
+   "g": "g01",
+   "o": "INVALID/medium",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "INVALID/high",
+   "jr": "Same shape as s12-32: the signatures are exactly as described, but neither cited rule reaches a parameter list and the canon contains no rule that does. The `{Entity}Input` row is a required form for a type that exists, not a mandate to create one, so the subjective lane's rule quote does not ban th",
+   "final": "INVALID"
+  },
+  {
+   "id": "s12-42",
+   "g": "g01",
+   "o": "DRIFT/medium",
+   "s": "EXCEPTION/medium",
+   "j": "DRIFT/medium",
+   "jr": "The rule sentence is unqualified and its stated trigger — a lone unambiguous tally — is met three times. The EXEMPT rests on a TSDoc rationale plus sibling packages, and neither is an exemption source: the authority rule says the canon outranks existing code and forbids importing names from another ",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-43",
+   "g": "g01",
+   "o": "DRIFT/medium",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "DRIFT-RESHAPE/medium",
+   "jr": "The naming defect is real on both counts and neither lane disputes it. The repair as written names only interpret's three manager signatures and their imports, and an executor following it ships a rename that leaves `@orkestrel/brief` importing a symbol that no longer exists at its next re-pin — fiv",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s12-44",
+   "g": "g01",
+   "o": "DRIFT/high",
+   "s": "EXCEPTION/medium",
+   "j": "INVALID/medium",
+   "jr": "The consumer sites are exactly as the finding describes, but they prove the field is a reference, not that two synonyms name one concept — holding the referent's identifier is what a reference field does, and the equality comparisons are what a foreign key is for. The rule bans alternating synonyms ",
+   "final": "INVALID"
+  },
+  {
+   "id": "s12-45",
+   "g": "g01",
+   "o": "DRIFT/medium",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "DRIFT-RESHAPE/medium",
+   "jr": "The mismatch is real and neither offered branch closes it. The exported-leaf branch publishes a second export whose second parameter is the same accumulator, now required — one more public symbol, and the accumulator is still on the surface. Promoting `visited` to a supported parameter publishes a k",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s12-46",
+   "g": "g01",
+   "o": "INVALID/medium",
+   "s": "EXCEPTION/high",
+   "j": "INVALID/medium",
+   "jr": "The code does what the finding says, but the quoted law does not reach it. The law governs how absence is represented in a value or contract a consumer must decode; `line` is a total renderer whose return is display text, no caller tests it, and the empty render is the same policy the package's decl",
+   "final": "INVALID"
+  },
+  {
+   "id": "s12-47",
+   "g": "g01",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-01",
+   "g": "g02",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-02",
+   "g": "g02",
+   "o": "DRIFT/high",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-03",
+   "g": "g02",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-04",
+   "g": "g02",
+   "o": "INVALID/medium",
+   "s": "DRIFT/medium",
+   "j": "INVALID/high",
+   "jr": "Both cited rules fail to reach the code. The placement half is refuted by the rule the finding itself cites: architecture.md § Kind purity states the `create*`/`parse*` forms are one-directional and gives `createWriteDirectory` staying in `helpers.ts` as its sanctioned example, so `create*` is not \"",
+   "final": "INVALID"
+  },
+  {
+   "id": "s12-05",
+   "g": "g02",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-06",
+   "g": "g02",
+   "o": "DRIFT/medium",
+   "s": "DRIFT-RESHAPE/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "One third of this composite finding is a real violation and the repair as written is harmful. `createSignCommand` returns a mutable `string[]` and the quoted rules ban that outright, so the return type is drift. The two parameter claims are not reached by either quoted sentence: AGENTS.md names \"int",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s12-07",
+   "g": "g02",
+   "o": "DRIFT/medium",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The compound member is real drift and the proposed repair is the wrong shape. `entryTotal` is a public property of a returned record, names.md's hard target is \"Public properties: one word\", and the § Entity-scoped names exemption for \"standalone helpers\" covers the helper's own name rather than the",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s12-08",
+   "g": "g02",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-09",
+   "g": "g02",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-10",
+   "g": "g02",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-11",
+   "g": "g02",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-12",
+   "g": "g02",
+   "o": "DRIFT/high",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-13",
+   "g": "g02",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-14",
+   "g": "g02",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-15",
+   "g": "g02",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-16",
+   "g": "g02",
+   "o": "DRIFT/high",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-17",
+   "g": "g02",
+   "o": "DRIFT/high",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-18",
+   "g": "g02",
+   "o": "INVALID/high",
+   "s": "INVALID/high",
+   "final": "INVALID"
+  },
+  {
+   "id": "s12-19",
+   "g": "g02",
+   "o": "INVALID/medium",
+   "s": "EXCEPTION/high",
+   "j": "INVALID/high",
+   "jr": "The code claim is accurate but the cited rule does not reach it, and no other rule in the canon does. architecture.md § Kind purity governs which declaration kinds sit in which centralized file; `createSignCommand` is a helper in `helpers.ts`, which is the correct file, so kind purity is not breache",
+   "final": "INVALID"
+  },
+  {
+   "id": "s12-20",
+   "g": "g02",
+   "o": "DRIFT/medium",
+   "s": "INVALID/medium",
+   "j": "INVALID/high",
+   "jr": "The finding misreads the rule. `SEACompressionManifest['assets'][number]` is not a second term for a concept — it resolves to `SEACompressionResult` itself, so there is exactly one term in the vocabulary and nothing is alternating. \"One concept, one term. Do not alternate synonyms.\" sits among AGENT",
+   "final": "INVALID"
+  },
+  {
+   "id": "s12-48",
+   "g": "g03",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-49",
+   "g": "g03",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-50",
+   "g": "g03",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-51",
+   "g": "g03",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-52",
+   "g": "g03",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-53",
+   "g": "g03",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-54",
+   "g": "g03",
+   "o": "DRIFT/high",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The violation is real and both lanes verified it. The repair is wrong on scope. The flagged `*View` functions are one third of a published three-part family — `create*State` / `*View` / `*Reduce` — and the `*Reduce` half is noun-first under the same rule, in the same file, on adjacent rows of the sa",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s12-55",
+   "g": "g03",
+   "o": "DRIFT/high",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-56",
+   "g": "g03",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-57",
+   "g": "g03",
+   "o": "DRIFT-RESHAPE/medium",
+   "s": "INVALID/medium",
+   "j": "INVALID/medium",
+   "jr": "Neither quoted rule reaches the code. The sentinel ban is scoped by its own leading sentence to representing absence, and `reason` is a required discriminant that always carries a value; the design law one line earlier expressly permits a literal union for an irreducible failure mode. The discrimina",
+   "final": "INVALID"
+  },
+  {
+   "id": "s12-58",
+   "g": "g03",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-59",
+   "g": "g03",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-60",
+   "g": "g03",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-61",
+   "g": "g03",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-62",
+   "g": "g03",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s12-63",
+   "g": "g03",
+   "o": "INVALID/medium",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "INVALID/high",
+   "jr": "The quoted rule does not reach fixed default copy, and the finding's factual premise is false. The rule's own worked scope names business decisions — user models, login flow, authorization — not user-visible strings in a renderer. The seam's TSDoc is honestly scoped to glyphs and styles already, and",
+   "final": "INVALID"
+  },
+  {
+   "id": "s12-64",
+   "g": "g03",
+   "o": "INVALID/medium",
+   "s": "DRIFT/medium",
+   "j": "INVALID/high",
+   "jr": "The quoted rule is a vocabulary law about naming one concept with one term, and the field introduces no second term — `PromptClientOptions['terminal']` is a type expression resolving to the single named `TerminalInterface`. No rule in typescript.md § Types, architecture.md § System constraints, or n",
+   "final": "INVALID"
+  },
+  {
+   "id": "s14-01",
+   "g": "g04",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT-RESHAPE/high",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s14-02",
+   "g": "g04",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT/medium",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "Both lanes agree the 1:1 forward is real, and the code confirms it. The dispute is decided by one fact: the subjective lane's claim that `negotiateEncoding`'s \"only source caller is Negotiator.ts:46\" is false. `@orkestrel/middleware` imports it from `@orkestrel/server` in two source files, and `midd",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s14-03",
+   "g": "g04",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s14-04",
+   "g": "g04",
+   "o": "DRIFT-RESHAPE/medium",
+   "s": "EXCEPTION/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The violation is real and the rule names it by its exact term. EXCEPTION fails: the subjective lane's only proof is sibling-package code, which AGENTS.md ranks below the rules, and its rule_quote governs how a factory is named rather than whether one must exist. But the repair is wrong as written — ",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s14-05",
+   "g": "g04",
+   "o": "DRIFT/high",
+   "s": "INVALID/high",
+   "j": "INVALID/high",
+   "jr": "The finding invents its own separating criterion — \"takes raw wire text and returns `T | undefined`\" — and attributes it to the kind table. Neither rule file states it. The architecture rule states the opposite twice: a name does not place a function, and its worked example moves a pure lexical leaf",
+   "final": "INVALID"
+  },
+  {
+   "id": "s14-06",
+   "g": "g04",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s14-07",
+   "g": "g04",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT-RESHAPE/high",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s14-08",
+   "g": "g04",
+   "o": "DRIFT/medium",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The finding's stated violation is a misread on both sides. The code: `response` does use a labeled tuple element, and `error` at :495 carries an object payload too, so the map does not split into a conforming group and one outlier. The rule: the quoted sentence asks for labeled tuple elements and sa",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s14-09",
+   "g": "g04",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT-RESHAPE/high",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s14-10",
+   "g": "g04",
+   "o": "INVALID/high",
+   "s": "INVALID/high",
+   "final": "INVALID"
+  },
+  {
+   "id": "s14-11",
+   "g": "g04",
+   "o": "DRIFT/high",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s14-12",
+   "g": "g04",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The violation is real and neither lane disputes it: four two-word noun phrases where the rule fixes `{verb}{Noun}`, in a file whose other leaves already conform. The repair is wrong twice. It renames `clientRateKey` to `computeRateKey`, dropping the qualifier that names whose key it is, and it scope",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s14-13",
+   "g": "g04",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s14-14",
+   "g": "g04",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "Both lanes agree the rename direction is right and the code confirms it: `Info` is on the rejected-words list, the type is plain non-behavioral data whose required form is the bare entity name, and `Connection` is unoccupied fleet-wide. The dispute is scope, and the objective lane's decisive fact is",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s14-15",
+   "g": "g04",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s14-30",
+   "g": "g04",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT-RESHAPE/high",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s13-01",
+   "g": "g05",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s13-02",
+   "g": "g05",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s13-03",
+   "g": "g05",
+   "o": "DRIFT/high",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The violation is real and unregistered: `type` names the CFB entry-lifecycle axis on two public interfaces, readers compare it against MSG_TYPE_* constants, and msg's guide has no Vocabulary register and its history no settling commit. The subjective lane wins the repair question: the public constan",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s13-04",
+   "g": "g05",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s13-05",
+   "g": "g05",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s13-06",
+   "g": "g05",
+   "o": "DRIFT-RESHAPE/medium",
+   "s": "DRIFT/medium",
+   "j": "DRIFT/medium",
+   "jr": "The subjective lane is right. Both halves of the finding's repair direction are sound once the disjunction is read correctly. The `MSG_FIELD_TYPE_MAPPING` retyping is provably safe and makes the guide's existing claim true. For `MSGDirectoryEntryType`, 'the same treatment' is impossible (the member ",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s13-07",
+   "g": "g05",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s13-08",
+   "g": "g05",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s13-09",
+   "g": "g05",
+   "o": "INVALID/medium",
+   "s": "INVALID/medium",
+   "final": "INVALID"
+  },
+  {
+   "id": "s13-10",
+   "g": "g05",
+   "o": "DRIFT-RESHAPE/medium",
+   "s": "INVALID/high",
+   "j": "INVALID/high",
+   "jr": "The subjective lane is right and the objective lane conceded the decisive fact while keeping a verdict that does not follow from it. The finding's entire proving clause — 'every property it declares is `readonly`, so the name contradicts the contract it carries' — is false: the index signature carri",
+   "final": "INVALID"
+  },
+  {
+   "id": "s13-11",
+   "g": "g05",
+   "o": "DRIFT/high",
+   "s": "DRIFT-RESHAPE/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "Both lanes reach the same corrected names and the same facts; the subjective lane's verdict label is the one that fits the definitions. The violation is real: the abbreviation ban carries no private-member exemption, and the hard target grants private methods two or three words rather than truncatio",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s13-12",
+   "g": "g05",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s13-13",
+   "g": "g05",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s13-14",
+   "g": "g05",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s13-15",
+   "g": "g05",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s13-16",
+   "g": "g05",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The objective lane's verdict label is right; the subjective lane ruled DRIFT while issuing an amend that rewrites three of the finding's four importers, which is DRIFT-RESHAPE by definition. The placement violation is real and unregistered — the function's own TSDoc uses the rule row's words verbati",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s13-17",
+   "g": "g05",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s13-18",
+   "g": "g05",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s13-19",
+   "g": "g05",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s13-20",
+   "g": "g06",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s13-21",
+   "g": "g06",
+   "o": "INVALID/high",
+   "s": "INVALID/high",
+   "final": "INVALID"
+  },
+  {
+   "id": "s13-22",
+   "g": "g06",
+   "o": "DRIFT/high",
+   "s": "DRIFT-RESHAPE/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The banned word is at the cited line, so the violation is real; the finding's replacement word is wrong. writing.md fixes `must` for a requirement and the imperative for a recommendation, and the package rules this claim a preference: guides/brief.md:1174 states it as \"Prefer proofs with a clear exi",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s13-23",
+   "g": "g06",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s13-24",
+   "g": "g06",
+   "o": "INVALID/medium",
+   "s": "INVALID/high",
+   "final": "INVALID"
+  },
+  {
+   "id": "s13-25",
+   "g": "g06",
+   "o": "EXCEPTION/medium",
+   "s": "EXCEPTION/high",
+   "final": "EXCEPTION"
+  },
+  {
+   "id": "s13-26",
+   "g": "g06",
+   "o": "DRIFT/high",
+   "s": "DRIFT-RESHAPE/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The mismatch is real — the tags name `source` and the declared parameter is `input`, so the parameter each function actually has is undocumented. The finding's repair does not compile, which I proved rather than reasoned: `function f(source: string) { const source = source.trim() }` under brief's ow",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s13-27",
+   "g": "g06",
+   "o": "INVALID/high",
+   "s": "EXCEPTION/high",
+   "j": "INVALID/high",
+   "jr": "The rule the finding quotes binds a public export, and every export it names is documented: both interfaces carry a description, `BriefManagerInterface` also carries `@remarks`, and both implementing classes carry TSDoc with `@example`. An interface member is not itself an export, and no rule in the",
+   "final": "INVALID"
+  },
+  {
+   "id": "s13-28",
+   "g": "g06",
+   "o": "DRIFT/high",
+   "s": "EXCEPTION/high",
+   "j": "DRIFT/high",
+   "jr": "`BriefManagerInterface`'s only numeric member is `size`, so the tally is lone and unambiguous and the rule assigns it `count`. The rule's own exemption covers coexisting distinct tallies, which brief's manager does not have. The subjective lane's decisive evidence is a sibling package's TSDoc granti",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s13-29",
+   "g": "g06",
+   "o": "INVALID/medium",
+   "s": "EXCEPTION/medium",
+   "j": "INVALID/medium",
+   "jr": "The finding applies an English part-of-speech test to a token this ecosystem uses as an entity's proper name, so its premise fails rather than its rule. `Interpret` is the class, `InterpretInterface` the contract, `createInterpret` the factory, and `'interpret'` a `BriefStage` literal, so the proper",
+   "final": "INVALID"
+  },
+  {
+   "id": "s13-30",
+   "g": "g06",
+   "o": "DRIFT/high",
+   "s": "EXCEPTION/medium",
+   "j": "DRIFT/high",
+   "jr": "The concept's term is `output` everywhere it is read — the member, the guard key, the shape key, the guide row, and the builder's own `@param` description — while the parameter alone says `result`, which is the alternation the rule refuses. The claimed shadow-avoidance convention does not meet the e",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s14-16",
+   "g": "g07",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s14-17",
+   "g": "g07",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s14-18",
+   "g": "g07",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT-RESHAPE/high",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s14-19",
+   "g": "g07",
+   "o": "DRIFT/high",
+   "s": "INVALID/high",
+   "j": "INVALID/high",
+   "jr": "The finding misreads the rule and its supporting fleet claim is false. The rule's operative requirement is that both hooks and error handling are threaded; `new Emitter(options)` threads both, and the rule's own next sentence makes equivalent threading the test rather than the literal record shape. ",
+   "final": "INVALID"
+  },
+  {
+   "id": "s14-20",
+   "g": "g07",
+   "o": "INVALID/high",
+   "s": "INVALID/high",
+   "final": "INVALID"
+  },
+  {
+   "id": "s14-21",
+   "g": "g07",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT-RESHAPE/high",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s14-22",
+   "g": "g07",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "EXCEPTION/medium",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "I reproduced the exploit myself: it is real, and it defeats the EXCEPTION. The guide and the guard's `@remarks` document only the ACCESSOR case, which the clone refuses; a Proxy carrying a `get` trap over a data-descriptor target is a different case, and there the clone succeeds and stores a value t",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s14-23",
+   "g": "g07",
+   "o": "DRIFT/high",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The drift is real on the rule's unconditional clause: six barrelled classes, zero `@example` in any of the six files, no guide fence constructing one, and an empty `INTERNAL`. The guide even states the intern condition as fact and admits the missing example (\"Their constructors are not a documented ",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s14-24",
+   "g": "g07",
+   "o": "DRIFT/high",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The duplication is exact - my own token-normalized diff of the two files leaves only doc wording - so \"Centralize any pattern repeated twice\" is violated beyond the already-shared `computeKeys` leaf. The finding's PRIMARY repair is harmful: typing both `TableInterface.selection` and `TableInterface.",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s14-25",
+   "g": "g07",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s14-26",
+   "g": "g07",
+   "o": "INVALID/high",
+   "s": "INVALID/medium",
+   "final": "INVALID"
+  },
+  {
+   "id": "s14-27",
+   "g": "g07",
+   "o": "DRIFT/high",
+   "s": "INVALID/medium",
+   "j": "INVALID/high",
+   "jr": "The finding misreads the rules on both halves. The no-argument overload is documented \"Drop every pick\" and \"Close every row\" - resetting that manager's whole state, which is `clear`'s fixed meaning verbatim - and the keyed and list overloads are the batch shape `patterns.md` prescribes for ONE sing",
+   "final": "INVALID"
+  },
+  {
+   "id": "s14-28",
+   "g": "g07",
+   "o": "EXCEPTION/high",
+   "s": "INVALID/high",
+   "j": "INVALID/high",
+   "jr": "The finding applies the Tallies rule at package scope; the rule's subject is one surface, and its own worked examples are members of a single entity (a pool, a queue). The queue example is decisive against the finding: it keeps `count` beside a second named tally on the same interface. `PaginationMa",
+   "final": "INVALID"
+  },
+  {
+   "id": "s14-29",
+   "g": "g07",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "EXCEPTION/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "I reproduced the exploit, and it falsifies the EXCEPTION at its own premise. The guide claims the guard, the constructor, and the parser cannot disagree about which schemas a table can be opened against; with a Proxy `meta` carrying a `get` trap over a data-descriptor target, `isTableSchema` returns",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s15-01",
+   "g": "g08",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s15-02",
+   "g": "g08",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT-RESHAPE/high",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s15-03",
+   "g": "g08",
+   "o": "DRIFT/high",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s15-04",
+   "g": "g08",
+   "o": "DRIFT-RESHAPE/medium",
+   "s": "DRIFT-RESHAPE/medium",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s15-05",
+   "g": "g08",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s15-06",
+   "g": "g08",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s15-07",
+   "g": "g08",
+   "o": "INVALID/high",
+   "s": "DRIFT/medium",
+   "j": "INVALID/high",
+   "jr": "The objective lane wins on the rule; the subjective lane's fact is real but carries no rule. The cited sentence sits under the heading '## Guide examples' whose lead is 'Code fences import through the package's published specifier', and its own second clause affirmatively reserves `@src/*` FOR sourc",
+   "final": "INVALID"
+  },
+  {
+   "id": "s15-08",
+   "g": "g08",
+   "o": "INVALID/medium",
+   "s": "INVALID/medium",
+   "final": "INVALID"
+  },
+  {
+   "id": "s15-09",
+   "g": "g08",
+   "o": "EXCEPTION/high",
+   "s": "EXCEPTION/high",
+   "final": "EXCEPTION"
+  },
+  {
+   "id": "s15-10",
+   "g": "g08",
+   "o": "EXCEPTION/high",
+   "s": "EXCEPTION/medium",
+   "final": "EXCEPTION"
+  },
+  {
+   "id": "s15-22",
+   "g": "g08",
+   "o": "INVALID/medium",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "DRIFT-RESHAPE/medium",
+   "jr": "The subjective lane is right that half survives. The placement half fails: architecture.md's `createWriteDirectory` case says placement follows what the function is, and the leaf-pair rule characterizes factories.ts as the layer that constructs or drives a class — program's factories.ts imports `Pro",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s15-23",
+   "g": "g08",
+   "o": "DRIFT-RESHAPE/medium",
+   "s": "DRIFT/medium",
+   "j": "DRIFT/high",
+   "jr": "I reproduced the subjective lane's probe and it holds exactly; the objective lane's decisive claim fails at the actual call site. `structuredClone` preserves an own `__proto__` key without touching the prototype, so the TSDoc's only stated rationale names no property it lacks; it also clones cycles ",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s15-24",
+   "g": "g08",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s15-25",
+   "g": "g08",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The objective lane wins the decisive point and loses a sub-point. I typechecked both fold forms under program's own tsc: a `Partial` accumulator fails TS2322 and `Object.fromEntries` fails TS2739, so the finding's clause 'build `completeTallies` by folding `STATUSES`' cannot be implemented without t",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s15-26",
+   "g": "g08",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s15-27",
+   "g": "g08",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s15-28",
+   "g": "g08",
+   "o": "EXCEPTION/medium",
+   "s": "EXCEPTION/medium",
+   "final": "EXCEPTION"
+  },
+  {
+   "id": "s15-11",
+   "g": "g09",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s15-12",
+   "g": "g09",
+   "o": "DRIFT-RESHAPE/medium",
+   "s": "DRIFT-RESHAPE/medium",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s15-13",
+   "g": "g09",
+   "o": "DRIFT/high",
+   "s": "EXCEPTION/medium",
+   "j": "INVALID/high",
+   "jr": "The finding's decisive factual claim is false. It states the three functions add no invariant and no narrower contract; the declared return type makes the compiler reject a shape that drops or widens a member against the package's own public type, which I proved with tsc rather than argued. The obje",
+   "final": "INVALID"
+  },
+  {
+   "id": "s15-14",
+   "g": "g09",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT-RESHAPE/high",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s15-15",
+   "g": "g09",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s15-16",
+   "g": "g09",
+   "o": "DRIFT/high",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The rule and the code are both as the finding states, and the hunt for a recorded choice comes back empty, so the violation is real. The repair as written is not sound: `parseFenceImports` claims a form the rules reserve for coercion to `T | undefined`, and the finding scopes the change to guide whi",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s15-17",
+   "g": "g09",
+   "o": "DRIFT/high",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "DRIFT-RESHAPE/medium",
+   "jr": "Both lanes are right that the reserved-form breach is real: this is a projection, and the rules give `*Of` to builders. The dispute is only the replacement name, and the package's own evidence settles it against the finding. The TSDoc and the guide both call the operation normalization, `normalizeDi",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s15-18",
+   "g": "g09",
+   "o": "INVALID/medium",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "INVALID/high",
+   "jr": "Neither cited rule reaches this code. The design law constrains which literal unions may exist rather than mandating one for a local, and the placement rule is scoped to reusable or public aliases, which a function-local `let` is not. The finding also overstates its own measurements. The repair woul",
+   "final": "INVALID"
+  },
+  {
+   "id": "s15-19",
+   "g": "g09",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s15-20",
+   "g": "g09",
+   "o": "DRIFT-RESHAPE/medium",
+   "s": "DRIFT-RESHAPE/medium",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s15-21",
+   "g": "g09",
+   "o": "EXCEPTION/high",
+   "s": "EXCEPTION/high",
+   "final": "EXCEPTION"
+  },
+  {
+   "id": "s15-29",
+   "g": "g09",
+   "o": "DRIFT/high",
+   "s": "DRIFT-RESHAPE/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The duplication and its silent failure mode are real and undefended, so the finding survives. Its primary repair does not: putting `isLSPErrorCode` in validators.ts and importing it from errors.ts runs an edge from a file the leaf pair sits above back into that pair, which architecture.md:84-89 refu",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s15-30",
+   "g": "g09",
+   "o": "DRIFT/high",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The repetition is real, undefended, and drifts silently because a hand-written type predicate is unchecked. The finding's repair closes only half of it: three new guards remove the call-site repetition while each literal set stays written twice, once as the union in types.ts and once inside the guar",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s15-31",
+   "g": "g09",
+   "o": "DRIFT-RESHAPE/medium",
+   "s": "DRIFT-RESHAPE/high",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s15-32",
+   "g": "g09",
+   "o": "INVALID/high",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "INVALID/high",
+   "jr": "The finding asks for a comment and cites a rule that governs comment content, not comment presence. Nothing in the canon obliges a justification on a swallowed catch, and the same uncommented shape is fleet-uniform in teardown paths, so recording it as a violation in lsp alone would make the audit i",
+   "final": "INVALID"
+  },
+  {
+   "id": "s15-33",
+   "g": "g09",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s15-34",
+   "g": "g09",
+   "o": "EXCEPTION/high",
+   "s": "EXCEPTION/high",
+   "final": "EXCEPTION"
+  },
+  {
+   "id": "s15-35",
+   "g": "g09",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s16-01",
+   "g": "g10",
+   "o": "DRIFT/high",
+   "s": "DRIFT-RESHAPE/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The violation is real and the git history convicts rather than exonerates: at f1c603c the coercers sat in parsers.ts under coerce* names (right file, wrong name), and a40fe64 moved them out to satisfy the parsers.ts prefix gate at tests/setupPolicy.ts:568 while keeping the published names unchanged ",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s16-02",
+   "g": "g10",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s16-03",
+   "g": "g10",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s16-04",
+   "g": "g10",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s16-05",
+   "g": "g10",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s16-06",
+   "g": "g10",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s16-07",
+   "g": "g10",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s16-08",
+   "g": "g10",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s16-09",
+   "g": "g10",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s16-10",
+   "g": "g10",
+   "o": "DRIFT/high",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s16-11",
+   "g": "g10",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s16-12",
+   "g": "g10",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s16-13",
+   "g": "g10",
+   "o": "INVALID/medium",
+   "s": "DRIFT/medium",
+   "j": "INVALID/high",
+   "jr": "The finding's decisive premise is that the contract reserves the word `guard` for a total `is*` predicate. It does not. Every occurrence of `guard` across AGENTS.md and .claude/rules/*.md is either the Guard kind — fixed to the name form `is{Condition}` and to validators.ts — or the ordinary English",
+   "final": "INVALID"
+  },
+  {
+   "id": "s16-14",
+   "g": "g10",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s16-15",
+   "g": "g10",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s16-16",
+   "g": "g10",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s16-17",
+   "g": "g10",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT/medium",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The violation is real: one interface carries `create`/`drop` for a store and `index`/`deindex` for an index — two verb pairs for one add/remove concept — while `drop` is already the package's single deletion term (IndexedDBDatabaseInterface.drop deletes the database), `index` is a bare-noun accessor",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s16-18",
+   "g": "g10",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s16-19",
+   "g": "g11",
+   "o": "DRIFT/high",
+   "s": "DRIFT-RESHAPE/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The duplication is real at both sites, but the subjective lane's decisive evidence checks out and the objective lane's does not cover it: the constructor reads its options BARE while `enqueue` wraps every read in try/catch, so the finding's repair sentence 'call them from both sites' would convert a",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s16-20",
+   "g": "g11",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT-RESHAPE/high",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s16-21",
+   "g": "g11",
+   "o": "INVALID/medium",
+   "s": "EXCEPTION/medium",
+   "j": "INVALID/high",
+   "jr": "The finding misreads the rule it cites, and the subjective lane's own reasoning concedes it ('is not what the cited law bans') while still labelling the result EXCEPTION — a label that requires a real violation excused by evidence. The operative text bans two terms for one concept; the finding alleg",
+   "final": "INVALID"
+  },
+  {
+   "id": "s16-22",
+   "g": "g11",
+   "o": "DRIFT/medium",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "Both lanes verified the same facts and reached the same substance; only the objective lane's label contradicts its own repair field, which reads 'amend'. The omission is real on both the interface and the class, the sibling that carries the identical tally pair documents every data member, and the r",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s16-23",
+   "g": "g11",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT-RESHAPE/high",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s16-24",
+   "g": "g11",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT-RESHAPE/high",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s16-25",
+   "g": "g11",
+   "o": "INVALID/high",
+   "s": "INVALID/medium",
+   "final": "INVALID"
+  },
+  {
+   "id": "s16-26",
+   "g": "g11",
+   "o": "DRIFT/high",
+   "s": "DRIFT-RESHAPE/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "Both lanes confirm the violation and correctly refuse an EXCEPTION for fleet-wide uniformity, which AGENTS.md § Authority and loading settles. The subjective lane's addition is the one I could falsify and could not: `src/core/types.ts:212-228` carries the identical imperative first sentences on ever",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s16-27",
+   "g": "g11",
+   "o": "DRIFT/high",
+   "s": "DRIFT-RESHAPE/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "Both lanes agree the aliases are a rename-only republication the barrel rule bans outright, and the deliberate-reason hunt returns only a `@remarks` arguing for delegation rather than for aliasing — undercut by the same interface passing reason's `Subject` and `ReasonInterface` through unaliased. Th",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s16-28",
+   "g": "g11",
+   "o": "EXCEPTION/high",
+   "s": "EXCEPTION/high",
+   "final": "EXCEPTION"
+  },
+  {
+   "id": "s16-29",
+   "g": "g11",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s16-30",
+   "g": "g11",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "EXCEPTION/medium",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The subjective lane's EXCEPTION rests on a premise I checked and falsified: it reads the siblings' return TYPE (`readonly string[]`) as the same shape, but none of them returns formatted prose. `findMissingScopes` returns `[...missing]` scope ids, `findUnmetRules` returns rule names, `findUngrantedA",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s16-31",
+   "g": "g11",
+   "o": "INVALID/medium",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "INVALID/high",
+   "jr": "The finding's load-bearing coupling is factually wrong and its reading of the term is contradicted by fleet vocabulary the subjective lane never checked. `interpolateMessage` is the only symbol that formats with `en-US`, and it carries NO display-neutral claim — its own `@remarks` discloses the grou",
+   "final": "INVALID"
+  },
+  {
+   "id": "s16-32",
+   "g": "g11",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT-RESHAPE/high",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s16-33",
+   "g": "g11",
+   "o": "DRIFT/high",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s16-34",
+   "g": "g11",
+   "o": "DRIFT/high",
+   "s": "DRIFT-RESHAPE/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "Every cited location resolves and every one is imperative, and both lanes correctly refuse an EXCEPTION for fleet-wide uniformity. The dispute is the repair's second half, and the subjective lane is right for a reason I confirmed at the rule level rather than the convention level: the cited rule liv",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s17-01",
+   "g": "g12",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The violation is real and neither lane disputes it: /home/user/scaffold/AGENTS.md carries only named headings and exactly one '§' (line 87, itself a named reference), while rater's initial-commit AGENTS.md was numbered, so every cited number now resolves to nothing and ships in the published .d.ts. ",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s17-03",
+   "g": "g12",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s17-04",
+   "g": "g12",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "EXCEPTION/high",
+   "j": "EXCEPTION/high",
+   "jr": "The finding's operative claim is a placement claim, and it fails the survival test on every branch. Its quoted Kind purity clause binds functions already in factories.ts and pulls nothing in — architecture.md:67-70 names and forbids exactly that inference ('A name does not place a function... Placem",
+   "final": "EXCEPTION"
+  },
+  {
+   "id": "s17-05",
+   "g": "g12",
+   "o": "DRIFT-RESHAPE/medium",
+   "s": "DRIFT-RESHAPE/medium",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s17-06",
+   "g": "g12",
+   "o": "DRIFT-RESHAPE/medium",
+   "s": "DRIFT-RESHAPE/high",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s17-07",
+   "g": "g12",
+   "o": "DRIFT/medium",
+   "s": "EXCEPTION/medium",
+   "j": "EXCEPTION/medium",
+   "jr": "The bare-noun domain union is the fleet's settled published shape, and the finding's two concrete supports both fail. Its collision evidence is refuted: rater/tests/distribution.test.ts declares a local `interface Stage` about the distribution staging tree in a file whose own header states 'Nothing ",
+   "final": "EXCEPTION"
+  },
+  {
+   "id": "s17-08",
+   "g": "g12",
+   "o": "DRIFT/medium",
+   "s": "EXCEPTION/medium",
+   "j": "DRIFT-RESHAPE/medium",
+   "jr": "The duplication is real and undocumented, so EXCEPTION fails its evidentiary bar, but the finding's repair is harmful, so DRIFT fails too. On the violation: `ratedLine` writes `success: result.success` and `worksheet: resultsWorksheet(...)`, and `resultsWorksheet` writes `success: result.success` fr",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s17-02",
+   "g": "g13",
+   "o": "INVALID/high",
+   "s": "DRIFT-RESHAPE/high",
+   "j": "INVALID/high",
+   "jr": "The cited rule governs guide fences and in the same sentence reserves `@src/*` for source. The flagged lines are source TSDoc, the three guides already use the published specifier, and no rule text reaches a source `@example`. The finding's convention claim is also factually wrong: `@src/*` in TSDoc",
+   "final": "INVALID"
+  },
+  {
+   "id": "s17-09",
+   "g": "g13",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s17-10",
+   "g": "g13",
+   "o": "DRIFT-RESHAPE/medium",
+   "s": "DRIFT-RESHAPE/medium",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s17-11",
+   "g": "g13",
+   "o": "DRIFT/high",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "DRIFT-RESHAPE/medium",
+   "jr": "The shape deviation is real and the TSDoc claims conformance it does not have, so this is not an exception. The finding's repair is the wrong fix: `ModelInterface` defaults its row type, so an entity array erases the typing that is the singular accessor's whole point, and the manager holds no instan",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s17-12",
+   "g": "g13",
+   "o": "INVALID/high",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "INVALID/high",
+   "jr": "The rule's own clause says barrel a class a consumer can construct, and every constructor argument is reachable from published exports. The secondary '@example the row obliges' claim is also unfounded: the package's parity gate accepts the guide's runnable fences and passes green. The proposed repai",
+   "final": "INVALID"
+  },
+  {
+   "id": "s17-13",
+   "g": "g13",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s17-14",
+   "g": "g13",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT-RESHAPE/high",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s17-15",
+   "g": "g13",
+   "o": "DRIFT-RESHAPE/medium",
+   "s": "DRIFT-RESHAPE/medium",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s17-16",
+   "g": "g13",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s17-17",
+   "g": "g13",
+   "o": "DRIFT/high",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The deviation is real and documented as compliance rather than as a reasoned exception, so it is not an EXCEPTION. The repair is wrong on a mechanical point: `fill`, `validate` and `parameters` reach `#throwNotFound` only through `template(id)`, so deleting the helper deletes the throws the repair s",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s17-18",
+   "g": "g13",
+   "o": "INVALID/high",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "DRIFT-RESHAPE/medium",
+   "jr": "The overlap is real and unique in the fleet: this is the only interface carrying both members, and workspace resolves the same overlap by keeping `clear()` as the sole remove-all. The finding's event half is harmful — it inflates one signal into N+1 and contradicts the fleet's own stated rule for `c",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s17-19",
+   "g": "g13",
+   "o": "INVALID/high",
+   "s": "DRIFT/medium",
+   "j": "INVALID/high",
+   "jr": "The quoted step presupposes a `destroy()` rather than mandating one, and the finding's stated harm is factually wrong because the emitter is a published member carrying its own `destroy()`. The fleet's dominant precedent, including a class comment arguing this case explicitly, is that an entity owni",
+   "final": "INVALID"
+  },
+  {
+   "id": "s17-20",
+   "g": "g13",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s17-21",
+   "g": "g13",
+   "o": "INVALID/medium",
+   "s": "DRIFT/medium",
+   "j": "INVALID/medium",
+   "jr": "The rule bans storing a second flag that can drift. `valid` is recomputed on every call on an immutable result value, so the drift the rule names is impossible by construction, and `valid` carries real information the literal does not — which of the two arrays gates validity, a decision a test state",
+   "final": "INVALID"
+  },
+  {
+   "id": "s17-22",
+   "g": "g13",
+   "o": "INVALID/medium",
+   "s": "DRIFT/high",
+   "j": "DRIFT-RESHAPE/medium",
+   "jr": "The cited section orders members; it mandates the `#`-field-plus-getter form only for child managers, and five fleet classes hold public readonly data fields the same way. What the cited lines do break is the tier order: public members precede the `#` fields. The eight-getter rewrite is churn no rul",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s17-23",
+   "g": "g13",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s17-24",
+   "g": "g13",
+   "o": "EXCEPTION/high",
+   "s": "EXCEPTION/high",
+   "final": "EXCEPTION"
+  },
+  {
+   "id": "s17-25",
+   "g": "g13",
+   "o": "INVALID/medium",
+   "s": "INVALID/high",
+   "final": "INVALID"
+  },
+  {
+   "id": "s17-26",
+   "g": "g13",
+   "o": "DRIFT-RESHAPE/medium",
+   "s": "DRIFT/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "All three types are unconsumed, so the creation gate applies. The finding's repair offers a disjunction whose second arm is harmful, and it omits the dangling `{@link WebSocketClose}` that deleting the type leaves behind in the event-map TSDoc.",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s17-27",
+   "g": "g13",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s17-28",
+   "g": "g13",
+   "o": "DRIFT/high",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s17-29",
+   "g": "g13",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s17-30",
+   "g": "g13",
+   "o": "INVALID/medium",
+   "s": "DRIFT/medium",
+   "j": "INVALID/medium",
+   "jr": "The wrapper test targets wrappers around an existing symbol, and both of its stated remedies name a symbol to use instead — there is none here. These are the canonical `create*` value factories that the centralized-file table and the naming rule both prescribe, and deleting them churns 47 sites plus",
+   "final": "INVALID"
+  },
+  {
+   "id": "s17-31",
+   "g": "g13",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s17-32",
+   "g": "g13",
+   "o": "DRIFT/high",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s17-33",
+   "g": "g13",
+   "o": "INVALID/medium",
+   "s": "EXCEPTION/high",
+   "j": "INVALID/high",
+   "jr": "Neither cited rule says anything about `{@link}` syntax, so the finding's rule citation does not reach what it flags. The technical resolution claim is asserted rather than proven, and the form is fleet canon at 782 sites in 17 packages, so it cannot be workspace's package-level drift.",
+   "final": "INVALID"
+  },
+  {
+   "id": "s17-34",
+   "g": "g13",
+   "o": "DRIFT/medium",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "DRIFT-RESHAPE/medium",
+   "jr": "The `''` filler is real and is the shape the sentinel law names, and an untyped consumer of the published package still reaches it. The finding's repair is right for `move` and explicitly unspecified for `write` / `prepend` / `append` ('take the same decision explicitly'), and the obvious silent ear",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s17-35",
+   "g": "g13",
+   "o": "EXCEPTION/high",
+   "s": "EXCEPTION/high",
+   "final": "EXCEPTION"
+  },
+  {
+   "id": "s17-36",
+   "g": "g13",
+   "o": "INVALID/high",
+   "s": "EXCEPTION/high",
+   "j": "INVALID/high",
+   "jr": "The rule binds interface properties and public return collections. `RelationProps` occupies neither position: it is a type alias, its only value use is a private method's return, and every public return wraps it in `Readonly`. The finding reads a published type alias as a public return collection, w",
+   "final": "INVALID"
+  },
+  {
+   "id": "s17-37",
+   "g": "g13",
+   "o": "DRIFT/high",
+   "s": "EXCEPTION/medium",
+   "j": "DRIFT/medium",
+   "jr": "The rule text is unambiguous and the code is its inverse at the two sites the bullet reaches. The guide documents the behaviour but cannot grant an exemption, so the original EXEMPT does not survive. The split is fleet-wide rather than workspace's, which makes the resolution a canon decision rather ",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s17-38",
+   "g": "g13",
+   "o": "INVALID/high",
+   "s": "INVALID/high",
+   "final": "INVALID"
+  },
+  {
+   "id": "s18-07",
+   "g": "g14",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT-RESHAPE/high",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s18-08",
+   "g": "g14",
+   "o": "INVALID/high",
+   "s": "INVALID/high",
+   "final": "INVALID"
+  },
+  {
+   "id": "s18-09",
+   "g": "g14",
+   "o": "DRIFT-RESHAPE/medium",
+   "s": "EXCEPTION/medium",
+   "j": "DRIFT-RESHAPE/medium",
+   "jr": "The key is two words and no quoted exemption reaches it, so the violation against the rule text is real. The repair is not. `residency` is a coined word the rule's own predictability purpose argues against, it severs the documented 1:1 tie to the wire's `keep_alive`, and it orphans `DEFAULT_KEEP_ALI",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s18-10",
+   "g": "g14",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT/medium",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The violation is real and better founded than the finding states: this package documents shortening every other native option name, so nothing defends `foreignKeys`. The repair word is wrong. `constraints` collides with the term the package has already fixed for the general violation class (`'CONSTR",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s18-11",
+   "g": "g14",
+   "o": "DRIFT/high",
+   "s": "EXCEPTION/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "`exec` abbreviates a verb the lifecycle table fixes with this method's meaning, sqlite is the only fleet interface using it, and the mirror defence fails because this wrapper already renames `open` to `connect`, `isTransaction` to `transacting`, and three native option names. The guide's 'thin typed",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s18-12",
+   "g": "g14",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "EXCEPTION/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The noun-named method is a real violation of the quoted rule, and the subjective lane's blanket EXCEPTION overstates its case: the nearest sibling wrapper uses verbs (`read` / `write`) and its driver omits `transaction` entirely, so `transaction` is fixed at the driver layer rather than the wrapper ",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s18-13",
+   "g": "g14",
+   "o": "DRIFT-RESHAPE/medium",
+   "s": "INVALID/high",
+   "j": "INVALID/high",
+   "jr": "The finding's load-bearing premise is false. Neither constructor argument is owner-produced, and `prepare` hands back the instance rather than a projection, so neither intern trigger the rule names fires — which is precisely the rule's barrelling condition. The nearest fleet sibling barrels three cl",
+   "final": "INVALID"
+  },
+  {
+   "id": "s18-14",
+   "g": "g14",
+   "o": "INVALID/medium",
+   "s": "DRIFT/medium",
+   "j": "INVALID/high",
+   "jr": "The finding reads 'expose a machine-readable `code`' as 'expose a distinct code per cause'. The quoted sentence says nothing about granularity, `SQLiteError` satisfies it, and a sweep of the whole canon finds no other rule reaching error-code partitioning — including the table row the subjective lan",
+   "final": "INVALID"
+  },
+  {
+   "id": "s18-15",
+   "g": "g14",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s18-23",
+   "g": "g14",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT-RESHAPE/high",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s18-24",
+   "g": "g14",
+   "o": "INVALID/low",
+   "s": "DRIFT/medium",
+   "j": "DRIFT/medium",
+   "jr": "The property modifier is present, but the declared return of a public interface member is a public return collection and the rule reaches it. The hunt for a deliberate reason comes back empty: no TSDoc, test, guide passage, or commit explains the exception, every sibling record in the file carries `",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s18-25",
+   "g": "g14",
+   "o": "INVALID/high",
+   "s": "EXCEPTION/high",
+   "j": "INVALID/high",
+   "jr": "The finding misreads the rule's subject and states a fact that is false. The rule binds public exports; the export here is the class, which has description, `@remarks`, and `@example`. The abort-carrying-a-partial contract the finding says is missing is fully documented on `ProviderInterface.stream`",
+   "final": "INVALID"
+  },
+  {
+   "id": "s18-26",
+   "g": "g14",
+   "o": "INVALID/medium",
+   "s": "DRIFT-RESHAPE/high",
+   "j": "INVALID/medium",
+   "jr": "Neither cited rule reaches either half. The barrel rule governs membership, and both types are members, so the 'third state' the finding describes does not exist at this site; the word 'internal' in their TSDoc is the same descriptive sense published across `console` and `mcp`. On the naming half, n",
+   "final": "INVALID"
+  },
+  {
+   "id": "s18-27",
+   "g": "g14",
+   "o": "DRIFT/high",
+   "s": "INVALID/medium",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The code is exactly as cited and the underlying defect is real — ollama is the only package publishing an unresolvable in-repository alias in its examples — but the finding aims the rule at the one site the rule reserves while leaving every site the rule actually bans untouched. A repair that change",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s18-30",
+   "g": "g14",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s18-31",
+   "g": "g14",
+   "o": "DRIFT-RESHAPE/medium",
+   "s": "INVALID/high",
+   "j": "INVALID/high",
+   "jr": "The finding's decisive premise — that a reader has no way to resolve the reference — is false: `@orkestrel/indexeddb` is a published package whose `IndexedDBError` carries exactly the `code` member the comment claims, so every one of the three statements is checkable. Its framing is also wrong on th",
+   "final": "INVALID"
+  },
+  {
+   "id": "s18-32",
+   "g": "g14",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "Every flagged sentence is verbatim as reported, the substitution row and the greenfield law both apply, and the hunt finds no deliberate reason — these are migration notes the guide then reproduced. The repair is wrong at one site and short at three more. Its replacement for types.ts:131 preserves a",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s18-33",
+   "g": "g14",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s18-34",
+   "g": "g14",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s18-41",
+   "g": "g14",
+   "o": "INVALID/high",
+   "s": "EXCEPTION/high",
+   "j": "INVALID/high",
+   "jr": "The original EXEMPT is upheld, but on a firmer basis than 'preserving an external API's method names': the rule bans `get*`-prefixed accessors, and `get(parameters?)` is neither prefixed nor an accessor. The finding applies an accessor rule to a verb-named executing method, so the ban does not reach",
+   "final": "INVALID"
+  },
+  {
+   "id": "s18-42",
+   "g": "g14",
+   "o": "EXCEPTION/high",
+   "s": "EXCEPTION/high",
+   "final": "EXCEPTION"
+  },
+  {
+   "id": "s18-01",
+   "g": "g15",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s18-02",
+   "g": "g15",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s18-03",
+   "g": "g15",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s18-04",
+   "g": "g15",
+   "o": "DRIFT/high",
+   "s": "DRIFT-RESHAPE/high",
+   "j": "DRIFT-RESHAPE/high",
+   "jr": "The violation is real and neither lane disputes it: `reset()` drops buffered state and leaves the parser usable, which is the fixed meaning of `clear`, and the rule names `reset` as a banned synonym. No deliberate-reason evidence exists — the guide argues nothing for the name, the WHATWG framing in ",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s18-05",
+   "g": "g15",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s18-06",
+   "g": "g15",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT/high",
+   "j": "DRIFT/high",
+   "jr": "The violation is real and both lanes agree on the code: ToolManager.ts:73 seeds `let removed = false` and :75 sets it true on the first success, which is any-succeeds, while the rule requires all-succeed. The dispute is whether `let removed = true` is a harmful mechanic because it makes `remove([])`",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s18-16",
+   "g": "g15",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s18-17",
+   "g": "g15",
+   "o": "DRIFT-RESHAPE/high",
+   "s": "DRIFT-RESHAPE/high",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s18-18",
+   "g": "g15",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s18-19",
+   "g": "g15",
+   "o": "INVALID/medium",
+   "s": "DRIFT-RESHAPE/medium",
+   "j": "DRIFT-RESHAPE/medium",
+   "jr": "The objective lane's INVALID rests on a taxonomy claim the rule file refutes. names.md:12 opens the entity-scoped section with 'Properties/getters, methods, option keys, and event names belong to an entity whose type already supplies context', so an option key is not carved out of 'properties'; the ",
+   "final": "DRIFT-RESHAPE"
+  },
+  {
+   "id": "s18-20",
+   "g": "g15",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s18-21",
+   "g": "g15",
+   "o": "INVALID/medium",
+   "s": "INVALID/high",
+   "final": "INVALID"
+  },
+  {
+   "id": "s18-22",
+   "g": "g15",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s18-28",
+   "g": "g15",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s18-29",
+   "g": "g15",
+   "o": "DRIFT/high",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s18-35",
+   "g": "g15",
+   "o": "DRIFT/high",
+   "s": "DRIFT/medium",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s18-36",
+   "g": "g15",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s18-37",
+   "g": "g15",
+   "o": "DRIFT/medium",
+   "s": "DRIFT/high",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s18-38",
+   "g": "g15",
+   "o": "DRIFT/high",
+   "s": "DRIFT-RESHAPE/high",
+   "j": "DRIFT/high",
+   "jr": "Both lanes reached the same substance and I confirmed every part of it, so the split is a classification error rather than a factual one. The interface half is real drift: types.ts:7-11 documents `parse` with a description only and types.ts:13 documents `reset` with one line, while the rule requires",
+   "final": "DRIFT"
+  },
+  {
+   "id": "s18-39",
+   "g": "g15",
+   "o": "EXCEPTION/high",
+   "s": "EXCEPTION/high",
+   "final": "EXCEPTION"
+  },
+  {
+   "id": "s18-40",
+   "g": "g15",
+   "o": "EXCEPTION/high",
+   "s": "EXCEPTION/medium",
+   "final": "EXCEPTION"
+  }
+ ],
+ "tsdoc": {
+  "questions": [
+   {
+    "question": "First-sentence voice: must an exported symbol's TSDoc first sentence be third-person (`Creates`, `Escapes`), making imperative openings (`Create`, `Escape`) drift?",
+    "rule_quote": "The first sentence states what the symbol does in the third person with an `-s` verb — `Creates`, `Returns`, `Checks whether` — and never repeats the symbol's name.",
+    "fleet_reading": "The rule is literal and unambiguous, and the fleet contradicts it almost everywhere. Doc blocks immediately preceding an `export function` / exported arrow across 48 fleet packages plus scaffold: third-person=442, imperative=1507. 33 packages are exclusively imperative, 6 exclusively third-person, 10 mixed. Per-package third/imperative: scaffold 7/116, contract 1/215, browser 1/139, reason 0/139, database 0/66, workflow 0/51, middleware 4/48, markdown 20/43, interpret 0/42, toolbox 0/42, server 0/38, terminal 0/38, console 0/37, msg 1/36, program 0/36, html 11/35, brief 1/33, csv 2/33, qualifier 0/33, sea 2/33, form 0/32, agent 0/30, table 0/25, router 0/23, rater 0/22 — against mcp 168/0, test 101/0, process 38/0, probe 32/0, lsp 28/0, codec 25/0. Fleet-wide leading words confirm the split: Determine 246, Create 168, Build 152, Narrow 99, Compile 70, Decode 60, Read 58, Resolve 54, against Determines 87, Creates 52, Checks 52, Reads 44. No commit in the available (shallow) history migrates a package between voices; each package was authored in one voice and left there, so no deliberate fleet convention displaces the rule. No gate enforces the rule: `configs/policy.ts` and `tests/policy.test.ts` contain no check on TSDoc voice. Scope note for per-package rulings: the canon repository is itself 116 imperative to 7 third-person, so a DRIFT finding raised against one package is selective enforcement of a fleet-wide condition.",
+    "ruling": "DRIFT",
+    "confidence": "high",
+    "evidence": [
+     "/home/user/scaffold/.claude/rules/typescript.md:75 - The rule names the third-person `-s` form with `Creates`, `Returns`, `Checks whether` as its examples; imperative openings do not satisfy it.",
+     "/home/user/scaffold/src/core/validators.ts:56 - Canon exemplar opens imperative: `Narrow a value to a logical target-relative path.`",
+     "/home/user/fleet/contract/src/core/shapers.ts:73 - `Build a string {@link StringShape}.` — contract is 215 imperative to 1 third-person.",
+     "/home/user/fleet/reason/src/core/validators.ts:277 - `Determine whether a value is a {@link Check} …` — reason is 139 imperative to 0 third-person.",
+     "/home/user/fleet/mcp/src/server/handlers.ts:32 - `Creates the Streamable-HTTP POST handler …` — mcp is 168 third-person to 0 imperative.",
+     "/home/user/fleet/lsp/src/server/factories.ts:4 - `Creates a byte transport over a Language Server Protocol chi…` — lsp is 28 third-person to 0 imperative.",
+     "/home/user/scaffold/configs/policy.ts:1 - grep for `third person`, `first sentence` returns nothing; no mechanical gate enforces the voice rule.",
+     "/home/user/fleet/probe/.git:1 - `git log -S` over each sampled package returns no commit converting first-sentence voice; commit 116c64f (2026-08-20, probe) corrects TSDoc truth, not voice."
+    ]
+   },
+   {
+    "question": "Boolean `@returns` form: must a boolean-returning guard's `@returns` be written \"True if …; false otherwise\"?",
+    "rule_quote": "Describe a boolean parameter as \"If `true`, …; if `false`, …\", and a boolean return as \"True if …; false otherwise\".",
+    "fleet_reading": "The rule prescribes a literal phrasing, and the neighbouring rule line does the same shape (\"Write a default as \\\"Default: …\\\" and a thrown error as \\\"Thrown when …\\\"\"), so read it as exact wording rather than as content guidance. The fleet overwhelmingly uses a different form. Boolean `@returns` openings across 48 fleet packages plus scaffold: \"True if\"=47, \"`true` when/for/only when\"=325, \"Whether\"=117; \"false otherwise\" appears 57 times fleet-wide. Only codec (7), lsp (19), probe (14), and test (7) use the prescribed form, and each of those is one of the six all-third-person packages. Per-package \"True if\"/backtick-`true`/\"Whether\": scaffold 0/25/2, reason 0/44/0, mcp 0/40/37, table 0/22/11, contract 0/16/0, middleware 0/16/0, program 0/15/0, html 0/14/0, interpret 0/13/0, markdown 0/13/0, rater 0/11/0, server 0/10/0, agent 0/9/0, csv 0/7/0, qualifier 0/7/0, database 0/5/18, form 0/1/16, workspace 0/0/6, browser 0/0/6, pool 0/0/3. The canon repository is the largest single violator at 0 conforming against 25 backtick-`true`. No gate enforces the form. The dominant fleet form does state the true branch (\"`true` when the value is X\") but does not spell the false branch, so it is a genuine departure from the prescribed wording rather than a synonym of it.",
+    "ruling": "DRIFT",
+    "confidence": "medium",
+    "evidence": [
+     "/home/user/scaffold/.claude/rules/typescript.md:77 - The rule gives the boolean-return phrasing in quotation marks: \"True if …; false otherwise\".",
+     "/home/user/scaffold/.claude/rules/typescript.md:79 - The next line prescribes \"Default: …\" and \"Thrown when …\" the same way, so the section prescribes literal phrasings.",
+     "/home/user/scaffold/src/core/validators.ts:59 - Canon writes `@returns \\`true\\` for a bounded relative path with no traversal …`, not the prescribed form; scaffold/src is 0 conforming to 25 backtick-`true`.",
+     "/home/user/fleet/codec/src/core/validators.ts:11 - `@returns True if \\`value\\` is canonical §4 Base64 text; false otherwise.` — codec is one of four packages using the prescribed form.",
+     "/home/user/fleet/reason/src/core/validators.ts:277 - reason uses `@returns \\`true\\` when …` 44 times and the prescribed form 0 times.",
+     "/home/user/fleet/database/src:1 - database opens 18 boolean returns with \"Whether\", a third distinct form the rule names nowhere.",
+     "/home/user/scaffold/configs/policy.ts:1 - grep for `@returns` returns nothing; no mechanical gate enforces the boolean-return form."
+    ]
+   },
+   {
+    "question": "`@example` import specifiers: must a public TSDoc `@example` block import from `@orkestrel/<name>`, making `@src/*` aliases in source examples drift under documentation.md?",
+    "rule_quote": "Code fences import through the package's published specifier:\n\n- primary/core API: `@orkestrel/<name>`;\n- secondary environment API: `@orkestrel/<name>/<environment>`.\n\nNever use in-repository `@src/*` aliases in public guide examples; reserve them for source/tests.",
+    "fleet_reading": "The findings misread the cited rule. It sits under the heading `## Guide examples`, its ban names \"public guide examples\", and its own second clause reserves `@src/*` \"for source/tests\" — so on its literal text it does not reach a TSDoc `@example` block inside a source file, and it arguably permits `@src/*` there. History confirms that reading was applied deliberately: reason commit 3e6bca5 \"docs: guide fences import the published specifier\" (2026-07-20) rewrote `guides/src/reason.md` only and left every `src` TSDoc example on `@src/core`; console carries the same commit 175a3b7. The enforcement boundary matches: `tests/guides.test.ts:189` checks specifiers in guide fences and no gate reads TSDoc `@example` at all. The findings' factual half is nonetheless confirmed. Doc-comment specifiers across 48 fleet packages plus scaffold: `@src/*`=331 in 19 packages, `@orkestrel/*`=533 in 34 packages. Those blocks ship: fleet/reason/dist/src/core/index.d.ts carries 150 `@example` tags and 148 `from '@src/core'`; interpret 55, toolbox 22, agent 21, console 16, markdown 14, router 10, template 8. `package.json` `files` is `[\"dist/src\",\"README.md\"]` and `exports[\".\"].import.types` resolves into `dist/src`, so a consumer's editor reads a specifier only this repository's `tsconfig.json` paths resolve. Canon scaffold/src is 139 `@orkestrel/*` to 0 `@src/*`, so `@orkestrel/<name>` is the canon form — but as authored practice, not as anything this rule says. Route the shipping defect to a new rule that names published `@example` blocks; do not raise it as drift against documentation.md § Guide examples.",
+    "ruling": "INVALID",
+    "confidence": "high",
+    "evidence": [
+     "/home/user/scaffold/.claude/rules/documentation.md:54 - The section heading is `## Guide examples`, scoping every line under it to guide fences.",
+     "/home/user/scaffold/.claude/rules/documentation.md:61 - `Never use in-repository @src/* aliases in public guide examples; reserve them for source/tests.` — the ban names guide examples and the second clause reserves the alias for source.",
+     "/home/user/scaffold/tests/guides.test.ts:189 - The only specifier gate reads guide fences (`statement.specifier.startsWith('@orkestrel/scaffold')`); nothing reads a TSDoc `@example`.",
+     "/home/user/fleet/reason/.git:1 - Commit 3e6bca5 (2026-07-20) \"docs: guide fences import the published specifier\" changed guides/src/reason.md, guides/src/scaffold.md, AGENTS.md, package-lock.json — and no src file.",
+     "/home/user/fleet/reason/dist/src/core/index.d.ts:21 - The shipped declaration carries `import { addVariable, symbolicDefinition } from '@src/core'` inside an `@example` fence; the file holds 150 `@example` tags and 148 such specifiers.",
+     "/home/user/fleet/reason/package.json:1 - `files` is [\"dist/src\",\"README.md\"] and `exports[\".\"].import.types` is ./dist/src/core/index.d.ts, so those specifiers reach every consumer.",
+     "/home/user/scaffold/.claude/rules/workspace.md:46 - `@src/core` is a tsconfig path alias of this repository only; nothing resolves it in an installed package.",
+     "/home/user/scaffold/src/core/validators.ts:68 - Canon TSDoc example imports `@orkestrel/scaffold`; scaffold/src is 139 `@orkestrel/*` to 0 `@src/*` in doc comments."
+    ]
+   }
+  ]
+ }
+}
