@@ -95,3 +95,15 @@ declaration, and the `middleware` control still reports.
 `recon.mjs` reports what `scaffold overwrite` would change in a target, from `scaffold audit --json`.
 Control: a planted byte in `abort`'s `.editorconfig` reported `stale` drift on that path, and the
 restored file reported aligned.
+
+## Probe gate verdict (2026-08-28, control run)
+
+The full `npm test` in `probe` is red on pristine `main` at `a40ca19` in this container: 13 failures in `tests/src/bin/main.test.ts`, 213 passing, measured by `/home/user/work/probe-control2.sh` with output at `/home/user/work/probe-control2.log`. The campaign branch's red therefore predates the dependency update. The failures are container-environment failures (LSP arm deadlines under this host), not campaign regressions. The scoped `npm run test:src:server` passes 177/177 on the same checkout.
+
+## Src-audit verification round (2026-08-28)
+
+The audit lanes s12-s18 returned 273 findings over 26 packages (parse: `/home/user/work/groupprep.mjs`); the original lanes ruled 258 CONFIRMED and 15 EXEMPT. Slices s01-s11 are not yet dispatched. Every returned finding is being re-ruled from primary evidence before any fix lands: workflow `wf_2ce5d3a7-015` runs a blind objective lane and a blind subjective lane per package group (group files under `src-audit/groups/`, lane brief `src-audit/verify-brief.md`), a fleet-wide TSDoc-convention lane (`src-audit/g16-tsdoc-brief.md`), and a judge on every lane disagreement. Verdict vocabulary: DRIFT, DRIFT-RESHAPE, EXCEPTION, INVALID.
+
+Bench ledger for the round: the `codex` CLI is absent from PATH (`command not found`, probed 2026-08-28), so the Sol bench is dark and every lane runs on Claude Opus 5 as a separate clean-context subagent, per the engine-assignment table in `.agents/orchestration.md`. The Cursor Grok bench round-tripped earlier in the campaign and holds no lane here because verification is judgment-bearing work.
+
+The mcp conformance re-record closed its server half green and stopped on a clean deviation: the client driver `tests/conformanceClient.ts` omits object-typed schema arguments, so the runner's `json-schema-2020-12-preservation` scenario cannot arm. Successor unit `mcp-client-rerecord` (brief in `src-audit/`) owns the driver change and the client baseline re-measurement.
