@@ -147,3 +147,19 @@ branch carries a merge of that main; its own gate run is recorded beside this en
 completes. The wave remainder is release work: bump and publish `lsp`, `mcp`, `sea` in layer
 order, `scaffold` on its own account, then re-pin `lsp` and `mcp` in `probe` and publish
 `probe` last.
+
+## Overwrite pass (2026-08-28)
+
+`scaffold overwrite` ran serially in all fleet targets except `scaffold` itself (recon proved
+overwrite there would delete the instruction canon the package vendors). Every run exited 0.
+The only files that moved were the vendored catalog `.claude/agents/orkestrel.md` and stale
+dependency guide mirrors — a forward refresh from the live registry that adds the `codec` row
+and carries `lsp 0.0.5`, `mcp 0.0.27`, `probe 0.0.11`, `sea 0.0.13`, `server 0.0.17`, and
+`process 0.0.9`. No package-owned file moved, so no walk-back was needed. Committed in every
+target as "Adopt the catalog and guide mirrors for the wave" and pushed. Per-repo logs:
+`/home/user/work/logs/ow-*.log`; progress: `/home/user/work/overwrite-progress.log`.
+
+The registry read also settles the wave state: the lsp, mcp, sea, server, and probe releases
+predate this campaign; the packages still owing a republish for `process@0.0.9` are `lsp`,
+`mcp`, `sea` (published versions pin `^0.0.8`), then `probe`, with `scaffold` on its own
+account — the release remainder recorded under the process coordination entry.
