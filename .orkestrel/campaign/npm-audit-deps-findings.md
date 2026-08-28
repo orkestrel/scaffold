@@ -107,3 +107,28 @@ The audit lanes s12-s18 returned 273 findings over 26 packages (parse: `/home/us
 Bench ledger for the round: the `codex` CLI is absent from PATH (`command not found`, probed 2026-08-28), so the Sol bench is dark and every lane runs on Claude Opus 5 as a separate clean-context subagent, per the engine-assignment table in `.agents/orchestration.md`. The Cursor Grok bench round-tripped earlier in the campaign and holds no lane here because verification is judgment-bearing work.
 
 The mcp conformance re-record closed its server half green and stopped on a clean deviation: the client driver `tests/conformanceClient.ts` omits object-typed schema arguments, so the runner's `json-schema-2020-12-preservation` scenario cannot arm. Successor unit `mcp-client-rerecord` (brief in `src-audit/`) owns the driver change and the client baseline re-measurement.
+
+## Process refactor coordination (2026-08-28)
+
+The user is refactoring `process` in a different session and removing the `Retention` class
+(superfluous); a release follows. Prepared here, measured on 2026-08-28 against the fleet
+checkouts and the registry at `process@0.0.8`:
+
+- Runtime dependents that re-pin and republish: `lsp`, `mcp`, `sea` (each pins `^0.0.8`), and
+  `scaffold` (runtime `dependencies` too). `probe` follows transitively (it pins `lsp` and `mcp`,
+  not `process`), and nothing runtime-depends on `probe`, so the cascade closes there. No package
+  declares `process` in `devDependencies`, `peerDependencies`, or `optionalDependencies`.
+- `Retention` removal costs dependents no code: `grep -rn Retention` over `src/` and `tests/` of
+  `lsp`, `mcp`, `sea`, `scaffold`, and `probe` returns nothing. The `Retention` hits in `console`
+  and `contract` are unrelated symbols of their own. The only dependent-side carriers are the
+  vendored `guides/process.md` mirrors in `lsp`, `mcp`, and `sea`, which still document
+  `Retention` and must be refreshed from the refactored guide during the wave (the published
+  package ships only `dist/src`, so the mirror refresh follows the `orkestrel-publish` wave
+  procedure).
+- `/home/user/work/process-repin.sh <new-version>` stages the re-pin and lockfile regeneration
+  for the direct dependents once the release is on the registry.
+- Freeze: no fix unit dispatches into `/home/user/fleet/process` while the refactor session owns
+  that tree, and the process rows in the g05 verification verdicts are advisory input for the
+  refactor rather than fix work here. The s13 process findings (ProcessChild interface naming,
+  snapshotCommand cloners placement, SupervisorFace type extraction, ProcessError @example,
+  undocumented signal members) were handed to the user for that session.
