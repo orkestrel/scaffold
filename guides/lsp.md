@@ -10,6 +10,12 @@ and call `destroy()` when the session ends. Concurrent `start()` calls share the
 failed handshake or peer exit closes that transport generation, and a later `start()` call begins
 a fresh generation.
 
+The client advertises `utf-16` as its only position encoding. `LSP_CAPABILITIES` is that
+advertisement and the acceptance set behind it: the client sends the record as the initialize
+request's `capabilities`, and a server that selects an encoding the record does not list fails the
+handshake with an `LSPError` whose `code` property is `protocol`. A server that omits
+`positionEncoding` leaves the protocol's own default in force, and `encoding` reports `utf-16`.
+
 The client accepts `open()` and `close()` only during a ready generation. A dead generation refuses
 wire writes with an `LSPError` whose `code` property is `closed`. During teardown, the client sends
 `shutdown`, then permits only `exit` on an initialized generation that has not exited.
@@ -95,13 +101,14 @@ transport listeners during teardown. A close failure that settles before that de
 before the client destroys its emitter. At the deadline, the client emits an `LSPError` coded
 `timeout` and absorbs the later close outcome.
 
-## Stdio transport
+## Stdio client transport
 
-The server environment publishes `StdioTransport`, the byte transport over a language server run as
+The server environment publishes `StdioClientTransport`, the byte transport over a language server run as
 a child process. It carries bytes and never frames: every standard-output chunk reaches the `chunk`
 event exactly as the host delivered it, so a frame split across reads and two frames coalesced into
-one read both arrive unaltered and the client's parser owns the framing. Standard error is drained
-so a chatty server can't fill its pipe and stall.
+one read both arrive unaltered and the client's parser owns the framing. Standard error is read
+continuously and retained as a bounded tail by the process package, so a chatty server can't fill
+its pipe and stall.
 
 `server.command` is the child's argument vector: its first element names the executable and the rest
 are its arguments, so a launcher and its target stay one value and no shell splits them.
@@ -110,12 +117,12 @@ environment; the current directory and this process's environment apply when eit
 
 ```ts
 import { createLSPClient } from '@orkestrel/lsp'
-import { createStdioTransport } from '@orkestrel/lsp/server'
+import { createStdioClientTransport } from '@orkestrel/lsp/server'
 import { pathToFileURL } from 'node:url'
 
 declare const directory: string
 
-const transport = createStdioTransport({
+const transport = createStdioClientTransport({
 	server: { command: ['my-language-server', '--stdio'], directory },
 	grace: 5_000,
 })
@@ -125,16 +132,18 @@ await client.destroy()
 ```
 
 `grace` bounds the cooperative termination window in milliseconds, and `5000` applies when it is
-absent. `close()` ends the child's input stream, waits `grace` for the child's own exit, and hands a
-child that outlives that window to the process package's `stopChild` helper, which signals it, waits
-`grace` again, and escalates to an unconditional kill. The child stays in the parent's process group
-rather than leading its own, so that helper reaches it through a direct signal after the host reports
-that no group owns its identifier. `close()` then waits up to `grace` more for the child's streams to
-close, and emits `exit` carrying the code and signal the host reported, so a grandchild holding the
-child's standard output open past its exit delays neither the call nor the event. A second `close()`
-called while the first is in flight settles on that same termination rather than resolving early.
-When the helper cannot confirm the child stopped, `close()` rejects with an `LSPError` whose `code`
-property is `timeout`, and the transport keeps the still-live child.
+absent. `close()` closes the child's input channel, waits `grace` for that closure's flush and the
+child's own ending together on one shared deadline rather than a window for each, and hands a child
+that outlives that window to the process package session's `stop`, which signals the
+child's process group and escalates to an unconditional kill after `grace` again. The child leads
+its own process group on a POSIX host, so that signal reaches its whole tree; Windows carries no
+such group, so the host's `taskkill` utility ends the tree there instead. `close()` then waits up to
+`grace` more for the child's streams to close, and emits `exit` carrying the code and signal the
+host reported, so a grandchild holding the child's standard output open past its exit delays neither
+the call nor the event. A second `close()` called while the first is in flight settles on that same
+termination rather than resolving early. When the package cannot confirm the child stopped,
+`close()` rejects with an `LSPError` whose `code` property is `timeout`, and the transport keeps the
+still-live child.
 
 Each accepted `start()` call opens a generation that owns its child, and only the current generation
 reaches the emitter. `start()` spawns the configured child and resolves after the host reports it
@@ -162,6 +171,45 @@ Use `parseLSPMessages()` with the preceding `LSPDecodeState` value to decode spl
 frames. Retained byte segments are owned copies, so caller mutation after parsing cannot alter a
 later continuation. The parser accepts unknown header fields and refuses malformed parameters in a
 known `Content-Type` field. Use `encodeLSPMessage()` to produce a byte-accurate frame.
+
+The core package publishes the operations over a retained state beside the codec.
+`joinLSPSegments()` flattens a segment chain into one owned buffer, and `takeLSPTail()` takes that
+chain's last bytes as an owned buffer, which is how a scan window survives a chunk split.
+`scanLSPBoundary()` reports the first `\r\n\r\n` index in a flat buffer, and that index addresses
+the buffer you passed, so a caller scanning a window adds the window's own offset to it.
+`scanLSPBoundary()` returns the boundary's index, so `bytes.subarray(0, boundary)` is the block
+`readLSPHeader()` reads and the body starts at `boundary + 4`.
+
+```ts
+import type { LSPDecodeState } from '@orkestrel/lsp'
+import { joinLSPSegments, scanLSPBoundary, takeLSPTail } from '@orkestrel/lsp'
+
+declare const state: LSPDecodeState
+
+const bytes = joinLSPSegments(state)
+const boundary = scanLSPBoundary(bytes)
+const overlap = takeLSPTail(state, 3)
+```
+
+When you frame the bytes yourself, reach the header and body grammars directly. `readLSPHeader()`
+reads one header block and returns the `Content-Length` it declares. `readLSPBody()` reads the
+content bytes that length measures and returns the validated JSON-RPC message. Each refuses with an
+`LSPError`, and when you pass a `messages` argument it travels on that error's `context.messages`
+property, so a caller that has already decoded frames keeps them through a refusal.
+
+```ts
+import { encodeLSPMessage, readLSPBody, readLSPHeader, scanLSPBoundary } from '@orkestrel/lsp'
+
+const frame = encodeLSPMessage({ jsonrpc: '2.0', method: 'initialized' })
+const boundary = scanLSPBoundary(frame)
+
+if (boundary !== undefined) {
+	const length = readLSPHeader(frame.subarray(0, boundary))
+	const message = readLSPBody(frame.subarray(boundary + 4, boundary + 4 + length))
+}
+```
+
+`length` reads `40`, the encoded body's byte length, and `message.method` reads `initialized`.
 
 ## Validation
 
@@ -270,12 +318,12 @@ The transport interface exposes these behavioral methods:
 
 The server surface provides these exports:
 
-| Export                    | Kind      | Purpose                                                                   |
-| ------------------------- | --------- | ------------------------------------------------------------------------- |
-| `StdioTransport`          | class     | Implements the byte transport over a language server child process.       |
-| `createStdioTransport`    | function  | Creates a `StdioTransportInterface` from `StdioTransportOptions`.         |
-| `StdioTransportInterface` | interface | Defines the readonly `pid` property beside the byte transport surface.    |
-| `StdioTransportOptions`   | interface | Configures the child's command, directory, environment, and grace window. |
+| Export                          | Kind      | Purpose                                                                       |
+| ------------------------------- | --------- | ----------------------------------------------------------------------------- |
+| `StdioClientTransport`          | class     | Implements the byte transport over a language server child process.           |
+| `createStdioClientTransport`    | function  | Creates a `StdioClientTransportInterface` from `StdioClientTransportOptions`. |
+| `StdioClientTransportInterface` | interface | Defines the readonly `pid` property beside the byte transport surface.        |
+| `StdioClientTransportOptions`   | interface | Configures the child's command, directory, environment, and grace window.     |
 
 The client surface provides these entities and configuration contracts:
 
@@ -292,18 +340,24 @@ The client surface provides these entities and configuration contracts:
 | `LSPTransportInterface` | interface | Defines the readonly `emitter` property and the byte transport methods.                           |
 | `LSPTransportEventMap`  | type      | Maps byte chunks, exits, and errors to transport listeners.                                       |
 
-The framing and error surface provides these exports:
+The framing, timing, and error surface provides these exports:
 
-| Export             | Kind      | Purpose                                                       |
-| ------------------ | --------- | ------------------------------------------------------------- |
-| `encodeLSPMessage` | function  | Encodes a JSON-RPC message into an LSP frame.                 |
-| `parseLSPMessages` | function  | Decodes complete messages and returns retained framing state. |
-| `LSPDecodeState`   | type      | Describes retained incremental framing bytes.                 |
-| `LSPError`         | class     | Reports a package failure with a stable code.                 |
-| `isLSPError`       | function  | Checks for a branded package error.                           |
-| `LSPErrorCode`     | type      | Lists stable package error codes.                             |
-| `LSPErrorContext`  | interface | Describes structured error details.                           |
-| `LSPErrorOptions`  | interface | Configures a package error.                                   |
+| Export             | Kind      | Purpose                                                                  |
+| ------------------ | --------- | ------------------------------------------------------------------------ |
+| `encodeLSPMessage` | function  | Encodes a JSON-RPC message into an LSP frame.                            |
+| `parseLSPMessages` | function  | Decodes complete messages and returns retained framing state.            |
+| `LSPDecodeState`   | type      | Describes retained incremental framing bytes.                            |
+| `joinLSPSegments`  | function  | Flattens retained decode segments into one owned buffer.                 |
+| `takeLSPTail`      | function  | Takes the last retained bytes of a decode state.                         |
+| `scanLSPBoundary`  | function  | Finds the first header boundary in a flat buffer.                        |
+| `readLSPHeader`    | function  | Reads a header block and returns its declared content length.            |
+| `readLSPBody`      | function  | Reads one content body as a validated JSON-RPC message.                  |
+| `waitForDeadline`  | function  | Waits for a deadline to elapse without holding the host event loop open. |
+| `LSPError`         | class     | Reports a package failure with a stable code.                            |
+| `isLSPError`       | function  | Checks for a branded package error.                                      |
+| `LSPErrorCode`     | type      | Lists stable package error codes.                                        |
+| `LSPErrorContext`  | interface | Describes structured error details.                                      |
+| `LSPErrorOptions`  | interface | Configures a package error.                                              |
 
 The JSON-RPC and initialization surface provides these payload types:
 
@@ -369,12 +423,13 @@ The validation surface provides these guards:
 | `isLSPServerCapabilities`       | function | Checks server capabilities.              |
 | `isLSPInitializeResult`         | function | Checks an initialize result.             |
 
-The constant surface provides these protocol names and limits:
+The constant surface provides these protocol names, advertisements, and limits:
 
 | Export                     | Kind  | Purpose                                                       |
 | -------------------------- | ----- | ------------------------------------------------------------- |
 | `LSP_METHODS`              | const | Names the protocol methods that the client sends or consumes. |
 | `LSP_ENCODINGS`            | const | Lists protocol position encodings.                            |
+| `LSP_CAPABILITIES`         | const | Describes the capabilities the client advertises.             |
 | `LSP_TIMEOUT`              | const | Names the default request-settlement timeout in milliseconds. |
 | `JSONRPC_PARSE_ERROR`      | const | Identifies a malformed JSON payload.                          |
 | `JSONRPC_INVALID_REQUEST`  | const | Identifies a structurally invalid request.                    |
