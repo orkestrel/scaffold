@@ -1,7 +1,9 @@
 import type { Audit } from '@src/core'
 import { describe, expect, it } from 'vitest'
 import { width } from '@orkestrel/console'
-import { createBlueprint, ScaffoldError } from '@src/core'
+import { resolve } from 'node:path'
+import { CATALOG_AGENT_PATH, createBlueprint, ScaffoldError } from '@src/core'
+import { createScratch } from '@orkestrel/test/server'
 import {
 	COMMAND_OPTIONS,
 	EXECUTABLE_NAME,
@@ -23,18 +25,40 @@ import {
 	argvToCommand,
 	auditToExit,
 	auditToSummary,
+	catalogToNames,
 	dependenciesToFloors,
 	dependenciesToFleet,
+	entriesToReleases,
 	environmentToUpstream,
 	errorToEnvelope,
+	fetchToRefusal,
 	manifestToWritableDependencies,
+	mergeResults,
 	optionToName,
+	readGitRecords,
 	releasesToExit,
+	releasesToPins,
 	releasesToQuestions,
 	renderUsage,
+	resultToTally,
+	sanitizeLine,
+	scriptToInvocations,
+	selectionToEnvironments,
+	selectionToGroups,
+	selectionToPackages,
+	targetToEnvironments,
 	verbToSyntax,
+	versionsToRefusal,
 } from '../../../src/bin/helpers.js'
-import { AUDIT_EXIT_CASES, buildOptionArgv, COMMAND_CASES, USAGE_CASES } from '../../setupServer.js'
+import {
+	AUDIT_EXIT_CASES,
+	buildOptionArgv,
+	CATALOG_AGENT_ROWS_TEXT,
+	COMMAND_CASES,
+	SCRATCH_PREFIX,
+	USAGE_CASES,
+	WORKSPACE_ROOT,
+} from '../../setupServer.js'
 
 // Every option token some verb documents, once, in verb order.
 const DOCUMENTED: readonly string[] = [...new Set(VERBS.flatMap((verb) => VERB_OPTIONS[verb]))]
@@ -505,6 +529,334 @@ describe('isUsageError', () => {
 			null,
 		]) {
 			expect(isUsageError(value)).toBe(false)
+		}
+	})
+})
+
+describe('sanitizeLine', () => {
+	it('folds every break onto one line', () => {
+		expect(sanitizeLine('first\nsecond')).toBe('first second')
+		expect(sanitizeLine('first\r\nsecond')).toBe('first second')
+	})
+
+	it('removes ANSI escapes and control characters, keeping ordinary prose', () => {
+		expect(sanitizeLine('[31mred[0m')).toBe('red')
+		expect(sanitizeLine('bell')).toBe('bell')
+		expect(sanitizeLine('plain prose')).toBe('plain prose')
+	})
+})
+
+describe('versionsToRefusal', () => {
+	const pins = { runtime: [], development: [] }
+
+	it('answers no refusal for a complete resolution', () => {
+		expect(versionsToRefusal({ releases: [], pins, forced: false, complete: true })).toBeUndefined()
+	})
+
+	it('names every dependency the registry could not answer for', () => {
+		const refusal = versionsToRefusal({
+			releases: [
+				{ name: '@orkestrel/emitter', range: '^0.0.5', lookup: 'missing', note: 'absent' },
+				{ name: '@orkestrel/router', range: '^0.0.8', lookup: 'found', latest: '0.0.8' },
+			],
+			pins,
+			forced: false,
+			complete: false,
+		})
+		expect(refusal?.code).toBe('FETCH')
+		expect(refusal?.message).toContain('@orkestrel/emitter')
+		expect(refusal?.message).not.toContain('@orkestrel/router')
+	})
+
+	it('reports an incomplete resolution that named no failed release', () => {
+		const refusal = versionsToRefusal({ releases: [], pins, forced: false, complete: false })
+		expect(refusal?.message).toBe('A declared dependency names no concrete floor.')
+	})
+})
+
+describe('fetchToRefusal', () => {
+	it('answers no refusal for an empty fetch and for a complete one', () => {
+		expect(fetchToRefusal([], [])).toBeUndefined()
+		expect(
+			fetchToRefusal(
+				[{ name: '@orkestrel/emitter', lookup: 'found', version: '0.0.6', dependencies: [] }],
+				[{ name: '@orkestrel/emitter', path: 'guides/emitter.md', lookup: 'found', content: '' }],
+			),
+		).toBeUndefined()
+	})
+
+	it('refuses a catalog row that did not answer', () => {
+		const refusal = fetchToRefusal(
+			[{ name: '@orkestrel/emitter', lookup: 'failed', note: 'transport' }],
+			[],
+		)
+		expect(refusal?.code).toBe('FETCH')
+		expect(refusal?.message).toContain('@orkestrel/emitter')
+	})
+
+	// A mirror the host could not serve is skipped rather than refused, so a failed
+	// and a missing mirror are the control the mirror rule needs.
+	it('carries a failed and a missing mirror instead of refusing them', () => {
+		expect(
+			fetchToRefusal(
+				[],
+				[
+					{ name: '@orkestrel/emitter', path: 'guides/emitter.md', lookup: 'failed', note: 'x' },
+					{ name: '@orkestrel/router', path: 'guides/router.md', lookup: 'missing', note: 'x' },
+				],
+			),
+		).toBeUndefined()
+		expect(
+			fetchToRefusal(
+				[],
+				[{ name: '@orkestrel/queue', path: 'guides/queue.md', lookup: 'unmatched', note: 'x' }],
+			)?.message,
+		).toContain('@orkestrel/queue')
+	})
+})
+
+describe('entriesToReleases', () => {
+	it('answers one verdict per declaration, in input order', () => {
+		expect(
+			entriesToReleases(
+				[
+					{ name: '@orkestrel/emitter', range: '^0.0.5' },
+					{ name: '@orkestrel/router', range: '^0.0.8' },
+				],
+				[{ name: '@orkestrel/emitter', lookup: 'found', version: '0.0.6', dependencies: [] }],
+			),
+		).toStrictEqual([
+			{ name: '@orkestrel/emitter', range: '^0.0.5', lookup: 'found', latest: '0.0.6' },
+			{
+				name: '@orkestrel/router',
+				range: '^0.0.8',
+				lookup: 'missing',
+				note: 'the organization catalog does not list the declared package',
+			},
+		])
+	})
+
+	it('carries the verdict and note a listed row answered with', () => {
+		expect(
+			entriesToReleases(
+				[{ name: '@orkestrel/emitter', range: '^0.0.5' }],
+				[{ name: '@orkestrel/emitter', lookup: 'failed', note: 'transport' }],
+			),
+		).toStrictEqual([
+			{ name: '@orkestrel/emitter', range: '^0.0.5', lookup: 'failed', note: 'transport' },
+		])
+	})
+})
+
+describe('releasesToPins', () => {
+	it('pins every declaration at the caret of its release, runtime ahead of development', () => {
+		expect(
+			releasesToPins(
+				[
+					{ name: '@orkestrel/emitter', range: '^0.0.5', lookup: 'found', latest: '0.0.6' },
+					{ name: '@orkestrel/test', range: '^0.0.8', lookup: 'found', latest: '0.0.9' },
+				],
+				{
+					runtime: [{ name: '@orkestrel/emitter', range: '^0.0.5' }],
+					development: [{ name: '@orkestrel/test', range: '^0.0.8' }],
+				},
+			),
+		).toStrictEqual({
+			runtime: [{ name: '@orkestrel/emitter', range: '^0.0.6' }],
+			development: [{ name: '@orkestrel/test', range: '^0.0.9' }],
+		})
+	})
+
+	it('refuses the whole set when one release is missing', () => {
+		expect(() =>
+			releasesToPins(
+				[{ name: '@orkestrel/emitter', range: '^0.0.5', lookup: 'missing', note: 'absent' }],
+				{ runtime: [{ name: '@orkestrel/emitter', range: '^0.0.5' }], development: [] },
+			),
+		).toThrow(ScaffoldError)
+	})
+
+	it('refuses a verdict list that does not match the declaration set', () => {
+		expect(() =>
+			releasesToPins(
+				[{ name: '@orkestrel/emitter', range: '^0.0.5', lookup: 'found', latest: '0.0.6' }],
+				{ runtime: [], development: [] },
+			),
+		).toThrow(ScaffoldError)
+	})
+})
+
+describe('scriptToInvocations', () => {
+	it('reads a project named as a separate token and as one token', () => {
+		expect(scriptToInvocations('vitest run --project src:core')).toStrictEqual({
+			projects: ['src:core'],
+			scripts: [],
+		})
+		expect(scriptToInvocations('vitest run --project=src:server')).toStrictEqual({
+			projects: ['src:server'],
+			scripts: [],
+		})
+	})
+
+	it('reads every npm run script and reads through quotes', () => {
+		expect(scriptToInvocations('npm run build && npm run "test:src"')).toStrictEqual({
+			projects: [],
+			scripts: ['build', 'test:src'],
+		})
+	})
+
+	it('refuses a command whose value a shell expansion decides', () => {
+		expect(scriptToInvocations('vitest run --project $PROJECT')).toBeUndefined()
+		expect(scriptToInvocations('vitest run "--project=$PROJECT"')).toBeUndefined()
+		expect(scriptToInvocations('npm run `echo build`')).toBeUndefined()
+	})
+
+	it('refuses an unterminated quote, a trailing escape, and an empty selection', () => {
+		expect(scriptToInvocations("vitest run --project 'src:core")).toBeUndefined()
+		expect(scriptToInvocations('vitest run --project src:core \\')).toBeUndefined()
+		expect(scriptToInvocations('vitest run --project=')).toBeUndefined()
+		expect(scriptToInvocations('vitest run --project && echo done')).toBeUndefined()
+	})
+
+	it('reads a command naming neither a project nor a script', () => {
+		expect(scriptToInvocations('tsc --noEmit')).toStrictEqual({ projects: [], scripts: [] })
+	})
+})
+
+describe('selectionToEnvironments', () => {
+	it('answers the named environments in declared order', () => {
+		expect(selectionToEnvironments('server,core', 'src')).toStrictEqual(['core', 'server'])
+	})
+
+	it('answers none for no selection', () => {
+		expect(selectionToEnvironments(undefined, 'src')).toStrictEqual([])
+	})
+
+	it('refuses a name that is not an environment, quoting the axis', () => {
+		expect(() => selectionToEnvironments('styles', 'app')).toThrow(UsageError)
+		expect(() => selectionToEnvironments('styles', 'app')).toThrow("'--app'")
+	})
+})
+
+describe('selectionToGroups', () => {
+	it('answers the named groups in plan order', () => {
+		expect(selectionToGroups('tests,manifest')).toStrictEqual(['manifest', 'tests'])
+	})
+
+	it('answers undefined for no selection, which covers every group', () => {
+		expect(selectionToGroups(undefined)).toBeUndefined()
+	})
+
+	it('refuses a name that is not a group', () => {
+		expect(() => selectionToGroups('sources')).toThrow(UsageError)
+	})
+})
+
+describe('selectionToPackages', () => {
+	it('answers the named packages in selection order', () => {
+		expect(selectionToPackages('@orkestrel/router,@orkestrel/emitter')).toStrictEqual([
+			'@orkestrel/router',
+			'@orkestrel/emitter',
+		])
+	})
+
+	it('answers none for no selection', () => {
+		expect(selectionToPackages(undefined)).toStrictEqual([])
+	})
+
+	it('refuses a name outside the published scope', () => {
+		expect(() => selectionToPackages('vitest')).toThrow(UsageError)
+	})
+})
+
+describe('mergeResults', () => {
+	it('carries both path lists under the target the first result names', () => {
+		expect(
+			mergeResults(
+				{ target: './first', written: ['a'], skipped: ['b'], removed: [] },
+				{ target: './second', written: ['c'], skipped: [], removed: ['d'] },
+			),
+		).toStrictEqual({
+			target: './first',
+			written: ['a', 'c'],
+			skipped: ['b'],
+			removed: ['d'],
+		})
+	})
+})
+
+describe('resultToTally', () => {
+	it('states each tally and the target', () => {
+		expect(resultToTally({ target: './t', written: ['a'], skipped: ['b', 'c'], removed: [] })).toBe(
+			'1 written, 2 unchanged, 0 removed in ./t.',
+		)
+	})
+})
+
+describe('targetToEnvironments', () => {
+	it('reads the environments an axis holds as directories', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			workspace.ensure('project/src/core')
+			workspace.ensure('project/src/server')
+			// The control: a directory on the other axis is outside what this axis
+			// ships, so an answer reading the target rather than the axis reports it.
+			workspace.ensure('project/app/browser')
+			const project = resolve(workspace.path, 'project')
+			expect(targetToEnvironments(project, 'src')).toStrictEqual(['core', 'server'])
+			expect(targetToEnvironments(project, 'app')).toStrictEqual(['browser'])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('answers none for an axis the target does not hold', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			expect(targetToEnvironments(workspace.path, 'src')).toStrictEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+})
+
+describe('catalogToNames', () => {
+	it('reads the package names the catalog table lists, in table order', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			workspace.write(`project/${CATALOG_AGENT_PATH}`, CATALOG_AGENT_ROWS_TEXT)
+			expect(catalogToNames(resolve(workspace.path, 'project'))).toStrictEqual([
+				'@orkestrel/contract',
+				'@orkestrel/emitter',
+			])
+		} finally {
+			workspace.destroy()
+		}
+	})
+
+	it('answers no names when the target holds no catalog file', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			expect(catalogToNames(workspace.path)).toStrictEqual([])
+		} finally {
+			workspace.destroy()
+		}
+	})
+})
+
+describe('readGitRecords', () => {
+	it('answers the records git wrote for this repository', () => {
+		const records = readGitRecords(WORKSPACE_ROOT, ['ls-files', '-z'])
+		expect(records).toContain('package.json')
+		expect(records.every((record) => record.length > 0)).toBe(true)
+	})
+
+	it('refuses a directory that is not a git repository', () => {
+		const workspace = createScratch({ prefix: SCRATCH_PREFIX })
+		try {
+			expect(() => readGitRecords(workspace.path, ['ls-files', '-z'])).toThrow(ScaffoldError)
+		} finally {
+			workspace.destroy()
 		}
 	})
 })

@@ -4,7 +4,6 @@ import type {
 	CatalogEntry,
 	Dependency,
 	DependencyPinSet,
-	Environment,
 	Group,
 	ManifestRegionSet,
 	Mirror,
@@ -39,12 +38,9 @@ import type {
 	TargetQuestion,
 	VersionResolution,
 } from './types.js'
-import { renderTable, strip, stripControls } from '@orkestrel/console'
+import { renderTable } from '@orkestrel/console'
 import { attempt, isRecord, isString, parseJSON } from '@orkestrel/contract'
-import { createMarkdown, flattenText, isTableNode } from '@orkestrel/markdown'
-import { executeSync } from '@orkestrel/process/server'
 import {
-	CATALOG_AGENT_PATH,
 	BIN_ENTRY_PATH,
 	blueprintToDevDependencies,
 	blueprintToRootVite,
@@ -54,16 +50,12 @@ import {
 	CONFORMANCE_TEST_PATH,
 	createBlueprint,
 	Compiler,
-	DEPENDENCY_NAME_PATTERN,
-	ENVIRONMENTS,
 	extractRangeMajor,
-	GROUPS,
 	GLOBAL_SETUP_PATH,
 	GUIDES_TEST_PATH,
 	HOST_PATHS,
 	INTEGRATION_TEST_PATH,
-	isCanonPath,
-	isDeferredPath,
+	isFloorPath,
 	manifestToDependencies,
 	manifestToName,
 	MAX_MANIFEST_BYTES,
@@ -79,7 +71,6 @@ import {
 	Upstream,
 	filesToHost,
 	isExactCaseFile,
-	isPhysicalDirectory,
 	isWorktree,
 	listFiles,
 	readFileText,
@@ -88,18 +79,34 @@ import {
 	resolveContainedPath,
 } from '@src/server'
 import { EXIT_CLEAN, EXIT_DRIFT, EXIT_USAGE } from './constants.js'
-import { isUsageError, UsageError } from './errors.js'
+import { isUsageError } from './errors.js'
 import {
 	argvToCommand,
 	auditToExit,
 	auditToSummary,
+	catalogToNames,
 	dependenciesToFloors,
 	dependenciesToFleet,
+	entriesToReleases,
 	errorToEnvelope,
+	fetchToRefusal,
 	manifestToWritableDependencies,
+	mergeResults,
+	readGitRecords,
 	releasesToExit,
+	releasesToPins,
 	releasesToQuestions,
 	renderUsage,
+	resultToTally,
+	sanitizeLine,
+	scriptToInvocations,
+	selectionToEnvironments,
+	selectionToGroups,
+	selectionToPackages,
+	targetToEnvironments,
+	versionsToRefusal,
+	writeDiagnostic,
+	writeOutput,
 } from './helpers.js'
 
 /**
@@ -137,12 +144,6 @@ import {
  * ```
  */
 export class CLI implements CLIInterface {
-	// The destinations a terminal caller means. They are the only process
-	// streams this class names, and it names them once: a handler is what every
-	// write goes through, so the default is a handler too rather than a branch at
-	// each write site.
-	static readonly #stdout: OutputHandler = (line) => void process.stdout.write(`${line}\n`)
-	static readonly #stderr: OutputHandler = (line) => void process.stderr.write(`${line}\n`)
 	readonly #output: OutputHandler
 	readonly #diagnostic: OutputHandler
 	// What every upstream reader this class builds is constructed from. It is held
@@ -157,8 +158,11 @@ export class CLI implements CLIInterface {
 	 * endpoints; the process streams and the published endpoints when absent.
 	 */
 	constructor(options?: CLIOptions) {
-		this.#output = options?.output ?? CLI.#stdout
-		this.#diagnostic = options?.diagnostic ?? CLI.#stderr
+		// The process streams are what a terminal caller means, and a handler is what
+		// every write goes through, so the default is a handler too rather than a
+		// branch at each write site.
+		this.#output = options?.output ?? writeOutput
+		this.#diagnostic = options?.diagnostic ?? writeDiagnostic
 		this.#upstream = options?.upstream
 	}
 
@@ -221,11 +225,11 @@ export class CLI implements CLIInterface {
 	async #create(command: NewCommand): Promise<number> {
 		const target = command.target ?? command.name
 		const blueprint = createBlueprint(command.name, {
-			src: this.#environments(command.src, 'src'),
-			app: this.#environments(command.app, 'app'),
+			src: selectionToEnvironments(command.src, 'src'),
+			app: selectionToEnvironments(command.app, 'app'),
 			bin: command.bin === true,
 			setup: false,
-			dependencies: this.#packages(command.dependencies).map((name) => ({
+			dependencies: selectionToPackages(command.dependencies).map((name) => ({
 				name,
 				range: '^0.0.0',
 			})),
@@ -245,7 +249,8 @@ export class CLI implements CLIInterface {
 			},
 			command.offline === true,
 		)
-		this.#assertVersions(versions)
+		const refusal = versionsToRefusal(versions)
+		if (refusal !== undefined) throw refusal
 		const resolved = replacePlanRanges(plan, versions.pins)
 		if (resolved === undefined) {
 			throw new ScaffoldError('BLOCKED', 'The compiled plan ranges could not be replaced.')
@@ -263,7 +268,7 @@ export class CLI implements CLIInterface {
 			if (command.json === true) this.#report(outcome)
 			else {
 				this.#say(`Scaffolded ${blueprint.name} into ${result.target}.`)
-				this.#say(this.#tally(result))
+				this.#say(resultToTally(result))
 			}
 			if (versions.forced || host.forced) this.#reportBaselines(outcome.provenance)
 			return EXIT_CLEAN
@@ -285,7 +290,7 @@ export class CLI implements CLIInterface {
 		const target = command.target ?? '.'
 		const manifest = this.#manifest(target)
 		const blueprint = this.#derive(target)
-		const groups = this.#groups(command.groups)
+		const groups = selectionToGroups(command.groups)
 		const declared = manifestToWritableDependencies(manifest, blueprint)
 		const versions = await this.#versions(declared, command.offline === true)
 		const questions = [
@@ -331,7 +336,7 @@ export class CLI implements CLIInterface {
 	// host, and a second instance could not promise they were.
 	async #restore(command: RepairCommand): Promise<number> {
 		const target = command.target ?? '.'
-		const groups = this.#groups(command.groups)
+		const groups = selectionToGroups(command.groups)
 		const blueprint = this.#derive(target)
 		this.#assertTarget(target, blueprint, groups)
 		const host = await this.#host(command.from, target, command.offline === true)
@@ -352,8 +357,9 @@ export class CLI implements CLIInterface {
 				manifestToWritableDependencies(this.#manifest(target), blueprint),
 				command.offline === true,
 			)
-			this.#assertVersions(versions)
-			const result = this.#merge(
+			const refusal = versionsToRefusal(versions)
+			if (refusal !== undefined) throw refusal
+			const result = mergeResults(
 				host.materializer.repair(plan, audit, target),
 				host.materializer.declare(
 					{ pins: versions.pins, scripts: blueprintToWritableScripts(blueprint) },
@@ -376,7 +382,7 @@ export class CLI implements CLIInterface {
 			else {
 				this.#present(terminal)
 				this.#reportReplacements(audit, terminal)
-				this.#say(this.#tally(result))
+				this.#say(resultToTally(result))
 			}
 			if (versions.forced || host.forced) this.#reportBaselines(outcome.provenance)
 			if (command.offline !== true && (versions.forced || host.forced)) return EXIT_DRIFT
@@ -396,19 +402,20 @@ export class CLI implements CLIInterface {
 				`Read the data root from ${String(host)}. The other ${String(extra.length)} local root${extra.length === 1 ? '' : 's'} named by --from reach nothing this run does.`,
 			)
 		}
-		const previous = this.#previous(target)
+		const previous = catalogToNames(target)
 		const fetched = await this.#fetch(target, command.all === true)
 		const declarations = manifestToDependencies(this.#manifest(target))
 		const writable: DependencyPinSet = {
 			runtime: dependenciesToFleet(declarations.runtime),
 			development: dependenciesToFleet(declarations.development),
 		}
-		const releases = this.#catalogReleases(
+		const releases = entriesToReleases(
 			[...writable.runtime, ...writable.development],
 			fetched.entries,
 		)
-		const pins = this.#pin(releases, writable)
-		this.#assertFetched(fetched.entries, fetched.mirrors)
+		const pins = releasesToPins(releases, writable)
+		const refusal = fetchToRefusal(fetched.entries, fetched.mirrors)
+		if (refusal !== undefined) throw refusal
 		const guides: Baseline | undefined =
 			fetched.mirrors.length === 0
 				? undefined
@@ -418,7 +425,7 @@ export class CLI implements CLIInterface {
 		const materializer = new Materializer({ host: host ?? readHostFloor() })
 		let result: MaterializeResult
 		try {
-			result = this.#merge(
+			result = mergeResults(
 				this.#publish(materializer, target, fetched.entries, fetched.mirrors),
 				materializer.declare({ pins, scripts: [] }, target),
 			)
@@ -447,7 +454,7 @@ export class CLI implements CLIInterface {
 	// leaves the target repaired and says which step it could not complete.
 	async #replace(command: OverwriteCommand): Promise<number> {
 		const target = command.target ?? '.'
-		const groups = this.#groups(command.groups)
+		const groups = selectionToGroups(command.groups)
 		const blueprint = this.#derive(target)
 		this.#assertTarget(target, blueprint, groups)
 		const worktree = this.#worktree(target)
@@ -492,16 +499,16 @@ export class CLI implements CLIInterface {
 				command.dirty === true ? { tracked: worktree.tracked, dirty: [] } : worktree,
 				target,
 			)
-			const offline = this.#merge(repaired, removed)
-			const online: Omit<OverwriteResult, 'audit'> =
+			const local = mergeResults(repaired, removed)
+			const remainder: Omit<OverwriteResult, 'audit'> =
 				command.offline === true
-					? await this.#offline(host.materializer, target, declared, host.baseline)
+					? await this.#declare(host.materializer, target, declared, host.baseline)
 					: await this.#reconcile(host.materializer, target, declared, host.baseline, host.forced)
 			const [measured] = this.#survey(host.materializer, blueprint, target, groups)
 			const terminal = this.#appendQuestions(measured, target, blueprint, groups)
 			const outcome: OverwriteResult = {
-				...online,
-				...this.#merge(offline, online),
+				...remainder,
+				...mergeResults(local, remainder),
 				audit: terminal,
 			}
 			if (command.json === true) this.#report(outcome)
@@ -509,28 +516,28 @@ export class CLI implements CLIInterface {
 				this.#present(terminal)
 				this.#reportReplacements(audit, terminal)
 				this.#recount(outcome)
-				if (online.note !== undefined) this.#warn(online.note)
+				if (remainder.note !== undefined) this.#warn(remainder.note)
 			}
-			if (online.note !== undefined) return EXIT_DRIFT
+			if (remainder.note !== undefined) return EXIT_DRIFT
 			return auditToExit(terminal)
 		} finally {
 			host.materializer.destroy()
 		}
 	}
 
-	// The network half of `overwrite`, collected rather than thrown: the offline
-	// half has already written, so a step that cannot complete is reported as the
-	// step it was instead of discarding what already landed. It writes through the
-	// verb's own materializer rather than opening a second one, so every byte the
-	// run lands comes from the host the caller named once.
-	async #offline(
+	// What substitutes for the network half of `overwrite` when `--offline` is
+	// given: the declarations are re-derived from the floor the run already holds,
+	// and the catalog step that half would have run is reported as skipped rather
+	// than attempted.
+	async #declare(
 		materializer: MaterializerInterface,
 		target: string,
 		declared: ManifestRegionSet,
 		host: Baseline | undefined,
 	): Promise<Omit<OverwriteResult, 'audit'>> {
 		const versions = await this.#versions(declared.pins, true)
-		this.#assertVersions(versions)
+		const refusal = versionsToRefusal(versions)
+		if (refusal !== undefined) throw refusal
 		const written = materializer.declare({ pins: versions.pins, scripts: declared.scripts }, target)
 		return {
 			...written,
@@ -546,6 +553,11 @@ export class CLI implements CLIInterface {
 		}
 	}
 
+	// The network half of `overwrite`, collected rather than thrown: the local
+	// half has already written, so a step that cannot complete is reported as the
+	// step it was instead of discarding what already landed. It writes through the
+	// verb's own materializer rather than opening a second one, so every byte the
+	// run lands comes from the host the caller named once.
 	async #reconcile(
 		materializer: MaterializerInterface,
 		target: string,
@@ -553,7 +565,7 @@ export class CLI implements CLIInterface {
 		host: Baseline | undefined,
 		hostForced: boolean,
 	): Promise<Omit<OverwriteResult, 'audit'>> {
-		const previous = this.#previous(target)
+		const previous = catalogToNames(target)
 		let releases: readonly Release[] = []
 		let provenance: Provenance = { ...(host === undefined ? {} : { host }) }
 		try {
@@ -563,9 +575,11 @@ export class CLI implements CLIInterface {
 				...(versions.baseline === undefined ? {} : { versions: versions.baseline }),
 				...(host === undefined ? {} : { host }),
 			}
-			this.#assertVersions(versions)
+			const refused = versionsToRefusal(versions)
+			if (refused !== undefined) throw refused
 			const fetched = await this.#fetch(target, false)
-			this.#assertFetched(fetched.entries, fetched.mirrors)
+			const incomplete = fetchToRefusal(fetched.entries, fetched.mirrors)
+			if (incomplete !== undefined) throw incomplete
 			const guides: Baseline | undefined =
 				fetched.mirrors.length === 0
 					? undefined
@@ -577,7 +591,7 @@ export class CLI implements CLIInterface {
 				...(guides === undefined ? {} : { guides }),
 				...(host === undefined ? {} : { host }),
 			}
-			const written = this.#merge(
+			const written = mergeResults(
 				this.#publish(materializer, target, fetched.entries, fetched.mirrors),
 				materializer.declare({ pins: versions.pins, scripts: declared.scripts }, target),
 			)
@@ -632,12 +646,10 @@ export class CLI implements CLIInterface {
 				forced: false,
 			}
 		}
-		// A canon destination is dropped beside a deferred one, and for the same
-		// reason the assembler drops it: the overlay keeps the floor's bytes for a
-		// canon path and another verb owns a deferred path's bytes, so a request
-		// for either spends a round trip on bytes the overlay would not take.
+		// A floor destination is dropped for the reason the assembler drops it:
+		// requesting one spends a round trip on bytes the overlay would not take.
 		const paths = floor.manifest.entries
-			.filter((entry) => !isDeferredPath(entry.destination) && !isCanonPath(entry.destination))
+			.filter((entry) => !isFloorPath(entry.destination))
 			.map((entry) => entry.destination)
 		const current = target === undefined ? floor.bytes : readSnapshot(target, paths)
 		const upstream = new Upstream(this.#upstream)
@@ -730,26 +742,11 @@ export class CLI implements CLIInterface {
 		}
 		return {
 			releases,
-			pins: this.#pin(releases, declared),
+			pins: releasesToPins(releases, declared),
 			baseline: 'live',
 			forced: false,
 			complete: true,
 		}
-	}
-
-	// Refuse an incomplete version resolution before a caller opens a write.
-	#assertVersions(versions: VersionResolution): void {
-		if (versions.complete) return
-		const names = versions.releases
-			.filter((release) => release.lookup !== 'found')
-			.map((release) => release.name)
-		throw new ScaffoldError(
-			'FETCH',
-			names.length === 0
-				? 'A declared dependency names no concrete floor.'
-				: `The registry named no release for ${names.join(', ')}.`,
-			{ names: names.length },
-		)
 	}
 
 	// Measure each fleet row against the registry's newest release and each
@@ -825,80 +822,7 @@ export class CLI implements CLIInterface {
 		entries: readonly CatalogEntry[],
 		mirrors: readonly Mirror[],
 	): MaterializeResult {
-		return this.#merge(materializer.mirror(mirrors, target), materializer.catalog(entries, target))
-	}
-
-	// Derive declared release evidence from the catalog packuments already read.
-	#catalogReleases(
-		declared: readonly Dependency[],
-		entries: readonly CatalogEntry[],
-	): readonly Release[] {
-		return declared.map((dependency): Release => {
-			const entry = entries.find((candidate) => candidate.name === dependency.name)
-			if (entry?.lookup === 'found') {
-				return { ...dependency, lookup: 'found', latest: entry.version }
-			}
-			return {
-				...dependency,
-				lookup: entry?.lookup ?? 'missing',
-				note: entry?.note ?? 'the organization catalog does not list the declared package',
-			}
-		})
-	}
-
-	// A catalog transaction starts only after every packument answered. A mirror
-	// the host could not serve — a failed read or an absent guide, which is what
-	// a published package with a private repository answers with — is skipped and
-	// reported rather than refusing every other write, because one unreachable
-	// package never costs the caller the rest of the fetch.
-	#assertFetched(entries: readonly CatalogEntry[], mirrors: readonly Mirror[]): void {
-		const failed = [
-			...entries.filter((entry) => entry.lookup !== 'found').map((entry) => entry.name),
-			...mirrors
-				.filter(
-					(mirror) =>
-						mirror.lookup !== 'found' && mirror.lookup !== 'failed' && mirror.lookup !== 'missing',
-				)
-				.map((mirror) => mirror.name),
-		]
-		if (failed.length === 0) return
-		throw new ScaffoldError(
-			'FETCH',
-			`Upstream produced no complete catalog answer for ${failed.join(', ')}.`,
-			{ names: failed.length },
-		)
-	}
-
-	// Build the complete pin set or refuse before any caller writes a range.
-	#pin(releases: readonly Release[], declared: DependencyPinSet): DependencyPinSet {
-		const refused = releases.filter((release) => release.lookup !== 'found')
-		if (refused.length > 0) {
-			throw new ScaffoldError(
-				'FETCH',
-				`The registry named no release for ${refused.map((release) => release.name).join(', ')}.`,
-				{ names: refused.length },
-			)
-		}
-		const dependencies = [...declared.runtime, ...declared.development]
-		const pins: Dependency[] = []
-		for (let index = 0; index < releases.length; index += 1) {
-			const release = releases[index]
-			const dependency = dependencies[index]
-			if (release === undefined || dependency === undefined) {
-				throw new ScaffoldError('FETCH', 'The release answer has no matching declaration.')
-			}
-			if (release.lookup !== 'found') {
-				throw new ScaffoldError('FETCH', `The registry named no release for ${release.name}.`)
-			}
-			pins.push({ name: dependency.name, range: `^${release.latest}` })
-		}
-		if (pins.length !== dependencies.length) {
-			throw new ScaffoldError('FETCH', 'The release answer does not match the declaration set.')
-		}
-		return {
-			runtime: pins.slice(0, declared.runtime.length),
-			development: pins.slice(declared.runtime.length),
-		}
+		return mergeResults(materializer.mirror(mirrors, target), materializer.catalog(entries, target))
 	}
 
 	// Compile a blueprint into the plan it describes, or refuse with the questions
@@ -990,8 +914,8 @@ export class CLI implements CLIInterface {
 		const global = resolveContainedPath(target, GLOBAL_SETUP_PATH)
 		const showcase = resolveContainedPath(target, SHOWCASE_CONFIG_PATH)
 		return createBlueprint(declared.slice(declared.lastIndexOf('/') + 1), {
-			src: this.#probe(target, 'src'),
-			app: this.#probe(target, 'app'),
+			src: targetToEnvironments(target, 'src'),
+			app: targetToEnvironments(target, 'app'),
 			dependencies: manifestToDependencies(manifest).runtime,
 			bin: bin !== undefined && isExactCaseFile(bin),
 			setup:
@@ -1010,119 +934,6 @@ export class CLI implements CLIInterface {
 			global: global !== undefined && isExactCaseFile(global),
 			showcase: showcase !== undefined && isExactCaseFile(showcase),
 		})
-	}
-
-	// Read the literal Vitest projects and npm run scripts one shell command
-	// invokes. Quotes group a token but do not hide the option, while shell
-	// expansions make its value unresolved and therefore refuse the write that
-	// asked the question.
-	#invocations(
-		script: string,
-	): { readonly projects: readonly string[]; readonly scripts: readonly string[] } | undefined {
-		const tokens: Array<{ value: string; resolved: boolean }> = []
-		let value = ''
-		let resolved = true
-		let started = false
-		let quote: string | undefined
-		for (let index = 0; index < script.length; index += 1) {
-			const character = script[index]
-			if (character === undefined) return undefined
-			if (quote === undefined) {
-				if (/\s/.test(character)) {
-					if (started) tokens.push({ value, resolved })
-					value = ''
-					resolved = true
-					started = false
-					continue
-				}
-				if (';&|()'.includes(character)) {
-					if (started) tokens.push({ value, resolved })
-					const paired = script[index + 1] === character && (character === '&' || character === '|')
-					tokens.push({ value: paired ? `${character}${character}` : character, resolved: true })
-					value = ''
-					resolved = true
-					started = false
-					if (paired) index += 1
-					continue
-				}
-				if (character === '"' || character === "'") {
-					quote = character
-					started = true
-					continue
-				}
-				if (character === '\\') {
-					const escaped = script[index + 1]
-					if (escaped === undefined) return undefined
-					value += escaped
-					started = true
-					index += 1
-					continue
-				}
-				if (character === '$' || character === '`' || character === '%') resolved = false
-				value += character
-				started = true
-				continue
-			}
-			if (character === quote) {
-				quote = undefined
-				continue
-			}
-			if (character === '\\' && quote === '"') {
-				const escaped = script[index + 1]
-				if (escaped === undefined) return undefined
-				value += escaped
-				index += 1
-				continue
-			}
-			if (quote === '"' && (character === '$' || character === '`' || character === '%')) {
-				resolved = false
-			}
-			value += character
-			started = true
-		}
-		if (quote !== undefined) return undefined
-		if (started) tokens.push({ value, resolved })
-
-		const projects: string[] = []
-		const scripts: string[] = []
-		for (let index = 0; index < tokens.length; index += 1) {
-			const token = tokens[index]
-			if (token === undefined) return undefined
-			if (token.value === 'npm' && tokens[index + 1]?.value === 'run') {
-				const name = tokens[index + 2]
-				if (
-					name === undefined ||
-					!name.resolved ||
-					name.value.length === 0 ||
-					['&&', '||', ';', '|', '&', '(', ')'].includes(name.value)
-				)
-					return undefined
-				scripts.push(name.value)
-				index += 2
-				continue
-			}
-			if (token.value === '--project') {
-				const project = tokens[index + 1]
-				if (
-					project === undefined ||
-					!project.resolved ||
-					project.value.length === 0 ||
-					['&&', '||', ';', '|', '&', '(', ')'].includes(project.value)
-				)
-					return undefined
-				projects.push(project.value)
-				index += 1
-				continue
-			}
-			if (token.value.startsWith('--project=')) {
-				const project = token.value.slice('--project='.length)
-				if (!token.resolved || project.length === 0) return undefined
-				projects.push(project)
-				continue
-			}
-			if (!token.resolved && token.value.includes('--project')) return undefined
-		}
-		return { projects, scripts }
 	}
 
 	// Report either side of the planned-project invariant. Audit carries the
@@ -1155,7 +966,7 @@ export class CLI implements CLIInterface {
 		let unresolved = false
 		for (const script of Object.values(scripts)) {
 			if (!isString(script) || !script.includes('vitest')) continue
-			const invoked = this.#invocations(script)
+			const invoked = scriptToInvocations(script)
 			if (invoked === undefined) {
 				unresolved = true
 				continue
@@ -1187,7 +998,7 @@ export class CLI implements CLIInterface {
 		const expectedLines = new Map<string, string>()
 		for (const [name, script] of Object.entries(expected)) {
 			if (!name.startsWith('test:')) continue
-			const invoked = this.#invocations(script)
+			const invoked = scriptToInvocations(script)
 			if (invoked === undefined) continue
 			for (const project of invoked.projects) {
 				if (project === 'probe') continue
@@ -1208,7 +1019,7 @@ export class CLI implements CLIInterface {
 			visited.add(name)
 			const script = scripts[name]
 			if (!isString(script)) continue
-			const invoked = this.#invocations(script)
+			const invoked = scriptToInvocations(script)
 			if (invoked === undefined) {
 				unresolved = true
 				continue
@@ -1475,40 +1286,12 @@ export class CLI implements CLIInterface {
 		return manifest
 	}
 
-	// The environments one axis physically ships, read as directories rather than
-	// declared, because a directory is the fact and a declaration would be a
-	// second copy of it free to disagree.
-	#probe(target: string, axis: string): readonly Environment[] {
-		return ENVIRONMENTS.filter((environment) => {
-			const full = resolveContainedPath(target, `${axis}/${environment}`)
-			return full !== undefined && isPhysicalDirectory(full)
-		})
-	}
-
-	// The packages the target's catalog table listed before this run. Read through
-	// the declared markdown parser rather than by pattern, so a row is a row
-	// because the document says so.
-	#previous(target: string): readonly string[] {
-		const text = readFileText(target, CATALOG_AGENT_PATH)
-		if (text === undefined) return []
-		const names: string[] = []
-		for (const table of createMarkdown(text).filter(isTableNode)) {
-			for (const row of table.rows) {
-				const [cell] = row
-				if (cell === undefined) continue
-				const name = cell.map(flattenText).join('').trim()
-				if (DEPENDENCY_NAME_PATTERN.test(name)) names.push(name)
-			}
-		}
-		return names
-	}
-
 	// What git reports about the target's working tree. Deletion draws only on
 	// what git tracks and refuses a tree carrying uncommitted work, so a target
 	// that is not a repository has no recovery mechanism and is refused here.
 	#worktree(target: string): Worktree {
-		const tracked = this.#inventory(target, ['ls-files', '-z'])
-		const dirty = this.#inventory(target, [
+		const tracked = readGitRecords(target, ['ls-files', '-z'])
+		const dirty = readGitRecords(target, [
 			'status',
 			'--porcelain=v1',
 			'--untracked-files=all',
@@ -1523,81 +1306,6 @@ export class CLI implements CLIInterface {
 			})
 		}
 		return state
-	}
-
-	// One git query, answered as its NUL-separated records. Git is asked rather
-	// than reimplemented, because the tracked set and the dirty set are git's own
-	// answers and nothing else can give them. `executeSync` resolves the bare `git`
-	// name against `PATH` and `PATHEXT` on Windows, never through a shell, so the
-	// query runs without an extension of its own.
-	#inventory(target: string, args: readonly string[]): readonly string[] {
-		// A failed run resolves instead of throwing, so this class stays the owner of
-		// what leaves it: git's own refusal is buffered into the result rather than
-		// written onto a stream nobody chose, and the failure is reported through the
-		// diagnostic handler the caller supplied.
-		const result = executeSync(
-			{ file: 'git', arguments: [...args] },
-			{ workspace: target, limit: MAX_MANIFEST_BYTES, strict: false },
-		)
-		if (result.failed) {
-			throw new ScaffoldError('TARGET', `The target at ${target} is not a git repository.`, {
-				target,
-			})
-		}
-		return result.stdout.split('\0').filter((record) => record.length > 0)
-	}
-
-	// The environments a comma-separated selection names, refused by name when it
-	// names something that is not one.
-	#environments(selection: string | undefined, axis: string): readonly Environment[] {
-		if (selection === undefined) return []
-		const requested = selection.split(',')
-		const refused = requested.filter(
-			(name) => !ENVIRONMENTS.some((environment) => environment === name),
-		)
-		if (refused.length > 0) {
-			throw new UsageError(
-				`'--${axis}' does not take ${refused.join(', ')}. It takes ${ENVIRONMENTS.join(', ')}.`,
-			)
-		}
-		return ENVIRONMENTS.filter((environment) => requested.includes(environment))
-	}
-
-	// The groups a comma-separated selection names; absence covers every group.
-	#groups(selection: string | undefined): readonly Group[] | undefined {
-		if (selection === undefined) return undefined
-		const requested = selection.split(',')
-		const refused = requested.filter((name) => !GROUPS.some((group) => group === name))
-		if (refused.length > 0) {
-			throw new UsageError(
-				`'--groups' does not take ${refused.join(', ')}. It takes ${GROUPS.join(', ')}.`,
-			)
-		}
-		return GROUPS.filter((group) => requested.includes(group))
-	}
-
-	// The fleet packages a comma-separated selection names.
-	#packages(selection: string | undefined): readonly string[] {
-		if (selection === undefined) return []
-		const requested = selection.split(',')
-		const refused = requested.filter((name) => !DEPENDENCY_NAME_PATTERN.test(name))
-		if (refused.length > 0) {
-			throw new UsageError(
-				`'--deps' does not take ${refused.join(', ')}. Every name is a published @orkestrel package.`,
-			)
-		}
-		return requested
-	}
-
-	// The results of one run, read as one. Written and skipped never overlap
-	// across the calls a verb makes, because each call answers for its own paths.
-	#merge(first: MaterializeResult, second: MaterializeResult): MaterializeResult {
-		return {
-			target: first.target,
-			written: [...first.written, ...second.written],
-			skipped: [...first.skipped, ...second.skipped],
-			removed: [...first.removed, ...second.removed],
-		}
 	}
 
 	// Name every surface baseline after a network read forced a floor.
@@ -1653,10 +1361,10 @@ export class CLI implements CLIInterface {
 			if (current?.drift !== 'aligned' || current.observed === undefined) continue
 			const previousLines = Buffer.from(finding.observed, 'hex')
 				.toString('utf8')
-				.split(/\r\n|\r|\n/u).length
+				.split(/\r\n|\n/u).length
 			const currentLines = Buffer.from(current.observed, 'hex')
 				.toString('utf8')
-				.split(/\r\n|\r|\n/u).length
+				.split(/\r\n|\n/u).length
 			const delta = currentLines - previousLines
 			if (delta === 0) {
 				this.#say(`${finding.path} replaced (0-line delta).`)
@@ -1671,18 +1379,13 @@ export class CLI implements CLIInterface {
 
 	// The catalog outcome as a person reads it.
 	#recount(result: CatalogResult): void {
-		this.#say(this.#tally(result))
+		this.#say(resultToTally(result))
 		this.#say(
 			`${String(result.entries.length)} published, ${String(result.mirrors.filter((mirror) => mirror.lookup === 'found').length)} guide${result.mirrors.length === 1 ? '' : 's'} fetched, ${String(result.dropped.length)} no longer listed.`,
 		)
 		for (const mirror of result.mirrors) {
 			if (mirror.lookup !== 'found') this.#warn(`${mirror.name}: ${mirror.note}`)
 		}
-	}
-
-	// One line stating what a mutation did.
-	#tally(result: MaterializeResult): string {
-		return `${String(result.written.length)} written, ${String(result.skipped.length)} unchanged, ${String(result.removed.length)} removed in ${result.target}.`
 	}
 
 	// The one machine-readable value a `--json` run emits.
@@ -1701,20 +1404,10 @@ export class CLI implements CLIInterface {
 	}
 
 	#say(line: string): void {
-		this.#output(this.#sanitize(line))
+		this.#output(sanitizeLine(line))
 	}
 
 	#warn(line: string): void {
-		this.#diagnostic(this.#sanitize(line))
-	}
-
-	// The single write path, and the only place hostile bytes are answered for.
-	// A refusal quotes the argument that caused it, so an escape sequence, a bell,
-	// or a forged second line arrives here inside otherwise ordinary prose. ANSI
-	// escapes go first because they are what repaints a terminal, control
-	// characters next, and what remains is folded onto one line because a handler
-	// takes one line and a caller writing a record per call must get one record.
-	#sanitize(line: string): string {
-		return stripControls(strip(line)).split(/\r?\n/).join(' ')
+		this.#diagnostic(sanitizeLine(line))
 	}
 }

@@ -20,6 +20,8 @@ import {
 	blueprintToScripts,
 	blueprintToWritableScripts,
 	CATALOG_AGENT_PATH,
+	CATALOG_CLOSING_MARKER,
+	CATALOG_OPENING_MARKER,
 	createBlueprint,
 	DECLARATION_DEV_DEPENDENCIES,
 	GROUPS,
@@ -4853,8 +4855,8 @@ describe('CLI catalog', () => {
 				]),
 			).toBe(EXIT_CLEAN)
 			const agent = requireValue(workspace.read(`fresh/${CATALOG_AGENT_PATH}`))
-			expect(agent.split('<!-- orkestrel:catalog -->')).toHaveLength(2)
-			expect(agent.split('<!-- /orkestrel:catalog -->')).toHaveLength(2)
+			expect(agent.split(CATALOG_OPENING_MARKER)).toHaveLength(2)
+			expect(agent.split(CATALOG_CLOSING_MARKER)).toHaveLength(2)
 			expect(workspace.read('fresh/AGENTS.md')).not.toContain('orkestrel:catalog')
 
 			const sink = createSink()

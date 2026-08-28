@@ -113,3 +113,58 @@ export const MAX_UPSTREAM_TIMEOUT = 300_000
  * than repeating a literal that only agrees by inspection.
  */
 export const MANIFEST_NAME = 'manifest.json'
+
+/** The raw content host a repository read addresses when a caller names none. */
+export const DEFAULT_REPOSITORY_BASE = 'https://raw.githubusercontent.com'
+
+/** The registry a version read addresses when a caller names none. */
+export const DEFAULT_REGISTRY_BASE = 'https://registry.npmjs.org'
+
+/** The repository branch a raw content read addresses when a caller names none. */
+export const DEFAULT_BRANCH = 'main'
+
+/**
+ * The timeout one upstream request is given when a caller names none, in milliseconds.
+ *
+ * @remarks
+ * Both endpoints open at this value; a caller raises either one on its own up to
+ * {@link MAX_UPSTREAM_TIMEOUT}.
+ */
+export const DEFAULT_UPSTREAM_TIMEOUT = 10_000
+
+/** The simultaneous upstream requests a reader opens with, under {@link MAX_UPSTREAM_CONCURRENCY}. */
+export const DEFAULT_UPSTREAM_CONCURRENCY = 6
+
+/**
+ * The retries one upstream request is given when a caller names none.
+ *
+ * @remarks
+ * A read is attempted once by default. Retrying is the caller's decision because
+ * a repeated request costs the upstream host, not this package.
+ */
+export const DEFAULT_UPSTREAM_RETRIES = 0
+
+/** The npm scope and repository owner the fleet's packages and sources are published under. */
+export const ORKESTREL_SCOPE = 'orkestrel'
+
+/**
+ * The repository this package's own vendored files are served from.
+ *
+ * @remarks
+ * This package's bare name, stated rather than derived, because the reader has no
+ * manifest to read it out of and one raw content host serves both the fleet's
+ * guides and these files.
+ */
+export const SCAFFOLD_REPOSITORY = 'scaffold'
+
+/** The note a release carries when its packument names no readable latest version. */
+export const UNREADABLE_VERSION_NOTE = 'the answer carries no readable latest version'
+
+/**
+ * The media type that selects the registry's abbreviated packument.
+ *
+ * @remarks
+ * Sent on exactly the reads that want a version, so the registry answers with the
+ * smaller document instead of the whole packument.
+ */
+export const PACKUMENT_MEDIA_TYPE = 'application/vnd.npm.install-v1+json'

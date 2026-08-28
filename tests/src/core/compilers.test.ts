@@ -1,8 +1,7 @@
-import type { ManifestScript, Ownership } from '@src/core'
+import type { ManifestScript } from '@src/core'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import {
-	artifactToFinding,
 	blueprintToConfigArtifacts,
 	blueprintToDevDependencies,
 	blueprintToDocumentArtifacts,
@@ -16,25 +15,18 @@ import {
 	blueprintToTestArtifacts,
 	blueprintToWritableScripts,
 	CONFIG_TEMPLATES,
-	contentToHex,
 	createBlueprint,
 	ENVIRONMENTS,
 	FLOOR_RANGE_PATTERN,
 	isCanonPath,
-	isFinding,
 	nameToHostArtifacts,
 	ORKESTREL_RANGE_PATTERN,
 	RELEASE_PROOF_COMMAND,
 	replaceManifestRanges,
 	replaceManifestScripts,
 } from '@src/core'
-import { buildBlueprint, buildContentArtifact } from '../../setup.js'
+import { buildBlueprint } from '../../setup.js'
 import { describe, expect, it } from 'vitest'
-
-const OWNERSHIPS: readonly Ownership[] = ['content', 'presence', 'birth']
-const PLANNED = '# Sample\n'
-const MATCHING = contentToHex(PLANNED)
-const DIFFERING = contentToHex('# Edited\n')
 
 describe('FLOOR_RANGE_PATTERN', () => {
 	it('accepts a canonical major.minor.patch floor', () => {
@@ -1827,77 +1819,5 @@ describe('content artifact compilers', () => {
 		expect(artifact?.content).toContain("'ollama'")
 		expect(artifact?.content).toContain("'postgres'")
 		expect(artifact?.content).not.toContain('test:service')
-	})
-})
-
-describe('artifactToFinding producer matrix', () => {
-	// The instrument's population is every finding the producer can reach: every
-	// ownership tier by every observation state a target can present.
-	// Its control is drawn from outside that population, because a control sampled
-	// from inside it could only show the producer disagreeing with itself, and the
-	// question here is what the producer never reaches at all.
-	it('reaches every verdict shape, and the guard admits one it never reaches', () => {
-		const cells: string[] = []
-		const verdicts: string[] = []
-		for (const ownership of OWNERSHIPS) {
-			for (const [state, observed] of [
-				['absent', undefined],
-				['matching', MATCHING],
-				['differing', DIFFERING],
-			] as const) {
-				const finding = artifactToFinding(
-					buildContentArtifact({ ownership, content: PLANNED }),
-					observed,
-				)
-				// Soundness in the direction the guard does promise: the producer never
-				// emits a finding the guard rejects.
-				expect(isFinding(finding)).toBe(true)
-				const verdict = `${finding.ownership}/${finding.drift}/${finding.observed === undefined ? 'no observed' : 'observed'}`
-				cells.push(`${ownership} ${state} -> ${verdict}`)
-				verdicts.push(verdict)
-			}
-		}
-		expect(cells).toStrictEqual([
-			'content absent -> content/missing/no observed',
-			'content matching -> content/aligned/observed',
-			'content differing -> content/stale/observed',
-			'presence absent -> presence/missing/no observed',
-			'presence matching -> presence/aligned/observed',
-			'presence differing -> presence/aligned/observed',
-			'birth absent -> birth/aligned/no observed',
-			'birth matching -> birth/aligned/observed',
-			'birth differing -> birth/aligned/observed',
-		])
-		expect([...new Set(verdicts)].sort()).toStrictEqual([
-			'birth/aligned/no observed',
-			'birth/aligned/observed',
-			'content/aligned/observed',
-			'content/missing/no observed',
-			'content/stale/observed',
-			'presence/aligned/observed',
-			'presence/missing/no observed',
-		])
-
-		// The control. A birth-owned path reported stale is outside the population
-		// above: birth ownership is never compared, so the producer reports it
-		// aligned whatever the target holds.
-		const control = {
-			path: 'package.json',
-			group: 'manifest',
-			ownership: 'birth',
-			drift: 'stale',
-			observed: MATCHING,
-		}
-		expect(isFinding(control)).toBe(true)
-		expect(verdicts).not.toContain('birth/stale/observed')
-
-		// What the control established: the guard's population is strictly wider
-		// than the producer's, so the gap the `Finding` and `isFinding` remarks
-		// describe is measured rather than assumed, and a consumer that treats a
-		// guarded finding as a verdict some audit reached is wrong on real input.
-		// What it did not establish: nothing about what happens next. It does not
-		// show this verdict reaching a write, because `repair` re-derives every
-		// finding and refuses a caller's audit that disagrees, and it names one
-		// member of the gap rather than enumerating it.
 	})
 })

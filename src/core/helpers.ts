@@ -4,6 +4,7 @@ import type {
 	Dependency,
 	ManifestDependencySet,
 	Drift,
+	Environment,
 	Finding,
 	Group,
 	Ownership,
@@ -28,6 +29,7 @@ import {
 	PRINT_WIDTH,
 	TAB_WIDTH,
 	VERSION_PATTERN,
+	WORKSPACE_OWNED_PATHS,
 } from './constants.js'
 
 /**
@@ -221,6 +223,58 @@ export function isCanonPath(path: string): boolean {
 }
 
 /**
+ * Checks whether a target's present bytes at a path are owned by another surface.
+ *
+ * @param path - The target-relative path to test.
+ * @returns True if the path is a {@link WORKSPACE_OWNED_PATHS} member or a
+ * deferred path; false otherwise.
+ *
+ * @remarks
+ * The one reading of presence ownership. A workspace-owned path carries bytes
+ * the consumer's own workspace writes, and a deferred path carries bytes the
+ * catalog or mirror surface writes, so a vendored expansion plans either by
+ * presence rather than reading and claiming its content.
+ *
+ * @example
+ * ```ts
+ * import { isRetainedPath } from '@orkestrel/scaffold'
+ *
+ * isRetainedPath('.gitignore') // true
+ * isRetainedPath('LICENSE') // false
+ * ```
+ */
+export function isRetainedPath(path: string): boolean {
+	return WORKSPACE_OWNED_PATHS.includes(path) || isDeferredPath(path)
+}
+
+/**
+ * Checks whether a destination's floor bytes survive a live overlay.
+ *
+ * @param path - The target-relative destination to test.
+ * @returns True if the path is deferred or belongs to the instruction canon;
+ * false otherwise.
+ *
+ * @remarks
+ * The one reading of what a live fill does not replace, so the overlay assembler
+ * and the executable's fetch list never disagree about a destination. A deferred
+ * path's bytes belong to the catalog or mirror verb, and a canon destination is
+ * staged for reading rather than for a target, so the installed floor's bytes
+ * stand for both. A reader that requested either would spend a round trip on
+ * bytes the overlay would not take.
+ *
+ * @example
+ * ```ts
+ * import { isFloorPath } from '@orkestrel/scaffold'
+ *
+ * isFloorPath('AGENTS.md') // true
+ * isFloorPath('scripts/codex.sh') // false
+ * ```
+ */
+export function isFloorPath(path: string): boolean {
+	return isDeferredPath(path) || isCanonPath(path)
+}
+
+/**
  * Infer the {@link Group} a path belongs to.
  *
  * @param path - The target-relative path to classify.
@@ -396,6 +450,34 @@ export function nameToRewrite(name: string): string {
 }
 
 /**
+ * Select the single published environment a package root points at.
+ *
+ * @param src - The declared published environments.
+ * @returns That environment, or `undefined` when the selection declares none or
+ * several.
+ *
+ * @remarks
+ * A workspace publishing exactly one environment puts it at the package root,
+ * so its entry fields and its `'.'` export condition both name that
+ * environment's build. A workspace publishing several puts core at the root and
+ * gives every other environment a subpath, so there is no single root to name.
+ * Both callers read the same answer, which is why the branch is decided once
+ * here rather than twice.
+ *
+ * @example
+ * ```ts
+ * import { srcToRoot } from '@orkestrel/scaffold'
+ *
+ * srcToRoot(['browser']) // 'browser'
+ * srcToRoot(['core', 'server']) // undefined
+ * ```
+ */
+export function srcToRoot(src: readonly Environment[]): Environment | undefined {
+	if (src.length !== 1) return undefined
+	return src[0]
+}
+
+/**
  * Select the host paths a named workspace vendors.
  *
  * @param paths - The candidate host paths, in their declared order.
@@ -516,6 +598,50 @@ export function inferDrift(artifact: Artifact, observed?: string): Exclude<Drift
 	if (observed === undefined) return 'missing'
 	if (artifact.ownership === 'presence') return 'aligned'
 	return observed === artifactToHex(artifact) ? 'aligned' : 'stale'
+}
+
+/**
+ * Project one planned artifact and the bytes found at its path into a verdict.
+ *
+ * @param artifact - The planned artifact.
+ * @param observed - The destination's exact bytes as hexadecimal; absent when
+ * the destination holds no file.
+ * @returns The finding, carrying the artifact's ownership and `observed`
+ * exactly where bytes were read.
+ *
+ * @remarks
+ * The comparison itself is {@link inferDrift}'s, so ownership decides it here
+ * exactly as it does everywhere else. This adds only the shape: a missing
+ * destination has no bytes to record, and every other verdict records the bytes
+ * it was given, which is the precondition the mutation that follows is held to.
+ * Ownership is copied rather than inferred from drift because aligned findings
+ * span every ownership tier.
+ *
+ * `foreign` is not answerable here, because it describes a path no artifact was
+ * planned for.
+ *
+ * @example
+ * ```ts
+ * import { artifactToFinding } from '@orkestrel/scaffold'
+ *
+ * artifactToFinding(
+ * 	{ path: 'README.md', group: 'docs', ownership: 'content', origin: 'computed', content: 'hi\n' },
+ * 	'6279650a',
+ * ) // { path: 'README.md', group: 'docs', ownership: 'content', drift: 'stale', observed: '6279650a' }
+ * ```
+ */
+export function artifactToFinding(artifact: Artifact, observed?: string): Finding {
+	const path = artifact.path
+	const group = artifact.group
+	const ownership = artifact.ownership
+	if (observed === undefined) {
+		return inferDrift(artifact) === 'aligned'
+			? { path, group, ownership, drift: 'aligned' }
+			: { path, group, ownership, drift: 'missing' }
+	}
+	return inferDrift(artifact, observed) === 'stale'
+		? { path, group, ownership, drift: 'stale', observed }
+		: { path, group, ownership, drift: 'aligned', observed }
 }
 
 /**

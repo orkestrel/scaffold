@@ -276,6 +276,26 @@ export const ORCHESTRATION_PATH_NAMES: readonly string[] = Object.freeze(['.mcp.
  */
 export const CATALOG_AGENT_PATH = '.claude/agents/orkestrel.md'
 
+/**
+ * The marker opening the package table inside {@link CATALOG_AGENT_PATH}.
+ *
+ * @remarks
+ * The catalog verb rewrites the region between this marker and
+ * {@link CATALOG_CLOSING_MARKER} and leaves every other byte of the file alone,
+ * so the writer and every proof that reads the rendered file read the pair from
+ * here rather than repeating a literal that only agrees by inspection.
+ */
+export const CATALOG_OPENING_MARKER = '<!-- orkestrel:catalog -->'
+
+/**
+ * The marker closing the package table inside {@link CATALOG_AGENT_PATH}.
+ *
+ * @remarks
+ * It pairs with {@link CATALOG_OPENING_MARKER}; a file missing either marker is
+ * refused rather than rewritten.
+ */
+export const CATALOG_CLOSING_MARKER = '<!-- /orkestrel:catalog -->'
+
 /** The provisioner skeleton a workspace with declared service vendors is given once. */
 export const SERVICE_SCRIPT_PATH = 'scripts/service.sh'
 

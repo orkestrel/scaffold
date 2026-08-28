@@ -224,6 +224,18 @@ export interface VersionResolution {
 	readonly complete: boolean
 }
 
+/**
+ * The literal Vitest projects and npm run scripts one shell command invokes.
+ *
+ * @remarks
+ * Literal only: a token whose value a shell expansion decides is unresolved, so
+ * the whole reading answers `undefined` rather than reporting a name it guessed.
+ */
+export interface ScriptInvocations {
+	readonly projects: readonly string[]
+	readonly scripts: readonly string[]
+}
+
 /** One target question beside the artifact groups that make it relevant. */
 export interface TargetQuestion extends Question {
 	readonly groups: readonly Group[]

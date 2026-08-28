@@ -4,6 +4,7 @@ import { resolve } from 'node:path'
 import { isNumber, isRecord } from '@orkestrel/contract'
 import { describe, expect, it } from 'vitest'
 import {
+	artifactToFinding,
 	artifactToHex,
 	bytesToHex,
 	CANON_PATHS,
@@ -22,6 +23,9 @@ import {
 	isCollection,
 	isDeferredPath,
 	isDependency,
+	isFinding,
+	isFloorPath,
+	isRetainedPath,
 	manifestToDependencies,
 	manifestToName,
 	matchesDriftReachability,
@@ -39,6 +43,7 @@ import {
 	selectHostPaths,
 	serializeTypeScriptString,
 	TAB_WIDTH,
+	WORKSPACE_OWNED_PATHS,
 } from '@src/core'
 import {
 	buildBlueprint,
@@ -169,6 +174,41 @@ describe('isCanonPath', () => {
 				HOST_PATHS.some((host) => canon === host || canon.startsWith(`${host}/`)),
 			),
 		).toHaveLength(1)
+	})
+})
+
+describe('isRetainedPath', () => {
+	it('matches a workspace-owned path and a deferred path', () => {
+		for (const path of WORKSPACE_OWNED_PATHS) expect(isRetainedPath(path)).toBe(true)
+		expect(isRetainedPath('.claude/agents/orkestrel.md')).toBe(true)
+		expect(isRetainedPath('guides/router.md')).toBe(true)
+	})
+
+	it('refuses a vendored path whose bytes the plan claims', () => {
+		expect(isRetainedPath('LICENSE')).toBe(false)
+		expect(isRetainedPath('scripts/deps.sh')).toBe(false)
+		// A canon path is kept by the overlay rather than by presence, so it is
+		// outside this reading even though the other path predicate accepts it.
+		expect(isRetainedPath('AGENTS.md')).toBe(false)
+		expect(isRetainedPath('')).toBe(false)
+	})
+})
+
+describe('isFloorPath', () => {
+	it('matches a deferred path and every canon destination', () => {
+		expect(isFloorPath('.claude/agents/orkestrel.md')).toBe(true)
+		expect(isFloorPath('guides/router.md')).toBe(true)
+		for (const path of CANON_PATHS) expect(isFloorPath(path)).toBe(true)
+		expect(isFloorPath('.claude/rules/names.md')).toBe(true)
+	})
+
+	it('refuses a host-owned destination a live fill replaces', () => {
+		expect(isFloorPath('scripts/deps.sh')).toBe(false)
+		expect(isFloorPath('.claude/settings.json')).toBe(false)
+		// A workspace-owned path is retained by presence rather than by the floor,
+		// so the sibling reading accepts it and this one does not.
+		expect(isFloorPath('.gitignore')).toBe(false)
+		expect(isFloorPath('')).toBe(false)
 	})
 })
 
@@ -679,5 +719,82 @@ describe('manifestToDependencies', () => {
 			development: [],
 			peer: [],
 		})
+	})
+})
+
+const OWNERSHIPS: readonly Ownership[] = ['content', 'presence', 'birth']
+const PLANNED = '# Sample\n'
+const MATCHING = contentToHex(PLANNED)
+const DIFFERING = contentToHex('# Edited\n')
+
+describe('artifactToFinding producer matrix', () => {
+	// The instrument's population is every finding the producer can reach: every
+	// ownership tier by every observation state a target can present.
+	// Its control is drawn from outside that population, because a control sampled
+	// from inside it could only show the producer disagreeing with itself, and the
+	// question here is what the producer never reaches at all.
+	it('reaches every verdict shape, and the guard admits one it never reaches', () => {
+		const cells: string[] = []
+		const verdicts: string[] = []
+		for (const ownership of OWNERSHIPS) {
+			for (const [state, observed] of [
+				['absent', undefined],
+				['matching', MATCHING],
+				['differing', DIFFERING],
+			] as const) {
+				const finding = artifactToFinding(
+					buildContentArtifact({ ownership, content: PLANNED }),
+					observed,
+				)
+				// Soundness in the direction the guard does promise: the producer never
+				// emits a finding the guard rejects.
+				expect(isFinding(finding)).toBe(true)
+				const verdict = `${finding.ownership}/${finding.drift}/${finding.observed === undefined ? 'no observed' : 'observed'}`
+				cells.push(`${ownership} ${state} -> ${verdict}`)
+				verdicts.push(verdict)
+			}
+		}
+		expect(cells).toStrictEqual([
+			'content absent -> content/missing/no observed',
+			'content matching -> content/aligned/observed',
+			'content differing -> content/stale/observed',
+			'presence absent -> presence/missing/no observed',
+			'presence matching -> presence/aligned/observed',
+			'presence differing -> presence/aligned/observed',
+			'birth absent -> birth/aligned/no observed',
+			'birth matching -> birth/aligned/observed',
+			'birth differing -> birth/aligned/observed',
+		])
+		expect([...new Set(verdicts)].sort()).toStrictEqual([
+			'birth/aligned/no observed',
+			'birth/aligned/observed',
+			'content/aligned/observed',
+			'content/missing/no observed',
+			'content/stale/observed',
+			'presence/aligned/observed',
+			'presence/missing/no observed',
+		])
+
+		// The control. A birth-owned path reported stale is outside the population
+		// above: birth ownership is never compared, so the producer reports it
+		// aligned whatever the target holds.
+		const control = {
+			path: 'package.json',
+			group: 'manifest',
+			ownership: 'birth',
+			drift: 'stale',
+			observed: MATCHING,
+		}
+		expect(isFinding(control)).toBe(true)
+		expect(verdicts).not.toContain('birth/stale/observed')
+
+		// What the control established: the guard's population is strictly wider
+		// than the producer's, so the gap the `Finding` and `isFinding` remarks
+		// describe is measured rather than assumed, and a consumer that treats a
+		// guarded finding as a verdict some audit reached is wrong on real input.
+		// What it did not establish: nothing about what happens next. It does not
+		// show this verdict reaching a write, because `repair` re-derives every
+		// finding and refuses a caller's audit that disagrees, and it names one
+		// member of the gap rather than enumerating it.
 	})
 })

@@ -4,13 +4,20 @@ import type {
 	CatalogEntry,
 	Dependency,
 	HostFile,
-	Lookup,
 	Mirror,
 	Release,
 	ScaffoldErrorCode,
 	Snapshot,
 } from '@src/core'
-import type { UpstreamEventMap, UpstreamInterface, UpstreamOptions } from './types.js'
+import type {
+	BytesReadResult,
+	HostInventory,
+	ReadAllowance,
+	TextReadResult,
+	UpstreamEventMap,
+	UpstreamInterface,
+	UpstreamOptions,
+} from './types.js'
 import {
 	isError,
 	isRecord,
@@ -40,6 +47,18 @@ import {
 	nameToGuide,
 	ScaffoldError,
 } from '@src/core'
+import {
+	DEFAULT_BRANCH,
+	DEFAULT_REGISTRY_BASE,
+	DEFAULT_REPOSITORY_BASE,
+	DEFAULT_UPSTREAM_CONCURRENCY,
+	DEFAULT_UPSTREAM_RETRIES,
+	DEFAULT_UPSTREAM_TIMEOUT,
+	ORKESTREL_SCOPE,
+	PACKUMENT_MEDIA_TYPE,
+	SCAFFOLD_REPOSITORY,
+	UNREADABLE_VERSION_NOTE,
+} from './constants.js'
 import { computeManifestDigest, hexToDigest } from './helpers.js'
 import {
 	isDependencies,
@@ -79,7 +98,7 @@ import {
  * flight instead of waiting for it.
  *
  * The allowance is threaded through the private reads as a mutable
- * `{ remaining: number }` carrier rather than held on the instance, because
+ * {@link ReadAllowance} carrier rather than held on the instance, because
  * concurrent calls each own their own budget and must not spend each other's.
  *
  * @example
@@ -92,29 +111,6 @@ import {
  * ```
  */
 export class Upstream implements UpstreamInterface {
-	// The defaults a request is built with, and the fixed strings the fleet's
-	// own addresses are assembled from. They sit here rather than in
-	// `constants.ts` because that file is frozen, and each is read by exactly one
-	// line of this class: a default is the entity's law applied when it builds a
-	// request, so it belongs beside the law rather than in shared data.
-	static readonly #defaultRepository = 'https://raw.githubusercontent.com'
-	static readonly #defaultRegistry = 'https://registry.npmjs.org'
-	static readonly #defaultBranch = 'main'
-	static readonly #defaultTimeout = 10_000
-	static readonly #defaultConcurrency = 6
-	static readonly #defaultRetries = 0
-	static readonly #scope = 'orkestrel'
-	// The repository this package's own vendored files are served from. It is
-	// this package's bare name, stated rather than derived, because the reader
-	// has no manifest to read it out of and one raw content host serves both the
-	// fleet's guides and these files.
-	static readonly #vendor = 'scaffold'
-	static readonly #unreadable = 'the answer carries no readable latest version'
-	// The media type that selects the registry's abbreviated packument. It sits
-	// with the request defaults because it is part of how this class asks for a
-	// version, and it is asked for at exactly the reads that want one.
-	static readonly #packument = 'application/vnd.npm.install-v1+json'
-
 	readonly #emitter: Emitter<UpstreamEventMap>
 	readonly #repositoryBase: string
 	readonly #repositoryBranch: string
@@ -160,18 +156,18 @@ export class Upstream implements UpstreamInterface {
 			...(options?.error === undefined ? {} : { error: options.error }),
 		})
 		this.#repositoryBase = this.#endpoint(
-			options?.repository?.base ?? Upstream.#defaultRepository,
+			options?.repository?.base ?? DEFAULT_REPOSITORY_BASE,
 			'repository',
 		)
-		this.#repositoryBranch = options?.repository?.branch ?? Upstream.#defaultBranch
-		this.#repositoryTimeout = options?.repository?.timeout ?? Upstream.#defaultTimeout
+		this.#repositoryBranch = options?.repository?.branch ?? DEFAULT_BRANCH
+		this.#repositoryTimeout = options?.repository?.timeout ?? DEFAULT_UPSTREAM_TIMEOUT
 		this.#registryBase = this.#endpoint(
-			options?.registry?.base ?? Upstream.#defaultRegistry,
+			options?.registry?.base ?? DEFAULT_REGISTRY_BASE,
 			'registry',
 		)
-		this.#registryTimeout = options?.registry?.timeout ?? Upstream.#defaultTimeout
-		this.#concurrency = options?.concurrency ?? Upstream.#defaultConcurrency
-		this.#retries = options?.retries ?? Upstream.#defaultRetries
+		this.#registryTimeout = options?.registry?.timeout ?? DEFAULT_UPSTREAM_TIMEOUT
+		this.#concurrency = options?.concurrency ?? DEFAULT_UPSTREAM_CONCURRENCY
+		this.#retries = options?.retries ?? DEFAULT_UPSTREAM_RETRIES
 		this.#limit = options?.limit ?? MAX_REGISTRY_BYTES
 		this.#budget = options?.budget ?? MAX_TOTAL_REGISTRY_BYTES
 	}
@@ -394,12 +390,12 @@ export class Upstream implements UpstreamInterface {
 	// One dependency, read and projected into the verdict its row carries. A
 	// found answer that states no admitted version is unmatched rather than a
 	// found one carrying nothing, because an empty version is not an answer.
-	async #release(dependency: Dependency, allowance: { remaining: number }): Promise<Release> {
+	async #release(dependency: Dependency, allowance: ReadAllowance): Promise<Release> {
 		const outcome = await this.#readWithRetries(
 			this.#registryURL(dependency.name),
 			this.#registryTimeout,
 			allowance,
-			Upstream.#packument,
+			PACKUMENT_MEDIA_TYPE,
 		)
 		const latest =
 			outcome.lookup === 'found'
@@ -413,7 +409,7 @@ export class Upstream implements UpstreamInterface {
 						name: dependency.name,
 						range: dependency.range,
 						lookup: outcome.lookup === 'found' ? 'unmatched' : outcome.lookup,
-						note: outcome.lookup === 'found' ? Upstream.#unreadable : outcome.note,
+						note: outcome.lookup === 'found' ? UNREADABLE_VERSION_NOTE : outcome.note,
 						...(major === undefined ? {} : { major }),
 					}
 				: {
@@ -428,11 +424,7 @@ export class Upstream implements UpstreamInterface {
 	}
 
 	// One guide, read and projected beside the local bytes it answers for.
-	async #mirror(
-		name: string,
-		current: Snapshot,
-		allowance: { remaining: number },
-	): Promise<Mirror> {
+	async #mirror(name: string, current: Snapshot, allowance: ReadAllowance): Promise<Mirror> {
 		const path = nameToGuide(name)
 		const outcome = await this.#readWithRetries(
 			this.#guideURL(name),
@@ -465,14 +457,9 @@ export class Upstream implements UpstreamInterface {
 	// several exits and each one still has to be published exactly once.
 	async #file(
 		path: string,
-		inventory: {
-			readonly lookup: Lookup
-			readonly digests: ReadonlyMap<string, string>
-			readonly duplicates: ReadonlySet<string>
-			readonly note: string
-		},
+		inventory: HostInventory,
 		current: Snapshot,
-		allowance: { remaining: number },
+		allowance: ReadAllowance,
 	): Promise<HostFile> {
 		const file = await this.#answer(path, inventory, current[path], allowance)
 		this.#emitter.emit('file', file)
@@ -495,14 +482,9 @@ export class Upstream implements UpstreamInterface {
 	// repository would claim a comparison that verb is about to break.
 	async #answer(
 		path: string,
-		inventory: {
-			readonly lookup: Lookup
-			readonly digests: ReadonlyMap<string, string>
-			readonly duplicates: ReadonlySet<string>
-			readonly note: string
-		},
+		inventory: HostInventory,
 		observed: string | undefined,
-		allowance: { remaining: number },
+		allowance: ReadAllowance,
 	): Promise<HostFile> {
 		const carried = observed === undefined ? {} : { observed }
 		if (inventory.lookup !== 'found') {
@@ -559,12 +541,7 @@ export class Upstream implements UpstreamInterface {
 	// to fall back to. The membership digest is recomputed rather than trusted, so
 	// a membership edit that did not update the manifest's own claim is refused
 	// here instead of authorizing bytes downstream.
-	async #inventory(allowance: { remaining: number }): Promise<{
-		readonly lookup: Lookup
-		readonly digests: ReadonlyMap<string, string>
-		readonly duplicates: ReadonlySet<string>
-		readonly note: string
-	}> {
+	async #inventory(allowance: ReadAllowance): Promise<HostInventory> {
 		const url = this.#vendorURL(HOST_INVENTORY_PATH)
 		const empty = { digests: new Map<string, string>(), duplicates: new Set<string>() }
 		const outcome = await this.#readWithRetries(url, this.#repositoryTimeout, allowance)
@@ -605,12 +582,12 @@ export class Upstream implements UpstreamInterface {
 	// One catalog row. It publishes nothing on the observation channel: the
 	// channel carries the verdicts the writer binds to, and a catalog row is
 	// not one of them, so the whole sorted list is the answer instead.
-	async #entry(name: string, allowance: { remaining: number }): Promise<CatalogEntry> {
+	async #entry(name: string, allowance: ReadAllowance): Promise<CatalogEntry> {
 		const outcome = await this.#readWithRetries(
 			this.#registryURL(name),
 			this.#registryTimeout,
 			allowance,
-			Upstream.#packument,
+			PACKUMENT_MEDIA_TYPE,
 		)
 		const version = outcome.lookup === 'found' ? this.#latest(outcome.content) : undefined
 		if (version !== undefined) {
@@ -619,7 +596,7 @@ export class Upstream implements UpstreamInterface {
 		return {
 			name,
 			lookup: outcome.lookup === 'found' ? 'unmatched' : outcome.lookup,
-			note: outcome.lookup === 'found' ? Upstream.#unreadable : outcome.note,
+			note: outcome.lookup === 'found' ? UNREADABLE_VERSION_NOTE : outcome.note,
 		}
 	}
 
@@ -656,8 +633,8 @@ export class Upstream implements UpstreamInterface {
 	// map rather than a search. Every refusal here is coded rather than collected,
 	// because a caller that received an empty or partial fleet could not tell it
 	// from a fleet that shrank.
-	async #packages(allowance: { remaining: number }): Promise<readonly string[]> {
-		const url = `${this.#registryBase}/-/org/${Upstream.#scope}/package`
+	async #packages(allowance: ReadAllowance): Promise<readonly string[]> {
+		const url = `${this.#registryBase}/-/org/${ORKESTREL_SCOPE}/package`
 		const outcome = await this.#readWithRetries(url, this.#registryTimeout, allowance)
 		if (outcome.lookup !== 'found') {
 			throw this.#error('FETCH', `The organization package list at ${url} produced no answer.`, {
@@ -750,7 +727,7 @@ export class Upstream implements UpstreamInterface {
 	#guideURL(name: string): string {
 		const branch = this.#encode(this.#repositoryBranch)
 		const repository = encodeURIComponent(name.slice(name.lastIndexOf('/') + 1))
-		return `${this.#repositoryBase}/${Upstream.#scope}/${repository}/refs/heads/${branch}/${nameToGuide(name)}`
+		return `${this.#repositoryBase}/${ORKESTREL_SCOPE}/${repository}/refs/heads/${branch}/${nameToGuide(name)}`
 	}
 
 	// The same canonical raw-content path, over this package's own repository and
@@ -761,7 +738,7 @@ export class Upstream implements UpstreamInterface {
 	// other than the file the row answers for.
 	#vendorURL(path: string): string {
 		const branch = this.#encode(this.#repositoryBranch)
-		return `${this.#repositoryBase}/${Upstream.#scope}/${Upstream.#vendor}/refs/heads/${branch}/${this.#encode(path)}`
+		return `${this.#repositoryBase}/${ORKESTREL_SCOPE}/${SCAFFOLD_REPOSITORY}/refs/heads/${branch}/${this.#encode(path)}`
 	}
 
 	// One slash-joined path, encoded a segment at a time, so its separators stay
@@ -785,27 +762,24 @@ export class Upstream implements UpstreamInterface {
 	async #readWithRetries(
 		url: string,
 		timeout: number,
-		allowance: { remaining: number },
+		allowance: ReadAllowance,
 		accept: string | undefined,
 		binary: true,
-	): Promise<{ readonly lookup: Lookup; readonly hex: string; readonly note: string }>
+	): Promise<BytesReadResult>
 	async #readWithRetries(
 		url: string,
 		timeout: number,
-		allowance: { remaining: number },
+		allowance: ReadAllowance,
 		accept?: string,
 		binary?: false,
-	): Promise<{ readonly lookup: Lookup; readonly content: string; readonly note: string }>
+	): Promise<TextReadResult>
 	async #readWithRetries(
 		url: string,
 		timeout: number,
-		allowance: { remaining: number },
+		allowance: ReadAllowance,
 		accept?: string,
 		binary = false,
-	): Promise<
-		| { readonly lookup: Lookup; readonly content: string; readonly note: string }
-		| { readonly lookup: Lookup; readonly hex: string; readonly note: string }
-	> {
+	): Promise<TextReadResult | BytesReadResult> {
 		let note = ''
 		for (let round = 0; round <= this.#retries; round += 1) {
 			this.#assertAlive()
@@ -825,27 +799,24 @@ export class Upstream implements UpstreamInterface {
 	async #request(
 		url: string,
 		timeout: number,
-		allowance: { remaining: number },
+		allowance: ReadAllowance,
 		accept: string | undefined,
 		binary: true,
-	): Promise<{ readonly lookup: Lookup; readonly hex: string; readonly note: string }>
+	): Promise<BytesReadResult>
 	async #request(
 		url: string,
 		timeout: number,
-		allowance: { remaining: number },
+		allowance: ReadAllowance,
 		accept?: string,
 		binary?: false,
-	): Promise<{ readonly lookup: Lookup; readonly content: string; readonly note: string }>
+	): Promise<TextReadResult>
 	async #request(
 		url: string,
 		timeout: number,
-		allowance: { remaining: number },
+		allowance: ReadAllowance,
 		accept?: string,
 		binary = false,
-	): Promise<
-		| { readonly lookup: Lookup; readonly content: string; readonly note: string }
-		| { readonly lookup: Lookup; readonly hex: string; readonly note: string }
-	> {
+	): Promise<TextReadResult | BytesReadResult> {
 		if (allowance.remaining <= 0) {
 			const note = `the call spent its ${String(this.#budget)}-byte allowance`
 			return binary ? { lookup: 'failed', hex: '', note } : { lookup: 'failed', content: '', note }
@@ -898,24 +869,13 @@ export class Upstream implements UpstreamInterface {
 	// covers the whole 2xx range. It is a verdict rather than an empty answer: a
 	// zero-byte file arrives as a `200` with an empty stream and still reads as
 	// found.
+	async #body(response: Response, allowance: ReadAllowance, binary: true): Promise<BytesReadResult>
+	async #body(response: Response, allowance: ReadAllowance, binary?: false): Promise<TextReadResult>
 	async #body(
 		response: Response,
-		allowance: { remaining: number },
-		binary: true,
-	): Promise<{ readonly lookup: Lookup; readonly hex: string; readonly note: string }>
-	async #body(
-		response: Response,
-		allowance: { remaining: number },
-		binary?: false,
-	): Promise<{ readonly lookup: Lookup; readonly content: string; readonly note: string }>
-	async #body(
-		response: Response,
-		allowance: { remaining: number },
+		allowance: ReadAllowance,
 		binary = false,
-	): Promise<
-		| { readonly lookup: Lookup; readonly content: string; readonly note: string }
-		| { readonly lookup: Lookup; readonly hex: string; readonly note: string }
-	> {
+	): Promise<TextReadResult | BytesReadResult> {
 		const body = response.body
 		if (body === null) {
 			const note = `HTTP ${String(response.status)}, and the answer carries no body`

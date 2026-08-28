@@ -38,9 +38,8 @@ import {
 	HOST_INVENTORY_PATH,
 	HOST_PATHS,
 	inferGroup,
-	isCanonPath,
 	isCollection,
-	isDeferredPath,
+	isFloorPath,
 	isHex,
 	isPath,
 	MAX_ARTIFACT_BYTES,
@@ -1061,7 +1060,7 @@ export function readFileText(
  * @remarks
  * The one door from a real directory into the vocabulary an audit compares in.
  * Absence is omission rather than an empty value, because core reads a missing
- * key as a missing destination and an empty string as a present directory; the
+ * key as a missing destination and an empty string as a present directory;
  * they are different verdicts. A path that is there but unreadable throws instead
  * of being omitted, because omission would report it as missing and a repair
  * would then overwrite whatever is actually sitting there.
@@ -1190,7 +1189,7 @@ export function readHostManifest(
  * @param root - The vendored host root. Default: the installed package's
  * vendored root, resolved from this module's location.
  * @returns The verified manifest and the exact bytes of every declared entry.
- * @throws `ScaffoldError('TARGET', â€¦)` when the root is not a readable physical
+ * @throws `ScaffoldError('TARGET', …)` when the root is not a readable physical
  * directory, its manifest is absent or unreadable, the manifest does not verify,
  * or a declared file is unreadable or misses its digest.
  *
@@ -1292,13 +1291,10 @@ export function readManifestEntry(destination: string, source: string): Manifest
  * restates it. The host surface contributes one baseline: a fill carries live
  * bytes for every path that surface writes, or it is nothing. A row that failed,
  * went missing, names an undeclared path, or leaves a host-owned path absent
- * answers `undefined`. Deferred paths are presence-only and retain the installed
- * floor bytes that their catalog or mirror surface owns; repair never writes
- * those floor bytes. A canon path is read the same way for a different reason:
- * the canon is staged for reading rather than for a target, so every canon
- * destination keeps its floor bytes here, claimed or not, and a fill that carries
- * no row for one is complete rather than spoiled. One `Host` can therefore carry
- * live host bytes beside floor bytes without mixing baselines within a surface.
+ * answers `undefined`. Every {@link isFloorPath} destination keeps the installed
+ * floor's bytes instead, claimed or not, so a fill carrying no row for one is
+ * complete rather than spoiled. One `Host` can therefore carry live host bytes
+ * beside floor bytes without mixing baselines within a surface.
  *
  * The emitted entries keep the release's own order and its storage and
  * executable declarations, and carry digests recomputed over the bytes the fill
@@ -1323,15 +1319,14 @@ export function filesToHost(files: readonly HostFile[], floor: Host): Host | und
 	const held = new Map<string, string>()
 	for (const file of files) {
 		if (file.lookup !== 'found' || !declared.has(file.path)) return undefined
-		if (!isDeferredPath(file.path) && !isCanonPath(file.path)) held.set(file.path, file.hex)
+		if (!isFloorPath(file.path)) held.set(file.path, file.hex)
 	}
 	const entries: ManifestEntry[] = []
 	const bytes: Record<string, string> = {}
 	for (const entry of floor.manifest.entries) {
-		const hex =
-			isDeferredPath(entry.destination) || isCanonPath(entry.destination)
-				? floor.bytes[entry.destination]
-				: held.get(entry.destination)
+		const hex = isFloorPath(entry.destination)
+			? floor.bytes[entry.destination]
+			: held.get(entry.destination)
 		if (hex === undefined) return undefined
 		entries.push({
 			storage: entry.storage,

@@ -16,6 +16,8 @@ import { fileURLToPath } from 'node:url'
 import { gzipSync } from 'node:zlib'
 import {
 	CATALOG_AGENT_PATH,
+	CATALOG_CLOSING_MARKER,
+	CATALOG_OPENING_MARKER,
 	blueprintToDevDependencies,
 	contentToHex,
 	blueprintToScripts,
@@ -1474,21 +1476,41 @@ export function buildTargetAudit(
  * The catalog agent file as a target carries it, markers and surrounding prose included.
  *
  * @remarks
- * The marker pair is written literally here because the writer holds it as a
- * private class constant. Once the artifact that renders this file exists, both
- * belong to one shared constant and this fixture reads it instead.
+ * The marker pair is read from the shared constants the writer reads, so the
+ * fixture and the writer cannot drift apart.
  */
 export const CATALOG_AGENT_TEXT = [
 	'# Orkestrel',
 	'',
 	'Prose a consumer wrote above the table.',
 	'',
-	'<!-- orkestrel:catalog -->',
+	CATALOG_OPENING_MARKER,
 	'| Package | Version |',
 	'| --- | --- |',
-	'<!-- /orkestrel:catalog -->',
+	CATALOG_CLOSING_MARKER,
 	'',
 	'Prose a consumer wrote below the table.',
+	'',
+].join('\n')
+
+/**
+ * The catalog agent file carrying a package table a reader can list names from.
+ *
+ * @remarks
+ * The rows are what {@link CATALOG_AGENT_TEXT} deliberately lacks. The trailing
+ * row names something that is not a published package, so a reading that matched
+ * every first cell rather than every package name reports it.
+ */
+export const CATALOG_AGENT_ROWS_TEXT = [
+	'# Orkestrel',
+	'',
+	CATALOG_OPENING_MARKER,
+	'| Package | Version |',
+	'| --- | --- |',
+	'| @orkestrel/contract | 0.0.9 |',
+	'| @orkestrel/emitter | 0.0.6 |',
+	'| not a package | 0.0.1 |',
+	CATALOG_CLOSING_MARKER,
 	'',
 ].join('\n')
 

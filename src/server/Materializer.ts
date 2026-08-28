@@ -32,13 +32,15 @@ import { Emitter } from '@orkestrel/emitter'
 import {
 	catalogToLayers,
 	CATALOG_AGENT_PATH,
+	CATALOG_CLOSING_MARKER,
+	CATALOG_OPENING_MARKER,
 	cloneValue,
 	computeBytes,
 	contentToHex,
 	inferGroup,
 	isAudit,
-	isDeferredPath,
 	isPlan,
+	isRetainedPath,
 	MAX_ARTIFACT_BYTES,
 	MAX_MANIFEST_BYTES,
 	MAX_TOTAL_ARTIFACT_BYTES,
@@ -47,8 +49,8 @@ import {
 	replaceManifestRanges,
 	replaceManifestScripts,
 	ScaffoldError,
-	WORKSPACE_OWNED_PATHS,
 } from '@src/core'
+import { MANIFEST_NAME } from './constants.js'
 import {
 	computeFileDigest,
 	computeManifestDigest,
@@ -125,13 +127,6 @@ import { WriteTransaction } from './WriteTransaction.js'
  * ```
  */
 export class Materializer implements MaterializerInterface {
-	// The marker pair bounding the package table inside the catalog agent file.
-	// It sits here rather than in `constants.ts` because that file is frozen; the
-	// artifact that renders the file must read the same pair, so the pair belongs
-	// in core as soon as both consumers exist.
-	static readonly #opening = '<!-- orkestrel:catalog -->'
-	static readonly #closing = '<!-- /orkestrel:catalog -->'
-
 	readonly #emitter: Emitter<MaterializerEventMap>
 	readonly #root: string | undefined
 	readonly #value: Host | undefined
@@ -588,7 +583,7 @@ export class Materializer implements MaterializerInterface {
 				error: walked.error,
 			})
 		}
-		const declared = [...manifest.entries.map((entry) => entry.storage), 'manifest.json'].sort()
+		const declared = [...manifest.entries.map((entry) => entry.storage), MANIFEST_NAME].sort()
 		const stored = walked.value
 		if (
 			stored.length !== declared.length ||
@@ -697,11 +692,7 @@ export class Materializer implements MaterializerInterface {
 		let budget = remaining
 		for (const entry of matched) {
 			const path = this.#remap(artifact, entry.destination)
-			if (WORKSPACE_OWNED_PATHS.includes(path)) {
-				expanded.push(this.#presence(artifact, path, entry.destination))
-				continue
-			}
-			if (isDeferredPath(path)) {
+			if (isRetainedPath(path)) {
 				expanded.push(this.#presence(artifact, path, entry.destination))
 				continue
 			}
@@ -729,10 +720,7 @@ export class Materializer implements MaterializerInterface {
 			})
 		}
 		if (isPhysicalFile(full)) {
-			if (WORKSPACE_OWNED_PATHS.includes(artifact.path)) {
-				return [this.#presence(artifact, artifact.path, source)]
-			}
-			if (isDeferredPath(artifact.path)) {
+			if (isRetainedPath(artifact.path)) {
 				return [this.#presence(artifact, artifact.path, source)]
 			}
 			return [this.#hydrated(artifact, artifact.path, source, this.#readRoot(source, remaining))]
@@ -748,11 +736,7 @@ export class Materializer implements MaterializerInterface {
 		for (const name of listFiles(full)) {
 			const path = `${artifact.path}/${name}`
 			const destination = `${source}/${name}`
-			if (WORKSPACE_OWNED_PATHS.includes(path)) {
-				expanded.push(this.#presence(artifact, path, destination))
-				continue
-			}
-			if (isDeferredPath(path)) {
+			if (isRetainedPath(path)) {
 				expanded.push(this.#presence(artifact, path, destination))
 				continue
 			}
@@ -1161,14 +1145,14 @@ export class Materializer implements MaterializerInterface {
 			)
 			.join('\n')
 		return (text: string) => {
-			const opening = text.indexOf(Materializer.#opening)
-			const closing = text.indexOf(Materializer.#closing, opening + Materializer.#opening.length)
+			const opening = text.indexOf(CATALOG_OPENING_MARKER)
+			const closing = text.indexOf(CATALOG_CLOSING_MARKER, opening + CATALOG_OPENING_MARKER.length)
 			if (opening < 0 || closing < 0) {
 				throw this.#error('TARGET', 'The catalog agent file carries no marked region.', {
 					path: CATALOG_AGENT_PATH,
 				})
 			}
-			return `${text.slice(0, opening + Materializer.#opening.length)}\n\n${table}\n\n${text.slice(closing)}`
+			return `${text.slice(0, opening + CATALOG_OPENING_MARKER.length)}\n\n${table}\n\n${text.slice(closing)}`
 		}
 	}
 

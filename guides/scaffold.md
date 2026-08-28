@@ -110,6 +110,8 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `BIN_ENTRY_PATH`                  | const | The executable entry whose presence makes a workspace `bin`.                                     |
 | `CANON_PATHS`                     | const | The instruction-canon paths staged for reading rather than for a target, frozen.                 |
 | `CATALOG_AGENT_PATH`              | const | The agent file whose marker-bounded package table the catalog verb alone owns.                   |
+| `CATALOG_CLOSING_MARKER`          | const | The marker closing the package table inside the catalog agent file.                              |
+| `CATALOG_OPENING_MARKER`          | const | The marker opening the package table inside the catalog agent file.                              |
 | `CONFIG_TEMPLATES`                | const | Formatter-stable template text for every configuration artifact.                                 |
 | `CONFORMANCE_TEST_PATH`           | const | The official-tooling drift proof whose presence makes a workspace `conformance`.                 |
 | `CONTROL_CHARACTER_PATTERN`       | const | Unicode controls, formatting controls, and line and paragraph separators rejected in text.       |
@@ -205,6 +207,7 @@ Exported from `@orkestrel/scaffold`, and reachable from
 
 | Name                        | Kind     | Summary                                                                       |
 | --------------------------- | -------- | ----------------------------------------------------------------------------- |
+| `artifactToFinding`         | function | Project one planned artifact and the bytes found at its path into a verdict.  |
 | `artifactToHex`             | function | Project an artifact to the exact bytes it claims, as hexadecimal.             |
 | `bytesToHex`                | function | Encode bytes as exact lowercase hexadecimal text.                             |
 | `catalogToLayers`           | function | Project a catalog into the layers it publishes in.                            |
@@ -219,6 +222,8 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `inferGroup`                | function | Infer the `Group` a path belongs to.                                          |
 | `isCanonPath`               | function | Test whether a path belongs to the instruction canon a target reads.          |
 | `isDeferredPath`            | function | Test whether another surface owns the vendored bytes at a path.               |
+| `isFloorPath`               | function | Checks whether a destination's floor bytes survive a live overlay.            |
+| `isRetainedPath`            | function | Checks whether another surface owns a target's present bytes at a path.       |
 | `manifestToDependencies`    | function | Project a manifest's `@orkestrel/*` declarations into separate section lists. |
 | `manifestToName`            | function | Project a package manifest's text to its own name.                            |
 | `matchesDriftReachability`  | function | Test whether `inferDrift` could have produced a finding for an ownership.     |
@@ -232,13 +237,13 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `selectGroups`              | function | Select the groups a compile covers, in plan order.                            |
 | `selectHostPaths`           | function | Select the host paths a named workspace vendors.                              |
 | `serializeTypeScriptString` | function | Serialize one string as a single-quoted TypeScript literal.                   |
+| `srcToRoot`                 | function | Select the single published environment a package root points at.             |
 
 #### Compilers
 
 | Name                                | Kind     | Summary                                                                         |
 | ----------------------------------- | -------- | ------------------------------------------------------------------------------- |
 | `applyOverrides`                    | function | Replace the content of every drafted artifact an override names.                |
-| `artifactToFinding`                 | function | Project one planned artifact and the bytes found at its path into a verdict.    |
 | `artifactsToQuestions`              | function | Measure a drafted artifact list against the laws a whole plan decides.          |
 | `blueprintToConfigArtifacts`        | function | Compile every artifact in the `configs` group.                                  |
 | `blueprintToDevDependencies`        | function | Project a blueprint into the development dependencies its manifest declares.    |
@@ -265,7 +270,6 @@ Exported from `@orkestrel/scaffold`, and reachable from
 | `replacePlanRanges`                 | function | Replace writable ranges in a plan's manifest and recompute its identity.        |
 | `srcToEntry`                        | function | Project a published selection into the manifest's entry fields.                 |
 | `srcToExports`                      | function | Project a published selection into the manifest's `exports` map.                |
-| `srcToRoot`                         | function | Select the single published environment a package root points at.               |
 
 #### Factories
 
@@ -296,12 +300,16 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 
 | Name                    | Kind      | Summary                                                                              |
 | ----------------------- | --------- | ------------------------------------------------------------------------------------ |
+| `BytesReadResult`       | interface | The outcome of one bounded read whose body is taken as exact bytes.                  |
 | `Host`                  | interface | A whole vendored host supplied as a value rather than read from a directory.         |
+| `HostInventory`         | interface | The committed vendored-file inventory as one call's reads are decided against.       |
 | `HostManifest`          | interface | The complete vendored-host inventory.                                                |
 | `ManifestEntry`         | interface | One file record of the vendored host's manifest, including its exact-byte digest.    |
 | `MaterializeResult`     | interface | The outcome of one mutation of a target.                                             |
 | `MaterializerInterface` | interface | The mutation contract: the package's only filesystem writer.                         |
 | `MaterializerOptions`   | interface | Options for the materializer.                                                        |
+| `ReadAllowance`         | interface | The byte allowance one whole upstream call spends across every read it makes.        |
+| `TextReadResult`        | interface | The outcome of one bounded read whose body is taken as text.                         |
 | `Worktree`              | interface | What git reports about a target's working tree.                                      |
 | `UpstreamInterface`     | interface | The upstream contract: the package's only network reader, and it never writes.       |
 | `UpstreamOptions`       | interface | Options for the upstream reader.                                                     |
@@ -315,6 +323,12 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 | Name                                | Kind  | Summary                                                                                  |
 | ----------------------------------- | ----- | ---------------------------------------------------------------------------------------- |
 | `BRANCH_PATTERN`                    | const | The Git branch syntax the repository endpoint accepts.                                   |
+| `DEFAULT_BRANCH`                    | const | The repository branch a raw content read addresses when a caller names none.             |
+| `DEFAULT_REGISTRY_BASE`             | const | The registry a version read addresses when a caller names none.                          |
+| `DEFAULT_REPOSITORY_BASE`           | const | The raw content host a repository read addresses when a caller names none.               |
+| `DEFAULT_UPSTREAM_CONCURRENCY`      | const | The simultaneous upstream requests a reader opens with.                                  |
+| `DEFAULT_UPSTREAM_RETRIES`          | const | The retries one upstream request is given when a caller names none.                      |
+| `DEFAULT_UPSTREAM_TIMEOUT`          | const | The timeout one upstream request is given when a caller names none, in milliseconds.     |
 | `DIGEST_PATTERN`                    | const | The exact SHA-256 syntax a digest is stated in: sixty-four lowercase hexadecimal digits. |
 | `DRIVE_PATTERN`                     | const | The drive prefix a Windows host path may open with.                                      |
 | `INVALID_SEGMENT_CHARACTER_PATTERN` | const | Visible characters no host path segment may carry.                                       |
@@ -327,7 +341,11 @@ Exported from `@orkestrel/scaffold/server`, and reachable from
 | `MAX_UPSTREAM_CONCURRENCY`          | const | Maximum simultaneous upstream requests.                                                  |
 | `MAX_UPSTREAM_RETRIES`              | const | Maximum retries one upstream request may be given after a transport fault.               |
 | `MAX_UPSTREAM_TIMEOUT`              | const | Maximum timeout one upstream request may be given, in milliseconds.                      |
+| `ORKESTREL_SCOPE`                   | const | The npm scope and repository owner the fleet's packages and sources are published under. |
+| `PACKUMENT_MEDIA_TYPE`              | const | The media type that selects the registry's abbreviated packument.                        |
 | `RESERVED_SEGMENT_PATTERN`          | const | The Windows device names that stay reserved even when an extension follows.              |
+| `SCAFFOLD_REPOSITORY`               | const | The repository this package's own vendored files are served from.                        |
+| `UNREADABLE_VERSION_NOTE`           | const | The note a release carries when its packument names no readable latest version.          |
 
 #### Guards
 

@@ -58,45 +58,18 @@ import {
 	VERSION_PATTERN,
 } from './constants.js'
 import {
+	artifactToFinding,
 	computeBytes,
 	computeHash,
-	inferDrift,
 	inferGroup,
 	matchesEngines,
 	matchesPrintWidth,
 	nameToRewrite,
 	serializeTypeScriptString,
 	selectHostPaths,
+	srcToRoot,
 } from './helpers.js'
 import { ARTIFACT_TEMPLATES, CONFIG_TEMPLATES } from './templates.js'
-
-/**
- * Select the single published environment a package root points at.
- *
- * @param src - The declared published environments.
- * @returns That environment, or `undefined` when the selection declares none or
- * several.
- *
- * @remarks
- * A workspace publishing exactly one environment puts it at the package root,
- * so its entry fields and its `'.'` export condition both name that
- * environment's build. A workspace publishing several puts core at the root and
- * gives every other environment a subpath, so there is no single root to name.
- * Both callers read the same answer, which is why the branch is decided once
- * here rather than twice.
- *
- * @example
- * ```ts
- * import { srcToRoot } from '@orkestrel/scaffold'
- *
- * srcToRoot(['browser']) // 'browser'
- * srcToRoot(['core', 'server']) // undefined
- * ```
- */
-export function srcToRoot(src: readonly Environment[]): Environment | undefined {
-	if (src.length !== 1) return undefined
-	return src[0]
-}
 
 /**
  * Build one `exports` condition block for a built environment.
@@ -2104,50 +2077,6 @@ export function planToHash(plan: Plan): string | undefined {
 	)
 	if (!outcome.success || outcome.value === undefined) return undefined
 	return computeHash(outcome.value)
-}
-
-/**
- * Project one planned artifact and the bytes found at its path into a verdict.
- *
- * @param artifact - The planned artifact.
- * @param observed - The destination's exact bytes as hexadecimal; absent when
- * the destination holds no file.
- * @returns The finding, carrying the artifact's ownership and `observed`
- * exactly where bytes were read.
- *
- * @remarks
- * The comparison itself is {@link inferDrift}'s, so ownership decides it here
- * exactly as it does everywhere else. This adds only the shape: a missing
- * destination has no bytes to record, and every other verdict records the bytes
- * it was given, which is the precondition the mutation that follows is held to.
- * Ownership is copied rather than inferred from drift because aligned findings
- * span every ownership tier.
- *
- * `foreign` is not answerable here, because it describes a path no artifact was
- * planned for.
- *
- * @example
- * ```ts
- * import { artifactToFinding } from '@orkestrel/scaffold'
- *
- * artifactToFinding(
- * 	{ path: 'README.md', group: 'docs', ownership: 'content', origin: 'computed', content: 'hi\n' },
- * 	'6279650a',
- * ) // { path: 'README.md', group: 'docs', ownership: 'content', drift: 'stale', observed: '6279650a' }
- * ```
- */
-export function artifactToFinding(artifact: Artifact, observed?: string): Finding {
-	const path = artifact.path
-	const group = artifact.group
-	const ownership = artifact.ownership
-	if (observed === undefined) {
-		return inferDrift(artifact) === 'aligned'
-			? { path, group, ownership, drift: 'aligned' }
-			: { path, group, ownership, drift: 'missing' }
-	}
-	return inferDrift(artifact, observed) === 'stale'
-		? { path, group, ownership, drift: 'stale', observed }
-		: { path, group, ownership, drift: 'aligned', observed }
 }
 
 /**

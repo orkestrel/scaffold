@@ -4,6 +4,7 @@ import type {
 	CatalogEntry,
 	HostFile,
 	Dependency,
+	Lookup,
 	ManifestRegionSet,
 	Mirror,
 	Plan,
@@ -335,6 +336,67 @@ export interface UpstreamOptions {
 	readonly budget?: number
 	readonly on?: EmitterHooks<UpstreamEventMap>
 	readonly error?: EmitterErrorHandler
+}
+
+/**
+ * The byte allowance one whole upstream call spends across every read it makes.
+ *
+ * @remarks
+ * `remaining` is deliberately mutable, and it is the one member of this module's
+ * contracts that is. The carrier is what makes `budget` a bound on a call rather
+ * than on a request: each read subtracts what it consumed from the same object,
+ * so many small answers exhaust the call exactly as one oversized answer does.
+ * Each call constructs its own carrier from `budget`, because concurrent calls
+ * own separate budgets and must not spend each other's.
+ */
+export interface ReadAllowance {
+	remaining: number
+}
+
+/**
+ * The committed vendored-file inventory as one call's reads are decided against.
+ *
+ * @remarks
+ * `lookup` is the verdict of the inventory read itself, and every row of the
+ * call inherits it when it is not `found`. `digests` maps a target-relative
+ * destination to the exact bytes the inventory declares for it, `duplicates`
+ * names every destination the inventory claims more than once, and `note` states
+ * why a lookup that is not `found` produced no inventory.
+ */
+export interface HostInventory {
+	readonly lookup: Lookup
+	readonly digests: ReadonlyMap<string, string>
+	readonly duplicates: ReadonlySet<string>
+	readonly note: string
+}
+
+/**
+ * The outcome of one bounded read whose body is taken as text.
+ *
+ * @remarks
+ * `content` carries the body only when `lookup` is `found`; otherwise it is
+ * empty and `note` states what happened. A read that is not `found` is an answer
+ * rather than a throw, which is what lets one dead row sit beside live ones.
+ */
+export interface TextReadResult {
+	readonly lookup: Lookup
+	readonly content: string
+	readonly note: string
+}
+
+/**
+ * The outcome of one bounded read whose body is taken as exact bytes.
+ *
+ * @remarks
+ * `hex` carries the body as lowercase hexadecimal, and only when `lookup` is
+ * `found`; otherwise it is empty and `note` states what happened. Bytes rather
+ * than text, because a vendored file is compared by digest and a decode would
+ * change what is hashed.
+ */
+export interface BytesReadResult {
+	readonly lookup: Lookup
+	readonly hex: string
+	readonly note: string
 }
 
 /**
