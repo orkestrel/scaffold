@@ -163,3 +163,20 @@ The registry read also settles the wave state: the lsp, mcp, sea, server, and pr
 predate this campaign; the packages still owing a republish for `process@0.0.9` are `lsp`,
 `mcp`, `sea` (published versions pin `^0.0.8`), then `probe`, with `scaffold` on its own
 account — the release remainder recorded under the process coordination entry.
+
+## User rulings at the decision gate (2026-08-28)
+
+The user ruled on the four open decisions:
+
+1. **Fix scope: proceed.** Apply the verified fixes that keep published surfaces still. Deliver
+   every breaking rename, deletion, or signature change as a layer-ordered work order for separate
+   approval, without applying it.
+2. **TSDoc voice: migrate, last.** The fleet migrates to the rule's third-person first sentence,
+   with the boolean `@returns` wording in the same pass, as the final fix wave after every other
+   fix unit has landed.
+3. **Conflicts: the rules win.** Batch operations follow `patterns.md` § Batch operations
+   (all-succeed); the `guides/workspace.md` any-succeeded sites conform to the rule. Guard
+   families follow `architecture.md` § Kind purity; `guides/html.md` conforms to the rule. Both
+   are behavioral rulings, so the conforming changes are movers and land with the fix phase.
+4. **Release: prepared, not published.** The process 0.0.9 wave remainder and every other publish
+   hold until the user asks. Fix work continues on the campaign branches.
