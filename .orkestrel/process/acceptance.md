@@ -68,3 +68,90 @@ decision and the owner's credential.
   files. `.agents/orchestration.md` § Check the brief before you send it requires reading each
   criterion against the off-limits list; that check was not run. The correct criterion was
   `npm run check:src`.
+
+---
+
+# Release — `@orkestrel/process@0.0.9`, 2026-08-28
+
+## Round
+
+One package, one layer. `@orkestrel/process` sits at L2 in the catalog's layer order.
+
+## Registry evidence, taken before the bump
+
+`@orkestrel/process` served 0.0.8, so the bump read 0.0.9 from the registry rather than from the
+local manifest. `@orkestrel/contract` served 0.0.13 and `@orkestrel/emitter` served 0.0.8, both
+matching the declared ranges, so no runtime range moved and no re-pin was owed.
+
+## Bump ruling
+
+Bumped. The trigger is the rebuilt dist differing materially from the published tarball:
+`Retention` and `RetentionInterface` are removed from the published surface and `captureChunk` is
+added, and `execute` no longer returns a captured string ending inside a UTF-8 sequence. The final
+runtime dependency set is unchanged against the packument, so that second trigger did not fire.
+
+The self-pin sweep is empty: no source or test carries the prior version as a literal, and
+published code emits no version of its own, so the bump edits no emitted byte.
+
+## Preparation, all outside the window
+
+`npm run prepublishOnly` green, which is `format:check`, `lint:check`, `check`, `build`, `test`,
+and `test:distribution --mode release`. Under `--mode release` the distribution proof fails rather
+than skips on an unreachable registry, so it proved the packed artifact installs and resolves
+rather than passing by skipping. Committed and pushed before any approval was minted.
+
+## Approvals
+
+Two, both surfaced to the user before they arrived.
+
+The first `npm login` mint expired on the 45-second abandon before the click landed; the journal
+showed the spinner dropping to the legacy `Username:` prompt, which is the expiry signal rather
+than a prompt to answer, and `npm whoami` still reported `ENEEDAUTH`. The stale attempt was killed
+by process id, enumerated with `ps -eo pid,comm` rather than by a pattern over the command line,
+and one fresh flow was minted with the user at the keyboard. Authenticated as `mikesaintsg`.
+
+The upload took the browser authorization at `auth/cli/09e30a6e-…`. One package, so one approval
+covered the layer and the five-minute window was never contended. Exactly one publish attempt was
+made, so no `authId` was superseded.
+
+## Registry confirmation
+
+Read from the registry rather than from an exit code. The first read served 0.0.8 and the second
+served 0.0.9, which is the CDN lag the window reference names.
+
+The published tarball was fetched and unpacked, and `dist/src/{core,server}/index.{js,cjs,d.ts}`
+compared byte-identical against the tree that passed the gates. The published manifest declares
+`@orkestrel/contract ^0.0.13` and `@orkestrel/emitter ^0.0.8`. The published server face holds 37
+exports, with `Retention` absent and `captureChunk` present.
+
+## What this release obliges, and where it goes
+
+`@orkestrel/process` is a runtime dependency of `@orkestrel/lsp`, `@orkestrel/mcp`,
+`@orkestrel/scaffold`, and `@orkestrel/sea` at L3, and through them of `@orkestrel/probe` at L4.
+Under § What a bump obliges each re-pins, re-runs its gates, bumps, and republishes in layer order.
+
+Those consumers pin `^0.0.8`, and a caret pins one exact release at `0.0.x`, so none of them
+resolves 0.0.9 until it re-pins. Nothing is broken by this release standing alone.
+
+The owner ruled that the downstream cascade is handled in a separate session. It is recorded here
+rather than started.
+
+## The `FUNCTION_DOMAIN_FOLDERS` entry, revisited
+
+`tests/setupPolicy.ts` still registers `src/server/execution`, a folder this campaign deleted. Two
+things were established while trying to close it.
+
+It is inert. Registration makes a path eligible and judges nothing about what a module does, so an
+entry naming a path no target holds matches nothing and reports nothing.
+
+Whether removing it is safe could not be established from here. A GitHub code search across the
+`orkestrel` organization returned zero hits for the path — and zero for a control query that must
+have matched, so the search is blind for this organization and reports on the instrument rather
+than on the fleet. The entry therefore stays, and retiring it needs a fleet-wide check of which
+targets hold that path, then a scaffold release and a `repair` pass across every target.
+
+Also for that scaffold session: `guides/process.md` in the scaffold checkout is a mirror of this
+package's guide and is now stale, still naming the deleted `tests/src/server/execution/*.test.ts`
+paths. Refresh the mirror rather than rewriting it.
+
+RELEASE: LANDED
