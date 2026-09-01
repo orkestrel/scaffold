@@ -43,14 +43,44 @@ recoverable from git history by hash; no campaign folder is the plan of record.
   performance campaign accepted 2026-09-01: the promoted tracking ledger's reuse is unproven by
   the suite — deleting the slot-to-map carry-in or the recall block keeps every test green, and
   only a work-counting assertion over per-node reads can pin it; carrier is the published
-  per-node read bound. The refined-leaf capture row is excluded while
-  `createStringFaults`/`createNumberFaults` keep their signatures — a campaign allowed to move
-  the helper signatures can reopen it with a pre-captured context (measured frame in the
-  campaign record). `oneOf` diagnostics still run every variant plan before their tally where
+  per-node read bound. `oneOf` diagnostics still run every variant plan before their tally where
   the compiled guards already exist; a guard-first tally is the remaining union seam. The
   internal snapshot freezes cost 47 ns per call on a five-key object, measured and unclaimed
   behind documented frozen returns. The u2fix hostile-pre-load probe suite is retained in the
   campaign archive and promotes if the workspace ever takes a hostile-intrinsics test project.
+  Successor seams from the paired-harness performance campaign accepted 2026-09-01 (contract
+  c13cfae): the refined-leaf capture row is closed for strings — `createStringFaults` takes
+  an optional pre-captured pattern, and the compiled auditor, the compiled reporter, and
+  `stringOf` capture it through `ownPattern` at compile time — while `createNumberFaults` keeps
+  its signature and reads `min` and `max` from the shape per call; the trigger for the same
+  capture there is a measurement attributing material time to those reads. The lazy fault-path
+  row is refused on measurement: an honest trail form that materializes the path at every fault,
+  every container `readValue` context, and every refined-leaf helper call reads 1.07–1.11 on the
+  audit families in 6 fresh processes against the tree without it, so the per-field `pathOf`
+  copies stay, and the baseline's habit of publishing the caller's root `path` array by
+  reference in root-level faults is recorded, not changed. The masked auditor's extra-key scan
+  through `matchesMember` reads 0.96–0.97 when gated on the presence pass, inside the harness's
+  admission bar, though `positions` and the declared vocabulary are provably one key set (an
+  absent child shape is refused at validation through every door); a form that drops the `Set`
+  for the record is the remaining seam. The folded array guard (0.97), the untracked ledger
+  (ceiling 0.95–0.98), and a lazy fault-array slot (a clean container returns a fresh array
+  either way) are refused on measurement or by construction. The `oneOf` guard-first tally stays
+  refused on the every-door-reads rule, and the reporter-versus-`parse` law holds on coercible
+  values by probe. The compile tier stays excluded on the documented eager lockstep. The
+  shape-builder tier is measured and unopened: `stringShape()` 15.6 µs, `objectShape` of the
+  five-key fixture 76.6 µs, `compileGuard` 82.5 µs, `createContract` 114.6 µs on node 22.22.2,
+  where the `ShapeValidator` clear-twice churn is the first station to attribute. The `Result`
+  allocation class stays excluded on the first campaign's 0.992 reading. The `readValue`
+  success-path deferral and the compiled doors' captured-pattern wire have no suite guard by
+  construction (each is unobservable from the published surface: every compiled door refuses a
+  shape whose `pattern` is an accessor, and the clone the leaves read carries an internal one)
+  and rest on the campaign's paired A/B and the retained wire probes. The compiled doors' plan-time
+  `pattern` refusal is unreachable while `ShapeCloner#captureString` mints the clone's pattern
+  from captured strings; a change there surfaces a `compileAuditor`-named message from
+  `createContract`. The paired harness runs 6 fresh
+  processes with load order swapped: a single-process identity reading drifts up to ±8 %, a
+  planted 6 % slowdown reads median 1.06 with every replicate at or above 1.03, and the
+  admission rule is median ≤ 0.95 with every replicate ≤ 0.98 on the target family.
 
 ## 2. Design and research records
 

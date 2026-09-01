@@ -59,7 +59,7 @@ Subject: the U3 + U3f tree (brief `u3f-audit-brief.md`, successor of `u3-audit-b
 
 Objective lane: claims 1 to 10 CONFIRMED with attacks recorded; claim 11 repaired by the Orchestrator edit unit and re-swept clean; findings A, B, and C recorded with carriers. Subjective lane: claims 1, 2, 4, 5, 6, 7, 9, and 11 CONFIRMED; claim 3 adopted into U3i; claims 8 and 10 ruled brief defects from the U3g unit; F1 and F2 adopted into U3i. Round 2 ends FAIL and a fix round U3i follows (`u3i-brief.md`), written by `builder` on Sonnet from exact text, audited by `checker`, a short `reviewer` lane on Opus 5 for the recast prose, the Orchestrator's F1 mutation probe, and `verifier`.
 
-Closure: pending U3i (`u3i-brief.md`); the closing lines are appended when its audit, the F1 mutation probe, `checker`, and `verifier` return.
+Closure: U3i landed and was audited (§ U3i audit), U3j landed and was audited (§ U3j audit), and the Orchestrator edit unit U3k closed the last two copies of the unconditional read count; `checker` PASS on U3i, U3j, and U3k; `verifier` GREEN on runs 3, 4, and 5 (`src:core` 1324). The U3 tree is accepted for the checkpoint commit.
 
 ## U3i audit (2026-09-01): the fix round's own round
 
@@ -105,3 +105,7 @@ Subject: unit U3j (`u3j-brief.md`, `u3j-report.md`; builder on Sonnet from the U
 ### Ruling
 
 FAIL on the two findings; closed by the Orchestrator edit unit U3k (`u3k-orchestrator-edits-brief.md`), verified by `checker` and `verifier` run 5.
+
+## Closure (2026-09-01)
+
+U3k: `u3k-checker-report.md` PASS; `u3-final-verifier-report-5.md` GREEN. Every lane, checker, and verifier run on the U3 tree is reconciled in the sections preceding this one; the tree (U3 + U3f + U3g + the Orchestrator edit units + U3i + U3j + U3k over 163490f) is committed as the campaign's third checkpoint. Round count on the read-count sentence: three revisions and one carry-through; the sentence now states the condition rather than a number, and the seam is closed on that form.
