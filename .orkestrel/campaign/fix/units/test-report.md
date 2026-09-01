@@ -79,3 +79,14 @@ the `matchesColor` call sites), `tests/src/browser/helpers.test.ts`, and `guides
 `format:check` 0, `lint:check` 0, `check` 0, `build` 0, `test` 0 (450 passed, 8 pre-existing
 host-probe skips; policy 111, config 46, setup 24, guides 38). Committed as the second commit of
 the unit (`30f6211` over `2f94b93`, base `440b54f`). The audit subject is the combined diff.
+
+## Fix-up 2 (test-fixup-2, builder on Sonnet; commit follows `30f6211`)
+
+`src/browser/helpers.ts:1474` `` `style` `` → `` `readStyle` ``; `guides/test.md:456` `` `states` ``
+→ `` `placements` ``; `parseCSSColor` moved to follow `parseColor` in the helpers test import list.
+Full word-boundary sweep over `src`, `tests`, `guides` for `style`, `token`, `rootToken`, `pixels`,
+`contrast`, `rgba`, `colorEqual`, `resolveColor`, `states`: every remaining hit classified as CSS
+value syntax, the DOM `.style` property or `style=` attribute, `PortfolioOptions.states` and
+locals holding it, the ARIA-state locals of `readStates`, or the English verb; no survivor.
+Gates: `format:check` 0, `lint:check` 0, `check` 0, `build` 0, `test` 0. This supersedes the
+status line of the unit's own report and the import-order deviation claim above.
