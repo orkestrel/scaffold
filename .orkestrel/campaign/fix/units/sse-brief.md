@@ -88,7 +88,7 @@ staged.
 
 **Control identifiers.** none. A test is named for what it proves, never for a control label.
 
-**Standing conditions.** The W-DEV wave landed in @orkestrel/test (browser style helpers renamed to readStyle, readToken, readRootToken, readPixels, parseCSSColor, matchesColor; PortfolioInterface.placements) and @orkestrel/guide (helpers renamed verb-first; Source.methods follows extends); both are staged in this checkout's closure, so tests that name a renamed helper move in this unit..
+**Standing conditions.** The W-DEV wave landed in @orkestrel/test (browser style helpers renamed to readStyle, readToken, readRootToken, readPixels, parseCSSColor, matchesColor; PortfolioInterface.placements) and @orkestrel/guide (helpers renamed verb-first; Source.methods follows extends, so an extending interface's Methods table must list inherited members); both are staged and verified in this checkout's closure (run `node /home/user/work/verify-stage.mjs sse` to see the rows) and this checkout's tests/guides.test.ts already imports the renamed guide helpers. Do not run npm install..
 
 ## Unknowns
 

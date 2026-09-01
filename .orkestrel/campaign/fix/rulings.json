@@ -55,7 +55,8 @@
  "database": [
   "s05-12: `scanDriver`.",
   "s05-06, s05-21, s05-23: as the ledger has them (`matchesFuzzy` deleted with rows and test block; `INDEXABLE_STORAGE` a frozen readonly array read with `some`; the `compile*SQL` trio while `schemaToTable`, `schemaToIndexes`, and `stepToSQL` stand).",
-  "sqlite's `transaction` did not move (refused fleet-wide); database's member stays."
+  "sqlite's `transaction` did not move (refused fleet-wide); database's member stays.",
+  "Carrier from the W-DEV sweep: @orkestrel/guide's parity now resolves an interface's methods through its `extends` chain, so `documents every interface method` fails where an extending interface's Methods table omits inherited call-signature members (`DriverInterface`). List every inherited call-signature member in the extending interface's table (documentation.md: the table's methods exactly match the interface's call-signature members), or restructure the interface; `test:guides` is red in this checkout until then."
  ],
  "markdown": [
   "s10-08: `isFlankingWhitespace`; the predicate is total, so `is*` stays; `isFenceWhitespace` is untouched. The vendored `guides/html.md` mirror is untouched while this package's own rows carry the html renames."
@@ -103,7 +104,8 @@
   "s04-21: the interned classes leave the barrel, enter `INTERNAL`, and lose their `@example` blocks.",
   "s04-26: the required `emitter` member lands on `CDPClientInterface`; the report states that this breaks a foreign implementation.",
   "Audit carriers: s04b-07 → `BrowserTransition`, `BrowserTransitionInterface`, `BrowserTransitionFunction`, and `pending` replace the flight vocabulary everywhere including the guide; s04b-11 placement and the at-call-time clause; guide row order; `BROWSER_WAIT_POLL_INTERVAL_MS` row prose; `settleBrowserTeardown` captures the first failure with a settled boolean, proved by a test that throws `undefined` and one that throws `null`.",
-  "Every other row applies exactly as its ledger edits list. The Playwright browser project result is an observation, not a criterion."
+  "Every other row applies exactly as its ledger edits list. The Playwright browser project result is an observation, not a criterion.",
+  "Carrier from the W-DEV sweep: @orkestrel/guide's parity now resolves an interface's methods through its `extends` chain, so `documents every interface method` fails where an extending interface's Methods table omits inherited call-signature members (`BrowserPageInterface` and any sibling the failing test names). List every inherited call-signature member in the extending interface's table (documentation.md: the table's methods exactly match the interface's call-signature members), or restructure the interface; `test:guides` is red in this checkout until then."
  ],
  "interpret": [
   "s12-26: delete `createTemplate`; the class raises its own `NOTFOUND` when `parseTemplate` returns `undefined`. No throwing twin beside the parser.",
@@ -121,7 +123,8 @@
   "s01-09: `createReadableStream` is deleted with its guide row, fence, and parity entry.",
   "s01-07, s01-10, s01-18, s01-19: as the ledger has them.",
   "Carry: websocket's thrown class is `WebSocketError`; report every `catch` site this package holds. Carry: process's `ProcessChildInterface`; sse's `clear()`.",
-  "Audit carrier: the cache-stamp sentence in MCPServer.ts names its members rather than counting them."
+  "Audit carrier: the cache-stamp sentence in MCPServer.ts names its members rather than counting them.",
+  "Carrier from the W-DEV sweep: @orkestrel/guide's parity now resolves an interface's methods through its `extends` chain, so `documents every interface method` fails where an extending interface's Methods table omits inherited call-signature members (`MCPProgressOwnerInterface`). List every inherited call-signature member in the extending interface's table (documentation.md: the table's methods exactly match the interface's call-signature members), or restructure the interface; `test:guides` is red in this checkout until then."
  ],
  "qualifier": [
   "s16-30: `describe*` for the message producers; `findRule` keeps `find*`.",

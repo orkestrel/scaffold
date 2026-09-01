@@ -1,1 +1,4012 @@
-[]
+[
+ {
+  "consumer": "guide",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:07:56Z"
+ },
+ {
+  "consumer": "guide",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:07:56Z"
+ },
+ {
+  "consumer": "guide",
+  "dependency": "@orkestrel/markdown",
+  "declared": "^0.0.12",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:07:56Z"
+ },
+ {
+  "consumer": "guide",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:07:56Z"
+ },
+ {
+  "consumer": "pool",
+  "dependency": "@orkestrel/contract",
+  "declared": "none",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:08:29Z"
+ },
+ {
+  "consumer": "pool",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:08:29Z"
+ },
+ {
+  "consumer": "pool",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:08:29Z"
+ },
+ {
+  "consumer": "pool",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:08:29Z"
+ },
+ {
+  "consumer": "pool",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:08:29Z"
+ },
+ {
+  "consumer": "pool",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:08:29Z"
+ },
+ {
+  "consumer": "program",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:08:31Z"
+ },
+ {
+  "consumer": "program",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:08:31Z"
+ },
+ {
+  "consumer": "program",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:08:31Z"
+ },
+ {
+  "consumer": "program",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:08:31Z"
+ },
+ {
+  "consumer": "program",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:08:31Z"
+ },
+ {
+  "consumer": "program",
+  "dependency": "@orkestrel/qualifier",
+  "declared": "^0.0.12",
+  "tarball": "qualifier-3b1e47b.tgz",
+  "version": "0.0.12",
+  "sha256": "45a87ab657fbcbd3",
+  "commit": "3b1e47b",
+  "staged": "2026-09-01T23:08:31Z"
+ },
+ {
+  "consumer": "program",
+  "dependency": "@orkestrel/rater",
+  "declared": "^0.0.12",
+  "tarball": "rater-112c7e8.tgz",
+  "version": "0.0.12",
+  "sha256": "9d4b6d92ce41d1b9",
+  "commit": "112c7e8",
+  "staged": "2026-09-01T23:08:31Z"
+ },
+ {
+  "consumer": "program",
+  "dependency": "@orkestrel/reason",
+  "declared": "^0.0.8",
+  "tarball": "reason-9844655.tgz",
+  "version": "0.0.8",
+  "sha256": "fd769506ad6e0515",
+  "commit": "9844655",
+  "staged": "2026-09-01T23:08:31Z"
+ },
+ {
+  "consumer": "program",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:08:31Z"
+ },
+ {
+  "consumer": "qualifier",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:08:34Z"
+ },
+ {
+  "consumer": "qualifier",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:08:34Z"
+ },
+ {
+  "consumer": "qualifier",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:08:34Z"
+ },
+ {
+  "consumer": "qualifier",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:08:34Z"
+ },
+ {
+  "consumer": "qualifier",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:08:34Z"
+ },
+ {
+  "consumer": "qualifier",
+  "dependency": "@orkestrel/reason",
+  "declared": "^0.0.8",
+  "tarball": "reason-9844655.tgz",
+  "version": "0.0.8",
+  "sha256": "fd769506ad6e0515",
+  "commit": "9844655",
+  "staged": "2026-09-01T23:08:34Z"
+ },
+ {
+  "consumer": "qualifier",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:08:34Z"
+ },
+ {
+  "consumer": "queue",
+  "dependency": "@orkestrel/abort",
+  "declared": "^0.0.8",
+  "tarball": "abort-46a7fb5.tgz",
+  "version": "0.0.8",
+  "sha256": "8877d25fd1dbd50c",
+  "commit": "46a7fb5",
+  "staged": "2026-09-01T23:08:38Z"
+ },
+ {
+  "consumer": "queue",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:08:38Z"
+ },
+ {
+  "consumer": "queue",
+  "dependency": "@orkestrel/database",
+  "declared": "^0.0.12",
+  "tarball": "database-dc5387c.tgz",
+  "version": "0.0.12",
+  "sha256": "4c36b5a5496fc58b",
+  "commit": "dc5387c",
+  "staged": "2026-09-01T23:08:38Z"
+ },
+ {
+  "consumer": "queue",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:08:38Z"
+ },
+ {
+  "consumer": "queue",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:08:38Z"
+ },
+ {
+  "consumer": "queue",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:08:38Z"
+ },
+ {
+  "consumer": "queue",
+  "dependency": "@orkestrel/indexeddb",
+  "declared": "none",
+  "tarball": "indexeddb-80ee848.tgz",
+  "version": "0.0.9",
+  "sha256": "f178df3ef6a96647",
+  "commit": "80ee848",
+  "staged": "2026-09-01T23:08:38Z"
+ },
+ {
+  "consumer": "queue",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:08:38Z"
+ },
+ {
+  "consumer": "queue",
+  "dependency": "@orkestrel/sqlite",
+  "declared": "none",
+  "tarball": "sqlite-a397f6c.tgz",
+  "version": "0.0.9",
+  "sha256": "ab9d15ab588f6a86",
+  "commit": "a397f6c",
+  "staged": "2026-09-01T23:08:38Z"
+ },
+ {
+  "consumer": "queue",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:08:38Z"
+ },
+ {
+  "consumer": "queue",
+  "dependency": "@orkestrel/timeout",
+  "declared": "^0.0.8",
+  "tarball": "timeout-e09ebb1.tgz",
+  "version": "0.0.8",
+  "sha256": "c4802fbcc0cf820c",
+  "commit": "e09ebb1",
+  "staged": "2026-09-01T23:08:38Z"
+ },
+ {
+  "consumer": "rater",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:08:41Z"
+ },
+ {
+  "consumer": "rater",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:08:41Z"
+ },
+ {
+  "consumer": "rater",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:08:41Z"
+ },
+ {
+  "consumer": "rater",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:08:41Z"
+ },
+ {
+  "consumer": "rater",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:08:41Z"
+ },
+ {
+  "consumer": "rater",
+  "dependency": "@orkestrel/reason",
+  "declared": "^0.0.8",
+  "tarball": "reason-9844655.tgz",
+  "version": "0.0.8",
+  "sha256": "fd769506ad6e0515",
+  "commit": "9844655",
+  "staged": "2026-09-01T23:08:41Z"
+ },
+ {
+  "consumer": "rater",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:08:41Z"
+ },
+ {
+  "consumer": "reason",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:08:43Z"
+ },
+ {
+  "consumer": "reason",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:08:43Z"
+ },
+ {
+  "consumer": "reason",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:08:43Z"
+ },
+ {
+  "consumer": "reason",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:08:43Z"
+ },
+ {
+  "consumer": "reason",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:08:43Z"
+ },
+ {
+  "consumer": "reason",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:08:43Z"
+ },
+ {
+  "consumer": "relation",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:08:48Z"
+ },
+ {
+  "consumer": "relation",
+  "dependency": "@orkestrel/database",
+  "declared": "^0.0.12",
+  "tarball": "database-dc5387c.tgz",
+  "version": "0.0.12",
+  "sha256": "4c36b5a5496fc58b",
+  "commit": "dc5387c",
+  "staged": "2026-09-01T23:08:48Z"
+ },
+ {
+  "consumer": "relation",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:08:48Z"
+ },
+ {
+  "consumer": "relation",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:08:48Z"
+ },
+ {
+  "consumer": "relation",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:08:48Z"
+ },
+ {
+  "consumer": "relation",
+  "dependency": "@orkestrel/indexeddb",
+  "declared": "none",
+  "tarball": "indexeddb-80ee848.tgz",
+  "version": "0.0.9",
+  "sha256": "f178df3ef6a96647",
+  "commit": "80ee848",
+  "staged": "2026-09-01T23:08:48Z"
+ },
+ {
+  "consumer": "relation",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:08:48Z"
+ },
+ {
+  "consumer": "relation",
+  "dependency": "@orkestrel/sqlite",
+  "declared": "none",
+  "tarball": "sqlite-a397f6c.tgz",
+  "version": "0.0.9",
+  "sha256": "ab9d15ab588f6a86",
+  "commit": "a397f6c",
+  "staged": "2026-09-01T23:08:48Z"
+ },
+ {
+  "consumer": "relation",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:08:48Z"
+ },
+ {
+  "consumer": "router",
+  "dependency": "@orkestrel/abort",
+  "declared": "^0.0.8",
+  "tarball": "abort-46a7fb5.tgz",
+  "version": "0.0.8",
+  "sha256": "8877d25fd1dbd50c",
+  "commit": "46a7fb5",
+  "staged": "2026-09-01T23:08:51Z"
+ },
+ {
+  "consumer": "router",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:08:51Z"
+ },
+ {
+  "consumer": "router",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:08:51Z"
+ },
+ {
+  "consumer": "router",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:08:51Z"
+ },
+ {
+  "consumer": "router",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:08:51Z"
+ },
+ {
+  "consumer": "router",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:08:51Z"
+ },
+ {
+  "consumer": "router",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:08:51Z"
+ },
+ {
+  "consumer": "sea",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:08:57Z"
+ },
+ {
+  "consumer": "sea",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:08:57Z"
+ },
+ {
+  "consumer": "sea",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:08:57Z"
+ },
+ {
+  "consumer": "sea",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:08:57Z"
+ },
+ {
+  "consumer": "sea",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:08:57Z"
+ },
+ {
+  "consumer": "sea",
+  "dependency": "@orkestrel/process",
+  "declared": "^0.0.9",
+  "tarball": "process-ae39a0c.tgz",
+  "version": "0.0.9",
+  "sha256": "bfc96adba144b249",
+  "commit": "ae39a0c",
+  "staged": "2026-09-01T23:08:57Z"
+ },
+ {
+  "consumer": "sea",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:08:57Z"
+ },
+ {
+  "consumer": "server",
+  "dependency": "@orkestrel/abort",
+  "declared": "^0.0.8",
+  "tarball": "abort-46a7fb5.tgz",
+  "version": "0.0.8",
+  "sha256": "8877d25fd1dbd50c",
+  "commit": "46a7fb5",
+  "staged": "2026-09-01T23:08:58Z"
+ },
+ {
+  "consumer": "server",
+  "dependency": "@orkestrel/codec",
+  "declared": "^0.0.1",
+  "tarball": "codec-dcbeb4c.tgz",
+  "version": "0.0.1",
+  "sha256": "2ae43a9edfa27df1",
+  "commit": "dcbeb4c",
+  "staged": "2026-09-01T23:08:58Z"
+ },
+ {
+  "consumer": "server",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:08:58Z"
+ },
+ {
+  "consumer": "server",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:08:58Z"
+ },
+ {
+  "consumer": "server",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:08:58Z"
+ },
+ {
+  "consumer": "server",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:08:58Z"
+ },
+ {
+  "consumer": "server",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:08:58Z"
+ },
+ {
+  "consumer": "server",
+  "dependency": "@orkestrel/router",
+  "declared": "^0.0.12",
+  "tarball": "router-a416aed.tgz",
+  "version": "0.0.12",
+  "sha256": "b758bee4837a373f",
+  "commit": "a416aed",
+  "staged": "2026-09-01T23:08:58Z"
+ },
+ {
+  "consumer": "server",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:08:58Z"
+ },
+ {
+  "consumer": "server",
+  "dependency": "@orkestrel/timeout",
+  "declared": "^0.0.8",
+  "tarball": "timeout-e09ebb1.tgz",
+  "version": "0.0.8",
+  "sha256": "c4802fbcc0cf820c",
+  "commit": "e09ebb1",
+  "staged": "2026-09-01T23:08:58Z"
+ },
+ {
+  "consumer": "sqlite",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:09:04Z"
+ },
+ {
+  "consumer": "sqlite",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:09:04Z"
+ },
+ {
+  "consumer": "sqlite",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:09:04Z"
+ },
+ {
+  "consumer": "sqlite",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:09:04Z"
+ },
+ {
+  "consumer": "sqlite",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:09:04Z"
+ },
+ {
+  "consumer": "sse",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:09:08Z"
+ },
+ {
+  "consumer": "sse",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:09:08Z"
+ },
+ {
+  "consumer": "sse",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:09:08Z"
+ },
+ {
+  "consumer": "sse",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:09:08Z"
+ },
+ {
+  "consumer": "sse",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:09:08Z"
+ },
+ {
+  "consumer": "table",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:09:08Z"
+ },
+ {
+  "consumer": "table",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:09:08Z"
+ },
+ {
+  "consumer": "table",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:09:08Z"
+ },
+ {
+  "consumer": "table",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:09:08Z"
+ },
+ {
+  "consumer": "table",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:09:08Z"
+ },
+ {
+  "consumer": "table",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:09:08Z"
+ },
+ {
+  "consumer": "template",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:09:13Z"
+ },
+ {
+  "consumer": "template",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:09:13Z"
+ },
+ {
+  "consumer": "template",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:09:13Z"
+ },
+ {
+  "consumer": "template",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:09:13Z"
+ },
+ {
+  "consumer": "template",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:09:13Z"
+ },
+ {
+  "consumer": "template",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:09:13Z"
+ },
+ {
+  "consumer": "terminal",
+  "dependency": "@orkestrel/console",
+  "declared": "^0.0.11",
+  "tarball": "console-a96051e.tgz",
+  "version": "0.0.11",
+  "sha256": "7fb83cb4e72b93b8",
+  "commit": "a96051e",
+  "staged": "2026-09-01T23:09:17Z"
+ },
+ {
+  "consumer": "terminal",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:09:17Z"
+ },
+ {
+  "consumer": "terminal",
+  "dependency": "@orkestrel/database",
+  "declared": "^0.0.12",
+  "tarball": "database-dc5387c.tgz",
+  "version": "0.0.12",
+  "sha256": "4c36b5a5496fc58b",
+  "commit": "dc5387c",
+  "staged": "2026-09-01T23:09:17Z"
+ },
+ {
+  "consumer": "terminal",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:09:17Z"
+ },
+ {
+  "consumer": "terminal",
+  "dependency": "@orkestrel/form",
+  "declared": "^0.0.3",
+  "tarball": "form-1313672.tgz",
+  "version": "0.0.3",
+  "sha256": "69cc66ebbdf9a847",
+  "commit": "1313672",
+  "staged": "2026-09-01T23:09:17Z"
+ },
+ {
+  "consumer": "terminal",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:09:17Z"
+ },
+ {
+  "consumer": "terminal",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:09:17Z"
+ },
+ {
+  "consumer": "terminal",
+  "dependency": "@orkestrel/indexeddb",
+  "declared": "none",
+  "tarball": "indexeddb-80ee848.tgz",
+  "version": "0.0.9",
+  "sha256": "f178df3ef6a96647",
+  "commit": "80ee848",
+  "staged": "2026-09-01T23:09:17Z"
+ },
+ {
+  "consumer": "terminal",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:09:17Z"
+ },
+ {
+  "consumer": "terminal",
+  "dependency": "@orkestrel/sqlite",
+  "declared": "none",
+  "tarball": "sqlite-a397f6c.tgz",
+  "version": "0.0.9",
+  "sha256": "ab9d15ab588f6a86",
+  "commit": "a397f6c",
+  "staged": "2026-09-01T23:09:17Z"
+ },
+ {
+  "consumer": "terminal",
+  "dependency": "@orkestrel/sse",
+  "declared": "^0.0.5",
+  "tarball": "sse-098e309.tgz",
+  "version": "0.0.5",
+  "sha256": "b8b46411d3c85e9b",
+  "commit": "098e309",
+  "staged": "2026-09-01T23:09:17Z"
+ },
+ {
+  "consumer": "terminal",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:09:17Z"
+ },
+ {
+  "consumer": "test",
+  "dependency": "@orkestrel/contract",
+  "declared": "none",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:09:18Z"
+ },
+ {
+  "consumer": "test",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:09:18Z"
+ },
+ {
+  "consumer": "test",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:09:18Z"
+ },
+ {
+  "consumer": "test",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:09:18Z"
+ },
+ {
+  "consumer": "timeout",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:09:21Z"
+ },
+ {
+  "consumer": "timeout",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:09:21Z"
+ },
+ {
+  "consumer": "timeout",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:09:21Z"
+ },
+ {
+  "consumer": "timeout",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:09:21Z"
+ },
+ {
+  "consumer": "timeout",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:09:21Z"
+ },
+ {
+  "consumer": "tool",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:09:30Z"
+ },
+ {
+  "consumer": "tool",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:09:30Z"
+ },
+ {
+  "consumer": "tool",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:09:30Z"
+ },
+ {
+  "consumer": "tool",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:09:30Z"
+ },
+ {
+  "consumer": "tool",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:09:30Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/abort",
+  "declared": "none",
+  "tarball": "abort-46a7fb5.tgz",
+  "version": "0.0.8",
+  "sha256": "8877d25fd1dbd50c",
+  "commit": "46a7fb5",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/agent",
+  "declared": "^0.0.19",
+  "tarball": "agent-9f9ada6.tgz",
+  "version": "0.0.19",
+  "sha256": "7657be43daa32991",
+  "commit": "9f9ada6",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/budget",
+  "declared": "none",
+  "tarball": "budget-8e061e3.tgz",
+  "version": "0.0.8",
+  "sha256": "9dab792a6a5d50a6",
+  "commit": "8e061e3",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/codec",
+  "declared": "none",
+  "tarball": "codec-dcbeb4c.tgz",
+  "version": "0.0.1",
+  "sha256": "2ae43a9edfa27df1",
+  "commit": "dcbeb4c",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/console",
+  "declared": "none",
+  "tarball": "console-a96051e.tgz",
+  "version": "0.0.11",
+  "sha256": "7fb83cb4e72b93b8",
+  "commit": "a96051e",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/database",
+  "declared": "^0.0.12",
+  "tarball": "database-dc5387c.tgz",
+  "version": "0.0.12",
+  "sha256": "4c36b5a5496fc58b",
+  "commit": "dc5387c",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/emitter",
+  "declared": "none",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/form",
+  "declared": "^0.0.3",
+  "tarball": "form-1313672.tgz",
+  "version": "0.0.3",
+  "sha256": "69cc66ebbdf9a847",
+  "commit": "1313672",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "websocket",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:09:33Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "websocket",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:09:33Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/indexeddb",
+  "declared": "none",
+  "tarball": "indexeddb-80ee848.tgz",
+  "version": "0.0.9",
+  "sha256": "f178df3ef6a96647",
+  "commit": "80ee848",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "websocket",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:09:33Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "websocket",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:09:33Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/queue",
+  "declared": "none",
+  "tarball": "queue-f602310.tgz",
+  "version": "0.0.11",
+  "sha256": "69471db1b68267dc",
+  "commit": "f602310",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "websocket",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:09:33Z"
+ },
+ {
+  "consumer": "websocket",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:09:33Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/relation",
+  "declared": "^0.0.10",
+  "tarball": "relation-e7c8c80.tgz",
+  "version": "0.0.10",
+  "sha256": "20828e2030581f6a",
+  "commit": "e7c8c80",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/router",
+  "declared": "none",
+  "tarball": "router-a416aed.tgz",
+  "version": "0.0.12",
+  "sha256": "b758bee4837a373f",
+  "commit": "a416aed",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/server",
+  "declared": "^0.0.17",
+  "tarball": "server-ba377d4.tgz",
+  "version": "0.0.17",
+  "sha256": "f0678cd00cc5fa6c",
+  "commit": "ba377d4",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/sqlite",
+  "declared": "none",
+  "tarball": "sqlite-a397f6c.tgz",
+  "version": "0.0.9",
+  "sha256": "ab9d15ab588f6a86",
+  "commit": "a397f6c",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/sse",
+  "declared": "none",
+  "tarball": "sse-098e309.tgz",
+  "version": "0.0.5",
+  "sha256": "b8b46411d3c85e9b",
+  "commit": "098e309",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/terminal",
+  "declared": "^0.0.13",
+  "tarball": "terminal-a3bdd89.tgz",
+  "version": "0.0.13",
+  "sha256": "4b1e11e6db7d7ccd",
+  "commit": "a3bdd89",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/timeout",
+  "declared": "none",
+  "tarball": "timeout-e09ebb1.tgz",
+  "version": "0.0.8",
+  "sha256": "c4802fbcc0cf820c",
+  "commit": "e09ebb1",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/tool",
+  "declared": "^0.0.12",
+  "tarball": "tool-1ba9528.tgz",
+  "version": "0.0.12",
+  "sha256": "4ca1c37d4471ae1a",
+  "commit": "1ba9528",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/workflow",
+  "declared": "^0.0.16",
+  "tarball": "workflow-0e9babf.tgz",
+  "version": "0.0.16",
+  "sha256": "c06dadb920ced46c",
+  "commit": "0e9babf",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "toolbox",
+  "dependency": "@orkestrel/workspace",
+  "declared": "^0.0.6",
+  "tarball": "workspace-a883d9d.tgz",
+  "version": "0.0.6",
+  "sha256": "90069a5aef767c4c",
+  "commit": "a883d9d",
+  "staged": "2026-09-01T23:09:31Z"
+ },
+ {
+  "consumer": "worker",
+  "dependency": "@orkestrel/abort",
+  "declared": "none",
+  "tarball": "abort-46a7fb5.tgz",
+  "version": "0.0.8",
+  "sha256": "8877d25fd1dbd50c",
+  "commit": "46a7fb5",
+  "staged": "2026-09-01T23:09:38Z"
+ },
+ {
+  "consumer": "worker",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.13",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:09:38Z"
+ },
+ {
+  "consumer": "worker",
+  "dependency": "@orkestrel/database",
+  "declared": "^0.0.12",
+  "tarball": "database-dc5387c.tgz",
+  "version": "0.0.12",
+  "sha256": "4c36b5a5496fc58b",
+  "commit": "dc5387c",
+  "staged": "2026-09-01T23:09:38Z"
+ },
+ {
+  "consumer": "worker",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:09:38Z"
+ },
+ {
+  "consumer": "worker",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:09:38Z"
+ },
+ {
+  "consumer": "worker",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:09:38Z"
+ },
+ {
+  "consumer": "worker",
+  "dependency": "@orkestrel/indexeddb",
+  "declared": "none",
+  "tarball": "indexeddb-80ee848.tgz",
+  "version": "0.0.9",
+  "sha256": "f178df3ef6a96647",
+  "commit": "80ee848",
+  "staged": "2026-09-01T23:09:38Z"
+ },
+ {
+  "consumer": "worker",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:09:38Z"
+ },
+ {
+  "consumer": "worker",
+  "dependency": "@orkestrel/pool",
+  "declared": "^0.0.9",
+  "tarball": "pool-dc9e986.tgz",
+  "version": "0.0.9",
+  "sha256": "1cad93d2655ca4ff",
+  "commit": "dc9e986",
+  "staged": "2026-09-01T23:09:38Z"
+ },
+ {
+  "consumer": "worker",
+  "dependency": "@orkestrel/queue",
+  "declared": "^0.0.11",
+  "tarball": "queue-f602310.tgz",
+  "version": "0.0.11",
+  "sha256": "69471db1b68267dc",
+  "commit": "f602310",
+  "staged": "2026-09-01T23:09:38Z"
+ },
+ {
+  "consumer": "worker",
+  "dependency": "@orkestrel/sqlite",
+  "declared": "none",
+  "tarball": "sqlite-a397f6c.tgz",
+  "version": "0.0.9",
+  "sha256": "ab9d15ab588f6a86",
+  "commit": "a397f6c",
+  "staged": "2026-09-01T23:09:38Z"
+ },
+ {
+  "consumer": "worker",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:09:38Z"
+ },
+ {
+  "consumer": "worker",
+  "dependency": "@orkestrel/timeout",
+  "declared": "none",
+  "tarball": "timeout-e09ebb1.tgz",
+  "version": "0.0.8",
+  "sha256": "c4802fbcc0cf820c",
+  "commit": "e09ebb1",
+  "staged": "2026-09-01T23:09:38Z"
+ },
+ {
+  "consumer": "workflow",
+  "dependency": "@orkestrel/abort",
+  "declared": "^0.0.8",
+  "tarball": "abort-46a7fb5.tgz",
+  "version": "0.0.8",
+  "sha256": "8877d25fd1dbd50c",
+  "commit": "46a7fb5",
+  "staged": "2026-09-01T23:09:42Z"
+ },
+ {
+  "consumer": "workflow",
+  "dependency": "@orkestrel/budget",
+  "declared": "^0.0.8",
+  "tarball": "budget-8e061e3.tgz",
+  "version": "0.0.8",
+  "sha256": "9dab792a6a5d50a6",
+  "commit": "8e061e3",
+  "staged": "2026-09-01T23:09:42Z"
+ },
+ {
+  "consumer": "workflow",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:09:42Z"
+ },
+ {
+  "consumer": "workflow",
+  "dependency": "@orkestrel/database",
+  "declared": "^0.0.12",
+  "tarball": "database-dc5387c.tgz",
+  "version": "0.0.12",
+  "sha256": "4c36b5a5496fc58b",
+  "commit": "dc5387c",
+  "staged": "2026-09-01T23:09:42Z"
+ },
+ {
+  "consumer": "workflow",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:09:42Z"
+ },
+ {
+  "consumer": "workflow",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:09:42Z"
+ },
+ {
+  "consumer": "workflow",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:09:42Z"
+ },
+ {
+  "consumer": "workflow",
+  "dependency": "@orkestrel/indexeddb",
+  "declared": "none",
+  "tarball": "indexeddb-80ee848.tgz",
+  "version": "0.0.9",
+  "sha256": "f178df3ef6a96647",
+  "commit": "80ee848",
+  "staged": "2026-09-01T23:09:42Z"
+ },
+ {
+  "consumer": "workflow",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:09:42Z"
+ },
+ {
+  "consumer": "workflow",
+  "dependency": "@orkestrel/queue",
+  "declared": "^0.0.11",
+  "tarball": "queue-f602310.tgz",
+  "version": "0.0.11",
+  "sha256": "69471db1b68267dc",
+  "commit": "f602310",
+  "staged": "2026-09-01T23:09:42Z"
+ },
+ {
+  "consumer": "workflow",
+  "dependency": "@orkestrel/sqlite",
+  "declared": "none",
+  "tarball": "sqlite-a397f6c.tgz",
+  "version": "0.0.9",
+  "sha256": "ab9d15ab588f6a86",
+  "commit": "a397f6c",
+  "staged": "2026-09-01T23:09:42Z"
+ },
+ {
+  "consumer": "workflow",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:09:42Z"
+ },
+ {
+  "consumer": "workflow",
+  "dependency": "@orkestrel/timeout",
+  "declared": "^0.0.8",
+  "tarball": "timeout-e09ebb1.tgz",
+  "version": "0.0.8",
+  "sha256": "c4802fbcc0cf820c",
+  "commit": "e09ebb1",
+  "staged": "2026-09-01T23:09:42Z"
+ },
+ {
+  "consumer": "workspace",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:09:47Z"
+ },
+ {
+  "consumer": "workspace",
+  "dependency": "@orkestrel/database",
+  "declared": "^0.0.12",
+  "tarball": "database-dc5387c.tgz",
+  "version": "0.0.12",
+  "sha256": "4c36b5a5496fc58b",
+  "commit": "dc5387c",
+  "staged": "2026-09-01T23:09:47Z"
+ },
+ {
+  "consumer": "workspace",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:09:47Z"
+ },
+ {
+  "consumer": "workspace",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:09:47Z"
+ },
+ {
+  "consumer": "workspace",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:09:47Z"
+ },
+ {
+  "consumer": "workspace",
+  "dependency": "@orkestrel/indexeddb",
+  "declared": "none",
+  "tarball": "indexeddb-80ee848.tgz",
+  "version": "0.0.9",
+  "sha256": "f178df3ef6a96647",
+  "commit": "80ee848",
+  "staged": "2026-09-01T23:09:47Z"
+ },
+ {
+  "consumer": "workspace",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:09:47Z"
+ },
+ {
+  "consumer": "workspace",
+  "dependency": "@orkestrel/sqlite",
+  "declared": "none",
+  "tarball": "sqlite-a397f6c.tgz",
+  "version": "0.0.9",
+  "sha256": "ab9d15ab588f6a86",
+  "commit": "a397f6c",
+  "staged": "2026-09-01T23:09:47Z"
+ },
+ {
+  "consumer": "workspace",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:09:47Z"
+ },
+ {
+  "consumer": "scaffold",
+  "dependency": "@orkestrel/console",
+  "declared": "^0.0.11",
+  "tarball": "console-a96051e.tgz",
+  "version": "0.0.11",
+  "sha256": "7fb83cb4e72b93b8",
+  "commit": "a96051e",
+  "staged": "2026-09-01T23:09:50Z"
+ },
+ {
+  "consumer": "scaffold",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:09:50Z"
+ },
+ {
+  "consumer": "scaffold",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:09:50Z"
+ },
+ {
+  "consumer": "scaffold",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:09:50Z"
+ },
+ {
+  "consumer": "scaffold",
+  "dependency": "@orkestrel/html",
+  "declared": "^0.0.7",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:09:50Z"
+ },
+ {
+  "consumer": "scaffold",
+  "dependency": "@orkestrel/markdown",
+  "declared": "^0.0.12",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:09:50Z"
+ },
+ {
+  "consumer": "scaffold",
+  "dependency": "@orkestrel/process",
+  "declared": "^0.0.9",
+  "tarball": "process-ae39a0c.tgz",
+  "version": "0.0.9",
+  "sha256": "bfc96adba144b249",
+  "commit": "ae39a0c",
+  "staged": "2026-09-01T23:09:50Z"
+ },
+ {
+  "consumer": "scaffold",
+  "dependency": "@orkestrel/template",
+  "declared": "^0.0.5",
+  "tarball": "template-bf94339.tgz",
+  "version": "0.0.5",
+  "sha256": "3699c0c072ea3cae",
+  "commit": "bf94339",
+  "staged": "2026-09-01T23:09:50Z"
+ },
+ {
+  "consumer": "scaffold",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:09:50Z"
+ },
+ {
+  "consumer": "abort",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:12:28Z"
+ },
+ {
+  "consumer": "abort",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:12:28Z"
+ },
+ {
+  "consumer": "abort",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:12:28Z"
+ },
+ {
+  "consumer": "brief",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:12:28Z"
+ },
+ {
+  "consumer": "abort",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:12:28Z"
+ },
+ {
+  "consumer": "brief",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:12:28Z"
+ },
+ {
+  "consumer": "abort",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:12:28Z"
+ },
+ {
+  "consumer": "brief",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:12:28Z"
+ },
+ {
+  "consumer": "brief",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:12:28Z"
+ },
+ {
+  "consumer": "agent",
+  "dependency": "@orkestrel/abort",
+  "declared": "^0.0.8",
+  "tarball": "abort-46a7fb5.tgz",
+  "version": "0.0.8",
+  "sha256": "8877d25fd1dbd50c",
+  "commit": "46a7fb5",
+  "staged": "2026-09-01T23:12:29Z"
+ },
+ {
+  "consumer": "brief",
+  "dependency": "@orkestrel/interpret",
+  "declared": "^0.0.11",
+  "tarball": "interpret-25948e5.tgz",
+  "version": "0.0.11",
+  "sha256": "53301ec2ea9d0d72",
+  "commit": "25948e5",
+  "staged": "2026-09-01T23:12:28Z"
+ },
+ {
+  "consumer": "agent",
+  "dependency": "@orkestrel/budget",
+  "declared": "^0.0.8",
+  "tarball": "budget-8e061e3.tgz",
+  "version": "0.0.8",
+  "sha256": "9dab792a6a5d50a6",
+  "commit": "8e061e3",
+  "staged": "2026-09-01T23:12:29Z"
+ },
+ {
+  "consumer": "brief",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:12:28Z"
+ },
+ {
+  "consumer": "agent",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:12:29Z"
+ },
+ {
+  "consumer": "brief",
+  "dependency": "@orkestrel/reason",
+  "declared": "^0.0.8",
+  "tarball": "reason-9844655.tgz",
+  "version": "0.0.8",
+  "sha256": "fd769506ad6e0515",
+  "commit": "9844655",
+  "staged": "2026-09-01T23:12:28Z"
+ },
+ {
+  "consumer": "agent",
+  "dependency": "@orkestrel/database",
+  "declared": "^0.0.12",
+  "tarball": "database-dc5387c.tgz",
+  "version": "0.0.12",
+  "sha256": "4c36b5a5496fc58b",
+  "commit": "dc5387c",
+  "staged": "2026-09-01T23:12:29Z"
+ },
+ {
+  "consumer": "brief",
+  "dependency": "@orkestrel/template",
+  "declared": "none",
+  "tarball": "template-bf94339.tgz",
+  "version": "0.0.5",
+  "sha256": "3699c0c072ea3cae",
+  "commit": "bf94339",
+  "staged": "2026-09-01T23:12:28Z"
+ },
+ {
+  "consumer": "agent",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:12:29Z"
+ },
+ {
+  "consumer": "brief",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:12:28Z"
+ },
+ {
+  "consumer": "agent",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:12:29Z"
+ },
+ {
+  "consumer": "agent",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:12:29Z"
+ },
+ {
+  "consumer": "agent",
+  "dependency": "@orkestrel/indexeddb",
+  "declared": "none",
+  "tarball": "indexeddb-80ee848.tgz",
+  "version": "0.0.9",
+  "sha256": "f178df3ef6a96647",
+  "commit": "80ee848",
+  "staged": "2026-09-01T23:12:29Z"
+ },
+ {
+  "consumer": "agent",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:12:29Z"
+ },
+ {
+  "consumer": "agent",
+  "dependency": "@orkestrel/queue",
+  "declared": "^0.0.11",
+  "tarball": "queue-f602310.tgz",
+  "version": "0.0.11",
+  "sha256": "69471db1b68267dc",
+  "commit": "f602310",
+  "staged": "2026-09-01T23:12:29Z"
+ },
+ {
+  "consumer": "agent",
+  "dependency": "@orkestrel/sqlite",
+  "declared": "none",
+  "tarball": "sqlite-a397f6c.tgz",
+  "version": "0.0.9",
+  "sha256": "ab9d15ab588f6a86",
+  "commit": "a397f6c",
+  "staged": "2026-09-01T23:12:29Z"
+ },
+ {
+  "consumer": "agent",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:12:29Z"
+ },
+ {
+  "consumer": "agent",
+  "dependency": "@orkestrel/timeout",
+  "declared": "^0.0.8",
+  "tarball": "timeout-e09ebb1.tgz",
+  "version": "0.0.8",
+  "sha256": "c4802fbcc0cf820c",
+  "commit": "e09ebb1",
+  "staged": "2026-09-01T23:12:29Z"
+ },
+ {
+  "consumer": "agent",
+  "dependency": "@orkestrel/tool",
+  "declared": "^0.0.12",
+  "tarball": "tool-1ba9528.tgz",
+  "version": "0.0.12",
+  "sha256": "4ca1c37d4471ae1a",
+  "commit": "1ba9528",
+  "staged": "2026-09-01T23:12:29Z"
+ },
+ {
+  "consumer": "agent",
+  "dependency": "@orkestrel/workflow",
+  "declared": "^0.0.16",
+  "tarball": "workflow-0e9babf.tgz",
+  "version": "0.0.16",
+  "sha256": "c06dadb920ced46c",
+  "commit": "0e9babf",
+  "staged": "2026-09-01T23:12:29Z"
+ },
+ {
+  "consumer": "agent",
+  "dependency": "@orkestrel/workspace",
+  "declared": "^0.0.6",
+  "tarball": "workspace-a883d9d.tgz",
+  "version": "0.0.6",
+  "sha256": "90069a5aef767c4c",
+  "commit": "a883d9d",
+  "staged": "2026-09-01T23:12:29Z"
+ },
+ {
+  "consumer": "browser",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:12:37Z"
+ },
+ {
+  "consumer": "browser",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:12:37Z"
+ },
+ {
+  "consumer": "browser",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:12:37Z"
+ },
+ {
+  "consumer": "browser",
+  "dependency": "@orkestrel/html",
+  "declared": "^0.0.7",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:12:37Z"
+ },
+ {
+  "consumer": "browser",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:12:37Z"
+ },
+ {
+  "consumer": "browser",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:12:37Z"
+ },
+ {
+  "consumer": "browser",
+  "dependency": "@orkestrel/websocket",
+  "declared": "^0.0.10",
+  "tarball": "websocket-6bdb626.tgz",
+  "version": "0.0.10",
+  "sha256": "d0a28adea0234d9e",
+  "commit": "6bdb626",
+  "staged": "2026-09-01T23:12:37Z"
+ },
+ {
+  "consumer": "budget",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:12:40Z"
+ },
+ {
+  "consumer": "budget",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:12:40Z"
+ },
+ {
+  "consumer": "budget",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:12:40Z"
+ },
+ {
+  "consumer": "budget",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:12:40Z"
+ },
+ {
+  "consumer": "budget",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:12:40Z"
+ },
+ {
+  "consumer": "codec",
+  "dependency": "@orkestrel/contract",
+  "declared": "none",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:12:45Z"
+ },
+ {
+  "consumer": "codec",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:12:45Z"
+ },
+ {
+  "consumer": "codec",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:12:45Z"
+ },
+ {
+  "consumer": "codec",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:12:45Z"
+ },
+ {
+  "consumer": "codec",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:12:45Z"
+ },
+ {
+  "consumer": "console",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:12:50Z"
+ },
+ {
+  "consumer": "console",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:12:50Z"
+ },
+ {
+  "consumer": "console",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:12:50Z"
+ },
+ {
+  "consumer": "console",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:12:50Z"
+ },
+ {
+  "consumer": "console",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:12:50Z"
+ },
+ {
+  "consumer": "console",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:12:50Z"
+ },
+ {
+  "consumer": "contract",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:12:54Z"
+ },
+ {
+  "consumer": "contract",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:12:54Z"
+ },
+ {
+  "consumer": "contract",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:12:54Z"
+ },
+ {
+  "consumer": "csv",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:12:55Z"
+ },
+ {
+  "consumer": "contract",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:12:54Z"
+ },
+ {
+  "consumer": "csv",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:12:55Z"
+ },
+ {
+  "consumer": "csv",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:12:55Z"
+ },
+ {
+  "consumer": "csv",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:12:55Z"
+ },
+ {
+  "consumer": "csv",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:12:55Z"
+ },
+ {
+  "consumer": "emitter",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:13:06Z"
+ },
+ {
+  "consumer": "database",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:13:06Z"
+ },
+ {
+  "consumer": "emitter",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:13:06Z"
+ },
+ {
+  "consumer": "database",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:13:06Z"
+ },
+ {
+  "consumer": "emitter",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:13:06Z"
+ },
+ {
+  "consumer": "database",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:13:06Z"
+ },
+ {
+  "consumer": "emitter",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:13:06Z"
+ },
+ {
+  "consumer": "database",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:13:06Z"
+ },
+ {
+  "consumer": "emitter",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:13:06Z"
+ },
+ {
+  "consumer": "database",
+  "dependency": "@orkestrel/indexeddb",
+  "declared": "^0.0.9",
+  "tarball": "indexeddb-80ee848.tgz",
+  "version": "0.0.9",
+  "sha256": "f178df3ef6a96647",
+  "commit": "80ee848",
+  "staged": "2026-09-01T23:13:06Z"
+ },
+ {
+  "consumer": "database",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:13:06Z"
+ },
+ {
+  "consumer": "database",
+  "dependency": "@orkestrel/sqlite",
+  "declared": "^0.0.9",
+  "tarball": "sqlite-a397f6c.tgz",
+  "version": "0.0.9",
+  "sha256": "ab9d15ab588f6a86",
+  "commit": "a397f6c",
+  "staged": "2026-09-01T23:13:06Z"
+ },
+ {
+  "consumer": "database",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:13:06Z"
+ },
+ {
+  "consumer": "form",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:13:11Z"
+ },
+ {
+  "consumer": "form",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:13:11Z"
+ },
+ {
+  "consumer": "form",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:13:11Z"
+ },
+ {
+  "consumer": "form",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:13:11Z"
+ },
+ {
+  "consumer": "form",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:13:11Z"
+ },
+ {
+  "consumer": "form",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:13:11Z"
+ },
+ {
+  "consumer": "html",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:13:14Z"
+ },
+ {
+  "consumer": "html",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:13:14Z"
+ },
+ {
+  "consumer": "html",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:13:14Z"
+ },
+ {
+  "consumer": "html",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:13:14Z"
+ },
+ {
+  "consumer": "indexeddb",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:13:22Z"
+ },
+ {
+  "consumer": "indexeddb",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:13:22Z"
+ },
+ {
+  "consumer": "indexeddb",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:13:22Z"
+ },
+ {
+  "consumer": "indexeddb",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:13:22Z"
+ },
+ {
+  "consumer": "indexeddb",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:13:22Z"
+ },
+ {
+  "consumer": "interpret",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:13:27Z"
+ },
+ {
+  "consumer": "interpret",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:13:27Z"
+ },
+ {
+  "consumer": "interpret",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:13:27Z"
+ },
+ {
+  "consumer": "interpret",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:13:27Z"
+ },
+ {
+  "consumer": "interpret",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:13:27Z"
+ },
+ {
+  "consumer": "interpret",
+  "dependency": "@orkestrel/reason",
+  "declared": "^0.0.8",
+  "tarball": "reason-9844655.tgz",
+  "version": "0.0.8",
+  "sha256": "fd769506ad6e0515",
+  "commit": "9844655",
+  "staged": "2026-09-01T23:13:27Z"
+ },
+ {
+  "consumer": "interpret",
+  "dependency": "@orkestrel/template",
+  "declared": "^0.0.5",
+  "tarball": "template-bf94339.tgz",
+  "version": "0.0.5",
+  "sha256": "3699c0c072ea3cae",
+  "commit": "bf94339",
+  "staged": "2026-09-01T23:13:27Z"
+ },
+ {
+  "consumer": "interpret",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:13:27Z"
+ },
+ {
+  "consumer": "lsp",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:13:33Z"
+ },
+ {
+  "consumer": "lsp",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:13:33Z"
+ },
+ {
+  "consumer": "lsp",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:13:33Z"
+ },
+ {
+  "consumer": "lsp",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:13:33Z"
+ },
+ {
+  "consumer": "lsp",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:13:33Z"
+ },
+ {
+  "consumer": "lsp",
+  "dependency": "@orkestrel/process",
+  "declared": "^0.0.9",
+  "tarball": "process-ae39a0c.tgz",
+  "version": "0.0.9",
+  "sha256": "bfc96adba144b249",
+  "commit": "ae39a0c",
+  "staged": "2026-09-01T23:13:33Z"
+ },
+ {
+  "consumer": "lsp",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:13:33Z"
+ },
+ {
+  "consumer": "markdown",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:13:38Z"
+ },
+ {
+  "consumer": "markdown",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:13:38Z"
+ },
+ {
+  "consumer": "markdown",
+  "dependency": "@orkestrel/html",
+  "declared": "^0.0.7",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:13:38Z"
+ },
+ {
+  "consumer": "markdown",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:13:38Z"
+ },
+ {
+  "consumer": "mcp",
+  "dependency": "@orkestrel/abort",
+  "declared": "none",
+  "tarball": "abort-46a7fb5.tgz",
+  "version": "0.0.8",
+  "sha256": "8877d25fd1dbd50c",
+  "commit": "46a7fb5",
+  "staged": "2026-09-01T23:13:45Z"
+ },
+ {
+  "consumer": "mcp",
+  "dependency": "@orkestrel/codec",
+  "declared": "^0.0.1",
+  "tarball": "codec-dcbeb4c.tgz",
+  "version": "0.0.1",
+  "sha256": "2ae43a9edfa27df1",
+  "commit": "dcbeb4c",
+  "staged": "2026-09-01T23:13:45Z"
+ },
+ {
+  "consumer": "mcp",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:13:45Z"
+ },
+ {
+  "consumer": "mcp",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:13:45Z"
+ },
+ {
+  "consumer": "mcp",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:13:45Z"
+ },
+ {
+  "consumer": "mcp",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:13:45Z"
+ },
+ {
+  "consumer": "mcp",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:13:45Z"
+ },
+ {
+  "consumer": "mcp",
+  "dependency": "@orkestrel/process",
+  "declared": "^0.0.9",
+  "tarball": "process-ae39a0c.tgz",
+  "version": "0.0.9",
+  "sha256": "bfc96adba144b249",
+  "commit": "ae39a0c",
+  "staged": "2026-09-01T23:13:45Z"
+ },
+ {
+  "consumer": "mcp",
+  "dependency": "@orkestrel/router",
+  "declared": "^0.0.12",
+  "tarball": "router-a416aed.tgz",
+  "version": "0.0.12",
+  "sha256": "b758bee4837a373f",
+  "commit": "a416aed",
+  "staged": "2026-09-01T23:13:45Z"
+ },
+ {
+  "consumer": "mcp",
+  "dependency": "@orkestrel/server",
+  "declared": "^0.0.17",
+  "tarball": "server-ba377d4.tgz",
+  "version": "0.0.17",
+  "sha256": "f0678cd00cc5fa6c",
+  "commit": "ba377d4",
+  "staged": "2026-09-01T23:13:45Z"
+ },
+ {
+  "consumer": "mcp",
+  "dependency": "@orkestrel/sse",
+  "declared": "^0.0.5",
+  "tarball": "sse-098e309.tgz",
+  "version": "0.0.5",
+  "sha256": "b8b46411d3c85e9b",
+  "commit": "098e309",
+  "staged": "2026-09-01T23:13:45Z"
+ },
+ {
+  "consumer": "mcp",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:13:45Z"
+ },
+ {
+  "consumer": "mcp",
+  "dependency": "@orkestrel/timeout",
+  "declared": "none",
+  "tarball": "timeout-e09ebb1.tgz",
+  "version": "0.0.8",
+  "sha256": "c4802fbcc0cf820c",
+  "commit": "e09ebb1",
+  "staged": "2026-09-01T23:13:45Z"
+ },
+ {
+  "consumer": "mcp",
+  "dependency": "@orkestrel/tool",
+  "declared": "^0.0.12",
+  "tarball": "tool-1ba9528.tgz",
+  "version": "0.0.12",
+  "sha256": "4ca1c37d4471ae1a",
+  "commit": "1ba9528",
+  "staged": "2026-09-01T23:13:45Z"
+ },
+ {
+  "consumer": "mcp",
+  "dependency": "@orkestrel/websocket",
+  "declared": "^0.0.10",
+  "tarball": "websocket-6bdb626.tgz",
+  "version": "0.0.10",
+  "sha256": "d0a28adea0234d9e",
+  "commit": "6bdb626",
+  "staged": "2026-09-01T23:13:45Z"
+ },
+ {
+  "consumer": "middleware",
+  "dependency": "@orkestrel/abort",
+  "declared": "^0.0.8",
+  "tarball": "abort-46a7fb5.tgz",
+  "version": "0.0.8",
+  "sha256": "8877d25fd1dbd50c",
+  "commit": "46a7fb5",
+  "staged": "2026-09-01T23:13:50Z"
+ },
+ {
+  "consumer": "middleware",
+  "dependency": "@orkestrel/budget",
+  "declared": "^0.0.8",
+  "tarball": "budget-8e061e3.tgz",
+  "version": "0.0.8",
+  "sha256": "9dab792a6a5d50a6",
+  "commit": "8e061e3",
+  "staged": "2026-09-01T23:13:50Z"
+ },
+ {
+  "consumer": "middleware",
+  "dependency": "@orkestrel/codec",
+  "declared": "none",
+  "tarball": "codec-dcbeb4c.tgz",
+  "version": "0.0.1",
+  "sha256": "2ae43a9edfa27df1",
+  "commit": "dcbeb4c",
+  "staged": "2026-09-01T23:13:50Z"
+ },
+ {
+  "consumer": "middleware",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:13:50Z"
+ },
+ {
+  "consumer": "middleware",
+  "dependency": "@orkestrel/database",
+  "declared": "^0.0.12",
+  "tarball": "database-dc5387c.tgz",
+  "version": "0.0.12",
+  "sha256": "4c36b5a5496fc58b",
+  "commit": "dc5387c",
+  "staged": "2026-09-01T23:13:50Z"
+ },
+ {
+  "consumer": "middleware",
+  "dependency": "@orkestrel/emitter",
+  "declared": "none",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:13:50Z"
+ },
+ {
+  "consumer": "middleware",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:13:50Z"
+ },
+ {
+  "consumer": "middleware",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:13:50Z"
+ },
+ {
+  "consumer": "middleware",
+  "dependency": "@orkestrel/indexeddb",
+  "declared": "none",
+  "tarball": "indexeddb-80ee848.tgz",
+  "version": "0.0.9",
+  "sha256": "f178df3ef6a96647",
+  "commit": "80ee848",
+  "staged": "2026-09-01T23:13:50Z"
+ },
+ {
+  "consumer": "middleware",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:13:50Z"
+ },
+ {
+  "consumer": "middleware",
+  "dependency": "@orkestrel/router",
+  "declared": "^0.0.12",
+  "tarball": "router-a416aed.tgz",
+  "version": "0.0.12",
+  "sha256": "b758bee4837a373f",
+  "commit": "a416aed",
+  "staged": "2026-09-01T23:13:50Z"
+ },
+ {
+  "consumer": "middleware",
+  "dependency": "@orkestrel/server",
+  "declared": "^0.0.17",
+  "tarball": "server-ba377d4.tgz",
+  "version": "0.0.17",
+  "sha256": "f0678cd00cc5fa6c",
+  "commit": "ba377d4",
+  "staged": "2026-09-01T23:13:50Z"
+ },
+ {
+  "consumer": "middleware",
+  "dependency": "@orkestrel/sqlite",
+  "declared": "none",
+  "tarball": "sqlite-a397f6c.tgz",
+  "version": "0.0.9",
+  "sha256": "ab9d15ab588f6a86",
+  "commit": "a397f6c",
+  "staged": "2026-09-01T23:13:50Z"
+ },
+ {
+  "consumer": "middleware",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:13:50Z"
+ },
+ {
+  "consumer": "middleware",
+  "dependency": "@orkestrel/timeout",
+  "declared": "^0.0.8",
+  "tarball": "timeout-e09ebb1.tgz",
+  "version": "0.0.8",
+  "sha256": "c4802fbcc0cf820c",
+  "commit": "e09ebb1",
+  "staged": "2026-09-01T23:13:50Z"
+ },
+ {
+  "consumer": "msg",
+  "dependency": "@orkestrel/contract",
+  "declared": "none",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:14:05Z"
+ },
+ {
+  "consumer": "msg",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:14:05Z"
+ },
+ {
+  "consumer": "msg",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:14:05Z"
+ },
+ {
+  "consumer": "msg",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:14:05Z"
+ },
+ {
+  "consumer": "msg",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:14:05Z"
+ },
+ {
+  "consumer": "ndjson",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:14:06Z"
+ },
+ {
+  "consumer": "ndjson",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:14:06Z"
+ },
+ {
+  "consumer": "ndjson",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:14:06Z"
+ },
+ {
+  "consumer": "ndjson",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:14:06Z"
+ },
+ {
+  "consumer": "ndjson",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:14:06Z"
+ },
+ {
+  "consumer": "ollama",
+  "dependency": "@orkestrel/abort",
+  "declared": "^0.0.8",
+  "tarball": "abort-46a7fb5.tgz",
+  "version": "0.0.8",
+  "sha256": "8877d25fd1dbd50c",
+  "commit": "46a7fb5",
+  "staged": "2026-09-01T23:14:16Z"
+ },
+ {
+  "consumer": "ollama",
+  "dependency": "@orkestrel/agent",
+  "declared": "^0.0.19",
+  "tarball": "agent-9f9ada6.tgz",
+  "version": "0.0.19",
+  "sha256": "7657be43daa32991",
+  "commit": "9f9ada6",
+  "staged": "2026-09-01T23:14:16Z"
+ },
+ {
+  "consumer": "ollama",
+  "dependency": "@orkestrel/budget",
+  "declared": "^0.0.8",
+  "tarball": "budget-8e061e3.tgz",
+  "version": "0.0.8",
+  "sha256": "9dab792a6a5d50a6",
+  "commit": "8e061e3",
+  "staged": "2026-09-01T23:14:16Z"
+ },
+ {
+  "consumer": "ollama",
+  "dependency": "@orkestrel/codec",
+  "declared": "none",
+  "tarball": "codec-dcbeb4c.tgz",
+  "version": "0.0.1",
+  "sha256": "2ae43a9edfa27df1",
+  "commit": "dcbeb4c",
+  "staged": "2026-09-01T23:14:16Z"
+ },
+ {
+  "consumer": "ollama",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:14:16Z"
+ },
+ {
+  "consumer": "ollama",
+  "dependency": "@orkestrel/database",
+  "declared": "none",
+  "tarball": "database-dc5387c.tgz",
+  "version": "0.0.12",
+  "sha256": "4c36b5a5496fc58b",
+  "commit": "dc5387c",
+  "staged": "2026-09-01T23:14:16Z"
+ },
+ {
+  "consumer": "ollama",
+  "dependency": "@orkestrel/emitter",
+  "declared": "none",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:14:16Z"
+ },
+ {
+  "consumer": "ollama",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:14:16Z"
+ },
+ {
+  "consumer": "ollama",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:14:16Z"
+ },
+ {
+  "consumer": "ollama",
+  "dependency": "@orkestrel/indexeddb",
+  "declared": "none",
+  "tarball": "indexeddb-80ee848.tgz",
+  "version": "0.0.9",
+  "sha256": "f178df3ef6a96647",
+  "commit": "80ee848",
+  "staged": "2026-09-01T23:14:16Z"
+ },
+ {
+  "consumer": "ollama",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:14:16Z"
+ },
+ {
+  "consumer": "ollama",
+  "dependency": "@orkestrel/ndjson",
+  "declared": "^0.0.8",
+  "tarball": "ndjson-1d50483.tgz",
+  "version": "0.0.8",
+  "sha256": "c8cb77e0069f1f3f",
+  "commit": "1d50483",
+  "staged": "2026-09-01T23:14:16Z"
+ },
+ {
+  "consumer": "ollama",
+  "dependency": "@orkestrel/queue",
+  "declared": "none",
+  "tarball": "queue-f602310.tgz",
+  "version": "0.0.11",
+  "sha256": "69471db1b68267dc",
+  "commit": "f602310",
+  "staged": "2026-09-01T23:14:16Z"
+ },
+ {
+  "consumer": "ollama",
+  "dependency": "@orkestrel/router",
+  "declared": "^0.0.12",
+  "tarball": "router-a416aed.tgz",
+  "version": "0.0.12",
+  "sha256": "b758bee4837a373f",
+  "commit": "a416aed",
+  "staged": "2026-09-01T23:14:16Z"
+ },
+ {
+  "consumer": "ollama",
+  "dependency": "@orkestrel/server",
+  "declared": "^0.0.17",
+  "tarball": "server-ba377d4.tgz",
+  "version": "0.0.17",
+  "sha256": "f0678cd00cc5fa6c",
+  "commit": "ba377d4",
+  "staged": "2026-09-01T23:14:16Z"
+ },
+ {
+  "consumer": "ollama",
+  "dependency": "@orkestrel/sqlite",
+  "declared": "none",
+  "tarball": "sqlite-a397f6c.tgz",
+  "version": "0.0.9",
+  "sha256": "ab9d15ab588f6a86",
+  "commit": "a397f6c",
+  "staged": "2026-09-01T23:14:16Z"
+ },
+ {
+  "consumer": "ollama",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:14:16Z"
+ },
+ {
+  "consumer": "probe",
+  "dependency": "@orkestrel/abort",
+  "declared": "none",
+  "tarball": "abort-46a7fb5.tgz",
+  "version": "0.0.8",
+  "sha256": "8877d25fd1dbd50c",
+  "commit": "46a7fb5",
+  "staged": "2026-09-01T23:14:18Z"
+ },
+ {
+  "consumer": "ollama",
+  "dependency": "@orkestrel/timeout",
+  "declared": "^0.0.8",
+  "tarball": "timeout-e09ebb1.tgz",
+  "version": "0.0.8",
+  "sha256": "c4802fbcc0cf820c",
+  "commit": "e09ebb1",
+  "staged": "2026-09-01T23:14:16Z"
+ },
+ {
+  "consumer": "probe",
+  "dependency": "@orkestrel/codec",
+  "declared": "none",
+  "tarball": "codec-dcbeb4c.tgz",
+  "version": "0.0.1",
+  "sha256": "2ae43a9edfa27df1",
+  "commit": "dcbeb4c",
+  "staged": "2026-09-01T23:14:18Z"
+ },
+ {
+  "consumer": "ollama",
+  "dependency": "@orkestrel/tool",
+  "declared": "^0.0.12",
+  "tarball": "tool-1ba9528.tgz",
+  "version": "0.0.12",
+  "sha256": "4ca1c37d4471ae1a",
+  "commit": "1ba9528",
+  "staged": "2026-09-01T23:14:16Z"
+ },
+ {
+  "consumer": "probe",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:14:18Z"
+ },
+ {
+  "consumer": "ollama",
+  "dependency": "@orkestrel/workflow",
+  "declared": "none",
+  "tarball": "workflow-0e9babf.tgz",
+  "version": "0.0.16",
+  "sha256": "c06dadb920ced46c",
+  "commit": "0e9babf",
+  "staged": "2026-09-01T23:14:16Z"
+ },
+ {
+  "consumer": "probe",
+  "dependency": "@orkestrel/database",
+  "declared": "none",
+  "tarball": "database-dc5387c.tgz",
+  "version": "0.0.12",
+  "sha256": "4c36b5a5496fc58b",
+  "commit": "dc5387c",
+  "staged": "2026-09-01T23:14:18Z"
+ },
+ {
+  "consumer": "ollama",
+  "dependency": "@orkestrel/workspace",
+  "declared": "^0.0.6",
+  "tarball": "workspace-a883d9d.tgz",
+  "version": "0.0.6",
+  "sha256": "90069a5aef767c4c",
+  "commit": "a883d9d",
+  "staged": "2026-09-01T23:14:16Z"
+ },
+ {
+  "consumer": "probe",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:14:18Z"
+ },
+ {
+  "consumer": "probe",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:14:18Z"
+ },
+ {
+  "consumer": "probe",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:14:18Z"
+ },
+ {
+  "consumer": "probe",
+  "dependency": "@orkestrel/indexeddb",
+  "declared": "none",
+  "tarball": "indexeddb-80ee848.tgz",
+  "version": "0.0.9",
+  "sha256": "f178df3ef6a96647",
+  "commit": "80ee848",
+  "staged": "2026-09-01T23:14:18Z"
+ },
+ {
+  "consumer": "probe",
+  "dependency": "@orkestrel/lsp",
+  "declared": "^0.0.5",
+  "tarball": "lsp-262012f.tgz",
+  "version": "0.0.5",
+  "sha256": "e4accf81318d4720",
+  "commit": "262012f",
+  "staged": "2026-09-01T23:14:18Z"
+ },
+ {
+  "consumer": "probe",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:14:18Z"
+ },
+ {
+  "consumer": "probe",
+  "dependency": "@orkestrel/mcp",
+  "declared": "^0.0.27",
+  "tarball": "mcp-3ef77c1.tgz",
+  "version": "0.0.27",
+  "sha256": "0c00394566c42946",
+  "commit": "3ef77c1",
+  "staged": "2026-09-01T23:14:18Z"
+ },
+ {
+  "consumer": "probe",
+  "dependency": "@orkestrel/process",
+  "declared": "none",
+  "tarball": "process-ae39a0c.tgz",
+  "version": "0.0.9",
+  "sha256": "bfc96adba144b249",
+  "commit": "ae39a0c",
+  "staged": "2026-09-01T23:14:18Z"
+ },
+ {
+  "consumer": "probe",
+  "dependency": "@orkestrel/queue",
+  "declared": "^0.0.11",
+  "tarball": "queue-f602310.tgz",
+  "version": "0.0.11",
+  "sha256": "69471db1b68267dc",
+  "commit": "f602310",
+  "staged": "2026-09-01T23:14:18Z"
+ },
+ {
+  "consumer": "probe",
+  "dependency": "@orkestrel/sqlite",
+  "declared": "none",
+  "tarball": "sqlite-a397f6c.tgz",
+  "version": "0.0.9",
+  "sha256": "ab9d15ab588f6a86",
+  "commit": "a397f6c",
+  "staged": "2026-09-01T23:14:18Z"
+ },
+ {
+  "consumer": "probe",
+  "dependency": "@orkestrel/sse",
+  "declared": "none",
+  "tarball": "sse-098e309.tgz",
+  "version": "0.0.5",
+  "sha256": "b8b46411d3c85e9b",
+  "commit": "098e309",
+  "staged": "2026-09-01T23:14:18Z"
+ },
+ {
+  "consumer": "probe",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:14:18Z"
+ },
+ {
+  "consumer": "probe",
+  "dependency": "@orkestrel/timeout",
+  "declared": "^0.0.8",
+  "tarball": "timeout-e09ebb1.tgz",
+  "version": "0.0.8",
+  "sha256": "c4802fbcc0cf820c",
+  "commit": "e09ebb1",
+  "staged": "2026-09-01T23:14:18Z"
+ },
+ {
+  "consumer": "probe",
+  "dependency": "@orkestrel/tool",
+  "declared": "^0.0.12",
+  "tarball": "tool-1ba9528.tgz",
+  "version": "0.0.12",
+  "sha256": "4ca1c37d4471ae1a",
+  "commit": "1ba9528",
+  "staged": "2026-09-01T23:14:18Z"
+ },
+ {
+  "consumer": "probe",
+  "dependency": "@orkestrel/websocket",
+  "declared": "none",
+  "tarball": "websocket-6bdb626.tgz",
+  "version": "0.0.10",
+  "sha256": "d0a28adea0234d9e",
+  "commit": "6bdb626",
+  "staged": "2026-09-01T23:14:18Z"
+ },
+ {
+  "consumer": "process",
+  "dependency": "@orkestrel/contract",
+  "declared": "^0.0.15",
+  "tarball": "contract-038a15a.tgz",
+  "version": "0.0.15",
+  "sha256": "b84a72fd460bcd4c",
+  "commit": "038a15a",
+  "staged": "2026-09-01T23:14:27Z"
+ },
+ {
+  "consumer": "process",
+  "dependency": "@orkestrel/emitter",
+  "declared": "^0.0.8",
+  "tarball": "emitter-3f59367.tgz",
+  "version": "0.0.8",
+  "sha256": "74a2b8cd494674ea",
+  "commit": "3f59367",
+  "staged": "2026-09-01T23:14:27Z"
+ },
+ {
+  "consumer": "process",
+  "dependency": "@orkestrel/guide",
+  "declared": "^0.0.15",
+  "tarball": "guide-be6111e.tgz",
+  "version": "0.0.15",
+  "sha256": "32e843a2daed317c",
+  "commit": "be6111e",
+  "staged": "2026-09-01T23:14:27Z"
+ },
+ {
+  "consumer": "process",
+  "dependency": "@orkestrel/html",
+  "declared": "none",
+  "tarball": "html-ce9b703.tgz",
+  "version": "0.0.7",
+  "sha256": "c5fb0a14f33f108c",
+  "commit": "ce9b703",
+  "staged": "2026-09-01T23:14:27Z"
+ },
+ {
+  "consumer": "process",
+  "dependency": "@orkestrel/markdown",
+  "declared": "none",
+  "tarball": "markdown-de72312.tgz",
+  "version": "0.0.12",
+  "sha256": "6187401b0676eac3",
+  "commit": "de72312",
+  "staged": "2026-09-01T23:14:27Z"
+ },
+ {
+  "consumer": "process",
+  "dependency": "@orkestrel/test",
+  "declared": "^0.0.11",
+  "tarball": "test-cced24a.tgz",
+  "version": "0.0.11",
+  "sha256": "8ecf49bbc6370d54",
+  "commit": "cced24a",
+  "staged": "2026-09-01T23:14:27Z"
+ }
+]
