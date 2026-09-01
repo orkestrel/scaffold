@@ -2662,5 +2662,1375 @@
     ]
    }
   }
+ },
+ {
+  "package": "browser",
+  "id": "s04-01",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "browser",
+  "id": "s04-02",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "browser",
+  "id": "s04-05",
+  "kind": "remove",
+  "consumers": {
+   "scaffold": {
+    "found": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "browser",
+  "id": "s04-06",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "browser",
+  "id": "s04-07",
+  "kind": "mixed",
+  "consumers": {
+   "scaffold": {
+    "filter": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "browser",
+  "id": "s04-09",
+  "kind": "mixed",
+  "consumers": {
+   "scaffold": {
+    "text": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "browser",
+  "id": "s04-10",
+  "kind": "remove",
+  "consumers": {
+   "scaffold": {
+    "receive": [
+     "guides/scaffold.md"
+    ],
+    "fail": [
+     "guides/scaffold.md"
+    ],
+    "close": [
+     "guides/scaffold.md"
+    ],
+    "update": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "browser",
+  "id": "s04-11",
+  "kind": "rename",
+  "consumers": {
+   "scaffold": {
+    "fail": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "browser",
+  "id": "s04-12",
+  "kind": "mixed",
+  "consumers": {}
+ },
+ {
+  "package": "browser",
+  "id": "s04-18",
+  "kind": "rename",
+  "consumers": {
+   "scaffold": {
+    "type": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "browser",
+  "id": "s04-19",
+  "kind": "option-key",
+  "consumers": {}
+ },
+ {
+  "package": "browser",
+  "id": "s04-20",
+  "kind": "rename",
+  "consumers": {
+   "scaffold": {
+    "media": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "browser",
+  "id": "s04-21",
+  "kind": "remove",
+  "consumers": {}
+ },
+ {
+  "package": "browser",
+  "id": "s04-22",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "browser",
+  "id": "s04-26",
+  "kind": "signature",
+  "consumers": {
+   "scaffold": {
+    "emitter": [
+     "guides/scaffold.md",
+     "guides/README.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "browser",
+  "id": "s04-29",
+  "kind": "signature",
+  "consumers": {}
+ },
+ {
+  "package": "browser",
+  "id": "s04-35",
+  "kind": "remove",
+  "consumers": {}
+ },
+ {
+  "package": "browser",
+  "id": "s04b-04",
+  "kind": "rename",
+  "consumers": {
+   "scaffold": {
+    "list": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "browser",
+  "id": "s04b-05",
+  "kind": "signature",
+  "consumers": {}
+ },
+ {
+  "package": "browser",
+  "id": "s04b-10",
+  "kind": "rename",
+  "consumers": {
+   "scaffold": {
+    "test": [
+     "guides/scaffold.md",
+     "guides/README.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "browser",
+  "id": "s04b-12",
+  "kind": "mixed",
+  "consumers": {
+   "scaffold": {
+    "start": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "guide",
+  "id": "s15-16",
+  "kind": "rename",
+  "consumers": {
+   "abort": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "agent": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "brief": {
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ],
+    "declarationBody": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "browser": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "budget": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "codec": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "console": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "contract": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "csv": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "database": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "emitter": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "form": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "html": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "indexeddb": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "interpret": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "lsp": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "markdown": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "mcp": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/setupServer.ts",
+     "tests/guides.test.ts"
+    ]
+   },
+   "middleware": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "msg": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "ndjson": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "ollama": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "pool": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "process": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "program": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "qualifier": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "queue": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "rater": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "reason": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "relation": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "router": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "sea": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "server": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "sqlite": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "sse": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "table": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "template": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "terminal": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "test": {
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "timeout": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "tool": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "toolbox": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "websocket": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "worker": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "workflow": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "workspace": {
+    "symbolKey": [
+     "tests/guides.test.ts"
+    ],
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "scaffold": {
+    "missingSymbols": [
+     "tests/guides.test.ts"
+    ],
+    "fenceImports": [
+     "tests/guides.test.ts"
+    ]
+   }
+  }
+ },
+ {
+  "package": "guide",
+  "id": "s15-17",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "interpret",
+  "id": "s12-25",
+  "kind": "mixed",
+  "consumers": {}
+ },
+ {
+  "package": "interpret",
+  "id": "s12-26",
+  "kind": "mixed",
+  "consumers": {}
+ },
+ {
+  "package": "interpret",
+  "id": "s12-29",
+  "kind": "mixed",
+  "consumers": {
+   "brief": {
+    "register": [
+     "tests/setup.ts",
+     "guides/brief.md"
+    ],
+    "unregister": [
+     "tests/setup.ts"
+    ]
+   },
+   "scaffold": {
+    "register": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "interpret",
+  "id": "s12-30",
+  "kind": "mixed",
+  "consumers": {
+   "brief": {
+    "action": [
+     "src/core/helpers.ts",
+     "tests/setup.ts",
+     "tests/src/core/BriefCompiler.test.ts",
+     "guides/brief.md"
+    ],
+    "domain": [
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "tests/setup.ts",
+     "tests/src/core/BriefCompiler.test.ts",
+     "guides/brief.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "interpret",
+  "id": "s12-34",
+  "kind": "option-key",
+  "consumers": {
+   "brief": {
+    "lexicon": [
+     "src/core/helpers.ts"
+    ]
+   }
+  }
+ },
+ {
+  "package": "interpret",
+  "id": "s12-35",
+  "kind": "behavior",
+  "consumers": {
+   "brief": {
+    "destroy": [
+     "src/core/BriefCompiler.ts",
+     "src/core/BriefManager.ts",
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "tests/setup.ts",
+     "tests/src/core/BriefCompiler.test.ts",
+     "guides/brief.md"
+    ]
+   },
+   "scaffold": {
+    "destroy": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "interpret",
+  "id": "s12-37",
+  "kind": "behavior",
+  "consumers": {
+   "brief": {
+    "generate": [
+     "guides/brief.md"
+    ]
+   },
+   "scaffold": {
+    "generate": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "interpret",
+  "id": "s12-38",
+  "kind": "remove",
+  "consumers": {}
+ },
+ {
+  "package": "interpret",
+  "id": "s12-39",
+  "kind": "remove",
+  "consumers": {}
+ },
+ {
+  "package": "interpret",
+  "id": "s12-42",
+  "kind": "rename",
+  "consumers": {
+   "brief": {
+    "size": [
+     "src/core/BriefManager.ts",
+     "src/core/types.ts",
+     "guides/brief.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "interpret",
+  "id": "s12-43",
+  "kind": "rename",
+  "consumers": {
+   "brief": {
+    "ManagerAddOptions": [
+     "src/core/BriefManager.ts",
+     "src/core/types.ts",
+     "guides/brief.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "interpret",
+  "id": "s12-45",
+  "kind": "signature",
+  "consumers": {
+   "brief": {
+    "canonicalize": [
+     "src/core/helpers.ts"
+    ]
+   }
+  }
+ },
+ {
+  "package": "mcp",
+  "id": "s01-01",
+  "kind": "mixed",
+  "consumers": {}
+ },
+ {
+  "package": "mcp",
+  "id": "s01-02",
+  "kind": "remove",
+  "consumers": {}
+ },
+ {
+  "package": "mcp",
+  "id": "s01-03",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "mcp",
+  "id": "s01-04",
+  "kind": "behavior",
+  "consumers": {}
+ },
+ {
+  "package": "mcp",
+  "id": "s01-07",
+  "kind": "mixed",
+  "consumers": {}
+ },
+ {
+  "package": "mcp",
+  "id": "s01-09",
+  "kind": "remove",
+  "consumers": {}
+ },
+ {
+  "package": "mcp",
+  "id": "s01-10",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "mcp",
+  "id": "s01-11",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "mcp",
+  "id": "s01-18",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "mcp",
+  "id": "s01-19",
+  "kind": "signature",
+  "consumers": {}
+ },
+ {
+  "package": "qualifier",
+  "id": "s16-27",
+  "kind": "mixed",
+  "consumers": {
+   "program": {
+    "QualificationValidationResult": [
+     "tests/src/core/helpers.test.ts"
+    ],
+    "isQualificationValidationResult": [
+     "src/core/helpers.ts"
+    ],
+    "validate": [
+     "src/core/programs/Program.ts",
+     "src/core/programs/ProgramManager.ts",
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "tests/setup.ts",
+     "tests/src/core/programs/ProgramManager.test.ts",
+     "tests/src/core/programs/Program.test.ts",
+     "tests/src/core/validators.test.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/setup.test.ts",
+     "guides/program.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "qualifier",
+  "id": "s16-30",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "qualifier",
+  "id": "s16-32",
+  "kind": "mixed",
+  "consumers": {
+   "program": {
+    "context": [
+     "src/core/helpers.ts",
+     "tests/src/core/programs/ProgramManager.test.ts",
+     "tests/src/core/programs/Program.test.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/program.md"
+    ]
+   },
+   "scaffold": {
+    "context": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "rater",
+  "id": "s17-05",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "rater",
+  "id": "s17-06",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "rater",
+  "id": "s17-08",
+  "kind": "remove",
+  "consumers": {
+   "program": {
+    "success": [
+     "src/core/programs/Program.ts",
+     "src/core/validators.ts",
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "tests/setup.ts",
+     "tests/src/core/programs/ProgramManager.test.ts",
+     "tests/src/core/programs/Program.test.ts",
+     "tests/src/core/validators.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/src/core/integration.test.ts",
+     "tests/setup.test.ts",
+     "guides/program.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "relation",
+  "id": "s17-10",
+  "kind": "type",
+  "consumers": {
+   "toolbox": {
+    "column": [
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/toolbox.md"
+    ],
+    "key": [
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/toolbox.md"
+    ],
+    "through": [
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/toolbox.md",
+     "guides/README.md"
+    ],
+    "source": [
+     "src/core/types.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/toolbox.md"
+    ],
+    "target": [
+     "src/core/types.ts",
+     "tests/src/core/factories.test.ts",
+     "guides/toolbox.md"
+    ],
+    "tag": [
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/toolbox.md"
+    ],
+    "label": [
+     "src/core/types.ts",
+     "tests/src/core/factories.test.ts",
+     "guides/toolbox.md"
+    ]
+   },
+   "scaffold": {
+    "key": [
+     "guides/scaffold.md"
+    ],
+    "through": [
+     "guides/scaffold.md",
+     "guides/README.md"
+    ],
+    "source": [
+     "guides/scaffold.md"
+    ],
+    "target": [
+     "guides/scaffold.md",
+     "guides/README.md"
+    ],
+    "tag": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "sea",
+  "id": "s12-03",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "sea",
+  "id": "s12-05",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "sea",
+  "id": "s12-07",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "sea",
+  "id": "s12-17",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "server",
+  "id": "s14-01",
+  "kind": "mixed",
+  "consumers": {
+   "mcp": {
+    "openStream": [
+     "src/server/handlers.ts",
+     "src/server/factories.ts",
+     "src/server/HTTPDisconnect.ts",
+     "src/server/helpers.ts",
+     "src/server/MCPSession.ts",
+     "src/server/middlewares.ts",
+     "src/server/types.ts",
+     "tests/setupServer.ts",
+     "tests/src/server/HTTPDisconnect.test.ts",
+     "tests/src/server/middlewares.test.ts",
+     "guides/mcp.md",
+     "guides/README.md"
+    ]
+   },
+   "toolbox": {
+    "openStream": [
+     "src/server/terminals/TerminalRoutes.ts",
+     "tests/src/server/terminals/TerminalConnection.test.ts",
+     "guides/toolbox.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "server",
+  "id": "s14-03",
+  "kind": "remove",
+  "consumers": {}
+ },
+ {
+  "package": "server",
+  "id": "s14-11",
+  "kind": "mixed",
+  "consumers": {
+   "mcp": {
+    "start": [
+     "src/server/factories.ts",
+     "src/server/types.ts",
+     "tests/setupServer.ts",
+     "tests/src/server/transports/WebSocketClientTransport.test.ts",
+     "tests/src/server/transports/HTTPClientTransport.test.ts",
+     "tests/src/server/factories.test.ts",
+     "tests/fixtures/browserServer.ts",
+     "guides/mcp.md"
+    ]
+   },
+   "middleware": {
+    "start": [
+     "src/server/helpers.ts",
+     "src/server/middlewares.ts",
+     "src/core/middlewares.ts",
+     "tests/setup.ts",
+     "tests/setup.test.ts",
+     "guides/middleware.md"
+    ]
+   },
+   "ollama": {
+    "start": [
+     "tests/setupServer.ts",
+     "tests/setupServer.test.ts",
+     "tests/setupService.test.ts",
+     "guides/ollama.md"
+    ]
+   },
+   "probe": {
+    "start": [
+     "guides/probe.md"
+    ]
+   },
+   "scaffold": {
+    "start": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "server",
+  "id": "s14-12",
+  "kind": "rename",
+  "consumers": {
+   "middleware": {
+    "clientRateKey": [
+     "src/core/helpers.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/middleware.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "server",
+  "id": "s14-14",
+  "kind": "rename",
+  "consumers": {
+   "middleware": {
+    "ConnectionInfo": [
+     "src/core/types.ts",
+     "guides/middleware.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "terminal",
+  "id": "s12-48",
+  "kind": "mixed",
+  "consumers": {
+   "toolbox": {
+    "name": [
+     "src/server/factories.ts",
+     "src/server/terminals/TerminalConnection.ts",
+     "src/server/terminals/TerminalRoutes.ts",
+     "src/server/types.ts",
+     "src/core/factories.ts",
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "tests/src/server/factories.test.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/toolbox.md"
+    ]
+   },
+   "scaffold": {
+    "name": [
+     "guides/scaffold.md",
+     "guides/README.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "terminal",
+  "id": "s12-52",
+  "kind": "signature",
+  "consumers": {
+   "toolbox": {
+    "terminals": [
+     "src/server/factories.ts",
+     "src/core/factories.ts",
+     "src/core/types.ts",
+     "tests/src/server/terminals/TerminalConnection.test.ts",
+     "tests/src/server/factories.test.ts",
+     "tests/src/core/factories.test.ts",
+     "guides/toolbox.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "terminal",
+  "id": "s12-54",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "terminal",
+  "id": "s12-55",
+  "kind": "mixed",
+  "consumers": {
+   "toolbox": {
+    "shutdown": [
+     "src/server/types.ts",
+     "guides/toolbox.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "terminal",
+  "id": "s12-58",
+  "kind": "rename",
+  "consumers": {
+   "toolbox": {
+    "TimerCancel": [
+     "src/server/terminals/TerminalConnection.ts",
+     "tests/src/core/factories.test.ts"
+    ]
+   }
+  }
+ },
+ {
+  "package": "terminal",
+  "id": "s12-59",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "workspace",
+  "id": "s17-31",
+  "kind": "rename",
+  "consumers": {
+   "agent": {
+    "data": [
+     "src/core/AgentContext.ts",
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/src/core/AgentContext.test.ts",
+     "guides/agent.md"
+    ]
+   },
+   "ollama": {
+    "data": [
+     "tests/setup.ts",
+     "guides/ollama.md"
+    ]
+   },
+   "toolbox": {
+    "data": [
+     "src/core/factories.ts",
+     "guides/toolbox.md"
+    ]
+   },
+   "scaffold": {
+    "data": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "workspace",
+  "id": "s17-32",
+  "kind": "rename",
+  "consumers": {}
  }
 ]

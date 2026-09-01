@@ -41,7 +41,7 @@ dependency before it publishes, § What a bump obliges) and § Writing concurren
 and pushed. Network reaches the registry through the session proxy. Publishing is held by the
 user's ruling: no package publishes in this phase.
 
-**Measurements.** Fleet: 49 published packages (`supervisor` excluded). Contract is at 0.0.15 on
+**Measurements.** Fleet: every published `@orkestrel/*` package in the catalog table except `supervisor`. Contract is at 0.0.15 on
 the registry and every dependent except `worker` pins `^0.0.15`; `worker` stays at `^0.0.13`
 because its `queue` dependency's pin nests a second contract copy and splits `Infer`
 (`/home/user/work/logs/repin-worker.log`). Every fleet package builds to `dist/` with `npm run
