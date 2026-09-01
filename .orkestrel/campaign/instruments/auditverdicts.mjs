@@ -39,6 +39,6 @@ for (const pkg of pkgs) {
 	for (const r of refuted) md += `- **${r.lane}, claim ${r.claim}:** ${r.evidence}\n`
 	if (refuted.length) md += `\n**Ruling:** _pending_\n\n`
 }
-writeFileSync('/home/user/scaffold/.orkestrel/campaign/fix/audit-1-verdict.md', md)
+writeFileSync(process.env.AUDIT_OUT || '/home/user/scaffold/.orkestrel/campaign/fix/audit-1-verdict.md', md)
 console.log(summary.join('\n'))
 console.log('packages with lane results:', pkgs.length)

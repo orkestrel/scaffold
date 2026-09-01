@@ -293,3 +293,17 @@ Both lanes confirmed every claim.
 
 **Ruling:** Referrals ruled. Empty-batch answer: `true` for an empty id list is the conjunction over no members and the consistent all-succeed answer; document it in the batch paragraph and pin it. Fleet shape: 'applies to those items and returns true only when all succeed' names partial-apply-and-report — every listed item is attempted and the return is the conjunction; template's atomic pre-check is the divergent shape and aligns in the template breaking unit, with both guides stating the one meaning. s17-34: the early return stands; the recorded rationale is corrected to 'a throw would be a new observable refusal on a branch the declared overloads forbid'.
 
+## msg — reviewer PASS, checker FAIL
+
+- **checker, claim 2:** s13-06 is labeled DRIFT in the dossier (verdict=CONFIRMED, dossier.md:42), and the dossier's own convention states 'DRIFT: the finding's own repair stands' (dossier.md:4), so its operative repair is the finding's literal repair: line (dossier.md:44): 'Type MSG_FIELD_TYPE_MAPPING as Readonly<Record<string, MSGFieldType>> ... and give MSGDirectoryEntryType the same treatment or delete it.' The diff (diff.md:434-435) implements only the MSG_FIELD_TYPE_MAPPING half; MSGDirectoryEntryType (types.ts:51) is untouched by the diff and neither given 'the same treatment' nor deleted. The writer's own report (msg.md:9, msg.md:46) concedes this half was deferred rather than applied, so the single 'applied' disposition for s13-06 does not implement its stated operative repair in full. Every other applied disposition (s13-04, s13-05, s13-07, s13-08, s13-11, s13-12, s13-13, s13-14) matches its operative repair line or line under Verification exactly against diff.md.
+- **checker, claim misapplied s13-06:** The report discloses (msg.md:9, msg.md:46) that only the MSG_FIELD_TYPE_MAPPING half of the finding's DRIFT repair line was applied; the MSGDirectoryEntryType half ('give it the same treatment or delete it') was deferred and carried to a work order, but the single disposition is recorded as 'applied' rather than split or recorded as partially deferred_breaking. Per the dossier's own convention (dossier.md:4) and the audit brief's claim 2 rule, a DRIFT finding's operative repair is its full repair: line, and an 'applied' disposition must implement it completely. — correct: Record s13-06 as a split disposition — applied for the MSG_FIELD_TYPE_MAPPING retype and deferred_breaking for the MSGDirectoryEntryType half — or apply the full compound repair (choosing either 'same treatment' or deletion for MSGDirectoryEntryType) before marking the finding applied.
+
+**Ruling:** Retained: s13-06's `MSGDirectoryEntryType` half (retype or delete a published alias) is breaking and joins the msg breaking unit's rows; the disposition is split on the record.
+
+## qualifier — reviewer PASS, checker PASS
+
+Both lanes confirmed every claim.
+
+## program — reviewer PASS, checker PASS
+
+Both lanes confirmed every claim.

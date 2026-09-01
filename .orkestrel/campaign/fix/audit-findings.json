@@ -109,5 +109,8 @@
  "workspace": [
   "empty batch: state in guides/workspace.md:357-361 that an empty list returns true and pin it in Workspace.test.ts and WorkspaceManager.test.ts",
   "cross-package (template unit): align template's remove(ids) to partial-apply-and-report and state the one batch meaning in guides/template.md"
+ ],
+ "msg": [
+  "s13-06 second half: type MSGDirectoryEntryType as Readonly<Record<string, MSGDirectoryEntryTypeMember>> like MSG_FIELD_TYPE_MAPPING, or delete it with its guide row (breaking)"
  ]
 }
