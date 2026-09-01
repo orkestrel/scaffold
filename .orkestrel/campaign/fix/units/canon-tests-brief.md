@@ -26,7 +26,7 @@ Browser/style setup exposes shared assertions/builders:
 The renames the `test` unit landed (its report at
 `/home/user/scaffold/tmp/units/breaking/test-report.md` is authoritative; read it first and use the
 names it reports, which are expected to be): `style` → `readStyle`, `token` → `readToken`,
-`rootToken` → `readRootToken`, `pixels` → `readPixels`, `rgba` → `resolveColor`,
+`rootToken` → `readRootToken`, `pixels` → `readPixels`, `rgba` → `parseCSSColor`,
 `colorEqual` → `matchesColor`. `mount`, `render`, `build`, and `findRule` did not move. The exported
 surface to check against: `/home/user/fleet/test/src/browser/index.ts`.
 

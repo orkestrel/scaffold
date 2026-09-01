@@ -134,7 +134,7 @@ finds the ruled name colliding with an existing export stops and reports.
 | toolbox s10-25 | `TerminalBridge` and `TerminalBridgeOptions`; the factory is named `create{Entity}` for the type it returns, so it becomes `createTerminalBridge` if it returns the bridge and stays `createTerminalRoutes` if it returns routes. The writer reads the return type and reports. |
 | toolbox s10-32 | `MAX_WORKFLOW_CHAIN`. |
 | toolbox s10-21 | `databaseToolCode` and `relationToolCode` stay outside the row (s10-18 defers them). |
-| test s11-37 | `readStyle`, `readToken`, `readRootToken`, `readPixels`, `readContrast`; `rgba` becomes `resolveColor` as the ledger has it (it resolves a CSS color through a live probe element and returns `Color \| undefined`). |
+| test s11-37 | `readStyle`, `readToken`, `readRootToken`, `readPixels`, `readContrast`; `rgba` becomes `parseCSSColor`: it coerces a CSS color expression through a live probe element to `Color \| undefined`, the `parse*` contract. The ledger's `resolveColor` was withdrawn by the vocabulary audit (`resolve*` picks an effective value from options and defaults). The test writer landed `resolveColor` before the ruling changed; a `builder` fix-up renames it. |
 | test s11-36, s11-38 | `PortfolioInterface.placements`; `matchesColor`. |
 | guide s15-16, s15-17 | The ledger's verb-first names, with `extractFenceImports` and `normalizeIdentifier`; `identifierOf` lands once. |
 | msg s13-02, s13-03 | `category` on the field data interfaces and on the directory entry; `MSG_CATEGORY_*` replaces `MSG_TYPE_*`. The external-mirror rule never licenses `type`. |

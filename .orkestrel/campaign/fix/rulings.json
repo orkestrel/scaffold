@@ -16,7 +16,7 @@
   "s18-03: `reset()` becomes `clear()` on the interface and the parser; the guide quote block, Surface fence, Types row, Methods row, and Methods fence move."
  ],
  "test": [
-  "s11-37: `style` → `readStyle`, `token` → `readToken`, `rootToken` → `readRootToken`, `pixels` → `readPixels`, `contrast` → `readContrast` (a `read*` helper obtains a value from a live host object); `rgba` → `resolveColor` (it resolves a CSS color through a live probe element and returns `Color | undefined`).",
+  "s11-37: `style` → `readStyle`, `token` → `readToken`, `rootToken` → `readRootToken`, `pixels` → `readPixels`, `contrast` → `readContrast` (a `read*` helper obtains a value from a live host object); `rgba` → `parseCSSColor` (it coerces a CSS color expression through a live probe element to `Color | undefined`, which is the `parse*` contract; `resolve*` picks an effective value from options and defaults and does not fit).",
   "s11-36: `PortfolioInterface.states` → `placements`; `PortfolioOptions.states` stays as the declared registry.",
   "s11-38: `colorEqual` → `matchesColor` (`matches*` is a predicate).",
   "The vocabulary these names follow is being landed in scaffold's `.claude/rules/names.md` in the same wave; this checkout's vendored copy predates it. Apply the names above as ruled."
