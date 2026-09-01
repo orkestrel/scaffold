@@ -1,0 +1,25 @@
+=== build ===
+build exit=0
+=== mutation: subject read twice again (pre-fix shape) ===
+read-once lines: 1
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:core| tests/src/core/helpers.test.ts > readValue > refuses through its own error when a subject accessor changes its answer between reads
+      Tests  1 failed | 228 passed (229)
+restore: RESTORED-EXACTLY
+      Tests  229 passed (229)
+=== readValue hostile record (u2f vs base; exactly the alternating line must differ) ===
+22c22
+< subject accessor alternating string then hostile object: THREW Error code=undefined msg="hostile toString" contextKeys=- context=undefined cause=undefined
+---
+> subject accessor alternating string then hostile object: THREW ContractError code=structure msg="door: thing could not be read" contextKeys=- context=undefined cause="boom"
+=== preview boundary record (u2f vs base) ===
+preview record: IDENTICAL
+=== parity identity form ===
+PARITY: IDENTICAL
+=== parity content form ===
+PARITY: IDENTICAL
+=== bare stringify tokens in preview TSDoc ===
+count: 0
+=== superseded sentence present? ===
+0
+U2F ACCEPTANCE EVIDENCE COMPLETE
