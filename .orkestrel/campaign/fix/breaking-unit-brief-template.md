@@ -14,11 +14,18 @@ surface. No compatibility alias, re-export, or shim.
 
 ## Context
 
-**Evidence.** The rows: ROWS (each with its ledger record in
+**Evidence.** The rows, each with its ledger record in
 `.orkestrel/campaign/fix/breaking-ledger.json`, its finding text and corrected repair under
 `## <id>` in `.orkestrel/campaign/fix/PACKAGE.md`, and the writer's deferral note in
-`.orkestrel/campaign/fix/reports/PACKAGE.md`). The fix-round audit findings for this package that
-this unit also carries: AUDIT_FINDINGS. External consumers of each moved symbol (for the record
+`.orkestrel/campaign/fix/reports/PACKAGE.md`:
+
+ROWS
+
+The fix-round audit findings for this package that this unit also carries:
+
+AUDIT_FINDINGS
+
+External consumers of each moved symbol (for the record
 only; their units follow): `.orkestrel/campaign/fix/breaking-radius.json`.
 
 **Law.** `AGENTS.md`; `.claude/rules/names.md`, `.claude/rules/typescript.md`,
