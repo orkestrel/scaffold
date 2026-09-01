@@ -268,3 +268,27 @@ package, the script now names `model: 'sonnet'` on the checker lane beside the r
 `model: 'opus'`, and the round resumed from cache for the reviewer results. Standing rule for
 every later workflow in this campaign: every `agent()` call names its model alias explicitly,
 whatever the role file says. The writer units all carried `model: 'opus'` and are unaffected.
+
+## Breaking-change phase (opened 2026-09-01)
+
+The user directed on 2026-09-01 that the deferred breaking changes be applied, using the tarball
+method where a consumer must prove against a dependency that has not published, and that the
+instruction set be read in full and followed strictly. The Orchestrator re-read `AGENTS.md`,
+every `.claude/rules/*.md` file, `.agents/orchestration.md`, the `orkestrel-align-packages`,
+`orkestrel-harden-package`, `orkestrel-falsify`, `orkestrel-publish`, and `orkestrel-debrief`
+skills with their references, every `.claude/agents/*.md` role file, the brief template, and both
+transport contracts before designing the phase.
+
+The phase runs the execution loop: absorption of the work-order rows into an exact symbol ledger
+on the Cursor Grok bench (brief `fix/breaking-ledger-brief.md`, one launch per layer chunk,
+journals under `tmp/cursor/`), a scripted consumer blast radius over that ledger
+(`instruments/radius.mjs`), an adversarial design round on one brief
+(`tmp/units/fix/breaking-design-brief.md`; planner and the objective lane on Opus with the Sol
+substitution recorded), then implementation in layer order with one Opus `implementer` per package
+unit, consumers proving against the dependency's built tarball staged with `npm install --no-save`
+and recorded in `fix/tarballs.json` (`instruments/pack-dep.sh`, `stage-dep.sh`, `restore-dep.sh`),
+an `orkestrel-falsify` audit per unit, and the independent gate sweep (`instruments/fleet-gates.sh`).
+Publishing stays held: every consumer's committed state names the registry range it still declares
+beside the tarball it proved against, and the wave re-pins layer by layer when the user releases.
+The all-succeed and kind-purity rulings are closed: workspace (s17-37), terminal, tool (s18-06),
+and html (s08-06 plus the `isEmptyElement` residue) all landed under them.
