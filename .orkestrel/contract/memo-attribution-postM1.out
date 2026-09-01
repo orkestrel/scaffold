@@ -1,6 +1,0 @@
-  2 untouched /   2 total  at <instance_members_initializer> (core/index.js:3813:11) <- at new ShapeValidator (core/index.js:3833:13) <- at core/index.js:5385:33
-  2 untouched /   2 total  at <instance_members_initializer> (core/index.js:3820:13) <- at new ShapeValidator (core/index.js:3833:13) <- at core/index.js:5385:33
-  2 untouched /   2 total  at #clear (core/index.js:3902:19) <- at ShapeValidator.validate (core/index.js:3876:14) <- at core/index.js:5385:59
-  2 untouched /   2 total  at #clear (core/index.js:3895:17) <- at ShapeValidator.validate (core/index.js:3880:14) <- at core/index.js:5385:59
-  2 untouched /   2 total  at #clear (core/index.js:3902:19) <- at ShapeValidator.validate (core/index.js:3880:14) <- at core/index.js:5385:59
-  2 untouched /   2 total  at <instance_members_initializer> (core/index.js:3813:11) <- at new ShapeValidator (core/index.js:3833:13) <- at core/index.js:9695:3

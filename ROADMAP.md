@@ -26,6 +26,20 @@ recoverable from git history by hash; no campaign folder is the plan of record.
   work; the trigger is the first Windows campaign that runs the bin suite there. The Linux
   acceptance recorded 2026-08-24: the `script`-guarded proofs execute rather than skip on this
   host — the bin suite passes complete with no skipped case.
+- **contract**: successor seams from the memoization campaign accepted 2026-09-01 (contract
+  950a241). Working-state churn: `ShapeValidator` constructs fresh collections per `validate`
+  call through its `#clear` method, and `ShapeCloner` and `SchemaCloner` keep per-instance
+  `#empty*` peers — the idiom `ContractCompiler` left at that campaign, so sibling engines in one
+  directory carry one member vocabulary for two mechanisms; the trigger is an allocation-rate
+  measurement attributing material time to the churn, or the package's next hardening campaign.
+  Ledger semantics: a compiled door invoked synchronously from inside another door's walk joins
+  the outer call's scope, while `guides/contract.md` documents reuse as holding within one call;
+  rule on the wording or the mechanism at the ledger capability's next change. Test coverage: the
+  reporter family carries no cross-call memo case. Declarations: `INTRINSICS.recall` publishes an
+  `any`-shaped return, and `createContract` carries no `@throws` tag while the `contain` TSDoc
+  states that population carries one. Fleet: the catalog row for `@orkestrel/supervisor` pins
+  `@orkestrel/contract` at `^0.0.11` against the fleet's `^0.0.13`; confirm against that
+  repository's own manifest before sequencing any contract cascade.
 
 ## 2. Design and research records
 

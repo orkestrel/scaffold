@@ -1,9 +1,0 @@
-WeakMap instances constructed during compile: 44 (of 44 pre-call total)
-  never touched through get, set, or has: 36
-  touched through has alone (cycle or membership checks): 0
-  touched through get or set: 8
-WeakMap instances constructed during calls: 23
-  with gets > 0 (control - must be > 0): 12
-  with sets > 0 (control - must be > 0): 12
----
-VERDICT: 36 build-time memo allocation(s) were never read or written — dead at build, replaced before first use
