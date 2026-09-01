@@ -16,7 +16,9 @@ ownership, serial and parallel order, acceptance criteria, risks, and the exit c
 **Evidence.** The deferred rows: `.orkestrel/campaign/fix/work-order.md` (grouped by publish
 layer; row = package + finding id + writer's deferral note). The verified symbol ledger:
 `.orkestrel/campaign/fix/breaking-ledger.json` (one record per row: exact exported symbols, action,
-target name, owning member, file:line). The consumer blast radius:
+target name, owning member, file:line). The distillation's open naming questions, one report per layer chunk under `Unknowns`:
+`.orkestrel/campaign/fix/breaking-ledger-*-report.md` (a ledger record with `to` omitted has its
+alternatives there; the design rules on each). The consumer blast radius:
 `.orkestrel/campaign/fix/breaking-radius.json` (per row, which fleet packages reference each symbol
 in `src/`, `tests/`, `app/`, or `guides/` while importing from the owning package). Each row's finding
 text and corrected repair: `.orkestrel/campaign/fix/<package>.md` § `## <id>`. Each writer's report:
