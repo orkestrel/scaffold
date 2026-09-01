@@ -46,7 +46,26 @@ Started 2026-09-01. Orchestrator: the Claude Code session engine, per the harnes
 | per-unit audit, subjective lane | design-fit audit | `reviewer` | Opus 5 | none |
 | per-unit audit, objective lane | correctness audit | `reviewer` role file | Opus 5 | Sol dark; the remaining engine runs every lane, clean contexts, blind |
 | audit mechanics | mechanical conformance | `checker` | Sonnet | dispatched where criteria are mechanical |
-| gates | gate evidence | `verifier` | Sonnet | none |
+| m1fix, m4fix | fix rounds adopting audit prescriptions | `implementer` | Opus 5 | Sol dark recorded |
+| m2fix | fully specified comment replacement | `builder` | Sonnet | prescriptions verbatim in the brief |
+| verify-final | gate evidence | `verifier` | Sonnet | none |
+
+## Unit closure record
+
+- m1 (contract b3852d9) — audited (`m1-audit-verdict.md`), findings carried by m1fix (1cd4ac8),
+  closed by mutation probe: a planted build-time initializer reddens exactly the promoted
+  regression case.
+- m2 (7e762ab) — audited (`m2-audit-verdict.md`), prose findings carried by m2fix (fcdd4d0),
+  closed by mechanical verification of the adopted replacements.
+- m4 (in 950a241) — audited (`m4-audit-verdict.md`), falsified sentences and the fence-guard
+  hole carried by m4fix (same commit), closed by mutation probes on the guide's claim lines.
+- Successor findings recorded, each against the capability that owns it, for the next campaign:
+  the call-scoped ledger's shared-scope semantics under synchronous nested door calls; the
+  `any`-shaped `INTRINSICS.recall` declaration; a reporter-family cross-call memo case;
+  `ShapeValidator` and cloner working-state churn with the sentinel-idiom vocabulary
+  divergence; the fleet-wide six-vocabulary ruling; the `@throws` tag absence on
+  `createContract`; `@orkestrel/supervisor`'s catalog pin at `^0.0.11` against the fleet's
+  `^0.0.13` (confirm against its own manifest before any release sequencing).
 
 ## Reconciled design (2026-09-01)
 
@@ -116,3 +135,31 @@ contract and scaffold repositories:
 The probe MCP server did not connect to this session (registered in user scope, handshake
 verified out of session); TypeScript-edit claims are settled by running the workspace's own
 `check` gate, per the fallback in `.claude/rules/tests.md` § Probes.
+
+## Acceptance (2026-09-01)
+
+Accepted. Every exit-criterion capability closed:
+
+- Dead tracking-memo allocation: removed at b3852d9, audit-fixed at 1cd4ac8, guarded by the
+  promoted construction-delta regression case (mutation-proved). Measured direction against the
+  baseline: medium `createContract` 12543 to 11677 B/call, deep 52512 to 48449, deep guard-only
+  18878 to 17544 (`contract-baseline-postM1.out`).
+- Release sentinels at class scope with `#index` absence as `undefined`: landed at 7e762ab,
+  prose-fixed at fcdd4d0. Cold construction 1152 to 648 B/call on every shape
+  (`contract-baseline-postM2.out`; confirmed on the accepted commit in
+  `contract-baseline-final.out`, control 8248 B against 8192 B expected).
+- Retention rule and eager-bundle reason published at 950a241 with the guides suite's executed
+  half: every value-asserting flagship fence transcribed and presence-guarded, flips
+  mutation-proved.
+- Lazy bundle, per-family plan release, reentry-poison caching, and the validator and cloner
+  churn seams: excluded on recorded evidence, each with its reopening measurement named in
+  § Reconciled design.
+- Gates: independent `verifier` reports the chain green at 950a241 — `format:check`,
+  `lint:check`, `check`, `build`, `test` all exit 0 (`verify-final-report.md`).
+- The release decision stays the user's: the runtime artifact moved materially, so a release
+  bumps `@orkestrel/contract` and obliges the L1 through L6 re-pin cascade the ecosystem report
+  enumerates; confirm the `@orkestrel/supervisor` pin against its own manifest before
+  sequencing.
+
+The campaign-folder prune awaits the owner's explicit go-ahead per the retention procedure; the
+retention checks and disposition are presented in the session's closing report.
