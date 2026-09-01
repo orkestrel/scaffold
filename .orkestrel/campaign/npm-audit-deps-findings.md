@@ -257,3 +257,14 @@ Opus as the recorded substitution; the checker lane supplies the second engine. 
 Orchestrator reconciles: a claim either lane refutes becomes a fix-up unit or an on-record
 dismissal in `fix/audit-1-verdict.md`. The units still running under `wf_a88c02f6-538` receive
 the same round when they land.
+
+### Routing correction (2026-09-01)
+
+The audit round's `checker` lane launched with `agentType: 'checker'` and no explicit model. The
+role file pins `model: sonnet`, but the Workflow tool's custom-agent path does not apply the
+frontmatter pin and the lane inherited the session model instead — a Fable subagent, which the
+routing rules forbid (`CLAUDE.md` § Models: never `inherit`). The run was stopped after its first
+package, the script now names `model: 'sonnet'` on the checker lane beside the reviewer lane's
+`model: 'opus'`, and the round resumed from cache for the reviewer results. Standing rule for
+every later workflow in this campaign: every `agent()` call names its model alias explicitly,
+whatever the role file says. The writer units all carried `model: 'opus'` and are unaffected.
