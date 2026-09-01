@@ -389,3 +389,25 @@ governed the touched block).
   edit, so `readHostFloor` tests fail until `npm run build` runs (the ordinary chain builds first).
 - **Bench:** `codex` absent from `PATH`; Sol dark; Opus holds every lane, told the writer's engine is
   its own; re-probed at each wave boundary.
+
+## Breaking phase — W0 closed, W-DEV in progress (2026-09-01)
+
+- **Vocabulary unit closed applied** after five audit rounds (`units/vocabulary-audit-verdict.md`):
+  the prefix list has one home in § Standalone helpers; `describe*` and `render*` are disjoint by
+  input; `build*` is neither a factory nor a combinator named for its constituents; `create*` is
+  the factory form with `architecture.md` § Kind purity deciding what a factory is and where it
+  lives; `*Of` is the combinator named for its constituents; § Fixed derivation/construction forms
+  opens with "a form's contract binds a new name" and routes the retained exceptions to § Kind
+  purity; the external-mirror rule and its never-licensed-word companion stand in § General
+  vocabulary. Final text quoted in `fix/vocabulary.md` for every later brief. The `rgba` target
+  moved from `resolveColor` to `parseCSSColor` under the landed text.
+- **Findings for the next change:** define `entity` in `architecture.md` § Kind purity where "a
+  function returning a live entity" is stated; a renamed interface member ships a stale guide
+  sentence with parity green (every unit brief now carries a prose sweep).
+- **test unit closed applied** (`units/test-audit-verdict.md`): commits `2f94b93`, `30f6211`,
+  `4b86f16` in `/home/user/fleet/test`; every gate green on the verifier's run.
+- **canon-tests closed applied** (commit `1eb39f0`): `.claude/rules/tests.md` names the renamed
+  browser style helpers.
+- **guide unit**: landed (`8eca8dc`), audited (objective `FAIL 2`, subjective `FAIL 5`, checker
+  PASS, verifier GREEN), fix round `guide-fixup` in flight on Opus with every ruling in
+  `units/guide-fixup-brief.md`.
