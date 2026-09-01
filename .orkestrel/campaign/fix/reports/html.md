@@ -47,3 +47,14 @@ Four items, none of which stopped the unit.
 4. Convergence run. `npm run format:check` failed on guides/html.md after my table edits (oxfmt re-pads markdown tables). Per the brief I ran `npm run lint` then `npm run format` once, then proved the whole non-mutating chain green. `npm run lint --fix` reported no changes; the only formatter rewrite was the guide's table padding.
 
 Ancillary choices recorded here rather than stopped on: the four element-name predicates sit after `lowercaseASCII` in helpers.ts and `isSafeURL` sits directly after `sanitizeURL`, which is the pairing the guide already describes; `HTMLScan` is constrained to `TNode extends HTMLNode`; the `walkNodes` comment gives the generator reason for the remaining `try`.
+
+## Residue closed (2026-09-01)
+
+The s08-06 residue the unit reported — `isEmptyElement(element: ElementNode) => boolean` left in
+`validators.ts` because the ruling's enumeration named five functions — is closed by an
+Orchestrator-owned follow-up in the same repository: the predicate moved to `helpers.ts` beside
+the element-name predicates, `HTML.ts` imports it from there, its test moved into the
+`element and URL predicates` group, and `guides/html.md` now describes a single from-unknown
+family with the row under Helpers and the Tests bullets moved accordingly. Full gate chain green
+(`/home/user/work/html-gates.log`); surface tripwire reports no missing export. Committed on the
+html campaign branch as "Move isEmptyElement to helpers under kind purity".
