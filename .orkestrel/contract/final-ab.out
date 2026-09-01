@@ -1,0 +1,9 @@
+cmd: final cumulative A/B - base859 (0.0.14) vs accepted tree, 2026-09-01
+is-medium: A 2723 ns/op  B 2008 ns/op  B/A median 0.728 (ratio p25 0.699 p75 0.805)
+parse-medium: A 2961 ns/op  B 2407 ns/op  B/A median 0.816 (ratio p25 0.766 p75 0.887)
+audit-medium: A 5406 ns/op  B 4070 ns/op  B/A median 0.751 (ratio p25 0.720 p75 0.793)
+explain-medium: A 5195 ns/op  B 3987 ns/op  B/A median 0.744 (ratio p25 0.705 p75 0.798)
+is-deep: A 8581 ns/op  B 6520 ns/op  B/A median 0.767 (ratio p25 0.712 p75 0.802)
+audit-deep: A 22459 ns/op  B 15176 ns/op  B/A median 0.673 (ratio p25 0.647 p75 0.702)
+is-list48: A 14872 ns/op  B 13158 ns/op  B/A median 0.895 (ratio p25 0.847 p75 0.933)
+audit-list48: A 23387 ns/op  B 21573 ns/op  B/A median 0.935 (ratio p25 0.901 p75 0.973)

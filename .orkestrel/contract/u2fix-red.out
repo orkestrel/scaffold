@@ -1,0 +1,4 @@
+cmd: u2fix mutation probe RED leg on the current (unfixed) dist, 2026-09-01
+reporter wide+hostile: COMPILE THREW structure context={"shape":"object"}
+auditor wide+hostile : COMPILE THREW structure context={"shape":"object"}
+verdict: reporter total RED; auditor path in refusal RED
