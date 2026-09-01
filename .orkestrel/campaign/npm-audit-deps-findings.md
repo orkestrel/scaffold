@@ -364,3 +364,28 @@ rows (queue, probe's observation aside) ride a prose fix-up unit. Dismissed on t
 checker's merge-commit refutations for contract (the merge is the reconciliation with the user's
 release, not the unit), and the html third-person rewrite objection (the fix brief's voice rule
 governed the touched block).
+
+## Breaking phase — W0 (2026-09-01)
+
+- **Plan reconciled** (`fix/breaking-plan.md`, commit `3f7d32c`): both design lanes read in full and
+  every disagreement ruled; naming and shape rulings fixed per row (`fix/rulings.json` feeds every
+  unit brief); refusals recorded with their rule text; the tally extension in `program`,
+  `middleware`, `msg`, and `pool` recorded as a finding for the next change and not taken.
+- **Catalog regenerated** (`units/catalog-report.md`, commit `0688c45`): contract `0.0.15`, process
+  `0.0.9`, layer column unchanged; the contract and process guide mirrors refreshed from the
+  registry.
+- **Harness measured** (`units/harness-report.md`, commit `2d8df50`): a second
+  `npm install --no-save` reverts the tarball an earlier one staged, so every consumer is staged
+  with its whole @orkestrel closure in one command (`stage-closure.sh`); the closure from branch
+  tips collapses the nested contract copies and `worker` typechecks green (it joins L4); the
+  negative control of `verify-stage.mjs` reddens on the first differing file.
+- **Vocabulary landed** (`units/vocabulary-report.md`, commit `766c3dc`): the prefix vocabulary in
+  one home and the external-mirror rule with its never-licensed-word companion; quoted into every
+  later brief through `fix/vocabulary.md`. Scaffold's vendored host surface moved: a scaffold bump
+  is owed at the next release.
+- **Findings carried to `scaffold-adopt` (L3):** `tests/src/core/fixtures/app-only-toolchain.txt:2`
+  still pins contract `^0.0.13` while the manifest declares `^0.0.15`, failing
+  `compilers.test.ts` at HEAD; `dist/host` predates the catalog regeneration and the vocabulary
+  edit, so `readHostFloor` tests fail until `npm run build` runs (the ordinary chain builds first).
+- **Bench:** `codex` absent from `PATH`; Sol dark; Opus holds every lane, told the writer's engine is
+  its own; re-probed at each wave boundary.
