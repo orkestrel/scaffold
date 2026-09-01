@@ -1,0 +1,4 @@
+is-medium: median 0.996 min 0.958 max 1.008 replicates ab-1=0.958 ab-2=1.001 ab-3=0.994 ba-1=0.996 ba-2=0.988 ba-3=1.008
+is-deep: median 0.992 min 0.978 max 1.009 replicates ab-1=1.009 ab-2=0.992 ab-3=1.007 ba-1=0.978 ba-2=0.989 ba-3=0.989
+is-list48: median 0.992 min 0.980 max 0.994 replicates ab-1=0.986 ab-2=0.992 ab-3=0.980 ba-1=0.992 ba-2=0.994 ba-3=0.984
+audit-list48: median 1.001 min 0.943 max 1.035 replicates ab-1=1.001 ab-2=1.009 ab-3=1.035 ba-1=0.998 ba-2=0.965 ba-3=0.943
