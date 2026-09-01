@@ -4032,5 +4032,422 @@
   "id": "s17-32",
   "kind": "rename",
   "consumers": {}
+ },
+ {
+  "package": "brief",
+  "id": "s13-28",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "brief",
+  "id": "s13-30",
+  "kind": "signature",
+  "consumers": {
+   "scaffold": {
+    "example": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "program",
+  "id": "s15-22",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "program",
+  "id": "s15-23",
+  "kind": "remove",
+  "consumers": {}
+ },
+ {
+  "package": "workflow",
+  "id": "s06-01",
+  "kind": "remove",
+  "consumers": {}
+ },
+ {
+  "package": "workflow",
+  "id": "s06-03",
+  "kind": "remove",
+  "consumers": {
+   "agent": {
+    "createDeferred": [
+     "src/core/Agent.ts"
+    ],
+    "DeferredInterface": [
+     "src/core/Agent.ts"
+    ]
+   }
+  }
+ },
+ {
+  "package": "workflow",
+  "id": "s06-09",
+  "kind": "remove",
+  "consumers": {
+   "toolbox": {
+    "Phase": [
+     "src/core/shapers.ts",
+     "tests/src/core/helpers.test.ts"
+    ],
+    "Task": [
+     "src/core/shapers.ts"
+    ],
+    "TaskController": [
+     "tests/setup.ts"
+    ]
+   }
+  }
+ },
+ {
+  "package": "workflow",
+  "id": "s06-11",
+  "kind": "mixed",
+  "consumers": {
+   "agent": {
+    "description": [
+     "src/core/factories.ts",
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "tests/src/core/Agent.test.ts",
+     "guides/agent.md"
+    ]
+   },
+   "toolbox": {
+    "description": [
+     "src/core/shapers.ts",
+     "src/core/factories.ts",
+     "src/core/helpers.ts",
+     "src/core/constants.ts",
+     "src/core/types.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/toolbox.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "workflow",
+  "id": "s06-16",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "workflow",
+  "id": "s06-22",
+  "kind": "remove",
+  "consumers": {
+   "toolbox": {
+    "origin": [
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/helpers.test.ts"
+    ]
+   },
+   "scaffold": {
+    "origin": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "workflow",
+  "id": "s06-23",
+  "kind": "rename",
+  "consumers": {
+   "agent": {
+    "run": [
+     "src/core/Agent.ts",
+     "src/core/factories.ts",
+     "src/core/helpers.ts",
+     "src/core/AgentRegistry.ts",
+     "src/core/types.ts",
+     "tests/setup.ts",
+     "tests/src/core/Agent.test.ts",
+     "tests/src/core/AgentRegistry.test.ts",
+     "guides/agent.md"
+    ]
+   },
+   "toolbox": {
+    "run": [
+     "src/core/shapers.ts",
+     "src/core/factories.ts",
+     "src/core/helpers.ts",
+     "src/core/constants.ts",
+     "src/core/types.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/src/core/shapers.test.ts",
+     "guides/toolbox.md"
+    ]
+   },
+   "scaffold": {
+    "run": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "workflow",
+  "id": "s06-24",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "agent",
+  "id": "s18 ProviderDelta",
+  "kind": "rename",
+  "consumers": {
+   "ollama": {
+    "type": [
+     "src/server/factories.ts",
+     "src/server/helpers.ts",
+     "src/server/OllamaProvider.ts",
+     "src/server/types.ts",
+     "tests/setupServer.ts",
+     "tests/setup.ts",
+     "tests/src/server/helpers.test.ts",
+     "tests/src/server/integration.test.ts",
+     "tests/src/server/OllamaProvider.test.ts",
+     "tests/setupServer.test.ts",
+     "tests/setup.test.ts",
+     "tests/setupService.ts",
+     "tests/service/compaction.test.ts",
+     "tests/service/lifecycle.test.ts",
+     "tests/service/budget.test.ts",
+     "tests/service/schema.test.ts",
+     "tests/service/transport.test.ts",
+     "tests/service/scopes.test.ts",
+     "tests/service/OllamaProvider.test.ts",
+     "tests/setupService.test.ts",
+     "guides/ollama.md"
+    ]
+   },
+   "toolbox": {
+    "type": [
+     "src/core/factories.ts",
+     "src/core/types.ts",
+     "tests/setup.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/setup.test.ts",
+     "guides/toolbox.md"
+    ]
+   },
+   "scaffold": {
+    "type": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "agent",
+  "id": "s08-12",
+  "kind": "rename",
+  "consumers": {
+   "ollama": {
+    "type": [
+     "src/server/factories.ts",
+     "src/server/helpers.ts",
+     "src/server/OllamaProvider.ts",
+     "src/server/types.ts",
+     "tests/setupServer.ts",
+     "tests/setup.ts",
+     "tests/src/server/helpers.test.ts",
+     "tests/src/server/integration.test.ts",
+     "tests/src/server/OllamaProvider.test.ts",
+     "tests/setupServer.test.ts",
+     "tests/setup.test.ts",
+     "tests/setupService.ts",
+     "tests/service/compaction.test.ts",
+     "tests/service/lifecycle.test.ts",
+     "tests/service/budget.test.ts",
+     "tests/service/schema.test.ts",
+     "tests/service/transport.test.ts",
+     "tests/service/scopes.test.ts",
+     "tests/service/OllamaProvider.test.ts",
+     "tests/setupService.test.ts",
+     "guides/ollama.md"
+    ]
+   },
+   "toolbox": {
+    "type": [
+     "src/core/factories.ts",
+     "src/core/types.ts",
+     "tests/setup.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/setup.test.ts",
+     "guides/toolbox.md"
+    ]
+   },
+   "scaffold": {
+    "type": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "agent",
+  "id": "s08-13",
+  "kind": "event",
+  "consumers": {
+   "ollama": {
+    "compactError": [
+     "tests/service/conversation.test.ts"
+    ]
+   }
+  }
+ },
+ {
+  "package": "agent",
+  "id": "s08-14",
+  "kind": "option-key",
+  "consumers": {}
+ },
+ {
+  "package": "agent",
+  "id": "s08-19",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "agent",
+  "id": "s08-22",
+  "kind": "remove",
+  "consumers": {}
+ },
+ {
+  "package": "agent",
+  "id": "s08-23",
+  "kind": "rename",
+  "consumers": {
+   "ollama": {
+    "description": [
+     "src/server/OllamaProvider.ts",
+     "src/server/types.ts",
+     "tests/setupServer.ts",
+     "tests/src/server/OllamaProvider.test.ts",
+     "tests/service/compaction.test.ts",
+     "guides/ollama.md"
+    ],
+    "format": [
+     "src/server/factories.ts",
+     "src/server/OllamaProvider.ts",
+     "src/server/types.ts",
+     "tests/src/server/integration.test.ts",
+     "tests/src/server/OllamaProvider.test.ts",
+     "tests/setupService.ts",
+     "tests/service/OllamaProvider.test.ts",
+     "tests/setupService.test.ts",
+     "guides/ollama.md"
+    ],
+    "framing": [
+     "src/server/factories.ts",
+     "src/server/OllamaProvider.ts",
+     "src/server/types.ts",
+     "tests/src/server/integration.test.ts",
+     "tests/src/server/OllamaProvider.test.ts",
+     "tests/setupService.ts",
+     "tests/setupService.test.ts",
+     "guides/ollama.md"
+    ]
+   },
+   "toolbox": {
+    "description": [
+     "src/core/factories.ts",
+     "src/core/types.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/toolbox.md"
+    ],
+    "format": [
+     "src/core/factories.ts",
+     "src/core/types.ts",
+     "tests/src/core/factories.test.ts",
+     "guides/toolbox.md"
+    ]
+   },
+   "scaffold": {
+    "format": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "agent",
+  "id": "s08-28",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "agent",
+  "id": "s08-29",
+  "kind": "rename",
+  "consumers": {
+   "ollama": {
+    "ConversationSummarizer": [
+     "tests/setup.ts",
+     "tests/service/compaction.test.ts"
+    ]
+   }
+  }
+ },
+ {
+  "package": "ollama",
+  "id": "s18-09",
+  "kind": "option-key",
+  "consumers": {}
+ },
+ {
+  "package": "toolbox",
+  "id": "s10-15",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "toolbox",
+  "id": "s10-21",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "toolbox",
+  "id": "s10-22",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "toolbox",
+  "id": "s10-25",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "toolbox",
+  "id": "s10-26",
+  "kind": "rename",
+  "consumers": {
+   "scaffold": {
+    "Method": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "toolbox",
+  "id": "s10-32",
+  "kind": "rename",
+  "consumers": {}
  }
 ]

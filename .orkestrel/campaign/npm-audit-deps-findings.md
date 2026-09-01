@@ -332,3 +332,14 @@ finished, returned an empty journal with exit 1 and no output. Per `.agents/orch
 answered `GROK-LIVE` (exit 0), so the empty lane reads as starvation or a transient launch
 failure rather than a dark bench, and the lane re-ran alone. Each chunk's open naming questions
 sit under `Unknowns` in `fix/breaking-ledger-<chunk>-report.md` for the design round to rule on.
+
+### Breaking ledger complete (2026-09-01)
+
+The L4–L6 chunk returned on its third launch (`fix/breaking-ledger-L4L6.json`; the two empty
+lanes before it left no stderr once captured, so the failure mode stays unattributed beyond
+"the CLI exited 1 with no output"). The merged `fix/breaking-ledger.json` now carries one verified
+record per work-order row, and `fix/breaking-radius.json` maps each row's consumer candidates.
+The fix-round audit reconciliation is written in `fix/audit-1-verdict.md` with a carrier for every
+retained finding in `fix/audit-findings.json`, which the breaking unit briefs load; the five
+packages whose lanes are still running (msg, qualifier, program, csv, form) receive their rulings
+when they return.
