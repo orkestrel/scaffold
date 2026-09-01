@@ -1807,5 +1807,860 @@
     ]
    }
   }
+ },
+ {
+  "package": "console",
+  "id": "s09-07",
+  "kind": "mixed",
+  "consumers": {}
+ },
+ {
+  "package": "console",
+  "id": "s09-09",
+  "kind": "remove",
+  "consumers": {}
+ },
+ {
+  "package": "console",
+  "id": "s09-10",
+  "kind": "remove",
+  "consumers": {}
+ },
+ {
+  "package": "console",
+  "id": "s09-11",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "console",
+  "id": "s09-12",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "console",
+  "id": "s09-14",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "console",
+  "id": "s09-21",
+  "kind": "rename",
+  "consumers": {
+   "terminal": {
+    "success": [
+     "src/server/Terminal.ts",
+     "src/core/helpers.ts",
+     "src/core/constants.ts",
+     "src/core/types.ts",
+     "tests/src/server/Terminal.test.ts",
+     "guides/terminal.md"
+    ],
+    "failure": [
+     "src/server/Terminal.ts",
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "tests/src/server/Terminal.test.ts",
+     "tests/setup.test.ts",
+     "guides/terminal.md"
+    ]
+   },
+   "toolbox": {
+    "success": [
+     "guides/toolbox.md"
+    ],
+    "failure": [
+     "guides/toolbox.md"
+    ]
+   },
+   "scaffold": {
+    "success": [
+     "src/bin/CLI.ts",
+     "src/bin/helpers.ts"
+    ],
+    "failure": [
+     "src/bin/CLI.ts",
+     "src/bin/helpers.ts",
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "database",
+  "id": "s05-06",
+  "kind": "remove",
+  "consumers": {}
+ },
+ {
+  "package": "database",
+  "id": "s05-12",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "database",
+  "id": "s05-21",
+  "kind": "type",
+  "consumers": {}
+ },
+ {
+  "package": "database",
+  "id": "s05-23",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "markdown",
+  "id": "s10-08",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "middleware",
+  "id": "referral s11-Q2",
+  "kind": "signature",
+  "consumers": {
+   "scaffold": {
+    "set": [
+     "guides/scaffold.md",
+     "guides/README.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "middleware",
+  "id": "referral s11b-Q1a (option)",
+  "kind": "option-key",
+  "consumers": {}
+ },
+ {
+  "package": "middleware",
+  "id": "s11-01",
+  "kind": "mixed",
+  "consumers": {}
+ },
+ {
+  "package": "middleware",
+  "id": "s11-02",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "middleware",
+  "id": "s11-04",
+  "kind": "remove",
+  "consumers": {}
+ },
+ {
+  "package": "middleware",
+  "id": "s11-06",
+  "kind": "mixed",
+  "consumers": {
+   "scaffold": {
+    "reason": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "middleware",
+  "id": "s11-12",
+  "kind": "mixed",
+  "consumers": {
+   "scaffold": {
+    "data": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "middleware",
+  "id": "s11-14",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "middleware",
+  "id": "s11-15",
+  "kind": "mixed",
+  "consumers": {
+   "scaffold": {
+    "data": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "middleware",
+  "id": "s11-17",
+  "kind": "mixed",
+  "consumers": {
+   "scaffold": {
+    "file": [
+     "guides/scaffold.md"
+    ],
+    "files": [
+     "guides/scaffold.md"
+    ],
+    "field": [
+     "guides/scaffold.md"
+    ],
+    "fields": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "middleware",
+  "id": "s11-18",
+  "kind": "mixed",
+  "consumers": {}
+ },
+ {
+  "package": "middleware",
+  "id": "s11-23",
+  "kind": "rename",
+  "consumers": {
+   "scaffold": {
+    "only": [
+     "guides/scaffold.md",
+     "guides/README.md"
+    ],
+    "except": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "middleware",
+  "id": "s11-24",
+  "kind": "mixed",
+  "consumers": {
+   "scaffold": {
+    "require": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "middleware",
+  "id": "s11-25",
+  "kind": "union-member",
+  "consumers": {
+   "scaffold": {
+    "fallback": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "middleware",
+  "id": "s11-27",
+  "kind": "behavior",
+  "consumers": {}
+ },
+ {
+  "package": "process",
+  "id": "s13-15",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "reason",
+  "id": "s07-04",
+  "kind": "remove",
+  "consumers": {
+   "rater": {
+    "isSubject": [
+     "src/core/Rater.ts"
+    ]
+   }
+  }
+ },
+ {
+  "package": "reason",
+  "id": "s07-06",
+  "kind": "rename",
+  "consumers": {
+   "brief": {
+    "check": [
+     "src/core/BriefCompiler.ts",
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "tests/setup.ts",
+     "tests/src/core/BriefCompiler.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/setup.test.ts",
+     "guides/brief.md"
+    ],
+    "atom": [
+     "src/core/helpers.ts",
+     "guides/brief.md"
+    ],
+    "compound": [
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/brief.md"
+    ],
+    "rule": [
+     "src/core/BriefCompiler.ts",
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "tests/setup.ts",
+     "tests/src/core/BriefCompiler.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/setup.test.ts",
+     "guides/brief.md"
+    ],
+    "bounds": [
+     "guides/brief.md"
+    ],
+    "operation": [
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "tests/src/core/BriefCompiler.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/setup.test.ts",
+     "guides/brief.md"
+    ],
+    "fact": [
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/brief.md"
+    ],
+    "quantitativeDefinition": [
+     "tests/setup.ts",
+     "guides/brief.md"
+    ],
+    "logicalDefinition": [
+     "src/core/helpers.ts",
+     "guides/brief.md"
+    ]
+   },
+   "interpret": {
+    "check": [
+     "src/core/validators.ts",
+     "tests/setup.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/setup.test.ts",
+     "guides/interpret.md"
+    ],
+    "atom": [
+     "tests/src/core/Narrator.test.ts"
+    ],
+    "rule": [
+     "src/core/stages/Generator.ts",
+     "src/core/validators.ts",
+     "src/core/managers/SubjectManager.ts",
+     "src/core/managers/DefinitionManager.ts",
+     "src/core/managers/TemplateManager.ts",
+     "src/core/types.ts",
+     "tests/setup.ts",
+     "tests/src/core/Narrator.test.ts",
+     "guides/interpret.md"
+    ],
+    "bounds": [
+     "tests/setup.ts",
+     "tests/setup.test.ts"
+    ],
+    "variable": [
+     "src/core/validators.ts",
+     "src/core/helpers.ts",
+     "tests/setup.ts",
+     "tests/src/core/validators.test.ts",
+     "tests/src/core/stages/Clarifier.test.ts",
+     "tests/src/core/Narrator.test.ts",
+     "tests/src/core/Interpret.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/setup.test.ts",
+     "guides/interpret.md"
+    ],
+    "constant": [
+     "src/core/stages/Clarifier.ts",
+     "src/core/validators.ts",
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "tests/setup.ts",
+     "tests/src/core/validators.test.ts",
+     "tests/src/core/stages/Clarifier.test.ts",
+     "tests/src/core/Narrator.test.ts",
+     "tests/src/core/Interpret.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/setup.test.ts",
+     "guides/interpret.md"
+    ],
+    "operation": [
+     "src/core/validators.ts",
+     "src/core/helpers.ts",
+     "tests/setup.ts",
+     "tests/src/core/validators.test.ts",
+     "tests/src/core/stages/Clarifier.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/setup.test.ts",
+     "guides/interpret.md"
+    ],
+    "equation": [
+     "tests/src/core/Narrator.test.ts",
+     "tests/src/core/Interpret.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/setup.test.ts"
+    ],
+    "fact": [
+     "src/core/types.ts",
+     "tests/src/core/Narrator.test.ts"
+    ],
+    "inference": [
+     "tests/src/core/Narrator.test.ts"
+    ],
+    "staticFactor": [
+     "tests/setup.ts"
+    ],
+    "fieldFactor": [
+     "src/core/validators.ts",
+     "src/core/factories.ts",
+     "src/core/managers/TemplateManager.ts",
+     "src/core/Interpret.ts",
+     "tests/setup.ts",
+     "tests/src/core/validators.test.ts",
+     "tests/src/core/Narrator.test.ts",
+     "tests/src/core/factories.test.ts",
+     "guides/interpret.md"
+    ],
+    "factorGroup": [
+     "src/core/validators.ts",
+     "src/core/factories.ts",
+     "src/core/managers/TemplateManager.ts",
+     "src/core/Interpret.ts",
+     "tests/setup.ts",
+     "tests/src/core/validators.test.ts",
+     "tests/src/core/Narrator.test.ts",
+     "tests/src/core/factories.test.ts",
+     "guides/interpret.md"
+    ],
+    "quantitativeDefinition": [
+     "src/core/validators.ts",
+     "src/core/factories.ts",
+     "src/core/managers/TemplateManager.ts",
+     "src/core/Interpret.ts",
+     "tests/setup.ts",
+     "tests/src/core/validators.test.ts",
+     "tests/src/core/Narrator.test.ts",
+     "tests/src/core/factories.test.ts",
+     "guides/interpret.md"
+    ],
+    "logicalDefinition": [
+     "tests/setup.ts",
+     "tests/src/core/Narrator.test.ts",
+     "tests/setup.test.ts"
+    ],
+    "symbolicDefinition": [
+     "src/core/managers/DefinitionManager.ts",
+     "tests/src/core/Narrator.test.ts",
+     "tests/src/core/Interpret.test.ts",
+     "tests/src/core/managers/DefinitionManager.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/setup.test.ts"
+    ],
+    "inferentialDefinition": [
+     "tests/src/core/Narrator.test.ts"
+    ]
+   },
+   "program": {
+    "check": [
+     "src/core/helpers.ts",
+     "tests/src/core/programs/Program.test.ts",
+     "guides/program.md"
+    ],
+    "atom": [
+     "tests/setup.ts",
+     "tests/src/core/programs/ProgramManager.test.ts",
+     "tests/src/core/programs/Program.test.ts",
+     "tests/src/core/validators.test.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/program.md"
+    ],
+    "rule": [
+     "src/core/helpers.ts",
+     "tests/setup.ts",
+     "tests/src/core/programs/ProgramManager.test.ts",
+     "tests/src/core/programs/Program.test.ts",
+     "tests/src/core/validators.test.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/setup.test.ts",
+     "guides/program.md"
+    ],
+    "constant": [
+     "guides/program.md"
+    ],
+    "operation": [
+     "guides/program.md"
+    ],
+    "staticFactor": [
+     "tests/setup.ts",
+     "tests/src/core/programs/Program.test.ts",
+     "guides/program.md"
+    ],
+    "fieldFactor": [
+     "tests/setup.ts"
+    ],
+    "factorGroup": [
+     "tests/setup.ts",
+     "tests/src/core/programs/Program.test.ts",
+     "guides/program.md"
+    ],
+    "quantitativeDefinition": [
+     "tests/setup.ts",
+     "tests/src/core/programs/Program.test.ts",
+     "guides/program.md"
+    ],
+    "logicalDefinition": [
+     "tests/setup.ts",
+     "tests/src/core/programs/ProgramManager.test.ts",
+     "tests/src/core/programs/Program.test.ts",
+     "tests/src/core/validators.test.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/setup.test.ts",
+     "guides/program.md"
+    ]
+   },
+   "qualifier": {
+    "check": [
+     "src/core/helpers.ts",
+     "tests/src/core/Qualifier.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/setup.test.ts",
+     "guides/qualifier.md"
+    ],
+    "atom": [
+     "src/core/Qualifier.ts",
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "tests/setup.ts",
+     "tests/src/core/validators.test.ts",
+     "tests/src/core/Qualifier.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/qualifier.md"
+    ],
+    "rule": [
+     "src/core/Qualifier.ts",
+     "src/core/validators.ts",
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "tests/setup.ts",
+     "tests/src/core/validators.test.ts",
+     "tests/src/core/Qualifier.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/setup.test.ts",
+     "guides/qualifier.md"
+    ],
+    "transform": [
+     "tests/setup.ts",
+     "tests/src/core/Qualifier.test.ts",
+     "guides/qualifier.md"
+    ],
+    "bounds": [
+     "tests/src/core/helpers.test.ts"
+    ],
+    "constant": [
+     "guides/qualifier.md"
+    ],
+    "staticFactor": [
+     "src/core/helpers.ts",
+     "tests/setup.ts",
+     "tests/src/core/Qualifier.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/qualifier.md"
+    ],
+    "fieldFactor": [
+     "tests/setup.ts",
+     "tests/src/core/Qualifier.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/qualifier.md"
+    ],
+    "factorGroup": [
+     "src/core/helpers.ts",
+     "tests/setup.ts",
+     "tests/src/core/Qualifier.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/qualifier.md"
+    ],
+    "quantitativeDefinition": [
+     "src/core/helpers.ts",
+     "tests/setup.ts",
+     "tests/src/core/validators.test.ts",
+     "tests/src/core/Qualifier.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/qualifier.md"
+    ],
+    "logicalDefinition": [
+     "src/core/Qualifier.ts",
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "tests/setup.ts",
+     "tests/src/core/validators.test.ts",
+     "tests/src/core/Qualifier.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/qualifier.md"
+    ]
+   },
+   "rater": {
+    "check": [
+     "src/core/validators.ts",
+     "src/core/helpers.ts",
+     "tests/setup.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/src/core/Rater.test.ts",
+     "guides/rater.md"
+    ],
+    "staticFactor": [
+     "src/core/helpers.ts",
+     "tests/setup.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/src/core/Rater.test.ts",
+     "guides/rater.md"
+    ],
+    "fieldFactor": [
+     "src/core/helpers.ts",
+     "tests/setup.ts",
+     "tests/src/core/Rater.test.ts",
+     "guides/rater.md"
+    ],
+    "lookupFactor": [
+     "tests/setup.ts"
+    ],
+    "factorGroup": [
+     "src/core/helpers.ts",
+     "tests/setup.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/src/core/Rater.test.ts",
+     "guides/rater.md"
+    ],
+    "quantitativeDefinition": [
+     "src/core/validators.ts",
+     "src/core/helpers.ts",
+     "tests/setup.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/src/core/Rater.test.ts",
+     "guides/rater.md"
+    ],
+    "logicalDefinition": [
+     "tests/src/core/validators.test.ts"
+    ]
+   },
+   "scaffold": {
+    "check": [
+     "guides/scaffold.md"
+    ],
+    "rule": [
+     "guides/scaffold.md"
+    ],
+    "bounds": [
+     "guides/scaffold.md"
+    ],
+    "operation": [
+     "guides/scaffold.md"
+    ],
+    "fact": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "reason",
+  "id": "s07-17",
+  "kind": "mixed",
+  "consumers": {
+   "brief": {
+    "collection": [
+     "src/core/helpers.ts",
+     "guides/brief.md"
+    ]
+   },
+   "interpret": {
+    "collection": [
+     "src/core/factories.ts",
+     "src/core/managers/SubjectManager.ts",
+     "src/core/managers/DefinitionManager.ts",
+     "src/core/managers/TemplateManager.ts",
+     "src/core/types.ts",
+     "guides/interpret.md"
+    ]
+   },
+   "program": {
+    "collection": [
+     "src/core/programs/ProgramManager.ts",
+     "src/core/helpers.ts",
+     "tests/setup.test.ts",
+     "guides/program.md"
+    ]
+   },
+   "scaffold": {
+    "collection": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "table",
+  "id": "s14-23",
+  "kind": "remove",
+  "consumers": {}
+ },
+ {
+  "package": "template",
+  "id": "s17-16",
+  "kind": "rename",
+  "consumers": {
+   "interpret": {
+    "size": [
+     "guides/interpret.md"
+    ]
+   },
+   "mcp": {
+    "size": [
+     "guides/mcp.md"
+    ]
+   },
+   "probe": {
+    "size": [
+     "guides/probe.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "template",
+  "id": "s17-17",
+  "kind": "signature",
+  "consumers": {
+   "interpret": {
+    "template": [
+     "src/core/Narrator.ts",
+     "guides/interpret.md",
+     "guides/README.md"
+    ]
+   },
+   "mcp": {
+    "template": [
+     "guides/mcp.md"
+    ]
+   },
+   "scaffold": {
+    "template": [
+     "src/core/compilers.ts",
+     "tests/src/core/templates.test.ts",
+     "guides/scaffold.md",
+     "guides/README.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "template",
+  "id": "s17-18",
+  "kind": "signature",
+  "consumers": {
+   "interpret": {
+    "remove": [
+     "guides/interpret.md"
+    ]
+   },
+   "mcp": {
+    "remove": [
+     "guides/mcp.md"
+    ]
+   },
+   "probe": {
+    "remove": [
+     "guides/probe.md"
+    ]
+   },
+   "scaffold": {
+    "remove": [
+     "src/core/compilers.ts",
+     "tests/src/core/templates.test.ts",
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "websocket",
+  "id": "s17-26",
+  "kind": "remove",
+  "consumers": {}
+ },
+ {
+  "package": "websocket",
+  "id": "s17-27",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "websocket",
+  "id": "s17-28",
+  "kind": "mixed",
+  "consumers": {
+   "browser": {
+    "close": [
+     "src/server/transports/WebSocketCDPTransport.ts",
+     "tests/setupServer.ts",
+     "guides/browser.md"
+    ]
+   },
+   "mcp": {
+    "NodeWebSocket": [
+     "src/server/transports/WebSocketClientTransport.ts",
+     "tests/src/server/transports/WebSocketServerTransport.test.ts"
+    ],
+    "ping": [
+     "tests/src/server/transports/WebSocketServerTransport.test.ts",
+     "tests/src/server/transports/WebSocketClientTransport.test.ts",
+     "tests/src/server/factories.test.ts",
+     "guides/mcp.md"
+    ],
+    "close": [
+     "src/server/transports/WebSocketServerTransport.ts",
+     "src/server/transports/WebSocketClientTransport.ts",
+     "src/server/factories.ts",
+     "tests/setupServer.ts",
+     "tests/src/server/transports/WebSocketServerTransport.test.ts",
+     "tests/src/server/transports/WebSocketClientTransport.test.ts",
+     "tests/src/server/factories.test.ts",
+     "tests/fixtures/browserServer.ts",
+     "tests/setupServer.test.ts",
+     "guides/mcp.md"
+    ],
+    "encodeWebSocketFrame": [
+     "tests/setupServer.ts",
+     "tests/src/server/transports/WebSocketServerTransport.test.ts",
+     "tests/src/server/transports/WebSocketClientTransport.test.ts",
+     "tests/setupServer.test.ts"
+    ]
+   },
+   "scaffold": {
+    "close": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
  }
 ]
