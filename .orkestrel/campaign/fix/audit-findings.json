@@ -112,5 +112,14 @@
  ],
  "msg": [
   "s13-06 second half: type MSGDirectoryEntryType as Readonly<Record<string, MSGDirectoryEntryTypeMember>> like MSG_FIELD_TYPE_MAPPING, or delete it with its guide row (breaking)"
+ ],
+ "csv": [
+  "s16-01 guide mirror: rewrite the coerceReal Behavior cell at guides/csv.md:142 to name parseNumber as the nearest equivalent and state that @orkestrel/contract exports no parseReal",
+  "s16-01 principal half (breaking): move coerceInteger, coerceReal, coerceBoolean into src/core/parsers.ts as parseInteger-style parse* names, delete the three naming @remarks, move their describe blocks from tests/src/core/parsers.test.ts beside the code, update the guide rows"
+ ],
+ "form": [
+  "s14-16: describe freezeEntry as frozen (neither writable nor configurable) in helpers.ts:85-86, guides/form.md:165, and the test name; never 'sealed'",
+  "s14-22: split guides/form.md:1401-1405 into one-idea sentences and re-wrap",
+  "s14-21: name createFieldError in the Helpers intro at guides/form.md:159-160 and move its row between formatMessage and serializeForm"
  ]
 }

@@ -352,3 +352,15 @@ context, blind to each other, with the Sol substitution recorded. Each returns t
 (design, alternatives, units with role and engine, refusals, tensions, risks) as data; the
 Orchestrator reconciles them into the plan, the routing ledger, and the exit criterion before any
 breaking unit dispatches.
+
+### Fix round 1 audit reconciled (2026-09-01)
+
+Both audit rounds returned every lane (`wf_fb4a8aaa-e90` and `wf_e17268d6-07a`). The
+Orchestrator reproduced each sharp refutation against the trees before ruling, and
+`fix/audit-1-verdict.md` carries a ruling per package with the lanes' reports left unedited. Every
+retained finding has a carrier in `fix/audit-findings.json`; the breaking unit for that package
+loads them as its AUDIT_FINDINGS row, and the two packages with retained findings and no breaking
+rows (queue, probe's observation aside) ride a prose fix-up unit. Dismissed on the record: the
+checker's merge-commit refutations for contract (the merge is the reconciliation with the user's
+release, not the unit), and the html third-person rewrite objection (the fix brief's voice rule
+governed the touched block).
