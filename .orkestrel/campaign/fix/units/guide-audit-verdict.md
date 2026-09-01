@@ -44,3 +44,17 @@ Findings outside the claims (subjective lane), with rulings:
 
 Terminal lines: objective `FAIL 2`; subjective `FAIL 5`; checker `PASS`; verifier GREEN. Fix round
 `guide-fixup` (Opus implementer) carries every ruling above; round 2 follows.
+
+## Round 2 (fix round `guide-fixup`, commit `b015704`; subject the combined diff against `907df3a`)
+
+| Claim | Objective lane | Verifier | Orchestrator |
+| --- | --- | --- | --- |
+| 1, 2, 3, 4, 6, 8 | CONFIRMED (no old name or deleted locator survives; every ledger spelling and the `extends` carrier landed; no alias; owned files only; nothing hidden) | — | stand |
+| 9 every round-1 ruling closed as ruled with its assertion | CONFIRMED | — | stands |
+| 10 one locator; one location per file per name; no cross-pairing | CONFIRMED | — | stands |
+| 11 `escapeRegExp` at every interpolating site; no declared escape helper | CONFIRMED | — | stands |
+| 12 ancillary decisions contradict no ruling and are pinned | BROKEN: "a located head with an empty body is a declaration" widens round-1 F1's predicate ("a head with a body or with bases"), so an empty `export interface X {}` now shadows a same-named class and a later file's members, undocumented | upheld; fix round `guide-fixup-2` restores the ruled predicate in `Source.#locate` and pins both cases |
+| gates | — | GREEN at `b015704` (569 tests) | stands |
+| outside claims: round-1 F3's bound has no durable home beyond this verdict | finding | upheld: `guide-fixup-2` states the bound in the guide's extraction paragraph |
+
+Terminal lines: objective `FAIL 12`; verifier GREEN.
