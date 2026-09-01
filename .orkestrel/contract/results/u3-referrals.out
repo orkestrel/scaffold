@@ -1,0 +1,8 @@
+== u2f
+pattern accessor reads per call: 3
+third read throws: THREW ContractError createStringFaults: shape could not be read
+supplied g pattern, three calls (faults@lastIndex): 0@0 0@0 0@0
+== u3
+pattern accessor reads per call: 2
+third read throws: returned [{"reason":"constraint","path":[],"expected":"string","constraint":"pattern","li
+supplied g pattern, three calls (faults@lastIndex): 0@3 1@0 0@3
