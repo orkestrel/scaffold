@@ -1,0 +1,35 @@
+diff --git a/.claude/rules/names.md b/.claude/rules/names.md
+index e275d89..3fa9ec3 100644
+--- a/.claude/rules/names.md
++++ b/.claude/rules/names.md
+@@ -88,7 +88,20 @@ Module helpers have no owning entity at the call site, so default to `{verb}{Nou
+ 
+ - A one-word helper is valid only when its meaning and arguments are unmistakable: `delay`, `clamp`, `tokenize`, `similarity`.
+ - Reject vague helpers such as `process` or `handle`.
+-- A helper prefix has one project-wide meaning: `extract*` extracts structure, `infer*` derives, `compute*` calculates deterministically, and `matches*` is a predicate.
++- A helper prefix has one project-wide meaning:
++  - `extract*` extracts structure.
++  - `infer*` derives.
++  - `compute*` calculates deterministically.
++  - `matches*` is a predicate.
++  - `build*` constructs a composite value from parts and reads no host.
++  - `read*` obtains a value from a live host object, a stream position, or a byte layout, returns it or throws, and never coerces; coercion to `T | undefined` is `parse*`.
++  - `resolve*` picks the effective value from options and defaults.
++  - `scan*` walks a structure and returns its findings.
++  - `describe*` renders a finding as a human-readable message.
++  - `normalize*` returns the canonical form of a value of the same type.
++  - `collect*` gathers members into a collection.
++  - `render*` produces text or markup from a value.
++  - `supports*` is a capability predicate and narrows no type.
+ - When a helper family grows around one shape, promote it to a class with entity-scoped one-word methods.
+ 
+ ## General vocabulary
+@@ -103,6 +116,8 @@ The root design laws in `AGENTS.md` — one term per concept, boolean behavior s
+ - Do not alternate `count`/`length`/`size`/`total` or `abort`/`cancel`.
+ - Name the axis a discriminant varies: `relationship`, `command`, `category`, `operation`, `via`.
+ - A binary switch is a boolean such as `bail`, never `'continue' | 'halt'`; genuine discriminants, multi-state lifecycles, conventional value pairs (`ascending`/`descending`, `and`/`or`), and external-spec literals remain unions.
++- An option key, constant, or member that transliterates an external protocol field, format field, or engine pragma keeps the external wording in this project's casing, and its TSDoc names the source it mirrors: the `foreignKeys` key mirrors the `PRAGMA foreign_keys` statement, and the `keepAlive` key mirrors the Ollama `keep_alive` field.
++- Mirror no banned word: a mirrored name never uses `kind` or `type` as a member name, and never uses a word § Rejected naming lists. A Compound File Binary (CFB) directory entry's object-type byte takes a named discriminant.
+ 
+ ## Acronyms
+ 
