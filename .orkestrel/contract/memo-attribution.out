@@ -1,0 +1,25 @@
+  3 untouched /   3 total  at #trackGuard (core/index.js:6817:14) <- at #buildGuard (core/index.js:6989:65) <- at core/index.js:6587:58
+  2 untouched /   2 total  at <instance_members_initializer> (core/index.js:3813:11) <- at new ShapeValidator (core/index.js:3833:13) <- at core/index.js:5385:33
+  2 untouched /   2 total  at <instance_members_initializer> (core/index.js:3820:13) <- at new ShapeValidator (core/index.js:3833:13) <- at core/index.js:5385:33
+  2 untouched /   2 total  at #clear (core/index.js:3902:19) <- at ShapeValidator.validate (core/index.js:3876:14) <- at core/index.js:5385:59
+  2 untouched /   2 total  at #clear (core/index.js:3895:17) <- at ShapeValidator.validate (core/index.js:3880:14) <- at core/index.js:5385:59
+  2 untouched /   2 total  at #clear (core/index.js:3902:19) <- at ShapeValidator.validate (core/index.js:3880:14) <- at core/index.js:5385:59
+  2 untouched /   2 total  at <instance_members_initializer> (core/index.js:3813:11) <- at new ShapeValidator (core/index.js:3833:13) <- at core/index.js:9695:3
+  2 untouched /   2 total  at <instance_members_initializer> (core/index.js:3820:13) <- at new ShapeValidator (core/index.js:3833:13) <- at core/index.js:9695:3
+  2 untouched /   2 total  at #clear (core/index.js:3902:19) <- at ShapeValidator.validate (core/index.js:3876:14) <- at core/index.js:9695:29
+  2 untouched /   2 total  at #clear (core/index.js:3895:17) <- at ShapeValidator.validate (core/index.js:3880:14) <- at core/index.js:9695:29
+  2 untouched /   2 total  at #clear (core/index.js:3902:19) <- at ShapeValidator.validate (core/index.js:3880:14) <- at core/index.js:9695:29
+  1 untouched /   1 total  at <instance_members_initializer> (core/index.js:3813:11) <- at new ShapeValidator (core/index.js:3833:13) <- at core/index.js:9409:3
+  1 untouched /   1 total  at <instance_members_initializer> (core/index.js:3820:13) <- at new ShapeValidator (core/index.js:3833:13) <- at core/index.js:9409:3
+  1 untouched /   1 total  at #clear (core/index.js:3902:19) <- at ShapeValidator.validate (core/index.js:3876:14) <- at core/index.js:9409:29
+  1 untouched /   1 total  at #clear (core/index.js:3895:17) <- at ShapeValidator.validate (core/index.js:3880:14) <- at core/index.js:9409:29
+  1 untouched /   1 total  at #clear (core/index.js:3902:19) <- at ShapeValidator.validate (core/index.js:3880:14) <- at core/index.js:9409:29
+  1 untouched /   1 total  at <instance_members_initializer> (core/index.js:3813:11) <- at new ShapeValidator (core/index.js:3833:13) <- at core/index.js:9621:3
+  1 untouched /   1 total  at <instance_members_initializer> (core/index.js:3820:13) <- at new ShapeValidator (core/index.js:3833:13) <- at core/index.js:9621:3
+  1 untouched /   1 total  at #clear (core/index.js:3902:19) <- at ShapeValidator.validate (core/index.js:3876:14) <- at core/index.js:9621:29
+  1 untouched /   1 total  at #clear (core/index.js:3895:17) <- at ShapeValidator.validate (core/index.js:3880:14) <- at core/index.js:9621:29
+  1 untouched /   1 total  at #clear (core/index.js:3902:19) <- at ShapeValidator.validate (core/index.js:3880:14) <- at core/index.js:9621:29
+  1 untouched /   1 total  at new ContractCompiler (core/index.js:6547:22) <- at core/index.js:8155:23 <- at attempt (core/index.js:2142:11)
+  1 untouched /   1 total  at <instance_members_initializer> (core/index.js:3813:11) <- at new ShapeValidator (core/index.js:3833:13) <- at #prepare (core/index.js:6705:21)
+  1 untouched /   1 total  at <instance_members_initializer> (core/index.js:3820:13) <- at new ShapeValidator (core/index.js:3833:13) <- at #prepare (core/index.js:6705:21)
+  1 untouched /   1 total  at #clear (core/index.js:3902:19) <- at ShapeValidator.validate (core/index.js:3876:14) <- at #prepare (core/index.js:6706:13)

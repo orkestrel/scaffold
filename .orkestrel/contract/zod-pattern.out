@@ -1,0 +1,15 @@
+node v22.22.2; methods per class: 24; instances per round: 30000; rounds: 3; retention: monotonic
+proto        (prototype methods)      : median 72.0 B/instance (rounds: 72.0, 72.0, 72.3)
+lazy-cold    (getters, untouched)     : median 72.1 B/instance (rounds: 71.8, 72.1, 72.3)
+lazy-warm    (getters, all touched)   : median 2584.0 B/instance (rounds: 2583.9, 2584.0, 2584.4)
+instance     (ctor-assigned bound)    : median 2624.5 B/instance (rounds: 2624.3, 2624.5, 2624.7)
+frozen-lazy  (frozen, then touched)   : median 72.0 B/instance (rounds: 72.0, 72.0, 72.8)
+control      (proto + 1024B on-heap)  : median 1152.6 B/instance (rounds: 1152.3, 1152.6, 1152.6)
+---
+CONTROL_BUFFER delta over proto: 1080.5 B/instance (expectation: 1024 payload + array headers)
+instance over proto:     +2552.4 B/instance
+lazy-cold over proto:    +0.1 B/instance
+lazy-warm over proto:    +2512.0 B/instance
+instance / lazy-cold ratio (headline analogue): 36.39x
+frozen-lazy touched read: THREW: TypeError: Cannot define property parse, object is not extensible
+frozen-lazy heap: 72.0 B/instance (compare lazy-warm 2584.0, lazy-cold 72.1)
