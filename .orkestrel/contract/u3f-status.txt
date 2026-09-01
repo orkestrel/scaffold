@@ -1,0 +1,6 @@
+ M guides/contract.md
+ M src/core/ContractCompiler.ts
+ M src/core/combinators.ts
+ M src/core/helpers.ts
+ M tests/src/core/compilers.test.ts
+ M tests/src/core/helpers.test.ts
