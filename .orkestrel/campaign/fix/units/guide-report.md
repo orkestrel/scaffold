@@ -97,3 +97,25 @@ Built `dist/` moves: true
 
 Actual diff and status rendered by the Orchestrator: `tmp/units/breaking/guide.diff`,
 `tmp/units/breaking/guide.status`.
+
+## Fix-up (guide-fixup, implementer on Opus 5; commit follows `8eca8dc`)
+
+Every round-1 finding closed: the retirement literal deleted; `Source.#locate` returns the first
+declaring file in sorted key order and `#members` reads body and bases from that one record
+(prose at `types.ts:216-226`, `Source.ts:32-36`, `guides/guide.md:214,331-334`; test
+`Source.test.ts:846`); `escapeRegExp` added in `helpers.ts` and applied in the declaration
+grammar and in `findUnexampled` (no `@orkestrel/contract` escape helper exists; `@orkestrel/router`
+exports one under this name, so the term is shared); `extractDeclaration(source, keyword, name):
+Declaration | undefined` replaces `matchesDeclaration`, `extractDeclarationBody`, and
+`extractDeclarationBases` with no alias, `Declaration { body, bases }` declared in `types.ts`;
+executed assertions for the first-declaring-file bound, the keyword-keeping negative case, the
+qualified base, and `examples(name)` not following `extends`; the `examples` asymmetry stated in
+the guide row, the paragraph, and the TSDoc; `#members` returns `[]` for a visited name. Ancillary
+decisions recorded: `Declaration` is a sibling of `DeclarationHead`; a located head with an empty
+body is a declaration; an unterminated head reports no declaration. Failing-first evidence
+recorded (3 failed before, 373 passed after; revert proof for the `findUnexampled` escape).
+Sweep for every retired name and the three deleted locators: no hit. Gates: `format:check` 0,
+`lint:check` 0, `check` 0, `build` 0, `test` 0 (373 src, 111 policy, 46 config, 12 setup, 27
+guides). Observations for the next change: the earlier retirement block naming `extractCodeLines`,
+`moduleDirs`, `moduleKeys` stands; `README.md` § API says `patterns()` where the interface exposes
+`fences()`.

@@ -8,8 +8,8 @@ status, and the report, never your own reading of the intent. Read-only.
 
 ## Subject
 
-- Diff: `/home/user/scaffold/tmp/units/breaking/guide.diff` (actual `git diff` at return).
-- Status: `/home/user/scaffold/tmp/units/breaking/guide.status` (actual `git status --short` at return).
+- Diff: `/home/user/scaffold/tmp/units/breaking/guide.diff` (actual `git diff` of the unit's two commits against their base `907df3af3dcf5603b47aa726cee1e074992f4b0c`).
+- Status: `/home/user/scaffold/tmp/units/breaking/guide.status` (actual `git diff --name-status` against that base; the tree is committed clean).
 - Report: `/home/user/scaffold/tmp/units/breaking/guide-report.md`.
 - Brief the writer executed: `/home/user/scaffold/tmp/units/breaking/guide-brief.md` (its Rulings and Vocabulary sections are
   the ruled forms).
@@ -36,3 +36,21 @@ with its evidence line (file:line or the command and its output as quoted in the
 
 Per-claim verdicts with evidence, then one terminal line: `PASS` when every claim you hold is
 CONFIRMED, `FAIL` otherwise with the failing claim numbers. No process diary.
+
+## Round 2 addendum
+
+The subject is now the combined diff of the unit and its fix-up. Beyond claims 1, 2, 3, 4, 6, and
+8, rule on these round-2 claims with the same verdict shape:
+
+9. Every round-1 ruling in `/home/user/scaffold/.orkestrel/campaign/fix/units/guide-audit-verdict.md`
+   (objective F1, F2, F3-as-bound; subjective F1, F2/R3, F3, F4; claim 2's retirement literal;
+   claim 5's three prose claims) is closed in the diff as ruled, with the executed assertion the
+   ruling names.
+10. `extractDeclaration` is the only declaration locator; `Source.ts` locates once per file per
+    name; an unterminated head cannot pair one declaration's body with another's bases.
+11. `escapeRegExp` is applied at every site that interpolates caller text into a `RegExp` in
+    `src/core/helpers.ts`, and `@orkestrel/contract` declares no escape helper (verify against
+    `node_modules/@orkestrel/contract/dist/src/core/index.d.ts`).
+12. The ancillary decisions the fix-up recorded (a located head with an empty body is a
+    declaration; an unterminated head reports no declaration; `Declaration` beside
+    `DeclarationHead`) contradict no ruling and are each pinned by a test.

@@ -36,7 +36,7 @@ index 9b3e21f..06456bc 100644
  - `extractSourceLines(source)` — returns one `SourceLine` per physical line,
    including the final line, with exact `source`, equal-length masked `code`, and
 diff --git a/guides/guide.md b/guides/guide.md
-index 509e869..a5760f5 100644
+index 509e869..a6b9e15 100644
 --- a/guides/guide.md
 +++ b/guides/guide.md
 @@ -4,7 +4,7 @@
@@ -57,7 +57,15 @@ index 509e869..a5760f5 100644
  | `GuideModule`            | type      | `string \| readonly string[]` — one source directory, or several; `'.'` is the canonical workspace root.                                                                                                                         |
  | `SourceLine`             | interface | `{ source, code, jsdoc }` — one terminator-free physical source line with exact raw text, equal-length projections, and every genuine JSDoc span at its physical column or `undefined`.                                          |
  | `ManifestEntry`          | interface | `{ concept, spec, source, tests }` — one `## By concept` manifest row, paths normalized to workspace root.                                                                                                                       |
-@@ -67,40 +67,42 @@ the declaration, member, JSDoc, and guide-document grammars built on it, and the
+@@ -45,6 +45,7 @@ The manifest/extraction shapes every check is built from, from [`types.ts`](../s
+ | `SourceOptions`          | interface | `{ files, module }` — exact canonical-segment opaque workspace-relative inventory keys plus the canonicalized module scope to reflect.                                                                                           |
+ | `SourceManagerOptions`   | interface | `{ files, modules }` — one shared inventory plus the consumer's own specifier-to-module policy.                                                                                                                                  |
+ | `DeclarationHead`        | interface | `{ text, end }` — a declaration head joined into one line (across an oxfmt-wrapped signature) plus the index of the line ending in `{`.                                                                                          |
++| `Declaration`            | interface | `{ body, bases }` — one located `export class` / `export interface` declaration, its body lines and its base identifiers read from the same head.                                                                                |
+ 
+ ### Constants
+ 
+@@ -67,40 +68,41 @@ the declaration, member, JSDoc, and guide-document grammars built on it, and the
  path primitives `Guide`, `Source`, `parsers.ts`, and a consumer's parity test all reach for
  directly.
  
@@ -95,42 +103,41 @@ index 509e869..a5760f5 100644
 -| `findUnexampled`       | function | `(names: readonly string[], fences: readonly string[], examples: readonly string[]) => readonly string[]` | The names with no fence mention (word boundary) and no `@example` membership — the EX check's core comparison.                                                                                                                                    |
 -| `findUnlisted`         | function | `(fences: readonly GuideFence[], languages: readonly string[]) => readonly GuideFence[]`                  | The fences whose language the caller did not list, plus every untagged fence — an untagged fence has no language to list.                                                                                                                         |
 -| `fenceImports`         | function | `(fence: string) => readonly FenceImport[]`                                                               | Parses a fence's brace `import` statements into per-specifier imported identifier names — the FI check's core comparison. Brace bindings only: a default, namespace, side-effect, or mixed `import Default, { named }` statement is not surfaced. |
-+| Name                      | Kind     | Signature                                                                                                 | Behavior                                                                                                                                                                                                                                          |
-+| ------------------------- | -------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-+| `normalizeDirectories`    | function | `(module: GuideModule) => readonly string[]`                                                              | Canonicalizes through `resolvePath`, uses `'.'` for root, and removes duplicates in first-seen order.                                                                                                                                             |
-+| `computeModuleKey`        | function | `(module: GuideModule) => string`                                                                         | The stable cache key for a module scope — its normalized directories joined by NUL, so two spellings of one module share a key and no directory boundary can collide with directory text.                                                         |
-+| `selectModuleKeys`        | function | `(files: Readonly<Record<string, string>>, module: GuideModule) => readonly string[]`                     | Selects exact canonical-segment opaque `.ts` keys under any scope and excludes every selected exact `index.ts` plus `*.test.ts`; sorted.                                                                                                          |
-+| `hasCanonicalSegments`    | function | `(key: string) => boolean`                                                                                | Rejects empty, `.` and `..` slash-separated segments without normalization while retaining ordinary dotfiles.                                                                                                                                     |
-+| `computeSymbolKey`        | function | `(symbol: SurfaceSymbol) => string`                                                                       | The bijection key for a surface symbol — `${kind} ${name}` — so a symbol comparison diffs (name, kind) pairs, not names alone.                                                                                                                    |
-+| `findMissing`             | function | `(names: readonly string[], source: readonly string[]) => readonly string[]`                              | The names present in `names` but absent from `source` — the set-difference behind a both-directions bijection assertion.                                                                                                                          |
-+| `findMissingSymbols`      | function | `(symbols: readonly SurfaceSymbol[], source: readonly SurfaceSymbol[]) => readonly string[]`              | The `computeSymbolKey` set-difference between two symbol lists.                                                                                                                                                                                   |
-+| `extractSourceLines`      | function | `(source: string) => readonly SourceLine[]`                                                               | Equal-length physical source, code, and JSDoc projection with bounded literal Unicode identifier slash state.                                                                                                                                     |
-+| `extractExports`          | function | `(source: string) => readonly SurfaceSymbol[]`                                                            | Direct five-kind exports over projected lines with an uninterrupted column-zero head; projection never widens membership.                                                                                                                         |
-+| `extractHidden`           | function | `(source: string) => readonly SurfaceSymbol[]`                                                            | The non-exported mirror with the same projected, uninterrupted column-zero head and five-kind population.                                                                                                                                         |
-+| `joinHead`                | function | `(lines: readonly string[], start: number) => DeclarationHead \| undefined`                               | Joins a declaration head starting at `start` into one space-separated line, consuming lines until the first ending in `{`.                                                                                                                        |
-+| `matchesDeclaration`      | function | `(head: string, keyword: 'class' \| 'interface', name: string) => boolean`                                | The one head grammar `extractDeclarationBody` and `extractDeclarationBases` share — an exact `export {keyword} {name}` with an optional generic parameter list and an optional heritage clause before the opening `{`.                            |
-+| `extractDeclarationBody`  | function | `(source: string, keyword: 'class' \| 'interface', name: string) => readonly string[]`                    | Selects a real head/close from projected lines and returns the aligned raw body for JSDoc evidence.                                                                                                                                               |
-+| `extractDeclarationBases` | function | `(source: string, keyword: 'class' \| 'interface', name: string) => readonly string[]`                    | The base identifiers the located head extends, in head order — every balanced `<...>` span is removed first, so a `T extends Base` type parameter is never a base and `Base<T>` reads as `Base`, and a class's `implements` clause is excluded.   |
-+| `extractMemberMethods`    | function | `(lines: readonly string[]) => readonly string[]`                                                         | Matches callable members on one projection of the body; commented candidates, getters, setters, `static`, and `#` privates never count.                                                                                                           |
-+| `extractExampleLines`     | function | `(lines: readonly SourceLine[]) => readonly SourceLine[]`                                                 | The next physical candidate after the authoritative exact `@example` span in a leading chain.                                                                                                                                                     |
-+| `extractExamples`         | function | `(source: string) => readonly string[]`                                                                   | Matches exported functions against shared eligible genuine JSDoc adjacency and aligned code.                                                                                                                                                      |
-+| `extractExampleMethods`   | function | `(lines: readonly string[]) => readonly string[]`                                                         | Matches callable members against the same shared eligible genuine JSDoc adjacency and aligned code.                                                                                                                                               |
-+| `selectSectionBlocks`     | function | `(document: MarkdownDocument, heading: string) => readonly BlockNode[]`                                   | The block nodes under a named `##` heading, up to the next `##`-or-higher heading (or the document's end).                                                                                                                                        |
-+| `extractSurface`          | function | `(document: MarkdownDocument) => readonly SurfaceSymbol[]`                                                | Every `## Surface` identifier: each table's rows union every backticked H3 entity heading, deduped by `computeSymbolKey`.                                                                                                                         |
-+| `extractMethods`          | function | `(document: MarkdownDocument) => readonly MethodGroup[]`                                                  | One `MethodGroup` per documented behavioral interface in `## Methods` — an H4 code span sets the interface, the following table lists its methods.                                                                                                |
-+| `extractLinks`            | function | `(document: MarkdownDocument) => readonly string[]`                                                       | Every link href in the guide document, including table cells — a full, depth-first AST walk.                                                                                                                                                      |
-+| `extractTests`            | function | `(document: MarkdownDocument) => readonly string[]`                                                       | The relative test links declared under `## Tests`.                                                                                                                                                                                                |
-+| `extractFences`           | function | `(document: MarkdownDocument) => readonly GuideFence[]`                                                   | Every fenced code block anywhere in the guide document, tagged or not — a full AST walk with no language filter.                                                                                                                                  |
-+| `isExternalLink`          | function | `(href: string) => boolean`                                                                               | Whether a link `href` should be skipped by guides-parity link checks — an external scheme (`EXTERNAL_SCHEMES`) or a bare `#` anchor.                                                                                                              |
-+| `resolveLink`             | function | `(file: string, target: string) => string`                                                                | Derives a declaring file's directory, including workspace-root files, then delegates to `resolvePath`.                                                                                                                                            |
-+| `resolvePath`             | function | `(directory: string, target: string) => string`                                                           | Sole dot-segment reducer; returns `'.'` when no segment remains and preserves every excess leading parent.                                                                                                                                        |
-+| `findFirstCode`           | function | `(nodes: readonly InlineNode[]) => string \| undefined`                                                   | The first code-span value found by descending an inline node list, following into `emphasis`, `link`, and `image` children.                                                                                                                       |
-+| `normalizeIdentifier`     | function | `(code: string) => string`                                                                                | The identifier prefix of a code-span text — everything before its first `<`, trimmed (strips generic-parameter annotation).                                                                                                                       |
-+| `findKindIndex`           | function | `(table: TableNode) => number \| undefined`                                                               | The index of a table's `Kind` column, found by its header text so it survives column reordering.                                                                                                                                                  |
-+| `extractCellLinks`        | function | `(cell: readonly InlineNode[]) => readonly string[]`                                                      | The link hrefs found within one table cell's inline content, in walk order.                                                                                                                                                                       |
-+| `findUnexampled`          | function | `(names: readonly string[], fences: readonly string[], examples: readonly string[]) => readonly string[]` | The names with no fence mention (word boundary) and no `@example` membership — the EX check's core comparison.                                                                                                                                    |
-+| `findUnlisted`            | function | `(fences: readonly GuideFence[], languages: readonly string[]) => readonly GuideFence[]`                  | The fences whose language the caller did not list, plus every untagged fence — an untagged fence has no language to list.                                                                                                                         |
-+| `extractFenceImports`     | function | `(fence: string) => readonly FenceImport[]`                                                               | Parses a fence's brace `import` statements into per-specifier imported identifier names — the FI check's core comparison. Brace bindings only: a default, namespace, side-effect, or mixed `import Default, { named }` statement is not surfaced. |
++| Name                    | Kind     | Signature                                                                                                 | Behavior                                                                                                                                                                                                                                          |
++| ----------------------- | -------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `normalizeDirectories`  | function | `(module: GuideModule) => readonly string[]`                                                              | Canonicalizes through `resolvePath`, uses `'.'` for root, and removes duplicates in first-seen order.                                                                                                                                             |
++| `computeModuleKey`      | function | `(module: GuideModule) => string`                                                                         | The stable cache key for a module scope — its normalized directories joined by NUL, so two spellings of one module share a key and no directory boundary can collide with directory text.                                                         |
++| `selectModuleKeys`      | function | `(files: Readonly<Record<string, string>>, module: GuideModule) => readonly string[]`                     | Selects exact canonical-segment opaque `.ts` keys under any scope and excludes every selected exact `index.ts` plus `*.test.ts`; sorted.                                                                                                          |
++| `hasCanonicalSegments`  | function | `(key: string) => boolean`                                                                                | Rejects empty, `.` and `..` slash-separated segments without normalization while retaining ordinary dotfiles.                                                                                                                                     |
++| `computeSymbolKey`      | function | `(symbol: SurfaceSymbol) => string`                                                                       | The bijection key for a surface symbol — `${kind} ${name}` — so a symbol comparison diffs (name, kind) pairs, not names alone.                                                                                                                    |
++| `findMissing`           | function | `(names: readonly string[], source: readonly string[]) => readonly string[]`                              | The names present in `names` but absent from `source` — the set-difference behind a both-directions bijection assertion.                                                                                                                          |
++| `findMissingSymbols`    | function | `(symbols: readonly SurfaceSymbol[], source: readonly SurfaceSymbol[]) => readonly string[]`              | The `computeSymbolKey` set-difference between two symbol lists.                                                                                                                                                                                   |
++| `extractSourceLines`    | function | `(source: string) => readonly SourceLine[]`                                                               | Equal-length physical source, code, and JSDoc projection with bounded literal Unicode identifier slash state.                                                                                                                                     |
++| `extractExports`        | function | `(source: string) => readonly SurfaceSymbol[]`                                                            | Direct five-kind exports over projected lines with an uninterrupted column-zero head; projection never widens membership.                                                                                                                         |
++| `extractHidden`         | function | `(source: string) => readonly SurfaceSymbol[]`                                                            | The non-exported mirror with the same projected, uninterrupted column-zero head and five-kind population.                                                                                                                                         |
++| `joinHead`              | function | `(lines: readonly string[], start: number) => DeclarationHead \| undefined`                               | Joins a declaration head starting at `start` into one space-separated line, consuming lines until the first ending in `{`.                                                                                                                        |
++| `escapeRegExp`          | function | `(value: string) => string`                                                                               | Escapes every regex metacharacter in a literal string so it reads as text inside a larger `RegExp` source — `extractDeclaration`'s head grammar and `findUnexampled`'s word-boundary search both splice a caller-supplied name through it.        |
++| `extractDeclaration`    | function | `(source: string, keyword: 'class' \| 'interface', name: string) => Declaration \| undefined`             | Locates one real `export class` / `export interface` head in projected lines and returns its raw body and its `extends` bases together, or `undefined` when the file declares no such head.                                                       |
++| `extractMemberMethods`  | function | `(lines: readonly string[]) => readonly string[]`                                                         | Matches callable members on one projection of the body; commented candidates, getters, setters, `static`, and `#` privates never count.                                                                                                           |
++| `extractExampleLines`   | function | `(lines: readonly SourceLine[]) => readonly SourceLine[]`                                                 | The next physical candidate after the authoritative exact `@example` span in a leading chain.                                                                                                                                                     |
++| `extractExamples`       | function | `(source: string) => readonly string[]`                                                                   | Matches exported functions against shared eligible genuine JSDoc adjacency and aligned code.                                                                                                                                                      |
++| `extractExampleMethods` | function | `(lines: readonly string[]) => readonly string[]`                                                         | Matches callable members against the same shared eligible genuine JSDoc adjacency and aligned code.                                                                                                                                               |
++| `selectSectionBlocks`   | function | `(document: MarkdownDocument, heading: string) => readonly BlockNode[]`                                   | The block nodes under a named `##` heading, up to the next `##`-or-higher heading (or the document's end).                                                                                                                                        |
++| `extractSurface`        | function | `(document: MarkdownDocument) => readonly SurfaceSymbol[]`                                                | Every `## Surface` identifier: each table's rows union every backticked H3 entity heading, deduped by `computeSymbolKey`.                                                                                                                         |
++| `extractMethods`        | function | `(document: MarkdownDocument) => readonly MethodGroup[]`                                                  | One `MethodGroup` per documented behavioral interface in `## Methods` — an H4 code span sets the interface, the following table lists its methods.                                                                                                |
++| `extractLinks`          | function | `(document: MarkdownDocument) => readonly string[]`                                                       | Every link href in the guide document, including table cells — a full, depth-first AST walk.                                                                                                                                                      |
++| `extractTests`          | function | `(document: MarkdownDocument) => readonly string[]`                                                       | The relative test links declared under `## Tests`.                                                                                                                                                                                                |
++| `extractFences`         | function | `(document: MarkdownDocument) => readonly GuideFence[]`                                                   | Every fenced code block anywhere in the guide document, tagged or not — a full AST walk with no language filter.                                                                                                                                  |
++| `isExternalLink`        | function | `(href: string) => boolean`                                                                               | Whether a link `href` should be skipped by guides-parity link checks — an external scheme (`EXTERNAL_SCHEMES`) or a bare `#` anchor.                                                                                                              |
++| `resolveLink`           | function | `(file: string, target: string) => string`                                                                | Derives a declaring file's directory, including workspace-root files, then delegates to `resolvePath`.                                                                                                                                            |
++| `resolvePath`           | function | `(directory: string, target: string) => string`                                                           | Sole dot-segment reducer; returns `'.'` when no segment remains and preserves every excess leading parent.                                                                                                                                        |
++| `findFirstCode`         | function | `(nodes: readonly InlineNode[]) => string \| undefined`                                                   | The first code-span value found by descending an inline node list, following into `emphasis`, `link`, and `image` children.                                                                                                                       |
++| `normalizeIdentifier`   | function | `(code: string) => string`                                                                                | The identifier prefix of a code-span text — everything before its first `<`, trimmed (strips generic-parameter annotation).                                                                                                                       |
++| `findKindIndex`         | function | `(table: TableNode) => number \| undefined`                                                               | The index of a table's `Kind` column, found by its header text so it survives column reordering.                                                                                                                                                  |
++| `extractCellLinks`      | function | `(cell: readonly InlineNode[]) => readonly string[]`                                                      | The link hrefs found within one table cell's inline content, in walk order.                                                                                                                                                                       |
++| `findUnexampled`        | function | `(names: readonly string[], fences: readonly string[], examples: readonly string[]) => readonly string[]` | The names with no fence mention (word boundary) and no `@example` membership — the EX check's core comparison.                                                                                                                                    |
++| `findUnlisted`          | function | `(fences: readonly GuideFence[], languages: readonly string[]) => readonly GuideFence[]`                  | The fences whose language the caller did not list, plus every untagged fence — an untagged fence has no language to list.                                                                                                                         |
++| `extractFenceImports`   | function | `(fence: string) => readonly FenceImport[]`                                                               | Parses a fence's brace `import` statements into per-specifier imported identifier names — the FI check's core comparison. Brace bindings only: a default, namespace, side-effect, or mixed `import Default, { named }` statement is not surfaced. |
  
  ### Parsers
  
@@ -140,7 +147,7 @@ index 509e869..a5760f5 100644
  kind, and sorted by name. Member structure comes from projected lines while raw bodies preserve
 -JSDoc evidence. `Source` never uses the
 +JSDoc evidence, and `methods(name)` resolves a declaration's members through its `extends` chain
-+within the same module scope. `Source` never uses the
++within the same module scope, reading the first file that declares the name. `Source` never uses the
  TypeScript compiler API or filesystem; the consumer gathers `files` however its environment
  allows. See [`## Methods`](#methods) for the public call-signature surface.
  
@@ -156,14 +163,14 @@ index 509e869..a5760f5 100644
 -| `exists`   | `boolean`                  | Whether a workspace-root-relative path exists in the inventory.                                                                        |
 -| `hidden`   | `readonly SurfaceSymbol[]` | Every module-scope declaration LACKING `export` (AGENTS §5).                                                                           |
 -| `examples` | `readonly string[]`        | The exported functions (or, given `name`, members) whose eligible leading JSDoc chain ends in an exact block-position `@example` span. |
-+| Method     | Returns                    | Behavior                                                                                                                                          |
-+| ---------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-+| `exports`  | `readonly SurfaceSymbol[]` | What the package **declares** — direct `type`, `interface`, `const`, `function`, and `class` declarations in the selected module keys.            |
-+| `surface`  | `readonly SurfaceSymbol[]` | What a consumer can **import** — every declaration reachable through the selected directories' conventional root `index.ts` barrels.              |
-+| `methods`  | `readonly string[]`        | The call-signature members of the `class` / `interface` named `name`, unioned with those of every declaration it extends within the module scope. |
-+| `exists`   | `boolean`                  | Whether a workspace-root-relative path exists in the inventory.                                                                                   |
-+| `hidden`   | `readonly SurfaceSymbol[]` | Every module-scope declaration LACKING `export` (AGENTS §5).                                                                                      |
-+| `examples` | `readonly string[]`        | The exported functions (or, given `name`, members) whose eligible leading JSDoc chain ends in an exact block-position `@example` span.            |
++| Method     | Returns                    | Behavior                                                                                                                                                                                                    |
++| ---------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `exports`  | `readonly SurfaceSymbol[]` | What the package **declares** — direct `type`, `interface`, `const`, `function`, and `class` declarations in the selected module keys.                                                                      |
++| `surface`  | `readonly SurfaceSymbol[]` | What a consumer can **import** — every declaration reachable through the selected directories' conventional root `index.ts` barrels.                                                                        |
++| `methods`  | `readonly string[]`        | The call-signature members of the `class` / `interface` named `name`, unioned with those of every declaration it extends within the module scope. The first file declaring the name answers for it.         |
++| `exists`   | `boolean`                  | Whether a workspace-root-relative path exists in the inventory.                                                                                                                                             |
++| `hidden`   | `readonly SurfaceSymbol[]` | Every module-scope declaration LACKING `export` (AGENTS §5).                                                                                                                                                |
++| `examples` | `readonly string[]`        | The exported functions (or, given `name`, that declaration's own members) whose eligible leading JSDoc chain ends in an exact block-position `@example` span. Given `name`, it follows no `extends` clause. |
  
  #### Which projector a check uses
  
@@ -183,7 +190,7 @@ index 509e869..a5760f5 100644
  → `WidgetInterface`) so the bijection key is always the bare name. `extractLinks` walks the
  whole AST for every `link` node (table cells included); `extractTests` does the same walk
  scoped to the `## Tests` section only; and `extractFences` walks the whole AST for every
-@@ -299,23 +302,32 @@ when it is the first non-whitespace source material. Within a leading whitespace
+@@ -299,23 +302,42 @@ when it is the first non-whitespace source material. Within a leading whitespace
  each later span replaces the earlier one and is authoritative. Only an exact block-position
  `@example` tag qualifies; same-line title text is allowed. Source material between or after spans
  severs association, a leading JSDoc on the next line replaces pending state, and any other next
@@ -201,28 +208,38 @@ index 509e869..a5760f5 100644
  template payload, enums, `let`, `var`, and other TypeScript declaration forms are outside these
  two populations; enum exclusion describes reflection scope, not a general package-policy ban.
 -`declarationBody` locates a named real `export class` / `export interface` head and exact
-+`extractDeclarationBody` locates a named real `export class` / `export interface` head and exact
++`extractDeclaration` locates a named real `export class` / `export interface` head and exact
  column-zero close in projected lines (joining an oxfmt-wrapped signature via `joinHead`), then
 -returns the aligned raw body. `memberMethods` projects that body once and matches
-+returns the aligned raw body. `extractMemberMethods` projects that body once and matches
++returns that one head's aligned raw body and its `extends` bases as a single `Declaration`, or
++`undefined` when the file declares no such head. One locator is what keeps a body and a heritage
++clause on the same declaration. Its identifier is escaped through `escapeRegExp` before it enters
++the head grammar, so a name carrying a regex metacharacter is literal text rather than a wildcard
++or a thrown `SyntaxError`. A head that opens no column-zero close is skipped and the scan
++continues. `extractMemberMethods` projects that body once and matches
  `^\t(?:async )?\*?(\w+)(<[^>]*>)?\??\(` against those body lines — plain / `async` /
  generator / optional methods count; getters, setters, `static` members, and `#` privates
  never match (their keyword or sigil breaks the `name(` shape), and `constructor` is filtered
 -out of `Source.methods`. `selectModuleKeys` scopes the inventory to one `GuideModule`'s `.ts` files,
-+out of `Source.methods`. `matchesDeclaration` is the head grammar both locators share, so a head
-+one of them accepts the other accepts too. `extractDeclarationBases` reads the located head's
-+`extends` clause with every balanced `<...>` span removed first, so a `T extends Base` type
-+parameter never reads as a base and `Base<T>` reads as `Base`, and a class's `implements` clause
-+is excluded. `Source.methods(name)` unions the located declaration's own members with those of
-+every declaration it extends, following each base through the same module scope and keeping the
-+keyword it started from — an interface chain resolves through interfaces, a class chain through
-+classes. The inventory is the bound: a base the selected directories do not declare, whether it is
-+imported from another package or written as a qualified name, contributes no members and is not an
-+error, and one visited set per call collapses a cycle and a diamond to a single visit. `selectModuleKeys` scopes the inventory to one `GuideModule`'s `.ts` files,
++out of `Source.methods`. Every balanced `<...>` span is removed from the head before its `extends`
++clause is read, so a `T extends Base` type parameter never reads as a base and `Base<T>` reads as
++`Base`, and a class's `implements` clause is excluded. `Source.methods(name)` unions the located
++declaration's own members with those of every declaration it extends, following each base through
++the same module scope and keeping the keyword it started from — an interface chain resolves through
++interfaces, a class chain through classes, so an interface extending a name only a class declares
++gets nothing from it. One declaration answers for a name: the module scope's files are read in
++sorted key order, the first one declaring that head supplies both the members and the bases, and a
++second file declaring the same name adds nothing. The inventory is the further bound: a base the
++selected directories do not declare, whether it is imported from another package or written as a
++qualified name such as `external.Store`, contributes no members and is not an error, and one
++visited set per call collapses a cycle and a diamond to a single visit. `Source.examples(name)` is
++deliberately asymmetric with it — it reads only the named declaration's own body, under each
++keyword, and follows no `extends` clause, so an inherited member's `@example` belongs to the base
++that declares it. `selectModuleKeys` scopes the inventory to one `GuideModule`'s `.ts` files,
  excluding each scope directory's own `index.ts` and any `*.test.ts` file. `Source.hidden()`
  mechanically asserts AGENTS §5's export-discipline rule and catches a hidden five-kind
  declaration the surface bijection alone would never see.
-@@ -334,8 +346,8 @@ quoted target. Arbitrary trailing source is rejected. Only the terminal `.js` be
+@@ -334,8 +356,8 @@ quoted target. Arbitrary trailing source is rejected. Only the terminal `.js` be
  `resolveLink(currentIndex, target)` derives the current index file's directory and delegates to
  `resolvePath`, the only dot-segment reducer. Exact workspace-root `index.ts` and nested targets
  ending `/index.ts` recurse as barrels, while another exact `.ts` target contributes its direct
@@ -233,7 +250,7 @@ index 509e869..a5760f5 100644
  same-name/different-kind rows, and the final list uses the same name sort as `exports()`.
  
  Missing roots and targets, empty barrels, and unsupported rows contribute nothing without
-@@ -352,9 +364,9 @@ same readonly array instance is returned thereafter.
+@@ -352,9 +374,9 @@ same readonly array instance is returned thereafter.
  Every guides-parity check reduces to `expect([]).toEqual([])`, paired with a non-vacuousness
  guard so a renamed heading fails loudly instead of passing on an empty extraction:
  
@@ -245,7 +262,7 @@ index 509e869..a5760f5 100644
    so a declaration may drift in neither name nor kind. Guard: `guide.surface().length > 0`.
  - **MB — Methods bijection + class-no-extra.** Per `MethodGroup`, its `methods` vs
    `source.methods(group.interface)`, `findMissing` both directions; then, by the
-@@ -381,11 +393,11 @@ guard so a renamed heading fails loudly instead of passing on an empty extractio
+@@ -381,11 +403,11 @@ guard so a renamed heading fails loudly instead of passing on an empty extractio
    comparison. Guard: the SB/MB extractions this check reuses already prove non-vacuous.
  - **FI — Fence-import reality.** Every `import { ... } from 'specifier'` in a `guide.fences()`
    fence of the checked language, for a SELF specifier (this repo's own package name / path
@@ -259,7 +276,7 @@ index 509e869..a5760f5 100644
  a phantom Guide row must be missing from the barrel; kind drift must fail in both barrel/Guide
  directions; a barrel-only declaration outside `selectModuleKeys()` must be missing from direct exports;
  a correlated commented declaration must remain absent from direct and barrel populations while
-@@ -465,7 +477,7 @@ sources.source('@scope/package') === sources.source('@scope/package/core') // tr
+@@ -465,7 +487,7 @@ sources.source('@scope/package') === sources.source('@scope/package/core') // tr
  ### The bijection assertion shape
  
  ```ts
@@ -268,7 +285,7 @@ index 509e869..a5760f5 100644
  
  const guide = createGuide('## Surface\n\n| Name | Kind |\n| --- | --- |\n| `Guide` | class |')
  const source = createSource({
-@@ -477,10 +489,10 @@ const source = createSource({
+@@ -477,10 +499,10 @@ const source = createSource({
  })
  
  // Direct declarations, public barrel, and guide surface agree in all four directions.
@@ -283,7 +300,7 @@ index 509e869..a5760f5 100644
  ```
  
  ### Project source into physical code lines
-@@ -510,7 +522,7 @@ resolveLink('index.ts', './root.ts') // 'root.ts'
+@@ -510,7 +532,7 @@ resolveLink('index.ts', './root.ts') // 'root.ts'
  - [`tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) — `createGuide` / `createSource` + the compiled symbol/group/manifest contracts.
  - [`tests/src/core/Guide.test.ts`](../tests/src/core/Guide.test.ts) — `Guide`'s six cached projections and production barrel/Guide phantom and kind-drift controls.
  - [`tests/src/core/sources/Source.test.ts`](../tests/src/core/sources/Source.test.ts) — direct/barrel projections, lexical and JSDoc regressions, canonical-key populations, root and nested indexes, exact row grammar, graph invariants, and correlated population controls.
@@ -293,10 +310,17 @@ index 509e869..a5760f5 100644
  - [`tests/guides.test.ts`](../tests/guides.test.ts) — the drop-in guides-parity suite, run against THIS repo's own `guides/README.md` manifest — the self-dogfooding acceptance criterion.
  
 diff --git a/src/core/helpers.ts b/src/core/helpers.ts
-index f158b4f..afc21a7 100644
+index f158b4f..3bccd94 100644
 --- a/src/core/helpers.ts
 +++ b/src/core/helpers.ts
-@@ -601,10 +601,10 @@ export function normalizeDirectories(module: GuideModule): readonly string[] {
+@@ -1,5 +1,6 @@
+ import type { BlockNode, InlineNode, MarkdownDocument, TableNode } from '@orkestrel/markdown'
+ import type {
++	Declaration,
+ 	DeclarationHead,
+ 	FenceImport,
+ 	GuideFence,
+@@ -601,10 +602,10 @@ export function normalizeDirectories(module: GuideModule): readonly string[] {
   *
   * @example
   * ```ts
@@ -309,7 +333,7 @@ index f158b4f..afc21a7 100644
  	return normalizeDirectories(module).join('\0')
  }
  
-@@ -657,10 +657,10 @@ export function selectModuleKeys(
+@@ -657,10 +658,10 @@ export function selectModuleKeys(
   *
   * @example
   * ```ts
@@ -322,7 +346,7 @@ index f158b4f..afc21a7 100644
  	return `${symbol.kind} ${symbol.name}`
  }
  
-@@ -709,7 +709,7 @@ export function findUnlisted(
+@@ -709,7 +710,7 @@ export function findUnlisted(
  
  /**
   * The symbol-key set-difference between two symbol lists — `symbols` present but
@@ -331,7 +355,7 @@ index f158b4f..afc21a7 100644
   * neither name nor kind.
   *
   * @param symbols - The candidate symbols
-@@ -718,14 +718,14 @@ export function findUnlisted(
+@@ -718,14 +719,14 @@ export function findUnlisted(
   *
   * @example
   * ```ts
@@ -349,7 +373,16 @@ index f158b4f..afc21a7 100644
  }
  
  /**
-@@ -768,10 +768,10 @@ export function findUnexampled(
+@@ -752,7 +753,7 @@ export function findUnexampled(
+ 	const exampled = new Set(examples)
+ 	return names.filter((name) => {
+ 		if (exampled.has(name)) return false
+-		const boundary = new RegExp(`\\b${name}\\b`)
++		const boundary = new RegExp(`\\b${escapeRegExp(name)}\\b`)
+ 		return !fences.some((fence) => boundary.test(fence))
+ 	})
+ }
+@@ -768,10 +769,10 @@ export function findUnexampled(
   *
   * @example
   * ```ts
@@ -362,7 +395,7 @@ index f158b4f..afc21a7 100644
  	const results: FenceImport[] = []
  	const pattern = /import\s+(?:type\s+)?\{([^}]*)\}\s*from\s*['"]([^'"]+)['"]/gs
  
-@@ -881,14 +881,14 @@ export function resolveLink(file: string, target: string): string {
+@@ -881,14 +882,14 @@ export function resolveLink(file: string, target: string): string {
   *
   * @example
   * ```ts
@@ -380,7 +413,7 @@ index f158b4f..afc21a7 100644
  			if (value !== undefined) return value
  		}
  	}
-@@ -903,10 +903,10 @@ export function firstCode(nodes: readonly InlineNode[]): string | undefined {
+@@ -903,10 +904,10 @@ export function firstCode(nodes: readonly InlineNode[]): string | undefined {
   *
   * @example
   * ```ts
@@ -393,7 +426,7 @@ index f158b4f..afc21a7 100644
  	const links: string[] = []
  	for (const node of walkNodes({ element: 'paragraph', children: cell })) {
  		if (isLinkNode(node)) links.push(node.href)
-@@ -926,11 +926,11 @@ export function cellLinks(cell: readonly InlineNode[]): readonly string[] {
+@@ -926,11 +927,11 @@ export function cellLinks(cell: readonly InlineNode[]): readonly string[] {
   *
   * @example
   * ```ts
@@ -408,7 +441,7 @@ index f158b4f..afc21a7 100644
  	const index = code.indexOf('<')
  	return (index < 0 ? code : code.slice(0, index)).trim()
  }
-@@ -945,10 +945,10 @@ export function identifierOf(code: string): string {
+@@ -945,10 +946,10 @@ export function identifierOf(code: string): string {
   *
   * @example
   * ```ts
@@ -421,7 +454,7 @@ index f158b4f..afc21a7 100644
  	for (let index = 0; index < table.header.length; index += 1) {
  		const cell = table.header[index]
  		if (
-@@ -977,11 +977,11 @@ export function kindIndex(table: TableNode): number | undefined {
+@@ -977,11 +978,11 @@ export function kindIndex(table: TableNode): number | undefined {
   *
   * @example
   * ```ts
@@ -436,7 +469,7 @@ index f158b4f..afc21a7 100644
  	const symbols: SurfaceSymbol[] = []
  	const seen = new Set<string>()
  
-@@ -1005,7 +1005,7 @@ export function exportsFrom(source: string): readonly SurfaceSymbol[] {
+@@ -1005,7 +1006,7 @@ export function exportsFrom(source: string): readonly SurfaceSymbol[] {
  
  /**
   * The module-scope declarations LACKING the `export` keyword in one file's
@@ -445,7 +478,7 @@ index f158b4f..afc21a7 100644
   * the same way (column 0, so an indented inner declaration never matches).
   * Scans only the five {@link ExportKind} keywords (`function` / `class` /
   * `const` / `interface` / `type`) — a module-scope `let` or `var` is a
-@@ -1021,11 +1021,11 @@ export function exportsFrom(source: string): readonly SurfaceSymbol[] {
+@@ -1021,11 +1022,11 @@ export function exportsFrom(source: string): readonly SurfaceSymbol[] {
   *
   * @example
   * ```ts
@@ -460,107 +493,89 @@ index f158b4f..afc21a7 100644
  	const symbols: SurfaceSymbol[] = []
  	const seen = new Set<string>()
  
-@@ -1072,6 +1072,33 @@ export function joinHead(lines: readonly string[], start: number): DeclarationHe
- 	return undefined
+@@ -1073,28 +1074,67 @@ export function joinHead(lines: readonly string[], start: number): DeclarationHe
  }
  
-+/**
-+ * Whether a joined declaration head declares the named `export class` /
-+ * `export interface` — the one head grammar {@link extractDeclarationBody} and
-+ * {@link extractDeclarationBases} share, so a head one of them accepts the
-+ * other accepts too. An optional generic parameter list and an optional
-+ * `extends` / `implements` clause may sit between the identifier and the
-+ * opening `{`, and the identifier itself must match exactly.
+ /**
+- * The body lines of the named `export class` / `export interface` declaration
+- * within one file's source text — everything between a projected real head and
+- * projected column-0 closing `}`. Structural eligibility is projected while the
+- * corresponding returned body lines remain raw for JSDoc evidence.
++ * Escapes every regex metacharacter in a literal string so it reads as text
++ * inside a larger `RegExp` source rather than as syntax.
 + *
-+ * @param head - A declaration head joined into one line (see {@link joinHead})
-+ * @param keyword - Whether the head must declare a `class` or an `interface`
-+ * @param name - The declaration's identifier
-+ * @returns True when `head` declares that exact `export {keyword} {name}`; false otherwise
++ * @remarks
++ * Every caller-supplied name reaches a `RegExp` through this: {@link
++ * extractDeclaration} splices it into the head grammar and {@link
++ * findUnexampled} into a word-boundary search, so a name carrying `$`, `(`,
++ * `[`, or `.` matches that character literally instead of throwing or matching
++ * text it does not name. Pure and total; never throws.
++ *
++ * @param value - The literal string to escape
++ * @returns `value` with every regex metacharacter backslash-escaped
 + *
 + * @example
 + * ```ts
-+ * matchesDeclaration('export interface X extends Y {', 'interface', 'X') // true
-+ * matchesDeclaration('export interface Xtra {', 'interface', 'X') // false
++ * escapeRegExp('A.B') // 'A\\.B'
++ * new RegExp(`^${escapeRegExp('A.B')}$`).test('AxB') // false
 + * ```
 + */
-+export function matchesDeclaration(
-+	head: string,
-+	keyword: 'class' | 'interface',
-+	name: string,
-+): boolean {
-+	return new RegExp(`^export ${keyword} ${name}(?:<.*>)?(?: .*)? \\{$`).test(head)
++export function escapeRegExp(value: string): string {
++	return value.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')
 +}
 +
- /**
-  * The body lines of the named `export class` / `export interface` declaration
-  * within one file's source text — everything between a projected real head and
-@@ -1085,16 +1112,15 @@ export function joinHead(lines: readonly string[], start: number): DeclarationHe
++/**
++ * Locates the named `export class` / `export interface` declaration in one
++ * file's source text and returns its body lines and its base identifiers read
++ * from that one head, so a body and a heritage clause always come from the same
++ * declaration.
++ *
++ * @remarks
++ * The head is matched on projected lines (column 0, an oxfmt-wrapped signature
++ * joined through {@link joinHead}), with an optional generic parameter list and
++ * an optional heritage clause between the identifier and the opening `{`; the
++ * identifier matches exactly and is escaped through {@link escapeRegExp}, so a
++ * metacharacter in `name` is literal text. The returned body lines are the raw
++ * source between that head and the first projected column-zero `}`, keeping
++ * JSDoc evidence intact. Every balanced `<...>` span is removed from the head
++ * before its `extends` clause is read, so a `T extends Base` type parameter is
++ * never a base and `Base<T>` reads as `Base`; a class's `implements` clause and
++ * everything after it is excluded, and a qualified base such as
++ * `namespace.Base` is returned verbatim. A head that opens no column-zero close
++ * is skipped and the scan continues, so a later real declaration still answers.
+  *
+  * @param source - The file's source text to search
+  * @param keyword - Whether to look for a `class` or an `interface`
+  * @param name - The declaration's identifier
+- * @returns The declaration's body lines, or an empty array when `source` does not declare it
++ * @returns Its body and bases, or `undefined` when `source` declares no such head
   *
   * @example
   * ```ts
 - * declarationBody('export interface X {\n\twalk(): void\n}\n', 'interface', 'X') // ['\twalk(): void']
-+ * extractDeclarationBody('export interface X {\n\twalk(): void\n}\n', 'interface', 'X') // ['\twalk(): void']
++ * extractDeclaration('export interface X extends Y {\n\twalk(): void\n}\n', 'interface', 'X')
++ * // { body: ['\twalk(): void'], bases: ['Y'] }
   * ```
   */
 -export function declarationBody(
-+export function extractDeclarationBody(
++export function extractDeclaration(
  	source: string,
  	keyword: 'class' | 'interface',
  	name: string,
- ): readonly string[] {
+-): readonly string[] {
++): Declaration | undefined {
  	const opener = `export ${keyword} ${name}`
 -	const declaration = new RegExp(`^export ${keyword} ${name}(?:<.*>)?(?: .*)? \\{$`)
++	const grammar = new RegExp(`^${escapeRegExp(opener)}(?:<.*>)?(?: .*)? \\{$`)
  	const lines = extractSourceLines(source)
  	const projected = lines.map((line) => line.code)
  
-@@ -1103,7 +1129,7 @@ export function declarationBody(
+@@ -1103,18 +1143,33 @@ export function declarationBody(
  		if (line === undefined || !line.startsWith(opener)) continue
  
  		const head = joinHead(projected, index)
 -		if (head === undefined || !declaration.test(head.text)) continue
-+		if (head === undefined || !matchesDeclaration(head.text, keyword, name)) continue
- 
- 		for (let close = head.end + 1; close < projected.length; close += 1) {
- 			if (projected[close] === '}') {
-@@ -1117,6 +1143,63 @@ export function declarationBody(
- 	return []
- }
- 
-+/**
-+ * The base identifiers the named `export class` / `export interface`
-+ * declaration extends, in head order — the `extends` clause behind
-+ * `Source.methods`' inherited-member resolution. The head is
-+ * located by {@link extractDeclarationBody}'s grammar through
-+ * {@link matchesDeclaration}. Every balanced `<...>` span is removed before the
-+ * clause is read, so a `T extends Base` type parameter never reads as a base
-+ * and `Base<T>` reads as `Base`; a class's `implements` clause and everything
-+ * after it is excluded. A qualified base such as `namespace.Base` is returned
-+ * verbatim and matches no reflected declaration.
-+ *
-+ * @param source - The file's source text to search
-+ * @param keyword - Whether to look for a `class` or an `interface`
-+ * @param name - The declaration's identifier
-+ * @returns The base identifiers, or an empty array when the head extends nothing
-+ *
-+ * @example
-+ * ```ts
-+ * extractDeclarationBases('export interface B extends A, C<T> {\n}\n', 'interface', 'B') // ['A', 'C']
-+ * ```
-+ */
-+export function extractDeclarationBases(
-+	source: string,
-+	keyword: 'class' | 'interface',
-+	name: string,
-+): readonly string[] {
-+	const opener = `export ${keyword} ${name}`
-+	const projected = extractSourceLines(source).map((line) => line.code)
-+
-+	for (let index = 0; index < projected.length; index += 1) {
-+		const line = projected[index]
-+		if (line === undefined || !line.startsWith(opener)) continue
-+
-+		const head = joinHead(projected, index)
-+		if (head === undefined || !matchesDeclaration(head.text, keyword, name)) continue
++		if (head === undefined || !grammar.test(head.text)) continue
 +
 +		let depth = 0
 +		let flat = ''
@@ -569,24 +584,33 @@ index f158b4f..afc21a7 100644
 +			else if (character === '>') depth = Math.max(0, depth - 1)
 +			else if (depth === 0) flat += character
 +		}
-+
-+		const listed = flat.replace(/\bimplements\b[\s\S]*$/, '').match(/\bextends\b([\s\S]*)$/)
-+		const clause = listed?.[1]
-+		if (clause === undefined) return []
-+
-+		return clause
-+			.split(',')
-+			.map((base) => base.trim())
-+			.filter(isNonEmptyString)
-+	}
-+
-+	return []
-+}
-+
++		const clause = flat.replace(/\bimplements\b[\s\S]*$/, '').match(/\bextends\b([\s\S]*)$/)?.[1]
++		const bases =
++			clause === undefined
++				? []
++				: clause
++						.split(',')
++						.map((base) => base.trim())
++						.filter(isNonEmptyString)
+ 
+ 		for (let close = head.end + 1; close < projected.length; close += 1) {
+-			if (projected[close] === '}') {
+-				return lines.slice(head.end + 1, close).map((record) => record.source)
+-			}
++			if (projected[close] !== '}') continue
++			return { body: lines.slice(head.end + 1, close).map((record) => record.source), bases }
+ 		}
+ 
+-		// Unterminated body — keep scanning in case a later match succeeds.
++		// Unterminated body — keep scanning in case a later head closes.
+ 	}
+ 
+-	return []
++	return undefined
+ }
+ 
  /**
-  * The member lines declaring a callable member: plain, `async`, generator
-  * (`*`), and optional (`records?(`) methods all count; getters, setters,
-@@ -1129,10 +1212,10 @@ export function declarationBody(
+@@ -1129,10 +1184,10 @@ export function declarationBody(
   *
   * @example
   * ```ts
@@ -599,7 +623,7 @@ index f158b4f..afc21a7 100644
  	const methods: string[] = []
  
  	for (const line of extractSourceLines(lines.join('\n'))) {
-@@ -1154,10 +1237,13 @@ export function memberMethods(lines: readonly string[]): readonly string[] {
+@@ -1154,10 +1209,13 @@ export function memberMethods(lines: readonly string[]): readonly string[] {
   *
   * @example
   * ```ts
@@ -615,7 +639,7 @@ index f158b4f..afc21a7 100644
  	const blocks: BlockNode[] = []
  	let active = false
  
-@@ -1180,7 +1266,7 @@ export function sectionBlocks(document: MarkdownDocument, heading: string): read
+@@ -1180,7 +1238,7 @@ export function sectionBlocks(document: MarkdownDocument, heading: string): read
   * Every `## Surface` identifier the guide documents — each table row's column 0
   * code span (the name) paired with its `Kind` column (located by header text)
   * UNION every backticked H3 entity heading in the section
@@ -624,7 +648,7 @@ index f158b4f..afc21a7 100644
   * no code-span name, or an unrecognized `Kind` text, is skipped.
   *
   * @param document - The parsed guide document
-@@ -1195,13 +1281,13 @@ export function extractSurface(document: MarkdownDocument): readonly SurfaceSymb
+@@ -1195,13 +1253,13 @@ export function extractSurface(document: MarkdownDocument): readonly SurfaceSymb
  	const symbols: SurfaceSymbol[] = []
  	const seen = new Set<string>()
  
@@ -642,7 +666,7 @@ index f158b4f..afc21a7 100644
  				if (name === undefined) continue
  
  				const kindCell = column === undefined ? undefined : row[column]
-@@ -1212,7 +1298,7 @@ export function extractSurface(document: MarkdownDocument): readonly SurfaceSymb
+@@ -1212,7 +1270,7 @@ export function extractSurface(document: MarkdownDocument): readonly SurfaceSymb
  				if (!isExportKind(kindText)) continue
  
  				const symbol: SurfaceSymbol = { name, kind: kindText }
@@ -651,7 +675,7 @@ index f158b4f..afc21a7 100644
  				if (seen.has(key)) continue
  				seen.add(key)
  				symbols.push(symbol)
-@@ -1221,11 +1307,11 @@ export function extractSurface(document: MarkdownDocument): readonly SurfaceSymb
+@@ -1221,11 +1279,11 @@ export function extractSurface(document: MarkdownDocument): readonly SurfaceSymb
  		}
  
  		if (isHeadingNode(block) && block.level === 3) {
@@ -666,7 +690,7 @@ index f158b4f..afc21a7 100644
  			if (seen.has(key)) continue
  			seen.add(key)
  			symbols.push(symbol)
-@@ -1252,10 +1338,10 @@ export function extractMethods(document: MarkdownDocument): readonly MethodGroup
+@@ -1252,10 +1310,10 @@ export function extractMethods(document: MarkdownDocument): readonly MethodGroup
  	const groups: MethodGroup[] = []
  	let current: string | undefined
  
@@ -680,7 +704,7 @@ index f158b4f..afc21a7 100644
  			continue
  		}
  
-@@ -1263,8 +1349,8 @@ export function extractMethods(document: MarkdownDocument): readonly MethodGroup
+@@ -1263,8 +1321,8 @@ export function extractMethods(document: MarkdownDocument): readonly MethodGroup
  			const methods: string[] = []
  			for (const row of block.rows) {
  				const cell = row[0]
@@ -691,7 +715,7 @@ index f158b4f..afc21a7 100644
  				if (name !== undefined) methods.push(name)
  			}
  			groups.push({ interface: current, methods })
-@@ -1309,7 +1395,7 @@ export function extractLinks(document: MarkdownDocument): readonly string[] {
+@@ -1309,7 +1367,7 @@ export function extractLinks(document: MarkdownDocument): readonly string[] {
   */
  export function extractTests(document: MarkdownDocument): readonly string[] {
  	const links: string[] = []
@@ -700,7 +724,7 @@ index f158b4f..afc21a7 100644
  		for (const node of walkNodes(block)) {
  			if (isLinkNode(node)) links.push(node.href)
  		}
-@@ -1426,11 +1512,11 @@ export function extractExampleLines(lines: readonly SourceLine[]): readonly Sour
+@@ -1426,11 +1484,11 @@ export function extractExampleLines(lines: readonly SourceLine[]): readonly Sour
   * @example
   * ```ts
   * const block = ['/**', ' * @example', ' *' + '/', 'export function walk() {}', ''].join('\n')
@@ -715,7 +739,7 @@ index f158b4f..afc21a7 100644
  	const names: string[] = []
  	const seen = new Set<string>()
  
-@@ -1447,7 +1533,7 @@ export function examplesFrom(source: string): readonly string[] {
+@@ -1447,7 +1505,7 @@ export function examplesFrom(source: string): readonly string[] {
  }
  
  /**
@@ -724,7 +748,7 @@ index f158b4f..afc21a7 100644
   * grammar) whose immediately preceding eligible genuine JSDoc block, within
   * the same body, carries `@example`. Shared adjacency comes from
   * {@link extractExampleLines}; member membership is matched against aligned
-@@ -1458,10 +1544,10 @@ export function examplesFrom(source: string): readonly string[] {
+@@ -1458,10 +1516,10 @@ export function examplesFrom(source: string): readonly string[] {
   *
   * @example
   * ```ts
@@ -781,19 +805,19 @@ index c8fa513..4a92536 100644
  			if (!isNonEmptyArray<string>(sourceHrefs)) continue
  			const [firstSource] = sourceHrefs
 diff --git a/src/core/sources/Source.ts b/src/core/sources/Source.ts
-index c49af0d..2a37b01 100644
+index c49af0d..c4e2130 100644
 --- a/src/core/sources/Source.ts
 +++ b/src/core/sources/Source.ts
-@@ -1,18 +1,19 @@
- import type { SourceInterface, SourceOptions, SurfaceSymbol } from '../types.js'
+@@ -1,18 +1,18 @@
+-import type { SourceInterface, SourceOptions, SurfaceSymbol } from '../types.js'
++import type { Declaration, SourceInterface, SourceOptions, SurfaceSymbol } from '../types.js'
  import {
 -	declarationBody,
 -	exampleMethods,
 -	examplesFrom,
 -	exportsFrom,
 +	computeSymbolKey,
-+	extractDeclarationBases,
-+	extractDeclarationBody,
++	extractDeclaration,
 +	extractExampleMethods,
 +	extractExamples,
 +	extractExports,
@@ -811,21 +835,21 @@ index c49af0d..2a37b01 100644
  } from '../helpers.js'
  
  /**
-@@ -28,8 +29,11 @@ import {
+@@ -28,7 +28,12 @@ import {
   * construction, and exact opaque inventory keys are never rewritten; keys with
   * empty, `.` or `..` segments stay outside both initial and resolved barrel
   * inventory entrances after relative-row reduction; canonical parent hops
 - * remain valid. Source projection preserves columns without widening
-- * direct/hidden column-zero heads. Literal ECMAScript Unicode identifiers
 + * remain valid. `methods` resolves a declaration's members through its
 + * `extends` chain within the same module scope, keeping the keyword it started
-+ * from; a base the scope does not declare contributes nothing. Source
-+ * projection preserves columns without widening direct/hidden column-zero
-+ * heads. Literal ECMAScript Unicode identifiers
++ * from; a base the scope does not declare contributes nothing. One declaration
++ * answers for a name: the first file in sorted key order that declares the head
++ * supplies its members and its bases, and a second file declaring the same name
++ * adds nothing. Source projection preserves columns without widening
+  * direct/hidden column-zero heads. Literal ECMAScript Unicode identifiers
   * participate in bounded slash-state recognition without escape decoding.
   * Regex recognition is bounded: slash after bare `}` is division, so a
-  * post-brace regex statement requires an explicit `;`. General semicolonless
-@@ -70,7 +74,7 @@ export class Source implements SourceInterface {
+@@ -70,7 +75,7 @@ export class Source implements SourceInterface {
  	// The module's exports are computed once on first access and cached —
  	// every subsequent call reuses the same scan of an immutable inventory.
  	exports(): readonly SurfaceSymbol[] {
@@ -834,7 +858,7 @@ index c49af0d..2a37b01 100644
  		return this.#exports
  	}
  
-@@ -82,11 +86,11 @@ export class Source implements SourceInterface {
+@@ -82,11 +87,11 @@ export class Source implements SourceInterface {
  	}
  
  	methods(name: string): readonly string[] {
@@ -850,7 +874,7 @@ index c49af0d..2a37b01 100644
  	}
  
  	exists(relative: string): boolean {
-@@ -97,7 +101,7 @@ export class Source implements SourceInterface {
+@@ -97,7 +102,7 @@ export class Source implements SourceInterface {
  	// The module's hidden declarations are computed once on first access and
  	// cached — mirrors `exports()`'s caching.
  	hidden(): readonly SurfaceSymbol[] {
@@ -859,7 +883,7 @@ index c49af0d..2a37b01 100644
  		return this.#hidden
  	}
  
-@@ -114,7 +118,7 @@ export class Source implements SourceInterface {
+@@ -114,7 +119,7 @@ export class Source implements SourceInterface {
  
  	// The union of exported-function `@example` names across the module's
  	// files, deduped in first-seen order — mirrors `#scanSymbols`, but over a
@@ -868,7 +892,7 @@ index c49af0d..2a37b01 100644
  	#scanExamples(): readonly string[] {
  		const names: string[] = []
  		const seen = new Set<string>()
-@@ -123,7 +127,7 @@ export class Source implements SourceInterface {
+@@ -123,7 +128,7 @@ export class Source implements SourceInterface {
  			const text = this.#files[key]
  			if (text === undefined) continue
  
@@ -877,7 +901,7 @@ index c49af0d..2a37b01 100644
  				if (seen.has(name)) continue
  				seen.add(name)
  				names.push(name)
-@@ -182,8 +186,8 @@ export class Source implements SourceInterface {
+@@ -182,8 +187,8 @@ export class Source implements SourceInterface {
  
  			const text = this.#files[path]
  			if (text === undefined) continue
@@ -888,23 +912,21 @@ index c49af0d..2a37b01 100644
  				if (seen.has(identity)) continue
  				seen.add(identity)
  				symbols.push(symbol)
-@@ -195,11 +199,11 @@ export class Source implements SourceInterface {
+@@ -195,11 +200,9 @@ export class Source implements SourceInterface {
  	// body named `name`, unioning both shapes (an implementer may carry its
  	// own `@example` a documented interface member does not, or vice versa).
  	#exampleMembers(name: string): readonly string[] {
 -		const interfaceBody = this.#declarationBody('interface', name)
 -		const classBody = this.#declarationBody('class', name)
-+		const interfaceBody = this.#body('interface', name)
-+		const classBody = this.#body('class', name)
  		const members = new Set<string>([
 -			...exampleMethods(interfaceBody),
 -			...exampleMethods(classBody),
-+			...extractExampleMethods(interfaceBody),
-+			...extractExampleMethods(classBody),
++			...extractExampleMethods(this.#locate('interface', name)?.body ?? []),
++			...extractExampleMethods(this.#locate('class', name)?.body ?? []),
  		])
  		return Array.from(members).sort()
  	}
-@@ -217,7 +221,7 @@ export class Source implements SourceInterface {
+@@ -217,7 +220,7 @@ export class Source implements SourceInterface {
  			if (text === undefined) continue
  
  			for (const symbol of scan(text)) {
@@ -913,57 +935,56 @@ index c49af0d..2a37b01 100644
  				if (seen.has(identity)) continue
  				seen.add(identity)
  				symbols.push(symbol)
-@@ -227,14 +231,48 @@ export class Source implements SourceInterface {
+@@ -227,17 +230,43 @@ export class Source implements SourceInterface {
  		return symbols.sort((a, b) => (a.name === b.name ? 0 : a.name < b.name ? -1 : 1))
  	}
  
+-	// The first non-empty declaration body found across the module scope's
+-	// files, searched in sorted file order until one file declares `name`.
+-	#declarationBody(keyword: 'class' | 'interface', name: string): readonly string[] {
 +	// The declared method names of the `keyword` declaration named `name`
-+	// unioned with those of every declaration it extends, or `undefined` when
-+	// the module scope declares no such head — which is what sends `methods()`
-+	// on to the class shape. A base the scope does not declare contributes
-+	// nothing, and `visited` collapses a cycle or a diamond to one visit.
++	// unioned with those of every declaration it extends. `undefined` states one
++	// fact only — the module scope declares no such head — which is what sends
++	// `methods()` on to the class shape; a name already on the visit path is
++	// declared and returns an empty union, so a cycle and a diamond each collapse
++	// to one visit. A base the scope does not declare contributes nothing.
 +	#members(
 +		keyword: 'class' | 'interface',
 +		name: string,
 +		visited: Set<string>,
 +	): readonly string[] | undefined {
-+		if (visited.has(name)) return undefined
++		if (visited.has(name)) return []
 +		visited.add(name)
 +
-+		const methods = new Set<string>()
-+		let declared = false
++		const declaration = this.#locate(keyword, name)
++		if (declaration === undefined) return undefined
 +
-+		for (const key of selectModuleKeys(this.#files, this.#directories)) {
-+			const text = this.#files[key]
-+			if (text === undefined) continue
-+
-+			const body = extractDeclarationBody(text, keyword, name)
-+			const bases = extractDeclarationBases(text, keyword, name)
-+			if (body.length === 0 && bases.length === 0) continue
-+
-+			declared = true
-+			for (const method of extractMemberMethods(body)) methods.add(method)
-+			for (const base of bases) {
-+				for (const member of this.#members(keyword, base, visited) ?? []) methods.add(member)
-+			}
++		const methods = new Set<string>(extractMemberMethods(declaration.body))
++		for (const base of declaration.bases) {
++			for (const member of this.#members(keyword, base, visited) ?? []) methods.add(member)
 +		}
 +
-+		return declared ? Array.from(methods).sort() : undefined
++		return Array.from(methods).sort()
 +	}
 +
- 	// The first non-empty declaration body found across the module scope's
- 	// files, searched in sorted file order until one file declares `name`.
--	#declarationBody(keyword: 'class' | 'interface', name: string): readonly string[] {
-+	#body(keyword: 'class' | 'interface', name: string): readonly string[] {
++	// The one declaration that answers for `name` — the first file in sorted key
++	// order that declares the head, whose body and bases are read together, so a
++	// later file declaring the same name contributes nothing.
++	#locate(keyword: 'class' | 'interface', name: string): Declaration | undefined {
  		for (const key of selectModuleKeys(this.#files, this.#directories)) {
  			const text = this.#files[key]
  			if (text === undefined) continue
  
 -			const body = declarationBody(text, keyword, name)
-+			const body = extractDeclarationBody(text, keyword, name)
- 			if (body.length > 0) return body
+-			if (body.length > 0) return body
++			const declaration = extractDeclaration(text, keyword, name)
++			if (declaration !== undefined) return declaration
  		}
  
+-		return []
++		return undefined
+ 	}
+ }
 diff --git a/src/core/sources/SourceManager.ts b/src/core/sources/SourceManager.ts
 index 984cd62..5ba5f3e 100644
 --- a/src/core/sources/SourceManager.ts
@@ -985,7 +1006,7 @@ index 984cd62..5ba5f3e 100644
  		if (existing !== undefined) return existing
  
 diff --git a/src/core/types.ts b/src/core/types.ts
-index 279ac67..40274f8 100644
+index 279ac67..db0ca55 100644
 --- a/src/core/types.ts
 +++ b/src/core/types.ts
 @@ -14,7 +14,7 @@ export type ExportKind = (typeof EXPORT_KINDS)[number]
@@ -1011,7 +1032,7 @@ index 279ac67..40274f8 100644
  	 * computes lazily, and caches the same readonly array instance.
  	 *
  	 * @returns The conventional barrel-reachable surface
-@@ -209,10 +209,21 @@ export interface SourceInterface {
+@@ -209,10 +209,24 @@ export interface SourceInterface {
  	 */
  	surface(): readonly SurfaceSymbol[]
  	/**
@@ -1020,14 +1041,17 @@ index 279ac67..40274f8 100644
 +	 * unioned with the members of every declaration it extends.
 +	 *
 +	 * @remarks
-+	 * Resolution reads each `extends` clause out of the located declaration head
-+	 * and follows it through this same module scope, keeping the keyword it
-+	 * started from: an `interface` chain resolves through interfaces and a
-+	 * `class` chain through classes, so a class's `implements` clause is outside
-+	 * the walk. A base the scope does not declare — imported from another
-+	 * package, written as a qualified name, or declared outside the selected
-+	 * directories — contributes no members and is not an error. One visited set
-+	 * per call collapses a cycle and a diamond to a single visit.
++	 * One declaration answers for `name`: the module scope's files are read in
++	 * sorted key order and the first one declaring that head supplies both the
++	 * members and the bases, so a second file declaring the same name adds
++	 * nothing. Resolution reads that head's `extends` clause and follows it
++	 * through this same module scope, keeping the keyword it started from: an
++	 * `interface` chain resolves through interfaces and a `class` chain through
++	 * classes, so a class's `implements` clause is outside the walk. A base the
++	 * scope does not declare — imported from another package, written as a
++	 * qualified name, or declared outside the selected directories —
++	 * contributes no members and is not an error. One visited set per call
++	 * collapses a cycle and a diamond to a single visit.
  	 *
  	 * @param name - The declaration's identifier
 -	 * @returns Its declared method names, deduplicated and sorted, a class `constructor` excluded
@@ -1035,6 +1059,36 @@ index 279ac67..40274f8 100644
  	 */
  	methods(name: string): readonly string[]
  	/**
+@@ -256,6 +270,12 @@ export interface SourceInterface {
+ 	 * member eligibility comes from aligned projected code while genuine JSDoc
+ 	 * evidence retains its source columns.
+ 	 *
++	 * @remarks
++	 * This overload reads only the named declaration's own body, in the first
++	 * file that declares it, under each keyword. Unlike {@link methods}, the
++	 * overload follows no `extends` clause, so an inherited member's `@example`
++	 * belongs to the base that declares it.
++	 *
+ 	 * @example
+ 	 * ```ts
+ 	 * source.examples('GuideInterface') // ['fences', 'links', 'tests']
+@@ -311,3 +331,16 @@ export interface DeclarationHead {
+ 	/** The index (within the source `lines`) of the line ending in `{`. */
+ 	readonly end: number
+ }
++
++/**
++ * One located `export class` / `export interface` declaration — the body lines
++ * and the base identifiers read from the same head, so a consumer never pairs
++ * one declaration's body with another declaration's heritage (see
++ * {@link extractDeclaration}).
++ */
++export interface Declaration {
++	/** Its raw body lines, between the head and the column-zero closing `}`. */
++	readonly body: readonly string[]
++	/** The base identifiers its head extends, in head order. */
++	readonly bases: readonly string[]
++}
 diff --git a/tests/fixtures/broken/phantom-import/guides/src/widget.md b/tests/fixtures/broken/phantom-import/guides/src/widget.md
 index 8207664..fb0ff8b 100644
 --- a/tests/fixtures/broken/phantom-import/guides/src/widget.md
@@ -1170,10 +1224,10 @@ index dd455d9..c4ae74e 100644
  
  	it('missing-interface-method: the guide is missing the reset row', () => {
 diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
-index ce0cecf..955c292 100644
+index ce0cecf..e8ebaa3 100644
 --- a/tests/src/core/helpers.test.ts
 +++ b/tests/src/core/helpers.test.ts
-@@ -1,11 +1,12 @@
+@@ -1,11 +1,11 @@
  import type { SourceLine, SurfaceSymbol } from '@src/core'
  import * as core from '@src/core'
  import {
@@ -1183,15 +1237,14 @@ index ce0cecf..955c292 100644
 -	examplesFrom,
 -	exportsFrom,
 +	extractCellLinks,
-+	extractDeclarationBases,
-+	extractDeclarationBody,
++	extractDeclaration,
 +	extractExampleMethods,
 +	extractExamples,
 +	extractExports,
  	extractExampleLines,
  	extractLinks,
  	extractMethods,
-@@ -13,25 +14,26 @@ import {
+@@ -13,25 +13,26 @@ import {
  	extractSourceLines,
  	extractSurface,
  	extractTests,
@@ -1212,7 +1265,7 @@ index ce0cecf..955c292 100644
 -	kindIndex,
 -	memberMethods,
 -	missingSymbols,
-+	matchesDeclaration,
++	escapeRegExp,
 +	findKindIndex,
 +	extractMemberMethods,
 +	findMissingSymbols,
@@ -1227,7 +1280,7 @@ index ce0cecf..955c292 100644
  } from '@src/core'
  import { createMarkdown } from '@orkestrel/markdown'
  import { describe, expect, it } from 'vitest'
-@@ -359,13 +361,15 @@ describe('extractSourceLines', () => {
+@@ -359,13 +360,15 @@ describe('extractSourceLines', () => {
  	})
  })
  
@@ -1246,7 +1299,7 @@ index ce0cecf..955c292 100644
  	})
  })
  
-@@ -465,26 +469,26 @@ describe('findUnlisted', () => {
+@@ -465,26 +468,26 @@ describe('findUnlisted', () => {
  	})
  })
  
@@ -1279,7 +1332,7 @@ index ce0cecf..955c292 100644
  	})
  })
  
-@@ -567,53 +571,53 @@ describe('resolveLink', () => {
+@@ -567,53 +570,53 @@ describe('resolveLink', () => {
  	})
  })
  
@@ -1346,7 +1399,7 @@ index ce0cecf..955c292 100644
  				{
  					element: 'emphasis',
  					strong: false,
-@@ -625,7 +629,7 @@ describe('firstCode', () => {
+@@ -625,7 +628,7 @@ describe('firstCode', () => {
  
  	it('finds a code span nested inside a link', () => {
  		expect(
@@ -1355,7 +1408,7 @@ index ce0cecf..955c292 100644
  				{
  					element: 'link',
  					href: 'widget.md',
-@@ -637,7 +641,7 @@ describe('firstCode', () => {
+@@ -637,7 +640,7 @@ describe('firstCode', () => {
  
  	it('finds a code span nested inside an image', () => {
  		expect(
@@ -1364,7 +1417,7 @@ index ce0cecf..955c292 100644
  				{
  					element: 'image',
  					src: 'widget.png',
-@@ -648,20 +652,22 @@ describe('firstCode', () => {
+@@ -648,20 +651,22 @@ describe('firstCode', () => {
  	})
  
  	it('returns undefined when no code span is present', () => {
@@ -1391,7 +1444,7 @@ index ce0cecf..955c292 100644
  				{ element: 'link', href: 'a.ts', children: [{ element: 'text', value: 'a' }] },
  				{ element: 'text', value: ' ' },
  				{ element: 'link', href: 'b.ts', children: [{ element: 'text', value: 'b' }] },
-@@ -670,12 +676,12 @@ describe('cellLinks', () => {
+@@ -670,12 +675,12 @@ describe('cellLinks', () => {
  	})
  
  	it('returns an empty array when the cell has no links', () => {
@@ -1406,8 +1459,18 @@ index ce0cecf..955c292 100644
  				{
  					element: 'emphasis',
  					strong: false,
-@@ -818,77 +824,81 @@ describe('findUnexampled', () => {
+@@ -816,79 +821,91 @@ describe('findUnexampled', () => {
+ 	it('returns an empty array when every name is exampled', () => {
+ 		expect(findUnexampled(['a', 'b'], [], ['a', 'b'])).toEqual([])
  	})
++
++	it('reads a regex metacharacter in a name as literal text', () => {
++		expect(findUnexampled(['widget.render'], ['widgetxrender()'], [])).toEqual(['widget.render'])
++	})
++
++	it('keeps a name carrying a bracket instead of throwing', () => {
++		expect(findUnexampled(['widget['], ['widget()'], [])).toEqual(['widget['])
++	})
  })
  
 -describe('fenceImports', () => {
@@ -1503,7 +1566,7 @@ index ce0cecf..955c292 100644
  		for (const source of [
  			'const ratio = count++ / total /* open\nexport const ghost = true\n*/\nexport const visible = true',
  			'const ratio = count-- / total /* open\nexport const ghost = true\n*/\nexport const visible = true',
-@@ -897,28 +907,28 @@ describe('successor lexical and reflection boundaries', () => {
+@@ -897,28 +914,28 @@ describe('successor lexical and reflection boundaries', () => {
  			'const values = [... /[/*]/]\nexport const visible = true',
  			'for (const value of /[/*]/) value\nexport const visible = true',
  		]) {
@@ -1537,7 +1600,7 @@ index ce0cecf..955c292 100644
  			sources.map(() => [{ name: 'visible', kind: 'const' }]),
  		)
  	})
-@@ -931,13 +941,13 @@ describe('successor lexical and reflection boundaries', () => {
+@@ -931,13 +948,13 @@ describe('successor lexical and reflection boundaries', () => {
  			'*/',
  			'export const visible = true /* trailing */',
  		].join('\n')
@@ -1550,20 +1613,20 @@ index ce0cecf..955c292 100644
  	})
  
 -	it('declarationBody ignores commented declarations and commented closes', () => {
-+	it('extractDeclarationBody ignores commented declarations and commented closes', () => {
++	it('extractDeclaration ignores commented declarations and commented closes', () => {
  		const source = [
  			'/*',
  			'export interface Ghost {',
-@@ -951,7 +961,7 @@ describe('successor lexical and reflection boundaries', () => {
+@@ -951,7 +968,7 @@ describe('successor lexical and reflection boundaries', () => {
  			'\tvisible(): void',
  			'}',
  		].join('\n')
 -		expect(declarationBody(source, 'interface', 'Ghost')).toEqual([
-+		expect(extractDeclarationBody(source, 'interface', 'Ghost')).toEqual([
++		expect(extractDeclaration(source, 'interface', 'Ghost')?.body).toEqual([
  			'\t/*',
  			'}',
  			'\t*/',
-@@ -959,20 +969,20 @@ describe('successor lexical and reflection boundaries', () => {
+@@ -959,20 +976,20 @@ describe('successor lexical and reflection boundaries', () => {
  		])
  	})
  
@@ -1588,7 +1651,7 @@ index ce0cecf..955c292 100644
  	})
  })
  
-@@ -1080,7 +1090,7 @@ describe('extractTests', () => {
+@@ -1080,7 +1097,7 @@ describe('extractTests', () => {
  	})
  })
  
@@ -1597,7 +1660,7 @@ index ce0cecf..955c292 100644
  	it('excludes five-kind declarations inside a multiline block comment', () => {
  		const source = [
  			'/*',
-@@ -1093,7 +1103,7 @@ describe('exportsFrom', () => {
+@@ -1093,7 +1110,7 @@ describe('exportsFrom', () => {
  			'export const visible = true',
  			'',
  		].join('\n')
@@ -1606,7 +1669,7 @@ index ce0cecf..955c292 100644
  	})
  
  	it('retains five-kind code with literal initializers and comments while excluding enum', () => {
-@@ -1107,7 +1117,7 @@ describe('exportsFrom', () => {
+@@ -1107,7 +1124,7 @@ describe('exportsFrom', () => {
  			'export class VisibleClass {} // note',
  			'export enum Outside { Value }',
  		].join('\n')
@@ -1615,7 +1678,7 @@ index ce0cecf..955c292 100644
  			{ name: 'VisibleType', kind: 'type' },
  			{ name: 'VisibleInterface', kind: 'interface' },
  			{ name: 'stringValue', kind: 'const' },
-@@ -1119,7 +1129,7 @@ describe('exportsFrom', () => {
+@@ -1119,7 +1136,7 @@ describe('exportsFrom', () => {
  	})
  
  	it('scans all five ExportKind declarations from the good fixture types.ts', () => {
@@ -1624,7 +1687,7 @@ index ce0cecf..955c292 100644
  		expect(symbols).toEqual([
  			{ name: 'WidgetInterface', kind: 'interface' },
  			{ name: 'WidgetKind', kind: 'type' },
-@@ -1129,7 +1139,7 @@ describe('exportsFrom', () => {
+@@ -1129,7 +1146,7 @@ describe('exportsFrom', () => {
  	it('scans a plain function, an async function, a class, and a const', () => {
  		const source =
  			'export function a() {}\nexport async function b() {}\nexport class C {}\nexport const D = 1\n'
@@ -1633,7 +1696,7 @@ index ce0cecf..955c292 100644
  			{ name: 'a', kind: 'function' },
  			{ name: 'b', kind: 'function' },
  			{ name: 'C', kind: 'class' },
-@@ -1138,23 +1148,23 @@ describe('exportsFrom', () => {
+@@ -1138,23 +1155,23 @@ describe('exportsFrom', () => {
  	})
  
  	it('scans a generator function as kind function', () => {
@@ -1661,7 +1724,7 @@ index ce0cecf..955c292 100644
  	it('excludes five-kind declarations inside a multiline block comment', () => {
  		const source = [
  			'/*',
-@@ -1167,7 +1177,7 @@ describe('hiddenFrom', () => {
+@@ -1167,7 +1184,7 @@ describe('hiddenFrom', () => {
  			'const visible = true',
  			'',
  		].join('\n')
@@ -1670,7 +1733,7 @@ index ce0cecf..955c292 100644
  	})
  
  	it('retains hidden five-kind code with literal initializers and comments while excluding enum', () => {
-@@ -1181,7 +1191,7 @@ describe('hiddenFrom', () => {
+@@ -1181,7 +1198,7 @@ describe('hiddenFrom', () => {
  			'class VisibleClass {} // note',
  			'enum Outside { Value }',
  		].join('\n')
@@ -1679,7 +1742,7 @@ index ce0cecf..955c292 100644
  			{ name: 'VisibleType', kind: 'type' },
  			{ name: 'VisibleInterface', kind: 'interface' },
  			{ name: 'stringValue', kind: 'const' },
-@@ -1193,55 +1203,57 @@ describe('hiddenFrom', () => {
+@@ -1193,55 +1210,57 @@ describe('hiddenFrom', () => {
  	})
  
  	it('detects a hidden function declaration', () => {
@@ -1748,97 +1811,168 @@ index ce0cecf..955c292 100644
  		expect(symbols).toEqual([{ name: 'secretHelper', kind: 'function' }])
  	})
  })
-@@ -1291,19 +1303,19 @@ describe('joinHead', () => {
+@@ -1291,24 +1310,54 @@ describe('joinHead', () => {
  	})
  })
  
 -describe('declarationBody', () => {
-+describe('extractDeclarationBody', () => {
- 	it('extracts an interface body', () => {
+-	it('extracts an interface body', () => {
++describe('escapeRegExp', () => {
++	it('escapes every regex metacharacter', () => {
++		expect(escapeRegExp('a.b+c*d?e^f$g(h)i[j]k{l}m|n\\o')).toBe(
++			'a\\.b\\+c\\*d\\?e\\^f\\$g\\(h\\)i\\[j\\]k\\{l\\}m\\|n\\\\o',
++		)
++	})
++
++	it('leaves an ordinary identifier unchanged', () => {
++		expect(escapeRegExp('WidgetInterface')).toBe('WidgetInterface')
++	})
++
++	it('makes an escaped string match itself and nothing else', () => {
++		const pattern = new RegExp(`^${escapeRegExp('A.B')}$`)
++		expect({ literal: pattern.test('A.B'), wildcard: pattern.test('AxB') }).toEqual({
++			literal: true,
++			wildcard: false,
++		})
++	})
++
++	it('escapes a metacharacter-only name into a pattern that matches that text', () => {
++		expect(new RegExp(`^${escapeRegExp('.*')}$`).test('.*')).toBe(true)
++	})
++})
++
++describe('extractDeclaration', () => {
++	it('reads an interface body', () => {
  		const source = 'export interface X {\n\twalk(): void\n}\n'
 -		expect(declarationBody(source, 'interface', 'X')).toEqual(['\twalk(): void'])
-+		expect(extractDeclarationBody(source, 'interface', 'X')).toEqual(['\twalk(): void'])
++		expect(extractDeclaration(source, 'interface', 'X')).toEqual({
++			body: ['\twalk(): void'],
++			bases: [],
++		})
  	})
  
- 	it('extracts a class body', () => {
+-	it('extracts a class body', () => {
++	it('reads a class body', () => {
  		const source = 'export class X {\n\twalk(): void {}\n}\n'
 -		expect(declarationBody(source, 'class', 'X')).toEqual(['\twalk(): void {}'])
-+		expect(extractDeclarationBody(source, 'class', 'X')).toEqual(['\twalk(): void {}'])
++		expect(extractDeclaration(source, 'class', 'X')).toEqual({
++			body: ['\twalk(): void {}'],
++			bases: [],
++		})
  	})
  
- 	it('extracts a body from the fixture types.ts text', () => {
+-	it('extracts a body from the fixture types.ts text', () => {
 -		const body = declarationBody(
-+		const body = extractDeclarationBody(
++	it('reads a body from the fixture types.ts text', () => {
++		const declaration = extractDeclaration(
  			requireText(FIXTURES, 'good/module/types.ts'),
  			'interface',
  			'WidgetInterface',
-@@ -1317,65 +1329,143 @@ describe('declarationBody', () => {
+ 		)
+-		expect(body).toEqual([
++		expect(declaration?.body).toEqual([
+ 			'\treadonly count: number',
+ 			'\tinspect(): string',
+ 			'\trender(label: string, data?: T): string',
+@@ -1316,74 +1365,199 @@ describe('declarationBody', () => {
+ 		])
  	})
  
- 	it('returns an empty array when the named declaration is missing', () => {
+-	it('returns an empty array when the named declaration is missing', () => {
 -		expect(declarationBody('export class X {\n}\n', 'interface', 'Y')).toEqual([])
-+		expect(extractDeclarationBody('export class X {\n}\n', 'interface', 'Y')).toEqual([])
++	it('reads the body and the bases from one head', () => {
++		const source = 'export interface B extends A {\n\twalk(): void\n}\n'
++		expect(extractDeclaration(source, 'interface', 'B')).toEqual({
++			body: ['\twalk(): void'],
++			bases: ['A'],
++		})
 +	})
-+})
 +
-+describe('matchesDeclaration', () => {
-+	it('accepts a plain head', () => {
-+		expect(matchesDeclaration('export interface X {', 'interface', 'X')).toBe(true)
++	it('returns undefined when the named declaration is missing', () => {
++		expect(extractDeclaration('export class X {\n}\n', 'interface', 'Y')).toBeUndefined()
++	})
++
++	it('separates an empty declared body from an absent declaration', () => {
++		expect({
++			declared: extractDeclaration('export interface X {\n}\n', 'interface', 'X'),
++			absent: extractDeclaration('export interface X {\n}\n', 'interface', 'Y'),
++		}).toEqual({ declared: { body: [], bases: [] }, absent: undefined })
 +	})
 +
 +	it('accepts a generic head', () => {
-+		expect(matchesDeclaration('export interface X<T> {', 'interface', 'X')).toBe(true)
-+	})
-+
-+	it('accepts an extends head', () => {
-+		expect(matchesDeclaration('export interface X extends Y {', 'interface', 'X')).toBe(true)
++		expect(extractDeclaration('export interface X<T> {\n}\n', 'interface', 'X')).toEqual({
++			body: [],
++			bases: [],
++		})
 +	})
 +
 +	it('rejects a longer identifier sharing the prefix', () => {
-+		expect(matchesDeclaration('export interface Xtra {', 'interface', 'X')).toBe(false)
++		expect(extractDeclaration('export interface Xtra {\n}\n', 'interface', 'X')).toBeUndefined()
 +	})
 +
 +	it('rejects the other keyword', () => {
-+		expect(matchesDeclaration('export class X {', 'interface', 'X')).toBe(false)
++		expect(extractDeclaration('export class X {\n}\n', 'interface', 'X')).toBeUndefined()
 +	})
 +
 +	it('rejects a head that opens no body', () => {
-+		expect(matchesDeclaration('export interface X', 'interface', 'X')).toBe(false)
-+	})
-+})
-+
-+describe('extractDeclarationBases', () => {
-+	it('returns an empty array when the declaration extends nothing', () => {
-+		expect(extractDeclarationBases('export interface X {\n}\n', 'interface', 'X')).toEqual([])
++		expect(extractDeclaration('export interface X\n', 'interface', 'X')).toBeUndefined()
 +	})
 +
-+	it('returns an empty array when the declaration is absent', () => {
-+		expect(extractDeclarationBases('export interface X {\n}\n', 'interface', 'Y')).toEqual([])
++	it('reads a regex metacharacter in the name as literal text', () => {
++		expect(
++			extractDeclaration('export interface Anything {\n}\n', 'interface', '.*'),
++		).toBeUndefined()
 +	})
 +
-+	it('returns one base', () => {
-+		const source = 'export interface B extends A {\n}\n'
-+		expect(extractDeclarationBases(source, 'interface', 'B')).toEqual(['A'])
++	it('reads a qualified name literally rather than as a wildcard', () => {
++		expect({
++			literal: extractDeclaration('export interface A.B {\n}\n', 'interface', 'A.B'),
++			wildcard: extractDeclaration('export interface AxB {\n}\n', 'interface', 'A.B'),
++		}).toEqual({ literal: { body: [], bases: [] }, wildcard: undefined })
++	})
++
++	it('returns undefined rather than throwing for a name carrying an unbalanced bracket', () => {
++		expect(
++			extractDeclaration('export interface Widget {\n}\n', 'interface', 'Widget['),
++		).toBeUndefined()
++	})
++
++	it('returns undefined rather than throwing for a name carrying an open group', () => {
++		expect(
++			extractDeclaration('export interface Widget {\n}\n', 'interface', 'Widget('),
++		).toBeUndefined()
++	})
++
++	it('reads a name carrying a dollar sign', () => {
++		const source = 'export interface Widget$ {\n\twalk(): void\n}\n'
++		expect(extractDeclaration(source, 'interface', 'Widget$')).toEqual({
++			body: ['\twalk(): void'],
++			bases: [],
++		})
++	})
++
++	it('returns no base when the declaration extends nothing', () => {
++		expect(extractDeclaration('export interface X {\n}\n', 'interface', 'X')?.bases).toEqual([])
 +	})
 +
 +	it('returns every base in head order and strips generic arguments', () => {
 +		const source = 'export interface B extends A, C<T, U> {\n}\n'
-+		expect(extractDeclarationBases(source, 'interface', 'B')).toEqual(['A', 'C'])
++		expect(extractDeclaration(source, 'interface', 'B')?.bases).toEqual(['A', 'C'])
 +	})
 +
 +	it('reads past a type parameter that carries its own extends', () => {
 +		const source = 'export interface B<T extends A> extends C {\n}\n'
-+		expect(extractDeclarationBases(source, 'interface', 'B')).toEqual(['C'])
++		expect(extractDeclaration(source, 'interface', 'B')?.bases).toEqual(['C'])
 +	})
 +
 +	it('excludes a class implements clause', () => {
 +		const source = 'export class B extends A implements I, J {\n}\n'
-+		expect(extractDeclarationBases(source, 'class', 'B')).toEqual(['A'])
++		expect(extractDeclaration(source, 'class', 'B')?.bases).toEqual(['A'])
 +	})
 +
 +	it('reads a head oxfmt wrapped across lines', () => {
 +		const source = ['export interface B', '\textends A,', '\t\tC {', '}', ''].join('\n')
-+		expect(extractDeclarationBases(source, 'interface', 'B')).toEqual(['A', 'C'])
++		expect(extractDeclaration(source, 'interface', 'B')?.bases).toEqual(['A', 'C'])
 +	})
 +
 +	it('ignores a commented declaration', () => {
@@ -1851,7 +1985,26 @@ index ce0cecf..955c292 100644
 +			'}',
 +			'',
 +		].join('\n')
-+		expect(extractDeclarationBases(source, 'interface', 'B')).toEqual(['A'])
++		expect(extractDeclaration(source, 'interface', 'B')?.bases).toEqual(['A'])
++	})
++
++	it('pairs the body and the bases of the one head it locates', () => {
++		const source = [
++			'export interface B extends Ghost {',
++			'export interface B extends A {',
++			'\twalk(): void',
++			'}',
++			'',
++		].join('\n')
++		expect(extractDeclaration(source, 'interface', 'B')).toEqual({
++			body: ['export interface B extends A {', '\twalk(): void'],
++			bases: ['Ghost'],
++		})
++	})
++
++	it('reports no declaration for a head that opens no column-zero close', () => {
++		const source = ['export interface B extends A {', '\twalk(): void', ''].join('\n')
++		expect(extractDeclaration(source, 'interface', 'B')).toBeUndefined()
  	})
  })
  
@@ -1924,16 +2077,18 @@ index ce0cecf..955c292 100644
  	it("reproduces the good fixture Widget class's exact three methods (excluding the trap members)", () => {
 -		const body = declarationBody(requireText(FIXTURES, 'good/module/Widget.ts'), 'class', 'Widget')
 -		expect(memberMethods(body).filter((method) => method !== 'constructor')).toEqual([
-+		const body = extractDeclarationBody(
+-			'inspect',
+-			'render',
+-			'reset',
+-		])
++		const declaration = extractDeclaration(
 +			requireText(FIXTURES, 'good/module/Widget.ts'),
 +			'class',
 +			'Widget',
 +		)
-+		expect(extractMemberMethods(body).filter((method) => method !== 'constructor')).toEqual([
- 			'inspect',
- 			'render',
- 			'reset',
-@@ -1383,7 +1473,7 @@ describe('memberMethods', () => {
++		expect(
++			extractMemberMethods(declaration?.body ?? []).filter((method) => method !== 'constructor'),
++		).toEqual(['inspect', 'render', 'reset'])
  	})
  })
  
@@ -1942,7 +2097,7 @@ index ce0cecf..955c292 100644
  	it('excludes template and outer-comment faux JSDoc while preserving genuine examples', () => {
  		const source = [
  			'export const text = `',
-@@ -1401,43 +1491,43 @@ describe('examplesFrom', () => {
+@@ -1401,43 +1575,43 @@ describe('examplesFrom', () => {
  			'export function genuine(): void {}',
  			'',
  		].join('\n')
@@ -1994,7 +2149,7 @@ index ce0cecf..955c292 100644
  	})
  
  	it('dedupes a repeated export', () => {
-@@ -1452,7 +1542,7 @@ describe('examplesFrom', () => {
+@@ -1452,7 +1626,7 @@ describe('examplesFrom', () => {
  			'export function walk() {}',
  			'',
  		].join('\n')
@@ -2003,7 +2158,7 @@ index ce0cecf..955c292 100644
  	})
  })
  
-@@ -1476,7 +1566,7 @@ describe('extractExampleLines exact tags and physical adjacency', () => {
+@@ -1476,7 +1650,7 @@ describe('extractExampleLines exact tags and physical adjacency', () => {
  			[],
  			[],
  		])
@@ -2012,7 +2167,7 @@ index ce0cecf..955c292 100644
  	})
  
  	it('makes the last whitespace-separated leading JSDoc span authoritative', () => {
-@@ -1488,23 +1578,25 @@ describe('extractExampleLines exact tags and physical adjacency', () => {
+@@ -1488,23 +1662,25 @@ describe('extractExampleLines exact tags and physical adjacency', () => {
  				extractExampleLines(extractSourceLines(source)).map((line) => line.source),
  			),
  		).toEqual([[], ['export function candidate(): void {}']])
@@ -2042,7 +2197,7 @@ index ce0cecf..955c292 100644
  	})
  
  	it('severs or replaces pending association at the next physical record boundary', () => {
-@@ -1518,11 +1610,11 @@ describe('extractExampleLines exact tags and physical adjacency', () => {
+@@ -1518,11 +1694,11 @@ describe('extractExampleLines exact tags and physical adjacency', () => {
  			'/** @example */\n/** plain */\nexport function candidate(): void {}',
  			'/** plain */\n/**\n * @example title\n */\nexport function candidate(): void {}',
  		]
@@ -2056,7 +2211,7 @@ index ce0cecf..955c292 100644
  	it('excludes faux JSDoc inside an outer comment while preserving a genuine member example', () => {
  		const lines = [
  			'\t/*',
-@@ -1533,16 +1625,16 @@ describe('exampleMethods', () => {
+@@ -1533,16 +1709,16 @@ describe('exampleMethods', () => {
  			'\t */',
  			'\tgenuine(): void',
  		]
@@ -2076,7 +2231,7 @@ index ce0cecf..955c292 100644
  	})
  
  	it('dedupes and sorts the results', () => {
-@@ -1556,11 +1648,11 @@ describe('exampleMethods', () => {
+@@ -1556,11 +1732,11 @@ describe('exampleMethods', () => {
  			'\t */',
  			'\talpha(): void',
  		]
@@ -2090,7 +2245,7 @@ index ce0cecf..955c292 100644
  	})
  
  	it('uses exact titled tags and last-span authority for members', () => {
-@@ -1576,7 +1668,7 @@ describe('exampleMethods', () => {
+@@ -1576,7 +1752,7 @@ describe('exampleMethods', () => {
  			'\t/** plain */ /** @example title */',
  			'\tauthoritative(): void',
  		]
@@ -2099,7 +2254,7 @@ index ce0cecf..955c292 100644
  	})
  
  	it('applies minimal JSDoc span replacement to members', () => {
-@@ -1589,7 +1681,7 @@ describe('exampleMethods', () => {
+@@ -1589,7 +1765,7 @@ describe('exampleMethods', () => {
  			'\t/** @example */ /**/',
  			'\treplaced(): void',
  		]
@@ -2108,7 +2263,7 @@ index ce0cecf..955c292 100644
  	})
  })
  
-@@ -1647,7 +1739,9 @@ describe('broken fixture: missing-example', () => {
+@@ -1647,7 +1823,9 @@ describe('broken fixture: missing-example', () => {
  		).document
  		const fences = extractFences(guideDocument).map((fence) => fence.code)
  		const surfaceNames = ['greet', 'farewell']
@@ -2119,7 +2274,7 @@ index ce0cecf..955c292 100644
  
  		const unexampled = surfaceNames.filter((name) => {
  			if (examples.includes(name)) return false
-@@ -1664,12 +1758,12 @@ describe('broken fixture: phantom-import', () => {
+@@ -1664,12 +1842,12 @@ describe('broken fixture: phantom-import', () => {
  			requireText(FIXTURES, 'broken/phantom-import/guides/src/widget.md'),
  		).document
  		const fences = extractFences(guideDocument).map((fence) => fence.code)
@@ -2134,37 +2289,8 @@ index ce0cecf..955c292 100644
  				.filter((entry) => entry.specifier === '@src/core')
  				.flatMap((entry) => findMissing(entry.names, exportNames)),
  		)
-@@ -1699,4 +1793,28 @@ describe('successor runtime surface', () => {
- 			moduleKeys: false,
- 		})
- 	})
-+
-+	it('exposes every verb-first helper and retires its noun-phrase predecessor', () => {
-+		const renamed = {
-+			computeModuleKey: 'moduleKey',
-+			computeSymbolKey: 'symbolKey',
-+			extractCellLinks: 'cellLinks',
-+			extractDeclarationBody: 'declarationBody',
-+			extractExampleMethods: 'exampleMethods',
-+			extractExamples: 'examplesFrom',
-+			extractExports: 'exportsFrom',
-+			extractFenceImports: 'fenceImports',
-+			extractHidden: 'hiddenFrom',
-+			extractMemberMethods: 'memberMethods',
-+			findFirstCode: 'firstCode',
-+			findKindIndex: 'kindIndex',
-+			findMissingSymbols: 'missingSymbols',
-+			normalizeIdentifier: 'identifierOf',
-+			selectSectionBlocks: 'sectionBlocks',
-+		}
-+		expect({
-+			absent: Object.keys(renamed).filter((name) => !Object.hasOwn(core, name)),
-+			surviving: Object.values(renamed).filter((name) => Object.hasOwn(core, name)),
-+		}).toEqual({ absent: [], surviving: [] })
-+	})
- })
 diff --git a/tests/src/core/sources/Source.test.ts b/tests/src/core/sources/Source.test.ts
-index 253a35c..31b59dd 100644
+index 253a35c..77748f8 100644
 --- a/tests/src/core/sources/Source.test.ts
 +++ b/tests/src/core/sources/Source.test.ts
 @@ -2,9 +2,9 @@ import {
@@ -2277,7 +2403,7 @@ index 253a35c..31b59dd 100644
  	})
  
  	it('surface() does not alias excess ancestors to an unrelated root inventory key', () => {
-@@ -745,6 +745,125 @@ describe('Source', () => {
+@@ -745,6 +745,190 @@ describe('Source', () => {
  		expect(source.methods('Nonexistent')).toEqual([])
  	})
  
@@ -2379,6 +2505,71 @@ index 253a35c..31b59dd 100644
 +		expect(source.methods('CursorStoreInterface')).toEqual(['cursor'])
 +	})
 +
++	it('methods() reads the first declaring file and ignores a later file declaring the same name', () => {
++		const source = new Source({
++			files: {
++				'module/first.ts': [
++					'export interface ReadInterface {',
++					'\tread(): string',
++					'}',
++					'export interface StoreInterface extends ReadInterface {',
++					'\topen(): void',
++					'}',
++					'',
++				].join('\n'),
++				'module/second.ts': [
++					'export interface StoreInterface {',
++					'\twrite(value: string): void',
++					'}',
++					'',
++				].join('\n'),
++			},
++			module: 'module',
++		})
++		expect(source.methods('StoreInterface')).toEqual(['open', 'read'])
++	})
++
++	it('methods() keeps its keyword and reads no member from a same-named class base', () => {
++		const source = new Source({
++			files: {
++				'module/types.ts': [
++					'export interface StoreInterface extends Store {',
++					'\topen(): void',
++					'}',
++					'',
++				].join('\n'),
++				'module/Store.ts': [
++					'export class Store {',
++					'\tread(): string {',
++					"\t\treturn ''",
++					'\t}',
++					'}',
++					'',
++				].join('\n'),
++			},
++			module: 'module',
++		})
++		expect(source.methods('StoreInterface')).toEqual(['open'])
++	})
++
++	it('methods() reads no member from a qualified base', () => {
++		const source = new Source({
++			files: {
++				'module/types.ts': [
++					'export interface StoreInterface extends external.Store {',
++					'\topen(): void',
++					'}',
++					'export interface Store {',
++					'\tread(): string',
++					'}',
++					'',
++				].join('\n'),
++			},
++			module: 'module',
++		})
++		expect(source.methods('StoreInterface')).toEqual(['open'])
++	})
++
 +	it('methods() walks a class chain and still excludes the constructor', () => {
 +		const source = new Source({
 +			files: {
@@ -2403,6 +2594,36 @@ index 253a35c..31b59dd 100644
  	it('exists() is true for an exact key', () => {
  		const source = new Source({ files: GOOD_FILES, module: 'module' })
  		expect(source.exists('module/Widget.ts')).toBe(true)
+@@ -867,6 +1051,29 @@ describe('Source', () => {
+ 		expect(source.examples('WidgetInterface')).toEqual(['walk'])
+ 	})
+ 
++	it('examples(name) reads only the named body and follows no extends clause', () => {
++		const source = new Source({
++			files: {
++				'module/types.ts': [
++					'export interface ReadInterface {',
++					'\t/** @example */',
++					'\tread(): string',
++					'}',
++					'export interface StoreInterface extends ReadInterface {',
++					'\t/** @example */',
++					'\topen(): void',
++					'}',
++					'',
++				].join('\n'),
++			},
++			module: 'module',
++		})
++		expect({
++			own: source.examples('StoreInterface'),
++			inherited: source.methods('StoreInterface'),
++		}).toEqual({ own: ['open'], inherited: ['open', 'read'] })
++	})
++
+ 	it("examples(name) reads the class body's @example members under the implementer's own name", () => {
+ 		const files = {
+ 			'src/core/types.ts': [
 diff --git a/tests/src/core/sources/SourceManager.test.ts b/tests/src/core/sources/SourceManager.test.ts
 index c38dad9..6012ae2 100644
 --- a/tests/src/core/sources/SourceManager.test.ts
