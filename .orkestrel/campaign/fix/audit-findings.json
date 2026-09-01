@@ -1,0 +1,113 @@
+{
+ "agent": [
+  "s08-16: dispose and apply as breaking \u2014 rename MessageInterface, ContextFormatInterface, AuthorityContextInterface, SectionInterface to the bare {Entity} data form (InstructionInterface stays: the bare name is the class)",
+  "s08-24: collapse the Conversation constructor to constructor(options?: ConversationOptions), delete the seed ?? options.snapshot precedence and its TSDoc paragraph; ConversationManager.add is the in-package caller",
+  "s08-21: AgentContext.#attach reads no # field and calls no sibling \u2014 extract it as an exported helper beside attachImages, or fold it; the ContextSectionSourceInterface members follow the s08-23 rename",
+  "report amendment: relabel s08-12 as applied with the deferred remainder named"
+ ],
+ "brief": [
+  "s13-20 residue: recount guides/brief.md:302 ('four arrayShape(referenceShape) partitions') with the source doc it mirrors, alongside :76, :109, :618, :637, :1193"
+ ],
+ "browser": [
+  "s04b-11: move BrowserPagesFunction beside BrowserEmulationManagerInterface under the context-state section, BrowserTeardownFunction beside its helper's section; TSDoc 'Returns the context's live pages at call time'",
+  "s04-21 example half: add a runnable @example to every class that stays barrelled after the interning rows land",
+  "s04b-07: rename BrowserFlight/BrowserFlightInterface/BrowserFlightFunction to BrowserTransition/BrowserTransitionInterface/BrowserTransitionFunction and the attempt accessor to pending (new, unpublished symbols); fix the guide table order for the two rows",
+  "s04b-08: move the settleBrowserTeardown guide row into alphabetical position and add it to the import fence and usage lines",
+  "s04-24: restate the BROWSER_WAIT_POLL_INTERVAL_MS row as the interval every DOM wait polls at",
+  "settleBrowserTeardown: retain the first failure with a settled boolean so a thrown undefined or null is kept",
+  "report amendment: record the BrowserCodegen #start/#stop extension under s04b-06 with its rule clause"
+ ],
+ "console": [
+  "s09-13: repoint the {@link} at src/server/types.ts:15 to ./validators.js and sweep src/server for the same form; retitle or split the guides/console.md:683 fence so the validators have their own"
+ ],
+ "contract": [
+  "s03-07 rename half: rename isValidISOInstant to matchesISOInstant with its guide row and the classifyFormat call site",
+  "s03-24 siblings: give ShapeCloner, SchemaCloner, and JSONCloner the class-scoped frozen empty-peer pattern main landed in ContractCompiler (7e762ab), dropping their per-instance #empty* fields",
+  "s03-02 guide: move the CONTRACT_CODES row into the ContractError section beside ContractCode",
+  "report amendment: mark s03-24 superseded in the Dispositions list"
+ ],
+ "database": [
+  "s05-01/s05-07: correct the guide Tests index \u2014 strike the page-matrix clause from the validators.test.ts bullet, credit helpers.test.ts with validatePage/findColumn/resolvePrimary/resolveColumns, add a bullet for tests/src/server/inferers.test.ts",
+  "s05-18: re-wrap the comment paragraphs at SQLiteDriver.ts:247-252, src/browser/types.ts:3, and src/server/helpers.ts:94 and recast the stranded-preposition sentences",
+  "s05-04: delete the invented-audience sentence for escapeLike from src/server/compilers.ts:118-119 and guides/database.md:111, and remove escapeLike as the orphan the dossier ruled (breaking row)"
+ ],
+ "html": [
+  "s08-02: reword the HTMLSource guide row to the TSDoc sentence ('entry index is the original-input offset that normalized offset index came from')",
+  "s08-06: name the family as the name, element, and URL predicates at guides/html.md:69 and :93; move isEmptyElement above mergeText in the HTML.ts import block",
+  "report amendment: disclose the third-person rewrite of isEmptyElement's TSDoc in the residue section"
+ ],
+ "indexeddb": [
+  "s16-08 branches: collapse each isArray overload pair in src/browser/IndexedDBStore.ts (get, has, remove) into one call whose argument is narrowed once, or state the overload-selection reason in a comment",
+  "cross-package: guide unit \u2014 make Source.methods follow extends so an interface can share a member set; then indexeddb declares the shared member set once and IndexedDBStoreInterface extends it"
+ ],
+ "interpret": [
+  "s12-21: delete the parenthetical at src/core/helpers.ts:201-202 and re-prove with separate sweeps for 'AGENTS' and '\u00a7' over src/"
+ ],
+ "markdown": [
+  "s10-02: repoint the tests/src/core/parsers.test.ts:36-37 comment to compilers.test.ts",
+  "s10-06: replace the anonymous return spellings in guides/markdown.md Helpers rows with HeadingMatch, FenceMatch, CodeSpanMatch, LinkBounds, EmphasisBounds, TableCollection, ListCollection"
+ ],
+ "mcp": [
+  "s01-06: write 'carries ttlMs and cacheScope' at src/core/MCPServer.ts:462"
+ ],
+ "middleware": [
+  "s11b-11: give src/server/types.ts:177 the three-step mime chain its twin at :141-143 states",
+  "s11-08 guide: write the Validators \u2014 core intro as a complete sentence or drop it to match the sibling sections"
+ ],
+ "ndjson": [
+  "s18-22: rewrite the tests/src/core/NDJSONParser.test.ts:610-616 rationale to attribute the swallow to parseJSONAs from @orkestrel/contract"
+ ],
+ "ollama": [
+  "s18-34: declare OllamaErrorOptions { readonly cause?: unknown } in src/server/types.ts and type the OllamaError constructor's options parameter with it; guide row"
+ ],
+ "pool": [
+  "s18-17: rename the union member and align every remaining cleanup-hook site (guides/pool.md:121-149, src/core/types.ts:85, src/core/Pool.ts:136, #cleanupError/#completeCleanup/#failCleanup and the cleanup/cleanups locals) to destroy in one change; keep the failure-category vocabulary consistent with the error code",
+  "s18-18: state both synchronous throw conditions on acquire \u2014 a non-native signal, or a signal whose aborted read fails"
+ ],
+ "process": [
+  "s13-17: rewrite guides/process.md:203-204 and src/server/types.ts:4-8 to the criterion the table applies (contracts the Node-side face declares), and add one sentence to the SupervisorFace row cross-referencing the Supervisor internals note at :1396"
+ ],
+ "queue": [
+  "s16-19 guide: rewrite guides/queue.md:116 to state that enqueue uses readOption and validateOption while the constructor uses validateOption alone"
+ ],
+ "reason": [
+  "s07-10: rename the element parameter in the twelve helpers to its domain noun (rule, equation, fact, inference) once s07-06 has landed in the same unit",
+  "successor: isWithinBounds carries the is* prefix on a non-guard predicate \u2014 rename to matchesBounds in the same unit"
+ ],
+ "relation": [
+  "s17-09/s17-13: amend guides/relation.md:317 (drop isRelationDescriptor, add readColumn and countAttached) and add a bullet for tests/src/core/validators.test.ts",
+  "s17-11 rename half: rename RelationManager models() to names() with its interface member, guide row, and tests"
+ ],
+ "scaffold": [
+  "s02-13: rename const local / its pair at src/bin/CLI.ts:502-521 to base and remainder (nouns)",
+  "s02-05: rename refused and incomplete at src/bin/CLI.ts:578,581 to versionRefusal and fetchRefusal",
+  "s02-04: replace the ReadAllowance record with an entity holding #remaining, a readonly remaining getter, and spend(bytes), threaded through Upstream's private reads; guide row and tests",
+  "s02-07: rewrite src/core/helpers.ts:226's first sentence to the active form the guide row carries"
+ ],
+ "server": [
+  "s14-02: export one selection leaf (pickCoding) from helpers.ts used by both negotiateEncoding and Negotiator.encoding; update codingQuality's TSDoc and add the guide row",
+  "s14-09: sweep the remaining PROPOSAL \u00a7/\u00a7N citations in tests/ (Server.test.ts:27,509; Negotiator.test.ts:5; factories.test.ts:6; setup.ts:3; setupServer.ts:7)"
+ ],
+ "sqlite": [
+  "s18-30 sibling: correct README.md:27 to guides/sqlite.md"
+ ],
+ "table": [
+  "s14-24: give the extracted KeyManager a distinct term in guides/table.md:839-846 and add the tests/src/core/tables/KeyManager.test.ts bullet to the Tests list",
+  "s14-29: rewrite guides/table.md:178-181 to the shipped constructor order (guard the handed value, own a copy, guard and audit the copy) and where guard, constructor, and parseTable still agree"
+ ],
+ "test": [
+  "s11-31: add a Limits row ruling the outcome triple ships because the package declares no runtime dependency, naming the default divergence from @orkestrel/contract's Result; add the same warning to the Result surface row",
+  "s11-35: add a sentence beside the Core Helpers table naming dropRegistration as the mechanic createSignal's paths share, reachable only by a consumer holding its own registration list"
+ ],
+ "toolbox": [
+  "s10-29: replace the causal since with because at guides/toolbox.md:335"
+ ],
+ "workflow": [
+  "s06-04: replace the RunHolder record with a run-scoped entity (#runner, readonly runner getter, hold(runner?)) declared as RunHolderInterface in types.ts and minted per #execute",
+  "s06-17: extract createWorkflowTree(definition, bail, captured) into src/core/factories.ts and route WorkflowManager, WorkflowRunner, and the factory through it"
+ ],
+ "workspace": [
+  "empty batch: state in guides/workspace.md:357-361 that an empty list returns true and pin it in Workspace.test.ts and WorkspaceManager.test.ts",
+  "cross-package (template unit): align template's remove(ids) to partial-apply-and-report and state the one batch meaning in guides/template.md"
+ ]
+}

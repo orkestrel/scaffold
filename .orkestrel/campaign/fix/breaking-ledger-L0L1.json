@@ -648,7 +648,7 @@
     "file": "src/browser/types.ts:165"
    }
   ],
-  "guide": "guides/indexeddb.md IndexedDBUpgradeContext Surface row, Methods rows for create/drop/store/index/deindex, auto-commit paragraph naming those members, and the context.create('meta', …) fence",
+  "guide": "guides/indexeddb.md IndexedDBUpgradeContext Surface row, Methods rows for create/drop/store/index/deindex, auto-commit paragraph naming those members, and the context.create('meta', \u2026) fence",
   "prerequisite": [],
   "summary": "Remove IndexedDBUpgradeContext.create, drop, store, index, and deindex and extract stores.create/stores.drop plus indexes.create/indexes.drop, after resolving the collision with the existing stores name list."
  },
@@ -734,7 +734,7 @@
     "file": "src/core/SSEParser.ts:147"
    }
   ],
-  "guide": "guides/sse.md lines 12, 34, 42, 119, 128, 146, 156, 157, 170; TSDoc prose at src/core/types.ts:82,85,88, SSEParser.ts:29,84, factories.ts:17,36, errors.ts:17,46; tests tests/src/core/factories.test.ts:23,27 and SSEParser.test.ts",
+  "guide": "guides/sse.md lines 12, 34, 42, 119, 128, 146, 156, 157, 170; TSDoc prose at src/core/types.ts:82,85,88, SSEParser.ts:29,84, factories.ts:17,36, errors.ts:17,31,46; tests tests/src/core/factories.test.ts:23,27 and SSEParser.test.ts",
   "prerequisite": [],
   "summary": "Rename the published reset() to clear() on the interface and the class; keep the private #clear() (no collision, proven by tsc per the DRIFT-RESHAPE lane); update every prose mention, guide line, and test call. Orchestrator fill-in: the Grok chunk omitted this row."
  },
