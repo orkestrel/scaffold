@@ -299,7 +299,7 @@
  },
  {
   "package": "agent",
-  "id": "s18 ProviderDelta",
+  "id": "referral s18 ProviderDelta",
   "kind": "rename",
   "edits": [
    {
