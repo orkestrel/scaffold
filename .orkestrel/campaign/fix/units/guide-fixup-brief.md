@@ -113,4 +113,41 @@ Decide, record, and carry on from the exact wording of a test title or a TSDoc s
 
 ## Subjective findings
 
-(appended by the Orchestrator when the subjective lane returns)
+Each with its ruling; these are part of this unit's scope and acceptance.
+
+5. **One located head, not two locators.** `extractDeclarationBody` (`helpers.ts:1123-1141`) and
+   `extractDeclarationBases` (`:1172-1198`) are line-for-line duplicates up to the head match,
+   `matchesDeclaration` exists only to keep the two copies in step, and on an unterminated head
+   they can locate different declarations (`extractDeclarationBody` keeps scanning for a later
+   match; `extractDeclarationBases` returns from the first), so `Source.#members` can pair one
+   declaration's body with another's bases. `types.ts:319-324` already declares `DeclarationHead`.
+   Ruling: one exported leaf locates the head once and returns the body and the bases together
+   as one record (name it under `extract*` for what it extracts, and reuse or extend
+   `DeclarationHead` as its return type in `types.ts`); the two locators and `matchesDeclaration`
+   are deleted unless one keeps a boundary of its own (the close-brace scan and raw-line
+   alignment stay inside the leaf). Callers in `Source.ts` destructure the record. The guide's
+   Surface rows, `@example` blocks, and the sentence at `guides/guide.md:321` move with it, and
+   the tests cover the leaf directly. This also closes finding 3's second door and the
+   `both locators` count at `guides/guide.md:321` (a count over a set that can grow; name the
+   members or recast the sentence).
+6. **Prose claims without executed assertions.** Add to `tests/src/core/sources/Source.test.ts`:
+   the two-file case from finding 2 (first declaring file wins; the second file's members are
+   not reported); the keyword-keeping negative case (an interface extends a name declared only
+   as a class: only its own members come back); the qualified-base case (`extends A.B`
+   contributes no members). Where a clause describes behavior the leaf does not have after the
+   ruling, correct the clause rather than the test.
+7. **`examples(name)` asymmetry.** `methods(name)` follows `extends`; `examples(name)` reads only
+   the named declaration's own body. Say so in the `examples` row of `guides/guide.md` (around
+   `:214-217`) and in the extraction-model paragraph, and in the `SourceInterface.examples` TSDoc.
+8. **`#members` returns `undefined` for two facts** (`Source.ts:244, 265`): no such head, and a
+   name already on the visit path. Ruling: return `[]` for a visited name so `undefined` keeps
+   one meaning; keep the comment at `:234-238` true.
+9. **Finding 3 (escape) also covers the direct `head` door**: `matchesDeclaration('export
+   interface Anything {', 'interface', '.*')` returned true. After the ruling in finding 5 the
+   published leaf takes `name`; the escape applies there and its test names a metacharacter.
+
+Acceptance criteria 6 to 9 follow these findings: 6. exactly one exported declaration locator
+exists, `Source.ts` calls it once per file per name, and the guide's Surface table and prose name
+it and no deleted locator; 7. the three prose claims each have an executed assertion in
+`Source.test.ts`; 8. the `examples` asymmetry is stated in the guide row, the paragraph, and the
+TSDoc; 9. `#members` returns `[]` for a visited name and the comment describes both returns.

@@ -10,9 +10,9 @@ Bench: Sol dark; both reviewer lanes on the writer's engine (Opus 5) in clean co
 | --- | --- | --- | --- | --- | --- |
 | 1 rows applied/refused/stopped | CONFIRMED | — | CONFIRMED | — | stands |
 | 2 no old name survives; contracts in `types.ts` | BROKEN: the retirement literal at `tests/src/core/helpers.test.ts:1797-1819` spells every old name; parity's SB direction already fails on a reintroduced export, so the literal is redundant coverage | — | CONFIRMED on the report's own carve-out | — | objective upheld: delete the literal; criterion 1 stands as written |
-| 3 ruled forms landed | CONFIRMED (every ledger spelling verbatim; `extends` chain proved from a real pair) | SUBJECTIVE-PENDING | — | — | — |
-| 4 no alias or shim | CONFIRMED (`export *` barrel; no `@deprecated`, no re-export) | SUBJECTIVE-PENDING | — | — | — |
-| 5 guide rows, fences, examples; parity list; executed assertions | — | SUBJECTIVE-PENDING | CONFIRMED (no `INTERNAL` list; executed `@example` values quoted) | — | — |
+| 3 ruled forms landed | CONFIRMED (every ledger spelling verbatim; `extends` chain proved from a real pair) | CONFIRMED | — | — | stands |
+| 4 no alias or shim | CONFIRMED (`export *` barrel; no `@deprecated`, no re-export) | CONFIRMED | — | — | stands |
+| 5 guide rows, fences, examples; parity list; executed assertions | — | BROKEN: three prose claims about `Source.methods` (located declaration versus cross-file union; keyword-keeping walk; qualified base) carry no executed assertion, and the first is false against the code | CONFIRMED on rows and fences (no `INTERNAL` list; executed `@example` values quoted) | — | subjective upheld; the checker's reading covered the rows and fences, not the behavior claims |
 | 6 only owned files | CONFIRMED, with `README.md` outside both lists; the edit was required (`missingSymbols` named at `:33,:133`) | — | CONFIRMED | — | `README.md` granted retroactively; every later brief owns the package README |
 | 7 gates as reported | — | — | CONFIRMED on quoted codes | GREEN: every gate exit 0 (359 src, 111 policy, 46 config, 12 setup, 27 guides) | stands |
 | 8 report hides no criterion failure | CONFIRMED (criterion 1's miss is disclosed with its reason) | — | — | — | stands |
@@ -31,4 +31,16 @@ Findings outside the claims (objective lane), with rulings:
   class. Recorded as a bound of the member-resolution capability for the next change, beside
   `Source.examples()` not following the chain.
 
-Terminal lines so far: objective `FAIL 2`; checker `PASS`; verifier GREEN; subjective pending.
+Findings outside the claims (subjective lane), with rulings:
+
+- **S-F1** `guides/guide.md:321` tallies `both locators`. Ruling: name the members or recast.
+- **S-F2 / R3** the two locators duplicate the head scan and can locate different declarations
+  on an unterminated head; `DeclarationHead` already exists. Ruling: one exported leaf returns
+  body and bases together; the duplicates and `matchesDeclaration` go unless one keeps a boundary.
+- **S-F3** `examples(name)` does not follow `extends` while `methods(name)` does, undocumented.
+  Ruling: state the asymmetry in the guide row, the paragraph, and the TSDoc.
+- **S-F4** `#members` returns `undefined` for two facts. Ruling: `[]` for a visited name.
+- **R1** matches objective F2 (escape). **R2** matches objective F1: ruled first declaring file.
+
+Terminal lines: objective `FAIL 2`; subjective `FAIL 5`; checker `PASS`; verifier GREEN. Fix round
+`guide-fixup` (Opus implementer) carries every ruling above; round 2 follows.
