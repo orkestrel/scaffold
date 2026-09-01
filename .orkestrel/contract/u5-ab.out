@@ -1,0 +1,9 @@
+cmd: u5-patch stacked on acc2u4, parity + marginal A/B, 2026-09-01
+U5 patched -> /tmp/claude-0/-home-user/3ec60757-0c2d-5c44-9e42-96e2e2ce9d94/scratchpad/dists/acc2u5/index.js
+=== parity (U1 tree dist vs full stack +u5)
+comparisons: 1170
+PARITY: IDENTICAL
+=== marginal A/B (acc2u4 vs +u5): audit-deep carries the union; audit-medium is the union-free control
+audit-deep: A 16385 ns/op  B 14148 ns/op  B/A median 0.857 (ratio p25 0.832 p75 0.900)
+audit-medium: A 3675 ns/op  B 3591 ns/op  B/A median 0.979 (ratio p25 0.941 p75 1.020)
+is-medium: A 1894 ns/op  B 1863 ns/op  B/A median 0.994 (ratio p25 0.948 p75 1.038)

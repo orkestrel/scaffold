@@ -1,0 +1,9 @@
+cmd: cumulative A/B - base859 (0.0.14) vs full proven stack u1+u2+u2b+u3+u4+u5, 2026-09-01
+is-medium: A 3157 ns/op  B 2165 ns/op  B/A median 0.718 (ratio p25 0.661 p75 0.747)
+parse-medium: A 2633 ns/op  B 2352 ns/op  B/A median 0.876 (ratio p25 0.855 p75 0.914)
+audit-medium: A 4952 ns/op  B 3563 ns/op  B/A median 0.732 (ratio p25 0.713 p75 0.748)
+explain-medium: A 4710 ns/op  B 3954 ns/op  B/A median 0.832 (ratio p25 0.802 p75 0.865)
+is-deep: A 7974 ns/op  B 6242 ns/op  B/A median 0.784 (ratio p25 0.745 p75 0.809)
+audit-deep: A 23533 ns/op  B 14838 ns/op  B/A median 0.635 (ratio p25 0.615 p75 0.661)
+is-list48: A 14427 ns/op  B 12712 ns/op  B/A median 0.890 (ratio p25 0.852 p75 0.915)
+audit-list48: A 23259 ns/op  B 21511 ns/op  B/A median 0.931 (ratio p25 0.900 p75 0.954)

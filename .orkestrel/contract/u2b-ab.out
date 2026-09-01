@@ -1,0 +1,10 @@
+cmd: u2b stacked patch + parity + ab-inproc, 2026-09-01
+U2b audit patched -> /tmp/claude-0/-home-user/3ec60757-0c2d-5c44-9e42-96e2e2ce9d94/scratchpad/dists/u2b/index.js
+=== parity (original vs u2+u2b)
+comparisons: 1170
+PARITY: IDENTICAL
+=== A/B (original vs u2+u2b)
+is-medium: A 2757 ns/op  B 2333 ns/op  B/A median 0.838 (ratio p25 0.795 p75 0.886)
+audit-medium: A 4959 ns/op  B 4330 ns/op  B/A median 0.880 (ratio p25 0.857 p75 0.917)
+is-deep: A 8204 ns/op  B 7087 ns/op  B/A median 0.867 (ratio p25 0.844 p75 0.882)
+audit-deep: A 20689 ns/op  B 19383 ns/op  B/A median 0.932 (ratio p25 0.915 p75 0.959)

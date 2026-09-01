@@ -1,0 +1,11 @@
+cmd: compose acc2 (U1 tree dist + u2 + u2b), stack u3, parity + marginal A/B, 2026-09-01
+U2 guard patched -> /tmp/claude-0/-home-user/3ec60757-0c2d-5c44-9e42-96e2e2ce9d94/scratchpad/dists/acc2pre/index.js
+U2b audit patched -> /tmp/claude-0/-home-user/3ec60757-0c2d-5c44-9e42-96e2e2ce9d94/scratchpad/dists/acc2/index.js
+U3 patched -> /tmp/claude-0/-home-user/3ec60757-0c2d-5c44-9e42-96e2e2ce9d94/scratchpad/dists/acc2u3/index.js
+=== parity (U1 tree dist vs full stack u2+u2b+u3)
+comparisons: 1170
+PARITY: IDENTICAL
+=== marginal A/B (acc2 vs acc2+u3)
+is-medium: A 2168 ns/op  B 1979 ns/op  B/A median 0.909 (ratio p25 0.870 p75 0.980)
+is-deep: A 7422 ns/op  B 6637 ns/op  B/A median 0.885 (ratio p25 0.841 p75 0.928)
+audit-deep: A 19912 ns/op  B 19036 ns/op  B/A median 0.964 (ratio p25 0.915 p75 0.996)
