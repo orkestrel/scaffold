@@ -1,0 +1,63 @@
+cmd: bash run-typefixture.sh (t6 createContract tier, t7 optional tier), 2026-09-01
+=== tier: t6-createcontract
+--- run 1
+Files:                         95
+Symbols:                    36003
+Types:                        560
+Instantiations:               562
+Memory used:               70634K
+Parse time:                 0.40s
+Bind time:                  0.16s
+Check time:                 0.10s
+Total time:                 0.71s
+--- run 2
+Files:                         95
+Symbols:                    36003
+Types:                        560
+Instantiations:               562
+Memory used:               67760K
+Parse time:                 0.41s
+Bind time:                  0.17s
+Check time:                 0.11s
+Total time:                 0.75s
+--- run 3
+Files:                         95
+Symbols:                    36003
+Types:                        560
+Instantiations:               562
+Memory used:               69767K
+Parse time:                 0.38s
+Bind time:                  0.15s
+Check time:                 0.11s
+Total time:                 0.70s
+=== tier: t7-optional
+--- run 1
+Files:                         95
+Symbols:                    35194
+Types:                        353
+Instantiations:               824
+Memory used:               70093K
+Parse time:                 0.54s
+Bind time:                  0.17s
+Check time:                 0.08s
+Total time:                 0.85s
+--- run 2
+Files:                         95
+Symbols:                    35194
+Types:                        353
+Instantiations:               824
+Memory used:               69803K
+Parse time:                 0.36s
+Bind time:                  0.16s
+Check time:                 0.09s
+Total time:                 0.65s
+--- run 3
+Files:                         95
+Symbols:                    35194
+Types:                        353
+Instantiations:               824
+Memory used:               69622K
+Parse time:                 0.38s
+Bind time:                  0.17s
+Check time:                 0.09s
+Total time:                 0.69s
