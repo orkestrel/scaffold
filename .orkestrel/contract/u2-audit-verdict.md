@@ -22,3 +22,7 @@ Subject: U2 `readValue` lazy construction and the bounded `preview` fast path (t
 ## Ruling
 
 Round 1 FAILS on documentation drift alone; every code claim held. U2f carries the two prose prescriptions verbatim, the margin sentence, and the containment repair with its red-first proof. The fix round closes on the Orchestrator's re-run evidence (records, parity, scoped suite with the new pin red on the pre-fix tree and green after) and a `checker` pass, per `.claude/rules/quality.md` § Rounds and verdicts.
+
+## Fix round closure (U2f, 2026-09-01)
+
+U2f (`u2f-brief.md`, `u2f-report.md`, `builder` on Sonnet) landed the two TSDoc prescriptions verbatim, the margin note, and the `subject` read-once repair with its pin. Orchestrator evidence (`u2f-acceptance.out`): the read-once mutation reddens exactly the new pin (1 failed of 229) and restores exactly to 229 green; the hostile record differs from 0.0.15 on the alternating-subject vector alone (raw `Error` → `ContractError` `door: thing could not be read`); preview record identical; parity IDENTICAL in both forms; no bare `stringify` token and no superseded sentence remain. `checker` PASS on every item (`u2f-checker-report.md`); `verifier` GREEN (`u2f-verifier-report.md`: `src:core` 1316, policy 111, config 46, setup 61, guides 65). Round closed per `.claude/rules/quality.md` § Rounds and verdicts (verbatim adoption plus the repair's red-first proof).
