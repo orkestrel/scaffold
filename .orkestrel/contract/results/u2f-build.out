@@ -1,0 +1,51 @@
+
+> @orkestrel/contract@0.0.15 build
+> npm run clean && npm run build:src
+
+
+> @orkestrel/contract@0.0.15 clean
+> node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+
+
+> @orkestrel/contract@0.0.15 build:src
+> npm run build:src:core
+
+
+> @orkestrel/contract@0.0.15 build:src:core
+> vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 18 modules transformed.
+rendering chunks...
+
+[unplugin:dts] Start generate declaration files...
+[unplugin:dts] Start bundling declaration files...
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+[unplugin:dts] Declaration files built in 4090ms.
+
+computing gzip size...
+dist/src/core/index.js  399.29 kB │ gzip: 93.15 kB │ map: 738.72 kB
+
+transforming...
+✓ 18 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  404.96 kB │ gzip: 93.94 kB │ map: 738.72 kB
+
+✓ built in 5.54s
+[33m[PLUGIN_TIMINGS] [0mYour build spent 91% of 5.5s inside plugin hooks (5.0s).
+Measured inside the callback, so queue time is excluded and time the callback itself awaited is not:
+  - unplugin-dts buildStart (38%, 2.1s, 2 calls)
+  - unplugin-dts writeBundle (34%, 1.9s, 2 calls)
+Those rows are 73% of the build; the rest of the 91% is below.
+Not measurable — 1 hook whose calls overlap, so elapsed time covers work other calls were doing. Profile with `node --cpu-prof`:
+  - orkestrel-environment-boundary resolveId (154 calls)
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+
+> @orkestrel/contract@0.0.15 copy
+> node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
