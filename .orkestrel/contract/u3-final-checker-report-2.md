@@ -1,0 +1,9 @@
+# U3 final tree checker report, run 2 (checker / Sonnet; immutable; brief `u3-final-checker-brief-2.md`)
+
+1. Cross-reference sweep (`\b(above|below)\b`, case-insensitive, added lines) — met. Ran over every `+`-prefixed line in `tmp/units/u3-final2-diff.patch` (covers `guides/contract.md`, `src/core/ContractCompiler.ts`, `src/core/combinators.ts`, `src/core/helpers.ts`, `tests/src/core/compilers.test.ts`, `tests/src/core/helpers.test.ts`, `tests/src/core/integration.test.ts`): no matches. The two target lines read (diff lines 379 and 405) `so the preceding repeated answers are the strip rather` and `so the preceding empty report is the argument being`, confirmed by direct read.
+2. The two edits are the only differences between `u3-final-diff.patch` and `u3-final2-diff.patch` — met. Both files are 489 lines; the only differing lines are the two named replacements; the regions before, between, and after them (through the trailing `OWNED_MEMBERS.length).toBe(217)` hunk) match exactly.
+3. Vocabulary sweep (`\b(should|simply|easy|easier|just|currently|now|via|e\.g\.|i\.e\.|etc\.)\b`, case-insensitive, added lines) — not met: one hit at diff line 18 (`guides/contract.md`, hunk `@@ -252,7 +253,7 @@`): "**Both are pinned now**, so the next export that moves this number fails a test instead of quietly falsifying this paragraph." `now` is temporal (banned sense). The line is unchanged from `u3-final-diff.patch` line 17; the removed `-` line carries the same `now`, and the only textual change on the line is `216` → `217`, so the hit predates the fix round and is not something the Orchestrator's edits introduced.
+
+Verdict: FAIL
+
+Referrals: whether the pre-existing `now` hit at `guides/contract.md` (hunk `@@ -252,7 +253,7 @@`) is in scope for this fix round, given it is untouched by the two named edits and was already present when run 1 characterized the sweep as clean — addressed to the Orchestrator.
