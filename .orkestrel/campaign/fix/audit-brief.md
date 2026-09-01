@@ -16,9 +16,13 @@ required.
 
 Your launch prompt names the package, its repository path, its dossier
 (`.orkestrel/campaign/fix/<package>.md`), its writer report
-(`.orkestrel/campaign/fix/reports/<package>.md`), and the diff evidence. The tree is
-uncommitted: read the actual working-tree diff with `git -C <repo> diff` and `git -C <repo>
-status --short` yourself — the diff, not the report, is the subject.
+(`.orkestrel/campaign/fix/reports/<package>.md`), and the commit hashes that carry the unit's
+changes. Read the actual committed diff yourself with `git -C <repo> show --stat <hash>` and
+`git -C <repo> show <hash>` for every named hash — the diff, not the report, is the subject.
+Ignore the neighbouring re-pin commit ("Re-pin @orkestrel/contract to the 0.0.15 release"): it
+touches only the manifest and lockfile and is not part of the unit. Where the prompt names a
+second hash (a follow-up or a merge), audit it as part of the same unit and read the report's
+closing sections for what it carries.
 
 ## Claims to rule on
 
