@@ -1,0 +1,63 @@
+=== medium-explain ===
+total sampled 2101 ms; frames 71
+ 19.0%  (anonymous) @ index.js:2419
+ 15.0%  preview @ index.js:3100
+ 11.6%  (anonymous) @ index.js:7881
+  8.7%  attempt @ index.js:2162
+  8.6%  (garbage collector) @ :0
+  5.3%  node @ index.js:7801
+  4.5%  entries @ index.js:7811
+  3.8%  (anonymous) @ index.js:6908
+  2.8%  (anonymous) @ index.js:2528
+  2.0%  plans @ index.js:7865
+  1.9%  createNumberFaults @ index.js:3228
+  1.8%  readValue @ index.js:2199
+  1.7%  createArrayFaults @ index.js:3282
+  1.6%  (anonymous) @ index.js:2200
+  1.6%  node @ index.js:7755
+  1.1%  readValue.subject @ index.js:3229
+  0.9%  (anonymous) @ cpu-attribution2.mjs:1
+  0.8%  (program) @ :0
+  0.7%  compileForInternalLoader @ realm:385
+=== medium-parse ===
+total sampled 2091 ms; frames 58
+ 28.7%  (anonymous) @ index.js:2419
+ 15.6%  (anonymous) @ index.js:7335
+ 10.9%  (anonymous) @ index.js:2200
+  9.5%  variants @ index.js:7330
+  7.8%  (garbage collector) @ :0
+  5.8%  (anonymous) @ cpu-attribution2.mjs:1
+  5.8%  attempt @ index.js:2162
+  5.0%  entries @ index.js:7270
+  2.7%  (anonymous) @ index.js:2528
+  1.0%  matchesRecordBrand @ index.js:2370
+  0.9%  (program) @ :0
+  0.9%  base @ index.js:7239
+  0.7%  (anonymous) @ index.js:7258
+  0.5%  compileForInternalLoader @ realm:385
+  0.4%  parseBoolean @ index.js:6207
+  0.4%  (anonymous) @ index.js:7248
+  0.4%  compileSourceTextModule @ utils:344
+  0.2%  compileFunction @ :0
+  0.2%  matchesMember @ index.js:1723
+=== deep-explain ===
+total sampled 2080 ms; frames 66
+ 17.2%  (anonymous) @ index.js:7881
+ 13.6%  (anonymous) @ index.js:2419
+  9.8%  (garbage collector) @ :0
+  9.3%  attempt @ index.js:2162
+  5.9%  (anonymous) @ index.js:6908
+  3.8%  (anonymous) @ index.js:2528
+  3.8%  get pattern @ index.js:5048
+  3.7%  entries @ index.js:7811
+  3.7%  plans @ index.js:7865
+  2.9%  readPatternFlags @ index.js:2009
+  2.6%  readValue @ index.js:2199
+  2.6%  createNumberFaults @ index.js:3228
+  2.0%  node @ index.js:7755
+  1.7%  matchesRecordBrand @ index.js:2370
+  1.7%  readPattern @ index.js:2060
+  1.5%  createArrayFaults @ index.js:3282
+  1.4%  readValue.subject @ index.js:3229
+  1.3%  node @ index.js:7801
+  1.3%  readValue.subject @ index.js:3173

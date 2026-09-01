@@ -1,0 +1,3 @@
+DIFF chain.audit(lyingLength): [{"reason":"type","path":["0"],"expected":"array","received":"1"},{"reason":"type","path":["1"],"expected":"array","rece VS [{"reason":"type","path":["0"],"expected":"array","received":"\"1\""},{"reason":"type","path":["1"],"expected":"array","
+DIFF chain.explain(lyingLength): [{"reason":"type","path":["0"],"expected":"array","received":"1"},{"reason":"type","path":["1"],"expected":"array","rece VS [{"reason":"type","path":["0"],"expected":"array","received":"\"1\""},{"reason":"type","path":["1"],"expected":"array","
+PARITY: 16 DIFFERENCES

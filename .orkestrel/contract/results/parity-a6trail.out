@@ -1,0 +1,3 @@
+DIFF exclusive.audit(nestedShared): [{"reason":"oneOf","path":[],"matched":0},{"reason":"type","path":"[circular]","expected":"object","received":"array"}] VS [{"reason":"oneOf","path":[],"matched":0},{"reason":"type","path":[],"expected":"object","received":"array"}]
+DIFF exclusive.explain(nestedShared): [{"reason":"oneOf","path":[],"matched":0},{"reason":"type","path":"[circular]","expected":"object","received":"array"}] VS [{"reason":"oneOf","path":[],"matched":0},{"reason":"type","path":[],"expected":"object","received":"array"}]
+PARITY: 22 DIFFERENCES

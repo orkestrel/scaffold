@@ -1,0 +1,4 @@
+packed 3: success=true dense=true traps{ descriptor:0=1 descriptor:1=1 descriptor:2=1 get:0=1 get:1=1 get:2=1 get:length=1 ownKeys=1 }
+packed 1025: success=true dense=true traps{ descriptor:0=1 descriptor:1=1 descriptor:10=1 descriptor:100=1 descriptor:1000=1 descriptor:1001=1 descriptor:1002=1 descriptor:1003=1 descriptor:1004=1 descriptor:1005=1 descriptor:1006=1 descriptor:1007=1 descriptor:1008=1 descriptor:1009=1 descriptor:101=1 descriptor:1010=1 descriptor:1011=1 descriptor:1012=1 descriptor:1013=1 descriptor:1014=1 descri
+sparse: success=true dense=false traps{ descriptor:0=1 descriptor:2=1 get:0=1 get:2=1 get:length=1 ownKeys=1 }
+extra key: success=true dense=true traps{ descriptor:0=1 descriptor:1=1 get:0=1 get:1=1 get:length=1 ownKeys=1 }

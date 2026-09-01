@@ -1,0 +1,20 @@
+node v22.22.2; adaptive calls targeting 40 ms/round; median of 7 rounds
+--- shape: medium
+is(valid)       : 2100 ns/op (min 1995, max 2214; 15563 calls x 7 rounds)
+is(invalid-late): 1880 ns/op (min 1826, max 2429; 19386 calls x 7 rounds)
+parse(valid)    : 2204 ns/op (min 2004, max 2279; 15722 calls x 7 rounds)
+audit(valid)    : 4802 ns/op (min 3301, max 5420; 6734 calls x 7 rounds)
+explain(invalid): 3262 ns/op (min 3190, max 3600; 10907 calls x 7 rounds)
+generate()      : 5813 ns/op (min 4746, max 6108; 6487 calls x 7 rounds)
+--- shape: deep
+is(valid)       : 6383 ns/op (min 5972, max 6731; 6448 calls x 7 rounds)
+is(invalid-late): 6181 ns/op (min 5957, max 6315; 6139 calls x 7 rounds)
+parse(valid)    : 6597 ns/op (min 6439, max 6852; 5827 calls x 7 rounds)
+audit(valid)    : 13731 ns/op (min 13470, max 14031; 2895 calls x 7 rounds)
+explain(invalid): 8897 ns/op (min 8463, max 9826; 4545 calls x 7 rounds)
+generate()      : 16870 ns/op (min 16353, max 17637; 2354 calls x 7 rounds)
+--- controls
+CONTROL_TIMER (empty body): 9 ns/op (min 9, max 10; 1000000 calls x 7 rounds)
+timer floor 9.2 ns/op vs cheapest subject 1880 ns/op: DISCRIMINATES
+ordering control: deep > medium for every family - DISCRIMINATES
+sink 4216646

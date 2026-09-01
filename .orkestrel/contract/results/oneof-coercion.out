@@ -1,0 +1,7 @@
+OK   oneOf(string, number) on "42": parse="42" explain=[] is=true audit.length=0
+OK   oneOf(number, boolean) on "42": parse=undefined explain=[{"reason":"oneOf","path":[],"matched":0}] is=false audit.length=2
+OK   oneOf(integer, boolean) on 7: parse=7 explain=[] is=true audit.length=0
+OK   oneOf(number, boolean) on "true": parse=undefined explain=[{"reason":"oneOf","path":[],"matched":0}] is=false audit.length=2
+OK   oneOf(obj{a:number}, obj{b:string}) on {a:"1"}: parse=undefined explain=[{"reason":"oneOf","path":[],"matched":0}] is=false audit.length=2
+OK   oneOf(literal a, literal b) on "a": parse="a" explain=[] is=true audit.length=0
+oneOf explain/parse law: HOLDS

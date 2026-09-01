@@ -1,0 +1,6 @@
+stringShape(): 15651 ns/op (min 14510, max 19772; 1561 calls x 7 rounds)
+stringShape({min:1,max:8}): 19048 ns/op (min 18208, max 24342; 1672 calls x 7 rounds)
+objectShape(medium, leaves rebuilt): 76645 ns/op (min 72098, max 99130; 497 calls x 7 rounds)
+compileGuard(medium prebuilt): 82513 ns/op (min 79326, max 84029; 467 calls x 7 rounds)
+createContract(medium prebuilt): 114571 ns/op (min 103901, max 128379; 353 calls x 7 rounds)
+sink 42850
