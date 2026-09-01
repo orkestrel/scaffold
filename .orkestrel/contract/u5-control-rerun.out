@@ -1,3 +1,0 @@
-cmd: U5 union-free control re-run alone, 2026-09-01
-audit-medium: A 4267 ns/op  B 4309 ns/op  B/A median 1.004 (ratio p25 0.952 p75 1.093)
-explain-medium: A 3755 ns/op  B 3788 ns/op  B/A median 1.027 (ratio p25 0.966 p75 1.079)

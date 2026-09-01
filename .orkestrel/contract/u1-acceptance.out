@@ -1,9 +1,0 @@
-cmd: U1 acceptance - parity + ab-inproc, base859 dist vs rebuilt tree dist, 2026-09-01
-=== parity
-comparisons: 1170
-PARITY: IDENTICAL
-=== A/B
-is-medium: A 2719 ns/op  B 2521 ns/op  B/A median 0.917 (ratio p25 0.878 p75 0.978)
-is-list48: A 14663 ns/op  B 13591 ns/op  B/A median 0.924 (ratio p25 0.896 p75 0.952)
-audit-list48: A 21318 ns/op  B 19462 ns/op  B/A median 0.910 (ratio p25 0.883 p75 0.934)
-is-deep: A 8372 ns/op  B 8252 ns/op  B/A median 0.967 (ratio p25 0.942 p75 1.008)

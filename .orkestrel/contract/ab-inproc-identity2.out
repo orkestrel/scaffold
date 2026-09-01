@@ -1,6 +1,0 @@
-cmd: ab-inproc identity, 49 paired rounds + list48 families, 2026-09-01
-is-medium: A 3582 ns/op  B 3539 ns/op  B/A median 1.002 (ratio p25 0.950 p75 1.120)
-is-deep: A 14294 ns/op  B 14305 ns/op  B/A median 0.990 (ratio p25 0.945 p75 1.059)
-audit-deep: A 25495 ns/op  B 25200 ns/op  B/A median 0.959 (ratio p25 0.910 p75 1.056)
-is-list48: A 18698 ns/op  B 17662 ns/op  B/A median 0.991 (ratio p25 0.929 p75 1.068)
-audit-list48: A 28184 ns/op  B 28893 ns/op  B/A median 1.029 (ratio p25 0.964 p75 1.123)

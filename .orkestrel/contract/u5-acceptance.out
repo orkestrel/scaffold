@@ -1,9 +1,0 @@
-cmd: U5 acceptance - parity + marginal A/B vs u2fix tree, 2026-09-01
-=== parity
-comparisons: 1170
-PARITY: IDENTICAL
-=== A/B (A=u2fix tree, B=U5 tree)
-audit-deep: A 18698 ns/op  B 17040 ns/op  B/A median 0.873 (ratio p25 0.827 p75 0.930)
-audit-medium: A 4238 ns/op  B 4374 ns/op  B/A median 1.028 (ratio p25 0.911 p75 1.099)
-is-medium: A 2179 ns/op  B 2148 ns/op  B/A median 0.999 (ratio p25 0.910 p75 1.090)
-explain-medium: A 3855 ns/op  B 4055 ns/op  B/A median 1.041 (ratio p25 0.998 p75 1.121)

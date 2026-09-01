@@ -1,7 +1,0 @@
-cmd: bash ab-run.sh <same dist both sides> — identity control, 2026-09-01
-is-medium: A 2886 ns/op (2886,2901,2488)  B 2606 ns/op (3638,2606,2576)  B/A 0.903
-parse-medium: A 2854 ns/op (3549,2854,2743)  B 2776 ns/op (2824,2613,2776)  B/A 0.973
-audit-medium: A 6088 ns/op (6428,5158,6088)  B 5010 ns/op (5287,5010,4793)  B/A 0.823
-explain-medium: A 5423 ns/op (5423,4984,6051)  B 4412 ns/op (5835,4316,4412)  B/A 0.814
-is-deep: A 8517 ns/op (8659,7978,8517)  B 8169 ns/op (8827,7456,8169)  B/A 0.959
-audit-deep: A 21929 ns/op (21929,22836,21588)  B 21703 ns/op (20998,21703,22819)  B/A 0.990

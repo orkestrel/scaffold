@@ -1,8 +1,0 @@
-cmd: U4 acceptance - parity + marginal A/B vs U3 tree, 2026-09-01
-=== parity
-comparisons: 1170
-PARITY: IDENTICAL
-=== A/B (A=U3 tree, B=U4 tree)
-audit-medium: A 4182 ns/op  B 3915 ns/op  B/A median 0.932 (ratio p25 0.882 p75 0.973)
-audit-deep: A 18719 ns/op  B 17307 ns/op  B/A median 0.922 (ratio p25 0.881 p75 0.976)
-explain-medium: A 3943 ns/op  B 3567 ns/op  B/A median 0.909 (ratio p25 0.864 p75 0.959)

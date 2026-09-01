@@ -1,9 +1,0 @@
-cmd: u1-patch + parity (identity, patched, seeded re-check) @ 2026-09-01
-U1 patched -> /tmp/claude-0/-home-user/3ec60757-0c2d-5c44-9e42-96e2e2ce9d94/scratchpad/dists/u1/index.js
-=== corpus identity re-check (same dist)
-comparisons: 1170
-PARITY: IDENTICAL
-=== U1 parity (original vs patched)
-comparisons: 1170
-PARITY: IDENTICAL
-u1-parity exit: 0

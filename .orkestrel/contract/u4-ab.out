@@ -1,9 +1,0 @@
-cmd: u4-patch stacked on acc2u3, parity + marginal A/B, 2026-09-01
-U4 patched -> /tmp/claude-0/-home-user/3ec60757-0c2d-5c44-9e42-96e2e2ce9d94/scratchpad/dists/acc2u4/index.js
-=== parity (U1 tree dist vs full stack +u4)
-comparisons: 1170
-PARITY: IDENTICAL
-=== marginal A/B (acc2u3 vs +u4)
-audit-medium: A 4295 ns/op  B 3674 ns/op  B/A median 0.868 (ratio p25 0.816 p75 0.915)
-audit-deep: A 17799 ns/op  B 16596 ns/op  B/A median 0.939 (ratio p25 0.870 p75 0.973)
-explain-medium: A 4342 ns/op  B 3887 ns/op  B/A median 0.891 (ratio p25 0.866 p75 0.925)

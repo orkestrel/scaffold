@@ -1,7 +1,0 @@
-cmd: node instruments/headroom.mjs @ contract 859d149, 2026-09-01
-spot parity over invalid set and valid: AGREES
-node v22.22.2
-hand-hardened is(valid)   : 16 ns/op (min 14, max 44; 140703 calls x 7 rounds)
-contract is(valid)        : 2911 ns/op (min 2660, max 3162; 7936 calls x 7 rounds)
-headroom: contract/hand = 177.4x
-sink 1052473
