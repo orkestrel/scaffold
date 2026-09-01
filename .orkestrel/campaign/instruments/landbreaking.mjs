@@ -8,6 +8,8 @@ import { execFileSync } from 'node:child_process'
 const [pkg, reportPath] = process.argv.slice(2)
 if (!pkg || !reportPath) throw new Error('usage: landbreaking.mjs <package> <report.json> [--wide]')
 const wide = process.argv.includes('--wide')
+const baseArg = process.argv.find((arg) => arg.startsWith('--base='))
+const base = baseArg ? baseArg.slice('--base='.length) : undefined
 const FIX = '/home/user/scaffold/.orkestrel/campaign/fix'
 const UNITS = '/home/user/scaffold/tmp/units/breaking'
 const repo = pkg === 'scaffold' ? '/home/user/scaffold' : `/home/user/fleet/${pkg}`
@@ -16,8 +18,8 @@ mkdirSync(UNITS, { recursive: true })
 const report = JSON.parse(readFileSync(reportPath, 'utf8'))
 const rulings = JSON.parse(readFileSync(`${FIX}/rulings.json`, 'utf8'))[pkg] || []
 const git = (args) => execFileSync('git', ['-C', repo, ...args], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
-const diff = git(['diff'])
-const status = git(['status', '--short'])
+const diff = git(base ? ['diff', base] : ['diff'])
+const status = base ? git(['diff', '--name-status', base]) : git(['status', '--short'])
 writeFileSync(`${UNITS}/${pkg}.diff`, diff)
 writeFileSync(`${UNITS}/${pkg}.status`, status)
 

@@ -23,9 +23,9 @@ Browser/style setup exposes shared assertions/builders:
 `findRule` proves a declaration exists in the cascade; `style()` reads the resolved result.
 ```
 
-The renames the `test` unit landed (its report at
-`/home/user/scaffold/tmp/units/breaking/test-report.md` is authoritative; read it first and use the
-names it reports, which are expected to be): `style` → `readStyle`, `token` → `readToken`,
+The renames the `test` unit landed, as amended by the `test-fixup` unit that renames the unit's
+`resolveColor` to `parseCSSColor` (the report at `/home/user/scaffold/tmp/units/breaking/test-report.md`
+still spells `resolveColor`; the ruled final names are these): `style` → `readStyle`, `token` → `readToken`,
 `rootToken` → `readRootToken`, `pixels` → `readPixels`, `rgba` → `parseCSSColor`,
 `colorEqual` → `matchesColor`. `mount`, `render`, `build`, and `findRule` did not move. The exported
 surface to check against: `/home/user/fleet/test/src/browser/index.ts`.
