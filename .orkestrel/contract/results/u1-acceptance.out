@@ -1,0 +1,32 @@
+=== build ===
+build exit=0
+
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+=== mutation reproduction ===
+2
+-- mutated (own corroboration removed) --
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:core| tests/src/core/helpers.test.ts > readArrayEntries > reads a reordered key view identically to an ordinary copy
+ FAIL  |src:core| tests/src/core/helpers.test.ts > readArrayEntries > refuses a canonical population that disowns one of its own indices
+ FAIL  |src:core| tests/src/core/helpers.test.ts > readArrayEntries > refuses equal-cardinality split membership
+ FAIL  |src:core| tests/src/core/helpers.test.ts > readArrayEntries > preserves exact reasons from reflected membership and value reads
+ FAIL  |src:core| tests/src/core/helpers.test.ts > matchesJSONDepth > refuses contradictory, impossible, and hostile array reads
+      Tests  5 failed | 217 passed (222)
+restore check: RESTORED-EXACTLY
+-- restored --
+      Tests  222 passed (222)
+=== hostile-array record (u1 vs base) ===
+hostile record: IDENTICAL
+=== trap-count record (u1 vs base) ===
+trap counts: IDENTICAL
+=== parity (identity form) ===
+PARITY: IDENTICAL
+=== parity (content form) ===
+PARITY: IDENTICAL
+=== 6-process A/B (u1 source build vs base015) ===
+is-medium: median 0.900 min 0.718 max 0.952 replicates ab-1=0.952 ab-2=0.920 ab-3=0.718 ba-1=0.899 ba-2=0.900 ba-3=0.889
+parse-medium: median 0.937 min 0.897 max 0.957 replicates ab-1=0.906 ab-2=0.897 ab-3=0.947 ba-1=0.898 ba-2=0.937 ba-3=0.957
+is-deep: median 0.942 min 0.735 max 0.985 replicates ab-1=0.964 ab-2=0.928 ab-3=0.735 ba-1=0.985 ba-2=0.942 ba-3=0.938
+is-list48: median 0.869 min 0.847 max 0.877 replicates ab-1=0.877 ab-2=0.847 ab-3=0.867 ba-1=0.869 ba-2=0.869 ba-3=0.853
+audit-list48: median 0.928 min 0.904 max 0.949 replicates ab-1=0.904 ab-2=0.928 ab-3=0.915 ba-1=0.917 ba-2=0.949 ba-3=0.944
+U1 ACCEPTANCE EVIDENCE COMPLETE

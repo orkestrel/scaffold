@@ -1,0 +1,250 @@
+diff --git a/guides/contract.md b/guides/contract.md
+index c42a2d1..dad254b 100644
+--- a/guides/contract.md
++++ b/guides/contract.md
+@@ -213,7 +213,8 @@ The safe JSON surface keeps text parsing lazy: `parseJSON` returns `unknown`, wh
+ | `sortValues`            | function | Order primitive keys or indices ascending, on an OWNED copy, through the captured `Array.prototype.sort`. Every schema this package emits is ordered so the same input produces the same bytes; a `sort` that empties its receiver made `valueToSchema({ b: 1, a: 2 })` publish `{ type: 'object', additionalProperties: false }` — a success with the caller's properties silently gone. The comparison is `<` / `>` on primitives, which dispatches through nothing.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+ | `pathOf`                | function | Build a diagnostic path from an existing path plus further segments, without array iteration; an absent segment is omitted, so an optional level needs no branch at the call site. `[...path, key]` reads better and retrieves `Array.prototype[Symbol.iterator]` at the moment of use — and the damaging installation there is not a thrower but a LIAR: an iterator yielding one extra value turns a refusal this package authored into `path: ['INJECTED', 'properties', 'INJECTED']`, so a caller writes their own text into a published diagnostic. An indexed walk plus a rest parameter dispatches through nothing.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+ | `readValue`             | function | The sole required-read refusal constructor layered over `attempt`: returns a successful callback value, but converts every failed read into `ContractError` with the single message shape `<reader>: <subject> could not be read` and the exact thrown value as `cause`. Its trailing `ReadValueOptions` carries `subject`, `code`, and copied `context`, so the reader owning a public boundary retains its `{ shape }` / `{ path }`. The copy reads OWN fields only: a context that omits `path`, `shape`, `limit`, or `received` publishes that field as absent rather than resolving it through `Object.prototype`, which any caller can write, so no refusal this module authors carries — or retains by identity — a value its caller never supplied. Hostile diagnostic inputs fall back to stable vocabulary without inspecting the thrown value.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+-| `readArrayEntries`      | function | Snapshot a caller `readonly T[]` through one reflected-population lens, returning `Result<ArrayRead<T>>`; its default failure channel is `unknown`, and a failed length, `Reflect.ownKeys`, reflected membership, or reflected value read retains the exact thrown value. `length` and the reflected key population are each captured once. Canonical reflected indices below `4294967295` must be below the captured length, are sorted numerically, corroborated with `Object.hasOwn`, and read once. The frozen `entries` are one native sparse array of the captured length: reading a hole yields `undefined`, but own membership stays absent; `dense` means the reflected canonical count equals length. Work and indexed source reads are proportional to reflected population, so consumers must require `dense` or carry an independent bound before length-driven work. A descriptor-only index omitted from reflection is deliberately outside this lens and remains a hole; `4294967295` is metadata, not an array index. Caller-defined iteration is ignored. Backs `arrayOf`, guarded `parseArray`, JSON matching/canonicalization, `inferArray`, the compiled array parser, reporter, and strict array audit.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
++| `readArrayEntries`      | function | Snapshot a caller `readonly T[]` through one reflected-population lens, returning `Result<ArrayRead<T>>`; its default failure channel is `unknown`, and a failed length, `Reflect.ownKeys`, reflected membership, or reflected value read retains the exact thrown value. `length` and the reflected key population are each captured once. Canonical reflected indices below `4294967295` must be below the captured length, are sorted numerically, corroborated with `Object.hasOwn`, and read once. The frozen `entries` are one native sparse array of the captured length: reading a hole yields `undefined`, but own membership stays absent; `dense` means the reflected canonical count equals length. Work and indexed source reads are proportional to reflected population, so consumers must require `dense` or carry an independent bound before length-driven work. A reflected population that is exactly the canonical indices in ascending order followed by `length` is copied straight by index under the same `Object.hasOwn` corroboration, and answers with the same entries, the same `dense` fact, and the same refusals as the walk; `INDEX_TEXTS` bounds what that decision costs and nothing about what it decides. A descriptor-only index omitted from reflection is deliberately outside this lens and remains a hole; `4294967295` is metadata, not an array index. Caller-defined iteration is ignored. Backs `arrayOf`, guarded `parseArray`, JSON matching/canonicalization, `inferArray`, the compiled array parser, reporter, and strict array audit.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
++| `INDEX_TEXTS`           | const    | The decimal text of every array index from `0` through `1023`, frozen, built while `constants.ts` evaluates through the captured `String` coercion. `readArrayEntries` decides whether a reflected own-key population is exactly the canonical indices followed by `length`, which asks whether the key at each position is that position's decimal text; below this table's length that text is compared rather than rebuilt per call. The length is a COST bound and never an answer bound: a position past the end is compared against the same coercion this table was built from, so an array of any length reaches the same verdict, the same entries, and the same `dense` fact. No companion limit constant exists, and no size selects an algorithm.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+ | `readGuardShape`        | function | Snapshot a combinator's readable own string guard declarations into one null-prototype guard record and key list, then collect the selected optional-key mode. The supplied reader name owns the shared `shape` and `optional` read refusals. Backs both `recordOf` and `objectOf`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+ | `holds`                 | function | Invoke a zero-arg predicate through the `attempt` boundary — `true` only when the callback returns the boolean literal `true`; a throw (or any non-`true` return) is `false`. Backs the `instanceof`-based validators and every container combinator's element walk.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+ | `enumerableKeys`        | function | Snapshot an object's own enumerable **string** keys through the `attempt` boundary, returning a frozen owned list or `undefined` when enumeration throws. THE package-wide runtime property view — compiled guards, parsers, reporters, schema inference, and owned schema cloning all read an object through this one lens, which is the key set `JSON.stringify` serializes (no inherited, symbol, or non-enumerable keys).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index 2c90c89..dd9cec0 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -217,6 +217,44 @@ export const INTRINSICS = Object.freeze({
+ 	now: Date.now,
+ })
+ 
++// Reflected-index text, built from the coercion captured above.
++
++/**
++ * The decimal text of every array index from `0` through `1023`, frozen.
++ *
++ * @remarks
++ * {@link readArrayEntries} puts one question to a reflected own-key population
++ * before it walks: whether the key at each position is that position's decimal
++ * text, with `length` last. Building that text is the whole cost of the
++ * question, so every answer this table covers is built once — while this module
++ * evaluates, through the captured `text` coercion — and compared rather than
++ * rebuilt per call.
++ *
++ * The table's length is a COST bound and never an answer bound. A position past
++ * the end is compared against the same coercion the table was built from, so an
++ * array of any length reaches the same verdict, the same entries, and the same
++ * `dense` fact; only the price of the comparison differs. Nothing here selects
++ * an algorithm, and no companion limit constant gates one: an index below 1024
++ * is compared against text already built, an index above it against text built
++ * on the spot, and the snapshot is identical either way. A slot the fill below
++ * failed to write would compare unequal and send that population down the walk,
++ * which is the same answer more slowly — so even a damaged table decides cost
++ * alone.
++ *
++ * @example
++ * ```ts
++ * INDEX_TEXTS[7] // '7'
++ * ```
++ */
++export const INDEX_TEXTS: readonly string[] = new INTRINSICS.list<string>()
++// Filled in place through the captured write, ascending, and frozen after: the
++// published type stays readonly while the table is built, and an array appended
++// in order carries no hole for the per-position comparison to step over.
++for (let index = 0; index < 1024; index += 1) {
++	INTRINSICS.write(INDEX_TEXTS, index, INTRINSICS.text(index))
++}
++INTRINSICS.freeze(INDEX_TEXTS)
++
+ // JSON-related constants. Kept as plain frozen data so the shipped combinators
+ // and parsers operate on them directly — there is deliberately no bespoke
+ // JSON-Schema guard (AGENTS §14 — the deep recursive validators stay out by
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 691406a..7b0f387 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -22,6 +22,7 @@ import type {
+ import {
+ 	COMPILE_NODE_LIMIT,
+ 	GUARD_DEPTH_LIMIT,
++	INDEX_TEXTS,
+ 	INFER_DEPTH_LIMIT,
+ 	INTRINSICS,
+ 	PREVIEW_LIMIT,
+@@ -1004,12 +1005,17 @@ export function matchesRecordBrand(value: unknown): boolean {
+  * frozen native snapshot retains actual holes: reading one yields `undefined`,
+  * while own membership remains absent. Its work is proportional to the
+  * reflected population, so a length-driven consumer must require `dense` or
+- * carry an independent bound. Caller-defined iteration is ignored. A
+- * descriptor-only index omitted from reflection is deliberately outside this
+- * lens and remains a hole. Failure retains the exact thrown value when length,
+- * reflection, membership, or indexed value observation throws; a non-native
+- * length or view disagreement is also failure. `4294967295` is metadata rather
+- * than an array index.
++ * carry an independent bound. A population that is exactly the canonical
++ * indices in ascending order followed by `length` is copied straight by index
++ * under the same per-index corroboration, and answers with the same entries,
++ * the same `dense` fact, and the same refusals as the walk;
++ * {@link INDEX_TEXTS} bounds what that decision costs and nothing about what
++ * it decides. Caller-defined iteration is ignored. A descriptor-only index
++ * omitted from reflection is deliberately outside this lens and remains a
++ * hole. Failure retains the exact thrown value when length, reflection,
++ * membership, or indexed value observation throws; a non-native length or view
++ * disagreement is also failure. `4294967295` is metadata rather than an array
++ * index.
+  *
+  * @param value - The array whose reflected indexed entries to read
+  * @returns A successful frozen entry snapshot with its dense fact, or a
+@@ -1026,11 +1032,33 @@ export function readArrayEntries<T>(value: readonly T[]): Result<ArrayRead<T>> {
+ 		if (!INTRINSICS.safe(length) || length < 0 || length > 2 ** 32 - 1) {
+ 			throw new INTRINSICS.error('Array length is outside the native array domain')
+ 		}
++		const members = INTRINSICS.members(value)
++		let canonical = members.length === length + 1 && members[length] === 'length'
++		if (canonical) {
++			for (let position = 0; position < length; position += 1) {
++				const text =
++					position < INDEX_TEXTS.length ? INDEX_TEXTS[position] : INTRINSICS.text(position)
++				if (members[position] !== text) {
++					canonical = false
++					break
++				}
++			}
++		}
++		if (canonical) {
++			const packed = new INTRINSICS.list<T | undefined>(length)
++			for (let index = 0; index < length; index += 1) {
++				const key = members[index]
++				if (key === undefined || !INTRINSICS.own(value, key)) {
++					throw new INTRINSICS.error('Array index views disagree')
++				}
++				packed[index] = value[index]
++			}
++			return INTRINSICS.freeze({ entries: INTRINSICS.freeze(packed), dense: true })
++		}
+ 		const collected: number[] = []
+ 		const keys: string[] = []
+ 		let ascending = true
+ 		let previous = -1
+-		const members = INTRINSICS.members(value)
+ 		for (let position = 0; position < members.length; position += 1) {
+ 			const key = members[position]
+ 			if (!isString(key)) continue
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 5dea66b..3c57b98 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -62,6 +62,7 @@ import {
+ 	createNumberFaults,
+ 	createStringFaults,
+ 	drawRandom,
++	INDEX_TEXTS,
+ 	INTRINSICS,
+ 	limitEntries,
+ 	matchesMember,
+@@ -703,6 +704,103 @@ describe('readArrayEntries', () => {
+ 		expect(outcome.value.dense).toBe(true)
+ 	})
+ 
++	it('answers a canonical view and a reordered view of the same members identically', () => {
++		// A population arriving as exactly the canonical indices then `length` is
++		// copied straight by index, and a reordered report of those same members
++		// walks. The two answers are pinned to each other rather than each to its
++		// own expectation, so a path that drifts cannot take its expectation with it.
++		const source = [10, 20, 30, 40, 50]
++		const reordered = new Proxy(source, {
++			ownKeys() {
++				return ['4', '0', '3', '1', '2', 'length']
++			},
++		})
++		const canonical = readArrayEntries(source)
++		const walked = readArrayEntries(reordered)
++
++		expect(canonical.success).toBe(true)
++		expect(walked.success).toBe(true)
++		if (!canonical.success) throw canonical.error
++		if (!walked.success) throw walked.error
++		expect(canonical.value.entries).toEqual([10, 20, 30, 40, 50])
++		expect(walked.value.entries).toEqual(canonical.value.entries)
++		expect(walked.value.dense).toBe(canonical.value.dense)
++		expect(canonical.value.dense).toBe(true)
++		expect(Object.isFrozen(canonical.value.entries)).toBe(true)
++		expect(Reflect.ownKeys(canonical.value.entries)).toEqual(['0', '1', '2', '3', '4', 'length'])
++	})
++
++	it('snapshots an array carrying an extra own string key like a plain array', () => {
++		const annotated: number[] = [1, 2]
++		Object.defineProperty(annotated, 'note', { value: 'metadata', enumerable: true })
++		const outcome = readArrayEntries(annotated)
++		const plain = readArrayEntries([1, 2])
++
++		expect(Reflect.ownKeys(annotated)).toEqual(['0', '1', 'length', 'note'])
++		expect(outcome.success).toBe(true)
++		if (!outcome.success) throw outcome.error
++		if (!plain.success) throw plain.error
++		expect(outcome.value.entries).toEqual(plain.value.entries)
++		expect(outcome.value.dense).toBe(plain.value.dense)
++		expect(outcome.value.dense).toBe(true)
++		expect(Reflect.ownKeys(outcome.value.entries)).toEqual(['0', '1', 'length'])
++	})
++
++	it('snapshots an array carrying an own symbol key like a plain array', () => {
++		const marked: number[] = [1, 2]
++		Object.defineProperty(marked, Symbol('mark'), { value: 'metadata', enumerable: true })
++		const outcome = readArrayEntries(marked)
++		const plain = readArrayEntries([1, 2])
++
++		expect(Reflect.ownKeys(marked).length).toBe(4)
++		expect(outcome.success).toBe(true)
++		if (!outcome.success) throw outcome.error
++		if (!plain.success) throw plain.error
++		expect(outcome.value.entries).toEqual(plain.value.entries)
++		expect(outcome.value.dense).toBe(plain.value.dense)
++		expect(outcome.value.dense).toBe(true)
++		expect(Object.getOwnPropertySymbols(outcome.value.entries)).toEqual([])
++	})
++
++	it('snapshots an array at the index-text table length and one past it alike', () => {
++		// The table bounds what the canonical decision costs, never what it decides:
++		// the length past its end takes the same verdict from the same coercion.
++		expect(Object.isFrozen(INDEX_TEXTS)).toBe(true)
++		expect(INDEX_TEXTS.length).toBe(1024)
++		expect(INDEX_TEXTS[0]).toBe('0')
++		expect(INDEX_TEXTS[INDEX_TEXTS.length - 1]).toBe('1023')
++
++		for (const length of [INDEX_TEXTS.length, INDEX_TEXTS.length + 1]) {
++			const source: number[] = []
++			for (let index = 0; index < length; index += 1) source[index] = index * 2
++			const outcome = readArrayEntries(source)
++
++			expect(outcome.success).toBe(true)
++			if (!outcome.success) throw outcome.error
++			expect(outcome.value.dense).toBe(true)
++			expect(outcome.value.entries.length).toBe(length)
++			expect(outcome.value.entries[0]).toBe(0)
++			expect(outcome.value.entries[length - 1]).toBe((length - 1) * 2)
++			expect(outcome.value.entries).toEqual(source)
++			expect(Object.hasOwn(outcome.value.entries, length - 1)).toBe(true)
++		}
++	})
++
++	it('refuses a canonical population that disowns one of its own indices', () => {
++		// The reported population is exactly the canonical indices then `length`,
++		// so the direct copy answers it — and every index is still corroborated
++		// against its own membership read rather than taken from the report.
++		const disowning = new Proxy([1, 2], {
++			getOwnPropertyDescriptor(target, property) {
++				return property === '1' ? undefined : Reflect.getOwnPropertyDescriptor(target, property)
++			},
++		})
++
++		expect(Reflect.ownKeys(disowning)).toEqual(['0', '1', 'length'])
++		expect(Object.hasOwn(disowning, '1')).toBe(false)
++		expect(readArrayEntries(disowning).success).toBe(false)
++	})
++
+ 	it('fails a non-native advertised length', () => {
+ 		const hostile = new Proxy([], {
+ 			get(target, property, receiver) {
