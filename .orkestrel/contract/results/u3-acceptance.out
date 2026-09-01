@@ -1,0 +1,28 @@
+=== build ===
+build exit=0
+=== mutation: helper ignores the supplied pattern ===
+stateless line: 1958
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:core| tests/src/core/helpers.test.ts > createStringFaults > applies the supplied pattern instead of re-reading the shape
+      Tests  1 failed | 231 passed (232)
+restore: RESTORED-EXACTLY
+      Tests  232 passed (232)
+      Tests  259 passed (259)
+   Duration  8.17s (transform 1.72s, setup 1.45s, import 463ms, tests 6.02s, environment 0ms)
+=== pattern-fault record (u3 vs base) ===
+pattern record: IDENTICAL
+=== parity identity form ===
+PARITY: IDENTICAL
+=== parity content form ===
+PARITY: IDENTICAL
+=== 6-process A/B: u2f checkpoint (A) vs u3 (B) — isolates U3 ===
+audit-deep: median 0.914 min 0.882 max 0.962 replicates ab-1=0.962 ab-2=0.882 ab-3=0.897 ba-1=0.915 ba-2=0.902 ba-3=0.914
+explain-deep: median 0.872 min 0.847 max 0.960 replicates ab-1=0.884 ab-2=0.854 ab-3=0.960 ba-1=0.869 ba-2=0.847 ba-3=0.872
+audit-medium: median 1.007 min 0.997 max 1.060 replicates ab-1=1.060 ab-2=1.007 ab-3=1.027 ba-1=1.000 ba-2=1.001 ba-3=0.997
+explain-medium: median 1.028 min 0.993 max 1.086 replicates ab-1=1.028 ab-2=0.995 ab-3=1.086 ba-1=1.022 ba-2=0.993 ba-3=1.035
+=== 6-process A/B: base015 (A) vs u3 (B) — cumulative ===
+audit-deep: median 0.779 min 0.729 max 0.816 replicates ab-1=0.787 ab-2=0.816 ab-3=0.779 ba-1=0.729 ba-2=0.734 ba-3=0.752
+explain-deep: median 0.812 min 0.767 max 0.818 replicates ab-1=0.818 ab-2=0.796 ab-3=0.800 ba-1=0.812 ba-2=0.818 ba-3=0.767
+audit-medium: median 0.823 min 0.762 max 0.841 replicates ab-1=0.822 ab-2=0.841 ab-3=0.841 ba-1=0.762 ba-2=0.823 ba-3=0.811
+explain-medium: median 0.746 min 0.683 max 0.749 replicates ab-1=0.749 ab-2=0.746 ab-3=0.735 ba-1=0.717 ba-2=0.749 ba-3=0.683
+U3 ACCEPTANCE EVIDENCE COMPLETE
