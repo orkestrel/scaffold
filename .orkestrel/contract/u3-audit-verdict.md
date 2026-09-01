@@ -60,3 +60,26 @@ Subject: the U3 + U3f tree (brief `u3f-audit-brief.md`, successor of `u3-audit-b
 Objective lane: claims 1 to 10 CONFIRMED with attacks recorded; claim 11 repaired by the Orchestrator edit unit and re-swept clean; findings A, B, and C recorded with carriers. Subjective lane: claims 1, 2, 4, 5, 6, 7, 9, and 11 CONFIRMED; claim 3 adopted into U3i; claims 8 and 10 ruled brief defects from the U3g unit; F1 and F2 adopted into U3i. Round 2 ends FAIL and a fix round U3i follows (`u3i-brief.md`), written by `builder` on Sonnet from exact text, audited by `checker`, a short `reviewer` lane on Opus 5 for the recast prose, the Orchestrator's F1 mutation probe, and `verifier`.
 
 Closure: pending U3i (`u3i-brief.md`); the closing lines are appended when its audit, the F1 mutation probe, `checker`, and `verifier` return.
+
+## U3i audit (2026-09-01): the fix round's own round
+
+Subject: unit U3i (`u3i-brief.md`, `u3i-report.md`; builder on Sonnet from exact text the Orchestrator wrote). Lanes: one subjective lane (`reviewer`, Opus 5; `u3i-audit-subjective.md`), `checker` (`u3i-checker-report.md`, PASS; its import-position referral ruled an Orchestrator brief error), `verifier` run 3 (`u3-final-verifier-report-3.md`, GREEN; `src:core` 1324). The objective questions were settled by the Orchestrator's probes: the F1 mutation on the U3i tree fails exactly the new pin (`u3i-f1-mutation.out`), and the census equality holds with `ContractCompiler` counted as a class (`census-derived-u3final.out`). No objective lane ran on U3i; recorded as the round's deviation, on the ground that the unit's claims are prose and a recast pin whose binding the probes measure.
+
+### Lane terminal line
+
+- Subjective: `VERDICT: FAIL — 1 broken, 0 unresolved, 0 not-evidenced, 3 findings outside the claims`
+
+### Reconciliation (every vector reproduced)
+
+| Item | Ruling | Carrier |
+| --- | --- | --- |
+| Claim 1 (BROKEN): the sentence "asks the shape's `pattern` accessor twice per call" is unconditional, while a min-only or max-only shape reads the accessor once (the presence test short-circuits) | Reproduced on the dist (`readcount-cases-u3final.out`): declared pattern 2, supplied 0, min-only 1, max-only 1. The Orchestrator's sentence stated the declared-pattern case as the only case. Adopted with the lane's wording, which carries the condition. | U3j item 1 (TSDoc) and item 2 (guide row). |
+| Finding A: the pre-existing U3 test title `applies the supplied pattern instead of re-reading the shape` claims the read-count promise its body does not measure; under the F1 mutation it passed while the new pin failed | Reproduced from `u3i-f1-mutation.out` (one failure, the new pin). Adopted: rename to what the body asserts. | U3j item 3. |
+| Finding B: the guide paragraph's closing clause "so an export that changes the population is derived by the test instead of copied into this paragraph" misassigns its subject, and the following sentence closes the paragraph correctly | Read and confirmed. Adopted: strike the clause. | U3j item 4. |
+| Finding C: "nobody's assertion noticed" gives an assertion a human faculty | Confirmed against `.claude/rules/writing.md` § Voice and actor. Adopted: "no assertion failed". | U3j item 5. |
+| Claims 2 to 8 CONFIRMED: the renamed title, the supplied-rebuild pin, the count-free paragraph, the derived census (a second mechanism, not a tautology), the `tests/setup.ts` TSDoc, scope, and the banned-construct sweep | Accepted as ruled. | none |
+| Observations: the relocated "a count nobody derives is a count that drifts" register; `both accessors of \`RegExp.prototype\`` and `below` at `guides/contract.md:256` and `:258`, pre-existing | Recorded for the guide's next prose edit; a ruling on the register belongs to a design round. | `acceptance-perf2.md` § Remaining risk. |
+
+### Ruling
+
+FAIL; fix round U3j (`u3j-brief.md`, builder on Sonnet, exact text from the lane's own prescriptions) follows, closed by `checker`, a `reviewer` lane on the four sentences, and `verifier` run 4. The read-count sentence is on its third revision; U3j states the condition the count depends on rather than a number, which is the property the earlier revisions stood in for.
