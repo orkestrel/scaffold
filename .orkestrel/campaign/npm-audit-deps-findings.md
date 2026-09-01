@@ -411,3 +411,19 @@ governed the touched block).
 - **guide unit**: landed (`8eca8dc`), audited (objective `FAIL 2`, subjective `FAIL 5`, checker
   PASS, verifier GREEN), fix round `guide-fixup` in flight on Opus with every ruling in
   `units/guide-fixup-brief.md`.
+
+## Breaking phase — W-DEV closed, L0 open (2026-09-01)
+
+- **guide unit closed applied** after three rounds (`units/guide-audit-verdict.md`): one declaration
+  locator (`extractDeclaration` returning body and bases), `Source.methods` reads the first
+  declaring file (a head with a body or bases) and follows `extends`, `escapeRegExp` guards every
+  interpolated name, `examples(name)` documented as not following `extends`.
+- **Fleet adoption** (`units/devadopt-report.md`): every checkout's parity test imports the renamed
+  guide helpers (committed and pushed per checkout); the sweep stages each checkout's whole closure
+  from committed tips and typechecks it: every checkout green on `check`; `test:guides` red only in
+  browser, database, and mcp (extending interfaces whose Methods tables omit inherited members —
+  carried to their units in `fix/rulings.json`) and in probe (pre-existing language-server
+  instrument failure).
+- **Harness defect fixed:** concurrent packs of one package raced on its `dist/`; `pack-dep.sh` now
+  locks per package and trips on a tarball without declarations (`5db3ed0`).
+- **L0 launched:** contract, msg, sse as Opus implementer units against their staged closures.
