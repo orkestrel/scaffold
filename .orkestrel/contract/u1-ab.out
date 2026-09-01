@@ -1,0 +1,6 @@
+cmd: ab-inproc U1 (A=original, B=order-aware patch), 49 paired rounds, 2026-09-01
+is-medium: A 2763 ns/op  B 2402 ns/op  B/A median 0.860 (ratio p25 0.796 p75 0.897)
+is-deep: A 8351 ns/op  B 8163 ns/op  B/A median 0.973 (ratio p25 0.925 p75 1.023)
+audit-deep: A 22685 ns/op  B 22092 ns/op  B/A median 0.971 (ratio p25 0.907 p75 1.012)
+is-list48: A 16018 ns/op  B 14494 ns/op  B/A median 0.892 (ratio p25 0.834 p75 0.956)
+audit-list48: A 25466 ns/op  B 23418 ns/op  B/A median 0.925 (ratio p25 0.870 p75 0.986)
