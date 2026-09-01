@@ -7,6 +7,7 @@ OUT=/home/user/scaffold/tmp/tarballs; mkdir -p "$OUT"
 cd "$DIR"
 [ -z "$(git status --porcelain)" ] || { echo "REFUSE: $P tree is dirty; commit before packing" >&2; exit 1; }
 C=$(git rev-parse --short HEAD)
+if [ -f "$OUT/$P-$C.tgz" ] && [ "${FORCE:-}" != 1 ]; then echo "$OUT/$P-$C.tgz"; exit 0; fi
 npm run build >"$OUT/$P-$C.build.log" 2>&1 || { echo "BUILD FAILED: see $OUT/$P-$C.build.log" >&2; exit 1; }
 T=$(npm pack --pack-destination "$OUT" --silent 2>/dev/null | tail -1)
 mv "$OUT/$T" "$OUT/$P-$C.tgz"

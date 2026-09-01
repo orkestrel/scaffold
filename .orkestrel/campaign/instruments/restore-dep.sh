@@ -10,5 +10,9 @@ REG=/home/user/scaffold/.orkestrel/campaign/fix/tarballs.json
 node -e '
 const fs=require("fs"); const p=process.argv[1]; const c=process.argv[2];
 let a=[]; try{a=JSON.parse(fs.readFileSync(p,"utf8"))}catch{}
-fs.writeFileSync(p, JSON.stringify(a.filter(x=>x.consumer!==c),null,1)+"\n")' "$REG" "$C"
+const now=new Date().toISOString().replace(/\.\d+Z$/,"Z");
+const hist=process.argv[3]; let h=[]; try{h=JSON.parse(fs.readFileSync(hist,"utf8"))}catch{}
+for(const x of a.filter(x=>x.consumer===c)) h.push({...x, restored: now});
+fs.writeFileSync(hist, JSON.stringify(h,null,1)+"\n");
+fs.writeFileSync(p, JSON.stringify(a.filter(x=>x.consumer!==c),null,1)+"\n")' "$REG" "$C" /home/user/scaffold/.orkestrel/campaign/fix/tarballs-history.json
 echo "$C: registry copies restored from the lockfile"
