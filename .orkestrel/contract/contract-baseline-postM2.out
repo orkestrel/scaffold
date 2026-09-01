@@ -1,0 +1,16 @@
+node v22.22.2; calls per round: 500; rounds: 3; retention: monotonic
+--- shape: small
+compiler-cold: 648 B/call, 1.7 us/call (heap rounds: 648, 648, 823)
+guard-only   : 1807 B/call, 57.6 us/call (heap rounds: 1738, 1807, 1921)
+contract     : 2029 B/call, 67.4 us/call (heap rounds: 1962, 2029, 2303)
+--- shape: medium
+compiler-cold: 648 B/call, 0.2 us/call (heap rounds: 648, 648, 648)
+guard-only   : 4849 B/call, 167.8 us/call (heap rounds: 4834, 4849, 5118)
+contract     : 11687 B/call, 230.2 us/call (heap rounds: 11450, 11687, 11784)
+--- shape: deep
+compiler-cold: 648 B/call, 0.2 us/call (heap rounds: 648, 648, 648)
+guard-only   : 17037 B/call, 411.0 us/call (heap rounds: 16921, 17037, 17236)
+contract     : 48468 B/call, 617.0 us/call (heap rounds: 48446, 48468, 48540)
+--- control
+CONTROL_ARRAY: 8248 B/call, 2.6 us/call (heap rounds: 8248, 8248, 8248)
+control expectation: near 8192 B payload; measured 8248 B/call

@@ -26,6 +26,20 @@ bundle was excluded on recorded grounds (containment, snapshot anchor, retention
 frozen-instance `defineProperty` throw measured in
 `/home/user/scaffold/.orkestrel/contract/zod-pattern.out`).
 
+**Carried finding (from the m2-sentinels unit's report, its named carrier is this unit).** After
+the m2 change, the release sentence at `guides/contract.md:491` over-claims for one member: the
+node index is no longer released through a preconstructed peer — release drops it to
+`undefined`, because freezing does not reach a `WeakMap`'s writes — while the other working
+collections release through shared frozen class-owned peers. Rewrite that sentence to match the
+changed source (the m2 report at
+`/home/user/scaffold/tmp/units/m2-sentinels-report.md` carries a replacement draft; its facts
+are verified, its wording is yours, and the writing rules bind it — the draft's `because`
+clause survives only if you verify it reads true against the source comments). The m2 audit
+adds one instruction its round carried to this unit: the guide sentence must not write
+`frozen` about the class-owned peers as a bare promise — a reader cannot check a `#` static's
+frozenness, and the freeze holds under a module-evaluation-order qualification stated in the
+source. Drop the word from the guide sentence, or carry the qualification with it.
+
 **Law.** `AGENTS.md` § Writing, `.claude/rules/writing.md`, `.claude/rules/documentation.md`,
 `.claude/rules/typescript.md` § Comments and API documentation, `.claude/rules/tests.md`
 (guides project). Skill: none. Guide: `/home/user/contract/guides/contract.md` — the subject.
@@ -52,10 +66,10 @@ the artifact-outlives-compiler claim.
 ## Scope
 
 **Owned.** `/home/user/contract/guides/contract.md` (the compiler and `createContract`
-sections), `/home/user/contract/src/core/types.ts` (TSDoc on `ContractCompilerInterface` only —
-no member, signature, or type change of any kind), `/home/user/contract/src/core/compilers.ts`
-(TSDoc on `createContract` only), `/home/user/contract/tests/guides.test.ts` (only what the
-fence mechanism requires).
+sections, and the release sentence the carried finding names), `/home/user/contract/src/core/types.ts`
+(TSDoc on `ContractCompilerInterface` only — no member, signature, or type change of any kind),
+`/home/user/contract/src/core/compilers.ts` (TSDoc on `createContract` only),
+`/home/user/contract/tests/guides.test.ts` (only what the fence mechanism requires).
 
 **Shared (report-only).** none.
 
