@@ -1,0 +1,9 @@
+cmd: u2fix mutation probe corrected - RED leg (baseU4 pre-fix dist) then GREEN leg (rebuilt fixed dist), 2026-09-01
+=== RED leg (pre-fix)
+reporter wide+hostile: THREW structure context={"shape":"object"}
+auditor wide+hostile : THREW structure context={"shape":"object"}
+verdict: reporter total RED; auditor path in refusal RED
+=== GREEN leg (fixed)
+reporter wide+hostile: ANSWERED [{"reason":"type","path":[],"expected":"object","received":"object"}]
+auditor wide+hostile : THREW structure context={"path":[],"shape":"object"}
+verdict: reporter total GREEN; auditor path in refusal GREEN

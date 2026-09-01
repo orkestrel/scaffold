@@ -1,0 +1,11 @@
+cmd: U2 acceptance - parity + marginal A/B vs U1 tree dist, 2026-09-01
+=== parity
+comparisons: 1170
+PARITY: IDENTICAL
+=== A/B (A=U1 tree, B=U2 tree)
+is-medium: A 2513 ns/op  B 2253 ns/op  B/A median 0.909 (ratio p25 0.874 p75 0.955)
+audit-medium: A 5583 ns/op  B 4945 ns/op  B/A median 0.905 (ratio p25 0.838 p75 0.954)
+is-deep: A 8773 ns/op  B 7854 ns/op  B/A median 0.924 (ratio p25 0.854 p75 0.962)
+audit-deep: A 22201 ns/op  B 19148 ns/op  B/A median 0.895 (ratio p25 0.842 p75 0.918)
+parse-medium: A 2491 ns/op  B 2219 ns/op  B/A median 0.878 (ratio p25 0.838 p75 0.968)
+explain-medium: A 4830 ns/op  B 4302 ns/op  B/A median 0.907 (ratio p25 0.846 p75 0.947)

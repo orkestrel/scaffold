@@ -1,0 +1,12 @@
+cmd: u2fix acceptance - mutation GREEN leg + parity + A/B, 2026-09-01
+=== mutation probe (rebuilt dist)
+reporter wide+hostile: CALL THREW raw TypeError: artifact is not a function
+auditor wide+hostile : CALL THREW raw TypeError: artifact is not a function
+verdict: reporter total RED; auditor path in refusal RED
+=== parity
+comparisons: 1170
+PARITY: IDENTICAL
+=== A/B (A=U4 tree, B=u2fix tree)
+audit-medium: A 3807 ns/op  B 3972 ns/op  B/A median 1.045 (ratio p25 0.990 p75 1.122)
+audit-deep: A 16748 ns/op  B 16280 ns/op  B/A median 0.987 (ratio p25 0.957 p75 1.027)
+explain-medium: A 3672 ns/op  B 3479 ns/op  B/A median 0.946 (ratio p25 0.903 p75 0.974)
