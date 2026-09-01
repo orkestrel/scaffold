@@ -343,3 +343,12 @@ The fix-round audit reconciliation is written in `fix/audit-1-verdict.md` with a
 retained finding in `fix/audit-findings.json`, which the breaking unit briefs load; the five
 packages whose lanes are still running (msg, qualifier, program, csv, form) receive their rulings
 when they return.
+
+### Breaking-phase design round launched (2026-09-01)
+
+Workflow `wf_45980be9-63e` runs the adversarial design pass on `fix/breaking-design-brief.md`: a
+subjective lane and an objective lane, each a `planner` role on Claude Opus 5 with a clean
+context, blind to each other, with the Sol substitution recorded. Each returns the planner shape
+(design, alternatives, units with role and engine, refusals, tensions, risks) as data; the
+Orchestrator reconciles them into the plan, the routing ledger, and the exit criterion before any
+breaking unit dispatches.
