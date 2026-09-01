@@ -713,5 +713,70 @@
   "guide": "guides/sqlite.md SQLiteDatabase Surface row, transaction Methods row, transacting contract items, and transaction(scope) fences",
   "prerequisite": [],
   "summary": "Rename SQLiteDatabaseInterface.transaction / SQLiteDatabase.transaction; whether the replacement is transact, a fleet-wide rename from database, or keeping transaction as the shared domain term is not settled."
+ },
+ {
+  "package": "sse",
+  "id": "s18-04",
+  "kind": "rename",
+  "edits": [
+   {
+    "symbol": "reset",
+    "action": "rename",
+    "to": "clear",
+    "member": "SSEParserInterface",
+    "file": "src/core/types.ts:89"
+   },
+   {
+    "symbol": "reset",
+    "action": "rename",
+    "to": "clear",
+    "member": "SSEParser",
+    "file": "src/core/SSEParser.ts:147"
+   }
+  ],
+  "guide": "guides/sse.md lines 12, 34, 42, 119, 128, 146, 156, 157, 170; TSDoc prose at src/core/types.ts:82,85,88, SSEParser.ts:29,84, factories.ts:17,36, errors.ts:17,46; tests tests/src/core/factories.test.ts:23,27 and SSEParser.test.ts",
+  "prerequisite": [],
+  "summary": "Rename the published reset() to clear() on the interface and the class; keep the private #clear() (no collision, proven by tsc per the DRIFT-RESHAPE lane); update every prose mention, guide line, and test call. Orchestrator fill-in: the Grok chunk omitted this row."
+ },
+ {
+  "package": "ndjson",
+  "id": "s18-03",
+  "kind": "rename",
+  "edits": [
+   {
+    "symbol": "reset",
+    "action": "rename",
+    "to": "clear",
+    "member": "NDJSONParserInterface",
+    "file": "src/core/types.ts:21"
+   },
+   {
+    "symbol": "reset",
+    "action": "rename",
+    "to": "clear",
+    "member": "NDJSONParser",
+    "file": "src/core/NDJSONParser.ts:46"
+   }
+  ],
+  "guide": "guides/ndjson.md quote block, Surface fence, Types row, Methods row, Methods fence (lines near 15, 38, 45, 92); TSDoc at types.ts:17 and NDJSONParser.ts:25",
+  "prerequisite": [],
+  "summary": "Rename the published reset() to clear() on the interface and the class, with the guide and the tests that call it. Orchestrator fill-in: the Grok chunk omitted this row."
+ },
+ {
+  "package": "budget",
+  "id": "s18-19",
+  "kind": "option-key",
+  "edits": [
+   {
+    "symbol": "consume",
+    "action": "rename",
+    "to": "consumer",
+    "member": "BudgetOptions",
+    "file": "src/core/types.ts:21"
+   }
+  ],
+  "guide": "guides/budget.md:16,25,31,61,110",
+  "prerequisite": [],
+  "summary": "Rename the option key BudgetOptions.consume to consumer (the DRIFT-RESHAPE lane amendment the judge adopted; the finding proposed charge, which would force #consumer and createTokenConsumer to move with it). Update Budget.ts:33,43,76; helpers.ts:36,41,75-84,96-99; factories.ts:25,47,124. BudgetInterface.consume(value) is unchanged. Orchestrator fill-in: the Grok chunk omitted this row."
  }
 ]
