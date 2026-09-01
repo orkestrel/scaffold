@@ -218,3 +218,26 @@ main's landed design (see `fix/reports/contract.md` § Reconciliation). The flee
 lockfile regeneration, `npm run check`, and a commit and push only for rows that pass; the row log
 is `/home/user/work/contract-repin.log`. Per the runtime-bump law every re-pinned package is a
 mover for the second inventory; publishing stays held by the user's ruling.
+
+### Contract re-pin outcome (2026-09-01)
+
+`/home/user/work/contract-repin.sh 0.0.15` moved every fleet dependent's `@orkestrel/contract` pin
+to `^0.0.15` with a regenerated lockfile and `npm run check` green, committed and pushed row by row
+(`/home/user/work/contract-repin.log`), with two rows outside the pass:
+
+- **worker stays at `^0.0.13`.** Its `queue` dependency pins contract `0.0.13`, so the re-pin
+  installs a second contract copy under `node_modules/@orkestrel/queue/node_modules`, and the
+  compiler reads `Infer` from the two copies as distinct types (`src/server/factories.ts:43`,
+  TS2322 then TS2589). This is the layer cascade the publish law names: worker re-pins after
+  queue (and its other L2–L3 dependencies) republish against 0.0.15. The pin was returned to
+  `^0.0.13` by edit and reinstall; the tree is clean and typechecks.
+- **qualifier re-pinned with a scoped commit.** The tree held uncommitted drafts from the first
+  run of its fix unit, interrupted by the usage limit. The manifest and lockfile committed alone;
+  the drafts stay for the resumed unit, whose brief names them as untested input to re-derive
+  finding by finding.
+
+Every other re-pinned package installs the same transient state — its own 0.0.15 at the root and a
+nested 0.0.13 under each `@orkestrel/*` dependency that still pins the old release — until the wave
+republishes layer by layer. `isContractError` brands by an own descriptor rather than by `instanceof`
+against one copy, so cross-copy detection holds; the fleet gate sweep after the fix round is the
+runtime proof.
