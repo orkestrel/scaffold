@@ -58,3 +58,16 @@ Terminal lines: objective `FAIL 2`; subjective `FAIL 5`; checker `PASS`; verifie
 | outside claims: round-1 F3's bound has no durable home beyond this verdict | finding | upheld: `guide-fixup-2` states the bound in the guide's extraction paragraph |
 
 Terminal lines: objective `FAIL 12`; verifier GREEN.
+
+## Round 3 (fix round `guide-fixup-2`)
+
+Subject: the four-file diff restoring round-1 F1's predicate. Orchestrator verification in place
+of a lane, on the auditor's own "what right looks like": `Source.#locate` now reads
+`if (declaration === undefined) continue; if (declaration.body.length === 0 && declaration.bases.length === 0) continue; return declaration`;
+the two named cases (empty first-file head → later file's members; empty interface head →
+same-named class) exist, failed before the change, and pass after it; the bound is stated in the
+`methods` remark and the guide paragraph; the builder's gate chain exits 0. Verdict: PASS. The
+guide unit closes **applied** for s15-16, s15-17, and the `Source.methods` follows-`extends`
+carrier. Findings for the next change: `Source.examples(name)` does not follow `extends` (stated
+in the guide); the earlier retirement block naming `extractCodeLines`, `moduleDirs`, `moduleKeys`
+in `helpers.test.ts`; `README.md` § API names `patterns()` where the interface exposes `fences()`.

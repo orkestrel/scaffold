@@ -119,3 +119,12 @@ Sweep for every retired name and the three deleted locators: no hit. Gates: `for
 guides). Observations for the next change: the earlier retirement block naming `extractCodeLines`,
 `moduleDirs`, `moduleKeys` stands; `README.md` § API says `patterns()` where the interface exposes
 `fences()`.
+
+## Fix-up 2 (guide-fixup-2, builder on Sonnet; commit follows `b015704`)
+
+`Source.#locate` skips a located declaration whose body and bases are both empty and keeps
+scanning, so an empty `export interface X {}` falls through to a later declaring file or a
+same-named class; two real-text tests written first (2 failed before, 375 passed after); the
+bases-only bound stated in the `methods` remark and the guide's extraction paragraph. Gates:
+`format:check` 0 (after a scoped converge of the test file), `lint:check` 0, `check` 0, `build` 0,
+`test` 0 (375 src, 111 policy, 46 config, 12 setup, 27 guides).
