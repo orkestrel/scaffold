@@ -321,3 +321,14 @@ bounds which consumers a unit visits, and the compiler against the staged tarbal
 consumption. It cannot under-report a consumer that imports the package by its published
 specifier, and it does not see a consumer that reaches a symbol through a re-export or a dynamic
 import (none exist under the barrel law).
+
+### Breaking ledger, L2 to L6 (2026-09-01)
+
+The L2 chunk returned every row (`fix/breaking-ledger-L2.json`; two referral rows carried the
+work order's `referral` prefix after normalization) and the L3 chunk returned every row
+(`fix/breaking-ledger-L3.json`). The L4–L6 chunk, launched by the serial chain the moment L3
+finished, returned an empty journal with exit 1 and no output. Per `.agents/orchestration.md`
+§ Bench laws the lane was re-probed before ruling: a bounded round trip through the same CLI
+answered `GROK-LIVE` (exit 0), so the empty lane reads as starvation or a transient launch
+failure rather than a dark bench, and the lane re-ran alone. Each chunk's open naming questions
+sit under `Unknowns` in `fix/breaking-ledger-<chunk>-report.md` for the design round to rule on.
