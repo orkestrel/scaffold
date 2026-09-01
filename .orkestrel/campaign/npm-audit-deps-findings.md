@@ -292,3 +292,13 @@ Publishing stays held: every consumer's committed state names the registry range
 beside the tarball it proved against, and the wave re-pins layer by layer when the user releases.
 The all-succeed and kind-purity rulings are closed: workspace (s17-37), terminal, tool (s18-06),
 and html (s08-06 plus the `isEmptyElement` residue) all landed under them.
+
+### Fix round 1 closed (2026-09-01)
+
+Workflow `wf_a88c02f6-538` finished with every writer unit returned (47 of 47, no errors after the
+resume). Every unit is tripwired for surface removals, committed on its package's campaign branch
+as "Apply the verified src-audit fixes", and pushed; the reports sit under `fix/reports/`. The
+disposition tally from `instruments/workorder.mjs` over the 48 report files (2026-09-01): applied
+311, deferred as breaking 158, deferred to the TSDoc wave 21, already resolved 2. The regenerated
+`fix/work-order.md` carries 161 rows (the deferred rows plus the referral-derived extras) grouped
+by layer, and is the input ledger for the breaking phase.
