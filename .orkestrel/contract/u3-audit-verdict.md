@@ -83,3 +83,25 @@ Subject: unit U3i (`u3i-brief.md`, `u3i-report.md`; builder on Sonnet from exact
 ### Ruling
 
 FAIL; fix round U3j (`u3j-brief.md`, builder on Sonnet, exact text from the lane's own prescriptions) follows, closed by `checker`, a `reviewer` lane on the four sentences, and `verifier` run 4. The read-count sentence is on its third revision; U3j states the condition the count depends on rather than a number, which is the property the earlier revisions stood in for.
+
+## U3j audit (2026-09-01)
+
+Subject: unit U3j (`u3j-brief.md`, `u3j-report.md`; builder on Sonnet from the U3i lane's prescriptions). Lanes: one subjective lane (`reviewer`, Opus 5; `u3j-audit-subjective.md`), `checker` (`u3j-checker-report.md`, PASS), `verifier` run 4 (`u3-final-verifier-report-4.md`, GREEN). No objective lane: the unit is prose and a title; recorded as the round's deviation.
+
+### Lane terminal line
+
+- Subjective: `VERDICT: FAIL — 0 broken, 0 unresolved, 0 not-evidenced, 2 findings outside the claims`
+
+### Reconciliation
+
+| Item | Ruling | Carrier |
+| --- | --- | --- |
+| Claims 1 to 5 CONFIRMED: the conditioned read-count sentence (true of the code, the probe record, and the pins), the renamed title, the paragraph closing once, the faculty-free TSDoc, and the five-line delta | Accepted as ruled. The lane's note that claim 3's "one subject and one predicate" conjunct is false read literally is a brief defect; it was ruled under the reading its predecessor finding fixes. | none |
+| Finding A: the declared-pattern pin's title at `helpers.test.ts:3288` still says "twice per call" of an unqualified hand-rolled shape, while a min-only shape reads once (`readcount-cases-u3final.out`); the U3j brief's criterion 5 wrongly called it bounded | Confirmed by the sweep (`twice per call` survives in that one title). Adopted verbatim. | Orchestrator edit unit U3k, edit 1. |
+| Finding B: the `@param pattern` default line "rebuilt from `shape` on every call" states the declared-pattern behaviour unconditionally; entered with U3 | Confirmed by the sweep of `on every call` (the other hits describe the bounds and the rebuilt pattern's answers, not the accessor's read count). Adopted verbatim. | Orchestrator edit unit U3k, edit 2. |
+| Referral: the documented precondition on the published `createStringFaults` ("must be a `readPattern` result for this shape's own pattern") is unenforced | Already ruled in round 1 (`u3-audit-verdict.md` § Round 1): a documented obligation on the interface; a per-answer guard was refused on cost and on consistency with `matchesPattern`. Stands. | none |
+| Observations: the ellipsis "names the `limit` when one was" (attachment readable two ways), the paragraph closing on its editing history, the row's length | Recorded; the lane declined to raise them and the seam budget warns off a fourth revision of the sentence. The minimal alternative form the lane offers is kept in its return for the guide's next prose edit. | `acceptance-perf2.md` § Remaining risk. |
+
+### Ruling
+
+FAIL on the two findings; closed by the Orchestrator edit unit U3k (`u3k-orchestrator-edits-brief.md`), verified by `checker` and `verifier` run 5.
