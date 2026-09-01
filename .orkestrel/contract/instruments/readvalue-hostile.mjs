@@ -40,6 +40,7 @@ for (const key of ['path', 'shape', 'limit', 'received']) {
 	delete Object.prototype[key]
 }
 line('context is null', () => readValue(boom, 'door', { context: null }))
+line('subject accessor alternating string then hostile object', () => { let reads = 0; return readValue(boom, 'door', { get subject() { reads += 1; return reads === 1 ? 'thing' : { toString() { throw new Error('hostile toString') } } } }) })
 line('options is a string', () => readValue(boom, 'door', 'nope'))
 const contract = createContract(objectShape({ a: stringShape() }))
 line('auditor prototype-trap refusal', () => contract.audit(new Proxy({ a: 'x' }, { getPrototypeOf: () => { throw new Error('proto') } }), ['root']))
