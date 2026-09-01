@@ -1,0 +1,24 @@
+diff --git a/.claude/rules/names.md b/.claude/rules/names.md
+index c5e0a34..9a8baab 100644
+--- a/.claude/rules/names.md
++++ b/.claude/rules/names.md
+@@ -93,7 +93,7 @@ Module helpers have no owning entity at the call site, so default to `{verb}{Nou
+   - `infer*` derives.
+   - `compute*` calculates deterministically.
+   - `matches*` is a predicate.
+-  - `build*` constructs a plain composite value (a record, a row, a worksheet) from parts and reads no host; an entity factory is `create*` and a combinator named for its constituents is `*Of`, both in § Fixed derivation/construction forms.
++  - `build*` is the assembly step inside the package's own computation that composes parts the package computed, sits in `helpers.ts`, and reads no host; a factory a consumer calls is `create*` and a combinator named for its constituents is `*Of`, both in § Fixed derivation/construction forms.
+   - `read*` obtains a value from a live host object, a stream position, or a byte layout, returns it or throws, and never coerces; a coercing helper is `parse*` in § Fixed derivation/construction forms.
+   - `resolve*` picks the effective value from options and defaults.
+   - `scan*` walks a structure and returns its findings.
+@@ -168,8 +168,8 @@ Keep canonical case:
+ 
+ - `is*`: total `Guard<T>`; never throws; returns false off-shape.
+ - `parse*`: coercion producing `T | undefined`; cross-type conversion never belongs in a guard.
+-- `create*`: factory constructing an entity/value.
+-- `*Of`: builder combining constituent parts into a container/guard/value, such as `arrayOf(guard)` or `boundsOf(min, max)`.
++- `create*`: factory in `factories.ts` that a consumer calls to obtain an entity or a value it then holds; a package-internal assembly step is `build*` in § Standalone helpers.
++- `*Of`: combinator named for its constituents, combining them into a container/guard/value, such as `arrayOf(guard)` or `boundsOf(min, max)`.
+ - `{noun}To{Noun}`: projection from a whole to a derived view, such as `definitionToSnapshot`.
+ - `*Shape`: `ContractShape` value/JSON-Schema blueprint, not a function or type.
+ - Leading `_`: intentionally unused binding only; never privacy.
