@@ -166,7 +166,7 @@ Keep canonical case:
 
 ## Fixed derivation/construction forms
 
-- A form's contract binds a new name; `.claude/rules/architecture.md` § Kind purity names the retained names that keep a form outside its file, such as `createWriteDirectory` and `isVacant` in `helpers.ts`.
+- A form's contract binds a new name; `.claude/rules/architecture.md` § Kind purity names the retained names that keep a form outside its file, such as `createWriteDirectory` and `isVacant`.
 - `is*`: total `Guard<T>`; never throws; returns false off-shape.
 - `parse*`: coercion producing `T | undefined`; cross-type conversion never belongs in a guard.
 - `create*`: the factory form; `.claude/rules/architecture.md` § Kind purity states what a factory is and where it lives.

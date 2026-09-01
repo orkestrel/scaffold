@@ -77,3 +77,22 @@ Terminal line: `FAIL 3`. Fix round `vocabulary-5` is an exact-text edit by `buil
 text ruled above; the round-5 lane holds the disjointness, pointer, and retained-exception claims.
 A remaining objection that turns only on `entity` being undefined closes as a finding for the
 next change, not as another round.
+
+## Round 5 (fix round `vocabulary-5`, commit `fa3d5f3`, subject `units/vocabulary-5.diff`)
+
+| Claim | Objective lane (Opus reviewer) | Orchestrator |
+| --- | --- | --- |
+| 1 `build*` and `*Of` disjoint | CONFIRMED (complementary predicates) | stands |
+| 2 `create*` carries no discriminator; `build*` excludes a factory by pointer; no placement in `names.md` | BROKEN on the third conjunct: the new bullet ended "in `helpers.ts`", a placement fact whose home is `architecture.md:67-70` | upheld; the phrase struck by the Orchestrator as a one-line fix (below) |
+| 3 the new bullet binds a new name, routes exceptions to § Kind purity, resolves `is*`/`isVacant` | CONFIRMED | stands |
+| 4 each exemplar takes one form given placement | CONFIRMED (placement → form, never through `entity`) | stands |
+| 5 directives; no count, `should`, ambiguous pronoun | CONFIRMED | stands |
+| 6 only the named lines | CONFIRMED | stands |
+| outside claims: "named for its constituents" scope after "neither … nor" | non-blocking observation; the pointer resolves it | recorded |
+
+Terminal line: `FAIL 2`. **Orchestrator fix, one line:** ` in \`helpers.ts\`` struck from line 169, leaving
+"such as `createWriteDirectory` and `isVacant`"; `format:check` 0, `lint:check` 0, `test:policy` 0
+on the Orchestrator's own run. Verdict after the fix: **PASS** (the lane's only break was the
+struck phrase; every other claim CONFIRMED). The vocabulary unit closes **applied**. Finding for
+the next change, against `architecture.md` § Kind purity: define `entity` where "a function
+returning a live entity" is stated.
