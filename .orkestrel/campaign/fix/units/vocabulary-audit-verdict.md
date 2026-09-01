@@ -60,3 +60,20 @@ placement (`createCaptureResult` and `createRestoredSession` are factories; rate
 program's assemblers are helpers), the text yields each name form. Fix round `vocabulary-4` is an
 exact-text edit by `builder`; the round-4 lane checks the one-home, pointer, and placement claims
 and that the exemplars follow given their placement.
+
+## Round 4 (fix round `vocabulary-4`, commit `7775eb7`, subject `units/vocabulary-4.diff`)
+
+| Claim | Objective lane (Opus reviewer) | Orchestrator |
+| --- | --- | --- |
+| 1 one form per line; pointers only | CONFIRMED | stands |
+| 2 no placement statement; no contradiction of § Kind purity | CONFIRMED | stands |
+| 3 the lines yield one form per exemplar given placement | BROKEN: `build*` and `*Of` are not disjoint after "named for its constituents" left line 172; `entity` is defined nowhere, so line 171 does not reach `createCaptureResult` on its own | first half upheld: line 172 regains its discriminator and line 96 negates it in text. Second half: `entity` is a term `AGENTS.md` and `architecture.md` use as given; line 171 stops carrying a discriminator and points to § Kind purity, which owns what a factory is. Defining `entity` is recorded as a finding for the next change against `architecture.md` § Kind purity. |
+| 4 directives; no count, `should`, or ambiguous pronoun | CONFIRMED | stands |
+| 5 only the three lines | CONFIRMED | stands |
+| outside claims: a form's contract versus the retained `createWriteDirectory` and `isVacant` | finding | upheld: § Fixed derivation/construction forms opens with the rule that a form's contract binds a new name and § Kind purity names the retained exceptions |
+| outside claims: `names.md:159` identifier-shape row; `combinator combining` stem repeat | findings | the shape row states form not contract (no second home); the stem repeat is cured by the round-5 text |
+
+Terminal line: `FAIL 3`. Fix round `vocabulary-5` is an exact-text edit by `builder` with the
+text ruled above; the round-5 lane holds the disjointness, pointer, and retained-exception claims.
+A remaining objection that turns only on `entity` being undefined closes as a finding for the
+next change, not as another round.
