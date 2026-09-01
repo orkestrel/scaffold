@@ -70,3 +70,12 @@ Built `dist/` moves: true
 
 Actual diff and status rendered by the Orchestrator: `tmp/units/breaking/test.diff`,
 `tmp/units/breaking/test.status`.
+
+## Fix-up (test-fixup, builder on Sonnet)
+
+`resolveColor` → `parseCSSColor` in `src/browser/helpers.ts` (declaration, `@example`, `{@link}`,
+the `matchesColor` call sites), `tests/src/browser/helpers.test.ts`, and `guides/test.md`;
+`rg 'resolveColor' src tests guides` empty. Gates after `lint` and `format` converged:
+`format:check` 0, `lint:check` 0, `check` 0, `build` 0, `test` 0 (450 passed, 8 pre-existing
+host-probe skips; policy 111, config 46, setup 24, guides 38). Committed as the second commit of
+the unit (`30f6211` over `2f94b93`, base `440b54f`). The audit subject is the combined diff.

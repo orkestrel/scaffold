@@ -1,0 +1,1165 @@
+diff --git a/guides/test.md b/guides/test.md
+index 0faa823..b8a4018 100644
+--- a/guides/test.md
++++ b/guides/test.md
+@@ -113,7 +113,7 @@ Imported from `@orkestrel/test`.
+ | `RecorderMap`              | type      | `{ readonly [K in TName]: RecorderInterface<TMap[K]> }` — one recorder per requested event name.                                                                                                                                                                                         |
+ | `Success`                  | interface | `{ success: true, value }` — the produced arm of one outcome.                                                                                                                                                                                                                            |
+ | `Failure`                  | interface | `{ success: false, error }` — the failed arm of one outcome.                                                                                                                                                                                                                             |
+-| `Result`                   | type      | `Success<T> \| Failure<E>` — one operation's outcome, discriminated on `success`; `E` defaults to `Error`.                                                                                                                                                                               |
++| `Result`                   | type      | `Success<T> \| Failure<E>` — one operation's outcome, discriminated on `success`; `E` defaults to `Error`, where `@orkestrel/contract` publishes the same name defaulting to `unknown`; [Limits](#limits) rules that divergence.                                                         |
+ | `SignalInterface`          | interface | `{ controller, signal, count }` — a real abort controller, its instrumented signal, and that signal's live abort-listener tally.                                                                                                                                                         |
+ | `SignalRegistration`       | type      | `readonly [listener, installed, capture, cleanup]` — one abort listener an instrumented signal installed, as its tally holds it.                                                                                                                                                         |
+ | `ResourceFactoryInterface` | interface | `{ created, destroyed }` plus `create` / `destroy` — numbered resources, with a recorder for the ids created and one for the ids destroyed.                                                                                                                                              |
+@@ -165,6 +165,11 @@ instead of propagating.
+ | `flattenHeaders`      | function | `(init: HeadersSource) => Readonly<Record<string, string>>`                           | Normalizes any header initializer into a frozen plain record.     |
+ | `resolveRoot`         | function | `(meta: ImportMeta) => URL`                                                           | The URL one directory above the calling module's own file.        |
+ 
++`dropRegistration` is the mechanic `createSignal`'s one-shot and scope-abort paths share, exported
++because both of them call it rather than because a consumer was expected to. Reaching it takes a
++`SignalRegistration` list of your own: `createSignal` hands back `SignalInterface`, whose members are
++`controller`, `signal`, and `count`, so nothing this package returns carries the list to pass.
++
+ #### Factories
+ 
+ | API                     | Kind     | Signature                                                                                                 | Summary                                                          |
+@@ -188,13 +193,13 @@ journey verb. `build` creates a node, `mount` attaches one, and `render` does bo
+ markup or from a tag and its classes; `clearStorage` takes nothing at all, and `removeDatabase`
+ takes a database name. The predicates, the element readers, and the describers name a node the
+ caller already has — `isRendered`, `isReachable`, `readText`, `readRole`, `readName`, `readStates`,
+-`describeTree`, `describeFocus`, `extractOrphans`, `readRows`, `style`, `token`, `pixels`,
+-`contrast`, `readLayers`, `readBackdrop`, and `readRing` — and each reads that node rather than
+-acting on a target it was handed. `captureFrame` and `place` take an element as well, and
+-photographing one is a reading too: neither moves focus, dispatches an event, or changes what the
+-element renders. `typeInput` and `commitInput` are the exception, and it stays narrow: they write
+-into the field they are given, as the synthetic counterpart of `typeAccessible` for a component
+-that listens for `input`. The color leaves, the cascade readers, the pane verbs, and the
++`describeTree`, `describeFocus`, `extractOrphans`, `readRows`, `readStyle`, `readToken`,
++`readPixels`, `readContrast`, `readLayers`, `readBackdrop`, and `readRing` — and each reads that
++node rather than acting on a target it was handed. `captureFrame` and `place` take an element as
++well, and photographing one is a reading too: neither moves focus, dispatches an event, or changes
++what the element renders. `typeInput` and `commitInput` are the exception, and it stays narrow: they
++write into the field they are given, as the synthetic counterpart of `typeAccessible` for a
++component that listens for `input`. The color leaves, the cascade readers, the pane verbs, and the
+ whole-document readers take a value or nothing at all, so they name no target either.
+ 
+ #### Types
+@@ -206,7 +211,7 @@ whole-document readers take a value or nothing at all, so they name no target ei
+ | `FrameOptions`       | interface | `{ path, width, height, element? }` — where one frame is written, the viewport it is shot at, and what it shoots.                                   |
+ | `CaptureVariant`     | interface | `{ name, width, height, apply? }` — one theme-and-viewport pair, and the document change it needs first.                                            |
+ | `PortfolioOptions`   | interface | `{ states, variants, variant, directory, enabled? }` — the registry, the matrix, this run's variant, where it writes, and whether it writes at all. |
+-| `PortfolioInterface` | interface | `{ variant, states, paths, files }` plus `place` — one run's registry and what it placed.                                                           |
++| `PortfolioInterface` | interface | `{ variant, placements, paths, files }` plus `place` — one run's registry and what it placed.                                                       |
+ | `JournalStep`        | interface | `{ action, trigger, result }` — one scripted step and what the surface did about it.                                                                |
+ | `JournalInterface`   | interface | `{ steps, output }` plus `start` / `stop` / `record` — one scenario's steps and the page's own output.                                              |
+ 
+@@ -258,14 +263,14 @@ whole-document readers take a value or nothing at all, so they name no target ei
+ | `clearStorage`          | function | `() => void`                                                                                            | Empties local and session storage together, for an `afterEach` hook that runs after a failed test too.                                             |
+ | `removeDatabase`        | function | `(name: string) => Promise<void>`                                                                       | Deletes one IndexedDB database; rejects on an error and on a block.                                                                                |
+ | `parseColor`            | function | `(value: string) => Color \| undefined`                                                                 | One computed `rgb()`, `rgba()`, or `color(srgb …)` value as straight channels; `undefined` for anything else.                                      |
+-| `rgba`                  | function | `(value: string) => Color \| undefined`                                                                 | Any CSS color expression resolved to channels by the real cascade; `undefined` when the CSSOM refuses it.                                          |
+-| `colorEqual`            | function | `(first: string \| Color, second: string \| Color) => boolean`                                          | Whether two colors render the same, within half a channel step.                                                                                    |
++| `parseCSSColor`         | function | `(value: string) => Color \| undefined`                                                                 | Any CSS color expression resolved to channels by the real cascade; `undefined` when the CSSOM refuses it.                                          |
++| `matchesColor`          | function | `(first: string \| Color, second: string \| Color) => boolean`                                          | Whether two colors render the same, within half a channel step.                                                                                    |
+ | `blendColor`            | function | `(front: Color, back: Color) => Color`                                                                  | One color composited over another, always opaque.                                                                                                  |
+ | `measureLuminance`      | function | `(color: Color) => number`                                                                              | One opaque color's WCAG relative luminance, from `0` to `1`.                                                                                       |
+ | `measureContrast`       | function | `(front: Color, back: Color) => number`                                                                 | The WCAG 2.x ratio between two opaque colors, from `1` to `21`.                                                                                    |
+ | `readLayers`            | function | `(element: Element) => readonly Color[]`                                                                | Every painted layer between the element and its first opaque ancestor, that ancestor last; an unpainted stack is empty.                            |
+ | `readBackdrop`          | function | `(element: Element, floor: Color) => Color`                                                             | The opaque color behind an element, every translucent layer composited onto the required floor.                                                    |
+-| `contrast`              | function | `(element: Element, floor?: Color) => number`                                                           | The WCAG 2.x ratio for one element's text; an omitted floor refuses an unpainted stack and a supplied one composites onto it.                      |
++| `readContrast`          | function | `(element: Element, floor?: Color) => number`                                                           | The WCAG 2.x ratio for one element's text; an omitted floor refuses an unpainted stack and a supplied one composites onto it.                      |
+ | `readRing`              | function | `(control: Element, worn?: Element) => number \| undefined`                                             | The ratio the painted focus chrome reaches against its backdrop; `undefined` off `:focus-visible` or with no painted chrome.                       |
+ | `stagePane`             | function | `(width: number, height: number) => Promise<void>`                                                      | Sets the viewport and renders the runner's tester pane at that size, unscaled.                                                                     |
+ | `releasePane`           | function | `() => void`                                                                                            | Hands the staged pane back to the runner's own layout.                                                                                             |
+@@ -276,10 +281,10 @@ whole-document readers take a value or nothing at all, so they name no target ei
+ | `findKeyframes`         | function | `(name: string) => CSSKeyframesRule \| undefined`                                                       | The animation the cascade declares under an exact name.                                                                                            |
+ | `readRows`              | function | `(root: ParentNode, selector: string) => readonly string[]`                                             | One line per matched element, built from its text nodes rather than from `textContent`.                                                            |
+ | `extractOrphans`        | function | `(root: ParentNode, child: string, parent: string) => readonly string[]`                                | The markup of every element carrying the `child` class with no `parent` class above it.                                                            |
+-| `style`                 | function | `(element: Element, property: string) => string`                                                        | One resolved CSS property, trimmed, read from the real browser.                                                                                    |
+-| `token`                 | function | `(element: Element, name: string) => string`                                                            | One custom property off an element's resolved style, its dashes optional.                                                                          |
+-| `rootToken`             | function | `(name: string) => string`                                                                              | The same reading taken against the document element.                                                                                               |
+-| `pixels`                | function | `(element: Element, property: string) => number`                                                        | One resolved length as a number of pixels; `0` when it carries none.                                                                               |
++| `readStyle`             | function | `(element: Element, property: string) => string`                                                        | One resolved CSS property, trimmed, read from the real browser.                                                                                    |
++| `readToken`             | function | `(element: Element, name: string) => string`                                                            | One custom property off an element's resolved style, its dashes optional.                                                                          |
++| `readRootToken`         | function | `(name: string) => string`                                                                              | The same reading taken against the document element.                                                                                               |
++| `readPixels`            | function | `(element: Element, property: string) => number`                                                        | One resolved length as a number of pixels; `0` when it carries none.                                                                               |
+ | `expandCaptures`        | function | `(states: readonly string[], variants: readonly CaptureVariant[]) => readonly string[]`                 | The registry times the variants, as `<state>--<variant>.png` names.                                                                                |
+ 
+ #### Factories
+@@ -347,23 +352,23 @@ another connection is still open, and a suite that swallowed it would leave the
+ the previous test's records through a database that reports itself deleted. The connection holding
+ it open is the caller's to close, and [Voices](#voices) carries the message each refusal spells.
+ 
+-`rgba` is the live half of the pair `parseColor` opens. `parseColor` reads text and speaks only the
+-computed syntaxes a cascade hands back; `rgba` stages a probe element, hands the expression to the
+-real cascade, and reads back what the engine computed — which is the only way a keyword, a hex
+-triple, a `var()` reference, or a `color-mix()` becomes channels at all. The probe is mounted, so a
+-`var()` reference resolves against the tokens `:root` declares, and it is removed in a `finally`.
+-Refusal is the CSSOM's: an expression it will not parse returns `undefined`. A `var()` naming an
+-undeclared custom property is not refused, and [Limits](#limits) states what that costs.
+-
+-`colorEqual` compares two colors as a browser renders them. Each string side resolves through
+-`rgba`, so a keyword, a token reference, and the `rgb()` an engine computes for either compare equal
+-without a test converting anything first. The tolerance is half a channel step on the 0–255 scale,
+-and the alpha is scaled onto that same range before it is compared, so one number covers every
+-channel. A side that resolves to nothing makes the answer `false` rather than a throw, because this
+-is a predicate.
+-
+-`contrast` resolves a transparent or translucent background through the element's ancestors: every
+-painted layer from the element up to the first opaque one composites top-over-bottom onto that
++`parseCSSColor` is the live half of the pair `parseColor` opens. `parseColor` reads text and speaks
++only the computed syntaxes a cascade hands back; `parseCSSColor` stages a probe element, hands the
++expression to the real cascade, and reads back what the engine computed — which is the only way a
++keyword, a hex triple, a `var()` reference, or a `color-mix()` becomes channels at all. The probe is
++mounted, so a `var()` reference resolves against the tokens `:root` declares, and it is removed in a
++`finally`. Refusal is the CSSOM's: an expression it will not parse returns `undefined`. A `var()`
++naming an undeclared custom property is not refused, and [Limits](#limits) states what that costs.
++
++`matchesColor` compares two colors as a browser renders them. Each string side resolves through
++`parseCSSColor`, so a keyword, a token reference, and the `rgb()` an engine computes for either
++compare equal without a test converting anything first. The tolerance is half a channel step on the
++0–255 scale, and the alpha is scaled onto that same range before it is compared, so one number
++covers every channel. A side that resolves to nothing makes the answer `false` rather than a throw,
++because this is a predicate.
++
++`readContrast` resolves a transparent or translucent background through the element's ancestors:
++every painted layer from the element up to the first opaque one composites top-over-bottom onto that
+ opaque base, so a 3% surface tint reads as a tint over what shows through it rather than as a
+ full-strength paint. A translucent foreground then resolves against that effective background before
+ luminance is measured. With `floor` omitted it refuses every stack whose walk reaches no fully
+@@ -414,19 +419,19 @@ selector is compound, so `findRule` matches its argument as a substring of the w
+ `findRule('.card')` finds `.card`, `.card:hover`, and `.panel > .card` alike, and more of the
+ selector narrows it. An animation name is one atom, so `findKeyframes` matches it exactly. Each
+ answers what a stylesheet declares rather than what an element resolves to, and a rule either one
+-finds may be overridden by another — assert on `style` where the rendered result is the subject.
+-
+-`token`, `rootToken`, and `pixels` are `style` with the question narrowed. `token` reads a custom
+-property and accepts the name with or without its leading dashes, because a token is spoken about
+-both ways — `--surface` in a stylesheet and `surface` in prose. An absent token reads as `''`, which
+-is what the CSSOM returns and is indistinguishable from a token declared empty, so assert on the
+-value you expect rather than on presence. Resolution is inheritance: a token declared on `:root`
+-reads from any mounted descendant, and from an unmounted element it reads as `''`. `rootToken` is
+-that reading taken against `document.documentElement`, which is where a theme declares its tokens
+-and where a `[data-theme]` switch retunes them. `pixels` reads the leading number of a resolved
+-length and answers `0` for a value carrying none, because `'auto'`, `'none'`, and `''` each
+-contribute no pixels to what a reader sees; read the text with `style` where that distinction
+-matters.
++finds may be overridden by another — assert on `readStyle` where the rendered result is the subject.
++
++`readToken`, `readRootToken`, and `readPixels` are `readStyle` with the question narrowed.
++`readToken` reads a custom property and accepts the name with or without its leading dashes, because
++a token is spoken about both ways — `--surface` in a stylesheet and `surface` in prose. An absent
++token reads as `''`, which is what the CSSOM returns and is indistinguishable from a token declared
++empty, so assert on the value you expect rather than on presence. Resolution is inheritance: a token
++declared on `:root` reads from any mounted descendant, and from an unmounted element it reads as
++`''`. `readRootToken` is that reading taken against `document.documentElement`, which is where a
++theme declares its tokens and where a `[data-theme]` switch retunes them. `readPixels` reads the
++leading number of a resolved length and answers `0` for a value carrying none, because `'auto'`,
++`'none'`, and `''` each contribute no pixels to what a reader sees; read the text with `readStyle`
++where that distinction matters.
+ 
+ `stagePane` unscales the runner's tester and lifts it to the window's origin, because a frame shot
+ through the runner's fitting scale is a thumbnail of the surface. That couples it to Vitest's own
+@@ -802,8 +807,8 @@ absent, present-but-gated, and ambiguous are different findings about an interfa
+ | `Named region "<name>" is ambiguous across <n> elements`                              | `readPerception`        |
+ | `Named region "<name>" could not be resolved`                                         | `readPerception`        |
+ | `Interactive target "<name>" does not carry a value`                                  | `readValue`             |
+-| `Computed foreground color is unavailable`                                            | `contrast`              |
+-| `Computed background color is unavailable`                                            | `contrast`              |
++| `Computed foreground color is unavailable`                                            | `readContrast`          |
++| `Computed background color is unavailable`                                            | `readContrast`          |
+ | `Tester pane is unavailable for a capture`                                            | `stagePane`             |
+ | `Tester pane rendered <w>x<h> for a <w>x<h> viewport`                                 | `stagePane`             |
+ | `Capture frame was written to <path> where <path> was asked for`                      | `captureFrame`          |
+@@ -1036,23 +1041,22 @@ These hold across `src/core`, `src/browser`, `src/server`, and this guide.
+     both, `clearStorage` takes nothing at all, and `removeDatabase` takes a database name. The
+     predicates, the element readers, and the describers do take a node —
+     `isRendered`, `isReachable`, `readText`, `readRole`, `readName`, `readStates`, `describeTree`,
+-    `describeFocus`, `extractOrphans`, `readRows`, `style`, `token`, `pixels`, `contrast`,
+-    `readLayers`, `readBackdrop`, and `readRing` — and each is a reader of a node the caller already
+-    has rather than a verb that acts on a target. `captureFrame` and `place` take one as the subject
+-    of a photograph, which is a reading too: neither moves focus, dispatches an event, nor changes
+-    what the element renders. `typeInput` and `commitInput` are the one pair that acts on the
+-    element it is handed, and the exception is deliberately narrow: they are the synthetic
+-    counterpart of `typeAccessible`, for a component that listens for `input` and a test that
+-    already holds the field. Drive the field by name wherever the keystrokes are part of what the
+-    journey claims.
+-    `readRing` is the case that makes the split explicit. It measures the focus chrome a browser
+-    painted and never brings the focus about, so a journey reaches the control through
+-    `traverseAccessible` or `pressKeys` and then measures what landed.
+-    The whole environment imports `vitest/browser` and DOM globals and nothing else — no `src/core`
+-    import, no framework, no `node:*`, and no `import.meta.env`, so whether a run writes captures is
+-    the consumer's decision through `PortfolioOptions.enabled` rather than an environment variable
+-    this package reads. `vitest` is a peer dependency, so the provider the layer drives is the one
+-    the consumer already installed, and rule 9's empty `dependencies` is untouched.
++    `describeFocus`, `extractOrphans`, `readRows`, `readStyle`, `readToken`, `readPixels`,
++    `readContrast`, `readLayers`, `readBackdrop`, and `readRing` — and each is a reader of a node
++    the caller already has rather than a verb that acts on a target. `captureFrame` and `place` take
++    one as the subject of a photograph, which is a reading too: neither moves focus, dispatches an
++    event, nor changes what the element renders. `typeInput` and `commitInput` are the one pair that
++    acts on the element it is handed, and the exception is deliberately narrow: they are the
++    synthetic counterpart of `typeAccessible`, for a component that listens for `input` and a test
++    that already holds the field. Drive the field by name wherever the keystrokes are part of what
++    the journey claims. `readRing` is the case that makes the split explicit. It measures the focus
++    chrome a browser painted and never brings the focus about, so a journey reaches the control
++    through `traverseAccessible` or `pressKeys` and then measures what landed. The whole environment
++    imports `vitest/browser` and DOM globals and nothing else — no `src/core` import, no framework,
++    no `node:*`, and no `import.meta.env`, so whether a run writes captures is the consumer's
++    decision through `PortfolioOptions.enabled` rather than an environment variable this package
++    reads. `vitest` is a peer dependency, so the provider the layer drives is the one the consumer
++    already installed, and rule 9's empty `dependencies` is untouched.
+ 14. **The wait family polls only where nothing publishes an event.** The no-polling architecture law
+     governs a product's idle wakeup: a running system parks on the event or the abort signal that
+     fires. A test instrument is the other case. It waits on a fact another process produces — a file
+@@ -1212,6 +1216,7 @@ or when a consumer appears the ruling did not consider.
+ | A reserve-then-release port picker                                                               | Refused | It binds a port, closes it, and hands the number to a child that binds it again, and the window between that close and that rebind is a race another process on the host can win. Have the child bind `0` and report back the port it was given; `createLoopback` does exactly that for a server the test owns itself.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+ | An abort-signal wait — `waitForAbort`                                                            | Ships   | It ships as `waitForAbort`. Every bounded member still takes `WaitOptions.signal` and rejects with the signal's own reason, so a bounded wait needs nothing here; this answers the other case, where the abort is itself the fact the test waits for. It parks on a one-shot listener with no timer and no budget, so a signal that never aborts is the caller's own deadlock rather than a timeout this could name.                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+ | Abort-signal instrumentation                                                                     | Ships   | It ships as `createSignal`. A recorder handed to `addEventListener('abort', …)` still records what one listener heard; what no recorder can answer is how many listeners stand on the signal at this moment, which is the question a leak asks. The instrumented signal counts its own abort registrations, keyed by the original callback and the capture mode, so a helper that removes what it added proves the removal. A registration leaves the tally on removal, on a one-shot delivery, and when a signal scoping it aborts, which is what makes the reading a live tally rather than an install count.                                                                                                                                                                                                                                                   |
++| An outcome triple — a produced arm, a failed arm, and their union                                | Ships   | It ships as `Success`, `Failure`, and `Result`. The rule governing it permits a local declaration only where no declared dependency already carries one, and this package declares no runtime dependency at all, so it cannot import `@orkestrel/contract`'s. That buys a divergence a consumer holding both packages meets: the two `Success<T>` declarations carry identical members and so do the two `Failure<E>` declarations, while `@orkestrel/test`'s `Result<T, E = Error>` defaults its failure type to `Error` and `@orkestrel/contract`'s `Result<T, E = unknown>` leaves it `unknown`. No signature published here returns one — `retryUntil` reads the type internally — so a workspace holding both packages takes its outcome from `@orkestrel/contract` and reaches for this one only where the value came from this package.                    |
+ 
+ `ScratchInterface`'s own members were ruled the same way, and coherence rather than demand decided
+ them. `ensure` ships because it is the one member that produces an empty directory — `write` always
+@@ -1235,10 +1240,10 @@ peer, protocol fixture, and domain builder stays in the package that owns it.
+ A shipped helper can still decline the question it looks like it answers. Each bound here belongs to
+ the helper rather than to the host, and each names what to reach for instead.
+ 
+-- **`rgba` resolves an undeclared token to the inherited color.** A `var()` naming a custom property
+-  nothing declares is not a parse failure: the cascade accepts it and computes the inherited color,
+-  so `rgba('var(--absent)')` hands back channels rather than `undefined`. Read `token` or `rootToken`
+-  where a missing token is the subject.
++- **`parseCSSColor` resolves an undeclared token to the inherited color.** A `var()` naming a custom
++  property nothing declares is not a parse failure: the cascade accepts it and computes the
++  inherited color, so `parseCSSColor('var(--absent)')` hands back channels rather than `undefined`.
++  Read `readToken` or `readRootToken` where a missing token is the subject.
+ - **`createLoopback` cannot take back an upgraded socket.** A server that claims an upgrade keeps
+   that connection, detached from the server itself, so `destroy()`'s `closeAllConnections` never
+   reaches it and the close waits on it. A fixture that upgrades records the socket its `upgrade`
+@@ -1257,10 +1262,10 @@ the helper rather than to the host, and each names what to reach for instead.
+   neither an object nor a function before it reads anything, and a getter that throws on an accepted
+   target hands that throw straight to the caller. Wrap the call in `captureError` where a hostile
+   getter is the subject.
+-- **`pixels` reports a measured contribution rather than a parsed length.** A resolved value carrying
+-  no leading number — `'auto'`, `'none'`, `''` — reads as `0`, because none of them contributes a
+-  pixel to what a reader sees, so a caller cannot tell an unparsable value from a genuine zero. Read
+-  the text with `style` where that distinction is the subject.
++- **`readPixels` reports a measured contribution rather than a parsed length.** A resolved value
++  carrying no leading number — `'auto'`, `'none'`, `''` — reads as `0`, because none of them
++  contributes a pixel to what a reader sees, so a caller cannot tell an unparsable value from a
++  genuine zero. Read the text with `readStyle` where that distinction is the subject.
+ 
+ ## Patterns
+ 
+@@ -2021,11 +2026,11 @@ teardown.add(() => heading.remove())
+ ```
+ 
+ Mount before measuring. An unmounted element inherits no custom property, resolves against no rule,
+-and lays out no box, so `style`, `token`, and `pixels` each answer with the initial value — which
+-reads as a styling defect rather than as a detached node — and `contrast` refuses the element
+-outright, because its computed foreground color does not exist. `build` sets its `text` as text
+-rather than as markup, so a `<` in it stays a `<`; write the fixture as markup where the fixture is
+-markup.
++and lays out no box, so `readStyle`, `readToken`, and `readPixels` each answer with the initial
++value — which reads as a styling defect rather than as a detached node — and `readContrast` refuses
++the element outright, because its computed foreground color does not exist. `build` sets its `text`
++as text rather than as markup, so a `<` in it stays a `<`; write the fixture as markup where the
++fixture is markup.
+ 
+ ### Drive an interface the way a person does
+ 
+@@ -2090,8 +2095,8 @@ the door for all of those.
+ 
+ ### Measure what a reader sees
+ 
+-`contrast` measures the ratio between an element's rendered text and what is actually behind it, not
+-between the two colors its own rule declares. It walks the ancestors from the element up to the
++`readContrast` measures the ratio between an element's rendered text and what is actually behind it,
++not between the two colors its own rule declares. It walks the ancestors from the element up to the
+ first opaque layer and composites them top over bottom, so a 3% surface tint reads as a tint over
+ what shows through it. A translucent foreground then resolves against that effective background
+ before luminance is measured.
+@@ -2107,21 +2112,21 @@ knowing.
+ 
+ ```ts
+ import { requireValue } from '@orkestrel/test'
+-import { CANVAS_COLOR, contrast, render } from '@orkestrel/test/browser'
++import { CANVAS_COLOR, readContrast, render } from '@orkestrel/test/browser'
+ 
+ const surface = render('<main style="background:#fff"><p style="color:#767676">Ready</p></main>')
+ const text = requireValue(surface.querySelector('p'))
+ 
+-contrast(text).toFixed(2) // '4.54' — measured against the white the ancestor really paints
+-contrast(text) >= 4.5 // true — the WCAG 2.x floor for body text
++readContrast(text).toFixed(2) // '4.54' — measured against the white the ancestor really paints
++readContrast(text) >= 4.5 // true — the WCAG 2.x floor for body text
+ 
+ // A fragment with no painted ancestor is refused rather than assumed.
+ const fragment = render('<p style="color:#767676">Ready</p>')
+ const orphan = requireValue(fragment.querySelector('p'))
+-contrast(orphan) // throws Error: Computed background color is unavailable
++readContrast(orphan) // throws Error: Computed background color is unavailable
+ 
+ // Name the surface it is really on, and the same stack measures.
+-contrast(orphan, CANVAS_COLOR).toFixed(2) // '4.54'
++readContrast(orphan, CANVAS_COLOR).toFixed(2) // '4.54'
+ ```
+ 
+ `readRing` is the same reading for focus chrome, and it reads only: focus arrives through
+@@ -2143,36 +2148,43 @@ readRing(focused, requireValue(document.querySelector('label[for="evaluate"]')))
+ 
+ ### Read the tokens and colors a theme declares
+ 
+-`token` and `rootToken` read what the cascade resolved, and `rgba` resolves any color expression by
+-asking the same browser. In the following fence the document declares `--ink: rgb(1, 2, 3)` on `:root`,
+-`.card` sets `padding-left: 12px`, and `card` is a mounted inline element carrying that class, so
+-its `width` resolves to `auto`.
++`readToken` and `readRootToken` read what the cascade resolved, and `parseCSSColor` resolves any
++color expression by asking the same browser. In the following fence the document declares
++`--ink: rgb(1, 2, 3)` on `:root`, `.card` sets `padding-left: 12px`, and `card` is a mounted inline
++element carrying that class, so its `width` resolves to `auto`.
+ 
+ ```ts
+-import { colorEqual, pixels, rgba, rootToken, token } from '@orkestrel/test/browser'
++import {
++	matchesColor,
++	readPixels,
++	readRootToken,
++	readToken,
++	parseCSSColor,
++} from '@orkestrel/test/browser'
+ 
+-rootToken('ink') // 'rgb(1, 2, 3)'
+-rootToken('--ink') // 'rgb(1, 2, 3)' — the dashes are optional
+-token(card, 'ink') // 'rgb(1, 2, 3)' — inherited from `:root` by a mounted element
+-token(card, 'absent') // '' — an undeclared token reads as a token declared empty does
++readRootToken('ink') // 'rgb(1, 2, 3)'
++readRootToken('--ink') // 'rgb(1, 2, 3)' — the dashes are optional
++readToken(card, 'ink') // 'rgb(1, 2, 3)' — inherited from `:root` by a mounted element
++readToken(card, 'absent') // '' — an undeclared token reads as a token declared empty does
+ 
+-rgba('var(--ink)') // [1, 2, 3, 1]
+-rgba('rebeccapurple') // [102, 51, 153, 1]
+-rgba('not-a-color') // undefined — the CSSOM refused the expression
+-colorEqual('rebeccapurple', 'rgb(102, 51, 153)') // true
+-colorEqual(token(card, 'ink'), 'rgb(1, 2, 3)') // true
++parseCSSColor('var(--ink)') // [1, 2, 3, 1]
++parseCSSColor('rebeccapurple') // [102, 51, 153, 1]
++parseCSSColor('not-a-color') // undefined — the CSSOM refused the expression
++matchesColor('rebeccapurple', 'rgb(102, 51, 153)') // true
++matchesColor(readToken(card, 'ink'), 'rgb(1, 2, 3)') // true
+ 
+-pixels(card, 'padding-left') // 12
+-pixels(card, 'width') // 0 — a width resolving to `auto` carries no number
++readPixels(card, 'padding-left') // 12
++readPixels(card, 'width') // 0 — a width resolving to `auto` carries no number
+ ```
+ 
+ Assert on the value rather than on presence. An absent token and one declared empty both read as
+-`''`, and `rgba` resolves a `var()` naming an undeclared property to the inherited color rather than
+-refusing it, so a test that means to catch a missing token compares what `token` returned.
++`''`, and `parseCSSColor` resolves a `var()` naming an undeclared property to the inherited color
++rather than refusing it, so a test that means to catch a missing token compares what `readToken`
++returned.
+ 
+ ### Find a rule in the cascade
+ 
+-Assert on the stylesheet where the stylesheet is the subject, and on `style` where the rendered
++Assert on the stylesheet where the stylesheet is the subject, and on `readStyle` where the rendered
+ result is. In the following fence the cascade declares `.card { padding: 8px }` inside a media query, and
+ an animation named `slide` carrying a `from` stop and a `to` stop.
+ 
+@@ -2196,7 +2208,8 @@ earlier one. That descent reaches a grouping rule and nothing else, and a `@keyf
+ one: the last line of the fence finds the `@keyframes` rule itself because the walk collects it where
+ it sits, and the keyframe stops inside it never appear in that list, which is why `findKeyframes` is
+ the door to them. A rule either finder returns may still be overridden by another, which is why a
+-claim about what a reader sees is asserted through `style`, `token`, `pixels`, or `contrast` instead.
++claim about what a reader sees is asserted through `readStyle`, `readToken`, `readPixels`, or
++`readContrast` instead.
+ 
+ ### Remove an IndexedDB database
+ 
+@@ -2399,35 +2412,33 @@ Each entry names the rules its file proves. The test names carry the cases.
+   named by its tag, and a subtree with nothing reachable. `waitForFrame` takes the frame callbacks
+   already queued, `render` takes parsed fixture markup attached to the document, and `clearStorage`
+   takes local and session storage emptied together.
+-  `contrast` takes a translucent surface composited onto the opaque layer beneath it, a fully opaque
+-  stack over different ancestors as the control from outside that population, a stack where
++  `readContrast` takes a translucent surface composited onto the opaque layer beneath it, a fully
++  opaque stack over different ancestors as the control from outside that population, a stack where
+   nothing paints and one whose every painted layer is translucent, a stack 64 translucent layers
+   deep whose composite has rounded to the canvas's own channels, a detached element whose computed
+   foreground does not exist, and the same unpainted and translucent stacks measured against a
+-  supplied floor instead of refused. The color
+-  leaves beneath it take their own inputs: `parseColor` across the legacy and modern syntaxes, a
+-  refused keyword, hex triple, empty value, and unsupported color space, and — as the control the
+-  literals cannot supply — what this browser actually computes for a keyword and for a
+-  `color-mix()`. `blendColor`, `measureLuminance`, and `measureContrast` take their identities,
+-  their ordering, and the symmetry of the ratio. `readLayers` takes an unpainted stack, a
+-  transparent layer left out of a painted one, an opaque layer that ends the walk, and the deep
+-  stack whose last layer stays translucent while its composite no longer separates the floors;
+-  `readBackdrop` takes the floor returned by identity, a translucent stack composited onto it, and
+-  an opaque layer that ends the walk.
+-  `readRing` takes a painted outline and a painted box-shadow reached through `traverseAccessible`,
+-  a control that is not focused, a focused control left the browser's own ring, a focus style that
+-  only repaints the control's fill, and a `worn` element whose reading separates from the control's
+-  own. `stagePane` takes the marked pane, the tester
+-  rendered at the viewport it was given, and a release that runs twice without complaining;
+-  `captureFrame` takes a real file written, read back, and matched, with a planted file as the
+-  comparison's negative control, one element shot rather than the page, and a pane pinned to the
+-  wrong size by a rule of higher specificity, which is the refusal that also proves the release runs
+-  on the failing path. `readCascade` takes class tokens collected from plain and grouped rules and
+-  only real ones; `readRows` takes a row joined from its own text nodes rather than from run-together
+-  content, and an empty list; `extractOrphans` takes a child class rendered outside its container
+-  with a nested one left alone, nothing reported when every child sits inside one, and, as the
+-  control, an element answering the invariant by carrying both classes itself; `style` takes the
+-  browser's resolved value for one property. `expandCaptures` takes the exact expected file list
++  supplied floor instead of refused. The color leaves beneath it take their own inputs: `parseColor`
++  across the legacy and modern syntaxes, a refused keyword, hex triple, empty value, and unsupported
++  color space, and — as the control the literals cannot supply — what this browser actually computes
++  for a keyword and for a `color-mix()`. `blendColor`, `measureLuminance`, and `measureContrast`
++  take their identities, their ordering, and the symmetry of the ratio. `readLayers` takes an
++  unpainted stack, a transparent layer left out of a painted one, an opaque layer that ends the
++  walk, and the deep stack whose last layer stays translucent while its composite no longer
++  separates the floors; `readBackdrop` takes the floor returned by identity, a translucent stack
++  composited onto it, and an opaque layer that ends the walk. `readRing` takes a painted outline and
++  a painted box-shadow reached through `traverseAccessible`, a control that is not focused, a
++  focused control left the browser's own ring, a focus style that only repaints the control's fill,
++  and a `worn` element whose reading separates from the control's own. `stagePane` takes the marked
++  pane, the tester rendered at the viewport it was given, and a release that runs twice without
++  complaining; `captureFrame` takes a real file written, read back, and matched, with a planted file
++  as the comparison's negative control, one element shot rather than the page, and a pane pinned to
++  the wrong size by a rule of higher specificity, which is the refusal that also proves the release
++  runs on the failing path. `readCascade` takes class tokens collected from plain and grouped rules
++  and only real ones; `readRows` takes a row joined from its own text nodes rather than from
++  run-together content, and an empty list; `extractOrphans` takes a child class rendered outside its
++  container with a nested one left alone, nothing reported when every child sits inside one, and, as
++  the control, an element answering the invariant by carrying both classes itself; `readStyle` takes
++  the browser's resolved value for one property. `expandCaptures` takes the exact expected file list
+   rather than a count, and both empty inputs.
+ - [`tests/src/browser/factories.test.ts`](../tests/src/browser/factories.test.ts) — rule 17, and the
+   portfolio's refusals, its disabled gate, and its writes. Creation refuses an unregistered variant
+diff --git a/src/browser/factories.ts b/src/browser/factories.ts
+index bdd72c1..b94779a 100644
+--- a/src/browser/factories.ts
++++ b/src/browser/factories.ts
+@@ -116,7 +116,7 @@ export function createPortfolio(options: PortfolioOptions): PortfolioInterface {
+ 	return {
+ 		variant: options.variant,
+ 		files,
+-		get states() {
++		get placements() {
+ 			return [...placed]
+ 		},
+ 		get paths() {
+diff --git a/src/browser/helpers.ts b/src/browser/helpers.ts
+index 940b90d..1d9a55a 100644
+--- a/src/browser/helpers.ts
++++ b/src/browser/helpers.ts
+@@ -847,8 +847,8 @@ export function build<K extends keyof HTMLElementTagNameMap>(
+  * @remarks
+  * What this buys is the composition, not the attachment: the `append` method returns `void`, and
+  * this hands the element back, so it fits where an expression is expected. The {@link render} helper
+- * returns its fixture through it, and the {@link rgba} helper probes through `mount(build('span'))`.
+- * A bare `append` call breaks each of those call sites.
++ * returns its fixture through it, and the {@link parseCSSColor} helper probes through
++ * `mount(build('span'))`. A bare `append` call breaks each of those call sites.
+  *
+  * Being connected is what the attachment then buys: `getComputedStyle` resolves against the shipped
+  * cascade, custom properties inherit from `:root`, and the element lays out a real box. A detached
+@@ -1081,20 +1081,20 @@ export function parseColor(value: string): Color | undefined {
+  * Refusal is the CSSOM's: an expression it will not parse leaves the probe's inline `color` empty
+  * and this returns `undefined`. A `var()` naming an undeclared custom property is not refused,
+  * because the cascade accepts it and computes the inherited color, so a test that means to catch a
+- * missing token asserts on {@link token} rather than on this.
++ * missing token asserts on {@link readToken} rather than on this.
+  *
+  * @example
+  * ```ts
+- * rgba('rebeccapurple') // [102, 51, 153, 1]
+- * rgba('not-a-color') // undefined
++ * parseCSSColor('rebeccapurple') // [102, 51, 153, 1]
++ * parseCSSColor('not-a-color') // undefined
+  * ```
+  */
+-export function rgba(value: string): Color | undefined {
++export function parseCSSColor(value: string): Color | undefined {
+ 	const probe = mount(build('span'))
+ 	try {
+ 		probe.style.color = value
+ 		if (probe.style.color === '') return undefined
+-		return parseColor(style(probe, 'color'))
++		return parseColor(readStyle(probe, 'color'))
+ 	} finally {
+ 		probe.remove()
+ 	}
+@@ -1109,7 +1109,7 @@ export function rgba(value: string): Color | undefined {
+  * including when either side names no readable color.
+  *
+  * @remarks
+- * Each string side is resolved through {@link rgba}, so a keyword, a token reference, and the
++ * Each string side is resolved through {@link parseCSSColor}, so a keyword, a token reference, and the
+  * `rgb()` the engine computes for either of them compare equal without a test converting anything
+  * first. A side that resolves to nothing makes the answer `false` rather than a throw, because this
+  * is a predicate.
+@@ -1121,13 +1121,13 @@ export function rgba(value: string): Color | undefined {
+  *
+  * @example
+  * ```ts
+- * colorEqual('rebeccapurple', 'rgb(102, 51, 153)') // true
+- * colorEqual('red', [0, 0, 255, 1]) // false
++ * matchesColor('rebeccapurple', 'rgb(102, 51, 153)') // true
++ * matchesColor('red', [0, 0, 255, 1]) // false
+  * ```
+  */
+-export function colorEqual(first: string | Color, second: string | Color): boolean {
+-	const left = typeof first === 'string' ? rgba(first) : first
+-	const right = typeof second === 'string' ? rgba(second) : second
++export function matchesColor(first: string | Color, second: string | Color): boolean {
++	const left = typeof first === 'string' ? parseCSSColor(first) : first
++	const right = typeof second === 'string' ? parseCSSColor(second) : second
+ 	if (left === undefined || right === undefined) return false
+ 	const tolerance = 0.5
+ 	const [leftRed, leftGreen, leftBlue, leftAlpha] = left
+@@ -1218,7 +1218,7 @@ export function measureContrast(front: Color, back: Color): number {
+  * the walk stops at the first fully opaque layer, because nothing above that layer is visible.
+  *
+  * The stack is what tells a resolved backdrop from an assumed one: the walk reached an opaque
+- * surface exactly when its last layer's alpha is `1`. {@link contrast} refuses on that reading,
++ * surface exactly when its last layer's alpha is `1`. {@link readContrast} refuses on that reading,
+  * which no comparison of composited colors can replace — 64 half-transparent layers composite to
+  * the same channels over opposite floors, because the floor's remaining share falls below the last
+  * bit a channel carries.
+@@ -1300,11 +1300,11 @@ export function readBackdrop(element: Element, floor: Color): Color {
+  * @example
+  * ```ts
+  * const container = render('<p style="background: #000; color: #fff">Ready</p>')
+- * contrast(requireValue(container.firstElementChild)) // 21
+- * contrast(requireValue(container.firstElementChild), CANVAS_COLOR) // 21, and never refuses
++ * readContrast(requireValue(container.firstElementChild)) // 21
++ * readContrast(requireValue(container.firstElementChild), CANVAS_COLOR) // 21, and never refuses
+  * ```
+  */
+-export function contrast(element: Element, floor?: Color): number {
++export function readContrast(element: Element, floor?: Color): number {
+ 	const foreground = parseColor(getComputedStyle(element).color)
+ 	if (foreground === undefined) throw new Error('Computed foreground color is unavailable')
+ 	const layers = readLayers(element)
+@@ -1470,7 +1470,7 @@ export function readRules(): readonly CSSRule[] {
+  *
+  * @remarks
+  * This proves a declaration exists in the cascade at all, which is a different question from what an
+- * element resolves to: {@link style} reads the winner, and a rule this finds may be overridden by
++ * element resolves to: {@link readStyle} reads the winner, and a rule this finds may be overridden by
+  * another. Assert on this where the subject is the stylesheet, and on `style` where the subject is
+  * the rendered result.
+  *
+@@ -1587,10 +1587,10 @@ export function extractOrphans(root: ParentNode, child: string, parent: string):
+  *
+  * @example
+  * ```ts
+- * style(button, 'padding-left')
++ * readStyle(button, 'padding-left')
+  * ```
+  */
+-export function style(element: Element, property: string): string {
++export function readStyle(element: Element, property: string): string {
+ 	return getComputedStyle(element).getPropertyValue(property).trim()
+ }
+ 
+@@ -1609,17 +1609,17 @@ export function style(element: Element, property: string): string {
+  * presence.
+  *
+  * Resolution is inheritance, so a token declared on `:root` reads from any mounted descendant and
+- * from an unmounted element reads as `''`. Use {@link rootToken} where the declaration is the
++ * from an unmounted element reads as `''`. Use {@link readRootToken} where the declaration is the
+  * document's.
+  *
+  * @example
+  * ```ts
+- * token(panel, 'surface') // '#ffffff'
+- * token(panel, '--surface') // '#ffffff'
++ * readToken(panel, 'surface') // '#ffffff'
++ * readToken(panel, '--surface') // '#ffffff'
+  * ```
+  */
+-export function token(element: Element, name: string): string {
+-	return style(element, name.startsWith('--') ? name : `--${name}`)
++export function readToken(element: Element, name: string): string {
++	return readStyle(element, name.startsWith('--') ? name : `--${name}`)
+ }
+ 
+ /**
+@@ -1629,18 +1629,18 @@ export function token(element: Element, name: string): string {
+  * @returns The resolved value, trimmed; an empty string when the document declares no such property.
+  *
+  * @remarks
+- * This is {@link token} against `document.documentElement`, which is where a theme declares its
++ * This is {@link readToken} against `document.documentElement`, which is where a theme declares its
+  * tokens and where a `[data-theme]` switch retunes them. It exists as its own name because that
+  * element is the one a token question is nearly always about, and naming it at every call site
+  * buries the question.
+  *
+  * @example
+  * ```ts
+- * rootToken('surface')
++ * readRootToken('surface')
+  * ```
+  */
+-export function rootToken(name: string): string {
+-	return token(document.documentElement, name)
++export function readRootToken(name: string): string {
++	return readToken(document.documentElement, name)
+ }
+ 
+ /**
+@@ -1658,16 +1658,16 @@ export function rootToken(name: string): string {
+  *
+  * An unparsable value reads as `0` rather than as absence, because every caller of this is measuring
+  * and `'auto'`, `'none'`, and `''` each contribute no pixels to what a reader sees. Where the
+- * distinction matters, read the text with {@link style} instead.
++ * distinction matters, read the text with {@link readStyle} instead.
+  *
+  * @example
+  * ```ts
+- * pixels(button, 'padding-left') // 12
+- * pixels(button, 'width') // 0 when the width resolves to `auto`
++ * readPixels(button, 'padding-left') // 12
++ * readPixels(button, 'width') // 0 when the width resolves to `auto`
+  * ```
+  */
+-export function pixels(element: Element, property: string): number {
+-	const measured = Number.parseFloat(style(element, property))
++export function readPixels(element: Element, property: string): number {
++	const measured = Number.parseFloat(readStyle(element, property))
+ 	return Number.isFinite(measured) ? measured : 0
+ }
+ 
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index a7e6826..c52f199 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -78,7 +78,7 @@ export interface PortfolioInterface {
+ 	/** The name of the variant this run renders. */
+ 	readonly variant: string
+ 	/** Every state placed so far, in placement order. */
+-	readonly states: readonly string[]
++	readonly placements: readonly string[]
+ 	/** Every path written so far, in write order. */
+ 	readonly paths: readonly string[]
+ 	/** The registry expanded across every variant: the filenames a complete portfolio holds. */
+diff --git a/tests/src/browser/factories.test.ts b/tests/src/browser/factories.test.ts
+index b045e81..d81b517 100644
+--- a/tests/src/browser/factories.test.ts
++++ b/tests/src/browser/factories.test.ts
+@@ -159,7 +159,7 @@ describe('createPortfolio', () => {
+ 		})
+ 		await expect(portfolio.place('start-empty')).resolves.toBeUndefined()
+ 		expect(applied.count).toBe(0)
+-		expect(portfolio.states).toStrictEqual([])
++		expect(portfolio.placements).toStrictEqual([])
+ 		expect(portfolio.paths).toStrictEqual([])
+ 	})
+ 
+@@ -174,7 +174,7 @@ describe('createPortfolio', () => {
+ 		await expect(portfolio.place('answer-partial')).rejects.toThrow(
+ 			'Capture state "answer-partial" is not registered',
+ 		)
+-		expect(portfolio.states).toStrictEqual([])
++		expect(portfolio.placements).toStrictEqual([])
+ 	})
+ 
+ 	it('applies the variant, resizes the viewport, writes the file, and records it', async () => {
+@@ -186,7 +186,7 @@ describe('createPortfolio', () => {
+ 			directory: DIRECTORY,
+ 			enabled: true,
+ 		})
+-		const before = portfolio.states
++		const before = portfolio.placements
+ 		const written = await portfolio.place('start-empty')
+ 		// The provider returns the written path in its host's own separator, and the runner reports
+ 		// its root with forward slashes on every host, so each side is compared through
+@@ -199,7 +199,7 @@ describe('createPortfolio', () => {
+ 		expect(window.innerHeight).toBe(844)
+ 		expect(normalizePath(requireValue(written))).toBe(expected)
+ 		expect((await commands.readFile(expected)).length).toBeGreaterThan(0)
+-		expect(portfolio.states).toStrictEqual(['start-empty'])
++		expect(portfolio.placements).toStrictEqual(['start-empty'])
+ 		expect(portfolio.paths.map(normalizePath)).toStrictEqual([expected])
+ 		// The readers hand out snapshots, so a list read before a placement stays what it was.
+ 		expect(before).toStrictEqual([])
+@@ -217,7 +217,7 @@ describe('createPortfolio', () => {
+ 		await expect(portfolio.place('answer-ideal')).rejects.toThrow(
+ 			'Capture state "answer-ideal" is already placed',
+ 		)
+-		expect(portfolio.states).toStrictEqual(['answer-ideal'])
++		expect(portfolio.placements).toStrictEqual(['answer-ideal'])
+ 		expect(portfolio.paths.map(normalizePath)).toStrictEqual([
+ 			normalizePath(`${server.config.root}/tmp/capture/portfolio/answer-ideal--dark-390.png`),
+ 		])
+@@ -293,7 +293,7 @@ describe('createPortfolio', () => {
+ 			expect(document.documentElement.getAttribute('data-theme')).toBe('dark')
+ 			expect(normalizePath(requireValue(written))).toBe(expected)
+ 			expect((await commands.readFile(expected)).length).toBeGreaterThan(0)
+-			expect(portfolio.states).toStrictEqual(['start-empty'])
++			expect(portfolio.placements).toStrictEqual(['start-empty'])
+ 
+ 			// A run that omits `enabled` returns undefined here, resizes nothing, and records nothing.
+ 			// The placement above left the viewport and the theme at what `dark-390` selects, so a
+@@ -314,7 +314,7 @@ describe('createPortfolio', () => {
+ 			expect(window.innerWidth).toBe(320)
+ 			expect(window.innerHeight).toBe(480)
+ 			expect(document.documentElement.getAttribute('data-theme')).toBeNull()
+-			expect(ordinary.states).toStrictEqual([])
++			expect(ordinary.placements).toStrictEqual([])
+ 			expect(ordinary.paths).toStrictEqual([])
+ 
+ 			await expect(portfolio.place('answer-partial')).rejects.toThrow(
+diff --git a/tests/src/browser/helpers.test.ts b/tests/src/browser/helpers.test.ts
+index 6304dc7..4eb9ee0 100644
+--- a/tests/src/browser/helpers.test.ts
++++ b/tests/src/browser/helpers.test.ts
+@@ -10,9 +10,7 @@ import {
+ 	clickAccessible,
+ 	clickAccessibleWithin,
+ 	clickDisclosure,
+-	colorEqual,
+ 	commitInput,
+-	contrast,
+ 	describeFocus,
+ 	describeTree,
+ 	expandCaptures,
+@@ -25,36 +23,38 @@ import {
+ 	isOutsideViewport,
+ 	isReachable,
+ 	isRendered,
++	matchesColor,
+ 	measureContrast,
+ 	measureLuminance,
+ 	mount,
+ 	parseColor,
+-	pixels,
+ 	pressKeys,
+ 	readBackdrop,
+ 	readCascade,
++	readContrast,
+ 	readFocus,
+ 	readLayers,
+ 	readName,
+ 	readPage,
+ 	readPerception,
++	readPixels,
+ 	readRing,
+ 	readRole,
++	readRootToken,
+ 	readRows,
+ 	readRules,
+ 	readStates,
++	readStyle,
+ 	readText,
++	readToken,
+ 	readValue,
+ 	releasePane,
+ 	removeDatabase,
+ 	render,
+ 	resolveAccessible,
++	parseCSSColor,
+ 	resolveRendered,
+-	rgba,
+-	rootToken,
+ 	stagePane,
+-	style,
+-	token,
+ 	traverseAccessible,
+ 	typeAccessible,
+ 	typeInput,
+@@ -981,11 +981,11 @@ describe('mount', () => {
+ 		const built = build('div', { classes: 'journey-mounted' })
+ 		// Unmounted, the element resolves the initial value for every property and has no box. This
+ 		// pair is the whole contract: the append is what changes both answers.
+-		expect(style(built, 'padding-left')).toBe('')
++		expect(readStyle(built, 'padding-left')).toBe('')
+ 		expect(built.getBoundingClientRect().width).toBe(0)
+ 		const mounted = mount(built)
+ 		try {
+-			expect(style(mounted, 'padding-left')).toBe('12px')
++			expect(readStyle(mounted, 'padding-left')).toBe('12px')
+ 			expect(mounted.getBoundingClientRect().width).toBe(40)
+ 		} finally {
+ 			mounted.remove()
+@@ -1014,7 +1014,7 @@ describe('mount', () => {
+ 		const save = requireValue(panel.querySelector('button'))
+ 		expect(save.textContent).toBe('Save')
+ 		expect(save.getAttribute('type')).toBe('button')
+-		expect(pixels(save, 'padding-left')).toBe(12)
++		expect(readPixels(save, 'padding-left')).toBe(12)
+ 
+ 		const markup = render('<button type="button">Save</button>')
+ 		const heading = render('h2', 'title')
+@@ -1285,61 +1285,61 @@ describe('parseColor', () => {
+ 	})
+ })
+ 
+-describe('rgba', () => {
++describe('parseCSSColor', () => {
+ 	it('resolves the syntaxes parseColor refuses, by asking the browser', () => {
+ 		// Each of these returns `undefined` from `parseColor`, which is what the live resolver is for.
+ 		expect(parseColor('rebeccapurple')).toBeUndefined()
+ 		expect(parseColor('#ff0000')).toBeUndefined()
+-		expect(rgba('rebeccapurple')).toStrictEqual([102, 51, 153, 1])
+-		expect(rgba('#ff0000')).toStrictEqual([255, 0, 0, 1])
+-		expect(rgba('rgb(1, 2, 3)')).toStrictEqual([1, 2, 3, 1])
++		expect(parseCSSColor('rebeccapurple')).toStrictEqual([102, 51, 153, 1])
++		expect(parseCSSColor('#ff0000')).toStrictEqual([255, 0, 0, 1])
++		expect(parseCSSColor('rgb(1, 2, 3)')).toStrictEqual([1, 2, 3, 1])
+ 	})
+ 
+ 	it('resolves a var() reference against the tokens the document declares', () => {
+ 		buildStylesheet(':root { --journey-ink: rgb(10, 20, 30) }')
+-		expect(rgba('var(--journey-ink)')).toStrictEqual([10, 20, 30, 1])
++		expect(parseCSSColor('var(--journey-ink)')).toStrictEqual([10, 20, 30, 1])
+ 	})
+ 
+ 	it('refuses an expression the CSSOM will not parse', () => {
+-		expect(rgba('not-a-color')).toBeUndefined()
+-		expect(rgba('')).toBeUndefined()
+-		expect(rgba('12px')).toBeUndefined()
++		expect(parseCSSColor('not-a-color')).toBeUndefined()
++		expect(parseCSSColor('')).toBeUndefined()
++		expect(parseCSSColor('12px')).toBeUndefined()
+ 	})
+ 
+ 	it('leaves no probe element behind, on the refusing path as well as the reading one', () => {
+ 		const before = document.body.childElementCount
+-		expect(rgba('rebeccapurple')).toStrictEqual([102, 51, 153, 1])
+-		expect(rgba('not-a-color')).toBeUndefined()
++		expect(parseCSSColor('rebeccapurple')).toStrictEqual([102, 51, 153, 1])
++		expect(parseCSSColor('not-a-color')).toBeUndefined()
+ 		expect(document.body.childElementCount).toBe(before)
+ 		expect(document.body.querySelector(':scope > span')).toBeNull()
+ 	})
+ })
+ 
+-describe('colorEqual', () => {
++describe('matchesColor', () => {
+ 	it('reads two spellings of one color as equal', () => {
+-		expect(colorEqual('rebeccapurple', 'rgb(102, 51, 153)')).toBe(true)
+-		expect(colorEqual('#ff0000', [255, 0, 0, 1])).toBe(true)
+-		expect(colorEqual([1, 2, 3, 1], [1, 2, 3, 1])).toBe(true)
++		expect(matchesColor('rebeccapurple', 'rgb(102, 51, 153)')).toBe(true)
++		expect(matchesColor('#ff0000', [255, 0, 0, 1])).toBe(true)
++		expect(matchesColor([1, 2, 3, 1], [1, 2, 3, 1])).toBe(true)
+ 	})
+ 
+ 	it('reads different colors as unequal, including on alpha alone', () => {
+-		expect(colorEqual('red', [0, 0, 255, 1])).toBe(false)
+-		expect(colorEqual([1, 2, 3, 1], [1, 2, 3, 0.5])).toBe(false)
++		expect(matchesColor('red', [0, 0, 255, 1])).toBe(false)
++		expect(matchesColor([1, 2, 3, 1], [1, 2, 3, 0.5])).toBe(false)
+ 	})
+ 
+ 	it('holds at the tolerance and parts one step past it', () => {
+-		expect(colorEqual([10, 20, 30, 1], [10.5, 20, 30, 1])).toBe(true)
+-		expect(colorEqual([10, 20, 30, 1], [10.6, 20, 30, 1])).toBe(false)
++		expect(matchesColor([10, 20, 30, 1], [10.5, 20, 30, 1])).toBe(true)
++		expect(matchesColor([10, 20, 30, 1], [10.6, 20, 30, 1])).toBe(false)
+ 		// The alpha is scaled onto the same 0-255 range before it is compared, so half a channel step
+ 		// on the 0-1 scale is `0.5 / 255`.
+-		expect(colorEqual([10, 20, 30, 1], [10, 20, 30, 1 - 0.5 / 255])).toBe(true)
+-		expect(colorEqual([10, 20, 30, 1], [10, 20, 30, 1 - 0.6 / 255])).toBe(false)
++		expect(matchesColor([10, 20, 30, 1], [10, 20, 30, 1 - 0.5 / 255])).toBe(true)
++		expect(matchesColor([10, 20, 30, 1], [10, 20, 30, 1 - 0.6 / 255])).toBe(false)
+ 	})
+ 
+ 	it('reports false when either side names no readable color', () => {
+-		expect(colorEqual('not-a-color', 'red')).toBe(false)
+-		expect(colorEqual('red', 'not-a-color')).toBe(false)
+-		expect(colorEqual('not-a-color', 'not-a-color')).toBe(false)
++		expect(matchesColor('not-a-color', 'red')).toBe(false)
++		expect(matchesColor('red', 'not-a-color')).toBe(false)
++		expect(matchesColor('not-a-color', 'not-a-color')).toBe(false)
+ 	})
+ })
+ 
+@@ -1463,10 +1463,10 @@ describe('readBackdrop', () => {
+ 	})
+ })
+ 
+-describe('contrast', () => {
++describe('readContrast', () => {
+ 	it('refuses a detached element whose foreground has no computed channels', () => {
+ 		const detached = document.createElement('p')
+-		expect(() => contrast(detached)).toThrow('Computed foreground color is unavailable')
++		expect(() => readContrast(detached)).toThrow('Computed foreground color is unavailable')
+ 	})
+ 
+ 	it('measures a fully opaque stack from the element that paints, ignoring its ancestors', () => {
+@@ -1475,8 +1475,8 @@ describe('contrast', () => {
+ 				'<div style="background: #000"><p style="background: #000; color: #fff">Ready</p></div>',
+ 		)
+ 		const [over, under] = container.querySelectorAll('p')
+-		expect(contrast(requireValue(over))).toBeCloseTo(21, 5)
+-		expect(contrast(requireValue(under))).toBeCloseTo(21, 5)
++		expect(readContrast(requireValue(over))).toBeCloseTo(21, 5)
++		expect(readContrast(requireValue(under))).toBeCloseTo(21, 5)
+ 	})
+ 
+ 	it('composites a translucent surface onto the opaque layer beneath it', () => {
+@@ -1484,7 +1484,7 @@ describe('contrast', () => {
+ 			'<div style="background: #000">' +
+ 				'<p style="background: rgba(255, 255, 255, 0.5); color: #000">Ready</p></div>',
+ 		)
+-		const composited = contrast(requireValue(container.querySelector('p')))
++		const composited = readContrast(requireValue(container.querySelector('p')))
+ 		// A 50% white tint over black paints mid-grey, so black text on it reads far below the 21
+ 		// an uncomposited reading of the same declaration would report.
+ 		expect(composited).toBeCloseTo(5.28, 1)
+@@ -1493,7 +1493,7 @@ describe('contrast', () => {
+ 
+ 	it('refuses a stack where nothing from the element upwards paints a background', () => {
+ 		const container = buildFixture('<p style="color: #000">Ready</p>')
+-		expect(() => contrast(requireValue(container.querySelector('p')))).toThrow(
++		expect(() => readContrast(requireValue(container.querySelector('p')))).toThrow(
+ 			'Computed background color is unavailable',
+ 		)
+ 	})
+@@ -1503,7 +1503,7 @@ describe('contrast', () => {
+ 			'<div style="background: rgba(255, 255, 255, 0.5)">' +
+ 				'<p style="color: #000">Ready</p></div>',
+ 		)
+-		expect(() => contrast(requireValue(container.querySelector('p')))).toThrow(
++		expect(() => readContrast(requireValue(container.querySelector('p')))).toThrow(
+ 			'Computed background color is unavailable',
+ 		)
+ 	})
+@@ -1520,7 +1520,7 @@ describe('contrast', () => {
+ 				'<p style="color: #000">Ready</p>' +
+ 				'</div>'.repeat(depth),
+ 		)
+-		expect(() => contrast(requireValue(container.querySelector('p')))).toThrow(
++		expect(() => readContrast(requireValue(container.querySelector('p')))).toThrow(
+ 			'Computed background color is unavailable',
+ 		)
+ 	})
+@@ -1528,8 +1528,8 @@ describe('contrast', () => {
+ 	it('measures the same unpainted stack against a supplied floor instead of refusing it', () => {
+ 		const container = buildFixture('<p style="color: #000">Ready</p>')
+ 		const paragraph = requireValue(container.querySelector('p'))
+-		expect(contrast(paragraph, CANVAS_COLOR)).toBeCloseTo(21, 5)
+-		expect(contrast(paragraph, [0, 0, 0, 1])).toBe(1)
++		expect(readContrast(paragraph, CANVAS_COLOR)).toBeCloseTo(21, 5)
++		expect(readContrast(paragraph, [0, 0, 0, 1])).toBe(1)
+ 	})
+ 
+ 	it('composites a translucent stack onto the supplied floor', () => {
+@@ -1540,30 +1540,30 @@ describe('contrast', () => {
+ 		const paragraph = requireValue(container.querySelector('p'))
+ 		// The same half-white tint resolves to white over the canvas and to mid grey over black, so
+ 		// the floor is what the answer turns on rather than an argument the measurement ignores.
+-		expect(contrast(paragraph, CANVAS_COLOR)).toBeCloseTo(21, 5)
+-		expect(contrast(paragraph, [0, 0, 0, 1])).toBeCloseTo(5.28, 1)
++		expect(readContrast(paragraph, CANVAS_COLOR)).toBeCloseTo(21, 5)
++		expect(readContrast(paragraph, [0, 0, 0, 1])).toBeCloseTo(5.28, 1)
+ 	})
+ 
+ 	it('refuses a detached element whichever floor it is handed', () => {
+-		expect(() => contrast(document.createElement('p'), CANVAS_COLOR)).toThrow(
++		expect(() => readContrast(document.createElement('p'), CANVAS_COLOR)).toThrow(
+ 			'Computed foreground color is unavailable',
+ 		)
+ 	})
+ 
+-	// guides/test.md → Patterns → "Measure what a reader sees", the `contrast` fence. A browser fence
++	// guides/test.md → Patterns → "Measure what a reader sees", the `readContrast` fence. A browser fence
+ 	// carries in this directory because the guides project runs with the browser disabled.
+ 	it('reads grey on white at 4.54, refuses it unpainted, and measures it on a named floor', () => {
+ 		const surface = buildFixture(
+ 			'<main style="background:#fff"><p style="color:#767676">Ready</p></main>',
+ 		)
+ 		const text = requireValue(surface.querySelector('p'))
+-		expect(contrast(text).toFixed(2)).toBe('4.54')
+-		expect(contrast(text) >= 4.5).toBe(true)
++		expect(readContrast(text).toFixed(2)).toBe('4.54')
++		expect(readContrast(text) >= 4.5).toBe(true)
+ 
+ 		const fragment = buildFixture('<p style="color:#767676">Ready</p>')
+ 		const orphan = requireValue(fragment.querySelector('p'))
+-		expect(() => contrast(orphan)).toThrow('Computed background color is unavailable')
+-		expect(contrast(orphan, CANVAS_COLOR).toFixed(2)).toBe('4.54')
++		expect(() => readContrast(orphan)).toThrow('Computed background color is unavailable')
++		expect(readContrast(orphan, CANVAS_COLOR).toFixed(2)).toBe('4.54')
+ 	})
+ })
+ 
+@@ -1600,7 +1600,7 @@ describe('readRing', () => {
+ 		buildFixture('<button type="button">Bare</button>')
+ 		const control = await traverseAccessible('Bare')
+ 		expect(control.matches(':focus-visible')).toBe(true)
+-		expect(style(control, 'outline-style')).toBe('auto')
++		expect(readStyle(control, 'outline-style')).toBe('auto')
+ 		expect(readRing(control)).toBeUndefined()
+ 	})
+ 
+@@ -1632,7 +1632,7 @@ describe('readRing', () => {
+ 				'<button type="button" class="journey-fill">Filled</button></div>',
+ 		)
+ 		const control = await traverseAccessible('Filled')
+-		expect(style(control, 'background-color')).toBe('rgb(0, 0, 0)')
++		expect(readStyle(control, 'background-color')).toBe('rgb(0, 0, 0)')
+ 		// The resting fill is gone by the time focus is on the control, so nothing here is a reading
+ 		// about focus and the measurement says so rather than scoring the control's ordinary chrome.
+ 		expect(readRing(control)).toBeUndefined()
+@@ -1900,10 +1900,10 @@ describe('extractOrphans', () => {
+ 	})
+ })
+ 
+-describe('style', () => {
++describe('readStyle', () => {
+ 	it('reads the browser resolved value of one property', () => {
+ 		const container = buildFixture('<p style="padding-left: 12px">Ready</p>')
+-		expect(style(requireValue(container.querySelector('p')), 'padding-left')).toBe('12px')
++		expect(readStyle(requireValue(container.querySelector('p')), 'padding-left')).toBe('12px')
+ 	})
+ 
+ 	it('returns a custom property with no surrounding whitespace, however it was declared', () => {
+@@ -1916,10 +1916,10 @@ describe('style', () => {
+ 			'<p class="journey-gapped" style="--journey-inline:  8px  ">Ready</p>',
+ 		)
+ 		const subject = requireValue(container.querySelector('p'))
+-		expect(style(subject, '--journey-padded')).toBe('8px')
+-		expect(style(subject, '--journey-substituted')).toBe('8px')
+-		expect(style(subject, '--journey-fallback')).toBe('8px')
+-		expect(style(subject, '--journey-inline')).toBe('8px')
++		expect(readStyle(subject, '--journey-padded')).toBe('8px')
++		expect(readStyle(subject, '--journey-substituted')).toBe('8px')
++		expect(readStyle(subject, '--journey-fallback')).toBe('8px')
++		expect(readStyle(subject, '--journey-inline')).toBe('8px')
+ 		// This assertion does not discriminate the trim on the engine the suite runs against. Chromium
+ 		// 1194 returns every one of these already trimmed — a padded declaration, a `var()`
+ 		// substitution, a fallback, and an inline style alike — so the same values come back with the
+@@ -1932,33 +1932,37 @@ describe('style', () => {
+ 
+ 	it('keeps the whitespace inside a value', () => {
+ 		const container = buildFixture('<p style="--journey-shadow: 0 0 2px">Ready</p>')
+-		expect(style(requireValue(container.querySelector('p')), '--journey-shadow')).toBe('0 0 2px')
++		expect(readStyle(requireValue(container.querySelector('p')), '--journey-shadow')).toBe(
++			'0 0 2px',
++		)
+ 	})
+ 
+ 	it('reads a property the element resolves none of as an empty string', () => {
+ 		const container = buildFixture('<p>Ready</p>')
+-		expect(style(requireValue(container.querySelector('p')), '--journey-absent')).toBe('')
++		expect(readStyle(requireValue(container.querySelector('p')), '--journey-absent')).toBe('')
+ 	})
+ })
+ 
+-describe('token', () => {
++describe('readToken', () => {
+ 	it('reads a custom property with and without its leading dashes', () => {
+ 		const container = buildFixture('<p style="--journey-ink: rgb(1, 2, 3)">Ready</p>')
+ 		const subject = requireValue(container.querySelector('p'))
+-		expect(token(subject, 'journey-ink')).toBe('rgb(1, 2, 3)')
+-		expect(token(subject, '--journey-ink')).toBe('rgb(1, 2, 3)')
++		expect(readToken(subject, 'journey-ink')).toBe('rgb(1, 2, 3)')
++		expect(readToken(subject, '--journey-ink')).toBe('rgb(1, 2, 3)')
+ 	})
+ 
+ 	it('reads a token declared on an ancestor', () => {
+ 		const container = buildFixture('<div style="--journey-ink: rgb(4, 5, 6)"><p>Ready</p></div>')
+-		expect(token(requireValue(container.querySelector('p')), 'journey-ink')).toBe('rgb(4, 5, 6)')
++		expect(readToken(requireValue(container.querySelector('p')), 'journey-ink')).toBe(
++			'rgb(4, 5, 6)',
++		)
+ 	})
+ 
+ 	it('reads a token nothing declares as an empty string', () => {
+ 		const container = buildFixture('<p>Ready</p>')
+ 		const subject = requireValue(container.querySelector('p'))
+-		expect(token(subject, 'journey-undeclared')).toBe('')
+-		expect(token(subject, '--journey-undeclared')).toBe('')
++		expect(readToken(subject, 'journey-undeclared')).toBe('')
++		expect(readToken(subject, '--journey-undeclared')).toBe('')
+ 	})
+ 
+ 	// guides/test.md → Patterns → "Read the tokens and colors a theme declares". A browser fence
+@@ -1970,55 +1974,57 @@ describe('token', () => {
+ 		const container = buildFixture('<span class="card">Ledger</span>')
+ 		const card = requireValue(container.querySelector('span'))
+ 
+-		expect(rootToken('ink')).toBe('rgb(1, 2, 3)')
+-		expect(rootToken('--ink')).toBe('rgb(1, 2, 3)')
+-		expect(token(card, 'ink')).toBe('rgb(1, 2, 3)')
+-		expect(token(card, 'absent')).toBe('')
++		expect(readRootToken('ink')).toBe('rgb(1, 2, 3)')
++		expect(readRootToken('--ink')).toBe('rgb(1, 2, 3)')
++		expect(readToken(card, 'ink')).toBe('rgb(1, 2, 3)')
++		expect(readToken(card, 'absent')).toBe('')
+ 
+-		expect(rgba('var(--ink)')).toStrictEqual([1, 2, 3, 1])
+-		expect(rgba('rebeccapurple')).toStrictEqual([102, 51, 153, 1])
+-		expect(rgba('not-a-color')).toBeUndefined()
+-		expect(colorEqual('rebeccapurple', 'rgb(102, 51, 153)')).toBe(true)
+-		expect(colorEqual(token(card, 'ink'), 'rgb(1, 2, 3)')).toBe(true)
++		expect(parseCSSColor('var(--ink)')).toStrictEqual([1, 2, 3, 1])
++		expect(parseCSSColor('rebeccapurple')).toStrictEqual([102, 51, 153, 1])
++		expect(parseCSSColor('not-a-color')).toBeUndefined()
++		expect(matchesColor('rebeccapurple', 'rgb(102, 51, 153)')).toBe(true)
++		expect(matchesColor(readToken(card, 'ink'), 'rgb(1, 2, 3)')).toBe(true)
+ 
+-		expect(pixels(card, 'padding-left')).toBe(12)
+-		expect(style(card, 'width')).toBe('auto')
+-		expect(pixels(card, 'width')).toBe(0)
++		expect(readPixels(card, 'padding-left')).toBe(12)
++		expect(readStyle(card, 'width')).toBe('auto')
++		expect(readPixels(card, 'width')).toBe(0)
+ 	})
+ })
+ 
+-describe('rootToken', () => {
++describe('readRootToken', () => {
+ 	it('reads a token the document declares, with and without its leading dashes', () => {
+ 		buildStylesheet(':root { --journey-surface: rgb(7, 8, 9) }')
+-		expect(rootToken('journey-surface')).toBe('rgb(7, 8, 9)')
+-		expect(rootToken('--journey-surface')).toBe('rgb(7, 8, 9)')
+-		expect(rootToken('journey-surface')).toBe(token(document.documentElement, 'journey-surface'))
++		expect(readRootToken('journey-surface')).toBe('rgb(7, 8, 9)')
++		expect(readRootToken('--journey-surface')).toBe('rgb(7, 8, 9)')
++		expect(readRootToken('journey-surface')).toBe(
++			readToken(document.documentElement, 'journey-surface'),
++		)
+ 	})
+ 
+ 	it('reads a token the document does not declare as an empty string', () => {
+-		expect(rootToken('journey-unthemed')).toBe('')
++		expect(readRootToken('journey-unthemed')).toBe('')
+ 	})
+ })
+ 
+-describe('pixels', () => {
++describe('readPixels', () => {
+ 	it('reads a resolved length as its number of pixels', () => {
+ 		const container = buildFixture('<p style="padding-left: 12px; margin-top: 0.5px">Ready</p>')
+ 		const subject = requireValue(container.querySelector('p'))
+-		expect(pixels(subject, 'padding-left')).toBe(12)
+-		expect(pixels(subject, 'margin-top')).toBe(0.5)
++		expect(readPixels(subject, 'padding-left')).toBe(12)
++		expect(readPixels(subject, 'margin-top')).toBe(0.5)
+ 	})
+ 
+ 	it('reads a custom property carrying a length', () => {
+ 		const container = buildFixture('<p style="--journey-gap: 8px">Ready</p>')
+-		expect(pixels(requireValue(container.querySelector('p')), '--journey-gap')).toBe(8)
++		expect(readPixels(requireValue(container.querySelector('p')), '--journey-gap')).toBe(8)
+ 	})
+ 
+ 	it('reads an unparsable value as zero', () => {
+ 		const container = buildFixture('<p style="--journey-label: wide">Ready</p>')
+ 		const subject = requireValue(container.querySelector('p'))
+-		expect(style(subject, '--journey-label')).toBe('wide')
+-		expect(pixels(subject, '--journey-label')).toBe(0)
+-		expect(pixels(subject, '--journey-absent')).toBe(0)
++		expect(readStyle(subject, '--journey-label')).toBe('wide')
++		expect(readPixels(subject, '--journey-label')).toBe(0)
++		expect(readPixels(subject, '--journey-absent')).toBe(0)
+ 	})
+ })
+ 

@@ -23,3 +23,19 @@ changes to `parseCSSColor` (the `parse*` contract fits; `resolve*` is left as wr
 `describe*`/`render*` triggers are made disjoint by input; `build*` names its `create*` and `*Of`
 exclusions; `read*` refers coercion to § Fixed derivation/construction forms. Fix round:
 `vocabulary-2-brief.md` (Opus implementer), audited by the objective lane on the diff.
+
+## Round 2 (fix round `vocabulary-2`, commit `7b13932`, subject `units/vocabulary-2.diff`)
+
+| Claim | Objective lane (Opus reviewer) | Orchestrator |
+| --- | --- | --- |
+| 1 `describe*`/`render*` disjoint by input | CONFIRMED (binary "is a finding" conjunct) | stands |
+| 2 `build*` excludes `create*` and `*Of` from the text alone | BROKEN: line 171 still reads "`create*`: factory constructing an entity/value", so a plain composite matches both; `entity` is defined nowhere | upheld; line 171 was off-limits to the unit, so a successor unit owns it (`vocabulary-3`) |
+| 3 `read*` refers coercion to its home | CONFIRMED | stands |
+| 4 directives, no count, no `should` | CONFIRMED | stands |
+| 5 only lines 91-104 | CONFIRMED | stands |
+| Finding A: the brief's exemplar helpers were not all in `breaking-plan.md` | finding | upheld: they live in `fix/rulings.json` and the ledger; later audit briefs pin every exemplar to its file |
+
+Terminal line: `FAIL 2`. Fix round `vocabulary-3` owns line 96 and § Fixed derivation/construction
+forms, with the axis ruled as: `create*` is a factory a consumer calls to obtain an entity or
+value and lives in `factories.ts`; `build*` is an assembly step inside the package's own
+computation, exported for its tests, and lives in `helpers.ts`.
