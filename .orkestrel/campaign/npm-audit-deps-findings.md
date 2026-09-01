@@ -302,3 +302,22 @@ disposition tally from `instruments/workorder.mjs` over the 48 report files (202
 311, deferred as breaking 158, deferred to the TSDoc wave 21, already resolved 2. The regenerated
 `fix/work-order.md` carries 161 rows (the deferred rows plus the referral-derived extras) grouped
 by layer, and is the input ledger for the breaking phase.
+
+### Breaking ledger and blast radius, L0 and L1 (2026-09-01)
+
+The Cursor Grok bench distilled the L0 and L1 rows (`fix/breaking-ledger-L0L1.json`, journal
+`tmp/cursor/breaking-ledger-L0L1.log`, exit 0, report retained as
+`fix/breaking-ledger-L0L1-report.md`). The chunk omitted three rows — sse s18-04, ndjson s18-03,
+budget s18-19 — which the Orchestrator filled from the dossiers with the symbols verified by
+search, marked as fill-ins in the records. `instruments/radius.mjs` computes each row's consumer
+candidates over `src/`, `tests/`, `app/`, and the consumer's own guide; its first form counted
+the vendored dependency guide mirrors and reported every package as a consumer of every contract
+symbol, corrected to count only the consumer's own guide. Controls after the correction: the
+contract-internal spine `schemaNodeToShape` reports no external consumer, and `createContract`
+reports brief, csv, database, guide, html, markdown, queue, template, toolbox, and workflow.
+Coverage: a word-boundary text search over files importing the owning package, so a member
+rename with a common name (`describe`, `states`, `token`, `value`, `keys`) over-reports; the list
+bounds which consumers a unit visits, and the compiler against the staged tarball is the proof of
+consumption. It cannot under-report a consumer that imports the package by its published
+specifier, and it does not see a consumer that reaches a symbol through a re-export or a dynamic
+import (none exist under the barrel law).

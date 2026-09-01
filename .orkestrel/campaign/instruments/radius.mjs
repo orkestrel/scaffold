@@ -5,7 +5,9 @@ import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { execFileSync } from 'node:child_process'
 const FIX = '/home/user/scaffold/.orkestrel/campaign/fix'
-const ledger = JSON.parse(readFileSync(join(FIX, 'breaking-ledger.json'), 'utf8'))
+const ledger = process.argv[2] === '--control'
+	? [{ package: process.argv[3], id: 'control', kind: 'control', edits: [{ symbol: process.argv[4] }] }]
+	: JSON.parse(readFileSync(join(FIX, 'breaking-ledger.json'), 'utf8'))
 const repos = readdirSync('/home/user/fleet').filter(d => statSync(join('/home/user/fleet', d)).isDirectory()).map(d => [d, join('/home/user/fleet', d)])
 repos.push(['scaffold', '/home/user/scaffold'])
 function grep(dir, pattern, paths) {
@@ -23,13 +25,15 @@ for (const row of ledger) {
 		if (!importers.length) continue
 		for (const e of row.edits || []) {
 			if (!e.symbol) continue
-			const hits = grep(dir, `\\b${e.symbol}\\b`, ['src', 'tests', 'guides', 'app'])
-			const both = hits.filter(h => importers.includes(h) || h.includes('/guides/'))
+			const hits = grep(dir, `\\b${e.symbol}\\b`, ['src', 'tests', 'app', `guides/${name}.md`, 'guides/README.md'])
+			// A vendored dependency guide mirror names every upstream symbol; only the consumer's own guide counts.
+			const both = hits.filter(h => importers.includes(h) || h.endsWith(`/guides/${name}.md`) || h.endsWith('/guides/README.md'))
 			if (both.length) (consumers[name] ||= {})[e.symbol] = both.map(h => h.replace(dir + '/', ''))
 		}
 	}
 	out.push({ package: row.package, id: row.id, kind: row.kind, consumers })
 }
-writeFileSync(join(FIX, 'breaking-radius.json'), JSON.stringify(out, null, 1))
+if (process.argv[2] !== '--control') writeFileSync(join(FIX, 'breaking-radius.json'), JSON.stringify(out, null, 1))
+else console.log('CONTROL', out[0].edits ? '' : '', JSON.stringify(Object.fromEntries(Object.entries(out[0].consumers).map(([k, v]) => [k, Object.values(v).flat().length]))))
 const touched = new Set(out.flatMap(r => Object.keys(r.consumers)))
 console.log('rows:', out.length, '| rows with external consumers:', out.filter(r => Object.keys(r.consumers).length).length, '| consumer packages:', [...touched].sort().join(','))

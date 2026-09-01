@@ -1,0 +1,1811 @@
+[
+ {
+  "package": "contract",
+  "id": "s03-01",
+  "kind": "mixed",
+  "consumers": {}
+ },
+ {
+  "package": "contract",
+  "id": "s03-06",
+  "kind": "option-key",
+  "consumers": {}
+ },
+ {
+  "package": "contract",
+  "id": "s03-10",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "contract",
+  "id": "s03-13",
+  "kind": "mixed",
+  "consumers": {
+   "brief": {
+    "expansion": [
+     "guides/brief.md"
+    ]
+   },
+   "database": {
+    "expansion": [
+     "tests/src/core/helpers.test.ts"
+    ]
+   },
+   "mcp": {
+    "expansion": [
+     "src/core/validators.ts",
+     "src/core/types.ts",
+     "guides/mcp.md"
+    ]
+   },
+   "middleware": {
+    "expansion": [
+     "src/core/helpers.ts"
+    ]
+   },
+   "process": {
+    "expansion": [
+     "src/server/helpers.ts",
+     "tests/src/server/helpers.test.ts",
+     "guides/process.md"
+    ]
+   },
+   "table": {
+    "expansion": [
+     "src/core/Table.ts",
+     "src/core/types.ts",
+     "tests/setup.ts",
+     "tests/src/core/Table.test.ts",
+     "guides/table.md"
+    ]
+   },
+   "toolbox": {
+    "expansion": [
+     "src/core/factories.ts",
+     "src/core/helpers.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/toolbox.md"
+    ]
+   },
+   "scaffold": {
+    "expansion": [
+     "src/server/helpers.ts",
+     "src/core/helpers.ts",
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "contract",
+  "id": "s03-22",
+  "kind": "rename",
+  "consumers": {
+   "abort": {
+    "describe": [
+     "tests/src/core/Abort.test.ts",
+     "tests/src/core/helpers.test.ts"
+    ],
+    "prototype": [
+     "tests/src/core/helpers.test.ts"
+    ],
+    "parent": [
+     "src/core/helpers.ts",
+     "tests/src/core/Abort.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/abort.md"
+    ]
+   },
+   "agent": {
+    "describe": [
+     "tests/src/core/conversations/stores/DatabaseConversationStore.test.ts",
+     "tests/src/core/factories.test.ts",
+     "guides/agent.md"
+    ],
+    "prototype": [
+     "src/core/instructions/InstructionManager.ts"
+    ],
+    "declare": [
+     "src/core/factories.ts",
+     "guides/agent.md"
+    ],
+    "parent": [
+     "src/core/factories.ts",
+     "src/core/helpers.ts",
+     "tests/src/core/factories.test.ts",
+     "guides/agent.md"
+    ]
+   },
+   "brief": {
+    "describe": [
+     "src/core/BriefCompiler.ts",
+     "src/core/helpers.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/parsers.test.ts",
+     "tests/src/core/shapers.test.ts"
+    ],
+    "prototype": [
+     "src/core/BriefCompiler.ts",
+     "src/core/cloners.ts",
+     "src/core/helpers.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/parsers.test.ts",
+     "tests/src/core/shapers.test.ts",
+     "guides/brief.md"
+    ]
+   },
+   "browser": {
+    "describe": [
+     "tests/src/server/Browser.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/src/core/BrowserHARManager.test.ts"
+    ],
+    "prototype": [
+     "tests/src/core/BrowserHARManager.test.ts"
+    ],
+    "parent": [
+     "src/core/BrowserPage.ts",
+     "src/core/BrowserFrame.ts",
+     "src/core/helpers.ts",
+     "src/core/BrowserSnapshot.ts",
+     "src/core/BrowserLocator.ts",
+     "tests/setupServer.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/browser.md"
+    ]
+   },
+   "budget": {
+    "describe": [
+     "tests/src/core/Budget.test.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/setup.test.ts"
+    ],
+    "prototype": [
+     "src/core/validators.ts",
+     "tests/src/core/Budget.test.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/helpers.test.ts"
+    ],
+    "parent": [
+     "src/core/Budget.ts",
+     "tests/src/core/Budget.test.ts",
+     "tests/src/core/factories.test.ts",
+     "guides/budget.md"
+    ]
+   },
+   "csv": {
+    "describe": [
+     "src/core/CSV.ts",
+     "src/core/types.ts",
+     "tests/src/core/shapers.test.ts",
+     "tests/src/core/CSV.test.ts"
+    ],
+    "prototype": [
+     "src/core/validators.ts",
+     "guides/csv.md"
+    ],
+    "declare": [
+     "guides/csv.md"
+    ]
+   },
+   "database": {
+    "describe": [
+     "src/core/types.ts",
+     "tests/src/server/drivers/JSONDriver.test.ts",
+     "tests/src/server/drivers/SQLiteDriver.test.ts",
+     "tests/src/server/integration.test.ts",
+     "tests/src/browser/factories.test.ts",
+     "tests/src/browser/drivers/IndexedDBDriver.test.ts",
+     "tests/src/browser/integration.test.ts",
+     "tests/src/core/Table.test.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/Database.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/src/core/drivers/MemoryDriver.test.ts",
+     "tests/src/core/cloners.test.ts",
+     "tests/src/core/Query.test.ts",
+     "tests/setup.test.ts",
+     "tests/guides.test.ts"
+    ],
+    "prototype": [
+     "src/server/compilers.ts"
+    ],
+    "declare": [
+     "src/server/helpers.ts",
+     "src/core/helpers.ts",
+     "tests/setup.ts",
+     "guides/database.md"
+    ],
+    "parent": [
+     "src/server/helpers.ts",
+     "src/server/drivers/JSONDriver.ts",
+     "tests/src/server/drivers/SQLiteDriver.test.ts",
+     "tests/src/core/helpers.test.ts"
+    ]
+   },
+   "form": {
+    "describe": [
+     "src/core/types.ts",
+     "tests/src/core/Form.test.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/errors.test.ts",
+     "tests/src/core/parsers.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/src/core/cloners.test.ts",
+     "tests/setup.test.ts"
+    ],
+    "define": [
+     "guides/form.md"
+    ],
+    "prototype": [
+     "src/core/helpers.ts",
+     "tests/src/core/Form.test.ts",
+     "tests/src/core/parsers.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/form.md"
+    ],
+    "declare": [
+     "src/core/Form.ts",
+     "src/core/types.ts",
+     "tests/src/core/Form.test.ts",
+     "guides/form.md"
+    ]
+   },
+   "guide": {
+    "describe": [
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/shapers.test.ts",
+     "tests/setup.test.ts"
+    ],
+    "declare": [
+     "src/core/helpers.ts"
+    ],
+    "parent": [
+     "src/core/helpers.ts",
+     "guides/guide.md"
+    ]
+   },
+   "html": {
+    "describe": [
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/shapers.test.ts",
+     "guides/html.md"
+    ],
+    "prototype": [
+     "src/core/helpers.ts",
+     "guides/html.md"
+    ],
+    "parent": [
+     "src/core/helpers.ts"
+    ]
+   },
+   "interpret": {
+    "describe": [
+     "src/core/helpers.ts",
+     "src/core/Narrator.ts",
+     "src/core/types.ts",
+     "tests/src/core/Interpret.test.ts",
+     "tests/setup.test.ts",
+     "guides/interpret.md"
+    ],
+    "prototype": [
+     "src/core/validators.ts",
+     "src/core/helpers.ts",
+     "src/core/Narrator.ts",
+     "src/core/types.ts",
+     "tests/setup.ts",
+     "tests/setup.test.ts",
+     "guides/interpret.md"
+    ],
+    "declare": [
+     "tests/setup.test.ts"
+    ]
+   },
+   "lsp": {
+    "describe": [
+     "tests/setupConformance.test.ts"
+    ],
+    "prototype": [
+     "src/core/errors.ts"
+    ],
+    "declare": [
+     "src/core/helpers.ts",
+     "tests/setupConformance.ts",
+     "guides/lsp.md"
+    ]
+   },
+   "markdown": {
+    "describe": [
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/shapers.test.ts",
+     "tests/setup.test.ts"
+    ],
+    "parent": [
+     "src/core/helpers.ts"
+    ]
+   },
+   "mcp": {
+    "describe": [
+     "src/server/transports/HTTPClientTransport.ts",
+     "src/browser/transports/HTTPClientTransport.ts",
+     "src/core/validators.ts",
+     "src/core/helpers.ts",
+     "tests/conformanceClient.ts",
+     "tests/src/server/transports/WebSocketClientTransport.test.ts",
+     "tests/src/server/transports/StdioClientTransport.test.ts",
+     "tests/src/server/transports/HTTPClientTransport.test.ts",
+     "tests/src/browser/transports/HTTPClientTransport.test.ts",
+     "tests/src/browser/factories.test.ts",
+     "tests/src/core/MCPServer.test.ts",
+     "tests/src/core/MCPLegacyClientTransport.test.ts",
+     "tests/src/core/MCPClient.test.ts",
+     "tests/setupConformance.test.ts",
+     "tests/setup.test.ts",
+     "tests/guides.test.ts"
+    ],
+    "define": [
+     "src/core/helpers.ts"
+    ],
+    "prototype": [
+     "tests/src/core/MCPServer.test.ts",
+     "guides/mcp.md"
+    ],
+    "declare": [
+     "src/core/helpers.ts",
+     "src/core/MCPServer.ts",
+     "tests/conformanceClient.ts",
+     "tests/src/core/MCPServer.test.ts",
+     "tests/setupConformance.ts",
+     "tests/guides.test.ts",
+     "tests/setupGlobal.ts",
+     "guides/mcp.md"
+    ],
+    "parent": [
+     "src/server/factories.ts",
+     "tests/guides.test.ts",
+     "guides/mcp.md"
+    ]
+   },
+   "middleware": {
+    "prototype": [
+     "src/server/helpers.ts",
+     "src/core/validators.ts",
+     "src/core/helpers.ts",
+     "guides/middleware.md"
+    ],
+    "declare": [
+     "src/core/factories.ts",
+     "guides/middleware.md"
+    ],
+    "parent": [
+     "src/server/helpers.ts",
+     "guides/middleware.md"
+    ]
+   },
+   "ndjson": {
+    "describe": [
+     "tests/src/core/NDJSONParser.test.ts",
+     "tests/setup.test.ts"
+    ],
+    "prototype": [
+     "tests/src/core/NDJSONParser.test.ts"
+    ]
+   },
+   "ollama": {
+    "describe": [
+     "tests/setupServer.test.ts",
+     "tests/service/schema.test.ts",
+     "tests/service/OllamaProvider.test.ts",
+     "tests/setupService.test.ts",
+     "guides/ollama.md"
+    ]
+   },
+   "probe": {
+    "describe": [
+     "src/server/helpers.ts",
+     "src/core/shapers.ts",
+     "tests/src/server/helpers.test.ts",
+     "tests/src/server/ProbeServer.test.ts",
+     "tests/src/core/validators.test.ts",
+     "tests/src/core/errors.test.ts",
+     "tests/src/bin/main.test.ts",
+     "tests/guides.test.ts"
+    ],
+    "define": [
+     "guides/probe.md"
+    ],
+    "prototype": [
+     "src/core/errors.ts",
+     "tests/src/core/validators.test.ts",
+     "tests/guides.test.ts"
+    ],
+    "declare": [
+     "src/server/helpers.ts",
+     "tests/src/server/helpers.test.ts",
+     "tests/src/core/errors.test.ts",
+     "tests/guides.test.ts",
+     "guides/probe.md"
+    ],
+    "parent": [
+     "src/server/stages/RuntimeStage.ts",
+     "src/server/helpers.ts",
+     "src/core/validators.ts",
+     "tests/setupServer.ts",
+     "tests/src/server/helpers.test.ts",
+     "tests/src/bin/main.test.ts",
+     "guides/probe.md"
+    ]
+   },
+   "process": {
+    "describe": [
+     "tests/src/server/Process.test.ts",
+     "tests/src/server/helpers.test.ts",
+     "tests/src/server/ProcessManager.test.ts",
+     "tests/src/server/Session.test.ts",
+     "tests/src/core/errors.test.ts",
+     "tests/guides.test.ts"
+    ],
+    "prototype": [
+     "src/core/errors.ts",
+     "tests/guides.test.ts",
+     "guides/process.md"
+    ],
+    "declare": [
+     "tests/src/core/errors.test.ts"
+    ],
+    "parent": [
+     "src/server/helpers.ts",
+     "tests/src/server/Process.test.ts",
+     "tests/src/server/helpers.test.ts",
+     "tests/src/server/Session.test.ts",
+     "guides/process.md"
+    ]
+   },
+   "program": {
+    "describe": [
+     "tests/src/core/helpers.test.ts"
+    ],
+    "prototype": [
+     "src/core/helpers.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/program.md"
+    ]
+   },
+   "qualifier": {
+    "describe": [
+     "src/core/helpers.ts",
+     "tests/setup.test.ts"
+    ],
+    "prototype": [
+     "tests/setup.test.ts"
+    ],
+    "declare": [
+     "tests/setup.test.ts"
+    ]
+   },
+   "queue": {
+    "describe": [
+     "tests/src/core/stores/MemoryQueueStore.test.ts",
+     "tests/src/core/stores/DatabaseQueueStore.test.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/src/core/Queue.test.ts"
+    ],
+    "prototype": [
+     "src/core/validators.ts",
+     "tests/src/core/Queue.test.ts"
+    ],
+    "parent": [
+     "guides/queue.md"
+    ]
+   },
+   "rater": {
+    "describe": [
+     "tests/src/core/Rater.test.ts"
+    ],
+    "prototype": [
+     "tests/src/core/Rater.test.ts"
+    ]
+   },
+   "reason": {
+    "describe": [
+     "tests/src/core/validators.test.ts"
+    ],
+    "define": [
+     "tests/setup.ts"
+    ],
+    "prototype": [
+     "src/core/validators.ts",
+     "src/core/helpers.ts",
+     "tests/setup.ts",
+     "tests/src/core/validators.test.ts"
+    ],
+    "parent": [
+     "src/core/helpers.ts",
+     "guides/reason.md"
+    ]
+   },
+   "relation": {
+    "describe": [
+     "tests/src/core/Model.test.ts",
+     "tests/src/core/RelationManager.test.ts",
+     "tests/setup.test.ts"
+    ],
+    "define": [
+     "src/core/helpers.ts",
+     "guides/relation.md"
+    ],
+    "parent": [
+     "src/core/Model.ts",
+     "guides/relation.md"
+    ]
+   },
+   "router": {
+    "parent": [
+     "guides/README.md"
+    ]
+   },
+   "server": {
+    "prototype": [
+     "src/server/helpers.ts",
+     "guides/server.md"
+    ],
+    "declare": [
+     "guides/server.md"
+    ],
+    "parent": [
+     "src/server/Server.ts",
+     "guides/README.md"
+    ]
+   },
+   "sqlite": {
+    "prototype": [
+     "src/server/helpers.ts"
+    ]
+   },
+   "sse": {
+    "describe": [
+     "tests/src/core/SSEParser.test.ts",
+     "tests/setup.test.ts"
+    ],
+    "prototype": [
+     "tests/src/core/SSEParser.test.ts"
+    ]
+   },
+   "table": {
+    "describe": [
+     "src/core/types.ts",
+     "tests/src/core/Table.test.ts",
+     "tests/src/core/errors.test.ts",
+     "tests/src/core/cloners.test.ts"
+    ],
+    "prototype": [
+     "src/core/types.ts",
+     "tests/src/core/Table.test.ts",
+     "guides/table.md"
+    ],
+    "declare": [
+     "src/core/types.ts",
+     "guides/table.md"
+    ],
+    "parent": [
+     "guides/table.md"
+    ]
+   },
+   "template": {
+    "describe": [
+     "tests/src/core/shapers.test.ts"
+    ],
+    "prototype": [
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "guides/template.md"
+    ]
+   },
+   "terminal": {
+    "describe": [
+     "tests/src/core/stores/DatabaseTerminalStore.test.ts"
+    ]
+   },
+   "timeout": {
+    "describe": [
+     "tests/src/core/Timeout.test.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/helpers.test.ts"
+    ],
+    "prototype": [
+     "src/core/validators.ts",
+     "tests/src/core/helpers.test.ts"
+    ],
+    "parent": [
+     "tests/src/core/Timeout.test.ts",
+     "tests/src/core/factories.test.ts",
+     "guides/timeout.md"
+    ]
+   },
+   "tool": {
+    "describe": [
+     "guides/tool.md"
+    ],
+    "define": [
+     "src/core/types.ts"
+    ]
+   },
+   "toolbox": {
+    "describe": [
+     "src/core/factories.ts",
+     "tests/src/core/stores/DatabaseDefinitionStore.test.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/src/core/shapers.test.ts",
+     "guides/toolbox.md"
+    ],
+    "prototype": [
+     "src/core/factories.ts",
+     "tests/src/core/factories.test.ts",
+     "guides/toolbox.md"
+    ],
+    "declare": [
+     "guides/toolbox.md"
+    ],
+    "parent": [
+     "src/core/helpers.ts",
+     "tests/src/core/factories.test.ts"
+    ]
+   },
+   "websocket": {
+    "describe": [
+     "tests/src/server/NodeWebSocket.test.ts",
+     "tests/src/server/helpers.test.ts",
+     "tests/integration.test.ts"
+    ]
+   },
+   "worker": {
+    "describe": [
+     "tests/src/server/factories.test.ts",
+     "tests/src/server/helpers.test.ts",
+     "tests/src/core/Worker.test.ts",
+     "tests/setupServer.test.ts"
+    ],
+    "define": [
+     "guides/worker.md"
+    ],
+    "prototype": [
+     "tests/src/core/Worker.test.ts"
+    ],
+    "parent": [
+     "tests/src/server/fixtures/malformed.ts",
+     "tests/src/server/fixtures/identity.ts",
+     "guides/worker.md"
+    ]
+   },
+   "workflow": {
+    "describe": [
+     "src/core/types.ts",
+     "tests/src/core/stores/DatabaseWorkflowStore.test.ts",
+     "tests/src/core/shapers.test.ts"
+    ],
+    "prototype": [
+     "src/core/cloners.ts",
+     "src/core/validators.ts",
+     "src/core/helpers.ts",
+     "guides/workflow.md"
+    ],
+    "declare": [
+     "src/core/tasks/Task.ts",
+     "src/core/phases/Phase.ts",
+     "src/core/Workflow.ts",
+     "guides/workflow.md"
+    ],
+    "parent": [
+     "src/core/tasks/Task.ts",
+     "src/core/phases/Phase.ts",
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "guides/workflow.md",
+     "guides/README.md"
+    ]
+   },
+   "workspace": {
+    "describe": [
+     "tests/src/core/workspaces/stores/DatabaseWorkspaceStore.test.ts",
+     "guides/workspace.md"
+    ]
+   },
+   "scaffold": {
+    "describe": [
+     "src/core/compilers.ts",
+     "src/bin/CLI.ts",
+     "src/bin/helpers.ts",
+     "tests/src/server/helpers.test.ts",
+     "tests/src/server/Upstream.test.ts",
+     "tests/src/core/templates.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/src/core/cloners.test.ts",
+     "tests/src/core/constants.test.ts",
+     "tests/guides.test.ts",
+     "guides/scaffold.md"
+    ],
+    "prototype": [
+     "src/core/cloners.ts",
+     "src/core/helpers.ts",
+     "tests/src/core/cloners.test.ts"
+    ],
+    "declare": [
+     "src/server/helpers.ts",
+     "src/server/Upstream.ts",
+     "src/server/Materializer.ts",
+     "src/core/validators.ts",
+     "src/core/compilers.ts",
+     "src/bin/CLI.ts",
+     "tests/src/server/helpers.test.ts",
+     "tests/src/server/Upstream.test.ts",
+     "tests/src/core/templates.test.ts",
+     "tests/src/core/constants.test.ts",
+     "guides/scaffold.md"
+    ],
+    "parent": [
+     "src/server/helpers.ts",
+     "src/server/WriteTransaction.ts",
+     "src/server/Materializer.ts",
+     "tests/src/server/helpers.test.ts",
+     "tests/src/core/templates.test.ts"
+    ]
+   }
+  }
+ },
+ {
+  "package": "contract",
+  "id": "s03-23",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "msg",
+  "id": "s13-02",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "msg",
+  "id": "s13-03",
+  "kind": "mixed",
+  "consumers": {
+   "scaffold": {
+    "type": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "test",
+  "id": "s11-36",
+  "kind": "rename",
+  "consumers": {
+   "agent": {
+    "states": [
+     "tests/src/core/conversations/Conversation.test.ts"
+    ]
+   },
+   "brief": {
+    "states": [
+     "tests/src/core/helpers.test.ts",
+     "guides/brief.md"
+    ]
+   },
+   "codec": {
+    "states": [
+     "tests/src/core/helpers.test.ts",
+     "tests/guides.test.ts"
+    ]
+   },
+   "contract": {
+    "states": [
+     "guides/contract.md"
+    ]
+   },
+   "database": {
+    "states": [
+     "tests/setupServer.test.ts",
+     "tests/guides.test.ts"
+    ]
+   },
+   "form": {
+    "states": [
+     "guides/form.md"
+    ]
+   },
+   "guide": {
+    "states": [
+     "guides/guide.md"
+    ]
+   },
+   "html": {
+    "states": [
+     "tests/src/core/helpers.test.ts"
+    ]
+   },
+   "lsp": {
+    "states": [
+     "tests/guides.test.ts"
+    ]
+   },
+   "mcp": {
+    "states": [
+     "tests/src/server/factories.test.ts",
+     "tests/src/core/MCPServer.test.ts",
+     "tests/src/core/MCPClient.test.ts",
+     "tests/guides.test.ts",
+     "guides/mcp.md"
+    ]
+   },
+   "middleware": {
+    "states": [
+     "tests/setupServer.ts",
+     "tests/src/server/helpers.test.ts"
+    ]
+   },
+   "ollama": {
+    "states": [
+     "tests/service/compaction.test.ts"
+    ]
+   },
+   "probe": {
+    "states": [
+     "tests/src/server/stages/LintStage.test.ts",
+     "tests/src/server/helpers.test.ts",
+     "tests/src/server/Probe.test.ts",
+     "tests/src/server/ProbeServer.test.ts",
+     "guides/probe.md"
+    ]
+   },
+   "process": {
+    "states": [
+     "tests/guides.test.ts",
+     "guides/process.md"
+    ]
+   },
+   "server": {
+    "states": [
+     "guides/server.md"
+    ]
+   },
+   "table": {
+    "states": [
+     "guides/table.md"
+    ]
+   },
+   "workflow": {
+    "states": [
+     "tests/src/core/Workflow.test.ts",
+     "tests/src/core/tasks/Task.test.ts",
+     "tests/src/core/phases/Phase.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/src/core/WorkflowRunner.test.ts",
+     "guides/workflow.md"
+    ]
+   },
+   "scaffold": {
+    "states": [
+     "tests/setupServer.ts",
+     "tests/setup.ts",
+     "tests/src/core/templates.test.ts",
+     "tests/src/bin/CLI.test.ts",
+     "tests/src/bin/helpers.test.ts",
+     "tests/distribution.test.ts",
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "test",
+  "id": "s11-37",
+  "kind": "rename",
+  "consumers": {
+   "agent": {
+    "token": [
+     "tests/setup.ts",
+     "tests/src/core/Agent.test.ts",
+     "tests/src/core/conversations/Conversation.test.ts",
+     "tests/src/core/factories.test.ts",
+     "tests/src/core/integration.test.ts",
+     "guides/agent.md",
+     "guides/README.md"
+    ]
+   },
+   "brief": {
+    "contrast": [
+     "guides/brief.md"
+    ]
+   },
+   "browser": {
+    "style": [
+     "guides/browser.md"
+    ],
+    "token": [
+     "tests/src/core/BrowserPage.test.ts",
+     "tests/setup.test.ts",
+     "guides/browser.md"
+    ],
+    "pixels": [
+     "guides/browser.md"
+    ]
+   },
+   "budget": {
+    "token": [
+     "tests/src/core/factories.test.ts",
+     "guides/budget.md"
+    ]
+   },
+   "console": {
+    "style": [
+     "tests/src/server/ProcessCapture.test.ts",
+     "tests/src/browser/factories.test.ts",
+     "tests/src/core/Logger.test.ts",
+     "tests/src/core/Spinner.test.ts",
+     "tests/src/core/Progress.test.ts",
+     "guides/console.md"
+    ],
+    "token": [
+     "guides/console.md"
+    ]
+   },
+   "contract": {
+    "style": [
+     "guides/contract.md"
+    ]
+   },
+   "database": {
+    "style": [
+     "guides/database.md"
+    ],
+    "token": [
+     "guides/database.md"
+    ]
+   },
+   "form": {
+    "token": [
+     "tests/src/core/Form.test.ts"
+    ]
+   },
+   "guide": {
+    "style": [
+     "tests/src/core/helpers.test.ts"
+    ]
+   },
+   "html": {
+    "contrast": [
+     "guides/html.md"
+    ],
+    "style": [
+     "tests/src/core/HTML.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/html.md"
+    ],
+    "token": [
+     "tests/src/core/HTML.test.ts",
+     "guides/html.md"
+    ]
+   },
+   "interpret": {
+    "token": [
+     "guides/interpret.md"
+    ]
+   },
+   "markdown": {
+    "style": [
+     "guides/markdown.md"
+    ]
+   },
+   "mcp": {
+    "contrast": [
+     "tests/src/core/MCPServer.test.ts"
+    ],
+    "style": [
+     "tests/src/server/helpers.test.ts"
+    ],
+    "token": [
+     "tests/src/server/transports/HTTPClientTransport.test.ts",
+     "tests/src/server/factories.test.ts",
+     "tests/src/server/helpers.test.ts",
+     "tests/src/browser/factories.test.ts",
+     "tests/src/browser/helpers.test.ts",
+     "tests/src/core/MCPServer.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "tests/src/core/MCPClient.test.ts",
+     "guides/mcp.md"
+    ]
+   },
+   "middleware": {
+    "style": [
+     "tests/src/server/helpers.test.ts"
+    ],
+    "token": [
+     "tests/setupServer.ts",
+     "tests/src/server/middlewares.test.ts",
+     "tests/src/core/middlewares.test.ts",
+     "guides/middleware.md"
+    ]
+   },
+   "msg": {
+    "style": [
+     "guides/msg.md"
+    ]
+   },
+   "ollama": {
+    "style": [
+     "tests/setupServer.ts",
+     "tests/service/OllamaProvider.test.ts"
+    ],
+    "token": [
+     "tests/setupServer.ts",
+     "tests/src/server/OllamaProvider.test.ts",
+     "tests/setup.test.ts",
+     "tests/service/lifecycle.test.ts",
+     "tests/service/budget.test.ts",
+     "tests/service/OllamaProvider.test.ts",
+     "tests/setupService.test.ts",
+     "guides/ollama.md"
+    ]
+   },
+   "pool": {
+    "token": [
+     "tests/src/core/Pool.test.ts",
+     "guides/pool.md"
+    ]
+   },
+   "probe": {
+    "token": [
+     "tests/src/server/stages/RuntimeStage.test.ts",
+     "tests/src/server/Probe.test.ts",
+     "tests/src/core/validators.test.ts",
+     "guides/probe.md"
+    ]
+   },
+   "process": {
+    "contrast": [
+     "tests/src/server/helpers.test.ts"
+    ],
+    "token": [
+     "tests/src/server/Process.test.ts",
+     "tests/src/server/helpers.test.ts",
+     "tests/src/server/Session.test.ts",
+     "tests/guides.test.ts",
+     "guides/process.md"
+    ]
+   },
+   "program": {
+    "contrast": [
+     "tests/src/core/programs/Program.test.ts"
+    ],
+    "token": [
+     "guides/program.md"
+    ]
+   },
+   "queue": {
+    "token": [
+     "tests/src/core/Queue.test.ts",
+     "guides/queue.md"
+    ]
+   },
+   "reason": {
+    "contrast": [
+     "tests/src/core/reasoners/LogicalReasoner.test.ts"
+    ],
+    "style": [
+     "tests/src/core/Reason.test.ts",
+     "guides/reason.md"
+    ],
+    "token": [
+     "tests/src/core/operators/Evaluator.test.ts"
+    ]
+   },
+   "relation": {
+    "style": [
+     "guides/relation.md"
+    ]
+   },
+   "sea": {
+    "token": [
+     "tests/src/server/helpers.test.ts"
+    ]
+   },
+   "server": {
+    "style": [
+     "guides/server.md"
+    ],
+    "token": [
+     "guides/server.md"
+    ]
+   },
+   "table": {
+    "pixels": [
+     "guides/table.md"
+    ]
+   },
+   "template": {
+    "token": [
+     "tests/src/core/Template.test.ts",
+     "tests/src/core/helpers.test.ts",
+     "guides/template.md"
+    ]
+   },
+   "terminal": {
+    "style": [
+     "guides/terminal.md",
+     "guides/README.md"
+    ],
+    "token": [
+     "tests/src/core/PromptClient.test.ts",
+     "guides/terminal.md"
+    ]
+   },
+   "toolbox": {
+    "contrast": [
+     "tests/src/core/factories.test.ts"
+    ],
+    "token": [
+     "guides/toolbox.md"
+    ]
+   },
+   "websocket": {
+    "token": [
+     "tests/src/server/NodeWebSocket.test.ts",
+     "tests/src/server/helpers.test.ts",
+     "guides/websocket.md"
+    ]
+   },
+   "worker": {
+    "token": [
+     "tests/src/server/factories.test.ts",
+     "tests/src/server/helpers.test.ts",
+     "tests/setupServer.test.ts",
+     "guides/worker.md"
+    ]
+   },
+   "workflow": {
+    "token": [
+     "guides/workflow.md",
+     "guides/README.md"
+    ]
+   },
+   "scaffold": {
+    "token": [
+     "tests/setupServer.ts",
+     "tests/src/core/templates.test.ts",
+     "tests/src/bin/helpers.test.ts",
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "test",
+  "id": "s11-38",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "csv",
+  "id": "s16-03",
+  "kind": "remove",
+  "consumers": {}
+ },
+ {
+  "package": "csv",
+  "id": "s16-05",
+  "kind": "mixed",
+  "consumers": {
+   "scaffold": {
+    "comment": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "html",
+  "id": "s08-01",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "html",
+  "id": "s08-04",
+  "kind": "remove",
+  "consumers": {
+   "markdown": {
+    "createTextContract": [
+     "guides/markdown.md",
+     "guides/README.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "html",
+  "id": "s08-09",
+  "kind": "rename",
+  "consumers": {
+   "markdown": {
+    "SanitizeOptions": [
+     "guides/markdown.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "indexeddb",
+  "id": "s16-10",
+  "kind": "mixed",
+  "consumers": {
+   "agent": {
+    "query": [
+     "guides/agent.md"
+    ],
+    "keys": [
+     "guides/agent.md"
+    ],
+    "count": [
+     "guides/agent.md"
+    ],
+    "path": [
+     "guides/agent.md"
+    ]
+   },
+   "database": {
+    "query": [
+     "src/browser/drivers/IndexedDBDriver.ts",
+     "tests/src/browser/drivers/IndexedDBDriver.test.ts",
+     "guides/database.md"
+    ],
+    "records": [
+     "src/browser/drivers/IndexedDBDriver.ts",
+     "tests/src/browser/drivers/IndexedDBDriver.test.ts",
+     "guides/database.md"
+    ],
+    "keys": [
+     "src/browser/drivers/IndexedDBDriver.ts",
+     "tests/src/browser/helpers.test.ts",
+     "tests/src/browser/drivers/IndexedDBDriver.test.ts",
+     "guides/database.md"
+    ],
+    "count": [
+     "tests/src/browser/drivers/IndexedDBDriver.test.ts",
+     "guides/database.md"
+    ],
+    "path": [
+     "src/browser/helpers.ts",
+     "src/browser/drivers/IndexedDBDriver.ts",
+     "tests/src/browser/drivers/IndexedDBDriver.test.ts",
+     "guides/database.md"
+    ]
+   },
+   "middleware": {
+    "records": [
+     "guides/middleware.md"
+    ],
+    "keys": [
+     "guides/middleware.md"
+    ],
+    "path": [
+     "guides/middleware.md"
+    ]
+   },
+   "queue": {
+    "keys": [
+     "guides/queue.md"
+    ],
+    "count": [
+     "guides/queue.md"
+    ]
+   },
+   "relation": {
+    "query": [
+     "guides/relation.md",
+     "guides/README.md"
+    ],
+    "records": [
+     "guides/relation.md"
+    ],
+    "keys": [
+     "guides/relation.md"
+    ],
+    "count": [
+     "guides/relation.md"
+    ]
+   },
+   "terminal": {
+    "records": [
+     "guides/terminal.md"
+    ],
+    "keys": [
+     "guides/terminal.md"
+    ],
+    "count": [
+     "guides/terminal.md"
+    ],
+    "path": [
+     "guides/terminal.md"
+    ]
+   },
+   "toolbox": {
+    "query": [
+     "guides/toolbox.md",
+     "guides/README.md"
+    ],
+    "records": [
+     "guides/toolbox.md"
+    ],
+    "keys": [
+     "guides/toolbox.md"
+    ],
+    "count": [
+     "guides/toolbox.md"
+    ],
+    "path": [
+     "guides/toolbox.md"
+    ]
+   },
+   "worker": {
+    "query": [
+     "guides/worker.md"
+    ],
+    "records": [
+     "guides/worker.md"
+    ],
+    "count": [
+     "guides/worker.md"
+    ],
+    "path": [
+     "guides/worker.md"
+    ]
+   },
+   "workflow": {
+    "query": [
+     "guides/README.md"
+    ],
+    "records": [
+     "guides/workflow.md"
+    ],
+    "keys": [
+     "guides/workflow.md"
+    ],
+    "count": [
+     "guides/workflow.md"
+    ],
+    "path": [
+     "guides/workflow.md"
+    ]
+   },
+   "workspace": {
+    "query": [
+     "guides/workspace.md"
+    ],
+    "keys": [
+     "guides/workspace.md"
+    ],
+    "count": [
+     "guides/workspace.md"
+    ],
+    "path": [
+     "guides/workspace.md",
+     "guides/README.md"
+    ]
+   },
+   "scaffold": {
+    "records": [
+     "guides/scaffold.md"
+    ],
+    "path": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "indexeddb",
+  "id": "s16-12",
+  "kind": "remove",
+  "consumers": {
+   "database": {
+    "rangeExactKey": [
+     "src/browser/helpers.ts"
+    ],
+    "rangeBetweenKeys": [
+     "src/browser/helpers.ts"
+    ]
+   }
+  }
+ },
+ {
+  "package": "indexeddb",
+  "id": "s16-15",
+  "kind": "mixed",
+  "consumers": {
+   "agent": {
+    "value": [
+     "guides/agent.md"
+    ]
+   },
+   "database": {
+    "value": [
+     "src/browser/helpers.ts",
+     "src/browser/drivers/IndexedDBDriver.ts",
+     "tests/src/browser/helpers.test.ts",
+     "tests/src/browser/drivers/IndexedDBDriver.test.ts",
+     "guides/database.md"
+    ]
+   },
+   "middleware": {
+    "value": [
+     "guides/middleware.md"
+    ]
+   },
+   "queue": {
+    "value": [
+     "guides/queue.md"
+    ]
+   },
+   "relation": {
+    "value": [
+     "guides/relation.md"
+    ]
+   },
+   "terminal": {
+    "value": [
+     "guides/terminal.md"
+    ]
+   },
+   "toolbox": {
+    "value": [
+     "guides/toolbox.md"
+    ]
+   },
+   "worker": {
+    "value": [
+     "guides/worker.md"
+    ]
+   },
+   "workflow": {
+    "value": [
+     "guides/workflow.md"
+    ]
+   },
+   "workspace": {
+    "value": [
+     "guides/workspace.md"
+    ]
+   },
+   "scaffold": {
+    "value": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "indexeddb",
+  "id": "s16-17",
+  "kind": "mixed",
+  "consumers": {
+   "agent": {
+    "stores": [
+     "guides/agent.md"
+    ],
+    "create": [
+     "guides/agent.md"
+    ],
+    "drop": [
+     "guides/agent.md"
+    ],
+    "store": [
+     "guides/agent.md"
+    ],
+    "index": [
+     "guides/agent.md",
+     "guides/README.md"
+    ]
+   },
+   "database": {
+    "stores": [
+     "src/browser/drivers/IndexedDBDriver.ts",
+     "tests/src/browser/drivers/IndexedDBDriver.test.ts",
+     "guides/database.md",
+     "guides/README.md"
+    ],
+    "create": [
+     "src/browser/drivers/IndexedDBDriver.ts",
+     "tests/src/browser/drivers/IndexedDBDriver.test.ts",
+     "guides/database.md"
+    ],
+    "drop": [
+     "src/browser/helpers.ts",
+     "src/browser/drivers/IndexedDBDriver.ts",
+     "tests/src/browser/helpers.test.ts",
+     "tests/src/browser/drivers/IndexedDBDriver.test.ts",
+     "guides/database.md"
+    ],
+    "store": [
+     "src/browser/helpers.ts",
+     "src/browser/drivers/IndexedDBDriver.ts",
+     "tests/src/browser/helpers.test.ts",
+     "tests/src/browser/drivers/IndexedDBDriver.test.ts",
+     "guides/database.md"
+    ],
+    "index": [
+     "src/browser/helpers.ts",
+     "src/browser/drivers/IndexedDBDriver.ts",
+     "tests/src/browser/helpers.test.ts",
+     "tests/src/browser/drivers/IndexedDBDriver.test.ts",
+     "guides/database.md",
+     "guides/README.md"
+    ],
+    "deindex": [
+     "src/browser/drivers/IndexedDBDriver.ts"
+    ]
+   },
+   "middleware": {
+    "stores": [
+     "guides/middleware.md"
+    ],
+    "create": [
+     "guides/middleware.md"
+    ],
+    "store": [
+     "guides/middleware.md"
+    ],
+    "index": [
+     "guides/middleware.md",
+     "guides/README.md"
+    ]
+   },
+   "queue": {
+    "stores": [
+     "guides/queue.md"
+    ],
+    "create": [
+     "guides/queue.md"
+    ],
+    "drop": [
+     "guides/queue.md"
+    ],
+    "store": [
+     "guides/queue.md"
+    ],
+    "index": [
+     "guides/queue.md",
+     "guides/README.md"
+    ]
+   },
+   "relation": {
+    "drop": [
+     "guides/relation.md"
+    ],
+    "store": [
+     "guides/relation.md",
+     "guides/README.md"
+    ],
+    "index": [
+     "guides/relation.md",
+     "guides/README.md"
+    ]
+   },
+   "terminal": {
+    "stores": [
+     "guides/terminal.md"
+    ],
+    "drop": [
+     "guides/terminal.md"
+    ],
+    "store": [
+     "guides/terminal.md"
+    ],
+    "index": [
+     "guides/terminal.md",
+     "guides/README.md"
+    ]
+   },
+   "toolbox": {
+    "stores": [
+     "guides/toolbox.md"
+    ],
+    "create": [
+     "guides/toolbox.md"
+    ],
+    "drop": [
+     "guides/toolbox.md"
+    ],
+    "store": [
+     "guides/toolbox.md",
+     "guides/README.md"
+    ],
+    "index": [
+     "guides/toolbox.md",
+     "guides/README.md"
+    ]
+   },
+   "worker": {
+    "stores": [
+     "guides/worker.md"
+    ],
+    "create": [
+     "guides/worker.md"
+    ],
+    "store": [
+     "guides/worker.md",
+     "guides/README.md"
+    ],
+    "index": [
+     "guides/worker.md",
+     "guides/README.md"
+    ]
+   },
+   "workflow": {
+    "stores": [
+     "guides/workflow.md",
+     "guides/README.md"
+    ],
+    "create": [
+     "guides/workflow.md"
+    ],
+    "drop": [
+     "guides/workflow.md"
+    ],
+    "store": [
+     "guides/workflow.md"
+    ],
+    "index": [
+     "guides/workflow.md",
+     "guides/README.md"
+    ]
+   },
+   "workspace": {
+    "stores": [
+     "guides/workspace.md",
+     "guides/README.md"
+    ],
+    "create": [
+     "guides/workspace.md"
+    ],
+    "drop": [
+     "guides/workspace.md"
+    ],
+    "store": [
+     "guides/workspace.md"
+    ],
+    "index": [
+     "guides/workspace.md",
+     "guides/README.md"
+    ]
+   },
+   "scaffold": {
+    "stores": [
+     "guides/scaffold.md"
+    ],
+    "create": [
+     "guides/scaffold.md"
+    ],
+    "drop": [
+     "guides/scaffold.md"
+    ],
+    "index": [
+     "guides/scaffold.md",
+     "guides/README.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "sqlite",
+  "id": "s18-10",
+  "kind": "option-key",
+  "consumers": {
+   "database": {
+    "foreignKeys": [
+     "src/server/drivers/SQLiteDriver.ts"
+    ]
+   }
+  }
+ },
+ {
+  "package": "sqlite",
+  "id": "s18-11",
+  "kind": "rename",
+  "consumers": {
+   "database": {
+    "exec": [
+     "src/server/drivers/SQLiteDriver.ts",
+     "tests/setupServer.ts",
+     "tests/src/server/drivers/SQLiteDriver.test.ts",
+     "guides/database.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "sqlite",
+  "id": "s18-12",
+  "kind": "rename",
+  "consumers": {
+   "database": {
+    "transaction": [
+     "src/server/drivers/SQLiteDriver.ts",
+     "tests/setupServer.ts",
+     "tests/src/server/drivers/SQLiteDriver.test.ts",
+     "guides/database.md"
+    ]
+   },
+   "scaffold": {
+    "transaction": [
+     "guides/scaffold.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "sse",
+  "id": "s18-04",
+  "kind": "rename",
+  "consumers": {}
+ },
+ {
+  "package": "ndjson",
+  "id": "s18-03",
+  "kind": "rename",
+  "consumers": {
+   "ollama": {
+    "reset": [
+     "src/server/OllamaProvider.ts",
+     "guides/ollama.md"
+    ]
+   }
+  }
+ },
+ {
+  "package": "budget",
+  "id": "s18-19",
+  "kind": "option-key",
+  "consumers": {
+   "agent": {
+    "consume": [
+     "src/core/Agent.ts",
+     "src/core/helpers.ts",
+     "src/core/types.ts",
+     "tests/src/core/Agent.test.ts",
+     "guides/agent.md"
+    ]
+   },
+   "middleware": {
+    "consume": [
+     "src/core/middlewares.ts",
+     "guides/middleware.md"
+    ]
+   },
+   "ollama": {
+    "consume": [
+     "tests/service/compaction.test.ts",
+     "tests/service/conversation.test.ts",
+     "guides/ollama.md"
+    ]
+   },
+   "toolbox": {
+    "consume": [
+     "guides/toolbox.md"
+    ]
+   },
+   "workflow": {
+    "consume": [
+     "src/core/types.ts",
+     "tests/setup.ts",
+     "tests/src/core/WorkflowRunner.test.ts",
+     "guides/workflow.md"
+    ]
+   }
+  }
+ }
+]
