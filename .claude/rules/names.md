@@ -93,14 +93,14 @@ Module helpers have no owning entity at the call site, so default to `{verb}{Nou
   - `infer*` derives.
   - `compute*` calculates deterministically.
   - `matches*` is a predicate.
-  - `build*` constructs a composite value from parts and reads no host.
-  - `read*` obtains a value from a live host object, a stream position, or a byte layout, returns it or throws, and never coerces; coercion to `T | undefined` is `parse*`.
+  - `build*` constructs a plain composite value (a record, a row, a worksheet) from parts and reads no host; an entity factory is `create*` and a combinator named for its constituents is `*Of`, both in § Fixed derivation/construction forms.
+  - `read*` obtains a value from a live host object, a stream position, or a byte layout, returns it or throws, and never coerces; a coercing helper is `parse*` in § Fixed derivation/construction forms.
   - `resolve*` picks the effective value from options and defaults.
   - `scan*` walks a structure and returns its findings.
-  - `describe*` renders a finding as a human-readable message.
+  - `describe*` takes a finding and returns the human-readable message that names it.
   - `normalize*` returns the canonical form of a value of the same type.
   - `collect*` gathers members into a collection.
-  - `render*` produces text or markup from a value.
+  - `render*` produces text or markup from a value that is not a finding.
   - `supports*` is a capability predicate and narrows no type.
 - When a helper family grows around one shape, promote it to a class with entity-scoped one-word methods.
 
