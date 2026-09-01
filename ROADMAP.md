@@ -39,7 +39,18 @@ recoverable from git history by hash; no campaign folder is the plan of record.
   `any`-shaped return, and `createContract` carries no `@throws` tag while the `contain` TSDoc
   states that population carries one. Fleet: the catalog row for `@orkestrel/supervisor` pins
   `@orkestrel/contract` at `^0.0.11` against the fleet's `^0.0.13`; confirm against that
-  repository's own manifest before sequencing any contract cascade.
+  repository's own manifest before sequencing any contract cascade. Successor seams from the
+  performance campaign accepted 2026-09-01: the promoted tracking ledger's reuse is unproven by
+  the suite — deleting the slot-to-map carry-in or the recall block keeps every test green, and
+  only a work-counting assertion over per-node reads can pin it; carrier is the published
+  per-node read bound. The refined-leaf capture row is excluded while
+  `createStringFaults`/`createNumberFaults` keep their signatures — a campaign allowed to move
+  the helper signatures can reopen it with a pre-captured context (measured frame in the
+  campaign record). `oneOf` diagnostics still run every variant plan before their tally where
+  the compiled guards already exist; a guard-first tally is the remaining union seam. The
+  internal snapshot freezes cost 47 ns per call on a five-key object, measured and unclaimed
+  behind documented frozen returns. The u2fix hostile-pre-load probe suite is retained in the
+  campaign archive and promotes if the workspace ever takes a hostile-intrinsics test project.
 
 ## 2. Design and research records
 
