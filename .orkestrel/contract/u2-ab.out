@@ -1,0 +1,9 @@
+cmd: u2-patch + parity + ab-inproc, 2026-09-01
+U2 guard patched -> /tmp/claude-0/-home-user/3ec60757-0c2d-5c44-9e42-96e2e2ce9d94/scratchpad/dists/u2/index.js
+=== parity
+comparisons: 1170
+PARITY: IDENTICAL
+=== A/B
+is-medium: A 2784 ns/op  B 2581 ns/op  B/A median 0.911 (ratio p25 0.842 p75 0.987)
+is-deep: A 8806 ns/op  B 7978 ns/op  B/A median 0.920 (ratio p25 0.865 p75 0.998)
+audit-deep: A 23488 ns/op  B 22564 ns/op  B/A median 0.972 (ratio p25 0.938 p75 1.041)
