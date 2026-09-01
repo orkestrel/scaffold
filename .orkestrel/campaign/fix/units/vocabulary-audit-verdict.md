@@ -39,3 +39,24 @@ Terminal line: `FAIL 2`. Fix round `vocabulary-3` owns line 96 and § Fixed deri
 forms, with the axis ruled as: `create*` is a factory a consumer calls to obtain an entity or
 value and lives in `factories.ts`; `build*` is an assembly step inside the package's own
 computation, exported for its tests, and lives in `helpers.ts`.
+
+## Round 3 (fix round `vocabulary-3`, commit `5238723`, subject `units/vocabulary-3.diff`)
+
+| Claim | Objective lane (Opus reviewer) | Orchestrator |
+| --- | --- | --- |
+| 1 each exemplar lands on one prefix from the text alone | BROKEN: the caller clause ("a consumer calls") decides nothing for `createCaptureResult` and `createRestoredSession`, which the package assembles on its own path in `factories.ts` | upheld; the caller axis is withdrawn |
+| 2 one home per contract; line 172 drops `builder` | BROKEN: line 96 restated the `*Of` gloss verbatim and a drifted `create*` gloss | upheld; cross-references become pointers |
+| 3 file names on 96 and 171 create no second home and contradict nothing in `architecture.md` | BROKEN: `architecture.md` § Kind purity keeps the forms one-directional (`createWriteDirectory` lives in `helpers.ts`) and owns placement; line 171 reversed the gate and line 96 invented a `build*` placement | upheld; no file is named in `names.md` beyond a pointer to § Kind purity |
+| 4 directives, no count, no `should` | CONFIRMED | stands |
+| 5 only lines 96, 171, 172 | CONFIRMED | stands |
+| outside claims: `it` on line 171 can attach to two referents | finding | upheld; the pronoun goes |
+
+Terminal line: `FAIL 1, 2, 3`. Ruling for round 4: the name form follows placement and placement is
+§ Kind purity's decision, so `names.md` states only what each form constructs — `create*` a
+factory constructing an entity, `build*` a composite value that is not a factory, `*Of` a
+combinator over constituents — and points to § Kind purity for what a factory is and where it
+lives. The claim "decides the exemplar from the text alone" was over-asked: given § Kind purity's
+placement (`createCaptureResult` and `createRestoredSession` are factories; rater's, sea's, and
+program's assemblers are helpers), the text yields each name form. Fix round `vocabulary-4` is an
+exact-text edit by `builder`; the round-4 lane checks the one-home, pointer, and placement claims
+and that the exemplars follow given their placement.
