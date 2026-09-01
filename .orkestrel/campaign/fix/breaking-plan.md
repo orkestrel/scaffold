@@ -28,12 +28,14 @@ is the only cross-checkout mechanism.
 4. **The catalog regenerates first** (objective lane). The committed table names contract at
    `0.0.13` and process at `0.0.8` while the registry serves `0.0.15` and `0.0.9`; the layer column
    is derived from a graph that has not moved, and the regenerated column is what every wave reads.
-5. **Staging scope is measured, not argued.** The fleet already runs with nested contract copies:
-   `npm ls @orkestrel/contract` in `database` shows `0.0.15` at the top and `0.0.13` nested under
-   `emitter`, `guide`, and `indexeddb`, and that checkout's `check` is green. Nesting bites only
-   where a generic type crosses the copy boundary, which is `worker` through `queue`. The default is
-   therefore direct-edge staging; the harness unit measures whether staging the changed closure in
-   one install collapses the copies in `worker`, and `worker` joins L4 or is carried on that reading.
+5. **Staging scope was measured: every consumer stages its whole closure in one command.** The
+   harness unit (`units/harness-report.md`) measured that a second `npm install --no-save` reverts
+   the tarball an earlier one staged, so incremental staging is impossible; that staging the
+   runtime closure from branch tips collapses the nested contract copies (`worker` typechecks green
+   with its closure staged, and red with the contract tarball alone); and that a closure install
+   costs about one second per consumer plus one pack per package per tip. `stage-closure.sh` is
+   therefore the only staging entry point, `worker` joins L4 as an adopt unit, and the plan's
+   earlier direct-edge default is withdrawn.
 6. **`verifyStage` is the first criterion of every consumer unit** (objective lane). The staged
    tarball carries the registry's version string, so only a content digest separates them. The
    negative control is taken once in the harness unit and quoted.
@@ -160,7 +162,7 @@ Each row closes refused with the rule text quoted in the unit's report.
 
 ## Carries and findings for the next change
 
-- **worker adoption** is decided by the harness measurement, not planned as carried.
+- **worker adoption** joins L4: the harness measured that its closure staged in one install collapses the contract copies and its typecheck is green.
 - **Tally drift** in `program`, `middleware`, `msg`, and `pool` (`size` where `count` is the lone
   tally): a finding against those packages' naming capability, for the next change.
 - **toolbox s10-18** (`databaseToolCode`, `relationToolCode`): stays deferred as the fix round left
@@ -178,7 +180,7 @@ taken by the Orchestrator after the unit exits.
 | --- | --- | --- | --- | --- |
 | W0 | catalog | scaffold | Orchestrator-owned command (`scaffold catalog`), verdict by `checker` on Sonnet | none |
 | W0 | vocabulary | scaffold | `implementer` on Opus 5 | none |
-| W0 | harness | scaffold scratch | Orchestrator-owned instrument and measurements | contract into budget, database, worker (measurement only, restored after) |
+| W0 | harness | scaffold scratch | Orchestrator-owned instrument and measurements (done: `units/harness-report.md`) | contract into budget, database, worker (measurement only, restored after) |
 | W-DEV | test | test | `implementer` on Opus 5 | none |
 | W-DEV | guide | guide | `implementer` on Opus 5 (rows plus the `Source.methods` follows-`extends` capability) | none |
 | W-DEV | canon-tests | scaffold | `builder` on Sonnet (`.claude/rules/tests.md` style-primitives sentence) | none |
@@ -191,7 +193,7 @@ taken by the Orchestrator after the unit exits.
 | L3 | scaffold-adopt | scaffold | `builder` on Sonnet (console `succeed`/`fail` at `src/bin`, staged-surface repairs) | console, contract, markdown, process, template (+ dev) |
 | L3 | queue-fixup | queue | `builder` on Sonnet (guide sentence, audit carrier) | none |
 | L4 | brief, program, workflow | each | `implementer` on Opus 5 | direct changed dependencies (+ dev) |
-| L4 | worker, queue, probe, lsp adopt | each, only when red | `builder` on Sonnet | direct changed dependencies (+ dev) |
+| L4 | worker, queue, probe, lsp adopt | each, only when red | `builder` on Sonnet | the whole closure |
 | L5 | agent | agent | `implementer` on Opus 5 | contract, budget, database, queue, workflow, workspace (+ dev) |
 | L6 | ollama, toolbox | each | `implementer` on Opus 5 | direct changed dependencies (+ dev) |
 | L1–L6 | adopt-<package> | any no-row dependent that reddens | `builder` on Sonnet | its changed dependencies |
@@ -213,8 +215,12 @@ The Orchestrator owns every staging action and runs it from the instruments unde
 
 - `pack-dep.sh <package>` builds from a clean committed tip and packs to
   `tmp/tarballs/<package>-<sha>.tgz`; a dirty tree is refused.
-- `stage-deps.sh <consumer> <tarball>...` installs every tarball in one `npm install --no-save`
-  command, refuses if the manifest or lockfile moved, and writes one register row per tarball.
+- `stage-set.mjs <consumer>` prints the consumer's @orkestrel closure from committed manifests
+  (runtime and development, transitive over runtime; scaffold and probe excluded), and
+  `stage-closure.sh <consumer>` packs that closure and installs it through
+  `stage-deps.sh <consumer> <tarball>...`, one `npm install --no-save` command for every tarball,
+  refusing if the manifest or lockfile moved and writing one register row per tarball. A consumer
+  is never staged incrementally: a later install reverts an earlier staged tarball.
 - `verify-stage.mjs <consumer>` compares each installed `node_modules/@orkestrel/<dependency>`
   against its register row's tarball, file by file, and exits non-zero on any difference. It is the
   first acceptance criterion of every consumer unit and runs again before the unit's audit.
