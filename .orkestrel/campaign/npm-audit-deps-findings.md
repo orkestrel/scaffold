@@ -241,3 +241,19 @@ nested 0.0.13 under each `@orkestrel/*` dependency that still pins the old relea
 republishes layer by layer. `isContractError` brands by an own descriptor rather than by `instanceof`
 against one copy, so cross-copy detection holds; the fleet gate sweep after the fix round is the
 runtime proof.
+
+## Fix round 1 audit (2026-09-01)
+
+Workflow `wf_fb4a8aaa-e90` audits every landed fix unit on the terms of `fix/audit-brief.md`:
+per package a read-only `reviewer` lane on Claude Opus 5 and a read-only `checker` lane on the
+native tier, blind to each other, each handed the unit's dossier, its writer report, and the
+committed diff pre-rendered under `tmp/units/fix/diffs/` (the roles carry no shell, so the
+Orchestrator supplies the diff evidence per the permission floor). Each lane rules CONFIRMED or
+REFUTED on the brief's seven claims — disposition coverage, fidelity to the operative repair
+(the corrected one for DRIFT-RESHAPE), the breaking test on both sides, noop truth, scope,
+off-limits files, and guide parity — and names any misapplied finding with its faithful
+application. The writer engine was Opus and the Sol bench is dark, so the reviewer lane runs on
+Opus as the recorded substitution; the checker lane supplies the second engine. The
+Orchestrator reconciles: a claim either lane refutes becomes a fix-up unit or an on-record
+dismissal in `fix/audit-1-verdict.md`. The units still running under `wf_a88c02f6-538` receive
+the same round when they land.
