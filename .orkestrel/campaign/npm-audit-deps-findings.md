@@ -198,3 +198,23 @@ final TSDoc wave. The multi-package TSDoc findings (s13-01, s18-01, s18-02) rout
 the judge-ruled s01-ex-03/ex03 (INVALID) and s01-ex-04/ex04 (EXCEPTION) produce no fix work.
 Writers run on the Opus engine because the Sol bench remains dark (`codex` absent, re-probed at
 session resume); the substitution is recorded per the engine-assignment table.
+
+## Fix round 1 outcome and the contract reconciliation (2026-09-01)
+
+Workflow `wf_a88c02f6-538` completed with the writer units for browser, middleware, workflow,
+toolbox, server, mcp, interpret, contract, reason, database, agent, console, scaffold, markdown,
+sea, ollama, guide, terminal, rater, test, template, html, queue, indexeddb, and msg returned,
+gated green in their own repositories, tripwired for surface removals, reviewed, committed, and
+pushed (reports under `fix/reports/`). The remaining units — program, form, csv, table,
+qualifier, lsp, brief, router, workspace, sqlite, relation, process, websocket, probe, sse, pool,
+ndjson, budget, tool, emitter, abort, worker — failed to launch on the account's weekly usage
+limit (reset 2026-09-02 03:00 UTC) and re-run from the same script with `resumeFromRunId` once
+the limit lifts.
+
+Contract published 0.0.14 (10:56 UTC) and 0.0.15 (15:29 UTC) on 2026-09-01 from the user's other
+session. The campaign branch merged `origin/main` with two conflicts, both resolved in favor of
+main's landed design (see `fix/reports/contract.md` § Reconciliation). The fleet re-pins
+`@orkestrel/contract` to `^0.0.15` through `/home/user/work/contract-repin.sh`: manifest rewrite,
+lockfile regeneration, `npm run check`, and a commit and push only for rows that pass; the row log
+is `/home/user/work/contract-repin.log`. Per the runtime-bump law every re-pinned package is a
+mover for the second inventory; publishing stays held by the user's ruling.

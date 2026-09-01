@@ -74,3 +74,16 @@ Four things the Orchestrator should rule on rather than discover.
 4. Test file placement was left as it is. Symbols moved between modules inside src/core, so tests exercising them through the @src/core barrel now sit in a test file mirroring a different module: the canonicalization and format-classification proofs stay in inferers.test.ts, and createContract's 99 assertions stay in compilers.test.ts, where they are interleaved with the four-door agreement matrices. src/core/factories.ts therefore has no mirrored test file. Nothing in the policy or config suite reports any of this, and the dossier findings name no test move. Splitting those proofs is a larger restructuring than this unit's scope.
 
 One observation outside every finding's scope: ShapeCloner, SchemaCloner, and JSONCloner carry the same #empty* preconstructed-peer family that s03-24 removed from ContractCompiler. The finding named ContractCompiler only, so the siblings were left untouched and belong to a successor unit.
+
+## Reconciliation with contract main (2026-09-01)
+
+The user published contract 0.0.14 and 0.0.15 from another session while this unit's changes sat
+on the campaign branch. Merging `origin/main` (tip `3193da1`, "Bump to 0.0.15") into the branch
+conflicted in two files. `src/core/ContractCompiler.ts`: main's "Share the release peers at
+class scope" (`7e762ab`) resolves the same `#empty*` concern s03-24 addressed, with measured
+class-owned frozen sentinels and a dropped index; main's version stands whole and **s03-24 is
+superseded, not applied**. `src/core/compilers.ts`: main added the eager-bundle paragraph to the
+`createContract` TSDoc that s03-11 moved to `src/core/factories.ts`; the paragraph is ported onto
+the moved function verbatim and the removal stands. The published declaration surface of 0.0.15
+against 0.0.13 is additive (`PRESENCE_MASK_LIMIT` added, nothing removed), so every dependent
+re-pins without code change.
