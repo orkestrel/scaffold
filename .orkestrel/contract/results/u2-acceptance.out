@@ -1,0 +1,41 @@
+=== build ===
+build exit=0
+=== mutation A: readValue spread removed ===
+spread lines: 1
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:core| tests/src/core/helpers.test.ts > readValue > carries structured context and contains hostile diagnostic options
+ FAIL  |src:core| tests/src/core/helpers.test.ts > readValue > projects its refusal context from OWN context fields only
+ FAIL  |src:core| tests/src/core/helpers.test.ts > readValue > keeps a caller value out of a builder refusal it never received
+ FAIL  |src:core| tests/src/core/helpers.test.ts > readValue > refuses the read when any own context field throws, advertised or not
+ FAIL  |src:core| tests/src/core/helpers.test.ts > readValue > publishes carried context fields in one canonical order and retains no caller object
+      Tests  5 failed | 223 passed (228)
+restore A: RESTORED-EXACTLY
+      Tests  228 passed (228)
+=== mutation B: preview length gate removed ===
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |src:core| tests/src/core/helpers.test.ts > preview > renders text far past the limit without encoding the text it never renders
+AssertionError: expected 274.6172999999999 to be less than 13.655146000000059
+      Tests  1 failed | 227 passed (228)
+restore B: RESTORED-EXACTLY
+      Tests  228 passed (228)
+=== readValue hostile record (u2 vs base) ===
+readValue record: IDENTICAL
+=== preview boundary record (u2 vs base) ===
+preview record: IDENTICAL
+=== parity identity form ===
+PARITY: IDENTICAL
+=== parity content form ===
+PARITY: IDENTICAL
+=== 6-process A/B: u1f checkpoint (A) vs u2 (B) — isolates U2 ===
+audit-medium: median 0.887 min 0.810 max 0.982 replicates ab-1=0.884 ab-2=0.810 ab-3=0.883 ba-1=0.982 ba-2=0.887 ba-3=0.959
+audit-deep: median 0.899 min 0.816 max 0.944 replicates ab-1=0.899 ab-2=0.816 ab-3=0.864 ba-1=0.944 ba-2=0.864 ba-3=0.930
+explain-medium: median 0.776 min 0.768 max 0.801 replicates ab-1=0.782 ab-2=0.775 ab-3=0.768 ba-1=0.775 ba-2=0.776 ba-3=0.801
+explain-deep: median 0.969 min 0.953 max 0.989 replicates ab-1=0.989 ab-2=0.953 ab-3=0.967 ba-1=0.980 ba-2=0.954 ba-3=0.969
+parse-medium: median 0.943 min 0.908 max 0.949 replicates ab-1=0.919 ab-2=0.908 ab-3=0.945 ba-1=0.943 ba-2=0.949 ba-3=0.910
+=== 6-process A/B: base015 (A) vs u2 (B) — cumulative ===
+audit-medium: median 0.833 min 0.809 max 0.854 replicates ab-1=0.854 ab-2=0.833 ab-3=0.844 ba-1=0.829 ba-2=0.809 ba-3=0.814
+audit-deep: median 0.864 min 0.798 max 0.886 replicates ab-1=0.864 ab-2=0.878 ab-3=0.857 ba-1=0.798 ba-2=0.886 ba-3=0.848
+explain-medium: median 0.751 min 0.716 max 0.762 replicates ab-1=0.762 ab-2=0.751 ab-3=0.735 ba-1=0.740 ba-2=0.716 ba-3=0.754
+explain-deep: median 0.930 min 0.917 max 0.949 replicates ab-1=0.934 ab-2=0.917 ab-3=0.922 ba-1=0.923 ba-2=0.930 ba-3=0.949
+parse-medium: median 0.883 min 0.847 max 0.898 replicates ab-1=0.898 ab-2=0.879 ab-3=0.883 ba-1=0.847 ba-2=0.898 ba-3=0.870
+U2 ACCEPTANCE EVIDENCE COMPLETE
