@@ -244,9 +244,9 @@ interface ScratchInterface {
 
 Browser/style setup exposes shared assertions/builders:
 
-`mount`, `render`, `build`, `style`, `token`, `rootToken`, `pixels`, `rgba`, `colorEqual`, `findRule`.
+`mount`, `render`, `build`, `readStyle`, `readToken`, `readRootToken`, `readPixels`, `parseCSSColor`, `matchesColor`, `findRule`.
 
-`findRule` proves a declaration exists in the cascade; `style()` reads the resolved result.
+`findRule` proves a declaration exists in the cascade; `readStyle()` reads the resolved result.
 
 ## Browser tests
 
