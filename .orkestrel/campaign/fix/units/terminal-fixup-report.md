@@ -17,7 +17,7 @@ guard restored by editing the exact text back, exit 0, 38 passed. `git diff --st
 restoration: `src/core/types.ts` only.
 
 Sweeps over `src`, `tests`, `guides/terminal.md`, `README.md`: `already holds` — six hits outside
-the named sites: three about the form ("the answer the form already holds"), two true claims about
+the named sites: those about the form ("the answer the form already holds"), the true claims about
 the caller holding the form's own `answer` promise (`guides/terminal.md:444,518`,
 `src/core/types.ts:468`), and the test comment at `tests/src/core/TerminalManager.test.ts:19`
 (off-limits to the unit; the Orchestrator rewrote it to "not their names" before landing).
