@@ -1,0 +1,9 @@
+ M guides/mcp.md
+ M src/server/factories.ts
+ M tests/fixtures/browserServer.ts
+ M tests/guides.test.ts
+ M tests/src/core/MCPClient.test.ts
+ M tests/src/server/factories.test.ts
+ M tests/src/server/integration.test.ts
+ M tests/src/server/transports/StdioServerTransport.test.ts
+ M tests/src/server/transports/WebSocketServerTransport.test.ts
