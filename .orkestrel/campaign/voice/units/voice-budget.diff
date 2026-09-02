@@ -1,0 +1,204 @@
+diff --git a/src/core/Budget.ts b/src/core/Budget.ts
+index 3fa2170..eb26a6a 100644
+--- a/src/core/Budget.ts
++++ b/src/core/Budget.ts
+@@ -4,7 +4,7 @@ import { validateBudgetOptions } from './helpers.js'
+ import { isBudgetAmount } from './validators.js'
+ 
+ /**
+- * A cumulative cost handle whose native `AbortSignal` aborts at its ceiling.
++ * Represents a cumulative cost handle whose native `AbortSignal` aborts at its ceiling.
+  *
+  * @remarks
+  * `consume(value)` invokes the configured consumer before changing state, then
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index bb8f857..3235ff9 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -100,7 +100,7 @@ export function validateBudgetOptions<T>(options: BudgetOptions<T>): BudgetOptio
+ }
+ 
+ /**
+- * Validate and normalize token-budget construction options.
++ * Validates and normalizes token-budget construction options.
+  *
+  * @remarks
+  * Each property is read exactly once before validation. The returned object is
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 6750220..ea962ea 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -1,5 +1,5 @@
+ /**
+- * Options for constructing a cumulative budget.
++ * Represents the options for constructing a cumulative budget.
+  *
+  * @remarks
+  * `max` is a finite nonnegative ceiling. `consumer` extracts the finite
+@@ -13,18 +13,18 @@
+  * ```
+  */
+ export interface BudgetOptions<T> {
+-	/** Trace label for the budget; omission generates a random UUID. */
++	/** Holds the trace label for the budget; omission generates a random UUID. */
+ 	readonly id?: string
+-	/** Finite nonnegative cumulative ceiling. */
++	/** Holds the finite nonnegative cumulative ceiling. */
+ 	readonly max: number
+ 	/** Extracts the finite nonnegative charge from a consumed value. */
+ 	readonly consumer: (value: T) => number
+-	/** Native parent signal composed with the budget's owned exhaustion signal. */
++	/** Holds the native parent signal composed with the budget's owned exhaustion signal. */
+ 	readonly signal?: AbortSignal
+ }
+ 
+ /**
+- * A cumulative cost handle whose native signal aborts at its ceiling.
++ * Represents a cumulative cost handle whose native signal aborts at its ceiling.
+  *
+  * @example
+  * ```ts
+@@ -36,33 +36,33 @@ export interface BudgetOptions<T> {
+  * ```
+  */
+ export interface BudgetInterface<T> {
+-	/** Stable trace label. */
++	/** Holds the stable trace label. */
+ 	readonly id: string
+-	/** Current native owned-or-parent-composed observation signal. */
++	/** Holds the current native owned-or-parent-composed observation signal. */
+ 	readonly signal: AbortSignal
+-	/** Validated finite nonnegative ceiling. */
++	/** Holds the validated finite nonnegative ceiling. */
+ 	readonly max: number
+-	/** Cumulative finite nonnegative accepted charges. */
++	/** Holds the cumulative finite nonnegative accepted charges. */
+ 	readonly consumed: number
+-	/** Nonnegative headroom derived from `max` and `consumed`. */
++	/** Holds the nonnegative headroom derived from `max` and `consumed`. */
+ 	readonly remaining: number
+-	/** Whether the cumulative tally has reached or exceeded `max`. */
++	/** Indicates whether the cumulative tally has reached or exceeded `max`. */
+ 	readonly exhausted: boolean
+ 	/**
+-	 * Re-arm a fresh signal without resetting the cumulative tally.
++	 * Re-arms a fresh signal without resetting the cumulative tally.
+ 	 *
+ 	 * @returns Nothing
+ 	 */
+ 	start(): void
+ 	/**
+-	 * Validate and atomically add the charge extracted from a domain value.
++	 * Validates and atomically adds the charge extracted from a domain value.
+ 	 *
+ 	 * @param value - Domain value passed to the configured consumer
+ 	 * @returns Nothing
+ 	 */
+ 	consume(value: T): void
+ 	/**
+-	 * Reset the tally and re-arm a fresh signal.
++	 * Resets the tally and re-arms a fresh signal.
+ 	 *
+ 	 * @returns Nothing
+ 	 */
+@@ -70,7 +70,7 @@ export interface BudgetInterface<T> {
+ }
+ 
+ /**
+- * Token-usage field selected as the charge for a token budget.
++ * Names the token-usage field selected as the charge for a token budget.
+  *
+  * @example
+  * ```ts
+@@ -80,7 +80,7 @@ export interface BudgetInterface<T> {
+ export type TokenScope = 'completion' | 'total' | 'prompt'
+ 
+ /**
+- * Options for constructing a token budget.
++ * Represents the options for constructing a token budget.
+  *
+  * @remarks
+  * `scope` defaults to `completion`. All other fields have the same strict
+@@ -92,18 +92,18 @@ export type TokenScope = 'completion' | 'total' | 'prompt'
+  * ```
+  */
+ export interface TokenBudgetOptions {
+-	/** Trace label for the budget; omission generates a random UUID. */
++	/** Holds the trace label for the budget; omission generates a random UUID. */
+ 	readonly id?: string
+-	/** Finite nonnegative token ceiling. */
++	/** Holds the finite nonnegative token ceiling. */
+ 	readonly max: number
+-	/** Token usage field charged per provider response. */
++	/** Names the token usage field charged per provider response. */
+ 	readonly scope?: TokenScope
+-	/** Native parent signal composed with the budget's owned exhaustion signal. */
++	/** Holds the native parent signal composed with the budget's owned exhaustion signal. */
+ 	readonly signal?: AbortSignal
+ }
+ 
+ /**
+- * Canonical finite nonnegative token counts reported for one provider call.
++ * Represents the canonical finite nonnegative token counts reported for one provider call.
+  *
+  * @example
+  * ```ts
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index 8d2bc6a..dc2b662 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -2,10 +2,10 @@ import type { TokenScope, TokenUsage } from './types.js'
+ import { isFiniteNumber, isRecord } from '@orkestrel/contract'
+ 
+ /**
+- * Determine whether a value is a valid budget amount.
++ * Determines whether a value is a valid budget amount.
+  *
+  * @param value - Unknown amount candidate
+- * @returns `true` only for a finite nonnegative number
++ * @returns True if the value is a finite nonnegative number; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -18,10 +18,10 @@ export function isBudgetAmount(value: unknown): value is number {
+ }
+ 
+ /**
+- * Determine whether a value is a genuine native `AbortSignal`.
++ * Determines whether a value is a genuine native `AbortSignal`.
+  *
+  * @param value - Unknown signal candidate
+- * @returns `true` only when the intrinsic signal getter accepts the value
++ * @returns True if the intrinsic signal getter accepts the value; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -40,10 +40,10 @@ export function isBudgetSignal(value: unknown): value is AbortSignal {
+ }
+ 
+ /**
+- * Determine whether a value selects a supported token usage field.
++ * Determines whether a value selects a supported token usage field.
+  *
+  * @param value - Unknown scope candidate
+- * @returns `true` for `completion`, `total`, or `prompt`
++ * @returns True if the value is `completion`, `total`, or `prompt`; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -56,13 +56,13 @@ export function isTokenScope(value: unknown): value is TokenScope {
+ }
+ 
+ /**
+- * Determine whether a value is readable token usage with valid numeric fields.
++ * Determines whether a value is readable token usage with valid numeric fields.
+  *
+  * @remarks
+  * Hostile getters and revoked proxies are contained and return `false`.
+  *
+  * @param value - Unknown usage candidate
+- * @returns `true` only when all three token counts are finite and nonnegative
++ * @returns True if all three token counts are finite and nonnegative; false otherwise
+  *
+  * @example
+  * ```ts

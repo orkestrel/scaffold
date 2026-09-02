@@ -763,3 +763,13 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   of every later checker brief; sqlite's disclosed drop of the `SQLITE_*` code tokens under the
   name clause stands. The unit briefs for every later slice carry those rulings as standing
   conditions, and the vendored rule path replaces the checkout path the pilot briefs named.
+- **Slice 2 lanes** (budget, worker, relation, rater, pool, websocket, template, tool): every
+  writer's chain green; checker PASS on every unit under the amended claim 2; subjective PASS on
+  budget, relation, and websocket, and FAIL on the verb fit of a handful of sentences in the
+  others (a class summary whose verb renamed the appositive's subject, `Backs X with Y` where the
+  class is Y, `Holds` on an empty constants module, `Returns` on a `void` release, `Registers`
+  and `Advertises` on a registry class and a data field, `Holds` on the registry itself). Each
+  is a builder fix-up with the ruled sentence. Ruling on the lane's fleet-level finding: a guide's
+  tagline and Surface rows keep the noun-phrase genre by design (`documentation.md` governs the
+  guide, the wave governs TSDoc), so a guide quoting the pre-wave noun phrase is not drift; the
+  debrief records the question of whether the guide surface table wants a voice rule of its own.
