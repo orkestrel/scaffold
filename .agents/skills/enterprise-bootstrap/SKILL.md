@@ -24,18 +24,22 @@ every claim about the result from what renders.
 Open the reference that owns a subject before writing markup. Never guess a class name: an invented
 utility (`.vw-50`, `.pointer-events-none`) has no rule in the shipped CSS and fails silently. Pick
 components from [components.md](references/components.md) → Choosing components, take their markup
-from the same file, and take fine layout from [utilities.md](references/utilities.md). Where
-Bootstrap ships no component for the need — combobox, date picker, tags input, data grid, tree —
-work the native-first ladder in [bootstrap-reference.md](references/bootstrap-reference.md) → When
-not to hand-roll before building one.
+from the same file, and take fine layout from [utilities.md](references/utilities.md). Pick an
+input's affordance from [inputs.md](references/inputs.md), which keys on what the person is asked
+for rather than on what a schema calls the field. Where Bootstrap ships no component for the need —
+combobox, date picker, tags input, data grid, tree — work the native-first ladder in
+[bootstrap-reference.md](references/bootstrap-reference.md) → When not to hand-roll before building
+one.
 
 | Layer          | File                                                        | Holds                                                                             |
 | -------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------- |
 | Operate        | `SKILL.md` (this file)                                      | Process, decision rules, checklist                                                |
 | Design craft   | [frontend-design.md](references/frontend-design.md)         | Aesthetic, typography, signature, interface copy, anti-defaults                   |
 | Components     | [components.md](references/components.md)                   | Bootstrap component markup + enterprise selection notes                           |
+| Inputs         | [inputs.md](references/inputs.md)                           | Affordance per input category, its alternates, its rung, its states               |
 | Utilities      | [utilities.md](references/utilities.md)                     | Class index, helpers, composition notes                                           |
 | Bootstrap deep | [bootstrap-reference.md](references/bootstrap-reference.md) | Color modes, theming/tokens, forms, JS lifecycle, a11y depth, enterprise patterns |
+| Instruments    | [inspection.md](references/inspection.md)                   | Property, population, reading, control, and coverage per instrument               |
 
 ---
 
@@ -83,13 +87,11 @@ both viewports and both themes plus an accessibility snapshot; source only corro
 mechanism. For a full review-round campaign built on that evidence, use the
 `orkestrel-polish-surface` skill instead of improvising one here.
 
-**Mechanical proof.** These instruments settle what a capture cannot. Pair each one with a negative
-control drawn from outside the population it covers, and treat an instrument whose control passes as
-broken; `.claude/rules/quality.md` owns this law where it is present:
-
-- **Contrast, composited.** Read every pairing through a reader that composites the painted layers, in both themes ([bootstrap-reference.md](references/bootstrap-reference.md) → Measuring the bars).
-- **Authored classes against the shipped cascade.** Extract every class authored in the templates and components, and fail the run on one that has no rule in the compiled CSS the page loads. Assert a population floor so an extractor that quietly matched nothing cannot pass, and control it with a class you know is absent.
-- **One glyph, one meaning.** Register each status glyph against the meaning it carries. No meaning takes more than one glyph, no glyph serves more than one meaning, and every registered glyph resolves in the icon set actually shipped.
+**Mechanical proof.** [inspection.md](references/inspection.md) owns the instruments that settle what
+a capture cannot — composited contrast, authored classes against the shipped cascade, declared class
+combinations, style escapes, token discipline, a custom rule doing a utility's job, and one glyph per
+meaning. Run each one with the negative control the file names, and treat an instrument whose control
+passes as broken; `.claude/rules/quality.md` owns that law where it is present.
 
 ---
 
@@ -172,6 +174,7 @@ A status mark with **no text** is an icon glyph, never a `badge`
 
 ### Forms
 
+- Choose each field's affordance in [inputs.md](references/inputs.md) → The catalog, keyed by what the person is asked for, and draw every state in that file's fixed set. Its cross-category rules — read-only chrome, the locked select, the chosen filter's variant, the non-drag path for a file drop — are laws, not suggestions.
 - Give every field a visible label (top-aligned by default) or `.form-floating` — never placeholder-only.
 - Validate on **blur**, re-validate error fields on input, re-check everything on submit, and keep submit **enabled**. Never disable submit as a validation strategy.
 - Pair a focusable error summary with inline `.invalid-feedback` per field (`aria-describedby`, `aria-invalid`).
@@ -185,7 +188,14 @@ utilities, then the extension points — component `--bs-{component}-*` variable
 utilities API for missing utility steps ([bootstrap-reference.md](references/bootstrap-reference.md)
 → Theming).
 
-When the developer authorizes it:
+One exception stands, and a measurement rather than a judgment opens it: take an authored rule
+without asking where an instrument in [inspection.md](references/inspection.md) reports the vendor
+cascade failing a stated bar, the rule cites that reading, the rule restores the bar and does
+nothing else, and the rule is written over tokens.
+[inspection.md](references/inspection.md) → When an authored rule is already earned states the whole
+condition. Anything wider is still a proposal.
+
+When the developer authorizes it, or the exception opens:
 
 - Name it in Bootstrap vocabulary.
 - Take colors from `var(--bs-…)` and theme tokens so light and dark both work.
@@ -223,6 +233,7 @@ Progress:
 - [ ] Subject, audience, single job stated
 - [ ] Design plan critiqued against the AI defaults: palette, type, layout, one signature
 - [ ] Shell from components.md, utilities from utilities.md; no invented class
+- [ ] Input affordances from inputs.md; every state in its fixed set drawn, per field
 - [ ] Styling ladder held: no `style` attribute, no `<style>` block, no custom rule doing a utility's job
 - [ ] Plan tokens mapped to theme / --bs-* (no hex scatter); light and dark both shipped where both are offered
 - [ ] Copy in user language, verbs consistent, empty/error/loading text useful
@@ -230,7 +241,7 @@ Progress:
 - [ ] Contrast composited and measured in both themes: ≥ 4.5:1 information-bearing (small included), ≥ 3:1 marks and state chrome; meaning not color-alone
 - [ ] Tiers held: `-emphasis` for information-bearing status, solid buttons for real actions, no tone class inside a filled surface
 - [ ] Every treatment resolved in the shipped cascade, not from docs memory
-- [ ] Authored classes checked against that cascade; one glyph per meaning; every instrument's control failed
+- [ ] Every instrument in inspection.md run: population reported, control failed, coverage stated
 - [ ] Keyboard: focus visible, not obscured, targets ≥ 24px, icon controls named
 - [ ] Reduced motion respected; every drag has a non-drag path
 - [ ] Forms: labels visible, blur validation, error summary + inline, submit enabled
