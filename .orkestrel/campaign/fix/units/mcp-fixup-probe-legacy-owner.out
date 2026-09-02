@@ -1,9 +1,0 @@
-PASS "export interface MCPSessionMiddlewareOptions {" -> true
-PASS "export interface MCPSessionOptions {" -> true
-PASS "export interface MCPSessionInterface {" -> true
-PASS "export interface MCPSessionState {" -> true
-PASS "export interface MCPSessionEvent {" -> true
-PASS "export interface MCPSessionEntry {" -> true
-PASS "export class MCPSession implements MCPSessionInterface {" -> true
-PASS "export function createMCPSession<TState extends MCPSessionState>(" -> true
-pattern check: the probe's LEGACY_OWNER_PATTERN literal is identical to tests/guides.test.ts at 51775d1 (399 bytes each, whitespace stripped, cmp identical)

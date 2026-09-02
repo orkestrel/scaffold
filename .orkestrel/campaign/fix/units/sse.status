@@ -1,8 +1,0 @@
- M README.md
- M guides/sse.md
- M src/core/SSEParser.ts
- M src/core/errors.ts
- M src/core/factories.ts
- M src/core/types.ts
- M tests/src/core/SSEParser.test.ts
- M tests/src/core/factories.test.ts

@@ -26,6 +26,15 @@ recoverable from git history by hash; no campaign folder is the plan of record.
   work; the trigger is the first Windows campaign that runs the bin suite there. The Linux
   acceptance recorded 2026-08-24: the `script`-guarded proofs execute rather than skip on this
   host — the bin suite passes complete with no skipped case.
+- **fleet publish wave**: every published package carries unpublished conformance, breaking, and
+  voice changes on `claude/orkestrel-npm-audit-deps-14ibta` (closed 2026-09-02), and the owner
+  holds publishing. The trigger is the owner's release decision. Per the `orkestrel-publish`
+  skill: re-pack from the accepted tips, restore each registry copy before its distribution proof,
+  publish in the layer order the `scaffold catalog` table regenerates, then re-pin each dependent
+  and refresh its vendored guide mirrors layer by layer. Scaffold publishes on its own account
+  first, because its vendored host surface moved (the `names.md` vocabulary, the `tests.md` helper
+  names, and the 2026-09-02 debrief refinements), and every target's adoption visit then runs
+  `scaffold overwrite` under the row above.
 
 ## 2. Design and research records
 

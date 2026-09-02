@@ -1,8 +1,0 @@
- M .claude/rules/architecture.md
- M .github/workflows/ci.yml
- M AGENTS.md
- M host.json
- M tests/policy.test.ts
- M tests/setupPolicy.ts
-?? .claude/rules/portability.md
-?? .orkestrel/
