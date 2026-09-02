@@ -162,6 +162,15 @@ cannot decide is `UNRESOLVED`; say what would settle it. Do not hedge toward an 
     the Mechanical proof paragraph and the checklist (`5bea858`). Attack: a reading of the
     checklist under which a keyboard or motion check may be listed without a control.
 
+26. Terrain's repairs for `policy/no-nested-functions` (`visit-terrain-report.md` § The repair)
+    preserve behaviour: every extracted helper (`readEpoch`, `collectRates`, `coverFields`,
+    `placeNoticeRule`, `gradeBuilding`, `countNumeric`, `readNow`, `scheduleTask`) is exported from
+    its centralized file, tested, and equivalent to the closure it replaced; the abort-signal
+    listener rewrites in `useMedia` and `useDragDrop` remove every listener the named form removed;
+    the `#teardown` method reads the same schedule the closure captured. Attack: a listener that
+    survives unmount, a helper whose default differs from the inline value it replaced, a
+    field-initializer whose `this` binding differs from the arrow it replaced.
+
 ## Unknowns
 
 - Whether the terrain capture runs complete for every variant before the round; if a variant is
