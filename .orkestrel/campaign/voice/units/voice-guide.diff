@@ -1,0 +1,861 @@
+diff --git a/src/core/Guide.ts b/src/core/Guide.ts
+index ac37f54..42ddc6b 100644
+--- a/src/core/Guide.ts
++++ b/src/core/Guide.ts
+@@ -9,7 +9,7 @@ import {
+ } from './helpers.js'
+ 
+ /**
+- * A stateful, structured view over one parsed guide — the six documented
++ * Presents a stateful, structured view over one parsed guide — the six documented
+  * projections (`sections` / `surface` / `methods` / `links` / `tests` /
+  * `fences`) are extracted once at construction and cached.
+  *
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index beda7fb..e957881 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -18,27 +18,27 @@ export const EXPORT_KINDS = Object.freeze([
+ ] as const)
+ 
+ /**
+- * The `## Surface` heading text a guide's documented exports section is keyed on.
++ * Names the `## Surface` heading text a guide's documented exports section is keyed on.
+  */
+ export const SURFACE: string = 'Surface'
+ 
+ /**
+- * The `## Methods` heading text a guide's documented interface-methods section is keyed on.
++ * Names the `## Methods` heading text a guide's documented interface-methods section is keyed on.
+  */
+ export const METHODS: string = 'Methods'
+ 
+ /**
+- * The `## Tests` heading text a guide's documented test-link section is keyed on.
++ * Names the `## Tests` heading text a guide's documented test-link section is keyed on.
+  */
+ export const TESTS: string = 'Tests'
+ 
+ /**
+- * The `## By concept` heading text the manifest's run-map table is keyed on.
++ * Names the `## By concept` heading text the manifest's run-map table is keyed on.
+  */
+ export const MANIFEST: string = 'By concept'
+ 
+ /**
+- * The link `href` schemes a guides-parity link check skips as external — a link
++ * Lists the link `href` schemes a guides-parity link check skips as external — a link
+  * with one of these prefixes (or a bare `#` anchor, handled separately in
+  * `isExternalLink`) is never resolved against the filesystem.
+  */
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 6615067..587fd34 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -16,7 +16,7 @@ import { Source } from './sources/Source.js'
+ import { SourceManager } from './sources/SourceManager.js'
+ 
+ /**
+- * Create a structured {@link GuideInterface} view over one guide's markdown
++ * Creates a structured {@link GuideInterface} view over one guide's markdown
+  * source — parses once and caches its `sections` / `surface` / `methods` /
+  * `links` / `tests` / `fences` projections.
+  *
+@@ -36,7 +36,7 @@ export function createGuide(source: string): GuideInterface {
+ }
+ 
+ /**
+- * Create a pure {@link SourceInterface} over a consumer-supplied file
++ * Creates a pure {@link SourceInterface} over a consumer-supplied file
+  * inventory — see {@link Source}.
+  *
+  * @param options - The file inventory and module scope to reflect
+@@ -58,7 +58,7 @@ export function createSource(options: SourceOptions): SourceInterface {
+ }
+ 
+ /**
+- * Create a {@link SourceManagerInterface} that resolves the consumer's local
++ * Creates a {@link SourceManagerInterface} that resolves the consumer's local
+  * import specifiers and shares one source view per module.
+  *
+  * @param options - The shared file inventory and specifier-to-module policy
+@@ -80,7 +80,7 @@ export function createSourceManager(options: SourceManagerOptions): SourceManage
+ }
+ 
+ /**
+- * Compile the {@link surfaceSymbolShape} into a {@link ContractInterface} for
++ * Compiles the {@link surfaceSymbolShape} into a {@link ContractInterface} for
+  * {@link SurfaceSymbol} — a guard, coercing parser, JSON Schema, and seeded
+  * generator from one shape declaration (AGENTS §14).
+  *
+@@ -99,7 +99,7 @@ export function createSurfaceSymbolContract(): ContractInterface<SurfaceSymbol>
+ }
+ 
+ /**
+- * Compile the {@link methodGroupShape} into a {@link ContractInterface} for
++ * Compiles the {@link methodGroupShape} into a {@link ContractInterface} for
+  * {@link MethodGroup} — a guard, coercing parser, JSON Schema, and seeded
+  * generator from one shape declaration (AGENTS §14).
+  *
+@@ -118,7 +118,7 @@ export function createMethodGroupContract(): ContractInterface<MethodGroup> {
+ }
+ 
+ /**
+- * Compile the {@link manifestEntryShape} into a {@link ContractInterface} for
++ * Compiles the {@link manifestEntryShape} into a {@link ContractInterface} for
+  * {@link ManifestEntry} — a guard, coercing parser, JSON Schema, and seeded
+  * generator from one shape declaration (AGENTS §14).
+  *
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 3bccd94..7751c38 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -25,7 +25,7 @@ import { EXTERNAL_SCHEMES, METHODS, SURFACE, TESTS } from './constants.js'
+ import { isExportKind } from './validators.js'
+ 
+ /**
+- * Extract aligned physical source-line records in one character traversal.
++ * Extracts aligned physical source-line records in one character traversal.
+  * Real line and block comments and complete template tokens become spaces in
+  * {@link SourceLine.code}, while ordinary code, quoted strings, and recognized
+  * regex literals retain their columns. Genuine JSDoc opened from reflection
+@@ -548,12 +548,12 @@ export function extractSourceLines(source: string): readonly SourceLine[] {
+ }
+ 
+ /**
+- * Whether an opaque inventory key contains only canonical slash-separated
++ * Checks whether an opaque inventory key contains only canonical slash-separated
+  * segments. Empty, `.` and `..` segments are rejected without rewriting the
+  * key; ordinary dotfile segments remain valid.
+  *
+  * @param key - The opaque inventory key to inspect
+- * @returns `true` when every segment is canonical
++ * @returns True if every segment is canonical; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -566,7 +566,7 @@ export function hasCanonicalSegments(key: string): boolean {
+ }
+ 
+ /**
+- * A module scope normalized to its canonical directory list. `'.'` represents
++ * Normalizes a module scope to its canonical directory list. `'.'` represents
+  * workspace root; empty, trailing, and dot-segment spellings reduce through
+  * {@link resolvePath}, and duplicates are removed in first-seen order.
+  *
+@@ -592,7 +592,7 @@ export function normalizeDirectories(module: GuideModule): readonly string[] {
+ }
+ 
+ /**
+- * The stable cache key for a {@link GuideModule}. Directories normalize before
++ * Computes the stable cache key for a {@link GuideModule}. Directories normalize before
+  * joining, so equivalent module spellings share one key. The NUL separator
+  * cannot occur in filesystem-backed canonical-segment inventory keys, so no
+  * directory boundary can collide with directory text.
+@@ -610,7 +610,7 @@ export function computeModuleKey(module: GuideModule): string {
+ }
+ 
+ /**
+- * The exact opaque file-inventory keys belonging under any canonical
++ * Selects the exact opaque file-inventory keys belonging under any canonical
+  * {@link GuideModule} directory, sorted. `'.'` selects canonical root-relative
+  * keys without accepting `/`, `./`, or `../` aliases. Every selected exact
+  * `index.ts` and every `.test.ts` key is excluded independent of scope order.
+@@ -650,7 +650,7 @@ export function selectModuleKeys(
+ }
+ 
+ /**
+- * The bijection key for a surface symbol — its kind and name combined — so a
++ * Computes the bijection key for a surface symbol — its kind and name combined — so a
+  * symbol-set comparison diffs (name, kind) pairs rather than names alone.
+  *
+  * @param symbol - The symbol to key
+@@ -666,7 +666,7 @@ export function computeSymbolKey(symbol: SurfaceSymbol): string {
+ }
+ 
+ /**
+- * The names present in `names` but absent from `source` — the set-difference
++ * Finds the names present in `names` but absent from `source` — the set-difference
+  * behind a both-directions bijection assertion.
+  *
+  * @param names - The candidate names
+@@ -687,7 +687,7 @@ export function findMissing(
+ }
+ 
+ /**
+- * The fences whose language is absent from the caller's listed languages.
++ * Finds the fences whose language is absent from the caller's listed languages.
+  * Untagged fences are always returned because they have no language to list.
+  *
+  * @param fences - The guide fences to check
+@@ -709,7 +709,7 @@ export function findUnlisted(
+ }
+ 
+ /**
+- * The symbol-key set-difference between two symbol lists — `symbols` present but
++ * Finds the symbol-key set-difference between two symbol lists — `symbols` present but
+  * absent from `source`, compared by {@link computeSymbolKey} so a symbol can drift in
+  * neither name nor kind.
+  *
+@@ -730,7 +730,7 @@ export function findMissingSymbols(
+ }
+ 
+ /**
+- * The names in `names` that have no example — a fence containing the name at a
++ * Finds the names in `names` that have no example — a fence containing the name at a
+  * word boundary in `fences`, or a membership in `examples`, both count as
+  * "has an example"; presence-only, fence and JSDoc content are never checked.
+  *
+@@ -759,7 +759,7 @@ export function findUnexampled(
+ }
+ 
+ /**
+- * Parse a fence's `import` statements into per-specifier imported identifier
++ * Parses a fence's `import` statements into per-specifier imported identifier
+  * names — handles `import type`, mixed multiline braces, and `x as y` aliases
+  * (resolved to the local name `x`... the ORIGINAL exported name, since it is
+  * the export that must exist in the checked public/barrel surface).
+@@ -800,11 +800,12 @@ export function extractFenceImports(fence: string): readonly FenceImport[] {
+ }
+ 
+ /**
+- * Whether a link `href` should be skipped by the guides-parity link checks — an
+- * external scheme ({@link EXTERNAL_SCHEMES}) or a bare in-document `#` anchor.
++ * Checks whether a link `href` should be skipped by the guides-parity link
++ * checks — an external scheme ({@link EXTERNAL_SCHEMES}) or a bare in-document
++ * `#` anchor.
+  *
+  * @param href - The link destination
+- * @returns `true` when the link should not be resolved against the filesystem
++ * @returns True if the link should not be resolved against the filesystem; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -818,7 +819,7 @@ export function isExternalLink(href: string): boolean {
+ }
+ 
+ /**
+- * Resolve a relative `target` from a root-relative `directory`, normalizing
++ * Resolves a relative `target` from a root-relative `directory`, normalizing
+  * forward-slash dot segments without filesystem or extension inference. A
+  * parent pops only a retained real component; every excess leading parent is
+  * preserved.
+@@ -852,7 +853,7 @@ export function resolvePath(directory: string, target: string): string {
+ }
+ 
+ /**
+- * Resolve a relative `target` from the directory containing a root-relative
++ * Resolves a relative `target` from the directory containing a root-relative
+  * declaring `file`. A slashless file belongs to the workspace root; path
+  * reduction is delegated to {@link resolvePath}.
+  *
+@@ -873,7 +874,7 @@ export function resolveLink(file: string, target: string): string {
+ }
+ 
+ /**
+- * The first code-span value found by descending an inline node list, following
++ * Finds the first code-span value by descending an inline node list, following
+  * into `emphasis` / `link` / `image` children — the extraction rule behind a
+  * Surface or Methods table row's first-column identifier.
+  *
+@@ -897,7 +898,7 @@ export function findFirstCode(nodes: readonly InlineNode[]): string | undefined
+ }
+ 
+ /**
+- * The link hrefs found within one table cell's inline content.
++ * Extracts the link hrefs within one table cell's inline content.
+  *
+  * @param cell - The cell's inline nodes
+  * @returns The cell's link hrefs, in walk order
+@@ -916,7 +917,7 @@ export function extractCellLinks(cell: readonly InlineNode[]): readonly string[]
+ }
+ 
+ /**
+- * The identifier prefix of a code-span text — everything before its first `<`,
++ * Returns the identifier prefix of a code-span text — everything before its first `<`,
+  * trimmed. Guide cells and headings may annotate a generic-parameterized name
+  * (`MarkdownHandler<TNode, T>`) for readability, but the bijection key is the
+  * bare identifier the source scanner captures, so both sides must normalize
+@@ -937,7 +938,7 @@ export function normalizeIdentifier(code: string): string {
+ }
+ 
+ /**
+- * The index of a table's `Kind` column, found by its header text so it survives
++ * Finds the index of a table's `Kind` column by its header text so it survives
+  * column reordering. The match is exact and case-sensitive (`'Kind'`) — a table
+  * without that exact header contributes no symbols to the surface it feeds.
+  *
+@@ -963,7 +964,7 @@ export function findKindIndex(table: TableNode): number | undefined {
+ }
+ 
+ /**
+- * The module-scope exports declared in one file's source text — matches
++ * Extracts the module-scope exports declared in one file's source text — matches
+  * `export (async)? (function(\*)?|class|const|interface|type) Name`, deduped
+  * by (kind, name). A generator export (`export function* walk`) scans as kind
+  * `function` — its trailing `*` is stripped before the {@link ExportKind} check.
+@@ -1005,7 +1006,7 @@ export function extractExports(source: string): readonly SurfaceSymbol[] {
+ }
+ 
+ /**
+- * The module-scope declarations LACKING the `export` keyword in one file's
++ * Extracts the module-scope declarations LACKING the `export` keyword in one file's
+  * source text — the mirror image of {@link extractExports}'s grammar, anchored
+  * the same way (column 0, so an indented inner declaration never matches).
+  * Scans only the five {@link ExportKind} keywords (`function` / `class` /
+@@ -1048,7 +1049,7 @@ export function extractHidden(source: string): readonly SurfaceSymbol[] {
+ }
+ 
+ /**
+- * Join the declaration head starting at `start` into one space-separated
++ * Joins the declaration head starting at `start` into one space-separated
+  * line, consuming lines until the first that ends with `{`.
+  *
+  * @param lines - The file's source lines
+@@ -1173,7 +1174,7 @@ export function extractDeclaration(
+ }
+ 
+ /**
+- * The member lines declaring a callable member: plain, `async`, generator
++ * Selects the member lines declaring a callable member: plain, `async`, generator
+  * (`*`), and optional (`records?(`) methods all count; getters, setters,
+  * `static` members, and `#` privates never do (their keyword or `#` breaks
+  * the `name(` shape). Matching runs once over projected lines so commented
+@@ -1199,7 +1200,7 @@ export function extractMemberMethods(lines: readonly string[]): readonly string[
+ }
+ 
+ /**
+- * The block nodes under the named `##` heading, up to the next `##`-or-higher
++ * Selects the block nodes under the named `##` heading, up to the next `##`-or-higher
+  * heading (or the document's end) — the section-scoping window `extractSurface` /
+  * `extractMethods` walk over.
+  *
+@@ -1235,7 +1236,7 @@ export function selectSectionBlocks(
+ }
+ 
+ /**
+- * Every `## Surface` identifier the guide documents — each table row's column 0
++ * Extracts every `## Surface` identifier the guide documents — each table row's column 0
+  * code span (the name) paired with its `Kind` column (located by header text)
+  * UNION every backticked H3 entity heading in the section
+  * (`{name: <codeSpan>, kind: 'class'}`), deduped by {@link computeSymbolKey}. A row with
+@@ -1294,7 +1295,7 @@ export function extractSurface(document: MarkdownDocument): readonly SurfaceSymb
+ }
+ 
+ /**
+- * One {@link MethodGroup} per documented behavioral interface in `## Methods` —
++ * Extracts one {@link MethodGroup} per documented behavioral interface in `## Methods` —
+  * an H4 with a code span sets the current interface, and the table immediately
+  * following becomes its documented methods.
+  *
+@@ -1334,7 +1335,7 @@ export function extractMethods(document: MarkdownDocument): readonly MethodGroup
+ }
+ 
+ /**
+- * Every link href in the guide document, including table cells — a full,
++ * Extracts every link href in the guide document, including table cells — a full,
+  * depth-first walk of the whole AST.
+  *
+  * @param document - The parsed guide document
+@@ -1354,7 +1355,7 @@ export function extractLinks(document: MarkdownDocument): readonly string[] {
+ }
+ 
+ /**
+- * The relative test links declared under `## Tests` — every link href found
++ * Extracts the relative test links declared under `## Tests` — every link href found
+  * within that section only.
+  *
+  * @param document - The parsed guide document
+@@ -1376,7 +1377,7 @@ export function extractTests(document: MarkdownDocument): readonly string[] {
+ }
+ 
+ /**
+- * Select the next physical record after an eligible genuine JSDoc whose final
++ * Selects the next physical record after an eligible genuine JSDoc whose final
+  * authoritative span carries an exact block-position `@example` tag. Title
+  * text is allowed. A leading whitespace-separated span chain is last-span
+  * authoritative; intervening source material severs association, while a
+@@ -1473,7 +1474,7 @@ export function extractExampleLines(lines: readonly SourceLine[]): readonly Sour
+ }
+ 
+ /**
+- * The exported functions in one file's source text whose immediately preceding
++ * Extracts the exported functions in one file's source text whose immediately preceding
+  * eligible genuine JSDoc block carries `@example`. Shared adjacency comes from
+  * {@link extractExampleLines}; exported-function membership is matched against
+  * the aligned code projection, so comment and template payload cannot qualify.
+@@ -1505,7 +1506,7 @@ export function extractExamples(source: string): readonly string[] {
+ }
+ 
+ /**
+- * The callable-member names in a declaration body (per {@link extractMemberMethods}'
++ * Extracts the callable-member names in a declaration body (per {@link extractMemberMethods}'
+  * grammar) whose immediately preceding eligible genuine JSDoc block, within
+  * the same body, carries `@example`. Shared adjacency comes from
+  * {@link extractExampleLines}; member membership is matched against aligned
+@@ -1536,7 +1537,7 @@ export function extractExampleMethods(lines: readonly string[]): readonly string
+ }
+ 
+ /**
+- * Every fenced code block anywhere in the guide document. A full AST walk
++ * Extracts every fenced code block anywhere in the guide document. A full AST walk
+  * includes fences nested inside blockquotes and lists.
+  *
+  * @param document - The parsed guide document
+diff --git a/src/core/parsers.ts b/src/core/parsers.ts
+index 4a92536..8f83228 100644
+--- a/src/core/parsers.ts
++++ b/src/core/parsers.ts
+@@ -10,7 +10,7 @@ import {
+ } from './helpers.js'
+ 
+ /**
+- * Parse a `## By concept` manifest table into its {@link ManifestEntry} rows —
++ * Parses a `## By concept` manifest table into its {@link ManifestEntry} rows —
+  * each row's Concept cell (flattened text), Spec / Tests cells (a single link
+  * href, resolved against `directory`), and Source cell (every link href,
+  * resolved against `directory`; Source links canonicalize through
+diff --git a/src/core/shapers.ts b/src/core/shapers.ts
+index f494121..92485bc 100644
+--- a/src/core/shapers.ts
++++ b/src/core/shapers.ts
+@@ -7,8 +7,8 @@ import { EXPORT_KINDS } from './constants.js'
+ // here is non-recursive, so each shapes directly (no `lazyOf` gate needed).
+ 
+ /**
+- * The shape of a {@link SurfaceSymbol} — a documented / exported symbol's
+- * `name` paired with its {@link ExportKind}.
++ * Shapes a {@link SurfaceSymbol} — a documented / exported symbol's `name`
++ * paired with its {@link ExportKind}.
+  *
+  * @example
+  * ```ts
+@@ -25,8 +25,8 @@ export const surfaceSymbolShape = objectShape({
+ })
+ 
+ /**
+- * The shape of a {@link MethodGroup} — a backticked `interface` name paired
+- * with its documented `methods`.
++ * Shapes a {@link MethodGroup} — a backticked `interface` name paired with
++ * its documented `methods`.
+  *
+  * @example
+  * ```ts
+@@ -43,8 +43,8 @@ export const methodGroupShape = objectShape({
+ })
+ 
+ /**
+- * The shape of a {@link ManifestEntry} — one `## By concept` manifest row,
+- * `source` accepting either a single directory or several.
++ * Shapes a {@link ManifestEntry} — one `## By concept` manifest row, `source`
++ * accepting either a single directory or several.
+  *
+  * @example
+  * ```ts
+diff --git a/src/core/sources/Source.ts b/src/core/sources/Source.ts
+index 32b29f1..0b8bc7c 100644
+--- a/src/core/sources/Source.ts
++++ b/src/core/sources/Source.ts
+@@ -16,10 +16,10 @@ import {
+ } from '../helpers.js'
+ 
+ /**
+- * A pure `SourceInterface` — reflects a module scope's intentional direct
+- * declarations, conventional barrel-reachable surface, and member methods over
+- * a consumer-supplied file inventory, using text-only line scanners rather than
+- * the TypeScript compiler API or the filesystem. `Source` never touches disk:
++ * Reflects, as a pure `SourceInterface`, a module scope's intentional direct declarations,
++ * conventional barrel-reachable surface, and member methods over a consumer-supplied file
++ * inventory, using text-only line scanners rather than the TypeScript compiler API or the
++ * filesystem. `Source` never touches disk:
+  * the consumer gathers the inventory however their environment allows
+  * (`node:fs` in a Node script, `import.meta.glob` in a browser/vitest run) and
+  * passes it in as `files`. Conventional barrel traversal recurses through both
+diff --git a/src/core/types.ts b/src/core/types.ts
+index bbddabd..0bb6641 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -1,7 +1,7 @@
+ import type { EXPORT_KINDS } from './constants.js'
+ 
+ /**
+- * The declaration kind a documented / exported symbol carries — exactly the
++ * Represents the declaration kind a documented / exported symbol carries — exactly the
+  * five reflected `type`, `interface`, `const`, `function`, and `class` heads,
+  * derived from {@link EXPORT_KINDS} so the type, the guard, and the shape name
+  * one population. Comment/template payload is excluded before reflection.
+@@ -10,7 +10,7 @@ import type { EXPORT_KINDS } from './constants.js'
+ export type ExportKind = (typeof EXPORT_KINDS)[number]
+ 
+ /**
+- * One documented / exported symbol — its identifier plus its declaration kind.
++ * Represents one documented / exported symbol — its identifier plus its declaration kind.
+  *
+  * @remarks
+  * `kind` mirrors the guide Surface table's own `Kind` column header, which this
+@@ -19,14 +19,14 @@ export type ExportKind = (typeof EXPORT_KINDS)[number]
+  * reflected symbol name one axis.
+  */
+ export interface SurfaceSymbol {
+-	/** Its identifier. */
++	/** Holds the symbol's identifier. */
+ 	readonly name: string
+-	/** Its declaration kind — half of the bijection key alongside {@link name}. */
++	/** Holds the symbol's declaration kind — half of the bijection key alongside {@link name}. */
+ 	readonly kind: ExportKind
+ }
+ 
+ /**
+- * The source scope a guide's manifest entry covers — one module directory, or
++ * Represents the source scope a guide's manifest entry covers — one module directory, or
+  * several when a layer guide spans multiple source directories (a core module
+  * plus its backend implementations). `'.'` is the canonical workspace-root
+  * directory; empty, trailing-slash, and dot-segment spellings canonicalize to
+@@ -35,90 +35,91 @@ export interface SurfaceSymbol {
+ export type GuideModule = string | readonly string[]
+ 
+ /**
+- * One terminator-free physical source line and its aligned reflection
++ * Represents one terminator-free physical source line and its aligned reflection
+  * projections. Every projection has the same length as {@link source}, and
+  * every genuine JSDoc span retains its physical opener column; the final
+  * physical line is present even when it is empty.
+  */
+ export interface SourceLine {
+-	/** The exact source characters, excluding the LF or CRLF terminator. */
++	/** Holds the exact source characters, excluding the LF or CRLF terminator. */
+ 	readonly source: string
+-	/** Source code with comment and template spans replaced by aligned spaces. */
++	/** Holds source code with comment and template spans replaced by aligned spaces. */
+ 	readonly code: string
+-	/** Every genuine JSDoc span at its exact source columns, or `undefined` when absent. */
++	/** Holds every genuine JSDoc span at its exact source columns, or `undefined` when absent. */
+ 	readonly jsdoc: string | undefined
+ }
+ 
+ /**
+- * One `## By concept` manifest row — a single guides-parity check target, paths
++ * Represents one `## By concept` manifest row — a single guides-parity check target, paths
+  * normalized to workspace root.
+  */
+ export interface ManifestEntry {
+-	/** The concept name — the row's first cell, flattened. */
++	/** Holds the concept name — the row's first cell, flattened. */
+ 	readonly concept: string
+-	/** The guide `.md` this entry documents, root-relative. */
++	/** Names the guide `.md` this entry documents, root-relative. */
+ 	readonly spec: string
+-	/** The source directory (or directories) the guide documents. */
++	/** Names the source directory (or directories) the guide documents. */
+ 	readonly source: GuideModule
+-	/** The tests directory the guide's `## Tests` links resolve against. */
++	/** Names the tests directory the guide's `## Tests` links resolve against. */
+ 	readonly tests: string
+ }
+ 
+ /**
+- * One `#### \`Interface\`` block in a guide's `## Methods` section — the
++ * Represents one `#### \`Interface\`` block in a guide's `## Methods` section — the
+  * documented member names of one behavioral interface.
+  */
+ export interface MethodGroup {
+-	/** The backticked interface name. */
++	/** Holds the backticked interface name. */
+ 	readonly interface: string
+-	/** Its documented Method-cell identifiers, in table order. */
++	/** Lists the group's documented Method-cell identifiers, in table order. */
+ 	readonly methods: readonly string[]
+ }
+ 
+ /**
+- * One brace `import` statement projected from a guide fence — its specifier
++ * Represents one brace `import` statement projected from a guide fence — its specifier
+  * paired with the exported names it binds.
+  */
+ export interface FenceImport {
+-	/** The module specifier the statement imports from. */
++	/** Names the module specifier the statement imports from. */
+ 	readonly specifier: string
+-	/** The imported names, each alias resolved to the original exported name. */
++	/** Lists the imported names, each alias resolved to the original exported name. */
+ 	readonly names: readonly string[]
+ }
+ 
+-/** One fenced code block projected from a guide document. */
++/** Represents one fenced code block projected from a guide document. */
+ export interface GuideFence {
+-	/** The info-string language tag, or `undefined` when the fence is untagged. */
++	/** Holds the info-string language tag, or `undefined` when the fence is untagged. */
+ 	readonly language: string | undefined
+-	/** The fence's verbatim code body. */
++	/** Holds the fence's verbatim code body. */
+ 	readonly code: string
+ }
+ 
+ /**
+- * The structured, pure view of one parsed guide — every projection extracted and
++ * Represents the structured, pure view of one parsed guide — every projection extracted and
+  * cached once at construction (see {@link createGuide}).
+  */
+ export interface GuideInterface {
+ 	/**
+-	 * The `##` heading names, in document order — the non-vacuousness guard for section presence.
++	 * Lists the `##` heading names, in document order — the non-vacuousness guard for
++	 * section presence.
+ 	 *
+ 	 * @returns The document's `##` heading names, in document order
+ 	 */
+ 	sections(): readonly string[]
+ 	/**
+-	 * Every `## Surface` identifier + kind — table rows union backticked entity headings.
++	 * Lists every `## Surface` identifier + kind — table rows union backticked entity headings.
+ 	 *
+ 	 * @returns The documented surface symbols, in encounter order
+ 	 */
+ 	surface(): readonly SurfaceSymbol[]
+ 	/**
+-	 * One {@link MethodGroup} per documented behavioral interface in `## Methods`.
++	 * Returns one {@link MethodGroup} per documented behavioral interface in `## Methods`.
+ 	 *
+ 	 * @returns One group per documented behavioral interface, in document order
+ 	 */
+ 	methods(): readonly MethodGroup[]
+ 	/**
+-	 * Every link href in the guide, including table cells.
++	 * Lists every link href in the guide, including table cells.
+ 	 *
+ 	 * @example
+ 	 * ```ts
+@@ -127,7 +128,7 @@ export interface GuideInterface {
+ 	 */
+ 	links(): readonly string[]
+ 	/**
+-	 * The relative test links declared under `## Tests`.
++	 * Lists the relative test links declared under `## Tests`.
+ 	 *
+ 	 * @example
+ 	 * ```ts
+@@ -136,7 +137,7 @@ export interface GuideInterface {
+ 	 */
+ 	tests(): readonly string[]
+ 	/**
+-	 * Every fenced code block in the whole document, in document order — no
++	 * Lists every fenced code block in the whole document, in document order — no
+ 	 * language filter, so a consumer decides which languages its checks read.
+ 	 *
+ 	 * @example
+@@ -148,12 +149,12 @@ export interface GuideInterface {
+ }
+ 
+ /**
+- * The reflected source truth a guide's documented surface is checked against —
++ * Represents the reflected source truth a guide's documented surface is checked against —
+  * a pure view over a consumer-supplied file inventory (see {@link Source}).
+  */
+ export interface SourceInterface {
+ 	/**
+-	 * Every direct declaration in the selected module keys matching
++	 * Lists every direct declaration in the selected module keys matching
+ 	 * `export (async )?(function*?|class|const|interface|type) Name`, by
+ 	 * (name, kind). Module keys are `.ts` inventory keys under the selected
+ 	 * directories, excluding each directory's exact root `index.ts` and every
+@@ -169,7 +170,7 @@ export interface SourceInterface {
+ 	 */
+ 	exports(): readonly SurfaceSymbol[]
+ 	/**
+-	 * Every declaration reachable from each selected module's conventional root
++	 * Lists every declaration reachable from each selected module's conventional root
+ 	 * `index.ts` through complete relative `.js` `export *` rows. Unlike
+ 	 * {@link exports}, this inventories barrel reachability rather than all
+ 	 * intentional direct declarations under the selected directories.
+@@ -209,7 +210,7 @@ export interface SourceInterface {
+ 	 */
+ 	surface(): readonly SurfaceSymbol[]
+ 	/**
+-	 * The call-signature members of the `class` / `interface` named `name`,
++	 * Returns the call-signature members of the `class` / `interface` named `name`,
+ 	 * unioned with the members of every declaration it extends.
+ 	 *
+ 	 * @remarks
+@@ -233,14 +234,14 @@ export interface SourceInterface {
+ 	 */
+ 	methods(name: string): readonly string[]
+ 	/**
+-	 * Whether a workspace-root-relative path exists in the inventory.
++	 * Checks whether a workspace-root-relative path exists in the inventory.
+ 	 *
+ 	 * @param relative - The workspace-root-relative path to look up
+ 	 * @returns True if the inventory holds that exact key; false otherwise
+ 	 */
+ 	exists(relative: string): boolean
+ 	/**
+-	 * Every module-scope declaration LACKING the `export` keyword (AGENTS §5's
++	 * Lists every module-scope declaration LACKING the `export` keyword (AGENTS §5's
+ 	 * export-discipline reflection) across the same projected physical code lines
+ 	 * and five declaration kinds as {@link exports}. Comment/template payload and
+ 	 * `enum` are outside this population; projection preserves physical columns
+@@ -254,7 +255,7 @@ export interface SourceInterface {
+ 	 */
+ 	hidden(): readonly SurfaceSymbol[]
+ 	/**
+-	 * The names of every exported function whose next-physical-record eligible
++	 * Lists the names of every exported function whose next-physical-record eligible
+ 	 * genuine JSDoc chain ends in a span carrying an exact block-position
+ 	 * `@example` tag. Title text is allowed; intervening material severs
+ 	 * association.
+@@ -266,7 +267,7 @@ export interface SourceInterface {
+ 	 */
+ 	examples(): readonly string[]
+ 	/**
+-	 * The members of the `class` / `interface` named `name` whose immediately
++	 * Lists the members of the `class` / `interface` named `name` whose immediately
+ 	 * preceding eligible genuine JSDoc chain, within the declaration body, ends
+ 	 * in a span carrying an exact block-position `@example` tag. Title text is
+ 	 * allowed; intervening material severs association. Declaration and callable
+@@ -288,34 +289,40 @@ export interface SourceInterface {
+ }
+ 
+ /**
+- * The construction input for a {@link Source} — a consumer-supplied file
++ * Represents the construction input for a {@link Source} — a consumer-supplied file
+  * inventory (root-relative path → file text) plus the module scope to
+  * reflect. The consumer gathers `files` however their environment allows
+  * (`node:fs` in a Node script, `import.meta.glob` in a browser/vitest run) —
+  * `Source` itself never touches disk.
+  */
+ export interface SourceOptions {
+-	/** The workspace's exact canonical-segment opaque inventory keys, root-relative path → text. */
++	/**
++	 * Holds the workspace's exact canonical-segment opaque inventory keys, root-relative path
++	 * → text.
++	 */
+ 	readonly files: Readonly<Record<string, string>>
+-	/** The source directory (or directories) this guide documents; `'.'` is workspace root. */
++	/** Names the source directory (or directories) this guide documents; `'.'` is workspace root. */
+ 	readonly module: GuideModule
+ }
+ 
+ /**
+- * The construction input for a {@link SourceManager}: one shared file inventory
++ * Represents the construction input for a {@link SourceManager}: one shared file inventory
+  * plus the consumer's specifier-to-module policy.
+  */
+ export interface SourceManagerOptions {
+-	/** The workspace's exact canonical-segment opaque inventory keys, root-relative path → text. */
++	/**
++	 * Holds the workspace's exact canonical-segment opaque inventory keys, root-relative path
++	 * → text.
++	 */
+ 	readonly files: Readonly<Record<string, string>>
+-	/** Each local import specifier mapped to the source module it exposes. */
++	/** Maps each local import specifier to the source module it exposes. */
+ 	readonly modules: Readonly<Record<string, GuideModule>>
+ }
+ 
+-/** A specifier resolver that shares one {@link SourceInterface} per module. */
++/** Represents a specifier resolver that shares one {@link SourceInterface} per module. */
+ export interface SourceManagerInterface {
+ 	/**
+-	 * Resolve a mapped specifier to its shared source view.
++	 * Resolves a mapped specifier to its shared source view.
+ 	 *
+ 	 * @param specifier - The import specifier to resolve
+ 	 * @returns Its source view, or `undefined` when the specifier is not mapped
+@@ -324,26 +331,26 @@ export interface SourceManagerInterface {
+ }
+ 
+ /**
+- * A declaration head joined into a single line, plus the index of the line
++ * Pairs a declaration head joined into a single line with the index of the line
+  * carrying its opening `{` — how a head that oxfmt wrapped across lines
+  * (printWidth 100) is matched as if it were written on one.
+  */
+ export interface DeclarationHead {
+-	/** The joined, space-separated head text. */
++	/** Holds the joined, space-separated head text. */
+ 	readonly text: string
+-	/** The index (within the source `lines`) of the line ending in `{`. */
++	/** Holds the index (within the source `lines`) of the line ending in `{`. */
+ 	readonly end: number
+ }
+ 
+ /**
+- * One located `export class` / `export interface` declaration — the body lines
++ * Represents one located `export class` / `export interface` declaration — the body lines
+  * and the base identifiers read from the same head, so a consumer never pairs
+  * one declaration's body with another declaration's heritage (see
+  * {@link extractDeclaration}).
+  */
+ export interface Declaration {
+-	/** Its raw body lines, between the head and the column-zero closing `}`. */
++	/** Holds the declaration's raw body lines, between the head and the column-zero closing `}`. */
+ 	readonly body: readonly string[]
+-	/** The base identifiers its head extends, in head order. */
++	/** Lists the base identifiers its head extends, in head order. */
+ 	readonly bases: readonly string[]
+ }
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index 4f2c20d..610dc91 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -9,11 +9,12 @@ import { EXPORT_KINDS } from './constants.js'
+ // combinators and hoisted as module-level values (compiled once, not per call).
+ 
+ /**
+- * Whether `value` is one of the five documented {@link ExportKind} literals — the
+- * guard behind extracting a Surface table's `Kind` cell into a typed symbol.
++ * Checks whether `value` is one of the five documented {@link ExportKind}
++ * literals — the guard behind extracting a Surface table's `Kind` cell into a
++ * typed symbol.
+  *
+  * @param value - The candidate value
+- * @returns `true` when `value` is a valid {@link ExportKind}
++ * @returns True if `value` is a valid {@link ExportKind}; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -24,11 +25,11 @@ import { EXPORT_KINDS } from './constants.js'
+ export const isExportKind: Guard<ExportKind> = literalOf(EXPORT_KINDS)
+ 
+ /**
+- * Whether `value` is a well-formed {@link SurfaceSymbol} — a `name` string
+- * paired with a valid {@link ExportKind}.
++ * Checks whether `value` is a well-formed {@link SurfaceSymbol} — a `name`
++ * string paired with a valid {@link ExportKind}.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a well-formed {@link SurfaceSymbol}
++ * @returns True if `value` is a well-formed {@link SurfaceSymbol}; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -42,11 +43,11 @@ export const isSurfaceSymbol: Guard<SurfaceSymbol> = recordOf({
+ })
+ 
+ /**
+- * Whether `value` is a well-formed {@link MethodGroup} — a backticked
++ * Checks whether `value` is a well-formed {@link MethodGroup} — a backticked
+  * `interface` name paired with its documented `methods`.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a well-formed {@link MethodGroup}
++ * @returns True if `value` is a well-formed {@link MethodGroup}; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -60,11 +61,12 @@ export const isMethodGroup: Guard<MethodGroup> = recordOf({
+ })
+ 
+ /**
+- * Whether `value` is a well-formed {@link ManifestEntry} — a `## By concept`
+- * manifest row, its `source` accepting either a single directory or several.
++ * Checks whether `value` is a well-formed {@link ManifestEntry} — a
++ * `## By concept` manifest row, its `source` accepting either a single directory
++ * or several.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is a well-formed {@link ManifestEntry}
++ * @returns True if `value` is a well-formed {@link ManifestEntry}; false otherwise
+  *
+  * @example
+  * ```ts

@@ -813,3 +813,6 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   header (`MSG`) deleted in favour of the third-person paragraph beneath it is accepted;
   comment overflow past the print width where the package already tolerates it is recorded for
   the debrief, not a fix.
+- **Slice 4 closed** (server `de721d9`, html `532fc73`, interpret `8fa4740`, csv `5e4f03b`,
+  brief `2324035`, msg `234386a`, test `5aff09d`, guide `8b6ac02`). Every landing chain green;
+  `voice/scan-after-slice4.txt` reads zero in every bucket for the eight.
