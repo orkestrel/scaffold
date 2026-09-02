@@ -178,7 +178,11 @@ main's `ContractCompiler.ts` and ported main's TSDoc into the moved factory), re
 gate chain, re-pin the fleet if the version moved, and repack before any consumer stages it. A
 consumer staged against a superseded contract tip is re-staged at its next boundary. Reading on
 2026-09-02 after L0 landed: `origin/main` at `3193da1` (Bump to 0.0.15), branch tip `d24e79c`,
-main ahead of the merge base by nothing.
+main ahead of the merge base by nothing. Second reading, after the contract fix-up: `origin/main`
+at `c13cfae` (three unpublished commits: canonical array copy, read diagnostics on refusal,
+string refinement patterns at compile time), every one touching files the branch changed; unit
+`contract-merge` (Opus implementer) reconciles them into the branch, the Orchestrator commits the
+merge, repacks, and re-stages contract's consumers.
 
 ## Wave schedule and routing ledger
 
