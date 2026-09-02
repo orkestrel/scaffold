@@ -45,13 +45,19 @@ Verified by the Orchestrator directly, not taken from a writer's report:
 ## Review evidence
 
 Code change: the diffs are on disk under `tmp/units/diffs/` in the scaffold checkout —
-`scaffold.patch` and `scaffold.stat` (`f453f00..HEAD`, skills, bridges, roadmap, inventory),
-`test.patch` and `test.stat` (`95fcf3a..ce75175`), `form.patch` and `form.stat`
-(`7779e6b..2f07735`), and `terrain.patch` and `terrain.status` (the working tree). Read the
+`scaffold.patch` and `scaffold.stat` (`f453f00..HEAD` with `.orkestrel` excluded: skills, bridges,
+roadmap, inventory, catalog, manifest), `test.patch` and `test.stat` (`95fcf3a..c98f3ba`, the
+additions and the resolver fix), `form.patch` and `form.stat` (`7779e6b..56e7d9f`), and
+`terrain.patch`, `terrain.stat`, and `terrain.status` (`c5c4531..93677fb` over `tests` and `app`
+with the vendored policy and config tests excluded; the status shows the user's lockfile pair and
+nothing else). Read the
 patch, then the file in the tree where the patch needs context. A lane with no shell reads these
 files; a lane with a shell may also run `git diff` itself.
-Rendered surface: the terrain capture portfolio under `terrain/tmp/capture/` for every declared
-variant, produced by the Orchestrator's capture runs, is the primary evidence for claims about
+Rendered surface: the terrain capture portfolio, twelve frames under
+`C:\Users\mikes\WebstormProjects\terrain\tmp\capture\states\` named `<state>--<variant>.png` for the
+states `schedule-empty`, `schedule-populated`, `delete-armed` and the variants `light-1280`,
+`dark-1280`, `light-390`, `dark-390`, produced by the unit's and the Orchestrator's capture runs
+(`terrain-successor-report.md` § Run summaries; `terrain-captures.sh`), is the primary evidence for claims about
 what terrain renders; source corroborates.
 Proposal: the two skills and the harness reference are process proposals; the canon they must
 satisfy is `AGENTS.md` § Writing and § Instruction files and `.claude/rules/documentation.md`
