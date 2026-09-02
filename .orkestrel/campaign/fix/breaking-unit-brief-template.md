@@ -48,7 +48,7 @@ only; their units follow): `.orkestrel/campaign/fix/breaking-radius.json`.
 
 **Host.** Linux, bash. Repository REPO on branch `claude/orkestrel-npm-audit-deps-14ibta`,
 committed clean at the launch, `node_modules` installed. Network reaches the registry; you do not
-need it. Do not run `npm install`.
+need it. Do not run `npm install`. Build a throwaway probe, where you need one, under the system temporary directory, never under the checkout's `tmp/`.
 
 **Measurements.** STAGED_TARBALLS (dependency tarballs already staged by the Orchestrator with
 `npm install --no-save` and verified file-by-file against their register rows, so this package's

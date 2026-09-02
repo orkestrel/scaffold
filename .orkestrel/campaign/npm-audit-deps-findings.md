@@ -489,3 +489,33 @@ governed the touched block).
   `src/server/sqlite` directory claim.
 - **Next:** stage database's closure (contract `2c15840`, indexeddb `bf4730e`, sqlite `5a9340b`,
   plus emitter, guide, html, markdown, test), generate its brief, launch it beside the L2 writers.
+
+## Breaking phase — L2 fix rounds (2026-09-02)
+
+- **Landed and audited in L2 so far:** database (`c7baae0`), console (`a35c93f`), middleware
+  (`453f794`), template (`50da0d2`); every checker and verifier lane green; reviewer lanes returned
+  findings outside the claims, carried by one fix-up per package (`units/<pkg>-fixup-brief.md`).
+- **Ruling reversed by rule authority — template s17-18.** The design ruling dropped the
+  no-argument `remove()` overload as an alternation with `clear`. The objective lane showed it
+  contradicts `.claude/rules/patterns.md` § Managers § Batch operations as written ("`method(): void`
+  … No argument applies to all"), which a brief cannot repeal, and console, interpret, and table
+  keep the same `clear` plus `remove()` pair. The rule wins: template restores the overload and
+  s17-18 closes refused.
+- **Question for the user:** a manager that owns `clear` (reset state, one `clear` event) and the
+  batch family's no-argument `remove()` (remove all, one `remove` event per instance) carries two
+  remove-all paths. Either the batch rule gains an exception (a manager that owns `clear` declares
+  no no-argument form of its batch verb) and console, interpret, table, and template drop
+  `remove()` in a successor wave, or the pair stands as two observations of one end state. The
+  fleet keeps the pair until you rule.
+- **Ruled by the Orchestrator:** middleware injects the rebuild step into `DatabaseSessionStore`
+  to break the factories-to-store cycle; `SessionSnapshot.data` → `state`, `transferSessionData`
+  → `transferSessionState`, `buildClientInfo` → `buildClient`, and the multipart default constants
+  take the grouped `_SIZE` / `_COUNT` names, all before publish so no migration cost lands;
+  database's IndexedDB `column.remove` migration fails closed on a non-record value; storage-array
+  membership reads `includes`. Console keeps `createCaptureResult` as ruled (both lanes question
+  the `create*` form for a function that runs a callback; recorded for the next change).
+- **Findings for the next change:** middleware's `Session.set` beside `SessionStoreInterface.set`
+  (one word, two operations), `SessionLimits` as a bare `*Limits` name for a partial, the guides
+  test mapping no `@orkestrel/console/server` specifier, the `AGENTS §N` citations across guides
+  and tests, and the stale vendored mirrors (`guides/indexeddb.md`, `guides/sqlite.md`) that the
+  re-pin after publish refreshes.
