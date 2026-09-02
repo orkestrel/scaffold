@@ -585,3 +585,7 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
 - **Middleware re-staged on `server-522ed4c.tgz`** (`instruments/restage-middleware.sh`, log
   `restage-middleware.log`): stage exit 0 with every closure row OK, `npm run check` exit 0,
   `npm test` exit 0. The tip `aa8646a` stands; the L4 closures read it from there.
+- **Workspace and template fix-ups landed.** Workspace at `e564c2d` (each empty-batch pin red
+  under its own seed; verdict written). Template at `8fdc167` (`template-fixup-2`; the L2 verdict
+  carries an addendum). Interpret re-stages on `template-8fdc167.tgz` when its fix-up lands, and
+  `l3-standing.txt` names the new template tip for any later L3 re-brief.

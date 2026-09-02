@@ -33,3 +33,16 @@ system temporary directory.
 Terminal lines: objective PASS; checker PASS on its claims (7 by construction); verifier GREEN.
 **Verdict: PASS after the fix-up.** The unit closes **applied** for s17-16 and s17-17,
 **refused** for s17-18. Tip packed: `template-2eccc62.tgz`.
+
+## Addendum — template-fixup-2 (after the workspace unit's audit)
+
+The workspace unit's objective lane found the L2 fix-round row "align template's `remove(ids)` to
+partial-apply-and-report and state the one batch meaning in `guides/template.md`" uncarried: the
+tip `2eccc62` pre-checked every id and returned `false` before removing anything, and its guide
+said "all-or-nothing". `units/template-fixup-2-brief.md` (`builder`, Sonnet;
+`units/template-fixup-2-report.md`) landed the rule's meaning — each present id removed, `remove`
+emitted per instance, `true` only when every id was present — with the red-then-green proof
+recorded, at `8fdc167` with the full chain green (`instruments/land-fixup.mjs`, log
+`land-fixup.log`). Interpret, template's only fleet dependent, re-stages on
+`template-8fdc167.tgz` after its own fix-up lands. **Verdict stands: PASS.** Tip packed:
+`template-8fdc167.tgz`.
