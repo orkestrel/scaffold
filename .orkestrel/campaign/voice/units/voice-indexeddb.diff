@@ -1,0 +1,442 @@
+diff --git a/src/browser/IndexedDBCursor.ts b/src/browser/IndexedDBCursor.ts
+index 91bd02e..fc4d986 100644
+--- a/src/browser/IndexedDBCursor.ts
++++ b/src/browser/IndexedDBCursor.ts
+@@ -3,7 +3,7 @@ import type { IndexedDBCursorInterface, Row } from './types.js'
+ import { guardSync, promisifyRequest } from './helpers.js'
+ 
+ /**
+- * A promisified value cursor over an object store or index.
++ * Represents a promisified value cursor over an object store or index.
+  *
+  * @remarks
+  * Wraps `IDBCursorWithValue` and the request that drives it. The position
+diff --git a/src/browser/IndexedDBDatabase.ts b/src/browser/IndexedDBDatabase.ts
+index 8440d63..e9a6486 100644
+--- a/src/browser/IndexedDBDatabase.ts
++++ b/src/browser/IndexedDBDatabase.ts
+@@ -16,7 +16,7 @@ import { IndexedDBTransaction } from './IndexedDBTransaction.js'
+ import { IndexedDBTransactionStore } from './IndexedDBTransactionStore.js'
+ 
+ /**
+- * A browser-native IndexedDB database — a typed, Promise-based handle.
++ * Represents a browser-native IndexedDB database — a typed, Promise-based handle.
+  *
+  * @remarks
+  * Connects lazily on first use (`connect`, also awaited internally by every store
+diff --git a/src/browser/IndexedDBIndex.ts b/src/browser/IndexedDBIndex.ts
+index e0fa6d8..ec694c0 100644
+--- a/src/browser/IndexedDBIndex.ts
++++ b/src/browser/IndexedDBIndex.ts
+@@ -12,7 +12,7 @@ import { guardSync, hasKey, promisifyRequest, readRecord, readRecords } from './
+ import { IndexedDBCursor } from './IndexedDBCursor.js'
+ 
+ /**
+- * A secondary index on a store — a read-only view keyed by an indexed path.
++ * Represents a secondary index on a store — a read-only view keyed by an indexed path.
+  *
+  * @remarks
+  * Reached through `store.index(name)`. Each call opens its own `readonly`
+diff --git a/src/browser/IndexedDBStore.ts b/src/browser/IndexedDBStore.ts
+index 04b0a15..f711093 100644
+--- a/src/browser/IndexedDBStore.ts
++++ b/src/browser/IndexedDBStore.ts
+@@ -14,8 +14,8 @@ import { IndexedDBIndex } from './IndexedDBIndex.js'
+ import { IndexedDBTransactionStore } from './IndexedDBTransactionStore.js'
+ 
+ /**
+- * An object store — the full keyed CRUD surface plus index, count, and cursor
+- * access.
++ * Represents an object store — the full keyed CRUD surface plus index, count, and
++ * cursor access.
+  *
+  * @remarks
+  * Reached through `database.store(name)`. Each call runs in its own implicit
+diff --git a/src/browser/IndexedDBTransaction.ts b/src/browser/IndexedDBTransaction.ts
+index 38fd0ee..dda6d50 100644
+--- a/src/browser/IndexedDBTransaction.ts
++++ b/src/browser/IndexedDBTransaction.ts
+@@ -8,7 +8,7 @@ import { guardSync } from './helpers.js'
+ import { IndexedDBTransactionStore } from './IndexedDBTransactionStore.js'
+ 
+ /**
+- * An explicit transaction over one or more stores.
++ * Represents an explicit transaction over one or more stores.
+  *
+  * @remarks
+  * Wraps `IDBTransaction` with state tracking and typed, scope-bound store access.
+diff --git a/src/browser/IndexedDBTransactionStore.ts b/src/browser/IndexedDBTransactionStore.ts
+index 96319fa..373bcaa 100644
+--- a/src/browser/IndexedDBTransactionStore.ts
++++ b/src/browser/IndexedDBTransactionStore.ts
+@@ -10,7 +10,7 @@ import { guardSync, hasKey, promisifyRequest, readRecord, readRecords } from './
+ import { IndexedDBCursor } from './IndexedDBCursor.js'
+ 
+ /**
+- * An object store bound to an explicit transaction.
++ * Represents an object store bound to an explicit transaction.
+  *
+  * @remarks
+  * The same CRUD surface as a standalone store, but every call runs in the owning
+diff --git a/src/browser/constants.ts b/src/browser/constants.ts
+index b1e986b..331b19c 100644
+--- a/src/browser/constants.ts
++++ b/src/browser/constants.ts
+@@ -1,7 +1,7 @@
+ import type { IndexedDBErrorCode } from './types.js'
+ 
+ /**
+- * Native `DOMException.name` → our {@link IndexedDBErrorCode}.
++ * Maps native `DOMException.name` → our {@link IndexedDBErrorCode}.
+  *
+  * @remarks
+  * The mapping the request boundary's `wrapError` reads to translate a raw
+diff --git a/src/browser/errors.ts b/src/browser/errors.ts
+index faaee03..fe038f2 100644
+--- a/src/browser/errors.ts
++++ b/src/browser/errors.ts
+@@ -9,7 +9,7 @@
+ import type { IndexedDBErrorCode } from './types.js'
+ 
+ /**
+- * An error thrown by the IndexedDB wrapper.
++ * Represents an error thrown by the IndexedDB wrapper.
+  *
+  * @remarks
+  * Carries an {@link IndexedDBErrorCode} and the originating native error as the
+@@ -38,10 +38,10 @@ export class IndexedDBError extends Error {
+ }
+ 
+ /**
+- * Whether a value is an {@link IndexedDBError}.
++ * Checks whether a value is an {@link IndexedDBError}.
+  *
+  * @param value - The value to test
+- * @returns `true` when `value` is an `IndexedDBError`
++ * @returns True if `value` is an `IndexedDBError`; false otherwise
+  */
+ export function isIndexedDBError(value: unknown): value is IndexedDBError {
+ 	return value instanceof IndexedDBError
+diff --git a/src/browser/factories.ts b/src/browser/factories.ts
+index f7065b6..299bff6 100644
+--- a/src/browser/factories.ts
++++ b/src/browser/factories.ts
+@@ -2,7 +2,7 @@ import type { IndexedDBDatabaseInterface, IndexedDBDatabaseOptions, StoresShape
+ import { IndexedDBDatabase } from './IndexedDBDatabase.js'
+ 
+ /**
+- * Create a browser-native IndexedDB database over a store schema.
++ * Creates a browser-native IndexedDB database over a store schema.
+  *
+  * @remarks
+  * The `const` type parameter captures the literal store names, so `db.store(name)`
+diff --git a/src/browser/helpers.ts b/src/browser/helpers.ts
+index 4d6572d..d0c1336 100644
+--- a/src/browser/helpers.ts
++++ b/src/browser/helpers.ts
+@@ -14,21 +14,21 @@ import { IndexedDBError } from './errors.js'
+ // with `isRecord` at the boundary (the same `as`-free bridge used throughout).
+ 
+ /**
+- * Whether IndexedDB is available in this environment.
++ * Checks whether IndexedDB is available in this environment.
+  *
+  * @remarks
+  * Gate IndexedDB code with this and fall back to another storage strategy where
+  * it is absent (a non-browser runtime, a privacy mode that disables storage).
+  * The entry probe, checked before reaching for the rest of this module.
+  *
+- * @returns `true` when `globalThis.indexedDB` exists
++ * @returns True if `globalThis.indexedDB` exists; false otherwise
+  */
+ export function isIndexedDBSupported(): boolean {
+ 	return typeof globalThis.indexedDB !== 'undefined'
+ }
+ 
+ /**
+- * Resolve an `IDBRequest` to its result, rejecting with an {@link IndexedDBError}.
++ * Resolves an `IDBRequest` to its result, rejecting with an {@link IndexedDBError}.
+  *
+  * @remarks
+  * The single bridge from IndexedDB's event-based requests to Promises. Issue the
+@@ -46,7 +46,7 @@ export function promisifyRequest<T>(request: IDBRequest<T>): Promise<T> {
+ }
+ 
+ /**
+- * Resolve once an `IDBTransaction` commits, rejecting if it errors or aborts.
++ * Resolves once an `IDBTransaction` commits, rejecting if it errors or aborts.
+  *
+  * @remarks
+  * Await this after issuing the writes of a `readwrite` transaction to guarantee
+@@ -67,7 +67,7 @@ export function promisifyTransaction(transaction: IDBTransaction): Promise<void>
+ }
+ 
+ /**
+- * Run a synchronous native IndexedDB call, wrapping a thrown `DOMException`
++ * Runs a synchronous native IndexedDB call, wrapping a thrown `DOMException`
+  * into a typed {@link IndexedDBError}.
+  *
+  * @remarks
+@@ -92,7 +92,7 @@ export function guardSync<T>(action: () => T): T {
+ }
+ 
+ /**
+- * Read one record by key from a store or index, narrowing it to a {@link Row}.
++ * Reads one record by key from a store or index, narrowing it to a {@link Row}.
+  *
+  * @remarks
+  * The shared point-read of every store-like class (`IndexedDBStore`,
+@@ -114,7 +114,7 @@ export async function readRecord(
+ }
+ 
+ /**
+- * Read many records from a store or index over an optional key range.
++ * Reads many records from a store or index over an optional key range.
+  *
+  * @remarks
+  * The shared bulk read of every store-like class: issue the native `getAll` over
+@@ -137,7 +137,7 @@ export async function readRecords(
+ }
+ 
+ /**
+- * Whether a key is present in a store or index.
++ * Checks whether a key is present in a store or index.
+  *
+  * @remarks
+  * The shared presence test of every store-like class: a native `count` of the
+@@ -146,7 +146,7 @@ export async function readRecords(
+  *
+  * @param source - The object store or index to test
+  * @param key - The key to look for
+- * @returns `true` when at least one record has the key
++ * @returns True if at least one record has the key; false otherwise
+  */
+ export async function hasKey(
+ 	source: IDBObjectStore | IDBIndex,
+@@ -156,7 +156,7 @@ export async function hasKey(
+ }
+ 
+ /**
+- * Create a secondary index on a store from its {@link IndexDefinition}.
++ * Creates a secondary index on a store from its {@link IndexDefinition}.
+  *
+  * @remarks
+  * The shared index-DDL leaf used both by the built-in create-missing-stores pass
+@@ -177,7 +177,7 @@ export function createIndex(store: IDBObjectStore, definition: IndexDefinition):
+ }
+ 
+ /**
+- * Build a key range strictly above one key.
++ * Builds a key range strictly above one key.
+  *
+  * @param value - The excluded lower boundary
+  * @returns A range containing keys greater than `value`
+@@ -187,7 +187,7 @@ export function rangeAboveKey(value: IDBValidKey): IDBKeyRange {
+ }
+ 
+ /**
+- * Build a key range starting at one key.
++ * Builds a key range starting at one key.
+  *
+  * @param value - The included lower boundary
+  * @returns A range containing keys greater than or equal to `value`
+@@ -197,7 +197,7 @@ export function rangeFromKey(value: IDBValidKey): IDBKeyRange {
+ }
+ 
+ /**
+- * Build a key range strictly below one key.
++ * Builds a key range strictly below one key.
+  *
+  * @param value - The excluded upper boundary
+  * @returns A range containing keys less than `value`
+@@ -207,7 +207,7 @@ export function rangeBelowKey(value: IDBValidKey): IDBKeyRange {
+ }
+ 
+ /**
+- * Build a key range ending at one key.
++ * Builds a key range ending at one key.
+  *
+  * @param value - The included upper boundary
+  * @returns A range containing keys less than or equal to `value`
+@@ -217,7 +217,7 @@ export function rangeToKey(value: IDBValidKey): IDBKeyRange {
+ }
+ 
+ /**
+- * Build a key range containing every string with one prefix.
++ * Builds a key range containing every string with one prefix.
+  *
+  * @param value - The required string prefix
+  * @returns A closed range spanning every matching string
+@@ -228,7 +228,7 @@ export function rangePrefix(value: string): IDBKeyRange {
+ }
+ 
+ /**
+- * Map a native IndexedDB `DOMException` to a typed {@link IndexedDBError}.
++ * Maps a native IndexedDB `DOMException` to a typed {@link IndexedDBError}.
+  *
+  * @remarks
+  * The boundary the two Promise bridges ({@link promisifyRequest} /
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index 3785823..0e78aa8 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -13,7 +13,7 @@
+ // === Row
+ 
+ /**
+- * A record stored in, and read from, an object store.
++ * Represents a record stored in, and read from, an object store.
+  *
+  * @remarks
+  * The value shape every store / index / transaction-store CRUD method reads and
+@@ -25,7 +25,7 @@ export type Row = Record<string, unknown>
+ // === Errors
+ 
+ /**
+- * A machine-readable {@link IndexedDBError} code.
++ * Represents a machine-readable {@link IndexedDBError} code.
+  *
+  * @remarks
+  * Each maps from a native `DOMException.name` or a wrapper-lifecycle fault:
+@@ -64,7 +64,7 @@ export type IndexedDBErrorCode =
+ // === Schema
+ 
+ /**
+- * A key path — one field, or several for a compound key.
++ * Represents a key path — one field, or several for a compound key.
+  *
+  * @remarks
+  * A single string addresses one field; an array addresses a compound key over
+@@ -73,7 +73,7 @@ export type IndexedDBErrorCode =
+ export type KeyPath = string | readonly string[]
+ 
+ /**
+- * A secondary index on a store.
++ * Represents a secondary index on a store.
+  *
+  * @remarks
+  * `name` identifies the index for `store.index(name)`; `path` is the field(s) it
+@@ -88,7 +88,7 @@ export interface IndexDefinition {
+ }
+ 
+ /**
+- * A store's schema.
++ * Represents a store's schema.
+  *
+  * @remarks
+  * `path` is the in-line key path (omit it for an **out-of-line** store, where the
+@@ -102,11 +102,11 @@ export interface StoreDefinition {
+ 	readonly indexes?: readonly IndexDefinition[]
+ }
+ 
+-/** A database's stores — a map of store name to its {@link StoreDefinition}. */
++/** Represents a database's stores — a map of store name to its {@link StoreDefinition}. */
+ export type StoresShape = Readonly<Record<string, StoreDefinition>>
+ 
+ /**
+- * The store manager of a version-change upgrade.
++ * Represents the store manager of a version-change upgrade.
+  *
+  * @remarks
+  * Reached as `context.stores` on {@link IndexedDBUpgradeContext}. `names` lists
+@@ -133,7 +133,7 @@ export interface IndexedDBUpgradeStoreManagerInterface {
+ }
+ 
+ /**
+- * The secondary-index manager of a version-change upgrade.
++ * Represents the secondary-index manager of a version-change upgrade.
+  *
+  * @remarks
+  * Reached as `context.indexes` on {@link IndexedDBUpgradeContext}. `create` adds
+@@ -157,7 +157,7 @@ export interface IndexedDBUpgradeIndexManagerInterface {
+ }
+ 
+ /**
+- * The escape hatch into a version-change upgrade, passed to
++ * Represents the escape hatch into a version-change upgrade, passed to
+  * `IndexedDBDatabaseOptions.upgrade`.
+  *
+  * @remarks
+@@ -179,7 +179,7 @@ export interface IndexedDBUpgradeContext {
+ }
+ 
+ /**
+- * Options for `createIndexedDBDatabase`.
++ * Represents the options for `createIndexedDBDatabase`.
+  *
+  * @remarks
+  * `name` is passed to `indexedDB.open`. `version` is optional: give it to pin an
+@@ -214,7 +214,7 @@ export interface IndexedDBDatabaseOptions<Stores extends StoresShape = StoresSha
+ }
+ 
+ /**
+- * Options for opening a cursor.
++ * Represents the options for opening a cursor.
+  *
+  * @remarks
+  * `query` restricts iteration to a key range (or a single key), and omitting it
+@@ -229,7 +229,7 @@ export interface CursorOptions {
+ // === Cursor
+ 
+ /**
+- * A promisified value cursor for streaming and in-place mutation.
++ * Represents a promisified value cursor for streaming and in-place mutation.
+  *
+  * @remarks
+  * Wraps `IDBCursorWithValue`. `key` / `primary` / `value` snapshot the current
+@@ -259,7 +259,7 @@ export interface IndexedDBCursorInterface {
+ // === Index
+ 
+ /**
+- * A secondary index — read access by an indexed key path.
++ * Represents a secondary index — read access by an indexed key path.
+  *
+  * @remarks
+  * Indexes are read-only views over a store. `get` / `resolve` fetch the first
+@@ -290,7 +290,7 @@ export interface IndexedDBIndexInterface {
+ // === Record store
+ 
+ /**
+- * The keyed record surface of an object store, in or out of an explicit
++ * Represents the keyed record surface of an object store, in or out of an explicit
+  * transaction.
+  *
+  * @remarks
+@@ -328,8 +328,8 @@ export interface IndexedDBRecordStoreInterface {
+ // === Store
+ 
+ /**
+- * An object store — the keyed record surface plus the store's own schema metadata and
+- * `index` accessor.
++ * Represents an object store — the keyed record surface plus the store's own schema
++ * metadata and `index` accessor.
+  *
+  * @remarks
+  * {@link IndexedDBRecordStoreInterface} plus the store's own schema metadata and
+@@ -349,7 +349,7 @@ export interface IndexedDBStoreInterface extends IndexedDBRecordStoreInterface {
+ // === Transaction store
+ 
+ /**
+- * An object store bound to an explicit transaction.
++ * Represents an object store bound to an explicit transaction.
+  *
+  * @remarks
+  * The same {@link IndexedDBRecordStoreInterface} surface as
+@@ -365,7 +365,7 @@ export interface IndexedDBTransactionStoreInterface extends IndexedDBRecordStore
+ // === Transaction
+ 
+ /**
+- * An explicit transaction over one or more stores.
++ * Represents an explicit transaction over one or more stores.
+  *
+  * @remarks
+  * Obtained through the `scope` callback of the database's `read` / `write`. `store`
+@@ -390,7 +390,7 @@ export interface IndexedDBTransactionInterface<Stores extends StoresShape = Stor
+ // === Database
+ 
+ /**
+- * A browser-native IndexedDB database.
++ * Represents a browser-native IndexedDB database.
+  *
+  * @remarks
+  * A typed, Promise-based handle over `IDBDatabase`. It connects lazily on first

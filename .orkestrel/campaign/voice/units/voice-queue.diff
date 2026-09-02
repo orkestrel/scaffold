@@ -1,0 +1,520 @@
+diff --git a/src/core/Queue.ts b/src/core/Queue.ts
+index 1422b1f..731a608 100644
+--- a/src/core/Queue.ts
++++ b/src/core/Queue.ts
+@@ -26,7 +26,7 @@ import {
+ } from './validators.js'
+ 
+ /**
+- * A concurrent, cooperative FIFO job queue with optional outstanding-work persistence.
++ * Represents a concurrent, cooperative FIFO job queue with optional outstanding-work persistence.
+  *
+  * @typeParam TInput - The work input each entry carries
+  * @typeParam TResult - The value each entry resolves
+@@ -73,7 +73,7 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 	#drained = true
+ 
+ 	/**
+-	 * Create a queue.
++	 * Creates a queue.
+ 	 *
+ 	 * @param options - Handler, validated execution limits, persistence, and observation hooks
+ 	 */
+@@ -133,7 +133,7 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 	}
+ 
+ 	/**
+-	 * Reserve and submit one FIFO entry.
++	 * Reserves and submits one FIFO entry.
+ 	 *
+ 	 * @param input - Handler input
+ 	 * @param options - Optional id, retry/timeout overrides, and entry abort signal
+@@ -205,7 +205,7 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 	}
+ 
+ 	/**
+-	 * Load and accept every outstanding stored entry from the current lifecycle generation.
++	 * Loads and accepts every outstanding stored entry from the current lifecycle generation.
+ 	 *
+ 	 * @returns A promise that settles after every loaded entry is reserved and accepted
+ 	 * @throws {QueueError} Thrown when the store's load fails or returns a malformed entry.
+@@ -250,7 +250,7 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 		}
+ 	}
+ 
+-	/** Begin or restart worker execution unless the queue is terminal. */
++	/** Begins or restarts worker execution unless the queue is terminal. */
+ 	start(): void {
+ 		if (this.#abortPromise !== undefined || this.#destroyPromise !== undefined) return
+ 		this.#stopped = false
+@@ -259,7 +259,7 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 	}
+ 
+ 	/**
+-	 * Reject non-active work and await current-loop and durable cleanup quiescence.
++	 * Rejects non-active work and awaits current-loop and durable cleanup quiescence.
+ 	 *
+ 	 * @returns The stable stop barrier
+ 	 */
+@@ -282,13 +282,13 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 		return barrier.promise
+ 	}
+ 
+-	/** Suspend new execution while leaving active entries untouched. */
++	/** Suspends new execution while leaving active entries untouched. */
+ 	pause(): void {
+ 		if (this.#paused || this.stopped || this.#destroyPromise !== undefined) return
+ 		this.#paused = true
+ 	}
+ 
+-	/** Continue execution after a pause. */
++	/** Continues execution after a pause. */
+ 	resume(): void {
+ 		if (!this.#paused || this.stopped || this.#destroyPromise !== undefined) return
+ 		this.#paused = false
+@@ -296,7 +296,7 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 	}
+ 
+ 	/**
+-	 * Cancel the queue and await owned cleanup.
++	 * Cancels the queue and awaits owned cleanup.
+ 	 *
+ 	 * @param reason - Optional cause carried by the coded abort error
+ 	 * @returns The stable abort barrier
+@@ -322,7 +322,7 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 	}
+ 
+ 	/**
+-	 * Reject non-active work and await its durable cleanup.
++	 * Rejects non-active work and awaits its durable cleanup.
+ 	 *
+ 	 * @returns A promise that settles after every affected removal completes
+ 	 */
+@@ -345,7 +345,7 @@ export class Queue<TInput, TResult> implements QueueInterface<TInput, TResult> {
+ 	}
+ 
+ 	/**
+-	 * Tear down once, destroying the emitter only after cleanup finishes.
++	 * Tears down once, destroying the emitter only after cleanup finishes.
+ 	 *
+ 	 * @returns The stable destroy barrier
+ 	 */
+diff --git a/src/core/errors.ts b/src/core/errors.ts
+index 8d53b52..b60f964 100644
+--- a/src/core/errors.ts
++++ b/src/core/errors.ts
+@@ -1,7 +1,7 @@
+ import type { QueueErrorContext, QueueErrorOptions } from './types.js'
+ 
+ /**
+- * Error carrying a machine-readable queue category and optional context.
++ * Represents a failure carrying a machine-readable queue category and optional context.
+  *
+  * @example
+  * ```ts
+@@ -14,7 +14,7 @@ export class QueueError extends Error {
+ 	readonly context: QueueErrorContext | undefined
+ 
+ 	/**
+-	 * Create a queue error.
++	 * Creates a queue error.
+ 	 *
+ 	 * @param message - Human-readable failure description
+ 	 * @param options - Machine-readable category, optional context, and optional cause
+@@ -28,10 +28,11 @@ export class QueueError extends Error {
+ }
+ 
+ /**
+- * Determine whether an unknown value is a {@link QueueError}.
++ * Determines whether an unknown value is a {@link QueueError}.
+  *
+  * @param value - The value to inspect
+- * @returns `true` only for a `QueueError`; hostile values return `false`
++ * @returns True if the value is a real `QueueError` instance; false otherwise, including for
++ *   a hostile value
+  *
+  * @example
+  * ```ts
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 1b933aa..6b5b5a8 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -8,7 +8,7 @@ import { DatabaseQueueStore } from './stores/DatabaseQueueStore.js'
+ import { MemoryQueueStore } from './stores/MemoryQueueStore.js'
+ 
+ /**
+- * Create a concurrent, cooperative job queue — a bounded-concurrency engine that
++ * Creates a concurrent, cooperative job queue — a bounded-concurrency engine that
+  * runs each enqueued input through a handler, with retries and a per-attempt
+  * timeout / abort, all over the L1 `Abort` / `Timeout` primitives.
+  *
+@@ -48,7 +48,7 @@ export function createQueue<TInput, TResult>(
+ }
+ 
+ /**
+- * Create a {@link DatabaseQueueStore} over any {@link DriverInterface} — the durable,
++ * Creates a {@link DatabaseQueueStore} over any {@link DriverInterface} — the durable,
+  * driver-pluggable backing for a queue's outstanding entries.
+  *
+  * @remarks
+@@ -106,7 +106,7 @@ export function createDatabaseQueueStore(
+ }
+ 
+ /**
+- * Create an in-memory {@link MemoryQueueStore} — the zero-plumbing DEFAULT queue store
++ * Creates an in-memory {@link MemoryQueueStore} — the zero-plumbing DEFAULT queue store
+  * over a plain `Map` (the twin of {@link DatabaseQueueStore}).
+  *
+  * @remarks
+diff --git a/src/core/stores/DatabaseQueueStore.ts b/src/core/stores/DatabaseQueueStore.ts
+index 4652871..61b54f2 100644
+--- a/src/core/stores/DatabaseQueueStore.ts
++++ b/src/core/stores/DatabaseQueueStore.ts
+@@ -2,7 +2,7 @@ import type { TableInterface } from '@orkestrel/database'
+ import type { QueueStoreInterface, StoredEntry } from '../types.js'
+ 
+ /**
+- * A {@link QueueStoreInterface} backed by one table of the `databases` layer — a
++ * Represents a {@link QueueStoreInterface} backed by one table of the `databases` layer — a
+  * queue's durable state IS a table, so persistence reduces to keyed CRUD over a
+  * `TableInterface`.
+  *
+@@ -34,7 +34,7 @@ export class DatabaseQueueStore<TInput> implements QueueStoreInterface<TInput> {
+ 	readonly #table: TableInterface<StoredEntry<TInput>>
+ 
+ 	/**
+-	 * Wrap a table as a queue store.
++	 * Wraps a table as a queue store.
+ 	 *
+ 	 * @param table - The {@link TableInterface} holding the outstanding entries — its
+ 	 *   row is a {@link StoredEntry}`<TInput>` (the `{ id; input; attempts }` shape)
+@@ -43,22 +43,22 @@ export class DatabaseQueueStore<TInput> implements QueueStoreInterface<TInput> {
+ 		this.#table = table
+ 	}
+ 
+-	/** Upsert an entry by its `id` (a re-`save` of an existing `id` overwrites it). */
++	/** Upserts an entry by its `id` (a re-`save` of an existing `id` overwrites it). */
+ 	async save(entry: StoredEntry<TInput>): Promise<void> {
+ 		await this.#table.set(entry)
+ 	}
+ 
+-	/** Drop a finished entry by `id`; absent is a no-op (no throw). */
++	/** Drops a finished entry by `id`; absent is a no-op (no throw). */
+ 	async remove(id: string): Promise<void> {
+ 		await this.#table.remove(id)
+ 	}
+ 
+-	/** Every outstanding entry — the work to resume after a restart. */
++	/** Returns every outstanding entry — the work to resume after a restart. */
+ 	load(): Promise<ReadonlyArray<StoredEntry<TInput>>> {
+ 		return this.#table.records()
+ 	}
+ 
+-	/** Empty the store — drop every outstanding entry. */
++	/** Empties the store — drops every outstanding entry. */
+ 	async clear(): Promise<void> {
+ 		await this.#table.clear()
+ 	}
+diff --git a/src/core/stores/MemoryQueueStore.ts b/src/core/stores/MemoryQueueStore.ts
+index ee45b28..89b211f 100644
+--- a/src/core/stores/MemoryQueueStore.ts
++++ b/src/core/stores/MemoryQueueStore.ts
+@@ -5,7 +5,7 @@ import { QueueError } from '../errors.js'
+ import { isStoredEntry } from '../validators.js'
+ 
+ /**
+- * An in-memory store owning validated, immutable JSON snapshots of outstanding entries.
++ * Represents an in-memory store owning validated, immutable JSON snapshots of outstanding entries.
+  *
+  * @typeParam TInput - The contract shape for each stored input
+  *
+@@ -25,7 +25,7 @@ export class MemoryQueueStore<TInput extends ContractShape> implements QueueStor
+ 	readonly #entries = new Map<string, StoredEntry<Infer<TInput>>>()
+ 
+ 	/**
+-	 * Create an in-memory queue store.
++	 * Creates an in-memory queue store.
+ 	 *
+ 	 * @param input - Runtime contract for each stored input
+ 	 */
+@@ -33,7 +33,7 @@ export class MemoryQueueStore<TInput extends ContractShape> implements QueueStor
+ 		this.#contract = createContract(input)
+ 	}
+ 
+-	/** Upsert a validated, owned snapshot under the entry's id. */
++	/** Upserts a validated, owned snapshot under the entry's id. */
+ 	save(entry: StoredEntry<Infer<TInput>>): Promise<void> {
+ 		try {
+ 			const candidate = { id: entry.id, input: entry.input, attempts: entry.attempts }
+@@ -57,13 +57,13 @@ export class MemoryQueueStore<TInput extends ContractShape> implements QueueStor
+ 		}
+ 	}
+ 
+-	/** Remove an entry; an absent id is a no-op. */
++	/** Removes an entry; an absent id is a no-op. */
+ 	remove(id: string): Promise<void> {
+ 		this.#entries.delete(id)
+ 		return Promise.resolve()
+ 	}
+ 
+-	/** Return fresh immutable snapshots of every outstanding entry. */
++	/** Returns fresh immutable snapshots of every outstanding entry. */
+ 	load(): Promise<ReadonlyArray<StoredEntry<Infer<TInput>>>> {
+ 		try {
+ 			const snapshots: Array<StoredEntry<Infer<TInput>>> = []
+@@ -85,7 +85,7 @@ export class MemoryQueueStore<TInput extends ContractShape> implements QueueStor
+ 		}
+ 	}
+ 
+-	/** Remove every outstanding entry. */
++	/** Removes every outstanding entry. */
+ 	clear(): Promise<void> {
+ 		this.#entries.clear()
+ 		return Promise.resolve()
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 3c9540d..9c644cb 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -1,7 +1,7 @@
+ import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkestrel/emitter'
+ 
+ /**
+- * Machine-readable queue failure categories.
++ * Represents the machine-readable queue failure categories.
+  *
+  * @example
+  * ```ts
+@@ -20,7 +20,7 @@ export type QueueCode =
+ 	| 'cleanup'
+ 
+ /**
+- * The construction and per-entry option keys a queue validates.
++ * Represents the construction and per-entry option keys a queue validates.
+  *
+  * @example
+  * ```ts
+@@ -30,7 +30,7 @@ export type QueueCode =
+ export type QueueOption = 'id' | 'concurrency' | 'retries' | 'timeout' | 'signal'
+ 
+ /**
+- * Structured context carried by a {@link QueueError}.
++ * Represents the structured context carried by a {@link QueueError}.
+  *
+  * @example
+  * ```ts
+@@ -45,7 +45,7 @@ export interface QueueErrorContext {
+ }
+ 
+ /**
+- * Construction options for a {@link QueueError}.
++ * Represents the construction options for a {@link QueueError}.
+  *
+  * @example
+  * ```ts
+@@ -59,7 +59,7 @@ export interface QueueErrorOptions {
+ }
+ 
+ /**
+- * The push observation surface of a {@link QueueInterface} (AGENTS §13) — the lifecycle
++ * Represents the push observation surface of a {@link QueueInterface} (AGENTS §13) — the lifecycle
+  * moments a fire-and-forget observer (logging, metrics, tracing) subscribes to, ALONGSIDE
+  * the per-entry `enqueue` promise.
+  *
+@@ -86,24 +86,24 @@ export interface QueueErrorOptions {
+  * ```
+  */
+ export type QueueEventMap<TResult> = {
+-	/** An entry was accepted (and durably persisted, when a store is set) — its id. */
++	/** Signals that an entry was accepted (and durably persisted, when a store is set) — its id. */
+ 	readonly enqueue: readonly [id: string]
+-	/** An attempt began running — the entry's id (after it was dequeued, in flight). */
++	/** Signals that an attempt began running — the entry's id (after it was dequeued, in flight). */
+ 	readonly start: readonly [id: string]
+-	/** A failed attempt is being retried — the entry id + completed-attempt count. */
++	/** Signals that a failed attempt is being retried — the entry id + completed-attempt count. */
+ 	readonly retry: readonly [id: string, attempt: number]
+-	/** An entry settled successfully — its id + the resolved result. */
++	/** Signals that an entry settled successfully — its id + the resolved result. */
+ 	readonly success: readonly [id: string, result: TResult]
+-	/** An entry settled with a terminal failure — its id + the error (always `unknown`). */
++	/** Signals that an entry settled with a terminal failure — its id + the error (always `unknown`). */
+ 	readonly failure: readonly [id: string, error: unknown]
+-	/** The queue was aborted — its coded abort error. */
++	/** Signals that the queue was aborted — its coded abort error. */
+ 	readonly abort: readonly [reason: unknown]
+-	/** The queue transitioned to no reserved live ids (drained). */
++	/** Signals that the queue transitioned to no reserved live ids (drained). */
+ 	readonly drain: readonly []
+ }
+ 
+ /**
+- * The per-attempt execution handle a queue handler receives.
++ * Represents the per-attempt execution handle a queue handler receives.
+  *
+  * @example
+  * ```ts
+@@ -113,7 +113,7 @@ export type QueueEventMap<TResult> = {
+  */
+ export interface QueueExecution {
+ 	/**
+-	 * The entry's stable id — equal across every attempt and across a crash-replay
++	 * Holds the entry's stable id — equal across every attempt and across a crash-replay
+ 	 * (`restore` re-runs an entry under its original id). Durable persistence is
+ 	 * at-least-once (a crash between handler-success and the store's `remove`, or a
+ 	 * failed `remove`, re-runs the entry), so use this id to make a handler idempotent
+@@ -141,7 +141,7 @@ export type QueueHandler<TInput, TResult> = (
+ ) => Promise<TResult> | TResult
+ 
+ /**
+- * Per-entry options for `enqueue`.
++ * Represents the per-entry options for `enqueue`.
+  *
+  * @remarks
+  * - `id` — a trace label for the entry; defaults to a random UUID.
+@@ -165,7 +165,7 @@ export interface QueueEntryOptions {
+ }
+ 
+ /**
+- * Options for `createQueue`.
++ * Represents the options for `createQueue`.
+  *
+  * @remarks
+  * - `handler` — runs each entry's work; rejecting triggers a retry while attempts
+@@ -188,7 +188,7 @@ export interface QueueEntryOptions {
+  */
+ export interface QueueOptions<TInput, TResult> {
+ 	readonly on?: EmitterHooks<QueueEventMap<TResult>>
+-	/** The emitter's listener-error handler (AGENTS §13) — a listener throw routes here, not to a domain event. */
++	/** Holds the emitter's listener-error handler (AGENTS §13) — a listener throw routes here, not to a domain event. */
+ 	readonly error?: EmitterErrorHandler
+ 	readonly handler: QueueHandler<TInput, TResult>
+ 	readonly concurrency?: number
+@@ -198,7 +198,7 @@ export interface QueueOptions<TInput, TResult> {
+ }
+ 
+ /**
+- * A concurrent, cooperative job queue.
++ * Represents a concurrent, cooperative job queue.
+  *
+  * @remarks
+  * Exposes a typed {@link emitter} (AGENTS §13) carrying its lifecycle moments
+@@ -214,38 +214,38 @@ export interface QueueOptions<TInput, TResult> {
+  * ```
+  */
+ export interface QueueInterface<TInput, TResult> {
+-	/** The typed push observation surface carrying this queue's {@link QueueEventMap} moments. */
++	/** Holds the typed push observation surface carrying this queue's {@link QueueEventMap} moments. */
+ 	readonly emitter: EmitterInterface<QueueEventMap<TResult>>
+-	/** The number of reserved live entries — admitting, pending, claimed, or awaiting cleanup. */
++	/** Counts the reserved live entries — admitting, pending, claimed, or awaiting cleanup. */
+ 	readonly count: number
+-	/** The number of claimed entries in flight, never above the queue's concurrency. */
++	/** Counts the claimed entries in flight, never above the queue's concurrency. */
+ 	readonly active: number
+-	/** True while `pause` has suspended dequeuing; false otherwise. */
++	/** Reports the pause state: true while `pause` has suspended dequeuing; false otherwise. */
+ 	readonly paused: boolean
+-	/** True after `stop` or `abort` has halted the queue; false otherwise. */
++	/** Reports the halt state: true after `stop` or `abort` has halted the queue; false otherwise. */
+ 	readonly stopped: boolean
+-	/** Reserve and submit one FIFO entry. */
++	/** Reserves and submits one FIFO entry. */
+ 	enqueue(input: TInput, options?: QueueEntryOptions): Promise<TResult>
+-	/** Re-enqueue outstanding entries loaded from the store; no-op without a store. */
++	/** Re-enqueues outstanding entries loaded from the store; no-op without a store. */
+ 	restore(): Promise<void>
+-	/** Begin or restart worker execution. */
++	/** Begins or restarts worker execution. */
+ 	start(): void
+-	/** Reject non-active work and await current-loop/durable quiescence. */
++	/** Rejects non-active work and awaits current-loop/durable quiescence. */
+ 	stop(): Promise<void>
+-	/** Suspend new execution resumably. */
++	/** Suspends new execution resumably. */
+ 	pause(): void
+-	/** Continue execution after a pause. */
++	/** Continues execution after a pause. */
+ 	resume(): void
+-	/** Cancel active work, reject pending work, and await cleanup. */
++	/** Cancels active work, rejects pending work, and awaits cleanup. */
+ 	abort(reason?: unknown): Promise<void>
+-	/** Reject non-active work and await its durable cleanup. */
++	/** Rejects non-active work and awaits its durable cleanup. */
+ 	clear(): Promise<void>
+-	/** Tear down idempotently and destroy observation last. */
++	/** Tears down idempotently and destroys observation last. */
+ 	destroy(): Promise<void>
+ }
+ 
+ /**
+- * A durably persisted, still-outstanding queue entry — re-run after a restart.
++ * Represents a durably persisted, still-outstanding queue entry — re-run after a restart.
+  *
+  * @remarks
+  * The store holds only entries that have NOT yet completed, so what `load`
+@@ -266,7 +266,7 @@ export interface StoredEntry<TInput> {
+ }
+ 
+ /**
+- * Durable backing for a Queue's outstanding entries.
++ * Represents the durable backing for a Queue's outstanding entries.
+  *
+  * @remarks
+  * The store holds ONLY work that has not yet completed: `save` upserts an entry
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index 0020ff2..df40ee0 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -3,10 +3,10 @@ import { isFiniteNumber, isInteger, isRecord, isString } from '@orkestrel/contra
+ import { MAX_TIMEOUT_MS } from '@orkestrel/timeout'
+ 
+ /**
+- * Determine whether a value is a valid queue concurrency.
++ * Determines whether a value is a valid queue concurrency.
+  *
+  * @param value - Value to inspect
+- * @returns Whether the value is a positive safe integer
++ * @returns True if the value is a positive safe integer; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -19,10 +19,10 @@ export function isQueueConcurrency(value: unknown): value is number {
+ }
+ 
+ /**
+- * Determine whether a value is a valid queue retry count.
++ * Determines whether a value is a valid queue retry count.
+  *
+  * @param value - Value to inspect
+- * @returns Whether the value is a nonnegative safe integer
++ * @returns True if the value is a nonnegative safe integer; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -35,10 +35,11 @@ export function isQueueRetries(value: unknown): value is number {
+ }
+ 
+ /**
+- * Determine whether a value is a valid queue timeout.
++ * Determines whether a value is a valid queue timeout.
+  *
+  * @param value - Value to inspect
+- * @returns Whether the value is an integer within the native timer range, inclusive
++ * @returns True if the value is an integer within the native timer range,
++ *   inclusive; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -51,10 +52,10 @@ export function isQueueTimeout(value: unknown): value is number {
+ }
+ 
+ /**
+- * Determine whether a value is a native abort signal usable by the queue.
++ * Determines whether a value is a native abort signal usable by the queue.
+  *
+  * @param value - Value to inspect
+- * @returns Whether the value carries the native `AbortSignal` internal slot
++ * @returns True if the value carries the native `AbortSignal` internal slot; false otherwise
+  *
+  * @example
+  * ```ts
