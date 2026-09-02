@@ -68,3 +68,11 @@ No findings outside the claims. The diff is comment-only across all 8 files, the
 ## Orchestrator
 
 Both lanes PASS. Landed by the Orchestrator's chain, every gate 0. **Verdict: PASS.**
+
+## Addendum — summary fix-up (`4b53210`)
+
+The acceptance scan after landing listed the `Negotiator.format` method block as summary-less
+(`@remarks` only). Under the program precedent it gained the first sentence `Dispatches the
+request to the handler its \`Accept\` header negotiates, answering 406 when none matches.`
+(`voice-server-fixup-brief.md`, builder on Sonnet; `voice-server-fixup.diff`, `.status`). Landed
+by the Orchestrator's chain, every gate 0. Verdict stands: **PASS**.
