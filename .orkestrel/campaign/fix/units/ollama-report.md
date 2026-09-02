@@ -74,3 +74,18 @@ Built `dist/` moves: yes: dist/src/server/index.d.ts declares OllamaErrorOptions
 
 Actual diff and status rendered by the Orchestrator: `tmp/units/breaking/ollama.diff`,
 `tmp/units/breaking/ollama.status`.
+
+## Corrections by the Orchestrator (after the objective lane)
+
+The s18-09 row's refusing rule, quoted verbatim from `.claude/rules/names.md` § General
+vocabulary as the brief carries it: "An option key, constant, or member that transliterates an
+external protocol field, format field, or engine pragma keeps the external wording in this
+project's casing, and its TSDoc names the source it mirrors: the `foreignKeys` key mirrors the
+`PRAGMA foreign_keys` statement, and the `keepAlive` key mirrors the Ollama `keep_alive` field."
+The clause reaches the key, the constant, and the wire member alike. Carry `partial`: no adoption
+owed — the package declares no `AgentQueueOptions` or `AgentRunnerOptions`, and `allowPartial`
+occurs nowhere under `src`, `tests`, `README.md`, or `guides/ollama.md`. Acceptance criterion 1 as
+written does not hold over `guides/`: its population includes the vendored mirrors this unit is
+forbidden to edit; the Orchestrator narrows it to the hand-authored files and the mirrors refresh
+at the re-pin. The supplied diff omitted the untracked `tests/src/server/errors.test.ts`; the
+landing instrument now marks untracked files with `git add -N` before rendering the diff.

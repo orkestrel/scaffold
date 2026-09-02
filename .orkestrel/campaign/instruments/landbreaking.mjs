@@ -18,6 +18,10 @@ mkdirSync(UNITS, { recursive: true })
 const report = JSON.parse(readFileSync(reportPath, 'utf8'))
 const rulings = JSON.parse(readFileSync(`${FIX}/rulings.json`, 'utf8'))[pkg] || []
 const git = (args) => execFileSync('git', ['-C', repo, ...args], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
+if (!base) {
+	const untracked = git(['ls-files', '--others', '--exclude-standard']).split('\n').filter(Boolean)
+	if (untracked.length > 0) git(['add', '-N', '--', ...untracked])
+}
 const diff = git(base ? ['diff', base] : ['diff'])
 const status = base ? git(['diff', '--name-status', base]) : git(['status', '--short'])
 writeFileSync(`${UNITS}/${pkg}.diff`, diff)
