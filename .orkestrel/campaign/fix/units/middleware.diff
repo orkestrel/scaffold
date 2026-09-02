@@ -1,0 +1,3274 @@
+diff --git a/guides/middleware.md b/guides/middleware.md
+index e00fbba..9f70155 100644
+--- a/guides/middleware.md
++++ b/guides/middleware.md
+@@ -69,105 +69,106 @@ const handle = compose<State>([boundary, security], async (_request, context) =>
+ 
+ ### Types
+ 
+-| Type                        | Kind      | Shape                                                                                                   |
+-| --------------------------- | --------- | ------------------------------------------------------------------------------------------------------- |
+-| `BoundaryOptions`           | interface | `{ expose?; report? }` — options for `createBoundary`.                                                  |
+-| `TelemetryEntry`            | interface | `{ method; pathname; status; duration }` — one settled-request record.                                  |
+-| `TelemetryOptions`          | interface | `{ record }` — options for `createTelemetry`.                                                           |
+-| `CompressionOptions`        | interface | `{ threshold?; encodings?; filter? }` — options for `createCompression`.                                |
+-| `CompressResponseOptions`   | interface | `{ threshold; filter?; encodings; compress }` — the resolved settings `compressResponse` runs against.  |
+-| `SecurityIdentifierOptions` | type      | `{ trust?: boolean } \| false` — `createSecurity`'s `identifier` sub-option.                            |
+-| `SecurityOptions`           | interface | `{ frame?; csp?; referrer?; permissions?; coop?; corp?; cluster?; coep?; hsts?; identifier? }`.         |
+-| `CorsOptions`               | interface | `{ origin?; methods?; headers? }` — options for `createCors`.                                           |
+-| `DeadlineOptions`           | interface | `{ ms; status? }` — options for `createDeadline`.                                                       |
+-| `ForwardedOptions`          | type      | `{ proxies } \| { trusted }` — exactly one, for `createForwarded`.                                      |
+-| `ETagOptions`               | interface | `{ weak? }` — options for `createETag`.                                                                 |
+-| `BearerOptions`             | interface | `{ secret; header?; scheme? }` — options for `createBearer`.                                            |
+-| `LimiterOptions`            | interface | `{ max; window; capacity?; key?; message?; clock?; policy?; evict? }`.                                  |
+-| `BearerState`               | interface | `{ readonly token?: string }` — the state slice `createBearer` stashes.                                 |
+-| `IdentifierState`           | interface | `{ readonly identifier?: string }` — the state slice `createSecurity` stashes.                          |
+-| `ClientInfo`                | interface | `{ readonly ip?: string }` — the resolved client connection facts.                                      |
+-| `ClientState`               | interface | `{ readonly client?: ClientInfo }` — the state slice `createForwarded` stashes.                         |
+-| `ConnectionState`           | interface | `{ readonly connection?: ConnectionInfo }` — the socket-fact state slice `resolveKey` reads.            |
+-| `SessionInterface`          | interface | `{ id; data }` — a server-managed session's public surface.                                             |
+-| `SessionControlInterface`   | interface | `regenerate()` / `destroy()` — the mid-handler session control handle.                                  |
+-| `SessionState`              | interface | `{ readonly session?; readonly control? }` — the state slice `createSession` stashes.                   |
+-| `BodyState`                 | interface | `{ readonly body?: unknown }` — the state slice `createBody` stashes.                                   |
+-| `SessionStoreInterface`     | interface | `get` / `set` / `delete` — the pluggable session persistence seam.                                      |
+-| `SessionTransport`          | interface | `read` / `write` / `clear` — how a session id travels to/from the client.                               |
+-| `SessionOptions`            | interface | `{ transport; store?; ttl?; lifetime?; capacity?; evict?; create?; mint?; require?; ends?; clock? }`.   |
+-| `CookieTransportOptions`    | interface | `{ name?; secret; cookie? }` — options for `createCookieTransport`.                                     |
+-| `HeaderTransportOptions`    | interface | `{ header? }` — options for `createHeaderTransport`.                                                    |
+-| `MemorySessionStoreOptions` | interface | `{ ttl?; lifetime?; capacity?; evict? }` — options for `createMemorySessionStore`.                      |
+-| `SessionLimits`             | interface | `{ ttl?; lifetime? }` — the idle and absolute-lifetime thresholds a store enforces.                     |
+-| `SessionCursors`            | interface | `{ lastSeen; createdAt }` — the per-session instants `sessionExpired` measures against.                 |
+-| `SessionRow`                | interface | `{ id; session; lastSeen; createdAt }` — one persisted session row `DatabaseSessionStore` reads/writes. |
+-| `SessionEntry`              | interface | `{ session; lastSeen; createdAt }` — one in-process entry `MemorySessionStore` holds.                   |
+-| `SessionSnapshot`           | interface | `{ id; data }` — a session's serializable projection, the value `snapshotSession` produces.             |
+-| `CSRFState`                 | interface | `{ readonly csrf?: string }` — the state slice `createCSRF` stashes.                                    |
+-| `CSRFOptions`               | interface | `{ secret; cookie?; header?; field?; safe? }` — options for `createCSRF`.                               |
+-| `MultipartFile`             | interface | `{ field; name; size; mime; validated; status; path }` — one staged upload.                             |
+-| `MultipartBody`             | interface | `{ files; fields }` — the parsed multipart request body.                                                |
+-| `MultipartState`            | interface | `{ readonly multipart?: MultipartBody }` — the state slice `createMultipart` stashes.                   |
+-| `Asset`                     | interface | `{ body; encoding? }` — one identity or Brotli in-memory representation.                                |
+-| `AssetSourceInterface`      | interface | `read` — resolve one validated relative asset key.                                                      |
+-| `AssetOptions`              | interface | `{ source }` — options for `createAssets`.                                                              |
+-| `StaticOptions`             | interface | `{ root; prefix?; index?; dotfiles?; cache?; etag?; fallback? }`.                                       |
+-| `MultipartLimits`           | interface | `{ file?; files?; field?; fields?; total? }` — per-category mid-stream caps.                            |
+-| `MultipartOptions`          | interface | `{ limits?; allowed?; directory? }` — options for `createMultipart`.                                    |
+-| `NodeCompressionOptions`    | interface | `{ threshold?; filter? }` — options for the node face's `createCompression`.                            |
+-| `MultipartReason`           | type      | `'limit' \| 'malformed' \| 'rejected'` — the axis `MultipartError` maps to a status.                    |
+-| `UploadStatus`              | type      | `'staged' \| 'moved'` — a staged upload's temp-file lifecycle stage.                                    |
+-| `UploadedFileInterface`     | interface | `{ field; name; size; mime; validated; status: UploadStatus; path }`.                                   |
+-| `PartHeaders`               | interface | `{ name; filename; contentType }` — one multipart part's parsed header block.                           |
+-| `UploadedFileInput`         | interface | `{ field; name; size; mime; validated; status; path }` — input for `createUploadedFile`.                |
++| Type                        | Kind      | Shape                                                                                                  |
++| --------------------------- | --------- | ------------------------------------------------------------------------------------------------------ |
++| `BoundaryOptions`           | interface | `{ expose?; report? }` — options for `createBoundary`.                                                 |
++| `TelemetryEntry`            | interface | `{ method; pathname; status; duration }` — one settled-request record.                                 |
++| `TelemetryOptions`          | interface | `{ record }` — options for `createTelemetry`.                                                          |
++| `CompressionOptions`        | interface | `{ threshold?; encodings?; filter? }` — options for `createCompression`.                               |
++| `CompressResponseOptions`   | interface | `{ threshold; filter?; encodings; compress }` — the resolved settings `compressResponse` runs against. |
++| `SecurityIdentifierOptions` | type      | `{ trust?: boolean } \| false` — `createSecurity`'s `identifier` sub-option.                           |
++| `SecurityOptions`           | interface | `{ frame?; csp?; referrer?; permissions?; coop?; corp?; cluster?; coep?; hsts?; identifier? }`.        |
++| `CorsOptions`               | interface | `{ origin?; methods?; headers? }` — options for `createCors`.                                          |
++| `DeadlineOptions`           | interface | `{ ms; status? }` — options for `createDeadline`.                                                      |
++| `ForwardedOptions`          | type      | `{ proxies } \| { trusted }` — exactly one, for `createForwarded`.                                     |
++| `ETagOptions`               | interface | `{ weak? }` — options for `createETag`.                                                                |
++| `BearerOptions`             | interface | `{ secret; header?; scheme? }` — options for `createBearer`.                                           |
++| `LimiterOptions`            | interface | `{ max; window; capacity?; key?; message?; clock?; policy?; evict? }`.                                 |
++| `BearerState`               | interface | `{ readonly token?: string }` — the state slice `createBearer` stashes.                                |
++| `IdentifierState`           | interface | `{ readonly identifier?: string }` — the state slice `createSecurity` stashes.                         |
++| `Client`                    | interface | `{ readonly ip?: string }` — the resolved client connection facts.                                     |
++| `ClientState`               | interface | `{ readonly client?: Client }` — the state slice `createForwarded` stashes.                            |
++| `ConnectionState`           | interface | `{ readonly connection?: ConnectionInfo }` — the socket-fact state slice `resolveKey` reads.           |
++| `SessionInterface`          | interface | `{ id; state }` plus `set` / `delete` / `clear` — a server-managed session's public surface.           |
++| `SessionControlInterface`   | interface | `regenerate()` / `destroy()` — the mid-handler session control handle.                                 |
++| `SessionState`              | interface | `{ readonly session?; readonly control? }` — the state slice `createSession` stashes.                  |
++| `BodyState`                 | interface | `{ readonly body?: unknown }` — the state slice `createBody` stashes.                                  |
++| `SessionStoreInterface`     | interface | `get` / `set` / `delete` — the pluggable session persistence seam.                                     |
++| `SessionTransportInterface` | interface | `read` / `write` / `clear` — how a session id travels to/from the client.                              |
++| `SessionOptions`            | interface | `{ transport; store?; ttl?; lifetime?; capacity?; evict?; create?; mint?; required?; clock? }`.        |
++| `CookieTransportOptions`    | interface | `{ name?; secret; cookie? }` — options for `createCookieTransport`.                                    |
++| `HeaderTransportOptions`    | interface | `{ header? }` — options for `createHeaderTransport`.                                                   |
++| `MemorySessionStoreOptions` | interface | `{ ttl?; lifetime?; capacity?; evict? }` — options for `createMemorySessionStore`.                     |
++| `SessionLimits`             | interface | `{ ttl?; lifetime? }` — the idle and absolute-lifetime thresholds a store enforces.                    |
++| `SessionCursors`            | interface | `{ seen; created }` — the per-session instants `sessionExpired` measures against.                      |
++| `SessionRow`                | interface | `{ id; session; seen; created }` — one persisted session row `DatabaseSessionStore` reads/writes.      |
++| `SessionEntry`              | interface | `{ session; seen; created }` — one in-process entry `MemorySessionStore` holds.                        |
++| `SessionSnapshot`           | interface | `{ id; data }` — a session's serializable projection, the value `snapshotSession` produces.            |
++| `CSRFState`                 | interface | `{ readonly csrf?: string }` — the state slice `createCSRF` stashes.                                   |
++| `CSRFOptions`               | interface | `{ secret; cookie?; header?; field?; safe? }` — options for `createCSRF`.                              |
++| `MultipartFile`             | interface | `{ field; name; size; mime; validated; status; path }` — one staged upload.                            |
++| `MultipartBody`             | interface | `{ files; fields }` — the parsed multipart request body.                                               |
++| `MultipartState`            | interface | `{ readonly multipart?: MultipartBody }` — the state slice `createMultipart` stashes.                  |
++| `Asset`                     | interface | `{ body; encoding? }` — one identity or Brotli in-memory representation.                               |
++| `AssetSourceInterface`      | interface | `read` — resolve one validated relative asset key.                                                     |
++| `AssetOptions`              | interface | `{ source }` — options for `createAssets`.                                                             |
++| `StaticOptions`             | interface | `{ root; prefix?; index?; dotfiles?; cache?; etag?; fallback? }`.                                      |
++| `MultipartLimitsInput`      | interface | `{ file?: { size?; count? }; field?: { size?; count? }; total? }` — the caller's partial caps.         |
++| `MultipartLimits`           | interface | `{ file: { size; count }; field: { size; count }; total }` — the effective mid-stream caps.            |
++| `MultipartOptions`          | interface | `{ limits?; allowed?; directory? }` — options for `createMultipart`.                                   |
++| `NodeCompressionOptions`    | interface | `{ threshold?; filter? }` — options for the node face's `createCompression`.                           |
++| `MultipartErrorCode`        | type      | `'limit' \| 'malformed' \| 'rejected'` — the axis `MultipartError` maps to a status.                   |
++| `UploadStatus`              | type      | `'staged' \| 'moved'` — a staged upload's temp-file lifecycle stage.                                   |
++| `UploadedFile`              | interface | `{ field; name; size; mime; validated; status: UploadStatus; path }`.                                  |
++| `PartHeaders`               | interface | `{ name; filename; mime }` — one multipart part's parsed header block.                                 |
++| `UploadedFileInput`         | interface | `{ field; name; size; mime; validated; status; path }` — input for `createUploadedFile`.               |
+ 
+ ### Constants
+ 
+-| API                               | Kind  | Summary                                                                               |
+-| --------------------------------- | ----- | ------------------------------------------------------------------------------------- |
+-| `DEFAULT_COMPRESSION_THRESHOLD`   | const | Default minimum buffered body size (bytes) worth compressing (`1024`).                |
+-| `DEFAULT_COMPRESSION_ENCODINGS`   | const | Default codings offered, in preference order (`['gzip', 'deflate']`).                 |
+-| `DEFAULT_FRAME_OPTIONS`           | const | Default `X-Frame-Options` value (`'DENY'`).                                           |
+-| `DEFAULT_CSP`                     | const | Default `Content-Security-Policy` value.                                              |
+-| `DEFAULT_REFERRER_POLICY`         | const | Default `Referrer-Policy` value (`'strict-origin-when-cross-origin'`).                |
+-| `DEFAULT_PERMISSIONS_POLICY`      | const | Default `Permissions-Policy` value.                                                   |
+-| `DEFAULT_COOP`                    | const | Default `Cross-Origin-Opener-Policy` value (`'same-origin'`).                         |
+-| `DEFAULT_CORP`                    | const | Default `Cross-Origin-Resource-Policy` value (`'same-origin'`).                       |
+-| `DEFAULT_CLUSTER`                 | const | Default `Origin-Agent-Cluster` value (`'?1'`).                                        |
+-| `DEFAULT_COEP`                    | const | The `coep: true` opt-in value (`'require-corp'`).                                     |
+-| `DEFAULT_HSTS`                    | const | The `hsts: true` opt-in value (`'max-age=31536000; includeSubDomains'`).              |
+-| `DEFAULT_IDENTIFIER_HEADER`       | const | The request-identifier header name (`'x-request-id'`).                                |
+-| `DEFAULT_CORS_METHODS`            | const | Default preflight-advertised methods.                                                 |
+-| `DEFAULT_CORS_HEADERS`            | const | Default preflight-advertised headers.                                                 |
+-| `DEFAULT_DEADLINE_STATUS`         | const | Default status returned when a deadline fires first (`503`).                          |
+-| `DEFAULT_BEARER_HEADER`           | const | Default bearer-token header (`'authorization'`).                                      |
+-| `DEFAULT_BEARER_SCHEME`           | const | Default bearer scheme prefix (`'Bearer'`).                                            |
+-| `DEFAULT_LIMITER_CAPACITY`        | const | Default max distinct rate-limit keys tracked (`10_000`).                              |
+-| `DEFAULT_LIMITER_MESSAGE`         | const | Default 429 body message.                                                             |
+-| `DEFAULT_SESSION_CAPACITY`        | const | Default max distinct session ids `createMemorySessionStore` tracks (`10_000`).        |
+-| `DEFAULT_SESSION_COOKIE`          | const | Default session cookie name (`'session'`).                                            |
+-| `DEFAULT_SESSION_HEADER`          | const | Default session header name (`'session-id'`).                                         |
+-| `DEFAULT_CSRF_COOKIE`             | const | Default CSRF cookie name (`'csrf'`).                                                  |
+-| `DEFAULT_CSRF_HEADER`             | const | Default CSRF submission header (`'x-csrf-token'`).                                    |
+-| `DEFAULT_CSRF_FIELD`              | const | Default CSRF submission body field (`'_csrf'`).                                       |
+-| `DEFAULT_CSRF_SAFE_METHODS`       | const | Methods that mint instead of verify (`['GET', 'HEAD', 'OPTIONS']`).                   |
+-| `MULTIPART_REASON_STATUS`         | const | `MultipartReason` → HTTP status map (`limit`→413, `malformed`→400, `rejected`→415).   |
+-| `MULTIPART_ERROR_BRAND`           | const | The registry symbol `MultipartError` carries so `isMultipartError` recognizes it.     |
+-| `NODE_COMPRESSION_ENCODINGS`      | const | The codings the node face's `createCompression` offers (`['gzip', 'deflate']`).       |
+-| `DEFAULT_STATIC_INDEX`            | const | Default directory-index filename (`'index.html'`).                                    |
+-| `DEFAULT_STATIC_FALLBACK_EXCLUDE` | const | Default SPA-fallback excluded prefix (`'/api'`).                                      |
+-| `DEFAULT_STATIC_DOTFILES`         | const | Default dotfile-segment policy (`'ignore'`).                                          |
+-| `DEFAULT_CONTENT_TYPE`            | const | Fallback `Content-Type` for an unmapped extension.                                    |
+-| `DEFAULT_MULTIPART_FILE`          | const | Default max size (bytes) of one uploaded file (`10_485_760`).                         |
+-| `DEFAULT_MULTIPART_FILES`         | const | Default max number of file parts (`10`).                                              |
+-| `DEFAULT_MULTIPART_FIELD`         | const | Default max size (bytes) of one text field (`65_536`).                                |
+-| `DEFAULT_MULTIPART_FIELDS`        | const | Default max number of text field parts (`100`).                                       |
+-| `DEFAULT_MULTIPART_TOTAL`         | const | Default max combined request body size (bytes) (`52_428_800`).                        |
+-| `MULTIPART_MAX_HEADER_BLOCK`      | const | Max bytes a single multipart part header block may occupy (`16_384`).                 |
+-| `MULTIPART_MAX_PREAMBLE`          | const | Max bytes scanned before the first boundary before rejecting as malformed (`65_536`). |
+-| `RESERVED_DEVICE_NAMES`           | const | The Windows reserved-device-name set the static traversal guard refuses.              |
+-| `EXTENSION_TYPES`                 | const | The file-extension → `Content-Type` lookup table `lookupContentType` uses.            |
++| API                               | Kind  | Summary                                                                                |
++| --------------------------------- | ----- | -------------------------------------------------------------------------------------- |
++| `DEFAULT_COMPRESSION_THRESHOLD`   | const | Default minimum buffered body size (bytes) worth compressing (`1024`).                 |
++| `DEFAULT_COMPRESSION_ENCODINGS`   | const | Default codings offered, in preference order (`['gzip', 'deflate']`).                  |
++| `DEFAULT_FRAME_OPTIONS`           | const | Default `X-Frame-Options` value (`'DENY'`).                                            |
++| `DEFAULT_CSP`                     | const | Default `Content-Security-Policy` value.                                               |
++| `DEFAULT_REFERRER_POLICY`         | const | Default `Referrer-Policy` value (`'strict-origin-when-cross-origin'`).                 |
++| `DEFAULT_PERMISSIONS_POLICY`      | const | Default `Permissions-Policy` value.                                                    |
++| `DEFAULT_COOP`                    | const | Default `Cross-Origin-Opener-Policy` value (`'same-origin'`).                          |
++| `DEFAULT_CORP`                    | const | Default `Cross-Origin-Resource-Policy` value (`'same-origin'`).                        |
++| `DEFAULT_CLUSTER`                 | const | Default `Origin-Agent-Cluster` value (`'?1'`).                                         |
++| `DEFAULT_COEP`                    | const | The `coep: true` opt-in value (`'require-corp'`).                                      |
++| `DEFAULT_HSTS`                    | const | The `hsts: true` opt-in value (`'max-age=31536000; includeSubDomains'`).               |
++| `DEFAULT_IDENTIFIER_HEADER`       | const | The request-identifier header name (`'x-request-id'`).                                 |
++| `DEFAULT_CORS_METHODS`            | const | Default preflight-advertised methods.                                                  |
++| `DEFAULT_CORS_HEADERS`            | const | Default preflight-advertised headers.                                                  |
++| `DEFAULT_DEADLINE_STATUS`         | const | Default status returned when a deadline fires first (`503`).                           |
++| `DEFAULT_BEARER_HEADER`           | const | Default bearer-token header (`'authorization'`).                                       |
++| `DEFAULT_BEARER_SCHEME`           | const | Default bearer scheme prefix (`'Bearer'`).                                             |
++| `DEFAULT_LIMITER_CAPACITY`        | const | Default max distinct rate-limit keys tracked (`10_000`).                               |
++| `DEFAULT_LIMITER_MESSAGE`         | const | Default 429 body message.                                                              |
++| `DEFAULT_SESSION_CAPACITY`        | const | Default max distinct session ids `createMemorySessionStore` tracks (`10_000`).         |
++| `DEFAULT_SESSION_COOKIE`          | const | Default session cookie name (`'session'`).                                             |
++| `DEFAULT_SESSION_HEADER`          | const | Default session header name (`'session-id'`).                                          |
++| `DEFAULT_CSRF_COOKIE`             | const | Default CSRF cookie name (`'csrf'`).                                                   |
++| `DEFAULT_CSRF_HEADER`             | const | Default CSRF submission header (`'x-csrf-token'`).                                     |
++| `DEFAULT_CSRF_FIELD`              | const | Default CSRF submission body field (`'_csrf'`).                                        |
++| `DEFAULT_CSRF_SAFE_METHODS`       | const | Methods that mint instead of verify (`['GET', 'HEAD', 'OPTIONS']`).                    |
++| `MULTIPART_STATUS`                | const | `MultipartErrorCode` → HTTP status map (`limit`→413, `malformed`→400, `rejected`→415). |
++| `MULTIPART_ERROR_BRAND`           | const | The registry symbol `MultipartError` carries so `isMultipartError` recognizes it.      |
++| `NODE_COMPRESSION_ENCODINGS`      | const | The codings the node face's `createCompression` offers (`['gzip', 'deflate']`).        |
++| `DEFAULT_STATIC_INDEX`            | const | Default directory-index filename (`'index.html'`).                                     |
++| `DEFAULT_STATIC_FALLBACK_EXCLUDE` | const | Default SPA-fallback excluded prefix (`'/api'`).                                       |
++| `DEFAULT_STATIC_DOTFILES`         | const | Default dotfile-segment policy (`'ignore'`).                                           |
++| `DEFAULT_CONTENT_TYPE`            | const | Fallback `Content-Type` for an unmapped extension.                                     |
++| `DEFAULT_MULTIPART_FILE`          | const | Default max size (bytes) of one uploaded file (`10_485_760`).                          |
++| `DEFAULT_MULTIPART_FILES`         | const | Default max number of file parts (`10`).                                               |
++| `DEFAULT_MULTIPART_FIELD`         | const | Default max size (bytes) of one text field (`65_536`).                                 |
++| `DEFAULT_MULTIPART_FIELDS`        | const | Default max number of text field parts (`100`).                                        |
++| `DEFAULT_MULTIPART_TOTAL`         | const | Default max combined request body size (bytes) (`52_428_800`).                         |
++| `MULTIPART_MAX_HEADER_BLOCK`      | const | Max bytes a single multipart part header block may occupy (`16_384`).                  |
++| `MULTIPART_MAX_PREAMBLE`          | const | Max bytes scanned before the first boundary before rejecting as malformed (`65_536`).  |
++| `RESERVED_DEVICE_NAMES`           | const | The Windows reserved-device-name set the static traversal guard refuses.               |
++| `EXTENSION_TYPES`                 | const | The file-extension → `Content-Type` lookup table `lookupContentType` uses.             |
+ 
+ ### Shapers
+ 
+@@ -192,17 +193,17 @@ const handle = compose<State>([boundary, security], async (_request, context) =>
+ | `isCompressionNegotiated`   | function | Narrow a negotiated `Encoding` to one worth actually compressing with.                    |
+ | `rebuildResponse`           | function | Reconstruct a `Response` with a new body, copying status/headers (with overrides).        |
+ | `compressResponse`          | function | The shared compression decision skeleton — eligibility, negotiation, buffer, compress.    |
+-| `transferSessionData`       | function | Copy one session's `data` Map onto another — the `regenerate()` data-carry.               |
++| `transferSessionData`       | function | Copy one session's `state` onto another — the `regenerate()` state-carry.                 |
+ | `sessionExpired`            | function | Whether a session's idle/absolute-lifetime thresholds have elapsed as of `now`.           |
+-| `snapshotSession`           | function | Copy a session's `data` Map into a plain, serializable `{ id; data }` record.             |
+-| `restoreSession`            | function | Rebuild a `Session` from an untrusted snapshot value, or `undefined` when malformed.      |
++| `snapshotSession`           | function | Copy a session's `state` into a plain, serializable `{ id; data }` record.                |
++| `validateSessionLimits`     | function | Refuse a malformed `ttl`/`lifetime` — the construction gate both stores apply.            |
+ | `isPreflight`               | function | Whether a request is a CORS preflight (`OPTIONS` + `Access-Control-Request-Method`).      |
+-| `buildClientInfo`           | function | Build a `ClientInfo` from a resolved (or absent) client IP.                               |
++| `buildClientInfo`           | function | Build a `Client` from a resolved (or absent) client IP.                                   |
+ | `equalsConstantTime`        | function | Constant-time string equality (avoids a timing oracle in the CSRF double-submit compare). |
+ 
+ ### Validators — core
+ 
+-The total `(unknown) => value is T` guards, each safe against any input:
++Each guard below is total: it accepts any input, returns `false` off-shape, and never throws.
+ 
+ | API                | Kind     | Summary                                               |
+ | ------------------ | -------- | ----------------------------------------------------- |
+@@ -229,21 +230,25 @@ The total `(unknown) => value is T` guards, each safe against any input:
+ | `compressNodeBytes`         | function | Compress bytes with Node's guaranteed zlib gzip/deflate codecs.                                                                |
+ | `multipartBoundary`         | function | Extract the multipart boundary token from a `Content-Type` header.                                                             |
+ | `parsePartHeaders`          | function | Parse one multipart part's raw header block into its field/filename/mime facts.                                                |
+-| `resolveMultipartLimits`    | function | Resolve `MultipartLimits` defaults into a fully-populated `Required<MultipartLimits>`.                                         |
+-| `parseMultipartRequest`     | function | Stream-parse a multipart request body into a `MultipartBody`, or `undefined`.                                                  |
+-| `resolveDefaultDirectory`   | function | Lazily create + memoize the default `0o700` `mkdtemp` staging directory under `os.tmpdir()`.                                   |
+-| `createUploadedFile`        | function | Build a frozen `UploadedFileInterface` record.                                                                                 |
++| `resolveMultipartLimits`    | function | Resolve a `MultipartLimitsInput` into the effective `MultipartLimits`, one default per omitted leaf.                           |
++| `createUploadedFile`        | function | Build a frozen `UploadedFile` record.                                                                                          |
+ | `streamFile`                | function | Open a DOM `ReadableStream` over a path's or open `FileHandle`'s bytes (optional byte range), for a `Response` body.           |
+ | `streamUploadedFile`        | function | Open a `ReadableStream` over a staged upload's on-disk bytes.                                                                  |
+ | `readUploadedFile`          | function | Read a staged upload's on-disk bytes into one `Uint8Array`.                                                                    |
+ | `moveUploadedFile`          | function | Relocate a staged upload's temp file (rename, with EXDEV copy+unlink fallback).                                                |
+ | `unlinkStagedFiles`         | function | Best-effort unlink of every still-`'staged'` file in a `MultipartBody` (downstream-throw cleanup).                             |
+ 
++### Parsers — node
++
++| API                     | Kind     | Summary                                                                       |
++| ----------------------- | -------- | ----------------------------------------------------------------------------- |
++| `parseMultipartRequest` | function | Stream-parse a multipart request body into a `MultipartBody`, or `undefined`. |
++
+ ### Entities
+ 
+ | API                    | Kind  | Summary                                                                                                                                 |
+ | ---------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------- |
+-| `Session`              | class | The default session entity — `id` + a live `data` Map; implements `SessionInterface`.                                                   |
++| `Session`              | class | The default session entity — `id` + a `state` view written through its mutators; implements `SessionInterface`.                         |
+ | `MemorySessionStore`   | class | The default in-process `SessionStoreInterface` — idle + absolute-lifetime eviction.                                                     |
+ | `DatabaseSessionStore` | class | A durable `SessionStoreInterface` over an `@orkestrel/database` table — same idle + absolute-lifetime contract as `MemorySessionStore`. |
+ 
+@@ -257,24 +262,26 @@ omission is asserted rather than assumed, and adding it to the barrel would turn
+ 
+ | API                          | Kind     | Summary                                                                                                        |
+ | ---------------------------- | -------- | -------------------------------------------------------------------------------------------------------------- |
+-| `createCookieTransport`      | function | Build a signed-cookie `SessionTransport`.                                                                      |
+-| `createHeaderTransport`      | function | Build a bare-header `SessionTransport`.                                                                        |
++| `createCookieTransport`      | function | Build a signed-cookie `SessionTransportInterface`.                                                             |
++| `createHeaderTransport`      | function | Build a bare-header `SessionTransportInterface`.                                                               |
+ | `createMemorySessionStore`   | function | Build a `MemorySessionStore` as a `SessionStoreInterface`.                                                     |
+ | `createDatabaseSessionStore` | function | Build a `DatabaseSessionStore` as a `SessionStoreInterface`, over a caller-opened `@orkestrel/database` table. |
++| `createRestoredSession`      | function | Rebuild a `Session` from an untrusted snapshot value, or `undefined` when malformed.                           |
+ 
+ ### Errors
+ 
+-| API                | Kind     | Summary                                                                    |
+-| ------------------ | -------- | -------------------------------------------------------------------------- |
+-| `MultipartError`   | class    | An `HTTPError` subclass `createMultipart` throws — adds the `reason` axis. |
+-| `isMultipartError` | function | Narrow an unknown caught value to a `MultipartError`.                      |
++| API                | Kind     | Summary                                                                  |
++| ------------------ | -------- | ------------------------------------------------------------------------ |
++| `MultipartError`   | class    | An `HTTPError` subclass `createMultipart` throws — adds the `code` axis. |
++| `isMultipartError` | function | Narrow an unknown caught value to a `MultipartError`.                    |
+ 
+ ## Methods
+ 
+-The public methods of `AssetSourceInterface`, `SessionControlInterface`,
+-`SessionStoreInterface`, and `SessionTransport` — the behavioral seams the
+-middleware factories compose
+-(their `readonly` data members, where any exist, stay Surface rows above).
++The public methods of `AssetSourceInterface`, `SessionInterface`,
++`SessionControlInterface`, `SessionStoreInterface`, and
++`SessionTransportInterface` — the behavioral seams the middleware factories
++compose (their `readonly` data members, where any exist, stay Surface rows
++above).
+ 
+ #### `AssetSourceInterface`
+ 
+@@ -286,30 +293,42 @@ factory's lifetime. A miss may be read again later.
+ | ------ | -------------------- | -------------------------------------------------------------- |
+ | `read` | `Asset \| undefined` | Return one identity/Brotli asset for a validated relative key. |
+ 
++#### `SessionInterface`
++
++The session entity's own write seam. `state` is a readonly view, so every
++write goes through a mutator and no consumer holds the entity's `Map`.
++
++| Method   | Returns   | Behavior                                                         |
++| -------- | --------- | ---------------------------------------------------------------- |
++| `set`    | `void`    | Write one key's value into the session's state.                  |
++| `delete` | `boolean` | Remove one key — true when the session held it, false otherwise. |
++| `clear`  | `void`    | Empty the state, leaving the session and its id alive.           |
++
+ #### `SessionControlInterface`
+ 
+ `regenerate` is the OWASP anti-fixation primitive (rotate the id, keep the
+-data); `destroy` ends the session outright. Both record intent
++state); `destroy` ends the session outright. Both record intent
+ SYNCHRONOUSLY; the store I/O and transport write happen after `next()`
+ returns (`destroy` supersedes a prior `regenerate`).
+ 
+-| Method       | Returns | Behavior                                                               |
+-| ------------ | ------- | ---------------------------------------------------------------------- |
+-| `regenerate` | `void`  | Mint a new id, carry the session's `data` over, invalidate the old id. |
+-| `destroy`    | `void`  | End the session — deletes it from the store and clears its transport.  |
++| Method       | Returns | Behavior                                                                |
++| ------------ | ------- | ----------------------------------------------------------------------- |
++| `regenerate` | `void`  | Mint a new id, carry the session's `state` over, invalidate the old id. |
++| `destroy`    | `void`  | End the session — deletes it from the store and clears its transport.   |
+ 
+ #### `SessionStoreInterface`
+ 
+-The pluggable point-access persistence seam (AGENTS §5 store mold) —
+-`get`/`set`/`delete`, every primitive async with a trailing injected `now`.
++The pluggable point-access persistence seam — `get`/`set`/`delete`, every
++primitive async with a trailing injected `now`. `set` reads the id from the
++session it is handed, so no separate id is passed.
+ 
+ | Method   | Returns                   | Behavior                                                           |
+ | -------- | ------------------------- | ------------------------------------------------------------------ |
+ | `get`    | `Promise<S \| undefined>` | Read a session by id, applying idle/absolute expiry against `now`. |
+-| `set`    | `Promise<void>`           | Persist a session's current state, refreshing its idle window.     |
++| `set`    | `Promise<void>`           | Persist a session under its own `id`, refreshing its idle window.  |
+ | `delete` | `Promise<void>`           | Remove a session by id — a no-op on an absent id, never throws.    |
+ 
+-#### `SessionTransport`
++#### `SessionTransportInterface`
+ 
+ How a session id travels to and from the client — `read` is total (never
+ throws); `write`/`clear` mutate the RETURNED `Response` on the way out (the
+@@ -330,10 +349,9 @@ These invariants hold across `src/core` / `src/server` ↔ `middleware.md`.
+    source directory, and every export appears as a Surface row — exhaustive,
+    both directions (AGENTS §22).
+ 2. **DOC ↔ SOURCE method bijection.** The `## Methods` tables list exactly
+-   `AssetSourceInterface`'s, `SessionControlInterface`'s,
+-   `SessionStoreInterface`'s, and `SessionTransport`'s public methods —
+-   exhaustive, both directions (AGENTS
+-   §22).
++   `AssetSourceInterface`'s, `SessionInterface`'s, `SessionControlInterface`'s,
++   `SessionStoreInterface`'s, and `SessionTransportInterface`'s public methods —
++   exhaustive, both directions.
+ 
+ ### The ordering doctrine (PROPOSAL §5)
+ 
+@@ -410,18 +428,21 @@ prevents:
+     maps its outcomes.
+ 19. **Session.** The default `MemorySessionStore` enforces BOTH an idle
+     timeout (`ttl`, lazy eviction on `get`) AND an absolute lifetime
+-    (`lifetime`, evicting even a continuously-touched session — `createdAt`
++    (`lifetime`, evicting even a continuously-touched session — `created`
+     is stamped once at first `set` and preserved across every later
+     re-persist); it is ALSO capacity-capped (`capacity`, default
+     `DEFAULT_SESSION_CAPACITY`) and evicts the least-recently-WRITTEN id —
+     every `set` (not `get`) refreshes recency — invoking the optional
+     `evict` sink (throw-isolated) on a capacity eviction or an expired-entry
+     prune, but never for an explicit `delete`; `control.regenerate()` rotates the id while carrying the
+-    session's `data` over and invalidating the old id; a signed cookie
++    session's `state` over and invalidating the old id; a signed cookie
+     transport inherits the full substrate injection-hardening matrix
+     (`__Host-` spoof rejection, `Domain`/`Path` injection throws,
+     `SameSite=None` forces `Secure`, `Secure` derived from the connection's
+-    TLS fact when omitted).
++    TLS fact when omitted). The battery installs no route of its own: it
++    answers `404` when `required` is set and no session resolves or mints, and
++    a consumer ending a session on `DELETE` mounts its own handler over
++    `control.destroy()`.
+ 20. **CSRF.** With a session ahead, the minted token is bound to that
+     session's id (`signToken(sessionId)`) — a mutating request's recovered
+     bound id must equal ITS OWN session's id, so a token minted under
+@@ -463,7 +484,8 @@ prevents:
+     `MULTIPART_MAX_PREAMBLE` before the first boundary is rejected
+     `'malformed'` rather than scanned unbounded; an empty-filename part
+     (a file input submitted with no file chosen) is a no-op — staged then
+-    discarded, never surfaced as an upload; staged files default to a
++    discarded, never counted against `limits.file.count`, never surfaced as an
++    upload; staged files default to a
+     process-owned `mkdtemp` directory under `os.tmpdir()` locked to mode
+     `0o700`, with each staged file opened at mode `0o600` (both overridable
+     via `options.directory`).
+@@ -612,7 +634,7 @@ import { Session } from '@orkestrel/middleware'
+ 
+ const store = createMemorySessionStore({ ttl: 60_000 })
+ const now = Date.now()
+-await store.set('id-1', new Session('id-1'), now)
++await store.set(new Session('id-1'), now)
+ await store.get('id-1', now) // resolves the session, or undefined if expired
+ await store.delete('id-1') // no-op on an already-absent id
+ ```
+@@ -637,7 +659,7 @@ import { createDatabase, createMemoryDriver } from '@orkestrel/database'
+ const db = createDatabase({ driver: createMemoryDriver(), tables: { sessions: sessionColumns } })
+ const store = createDatabaseSessionStore(db.table('sessions'), isSession, { ttl: 900_000 })
+ const now = Date.now()
+-await store.set('id-1', new Session('id-1'), now)
++await store.set(new Session('id-1'), now)
+ await store.get('id-1', now) // resolves the session, or undefined if expired/removed
+ ```
+ 
+@@ -693,7 +715,7 @@ if (isMultipartBody(context.state.multipart)) {
+ ```ts
+ import { resolveMultipartLimits } from '@orkestrel/middleware/server'
+ 
+-resolveMultipartLimits({ file: 1_048_576 }) // fills in every other default cap
++resolveMultipartLimits({ file: { size: 1_048_576 } }) // fills in every other default cap
+ ```
+ 
+ Multipart processing reports no progress. A consumer's request for upload progress is the
+@@ -762,7 +784,7 @@ still served through the fallback, because the operator configured that path.
+   `context.state.multipart`, narrowed with `isMultipartBody`. After it
+   runs, `context.body()` must NOT be called for that request — the
+   underlying stream is exhausted.
+-- **`SessionTransport.write`/`clear` mutate the RETURNED `Response` on the
++- **`SessionTransportInterface.write`/`clear` mutate the RETURNED `Response` on the
+   way out.** `createSession` applies store I/O and transport writes AFTER
+   `next()` resolves: `destroy()` → `store.delete` + `transport.clear`;
+   `regenerate()` → `store.set` the new session, `store.delete` the old,
+@@ -796,25 +818,28 @@ still served through the fallback, because the operator configured that path.
+   `buildRateLimitPolicyField` exact wire strings, `matchesTrustedEntry`/
+   `resolveForwardedFor` matrices, `detectEncodings`, `compressBytes`, buffering-eligibility
+   predicates, `transferSessionData`, the `isSession`/`isSessionControl`/
+-  `isMultipartBody` totality guards, `isPreflight`, `buildClientInfo`.
++  `isMultipartBody` totality guards, `isPreflight`, `buildClientInfo`,
++  `validateSessionLimits`.
+ - [`tests/src/core/Session.test.ts`](../tests/src/core/Session.test.ts) —
+-  the entity shape (`id`, an independent, mutable `data` Map per instance).
++  the entity shape (`id`, an independent `state` view and its mutators per instance).
+ - [`tests/src/core/stores/MemorySessionStore.test.ts`](../tests/src/core/stores/MemorySessionStore.test.ts) —
+   construction guards, get/set/delete, idle + absolute-lifetime eviction,
+-  `createdAt` stamped once and preserved across re-set.
++  `created` stamped once and preserved across re-set.
+ - [`tests/src/core/stores/DatabaseSessionStore.test.ts`](../tests/src/core/stores/DatabaseSessionStore.test.ts) —
+   get/set/delete over a real `@orkestrel/database` memory-driver table, idle +
+   absolute-lifetime eviction (including the underlying row's removal),
+-  `createdAt` stamped once and preserved across re-set, guard rejection.
++  `created` stamped once and preserved across re-set, guard rejection.
+ - [`tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) —
+   `createCookieTransport`/`createHeaderTransport` round-trips over real
+-  `Request`/`Response`, `createMemorySessionStore` shallow mirror.
++  `Request`/`Response`, `createMemorySessionStore` shallow mirror,
++  `createRestoredSession` snapshot rebuilds and malformed refusals.
+ - [`tests/src/core/middlewares.test.ts`](../tests/src/core/middlewares.test.ts) —
+   every battery's defaults, options, skip conditions, and §6 invariants;
+   the canonical onion composed end-to-end.
+ - [`tests/src/server/helpers.test.ts`](../tests/src/server/helpers.test.ts) —
+   traversal and SPA-fallback resolution, byte-signature matching, node zlib
+-  compression, multipart parsing/cleanup, and uploaded-file operations.
++  compression, multipart limit resolution, parsing/cleanup, and uploaded-file
++  operations.
+ - [`tests/src/server/middlewares.test.ts`](../tests/src/server/middlewares.test.ts) —
+   in-memory asset ownership, key refusal, identity/Brotli negotiation,
+   conditional and HEAD responses, filesystem static serving, multipart
+diff --git a/src/core/Session.ts b/src/core/Session.ts
+index 43a3df0..9048386 100644
+--- a/src/core/Session.ts
++++ b/src/core/Session.ts
+@@ -2,25 +2,44 @@ import type { SessionInterface } from './types.js'
+ 
+ /**
+  * A server-managed session's default entity — the `create` option's default
+- * value for `createSession`. It ships without a `create*` factory of its own,
+- * because the name `createSession` belongs to the battery.
++ * value for `createSession`. It ships without a bare `create*` factory of its
++ * own, because the name `createSession` belongs to the battery;
++ * `createRestoredSession` rebuilds one from a stored snapshot.
+  *
+  * @remarks
+- * `data` is a live, mutable `Map` a handler reads/writes directly;
+- * `createSession` persists it to the configured store on the way out.
++ * `state` is a readonly view over the entity's own `Map`; `set`, `delete`,
++ * and `clear` are the only ways to write it, so a handler never holds a
++ * mutable reference to it. `createSession` persists the state to the
++ * configured store on the way out.
+  *
+  * @example
+  * ```ts
+  * const session = new Session('abc123')
+- * session.data.set('userId', 'u_1')
++ * session.set('userId', 'u_1')
+  * ```
+  */
+ export class Session implements SessionInterface {
+ 	readonly id: string
+-	readonly data: Map<string, unknown>
++	readonly #state: Map<string, unknown>
+ 
+ 	constructor(id: string) {
+ 		this.id = id
+-		this.data = new Map()
++		this.#state = new Map()
++	}
++
++	get state(): ReadonlyMap<string, unknown> {
++		return this.#state
++	}
++
++	set(key: string, value: unknown): void {
++		this.#state.set(key, value)
++	}
++
++	delete(key: string): boolean {
++		return this.#state.delete(key)
++	}
++
++	clear(): void {
++		this.#state.clear()
+ 	}
+ }
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 4eb7b4e..8134507 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -6,23 +6,23 @@ import type {
+ 	SessionLimits,
+ 	SessionRow,
+ 	SessionStoreInterface,
+-	SessionTransport,
++	SessionTransportInterface,
+ } from './types.js'
+-import type { Session } from './Session.js'
+ import type { Guard } from '@orkestrel/contract'
+ import type { TableInterface } from '@orkestrel/database'
+-import { isString } from '@orkestrel/contract'
++import { isRecord, isString } from '@orkestrel/contract'
+ import { clearCookie, readSignedCookie, resolveSecure, writeSignedCookie } from '@orkestrel/server'
+ import { DEFAULT_SESSION_COOKIE, DEFAULT_SESSION_HEADER } from './constants.js'
++import { Session } from './Session.js'
+ import { DatabaseSessionStore } from './stores/DatabaseSessionStore.js'
+ import { MemorySessionStore } from './stores/MemorySessionStore.js'
+ 
+ /**
+- * Create a signed-cookie {@link SessionTransport} — the session id travels as
++ * Create a signed-cookie {@link SessionTransportInterface} — the session id travels as
+  * a `signToken`-signed cookie value.
+  *
+  * @param options - See {@link CookieTransportOptions}
+- * @returns A {@link SessionTransport}
++ * @returns A {@link SessionTransportInterface}
+  * @throws {TypeError} When `options.secret` or `options.name` is malformed
+  *
+  * @example
+@@ -30,7 +30,7 @@ import { MemorySessionStore } from './stores/MemorySessionStore.js'
+  * const transport = createCookieTransport({ secret: 'shh' })
+  * ```
+  */
+-export function createCookieTransport(options: CookieTransportOptions): SessionTransport {
++export function createCookieTransport(options: CookieTransportOptions): SessionTransportInterface {
+ 	if (
+ 		!isString(options.secret) &&
+ 		(!Array.isArray(options.secret) || !options.secret.every(isString))
+@@ -56,11 +56,11 @@ export function createCookieTransport(options: CookieTransportOptions): SessionT
+ }
+ 
+ /**
+- * Create a bare-header {@link SessionTransport} — the session id travels
++ * Create a bare-header {@link SessionTransportInterface} — the session id travels
+  * verbatim in a request/response header.
+  *
+  * @param options - See {@link HeaderTransportOptions}
+- * @returns A {@link SessionTransport}
++ * @returns A {@link SessionTransportInterface}
+  * @throws {TypeError} When `options.header` is malformed
+  *
+  * @example
+@@ -68,7 +68,7 @@ export function createCookieTransport(options: CookieTransportOptions): SessionT
+  * const transport = createHeaderTransport()
+  * ```
+  */
+-export function createHeaderTransport(options?: HeaderTransportOptions): SessionTransport {
++export function createHeaderTransport(options?: HeaderTransportOptions): SessionTransportInterface {
+ 	if (options?.header !== undefined && !isString(options.header))
+ 		throw new TypeError('HeaderTransportOptions.header must be a string when provided')
+ 	const header = options?.header ?? DEFAULT_SESSION_HEADER
+@@ -95,16 +95,15 @@ export function createHeaderTransport(options?: HeaderTransportOptions): Session
+  * @throws {TypeError} When `options.ttl` or `options.lifetime` is malformed
+  *
+  * @remarks
+- * The {@link Session} entity is the `create` option's default value factory
+- * for `createSession` and deliberately ships WITHOUT its own `create*`
+- * factory — the name `createSession` belongs to the battery, not this class.
++ * The store holds whatever {@link SessionInterface} entity `createSession`'s
++ * `create` option produced, keyed by that entity's own `id`.
+  *
+  * @example
+  * ```ts
+  * const store = createMemorySessionStore({ ttl: 60_000 })
+  * ```
+  */
+-export function createMemorySessionStore<S>(
++export function createMemorySessionStore<S extends SessionInterface>(
+ 	options?: MemorySessionStoreOptions,
+ ): SessionStoreInterface<S> {
+ 	return new MemorySessionStore<S>(options)
+@@ -120,6 +119,7 @@ export function createMemorySessionStore<S>(
+  * @param guard - A {@link Guard} narrowing a restored snapshot to `S`
+  * @param options - See {@link SessionLimits}
+  * @returns A {@link SessionStoreInterface}
++ * @throws {TypeError} When `options.ttl` or `options.lifetime` is malformed
+  *
+  * @remarks
+  * This factory only wraps `new DatabaseSessionStore(...)` — it never opens a
+@@ -138,3 +138,24 @@ export function createDatabaseSessionStore<S extends SessionInterface = Session>
+ ): SessionStoreInterface<S> {
+ 	return new DatabaseSessionStore<S>(table, guard, options)
+ }
++
++/**
++ * Rebuilds a {@link Session} from an untrusted snapshot value — the inverse of
++ * `snapshotSession` and a durable store's `get` deserialization step.
++ *
++ * @param value - The candidate snapshot, of unknown shape
++ * @returns A rebuilt {@link Session}, or `undefined` when `value` is malformed
++ *
++ * @example
++ * ```ts
++ * createRestoredSession({ id: 'abc', data: { userId: 'u_1' } }) // Session { id: 'abc' }
++ * createRestoredSession({ id: 1 }) // undefined
++ * ```
++ */
++export function createRestoredSession(value: unknown): Session | undefined {
++	if (!isRecord(value)) return undefined
++	if (!isString(value.id) || !isRecord(value.data)) return undefined
++	const session = new Session(value.id)
++	for (const [key, entry] of Object.entries(value.data)) session.set(key, entry)
++	return session
++}
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index ffc5e72..fc14ed0 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -1,6 +1,6 @@
+ import type {
+ 	BearerState,
+-	ClientInfo,
++	Client,
+ 	ClientState,
+ 	CompressResponseOptions,
+ 	ConnectionState,
+@@ -11,9 +11,8 @@ import type {
+ 	SessionSnapshot,
+ } from './types.js'
+ import type { Encoding, MiddlewareContext } from '@orkestrel/server'
+-import { isRecord, isString } from '@orkestrel/contract'
++import { isFiniteNumber } from '@orkestrel/contract'
+ import { clientRateKey, isCompressibleType, mergeVary, negotiateEncoding } from '@orkestrel/server'
+-import { Session } from './Session.js'
+ 
+ /**
+  * Derive `createLimiter`'s default rate-limit bucket key from a request's
+@@ -442,11 +441,12 @@ export async function compressResponse(
+ }
+ 
+ /**
+- * Copy every entry of one session's `data` into another — the regenerate
+- * data-carry `createSession`'s `control.regenerate()` applies.
++ * Copies every entry of one session's `state` into another — the regenerate
++ * state-carry `createSession`'s `control.regenerate()` applies.
+  *
+- * @param from - The source session whose `data` is copied
+- * @param to - The destination session `data` is copied into
++ * @param from - The source session whose `state` is copied
++ * @param to - The destination session the entries are written into, through
++ * its own `set` mutator
+  *
+  * @example
+  * ```ts
+@@ -454,7 +454,7 @@ export async function compressResponse(
+  * ```
+  */
+ export function transferSessionData(from: SessionInterface, to: SessionInterface): void {
+-	for (const [key, value] of from.data) to.data.set(key, value)
++	for (const [key, value] of from.state) to.set(key, value)
+ }
+ 
+ /**
+@@ -475,18 +475,18 @@ export function isPreflight(method: string, headers: Headers): boolean {
+ }
+ 
+ /**
+- * A parsed client-info fact for {@link ClientInfo} — a leaf shaping helper
++ * A parsed client-info fact for {@link Client} — a leaf shaping helper
+  * `createForwarded` uses to build its stashed slice.
+  *
+  * @param ip - The resolved client IP, if any
+- * @returns The {@link ClientInfo} slice value
++ * @returns The {@link Client} slice value
+  *
+  * @example
+  * ```ts
+  * buildClientInfo('203.0.113.7') // { ip: '203.0.113.7' }
+  * ```
+  */
+-export function buildClientInfo(ip: string | undefined): ClientInfo {
++export function buildClientInfo(ip: string | undefined): Client {
+ 	return { ...(ip !== undefined ? { ip } : {}) }
+ }
+ 
+@@ -530,7 +530,7 @@ export function equalsConstantTime(a: string, b: string): boolean {
+  *
+  * @example
+  * ```ts
+- * sessionExpired({ lastSeen: 0, createdAt: 0 }, 1_000, { ttl: 500 }) // true
++ * sessionExpired({ seen: 0, created: 0 }, 1_000, { ttl: 500 }) // true
+  * ```
+  */
+ export function sessionExpired(
+@@ -538,18 +538,41 @@ export function sessionExpired(
+ 	now: number,
+ 	limits: SessionLimits,
+ ): boolean {
+-	if (limits.ttl !== undefined && now - cursors.lastSeen >= limits.ttl) return true
+-	if (limits.lifetime !== undefined && now - cursors.createdAt >= limits.lifetime) return true
++	if (limits.ttl !== undefined && now - cursors.seen >= limits.ttl) return true
++	if (limits.lifetime !== undefined && now - cursors.created >= limits.lifetime) return true
+ 	return false
+ }
+ 
+ /**
+- * Snapshot a session's `data` Map into a plain, serializable record — the
++ * Validates a store's idle and absolute-lifetime thresholds, throwing when
++ * either is present and malformed — the shared construction gate
++ * {@link MemorySessionStore} and {@link DatabaseSessionStore} both apply, so
++ * one malformed `ttl` is refused identically by whichever store receives it.
++ *
++ * @param limits - See {@link SessionLimits}
++ * @returns Nothing; a successful return means both thresholds are usable
++ * @throws {TypeError} Thrown when `ttl` or `lifetime` is present and is not a
++ * positive finite number
++ *
++ * @example
++ * ```ts
++ * validateSessionLimits({ ttl: 60_000 }) // returns; the thresholds are usable
++ * ```
++ */
++export function validateSessionLimits(limits: SessionLimits | undefined): void {
++	if (limits?.ttl !== undefined && (!isFiniteNumber(limits.ttl) || limits.ttl <= 0))
++		throw new TypeError('SessionLimits.ttl must be a positive finite number when provided')
++	if (limits?.lifetime !== undefined && (!isFiniteNumber(limits.lifetime) || limits.lifetime <= 0))
++		throw new TypeError('SessionLimits.lifetime must be a positive finite number when provided')
++}
++
++/**
++ * Snapshots a session's `state` into a plain, serializable record — the
+  * projection a durable store's `set` writes to disk.
+  *
+  * @param session - The session to snapshot
+  * @returns A {@link SessionSnapshot} whose `data` is a plain-object copy of
+- * `session.data`, keyed alongside `session.id`
++ * `session.state`, keyed alongside `session.id`
+  *
+  * @remarks
+  * `data` is built on a null-prototype object (`Object.create(null)`), never
+@@ -565,27 +588,6 @@ export function sessionExpired(
+  */
+ export function snapshotSession(session: SessionInterface): SessionSnapshot {
+ 	const data: Record<string, unknown> = Object.create(null)
+-	for (const [key, value] of session.data) data[key] = value
++	for (const [key, value] of session.state) data[key] = value
+ 	return { id: session.id, data }
+ }
+-
+-/**
+- * Rebuild a `Session` from an untrusted snapshot value (the inverse of
+- * {@link snapshotSession}) — a durable store's `get` deserialization step.
+- *
+- * @param value - The candidate snapshot, of unknown shape
+- * @returns A rebuilt `Session`, or `undefined` when `value` is malformed
+- *
+- * @example
+- * ```ts
+- * restoreSession({ id: 'abc', data: { userId: 'u_1' } }) // Session { id: 'abc', data: Map }
+- * restoreSession({ id: 1 }) // undefined
+- * ```
+- */
+-export function restoreSession(value: unknown): Session | undefined {
+-	if (!isRecord(value)) return undefined
+-	if (!isString(value.id) || !isRecord(value.data)) return undefined
+-	const session = new Session(value.id)
+-	for (const [key, entry] of Object.entries(value.data)) session.data.set(key, entry)
+-	return session
+-}
+diff --git a/src/core/middlewares.ts b/src/core/middlewares.ts
+index c53c70f..98a4812 100644
+--- a/src/core/middlewares.ts
++++ b/src/core/middlewares.ts
+@@ -600,7 +600,7 @@ export function createLimiter<TState extends BearerState & ClientState & Connect
+ 				}
+ 			}
+ 			bucket = {
+-				budget: createBudget<number>({ max, consume: Number }),
++				budget: createBudget<number>({ max, consumer: Number }),
+ 				resetAt: now + window,
+ 			}
+ 			buckets.set(key, bucket)
+@@ -672,7 +672,7 @@ export function createBody<TState extends BodyState = BodyState>(): MiddlewareHa
+  * @param options - See {@link SessionOptions}
+  * @returns A `MiddlewareHandler<TState>`
+  * @throws {TypeError} When any option is malformed
+- * @throws {HTTPError} `404` when `require` is set and no session resolves or mints
++ * @throws {HTTPError} `404` when `required` is set and no session resolves or mints
+  *
+  * @example
+  * ```ts
+@@ -688,7 +688,7 @@ export function createSession<
+ 		!isFunction(options.transport.write) ||
+ 		!isFunction(options.transport.clear)
+ 	)
+-		throw new TypeError('SessionOptions.transport must implement SessionTransport')
++		throw new TypeError('SessionOptions.transport must implement SessionTransportInterface')
+ 	if (
+ 		options.store !== undefined &&
+ 		(!isFunction(options.store.get) ||
+@@ -704,10 +704,8 @@ export function createSession<
+ 		throw new TypeError('SessionOptions.create must be a function when provided')
+ 	if (options.mint !== undefined && !isFunction(options.mint))
+ 		throw new TypeError('SessionOptions.mint must be a function when provided')
+-	if (options.require !== undefined && !isBoolean(options.require))
+-		throw new TypeError('SessionOptions.require must be a boolean when provided')
+-	if (options.ends !== undefined && !isBoolean(options.ends))
+-		throw new TypeError('SessionOptions.ends must be a boolean when provided')
++	if (options.required !== undefined && !isBoolean(options.required))
++		throw new TypeError('SessionOptions.required must be a boolean when provided')
+ 	if (options.clock !== undefined && !isFunction(options.clock))
+ 		throw new TypeError('SessionOptions.clock must be a function when provided')
+ 
+@@ -723,8 +721,7 @@ export function createSession<
+ 		})
+ 	const create = options.create
+ 	const mint = options.mint
+-	const requireSession = options.require ?? false
+-	const ends = options.ends ?? false
++	const requireSession = options.required ?? false
+ 
+ 	return async (request, context, next) => {
+ 		const now = clock()
+@@ -732,11 +729,6 @@ export function createSession<
+ 		const incomingId = await transport.read(request)
+ 		let session = incomingId !== undefined ? await store.get(incomingId, now) : undefined
+ 
+-		if (ends && context.method === 'DELETE' && session !== undefined) {
+-			await store.delete(session.id)
+-			return new Response(null, { status: 204 })
+-		}
+-
+ 		let minted = false
+ 		if (session === undefined) {
+ 			const shouldMint = mint !== undefined ? await mint(context) : true
+@@ -777,11 +769,11 @@ export function createSession<
+ 				await store.delete(activeSession.id)
+ 				await transport.clear(response)
+ 			} else if (regenerated !== undefined) {
+-				await store.set(regenerated.id, regenerated, clock())
++				await store.set(regenerated, clock())
+ 				await store.delete(activeSession.id)
+ 				await transport.write(response, regenerated.id, encrypted)
+ 			} else {
+-				await store.set(activeSession.id, activeSession, clock())
++				await store.set(activeSession, clock())
+ 				if (minted) await transport.write(response, activeSession.id, encrypted)
+ 			}
+ 		}
+diff --git a/src/core/shapers.ts b/src/core/shapers.ts
+index 05df0d3..4338c63 100644
+--- a/src/core/shapers.ts
++++ b/src/core/shapers.ts
+@@ -7,7 +7,7 @@ import { integerShape, jsonShape, stringShape } from '@orkestrel/contract'
+  * declaring a durable session table never hand-writes the shape.
+  *
+  * @remarks
+- * `lastSeen`/`createdAt` are `integerShape({ min: 0 })` — the table validates
++ * `seen`/`created` are `integerShape({ min: 0 })` — the table validates
+  * them as integers, so
+  * {@link import('./stores/DatabaseSessionStore.js').DatabaseSessionStore}'s
+  * `now` clock must yield integer milliseconds (`Date.now()`, the implicit
+@@ -23,6 +23,6 @@ import { integerShape, jsonShape, stringShape } from '@orkestrel/contract'
+ export const sessionColumns = {
+ 	id: stringShape(),
+ 	session: jsonShape(),
+-	lastSeen: integerShape({ min: 0 }),
+-	createdAt: integerShape({ min: 0 }),
++	seen: integerShape({ min: 0 }),
++	created: integerShape({ min: 0 }),
+ }
+diff --git a/src/core/stores/DatabaseSessionStore.ts b/src/core/stores/DatabaseSessionStore.ts
+index d5486c0..8982fd4 100644
+--- a/src/core/stores/DatabaseSessionStore.ts
++++ b/src/core/stores/DatabaseSessionStore.ts
+@@ -6,7 +6,8 @@ import type {
+ } from '../types.js'
+ import type { Guard } from '@orkestrel/contract'
+ import type { TableInterface } from '@orkestrel/database'
+-import { restoreSession, sessionExpired, snapshotSession } from '../helpers.js'
++import { sessionExpired, snapshotSession, validateSessionLimits } from '../helpers.js'
++import { createRestoredSession } from '../factories.js'
+ import type { Session } from '../Session.js'
+ 
+ /**
+@@ -15,14 +16,14 @@ import type { Session } from '../Session.js'
+  * {@link MemorySessionStore}, backed by a caller-supplied `TableInterface`
+  * instead of an in-process `Map`.
+  *
+- * @typeParam S - The session data payload type
++ * @typeParam S - The stored session entity type
+  *
+  * @remarks
+  * `get` reads the row, evicts (removes the row) once `sessionExpired`
+  * reports either threshold elapsed, then rebuilds the session via
+- * {@link restoreSession} — a malformed snapshot or one that fails the
++ * {@link createRestoredSession} — a malformed snapshot or one that fails the
+  * caller's guard resolves `undefined` rather than throwing. A live read
+- * touches `lastSeen`. `set` preserves an existing row's `createdAt` across a
++ * touches `seen`. `set` preserves an existing row's `created` across a
+  * re-`set` of the same id (stamped once at the first `set`), mirroring
+  * {@link MemorySessionStore}. `delete` of an absent id is a no-op (the
+  * table's `remove` contract).
+@@ -38,7 +39,7 @@ import type { Session } from '../Session.js'
+  * @example
+  * ```ts
+  * const store = new DatabaseSessionStore(table, isSession, { ttl: 60_000 })
+- * await store.set('abc', new Session('abc'), Date.now())
++ * await store.set(new Session('abc'), Date.now())
+  * ```
+  */
+ export class DatabaseSessionStore<
+@@ -50,6 +51,7 @@ export class DatabaseSessionStore<
+ 	readonly #lifetime: number | undefined
+ 
+ 	constructor(table: TableInterface<SessionRow>, guard: Guard<S>, options?: SessionLimits) {
++		validateSessionLimits(options)
+ 		this.#table = table
+ 		this.#guard = guard
+ 		this.#ttl = options?.ttl
+@@ -63,16 +65,17 @@ export class DatabaseSessionStore<
+ 			await this.#table.remove(id)
+ 			return undefined
+ 		}
+-		const session = restoreSession(row.session)
++		const session = createRestoredSession(row.session)
+ 		if (session === undefined || !this.#guard(session)) return undefined
+-		await this.#table.update(id, { lastSeen: now })
++		await this.#table.update(id, { seen: now })
+ 		return session
+ 	}
+ 
+-	async set(id: string, session: S, now: number): Promise<void> {
++	async set(session: S, now: number): Promise<void> {
++		const id = session.id
+ 		const existing = await this.#table.get(id)
+-		const createdAt = existing?.createdAt ?? now
+-		await this.#table.set({ id, session: snapshotSession(session), lastSeen: now, createdAt })
++		const created = existing?.created ?? now
++		await this.#table.set({ id, session: snapshotSession(session), seen: now, created })
+ 	}
+ 
+ 	async delete(id: string): Promise<void> {
+diff --git a/src/core/stores/MemorySessionStore.ts b/src/core/stores/MemorySessionStore.ts
+index 660e3d6..888ba8c 100644
+--- a/src/core/stores/MemorySessionStore.ts
++++ b/src/core/stores/MemorySessionStore.ts
+@@ -1,6 +1,11 @@
+-import type { MemorySessionStoreOptions, SessionEntry, SessionStoreInterface } from '../types.js'
++import type {
++	MemorySessionStoreOptions,
++	SessionEntry,
++	SessionInterface,
++	SessionStoreInterface,
++} from '../types.js'
+ import { DEFAULT_SESSION_CAPACITY } from '../constants.js'
+-import { sessionExpired } from '../helpers.js'
++import { sessionExpired, validateSessionLimits } from '../helpers.js'
+ import { isFiniteNumber, isFunction } from '@orkestrel/contract'
+ 
+ /**
+@@ -8,14 +13,14 @@ import { isFiniteNumber, isFunction } from '@orkestrel/contract'
+  * enforcing both an idle timeout and an absolute lifetime, with lazy
+  * (read-time) eviction, a bounded capacity, and no background timers.
+  *
+- * @typeParam S - The session data payload type
++ * @typeParam S - The stored session entity type
+  *
+  * @remarks
+- * `get` evicts a session whose idle time (`now - lastSeen >= ttl`) or
+- * absolute lifetime (`now - createdAt >= lifetime`) has elapsed — the
++ * `get` evicts a session whose idle time (`now - seen >= ttl`) or
++ * absolute lifetime (`now - created >= lifetime`) has elapsed — the
+  * lifetime check fires EVEN IF the session was continuously touched, since
+- * `createdAt` is stamped once at the first `set` and preserved across every
+- * later re-`set` of the same id. A live read touches `lastSeen`. `delete` of
++ * `created` is stamped once at the first `set` and preserved across every
++ * later re-`set` of the same id. A live read touches `seen`. `delete` of
+  * an absent id is a no-op.
+  *
+  * Capacity is enforced as least-recently-used **by last write**: `set`
+@@ -30,10 +35,10 @@ import { isFiniteNumber, isFunction } from '@orkestrel/contract'
+  * @example
+  * ```ts
+  * const store = new MemorySessionStore({ ttl: 60_000, lifetime: 3_600_000 })
+- * await store.set('abc', { userId: 'u_1' }, Date.now())
++ * await store.set(new Session('abc'), Date.now())
+  * ```
+  */
+-export class MemorySessionStore<S> implements SessionStoreInterface<S> {
++export class MemorySessionStore<S extends SessionInterface> implements SessionStoreInterface<S> {
+ 	readonly #entries: Map<string, SessionEntry<S>>
+ 	readonly #ttl: number | undefined
+ 	readonly #lifetime: number | undefined
+@@ -41,20 +46,7 @@ export class MemorySessionStore<S> implements SessionStoreInterface<S> {
+ 	readonly #evict: ((id: string) => void) | undefined
+ 
+ 	constructor(options?: MemorySessionStoreOptions) {
+-		if (options?.ttl !== undefined && !isFiniteNumber(options.ttl))
+-			throw new TypeError(
+-				'MemorySessionStore requires options.ttl to be a finite number when provided',
+-			)
+-		if (options?.ttl !== undefined && options.ttl <= 0)
+-			throw new TypeError('MemorySessionStore requires options.ttl to be positive when provided')
+-		if (options?.lifetime !== undefined && !isFiniteNumber(options.lifetime))
+-			throw new TypeError(
+-				'MemorySessionStore requires options.lifetime to be a finite number when provided',
+-			)
+-		if (options?.lifetime !== undefined && options.lifetime <= 0)
+-			throw new TypeError(
+-				'MemorySessionStore requires options.lifetime to be positive when provided',
+-			)
++		validateSessionLimits(options)
+ 		if (
+ 			options?.capacity !== undefined &&
+ 			(!isFiniteNumber(options.capacity) ||
+@@ -83,16 +75,17 @@ export class MemorySessionStore<S> implements SessionStoreInterface<S> {
+ 			this.#notify(id)
+ 			return undefined
+ 		}
+-		this.#entries.set(id, { session: entry.session, lastSeen: now, createdAt: entry.createdAt })
++		this.#entries.set(id, { session: entry.session, seen: now, created: entry.created })
+ 		return entry.session
+ 	}
+ 
+-	async set(id: string, session: S, now: number): Promise<void> {
++	async set(session: S, now: number): Promise<void> {
++		const id = session.id
+ 		const existing = this.#entries.get(id)
+ 		if (existing === undefined) this.#reserve(now)
+-		const createdAt = existing?.createdAt ?? now
++		const created = existing?.created ?? now
+ 		this.#entries.delete(id)
+-		this.#entries.set(id, { session, lastSeen: now, createdAt })
++		this.#entries.set(id, { session, seen: now, created })
+ 	}
+ 
+ 	async delete(id: string): Promise<void> {
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 8d3a27f..885b3f9 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -286,7 +286,7 @@ export interface ConnectionState {
+  * `Forwarded` right-to-left past the configured trusted hops, falling back
+  * to the socket peer when no proxy hop qualifies.
+  */
+-export interface ClientInfo {
++export interface Client {
+ 	readonly ip?: string
+ }
+ 
+@@ -294,19 +294,27 @@ export interface ClientInfo {
+  * The client-facts state slice `createForwarded` stashes.
+  */
+ export interface ClientState {
+-	readonly client?: ClientInfo
++	readonly client?: Client
+ }
+ 
+ /**
+- * A server-managed session's public surface — an id and its mutable data bag.
++ * A server-managed session's public surface — an id, its live state, and the
++ * mutators that write it.
+  *
+  * @remarks
+- * `data` is a live `Map` a handler reads/writes directly; `createSession`
+- * persists it to the configured {@link SessionStoreInterface} on the way out.
++ * `state` is a readonly view a handler reads directly; `set`, `delete`, and
++ * `clear` are the only ways to write it, so no consumer holds a mutable
++ * reference to the entity's own `Map`. `createSession` persists the state to
++ * the configured {@link SessionStoreInterface} on the way out. `clear` empties
++ * the state without ending the session — `SessionControlInterface.destroy`
++ * does that.
+  */
+ export interface SessionInterface {
+ 	readonly id: string
+-	readonly data: Map<string, unknown>
++	readonly state: ReadonlyMap<string, unknown>
++	set(key: string, value: unknown): void
++	delete(key: string): boolean
++	clear(): void
+ }
+ 
+ /**
+@@ -317,7 +325,7 @@ export interface SessionInterface {
+  * `regenerate` and `destroy` record intent SYNCHRONOUSLY when called; the
+  * store I/O and transport write happen after the handler's `next()` returns
+  * (`destroy` supersedes a prior `regenerate`). `regenerate` mints a new id,
+- * carries the session's `data` over, and invalidates the old id.
++ * carries the session's `state` over, and invalidates the old id.
+  */
+ export interface SessionControlInterface {
+ 	regenerate(): void
+@@ -352,23 +360,26 @@ export interface BodyState {
+  * The pluggable session persistence seam `createSession`'s `store` option
+  * implements — a point-access store keyed by session id.
+  *
+- * @typeParam S - The session data payload type
++ * @typeParam S - The stored session entity type
+  * @remarks
+  * Every primitive is async and takes a trailing `now` clock reading (the
+  * same seam `createSession`'s `clock` option feeds) so a store can apply its
+  * own idle/absolute expiry against the caller's injected time rather than
+- * its own wall clock. `delete` of an absent id is a no-op, never throws.
+- *
+- * `get` must resolve a value satisfying {@link isSession} — an `id` string
+- * and a `data` `Map` — or `undefined`. `createSession` dereferences the
+- * resolved value's `id` and `data` without re-checking them, so a store that
+- * resolves an off-shape value corrupts the battery's own state rather than
+- * being refused at the seam. The shipped `DatabaseSessionStore` enforces this
+- * with the caller-supplied guard it is constructed with.
+- */
+-export interface SessionStoreInterface<S> {
++ * its own wall clock. `set` reads the id from the session it is handed —
++ * a stored value carries its own id, so no separate id is passed. `delete` of
++ * an absent id is a no-op, never throws.
++ *
++ * `get` must resolve a value satisfying {@link isSession} — an `id` string,
++ * a `state` `Map` view, and the mutators — or `undefined`. `createSession`
++ * dereferences the resolved value's `id` and `state` without re-checking
++ * them, so a store that resolves an off-shape value corrupts the battery's
++ * own state rather than being refused at the seam. The shipped
++ * `DatabaseSessionStore` enforces this with the caller-supplied guard it is
++ * constructed with.
++ */
++export interface SessionStoreInterface<S extends SessionInterface> {
+ 	get(id: string, now: number): Promise<S | undefined>
+-	set(id: string, session: S, now: number): Promise<void>
++	set(session: S, now: number): Promise<void>
+ 	delete(id: string): Promise<void>
+ }
+ 
+@@ -392,13 +403,13 @@ export interface SessionLimits {
+  * against.
+  *
+  * @remarks
+- * - `lastSeen` — the instant of the most recent live read or write.
+- * - `createdAt` — the instant of the first `set`, preserved across every
++ * - `seen` — the instant of the most recent live read or write.
++ * - `created` — the instant of the first `set`, preserved across every
+  *   later re-`set` of the same id.
+  */
+ export interface SessionCursors {
+-	readonly lastSeen: number
+-	readonly createdAt: number
++	readonly seen: number
++	readonly created: number
+ }
+ 
+ /**
+@@ -415,9 +426,9 @@ export interface SessionRow extends SessionCursors {
+  * One in-process session entry — the payload {@link MemorySessionStore} holds
+  * against an id, alongside the same cursors a persisted row carries.
+  *
+- * @typeParam S - The session data payload type
++ * @typeParam S - The stored session entity type
+  */
+-export interface SessionEntry<S> extends SessionCursors {
++export interface SessionEntry<S extends SessionInterface> extends SessionCursors {
+ 	readonly session: S
+ }
+ 
+@@ -426,8 +437,10 @@ export interface SessionEntry<S> extends SessionCursors {
+  * and a durable store's `set` writes.
+  *
+  * @remarks
+- * `data` is a null-prototype record so a session key literally named
+- * `__proto__` round-trips as an own enumerable property.
++ * `data` is the wire member a persisted row carries, built on a
++ * null-prototype record so a session key literally named `__proto__`
++ * round-trips as an own enumerable property. It holds the same entries the
++ * entity publishes as `state`.
+  */
+ export interface SessionSnapshot {
+ 	readonly id: string
+@@ -448,7 +461,7 @@ export interface SessionSnapshot {
+  * transport can resolve its own `Secure` attribute via `resolveSecure`
+  * without re-deriving connection facts itself.
+  */
+-export interface SessionTransport {
++export interface SessionTransportInterface {
+ 	read(request: Request): string | undefined | Promise<string | undefined>
+ 	write(response: Response, id: string, encrypted: boolean): void | Promise<void>
+ 	clear(response: Response): void
+@@ -457,10 +470,10 @@ export interface SessionTransport {
+ /**
+  * Options for `createSession` — the generic session battery.
+  *
+- * @typeParam S - The session data payload type `create` produces
++ * @typeParam S - The session entity type `create` produces
+  * @typeParam TState - The consumer's opaque per-request state type `mint` reads
+  * @remarks
+- * - `transport` — the {@link SessionTransport} (`createCookieTransport(...)`,
++ * - `transport` — the {@link SessionTransportInterface} (`createCookieTransport(...)`,
+  *   `createHeaderTransport(...)`, or a custom one).
+  * - `store` — the {@link SessionStoreInterface}; defaults to
+  *   `createMemorySessionStore({ ttl, lifetime, capacity, evict })`.
+@@ -477,14 +490,12 @@ export interface SessionTransport {
+  *   defaults to `new Session(id)`.
+  * - `mint` — decides whether to auto-mint a session when none resolves;
+  *   defaults to always minting (auto-session).
+- * - `require` — when `true`, a request that resolves no session and does not
++ * - `required` — when `true`, a request that resolves no session and does not
+  *   mint one renders a 404 instead of proceeding sessionless. Defaults to `false`.
+- * - `ends` — when `true`, a `DELETE` request carrying a valid session id
+- *   deletes the session and short-circuits with `204`. Defaults to `false`.
+  * - `clock` — the injected time source fed to the store; defaults to `Date.now`.
+  */
+-export interface SessionOptions<S, TState = unknown> {
+-	readonly transport: SessionTransport
++export interface SessionOptions<S extends SessionInterface, TState = unknown> {
++	readonly transport: SessionTransportInterface
+ 	readonly store?: SessionStoreInterface<S>
+ 	readonly ttl?: number
+ 	readonly lifetime?: number
+@@ -492,13 +503,12 @@ export interface SessionOptions<S, TState = unknown> {
+ 	readonly evict?: (id: string) => void
+ 	readonly create?: (id: string) => S
+ 	readonly mint?: (context: MiddlewareContext<TState>) => boolean | Promise<boolean>
+-	readonly require?: boolean
+-	readonly ends?: boolean
++	readonly required?: boolean
+ 	readonly clock?: () => number
+ }
+ 
+ /**
+- * Options for `createCookieTransport` — the signed-cookie {@link SessionTransport}.
++ * Options for `createCookieTransport` — the signed-cookie {@link SessionTransportInterface}.
+  *
+  * @remarks
+  * - `name` — the cookie name; defaults to {@link DEFAULT_SESSION_COOKIE}.
+@@ -513,7 +523,7 @@ export interface CookieTransportOptions {
+ }
+ 
+ /**
+- * Options for `createHeaderTransport` — the bare-header {@link SessionTransport}.
++ * Options for `createHeaderTransport` — the bare-header {@link SessionTransportInterface}.
+  *
+  * @remarks
+  * - `header` — the header carrying the session id; defaults to
+@@ -583,7 +593,7 @@ export interface CSRFOptions {
+  * Declared here rather than in the node-bound server surface so the
+  * fetch/string-pure {@link MultipartState} slice — referenced by any
+  * environment narrowing `context.state` — never depends on the node face.
+- * The server's concrete `UploadedFileInterface` is structurally compatible
++ * The server's concrete `UploadedFile` is structurally compatible
+  * with this shape.
+  */
+ export interface MultipartFile {
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index 90a0fb2..be29fdd 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -8,25 +8,29 @@ import { isRecord, isString } from '@orkestrel/contract'
+ 
+ /**
+  * Determine whether a value implements {@link SessionInterface} — a total
+- * structural guard: an `id` string plus a `data` `Map`. Prototype-agnostic —
+- * accepts a plain object, a null-prototype object, AND a class instance (a
+- * real `Session`), since a restored/stored session is routinely a class
+- * instance, not a literal.
++ * structural guard: an `id` string, a `state` `Map`, and the `set`, `delete`,
++ * and `clear` mutators. Prototype-agnostic — accepts a plain object, a
++ * null-prototype object, AND a class instance (a real `Session`), since a
++ * restored/stored session is routinely a class instance, not a literal.
+  *
+  * @param value - The candidate value
+  * @returns `true` when `value` is shaped like a {@link SessionInterface}
+  *
+  * @example
+  * ```ts
+- * isSession({ id: 'a', data: new Map() }) // true
+  * isSession(new Session('a')) // true
++ * isSession({ id: 'a', state: new Map() }) // false — the mutators are missing
+  * ```
+  */
+ export function isSession(value: unknown): value is SessionInterface {
+ 	if (typeof value !== 'object' || value === null) return false
+ 	const id: unknown = Reflect.get(value, 'id')
+-	const data: unknown = Reflect.get(value, 'data')
+-	return isString(id) && data instanceof Map
++	const state: unknown = Reflect.get(value, 'state')
++	if (!isString(id) || !(state instanceof Map)) return false
++	const set: unknown = Reflect.get(value, 'set')
++	const remove: unknown = Reflect.get(value, 'delete')
++	const clear: unknown = Reflect.get(value, 'clear')
++	return typeof set === 'function' && typeof remove === 'function' && typeof clear === 'function'
+ }
+ 
+ /**
+diff --git a/src/server/MultipartParser.ts b/src/server/MultipartParser.ts
+index 722f56e..1dc9e3b 100644
+--- a/src/server/MultipartParser.ts
++++ b/src/server/MultipartParser.ts
+@@ -19,7 +19,7 @@ export class MultipartParser {
+ 	readonly #signal: AbortSignal
+ 	readonly #abort: () => void
+ 	readonly #boundary: string
+-	readonly #limits: Required<MultipartLimits>
++	readonly #limits: MultipartLimits
+ 	readonly #allowed: readonly string[] | undefined
+ 	readonly #directory: string
+ 	readonly #staged: string[] = []
+@@ -35,7 +35,7 @@ export class MultipartParser {
+ 		stream: ReadableStream<Uint8Array>,
+ 		signal: AbortSignal,
+ 		boundary: string,
+-		limits: Required<MultipartLimits>,
++		limits: MultipartLimits,
+ 		allowed: readonly string[] | undefined,
+ 		directory: string,
+ 	) {
+@@ -98,13 +98,12 @@ export class MultipartParser {
+ 					throw new MultipartError('malformed', 'multipart header block too large')
+ 				const headerBlock = this.#buffer.subarray(0, headerEnd).toString('utf8')
+ 				this.#buffer = this.#buffer.subarray(headerEnd + 4)
+-				const { name, filename, contentType } = parsePartHeaders(headerBlock)
++				const { name, filename, mime } = parsePartHeaders(headerBlock)
+ 				if (name === undefined) throw new MultipartError('malformed', 'multipart part missing name')
+ 
+ 				const partDelimiter = Buffer.from(`\r\n--${this.#boundary}`)
+ 
+-				if (filename !== undefined)
+-					await this.#consumeFile(name, filename, contentType, partDelimiter)
++				if (filename !== undefined) await this.#consumeFile(name, filename, mime, partDelimiter)
+ 				else await this.#consumeField(name, partDelimiter)
+ 
+ 				while (this.#buffer.length < openMarker.length)
+@@ -136,12 +135,12 @@ export class MultipartParser {
+ 	async #consumeFile(
+ 		name: string,
+ 		filename: string,
+-		contentType: string | undefined,
++		mime: string | undefined,
+ 		delimiter: Buffer,
+ 	): Promise<void> {
+ 		if (filename !== '') {
+ 			this.#fileCount += 1
+-			if (this.#fileCount > this.#limits.files)
++			if (this.#fileCount > this.#limits.file.count)
+ 				throw new MultipartError('limit', 'too many multipart files')
+ 		}
+ 		const path = join(this.#directory, randomUUID())
+@@ -152,7 +151,7 @@ export class MultipartParser {
+ 		try {
+ 			await this.#scan(delimiter, 'unterminated multipart file part', async (chunk) => {
+ 				size += chunk.length
+-				if (size > this.#limits.file)
++				if (size > this.#limits.file.size)
+ 					throw new MultipartError('limit', 'multipart file exceeds size limit')
+ 				if (head.length < 16) head = Buffer.concat([head, chunk.subarray(0, 16 - head.length)])
+ 				await handle.write(chunk)
+@@ -166,11 +165,11 @@ export class MultipartParser {
+ 		}
+ 		if (filename === '') {
+ 			this.#fileCount += 1
+-			if (this.#fileCount > this.#limits.files)
++			if (this.#fileCount > this.#limits.file.count)
+ 				throw new MultipartError('limit', 'too many multipart files')
+ 		}
+ 		const detected = detectMIME(head)
+-		const declared = contentType ?? DEFAULT_CONTENT_TYPE
++		const declared = mime ?? DEFAULT_CONTENT_TYPE
+ 		const validated = detected !== undefined && detected === declared
+ 		if (this.#allowed !== undefined) {
+ 			const acceptable = detected !== undefined && this.#allowed.includes(detected)
+@@ -197,12 +196,12 @@ export class MultipartParser {
+ 	// Accumulates one text field part and keys it onto the parsed body.
+ 	async #consumeField(name: string, delimiter: Buffer): Promise<void> {
+ 		this.#fieldCount += 1
+-		if (this.#fieldCount > this.#limits.fields)
++		if (this.#fieldCount > this.#limits.field.count)
+ 			throw new MultipartError('limit', 'too many multipart fields')
+ 		let value = Buffer.alloc(0)
+ 		await this.#scan(delimiter, 'unterminated multipart field part', (chunk) => {
+ 			value = Buffer.concat([value, chunk])
+-			if (value.length > this.#limits.field)
++			if (value.length > this.#limits.field.size)
+ 				throw new MultipartError('limit', 'multipart field exceeds size limit')
+ 		})
+ 		if (!isDangerousKey(name)) this.#fields[name] = value.toString('utf8')
+diff --git a/src/server/constants.ts b/src/server/constants.ts
+index 179cc4b..6d25bae 100644
+--- a/src/server/constants.ts
++++ b/src/server/constants.ts
+@@ -1,8 +1,8 @@
+-import type { MultipartReason, StaticOptions } from './types.js'
++import type { MultipartErrorCode, StaticOptions } from './types.js'
+ import type { Encoding } from '@orkestrel/server'
+ 
+-/** The HTTP status `createMultipart` renders for each {@link MultipartReason}. */
+-export const MULTIPART_REASON_STATUS: Readonly<Record<MultipartReason, number>> = Object.freeze({
++/** The HTTP status `createMultipart` renders for each {@link MultipartErrorCode}. */
++export const MULTIPART_STATUS: Readonly<Record<MultipartErrorCode, number>> = Object.freeze({
+ 	limit: 413,
+ 	malformed: 400,
+ 	rejected: 415,
+diff --git a/src/server/errors.ts b/src/server/errors.ts
+index f029c39..e6fdc2c 100644
+--- a/src/server/errors.ts
++++ b/src/server/errors.ts
+@@ -1,6 +1,6 @@
+-import type { MultipartReason } from './types.js'
++import type { MultipartErrorCode } from './types.js'
+ import { HTTPError } from '@orkestrel/server'
+-import { MULTIPART_ERROR_BRAND, MULTIPART_REASON_STATUS } from './constants.js'
++import { MULTIPART_ERROR_BRAND, MULTIPART_STATUS } from './constants.js'
+ 
+ /**
+  * An error `createMultipart` throws when a streamed multipart request fails
+@@ -10,8 +10,8 @@ import { MULTIPART_ERROR_BRAND, MULTIPART_REASON_STATUS } from './constants.js'
+  * @remarks
+  * Extends the peer `HTTPError`, which already publishes the `status`,
+  * `context`, and brand members every fleet error of this shape carries, and
+- * adds the `reason` axis a caller narrows on. `status` is derived from
+- * `reason` through {@link MULTIPART_REASON_STATUS} (limit → 413, malformed →
++ * adds the machine-readable `code` axis a caller narrows on. `status` is
++ * derived from `code` through {@link MULTIPART_STATUS} (limit → 413, malformed →
+  * 400, rejected → 415), so `createBoundary` — or any other `isHTTPError`-aware
+  * renderer — maps it without knowing this face's error type. Narrow a caught
+  * value to the richer type with {@link isMultipartError}.
+@@ -24,17 +24,17 @@ import { MULTIPART_ERROR_BRAND, MULTIPART_REASON_STATUS } from './constants.js'
+  * ```
+  */
+ export class MultipartError extends HTTPError {
+-	readonly reason: MultipartReason
++	readonly code: MultipartErrorCode
+ 	readonly [MULTIPART_ERROR_BRAND] = true
+ 
+ 	constructor(
+-		reason: MultipartReason,
++		code: MultipartErrorCode,
+ 		message: string,
+ 		context?: Readonly<Record<string, unknown>>,
+ 	) {
+-		super(MULTIPART_REASON_STATUS[reason], message, context)
++		super(MULTIPART_STATUS[code], message, context)
+ 		this.name = 'MultipartError'
+-		this.reason = reason
++		this.code = code
+ 	}
+ }
+ 
+@@ -43,8 +43,8 @@ export class MultipartError extends HTTPError {
+  *
+  * @remarks
+  * Structural, not `instanceof` — tests that `value` is a non-null object
+- * carrying {@link MULTIPART_ERROR_BRAND}, a numeric `status`, and a `reason`
+- * in the parser's set of reason strings (`'limit' | 'malformed' | 'rejected'`).
++ * carrying {@link MULTIPART_ERROR_BRAND}, a numeric `status`, and a `code`
++ * in the parser's {@link MultipartErrorCode} set (`'limit' | 'malformed' | 'rejected'`).
+  * Total: never throws, returns `false` for any off-shape input.
+  *
+  * @param value - The value to test (typically a `catch` binding)
+@@ -57,16 +57,16 @@ export class MultipartError extends HTTPError {
+  * try {
+  * 	await parse(request)
+  * } catch (error) {
+- * 	if (isMultipartError(error)) console.log(error.status, error.reason)
++ * 	if (isMultipartError(error)) console.log(error.status, error.code)
+  * }
+  * ```
+  */
+ export function isMultipartError(value: unknown): value is MultipartError {
+ 	if (typeof value !== 'object' || value === null) return false
+ 	if (!(MULTIPART_ERROR_BRAND in value)) return false
+-	if (!('status' in value) || !('reason' in value)) return false
++	if (!('status' in value) || !('code' in value)) return false
+ 	if (typeof value.status !== 'number') return false
+-	if (value.reason !== 'limit' && value.reason !== 'malformed' && value.reason !== 'rejected')
++	if (value.code !== 'limit' && value.code !== 'malformed' && value.code !== 'rejected')
+ 		return false
+ 	return true
+ }
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index de1e5e2..8a9bc3b 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -1,10 +1,10 @@
+ import type { MultipartBody } from '@src/core'
+ import type {
+ 	MultipartLimits,
+-	MultipartOptions,
++	MultipartLimitsInput,
+ 	PartHeaders,
++	UploadedFile,
+ 	UploadedFileInput,
+-	UploadedFileInterface,
+ } from './types.js'
+ import type { FileHandle } from 'node:fs/promises'
+ import type { Encoding } from '@orkestrel/server'
+@@ -24,8 +24,6 @@ import {
+ 	EXTENSION_TYPES,
+ 	RESERVED_DEVICE_NAMES,
+ } from './constants.js'
+-import { MultipartError } from './errors.js'
+-import { MultipartParser } from './MultipartParser.js'
+ 
+ /**
+  * Whether `pathname` is `prefix` itself or lies under it on a SEGMENT
+@@ -392,39 +390,29 @@ export function multipartBoundary(contentType: string | null): string | undefine
+ }
+ 
+ /**
+- * Resolve `createMultipart`'s effective {@link MultipartLimits}, applying
+- * every documented default.
++ * Resolves `createMultipart`'s effective {@link MultipartLimits}, applying
++ * every documented default to an omitted leaf.
+  *
+  * @param limits - The caller's partial limits
+  * @returns The fully-resolved limits
+- */
+-export function resolveMultipartLimits(
+-	limits: MultipartLimits | undefined,
+-): Required<MultipartLimits> {
+-	return {
+-		file: limits?.file ?? DEFAULT_MULTIPART_FILE,
+-		files: limits?.files ?? DEFAULT_MULTIPART_FILES,
+-		field: limits?.field ?? DEFAULT_MULTIPART_FIELD,
+-		fields: limits?.fields ?? DEFAULT_MULTIPART_FIELDS,
+-		total: limits?.total ?? DEFAULT_MULTIPART_TOTAL,
+-	}
+-}
+-
+-/**
+- * Resolve `parseMultipartRequest`'s default staging directory when the
+- * caller did not configure one — a process-owned directory created ONCE
+- * (lazily, memoized across calls) via `mkdtemp` under `os.tmpdir()` and
+- * locked to mode `0o700`.
+- *
+- * @returns The absolute path of the process-owned staging directory
+  *
+  * @example
+  * ```ts
+- * const directory = await resolveDefaultDirectory()
++ * resolveMultipartLimits({ file: { size: 1_048_576 } })
+  * ```
+  */
+-export function resolveDefaultDirectory(): Promise<string> {
+-	return MultipartParser.directory()
++export function resolveMultipartLimits(limits: MultipartLimitsInput | undefined): MultipartLimits {
++	return {
++		file: {
++			size: limits?.file?.size ?? DEFAULT_MULTIPART_FILE,
++			count: limits?.file?.count ?? DEFAULT_MULTIPART_FILES,
++		},
++		field: {
++			size: limits?.field?.size ?? DEFAULT_MULTIPART_FIELD,
++			count: limits?.field?.count ?? DEFAULT_MULTIPART_FIELDS,
++		},
++		total: limits?.total ?? DEFAULT_MULTIPART_TOTAL,
++	}
+ }
+ 
+ /**
+@@ -433,19 +421,19 @@ export function resolveDefaultDirectory(): Promise<string> {
+  *
+  * @param block - The raw header block for one multipart part (before the
+  * terminating blank line)
+- * @returns The parsed `name`, `filename`, and `contentType` (each
+- * `undefined` when absent)
++ * @returns The parsed `name`, `filename`, and `mime` (each `undefined` when
++ * absent)
+  *
+  * @example
+  * ```ts
+  * parsePartHeaders('Content-Disposition: form-data; name="title"')
+- * // { name: 'title', filename: undefined, contentType: undefined }
++ * // { name: 'title', filename: undefined, mime: undefined }
+  * ```
+  */
+ export function parsePartHeaders(block: string): PartHeaders {
+ 	let name: string | undefined
+ 	let filename: string | undefined
+-	let contentType: string | undefined
++	let mime: string | undefined
+ 	for (const line of block.split('\r\n')) {
+ 		const colon = line.indexOf(':')
+ 		if (colon === -1) continue
+@@ -457,86 +445,24 @@ export function parsePartHeaders(block: string): PartHeaders {
+ 			if (nameMatch !== null) name = nameMatch[1]
+ 			if (filenameMatch !== null) filename = filenameMatch[1]
+ 		} else if (key === 'content-type') {
+-			contentType = value
++			mime = value
+ 		}
+ 	}
+-	return { name, filename, contentType }
+-}
+-
+-/**
+- * Stream-parse a `multipart/form-data` request into its files and fields —
+- * the mid-stream state machine `createMultipart` drives.
+- *
+- * @remarks
+- * Reads `request.body` chunk by chunk via its `ReadableStream` reader —
+- * NEVER buffers the whole body — enforcing every {@link MultipartLimits} cap
+- * the instant it is exceeded (reading stops, every already-staged temp file
+- * is deleted, throws {@link MultipartError} with reason `'limit'`). Each file
+- * part streams to `join(directory, randomUUID())` — the client's declared
+- * filename is METADATA ONLY, never a path component. A field OR file part
+- * named `__proto__` / `constructor` / `prototype` is silently skipped and
+- * never keyed onto the returned {@link MultipartBody} (a skipped file's
+- * staged temp file is unlinked immediately, since it can never be
+- * referenced). A file part with an empty declared filename (`filename=""`)
+- * AND a zero-byte body — the browser convention for an unselected optional
+- * `<input type="file">` — is a silent no-op: its temp file is unlinked, it is
+- * never counted against the `files` limit, and it never runs the `allowed`
+- * check. A malformed
+- * structure (missing/unterminated boundary, nameless part, an oversized
+- * header block, or a preamble exceeding {@link MULTIPART_MAX_PREAMBLE} before
+- * the first boundary) throws with reason `'malformed'`. A file is accepted
+- * against the configured `allowed` MIME list iff its SNIFFED bytes detect a
+- * type present in the list — sniff-authoritative, independent of whether the
+- * declared `Content-Type` matches (that agreement is exposed separately as
+- * `validated`); otherwise throws with reason `'rejected'`. A
+- * request abort mid-upload triggers the same fail-closed cleanup as a limit
+- * breach. Returns `undefined` for a non-multipart request (untouched).
+- *
+- * @param request - The incoming multipart request
+- * @param options - See {@link MultipartOptions}
+- * @returns The parsed {@link MultipartBody}, or `undefined` when the request
+- * is not `multipart/form-data`
+- * @throws {MultipartError} On any limit breach, malformed structure, or
+- * rejected file type
+- *
+- * @example
+- * ```ts
+- * const body = await parseMultipartRequest(request, { allowed: ['image/png'] })
+- * ```
+- */
+-export async function parseMultipartRequest(
+-	request: Request,
+-	options: MultipartOptions = {},
+-): Promise<MultipartBody | undefined> {
+-	const boundary = multipartBoundary(request.headers.get('content-type'))
+-	if (boundary === undefined) return undefined
+-	if (request.body === null) throw new MultipartError('malformed', 'multipart request has no body')
+-
+-	const limits = resolveMultipartLimits(options.limits)
+-	const allowed = options.allowed
+-	const directory = options.directory ?? (await resolveDefaultDirectory())
+-	return new MultipartParser(
+-		request.body,
+-		request.signal,
+-		boundary,
+-		limits,
+-		allowed,
+-		directory,
+-	).parse()
++	return { name, filename, mime }
+ }
+ 
+ /**
+- * Build a frozen {@link UploadedFileInterface} record.
++ * Build a frozen {@link UploadedFile} record.
+  *
+  * @param input - Every field of the record
+- * @returns A frozen {@link UploadedFileInterface}
++ * @returns A frozen {@link UploadedFile}
+  *
+  * @example
+  * ```ts
+  * createUploadedFile({ field: 'avatar', name: 'a.png', size: 1024, mime: 'image/png', validated: true, status: 'staged', path: '/tmp/x' })
+  * ```
+  */
+-export function createUploadedFile(input: UploadedFileInput): UploadedFileInterface {
++export function createUploadedFile(input: UploadedFileInput): UploadedFile {
+ 	return Object.freeze({ ...input })
+ }
+ 
+@@ -645,7 +571,7 @@ export function streamFile(
+ /**
+  * Open a staged/moved uploaded file as a web `ReadableStream`.
+  *
+- * @param file - The {@link UploadedFileInterface} record to stream
++ * @param file - The {@link UploadedFile} record to stream
+  * @returns A `ReadableStream<Uint8Array>` over the file's current on-disk path
+  *
+  * @example
+@@ -653,14 +579,14 @@ export function streamFile(
+  * new Response(streamUploadedFile(file))
+  * ```
+  */
+-export function streamUploadedFile(file: UploadedFileInterface): ReadableStream<Uint8Array> {
++export function streamUploadedFile(file: UploadedFile): ReadableStream<Uint8Array> {
+ 	return streamFile(file.path)
+ }
+ 
+ /**
+  * Read a staged/moved uploaded file's full contents into memory.
+  *
+- * @param file - The {@link UploadedFileInterface} record to read
++ * @param file - The {@link UploadedFile} record to read
+  * @returns The file's bytes
+  *
+  * @example
+@@ -668,7 +594,7 @@ export function streamUploadedFile(file: UploadedFileInterface): ReadableStream<
+  * const bytes = await readUploadedFile(file)
+  * ```
+  */
+-export async function readUploadedFile(file: UploadedFileInterface): Promise<Uint8Array> {
++export async function readUploadedFile(file: UploadedFile): Promise<Uint8Array> {
+ 	return readFile(file.path)
+ }
+ 
+@@ -680,9 +606,9 @@ export async function readUploadedFile(file: UploadedFileInterface): Promise<Uin
+  * `copyFile` + `unlink`. Returns a new frozen record with `status: 'moved'`
+  * and `path: destination` — the input record is never mutated.
+  *
+- * @param file - The {@link UploadedFileInterface} record to move
++ * @param file - The {@link UploadedFile} record to move
+  * @param destination - The final on-disk path
+- * @returns A new {@link UploadedFileInterface} record reflecting the move
++ * @returns A new {@link UploadedFile} record reflecting the move
+  *
+  * @example
+  * ```ts
+@@ -690,9 +616,9 @@ export async function readUploadedFile(file: UploadedFileInterface): Promise<Uin
+  * ```
+  */
+ export async function moveUploadedFile(
+-	file: UploadedFileInterface,
++	file: UploadedFile,
+ 	destination: string,
+-): Promise<UploadedFileInterface> {
++): Promise<UploadedFile> {
+ 	try {
+ 		await rename(file.path, destination)
+ 	} catch (error) {
+diff --git a/src/server/index.ts b/src/server/index.ts
+index 753bc71..0b2e5dc 100644
+--- a/src/server/index.ts
++++ b/src/server/index.ts
+@@ -2,4 +2,5 @@ export * from './types.js'
+ export * from './constants.js'
+ export * from './errors.js'
+ export * from './helpers.js'
++export * from './parsers.js'
+ export * from './middlewares.js'
+diff --git a/src/server/middlewares.ts b/src/server/middlewares.ts
+index 46fd794..c97731c 100644
+--- a/src/server/middlewares.ts
++++ b/src/server/middlewares.ts
+@@ -40,13 +40,13 @@ import {
+ 	isContainedPath,
+ 	isDotfilePath,
+ 	lookupContentType,
+-	parseMultipartRequest,
+ 	resolveContainedRealPath,
+ 	resolveStaticFallbackPath,
+ 	resolveStaticPath,
+ 	streamFile,
+ 	unlinkStagedFiles,
+ } from './helpers.js'
++import { parseMultipartRequest } from './parsers.js'
+ 
+ /**
+  * Serve validated in-memory assets with identity/Brotli negotiation.
+diff --git a/src/server/types.ts b/src/server/types.ts
+index 2c7b7e0..c0a6b4f 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -83,26 +83,42 @@ export interface StaticOptions {
+ }
+ 
+ /**
+- * Per-category size/count caps `createMultipart` enforces MID-STREAM.
++ * The caller's partial {@link MultipartLimits} — `createMultipart`'s `limits`
++ * option, with every member optional.
+  *
+  * @remarks
+- * - `file` — the maximum size in bytes of one uploaded file; defaults to
++ * `resolveMultipartLimits` applies each documented default to an omitted leaf,
++ * so a caller states only the caps it wants to move.
++ * - `file` — the per-file caps: `size` in bytes, `count` of file parts.
++ * - `field` — the per-field caps: `size` in bytes, `count` of text field parts.
++ * - `total` — the maximum combined byte size of the whole request body.
++ */
++export interface MultipartLimitsInput {
++	readonly file?: { readonly size?: number; readonly count?: number }
++	readonly field?: { readonly size?: number; readonly count?: number }
++	readonly total?: number
++}
++
++/**
++ * Per-category size/count caps `createMultipart` enforces MID-STREAM — the
++ * effective limits, every documented default already applied.
++ *
++ * @remarks
++ * - `file.size` — the maximum size in bytes of one uploaded file; defaults to
+  *   {@link DEFAULT_MULTIPART_FILE}.
+- * - `files` — the maximum number of file parts; defaults to
++ * - `file.count` — the maximum number of file parts; defaults to
+  *   {@link DEFAULT_MULTIPART_FILES}.
+- * - `field` — the maximum size in bytes of one text field; defaults to
++ * - `field.size` — the maximum size in bytes of one text field; defaults to
+  *   {@link DEFAULT_MULTIPART_FIELD}.
+- * - `fields` — the maximum number of text field parts; defaults to
++ * - `field.count` — the maximum number of text field parts; defaults to
+  *   {@link DEFAULT_MULTIPART_FIELDS}.
+  * - `total` — the maximum combined byte size of the whole request body;
+  *   defaults to {@link DEFAULT_MULTIPART_TOTAL}.
+  */
+ export interface MultipartLimits {
+-	readonly file?: number
+-	readonly files?: number
+-	readonly field?: number
+-	readonly fields?: number
+-	readonly total?: number
++	readonly file: { readonly size: number; readonly count: number }
++	readonly field: { readonly size: number; readonly count: number }
++	readonly total: number
+ }
+ 
+ /**
+@@ -110,7 +126,7 @@ export interface MultipartLimits {
+  * multipart upload parsing.
+  *
+  * @remarks
+- * - `limits` — see {@link MultipartLimits}.
++ * - `limits` — see {@link MultipartLimitsInput}.
+  * - `allowed` — a MIME allow-list validated against SNIFFED (not merely
+  *   declared) bytes; an empty array allows nothing. Omitted ⇒ no type
+  *   rejection.
+@@ -118,17 +134,17 @@ export interface MultipartLimits {
+  *   `os.tmpdir()`.
+  */
+ export interface MultipartOptions {
+-	readonly limits?: MultipartLimits
++	readonly limits?: MultipartLimitsInput
+ 	readonly allowed?: readonly string[]
+ 	readonly directory?: string
+ }
+ 
+ /**
+- * Why `createMultipart` rejected a request — the axis {@link MultipartError}
+- * maps onto its HTTP status: `'limit'` → 413, `'malformed'` → 400,
+- * `'rejected'` → 415.
++ * Why `createMultipart` rejected a request — the machine-readable code
++ * {@link MultipartError} carries and maps onto its HTTP status: `'limit'` →
++ * 413, `'malformed'` → 400, `'rejected'` → 415.
+  */
+-export type MultipartReason = 'limit' | 'malformed' | 'rejected'
++export type MultipartErrorCode = 'limit' | 'malformed' | 'rejected'
+ 
+ /**
+  * The lifecycle stage of one staged upload's temp file.
+@@ -160,7 +176,7 @@ export type UploadStatus = 'staged' | 'moved'
+  * - `status` — see {@link UploadStatus}.
+  * - `path` — the file's current on-disk path.
+  */
+-export interface UploadedFileInterface extends Omit<MultipartFile, 'status'> {
++export interface UploadedFile extends Omit<MultipartFile, 'status'> {
+ 	readonly status: UploadStatus
+ }
+ 
+@@ -171,23 +187,25 @@ export interface UploadedFileInterface extends Omit<MultipartFile, 'status'> {
+  * @remarks
+  * - `name` — the `Content-Disposition` `name` parameter, or `undefined` when absent.
+  * - `filename` — the `Content-Disposition` `filename` parameter, or `undefined` when absent.
+- * - `contentType` — the part's declared `Content-Type` header value, or `undefined` when absent.
++ * - `mime` — the part's declared `Content-Type` header value, or `undefined` when absent.
+  */
+ export interface PartHeaders {
+ 	readonly name: string | undefined
+ 	readonly filename: string | undefined
+-	readonly contentType: string | undefined
++	readonly mime: string | undefined
+ }
+ 
+ /**
+  * The full field set `createUploadedFile` needs to build an
+- * {@link UploadedFileInterface} record.
++ * {@link UploadedFile} record.
+  *
+  * @remarks
+  * - `field` — the multipart field name the file was submitted under.
+  * - `name` — the client-declared filename (metadata only).
+  * - `size` — the file's byte size.
+- * - `mime` — the sniffed MIME type, or the declared one when nothing sniffed.
++ * - `mime` — the SNIFFED (magic-byte-detected) MIME type when a signature
++ *   matches; otherwise the part's declared `Content-Type`; otherwise
++ *   {@link DEFAULT_CONTENT_TYPE}.
+  * - `validated` — `true` when the sniffed type matches the declared `Content-Type`.
+  * - `status` — see {@link UploadStatus}.
+  * - `path` — the file's current on-disk path.
+diff --git a/tests/setup.test.ts b/tests/setup.test.ts
+index 34bc416..6f4b088 100644
+--- a/tests/setup.test.ts
++++ b/tests/setup.test.ts
+@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
+ import { ContentTooLargeError } from '@orkestrel/server'
+ import {
+ 	buildRequest,
++	buildSession,
+ 	createEchoTerminal,
+ 	createManualClock,
+ 	createRecordingNext,
+@@ -205,3 +206,19 @@ describe('createManualClock', () => {
+ 		expect(createManualClock().clock()).toBe(0)
+ 	})
+ })
++
++describe('buildSession', () => {
++	it('carries the given id and leaves the state empty when no mark is given', () => {
++		const session = buildSession('id-1')
++		expect(session.id).toBe('id-1')
++		expect(session.state.size).toBe(0)
++	})
++
++	it('writes a given mark through the entity mutator and keeps sessions independent', () => {
++		const first = buildSession('id-1', 'first')
++		const second = buildSession('id-1', 'second')
++		expect(first.state.get('mark')).toBe('first')
++		expect(second.state.get('mark')).toBe('second')
++		expect([...first.state.keys()]).toEqual(['mark'])
++	})
++})
+diff --git a/tests/setup.ts b/tests/setup.ts
+index 0b8a491..31c8977 100644
+--- a/tests/setup.ts
++++ b/tests/setup.ts
+@@ -1,5 +1,6 @@
+ import type { MiddlewareContext, MiddlewareHandler, NextFunction } from '@orkestrel/server'
+ import { compose, readBody } from '@orkestrel/server'
++import { Session } from '@src/core'
+ 
+ // ── Middleware test harness (AGENTS §16.1) ───────────────────────────────────
+ //
+@@ -226,3 +227,23 @@ export function createManualClock(start = 0): ManualClockInterface {
+ 		},
+ 	}
+ }
++
++/**
++ * Build a {@link Session} carrying one optional state entry — the scenario
++ * builder every session proof drives, so a store or battery test states an id
++ * and one distinguishing value instead of re-deriving the entity.
++ *
++ * @param id - The session id the store keys the entity by
++ * @param mark - The value written under the `mark` key; omitted leaves the state empty
++ * @returns A `Session` ready to hand to a `SessionStoreInterface`
++ *
++ * @example
++ * ```ts
++ * await store.set(buildSession('id-1', 'first'), 0)
++ * ```
++ */
++export function buildSession(id: string, mark?: string): Session {
++	const session = new Session(id)
++	if (mark !== undefined) session.set('mark', mark)
++	return session
++}
+diff --git a/tests/src/core/Session.test.ts b/tests/src/core/Session.test.ts
+index 741faf1..10787f9 100644
+--- a/tests/src/core/Session.test.ts
++++ b/tests/src/core/Session.test.ts
+@@ -11,24 +11,38 @@ describe('Session', () => {
+ 		expect(session.id).toBe('abc123')
+ 	})
+ 
+-	it('starts with an empty, live, mutable data Map', () => {
++	it('starts with an empty state view', () => {
+ 		const session = new Session('abc123')
+-		expect(session.data).toBeInstanceOf(Map)
+-		expect(session.data.size).toBe(0)
++		expect(session.state).toBeInstanceOf(Map)
++		expect(session.state.size).toBe(0)
+ 	})
+ 
+-	it('a handler can read and write data directly through the live Map', () => {
++	it('a handler reads state directly and writes it through the mutators', () => {
+ 		const session = new Session('abc123')
+-		session.data.set('userId', 'u_1')
+-		expect(session.data.get('userId')).toBe('u_1')
+-		session.data.delete('userId')
+-		expect(session.data.has('userId')).toBe(false)
++		session.set('userId', 'u_1')
++		expect(session.state.get('userId')).toBe('u_1')
++		expect(session.delete('userId')).toBe(true)
++		expect(session.state.has('userId')).toBe(false)
+ 	})
+ 
+-	it('two sessions constructed with the same id carry independent data Maps', () => {
++	it('delete reports false for a key the session never held', () => {
++		const session = new Session('abc123')
++		expect(session.delete('absent')).toBe(false)
++	})
++
++	it('clear empties the state and leaves the id in place', () => {
++		const session = new Session('abc123')
++		session.set('userId', 'u_1')
++		session.set('role', 'admin')
++		session.clear()
++		expect(session.state.size).toBe(0)
++		expect(session.id).toBe('abc123')
++	})
++
++	it('two sessions constructed with the same id carry independent state', () => {
+ 		const first = new Session('same-id')
+ 		const second = new Session('same-id')
+-		first.data.set('key', 'value')
+-		expect(second.data.has('key')).toBe(false)
++		first.set('key', 'value')
++		expect(second.state.has('key')).toBe(false)
+ 	})
+ })
+diff --git a/tests/src/core/factories.test.ts b/tests/src/core/factories.test.ts
+index 77283ef..517e9a5 100644
+--- a/tests/src/core/factories.test.ts
++++ b/tests/src/core/factories.test.ts
+@@ -1,5 +1,12 @@
+-import { createCookieTransport, createHeaderTransport, createMemorySessionStore } from '@src/core'
++import type { Session } from '@src/core'
++import {
++	createCookieTransport,
++	createHeaderTransport,
++	createMemorySessionStore,
++	createRestoredSession,
++} from '@src/core'
+ import { describe, expect, it } from 'vitest'
++import { buildSession } from '../../setup.js'
+ 
+ // ============================================================================
+ //  @orkestrel/middleware — factories.ts unit tests (§16 mirror). Round-trips
+@@ -116,30 +123,30 @@ describe('createHeaderTransport', () => {
+ 
+ describe('createMemorySessionStore', () => {
+ 	it('returns a working store round-tripping a set session', async () => {
+-		const store = createMemorySessionStore<string>()
+-		await store.set('a', 'payload', 0)
+-		expect(await store.get('a', 0)).toBe('payload')
++		const store = createMemorySessionStore<Session>()
++		await store.set(buildSession('a'), 0)
++		expect((await store.get('a', 0))?.id).toBe('a')
+ 	})
+ 
+ 	it('resolves undefined for an id that was never set', async () => {
+-		const store = createMemorySessionStore<string>()
++		const store = createMemorySessionStore<Session>()
+ 		expect(await store.get('missing', 0)).toBeUndefined()
+ 	})
+ 
+ 	it('evicts at the idle (ttl) boundary', async () => {
+-		const store = createMemorySessionStore<string>({ ttl: 1_000 })
+-		await store.set('a', 'payload', 0)
++		const store = createMemorySessionStore<Session>({ ttl: 1_000 })
++		await store.set(buildSession('a'), 0)
+ 		expect(await store.get('a', 1_000)).toBeUndefined()
+ 	})
+ 
+ 	it('resolves the session right up to the idle boundary (exclusive)', async () => {
+-		const store = createMemorySessionStore<string>({ ttl: 1_000 })
+-		await store.set('a', 'payload', 0)
+-		expect(await store.get('a', 999)).toBe('payload')
++		const store = createMemorySessionStore<Session>({ ttl: 1_000 })
++		await store.set(buildSession('a'), 0)
++		expect((await store.get('a', 999))?.id).toBe('a')
+ 	})
+ 
+ 	it('delete is a total no-op on an absent id', async () => {
+-		const store = createMemorySessionStore<string>()
++		const store = createMemorySessionStore<Session>()
+ 		await expect(store.delete('missing')).resolves.toBeUndefined()
+ 	})
+ 
+@@ -147,3 +154,28 @@ describe('createMemorySessionStore', () => {
+ 		expect(() => createMemorySessionStore({ ttl: Number.NaN })).toThrow(TypeError)
+ 	})
+ })
++
++describe('createRestoredSession', () => {
++	it('rebuilds a session with its id and every snapshot entry', () => {
++		const restored = createRestoredSession({ id: 'abc', data: { userId: 'u_1', count: 3 } })
++		expect(restored?.id).toBe('abc')
++		expect(restored?.state.get('userId')).toBe('u_1')
++		expect(restored?.state.get('count')).toBe(3)
++	})
++
++	it('rebuilds a "__proto__"-named key as an own state entry', () => {
++		const snapshot: unknown = JSON.parse('{"id":"x","data":{"__proto__":"evil"}}')
++		const restored = createRestoredSession(snapshot)
++		expect(restored?.state.get('__proto__')).toBe('evil')
++		expect(Object.getPrototypeOf({})).toBe(Object.prototype)
++	})
++
++	it('returns undefined for malformed input', () => {
++		expect(createRestoredSession(undefined)).toBeUndefined()
++		expect(createRestoredSession(null)).toBeUndefined()
++		expect(createRestoredSession('abc')).toBeUndefined()
++		expect(createRestoredSession({})).toBeUndefined()
++		expect(createRestoredSession({ id: 1, data: {} })).toBeUndefined()
++		expect(createRestoredSession({ id: 'abc', data: 'not-a-record' })).toBeUndefined()
++	})
++})
+diff --git a/tests/src/core/helpers.test.ts b/tests/src/core/helpers.test.ts
+index 20be62f..5bb94f8 100644
+--- a/tests/src/core/helpers.test.ts
++++ b/tests/src/core/helpers.test.ts
+@@ -18,13 +18,14 @@ import {
+ 	rebuildResponse,
+ 	resolveForwardedFor,
+ 	resolveKey,
+-	restoreSession,
+ 	Session,
+ 	sessionExpired,
+ 	snapshotSession,
+ 	transferSessionData,
++	validateSessionLimits,
+ } from '@src/core'
+ import { describe, expect, it } from 'vitest'
++import { buildSession } from '../../setup.js'
+ 
+ // Minimal MiddlewareContext<unknown> stub — compressResponse only reads `method`.
+ function buildContext(method = 'GET'): MiddlewareContext<unknown> {
+@@ -275,63 +276,68 @@ describe('isCompressionNegotiated', () => {
+ })
+ 
+ describe('transferSessionData', () => {
+-	it('copies every entry from one session data Map into another', () => {
+-		const from = {
+-			id: 'a',
+-			data: new Map<string, unknown>([
+-				['userId', 'u_1'],
+-				['role', 'admin'],
+-			]),
+-		}
+-		const to = { id: 'b', data: new Map<string, unknown>() }
++	it('copies every entry from one session state into another', () => {
++		const from = new Session('a')
++		from.set('userId', 'u_1')
++		from.set('role', 'admin')
++		const to = new Session('b')
+ 		transferSessionData(from, to)
+-		expect(to.data.get('userId')).toBe('u_1')
+-		expect(to.data.get('role')).toBe('admin')
+-		expect(to.data.size).toBe(2)
++		expect(to.state.get('userId')).toBe('u_1')
++		expect(to.state.get('role')).toBe('admin')
++		expect(to.state.size).toBe(2)
+ 	})
+ 
+ 	it('leaves the source untouched and overwrites an overlapping destination key', () => {
+-		const from = { id: 'a', data: new Map<string, unknown>([['key', 'new']]) }
+-		const to = {
+-			id: 'b',
+-			data: new Map<string, unknown>([
+-				['key', 'old'],
+-				['extra', 1],
+-			]),
+-		}
++		const from = buildSession('a', 'new')
++		const to = buildSession('b', 'old')
++		to.set('extra', 1)
+ 		transferSessionData(from, to)
+-		expect(to.data.get('key')).toBe('new')
+-		expect(to.data.get('extra')).toBe(1)
+-		expect(from.data.get('key')).toBe('new')
++		expect(to.state.get('mark')).toBe('new')
++		expect(to.state.get('extra')).toBe(1)
++		expect(from.state.get('mark')).toBe('new')
++		expect(from.state.size).toBe(1)
+ 	})
+ })
+ 
+ describe('isSession', () => {
+ 	it('accepts a value shaped like a SessionInterface', () => {
+-		expect(isSession({ id: 'a', data: new Map() })).toBe(true)
++		expect(
++			isSession({
++				id: 'a',
++				state: new Map(),
++				set: () => undefined,
++				delete: () => true,
++				clear: () => undefined,
++			}),
++		).toBe(true)
+ 	})
+ 
+ 	it('accepts a real Session class instance', () => {
+ 		expect(isSession(new Session('a'))).toBe(true)
+ 	})
+ 
+-	it('accepts a real Session instance with entries in data', () => {
+-		const session = new Session('a')
+-		session.data.set('userId', 'u_1')
+-		expect(isSession(session)).toBe(true)
++	it('accepts a real Session instance with entries in state', () => {
++		expect(isSession(buildSession('a', 'u_1'))).toBe(true)
+ 	})
+ 
+ 	it('rejects a class instance that does not match the shape', () => {
+ 		class NotASession {
+ 			readonly id = 42
+-			readonly data = []
++			readonly state = []
+ 		}
+ 		expect(isSession(new NotASession())).toBe(false)
+ 
+-		class MissingData {
++		class MissingState {
+ 			readonly id = 'a'
+ 		}
+-		expect(isSession(new MissingData())).toBe(false)
++		expect(isSession(new MissingState())).toBe(false)
++	})
++
++	it('rejects a state-carrying value that publishes no mutators', () => {
++		expect(isSession({ id: 'a', state: new Map() })).toBe(false)
++		expect(isSession({ id: 'a', state: new Map(), set: () => undefined, delete: () => true })).toBe(
++			false,
++		)
+ 	})
+ 
+ 	it('rejects hostile inputs totally', () => {
+@@ -340,8 +346,8 @@ describe('isSession', () => {
+ 		expect(isSession('a')).toBe(false)
+ 		expect(isSession(42)).toBe(false)
+ 		expect(isSession([])).toBe(false)
+-		expect(isSession({ id: 'a', data: [] })).toBe(false)
+-		expect(isSession({ id: 1, data: new Map() })).toBe(false)
++		expect(isSession({ id: 'a', state: [] })).toBe(false)
++		expect(isSession({ id: 1, state: new Map() })).toBe(false)
+ 		expect(isSession({})).toBe(false)
+ 	})
+ })
+@@ -428,7 +434,7 @@ describe('equalsConstantTime', () => {
+ })
+ 
+ describe('buildClientInfo', () => {
+-	it('wraps a resolved IP into a ClientInfo slice', () => {
++	it('wraps a resolved IP into a Client slice', () => {
+ 		expect(buildClientInfo('203.0.113.7')).toEqual({ ip: '203.0.113.7' })
+ 	})
+ 
+@@ -645,70 +651,77 @@ describe('compressResponse', () => {
+ 
+ describe('sessionExpired', () => {
+ 	it('is false when neither ttl nor lifetime is configured', () => {
+-		expect(sessionExpired({ lastSeen: 0, createdAt: 0 }, 1_000_000, {})).toBe(false)
++		expect(sessionExpired({ seen: 0, created: 0 }, 1_000_000, {})).toBe(false)
+ 	})
+ 
+ 	it('is true once idle time reaches ttl (boundary >=)', () => {
+-		expect(sessionExpired({ lastSeen: 0, createdAt: 0 }, 999, { ttl: 1_000 })).toBe(false)
+-		expect(sessionExpired({ lastSeen: 0, createdAt: 0 }, 1_000, { ttl: 1_000 })).toBe(true)
++		expect(sessionExpired({ seen: 0, created: 0 }, 999, { ttl: 1_000 })).toBe(false)
++		expect(sessionExpired({ seen: 0, created: 0 }, 1_000, { ttl: 1_000 })).toBe(true)
+ 	})
+ 
+ 	it('is true once absolute lifetime reaches its threshold (boundary >=)', () => {
+-		expect(sessionExpired({ lastSeen: 500, createdAt: 0 }, 1_999, { lifetime: 2_000 })).toBe(false)
+-		expect(sessionExpired({ lastSeen: 500, createdAt: 0 }, 2_000, { lifetime: 2_000 })).toBe(true)
++		expect(sessionExpired({ seen: 500, created: 0 }, 1_999, { lifetime: 2_000 })).toBe(false)
++		expect(sessionExpired({ seen: 500, created: 0 }, 2_000, { lifetime: 2_000 })).toBe(true)
+ 	})
+ 
+ 	it('is true when either ttl or lifetime independently elapses (both configured)', () => {
++		expect(sessionExpired({ seen: 0, created: 0 }, 1_000, { ttl: 1_000, lifetime: 5_000 })).toBe(
++			true,
++		)
+ 		expect(
+-			sessionExpired({ lastSeen: 0, createdAt: 0 }, 1_000, { ttl: 1_000, lifetime: 5_000 }),
+-		).toBe(true)
+-		expect(
+-			sessionExpired({ lastSeen: 4_000, createdAt: 0 }, 5_000, { ttl: 2_000, lifetime: 5_000 }),
++			sessionExpired({ seen: 4_000, created: 0 }, 5_000, { ttl: 2_000, lifetime: 5_000 }),
+ 		).toBe(true)
+ 	})
+ 
+ 	it('is false when neither threshold has elapsed (both configured)', () => {
+-		expect(
+-			sessionExpired({ lastSeen: 100, createdAt: 0 }, 500, { ttl: 1_000, lifetime: 5_000 }),
+-		).toBe(false)
++		expect(sessionExpired({ seen: 100, created: 0 }, 500, { ttl: 1_000, lifetime: 5_000 })).toBe(
++			false,
++		)
+ 	})
+ })
+ 
+-describe('snapshotSession / restoreSession', () => {
+-	it('round-trips a session data Map through a plain-record snapshot', () => {
+-		const data = new Map<string, unknown>([
+-			['userId', 'u_1'],
+-			['count', 3],
+-		])
+-		const snapshot = snapshotSession({ id: 'abc', data })
+-		expect(snapshot).toEqual({ id: 'abc', data: { userId: 'u_1', count: 3 } })
+-		const restored = restoreSession(snapshot)
+-		expect(restored?.id).toBe('abc')
+-		expect(restored?.data.get('userId')).toBe('u_1')
+-		expect(restored?.data.get('count')).toBe(3)
++describe('snapshotSession', () => {
++	it('projects a session state into a plain record', () => {
++		const session = new Session('abc')
++		session.set('userId', 'u_1')
++		session.set('count', 3)
++		expect(snapshotSession(session)).toEqual({ id: 'abc', data: { userId: 'u_1', count: 3 } })
+ 	})
+ 
+-	it('snapshots an empty session data Map to an empty record', () => {
+-		expect(snapshotSession({ id: 'x', data: new Map() })).toEqual({ id: 'x', data: {} })
++	it('snapshots an empty session state to an empty record', () => {
++		expect(snapshotSession(new Session('x'))).toEqual({ id: 'x', data: {} })
+ 	})
+ 
+-	it('round-trips a "__proto__"-named data key without polluting Object.prototype', () => {
+-		const data = new Map<string, unknown>([['__proto__', 'evil']])
+-		const snapshot = snapshotSession({ id: 'x', data })
++	it('carries a "__proto__"-named state key without polluting Object.prototype', () => {
++		const session = new Session('x')
++		session.set('__proto__', 'evil')
++		const snapshot = snapshotSession(session)
+ 		expect(Object.getPrototypeOf(snapshot.data)).toBeNull()
+ 		expect(Object.prototype.hasOwnProperty.call(snapshot.data, '__proto__')).toBe(true)
+ 		expect(snapshot.data['__proto__']).toBe('evil')
+-		const restored = restoreSession(snapshot)
+-		expect(restored?.data.get('__proto__')).toBe('evil')
+ 		expect(Object.getPrototypeOf({})).toBe(Object.prototype)
+ 	})
++})
++
++describe('validateSessionLimits', () => {
++	it('returns for an absent bag, an absent threshold, or a positive finite one', () => {
++		expect(validateSessionLimits(undefined)).toBeUndefined()
++		expect(validateSessionLimits({})).toBeUndefined()
++		expect(validateSessionLimits({ ttl: 1_000 })).toBeUndefined()
++		expect(validateSessionLimits({ lifetime: 1_000 })).toBeUndefined()
++		expect(validateSessionLimits({ ttl: 1_000, lifetime: 2_000 })).toBeUndefined()
++	})
++
++	it('throws a TypeError for a non-finite or non-positive ttl', () => {
++		expect(() => validateSessionLimits({ ttl: Number.NaN })).toThrow(TypeError)
++		expect(() => validateSessionLimits({ ttl: Number.POSITIVE_INFINITY })).toThrow(TypeError)
++		expect(() => validateSessionLimits({ ttl: 0 })).toThrow(TypeError)
++		expect(() => validateSessionLimits({ ttl: -1 })).toThrow(TypeError)
++	})
+ 
+-	it('returns undefined for malformed restore input', () => {
+-		expect(restoreSession(undefined)).toBeUndefined()
+-		expect(restoreSession(null)).toBeUndefined()
+-		expect(restoreSession('abc')).toBeUndefined()
+-		expect(restoreSession({})).toBeUndefined()
+-		expect(restoreSession({ id: 1, data: {} })).toBeUndefined()
+-		expect(restoreSession({ id: 'abc', data: 'not-a-record' })).toBeUndefined()
++	it('throws a TypeError for a non-finite or non-positive lifetime', () => {
++		expect(() => validateSessionLimits({ lifetime: Number.NaN })).toThrow(TypeError)
++		expect(() => validateSessionLimits({ lifetime: 0 })).toThrow(TypeError)
++		expect(() => validateSessionLimits({ lifetime: -1 })).toThrow(TypeError)
+ 	})
+ })
+diff --git a/tests/src/core/middlewares.test.ts b/tests/src/core/middlewares.test.ts
+index 5ed64be..19dc88f 100644
+--- a/tests/src/core/middlewares.test.ts
++++ b/tests/src/core/middlewares.test.ts
+@@ -6,7 +6,7 @@ import type {
+ 	MultipartBody,
+ 	SessionInterface,
+ 	SessionState,
+-	SessionTransport,
++	SessionTransportInterface,
+ } from '@src/core'
+ import type { ConnectionState } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+@@ -38,6 +38,7 @@ import {
+ 	createEchoTerminal,
+ 	createManualClock,
+ 	createRecordingTerminal,
++	buildSession,
+ 	createTestContext,
+ 	ECHO_MARKER,
+ 	runChain,
+@@ -1235,7 +1236,7 @@ describe('isMultipartBody', () => {
+ 
+ // ── createSession ─────────────────────────────────────────────────────────
+ 
+-function createTestTransport(): SessionTransport & {
++function createTestTransport(): SessionTransportInterface & {
+ 	readonly written: Array<{ readonly response: Response; readonly id: string }>
+ 	readonly cleared: Response[]
+ } {
+@@ -1303,12 +1304,12 @@ describe('createSession', () => {
+ 		)
+ 	})
+ 
+-	it('require: true renders 404 when no session resolves and mint declines', async () => {
++	it('required: true renders 404 when no session resolves and mint declines', async () => {
+ 		const transport = createTestTransport()
+ 		const session = createSession<SessionInterface, SessionState>({
+ 			transport,
+ 			mint: () => false,
+-			require: true,
++			required: true,
+ 		})
+ 		const request = buildRequest('/')
+ 		const context = createTestContext(request, {})
+@@ -1317,37 +1318,7 @@ describe('createSession', () => {
+ 		})
+ 	})
+ 
+-	it('ends: true + DELETE with a valid session id deletes it and short-circuits with 204', async () => {
+-		const transport = createTestTransport()
+-		const store = createMemorySessionStore<SessionInterface>()
+-		const session = createSession<SessionInterface, SessionState>({ transport, store, ends: true })
+-		const first = await runChain(
+-			[session],
+-			createEchoTerminal(),
+-			buildRequest('/'),
+-			createTestContext(buildRequest('/'), {}),
+-		)
+-		const id = first.headers.get('x-test-session')
+-
+-		const deleteRequest = buildRequest('/', {
+-			method: 'DELETE',
+-			headers: { 'x-test-session': id ?? '' },
+-		})
+-		const terminal = createRecordingTerminal()
+-		const response = await runChain(
+-			[session],
+-			terminal.handler,
+-			deleteRequest,
+-			createTestContext(deleteRequest, {}),
+-		)
+-		expect(response.status).toBe(204)
+-		expect(terminal.count).toBe(0)
+-
+-		const stored = await store.get(id ?? '', Date.now())
+-		expect(stored).toBeUndefined()
+-	})
+-
+-	it('regenerate() rotates the id, keeps the data, and the old id is dead', async () => {
++	it('regenerate() rotates the id, keeps the state, and the old id is dead', async () => {
+ 		const transport = createTestTransport()
+ 		const store = createMemorySessionStore<SessionInterface>()
+ 		const session = createSession<SessionInterface, SessionState>({ transport, store })
+@@ -1361,8 +1332,8 @@ describe('createSession', () => {
+ 		expect(oldId).not.toBeNull()
+ 		const seeded = await store.get(oldId ?? '', Date.now())
+ 		expect(seeded).toBeDefined()
+-		if (seeded !== undefined) seeded.data.set('k', 'v')
+-		if (seeded !== undefined) await store.set(oldId ?? '', seeded, Date.now())
++		if (seeded !== undefined) seeded.set('k', 'v')
++		if (seeded !== undefined) await store.set(seeded, Date.now())
+ 
+ 		const request = buildRequest('/', { headers: { 'x-test-session': oldId ?? '' } })
+ 		const state: SessionState = {}
+@@ -1379,7 +1350,7 @@ describe('createSession', () => {
+ 		expect(newId).not.toBeNull()
+ 		expect(newId).not.toBe(oldId)
+ 		const newStored = await store.get(newId ?? '', Date.now())
+-		expect(newStored?.data.get('k')).toBe('v')
++		expect(newStored?.state.get('k')).toBe('v')
+ 		const oldStored = await store.get(oldId ?? '', Date.now())
+ 		expect(oldStored).toBeUndefined()
+ 	})
+@@ -1484,12 +1455,10 @@ describe('createSession', () => {
+ 		expect(state.session?.id).not.toBe(id)
+ 	})
+ 
+-	it('createdAt is preserved across a re-set of the same session', async () => {
+-		const store = createMemorySessionStore<{ id: string; data: Map<string, unknown> }>({
+-			lifetime: 10_000,
+-		})
+-		await store.set('s1', { id: 's1', data: new Map() }, 0)
+-		await store.set('s1', { id: 's1', data: new Map() }, 5_000)
++	it('created is preserved across a re-set of the same session', async () => {
++		const store = createMemorySessionStore<SessionInterface>({ lifetime: 10_000 })
++		await store.set(buildSession('s1'), 0)
++		await store.set(buildSession('s1'), 5_000)
+ 		const stillAlive = await store.get('s1', 9_000)
+ 		expect(stillAlive).toBeDefined()
+ 		const expired = await store.get('s1', 10_500)
+@@ -1531,9 +1500,9 @@ describe('createSession', () => {
+ 		const memory = createMemorySessionStore<SessionInterface>()
+ 		const store = {
+ 			get: (id: string, now: number) => memory.get(id, now),
+-			set: (id: string, value: SessionInterface, now: number) => {
++			set: (value: SessionInterface, now: number) => {
+ 				setCount += 1
+-				return memory.set(id, value, now)
++				return memory.set(value, now)
+ 			},
+ 			delete: (id: string) => memory.delete(id),
+ 		}
+@@ -1573,21 +1542,6 @@ describe('createSession', () => {
+ 		expect(evicted).toContain(firstId)
+ 	})
+ 
+-	it('DELETE with no resolvable session is a no-op — falls through to mint/next, never short-circuits', async () => {
+-		const transport = createTestTransport()
+-		const session = createSession<SessionInterface, SessionState>({ transport, ends: true })
+-		const request = buildRequest('/', { method: 'DELETE' })
+-		const terminal = createRecordingTerminal()
+-		const response = await runChain(
+-			[session],
+-			terminal.handler,
+-			request,
+-			createTestContext(request, {}),
+-		)
+-		expect(terminal.count).toBe(1)
+-		expect(response.status).not.toBe(204)
+-	})
+-
+ 	it('destroy() after an earlier regenerate() wins — the session is not persisted', async () => {
+ 		const transport = createTestTransport()
+ 		const store = createMemorySessionStore<SessionInterface>()
+@@ -1727,8 +1681,8 @@ describe('createCSRF', () => {
+ 
+ 	it('SESSION-BOUND: a token minted under session A replayed under session B is rejected with 403; A-on-A is accepted', async () => {
+ 		const csrf = createCSRF<CSRFState & SessionState>({ secret: SECRET })
+-		const sessionA: SessionInterface = { id: 'session-a', data: new Map() }
+-		const sessionB: SessionInterface = { id: 'session-b', data: new Map() }
++		const sessionA: SessionInterface = buildSession('session-a')
++		const sessionB: SessionInterface = buildSession('session-b')
+ 
+ 		const mintStateA: CSRFState & SessionState = { session: sessionA }
+ 		const mintResponseA = await runChain(
+diff --git a/tests/src/core/stores/DatabaseSessionStore.test.ts b/tests/src/core/stores/DatabaseSessionStore.test.ts
+index ae7df04..c8d356c 100644
+--- a/tests/src/core/stores/DatabaseSessionStore.test.ts
++++ b/tests/src/core/stores/DatabaseSessionStore.test.ts
+@@ -29,34 +29,34 @@ describe('DatabaseSessionStore get/set', () => {
+ 		expect(await store.get('missing', 0)).toBeUndefined()
+ 	})
+ 
+-	it('round-trips a set session back through get, restoring id and data', async () => {
++	it('round-trips a set session back through get, restoring id and state', async () => {
+ 		const { store } = buildStore()
+ 		const session = new Session('a')
+-		session.data.set('userId', 'u_1')
+-		await store.set('a', session, 0)
++		session.set('userId', 'u_1')
++		await store.set(session, 0)
+ 		const restored = await store.get('a', 0)
+ 		expect(restored?.id).toBe('a')
+-		expect(restored?.data.get('userId')).toBe('u_1')
++		expect(restored?.state.get('userId')).toBe('u_1')
+ 	})
+ })
+ 
+ describe('DatabaseSessionStore idle (ttl) eviction', () => {
+ 	it('resolves the session right up to the boundary (exclusive)', async () => {
+ 		const { store } = buildStore({ ttl: 1_000 })
+-		await store.set('a', new Session('a'), 0)
++		await store.set(new Session('a'), 0)
+ 		expect(await store.get('a', 999)).not.toBeUndefined()
+ 	})
+ 
+ 	it('evicts exactly AT the idle boundary and removes the underlying row', async () => {
+ 		const { table, store } = buildStore({ ttl: 1_000 })
+-		await store.set('a', new Session('a'), 0)
++		await store.set(new Session('a'), 0)
+ 		expect(await store.get('a', 1_000)).toBeUndefined()
+ 		expect(await table.get('a')).toBeUndefined()
+ 	})
+ 
+-	it('a live read touches lastSeen, resetting the idle window', async () => {
++	it('a live read touches seen, resetting the idle window', async () => {
+ 		const { store } = buildStore({ ttl: 1_000 })
+-		await store.set('a', new Session('a'), 0)
++		await store.set(new Session('a'), 0)
+ 		expect(await store.get('a', 900)).not.toBeUndefined()
+ 		expect(await store.get('a', 1_800)).not.toBeUndefined()
+ 	})
+@@ -65,20 +65,20 @@ describe('DatabaseSessionStore idle (ttl) eviction', () => {
+ describe('DatabaseSessionStore absolute lifetime eviction', () => {
+ 	it('evicts a continuously-touched session once its absolute lifetime elapses', async () => {
+ 		const { store } = buildStore({ ttl: 1_000, lifetime: 250 })
+-		await store.set('a', new Session('a'), 0)
++		await store.set(new Session('a'), 0)
+ 		expect(await store.get('a', 50)).not.toBeUndefined()
+ 		expect(await store.get('a', 200)).not.toBeUndefined()
+ 		expect(await store.get('a', 250)).toBeUndefined()
+ 	})
+ })
+ 
+-describe('DatabaseSessionStore createdAt stamping', () => {
+-	it('stamps createdAt once at the first set and preserves it across a later re-set', async () => {
++describe('DatabaseSessionStore created stamping', () => {
++	it('stamps created once at the first set and preserves it across a later re-set', async () => {
+ 		const { table, store } = buildStore({ lifetime: 1_000 })
+-		await store.set('a', new Session('a'), 0)
+-		await store.set('a', new Session('a'), 500)
++		await store.set(new Session('a'), 0)
++		await store.set(new Session('a'), 500)
+ 		const row = await table.get('a')
+-		expect(row?.createdAt).toBe(0)
++		expect(row?.created).toBe(0)
+ 		expect(await store.get('a', 999)).not.toBeUndefined()
+ 		expect(await store.get('a', 1_000)).toBeUndefined()
+ 	})
+@@ -87,12 +87,12 @@ describe('DatabaseSessionStore createdAt stamping', () => {
+ describe('DatabaseSessionStore guard rejection', () => {
+ 	it('resolves undefined when the restored session fails the caller-supplied guard', async () => {
+ 		const { table } = buildStore()
+-		// Stricter than `isSession`: also requires a specific data entry, so a
++		// Stricter than `isSession`: also requires a specific state entry, so a
+ 		// structurally-valid session that lacks it is still rejected.
+ 		const isAuthorized = (value: unknown): value is Session =>
+-			isSession(value) && value.data.get('authorized') === true
++			isSession(value) && value.state.get('authorized') === true
+ 		const strict = new DatabaseSessionStore(table, isAuthorized)
+-		await strict.set('a', new Session('a'), 0)
++		await strict.set(new Session('a'), 0)
+ 		expect(await strict.get('a', 0)).toBeUndefined()
+ 	})
+ })
+@@ -100,7 +100,7 @@ describe('DatabaseSessionStore guard rejection', () => {
+ describe('DatabaseSessionStore delete', () => {
+ 	it('deletes a present session so a later get resolves undefined', async () => {
+ 		const { store } = buildStore()
+-		await store.set('a', new Session('a'), 0)
++		await store.set(new Session('a'), 0)
+ 		await store.delete('a')
+ 		expect(await store.get('a', 0)).toBeUndefined()
+ 	})
+diff --git a/tests/src/core/stores/MemorySessionStore.test.ts b/tests/src/core/stores/MemorySessionStore.test.ts
+index 9c419a8..afcded6 100644
+--- a/tests/src/core/stores/MemorySessionStore.test.ts
++++ b/tests/src/core/stores/MemorySessionStore.test.ts
+@@ -1,6 +1,7 @@
+-import type { MemorySessionStoreOptions } from '@src/core'
++import type { MemorySessionStoreOptions, Session } from '@src/core'
+ import { DEFAULT_SESSION_CAPACITY, MemorySessionStore } from '@src/core'
+ import { describe, expect, it } from 'vitest'
++import { buildSession } from '../../../setup.js'
+ 
+ // ============================================================================
+ //  @orkestrel/middleware — MemorySessionStore unit tests (§16 mirror). Every
+@@ -41,47 +42,47 @@ describe('MemorySessionStore construction', () => {
+ 
+ describe('MemorySessionStore get/set', () => {
+ 	it('resolves undefined for an id that was never set', async () => {
+-		const store = new MemorySessionStore<string>()
++		const store = new MemorySessionStore<Session>()
+ 		expect(await store.get('missing', 0)).toBeUndefined()
+ 	})
+ 
+ 	it('round-trips a set session back through get', async () => {
+-		const store = new MemorySessionStore<string>()
+-		await store.set('a', 'payload', 0)
+-		expect(await store.get('a', 0)).toBe('payload')
++		const store = new MemorySessionStore<Session>()
++		await store.set(buildSession('a'), 0)
++		expect((await store.get('a', 0))?.id).toBe('a')
+ 	})
+ 
+ 	it('a later set replaces the session payload for the same id', async () => {
+-		const store = new MemorySessionStore<string>()
+-		await store.set('a', 'first', 0)
+-		await store.set('a', 'second', 100)
+-		expect(await store.get('a', 100)).toBe('second')
++		const store = new MemorySessionStore<Session>()
++		await store.set(buildSession('a', 'first'), 0)
++		await store.set(buildSession('a', 'second'), 100)
++		expect((await store.get('a', 100))?.state.get('mark')).toBe('second')
+ 	})
+ })
+ 
+ describe('MemorySessionStore idle (ttl) eviction', () => {
+ 	it('resolves the session right up to the boundary (exclusive)', async () => {
+-		const store = new MemorySessionStore<string>({ ttl: 1_000 })
+-		await store.set('a', 'payload', 0)
+-		expect(await store.get('a', 999)).toBe('payload')
++		const store = new MemorySessionStore<Session>({ ttl: 1_000 })
++		await store.set(buildSession('a'), 0)
++		expect((await store.get('a', 999))?.id).toBe('a')
+ 	})
+ 
+-	it('evicts exactly AT the idle boundary (now - lastSeen >= ttl)', async () => {
+-		const store = new MemorySessionStore<string>({ ttl: 1_000 })
+-		await store.set('a', 'payload', 0)
++	it('evicts exactly AT the idle boundary (now - seen >= ttl)', async () => {
++		const store = new MemorySessionStore<Session>({ ttl: 1_000 })
++		await store.set(buildSession('a'), 0)
+ 		expect(await store.get('a', 1_000)).toBeUndefined()
+ 	})
+ 
+-	it('a live read touches lastSeen, resetting the idle window', async () => {
+-		const store = new MemorySessionStore<string>({ ttl: 1_000 })
+-		await store.set('a', 'payload', 0)
+-		expect(await store.get('a', 900)).toBe('payload')
+-		expect(await store.get('a', 1_800)).toBe('payload')
++	it('a live read touches seen, resetting the idle window', async () => {
++		const store = new MemorySessionStore<Session>({ ttl: 1_000 })
++		await store.set(buildSession('a'), 0)
++		expect((await store.get('a', 900))?.id).toBe('a')
++		expect((await store.get('a', 1_800))?.id).toBe('a')
+ 	})
+ 
+ 	it('evicting an idle-expired session removes it permanently', async () => {
+-		const store = new MemorySessionStore<string>({ ttl: 1_000 })
+-		await store.set('a', 'payload', 0)
++		const store = new MemorySessionStore<Session>({ ttl: 1_000 })
++		await store.set(buildSession('a'), 0)
+ 		expect(await store.get('a', 1_000)).toBeUndefined()
+ 		expect(await store.get('a', 1_000)).toBeUndefined()
+ 	})
+@@ -89,46 +90,46 @@ describe('MemorySessionStore idle (ttl) eviction', () => {
+ 
+ describe('MemorySessionStore absolute lifetime eviction', () => {
+ 	it('evicts a continuously-touched session once its absolute lifetime elapses', async () => {
+-		const store = new MemorySessionStore<string>({ ttl: 1_000, lifetime: 250 })
+-		await store.set('a', 'payload', 0)
+-		expect(await store.get('a', 50)).toBe('payload')
+-		expect(await store.get('a', 100)).toBe('payload')
+-		expect(await store.get('a', 200)).toBe('payload')
++		const store = new MemorySessionStore<Session>({ ttl: 1_000, lifetime: 250 })
++		await store.set(buildSession('a'), 0)
++		expect((await store.get('a', 50))?.id).toBe('a')
++		expect((await store.get('a', 100))?.id).toBe('a')
++		expect((await store.get('a', 200))?.id).toBe('a')
+ 		expect(await store.get('a', 250)).toBeUndefined()
+ 	})
+ 
+-	it('evicts exactly AT the lifetime boundary (now - createdAt >= lifetime)', async () => {
+-		const store = new MemorySessionStore<string>({ lifetime: 1_000 })
+-		await store.set('a', 'payload', 0)
+-		expect(await store.get('a', 999)).toBe('payload')
++	it('evicts exactly AT the lifetime boundary (now - created >= lifetime)', async () => {
++		const store = new MemorySessionStore<Session>({ lifetime: 1_000 })
++		await store.set(buildSession('a'), 0)
++		expect((await store.get('a', 999))?.id).toBe('a')
+ 		expect(await store.get('a', 1_000)).toBeUndefined()
+ 	})
+ })
+ 
+-describe('MemorySessionStore createdAt stamping', () => {
+-	it('stamps createdAt once at the first set and preserves it across a later re-set', async () => {
+-		const store = new MemorySessionStore<string>({ lifetime: 1_000 })
+-		await store.set('a', 'first', 0)
+-		await store.set('a', 'second', 500)
+-		expect(await store.get('a', 999)).toBe('second')
++describe('MemorySessionStore created stamping', () => {
++	it('stamps created once at the first set and preserves it across a later re-set', async () => {
++		const store = new MemorySessionStore<Session>({ lifetime: 1_000 })
++		await store.set(buildSession('a', 'first'), 0)
++		await store.set(buildSession('a', 'second'), 500)
++		expect((await store.get('a', 999))?.state.get('mark')).toBe('second')
+ 		expect(await store.get('a', 1_000)).toBeUndefined()
+ 	})
+ })
+ 
+ describe('MemorySessionStore capacity', () => {
+ 	it('defaults to DEFAULT_SESSION_CAPACITY and evicts the oldest-written entry once exceeded', async () => {
+-		const store = new MemorySessionStore<string>()
++		const store = new MemorySessionStore<Session>()
+ 		for (let index = 0; index < DEFAULT_SESSION_CAPACITY; index += 1)
+-			await store.set(`id-${index}`, 'payload', 0)
+-		expect(await store.get('id-0', 0)).toBe('payload')
+-		await store.set('overflow', 'payload', 0)
++			await store.set(buildSession(`id-${index}`), 0)
++		expect((await store.get('id-0', 0))?.id).toBe('id-0')
++		await store.set(buildSession('overflow'), 0)
+ 		expect(await store.get('id-0', 0)).toBeUndefined()
+-		expect(await store.get('overflow', 0)).toBe('payload')
++		expect((await store.get('overflow', 0))?.id).toBe('overflow')
+ 	})
+ 
+ 	it('keeps size at or below an explicit capacity when inserting capacity+1 distinct never-read ids', async () => {
+-		const store = new MemorySessionStore<string>({ capacity: 5 })
+-		for (let index = 0; index < 6; index += 1) await store.set(`id-${index}`, 'payload', 0)
++		const store = new MemorySessionStore<Session>({ capacity: 5 })
++		for (let index = 0; index < 6; index += 1) await store.set(buildSession(`id-${index}`), 0)
+ 		let alive = 0
+ 		for (let index = 0; index < 6; index += 1)
+ 			if ((await store.get(`id-${index}`, 0)) !== undefined) alive += 1
+@@ -136,36 +137,36 @@ describe('MemorySessionStore capacity', () => {
+ 	})
+ 
+ 	it('evicts the least-recently-WRITTEN id, not the least-recently-inserted', async () => {
+-		const store = new MemorySessionStore<string>({ capacity: 2 })
+-		await store.set('a', '1', 0)
+-		await store.set('b', '2', 0)
++		const store = new MemorySessionStore<Session>({ capacity: 2 })
++		await store.set(buildSession('a', '1'), 0)
++		await store.set(buildSession('b', '2'), 0)
+ 		// Touch 'a' again — refreshes its write recency, making 'b' the oldest.
+-		await store.set('a', '1-touched', 0)
++		await store.set(buildSession('a', '1-touched'), 0)
+ 		// Inserting a brand-new id exceeds capacity — evicts the least-recently-written, 'b'.
+-		await store.set('c', '3', 0)
++		await store.set(buildSession('c', '3'), 0)
+ 		expect(await store.get('b', 0)).toBeUndefined()
+-		expect(await store.get('a', 0)).toBe('1-touched')
+-		expect(await store.get('c', 0)).toBe('3')
++		expect((await store.get('a', 0))?.state.get('mark')).toBe('1-touched')
++		expect((await store.get('c', 0))?.state.get('mark')).toBe('3')
+ 	})
+ 
+ 	it('invokes evict with the evicted id on a capacity eviction', async () => {
+ 		const evicted: string[] = []
+-		const store = new MemorySessionStore<string>({ capacity: 1, evict: (id) => evicted.push(id) })
+-		await store.set('a', '1', 0)
+-		await store.set('b', '2', 0)
++		const store = new MemorySessionStore<Session>({ capacity: 1, evict: (id) => evicted.push(id) })
++		await store.set(buildSession('a', '1'), 0)
++		await store.set(buildSession('b', '2'), 0)
+ 		expect(evicted).toEqual(['a'])
+ 	})
+ 
+ 	it('swallows a throwing evict callback without affecting the store', async () => {
+-		const store = new MemorySessionStore<string>({
++		const store = new MemorySessionStore<Session>({
+ 			capacity: 1,
+ 			evict: () => {
+ 				throw new Error('evict callback is broken')
+ 			},
+ 		})
+-		await store.set('a', '1', 0)
+-		await expect(store.set('b', '2', 0)).resolves.toBeUndefined()
+-		expect(await store.get('b', 0)).toBe('2')
++		await store.set(buildSession('a', '1'), 0)
++		await expect(store.set(buildSession('b', '2'), 0)).resolves.toBeUndefined()
++		expect((await store.get('b', 0))?.state.get('mark')).toBe('2')
+ 	})
+ 
+ 	it('throws a TypeError for capacity 0, negative, or non-integer', () => {
+@@ -177,14 +178,14 @@ describe('MemorySessionStore capacity', () => {
+ 
+ describe('MemorySessionStore delete', () => {
+ 	it('deletes a present session so a later get resolves undefined', async () => {
+-		const store = new MemorySessionStore<string>()
+-		await store.set('a', 'payload', 0)
++		const store = new MemorySessionStore<Session>()
++		await store.set(buildSession('a'), 0)
+ 		await store.delete('a')
+ 		expect(await store.get('a', 0)).toBeUndefined()
+ 	})
+ 
+ 	it('is a total no-op deleting an absent id (never throws)', async () => {
+-		const store = new MemorySessionStore<string>()
++		const store = new MemorySessionStore<Session>()
+ 		await expect(store.delete('missing')).resolves.toBeUndefined()
+ 	})
+ })
+diff --git a/tests/src/server/helpers.test.ts b/tests/src/server/helpers.test.ts
+index bb771c9..13c8da5 100644
+--- a/tests/src/server/helpers.test.ts
++++ b/tests/src/server/helpers.test.ts
+@@ -1,5 +1,5 @@
+-import { join, resolve as resolvePath } from 'node:path'
+-import { open, readFile, stat, writeFile } from 'node:fs/promises'
++import { dirname, join, resolve as resolvePath } from 'node:path'
++import { open, readFile, stat, unlink, writeFile } from 'node:fs/promises'
+ import { randomUUID } from 'node:crypto'
+ import { gunzipSync, inflateSync } from 'node:zlib'
+ import { describe, expect, it } from 'vitest'
+@@ -18,6 +18,11 @@ import {
+ 	isUnderPath,
+ 	lookupContentType,
+ 	matchesBytes,
++	DEFAULT_MULTIPART_FIELD,
++	DEFAULT_MULTIPART_FIELDS,
++	DEFAULT_MULTIPART_FILE,
++	DEFAULT_MULTIPART_FILES,
++	DEFAULT_MULTIPART_TOTAL,
+ 	MULTIPART_MAX_HEADER_BLOCK,
+ 	MULTIPART_MAX_PREAMBLE,
+ 	moveUploadedFile,
+@@ -25,7 +30,7 @@ import {
+ 	parseMultipartRequest,
+ 	parsePartHeaders,
+ 	readUploadedFile,
+-	resolveDefaultDirectory,
++	resolveMultipartLimits,
+ 	resolveStaticFallbackPath,
+ 	resolveStaticPath,
+ 	streamFile,
+@@ -465,7 +470,7 @@ describe('parseMultipartRequest', () => {
+ 			},
+ 		])
+ 		await expect(parseMultipartRequest(request, { allowed: ['image/png'] })).rejects.toSatisfy(
+-			(error: unknown) => isMultipartError(error) && error.reason === 'rejected',
++			(error: unknown) => isMultipartError(error) && error.code === 'rejected',
+ 		)
+ 	})
+ 
+@@ -480,7 +485,7 @@ describe('parseMultipartRequest', () => {
+ 			},
+ 		])
+ 		await expect(parseMultipartRequest(request, { allowed: ['text/plain'] })).rejects.toSatisfy(
+-			(error: unknown) => isMultipartError(error) && error.reason === 'rejected',
++			(error: unknown) => isMultipartError(error) && error.code === 'rejected',
+ 		)
+ 	})
+ 
+@@ -495,7 +500,7 @@ describe('parseMultipartRequest', () => {
+ 			},
+ 		])
+ 		await expect(parseMultipartRequest(request, { allowed: [] })).rejects.toSatisfy(
+-			(error: unknown) => isMultipartError(error) && error.reason === 'rejected',
++			(error: unknown) => isMultipartError(error) && error.code === 'rejected',
+ 		)
+ 	})
+ 
+@@ -572,7 +577,7 @@ describe('parseMultipartRequest', () => {
+ 				bytes: Buffer.from(PNG_MAGIC),
+ 			},
+ 		])
+-		const body = await parseMultipartRequest(request, { limits: { files: 1 } })
++		const body = await parseMultipartRequest(request, { limits: { file: { count: 1 } } })
+ 		expect(body?.files.b?.[0]?.name).toBe('b.png')
+ 	})
+ 
+@@ -634,7 +639,7 @@ describe('parseMultipartRequest', () => {
+ 		const request = new Request('http://test.local/x', init)
+ 		const promise = parseMultipartRequest(request)
+ 		await expect(promise).rejects.toSatisfy(
+-			(error: unknown) => isMultipartError(error) && error.reason === 'malformed',
++			(error: unknown) => isMultipartError(error) && error.code === 'malformed',
+ 		)
+ 		rejectedDuringFeed = sent < totalChunks
+ 		// The cap is checked incrementally, per chunk — rejection happens well
+@@ -663,7 +668,7 @@ describe('parseMultipartRequest', () => {
+ 			body: rejectedBody,
+ 		})
+ 		await expect(parseMultipartRequest(rejected)).rejects.toSatisfy(
+-			(error: unknown) => isMultipartError(error) && error.reason === 'malformed',
++			(error: unknown) => isMultipartError(error) && error.code === 'malformed',
+ 		)
+ 	})
+ 
+@@ -671,9 +676,9 @@ describe('parseMultipartRequest', () => {
+ 		const { request, cancelled } = buildCancelTrackingMultipartRequest([
+ 			{ kind: 'file', name: 'avatar', filename: 'big.bin', bytes: new Uint8Array(1000) },
+ 		])
+-		await expect(parseMultipartRequest(request, { limits: { file: 10 } })).rejects.toSatisfy(
+-			(error: unknown) => isMultipartError(error) && error.reason === 'limit',
+-		)
++		await expect(
++			parseMultipartRequest(request, { limits: { file: { size: 10 } } }),
++		).rejects.toSatisfy((error: unknown) => isMultipartError(error) && error.code === 'limit')
+ 		expect(cancelled.value).toBe(true)
+ 	})
+ 
+@@ -769,7 +774,7 @@ describe('parseMultipartRequest', () => {
+ 			expect(directory.names()).toHaveLength(1)
+ 			controller.abort()
+ 			await expect(parsing).rejects.toSatisfy(
+-				(error: unknown) => isMultipartError(error) && error.reason === 'malformed',
++				(error: unknown) => isMultipartError(error) && error.code === 'malformed',
+ 			)
+ 			expect(directory.names()).toHaveLength(0)
+ 		} finally {
+@@ -784,8 +789,11 @@ describe('parseMultipartRequest', () => {
+ 				{ kind: 'file', name: 'avatar', filename: 'big.bin', bytes: new Uint8Array(1000) },
+ 			])
+ 			await expect(
+-				parseMultipartRequest(request, { limits: { file: 10 }, directory: directory.path }),
+-			).rejects.toSatisfy((error: unknown) => isMultipartError(error) && error.reason === 'limit')
++				parseMultipartRequest(request, {
++					limits: { file: { size: 10 } },
++					directory: directory.path,
++				}),
++			).rejects.toSatisfy((error: unknown) => isMultipartError(error) && error.code === 'limit')
+ 			expect(directory.names()).toHaveLength(0)
+ 		} finally {
+ 			directory.destroy()
+@@ -799,7 +807,7 @@ describe('parseMultipartRequest', () => {
+ 				{ kind: 'file', name: 'avatar', filename: 'big.bin', bytes: new Uint8Array(10) },
+ 			])
+ 			const body = await parseMultipartRequest(request, {
+-				limits: { file: 10 },
++				limits: { file: { size: 10 } },
+ 				directory: directory.path,
+ 			})
+ 			expect(body?.files.avatar?.[0]?.size).toBe(10)
+@@ -813,9 +821,9 @@ describe('parseMultipartRequest', () => {
+ 			{ kind: 'field', name: 'a', value: '1' },
+ 			{ kind: 'field', name: 'b', value: '2' },
+ 		])
+-		await expect(parseMultipartRequest(request, { limits: { fields: 1 } })).rejects.toSatisfy(
+-			(error: unknown) => isMultipartError(error) && error.reason === 'limit',
+-		)
++		await expect(
++			parseMultipartRequest(request, { limits: { field: { count: 1 } } }),
++		).rejects.toSatisfy((error: unknown) => isMultipartError(error) && error.code === 'limit')
+ 	})
+ 
+ 	it('accepts exactly the field-count limit worth of fields', async () => {
+@@ -823,7 +831,7 @@ describe('parseMultipartRequest', () => {
+ 			{ kind: 'field', name: 'a', value: '1' },
+ 			{ kind: 'field', name: 'b', value: '2' },
+ 		])
+-		const body = await parseMultipartRequest(request, { limits: { fields: 2 } })
++		const body = await parseMultipartRequest(request, { limits: { field: { count: 2 } } })
+ 		expect(body?.fields.a).toBe('1')
+ 		expect(body?.fields.b).toBe('2')
+ 	})
+@@ -833,9 +841,9 @@ describe('parseMultipartRequest', () => {
+ 			{ kind: 'file', name: 'a', filename: 'a.txt', bytes: new TextEncoder().encode('x') },
+ 			{ kind: 'file', name: 'b', filename: 'b.txt', bytes: new TextEncoder().encode('y') },
+ 		])
+-		await expect(parseMultipartRequest(request, { limits: { files: 1 } })).rejects.toSatisfy(
+-			(error: unknown) => isMultipartError(error) && error.reason === 'limit',
+-		)
++		await expect(
++			parseMultipartRequest(request, { limits: { file: { count: 1 } } }),
++		).rejects.toSatisfy((error: unknown) => isMultipartError(error) && error.code === 'limit')
+ 	})
+ 
+ 	it('accepts exactly the file-count limit worth of files', async () => {
+@@ -845,7 +853,7 @@ describe('parseMultipartRequest', () => {
+ 				{ kind: 'file', name: 'a', filename: 'a.txt', bytes: new TextEncoder().encode('x') },
+ 			])
+ 			const body = await parseMultipartRequest(request, {
+-				limits: { files: 1 },
++				limits: { file: { count: 1 } },
+ 				directory: directory.path,
+ 			})
+ 			expect(body?.files.a?.[0]?.name).toBe('a.txt')
+@@ -862,7 +870,7 @@ describe('parseMultipartRequest', () => {
+ 				{ kind: 'file', name: 'unused', filename: '', bytes: new Uint8Array(0) },
+ 			])
+ 			const body = await parseMultipartRequest(request, {
+-				limits: { files: 1 },
++				limits: { file: { count: 1 } },
+ 				directory: directory.path,
+ 			})
+ 			expect(body?.files.a?.[0]?.name).toBe('a.txt')
+@@ -875,21 +883,21 @@ describe('parseMultipartRequest', () => {
+ 
+ 	it('trips the field-size limit', async () => {
+ 		const request = buildMultipartRequest([{ kind: 'field', name: 'a', value: 'x'.repeat(100) }])
+-		await expect(parseMultipartRequest(request, { limits: { field: 10 } })).rejects.toSatisfy(
+-			(error: unknown) => isMultipartError(error) && error.reason === 'limit',
+-		)
++		await expect(
++			parseMultipartRequest(request, { limits: { field: { size: 10 } } }),
++		).rejects.toSatisfy((error: unknown) => isMultipartError(error) && error.code === 'limit')
+ 	})
+ 
+ 	it('accepts a field exactly AT the field-size limit', async () => {
+ 		const request = buildMultipartRequest([{ kind: 'field', name: 'a', value: 'x'.repeat(10) }])
+-		const body = await parseMultipartRequest(request, { limits: { field: 10 } })
++		const body = await parseMultipartRequest(request, { limits: { field: { size: 10 } } })
+ 		expect(body?.fields.a).toBe('x'.repeat(10))
+ 	})
+ 
+ 	it('trips the total-size limit', async () => {
+ 		const request = buildMultipartRequest([{ kind: 'field', name: 'a', value: 'x'.repeat(1000) }])
+ 		await expect(parseMultipartRequest(request, { limits: { total: 50 } })).rejects.toSatisfy(
+-			(error: unknown) => isMultipartError(error) && error.reason === 'limit',
++			(error: unknown) => isMultipartError(error) && error.code === 'limit',
+ 		)
+ 	})
+ 
+@@ -916,7 +924,7 @@ describe('parseMultipartRequest', () => {
+ 			body: 'not a real multipart body at all',
+ 		})
+ 		await expect(parseMultipartRequest(request)).rejects.toSatisfy(
+-			(error: unknown) => isMultipartError(error) && error.reason === 'malformed',
++			(error: unknown) => isMultipartError(error) && error.code === 'malformed',
+ 		)
+ 	})
+ 
+@@ -929,7 +937,7 @@ describe('parseMultipartRequest', () => {
+ 			body,
+ 		})
+ 		await expect(parseMultipartRequest(request)).rejects.toSatisfy(
+-			(error: unknown) => isMultipartError(error) && error.reason === 'malformed',
++			(error: unknown) => isMultipartError(error) && error.code === 'malformed',
+ 		)
+ 	})
+ 
+@@ -942,7 +950,7 @@ describe('parseMultipartRequest', () => {
+ 			body,
+ 		})
+ 		await expect(parseMultipartRequest(request)).rejects.toSatisfy(
+-			(error: unknown) => isMultipartError(error) && error.reason === 'malformed',
++			(error: unknown) => isMultipartError(error) && error.code === 'malformed',
+ 		)
+ 	})
+ 
+@@ -956,7 +964,7 @@ describe('parseMultipartRequest', () => {
+ 			body,
+ 		})
+ 		await expect(parseMultipartRequest(request)).rejects.toSatisfy(
+-			(error: unknown) => isMultipartError(error) && error.reason === 'malformed',
++			(error: unknown) => isMultipartError(error) && error.code === 'malformed',
+ 		)
+ 	})
+ 
+@@ -982,7 +990,7 @@ describe('parseMultipartRequest', () => {
+ 			body: rejectedBody,
+ 		})
+ 		await expect(parseMultipartRequest(rejected)).rejects.toSatisfy(
+-			(error: unknown) => isMultipartError(error) && error.reason === 'malformed',
++			(error: unknown) => isMultipartError(error) && error.code === 'malformed',
+ 		)
+ 	})
+ })
+@@ -1339,7 +1347,7 @@ describe('parsePartHeaders', () => {
+ 		expect(parsePartHeaders('Content-Disposition: form-data; name="title"')).toEqual({
+ 			name: 'title',
+ 			filename: undefined,
+-			contentType: undefined,
++			mime: undefined,
+ 		})
+ 	})
+ 
+@@ -1351,7 +1359,7 @@ describe('parsePartHeaders', () => {
+ 		expect(parsePartHeaders(block)).toEqual({
+ 			name: 'avatar',
+ 			filename: 'a.png',
+-			contentType: 'image/png',
++			mime: 'image/png',
+ 		})
+ 	})
+ 
+@@ -1381,7 +1389,7 @@ describe('parsePartHeaders', () => {
+ 		expect(parsePartHeaders('X-Custom: whatever')).toEqual({
+ 			name: undefined,
+ 			filename: undefined,
+-			contentType: undefined,
++			mime: undefined,
+ 		})
+ 	})
+ })
+@@ -1448,11 +1456,11 @@ describe('isMultipartFile', () => {
+ describe('isMultipartError', () => {
+ 	it('accepts a structurally-branded plain object built WITHOUT the class', () => {
+ 		// Simulates the "other module face" case: a value carrying the SAME
+-		// well-known Symbol.for brand plus reason/status, but never
++		// well-known Symbol.for brand plus code/status, but never
+ 		// constructed via `new MultipartError(...)` — the guard is structural,
+ 		// not `instanceof`.
+ 		const brand = Symbol.for('@orkestrel/middleware.MultipartError')
+-		const value = { [brand]: true, status: 413, reason: 'limit' }
++		const value = { [brand]: true, status: 413, code: 'limit' }
+ 		expect(isMultipartError(value)).toBe(true)
+ 	})
+ 
+@@ -1460,9 +1468,9 @@ describe('isMultipartError', () => {
+ 		expect(isMultipartError(new Error('boom'))).toBe(false)
+ 	})
+ 
+-	it('rejects a branded object with an invalid reason', () => {
++	it('rejects a branded object with an invalid code', () => {
+ 		const brand = Symbol.for('@orkestrel/middleware.MultipartError')
+-		expect(isMultipartError({ [brand]: true, status: 400, reason: 'nope' })).toBe(false)
++		expect(isMultipartError({ [brand]: true, status: 400, code: 'nope' })).toBe(false)
+ 	})
+ 
+ 	it('is total on non-object input', () => {
+@@ -1478,9 +1486,22 @@ describe('staging security', () => {
+ 	it.runIf(process.platform !== 'win32')(
+ 		'the default staging directory is created with mode 0o700',
+ 		async () => {
+-			const directory = await resolveDefaultDirectory()
+-			const info = await stat(directory)
++			const request = buildMultipartRequest([
++				{
++					kind: 'file',
++					name: 'avatar',
++					filename: 'a.png',
++					contentType: 'image/png',
++					bytes: Buffer.from(PNG_MAGIC),
++				},
++			])
++			const body = await parseMultipartRequest(request)
++			const path = body?.files.avatar?.[0]?.path
++			expect(path).toBeDefined()
++			if (path === undefined) return
++			const info = await stat(dirname(path))
+ 			expect(info.mode & 0o777).toBe(0o700)
++			await unlink(path)
+ 		},
+ 	)
+ 
+@@ -1510,3 +1531,34 @@ describe('staging security', () => {
+ 		},
+ 	)
+ })
++
++// ── resolveMultipartLimits — the documented default matrix ──────────────────
++
++describe('resolveMultipartLimits', () => {
++	it('fills every leaf from the documented defaults when no limits are given', () => {
++		expect(resolveMultipartLimits(undefined)).toEqual({
++			file: { size: DEFAULT_MULTIPART_FILE, count: DEFAULT_MULTIPART_FILES },
++			field: { size: DEFAULT_MULTIPART_FIELD, count: DEFAULT_MULTIPART_FIELDS },
++			total: DEFAULT_MULTIPART_TOTAL,
++		})
++	})
++
++	it('keeps a stated leaf and defaults its sibling inside the same group', () => {
++		const limits = resolveMultipartLimits({ file: { size: 1_048_576 } })
++		expect(limits.file).toEqual({ size: 1_048_576, count: DEFAULT_MULTIPART_FILES })
++		expect(limits.field).toEqual({
++			size: DEFAULT_MULTIPART_FIELD,
++			count: DEFAULT_MULTIPART_FIELDS,
++		})
++	})
++
++	it('keeps every stated leaf across both groups and the total', () => {
++		expect(
++			resolveMultipartLimits({
++				file: { size: 1, count: 2 },
++				field: { size: 3, count: 4 },
++				total: 5,
++			}),
++		).toEqual({ file: { size: 1, count: 2 }, field: { size: 3, count: 4 }, total: 5 })
++	})
++})
+diff --git a/tests/src/server/middlewares.test.ts b/tests/src/server/middlewares.test.ts
+index 8ac8df0..bec55c4 100644
+--- a/tests/src/server/middlewares.test.ts
++++ b/tests/src/server/middlewares.test.ts
+@@ -1,4 +1,4 @@
+-import type { ConnectionState } from '@src/core'
++import type { ConnectionState, SessionInterface } from '@src/core'
+ import type { MultipartState } from '@src/core'
+ import { join } from 'node:path'
+ import http from 'node:http'
+@@ -936,7 +936,7 @@ describe('createMultipart', () => {
+ 		try {
+ 			const handler = createMultipart<MultipartState>({
+ 				directory: directory.path,
+-				limits: { file: 5 },
++				limits: { file: { size: 5 } },
+ 			})
+ 			const request = buildMultipartRequest([
+ 				{ kind: 'file', name: 'avatar', filename: 'big.bin', bytes: new Uint8Array(500) },
+@@ -1192,7 +1192,7 @@ describe('capstone: real socket + Dispatcher + canonical onion', () => {
+ 		identifier?: string
+ 		client?: { readonly ip?: string }
+ 		token?: string
+-		session?: { readonly id: string; readonly data: Map<string, unknown> }
++		session?: SessionInterface
+ 		control?: { regenerate(): void; destroy(): void }
+ 		csrf?: string
+ 	}
+@@ -1235,7 +1235,7 @@ describe('capstone: real socket + Dispatcher + canonical onion', () => {
+ 			createETag<CapstoneState>(),
+ 			createBearer<CapstoneState>({ secret }),
+ 			createLimiter<CapstoneState>({ max: 3, window: 60_000 }),
+-			createSession<{ readonly id: string; readonly data: Map<string, unknown> }, CapstoneState>({
++			createSession<SessionInterface, CapstoneState>({
+ 				transport: createCookieTransport({ secret }),
+ 			}),
+ 			createCSRF<CapstoneState>({ secret }),

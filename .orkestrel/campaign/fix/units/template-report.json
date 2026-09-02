@@ -1,0 +1,103 @@
+{
+ "unit": "breaking-template",
+ "rows": [
+  {
+   "id": "s17-16",
+   "state": "applied",
+   "note": "Renamed the manager's lone tally from `size` to `count` on `TemplateManagerInterface` (src/core/types.ts) and `TemplateManager` (src/core/TemplateManager.ts), per names.md § Tallies (\"A lone unambiguous tally is `count`\"). Updated the guide's `TemplateManagerInterface` Types row and the `## Methods` preamble, the `TemplateManager#has / #count` describe block and its assertions, and the `createTemplateManager` seeding assertion. The remaining `\\bsize\\b` hit in owned files is `this.#templates.size`, the platform `Map.prototype.size` member on a `#` field, not this package's surface."
+  },
+  {
+   "id": "s17-17",
+   "state": "applied",
+   "note": "`template(id)` now returns `TemplateInterface | undefined` on both the interface and the class, and its body is the bare `#templates` lookup. The `NOTFOUND` throw stays on `fill`, `validate`, and `parameters`, which now route through a new `#require(id): TemplateInterface` private method that carries the throw; `#throwNotFound` is gone. Updated the interface `@remarks`, the `TemplateErrorCode` `@remarks`, the `isTemplateError` `@example` in errors.ts (it called `manager.template('missing')` inside a try/catch expecting `NOTFOUND`, which the change made false), the guide's NOTFOUND preamble, the `template` Methods row, and the fence comment. The test that pinned the throw on the accessor now pins `undefined`; the three tests that pin the throw on `fill` / `validate` / `parameters` are unchanged and still green."
+  },
+  {
+   "id": "s17-18",
+   "state": "applied",
+   "note": "Dropped the no-argument `remove(): void` overload from `TemplateManagerInterface` and `TemplateManager`; the implementation signature narrowed to `remove(target: string | readonly string[]): boolean` and the `target === undefined` branch is gone. `clear()` keeps its single `clear` emission, unchanged. The TSDoc and the guide now name `clear` as the sole remove-all and name `remove(manager.templates().map((one) => one.id))` as the per-instance-observation substitute; a test proves that expression purges the registry and emits `remove` per instance."
+  }
+ ],
+ "symbols": [
+  "TemplateManagerInterface.size → TemplateManagerInterface.count",
+  "TemplateManager.size → TemplateManager.count",
+  "TemplateManagerInterface.template(id): TemplateInterface → template(id): TemplateInterface | undefined",
+  "TemplateManager.template(id): TemplateInterface → template(id): TemplateInterface | undefined",
+  "TemplateManagerInterface.remove(): void → removed",
+  "TemplateManager.remove(): void → removed",
+  "TemplateManager.remove(target?: string | readonly string[]): boolean | void → remove(target: string | readonly string[]): boolean",
+  "TemplateManager.#throwNotFound(id): never → TemplateManager.#require(id): TemplateInterface"
+ ],
+ "files": [
+  "/home/user/fleet/template/src/core/types.ts",
+  "/home/user/fleet/template/src/core/TemplateManager.ts",
+  "/home/user/fleet/template/src/core/errors.ts",
+  "/home/user/fleet/template/tests/src/core/TemplateManager.test.ts",
+  "/home/user/fleet/template/tests/src/core/factories.test.ts",
+  "/home/user/fleet/template/guides/template.md"
+ ],
+ "tests": [
+  "/home/user/fleet/template/tests/src/core/TemplateManager.test.ts — `TemplateManager#template › throws TemplateError coded NOTFOUND for an unknown id` became `returns undefined for an unknown id`",
+  "/home/user/fleet/template/tests/src/core/TemplateManager.test.ts — added `TemplateManager#template › returns the registered instance for a known id`",
+  "/home/user/fleet/template/tests/src/core/TemplateManager.test.ts — `describe('TemplateManager#has / #size')` became `describe('TemplateManager#has / #count')`, and `size reflects the number of registered templates` became `count reflects the number of registered templates`",
+  "/home/user/fleet/template/tests/src/core/TemplateManager.test.ts — deleted `TemplateManager#remove › remove() removes every registered template and returns void` with the capability it named",
+  "/home/user/fleet/template/tests/src/core/TemplateManager.test.ts — `emits remove once per registered template for remove()` became `remove(ids[]) over templates() purges the registry, emitting remove per instance`, proving the substitute expression the TSDoc and guide now name",
+  "/home/user/fleet/template/tests/src/core/TemplateManager.test.ts — `manager.size` assertions became `manager.count`, and the replace test reads `manager.template('greeting')?.content`",
+  "/home/user/fleet/template/tests/src/core/factories.test.ts — `expect(manager.size).toBe(1)` became `expect(manager.count).toBe(1)`"
+ ],
+ "gates": [
+  {
+   "command": "npm run format:check",
+   "exit": 0,
+   "excerpt": "Checking formatting...\nAll matched files use the correct format.\nFinished in 3008ms on 44 files using 4 threads."
+  },
+  {
+   "command": "npm run lint:check",
+   "exit": 0,
+   "excerpt": "> oxlint --config .oxlintrc.json --deny-warnings .\n(no output)"
+  },
+  {
+   "command": "npm run check",
+   "exit": 0,
+   "excerpt": "> tsc --noEmit --project tsconfig.json && npm run check:src\n> tsc --noEmit -p configs/src/tsconfig.core.json\n(no diagnostics)"
+  },
+  {
+   "command": "npm run build",
+   "exit": 0,
+   "excerpt": "dist/src/core/index.js  25.21 kB | gzip: 7.52 kB\ndist/src/core/index.cjs  25.77 kB | gzip: 7.63 kB\nCopied: dist/src/core/index.d.ts to dist/src/core/index.d.cts"
+  },
+  {
+   "command": "npm test",
+   "exit": 0,
+   "excerpt": "test:src  Test Files 5 passed (5)  Tests 123 passed (123)\ntest:policy  Test Files 1 passed (1)  Tests 111 passed (111)\ntest:config  Test Files 1 passed (1)  Tests 46 passed (46)\ntest:setup  Test Files 1 passed (1)  Tests 2 passed (2)\ntest:guides  Test Files 1 passed (1)  Tests 23 passed (23)"
+  },
+  {
+   "command": "npx tsc --noEmit -p tmp/probe/tsconfig.json (case: the new surface, throwaway type probe, deleted)",
+   "exit": 0,
+   "excerpt": "(no diagnostics) — `manager.count`, `manager.template('a')` assigned to `TemplateInterface | undefined`, `manager.remove('a')`, and `manager.remove(['a'])` all typecheck."
+  },
+  {
+   "command": "npx tsc --noEmit -p tmp/probe/tsconfig.json (control: the old surface, throwaway type probe, deleted)",
+   "exit": 2,
+   "excerpt": "tmp/probe/control.ts(5,31): error TS2339: Property 'size' does not exist on type 'TemplateManager'.\ntmp/probe/control.ts(6,7): error TS2322: Type 'TemplateInterface | undefined' is not assignable to type 'TemplateInterface'.\ntmp/probe/control.ts(7,9): error TS2554: Expected 1 arguments, but got 0."
+  }
+ ],
+ "diffstat": " guides/template.md                     | 73 +++++++++++++++++-----------------\n src/core/TemplateManager.ts            | 59 ++++++++++++++-------------\n src/core/errors.ts                     |  2 +-\n src/core/types.ts                      | 17 ++++----\n tests/src/core/TemplateManager.test.ts | 43 +++++++++-----------\n tests/src/core/factories.test.ts       |  2 +-\n 6 files changed, 96 insertions(+), 100 deletions(-)",
+ "status": " M guides/template.md\n M src/core/TemplateManager.ts\n M src/core/errors.ts\n M src/core/types.ts\n M tests/src/core/TemplateManager.test.ts\n M tests/src/core/factories.test.ts",
+ "distMoves": true,
+ "observations": [
+  "The built `dist/` moved. `dist/src/core/index.d.ts` now declares `readonly count: number` and `template(id: string): TemplateInterface | undefined`, and `grep -c 'remove(): void' dist/src/core/index.d.ts` returns 0.",
+  "A throwaway type probe under `tmp/probe/` gave the red-then-green receipt: the control naming the old surface broke at the type stage with one diagnostic per row (`size` missing, `TemplateInterface | undefined` unassignable, `Expected 1 arguments, but got 0`), and the case naming the new surface compiled clean. The probe was deleted before the final gate chain; `git status --short` lists only the six edited files and `tmp/` no longer exists.",
+  "The `NOTFOUND` throw moved into a new `#require(id): TemplateInterface` private method shared by `fill`, `validate`, and `parameters`. It survives the wrapper test by owning the invariant three public methods need, and it reaches `#templates`, so the leaf test places it as a class method rather than a helper.",
+  "The replace test reads `manager.template('greeting')?.content` — optional chaining, not a non-null assertion. The assertion still fails for the defect: an unregistered id yields `undefined`, which does not equal `'Hi again'`.",
+  "Re-aligning the guide's Types table widened every row by one character, because `count` is one longer than `size` and that row sets the column width. `npm run format` confirmed the alignment: oxfmt formats Markdown here and left the table byte-identical to what the edit produced.",
+  "The TSDoc first-sentence rewrite to the third-person `-s` form is scoped to the blocks this unit touched — `template`, `remove`, `fill`, `validate`, `parameters`. `register`, `templates`, `find`, `has`, and `clear` keep their imperative first sentences; that is pre-existing drift outside these rows.",
+  "`tests/src/core/TemplateManager.test.ts` carries `describe('TemplateManager — structural passthrough (R7)')`. `R7` is a control label in a test name, which the brief's standing directive refuses. It is outside these three rows, so it is recorded here for the campaign that owns R7 rather than changed.",
+  "`/home/user/fleet/template/README.md` carries `TODO: one-line description`, a fence calling `createTemplate({ id: 'example' })` without the required `name` and `content`, and a link to `guides/src/template.md`, which does not exist. None of it names a symbol these rows moved, so it is recorded rather than changed.",
+  "Whole-suite `npm test` timing on this host was unremarkable: no project reported a timeout and every project exited 0 on the final tree.",
+  "The centralization sweep over the touched files found nothing to move: `types.ts` holds only types, `TemplateManager.ts` holds one class with `#` fields and no module-scope or nested declaration, `errors.ts` is unchanged structurally, the barrel is untouched, and the tests declare no local fixture factory — the `(one) => one.id` arrow is an anonymous callback passed directly as an argument."
+ ],
+ "deviations": [
+  "The brief's Execution step directs running `npm run check` first and reading the red as the adoption list. It exited 0 on the launch baseline, so the adoption list was empty and no renamed upstream symbol needed adopting in this change. The preceding commit, `bf94339 Adopt the renamed guide helpers in the parity test`, had already closed the staged closure's only reach into this package.",
+  "Ruling s17-18 sits in tension with `.claude/rules/patterns.md` § Managers § Batch operations, which lists `method(): void` in the three-overload batch family and says \"No argument applies to all\". The row is not marked REFUSED, and `.claude/rules/names.md` § Fixed lifecycle vocabulary already assigns the remove-all meaning to `clear` (\"Reset state without destroying the entity\"), which makes the no-argument `remove()` an alternating synonym under `AGENTS.md` § Design laws \"One concept, one term\". The ruling was applied. The deviation contract's stop triggers — a target-name collision, two rows moving one symbol differently, a required change in an off-limits file, an unattributable gate failure — do not cover a rule tension, so this is recorded rather than stopped."
+ ]
+}

@@ -1,0 +1,2649 @@
+diff --git a/README.md b/README.md
+index e51e404..261250a 100644
+--- a/README.md
++++ b/README.md
+@@ -25,20 +25,20 @@ npm install @orkestrel/console
+ The same code retargets to any environment by swapping the `sink`:
+ 
+ ```ts
+-import { createLogger, createReporter, createSpinner } from '@src/core'
++import { Logger, Reporter, Spinner } from '@src/core'
+ 
+-const logger = createLogger({ name: 'http', level: 'info' }) // ANSI to the console by default
++const logger = new Logger({ name: 'http', level: 'info' }) // ANSI to the console by default
+ logger.info('request', { method: 'GET', path: '/' }) // a styled, leveled line + an `entry` event
+ logger.emitter.on('entry', (record) => archive(record)) // the transport seam — file / JSON / remote
+ 
+-const reporter = createReporter()
++const reporter = new Reporter()
+ reporter.section('Build')
+ reporter.step('bundling', { index: 2, total: 5 }) // [2/5] bundling
+ reporter.status('success', 'built in 1.2s') // ✔ built in 1.2s
+ 
+-const spinner = createSpinner({ message: 'deploying' })
++const spinner = new Spinner({ message: 'deploying' })
+ spinner.start() // a self-driving glyph cycle, `\r`-redrawn by an overwrite-capable sink
+-spinner.success('deployed') // ✔ deployed — the timer cleared, the line committed
++spinner.succeed('deployed') // ✔ deployed — the timer cleared, the line committed
+ ```
+ 
+ Style is data — a `Style` is a frozen record rendered through a swappable
+@@ -54,9 +54,9 @@ console.log(styler.red.bold('hi')) // renders through the injected renderer
+ Take control of `console.*` on the read side with `Capture`:
+ 
+ ```ts
+-import { createCapture } from '@src/core'
++import { Capture } from '@src/core'
+ 
+-const capture = createCapture({ mirror: true })
++const capture = new Capture({ mirror: true })
+ capture.start()
+ console.log('hello')
+ capture.messages() // [{ level: 'log', text: 'hello', time: ... }]
+diff --git a/guides/console.md b/guides/console.md
+index 4dd6d53..ac7c880 100644
+--- a/guides/console.md
++++ b/guides/console.md
+@@ -9,20 +9,20 @@
+ Build a styled, leveled logger and a narrative reporter over the shared substrate; the SAME code retargets to any environment by swapping the `sink`:
+ 
+ ```ts
+-import { createLogger, createReporter, createSpinner } from '@orkestrel/console'
++import { Logger, Reporter, Spinner } from '@orkestrel/console'
+ 
+-const logger = createLogger({ name: 'http', level: 'info' }) // ANSI to the console by default
++const logger = new Logger({ name: 'http', level: 'info' }) // ANSI to the console by default
+ logger.info('request', { method: 'GET', path: '/' }) // a styled, leveled line + an `entry` event
+ logger.emitter.on('entry', (record) => archive(record)) // the transport seam — file / JSON / remote
+ 
+-const reporter = createReporter()
++const reporter = new Reporter()
+ reporter.section('Build')
+ reporter.step('bundling', { index: 2, total: 5 }) // [2/5] bundling
+ reporter.status('success', 'built in 1.2s') // ✔ built in 1.2s
+ 
+-const spinner = createSpinner({ message: 'deploying' })
++const spinner = new Spinner({ message: 'deploying' })
+ spinner.start() // a self-driving glyph cycle, `\r`-redrawn by an overwrite-capable sink
+-spinner.success('deployed') // ✔ deployed — the timer cleared, the line committed
++spinner.succeed('deployed') // ✔ deployed — the timer cleared, the line committed
+ ```
+ 
+ Style is **data**: a `Style` is a frozen `{ foreground?, background?, attributes }` record, and a `RendererInterface` turns it into output for one target. The `Styler` is the fluent surface — `styler.red.bold('hi')` accumulates a style and renders it through the injected renderer; swap the renderer (ANSI default → browser `%c`) and the style model never changes. Logging is **orthogonal to styling**: a `LogLevel` is one coherent ascending scale (`debug` < `info` < `warn` < `error`), and a level's color is a styling choice, never a pseudo-level. Every retention buffer (a logger's tail, a capture's buffers) is **bounded** — never an unbounded leak.
+@@ -31,25 +31,24 @@ Style is **data**: a `Style` is a frozen `{ foreground?, background?, attributes
+ 
+ The style engine — text style as DATA, rendered by a swappable renderer (ANSI default; a browser `%c` renderer at the same seam).
+ 
+-| API                  | Kind      | Summary                                                                                                                                     |
+-| -------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+-| `Color`              | type      | A named terminal color — the 8 base colors, their 8 bright variants, and `default` (the target's own ink, no code).                         |
+-| `Attribute`          | type      | A text-style effect — `bold` / `dim` / `italic` / `underline` / `inverse` / `strikethrough` (the six standard SGR effects).                 |
+-| `Style`              | interface | Style as DATA — a frozen `{ foreground?, background?, attributes }` record; the one style value the whole system shares.                    |
+-| `RendererInterface`  | interface | The swappable style renderer — turns a `Style` + text into output for ONE target (ANSI default, browser `%c` at the same seam).             |
+-| `StylerOptions`      | interface | `createStyler` options — `renderer?` (the target, default ANSI) + `enabled?` (the no-color switch, default `true`).                         |
+-| `StylerInterface`    | interface | The fluent styling surface — a render FUNCTION carrying a chainable `Color` / `Attribute` accessor per token, immutable copy-on-write.      |
+-| `ThemeStatus`        | interface | One narrative outcome's presentation — the `icon` glyph a `StatusLevel` shows and the `Style` its line renders in.                          |
+-| `Theme`              | interface | The app-wide semantic style vocabulary — `levels` / `statuses` / `accent` / `chrome`, each role bound to a `Style`.                         |
+-| `ThemeOptions`       | interface | `createTheme` options — the roles to override on `DEFAULT_THEME`; a status supplies its whole copied `{ icon, style }` record.              |
+-| `ANSIRenderer`       | class     | The cross-environment default `RendererInterface` — renders a `Style` as SGR escape codes (stateless, event-free).                          |
+-| `createANSIRenderer` | function  | Create the default ANSI `RendererInterface`.                                                                                                |
+-| `createStyler`       | function  | Create the fluent `StylerInterface` (ANSI by default; pass a `renderer` to retarget, `enabled: false` to disable color).                    |
+-| `createTheme`        | function  | Create a `Theme` — merge over `DEFAULT_THEME`, snapshot and deep-freeze every style leaf, then share it across entities.                    |
+-| `freezeStyle`        | function  | Snapshot and deep-freeze one `Style`, including an independent frozen copy of its `attributes`.                                             |
+-| `strip`              | function  | Remove every ANSI escape sequence from a string, returning the plain visible text (total, re-entrant).                                      |
+-| `stripControls`      | function  | Remove every C0 control byte (except `\t` / `\n` / `\r`) plus DEL from a string — a SEPARATE pass from `strip`, so `width` stays untouched. |
+-| `width`              | function  | The VISIBLE width of a string — its length in code points after ANSI is stripped (the basis for terminal layout).                           |
++| API                 | Kind      | Summary                                                                                                                                     |
++| ------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
++| `Color`             | type      | A named terminal color — the 8 base colors, their 8 bright variants, and `default` (the target's own ink, no code).                         |
++| `Attribute`         | type      | A text-style effect — `bold` / `dim` / `italic` / `underline` / `inverse` / `strikethrough` (the six standard SGR effects).                 |
++| `Style`             | interface | Style as DATA — a frozen `{ foreground?, background?, attributes }` record; the one style value the whole system shares.                    |
++| `RendererInterface` | interface | The swappable style renderer — turns a `Style` + text into output for ONE target (ANSI default, browser `%c` at the same seam).             |
++| `StylerOptions`     | interface | `createStyler` options — `renderer?` (the target, default ANSI) + `enabled?` (the no-color switch, default `true`).                         |
++| `StylerInterface`   | interface | The fluent styling surface — a render FUNCTION carrying a chainable `Color` / `Attribute` accessor per token, immutable copy-on-write.      |
++| `ThemeStatus`       | interface | One narrative outcome's presentation — the `icon` glyph a `StatusLevel` shows and the `Style` its line renders in.                          |
++| `Theme`             | interface | The app-wide semantic style vocabulary — `levels` / `statuses` / `accent` / `chrome`, each role bound to a `Style`.                         |
++| `ThemeOptions`      | interface | `createTheme` options — the roles to override on `DEFAULT_THEME`; a status supplies its whole copied `{ icon, style }` record.              |
++| `ANSIRenderer`      | class     | The cross-environment default `RendererInterface` — renders a `Style` as SGR escape codes (stateless, event-free).                          |
++| `createStyler`      | function  | Create the fluent `StylerInterface` (ANSI by default; pass a `renderer` to retarget, `enabled: false` to disable color).                    |
++| `createTheme`       | function  | Create a `Theme` — merge over `DEFAULT_THEME`, snapshot and deep-freeze every style leaf, then share it across entities.                    |
++| `freezeStyle`       | function  | Snapshot and deep-freeze one `Style`, including an independent frozen copy of its `attributes`.                                             |
++| `strip`             | function  | Remove every ANSI escape sequence from a string, returning the plain visible text (total, re-entrant).                                      |
++| `stripControls`     | function  | Remove every C0 control byte (except `\t` / `\n` / `\r`) plus DEL from a string — a SEPARATE pass from `strip`, so `width` stays untouched. |
++| `width`             | function  | The VISIBLE width of a string — its length in code points after ANSI is stripped (the basis for terminal layout).                           |
+ 
+ ### Logging
+ 
+@@ -64,14 +63,12 @@ Structured logging — the immutable `LogRecord` + the `entry` event ARE the tra
+ | `selectWriter`           | function  | Select the `WriterSet` member a `LogLevel` routes to — the one level-to-target decision all three sink backends share.               |
+ | `createConsoleSink`      | function  | Create the default console `SinkInterface` — routes by level, writes through the `console` methods SNAPSHOTTED at creation.          |
+ | `Logger`                 | class     | The observable, leveled logger — builds a frozen `LogRecord`, gates it, retains a bounded tail, emits `entry`, writes a styled line. |
+-| `createLogger`           | function  | Create an observable, leveled `LoggerInterface` — the entry point into structured logging.                                           |
+ | `LoggerManager`          | class     | An event-free §9 registry of named loggers plus a convenience fan-out.                                                               |
+-| `createLoggerManager`    | function  | Create an event-free `LoggerManagerInterface` — a registry of named loggers + fan-out.                                               |
+ | `LoggerEventMap`         | type      | A logger's observable events (§13) — `entry(record)` for every accepted record (the transport seam).                                 |
+ | `LogFormatFunction`      | type      | The line layout a logger writes — `(record, styler, theme) => string`; `formatRecord` is the default (the event owns the record).    |
+-| `LoggerOptions`          | interface | `createLogger` options — `on?` / `error?` / `level?` / `name?` / `sink?` / `styler?` / `theme?` / `format?` / `limit?` / `silent?`.  |
++| `LoggerOptions`          | interface | `Logger` options — `on?` / `error?` / `level?` / `name?` / `sink?` / `styler?` / `theme?` / `format?` / `limit?` / `silent?`.        |
+ | `LoggerInterface`        | interface | The leveled logger — `emitter` / `level` / `name` data + `debug` / `info` / `warn` / `error` / `entries` / `clear` / `destroy`.      |
+-| `LoggerManagerOptions`   | interface | `createLoggerManager` options — the `level?` / `sink?` / `styler?` / `theme?` / `format?` / `limit?` / `silent?` logger defaults.    |
++| `LoggerManagerOptions`   | interface | `LoggerManager` options — the `level?` / `sink?` / `styler?` / `theme?` / `format?` / `limit?` / `silent?` logger defaults.          |
+ | `LoggerManagerInterface` | interface | The logger registry — a `count` data member + `register` / `logger` / `loggers` / the `debug`…`error` fan-out / `remove`.            |
+ 
+ ### Reporting
+@@ -91,10 +88,9 @@ Narrative reporting — pure width-aware LAYOUT renderers + a lean `Reporter` fr
+ | `TreeOptions`        | interface | `renderTree` options — `root` / `border?` / `styler?` / `style?`; a Reporter supplies chrome only when neither styling key is given.              |
+ | `StatusLevel`        | type      | A narrative OUTCOME level — `success` / `error` / `warn` / `info`, each with its own icon + color (DISTINCT from `LogLevel`).                     |
+ | `StepPosition`       | interface | A step's place in a sequence — the `{ index, total }` a `step` renders as a `[2/5]` prefix.                                                       |
+-| `ReporterOptions`    | interface | `createReporter` options — `sink?` / `styler?` / `theme?` / `width?` (the shared substrate, semantic roles, and layout width).                    |
++| `ReporterOptions`    | interface | `Reporter` options — `sink?` / `styler?` / `theme?` / `width?` (the shared substrate, semantic roles, and layout width).                          |
+ | `ReporterInterface`  | interface | The narrative reporter — `section` / `step` / `timing` / `status` / `table` / `tree` / `box` / `line` / `blank`.                                  |
+ | `Reporter`           | class     | The lean, event-free narrative reporter — formats through the shared styler + the pure renderers and writes to a sink.                            |
+-| `createReporter`     | function  | Create a lean, event-free `ReporterInterface` — the entry point into narrative reporting.                                                         |
+ | `renderSeparator`    | function  | Render a horizontal rule, optionally carrying a centered title — pure `SeparatorOptions → string`, width-aware.                                   |
+ | `renderBox`          | function  | Render content framed in box-drawing characters, optionally captioned — pure `BoxOptions → string`, width-aware.                                  |
+ | `renderTable`        | function  | Render a bordered grid of columns + rows with per-column alignment and width-aware sizing — pure `TableOptions → string`.                         |
+@@ -116,20 +112,19 @@ Narrative reporting — pure width-aware LAYOUT renderers + a lean `Reporter` fr
+ 
+ Console interception — take control of `console.*` on the READ side; a buffered, mirroring, forwarding interceptor with a lifecycle.
+ 
+-| API                  | Kind      | Summary                                                                                                                                |
+-| -------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+-| `CaptureLevel`       | type      | One intercepted `console` method — `log` / `info` / `warn` / `error` / `debug` (names the ORIGINATING method, not a severity).         |
+-| `ConsoleMethod`      | type      | The patched `console.*` method shape — a variadic `(...args) => void`; the boundary type the capture snapshots + swaps (§14).          |
+-| `CapturedMessage`    | interface | One captured console call — an immutable, serializable `{ level, text, time }`; every consumer reads this exact shape.                 |
+-| `CaptureEventMap`    | type      | A capture's observable events (§13) — `capture(message)` per intercepted call + the `start` / `stop` lifecycle signals.                |
+-| `CaptureOptions`     | interface | `createCapture` options — `on?` / `error?` / `levels?` / `mirror?` / `sink?` / `limit?`.                                               |
+-| `CaptureInterface`   | interface | The console interceptor — `emitter` / `active` data + `start` / `stop` / `messages` (whole buffer or one level) / `clear` / `destroy`. |
+-| `CaptureResult`      | interface | The structured outcome of `withCapture` — the wrapped function's `value` plus the `messages` it logged.                                |
+-| `RetentionInterface` | interface | The bounded, level-keyed retention buffer a capture keeps its records in — one capped total buffer plus one capped bucket per level.   |
+-| `Retention`          | class     | The bounded, level-keyed retention engine both captures compose — generic over the record type each carries, so neither can drift.     |
+-| `Capture`            | class     | The observable console interceptor — buffers (total + by level), emits `capture`, optionally mirrors + forwards to a sink.             |
+-| `createCapture`      | function  | Create an observable `CaptureInterface` — console interception on the read side (inactive until `start()`).                            |
+-| `withCapture`        | function  | Run a function with `console.*` captured for its duration (scoped, self-restoring) — returns `{ value, messages }` (sync or async).    |
++| API                   | Kind      | Summary                                                                                                                                |
++| --------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------- |
++| `CaptureLevel`        | type      | One intercepted `console` method — `log` / `info` / `warn` / `error` / `debug` (names the ORIGINATING method, not a severity).         |
++| `ConsoleMethod`       | type      | The patched `console.*` method shape — a variadic `(...args) => void`; the boundary type the capture snapshots + swaps (§14).          |
++| `CapturedMessage`     | interface | One captured console call — an immutable, serializable `{ level, text, time }`; every consumer reads this exact shape.                 |
++| `CaptureEventMap`     | type      | A capture's observable events (§13) — `capture(message)` per intercepted call + the `start` / `stop` lifecycle signals.                |
++| `CaptureOptions`      | interface | `Capture` options — `on?` / `error?` / `levels?` / `mirror?` / `sink?` / `limit?`.                                                     |
++| `CaptureInterface`    | interface | The console interceptor — `emitter` / `active` data + `start` / `stop` / `messages` (whole buffer or one level) / `clear` / `destroy`. |
++| `CaptureResult`       | interface | The structured outcome of `createCaptureResult` — the wrapped function's `value` plus the `messages` it logged.                        |
++| `RetentionInterface`  | interface | The bounded, level-keyed retention buffer a capture keeps its records in — one capped total buffer plus one capped bucket per level.   |
++| `Retention`           | class     | The bounded, level-keyed retention engine both captures compose — generic over the record type each carries, so neither can drift.     |
++| `Capture`             | class     | The observable console interceptor — buffers (total + by level), emits `capture`, optionally mirrors + forwards to a sink.             |
++| `createCaptureResult` | function  | Run a function with `console.*` captured for its duration (scoped, self-restoring) — returns `{ value, messages }` (sync or async).    |
+ 
+ ### Errors
+ 
+@@ -145,20 +140,18 @@ The one error type the console layer throws — an internal invariant / unreacha
+ 
+ Live activity animations — pure frame PRODUCERS over the SAME styler + sink substrate; the line-OVERWRITE is the sink's job.
+ 
+-| API                  | Kind      | Summary                                                                                                                                  |
+-| -------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+-| `ProgressBarOptions` | interface | `renderBar` options — `current` / `total` / `width?` / `fill?` / `empty?` / `styler?` / `style?` (a determinate bar string).             |
+-| `SpinnerEventMap`    | type      | A spinner's observable events (§13) — `frame(line)` per advance / outcome + the `start` / `stop` timer-lifecycle signals.                |
+-| `SpinnerOptions`     | interface | `createSpinner` options — `on?` / `error?` / `message?` / `frames?` / `interval?` / `sink?` / `styler?` / `theme?`.                      |
+-| `SpinnerInterface`   | interface | The activity spinner — `emitter` / `active` / `message` data + `start` / `tick` / `update` / `success` / `failure` / `stop` / `destroy`. |
+-| `Spinner`            | class     | The self-driving, observable spinner — a timer-advanced glyph cycle writing `\r` + a frame line to its sink; leak-free.                  |
+-| `createSpinner`      | function  | Create a self-driving, observable `SpinnerInterface` — a live activity spinner (inactive until `start()`).                               |
+-| `ProgressReport`     | interface | One advance of a progress bar — the clamped `{ current, total }` the `update` event carries.                                             |
+-| `ProgressEventMap`   | type      | A progress bar's observable events (§13) — `update({current,total})` per report + a `complete` signal on a successful finish.            |
+-| `ProgressOptions`    | interface | `createProgress` options — `on?` / `error?` / `total` / `message?` / `width?` / `fill?` / `empty?` / `sink?` / `styler?` / `theme?`.     |
+-| `ProgressInterface`  | interface | The progress bar — `emitter` / `active` / `completed` / `current` / `total` data + `update` / `complete` / `failure` / `destroy`.        |
+-| `Progress`           | class     | The update-driven, observable progress bar — recomputes + writes `\r` + the bar on each `update`; no self-timer (the caller drives).     |
+-| `createProgress`     | function  | Create an update-driven, observable `ProgressInterface` — a live progress bar.                                                           |
++| API                  | Kind      | Summary                                                                                                                               |
++| -------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------- |
++| `ProgressBarOptions` | interface | `renderBar` options — `current` / `total` / `width?` / `fill?` / `empty?` / `styler?` / `style?` (a determinate bar string).          |
++| `SpinnerEventMap`    | type      | A spinner's observable events (§13) — `frame(line)` per advance / outcome + the `start` / `stop` timer-lifecycle signals.             |
++| `SpinnerOptions`     | interface | `Spinner` options — `on?` / `error?` / `message?` / `frames?` / `interval?` / `sink?` / `styler?` / `theme?`.                         |
++| `SpinnerInterface`   | interface | The activity spinner — `emitter` / `active` / `message` data + `start` / `tick` / `update` / `succeed` / `fail` / `stop` / `destroy`. |
++| `Spinner`            | class     | The self-driving, observable spinner — a timer-advanced glyph cycle writing `\r` + a frame line to its sink; leak-free.               |
++| `ProgressReport`     | interface | One advance of a progress bar — the clamped `{ current, total }` the `update` event carries.                                          |
++| `ProgressEventMap`   | type      | A progress bar's observable events (§13) — `update({current,total})` per report + a `complete` signal on a successful finish.         |
++| `ProgressOptions`    | interface | `Progress` options — `on?` / `error?` / `total` / `message?` / `width?` / `fill?` / `empty?` / `sink?` / `styler?` / `theme?`.        |
++| `ProgressInterface`  | interface | The progress bar — `emitter` / `active` / `completed` / `current` / `total` data + `update` / `complete` / `fail` / `destroy`.        |
++| `Progress`           | class     | The update-driven, observable progress bar — recomputes + writes `\r` + the bar on each `update`; no self-timer (the caller drives).  |
+ 
+ ### Style constants
+ 
+@@ -191,7 +184,7 @@ The level order + label colors, the box-drawing junction sets, status icons / co
+ | `LEVEL_COLORS`        | const | Each `LogLevel`'s default label `Color` — its VISUAL treatment (orthogonal to leveling); excludes `default`.           |
+ | `DEFAULT_LOG_LIMIT`   | const | The default bounded-retention cap for a logger (`1000`); retention is always bounded.                                  |
+ | `DEFAULT_LOG_LEVEL`   | const | The default `LogLevel` threshold a logger gates at — `info`.                                                           |
+-| `LEVELS`              | const | Every `LogLevel` in ascending severity — the level axis (drives exhaustive tests).                                     |
++| `LOG_LEVELS`          | const | Every `LogLevel` in ascending severity — the level axis (drives exhaustive tests).                                     |
+ | `BORDER_CHARS`        | const | The complete `BorderChars` junction set for each `BorderStyle` — the standard Unicode box-drawing glyphs.              |
+ | `STATUS_ICONS`        | const | Each `StatusLevel`'s icon glyph — `success` ✔, `error` ✖, `warn` ⚠, `info` ℹ.                                          |
+ | `STATUS_COLORS`       | const | Each `StatusLevel`'s `Color` — `success` green, `error` red, `warn` yellow, `info` blue; excludes `default`.           |
+@@ -206,19 +199,18 @@ The level order + label colors, the box-drawing junction sets, status icons / co
+ 
+ ### Capture & animation constants
+ 
+-The default intercepted-method set, the bounded-buffer cap, the level projection, and the spinner frames / bar glyphs / track width (`src/core`). All `Object.freeze`d data.
++The intercepted-method set, the bounded-buffer cap, the level projection, and the spinner frames / bar glyphs / track width (`src/core`). All `Object.freeze`d data.
+ 
+-| API                        | Kind  | Summary                                                                                                              |
+-| -------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------- |
+-| `CAPTURE_LEVELS`           | const | Every `CaptureLevel` — the `console.*` methods a `Capture` intercepts (`log` / `info` / `warn` / `error` / `debug`). |
+-| `DEFAULT_CAPTURE_LEVELS`   | const | The default set of `CaptureLevel`s a `Capture` patches when `levels` is omitted — all five.                          |
+-| `DEFAULT_CAPTURE_LIMIT`    | const | The default bounded-buffer cap for a `Capture` (`1000`) — total + each by-level bucket; always bounded.              |
+-| `CAPTURE_LEVEL_MAP`        | const | Each `CaptureLevel`'s `LogLevel` for the optional sink forward (`log` → `info`, else the matching level).            |
+-| `SPINNER_FRAMES`           | const | The default spinner frame cycle — the ten braille-pattern glyphs (`⠋⠙⠹…`).                                           |
+-| `DEFAULT_SPINNER_INTERVAL` | const | The default timer period between spinner frames — `80` ms (≈12.5 fps).                                               |
+-| `BAR_FILL`                 | const | The default FILLED-cell glyph `renderBar` draws with — the full block `█`.                                           |
+-| `BAR_EMPTY`                | const | The default EMPTY-cell glyph `renderBar` draws with — the light-shade block `░`.                                     |
+-| `DEFAULT_BAR_WIDTH`        | const | The default visible cell count of a progress-bar TRACK — `30`.                                                       |
++| API                        | Kind  | Summary                                                                                                                         |
++| -------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------- |
++| `CAPTURE_LEVELS`           | const | Every `CaptureLevel` — the `console.*` methods a `Capture` intercepts by default (`log` / `info` / `warn` / `error` / `debug`). |
++| `DEFAULT_CAPTURE_LIMIT`    | const | The default bounded-buffer cap for a `Capture` (`1000`) — total + each by-level bucket; always bounded.                         |
++| `CAPTURE_LEVEL_MAP`        | const | Each `CaptureLevel`'s `LogLevel` for the optional sink forward (`log` → `info`, else the matching level).                       |
++| `SPINNER_FRAMES`           | const | The default spinner frame cycle — the ten braille-pattern glyphs (`⠋⠙⠹…`).                                                      |
++| `DEFAULT_SPINNER_INTERVAL` | const | The default timer period between spinner frames — `80` ms (≈12.5 fps).                                                          |
++| `BAR_FILL`                 | const | The default FILLED-cell glyph `renderBar` draws with — the full block `█`.                                                      |
++| `BAR_EMPTY`                | const | The default EMPTY-cell glyph `renderBar` draws with — the light-shade block `░`.                                                |
++| `DEFAULT_BAR_WIDTH`        | const | The default visible cell count of a progress-bar TRACK — `30`.                                                                  |
+ 
+ ### Browser sink
+ 
+@@ -266,7 +258,7 @@ The server output backend — a TTY-aware `Sink` over the real `process` streams
+ | `createServerSink`        | function  | Create a server `ServerSinkInterface` — per-target construction-time color inference, level routing, and plain-target stripping.                   |
+ | `createProcessCapture`    | function  | Create an observable `ProcessCaptureInterface` — the server "own ALL output" capture over the raw `process.*.write`.                               |
+ | `isStreamTarget`          | function  | Whether a value is a usable `StreamTargetInterface` (a record with a callable `write`) — the boundary guard (§14), total.                          |
+-| `columnsOf`               | function  | The width of a stream target — its live `columns` when a TTY, else the `DEFAULT_COLUMNS` fallback; total, re-read per call.                        |
++| `inferColumns`            | function  | Infer the width of a stream target — its live `columns` when a TTY, else the `DEFAULT_COLUMNS` fallback; total, re-read per call.                  |
+ | `inferStyled`             | function  | Infer one target's styled fact: `FORCE_COLOR`, then non-empty `NO_COLOR`, then `isTTY === true`; pure and global-free.                             |
+ | `decodeChunk`             | function  | Decode one `process.*.write` chunk (`string` / `Uint8Array`) to text — TOTAL, never throws (so the capture wrapper can't crash).                   |
+ | `isBufferEncoding`        | function  | Whether a value is a `BufferEncoding` accepted by `Buffer.toString` — backs `decodeChunk`'s encoding handling.                                     |
+@@ -275,13 +267,12 @@ The server output backend — a TTY-aware `Sink` over the real `process` streams
+ 
+ The default stream set, buffer cap, no-TTY column fallback, and the stream → log-level projection (`src/server`). All `Object.freeze`d data.
+ 
+-| API                      | Kind  | Summary                                                                                                           |
+-| ------------------------ | ----- | ----------------------------------------------------------------------------------------------------------------- |
+-| `STREAM_LEVELS`          | const | The two process streams a capture can intercept, in `stdout`-then-`stderr` order — the `StreamLevel` universe.    |
+-| `DEFAULT_CAPTURE_LEVELS` | const | The default set of `StreamLevel`s a process capture patches when `levels` is omitted — both streams.              |
+-| `DEFAULT_CAPTURE_LIMIT`  | const | The default bounded-buffer cap for a process capture (`1000`) — total + each per-stream bucket; always bounded.   |
+-| `DEFAULT_COLUMNS`        | const | The terminal width a server sink reports when the out stream is not a TTY and no explicit width was given — `80`. |
+-| `STREAM_LEVEL_MAP`       | const | Each `StreamLevel`'s `LogLevel` for the optional sink forward — `stdout` → `info`, `stderr` → `error`.            |
++| API                    | Kind  | Summary                                                                                                                |
++| ---------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------- |
++| `STREAM_LEVELS`        | const | The two process streams a capture intercepts by default, in `stdout`-then-`stderr` order — the `StreamLevel` universe. |
++| `DEFAULT_STREAM_LIMIT` | const | The default bounded-buffer cap for a process capture (`1000`) — total + each per-stream bucket; always bounded.        |
++| `DEFAULT_COLUMNS`      | const | The terminal width a server sink reports when the out stream is not a TTY and no explicit width was given — `80`.      |
++| `STREAM_LEVEL_MAP`     | const | Each `StreamLevel`'s `LogLevel` for the optional sink forward — `stdout` → `info`, `stderr` → `error`.                 |
+ 
+ ## Methods
+ 
+@@ -368,15 +359,15 @@ The public methods of each behavioral interface — one table per type, keyed by
+ 
+ #### `SpinnerInterface`
+ 
+-| Method    | Returns | Behavior                                                                                       |
+-| --------- | ------- | ---------------------------------------------------------------------------------------------- |
+-| `start`   | `void`  | Arm the periodic timer and render the first frame — a no-op when already `active`.             |
+-| `tick`    | `void`  | Advance one frame: build the line, emit `frame`, write `\r` + line to the sink.                |
+-| `update`  | `void`  | Change the message; re-renders immediately when `active`.                                      |
+-| `success` | `void`  | Stop with a SUCCESS line — clear the timer, write + emit `✔ message` + newline.                |
+-| `failure` | `void`  | Stop with a FAILURE line — clear the timer, write + emit `✖ message` + newline (error stream). |
+-| `stop`    | `void`  | Clear the timer and LEAVE the current line — a no-op when not `active`.                        |
+-| `destroy` | `void`  | Tear down — `stop()` then destroy the emitter.                                                 |
++| Method    | Returns | Behavior                                                                                      |
++| --------- | ------- | --------------------------------------------------------------------------------------------- |
++| `start`   | `void`  | Arm the periodic timer and render the first frame — a no-op when already `active`.            |
++| `tick`    | `void`  | Advance one frame: build the line, emit `frame`, write `\r` + line to the sink.               |
++| `update`  | `void`  | Change the message; re-renders immediately when `active`.                                     |
++| `succeed` | `void`  | Stop with a SUCCESS line — clear the timer, write + emit `✔ message` + newline.               |
++| `fail`    | `void`  | Stop with an ERROR line — clear the timer, write + emit `✖ message` + newline (error stream). |
++| `stop`    | `void`  | Clear the timer and LEAVE the current line — a no-op when not `active`.                       |
++| `destroy` | `void`  | Tear down — `stop()` then destroy the emitter.                                                |
+ 
+ #### `ProgressInterface`
+ 
+@@ -384,7 +375,7 @@ The public methods of each behavioral interface — one table per type, keyed by
+ | ---------- | ------- | --------------------------------------------------------------------------------------------------------- |
+ | `update`   | `void`  | Report progress: clamp `current`, re-render, emit `update`, write `\r` + bar. Ignored once terminal.      |
+ | `complete` | `void`  | Finish successfully — render a FULL bar + newline, emit a final `update` then `complete`.                 |
+-| `failure`  | `void`  | Finish unsuccessfully — render the bar at its current fill + newline to the error stream (no `complete`). |
++| `fail`     | `void`  | Finish unsuccessfully — render the bar at its current fill + newline to the error stream (no `complete`). |
+ | `destroy`  | `void`  | Tear down — destroy the emitter.                                                                          |
+ 
+ #### `ProcessCaptureInterface`
+@@ -408,10 +399,10 @@ These invariants hold across `src/core` ↔ `src/browser` ↔ `src/server` ↔ `
+ 5. **A theme is the application's vocabulary; an option is this instance's presentation.** A `Theme` binds the semantic roles the WHOLE application shares to `Style` values — a label style per `LogLevel` under `levels`, an icon + style per `StatusLevel` under `statuses`, one `accent` (spinner glyph, bar fill, step prefix) and one `chrome` (separators, box / table / tree connectors, a log line's timestamp / name / data surround). Hand ONE theme to the logger, the reporter, the spinner, and the progress bar and every surface speaks it; `createTheme` merges per role — and per entry within `levels` / `statuses` — over `DEFAULT_THEME`, snapshots every style leaf, and deep-freezes each snapshot, so an override restyles one role and later caller mutation cannot change it. A per-entity option carries what only THAT instance draws with: a spinner's `frames`, a progress bar's `fill` / `empty`, a box's / table's / tree's `border`. The test is which axis the value keys on: a domain axis (level, status, accent, chrome) is a theme role; a glyph one instance happens to use is an option, and it never enters the theme.
+ 6. **The `Sink` seam + the no-capture-loop.** `SinkInterface` is the ONE place text leaves the system — redirect output by supplying a different sink, with no change to the logger / reporter / animation. The default `createConsoleSink` (and `createBrowserSink` / `createServerSink`) SNAPSHOTS the underlying `console` / `process` write at creation and writes through that snapshot, so a `Capture` / `ProcessCapture` installed AFTERWARD can never feed the system's own output back into itself — create sinks (and loggers) BEFORE installing a capture.
+ 7. **`format` owns the human line; the record + `entry` / `capture` event owns the machine record.** A `Logger` ALWAYS emits an accepted record on `entry`, and a `Capture` / `ProcessCapture` emits every intercepted call on `capture`; a file / JSON / remote transport rides that emitter rather than a second code path, and it rides `entry` rather than `format` — the record is already structured there, so no transport parses a line back apart. `format` (a `LogFormatFunction`, defaulting to `formatRecord`) decides only what the human line looks like, and the order is fixed: gate, freeze the record, retain it, emit `entry`, then — unless `silent` — `format` and write. `silent` suppresses the WRITE and never invokes `format`, so a silent logger still feeds every transport and pays nothing for a line nobody reads. A formatter throw is a programmer error: it propagates to the `logger.info` caller and prevents that logger's write after its record and event have left. A manager fans out sequentially, so the throw also stops every remaining logger for that call before retention or `entry`. Listener isolation is the emitter's (§13): a listener throw routes to the emitter's OWN `error` handler, never onto the domain `EventMap`, so a buggy transport / capture listener can never perturb logging — nor (for the captures) escape into the host's `console.*` / `process.*.write` call.
+-8. **Bounded retention.** Every buffer is capped, never unbounded: a logger's `entries()` tail at `DEFAULT_LOG_LIMIT`, a `Capture` / `ProcessCapture`'s total buffer AND each per-level / per-stream bucket at `DEFAULT_CAPTURE_LIMIT` — oldest dropped first. A long-running logger or capture can never grow without bound. Both captures buffer through the ONE `Retention` engine (`RetentionInterface`, generic over the record type each carries), so their retention semantics cannot drift apart.
++8. **Bounded retention.** Every buffer is capped, never unbounded: a logger's `entries()` tail at `DEFAULT_LOG_LIMIT`, a `Capture` / `ProcessCapture`'s total buffer AND each per-level / per-stream bucket at `DEFAULT_CAPTURE_LIMIT` and `DEFAULT_STREAM_LIMIT` — oldest dropped first. A long-running logger or capture can never grow without bound. Both captures buffer through the ONE `Retention` engine (`RetentionInterface`, generic over the record type each carries), so their retention semantics cannot drift apart.
+ 9. **The environment split — one engine, environment sinks.** The cross-environment core owns the contract (`Style` / `SinkInterface` / `LogLevel`) and all the universal logic; each environment supplies only the platform output backend at the `Sink` seam. ANSI lives in core (`ANSIRenderer` + `createConsoleSink`); the browser translates ANSI to `console.log('%c…', css)` AT THE SINK (`createBrowserSink` over the pure, total, `%`-safe `ansiToConsole`); the server writes to the real `process` streams with styling selected per target at construction by the precedence in Contract 10. The browser / server modules import the core contracts (never redeclare them) and add only their backend.
+ 10. **Color detection is the server sink's alone.** `createServerSink` decides each target's styling ONCE, at construction: `options.styled` when supplied; otherwise `inferStyled(target, options.environment ?? process.env)` checks a PRESENT `FORCE_COLOR` first (only the exact value `'0'` disables), then a present, non-empty `NO_COLOR`, then the target's own `isTTY === true`. The sink stores that fact per target (`out` and `err` can differ), keys its ANSI stripping off it, and exposes the `out` fact as `styled`. Nothing else reads the environment: core's `createStyler` takes `enabled` from its caller and defaults to `true`, and the browser sink always styles. The server pairing is `createStyler({ enabled: sink.styled })` — one styling fact drives both ANSI generation and sink stripping.
+-11. **Animations: every sink gets the frame, the sink decides the redraw + timer leak-freedom.** A `Spinner` / `Progress` builds a frame line and writes a leading `\r` + that line to its sink, then emits it — every sink receives the SAME frame and the line-OVERWRITE is the SINK's decision. A `ServerSink` writes the frame straight to the stream and appends no newline (a plain target loses the frame's ANSI, never its `\r`), so a terminal returns to column 0 and redraws in place. Core's `createConsoleSink` also writes it verbatim, and because `console.log` terminates each call the frame lands as a fresh line rather than an overwrite — the plain-environment degrade, with no `\r`-specific branch in core. `createBrowserSink` strips the leading `\r` (a DevTools console cannot overwrite a line, and the stray control character would be rendered) and writes a fresh line — the locked browser degrade. A `Spinner`'s internal timer is ALWAYS cleared on `success` / `failure` / `stop` / `destroy`, so it never leaks; a `Progress` has no self-timer (the caller drives `update`). Both are universal — `setInterval` + the one styler + the one sink, no `node:*`, no `process.stdout`.
++11. **Animations: every sink gets the frame, the sink decides the redraw + timer leak-freedom.** A `Spinner` / `Progress` builds a frame line and writes a leading `\r` + that line to its sink, then emits it — every sink receives the SAME frame and the line-OVERWRITE is the SINK's decision. A `ServerSink` writes the frame straight to the stream and appends no newline (a plain target loses the frame's ANSI, never its `\r`), so a terminal returns to column 0 and redraws in place. Core's `createConsoleSink` also writes it verbatim, and because `console.log` terminates each call the frame lands as a fresh line rather than an overwrite — the plain-environment degrade, with no `\r`-specific branch in core. `createBrowserSink` strips the leading `\r` (a DevTools console cannot overwrite a line, and the stray control character would be rendered) and writes a fresh line — the locked browser degrade. A `Spinner`'s internal timer is ALWAYS cleared on `succeed` / `fail` / `stop` / `destroy`, so it never leaks; a `Progress` has no self-timer (the caller drives `update`). Both are universal — `setInterval` + the one styler + the one sink, no `node:*`, no `process.stdout`.
+ 12. **Capture never-throws, non-reentrant, pristine restore.** A `Capture` / `ProcessCapture` builds its record through a TOTAL stringify / decode (`formatArgs` / `decodeChunk`), so intercepting `console.*` / `process.*.write` can never throw and crash the host. Each is PROCESS-GLOBAL + NON-REENTRANT — it patches the one global, so at most one may be active at a time; `start()` is idempotent (never double-patches) and `stop()` restores the EXACT snapshot reference, leaving the global pristine. A `ProcessCapture` additionally returns the snapshot-original's backpressure boolean so a caller's `write` handling keeps working.
+ 13. **`width()`-aware rendering.** Every layout (`renderSeparator` / `renderBox` / `renderTable` / `renderTree` / `renderBar`, via `align` / `repeatTo`) measures on the VISIBLE `width` (ANSI stripped, counted in code points), so an already-styled cell or title keeps its columns — its escape codes never break the layout. Caller text arrives line-broken either way: the `renderBox` function splits its `content` on a line feed OR a CRLF pair, so a body written on Windows frames byte-identically to the same body written on POSIX, and no carriage return from a CRLF break reaches a framed row. A LONE carriage return is not a separator — it stays inside its line, because a bare `\r` is the animation frame's cursor control (Contract 11), and cutting a frame on it would break the redraw the sink decides.
+ 
+@@ -427,9 +418,9 @@ What ships is the **cross-environment core** (the style engine, structured loggi
+ ### A styled, leveled logger
+ 
+ ```ts
+-import { createLogger } from '@orkestrel/console'
++import { Logger } from '@orkestrel/console'
+ 
+-const logger = createLogger({ name: 'http', level: 'info' })
++const logger = new Logger({ name: 'http', level: 'info' })
+ logger.debug('verbose') // dropped — below the `info` threshold
+ logger.info('request', { method: 'GET', path: '/' }) // a styled line: time · INFO · [http] · message · data
+ logger.warn('slow', { ms: 900 }) // WARN in yellow, routed to the sink's warn stream
+@@ -444,14 +435,14 @@ logger.destroy() // clear() then destroy the emitter
+ ### The line a logger writes
+ 
+ ```ts
+-import { createLogger } from '@orkestrel/console'
++import { Logger } from '@orkestrel/console'
+ 
+ // `format` owns the human line and nothing else — the record is already structured on `entry`.
+-const logger = createLogger({ format: (record) => `${record.level}: ${record.message}` })
++const logger = new Logger({ format: (record) => `${record.level}: ${record.message}` })
+ logger.info('ready') // info: ready
+ 
+ // `silent` suppresses the WRITE only: the record is still emitted, and `format` is never invoked.
+-const quiet = createLogger({ silent: true, format: () => 'never built' })
++const quiet = new Logger({ silent: true, format: () => 'never built' })
+ quiet.emitter.on('entry', (record) => archive(record)) // still fires
+ quiet.info('archived') // nothing written, no formatter call
+ ```
+@@ -459,9 +450,9 @@ quiet.info('archived') // nothing written, no formatter call
+ ### A logger registry
+ 
+ ```ts
+-import { createLoggerManager } from '@orkestrel/console'
++import { LoggerManager } from '@orkestrel/console'
+ 
+-const manager = createLoggerManager({ level: 'info' })
++const manager = new LoggerManager({ level: 'info' })
+ manager.register('http') // mints + stores a logger named 'http', the manager's defaults flow in
+ manager.info('booted') // fan out an `info` log to every registered logger
+ manager.remove('http') // remove one by name (also: remove(['a', 'b']) for a batch)
+@@ -471,9 +462,9 @@ manager.remove() // no argument — empty the registry
+ ### A reporter narration
+ 
+ ```ts
+-import { createReporter } from '@orkestrel/console'
++import { Reporter } from '@orkestrel/console'
+ 
+-const reporter = createReporter()
++const reporter = new Reporter()
+ reporter.section('Deploy') // ── Deploy ──────────────
+ reporter.step('uploading', { index: 1, total: 3 }) // [1/3] uploading
+ reporter.timing('upload', 1234) // upload … 1.23s
+@@ -498,14 +489,7 @@ reporter.status('success', 'all green') // ✔ all green
+ ### One theme, every entity
+ 
+ ```ts
+-import {
+-	createLogger,
+-	createProgress,
+-	createReporter,
+-	createSpinner,
+-	createStyler,
+-	createTheme,
+-} from '@orkestrel/console'
++import { createStyler, createTheme, Logger, Progress, Reporter, Spinner } from '@orkestrel/console'
+ 
+ // A theme is the app-wide vocabulary. Override a role; the rest keep their defaults.
+ const theme = createTheme({
+@@ -513,22 +497,22 @@ const theme = createTheme({
+ 	accent: createStyler().magenta.style, // the spinner glyph, the bar fill, the step prefix
+ })
+ 
+-createLogger({ name: 'http', theme }).warn('slow') // …Z WARN [http] slow — WARN still in theme.levels.warn
+-createReporter({ theme }).status('success', 'all green') // + all green — glyph and line both bright magenta
+-createSpinner({ message: 'deploying', theme }).tick() // ⠋ deploying — the glyph in the accent
++new Logger({ name: 'http', theme }).warn('slow') // …Z WARN [http] slow — WARN still in theme.levels.warn
++new Reporter({ theme }).status('success', 'all green') // + all green — glyph and line both bright magenta
++new Spinner({ message: 'deploying', theme }).tick() // ⠋ deploying — the glyph in the accent
+ 
+ // A per-entity option is THIS instance's presentation, never a shared role.
+-createSpinner({ message: 'deploying', frames: ['-', '\\', '|', '/'] }).tick() // - deploying
+-createProgress({ total: 10, width: 10, fill: '=', empty: '.' }).update(4) // ====...... 40% (4/10)
++new Spinner({ message: 'deploying', frames: ['-', '\\', '|', '/'] }).tick() // - deploying
++new Progress({ total: 10, width: 10, fill: '=', empty: '.' }).update(4) // ====...... 40% (4/10)
+ ```
+ 
+-### Scoping third-party `console.*` with `withCapture`
++### Scoping third-party `console.*` with `createCaptureResult`
+ 
+ ```ts
+-import { withCapture } from '@orkestrel/console'
++import { createCaptureResult } from '@orkestrel/console'
+ 
+ // Create your loggers BEFORE this — they snapshot the real console, so they are never recaptured.
+-const { value, messages } = withCapture(() => {
++const { value, messages } = createCaptureResult(() => {
+ 	noisyLibrary() // its console.log / console.error are intercepted, not printed
+ 	return computeResult()
+ })
+@@ -536,15 +520,15 @@ value // the function's own return value
+ messages.map((m) => `${m.level}: ${m.text}`) // the third-party output, captured
+ 
+ // Async works too — awaited before `console` is restored:
+-const out = await withCapture(async () => fetchAndLog())
++const out = await createCaptureResult(async () => fetchAndLog())
+ ```
+ 
+ ### Capture lifecycle
+ 
+ ```ts
+-import { createCapture } from '@orkestrel/console'
++import { Capture } from '@orkestrel/console'
+ 
+-const capture = createCapture()
++const capture = new Capture()
+ capture.start() // snapshot the configured console.* and install the interceptors
+ console.log('hello')
+ capture.messages() // the whole buffer — [{ level: 'log', text: 'hello', time: … }]
+@@ -574,53 +558,53 @@ retention.records() // []
+ ### A spinner and a progress bar
+ 
+ ```ts
+-import { createProgress, createSpinner } from '@orkestrel/console'
++import { Progress, Spinner } from '@orkestrel/console'
+ 
+-const spinner = createSpinner({ message: 'connecting' })
++const spinner = new Spinner({ message: 'connecting' })
+ spinner.start() // a self-driving glyph cycle; a TTY sink redraws on the `\r`
+ spinner.tick() // advance one frame by hand: emits `frame`, writes `\r` + line
+ spinner.update('handshaking') // the message changes, re-rendered at once
+-spinner.success('connected') // ✔ connected — timer cleared, line committed
++spinner.succeed('connected') // ✔ connected — timer cleared, line committed
+ 
+-const failing = createSpinner({ message: 'connecting' })
++const failing = new Spinner({ message: 'connecting' })
+ failing.start()
+-failing.failure('unreachable') // ✖ unreachable — timer cleared, error stream
++failing.fail('unreachable') // ✖ unreachable — timer cleared, error stream
+ failing.destroy() // stop() then destroy the emitter
+ 
+-const progress = createProgress({ total: 100, message: 'downloading' })
++const progress = new Progress({ total: 100, message: 'downloading' })
+ progress.update(40) // ████████████░░░░░░░░░░░░░░░░░░ 40% (40/100) downloading
+ progress.update(80, 'almost there')
+ progress.complete('done') // a full bar, committed with a newline
+ 
+-const interrupted = createProgress({ total: 100, message: 'downloading' })
++const interrupted = new Progress({ total: 100, message: 'downloading' })
+ interrupted.update(30)
+-interrupted.failure('connection lost') // the bar at its current fill, error stream, no `complete`
++interrupted.fail('connection lost') // the bar at its current fill, error stream, no `complete`
+ interrupted.destroy() // tear down the emitter
+ ```
+ 
+ ### The browser — `%c` styling in DevTools
+ 
+ ```ts
+-import { createLogger } from '@orkestrel/console'
++import { Logger } from '@orkestrel/console'
+ import { createBrowserSink } from '@orkestrel/console/browser'
+ 
+ // The SAME core logger; only the sink changes. ANSI is translated to `%c` at the sink,
+ // so a DevTools console renders the same 16 colors a terminal would.
+-const logger = createLogger({ name: 'app', sink: createBrowserSink() })
++const logger = new Logger({ name: 'app', sink: createBrowserSink() })
+ logger.error('boom') // → console.error('%c…', 'color:#cd0000;…') in DevTools
+ ```
+ 
+ ### The server — a TTY sink and a process capture
+ 
+ ```ts
+-import { createLogger, createReporter, createStyler } from '@orkestrel/console'
++import { createStyler, Logger, Reporter } from '@orkestrel/console'
+ import { createProcessCapture, createServerSink } from '@orkestrel/console/server'
+ 
+ const sink = createServerSink() // FORCE_COLOR, then NO_COLOR, then isTTY — per target, at construction
+ const styler = createStyler({ enabled: sink.styled }) // keep generated ANSI paired with out stripping
+-const logger = createLogger({ name: 'server', sink, styler })
++const logger = new Logger({ name: 'server', sink, styler })
+ logger.error('boom') // → process.stderr (the error stream)
+-const reporter = createReporter({ sink, width: sink.columns }) // size the layout to the live terminal
++const reporter = new Reporter({ sink, width: sink.columns }) // size the layout to the live terminal
+ 
+ // `styled` overrides the inference outright — for a CI log that renders ANSI off a TTY, say.
+ const forced = createServerSink({ styled: true })
+@@ -639,13 +623,13 @@ capture.destroy() // stop() then tear down the emitter
+ ### One logger, different sink per environment (the cross-env one-liner)
+ 
+ ```ts
+-import { createLogger } from '@orkestrel/console'
++import { Logger } from '@orkestrel/console'
+ import { createBrowserSink } from '@orkestrel/console/browser'
+ import { createServerSink } from '@orkestrel/console/server'
+ 
+ // The Logger code is identical everywhere — only the sink is chosen per environment.
+ const sink = inBrowser ? createBrowserSink() : createServerSink()
+-const logger = createLogger({ name: 'app', sink }) // ANSI in core, `%c` in the browser, TTY/streams on the server
++const logger = new Logger({ name: 'app', sink }) // ANSI in core, `%c` in the browser, TTY/streams on the server
+ logger.info('ready') // styled the same way, routed to the right backend, with no other change
+ ```
+ 
+@@ -653,8 +637,8 @@ logger.info('ready') // styled the same way, routed to the right backend, with n
+ 
+ ```ts
+ import {
++	ANSIRenderer,
+ 	cellAt,
+-	createANSIRenderer,
+ 	createStyler,
+ 	formatDuration,
+ 	formatTime,
+@@ -663,7 +647,7 @@ import {
+ 	renderTable,
+ } from '@orkestrel/console'
+ 
+-const renderer = createANSIRenderer()
++const renderer = new ANSIRenderer()
+ renderer.render({ foreground: 'red', attributes: [] }, 'hi') // wraps 'hi' in the red SGR codes
+ 
+ const styler = createStyler()
+@@ -683,9 +667,18 @@ formatDuration(1230) // '1.23s'
+ ### Server helpers directly
+ 
+ ```ts
+-import { columnsOf, isBufferEncoding } from '@orkestrel/console/server'
++import { inferColumns } from '@orkestrel/console/server'
++
++inferColumns(process.stdout) // the live TTY width, or the DEFAULT_COLUMNS fallback off a TTY
++```
++
++### Server boundary guards directly
++
++```ts
++import { isBufferEncoding, isStreamTarget } from '@orkestrel/console/server'
+ 
+-columnsOf(process.stdout) // the live TTY width, or the DEFAULT_COLUMNS fallback off a TTY
++isStreamTarget(process.stdout) // true — a record with a callable `write`
++isStreamTarget({}) // false — no `write`
+ isBufferEncoding('utf8') // true — a value accepted by Buffer#toString
+ isBufferEncoding('nope') // false
+ ```
+@@ -695,18 +688,18 @@ isBufferEncoding('nope') // false
+ - [`tests/guides.test.ts`](../tests/guides.test.ts) — the `## Surface` ↔ source bijection across `src/core` and the `src/browser` + `src/server` backends (value + type exports), plus each interface ↔ implementing-class method bijection.
+ - [`tests/src/core/ANSIRenderer.test.ts`](../tests/src/core/ANSIRenderer.test.ts) — the ANSI renderer: foreground / background / attribute SGR codes, multi-attribute composition, `default` / unset / empty-style / empty-string pass-through.
+ - [`tests/src/core/Styler.test.ts`](../tests/src/core/Styler.test.ts) — the fluent styler: chainable `Color` / `Attribute` accessors, immutability + composition either way, last-color-wins / idempotent-attribute, the `enabled` verbatim switch, a swapped renderer, and `render` by value (the merge precedence, a themed role, the frozen merged style handed to the renderer).
+-- [`tests/src/core/Logger.test.ts`](../tests/src/core/Logger.test.ts) — the logger: the level gate (drop below threshold), the frozen `LogRecord`, bounded `entries()` retention + `clear`, the `entry` transport event (fires even when `silent`), the styled line, the themed level label, the `format` contract (the return written exactly, never invoked when `silent` or when the gate drops a record, a throw preventing only the write), and the emitter's listener-isolation (`error` handler) emit-safety.
++- [`tests/src/core/Logger.test.ts`](../tests/src/core/Logger.test.ts) — the logger: the level gate (drop below threshold), the frozen `LogRecord`, bounded `entries()` retention + `clear`, the `entry` transport event (fires even when `silent`), the styled line, the themed level label, the `format` contract (the return written exactly, never invoked when `silent` or when the gate drops a record, a throw preventing only the write), the default snapshotted console sink, and the emitter's listener-isolation (`error` handler) emit-safety.
+ - [`tests/src/core/LoggerManager.test.ts`](../tests/src/core/LoggerManager.test.ts) — the registry: `register` (defaults flow in — `theme` / `format` included — and a register override wins, re-register overwrites) / `logger` / `loggers` / `count`, sequential `debug`…`error` fan-out including formatter-throw halt, and `remove` ALL / one / batch.
+ - [`tests/src/core/Reporter.test.ts`](../tests/src/core/Reporter.test.ts) — the reporter verbs: `section` / `step` (with / without position) / `timing` / `status` (the theme's icon + style, `error` → error stream) / `table` / `tree` / `box` / `line` / `blank`, each verb's bytes unchanged under the explicit default theme.
+ - [`tests/src/core/Capture.test.ts`](../tests/src/core/Capture.test.ts) — the console interceptor: snapshot-at-`start` + restore, capture (total + by level) + bounded buffers, the `capture` event + `start` / `stop` lifecycle, `mirror` / `sink` forwarding, idempotency, and the no-capture-loop.
+-- [`tests/src/core/Spinner.test.ts`](../tests/src/core/Spinner.test.ts) — the spinner: deterministic `tick()` frame advance + the `\r` write, idempotent `start`, the leak-free timer (armed / always cleared, fake timers), `update`, `success` / `failure` outcome lines (the theme's status icon + style), the accent glyph, and the `frame` / `start` / `stop` events.
+-- [`tests/src/core/Progress.test.ts`](../tests/src/core/Progress.test.ts) — the progress bar: `update` clamp + render + `\r` write, the `update` event, terminal `complete` (full bar + `complete` event) / `failure` (error stream, no complete), the custom `fill` / `empty` glyphs with the accent on the filled run only, and the post-terminal ignore.
++- [`tests/src/core/Spinner.test.ts`](../tests/src/core/Spinner.test.ts) — the spinner: deterministic `tick()` frame advance + the `\r` write, idempotent `start`, the leak-free timer (armed / always cleared, fake timers), `update`, `succeed` / `fail` outcome lines (the theme's status icon + style), the accent glyph, and the `frame` / `start` / `stop` events.
++- [`tests/src/core/Progress.test.ts`](../tests/src/core/Progress.test.ts) — the progress bar: `update` clamp + render + `\r` write, the `update` event, terminal `complete` (full bar + `complete` event) / `fail` (error stream, no complete), the custom `fill` / `empty` glyphs with the accent on the filled run only, and the post-terminal ignore.
+ - [`tests/src/core/Retention.test.ts`](../tests/src/core/Retention.test.ts) — the shared retention engine both captures compose: oldest-first order in the whole buffer and per level, the independent cap on each, a record whose level has no bucket, the copy returned by every `records` call, `clear` leaving retention working, and the zero / one limits.
+ - [`tests/src/core/helpers.test.ts`](../tests/src/core/helpers.test.ts) — the pure helpers: `strip` / `width` (ANSI-aware, code points), `freezeStyle` snapshot and deep freeze, `meetsLevel` / `selectWriter` (every `LogLevel` plus an omitted one, and a backend folding two levels onto one target) / `formatTime` / `formatRecord`, `align` / `paint` / `repeatTo` / `cellAt`, `renderSeparator` / `renderBox` / `renderTable` / `renderTree` (every connector derived from the selected border set, an omitted `border` byte-identical to an explicit `single`) / `renderBar`, `formatDuration`, and the total `stringifyValue` / `formatArgs` (Error / cycle / BigInt).
+-- [`tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) — each `create*` returns a working instance of its interface, `createTheme`'s per-role / per-entry merge over the frozen `DEFAULT_THEME` plus style-leaf snapshot isolation through live entities, `createConsoleSink`'s level routing + snapshot + the verbatim `\r` redraw frame (a real `Spinner` driven through a recorder, against a plain-write control), and `withCapture` (sync + async, restore-on-throw).
++- [`tests/src/core/factories.test.ts`](../tests/src/core/factories.test.ts) — the value factories: `createStyler`'s renderer / `enabled` options, `createTheme`'s per-role / per-entry merge over the frozen `DEFAULT_THEME` plus style-leaf snapshot isolation through live entities, `createConsoleSink`'s level routing + snapshot + the verbatim `\r` redraw frame (a real `Spinner` driven through a recorder, against a plain-write control), and `createCaptureResult` (sync + async, restore-on-throw).
+ - [`tests/src/browser/helpers.test.ts`](../tests/src/browser/helpers.test.ts) — `ansiToConsole` in real Chromium: SGR runs → `%c` segments + parallel CSS, the reset clear, last-color-wins, the plain-text short-circuit, `%`-safety, and a partial `BrowserPalette` overriding named colors / attributes while every omission stays byte-identical; plus `escapePercent` / `parseParameters`.
+ - [`tests/src/browser/factories.test.ts`](../tests/src/browser/factories.test.ts) — `createBrowserSink` in real Chromium: the ANSI → `%c` `console[method](format, ...styles)` call, level routing, a threaded `palette`, the leading-`\r` animation degrade (only the leading one), and the snapshot (no capture loop).
+-- [`tests/src/server/helpers.test.ts`](../tests/src/server/helpers.test.ts) — the server helpers: `inferStyled` over the full `FORCE_COLOR` × `NO_COLOR` × `isTTY` matrix, `columnsOf` (live TTY width / fallback), and the total `decodeChunk` (string / Buffer / Uint8Array / bad encoding).
++- [`tests/src/server/helpers.test.ts`](../tests/src/server/helpers.test.ts) — the server helpers: `inferStyled` over the full `FORCE_COLOR` × `NO_COLOR` × `isTTY` matrix, `inferColumns` (live TTY width / fallback), and the total `decodeChunk` (string / Buffer / Uint8Array / bad encoding).
+ - [`tests/src/server/validators.test.ts`](../tests/src/server/validators.test.ts) — the server boundary guards: `isStreamTarget` (the real process streams, any callable `write`, and every off-shape value rejected without throwing) and `isBufferEncoding` (the full Node encoding family, case-insensitive and hyphenated, against non-encodings and non-strings).
+ - [`tests/src/server/factories.test.ts`](../tests/src/server/factories.test.ts) — `createServerSink` over a fake `StreamTargetInterface`: level routing to `out` / `err`, injected-environment inference with a TTY `out` beside piped `err`, a `styled` override, construction-time facts, the `\r` frame without an appended newline, and live / fixed `columns`.
+ - [`tests/src/server/ProcessCapture.test.ts`](../tests/src/server/ProcessCapture.test.ts) — the process capture over a `process.*.write` probe: snapshot-at-`start` + pristine restore, capture (total + per-stream) + bounded buffers, the `capture` / `start` / `stop` events, `mirror` (backpressure passed through) / `sink` forwarding, idempotency, and the never-throw decode.
+diff --git a/src/browser/factories.ts b/src/browser/factories.ts
+index 0b02bed..7c2ff08 100644
+--- a/src/browser/factories.ts
++++ b/src/browser/factories.ts
+@@ -15,7 +15,7 @@ import { ansiToConsole } from './helpers.js'
+  * Create the browser `%c` {@link SinkInterface} — the browser output backend. `write(text, level?)`
+  * translates the ANSI-styled `text` into a browser `console` call (`console[method](format, ...styles)`)
+  * via {@link ansiToConsole}, so a DevTools console renders the same styling a terminal does. Drop it in
+- * as a logger / reporter / spinner sink (`createLogger({ sink: createBrowserSink() })`) to retarget the
++ * as a logger / reporter / spinner sink (`new Logger({ sink: createBrowserSink() })`) to retarget the
+  * core output to the browser console with no change to the core.
+  *
+  * @param options - See {@link BrowserSinkOptions}
+@@ -41,10 +41,10 @@ import { ansiToConsole } from './helpers.js'
+  *
+  * @example
+  * ```ts
+- * import { createLogger } from '@src/core'
++ * import { Logger } from '@src/core'
+  * import { createBrowserSink } from '@src/browser'
+  *
+- * const logger = createLogger({ name: 'app', sink: createBrowserSink() })
++ * const logger = new Logger({ name: 'app', sink: createBrowserSink() })
+  * logger.error('boom') // → console.error('%c…', 'color:#cd0000;…') in DevTools
+  * ```
+  */
+diff --git a/src/core/Capture.ts b/src/core/Capture.ts
+index 230bf3f..b05ba44 100644
+--- a/src/core/Capture.ts
++++ b/src/core/Capture.ts
+@@ -10,7 +10,7 @@ import type {
+ 	ConsoleMethod,
+ } from './types.js'
+ import { Emitter } from '@orkestrel/emitter'
+-import { CAPTURE_LEVEL_MAP, DEFAULT_CAPTURE_LEVELS, DEFAULT_CAPTURE_LIMIT } from './constants.js'
++import { CAPTURE_LEVEL_MAP, CAPTURE_LEVELS, DEFAULT_CAPTURE_LIMIT } from './constants.js'
+ import { formatArgs } from './helpers.js'
+ import { Retention } from './Retention.js'
+ 
+@@ -68,7 +68,7 @@ export class Capture implements CaptureInterface {
+ 			...(options?.on !== undefined ? { on: options.on } : {}),
+ 			...(options?.error !== undefined ? { error: options.error } : {}),
+ 		})
+-		this.#levels = options?.levels ?? DEFAULT_CAPTURE_LEVELS
++		this.#levels = options?.levels ?? CAPTURE_LEVELS
+ 		this.#mirror = options?.mirror ?? false
+ 		this.#sink = options?.sink
+ 		this.#retention = new Retention<CapturedMessage>(
+diff --git a/src/core/Progress.ts b/src/core/Progress.ts
+index 0303668..2927850 100644
+--- a/src/core/Progress.ts
++++ b/src/core/Progress.ts
+@@ -26,11 +26,11 @@ import { renderBar } from './helpers.js'
+  *   to `current / total`, with the trailing `percent (current/total)` + message) via {@link renderBar},
+  *   emits `update`, and writes `'\r' + bar`. Progress advances only when the caller reports it.
+  * - **Outcome lines.** {@link complete} renders a full bar (`current = total`) + message, terminated by
+- *   a newline, emits a final `update` then `complete`, and marks `completed`. {@link failure} renders the
++ *   a newline, emits a final `update` then `complete`, and marks `completed`. {@link fail} renders the
+  *   bar at its current fill + message + newline and routes to the sink's error stream (no `complete` —
+  *   the work did not finish). Both are terminal: a later {@link update} is ignored once `active` is false.
+  * - **Bounded.** `current` is always clamped to `[0, total]`; {@link completed} reports whether
+- *   {@link complete} has run; {@link active} is `true` until a {@link complete} / {@link failure}.
++ *   {@link complete} has run; {@link active} is `true` until a {@link complete} / {@link fail}.
+  * - **Lifecycle.** {@link destroy} destroys the emitter (there is no timer to clear).
+  *
+  * @example
+@@ -93,7 +93,7 @@ export class Progress implements ProgressInterface {
+ 	}
+ 
+ 	update(current: number, message?: string): void {
+-		// Terminal bars ignore further updates — a complete()/failure() has committed the final line.
++		// Terminal bars ignore further updates — a complete()/fail() has committed the final line.
+ 		if (!this.#active) return
+ 		this.#advance(current, message)
+ 		this.#paint(false)
+@@ -109,7 +109,7 @@ export class Progress implements ProgressInterface {
+ 		this.#emitter.emit('complete')
+ 	}
+ 
+-	failure(message?: string): void {
++	fail(message?: string): void {
+ 		if (!this.#active) return
+ 		// Finish at the current fill (the work stopped short) — commit to the error stream, no complete.
+ 		// #advance emits a final `update` at the current fill (identical current/total), same as complete().
+@@ -134,8 +134,8 @@ export class Progress implements ProgressInterface {
+ 
+ 	// Render the bar at the current state and write `\r` + bar to the sink — the leading `\r` an
+ 	// overwrite-capable sink redraws on. `final` appends a newline that commits the line (a finished
+-	// bar is not overwritten); `level` routes a failure() write to the error stream. The single render
+-	// path shared by update()/complete()/failure().
++	// bar is not overwritten); `level` routes a fail() write to the error stream. The single render
++	// path shared by update()/complete()/fail().
+ 	#paint(final: boolean, level?: 'error'): void {
+ 		const bar = renderBar({
+ 			current: this.#current,
+diff --git a/src/core/Spinner.ts b/src/core/Spinner.ts
+index b5f025f..5fde89f 100644
+--- a/src/core/Spinner.ts
++++ b/src/core/Spinner.ts
+@@ -25,14 +25,14 @@ import { createConsoleSink, createStyler } from './factories.js'
+  *   current frame, emits it on `frame`, writes `'\r' + line` to the sink, then advances the frame
+  *   index (wrapping). A test drives frames by calling {@link tick} directly, or arms a real short
+  *   `interval` and proves the timer arms / clears through the sink it writes to.
+- * - **Leak-free timer.** The interval is always cleared on {@link success} / {@link failure} /
++ * - **Leak-free timer.** The interval is always cleared on {@link succeed} / {@link fail} /
+  *   {@link stop} / {@link destroy} — `#handle` is the single source of `active`, set on arm and unset
+  *   on clear, so a spinner never leaks a running interval.
+  * - **Idempotent `start`.** A {@link start} while already `active` is a no-op (it never arms a second
+  *   timer).
+- * - **Outcome lines.** {@link success} / {@link failure} clear the timer then write + emit a final line —
++ * - **Outcome lines.** {@link succeed} / {@link fail} clear the timer then write + emit a final line —
+  *   the supplied theme status icon + style (`✔` / `✖` by default) + the message — terminated
+- *   by a newline (the activity is over; the line is committed, not overwritten). {@link failure} routes to
++ *   by a newline (the activity is over; the line is committed, not overwritten). {@link fail} routes to
+  *   the sink's error stream.
+  * - **Lifecycle.** {@link stop} clears the timer and leaves the current line; {@link destroy}
+  *   stops then destroys the emitter. {@link update} swaps the message and re-renders immediately when
+@@ -43,7 +43,7 @@ import { createConsoleSink, createStyler } from './factories.js'
+  * const spinner = new Spinner({ message: 'building' })
+  * spinner.start() // arms the timer, paints the first frame to the sink
+  * spinner.update('bundling') // message changes, re-rendered at once
+- * spinner.success('built in 1.2s') // ✔ built in 1.2s — timer cleared, line committed
++ * spinner.succeed('built in 1.2s') // ✔ built in 1.2s — timer cleared, line committed
+  * ```
+  */
+ export class Spinner implements SpinnerInterface {
+@@ -111,11 +111,11 @@ export class Spinner implements SpinnerInterface {
+ 		if (this.#handle !== undefined) this.#paint(this.#line())
+ 	}
+ 
+-	success(message?: string): void {
++	succeed(message?: string): void {
+ 		this.#finish('success', message)
+ 	}
+ 
+-	failure(message?: string): void {
++	fail(message?: string): void {
+ 		this.#finish('error', message)
+ 	}
+ 
+@@ -135,7 +135,7 @@ export class Spinner implements SpinnerInterface {
+ 	// Stop the timer (emitting `stop` when it was running) and write + emit the final outcome line —
+ 	// the status icon + message, colored through the styler, terminated by a newline (the activity is
+ 	// over, so the line is committed, not overwritten). `error` routes to the sink's error stream. The
+-	// shared body of success()/failure() — the single home for the outcome path.
++	// shared body of succeed()/fail() — the single home for the outcome path.
+ 	#finish(level: 'success' | 'error', message?: string): void {
+ 		this.stop()
+ 		const text = message ?? this.#message
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index 42ce5a1..fa16779 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -236,7 +236,7 @@ export const DEFAULT_LOG_LEVEL: LogLevel = 'info'
+  * methods and the manager fans out to. The source of truth for the level axis (drives
+  * exhaustive tests); aligned with {@link LEVEL_SEVERITY}.
+  */
+-export const LEVELS: readonly LogLevel[] = Object.freeze(['debug', 'info', 'warn', 'error'])
++export const LOG_LEVELS: readonly LogLevel[] = Object.freeze(['debug', 'info', 'warn', 'error'])
+ 
+ // Narrative-rendering constants — the box-drawing junction sets the renderers frame with, the
+ // status icons + colors a `Reporter.status` outcome shows, the tree connectors, and the default
+@@ -399,13 +399,6 @@ export const CAPTURE_LEVELS: readonly CaptureLevel[] = Object.freeze([
+ 	'debug',
+ ])
+ 
+-/**
+- * The default set of {@link CaptureLevel}s a Capture patches when `options.levels` is omitted —
+- * all five universal `console.*` methods ({@link CAPTURE_LEVELS}). A consumer narrows it (e.g. just
+- * `['warn', 'error']`) via `options.levels`.
+- */
+-export const DEFAULT_CAPTURE_LEVELS: readonly CaptureLevel[] = CAPTURE_LEVELS
+-
+ /**
+  * The default bounded-buffer cap for a {@link import('./types.js').CaptureInterface} — at most this
+  * many recent {@link CapturedMessage}s are retained per buffer (the total buffer and each by-level
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 77b0f82..91dbf64 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -1,19 +1,8 @@
+ import type {
+-	CaptureInterface,
+ 	CaptureOptions,
+-	LoggerInterface,
+-	LoggerManagerInterface,
+-	LoggerManagerOptions,
+-	LoggerOptions,
++	CaptureResult,
+ 	LogLevel,
+-	ProgressInterface,
+-	ProgressOptions,
+-	RendererInterface,
+-	ReporterInterface,
+-	ReporterOptions,
+ 	SinkInterface,
+-	SpinnerInterface,
+-	SpinnerOptions,
+ 	StylerInterface,
+ 	StylerOptions,
+ 	Theme,
+@@ -21,40 +10,15 @@ import type {
+ } from './types.js'
+ import { ANSIRenderer } from './ANSIRenderer.js'
+ import { Capture } from './Capture.js'
+-import { DEFAULT_THEME, EMPTY_STYLE, LEVELS, STATUS_LEVELS } from './constants.js'
++import { DEFAULT_THEME, EMPTY_STYLE, LOG_LEVELS, STATUS_LEVELS } from './constants.js'
+ import { freezeStyle, selectWriter } from './helpers.js'
+-import { Logger } from './Logger.js'
+-import { LoggerManager } from './LoggerManager.js'
+-import { Progress } from './Progress.js'
+-import { Reporter } from './Reporter.js'
+-import { Spinner } from './Spinner.js'
+ import { Styler } from './Styler.js'
+ 
+ /**
+- * Create the cross-environment default {@link RendererInterface} — the ANSI / SGR
+- * renderer that turns style data into terminal escape codes. The default behind
+- * {@link createStyler}; construct one directly to render a {@link import('./types.js').Style}
+- * without the fluent surface, or to share one instance across stylers.
+- *
+- * @returns A stateless ANSI {@link RendererInterface}
+- *
+- * @example
+- * ```ts
+- * import { createANSIRenderer } from '@src/core'
+- *
+- * const renderer = createANSIRenderer()
+- * renderer.render({ foreground: 'red', attributes: ['bold'] }, 'alert') // '\x1b[1;31malert\x1b[0m'
+- * ```
+- */
+-export function createANSIRenderer(): RendererInterface {
+-	return new ANSIRenderer()
+-}
+-
+-/**
+- * Create the fluent, composable {@link StylerInterface} — the consumer-facing styling
++ * Creates the fluent, composable {@link StylerInterface} — the consumer-facing styling
+  * API. It builds a {@link import('./types.js').Style} under the hood and renders it
+- * through a {@link RendererInterface} (the ANSI default), so `styler.red.bold('hi')`
+- * yields styled text. Chains are immutable, so a base styler is freely reusable.
++ * through a {@link import('./types.js').RendererInterface} (the ANSI default), so
++ * `styler.red.bold('hi')` yields styled text. Chains are immutable, so a base styler is freely reusable.
+  *
+  * @param options - See {@link StylerOptions}
+  * @returns A base {@link StylerInterface}
+@@ -86,7 +50,7 @@ export function createStyler(options?: StylerOptions): StylerInterface {
+ }
+ 
+ /**
+- * Create a {@link Theme} — the app-wide semantic style vocabulary, merged role by role over
++ * Creates a {@link Theme} — the app-wide semantic style vocabulary, merged role by role over
+  * {@link DEFAULT_THEME}. Hand one theme to a logger / reporter / spinner / progress and every
+  * surface speaks it; omit `options` for the defaults.
+  *
+@@ -115,7 +79,7 @@ export function createStyler(options?: StylerOptions): StylerInterface {
+  */
+ export function createTheme(options?: ThemeOptions): Theme {
+ 	const levels = { ...DEFAULT_THEME.levels }
+-	for (const level of LEVELS) {
++	for (const level of LOG_LEVELS) {
+ 		levels[level] = freezeStyle(options?.levels?.[level] ?? DEFAULT_THEME.levels[level])
+ 	}
+ 	const statuses = { ...DEFAULT_THEME.statuses }
+@@ -132,9 +96,9 @@ export function createTheme(options?: ThemeOptions): Theme {
+ }
+ 
+ /**
+- * Create the default {@link SinkInterface} — a console sink that routes by level and writes
+- * through the `console` methods snapshotted at creation. The default output target behind
+- * {@link createLogger}.
++ * Creates the default {@link SinkInterface} — a console sink that routes by level and writes
++ * through the `console` methods snapshotted at creation. The default output target behind the
++ * {@link import('./Logger.js').Logger}.
+  *
+  * @returns A console {@link SinkInterface}
+  *
+@@ -170,199 +134,85 @@ export function createConsoleSink(): SinkInterface {
+ 	}
+ }
+ 
++// Run `fn` under a fresh, scoped console capture — the ergonomic form of the `Capture` class. A
++// sync `fn` returning T yields { value, messages }; an async `fn` returning Promise<T> yields a
++// Promise of the same. The capture starts before `fn`, stops in a finally (so console is always
++// restored, even on throw), and is discarded — only the buffered messages are returned.
++export function createCaptureResult<T>(
++	fn: () => Promise<T>,
++	options?: CaptureOptions,
++): Promise<CaptureResult<T>>
++export function createCaptureResult<T>(fn: () => T, options?: CaptureOptions): CaptureResult<T>
+ /**
+- * Create an observable, leveled {@link LoggerInterface} — the entry point into structured
+- * logging. Each `debug` / `info` / `warn` / `error` call builds a frozen
+- * {@link import('./types.js').LogRecord}, gates it by severity, retains a bounded tail,
+- * always emits it on `entry` (the transport seam), and — unless `silent` — writes a styled
+- * line to its sink.
++ * Runs `fn` with the global `console.*` captured for its duration, returning the function's `value`
++ * plus the {@link import('./types.js').CapturedMessage}s it logged — the scoped, self-restoring
++ * ergonomic form of the {@link Capture} class.
+  *
+- * @param options - See {@link LoggerOptions}
+- * @returns A {@link LoggerInterface}
++ * @param fn - The function to run under capture; may be sync (returns `T`) or async (returns
++ *   `Promise<T>`)
++ * @param options - See {@link CaptureOptions} (`levels` / `mirror` / `sink` / `limit` / `on` /
++ *   `error`); the capture is started for the duration of `fn` regardless
++ * @returns For a sync `fn`, a {@link CaptureResult}`<T>` (`{ value, messages }`); for an async
++ *   `fn`, a `Promise<CaptureResult<T>>` (awaited, then console restored)
+  *
+  * @remarks
+- * - **Record + event = transport.** Subscribe `logger.emitter.on('entry', …)` to tee
+- *   records to a file / JSON / remote transport; the event fires for every accepted record,
+- *   even when `silent` (silence suppresses only the sink write).
+- * - **Bounded retention.** `entries()` returns the recent records, capped at `options.limit`
+- *   (default {@link DEFAULT_LOG_LIMIT}); never unbounded.
+- * - **Sink + styler defaults.** `options.sink` defaults to {@link createConsoleSink} (the
+- *   snapshotted, level-routing console sink); `options.styler` to {@link createStyler} (ANSI).
+- *   Styling is orthogonal to level — a level only chooses a label color.
++ * - **Always restores.** `start()` runs before `fn`; `stop()` runs in a `finally`, so `console` is
++ *   restored even if `fn` throws / rejects (the throw / rejection still propagates). The capture
++ *   is local — created, used, and destroyed within the call.
++ * - **Sync vs async.** A `fn` returning a `Promise` is detected and awaited before `stop()`, so
++ *   captures during the async work are included; a plain `fn` stops synchronously. The return type
++ *   follows `fn`'s (overloaded).
++ * - **process-global caveat.** Like the {@link Capture} class, this patches the one global
++ *   `console`. Concurrent `createCaptureResult` calls (or one around other capturing code)
++ *   interleave — each captures every `console.*` call in flight, and the inner `stop()` restores
++ *   whatever the outer had installed. Use it for sequential, scoped capture, not overlapping captures.
+  *
+  * @example
+  * ```ts
+- * import { createLogger } from '@src/core'
+- *
+- * const logger = createLogger({ name: 'http', level: 'info' })
+- * logger.info('request', { method: 'GET', path: '/' })
+- * logger.debug('verbose') // dropped — below the info threshold
+- * ```
+- */
+-export function createLogger(options?: LoggerOptions): LoggerInterface {
+-	return new Logger(options)
+-}
+-
+-/**
+- * Create an event-free {@link LoggerManagerInterface} — a registry of named loggers plus
+- * a convenience fan-out. It mints + stores {@link LoggerInterface}s keyed by name (its
+- * defaults flowing into each), looks them up, removes them, and broadcasts a one-off log to
+- * every registered logger.
+- *
+- * @param options - See {@link LoggerManagerOptions}
+- * @returns A {@link LoggerManagerInterface}
+- *
+- * @remarks
+- * - **Defaults flow in.** `options.level` / `sink` / `styler` / `limit` / `silent` are the
+- *   defaults flowed into every `register`ed logger unless that call's options override them.
+- * - **Event-free.** The manager carries no emitter (each registered logger owns its own
+- *   observable `emitter`) — it is a pure registry.
++ * import { createCaptureResult } from '@src/core'
+  *
+- * @example
+- * ```ts
+- * import { createLoggerManager } from '@src/core'
+- *
+- * const loggers = createLoggerManager({ level: 'warn' })
+- * loggers.register('http')
+- * loggers.register('db', { level: 'debug' }) // overrides the default
+- * loggers.warn('slow', { ms: 900 }) // fans out to both
+- * ```
+- */
+-export function createLoggerManager(options?: LoggerManagerOptions): LoggerManagerInterface {
+-	return new LoggerManager(options)
+-}
+-
+-/**
+- * Create a lean, event-free {@link ReporterInterface} — the entry point into narrative
+- * reporting. Each verb (`section` / `step` / `timing` / `status` / `table` / `tree` / `box` /
+- * `line` / `blank`) formats through the shared styler + the pure layout renderers and writes to
+- * the sink — human / build-run narration over the same substrate the logger uses.
+- *
+- * @param options - See {@link ReporterOptions}
+- * @returns A {@link ReporterInterface}
+- *
+- * @remarks
+- * - **One styler, one sink.** `options.styler` defaults to {@link createStyler} (ANSI) and
+- *   `options.sink` to {@link createConsoleSink} (the snapshotted, level-routing console sink) —
+- *   no second colorizer. A `status('error', …)` routes to the sink's error stream.
+- * - **Width-aware.** `options.width` (default {@link DEFAULT_WIDTH}) sizes `section` and a
+- *   `box` with no explicit width; the renderers align on visible width so styled content keeps
+- *   its columns.
+- * - **Event-free.** The reporter carries no emitter — a pure formatting front-end, like
+- *   the renderers and `Scheduler`. Reach for a {@link createLogger} when you need observable,
+- *   leveled, transportable records instead.
+- *
+- * @example
+- * ```ts
+- * import { createReporter } from '@src/core'
+- *
+- * const reporter = createReporter()
+- * reporter.section('Build')
+- * reporter.step('bundling', { index: 2, total: 5 }) // [2/5] bundling
+- * reporter.status('success', 'built in 1.2s') // ✔ built in 1.2s
+- *
+- * // Disable color (a non-TTY) — every line is plain.
+- * const plain = createReporter({ styler: createStyler({ enabled: false }) })
+- * ```
+- */
+-export function createReporter(options?: ReporterOptions): ReporterInterface {
+-	return new Reporter(options)
+-}
+-
+-/**
+- * Create an observable {@link CaptureInterface} — console interception on the read side. While
+- * `active`, every configured `console.*` call is captured as a frozen
+- * {@link import('./types.js').CapturedMessage}, buffered (total + by level, bounded), emitted on
+- * `capture`, and — per options — mirrored to the real console and/or forwarded to a
+- * {@link SinkInterface}.
+- *
+- * @param options - See {@link CaptureOptions}
+- * @returns A {@link CaptureInterface} (inactive until `start()`)
+- *
+- * @remarks
+- * - **Snapshot-at-start — no capture loop.** `start()` snapshots the current `console[level]` per
+- *   configured level, then patches; the mirror writes through that snapshot. Our own console sink
+- *   output (the Logger / Reporter, which snapshot `console` at creation) is never recaptured —
+- *   `Capture` catches third-party `console.*`, not our writes. Create your loggers first.
+- * - **process-global + non-reentrant.** It patches the one global `console`, so at most one
+- *   capture may be active at a time; two concurrent captures interleave and clobber each other's
+- *   restore. Prefer {@link withCapture} for a scoped, self-restoring capture.
+- * - **Bounded.** `options.limit` (default {@link import('./constants.js').DEFAULT_CAPTURE_LIMIT})
+- *   caps both the total buffer and each by-level bucket; never unbounded.
+- *
+- * @example
+- * ```ts
+- * import { createCapture } from '@src/core'
+- *
+- * const capture = createCapture({ levels: ['warn', 'error'] })
+- * capture.start()
+- * console.error('boom') // captured, not mirrored (mirror defaults to false)
+- * capture.messages('error') // [{ level: 'error', text: 'boom', time: … }]
+- * capture.stop()
+- * ```
+- */
+-export function createCapture(options?: CaptureOptions): CaptureInterface {
+-	return new Capture(options)
+-}
+-
+-/**
+- * Create a self-driving, observable {@link SpinnerInterface} — a live activity spinner. `start()`
+- * arms a periodic timer that advances a glyph cycle, writing each `\r` + frame line to its sink and
+- * emitting it on `frame`; `success` / `failure` commit a final `✔` / `✖` line. The leading `\r` is the
+- * sink's to redraw on — a TTY sink overwrites for a smooth animation, a plain sink
+- * degrades to a fresh line.
+- *
+- * @param options - See {@link SpinnerOptions}
+- * @returns A {@link SpinnerInterface} (inactive until `start()`)
+- *
+- * @remarks
+- * - **Universal + leak-free.** Built on `setInterval` + the one styler + the one sink (no `node:*`,
+- *   no `process.stdout`); the timer is always cleared on `success` / `failure` / `stop` / `destroy`, so
+- *   it never leaks. `start()` is idempotent (no second timer while `active`).
+- * - **Observable.** Subscribe `spinner.emitter.on('frame', …)` to mirror the animation without
+- *   a terminal; `start` / `stop` bracket the timer lifecycle. `options.sink` defaults to
+- *   {@link createConsoleSink}, `options.styler` to {@link createStyler} (ANSI).
+- *
+- * @example
+- * ```ts
+- * import { createSpinner } from '@src/core'
+- *
+- * const spinner = createSpinner({ message: 'building' })
+- * spinner.start()
+- * spinner.success('built in 1.2s') // ✔ built in 1.2s — timer cleared, line committed
+- * ```
+- */
+-export function createSpinner(options?: SpinnerOptions): SpinnerInterface {
+-	return new Spinner(options)
+-}
+-
+-/**
+- * Create an update-driven, observable {@link ProgressInterface} — a live progress bar. Each
+- * `update(current)` recomputes the bar, writes `\r` + bar to its sink, and emits `{ current, total }`
+- * on `update`; `complete` / `failure` commit a final line. The leading `\r` is the sink's to redraw on —
+- * a TTY sink overwrites, a plain sink degrades to a fresh line. No self-timer — the caller
+- * drives the bar.
+- *
+- * @param options - See {@link ProgressOptions} (`total` is required)
+- * @returns A {@link ProgressInterface}
+- *
+- * @remarks
+- * - **Universal + update-driven.** Built on the one styler + the one sink (no `node:*`, no
+- *   `process.stdout`); progress advances only when the caller reports it. `current` is always clamped
+- *   to `[0, total]`. `options.sink` defaults to {@link createConsoleSink}, `options.styler` to
+- *   {@link createStyler} (ANSI).
+- * - **Observable.** Subscribe `progress.emitter.on('update', …)` to mirror progress without a
+- *   terminal; `complete` signals a successful finish.
+- *
+- * @example
+- * ```ts
+- * import { createProgress } from '@src/core'
++ * const { value, messages } = createCaptureResult(() => {
++ * 	console.log('working')
++ * 	return 42
++ * })
++ * value // 42
++ * messages.map((m) => m.text) // ['working']
+  *
+- * const progress = createProgress({ total: 100, message: 'downloading' })
+- * progress.update(40)
+- * progress.complete('done')
++ * // Async — awaited before console is restored.
++ * const out = await createCaptureResult(async () => {
++ * 	console.warn('async noise')
++ * 	return 'done'
++ * })
++ * out.value // 'done'
+  * ```
+  */
+-export function createProgress(options: ProgressOptions): ProgressInterface {
+-	return new Progress(options)
++export function createCaptureResult<T>(
++	fn: () => T | Promise<T>,
++	options?: CaptureOptions,
++): CaptureResult<T> | Promise<CaptureResult<T>> {
++	const capture = new Capture(options)
++	capture.start()
++	try {
++		const result = fn()
++		if (result instanceof Promise) {
++			return result.then(
++				(value) => {
++					const messages = capture.messages()
++					capture.destroy()
++					return { value, messages }
++				},
++				(error: unknown) => {
++					capture.destroy()
++					throw error
++				},
++			)
++		}
++		const messages = capture.messages()
++		capture.destroy()
++		return { value: result, messages }
++	} catch (error) {
++		// A sync throw — restore console before rethrowing (the async rejection path is handled above).
++		capture.destroy()
++		throw error
++	}
+ }
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 83b247f..0be8439 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -1,8 +1,6 @@
+ import type {
+ 	Alignment,
+ 	BoxOptions,
+-	CaptureOptions,
+-	CaptureResult,
+ 	LogLevel,
+ 	LogRecord,
+ 	ProgressBarOptions,
+@@ -31,7 +29,6 @@ import {
+ 	SEPARATOR_FILL,
+ 	SEPARATOR_TITLE_GAP,
+ } from './constants.js'
+-import { Capture } from './Capture.js'
+ 
+ // Pure, universal string helpers for the console / terminal system. `strip` removes
+ // ANSI escapes; `width` is the visible length (strip then count). Both are needed later
+@@ -39,8 +36,6 @@ import { Capture } from './Capture.js'
+ // surface shares one implementation. Every function exported.
+ // The logging helpers (`meetsLevel`, `formatTime`, `formatRecord`) are likewise pure and
+ // shared — the level gate's comparison and the styled-line layout, kept off the impl class.
+-// `withCapture` sits here too: it runs a function under a scoped `Capture` and returns that
+-// function's value, so it produces no entity and is reusable infrastructure, not a factory.
+ 
+ /**
+  * Remove every ANSI escape sequence from `text`, returning the plain visible string.
+@@ -721,86 +716,3 @@ export function renderBar(options: ProgressBarOptions): string {
+ 	const percent = Math.round(fraction * 100)
+ 	return `${bar} ${percent}% (${current}/${options.total})`
+ }
+-
+-// Run `fn` under a fresh, scoped console capture — the ergonomic form of {@link createCapture}.
+-// A sync `fn` returning T yields { value, messages }; an async `fn` returning Promise<T> yields a
+-// Promise of the same. The capture starts before `fn`, stops in a finally (so console is always
+-// restored, even on throw), and is discarded — only the buffered messages are returned.
+-export function withCapture<T>(
+-	fn: () => Promise<T>,
+-	options?: CaptureOptions,
+-): Promise<CaptureResult<T>>
+-export function withCapture<T>(fn: () => T, options?: CaptureOptions): CaptureResult<T>
+-/**
+- * Run `fn` with the global `console.*` captured for its duration, returning the function's `value`
+- * plus the {@link import('./types.js').CapturedMessage}s it logged — the scoped, self-restoring
+- * ergonomic form of {@link createCapture}.
+- *
+- * @param fn - The function to run under capture; may be sync (returns `T`) or async (returns
+- *   `Promise<T>`)
+- * @param options - See {@link CaptureOptions} (`levels` / `mirror` / `sink` / `limit` / `on` /
+- *   `error`); the capture is started for the duration of `fn` regardless
+- * @returns For a sync `fn`, a {@link CaptureResult}`<T>` (`{ value, messages }`); for an async
+- *   `fn`, a `Promise<CaptureResult<T>>` (awaited, then console restored)
+- *
+- * @remarks
+- * - **Always restores.** `start()` runs before `fn`; `stop()` runs in a `finally`, so `console` is
+- *   restored even if `fn` throws / rejects (the throw / rejection still propagates). The capture
+- *   is local — created, used, and destroyed within the call.
+- * - **Sync vs async.** A `fn` returning a `Promise` is detected and awaited before `stop()`, so
+- *   captures during the async work are included; a plain `fn` stops synchronously. The return type
+- *   follows `fn`'s (overloaded).
+- * - **process-global caveat.** Like {@link createCapture}, this patches the one global `console`.
+- *   Concurrent `withCapture` calls (or a `withCapture` around other capturing code) interleave —
+- *   each captures every `console.*` call in flight, and the inner `stop()` restores whatever the
+- *   outer had installed. Use it for sequential, scoped capture, not overlapping captures.
+- *
+- * @example
+- * ```ts
+- * import { withCapture } from '@src/core'
+- *
+- * const { value, messages } = withCapture(() => {
+- * 	console.log('working')
+- * 	return 42
+- * })
+- * value // 42
+- * messages.map((m) => m.text) // ['working']
+- *
+- * // Async — awaited before console is restored.
+- * const out = await withCapture(async () => {
+- * 	console.warn('async noise')
+- * 	return 'done'
+- * })
+- * out.value // 'done'
+- * ```
+- */
+-export function withCapture<T>(
+-	fn: () => T | Promise<T>,
+-	options?: CaptureOptions,
+-): CaptureResult<T> | Promise<CaptureResult<T>> {
+-	const capture = new Capture(options)
+-	capture.start()
+-	try {
+-		const result = fn()
+-		if (result instanceof Promise) {
+-			return result.then(
+-				(value) => {
+-					const messages = capture.messages()
+-					capture.destroy()
+-					return { value, messages }
+-				},
+-				(error: unknown) => {
+-					capture.destroy()
+-					throw error
+-				},
+-			)
+-		}
+-		const messages = capture.messages()
+-		capture.destroy()
+-		return { value: result, messages }
+-	} catch (error) {
+-		// A sync throw — restore console before rethrowing (the async rejection path is handled above).
+-		capture.destroy()
+-		throw error
+-	}
+-}
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 8295def..9e2921c 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -383,7 +383,7 @@ export type LoggerEventMap = {
+ export type LogFormatFunction = (record: LogRecord, styler: StylerInterface, theme: Theme) => string
+ 
+ /**
+- * Options for `createLogger` / the {@link LoggerInterface} constructor.
++ * Options for the {@link LoggerInterface} constructor.
+  *
+  * @remarks
+  * - `on` — the reserved {@link EmitterHooks} key: initial listeners for the
+@@ -457,7 +457,7 @@ export interface LoggerInterface {
+ }
+ 
+ /**
+- * Options for `createLoggerManager` / the {@link LoggerManagerInterface} constructor.
++ * Options for the {@link LoggerManagerInterface} constructor.
+  *
+  * @remarks
+  * The manager is an event-free registry — it carries no emitter of its own (each
+@@ -717,7 +717,7 @@ export interface StepPosition {
+ }
+ 
+ /**
+- * Options for {@link createReporter} / the {@link ReporterInterface} constructor.
++ * Options for the {@link ReporterInterface} constructor.
+  *
+  * @remarks
+  * - `sink` — where every formatted line is written; defaults to
+@@ -803,7 +803,7 @@ export interface ReporterInterface {
+  * `console.x` was called), not a severity threshold — there is no ordering and no gating (every
+  * configured method is captured). `log` and `info` are separate methods (both default-stream),
+  * mapped to the sink's default / `info` stream respectively; `warn` / `error` / `debug` map to
+- * their matching {@link LogLevel}. The default configured set is {@link DEFAULT_CAPTURE_LEVELS}.
++ * their matching {@link LogLevel}. The default configured set is {@link CAPTURE_LEVELS}.
+  */
+ export type CaptureLevel = 'log' | 'info' | 'warn' | 'error' | 'debug'
+ 
+@@ -857,13 +857,13 @@ export type CaptureEventMap = {
+ }
+ 
+ /**
+- * Options for `createCapture` / the {@link CaptureInterface} constructor.
++ * Options for the {@link CaptureInterface} constructor.
+  *
+  * @remarks
+  * - `on` — the reserved {@link EmitterHooks} key: initial listeners for the
+  *   {@link CaptureEventMap}, wired at construction (e.g. `{ capture: (m) => tee(m) }`).
+  * - `error` — the emitter's listener-error handler; a listener throw routes here.
+- * - `levels` — which `console.*` methods to intercept; defaults to {@link DEFAULT_CAPTURE_LEVELS}
++ * - `levels` — which `console.*` methods to intercept; defaults to {@link CAPTURE_LEVELS}
+  *   (all five). Only the listed methods are patched — an unlisted method is left untouched and
+  *   its calls pass through normally.
+  * - `mirror` — when `true`, each intercepted call is also forwarded to the snapshot-original
+@@ -929,7 +929,7 @@ export interface CaptureInterface {
+ }
+ 
+ /**
+- * The structured outcome of {@link import('./helpers.js').withCapture} — the wrapped function's
++ * The structured outcome of {@link import('./factories.js').createCaptureResult} — the wrapped function's
+  * own return `value` plus the {@link CapturedMessage}s intercepted while it ran.
+  *
+  * @remarks
+@@ -984,12 +984,12 @@ export interface ProgressBarOptions {
+  *
+  * @remarks
+  * - `frame` — the core event: fires once per advance (every `tick()`, whether driven by the internal
+- *   timer or called directly) and on the final `success` / `failure` line, carrying the rendered frame
++ *   timer or called directly) and on the final `succeed` / `fail` line, carrying the rendered frame
+  *   line (the same text written to the sink, minus the leading `\r`). The hook a non-sink consumer
+  *   (a test, a remote mirror) rides to observe the animation without a terminal.
+  * - `start` / `stop` — the lifecycle signals bracketing the internal timer: `start` fires when the
+  *   timer is armed (the first `start()` on an inactive spinner), `stop` when it is cleared (a
+- *   `stop()` / `success()` / `failure()` on an active spinner, and from `destroy()`); both pure signals
++ *   `stop()` / `succeed()` / `fail()` on an active spinner, and from `destroy()`); both pure signals
+  *   (empty tuples) so a consumer can observe the activity lifecycle.
+  *
+  * Listener isolation is the emitter's: a listener throw routes to the emitter's `error`
+@@ -998,27 +998,27 @@ export interface ProgressBarOptions {
+  * index signature.
+  */
+ export type SpinnerEventMap = {
+-	/** A frame was produced (a `tick()` advance or the final `success` / `failure` line) — the rendered line. */
++	/** A frame was produced (a `tick()` advance or the final `succeed` / `fail` line) — the rendered line. */
+ 	readonly frame: readonly [line: string]
+ 	/** The internal timer was armed (an inactive spinner's `start()`). */
+ 	readonly start: readonly []
+-	/** The internal timer was cleared (an active spinner's `stop()` / `success()` / `failure()` / `destroy()`). */
++	/** The internal timer was cleared (an active spinner's `stop()` / `succeed()` / `fail()` / `destroy()`). */
+ 	readonly stop: readonly []
+ }
+ 
+ /**
+- * Options for `createSpinner` / the {@link SpinnerInterface} constructor.
++ * Options for the {@link SpinnerInterface} constructor.
+  *
+  * @remarks
+  * - `on` — the reserved {@link EmitterHooks} key: initial listeners for the
+  *   {@link SpinnerEventMap}, wired at construction.
+  * - `error` — the emitter's listener-error handler; a listener throw routes here.
+  * - `message` — the text shown beside the spinner glyph; defaults to `''` (a bare glyph). Changed
+- *   live via `update(message)` and overridden by a `success` / `failure` argument.
++ *   live via `update(message)` and overridden by a `succeed` / `fail` argument.
+  * - `frames` — the cycle of glyph frames the spinner advances through; defaults to
+  *   {@link SPINNER_FRAMES} (the braille set `⠋⠙⠹…`). Each `tick()` advances to the next, wrapping.
+  * - `interval` — the timer period in milliseconds between frames; defaults to
+- *   {@link DEFAULT_SPINNER_INTERVAL}. The timer is always cleared on `success` / `failure` / `stop` /
++ *   {@link DEFAULT_SPINNER_INTERVAL}. The timer is always cleared on `succeed` / `fail` / `stop` /
+  *   `destroy`, so it never leaks; tests drive frames deterministically via `tick()` (no real clock).
+  * - `sink` — where each `\r` + frame line is written; defaults to
+  *   {@link import('./factories.js').createConsoleSink}. A TTY sink overwrites on the `\r`.
+@@ -1049,21 +1049,21 @@ export interface SpinnerOptions {
+  *   `node:*`) that calls `tick()` each `interval`; each `tick()` advances the frame index, builds the
+  *   styled `glyph + message` line, emits it on `frame`, and writes `'\r' + line` to the sink. A test
+  *   drives frames by calling `tick()` directly (no real clock) and proves the timer arms / clears
+- *   with fake timers — the timer is always cleared on `success` / `failure` / `stop` / `destroy`, so it
++ *   with fake timers — the timer is always cleared on `succeed` / `fail` / `stop` / `destroy`, so it
+  *   never leaks.
+  * - **Idempotent `start`.** A `start()` while already `active` is a no-op (it never arms a second
+  *   timer). `active` reflects whether the timer is currently armed.
+- * - **Outcome lines.** `success(message?)` / `failure(message?)` clear the timer, then write + emit a
++ * - **Outcome lines.** `succeed(message?)` / `fail(message?)` clear the timer, then write + emit a
+  *   final line — the theme's success / error status icon + style (`✔` / `✖` by default) + the
+  *   message — terminated by a newline (the activity is over; the line is committed, not overwritten).
+- *   `failure` routes to the sink's error stream.
++ *   `fail` routes to the sink's error stream.
+  * - **Lifecycle.** `stop()` clears the timer and leaves the current line (no final write);
+  *   `destroy()` stops then destroys the emitter. `update(message)` swaps the message (re-rendering
+  *   immediately when active, so the change shows without waiting for the next tick).
+  */
+ export interface SpinnerInterface {
+ 	readonly emitter: EmitterInterface<SpinnerEventMap>
+-	/** Whether the internal timer is currently armed (between `start()` and `stop` / `success` / `failure`). */
++	/** Whether the internal timer is currently armed (between `start()` and `stop` / `succeed` / `fail`). */
+ 	readonly active: boolean
+ 	/** The current message shown beside the glyph. */
+ 	readonly message: string
+@@ -1074,9 +1074,9 @@ export interface SpinnerInterface {
+ 	/** Change the message; re-renders immediately when `active` so the change shows at once. */
+ 	update(message: string): void
+ 	/** Stop with a success line — clear the timer, write + emit `✔ message` + newline. */
+-	success(message?: string): void
+-	/** Stop with a failure line — clear the timer, write + emit `✖ message` + newline (error stream). */
+-	failure(message?: string): void
++	succeed(message?: string): void
++	/** Stop with an error line — clear the timer, write + emit `✖ message` + newline (error stream). */
++	fail(message?: string): void
+ 	/** Clear the timer and leave the current line (no final write) — a no-op when not `active`. */
+ 	stop(): void
+ 	/** Tear down — `stop()` then destroy the emitter. */
+@@ -1115,7 +1115,7 @@ export interface RetentionInterface<T extends { readonly level: string }> {
+  * `current` is always the value after clamping into `[0, total]`, so a listener never sees an
+  * overrun or a negative. `total` is the bar's fixed target, repeated on every report so a listener
+  * needs no reference to the bar itself. The same record is emitted from `update`, `complete`, and
+- * `failure`.
++ * `fail`.
+  */
+ export interface ProgressReport {
+ 	readonly current: number
+@@ -1126,11 +1126,11 @@ export interface ProgressReport {
+  * The observable events a {@link ProgressInterface} emits.
+  *
+  * @remarks
+- * - `update` — the core event: fires on every `update(current)` (and on `complete` / `failure`),
++ * - `update` — the core event: fires on every `update(current)` (and on `complete` / `fail`),
+  *   carrying the `{ current, total }` progress (the clamped `current`). The hook a non-sink consumer
+  *   rides to observe progress without a terminal.
+  * - `complete` — the terminal signal: fires once from `complete()` (a successful finish), a pure
+- *   signal (empty tuple) so a consumer can observe the bar reaching its end. (`failure()` emits a final
++ *   signal (empty tuple) so a consumer can observe the bar reaching its end. (`fail()` emits a final
+  *   `update` and routes its line to the error stream, but is not a `complete` — completion means the
+  *   work finished successfully.)
+  *
+@@ -1139,14 +1139,14 @@ export interface ProgressReport {
+  * structurally, whereas an interface lacks the index signature.
+  */
+ export type ProgressEventMap = {
+-	/** Progress advanced — the clamped `{ current, total }` (fires on `update` and on `complete` / `failure`). */
++	/** Progress advanced — the clamped `{ current, total }` (fires on `update` and on `complete` / `fail`). */
+ 	readonly update: readonly [progress: ProgressReport]
+ 	/** The bar reached its end via `complete()` (a successful finish). */
+ 	readonly complete: readonly []
+ }
+ 
+ /**
+- * Options for `createProgress` / the {@link ProgressInterface} constructor.
++ * Options for the {@link ProgressInterface} constructor.
+  *
+  * @remarks
+  * - `on` — the reserved {@link EmitterHooks} key: initial listeners for the
+@@ -1154,7 +1154,7 @@ export type ProgressEventMap = {
+  * - `error` — the emitter's listener-error handler; a listener throw routes here.
+  * - `total` — the value `current` advances toward (the `100%` point); the only required option.
+  * - `message` — text shown after the bar; defaults to `''`. Overridden per-`update` and by a
+- *   `complete` / `failure` argument.
++ *   `complete` / `fail` argument.
+  * - `width` — the bar track's visible cell count, handed to {@link import('./helpers.js').renderBar};
+  *   defaults to {@link DEFAULT_BAR_WIDTH}.
+  * - `fill` / `empty` — the filled and empty track glyphs handed to
+@@ -1192,15 +1192,15 @@ export interface ProgressOptions {
+  *   SpinnerInterface}) — progress advances only when the caller reports it.
+  * - **Outcome lines.** `complete(message?)` renders a full bar (`current = total`) + message,
+  *   terminated by a newline, emits a final `update` then `complete`, and marks `completed`.
+- *   `failure(message?)` renders the bar at its current fill + message + newline and routes to the sink's
++ *   `fail(message?)` renders the bar at its current fill + message + newline and routes to the sink's
+  *   error stream (no `complete` — the work did not finish). Both are terminal: a later `update` after
+- *   a `complete` / `failure` is ignored (`active` is `false`).
++ *   a `complete` / `fail` is ignored (`active` is `false`).
+  * - **Bounded.** `current` is always clamped to `[0, total]`; `completed` reports whether
+- *   `complete()` has run; `active` is `true` until a `complete` / `failure`.
++ *   `complete()` has run; `active` is `true` until a `complete` / `fail`.
+  */
+ export interface ProgressInterface {
+ 	readonly emitter: EmitterInterface<ProgressEventMap>
+-	/** Whether the bar is still advancing (before any `complete()` / `failure()`). */
++	/** Whether the bar is still advancing (before any `complete()` / `fail()`). */
+ 	readonly active: boolean
+ 	/** Whether `complete()` has run (the bar finished successfully). */
+ 	readonly completed: boolean
+@@ -1213,7 +1213,7 @@ export interface ProgressInterface {
+ 	/** Finish successfully — render a full bar + newline, emit a final `update` then `complete`. */
+ 	complete(message?: string): void
+ 	/** Finish unsuccessfully — render the bar at its current fill + newline to the error stream (no `complete`). */
+-	failure(message?: string): void
++	fail(message?: string): void
+ 	/** Tear down — destroy the emitter. */
+ 	destroy(): void
+ }
+diff --git a/src/server/ProcessCapture.ts b/src/server/ProcessCapture.ts
+index b36922b..17ac292 100644
+--- a/src/server/ProcessCapture.ts
++++ b/src/server/ProcessCapture.ts
+@@ -12,7 +12,7 @@ import type { RetentionInterface, SinkInterface } from '@src/core'
+ import { StringDecoder } from 'node:string_decoder'
+ import { Emitter } from '@orkestrel/emitter'
+ import { Retention } from '@src/core'
+-import { DEFAULT_CAPTURE_LEVELS, DEFAULT_CAPTURE_LIMIT, STREAM_LEVEL_MAP } from './constants.js'
++import { DEFAULT_STREAM_LIMIT, STREAM_LEVEL_MAP, STREAM_LEVELS } from './constants.js'
+ import { decodeChunk } from './helpers.js'
+ import { isBufferEncoding } from './validators.js'
+ 
+@@ -92,12 +92,12 @@ export class ProcessCapture implements ProcessCaptureInterface {
+ 			...(options?.on !== undefined ? { on: options.on } : {}),
+ 			...(options?.error !== undefined ? { error: options.error } : {}),
+ 		})
+-		this.#levels = options?.levels ?? DEFAULT_CAPTURE_LEVELS
++		this.#levels = options?.levels ?? STREAM_LEVELS
+ 		this.#mirror = options?.mirror ?? false
+ 		this.#sink = options?.sink
+ 		this.#retention = new Retention<CapturedChunk>(
+ 			this.#levels,
+-			options?.limit ?? DEFAULT_CAPTURE_LIMIT,
++			options?.limit ?? DEFAULT_STREAM_LIMIT,
+ 		)
+ 	}
+ 
+diff --git a/src/server/constants.ts b/src/server/constants.ts
+index 5846f2a..d21afe3 100644
+--- a/src/server/constants.ts
++++ b/src/server/constants.ts
+@@ -11,20 +11,13 @@ import type { StreamLevel } from './types.js'
+  */
+ export const STREAM_LEVELS: readonly StreamLevel[] = Object.freeze(['stdout', 'stderr'])
+ 
+-/**
+- * The default set of {@link StreamLevel}s a process capture patches when `options.levels` is omitted
+- * — both streams ({@link STREAM_LEVELS}). A consumer narrows it (e.g. just `['stderr']`) via
+- * `options.levels`.
+- */
+-export const DEFAULT_CAPTURE_LEVELS: readonly StreamLevel[] = STREAM_LEVELS
+-
+ /**
+  * The default bounded-buffer cap for a {@link import('./types.js').ProcessCaptureInterface} — at
+  * most this many recent {@link import('./types.js').CapturedChunk}s are retained per buffer (the
+  * total buffer and each per-stream bucket; oldest dropped first). Mirrors the core `Capture`'s
+  * `DEFAULT_CAPTURE_LIMIT`; a consumer overrides it via `options.limit`.
+  */
+-export const DEFAULT_CAPTURE_LIMIT = 1000
++export const DEFAULT_STREAM_LIMIT = 1000
+ 
+ /**
+  * The terminal width {@link import('./factories.js').createServerSink} reports through
+diff --git a/src/server/factories.ts b/src/server/factories.ts
+index de98320..fb6ca77 100644
+--- a/src/server/factories.ts
++++ b/src/server/factories.ts
+@@ -7,7 +7,7 @@ import type {
+ } from './types.js'
+ import { selectWriter, strip, stripControls } from '@src/core'
+ import { ProcessCapture } from './ProcessCapture.js'
+-import { columnsOf, inferStyled } from './helpers.js'
++import { inferColumns, inferStyled } from './helpers.js'
+ import { isStreamTarget } from './validators.js'
+ 
+ /**
+@@ -42,14 +42,14 @@ import { isStreamTarget } from './validators.js'
+  *
+  * @example
+  * ```ts
+- * import { createLogger, createReporter, createStyler } from '@src/core'
++ * import { createStyler, Logger, Reporter } from '@src/core'
+  * import { createServerSink } from '@src/server'
+  *
+  * const sink = createServerSink()
+  * const styler = createStyler({ enabled: sink.styled })
+- * const logger = createLogger({ name: 'app', sink, styler })
++ * const logger = new Logger({ name: 'app', sink, styler })
+  * logger.error('boom') // → process.stderr, ANSI rendered on a TTY / stripped to a pipe
+- * const reporter = createReporter({ sink, width: sink.columns })
++ * const reporter = new Reporter({ sink, width: sink.columns })
+  * ```
+  */
+ export function createServerSink(options?: ServerSinkOptions): ServerSinkInterface {
+@@ -80,8 +80,8 @@ export function createServerSink(options?: ServerSinkOptions): ServerSinkInterfa
+ 		},
+ 		get columns(): number {
+ 			// A fixed override wins; otherwise the live out-stream width (tracks a resize), with the
+-			// non-TTY fallback inside columnsOf.
+-			return typeof fixed === 'number' ? fixed : columnsOf(out)
++			// non-TTY fallback inside inferColumns.
++			return typeof fixed === 'number' ? fixed : inferColumns(out)
+ 		},
+ 	})
+ }
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index 2ef4757..161ba8c 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -8,8 +8,8 @@ import { DEFAULT_COLUMNS } from './constants.js'
+ import { isBufferEncoding } from './validators.js'
+ 
+ /**
+- * The width in character cells of a stream target — its live `columns` when it is a TTY, else the
+- * non-interactive {@link DEFAULT_COLUMNS} fallback. The basis a {@link import('./types.js').ServerSinkInterface}
++ * Infers the width in character cells of a stream target — its live `columns` when it is a TTY, else
++ * the non-interactive {@link DEFAULT_COLUMNS} fallback. The basis a {@link import('./types.js').ServerSinkInterface}
+  * reports through `columns` so a `Reporter` / `Progress` can size its layout to the terminal.
+  *
+  * @remarks
+@@ -20,7 +20,7 @@ import { isBufferEncoding } from './validators.js'
+  * @param target - The stream whose width to probe
+  * @returns The terminal column count, or {@link DEFAULT_COLUMNS} when not a TTY
+  */
+-export function columnsOf(target: StreamTargetInterface): number {
++export function inferColumns(target: StreamTargetInterface): number {
+ 	const columns = target.columns
+ 	if (typeof columns === 'number' && Number.isFinite(columns) && columns > 0) return columns
+ 	return DEFAULT_COLUMNS
+diff --git a/src/server/types.ts b/src/server/types.ts
+index 442c5d8..5f92981 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -12,7 +12,7 @@ import type { SinkInterface } from '@src/core'
+  * The minimal writable-stream shape the server sink and process capture address — exactly the
+  * slice of a Node `tty.WriteStream` / `process.stdout` they touch, and no more. A
+  * {@link ServerSinkOptions} target and a {@link ProcessCaptureInterface}'s patched streams are
+- * narrowed to this via {@link import('./helpers.js').isStreamTarget} (narrow the
++ * narrowed to this via {@link import('./validators.js').isStreamTarget} (narrow the
+  * boundary, never `as`), so a test can drive either with a hand-built fake stream that never
+  * touches the real `process` streams.
+  *
+@@ -164,7 +164,7 @@ export type ProcessCaptureEventMap = {
+  * - `on` — initial {@link ProcessCaptureEventMap} listeners, wired at construction (e.g.
+  *   `{ capture: (c) => tee(c) }`).
+  * - `error` — the listener-error handler forwarded to the entity's emitter.
+- * - `levels` — which streams to intercept; defaults to {@link import('./constants.js').DEFAULT_CAPTURE_LEVELS}
++ * - `levels` — which streams to intercept; defaults to {@link import('./constants.js').STREAM_LEVELS}
+  *   (both `stdout` and `stderr`). Narrow it (e.g. just `['stderr']`) to capture one stream.
+  * - `mirror` — when `true`, each intercepted write is also replayed to the snapshot-original
+  *   `write` (bound to its stream), so the output still reaches the terminal while being captured;
+@@ -174,7 +174,7 @@ export type ProcessCaptureEventMap = {
+  *   {@link import('./constants.js').STREAM_LEVEL_MAP}), to tee captured output into the logging
+  *   pipeline / a file. Absent by default.
+  * - `limit` — the bounded-buffer cap (total and each per-stream bucket); defaults to
+- *   {@link import('./constants.js').DEFAULT_CAPTURE_LIMIT}. Retention is always bounded.
++ *   {@link import('./constants.js').DEFAULT_STREAM_LIMIT}. Retention is always bounded.
+  */
+ export interface ProcessCaptureOptions {
+ 	readonly on?: EmitterHooks<ProcessCaptureEventMap>
+diff --git a/tests/src/browser/factories.test.ts b/tests/src/browser/factories.test.ts
+index 3724251..98a2227 100644
+--- a/tests/src/browser/factories.test.ts
++++ b/tests/src/browser/factories.test.ts
+@@ -1,6 +1,6 @@
+ import type { ConsoleCaptureInterface } from '../../setupBrowser.js'
+ import { COLOR_HEX, createBrowserSink } from '@src/browser'
+-import { createCapture, createLogger, createStyler } from '@src/core'
++import { Capture, createStyler, Logger } from '@src/core'
+ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+ import { createRecorder } from '@orkestrel/test'
+ import { captureConsole } from '../../setupBrowser.js'
+@@ -11,7 +11,7 @@ import { captureConsole } from '../../setupBrowser.js'
+ // so no spy leaks. We assert: ANSI runs become a `console[method](format, ...styles)` call with the
+ // right CSS; the level routes to the matching console method; a leading `\r` (animation redraw)
+ // degrades to a non-overwriting line; the sink snapshots `console` at creation (no capture loop);
+-// and a real `createLogger({ sink })` writes one styled line end to end.
++// and a real `new Logger({ sink })` writes one styled line end to end.
+ 
+ let consoleSwap: ConsoleCaptureInterface
+ let log: ConsoleCaptureInterface['log']
+@@ -126,8 +126,8 @@ describe('createBrowserSink', () => {
+ 		expect(replaced.count).toBe(0)
+ 	})
+ 
+-	it('drives a real createLogger end to end — one styled info line via console.log', () => {
+-		const logger = createLogger({ name: 'app', sink: createBrowserSink() })
++	it('drives a real Logger end to end — one styled info line through console.log', () => {
++		const logger = new Logger({ name: 'app', sink: createBrowserSink() })
+ 		logger.info('ready')
+ 		expect(log.count).toBe(1)
+ 		const [format, ...styles] = log.calls[0] ?? ['']
+@@ -141,7 +141,7 @@ describe('createBrowserSink', () => {
+ 	})
+ 
+ 	it('routes a logger error line to console.error end to end', () => {
+-		const logger = createLogger({ name: 'app', sink: createBrowserSink() })
++		const logger = new Logger({ name: 'app', sink: createBrowserSink() })
+ 		logger.error('exploded')
+ 		expect(error.count).toBe(1)
+ 		expect(log.count).toBe(0)
+@@ -180,12 +180,12 @@ describe('createBrowserSink', () => {
+ 		expect(replacedError.count).toBe(0)
+ 	})
+ 
+-	it('survives a REAL createCapture patching console.* — no capture loop, the program log still mirrors', () => {
++	it('survives a REAL Capture patching console.* — no capture loop, the program log still mirrors', () => {
+ 		// The production threat the snapshot defends against: a Capture (C-d) patches the global
+ 		// console AFTER the sink exists. The sink must still hit the snapshot-original recorders, and
+ 		// the capture must NOT see the sink's own writes — only a genuine third-party console call.
+ 		const sink = createBrowserSink()
+-		const capture = createCapture({ mirror: true })
++		const capture = new Capture({ mirror: true })
+ 		capture.start()
+ 		// The sink writes — these must NOT be captured (they go through the pre-patch snapshot).
+ 		sink.write('sink line one')
+diff --git a/tests/src/core/Capture.test.ts b/tests/src/core/Capture.test.ts
+index c818987..9035089 100644
+--- a/tests/src/core/Capture.test.ts
++++ b/tests/src/core/Capture.test.ts
+@@ -1,5 +1,5 @@
+ import type { CaptureEventMap, CaptureLevel, CapturedMessage } from '@src/core'
+-import { Capture, createCapture, createLogger, createStyler } from '@src/core'
++import { Capture, createStyler, Logger } from '@src/core'
+ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+ import { createRecorder, createRecorders } from '@orkestrel/test'
+ import { createRecordingSink } from '../../setup.js'
+@@ -473,7 +473,7 @@ describe('Capture', () => {
+ 			console.log = (text: string) => real.push(text)
+ 			console.info = (text: string) => real.push(text)
+ 			// Logger built FIRST — its console sink snapshots the real console.log now.
+-			const logger = createLogger({ level: 'info', styler: createStyler({ enabled: false }) })
++			const logger = new Logger({ level: 'info', styler: createStyler({ enabled: false }) })
+ 			const capture = new Capture()
+ 			capture.start() // patches console AFTER the logger snapshotted it
+ 			console.log('third-party') // captured
+@@ -486,14 +486,4 @@ describe('Capture', () => {
+ 			logger.destroy()
+ 		})
+ 	})
+-
+-	describe('factory parity', () => {
+-		it('createCapture yields a working interceptor', () => {
+-			const capture = createCapture({ levels: ['log'] })
+-			capture.start()
+-			console.log('via factory')
+-			capture.stop()
+-			expect(capture.messages().map((m) => m.text)).toEqual(['via factory'])
+-		})
+-	})
+ })
+diff --git a/tests/src/core/Logger.test.ts b/tests/src/core/Logger.test.ts
+index 8569a85..0b6f251 100644
+--- a/tests/src/core/Logger.test.ts
++++ b/tests/src/core/Logger.test.ts
+@@ -1,5 +1,5 @@
+ import type { LoggerEventMap, LoggerInterface, LogLevel, LogRecord } from '@src/core'
+-import { createLogger, createStyler, createTheme, Logger, strip } from '@src/core'
++import { createStyler, createTheme, Logger, strip } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+ import { createRecorder, createRecorders } from '@orkestrel/test'
+ import { createRecordingSink } from '../../setup.js'
+@@ -424,12 +424,20 @@ describe('Logger', () => {
+ 		})
+ 	})
+ 
+-	describe('factory parity', () => {
+-		it('createLogger yields a working logger', () => {
+-			const sink = createRecordingSink()
+-			const logger = createLogger({ styler: createStyler({ enabled: false }), sink, level: 'info' })
+-			logger.info('via factory')
+-			expect(logger.entries().map((record) => record.message)).toEqual(['via factory'])
++	describe('default sink', () => {
++		it('defaults to the snapshotted console sink (writes one info line through console.log)', () => {
++			const seen: string[] = []
++			const original = console.log
++			console.log = (text: string) => seen.push(text)
++			try {
++				const logger = new Logger({ name: 'svc', level: 'info' })
++				logger.info('up')
++				expect(logger.entries().map((record) => record.message)).toEqual(['up'])
++				expect(seen).toHaveLength(1)
++				expect(seen[0]).toContain('up')
++			} finally {
++				console.log = original
++			}
+ 		})
+ 	})
+ })
+diff --git a/tests/src/core/LoggerManager.test.ts b/tests/src/core/LoggerManager.test.ts
+index e44dbda..c24abcc 100644
+--- a/tests/src/core/LoggerManager.test.ts
++++ b/tests/src/core/LoggerManager.test.ts
+@@ -1,12 +1,5 @@
+ import type { LogLevel } from '@src/core'
+-import {
+-	createLoggerManager,
+-	createStyler,
+-	createTheme,
+-	formatRecord,
+-	LoggerManager,
+-	strip,
+-} from '@src/core'
++import { createStyler, createTheme, formatRecord, LoggerManager, strip } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+ import { createRecordingSink } from '../../setup.js'
+ 
+@@ -252,19 +245,4 @@ describe('LoggerManager', () => {
+ 			expect('emitter' in manager).toBe(false)
+ 		})
+ 	})
+-
+-	describe('factory parity', () => {
+-		it('createLoggerManager yields a working registry + fan-out', () => {
+-			const sink = createRecordingSink()
+-			const manager = createLoggerManager({
+-				level: 'info',
+-				sink,
+-				styler: createStyler({ enabled: false }),
+-			})
+-			const logger = manager.register('svc')
+-			manager.info('up')
+-			expect(logger.entries().map((record) => record.message)).toEqual(['up'])
+-			expect(sink.calls).toHaveLength(1)
+-		})
+-	})
+ })
+diff --git a/tests/src/core/Progress.test.ts b/tests/src/core/Progress.test.ts
+index ae5def0..0d05e24 100644
+--- a/tests/src/core/Progress.test.ts
++++ b/tests/src/core/Progress.test.ts
+@@ -1,18 +1,11 @@
+ import type { ProgressEventMap } from '@src/core'
+-import {
+-	createProgress,
+-	createStyler,
+-	createTheme,
+-	DEFAULT_THEME,
+-	Progress,
+-	strip,
+-} from '@src/core'
++import { createStyler, createTheme, DEFAULT_THEME, Progress, strip } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+ import { createRecorder, createRecorders } from '@orkestrel/test'
+ import { createRecordingSink } from '../../setup.js'
+ 
+ // Progress — the update-driven, observable progress bar. update(current) recomputes the bar via
+-// renderBar, writes `\r` + bar to its sink, and emits { current, total } on `update`; complete/failure
++// renderBar, writes `\r` + bar to its sink, and emits { current, total } on `update`; complete/fail
+ // commit a final line. NO self-timer (the caller drives it) — so these tests need no fake clock.
+ // UNIVERSAL (the one styler + the one sink — no node:*). A disabled styler is used for content
+ // assertions so the bar reads plainly; one case uses an enabled styler and asserts via strip().
+@@ -140,7 +133,7 @@ describe('Progress', () => {
+ 		})
+ 	})
+ 
+-	describe('failure — finish at current fill, error stream, NO complete', () => {
++	describe('fail — finish at current fill, error stream, NO complete', () => {
+ 		it('renders the bar at its current fill + newline to the error stream, no complete event', () => {
+ 			const sink = createRecordingSink()
+ 			const progress = new Progress({ total: 10, width: 10, sink, styler: PLAIN })
+@@ -150,10 +143,10 @@ describe('Progress', () => {
+ 			])
+ 
+ 			progress.update(4)
+-			progress.failure('broke')
++			progress.fail('broke')
+ 
+ 			expect(progress.active).toBe(false)
+-			expect(progress.completed).toBe(false) // failure is NOT completion
++			expect(progress.completed).toBe(false) // fail is NOT completion
+ 			expect(progress.current).toBe(4) // stays at the current fill, not driven to total
+ 			// Final write: the CURRENT-fill bar + message + newline, on the error stream.
+ 			expect(sink.calls.at(-1)).toEqual(['\r████░░░░░░ 40% (4/10) broke\n', 'error'])
+@@ -168,7 +161,7 @@ describe('Progress', () => {
+ 				'complete',
+ 			])
+ 			progress.update(3) // one update event
+-			progress.failure('stopped') // one MORE terminal update event, still no complete
++			progress.fail('stopped') // one MORE terminal update event, still no complete
+ 			expect(events.update.count).toBe(2)
+ 			expect(events.update.calls.at(-1)?.[0]).toEqual({ current: 3, total: 10 })
+ 			expect(events.complete.count).toBe(0)
+@@ -186,15 +179,15 @@ describe('Progress', () => {
+ 			expect(progress.current).toBe(10)
+ 		})
+ 
+-		it('ignores update and a second complete/failure after failure', () => {
++		it('ignores update and a second complete/fail after fail', () => {
+ 			const sink = createRecordingSink()
+ 			const progress = new Progress({ total: 10, width: 10, sink, styler: PLAIN })
+ 			progress.update(2)
+-			progress.failure('x')
++			progress.fail('x')
+ 			const after = sink.calls.length
+ 			progress.update(9)
+ 			progress.complete('late')
+-			progress.failure('late')
++			progress.fail('late')
+ 			expect(sink.calls.length).toBe(after) // nothing more written
+ 			expect(progress.completed).toBe(false)
+ 		})
+@@ -240,7 +233,7 @@ describe('Progress', () => {
+ 			expect(sink.calls).toEqual([['\r\x1b[36m████\x1b[0m 100% (4/4) done\n', undefined]])
+ 		})
+ 
+-		it('keeps update, completion, and failure bytes identical with the explicit default theme', () => {
++		it('keeps update, completion, and fail-line bytes identical with the explicit default theme', () => {
+ 			const implicitSink = createRecordingSink()
+ 			const explicitSink = createRecordingSink()
+ 			const implicit = new Progress({ total: 4, message: 'work', sink: implicitSink })
+@@ -258,8 +251,8 @@ describe('Progress', () => {
+ 			const explicitFailure = new Progress({ total: 4, sink: explicitSink, theme: DEFAULT_THEME })
+ 			implicitFailure.update(1)
+ 			explicitFailure.update(1)
+-			implicitFailure.failure('failed')
+-			explicitFailure.failure('failed')
++			implicitFailure.fail('failed')
++			explicitFailure.fail('failed')
+ 			expect(implicitSink.calls).toEqual(explicitSink.calls)
+ 		})
+ 	})
+@@ -319,7 +312,7 @@ describe('Progress', () => {
+ 		})
+ 	})
+ 
+-	describe('complete / failure idempotency (terminal is sticky)', () => {
++	describe('complete / fail idempotency (terminal is sticky)', () => {
+ 		it('a second complete() after complete() is ignored — no extra write, no extra event', () => {
+ 			const sink = createRecordingSink()
+ 			const progress = new Progress({ total: 10, width: 10, sink, styler: PLAIN })
+@@ -331,26 +324,26 @@ describe('Progress', () => {
+ 			expect(events.complete.count).toBe(1)
+ 		})
+ 
+-		it('complete() after failure() is ignored (failure already made it terminal)', () => {
++		it('complete() after fail() is ignored (fail already made it terminal)', () => {
+ 			const sink = createRecordingSink()
+ 			const progress = new Progress({ total: 10, width: 10, sink, styler: PLAIN })
+ 			const events = createRecorders<ProgressEventMap, 'complete'>(progress.emitter, ['complete'])
+-			progress.failure('broke')
++			progress.fail('broke')
+ 			const after = sink.calls.length
+ 			progress.complete('late')
+ 			expect(sink.calls.length).toBe(after)
+-			expect(events.complete.count).toBe(0) // failure never completes
++			expect(events.complete.count).toBe(0) // fail never completes
+ 			expect(progress.completed).toBe(false)
+ 		})
+ 
+-		it('failure() after complete() is ignored (complete already made it terminal)', () => {
++		it('fail() after complete() is ignored (complete already made it terminal)', () => {
+ 			const sink = createRecordingSink()
+ 			const progress = new Progress({ total: 10, width: 10, sink, styler: PLAIN })
+ 			progress.complete('done')
+ 			const after = sink.calls.length
+-			progress.failure('too late')
++			progress.fail('too late')
+ 			expect(sink.calls.length).toBe(after)
+-			expect(progress.completed).toBe(true) // still completed; failure did nothing
++			expect(progress.completed).toBe(true) // still completed; fail did nothing
+ 		})
+ 	})
+ 
+@@ -398,13 +391,4 @@ describe('Progress', () => {
+ 			expect(bars(sink)).toEqual(['█████░░░░░ 50% (5/10)'])
+ 		})
+ 	})
+-
+-	describe('factory parity', () => {
+-		it('createProgress yields a working bar', () => {
+-			const sink = createRecordingSink()
+-			const progress = createProgress({ total: 4, width: 4, sink, styler: PLAIN })
+-			progress.update(2)
+-			expect(bars(sink)).toEqual(['██░░ 50% (2/4)'])
+-		})
+-	})
+ })
+diff --git a/tests/src/core/Reporter.test.ts b/tests/src/core/Reporter.test.ts
+index e850632..c9ee825 100644
+--- a/tests/src/core/Reporter.test.ts
++++ b/tests/src/core/Reporter.test.ts
+@@ -1,12 +1,5 @@
+ import type { ReporterInterface } from '@src/core'
+-import {
+-	createReporter,
+-	createStyler,
+-	createTheme,
+-	DEFAULT_THEME,
+-	Reporter,
+-	strip,
+-} from '@src/core'
++import { createStyler, createTheme, DEFAULT_THEME, Reporter, strip } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+ import { createRecordingSink } from '../../setup.js'
+ 
+@@ -351,20 +344,13 @@ describe('Reporter', () => {
+ 		})
+ 	})
+ 
+-	describe('factory parity', () => {
+-		it('createReporter yields a working reporter over a supplied sink + plain styler', () => {
+-			const sink = createRecordingSink()
+-			const reporter = createReporter({ sink, styler: createStyler({ enabled: false }), width: 10 })
+-			reporter.status('info', 'hello')
+-			expect(firstLine(sink)).toBe('ℹ hello')
+-		})
+-
++	describe('default sink', () => {
+ 		it('defaults to the snapshotted console sink (writes one line through console.log)', () => {
+ 			const seen: string[] = []
+ 			const original = console.log
+ 			console.log = (text: string) => seen.push(text)
+ 			try {
+-				const reporter = createReporter({ styler: createStyler({ enabled: false }) })
++				const reporter = new Reporter({ styler: createStyler({ enabled: false }) })
+ 				reporter.line('via default sink')
+ 				expect(seen).toEqual(['via default sink'])
+ 			} finally {
+diff --git a/tests/src/core/Spinner.test.ts b/tests/src/core/Spinner.test.ts
+index 243d07a..4c62ca2 100644
+--- a/tests/src/core/Spinner.test.ts
++++ b/tests/src/core/Spinner.test.ts
+@@ -1,20 +1,12 @@
+ import type { SpinnerEventMap } from '@src/core'
+ import type { RecordingSinkInterface } from '../../setup.js'
+-import {
+-	createSpinner,
+-	createStyler,
+-	createTheme,
+-	DEFAULT_THEME,
+-	SPINNER_FRAMES,
+-	Spinner,
+-	strip,
+-} from '@src/core'
++import { createStyler, createTheme, DEFAULT_THEME, SPINNER_FRAMES, Spinner, strip } from '@src/core'
+ import { describe, expect, it } from 'vitest'
+ import { createRecorder, createRecorders, waitForDelay } from '@orkestrel/test'
+ import { createRecordingSink } from '../../setup.js'
+ 
+ // Spinner — the self-driving, observable activity spinner. start() arms a setInterval that advances
+-// a glyph cycle, writing each `\r` + frame line to its sink and emitting it on `frame`; success/failure
++// a glyph cycle, writing each `\r` + frame line to its sink and emitting it on `frame`; succeed/fail
+ // commit a final ✔/✖ line. UNIVERSAL (setInterval + the one styler + the one sink — no node:*).
+ //
+ // DETERMINISM: frame-CONTENT is driven by calling tick() directly, so content assertions never wait.
+@@ -247,8 +239,8 @@ describe('Spinner', () => {
+ 		})
+ 	})
+ 
+-	describe('success / failure — the final outcome line, timer always cleared', () => {
+-		it('success() stops the timer and writes ✔ + message + newline', async () => {
++	describe('succeed / fail — the final outcome line, timer always cleared', () => {
++		it('succeed() stops the timer and writes ✔ + message + newline', async () => {
+ 			const sink = createRecordingSink()
+ 			const spinner = new Spinner({
+ 				message: 'work',
+@@ -259,7 +251,7 @@ describe('Spinner', () => {
+ 			})
+ 
+ 			spinner.start()
+-			spinner.success('done')
++			spinner.succeed('done')
+ 
+ 			expect(spinner.active).toBe(false)
+ 			// Final write: \r + ✔ + message + newline, on the default stream.
+@@ -273,12 +265,12 @@ describe('Spinner', () => {
+ 			expect(sink.calls.at(-1)).toEqual(['\r✔ done\n', undefined])
+ 		})
+ 
+-		it('failure() stops the timer and writes ✖ + message + newline to the error stream', async () => {
++		it('fail() stops the timer and writes ✖ + message + newline to the error stream', async () => {
+ 			const sink = createRecordingSink()
+ 			const spinner = new Spinner({ frames: ['*'], interval: PERIOD, sink, styler: PLAIN })
+ 
+ 			spinner.start()
+-			spinner.failure('broke')
++			spinner.fail('broke')
+ 
+ 			expect(spinner.active).toBe(false)
+ 			expect(sink.calls.at(-1)).toEqual(['\r✖ broke\n', 'error']) // error routes to the error stream
+@@ -289,17 +281,17 @@ describe('Spinner', () => {
+ 			expect(sink.calls.at(-1)).toEqual(['\r✖ broke\n', 'error'])
+ 		})
+ 
+-		it('success() with no argument reuses the current message', () => {
++		it('succeed() with no argument reuses the current message', () => {
+ 			const sink = createRecordingSink()
+ 			const spinner = new Spinner({ message: 'kept', frames: ['*'], sink, styler: PLAIN })
+-			spinner.success()
++			spinner.succeed()
+ 			expect(sink.calls.at(-1)).toEqual(['\r✔ kept\n', undefined])
+ 		})
+ 
+-		it('success() on a never-started spinner still writes the final line (and arms no timer)', async () => {
++		it('succeed() on a never-started spinner still writes the final line (and arms no timer)', async () => {
+ 			const sink = createRecordingSink()
+ 			const spinner = new Spinner({ message: 'x', interval: PERIOD, sink, styler: PLAIN })
+-			spinner.success('ok')
++			spinner.succeed('ok')
+ 			expect(frames(sink)).toEqual(['✔ ok'])
+ 
+ 			// Nothing armed a timer, so the window adds no frame.
+@@ -310,7 +302,7 @@ describe('Spinner', () => {
+ 		it('colors the icon + message through the styler (asserted via strip)', () => {
+ 			const sink = createRecordingSink()
+ 			const spinner = new Spinner({ frames: ['*'], sink, styler: createStyler() })
+-			spinner.success('green')
++			spinner.succeed('green')
+ 			const [text] = sink.calls.at(-1) ?? ['']
+ 			expect(strip(text)).not.toBe(text) // escapes present
+ 			// Strip ANSI via the framework helper; remove the leading \r + trailing newline.
+@@ -319,7 +311,7 @@ describe('Spinner', () => {
+ 
+ 		it('pins the exact default-theme bytes for a success outcome line', () => {
+ 			const sink = createRecordingSink()
+-			new Spinner({ sink }).success('done')
++			new Spinner({ sink }).succeed('done')
+ 			expect(sink.calls).toEqual([['\r\x1b[32m✔\x1b[0m \x1b[32mdone\x1b[0m\n', undefined]])
+ 		})
+ 
+@@ -335,8 +327,8 @@ describe('Spinner', () => {
+ 					},
+ 				}),
+ 			})
+-			spinner.success('done')
+-			spinner.failure('failed')
++			spinner.succeed('done')
++			spinner.fail('failed')
+ 			expect(sink.calls).toEqual([
+ 				['\r\x1b[4;94m+\x1b[0m \x1b[4;94mdone\x1b[0m\n', undefined],
+ 				['\r\x1b[1;95m-\x1b[0m \x1b[1;95mfailed\x1b[0m\n', 'error'],
+@@ -348,23 +340,23 @@ describe('Spinner', () => {
+ 			const explicitSink = createRecordingSink()
+ 			new Spinner({ sink: implicitSink, message: 'spin' }).tick()
+ 			new Spinner({ sink: explicitSink, message: 'spin', theme: DEFAULT_THEME }).tick()
+-			new Spinner({ sink: implicitSink }).success('done')
+-			new Spinner({ sink: explicitSink, theme: DEFAULT_THEME }).success('done')
+-			new Spinner({ sink: implicitSink }).failure('failed')
+-			new Spinner({ sink: explicitSink, theme: DEFAULT_THEME }).failure('failed')
++			new Spinner({ sink: implicitSink }).succeed('done')
++			new Spinner({ sink: explicitSink, theme: DEFAULT_THEME }).succeed('done')
++			new Spinner({ sink: implicitSink }).fail('failed')
++			new Spinner({ sink: explicitSink, theme: DEFAULT_THEME }).fail('failed')
+ 			expect(implicitSink.calls).toEqual(explicitSink.calls)
+ 		})
+ 	})
+ 
+ 	describe('the frame / start / stop events — the observation seam (§13)', () => {
+-		it('emits a frame per tick and a final frame on success', () => {
++		it('emits a frame per tick and a final frame on succeed', () => {
+ 			const sink = createRecordingSink()
+ 			const spinner = new Spinner({ message: 'm', frames: ['a', 'b'], sink, styler: PLAIN })
+ 			const events = createRecorders<SpinnerEventMap, 'frame'>(spinner.emitter, ['frame'])
+ 
+ 			spinner.tick()
+ 			spinner.tick()
+-			spinner.success('ok')
++			spinner.succeed('ok')
+ 
+ 			expect(events.frame.calls.map(([line]) => line)).toEqual(['a m', 'b m', '✔ ok'])
+ 		})
+@@ -391,7 +383,7 @@ describe('Spinner', () => {
+ 			expect(events.frame.count).toBe(painted) // leak guard — nothing is still painting
+ 		})
+ 
+-		it('success emits stop exactly once (the timer transition), then the final frame', async () => {
++		it('succeed emits stop exactly once (the timer transition), then the final frame', async () => {
+ 			const sink = createRecordingSink()
+ 			const spinner = new Spinner({ frames: ['a'], interval: PERIOD, sink, styler: PLAIN })
+ 			const events = createRecorders<SpinnerEventMap, 'start' | 'stop' | 'frame'>(spinner.emitter, [
+@@ -401,7 +393,7 @@ describe('Spinner', () => {
+ 			])
+ 
+ 			spinner.start()
+-			spinner.success('ok')
++			spinner.succeed('ok')
+ 
+ 			expect(events.start.count).toBe(1)
+ 			expect(events.stop.count).toBe(1)
+@@ -470,15 +462,15 @@ describe('Spinner', () => {
+ 			expect(sink.calls.length).toBe(before) // no write while inactive
+ 		})
+ 
+-		it('a second success() after stop writes another final line and arms no timer', async () => {
+-			// success()/failure() are NOT idempotent: each commits a fresh final line (stop() inside is the
+-			// no-op part). Documents that calling success twice writes two lines (the timer stays cleared).
++		it('a second succeed() after stop writes another final line and arms no timer', async () => {
++			// succeed()/fail() are NOT idempotent: each commits a fresh final line (stop() inside is the
++			// no-op part). Documents that calling succeed twice writes two lines (the timer stays cleared).
+ 			const sink = createRecordingSink()
+ 			const spinner = new Spinner({ frames: ['*'], interval: PERIOD, sink, styler: PLAIN })
+ 			spinner.start()
+-			spinner.success('one')
++			spinner.succeed('one')
+ 			const afterFirst = sink.calls.length
+-			spinner.success('two')
++			spinner.succeed('two')
+ 			expect(sink.calls.length).toBe(afterFirst + 1)
+ 			expect(sink.calls.at(-1)).toEqual(['\r✔ two\n', undefined])
+ 
+@@ -486,12 +478,12 @@ describe('Spinner', () => {
+ 			expect(sink.calls.length).toBe(afterFirst + 1) // leak guard
+ 		})
+ 
+-		it('failure() after success() commits a failureure line to the error stream (no timer leak)', async () => {
++		it('fail() after succeed() commits a failure line to the error stream (no timer leak)', async () => {
+ 			const sink = createRecordingSink()
+ 			const spinner = new Spinner({ frames: ['*'], interval: PERIOD, sink, styler: PLAIN })
+ 			spinner.start()
+-			spinner.success('ok')
+-			spinner.failure('then broke')
++			spinner.succeed('ok')
++			spinner.fail('then broke')
+ 			expect(sink.calls.at(-1)).toEqual(['\r✖ then broke\n', 'error'])
+ 
+ 			const after = sink.calls.length
+@@ -560,13 +552,4 @@ describe('Spinner', () => {
+ 			expect(all.every((text) => !text.includes('NaN'))).toBe(true)
+ 		})
+ 	})
+-
+-	describe('factory parity', () => {
+-		it('createSpinner yields a working spinner', () => {
+-			const sink = createRecordingSink()
+-			const spinner = createSpinner({ message: 'via factory', frames: ['*'], sink, styler: PLAIN })
+-			spinner.tick()
+-			expect(frames(sink)).toEqual(['* via factory'])
+-		})
+-	})
+ })
+diff --git a/tests/src/core/factories.test.ts b/tests/src/core/factories.test.ts
+index 412121c..ce11526 100644
+--- a/tests/src/core/factories.test.ts
++++ b/tests/src/core/factories.test.ts
+@@ -1,50 +1,31 @@
+-import type { Attribute, CaptureLevel, Color, LogLevel, RendererInterface, Style } from '@src/core'
++import type { Attribute, CaptureLevel, Color, RendererInterface, Style } from '@src/core'
+ import {
+-	createANSIRenderer,
+-	createCapture,
++	createCaptureResult,
+ 	createConsoleSink,
+-	createLogger,
+-	createLoggerManager,
+-	createReporter,
+-	createSpinner,
+ 	createStyler,
+ 	createTheme,
+ 	DEFAULT_THEME,
+ 	EMPTY_STYLE,
+ 	LEVEL_COLORS,
+-	LEVELS,
++	LOG_LEVELS,
++	Logger,
++	Reporter,
++	Spinner,
+ 	STATUS_COLORS,
+ 	STATUS_ICONS,
+ 	STATUS_LEVELS,
+-	withCapture,
+ } from '@src/core'
+ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+ import { createRecordingSink } from '../../setup.js'
+ 
+-// createANSIRenderer / createStyler — the public factories. createANSIRenderer returns
+-// the default ANSI renderer; createStyler returns the fluent surface, defaulting to ANSI
+-// + enabled, with options to swap the renderer (the C-f browser seam) and to disable.
+-// createConsoleSink / createLogger / createLoggerManager — the C-b logging factories: the
+-// snapshotting level-routing console sink, the observable logger, the event-free registry.
++// createStyler / createTheme — the styling factories. createStyler returns the fluent surface,
++// defaulting to ANSI + enabled, with options to swap the renderer (the C-f browser seam) and to
++// disable. createTheme merges per role over DEFAULT_THEME and deep-freezes every style leaf.
++// createConsoleSink is the C-b logging factory: the snapshotting, level-routing console sink.
+ 
+ const ESC = '\x1b['
+ const RESET = '\x1b[0m'
+ 
+-describe('createANSIRenderer', () => {
+-	it('returns a renderer that maps style DATA to SGR codes', () => {
+-		const renderer = createANSIRenderer()
+-		expect(renderer.render({ foreground: 'red', attributes: ['bold'] }, 'alert')).toBe(
+-			`${ESC}1;31malert${RESET}`,
+-		)
+-	})
+-
+-	it('passes the empty style and empty string through', () => {
+-		const renderer = createANSIRenderer()
+-		expect(renderer.render({ attributes: [] }, 'x')).toBe('x')
+-		expect(renderer.render({ foreground: 'red', attributes: [] }, '')).toBe('')
+-	})
+-})
+-
+ describe('createStyler', () => {
+ 	it('defaults to the ANSI renderer, enabled', () => {
+ 		const styler = createStyler()
+@@ -138,7 +119,7 @@ describe('createTheme', () => {
+ 		}
+ 		const theme = createTheme({ levels: { debug: style } })
+ 		const sink = createRecordingSink()
+-		const logger = createLogger({ level: 'debug', sink, theme })
++		const logger = new Logger({ level: 'debug', sink, theme })
+ 		style.foreground = 'magenta'
+ 		logger.debug('kept')
+ 		expect(sink.calls[0]?.[0]).toContain(`${ESC}36mDEBUG${RESET}`)
+@@ -150,7 +131,7 @@ describe('createTheme', () => {
+ 		const style = Object.freeze({ foreground: 'green' satisfies Color, attributes })
+ 		const theme = createTheme({ statuses: { success: { icon: '+', style } } })
+ 		const sink = createRecordingSink()
+-		const reporter = createReporter({ sink, theme })
++		const reporter = new Reporter({ sink, theme })
+ 		attributes.push('inverse')
+ 		reporter.status('success', 'kept')
+ 		expect(sink.calls).toEqual([[`${ESC}32m+${RESET} ${ESC}32mkept${RESET}`, undefined]])
+@@ -163,7 +144,7 @@ describe('createTheme', () => {
+ 		}
+ 		const theme = createTheme({ accent: style })
+ 		const sink = createRecordingSink()
+-		const spinner = createSpinner({ frames: ['*'], message: 'kept', sink, theme })
++		const spinner = new Spinner({ frames: ['*'], message: 'kept', sink, theme })
+ 		style.foreground = 'magenta'
+ 		spinner.tick()
+ 		expect(sink.calls).toEqual([[`\r${ESC}31m*${RESET} kept`, undefined]])
+@@ -180,7 +161,7 @@ describe('createTheme', () => {
+ 		}
+ 		const theme = createTheme({ chrome: style })
+ 		const sink = createRecordingSink()
+-		const reporter = createReporter({ sink, theme, width: 8 })
++		const reporter = new Reporter({ sink, theme, width: 8 })
+ 		foreground = 'magenta'
+ 		reporter.section('S')
+ 		expect(sink.calls[0]?.[0]).toBe(`${ESC}34m──${RESET} ${ESC}34mS${RESET} ${ESC}34m───${RESET}`)
+@@ -208,7 +189,7 @@ describe('createTheme', () => {
+ 		expect(Object.isFrozen(theme)).toBe(true)
+ 		expect(Object.isFrozen(theme.levels)).toBe(true)
+ 		expect(Object.isFrozen(theme.statuses)).toBe(true)
+-		for (const level of LEVELS) {
++		for (const level of LOG_LEVELS) {
+ 			expect(Object.isFrozen(theme.levels[level])).toBe(true)
+ 			expect(Object.isFrozen(theme.levels[level].attributes)).toBe(true)
+ 		}
+@@ -235,7 +216,7 @@ describe('createTheme', () => {
+ 	})
+ 
+ 	it('assembles its defaults from the level and status constants — one source per fact', () => {
+-		for (const level of LEVELS) {
++		for (const level of LOG_LEVELS) {
+ 			expect(DEFAULT_THEME.levels[level].foreground).toBe(LEVEL_COLORS[level])
+ 		}
+ 		for (const status of STATUS_LEVELS) {
+@@ -305,7 +286,7 @@ describe('createConsoleSink', () => {
+ 		const seen: string[] = []
+ 		console.log = (text: string) => seen.push(text)
+ 		const sink = createConsoleSink()
+-		const spinner = createSpinner({
++		const spinner = new Spinner({
+ 			frames: ['*'],
+ 			message: 'working',
+ 			sink,
+@@ -318,60 +299,13 @@ describe('createConsoleSink', () => {
+ 	})
+ })
+ 
+-describe('createLogger', () => {
+-	it('returns a working observable logger with the default console sink', () => {
+-		const seen: string[] = []
+-		const original = console.log
+-		console.log = (text: string) => seen.push(text)
+-		try {
+-			const logger = createLogger({ name: 'svc', level: 'info' })
+-			logger.info('up')
+-			expect(logger.entries().map((record) => record.message)).toEqual(['up'])
+-			// Default console sink wrote one info line through console.log.
+-			expect(seen).toHaveLength(1)
+-			expect(seen[0]).toContain('up')
+-		} finally {
+-			console.log = original
+-		}
+-	})
+-
+-	it('defaults the level to info', () => {
+-		const logger = createLogger({ silent: true })
+-		expect(logger.level).toBe('info')
+-	})
+-})
+-
+-describe('createLoggerManager', () => {
+-	it('returns an event-free registry that fans out to its loggers', () => {
+-		const lines: Array<readonly [text: string, level: LogLevel | undefined]> = []
+-		const sink = {
+-			write(text: string, level?: LogLevel) {
+-				lines.push([text, level])
+-			},
+-		}
+-		const manager = createLoggerManager({
+-			level: 'debug',
+-			sink,
+-			styler: createStyler({ enabled: false }),
+-		})
+-		const a = manager.register('a')
+-		const b = manager.register('b')
+-		manager.warn('shared')
+-		expect(a.entries()).toHaveLength(1)
+-		expect(b.entries()).toHaveLength(1)
+-		// Both loggers wrote through the shared sink, routed at warn.
+-		expect(lines.filter(([, level]) => level === 'warn')).toHaveLength(2)
+-		expect('emitter' in manager).toBe(false)
+-	})
+-})
+-
+-// createCapture / withCapture — the C-d console-interception factories. createCapture returns an
+-// inactive Capture (deeply covered in Capture.test.ts — here just factory parity). withCapture is
+-// the scoped, self-restoring form: it starts a capture, runs `fn`, stops in a finally (so console
+-// is restored even on throw / reject), and returns { value, messages } — sync for a sync `fn`, a
+-// Promise for an async one. Every test snapshots + restores console so a patch never leaks.
++// createCaptureResult — the C-d scoped console-interception factory. It starts a `Capture`, runs
++// `fn`, stops in a finally (so console is restored even on throw / reject), and returns
++// { value, messages } — sync for a sync `fn`, a Promise for an async one. The `Capture` class it
++// drives is covered in Capture.test.ts. Every test snapshots + restores console so a patch never
++// leaks.
+ 
+-describe('createCapture / withCapture', () => {
++describe('createCaptureResult', () => {
+ 	// The process-global leak guard — snapshot the five console methods, restore them afterward.
+ 	const methods: readonly CaptureLevel[] = ['log', 'info', 'warn', 'error', 'debug']
+ 	const snapshot = new Map<CaptureLevel, (...args: unknown[]) => void>()
+@@ -385,21 +319,10 @@ describe('createCapture / withCapture', () => {
+ 		snapshot.clear()
+ 	})
+ 
+-	describe('createCapture', () => {
+-		it('returns an inactive Capture that intercepts once started', () => {
+-			const capture = createCapture({ levels: ['log'] })
+-			expect(capture.active).toBe(false)
+-			capture.start()
+-			console.log('via factory')
+-			capture.stop()
+-			expect(capture.messages().map((m) => m.text)).toEqual(['via factory'])
+-		})
+-	})
+-
+-	describe('withCapture — sync', () => {
++	describe('createCaptureResult — sync', () => {
+ 		it('returns the function value plus the messages it logged, and restores console', () => {
+ 			const original = console.log
+-			const { value, messages } = withCapture(() => {
++			const { value, messages } = createCaptureResult(() => {
+ 				console.log('working', 1)
+ 				console.warn('careful')
+ 				return 42
+@@ -413,7 +336,7 @@ describe('createCapture / withCapture', () => {
+ 		})
+ 
+ 		it('honors options — only the configured levels are captured', () => {
+-			const { messages } = withCapture(
++			const { messages } = createCaptureResult(
+ 				() => {
+ 					console.log('ignored')
+ 					console.error('kept')
+@@ -427,7 +350,7 @@ describe('createCapture / withCapture', () => {
+ 		it('restores console even when the function throws (the throw still propagates)', () => {
+ 			const original = console.log
+ 			expect(() =>
+-				withCapture(() => {
++				createCaptureResult(() => {
+ 					console.log('before throw')
+ 					throw new Error('sync boom')
+ 				}),
+@@ -437,10 +360,10 @@ describe('createCapture / withCapture', () => {
+ 		})
+ 	})
+ 
+-	describe('withCapture — async', () => {
++	describe('createCaptureResult — async', () => {
+ 		it('awaits the promise, returning value + messages captured during the async work', async () => {
+ 			const original = console.log
+-			const result = withCapture(async () => {
++			const result = createCaptureResult(async () => {
+ 				console.log('sync part')
+ 				await Promise.resolve()
+ 				console.warn('async part')
+@@ -458,7 +381,7 @@ describe('createCapture / withCapture', () => {
+ 		it('restores console when the promise rejects (the rejection still propagates)', async () => {
+ 			const original = console.log
+ 			await expect(
+-				withCapture(async () => {
++				createCaptureResult(async () => {
+ 					console.log('before reject')
+ 					await Promise.resolve()
+ 					throw new Error('async boom')
+@@ -468,15 +391,15 @@ describe('createCapture / withCapture', () => {
+ 		})
+ 	})
+ 
+-	describe('withCapture — boundary shapes', () => {
++	describe('createCaptureResult — boundary shapes', () => {
+ 		it('a sync fn that logs nothing yields an empty messages list and its value', () => {
+-			const { value, messages } = withCapture(() => 7)
++			const { value, messages } = createCaptureResult(() => 7)
+ 			expect(value).toBe(7)
+ 			expect(messages).toEqual([])
+ 		})
+ 
+ 		it('returns the messages buffer as a copy independent of the (now destroyed) capture', () => {
+-			const { messages } = withCapture(() => {
++			const { messages } = createCaptureResult(() => {
+ 				console.log('a')
+ 				console.log('b')
+ 				return undefined
+@@ -488,10 +411,10 @@ describe('createCapture / withCapture', () => {
+ 		})
+ 
+ 		it('preserves a falsy sync return value (0 / false / null / undefined)', () => {
+-			expect(withCapture(() => 0).value).toBe(0)
+-			expect(withCapture(() => false).value).toBe(false)
+-			expect(withCapture(() => null).value).toBeNull()
+-			expect(withCapture(() => undefined).value).toBeUndefined()
++			expect(createCaptureResult(() => 0).value).toBe(0)
++			expect(createCaptureResult(() => false).value).toBe(false)
++			expect(createCaptureResult(() => null).value).toBeNull()
++			expect(createCaptureResult(() => undefined).value).toBeUndefined()
+ 		})
+ 
+ 		it('a sync throw discards the captured messages (only the throw propagates)', () => {
+@@ -499,7 +422,7 @@ describe('createCapture / withCapture', () => {
+ 			// so the buffered "before throw" line is never surfaced (documents the contract).
+ 			let caught: unknown
+ 			try {
+-				withCapture(() => {
++				createCaptureResult(() => {
+ 					console.log('lost on throw')
+ 					throw new Error('x')
+ 				})
+@@ -510,7 +433,7 @@ describe('createCapture / withCapture', () => {
+ 		})
+ 
+ 		it('the async overload resolves to a Promise even when fn returns a resolved promise of a value', async () => {
+-			const result = withCapture(() => Promise.resolve('async value'))
++			const result = createCaptureResult(() => Promise.resolve('async value'))
+ 			expect(result).toBeInstanceOf(Promise)
+ 			const { value, messages } = await result
+ 			expect(value).toBe('async value')
+@@ -518,7 +441,7 @@ describe('createCapture / withCapture', () => {
+ 		})
+ 
+ 		it('captures by the default level set (all five console methods) when levels omitted', async () => {
+-			const { messages } = withCapture(() => {
++			const { messages } = createCaptureResult(() => {
+ 				console.log('l')
+ 				console.info('i')
+ 				console.warn('w')
+diff --git a/tests/src/server/factories.test.ts b/tests/src/server/factories.test.ts
+index a9b412b..1c3100e 100644
+--- a/tests/src/server/factories.test.ts
++++ b/tests/src/server/factories.test.ts
+@@ -1,5 +1,5 @@
+ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+-import { createLogger, createReporter, strip } from '@src/core'
++import { Logger, Reporter, strip } from '@src/core'
+ import { createProcessCapture, createServerSink } from '@src/server'
+ import { createRecorder } from '@orkestrel/test'
+ import { createStreamTarget, createWriteProbe } from '../../setupServer.js'
+@@ -165,7 +165,7 @@ describe('createServerSink — through Logger / Reporter (integration, F2 newlin
+ 			err: createStreamTarget().target,
+ 			styled: false,
+ 		})
+-		const logger = createLogger({ name: 'app', sink })
++		const logger = new Logger({ name: 'app', sink })
+ 		logger.info('hello')
+ 		expect(out.writes.calls).toHaveLength(1)
+ 		const call = out.writes.calls[0]
+@@ -182,7 +182,7 @@ describe('createServerSink — through Logger / Reporter (integration, F2 newlin
+ 			err: createStreamTarget().target,
+ 			styled: false,
+ 		})
+-		const reporter = createReporter({ sink })
++		const reporter = new Reporter({ sink })
+ 		reporter.blank()
+ 		expect(out.writes.calls).toEqual([['\n']])
+ 	})
+@@ -194,7 +194,7 @@ describe('createServerSink — through Logger / Reporter (integration, F2 newlin
+ 			err: createStreamTarget().target,
+ 			styled: false,
+ 		})
+-		const logger = createLogger({ name: 'app', sink })
++		const logger = new Logger({ name: 'app', sink })
+ 		logger.info('one')
+ 		logger.info('two')
+ 		expect(out.writes.calls).toHaveLength(2)
+@@ -394,7 +394,7 @@ describe('createServerSink — frozen, stable surface', () => {
+ 
+ 	it('exposes a fixed columns override of 0-fallback semantics only when positive', () => {
+ 		// A fixed columns override is returned verbatim — even a small/odd width — since it short-
+-		// circuits columnsOf entirely (the override is the consumer's explicit choice).
++		// circuits inferColumns entirely (the override is the consumer's explicit choice).
+ 		const sink = createServerSink({
+ 			out: createStreamTarget({ isTTY: false }).target,
+ 			err: createStreamTarget().target,
+diff --git a/tests/src/server/helpers.test.ts b/tests/src/server/helpers.test.ts
+index 8826837..debb40e 100644
+--- a/tests/src/server/helpers.test.ts
++++ b/tests/src/server/helpers.test.ts
+@@ -1,5 +1,5 @@
+ import { describe, expect, it } from 'vitest'
+-import { columnsOf, decodeChunk, inferStyled } from '@src/server'
++import { decodeChunk, inferColumns, inferStyled } from '@src/server'
+ 
+ describe('inferStyled', () => {
+ 	it('applies FORCE_COLOR, then non-empty NO_COLOR, then isTTY across the full matrix', () => {
+@@ -36,18 +36,18 @@ describe('inferStyled', () => {
+ 	})
+ })
+ 
+-describe('columnsOf', () => {
++describe('inferColumns', () => {
+ 	it('returns a TTY stream live columns', () => {
+-		expect(columnsOf({ write: () => true, isTTY: true, columns: 120 })).toBe(120)
++		expect(inferColumns({ write: () => true, isTTY: true, columns: 120 })).toBe(120)
+ 	})
+ 
+ 	it('falls back to 80 for a non-TTY / absent / invalid columns', () => {
+-		expect(columnsOf({ write: () => true })).toBe(80)
+-		expect(columnsOf({ write: () => true, isTTY: false })).toBe(80)
+-		expect(columnsOf({ write: () => true, columns: 0 })).toBe(80)
+-		expect(columnsOf({ write: () => true, columns: -5 })).toBe(80)
+-		expect(columnsOf({ write: () => true, columns: Number.NaN })).toBe(80)
+-		expect(columnsOf({ write: () => true, columns: Number.POSITIVE_INFINITY })).toBe(80)
++		expect(inferColumns({ write: () => true })).toBe(80)
++		expect(inferColumns({ write: () => true, isTTY: false })).toBe(80)
++		expect(inferColumns({ write: () => true, columns: 0 })).toBe(80)
++		expect(inferColumns({ write: () => true, columns: -5 })).toBe(80)
++		expect(inferColumns({ write: () => true, columns: Number.NaN })).toBe(80)
++		expect(inferColumns({ write: () => true, columns: Number.POSITIVE_INFINITY })).toBe(80)
+ 	})
+ 
+ 	it('re-reads columns on each call (a getter-backed resize is observed)', () => {
+@@ -59,25 +59,25 @@ describe('columnsOf', () => {
+ 				return width
+ 			},
+ 		}
+-		expect(columnsOf(target)).toBe(100)
++		expect(inferColumns(target)).toBe(100)
+ 		width = 160
+-		expect(columnsOf(target)).toBe(160)
++		expect(inferColumns(target)).toBe(160)
+ 	})
+ 
+ 	it('accepts a positive columns regardless of isTTY (columns alone drives the width)', () => {
+-		// columnsOf does not consult isTTY — a positive finite columns is taken even when isTTY is
++		// inferColumns does not consult isTTY — a positive finite columns is taken even when isTTY is
+ 		// false/absent (the sink's TTY decision is separate from the width probe).
+-		expect(columnsOf({ write: () => true, columns: 132 })).toBe(132)
+-		expect(columnsOf({ write: () => true, isTTY: false, columns: 132 })).toBe(132)
++		expect(inferColumns({ write: () => true, columns: 132 })).toBe(132)
++		expect(inferColumns({ write: () => true, isTTY: false, columns: 132 })).toBe(132)
+ 	})
+ 
+ 	it('treats a fractional positive columns as-is (it is finite and > 0)', () => {
+ 		// Only NaN / non-finite / <= 0 fall back; a fractional positive is finite and > 0, so kept.
+-		expect(columnsOf({ write: () => true, columns: 100.5 })).toBe(100.5)
++		expect(inferColumns({ write: () => true, columns: 100.5 })).toBe(100.5)
+ 	})
+ 
+ 	it('falls back for negative infinity (non-finite) columns', () => {
+-		expect(columnsOf({ write: () => true, columns: Number.NEGATIVE_INFINITY })).toBe(80)
++		expect(inferColumns({ write: () => true, columns: Number.NEGATIVE_INFINITY })).toBe(80)
+ 	})
+ })
+ 
