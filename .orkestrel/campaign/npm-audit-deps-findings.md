@@ -703,3 +703,34 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   fleet READMEs returns nothing. Every tip now sits past its packed tarball, so W-END repacks
   every clean tip and re-stages every consumer's closure (`instruments/wend-repack-restage.sh`)
   before the authoritative fleet gate sweep (#3) and the second inventory (#7).
+
+## W-END closed (2026-09-02)
+
+- **Repack and re-stage.** Every fleet tip and scaffold packed clean (`units/wend-repack-restage.log`,
+  49 rows packed, none dirty, none failed); every consumer's closure re-staged and verified in one
+  install each; scaffold's own closure re-staged beside the fleet loop
+  (`units/wend-stage-scaffold.log`: contract `7ffbdcc`, emitter `22e4b0b`, markdown `7575e6d`,
+  template `85bc44b`, console `5a75c04` replacing the L3-adopt copies). The tarball register
+  (`fix/tarballs.json`) holds only the repacked tips. The handoff table (`fix/handoff.md`) lists
+  each package's accepted tip, tarball, and publish layer.
+- **Fleet gate sweep (#3).** `instruments/fleet-gates.sh` over every checkout and scaffold on the
+  repacked closures (`units/fleet-gates-wend.log`): every package green on format:check,
+  lint:check, check, build, and test, except probe on test. Probe's four failures
+  (`units/fleet-gates-wend-probe-test.log`) all carry "The probe could not arm: The Oxlint
+  language server exited with code 0", "The LSP request 'initialize' exceeded its deadline", or
+  the 60 s timeout on the runtime stage's arming path; probe's check and build are green. This is
+  the standing container failure ruled on pristine `main` on 2026-08-28, not a campaign defect,
+  and it carries no successor brief.
+- **Second inventory (#7).** `.orkestrel/campaign/inventory-2.md` compares each package's built
+  `dist/` and README against its declared published version. Every package's dist moved except
+  codec (nothing changed) and timeout (README moved only); every moved dist changed every emitted
+  file, none added or removed one. The republish order is the layer order from `layers.mjs`:
+  L0 codec contract msg sse test; L1 abort budget csv emitter html indexeddb ndjson sqlite
+  timeout tool; L2 console database form markdown middleware pool process reason router table
+  template websocket; L3 browser guide interpret lsp mcp qualifier queue rater relation scaffold
+  sea server terminal workspace; L4 brief probe program worker workflow; L5 agent; L6 ollama
+  toolbox. Scaffold publishes on its own account. Codec needs no release; timeout's README fix
+  ships with its next release or on its own if the user wants the link live.
+- **Held and next.** Publishing is the user's decision and nothing published. `mirror-refresh`
+  runs at the re-pin after each layer publishes. The TSDoc voice wave (#12) runs last, as ruled,
+  and opens next. The campaign folder's retention prune waits for the user's go-ahead.
