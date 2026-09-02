@@ -69,3 +69,17 @@ Eval 1 with the rewritten skill: the markup passes every mechanical assertion af
   run passed every assertion and the edit touches no line it reads.
 - Grading: `grade-eval1.mjs` mechanical pass, then the agent grader on the checks.md assertions
   with the same per-check reading as iteration 1.
+
+### Iteration 2 results
+
+| Eval                      | Old skill (iteration-1 run, reused) | New skill (fresh run)         |
+| ------------------------- | ----------------------------------- | ----------------------------- |
+| underwriting-form-inputs  | 13/17                               | 17/17 (agent-graded controls) |
+| toolbar-journey-test      | 8/9                                 | 9/9 (one mechanical row overridden on evidence: the voice is composed from a named constant and asserted by equality) |
+
+Summary from `aggregate_benchmark`: old skill 82.5%, new skill 100.0%. The toolbar run ran in a
+clean terrain worktree at the pre-campaign commit with the campaign build staged, because the
+main tree now carries the very test the prompt asks for. Its own findings — `releasePane` not
+restoring the tester viewport, the per-row `Select building for deletion` name, no journey at
+desktop width — overlap the truncation finding FX3 is closing and are carried there. Viewer:
+`tmp/skill-workspace/iteration-2/review.html` (static, with the iteration-1 comparison).
