@@ -1,0 +1,1481 @@
+diff --git a/src/core/Prompt.ts b/src/core/Prompt.ts
+index 4df4f9b..66a0149 100644
+--- a/src/core/Prompt.ts
++++ b/src/core/Prompt.ts
+@@ -19,7 +19,7 @@ import { Emitter } from '@orkestrel/emitter'
+ import { isFieldError, isFormError, serializeForm } from '@orkestrel/form'
+ 
+ /**
+- * The headless form broker. It parks live forms, exposes their serialized schemas, and applies
++ * Implements the headless form broker. It parks live forms, exposes their serialized schemas, and applies
+  * remote answers to the authoritative form.
+  *
+  * @remarks
+diff --git a/src/core/PromptClient.ts b/src/core/PromptClient.ts
+index 148b427..e94d5ae 100644
+--- a/src/core/PromptClient.ts
++++ b/src/core/PromptClient.ts
+@@ -31,7 +31,7 @@ import { createForm, isFieldError, parseForm } from '@orkestrel/form'
+ import { createSSEParser } from '@orkestrel/sse'
+ 
+ /**
+- * The SSE form bridge. It ingests serialized forms from a remote broker, renders them through a
++ * Implements the SSE form bridge. It ingests serialized forms from a remote broker, renders them through a
+  * local terminal, and posts answers back without blocking the event stream.
+  *
+  * @remarks
+diff --git a/src/core/TerminalManager.ts b/src/core/TerminalManager.ts
+index 57df3c0..8030da3 100644
+--- a/src/core/TerminalManager.ts
++++ b/src/core/TerminalManager.ts
+@@ -19,10 +19,9 @@ import { Emitter } from '@orkestrel/emitter'
+ import { isArray } from '@orkestrel/contract'
+ 
+ /**
+- * The multi-endpoint terminal MANAGER — a registry of named {@link PromptInterface} brokers (one
+- * per endpoint), so several parties can `ask` forms of each other by NAME with a `from` → `to`
+- * attribution edge on every parked form, and a transitive DEADLOCK check across all in-flight
+- * asks.
++ * Registers named {@link PromptInterface} brokers (one per endpoint), so several parties can
++ * `ask` forms of each other by NAME with a `from` → `to` attribution edge on every parked form,
++ * and a transitive DEADLOCK check across all in-flight asks.
+  *
+  * @remarks
+  * - **Registry.** `add(name, options?)` mints (or, if `name` is already mounted, returns the
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index f4bbe55..7cd47db 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -7,43 +7,43 @@ import { freezeStyle, STATUS_ICONS } from '@orkestrel/console'
+ 
+ // === Control bytes (named, no raw control characters in source)
+ 
+-/** Carriage return (`\r`, U+000D) — Enter on most terminals. */
++/** Names the carriage return byte (`\r`, U+000D) — Enter on most terminals. */
+ export const RETURN = String.fromCharCode(13)
+-/** Line feed (`\n`, U+000A) — Enter on some terminals / pasted input. */
++/** Names the line feed byte (`\n`, U+000A) — Enter on some terminals / pasted input. */
+ export const NEWLINE = String.fromCharCode(10)
+-/** Tab (`\t`, U+0009). */
++/** Names the tab byte (`\t`, U+0009). */
+ export const TAB = String.fromCharCode(9)
+-/** Escape (ESC, U+001B) — the lone byte, and the lead byte of every CSI / SS3 sequence. */
++/** Names the escape byte (ESC, U+001B) — the lone byte, and the lead byte of every CSI / SS3 sequence. */
+ export const ESCAPE = String.fromCharCode(27)
+-/** Backspace (BS, U+0008) — Ctrl+H / some terminals' Backspace. */
++/** Names the backspace byte (BS, U+0008) — Ctrl+H / some terminals' Backspace. */
+ export const BACKSPACE = String.fromCharCode(8)
+-/** Delete (DEL, U+007F) — the usual Backspace byte on a Unix TTY. */
++/** Names the delete byte (DEL, U+007F) — the usual Backspace byte on a Unix TTY. */
+ export const DELETE = String.fromCharCode(127)
+-/** Space (U+0020). */
++/** Names the space byte (U+0020). */
+ export const SPACE = ' '
+-/** Ctrl+C (ETX, U+0003) — interrupt / cancel. */
++/** Names the Ctrl+C byte (ETX, U+0003) — interrupt / cancel. */
+ export const CTRL_C = String.fromCharCode(3)
+-/** Ctrl+D (EOT, U+0004) — end-of-transmission / finish (the editor's commit key). */
++/** Names the Ctrl+D byte (EOT, U+0004) — end-of-transmission / finish (the editor's commit key). */
+ export const CTRL_D = String.fromCharCode(4)
+-/** Ctrl+U (NAK, U+0015) — clear the current line. */
++/** Names the Ctrl+U byte (NAK, U+0015) — clear the current line. */
+ export const CTRL_U = String.fromCharCode(21)
+-/** Ctrl+A (SOH, U+0001) — move to start of line. */
++/** Names the Ctrl+A byte (SOH, U+0001) — move to start of line. */
+ export const CTRL_A = String.fromCharCode(1)
+-/** Ctrl+E (ENQ, U+0005) — move to end of line. */
++/** Names the Ctrl+E byte (ENQ, U+0005) — move to end of line. */
+ export const CTRL_E = String.fromCharCode(5)
+ 
+ /**
+- * The Control Sequence Introducer lead (`ESC[`) for the navigation keys — the prefix of the
++ * Names the Control Sequence Introducer lead (`ESC[`) for the navigation keys — the prefix of the
+  * arrow / home / end / delete sequences {@link SEQUENCE_NAMES} is keyed by. Named `KEY_CSI`
+  * (not `CSI`) so it never collides with the console module's SGR `CSI` (both barrel through
+  * `@src/core`).
+  */
+ export const KEY_CSI = `${ESCAPE}[`
+-/** The Single Shift Three lead (`ESCO`) — the alternate arrow-key prefix some terminals emit (`ESC O A`). */
++/** Names the Single Shift Three lead (`ESCO`) — the alternate arrow-key prefix some terminals emit (`ESC O A`). */
+ export const KEY_SS3 = `${ESCAPE}O`
+ 
+ /**
+- * The exact escape SEQUENCE → canonical key NAME table {@link import('./helpers.js').parseKey}
++ * Holds the exact escape SEQUENCE → canonical key NAME table {@link import('./helpers.js').parseKey}
+  * consults for the navigation / editing keys. Covers BOTH the CSI form (`ESC[A`…) and the SS3
+  * form (`ESCOA`…) of the four arrows, plus the `home` / `end` / `delete` CSI sequences (with
+  * their numeric-tilde variants). The source of truth for the multi-byte key decode; frozen.
+@@ -73,7 +73,7 @@ export const SEQUENCE_NAMES: Readonly<Record<string, string>> = Object.freeze({
+ })
+ 
+ /**
+- * The control BYTE (or CRLF pair) → key descriptor table {@link import('./helpers.js').parseKey}
++ * Holds the control BYTE (or CRLF pair) → key descriptor table {@link import('./helpers.js').parseKey}
+  * consults for the one-byte keys and the two-byte CRLF Enter chunk. Each entry carries the
+  * canonical `name` and whether it is a `ctrl` combination. The source of truth for that decode;
+  * frozen.
+@@ -105,13 +105,13 @@ export const CONTROL_NAMES: Readonly<
+ 
+ // === Prompt defaults
+ 
+-/** The default mask glyph {@link import('./helpers.js').createPasswordState} uses — `*`. */
++/** Names the default mask glyph {@link import('./helpers.js').createPasswordState} uses — `*`. */
+ export const DEFAULT_MASK = '*'
+ 
+ // === Prompt-view icons
+ 
+ /**
+- * The six default glyphs {@link DEFAULT_PROMPT_THEME} assembles its `icons` from. Read only when
++ * Holds the six default glyphs {@link DEFAULT_PROMPT_THEME} assembles its `icons` from. Read only when
+  * the default theme is assembled; a view reads its resolved theme and never this constant. Frozen.
+  *
+  * @remarks
+@@ -132,7 +132,7 @@ export const PROMPT_ICONS = Object.freeze({
+ // === The default prompt theme
+ 
+ /**
+- * Every {@link import('./types.js').PromptRole}, in one frozen list — the role axis's source of
++ * Holds every {@link import('./types.js').PromptRole}, in one frozen list — the role axis's source of
+  * truth. {@link import('./helpers.js').createPromptTheme} walks it to merge a partial theme, and
+  * a consumer building a complete role map reads it rather than retyping every name.
+  */
+@@ -151,7 +151,7 @@ export const PROMPT_ROLES: readonly PromptRole[] = Object.freeze([
+ ])
+ 
+ /**
+- * The {@link import('./types.js').PromptTheme} every prompt renders with unless its options supply
++ * Holds the {@link import('./types.js').PromptTheme} every prompt renders with unless its options supply
+  * another — the glyph set assembled from {@link PROMPT_ICONS} plus the console
+  * {@link import('@orkestrel/console').STATUS_ICONS} `success` / `error` marks, and the console
+  * {@link import('@orkestrel/console').Style} each role is painted with. Deeply frozen through the
+@@ -193,14 +193,14 @@ export const DEFAULT_PROMPT_THEME: PromptTheme = Object.freeze({
+ 
+ // === Broker + SSE-bridge defaults
+ 
+-/** How long (ms) the {@link import('./types.js').PromptInterface} broker parks an unanswered prompt before it expires — 5 minutes. */
++/** Holds how long (ms) the {@link import('./types.js').PromptInterface} broker parks an unanswered prompt before it expires — 5 minutes. */
+ export const DEFAULT_PROMPT_TIMEOUT_MS = 300_000
+ 
+-/** How long (ms) the {@link import('./types.js').PromptClientInterface} waits before each reconnect attempt — 2 seconds. */
++/** Holds how long (ms) the {@link import('./types.js').PromptClientInterface} waits before each reconnect attempt — 2 seconds. */
+ export const DEFAULT_RECONNECT_DELAY_MS = 2_000
+ 
+ /**
+- * The SSE `event:` names the broker emits and the {@link import('./types.js').PromptClientInterface}
++ * Holds the SSE `event:` names the broker emits and the {@link import('./types.js').PromptClientInterface}
+  * dispatches on. Frozen; the source of truth for the wire event vocabulary.
+  *
+  * @remarks
+@@ -214,14 +214,14 @@ export const SSE_EVENTS = Object.freeze({
+ 	destroy: 'destroy',
+ })
+ 
+-/** The auth-token request header the {@link import('./types.js').PromptClientInterface} sends. */
++/** Names the auth-token request header the {@link import('./types.js').PromptClientInterface} sends. */
+ export const HEADER_TOKEN = 'x-orkestrel-token'
+ 
+-/** The `Accept` header value that opens the broker's SSE stream. */
++/** Names the `Accept` header value that opens the broker's SSE stream. */
+ export const ACCEPT_EVENT_STREAM = 'text/event-stream'
+ 
+ /**
+- * The maximum number of characters the {@link import('./types.js').PromptClientInterface} lets its
++ * Sets the maximum number of characters the {@link import('./types.js').PromptClientInterface} lets its
+  * SSE parser buffer before treating the stream as hostile — 1 MiB, comfortably above any
+  * legitimate prompt payload. Passed as the `limit` to `createSSEParser` so an unterminated
+  * or oversized `data:` field cannot grow the buffer without bound (a memory-exhaustion guard).
+diff --git a/src/core/errors.ts b/src/core/errors.ts
+index 2b61f02..4d33927 100644
+--- a/src/core/errors.ts
++++ b/src/core/errors.ts
+@@ -6,7 +6,7 @@ import type { TerminalErrorCode } from './types.js'
+ // mirroring the agents-module errors.
+ 
+ /**
+- * The error the terminal surfaces for its own refusals: parking on a destroyed or full broker, an
++ * Represents the error the terminal surfaces for its own refusals: parking on a destroyed or full broker, an
+  * unusable driver stream, a manager routing fault, or a ctrl-c cancellation. A parked form's own
+  * lifecycle failures reject through the form's `answer` with the form package's error, never with
+  * this one.
+@@ -17,9 +17,9 @@ import type { TerminalErrorCode } from './types.js'
+  * a caught value with {@link isTerminalError} and branch on `error.code`.
+  */
+ export class TerminalError extends Error {
+-	/** The machine-readable condition — see {@link TerminalErrorCode}. */
++	/** Holds the machine-readable condition — see {@link TerminalErrorCode}. */
+ 	readonly code: TerminalErrorCode
+-	/** An optional context bag naming the offending values — see the class {@link TerminalError remarks}. */
++	/** Holds an optional context bag naming the offending values — see the class {@link TerminalError remarks}. */
+ 	readonly context?: Readonly<Record<string, unknown>>
+ 
+ 	constructor(
+@@ -35,10 +35,10 @@ export class TerminalError extends Error {
+ }
+ 
+ /**
+- * Narrow an unknown caught value to a {@link TerminalError}.
++ * Narrows an unknown caught value to a {@link TerminalError}.
+  *
+  * @param value - The value to test (typically a `catch` binding or a rejected prompt call)
+- * @returns `true` when `value` is a {@link TerminalError}
++ * @returns True if `value` is a {@link TerminalError}; false otherwise
+  *
+  * @example
+  * ```ts
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index add78b1..44d9004 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -18,7 +18,7 @@ import { createDatabase, createMemoryDriver } from '@orkestrel/database'
+ import { rawShape, stringShape } from '@orkestrel/contract'
+ 
+ /**
+- * Create the headless {@link PromptInterface} broker. It parks live forms and applies remote
++ * Creates the headless {@link PromptInterface} broker. It parks live forms and applies remote
+  * answers to the authoritative instances.
+  *
+  * @param options - See {@link PromptOptions}
+@@ -45,7 +45,7 @@ export function createPrompt(options?: PromptOptions): PromptInterface {
+ }
+ 
+ /**
+- * Create the SSE prompt {@link PromptClientInterface} BRIDGE — it connects to a remote broker's SSE
++ * Creates the SSE prompt {@link PromptClientInterface} BRIDGE — it connects to a remote broker's SSE
+  * endpoint, dispatches each received form to a local {@link import('./types.js').TerminalInterface},
+  * and POSTs the answer back. Universal — `fetch` / SSE are web-standard.
+  *
+@@ -72,7 +72,7 @@ export function createPromptClient(options: PromptClientOptions): PromptClientIn
+ }
+ 
+ /**
+- * Create the multi-endpoint {@link TerminalManager} — a named registry of
++ * Creates the multi-endpoint {@link TerminalManager} — a named registry of
+  * {@link PromptInterface} brokers so several parties can `ask` prompts of each other by name,
+  * with a transitive DEADLOCK check across every in-flight ask.
+  *
+@@ -92,7 +92,7 @@ export function createTerminalManager(options?: TerminalManagerOptions): Termina
+ }
+ 
+ /**
+- * Create the in-memory {@link TerminalStoreInterface} — a process-lifetime `Map` of endpoint
++ * Creates the in-memory {@link TerminalStoreInterface} — a process-lifetime `Map` of endpoint
+  * config snapshots, the default store backing a {@link TerminalManagerInterface}'s `open` / `save`.
+  *
+  * @returns A {@link TerminalStoreInterface}
+@@ -109,7 +109,7 @@ export function createMemoryTerminalStore(): TerminalStoreInterface {
+ }
+ 
+ /**
+- * Create a {@link TerminalStoreInterface} backed by one table of the `databases` layer — the
++ * Creates a {@link TerminalStoreInterface} backed by one table of the `databases` layer — the
+  * driver-pluggable twin of {@link createMemoryTerminalStore}, storing each endpoint's config
+  * snapshot as one opaque JSON column.
+  *
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index d8ceec1..013e1dc 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -104,7 +104,7 @@ export function parseKey(input: string | Uint8Array): KeyEvent {
+ 	return { sequence, ctrl: false, meta: false, shift: false }
+ }
+ 
+-/** Whether a single character is a printable (non-control) character — used by {@link parseKey}'s char fallback. */
++/** Checks whether a single character is a printable (non-control) character — used by {@link parseKey}'s char fallback. */
+ export function isPrintable(character: string): boolean {
+ 	if (character.length === 0) return false
+ 	const code = character.codePointAt(0)
+@@ -116,7 +116,7 @@ export function isPrintable(character: string): boolean {
+ // === Prompt theme
+ 
+ /**
+- * Build a complete {@link PromptTheme} by merging a partial one over
++ * Builds a complete {@link PromptTheme} by merging a partial one over
+  * {@link DEFAULT_PROMPT_THEME}, leaf by leaf — each supplied icon replaces that glyph, each
+  * supplied role replaces that {@link Style}, and everything else keeps its default. Each supplied
+  * style is snapshotted through the console module's own
+@@ -146,7 +146,7 @@ export function createPromptTheme(options?: PromptThemeOptions): PromptTheme {
+ }
+ 
+ /**
+- * Sanitize text for one single-line display slot. Composes console's ANSI {@link strip} and C0
++ * Sanitizes text for one single-line display slot. Composes console's ANSI {@link strip} and C0
+  * {@link stripControls} passes with removal of tab, line feed, and carriage return.
+  *
+  * @param text - The text to sanitize for a glyph or hint slot
+@@ -162,7 +162,7 @@ export function sanitizeDisplayText(text: string): string {
+ }
+ 
+ /**
+- * Sanitize every terminal-readable string in a parsed form schema.
++ * Sanitizes every terminal-readable string in a parsed form schema.
+  *
+  * @remarks
+  * Display strings pass through {@link sanitizeDisplayText}: labels, help, placeholders, masks,
+@@ -274,7 +274,7 @@ export function sanitizeSchema(schema: FormSchema): FormSchema {
+ }
+ 
+ /**
+- * Sanitize every glyph a wire-supplied {@link PromptThemeOptions} carries for a single-line display
++ * Sanitizes every glyph a wire-supplied {@link PromptThemeOptions} carries for a single-line display
+  * slot. Only the icons need it: a role is guard-narrowed to a console {@link Style}, whose colors
+  * and attributes are fixed name sets, so no role can carry a byte a terminal would act on.
+  *
+@@ -341,7 +341,7 @@ export function renderErrorLine(
+ // === Input prompt
+ 
+ /**
+- * Build the initial text-field key state.
++ * Builds the initial text-field key state.
+  *
+  * @param field - The text field to render
+  * @param styler - The styler used to render the view
+@@ -371,7 +371,7 @@ export function renderInputView(state: InputState): string {
+ }
+ 
+ /**
+- * Advance an input prompt by one {@link KeyEvent} — the pure `(state, key) → PromptStep<string>`
++ * Advances an input prompt by one {@link KeyEvent} — the pure `(state, key) → PromptStep<string>`
+  * reducer. Printable characters extend the value; backspace shrinks it; ctrl-u clears it; ctrl-c
+  * cancels; return produces the candidate value, with an empty line falling back to the default.
+  */
+@@ -398,7 +398,7 @@ export function inputReduce(state: InputState, key: KeyEvent): PromptStep<string
+ // === Password prompt
+ 
+ /**
+- * Build the initial password-field key state.
++ * Builds the initial password-field key state.
+  *
+  * @param field - The password field to render
+  * @param styler - The styler used to render the view
+@@ -429,7 +429,7 @@ export function renderPasswordView(state: PasswordState): string {
+ }
+ 
+ /**
+- * Advance a password prompt by one {@link KeyEvent} — the pure `(state, key) → PromptStep<string>`
++ * Advances a password prompt by one {@link KeyEvent} — the pure `(state, key) → PromptStep<string>`
+  * reducer. Identical line-editing to {@link inputReduce} (printable extends, backspace shrinks,
+  * ctrl-u clears, ctrl-c cancels) but the view masks the value. Return produces the candidate value.
+  */
+@@ -458,7 +458,7 @@ export function passwordReduce(
+ // === Confirm prompt
+ 
+ /**
+- * Build the initial confirm-field key state.
++ * Builds the initial confirm-field key state.
+  *
+  * @param field - The confirm field to render
+  * @param styler - The styler used to render the view
+@@ -490,7 +490,7 @@ export function renderConfirmView(state: ConfirmState): string {
+ }
+ 
+ /**
+- * Advance a confirm prompt by one {@link KeyEvent} — the pure `(state, key) → PromptStep<boolean>`
++ * Advances a confirm prompt by one {@link KeyEvent} — the pure `(state, key) → PromptStep<boolean>`
+  * reducer. `y` / `Y` submits `true`, `n` / `N` submits `false`, return on an empty line submits
+  * the `default`, ctrl-c cancels; any other key is ignored (stays active).
+  */
+@@ -519,7 +519,7 @@ export function confirmReduce(
+ // === Select prompt
+ 
+ /**
+- * Build the initial select-field key state.
++ * Builds the initial select-field key state.
+  *
+  * @param field - The select field to render
+  * @param styler - The styler used to render the view
+@@ -565,7 +565,7 @@ export function renderSelectView(state: SelectState): string {
+ }
+ 
+ /**
+- * Advance a select prompt by one {@link KeyEvent} — the pure `(state, key) → PromptStep<string>`
++ * Advances a select prompt by one {@link KeyEvent} — the pure `(state, key) → PromptStep<string>`
+  * reducer. `up` / `down` (and `k` / `j`) move the focus, WRAPPING at the ends; return submits the
+  * focused choice's `value`; ctrl-c cancels. An empty choice list can never submit (a higher layer
+  * guards against it); any other key is ignored.
+@@ -601,7 +601,7 @@ export function selectReduce(state: SelectState, key: KeyEvent): PromptStep<stri
+ // === Checkbox prompt
+ 
+ /**
+- * Build the initial checkbox-field key state.
++ * Builds the initial checkbox-field key state.
+  *
+  * @param field - The checkbox field to render
+  * @param styler - The styler used to render the view
+@@ -658,7 +658,7 @@ export function renderCheckboxView(state: CheckboxState): string {
+ }
+ 
+ /**
+- * Advance a checkbox prompt by one {@link KeyEvent} — the pure
++ * Advances a checkbox prompt by one {@link KeyEvent} — the pure
+  * `(state, key) → PromptStep<readonly string[]>` reducer. `up` / `down` (and `k` / `j`) move the
+  * focus (wrapping); `space` toggles the focused index in the checked set; return submits the
+  * checked values in choice order; ctrl-c cancels. The form applies selection-count rules.
+@@ -707,7 +707,7 @@ export function checkboxReduce(
+ 	return { state, view: renderCheckboxView(state), status: 'active' }
+ }
+ 
+-/** Toggle `index` in a readonly index list — copy-on-write, returning the new sorted-by-insertion list. */
++/** Toggles `index` in a readonly index list — copy-on-write, returning the new sorted-by-insertion list. */
+ export function toggleIndex(indices: readonly number[], index: number): readonly number[] {
+ 	return indices.includes(index) ? indices.filter((i) => i !== index) : [...indices, index]
+ }
+@@ -715,7 +715,7 @@ export function toggleIndex(indices: readonly number[], index: number): readonly
+ // === Editor prompt
+ 
+ /**
+- * Build the initial editor-field key state.
++ * Builds the initial editor-field key state.
+  *
+  * @param field - The editor field to render
+  * @param styler - The styler used to render the view
+@@ -753,7 +753,7 @@ export function renderEditorView(state: EditorState): string {
+ }
+ 
+ /**
+- * Advance an editor prompt by one {@link KeyEvent} — the pure `(state, key) → PromptStep<string>`
++ * Advances an editor prompt by one {@link KeyEvent} — the pure `(state, key) → PromptStep<string>`
+  * reducer. Printable characters extend the current line; backspace shrinks it; return commits the
+  * current line and starts a fresh one; ctrl-d FINISHES (joining all lines, falling back to the
+  * default when empty); ctrl-c cancels. The form validates the candidate after the driver fills it.
+@@ -820,7 +820,7 @@ export function editLine(value: string, key: KeyEvent): string | undefined {
+ // === Broker + bridge wiring helpers
+ 
+ /**
+- * The default {@link import('./types.js').TimerHandler} — a thin host `setTimeout` / `clearTimeout`
++ * Implements the default {@link import('./types.js').TimerHandler} — a thin host `setTimeout` / `clearTimeout`
+  * wrapper that arms `callback` after `ms` and returns a {@link TimerCancelFunction}. The deadline seam
+  * behind both the {@link import('./Prompt.js').Prompt} broker (its expiry) and the
+  * {@link import('./PromptClient.js').PromptClient} (its reconnect backoff); a test injects a
+@@ -831,13 +831,13 @@ export function defaultTimer(callback: () => void, ms: number): TimerCancelFunct
+ 	return () => clearTimeout(handle)
+ }
+ 
+-/** The default {@link import('./types.js').FetchHandler} — the global `fetch`, adapted to the minimal injected shape the {@link import('./PromptClient.js').PromptClient} uses. */
++/** Implements the default {@link import('./types.js').FetchHandler} — the global `fetch`, adapted to the minimal injected shape the {@link import('./PromptClient.js').PromptClient} uses. */
+ export function globalFetch(input: string, init?: FetchInit): Promise<Response> {
+ 	return fetch(input, init)
+ }
+ 
+ /**
+- * Whether a caught value is an `AbortError` — the {@link import('./PromptClient.js').PromptClient}
++ * Checks whether a caught value is an `AbortError` — the {@link import('./PromptClient.js').PromptClient}
+  * distinguishes a deliberate `disconnect` / teardown (an aborted `fetch`) from a real fault, so it
+  * exits its connect loop quietly instead of emitting `error` / reconnecting.
+  */
+@@ -846,7 +846,7 @@ export function isAbortError(error: unknown): boolean {
+ }
+ 
+ /**
+- * Whether `url` is an INSECURE remote endpoint — a plain `http://` URL whose host is NOT a
++ * Checks whether `url` is an INSECURE remote endpoint — a plain `http://` URL whose host is NOT a
+  * loopback address. Pure string parsing (no `URL` global), so it stays total on malformed input.
+  *
+  * @remarks
+@@ -855,7 +855,7 @@ export function isAbortError(error: unknown): boolean {
+  * An `https://` URL (or any non-`http://` scheme) is never flagged.
+  *
+  * @param url - The candidate endpoint URL
+- * @returns `true` when `url` is a non-loopback `http://` endpoint
++ * @returns True if `url` is a non-loopback `http://` endpoint; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -879,12 +879,12 @@ export function isInsecureRemote(url: string): boolean {
+ 
+ // === Terminal manager wire seams (transport-neutral, no http dependency)
+ 
+-/** Serialize a parked {@link PendingForm} into a {@link WireEvent}. */
++/** Serializes a parked {@link PendingForm} into a {@link WireEvent}. */
+ export function serializePending(form: PendingForm): WireEvent {
+ 	return { event: 'pending', data: JSON.stringify(form), id: form.id }
+ }
+ 
+-/** Serialize a parked prompt's expiry or release into a {@link WireEvent} — event `'expire'`, `data` the JSON-stringified `{ id }` payload. */
++/** Serializes a parked prompt's expiry or release into a {@link WireEvent} — event `'expire'`, `data` the JSON-stringified `{ id }` payload. */
+ export function serializeExpire(id: string): WireEvent {
+ 	return { event: 'expire', data: JSON.stringify({ id }) }
+ }
+diff --git a/src/core/stores/DatabaseTerminalStore.ts b/src/core/stores/DatabaseTerminalStore.ts
+index 9c88caf..7b99d88 100644
+--- a/src/core/stores/DatabaseTerminalStore.ts
++++ b/src/core/stores/DatabaseTerminalStore.ts
+@@ -3,7 +3,7 @@ import type { TableInterface } from '@orkestrel/database'
+ import { isTerminalSnapshot } from '../validators.js'
+ 
+ /**
+- * A {@link TerminalStoreInterface} backed by one table of the `databases` layer — an endpoint's
++ * Implements a {@link TerminalStoreInterface} backed by one table of the `databases` layer — an endpoint's
+  * durable CONFIG state IS a row, so persistence reduces to keyed point-access (`get` / `set` /
+  * `delete`) over a {@link TableInterface}, the driver-pluggable twin of the plain-`Map`
+  * {@link import('./MemoryTerminalStore.js').MemoryTerminalStore}.
+@@ -48,7 +48,7 @@ export class DatabaseTerminalStore implements TerminalStoreInterface {
+ 	readonly #table: TableInterface<TerminalSnapshotRow>
+ 
+ 	/**
+-	 * Wrap a table as a terminal store.
++	 * Wraps a table as a terminal store.
+ 	 *
+ 	 * @param table - The {@link TableInterface} holding the snapshots — its row is the
+ 	 *   {@link TerminalSnapshotRow} `{ id; snapshot }` shape (the snapshot one opaque JSON column)
+@@ -57,7 +57,7 @@ export class DatabaseTerminalStore implements TerminalStoreInterface {
+ 		this.#table = table
+ 	}
+ 
+-	/** Resolve the persisted snapshot for `id`, narrowing the opaque JSON column back to a `TerminalSnapshot`. */
++	/** Resolves the persisted snapshot for `id`, narrowing the opaque JSON column back to a `TerminalSnapshot`. */
+ 	async get(id: string): Promise<TerminalSnapshot | undefined> {
+ 		const row = await this.#table.get(id)
+ 		if (row === undefined) return undefined
+@@ -67,12 +67,12 @@ export class DatabaseTerminalStore implements TerminalStoreInterface {
+ 		return isTerminalSnapshot(row.snapshot) ? row.snapshot : undefined
+ 	}
+ 
+-	/** Insert or replace under the snapshot's OWN `id` (no separate id param) — the row is `{ id, snapshot }`. */
++	/** Inserts or replaces under the snapshot's OWN `id` (no separate id param) — the row is `{ id, snapshot }`. */
+ 	async set(snapshot: TerminalSnapshot): Promise<void> {
+ 		await this.#table.set({ id: snapshot.id, snapshot })
+ 	}
+ 
+-	/** Drop a snapshot by id; an absent id is a no-op (no throw). */
++	/** Drops a snapshot by id; an absent id is a no-op (no throw). */
+ 	async delete(id: string): Promise<void> {
+ 		await this.#table.remove(id)
+ 	}
+diff --git a/src/core/stores/MemoryTerminalStore.ts b/src/core/stores/MemoryTerminalStore.ts
+index 7fdf01d..8ce00a3 100644
+--- a/src/core/stores/MemoryTerminalStore.ts
++++ b/src/core/stores/MemoryTerminalStore.ts
+@@ -1,7 +1,7 @@
+ import type { TerminalSnapshot, TerminalStoreInterface } from '../types.js'
+ 
+ /**
+- * The in-memory {@link TerminalStoreInterface} — a process-lifetime `Map` of
++ * Implements the in-memory {@link TerminalStoreInterface} — a process-lifetime `Map` of
+  * {@link TerminalSnapshot}s keyed by endpoint id, the DEFAULT store
+  * {@link import('../factories.js').createMemoryTerminalStore} builds. The EXACT twin of
+  * {@link import('./DatabaseTerminalStore.js').DatabaseTerminalStore}.
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 68878a0..29e29f5 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -15,7 +15,7 @@ import type { Style, StylerInterface } from '@orkestrel/console'
+ // === Key decoding
+ 
+ /**
+- * One decoded keypress — the TTY-agnostic representation of a single key, the output of
++ * Represents one decoded keypress — the TTY-agnostic representation of a single key, the output of
+  * {@link import('./helpers.js').parseKey}. A driver reads `name` and the modifier flags to decide
+  * its transition; `sequence` is preserved so a printable character round-trips and an unknown
+  * escape is never lost.
+@@ -42,7 +42,7 @@ export interface KeyEvent {
+ // === Presentation
+ 
+ /**
+- * One glyph slot a rendered field draws — the icon axis of a {@link PromptTheme}. A named value
++ * Names one glyph slot a rendered field draws — the icon axis of a {@link PromptTheme}. A named value
+  * set, not a toggle, so it stays a union.
+  *
+  * @remarks
+@@ -63,7 +63,7 @@ export type PromptIcon =
+ 	| 'error'
+ 
+ /**
+- * One styling slot a rendered field paints through — the semantic axis of a {@link PromptTheme}. A
++ * Names one styling slot a rendered field paints through — the semantic axis of a {@link PromptTheme}. A
+  * role says what a fragment MEANS; the theme decides what that meaning looks like, so a consumer
+  * re-maps styled output by naming roles rather than reimplementing a renderer.
+  *
+@@ -97,7 +97,7 @@ export type PromptRole =
+ 	| 'description'
+ 
+ /**
+- * A resolved PRESENTATION — the glyph for every {@link PromptIcon} and the console {@link Style}
++ * Represents a resolved PRESENTATION — the glyph for every {@link PromptIcon} and the console {@link Style}
+  * for every {@link PromptRole}. Plain JSON data with no functions, so it crosses the wire with the
+  * form it decorates. Built by {@link import('./helpers.js').createPromptTheme}.
+  *
+@@ -114,7 +114,7 @@ export interface PromptTheme {
+ }
+ 
+ /**
+- * The PARTIAL {@link PromptTheme} an option bag carries — every icon and every role is optional,
++ * Represents the PARTIAL {@link PromptTheme} an option bag carries — every icon and every role is optional,
+  * and {@link import('./helpers.js').createPromptTheme} merges what is supplied over
+  * {@link import('./constants.js').DEFAULT_PROMPT_THEME} leaf by leaf. Supplying one icon or one
+  * role leaves every other slot at its default.
+@@ -127,7 +127,7 @@ export interface PromptThemeOptions {
+ // === Reducer state
+ 
+ /**
+- * The immutable state a text field's reducer carries — built by
++ * Represents the immutable state a text field's reducer carries — built by
+  * {@link import('./helpers.js').createInputState}, rendered by
+  * {@link import('./helpers.js').renderInputView}, and advanced by
+  * {@link import('./helpers.js').inputReduce}.
+@@ -148,7 +148,7 @@ export interface InputState {
+ }
+ 
+ /**
+- * The immutable state a password field's reducer carries — the text state with the mask glyph in
++ * Represents the immutable state a password field's reducer carries — the text state with the mask glyph in
+  * place of a default, because a secret is never seeded from the schema.
+  *
+  * @remarks
+@@ -166,7 +166,7 @@ export interface PasswordState {
+ }
+ 
+ /**
+- * The immutable state a confirm field's reducer carries. It holds no typed value, because the
++ * Represents the immutable state a confirm field's reducer carries. It holds no typed value, because the
+  * answer is the key itself.
+  *
+  * @remarks
+@@ -182,7 +182,7 @@ export interface ConfirmState {
+ }
+ 
+ /**
+- * The immutable state a select field's reducer carries.
++ * Represents the immutable state a select field's reducer carries.
+  *
+  * @remarks
+  * - `message` — the sanitized label the header renders.
+@@ -199,7 +199,7 @@ export interface SelectState {
+ }
+ 
+ /**
+- * The immutable state a checkbox field's reducer carries — the select state plus the ticked set.
++ * Represents the immutable state a checkbox field's reducer carries — the select state plus the ticked set.
+  *
+  * @remarks
+  * - `message` — the sanitized label the header renders.
+@@ -219,7 +219,7 @@ export interface CheckboxState {
+ }
+ 
+ /**
+- * The immutable state an editor field's reducer carries — the committed lines and the line still
++ * Represents the immutable state an editor field's reducer carries — the committed lines and the line still
+  * being typed, kept apart so a return commits one without ending the field.
+  *
+  * @remarks
+@@ -241,14 +241,14 @@ export interface EditorState {
+ // === Reducer output
+ 
+ /**
+- * Where one field's reducer stands after a key. `active`: keep asking, because the key was
++ * Names where one field's reducer stands after a key. `active`: keep asking, because the key was
+  * consumed or the answer was refused. `submit`: the field resolved with its `value`. `cancel`: the
+  * user aborted with ctrl-c. Names its axis, never `kind`.
+  */
+ export type PromptStatus = 'active' | 'submit' | 'cancel'
+ 
+ /**
+- * The result of one reducer step — the next `state`, the rendered `view`, the `status`, and, on
++ * Represents the result of one reducer step — the next `state`, the rendered `view`, the `status`, and, on
+  * `submit`, the resolved `value`. The whole contract between a pure reducer and the impure driver:
+  * the driver applies the next `state`, writes the `view`, and reads `value` on `submit`.
+  *
+@@ -273,7 +273,7 @@ export interface PromptStep<T, S> {
+ // === Failure codes
+ 
+ /**
+- * The machine-readable condition carried by a {@link import('./errors.js').TerminalError} — the
++ * Names the machine-readable condition carried by a {@link import('./errors.js').TerminalError} — the
+  * axis a `catch` branches on. Names its axis (the failure condition), never `kind`.
+  *
+  * @remarks
+@@ -305,7 +305,7 @@ export type TerminalErrorCode =
+ // === The interactive driver
+ 
+ /**
+- * The contract for asking a form of a human at a keyboard — one method, because a form is one
++ * Declares the contract for asking a form of a human at a keyboard — one method, because a form is one
+  * question however many fields it holds. The server `Terminal` implements it against a real TTY;
+  * a {@link PromptClientInterface} holds one to answer forms parked elsewhere.
+  *
+@@ -327,7 +327,7 @@ export interface TerminalInterface {
+ // === The headless broker
+ 
+ /**
+- * The lifecycle status of a parked {@link PendingForm} — where the TICKET stands, which is not
++ * Names the lifecycle status of a parked {@link PendingForm} — where the TICKET stands, which is not
+  * where the form stands. A ticket is `pending` until somebody answers it; the form it carries has
+  * its own status, and the two are separate facts about separate entities.
+  *
+@@ -339,7 +339,7 @@ export interface TerminalInterface {
+ export type PendingFormStatus = 'pending' | 'answered' | 'expired'
+ 
+ /**
+- * One form PARKED by the broker — an id-keyed, wire-safe record of a live form awaiting a remote
++ * Represents one form PARKED by the broker — an id-keyed, wire-safe record of a live form awaiting a remote
+  * answer. The value a `pending` listener receives and the broker serializes over SSE to a
+  * {@link PromptClientInterface}.
+  *
+@@ -365,7 +365,7 @@ export interface PendingForm {
+ }
+ 
+ /**
+- * One injected timer — arms a deadline `callback` to fire after `ms`, returning a
++ * Represents one injected timer — arms a deadline `callback` to fire after `ms`, returning a
+  * {@link TimerCancelFunction} that cancels it. The broker's timeout seam: the default wraps the host
+  * `setTimeout` and `clearTimeout`; a test injects a deterministic timer that captures the callback
+  * and fires it on demand, with no real time and no global patching.
+@@ -376,7 +376,7 @@ export type TimerHandler = (callback: () => void, ms: number) => TimerCancelFunc
+ export type TimerCancelFunction = () => void
+ 
+ /**
+- * One parked form's runtime state inside the broker — the live form, the wire-safe record the
++ * Represents one parked form's runtime state inside the broker — the live form, the wire-safe record the
+  * broker exposes, and the cancel for its expiry timer.
+  *
+  * @remarks
+@@ -392,7 +392,7 @@ export interface ParkedForm {
+ }
+ 
+ /**
+- * The broker's event map — lean, errors `unknown`, no listener-error event.
++ * Declares the broker's event map — lean, errors `unknown`, no listener-error event.
+  *
+  * @remarks
+  * - `pending` — a form was parked; a transport forwards the wire record to remote clients.
+@@ -406,7 +406,7 @@ export type PromptEventMap = {
+ }
+ 
+ /**
+- * Options for {@link import('./factories.js').createPrompt} and every {@link PromptInterface}
++ * Configures {@link import('./factories.js').createPrompt} and every {@link PromptInterface}
+  * broker, including one a {@link TerminalManagerInterface} mounts per endpoint.
+  *
+  * @remarks
+@@ -430,7 +430,7 @@ export interface PromptOptions {
+ }
+ 
+ /**
+- * The parking envelope — everything the broker needs about a park that the form itself does not
++ * Represents the parking envelope — everything the broker needs about a park that the form itself does not
+  * say.
+  *
+  * @remarks
+@@ -443,7 +443,7 @@ export interface ParkRequest {
+ }
+ 
+ /**
+- * Why {@link PromptInterface.answer} refused. Names its axis with `reason`.
++ * Explains why {@link PromptInterface.answer} refused. Names its axis with `reason`.
+  *
+  * @remarks
+  * - `unknown` — no form is parked under that id, or the one that was has already settled.
+@@ -458,7 +458,7 @@ export type AnswerError =
+ 	| { readonly reason: 'rejected'; readonly errors: readonly FieldError[] }
+ 
+ /**
+- * The headless form BROKER — parks a live form until somebody elsewhere answers it. The headless
++ * Declares the headless form BROKER — parks a live form until somebody elsewhere answers it. The headless
+  * arm of the local-TTY / headless / remote trio: there is no terminal here, so a transport forwards
+  * each `pending` record to whoever can answer, and {@link answer} drives the parked form to
+  * settlement.
+@@ -503,14 +503,14 @@ export interface PromptInterface {
+ // === The SSE bridge
+ 
+ /**
+- * A minimal `fetch` — the subset of the global `fetch` a {@link PromptClientInterface} uses: open
++ * Represents a minimal `fetch` — the subset of the global `fetch` a {@link PromptClientInterface} uses: open
+  * the SSE stream, POST an answer. Injected so a test drives the client with a scripted `Response`
+  * instead of a real network.
+  */
+ export type FetchHandler = (input: string, init?: FetchInit) => Promise<Response>
+ 
+ /**
+- * The request init a {@link PromptClientInterface} passes to its {@link FetchHandler} — the
++ * Represents the request init a {@link PromptClientInterface} passes to its {@link FetchHandler} — the
+  * `RequestInit` fields it actually sets.
+  */
+ export interface FetchInit {
+@@ -521,7 +521,7 @@ export interface FetchInit {
+ }
+ 
+ /**
+- * The client's event map — lean, errors `unknown`, no listener-error event.
++ * Declares the client's event map — lean, errors `unknown`, no listener-error event.
+  *
+  * @remarks
+  * - `connect` — the SSE stream opened.
+@@ -539,7 +539,7 @@ export type PromptClientEventMap = {
+ }
+ 
+ /**
+- * Options for {@link import('./factories.js').createPromptClient} and the
++ * Configures {@link import('./factories.js').createPromptClient} and the
+  * {@link PromptClientInterface}.
+  *
+  * @remarks
+@@ -570,7 +570,7 @@ export interface PromptClientOptions {
+ }
+ 
+ /**
+- * The SSE form BRIDGE — the client-side counterpart to {@link PromptInterface}. It receives
++ * Declares the SSE form BRIDGE — the client-side counterpart to {@link PromptInterface}. It receives
+  * serialized {@link PendingForm} records from a remote broker, rebuilds each schema locally, drives
+  * it through a {@link TerminalInterface}, and POSTs the answer back, so a human at this machine
+  * answers forms a broker parked elsewhere.
+@@ -600,7 +600,7 @@ export interface PromptClientInterface {
+ // === The terminal manager
+ 
+ /**
+- * The manager's event map — the name-attributed re-emission of every mounted broker's events, so a
++ * Declares the manager's event map — the name-attributed re-emission of every mounted broker's events, so a
+  * caller subscribes once for ALL endpoints instead of once per broker.
+  *
+  * @remarks
+@@ -615,7 +615,7 @@ export type TerminalManagerEventMap = {
+ }
+ 
+ /**
+- * Options for {@link import('./factories.js').createTerminalManager} and the
++ * Configures {@link import('./factories.js').createTerminalManager} and the
+  * {@link TerminalManagerInterface}.
+  *
+  * @remarks
+@@ -634,16 +634,16 @@ export interface TerminalManagerOptions {
+ }
+ 
+ /**
+- * Why a {@link TerminalManagerInterface.answer} call refused — an {@link AnswerError} from the
++ * Explains why a {@link TerminalManagerInterface.answer} call refused — an {@link AnswerError} from the
+  * endpoint's own broker, or `terminal` when no endpoint is mounted under that name. One
+  * discriminant, `reason`, across both.
+  */
+ export type TerminalAnswerError = AnswerError | { readonly reason: 'terminal' }
+ 
+ /**
+- * The multi-endpoint terminal MANAGER — a registry of named {@link PromptInterface} brokers, one
+- * per endpoint, so several parties (agents, tools, humans) can ask forms of each other BY NAME,
+- * attributed with a `from` → `to` edge on every parked record.
++ * Declares a registry of named {@link PromptInterface} brokers, one per endpoint, so several
++ * parties (agents, tools, humans) can ask forms of each other BY NAME, attributed with a
++ * `from` → `to` edge on every parked record.
+  *
+  * @remarks
+  * - **Accessors.** `terminal(name)` looks up one endpoint's broker; `terminals()` lists every
+@@ -686,7 +686,7 @@ export interface TerminalManagerInterface {
+ // === Transport-neutral wire seam
+ 
+ /**
+- * One SSE-shaped wire frame — the `event` name, its already-stringified `data` payload, and an
++ * Represents one SSE-shaped wire frame — the `event` name, its already-stringified `data` payload, and an
+  * optional `id`. The transport-neutral shape {@link import('./helpers.js').serializePending},
+  * {@link import('./helpers.js').serializeExpire}, and
+  * {@link import('./helpers.js').serializeDestroy} build, with no `http` dependency.
+@@ -700,7 +700,7 @@ export interface WireEvent {
+ // === Terminal store
+ 
+ /**
+- * One endpoint's persisted CONFIG snapshot — `id` is the endpoint name and `timeout` its configured
++ * Represents one endpoint's persisted CONFIG snapshot — `id` is the endpoint name and `timeout` its configured
+  * default. Parked forms are process-bound and are never resurrected, so `open` always restores an
+  * EMPTY broker.
+  */
+@@ -710,7 +710,7 @@ export interface TerminalSnapshot {
+ }
+ 
+ /**
+- * One opaque persisted row — the shape a `TableInterface<TerminalSnapshotRow>`-backed store reads
++ * Represents one opaque persisted row — the shape a `TableInterface<TerminalSnapshotRow>`-backed store reads
+  * and writes. `snapshot` is narrowed with {@link import('./validators.js').isTerminalSnapshot} on
+  * read.
+  */
+@@ -720,7 +720,7 @@ export interface TerminalSnapshotRow {
+ }
+ 
+ /**
+- * The point-access persistence seam for a {@link TerminalManagerInterface}'s endpoint configs.
++ * Declares the point-access persistence seam for a {@link TerminalManagerInterface}'s endpoint configs.
+  * Every primitive is async; deleting an absent id is a no-op.
+  */
+ export interface TerminalStoreInterface {
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index b683adb..c14b073 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -9,7 +9,7 @@ import {
+ 	recordOf,
+ } from '@orkestrel/contract'
+ 
+-/** Narrow an unknown value to a {@link PendingFormStatus}. */
++/** Narrows an unknown value to a {@link PendingFormStatus}. */
+ export const isPendingFormStatus: Guard<PendingFormStatus> = literalOf(
+ 	'pending',
+ 	'answered',
+@@ -17,14 +17,14 @@ export const isPendingFormStatus: Guard<PendingFormStatus> = literalOf(
+ )
+ 
+ /**
+- * Narrow an unknown wire value to a {@link PendingForm} envelope.
++ * Narrows an unknown wire value to a {@link PendingForm} envelope.
+  *
+  * @remarks
+  * This guard checks the transport record and proves only that `schema` is a record. The Form
+  * package's `parseForm` owns the schema payload and its semantic audit.
+  *
+  * @param value - The decoded wire value to inspect
+- * @returns Whether the value is a complete pending-form envelope
++ * @returns True if the value is a complete pending-form envelope; false otherwise
+  */
+ export function isPendingForm(value: unknown): value is PendingForm {
+ 	return recordOf(
+@@ -41,17 +41,17 @@ export function isPendingForm(value: unknown): value is PendingForm {
+ }
+ 
+ /**
+- * Narrow an unknown value to a transport-neutral {@link WireEvent}.
++ * Narrows an unknown value to a transport-neutral {@link WireEvent}.
+  *
+  * @param value - The candidate wire event
+- * @returns Whether the value carries an event name, serialized data, and an optional id
++ * @returns True if the value carries an event name, serialized data, and an optional id; false otherwise
+  */
+ export const isWireEvent: Guard<WireEvent> = recordOf(
+ 	{ event: isString, data: isString, id: isString },
+ 	['id'],
+ )
+ 
+-/** Narrow an unknown value to a {@link TerminalSnapshot}. */
++/** Narrows an unknown value to a {@link TerminalSnapshot}. */
+ export const isTerminalSnapshot: Guard<TerminalSnapshot> = recordOf(
+ 	{ id: isNonEmptyString, timeout: isNumber },
+ 	['timeout'],
+diff --git a/src/server/Terminal.ts b/src/server/Terminal.ts
+index 5d27e53..fe52aeb 100644
+--- a/src/server/Terminal.ts
++++ b/src/server/Terminal.ts
+@@ -73,8 +73,8 @@ import {
+ } from './helpers.js'
+ 
+ /**
+- * The interactive terminal form DRIVER — the {@link TerminalInterface} implementation for a human at
+- * this machine's keyboard, and the only impure part of the terminal stack. {@link ask} walks one
++ * Implements {@link TerminalInterface} for a human at this machine's keyboard — the interactive form
++ * DRIVER, and the only impure part of the terminal stack. {@link ask} walks one
+  * form's fields in schema order, feeds raw-mode stdin bytes through `parseKey` into the matching
+  * pure reducer, renders each returned view in place, and binds every answer through the form's own
+  * `fill`. It owns no form logic: the schema, the rules, the values, and the settlement all belong to
+@@ -154,7 +154,7 @@ export class Terminal implements TerminalInterface {
+ 	// === The walk
+ 
+ 	/**
+-	 * Ask `fields` in the order given, skipping what the walk must not touch and rendering what it
++	 * Asks `fields` in the order given, skipping what the walk must not touch and rendering what it
+ 	 * must not edit. Returns early the moment the form stops being editable, so an abandoned form
+ 	 * ends the walk between fields as well as under an active read.
+ 	 */
+@@ -178,7 +178,7 @@ export class Terminal implements TerminalInterface {
+ 		}
+ 	}
+ 
+-	/** Write a group's label as a section header, resolving the schema's declared label and falling back to the group's own name. */
++	/** Writes a group's label as a section header, resolving the schema's declared label and falling back to the group's own name. */
+ 	#writeGroup(form: FormInterface, name: string): void {
+ 		const label = form.schema.groups?.find((group) => group.name === name)?.label ?? name
+ 		this.#output.write(
+@@ -186,7 +186,7 @@ export class Terminal implements TerminalInterface {
+ 		)
+ 	}
+ 
+-	/** Render a locked field read-only — its label, its mark, and the answer the form already holds. */
++	/** Renders a locked field read-only — its label, its mark, and the answer the form already holds. */
+ 	#writeLocked(form: FormInterface, field: FormField): void {
+ 		const line = renderLockedLine(
+ 			this.#styler,
+@@ -197,7 +197,7 @@ export class Terminal implements TerminalInterface {
+ 		this.#output.write(`${line}${LINE_FEED}`)
+ 	}
+ 
+-	/** Read one field through the reducer its control names, resolving the raw answer the binding projects. */
++	/** Reads one field through the reducer its control names, resolving the raw answer the binding projects. */
+ 	#read(form: FormInterface, field: FormField): Promise<FieldValue | undefined> {
+ 		if (field.control === 'password') return this.#askPassword(form, field)
+ 		if (field.control === 'confirm') return this.#confirm(form, field)
+@@ -209,7 +209,7 @@ export class Terminal implements TerminalInterface {
+ 	}
+ 
+ 	/**
+-	 * Bind one raw answer to the form — the single binding, and the only place this driver writes a
++	 * Binds one raw answer to the form — the single binding, and the only place this driver writes a
+ 	 * value. `parseValue` coerces the raw answer to the control's own shape and `matchesAnswer`
+ 	 * projects a blank one to absence, which is what keeps `required` refusing a bare return. A raw
+ 	 * answer the control cannot hold binds as absence and invalidates the field, so the field comes
+@@ -222,7 +222,7 @@ export class Terminal implements TerminalInterface {
+ 		if (value === undefined && matchesAnswer(raw)) form.invalidate(field.name, REFUSAL_MESSAGE)
+ 	}
+ 
+-	/** The erroring fields the walk can ask again — every field the walk skips or renders read-only is excluded, because a second pass could not change its answer. */
++	/** Collects the erroring fields the walk can ask again — every field the walk skips or renders read-only is excluded, because a second pass could not change its answer. */
+ 	#collectEditable(form: FormInterface, errors: readonly FieldError[]): readonly FormField[] {
+ 		const fields: FormField[] = []
+ 		for (const error of errors) {
+@@ -236,7 +236,7 @@ export class Terminal implements TerminalInterface {
+ 		return fields
+ 	}
+ 
+-	/** Write every supplied failure against its field's label. */
++	/** Writes every supplied failure against its field's label. */
+ 	#report(form: FormInterface, errors: readonly FieldError[]): void {
+ 		for (const error of errors) {
+ 			const label = sanitizeDisplayText(form.field(error.field)?.label ?? error.field)
+@@ -248,14 +248,14 @@ export class Terminal implements TerminalInterface {
+ 
+ 	// === The controls
+ 
+-	/** Read a field as one line of text — `text` itself and the six controls a terminal has no widget for. */
++	/** Reads a field as one line of text — `text` itself and the six controls a terminal has no widget for. */
+ 	#askText(form: FormInterface, field: FormField): Promise<string> {
+ 		const state = createInputState(fieldToText(field), this.#styler, this.#theme)
+ 		if (supportsRawMode(this.#input)) return this.#drive(form, state, inputReduce)
+ 		return this.#line(form, state.message, state.default)
+ 	}
+ 
+-	/** Read a secret — masked live in raw mode, and read without echo through readline on a stream that cannot enter it. */
++	/** Reads a secret — masked live in raw mode, and read without echo through readline on a stream that cannot enter it. */
+ 	#askPassword(form: FormInterface, field: PasswordField): Promise<string> {
+ 		const state = createPasswordState(field, this.#styler, this.#theme)
+ 		if (supportsRawMode(this.#input)) return this.#drive(form, state, passwordReduce)
+@@ -263,7 +263,7 @@ export class Terminal implements TerminalInterface {
+ 	}
+ 
+ 	/**
+-	 * Read a yes or no. The fallback accepts `y` / `yes` / `n` / `no` in any case and takes the
++	 * Reads a yes or no. The fallback accepts `y` / `yes` / `n` / `no` in any case and takes the
+ 	 * field's default for a bare line; anything else is returned as typed, so the binding refuses it
+ 	 * and the walk asks again rather than silently reading it as no.
+ 	 */
+@@ -284,7 +284,7 @@ export class Terminal implements TerminalInterface {
+ 		return line.trim()
+ 	}
+ 
+-	/** Read text over many lines — ctrl-d finishes in raw mode, and end of input finishes on a piped stream. */
++	/** Reads text over many lines — ctrl-d finishes in raw mode, and end of input finishes on a piped stream. */
+ 	#askEditor(form: FormInterface, field: EditorField): Promise<string> {
+ 		const state = createEditorState(field, this.#styler, this.#theme)
+ 		if (supportsRawMode(this.#input)) return this.#drive(form, state, editorReduce)
+@@ -292,7 +292,7 @@ export class Terminal implements TerminalInterface {
+ 	}
+ 
+ 	/**
+-	 * Read one choice. A disabled choice is named above the list and never offered, because the form
++	 * Reads one choice. A disabled choice is named above the list and never offered, because the form
+ 	 * refuses its value at every door. An open select is a suggestion list plus a typed line, since
+ 	 * `open` admits an answer the list does not offer; a closed select with nothing left to offer
+ 	 * resolves absence and lets the form's own rules report it.
+@@ -321,7 +321,7 @@ export class Terminal implements TerminalInterface {
+ 	}
+ 
+ 	/**
+-	 * Read any number of choices. Disabled choices are named above the list and never offered, so a
++	 * Reads any number of choices. Disabled choices are named above the list and never offered, so a
+ 	 * box the form would refuse can never be ticked. An empty answer is an answered "none of them",
+ 	 * which is what `matchesAnswer` says an empty list means.
+ 	 */
+@@ -339,7 +339,7 @@ export class Terminal implements TerminalInterface {
+ 	}
+ 
+ 	/**
+-	 * Read file paths — names only, because bytes never enter a form. A `multiple` field collects one
++	 * Reads file paths — names only, because bytes never enter a form. A `multiple` field collects one
+ 	 * path per line until a blank one, and a single field takes one. No path at all is absence rather
+ 	 * than an empty list, because the reader answered a blank line.
+ 	 */
+@@ -355,21 +355,21 @@ export class Terminal implements TerminalInterface {
+ 		return paths.length > 0 ? paths : undefined
+ 	}
+ 
+-	/** Name the choices a field shows but refuses, above the list the walk drives. */
++	/** Names the choices a field shows but refuses, above the list the walk drives. */
+ 	#writeUnavailable(choices: readonly FieldChoice[]): void {
+ 		const refused = filterDisabled(choices)
+ 		if (refused.length === 0) return
+ 		this.#output.write(`${renderUnavailableLine(this.#styler, this.#theme, refused)}${LINE_FEED}`)
+ 	}
+ 
+-	/** Write a field's header above its numbered choice list — the non-TTY presentation of a choice field. */
++	/** Writes a field's header above its numbered choice list — the non-TTY presentation of a choice field. */
+ 	#writeList(message: string, choices: readonly FieldChoice[]): void {
+ 		const header = renderPromptHeader(this.#styler, this.#theme, message)
+ 		const list = renderNumberedList(this.#styler, this.#theme, choices)
+ 		this.#output.write(`${header}${LINE_FEED}${list}${LINE_FEED}`)
+ 	}
+ 
+-	/** Paint one line of supplementary instruction through the `hint` role. */
++	/** Paints one line of supplementary instruction through the `hint` role. */
+ 	#formatHint(text: string): string {
+ 		return this.#styler.render(this.#theme.roles.hint, text)
+ 	}
+@@ -377,7 +377,7 @@ export class Terminal implements TerminalInterface {
+ 	// === The raw-mode kernel
+ 
+ 	/**
+-	 * The irreducible Node raw-mode primitive — the ONLY place raw mode is touched. Switches the input
++	 * Isolates the irreducible Node raw-mode primitive — the ONLY place raw mode is touched. Switches the input
+ 	 * into raw mode (each keypress delivered immediately, no echo), resumes its flow, and subscribes
+ 	 * `handler` to `'data'`. The paired {@link #leaveRaw} operation unsubscribes the exact handler,
+ 	 * leaves raw mode, and pauses the stream on submit, cancel, abandon, or throw.
+@@ -399,7 +399,7 @@ export class Terminal implements TerminalInterface {
+ 	}
+ 
+ 	/**
+-	 * Drive ONE field over raw-mode stdin — the generic engine every interactive control shares.
++	 * Drives ONE field over raw-mode stdin — the generic engine every interactive control shares.
+ 	 * Renders the reducer's initial view, enters raw mode once, and on each keypress runs `parseKey` →
+ 	 * `reduce` → an in-place re-render; on `submit` it cleans up and resolves the reducer's value, on
+ 	 * `cancel` (ctrl-c) it cleans up and rejects a {@link TerminalError} coded `CANCEL`. Abandoning
+@@ -477,7 +477,7 @@ export class Terminal implements TerminalInterface {
+ 		}
+ 	}
+ 
+-	/** End an active read that the form outlived — release raw mode exactly as a submit does, then fail the read with the form's own error. */
++	/** Ends an active read that the form outlived — releases raw mode exactly as a submit does, then fails the read with the form's own error. */
+ 	#interrupt(token: object, reject: (reason?: unknown) => void, error: unknown): void {
+ 		if (!this.#handlers.has(token)) return
+ 		this.#leaveRaw(token)
+@@ -485,21 +485,21 @@ export class Terminal implements TerminalInterface {
+ 		reject(error)
+ 	}
+ 
+-	/** Redraw a field view in place — climb over the previous view's `previousLines`, clear, and write the new view (the pure cursor-math is {@link redrawPrefix}). */
++	/** Redraws a field view in place — climbs over the previous view's `previousLines`, clears, and writes the new view (the pure cursor-math is {@link redrawPrefix}). */
+ 	#render(view: string, previousLines: number): void {
+ 		this.#output.write(`${redrawPrefix(previousLines)}${view}`)
+ 	}
+ 
+ 	// === Non-TTY fallbacks (node:readline line input)
+ 
+-	/** Read one line for a text-shaped field, taking the field's default when the line is bare. */
++	/** Reads one line for a text-shaped field, taking the field's default when the line is bare. */
+ 	async #line(form: FormInterface, message: string, seed: string): Promise<string> {
+ 		const answer = await this.#prompt(form, renderPromptHeader(this.#styler, this.#theme, message))
+ 		return answer.length > 0 ? answer : seed
+ 	}
+ 
+ 	/**
+-	 * Read a whole block for an `editor` field — a piped stream has no ctrl-d keypress, so end of
++	 * Reads a whole block for an `editor` field — a piped stream has no ctrl-d keypress, so end of
+ 	 * input is the terminator. It drains every remaining line, which is why nothing after an `editor`
+ 	 * field can be asked on the same stream.
+ 	 */
+@@ -516,7 +516,7 @@ export class Terminal implements TerminalInterface {
+ 		return text.length > 0 ? text : seed
+ 	}
+ 
+-	/** Write one field's header and read back the line the reader answers it with, or `''` once the stream has ended. */
++	/** Writes one field's header and reads back the line the reader answers it with, or `''` once the stream has ended. */
+ 	async #prompt(form: FormInterface, header: string): Promise<string> {
+ 		this.#output.write(`${header} `)
+ 		const line = await this.#next(form)
+@@ -524,7 +524,7 @@ export class Terminal implements TerminalInterface {
+ 	}
+ 
+ 	/**
+-	 * Take the next line the input carries — from the buffer when the reader has already read ahead,
++	 * Takes the next line the input carries — from the buffer when the reader has already read ahead,
+ 	 * and otherwise by waiting for one. It resolves ABSENCE once the stream has ended, so a walk over
+ 	 * an exhausted stream settles instead of waiting forever, and it rejects when the form is
+ 	 * abandoned, so an unanswerable read ends with the form rather than outliving it.
+@@ -545,7 +545,7 @@ export class Terminal implements TerminalInterface {
+ 	}
+ 
+ 	/**
+-	 * Open the walk's ONE readline interface, or keep the open one. A whole form is many questions
++	 * Opens the walk's ONE readline interface, or keeps the open one. A whole form is many questions
+ 	 * over one stream, and an interface reads ahead: a fresh interface per question would swallow
+ 	 * every line it read past the one it was asked for, so the walk holds a single reader and buffers
+ 	 * what arrives early. It is closed when the walk ends, so the process is free to exit.
+@@ -558,7 +558,7 @@ export class Terminal implements TerminalInterface {
+ 		this.#interface = rl
+ 	}
+ 
+-	/** Hand a line to whoever is waiting for it, or buffer it for the next question. */
++	/** Hands a line to whoever is waiting for it, or buffers it for the next question. */
+ 	#accept(line: string): void {
+ 		const taker = this.#taker
+ 		if (taker === undefined) {
+@@ -569,7 +569,7 @@ export class Terminal implements TerminalInterface {
+ 		taker(line)
+ 	}
+ 
+-	/** Record that no further line can arrive and release whoever was waiting for one. */
++	/** Records that no further line can arrive and releases whoever was waiting for one. */
+ 	#finish(): void {
+ 		this.#ended = true
+ 		const taker = this.#taker
+@@ -578,7 +578,7 @@ export class Terminal implements TerminalInterface {
+ 		taker(undefined)
+ 	}
+ 
+-	/** Close the walk's reader and release a waiting question — the walk is over, so the stream must stop holding the process open. */
++	/** Closes the walk's reader and releases a waiting question — the walk is over, so the stream must stop holding the process open. */
+ 	#close(): void {
+ 		const taker = this.#taker
+ 		this.#taker = undefined
+@@ -593,7 +593,7 @@ export class Terminal implements TerminalInterface {
+ 	}
+ 
+ 	/**
+-	 * Narrow the resolved input to the `node:readline` `createInterface` boundary, never an assertion.
++	 * Narrows the resolved input to the `node:readline` `createInterface` boundary, never an assertion.
+ 	 * The fallback only runs on a real piped `process.stdin` (or a `PassThrough` a test injects), both
+ 	 * genuine readables; a minimal non-readable fake reaching here means the walk was driven with a
+ 	 * stream it cannot use, which fails loudly rather than silently. `terminal: false` leaves readline
+diff --git a/src/server/constants.ts b/src/server/constants.ts
+index b5e34d7..6d86fb4 100644
+--- a/src/server/constants.ts
++++ b/src/server/constants.ts
+@@ -7,59 +7,59 @@
+ 
+ import type { FieldControl } from '@orkestrel/form'
+ 
+-/** The Escape byte (ESC, U+001B) — the lead byte of every CSI cursor-control sequence below. */
++/** Names the Escape byte (ESC, U+001B) — the lead byte of every CSI cursor-control sequence below. */
+ export const ESCAPE = String.fromCharCode(27)
+ 
+-/** The Control Sequence Introducer (`ESC[`) — the prefix of every cursor / erase sequence. */
++/** Names the Control Sequence Introducer (`ESC[`) — the prefix of every cursor / erase sequence. */
+ export const CSI = `${ESCAPE}[`
+ 
+ /**
+- * The cursor-UP sequence TEMPLATE (`ESC[{count}A`) — {@link import('./helpers.js').moveUp}
++ * Holds the cursor-UP sequence TEMPLATE (`ESC[{count}A`) — {@link import('./helpers.js').moveUp}
+  * interpolates the `{count}` placeholder with the number of lines to climb. Kept as a template so
+  * the count stays out of the constant.
+  */
+ export const CSI_UP = `${CSI}{count}A`
+ 
+ /**
+- * Hide the cursor (`ESC[?25l`) — written before the driver starts redrawing a prompt so the cursor
++ * Hides the cursor (`ESC[?25l`) — written before the driver starts redrawing a prompt so the cursor
+  * does not flicker across the view during an in-place re-render; paired with {@link CURSOR_SHOW}.
+  */
+ export const CURSOR_HIDE = `${CSI}?25l`
+ 
+-/** Show the cursor (`ESC[?25h`) — restores the cursor after a prompt resolves / cancels (the {@link CURSOR_HIDE} pair). */
++/** Shows the cursor (`ESC[?25h`) — restores the cursor after a prompt resolves / cancels (the {@link CURSOR_HIDE} pair). */
+ export const CURSOR_SHOW = `${CSI}?25h`
+ 
+ /**
+- * Erase from the cursor down to the end of the screen (`ESC[J`) — wipes the WHOLE previous (possibly
++ * Erases from the cursor down to the end of the screen (`ESC[J`) — wipes the WHOLE previous (possibly
+  * multi-line `select` / `checkbox`) view in one write before the new view is rendered, so a redraw
+  * never leaves orphaned rows below.
+  */
+ export const CLEAR_DOWN = `${CSI}J`
+ 
+-/** A carriage return (`\r`, U+000D) — returns the cursor to column 0 so a redraw starts at the line's left edge. */
++/** Names the carriage return byte (`\r`, U+000D) — returns the cursor to column 0 so a redraw starts at the line's left edge. */
+ export const CARRIAGE_RETURN = String.fromCharCode(13)
+ 
+-/** A line feed (`\n`, U+000A) — the line terminator the driver writes after the final committed prompt view. */
++/** Names the line feed byte (`\n`, U+000A) — the line terminator the driver writes after the final committed prompt view. */
+ export const LINE_FEED = String.fromCharCode(10)
+ 
+ /**
+- * The numbered-list prompt the non-TTY {@link import('./Terminal.js').Terminal} `select` fallback
++ * Holds the numbered-list prompt the non-TTY {@link import('./Terminal.js').Terminal} `select` fallback
+  * appends — a piped (non-terminal) stream cannot navigate with arrow keys, so the choices are
+  * printed numbered and the user types one number on a single readline line.
+  */
+ export const FALLBACK_SELECT_HINT = 'Enter a number'
+ 
+-/** The comma-separated multi-select hint the non-TTY `checkbox` fallback shows (the user types one or more numbers). */
++/** Holds the comma-separated multi-select hint the non-TTY `checkbox` fallback shows (the user types one or more numbers). */
+ export const FALLBACK_CHECKBOX_HINT = 'Enter numbers separated by commas'
+ 
+-/** The hint the non-TTY `editor` fallback shows — a piped stream has no ctrl-d, so end of input finishes the block. */
++/** Holds the hint the non-TTY `editor` fallback shows — a piped stream has no ctrl-d, so end of input finishes the block. */
+ export const FALLBACK_EDITOR_HINT = '(end of input finishes)'
+ 
+-/** The hint the non-TTY `confirm` fallback shows — a piped stream sends a whole line, so the answer is typed rather than pressed. */
++/** Holds the hint the non-TTY `confirm` fallback shows — a piped stream sends a whole line, so the answer is typed rather than pressed. */
+ export const FALLBACK_CONFIRM_HINT = '(y/n)'
+ 
+ /**
+- * The format cue appended to a field's label for each control the walk reads as a line of text —
++ * Holds the format cue appended to a field's label for each control the walk reads as a line of text —
+  * the terminal has no date picker, no color well, and no file chooser, so the accepted shape is
+  * stated instead. A control with no entry needs none: `text` and `editor` accept any line,
+  * `password` masks one, and `confirm`, `select`, and `checkbox` are answered by key rather than by
+@@ -74,20 +74,20 @@ export const CONTROL_HINTS: Readonly<Partial<Record<FieldControl, string>>> = Ob
+ 	file: '(path)',
+ })
+ 
+-/** The instruction a `file` field with `multiple` shows before its entries — one path per line, and a blank line ends the list. */
++/** Holds the instruction a `file` field with `multiple` shows before its entries — one path per line, and a blank line ends the list. */
+ export const FILE_HINT = 'One path per line, blank to finish'
+ 
+-/** The lead on the line listing an open `select`'s offered values, which a typed answer may ignore. */
++/** Holds the lead on the line listing an open `select`'s offered values, which a typed answer may ignore. */
+ export const SUGGESTION_LEAD = 'Suggestions'
+ 
+-/** The lead on the line listing the choices a `select` or `checkbox` shows but refuses, so a reader sees why one is missing from the list below. */
++/** Holds the lead on the line listing the choices a `select` or `checkbox` shows but refuses, so a reader sees why one is missing from the list below. */
+ export const UNAVAILABLE_LEAD = 'Unavailable'
+ 
+-/** The mark on a locked field's line — the walk renders its value and moves on, because the form refuses an edit there. */
++/** Holds the mark on a locked field's line — the walk renders its value and moves on, because the form refuses an edit there. */
+ export const LOCKED_MARK = '(locked)'
+ 
+ /**
+- * What a field is told when the walk read an answer the control cannot hold — a word typed into a
++ * States what a field is told when the walk read an answer the control cannot hold — a word typed into a
+  * `number`, an off-list value typed into an open `select` whose choice is refused. The value binds
+  * as absence and this message is invalidated onto the field, so the walk re-asks it with the reason
+  * on screen.
+diff --git a/src/server/factories.ts b/src/server/factories.ts
+index 57b58be..996c7fc 100644
+--- a/src/server/factories.ts
++++ b/src/server/factories.ts
+@@ -3,7 +3,7 @@ import type { TerminalOptions } from './types.js'
+ import { Terminal } from './Terminal.js'
+ 
+ /**
+- * Create the interactive terminal form driver — the local-keyboard arm of the terminal trio, beside
++ * Creates the interactive terminal form driver — the local-keyboard arm of the terminal trio, beside
+  * the core headless `createPrompt` broker and the SSE `createPromptClient` bridge. Where the broker
+  * PARKS a live form until somebody elsewhere answers it, a `Terminal` answers one HERE: it walks the
+  * form's fields in schema order, drives each control's pure reducer over raw-mode stdin, binds every
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index 2ce2b5b..a073849 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -22,7 +22,7 @@ import {
+ } from './constants.js'
+ 
+ /**
+- * Whether `value` is a usable {@link InputStreamInterface} — a record with callable `on` / `off`
++ * Checks whether `value` is a usable {@link InputStreamInterface} — a record with callable `on` / `off`
+  * `'data'` subscription methods. A total type guard: it NEVER throws and returns `false`
+  * for anything off-shape, so it narrows the one unavoidable input boundary (the real `process.stdin`,
+  * or a fake TTY a test injects) to the exact slice the driver reads — no `as`.
+@@ -34,7 +34,7 @@ import {
+  * fallback rather than raw mode.
+  *
+  * @param value - Any value crossing the boundary (a process stream, an injected fake, `unknown`)
+- * @returns `true` when `value` has callable `on` and `off`
++ * @returns True if `value` has callable `on` and `off`; false otherwise
+  */
+ export function isInputStream(value: unknown): value is InputStreamInterface {
+ 	return (
+@@ -48,13 +48,13 @@ export function isInputStream(value: unknown): value is InputStreamInterface {
+ }
+ 
+ /**
+- * Whether `value` is a usable {@link OutputStreamInterface} — a record with a callable `write`. A
++ * Checks whether `value` is a usable {@link OutputStreamInterface} — a record with a callable `write`. A
+  * total type guard: it NEVER throws and returns `false` for anything off-shape, so it
+  * narrows the output boundary (the real `process.stdout`, or a recording fake a test injects) to the
+  * one method the driver writes through — no `as`.
+  *
+  * @param value - Any value crossing the boundary (a process stream, an injected fake, `unknown`)
+- * @returns `true` when `value` has a callable `write`
++ * @returns True if `value` has a callable `write`; false otherwise
+  */
+ export function isOutputStream(value: unknown): value is OutputStreamInterface {
+ 	return (
+@@ -66,7 +66,7 @@ export function isOutputStream(value: unknown): value is OutputStreamInterface {
+ }
+ 
+ /**
+- * Whether `value` is a Node {@link NodeJS.ReadableStream} — a total structural guard
++ * Checks whether `value` is a Node {@link NodeJS.ReadableStream} — a total structural guard
+  * checking for the callable `read` / `pipe` / `on` that `node:readline`'s `createInterface` requires
+  * as its `input`. The non-TTY fallback narrows the resolved input stream through this before handing
+  * it to readline (never an `as`), so a real piped `process.stdin` (or a `PassThrough` a test injects)
+@@ -74,7 +74,7 @@ export function isOutputStream(value: unknown): value is OutputStreamInterface {
+  * isn't a full readable.
+  *
+  * @param value - The resolved input stream (or any value crossing the boundary)
+- * @returns `true` when `value` has the readable methods readline needs
++ * @returns True if `value` has the readable methods readline needs; false otherwise
+  */
+ export function isReadable(value: unknown): value is NodeJS.ReadableStream {
+ 	return (
+@@ -95,14 +95,14 @@ export function isReadable(value: unknown): value is NodeJS.ReadableStream {
+  * never throws.
+  *
+  * @param input - The resolved {@link InputStreamInterface}
+- * @returns `true` when the stream is a TTY with `setRawMode`
++ * @returns True if the stream is a TTY with `setRawMode`; false otherwise
+  */
+ export function supportsRawMode(input: InputStreamInterface): boolean {
+ 	return input.isTTY === true && typeof input.setRawMode === 'function'
+ }
+ 
+ /**
+- * The number of terminal LINES a rendered prompt `view` occupies — one more than its newline count
++ * Counts the terminal LINES a rendered prompt `view` occupies — one more than its newline count
+  * (a view with no newline is a single line; N newlines span N+1 lines). The basis of the in-place
+  * re-render: the driver records the line count of the view it just wrote so the next redraw knows how
+  * far up to move the cursor before overwriting. Total; an empty string is one (empty) line.
+@@ -119,7 +119,7 @@ export function lineCount(view: string): number {
+ }
+ 
+ /**
+- * The cursor-UP control sequence that moves the cursor up `count` lines (`ESC[{count}A`) — or the
++ * Returns the cursor-UP control sequence that moves the cursor up `count` lines (`ESC[{count}A`) — or the
+  * empty string when `count` is zero or negative (no movement needed, and `ESC[0A` is a wasted write).
+  * The pure step the in-place re-render uses to climb back over the previous view before clearing it.
+  * Total.
+@@ -133,7 +133,7 @@ export function moveUp(count: number): string {
+ }
+ 
+ /**
+- * The full reposition-and-clear prefix to write BEFORE re-rendering a prompt view in place — given
++ * Returns the full reposition-and-clear prefix to write BEFORE re-rendering a prompt view in place — given
+  * the line count of the PREVIOUS view, it moves the cursor up over those lines, returns it to column
+  * 0, and erases everything from there to the end of the screen, so the next view is drawn on a clean
+  * region (no orphaned rows from a taller previous view). Pure; the driver writes this immediately
+@@ -154,7 +154,7 @@ export function redrawPrefix(previousLines: number): string {
+ }
+ 
+ /**
+- * Project any field the walk reads as a LINE OF TEXT into the {@link TextField} the text reducer
++ * Projects any field the walk reads as a LINE OF TEXT into the {@link TextField} the text reducer
+  * takes — `text` itself, and the six controls a terminal has no widget for: `number`, `date`,
+  * `time`, `datetime`, `color`, and one `file` entry. The label carries that control's format cue
+  * from {@link CONTROL_HINTS}, and a declared `default` becomes the line a bare return submits. The
+@@ -184,7 +184,7 @@ export function fieldToText(field: FormField): TextField {
+ }
+ 
+ /**
+- * Project one held answer into the text a read-only line shows — a scalar as itself, a boolean as
++ * Projects one held answer into the text a read-only line shows — a scalar as itself, a boolean as
+  * `yes` / `no` (the word the confirm reducer commits), and a list joined by commas. Absence renders
+  * as nothing, because a locked field nobody has answered has nothing to show.
+  *
+diff --git a/src/server/types.ts b/src/server/types.ts
+index 0aaf9f4..269484e 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -8,7 +8,7 @@
+ import type { PromptThemeOptions } from '@src/core'
+ 
+ /**
+- * The minimal input-stream shape the driver reads — exactly the slice of a Node `tty.ReadStream` /
++ * Represents the minimal input-stream shape the driver reads — exactly the slice of a Node `tty.ReadStream` /
+  * `process.stdin` it touches, and no more. A {@link TerminalOptions} `input` is narrowed to this
+  * through {@link import('./helpers.js').isInputStream}, never an assertion, so a test drives a whole
+  * form with a hand-built fake stream that emits scripted key chunks, never touches the real
+@@ -36,7 +36,7 @@ export interface InputStreamInterface {
+ }
+ 
+ /**
+- * The minimal output-stream shape the driver writes — exactly the slice of a Node `tty.WriteStream`
++ * Represents the minimal output-stream shape the driver writes — exactly the slice of a Node `tty.WriteStream`
+  * / `process.stdout` it touches. A {@link TerminalOptions} `output` is narrowed to this through
+  * {@link import('./helpers.js').isOutputStream}, never an assertion, so a test records every byte
+  * the walk renders and asserts the rendered content with the ANSI stripped.
+@@ -54,7 +54,7 @@ export interface OutputStreamInterface {
+ }
+ 
+ /**
+- * Options for {@link import('./factories.js').createTerminal} — every member optional, so a bare
++ * Configures {@link import('./factories.js').createTerminal} — every member optional, so a bare
+  * `createTerminal()` walks a form over the real `process.stdin` / `process.stdout` with the default
+  * theme.
+  *

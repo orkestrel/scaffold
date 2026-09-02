@@ -835,3 +835,7 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   constants), database (`optional` re-anchored from the hook onto the scope; `fluent` from the
   builder onto the read), console (the `ThemeOptions` appositive orphaned; `Implements … styler`
   on the class without an `implements` clause; `StepPosition` restated).
+- **Slice 5 closed** (middleware `917ccd9`, markdown `b6717a5`, process `d272bbe`, form `ec87b5a`,
+  toolbox `0ec520f`, terminal `c0947ba`, database `42c0235`, console `ed4e280`; verdicts under
+  `voice/units/`). Every landing chain green; `voice/scan-after-slice5.txt` reads zero in every
+  bucket for the eight except form's one permitted `true | string` return.

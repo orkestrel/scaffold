@@ -1,0 +1,1688 @@
+diff --git a/src/browser/constants.ts b/src/browser/constants.ts
+index dde4c16..d45fd6f 100644
+--- a/src/browser/constants.ts
++++ b/src/browser/constants.ts
+@@ -1,7 +1,7 @@
+ import type { ColumnStorage } from '@src/core'
+ 
+ /**
+- * The declared {@link ColumnStorage}s that are valid, orderable IndexedDB keys.
++ * Lists the declared {@link ColumnStorage}s that are valid, orderable IndexedDB keys.
+  *
+  * @remarks
+  * `text` / `integer` / `real` occupy IndexedDB's string / number key space, so a
+@@ -19,7 +19,7 @@ export const INDEXABLE_STORAGE: readonly ColumnStorage[] = Object.freeze([
+ ])
+ 
+ /**
+- * The reserved out-of-line store the {@link IndexedDBDriver} stamps its
++ * Names the reserved out-of-line store the {@link IndexedDBDriver} stamps its
+  * {@link DriverMetadata} into.
+  *
+  * @remarks
+diff --git a/src/browser/drivers/IndexedDBDriver.ts b/src/browser/drivers/IndexedDBDriver.ts
+index 57d326b..7eb94d8 100644
+--- a/src/browser/drivers/IndexedDBDriver.ts
++++ b/src/browser/drivers/IndexedDBDriver.ts
+@@ -47,8 +47,8 @@ import {
+ import { METADATA_STORE } from '../constants.js'
+ 
+ /**
+- * The IndexedDB {@link DriverInterface} — the persistent browser backend, built on
+- * the published `@orkestrel/indexeddb` wrapper.
++ * Implements the {@link DriverInterface} over IndexedDB — the persistent browser backend,
++ * built on the published `@orkestrel/indexeddb` wrapper.
+  *
+  * @remarks
+  * A thin adapter: it implements the storage primitives the core database layer
+@@ -368,7 +368,7 @@ export class IndexedDBDriver implements DriverInterface {
+ 	}
+ 
+ 	/**
+-	 * Return the persisted {@link DriverMetadata}, or `undefined` when the store has
++	 * Returns the persisted {@link DriverMetadata}, or `undefined` when the store has
+ 	 * never been stamped.
+ 	 *
+ 	 * @remarks
+@@ -388,7 +388,7 @@ export class IndexedDBDriver implements DriverInterface {
+ 	}
+ 
+ 	/**
+-	 * Persist an owned metadata snapshot for a later `metadata()` to return.
++	 * Persists an owned metadata snapshot for a later `metadata()` to return.
+ 	 *
+ 	 * @param metadata - The {@link DriverMetadata} to persist
+ 	 */
+@@ -405,7 +405,7 @@ export class IndexedDBDriver implements DriverInterface {
+ 	}
+ 
+ 	/**
+-	 * Apply a {@link Migration} plan by reconnecting at a bumped version and
++	 * Applies a {@link Migration} plan by reconnecting at a bumped version and
+ 	 * running the plan's steps inside the wrapper's `upgrade` hook.
+ 	 *
+ 	 * @remarks
+diff --git a/src/browser/factories.ts b/src/browser/factories.ts
+index c81949b..d8c6015 100644
+--- a/src/browser/factories.ts
++++ b/src/browser/factories.ts
+@@ -2,7 +2,7 @@ import type { DriverInterface } from '@src/core'
+ import { IndexedDBDriver } from './drivers/IndexedDBDriver.js'
+ 
+ /**
+- * Create a persistent IndexedDB {@link DriverInterface} for the core database layer.
++ * Creates a persistent IndexedDB {@link DriverInterface} for the core database layer.
+  *
+  * @remarks
+  * Pass it to `createDatabase` from `@orkestrel/database` to run the typed database
+diff --git a/src/browser/helpers.ts b/src/browser/helpers.ts
+index 0405a36..c05d7cc 100644
+--- a/src/browser/helpers.ts
++++ b/src/browser/helpers.ts
+@@ -80,7 +80,7 @@ export function conditionToRange(condition: Condition): IDBKeyRange | undefined
+ }
+ 
+ /**
+- * Plan an IndexedDB read for a {@link QueryInput} — pick the index (or the primary
++ * Plans an IndexedDB read for a {@link QueryInput} — picks the index (or the primary
+  * store) and {@link IDBKeyRange} to narrow by, falling back to a full scan.
+  *
+  * @remarks
+@@ -182,7 +182,7 @@ export function selectPlan(
+ }
+ 
+ /**
+- * Map a backend {@link IndexedDBError} to the portable `DatabaseError` taxonomy
++ * Maps a backend {@link IndexedDBError} to the portable `DatabaseError` taxonomy
+  * — the default mapping used everywhere except inside `migrate()`.
+  *
+  * @remarks
+@@ -228,7 +228,7 @@ export function mapIndexedDBError(error: IndexedDBError): DatabaseError {
+ }
+ 
+ /**
+- * Map a backend {@link IndexedDBError} to the portable `DatabaseError` taxonomy
++ * Maps a backend {@link IndexedDBError} to the portable `DatabaseError` taxonomy
+  * for use INSIDE `migrate()` — the one context where `UPGRADE` means the
+  * migration itself failed, not a generic driver fault.
+  *
+@@ -251,7 +251,7 @@ export function mapMigrationError(error: IndexedDBError): DatabaseError {
+ }
+ 
+ /**
+- * Derive an IndexedDB index name for a declared column group — a bare column
++ * Derives an IndexedDB index name for a declared column group — a bare column
+  * name for a single-column index, a deterministic collision-free encoding for a
+  * compound one.
+  *
+@@ -285,7 +285,7 @@ export function deriveIndexedDBIndexName(columns: readonly string[]): string {
+ }
+ 
+ /**
+- * Project a table schema into the IndexedDB wrapper's store definition.
++ * Projects a table schema into the IndexedDB wrapper's store definition.
+  *
+  * @param schema - Portable table schema
+  * @returns Store definition with declared indexes
+diff --git a/src/browser/types.ts b/src/browser/types.ts
+index fc07727..40f5988 100644
+--- a/src/browser/types.ts
++++ b/src/browser/types.ts
+@@ -4,7 +4,7 @@
+ // this driver's pushdown-planning shape is local.
+ 
+ /**
+- * A pushdown plan — an optional index and optional `IDBKeyRange` used to narrow
++ * Represents a pushdown plan — an optional index and optional `IDBKeyRange` used to narrow
+  * a read. An omitted `index` selects the primary store; an omitted `range`
+  * performs a full scan. The plan is always a superset of the matching rows;
+  * the core engine refines it to the exact result. An empty plan (`{}`) is a
+diff --git a/src/core/Cursor.ts b/src/core/Cursor.ts
+index d137e59..5e8a7f8 100644
+--- a/src/core/Cursor.ts
++++ b/src/core/Cursor.ts
+@@ -1,7 +1,7 @@
+ import type { CursorInterface, Key, Row } from './types.js'
+ 
+ /**
+- * A forward row cursor for bulk in-place mutation.
++ * Walks a table's rows forward for bulk in-place mutation.
+  *
+  * @remarks
+  * Iterates a snapshot of the table's keys captured when the cursor was opened,
+diff --git a/src/core/Database.ts b/src/core/Database.ts
+index 85ab3c5..076e8dd 100644
+--- a/src/core/Database.ts
++++ b/src/core/Database.ts
+@@ -26,7 +26,7 @@ import { Table } from './Table.js'
+ import type { TransactionScope } from './TransactionScope.js'
+ 
+ /**
+- * A typed database view over one shared internal lifecycle and storage context.
++ * Exposes a typed view over one shared internal lifecycle and storage context.
+  *
+  * @remarks
+  * Each view owns only its table contracts, primary columns, indexes, and key
+diff --git a/src/core/DatabaseContext.ts b/src/core/DatabaseContext.ts
+index 5b8327c..d300796 100644
+--- a/src/core/DatabaseContext.ts
++++ b/src/core/DatabaseContext.ts
+@@ -19,7 +19,7 @@ import { checkAbort, equalsValue, normalizeDriverSchema, planMigration } from '.
+ import { TransactionScope } from './TransactionScope.js'
+ 
+ /**
+- * The internal shared owner behind every typed view of one database.
++ * Owns the internal shared state behind every typed view of one database.
+  *
+  * @remarks
+  * A context owns the driver, merged physical schema, lifecycle, observation,
+diff --git a/src/core/DatabaseTransaction.ts b/src/core/DatabaseTransaction.ts
+index a302fc7..3caf7aa 100644
+--- a/src/core/DatabaseTransaction.ts
++++ b/src/core/DatabaseTransaction.ts
+@@ -15,7 +15,7 @@ import { Table } from './Table.js'
+ import type { TransactionScope } from './TransactionScope.js'
+ 
+ /**
+- * A table-only database view bound to one driver transaction scope.
++ * Binds a table-only database view to one driver transaction scope.
+  *
+  * @typeParam T - The declared table shape map
+  *
+diff --git a/src/core/DriverIterator.ts b/src/core/DriverIterator.ts
+index 07e8d5b..71c5570 100644
+--- a/src/core/DriverIterator.ts
++++ b/src/core/DriverIterator.ts
+@@ -1,5 +1,5 @@
+ /**
+- * The internal continuation boundary for a root driver async iterator.
++ * Forms the internal continuation boundary for a root driver async iterator.
+  *
+  * @remarks
+  * A driver transaction can begin while a caller holds an idle root iterator.
+diff --git a/src/core/Query.ts b/src/core/Query.ts
+index eca107b..25ba180 100644
+--- a/src/core/Query.ts
++++ b/src/core/Query.ts
+@@ -11,7 +11,7 @@ import type {
+ import { computeAggregate, validatePage } from './helpers.js'
+ 
+ /**
+- * A fluent query builder bound to one table.
++ * Builds a read against one table through a fluent chain.
+  *
+  * @remarks
+  * Accumulates typed conditions, ordering, JS filters, and a page. Each builder
+@@ -87,7 +87,7 @@ export class Query<T = Row> implements QueryInterface<T> {
+ 	}
+ 
+ 	/**
+-	 * Lazily evaluate conditions, filters, offset, and limit.
++	 * Evaluates conditions, filters, offset, and limit lazily.
+ 	 *
+ 	 * @param options - Optional abort options
+ 	 * @returns Matching rows in storage order
+diff --git a/src/core/ScopedIterator.ts b/src/core/ScopedIterator.ts
+index 303247c..ff2a119 100644
+--- a/src/core/ScopedIterator.ts
++++ b/src/core/ScopedIterator.ts
+@@ -1,7 +1,7 @@
+ import type { AdmissionInterface } from './types.js'
+ 
+ /**
+- * The internal continuation admission boundary for one scoped async iterable.
++ * Forms the internal continuation admission boundary for one scoped async iterable.
+  *
+  * @remarks
+  * Each continuation enters the owning {@link AdmissionInterface} ledger
+diff --git a/src/core/Table.ts b/src/core/Table.ts
+index d46c949..f6b339a 100644
+--- a/src/core/Table.ts
++++ b/src/core/Table.ts
+@@ -33,7 +33,7 @@ import { ScopedIterator } from './ScopedIterator.js'
+ import type { TransactionScope } from './TransactionScope.js'
+ 
+ /**
+- * A table — typed keyed CRUD plus fluent query and cursor access over a driver.
++ * Exposes typed keyed CRUD plus fluent query and cursor access over a driver.
+  *
+  * @remarks
+  * The table's contract is the load-bearing piece: writes go through `parse`
+@@ -170,7 +170,7 @@ export class Table<T = Row> implements TableInterface<T> {
+ 	}
+ 
+ 	/**
+-	 * Count contract-valid rows matching `input`'s conditions.
++	 * Counts contract-valid rows matching `input`'s conditions.
+ 	 *
+ 	 * @remarks
+ 	 * Paging is ignored. Candidate rows use the driver's native `records` hook
+@@ -199,7 +199,7 @@ export class Table<T = Row> implements TableInterface<T> {
+ 	}
+ 
+ 	/**
+-	 * Compute an aggregate over `column` across rows matching `input`'s
++	 * Computes an aggregate over `column` across rows matching `input`'s
+ 	 * conditions.
+ 	 *
+ 	 * @remarks
+@@ -239,7 +239,7 @@ export class Table<T = Row> implements TableInterface<T> {
+ 	}
+ 
+ 	/**
+-	 * Stream the table's rows matching `input`, applying offset/limit paging.
++	 * Streams the table's rows matching `input`, applying offset/limit paging.
+ 	 *
+ 	 * @remarks
+ 	 * `input.limit` counts rows that pass both the input conditions and the
+diff --git a/src/core/TransactionScope.ts b/src/core/TransactionScope.ts
+index 3ddace7..056562e 100644
+--- a/src/core/TransactionScope.ts
++++ b/src/core/TransactionScope.ts
+@@ -3,7 +3,7 @@ import { DatabaseError } from './errors.js'
+ import { ScopedIterator } from './ScopedIterator.js'
+ 
+ /**
+- * The internal lifetime boundary for one database transaction callback.
++ * Forms the internal lifetime boundary for one database transaction callback.
+  *
+  * @remarks
+  * Promise operations enter synchronously through {@link track}. Closing stops new
+diff --git a/src/core/cloners.ts b/src/core/cloners.ts
+index 53f0631..5ea2682 100644
+--- a/src/core/cloners.ts
++++ b/src/core/cloners.ts
+@@ -4,7 +4,7 @@ import { DatabaseError } from './errors.js'
+ import { isDriverMetadata, isDriverSchema, isMigrationInput } from './validators.js'
+ 
+ /**
+- * Clone unknown driver metadata into a distinct deeply frozen snapshot.
++ * Clones unknown driver metadata into a distinct deeply frozen snapshot.
+  *
+  * @param value - Unknown metadata
+  * @returns Owned driver metadata
+@@ -26,7 +26,7 @@ export function cloneDriverMetadata(value: unknown): DriverMetadata {
+ }
+ 
+ /**
+- * Clone unknown driver schema into a distinct deeply frozen snapshot.
++ * Clones unknown driver schema into a distinct deeply frozen snapshot.
+  *
+  * @param value - Unknown table schema collection
+  * @returns Owned driver schema
+@@ -48,7 +48,7 @@ export function cloneDriverSchema(value: unknown): readonly TableSchema[] {
+ }
+ 
+ /**
+- * Clone unknown migration input into a distinct deeply frozen snapshot.
++ * Clones unknown migration input into a distinct deeply frozen snapshot.
+  *
+  * @param value - Unknown migration input
+  * @returns Owned migration input
+diff --git a/src/core/constants.ts b/src/core/constants.ts
+index e9281fd..83968ea 100644
+--- a/src/core/constants.ts
++++ b/src/core/constants.ts
+@@ -3,7 +3,7 @@ import type { ColumnSchema, TableSchema } from './types.js'
+ // Database constants — frozen plain data.
+ 
+ /**
+- * The primary-key column assumed when {@link PrimaryMap} does not name one.
++ * Supplies the primary-key column assumed when {@link PrimaryMap} does not name one.
+  *
+  * @remarks
+  * `id` is the convention IndexedDB (`keyPath: 'id'`) and SQL (`id` / rowid) both
+@@ -12,7 +12,7 @@ import type { ColumnSchema, TableSchema } from './types.js'
+ export const DEFAULT_PRIMARY = 'id'
+ 
+ /**
+- * The longest `LIKE` / `GLOB` pattern the wildcard matcher accepts before rejecting it.
++ * Sets the longest `LIKE` / `GLOB` pattern the wildcard matcher accepts before rejecting it.
+  *
+  * @remarks
+  * A `LIKE` / `GLOB` pattern is a caller-supplied operand, so
+@@ -27,7 +27,7 @@ export const DEFAULT_PRIMARY = 'id'
+ export const MAX_PATTERN_LENGTH = 1024
+ 
+ /**
+- * The `users` table the driver-conformance battery opens — keyed by the default
++ * Describes the `users` table the driver-conformance battery opens — keyed by the default
+  * `id` primary column.
+  *
+  * @remarks
+@@ -49,7 +49,7 @@ export const CONFORMANCE_USERS_SCHEMA: TableSchema = Object.freeze({
+ })
+ 
+ /**
+- * The `posts` table the driver-conformance battery opens — keyed by a non-`id`
++ * Describes the `posts` table the driver-conformance battery opens — keyed by a non-`id`
+  * `slug` primary column.
+  *
+  * @remarks
+@@ -67,7 +67,7 @@ export const CONFORMANCE_POSTS_SCHEMA: TableSchema = Object.freeze({
+ })
+ 
+ /**
+- * The fixed two-table schema every driver-conformance phase opens.
++ * Holds the fixed two-table schema every driver-conformance phase opens.
+  *
+  * @remarks
+  * Each phase mints a fresh driver and opens this exact schema, so a finding
+diff --git a/src/core/drivers/MemoryDriver.ts b/src/core/drivers/MemoryDriver.ts
+index abb03b7..089d693 100644
+--- a/src/core/drivers/MemoryDriver.ts
++++ b/src/core/drivers/MemoryDriver.ts
+@@ -26,7 +26,7 @@ import {
+ import { isKey } from '../validators.js'
+ 
+ /**
+- * The reference {@link DriverInterface} — nested maps, no I/O.
++ * Implements the reference {@link DriverInterface} — nested maps, no I/O.
+  *
+  * @remarks
+  * The in-between made concrete: it runs identically in a browser or on a server,
+@@ -110,7 +110,7 @@ export class MemoryDriver implements DriverInterface {
+ 	}
+ 
+ 	/**
+-	 * Natively filtered lazy iteration — the {@link DriverInterface.stream} hook.
++	 * Iterates rows lazily with native filtering — the {@link DriverInterface.stream} hook.
+ 	 *
+ 	 * @remarks
+ 	 * Iterates the table's keys in the same key order `scan` and `keys` yield
+@@ -144,7 +144,7 @@ export class MemoryDriver implements DriverInterface {
+ 	}
+ 
+ 	/**
+-	 * Capture the current state and return a thunk that rolls back to it.
++	 * Captures the current state and returns a thunk that rolls back to it.
+ 	 *
+ 	 * @remarks
+ 	 * Capture owns rows, schema, and one session-local table identity. Replay
+@@ -223,7 +223,7 @@ export class MemoryDriver implements DriverInterface {
+ 	}
+ 
+ 	/**
+-	 * Return the persisted {@link DriverMetadata}, or `undefined` when the store has
++	 * Returns the persisted {@link DriverMetadata}, or `undefined` when the store has
+ 	 * never been stamped.
+ 	 *
+ 	 * @remarks
+@@ -239,7 +239,7 @@ export class MemoryDriver implements DriverInterface {
+ 	}
+ 
+ 	/**
+-	 * Persist an owned snapshot for a later `metadata()` to return.
++	 * Persists an owned snapshot for a later `metadata()` to return.
+ 	 *
+ 	 * @param metadata - The {@link DriverMetadata} to persist
+ 	 */
+@@ -248,7 +248,7 @@ export class MemoryDriver implements DriverInterface {
+ 	}
+ 
+ 	/**
+-	 * Apply a {@link Migration} plan's steps against the in-memory store.
++	 * Applies a {@link Migration} plan's steps against the in-memory store.
+ 	 *
+ 	 * @remarks
+ 	 * Steps apply against an isolated candidate. Rows, schema changes, and
+diff --git a/src/core/errors.ts b/src/core/errors.ts
+index a672ebc..9dd233d 100644
+--- a/src/core/errors.ts
++++ b/src/core/errors.ts
+@@ -6,7 +6,7 @@ import type { DatabaseErrorCode } from './types.js'
+ // (`get`, `has`, `remove`) return `undefined` / `false` — they never throw.
+ 
+ /**
+- * An error thrown by the database layer.
++ * Represents an error thrown by the database layer.
+  *
+  * @remarks
+  * Carries a {@link DatabaseErrorCode} and an optional `context` bag naming the
+@@ -38,10 +38,10 @@ export class DatabaseError extends Error {
+ }
+ 
+ /**
+- * Narrow an unknown caught value to a {@link DatabaseError}.
++ * Narrows an unknown caught value to a {@link DatabaseError}.
+  *
+  * @param value - The value to test (typically a `catch` binding)
+- * @returns `true` when `value` is a {@link DatabaseError}
++ * @returns True if `value` is a {@link DatabaseError}; false otherwise
+  *
+  * @example
+  * ```ts
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 3451359..7732826 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -3,7 +3,7 @@ import { Database } from './Database.js'
+ import { MemoryDriver } from './drivers/MemoryDriver.js'
+ 
+ /**
+- * Create a database over a driver and a declared `tables` schema.
++ * Creates a database over a driver and a declared `tables` schema.
+  *
+  * @remarks
+  * `tables` maps each name to its columns (a `column → shape` map); the database
+@@ -40,7 +40,7 @@ export function createDatabase<const T extends TableMap>(
+ }
+ 
+ /**
+- * Create the in-memory reference {@link DriverInterface}.
++ * Creates the in-memory reference {@link DriverInterface}.
+  *
+  * @remarks
+  * Backed by nested maps with no I/O — the same driver runs in a browser or on a
+diff --git a/src/core/helpers.ts b/src/core/helpers.ts
+index 5bd9f7c..14242fb 100644
+--- a/src/core/helpers.ts
++++ b/src/core/helpers.ts
+@@ -141,7 +141,7 @@ export function compareValues(left: unknown, right: unknown): number {
+  *
+  * @param left - The left value
+  * @param right - The right value
+- * @returns Whether `left` and `right` are structurally equal
++ * @returns True if `left` and `right` are structurally equal; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -213,7 +213,7 @@ export function equalsValue(left: unknown, right: unknown): boolean {
+ // === Pattern matching
+ 
+ /**
+- * Match a value against a wildcard pattern in LINEAR time — the shared, ReDoS-SAFE
++ * Matches a value against a wildcard pattern in LINEAR time — the shared, ReDoS-SAFE
+  * engine behind {@link matchesLikePattern} and {@link matchesGlobPattern}.
+  *
+  * @remarks
+@@ -240,7 +240,7 @@ export function equalsValue(left: unknown, right: unknown): boolean {
+  * @param any - The any-run wildcard char (`%` for `LIKE`, `*` for `GLOB`)
+  * @param single - The single-char wildcard char (`_` for `LIKE`, `?` for `GLOB`)
+  * @param fold - Whether to match case-INSENSITIVELY (`LIKE` folds; `GLOB` does not)
+- * @returns Whether `value` matches `pattern`
++ * @returns True if `value` matches `pattern`; false otherwise
+  * @throws A `VALIDATION` {@link DatabaseError} when `pattern` exceeds {@link MAX_PATTERN_LENGTH}
+  */
+ export function matchesWildcardPattern(
+@@ -342,7 +342,7 @@ export function matchesGlobPattern(value: string, pattern: string): boolean {
+ // === Condition matching
+ 
+ /**
+- * Evaluate one {@link Condition} against a row — the per-operator predicate.
++ * Evaluates one {@link Condition} against a row — the per-operator predicate.
+  *
+  * @remarks
+  * Reads the condition's column — a `FieldPath`, resolved with `resolveField` (a
+@@ -360,7 +360,7 @@ export function matchesGlobPattern(value: string, pattern: string): boolean {
+  *
+  * @param row - The row to test
+  * @param condition - The condition to apply
+- * @returns Whether the row satisfies the condition
++ * @returns True if the row satisfies the condition; false otherwise
+  */
+ export function matchesCondition(row: Row, condition: Condition): boolean {
+ 	const value = resolveField(row, condition.column)
+@@ -401,7 +401,7 @@ export function matchesCondition(row: Row, condition: Condition): boolean {
+ }
+ 
+ /**
+- * Fold a row through a list of conditions, joining each by its connector.
++ * Folds a row through a list of conditions, joining each by its connector.
+  *
+  * @remarks
+  * Evaluated left-to-right: the first condition seeds the result, and each later
+@@ -411,7 +411,7 @@ export function matchesCondition(row: Row, condition: Condition): boolean {
+  *
+  * @param row - The row to test
+  * @param conditions - The conditions to fold
+- * @returns Whether the row satisfies the combined conditions
++ * @returns True if the row satisfies the combined conditions; false otherwise
+  */
+ export function matchesQuery(row: Row, conditions: readonly Condition[]): boolean {
+ 	let result = true
+@@ -429,7 +429,7 @@ export function matchesQuery(row: Row, conditions: readonly Condition[]): boolea
+ }
+ 
+ /**
+- * Filter rows by a list of conditions — the shared basis for a table's count
++ * Filters rows by a list of conditions — the shared basis for a table's count
+  * and aggregate paths (no sort/page, unlike {@link applyQuery}).
+  *
+  * @remarks
+@@ -456,7 +456,7 @@ export function filterRows(rows: readonly Row[], conditions: readonly Condition[
+ // === Ordering & paging
+ 
+ /**
+- * Sort rows by an ordering specification, leaving the input untouched.
++ * Sorts rows by an ordering specification, leaving the input untouched.
+  *
+  * @remarks
+  * Applies the terms in priority order — the first term that distinguishes two
+@@ -482,7 +482,7 @@ export function sortRows(rows: readonly Row[], order: readonly Order[]): readonl
+ }
+ 
+ /**
+- * Apply a {@link QueryInput} to rows — filter, then sort, then page.
++ * Applies a {@link QueryInput} to rows — filter, then sort, then page.
+  *
+  * @remarks
+  * The whole portable read pipeline in one place: conditions filter, `order`
+@@ -516,7 +516,7 @@ export function applyQuery(rows: readonly Row[], input?: QueryInput): readonly R
+ // === Aggregation
+ 
+ /**
+- * Compute an aggregate over a column across rows.
++ * Computes an aggregate over a column across rows.
+  *
+  * @remarks
+  * `count` returns the row count. The numeric aggregates coerce each cell with
+@@ -552,7 +552,7 @@ export function computeAggregate(
+ // === Keys
+ 
+ /**
+- * Read a row's primary key from a column, when it is a usable {@link Key}.
++ * Reads a row's primary key from a column, when it is a usable {@link Key}.
+  *
+  * @param row - The row to read
+  * @param column - The primary-key column name
+@@ -564,7 +564,7 @@ export function extractKey(row: Row, column: string): Key | undefined {
+ }
+ 
+ /**
+- * Return a fresh row whose primary column is authoritatively bound to its storage key.
++ * Returns a fresh row whose primary column is authoritatively bound to its storage key.
+  *
+  * @param row - The caller row
+  * @param primary - The primary column
+@@ -578,7 +578,7 @@ export function bindRowKey(row: Row, primary: string, key: Key): Row {
+ // === Schema
+ 
+ /**
+- * Map a column's {@link ContractShape} to its portable {@link ColumnStorage} — the
++ * Maps a column's {@link ContractShape} to its portable {@link ColumnStorage} — the
+  * value a `TableSchema` carries so a native backend can declare a real column.
+  *
+  * @remarks
+@@ -630,7 +630,7 @@ export function shapeToColumnStorage(shape: ContractShape): ColumnStorage {
+ }
+ 
+ /**
+- * Project one contract shape into a portable column schema.
++ * Projects one contract shape into a portable column schema.
+  *
+  * @param name - The column name
+  * @param shape - The column contract shape
+@@ -726,7 +726,7 @@ export function resolveColumns(tables: TableMap, name: string): ColumnMap {
+ // === Abort
+ 
+ /**
+- * Throw when an {@link OperationOptions.signal | AbortSignal} has fired — the shared
++ * Throws when an {@link OperationOptions.signal | AbortSignal} has fired — the shared
+  * abort gate checked at operation boundaries and between streamed rows.
+  *
+  * @remarks
+@@ -759,7 +759,7 @@ export function checkAbort(signal: AbortSignal | undefined): void {
+ // === Migrations
+ 
+ /**
+- * Structurally diff a deployed and a declared table set into a {@link Migration}
++ * Diffs a deployed and a declared table set structurally into a {@link Migration}
+  * plan.
+  *
+  * @remarks
+@@ -909,7 +909,7 @@ export function planMigration(
+ }
+ 
+ /**
+- * Sequentially project migration steps over a canonical validated owned schema.
++ * Projects migration steps sequentially over a canonical validated owned schema.
+  * Adding a required non-null column to an existing table rejects with
+  * `MIGRATION`; optional-only and nullable-only additions remain portable.
+  *
+@@ -1031,7 +1031,7 @@ export function projectMigrationSchema(
+ }
+ 
+ /**
+- * Canonicalize an unknown driver schema into a distinct deeply frozen snapshot.
++ * Canonicalizes an unknown driver schema into a distinct deeply frozen snapshot.
+  *
+  * @remarks
+  * Table and column lists are sorted by name. The index list is sorted by the
+@@ -1057,7 +1057,7 @@ export function normalizeDriverSchema(value: unknown): readonly TableSchema[] {
+ }
+ 
+ /**
+- * Apply one table's {@link MigrationStep}s to its rows — a pure row transform.
++ * Applies one table's {@link MigrationStep}s to its rows — a pure row transform.
+  *
+  * @remarks
+  * `column.remove` drops that field from every row (a fresh copy — inputs are
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 2f414a3..2e491db 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -20,7 +20,7 @@ import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkes
+ // === Primitives
+ 
+ /**
+- * A primary key — the value identifying a row within its table.
++ * Represents a primary key — the value identifying a row within its table.
+  *
+  * @remarks
+  * `string | number` is the intersection of what IndexedDB key ranges and SQL
+@@ -30,7 +30,7 @@ import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkes
+ export type Key = string | number
+ 
+ /**
+- * A key-generating function.
++ * Represents a key-generating function.
+  *
+  * @remarks
+  * Supplied through {@link DatabaseOptions.generator} as an authoritative
+@@ -40,13 +40,13 @@ export type Key = string | number
+  */
+ export type KeyFunction = () => Key
+ 
+-/** A table row — a plain record of column values keyed by column name. */
++/** Represents a table row — a plain record of column values keyed by column name. */
+ export type Row = Record<string, unknown>
+ 
+ // === Query input
+ 
+ /**
+- * A WHERE operator — the comparison a single {@link Condition} applies.
++ * Represents a WHERE operator — the comparison a single {@link Condition} applies.
+  *
+  * @remarks
+  * Each maps to a SQL operator and an IndexedDB read strategy (a key range where
+@@ -70,11 +70,11 @@ export type ConditionOperator =
+ 	| 'absent'
+ 	| 'present'
+ 
+-/** How a {@link Condition} joins to the running result of the conditions before it. */
++/** Names how a {@link Condition} joins to the running result of the conditions before it. */
+ export type ConditionConnector = 'and' | 'or'
+ 
+ /**
+- * One compiled WHERE condition.
++ * Represents one compiled WHERE condition.
+  *
+  * @remarks
+  * `values` carries the operands the operator needs — none for `absent` /
+@@ -91,17 +91,17 @@ export interface Condition {
+ 	readonly connector: ConditionConnector
+ }
+ 
+-/** A sort direction. */
++/** Names a sort direction. */
+ export type OrderDirection = 'ascending' | 'descending'
+ 
+-/** One ordering term — a column ({@link FieldPath}, flat or nested) and its direction. */
++/** Represents one ordering term — a column ({@link FieldPath}, flat or nested) and its direction. */
+ export interface Order {
+ 	readonly column: FieldPath
+ 	readonly direction: OrderDirection
+ }
+ 
+ /**
+- * A serializable read specification — everything a backend needs to compile one
++ * Represents a serializable read specification — everything a backend needs to compile one
+  * read, free of JS callbacks so any backend can honor it.
+  *
+  * @remarks
+@@ -117,7 +117,7 @@ export interface QueryInput {
+ 	readonly offset?: number
+ }
+ 
+-/** An aggregate computed over a numeric column. */
++/** Names an aggregate computed over a numeric column. */
+ export type AggregateOperation = 'count' | 'sum' | 'average' | 'minimum' | 'maximum'
+ 
+ /**
+@@ -135,11 +135,11 @@ export interface OperationOptions {
+ 
+ // === Lifecycle
+ 
+-/** The lifecycle state of a {@link DatabaseInterface}. */
++/** Names the lifecycle state of a {@link DatabaseInterface}. */
+ export type DatabaseStatus = 'idle' | 'open' | 'closed'
+ 
+ /**
+- * The admission boundary a scoped operation enters before it runs.
++ * Represents the admission boundary a scoped operation enters before it runs.
+  *
+  * @remarks
+  * The one contract the root database context and a transaction scope both
+@@ -154,7 +154,7 @@ export interface AdmissionInterface {
+ 	track<R>(operation: () => Promise<R>): Promise<R>
+ }
+ 
+-/** A machine-readable {@link DatabaseError} code. */
++/** Names a machine-readable {@link DatabaseError} code. */
+ export type DatabaseErrorCode =
+ 	| 'CLOSED'
+ 	| 'NOT_FOUND'
+@@ -166,7 +166,7 @@ export type DatabaseErrorCode =
+ 	| 'DRIVER'
+ 
+ /**
+- * One violated invariant from the driver-conformance battery.
++ * Represents one violated invariant from the driver-conformance battery.
+  *
+  * @remarks
+  * Mirrors the payload shape of a `DatabaseError` `CONFORMANCE` `context` —
+@@ -180,7 +180,7 @@ export interface ConformanceFinding {
+ }
+ 
+ /**
+- * The push observation surface of a {@link DatabaseInterface} — the
++ * Describes the push observation surface of a {@link DatabaseInterface} — the
+  * connection + transaction lifecycle a fire-and-forget observer (logging, metrics,
+  * tracing, cache invalidation) subscribes to.
+  *
+@@ -202,22 +202,22 @@ export interface ConformanceFinding {
+  * required index signature.
+  */
+ export type DatabaseEventMap = {
+-	/** The driver connected (`open`, or the lazy first-use connect completed). */
++	/** Signals that the driver connected (`open`, or the lazy first-use connect completed). */
+ 	readonly open: readonly []
+-	/** The database was closed (the driver released). */
++	/** Signals that the database was closed (the driver released). */
+ 	readonly close: readonly []
+-	/** A transaction scope began after its native boundary or fallback snapshot was acquired. */
++	/** Signals that a transaction scope began after its native boundary or fallback snapshot was acquired. */
+ 	readonly transaction: readonly []
+-	/** A transaction scope completed successfully (no rollback). */
++	/** Signals that a transaction scope completed successfully (no rollback). */
+ 	readonly commit: readonly []
+-	/** A transaction scope failed and rollback completed — the exact propagated scope error. */
++	/** Signals that a transaction scope failed and rollback completed — the exact propagated scope error. */
+ 	readonly rollback: readonly [error: unknown]
+-	/** A {@link Migration} plan was applied via `migrate` — the applied plan. */
++	/** Signals that a {@link Migration} plan was applied via `migrate` — the applied plan. */
+ 	readonly migrate: readonly [migration: Migration]
+ }
+ 
+ /**
+- * The push observation surface of a {@link TableInterface} — the per-row
++ * Describes the push observation surface of a {@link TableInterface} — the per-row
+  * mutation moments a fire-and-forget observer (cache invalidation, sync, an audit log)
+  * subscribes to, ALONGSIDE the database-level {@link DatabaseEventMap}.
+  *
+@@ -235,18 +235,18 @@ export type DatabaseEventMap = {
+  * `EventMap` is a `type` kind).
+  */
+ export type TableEventMap = {
+-	/** A row was written (set / added / updated) — the affected key (no value payload). */
++	/** Signals that a row was written (set / added / updated) — the affected key (no value payload). */
+ 	readonly write: readonly [key: Key]
+-	/** A row was removed — the affected key. */
++	/** Signals that a row was removed — the affected key. */
+ 	readonly remove: readonly [key: Key]
+-	/** The table was cleared (every row removed). */
++	/** Signals that the table was cleared (every row removed). */
+ 	readonly clear: readonly []
+ }
+ 
+ // === Driver contract
+ 
+ /**
+- * A portable storage type for a column — the backend maps it to its native type
++ * Names a portable storage type for a column — the backend maps it to its native type
+  * (SQLite affinity, an IndexedDB value). Derived from a column's `ContractShape`
+  * by `shapeToColumnStorage`; `json` covers object/array/union/raw values a backend stores
+  * as JSON text and can `json_extract` for nested-field queries.
+@@ -254,7 +254,7 @@ export type TableEventMap = {
+ export type ColumnStorage = 'text' | 'integer' | 'real' | 'boolean' | 'json' | 'blob'
+ 
+ /**
+- * One column of a {@link TableSchema} — its name, portable {@link ColumnStorage}, and
++ * Represents one column of a {@link TableSchema} — its name, portable {@link ColumnStorage}, and
+  * whether it independently accepts absence (`optional`) and explicit `null`
+  * (`nullable`).
+  */
+@@ -266,7 +266,7 @@ export interface ColumnSchema {
+ }
+ 
+ /**
+- * Persisted schema metadata a versioning driver owns as an immutable snapshot.
++ * Represents persisted schema metadata a versioning driver owns as an immutable snapshot.
+  *
+  * @remarks
+  * A driver snapshots metadata when it enters through `stamp` or a
+@@ -282,7 +282,7 @@ export interface DriverMetadata {
+ }
+ 
+ /**
+- * A backend-agnostic description of one table — what `open` hands each driver so a
++ * Represents a backend-agnostic description of one table — what `open` hands each driver so a
+  * native backend can create real tables and indexes.
+  *
+  * @remarks
+@@ -299,7 +299,7 @@ export interface TableSchema {
+ }
+ 
+ /**
+- * One step of a {@link Migration} plan — a single schema change applied to one
++ * Represents one step of a {@link Migration} plan — a single schema change applied to one
+  * table.
+  *
+  * @remarks
+@@ -321,7 +321,7 @@ export type MigrationStep =
+ 	  }
+ 
+ /**
+- * A schema migration plan — an ordered set of {@link MigrationStep}s moving a
++ * Represents a schema migration plan — an ordered set of {@link MigrationStep}s moving a
+  * database from one schema version to another.
+  *
+  * @remarks
+@@ -336,7 +336,7 @@ export interface Migration {
+ }
+ 
+ /**
+- * One atomic migration request.
++ * Represents one atomic migration request.
+  *
+  * @remarks
+  * `plan` carries the schema changes. `metadata`, when present, is the snapshot that
+@@ -349,7 +349,7 @@ export interface MigrationInput {
+ }
+ 
+ /**
+- * The storage operations available only inside a driver's transaction scope.
++ * Declares the storage operations available only inside a driver's transaction scope.
+  *
+  * @remarks
+  * A driver owns acquisition, commit or rollback, release, and lifetime. This
+@@ -380,7 +380,7 @@ export interface StorageInterface {
+ }
+ 
+ /**
+- * The storage primitive every backend implements — the whole of the bridge.
++ * Declares the storage primitive every backend implements — the whole of the bridge.
+  *
+  * @remarks
+  * The REQUIRED surface is deliberately minimal: keyed read / write / atomic
+@@ -406,7 +406,7 @@ export interface DriverInterface extends StorageInterface {
+ 	open(schema: readonly TableSchema[]): Promise<void>
+ 	close(): Promise<void>
+ 	/**
+-	 * Capture table rows and return a repeatable thunk that restores those rows —
++	 * Captures table rows and returns a repeatable thunk that restores those rows —
+ 	 * the primitive transactions are built on.
+ 	 *
+ 	 * @remarks
+@@ -417,8 +417,8 @@ export interface DriverInterface extends StorageInterface {
+ 	 */
+ 	snapshot(tables?: readonly string[]): Promise<() => Promise<void>>
+ 	/**
+-	 * Optional native transaction scope. The driver owns acquisition, commit or
+-	 * rollback, release, and invalidation of the scoped capability.
++	 * Opens a native transaction scope — an optional driver hook. The driver owns acquisition,
++	 * commit or rollback, release, and invalidation of the scoped capability.
+ 	 */
+ 	transaction?<R>(scope: (storage: StorageInterface) => Promise<R>): Promise<R>
+ }
+@@ -426,7 +426,7 @@ export interface DriverInterface extends StorageInterface {
+ // === Database
+ 
+ /**
+- * One table's columns — a map of column name to its value {@link ContractShape}.
++ * Represents one table's columns — a map of column name to its value {@link ContractShape}.
+  *
+  * @remarks
+  * This is exactly the property map an `objectShape` takes. A table row is always
+@@ -438,7 +438,7 @@ export interface DriverInterface extends StorageInterface {
+ export type ColumnMap = Readonly<Record<string, ContractShape>>
+ 
+ /**
+- * A database's table schema — a map of table name to its {@link ColumnMap}.
++ * Represents a database's table schema — a map of table name to its {@link ColumnMap}.
+  *
+  * @remarks
+  * Each table's row type is `Infer` of its columns (see {@link RowOf}); primary-key
+@@ -447,7 +447,7 @@ export type ColumnMap = Readonly<Record<string, ContractShape>>
+ export type TableMap = Readonly<Record<string, ColumnMap>>
+ 
+ /**
+- * The row type a table's {@link ColumnMap} describe — `Infer` of the `objectShape`
++ * Represents the row type a table's {@link ColumnMap} describe — `Infer` of the `objectShape`
+  * the database wraps them in.
+  *
+  * @remarks
+@@ -466,7 +466,7 @@ export type RowOf<C extends ColumnMap> = Infer<{
+ }>
+ 
+ /**
+- * Per-table primary-key column overrides — `{ [table]: column }`.
++ * Holds per-table primary-key column overrides — `{ [table]: column }`.
+  *
+  * @remarks
+  * A table absent from this map keys its rows by {@link DEFAULT_PRIMARY} (`id`).
+@@ -475,7 +475,7 @@ export type RowOf<C extends ColumnMap> = Infer<{
+ export type PrimaryMap = Readonly<Record<string, string>>
+ 
+ /**
+- * Per-table secondary indexes — `{ [table]: groups }`, each group one
++ * Holds per-table secondary indexes — `{ [table]: groups }`, each group one
+  * (possibly compound) index of column names.
+  *
+  * @remarks
+@@ -502,7 +502,7 @@ export type IndexMap = Readonly<Record<string, ReadonlyArray<readonly string[]>>
+ export interface DatabaseOptions<T extends TableMap = TableMap> {
+ 	readonly on?: EmitterHooks<DatabaseEventMap>
+ 	/**
+-	 * The listener-error handler shared by the database and every table emitter.
++	 * Holds the listener-error handler shared by the database and every table emitter.
+ 	 *
+ 	 * @remarks
+ 	 * Listener throws from root, imported, and transaction-scoped handles route
+@@ -516,7 +516,7 @@ export interface DatabaseOptions<T extends TableMap = TableMap> {
+ 	readonly indexes?: IndexMap
+ 	readonly name?: string
+ 	/**
+-	 * The authoritative key-generation override for a keyless write.
++	 * Holds the authoritative key-generation override for a keyless write.
+ 	 *
+ 	 * @remarks
+ 	 * Omit it to use global `crypto.randomUUID()`. A numeric primary requires a
+@@ -527,7 +527,7 @@ export interface DatabaseOptions<T extends TableMap = TableMap> {
+ 	 */
+ 	readonly generator?: KeyFunction
+ 	/**
+-	 * The declared schema version.
++	 * Holds the declared schema version.
+ 	 *
+ 	 * @remarks
+ 	 * Only meaningful when the driver implements BOTH {@link DriverInterface.metadata}
+@@ -559,7 +559,7 @@ export interface DatabaseOptions<T extends TableMap = TableMap> {
+ }
+ 
+ /**
+- * One table's portable definition, produced by `export` — the unit of schema /
++ * Represents one table's portable definition, produced by `export` — the unit of schema /
+  * migration exchange across environments.
+  *
+  * @remarks
+@@ -574,7 +574,7 @@ export interface TableDefinition {
+ }
+ 
+ /**
+- * A database view valid only inside one {@link DatabaseInterface.transaction}
++ * Represents a database view valid only inside one {@link DatabaseInterface.transaction}
+  * scope.
+  *
+  * @remarks
+@@ -588,7 +588,7 @@ export interface DatabaseStorageInterface<T extends TableMap = TableMap> {
+ }
+ 
+ /**
+- * A database — the ergonomic entry point that owns the driver and its tables.
++ * Represents a database — the ergonomic entry point that owns the driver and its tables.
+  *
+  * @remarks
+  * A database is a typed view over a set of tables on one driver. Tables are
+@@ -616,9 +616,9 @@ export interface DatabaseInterface<T extends TableMap = TableMap> {
+ 		options?: OperationOptions,
+ 	): Promise<R>
+ 	/**
+-	 * Diff a caller-supplied deployed schema against this database's declared
+-	 * schema (its `tables`, as configured) via `planMigration`, apply the
+-	 * resulting plan through the driver's optional `migrate` hook, and return
++	 * Diffs a caller-supplied deployed schema against this database's declared
++	 * schema (its `tables`, as configured) via `planMigration`, applies the
++	 * resulting plan through the driver's optional `migrate` hook, and returns
+ 	 * the applied plan.
+ 	 *
+ 	 * @param deployed - The schema currently deployed, as {@link TableSchema}s
+@@ -648,7 +648,7 @@ export interface DatabaseInterface<T extends TableMap = TableMap> {
+ // === Table
+ 
+ /**
+- * A table — typed keyed CRUD plus fluent query and cursor access.
++ * Exposes typed keyed CRUD plus fluent query and cursor access.
+  *
+  * @remarks
+  * Writes are coerced through the table's contract: a string input to a numeric
+@@ -677,7 +677,7 @@ export interface TableInterface<T = Row> {
+ 	keys(): Promise<readonly Key[]>
+ 	records(input?: QueryInput, options?: OperationOptions): Promise<readonly T[]>
+ 	/**
+-	 * Count contract-valid rows matching `input`'s conditions.
++	 * Counts contract-valid rows matching `input`'s conditions.
+ 	 *
+ 	 * @remarks
+ 	 * Paging is ignored. Like `records()` / `scan()`, `count()` narrows every
+@@ -686,7 +686,7 @@ export interface TableInterface<T = Row> {
+ 	 */
+ 	count(input?: QueryInput, options?: OperationOptions): Promise<number>
+ 	/**
+-	 * Compute an aggregate over `column` across rows matching `input`'s
++	 * Computes an aggregate over `column` across rows matching `input`'s
+ 	 * conditions.
+ 	 *
+ 	 * @remarks
+@@ -703,7 +703,7 @@ export interface TableInterface<T = Row> {
+ 		options?: OperationOptions,
+ 	): Promise<number | undefined>
+ 	/**
+-	 * Lazy filtered iteration over the table's rows.
++	 * Iterates the table's rows lazily with filtering.
+ 	 *
+ 	 * @remarks
+ 	 * `input`'s `conditions` / `offset` / `limit` are honored lazily as rows
+@@ -714,7 +714,7 @@ export interface TableInterface<T = Row> {
+ 	 */
+ 	scan(input?: QueryInput, options?: OperationOptions): AsyncIterable<T>
+ 	/**
+-	 * Upsert one or more rows.
++	 * Upserts one or more rows.
+ 	 *
+ 	 * @param row - The row to upsert
+ 	 * @param options - Optional abort signal
+@@ -722,7 +722,7 @@ export interface TableInterface<T = Row> {
+ 	 */
+ 	set(row: T, options?: OperationOptions): Promise<Key>
+ 	/**
+-	 * Upsert one or more rows.
++	 * Upserts one or more rows.
+ 	 *
+ 	 * @param rows - The rows to upsert
+ 	 * @param options - Optional abort signal, checked at entry and between items
+@@ -735,7 +735,7 @@ export interface TableInterface<T = Row> {
+ 	 */
+ 	set(rows: readonly T[], options?: OperationOptions): Promise<readonly Key[]>
+ 	/**
+-	 * Insert one or more rows, throwing `CONFLICT` on a duplicate key.
++	 * Inserts one or more rows, throwing `CONFLICT` on a duplicate key.
+ 	 *
+ 	 * @param row - The row to insert
+ 	 * @param options - Optional abort signal
+@@ -743,7 +743,7 @@ export interface TableInterface<T = Row> {
+ 	 */
+ 	add(row: T, options?: OperationOptions): Promise<Key>
+ 	/**
+-	 * Insert one or more rows, throwing `CONFLICT` on a duplicate key.
++	 * Inserts one or more rows, throwing `CONFLICT` on a duplicate key.
+ 	 *
+ 	 * @param rows - The rows to insert
+ 	 * @param options - Optional abort signal, checked at entry and between items
+@@ -756,16 +756,16 @@ export interface TableInterface<T = Row> {
+ 	 */
+ 	add(rows: readonly T[], options?: OperationOptions): Promise<readonly Key[]>
+ 	/**
+-	 * Apply a partial change to one or more rows.
++	 * Applies a partial change to one or more rows.
+ 	 *
+ 	 * @param key - The key of the row to update
+ 	 * @param changes - The partial changes to apply
+ 	 * @param options - Optional abort signal
+-	 * @returns `true` when the row existed and was updated
++	 * @returns True if the row existed and was updated; false otherwise
+ 	 */
+ 	update(key: Key, changes: Partial<T>, options?: OperationOptions): Promise<boolean>
+ 	/**
+-	 * Apply a partial change to one or more rows.
++	 * Applies a partial change to one or more rows.
+ 	 *
+ 	 * @param keys - The keys of the rows to update
+ 	 * @param changes - The partial changes to apply to each row
+@@ -783,15 +783,15 @@ export interface TableInterface<T = Row> {
+ 		options?: OperationOptions,
+ 	): Promise<readonly boolean[]>
+ 	/**
+-	 * Delete one or more rows.
++	 * Deletes one or more rows.
+ 	 *
+ 	 * @param key - The key of the row to remove
+ 	 * @param options - Optional abort signal
+-	 * @returns `true` when the row existed and was removed
++	 * @returns True if the row existed and was removed; false otherwise
+ 	 */
+ 	remove(key: Key, options?: OperationOptions): Promise<boolean>
+ 	/**
+-	 * Delete one or more rows.
++	 * Deletes one or more rows.
+ 	 *
+ 	 * @param keys - The keys of the rows to remove
+ 	 * @param options - Optional abort signal, checked at entry and between items
+@@ -811,7 +811,7 @@ export interface TableInterface<T = Row> {
+ // === Query
+ 
+ /**
+- * A fluent query builder.
++ * Builds a read through a fluent chain.
+  *
+  * @remarks
+  * `condition` appends one portable condition and `order` appends one portable
+@@ -831,8 +831,8 @@ export interface QueryInterface<T = Row> {
+ 	find(): Promise<T | undefined>
+ 	count(): Promise<number>
+ 	/**
+-	 * Lazy per-row evaluation of this query's conditions / filters / offset /
+-	 * limit.
++	 * Evaluates this query's conditions / filters / offset / limit lazily, row
++	 * by row.
+ 	 *
+ 	 * @remarks
+ 	 * `order` and its comparators are IGNORED (streaming yields unsorted, as
+@@ -847,7 +847,7 @@ export interface QueryInterface<T = Row> {
+ // === Cursor
+ 
+ /**
+- * A forward row cursor for bulk in-place mutation.
++ * Walks a table's rows forward for bulk in-place mutation.
+  *
+  * @remarks
+  * Iterates a snapshot of the table's keys taken at creation; `update` and
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index 2e05a81..79a85b5 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -10,20 +10,20 @@ import type {
+ import { cloneJSONRecord, cloneJSONValue } from '@orkestrel/contract'
+ 
+ /**
+- * Test whether a value is a usable database key.
++ * Checks whether a value is a usable database key.
+  *
+  * @param value - The value to test
+- * @returns Whether `value` is a string or finite number
++ * @returns True if `value` is a string or a finite number; false otherwise
+  */
+ export function isKey(value: unknown): value is Key {
+ 	return typeof value === 'string' || (typeof value === 'number' && Number.isFinite(value))
+ }
+ 
+ /**
+- * Test whether a value is a portable column schema.
++ * Checks whether a value is a portable column schema.
+  *
+  * @param value - The value to test
+- * @returns Whether `value` is a complete {@link ColumnSchema}
++ * @returns True if `value` is a complete {@link ColumnSchema}; false otherwise
+  */
+ export function isColumnSchema(value: unknown): value is ColumnSchema {
+ 	try {
+@@ -52,10 +52,10 @@ export function isColumnSchema(value: unknown): value is ColumnSchema {
+ }
+ 
+ /**
+- * Test whether a value is a portable table schema.
++ * Checks whether a value is a portable table schema.
+  *
+  * @param value - The value to test
+- * @returns Whether `value` is a complete {@link TableSchema}
++ * @returns True if `value` is a complete {@link TableSchema}; false otherwise
+  */
+ export function isTableSchema(value: unknown): value is TableSchema {
+ 	try {
+@@ -98,10 +98,10 @@ export function isTableSchema(value: unknown): value is TableSchema {
+ }
+ 
+ /**
+- * Test whether a value is a complete portable driver schema.
++ * Checks whether a value is a complete portable driver schema.
+  *
+  * @param value - The value to test
+- * @returns Whether `value` is a table-schema collection with unique table names
++ * @returns True if `value` is a table-schema collection with unique table names; false otherwise
+  */
+ export function isDriverSchema(value: unknown): value is readonly TableSchema[] {
+ 	try {
+@@ -115,10 +115,10 @@ export function isDriverSchema(value: unknown): value is readonly TableSchema[]
+ }
+ 
+ /**
+- * Test whether a value is one ordered migration step.
++ * Checks whether a value is one ordered migration step.
+  *
+  * @param value - The value to test
+- * @returns Whether `value` is a complete {@link MigrationStep}
++ * @returns True if `value` is a complete {@link MigrationStep}; false otherwise
+  */
+ export function isMigrationStep(value: unknown): value is MigrationStep {
+ 	try {
+@@ -184,10 +184,10 @@ export function isMigrationStep(value: unknown): value is MigrationStep {
+ }
+ 
+ /**
+- * Test whether a value is an ordered migration plan.
++ * Checks whether a value is an ordered migration plan.
+  *
+  * @param value - The value to test
+- * @returns Whether `value` is a complete {@link Migration}
++ * @returns True if `value` is a complete {@link Migration}; false otherwise
+  */
+ export function isMigration(value: unknown): value is Migration {
+ 	try {
+@@ -211,10 +211,10 @@ export function isMigration(value: unknown): value is Migration {
+ }
+ 
+ /**
+- * Test whether a value is persisted driver metadata.
++ * Checks whether a value is persisted driver metadata.
+  *
+  * @param value - The value to test
+- * @returns Whether `value` is complete {@link DriverMetadata}
++ * @returns True if `value` is complete {@link DriverMetadata}; false otherwise
+  */
+ export function isDriverMetadata(value: unknown): value is DriverMetadata {
+ 	try {
+@@ -234,10 +234,10 @@ export function isDriverMetadata(value: unknown): value is DriverMetadata {
+ }
+ 
+ /**
+- * Test whether a value is one atomic migration request.
++ * Checks whether a value is one atomic migration request.
+  *
+  * @param value - The value to test
+- * @returns Whether `value` is a complete {@link MigrationInput}
++ * @returns True if `value` is a complete {@link MigrationInput}; false otherwise
+  */
+ export function isMigrationInput(value: unknown): value is MigrationInput {
+ 	try {
+diff --git a/src/server/compilers.ts b/src/server/compilers.ts
+index 6776241..dfb668c 100644
+--- a/src/server/compilers.ts
++++ b/src/server/compilers.ts
+@@ -16,7 +16,7 @@ import { deriveSQLiteIndexName, encodeValue, quoteIdentifier } from './helpers.j
+ import { inferValueStorage } from './inferers.js'
+ 
+ /**
+- * Map a portable {@link ColumnStorage} to its SQLite column type.
++ * Maps a portable {@link ColumnStorage} to its SQLite column type.
+  *
+  * @param storage - The portable column type
+  * @returns The SQLite column type keyword
+@@ -37,7 +37,7 @@ export function compileColumnSQL(storage: ColumnStorage): string {
+ }
+ 
+ /**
+- * Compile a {@link FieldPath} to the SQL expression that reads it.
++ * Compiles a {@link FieldPath} to the SQL expression that reads it.
+  *
+  * @param path - The field path
+  * @returns The SQL expression selecting the value
+@@ -53,7 +53,7 @@ export function compileFieldSQL(path: FieldPath): string {
+ }
+ 
+ /**
+- * Compile an {@link AggregateOperation} over a {@link FieldPath}.
++ * Compiles an {@link AggregateOperation} over a {@link FieldPath}.
+  *
+  * @param operation - The aggregate to compute
+  * @param column - The column or nested path to aggregate
+@@ -75,7 +75,7 @@ export function compileAggregateSQL(operation: AggregateOperation, column: Field
+ }
+ 
+ /**
+- * Compile a NESTED {@link FieldPath} to the `json_type(<col>, <path>)` SQL
++ * Compiles a NESTED {@link FieldPath} to the `json_type(<col>, <path>)` SQL
+  * expression — the {@link compileFieldSQL} `json_extract` sibling used to tell a
+  * PRESENT JSON `null` apart from an ABSENT path (both read back as SQL `NULL`
+  * through `json_extract`, but `json_type` reports `'null'` for the former and
+@@ -109,7 +109,7 @@ export function compileJSONTypeSQL(path: readonly string[]): string {
+ // type-only and cannot couple the emitted JavaScript to the native package.
+ 
+ /**
+- * Compile one condition to its `<column> <operator>` SQL fragment and the parameters
++ * Compiles one condition to its `<column> <operator>` SQL fragment and the parameters
+  * it binds — engine-exact under SQL's three-valued NULL logic.
+  *
+  * @remarks
+@@ -407,7 +407,7 @@ export function compilePageSQL(limit: number | undefined, offset: number | undef
+ }
+ 
+ /**
+- * Compile a {@link QueryInput} into the SQL clause that follows a table name, with
++ * Compiles a {@link QueryInput} into the SQL clause that follows a table name, with
+  * its bound parameters in clause order.
+  *
+  * @remarks
+@@ -450,7 +450,7 @@ export function compileQuerySQL(input: QueryInput | undefined, schema: TableSche
+ }
+ 
+ /**
+- * Project a {@link TableSchema} to its `CREATE TABLE IF NOT EXISTS` statement.
++ * Projects a {@link TableSchema} to its `CREATE TABLE IF NOT EXISTS` statement.
+  *
+  * @param schema - The table schema
+  * @returns The complete table declaration
+@@ -475,7 +475,7 @@ export function schemaToTable(schema: TableSchema): string {
+ }
+ 
+ /**
+- * Project a {@link TableSchema} to its declared SQLite indexes.
++ * Projects a {@link TableSchema} to its declared SQLite indexes.
+  *
+  * @param schema - The table schema
+  * @returns One statement per declared index
+@@ -494,7 +494,7 @@ export function schemaToIndexes(schema: TableSchema): readonly string[] {
+ }
+ 
+ /**
+- * Project one {@link MigrationStep} to SQLite DDL.
++ * Projects one {@link MigrationStep} to SQLite DDL.
+  *
+  * @param step - The migration step
+  * @returns The statements that apply the step
+diff --git a/src/server/constants.ts b/src/server/constants.ts
+index aca7d4b..0976838 100644
+--- a/src/server/constants.ts
++++ b/src/server/constants.ts
+@@ -4,7 +4,7 @@ import type { ColumnStorage } from '@src/core'
+ // the declared column groups that SQLite can query without engine refinement.
+ 
+ /**
+- * The declared {@link ColumnStorage}s whose SQL EQUALITY comparisons (`equals` /
++ * Lists the declared {@link ColumnStorage}s whose SQL EQUALITY comparisons (`equals` /
+  * `not` / `any` / `none`) and `starts` / `ends` compiles are provably
+  * engine-exact under declared-type trust — `text` / `integer` / `real` /
+  * `boolean`; a `json` or `blob` column always refines instead.
+@@ -30,7 +30,7 @@ export const EXACT_COLUMN_STORAGE: readonly ColumnStorage[] = Object.freeze([
+ ])
+ 
+ /**
+- * The declared {@link ColumnStorage}s whose SQL RANGE comparisons
++ * Lists the declared {@link ColumnStorage}s whose SQL RANGE comparisons
+  * (`above` / `below` / `from` / `to` / `between`) and `ORDER BY` compiles are
+  * provably engine-exact — `integer` / `real` / `boolean` only. `text` is
+  * excluded: see {@link EXACT_COLUMN_STORAGE}'s remarks for the BINARY-collation
+@@ -44,7 +44,7 @@ export const EXACT_RANGE_COLUMN_STORAGE: readonly ColumnStorage[] = Object.freez
+ ])
+ 
+ /**
+- * The reserved metadata table the {@link SQLiteDriver} creates on `open` to
++ * Names the reserved metadata table the {@link SQLiteDriver} creates on `open` to
+  * persist its stamped `DriverMetadata` (`version` + declared schema JSON) — the
+  * SQLite realization of the `metadata` / `stamp` driver hooks.
+  *
+diff --git a/src/server/drivers/JSONDriver.ts b/src/server/drivers/JSONDriver.ts
+index 73f19c4..3215c49 100644
+--- a/src/server/drivers/JSONDriver.ts
++++ b/src/server/drivers/JSONDriver.ts
+@@ -33,7 +33,7 @@ import { DriverIterator } from '../../core/DriverIterator.js'
+ import { matchesAbsentPath } from '../helpers.js'
+ 
+ /**
+- * A persistent {@link DriverInterface} backed by a single JSON file — the
++ * Implements a persistent {@link DriverInterface} backed by a single JSON file — the
+  * reference {@link MemoryDriver} plus file load / flush.
+  *
+  * @remarks
+@@ -134,7 +134,7 @@ export class JSONDriver implements DriverInterface {
+ 	}
+ 
+ 	/**
+-	 * Natively filtered lazy iteration — delegates to the inner {@link MemoryDriver}.
++	 * Iterates rows lazily with native filtering — delegates to the inner {@link MemoryDriver}.
+ 	 *
+ 	 * @remarks
+ 	 * Semantics are the memory driver's own: `input.conditions` filters, `offset`
+@@ -157,7 +157,7 @@ export class JSONDriver implements DriverInterface {
+ 	}
+ 
+ 	/**
+-	 * Run an isolated native transaction callback over a candidate memory store.
++	 * Runs an isolated native transaction callback over a candidate memory store.
+ 	 *
+ 	 * @remarks
+ 	 * Single-writer: nesting and root operations while active throw `CONFLICT`.
+@@ -175,7 +175,7 @@ export class JSONDriver implements DriverInterface {
+ 	}
+ 
+ 	/**
+-	 * Capture an owned row snapshot at an exact writer-queue position.
++	 * Captures an owned row snapshot at an exact writer-queue position.
+ 	 *
+ 	 * @remarks
+ 	 * Capture owns table names, schemas, rows, and one session-local identity per
+@@ -205,7 +205,7 @@ export class JSONDriver implements DriverInterface {
+ 	}
+ 
+ 	/**
+-	 * Persist an owned metadata snapshot for a later `metadata()` to copy out.
++	 * Persists an owned metadata snapshot for a later `metadata()` to copy out.
+ 	 *
+ 	 * @remarks
+ 	 * Root stamping conflicts while a transaction is active. The scoped
+@@ -221,7 +221,7 @@ export class JSONDriver implements DriverInterface {
+ 	}
+ 
+ 	/**
+-	 * Apply one atomic {@link MigrationInput} through an isolated candidate.
++	 * Applies one atomic {@link MigrationInput} through an isolated candidate.
+ 	 *
+ 	 * @remarks
+ 	 * The candidate receives every plan step plus optional metadata. Its complete
+diff --git a/src/server/drivers/SQLiteDriver.ts b/src/server/drivers/SQLiteDriver.ts
+index 4322944..32f5908 100644
+--- a/src/server/drivers/SQLiteDriver.ts
++++ b/src/server/drivers/SQLiteDriver.ts
+@@ -58,8 +58,8 @@ import { METADATA_TABLE } from '../constants.js'
+ import { DriverIterator } from '../../core/DriverIterator.js'
+ 
+ /**
+- * The SQLite {@link DriverInterface} — the server-native, trusted-mode backend
+- * built on the published `@orkestrel/sqlite` synchronous wrapper.
++ * Implements the {@link DriverInterface} over SQLite — the server-native, trusted-mode
++ * backend built on the published `@orkestrel/sqlite` synchronous wrapper.
+  *
+  * @remarks
+  * A thin adapter: it implements the storage primitives the core database layer
+@@ -322,7 +322,7 @@ export class SQLiteDriver implements DriverInterface {
+ 	}
+ 
+ 	/**
+-	 * Begin a native transaction — real `BEGIN`, `COMMIT`, `ROLLBACK`.
++	 * Begins a native transaction — real `BEGIN`, `COMMIT`, `ROLLBACK`.
+ 	 *
+ 	 * @remarks
+ 	 * The callback receives a scoped {@link StorageInterface}. Fulfillment
+@@ -372,7 +372,7 @@ export class SQLiteDriver implements DriverInterface {
+ 	}
+ 
+ 	/**
+-	 * Apply a {@link Migration} plan by executing each step's projected DDL
++	 * Applies a {@link Migration} plan by executing each step's projected DDL
+ 	 * ({@link import('../compilers.js').stepToSQL}).
+ 	 *
+ 	 * @remarks
+@@ -424,7 +424,7 @@ export class SQLiteDriver implements DriverInterface {
+ 	}
+ 
+ 	/**
+-	 * Read the persisted {@link DriverMetadata} from the reserved `_metadata` table.
++	 * Reads the persisted {@link DriverMetadata} from the reserved `_metadata` table.
+ 	 *
+ 	 * @returns The last-stamped `DriverMetadata`, or `undefined` when never stamped
+ 	 *   (or the stored row is malformed)
+@@ -435,7 +435,7 @@ export class SQLiteDriver implements DriverInterface {
+ 	}
+ 
+ 	/**
+-	 * Persist an owned metadata snapshot into the reserved `_metadata` table's
++	 * Persists an owned metadata snapshot into the reserved `_metadata` table's
+ 	 * single row.
+ 	 *
+ 	 * @param metadata - The {@link DriverMetadata} to persist
+diff --git a/src/server/factories.ts b/src/server/factories.ts
+index cc2c6c8..a5b8cae 100644
+--- a/src/server/factories.ts
++++ b/src/server/factories.ts
+@@ -4,7 +4,7 @@ import { JSONDriver } from './drivers/JSONDriver.js'
+ import { SQLiteDriver } from './drivers/SQLiteDriver.js'
+ 
+ /**
+- * Create a persistent JSON-file {@link DriverInterface} for the core database layer.
++ * Creates a persistent JSON-file {@link DriverInterface} for the core database layer.
+  *
+  * @remarks
+  * Pass it to `createDatabase` from `@orkestrel/database` to run the typed
+@@ -38,7 +38,7 @@ export function createJSONDriver(path: string): DriverInterface {
+ }
+ 
+ /**
+- * Create a trusted-mode SQLite {@link DriverInterface} for the core database layer.
++ * Creates a trusted-mode SQLite {@link DriverInterface} for the core database layer.
+  *
+  * @remarks
+  * Pass it to `createDatabase` from `@orkestrel/database` to run the typed
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index 5097cd8..3ef46f1 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -68,7 +68,7 @@ export function findColumnStorage(column: string, schema: TableSchema): ColumnSt
+  * answers `false` rather than being read for a `code` any object could carry.
+  *
+  * @param error - The caught value to classify; any runtime is accepted
+- * @returns `true` when the error reports that the path holds nothing
++ * @returns True if the error reports that the path holds nothing; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -104,7 +104,7 @@ export function matchesAbsentPath(error: unknown): boolean {
+  *
+  * @param value - The condition operand to test
+  * @param storage - The column's declared portable storage type
+- * @returns `true` when the operand's runtime type matches the declared type
++ * @returns True if the operand's runtime type matches the declared type; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -150,7 +150,7 @@ export function matchesDeclaredStorage(value: unknown, storage: ColumnStorage):
+  *
+  * @param condition - The condition to test
+  * @param schema - The table's schema
+- * @returns Whether `condition` is exact
++ * @returns True if `condition` is exact; false otherwise
+  */
+ export function matchesConditionExactly(condition: Condition, schema: TableSchema): boolean {
+ 	if (!isString(condition.column)) return false
+@@ -211,7 +211,7 @@ export function matchesConditionExactly(condition: Condition, schema: TableSchem
+  *
+  * @param order - The order term to test
+  * @param schema - The table's schema
+- * @returns Whether `order` is exact
++ * @returns True if `order` is exact; false otherwise
+  */
+ export function matchesOrderExactly(order: Order, schema: TableSchema): boolean {
+ 	if (!isString(order.column)) return false
+@@ -227,7 +227,7 @@ export function matchesOrderExactly(order: Order, schema: TableSchema): boolean
+  *
+  * @param input - The query input to test
+  * @param schema - The table's schema
+- * @returns Whether every part of `input` is exact
++ * @returns True if every part of `input` is exact; false otherwise
+  */
+ export function matchesQueryExactly(input: QueryInput, schema: TableSchema): boolean {
+ 	const conditions = input.conditions ?? []
+@@ -239,12 +239,12 @@ export function matchesQueryExactly(input: QueryInput, schema: TableSchema): boo
+ }
+ 
+ /**
+- * Determine whether SQLite can execute an aggregate exactly like the core engine.
++ * Reports whether SQLite can execute an aggregate exactly like the core engine.
+  *
+  * @param operation - Aggregate operation
+  * @param column - Aggregate field
+  * @param schema - Current table schema
+- * @returns Whether native aggregation is exact
++ * @returns True if native aggregation is exact; false otherwise
+  */
+ export function matchesAggregateExactly(
+ 	operation: AggregateOperation,
+@@ -262,11 +262,11 @@ export function matchesAggregateExactly(
+ }
+ 
+ /**
+- * Test a declared SQLite type against a portable storage affinity.
++ * Checks a declared SQLite type against a portable storage affinity.
+  *
+  * @param declared - Native declared type
+  * @param storage - Portable column storage
+- * @returns Whether SQLite's official affinity rules yield the expected affinity
++ * @returns True if SQLite's official affinity rules yield the expected affinity; false otherwise
+  */
+ export function matchesSQLiteAffinity(declared: unknown, storage: ColumnStorage): boolean {
+ 	if (!isString(declared)) return false
+@@ -288,7 +288,7 @@ export function matchesSQLiteAffinity(declared: unknown, storage: ColumnStorage)
+ // === SQL identifiers
+ 
+ /**
+- * Quote a SQL identifier (a table or column name) so any characters are literal.
++ * Quotes a SQL identifier (a table or column name) so any characters are literal.
+  *
+  * @remarks
+  * Wraps the name in double quotes and doubles any embedded quote — the standard
+@@ -310,7 +310,7 @@ export function quoteIdentifier(identifier: string): string {
+ // === Value codecs
+ 
+ /**
+- * Encode a JS value to its stored {@link SQLiteValue} for a declared column.
++ * Encodes a JS value to its stored {@link SQLiteValue} for a declared column.
+  *
+  * @remarks
+  * The codec is total: a malformed value encodes to SQL `NULL`. Absence always
+@@ -361,7 +361,7 @@ export function encodeValue(value: unknown, column: ColumnSchema): SQLiteValue {
+ }
+ 
+ /**
+- * Decode a stored {@link SQLiteValue} back to its JS value for a declared column —
++ * Decodes a stored {@link SQLiteValue} back to its JS value for a declared column —
+  * the exact inverse of {@link encodeValue}.
+  *
+  * @remarks
+@@ -420,7 +420,7 @@ export function decodeValue(value: SQLiteValue, column: ColumnSchema): unknown {
+ }
+ 
+ /**
+- * Encode a whole {@link Row} to a {@link SQLiteRow} by its table's schema.
++ * Encodes a whole {@link Row} to a {@link SQLiteRow} by its table's schema.
+  *
+  * @remarks
+  * Encodes each declared column's value with {@link encodeValue}; columns the row
+@@ -445,7 +445,7 @@ export function encodeRow(row: Row, schema: TableSchema): SQLiteRow {
+ }
+ 
+ /**
+- * Extract a stored row's values in a declared positional order.
++ * Extracts a stored row's values in a declared positional order.
+  *
+  * @remarks
+  * SQLite statements bind arrays positionally. Every requested column must be
+@@ -483,7 +483,7 @@ export function extractValues(
+ }
+ 
+ /**
+- * Decode a stored {@link SQLiteRow} back to a {@link Row} by its table's schema.
++ * Decodes a stored {@link SQLiteRow} back to a {@link Row} by its table's schema.
+  *
+  * @remarks
+  * Decodes each declared column with {@link decodeValue} and **omits** any column
+@@ -515,7 +515,7 @@ export function decodeRow(row: SQLiteRow, schema: TableSchema): Row {
+ // === Persisted names
+ 
+ /**
+- * Build a collision-free SQL index name for a table + column-group index —
++ * Builds a collision-free SQL index name for a table + column-group index —
+  * shared by the compiler module's `schemaToIndexes` and `stepToSQL`,
+  * so a plan-built index name always matches one `open` would have created.
+  *
+diff --git a/src/server/types.ts b/src/server/types.ts
+index 29d8b7f..a8c4ff1 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -6,7 +6,7 @@ import type { SQLiteValue } from '@orkestrel/sqlite'
+ // host-independent and never speaks SQL.
+ 
+ /**
+- * A parameterized SQL fragment or statement plus its bind values.
++ * Represents a parameterized SQL fragment or statement plus its bind values.
+  *
+  * @remarks
+  * Produced by the pure SQL compilers (`compilers.ts`) that turn a core
