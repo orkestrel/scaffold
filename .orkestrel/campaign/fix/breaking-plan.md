@@ -293,3 +293,9 @@ The brief, program, and workflow closures consume no L3 package still under audi
 consumed only by probe, an adopt-when-red unit), so their staging and implementer units start
 while the mcp lanes and the browser verdict close. Probe, worker, queue, and lsp stage after mcp
 is accepted. The exit criterion is unchanged.
+
+## Standing condition: agent stages on workflow's checkpoint
+
+`@orkestrel/workflow` landed at `bcf8ab4` with its audit lanes running; agent's closure stages
+that checkpoint so the L5 implementer starts in parallel with the audit. A workflow fix-up
+re-stages agent before agent's own audit, as mcp re-staged on server's fix-up tip.
