@@ -91,7 +91,7 @@ staged.
 
 **Control identifiers.** none. A test is named for what it proves, never for a control label.
 
-**Standing conditions.** L0 landed: @orkestrel/contract (traversal spines interned as SchemaShaper/ValueInferer/SampleInferer with no state parameter on any door; ValueToSchemaOptions.limits.depth/.properties with ValueToSchemaLimits; INTRINSICS.reflect.{read,write,members,present,describe,define,prototype,apply,construct} replacing the flat reveal/declare/parent and the flat Reflect keys; validateShape, buildStringFaults/buildNumberFaults/buildArrayFaults, matchesISOInstant; expansion is number | undefined), @orkestrel/msg (category discriminants, MSG_CATEGORY_*), @orkestrel/sse (clear() replaces reset()). W-DEV landed in @orkestrel/test and @orkestrel/guide (renamed helpers; Source.methods follows extends so an extending interface's Methods table must list inherited members). Every one of these is staged from its committed tip in this checkout's closure and verified (run `node /home/user/work/verify-stage.mjs csv`); this checkout's tests/guides.test.ts already imports the renamed guide helpers. Adopt every renamed upstream symbol this package uses in the same change; the typecheck against the staged closure is the list. Do not run npm install..
+**Standing conditions.** L0 landed: @orkestrel/contract (traversal spines interned as SchemaShaper/ValueInferer/SampleInferer with no state parameter on any door; ValueToSchemaOptions.limits.depth/.properties with ValueToSchemaLimits; INTRINSICS.reflect.{read,write,members,present,describe,define,prototype,apply,construct} replacing the flat reveal/declare/parent and the flat Reflect keys; validateShape, buildStringFaults/buildNumberFaults/buildArrayFaults, matchesISOInstant; expansion is number | undefined), @orkestrel/msg (category discriminants, MSG_CATEGORY_*), @orkestrel/sse (clear() replaces reset()). W-DEV landed in @orkestrel/test and @orkestrel/guide (renamed helpers; Source.methods follows extends so an extending interface's Methods table must list inherited members). Every one of these is staged from its committed tip in this checkout's closure and verified (run `node /home/user/work/verify-stage.mjs csv` to see the rows); this checkout's tests/guides.test.ts already imports the renamed guide helpers. Adopt every renamed upstream symbol this package uses in the same change; the typecheck against the staged closure is the list. Do not run npm install..
 
 ## Unknowns
 
@@ -100,8 +100,9 @@ none.
 ## Scope
 
 **Owned.** `src/**`, `app/**` (if present), `tests/**` except the vendored policy pair,
-`guides/csv.md`, `guides/README.md` rows for this package, and the parity `INTERNAL` list
-where the package keeps one.
+`guides/csv.md`, `guides/README.md` rows for this package, the package's own `README.md`
+(it ships in `files` and its fences name the surface), and the parity `INTERNAL` list where the
+package keeps one.
 
 **Shared (report-only).** none.
 
