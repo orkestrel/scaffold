@@ -299,3 +299,9 @@ is accepted. The exit criterion is unchanged.
 `@orkestrel/workflow` landed at `bcf8ab4` with its audit lanes running; agent's closure stages
 that checkpoint so the L5 implementer starts in parallel with the audit. A workflow fix-up
 re-stages agent before agent's own audit, as mcp re-staged on server's fix-up tip.
+
+## Standing condition: ollama and toolbox stage on agent's checkpoint
+
+`@orkestrel/agent` landed at `df12fab` (re-staged on `workflow-9f00455.tgz`) with its audit lanes
+running; ollama's and toolbox's closures stage that checkpoint so the L6 implementers start in
+parallel with the audit. An agent fix-up re-stages both before their own audits.
