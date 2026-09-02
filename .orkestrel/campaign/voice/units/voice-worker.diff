@@ -1,0 +1,285 @@
+diff --git a/src/core/Worker.ts b/src/core/Worker.ts
+index 03bde4d..14d8669 100644
+--- a/src/core/Worker.ts
++++ b/src/core/Worker.ts
+@@ -6,8 +6,8 @@ import { Pool } from '@orkestrel/pool'
+ import { Queue } from '@orkestrel/queue'
+ 
+ /**
+- * A resource-backed job worker — a thin facade composing a `Queue` (`@orkestrel/queue`)
+- * with a `Pool` (`@orkestrel/pool`).
++ * Represents a resource-backed job worker — a thin facade composing a `Queue`
++ * (`@orkestrel/queue`) with a `Pool` (`@orkestrel/pool`).
+  *
+  * @remarks
+  * - **Composition, not reimplementation.** The Worker owns a `Pool` (built from
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 45cd780..e2c30b8 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -2,7 +2,7 @@ import type { WorkerInterface, WorkerOptions } from './types.js'
+ import { Worker } from './Worker.js'
+ 
+ /**
+- * Create a resource-backed job worker — a `Queue` (`@orkestrel/queue`) marrying a `Pool`
++ * Creates a resource-backed job worker — a `Queue` (`@orkestrel/queue`) marrying a `Pool`
+  * (`@orkestrel/pool`). Each enqueued input runs through the handler against an
+  * automatically acquired pooled resource (released when the job settles), with the
+  * queue's bounded concurrency, retries, and per-attempt timeout / abort.
+diff --git a/src/core/types.ts b/src/core/types.ts
+index b7ff013..a4e68fe 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -3,7 +3,7 @@ import type { PoolOptions } from '@orkestrel/pool'
+ import type { QueueEntryOptions, QueueExecution, QueueStoreInterface } from '@orkestrel/queue'
+ 
+ /**
+- * The push observation surface of a {@link WorkerInterface} (AGENTS §13) — the job
++ * Represents the push observation surface of a {@link WorkerInterface} (AGENTS §13) — the job
+  * lifecycle a fire-and-forget observer subscribes to, surfacing the underlying queue's
+  * moments so a Worker consumer never reaches through to the internal `Queue`.
+  *
+@@ -21,19 +21,19 @@ import type { QueueEntryOptions, QueueExecution, QueueStoreInterface } from '@or
+  * Declared as a `type` alias (§4.5).
+  */
+ export type WorkerEventMap<TResult> = {
+-	/** A job was accepted — its id (delegated from the underlying queue's `enqueue`). */
++	/** Fires when a job is accepted — its id (delegated from the underlying queue's `enqueue`). */
+ 	readonly enqueue: readonly [id: string]
+-	/** A job's attempt began running — its id. */
++	/** Fires when a job's attempt begins running — its id. */
+ 	readonly start: readonly [id: string]
+-	/** A failed job attempt is being retried — its id + the next (1-based) attempt index. */
++	/** Fires when a failed job attempt is being retried — its id + the next (1-based) attempt index. */
+ 	readonly retry: readonly [id: string, attempt: number]
+-	/** A job settled successfully — its id + the resolved result. */
++	/** Fires when a job settles successfully — its id + the resolved result. */
+ 	readonly success: readonly [id: string, result: TResult]
+-	/** A job settled with a terminal failure — its id + the error. */
++	/** Fires when a job settles with a terminal failure — its id + the error. */
+ 	readonly failure: readonly [id: string, error: unknown]
+-	/** The worker was aborted — the queue's coded abort error retaining the caller reason. */
++	/** Fires when the worker is aborted — the queue's coded abort error retaining the caller reason. */
+ 	readonly abort: readonly [reason: unknown]
+-	/** The worker went idle — no pending jobs and none in flight. */
++	/** Fires when the worker goes idle — no pending jobs and none in flight. */
+ 	readonly drain: readonly []
+ }
+ 
+@@ -45,7 +45,7 @@ export type WorkerHandler<TInput, TResource, TResult> = (
+ ) => Promise<TResult> | TResult
+ 
+ /**
+- * Options for `createWorker`.
++ * Configures `createWorker`.
+  *
+  * @remarks
+  * - `handler` — runs each job against an acquired pool resource; rejecting triggers a
+@@ -64,19 +64,19 @@ export type WorkerHandler<TInput, TResource, TResult> = (
+  */
+ export interface WorkerOptions<TInput, TResource, TResult> {
+ 	readonly on?: EmitterHooks<WorkerEventMap<TResult>>
+-	/** The emitter's listener-error handler (AGENTS §13) — a listener throw routes here, not to a domain event. */
++	/** Holds the emitter's listener-error handler (AGENTS §13) — a listener throw routes here, not to a domain event. */
+ 	readonly error?: EmitterErrorHandler
+ 	readonly handler: WorkerHandler<TInput, TResource, TResult>
+ 	readonly pool: PoolOptions<TResource>
+ 	readonly concurrency?: number
+ 	readonly retries?: number
+-	/** Integer milliseconds in `0..2_147_483_647`; `0` disables the per-attempt deadline. */
++	/** Holds integer milliseconds in `0..2_147_483_647`; `0` disables the per-attempt deadline. */
+ 	readonly timeout?: number
+ 	readonly store?: QueueStoreInterface<TInput>
+ }
+ 
+ /**
+- * A resource-backed job worker — a Queue whose handler runs against a pooled resource.
++ * Represents a resource-backed job worker — a Queue whose handler runs against a pooled resource.
+  *
+  * @remarks
+  * Exposes a typed {@link emitter} (AGENTS §13) carrying the job lifecycle
+@@ -92,24 +92,24 @@ export interface WorkerInterface<TInput, TResult> {
+ 	readonly paused: boolean
+ 	readonly stopped: boolean
+ 	enqueue(input: TInput, options?: QueueEntryOptions): Promise<TResult>
+-	/** Re-enqueue outstanding entries loaded from the store; no-op without a store. */
++	/** Re-enqueues outstanding entries loaded from the store; no-op without a store. */
+ 	restore(): Promise<void>
+ 	start(): void
+-	/** Stop the queue and await current-loop and durable cleanup quiescence. */
++	/** Stops the queue and awaits current-loop and durable cleanup quiescence. */
+ 	stop(): Promise<void>
+ 	pause(): void
+ 	resume(): void
+ 	/**
+-	 * Cancel in-flight work, reject pending work, and await queue-owned cleanup.
++	 * Cancels in-flight work, rejects pending work, and awaits queue-owned cleanup.
+ 	 *
+ 	 * @param reason - Optional cause retained by the queue's coded abort error
+ 	 * @returns The underlying queue's stable abort barrier
+ 	 */
+ 	abort(reason?: unknown): Promise<void>
+-	/** Drop pending work and await its durable cleanup. */
++	/** Drops pending work and awaits its durable cleanup. */
+ 	clear(): Promise<void>
+ 	/**
+-	 * Tear down the queue, then the pool, and finally the worker emitter.
++	 * Tears down the queue, then the pool, and finally the worker emitter.
+ 	 *
+ 	 * @returns One stable barrier shared by every call; it rejects with the original sole
+ 	 *   cleanup failure or an ordered `AggregateError` when both queue and pool fail
+diff --git a/src/server/Dispatch.ts b/src/server/Dispatch.ts
+index 255b815..55811ca 100644
+--- a/src/server/Dispatch.ts
++++ b/src/server/Dispatch.ts
+@@ -7,7 +7,7 @@ import { isReply } from './helpers.js'
+ import { Thread } from './Thread.js'
+ 
+ /**
+- * Internal lifecycle entity for one dispatched worker-thread job.
++ * Represents the internal lifecycle entity for one dispatched worker-thread job.
+  *
+  * @remarks
+  * Owns stable `message` / `messageerror` / death listener identities, settlement, result-guard
+diff --git a/src/server/NodeWorker.ts b/src/server/NodeWorker.ts
+index b1d561b..05c2e16 100644
+--- a/src/server/NodeWorker.ts
++++ b/src/server/NodeWorker.ts
+@@ -7,7 +7,7 @@ import { attempt } from '@orkestrel/contract'
+ import { dispatch, spawnThread } from './helpers.js'
+ 
+ /**
+- * Internal composition entity backing {@link createNodeWorker}.
++ * Represents the internal composition entity backing {@link createNodeWorker}.
+  *
+  * @remarks
+  * Supplies bound Pool and Queue operations without nested function assignments. The resulting
+diff --git a/src/server/Thread.ts b/src/server/Thread.ts
+index 4767681..a09db3f 100644
+--- a/src/server/Thread.ts
++++ b/src/server/Thread.ts
+@@ -2,7 +2,8 @@ import type { NodeThread } from './types.js'
+ import { Worker as ThreadWorker } from 'node:worker_threads'
+ 
+ /**
+- * Internal mutable implementation of the readonly {@link NodeThread} observation contract.
++ * Represents the internal mutable implementation of the readonly {@link NodeThread} observation
++ * contract.
+  *
+  * @remarks
+  * Liveness and the first terminal error live behind runtime-private fields. Thread `error`,
+diff --git a/src/server/factories.ts b/src/server/factories.ts
+index 224cbab..9d89991 100644
+--- a/src/server/factories.ts
++++ b/src/server/factories.ts
+@@ -7,7 +7,7 @@ import { createDatabaseQueueStore } from '@orkestrel/queue'
+ import { NodeWorker } from './NodeWorker.js'
+ 
+ /**
+- * Create a persistent JSON-file {@link QueueStoreInterface} — the core
++ * Creates a persistent JSON-file {@link QueueStoreInterface} — the core
+  * `createDatabaseQueueStore` over a server {@link createJSONDriver}.
+  *
+  * @remarks
+@@ -44,7 +44,7 @@ export function createJSONQueueStore<TInput extends ContractShape>(
+ }
+ 
+ /**
+- * Create a CPU-parallel worker over `node:worker_threads` — a thin specialization of the
++ * Creates a CPU-parallel worker over `node:worker_threads` — a thin specialization of the
+  * core `createWorker` whose pooled resource is a worker THREAD.
+  *
+  * @remarks
+diff --git a/src/server/handlers.ts b/src/server/handlers.ts
+index 938057a..e9ca039 100644
+--- a/src/server/handlers.ts
++++ b/src/server/handlers.ts
+@@ -11,7 +11,7 @@ import { parentPort } from 'node:worker_threads'
+ // a thread already).
+ 
+ /**
+- * Register a worker-thread handler — the worker-side half of {@link createNodeWorker}.
++ * Registers a worker-thread handler — the worker-side half of {@link createNodeWorker}.
+  *
+  * @remarks
+  * Must be the spawned thread's module entry. It listens on the parent port for the
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index 8eaf06e..8ac5bbc 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -14,7 +14,7 @@ import { Thread } from './Thread.js'
+ // narrow the envelopes' opaque `unknown` payloads with no assertion (AGENTS §14).
+ 
+ /**
+- * Spawn one worker thread and resolve a live {@link NodeThread} once it comes online.
++ * Spawns one worker thread and resolves a live {@link NodeThread} once it comes online.
+  *
+  * @remarks
+  * Constructs the thread with the `script` module and the cloned `workerData`, then
+@@ -39,7 +39,7 @@ export function spawnThread(script: string | URL, workerData: unknown): Promise<
+ }
+ 
+ /**
+- * Dispatch one job to a leased {@link NodeThread} and await its narrowed reply.
++ * Dispatches one job to a leased {@link NodeThread} and awaits its narrowed reply.
+  *
+  * @remarks
+  * Mints a fresh per-dispatch correlation `id`, posts it with `job: execution.id`, and
+@@ -77,7 +77,7 @@ export function dispatch<TResult>(
+ }
+ 
+ /**
+- * Narrow an inbound `message` to a {@link Reply} for a given job `id` — no assertion.
++ * Narrows an inbound `message` to a {@link Reply} for a given job `id` — no assertion.
+  *
+  * @remarks
+  * A total predicate: a record whose `id` matches and whose `ok` discriminant is well-formed.
+@@ -87,7 +87,7 @@ export function dispatch<TResult>(
+  *
+  * @param value - The inbound message to narrow
+  * @param id - The job id a matching reply must carry
+- * @returns `true` when the value is this job's well-formed reply
++ * @returns True if the value is this job's well-formed reply; false otherwise
+  */
+ export function isReply(value: unknown, id: string): value is Reply {
+ 	const outcome = attempt(() => {
+diff --git a/src/server/types.ts b/src/server/types.ts
+index 820956d..2cf104d 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -3,7 +3,7 @@ import type { QueueExecution, QueueStoreInterface } from '@orkestrel/queue'
+ import type { Worker as ThreadWorker } from 'node:worker_threads'
+ 
+ /**
+- * A thread→main reply envelope — a success carrying an opaque `value`, or a failure with a
++ * Represents a thread→main reply envelope — a success carrying an opaque `value`, or a failure with a
+  * message — part of the internal wire protocol `createNodeWorker` posts and `serveWorker`
+  * answers.
+  *
+@@ -21,7 +21,7 @@ export type Reply =
+ 	| { readonly id: string; readonly ok: false; readonly error: string }
+ 
+ /**
+- * A live worker thread plus its latched liveness state — the pooled resource a
++ * Represents a live worker thread plus its latched liveness state — the pooled resource a
+  * {@link createNodeWorker} leases per job.
+  *
+  * @remarks
+@@ -44,7 +44,7 @@ export interface NodeThread {
+ }
+ 
+ /**
+- * Options for `createNodeWorker` — a CPU-parallel worker over `node:worker_threads`.
++ * Configures `createNodeWorker` — a CPU-parallel worker over `node:worker_threads`.
+  *
+  * @remarks
+  * - `script` — the worker module each pooled thread runs; its module must call
+@@ -80,7 +80,7 @@ export interface NodeWorkerOptions<TInput, TResult> {
+ }
+ 
+ /**
+- * Options for `serveWorker` — the worker-side entry a thread script registers.
++ * Configures `serveWorker` — the worker-side entry a thread script registers.
+  *
+  * @remarks
+  * - `input` — narrows each inbound payload inside the thread; an invalid payload replies

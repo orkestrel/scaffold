@@ -1,0 +1,273 @@
+diff --git a/src/core/Pool.ts b/src/core/Pool.ts
+index c6fee7f..1e433b8 100644
+--- a/src/core/Pool.ts
++++ b/src/core/Pool.ts
+@@ -5,8 +5,9 @@ import { PoolError } from './errors.js'
+ import { isPoolMax, isPoolSignal } from './validators.js'
+ 
+ /**
+- * A capacity-aware resource pool whose opaque ownership records preserve FIFO settlement,
+- * cancellation, exact lease release, and deterministic teardown under concurrent hooks.
++ * Represents a capacity-aware resource pool whose opaque ownership records preserve FIFO
++ * settlement, cancellation, exact lease release, and deterministic teardown under concurrent
++ * hooks.
+  *
+  * @typeParam T - The pooled resource value
+  *
+@@ -55,7 +56,7 @@ export class Pool<T> implements PoolInterface<T> {
+ 	#repump = false
+ 
+ 	/**
+-	 * Construct a pool and synchronously validate its capacity contract.
++	 * Constructs a pool and synchronously validates its capacity contract.
+ 	 *
+ 	 * @param options - Resource hooks, observation hooks, and optional positive safe `max`
+ 	 * @throws {@link PoolError} Thrown when `options.max` is present and is not a positive safe
+@@ -78,28 +79,28 @@ export class Pool<T> implements PoolInterface<T> {
+ 		})
+ 	}
+ 
+-	/** The typed synchronous lifecycle observation surface. */
++	/** Holds the typed synchronous lifecycle observation surface. */
+ 	get emitter(): EmitterInterface<PoolEventMap> {
+ 		return this.#emitter
+ 	}
+ 
+-	/** All owned records, including records validating or destroying. */
++	/** Counts all owned records, including records validating or destroying. */
+ 	get size(): number {
+ 		return this.#resources.size
+ 	}
+ 
+-	/** Records immediately available without validation work. */
++	/** Counts the records immediately available without validation work. */
+ 	get idle(): number {
+ 		return this.#available.length
+ 	}
+ 
+-	/** Records represented by unsettled released-once lease tokens. */
++	/** Counts the records represented by unsettled released-once lease tokens. */
+ 	get active(): number {
+ 		return this.#leased.size
+ 	}
+ 
+ 	/**
+-	 * Queue and lease one resource in FIFO settlement order.
++	 * Queues and leases one resource in FIFO settlement order.
+ 	 *
+ 	 * @param signal - Optional native cancellation signal
+ 	 * @returns A promise for the unique resource lease
+@@ -131,7 +132,7 @@ export class Pool<T> implements PoolInterface<T> {
+ 	}
+ 
+ 	/**
+-	 * Destroy the records that are idle at this call's synchronous snapshot.
++	 * Destroys the records that are idle at this call's synchronous snapshot.
+ 	 *
+ 	 * @returns A promise that settles after every snapshot cleanup attempt
+ 	 */
+@@ -151,7 +152,7 @@ export class Pool<T> implements PoolInterface<T> {
+ 	}
+ 
+ 	/**
+-	 * Permanently tear down the pool and return its stable completion barrier.
++	 * Tears down the pool permanently and returns its stable completion barrier.
+ 	 *
+ 	 * @returns The exact promise shared by every destroy call
+ 	 */
+diff --git a/src/core/errors.ts b/src/core/errors.ts
+index ed6920c..1b006ac 100644
+--- a/src/core/errors.ts
++++ b/src/core/errors.ts
+@@ -1,7 +1,8 @@
+ import type { PoolErrorOptions } from './types.js'
+ 
+ /**
+- * A stable, machine-readable pool failure with the original cause and structured context.
++ * Represents a stable, machine-readable pool failure with the original cause and structured
++ * context.
+  *
+  * @example
+  * ```ts
+@@ -15,13 +16,13 @@ import type { PoolErrorOptions } from './types.js'
+  * ```
+  */
+ export class PoolError extends Error {
+-	/** Stable machine-readable failure category. */
++	/** Holds the stable machine-readable failure category. */
+ 	readonly code
+-	/** Optional structured input or aggregate destroy-hook failure details. */
++	/** Holds optional structured input or aggregate destroy-hook failure details. */
+ 	readonly context
+ 
+ 	/**
+-	 * Create a pool failure without coercing a hostile thrown value.
++	 * Creates a pool failure without coercing a hostile thrown value.
+ 	 *
+ 	 * @param options - Stable code plus optional cause and structured context
+ 	 */
+@@ -47,10 +48,10 @@ export class PoolError extends Error {
+ }
+ 
+ /**
+- * Test whether an unknown value is a {@link PoolError}, returning `false` for hostile proxies.
++ * Tests whether an unknown value is a {@link PoolError}, returning `false` for hostile proxies.
+  *
+  * @param value - The unknown boundary value
+- * @returns Whether the value is a real `PoolError` instance
++ * @returns True if the value is a real `PoolError` instance; false otherwise
+  *
+  * @example
+  * ```ts
+diff --git a/src/core/factories.ts b/src/core/factories.ts
+index 2c37c04..d1beb9c 100644
+--- a/src/core/factories.ts
++++ b/src/core/factories.ts
+@@ -2,7 +2,7 @@ import type { PoolInterface, PoolOptions } from './types.js'
+ import { Pool } from './Pool.js'
+ 
+ /**
+- * Create a resource pool with optional bounded capacity, unique ownership, and FIFO settlement.
++ * Creates a resource pool with optional bounded capacity, unique ownership, and FIFO settlement.
+  *
+  * @remarks
+  * Concurrent create and validation hooks may overlap, while acquire promises settle in
+diff --git a/src/core/types.ts b/src/core/types.ts
+index 43831a8..547988c 100644
+--- a/src/core/types.ts
++++ b/src/core/types.ts
+@@ -1,48 +1,48 @@
+ import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkestrel/emitter'
+ 
+-/** Machine-readable failure codes produced by {@link PoolError}. */
++/** Names the machine-readable failure codes produced by {@link PoolError}. */
+ export type PoolCode = 'invalid' | 'destroyed' | 'create' | 'cleanup'
+ 
+-/** Structured context attached to a {@link PoolError}. */
++/** Represents the structured context attached to a {@link PoolError}. */
+ export interface PoolContext {
+-	/** The rejected public input, when the failure is an input-validation error. */
++	/** Holds the rejected public input, when the failure is an input-validation error. */
+ 	readonly value?: unknown
+-	/** Distinct destroy-hook failures collected by `clear()` or `destroy()`. */
++	/** Holds distinct destroy-hook failures collected by `clear()` or `destroy()`. */
+ 	readonly failures?: readonly unknown[]
+ }
+ 
+-/** Construction options for {@link PoolError}. */
++/** Represents the construction options for {@link PoolError}. */
+ export interface PoolErrorOptions {
+-	/** The stable machine-readable failure category. */
++	/** Holds the stable machine-readable failure category. */
+ 	readonly code: PoolCode
+-	/** The original thrown value, retained without unsafe string coercion. */
++	/** Holds the original thrown value, retained without unsafe string coercion. */
+ 	readonly cause?: unknown
+-	/** Optional structured failure details. */
++	/** Holds optional structured failure details. */
+ 	readonly context?: PoolContext
+ }
+ 
+-/** Observable resource lifecycle events emitted by a {@link PoolInterface}. */
++/** Represents the observable resource lifecycle events emitted by a {@link PoolInterface}. */
+ export type PoolEventMap = {
+-	/** A created resource entered pool ownership. */
++	/** Signals that a created resource entered pool ownership. */
+ 	readonly create: readonly []
+-	/** A token settled successfully and its exact resource became leased. */
++	/** Signals that a token settled successfully and its exact resource became leased. */
+ 	readonly acquire: readonly []
+-	/** A released resource became immediately idle. */
++	/** Signals that a released resource became immediately idle. */
+ 	readonly release: readonly []
+-	/** A resource destroy hook completed or was attempted when absent. */
++	/** Signals that a resource destroy hook completed or was attempted when absent. */
+ 	readonly destroy: readonly []
+ }
+ 
+-/** A unique lease over one pool-owned resource record. */
++/** Represents a unique lease over one pool-owned resource record. */
+ export interface PoolToken<T> {
+-	/** The leased value. Duplicate values still belong to independent records. */
++	/** Holds the leased value. Duplicate values still belong to independent records. */
+ 	readonly value: T
+-	/** Return this exact lease once; subsequent calls are no-ops. */
++	/** Gives this exact lease back once; subsequent calls are no-ops. */
+ 	release(): void
+ }
+ 
+ /**
+- * Resource lifecycle options for {@link Pool} and `createPool`.
++ * Represents the resource lifecycle options for {@link Pool} and `createPool`.
+  *
+  * @remarks
+  * `create` lazily produces resources. `destroy` tears down a claimed resource.
+@@ -59,18 +59,18 @@ export interface PoolOptions<T> {
+ 	readonly max?: number
+ }
+ 
+-/** A FIFO resource pool with optional bounded capacity and deterministic teardown. */
++/** Represents a FIFO resource pool with optional bounded capacity and deterministic teardown. */
+ export interface PoolInterface<T> {
+-	/** The typed synchronous lifecycle observation surface. */
++	/** Holds the typed synchronous lifecycle observation surface. */
+ 	readonly emitter: EmitterInterface<PoolEventMap>
+-	/** All owned records, including records validating or destroying. */
++	/** Counts all owned records, including records validating or destroying. */
+ 	readonly size: number
+-	/** Records immediately available without validation work. */
++	/** Counts the records immediately available without validation work. */
+ 	readonly idle: number
+-	/** Records represented by unsettled released-once lease tokens. */
++	/** Counts the records represented by unsettled released-once lease tokens. */
+ 	readonly active: number
+ 	/**
+-	 * Queue and lease one resource in FIFO settlement order.
++	 * Queues and leases one resource in FIFO settlement order.
+ 	 *
+ 	 * @param signal - Optional native cancellation signal
+ 	 * @returns A promise for the unique resource lease
+@@ -80,13 +80,13 @@ export interface PoolInterface<T> {
+ 	 */
+ 	acquire(signal?: AbortSignal): Promise<PoolToken<T>>
+ 	/**
+-	 * Destroy the records that are idle at this call's synchronous snapshot.
++	 * Destroys the records that are idle at this call's synchronous snapshot.
+ 	 *
+ 	 * @returns A promise that settles after every snapshot cleanup attempt
+ 	 */
+ 	clear(): Promise<void>
+ 	/**
+-	 * Permanently tear down the pool and return its stable completion barrier.
++	 * Tears down the pool permanently and returns its stable completion barrier.
+ 	 *
+ 	 * @returns The exact promise shared by every destroy call
+ 	 */
+diff --git a/src/core/validators.ts b/src/core/validators.ts
+index 8e1c1b4..0d6b970 100644
+--- a/src/core/validators.ts
++++ b/src/core/validators.ts
+@@ -1,8 +1,8 @@
+ /**
+- * Test whether a value is a valid finite pool maximum.
++ * Tests whether a value is a valid finite pool maximum.
+  *
+  * @param value - The unknown maximum candidate
+- * @returns Whether the value is a positive safe integer
++ * @returns True if the value is a positive safe integer; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -15,10 +15,10 @@ export function isPoolMax(value: unknown): value is number {
+ }
+ 
+ /**
+- * Test whether a value is a native `AbortSignal`, returning `false` for hostile proxies.
++ * Tests whether a value is a native `AbortSignal`, returning `false` for hostile proxies.
+  *
+  * @param value - The unknown signal candidate
+- * @returns Whether the value is a native `AbortSignal`
++ * @returns True if the value is a native `AbortSignal`; false otherwise
+  *
+  * @example
+  * ```ts

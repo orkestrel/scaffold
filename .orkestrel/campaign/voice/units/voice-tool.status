@@ -1,0 +1,5 @@
+ M src/core/factories.ts
+ M src/core/tools/Tool.ts
+ M src/core/tools/ToolManager.ts
+ M src/core/types.ts
+ M src/core/validators.ts

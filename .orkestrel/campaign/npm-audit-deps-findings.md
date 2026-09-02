@@ -773,3 +773,7 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   tagline and Surface rows keep the noun-phrase genre by design (`documentation.md` governs the
   guide, the wave governs TSDoc), so a guide quoting the pre-wave noun phrase is not drift; the
   debrief records the question of whether the guide surface table wants a voice rule of its own.
+- **Slice 2 closed** (budget `aa92b5f`, relation `795a34d`, websocket `4f59e55`, rater `1ccb968`,
+  pool `fe2c9f1`, worker `5d1d6df`, tool `04c0395`, template `7ffa579`; verdicts under
+  `voice/units/`). Every landing chain green; `voice/scan-after-slice2.txt` reads zero in every
+  bucket for the eight.
