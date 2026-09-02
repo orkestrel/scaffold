@@ -1,0 +1,22 @@
+ M README.md
+ M guides/ollama.md
+ M src/server/OllamaProvider.ts
+ M src/server/constants.ts
+ M src/server/errors.ts
+ M src/server/helpers.ts
+ M src/server/types.ts
+ M tests/service/OllamaProvider.test.ts
+ M tests/service/compaction.test.ts
+ M tests/service/conversation.test.ts
+ M tests/service/lifecycle.test.ts
+ M tests/service/transport.test.ts
+ M tests/setup.test.ts
+ M tests/setup.ts
+ M tests/setupServer.test.ts
+ M tests/setupServer.ts
+ M tests/setupService.test.ts
+ M tests/setupService.ts
+ M tests/src/server/OllamaProvider.test.ts
+ M tests/src/server/helpers.test.ts
+ M tests/src/server/integration.test.ts
+?? tests/src/server/errors.test.ts
