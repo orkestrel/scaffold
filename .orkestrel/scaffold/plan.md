@@ -165,3 +165,13 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
 - Iteration 2 evaluation: form eval 17/17 (agent-graded), toolbar eval 9/9 (one mechanical row
   overridden on evidence); old skill 82.5%, new skill 100.0%. Static viewer sent to the user;
   benchmarks retained as `benchmark-iteration-{1,2}.md`. The eval worktree was removed.
+- FX3 returned: committed in terrain as "Close the audit round's findings against the reference
+  suite" (2 files, 338+/94-). C19, F2, F3, F4 closed; eight runs green; twelve frames re-filmed and
+  read complete. Measured mechanism behind F2: the layer's `captureFrame` shoots the body at the
+  pane's declared height, so a body taller than the pane is clipped to the runner's canvas. The
+  suite's fix declares a 1900 px pane for the 390 variants, which costs them a true phone height.
+  Ruling: that is a layer defect this campaign owns; FX2b in test makes the shot cover the
+  document and exports the frame reader, then FX3b in terrain restores the 844 px pane, adopts
+  the layer's reader, and moves its census and escape negative controls through the read root
+  (claim 3 alignment). Product observation for the user: the armed Delete reads 4.045 against the
+  dark themes, under the 4.5 text bar, on `btn-outline-danger`.
