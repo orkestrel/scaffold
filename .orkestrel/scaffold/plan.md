@@ -98,3 +98,17 @@ Writers never overlap inside one checkout. Every writer starts from a committed 
   working-tree file was never touched. Rule for the rest of the campaign: in a tree carrying a
   user's staged change, commit with explicit pathspecs (`git commit -- <paths>`), never a bare
   commit over the index.
+
+## U3s3 resolver fix, returned 2026-09-02
+
+- Committed in test at `c98f3ba`. Mechanism: a visible pass without `includeHidden` decides every
+  returned, refused, or ambiguous element; a hidden pass matches `computeNamePattern` and only
+  chooses between the absent and not-visible voices. Bound recorded in the report: a hidden icon
+  whose content is a word reads as absent; a punctuation-only difference reads as not visible.
+  `readPerception` drops `includeHidden`; an `aria-hidden` control or region is now refused.
+- Proof: 4 failed | 193 passed before, 203 passed after on the helpers file; browser project 234.
+  Full chain dispatched to `verifier` (`gates-resolve-brief.md`).
+- Tarball rebuilt from `c98f3ba` at 17:23 into `tmp/tarballs/orkestrel-test-0.0.11.tgz`; the packed
+  browser entry carries `computeNamePattern`. Re-stage into terrain after the visit returns, then
+  dispatch U6s on `terrain-successor-brief.md`.
+- Audit claim 23 stands as written; the auditor reads `resolve-hidden-report.md`.

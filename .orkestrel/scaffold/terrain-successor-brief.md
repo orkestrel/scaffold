@@ -21,7 +21,7 @@ rebuilt layer, and remove every comment or workaround that named the defect.
   findings. The fix: `test/tmp/units/resolve-hidden-report.md` (mechanism and bound).
 - `node_modules/@orkestrel/test` holds the rebuilt campaign tarball; prove it first with
   `npm ls @orkestrel/test` and by reading the resolver in
-  `node_modules/@orkestrel/test/dist/browser/index.js` for the two-pass shape the fix report
+  `node_modules/@orkestrel/test/dist/src/browser/index.js` for the two-pass shape the fix report
   describes. Where the installed copy is still the old build, stop and report.
 - Skill: `orkestrel-prove-journey` and every reference it names. Rules: `AGENTS.md`,
   `.claude/rules/tests.md`, `.claude/rules/browser.md`. Guide: terrain's `guides/README.md`.
