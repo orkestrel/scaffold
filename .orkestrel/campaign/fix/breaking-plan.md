@@ -261,3 +261,14 @@ dependent of a changed package is either a unit or a green typecheck against the
 with every red from the W-END sweep owning a successor brief; every register row names its
 pending re-pin; every tarball is swept; no version is bumped and nothing is published. The
 publish wave is the next goal.
+
+## Standing condition: L2 closures staged before indexeddb and sqlite were accepted
+
+The eight L2 units launched early (console, markdown, middleware, process, reason, table, template,
+websocket) were staged with indexeddb at `80ee848` and sqlite at `a397f6c`, the pre-unit tips.
+indexeddb closed at `bf4730e` and sqlite at `5a9340b` on 2026-09-02, and database's closure is
+staged from those. When each of the eight lands, before its audit: re-run `stage-closure.sh` for
+that checkout, run `npm run check` and `npm run test:guides`, and read any red as an adoption
+list for a builder fix-up (middleware's closure carries indexeddb and sqlite; the others do not,
+so their re-stage is a no-op that the verify step proves). After database lands, repeat for every
+L2 checkout whose closure carries database (middleware) before the L2 tips are packed for L3.
