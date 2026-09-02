@@ -1,6 +1,8 @@
 // Print the @orkestrel/* closure a consumer must stage, one bare package name per line: every
-// runtime and development dependency from the fleet's committed manifests, followed transitively
-// over runtime dependencies, excluding the tooling packages (scaffold, probe) and the consumer.
+// runtime, peer, and development dependency from the fleet's committed manifests, followed
+// transitively over runtime and peer dependencies (a peer must be satisfied by the consumer's own
+// install, so an unstaged peer resolves to the registry copy), excluding the tooling packages
+// (scaffold, probe) and the consumer.
 // Usage: node stage-set.mjs <consumer> [--runtime-only]
 import { readFileSync, existsSync } from 'node:fs'
 
@@ -14,7 +16,7 @@ const bare = (spec) => spec.replace('@orkestrel/', '')
 const orkestrel = (record) => Object.keys(record ?? {}).filter((key) => key.startsWith('@orkestrel/')).map(bare)
 
 const root = manifest(consumer)
-const seeds = [...orkestrel(root.dependencies), ...(runtimeOnly ? [] : orkestrel(root.devDependencies))]
+const seeds = [...orkestrel(root.dependencies), ...orkestrel(root.peerDependencies), ...(runtimeOnly ? [] : orkestrel(root.devDependencies))]
 const closure = new Set()
 const queue = seeds.filter((name) => !EXCLUDED.has(name) && name !== consumer)
 while (queue.length > 0) {
@@ -22,7 +24,7 @@ while (queue.length > 0) {
 	if (closure.has(name)) continue
 	if (!existsSync(`${dir(name)}/package.json`)) continue
 	closure.add(name)
-	for (const next of orkestrel(manifest(name).dependencies)) {
+	for (const next of [...orkestrel(manifest(name).dependencies), ...orkestrel(manifest(name).peerDependencies)]) {
 		if (!EXCLUDED.has(next) && next !== consumer && !closure.has(next)) queue.push(next)
 	}
 }

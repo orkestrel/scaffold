@@ -602,3 +602,18 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   `ScopeInterface` beside `cacheScope`; `guides/README.md:58` names `openStream` for the vendored
   `guides/server.md` mirror until the re-pin. Browser's, terminal's, interpret's, and workspace's
   successor rows are in their verdicts.
+
+## L4 open
+
+- **Staging harness followed no peer dependency.** `stage-set.mjs` built a consumer's closure
+  over runtime and development dependencies only, so a package reached through a peer resolved to
+  the registry copy: probe consumes mcp, mcp declares `@orkestrel/server` and `@orkestrel/router`
+  as peers, and probe's nested `@orkestrel/server@0.0.17` lacked `createStream`, which
+  `mcp-51775d1.tgz` imports, so probe's test gate went red on module load while `npm run check`
+  stayed green. The builder now follows `peerDependencies` transitively beside `dependencies`; a
+  scan over every consumer in `tarballs.json` (49 rows) found only probe missing members (router,
+  server). Only mcp and middleware declare peers in the fleet, and middleware stages server and
+  database as direct dependencies. Probe re-stages with the corrected closure before its
+  adopt-when-red reading.
+- **L4 adopt-when-red readings on the accepted tips.** worker: check 0, test 0 (106 src). queue:
+  check 0, test 0 (151 src). lsp: check 0, test 0 (159 src). probe: pending the re-stage.
