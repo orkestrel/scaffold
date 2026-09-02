@@ -28,7 +28,7 @@
 			"storage": "agents/skills/enterprise-bootstrap/SKILL.md",
 			"destination": ".agents/skills/enterprise-bootstrap/SKILL.md",
 			"executable": false,
-			"digest": "29f920fe6922e4c351faf8d2dcf51e9888b55fc4d8aed9963cc075eba6e8e6cf"
+			"digest": "79cf8eafff065e367f7707544205f38d9a803ed19afc411d831e21acb4338899"
 		},
 		{
 			"storage": "agents/skills/enterprise-bootstrap/agents/openai.yaml",
@@ -772,5 +772,5 @@
 		".codex/agents",
 		".cursor/rules"
 	],
-	"digest": "bbc6b360fd3a34c30984323bef3af2e81b1652848395aa8c56c9b46394a3eeb2"
+	"digest": "1fa593c9830b0d29ad6a3c709dd9712999dcd4f04f6497d5783e62ff387172c2"
 }

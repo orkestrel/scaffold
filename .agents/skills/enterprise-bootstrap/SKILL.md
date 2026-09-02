@@ -92,7 +92,9 @@ negative control it names, and treat an instrument whose control passes as broke
 `.claude/rules/quality.md` owns that law where it is present. Those instruments settle what a capture
 cannot: composited contrast, authored classes against the shipped cascade, declared class
 combinations, style escapes, token discipline, a custom rule doing a utility's job, and one glyph per
-meaning.
+meaning. Hold every check the deliverable lists to that shape, whether or not inspection.md names
+it: each states its population, its negative control, and its coverage, and a check that cannot
+name a control is recorded as open rather than listed as a check.
 
 ---
 
@@ -238,7 +240,7 @@ Progress:
 - [ ] Contrast composited and measured in both themes: ≥ 4.5:1 information-bearing (small included), ≥ 3:1 marks and state chrome; meaning not color-alone
 - [ ] Tiers held: `-emphasis` for information-bearing status, solid buttons for real actions, no tone class inside a filled surface
 - [ ] Every treatment resolved in the shipped cascade, not from docs memory
-- [ ] Every instrument in inspection.md run: population reported, control failed, coverage stated
+- [ ] Every check listed, inspection.md instrument or not: population reported, control failed, coverage stated; a check with no control listed as open
 - [ ] Keyboard: focus visible, not obscured, targets ≥ 24px, icon controls named
 - [ ] Reduced motion respected; every drag has a non-drag path
 - [ ] Forms: labels visible, blur validation, error summary + inline, submit enabled
