@@ -1,0 +1,317 @@
+diff --git a/src/server/NodeWebSocket.ts b/src/server/NodeWebSocket.ts
+index 0324c1c..dde4ad0 100644
+--- a/src/server/NodeWebSocket.ts
++++ b/src/server/NodeWebSocket.ts
+@@ -35,7 +35,7 @@ import {
+ } from './constants.js'
+ 
+ /**
+- * A server-native WebSocket over a raw upgraded `node:stream` Duplex — the lean
++ * Represents a server-native WebSocket over a raw upgraded `node:stream` Duplex — the lean
+  * wrapper around the RFC 6455 wire protocol.
+  *
+  * @remarks
+diff --git a/src/server/constants.ts b/src/server/constants.ts
+index 38916c4..d11340c 100644
+--- a/src/server/constants.ts
++++ b/src/server/constants.ts
+@@ -7,7 +7,7 @@ import type { WebSocketReadyState } from './types.js'
+ // `NodeWebSocket` wrapper read them by name rather than re-spelling the bit values.
+ 
+ /**
+- * The RFC 6455 GUID concatenated to a client's `Sec-WebSocket-Key` before the SHA-1
++ * Names the RFC 6455 GUID concatenated to a client's `Sec-WebSocket-Key` before the SHA-1
+  * hash that yields the `Sec-WebSocket-Accept` response value.
+  *
+  * @remarks
+@@ -16,65 +16,65 @@ import type { WebSocketReadyState } from './types.js'
+  */
+ export const WEBSOCKET_GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
+ 
+-/** The WebSocket protocol version this wrapper speaks (`Sec-WebSocket-Version: 13`). */
++/** Names the WebSocket protocol version this wrapper speaks (`Sec-WebSocket-Version: 13`). */
+ export const WEBSOCKET_VERSION = '13'
+ 
+-/** Text frame opcode — a UTF-8 payload (RFC 6455 §5.6). */
++/** Names the text frame opcode — a UTF-8 payload (RFC 6455 §5.6). */
+ export const WEBSOCKET_OPCODE_TEXT = 0x01
+ 
+-/** Binary frame opcode — a raw byte payload (RFC 6455 §5.6). */
++/** Names the binary frame opcode — a raw byte payload (RFC 6455 §5.6). */
+ export const WEBSOCKET_OPCODE_BINARY = 0x02
+ 
+-/** Continuation frame opcode — the next fragment of an open data message (RFC 6455 §5.4). */
++/** Names the continuation frame opcode — the next fragment of an open data message (RFC 6455 §5.4). */
+ export const WEBSOCKET_OPCODE_CONTINUATION = 0x00
+ 
+-/** Close frame opcode — a control frame ending the connection (RFC 6455 §5.5.1). */
++/** Names the close frame opcode — a control frame ending the connection (RFC 6455 §5.5.1). */
+ export const WEBSOCKET_OPCODE_CLOSE = 0x08
+ 
+-/** Ping frame opcode — a control frame the peer must answer with a pong (RFC 6455 §5.5.2). */
++/** Names the ping frame opcode — a control frame the peer must answer with a pong (RFC 6455 §5.5.2). */
+ export const WEBSOCKET_OPCODE_PING = 0x09
+ 
+-/** Pong frame opcode — a control frame answering a ping (RFC 6455 §5.5.3). */
++/** Names the pong frame opcode — a control frame answering a ping (RFC 6455 §5.5.3). */
+ export const WEBSOCKET_OPCODE_PONG = 0x0a
+ 
+-/** Ready state for a connecting WebSocket (before the handshake completes). */
++/** Names the ready state for a connecting WebSocket (before the handshake completes). */
+ export const WEBSOCKET_READY_CONNECTING: WebSocketReadyState = 0
+ 
+-/** Ready state for an open WebSocket (the handshake completed; frames flow). */
++/** Names the ready state for an open WebSocket (the handshake completed; frames flow). */
+ export const WEBSOCKET_READY_OPEN: WebSocketReadyState = 1
+ 
+-/** Ready state for a closing WebSocket (a close frame was sent or received). */
++/** Names the ready state for a closing WebSocket (a close frame was sent or received). */
+ export const WEBSOCKET_READY_CLOSING: WebSocketReadyState = 2
+ 
+-/** Ready state for a closed WebSocket (the socket ended). */
++/** Names the ready state for a closed WebSocket (the socket ended). */
+ export const WEBSOCKET_READY_CLOSED: WebSocketReadyState = 3
+ 
+-/** Normal-closure status code (RFC 6455 §7.4.1) — the default `close` code. */
++/** Names the normal-closure status code (RFC 6455 §7.4.1) — the default `close` code. */
+ export const WEBSOCKET_CLOSE_NORMAL = 1000
+ 
+-/** Protocol-error status code (RFC 6455 §7.4.1) — a framing/state rule was violated. */
++/** Names the protocol-error status code (RFC 6455 §7.4.1) — a framing/state rule was violated. */
+ export const WEBSOCKET_CLOSE_PROTOCOL = 1002
+ 
+-/** Unsupported-data status code (RFC 6455 §7.4.1) — the endpoint received a data type it cannot accept (e.g. binary on a text-only endpoint). */
++/** Names the unsupported-data status code (RFC 6455 §7.4.1) — the endpoint received a data type it cannot accept (e.g. binary on a text-only endpoint). */
+ export const WEBSOCKET_CLOSE_UNSUPPORTED = 1003
+ 
+-/** Invalid-frame-payload-data status code (RFC 6455 §7.4.1) — e.g. non-UTF-8 text or an unparseable close reason. */
++/** Names the invalid-frame-payload-data status code (RFC 6455 §7.4.1) — e.g. non-UTF-8 text or an unparseable close reason. */
+ export const WEBSOCKET_CLOSE_INVALID = 1007
+ 
+-/** Message-too-big status code (RFC 6455 §7.4.1) — a reassembled message exceeded the payload cap. */
++/** Names the message-too-big status code (RFC 6455 §7.4.1) — a reassembled message exceeded the payload cap. */
+ export const WEBSOCKET_CLOSE_TOOBIG = 1009
+ 
+-/** The default maximum inbound single-frame length AND reassembled-message total byte count (100 MiB — the `ws` package default). */
++/** Names the default maximum inbound single-frame length AND reassembled-message total byte count (100 MiB — the `ws` package default). */
+ export const WEBSOCKET_MAX_PAYLOAD = 104_857_600
+ 
+-/** The default close-handshake timeout in milliseconds — how long `close()` waits for the peer's echo before tearing the socket down. */
++/** Names the default close-handshake timeout in milliseconds — how long `close()` waits for the peer's echo before tearing the socket down. */
+ export const WEBSOCKET_CLOSE_TIMEOUT_MS = 30_000
+ 
+-/** The post-`#fail` flush grace in milliseconds — how long a validation-breach close frame is given to flush through the socket's write buffer before the hard `destroy()` fallback fires (the normal path destroys sooner, on the `end()` flush callback). */
++/** Names the post-`#fail` flush grace in milliseconds — how long a validation-breach close frame is given to flush through the socket's write buffer before the hard `destroy()` fallback fires (the normal path destroys sooner, on the `end()` flush callback). */
+ export const WEBSOCKET_FAIL_TIMEOUT_MS = 1_000
+ 
+-/** The maximum control-frame payload length in bytes (RFC 6455 §5.5). */
++/** Names the maximum control-frame payload length in bytes (RFC 6455 §5.5). */
+ export const WEBSOCKET_CONTROL_MAXLEN = 125
+ 
+-/** The maximum UTF-8 close-reason length after the two-byte status code. */
++/** Names the maximum UTF-8 close-reason length after the two-byte status code. */
+ export const WEBSOCKET_CLOSE_REASON_MAXLEN = WEBSOCKET_CONTROL_MAXLEN - 2
+diff --git a/src/server/errors.ts b/src/server/errors.ts
+index 5a627b7..8bd3ab3 100644
+--- a/src/server/errors.ts
++++ b/src/server/errors.ts
+@@ -12,7 +12,7 @@ import type { WebSocketErrorCode } from './types.js'
+ // `WEBSOCKET_CLOSE_*` status code instead (AGENTS §12).
+ 
+ /**
+- * An error thrown by the WebSocket wrapper for a refused caller-supplied value.
++ * Represents an error thrown by the WebSocket wrapper for a refused caller-supplied value.
+  *
+  * @remarks
+  * Carries a {@link WebSocketErrorCode} and an optional `context` record holding the
+@@ -57,10 +57,10 @@ export class WebSocketError extends Error {
+ }
+ 
+ /**
+- * Whether a value is a {@link WebSocketError}.
++ * Checks whether a value is a {@link WebSocketError}.
+  *
+  * @param value - The value to test (typically a `catch` binding)
+- * @returns `true` when `value` is a `WebSocketError`
++ * @returns True if `value` is a `WebSocketError`; false otherwise
+  *
+  * @example
+  * ```ts
+diff --git a/src/server/helpers.ts b/src/server/helpers.ts
+index 148e159..a084ec4 100644
+--- a/src/server/helpers.ts
++++ b/src/server/helpers.ts
+@@ -12,7 +12,7 @@ import { WebSocketError } from './errors.js'
+ // `isCloseCode`) in `validators.ts` — this file keeps only what is neither.
+ //
+ /**
+- * Compute the `Sec-WebSocket-Accept` response value for an RFC 6455 upgrade.
++ * Computes the `Sec-WebSocket-Accept` response value for an RFC 6455 upgrade.
+  *
+  * @remarks
+  * The base64-encoded SHA-1 of the client's `Sec-WebSocket-Key` concatenated with the
+@@ -29,7 +29,7 @@ export function computeWebSocketAccept(key: string): string {
+ }
+ 
+ /**
+- * Read the declared payload length off the front of a buffer, without buffering or
++ * Reads the declared payload length off the front of a buffer, without buffering or
+  * reading the payload itself.
+  *
+  * @remarks
+diff --git a/src/server/parsers.ts b/src/server/parsers.ts
+index a91252e..d000846 100644
+--- a/src/server/parsers.ts
++++ b/src/server/parsers.ts
+@@ -6,7 +6,7 @@ import type { WebSocketFrame } from './types.js'
+ // bytes that may not be there yet, where a guard is total.
+ 
+ /**
+- * Decode a single RFC 6455 frame from the front of a buffer.
++ * Decodes a single RFC 6455 frame from the front of a buffer.
+  *
+  * @remarks
+  * Reads the FIN bit and opcode (byte 0), the mask bit and 7-bit payload length (byte
+@@ -109,7 +109,7 @@ export function parseWebSocketCanonical(buffer: Buffer): boolean | undefined {
+ }
+ 
+ /**
+- * Decode a byte sequence as strict UTF-8, or signal it is malformed.
++ * Decodes a byte sequence as strict UTF-8, or signals it is malformed.
+  *
+  * @remarks
+  * Wraps `TextDecoder('utf-8', { fatal: true })` in a try/catch so a malformed sequence
+diff --git a/src/server/types.ts b/src/server/types.ts
+index 74ed19b..f8243e0 100644
+--- a/src/server/types.ts
++++ b/src/server/types.ts
+@@ -18,7 +18,7 @@ import type { EmitterErrorHandler, EmitterHooks, EmitterInterface } from '@orkes
+ // === Ready state
+ 
+ /**
+- * A WebSocket ready state — the four browser-compatible lifecycle values.
++ * Represents a WebSocket ready state — the four browser-compatible lifecycle values.
+  *
+  * @remarks
+  * `0` connecting, `1` open, `2` closing, `3` closed — the same numbering the DOM
+@@ -30,7 +30,7 @@ export type WebSocketReadyState = 0 | 1 | 2 | 3
+ // === Frame
+ 
+ /**
+- * A parsed RFC 6455 frame — the structured result of decoding one frame off the wire.
++ * Represents a parsed RFC 6455 frame — the structured result of decoding one frame off the wire.
+  *
+  * @remarks
+  * `fin` is the final-fragment bit (false for a continued fragment); `opcode`
+@@ -53,7 +53,7 @@ export interface WebSocketFrame {
+ }
+ 
+ /**
+- * Options for {@link encodeWebSocketFrame} — how a frame is masked on the wire.
++ * Represents the options for {@link encodeWebSocketFrame} — how a frame is masked on the wire.
+  *
+  * @remarks
+  * `masked` toggles the mask bit (server→client frames are NOT masked, the default;
+@@ -69,7 +69,7 @@ export interface WebSocketEncodeOptions {
+ // === Errors
+ 
+ /**
+- * The subject an {@link import('./errors.js').WebSocketError} names as refused.
++ * Represents the subject an {@link import('./errors.js').WebSocketError} names as refused.
+  *
+  * @remarks
+  * `OPTION` — a {@link NodeWebSocketOptions} member was refused at construction
+@@ -86,7 +86,7 @@ export type WebSocketErrorCode = 'OPTION' | 'LIMIT' | 'CLOSE' | 'FRAME'
+ // === Events
+ 
+ /**
+- * The event map of a {@link NodeWebSocketInterface} (AGENTS §13).
++ * Represents the event map of a {@link NodeWebSocketInterface} (AGENTS §13).
+  *
+  * @remarks
+  * `open` — the handshake completed and the socket is ready. `message` — a text frame
+@@ -110,7 +110,7 @@ export type NodeWebSocketEventMap = {
+ // === Options
+ 
+ /**
+- * Options for `createNodeWebSocket`.
++ * Represents the options for `createNodeWebSocket`.
+  *
+  * @remarks
+  * `socket` is the upgraded `node:stream` Duplex (the raw TCP stream after the HTTP
+@@ -137,7 +137,7 @@ export interface NodeWebSocketOptions {
+ 	readonly head?: Buffer
+ 	readonly protocol?: string
+ 	readonly on?: EmitterHooks<NodeWebSocketEventMap>
+-	/** The emitter's listener-error handler (AGENTS §13) — a listener throw routes here, not to a domain event. */
++	/** Holds the emitter's listener-error handler (AGENTS §13) — a listener throw routes here, not to a domain event. */
+ 	readonly error?: EmitterErrorHandler
+ 	readonly payload?: number
+ 	readonly timeout?: number
+@@ -147,7 +147,7 @@ export interface NodeWebSocketOptions {
+ // === Wrapper
+ 
+ /**
+- * A server-native WebSocket over a raw upgraded socket — the behavioral contract.
++ * Represents a server-native WebSocket over a raw upgraded socket — the behavioral contract.
+  *
+  * @remarks
+  * Created by `createNodeWebSocket`. In server mode it writes the RFC 6455 handshake
+diff --git a/src/server/validators.ts b/src/server/validators.ts
+index fbe8aec..84a52fa 100644
+--- a/src/server/validators.ts
++++ b/src/server/validators.ts
+@@ -3,7 +3,7 @@
+ // never `undefined`, is a guard and belongs here, never in `parsers.ts`.
+ 
+ /**
+- * Whether a value is a canonical RFC 6455 `Sec-WebSocket-Key`.
++ * Checks whether a value is a canonical RFC 6455 `Sec-WebSocket-Key`.
+  *
+  * @remarks
+  * A valid key is exactly 16 random bytes encoded as 24 characters of base64, ending
+@@ -11,7 +11,7 @@
+  * malformed or non-canonical encodings return `false`; nothing is thrown.
+  *
+  * @param key - The proposed `Sec-WebSocket-Key` header value
+- * @returns `true` when `key` is the canonical base64 encoding of 16 bytes
++ * @returns True if `key` is the canonical base64 encoding of 16 bytes; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -25,7 +25,7 @@ export function isWebSocketKey(key: string): boolean {
+ }
+ 
+ /**
+- * Whether a value is one valid WebSocket subprotocol token.
++ * Checks whether a value is one valid WebSocket subprotocol token.
+  *
+  * @remarks
+  * Subprotocols use the HTTP `token` grammar. Whitespace, separators, commas, and
+@@ -33,7 +33,7 @@ export function isWebSocketKey(key: string): boolean {
+  * second handshake header.
+  *
+  * @param protocol - The negotiated subprotocol to validate
+- * @returns `true` when `protocol` is one non-empty HTTP token
++ * @returns True if `protocol` is one non-empty HTTP token; false otherwise
+  *
+  * @example
+  * ```ts
+@@ -45,7 +45,7 @@ export function isWebSocketProtocol(protocol: string): boolean {
+ }
+ 
+ /**
+- * Whether a numeric value is a valid RFC 6455 close status code to RECEIVE (§7.4.1).
++ * Checks whether a numeric value is a valid RFC 6455 close status code to RECEIVE (§7.4.1).
+  *
+  * @remarks
+  * True for `1000`–`1003`, `1007`–`1014`, and the application range `3000`–`4999`; false
+@@ -58,7 +58,7 @@ export function isWebSocketProtocol(protocol: string): boolean {
+  * never throws.
+  *
+  * @param code - The close status code to validate
+- * @returns `true` when `code` is a valid RFC 6455 close code
++ * @returns True if `code` is a valid RFC 6455 close code; false otherwise
+  *
+  * @example
+  * ```ts
