@@ -1,0 +1,136 @@
+# Unit breaking-reason — report (2026-09-02)
+
+Writer: `implementer` on Opus 5 (native; Sol dark, substitution recorded). Returned report:
+
+## Rows
+
+- **s07-04** — applied: isSubject deleted from src/core/validators.ts. Its in-package consumers were tests only: the dedicated guard test in tests/src/core/validators.test.ts was deleted with the capability, the shared adversarial-keys test was narrowed to isNumberRecord and renamed, and the builder-output line in tests/src/core/integration.test.ts was dropped (a plain record is not builder output). The guide Surface row went with it, and the Practices bullet now directs a consumer to isRecord from @orkestrel/contract, naming that this package publishes no guard for Subject.
+- **s07-06** — applied: Every bare-noun value constructor moved from src/core/helpers.ts to src/core/factories.ts under the create{Entity} form, with its TSDoc, @example, and every in-package call site. helpers.ts keeps its leaf position: it imports no class and factories.ts is never imported by it. factories.ts stays kind-pure - every exported function there is create*. The guide's `### Builders` section became `### Value factories` (rows renamed, column header `Creates…`, an intro sentence added), `### Factories` became `### Entity factories`, and README.md's usage fence was rewritten. The unit tests for the moved functions moved from tests/src/core/helpers.test.ts to tests/src/core/factories.test.ts, which is the location the mirror rule names for src/core/factories.ts.
+- **s07-17** — applied: `set collection(value)` replaced by `seat(items)` on GroupManagerInterface, RuleManagerInterface, EquationManagerInterface, FactManagerInterface, InferenceManagerInterface, VariableManagerInterface and their classes; types.ts changed first. FactorManager had no setter and is untouched. DefinitionBuilder#seat now calls each manager's seat. The guide's Methods preamble no longer excludes a write-only setter, each of the six Methods tables carries a `seat` row, each Types row lists it, and a guide fence plus new behavioural tests exercise it.
+- **s07-10** — applied: The `source` parameter renamed to its domain noun in appendRule / prependRule / replaceRule (rule), appendEquation / prependEquation / replaceEquation (equation), appendFact / prependFact / replaceFact (fact), and appendInference / prependInference / replaceInference (inference), matching appendGroup / appendFactor. Each block's description, @param, @returns, and the `source.id` phrasing in the replace* blocks were corrected with it. Landed after s07-06, so no name shadows a factory.
+- **successor-isWithinBounds** — applied: isWithinBounds renamed to matchesBounds in src/core/helpers.ts, its consumer src/core/operators/Evaluator.ts, its tests, and the guide Helpers row. It returns boolean and narrows nothing, so `matches*` is its form and helpers.ts remains its home.
+
+## Symbols moved
+
+- isSubject → removed (src/core/validators.ts)
+- check → createCheck (src/core/helpers.ts → src/core/factories.ts)
+- atom → createAtom (helpers.ts → factories.ts)
+- compound → createCompound (helpers.ts → factories.ts)
+- rule → createRule (helpers.ts → factories.ts)
+- transform → createTransform (helpers.ts → factories.ts)
+- bounds → createBounds (helpers.ts → factories.ts)
+- variable → createVariable (helpers.ts → factories.ts)
+- constant → createConstant (helpers.ts → factories.ts)
+- operation → createOperation (helpers.ts → factories.ts)
+- equation → createEquation (helpers.ts → factories.ts)
+- fact → createFact (helpers.ts → factories.ts)
+- inference → createInference (helpers.ts → factories.ts)
+- staticSource → createStaticSource (helpers.ts → factories.ts)
+- fieldSource → createFieldSource (helpers.ts → factories.ts)
+- lookupSource → createLookupSource (helpers.ts → factories.ts)
+- rangeSource → createRangeSource (helpers.ts → factories.ts)
+- staticFactor → createStaticFactor (helpers.ts → factories.ts)
+- fieldFactor → createFieldFactor (helpers.ts → factories.ts)
+- lookupFactor → createLookupFactor (helpers.ts → factories.ts)
+- rangeFactor → createRangeFactor (helpers.ts → factories.ts)
+- factorGroup → createFactorGroup (helpers.ts → factories.ts)
+- quantitativeDefinition → createQuantitativeDefinition (helpers.ts → factories.ts)
+- logicalDefinition → createLogicalDefinition (helpers.ts → factories.ts)
+- symbolicDefinition → createSymbolicDefinition (helpers.ts → factories.ts)
+- inferentialDefinition → createInferentialDefinition (helpers.ts → factories.ts)
+- isWithinBounds → matchesBounds (src/core/helpers.ts)
+- GroupManagerInterface.collection setter → GroupManagerInterface.seat(items) (src/core/types.ts, GroupManager.ts)
+- RuleManagerInterface.collection setter → RuleManagerInterface.seat(items) (src/core/types.ts, RuleManager.ts)
+- EquationManagerInterface.collection setter → EquationManagerInterface.seat(items) (src/core/types.ts, EquationManager.ts)
+- FactManagerInterface.collection setter → FactManagerInterface.seat(items) (src/core/types.ts, FactManager.ts)
+- InferenceManagerInterface.collection setter → InferenceManagerInterface.seat(items) (src/core/types.ts, InferenceManager.ts)
+- VariableManagerInterface.collection setter → VariableManagerInterface.seat(items) (src/core/types.ts, VariableManager.ts)
+- appendRule/prependRule/replaceRule parameter source → rule (src/core/helpers.ts)
+- appendEquation/prependEquation/replaceEquation parameter source → equation (src/core/helpers.ts)
+- appendFact/prependFact/replaceFact parameter source → fact (src/core/helpers.ts)
+- appendInference/prependInference/replaceInference parameter source → inference (src/core/helpers.ts)
+
+## Files touched
+
+- /home/user/fleet/reason/README.md
+- /home/user/fleet/reason/guides/reason.md
+- /home/user/fleet/reason/src/core/builders/DefinitionBuilder.ts
+- /home/user/fleet/reason/src/core/builders/managers/EquationManager.ts
+- /home/user/fleet/reason/src/core/builders/managers/FactManager.ts
+- /home/user/fleet/reason/src/core/builders/managers/GroupManager.ts
+- /home/user/fleet/reason/src/core/builders/managers/InferenceManager.ts
+- /home/user/fleet/reason/src/core/builders/managers/RuleManager.ts
+- /home/user/fleet/reason/src/core/builders/managers/VariableManager.ts
+- /home/user/fleet/reason/src/core/factories.ts
+- /home/user/fleet/reason/src/core/helpers.ts
+- /home/user/fleet/reason/src/core/operators/Evaluator.ts
+- /home/user/fleet/reason/src/core/parsers.ts
+- /home/user/fleet/reason/src/core/types.ts
+- /home/user/fleet/reason/src/core/validators.ts
+- /home/user/fleet/reason/tests/setup.ts
+- /home/user/fleet/reason/tests/src/core/Reason.test.ts
+- /home/user/fleet/reason/tests/src/core/builders/DefinitionBuilder.test.ts
+- /home/user/fleet/reason/tests/src/core/factories.test.ts
+- /home/user/fleet/reason/tests/src/core/helpers.test.ts
+- /home/user/fleet/reason/tests/src/core/integration.test.ts
+- /home/user/fleet/reason/tests/src/core/operators/Evaluator.test.ts
+- /home/user/fleet/reason/tests/src/core/operators/Transformer.test.ts
+- /home/user/fleet/reason/tests/src/core/reasoners/InferentialReasoner.test.ts
+- /home/user/fleet/reason/tests/src/core/reasoners/LogicalReasoner.test.ts
+- /home/user/fleet/reason/tests/src/core/reasoners/QuantitativeReasoner.test.ts
+- /home/user/fleet/reason/tests/src/core/reasoners/SymbolicReasoner.test.ts
+- /home/user/fleet/reason/tests/src/core/validators.test.ts
+
+## Tests changed
+
+- tests/src/core/builders/DefinitionBuilder.test.ts — added describe('DefinitionBuilder — seat (the bulk re-seat channel)') with three cases: a list manager's whole collection replaced with no append/prepend/replace/remove event, the variables record replaced with no add/remove event, and seat throwing DESTROYED after the owning manager is destroyed. Run scoped before the rest: `npx vitest run --project src:core -t 'seat'` reported 3 passed | 1059 skipped.
+- tests/src/core/factories.test.ts — received the value-factory suites moved out of helpers.test.ts (expression, rule, transform/bounds, symbolic, fact/inference, source, factor, factor-group, and definition factories), each describe and it renamed to the create* name it proves; imports rebuilt; the file header comment now names both factory families.
+- tests/src/core/helpers.test.ts — the moved suites removed, the now-unused imports pruned, the isWithinBounds suite renamed to matchesBounds, and the header comment rewritten to describe what the file still proves.
+- tests/src/core/validators.test.ts — the isSubject guard test deleted with the capability; the adversarial-keys test narrowed to isNumberRecord and renamed; the isFieldPath describe title updated.
+- tests/src/core/integration.test.ts — the isSubject line removed from the builder-output round-trip test.
+- tests/guides.test.ts — unchanged; its INTERNAL list still names only `class Collection`, which is still the only stranded declaration.
+
+## Gates
+
+- `npm run format:check` → exit 0 — All matched files use the correct format. Finished in 2322ms on 70 files using 4 threads.
+- `npm run lint:check` → exit 0 — oxlint --config .oxlintrc.json --deny-warnings . (no diagnostics)
+- `npm run check` → exit 0 — tsc --noEmit --project tsconfig.json && tsc --noEmit -p configs/src/tsconfig.core.json (no diagnostics)
+- `npm run build` → exit 0 — ✓ built in 3.31s; Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+- `npm test` → exit 0 — src:core 14 files / 1062 passed; policy 111 passed; config 46 passed; setup 26 passed; guides 83 passed
+
+## Diff stat
+
+```text
+28 files changed, 4743 insertions(+), 3467 deletions(-) — README.md 16, guides/reason.md 386, src/core/builders/DefinitionBuilder.ts 14, src/core/builders/managers/EquationManager.ts 17, FactManager.ts 17, GroupManager.ts 20, InferenceManager.ts 17, RuleManager.ts 18, VariableManager.ts 20, src/core/factories.ts 776, src/core/helpers.ts 1001, src/core/operators/Evaluator.ts 6, src/core/parsers.ts 8, src/core/types.ts 18, src/core/validators.ts 119, tests/setup.ts 16, tests/src/core/Reason.test.ts 44, builders/DefinitionBuilder.test.ts 253, factories.test.ts 327, helpers.test.ts 810, integration.test.ts 430, operators/Evaluator.test.ts 518, operators/Transformer.test.ts 296, reasoners/InferentialReasoner.test.ts 836, LogicalReasoner.test.ts 365, QuantitativeReasoner.test.ts 744, SymbolicReasoner.test.ts 737, validators.test.ts 381. `git status --short` lists those same 28 paths, all modified, no untracked file.
+```
+
+Status at return (writer's reading): `All assigned rows applied; the package's own gate chain is green against the new surface. No compatibility alias, re-export, or shim was left behind.`
+Built `dist/` moves: true
+
+## Observations
+
+- `npm run check` was green before any edit, so the staged upstream closure required no symbol adoption in this package: the previous commit (9844655 'Adopt the renamed guide helpers in the parity test') had already taken the @orkestrel/guide rename. `node /home/user/work/verify-stage.mjs reason` reported contract, emitter, guide, html, markdown, and test all staged from their committed tips.
+- The built surface moved, as expected for a rename: `dist/src/core/index.d.ts` now carries createStaticFactor / createQuantitativeDefinition and `seat(items: ...)`, and the only isSubject-shaped hits left in it are isSubjectBuilder.
+- Acceptance criterion 1, distinctive names: `grep -rnw` over src, tests, guides for isSubject, isWithinBounds, staticSource, fieldSource, lookupSource, rangeSource, staticFactor, fieldFactor, lookupFactor, rangeFactor, factorGroup, quantitativeDefinition, logicalDefinition, symbolicDefinition, inferentialDefinition returns nothing.
+- Acceptance criterion 1, common-word names: check, atom, compound, rule, transform, bounds, variable, constant, operation, equation, fact, and inference are also domain words in this package, so a bare word-boundary sweep cannot answer the question and three instruments were used instead. `grep -rnPo '(?<![\w.$])NAME\('` over src, tests, guides/reason.md, README.md leaves only the manager accessor declarations in types.ts and the six manager classes, plus the plural prose forms `fact(s)` and `variable(s)` in trace strings and their expected values in tests. `grep -rnP '`NAME`'` leaves only property and option keys (`bounds`, `transform`), SymbolicExpression form values (`atom`, `variable`, `constant`, `operation`), the ProofNode `fact` / `inference` members, and manager method names. `npm run check` proves no unresolved identifier reference remains anywhere TypeScript reads. The sweep's coverage is src, tests, guides/reason.md, and README.md; the vendored guide mirrors were excluded as off-limits and carry none of these names.
+- `collection` as a manager member is gone: `grep -rn 'collection' src guides/reason.md README.md | grep -iE 'setter|`collection`|\.collection'` returns nothing. The word survives only as ordinary prose about a collection.
+- The guides parity test exposed a documentation gap the rename revealed rather than created: the manager accessors `equation`, `fact`, and `variable` had never been exampled — they passed only because the identically named value constructors appeared in guide fences. A new fence in the definition-workspace section now reads each manager's singular accessor on a draft of its own reasoning, so the six interfaces' accessor examples are real rather than incidental. Its claims (`name` defaulting to the id, `target`, the variables record) are the same properties the DefinitionBuilder accessor tests already assert.
+- Text integrity: no replacement character, no mojibake sequence, no trailing whitespace (`grep -rnP '[ \t]+$'` returns nothing, `git diff --check` exits 0), and the touched files remain UTF-8.
+- Centralization sweep over the touched files: every exported function in factories.ts is now `create*` and every exported function in helpers.ts is `{verb}{Noun}`; helpers.ts and validators.ts still import no implementation class, so the leaf pair stays class-free and factories.ts sits above them; index.ts needed no change because it already star-exports both files; no nested function, stray implementation-file declaration, or rename-only wrapper was introduced. `tests/policy.test.ts` (111 passed) is the mechanical half of that.
+- Out of scope, recorded against the row that owns it rather than fixed here: factToArityKey, factToKey, instantiateFact, and findUnboundVariables also name a parameter `source` for a Fact or Inference. They do not carry the s07-10 defect — their descriptions and @returns name no parameter the signature lacks — so they were left alone.
+- Timing: the whole `npm test` chain ran comfortably on this host (src:core 4.0s, guides 2.4s) with no timing-suspect failure to report.
+
+## Deviations
+
+- Decision, recorded and carried on (placement): the moved value factories were appended after the entity factories in src/core/factories.ts, behind a lead-in comment and the original `// ===` section markers, rather than interleaved. The brief leaves the placement of a moved block within its file to the executor.
+- Decision, recorded and carried on (placement): `seat` sits after `remove` and before `destroy` in each manager interface and class, grouping it with the write verbs and keeping `destroy` last. The parity test compares method sets, not order.
+- Decision, recorded and carried on (TSDoc wording): every first sentence in src/core/factories.ts was normalized to the third-person `Creates …` form, including the entity-factory blocks whose @example lines the rename already touched. Leaving `Create a check evaluator.` beside `Creates a {@link Check}` in one file would have shipped the rule violation the brief asked me to fix in the moved blocks.
+- Decision, recorded and carried on (guide structure): `### Builders` became `### Value factories` and `### Factories` became `### Entity factories`, matching the two kinds `.claude/rules/architecture.md` names for factories.ts. Subsection headings under `## Surface` are free-form to the parity test, and no anchor link addressed either heading.
+- Decision, recorded and carried on (test placement): the value-factory unit tests moved from tests/src/core/helpers.test.ts to tests/src/core/factories.test.ts. `.claude/rules/tests.md` mirrors tests to their module, so leaving them in helpers.test.ts after the source moved would have left a misplaced test.
+- Decision, recorded and carried on (scope): `seat` gained direct behavioural tests. The old setter had none — it was reachable only through `merge` — and `seat` is now a documented public method on six interfaces, which the test rules require to carry coverage.
+- Decision, recorded and carried on (lint cause, not suppression): removing the value constructors left `Comparison` imported into helpers.ts only for a `{@link Comparison}s` reference, which oxlint reports as unused. The pluralized code token also breaks `.claude/rules/writing.md` § Code tokens. The sentence now reads "the `Comparison` operators" and the import is gone. No directive was added.
+- Decision, recorded and carried on (formatting): `@src/core` import blocks that the rename left out of order were re-sorted case-insensitively, matching the convention the files already used, and the TSDoc example comment columns were re-aligned where the longer names broke a run. `npm run lint` then `npm run format` ran to converge, and the non-mutating chain proves the state.
+- Working-tree note: an early pass of the rename script over-matched — it renamed the manager accessor declarations (`rule(id: string)`) and the plural prose `variable(s)`. I reverted exactly that edit by capturing `git diff` and applying it in reverse (`git apply -R`), then re-ran with the corrected patterns. No `git checkout`, `restore`, `stash`, `reset`, or `clean` was used, and `git status --short` was confirmed clean before proceeding.
+
+Actual diff and status rendered by the Orchestrator: `tmp/units/breaking/reason.diff`,
+`tmp/units/breaking/reason.status`.

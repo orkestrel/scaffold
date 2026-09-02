@@ -42,7 +42,7 @@ only; their units follow): `.orkestrel/campaign/fix/breaking-radius.json`.
 **Law.** `AGENTS.md`; `.claude/rules/names.md`, `.claude/rules/typescript.md`,
 `.claude/rules/architecture.md`, `.claude/rules/patterns.md`, `.claude/rules/tests.md`,
 `.claude/rules/documentation.md`, `.claude/rules/quality.md`, `.claude/rules/workspace.md`,
-`.claude/rules/portability.md` (all vendored in the repository); skill
+`.claude/rules/portability.md` (vendored in the repository under `.claude/rules/`, or, where the checkout carries no such directory, the installed copy at `node_modules/@orkestrel/scaffold/dist/host/claude/rules/` that its `AGENTS.md` pointer names); skill
 `orkestrel-harden-package` in its structural lane with `references/centralization.md`; guide
 `guides/PACKAGE.md`.
 
