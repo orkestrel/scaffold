@@ -816,3 +816,9 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
 - **Slice 4 closed** (server `de721d9`, html `532fc73`, interpret `8fa4740`, csv `5e4f03b`,
   brief `2324035`, msg `234386a`, test `5aff09d`, guide `8b6ac02`). Every landing chain green;
   `voice/scan-after-slice4.txt` reads zero in every bucket for the eight.
+- **Correction to the slice 4 closure.** `scan-after-slice4.txt` reads zero in every bucket for
+  six of the eight; guide reads three verbless hits that are `'/**'` string literals in
+  `src/core/helpers.ts` (the scanner reads a comment opener inside code, a known artifact, no
+  doc block involved), and server reads one: the `Negotiator.format` method block opens with
+  `@remarks` and carries no summary sentence. Under the program precedent it gains one
+  (`voice-server-fixup-brief.md`, builder on Sonnet).
