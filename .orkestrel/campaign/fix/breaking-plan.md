@@ -309,3 +309,16 @@ parallel with the audit. An agent fix-up re-stages both before their own audits.
   catalog` refreshes every vendored `guides/<dependency>.md` mirror from the published bytes; the
   fleet gate sweep then proves each package green on its refreshed mirrors. Blocked while
   publishing is held; recorded, not scheduled.
+
+## Re-baseline after L6 (2026-09-02)
+
+- **Satisfied:** every L0–L6 package unit (verdict files under `units/`); the adopt-when-red
+  readings (worker, queue, lsp clean; probe adopt-clean on `check` with its standing container
+  failure); `readme-links` in both passes.
+- **Unchanged:** W-END `sweep` (repack every clean tip, re-stage every consumer, then the
+  `verifier` gate sweep over the fleet), W-END `handoff` (closure table, register consolidation,
+  tarball sweep), the second inventory and republish order.
+- **Blocked:** `mirror-refresh`, until the fleet publishes and each package re-pins; publishing is
+  held by the user.
+- **Successor questions recorded, not units:** the wire-member `type` clause in `names.md` (from
+  ollama); the terminal-route two-vocabulary seam (from toolbox); the TSDoc voice wave, last.

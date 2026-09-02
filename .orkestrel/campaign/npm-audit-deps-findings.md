@@ -675,3 +675,31 @@ running against `server-b32615d.tgz` and re-stages on `server-522ed4c.tgz` befor
   (README ships in `files`), so W-END repacks every tip and re-stages every closure once before
   the fleet gate sweep and the second inventory. Second pass over ollama and toolbox after their
   units land.
+
+## L6 closed, W-END open
+
+- **Ollama lanes.** Objective `FAIL 1` (the refusal restated the rule instead of quoting it; the
+  `partial` carry closed silently; the supplied diff omitted the untracked errors test), checker
+  PASS, the landing chain GREEN (98 src). Rulings of record: s18-09 stays refused under the
+  external-mirror clause with the mirror TSDoc landed; the s18-34 carrier is renamed
+  `OllamaHTTPErrorOptions` because the package exports no `OllamaError` entity; the wire member
+  `type: 'function'` on `WireChatRequest` against the vocabulary's "never `type` as a member
+  name" clause is a `names.md` question for scaffold (a declared wire body mirrors the field it
+  serializes; the ruling belongs in the rule file, as an exception for declared wire bodies or as
+  a serialization projection the package owes). `instruments/landbreaking.mjs` marks untracked
+  files with `git add -N` before rendering the diff.
+- **Toolbox lanes.** Objective `FAIL 2 3 8`, subjective `FAIL 3 5`, checker `FAIL 8`, verifier
+  GREEN (451 src). Every claim-8 failure was the report renderer printing the writer's grouped
+  fields as placeholders, not the writer; the renderer now prints nested fields and re-renders a
+  report alone with `--report-only`. The guide residues (`run` for `behavior`, `openStream` for
+  `createStream`, a causal `since` on a rewritten line, the `TerminalBridge` row voice) landed in
+  the fix-up. The `run` → `behavior` adoption reached toolbox's own published `TaskDraft`, and the
+  unknown-terminal error context replaced `known` with `count`; both carry radius rows with no
+  fleet consumer. `createTerminalRoutes` and its constants stay beside `TerminalBridge` on the
+  factory's return type; the two-vocabulary seam is a successor question.
+- **L6 closed.** ollama `795782d` and toolbox `02e25a0` accepted with verdicts. Every layer of
+  the breaking wave has landed.
+- **W-END readme-links, second pass.** ollama `3d681fa` and toolbox `c13a526`; the grep over the
+  fleet READMEs returns nothing. Every tip now sits past its packed tarball, so W-END repacks
+  every clean tip and re-stages every consumer's closure (`instruments/wend-repack-restage.sh`)
+  before the authoritative fleet gate sweep (#3) and the second inventory (#7).
