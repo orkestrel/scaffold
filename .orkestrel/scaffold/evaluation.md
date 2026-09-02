@@ -51,3 +51,21 @@ Eval 2 with the rewritten skill: every finding carries property, population, rea
 Eval 1 baseline after the prose grader: the fifteenth check in `checks.md` carries no control, two controls expect a green run rather than a planted defect, and no inline-style escape check exists. Assertion added on the grader's feedback: every read-only field still submits (a disabled named control carries a hidden input of the same name, or the field uses `readonly`); the old-skill output passes it. The eval-1 control fixture now plants a disabled named control with no carrier and reads 1 of 17.
 
 Eval 1 with the rewritten skill: the markup passes every mechanical assertion after the grader corrections (Bootstrap Icons tokens admitted when the page links that stylesheet; a theme set by the early-head script admitted; the `<style>` assertion sharpened to "declares only custom properties", which the old-skill output fails on `border-color`, `box-shadow`, and `font-family` rules and the new-skill output passes). The one remaining miss: `checks.md` states a negative control for the instruments the reference names but not for the extra checks the executor listed itself. Iteration-2 candidate for `enterprise-bootstrap`: state in the checklist that every check the deliverable lists carries its control, not only the instruments `inspection.md` names. Grader feedback carried: no assertion reads a `checks.md` reading back against `index.html`, which is how a population count of 91 against 90 distinct tokens went uncaught.
+
+## Iteration 2, 2026-09-02
+
+- Cause: the iteration-1 with-skill run of `underwriting-form-inputs` failed one assertion, "checks.md
+  names a negative control for every check it lists". The agent grader found controls on the checks
+  drawn from inspection.md and none on the checks drawn from the SKILL.md checklist, under a preamble
+  claiming every check carried one. The mechanical grader's substring count had passed it; the
+  agent grader's verdict stands.
+- Skill change (`5bea858`): the Mechanical proof law and the checklist line bind every check the
+  deliverable lists to population, negative control, and coverage, and a check with no control is
+  recorded as open rather than listed as a check.
+- Runs: `eval-1-underwriting-form-inputs/with_skill/run-1` launched fresh on Opus 5 against the
+  edited skill. `eval-3-toolbar-journey-test/with_skill` runs after the terrain tree settles. The
+  `old_skill` baselines are iteration-1's runs against the unchanged snapshot, re-used rather than
+  re-run; the benchmark names that reuse. `eval-2-markup-inspection` is not re-run: its with-skill
+  run passed every assertion and the edit touches no line it reads.
+- Grading: `grade-eval1.mjs` mechanical pass, then the agent grader on the checks.md assertions
+  with the same per-check reading as iteration 1.
