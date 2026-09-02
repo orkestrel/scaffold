@@ -10,7 +10,7 @@ capture portfolio at scaffold `3df4e22`, test `c98f3ba`, form `56e7d9f`, terrain
 | ---------- | ---------- | ------------ | --- | ----------------------------------------------------------- |
 | Subjective | `reviewer` | Opus 5       | yes | FAIL — 5 broken, 4 unresolved, 6 findings outside the claims |
 | Objective  | `grok`     | Cursor Grok  | yes | FAIL — 9 broken, 0 unresolved, 2 findings outside the claims |
-| Checker    | `grok`     | Cursor Grok  | yes | (pending at the time of this draft; appended when it returns) |
+| Checker    | `grok`     | Cursor Grok  | yes | FAIL — 9 broken (1, 2, 3, 4, 6, 7, 19, 21, 25), 0 unresolved, 0 findings outside the claims |
 
 Sol is dark this session; Grok holds the objective lane by the user's standing ruling. Both Grok
 lanes ran one at a time on the bench, journals under `tmp/cursor/`.
@@ -45,6 +45,11 @@ lanes ran one at a time on the bench, journals under `tmp/cursor/`.
 | 24    | UNRESOLVED | CONFIRMED | Objective lane read the visit reports and manifests; the checker re-reads the ranges.                                                                                       | checker |
 | 25    | CONFIRMED  | BROKEN    | Both lanes fault the meta-row's placement; it moves to open the checklist and binds the deliverable's checks file.                                                          | FX1     |
 | 26    | UNRESOLVED | CONFIRMED | Objective lane traced every helper and the `#teardown` read; the terrain gate chain was green at the visit. Stands.                                                         | —       |
+
+The checker names the same nine claims as the objective lane and adds two voice lines
+(`orkestrel-prove-journey/SKILL.md` 54, `capture-harness.md` 38) and a third sense of `control`
+(the interactive target, `SKILL.md` 66–67), sent to FX1 in flight. Claims 16 and 24 it confirmed,
+so both stand.
 
 ## Findings outside the claims
 
