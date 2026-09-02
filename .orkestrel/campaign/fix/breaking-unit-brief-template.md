@@ -67,8 +67,9 @@ UNKNOWNS.
 ## Scope
 
 **Owned.** `src/**`, `app/**` (if present), `tests/**` except the vendored policy pair,
-`guides/PACKAGE.md`, `guides/README.md` rows for this package, and the parity `INTERNAL` list
-where the package keeps one.
+`guides/PACKAGE.md`, `guides/README.md` rows for this package, the package's own `README.md`
+(it ships in `files` and its fences name the surface), and the parity `INTERNAL` list where the
+package keeps one.
 
 **Shared (report-only).** none.
 
