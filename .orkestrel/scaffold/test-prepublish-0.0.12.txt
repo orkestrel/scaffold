@@ -1,0 +1,206 @@
+npm notice run @orkestrel/test@0.0.12 prepublishOnly
+npm notice run npm run format:check && npm run lint:check && npm run check && npm run build && npm test && npm run test:distribution -- --mode release
+npm notice run @orkestrel/test@0.0.12 format:check
+npm notice run oxfmt --config .oxfmtrc.json --check .
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 926ms on 59 files using 16 threads.
+npm notice run @orkestrel/test@0.0.12 lint:check
+npm notice run oxlint --config .oxlintrc.json --deny-warnings .
+npm notice run @orkestrel/test@0.0.12 check
+npm notice run tsc --noEmit --project tsconfig.json && npm run check:src
+npm notice run @orkestrel/test@0.0.12 check:src
+npm notice run npm run check:src:core && npm run check:src:browser && npm run check:src:server
+npm notice run @orkestrel/test@0.0.12 check:src:core
+npm notice run tsc --noEmit -p configs/src/tsconfig.core.json
+npm notice run @orkestrel/test@0.0.12 check:src:browser
+npm notice run tsc --noEmit -p configs/src/tsconfig.browser.json
+npm notice run @orkestrel/test@0.0.12 check:src:server
+npm notice run tsc --noEmit -p configs/src/tsconfig.server.json
+npm notice run @orkestrel/test@0.0.12 build
+npm notice run npm run clean && npm run build:src
+npm notice run @orkestrel/test@0.0.12 clean
+npm notice run node -e "require('node:fs').rmSync('dist',{recursive:true,force:true})"
+npm notice run @orkestrel/test@0.0.12 build:src
+npm notice run npm run build:src:core && npm run build:src:browser && npm run build:src:server
+npm notice run @orkestrel/test@0.0.12 build:src:core
+npm notice run vite build --config configs/src/vite.core.config.ts && npm run copy dist/src/core/index.d.ts dist/src/core/index.d.cts
+[36mvite v8.2.2 [32mbuilding client environment for production...[36m[39m
+transforming...
+✓ 7 modules transformed.
+rendering chunks...
+
+[unplugin:dts] Start generate declaration files...
+[unplugin:dts] Start bundling declaration files...
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+[unplugin:dts] Declaration files built in 1390ms.
+
+computing gzip size...
+dist/src/core/index.js  29.04 kB │ gzip: 8.66 kB │ map: 44.48 kB
+
+transforming...
+✓ 7 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/core/index.cjs  29.76 kB │ gzip: 8.81 kB │ map: 44.48 kB
+
+[32m✓ built in 1.51s[39m
+npm notice run @orkestrel/test@0.0.12 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/core/index.d.ts dist/src/core/index.d.cts
+Copied: dist/src/core/index.d.ts to dist/src/core/index.d.cts
+npm notice run @orkestrel/test@0.0.12 build:src:browser
+npm notice run vite build --config configs/src/vite.browser.config.ts
+[36mvite v8.2.2 [32mbuilding client environment for production...[36m[39m
+transforming...
+✓ 6 modules transformed.
+rendering chunks...
+
+[unplugin:dts] Start generate declaration files...
+[unplugin:dts] Start bundling declaration files...
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+[unplugin:dts] Declaration files built in 1556ms.
+
+computing gzip size...
+dist/src/browser/index.js  92.34 kB │ gzip: 28.92 kB │ map: 128.78 kB
+
+[32m✓ built in 1.63s[39m
+npm notice run @orkestrel/test@0.0.12 build:src:server
+npm notice run vite build --config configs/src/vite.server.config.ts && npm run copy dist/src/server/index.d.ts dist/src/server/index.d.cts
+[36mvite v8.2.2 [32mbuilding client environment for production...[36m[39m
+[33m"build.lib.formats" will be ignored because "build.rolldownOptions.output" is already an array format.[39m
+transforming...
+✓ 6 modules transformed.
+rendering chunks...
+
+[unplugin:dts] Start generate declaration files...
+[unplugin:dts] Start bundling declaration files...
+Analysis will use the bundled TypeScript version 5.9.3
+*** The target project appears to use TypeScript 6.0.3 which is newer than the bundled compiler engine; consider upgrading API Extractor.
+[unplugin:dts] Declaration files built in 1691ms.
+
+computing gzip size...
+dist/src/server/index.js  33.12 kB │ gzip: 9.62 kB │ map: 50.80 kB
+
+transforming...
+✓ 6 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/src/server/index.cjs  34.91 kB │ gzip: 9.84 kB │ map: 52.30 kB
+
+[32m✓ built in 1.85s[39m
+npm notice run @orkestrel/test@0.0.12 copy
+npm notice run node -e "const fs=require('node:fs'),p=require('node:path'),a=process.argv[1],b=process.argv[2];fs.mkdirSync(p.dirname(b),{recursive:true});fs.cpSync(a,b,{force:true});console.log('Copied: '+a+' to '+b)" dist/src/server/index.d.ts dist/src/server/index.d.cts
+Copied: dist/src/server/index.d.ts to dist/src/server/index.d.cts
+npm notice run @orkestrel/test@0.0.12 test
+npm notice run npm run test:src && npm run test:policy && npm run test:config && npm run test:setup && npm run test:guides
+npm notice run @orkestrel/test@0.0.12 test:src
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project src:core --project src:browser --project src:server
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/test
+
+···········································-····················--·······-·-·············································-··············-·····-·········································································-·····························································································································································································································································7:56:34 PM [vite] [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: Boom
+[39m > ../../../../@vite/client:539:50
+ > tests/src/browser/factories.test.ts:453:10
+    451 |  		try {
+    452 |  			journal.start()
+    453 |  			window.dispatchEvent(new ErrorEvent('error', { message: 'Boom' }))
+        |            ^
+    454 |  			window.dispatchEvent(
+    455 |  				new PromiseRejectionEvent('unhandledrejection', {
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=90e1656b:302:11
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=90e1656b:1903:26
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=90e1656b:2326:20
+ > runWithCancel node_modules/@vitest/runner/dist/chunk-artifact.js?v=90e1656b:2323:10
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=90e1656b:2305:20
+ > runWithTimeout node_modules/@vitest/runner/dist/chunk-artifact.js?v=90e1656b:2272:10
+
+7:56:34 PM [vite] [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mUnknown Error[22m: Refused
+[39m
+7:56:34 PM [vite] [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: Ignored
+[39m > ../../../../@vite/client:539:50
+ > tests/src/browser/factories.test.ts:462:10
+    460 |  			journal.stop()
+    461 |  			recorded = journal.output
+    462 |  			window.dispatchEvent(new ErrorEvent('error', { message: 'Ignored' }))
+        |            ^
+    463 |  		} finally {
+    464 |  			Object.assign(console, channels)
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=90e1656b:302:11
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=90e1656b:1903:26
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=90e1656b:2326:20
+ > runWithCancel node_modules/@vitest/runner/dist/chunk-artifact.js?v=90e1656b:2323:10
+ > node_modules/@vitest/runner/dist/chunk-artifact.js?v=90e1656b:2305:20
+ > runWithTimeout node_modules/@vitest/runner/dist/chunk-artifact.js?v=90e1656b:2272:10
+
+···············
+
+ Test Files  7 passed (7)
+      Tests  476 passed | 9 skipped (485)
+   Start at  19:56:24
+   Duration  9.84s (transform 527ms, setup 643ms, import 603ms, tests 8.86s, environment 0ms)
+
+npm notice run @orkestrel/test@0.0.12 test:policy
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project policy
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/test
+
+···············································································································
+
+ Test Files  1 passed (1)
+      Tests  111 passed (111)
+   Start at  19:56:35
+   Duration  1.45s (transform 112ms, setup 33ms, import 316ms, tests 942ms, environment 0ms)
+
+npm notice run @orkestrel/test@0.0.12 test:config
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project config
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/test
+
+··············································
+
+ Test Files  1 passed (1)
+      Tests  46 passed (46)
+   Start at  19:56:37
+   Duration  1.76s (transform 201ms, setup 32ms, import 960ms, tests 609ms, environment 0ms)
+
+npm notice run @orkestrel/test@0.0.12 test:setup
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project setup
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/test
+
+························
+
+ Test Files  3 passed (3)
+      Tests  24 passed (24)
+   Start at  19:56:40
+   Duration  380ms (transform 137ms, setup 81ms, import 239ms, tests 25ms, environment 0ms)
+
+npm notice run @orkestrel/test@0.0.12 test:guides
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project guides
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/test
+
+····································-··
+
+ Test Files  1 passed (1)
+      Tests  38 passed | 1 skipped (39)
+   Start at  19:56:41
+   Duration  1.10s (transform 97ms, setup 32ms, import 496ms, tests 418ms, environment 0ms)
+
+npm notice run @orkestrel/test@0.0.12 test:distribution
+npm notice run vitest run --config vite.config.ts --no-cache --reporter=dot --project distribution --mode release
+
+ RUN  v4.1.11 C:/Users/mikes/WebstormProjects/test
+
+(node:4656) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+········---···-
+
+ Test Files  1 passed (1)
+      Tests  11 passed | 4 skipped (15)
+   Start at  19:56:43
+   Duration  11.81s (transform 116ms, setup 32ms, import 7.56s, tests 4.05s, environment 0ms)
+
